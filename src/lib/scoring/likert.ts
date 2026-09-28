@@ -1,0 +1,190 @@
+import type { AnchoredBands, Band, LikertInstrument } from '@/lib/instruments/types';
+import { clamp, median, normalCdf, round, standardError, Z90 } from './stats';
+
+export interface NormStat {
+  normSetId: string;
+  mean: number;
+  sd: number;
+  reliability?: number | null;
+}
+
+export interface ScaleScore {
+  scaleKey: string;
+  /** Ters maddeler çevrildikten sonraki toplam; eksik madde varsa orantılanmış toplam. */
+  raw: number | null;
+  /** Madde ortalaması. */
+  mean: number | null;
+  nAnswered: number;
+  nItems: number;
+  valid: boolean;
+  /** Yorumda kullanılan değer: ölçek ortalama puanlıysa `mean`, toplam puanlıysa `raw`. */
+  value: number | null;
+  valueMin: number;
+  valueMax: number;
+  band: Band | null;
+  basis: 'anchored' | 'norm';
+  z?: number;
+  t?: number;
+  percentile?: number;
+  normSetId?: string;
+  /** %90 güven aralığı (value ile aynı ölçekte). */
+  ciLow?: number;
+  ciHigh?: number;
+}
+
+export interface LikertAnswer {
+  value: number;
+  rtMs?: number | null;
+}
+
+export interface QualityReport {
+  tooFast: boolean;
+  straightLining: boolean;
+  incomplete: boolean;
+  medianRtMs: number | null;
+  longestRun: number;
+  notes: string[];
+}
+
+/** Yüzdelik değeri beş düzeye çevirir (norm varken kullanılır). */
+export function percentileBand(p: number): Band {
+  if (p < 10) return 'very_low';
+  if (p < 30) return 'low';
+  if (p <= 70) return 'average';
+  if (p <= 90) return 'high';
+  return 'very_high';
+}
+
+export function anchoredBand(value: number, bands: AnchoredBands): Band {
+  const sorted = [...bands.thresholds].sort((a, b) => a.min - b.min);
+  let current = sorted[0].band;
+  for (const th of sorted) {
+    if (value >= th.min - 1e-9) current = th.band;
+  }
+  return current;
+}
+
+export function scoreLikert(
+  def: LikertInstrument,
+  answers: Record<string, LikertAnswer>,
+  norms: Record<string, NormStat> = {},
+): ScaleScore[] {
+  const values = def.options.map((o) => o.value);
+  const optMin = Math.min(...values);
+  const optMax = Math.max(...values);
+
+  return def.scales.map((scale) => {
+    const scaleItems = def.items.filter((i) => i.scale === scale.key);
+    const nItems = scaleItems.length;
+    const keyed: number[] = [];
+    for (const item of scaleItems) {
+      const a = answers[item.key];
+      if (!a || !Number.isFinite(a.value)) continue;
+      const v = clamp(a.value, optMin, optMax);
+      keyed.push(item.reverse ? optMin + optMax - v : v);
+    }
+    const nAnswered = keyed.length;
+    const valid = nItems > 0 && nAnswered / nItems >= def.scoring.minAnsweredRatio - 1e-9;
+    const valueMin = def.scoring.method === 'mean' ? optMin : optMin * nItems;
+    const valueMax = def.scoring.method === 'mean' ? optMax : optMax * nItems;
+
+    if (!valid) {
+      return {
+        scaleKey: scale.key,
+        raw: null,
+        mean: null,
+        nAnswered,
+        nItems,
+        valid: false,
+        value: null,
+        valueMin,
+        valueMax,
+        band: null,
+        basis: 'anchored' as const,
+      };
+    }
+
+    const itemMean = keyed.reduce((s, v) => s + v, 0) / nAnswered;
+    const raw = itemMean * nItems; // eksik maddeler ortalamayla orantılanır
+    const value = def.scoring.method === 'mean' ? itemMean : raw;
+
+    const norm = norms[scale.key];
+    if (norm && norm.sd > 0) {
+      const z = (value - norm.mean) / norm.sd;
+      const percentile = normalCdf(z) * 100;
+      const rel = norm.reliability ?? scale.alpha;
+      const sem = rel ? standardError(norm.sd, rel) : undefined;
+      return {
+        scaleKey: scale.key,
+        raw: round(raw, 3),
+        mean: round(itemMean, 3),
+        nAnswered,
+        nItems,
+        valid: true,
+        value: round(value, 3),
+        valueMin,
+        valueMax,
+        band: percentileBand(percentile),
+        basis: 'norm' as const,
+        z: round(z, 3),
+        t: round(50 + 10 * z, 1),
+        percentile: round(percentile, 1),
+        normSetId: norm.normSetId,
+        ciLow: sem !== undefined ? round(clamp(value - Z90 * sem, valueMin, valueMax), 3) : undefined,
+        ciHigh: sem !== undefined ? round(clamp(value + Z90 * sem, valueMin, valueMax), 3) : undefined,
+      };
+    }
+
+    const sem = scale.alpha && scale.sdRef ? standardError(scale.sdRef, scale.alpha) : undefined;
+    return {
+      scaleKey: scale.key,
+      raw: round(raw, 3),
+      mean: round(itemMean, 3),
+      nAnswered,
+      nItems,
+      valid: true,
+      value: round(value, 3),
+      valueMin,
+      valueMax,
+      band: anchoredBand(value, def.anchoredBands),
+      basis: 'anchored' as const,
+      ciLow: sem !== undefined ? round(clamp(value - Z90 * sem, valueMin, valueMax), 3) : undefined,
+      ciHigh: sem !== undefined ? round(clamp(value + Z90 * sem, valueMin, valueMax), 3) : undefined,
+    };
+  });
+}
+
+/**
+ * Cevap kalitesi göstergeleri. Sonucu geçersiz kılmaz; raporda dikkat notu olarak gösterilir.
+ * - Çok hızlı: madde başına ortanca cevap süresi 700 ms'den kısa (cümleyi okumaya yetmeyecek kadar).
+ * - Düz çizgi: 12 veya daha fazla madde üst üste aynı seçenek (ters maddeler olduğu için anlamlı değildir).
+ */
+export function likertQuality(def: LikertInstrument, answers: Record<string, LikertAnswer>): QualityReport {
+  const ordered = def.items.map((i) => answers[i.key]);
+  const answered = ordered.filter((a): a is LikertAnswer => !!a && Number.isFinite(a.value));
+  const rts = answered.map((a) => a.rtMs).filter((v): v is number => typeof v === 'number' && v > 0);
+  const medianRtMs = rts.length ? median(rts) : null;
+
+  let longestRun = 0;
+  let run = 0;
+  let prev: number | undefined;
+  for (const a of ordered) {
+    if (!a) {
+      run = 0;
+      prev = undefined;
+      continue;
+    }
+    run = a.value === prev ? run + 1 : 1;
+    prev = a.value;
+    longestRun = Math.max(longestRun, run);
+  }
+
+  const notes: string[] = [];
+  const tooFast = medianRtMs !== null && rts.length >= 5 && medianRtMs < 700;
+  const straightLining = def.items.length >= 20 && longestRun >= 12;
+  const incomplete = answered.length < def.items.length;
+  if (tooFast) notes.push('Cevaplar çok hızlı verilmiş; bazı cümleler okunmadan işaretlenmiş olabilir.');
+  if (straightLining) notes.push('Uzun bir bölümde hep aynı seçenek işaretlenmiş.');
+  if (incomplete) notes.push('Bazı maddeler cevaplanmamış.');
+  return { tooFast, straightLining, incomplete, medianRtMs, longestRun, notes };
+}

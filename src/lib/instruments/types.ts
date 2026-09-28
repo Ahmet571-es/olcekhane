@@ -1,0 +1,141 @@
+/**
+ * Test tanımları için ortak türler.
+ *
+ * Testlerin kaynağı koddur: maddeler, puanlama anahtarları ve bilim kartları burada sürümlü
+ * olarak tutulur ve tohumlama (seed) sırasında veritabanına yazılır. Bir tanım değiştiğinde
+ * sürüm numarası artırılmalıdır; eski cevaplar kendi sürümünün anahtarıyla puanlanmaya devam eder.
+ */
+
+export type Domain = 'personality' | 'career' | 'academic' | 'cognitive' | 'wellbeing' | 'skills';
+export type InstrumentStatus = 'draft' | 'pilot' | 'active' | 'retired';
+export type LicenseStatus =
+  | 'public_domain'
+  | 'open_license'
+  | 'permission_granted'
+  | 'permission_pending'
+  | 'original';
+
+export type Band = 'very_low' | 'low' | 'average' | 'high' | 'very_high';
+export const BANDS: Band[] = ['very_low', 'low', 'average', 'high', 'very_high'];
+
+export interface Citation {
+  text: string;
+  url?: string;
+}
+
+/** Her testin sayfasında ve raporunda gösterilen "bilim kartı". */
+export interface ScienceCard {
+  basedOn: string;
+  whatItMeasures: string;
+  turkishVersion: string;
+  reliability: string;
+  normStatus: 'none' | 'provisional' | 'final';
+  normNote: string;
+  ageNote: string;
+  license: string;
+  licenseUrl?: string;
+  limitations: string[];
+  citations: Citation[];
+}
+
+export interface ScaleDef {
+  key: string;
+  name: string;
+  /** Tek cümlelik, çocuğun ve velinin anlayacağı tanım. */
+  plain: string;
+  /** Ölçeğin iki ucu: düşük ve yüksek puanın gündelik dildeki karşılığı. */
+  poles?: { low: string; high: string };
+  /** Kaynak çalışmada bildirilen iç tutarlılık (Cronbach α); ölçüm payını hesaplamak için. */
+  alpha?: number;
+  /** Ortalama puan ölçeğinde başvuru standart sapması; ölçüm payını hesaplamak için. */
+  sdRef?: number;
+}
+
+export interface LikertOption {
+  value: number;
+  label: string;
+}
+
+export interface LikertItemDef {
+  key: string;
+  text: string;
+  scale: string;
+  reverse?: boolean;
+  /** Özgün madde metni (çeviri denetimi için belgelenir, kullanıcıya gösterilmez). */
+  source?: string;
+}
+
+/**
+ * Norm yokken puanı ölçeğin kendi aralığına göre yorumlama eşikleri.
+ * Değerler madde ortalaması (ya da toplam puan) ölçeğindedir, alt sınır dahildir.
+ */
+export interface AnchoredBands {
+  basis: 'mean' | 'sum';
+  thresholds: { band: Band; min: number }[];
+}
+
+interface InstrumentBase {
+  slug: string;
+  version: number;
+  name: string;
+  shortName: string;
+  domain: Domain;
+  status: InstrumentStatus;
+  licenseStatus: LicenseStatus;
+  isFree: boolean;
+  minGrade: number;
+  maxGrade: number;
+  estimatedMinutes: number;
+  /** Katalogda tek satırlık açıklama. */
+  tagline: string;
+  /** Test tanıtım sayfasındaki giriş paragrafı. */
+  description: string;
+  /** Öğrenciye test başında gösterilen yönerge. */
+  intro: { title: string; paragraphs: string[] };
+  scales: ScaleDef[];
+  science: ScienceCard;
+  sortOrder: number;
+}
+
+export interface LikertInstrument extends InstrumentBase {
+  engine: 'likert';
+  prompt: string;
+  options: LikertOption[];
+  items: LikertItemDef[];
+  scoring: {
+    method: 'mean' | 'sum';
+    /** Bir ölçek puanı hesaplanabilmesi için cevaplanması gereken en az madde oranı. */
+    minAnsweredRatio: number;
+  };
+  anchoredBands: AnchoredBands;
+  /** Toplam puan da hesaplanacaksa (ör. öz-saygı tek boyutludur). */
+  totalScale?: string;
+}
+
+export interface ReadingQuestion {
+  key: string;
+  text: string;
+  options: { key: string; text: string }[];
+  answer: string;
+  /** Sorunun ölçtüğü beceri. */
+  skill: 'literal' | 'inference' | 'vocabulary' | 'main_idea';
+}
+
+export interface ReadingPassage {
+  key: string;
+  title: string;
+  /** Hangi sınıf düzeyleri için. */
+  minGrade: number;
+  maxGrade: number;
+  paragraphs: string[];
+  questions: ReadingQuestion[];
+}
+
+export interface ReadingInstrument extends InstrumentBase {
+  engine: 'reading';
+  passages: ReadingPassage[];
+  /** Sınıf düzeyine göre başvuru okuma hızları (dakikada kelime), yalnızca yayımlanmış Türkiye verisi. */
+  referenceRates: { grade: number; wpm: number; source: string; mode: 'oral' | 'silent' }[];
+}
+
+export type InstrumentDef = LikertInstrument | ReadingInstrument;
