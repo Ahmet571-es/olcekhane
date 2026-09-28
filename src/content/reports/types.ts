@@ -19,5 +19,13 @@ export type ScaleTexts = Partial<Record<Band, BandText>>;
 export interface ReportTemplate {
   version: string;
   bandLabels: Partial<Record<Band, string>>;
+  /** Çok ölçekli raporlarda "Genel bakış" başlığının altındaki açıklama. Verilmezse kişilik metni kullanılır. */
+  overview?: { student: string; parent: string };
+  /**
+   * Yüksek puanın gelişmiş bir beceri anlamına geldiği ölçekler (ör. çalışma alışkanlıkları). Bu durumda
+   * "Öne çıkanlar" yerine "Güçlü yanlar" ve "Geliştirilebilecek alanlar" ayrı ayrı gösterilir.
+   * Kişilik gibi uçları iyi ya da kötü olmayan ölçeklerde kullanılmaz.
+   */
+  evaluative?: boolean;
   scales: Record<string, ScaleTexts>;
 }

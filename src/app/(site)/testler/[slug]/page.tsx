@@ -31,7 +31,10 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   if (!def || (def.status !== 'active' && def.status !== 'pilot')) notFound();
   const sc = def.science;
   const guides = guidesForTest(slug);
-  const itemCount = def.engine === 'likert' ? `${def.items.length} cümle` : '1 metin, 8 soru';
+  const itemCount =
+    def.engine === 'likert'
+      ? `${def.items.length} ${def.profile === 'riasec' ? 'etkinlik' : 'cümle'}`
+      : '1 metin, 8 soru';
 
   const jsonLd = breadcrumbLd([
     { name: 'Ana sayfa', path: '/' },
@@ -108,8 +111,16 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
         </h2>
         <ul className="measure flex list-disc flex-col gap-2 pl-5">
           <li>Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor</li>
-          <li>Her boyut için sade bir açıklama ve gündelik hayatta işe yarayacak öneriler</li>
-          {def.engine === 'likert' && <li>Puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi</li>}
+          {def.engine === 'likert' && def.profile === 'riasec' ? (
+            <>
+              <li>Altı ilgi alanının Holland altıgeni üzerinde gösterimi ve üç harfli ilgi kodu</li>
+              <li>En belirgin üç alan için açıklamalar, keşif önerileri, lise ve üniversite yolları</li>
+              <li>Profile uyan örnek meslekler</li>
+            </>
+          ) : (
+            <li>Her boyut için sade bir açıklama ve gündelik hayatta işe yarayacak öneriler</li>
+          )}
+          {def.engine === 'likert' && !def.profile && <li>Puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi</li>}
           {def.engine === 'reading' && <li>Okuma hızı, anlama oranı ve soru türlerine göre sonuç</li>}
           <li>Sonucu dikkatle yorumlamayı gerektiren durumlar için uyarılar (ör. çok hızlı cevaplama)</li>
           <li>Testin bilimsel dayanağı ve sınırları</li>

@@ -19,7 +19,7 @@ export const okumaHizi: ReadingInstrument = {
   minGrade: 3,
   maxGrade: 13,
   estimatedMinutes: 7,
-  sortOrder: 30,
+  sortOrder: 40,
   tagline: 'Sınıf düzeyine uygun bir metni ne kadar hızlı okuyup ne kadarını anladığını birlikte ölçer.',
   description:
     'Hızlı okumak tek başına bir beceri değildir; önemli olan anlayarak okumaktır. Bu görevde öğrenci kendi sınıf düzeyine göre yazılmış bir metni sessizce okur, ardından metne bakmadan sekiz soruyu cevaplar. Rapor, okuma hızını ve anlama oranını birlikte değerlendirir.',

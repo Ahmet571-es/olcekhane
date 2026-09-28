@@ -1,3 +1,4 @@
+import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type RiasecKey } from '@/content/careers/riasec';
 import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
@@ -53,8 +54,14 @@ export interface ReportContent {
   qualityNotes: string[];
   sections: ReportSection[];
   highlights: string[];
+  /** Değerlendirici ölçeklerde güçlü yanlar ve geliştirilebilecek alanlar. */
+  strengths?: string[];
+  growth?: string[];
+  /** "Genel bakış" açıklaması (şablonda tanımlıysa). */
+  overview?: string;
   support: boolean;
   science: { basedOn: string; reliability: string; limitations: string[]; license: string };
+  interests?: InterestProfile;
   reading?: {
     passageTitle: string;
     wordCount: number;
@@ -68,6 +75,33 @@ export interface ReportContent {
     referenceNote: string | null;
     speedNote: string;
   };
+}
+
+export interface InterestProfile {
+  /** En belirgin üç alanın harfleri, ör. "SAE". */
+  code: string;
+  types: { key: RiasecKey; name: string; mean: number | null; rank: number }[];
+  top: {
+    key: RiasecKey;
+    name: string;
+    plain: string;
+    text: string;
+    likes: string[];
+    explore: string[];
+    paths: { lise: string; universite: string };
+  }[];
+  lowest: { key: RiasecKey; name: string }[];
+  /** En yüksek ile en düşük alan arasındaki fark (1–5 ölçeğinde). */
+  differentiation: number;
+  /** Profil henüz belirginleşmemiş (fark küçük). */
+  flat: boolean;
+  /** Hiçbir alanda belirgin ilgi yok. */
+  allLow: boolean;
+  /** 8. ve 9. sınıflarda sonuç keşif çerçevesinde sunulur. */
+  exploration: boolean;
+  /** Üçüncü ve dördüncü alan birbirine çok yakınsa uyarı. */
+  closeCall: string | null;
+  occupations: Occupation[];
 }
 
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
@@ -192,9 +226,20 @@ export function buildReport(input: {
     }
   }
 
+  const interests =
+    def.engine === 'likert' && def.profile === 'riasec' ? buildInterestProfile(sections, audience, input.grade) : undefined;
+
+  // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
+  let strengths: string[] | undefined;
+  let growth: string[] | undefined;
+  if (template?.evaluative) {
+    strengths = sections.filter((s) => s.band === 'high' || s.band === 'very_high').map((s) => `${s.name}: ${s.summary.toLocaleLowerCase('tr-TR')}`);
+    growth = sections.filter((s) => s.band === 'low' || s.band === 'very_low').map((s) => `${s.name}: ${s.summary.toLocaleLowerCase('tr-TR')}`);
+  }
+
   // Öne çıkanlar: ortadan en uzak düzeydeki ölçekler (çok ölçekli testlerde).
   const highlights: string[] = [];
-  if (sections.length > 2) {
+  if (sections.length > 2 && !interests && !template?.evaluative) {
     const rank: Record<string, number> = { very_high: 2, very_low: 2, high: 1, low: 1, average: 0 };
     const notable = sections
       .filter((s) => s.band && rank[s.band] > 0)
@@ -219,6 +264,9 @@ export function buildReport(input: {
     qualityNotes: input.qualityNotes ?? [],
     sections,
     highlights,
+    strengths,
+    growth,
+    overview: template?.overview ? (audience === 'student' ? template.overview.student : template.overview.parent) : undefined,
     support,
     science: {
       basedOn: science.basedOn,
@@ -227,5 +275,56 @@ export function buildReport(input: {
       license: science.license,
     },
     reading,
+    interests,
+  };
+}
+
+function buildInterestProfile(sections: ReportSection[], audience: Audience, grade: number): InterestProfile {
+  const byScale = new Map(sections.map((s) => [s.scaleKey, s.value]));
+  const rows = RIASEC_ORDER.map((key, order) => ({
+    key,
+    order,
+    name: RIASEC_TYPES[key].name,
+    mean: byScale.get(RIASEC_TYPES[key].scaleKey) ?? null,
+  }));
+  // Eşit puanlarda altıgendeki sıra korunur; sıralama kararlıdır.
+  const ranked = [...rows].filter((r) => r.mean !== null).sort((a, b) => b.mean! - a.mean! || a.order - b.order);
+  const rankOf = new Map(ranked.map((r, i) => [r.key, i + 1]));
+  const topKeys = ranked.slice(0, 3).map((r) => r.key);
+  const means = ranked.map((r) => r.mean!);
+  const max = means.length ? Math.max(...means) : 0;
+  const min = means.length ? Math.min(...means) : 0;
+  const differentiation = Math.round((max - min) * 100) / 100;
+
+  let closeCall: string | null = null;
+  if (ranked.length >= 4 && Math.abs(ranked[2].mean! - ranked[3].mean!) < 0.15) {
+    closeCall =
+      audience === 'student'
+        ? `${ranked[2].name} ve ${ranked[3].name} alanlarındaki puanların neredeyse aynı; üçüncü alanını bu ikisinden biri olarak düşünebilirsin.`
+        : `${ranked[2].name} ve ${ranked[3].name} alanlarındaki puanlar neredeyse aynıdır; üçüncü alan bu ikisinden biri olarak düşünülebilir.`;
+  }
+
+  return {
+    code: topKeys.join(''),
+    types: rows.map((r) => ({ key: r.key, name: r.name, mean: r.mean, rank: rankOf.get(r.key) ?? 0 })),
+    top: topKeys.map((k) => {
+      const t = RIASEC_TYPES[k];
+      return {
+        key: k,
+        name: t.name,
+        plain: t.plain,
+        text: audience === 'student' ? t.student : t.parent,
+        likes: t.likes,
+        explore: t.explore,
+        paths: t.paths,
+      };
+    }),
+    lowest: ranked.slice(-2).reverse().map((r) => ({ key: r.key, name: r.name })),
+    differentiation,
+    flat: differentiation < 0.8,
+    allLow: max < 2.6,
+    exploration: grade <= 9,
+    closeCall,
+    occupations: occupationsFor(topKeys, 8),
   };
 }

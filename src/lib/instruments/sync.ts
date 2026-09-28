@@ -11,6 +11,39 @@ function hashDef(def: InstrumentDef): string {
   return createHash('sha256').update(JSON.stringify(def)).digest('hex');
 }
 
+/**
+ * Ölçmeyi etkileyen alanların özeti: madde metinleri, seçenekler, puanlama anahtarı ve eşikler.
+ * Bunlar değişmeden yapılan düzeltmeler (bilim kartı, açıklama, yönerge, sıralama) mevcut sürümün
+ * üzerine yazılabilir; eski cevapların anlamı değişmez. Madde metni değişirse yeni sürüm gerekir.
+ */
+function scoringHash(def: InstrumentDef): string {
+  const core =
+    def.engine === 'likert'
+      ? {
+          engine: def.engine,
+          profile: def.profile ?? null,
+          options: def.options.map((o) => o.value),
+          items: def.items.map((i) => [i.key, i.scale, !!i.reverse, i.text]),
+          prompt: def.prompt,
+          scoring: def.scoring,
+          anchoredBands: def.anchoredBands,
+          scales: def.scales.map((s) => [s.key, s.alpha ?? null, s.sdRef ?? null]),
+          totalScale: def.totalScale ?? null,
+        }
+      : {
+          engine: def.engine,
+          passages: def.passages.map((p) => [
+            p.key,
+            p.minGrade,
+            p.maxGrade,
+            p.paragraphs,
+            p.questions.map((q) => [q.key, q.text, q.options, q.answer, q.skill]),
+          ]),
+          scales: def.scales.map((s) => s.key),
+        };
+  return createHash('sha256').update(JSON.stringify(core)).digest('hex');
+}
+
 function itemRows(def: InstrumentDef, versionId: string) {
   if (def.engine === 'likert') {
     return def.items.map((it, i) => ({
@@ -65,13 +98,23 @@ export async function syncDefinitions(log: (m: string) => void = console.log): P
 
     const hash = hashDef(def);
     const [existing] = await db
-      .select({ id: instrumentVersions.id, contentHash: instrumentVersions.contentHash })
+      .select({ id: instrumentVersions.id, contentHash: instrumentVersions.contentHash, definition: instrumentVersions.definition })
       .from(instrumentVersions)
       .where(and(eq(instrumentVersions.instrumentId, inst.id), eq(instrumentVersions.version, def.version)))
       .limit(1);
 
     if (existing) {
       if (existing.contentHash === hash) continue;
+      const stored = existing.definition as unknown as InstrumentDef;
+      if (scoringHash(stored) === scoringHash(def)) {
+        // Yalnızca sunum metinleri değişmiş: aynı sürümün üzerine yaz.
+        await db
+          .update(instrumentVersions)
+          .set({ definition: def as unknown as Record<string, unknown>, contentHash: hash })
+          .where(eq(instrumentVersions.id, existing.id));
+        log(`${def.slug} v${def.version}: açıklama metinleri güncellendi.`);
+        continue;
+      }
       const [{ n }] = await db
         .select({ n: count() })
         .from(attempts)

@@ -13,14 +13,6 @@ export interface UpcomingTest {
 
 export const UPCOMING: UpcomingTest[] = [
   {
-    key: 'mesleki-ilgi',
-    name: 'Mesleki İlgi Profili',
-    domain: 'career',
-    measures: 'Altı ilgi alanı (gerçekçi, araştırmacı, sanatçı, sosyal, girişimci, düzenli) ve bunlara uyan meslekler',
-    basedOn: 'Holland’ın RIASEC modeli; meslek eşleştirmesi O*NET veritabanı (CC BY 4.0)',
-    grades: '8. sınıf ve üzeri',
-  },
-  {
     key: 'sinav-kaygisi',
     name: 'Sınav Kaygısı (lise ve YKS)',
     domain: 'academic',
@@ -43,14 +35,6 @@ export const UPCOMING: UpcomingTest[] = [
     measures: 'Sınıf düzeyindeki temel kazanımlarda güçlü ve eksik konular',
     basedOn: 'Özgün sorular, MEB öğretim programı kazanımlarına eşlenmiş',
     grades: '5.–8. sınıf',
-  },
-  {
-    key: 'calisma-aliskanliklari',
-    name: 'Çalışma Alışkanlıkları ve Zaman Yönetimi',
-    domain: 'academic',
-    measures: 'Planlama, dikkat dağıtıcıları yönetme, tekrar ve sınav hazırlığı alışkanlıkları',
-    basedOn: 'Özgün ölçek, pilot çalışmayla geliştiriliyor',
-    grades: '6. sınıf ve üzeri',
   },
   {
     key: 'dayaniklilik',

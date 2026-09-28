@@ -1,4 +1,5 @@
 import type { ReportContent, ReportSection } from '@/lib/reports/build';
+import { InterestReport } from './interest-report';
 import { ScaleRuler } from './scale-ruler';
 
 const dateFmt = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -14,7 +15,7 @@ function rulerSteps(s: ReportSection) {
 
 export function ReportView({ report }: { report: ReportContent }) {
   const forStudent = report.audience === 'student';
-  const multi = report.sections.length > 1 && !report.reading;
+  const multi = report.sections.length > 1 && !report.reading && !report.interests;
   return (
     <article className="flex flex-col gap-10">
       <header className="flex flex-col gap-3 border-b border-rule pb-8">
@@ -53,11 +54,46 @@ export function ReportView({ report }: { report: ReportContent }) {
               Genel bakış
             </h2>
             <p className="measure mt-2 text-ink-2">
-              {forStudent
-                ? 'Her satır bir özelliği gösteriyor. Kırmızı işaret senin puanın; sarı bant ölçümün doğal payı. Uçlardan biri "iyi", öteki "kötü" değil; her ikisinin de güçlü yanları var.'
-                : 'Her satır bir kişilik boyutunu gösterir. Kırmızı işaret çocuğunuzun puanı, sarı bant ölçümün doğal payıdır. Uçlardan biri iyi, diğeri kötü değildir; her tarzın kendine özgü güçlü yanları vardır.'}
+              {report.overview ??
+                (forStudent
+                  ? 'Her satır bir özelliği gösteriyor. Kırmızı işaret senin puanın; sarı bant ölçümün doğal payı. Uçlardan biri "iyi", öteki "kötü" değil; her ikisinin de güçlü yanları var.'
+                  : 'Her satır bir kişilik boyutunu gösterir. Kırmızı işaret çocuğunuzun puanı, sarı bant ölçümün doğal payıdır. Uçlardan biri iyi, diğeri kötü değildir; her tarzın kendine özgü güçlü yanları vardır.')}
             </p>
           </div>
+          {(report.strengths || report.growth) && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="panel p-5">
+                <p className="font-bold">{forStudent ? 'Güçlü alışkanlıkların' : 'Güçlü yanlar'}</p>
+                {report.strengths && report.strengths.length > 0 ? (
+                  <ul className="mt-2 flex flex-col gap-1">
+                    {report.strengths.map((h) => (
+                      <li key={h}>{h}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-ink-2">
+                    {forStudent
+                      ? 'Henüz belirgin biçimde güçlü bir alan yok; aşağıdaki önerilerle kısa sürede geliştirebilirsin.'
+                      : 'Henüz belirgin biçimde güçlü bir alan görünmüyor; aşağıdaki önerilerle kısa sürede gelişme sağlanabilir.'}
+                  </p>
+                )}
+              </div>
+              <div className="panel p-5">
+                <p className="font-bold">{forStudent ? 'Geliştirebileceğin alanlar' : 'Geliştirilebilecek alanlar'}</p>
+                {report.growth && report.growth.length > 0 ? (
+                  <ul className="mt-2 flex flex-col gap-1">
+                    {report.growth.map((h) => (
+                      <li key={h}>{h}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-ink-2">
+                    {forStudent ? 'Belirgin biçimde zayıf bir alan görünmüyor.' : 'Belirgin biçimde zayıf bir alan görünmüyor.'}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
           {report.highlights.length > 0 && (
             <div className="panel p-5">
               <p className="font-bold">{forStudent ? 'Sende öne çıkanlar' : 'Öne çıkanlar'}</p>
@@ -95,11 +131,15 @@ export function ReportView({ report }: { report: ReportContent }) {
         </section>
       )}
 
-      <section className="flex flex-col gap-8" aria-label="Ayrıntılı sonuçlar">
-        {report.sections.map((s) => (
-          <SectionDetail key={s.scaleKey} s={s} forStudent={forStudent} showRuler={!multi && !report.reading} />
-        ))}
-      </section>
+      {report.interests ? (
+        <InterestReport report={report} />
+      ) : (
+        <section className="flex flex-col gap-8" aria-label="Ayrıntılı sonuçlar">
+          {report.sections.map((s) => (
+            <SectionDetail key={s.scaleKey} s={s} forStudent={forStudent} showRuler={!multi && !report.reading} />
+          ))}
+        </section>
+      )}
 
       {report.support && (
         <aside className="notice notice-info" aria-labelledby="destek">

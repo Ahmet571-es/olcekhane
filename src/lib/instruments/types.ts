@@ -99,6 +99,11 @@ interface InstrumentBase {
 
 export interface LikertInstrument extends InstrumentBase {
   engine: 'likert';
+  /**
+   * Özel rapor düzeni. "riasec": ilgi profili (altıgen grafik, ilgi kodu, meslek örnekleri).
+   * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
+   */
+  profile?: 'riasec';
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];
