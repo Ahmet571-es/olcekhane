@@ -35,12 +35,12 @@ export const okumaHizi: ReadingInstrument = {
     {
       key: 'comprehension',
       name: 'Anlama',
-      plain: 'Okuduğun metindeki bilgileri, çıkarımları ve ana fikri ne kadar kavradığın.',
+      plain: 'Okunan metindeki bilgileri, çıkarımları ve ana fikri kavrayabilme.',
     },
     {
       key: 'speed',
       name: 'Okuma hızı',
-      plain: 'Bir dakikada okuduğun kelime sayısı.',
+      plain: 'Bir dakikada okunan kelime sayısı.',
     },
   ],
   referenceRates: [

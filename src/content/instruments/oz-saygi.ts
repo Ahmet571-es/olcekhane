@@ -50,7 +50,7 @@ export const ozSaygi: LikertInstrument = {
     {
       key: 'self_esteem',
       name: 'Öz-saygı',
-      plain: 'Kendini genel olarak ne kadar değerli ve yeterli gördüğün.',
+      plain: 'Kişinin kendini genel olarak değerli ve yeterli görmesi.',
       poles: { low: 'Kendine karşı eleştirel', high: 'Kendine karşı olumlu' },
       alpha: 0.81,
       sdRef: 5,

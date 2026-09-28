@@ -55,7 +55,7 @@ export const besFaktor: LikertInstrument = {
     {
       key: 'extraversion',
       name: 'Dışadönüklük',
-      plain: 'İnsanların arasında ne kadar enerji bulduğun ve sosyal ortamlarda ne kadar öne çıktığın.',
+      plain: 'İnsanların arasında enerji bulma ve sosyal ortamlarda öne çıkma eğilimi.',
       poles: { low: 'Sakin, dinlemeyi seven', high: 'Sosyal, konuşkan, enerjik' },
       alpha: 0.87,
       sdRef: 0.7,
@@ -63,7 +63,7 @@ export const besFaktor: LikertInstrument = {
     {
       key: 'agreeableness',
       name: 'Uyumluluk',
-      plain: 'Başkalarının duygularına ne kadar önem verdiğin ve insanlarla ne kadar yumuşak ilişki kurduğun.',
+      plain: 'Başkalarının duygularını önemseme ve insanlarla yumuşak, uyumlu ilişkiler kurma eğilimi.',
       poles: { low: 'Doğrudan, kendi görüşünü savunan', high: 'Şefkatli, yardımsever, uzlaşmacı' },
       alpha: 0.82,
       sdRef: 0.7,
@@ -71,7 +71,7 @@ export const besFaktor: LikertInstrument = {
     {
       key: 'conscientiousness',
       name: 'Sorumluluk',
-      plain: 'Planlı, düzenli ve işini bitirmeye kararlı olma eğilimin.',
+      plain: 'Planlı, düzenli ve bir işi bitirmeye kararlı olma eğilimi.',
       poles: { low: 'Esnek, anlık karar veren', high: 'Planlı, düzenli, azimli' },
       alpha: 0.79,
       sdRef: 0.7,
@@ -79,7 +79,7 @@ export const besFaktor: LikertInstrument = {
     {
       key: 'emotional_stability',
       name: 'Duygusal Denge',
-      plain: 'Stresli ve zor anlarda ne kadar sakin kalabildiğin.',
+      plain: 'Stresli ve zor anlarda sakin kalabilme.',
       poles: { low: 'Duyguları yoğun yaşayan, çabuk etkilenen', high: 'Sakin, kolay sarsılmayan' },
       alpha: 0.86,
       sdRef: 0.7,
@@ -87,7 +87,7 @@ export const besFaktor: LikertInstrument = {
     {
       key: 'intellect',
       name: 'Merak ve Hayal Gücü',
-      plain: 'Yeni fikirlere, düşünmeye ve hayal kurmaya ne kadar açık olduğun.',
+      plain: 'Yeni fikirlere, düşünmeye ve hayal kurmaya açıklık.',
       poles: { low: 'Somut ve pratik düşünen', high: 'Meraklı, yaratıcı, fikir dolu' },
       alpha: 0.84,
       sdRef: 0.7,

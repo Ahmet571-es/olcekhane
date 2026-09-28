@@ -1,4 +1,5 @@
 import type { ReportContent, ReportSection } from '@/lib/reports/build';
+import { CognitiveReportView } from './cognitive-report';
 import { InterestReport } from './interest-report';
 import { ScaleRuler } from './scale-ruler';
 
@@ -133,6 +134,8 @@ export function ReportView({ report }: { report: ReportContent }) {
 
       {report.interests ? (
         <InterestReport report={report} />
+      ) : report.cognitive ? (
+        <CognitiveReportView report={report} />
       ) : (
         <section className="flex flex-col gap-8" aria-label="Ayrıntılı sonuçlar">
           {report.sections.map((s) => (

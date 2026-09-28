@@ -143,4 +143,72 @@ export interface ReadingInstrument extends InstrumentBase {
   referenceRates: { grade: number; wpm: number; source: string; mode: 'oral' | 'silent' }[];
 }
 
-export type InstrumentDef = LikertInstrument | ReadingInstrument;
+/* ---------- Bilişsel görevler ---------- */
+
+export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match';
+
+interface TaskBase {
+  /** Veritabanındaki blok anahtarı (task_trials.block). */
+  key: string;
+  kind: TaskKind;
+  name: string;
+  /** Öğrenciye gösterilen kısa açıklama. */
+  measures: string;
+  instructions: string[];
+}
+
+/** Sayı dizisi: ileri ya da geri tekrar. Her uzunlukta iki deneme; ikisi de yanlışsa görev biter. */
+export interface DigitSpanTask extends TaskBase {
+  kind: 'digit_span';
+  direction: 'forward' | 'backward';
+  /** Her rakamın ekranda kalma ve aradaki boşluk süreleri (ms). */
+  onMs: number;
+  offMs: number;
+  /** Geri bildirimli alıştırma dizisi (puanlanmaz). */
+  practice: number[];
+  /** İlk test dizisinin uzunluğu; sequences[i] bu uzunluk + i rakamlık iki diziyi içerir. */
+  startLength: number;
+  sequences: number[][][];
+}
+
+/** Kutu dizisi: ekrandaki kutuların yanma sırasını tekrar etme (görsel-uzamsal bellek). */
+export interface SpatialSpanTask extends TaskBase {
+  kind: 'spatial_span';
+  onMs: number;
+  offMs: number;
+  /** Kutuların konumları (0–100 arası yüzde koordinatlar). */
+  boxes: { x: number; y: number }[];
+  practice: number[];
+  startLength: number;
+  sequences: number[][][];
+}
+
+/** Ok görevi: ortadaki okun yönünü, kenardaki oklara aldırmadan bildirme (seçici dikkat). */
+export interface FlankerTask extends TaskBase {
+  kind: 'flanker';
+  fixationMs: number;
+  timeoutMs: number;
+  itiMs: [number, number];
+  practice: { dir: 'L' | 'R'; congruent: boolean }[];
+  trials: { dir: 'L' | 'R'; congruent: boolean }[];
+}
+
+/** Sembol eşleştirme: anahtardaki sembole karşılık gelen rakamı olabildiğince hızlı bulma (işlem hızı). */
+export interface SymbolMatchTask extends TaskBase {
+  kind: 'symbol_match';
+  durationMs: number;
+  /** Sembol anahtarları (1–9 rakamlarına eşlenir, sırayla). */
+  symbols: string[];
+  practice: number[];
+  /** Gösterilecek sembollerin sırası (0–8, anahtardaki sıra). */
+  sequence: number[];
+}
+
+export type CognitiveTask = DigitSpanTask | SpatialSpanTask | FlankerTask | SymbolMatchTask;
+
+export interface TaskInstrument extends InstrumentBase {
+  engine: 'tasks';
+  tasks: CognitiveTask[];
+}
+
+export type InstrumentDef = LikertInstrument | ReadingInstrument | TaskInstrument;

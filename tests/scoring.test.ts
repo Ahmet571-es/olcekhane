@@ -38,7 +38,7 @@ describe('test tanımları tutarlı', () => {
         for (const item of def.items) expect(scaleKeys.has(item.scale)).toBe(true);
         for (const s of def.scales) expect(def.items.some((i) => i.scale === s.key)).toBe(true);
         expect(def.options.length).toBeGreaterThanOrEqual(2);
-      } else {
+      } else if (def.engine === 'reading') {
         for (const p of def.passages) {
           expect(p.questions.length).toBe(8);
           const answers = p.questions.map((q) => q.answer);

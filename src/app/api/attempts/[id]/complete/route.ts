@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { AssessmentError, completeLikertAttempt } from '@/lib/assessment/service';
+import { AssessmentError, completeAttempt } from '@/lib/assessment/service';
 import { guardAttempt, jsonError } from '@/lib/api-guard';
 import { audit } from '@/lib/audit';
 
@@ -8,7 +8,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/attempts/[i
   const g = await guardAttempt(req, id);
   if ('error' in g) return g.error;
   try {
-    await completeLikertAttempt(id);
+    await completeAttempt(id);
   } catch (err) {
     if (err instanceof AssessmentError) return jsonError(400, err.message);
     throw err;

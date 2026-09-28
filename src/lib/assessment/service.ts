@@ -17,10 +17,22 @@ import {
 } from '@/db/schema';
 import { getInstrumentDef } from '@/content/instruments';
 import { hasActiveConsent } from '@/lib/consent';
-import type { InstrumentDef, LikertInstrument, ReadingInstrument } from '@/lib/instruments/types';
+import type { InstrumentDef, LikertInstrument, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
 import { buildReport, type Audience, type ReportContent, type StoredScore } from '@/lib/reports/build';
 import { likertQuality, scoreLikert, type LikertAnswer, type NormStat } from '@/lib/scoring/likert';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
+import {
+  TaskInputError,
+  scoreFlanker,
+  scoreSpan,
+  scoreSymbol,
+  taskQualityNotes,
+  type FlankerResult,
+  type FlankerTrialInput,
+  type SpanTrialInput,
+  type SymbolResult,
+  type SymbolTrialInput,
+} from '@/lib/scoring/tasks';
 
 export class AssessmentError extends Error {
   constructor(
@@ -345,6 +357,193 @@ export async function completeReadingAttempt(
       .where(eq(attempts.id, attemptId));
   });
   await generateReports(attemptId);
+}
+
+/* ---------- Bilişsel görevler ---------- */
+
+type TrialRow = typeof taskTrials.$inferInsert;
+
+/** Bir görevin denemelerini puanlayıp veritabanı satırlarına çevirir. Geçersiz veri AssessmentError fırlatır. */
+function taskRows(def: TaskInstrument, attemptId: string, block: string, input: unknown[]): TrialRow[] {
+  const task = def.tasks.find((t) => t.key === block);
+  if (!task) throw new AssessmentError('invalid', 'Geçersiz görev.');
+  try {
+    if (task.kind === 'digit_span' || task.kind === 'spatial_span') {
+      const { trials } = scoreSpan(task, input as SpanTrialInput[]);
+      return trials.map((t) => ({
+        attemptId,
+        block,
+        trialIndex: (t.length - task.startLength) * 2 + t.index,
+        stimulus: { length: t.length, index: t.index, seq: t.stimulus },
+        response: { seq: t.response },
+        correct: t.correct,
+        rtMs: t.rtMs === null ? null : Math.round(t.rtMs),
+      }));
+    }
+    if (task.kind === 'flanker') {
+      const { trials } = scoreFlanker(task, input as FlankerTrialInput[]);
+      return trials.map((t) => ({
+        attemptId,
+        block,
+        trialIndex: t.index,
+        stimulus: { dir: t.dir, congruent: t.congruent },
+        response: { key: t.response },
+        correct: t.correct,
+        rtMs: t.rtMs === null ? null : Math.round(t.rtMs),
+      }));
+    }
+    const { trials } = scoreSymbol(task, input as SymbolTrialInput[]);
+    return trials.map((t) => ({
+      attemptId,
+      block,
+      trialIndex: t.index,
+      stimulus: { symbol: t.symbol },
+      response: { digit: t.response },
+      correct: t.correct,
+      rtMs: t.rtMs === null ? null : Math.round(t.rtMs),
+    }));
+  } catch (err) {
+    if (err instanceof TaskInputError) throw new AssessmentError('invalid', err.message);
+    throw err;
+  }
+}
+
+/** Bir görevin bütün denemelerini kaydeder. Aynı görev yeniden gönderilirse öncekinin yerini alır. */
+export async function saveTaskBlock(attemptId: string, block: string, input: unknown[]): Promise<void> {
+  const attempt = await getAttempt(attemptId);
+  if (!attempt || attempt.status !== 'in_progress') {
+    throw new AssessmentError('not_in_progress', 'Bu uygulama tamamlanmış ya da kapatılmış.');
+  }
+  const { def } = await versionDefinition(attempt.versionId);
+  if (def.engine !== 'tasks') throw new AssessmentError('invalid', 'Geçersiz istek.');
+  const rows = taskRows(def, attemptId, block, input);
+  if (rows.length === 0) throw new AssessmentError('invalid', 'Görevde kaydedilecek deneme yok.');
+  await db.transaction(async (tx) => {
+    await tx.delete(taskTrials).where(and(eq(taskTrials.attemptId, attemptId), eq(taskTrials.block, block)));
+    await tx.insert(taskTrials).values(rows);
+    await tx.update(attempts).set({ lastActivityAt: new Date() }).where(eq(attempts.id, attemptId));
+  });
+}
+
+/** Tamamlanmış görevlerin anahtarları (yarıda kalan uygulamayı kaldığı yerden sürdürmek için). */
+export async function taskProgress(attemptId: string): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ block: taskTrials.block })
+    .from(taskTrials)
+    .where(eq(taskTrials.attemptId, attemptId));
+  return rows.map((r) => r.block);
+}
+
+export async function completeTaskAttempt(attemptId: string): Promise<void> {
+  const attempt = await getAttempt(attemptId);
+  if (!attempt) throw new AssessmentError('not_found', 'Uygulama bulunamadı.');
+  if (attempt.status === 'completed') return;
+  if (attempt.status !== 'in_progress') throw new AssessmentError('not_in_progress', 'Bu uygulama kapatılmış.');
+  const { def } = await versionDefinition(attempt.versionId);
+  if (def.engine !== 'tasks') throw new AssessmentError('invalid', 'Geçersiz istek.');
+
+  const rows = await db.select().from(taskTrials).where(eq(taskTrials.attemptId, attemptId));
+  const byBlock = new Map<string, typeof rows>();
+  for (const r of rows) byBlock.set(r.block, [...(byBlock.get(r.block) ?? []), r]);
+  const missing = def.tasks.filter((t) => !byBlock.has(t.key));
+  if (missing.length) throw new AssessmentError('invalid', 'Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
+
+  const scoreRows: (typeof scores.$inferInsert)[] = [];
+  let flankerRes: FlankerResult | undefined;
+  let symbolRes: SymbolResult | undefined;
+  const scaleOf: Record<string, string> = {};
+  for (const t of def.tasks) {
+    if (t.kind === 'digit_span') scaleOf[t.key] = t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
+    else if (t.kind === 'spatial_span') scaleOf[t.key] = 'spatial';
+    else if (t.kind === 'flanker') scaleOf[t.key] = 'attention';
+    else scaleOf[t.key] = 'speed';
+  }
+
+  for (const task of def.tasks) {
+    const tr = byBlock.get(task.key)!;
+    if (task.kind === 'digit_span' || task.kind === 'spatial_span') {
+      const input: SpanTrialInput[] = tr.map((r) => ({
+        length: Number((r.stimulus as { length: number }).length),
+        index: Number((r.stimulus as { index: number }).index),
+        response: ((r.response as { seq: number[] }).seq ?? []).map(Number),
+        rtMs: r.rtMs,
+      }));
+      const { result } = scoreSpan(task, input);
+      scoreRows.push({
+        attemptId,
+        scaleKey: scaleOf[task.key],
+        raw: result.span,
+        mean: null,
+        nAnswered: result.correctTrials,
+        nItems: result.totalTrials,
+        band: null,
+        extra: result as unknown as Record<string, unknown>,
+      });
+    } else if (task.kind === 'flanker') {
+      const input: FlankerTrialInput[] = tr.map((r) => ({
+        index: r.trialIndex,
+        response: ((r.response as { key: 'L' | 'R' | null }).key ?? null) as 'L' | 'R' | null,
+        rtMs: r.rtMs,
+      }));
+      const { result } = scoreFlanker(task, input);
+      flankerRes = result;
+      scoreRows.push({
+        attemptId,
+        scaleKey: 'attention',
+        raw: Math.round(result.accuracy * 1000) / 10,
+        mean: result.meanRt,
+        nAnswered: result.n - result.timeouts,
+        nItems: task.trials.length,
+        band: null,
+        extra: result as unknown as Record<string, unknown>,
+      });
+    } else {
+      const input: SymbolTrialInput[] = tr.map((r) => ({
+        index: r.trialIndex,
+        response: Number((r.response as { digit: number }).digit),
+        rtMs: r.rtMs,
+      }));
+      const { result } = scoreSymbol(task, input);
+      symbolRes = result;
+      scoreRows.push({
+        attemptId,
+        scaleKey: 'speed',
+        raw: result.perMinute,
+        mean: null,
+        nAnswered: result.correct,
+        nItems: result.attempted,
+        band: null,
+        extra: result as unknown as Record<string, unknown>,
+      });
+    }
+  }
+
+  const notes = taskQualityNotes({ flanker: flankerRes, symbol: symbolRes });
+  const now = new Date();
+  await db.transaction(async (tx) => {
+    await tx.delete(scores).where(eq(scores.attemptId, attemptId));
+    await tx.insert(scores).values(scoreRows);
+    await tx
+      .update(attempts)
+      .set({
+        status: 'completed',
+        completedAt: now,
+        durationMs: now.getTime() - attempt.startedAt.getTime(),
+        qualityFlags: { notes },
+      })
+      .where(eq(attempts.id, attemptId));
+  });
+  await generateReports(attemptId);
+}
+
+/** Motor türüne göre uygulamayı tamamlar (çoktan seçmeli ölçekler ve bilişsel görevler). */
+export async function completeAttempt(attemptId: string): Promise<void> {
+  const attempt = await getAttempt(attemptId);
+  if (!attempt) throw new AssessmentError('not_found', 'Uygulama bulunamadı.');
+  const { def } = await versionDefinition(attempt.versionId);
+  if (def.engine === 'likert') return completeLikertAttempt(attemptId);
+  if (def.engine === 'tasks') return completeTaskAttempt(attemptId);
+  throw new AssessmentError('invalid', 'Bu test bu yolla tamamlanamaz.');
 }
 
 async function loadScores(attemptId: string): Promise<StoredScore[]> {

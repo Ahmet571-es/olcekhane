@@ -2,7 +2,8 @@ import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type Riase
 import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
-import type { Band, InstrumentDef, ReadingInstrument } from '@/lib/instruments/types';
+import type { Band, InstrumentDef, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
+import type { FlankerResult, SpanResult, SymbolResult } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
 export type Audience = 'student' | 'parent';
@@ -62,6 +63,7 @@ export interface ReportContent {
   support: boolean;
   science: { basedOn: string; reliability: string; limitations: string[]; license: string };
   interests?: InterestProfile;
+  cognitive?: CognitiveReport;
   reading?: {
     passageTitle: string;
     wordCount: number;
@@ -75,6 +77,23 @@ export interface ReportContent {
     referenceNote: string | null;
     speedNote: string;
   };
+}
+
+export interface CognitiveBlock {
+  key: string;
+  name: string;
+  plain: string;
+  /** Kısa sonuç: "6 rakamlık diziye kadar" gibi. */
+  headline: string;
+  text: string;
+  ladder?: { length: number; results: boolean[] }[];
+  flanker?: { accCongruent: number; accIncongruent: number; rtCongruent: number | null; rtIncongruent: number | null };
+  symbol?: { correct: number; errors: number; perMinute: number };
+}
+
+export interface CognitiveReport {
+  blocks: CognitiveBlock[];
+  tips: string[];
 }
 
 export interface InterestProfile {
@@ -138,6 +157,7 @@ export function buildReport(input: {
 
   const sections: ReportSection[] = [];
   let reading: ReportContent['reading'];
+  let cognitive: CognitiveReport | undefined;
 
   if (def.engine === 'likert') {
     const optVals = def.options.map((o) => o.value);
@@ -173,6 +193,8 @@ export function buildReport(input: {
         percentile: s?.percentile ?? null,
       });
     }
+  } else if (def.engine === 'tasks') {
+    cognitive = buildCognitive(def, byKey, audience);
   } else {
     const rDef = def as ReadingInstrument;
     const comp = byKey.get('comprehension');
@@ -276,7 +298,133 @@ export function buildReport(input: {
     },
     reading,
     interests,
+    cognitive,
   };
+}
+
+const pct = (x: number) => `%${nf0.format(Math.round(x * 100))}`;
+
+function spanText(r: SpanResult, audience: Audience, what: { student: string; parent: string; unit: string; everyday: string }): string {
+  const you = audience === 'student';
+  if (r.belowFloor) {
+    return you
+      ? `En kısa ${what.unit} dizilerinde bile zorlandın. Bu, o an dikkatinin dağılmasından ya da görevi ilk kez yapıyor olmaktan kaynaklanabilir. ${what.everyday}`
+      : `En kısa ${what.unit} dizilerinde bile zorlandı. Bu sonuç o anki dikkat, yorgunluk ya da görevi ilk kez yapıyor olmaktan etkilenmiş olabilir; tek başına yorumlanmamalıdır. ${what.everyday}`;
+  }
+  const base = you ? what.student.replace('{n}', String(r.span)) : what.parent.replace('{n}', String(r.span));
+  const ceiling = r.ceiling
+    ? you
+      ? ' Görevdeki en uzun diziyi de doğru yaptın; yani sınırına henüz ulaşmamış olabilirsin.'
+      : ' Görevdeki en uzun diziyi de doğru yaptı; görev onun üst sınırını ölçmeye yetmemiş olabilir.'
+    : '';
+  return `${base}${ceiling} ${what.everyday}`;
+}
+
+function buildCognitive(def: TaskInstrument, byKey: Map<string, StoredScore>, audience: Audience): CognitiveReport {
+  const you = audience === 'student';
+  const blocks: CognitiveBlock[] = [];
+  const scale = (k: string) => def.scales.find((s) => s.key === k)!;
+
+  const fwd = byKey.get('digit_forward')?.extra as unknown as SpanResult | undefined;
+  if (fwd) {
+    blocks.push({
+      key: 'digit_forward',
+      name: scale('digit_forward').name,
+      plain: scale('digit_forward').plain,
+      headline: fwd.span ? `${fwd.span} rakamlık diziye kadar` : 'En kısa dizilerde zorlandı',
+      text: spanText(fwd, audience, {
+        unit: 'rakam',
+        student: 'Rakam dizilerini aynı sırayla en fazla {n} rakama kadar doğru tekrar edebildin.',
+        parent: 'Çocuğunuz rakam dizilerini aynı sırayla en fazla {n} rakamlık uzunluğa kadar doğru tekrar etti.',
+        everyday: you
+          ? 'Bu beceri, bir telefon numarasını yazana kadar ya da öğretmenin söylediği sayfa numarasını açana kadar aklında tutmak gibi işlerde kullanılır.'
+          : 'Bu beceri, kısa bir bilgiyi kullanana kadar akılda tutmak için gerekir: öğretmenin söylediği sayfa numarası ya da kısa bir yönerge gibi.',
+      }),
+      ladder: fwd.ladder,
+    });
+  }
+  const bwd = byKey.get('digit_backward')?.extra as unknown as SpanResult | undefined;
+  if (bwd) {
+    blocks.push({
+      key: 'digit_backward',
+      name: scale('digit_backward').name,
+      plain: scale('digit_backward').plain,
+      headline: bwd.span ? `${bwd.span} rakamlık diziye kadar` : 'En kısa dizilerde zorlandı',
+      text: spanText(bwd, audience, {
+        unit: 'rakam',
+        student: 'Rakam dizilerini tersten en fazla {n} rakama kadar doğru tekrar edebildin.',
+        parent: 'Çocuğunuz rakam dizilerini tersten en fazla {n} rakamlık uzunluğa kadar doğru tekrar etti.',
+        everyday: you
+          ? 'Bilgiyi hem akılda tutup hem de üzerinde değişiklik yapmak, zihinden işlem yaparken ve çok adımlı yönergeleri takip ederken işine yarar. Tersten tekrar, ileri tekrardan her zaman daha zordur.'
+          : 'Bilgiyi akılda tutarken üzerinde işlem yapabilmek; zihinden işlem, çok adımlı yönergeleri takip etme ve okuduğunu anlama gibi işlerde kullanılır. Tersten tekrar herkes için ileri tekrardan daha zordur.',
+      }),
+      ladder: bwd.ladder,
+    });
+  }
+  const sp = byKey.get('spatial')?.extra as unknown as SpanResult | undefined;
+  if (sp) {
+    blocks.push({
+      key: 'spatial',
+      name: scale('spatial').name,
+      plain: scale('spatial').plain,
+      headline: sp.span ? `${sp.span} kutuluk diziye kadar` : 'En kısa dizilerde zorlandı',
+      text: spanText(sp, audience, {
+        unit: 'kutu',
+        student: 'Yanan kutuların sırasını en fazla {n} kutuya kadar doğru hatırladın.',
+        parent: 'Çocuğunuz yanan kutuların sırasını en fazla {n} kutuluk uzunluğa kadar doğru hatırladı.',
+        everyday: you
+          ? 'Bu beceri; bir yolu, bir haritayı ya da bir geometri çizimindeki yerleri akılda tutarken kullanılır.'
+          : 'Bu beceri; bir yolu hatırlamak, harita ve şekillerle çalışmak ya da tahtadaki bir çizimi deftere geçirmek gibi işlerde kullanılır.',
+      }),
+      ladder: sp.ladder,
+    });
+  }
+  const at = byKey.get('attention')?.extra as unknown as FlankerResult | undefined;
+  if (at) {
+    const rt = at.meanRt === null ? '' : `, doğru cevaplarda ortalama ${nf0.format(at.meanRt)} milisaniye`;
+    blocks.push({
+      key: 'attention',
+      name: scale('attention').name,
+      plain: scale('attention').plain,
+      headline: `${pct(at.accuracy)} doğru${rt}`,
+      text: you
+        ? `Yanlardaki oklar ortadakiyle aynı yöne baktığında ${pct(at.accCongruent)}, farklı yöne baktığında ${pct(at.accIncongruent)} doğru yaptın. Kenardaki oklar ters yöne baktığında herkes biraz yavaşlar ve daha çok hata yapar; önemli olan dikkatini ortadaki oka toplayabilmek. Bu beceri, gürültülü bir sınıfta öğretmeni dinlemek ya da bir soruda gereksiz bilgileri ayıklamak gibi durumlarda işe yarar.`
+        : `Yanlardaki oklar ortadakiyle aynı yöne baktığında doğruluk ${pct(at.accCongruent)}, farklı yöne baktığında ${pct(at.accIncongruent)} oldu. Dikkat dağıtıcı oklar ters yöne baktığında herkes biraz yavaşlar ve daha çok hata yapar. Bu görev, dikkat dağıtan şeylere rağmen önemli olana odaklanabilmeyi ölçer; örneğin gürültülü bir ortamda öğretmeni dinlemek ya da bir sorudaki gereksiz bilgiyi ayıklamak gibi.`,
+      flanker: { accCongruent: at.accCongruent, accIncongruent: at.accIncongruent, rtCongruent: at.meanRtCongruent, rtIncongruent: at.meanRtIncongruent },
+    });
+  }
+  const spd = byKey.get('speed')?.extra as unknown as SymbolResult | undefined;
+  if (spd) {
+    const secs = Math.round(
+      ((def.tasks.find((t) => t.kind === 'symbol_match') as { durationMs?: number } | undefined)?.durationMs ?? 90_000) / 1000,
+    );
+    blocks.push({
+      key: 'speed',
+      name: scale('speed').name,
+      plain: scale('speed').plain,
+      headline: `${secs} saniyede ${spd.correct} doğru eşleştirme`,
+      text: you
+        ? `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdin (${spd.errors} hata). Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer; örneğin tahtadan bir şeyi deftere geçirmek ya da sınavda basit işlemleri yapmak gibi.`
+        : `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdi (${spd.errors} hata). Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer; tahtadan yazmak ya da sınavda basit işlemleri yapmak gibi işlerde kullanılır. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
+      symbol: { correct: spd.correct, errors: spd.errors, perMinute: spd.perMinute },
+    });
+  }
+
+  const tips = you
+    ? [
+        'Uzun ya da çok adımlı yönergeleri duyar duymaz kısaca not al.',
+        'Zihinden işlem yaparken ara sonuçları kâğıda yaz; zihnini asıl işe ayır.',
+        'Ders çalışırken telefonunu başka bir odaya koy; dikkat dağıtıcılar çalışma belleğini doldurur.',
+        'İyi uyumak, dikkat ve bellek için en basit ve en etkili desteklerden biridir.',
+      ]
+    : [
+        'Çok adımlı yönergeleri parçalara bölün ya da yazılı bir liste olarak verin.',
+        'Ödev ve ders çalışma sırasında dikkat dağıtıcıları, özellikle telefonu, ortamdan uzaklaştırın.',
+        'Düzenli uyku, dikkat ve bellek performansını doğrudan etkiler.',
+        'Çalışma belleğini “geliştirdiğini” söyleyen bilgisayar oyunlarının etkisinin okul başarısına aktarıldığına dair güçlü bir kanıt yoktur (Melby-Lervåg ve Hulme, 2013). Gündelik hayattaki destekler daha yararlıdır.',
+        'Dikkat, öğrenme ya da davranışla ilgili süreğen bir endişeniz varsa bu sonuca değil, okulun rehberlik servisine ya da bir uzmana başvurun.',
+      ];
+  return { blocks, tips };
 }
 
 function buildInterestProfile(sections: ReportSection[], audience: Audience, grade: number): InterestProfile {

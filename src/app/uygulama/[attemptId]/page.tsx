@@ -3,7 +3,8 @@ import { notFound, redirect } from 'next/navigation';
 import { LogoMark } from '@/components/site/logo';
 import { LikertRunner } from '@/components/runner/likert-runner';
 import { ReadingRunner } from '@/components/runner/reading-runner';
-import { AssessmentError, loadRunnerState } from '@/lib/assessment/service';
+import { TaskRunner } from '@/components/runner/tasks/task-runner';
+import { AssessmentError, loadRunnerState, taskProgress } from '@/lib/assessment/service';
 import { studentAccess } from '@/lib/auth/dal';
 import { getSession } from '@/lib/auth/session';
 import { currentDocument, hasActiveConsent } from '@/lib/consent';
@@ -32,6 +33,7 @@ export default async function RunnerPage(props: PageProps<'/uygulama/[attemptId]
   const reportUrl = self ? `/ogrenci/rapor/${attemptId}` : `/panel/rapor/${attemptId}`;
   if (attempt.status === 'completed') redirect(reportUrl);
 
+  const doneBlocks = def.engine === 'tasks' ? await taskProgress(attemptId) : [];
   const needsAssent = !(await hasActiveConsent(attempt.studentId, 'child_info'));
   const childInfo = needsAssent ? await currentDocument('child_info') : null;
   const assentHtml = childInfo ? renderMarkdown(childInfo.bodyMd) : null;
@@ -70,6 +72,17 @@ export default async function RunnerPage(props: PageProps<'/uygulama/[attemptId]
             initialAnswers={Object.fromEntries(
               state.answered.filter((a) => a.value !== null).map((a) => [a.itemKey, a.value as number]),
             )}
+            assentHtml={assentHtml}
+            reportUrl={reportUrl}
+            exitUrl={exitUrl}
+          />
+        ) : def.engine === 'tasks' ? (
+          <TaskRunner
+            attemptId={attemptId}
+            studentName={access.student.firstName}
+            intro={def.intro}
+            tasks={def.tasks}
+            doneBlocks={doneBlocks}
             assentHtml={assentHtml}
             reportUrl={reportUrl}
             exitUrl={exitUrl}

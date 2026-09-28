@@ -11,4 +11,5 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'okuma-hizi-ve-anlama': okumaReport,
   'mesleki-ilgi-profili': meslekiIlgiReport,
   'calisma-aliskanliklari': calismaAliskanliklariReport,
+  'dikkat-ve-bellek': { version: 'dikkat-bellek-rapor-1', bandLabels: {}, scales: {} },
 };

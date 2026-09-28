@@ -99,7 +99,7 @@ export const calismaAliskanliklari: LikertInstrument = {
     {
       key: T,
       name: 'Kendini sınama ve tekrar',
-      plain: 'Öğrendiğini kitaba bakmadan hatırlamaya çalışma ve tekrarı günlere yayma.',
+      plain: 'Öğrenilenleri kitaba bakmadan hatırlamaya çalışma ve tekrarı günlere yayma.',
       poles: { low: 'Yeniden okumaya dayanan', high: 'Kendini sınayan, aralıklı tekrar yapan' },
     },
     {
@@ -111,13 +111,13 @@ export const calismaAliskanliklari: LikertInstrument = {
     {
       key: F,
       name: 'Odaklanma',
-      plain: 'Dikkat dağıtıcıları uzak tutma ve çalışırken dikkatini toplayabilme.',
+      plain: 'Dikkat dağıtıcıları uzak tutma ve çalışırken dikkati toplayabilme.',
       poles: { low: 'Dikkati kolay dağılan', high: 'Dikkat dağıtıcıları yöneten' },
     },
     {
       key: H,
       name: 'Hatalardan öğrenme ve yardım isteme',
-      plain: 'Yanlışlarını inceleme, takıldığında soru sorma ve farklı kaynaklara başvurma.',
+      plain: 'Yanlışları inceleme, takılınca soru sorma ve farklı kaynaklara başvurma.',
       poles: { low: 'Takıldığında geçen', high: 'Soran, araştıran, hatasından öğrenen' },
     },
   ],

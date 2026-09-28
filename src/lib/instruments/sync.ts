@@ -5,10 +5,11 @@ import { db } from '@/db';
 import { attempts, instrumentVersions, instruments, items, legalDocuments, scales } from '@/db/schema';
 import { INSTRUMENTS } from '@/content/instruments';
 import { LEGAL_DOCS } from '@/content/legal';
+import { stableStringify } from '@/lib/stable-json';
 import type { InstrumentDef } from './types';
 
 function hashDef(def: InstrumentDef): string {
-  return createHash('sha256').update(JSON.stringify(def)).digest('hex');
+  return createHash('sha256').update(stableStringify(def)).digest('hex');
 }
 
 /**
@@ -30,7 +31,16 @@ function scoringHash(def: InstrumentDef): string {
           scales: def.scales.map((s) => [s.key, s.alpha ?? null, s.sdRef ?? null]),
           totalScale: def.totalScale ?? null,
         }
-      : {
+      : def.engine === 'tasks'
+        ? {
+            engine: def.engine,
+            // Görevlerin yönergeleri ve adları sunumdur; uyaranlar ve zamanlamalar ölçmeyi belirler.
+            tasks: def.tasks.map((t) =>
+              Object.fromEntries(Object.entries(t).filter(([k]) => k !== 'name' && k !== 'measures' && k !== 'instructions')),
+            ),
+            scales: def.scales.map((s) => s.key),
+          }
+        : {
           engine: def.engine,
           passages: def.passages.map((p) => [
             p.key,
@@ -41,7 +51,7 @@ function scoringHash(def: InstrumentDef): string {
           ]),
           scales: def.scales.map((s) => s.key),
         };
-  return createHash('sha256').update(JSON.stringify(core)).digest('hex');
+  return createHash('sha256').update(stableStringify(core)).digest('hex');
 }
 
 function itemRows(def: InstrumentDef, versionId: string) {
@@ -55,6 +65,8 @@ function itemRows(def: InstrumentDef, versionId: string) {
       reverse: !!it.reverse,
     }));
   }
+  // Bilişsel görevlerde madde yoktur; deneme verisi task_trials tablosunda tutulur.
+  if (def.engine === 'tasks') return [];
   let pos = 0;
   return def.passages.flatMap((p) =>
     p.questions.map((q) => ({
@@ -131,7 +143,8 @@ export async function syncDefinitions(log: (m: string) => void = console.log): P
         await tx.delete(scales).where(eq(scales.versionId, existing.id));
         await tx.delete(items).where(eq(items.versionId, existing.id));
         await tx.insert(scales).values(def.scales.map((s) => ({ versionId: existing.id, key: s.key, name: s.name })));
-        await tx.insert(items).values(itemRows(def, existing.id));
+        const rowsForItems = itemRows(def, existing.id);
+        if (rowsForItems.length) await tx.insert(items).values(rowsForItems);
       });
       log(`${def.slug} v${def.version} güncellendi (henüz uygulama yoktu).`);
       continue;
@@ -153,7 +166,8 @@ export async function syncDefinitions(log: (m: string) => void = console.log): P
         })
         .returning({ id: instrumentVersions.id });
       await tx.insert(scales).values(def.scales.map((s) => ({ versionId: v.id, key: s.key, name: s.name })));
-      await tx.insert(items).values(itemRows(def, v.id));
+      const newItems = itemRows(def, v.id);
+      if (newItems.length) await tx.insert(items).values(newItems);
     });
     log(`${def.slug} v${def.version} eklendi.`);
   }
