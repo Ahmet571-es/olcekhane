@@ -20,6 +20,7 @@ import { hasActiveConsent } from '@/lib/consent';
 import type { InstrumentDef, LikertInstrument, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
 import { buildReport, type Audience, type ReportContent, type StoredScore } from '@/lib/reports/build';
 import { likertQuality, scoreLikert, type LikertAnswer, type NormStat } from '@/lib/scoring/likert';
+import { formForGrade, isQuizChoice, scoreQuiz, type QuizAnswer, type QuizChoice } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
 import {
   TaskInputError,
@@ -536,13 +537,118 @@ export async function completeTaskAttempt(attemptId: string): Promise<void> {
   await generateReports(attemptId);
 }
 
-/** Motor türüne göre uygulamayı tamamlar (çoktan seçmeli ölçekler ve bilişsel görevler). */
+/* ---------- Akademik tanı testleri ---------- */
+
+/**
+ * Bir sorunun cevabını kaydeder. Doğru olup olmadığı sunucuda, cevap anahtarıyla hesaplanır; cevap
+ * anahtarı tarayıcıya hiç gönderilmez. "X", öğrencinin “Bilmiyorum” dediği anlamına gelir.
+ */
+export async function saveQuizAnswer(attemptId: string, itemKey: string, choice: QuizChoice, rtMs: number | null) {
+  const attempt = await getAttempt(attemptId);
+  if (!attempt || attempt.status !== 'in_progress') {
+    throw new AssessmentError('not_in_progress', 'Bu uygulama tamamlanmış ya da kapatılmış.');
+  }
+  const { def } = await versionDefinition(attempt.versionId);
+  if (def.engine !== 'quiz') throw new AssessmentError('invalid', 'Geçersiz istek.');
+  if (!isQuizChoice(choice)) throw new AssessmentError('invalid', 'Geçersiz cevap.');
+  const form = formForGrade(def, attempt.gradeAtAttempt);
+  const item = form.items.find((i) => i.key === itemKey);
+  if (!item) throw new AssessmentError('invalid', 'Bu soru öğrencinin formunda yok.');
+  const [row] = await db
+    .select({ id: items.id })
+    .from(items)
+    .where(and(eq(items.versionId, attempt.versionId), eq(items.key, itemKey)))
+    .limit(1);
+  if (!row) throw new AssessmentError('invalid', 'Geçersiz madde.');
+  const rt = rtMs !== null && Number.isFinite(rtMs) ? Math.max(0, Math.min(Math.round(rtMs), 3_600_000)) : null;
+  const value = choice === item.answer ? 1 : 0;
+
+  await db
+    .insert(responses)
+    .values({ attemptId, itemId: row.id, itemKey, value, valueText: choice, rtMs: rt })
+    .onConflictDoUpdate({
+      target: [responses.attemptId, responses.itemId],
+      set: {
+        value,
+        valueText: choice,
+        rtMs: rt,
+        answeredAt: new Date(),
+        changedCount: sql`${responses.changedCount} + 1`,
+      },
+    });
+  await db.update(attempts).set({ lastActivityAt: new Date() }).where(eq(attempts.id, attemptId));
+}
+
+export async function completeQuizAttempt(attemptId: string): Promise<void> {
+  const attempt = await getAttempt(attemptId);
+  if (!attempt) throw new AssessmentError('not_found', 'Uygulama bulunamadı.');
+  if (attempt.status === 'completed') return;
+  if (attempt.status !== 'in_progress') throw new AssessmentError('not_in_progress', 'Bu uygulama kapatılmış.');
+  const { def } = await versionDefinition(attempt.versionId);
+  if (def.engine !== 'quiz') throw new AssessmentError('invalid', 'Geçersiz istek.');
+  const form = formForGrade(def, attempt.gradeAtAttempt);
+
+  const rows = await db
+    .select({ itemKey: responses.itemKey, valueText: responses.valueText, rtMs: responses.rtMs })
+    .from(responses)
+    .where(eq(responses.attemptId, attemptId));
+  const answers: Record<string, QuizAnswer> = {};
+  for (const r of rows) if (isQuizChoice(r.valueText)) answers[r.itemKey] = { choice: r.valueText, rtMs: r.rtMs };
+  const unanswered = form.items.filter((i) => !answers[i.key]).length;
+  if (unanswered > 0) {
+    throw new AssessmentError(
+      'invalid',
+      `Testi bitirmek için bütün soruları cevaplaman ya da “Bilmiyorum” olarak işaretlemen gerekiyor (${unanswered} soru kaldı).`,
+    );
+  }
+
+  const result = scoreQuiz(form, answers);
+  const now = new Date();
+  await db.transaction(async (tx) => {
+    await tx.delete(scores).where(eq(scores.attemptId, attemptId));
+    await tx.insert(scores).values([
+      {
+        attemptId,
+        scaleKey: 'total',
+        raw: result.correct,
+        mean: result.ratio,
+        nAnswered: result.n - result.dontKnow - result.missing,
+        nItems: result.n,
+        band: result.band,
+        extra: result as unknown as Record<string, unknown>,
+      },
+      ...result.domains.map((d) => ({
+        attemptId,
+        scaleKey: d.key,
+        raw: d.correct,
+        mean: d.ratio,
+        nAnswered: d.n - d.dontKnow,
+        nItems: d.n,
+        band: d.band,
+        extra: { wrong: d.wrong, dontKnow: d.dontKnow, formKey: form.key } as Record<string, unknown>,
+      })),
+    ]);
+    await tx
+      .update(attempts)
+      .set({
+        status: 'completed',
+        completedAt: now,
+        durationMs: now.getTime() - attempt.startedAt.getTime(),
+        qualityFlags: { tooFast: result.flags.tooFast, notes: result.flags.notes },
+      })
+      .where(eq(attempts.id, attemptId));
+  });
+  await generateReports(attemptId);
+}
+
+/** Motor türüne göre uygulamayı tamamlar (ölçekler, akademik testler ve bilişsel görevler). */
 export async function completeAttempt(attemptId: string): Promise<void> {
   const attempt = await getAttempt(attemptId);
   if (!attempt) throw new AssessmentError('not_found', 'Uygulama bulunamadı.');
   const { def } = await versionDefinition(attempt.versionId);
   if (def.engine === 'likert') return completeLikertAttempt(attemptId);
   if (def.engine === 'tasks') return completeTaskAttempt(attemptId);
+  if (def.engine === 'quiz') return completeQuizAttempt(attemptId);
   throw new AssessmentError('invalid', 'Bu test bu yolla tamamlanamaz.');
 }
 

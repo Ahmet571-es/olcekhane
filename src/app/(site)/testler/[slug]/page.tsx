@@ -36,7 +36,10 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
       ? `${def.items.length} ${def.profile === 'riasec' ? 'etkinlik' : 'cümle'}`
       : def.engine === 'tasks'
         ? `${def.tasks.length} görev`
-        : '1 metin, 8 soru';
+        : def.engine === 'quiz'
+          ? `${def.forms[0].items.length} soru`
+          : '1 metin, 8 soru';
+  const scales = def.scales.filter((s) => s.key !== 'total');
 
   const jsonLd = breadcrumbLd([
     { name: 'Ana sayfa', path: '/' },
@@ -90,7 +93,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
         <div className="flex flex-col gap-6">
           <p className="measure text-ink-2">{sc.whatItMeasures}</p>
           <ul className="divide-y divide-rule border-y border-rule">
-            {def.scales.map((s) => (
+            {scales.map((s) => (
               <li key={s.key} className="grid gap-1 py-4 sm:grid-cols-[12rem_1fr] sm:gap-6">
                 <p className="font-bold">{s.name}</p>
                 <div>
@@ -106,6 +109,30 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           </ul>
         </div>
       </section>
+
+      {def.engine === 'quiz' && (
+        <section className="grid gap-10 border-t border-rule py-14 lg:grid-cols-[1fr_1.6fr]" aria-labelledby="formlar">
+          <div className="flex flex-col gap-3">
+            <h2 id="formlar" className="t-h2">
+              Hangi sınıf hangi soruları çözer?
+            </h2>
+            <p className="text-ink-2">
+              Her öğrenci, bulunduğu sınıftan bir önceki sınıfın konularını yoklayan formu çözer. Böylece test yılın her döneminde adil olur.
+            </p>
+          </div>
+          <ul className="divide-y divide-rule border-y border-rule">
+            {def.forms.map((f) => (
+              <li key={f.key} className="grid gap-1 py-4 sm:grid-cols-[12rem_1fr] sm:gap-6">
+                <p className="font-bold">
+                  {f.grade}. sınıf öğrencileri
+                  <span className="block text-[0.9375rem] font-normal text-ink-3">{f.contentGrade}. sınıf konuları</span>
+                </p>
+                <p>{f.domains.map((d) => d.name).join(' · ')}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="grid gap-10 border-t border-rule py-14 lg:grid-cols-[1fr_1.6fr]" aria-labelledby="rapor">
         <h2 id="rapor" className="t-h2">
@@ -132,6 +159,13 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <li>Her görevde ulaşılan dizi uzunluğu, doğruluk ve tepki süresi</li>
               <li>Görevlerin ölçtüğü becerilerin gündelik okul hayatındaki karşılığı</li>
               <li>Evde ve okulda işe yarayacak somut öneriler</li>
+            </>
+          )}
+          {def.engine === 'quiz' && (
+            <>
+              <li>Genel sonuç ve beş konu alanının her birinde “sağlam”, “pekiştirilmeli” ya da “öncelikli” değerlendirmesi</li>
+              <li>Yanlış cevapların işaret ettiği hata türleri ve her biri için somut öneriler</li>
+              <li>Yanlış yapılan soruların doğru cevapları ve kısa açıklamaları</li>
             </>
           )}
           <li>Sonucu dikkatle yorumlamayı gerektiren durumlar için uyarılar (ör. çok hızlı cevaplama)</li>

@@ -211,4 +211,97 @@ export interface TaskInstrument extends InstrumentBase {
   tasks: CognitiveTask[];
 }
 
-export type InstrumentDef = LikertInstrument | ReadingInstrument | TaskInstrument;
+/* ---------- Akademik tanı testleri (çoktan seçmeli, cevap anahtarlı) ---------- */
+
+export type QuizOptionKey = 'A' | 'B' | 'C' | 'D';
+
+export interface QuizOption {
+  key: QuizOptionKey;
+  text: string;
+  /** Bu seçeneği seçmek hangi yaygın hataya işaret ediyor (varsa). */
+  misconception?: string;
+}
+
+export interface QuizTable {
+  caption?: string;
+  head: string[];
+  rows: string[][];
+}
+
+/**
+ * Soruda kullanılan grafik. Değerler verilerden çizilir; sütunlar ve noktalar ölçeğe tam oturur.
+ * `showValues` kapalıysa değerler yazılmaz ve grafik eksendeki sayılardan okunur.
+ */
+export interface QuizChart {
+  kind: 'bar' | 'line' | 'pie';
+  title: string;
+  labels: string[];
+  values: number[];
+  /** Dikey eksenin adı ve ölçeği (sütun ve çizgi grafiklerinde). */
+  yLabel?: string;
+  step?: number;
+  max?: number;
+  showValues?: boolean;
+}
+
+/** İki paralel doğru ve bir kesen. Kesen soldan sağa yükselir; `slope` yatayla yaptığı açıdır. */
+export interface ParallelFigure {
+  kind: 'parallel';
+  slope: number;
+  marks: {
+    at: 'top' | 'bottom';
+    region: 'above-right' | 'above-left' | 'below-left' | 'below-right';
+    label: string;
+  }[];
+  /** Ekran okuyucular için şeklin sözlü anlatımı. */
+  alt: string;
+}
+
+/** Yarıçapları eşit, her biri diğerinin merkezinden geçen iki çember ve merkezlerle üstteki kesişim noktasının oluşturduğu üçgen. */
+export interface TwoCirclesFigure {
+  kind: 'two-circles';
+  alt: string;
+}
+
+export type QuizFigure = ParallelFigure | TwoCirclesFigure;
+
+export interface QuizItem {
+  key: string;
+  domain: string;
+  /** Soru metni. Kesirler {3/4}, tam sayılı kesirler {1 3/4} biçiminde yazılır. */
+  text: string;
+  table?: QuizTable;
+  chart?: QuizChart;
+  figure?: QuizFigure;
+  options: QuizOption[];
+  answer: QuizOptionKey;
+  /** Doğru cevabın kısa açıklaması: raporda yanlış yapılan soruların altında gösterilir. */
+  explain: string;
+}
+
+export interface QuizForm {
+  key: string;
+  /** Formu çözen öğrencinin sınıfı. */
+  grade: number;
+  /** Soruların ait olduğu sınıf düzeyi (bir önceki sınıf). */
+  contentGrade: number;
+  domains: { key: string; name: string; plain: string }[];
+  items: QuizItem[];
+}
+
+export interface Misconception {
+  name: string;
+  /** Hatanın ne olduğu, veliye ve öğrenciye anlaşılır biçimde. */
+  explain: string;
+  /** Bu hatayı gidermek için somut öneri. */
+  tip: string;
+}
+
+export interface QuizInstrument extends InstrumentBase {
+  engine: 'quiz';
+  subject: string;
+  forms: QuizForm[];
+  misconceptions: Record<string, Misconception>;
+}
+
+export type InstrumentDef = LikertInstrument | ReadingInstrument | TaskInstrument | QuizInstrument;

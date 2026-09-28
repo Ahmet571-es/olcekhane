@@ -28,7 +28,10 @@ describe('Görev uyaranları', () => {
     for (const pair of spatial.sequences)
       for (const seq of pair) {
         expect(new Set(seq).size).toBe(seq.length);
-        for (const b of seq) expect(b).toBeGreaterThanOrEqual(0), expect(b).toBeLessThan(spatial.boxes.length);
+        for (const b of seq) {
+          expect(b).toBeGreaterThanOrEqual(0);
+          expect(b).toBeLessThan(spatial.boxes.length);
+        }
       }
   });
 

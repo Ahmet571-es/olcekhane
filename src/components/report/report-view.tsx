@@ -1,4 +1,5 @@
 import type { ReportContent, ReportSection } from '@/lib/reports/build';
+import { AcademicReportView } from './academic-report';
 import { CognitiveReportView } from './cognitive-report';
 import { InterestReport } from './interest-report';
 import { ScaleRuler } from './scale-ruler';
@@ -132,7 +133,9 @@ export function ReportView({ report }: { report: ReportContent }) {
         </section>
       )}
 
-      {report.interests ? (
+      {report.academic ? (
+        <AcademicReportView report={report} />
+      ) : report.interests ? (
         <InterestReport report={report} />
       ) : report.cognitive ? (
         <CognitiveReportView report={report} />
@@ -165,12 +168,21 @@ export function ReportView({ report }: { report: ReportContent }) {
       )}
 
       <footer className="flex flex-col gap-4 border-t border-rule pt-8">
-        <p className="notice notice-info">
-          <strong>Bu rapor bir tanı değildir.</strong>{' '}
-          {forStudent
-            ? 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.'
-            : 'Çocuğunuzun kendi cevaplarına ya da görevdeki performansına dayanır; bugünkü hâlini anlatır. Eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.'}
-        </p>
+        {report.academic ? (
+          <p className="notice notice-info">
+            <strong>Bu rapor bir sınav notu değildir.</strong>{' '}
+            {forStudent
+              ? 'Tek bir testteki cevaplarına dayanır ve bugün neyi bildiğini gösterir. Eksikler çalışarak tamamlanır.'
+              : 'Tek bir testteki cevaplara dayanır ve bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli; sınıf geçme ya da okul seçimi gibi kararlarda tek başına dayanak olarak kullanılmamalıdır.'}
+          </p>
+        ) : (
+          <p className="notice notice-info">
+            <strong>Bu rapor bir tanı değildir.</strong>{' '}
+            {forStudent
+              ? 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.'
+              : 'Çocuğunuzun kendi cevaplarına ya da görevdeki performansına dayanır; bugünkü hâlini anlatır. Eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.'}
+          </p>
+        )}
         <details className="panel p-5">
           <summary className="cursor-pointer font-bold">Bu testin bilimsel dayanağı</summary>
           <dl className="mt-4 grid gap-3 text-[0.975rem] md:grid-cols-[12rem_1fr]">

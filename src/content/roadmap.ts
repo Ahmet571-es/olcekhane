@@ -21,11 +21,11 @@ export const UPCOMING: UpcomingTest[] = [
     grades: '11. sınıf ve üzeri',
   },
   {
-    key: 'akademik-tani',
-    name: 'Türkçe ve Matematik Tanı Testleri',
+    key: 'turkce-tani',
+    name: 'Türkçe Tanı Testi',
     domain: 'academic',
-    measures: 'Sınıf düzeyindeki temel kazanımlarda güçlü ve eksik konular',
-    basedOn: 'Özgün sorular, MEB öğretim programı kazanımlarına eşlenmiş',
+    measures: 'Bir önceki sınıfın dil bilgisi, yazım-noktalama ve sözcük bilgisi konularında güçlü ve eksik noktalar',
+    basedOn: 'Özgün sorular; ortaokul Türkçe öğretim programının temel konularına göre, Matematik Tanı Testi ile aynı yapıda',
     grades: '5.–8. sınıf',
   },
 ];

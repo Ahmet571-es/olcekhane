@@ -12,4 +12,10 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'mesleki-ilgi-profili': meslekiIlgiReport,
   'calisma-aliskanliklari': calismaAliskanliklariReport,
   'dikkat-ve-bellek': { version: 'dikkat-bellek-rapor-1', bandLabels: {}, scales: {} },
+  // Akademik tanı raporu ölçüt temellidir; düzey adları eyleme yöneliktir (neyin öncelikli olduğu).
+  'matematik-tani-testi': {
+    version: 'matematik-tani-rapor-1',
+    bandLabels: { high: 'Sağlam', average: 'Pekiştirilmeli', low: 'Öncelikli' },
+    scales: {},
+  },
 };

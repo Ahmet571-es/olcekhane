@@ -368,7 +368,7 @@ export function LikertRunner(props: {
   );
 }
 
-function SaveIndicator({ state }: { state: 'idle' | 'saving' | 'error' }) {
+export function SaveIndicator({ state }: { state: 'idle' | 'saving' | 'error' }) {
   if (state === 'error') return <span className="t-small font-bold text-warn">Bağlantı sorunu, tekrar deneniyor…</span>;
   if (state === 'saving') return <span className="t-small">Kaydediliyor…</span>;
   return <span className="t-small">Kaydedildi</span>;

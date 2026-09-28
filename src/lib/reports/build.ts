@@ -2,7 +2,18 @@ import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type Riase
 import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
-import type { Band, InstrumentDef, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
+import type {
+  Band,
+  InstrumentDef,
+  QuizChart,
+  QuizFigure,
+  QuizInstrument,
+  QuizOptionKey,
+  QuizTable,
+  ReadingInstrument,
+  TaskInstrument,
+} from '@/lib/instruments/types';
+import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
 import type { FlankerResult, SpanResult, SymbolResult } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
@@ -64,6 +75,7 @@ export interface ReportContent {
   science: { basedOn: string; reliability: string; limitations: string[]; license: string };
   interests?: InterestProfile;
   cognitive?: CognitiveReport;
+  academic?: AcademicReport;
   reading?: {
     passageTitle: string;
     wordCount: number;
@@ -77,6 +89,40 @@ export interface ReportContent {
     referenceNote: string | null;
     speedNote: string;
   };
+}
+
+export interface AcademicReport {
+  subject: string;
+  /** Soruların ait olduğu sınıf (öğrencinin bir önceki sınıfı). */
+  contentGrade: number;
+  n: number;
+  correct: number;
+  wrong: number;
+  dontKnow: number;
+  band: Band;
+  bandLabel: string;
+  text: string;
+  domains: { key: string; name: string; plain: string; correct: number; n: number; dontKnow: number; band: Band; bandLabel: string }[];
+  /** Yanlış cevapların işaret ettiği hata türleri; en sık görülenden başlayarak. */
+  misconceptions: { key: string; name: string; explain: string; tip: string; count: number; itemNumbers: number[] }[];
+  /** Hata türleri yalnızca birer soruda görüldüyse temkinli yorum notu gösterilir. */
+  misconceptionNote: string;
+  review: {
+    no: number;
+    key: string;
+    domain: string;
+    domainName: string;
+    text: string;
+    table?: QuizTable;
+    chart?: QuizChart;
+    figure?: QuizFigure;
+    options: { key: QuizOptionKey; text: string }[];
+    choice: QuizChoice | null;
+    answer: QuizOptionKey;
+    correct: boolean;
+    explain: string;
+  }[];
+  tips: string[];
 }
 
 export interface CognitiveBlock {
@@ -158,6 +204,7 @@ export function buildReport(input: {
   const sections: ReportSection[] = [];
   let reading: ReportContent['reading'];
   let cognitive: CognitiveReport | undefined;
+  let academic: AcademicReport | undefined;
 
   if (def.engine === 'likert') {
     const optVals = def.options.map((o) => o.value);
@@ -195,6 +242,8 @@ export function buildReport(input: {
     }
   } else if (def.engine === 'tasks') {
     cognitive = buildCognitive(def, byKey, audience);
+  } else if (def.engine === 'quiz') {
+    academic = buildAcademic(def, byKey, audience, template?.bandLabels ?? {});
   } else {
     const rDef = def as ReadingInstrument;
     const comp = byKey.get('comprehension');
@@ -299,6 +348,135 @@ export function buildReport(input: {
     reading,
     interests,
     cognitive,
+    academic,
+  };
+}
+
+/* ---------- Akademik tanı testleri ---------- */
+
+/** Genel sonuç metinleri. {g}: soruların ait olduğu sınıf, {s}: ders adı (küçük harfle). */
+const ACADEMIC_TEXT: Record<'high' | 'average' | 'low', { student: string; parent: string }> = {
+  high: {
+    student:
+      '{g}. sınıf {s} konularının çoğunu sağlam biliyorsun. Aşağıda yanlış yaptığın ya da bilmediğin az sayıdaki soruya ve varsa hata türlerine göz atman yeterli.',
+    parent:
+      'Çocuğunuz {g}. sınıfın temel {s} konularının büyük bölümüne hâkim görünüyor. Aşağıdaki yanlış yapılan sorular ve hata türleri, pekiştirilebilecek küçük noktaları gösteriyor.',
+  },
+  average: {
+    student:
+      '{g}. sınıf {s} konularının önemli bir kısmını biliyorsun; bazı konuların ise pekiştirilmesi gerekiyor. Aşağıda hangi alanlarda ve ne tür hatalar yaptığını görebilirsin. Önce bunlarla başlamak sana en çok yarayacak.',
+    parent:
+      'Çocuğunuz {g}. sınıf {s} konularının önemli bir kısmını biliyor; bazı konuların ise pekiştirilmesi gerekiyor. Yeni konular öncekilerin üzerine kurulduğu için bu eksiklerin bu yıl içinde tamamlanması yeni konuları öğrenmesini kolaylaştırır.',
+  },
+  low: {
+    student:
+      '{g}. sınıf {s} konularının birçoğunda zorlandın. Bu, bu konuları öğrenemeyeceğin anlamına gelmez: eksikler belirli konularda toplanıyor ve adım adım tamamlanabilir. Aşağıdaki alanlardan başlayabilir, öğretmeninden de destek isteyebilirsin.',
+    parent:
+      'Çocuğunuz {g}. sınıf {s} konularının birçoğunda zorlandı. Yeni konular öncekilerin üzerine kurulduğu için bu eksikler bu yılın konularını da zorlaştırabilir. Sonucu dersin öğretmeniyle paylaşmanızı ve aşağıdaki alanlardan başlayarak planlı bir tekrar yapılmasını öneririz. Tek bir testin sonucu kesin bir yargı değildir.',
+  },
+};
+
+/** Derse özgü çalışma önerileri (şimdilik matematik). */
+const ACADEMIC_TIPS: Record<string, Record<Audience, string[]>> = {
+  Matematik: {
+    student: [
+      'Yanlış yaptığın her soruyu açıklamasını okuduktan sonra birkaç gün içinde kâğıda bakmadan yeniden çöz.',
+      'Kısa ama sık çalış: her gün 15–20 dakika, haftada bir uzun oturumdan daha etkilidir.',
+      'Çalışırken farklı konulardan soruları karıştır; yalnızca aynı tür soruları art arda çözmek, sınavda hangi yöntemi kullanacağını seçmeyi öğretmez.',
+      'Takıldığın yerleri not al ve öğretmenine sor. Soru sormak, öğrenmenin en hızlı yollarından biridir.',
+    ],
+    parent: [
+      'Sonucu çocuğunuzun matematik öğretmeniyle paylaşın; öğretmen, eksik konular için sınıf içinde destek planlayabilir.',
+      'Kısa ve düzenli tekrar (günde 15–20 dakika), uzun ve seyrek çalışmadan daha etkilidir. Farklı konulardan soruların karıştırıldığı tekrarlar, aynı tür soruların art arda çözüldüğü tekrarlardan daha kalıcı öğrenme sağlar (Rohrer ve ark., 2015).',
+      'Yargılayıcı olmayan bir dil kullanın: “Neden yapamadın?” yerine “Bu soruyu birlikte nasıl düşünebiliriz?” diye sorun.',
+      'Gündelik hayattaki matematik fırsatlarını kullanın: alışverişte indirimi hesaplamak, bir tarifin ölçülerini ikiye katlamak ya da yolculuk süresini tahmin etmek gibi.',
+    ],
+  },
+};
+
+const GENERIC_ACADEMIC_TIPS: Record<Audience, string[]> = {
+  student: [
+    'Yanlış yaptığın her soruyu açıklamasını okuduktan sonra birkaç gün içinde yeniden çöz.',
+    'Kısa ama sık çalış: her gün 15–20 dakika, haftada bir uzun oturumdan daha etkilidir.',
+    'Takıldığın yerleri not al ve öğretmenine sor.',
+  ],
+  parent: [
+    'Sonucu dersin öğretmeniyle paylaşın; öğretmen, eksik konular için sınıf içinde destek planlayabilir.',
+    'Kısa ve düzenli tekrar (günde 15–20 dakika), uzun ve seyrek çalışmadan daha etkilidir.',
+    'Yargılayıcı olmayan bir dil kullanın: “Neden yapamadın?” yerine “Bunu birlikte nasıl düşünebiliriz?” diye sorun.',
+  ],
+};
+
+function buildAcademic(
+  def: QuizInstrument,
+  byKey: Map<string, StoredScore>,
+  audience: Audience,
+  bandLabels: Partial<Record<Band, string>>,
+): AcademicReport | undefined {
+  const result = byKey.get('total')?.extra as unknown as QuizResult | undefined;
+  if (!result) return undefined;
+  const form = def.forms.find((f) => f.key === result.formKey);
+  if (!form) return undefined;
+  const label = (b: Band) => bandLabels[b] ?? b;
+  const band = result.band === 'high' || result.band === 'average' ? result.band : 'low';
+  const byItem = new Map(result.items.map((r) => [r.key, r]));
+
+  const misconceptions = result.misconceptions
+    .filter((m) => def.misconceptions[m.key])
+    .map((m) => ({ key: m.key, ...def.misconceptions[m.key], count: m.count, itemNumbers: m.itemNumbers }));
+  const repeated = misconceptions.some((m) => m.count > 1);
+  const you = audience === 'student';
+  const misconceptionNote =
+    misconceptions.length === 0
+      ? you
+        ? 'Yanlış cevapların belirli bir hata türünde toplanmıyor.'
+        : 'Yanlış cevaplar belirli bir hata türünde toplanmıyor.'
+      : repeated
+        ? you
+          ? 'Birden fazla soruda görülen hata türleri, üzerinde durman gereken konuları en iyi gösteren işaretlerdir.'
+          : 'Birden fazla soruda görülen hata türleri güçlü bir işarettir. Tek soruda görülenler dikkatsizlikten de kaynaklanmış olabilir.'
+        : you
+          ? 'Her hata türü yalnızca bir soruda görüldü; bunlar dikkatsizlikten de kaynaklanmış olabilir. Yine de açıklamalara göz atman yararlı olur.'
+          : 'Her hata türü yalnızca bir soruda görüldü; bunlar dikkatsizlikten de kaynaklanmış olabilir. Kesin bir yargı için öğretmenin gözlemleriyle birlikte değerlendirilmelidir.';
+
+  return {
+    subject: def.subject,
+    contentGrade: form.contentGrade,
+    n: result.n,
+    correct: result.correct,
+    wrong: result.wrong,
+    dontKnow: result.dontKnow,
+    band,
+    bandLabel: label(band),
+    text: ACADEMIC_TEXT[band][audience]
+      .replaceAll('{g}', String(form.contentGrade))
+      .replaceAll('{s}', def.subject.toLocaleLowerCase('tr-TR')),
+    domains: form.domains.map((d) => {
+      const r = result.domains.find((x) => x.key === d.key);
+      const b = r?.band ?? 'low';
+      return { key: d.key, name: d.name, plain: d.plain, correct: r?.correct ?? 0, n: r?.n ?? 0, dontKnow: r?.dontKnow ?? 0, band: b, bandLabel: label(b) };
+    }),
+    misconceptions,
+    misconceptionNote,
+    review: form.items.map((it, i) => {
+      const r = byItem.get(it.key);
+      return {
+        no: i + 1,
+        key: it.key,
+        domain: it.domain,
+        domainName: form.domains.find((d) => d.key === it.domain)?.name ?? it.domain,
+        text: it.text,
+        table: it.table,
+        chart: it.chart,
+        figure: it.figure,
+        options: it.options.map((o) => ({ key: o.key, text: o.text })),
+        choice: r?.choice ?? null,
+        answer: it.answer,
+        correct: r?.correct ?? false,
+        explain: it.explain,
+      };
+    }),
+    tips: (ACADEMIC_TIPS[def.subject] ?? GENERIC_ACADEMIC_TIPS)[audience],
   };
 }
 

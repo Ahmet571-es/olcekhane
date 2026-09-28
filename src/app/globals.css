@@ -365,6 +365,30 @@
     background: var(--ok-bg);
   }
 
+  /* Soru metinlerinde kesir gösterimi: {3/4} → alt alta pay ve payda */
+  .frac {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.14em;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .frac-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.12;
+    font-size: 0.9em;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .frac-num {
+    padding-inline: 0.18em;
+    border-bottom: 1.5px solid currentColor;
+  }
+  .frac-den {
+    padding-inline: 0.18em;
+  }
+
   /* Uzun metinler (hukuki metinler, rehber yazıları) */
   .prose-olc {
     max-width: 70ch;
