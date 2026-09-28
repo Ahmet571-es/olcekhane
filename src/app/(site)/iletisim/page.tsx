@@ -46,8 +46,9 @@ export default async function ContactPage(props: PageProps<'/iletisim'>) {
           <div className="panel p-6">
             <h2 className="t-h3 mb-2">Kişisel veri başvuruları</h2>
             <p className="t-small text-ink-2">
-              KVKK’nın 11. maddesindeki haklarınızı kullanmak için formda “Kişisel veriler (KVKK) başvurusu” konusunu seçebilir
-              {c.kvkkEmail ? ` ya da ${c.kvkkEmail} adresine yazabilirsiniz` : ''}. Başvurular en geç 30 gün içinde ücretsiz sonuçlandırılır.
+              KVKK’nın 11. maddesindeki haklarınızı kullanmak için formda “Kişisel veriler (KVKK) başvurusu” konusunu
+              {c.kvkkEmail ? ` seçebilir ya da ${c.kvkkEmail} adresine yazabilirsiniz` : ' seçebilirsiniz'}. Başvurular en geç 30 gün içinde
+              ücretsiz sonuçlandırılır.
             </p>
           </div>
         </aside>

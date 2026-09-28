@@ -8,7 +8,7 @@ if (!url) {
   console.error('DATABASE_URL tanımlı değil.');
   process.exit(1);
 }
-const sql = postgres(url, { max: 1 });
+const sql = postgres(url, { max: 1, onnotice: () => {} });
 await migrate(drizzle(sql), { migrationsFolder: './drizzle' });
 await sql.end();
 console.log('Veritabanı güncel.');
