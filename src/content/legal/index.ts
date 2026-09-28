@@ -18,6 +18,8 @@ export interface LegalDocDef {
   version: number;
   slug: string;
   title: string;
+  /** Arama sonuçlarında görünen kısa açıklama. */
+  summary: string;
   bodyMd: string;
 }
 
@@ -177,12 +179,54 @@ const cookiePolicy = `Ölçekhane yalnızca platformun çalışması için zorun
 Reklam, izleme ya da üçüncü taraf analiz çerezi kullanmıyoruz. Bu nedenle çerez onay penceresi göstermiyoruz. İleride zorunlu olmayan bir çerez eklenirse, kullanılmadan önce onayınız istenecektir.`;
 
 export const LEGAL_DOCS: LegalDocDef[] = [
-  { kind: 'privacy_notice', version: 1, slug: 'aydinlatma-metni', title: 'KVKK Aydınlatma Metni', bodyMd: privacyNotice },
-  { kind: 'consent_assessment', version: 1, slug: 'acik-riza-olcme', title: 'Açık Rıza Metni: Ölçme Verilerinin İşlenmesi', bodyMd: consentAssessment },
-  { kind: 'consent_research', version: 1, slug: 'acik-riza-arastirma', title: 'Açık Rıza Metni: Norm ve Geçerlik Çalışmaları (İsteğe Bağlı)', bodyMd: consentResearch },
-  { kind: 'child_info', version: 1, slug: 'ogrenci-bilgilendirme', title: 'Öğrenci için bilgilendirme', bodyMd: childInfo },
-  { kind: 'terms', version: 1, slug: 'kullanim-kosullari', title: 'Kullanım Koşulları', bodyMd: terms },
-  { kind: 'cookie_policy', version: 1, slug: 'cerez-politikasi', title: 'Çerez Politikası', bodyMd: cookiePolicy },
+  {
+    kind: 'privacy_notice',
+    version: 1,
+    slug: 'aydinlatma-metni',
+    title: 'KVKK Aydınlatma Metni',
+    summary: 'Ölçekhane’nin veliler, öğrenciler ve okul kullanıcılarına ait kişisel verileri hangi amaçla, hangi hukuki sebeple ve nasıl işlediğine dair aydınlatma metni.',
+    bodyMd: privacyNotice,
+  },
+  {
+    kind: 'consent_assessment',
+    version: 1,
+    slug: 'acik-riza-olcme',
+    title: 'Açık Rıza Metni: Ölçme Verilerinin İşlenmesi',
+    summary: 'Öğrencinin test cevaplarının ve sonuçlarının işlenmesi için velinin verdiği açık rızanın metni.',
+    bodyMd: consentAssessment,
+  },
+  {
+    kind: 'consent_research',
+    version: 1,
+    slug: 'acik-riza-arastirma',
+    title: 'Açık Rıza Metni: Norm ve Geçerlik Çalışmaları (İsteğe Bağlı)',
+    summary: 'Kimlik bilgilerinden arındırılmış test verilerinin Türkiye normları ve geçerlik çalışmalarında kullanılmasına ilişkin isteğe bağlı açık rıza metni.',
+    bodyMd: consentResearch,
+  },
+  {
+    kind: 'child_info',
+    version: 1,
+    slug: 'ogrenci-bilgilendirme',
+    title: 'Öğrenci için bilgilendirme',
+    summary: 'Teste başlamadan önce öğrenciye kendi yaşına uygun bir dille yapılan bilgilendirme.',
+    bodyMd: childInfo,
+  },
+  {
+    kind: 'terms',
+    version: 1,
+    slug: 'kullanim-kosullari',
+    title: 'Kullanım Koşulları',
+    summary: 'Ölçekhane hizmetlerinin kullanım koşulları.',
+    bodyMd: terms,
+  },
+  {
+    kind: 'cookie_policy',
+    version: 1,
+    slug: 'cerez-politikasi',
+    title: 'Çerez Politikası',
+    summary: 'Ölçekhane’de kullanılan çerezler ve amaçları. Reklam ya da izleme çerezi kullanılmaz.',
+    bodyMd: cookiePolicy,
+  },
 ];
 
 export function legalDocBySlug(slug: string): LegalDocDef | undefined {

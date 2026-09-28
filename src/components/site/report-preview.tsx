@@ -43,7 +43,7 @@ export function ReportPreview() {
                   type="button"
                   onClick={() => setFocus(s.key)}
                   aria-pressed={active}
-                  className={`grid w-full gap-2 px-5 py-4 text-left transition-colors sm:grid-cols-[9.5rem_1fr] sm:items-center sm:gap-6 ${
+                  className={`grid w-full gap-2 px-5 py-4 text-left transition-colors sm:grid-cols-[10.5rem_1fr] sm:items-center sm:gap-6 ${
                     active ? 'bg-brass-soft/60' : 'hover:bg-surface-2'
                   }`}
                 >

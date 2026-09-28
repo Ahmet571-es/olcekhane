@@ -30,14 +30,14 @@ export function TestShelf({ showUpcoming = true, headingLevel = 3 }: { showUpcom
           <section key={domain} id={DOMAIN_ANCHORS[domain]} className="scroll-mt-24">
             <H className="t-h3 mb-3">{DOMAIN_LABELS[domain]}</H>
             <div className="overflow-x-auto rounded-xl border border-rule bg-surface">
-              <table className="w-full min-w-[46rem] border-collapse text-left">
+              <table className="w-full min-w-[46rem] table-fixed border-collapse text-left">
                 <thead>
                   <tr className="border-b border-rule-strong text-[0.8125rem] text-ink-3">
-                    <th scope="col" className="w-[26%] px-5 py-3 font-bold">Test</th>
-                    <th scope="col" className="w-[30%] px-5 py-3 font-bold">Ne ölçer?</th>
+                    <th scope="col" className="w-[22%] px-5 py-3 font-bold">Test</th>
+                    <th scope="col" className="w-[28%] px-5 py-3 font-bold">Ne ölçer?</th>
                     <th scope="col" className="w-[26%] px-5 py-3 font-bold">Dayandığı kaynak</th>
-                    <th scope="col" className="px-5 py-3 font-bold">Sınıf</th>
-                    <th scope="col" className="px-5 py-3 font-bold">Durum</th>
+                    <th scope="col" className="w-[11%] px-5 py-3 font-bold">Sınıf</th>
+                    <th scope="col" className="w-[13%] px-5 py-3 font-bold">Durum</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -51,13 +51,14 @@ export function TestShelf({ showUpcoming = true, headingLevel = 3 }: { showUpcom
                       </th>
                       <td className="t-small px-5 py-4 text-ink-2">{t.tagline}</td>
                       <td className="t-small px-5 py-4 text-ink-2">{t.science.basedOn}</td>
-                      <td className="t-small whitespace-nowrap px-5 py-4">{gradeRangeLabel(t.minGrade, t.maxGrade)}</td>
+                      <td className="t-small px-5 py-4">{gradeRangeLabel(t.minGrade, t.maxGrade)}</td>
                       <td className="px-5 py-4">
                         {t.status === 'pilot' ? (
-                          <span className="chip chip-brass">Pilot, ücretsiz</span>
+                          <span className="chip chip-brass">Pilot</span>
                         ) : (
-                          <span className="chip chip-ok">{t.isFree ? 'Yayında, ücretsiz' : 'Yayında'}</span>
+                          <span className="chip chip-ok">Yayında</span>
                         )}
+                        {t.isFree && <p className="t-meta mt-1">Ücretsiz</p>}
                       </td>
                     </tr>
                   ))}
@@ -68,7 +69,7 @@ export function TestShelf({ showUpcoming = true, headingLevel = 3 }: { showUpcom
                       </th>
                       <td className="t-small px-5 py-4 text-ink-3">{u.measures}</td>
                       <td className="t-small px-5 py-4 text-ink-3">{u.basedOn}</td>
-                      <td className="t-small whitespace-nowrap px-5 py-4 text-ink-3">{u.grades}</td>
+                      <td className="t-small px-5 py-4 text-ink-3">{u.grades}</td>
                       <td className="px-5 py-4">
                         <span className="chip">Hazırlanıyor</span>
                       </td>

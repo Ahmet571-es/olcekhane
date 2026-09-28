@@ -1,8 +1,19 @@
 import Link from 'next/link';
+import { JsonLd } from '@/components/seo/json-ld';
 import { ReportPreview } from '@/components/site/report-preview';
 import { TestShelf } from '@/components/site/test-shelf';
+import { GUIDE_CATEGORIES, guideBySlug } from '@/content/rehber';
 import { HeroVisual } from '@/components/three/hero-visual';
-import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from '@/lib/config';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, siteUrl } from '@/lib/config';
+import { pageMeta } from '@/lib/seo';
+
+export const metadata = pageMeta({
+  title: `${SITE_NAME}: ${SITE_TAGLINE}`,
+  absoluteTitle: true,
+  ogTitle: `${SITE_NAME}: Tahmin değil, ölçüm.`,
+  description: SITE_DESCRIPTION,
+  path: '/',
+});
 
 const PRINCIPLES = [
   {
@@ -22,6 +33,10 @@ const PRINCIPLES = [
     d: 'Sunucularımız Türkiye’de. Çocuk verisini reklam, pazarlama ya da yapay zekâ eğitimi için kullanmıyoruz. Açık rızanızı dilediğiniz an geri alabilirsiniz.',
   },
 ];
+
+const FEATURED_GUIDES = ['sinav-kaygisi', 'etkili-ders-calisma-yontemleri', 'kisilik-testleri-guvenilir-mi']
+  .map((slug) => guideBySlug(slug))
+  .filter((g) => g !== undefined);
 
 const FAQ = [
   {
@@ -71,7 +86,7 @@ export default function Home() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      <JsonLd data={jsonLd} />
 
       {/* Açılış */}
       <section className="relative overflow-hidden border-b border-rule">
@@ -193,6 +208,31 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Rehber */}
+      <section className="container-page pb-20 md:pb-28" aria-labelledby="rehberden">
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+          <h2 id="rehberden" className="t-h1">
+            Rehberden
+          </h2>
+          <Link href="/rehber" className="font-bold">
+            Bütün yazılar
+          </Link>
+        </div>
+        <ul className="grid gap-x-10 gap-y-10 md:grid-cols-3">
+          {FEATURED_GUIDES.map((g) => (
+            <li key={g.slug} className="flex flex-col gap-2 border-t-2 border-ink pt-4">
+              <p className="t-meta font-bold text-brass-ink">{GUIDE_CATEGORIES[g.category]}</p>
+              <h3 className="font-display text-xl font-bold leading-snug">
+                <Link href={`/rehber/${g.slug}`} className="no-underline hover:underline">
+                  {g.title}
+                </Link>
+              </h3>
+              <p className="text-ink-2">{g.description}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* SSS */}

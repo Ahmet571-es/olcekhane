@@ -1,12 +1,13 @@
-import type { Metadata } from 'next';
 import { TestShelf } from '@/components/site/test-shelf';
+import { pageMeta } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata = pageMeta({
   title: 'Testler: kişilik, ilgi, okuma ve öğrenme testleri',
   description:
     'Öğrenciler için bilimsel kişilik, öz-saygı, okuma hızı ve anlama testleri. Her testin dayandığı ölçek, Türkçe sürümü, güvenirliği ve sınırları açıkça yazılı.',
-  alternates: { canonical: '/testler' },
-};
+  path: '/testler',
+    ownImage: true,
+});
 
 export default function TestsPage() {
   return (

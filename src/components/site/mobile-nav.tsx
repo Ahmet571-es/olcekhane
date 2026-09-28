@@ -21,7 +21,7 @@ export function MobileNav({ items }: { items: { href: string; label: string }[] 
   }, [open]);
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         type="button"
         className="btn btn-secondary min-h-10 px-3.5"

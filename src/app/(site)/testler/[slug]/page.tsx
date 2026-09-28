@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getInstrumentDef, publicInstruments } from '@/content/instruments';
-import { DOMAIN_LABELS, gradeRangeLabel, siteUrl } from '@/lib/config';
+import { JsonLd } from '@/components/seo/json-ld';
+import { GuideList } from '@/components/site/guide-list';
+import { guidesForTest } from '@/content/rehber';
+import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
+import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
 export function generateStaticParams() {
   return publicInstruments().map((t) => ({ slug: t.slug }));
@@ -12,12 +16,13 @@ export async function generateMetadata(props: PageProps<'/testler/[slug]'>): Pro
   const { slug } = await props.params;
   const def = getInstrumentDef(slug);
   if (!def) return {};
-  return {
+  return pageMeta({
     title: `${def.name}${def.isFree ? ' (ücretsiz)' : ''}`,
+    ogTitle: def.name,
     description: `${def.tagline} ${def.estimatedMinutes} dakika sürer, ${gradeRangeLabel(def.minGrade, def.maxGrade)} öğrenciler için. Bilimsel dayanağı, güvenirliği ve sınırları açıkça yazılı.`,
-    alternates: { canonical: `/testler/${slug}` },
-    openGraph: { title: def.name, description: def.tagline, type: 'article' },
-  };
+    path: `/testler/${slug}`,
+    ownImage: true,
+  });
 }
 
 export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
@@ -25,17 +30,14 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const def = getInstrumentDef(slug);
   if (!def || (def.status !== 'active' && def.status !== 'pilot')) notFound();
   const sc = def.science;
+  const guides = guidesForTest(slug);
   const itemCount = def.engine === 'likert' ? `${def.items.length} cümle` : '1 metin, 8 soru';
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Ana sayfa', item: siteUrl('/') },
-      { '@type': 'ListItem', position: 2, name: 'Testler', item: siteUrl('/testler') },
-      { '@type': 'ListItem', position: 3, name: def.name, item: siteUrl(`/testler/${slug}`) },
-    ],
-  };
+  const jsonLd = breadcrumbLd([
+    { name: 'Ana sayfa', path: '/' },
+    { name: 'Testler', path: '/testler' },
+    { name: def.name, path: `/testler/${slug}` },
+  ]);
 
   const facts = [
     { k: 'Süre', v: `yaklaşık ${def.estimatedMinutes} dakika` },
@@ -46,7 +48,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
 
   return (
     <article className="container-page py-12 md:py-16">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      <JsonLd data={jsonLd} />
       <nav aria-label="Konum" className="t-small mb-8 text-ink-3">
         <Link href="/testler">Testler</Link> <span aria-hidden="true">/</span> {DOMAIN_LABELS[def.domain]}
       </nav>
@@ -172,6 +174,15 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           </dl>
         </div>
       </section>
+
+      {guides.length > 0 && (
+        <section className="grid gap-10 border-t border-rule py-14 lg:grid-cols-[1fr_1.6fr]" aria-labelledby="okuyun">
+          <h2 id="okuyun" className="t-h2">
+            Bu konuda okuyun
+          </h2>
+          <GuideList guides={guides} />
+        </section>
+      )}
 
       <section className="border-t border-rule pt-14">
         <div className="flex flex-col items-start gap-4 rounded-2xl bg-ink p-8 text-paper md:flex-row md:items-center md:justify-between md:p-10">

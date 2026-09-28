@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { LEGAL_DOCS, legalDocBySlug } from '@/content/legal';
 import { renderMarkdown } from '@/lib/markdown';
+import { pageMeta } from '@/lib/seo';
 import { fillCompany } from '@/lib/site';
 
 export function generateStaticParams() {
@@ -11,7 +12,7 @@ export function generateStaticParams() {
 export async function generateMetadata(props: PageProps<'/yasal/[slug]'>): Promise<Metadata> {
   const { slug } = await props.params;
   const doc = legalDocBySlug(slug);
-  return doc ? { title: doc.title, alternates: { canonical: `/yasal/${slug}` } } : {};
+  return doc ? pageMeta({ title: doc.title, description: doc.summary, path: `/yasal/${slug}` }) : {};
 }
 
 export default async function LegalPage(props: PageProps<'/yasal/[slug]'>) {

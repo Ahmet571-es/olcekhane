@@ -193,3 +193,24 @@ export const siteSettings = pgTable('site_settings', {
   value: jsonb('value').$type<unknown>().notNull(),
   updatedAt: updatedAt(),
 });
+
+/* ---------- İletişim formu ve okul başvuruları ---------- */
+
+export const contactTopic = pgEnum('contact_topic', ['parent', 'school', 'press', 'kvkk', 'other']);
+
+export const contactMessages = pgTable(
+  'contact_messages',
+  {
+    id: id(),
+    topic: contactTopic('topic').notNull(),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    phone: text('phone'),
+    organization: text('organization'),
+    message: text('message').notNull(),
+    ip: text('ip'),
+    handledAt: timestamp('handled_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('contact_messages_created_idx').on(t.createdAt)],
+);

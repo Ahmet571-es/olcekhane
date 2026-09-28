@@ -25,6 +25,14 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   reactStrictMode: true,
+  // Paylaşım görselleri derleme sırasında üretilir; yine de sunucuda yeniden üretilmeleri gerekirse
+  // yazı tipi dosyalarının bağımsız (standalone) çıktıda bulunmasını garanti eder.
+  outputFileTracingIncludes: {
+    '/**/*': [
+      './node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin*-700-normal.woff',
+      './node_modules/@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin*-{400,700}-normal.woff',
+    ],
+  },
   async headers() {
     return [
       {

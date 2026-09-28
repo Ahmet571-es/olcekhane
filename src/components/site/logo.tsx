@@ -4,9 +4,10 @@
  */
 export function LogoMark({ size = 32, className }: { size?: number; className?: string }) {
   const r2 = (v: number) => Math.round(v * 100) / 100;
-  const ticks = Array.from({ length: 10 }, (_, i) => {
-    const a = (Math.PI * (i * 10 + 5)) / 180;
-    const r1 = i % 3 === 0 ? 10.5 : 12;
+  // Derece çizgileri 9°–81° arasında: çeyreğin kenarlarına taşmaz; 18°, 45° ve 72° uzun çizgi.
+  const ticks = Array.from({ length: 9 }, (_, i) => {
+    const a = (Math.PI * (9 + i * 9)) / 180;
+    const r1 = i % 3 === 1 ? 10.5 : 12;
     return {
       x1: r2(3 + Math.cos(a) * r1),
       y1: r2(29 - Math.sin(a) * r1),

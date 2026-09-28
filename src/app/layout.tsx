@@ -4,6 +4,7 @@ import '@fontsource/atkinson-hyperlegible-next/700.css';
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, siteUrl } from '@/lib/config';
+import { OG_DEFAULTS, indexingAllowed } from '@/lib/seo';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -13,9 +14,10 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  openGraph: { siteName: SITE_NAME, locale: 'tr_TR', type: 'website' },
+  openGraph: { ...OG_DEFAULTS, type: 'website' },
   twitter: { card: 'summary_large_image' },
   formatDetection: { telephone: false },
+  robots: indexingAllowed() ? undefined : { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
