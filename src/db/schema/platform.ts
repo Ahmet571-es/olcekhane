@@ -139,6 +139,26 @@ export const entitlements = pgTable(
 
 /* ---------- İşletim: denetim kaydı, e-posta kuyruğu, lisans kayıt defteri, site ayarları ---------- */
 
+/**
+ * Zamanlanmış görevlerin çalışma kayıtları (ör. günlük temizlik). Yönetim panelinde son çalışma ve
+ * sonuç gösterilir; zamanlayıcı son başarılı çalışmaya bakarak görevin yeniden gerekip gerekmediğine karar verir.
+ */
+export const jobRuns = pgTable(
+  'job_runs',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    job: text('job').notNull(),
+    /** Çalıştıran: zamanlayıcı ya da yönetici. */
+    trigger: text('trigger').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    ok: boolean('ok'),
+    report: jsonb('report').$type<Record<string, number>>(),
+    error: text('error'),
+  },
+  (t) => [index('job_runs_job_idx').on(t.job, t.startedAt)],
+);
+
 export const auditLogs = pgTable(
   'audit_logs',
   {

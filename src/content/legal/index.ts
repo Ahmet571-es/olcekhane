@@ -41,9 +41,10 @@ KEP: {{company.kepAddress}}
 - Kimlik ve iletişim: ad soyad, e-posta adresi, isteğe bağlı telefon numarası
 - Hesap ve işlem bilgileri: şifrenin geri döndürülemez özeti, oluşturulan öğrenci profilleri, atanan testler, onay kayıtları
 - İşlem güvenliği: oturum kayıtları, IP adresi, tarayıcı bilgisi, önemli işlemlere ait denetim kayıtları
+- Okul aracılığıyla kullanımda: okulun bildirdiği veli e-posta adresi (yalnızca onay bağlantısı ve onayla ilgili bildirimler için)
 
 **Öğrenciler için**
-- Kimlik: ad, isteğe bağlı soyadı, sınıf düzeyi, isteğe bağlı doğum yılı ve cinsiyet
+- Kimlik: ad, isteğe bağlı soyadı, sınıf düzeyi, isteğe bağlı doğum yılı ve cinsiyet; okul aracılığıyla eklenen öğrencilerde ayrıca okul numarası ve sınıfı
 - Ölçme verileri: testlerdeki cevaplar, cevap süreleri, görevlerdeki performans kayıtları, bunlardan hesaplanan puanlar ve raporlar
 
 Öğrencilerin e-posta adresini ya da T.C. kimlik numarasını istemiyoruz.
@@ -77,9 +78,15 @@ Kişisel veriler yurt dışına aktarılmaz.
 ## 6. Ne kadar süre saklıyoruz?
 
 - Hesap ve öğrenci verileri: hesap açık kaldığı sürece. Hesap kapatıldığında ya da veli silinmesini istediğinde, yasal saklama zorunluluğu olmayan veriler en geç 30 gün içinde silinir veya anonimleştirilir.
-- Açık rıza geri alındığında: ilgili öğrencinin ölçme verileri en geç 30 gün içinde silinir.
-- İşlem güvenliği kayıtları: 2 yıl.
+- Açık rıza geri alındığında: ilgili öğrencinin ölçme verileri en geç 30 gün içinde silinir; rıza sonradan yeniden verilse de bu veriler kullanılmaz.
+- Açık rıza ve rızanın geri alınmasına ait kayıtlar: rızanın kanıtı olarak, öğrenci profili silindikten sonra 2 yıl (bu süre boyunca erişime kapalı tutulur).
+- Yarıda bırakılan testlerin cevapları: son cevaptan itibaren 90 gün.
+- E-posta gönderim kayıtları (alıcı ve konu): 90 gün.
+- İletişim formu mesajları: 1 yıl.
+- İşlem güvenliği kayıtları (giriş denemeleri, denetim kayıtları): en fazla 2 yıl.
 - Ödeme ve fatura kayıtları: vergi mevzuatı gereği 10 yıl.
+
+Süresi dolan veriler her gün çalışan otomatik bir görevle silinir veya anonimleştirilir.
 
 ## 7. Haklarınız
 

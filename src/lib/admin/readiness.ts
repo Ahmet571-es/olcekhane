@@ -4,6 +4,7 @@ import { EXPERTS } from '@/content/experts';
 import { publicInstruments } from '@/content/instruments';
 import { db } from '@/db';
 import { legalDocuments } from '@/db/schema';
+import { lastSuccessfulRun } from '@/lib/jobs/purge';
 import { missingCompanyFields } from '@/lib/site';
 
 export type CheckStatus = 'ok' | 'warn' | 'fail' | 'info';
@@ -112,6 +113,21 @@ export async function readinessChecks(): Promise<ReadinessCheck[]> {
     detail: missingDocs.length
       ? `Yayında olmayan: ${missingDocs.map((d) => d.label).join(', ')}.`
       : 'Yayında. Yayın öncesinde bir hukukçunun metinleri gözden geçirmesini öneririz.',
+  });
+
+  // Aydınlatma metnindeki saklama süreleri günlük temizlik göreviyle uygulanır.
+  const lastPurge = await lastSuccessfulRun();
+  const purgeFresh = !!lastPurge && Date.now() - lastPurge.getTime() < 36 * 3600_000;
+  const jobsOff = (env.SCHEDULED_JOBS ?? (prod ? 'true' : 'false')) === 'false';
+  out.push({
+    key: 'purge',
+    label: 'Günlük temizlik görevi',
+    status: purgeFresh ? 'ok' : prod ? 'fail' : 'warn',
+    detail: purgeFresh
+      ? `Son başarılı çalışma: ${new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Istanbul' }).format(lastPurge)}.`
+      : `${lastPurge ? 'Son 36 saatte başarılı çalışma yok' : 'Henüz hiç çalışmadı'}. Rıza geri alınınca verilerin 30 gün içinde silinmesi sözü bu görevle yerine getirilir.${
+          jobsOff ? ' Zamanlayıcı kapalı (SCHEDULED_JOBS=false).' : ''
+        } Aşağıdan elle de çalıştırabilirsiniz.`,
   });
 
   out.push({

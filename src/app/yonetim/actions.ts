@@ -9,6 +9,7 @@ import { contactMessages, orgInvites, organizations, sessions, students } from '
 import { audit } from '@/lib/audit';
 import { requireAdmin } from '@/lib/auth/dal';
 import { retryEmail } from '@/lib/email/send';
+import { runPurgeJob } from '@/lib/jobs/purge';
 import { sendInvite } from '@/lib/school/invites';
 import { slugifyTr } from '@/lib/slug';
 import { isUuid } from '@/lib/uuid';
@@ -155,4 +156,13 @@ export async function retryEmailAction(formData: FormData): Promise<void> {
   await audit({ actorUserId: admin.id, action: 'email.retry', entity: 'email', entityId: id, meta: { result } });
   revalidatePath('/yonetim/eposta');
   redirect(`/yonetim/eposta?deneme=${result}`);
+}
+
+/** Günlük temizlik görevini hemen çalıştırır (zamanlayıcıyı beklemeden). */
+export async function runPurgeAction(): Promise<void> {
+  const admin = await requireAdmin();
+  const report = await runPurgeJob('yönetici');
+  await audit({ actorUserId: admin.id, action: 'job.purge_manual', entity: 'job', entityId: 'temizlik', meta: report ?? { skipped: 1 } });
+  revalidatePath('/yonetim');
+  redirect(`/yonetim?temizlik=${report ? 'tamam' : 'mesgul'}#temizlik`);
 }

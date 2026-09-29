@@ -2,7 +2,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { and, count, eq } from 'drizzle-orm';
 import { db } from '@/db';
-import { attempts, instrumentVersions, instruments, items, legalDocuments, scales } from '@/db/schema';
+import { attempts, consentRecords, instrumentVersions, instruments, items, legalDocuments, scales } from '@/db/schema';
 import { INSTRUMENTS } from '@/content/instruments';
 import { LEGAL_DOCS } from '@/content/legal';
 import { stableStringify } from '@/lib/stable-json';
@@ -226,11 +226,30 @@ async function syncInstrument(def: InstrumentDef, log: (m: string) => void): Pro
  */
 export async function syncDefinitions(log: (m: string) => void = console.log): Promise<void> {
   // Hukuki metinler önce ve bağımsız eşitlenir: bir testteki sorun, yeni metin sürümlerini engellememeli.
+  // Metni değişen bir sürüm, henüz ona bağlı onay kaydı yoksa yerinde güncellenir; varsa üzerine
+  // yazılmaz (kişi o metni onayladı): yeni sürüm numarası verilmesi gerekir.
   for (const doc of LEGAL_DOCS) {
-    await db
-      .insert(legalDocuments)
-      .values({ kind: doc.kind, version: doc.version, title: doc.title, bodyMd: doc.bodyMd })
-      .onConflictDoNothing({ target: [legalDocuments.kind, legalDocuments.version] });
+    const [existing] = await db
+      .select({ id: legalDocuments.id, title: legalDocuments.title, bodyMd: legalDocuments.bodyMd })
+      .from(legalDocuments)
+      .where(and(eq(legalDocuments.kind, doc.kind), eq(legalDocuments.version, doc.version)))
+      .limit(1);
+    if (!existing) {
+      await db
+        .insert(legalDocuments)
+        .values({ kind: doc.kind, version: doc.version, title: doc.title, bodyMd: doc.bodyMd })
+        .onConflictDoNothing({ target: [legalDocuments.kind, legalDocuments.version] });
+      log(`${doc.kind} v${doc.version} eklendi.`);
+      continue;
+    }
+    if (existing.title === doc.title && existing.bodyMd === doc.bodyMd) continue;
+    const [{ n }] = await db.select({ n: count() }).from(consentRecords).where(eq(consentRecords.documentId, existing.id));
+    if (n > 0) {
+      log(`UYARI: ${doc.kind} v${doc.version} metni değişmiş ama bu sürüme bağlı ${n} onay kaydı var. Sürüm numarasını artırın.`);
+      continue;
+    }
+    await db.update(legalDocuments).set({ title: doc.title, bodyMd: doc.bodyMd }).where(eq(legalDocuments.id, existing.id));
+    log(`${doc.kind} v${doc.version} metni güncellendi (henüz onay kaydı yoktu).`);
   }
   // Bir testin eşitlenememesi diğerlerini durdurmaz; hatalar sonda topluca bildirilir.
   const failed: string[] = [];
