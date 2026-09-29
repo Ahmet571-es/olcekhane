@@ -6,7 +6,7 @@ import { QuizRunner } from '@/components/runner/quiz-runner';
 import { ReadingRunner } from '@/components/runner/reading-runner';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
 import { AssessmentError, loadRunnerState, taskProgress } from '@/lib/assessment/service';
-import { studentAccess } from '@/lib/auth/dal';
+import { requireAccountsOpen, studentAccess } from '@/lib/auth/dal';
 import { getSession } from '@/lib/auth/session';
 import { currentDocument, hasActiveConsent } from '@/lib/consent';
 import type { InstrumentDef } from '@/lib/instruments/types';
@@ -84,6 +84,7 @@ function Runner({ def, state, doneBlocks, common }: { def: InstrumentDef; state:
 }
 
 export default async function RunnerPage(props: PageProps<'/uygulama/[attemptId]'>) {
+  requireAccountsOpen();
   const { attemptId } = await props.params;
   const session = await getSession();
   if (!session) redirect(`/giris?sonra=${encodeURIComponent(`/uygulama/${attemptId}`)}`);

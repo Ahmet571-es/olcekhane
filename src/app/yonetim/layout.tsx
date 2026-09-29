@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { AppHeader, type NavItem } from '@/components/app/app-header';
 import { requireAdmin } from '@/lib/auth/dal';
 import { userOrgs } from '@/lib/school/access';
+import { accountsOpen } from '@/lib/site';
 
 export const metadata: Metadata = { title: 'Yönetim', robots: { index: false, follow: false } };
 
@@ -19,7 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await requireAdmin();
   const orgs = await userOrgs(user.id);
   const switchLinks: NavItem[] = [{ href: '/hesap', label: 'Hesabım' }];
-  if (orgs.length > 0) switchLinks.unshift({ href: '/okul', label: 'Okul paneli' });
+  if (orgs.length > 0 && accountsOpen()) switchLinks.unshift({ href: '/okul', label: 'Okul paneli' });
   return (
     <div className="flex min-h-dvh flex-col">
       <AppHeader homeHref="/yonetim" context="Yönetim" nav={NAV} userName={user.fullName} switchLinks={switchLinks} />

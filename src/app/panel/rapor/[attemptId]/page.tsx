@@ -5,12 +5,13 @@ import { PrintButton } from '@/components/report/print-button';
 import { ReportView } from '@/components/report/report-view';
 import { generateReports, getAttempt, getReport } from '@/lib/assessment/service';
 import { audit } from '@/lib/audit';
-import { requireUser, studentAccess } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser, studentAccess } from '@/lib/auth/dal';
 import { hasActiveConsent } from '@/lib/consent';
 
 export const metadata: Metadata = { title: 'Rapor', robots: { index: false, follow: false } };
 
 export default async function ReportPage(props: PageProps<'/panel/rapor/[attemptId]'>) {
+  requireAccountsOpen();
   const { attemptId } = await props.params;
   const q = await props.searchParams;
   const user = await requireUser(`/panel/rapor/${attemptId}`);

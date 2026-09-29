@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ResendVerification } from '@/components/panel/resend-verification';
-import { requireUser } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser } from '@/lib/auth/dal';
 import { GRADE_LABELS } from '@/lib/config';
 import { listChildren } from '@/lib/panel/queries';
 
@@ -16,6 +16,7 @@ const MESSAGES: Record<string, { ok: boolean; text: string }> = {
 };
 
 export default async function PanelHome(props: PageProps<'/panel'>) {
+  requireAccountsOpen();
   const user = await requireUser('/panel');
   const q = await props.searchParams;
   const msg = Object.entries(MESSAGES).find(([k]) => {

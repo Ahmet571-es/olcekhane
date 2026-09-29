@@ -16,6 +16,10 @@ import { runPurgeJob } from '@/lib/jobs/purge';
 import { sendInvite } from '@/lib/school/invites';
 import { slugifyTr } from '@/lib/slug';
 import { isUuid } from '@/lib/uuid';
+import { accountsOpen } from '@/lib/site';
+
+/** Hesaplar kapalıyken (ACCOUNTS_ENABLED) okul açılmaz ve davet gönderilmez: davetler kabul edilemez. */
+const SCHOOLS_CLOSED = 'Hesap bölümü kapalı (ACCOUNTS_ENABLED): okul açılamaz ve davet gönderilemez.';
 
 export type AdminFormState = { ok?: boolean; message?: string; errors?: Record<string, string>; values?: Record<string, string> };
 
@@ -55,6 +59,7 @@ async function uniqueSlug(name: string): Promise<string> {
 
 export async function createOrgAction(_: AdminFormState, formData: FormData): Promise<AdminFormState> {
   const admin = await requireAdmin();
+  if (!accountsOpen()) return { message: SCHOOLS_CLOSED };
   const raw = Object.fromEntries(formData) as Record<string, string>;
   const values = { name: raw.name ?? '', city: raw.city ?? '', district: raw.district ?? '', email: raw.email ?? '', role: raw.role ?? '' };
   const parsed = orgSchema.safeParse(raw);
@@ -72,6 +77,7 @@ export async function createOrgAction(_: AdminFormState, formData: FormData): Pr
 
 export async function adminInviteAction(orgId: string, _: AdminFormState, formData: FormData): Promise<AdminFormState> {
   const admin = await requireAdmin();
+  if (!accountsOpen()) return { message: SCHOOLS_CLOSED };
   if (!isUuid(orgId)) return { message: 'Okul bulunamadı.' };
   const raw = Object.fromEntries(formData) as Record<string, string>;
   const values = { email: raw.email ?? '', role: raw.role ?? '' };

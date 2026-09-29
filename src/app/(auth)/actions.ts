@@ -149,6 +149,8 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
 
   await db.insert(loginAttempts).values({ key: email, ip, success: !!(user && ok) });
   if (!user || !ok) return { message: 'E-posta adresi ya da şifre hatalı.', values };
+  // Hesaplar kapalıyken (hızlı test modu) yalnızca platform yöneticileri giriş yapabilir.
+  if (!accountsOpen() && user.role !== 'admin') return { message: ACCOUNTS_CLOSED_MESSAGE, values };
 
   // İki aşamalı doğrulama açıksa oturum ikinci adımdan sonra açılır.
   if (user.totpEnabledAt) {
@@ -216,11 +218,12 @@ export async function forgotPasswordAction(_: FormState, formData: FormData): Pr
   const allowed = (await rateLimit(`sifre:${email}`, 3, 3600)) && (await rateLimit(`sifre-ip:${ip}`, 10, 3600));
   if (allowed) {
     const [user] = await db
-      .select({ id: users.id, fullName: users.fullName })
+      .select({ id: users.id, fullName: users.fullName, role: users.role })
       .from(users)
       .where(and(eq(users.email, email), isNull(users.deletedAt)))
       .limit(1);
-    if (user) {
+    // Hesaplar kapalıyken yalnızca yöneticilere bağlantı gönderilir (ileti yine aynıdır).
+    if (user && (accountsOpen() || user.role === 'admin')) {
       const token = randomToken();
       await db.insert(authTokens).values({
         kind: 'password_reset',
@@ -254,6 +257,10 @@ export async function resetPasswordAction(_: FormState, formData: FormData): Pro
     )
     .limit(1);
   if (!row?.userId) return { message: 'Bağlantının süresi dolmuş ya da daha önce kullanılmış. Yeni bir bağlantı isteyin.' };
+  if (!accountsOpen()) {
+    const [owner] = await db.select({ role: users.role }).from(users).where(eq(users.id, row.userId)).limit(1);
+    if (owner?.role !== 'admin') return { message: ACCOUNTS_CLOSED_MESSAGE };
+  }
   const policy = checkPasswordPolicy(password, row.email ?? undefined);
   if (policy) return { errors: { password: policy } };
 

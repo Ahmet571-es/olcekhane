@@ -5,6 +5,7 @@ import { cache } from 'react';
 import { db } from '@/db';
 import { sessions, students, users } from '@/db/schema';
 import { clientIp, userAgent } from '@/lib/request';
+import { accountsOpen } from '@/lib/site';
 import { hashToken, randomToken } from './tokens';
 
 export const SESSION_COOKIE = 'olc_oturum';
@@ -132,6 +133,9 @@ export const getSession = cache(async (): Promise<CurrentSession | null> => {
     .limit(1);
 
   if (!row) return null;
+  // Hesaplar kapalıyken (hızlı test modu) yalnızca platform yöneticilerinin oturumu geçerlidir: daha önce
+  // açılmış veli, okul ya da öğrenci oturumları açılmamış sayılır.
+  if (!accountsOpen() && !(row.kind === 'user' && row.role === 'admin')) return null;
 
   // Son görülme zamanını en fazla saatte bir güncelle.
   if (now.getTime() - row.lastSeenAt.getTime() > 3600_000) {

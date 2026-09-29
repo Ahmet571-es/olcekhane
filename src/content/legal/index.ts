@@ -52,7 +52,7 @@ KEP: {{company.kepAddress}}
 
 ## 2. Hızlı test: hesap açmadan test çözme
 
-Testi çözerken seçtiğiniz sınıf düzeyi, cevaplarınız ve cevap süreleri (dikkat ve bellek görevlerinde görevdeki performansınız) test bittiğinde tek seferde sunucumuza gönderilir. Sunucu puanları ve raporu hesaplayıp size geri gönderir. Raporu PDF olarak indirmek istediğinizde aynı bilgiler bir kez daha gönderilir; PDF sunucunun belleğinde hazırlanıp doğrudan size iletilir.
+Teste başlarken seçtiğiniz sınıf düzeyi test sayfasının adresinde yer alır (bu yüzden tarayıcınızın geçmişinde de görünür). Cevaplarınız ve cevap süreleri (dikkat ve bellek görevlerinde görevdeki performansınız) test bittiğinde sınıf düzeyiyle birlikte tek seferde sunucumuza gönderilir. Sunucu puanları ve raporu hesaplayıp size geri gönderir. Raporu her PDF olarak indirişinizde aynı bilgiler yeniden gönderilir; PDF sunucunun belleğinde hazırlanıp doğrudan size iletilir.
 
 Bu bilgiler:
 
@@ -74,11 +74,11 @@ Her internet sitesinde olduğu gibi tarayıcınız, sayfaları isterken IP adres
 
 ## 4. İletişim formu
 
-Formu gönderdiğinizde adınız soyadınız, e-posta adresiniz, isteğe bağlı olarak telefon numaranız ve kurumunuz, seçtiğiniz konu, mesajınız, gönderim tarihi ve IP adresiniz kaydedilir; mesajınız ayrıca şirket e-posta adresimize iletilir. Bu bilgileri size dönüş yapmak, başvurunuzu (KVKK başvuruları dahil) sonuçlandırmak ve formun kötüye kullanılmasını önlemek için kullanırız.
+Formu gönderdiğinizde adınız soyadınız, e-posta adresiniz, isteğe bağlı olarak telefon numaranız ve kurumunuz, seçtiğiniz konu, mesajınız, gönderim tarihi ve IP adresiniz veritabanımıza kaydedilir. Şirket e-posta adresimize yalnızca yeni bir mesaj geldiğini bildiren, mesajın içeriğini ve sizin bilgilerinizi içermeyen bir e-posta gider. Bu bilgileri size dönüş yapmak, başvurunuzu (KVKK başvuruları dahil) sonuçlandırmak ve formun kötüye kullanılmasını önlemek için kullanırız. Size e-postayla yanıt verdiğimizde bu yazışma şirket e-posta hesabımızda kalır.
 
 ## 5. Giriş sayfası
 
-Veli, okul ve öğrenci hesapları şu an kapalıdır; giriş sayfası yalnızca platformu yöneten yetkililer içindir. Giriş sayfasında yapılan her deneme (yazılan e-posta adresi, IP adresi, tarih ve denemenin sonucu), hesapları izinsiz girişlere karşı korumak için kaydedilir.
+Veli, okul ve öğrenci hesapları şu an kapalıdır; giriş sayfası yalnızca platformu yöneten yetkililer içindir. Giriş sayfasında yapılan denemeler (yazılan e-posta adresi, IP adresi, tarih ve denemenin sonucu), hesapları izinsiz girişlere karşı korumak için kaydedilir. Giriş yapan yetkililerin oturumları IP adresi ve tarayıcı bilgisiyle, yaptıkları işlemler de denetim kaydına yazılır.
 
 ## 6. Hangi amaçlarla ve hangi hukuki sebeplerle işliyoruz?
 
@@ -96,7 +96,7 @@ Veriler; sitedeki test ekranları, iletişim formu ve giriş sayfası ile taray�
 ## 8. Verileri kimlere aktarıyoruz?
 
 - **Barındırma hizmeti (yurt dışı):** Sitemizin sunucusu, barındırma hizmeti aldığımız Hostinger’ın Almanya’daki (Avrupa Birliği) veri merkezinde bulunur. Siteye gönderdiğiniz bilgiler (iletişim formu mesajları, giriş denemeleri, bağlantı bilgileri ve kaydedilmeden işlenen hızlı test cevapları) bu sunucuda işlendiği için yurt dışına aktarılmış olur. Sunucuyu biz yönetiriz; veritabanı ve yedekleri sunucuda şifrelenmiş bir alanda tutulur. Barındırma sağlayıcısının sunucunun tamamından aldığı yedeklerde bu veriler yalnızca şifreli hâlleriyle bulunur.
-- **E-posta hizmeti:** İletişim formu mesajlarını şirket e-posta adresimize iletmek ve yöneticilere hesap güvenliğiyle ilgili e-postalar göndermek için e-posta hizmeti sağlayıcımızı kullanırız.
+- **E-posta hizmeti:** İletişim formuna yeni mesaj geldiğini (içeriği olmadan) şirket e-posta adresimize bildirmek, size yanıt vermek ve yetkililere hesap güvenliğiyle ilgili e-postalar göndermek için e-posta hizmeti sağlayıcımızı kullanırız.
 - **Yetkili kamu kurum ve kuruluşları:** yalnızca hukuken zorunlu olduğunda.
 
 Kişisel verileri satmıyor, reklam ya da pazarlama amacıyla kimseyle paylaşmıyoruz.
@@ -107,10 +107,12 @@ Kişisel verileri satmıyor, reklam ya da pazarlama amacıyla kimseyle paylaşm�
 - Hızlı testte IP adresi (hız sınırı): yalnızca sunucunun belleğinde, en geç 11 dakika.
 - İletişim formu, giriş ve şifre yenileme sayfalarındaki hız sınırı sayaçları (IP adresi ya da yazılan e-posta adresiyle): en geç 3 gün.
 - İletişim formu mesajları: 1 yıl.
-- E-posta gönderim kayıtları (alıcı ve konu; iletişim formu bildirimlerinde konu satırında gönderenin adı yer alır): 90 gün.
+- E-posta gönderim kayıtları (alıcı ve konu): 90 gün. Gönderilemeyen e-postaların içeriği (ör. şifre yenileme bağlantısı): en fazla 30 gün.
 - Giriş denemeleri: 1 yıl.
-- Yönetici işlemlerine ait denetim kayıtları: 2 yıl.
-- Kendi aldığımız şifreli veritabanı yedekleri: en fazla 28 gün; silinen bir kayıt bu yedeklerden de bu süre içinde çıkar. Barındırma sağlayıcısının sunucu yedekleri, sağlayıcının saklama süresine tabidir ve verileri yalnızca şifreli olarak içerir.
+- Yetkililerin oturum kayıtları (IP adresi ve tarayıcı bilgisiyle): çıkış yapılınca ya da en geç 31 gün içinde silinir.
+- Şifre yenileme bağlantıları (e-posta adresiyle): en geç 31 gün.
+- Denetim kayıtları (IP adresiyle): 2 yıl.
+- Kendi aldığımız şifreli veritabanı yedekleri: en fazla 28 gün; silinen bir kayıt bu yedeklerden de bu süre içinde çıkar. Yedekleme aksarsa, yenisi alınana kadar son yedek korunur. Barındırma sağlayıcısının sunucu yedekleri, sağlayıcının saklama süresine tabidir ve verileri yalnızca şifreli olarak içerir.
 
 Süresi dolan kayıtlar her gün çalışan otomatik bir görevle silinir.
 
@@ -221,7 +223,7 @@ const cookiePolicy = `Ölçekhane yalnızca platformun çalışması için zorun
 |---|---|---|
 | olc_oturum | Giriş yaptığınızda oturumunuzu açık tutar. | Veli ve personel için 30 gün, öğrenci için 8 saat ya da çıkış yapana kadar |
 | olc_iki_asama | İki aşamalı doğrulama açıksa, şifrenizi girdikten sonra kodu girene kadar girişinizi bekletir. | En fazla 10 dakika |
-| olc_var | Sitenin herkese açık sayfalarında "Giriş" yerine "Hesabım" bağlantısını göstermek için giriş yaptığınızı belirtir; kişisel bilgi içermez. | 30 gün ya da çıkış yapana kadar |
+| olc_var | Sitenin herkese açık sayfalarında "Giriş" yerine "Panelim" bağlantısını göstermek için giriş yaptığınızı belirtir; kişisel bilgi içermez. | 30 gün ya da çıkış yapana kadar |
 
 Reklam, izleme ya da üçüncü taraf analiz çerezi kullanmıyoruz. Bu nedenle çerez onay penceresi göstermiyoruz. İleride zorunlu olmayan bir çerez eklenirse, kullanılmadan önce onayınız istenecektir.`;
 

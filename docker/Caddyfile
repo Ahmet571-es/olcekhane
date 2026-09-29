@@ -3,6 +3,12 @@
 
 {
 	email {$ACME_EMAIL}
+	# İstek hataları (ör. uygulama yeniden başlarken dönen 502) Caddy'nin varsayılan günlüğüne istemcinin IP
+	# adresi, istenen adres ve başlıklarla yazılır. Erişim günlüğü gibi bunlar da yazılmaz (aydınlatma metni:
+	# ziyaretlerin kaydı tutulmaz). Sertifika ve sunucu iletileri günlükte kalır.
+	log default {
+		exclude http.log.error
+	}
 	# Yalnızca deneme kurulumlarında (kurulum provası): "local_certs" ile sertifikalar Caddy'nin kendi
 	# yerel sertifika yetkilisinden alınır. Gerçek kurulumda boştur (Let's Encrypt).
 	{$CADDY_GENEL_AYAR}

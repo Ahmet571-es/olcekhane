@@ -1,4 +1,4 @@
-# Ölçekhane: tek sunucuda çalışan kurulum (Türkiye'deki bir sunucu için; bkz. KURULUM.md).
+# Ölçekhane: tek sunucuda çalışan kurulum (bkz. KURULUM.md).
 #   docker compose up -d --build
 # Değişkenler .env dosyasından okunur (.env.example'dan kopyalayın).
 

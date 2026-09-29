@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AppHeader } from '@/components/app/app-header';
-import { requireUser } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser } from '@/lib/auth/dal';
 import { ROLE_LABELS, userOrgs } from '@/lib/school/access';
 
 export const metadata: Metadata = { title: 'Okul paneli', robots: { index: false, follow: false } };
 
 export default async function SchoolChooser() {
+  requireAccountsOpen();
   const user = await requireUser('/okul');
   const orgs = await userOrgs(user.id);
   if (orgs.length === 1) redirect(`/okul/${orgs[0].slug}`);

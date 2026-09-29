@@ -5,7 +5,7 @@ import { db } from '@/db';
 import { contactMessages } from '@/db/schema';
 import { sendEmail } from '@/lib/email/send';
 import { rateLimit } from '@/lib/rate-limit';
-import { clientIp, clientIpBucket } from '@/lib/request';
+import { appUrl, clientIp, clientIpBucket } from '@/lib/request';
 
 export type ContactState = { ok?: boolean; message?: string; errors?: Record<string, string>; values?: Record<string, string> };
 
@@ -51,14 +51,17 @@ export async function contactAction(_: ContactState, formData: FormData): Promis
     message: d.message,
     ip,
   });
+  // Bildirim e-postası mesajın kendisini ve gönderenin bilgilerini içermez: bunlar yalnızca veritabanında
+  // durur ve saklama süresi dolunca kendiliğinden silinir (aydınlatma metni). Mesaj yönetim panelinden okunur.
   const to = process.env.COMPANY_EMAIL;
   if (to) {
-    const text = `Konu: ${TOPIC_LABELS[d.topic]}\nAd: ${d.name}\nE-posta: ${d.email}\nTelefon: ${d.phone || '-'}\nKurum: ${d.organization || '-'}\n\n${d.message}`;
+    const link = appUrl('/yonetim/mesajlar');
+    const text = `İletişim formundan yeni bir mesaj geldi (konu: ${TOPIC_LABELS[d.topic]}).\n\nMesajı yönetim panelindeki Mesajlar sayfasında okuyabilirsiniz:\n${link}`;
     await sendEmail({
       to,
-      subject: `İletişim formu: ${TOPIC_LABELS[d.topic]} (${d.name})`,
+      subject: `İletişim formu: yeni mesaj (${TOPIC_LABELS[d.topic]})`,
       text,
-      html: `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap">${text.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!)}</pre>`,
+      html: `<p style="font-family:Arial,sans-serif">İletişim formundan yeni bir mesaj geldi (konu: ${TOPIC_LABELS[d.topic]}).</p><p style="font-family:Arial,sans-serif">Mesajı yönetim panelindeki <a href="${link}">Mesajlar</a> sayfasında okuyabilirsiniz.</p>`,
     });
   }
   return { ok: true, message: 'Mesajınız alındı. En geç iki iş günü içinde e-postayla dönüş yapacağız.' };

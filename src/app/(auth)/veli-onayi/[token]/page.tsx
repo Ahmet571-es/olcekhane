@@ -142,11 +142,15 @@ export default async function ParentConsentPage(props: PageProps<'/veli-onayi/[t
           </p>
         )}
         <ul className="t-small flex list-disc flex-col gap-1 pl-5 text-ink-2">
-          <li>
-            Çocuğunuzun bireysel sonuçlarını siz (hesap açarsanız), çocuğunuz ve okulun rehber öğretmeni görebilir. Ölçekhane yöneticileri yalnızca
-            destek ve denetim için, her erişimi kayda geçirerek görebilir.
-          </li>
-          <li>Öğretmenler ve okul yönetimi bireysel sonuç göremez; yalnızca en az beş öğrencilik grupların özetlerini görür.</li>
+          {open && (
+            <>
+              <li>
+                Çocuğunuzun bireysel sonuçlarını siz (hesap açarsanız), çocuğunuz ve okulun rehber öğretmeni görebilir. Ölçekhane yöneticileri
+                yalnızca destek ve denetim için, her erişimi kayda geçirerek görebilir.
+              </li>
+              <li>Öğretmenler ve okul yönetimi bireysel sonuç göremez; yalnızca en az beş öğrencilik grupların özetlerini görür.</li>
+            </>
+          )}
           <li>Veriler reklam, pazarlama ya da yapay zekâ eğitimi için kullanılmaz.</li>
         </ul>
       </section>

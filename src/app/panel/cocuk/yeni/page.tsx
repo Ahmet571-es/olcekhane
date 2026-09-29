@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { requireUser } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser } from '@/lib/auth/dal';
 import { currentDocument } from '@/lib/consent';
 import { renderMarkdown } from '@/lib/markdown';
 import { fillCompany } from '@/lib/site';
@@ -9,6 +9,7 @@ import { ChildForm } from './child-form';
 export const metadata: Metadata = { title: 'Çocuk profili oluştur' };
 
 export default async function NewChildPage() {
+  requireAccountsOpen();
   await requireUser('/panel/cocuk/yeni');
   const [assessment, research] = await Promise.all([
     currentDocument('consent_assessment'),

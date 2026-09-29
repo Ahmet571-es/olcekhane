@@ -8,7 +8,7 @@ import { db } from '@/db';
 import { guardianships, students } from '@/db/schema';
 import { AssessmentError, startOrResumeAttempt } from '@/lib/assessment/service';
 import { audit } from '@/lib/audit';
-import { requireUser, studentAccess } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser, studentAccess } from '@/lib/auth/dal';
 import { hasActiveConsent, lockStudentConsent, recordConsent, revokeConsent } from '@/lib/consent';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -36,6 +36,7 @@ const childSchema = z.object({
 });
 
 export async function createChildAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  requireAccountsOpen();
   const user = await requireUser('/panel/cocuk/yeni');
   const raw = Object.fromEntries(formData) as Record<string, string>;
   const values = {
@@ -91,6 +92,7 @@ export async function createChildAction(_: ActionState, formData: FormData): Pro
 }
 
 export async function startTestAction(formData: FormData): Promise<void> {
+  requireAccountsOpen();
   const user = await requireUser();
   const studentId = String(formData.get('studentId') ?? '');
   const slug = String(formData.get('slug') ?? '');
@@ -115,6 +117,7 @@ export async function startTestAction(formData: FormData): Promise<void> {
 }
 
 export async function setConsentAction(formData: FormData): Promise<void> {
+  requireAccountsOpen();
   const user = await requireUser();
   const studentId = String(formData.get('studentId') ?? '');
   const kind = String(formData.get('kind') ?? '');
@@ -166,6 +169,7 @@ const updateSchema = z.object({
 });
 
 export async function updateChildAction(_: ActionState, formData: FormData): Promise<ActionState> {
+  requireAccountsOpen();
   await requireUser();
   const studentId = String(formData.get('studentId') ?? '');
   const access = await studentAccess(studentId);
@@ -186,6 +190,7 @@ export async function updateChildAction(_: ActionState, formData: FormData): Pro
  * bilgileri günlük temizlik görevinde 30 gün içinde kalıcı olarak silinir (aydınlatma metni m.6).
  */
 export async function deleteChildAction(formData: FormData): Promise<void> {
+  requireAccountsOpen();
   const user = await requireUser();
   const studentId = String(formData.get('studentId') ?? '');
   if (formData.get('confirm') !== 'SİL') redirect(`/panel/cocuk/${studentId}?hata=silme-onayi`);
@@ -204,6 +209,7 @@ export async function deleteChildAction(formData: FormData): Promise<void> {
 
 /** Okulun eklediği öğrenciyi veli panelinden kaldırır (yalnızca veli bağı silinir). */
 export async function unlinkChildAction(formData: FormData): Promise<void> {
+  requireAccountsOpen();
   const user = await requireUser();
   const studentId = String(formData.get('studentId') ?? '');
   const access = await studentAccess(studentId);

@@ -6,11 +6,15 @@ import { getSession } from '@/lib/auth/session';
 import { accountsOpen } from '@/lib/site';
 import { RegisterForm } from './register-form';
 
-export const metadata: Metadata = {
-  title: 'Ücretsiz veli hesabı aç',
-  description: 'Ölçekhane veli hesabı ücretsizdir. Çocuğunuzun profilini oluşturun, ücretsiz testlerle başlayın.',
-  robots: { index: false },
-};
+export function generateMetadata(): Metadata {
+  return accountsOpen()
+    ? {
+        title: 'Ücretsiz veli hesabı aç',
+        description: 'Ölçekhane veli hesabı ücretsizdir. Çocuğunuzun profilini oluşturun, ücretsiz testlerle başlayın.',
+        robots: { index: false },
+      }
+    : { title: 'Hesap açma şu an kapalı', robots: { index: false } };
+}
 
 const STEPS = [
   { t: 'E-postanızı doğrulayın', d: 'Hesabınızın size ait olduğunu ve raporlara ulaşabileceğinizi doğrularız.' },

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { AppHeader, type NavItem } from '@/components/app/app-header';
-import { requireUser } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser } from '@/lib/auth/dal';
 import { userOrgs } from '@/lib/school/access';
 
 export const metadata: Metadata = { title: 'Panelim', robots: { index: false, follow: false } };
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
+  requireAccountsOpen();
   const user = await requireUser('/panel');
   const orgs = await userOrgs(user.id);
   const switchLinks: NavItem[] = [];

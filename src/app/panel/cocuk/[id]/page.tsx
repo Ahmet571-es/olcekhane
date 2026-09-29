@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { publicInstruments } from '@/content/instruments';
 import { db } from '@/db';
 import { organizations } from '@/db/schema';
-import { requireUser, studentAccess } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser, studentAccess } from '@/lib/auth/dal';
 import { DOMAIN_LABELS, GRADE_LABELS } from '@/lib/config';
 import { currentDocument, hasActiveConsent } from '@/lib/consent';
 import { renderMarkdown } from '@/lib/markdown';
@@ -30,6 +30,7 @@ const ERRORS: Record<string, string> = {
 };
 
 export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
+  requireAccountsOpen();
   const { id } = await props.params;
   const q = await props.searchParams;
   const user = await requireUser(`/panel/cocuk/${id}`);

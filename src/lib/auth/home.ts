@@ -3,6 +3,7 @@ import { count, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { guardianships } from '@/db/schema';
 import { userOrgs } from '@/lib/school/access';
+import { accountsOpen } from '@/lib/site';
 import type { SessionUser } from './session';
 
 /**
@@ -11,6 +12,8 @@ import type { SessionUser } from './session';
  * paneli. Paneller arasında üst çubuktaki bağlantılarla geçilir.
  */
 export async function homeFor(user: Pick<SessionUser, 'id' | 'role'>): Promise<string> {
+  // Hesaplar kapalıyken veli ve okul panelleri kapalıdır (oturumu yalnızca yöneticiler açabilir).
+  if (!accountsOpen()) return user.role === 'admin' ? '/yonetim' : '/';
   const [orgs, [kids]] = await Promise.all([
     userOrgs(user.id),
     db.select({ n: count() }).from(guardianships).where(eq(guardianships.userId, user.id)),

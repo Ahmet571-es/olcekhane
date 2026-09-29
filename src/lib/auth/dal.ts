@@ -1,11 +1,20 @@
 import 'server-only';
 import { and, eq, isNull } from 'drizzle-orm';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { cache } from 'react';
 import { db } from '@/db';
 import { guardianships, memberships, organizations, students } from '@/db/schema';
+import { accountsOpen } from '@/lib/site';
 import { isUuid } from '@/lib/uuid';
 import { getSession, type SessionStudent, type SessionUser } from './session';
+
+/**
+ * Veli paneli, okul paneli, öğrenci sayfası ve hesapla test çözme yalnızca hesaplar açıkken kullanılır.
+ * Kapalıyken (hızlı test modu) bu sayfalar ve işlemler yokmuş gibi davranır; yöneticiler için de.
+ */
+export function requireAccountsOpen(): void {
+  if (!accountsOpen()) notFound();
+}
 
 /**
  * Oturum açmış yetişkin kullanıcıyı döndürür; yoksa giriş sayfasına yönlendirir. İki aşamalı doğrulaması

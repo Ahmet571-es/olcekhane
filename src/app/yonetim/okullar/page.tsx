@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { requireAdmin } from '@/lib/auth/dal';
+import { accountsOpen } from '@/lib/site';
 import { NewOrgForm } from './new-org-form';
 
 const nf = new Intl.NumberFormat('tr-TR');
@@ -39,6 +40,12 @@ export default async function AdminOrgs() {
         <p className="measure text-ink-2">
           Okul hesabı açıp ilk yöneticiyi ya da rehber öğretmeni davet edin. Okul başvuruları iletişim formundan “Okul” konusuyla gelir.
         </p>
+        {!accountsOpen() && (
+          <p className="notice notice-info measure">
+            Hesap bölümü kapalı (ACCOUNTS_ENABLED): okul açılamaz, davet gönderilemez ve okul paneli kullanılamaz. Açmadan önce aydınlatma
+            metninin hesapları anlatan sürümü yayımlanmalı.
+          </p>
+        )}
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_26rem]">
         {rows.length === 0 ? (

@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { cache } from 'react';
 import { db } from '@/db';
 import { classTeachers, classes, memberships, organizations } from '@/db/schema';
-import { requireUser } from '@/lib/auth/dal';
+import { requireAccountsOpen, requireUser } from '@/lib/auth/dal';
 import type { SessionUser } from '@/lib/auth/session';
 
 export type OrgRole = 'org_admin' | 'counselor' | 'teacher';
@@ -87,6 +87,8 @@ export const userOrgs = cache(async (userId: string) => {
 
 /** Okul sayfaları için: kullanıcı bu okulun ekibinde değilse sayfa yokmuş gibi davranılır. */
 export const requireOrg = cache(async (slug: string): Promise<OrgContext> => {
+  // Hesaplar kapalıyken (hızlı test modu) okul paneli ve işlemleri kapalıdır.
+  requireAccountsOpen();
   const user = await requireUser(`/okul/${slug}`);
   const orgs = await userOrgs(user.id);
   const o = orgs.find((x) => x.slug === slug);

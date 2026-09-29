@@ -559,7 +559,9 @@ saatte yeniden başlatıp diski açın).
   dışında açan bir CDN ayrıca yurt dışına aktarım demektir.
 - Caddy, alan adı ve bütün alt alan adları için bir yıllık HSTS başlığı gönderir: alt alan adlarınızın
   hepsi HTTPS ile çalışmalı.
-- Erişim günlüğü bilerek kapalıdır (adreslerde tek kullanımlık bağlantılar bulunur). Kapsayıcı günlükleri
+- Erişim günlüğü bilerek kapalıdır (adreslerde tek kullanımlık bağlantılar bulunur); Caddy'nin istek hatası
+  kayıtları da (ör. uygulama yeniden başlarken dönen 502, istemcinin IP adresi ve istenen adresle) yazılmaz
+  (`docker/Caddyfile`, `exclude http.log.error`). Kapsayıcı günlükleri
   kapsayıcı başına en fazla 30 MB tutulur ve kapsayıcı yeniden oluşturulunca (ör. görüntüsü
   güncellenince) silinir. Veritabanı sorgu hataları günlüğe parametreleri (e-posta, IP gibi) olmadan
   yazılır ve PostgreSQL hata kayıtlarına anahtar değerleri yazılmaz; yine de beklenmeyen hataların
@@ -582,6 +584,8 @@ Bu bölüm teknik bir özettir, hukuki görüş değildir; kararları hukuk dan�
   her geliştirmede aydınlatma metni de güncellenmelidir.
 - **Saklama ve imha:** saklama süreleri aydınlatma metninde yazılıdır ve günlük temizlik göreviyle
   uygulanır; yedekler en fazla 28 gün tutulur. Saklama ve imha politikanıza bu görevi ve süreleri yazın.
+  İletişim formu bildirimleri şirket e-postasına içeriksiz gider; mesajlar **Yönetim → Mesajlar**
+  sayfasındadır. Size yazanlara e-postayla verdiğiniz yanıtların saklama süresini de politikanıza yazın.
 - **Kurulun 2018/10 sayılı kararındaki önlemler:** şifreli saklama ve anahtarların ayrı tutulması
   ([bölüm 4](#4-şifreli-veri-diski) ve [9.3](#93-sunucu-dışı-şifreli-kopya)), uzaktan erişimde iki aşamalı
   doğrulama (uygulama zorunlu tutar; sunucu erişimi yalnızca SSH anahtarıyla), işlem kayıtları
