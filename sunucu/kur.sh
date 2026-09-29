@@ -195,9 +195,14 @@ veri_alani() {
     mkdir -p "$(dirname "$kaynak")"
     chmod 700 "$(dirname "$kaynak")"
     bos=$(df --output=avail -B1G "$(dirname "$kaynak")" | tail -n1 | tr -d ' ')
-    boyut=${OLCEKHANE_VERI_GB:-$((bos * 6 / 10))}
-    [ "$boyut" -gt 200 ] && boyut=200
-    [ "$boyut" -ge "${OLCEKHANE_VERI_EN_AZ_GB:-15}" ] || hata "Sistem diskinde yeterli boş alan yok (${bos} GB boş; şifreli veri alanı için en az 25 GB gerekir)."
+    if [ -n "${OLCEKHANE_VERI_GB:-}" ]; then
+      boyut=$OLCEKHANE_VERI_GB
+      [ "$boyut" -lt "$bos" ] || hata "İstenen şifreli alan (${boyut} GB) boş alandan (${bos} GB) büyük."
+    else
+      boyut=$((bos * 6 / 10))
+      [ "$boyut" -gt 200 ] && boyut=200
+      [ "$boyut" -ge 15 ] || hata "Sistem diskinde yeterli boş alan yok (${bos} GB boş; şifreli veri alanı için en az 25 GB gerekir)."
+    fi
     fallocate -l "${boyut}G" "$kaynak"
     chmod 600 "$kaynak"
     bilgi "Şifreli veri alanı dosyası oluşturuldu: $kaynak (${boyut} GB)"
