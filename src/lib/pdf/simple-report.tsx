@@ -61,10 +61,13 @@ const C = {
 };
 
 const s = StyleSheet.create({
-  // Satır yüksekliği sayfada değil gövdede tanımlanır: sayfadan miras kalan satır yüksekliği, sabit (fixed)
-  // konumlu alt bilgiyi ve sayfa numarasını görünmez kılıyor (@react-pdf/renderer 4.9).
+  // Satır yüksekliği sayfaya ya da kapsayıcı bir View'a verilmez; paragraf metinlerine yazı boyutuyla birlikte
+  // verilir. @react-pdf/renderer 4.9'da oransal satır yüksekliği, tanımlandığı öğenin kendi yazı boyutuyla
+  // (yoksa varsayılan 18 pt ile) mutlak değere çevrilip miras bırakılıyor: sayfaya verilince sabit (fixed) alt
+  // bilgi ve sayfa numarası çizilmiyor, yazı boyutu olmayan öğeye verilince satır arası iki katına çıkıyor.
   page: { paddingTop: 40, paddingBottom: 56, paddingHorizontal: 44, fontFamily: 'Atkinson', fontSize: 10.5, color: C.ink, backgroundColor: C.paper },
-  body: { lineHeight: 1.45 },
+  para: { fontSize: 10.5, lineHeight: 1.45 },
+  paraSmall: { fontSize: 9, lineHeight: 1.45 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', borderBottomWidth: 1.5, borderBottomColor: C.ink, paddingBottom: 8 },
   brand: { fontFamily: 'Bricolage', fontWeight: 700, fontSize: 17, lineHeight: 1.2 },
   tag: { fontSize: 8.5, color: C.ink3, marginTop: 1 },
@@ -74,7 +77,7 @@ const s = StyleSheet.create({
   meta: { color: C.ink2, marginTop: 4 },
   chips: { flexDirection: 'row', gap: 6, marginTop: 8 },
   chip: { fontSize: 8.5, fontWeight: 700, color: C.brassInk, backgroundColor: C.brassSoft, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
-  privacy: { marginTop: 12, backgroundColor: C.surface2, borderRadius: 6, padding: 9, fontSize: 9, color: C.ink2 },
+  privacy: { marginTop: 12, backgroundColor: C.surface2, borderRadius: 6, padding: 9, fontSize: 9, lineHeight: 1.45, color: C.ink2 },
   caution: { marginTop: 12, backgroundColor: C.warnBg, borderRadius: 6, padding: 9 },
   cautionTitle: { fontWeight: 700, marginBottom: 2 },
   bullet: { flexDirection: 'row', gap: 5 },
@@ -85,7 +88,7 @@ const s = StyleSheet.create({
   figureValue: { fontFamily: 'Bricolage', fontWeight: 700, fontSize: 18, lineHeight: 1.25, marginTop: 2 },
   figureNote: { fontSize: 8.5, color: C.ink3 },
   h2: { fontFamily: 'Bricolage', fontWeight: 700, fontSize: 14, lineHeight: 1.25, marginTop: 20, marginBottom: 8 },
-  note: { fontSize: 8.5, color: C.ink3, marginTop: 6 },
+  note: { fontSize: 8.5, lineHeight: 1.4, color: C.ink3, marginTop: 6 },
   item: { paddingVertical: 8, borderTopWidth: 1, borderTopColor: C.rule },
   itemHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 6, marginBottom: 2 },
   itemTitle: { fontWeight: 700, fontSize: 11 },
@@ -274,83 +277,81 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
           </View>
         </View>
 
-        <View style={s.body}>
-          <Text style={s.title}>{report.instrumentName}</Text>
-          <Text style={s.meta}>{meta}</Text>
-          {report.isPilot && (
-            <View style={s.chips}>
-              <Text style={s.chip}>Pilot test</Text>
-            </View>
-          )}
-
-          <Text style={s.privacy}>
-            Bu rapor, {siteHost} adresinde hesap açmadan çözülen testten hazırlandı. Test cevapları ve bu rapor hiçbir yerde saklanmadı; raporun tek
-            kopyası bu dosyadır.
-          </Text>
-
-          {report.cautions.length > 0 && (
-            <View style={s.caution} wrap={false}>
-              <Text style={s.cautionTitle}>Bu sonucu dikkatle yorumlayın</Text>
-              {report.cautions.map((c) => (
-                <View key={c} style={s.bullet}>
-                  <Text>•</Text>
-                  <Text style={{ flex: 1 }}>{c}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {report.keyFigures.length > 0 && (
-            <View style={s.figures} wrap={false}>
-              {report.keyFigures.map((f, i) => (
-                <View key={f.label} style={i === report.keyFigures.length - 1 ? s.figureLast : s.figure}>
-                  <Text style={s.figureLabel}>{f.label}</Text>
-                  <Text style={s.figureValue}>{f.value}</Text>
-                  {f.note && <Text style={s.figureNote}>{f.note}</Text>}
-                </View>
-              ))}
-            </View>
-          )}
-
-          {report.chart && (
-            <View wrap={false}>
-              <Text style={s.h2}>{report.chartTitle}</Text>
-              <Chart chart={report.chart} />
-              {report.chartNote && <Text style={s.note}>{report.chartNote}</Text>}
-            </View>
-          )}
-
-          <Text style={s.h2} minPresenceAhead={60}>
-            {report.itemsTitle}
-          </Text>
-          {report.items.map((it) => (
-            <View key={it.title} style={s.item} wrap={false}>
-              <View style={s.itemHead}>
-                <Text style={s.itemTitle}>{it.title}</Text>
-                {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
-              </View>
-              <Text>{it.text}</Text>
-            </View>
-          ))}
-
-          {report.support && (
-            <View style={s.support} wrap={false}>
-              <Text style={{ fontWeight: 700, marginBottom: 3 }}>{report.support.title}</Text>
-              {report.support.lines.map((l) => (
-                <View key={l} style={s.bullet}>
-                  <Text>•</Text>
-                  <Text style={{ flex: 1 }}>{l}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          <View style={s.disclaimer} wrap={false}>
-            <Text>
-              <Text style={{ fontWeight: 700 }}>{report.disclaimer.title}</Text> {report.disclaimer.text}
-            </Text>
-            <Text style={{ marginTop: 6 }}>{report.normNote}</Text>
+        <Text style={s.title}>{report.instrumentName}</Text>
+        <Text style={s.meta}>{meta}</Text>
+        {report.isPilot && (
+          <View style={s.chips}>
+            <Text style={s.chip}>Pilot test</Text>
           </View>
+        )}
+
+        <Text style={s.privacy}>
+          Bu rapor, {siteHost} adresinde hesap açmadan çözülen testten hazırlandı. Test cevapları ve bu rapor hiçbir yerde saklanmadı; raporun tek
+          kopyası bu dosyadır.
+        </Text>
+
+        {report.cautions.length > 0 && (
+          <View style={s.caution} wrap={false}>
+            <Text style={s.cautionTitle}>Bu sonucu dikkatle yorumlayın</Text>
+            {report.cautions.map((c) => (
+              <View key={c} style={s.bullet}>
+                <Text>•</Text>
+                <Text style={[s.para, { flex: 1 }]}>{c}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {report.keyFigures.length > 0 && (
+          <View style={s.figures} wrap={false}>
+            {report.keyFigures.map((f, i) => (
+              <View key={f.label} style={i === report.keyFigures.length - 1 ? s.figureLast : s.figure}>
+                <Text style={s.figureLabel}>{f.label}</Text>
+                <Text style={s.figureValue}>{f.value}</Text>
+                {f.note && <Text style={s.figureNote}>{f.note}</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {report.chart && (
+          <View wrap={false}>
+            <Text style={s.h2}>{report.chartTitle}</Text>
+            <Chart chart={report.chart} />
+            {report.chartNote && <Text style={s.note}>{report.chartNote}</Text>}
+          </View>
+        )}
+
+        <Text style={s.h2} minPresenceAhead={60}>
+          {report.itemsTitle}
+        </Text>
+        {report.items.map((it) => (
+          <View key={it.title} style={s.item} wrap={false}>
+            <View style={s.itemHead}>
+              <Text style={s.itemTitle}>{it.title}</Text>
+              {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
+            </View>
+            <Text style={s.para}>{it.text}</Text>
+          </View>
+        ))}
+
+        {report.support && (
+          <View style={s.support} wrap={false}>
+            <Text style={{ fontWeight: 700, marginBottom: 3 }}>{report.support.title}</Text>
+            {report.support.lines.map((l) => (
+              <View key={l} style={s.bullet}>
+                <Text>•</Text>
+                <Text style={[s.para, { flex: 1 }]}>{l}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        <View style={s.disclaimer} wrap={false}>
+          <Text style={s.paraSmall}>
+            <Text style={{ fontWeight: 700 }}>{report.disclaimer.title}</Text> {report.disclaimer.text}
+          </Text>
+          <Text style={[s.paraSmall, { marginTop: 6 }]}>{report.normNote}</Text>
         </View>
 
         <View style={s.footer} fixed>
