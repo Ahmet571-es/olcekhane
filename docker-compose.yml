@@ -28,7 +28,9 @@ services:
       # PostgreSQL 18 görüntüsü veriyi /var/lib/postgresql/18/docker altında tutar.
       - db-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U olcekhane -d olcekhane"]
+      # TCP üzerinden denetlenir: ilk kurulumda geçici olarak açılan başlatma sunucusu yalnızca yerel
+      # sokette dinler; bu denetim ancak asıl sunucu bağlantı kabul ettiğinde başarılı olur.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U olcekhane -d olcekhane"]
       interval: 10s
       timeout: 5s
       retries: 12
