@@ -1,13 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { childAssentAction } from '@/app/uygulama/actions';
 import { MathText } from '@/components/quiz/math-text';
 import { QuizVisual } from '@/components/quiz/quiz-visuals';
 import type { QuizChart, QuizFigure, QuizOptionKey, QuizTable } from '@/lib/instruments/types';
 import type { QuizChoice } from '@/lib/scoring/quiz';
-import { AssentStep, IntroStep, ProgressRuler, SaveIndicator } from './likert-runner';
+import { IntroStep, ProgressRuler } from './likert-runner';
+import { useLeaveWarning } from './tasks/common';
 
 /** Tarayıcıya gönderilen soru: cevap anahtarı, açıklama ve hata türleri yoktur. */
 export type QuizClientItem = {
@@ -19,81 +18,29 @@ export type QuizClientItem = {
   options: { key: QuizOptionKey; text: string }[];
 };
 
-type Phase = 'assent' | 'intro' | 'items' | 'review';
-type Pending = { choice: QuizChoice; rtMs: number | null };
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+type Phase = 'intro' | 'items' | 'review';
+type Answer = { choice: QuizChoice; rtMs: number | null };
 const LETTER_KEYS: Record<string, QuizOptionKey> = { a: 'A', b: 'B', c: 'C', d: 'D', '1': 'A', '2': 'B', '3': 'C', '4': 'D' };
 
-/** Hızlı test: cevaplar cihazda tutulur; bitince hepsi birden verilir. */
-export type LocalQuiz = { onFinish: (answers: Record<string, { choice: QuizChoice; rtMs: number | null }>) => Promise<void> };
-
+/** Cevaplar yalnızca bu sayfada tutulur; test bitince hepsi birden `onFinish` ile verilir. */
 export function QuizRunner(props: {
-  attemptId: string;
-  studentName: string;
   intro: { title: string; paragraphs: string[] };
   /** Soruların ait olduğu sınıf düzeyi (öğrencinin bir önceki sınıfı). */
   contentGrade: number;
   items: QuizClientItem[];
-  initialAnswers: Record<string, QuizChoice>;
-  assentHtml: string | null;
-  reportUrl: string;
-  exitUrl: string;
-  local?: LocalQuiz;
+  onFinish: (answers: Record<string, Answer>) => Promise<void>;
 }) {
-  const { items, attemptId, local } = props;
-  const router = useRouter();
-  const [answers, setAnswers] = useState<Record<string, QuizChoice>>(props.initialAnswers);
+  const { items, onFinish } = props;
+  const [answers, setAnswers] = useState<Record<string, QuizChoice>>({});
   const answeredCount = items.filter((i) => answers[i.key] !== undefined).length;
-  const firstOpen = items.findIndex((i) => answers[i.key] === undefined);
-  const [phase, setPhase] = useState<Phase>(props.assentHtml ? 'assent' : 'intro');
-  const [index, setIndex] = useState(firstOpen === -1 ? 0 : firstOpen);
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'error'>('idle');
-  const [fatal, setFatal] = useState<string | null>(null);
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [index, setIndex] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
 
   const shownAt = useRef(0);
-  const pending = useRef(new Map<string, Pending>());
-  const collected = useRef(new Map<string, Pending>());
-  const flushing = useRef(false);
+  const collected = useRef(new Map<string, Answer>());
   const headingRef = useRef<HTMLHeadingElement>(null);
-
-  const flush = useCallback(async () => {
-    if (local) return;
-    if (flushing.current) return;
-    flushing.current = true;
-    let backoff = 800;
-    while (pending.current.size > 0) {
-      const [key, payload] = pending.current.entries().next().value as [string, Pending];
-      setSaveState('saving');
-      try {
-        const res = await fetch(`/api/attempts/${attemptId}/answer`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ itemKey: key, option: payload.choice, rtMs: payload.rtMs }),
-          keepalive: true,
-        });
-        if (res.status === 401) {
-          setFatal('Oturumun süresi dolmuş. Verdiğin cevaplar kaydedildi; devam etmek için yeniden giriş yapılması gerekiyor.');
-          break;
-        }
-        if (res.status === 409) {
-          setFatal('Bu test başka bir sekmede tamamlanmış ya da kapatılmış.');
-          break;
-        }
-        if (!res.ok) throw new Error(String(res.status));
-        if (pending.current.get(key) === payload) pending.current.delete(key);
-        backoff = 800;
-      } catch {
-        setSaveState('error');
-        await sleep(backoff);
-        backoff = Math.min(backoff * 2, 8000);
-      }
-    }
-    if (pending.current.size === 0) setSaveState('idle');
-    flushing.current = false;
-  }, [attemptId, local]);
 
   useEffect(() => {
     if (phase !== 'items') return;
@@ -102,14 +49,8 @@ export function QuizRunner(props: {
     window.scrollTo({ top: 0 });
   }, [index, phase]);
 
-  useEffect(() => {
-    // Hızlı testte cevaplar yalnızca bu sayfada durur: tek bir cevap bile verildiyse ayrılmadan önce uyarılır.
-    const warn = (e: BeforeUnloadEvent) => {
-      if (pending.current.size > 0 || (local && collected.current.size > 0)) e.preventDefault();
-    };
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [local]);
+  // Cevaplar yalnızca bu sayfada durur: tek bir cevap bile verildiyse ayrılmadan önce uyarılır.
+  useLeaveWarning(answeredCount > 0);
 
   const choose = useCallback(
     (choice: QuizChoice) => {
@@ -117,10 +58,8 @@ export function QuizRunner(props: {
       const rtMs = Math.round(performance.now() - shownAt.current);
       setAnswers((a) => ({ ...a, [item.key]: choice }));
       collected.current.set(item.key, { choice, rtMs });
-      if (!local) pending.current.set(item.key, { choice, rtMs });
-      void flush();
     },
-    [flush, index, items, local],
+    [index, items],
   );
 
   const next = useCallback(() => {
@@ -151,53 +90,12 @@ export function QuizRunner(props: {
   async function finish() {
     setFinishing(true);
     setFinishError(null);
-    if (local) {
-      try {
-        await local.onFinish(Object.fromEntries(collected.current));
-      } catch (err) {
-        setFinishing(false);
-        setFinishError(err instanceof Error ? err.message : 'Rapor hazırlanamadı. Lütfen tekrar deneyin.');
-      }
-      return;
-    }
-    await flush();
-    for (let i = 0; i < 20 && pending.current.size > 0; i++) await sleep(500);
     try {
-      const res = await fetch(`/api/attempts/${attemptId}/complete`, { method: 'POST' });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error ?? 'Test tamamlanamadı.');
-      }
-      router.replace(props.reportUrl);
+      await onFinish(Object.fromEntries(collected.current));
     } catch (err) {
       setFinishing(false);
-      setFinishError(err instanceof Error ? err.message : 'Test tamamlanamadı. Lütfen tekrar deneyin.');
+      setFinishError(err instanceof Error ? err.message : 'Rapor hazırlanamadı. Lütfen tekrar deneyin.');
     }
-  }
-
-  if (fatal) {
-    return (
-      <div className="mx-auto flex max-w-xl flex-col gap-4">
-        <p className="notice notice-danger">{fatal}</p>
-        <a href={props.exitUrl} className="btn btn-secondary self-start">
-          Geri dön
-        </a>
-      </div>
-    );
-  }
-
-  if (phase === 'assent' && props.assentHtml) {
-    return (
-      <AssentStep
-        html={props.assentHtml}
-        name={props.studentName}
-        exitUrl={props.exitUrl}
-        onAccept={async () => {
-          await childAssentAction(attemptId);
-          setPhase('intro');
-        }}
-      />
-    );
   }
 
   if (phase === 'intro') {
@@ -205,8 +103,8 @@ export function QuizRunner(props: {
       <IntroStep
         title={`${props.intro.title}: ${props.contentGrade}. sınıf konuları`}
         paragraphs={props.intro.paragraphs}
-        cta={answeredCount > 0 ? 'Kaldığın yerden devam et' : 'Başla'}
-        onStart={() => setPhase(answeredCount >= items.length ? 'review' : 'items')}
+        cta="Başla"
+        onStart={() => setPhase('items')}
       />
     );
   }
@@ -243,9 +141,8 @@ export function QuizRunner(props: {
           </div>
         ) : (
           <p className="text-lg">
-            {local
-              ? `Bütün soruları cevapladın${dontKnow > 0 ? `; ${dontKnow} soruyu “Bilmiyorum” olarak işaretledin` : ''}. Testi bitirdiğinde raporun hemen hazırlanacak.`
-              : `Cevapların kaydedildi${dontKnow > 0 ? `; ${dontKnow} soruyu “Bilmiyorum” olarak işaretledin` : ''}. Testi bitirdiğinde raporun hemen hazırlanacak ve yanlış yaptığın soruların doğru cevaplarını açıklamalarıyla görebileceksin.`}
+            Bütün soruları cevapladın{dontKnow > 0 ? `; ${dontKnow} soruyu “Bilmiyorum” olarak işaretledin` : ''}. Testi bitirdiğinde raporun
+            hemen hazırlanacak.
           </p>
         )}
         {finishError && <p className="notice notice-danger">{finishError}</p>}
@@ -264,7 +161,6 @@ export function QuizRunner(props: {
             Cevaplarımı gözden geçir
           </button>
         </div>
-        {!local && <SaveIndicator state={saveState} />}
       </div>
     );
   }
@@ -276,12 +172,9 @@ export function QuizRunner(props: {
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-7">
       <div className="flex flex-col gap-3">
         <ProgressRuler total={items.length} done={answeredCount} current={index} />
-        <div className="flex items-center justify-between text-[0.9375rem] text-ink-3">
-          <span aria-live="polite" className="tabular">
-            Soru {index + 1} / {items.length}
-          </span>
-          {!local && <SaveIndicator state={saveState} />}
-        </div>
+        <p aria-live="polite" className="tabular text-[0.9375rem] text-ink-3">
+          Soru {index + 1} / {items.length}
+        </p>
       </div>
 
       <QuizVisual item={item} />

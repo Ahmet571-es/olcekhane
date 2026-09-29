@@ -2,8 +2,8 @@ import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
 import type { Audience, InterestProfile, ReportContent } from './build';
 
 /**
- * Basit rapor: hızlı testte (hesapsız, hiçbir şey saklanmadan) ekranda gösterilen ve PDF olarak indirilen
- * rapor. Tam rapordan (ReportContent) türetilir: teste uygun tek bir grafik, her ölçek ya da alan için
+ * Basit rapor: test bitince ekranda gösterilen ve PDF olarak indirilen ücretsiz rapor (hiçbir yerde
+ * saklanmaz). Tam rapordan (ReportContent) türetilir: teste uygun tek bir grafik, her ölçek ya da alan için
  * düzey ve kısa yorum. Öneriler, ayrıntılı açıklamalar ve soru soru inceleme kapsamlı rapordadır.
  */
 

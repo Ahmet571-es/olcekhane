@@ -25,11 +25,10 @@ const rt = z.number().min(0).max(3_600_000).nullable();
 const fewKeys = (max: number) => (o: Record<string, unknown>) => Object.keys(o).length <= max;
 
 /**
- * Hızlı test: testin bütün cevapları tek istekte gelir. Hiçbir şey kaydedilmez; cevaplar yalnızca
- * raporu hazırlamak için kullanılır. Ad, e-posta gibi kimlik bilgisi istenmez: cevaplar kimseye
- * bağlanamaz.
+ * Testin bütün cevapları tek istekte gelir. Hiçbir şey kaydedilmez; cevaplar yalnızca raporu
+ * hazırlamak için kullanılır. Ad, e-posta gibi kimlik bilgisi istenmez: cevaplar kimseye bağlanamaz.
  */
-export const quickBody = z.object({
+export const answersBody = z.object({
   grade: z.number().int().min(1).max(13),
   data: z.discriminatedUnion('engine', [
     z.object({
@@ -56,7 +55,6 @@ export const quickBody = z.object({
 });
 
 /** PDF isteği: aynı cevaplar ve raporun kimin için olduğu (öğrenci ya da veli). */
-export const quickPdfBody = quickBody.extend({ audience: z.enum(['student', 'parent']) });
+export const pdfBody = answersBody.extend({ audience: z.enum(['student', 'parent']) });
 
-export type QuickBody = z.infer<typeof quickBody>;
-export type QuickData = QuickBody['data'];
+export type AnswersBody = z.infer<typeof answersBody>;

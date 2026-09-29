@@ -6,8 +6,8 @@ import { indexingAllowed } from '@/lib/seo';
 export const dynamic = 'force-dynamic';
 
 /**
- * Hesaba bağlı alanlar (panel, test uygulaması, yönetim, API) taranmaz. Giriş ve kayıt sayfaları
- * taranabilir ama "noindex" etiketi taşır; engellenirse arama motoru bu etiketi göremez.
+ * API uçları taranmaz. Test çözme sayfaları (/testler/.../coz) taranabilir ama "noindex" etiketi taşır;
+ * engellenirse arama motoru bu etiketi göremez.
  */
 export default function robots(): MetadataRoute.Robots {
   if (!indexingAllowed()) {
@@ -17,7 +17,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/panel', '/uygulama', '/yonetim', '/api/', '/ogrenci/', '/eposta-dogrula'],
+      disallow: ['/api/'],
     },
     sitemap: siteUrl('/sitemap.xml'),
   };

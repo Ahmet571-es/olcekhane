@@ -15,7 +15,7 @@ export const metadata = pageMeta({
 const CRITERIA = [
   {
     t: 'Kanıt',
-    d: 'Ölçeğin güvenirliği ve geçerliği hakemli bilimsel yayınlarla gösterilmiş olmalı. Kendi geliştirdiğimiz testlerde bu kanıtı pilot çalışmalarla kendimiz toplamamız gerekir; bu çalışmalar yapılana kadar test “pilot” olarak işaretlenir ve durumu test sayfasında açıkça yazılır.',
+    d: 'Ölçeğin güvenirliği ve geçerliği hakemli bilimsel yayınlarla gösterilmiş olmalı. Kendi geliştirdiğimiz testlerde bu kanıt henüz yok; bu testler “pilot” olarak işaretlenir ve durumları test sayfasında açıkça yazılır.',
   },
   {
     t: 'Kullanım izni',
@@ -31,9 +31,8 @@ const ADAPTATION = [
   ['Çeviri ve sade dil', 'Maddeler Türkçeye çevrilir ve ergenlerin rahatça anlayacağı bir dile getirilir. Her çevirinin yanında özgün madde metni belgelenir.'],
   ['Uzman incelemesi', 'Psikoloji ve ölçme alanından uzmanlar, çevirinin özgün anlamı koruyup korumadığını değerlendirir.'],
   ['Öğrencilerle anlaşılırlık denemesi', 'Maddeler küçük bir öğrenci grubuna okutulur; yanlış anlaşılan ifadeler düzeltilir.'],
-  ['Pilot uygulama', 'Test “pilot” etiketiyle uygulanır. Analizlere yalnızca velilerin ayrıca ve isteğe bağlı olarak araştırma izni verdiği veriler katılır; hızlı testte cevaplar saklanmadığı için hiçbir cevap analizlere katılmaz.'],
-  ['İstatistiksel analiz', 'İç tutarlılık (Cronbach alfa), madde analizi, faktör yapısı ve yaş ile cinsiyet grupları arasında ölçme eşdeğerliği incelenir.'],
-  ['Norm oluşturma', 'Yeterli sayıda öğrenciye ulaşıldığında sınıf düzeylerine göre Türkiye normları hesaplanır ve raporlar yüzdelik değerlerle yorumlanmaya başlar.'],
+  ['Güvenirlik ve geçerlik çalışması', 'Test, velilerin bilgilendirilmiş onayıyla yeterli sayıda öğrenciye uygulanır. İç tutarlılık (Cronbach alfa), madde analizi, faktör yapısı ve yaş ile cinsiyet grupları arasında ölçme eşdeğerliği incelenir.'],
+  ['Norm çalışması', 'Türkiye’yi temsil eden bir örneklemle sınıf düzeylerine göre normlar hesaplanır. Ancak bundan sonra puanlar akranlarla karşılaştırılarak, yüzdelik değerlerle yorumlanabilir.'],
 ];
 
 const NOT_USED = [
@@ -163,8 +162,8 @@ export default function SciencePage() {
 
       <Section
         id="uyarlama"
-        title="Türkçeye nasıl uyarlıyoruz?"
-        intro="Uluslararası Test Komisyonu’nun (ITC) test uyarlama yönergelerine dayanan altı adım. Bir test bu adımların hepsinden geçene kadar “pilot” olarak işaretlenir."
+        title="Bir testin Türkçe sürümü nasıl doğrulanır?"
+        intro="Uluslararası Test Komisyonu’nun (ITC) test uyarlama yönergelerine göre bir ölçeğin Türkçe sürümü şu beş adımdan geçmelidir. Kendi geliştirdiğimiz testler için de aynı adımlar gerekir."
         className="border-t border-rule"
       >
         <ol className="flex flex-col gap-6">
@@ -183,10 +182,18 @@ export default function SciencePage() {
             </li>
           ))}
         </ol>
-        <p className="measure">
-          Her testin sayfasındaki <strong>bilim kartında</strong>, o testin hangi aşamada olduğunu ve Türkiye normlarının hazır olup olmadığını
-          görebilirsiniz. <Link href="/testler">Testlere göz atın</Link>
-        </p>
+        <div className="notice notice-info measure flex flex-col gap-2">
+          <p className="font-bold">Sitedeki testler bu adımların neresinde?</p>
+          <p>
+            Çevirisini yaptığımız testlerde (Beş Faktör Kişilik ve Öz-saygı) yalnızca ilk adım tamamlandı; kendi geliştirdiğimiz testler
+            yazılmış ve kaynaklarıyla belgelenmiş durumda. Hiçbir test için uzman incelemesi, güvenirlik ve geçerlik ya da norm çalışması henüz
+            yapılmadı. Sitemiz hiçbir test cevabını saklamadığı için bu çalışmalar site üzerinden yapılamaz; ancak katılımcıların
+            bilgilendirilmiş onayıyla yürütülen ayrı bir araştırmayla yapılabilir.
+          </p>
+          <p>
+            Her testin sayfasındaki <strong>bilim kartında</strong> o testin durumu yazar. <Link href="/testler">Testlere göz atın</Link>
+          </p>
+        </div>
       </Section>
 
       <Section id="norm" title="Norm yokken sonuçları nasıl yorumluyoruz?" className="border-t border-rule">
@@ -200,9 +207,9 @@ export default function SciencePage() {
           karşılaştırma yapmaz. Rapor bu farkı her zaman açıkça belirtir.
         </p>
         <p className="measure">
-          Normlar, velilerin ayrıca ve isteğe bağlı olarak verdiği araştırma izniyle, kimlik bilgilerinden arındırılmış verilerden oluşturulacak.
-          Hızlı testte cevaplar saklanmadığı için norm çalışmalarında kullanılmaz. Bir test için norm hazır olduğunda raporlar yüzdelik
-          değerlerle yorumlanmaya başlar.
+          Şu an sitedeki testlerin hiçbirinin Türkiye normu yok; bu yüzden hiçbir raporda “akranlarının yüzde kaçından yüksek” gibi bir
+          karşılaştırma bulunmaz. Sitemiz cevapları saklamadığı için normlar sitedeki cevaplardan oluşturulamaz. Bir test için güvenilir bir
+          norm yayımlanırsa, raporlar ancak o zaman akranlarla karşılaştırma yapmaya başlar ve bu değişiklik test sayfasında açıkça yazılır.
         </p>
       </Section>
 

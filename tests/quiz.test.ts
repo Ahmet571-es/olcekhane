@@ -3,7 +3,7 @@ import { matematik } from '@/content/instruments/matematik';
 import { MISCONCEPTIONS } from '@/content/instruments/matematik/misconceptions';
 import { groupDigits, plainMath } from '@/components/quiz/math-text';
 import type { QuizForm } from '@/lib/instruments/types';
-import { buildReport, type StoredScore } from '@/lib/reports/build';
+import { buildReport, type ReportScore } from '@/lib/reports/build';
 import { DONT_KNOW, formForGrade, quizBand, scoreQuiz, type QuizAnswer, type QuizChoice } from '@/lib/scoring/quiz';
 
 const forms = matematik.forms;
@@ -199,7 +199,7 @@ describe('Akademik rapor', () => {
     const form = forms[3];
     const pick = (i: number): QuizChoice => (i % 3 === 0 ? (form.items[i].options.find((o) => o.misconception)?.key ?? 'A') : form.items[i].answer);
     const result = scoreQuiz(form, answersFor(form, pick));
-    const stored: StoredScore[] = [
+    const stored: ReportScore[] = [
       {
         scaleKey: 'total',
         raw: result.correct,
@@ -222,7 +222,6 @@ describe('Akademik rapor', () => {
         studentName: 'Deniz',
         grade: 8,
         completedAt: new Date('2026-09-29T10:00:00Z'),
-        hasNorms: false,
       });
       const a = rep.academic!;
       expect(a.review).toHaveLength(20);

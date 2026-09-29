@@ -32,7 +32,7 @@ const PRINCIPLES = [
   },
   {
     t: 'Gizlilik',
-    d: 'Testler hesap açmadan çözülür; ad, e-posta ya da telefon istemiyoruz. Cevaplar yalnızca raporu hazırlamak için kullanılır ve hiçbir yere kaydedilmez. Sunucumuz Almanya’dadır (Avrupa Birliği). Kimsenin verisini reklam, pazarlama ya da yapay zekâ eğitimi için kullanmıyoruz; satmıyoruz.',
+    d: 'Sitemizde hesap, veritabanı ve çerez yok. Testler hesap açmadan çözülür; ad, e-posta ya da telefon istemiyoruz. Cevaplar yalnızca raporu hazırlamak için kullanılır ve hiçbir yere kaydedilmez. Sunucumuz Almanya’dadır (Avrupa Birliği). Kimsenin verisini reklam, pazarlama ya da yapay zekâ eğitimi için kullanmıyoruz; satmıyoruz.',
   },
 ];
 
@@ -128,7 +128,7 @@ export default function AboutPage() {
           <p className="measure text-ink-2">Şirket bilgileri yakında burada yer alacak.</p>
         )}
         <p>
-          Bize ulaşmak için: <Link href="/iletisim">İletişim formu</Link>
+          Bize ulaşmak için: <Link href="/iletisim">İletişim</Link>
         </p>
       </Section>
     </>

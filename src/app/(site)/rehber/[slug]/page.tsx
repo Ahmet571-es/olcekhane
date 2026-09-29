@@ -175,7 +175,7 @@ export default async function GuidePage(props: PageProps<'/rehber/[slug]'>) {
           <p className="t-meta measure">
             Bu yazı, kaynaklarda listelenen hakemli araştırmalara ve kurum yayınlarına dayanılarak hazırlanmıştır. İlk yayın:{' '}
             <time dateTime={g.publishedAt}>{fmt(g.publishedAt)}</time>. Bir hata fark ederseniz{' '}
-            <Link href="/iletisim?konu=other">bize yazın</Link>.
+            <Link href="/iletisim">bize yazın</Link>.
           </p>
         </div>
 

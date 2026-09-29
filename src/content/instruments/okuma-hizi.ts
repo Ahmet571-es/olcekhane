@@ -439,7 +439,7 @@ export const okumaHizi: ReadingInstrument = {
       'Görev pilot aşamasındadır. Anlama sorularının madde analizi ve metinlerin sınıf düzeyine uygunluğu henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye’de 1–4. sınıflar için sesli okuma hızı çalışmaları vardır (ör. 1–4. sınıflarda dakikada ortalama 45, 73, 91 ve 97 kelime). 5. sınıf ve üzeri ile sessiz okuma için yayımlanmış bir Türkiye normu bulunmamaktadır. Bu nedenle hız şimdilik karşılaştırma yapılmadan raporlanır.',
+      'Türkiye’de 1–4. sınıflar için sesli okuma hızı çalışmaları vardır (ör. 1–4. sınıflarda dakikada ortalama 45, 73, 91 ve 97 kelime); bu test sessiz okumayı ölçtüğü için 3. ve 4. sınıf raporlarında bu ortalama yalnızca kaba bir fikir olarak verilir. 5. sınıf ve üzeri ile sessiz okuma için yayımlanmış bir Türkiye normu bulunmamaktadır. Bu nedenle hız bir norma göre değerlendirilmez; anlama düzeyiyle birlikte yorumlanır.',
     ageNote: '3. sınıftan itibaren uygundur. Her sınıf grubu kendi düzeyine göre yazılmış farklı bir metin okur.',
     license: 'Özgün içerik: metinler ve sorular Ölçekhane’ye aittir.',
     limitations: [

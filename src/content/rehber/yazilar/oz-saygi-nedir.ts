@@ -15,7 +15,7 @@ export const ozSaygiNedir: Guide = {
   ],
   relatedTests: ['oz-saygi'],
   publishedAt: '2026-09-29',
-  updatedAt: '2026-09-29',
+  updatedAt: '2026-09-30',
   healthNotice: true,
   body: `
 ## Öz-saygı nedir?
@@ -61,7 +61,7 @@ Daha yararlı olan, övgünün **gerçekçi** ve **somut** olmasıdır:
 
 ## Öz-saygı nasıl ölçülür?
 
-En yaygın kullanılan araç, Rosenberg’in 10 maddelik ölçeğidir. Ölçek 53 ülkede aynı anda uygulanmış ve farklı kültürlerde benzer bir yapı gösterdiği bulunmuştur (Schmitt ve Allik, 2005). Ölçekhane’deki [Öz-saygı Ölçeği](/testler/oz-saygi) bu ölçeğin Türkçe sürümüne dayanır ve yaklaşık üç dakika sürer.
+En yaygın kullanılan araç, Rosenberg’in 10 maddelik ölçeğidir. Ölçek 53 ülkede aynı anda uygulanmış ve farklı kültürlerde benzer bir yapı gösterdiği bulunmuştur (Schmitt ve Allik, 2005). Ölçekhane’deki [Öz-saygı Ölçeği](/testler/oz-saygi) bu ölçeğin bizim yaptığımız Türkçe çevirisine dayanır ve yaklaşık üç dakika sürer. Bu çevirinin Türkçe geçerlik çalışması henüz yapılmadı.
 
 Her kendini anlatma ölçeğinde olduğu gibi sonuç, o günkü ruh hâlinden etkilenebilir. Bu yüzden tek bir ölçüm, çocuğunuzu gözlemlerinizle birlikte değerlendirdiğinizde anlam kazanır.
 

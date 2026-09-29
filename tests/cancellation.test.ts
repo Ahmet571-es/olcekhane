@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { harfIsaretleme } from '@/content/instruments/harf-isaretleme';
 import { cancellationSheet, seedFrom } from '@/lib/instruments/cancellation';
 import type { CancellationTask } from '@/lib/instruments/types';
-import { buildReport, type StoredScore } from '@/lib/reports/build';
+import { buildReport, type ReportScore } from '@/lib/reports/build';
 import { TaskInputError, scoreCancellation, taskQualityNotes, type CancellationSectionInput } from '@/lib/scoring/tasks';
 
 const task = harfIsaretleme.tasks[0] as CancellationTask;
@@ -185,7 +185,7 @@ describe('Harf işaretleme raporu', () => {
   const sheet = cancellationSheet(task, ids[2]);
   const input = [0, 1, 2, 3].map((i) => section(sheet, i, { upTo: upToTarget(sheet[i], i < 2 ? 260 : 170), skipEvery: 8, wrong: 1 }));
   const { result } = scoreCancellation(task, sheet, input);
-  const stored = (scaleKey: string, raw: number | null, extra: Record<string, unknown>): StoredScore => ({
+  const stored = (scaleKey: string, raw: number | null, extra: Record<string, unknown>): ReportScore => ({
     scaleKey,
     raw,
     mean: null,
@@ -205,7 +205,7 @@ describe('Harf işaretleme raporu', () => {
     stored('surdurme', result.sustainChange, {}),
   ];
   const report = (audience: 'student' | 'parent') =>
-    buildReport({ def: harfIsaretleme, scores, audience, studentName: 'Deneme', grade: 5, completedAt: new Date(), hasNorms: false });
+    buildReport({ def: harfIsaretleme, scores, audience, studentName: 'Deneme', grade: 5, completedAt: new Date() });
 
   it('dört kart, bölüm grafiği ve dikkate özgü öneriler', () => {
     for (const audience of ['student', 'parent'] as const) {

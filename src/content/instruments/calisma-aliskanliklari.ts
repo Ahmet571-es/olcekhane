@@ -129,7 +129,7 @@ export const calismaAliskanliklari: LikertInstrument = {
       'Öğrencinin beş alandaki çalışma alışkanlıklarını ne sıklıkla kullandığını ölçer: planlama, kendini sınama ve aralıklı tekrar, anlayarak çalışma, odaklanma, hatalardan öğrenme ve yardım isteme. Kişilik değil davranış ölçer; bu yüzden sonuçlar doğrudan geliştirilebilir.',
     turkishVersion: 'Özgün Türkçe ölçek; bir çeviri değildir. Her alanda, onaylama eğilimini dengelemek için ters yönlü maddeler vardır.',
     reliability:
-      'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi; sonuçlar hazır olduğunda burada yayımlanacak.',
+      'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
       'Türkiye normu henüz yok. Puanlar, her alışkanlığın ne sıklıkla kullanıldığına göre (1: hiçbir zaman, 5: her zaman) yorumlanır.',

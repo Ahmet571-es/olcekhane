@@ -1,10 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
-import { childAssentAction } from '@/app/uygulama/actions';
 import type { CognitiveTask } from '@/lib/instruments/types';
-import { AssentStep, IntroStep } from '../likert-runner';
+import { IntroStep } from '../likert-runner';
 import { Cancellation } from './cancellation';
 import { useLeaveWarning } from './common';
 import { DigitSpan } from './digit-span';
@@ -12,9 +10,7 @@ import { Flanker } from './flanker';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
 
-type Phase = 'assent' | 'intro' | 'task-intro' | 'task' | 'saving' | 'between' | 'finishing';
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+type Phase = 'intro' | 'task-intro' | 'task' | 'between' | 'finishing';
 
 function TaskSteps({ tasks, done, current }: { tasks: CognitiveTask[]; done: Set<string>; current: number }) {
   return (
@@ -38,156 +34,58 @@ function TaskSteps({ tasks, done, current }: { tasks: CognitiveTask[]; done: Set
 }
 
 /**
- * Hızlı test: görevlerin denemeleri sunucuya tek tek gönderilmez, cihazda tutulur; bütün görevler
- * bitince hepsi birden verilir. `attemptId` bu durumda harf işaretleme sayfalarının tohumudur.
+ * Görevlerin denemeleri sunucuya tek tek gönderilmez, yalnızca bu sayfada tutulur; bütün görevler
+ * bitince hepsi birden `onFinish` ile verilir. `seed`, harf işaretleme sayfalarının tohumudur
+ * (tarayıcıda rastgele üretilir, kimseye bağlı değildir).
  */
-export type LocalTasks = { onFinish: (blocks: Record<string, unknown[]>) => Promise<void> };
-
 export function TaskRunner(props: {
-  attemptId: string;
-  studentName: string;
   intro: { title: string; paragraphs: string[] };
   tasks: CognitiveTask[];
-  doneBlocks: string[];
-  assentHtml: string | null;
-  reportUrl: string;
-  exitUrl: string;
-  local?: LocalTasks;
+  seed: string;
+  onFinish: (blocks: Record<string, unknown[]>) => Promise<void>;
 }) {
-  const { tasks, attemptId, local } = props;
-  const router = useRouter();
-  const [done, setDone] = useState(() => new Set(props.doneBlocks));
-  const [phase, setPhase] = useState<Phase>(props.assentHtml ? 'assent' : 'intro');
-  const [fatal, setFatal] = useState<string | null>(null);
+  const { tasks, seed, onFinish } = props;
+  const [done, setDone] = useState<Set<string>>(() => new Set());
+  const [phase, setPhase] = useState<Phase>('intro');
   const [finishError, setFinishError] = useState<string | null>(null);
   const blocks = useRef(new Map<string, unknown[]>());
   const current = tasks.findIndex((t) => !done.has(t.key));
   const task = current === -1 ? null : tasks[current];
 
-  // Hızlı testte yapılan görevler yalnızca bu sayfada durur: başladıktan sonra ayrılmadan önce uyarılır.
-  useLeaveWarning(phase === 'task' || phase === 'saving' || (!!local && phase !== 'intro' && phase !== 'assent'));
+  // Yapılan görevler yalnızca bu sayfada durur: başladıktan sonra ayrılmadan önce uyarılır.
+  useLeaveWarning(phase !== 'intro');
 
-  async function finishLocal(l: LocalTasks) {
+  async function finish() {
     setPhase('finishing');
     setFinishError(null);
     try {
-      await l.onFinish(Object.fromEntries(blocks.current));
+      await onFinish(Object.fromEntries(blocks.current));
     } catch (err) {
       setFinishError(err instanceof Error ? err.message : 'Rapor hazırlanamadı. Lütfen tekrar deneyin.');
     }
   }
 
-  async function save(block: string, trials: unknown[]) {
-    if (local) {
-      blocks.current.set(block, trials);
-      const next = new Set(done);
-      next.add(block);
-      setDone(next);
-      if (next.size >= tasks.length) void finishLocal(local);
-      else setPhase('between');
-      return;
-    }
-    setPhase('saving');
-    let backoff = 800;
-    for (let attempt = 0; attempt < 6; attempt++) {
-      try {
-        const res = await fetch(`/api/attempts/${attemptId}/task`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ block, trials }),
-        });
-        if (res.status === 401) {
-          setFatal('Oturumun süresi dolmuş. Tamamladığın görevler kaydedildi; devam etmek için yeniden giriş yapılması gerekiyor.');
-          return;
-        }
-        if (res.status === 409) {
-          setFatal('Bu uygulama başka bir sekmede tamamlanmış ya da kapatılmış.');
-          return;
-        }
-        if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
-          if (res.status === 400) {
-            setFatal(j.error ?? 'Görev kaydedilemedi.');
-            return;
-          }
-          throw new Error(String(res.status));
-        }
-        const next = new Set(done);
-        next.add(block);
-        setDone(next);
-        setPhase(next.size >= tasks.length ? 'finishing' : 'between');
-        if (next.size >= tasks.length) void finish();
-        return;
-      } catch {
-        await sleep(backoff);
-        backoff = Math.min(backoff * 2, 8000);
-      }
-    }
-    setFatal('Bağlantı sorunu nedeniyle görev kaydedilemedi. İnternet bağlantını kontrol edip sayfayı yenile; bu görevi yeniden yapman gerekebilir.');
-  }
-
-  async function finish() {
-    setPhase('finishing');
-    try {
-      const res = await fetch(`/api/attempts/${attemptId}/complete`, { method: 'POST' });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error ?? 'Sonuçlar hesaplanamadı.');
-      }
-      router.replace(props.reportUrl);
-    } catch (err) {
-      setFatal(err instanceof Error ? err.message : 'Sonuçlar hesaplanamadı. Lütfen tekrar deneyin.');
-    }
-  }
-
-  if (fatal) {
-    return (
-      <div className="mx-auto flex max-w-xl flex-col gap-4">
-        <p className="notice notice-danger">{fatal}</p>
-        <a href={props.exitUrl} className="btn btn-secondary self-start">
-          Geri dön
-        </a>
-      </div>
-    );
-  }
-
-  if (phase === 'assent' && props.assentHtml) {
-    return (
-      <AssentStep
-        html={props.assentHtml}
-        name={props.studentName}
-        exitUrl={props.exitUrl}
-        onAccept={async () => {
-          await childAssentAction(attemptId);
-          setPhase('intro');
-        }}
-      />
-    );
+  function save(block: string, trials: unknown[]) {
+    blocks.current.set(block, trials);
+    const next = new Set(done);
+    next.add(block);
+    setDone(next);
+    if (next.size >= tasks.length) void finish();
+    else setPhase('between');
   }
 
   if (phase === 'intro') {
-    const resuming = done.size > 0;
-    return (
-      <IntroStep
-        title={props.intro.title}
-        paragraphs={resuming ? [`${done.size} görevi tamamlamışsın. Kaldığın yerden devam edebilirsin.`] : props.intro.paragraphs}
-        cta={resuming ? 'Kaldığın yerden devam et' : 'Başla'}
-        onStart={() => {
-          if (!task) void (local ? finishLocal(local) : finish());
-          else setPhase('task-intro');
-        }}
-      />
-    );
+    return <IntroStep title={props.intro.title} paragraphs={props.intro.paragraphs} cta="Başla" onStart={() => setPhase('task-intro')} />;
   }
 
   if (phase === 'finishing' || !task) {
     return (
       <div className="mx-auto flex max-w-xl flex-col items-center gap-4 text-center">
         <h1 className="t-h1">Bütün görevleri bitirdin!</h1>
-        {finishError && local ? (
+        {finishError ? (
           <>
             <p className="notice notice-danger text-left">{finishError}</p>
-            <button type="button" className="btn btn-primary btn-lg" onClick={() => void finishLocal(local)}>
+            <button type="button" className="btn btn-primary btn-lg" onClick={() => void finish()}>
               Tekrar dene
             </button>
           </>
@@ -206,15 +104,10 @@ export function TaskRunner(props: {
         <p className="text-lg">
           Sıradaki görev: <strong>{task.name}</strong>. İstersen biraz dinlenebilirsin; hazır olduğunda devam et.
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div>
           <button type="button" className="btn btn-primary btn-lg" autoFocus onClick={() => setPhase('task-intro')}>
             Sonraki göreve geç
           </button>
-          {!local && (
-            <a href={props.exitUrl} className="btn btn-secondary btn-lg">
-              Ara ver, sonra devam et
-            </a>
-          )}
         </div>
       </div>
     );
@@ -245,26 +138,16 @@ export function TaskRunner(props: {
     );
   }
 
-  if (phase === 'saving') {
-    return (
-      <div className="mx-auto flex max-w-xl flex-col items-center gap-3 text-center">
-        <p className="text-lg" aria-live="polite">
-          Kaydediliyor…
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <TaskSteps tasks={tasks} done={done} current={current} />
       <h1 className="sr-only">{task.name}</h1>
-      {task.kind === 'digit_span' && <DigitSpan key={task.key} task={task} onDone={(t) => void save(task.key, t)} />}
-      {task.kind === 'spatial_span' && <SpatialSpan key={task.key} task={task} onDone={(t) => void save(task.key, t)} />}
-      {task.kind === 'flanker' && <Flanker key={task.key} task={task} onDone={(t) => void save(task.key, t)} />}
-      {task.kind === 'symbol_match' && <SymbolMatch key={task.key} task={task} onDone={(t) => void save(task.key, t)} />}
+      {task.kind === 'digit_span' && <DigitSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'spatial_span' && <SpatialSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'flanker' && <Flanker key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'symbol_match' && <SymbolMatch key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cancellation' && (
-        <Cancellation key={task.key} task={task} attemptId={attemptId} onDone={(t) => void save(task.key, t)} />
+        <Cancellation key={task.key} task={task} seed={seed} onDone={(t) => save(task.key, t)} />
       )}
     </div>
   );

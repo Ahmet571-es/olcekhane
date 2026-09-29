@@ -156,7 +156,7 @@ export const meslekiIlgi: LikertInstrument = {
     turkishVersion:
       'Özgün Türkçe ölçek; bir çeviri değildir. Maddeler öğrencilerin gündelik hayatından ve okul ortamından tanıdık etkinlikler olarak yazılmış, meslek adları kullanılmamıştır.',
     reliability:
-      'Pilot aşamasındadır: iç tutarlılık, yapı geçerliği ve altıgen yapısı henüz incelenmedi; sonuçlar hazır olduğunda burada yayımlanacak. Karşılaştırma için: benzer yapıdaki O*NET İlgi Profili kısa formunda her alanın güvenirliği .78–.87 arasındadır.',
+      'Pilot aşamasındadır: iç tutarlılık, yapı geçerliği ve altıgen yapısı henüz incelenmedi. Karşılaştırma için: benzer yapıdaki O*NET İlgi Profili kısa formunda her alanın güvenirliği .78–.87 arasındadır.',
     normStatus: 'none',
     normNote:
       'Türkiye normu henüz yok. Puanlar ölçeğin kendi aralığına göre ve öğrencinin kendi profili içinde, en yüksekten en düşüğe sıralanarak yorumlanır.',

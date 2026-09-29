@@ -272,7 +272,7 @@ export const dikkatBellek: TaskInstrument = {
       'Pilot aşamasındadır. Bu tür görevlerde tek bir uygulamanın güvenirliği sınırlıdır; özellikle iki koşul arasındaki farklara dayanan puanlar bireyleri ayırt etmede zayıf kalır. Bu yüzden raporda fark puanları yerine doğruluk, dizi uzunluğu ve ortalama tepki süresi verilir.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu henüz yok; sonuçlar akranlarla karşılaştırılmadan, yapılan işin kendisiyle anlatılır. Çalışma belleği çocukluk ve ergenlik boyunca yaşla birlikte belirgin biçimde gelişir; bu yüzden normlar sınıf düzeyine göre oluşturulacaktır.',
+      'Türkiye normu henüz yok; sonuçlar akranlarla karşılaştırılmadan, yapılan işin kendisiyle anlatılır. Çalışma belleği çocukluk ve ergenlik boyunca yaşla birlikte belirgin biçimde gelişir; bu yüzden bir norm, sınıf düzeylerine göre ayrı ayrı oluşturulmalıdır.',
     ageNote: '4. sınıftan itibaren uygulanır. Dokunmatik ekranlı bir cihazda ya da klavye ve fareyle yapılabilir.',
     license: 'Özgün görevler. Ölçekhane tarafından geliştirilmiştir.',
     limitations: [

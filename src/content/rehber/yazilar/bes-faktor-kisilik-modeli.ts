@@ -15,7 +15,7 @@ export const besFaktorKisilikModeli: Guide = {
   ],
   relatedTests: ['bes-faktor-kisilik'],
   publishedAt: '2026-09-29',
-  updatedAt: '2026-09-29',
+  updatedAt: '2026-09-30',
   body: `
 ## Beş Faktör modeli nereden çıktı?
 
@@ -71,7 +71,7 @@ Yine de bu ilişkiler orta düzeydedir. Kişilik bir kader değildir: sorumluluk
 
 En yaygın yol, kişinin kendini anlattığı cümlelere ne kadar katıldığını belirttiği ölçeklerdir: “Planlarıma sadık kalırım”, “Yeni insanlarla kolay tanışırım” gibi. İyi bir ölçekte her boyut birden fazla cümleyle ölçülür, cümlelerin bir kısmı ters yönde yazılır ve ölçeğin güvenirliği araştırmalarla gösterilmiştir.
 
-Uluslararası Kişilik Madde Havuzu (IPIP), bu tür ölçekleri herkesin kullanımına açık olarak sunan bilimsel bir projedir (Goldberg ve ark., 2006). Ölçekhane’deki [Beş Faktör Kişilik Profili](/testler/bes-faktor-kisilik) de bu havuzdaki 50 maddelik ölçeğin Türkçe sürümüne dayanır.
+Uluslararası Kişilik Madde Havuzu (IPIP), bu tür ölçekleri herkesin kullanımına açık olarak sunan bilimsel bir projedir (Goldberg ve ark., 2006). Ölçekhane’deki [Beş Faktör Kişilik Profili](/testler/bes-faktor-kisilik) de bu havuzdaki 50 maddelik ölçeğin bizim yaptığımız Türkçe çevirisine dayanır; bu çevirinin geçerlik çalışması henüz yapılmadı.
 
 Kendini anlatma yöntemi pratik ve güvenilirdir ama sınırları vardır: Kişi kendini olduğundan farklı gösterebilir ya da kendini tam tanımıyor olabilir. Bu yüzden sonuçlar, kişiyi tanıyan birinin gözlemleriyle birlikte değerlendirildiğinde en anlamlı hâle gelir.
 

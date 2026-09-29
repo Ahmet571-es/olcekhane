@@ -1,8 +1,8 @@
 import 'server-only';
 
 /**
- * Bellekte tutulan sabit pencereli hız sınırı. Hızlı testte hiçbir şey saklanmadığı için istemci adresi
- * veritabanına da yazılmaz; yalnızca pencere süresince bu süreçte tutulur. Süresi dolan sayaçlar her
+ * Bellekte tutulan sabit pencereli hız sınırı. Sitede hiçbir şey saklanmadığı için istemci adresi diske
+ * yazılmaz; yalnızca pencere süresince bu süreçte tutulur. Süresi dolan sayaçlar her
  * dakika silinir: 10 dakikalık bir sayaç en geç 11 dakika sonra bellekten çıkar (aydınlatma metni bu
  * süreyi söyler). Uygulama tek süreç olarak çalıştığından (bkz. docker-compose.yml) sayaç bütün
  * istekleri görür.

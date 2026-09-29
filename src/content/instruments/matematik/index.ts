@@ -58,7 +58,7 @@ export const matematik: QuizInstrument = {
     turkishVersion:
       'Özgün Türkçe test; çeviri değildir. Her sınıf için ayrı bir form vardır (5., 6., 7. ve 8. sınıflar için 20’şer soru). Her alanda 4 soru bulunur.',
     reliability:
-      'Pilot aşamasındadır. Soruların güçlüğü ve ayırt ediciliği ile formların güvenirliği (KR-20) henüz incelenmedi; sonuçlar hazır olduğunda burada yayımlanacak.',
+      'Pilot aşamasındadır. Soruların güçlüğü ve ayırt ediciliği ile formların güvenirliği (KR-20) henüz incelenmedi.',
     normStatus: 'none',
     normNote:
       'Türkiye normu yoktur; sonuçlar ölçüt temellidir. Bir alanda 4 sorudan en az 3’ünü doğru yapmak “sağlam”, 2’sini doğru yapmak “pekiştirilmeli”, daha azını doğru yapmak “öncelikli” olarak yorumlanır. Testin geneli için de aynı oranlar kullanılır (20 sorudan en az 15 ve en az 10 doğru).',

@@ -1,7 +1,7 @@
 import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type RiasecKey } from '@/content/careers/riasec';
 import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText } from '@/content/reports/types';
-import { GRADE_LABELS, gradeRangeLabel } from '@/lib/config';
+import { GRADE_LABELS } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import type {
   Band,
@@ -21,8 +21,8 @@ import type { ReadingResult } from '@/lib/scoring/reading';
 
 export type Audience = 'student' | 'parent';
 
-/** Veritabanından okunan ölçek puanının rapora gereken kısmı. */
-export interface StoredScore {
+/** Puanlamadan gelen ölçek puanının rapora gereken kısmı. */
+export interface ReportScore {
   scaleKey: string;
   raw: number | null;
   mean: number | null;
@@ -192,37 +192,14 @@ function pickText(bt: BandText | undefined, audience: Audience) {
     : { text: bt.parent, tips: bt.tipsParent, summary: bt.summary };
 }
 
-/** Raporda kullanılan norm grubunun özeti (norm varken). */
-export interface NormInfo {
-  status: 'provisional' | 'final';
-  n: number;
-  gradeMin: number;
-  gradeMax: number;
-  source: string;
-}
-
-/**
- * Norm açıklaması. Ön normlar platformu kullanan öğrencilerden oluşur ve Türkiye’yi temsil etmez;
- * rapor bunu açıkça söyler. Kesin normlarda kaynağı (örneklem çalışması) belirtilir.
- */
-export function normNoteText(norm: NormInfo): string {
-  const range = gradeRangeLabel(norm.gradeMin, norm.gradeMax);
-  const n = new Intl.NumberFormat('tr-TR').format(norm.n);
-  return norm.status === 'final'
-    ? `Puanlar, ${range} öğrencilerinden oluşan norm grubuyla (${n} öğrenci; ${norm.source}) karşılaştırılarak yorumlanmıştır.`
-    : `Puanlar, Ölçekhane’de bu testi çözen ${range} öğrencilerinden oluşan ön norm grubuyla (${n} öğrenci) karşılaştırılarak yorumlanmıştır. Bu grup Türkiye’yi temsil eden bir örneklem değildir; veri arttıkça norm güncellenecektir.`;
-}
-
 export function buildReport(input: {
   def: InstrumentDef;
-  scores: StoredScore[];
+  scores: ReportScore[];
   audience: Audience;
   studentName: string;
   grade: number;
   completedAt: Date;
   qualityNotes?: string[];
-  hasNorms: boolean;
-  norm?: NormInfo | null;
 }): ReportContent {
   const { def, audience } = input;
   const template = REPORT_TEMPLATES[def.slug];
@@ -359,11 +336,8 @@ export function buildReport(input: {
     gradeLabel: GRADE_LABELS[input.grade] ?? `${input.grade}. sınıf`,
     completedAt: input.completedAt.toISOString(),
     isPilot: def.status === 'pilot',
-    normNote: input.norm
-      ? normNoteText(input.norm)
-      : input.hasNorms
-        ? 'Puanlar, aynı sınıf düzeyindeki öğrencilerden oluşan bir norm grubuyla karşılaştırılarak yorumlanmıştır.'
-        : science.normNote,
+    // Sitede norm tablosu yoktur: norm durumu her zaman testin bilim kartındaki açıklamadır.
+    normNote: science.normNote,
     qualityNotes: input.qualityNotes ?? [],
     sections,
     highlights,
@@ -441,7 +415,7 @@ const GENERIC_ACADEMIC_TIPS: Record<Audience, string[]> = {
 
 function buildAcademic(
   def: QuizInstrument,
-  byKey: Map<string, StoredScore>,
+  byKey: Map<string, ReportScore>,
   audience: Audience,
   bandLabels: Partial<Record<Band, string>>,
 ): AcademicReport | undefined {
@@ -655,7 +629,7 @@ function cancellationBlocks(
   return [tempo, isabet, net, surdurme];
 }
 
-function buildCognitive(def: TaskInstrument, byKey: Map<string, StoredScore>, audience: Audience): CognitiveReport {
+function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
   const you = audience === 'student';
   const blocks: CognitiveBlock[] = [];
   const scale = (k: string) => def.scales.find((s) => s.key === k)!;

@@ -1,6 +1,6 @@
 import { cancellationSheet } from '@/lib/instruments/cancellation';
 import type { CognitiveTask, QuizForm, TaskInstrument } from '@/lib/instruments/types';
-import type { StoredScore } from '@/lib/reports/build';
+import type { ReportScore } from '@/lib/reports/build';
 import type { ScaleScore } from '@/lib/scoring/likert';
 import type { QuizResult } from '@/lib/scoring/quiz';
 import type { ReadingResult } from '@/lib/scoring/reading';
@@ -20,11 +20,7 @@ import {
   type SymbolTrialInput,
 } from '@/lib/scoring/tasks';
 
-/**
- * Ölçek puanı satırları: puanlamanın veritabanından bağımsız sonucu. Hesaplı uygulamada `scores`
- * tablosuna yazılır; hızlı testte (hiçbir şey saklanmadan) doğrudan rapora verilir. Aynı fonksiyonlar
- * iki yolda da kullanıldığı için iki yolun puanları birebir aynıdır.
- */
+/** Ölçek puanı satırları: puanlamanın sonucu. Hiçbir yere yazılmaz, doğrudan rapora verilir. */
 export interface ScoreRow {
   scaleKey: string;
   raw: number | null;
@@ -42,7 +38,7 @@ export interface ScoreRow {
 }
 
 /** Rapor oluşturucunun beklediği biçim. */
-export function toStored(r: ScoreRow): StoredScore {
+export function toReportScore(r: ScoreRow): ReportScore {
   return {
     scaleKey: r.scaleKey,
     raw: r.raw,
@@ -131,7 +127,7 @@ function spanScale(t: CognitiveTask): string {
 
 /**
  * Bilişsel görevlerin ölçek puanları ve cevap kalitesi notları. Bütün görevlerin denemeleri gerekir.
- * `seed`, harf işaretleme sayfalarının üretildiği kimliktir (hesaplı uygulamada uygulama kimliği).
+ * `seed`, harf işaretleme sayfalarının üretildiği tohumdur (tarayıcıda rastgele üretilir).
  * Geçersiz veri TaskInputError fırlatır.
  */
 export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInputs>, seed: string): { rows: ScoreRow[]; notes: string[] } {

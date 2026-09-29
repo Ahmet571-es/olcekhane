@@ -59,7 +59,7 @@ export function TestShelf({ showUpcoming = true, headingLevel = 3 }: { showUpcom
                           <span className="chip chip-ok">Yayında</span>
                         )}
                         {t.isFree && <p className="t-meta mt-1">Ücretsiz</p>}
-                        <Link href={`/hizli-test/${t.slug}`} className="t-small mt-1 inline-block font-bold" aria-label={`${t.name}: hemen çöz`}>
+                        <Link href={`/testler/${t.slug}/coz`} className="t-small mt-1 inline-block font-bold" aria-label={`${t.name}: hemen çöz`}>
                           Hemen çöz
                         </Link>
                       </td>

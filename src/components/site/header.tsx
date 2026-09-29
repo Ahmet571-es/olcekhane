@@ -1,19 +1,24 @@
 import Link from 'next/link';
-import { accountsOpen } from '@/lib/site';
-import { AccountLinks } from './account-links';
 import { Logo } from './logo';
 import { MobileNav } from './mobile-nav';
 
 export const NAV = [
   { href: '/testler', label: 'Testler' },
   { href: '/veliler-icin', label: 'Veliler için' },
-  { href: '/okullar-icin', label: 'Okullar için' },
   { href: '/rehber', label: 'Rehber' },
   { href: '/bilimsel-yaklasim', label: 'Bilimsel yaklaşım' },
 ];
 
+/** Üst bölümdeki tek eylem düğmesi: hesap ya da giriş yoktur, testler doğrudan çözülür. */
+export function TestsCta() {
+  return (
+    <Link href="/testler" className="btn btn-primary whitespace-nowrap">
+      Ücretsiz test çöz
+    </Link>
+  );
+}
+
 export function SiteHeader() {
-  const accounts = accountsOpen();
   return (
     <header className="relative z-20 border-b border-rule/70 bg-paper/85 backdrop-blur supports-[backdrop-filter]:bg-paper/70">
       <div className="container-page flex h-[4.25rem] items-center justify-between gap-6">
@@ -32,9 +37,9 @@ export function SiteHeader() {
           </ul>
         </nav>
         <div className="hidden xl:block">
-          <AccountLinks accounts={accounts} />
+          <TestsCta />
         </div>
-        <MobileNav items={NAV} accounts={accounts} />
+        <MobileNav items={NAV} cta={<TestsCta />} />
       </div>
     </header>
   );

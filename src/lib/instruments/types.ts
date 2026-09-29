@@ -1,9 +1,8 @@
 /**
  * Test tanımları için ortak türler.
  *
- * Testlerin kaynağı koddur: maddeler, puanlama anahtarları ve bilim kartları burada sürümlü
- * olarak tutulur ve tohumlama (seed) sırasında veritabanına yazılır. Bir tanım değiştiğinde
- * sürüm numarası artırılmalıdır; eski cevaplar kendi sürümünün anahtarıyla puanlanmaya devam eder.
+ * Testlerin kaynağı koddur: maddeler, puanlama anahtarları ve bilim kartları burada sürümlü olarak
+ * tutulur. Bir tanım değiştiğinde (madde, anahtar ya da puanlama) sürüm numarası artırılmalıdır.
  */
 
 export type Domain = 'personality' | 'career' | 'academic' | 'cognitive' | 'wellbeing' | 'skills';
@@ -148,7 +147,7 @@ export interface ReadingInstrument extends InstrumentBase {
 export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match' | 'cancellation';
 
 interface TaskBase {
-  /** Veritabanındaki blok anahtarı (task_trials.block). */
+  /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
   key: string;
   kind: TaskKind;
   name: string;

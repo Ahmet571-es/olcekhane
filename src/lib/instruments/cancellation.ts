@@ -74,8 +74,8 @@ function section(task: CancellationTask, rand: () => number): string[] {
 }
 
 /** Uygulamanın bütün bölümleri: bölüm başına rows × columns harf, satır satır soldan sağa. */
-export function cancellationSheet(task: CancellationTask, attemptId: string): string[][] {
-  const rand = rng(seedFrom(`${attemptId}:${task.key}:${task.generator}`));
+export function cancellationSheet(task: CancellationTask, seed: string): string[][] {
+  const rand = rng(seedFrom(`${seed}:${task.key}:${task.generator}`));
   return Array.from({ length: task.sections }, () => section(task, rand));
 }
 

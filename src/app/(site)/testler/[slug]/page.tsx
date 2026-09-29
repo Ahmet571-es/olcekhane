@@ -45,7 +45,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const scales = def.scales.filter((s) => s.key !== 'total');
   // Güvenirliği ve başvuru standart sapması bilinen ölçeklerde cetvelde ölçüm payı da gösterilir.
   const showsMargin = def.engine === 'likert' && def.scales.some((s) => s.alpha !== undefined && s.sdRef !== undefined);
-  const quickUrl = `/hizli-test/${def.slug}`;
+  const solveUrl = `/testler/${def.slug}/coz`;
 
   const jsonLd = breadcrumbLd([
     { name: 'Ana sayfa', path: '/' },
@@ -74,7 +74,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           <h1 className="t-h1">{def.name}</h1>
           <p className="t-lede measure">{def.description}</p>
           <div className="flex flex-wrap gap-3">
-            <Link href={quickUrl} className="btn btn-primary btn-lg">
+            <Link href={solveUrl} className="btn btn-primary btn-lg">
               {def.isFree ? 'Ücretsiz çöz' : 'Testi çöz'}
             </Link>
             <a href="#bilim-karti" className="btn btn-secondary btn-lg">
@@ -257,7 +257,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             <p className="font-display text-2xl font-bold">{def.isFree ? 'Bu test ücretsiz.' : def.name}</p>
             <p className="opacity-85">Hesap açmadan çözün. Cevaplarınız saklanmaz; rapor ekranda gösterilir ve PDF olarak size verilir.</p>
           </div>
-          <Link href={quickUrl} className="btn bg-paper text-ink hover:bg-surface-2">
+          <Link href={solveUrl} className="btn bg-paper text-ink hover:bg-surface-2">
             Testi çöz
           </Link>
         </div>

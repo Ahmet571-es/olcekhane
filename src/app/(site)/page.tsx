@@ -7,7 +7,6 @@ import { GUIDE_CATEGORIES, guideBySlug } from '@/content/rehber';
 import { HeroVisual } from '@/components/three/hero-visual';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, siteUrl } from '@/lib/config';
 import { pageMeta } from '@/lib/seo';
-import { accountsOpen } from '@/lib/site';
 
 export const metadata = pageMeta({
   title: `${SITE_NAME}: ${SITE_TAGLINE}`,
@@ -24,7 +23,7 @@ const PRINCIPLES = [
   },
   {
     t: 'Norm durumunu açıkça yazıyoruz',
-    d: 'Türkiye normu henüz hazır olmayan testlerde bunu raporda açıkça yazıyor, sonucu akranlarla karşılaştırıyormuş gibi göstermiyoruz.',
+    d: 'Sitedeki testlerin henüz Türkiye normu yok. Bunu raporda açıkça yazıyor, sonucu akranlarla karşılaştırıyormuş gibi göstermiyoruz.',
   },
   {
     t: 'Tanı koymuyoruz',
@@ -44,18 +43,18 @@ const LIVE = publicInstruments();
 const SHORTEST = Math.min(...LIVE.map((t) => t.estimatedMinutes));
 const LONGEST = Math.max(...LIVE.map((t) => t.estimatedMinutes));
 
-const faq = (accounts: boolean) => [
+const FAQ = [
   {
     q: 'Testler tanı koyar mı?',
     a: 'Hayır. Ölçekhane’deki testler öğrencinin kendini nasıl gördüğünü, ilgilerini ve bazı becerilerini ölçer. Bir psikolojik ya da tıbbi tanı değildir. Endişe verici bir durum fark ederseniz okulun rehberlik servisine ya da bir uzmana başvurmanızı öneririz.',
   },
   {
     q: 'Hesap açmam gerekiyor mu?',
-    a: `Hayır. Testi seçer, sınıfı işaretler ve hemen başlarsınız; ad, e-posta ya da telefon istemiyoruz.${accounts ? '' : ' Veli ve okul hesapları şu an kapalı. Okulunuz için ön başvuruyu iletişim formundan yapabilirsiniz.'}`,
+    a: 'Hayır. Sitede hesap ya da üyelik yok: testi seçer, sınıfı işaretler ve hemen başlarsınız. Ad, e-posta ya da telefon istemiyoruz.',
   },
   {
     q: 'Cevaplarım ve rapor saklanıyor mu?',
-    a: 'Hayır. Cevaplar raporu hazırlamak için sunucumuza gönderilir ama veritabanına ya da dosyaya yazılmaz. Rapor ekranda gösterilir ve PDF olarak size verilir; sayfayı kapattıktan sonra raporu yeniden gösteremeyiz. Bu yüzden raporu PDF olarak indirmenizi öneririz. Sunucumuz Almanya’dadır; ayrıntılar KVKK aydınlatma metninde.',
+    a: 'Hayır. Sitemizin veritabanı yok. Cevaplar raporu hazırlamak için sunucumuza gönderilir ama hiçbir yere yazılmaz. Rapor ekranda gösterilir ve PDF olarak size verilir; sayfayı kapattıktan sonra raporu yeniden gösteremeyiz. Bu yüzden raporu PDF olarak indirmenizi öneririz. Sunucumuz Almanya’dadır; ayrıntılar KVKK aydınlatma metninde.',
   },
   {
     q: 'Hangi yaşlar için uygun?',
@@ -71,7 +70,7 @@ const faq = (accounts: boolean) => [
   },
   {
     q: '"Pilot" etiketi ne anlama geliyor?',
-    a: 'Pilot testlerin Türkçe geçerlik ve norm çalışmaları henüz yapılmadı. Bu testlerin sonuçları akranlarla karşılaştırılmadan yorumlanır ve raporda bu durum açıkça belirtilir.',
+    a: 'Pilot testleri Ölçekhane geliştirdi; bu testlerin güvenirlik ve geçerlik çalışmaları henüz yapılmadı. Sonuçları dikkatle, bir norm grubuyla karşılaştırılmadan yorumlanır ve raporda bu durum açıkça belirtilir. Diğer testler, güvenirliği uluslararası araştırmalarla gösterilmiş ölçeklere dayanır; ancak Türkçe çevirilerimizin geçerlik çalışması da henüz yapılmadı.',
   },
   {
     q: 'Ücretli mi?',
@@ -79,8 +78,22 @@ const faq = (accounts: boolean) => [
   },
 ];
 
+const STEPS = [
+  {
+    t: 'Testi seçin',
+    d: 'Her testin neyi ölçtüğü, ne kadar sürdüğü ve hangi sınıflara uygun olduğu test sayfasında yazıyor.',
+  },
+  {
+    t: 'Sınıfı işaretleyip çözün',
+    d: 'Hesap açmadan hemen başlarsınız. Testi tek seferde bitirin: sayfa kapanırsa cevaplar silinir.',
+  },
+  {
+    t: 'Raporu okuyun, PDF’i saklayın',
+    d: 'Öğrenci ve veli raporu hemen ekranda. İkisini de PDF olarak indirebilirsiniz; biz hiçbir kopyasını saklamayız.',
+  },
+];
+
 export default function Home() {
-  const accounts = accountsOpen();
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -195,33 +208,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Veliler ve okullar */}
-      <section className="container-page pb-20 md:pb-28" aria-label="Kimler için">
-        <div className="grid overflow-hidden rounded-2xl border border-rule md:grid-cols-2">
-          <div className="flex flex-col gap-4 bg-surface p-8 md:p-10">
-            <h2 className="t-h2">Veliler için</h2>
-            <p className="text-ink-2">
-              Çocuğunuzun kendini nasıl gördüğünü, nelerden hoşlandığını ve nasıl öğrendiğini anlamak için. Testi birlikte seçin, çocuğunuz
-              çözsün, raporu birlikte okuyun. Raporu PDF olarak saklayıp aradan zaman geçince yeniden çözerek karşılaştırabilirsiniz.
-            </p>
-            <div className="mt-auto pt-2">
-              <Link href="/veliler-icin" className="btn btn-primary">
+      {/* Nasıl çalışır */}
+      <section className="container-page pb-20 md:pb-28" aria-labelledby="nasil">
+        <div className="grid gap-10 rounded-2xl bg-ink p-8 text-paper md:p-12 lg:grid-cols-[1fr_1.6fr]">
+          <div className="flex flex-col gap-4">
+            <h2 id="nasil" className="t-h1">
+              Nasıl çalışır?
+            </h2>
+            <p className="opacity-85">Testi çocuğunuzla birlikte seçin, o çözsün, raporu birlikte okuyun.</p>
+            <div className="mt-auto flex flex-wrap gap-3 pt-2">
+              <Link href="/testler" className="btn bg-paper text-ink hover:bg-surface-2">
+                Testlere göz atın
+              </Link>
+              <Link href="/veliler-icin" className="btn border-paper/40 bg-transparent text-paper hover:border-paper">
                 Veliler için
               </Link>
             </div>
           </div>
-          <div className="flex flex-col gap-4 bg-ink p-8 text-paper md:p-10">
-            <h2 className="t-h2">Okullar için</h2>
-            <p className="opacity-85">
-              Rehberlik servisleri için sınıf düzeyinde uygulama: veli onayı çevrim içi alınır, rehber öğretmen bireysel raporları görür,
-              öğretmenler yalnızca grup özetlerini görür.{accounts ? '' : ' Okul paneli şu an kapalı; ön başvuruları alıyoruz.'}
-            </p>
-            <div className="mt-auto pt-2">
-              <Link href="/okullar-icin" className="btn border-paper/40 bg-transparent text-paper hover:border-paper">
-                Okullar için ayrıntılar
-              </Link>
-            </div>
-          </div>
+          <ol className="grid gap-8 sm:grid-cols-3">
+            {STEPS.map((st, i) => (
+              <li key={st.t} className="flex flex-col gap-2 border-t border-paper/30 pt-4">
+                <span className="font-display text-3xl font-bold tabular opacity-70" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <p className="font-display text-xl font-bold">{st.t}</p>
+                <p className="opacity-85">{st.d}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
@@ -257,7 +271,7 @@ export default function Home() {
             Sık sorulanlar
           </h2>
           <div className="divide-y divide-rule border-y border-rule">
-            {faq(accounts).map((f) => (
+            {FAQ.map((f) => (
               <details key={f.q} className="group py-5">
                 <summary className="flex cursor-pointer list-none items-start justify-between gap-6 font-display text-lg font-bold">
                   {f.q}

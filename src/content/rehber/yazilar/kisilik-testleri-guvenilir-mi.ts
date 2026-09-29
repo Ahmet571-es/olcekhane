@@ -15,7 +15,7 @@ export const kisilikTestleriGuvenilirMi: Guide = {
   ],
   relatedTests: ['bes-faktor-kisilik', 'oz-saygi'],
   publishedAt: '2026-09-29',
-  updatedAt: '2026-09-29',
+  updatedAt: '2026-09-30',
   body: `
 ## Neden bu kadar çok test var?
 
@@ -50,7 +50,7 @@ Bir test çok tutarlı olup yine de yanlış şeyi ölçüyor olabilir. Geçerli
 ## Bir testi değerlendirmek için 7 soru
 
 1. **Kaynağı ne?** Testi kim geliştirmiş, hangi bilimsel yayınlara dayanıyor?
-2. **Türkçe sürümü nasıl hazırlanmış?** Bir çeviri, özgün anlamı koruyup korumadığı sınanmadan kullanılmamalıdır. Uluslararası Test Komisyonu’nun test uyarlama yönergeleri bu süreci adım adım tanımlar (International Test Commission, 2017).
+2. **Türkçe sürümü nasıl hazırlanmış?** Bir çevirinin özgün anlamı koruyup korumadığı sınanmalıdır; sınanmadıysa bu açıkça belirtilmelidir. Uluslararası Test Komisyonu’nun test uyarlama yönergeleri bu süreci adım adım tanımlar (International Test Commission, 2017).
 3. **Güvenirliği belirtilmiş mi?** Belirtilmemişse ölçümün ne kadar tutarlı olduğunu bilemezsiniz.
 4. **Sonuç kimlerle karşılaştırılıyor?** Norm grubunun yaşı, ülkesi ve büyüklüğü yazıyor mu?
 5. **Çocuğun yaşına uygun mu?** Yetişkinler için yazılmış maddeler bir ortaokul öğrencisi için anlamsız olabilir.

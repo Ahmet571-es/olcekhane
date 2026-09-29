@@ -118,9 +118,9 @@ export default function ParentsPage() {
       <Section id="gizlilik" title="Çocuğunuzun verileri" className="border-t border-rule">
         <ul className="measure flex list-disc flex-col gap-2 pl-5">
           <li>Hesap açmanız gerekmez. Sizden ya da çocuğunuzdan ad, e-posta, telefon ya da kimlik numarası istemiyoruz.</li>
-          <li>Cevaplar yalnızca raporu hazırlamak için kullanılır; veritabanına ya da dosyaya kaydedilmez.</li>
+          <li>Sitemizin veritabanı yok. Cevaplar yalnızca raporu hazırlamak için kullanılır ve hiçbir yere kaydedilmez.</li>
           <li>Raporun tek kopyası size verilen PDF’tir. Kiminle paylaşacağınıza siz karar verirsiniz.</li>
-          <li>Sitemizin sunucusu Almanya’dadır (Avrupa Birliği). Reklam, izleme ya da analiz çerezi kullanmıyoruz.</li>
+          <li>Sitemizin sunucusu Almanya’dadır (Avrupa Birliği). Çerez kullanmıyoruz; reklam, izleme ya da analiz aracı da yok.</li>
         </ul>
         <p>
           Ayrıntılar: <Link href="/yasal/aydinlatma-metni">KVKK aydınlatma metni</Link>

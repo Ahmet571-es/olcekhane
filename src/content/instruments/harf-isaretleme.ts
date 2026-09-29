@@ -83,7 +83,7 @@ export const harfIsaretleme: TaskInstrument = {
       'Pilot aşamasındadır; bu görevin güvenirlik çalışması henüz yapılmadı. Her bölüm ayrı süreyle uygulandığı için güvenirlik bölümler arası tutarlılıkla hesaplanabilir. Benzer bir dijital harf işaretleme görevinde üniversite öğrencileriyle paralel form güvenirliği r = .71–.83, iç tutarlılık α = .73–.91, d2 dikkat testiyle ilişki r = .43–.59 bulunmuştur (Pahor ve ark., 2022). Bu değerler çocuklar ve bu görev için doğrudan geçerli değildir.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu henüz yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Sürekli dikkat çocukluk boyunca yaşla birlikte belirgin biçimde gelişir (Betts ve ark., 2006); bu yüzden normlar sınıf düzeyine göre oluşturulacaktır. Puanlar, kâğıt-kalem Burdon uygulamalarının puanları ve normlarıyla karşılaştırılamaz: sayfa, süre ve işaretleme biçimi farklıdır.',
+      'Türkiye normu henüz yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Sürekli dikkat çocukluk boyunca yaşla birlikte belirgin biçimde gelişir (Betts ve ark., 2006); bu yüzden bir norm, sınıf düzeylerine göre ayrı ayrı oluşturulmalıdır. Puanlar, kâğıt-kalem Burdon uygulamalarının puanları ve normlarıyla karşılaştırılamaz: sayfa, süre ve işaretleme biçimi farklıdır.',
     ageNote:
       '3. sınıftan itibaren uygulanır. Tablet ya da bilgisayarla yapılması önerilir; telefonda harfler küçük kalır. Aynı öğrencinin sonuçları karşılaştırılacaksa aynı tür cihaz kullanılmalıdır.',
     license: 'Özgün görev. Ölçekhane tarafından geliştirilmiştir.',

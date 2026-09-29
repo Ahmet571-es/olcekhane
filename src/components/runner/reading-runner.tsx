@@ -1,29 +1,19 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { childAssentAction } from '@/app/uygulama/actions';
-import { AssentStep, IntroStep, ProgressRuler } from './likert-runner';
+import { IntroStep, ProgressRuler } from './likert-runner';
+import { useLeaveWarning } from './tasks/common';
 
 type Question = { key: string; text: string; options: { key: string; text: string }[] };
-type Phase = 'assent' | 'intro' | 'ready' | 'reading' | 'questions' | 'submitting';
+type Phase = 'intro' | 'ready' | 'reading' | 'questions' | 'submitting';
 
-/** Hızlı test: sonuç sunucuya kaydedilmez; okuma süresi ve cevaplar işleyiciye verilir. */
-export type LocalReading = { onFinish: (result: { passageKey: string; readingMs: number; answers: Record<string, string> }) => Promise<void> };
-
+/** Okuma süresi ve cevaplar yalnızca bu sayfada tutulur; test bitince `onFinish` ile verilir. */
 export function ReadingRunner(props: {
-  attemptId: string;
-  studentName: string;
   intro: { title: string; paragraphs: string[] };
   passage: { key: string; title: string; paragraphs: string[]; questions: Question[] };
-  assentHtml: string | null;
-  reportUrl: string;
-  exitUrl: string;
-  local?: LocalReading;
+  onFinish: (result: { passageKey: string; readingMs: number; answers: Record<string, string> }) => Promise<void>;
 }) {
-  const { local } = props;
-  const router = useRouter();
-  const [phase, setPhase] = useState<Phase>(props.assentHtml ? 'assent' : 'intro');
+  const [phase, setPhase] = useState<Phase>('intro');
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -39,55 +29,17 @@ export function ReadingRunner(props: {
     }
   }, [phase, qIndex]);
 
-  // Hızlı testte okuma başladıktan sonra sayfadan ayrılmak bütün cevapları siler.
-  const unsaved = !!local && (phase === 'reading' || phase === 'questions' || phase === 'submitting');
-  useEffect(() => {
-    if (!unsaved) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [unsaved]);
+  // Okuma başladıktan sonra sayfadan ayrılmak bütün cevapları siler.
+  useLeaveWarning(phase === 'reading' || phase === 'questions' || phase === 'submitting');
 
   async function submit() {
     setPhase('submitting');
-    if (local) {
-      try {
-        await local.onFinish({ passageKey: props.passage.key, readingMs: readingMs.current, answers });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Rapor hazırlanamadı.');
-        setPhase('questions');
-      }
-      return;
-    }
     try {
-      const res = await fetch(`/api/attempts/${props.attemptId}/reading`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ passageKey: props.passage.key, readingMs: readingMs.current, answers }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error ?? 'Sonuç kaydedilemedi.');
-      }
-      router.replace(props.reportUrl);
+      await props.onFinish({ passageKey: props.passage.key, readingMs: readingMs.current, answers });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sonuç kaydedilemedi.');
+      setError(err instanceof Error ? err.message : 'Rapor hazırlanamadı.');
       setPhase('questions');
     }
-  }
-
-  if (phase === 'assent' && props.assentHtml) {
-    return (
-      <AssentStep
-        html={props.assentHtml}
-        name={props.studentName}
-        exitUrl={props.exitUrl}
-        onAccept={async () => {
-          await childAssentAction(props.attemptId);
-          setPhase('intro');
-        }}
-      />
-    );
   }
 
   if (phase === 'intro') {

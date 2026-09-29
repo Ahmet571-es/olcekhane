@@ -138,19 +138,20 @@ function SectionTimer({ startedAt, durationMs }: { startedAt: number | null; dur
 
 /**
  * Harf işaretleme: süreli bölümlerde, satır satır dizilmiş harfler arasında aranan harflere dokunulur.
- * Sayfalar uygulama kimliğinden üretilir (sunucu aynı sayfayı üretip puanlar). Her bölüm tam süre sürer;
- * süre dolunca işaretler ve işaretlenme zamanları kaydedilir, sonraki bölüm kısa bir geri sayımla başlar.
+ * Sayfalar tarayıcıda rastgele üretilen tohumdan üretilir (sunucu aynı tohumla aynı sayfayı üretip puanlar).
+ * Her bölüm tam süre sürer; süre dolunca işaretler ve işaretlenme zamanları sayfada tutulur, sonraki bölüm
+ * kısa bir geri sayımla başlar.
  */
 export function Cancellation({
   task,
-  attemptId,
+  seed,
   onDone,
 }: {
   task: CancellationTask;
-  attemptId: string;
+  seed: string;
   onDone: (sections: CancellationSectionInput[]) => void;
 }) {
-  const sheet = useMemo(() => cancellationSheet(task, attemptId), [task, attemptId]);
+  const sheet = useMemo(() => cancellationSheet(task, seed), [task, seed]);
   const practice = useMemo(() => task.practice.flat(), [task.practice]);
   const [step, setStep] = useState<Step>('ready');
   const [section, setSection] = useState(0);
