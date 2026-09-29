@@ -1,9 +1,9 @@
 import 'server-only';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { EXPERTS } from '@/content/experts';
 import { publicInstruments } from '@/content/instruments';
 import { db } from '@/db';
-import { legalDocuments } from '@/db/schema';
+import { jobRuns, legalDocuments } from '@/db/schema';
 import { lastSuccessfulRun } from '@/lib/jobs/purge';
 import { missingCompanyFields } from '@/lib/site';
 
@@ -128,6 +128,26 @@ export async function readinessChecks(): Promise<ReadinessCheck[]> {
       : `${lastPurge ? 'Son 36 saatte başarılı çalışma yok' : 'Henüz hiç çalışmadı'}. Rıza geri alınınca verilerin 30 gün içinde silinmesi sözü bu görevle yerine getirilir.${
           jobsOff ? ' Zamanlayıcı kapalı (SCHEDULED_JOBS=false).' : ''
         } Aşağıdan elle de çalıştırabilirsiniz.`,
+  });
+
+  // Veritabanı yedekleri: yedek kapsayıcısı (docker/backup.sh) her çalışmayı görev kaydına yazar.
+  const [lastBackup, [lastBackupRun]] = await Promise.all([
+    lastSuccessfulRun('yedek'),
+    db.select({ ok: jobRuns.ok, at: jobRuns.startedAt, error: jobRuns.error }).from(jobRuns).where(eq(jobRuns.job, 'yedek')).orderBy(desc(jobRuns.startedAt)).limit(1),
+  ]);
+  const backupFresh = !!lastBackup && Date.now() - lastBackup.getTime() < 36 * 3600_000;
+  const when = (d: Date) => new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Istanbul' }).format(d);
+  out.push({
+    key: 'backup',
+    label: 'Veritabanı yedeği',
+    status: backupFresh ? (lastBackupRun?.ok === false ? 'warn' : 'ok') : prod ? 'fail' : 'info',
+    detail: backupFresh
+      ? `Son başarılı yedek: ${when(lastBackup)}.${lastBackupRun?.ok === false ? ` Ondan sonraki deneme başarısız oldu (${when(lastBackupRun.at)}); yedek kapsayıcısının günlüğüne bakın: docker compose logs yedek.` : ''}`
+      : lastBackup
+        ? `Son 36 saatte başarılı yedek yok (son başarılı yedek: ${when(lastBackup)}). Yedek kapsayıcısının günlüğüne bakın: docker compose logs yedek.`
+        : prod
+          ? 'Henüz hiç yedek alınmadı. Yedek kapsayıcısı her gece çalışır; hemen almak için: docker compose exec yedek bash /usr/local/bin/yedekle simdi'
+          : 'Kayıt yok: yedekler üretimde yedek kapsayıcısıyla alınır (KURULUM.md, bölüm 9).',
   });
 
   // Bireysel sonuçlara erişen görevlerde iki aşamalı doğrulama zorunlu; kurmamış olanlar ilk girişte yönlendirilir.

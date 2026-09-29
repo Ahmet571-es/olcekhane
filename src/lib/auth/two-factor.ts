@@ -1,8 +1,13 @@
 import 'server-only';
-import { and, eq, gt, isNull, or, lt, sql } from 'drizzle-orm';
+import { and, count, eq, gt, isNull, ne, or, lt, sql } from 'drizzle-orm';
 import { cookies } from 'next/headers';
-import { db } from '@/db';
-import { authTokens, memberships, organizations, recoveryCodes, users } from '@/db/schema';
+import { db, type Exec, type Tx } from '@/db';
+import { authTokens, loginAttempts, memberships, organizations, recoveryCodes, users } from '@/db/schema';
+import { audit } from '@/lib/audit';
+import { sendEmail } from '@/lib/email/send';
+import { recoveryCodeUsedTemplate, secondStepFailedTemplate } from '@/lib/email/templates';
+import { rateLimit } from '@/lib/rate-limit';
+import { appUrl } from '@/lib/request';
 import { hashToken, randomToken } from './tokens';
 import { base32Decode, normalizeRecoveryCode, verifyTotp } from './totp';
 import { hashRecoveryCode, newRecoveryCodes, openSecret } from './two-factor-crypto';
@@ -15,14 +20,30 @@ export { sealSecret, openSecret, RECOVERY_CODE_COUNT } from './two-factor-crypto
  * görebilen platform yöneticileri ve rehber öğretmenler için zorunludur, diğer kullanıcılar için isteğe bağlıdır.
  */
 
-/** Kullanıcının kurtarma kodlarını yenileriyle değiştirir; yeni kodları (bir kez gösterilmek üzere) döndürür. */
-export async function replaceRecoveryCodes(userId: string): Promise<string[]> {
+/**
+ * Kullanıcının kurtarma kodlarını yenileriyle değiştirir; yeni kodları (bir kez gösterilmek üzere)
+ * döndürür. Süren bir işlem verilirse onun içinde çalışır.
+ */
+export async function replaceRecoveryCodes(userId: string, tx?: Tx): Promise<string[]> {
   const codes = newRecoveryCodes();
-  await db.transaction(async (tx) => {
-    await tx.delete(recoveryCodes).where(eq(recoveryCodes.userId, userId));
-    await tx.insert(recoveryCodes).values(codes.hashes.map((codeHash) => ({ userId, codeHash })));
-  });
+  const run = async (t: Tx) => {
+    await t.delete(recoveryCodes).where(eq(recoveryCodes.userId, userId));
+    await t.insert(recoveryCodes).values(codes.hashes.map((codeHash) => ({ userId, codeHash })));
+  };
+  if (tx) await run(tx);
+  else await db.transaction(run);
   return codes.display;
+}
+
+/**
+ * Kullanıcının bekleyen (şifresi doğrulanmış, kodu henüz girilmemiş) girişlerini geçersiz kılar:
+ * şifre değişince, iki aşamalı doğrulama kurulunca, kapatılınca ya da sıfırlanınca.
+ */
+export async function revokePendingLogins(userId: string, exec: Exec = db): Promise<void> {
+  await exec
+    .update(authTokens)
+    .set({ usedAt: new Date() })
+    .where(and(eq(authTokens.userId, userId), eq(authTokens.kind, 'login_2fa'), isNull(authTokens.usedAt)));
 }
 
 export async function unusedRecoveryCodes(userId: string): Promise<number> {
@@ -77,6 +98,59 @@ export async function verifySecondFactor(userId: string, input: string): Promise
   return used ? 'recovery' : null;
 }
 
+/**
+ * İkinci adım denemeleri için kesin sınır. Kod doğrulanmadan önce, tek bir atomik sayaçla sayılır;
+ * böylece aynı anda gönderilen istekler sınırı aşamaz. Hesap başına 15 dakikada 8, günde 40 deneme
+ * (başarılı denemeler dahil). Hatalı denemelere göre kullanıcıya gösterilen sınırlar ayrıca uygulanır.
+ */
+export async function secondFactorAttemptAllowed(userId: string): Promise<boolean> {
+  return (await rateLimit(`iki-asama-deneme:${userId}`, 8, 900)) && (await rateLimit(`iki-asama-gun:${userId}`, 40, 86400));
+}
+
+export type SecondFactorAttempt = { ok: true; method: 'totp' | 'recovery' } | { ok: false; message?: string; codeError?: string };
+
+/**
+ * İkinci adımı sınırlarıyla birlikte dener (girişte ve kodla doğrulanmamış bir oturumu doğrularken):
+ * hesap başına 15 dakikada 8 ve günde 20 hatalı deneme, IP başına 15 dakikada 30 hatalı deneme; ayrıca
+ * bütün denemeler atomik sayaçla sınırlıdır. Kod art arda yanlış girilirse şifre başkasının elinde
+ * olabilir: hesap sahibi e-postayla uyarılır (6 saatte bir).
+ */
+export async function attemptSecondFactor(userId: string, email: string, input: string, ip: string): Promise<SecondFactorAttempt> {
+  const key = `iki-asama:${email}`;
+  const since = new Date(Date.now() - 15 * 60_000);
+  const day = new Date(Date.now() - 86400_000);
+  const failed = (from: Date) => and(eq(loginAttempts.key, key), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, from));
+  const [[byKey], [byDay], [byIp]] = await Promise.all([
+    db.select({ n: count() }).from(loginAttempts).where(failed(since)),
+    db.select({ n: count() }).from(loginAttempts).where(failed(day)),
+    db
+      .select({ n: count() })
+      .from(loginAttempts)
+      .where(and(eq(loginAttempts.ip, ip), ne(loginAttempts.key, 'ogrenci-kodu'), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, since))),
+  ]);
+  if (byDay.n >= 20) return { ok: false, message: 'Bugün çok fazla hatalı kod girildi. Yarın tekrar deneyin ya da şifrenizi yenileyin.' };
+  if (byKey.n >= 8 || byIp.n >= 30 || !(await secondFactorAttemptAllowed(userId))) {
+    return { ok: false, message: 'Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar deneyin.' };
+  }
+  const method = await verifySecondFactor(userId, input);
+  await db.insert(loginAttempts).values({ key, ip, success: !!method });
+  if (method) return { ok: true, method };
+  if (byKey.n + 1 >= 3 && (await rateLimit(`iki-asama-uyari:${userId}`, 1, 6 * 3600))) {
+    const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, userId)).limit(1);
+    await sendEmail({ to: email, ...secondStepFailedTemplate(u?.fullName ?? '', appUrl('/sifremi-unuttum')) });
+  }
+  return { ok: false, codeError: 'Kod doğru değil ya da süresi geçmiş. Uygulamadaki güncel kodu yazın.' };
+}
+
+/** Kurtarma koduyla girildi: denetim kaydı ve hesap sahibine e-posta. Kalan kod sayısını döndürür. */
+export async function recoveryCodeUsed(userId: string, email: string): Promise<number> {
+  const left = await unusedRecoveryCodes(userId);
+  await audit({ actorUserId: userId, action: 'user.recovery_code_used', entity: 'user', entityId: userId, meta: { left } });
+  const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, userId)).limit(1);
+  await sendEmail({ to: email, ...recoveryCodeUsedTemplate(u?.fullName ?? '', left, appUrl('/hesap/iki-asamali')) });
+  return left;
+}
+
 /** Kurulum sırasında bekleyen sırla gelen kodu doğrular; doğruysa eşleşen adımı döndürür. */
 export function verifyPendingCode(sealedPending: string, input: string): number | null {
   return verifyTotp(base32Decode(openSecret(sealedPending)), input, null);
@@ -129,8 +203,21 @@ export async function pendingSecondStep(): Promise<{ id: string; userId: string;
   return { id: row.id, userId: row.userId, email: row.email, next };
 }
 
-/** İkinci adım tamamlandı ya da vazgeçildi: bekleyen giriş kapatılır. */
-export async function finishSecondStep(id: string | null): Promise<void> {
-  if (id) await db.update(authTokens).set({ usedAt: new Date() }).where(and(eq(authTokens.id, id), isNull(authTokens.usedAt)));
+/**
+ * İkinci adım tamamlandı ya da vazgeçildi: bekleyen giriş kapatılır. Bekleyen giriş bu çağrıyla
+ * kapandıysa true döner; aynı anda gelen ikinci bir istek (ya da şifre değişince geçersiz kılınmış bir
+ * giriş) false alır ve oturum açmamalıdır.
+ */
+export async function finishSecondStep(id: string | null): Promise<boolean> {
+  let consumed = false;
+  if (id) {
+    const rows = await db
+      .update(authTokens)
+      .set({ usedAt: new Date() })
+      .where(and(eq(authTokens.id, id), isNull(authTokens.usedAt), gt(authTokens.expiresAt, sql`now()`)))
+      .returning({ id: authTokens.id });
+    consumed = rows.length > 0;
+  }
   (await cookies()).delete(SECOND_STEP_COOKIE);
+  return consumed;
 }

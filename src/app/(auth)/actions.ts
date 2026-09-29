@@ -11,9 +11,9 @@ import { recordConsent } from '@/lib/consent';
 import { checkPasswordPolicy, dummyVerify, hashPassword, verifyPassword } from '@/lib/auth/password';
 import { createUserSession, destroyAllUserSessions, destroySession, getSession } from '@/lib/auth/session';
 import { hashToken, randomToken } from '@/lib/auth/tokens';
-import { finishSecondStep, pendingSecondStep, startSecondStep, unusedRecoveryCodes, verifySecondFactor } from '@/lib/auth/two-factor';
+import { attemptSecondFactor, finishSecondStep, pendingSecondStep, recoveryCodeUsed, revokePendingLogins, startSecondStep } from '@/lib/auth/two-factor';
 import { sendEmail } from '@/lib/email/send';
-import { passwordResetTemplate, recoveryCodeUsedTemplate, secondStepFailedTemplate, verifyEmailTemplate } from '@/lib/email/templates';
+import { passwordResetTemplate, verifyEmailTemplate } from '@/lib/email/templates';
 import { rateLimit } from '@/lib/rate-limit';
 import { appUrl, clientIpBucket } from '@/lib/request';
 import { homeFor, safeNextPath } from '@/lib/auth/home';
@@ -131,7 +131,9 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
       // Öğrenci kodu denemeleri (okulda aynı IP’den) yetişkin girişlerini kilitlemesin.
       .where(and(eq(loginAttempts.ip, ip), ne(loginAttempts.key, 'ogrenci-kodu'), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, since))),
   ]);
-  if (byKey.n >= 8 || byIp.n >= 30) {
+  // Hatalı denemeler yukarıda sayılır ama sayım ile kayıt arasında zaman vardır; aynı anda gönderilen
+  // istekler bu arayı kullanamasın diye hesap başına bütün denemeler ayrıca atomik olarak sınırlanır.
+  if (byKey.n >= 8 || byIp.n >= 30 || !(await rateLimit(`giris-deneme:${email}`, 10, 900))) {
     return { message: 'Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar deneyin ya da şifrenizi yenileyin.', values };
   }
 
@@ -168,44 +170,17 @@ export async function secondStepAction(_: FormState, formData: FormData): Promis
   if (!pending) return { message: 'Girişin süresi doldu. Lütfen e-posta ve şifrenizle yeniden giriş yapın.' };
   const code = String(formData.get('code') ?? '').trim();
   if (!code) return { errors: { code: 'Kodu yazın.' } };
-  const ip = await clientIpBucket();
-  const key = `iki-asama:${pending.email}`;
-  // Şifresi bilinen bir hesapta kod tahminini sınırlamak için: hesap başına 15 dakikada 8 ve günde 20,
-  // IP başına 15 dakikada 30 hatalı deneme.
-  const since = new Date(Date.now() - 15 * 60_000);
-  const day = new Date(Date.now() - 86400_000);
-  const failed = (from: Date) => and(eq(loginAttempts.key, key), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, from));
-  const [[byKey], [byDay], [byIp]] = await Promise.all([
-    db.select({ n: count() }).from(loginAttempts).where(failed(since)),
-    db.select({ n: count() }).from(loginAttempts).where(failed(day)),
-    db
-      .select({ n: count() })
-      .from(loginAttempts)
-      .where(and(eq(loginAttempts.ip, ip), ne(loginAttempts.key, 'ogrenci-kodu'), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, since))),
-  ]);
-  if (byDay.n >= 20) return { message: 'Bugün çok fazla hatalı kod girildi. Yarın tekrar deneyin ya da şifrenizi yenileyin.' };
-  if (byKey.n >= 8 || byIp.n >= 30) return { message: 'Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar deneyin.' };
+  const attempt = await attemptSecondFactor(pending.userId, pending.email, code, await clientIpBucket());
+  if (!attempt.ok) return attempt.codeError ? { errors: { code: attempt.codeError } } : { message: attempt.message };
 
-  const method = await verifySecondFactor(pending.userId, code);
-  await db.insert(loginAttempts).values({ key, ip, success: !!method });
-  if (!method) {
-    // Şifre doğru girilip kod tekrar tekrar yanlışsa şifre başkasının elinde olabilir: sahibini uyar (6 saatte bir).
-    if (byKey.n + 1 >= 3 && (await rateLimit(`iki-asama-uyari:${pending.userId}`, 1, 6 * 3600))) {
-      const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, pending.userId)).limit(1);
-      await sendEmail({ to: pending.email, ...secondStepFailedTemplate(u?.fullName ?? '', appUrl('/sifremi-unuttum')) });
-    }
-    return { errors: { code: 'Kod doğru değil ya da süresi geçmiş. Uygulamadaki güncel kodu yazın.' } };
-  }
-
-  await finishSecondStep(pending.id);
+  // Bekleyen giriş yalnızca bir kez kullanılabilir: aynı anda gelen ikinci istek ya da bu arada şifre
+  // değişmişse (bekleyen girişler geçersiz kılınır) oturum açılmaz.
+  if (!(await finishSecondStep(pending.id))) return { message: 'Girişin süresi doldu. Lütfen e-posta ve şifrenizle yeniden giriş yapın.' };
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, pending.userId));
-  await createUserSession(pending.userId);
+  await createUserSession(pending.userId, { twoFactor: true });
   await setHintCookie();
-  if (method === 'recovery') {
-    const left = await unusedRecoveryCodes(pending.userId);
-    await audit({ actorUserId: pending.userId, action: 'user.recovery_code_used', entity: 'user', entityId: pending.userId, meta: { left } });
-    const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, pending.userId)).limit(1);
-    await sendEmail({ to: pending.email, ...recoveryCodeUsedTemplate(u?.fullName ?? '', left, appUrl('/hesap/iki-asamali')) });
+  if (attempt.method === 'recovery') {
+    const left = await recoveryCodeUsed(pending.userId, pending.email);
     redirect(`/hesap/iki-asamali?kurtarma=${left}`);
   }
   const [u] = await db.select({ id: users.id, role: users.role }).from(users).where(eq(users.id, pending.userId)).limit(1);
@@ -278,8 +253,16 @@ export async function resetPasswordAction(_: FormState, formData: FormData): Pro
   const policy = checkPasswordPolicy(password, row.email ?? undefined);
   if (policy) return { errors: { password: policy } };
 
+  // Bağlantı tek kullanımlıktır: aynı anda gelen ikinci istek şifreyi yeniden değiştiremez.
+  const [used] = await db
+    .update(authTokens)
+    .set({ usedAt: new Date() })
+    .where(and(eq(authTokens.id, row.id), isNull(authTokens.usedAt)))
+    .returning({ id: authTokens.id });
+  if (!used) return { message: 'Bağlantının süresi dolmuş ya da daha önce kullanılmış. Yeni bir bağlantı isteyin.' };
   await db.update(users).set({ passwordHash: await hashPassword(password) }).where(eq(users.id, row.userId));
-  await db.update(authTokens).set({ usedAt: new Date() }).where(eq(authTokens.id, row.id));
+  // Eski şifreyle başlatılmış, kodu henüz girilmemiş girişler de geçersiz olur.
+  await revokePendingLogins(row.userId);
   await destroyAllUserSessions(row.userId);
   await audit({ actorUserId: row.userId, action: 'user.password_reset', entity: 'user', entityId: row.userId });
   // E-posta kutusuna erişim tek başına yetmesin: iki aşamalı doğrulama açıksa oturum ikinci adımdan sonra açılır.

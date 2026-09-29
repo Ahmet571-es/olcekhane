@@ -27,7 +27,11 @@ async function setSessionCookie(token: string, expiresAt: Date) {
   });
 }
 
-export async function createUserSession(userId: string): Promise<void> {
+/**
+ * Yetişkin oturumu açar. `twoFactor`: oturum girişin ikinci adımı (kod ya da kurtarma kodu)
+ * doğrulanarak açılıyor; yalnızca bu durumda oturum bireysel sonuçlara erişebilir.
+ */
+export async function createUserSession(userId: string, opts: { twoFactor?: boolean } = {}): Promise<void> {
   const token = randomToken();
   const expiresAt = new Date(Date.now() + USER_SESSION_DAYS * 86400_000);
   await db.insert(sessions).values({
@@ -37,8 +41,18 @@ export async function createUserSession(userId: string): Promise<void> {
     expiresAt,
     ip: await clientIp(),
     userAgent: await userAgent(),
+    twoFactorAt: opts.twoFactor ? new Date() : null,
   });
   await setSessionCookie(token, expiresAt);
+}
+
+/**
+ * Oturum iki aşamalı mı: kullanıcının iki aşamalı doğrulaması açık ve bu oturumda ikinci adım,
+ * doğrulamanın açıldığı (ya da yeni cihaza taşındığı) andan sonra doğrulanmış olmalı. Şifreyle açılmış
+ * eski bir oturum, kullanıcı sonradan iki aşamalı doğrulamayı açınca kendiliğinden yükselmez.
+ */
+export function sessionHasTwoFactor(totpEnabledAt: Date | null, twoFactorAt: Date | null): boolean {
+  return !!totpEnabledAt && !!twoFactorAt && twoFactorAt.getTime() >= totpEnabledAt.getTime();
 }
 
 export async function createStudentSession(studentId: string): Promise<void> {
@@ -61,7 +75,9 @@ export type SessionUser = {
   fullName: string;
   role: 'parent' | 'staff' | 'admin';
   emailVerified: boolean;
-  /** İki aşamalı doğrulama açık mı (açıksa bu oturum ikinci adımla açılmıştır). */
+  /** Kullanıcının hesabında iki aşamalı doğrulama açık mı. */
+  twoFactorEnabled: boolean;
+  /** Bu oturum ikinci adım doğrulanarak mı açıldı (bireysel verilere erişim buna bakar). */
   twoFactor: boolean;
 };
 
@@ -87,6 +103,7 @@ export const getSession = cache(async (): Promise<CurrentSession | null> => {
       id: sessions.id,
       kind: sessions.kind,
       lastSeenAt: sessions.lastSeenAt,
+      twoFactorAt: sessions.twoFactorAt,
       userId: users.id,
       email: users.email,
       fullName: users.fullName,
@@ -123,7 +140,8 @@ export const getSession = cache(async (): Promise<CurrentSession | null> => {
         fullName: row.fullName!,
         role: row.role!,
         emailVerified: !!row.emailVerifiedAt,
-        twoFactor: !!row.totpEnabledAt,
+        twoFactorEnabled: !!row.totpEnabledAt,
+        twoFactor: sessionHasTwoFactor(row.totpEnabledAt, row.twoFactorAt),
       },
     };
   }

@@ -5,6 +5,9 @@ import { LEGAL_DOCS } from '@/content/legal';
 import { allGuides } from '@/content/rehber';
 import { siteUrl } from '@/lib/config';
 
+// APP_URL sunucu çalışırken okunur (derleme anında değil).
+export const dynamic = 'force-dynamic';
+
 /**
  * Site haritası yalnızca herkese açık, dizine eklenmesi istenen sayfaları içerir.
  * Güncelleme tarihi yalnızca gerçekten bilinen sayfalarda (rehber yazıları) verilir.

@@ -2,8 +2,8 @@ import 'server-only';
 
 /**
  * Şirket bilgileri: e-ticaret ve KVKK mevzuatı gereği sitede gösterilmesi zorunlu alanlar.
- * Ortam değişkenlerinden okunur ve derleme anında sayfalara yazılır; böylece tanıtım sayfaları
- * veritabanına ihtiyaç duymadan statik olarak sunulur. Bilgiler değişince imaj yeniden derlenmelidir.
+ * Sunucu çalışırken ortam değişkenlerinden okunur (sayfalar istek anında üretilir, bkz. app/layout.tsx);
+ * .env değişince kapsayıcının yeniden başlatılması yeterlidir.
  */
 export interface CompanyInfo {
   legalName: string;

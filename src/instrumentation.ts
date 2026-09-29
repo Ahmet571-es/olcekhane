@@ -2,6 +2,10 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
   if (process.env.NEXT_PHASE === 'phase-production-build') return;
 
+  // Sorgu hataları kapsayıcı günlüğüne parametreleriyle (e-posta, IP gibi) yazılmasın.
+  const { installLogSanitizer } = await import('./lib/log');
+  installLogSanitizer();
+
   // Test tanımlarını ve hukuki metinleri veritabanına eşitle.
   if (process.env.SYNC_ON_START !== 'false') {
     try {

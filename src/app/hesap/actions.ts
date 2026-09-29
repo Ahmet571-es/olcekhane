@@ -61,12 +61,13 @@ export async function changePasswordAction(_: AccountFormState, formData: FormDa
   if (current === next) return { errors: { next: 'Yeni şifre eskisiyle aynı olamaz.' } };
 
   await db.update(users).set({ passwordHash: await hashPassword(next) }).where(eq(users.id, s.user.id));
-  // Bu cihazdaki oturum açık kalır; diğer bütün oturumlar ve bekleyen şifre yenileme bağlantıları geçersiz olur.
+  // Bu cihazdaki oturum açık kalır; diğer bütün oturumlar, bekleyen şifre yenileme bağlantıları ve eski
+  // şifreyle başlatılıp kodu henüz girilmemiş girişler geçersiz olur.
   await db.delete(sessions).where(and(eq(sessions.userId, s.user.id), ne(sessions.id, s.sessionId)));
   await db
     .update(authTokens)
     .set({ usedAt: new Date() })
-    .where(and(eq(authTokens.userId, s.user.id), eq(authTokens.kind, 'password_reset'), isNull(authTokens.usedAt)));
+    .where(and(eq(authTokens.userId, s.user.id), inArray(authTokens.kind, ['password_reset', 'login_2fa']), isNull(authTokens.usedAt)));
   await audit({ actorUserId: s.user.id, action: 'user.password_change', entity: 'user', entityId: s.user.id });
   await sendEmail({ to: s.user.email, ...passwordChangedTemplate(s.user.fullName, appUrl('/sifremi-unuttum')) });
   revalidatePath('/hesap');
@@ -184,7 +185,6 @@ export async function closeAccountAction(_: AccountFormState, formData: FormData
       emailVerifiedAt: null,
       passwordHash: await hashPassword(randomToken()),
       totpSecret: null,
-      totpPendingSecret: null,
       totpEnabledAt: null,
       totpLastStep: null,
     })

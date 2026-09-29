@@ -80,7 +80,9 @@ Kişisel veriler yurt dışına aktarılmaz.
 - Hesap ve öğrenci verileri: hesap açık kaldığı sürece. Hesap kapatıldığında ya da veli silinmesini istediğinde, yasal saklama zorunluluğu olmayan veriler en geç 30 gün içinde silinir veya anonimleştirilir.
 - Açık rıza geri alındığında: ilgili öğrencinin ölçme verileri en geç 30 gün içinde silinir; rıza sonradan yeniden verilse de bu veriler kullanılmaz.
 - Açık rıza ve rızanın geri alınmasına ait kayıtlar: rızanın kanıtı olarak, öğrenci profili silindikten sonra 2 yıl (bu süre boyunca erişime kapalı tutulur).
+- Aydınlatma metninin okunduğuna ve kullanım koşullarının kabul edildiğine dair kayıtlar (tarih, IP adresi ve tarayıcı bilgisiyle): hesap kapatıldıktan sonra 2 yıl.
 - Yarıda bırakılan testlerin cevapları: son cevaptan itibaren 90 gün.
+- Okul ekibine gönderilen davetler (davet edilenin e-posta adresi): davet sonuçlandıktan ya da süresi dolduktan sonra, davet tarihinden itibaren 90 gün.
 - E-posta gönderim kayıtları (alıcı ve konu): 90 gün.
 - İletişim formu mesajları: 1 yıl.
 - İşlem güvenliği kayıtları (giriş denemeleri, denetim kayıtları): en fazla 2 yıl.
@@ -177,11 +179,13 @@ Bu koşullara Türkiye Cumhuriyeti hukuku uygulanır. Tüketici işlemlerinden d
 
 {{company.legalName}} · {{company.address}} · {{company.email}}`;
 
-const cookiePolicy = `Ölçekhane yalnızca platformun çalışması için zorunlu olan tek bir çerez kullanır.
+const cookiePolicy = `Ölçekhane yalnızca platformun çalışması için zorunlu olan çerezleri kullanır.
 
 | Çerez | Amaç | Süre |
 |---|---|---|
 | olc_oturum | Giriş yaptığınızda oturumunuzu açık tutar. | Veli ve personel için 30 gün, öğrenci için 8 saat ya da çıkış yapana kadar |
+| olc_iki_asama | İki aşamalı doğrulama açıksa, şifrenizi girdikten sonra kodu girene kadar girişinizi bekletir. | En fazla 10 dakika |
+| olc_var | Sitenin herkese açık sayfalarında "Giriş" yerine "Hesabım" bağlantısını göstermek için giriş yaptığınızı belirtir; kişisel bilgi içermez. | 30 gün ya da çıkış yapana kadar |
 
 Reklam, izleme ya da üçüncü taraf analiz çerezi kullanmıyoruz. Bu nedenle çerez onay penceresi göstermiyoruz. İleride zorunlu olmayan bir çerez eklenirse, kullanılmadan önce onayınız istenecektir.`;
 

@@ -31,6 +31,11 @@ Next.js 16 (App Router, sunucu eylemleri), React 19, TypeScript, PostgreSQL 18 v
 Tailwind CSS 4, three.js (tanıtım sayfalarındaki 3B sahneler). Üretimde Docker, Caddy (HTTPS) ve
 PostgreSQL.
 
+Sayfalar istek anında üretilir: site adresi (`APP_URL`), dizine ekleme ayarı (`ALLOW_INDEXING`) ve şirket
+bilgileri (`COMPANY_*`) sunucu çalışırken ortam değişkenlerinden okunur. Derleme için veritabanı ya da
+`.env` gerekmez; veritabanı bağlantısı ilk sorguda kurulur. Yalnızca paylaşım görselleri derlemede
+üretilir.
+
 ```
 src/app          sayfalar ve sunucu eylemleri ((site) tanıtım, (auth) giriş ve veli onayı,
                  panel veli, okul okul paneli, ogrenci öğrenci, uygulama test ekranları,
@@ -105,3 +110,8 @@ değişiklik için sürüm numarasını artırın (sunucu günlüğünde uyarı 
   aşamalı doğrulama sırları buna bağlıdır.
 - Uygulama yalnızca Caddy arkasında çalışmalıdır: istemcinin IP adresi `X-Forwarded-For` başlığının
   son değerinden okunur ve Caddy bu başlığı gerçek adresle değiştirir.
+- İki aşamalı doğrulama oturum düzeyindedir: bir oturum, ikinci adımı kullanıcının doğrulamayı açtığı
+  andan sonra doğrulanmışsa (`sessions.two_factor_at`) iki aşamalı sayılır. Bekleyen kurulum sırrı da
+  oturuma bağlıdır; şifreyi bilen başka bir oturum onu göremez.
+- Veritabanı sorgu hataları (Drizzle, iletide parametreleri taşır) günlüğe parametresiz yazılır
+  (`src/lib/log.ts`; `console.error` sunucu açılışında sarılır).

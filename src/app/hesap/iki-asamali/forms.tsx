@@ -3,7 +3,15 @@
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
 import { Field, FormMessage, SubmitButton, describedBy } from '@/components/ui/form';
-import { cancelSetupAction, confirmSetupAction, disableAction, regenerateCodesAction, type TwoFactorState } from './actions';
+import {
+  cancelSetupAction,
+  confirmSetupAction,
+  disableAction,
+  regenerateCodesAction,
+  startSetupAction,
+  verifySessionAction,
+  type TwoFactorState,
+} from './actions';
 
 /** Kurtarma kodları yalnızca üretildikleri anda gösterilir. */
 function RecoveryCodes({ codes, next }: { codes: string[]; next?: string }) {
@@ -48,6 +56,82 @@ function Hidden({ zorunlu, next }: { zorunlu: boolean; next?: string }) {
       {zorunlu && <input type="hidden" name="zorunlu" value="1" />}
       {next && <input type="hidden" name="sonra" value={next} />}
     </>
+  );
+}
+
+/**
+ * Kurulumu (ya da yeni cihaza taşımayı) başlatma formu: şifre, taşımada ayrıca şu anki cihazdaki kod
+ * ya da bir kurtarma kodu istenir.
+ */
+export function StartSetupForm({ moving, zorunlu, next }: { moving: boolean; zorunlu: boolean; next?: string }) {
+  const [state, action] = useActionState<TwoFactorState, FormData>(startSetupAction, {});
+  const e = state.errors ?? {};
+  const id = moving ? 'tasi' : 'baslat';
+  return (
+    <form action={action} className="flex flex-col gap-4" noValidate>
+      <Hidden zorunlu={zorunlu} next={next} />
+      <FormMessage ok={state.ok} message={state.message} />
+      <Field id={`${id}-password`} label="Şifreniz" error={e.password}>
+        <input
+          id={`${id}-password`}
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          className="input max-w-sm"
+          aria-invalid={!!e.password}
+          aria-describedby={describedBy(`${id}-password`, e.password)}
+        />
+      </Field>
+      {moving && (
+        <Field id={`${id}-code`} label="Şu anki cihazdaki kod ya da bir kurtarma kodu" error={e.code}>
+          <input
+            id={`${id}-code`}
+            name="code"
+            autoComplete="one-time-code"
+            maxLength={16}
+            required
+            className="input max-w-[16rem] font-mono tracking-widest"
+            aria-invalid={!!e.code}
+            aria-describedby={describedBy(`${id}-code`, e.code)}
+          />
+        </Field>
+      )}
+      <div>
+        <SubmitButton pendingText="Hazırlanıyor…" className={moving ? 'btn btn-secondary' : 'btn btn-primary'}>
+          {moving ? 'Yeni cihazda kur' : 'Kurulumu başlat'}
+        </SubmitButton>
+      </div>
+    </form>
+  );
+}
+
+/** Kodla doğrulanmamış bir oturumu doğrulama formu. */
+export function VerifySessionForm({ zorunlu, next }: { zorunlu: boolean; next?: string }) {
+  const [state, action] = useActionState<TwoFactorState, FormData>(verifySessionAction, {});
+  const e = state.errors ?? {};
+  return (
+    <form action={action} className="flex flex-col gap-4" noValidate>
+      <Hidden zorunlu={zorunlu} next={next} />
+      <FormMessage ok={state.ok} message={state.message} />
+      <Field id="dogrula-code" label="Doğrulama kodu ya da kurtarma kodu" error={e.code}>
+        <input
+          id="dogrula-code"
+          name="code"
+          autoComplete="one-time-code"
+          maxLength={16}
+          required
+          className="input max-w-[16rem] font-mono tracking-widest"
+          aria-invalid={!!e.code}
+          aria-describedby={describedBy('dogrula-code', e.code)}
+        />
+      </Field>
+      <div>
+        <SubmitButton pendingText="Doğrulanıyor…" className="btn btn-primary">
+          Oturumu doğrula
+        </SubmitButton>
+      </div>
+    </form>
   );
 }
 

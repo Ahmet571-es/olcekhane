@@ -50,6 +50,13 @@
       "when": 1790653622654,
       "tag": "0006_iki_asamali_dogrulama",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790661708673,
+      "tag": "0007_oturum_dogrulama",
+      "breakpoints": true
     }
   ]
 }

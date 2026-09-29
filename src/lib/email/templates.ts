@@ -119,15 +119,17 @@ export function accountClosedTemplate(name: string, deletedProfiles: number) {
   return { subject, html, text };
 }
 
-export function twoFactorChangedTemplate(p: { name: string; change: 'enabled' | 'disabled' | 'reset' | 'codes'; link: string }) {
-  const subject =
-    p.change === 'enabled'
-      ? 'İki aşamalı doğrulama açıldı'
-      : p.change === 'codes'
-        ? 'Kurtarma kodlarınız yenilendi'
-        : 'İki aşamalı doğrulama kapatıldı';
+export function twoFactorChangedTemplate(p: { name: string; change: 'enabled' | 'moved' | 'disabled' | 'reset' | 'codes'; link: string }) {
+  const subject = {
+    enabled: 'İki aşamalı doğrulama açıldı',
+    moved: 'İki aşamalı doğrulama yeni bir cihaza taşındı',
+    codes: 'Kurtarma kodlarınız yenilendi',
+    disabled: 'İki aşamalı doğrulama kapatıldı',
+    reset: 'İki aşamalı doğrulama kapatıldı',
+  }[p.change];
   const what = {
     enabled: 'Ölçekhane hesabınızda iki aşamalı doğrulama açıldı. Bundan sonra girişte şifrenizin yanında kimlik doğrulama uygulamanızdaki kodu da yazacaksınız. Diğer cihazlardaki oturumlarınız kapatıldı.',
+    moved: 'Ölçekhane hesabınızın iki aşamalı doğrulaması yeni bir cihaza taşındı. Eski cihazdaki kodlar ve eski kurtarma kodları artık geçerli değil; diğer cihazlardaki oturumlarınız kapatıldı.',
     disabled: 'Ölçekhane hesabınızda iki aşamalı doğrulama kapatıldı. Girişte artık yalnızca şifreniz istenecek.',
     reset: 'Ölçekhane hesabınızın iki aşamalı doğrulaması platform yöneticisi tarafından sıfırlandı ve oturumlarınız kapatıldı. Bir sonraki girişinizde yeniden kurmanız istenecek.',
     codes: 'Ölçekhane hesabınız için yeni kurtarma kodları oluşturuldu; eski kodlar artık geçerli değil.',

@@ -278,13 +278,17 @@ nano .env
 | `BACKUP_TIME` | Yedek saati, Türkiye saatiyle (varsayılan `03:15`) |
 
 İçinde `#` geçen bir değeri tırnak içine yazın (`COMPANY_ADDRESS="..."`). `.env` değiştikten sonra
-`docker compose up -d` çalıştırın; değişen kapsayıcılar yeniden oluşturulur.
+`docker compose up -d` çalıştırın; değişen kapsayıcılar yeniden oluşturulur. Sayfalar istek anında
+üretildiği için şirket bilgileri, site adresi ve `ALLOW_INDEXING` yeniden derleme gerekmeden
+aydınlatma metnine, altbilgiye, `robots.txt` ve site haritasına yansır.
 
 ### 5.3 DNS
 
 `olcekhane.com` ve `www.olcekhane.com` için sunucunun IPv4 adresini gösteren **A** kayıtları ekleyin.
-Sunucunuzda IPv6 çalışmıyorsa AAAA kaydı eklemeyin; yoksa sertifika alınamayabilir. Kaydın yayıldığını
-denetleyin: `dig +short olcekhane.com` (komut yoksa `sudo apt install -y bind9-dnsutils`).
+**AAAA (IPv6) kaydı eklemeyin:** kurulum yalnızca IPv4 ile yayın yapar. IPv6 bağlantıları kapsayıcılara
+Docker'ın ağ geçidi üzerinden ulaşsaydı bütün IPv6 ziyaretçileri tek bir IP adresinden geliyormuş gibi
+görünür, hatalı giriş sınırları hepsine birlikte uygulanırdı. Kaydın yayıldığını denetleyin:
+`dig +short olcekhane.com` (komut yoksa `sudo apt install -y bind9-dnsutils`).
 
 ### 5.4 Başlatma
 
@@ -309,8 +313,13 @@ docker compose exec app node dist/create-admin.mjs
 
 E-posta adresi ve şifre (en az 12 karakter; yazarken ekranda görünmez) sorulur. Sonra
 `https://olcekhane.com/giris` adresinden girin: iki aşamalı doğrulamayı kurmanız istenir (Google
-Authenticator, Microsoft Authenticator, 2FAS gibi bir uygulamayla). Kurulumun sonunda gösterilen 10
-kurtarma kodunu parola yöneticisine kaydedin.
+Authenticator, Microsoft Authenticator, 2FAS gibi bir uygulamayla). Kurulum şifrenizi bir kez daha
+ister ve yalnızca başlattığınız oturumda görünür. Kurulumun sonunda gösterilen 10 kurtarma kodunu
+parola yöneticisine kaydedin.
+
+Bireysel sonuçlara ve yönetim paneline yalnızca kodla doğrulanmış oturumlar erişir. Kodla
+doğrulanmamış bir oturum (ör. iki aşamalı doğrulama başka bir cihazda kurulurken açık kalmış bir
+oturum) "Bu oturumu doğrulayın" sayfasına yönlendirilir.
 
 En az iki yönetici hesabı açın (aynı komutla, herkes kendi e-postasıyla): biri telefonunu ve kurtarma
 kodlarını kaybederse diğeri **Yönetim → Kullanıcılar** sayfasından onun iki aşamalı doğrulamasını
@@ -364,7 +373,10 @@ Bu komut şifreyi de yeniler ve hesabın bütün oturumlarını kapatır.
 
 `yedek` kapsayıcısı her gün `BACKUP_TIME` saatinde veritabanının sıkıştırılmış bir kopyasını
 `/srv/olcekhane/uygulama/yedekler` klasörüne yazar ve `BACKUP_KEEP_DAYS` günü dolan yedekleri siler.
-Dosyaları yalnızca root okuyabilir.
+Dosyaları yalnızca root okuyabilir. Eski yedekler yalnızca yeni yedek başarıyla alındıktan sonra silinir
+ve en yeni yedek hiçbir zaman silinmez: yedek art arda alınamazsa eldeki yedekler kaybolmaz. Her çalışma
+veritabanına kaydedilir; **Yönetim → Genel bakış** sayfasındaki hazırlık listesi son başarılı yedeği
+gösterir ve 36 saatten eskiyse "Eksik" olarak işaretler.
 
 ```bash
 sudo ls -lh yedekler/                                       # yedekler
@@ -385,36 +397,55 @@ bir veritabanında öğrenci giriş kodları ve iki aşamalı doğrulama kurulum
 
 Sunucunun diski ya da kendisi kaybolursa yedekler de gider. `sunucu/yedek-kopyala.sh` betiği her gün
 yedekleri **age** ile şifreler ve Türkiye'deki başka bir sunucuya gönderir. Şifreleme bir açık anahtarla
-yapılır; yedeği açacak gizli anahtar sunucuda bulunmaz. Sunucudan silinen yedeğin kopyası karşı tarafta
-da silinir, böylece saklama süresi her yerde aynı kalır.
+yapılır; yedeği açacak gizli anahtar sunucuda bulunmaz. Karşı taraftaki kopyalar da en fazla 28 gün
+saklanır.
 
 1. **Anahtar çifti** (kendi bilgisayarınızda, sunucuda değil):
    `age-keygen -o olcekhane-yedek.key`. Çıktıdaki `age1…` ile başlayan açık anahtarı not edin; anahtar
    dosyasını parola yöneticisine ve çevrim dışı bir yere kaydedin.
-2. **Hedef:** Türkiye'de, SSH ile bağlanılabilen ve `rsync` kurulu bir depolama sunucusunda bir kullanıcı
-   ve klasör (ör. `yedek@yedek.ornek.com.tr:olcekhane/`).
-3. **Sunucuda:**
+2. **Sunucuda bir SSH anahtarı:**
 
    ```bash
    sudo apt install -y age rsync
    sudo ssh-keygen -t ed25519 -N '' -C olcekhane-yedek -f /root/.ssh/olcekhane_yedek
-   sudo cat /root/.ssh/olcekhane_yedek.pub      # hedefteki kullanıcının ~/.ssh/authorized_keys dosyasına ekleyin
-   sudo ssh -i /root/.ssh/olcekhane_yedek yedek@yedek.ornek.com.tr true   # sunucu anahtarını bir kez onaylayın
-   sudo nano /etc/olcekhane.conf                # YEDEK_ALICI, YEDEK_HEDEF, YEDEK_SSH_ANAHTARI (4.3'te kuruldu)
+   sudo cat /root/.ssh/olcekhane_yedek.pub
+   ```
+
+3. **Depolama sunucusunda** (Türkiye'de, `rsync` kurulu) yalnızca yedeğe ayrılmış bir kullanıcı açın ve
+   anahtarı **yalnızca yazabilecek, silemeyecek** biçimde tanımlayın. Böylece Ölçekhane sunucusu ele
+   geçirilse bile karşıdaki kopyalar silinemez; süresi dolanları depolama sunucusundaki bir görev siler:
+
+   ```bash
+   sudo adduser --disabled-password --comment '' yedek
+   sudo -u yedek mkdir -p -m 700 /home/yedek/olcekhane /home/yedek/.ssh
+   sudo -u yedek nano /home/yedek/.ssh/authorized_keys
+   #   tek satır (sondaki anahtar, 2. adımdaki çıktı):
+   #   command="/usr/bin/rrsync -wo -no-del /home/yedek/olcekhane",restrict ssh-ed25519 AAAA… olcekhane-yedek
+   sudo crontab -u yedek -e
+   #   30 6 * * * find /home/yedek/olcekhane -maxdepth 1 -name 'olcekhane-*.dump.age' -mtime +27 -delete
+   ```
+
+4. **Ölçekhane sunucusunda** ayarları yazın ve betiği kurun:
+
+   ```bash
+   sudo ssh -i /root/.ssh/olcekhane_yedek yedek@yedek.ornek.com.tr   # sunucu anahtarını bir kez onaylayın (komutun reddedilmesi beklenir)
+   sudo nano /etc/olcekhane.conf      # YEDEK_ALICI=age1…, YEDEK_HEDEF=yedek@yedek.ornek.com.tr:, YEDEK_KARSIDA_SIL=hayir
    sudo install -m 700 sunucu/yedek-kopyala.sh /usr/local/sbin/olcekhane-yedek-kopyala
-   sudo olcekhane-yedek-kopyala                 # ilk kopya
+   sudo olcekhane-yedek-kopyala       # ilk kopya
    sudo install -m 644 sunucu/olcekhane.cron /etc/cron.d/olcekhane
    ```
 
 Betik her gün 04:30'da çalışır (sunucu saatiyle); kaydı `/var/log/olcekhane-yedek-kopya.log`
-dosyasındadır. Şifreli disk açık değilse ya da hiç yedek yoksa hiçbir şey yapmaz, karşıdaki kopyalara
-dokunmaz. S3 uyumlu bir depolama kullanacaksanız betiğin son satırındaki `rsync` yerine `rclone sync`
-kullanabilirsiniz.
+dosyasındadır. Şifreli disk açık değilse ya da hiç yedek yoksa hiçbir şey yapmaz. Karşı sunucuda
+yukarıdaki kısıtlamayı yapamıyorsanız `YEDEK_KARSIDA_SIL=evet` bırakın ve `YEDEK_HEDEF` olarak bir
+klasör verin (`yedek@yedek.ornek.com.tr:olcekhane/`): o zaman süresi dolan kopyaları bu betik siler.
+Bu kipte de yalnızca `olcekhane-*.dump.age` dosyalarına dokunulur, saklama süresi içindeki kopyalar
+(yeni kurulmuş bir sunucuda karşılığı olmasa bile) silinmez ve bir çalışmada en fazla 10 dosya silinir.
 
 Şifreli disk kullanmıyorsanız ayar dosyasını `sudo install -m 644 sunucu/olcekhane.conf.example
 /etc/olcekhane.conf` ile kurun ve içine `VERI_BAGLAMA=/`,
-`YEDEK_KAYNAK=/srv/olcekhane/uygulama/yedekler`, `YEDEK_AYNA=/srv/olcekhane/yedek-kopya` satırlarını
-ekleyin.
+`YEDEK_KAYNAK=/srv/olcekhane/uygulama/yedekler`, `YEDEK_AYNA=/srv/olcekhane/yedek-kopya` ve
+`UYGULAMA_ENV=/srv/olcekhane/uygulama/.env` satırlarını ekleyin.
 
 Karşıdaki bir kopyayı açmak için (kendi bilgisayarınızda):
 `age -d -i olcekhane-yedek.key -o olcekhane-20261001-031500.dump olcekhane-20261001-031500.dump.age`.
@@ -452,7 +483,8 @@ veri ihlali prosedürünüze göre değerlendirin ([bölüm 13](#13-kvkk-notlar�
 
 Yeni sunucuyu bu rehberle kurun, eski `.env` dosyasını (özellikle aynı `APP_SECRET` değerini) kullanın,
 son yedeği [9.5](#95-gerçek-geri-yükleme)'teki gibi geri yükleyin ve DNS kaydını yeni sunucuya çevirin.
-Eski sunucudaki diskleri ve yedekleri sağlayıcının güvenli silme yöntemiyle yok edin.
+Sunucu dışı kopyalamayı ([9.3](#93-sunucu-dışı-şifreli-kopya)) geri yüklemeden sonra kurun. Eski
+sunucudaki diskleri ve yedekleri sağlayıcının güvenli silme yöntemiyle yok edin.
 
 ## 10. Güncelleme
 
@@ -480,13 +512,14 @@ saatte yeniden başlatıp diski açın).
   ulaşılamıyorsa `503` döner; başka bilgi vermez. Sunucu yeniden başlayıp şifreli disk açılmayı
   beklerken de bu adres yanıt vermez ve uyarı gelir.
 - Disk: `df -h / /srv/olcekhane` (yüzde 80'i geçmesin).
-- Hazırlık listesi: temizlik görevi son 36 saatte başarıyla çalışmadıysa ya da `SMTP_URL` tanımlı
-  değilse "Eksik" gösterir. Gönderilemeyen e-postalar **Yönetim → E-postalar** sayfasında görünür.
+- Hazırlık listesi: temizlik görevi ya da veritabanı yedeği son 36 saatte başarıyla çalışmadıysa ya da
+  `SMTP_URL` tanımlı değilse "Eksik" gösterir. Gönderilemeyen e-postalar **Yönetim → E-postalar**
+  sayfasında görünür. Sunucu dışı kopyanın kaydı: `sudo tail /var/log/olcekhane-yedek-kopya.log`.
 
 ## 12. Güvenlik notları
 
-- Dışarıya yalnızca 80 ve 443 portları açıktır. Veritabanı ve uygulama yalnızca iç Docker ağından
-  erişilebilir.
+- Dışarıya yalnızca 80 ve 443 portları, yalnızca IPv4 üzerinden açıktır ([5.3](#53-dns)). Veritabanı ve
+  uygulama yalnızca iç Docker ağından erişilebilir.
 - Hız sınırları ve güvenlik kayıtları istemcinin IP adresine dayanır; Caddy bu adresi kendi gördüğü
   bağlantıdan alır ve istemcinin gönderdiği `X-Forwarded-For` başlığını yok sayar. Sitenin önüne bir CDN
   ya da başka bir vekil sunucu koyarsanız bütün ziyaretçiler o sunucunun adresinden geliyormuş gibi
@@ -497,11 +530,12 @@ saatte yeniden başlatıp diski açın).
   hepsi HTTPS ile çalışmalı.
 - Erişim günlüğü bilerek kapalıdır (adreslerde tek kullanımlık bağlantılar bulunur). Kapsayıcı günlükleri
   kapsayıcı başına en fazla 30 MB tutulur ve kapsayıcı yeniden oluşturulunca (ör. görüntüsü
-  güncellenince) silinir. Uygulamanın kendi yazdığı hata kayıtları sorgu parametrelerini içermez; ancak
-  beklenmeyen bir hatada Next.js hatanın tamamını yazar ve bu ayrıntılarda seyrek olarak bir e-posta
-  adresi gibi kişisel veri bulunabilir. Günlükleri sunucu dışına kopyalamayın.
-- İki aşamalı doğrulama platform yöneticileri ve rehber öğretmenler için zorunludur; uygulama kurmadan
-  bireysel sonuçlara erişim vermez.
+  güncellenince) silinir. Veritabanı sorgu hataları günlüğe parametreleri (e-posta, IP gibi) olmadan
+  yazılır ve PostgreSQL hata kayıtlarına anahtar değerleri yazılmaz; yine de beklenmeyen hataların
+  ayrıntılarında seyrek olarak kişisel veri bulunabilir. Günlükleri sunucu dışına kopyalamayın.
+- İki aşamalı doğrulama platform yöneticileri ve rehber öğretmenler için zorunludur. Bireysel sonuçlara
+  yalnızca ikinci adımı (kod ya da kurtarma kodu) doğrulanmış oturumlar erişir; kurulum şifre ister ve
+  yalnızca başlatıldığı oturumda tamamlanabilir, yeni cihaza taşıma ayrıca şu anki cihazın kodunu ister.
 - Sunucuya SSH ile erişebilen herkes bütün verilere erişebilir: bu kişileri az tutun ve KVKK yetki
   listenize yazın. Görevden ayrılanın SSH anahtarını `~/.ssh/authorized_keys` dosyasından hemen silin.
 
@@ -541,6 +575,8 @@ Bu bölüm teknik bir özettir, hukuki görüş değildir; kararları hukuk dan�
 | E-postalar gitmiyor | **Yönetim → E-postalar** sayfasındaki hata iletisine bakın; `SMTP_URL` içindeki özel karakterleri kodlayın, 465 için `smtps://`, 587 için `smtp://` kullanın. |
 | E-postalar istenmeyen klasörüne düşüyor | SPF, DKIM ve DMARC kayıtlarını ve `MAIL_FROM` adresinin alan adını denetleyin. |
 | İki aşamalı doğrulama kodu reddediliyor | Sunucunun (`timedatectl`) ve telefonun saati doğru mu? 15 dakikada 8 hatalı denemeden sonra 15 dakika, bir günde 20 hatalı denemeden sonra ertesi güne kadar beklenir. |
+| "Bu oturumu doğrulayın" sayfası açılıyor | Oturum kodla doğrulanmamış (ör. iki aşamalı doğrulama başka bir cihazda kurulurken açık kalmış). Uygulamadaki kodu ya da bir kurtarma kodunu yazın ya da çıkıp yeniden girin. |
+| Hazırlık listesinde "Veritabanı yedeği: Eksik" | `docker compose logs yedek` çıktısına bakın; elle denemek için `docker compose exec yedek bash /usr/local/bin/yedekle simdi`. |
 | Sunucu yeniden başladı, site kapalı | `sudo olcekhane-ac` ile şifreli diski açın. |
 | `Cannot connect to the Docker daemon` | Docker, şifreli disk bağlanmadan başlamaz: önce `sudo olcekhane-ac`. |
 | Disk doluyor | `docker system df`, `docker image prune -f`, `docker builder prune -f`; `yedekler/` boyutunu ve `BACKUP_KEEP_DAYS` değerini denetleyin. |

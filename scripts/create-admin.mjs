@@ -101,8 +101,9 @@ try {
     if (existing) {
       id = existing.id;
       await tx`update users set role = 'admin', password_hash = ${passwordHash}, email_verified_at = coalesce(email_verified_at, now()), updated_at = now() where id = ${id}`;
-      // Şifre değişti: açık oturumlar kapanır.
+      // Şifre değişti: açık oturumlar ve eski şifreyle başlatılıp kodu girilmemiş girişler kapanır.
       await tx`delete from sessions where user_id = ${id}`;
+      await tx`update auth_tokens set used_at = now() where user_id = ${id} and kind = 'login_2fa' and used_at is null`;
       out.push(`Yönetici güncellendi: ${email} (şifre yenilendi, açık oturumlar kapatıldı).`);
     } else {
       const [row] = await tx`
@@ -113,7 +114,7 @@ try {
       out.push(`Yönetici hesabı oluşturuldu: ${email}`);
     }
     if (reset2fa) {
-      await tx`update users set totp_secret = null, totp_pending_secret = null, totp_enabled_at = null, totp_last_step = null where id = ${id}`;
+      await tx`update users set totp_secret = null, totp_enabled_at = null, totp_last_step = null where id = ${id}`;
       await tx`delete from recovery_codes where user_id = ${id}`;
       out.push('İki aşamalı doğrulama sıfırlandı.');
     }

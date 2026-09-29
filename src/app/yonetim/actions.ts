@@ -8,6 +8,7 @@ import { db } from '@/db';
 import { contactMessages, orgInvites, organizations, recoveryCodes, sessions, students, users } from '@/db/schema';
 import { audit } from '@/lib/audit';
 import { requireAdmin } from '@/lib/auth/dal';
+import { revokePendingLogins } from '@/lib/auth/two-factor';
 import { retryEmail, sendEmail } from '@/lib/email/send';
 import { twoFactorChangedTemplate } from '@/lib/email/templates';
 import { appUrl } from '@/lib/request';
@@ -186,12 +187,13 @@ export async function resetTwoFactorAction(userId: string, formData: FormData): 
   const back = `/yonetim/kullanicilar?e=${encodeURIComponent(u.email)}`;
   if (userId === admin.id) redirect(`${back}&hata=kendi`);
   if (formData.get('confirm') !== 'on') redirect(`${back}&hata=onay`);
-  await db
-    .update(users)
-    .set({ totpSecret: null, totpPendingSecret: null, totpEnabledAt: null, totpLastStep: null })
-    .where(eq(users.id, userId));
-  await db.delete(recoveryCodes).where(eq(recoveryCodes.userId, userId));
-  await db.delete(sessions).where(eq(sessions.userId, userId));
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ totpSecret: null, totpEnabledAt: null, totpLastStep: null }).where(eq(users.id, userId));
+    await tx.delete(recoveryCodes).where(eq(recoveryCodes.userId, userId));
+    // Oturumlarla birlikte bekleyen kurulumlar da gider; kodu henüz girilmemiş girişler de geçersiz olur.
+    await tx.delete(sessions).where(eq(sessions.userId, userId));
+    await revokePendingLogins(userId, tx);
+  });
   await audit({ actorUserId: admin.id, action: 'user.2fa_reset_by_admin', entity: 'user', entityId: userId, meta: { reason: String(formData.get('reason') ?? '').slice(0, 300) } });
   await sendEmail({ to: u.email, ...twoFactorChangedTemplate({ name: u.fullName, change: 'reset', link: appUrl('/hesap/iki-asamali') }) });
   redirect(`${back}&sifirlandi=1`);

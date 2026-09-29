@@ -1,49 +1,44 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { eq } from 'drizzle-orm';
 import QRCode from 'qrcode';
 import { db } from '@/db';
-import { users } from '@/db/schema';
-import { requireUser } from '@/lib/auth/dal';
+import { sessions, users } from '@/db/schema';
 import { safeNextPath } from '@/lib/auth/next-path';
+import { getSession } from '@/lib/auth/session';
 import { otpauthUri } from '@/lib/auth/totp';
 import { openSecret, twoFactorRequired, unusedRecoveryCodes } from '@/lib/auth/two-factor';
-import { startSetupAction } from './actions';
-import { DisableForm, RegenerateCodesForm, SetupPanel } from './forms';
+import { DisableForm, RegenerateCodesForm, SetupPanel, StartSetupForm, VerifySessionForm } from './forms';
 
 export const metadata: Metadata = { title: 'İki aşamalı doğrulama', robots: { index: false, follow: false } };
 
 const dateFmt = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 
 export default async function TwoFactorPage(props: PageProps<'/hesap/iki-asamali'>) {
-  const user = await requireUser('/hesap/iki-asamali');
+  const s = await getSession();
+  if (s?.kind !== 'user') redirect(`/giris?sonra=${encodeURIComponent('/hesap/iki-asamali')}`);
+  const user = s.user;
   const q = await props.searchParams;
   const zorunlu = q.zorunlu === '1';
   const next = safeNextPath(q.sonra) ?? undefined;
-  const [[u], required] = await Promise.all([
-    db
-      .select({ secret: users.totpSecret, pending: users.totpPendingSecret, enabledAt: users.totpEnabledAt })
-      .from(users)
-      .where(eq(users.id, user.id))
-      .limit(1),
+  const [[u], [sess], required] = await Promise.all([
+    db.select({ enabledAt: users.totpEnabledAt }).from(users).where(eq(users.id, user.id)).limit(1),
+    // Bekleyen kurulum yalnızca onu başlatan oturumda görünür.
+    db.select({ pending: sessions.totpPendingSecret }).from(sessions).where(eq(sessions.id, s.sessionId)).limit(1),
     twoFactorRequired(user),
   ]);
-  const enabled = !!u?.enabledAt && !!u.secret;
+  const enabled = !!u?.enabledAt;
+  const verified = user.twoFactor;
   const left = enabled ? await unusedRecoveryCodes(user.id) : 0;
 
-  // Kurulum sürüyorsa karekod ve elle girilecek anahtar.
+  // Bu oturumda kurulum sürüyorsa karekod ve elle girilecek anahtar.
   let setup: { qr: string; key: string } | null = null;
-  if (u?.pending) {
-    const secret = openSecret(u.pending);
+  if (sess?.pending) {
+    const secret = openSecret(sess.pending);
     const svg = await QRCode.toString(otpauthUri(secret, user.email), { type: 'svg', errorCorrectionLevel: 'M', margin: 1 });
     setup = { qr: `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`, key: secret.match(/.{1,4}/g)!.join(' ') };
   }
-  const hidden = (
-    <>
-      {zorunlu && <input type="hidden" name="zorunlu" value="1" />}
-      {next && <input type="hidden" name="sonra" value={next} />}
-    </>
-  );
   const kurtarma = typeof q.kurtarma === 'string' ? Number(q.kurtarma) : null;
 
   return (
@@ -75,11 +70,6 @@ export default async function TwoFactorPage(props: PageProps<'/hesap/iki-asamali
           İki aşamalı doğrulama kapatıldı.
         </p>
       )}
-      {q.hata === 'cok-deneme' && (
-        <p className="notice notice-danger" role="alert">
-          Kısa sürede çok fazla işlem yapıldı. Biraz sonra tekrar deneyin.
-        </p>
-      )}
 
       {!setup && (
         <section className="panel flex flex-col gap-4 p-6 md:p-8" aria-labelledby="durum">
@@ -96,7 +86,7 @@ export default async function TwoFactorPage(props: PageProps<'/hesap/iki-asamali
               <span className="chip">Kapalı</span>
             )}
           </p>
-          {enabled && (
+          {enabled && verified && (
             <p className="t-small text-ink-2">
               Kullanılmamış kurtarma kodu: <strong>{left}</strong>
               {left <= 3 && ' — azaldı; yeni kodlar oluşturun.'}
@@ -112,13 +102,21 @@ export default async function TwoFactorPage(props: PageProps<'/hesap/iki-asamali
           <h2 id="baslat" className="t-h3">
             Kurulum
           </h2>
-          <p className="text-ink-2">Kurulum birkaç dakika sürer. Telefonunuz ve bir kimlik doğrulama uygulaması gerekir.</p>
-          <form action={startSetupAction}>
-            {hidden}
-            <button type="submit" className="btn btn-primary">
-              Kurulumu başlat
-            </button>
-          </form>
+          <p className="text-ink-2">
+            Kurulum birkaç dakika sürer. Telefonunuz ve bir kimlik doğrulama uygulaması gerekir. Başlamak için şifrenizi yazın.
+          </p>
+          <StartSetupForm moving={false} zorunlu={zorunlu} next={next} />
+        </section>
+      ) : !verified ? (
+        <section className="panel flex flex-col gap-4 p-6 md:p-8" aria-labelledby="oturum">
+          <h2 id="oturum" className="t-h3">
+            Bu oturumu doğrulayın
+          </h2>
+          <p className="text-ink-2">
+            Bu oturum kimlik doğrulama uygulamasındaki kodla açılmadı. Öğrencilerin bireysel sonuçlarına ve iki aşamalı doğrulama ayarlarına
+            erişmek için uygulamadaki güncel kodu ya da bir kurtarma kodunu yazın.
+          </p>
+          <VerifySessionForm zorunlu={zorunlu} next={next} />
         </section>
       ) : (
         <>
@@ -135,13 +133,11 @@ export default async function TwoFactorPage(props: PageProps<'/hesap/iki-asamali
             <h2 id="tasi" className="t-h3">
               Yeni telefona taşı
             </h2>
-            <p className="t-small text-ink-2">Yeni cihazda kurulumu tamamlayana kadar mevcut kurulum geçerli kalır.</p>
-            <form action={startSetupAction}>
-              {hidden}
-              <button type="submit" className="btn btn-secondary">
-                Yeni cihazda kur
-              </button>
-            </form>
+            <p className="t-small text-ink-2">
+              Şifreniz ve şu anki cihazınızdaki kod (ya da bir kurtarma kodu) istenir. Yeni cihazda kurulumu tamamlayana kadar mevcut kurulum
+              geçerli kalır.
+            </p>
+            <StartSetupForm moving zorunlu={zorunlu} next={next} />
           </section>
           {required ? (
             <p className="t-small text-ink-2">Göreviniz gereği iki aşamalı doğrulama kapatılamaz.</p>

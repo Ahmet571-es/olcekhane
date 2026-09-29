@@ -55,10 +55,13 @@ services:
     image: caddy:2
     restart: unless-stopped
     logging: *gunluk
+    # Yalnızca IPv4: kapsayıcı ağı IPv6 kullanmadığı için Docker, IPv6 bağlantılarını ağ geçidi
+    # adresinden iletirdi ve bütün IPv6 ziyaretçileri tek bir IP adresinden geliyormuş gibi görünürdü
+    # (hız sınırları hepsine birlikte uygulanırdı). Alan adına AAAA kaydı eklemeyin (KURULUM.md, 5.3).
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:443:443/udp"
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN:?SITE_DOMAIN .env dosyasında tanımlı olmalı}
       ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL .env dosyasında tanımlı olmalı}

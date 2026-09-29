@@ -94,12 +94,29 @@ describe('günlük temizlik görevi', () => {
     ids.failedNew = await mail('failed', ago(2), 'gizli bağlantı');
     ids.veryOld = await mail('sent', ago(100), '');
     await db.insert(rateLimits).values({ key: `temizlik-${tag}`, count: 3, windowStart: ago(3) });
+
+    // Hesap düzeyindeki aydınlatma kayıtları: 2 yıldan uzun süre önce kapatılmış hesabınki silinmeli,
+    // yakında kapatılmış ve açık hesabınki kalmalı.
+    const [notice] = await db.select({ id: legalDocuments.id }).from(legalDocuments).where(eq(legalDocuments.kind, 'privacy_notice')).limit(1);
+    const closed = (days: number | null, name: string) =>
+      db
+        .insert(users)
+        .values({ email: `${name}-${tag}@hesap.invalid`, passwordHash: 'x', fullName: 'Kapatılmış hesap', deletedAt: days === null ? null : ago(days) })
+        .returning({ id: users.id })
+        .then((r) => r[0].id);
+    ids.closedOld = await closed(800, 'eski');
+    ids.closedRecent = await closed(100, 'yeni');
+    for (const u of [ids.closedOld, ids.closedRecent, parent.id]) {
+      await db.insert(consentRecords).values({ kind: 'notice_ack', documentId: notice.id, actorUserId: u, granted: true, method: 'form', ip: '203.0.113.9', userAgent: 'Test' });
+    }
   });
 
   afterAll(async () => {
     await db.delete(students).where(inArray(students.id, [ids.active, ids.recentDeleted, ids.expiredDeleted].filter(Boolean)));
     if (ids.org) await db.delete(organizations).where(eq(organizations.id, ids.org));
-    if (ids.parent) await db.delete(users).where(eq(users.id, ids.parent));
+    const userIds = [ids.parent, ids.closedOld, ids.closedRecent].filter(Boolean);
+    await db.delete(consentRecords).where(inArray(consentRecords.actorUserId, userIds));
+    await db.delete(users).where(inArray(users.id, userIds));
     await db.delete(emailOutbox).where(eq(emailOutbox.subject, `Temizlik ${tag}`));
     await db.delete(rateLimits).where(eq(rateLimits.key, `temizlik-${tag}`));
   });
@@ -136,6 +153,12 @@ describe('günlük temizlik görevi', () => {
     expect(body[ids.failedNew]).toBe('gizli bağlantı');
     expect(body[ids.veryOld]).toBeUndefined();
     expect(await db.select().from(rateLimits).where(eq(rateLimits.key, `temizlik-${tag}`))).toHaveLength(0);
+
+    const notices = await db
+      .select({ user: consentRecords.actorUserId })
+      .from(consentRecords)
+      .where(inArray(consentRecords.actorUserId, [ids.closedOld, ids.closedRecent, ids.parent]));
+    expect(notices.map((n) => n.user).sort()).toEqual([ids.closedRecent, ids.parent].sort());
 
     const [run] = await db.select().from(jobRuns).where(eq(jobRuns.job, 'temizlik')).orderBy(sql`started_at desc`).limit(1);
     expect(run).toMatchObject({ ok: true, trigger: 'yönetici' });

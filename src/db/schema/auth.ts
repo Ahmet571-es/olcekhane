@@ -33,8 +33,6 @@ export const users = pgTable(
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     /** İki aşamalı doğrulama (TOTP) sırrı; APP_SECRET’ten türetilen anahtarla AES-256-GCM ile şifreli. */
     totpSecret: text('totp_secret'),
-    /** Kurulum sürerken, kod doğrulanana kadar bekleyen yeni sır (şifreli). */
-    totpPendingSecret: text('totp_pending_secret'),
     totpEnabledAt: timestamp('totp_enabled_at', { withTimezone: true }),
     /** En son kabul edilen zaman adımı: aynı kod ikinci kez kullanılamaz. */
     totpLastStep: bigint('totp_last_step', { mode: 'number' }),
@@ -78,6 +76,13 @@ export const sessions = pgTable(
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
     ip: text('ip'),
     userAgent: text('user_agent'),
+    /**
+     * Bu oturumda ikinci adımın (kod ya da kurtarma kodu) doğrulandığı an. Oturum ancak bu an,
+     * kullanıcının iki aşamalı doğrulamayı açtığı andan sonraysa "iki aşamalı" sayılır.
+     */
+    twoFactorAt: timestamp('two_factor_at', { withTimezone: true }),
+    /** Kurulum sürerken, kod doğrulanana kadar bekleyen yeni sır (şifreli): yalnızca kurulumu başlatan oturum görür. */
+    totpPendingSecret: text('totp_pending_secret'),
     createdAt: createdAt(),
   },
   (t) => [

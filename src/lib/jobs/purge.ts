@@ -11,6 +11,8 @@ import { errorSummary } from '@/lib/log';
 export const RETENTION = {
   /** Silinmiş öğrenci profillerinin rıza kanıtı (rıza ve geri alma kayıtları, onay istekleri). */
   deletedProfileEvidenceDays: 730,
+  /** Kapatılmış hesapların aydınlatma ve kullanım koşulları kayıtları (IP ve tarayıcı bilgisiyle). */
+  closedAccountNoticeDays: 730,
   /** Bu süre boyunca hiç cevap verilmeyen yarım uygulama "yarıda bırakıldı" sayılır. */
   stalledAttemptDays: 30,
   /** Yarıda bırakılmış uygulamalar, son cevaptan bu süre sonra silinir. */
@@ -33,6 +35,8 @@ export const RETENTION = {
   expiredConsentRequestDays: 30,
   /** Hız sınırı sayaçları (en uzun pencere 24 saat). */
   rateLimitHours: 48,
+  /** Görev çalışma kayıtları (temizlik ve yedek; kişisel veri içermez). */
+  jobRunDays: 365,
 } as const;
 
 export type PurgeReport = Record<string, number>;
@@ -46,6 +50,7 @@ export const PURGE_LABELS: Record<string, string> = {
   deletedProfileLinks: 'Silinmiş profillerden kaldırılan bağ',
   anonymizedProfiles: 'Anonimleştirilen silinmiş profil',
   expiredProfiles: 'Saklama süresi dolan silinmiş profil',
+  closedAccountNotices: 'Kapatılmış hesabın saklama süresi dolan aydınlatma kaydı',
   expiredConsentRequests: 'Süresi dolmuş onay isteği',
   unsentEmailBodies: 'İçeriği silinen gönderilmemiş e-posta',
   emailLogs: 'Silinen e-posta kaydı',
@@ -56,6 +61,7 @@ export const PURGE_LABELS: Record<string, string> = {
   authTokens: 'Silinen doğrulama belirteci',
   sessions: 'Silinen süresi dolmuş oturum',
   rateLimits: 'Silinen hız sınırı sayacı',
+  jobRuns: 'Silinen eski görev kaydı',
 };
 
 const PURGED_REPORT = sql`'{"format":0,"purged":true}'::jsonb`;
@@ -143,6 +149,17 @@ async function purgeSteps(tx: Tx): Promise<PurgeReport> {
         select count(*)::int as n from x`,
   );
 
+  // 5b. Kapatılmış hesapların hesap düzeyindeki kayıtları (aydınlatma metninin okunması, kullanım
+  //     koşullarının kabulü; IP ve tarayıcı bilgisiyle) saklama süresi dolunca silinir. Öğrenciye ait
+  //     rıza kayıtları profille birlikte (5. adım) silinir.
+  r.closedAccountNotices = await count(
+    tx,
+    sql`with x as (delete from consent_records cr where cr.subject_student_id is null
+          and exists (select 1 from users u where u.id = cr.actor_user_id and u.deleted_at < ${days(RETENTION.closedAccountNoticeDays)})
+        returning 1)
+        select count(*)::int as n from x`,
+  );
+
   // 6. Yanıtlanmamış ve süresi dolmuş veli onayı istekleri.
   r.expiredConsentRequests = await count(
     tx,
@@ -207,6 +224,10 @@ async function purgeSteps(tx: Tx): Promise<PurgeReport> {
     tx,
     sql`with x as (delete from rate_limits where window_start < now() - make_interval(hours => ${RETENTION.rateLimitHours}) returning 1)
         select count(*)::int as n from x`,
+  );
+  r.jobRuns = await count(
+    tx,
+    sql`with x as (delete from job_runs where started_at < ${days(RETENTION.jobRunDays)} returning 1) select count(*)::int as n from x`,
   );
   return r;
 }

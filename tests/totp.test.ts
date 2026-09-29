@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { sessionHasTwoFactor } from '@/lib/auth/session';
 import { base32Decode, base32Encode, hotp, normalizeRecoveryCode, otpauthUri, totpStep, verifyTotp } from '@/lib/auth/totp';
 import { hashRecoveryCode, newRecoveryCodes, openSecret, sealSecret } from '@/lib/auth/two-factor-crypto';
 
@@ -63,6 +64,23 @@ describe('kod doğrulama', () => {
     expect(params.get('issuer')).toBe('Ölçekhane');
     expect(params.get('digits')).toBe('6');
     expect(params.get('period')).toBe('30');
+  });
+});
+
+describe('oturumun iki aşamalı sayılması', () => {
+  const enabled = new Date('2026-09-01T10:00:00Z');
+  it('ikinci adım, doğrulamanın açıldığı an ya da sonrasında doğrulanmış olmalı', () => {
+    expect(sessionHasTwoFactor(enabled, new Date('2026-09-01T10:00:00Z'))).toBe(true);
+    expect(sessionHasTwoFactor(enabled, new Date('2026-09-02T08:00:00Z'))).toBe(true);
+  });
+  it('yalnızca şifreyle açılmış oturum, kullanıcı doğrulamayı sonradan açınca yükselmez', () => {
+    expect(sessionHasTwoFactor(enabled, null)).toBe(false);
+  });
+  it('eski bir kurulumda doğrulanmış oturum, doğrulama yeniden kurulunca (ya da taşınınca) geçersiz sayılır', () => {
+    expect(sessionHasTwoFactor(enabled, new Date('2026-08-20T09:00:00Z'))).toBe(false);
+  });
+  it('doğrulama kapalıysa oturum iki aşamalı değildir', () => {
+    expect(sessionHasTwoFactor(null, new Date('2026-09-02T08:00:00Z'))).toBe(false);
   });
 });
 

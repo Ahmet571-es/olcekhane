@@ -13,3 +13,6 @@ YEDEK_ALICI=age1...
 YEDEK_HEDEF=yedek@yedek.ornek.com.tr:olcekhane/
 # Karşı sunucuya bağlanırken kullanılan SSH anahtarı.
 YEDEK_SSH_ANAHTARI=/root/.ssh/olcekhane_yedek
+# Süresi dolan kopyaları kim siler? evet: bu betik (varsayılan). hayir: betik yalnızca ekler; anahtar
+# karşıda rrsync -wo -no-del ile kısıtlanır ve süresi dolanları karşıdaki bir görev siler (önerilen).
+YEDEK_KARSIDA_SIL=evet
