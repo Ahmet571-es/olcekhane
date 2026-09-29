@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Docker için derlenmiş sunucu betikleri (npm run build:scripts).
+    "dist/**",
   ]),
 ]);
 

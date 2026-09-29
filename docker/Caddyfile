@@ -1,0 +1,30 @@
+# Ölçekhane: Caddy ters vekil sunucusu (HTTPS sertifikası Let's Encrypt'ten kendiliğinden alınır ve yenilenir).
+# SITE_DOMAIN ve ACME_EMAIL, docker-compose.yml aracılığıyla .env dosyasından gelir.
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		# Tarayıcı bu alan adına bir yıl boyunca yalnızca HTTPS ile bağlansın.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	reverse_proxy app:3000 {
+		# İstemcinin IP adresi: istemcinin kendisinin gönderebileceği X-Forwarded-For değerine güvenilmez,
+		# Caddy'nin gördüğü adresle değiştirilir (hız sınırları ve güvenlik kayıtları bu adresi kullanır).
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Real-IP {remote_host}
+	}
+
+	# Erişim günlüğü bilerek kapalıdır: adreslerde tek kullanımlık bağlantılar (veli onayı, şifre
+	# yenileme) bulunur. Güvenlik kayıtları uygulamanın kendi veritabanında tutulur.
+}
+
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
