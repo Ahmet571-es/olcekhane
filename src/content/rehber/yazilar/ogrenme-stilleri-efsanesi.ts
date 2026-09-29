@@ -51,7 +51,7 @@ Aradan geçen yıllarda yapılan çalışmaları birleştiren 2024 tarihli bir m
 
 Öğrenme yöntemlerini inceleyen kapsamlı bir değerlendirmede, yaş, yetenek ve konu fark etmeksizin en güçlü kanıta sahip iki yöntem **kendini sınamak** ve **çalışmayı zamana yaymak** olarak belirlenmiştir. Altını çizmek ve tekrar tekrar okumak gibi popüler yöntemlerin ise yararı sınırlı bulunmuştur (Dunlosky ve ark., 2013). Ayrıntılar için: [Etkili ders çalışma yöntemleri: Araştırmalar ne diyor?](/rehber/etkili-ders-calisma-yontemleri)
 
-Ölçekhane’de bu nedenle öğrenme stili testi yoktur. Bunun yerine öğrencinin hangi çalışma yöntemlerini ne sıklıkla kullandığını ölçen bir çalışma alışkanlıkları envanteri hazırlıyoruz. Nedenini [bilimsel yaklaşımımızda](/bilimsel-yaklasim#kullanmadiklarimiz) da anlatıyoruz.
+Ölçekhane’de bu nedenle öğrenme stili testi yoktur. Bunun yerine öğrencinin araştırmalarla etkisi gösterilmiş çalışma yöntemlerini ne sıklıkla kullandığını ölçen [Çalışma Alışkanlıkları Envanteri](/testler/calisma-aliskanliklari)’ni sunuyoruz. Nedenini [bilimsel yaklaşımımızda](/bilimsel-yaklasim#kullanmadiklarimiz) da anlatıyoruz.
 
 ## Çocuğunuz daha önce bir öğrenme stili testi çözdüyse
 

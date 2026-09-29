@@ -13,6 +13,7 @@ import { recordConsent } from '@/lib/consent';
 import { rateLimit } from '@/lib/rate-limit';
 import { notifyNewCounselor } from '@/lib/school/invites';
 import { clientIpBucket } from '@/lib/request';
+import { ACCOUNTS_CLOSED_MESSAGE, accountsOpen } from '@/lib/site';
 
 export type InviteFormState = { message?: string; errors?: Record<string, string>; values?: Record<string, string> };
 
@@ -53,6 +54,7 @@ async function completeInvite(inv: NonNullable<Awaited<ReturnType<typeof validIn
 
 /** Oturum açmış ve davetin gönderildiği adresle aynı hesaptaki kullanıcı için. */
 export async function acceptInviteAction(token: string): Promise<void> {
+  if (!accountsOpen()) redirect(`/davet/${encodeURIComponent(token)}`);
   const inv = await validInvite(token);
   if (!inv) redirect(`/davet/${encodeURIComponent(token)}`);
   const s = await getSession();
@@ -69,6 +71,7 @@ const registerSchema = z.object({
 
 /** Hesabı olmayan davetli için: hesap oluşturur ve daveti kabul eder. */
 export async function registerFromInviteAction(token: string, _: InviteFormState, formData: FormData): Promise<InviteFormState> {
+  if (!accountsOpen()) return { message: ACCOUNTS_CLOSED_MESSAGE };
   const inv = await validInvite(token);
   if (!inv) return { message: 'Davet bağlantısı geçersiz ya da süresi dolmuş.' };
   const raw = Object.fromEntries(formData) as Record<string, string>;

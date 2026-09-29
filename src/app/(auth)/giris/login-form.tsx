@@ -5,7 +5,7 @@ import { useActionState } from 'react';
 import { Field, FormMessage, SubmitButton, describedBy } from '@/components/ui/form';
 import { loginAction, type FormState } from '../actions';
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, accounts }: { next: string; accounts: boolean }) {
   const [state, action] = useActionState<FormState, FormData>(loginAction, {});
   return (
     <form action={action} className="flex flex-col gap-5" noValidate>
@@ -40,9 +40,13 @@ export function LoginForm({ next }: { next: string }) {
       <SubmitButton pendingText="Giriş yapılıyor…">Giriş yap</SubmitButton>
       <div className="flex flex-wrap justify-between gap-3 text-[0.95rem]">
         <Link href="/sifremi-unuttum">Şifremi unuttum</Link>
-        <Link href={next ? `/kayit?sonra=${encodeURIComponent(next)}` : '/kayit'}>Hesabınız yok mu? Ücretsiz kaydolun</Link>
+        {accounts && <Link href={next ? `/kayit?sonra=${encodeURIComponent(next)}` : '/kayit'}>Hesabınız yok mu? Ücretsiz kaydolun</Link>}
       </div>
-      <p className="t-meta">Okulunuzun verdiği öğrenci koduyla giriş için <Link href="/ogrenci-girisi">öğrenci girişi</Link> sayfasını kullanın.</p>
+      {accounts && (
+        <p className="t-meta">
+          Okulunuzun verdiği öğrenci koduyla giriş için <Link href="/ogrenci-girisi">öğrenci girişi</Link> sayfasını kullanın.
+        </p>
+      )}
     </form>
   );
 }

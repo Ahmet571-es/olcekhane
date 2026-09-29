@@ -19,7 +19,7 @@ import { getInstrumentDef } from '@/content/instruments';
 import { hasActiveConsent, lockStudentConsent } from '@/lib/consent';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
 import type { InstrumentDef, LikertInstrument, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
-import { buildReport, type Audience, type ReportContent, type StoredScore } from '@/lib/reports/build';
+import { buildReport, type Audience, type NormInfo, type ReportContent, type StoredScore } from '@/lib/reports/build';
 import { likertQuality, scoreLikert, type LikertAnswer, type NormStat } from '@/lib/scoring/likert';
 import { formForGrade, isQuizChoice, scoreQuiz, type QuizAnswer, type QuizChoice } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
@@ -29,15 +29,12 @@ import {
   scoreFlanker,
   scoreSpan,
   scoreSymbol,
-  taskQualityNotes,
-  type CancellationResult,
   type CancellationSectionInput,
-  type FlankerResult,
   type FlankerTrialInput,
   type SpanTrialInput,
-  type SymbolResult,
   type SymbolTrialInput,
 } from '@/lib/scoring/tasks';
+import { likertRows, quizRows, readingRows, taskScoreRows, type TaskInputs } from './score-rows';
 
 export class AssessmentError extends Error {
   constructor(
@@ -260,7 +257,8 @@ export async function saveLikertAnswer(attemptId: string, itemKey: string, value
   await db.update(attempts).set({ lastActivityAt: new Date() }).where(eq(attempts.id, attemptId));
 }
 
-async function activeNorms(versionId: string, grade: number): Promise<Record<string, NormStat>> {
+/** Sürümün, öğrencinin sınıfını kapsayan etkin norm grubu (yoksa boş). */
+export async function activeNorms(versionId: string, grade: number): Promise<Record<string, NormStat>> {
   const [set] = await db
     .select({ id: normSets.id })
     .from(normSets)
@@ -307,23 +305,7 @@ export async function completeLikertAttempt(attemptId: string): Promise<void> {
 
   await runFinish(attempt, async (tx) => {
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));
-    await tx.insert(scores).values(
-      scaleScores.map((s) => ({
-        attemptId,
-        scaleKey: s.scaleKey,
-        raw: s.raw,
-        mean: s.mean,
-        nAnswered: s.nAnswered,
-        nItems: s.nItems,
-        z: s.z ?? null,
-        t: s.t ?? null,
-        percentile: s.percentile ?? null,
-        band: s.band,
-        normSetId: s.normSetId ?? null,
-        ciLow: s.ciLow ?? null,
-        ciHigh: s.ciHigh ?? null,
-      })),
-    );
+    await tx.insert(scores).values(likertRows(scaleScores).map((r) => ({ attemptId, ...r })));
     await finishAttempt(tx, attemptId, {
       completedAt: now,
       durationMs: now.getTime() - attempt.startedAt.getTime(),
@@ -385,28 +367,7 @@ export async function completeReadingAttempt(
       })
       .onConflictDoNothing();
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));
-    await tx.insert(scores).values([
-      {
-        attemptId,
-        scaleKey: 'comprehension',
-        raw: result.correct,
-        mean: result.comprehensionPct / 100,
-        nAnswered: Object.keys(payload.answers).length,
-        nItems: result.total,
-        band: result.band,
-        extra: result as unknown as Record<string, unknown>,
-      },
-      {
-        attemptId,
-        scaleKey: 'speed',
-        raw: result.wpm,
-        mean: null,
-        nAnswered: 1,
-        nItems: 1,
-        band: null,
-        extra: { wpm: result.wpm, effectiveWpm: result.effectiveWpm, wordCount: result.wordCount },
-      },
-    ]);
+    await tx.insert(scores).values(readingRows(result, Object.keys(payload.answers).length).map((r) => ({ attemptId, ...r })));
     await finishAttempt(tx, attemptId, {
       completedAt: now,
       durationMs: now.getTime() - attempt.startedAt.getTime(),
@@ -525,115 +486,50 @@ export async function completeTaskAttempt(attemptId: string): Promise<void> {
   const missing = def.tasks.filter((t) => !byBlock.has(t.key));
   if (missing.length) throw new AssessmentError('invalid', 'Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
 
-  const scoreRows: (typeof scores.$inferInsert)[] = [];
-  let flankerRes: FlankerResult | undefined;
-  let symbolRes: SymbolResult | undefined;
-  let cancellationRes: CancellationResult | undefined;
-  const scaleOf: Record<string, string> = {};
-  for (const t of def.tasks) {
-    if (t.kind === 'digit_span') scaleOf[t.key] = t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
-    else if (t.kind === 'spatial_span') scaleOf[t.key] = 'spatial';
-    else if (t.kind === 'flanker') scaleOf[t.key] = 'attention';
-    else if (t.kind === 'symbol_match') scaleOf[t.key] = 'speed';
-  }
-
+  // Kayıtlı denemeler, tarayıcının gönderdiği biçime çevrilip hızlı testle aynı fonksiyonla puanlanır.
+  const inputs = new Map<string, TaskInputs>();
   for (const task of def.tasks) {
     const tr = byBlock.get(task.key)!;
     if (task.kind === 'digit_span' || task.kind === 'spatial_span') {
-      const input: SpanTrialInput[] = tr.map((r) => ({
-        length: Number((r.stimulus as { length: number }).length),
-        index: Number((r.stimulus as { index: number }).index),
-        response: ((r.response as { seq: number[] }).seq ?? []).map(Number),
-        rtMs: r.rtMs,
-      }));
-      const { result } = scoreSpan(task, input);
-      scoreRows.push({
-        attemptId,
-        scaleKey: scaleOf[task.key],
-        raw: result.span,
-        mean: null,
-        nAnswered: result.correctTrials,
-        nItems: result.totalTrials,
-        band: null,
-        extra: result as unknown as Record<string, unknown>,
-      });
-    } else if (task.kind === 'flanker') {
-      const input: FlankerTrialInput[] = tr.map((r) => ({
-        index: r.trialIndex,
-        response: ((r.response as { key: 'L' | 'R' | null }).key ?? null) as 'L' | 'R' | null,
-        rtMs: r.rtMs,
-      }));
-      const { result } = scoreFlanker(task, input);
-      flankerRes = result;
-      scoreRows.push({
-        attemptId,
-        scaleKey: 'attention',
-        raw: Math.round(result.accuracy * 1000) / 10,
-        mean: result.meanRt,
-        nAnswered: result.n - result.timeouts,
-        nItems: task.trials.length,
-        band: null,
-        extra: result as unknown as Record<string, unknown>,
-      });
-    } else if (task.kind === 'cancellation') {
-      const input: CancellationSectionInput[] = tr.map((r) => {
-        const resp = r.response as { marks?: number[]; times?: number[]; unmarks?: number };
-        return {
-          index: r.trialIndex,
-          response: { marks: (resp.marks ?? []).map(Number), times: (resp.times ?? []).map(Number), unmarks: Number(resp.unmarks ?? 0) },
+      inputs.set(
+        task.key,
+        tr.map((r) => ({
+          length: Number((r.stimulus as { length: number }).length),
+          index: Number((r.stimulus as { index: number }).index),
+          response: ((r.response as { seq: number[] }).seq ?? []).map(Number),
           rtMs: r.rtMs,
-        };
-      });
-      const { result } = scoreCancellation(task, cancellationSheet(task, attemptId), input);
-      cancellationRes = result;
-      const n = task.rows * task.columns * task.sections;
-      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "tempo" satırında, diğerlerinde özet durur.
-      scoreRows.push(
-        { attemptId, scaleKey: 'tempo', raw: result.perMinute, mean: null, nAnswered: result.processed, nItems: n, band: null, extra: result as unknown as Record<string, unknown> },
-        {
-          attemptId,
-          scaleKey: 'isabet',
-          raw: Math.round(result.hitRate * 1000) / 10,
-          mean: null,
-          nAnswered: result.hits,
-          nItems: result.hits + result.omissions,
-          band: null,
-          extra: { hits: result.hits, omissions: result.omissions, commissions: result.commissions, falseAlarmRate: result.falseAlarmRate },
-        },
-        { attemptId, scaleKey: 'net', raw: result.net, mean: null, nAnswered: result.hits, nItems: result.processed, band: null, extra: { net: result.net } },
-        {
-          attemptId,
-          scaleKey: 'surdurme',
-          raw: result.sustainChange,
-          mean: null,
-          nAnswered: result.sections.length,
-          nItems: task.sections,
-          band: null,
-          extra: { sections: result.sections.map((s) => ({ net: s.net, ms: s.ms })) },
-        },
+        })),
+      );
+    } else if (task.kind === 'flanker') {
+      inputs.set(
+        task.key,
+        tr.map((r) => ({
+          index: r.trialIndex,
+          response: ((r.response as { key: 'L' | 'R' | null }).key ?? null) as 'L' | 'R' | null,
+          rtMs: r.rtMs,
+        })),
+      );
+    } else if (task.kind === 'cancellation') {
+      inputs.set(
+        task.key,
+        tr.map((r) => {
+          const resp = r.response as { marks?: number[]; times?: number[]; unmarks?: number };
+          return {
+            index: r.trialIndex,
+            response: { marks: (resp.marks ?? []).map(Number), times: (resp.times ?? []).map(Number), unmarks: Number(resp.unmarks ?? 0) },
+            rtMs: r.rtMs,
+          };
+        }),
       );
     } else {
-      const input: SymbolTrialInput[] = tr.map((r) => ({
-        index: r.trialIndex,
-        response: Number((r.response as { digit: number }).digit),
-        rtMs: r.rtMs,
-      }));
-      const { result } = scoreSymbol(task, input);
-      symbolRes = result;
-      scoreRows.push({
-        attemptId,
-        scaleKey: 'speed',
-        raw: result.perMinute,
-        mean: null,
-        nAnswered: result.correct,
-        nItems: result.attempted,
-        band: null,
-        extra: result as unknown as Record<string, unknown>,
-      });
+      inputs.set(
+        task.key,
+        tr.map((r) => ({ index: r.trialIndex, response: Number((r.response as { digit: number }).digit), rtMs: r.rtMs })),
+      );
     }
   }
-
-  const notes = taskQualityNotes({ flanker: flankerRes, symbol: symbolRes, cancellation: cancellationRes });
+  const { rows: rowsOut, notes } = taskScoreRows(def, inputs, attemptId);
+  const scoreRows = rowsOut.map((r) => ({ attemptId, ...r }));
   const now = new Date();
   await runFinish(attempt, async (tx) => {
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));
@@ -715,28 +611,7 @@ export async function completeQuizAttempt(attemptId: string): Promise<void> {
   const now = new Date();
   await runFinish(attempt, async (tx) => {
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));
-    await tx.insert(scores).values([
-      {
-        attemptId,
-        scaleKey: 'total',
-        raw: result.correct,
-        mean: result.ratio,
-        nAnswered: result.n - result.dontKnow - result.missing,
-        nItems: result.n,
-        band: result.band,
-        extra: result as unknown as Record<string, unknown>,
-      },
-      ...result.domains.map((d) => ({
-        attemptId,
-        scaleKey: d.key,
-        raw: d.correct,
-        mean: d.ratio,
-        nAnswered: d.n - d.dontKnow,
-        nItems: d.n,
-        band: d.band,
-        extra: { wrong: d.wrong, dontKnow: d.dontKnow, formKey: form.key } as Record<string, unknown>,
-      })),
-    ]);
+    await tx.insert(scores).values(quizRows(form, result).map((r) => ({ attemptId, ...r })));
     await finishAttempt(tx, attemptId, {
       completedAt: now,
       durationMs: now.getTime() - attempt.startedAt.getTime(),
@@ -773,6 +648,17 @@ async function loadScores(attemptId: string): Promise<StoredScore[]> {
   }));
 }
 
+/** Raporun norm açıklaması için norm grubunun özeti. */
+export async function normInfo(normSetId: string | null): Promise<NormInfo | null> {
+  if (!normSetId) return null;
+  const [norm] = await db
+    .select({ status: normSets.status, n: normSets.n, gradeMin: normSets.gradeMin, gradeMax: normSets.gradeMax, source: normSets.source })
+    .from(normSets)
+    .where(eq(normSets.id, normSetId))
+    .limit(1);
+  return norm && (norm.status === 'provisional' || norm.status === 'final') ? (norm as NormInfo) : null;
+}
+
 /** Öğrenci ve veli raporlarını oluşturup o anki hâliyle saklar. */
 export async function generateReports(attemptId: string, studentName?: string): Promise<void> {
   const attempt = await getAttempt(attemptId);
@@ -786,14 +672,7 @@ export async function generateReports(attemptId: string, studentName?: string): 
     .limit(1);
   const name = studentName ?? st?.firstName ?? '';
   const hasNorms = stored.some((s) => s.normSetId);
-  const normSetId = stored.find((s) => s.normSetId)?.normSetId;
-  const [norm] = normSetId
-    ? await db
-        .select({ status: normSets.status, n: normSets.n, gradeMin: normSets.gradeMin, gradeMax: normSets.gradeMax, source: normSets.source })
-        .from(normSets)
-        .where(eq(normSets.id, normSetId))
-        .limit(1)
-    : [];
+  const norm = await normInfo(stored.find((s) => s.normSetId)?.normSetId ?? null);
   for (const audience of ['student', 'parent'] as Audience[]) {
     const content = buildReport({
       def,
@@ -804,7 +683,7 @@ export async function generateReports(attemptId: string, studentName?: string): 
       completedAt: attempt.completedAt ?? new Date(),
       qualityNotes: attempt.qualityFlags?.notes ?? [],
       hasNorms,
-      norm: norm ?? null,
+      norm,
     });
     await db
       .insert(reports)

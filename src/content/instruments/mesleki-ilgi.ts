@@ -5,7 +5,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  * Kuram: Holland’ın RIASEC modeli (Holland, 1997).
  * Maddeler: Ölçekhane tarafından Türkiye’deki ortaokul ve lise öğrencileri için özgün olarak yazılmıştır;
  * herhangi bir ticari ya da lisanslı envanterden çeviri değildir. Her alan için 8 etkinlik maddesi vardır.
- * Durum: pilot. Güvenirlik ve yapı geçerliği, velilerin araştırma izni verdiği verilerle incelenecektir.
+ * Durum: pilot. Güvenirlik ve yapı geçerliği henüz incelenmedi.
  */
 
 const R = 'realistic';
@@ -109,9 +109,9 @@ export const meslekiIlgi: LikertInstrument = {
   maxGrade: 13,
   estimatedMinutes: 8,
   sortOrder: 30,
-  tagline: 'Altı ilgi alanında hangi etkinliklerden hoşlandığını ölçer ve bunlara uyan meslek ve eğitim yollarını gösterir.',
+  tagline: 'Altı ilgi alanında hangi etkinliklerden hoşlandığını ölçer ve bunlara uyan örnek meslekleri gösterir.',
   description:
-    'Holland’ın RIASEC modeline dayanan bu profil, öğrencinin gerçekçi, araştırmacı, sanatçı, sosyal, girişimci ve düzenli olmak üzere altı ilgi alanında hangi etkinliklerden ne kadar hoşlandığını ölçer. Sonuçta en belirgin üç ilgi alanını, bunlara uyan örnek meslekleri ve Türkiye’deki eğitim yollarını görürsünüz.',
+    'Holland’ın RIASEC modeline dayanan bu profil, öğrencinin gerçekçi, araştırmacı, sanatçı, sosyal, girişimci ve düzenli olmak üzere altı ilgi alanında hangi etkinliklerden ne kadar hoşlandığını ölçer. Sonuçta en belirgin üç ilgi alanını ve bunlara uyan örnek meslekleri görürsünüz.',
   intro: {
     title: 'Hangi etkinlikler sana göre?',
     paragraphs: [
@@ -156,7 +156,7 @@ export const meslekiIlgi: LikertInstrument = {
     turkishVersion:
       'Özgün Türkçe ölçek; bir çeviri değildir. Maddeler öğrencilerin gündelik hayatından ve okul ortamından tanıdık etkinlikler olarak yazılmış, meslek adları kullanılmamıştır.',
     reliability:
-      'Pilot aşamasındadır: iç tutarlılık, yapı geçerliği ve altıgen yapısı, velilerin ayrıca izin verdiği verilerle incelenmekte ve sonuçlar burada yayımlanacaktır. Karşılaştırma için: benzer yapıdaki O*NET İlgi Profili kısa formunda her alanın güvenirliği .78–.87 arasındadır.',
+      'Pilot aşamasındadır: iç tutarlılık, yapı geçerliği ve altıgen yapısı henüz incelenmedi; sonuçlar hazır olduğunda burada yayımlanacak. Karşılaştırma için: benzer yapıdaki O*NET İlgi Profili kısa formunda her alanın güvenirliği .78–.87 arasındadır.',
     normStatus: 'none',
     normNote:
       'Türkiye normu henüz yok. Puanlar ölçeğin kendi aralığına göre ve öğrencinin kendi profili içinde, en yüksekten en düşüğe sıralanarak yorumlanır.',
@@ -166,7 +166,7 @@ export const meslekiIlgi: LikertInstrument = {
     limitations: [
       'İlgi, yetenek demek değildir. Bir alana ilgi duymak o alanda şimdiden başarılı olmak anlamına gelmez; tersi de doğrudur.',
       'İlgiler ergenlikte değişebilir. Testi bir iki yılda bir tekrarlamak önerilir.',
-      'Pilot aşamasındadır: güvenirlik ve geçerlik çalışması sürmektedir.',
+      'Pilot aşamasındadır: güvenirlik ve geçerlik çalışması henüz yapılmadı.',
       'Meslek örnekleri yol gösterici niteliktedir; kesin bir eşleştirme değildir. Meslek seçiminde değerler, beceriler ve yaşam koşulları da önemlidir.',
     ],
     citations: [

@@ -80,7 +80,7 @@ export const harfIsaretleme: TaskInstrument = {
     turkishVersion:
       'Özgün görev. Harfler Türk alfabesinden seçilmiştir; aranan g harfinden yalnızca bir işaretle ayrılan ğ sayfalarda kullanılmaz. Yönergeler Türkçedir.',
     reliability:
-      'Pilot aşamasındadır; bu görevin güvenirlik çalışması sürmektedir. Her bölüm ayrı süreyle uygulandığı için güvenirlik bölümler arası tutarlılıkla hesaplanabilir. Benzer bir dijital harf işaretleme görevinde üniversite öğrencileriyle paralel form güvenirliği r = .71–.83, iç tutarlılık α = .73–.91, d2 dikkat testiyle ilişki r = .43–.59 bulunmuştur (Pahor ve ark., 2022). Bu değerler çocuklar ve bu görev için doğrudan geçerli değildir.',
+      'Pilot aşamasındadır; bu görevin güvenirlik çalışması henüz yapılmadı. Her bölüm ayrı süreyle uygulandığı için güvenirlik bölümler arası tutarlılıkla hesaplanabilir. Benzer bir dijital harf işaretleme görevinde üniversite öğrencileriyle paralel form güvenirliği r = .71–.83, iç tutarlılık α = .73–.91, d2 dikkat testiyle ilişki r = .43–.59 bulunmuştur (Pahor ve ark., 2022). Bu değerler çocuklar ve bu görev için doğrudan geçerli değildir.',
     normStatus: 'none',
     normNote:
       'Türkiye normu henüz yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Sürekli dikkat çocukluk boyunca yaşla birlikte belirgin biçimde gelişir (Betts ve ark., 2006); bu yüzden normlar sınıf düzeyine göre oluşturulacaktır. Puanlar, kâğıt-kalem Burdon uygulamalarının puanları ve normlarıyla karşılaştırılamaz: sayfa, süre ve işaretleme biçimi farklıdır.',
@@ -92,7 +92,7 @@ export const harfIsaretleme: TaskInstrument = {
       'Sonuç; yorgunluk, uykusuzluk, ortamdaki gürültü, isteklilik ve cihaz (ekran boyutu, dokunmatik ekran ya da fare) gibi etkenlerden etkilenir.',
       'Harfleri tanımakta ya da b, d ve p gibi harfleri ayırt etmekte zorlanan öğrencilerde sonuç, dikkatten çok harf tanımayı yansıtabilir.',
       'Görev yeniden yapıldığında alıştırma etkisiyle puanlar bir miktar yükselir; iki uygulama arasındaki küçük farklar yorumlanmamalıdır.',
-      'Pilot aşamasındadır: güvenirlik ve norm çalışması sürmektedir.',
+      'Pilot aşamasındadır: güvenirlik ve norm çalışması henüz yapılmadı.',
     ],
     citations: [
       {

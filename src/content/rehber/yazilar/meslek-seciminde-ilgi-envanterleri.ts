@@ -56,7 +56,7 @@ Meslek seçimi ayrıca kişinin değerlerine (para, güvence, insanlara yararlı
 - **Tek bir etiket değil, bir profil vermeli.** Altı alanın hepsindeki puanlar birlikte gösterilmelidir.
 - **Kaynağı ve kanıtı belli olmalı.** Örneğin ABD Çalışma Bakanlığı’nın geliştirdiği O*NET İlgi Profili, RIASEC modeline dayanan, herkese açık lisansla sunulan bir araçtır (National Center for O*NET Development, t.y.).
 
-Ölçekhane’de RIASEC modeline dayanan bir mesleki ilgi envanteri hazırlık aşamasındadır.
+Ölçekhane’deki [Mesleki İlgi Profili](/testler/mesleki-ilgi-profili) de RIASEC modeline dayanır. Maddeleri Türkiye’deki öğrenciler için özgün olarak yazılmıştır ve test şu anda pilot aşamadadır: güvenirlik ve geçerlik çalışması henüz yapılmamıştır.
 
 ## Sonuç nasıl kullanılmalı?
 

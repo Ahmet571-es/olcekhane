@@ -8,6 +8,9 @@ import { AssentStep, IntroStep, ProgressRuler } from './likert-runner';
 type Question = { key: string; text: string; options: { key: string; text: string }[] };
 type Phase = 'assent' | 'intro' | 'ready' | 'reading' | 'questions' | 'submitting';
 
+/** Hızlı test: sonuç sunucuya kaydedilmez; okuma süresi ve cevaplar işleyiciye verilir. */
+export type LocalReading = { onFinish: (result: { passageKey: string; readingMs: number; answers: Record<string, string> }) => Promise<void> };
+
 export function ReadingRunner(props: {
   attemptId: string;
   studentName: string;
@@ -16,7 +19,9 @@ export function ReadingRunner(props: {
   assentHtml: string | null;
   reportUrl: string;
   exitUrl: string;
+  local?: LocalReading;
 }) {
+  const { local } = props;
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>(props.assentHtml ? 'assent' : 'intro');
   const [qIndex, setQIndex] = useState(0);
@@ -34,8 +39,26 @@ export function ReadingRunner(props: {
     }
   }, [phase, qIndex]);
 
+  // Hızlı testte okuma başladıktan sonra sayfadan ayrılmak bütün cevapları siler.
+  const unsaved = !!local && (phase === 'reading' || phase === 'questions' || phase === 'submitting');
+  useEffect(() => {
+    if (!unsaved) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [unsaved]);
+
   async function submit() {
     setPhase('submitting');
+    if (local) {
+      try {
+        await local.onFinish({ passageKey: props.passage.key, readingMs: readingMs.current, answers });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Rapor hazırlanamadı.');
+        setPhase('questions');
+      }
+      return;
+    }
     try {
       const res = await fetch(`/api/attempts/${props.attemptId}/reading`, {
         method: 'POST',

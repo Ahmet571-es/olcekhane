@@ -13,6 +13,7 @@ import { consentReceiptTemplate } from '@/lib/email/templates';
 import { rateLimit } from '@/lib/rate-limit';
 import { appUrl, clientIpBucket } from '@/lib/request';
 import { consentRequestByToken } from '@/lib/school/consent-requests';
+import { accountsOpen } from '@/lib/site';
 
 /**
  * Okulun e-postayla gönderdiği bağlantıdan velinin kararı. Aydınlatma metninin okunduğu beyanı ile
@@ -31,6 +32,8 @@ export async function consentDecisionAction(token: string, formData: FormData): 
   }
   const decision = String(formData.get('decision') ?? '');
   if (!['grant', 'decline', 'revoke', 'revoke_research'].includes(decision)) redirect(back);
+  // Hesaplar kapalıyken yeni onay alınmaz; verilmiş rızayı geri almak ve onay vermemek her zaman mümkündür.
+  if (decision === 'grant' && !accountsOpen()) redirect(`${back}?hata=kapali`);
   // Onay vermek ya da reddetmek için bağlantı güncel ve süresi dolmamış olmalı; geri almanın kuralı ayrıdır.
   if ((decision === 'grant' || decision === 'decline') && !first.canDecide) redirect(`${back}?hata=sure`);
   if ((decision === 'revoke' || decision === 'revoke_research') && !first.canRevoke) redirect(back);
@@ -105,6 +108,7 @@ export async function linkStudentAction(token: string, formData: FormData): Prom
   const req = await consentRequestByToken(token);
   const back = `/veli-onayi/${encodeURIComponent(token)}`;
   if (!req) redirect(back);
+  if (!accountsOpen()) redirect(`${back}?hata=kapali`);
   if (!req.canDecide) redirect(`${back}?hata=sure`);
   const s = await getSession();
   if (s?.kind !== 'user') redirect(`/giris?sonra=${encodeURIComponent(back)}`);

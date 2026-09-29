@@ -5,7 +5,7 @@ import { publicInstruments } from '@/content/instruments';
 import { db } from '@/db';
 import { jobRuns, legalDocuments } from '@/db/schema';
 import { lastSuccessfulRun } from '@/lib/jobs/purge';
-import { missingCompanyFields } from '@/lib/site';
+import { accountsOpen, missingCompanyFields } from '@/lib/site';
 
 export type CheckStatus = 'ok' | 'warn' | 'fail' | 'info';
 
@@ -101,6 +101,16 @@ export async function readinessChecks(): Promise<ReadinessCheck[]> {
     detail: indexing
       ? 'Açık: site haritası yayında, sayfalar dizine eklenebilir.'
       : 'Kapalı: bütün sayfalar “noindex” ile sunuluyor. Hazırlık ortamı için doğru; yayına geçerken açın.',
+  });
+
+  const accounts = accountsOpen();
+  out.push({
+    key: 'accounts',
+    label: 'Hesap bölümü (ACCOUNTS_ENABLED)',
+    status: accounts ? 'warn' : 'info',
+    detail: accounts
+      ? 'Açık: veli, okul ve öğrenci hesapları kullanılabiliyor. Aydınlatma metni, kullanım koşulları ve tanıtım sayfaları şu an hızlı test modunu anlatıyor; hesaplarda işlenen verileri anlatan sürümleri yayımlanmadan hesapları açık tutmayın.'
+      : 'Kapalı (hızlı test modu): testler hesap açmadan çözülüyor ve cevaplar saklanmıyor. Kayıt, öğrenci girişi, okul daveti ve yeni veli onayları kapalı; giriş sayfası yalnızca yöneticiler için.',
   });
 
   if (prod && env.SESSION_COOKIE_SECURE === 'false') {

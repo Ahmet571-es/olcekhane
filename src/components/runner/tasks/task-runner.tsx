@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { childAssentAction } from '@/app/uygulama/actions';
 import type { CognitiveTask } from '@/lib/instruments/types';
 import { AssentStep, IntroStep } from '../likert-runner';
@@ -37,6 +37,12 @@ function TaskSteps({ tasks, done, current }: { tasks: CognitiveTask[]; done: Set
   );
 }
 
+/**
+ * Hızlı test: görevlerin denemeleri sunucuya tek tek gönderilmez, cihazda tutulur; bütün görevler
+ * bitince hepsi birden verilir. `attemptId` bu durumda harf işaretleme sayfalarının tohumudur.
+ */
+export type LocalTasks = { onFinish: (blocks: Record<string, unknown[]>) => Promise<void> };
+
 export function TaskRunner(props: {
   attemptId: string;
   studentName: string;
@@ -46,18 +52,41 @@ export function TaskRunner(props: {
   assentHtml: string | null;
   reportUrl: string;
   exitUrl: string;
+  local?: LocalTasks;
 }) {
-  const { tasks, attemptId } = props;
+  const { tasks, attemptId, local } = props;
   const router = useRouter();
   const [done, setDone] = useState(() => new Set(props.doneBlocks));
   const [phase, setPhase] = useState<Phase>(props.assentHtml ? 'assent' : 'intro');
   const [fatal, setFatal] = useState<string | null>(null);
+  const [finishError, setFinishError] = useState<string | null>(null);
+  const blocks = useRef(new Map<string, unknown[]>());
   const current = tasks.findIndex((t) => !done.has(t.key));
   const task = current === -1 ? null : tasks[current];
 
-  useLeaveWarning(phase === 'task' || phase === 'saving');
+  // Hızlı testte yapılan görevler yalnızca bu sayfada durur: başladıktan sonra ayrılmadan önce uyarılır.
+  useLeaveWarning(phase === 'task' || phase === 'saving' || (!!local && phase !== 'intro' && phase !== 'assent'));
+
+  async function finishLocal(l: LocalTasks) {
+    setPhase('finishing');
+    setFinishError(null);
+    try {
+      await l.onFinish(Object.fromEntries(blocks.current));
+    } catch (err) {
+      setFinishError(err instanceof Error ? err.message : 'Rapor hazırlanamadı. Lütfen tekrar deneyin.');
+    }
+  }
 
   async function save(block: string, trials: unknown[]) {
+    if (local) {
+      blocks.current.set(block, trials);
+      const next = new Set(done);
+      next.add(block);
+      setDone(next);
+      if (next.size >= tasks.length) void finishLocal(local);
+      else setPhase('between');
+      return;
+    }
     setPhase('saving');
     let backoff = 800;
     for (let attempt = 0; attempt < 6; attempt++) {
@@ -144,7 +173,7 @@ export function TaskRunner(props: {
         paragraphs={resuming ? [`${done.size} görevi tamamlamışsın. Kaldığın yerden devam edebilirsin.`] : props.intro.paragraphs}
         cta={resuming ? 'Kaldığın yerden devam et' : 'Başla'}
         onStart={() => {
-          if (!task) void finish();
+          if (!task) void (local ? finishLocal(local) : finish());
           else setPhase('task-intro');
         }}
       />
@@ -155,7 +184,16 @@ export function TaskRunner(props: {
     return (
       <div className="mx-auto flex max-w-xl flex-col items-center gap-4 text-center">
         <h1 className="t-h1">Bütün görevleri bitirdin!</h1>
-        <p className="text-lg text-ink-2">Sonuçların hesaplanıyor…</p>
+        {finishError && local ? (
+          <>
+            <p className="notice notice-danger text-left">{finishError}</p>
+            <button type="button" className="btn btn-primary btn-lg" onClick={() => void finishLocal(local)}>
+              Tekrar dene
+            </button>
+          </>
+        ) : (
+          <p className="text-lg text-ink-2">Sonuçların hesaplanıyor…</p>
+        )}
       </div>
     );
   }
@@ -172,9 +210,11 @@ export function TaskRunner(props: {
           <button type="button" className="btn btn-primary btn-lg" autoFocus onClick={() => setPhase('task-intro')}>
             Sonraki göreve geç
           </button>
-          <a href={props.exitUrl} className="btn btn-secondary btn-lg">
-            Ara ver, sonra devam et
-          </a>
+          {!local && (
+            <a href={props.exitUrl} className="btn btn-secondary btn-lg">
+              Ara ver, sonra devam et
+            </a>
+          )}
         </div>
       </div>
     );

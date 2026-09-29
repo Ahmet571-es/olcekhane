@@ -1,7 +1,7 @@
 export const SITE_NAME = 'Ölçekhane';
 export const SITE_TAGLINE = 'Öğrenciler için bilimsel kişilik, ilgi ve öğrenme testleri';
 export const SITE_DESCRIPTION =
-  'Ölçekhane, öğrencilerin kişiliğini, ilgi alanlarını ve öğrenme becerilerini araştırmalarla desteklenmiş ölçeklerle inceler; sonuçları öğrenciye, veliye ve öğretmene ayrı ayrı, sade bir dille anlatır.';
+  'Ölçekhane, öğrencilerin kişiliğini, ilgi alanlarını ve öğrenme becerilerini araştırmalarla desteklenmiş ölçeklerle inceler; sonuçları öğrenciye ve veliye ayrı ayrı, sade bir dille anlatır.';
 
 export function siteUrl(path = ''): string {
   const base = (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/$/, '');

@@ -30,14 +30,13 @@ export const matematik: QuizInstrument = {
   tagline:
     'Bir önceki sınıfın temel konularını yoklayan hazırbulunuşluk testi: neyin sağlam, neyin eksik olduğunu ve yanlışların hangi hatadan kaynaklandığını gösterir.',
   description:
-    'Matematikte her konu bir öncekinin üzerine kurulur; bu yüzden eksikleri erken fark etmek önemlidir. Bu testte öğrenci, bulunduğu sınıftan bir önceki sınıfın temel konularını yoklayan 20 soru çözer. Yanlış seçenekler, öğrencilerin sık yaptığı hatalara göre hazırlanmıştır. Rapor yalnızca kaç sorunun doğru olduğunu değil, yanlışların hangi hata türüne işaret ettiğini ve bunun için neler yapılabileceğini de anlatır.',
+    'Matematikte her konu bir öncekinin üzerine kurulur; bu yüzden eksikleri erken fark etmek önemlidir. Bu testte öğrenci, bulunduğu sınıftan bir önceki sınıfın temel konularını yoklayan 20 soru çözer. Yanlış seçenekler, öğrencilerin sık yaptığı hatalara göre hazırlanmıştır. Rapor yalnızca kaç sorunun doğru olduğunu değil, yanlışların hangi hata türüne işaret ettiğini de gösterir.',
   intro: {
     title: 'Matematik tanı testi',
     paragraphs: [
       'Birazdan 20 matematik sorusu göreceksin. Sorular bir önceki sınıfta öğrendiğin konulardan seçildi.',
       'Kâğıt ve kalem kullanabilirsin; hesap makinesi kullanma. Acele etmene gerek yok.',
       'Bir sorunun cevabını bilmiyorsan tahmin etme, “Bilmiyorum” düğmesine bas. Böylece rapor neyi bilip neyi henüz öğrenmediğini daha doğru gösterir.',
-      'İstediğin zaman ara verebilirsin; cevapların kaydedilir.',
     ],
   },
   scales: [
@@ -59,7 +58,7 @@ export const matematik: QuizInstrument = {
     turkishVersion:
       'Özgün Türkçe test; çeviri değildir. Her sınıf için ayrı bir form vardır (5., 6., 7. ve 8. sınıflar için 20’şer soru). Her alanda 4 soru bulunur.',
     reliability:
-      'Pilot aşamasındadır. Soruların güçlüğü ve ayırt ediciliği ile formların güvenirliği (KR-20), velilerin ayrıca izin verdiği verilerle incelenecek ve sonuçlar burada yayımlanacaktır.',
+      'Pilot aşamasındadır. Soruların güçlüğü ve ayırt ediciliği ile formların güvenirliği (KR-20) henüz incelenmedi; sonuçlar hazır olduğunda burada yayımlanacak.',
     normStatus: 'none',
     normNote:
       'Türkiye normu yoktur; sonuçlar ölçüt temellidir. Bir alanda 4 sorudan en az 3’ünü doğru yapmak “sağlam”, 2’sini doğru yapmak “pekiştirilmeli”, daha azını doğru yapmak “öncelikli” olarak yorumlanır. Testin geneli için de aynı oranlar kullanılır (20 sorudan en az 15 ve en az 10 doğru).',
@@ -71,7 +70,7 @@ export const matematik: QuizInstrument = {
       'Öğretim programı değişikliği sürecinde bazı konular okullarda farklı sınıflarda işlenebilir. Henüz işlenmemiş bir konudaki yanlış, eksik değil öğretilmemiş olduğunu gösterebilir.',
       'Tek bir yanlış seçenek bir hata türünü kesin olarak göstermez; dikkatsizlik ya da tahmin de olabilir. Aynı hata türü birden fazla soruda görüldüğünde işaret daha güçlüdür.',
       'Aynı form ikinci kez çözüldüğünde soruların hatırlanması puanı yükseltebilir; bu yüzden tekrarlanan sonuçlar dikkatle karşılaştırılmalıdır.',
-      'Pilot aşamasındadır: soru istatistikleri ve güvenirlik çalışması sürmektedir.',
+      'Pilot aşamasındadır: soru istatistikleri ve güvenirlik çalışması henüz yapılmadı.',
     ],
     citations: [
       {

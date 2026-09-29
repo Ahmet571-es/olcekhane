@@ -5,32 +5,32 @@ import { pageMeta } from '@/lib/seo';
 export const metadata = pageMeta({
   title: 'Veliler için: çocuğunuzu bilimsel testlerle tanıyın',
   description:
-    'Ölçekhane veliler için nasıl çalışır? Ücretsiz hesap, çocuk profili, açık rıza, test ve iki ayrı rapor. Raporu çocuğunuzla nasıl konuşacağınız ve ne zaman bir uzmana başvurmanız gerektiği.',
+    'Ölçekhane veliler için nasıl çalışır? Hesap açmadan ücretsiz test, öğrenci ve veli için iki ayrı rapor, PDF olarak. Raporu çocuğunuzla nasıl konuşacağınız ve ne zaman bir uzmana başvurmanız gerektiği.',
   path: '/veliler-icin',
-    ownImage: true,
+  ownImage: true,
 });
 
 const STEPS = [
   {
-    t: 'Ücretsiz hesap açın',
-    d: 'Adınız, e-posta adresiniz ve bir şifre yeterli. E-posta adresinizi doğruladıktan sonra testleri başlatabilirsiniz.',
+    t: 'Bir test seçin',
+    d: 'Testler sayfasından çocuğunuza uygun bir test seçin. Her testin süresi, uygun olduğu sınıflar ve bilimsel dayanağı test sayfasında yazıyor.',
   },
   {
-    t: 'Çocuğunuzun profilini oluşturun',
-    d: 'Adını ve sınıfını girin. Test verilerinin işlenmesi için açık rızanızı ayrı bir metinle istiyoruz; rızanızı istediğiniz zaman geri alabilirsiniz.',
+    t: 'Sınıfı seçip başlayın',
+    d: 'Hesap açmanız gerekmez; ad, e-posta ya da telefon istemiyoruz. Yalnızca sınıfı seçersiniz, çünkü sorular ve rapor sınıf düzeyine göre hazırlanır.',
   },
   {
-    t: 'Testi birlikte başlatın',
-    d: 'Testi siz başlatın, cihazı çocuğunuza verin. Çocuğunuz önce kendi yaşına göre yazılmış kısa bir bilgilendirmeyi okur. Sessiz bir ortam ve acele etmemek en doğru sonucu verir.',
+    t: 'Testi çocuğunuz çözsün',
+    d: 'Cihazı çocuğunuza verin; yakınında olun ama cevaplara karışmayın. Sessiz bir ortam ve acele etmemek en doğru sonucu verir. Testi tek seferde bitirin: sayfa kapanırsa cevaplar silinir.',
   },
   {
-    t: 'Raporu birlikte okuyun',
-    d: 'Test biter bitmez iki rapor hazırlanır: biri size, biri çocuğunuza. Önce onun raporunu birlikte okumanızı öneririz.',
+    t: 'Raporu birlikte okuyun, PDF olarak saklayın',
+    d: 'Test biter bitmez iki rapor hazırlanır: biri size, biri çocuğunuza. Raporlar hiçbir yerde saklanmaz; saklamak için PDF olarak indirin. Önce çocuğunuzun raporunu birlikte okumanızı öneririz.',
   },
 ];
 
 const TALK = [
-  'Güçlü yanlardan başlayın. Her raporda çocuğunuzun iyi yaptığı ya da doğal olarak kolay gelen şeyler yazıyor.',
+  'Güçlü yanlardan başlayın. Raporda çocuğunuzun iyi yaptığı ya da ona kolay gelen şeyleri bulun ve önce onları konuşun.',
   '“Sence bu seni anlatıyor mu?” diye sorun. Çocuğunuzun katılmadığı yerler, raporun kendisi kadar değerlidir.',
   'Etiket kullanmayın. “Sen içe dönüksün” yerine “Kalabalık yerine küçük grupları seviyorsun gibi görünüyor” demek, değişim ve gelişim için alan bırakır.',
   'Kardeşlerle ya da arkadaşlarıyla karşılaştırmayın. Kişilik boyutlarında iyi ya da kötü uç yoktur.',
@@ -45,12 +45,12 @@ export default function ParentsPage() {
         lede="Çocuğunuzu en iyi siz tanırsınız. Ölçekhane bu bilgiye bilimsel ölçümlerden gelen ikinci bir bakış ekler: çocuğunuzun kendini nasıl gördüğü, neye ilgi duyduğu ve nasıl öğrendiği."
       >
         <div className="flex flex-wrap gap-3">
-          <Link href="/kayit" className="btn btn-primary btn-lg">
-            Ücretsiz veli hesabı aç
+          <Link href="/testler" className="btn btn-primary btn-lg">
+            Ücretsiz test çöz
           </Link>
-          <Link href="/testler" className="btn btn-secondary btn-lg">
-            Testleri incele
-          </Link>
+          <a href="#nasil" className="btn btn-secondary btn-lg">
+            Nasıl işler?
+          </a>
         </div>
       </PageHeader>
 
@@ -90,9 +90,9 @@ export default function ParentsPage() {
 
       <Section id="gelisim" title="Gelişimini izleyin" className="border-t border-rule">
         <p className="measure">
-          Aynı testi aradan zaman geçtikten sonra yeniden çözebilirsiniz. Her uygulama tarihiyle birlikte profilde saklanır; böylece
-          çocuğunuzun zaman içinde nasıl değiştiğini görebilirsiniz. Kişilik ölçümlerinde anlamlı bir değişim görmek için genellikle en az
-          6–12 ay beklemek gerekir; okuma gibi becerilerde ise bir dönem sonra yapılan tekrar fikir verir.
+          Aynı testi aradan zaman geçtikten sonra yeniden çözebilirsiniz. Sonuçları biz saklamadığımız için karşılaştırmak isterseniz her
+          seferinde raporu PDF olarak indirip saklayın; raporda testin tarihi yazar. Kişilik ölçümlerinde anlamlı bir değişim görmek için
+          genellikle en az 6–12 ay beklemek gerekir; okuma gibi becerilerde ise bir dönem sonra yapılan tekrar fikir verir.
         </p>
       </Section>
 
@@ -117,10 +117,10 @@ export default function ParentsPage() {
 
       <Section id="gizlilik" title="Çocuğunuzun verileri" className="border-t border-rule">
         <ul className="measure flex list-disc flex-col gap-2 pl-5">
-          <li>Çocuğunuzun e-posta adresini ya da kimlik numarasını istemiyoruz.</li>
-          <li>Sonuçları veli hesabında yalnızca siz görürsünüz.</li>
-          <li>Veriler Türkiye’deki sunucularda tutulur; reklam, pazarlama ya da yapay zekâ eğitimi için kullanılmaz.</li>
-          <li>Açık rızanızı geri alabilir, profili ve bütün sonuçları silebilirsiniz.</li>
+          <li>Hesap açmanız gerekmez. Sizden ya da çocuğunuzdan ad, e-posta, telefon ya da kimlik numarası istemiyoruz.</li>
+          <li>Cevaplar yalnızca raporu hazırlamak için kullanılır; veritabanına ya da dosyaya kaydedilmez.</li>
+          <li>Raporun tek kopyası size verilen PDF’tir. Kiminle paylaşacağınıza siz karar verirsiniz.</li>
+          <li>Sitemizin sunucusu Almanya’dadır (Avrupa Birliği). Reklam, izleme ya da analiz çerezi kullanmıyoruz.</li>
         </ul>
         <p>
           Ayrıntılar: <Link href="/yasal/aydinlatma-metni">KVKK aydınlatma metni</Link>

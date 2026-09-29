@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { users } from '@/db/schema';
+import { AccountsClosed } from '@/components/site/accounts-closed';
 import { getSession } from '@/lib/auth/session';
 import { ROLE_LABELS } from '@/lib/school/access';
 import { inviteDetails } from '@/lib/school/invites';
+import { accountsOpen } from '@/lib/site';
 import { logoutAction } from '../../actions';
 import { acceptInviteAction } from '../actions';
 import { InviteRegisterForm } from './invite-register-form';
@@ -14,6 +16,7 @@ export const metadata: Metadata = { title: 'Okul ekibine davet', robots: { index
 
 export default async function InvitePage(props: PageProps<'/davet/[token]'>) {
   const { token } = await props.params;
+  if (!accountsOpen()) return <AccountsClosed title="Okul davetleri şu an kullanılamıyor" />;
   const inv = await inviteDetails(token);
   if (!inv) {
     return (

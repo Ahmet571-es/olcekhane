@@ -1,31 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
+import { taskTrial } from '@/lib/assessment/schemas';
 import { AssessmentError, saveTaskBlock } from '@/lib/assessment/service';
 import { guardAttempt, jsonError } from '@/lib/api-guard';
 import { rateLimit } from '@/lib/rate-limit';
 
-/** Harf işaretleme bölümü: bölüm sonunda işaretli harflerin sırası ve işaretlenme zamanları. */
-const cancellationResponse = z.object({
-  marks: z.array(z.number().int().min(0).max(4999)).max(5000),
-  times: z.array(z.number().min(0).max(600_000)).max(5000),
-  unmarks: z.number().int().min(0).max(100_000),
-});
 /** Bir bilişsel görevin bütün denemeleri tek istekte gelir; doğruluk sunucuda yeniden hesaplanır. */
-const trial = z.object({
-  length: z.number().int().min(1).max(20).optional(),
-  index: z.number().int().min(0).max(1000),
-  response: z.union([
-    z.array(z.number().int().min(0).max(9)).max(12),
-    z.enum(['L', 'R']),
-    z.number().int().min(1).max(9),
-    cancellationResponse,
-    z.null(),
-  ]),
-  rtMs: z.number().min(0).max(120_000).nullable(),
-});
 const body = z.object({
   block: z.string().min(1).max(40),
-  trials: z.array(trial).min(1).max(400),
+  trials: z.array(taskTrial).min(1).max(400),
 });
 
 export async function POST(req: NextRequest, ctx: RouteContext<'/api/attempts/[id]/task'>) {

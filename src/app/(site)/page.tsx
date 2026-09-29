@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { JsonLd } from '@/components/seo/json-ld';
 import { ReportPreview } from '@/components/site/report-preview';
 import { TestShelf } from '@/components/site/test-shelf';
+import { publicInstruments } from '@/content/instruments';
 import { GUIDE_CATEGORIES, guideBySlug } from '@/content/rehber';
 import { HeroVisual } from '@/components/three/hero-visual';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, siteUrl } from '@/lib/config';
 import { pageMeta } from '@/lib/seo';
+import { accountsOpen } from '@/lib/site';
 
 export const metadata = pageMeta({
   title: `${SITE_NAME}: ${SITE_TAGLINE}`,
@@ -21,16 +23,16 @@ const PRINCIPLES = [
     d: 'Her test, yayımlanmış ve kullanım izni uygun bir ölçeğe ya da bizim geliştirip açıkça belgelediğimiz bir göreve dayanır. Ticari kullanım izni olmayan ölçekleri kullanmıyoruz.',
   },
   {
-    t: 'Norm durumunu saklamıyoruz',
-    d: 'Türkiye normu henüz hazır olmayan testlerde bunu raporda açıkça yazıyoruz. Normları, velilerin isteğe bağlı izniyle, anonimleştirilmiş verilerden oluşturuyoruz.',
+    t: 'Norm durumunu açıkça yazıyoruz',
+    d: 'Türkiye normu henüz hazır olmayan testlerde bunu raporda açıkça yazıyor, sonucu akranlarla karşılaştırıyormuş gibi göstermiyoruz.',
   },
   {
     t: 'Tanı koymuyoruz',
     d: 'Raporlar çocuğu etiketlemez; güçlü yanları ve gelişim alanlarını anlatır. Gerektiğinde okulun rehberlik servisine ya da bir uzmana başvurmanızı öneririz.',
   },
   {
-    t: 'Veriler Türkiye’de',
-    d: 'Sunucularımız Türkiye’de. Çocuk verisini reklam, pazarlama ya da yapay zekâ eğitimi için kullanmıyoruz. Açık rızanızı dilediğiniz an geri alabilirsiniz.',
+    t: 'Hiçbir şey saklanmaz',
+    d: 'Hesap açmanız gerekmez; ad, e-posta ya da telefon istemiyoruz. Cevaplar yalnızca raporu hazırlamak için kullanılır ve hiçbir yere kaydedilmez. Raporun tek kopyası size verilen PDF’tir.',
   },
 ];
 
@@ -38,34 +40,47 @@ const FEATURED_GUIDES = ['sinav-kaygisi', 'etkili-ders-calisma-yontemleri', 'kis
   .map((slug) => guideBySlug(slug))
   .filter((g) => g !== undefined);
 
-const FAQ = [
+const LIVE = publicInstruments();
+const SHORTEST = Math.min(...LIVE.map((t) => t.estimatedMinutes));
+const LONGEST = Math.max(...LIVE.map((t) => t.estimatedMinutes));
+
+const faq = (accounts: boolean) => [
   {
     q: 'Testler tanı koyar mı?',
     a: 'Hayır. Ölçekhane’deki testler öğrencinin kendini nasıl gördüğünü, ilgilerini ve bazı becerilerini ölçer. Bir psikolojik ya da tıbbi tanı değildir. Endişe verici bir durum fark ederseniz okulun rehberlik servisine ya da bir uzmana başvurmanızı öneririz.',
   },
   {
+    q: 'Hesap açmam gerekiyor mu?',
+    a: `Hayır. Testi seçer, sınıfı işaretler ve hemen başlarsınız; ad, e-posta ya da telefon istemiyoruz.${accounts ? '' : ' Veli ve okul hesapları şu an kapalı. Okulunuz için ön başvuruyu iletişim formundan yapabilirsiniz.'}`,
+  },
+  {
+    q: 'Cevaplarım ve rapor saklanıyor mu?',
+    a: 'Hayır. Cevaplar raporu hazırlamak için sunucumuza gönderilir ama veritabanına ya da dosyaya yazılmaz. Rapor ekranda gösterilir ve PDF olarak size verilir; sayfayı kapattıktan sonra raporu yeniden gösteremeyiz. Bu yüzden raporu PDF olarak indirmenizi öneririz. Sunucumuz Almanya’dadır; ayrıntılar KVKK aydınlatma metninde.',
+  },
+  {
     q: 'Hangi yaşlar için uygun?',
-    a: 'Okuma görevi 3. sınıftan, kişilik profili ve öz-saygı ölçeği 6. sınıftan itibaren uygulanabilir. Her testin uygun olduğu sınıf aralığı test sayfasında yazıyor; sistem yalnızca çocuğunuzun sınıfına uygun testleri gösterir.',
+    a: 'Testlerin çoğu ortaokul ve lise öğrencileri içindir; okuma görevi ve harf işaretleme görevi 3. sınıftan itibaren uygulanabilir. Her testin uygun olduğu sınıf aralığı test sayfasında yazıyor; teste başlarken yalnızca bu aralıktaki sınıflar seçilebilir.',
   },
   {
     q: 'Bir test ne kadar sürüyor?',
-    a: 'Şu anki testler 3 ile 8 dakika arasında sürüyor. İstediğiniz an ara verebilir, kaldığınız yerden devam edebilirsiniz.',
+    a: `Testler ${SHORTEST} ile ${LONGEST} dakika arasında sürüyor; her testin süresi test sayfasında yazıyor. Testi tek seferde bitirin: sayfa kapanırsa cevaplar silinir ve baştan başlamanız gerekir.`,
   },
   {
     q: 'Sonuçları kimler görebilir?',
-    a: 'Veli hesabında sonuçları yalnızca siz görürsünüz. Okul hesaplarında, velinin onayıyla, okulun rehber öğretmeni bireysel raporu görebilir; öğretmenler yalnızca en az beş öğrencilik grupların özetini görür.',
+    a: 'Rapor yalnızca sizin ekranınızda gösterilir ve PDF olarak size verilir. Biz saklamadığımız için başka hiç kimseye gösterilmez; PDF’i kiminle paylaşacağınıza siz karar verirsiniz.',
   },
   {
     q: '"Pilot" etiketi ne anlama geliyor?',
-    a: 'Pilot testlerin Türkçe geçerlik ve norm çalışması sürüyor. Bu testler ücretsizdir ve raporlarında bu durum açıkça belirtilir.',
+    a: 'Pilot testlerin Türkçe geçerlik ve norm çalışmaları henüz yapılmadı. Bu testlerin sonuçları akranlarla karşılaştırılmadan yorumlanır ve raporda bu durum açıkça belirtilir.',
   },
   {
     q: 'Ücretli mi?',
-    a: 'Veli hesabı ve şu anda yayında olan testler ücretsizdir. İleride eklenecek kapsamlı paketler ücretli olacak; ücretli bir test başlatmadan önce fiyat açıkça gösterilir.',
+    a: 'Testler ve ekranda gösterilen, PDF olarak indirilen rapor ücretsizdir. Önerilerle zenginleştirilmiş kapsamlı rapor ileride ücretli olarak sunulacak; ödeme yapmadan önce fiyatı açıkça göreceksiniz.',
   },
 ];
 
 export default function Home() {
+  const accounts = accountsOpen();
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -114,14 +129,14 @@ export default function Home() {
               Sonucu öğrenciye ve veliye ayrı ayrı, herkesin anlayacağı bir dille anlatıyoruz.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/kayit" className="btn btn-primary btn-lg">
-                Ücretsiz başla
+              <Link href="/testler" className="btn btn-primary btn-lg">
+                Ücretsiz test çöz
               </Link>
-              <Link href="/testler" className="btn btn-secondary btn-lg">
-                Testleri incele
-              </Link>
+              <a href="#rapor" className="btn btn-secondary btn-lg">
+                Örnek rapor
+              </a>
             </div>
-            <p className="t-meta measure">Kişilik profili, öz-saygı ölçeği ve okuma görevi ücretsiz. Kredi kartı bilgisi istemiyoruz.</p>
+            <p className="t-meta measure">Bütün testler ücretsiz ve hesap açmadan çözülür. Ad, e-posta ya da kredi kartı bilgisi istemiyoruz; cevaplar saklanmaz.</p>
           </div>
           <HeroVisual />
         </div>
@@ -134,8 +149,8 @@ export default function Home() {
             Neyi, hangi araçla ölçüyoruz?
           </h2>
           <p className="t-lede measure">
-            Her testin hangi bilimsel ölçeğe dayandığını, Türkçe sürümünün durumunu ve sınırlarını açıkça yazıyoruz. Hazırlanan testleri de
-            saklamıyoruz.
+            Her testin hangi bilimsel ölçeğe dayandığını, Türkçe sürümünün durumunu ve sınırlarını açıkça yazıyoruz. Hazırlanmakta olan testleri
+            de burada gösteriyoruz.
           </p>
         </div>
         <TestShelf />
@@ -150,7 +165,7 @@ export default function Home() {
             </h2>
             <p className="t-lede measure">
               On üç yaşındaki bir öğrencinin okuyacağı rapor ile velisinin okuyacağı rapor aynı olmamalı. Her sonucu öğrenciye kendi diliyle,
-              veliye de evde neler yapılabileceğiyle birlikte anlatıyoruz.
+              veliye de ayrıca anlatıyoruz. İki raporu da PDF olarak indirebilirsiniz.
             </p>
           </div>
           <ReportPreview />
@@ -186,12 +201,12 @@ export default function Home() {
           <div className="flex flex-col gap-4 bg-surface p-8 md:p-10">
             <h2 className="t-h2">Veliler için</h2>
             <p className="text-ink-2">
-              Çocuğunuzun kendini nasıl gördüğünü, nelerden hoşlandığını ve nasıl öğrendiğini anlamak için. Profil oluşturun, testi birlikte
-              başlatın, raporu birlikte okuyun. Zaman içinde tekrarlayarak gelişimini izleyin.
+              Çocuğunuzun kendini nasıl gördüğünü, nelerden hoşlandığını ve nasıl öğrendiğini anlamak için. Testi birlikte seçin, çocuğunuz
+              çözsün, raporu birlikte okuyun. Raporu PDF olarak saklayıp aradan zaman geçince yeniden çözerek karşılaştırabilirsiniz.
             </p>
             <div className="mt-auto pt-2">
-              <Link href="/kayit" className="btn btn-primary">
-                Veli hesabı aç
+              <Link href="/veliler-icin" className="btn btn-primary">
+                Veliler için
               </Link>
             </div>
           </div>
@@ -199,7 +214,7 @@ export default function Home() {
             <h2 className="t-h2">Okullar için</h2>
             <p className="opacity-85">
               Rehberlik servisleri için sınıf düzeyinde uygulama: veli onayı çevrim içi alınır, rehber öğretmen bireysel raporları görür,
-              öğretmenler yalnızca grup özetlerini görür.
+              öğretmenler yalnızca grup özetlerini görür.{accounts ? '' : ' Okul paneli şu an kapalı; ön başvuruları alıyoruz.'}
             </p>
             <div className="mt-auto pt-2">
               <Link href="/okullar-icin" className="btn border-paper/40 bg-transparent text-paper hover:border-paper">
@@ -242,7 +257,7 @@ export default function Home() {
             Sık sorulanlar
           </h2>
           <div className="divide-y divide-rule border-y border-rule">
-            {FAQ.map((f) => (
+            {faq(accounts).map((f) => (
               <details key={f.q} className="group py-5">
                 <summary className="flex cursor-pointer list-none items-start justify-between gap-6 font-display text-lg font-bold">
                   {f.q}

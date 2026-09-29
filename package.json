@@ -21,6 +21,7 @@
     "@fontsource/atkinson-hyperlegible-next": "^5.3.0",
     "@fontsource/bricolage-grotesque": "^5.3.0",
     "@node-rs/argon2": "^2.2.1",
+    "@react-pdf/renderer": "^4.9.0",
     "@react-three/fiber": "^9.8.1",
     "drizzle-orm": "^0.45.3",
     "markdown-it": "^15.0.2",

@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { PageHeader, Section } from '@/components/site/page-header';
 import { pageMeta } from '@/lib/seo';
+import { accountsOpen } from '@/lib/site';
 
 export const metadata = pageMeta({
   title: 'Okullar ve rehberlik servisleri için',
   description:
-    'Rehberlik servisleri için çevrim içi ölçme platformu: sınıf yönetimi, e-postayla veli onayı, rehber öğretmene bireysel rapor, öğretmenlere yalnızca grup özeti. Veriler Türkiye’de.',
+    'Rehberlik servisleri için çevrim içi ölçme platformu: sınıf yönetimi, e-postayla veli onayı, rehber öğretmene bireysel rapor, öğretmenlere yalnızca grup özeti. Okul paneli için ön başvurular açık.',
   path: '/okullar-icin',
-    ownImage: true,
+  ownImage: true,
 });
 
 const FEATURES = [
@@ -32,25 +33,34 @@ const FEATURES = [
     d: 'Testleri sınıflara atayın, kimin tamamladığını izleyin. Uygun sınıf düzeyi dışındaki testler atanamaz.',
   },
   {
-    t: 'Veriler Türkiye’de',
-    d: 'Sunucular Türkiye’dedir. Öğrenci verileri reklam, pazarlama ya da yapay zekâ eğitimi için kullanılmaz.',
+    t: 'Veriler yalnızca rapor için',
+    d: 'Öğrenci verileri reklam, pazarlama ya da yapay zekâ eğitimi için kullanılmaz; kimseye satılmaz.',
   },
 ];
 
 export default function SchoolsPage() {
+  const open = accountsOpen();
   return (
     <>
       <PageHeader
         title="Okullar ve rehberlik servisleri için"
         lede="Rehber öğretmenlerin bireyi tanıma çalışmalarını destekleyen, veli onayını çevrim içi toplayan ve sonuçları doğru kişiye doğru ayrıntıda gösteren bir ölçme platformu."
       >
-        <div className="flex flex-wrap gap-3">
-          <Link href="/iletisim?konu=school" className="btn btn-primary btn-lg">
-            Okul başvurusu yapın
-          </Link>
-          <Link href="/bilimsel-yaklasim" className="btn btn-secondary btn-lg">
-            Bilimsel yaklaşımımız
-          </Link>
+        <div className="flex flex-col gap-5">
+          {!open && (
+            <p className="notice notice-info measure">
+              Okul paneli şu an kullanıma kapalı; ön başvuruları alıyoruz. Aşağıda panelin özelliklerini anlatıyoruz. Bu arada öğrencileriniz
+              testleri hesap açmadan, ücretsiz çözebilir: cevaplar saklanmaz, rapor PDF olarak verilir.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3">
+            <Link href="/iletisim?konu=school" className="btn btn-primary btn-lg">
+              Ön başvuru yapın
+            </Link>
+            <Link href="/testler" className="btn btn-secondary btn-lg">
+              Testlere göz atın
+            </Link>
+          </div>
         </div>
       </PageHeader>
 
@@ -106,7 +116,7 @@ export default function SchoolsPage() {
       <Section id="surec" title="Nasıl başlarsınız?" className="border-t border-rule">
         <ol className="flex flex-col gap-6">
           {[
-            ['Başvuru', 'İletişim formundan okulunuzun adını ve rehberlik servisinden bir yetkilinin bilgilerini gönderin.'],
+            ['Ön başvuru', 'İletişim formundan okulunuzun adını ve rehberlik servisinden bir yetkilinin bilgilerini gönderin. Okul paneli açıldığında sizinle iletişime geçeriz.'],
             ['Tanışma görüşmesi', 'Hangi sınıf düzeylerinde hangi testlerin uygun olduğunu birlikte planlarız.'],
             ['Pilot sınıf', 'Önce bir ya da iki sınıfla başlar, veli onayı ve uygulama sürecini birlikte denetleriz.'],
             ['Okul geneli', 'Süreç oturduktan sonra diğer sınıflara yayarız.'],
@@ -125,7 +135,7 @@ export default function SchoolsPage() {
         <p className="measure">Fiyatlandırma okulun öğrenci sayısına göre belirlenir. Ayrıntılar için başvurun.</p>
         <div>
           <Link href="/iletisim?konu=school" className="btn btn-primary">
-            Okul başvurusu yapın
+            Ön başvuru yapın
           </Link>
         </div>
       </Section>

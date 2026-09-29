@@ -8,6 +8,7 @@ import { audit } from '@/lib/audit';
 import { hashLoginCode, normalizeLoginCode } from '@/lib/auth/codes';
 import { createStudentSession, destroySession } from '@/lib/auth/session';
 import { clientIpBucket } from '@/lib/request';
+import { ACCOUNTS_CLOSED_MESSAGE, accountsOpen } from '@/lib/site';
 
 export type StudentLoginState = { message?: string; value?: string };
 
@@ -19,6 +20,7 @@ export type StudentLoginState = { message?: string; value?: string };
  * işler ve birkaç adresle tetiklenemez. Hatalı denemeler kayıt altına alınır.
  */
 export async function studentLoginAction(_: StudentLoginState, formData: FormData): Promise<StudentLoginState> {
+  if (!accountsOpen()) return { message: ACCOUNTS_CLOSED_MESSAGE };
   const raw = String(formData.get('code') ?? '');
   const value = raw.slice(0, 20);
   const ip = await clientIpBucket();

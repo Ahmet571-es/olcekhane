@@ -8,7 +8,7 @@ import { currentDocument, hasActiveConsent, latestConsent } from '@/lib/consent'
 import { renderMarkdown } from '@/lib/markdown';
 import { maskEmail } from '@/lib/mask';
 import { consentRequestByToken, markConsentRequestOpened } from '@/lib/school/consent-requests';
-import { fillCompany } from '@/lib/site';
+import { accountsOpen, fillCompany } from '@/lib/site';
 import { consentDecisionAction, linkStudentAction } from '../actions';
 
 export const metadata: Metadata = { title: 'Veli onayı', robots: { index: false, follow: false } };
@@ -31,6 +31,7 @@ const ERRORS: Record<string, string> = {
   'farkli-eposta': 'Bu bağlantı başka bir e-posta adresine gönderildi. Çocuğunuzu bağlamak için o adresle giriş yapın.',
   'onay-yok': 'Çocuğunuzu hesabınıza bağlamak için önce açık rıza vermeniz gerekiyor.',
   yakinlik: 'Çocuğunuza yakınlığınızı seçin.',
+  kapali: 'Okul bölümü şu an kapalı: yeni onay verilemez ve öğrenci bir veli hesabına bağlanamaz. Daha önce verdiğiniz rızayı bu sayfadan geri alabilirsiniz.',
 };
 
 function DocDetails({ title, bodyMd }: { title: string; bodyMd: string }) {
@@ -96,6 +97,8 @@ export default async function ParentConsentPage(props: PageProps<'/veli-onayi/[t
   ]);
   const karar = typeof q.karar === 'string' ? MESSAGES[q.karar] : undefined;
   const hata = typeof q.hata === 'string' ? ERRORS[q.hata] : undefined;
+  // Hesaplar kapalıyken yeni onay alınmaz ve öğrenci hesaba bağlanamaz; verilmiş rıza geri alınabilir.
+  const open = accountsOpen();
   const action = consentDecisionAction.bind(null, token);
   const linkAction = linkStudentAction.bind(null, token);
 
@@ -144,11 +147,11 @@ export default async function ParentConsentPage(props: PageProps<'/veli-onayi/[t
             destek ve denetim için, her erişimi kayda geçirerek görebilir.
           </li>
           <li>Öğretmenler ve okul yönetimi bireysel sonuç göremez; yalnızca en az beş öğrencilik grupların özetlerini görür.</li>
-          <li>Veriler Türkiye’deki sunucularda tutulur; reklam, pazarlama ya da yapay zekâ eğitimi için kullanılmaz.</li>
+          <li>Veriler reklam, pazarlama ya da yapay zekâ eğitimi için kullanılmaz.</li>
         </ul>
       </section>
 
-      {active && req.canDecide && (
+      {open && active && req.canDecide && (
         <section className="panel flex flex-col gap-4 p-5" aria-labelledby="raporlar">
           <h2 id="raporlar" className="font-body text-base font-bold">
             Raporları kendi hesabınızda görün
@@ -253,6 +256,8 @@ export default async function ParentConsentPage(props: PageProps<'/veli-onayi/[t
           Bu bağlantıyla artık onay verilemez: süresi dolmuş ya da yerine yeni bir bağlantı gönderilmiş. Onay vermek isterseniz okulunuzun
           rehberlik servisinden yeni bir bağlantı isteyin.
         </p>
+      ) : !open ? (
+        <p className="notice notice-info">Okul bölümü şu an kapalı: bu bağlantıyla onay verilemez ve okulunuz bu platformda uygulama yapamaz.</p>
       ) : (
         <form action={action} className="panel flex flex-col gap-4 p-5 md:p-6">
           <h2 className="font-body text-base font-bold">Kararınız</h2>

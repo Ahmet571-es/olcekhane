@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useActionState } from 'react';
 import { Field, FormMessage, SubmitButton, describedBy } from '@/components/ui/form';
 import { contactAction, type ContactState } from './actions';
@@ -46,7 +47,8 @@ export function ContactForm({ defaultTopic = '' }: { defaultTopic?: string }) {
         <textarea id="message" name="message" rows={6} className="input" defaultValue={v.message} required aria-invalid={!!e.message} aria-describedby={describedBy('message', e.message)} />
       </Field>
       <p className="t-meta">
-        Mesajınızı yalnızca size dönüş yapmak için kullanırız. Çocuğunuza ait test sonuçlarını bu formla paylaşmayın.
+        Mesajınızı yalnızca size dönüş yapmak için kullanır, 1 yıl sonra sileriz. Çocuğunuza ait test sonuçlarını bu formla paylaşmayın.
+        Ayrıntılar: <Link href="/yasal/aydinlatma-metni">KVKK aydınlatma metni</Link>
       </p>
       <div>
         <SubmitButton className="btn btn-primary btn-lg" pendingText="Gönderiliyor…">

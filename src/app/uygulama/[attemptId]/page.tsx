@@ -15,6 +15,10 @@ import { formForGrade, isQuizChoice, type QuizChoice } from '@/lib/scoring/quiz'
 import { passageForGrade } from '@/lib/scoring/reading';
 
 type RunnerState = Awaited<ReturnType<typeof loadRunnerState>>;
+
+/** Hesapla çözülen testlerde cevaplar tek tek kaydedilir; ara verip kaldığı yerden sürdürülebilir. */
+const PAUSE_NOTE = 'İstediğin an ara verebilirsin; cevapların kaydedilir ve sonra kaldığın yerden devam edersin.';
+const withPauseNote = (intro: InstrumentDef['intro']) => ({ ...intro, paragraphs: [...intro.paragraphs, PAUSE_NOTE] });
 type RunnerCommon = {
   attemptId: string;
   studentName: string;
@@ -30,7 +34,7 @@ function Runner({ def, state, doneBlocks, common }: { def: InstrumentDef; state:
       return (
         <LikertRunner
           {...common}
-          intro={def.intro}
+          intro={withPauseNote(def.intro)}
           prompt={def.prompt}
           options={def.options}
           items={def.items.map((i) => ({ key: i.key, text: i.text }))}
@@ -47,7 +51,7 @@ function Runner({ def, state, doneBlocks, common }: { def: InstrumentDef; state:
       return (
         <QuizRunner
           {...common}
-          intro={def.intro}
+          intro={withPauseNote(def.intro)}
           contentGrade={form.contentGrade}
           items={form.items.map((it) => ({
             key: it.key,

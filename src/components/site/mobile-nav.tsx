@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AccountLinks } from './account-links';
 
-export function MobileNav({ items }: { items: { href: string; label: string }[] }) {
+export function MobileNav({ items, accounts }: { items: { href: string; label: string }[]; accounts: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [lastPath, setLastPath] = useState(pathname);
@@ -44,7 +44,7 @@ export function MobileNav({ items }: { items: { href: string; label: string }[] 
               ))}
             </ul>
             <div className="mt-4">
-              <AccountLinks compact />
+              <AccountLinks compact accounts={accounts} />
             </div>
           </nav>
         </div>

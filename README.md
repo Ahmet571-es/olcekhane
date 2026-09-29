@@ -7,14 +7,23 @@ dille yazılır; her testin bilimsel dayanağı, güvenirliği ve sınırlılık
 
 Bu belge geliştiriciler içindir. Sunucuya kurulum için **[KURULUM.md](KURULUM.md)** dosyasına bakın.
 
+**Site modu.** Varsayılan olarak site **hızlı test** modunda çalışır (`ACCOUNTS_ENABLED=false`): testler
+hesap açmadan çözülür, cevaplar tek istekte sunucuya gelir, puanlanır ve rapor (ekranda ve PDF olarak)
+döndürülür; hiçbir şey veritabanına, dosyaya ya da günlüğe yazılmaz (`src/lib/assessment/quick*.ts`,
+`src/app/api/hizli-test`). Veli, okul ve öğrenci hesapları kodda hazırdır ama kapalıdır: kayıt, öğrenci
+girişi, okul daveti ve yeni veli onayları reddedilir; giriş sayfası yalnızca yöneticiler içindir.
+`ACCOUNTS_ENABLED=true` ile açılır; açmadan önce aydınlatma metninin hesapları anlatan sürümü yayımlanmalıdır.
+
 ## Neler var?
 
 - **Testler:** Beş Faktör Kişilik Profili, Öz-saygı Ölçeği (Rosenberg), Mesleki İlgi Profili (RIASEC),
   Çalışma Alışkanlıkları Envanteri, Okuma Hızı ve Anlama, Matematik Tanı Testi (5–8. sınıf, hata türü
-  analiziyle), Dikkat ve Çalışma Belleği Görevleri. Test tanımları kodda sürümlüdür
+  analiziyle), Dikkat ve Çalışma Belleği Görevleri, Sürekli Dikkat: Harf İşaretleme. Test tanımları kodda sürümlüdür
   (`src/content/instruments`); puanlama sunucuda yapılır.
-- **Veli paneli:** çocuk profili, açık rıza, test çözme, veli ve öğrenci raporları.
-- **Okul paneli:** okul yöneticisi, rehber öğretmen ve öğretmen görevleri; e-Okul listesinden öğrenci
+- **Hızlı test:** hesapsız ve saklamasız çözme; öğrenci ve veli için basit rapor (teste uygun tek grafik),
+  ekranda ve PDF olarak (`@react-pdf/renderer`, yazı tipleri `src/assets/fonts`).
+- **Veli paneli** (hesaplar açıkken): çocuk profili, açık rıza, test çözme, veli ve öğrenci raporları.
+- **Okul paneli** (hesaplar açıkken): okul yöneticisi, rehber öğretmen ve öğretmen görevleri; e-Okul listesinden öğrenci
   aktarma; veli onayını e-postayla alma; öğrenci giriş kodları; test atama; en az 5 öğrencilik ve
   küçük hücreleri gizleyen grup raporları. Okulda bireysel sonuçları yalnızca rehber öğretmen görür;
   öğretmen ve okul yöneticisi grup özetlerini görür.

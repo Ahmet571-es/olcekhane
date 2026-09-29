@@ -15,7 +15,7 @@ export const metadata = pageMeta({
 const CRITERIA = [
   {
     t: 'Kanıt',
-    d: 'Ölçeğin güvenirliği ve geçerliği hakemli bilimsel yayınlarla gösterilmiş olmalı. Kendi geliştirdiğimiz görevlerde bu kanıtı pilot çalışmalarla kendimiz topluyoruz ve bunu test sayfasında açıkça yazıyoruz.',
+    d: 'Ölçeğin güvenirliği ve geçerliği hakemli bilimsel yayınlarla gösterilmiş olmalı. Kendi geliştirdiğimiz testlerde bu kanıtı pilot çalışmalarla kendimiz toplamamız gerekir; bu çalışmalar yapılana kadar test “pilot” olarak işaretlenir ve durumu test sayfasında açıkça yazılır.',
   },
   {
     t: 'Kullanım izni',
@@ -31,7 +31,7 @@ const ADAPTATION = [
   ['Çeviri ve sade dil', 'Maddeler Türkçeye çevrilir ve ergenlerin rahatça anlayacağı bir dile getirilir. Her çevirinin yanında özgün madde metni belgelenir.'],
   ['Uzman incelemesi', 'Psikoloji ve ölçme alanından uzmanlar, çevirinin özgün anlamı koruyup korumadığını değerlendirir.'],
   ['Öğrencilerle anlaşılırlık denemesi', 'Maddeler küçük bir öğrenci grubuna okutulur; yanlış anlaşılan ifadeler düzeltilir.'],
-  ['Pilot uygulama', 'Test “pilot” etiketiyle uygulanır. Yalnızca velilerin ayrıca ve isteğe bağlı olarak araştırma izni verdiği veriler analizlere katılır.'],
+  ['Pilot uygulama', 'Test “pilot” etiketiyle uygulanır. Analizlere yalnızca velilerin ayrıca ve isteğe bağlı olarak araştırma izni verdiği veriler katılır; hızlı testte cevaplar saklanmadığı için hiçbir cevap analizlere katılmaz.'],
   ['İstatistiksel analiz', 'İç tutarlılık (Cronbach alfa), madde analizi, faktör yapısı ve yaş ile cinsiyet grupları arasında ölçme eşdeğerliği incelenir.'],
   ['Norm oluşturma', 'Yeterli sayıda öğrenciye ulaşıldığında sınıf düzeylerine göre Türkiye normları hesaplanır ve raporlar yüzdelik değerlerle yorumlanmaya başlar.'],
 ];
@@ -147,7 +147,7 @@ export default function SciencePage() {
       <Section
         id="olcum-payi"
         title="Ölçüm payı nedir?"
-        intro="Hiçbir test kusursuz değildir. Raporlarımızda puanın yanında her zaman bir ölçüm payı gösteriyoruz."
+        intro="Hiçbir test kusursuz değildir. Güvenirliği bilinen ölçeklerde raporda puanın yanında bir ölçüm payı da gösteriyoruz."
         className="border-t border-rule"
       >
         <p className="measure">
@@ -164,7 +164,7 @@ export default function SciencePage() {
       <Section
         id="uyarlama"
         title="Türkçeye nasıl uyarlıyoruz?"
-        intro="Uluslararası Test Komisyonu’nun (ITC) test uyarlama yönergelerine dayanan altı adım."
+        intro="Uluslararası Test Komisyonu’nun (ITC) test uyarlama yönergelerine dayanan altı adım. Bir test bu adımların hepsinden geçene kadar “pilot” olarak işaretlenir."
         className="border-t border-rule"
       >
         <ol className="flex flex-col gap-6">
@@ -200,14 +200,15 @@ export default function SciencePage() {
           karşılaştırma yapmaz. Rapor bu farkı her zaman açıkça belirtir.
         </p>
         <p className="measure">
-          Normları, velilerin ayrıca ve isteğe bağlı olarak verdiği araştırma izniyle, kimlik bilgilerinden arındırılmış verilerden oluşturuyoruz.
-          Bir test için norm hazır olduğunda raporlar yüzdelik değerlerle yorumlanmaya başlar.
+          Normlar, velilerin ayrıca ve isteğe bağlı olarak verdiği araştırma izniyle, kimlik bilgilerinden arındırılmış verilerden oluşturulacak.
+          Hızlı testte cevaplar saklanmadığı için norm çalışmalarında kullanılmaz. Bir test için norm hazır olduğunda raporlar yüzdelik
+          değerlerle yorumlanmaya başlar.
         </p>
       </Section>
 
       <Section id="kalite" title="Cevap kalitesini nasıl kontrol ediyoruz?" className="border-t border-rule">
         <ul className="measure flex list-disc flex-col gap-2 pl-5">
-          <li>Her maddenin cevaplanma süresini kaydediyoruz. Cümleyi okumaya yetmeyecek kadar hızlı verilen cevaplar raporda uyarı olarak görünür.</li>
+          <li>Her maddenin cevaplanma süresini ölçüyoruz. Cümleyi okumaya yetmeyecek kadar hızlı verilen cevaplar raporda uyarı olarak görünür.</li>
           <li>Uzun bölümlerde hep aynı seçeneğin işaretlenmesini fark ediyoruz. Testlerde ters yönlü maddeler olduğu için bu durum dikkatsizliğe işaret eder.</li>
           <li>Yeterince madde cevaplanmamışsa o bölüm için puan hesaplamıyoruz.</li>
           <li>Okuma görevinde metin çok hızlı geçildiyse hız değerini güvenilir saymıyoruz.</li>

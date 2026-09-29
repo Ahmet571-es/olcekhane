@@ -1,12 +1,15 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { AccountsClosed } from '@/components/site/accounts-closed';
 import { homeFor, safeNextPath } from '@/lib/auth/home';
 import { getSession } from '@/lib/auth/session';
+import { accountsOpen } from '@/lib/site';
 import { RegisterForm } from './register-form';
 
 export const metadata: Metadata = {
   title: 'Ücretsiz veli hesabı aç',
   description: 'Ölçekhane veli hesabı ücretsizdir. Çocuğunuzun profilini oluşturun, ücretsiz testlerle başlayın.',
+  robots: { index: false },
 };
 
 const STEPS = [
@@ -20,6 +23,7 @@ export default async function RegisterPage(props: PageProps<'/kayit'>) {
   const q = await props.searchParams;
   const next = safeNextPath(q.sonra) ?? '';
   if (s?.kind === 'user') redirect(next || (await homeFor(s.user)));
+  if (!accountsOpen()) return <AccountsClosed title="Hesap açma şu an kapalı" />;
   return (
     <div className="grid w-full max-w-5xl gap-12 md:grid-cols-[minmax(0,26rem)_1fr] md:gap-16">
       <div>
@@ -45,7 +49,7 @@ export default async function RegisterPage(props: PageProps<'/kayit'>) {
           </ol>
         </div>
         <p className="t-meta mt-5 max-w-[46ch]">
-          Çocuğunuzun verileri Türkiye’deki sunucularda tutulur; reklam ya da yapay zekâ eğitimi için kullanılmaz. Ayrıntılar aydınlatma metninde.
+          Çocuğunuzun verileri reklam, pazarlama ya da yapay zekâ eğitimi için kullanılmaz. Ayrıntılar aydınlatma metninde.
         </p>
       </aside>
     </div>

@@ -62,7 +62,7 @@ export const calismaAliskanliklari: LikertInstrument = {
   sortOrder: 35,
   tagline: 'Öğrencinin araştırmalarla etkisi gösterilmiş çalışma yöntemlerini ne sıklıkla kullandığını ölçer.',
   description:
-    'Bu envanter öğrencinin nasıl ders çalıştığını beş alanda inceler: planlama, kendini sınama ve tekrar, anlayarak çalışma, odaklanma ve hatalardan öğrenip yardım isteme. Maddeler, öğrenme araştırmalarında etkili bulunan yöntemlere göre yazılmıştır. Rapor, hangi alışkanlıkların güçlü olduğunu ve neyin küçük değişikliklerle geliştirilebileceğini gösterir.',
+    'Bu envanter öğrencinin nasıl ders çalıştığını beş alanda inceler: planlama, kendini sınama ve tekrar, anlayarak çalışma, odaklanma ve hatalardan öğrenip yardım isteme. Maddeler, öğrenme araştırmalarında etkili bulunan yöntemlere göre yazılmıştır. Rapor, hangi alışkanlıkların güçlü olduğunu ve hangilerinin geliştirilebileceğini gösterir.',
   intro: {
     title: 'Nasıl ders çalışıyorsun?',
     paragraphs: [
@@ -129,7 +129,7 @@ export const calismaAliskanliklari: LikertInstrument = {
       'Öğrencinin beş alandaki çalışma alışkanlıklarını ne sıklıkla kullandığını ölçer: planlama, kendini sınama ve aralıklı tekrar, anlayarak çalışma, odaklanma, hatalardan öğrenme ve yardım isteme. Kişilik değil davranış ölçer; bu yüzden sonuçlar doğrudan geliştirilebilir.',
     turkishVersion: 'Özgün Türkçe ölçek; bir çeviri değildir. Her alanda, onaylama eğilimini dengelemek için ters yönlü maddeler vardır.',
     reliability:
-      'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği, velilerin ayrıca izin verdiği verilerle incelenmekte ve sonuçlar burada yayımlanacaktır.',
+      'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi; sonuçlar hazır olduğunda burada yayımlanacak.',
     normStatus: 'none',
     normNote:
       'Türkiye normu henüz yok. Puanlar, her alışkanlığın ne sıklıkla kullanıldığına göre (1: hiçbir zaman, 5: her zaman) yorumlanır.',
@@ -137,7 +137,7 @@ export const calismaAliskanliklari: LikertInstrument = {
     license: 'Özgün ölçek. Ölçekhane tarafından geliştirilmiştir.',
     limitations: [
       'Öğrencinin kendi bildirimine dayanır; insanlar alışkanlıklarını olduğundan biraz farklı değerlendirebilir.',
-      'Pilot aşamasındadır: güvenirlik ve geçerlik çalışması sürmektedir.',
+      'Pilot aşamasındadır: güvenirlik ve geçerlik çalışması henüz yapılmadı.',
       'Okul başarısını tek başına açıklamaz; ön bilgi, motivasyon ve öğrenme ortamı da önemlidir.',
     ],
     citations: [

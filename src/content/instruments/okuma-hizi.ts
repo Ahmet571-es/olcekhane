@@ -436,10 +436,10 @@ export const okumaHizi: ReadingInstrument = {
       'Sessiz okuma hızı (dakikada kelime) ve okunan metni anlama düzeyi: bilgiyi bulma, çıkarım yapma, kelime anlamı ve ana fikir.',
     turkishVersion: 'Metinler doğrudan Türkçe yazılmıştır; çeviri değildir.',
     reliability:
-      'Görev pilot aşamasındadır. Anlama sorularının madde analizi ve metinlerin sınıf düzeyine uygunluğu platform verisiyle inceleniyor.',
+      'Görev pilot aşamasındadır. Anlama sorularının madde analizi ve metinlerin sınıf düzeyine uygunluğu henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye’de 1–4. sınıflar için sesli okuma hızı çalışmaları vardır (ör. 1–4. sınıflarda dakikada ortalama 45, 73, 91 ve 97 kelime). 5. sınıf ve üzeri ile sessiz okuma için yayımlanmış bir Türkiye normu bulunmamaktadır; sınıf düzeyi normları platform verisiyle oluşturuluyor. Bu nedenle hız şimdilik karşılaştırma yapılmadan raporlanır.',
+      'Türkiye’de 1–4. sınıflar için sesli okuma hızı çalışmaları vardır (ör. 1–4. sınıflarda dakikada ortalama 45, 73, 91 ve 97 kelime). 5. sınıf ve üzeri ile sessiz okuma için yayımlanmış bir Türkiye normu bulunmamaktadır. Bu nedenle hız şimdilik karşılaştırma yapılmadan raporlanır.',
     ageNote: '3. sınıftan itibaren uygundur. Her sınıf grubu kendi düzeyine göre yazılmış farklı bir metin okur.',
     license: 'Özgün içerik: metinler ve sorular Ölçekhane’ye aittir.',
     limitations: [

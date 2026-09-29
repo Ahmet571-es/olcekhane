@@ -4,6 +4,7 @@ import { publicInstruments } from '@/content/instruments';
 import { LEGAL_DOCS } from '@/content/legal';
 import { allGuides } from '@/content/rehber';
 import { siteUrl } from '@/lib/config';
+import { accountsOpen } from '@/lib/site';
 
 // APP_URL sunucu çalışırken okunur (derleme anında değil).
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const tests = publicInstruments().map((t) => ({ url: siteUrl(`/testler/${t.slug}`) }));
   const guides = allGuides().map((g) => ({ url: siteUrl(`/rehber/${g.slug}`), lastModified: g.updatedAt }));
-  const legal = LEGAL_DOCS.map((d) => ({ url: siteUrl(`/yasal/${d.slug}`) }));
+  const legal = LEGAL_DOCS.filter((d) => !d.accountsOnly || accountsOpen()).map((d) => ({ url: siteUrl(`/yasal/${d.slug}`) }));
   const experts = EXPERTS.length
     ? [{ url: siteUrl('/uzmanlar') }, ...EXPERTS.map((e) => ({ url: siteUrl(`/uzmanlar/${e.slug}`) }))]
     : [];

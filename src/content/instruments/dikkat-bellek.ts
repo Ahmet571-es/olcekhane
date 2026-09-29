@@ -159,7 +159,7 @@ export const dikkatBellek: TaskInstrument = {
   sortOrder: 50,
   tagline: 'Beş kısa görevle çalışma belleğini, seçici dikkati ve işlem hızını ölçer. Bir zekâ testi değildir.',
   description:
-    'Bu görevler, bilişsel psikolojide onlarca yıldır kullanılan deney düzenlerine dayanır: sayı ve kutu dizilerini akılda tutmak, dikkat dağıtan uyaranlara rağmen doğru cevabı vermek ve basit bir işi hızlı yapmak. Görevler oyun gibi hissettirir, yaklaşık 15 dakika sürer ve ara verilebilir. Rapor, her görevde ne yapıldığını sade bir dille anlatır; bir zekâ puanı vermez, tanı koymaz.',
+    'Bu görevler, bilişsel psikolojide onlarca yıldır kullanılan deney düzenlerine dayanır: sayı ve kutu dizilerini akılda tutmak, dikkat dağıtan uyaranlara rağmen doğru cevabı vermek ve basit bir işi hızlı yapmak. Görevler oyun gibi hissettirir ve yaklaşık 15 dakika sürer; görevler arasında dinlenilebilir. Rapor, her görevde ne yapıldığını sade bir dille anlatır; bir zekâ puanı vermez, tanı koymaz.',
   intro: {
     title: 'Beş kısa görev',
     paragraphs: [
@@ -279,7 +279,7 @@ export const dikkatBellek: TaskInstrument = {
       'Bir zekâ (IQ) testi değildir ve dikkat eksikliği gibi durumlar için tanı koymaz.',
       'Sonuç; yorgunluk, uykusuzluk, ortamdaki gürültü ve cihaz gibi etkenlerden etkilenebilir.',
       'Tek bir uygulama sınırlı bilgi verir. Endişe varsa uzman değerlendirmesi gerekir.',
-      'Pilot aşamasındadır: güvenirlik ve norm çalışması sürmektedir.',
+      'Pilot aşamasındadır: güvenirlik ve norm çalışması henüz yapılmadı.',
     ],
     citations: [
       {

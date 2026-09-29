@@ -24,15 +24,15 @@ const PRINCIPLES = [
   },
   {
     t: 'Çocuğun yararı',
-    d: 'Raporlar çocuğu etiketlemez, tanı koymaz. Çocuklar teste başlamadan önce kendi yaşlarına göre yazılmış bir bilgilendirmeyi okur ve istemezlerse devam etmezler.',
+    d: 'Raporlar çocuğu etiketlemez, tanı koymaz. Test ekranları öğrencinin anlayacağı sade bir dille yazılır; öğrenci istemezse testi istediği an bırakabilir.',
   },
   {
     t: 'Sade dil',
-    d: 'Bilimsel doğruluktan ödün vermeden, raporları öğrencinin ve velinin anlayacağı dille yazıyoruz. Teknik ayrıntılar isteyenler için ayrıca yer alıyor.',
+    d: 'Bilimsel doğruluktan ödün vermeden, raporları öğrencinin ve velinin anlayacağı dille yazıyoruz. Teknik ayrıntılar isteyenler için test sayfalarındaki bilim kartında yer alıyor.',
   },
   {
     t: 'Gizlilik',
-    d: 'Veriler Türkiye’deki sunucularda tutulur. Çocuk verisini reklam, pazarlama ya da yapay zekâ eğitimi için kullanmıyoruz; satmıyoruz.',
+    d: 'Testler hesap açmadan çözülür; ad, e-posta ya da telefon istemiyoruz. Cevaplar yalnızca raporu hazırlamak için kullanılır ve hiçbir yere kaydedilmez. Sunucumuz Almanya’dadır (Avrupa Birliği). Kimsenin verisini reklam, pazarlama ya da yapay zekâ eğitimi için kullanmıyoruz; satmıyoruz.',
   },
 ];
 

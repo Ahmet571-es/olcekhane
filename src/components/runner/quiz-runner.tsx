@@ -25,6 +25,9 @@ type Pending = { choice: QuizChoice; rtMs: number | null };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const LETTER_KEYS: Record<string, QuizOptionKey> = { a: 'A', b: 'B', c: 'C', d: 'D', '1': 'A', '2': 'B', '3': 'C', '4': 'D' };
 
+/** Hızlı test: cevaplar cihazda tutulur; bitince hepsi birden verilir. */
+export type LocalQuiz = { onFinish: (answers: Record<string, { choice: QuizChoice; rtMs: number | null }>) => Promise<void> };
+
 export function QuizRunner(props: {
   attemptId: string;
   studentName: string;
@@ -36,8 +39,9 @@ export function QuizRunner(props: {
   assentHtml: string | null;
   reportUrl: string;
   exitUrl: string;
+  local?: LocalQuiz;
 }) {
-  const { items, attemptId } = props;
+  const { items, attemptId, local } = props;
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, QuizChoice>>(props.initialAnswers);
   const answeredCount = items.filter((i) => answers[i.key] !== undefined).length;
@@ -51,10 +55,12 @@ export function QuizRunner(props: {
 
   const shownAt = useRef(0);
   const pending = useRef(new Map<string, Pending>());
+  const collected = useRef(new Map<string, Pending>());
   const flushing = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const flush = useCallback(async () => {
+    if (local) return;
     if (flushing.current) return;
     flushing.current = true;
     let backoff = 800;
@@ -87,7 +93,7 @@ export function QuizRunner(props: {
     }
     if (pending.current.size === 0) setSaveState('idle');
     flushing.current = false;
-  }, [attemptId]);
+  }, [attemptId, local]);
 
   useEffect(() => {
     if (phase !== 'items') return;
@@ -97,22 +103,24 @@ export function QuizRunner(props: {
   }, [index, phase]);
 
   useEffect(() => {
+    // Hızlı testte cevaplar yalnızca bu sayfada durur: tek bir cevap bile verildiyse ayrılmadan önce uyarılır.
     const warn = (e: BeforeUnloadEvent) => {
-      if (pending.current.size > 0) e.preventDefault();
+      if (pending.current.size > 0 || (local && collected.current.size > 0)) e.preventDefault();
     };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, []);
+  }, [local]);
 
   const choose = useCallback(
     (choice: QuizChoice) => {
       const item = items[index];
       const rtMs = Math.round(performance.now() - shownAt.current);
       setAnswers((a) => ({ ...a, [item.key]: choice }));
-      pending.current.set(item.key, { choice, rtMs });
+      collected.current.set(item.key, { choice, rtMs });
+      if (!local) pending.current.set(item.key, { choice, rtMs });
       void flush();
     },
-    [flush, index, items],
+    [flush, index, items, local],
   );
 
   const next = useCallback(() => {
@@ -143,6 +151,15 @@ export function QuizRunner(props: {
   async function finish() {
     setFinishing(true);
     setFinishError(null);
+    if (local) {
+      try {
+        await local.onFinish(Object.fromEntries(collected.current));
+      } catch (err) {
+        setFinishing(false);
+        setFinishError(err instanceof Error ? err.message : 'Rapor hazırlanamadı. Lütfen tekrar deneyin.');
+      }
+      return;
+    }
     await flush();
     for (let i = 0; i < 20 && pending.current.size > 0; i++) await sleep(500);
     try {
@@ -226,8 +243,9 @@ export function QuizRunner(props: {
           </div>
         ) : (
           <p className="text-lg">
-            Cevapların kaydedildi{dontKnow > 0 ? `; ${dontKnow} soruyu “Bilmiyorum” olarak işaretledin` : ''}. Testi bitirdiğinde raporun hemen
-            hazırlanacak ve yanlış yaptığın soruların doğru cevaplarını açıklamalarıyla görebileceksin.
+            {local
+              ? `Bütün soruları cevapladın${dontKnow > 0 ? `; ${dontKnow} soruyu “Bilmiyorum” olarak işaretledin` : ''}. Testi bitirdiğinde raporun hemen hazırlanacak.`
+              : `Cevapların kaydedildi${dontKnow > 0 ? `; ${dontKnow} soruyu “Bilmiyorum” olarak işaretledin` : ''}. Testi bitirdiğinde raporun hemen hazırlanacak ve yanlış yaptığın soruların doğru cevaplarını açıklamalarıyla görebileceksin.`}
           </p>
         )}
         {finishError && <p className="notice notice-danger">{finishError}</p>}
@@ -246,7 +264,7 @@ export function QuizRunner(props: {
             Cevaplarımı gözden geçir
           </button>
         </div>
-        <SaveIndicator state={saveState} />
+        {!local && <SaveIndicator state={saveState} />}
       </div>
     );
   }
@@ -262,7 +280,7 @@ export function QuizRunner(props: {
           <span aria-live="polite" className="tabular">
             Soru {index + 1} / {items.length}
           </span>
-          <SaveIndicator state={saveState} />
+          {!local && <SaveIndicator state={saveState} />}
         </div>
       </div>
 

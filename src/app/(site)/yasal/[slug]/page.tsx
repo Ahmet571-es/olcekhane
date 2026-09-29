@@ -3,21 +3,27 @@ import { notFound } from 'next/navigation';
 import { LEGAL_DOCS, legalDocBySlug } from '@/content/legal';
 import { renderMarkdown } from '@/lib/markdown';
 import { pageMeta } from '@/lib/seo';
-import { fillCompany } from '@/lib/site';
+import { accountsOpen, fillCompany } from '@/lib/site';
 
 export function generateStaticParams() {
   return LEGAL_DOCS.map((d) => ({ slug: d.slug }));
 }
 
+/** Hesaplar kapalıyken yalnızca hesap bölümünde kullanılan metinler (açık rızalar, öğrenci bilgilendirmesi) yayımlanmaz. */
+function publishedDoc(slug: string) {
+  const doc = legalDocBySlug(slug);
+  return doc && (!doc.accountsOnly || accountsOpen()) ? doc : undefined;
+}
+
 export async function generateMetadata(props: PageProps<'/yasal/[slug]'>): Promise<Metadata> {
   const { slug } = await props.params;
-  const doc = legalDocBySlug(slug);
+  const doc = publishedDoc(slug);
   return doc ? pageMeta({ title: doc.title, description: doc.summary, path: `/yasal/${slug}` }) : {};
 }
 
 export default async function LegalPage(props: PageProps<'/yasal/[slug]'>) {
   const { slug } = await props.params;
-  const doc = legalDocBySlug(slug);
+  const doc = publishedDoc(slug);
   if (!doc) notFound();
   return (
     <article className="container-page py-12 md:py-16">

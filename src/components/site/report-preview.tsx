@@ -90,7 +90,11 @@ export function ReportPreview() {
           </div>
           <p className="measure">{text}</p>
           <div>
-            <p className="font-bold">{audience === 'parent' ? 'Evde neler yapılabilir?' : 'Deneyebileceklerin'}</p>
+            <p className="flex flex-wrap items-center gap-2 font-bold">
+              {audience === 'parent' ? 'Evde neler yapılabilir?' : 'Deneyebileceklerin'}
+              {/* Öneriler ücretsiz basit raporda yoktur; ileride sunulacak kapsamlı raporun parçasıdır. */}
+              <span className="chip chip-brass font-bold">Kapsamlı raporda</span>
+            </p>
             <ul className="mt-1 flex list-disc flex-col gap-1 pl-5">
               {tips.map((t) => (
                 <li key={t}>{t}</li>
@@ -98,7 +102,10 @@ export function ReportPreview() {
             </ul>
           </div>
         </div>
-        <p className="t-meta">Soldaki satırlara dokunarak diğer boyutların metinlerini görebilirsiniz.</p>
+        <p className="t-meta">
+          Soldaki satırlara dokunarak diğer boyutların metinlerini görebilirsiniz. Ücretsiz raporda her boyutun düzeyi ve açıklaması yer alır;
+          öneriler yakında sunulacak kapsamlı rapordadır.
+        </p>
       </div>
     </div>
   );

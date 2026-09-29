@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { publicInstruments } from '@/content/instruments';
-import { getCompany } from '@/lib/site';
+import { accountsOpen, getCompany } from '@/lib/site';
 import { Logo } from './logo';
 
 export function SiteFooter() {
   const c = getCompany();
+  const accounts = accountsOpen();
   const tests = publicInstruments();
   const companyLines = [
     c.legalName,
@@ -38,13 +39,14 @@ export function SiteFooter() {
           <FooterLink href="/bilimsel-yaklasim">Bilimsel yaklaşım</FooterLink>
           <FooterLink href="/veliler-icin">Veliler için</FooterLink>
           <FooterLink href="/okullar-icin">Okullar için</FooterLink>
-          <FooterLink href="/ogrenci-girisi">Öğrenci girişi</FooterLink>
+          {accounts && <FooterLink href="/ogrenci-girisi">Öğrenci girişi</FooterLink>}
           <FooterLink href="/hakkimizda">Hakkımızda</FooterLink>
           <FooterLink href="/iletisim">İletişim</FooterLink>
         </FooterCol>
         <FooterCol title="Yasal">
           <FooterLink href="/yasal/aydinlatma-metni">KVKK aydınlatma metni</FooterLink>
-          <FooterLink href="/yasal/acik-riza-olcme">Açık rıza metinleri</FooterLink>
+          {/* Açık rıza metinleri yalnızca hesap bölümünde kullanılır; hesaplar kapalıyken yayında değildir. */}
+          {accounts && <FooterLink href="/yasal/acik-riza-olcme">Açık rıza metinleri</FooterLink>}
           <FooterLink href="/yasal/kullanim-kosullari">Kullanım koşulları</FooterLink>
           <FooterLink href="/yasal/cerez-politikasi">Çerez politikası</FooterLink>
         </FooterCol>

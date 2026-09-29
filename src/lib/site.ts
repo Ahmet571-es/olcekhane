@@ -39,6 +39,19 @@ export function missingCompanyFields(c: CompanyInfo = getCompany()): string[] {
   return COMPANY_FIELDS.filter((f) => !c[f.key]).map((f) => `${f.label} (${f.env})`);
 }
 
+/**
+ * Veli, okul ve öğrenci hesapları açık mı? Varsayılan: kapalı. Kapalıyken site yalnızca hızlı testle
+ * çalışır: kayıt, öğrenci girişi, okul daveti ve veli onayı sayfaları kapalıdır, bunların sunucu
+ * işlemleri reddedilir; giriş sayfası yalnızca yöneticiler içindir. ACCOUNTS_ENABLED=true ile açılır.
+ * Açmadan önce aydınlatma metninin hesaplarda işlenen verileri de anlatan sürümü yayımlanmalıdır.
+ */
+export function accountsOpen(): boolean {
+  return (process.env.ACCOUNTS_ENABLED ?? '').trim().toLowerCase() === 'true';
+}
+
+/** Hesaplar kapalıyken hesap açan ya da hesaba bağlayan sunucu işlemlerinin döndürdüğü ileti. */
+export const ACCOUNTS_CLOSED_MESSAGE = 'Veli, okul ve öğrenci hesapları şu an kapalı. Testleri hesap açmadan çözebilirsiniz.';
+
 /** Hukuki metinlerdeki {{company.alan}} yer tutucularını doldurur. Boş alanlar "—" olarak görünür. */
 export function fillCompany(md: string, c: CompanyInfo = getCompany()): string {
   return md.replace(/\{\{company\.(\w+)\}\}/g, (_, k: string) => {

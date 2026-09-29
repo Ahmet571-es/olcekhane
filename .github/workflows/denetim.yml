@@ -96,10 +96,31 @@ jobs:
           done
           [ "$ok" = 1 ] || { echo "::error title=Uygulama açılmadı::Sağlık denetimi 180 saniyede yanıt vermedi"; exit 1; }
           curl -fsS http://127.0.0.1:3000/api/saglik; echo
-          for yol in / /testler /hakkimizda /yasal/aydinlatma-metni /giris /robots.txt /sitemap.xml; do
+          for yol in / /testler /testler/oz-saygi /hizli-test/oz-saygi '/hizli-test/oz-saygi?sinif=7' /veliler-icin /okullar-icin \
+            /hakkimizda /yasal/aydinlatma-metni /giris /kayit /robots.txt /sitemap.xml; do
             kod=$(curl -s -o /dev/null -w '%{http_code}' -m 20 "http://127.0.0.1:3000$yol")
             echo "$yol -> $kod"
             [ "$kod" = 200 ] || { echo "::error title=Sayfa açılmadı::$yol $kod döndü"; exit 1; }
+          done
+          # Hesaplar varsayılan olarak kapalı (hızlı test modu): kayıt sayfası kapalı olduğunu söyler, yalnızca
+          # hesap bölümünde kullanılan açık rıza metni yayında değildir.
+          curl -fsS -m 20 http://127.0.0.1:3000/kayit | grep -q 'Hesap açma şu an kapalı' ||
+            { echo "::error title=Hesaplar kapalı değil::/kayit kapalı sayfasını göstermedi"; exit 1; }
+          kod=$(curl -s -o /dev/null -w '%{http_code}' -m 20 http://127.0.0.1:3000/yasal/acik-riza-olcme)
+          [ "$kod" = 404 ] || { echo "::error title=Hesap metni yayında::/yasal/acik-riza-olcme $kod döndü (404 bekleniyordu)"; exit 1; }
+          # Hızlı test: saklamadan puanlama ve PDF (öz-saygı ölçeği, 7. sınıf, örnek cevaplar).
+          GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 7, "data": {"engine": "likert", "answers": {f"R{i}": {"value": i % 4, "rtMs": 2500} for i in range(1, 11)}}}))')
+          curl -fsS -m 30 -H 'content-type: application/json' -d "$GOVDE" http://127.0.0.1:3000/api/hizli-test/oz-saygi \
+            | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["student"]["items"] and r["parent"]["items"], r; print("hızlı test raporu:", r["student"]["chartTitle"])'
+          PDF_GOVDE=$(printf '%s' "$GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["audience"]="parent"; print(json.dumps(b))')
+          curl -fsS -m 60 -H 'content-type: application/json' -d "$PDF_GOVDE" -o /tmp/rapor.pdf http://127.0.0.1:3000/api/hizli-test/oz-saygi/pdf
+          head -c 5 /tmp/rapor.pdf | grep -q '%PDF-' || { echo "::error title=PDF üretilemedi::Yanıt bir PDF değil"; exit 1; }
+          echo "PDF: $(wc -c < /tmp/rapor.pdf) bayt"
+          # PDF'teki metin okunabilir olmalı: Türkçe harfler, saklamama notu ve sayfa numarası (alt bilgi).
+          command -v pdftotext >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils >/dev/null; }
+          pdftotext /tmp/rapor.pdf /tmp/rapor.txt
+          for ifade in 'Öz-saygı Ölçeği' 'hiçbir' 'Sayfa 1 / ' 'Veli raporu'; do
+            grep -q "$ifade" /tmp/rapor.txt || { echo "::error title=PDF metni eksik::'$ifade' bulunamadı"; cat /tmp/rapor.txt; exit 1; }
           done
           docker run --rm --network deneme -e DATABASE_URL="postgres://olcekhane:$SIFRE@db:5432/olcekhane" \
             -e ADMIN_EMAIL=deneme@ornek.test -e ADMIN_PASSWORD="$(openssl rand -hex 12)" \

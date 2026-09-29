@@ -43,6 +43,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             ? `${def.forms[0].items.length} soru`
             : '1 metin, 8 soru';
   const scales = def.scales.filter((s) => s.key !== 'total');
+  // Güvenirliği ve başvuru standart sapması bilinen ölçeklerde cetvelde ölçüm payı da gösterilir.
+  const showsMargin = def.engine === 'likert' && def.scales.some((s) => s.alpha !== undefined && s.sdRef !== undefined);
+  const quickUrl = `/hizli-test/${def.slug}`;
 
   const jsonLd = breadcrumbLd([
     { name: 'Ana sayfa', path: '/' },
@@ -54,7 +57,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
     { k: 'Süre', v: `yaklaşık ${def.estimatedMinutes} dakika` },
     { k: 'Kimler için', v: gradeRangeLabel(def.minGrade, def.maxGrade) },
     { k: 'Uzunluk', v: itemCount },
-    { k: 'Ücret', v: def.isFree ? 'Ücretsiz' : 'Ücretli' },
+    { k: 'Ücret', v: def.isFree ? 'Ücretsiz, hesap gerekmez' : 'Ücretli' },
   ];
 
   return (
@@ -71,8 +74,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           <h1 className="t-h1">{def.name}</h1>
           <p className="t-lede measure">{def.description}</p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/kayit" className="btn btn-primary btn-lg">
-              {def.isFree ? 'Ücretsiz başla' : 'Başla'}
+            <Link href={quickUrl} className="btn btn-primary btn-lg">
+              {def.isFree ? 'Ücretsiz çöz' : 'Testi çöz'}
             </Link>
             <a href="#bilim-karti" className="btn btn-secondary btn-lg">
               Bilimsel dayanağı
@@ -139,48 +142,45 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
 
       <section className="grid gap-10 border-t border-rule py-14 lg:grid-cols-[1fr_1.6fr]" aria-labelledby="rapor">
         <h2 id="rapor" className="t-h2">
-          Raporda neler var?
+          Ücretsiz raporda neler var?
         </h2>
-        <ul className="measure flex list-disc flex-col gap-2 pl-5">
-          <li>Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor</li>
-          {def.engine === 'likert' && def.profile === 'riasec' && (
-            <>
-              <li>Altı ilgi alanının Holland altıgeni üzerinde gösterimi ve üç harfli ilgi kodu</li>
-              <li>En belirgin üç alan için açıklamalar, keşif önerileri, lise ve üniversite yolları</li>
-              <li>Profile uyan örnek meslekler</li>
-            </>
-          )}
-          {def.engine === 'likert' && !def.profile && (
-            <>
-              <li>Her boyut için sade bir açıklama ve gündelik hayatta işe yarayacak öneriler</li>
-              <li>Puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi</li>
-            </>
-          )}
-          {def.engine === 'reading' && <li>Okuma hızı, anlama oranı ve soru türlerine göre sonuç</li>}
-          {cancellation && (
-            <>
-              <li>Çalışma hızı, bulunan ve atlanan harfler, yanlış işaretlemeler ve net doğru sayısı</li>
-              <li>Bölümler ilerledikçe dikkatin korunup korunmadığını gösteren bölüm bölüm grafik</li>
-              <li>Evde ve okulda işe yarayacak somut öneriler</li>
-            </>
-          )}
-          {def.engine === 'tasks' && !cancellation && (
-            <>
-              <li>Her görevde ulaşılan dizi uzunluğu, doğruluk ve tepki süresi</li>
-              <li>Görevlerin ölçtüğü becerilerin gündelik okul hayatındaki karşılığı</li>
-              <li>Evde ve okulda işe yarayacak somut öneriler</li>
-            </>
-          )}
-          {def.engine === 'quiz' && (
-            <>
-              <li>Genel sonuç ve beş konu alanının her birinde “sağlam”, “pekiştirilmeli” ya da “öncelikli” değerlendirmesi</li>
-              <li>Yanlış cevapların işaret ettiği hata türleri ve her biri için somut öneriler</li>
-              <li>Yanlış yapılan soruların doğru cevapları ve kısa açıklamaları</li>
-            </>
-          )}
-          <li>Sonucu dikkatle yorumlamayı gerektiren durumlar için uyarılar (ör. çok hızlı cevaplama)</li>
-          <li>Testin bilimsel dayanağı ve sınırları</li>
-        </ul>
+        <div className="flex flex-col gap-5">
+          <ul className="measure flex list-disc flex-col gap-2 pl-5">
+            <li>Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor; ikisi de PDF olarak indirilebilir</li>
+            {def.engine === 'likert' && def.profile === 'riasec' && (
+              <>
+                <li>Altı ilgi alanının Holland altıgeni üzerinde gösterimi ve üç harfli ilgi kodu</li>
+                <li>En belirgin üç ilgi alanının açıklaması</li>
+              </>
+            )}
+            {def.engine === 'likert' && !def.profile && (
+              <>
+                <li>{showsMargin ? 'Her boyutun, puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi' : 'Her boyutun cetvel üzerinde gösterimi'}</li>
+                <li>Her boyut için düzey ve sade bir açıklama</li>
+              </>
+            )}
+            {def.engine === 'reading' && <li>Okuma hızı, anlama oranı ve soru türlerine göre sonuç</li>}
+            {cancellation && (
+              <>
+                <li>Çalışma hızı, bulunan ve atlanan harfler, yanlış işaretlemeler ve net doğru sayısı</li>
+                <li>Bölümler ilerledikçe dikkatin korunup korunmadığını gösteren bölüm bölüm grafik</li>
+              </>
+            )}
+            {def.engine === 'tasks' && !cancellation && <li>Her görevin sonucu ve ne anlama geldiği</li>}
+            {def.engine === 'quiz' && (
+              <>
+                <li>Genel sonuç ve konu alanlarının her birinde “sağlam”, “pekiştirilmeli” ya da “öncelikli” değerlendirmesi</li>
+                <li>Yanlış cevapların işaret ettiği hata türleri</li>
+              </>
+            )}
+            <li>Sonucu dikkatle yorumlamayı gerektiren durumlar için uyarılar (ör. çok hızlı cevaplama)</li>
+            <li>Norm durumu ve sonucun sınırları hakkında not</li>
+          </ul>
+          <p className="measure t-small text-ink-2">
+            Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz; raporun tek kopyası size verilen PDF’tir. Ayrıntılı açıklamaların
+            ve evde, okulda işe yarayacak önerilerin yer alacağı kapsamlı rapor yakında sunulacak.
+          </p>
+        </div>
       </section>
 
       <section id="bilim-karti" className="scroll-mt-24 border-t border-rule py-14" aria-labelledby="bilim">
@@ -255,10 +255,10 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
         <div className="flex flex-col items-start gap-4 rounded-2xl bg-ink p-8 text-paper md:flex-row md:items-center md:justify-between md:p-10">
           <div>
             <p className="font-display text-2xl font-bold">{def.isFree ? 'Bu test ücretsiz.' : def.name}</p>
-            <p className="opacity-85">Veli hesabınızı açın, çocuğunuzun profilini oluşturun ve testi birlikte başlatın.</p>
+            <p className="opacity-85">Hesap açmadan çözün. Cevaplarınız saklanmaz; rapor ekranda gösterilir ve PDF olarak size verilir.</p>
           </div>
-          <Link href="/kayit" className="btn bg-paper text-ink hover:bg-surface-2">
-            Ücretsiz veli hesabı aç
+          <Link href={quickUrl} className="btn bg-paper text-ink hover:bg-surface-2">
+            Testi çöz
           </Link>
         </div>
       </section>

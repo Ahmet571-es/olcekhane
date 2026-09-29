@@ -76,6 +76,9 @@ export function IntroStep({ title, paragraphs, onStart, cta }: { title: string; 
   );
 }
 
+/** Hızlı test: cevaplar sunucuya tek tek gönderilmez, cihazda tutulur; bitince hepsi birden verilir. */
+export type LocalLikert = { onFinish: (answers: Record<string, { value: number; rtMs: number | null }>) => Promise<void> };
+
 export function LikertRunner(props: {
   attemptId: string;
   studentName: string;
@@ -88,8 +91,9 @@ export function LikertRunner(props: {
   assentHtml: string | null;
   reportUrl: string;
   exitUrl: string;
+  local?: LocalLikert;
 }) {
-  const { items, options, attemptId } = props;
+  const { items, options, attemptId, local } = props;
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, number>>(props.initialAnswers);
   const answeredCount = Object.keys(answers).length;
@@ -99,14 +103,17 @@ export function LikertRunner(props: {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'error'>('idle');
   const [fatal, setFatal] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
 
   const shownAt = useRef<number>(0);
   const pending = useRef(new Map<string, { value: number; rtMs: number | null }>());
+  const collected = useRef(new Map<string, { value: number; rtMs: number | null }>());
   const flushing = useRef(false);
   const advanceTimer = useRef<number | null>(null);
   const headingRef = useRef<HTMLParagraphElement>(null);
 
   const flush = useCallback(async () => {
+    if (local) return;
     if (flushing.current) return;
     flushing.current = true;
     let backoff = 800;
@@ -139,7 +146,7 @@ export function LikertRunner(props: {
     }
     if (pending.current.size === 0) setSaveState('idle');
     flushing.current = false;
-  }, [attemptId]);
+  }, [attemptId, local]);
 
   useEffect(() => {
     if (phase === 'items') {
@@ -149,19 +156,22 @@ export function LikertRunner(props: {
   }, [index, phase]);
 
   useEffect(() => {
+    // Hesaplı uygulamada kaydedilmemiş cevap varsa; hızlı testte cevaplar yalnızca bu sayfada durduğu için
+    // tek bir cevap bile verildiyse sayfadan ayrılmadan önce uyarılır.
     const warn = (e: BeforeUnloadEvent) => {
-      if (pending.current.size > 0) e.preventDefault();
+      if (pending.current.size > 0 || (local && collected.current.size > 0)) e.preventDefault();
     };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, []);
+  }, [local]);
 
   const choose = useCallback(
     (value: number) => {
       const item = items[index];
       const rtMs = Math.round(performance.now() - shownAt.current);
       setAnswers((a) => ({ ...a, [item.key]: value }));
-      pending.current.set(item.key, { value, rtMs });
+      collected.current.set(item.key, { value, rtMs });
+      if (!local) pending.current.set(item.key, { value, rtMs });
       void flush();
       if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
       advanceTimer.current = window.setTimeout(() => {
@@ -169,7 +179,7 @@ export function LikertRunner(props: {
         else setPhase('review');
       }, 260);
     },
-    [flush, index, items],
+    [flush, index, items, local],
   );
 
   useEffect(() => {
@@ -193,6 +203,16 @@ export function LikertRunner(props: {
 
   async function finish() {
     setFinishing(true);
+    setFinishError(null);
+    if (local) {
+      try {
+        await local.onFinish(Object.fromEntries(collected.current));
+      } catch (err) {
+        setFinishing(false);
+        setFinishError(err instanceof Error ? err.message : 'Rapor hazırlanamadı. Lütfen tekrar deneyin.');
+      }
+      return;
+    }
     await flush();
     for (let i = 0; i < 20 && pending.current.size > 0; i++) await sleep(500);
     try {
@@ -274,8 +294,9 @@ export function LikertRunner(props: {
             </ul>
           </div>
         ) : (
-          <p className="text-lg">Cevapların kaydedildi. Bitirdiğinde raporun hemen hazırlanacak.</p>
+          <p className="text-lg">{local ? 'Bitirdiğinde raporun hemen hazırlanacak.' : 'Cevapların kaydedildi. Bitirdiğinde raporun hemen hazırlanacak.'}</p>
         )}
+        {finishError && <p className="notice notice-danger">{finishError}</p>}
         <div className="flex flex-wrap gap-3">
           <button type="button" className="btn btn-primary btn-lg" disabled={!canFinish || finishing} onClick={finish}>
             {finishing ? 'Rapor hazırlanıyor…' : 'Testi bitir ve raporu gör'}
@@ -291,7 +312,7 @@ export function LikertRunner(props: {
             Cevaplarıma dön
           </button>
         </div>
-        <SaveIndicator state={saveState} />
+        {!local && <SaveIndicator state={saveState} />}
       </div>
     );
   }
@@ -306,7 +327,7 @@ export function LikertRunner(props: {
           <span aria-live="polite" className="tabular">
             {index + 1} / {items.length}
           </span>
-          <SaveIndicator state={saveState} />
+          {!local && <SaveIndicator state={saveState} />}
         </div>
       </div>
 

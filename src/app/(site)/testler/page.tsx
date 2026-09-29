@@ -18,6 +18,9 @@ export default function TestsPage() {
           Her test ya yayımlanmış bir bilimsel ölçeğe ya da bizim geliştirip belgelediğimiz özgün bir göreve dayanır. Testin adına
           tıklayarak neyi ölçtüğünü, kaynağını, güvenirliğini ve sınırlarını görebilirsiniz.
         </p>
+        <p className="measure text-ink-2">
+          Bütün testler ücretsiz ve hesap açmadan çözülür. Cevaplar saklanmaz; rapor ekranda gösterilir ve PDF olarak size verilir.
+        </p>
       </div>
       <TestShelf headingLevel={2} />
     </div>

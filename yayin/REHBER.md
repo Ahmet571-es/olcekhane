@@ -9,17 +9,26 @@ Teknik ayrıntılar ve elle kurulum: [KURULUM.md](../KURULUM.md). Otomasyonun ke
 
 ## 1. Satın alınacaklar
 
-Kişisel veri tutan her şey Türkiye'de olmalı (aydınlatma metnindeki söz):
+Aydınlatma metni sunucunun **Hostinger'ın Almanya'daki veri merkezinde** olduğunu söyler. Başka bir
+sağlayıcı ya da ülke seçilirse önce metnin değişmesi gerekir.
 
-| Kalem | Örnek | Not |
+| Kalem | Seçilen | Not |
 |---|---|---|
-| Ana sunucu | Türkiye'de bir bulut sunucu, en az 2 çekirdek / 4 GB bellek / 40 GB disk | İşletim sistemi **Ubuntu 24.04**. Ek disk varsa kullanılır, yoksa veriler sistem diskinde şifreli bir alanda tutulur. |
-| Yedek sunucusu | Türkiye'de, farklı bir firma ya da veri merkezi; 1 çekirdek / 1 GB / 25 GB | Yedeklerin şifreli kopyası burada durur. |
-| Alan adı | `olcekhane.com` | DNS kayıtlarını düzenleyebilmelisiniz. |
-| E-posta gönderimi | Türkiye'de sunuculu, SMTP destekli kurumsal e-posta | Tek adres yeter: `bilgi@olcekhane.com`. |
+| Ana sunucu | Hostinger VPS **KVM 2**, veri merkezi **Almanya** (2 çekirdek / 8 GB bellek / 100 GB disk) | İşletim sistemi **Ubuntu 24.04**, eklentisiz ("Plain OS"). Veriler sistem diskinde şifreli bir alanda tutulur. |
+| Yedek sunucusu | İsteğe bağlı, şimdilik yok | Yedeklerin şifreli bir kopyasını ayrı bir yerde tutmak için. Eklenirse konumu aydınlatma metnine yazılır. |
+| Alan adı | `olcekhane.com` (Namecheap) | DNS kayıtlarını düzenleyebilmelisiniz. |
+| E-posta gönderimi | SMTP destekli kurumsal e-posta | Tek adres yeter: `bilgi@olcekhane.com`. Hesaplar kapalıyken yalnızca iletişim formu bildirimleri ve yönetici e-postaları için kullanılır. |
 
-Sunucuların **root şifreleri** e-postayla gelir. Bu şifreleri kimseyle paylaşmayın; yalnızca 3. adımda
-GitHub'a gireceksiniz.
+Ana sunucunun **root şifresini** Hostinger'da kurulum sırasında siz belirlersiniz. Bu şifreyi kimseyle
+paylaşmayın; yalnızca 3. adımda GitHub'a gireceksiniz.
+
+> **KVKK:** Sunucu yurt dışında olduğu için siteye gönderilen bilgiler (iletişim formu mesajları, giriş
+> denemeleri, IP adresleri) yurt dışına aktarılmış sayılır. Bunun için genellikle Kişisel Verileri Koruma
+> Kurulunun yayımladığı standart sözleşmenin Hostinger ile imzalanması ve imzadan sonra 5 iş günü içinde
+> Kurula bildirilmesi gerekir. Bu adımı bir hukukçuyla birlikte yapın.
+
+Site **hızlı test modunda** açılır: veli, okul ve öğrenci hesapları kapalıdır (`yayin/ayarlar.env` →
+`ACCOUNTS_ENABLED=false`), testler hesap açmadan çözülür ve cevaplar hiçbir yere kaydedilmez.
 
 ## 2. Ana parola (ANA_SIFRE)
 
@@ -42,7 +51,7 @@ adresini açın, **Name** kutusuna adı, **Secret** kutusuna değeri yapıştır
 |---|---|
 | `ANA_SIFRE` | 2. adımdaki parola |
 | `SUNUCU_ROOT_SIFRE` | Ana sunucunun root şifresi (ilk kurulumdan sonra silinebilir) |
-| `DEPO_ROOT_SIFRE` | Yedek sunucusunun root şifresi (ilk kurulumdan sonra silinebilir) |
+| `DEPO_ROOT_SIFRE` | Yalnızca yedek sunucusu alınırsa: onun root şifresi (ilk kurulumdan sonra silinebilir) |
 | `SMTP_KULLANICI` | E-posta adresi, ör. `bilgi@olcekhane.com` |
 | `SMTP_SIFRE` | O e-posta adresinin şifresi |
 
@@ -52,7 +61,7 @@ Girilen değerler GitHub'da bir daha görüntülenemez; yanlış girildiyse ayn�
 
 Bunlar sitede ve depoda görünebilir; `yayin/ayarlar.env` dosyasına işlenir:
 
-- Ana sunucunun ve yedek sunucusunun **IP adresleri**
+- Ana sunucunun (ve alınırsa yedek sunucusunun) **IP adresi**
 - Alan adı ve yönetici hesabı açılacak **e-posta adresi**
 - Şirket bilgileri: ticaret unvanı, adres, MERSİS numarası, vergi dairesi ve numarası, telefon, e-posta,
   KVKK başvuruları için e-posta, KEP adresi
@@ -90,4 +99,5 @@ IP adresleri ve gizli bilgiler girildiğinde yayın kendiliğinden başlar (GitH
   bir siteyi denetler ve diski kendiliğinden açar. Beklemek istemezseniz: GitHub → **Actions** →
   **Yayın** → **Run workflow** → `diski-ac` → **Run workflow**.
 - **Uyarılar:** bir iş akışı başarısız olursa GitHub size e-posta gönderir.
-- **Yedekler:** her gece alınır, 14 gün saklanır; şifreli kopyaları her sabah yedek sunucusuna çekilir.
+- **Yedekler:** her gece alınır, 14 gün saklanır; yedek sunucusu kurulduysa şifreli kopyaları her sabah
+  oraya çekilir.

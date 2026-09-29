@@ -1,8 +1,13 @@
 /**
- * Hukuki metinler (sürüm 1). {{company.*}} yer tutucuları, yönetim panelindeki şirket bilgileriyle
+ * Hukuki metinler. {{company.*}} yer tutucuları, şirket bilgileriyle (COMPANY_* ortam değişkenleri)
  * görüntüleme anında doldurulur. Metinler yayına alınmadan önce bir avukat tarafından gözden
- * geçirilmelidir. Bir metin değiştirildiğinde yeni sürüm olarak eklenir; eski onaylar kendi
- * sürümlerine bağlı kalır.
+ * geçirilmelidir. Bir metin değiştirildiğinde sürüm numarası artırılır; eski onaylar kendi
+ * sürümlerine bağlı kalır (bkz. lib/instruments/sync.ts).
+ *
+ * Aydınlatma metni ve kullanım koşulları hızlı test modunu (hesaplar kapalı, hiçbir test cevabı
+ * saklanmaz, sunucu Almanya'da) anlatır. Hesap bölümü açılmadan önce (ACCOUNTS_ENABLED) bu iki metnin
+ * hesaplarda işlenen verileri de anlatan yeni sürümleri yayımlanmalıdır. Açık rıza metinleri ve öğrenci
+ * bilgilendirmesi yalnızca hesap bölümünde kullanılır; hesaplar kapalıyken sitede yayında değildir.
  */
 
 export type LegalKind =
@@ -21,11 +26,21 @@ export interface LegalDocDef {
   /** Arama sonuçlarında görünen kısa açıklama. */
   summary: string;
   bodyMd: string;
+  /** Yalnızca hesap bölümünde kullanılan metin: hesaplar kapalıyken sitede yayımlanmaz. */
+  accountsOnly?: boolean;
 }
 
-const privacyNotice = `Bu aydınlatma metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu’nun ("KVKK") 10. maddesi ve Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ uyarınca, Ölçekhane platformunu kullanan veliler, öğretmenler ve öğrenciler için hazırlanmıştır.
+const privacyNotice = `Bu aydınlatma metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu’nun ("KVKK") 10. maddesi ve Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ uyarınca, Ölçekhane’yi ziyaret eden ve kullanan kişiler için hazırlanmıştır.
 
-Bu metin bilgilendirme amaçlıdır; sizden onay istemez. Çocuğunuzun test verilerinin işlenmesi için gereken açık rıza, ayrı bir metinle ve ayrı bir beyanla alınır.
+Bu metin bilgilendirme amaçlıdır; sizden onay istemez.
+
+## Kısaca
+
+- Testler hesap açmadan çözülür. Sizden ya da çocuğunuzdan ad, e-posta, telefon ya da kimlik numarası istemiyoruz.
+- Test cevapları yalnızca raporu hazırlamak için kullanılır; veritabanına, dosyaya ya da sunucu kayıtlarına yazılmaz.
+- Raporun tek kopyası, ekranınızda gösterilen ve indirdiğiniz PDF dosyasıdır. Sayfayı kapattıktan sonra raporu size yeniden gösteremeyiz.
+- Sitemizin sunucusu Almanya’dadır (Avrupa Birliği).
+- Reklam, izleme ya da ziyaretçi istatistiği (analiz) aracı kullanmıyoruz.
 
 ## 1. Veri sorumlusu
 
@@ -35,68 +50,81 @@ MERSİS No: {{company.mersisNo}}
 E-posta: {{company.kvkkEmail}}
 KEP: {{company.kepAddress}}
 
-## 2. Hangi verileri işliyoruz?
+## 2. Hızlı test: hesap açmadan test çözme
 
-**Veli ve okul personeli hesapları için**
-- Kimlik ve iletişim: ad soyad, e-posta adresi, isteğe bağlı telefon numarası
-- Hesap ve işlem bilgileri: şifrenin geri döndürülemez özeti, oluşturulan öğrenci profilleri, atanan testler, onay kayıtları
-- İşlem güvenliği: oturum kayıtları, IP adresi, tarayıcı bilgisi, önemli işlemlere ait denetim kayıtları
-- Okul aracılığıyla kullanımda: okulun bildirdiği veli e-posta adresi (yalnızca onay bağlantısı ve onayla ilgili bildirimler için)
+Testi çözerken seçtiğiniz sınıf düzeyi, cevaplarınız ve cevap süreleri (dikkat ve bellek görevlerinde görevdeki performansınız) test bittiğinde tek seferde sunucumuza gönderilir. Sunucu puanları ve raporu hesaplayıp size geri gönderir. Raporu PDF olarak indirmek istediğinizde aynı bilgiler bir kez daha gönderilir; PDF sunucunun belleğinde hazırlanıp doğrudan size iletilir.
 
-**Öğrenciler için**
-- Kimlik: ad, isteğe bağlı soyadı, sınıf düzeyi, isteğe bağlı doğum yılı ve cinsiyet; okul aracılığıyla eklenen öğrencilerde ayrıca okul numarası ve sınıfı
-- Ölçme verileri: testlerdeki cevaplar, cevap süreleri, görevlerdeki performans kayıtları, bunlardan hesaplanan puanlar ve raporlar
+Bu bilgiler:
 
-Öğrencilerin e-posta adresini ya da T.C. kimlik numarasını istemiyoruz.
+- veritabanına, dosyaya ya da sunucu kayıtlarına (günlüklere) yazılmaz; işlem bitince sunucunun belleğinden de silinir,
+- IP adresiniz ya da cihazınız dahil hiçbir kimlik bilgisiyle eşleştirilmez,
+- kimseyle paylaşılmaz; reklam, pazarlama, profil çıkarma ya da yapay zekâ modellerinin eğitimi için kullanılmaz.
 
-Psikolojik ölçme sonuçları sağlık verisi niteliği taşıyabileceğinden, öğrencilere ait ölçme verilerini KVKK’nın 6. maddesindeki özel nitelikli kişisel veri güvencesiyle koruyoruz.
+Kimliğinizi sormadığımız ve cevapları saklamadığımız için hızlı test cevapları ve raporlar, kimliği belirli ya da belirlenebilir bir kişiyle ilişkilendirilmez. Bu nedenle bu cevaplarla ilgili size gösterebileceğimiz, düzeltebileceğimiz ya da silebileceğimiz bir kayıt da bulunmaz.
 
-## 3. Hangi amaçlarla ve hangi hukuki sebeplerle işliyoruz?
+Raporlar kişilik, duygular ya da beceriler hakkında bilgi içerebilir. İndirdiğiniz PDF dosyasını kimlerle paylaşacağınıza siz karar verirsiniz; dosyayı güvenli bir yerde saklamanızı öneririz.
+
+## 3. Siteyi ziyaret ettiğinizde
+
+Her internet sitesinde olduğu gibi tarayıcınız, sayfaları isterken IP adresinizi ve tarayıcı bilgilerinizi sunucumuza iletir.
+
+- Ziyaretlerin kaydını tutmuyoruz: sunucumuzda erişim günlüğü kapalıdır; ziyaretçi istatistiği ya da analiz aracı kullanmıyoruz.
+- Kötüye kullanımı önlemek için kısa sürede çok sayıda istek gönderen adresleri sınırlarız. Hızlı testte bunun için IP adresiniz yalnızca sunucunun belleğinde tutulur ve en geç 11 dakika içinde silinir. İletişim formu ile giriş ve şifre yenileme sayfalarında aynı amaçla tutulan sayaçlar veritabanındadır ve en geç 3 gün içinde silinir.
+- Hızlı testte çerez kullanılmaz; cevaplarınız tarayıcınızda da saklanmaz. Çerezler yalnızca giriş yapıldığında, oturumu açık tutmak için kullanılır (bkz. Çerez Politikası).
+
+## 4. İletişim formu
+
+Formu gönderdiğinizde adınız soyadınız, e-posta adresiniz, isteğe bağlı olarak telefon numaranız ve kurumunuz, seçtiğiniz konu, mesajınız, gönderim tarihi ve IP adresiniz kaydedilir; mesajınız ayrıca şirket e-posta adresimize iletilir. Bu bilgileri size dönüş yapmak, başvurunuzu (KVKK başvuruları dahil) sonuçlandırmak ve formun kötüye kullanılmasını önlemek için kullanırız.
+
+## 5. Giriş sayfası
+
+Veli, okul ve öğrenci hesapları şu an kapalıdır; giriş sayfası yalnızca platformu yöneten yetkililer içindir. Giriş sayfasında yapılan her deneme (yazılan e-posta adresi, IP adresi, tarih ve denemenin sonucu), hesapları izinsiz girişlere karşı korumak için kaydedilir.
+
+## 6. Hangi amaçlarla ve hangi hukuki sebeplerle işliyoruz?
 
 | Amaç | Hukuki sebep |
 |---|---|
-| Hesabın açılması, girişin sağlanması, hizmetin sunulması | Sözleşmenin kurulması ve ifası (KVKK m.5/2-c) |
-| Öğrencinin testleri çözmesi, puanların hesaplanması ve raporların hazırlanması | Velinin açık rızası (KVKK m.6/2 ve m.6/3) |
-| Anonimleştirilmiş verilerle Türkiye normlarının ve geçerlik çalışmalarının yapılması | Velinin ayrıca verdiği, isteğe bağlı açık rıza |
-| Bilgi güvenliği, kötüye kullanımın önlenmesi, hataların giderilmesi | Veri sorumlusunun meşru menfaati (KVKK m.5/2-f) |
-| Mevzuattan doğan yükümlülükler (ör. vergi ve elektronik ticaret mevzuatı) | Kanunlarda açıkça öngörülme ve hukuki yükümlülük (KVKK m.5/2-a ve m.5/2-ç) |
+| İletişim formundan gelen sorulara ve başvurulara dönüş yapmak | Bir sözleşmenin kurulması veya ifasıyla doğrudan ilgili olması (KVKK m.5/2-c) ve veri sorumlusunun meşru menfaati (KVKK m.5/2-f) |
+| KVKK kapsamındaki başvuruları sonuçlandırmak | Hukuki yükümlülüğün yerine getirilmesi (KVKK m.5/2-ç) |
+| Bilgi güvenliği ve kötüye kullanımın önlenmesi (IP adresi, giriş denemeleri) | Veri sorumlusunun meşru menfaati (KVKK m.5/2-f) |
+| Mevzuattan doğan yükümlülükler ve yetkili kurumların talepleri | Kanunlarda açıkça öngörülme ve hukuki yükümlülük (KVKK m.5/2-a ve m.5/2-ç) |
 
-Öğrenci verilerini reklam, pazarlama ya da profil satışı amacıyla kullanmayız. Öğrenci verilerini yapay zekâ modellerinin eğitimi için kullanmayız.
+## 7. Verileri nasıl topluyoruz?
 
-## 4. Verileri nasıl topluyoruz?
+Veriler; sitedeki test ekranları, iletişim formu ve giriş sayfası ile tarayıcınızın her istekte gönderdiği bağlantı bilgileri aracılığıyla, elektronik ortamda ve otomatik yollarla toplanır.
 
-Veriler; platformdaki formlar, test ekranları ve sistem kayıtları aracılığıyla elektronik ortamda, otomatik yollarla toplanır. Okul aracılığıyla kullanılan hesaplarda öğrencinin adı ve sınıfı okul tarafından platforma girilir.
+## 8. Verileri kimlere aktarıyoruz?
 
-## 5. Verileri kimlere aktarıyoruz?
-
-- **Okul hesaplarında:** öğrencinin raporunu, velinin onayıyla, öğrencinin okulundaki rehber öğretmen (psikolojik danışman) görebilir. Öğretmenler ve okul yöneticileri bireysel sonuç göremez; yalnızca en az beş öğrenciden oluşan grupların özetlerini görebilir.
-- **Hizmet sağlayıcılar:** barındırma (sunucular Türkiye’dedir) ve e-posta gönderim hizmeti sağlayıcıları, yalnızca hizmetin gerektirdiği ölçüde ve gizlilik yükümlülüğü altında.
+- **Barındırma hizmeti (yurt dışı):** Sitemizin sunucusu, barındırma hizmeti aldığımız Hostinger’ın Almanya’daki (Avrupa Birliği) veri merkezinde bulunur. Siteye gönderdiğiniz bilgiler (iletişim formu mesajları, giriş denemeleri, bağlantı bilgileri ve kaydedilmeden işlenen hızlı test cevapları) bu sunucuda işlendiği için yurt dışına aktarılmış olur. Sunucuyu biz yönetiriz; veritabanı ve yedekleri sunucuda şifrelenmiş bir alanda tutulur. Barındırma sağlayıcısının sunucunun tamamından aldığı yedeklerde bu veriler yalnızca şifreli hâlleriyle bulunur.
+- **E-posta hizmeti:** İletişim formu mesajlarını şirket e-posta adresimize iletmek ve yöneticilere hesap güvenliğiyle ilgili e-postalar göndermek için e-posta hizmeti sağlayıcımızı kullanırız.
 - **Yetkili kamu kurum ve kuruluşları:** yalnızca hukuken zorunlu olduğunda.
 
-Kişisel veriler yurt dışına aktarılmaz.
+Kişisel verileri satmıyor, reklam ya da pazarlama amacıyla kimseyle paylaşmıyoruz.
 
-## 6. Ne kadar süre saklıyoruz?
+## 9. Ne kadar süre saklıyoruz?
 
-- Hesap ve öğrenci verileri: hesap açık kaldığı sürece. Hesap kapatıldığında ya da veli silinmesini istediğinde, yasal saklama zorunluluğu olmayan veriler en geç 30 gün içinde silinir veya anonimleştirilir.
-- Açık rıza geri alındığında: ilgili öğrencinin ölçme verileri en geç 30 gün içinde silinir; rıza sonradan yeniden verilse de bu veriler kullanılmaz.
-- Açık rıza ve rızanın geri alınmasına ait kayıtlar: rızanın kanıtı olarak, öğrenci profili silindikten sonra 2 yıl (bu süre boyunca erişime kapalı tutulur).
-- Aydınlatma metninin okunduğuna ve kullanım koşullarının kabul edildiğine dair kayıtlar (tarih, IP adresi ve tarayıcı bilgisiyle): hesap kapatıldıktan sonra 2 yıl.
-- Yarıda bırakılan testlerin cevapları: son cevaptan itibaren 90 gün.
-- Okul ekibine gönderilen davetler (davet edilenin e-posta adresi): davet sonuçlandıktan ya da süresi dolduktan sonra, davet tarihinden itibaren 90 gün.
-- E-posta gönderim kayıtları (alıcı ve konu): 90 gün.
+- Hızlı test cevapları ve raporlar: saklanmaz.
+- Hızlı testte IP adresi (hız sınırı): yalnızca sunucunun belleğinde, en geç 11 dakika.
+- İletişim formu, giriş ve şifre yenileme sayfalarındaki hız sınırı sayaçları (IP adresi ya da yazılan e-posta adresiyle): en geç 3 gün.
 - İletişim formu mesajları: 1 yıl.
-- İşlem güvenliği kayıtları (giriş denemeleri, denetim kayıtları): en fazla 2 yıl.
-- Ödeme ve fatura kayıtları: vergi mevzuatı gereği 10 yıl.
+- E-posta gönderim kayıtları (alıcı ve konu; iletişim formu bildirimlerinde konu satırında gönderenin adı yer alır): 90 gün.
+- Giriş denemeleri: 1 yıl.
+- Yönetici işlemlerine ait denetim kayıtları: 2 yıl.
+- Kendi aldığımız şifreli veritabanı yedekleri: en fazla 28 gün; silinen bir kayıt bu yedeklerden de bu süre içinde çıkar. Barındırma sağlayıcısının sunucu yedekleri, sağlayıcının saklama süresine tabidir ve verileri yalnızca şifreli olarak içerir.
 
-Süresi dolan veriler her gün çalışan otomatik bir görevle silinir veya anonimleştirilir.
+Süresi dolan kayıtlar her gün çalışan otomatik bir görevle silinir.
 
-## 7. Haklarınız
+## 10. Haklarınız
 
-KVKK’nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini, KVKK’nın 7. maddesindeki şartlar çerçevesinde silinmesini veya yok edilmesini ve bu işlemlerin aktarıldığı kişilere bildirilmesini isteme, münhasıran otomatik sistemlerle analiz edilmesi sonucu aleyhinize bir sonucun ortaya çıkmasına itiraz etme ve kanuna aykırı işleme sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme haklarına sahipsiniz.
+KVKK’nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini, KVKK’nın 7. maddesindeki şartlar çerçevesinde silinmesini veya yok edilmesini ve bu işlemlerin aktarıldığı kişilere bildirilmesini isteme, münhasıran otomatik sistemlerle analiz edilmesi sonucu aleyhinize bir sonucun ortaya çıkmasına itiraz etme ve kanuna aykırı işleme sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme haklarına sahipsiniz.
 
-Başvurularınızı {{company.kvkkEmail}} adresine e-posta ile, {{company.kepAddress}} adresine KEP ile veya {{company.address}} adresine yazılı olarak iletebilirsiniz. Başvurular en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.
+Başvurularınızı {{company.kvkkEmail}} adresine e-posta ile, {{company.kepAddress}} adresine KEP ile, {{company.address}} adresine yazılı olarak ya da sitedeki iletişim formundan "Kişisel veriler (KVKK) başvurusu" konusunu seçerek iletebilirsiniz. Başvurular en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.
 
-Veli panelinden çocuğunuza ait verileri görüntüleyebilir, açık rızanızı geri alabilir ve silme talebinde bulunabilirsiniz.`;
+Hızlı test cevaplarını ve raporları saklamadığımız için bunlarla ilgili bir başvuruda size gösterebileceğimiz bir kayıt bulunmaz.
+
+## 11. Hesaplar ve ücretli rapor
+
+Veli, okul ve öğrenci hesapları ile ücretli kapsamlı rapor henüz kullanıma açık değildir. Açıldıklarında, orada işlenecek veriler (ör. hesap bilgileri, ödeme ve fatura kayıtları) ve saklama süreleri bu metnin yeni bir sürümünde açıklanacak; yeni sürüm, uygulanmaya başlamadan önce bu sayfada yayımlanacaktır.`;
 
 const consentAssessment = `Bu metin, çocuğunuzun Ölçekhane’de test çözebilmesi için gereken açık rızanıza ilişkindir. Rıza vermek zorunda değilsiniz; ancak rıza verilmeden çocuğunuz test çözemez, çünkü testlerin tek amacı bu verileri işleyerek size rapor sunmaktır.
 
@@ -141,45 +169,53 @@ Burada çözeceğin testler seni daha iyi tanımana yardım etmek için hazırla
 
 Hazırsan başlayabilirsin.`;
 
-const terms = `Bu kullanım koşulları, Ölçekhane platformunu ("Platform") kullanan herkes için geçerlidir. Platformu kullanarak bu koşulları kabul etmiş olursunuz.
+const terms = `Bu kullanım koşulları, Ölçekhane’yi ("Platform") kullanan herkes için geçerlidir. Platformu kullanarak bu koşulları kabul etmiş olursunuz.
 
 ## 1. Hizmetin niteliği
 
-Platform, öğrencilerin kişilik, ilgi, öğrenme ve bilişsel beceriler gibi alanlarda bilimsel ölçme araçlarını çevrim içi olarak doldurmasını ve sonuçların öğrenci, veli ve öğretmenler için sade bir dille raporlanmasını sağlar.
+Platform, öğrencilerin kişilik, ilgi, öğrenme ve bilişsel beceriler gibi alanlarda bilimsel ölçme araçlarını çevrim içi olarak doldurmasını ve sonuçların öğrenci ve veli için sade bir dille raporlanmasını sağlar.
 
 **Platform tanı koymaz.** Raporlar tıbbi, psikiyatrik ya da psikolojik bir teşhis, tedavi veya klinik değerlendirme değildir ve bunların yerine geçmez. Çocuğunuzun ruh sağlığı ya da gelişimiyle ilgili bir endişeniz varsa bir uzmana başvurun.
 
-Bazı testler "pilot" olarak işaretlenmiştir. Bu testlerin Türkiye normları ve geçerlik çalışmaları sürmektedir; raporlarında bu durum açıkça belirtilir.
+Bazı testler "pilot" olarak işaretlenmiştir. Bu testlerin Türkiye normları ve geçerlik çalışmaları henüz yapılmamıştır; raporlarında bu durum açıkça belirtilir.
 
-## 2. Hesaplar
+## 2. Hızlı test
+
+- Testler hesap açmadan ve ücretsiz çözülür. Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz (ayrıntılar KVKK Aydınlatma Metni’nde).
+- Rapor ekranda gösterilir ve PDF olarak indirilebilir. Raporu saklamak size aittir: sayfa kapatıldıktan sonra rapor yeniden üretilemez ve Platform’dan istenemez.
+- 18 yaşından küçükler testleri velilerinin bilgisiyle çözmelidir. Test bir çocuk için çözülüyorsa bir yetişkinin yanında çözülmesini öneririz.
+
+## 3. Hesaplar
+
+Veli, okul ve öğrenci hesapları şu an kapalıdır. Açıldığında şu kurallar geçerli olur:
 
 - Veli hesabını yalnızca 18 yaşını doldurmuş kişiler açabilir.
 - Bir öğrenci için profil oluşturan kişi, o öğrencinin velisi ya da yasal temsilcisi olduğunu beyan eder.
 - Hesap bilgilerinizin gizliliğinden siz sorumlusunuz. Hesabınızın izinsiz kullanıldığını düşünüyorsanız bize hemen bildirin.
 
-## 3. Kullanım kuralları
+## 4. Kullanım kuralları
 
 - Platformdaki test maddeleri, metinler ve raporlar telif hakkıyla ya da lisansla korunur. Kopyalanamaz, yayımlanamaz, başka bir yerde test olarak kullanılamaz.
 - Testler, bir başkası adına ya da sonucu yanıltmak amacıyla çözülmemelidir.
 - Platformun güvenliğini tehdit edecek girişimlerde bulunulamaz.
 
-## 4. Sorumluluk
+## 5. Sorumluluk
 
 Raporlar, öğrencinin kendi cevaplarına ve görevlerdeki performansına dayanır; bu nedenle cevapların içtenliğinden ve uygulama koşullarından etkilenir. Raporlar, eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.
 
-## 5. Değişiklikler
+## 6. Değişiklikler
 
-Bu koşullar güncellenebilir. Önemli değişiklikler kayıtlı e-posta adresinize bildirilir.
+Bu koşullar güncellenebilir. Güncel metin her zaman bu sayfada yayımlanır. Hesap bölümü açıldığında, önemli değişiklikler hesabı olan kullanıcılara ayrıca e-postayla bildirilir.
 
-## 6. Uygulanacak hukuk
+## 7. Uygulanacak hukuk
 
 Bu koşullara Türkiye Cumhuriyeti hukuku uygulanır. Tüketici işlemlerinden doğan uyuşmazlıklarda, parasal sınırlar içinde tüketici hakem heyetleri, aşan durumlarda tüketici mahkemeleri yetkilidir.
 
-## 7. İletişim
+## 8. İletişim
 
 {{company.legalName}} · {{company.address}} · {{company.email}}`;
 
-const cookiePolicy = `Ölçekhane yalnızca platformun çalışması için zorunlu olan çerezleri kullanır.
+const cookiePolicy = `Ölçekhane yalnızca platformun çalışması için zorunlu olan çerezleri kullanır. Hızlı test çözerken hiçbir çerez kullanılmaz ve cevaplarınız tarayıcınızda da saklanmaz; aşağıdaki çerezler yalnızca giriş yapıldığında ayarlanır.
 
 | Çerez | Amaç | Süre |
 |---|---|---|
@@ -192,10 +228,10 @@ Reklam, izleme ya da üçüncü taraf analiz çerezi kullanmıyoruz. Bu nedenle 
 export const LEGAL_DOCS: LegalDocDef[] = [
   {
     kind: 'privacy_notice',
-    version: 1,
+    version: 2,
     slug: 'aydinlatma-metni',
     title: 'KVKK Aydınlatma Metni',
-    summary: 'Ölçekhane’nin veliler, öğrenciler ve okul kullanıcılarına ait kişisel verileri hangi amaçla, hangi hukuki sebeple ve nasıl işlediğine dair aydınlatma metni.',
+    summary: 'Ölçekhane’de hangi kişisel verilerin, hangi amaçla ve ne kadar süre işlendiği. Hızlı testte cevaplar saklanmaz; sunucu Almanya’dadır.',
     bodyMd: privacyNotice,
   },
   {
@@ -205,6 +241,7 @@ export const LEGAL_DOCS: LegalDocDef[] = [
     title: 'Açık Rıza Metni: Ölçme Verilerinin İşlenmesi',
     summary: 'Öğrencinin test cevaplarının ve sonuçlarının işlenmesi için velinin verdiği açık rızanın metni.',
     bodyMd: consentAssessment,
+    accountsOnly: true,
   },
   {
     kind: 'consent_research',
@@ -213,6 +250,7 @@ export const LEGAL_DOCS: LegalDocDef[] = [
     title: 'Açık Rıza Metni: Norm ve Geçerlik Çalışmaları (İsteğe Bağlı)',
     summary: 'Kimlik bilgilerinden arındırılmış test verilerinin Türkiye normları ve geçerlik çalışmalarında kullanılmasına ilişkin isteğe bağlı açık rıza metni.',
     bodyMd: consentResearch,
+    accountsOnly: true,
   },
   {
     kind: 'child_info',
@@ -221,10 +259,11 @@ export const LEGAL_DOCS: LegalDocDef[] = [
     title: 'Öğrenci için bilgilendirme',
     summary: 'Teste başlamadan önce öğrenciye kendi yaşına uygun bir dille yapılan bilgilendirme.',
     bodyMd: childInfo,
+    accountsOnly: true,
   },
   {
     kind: 'terms',
-    version: 1,
+    version: 2,
     slug: 'kullanim-kosullari',
     title: 'Kullanım Koşulları',
     summary: 'Ölçekhane hizmetlerinin kullanım koşulları.',

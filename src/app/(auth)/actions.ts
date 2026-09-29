@@ -17,6 +17,7 @@ import { passwordResetTemplate, verifyEmailTemplate } from '@/lib/email/template
 import { rateLimit } from '@/lib/rate-limit';
 import { appUrl, clientIpBucket } from '@/lib/request';
 import { homeFor, safeNextPath } from '@/lib/auth/home';
+import { ACCOUNTS_CLOSED_MESSAGE, accountsOpen } from '@/lib/site';
 
 export type FormState = {
   ok?: boolean;
@@ -71,6 +72,7 @@ const registerSchema = z.object({
 });
 
 export async function registerAction(_: FormState, formData: FormData): Promise<FormState> {
+  if (!accountsOpen()) return { message: ACCOUNTS_CLOSED_MESSAGE };
   const raw = Object.fromEntries(formData) as Record<string, string>;
   const values = { fullName: raw.fullName ?? '', email: raw.email ?? '' };
   const parsed = registerSchema.safeParse(raw);

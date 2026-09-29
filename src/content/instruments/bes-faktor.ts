@@ -23,13 +23,13 @@ export const besFaktor: LikertInstrument = {
   sortOrder: 10,
   tagline: 'Kişiliğin en çok araştırılmış beş boyutunda öğrencinin kendini nasıl gördüğünü gösterir.',
   description:
-    'Psikolojide kişiliği anlatmanın en çok araştırılmış yolu beş temel boyuttur: sosyal enerji, başkalarına yakınlık, sorumluluk, duygusal denge ve merak. Bu profil, öğrencinin bu beş boyutta kendini nasıl tanımladığını gösterir ve her biri için gündelik hayatta işe yarayacak öneriler verir.',
+    'Psikolojide kişiliği anlatmanın en çok araştırılmış yolu beş temel boyuttur: sosyal enerji, başkalarına yakınlık, sorumluluk, duygusal denge ve merak. Bu profil, öğrencinin bu beş boyutta kendini nasıl tanımladığını gösterir ve her boyutun ne anlama geldiğini sade bir dille anlatır.',
   intro: {
     title: 'Kendini nasıl tanımlıyorsun?',
     paragraphs: [
       'Birazdan seni anlatan 50 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, şu anki hâlini anlattığında çıkar.',
-      'Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur. Yaklaşık 8 dakika sürer ve istediğin an ara verip sonra devam edebilirsin.',
+      'Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur. Yaklaşık 8 dakika sürer.',
     ],
   },
   prompt: 'Bu cümle seni ne kadar doğru anlatıyor?',
@@ -150,11 +150,11 @@ export const besFaktor: LikertInstrument = {
     whatItMeasures:
       'Kişilik psikolojisinde en geniş araştırma desteğine sahip beş temel boyut: dışadönüklük, uyumluluk, sorumluluk, duygusal denge ve zihinsel merak.',
     turkishVersion:
-      'Maddeler Ölçekhane tarafından ergenlerin anlayacağı sade Türkçeye çevrildi. IPIP maddeleri kamu malı olduğu için çeviri ve uyarlama serbesttir. Bu çevirinin 12–18 yaş Türkiye örnekleminde geçerlik ve norm çalışması sürüyor.',
+      'Maddeler Ölçekhane tarafından ergenlerin anlayacağı sade Türkçeye çevrildi. IPIP maddeleri kamu malı olduğu için çeviri ve uyarlama serbesttir. Bu çevirinin Türkiye’deki 12–18 yaş öğrencilerle geçerlik ve norm çalışması henüz yapılmadı.',
     reliability: 'Özgün formun 10 maddelik ölçeklerinde iç tutarlılık (Cronbach α) .79 ile .87 arasındadır.',
     normStatus: 'none',
     normNote:
-      'Türkiye yaş normları hazırlanıyor. Şimdilik puanlar ölçeğin kendi aralığına göre yorumlanıyor: sonuç öğrencinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Türkiye yaş normları henüz yok. Puanlar ölçeğin kendi aralığına göre yorumlanıyor: sonuç öğrencinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
     ageNote:
       '6. sınıftan itibaren uygundur. Birkaç madde soyut ifade içerdiğinden küçük yaşlarda bir yetişkinin kelimeleri açıklaması gerekebilir; cevabı yönlendirmeden.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',

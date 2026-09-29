@@ -1,6 +1,6 @@
 # Ölçekhane sunucu kurulumu
 
-Bu rehber Ölçekhane'yi Türkiye'deki tek bir sunucuya Docker ile kurar. Kurulumun sonunda sunucuda dört
+Bu rehber Ölçekhane'yi tek bir sunucuya Docker ile kurar. Kurulumun sonunda sunucuda dört
 kapsayıcı çalışır:
 
 | Kapsayıcı | Görevi |
@@ -31,24 +31,29 @@ kendi alan adınızı yazın.
 
 ## 1. Gerekenler
 
-**Türkiye'de bir sunucu.** Aydınlatma metni, sunucuların Türkiye'de olduğunu ve kişisel verilerin yurt
-dışına aktarılmadığını söyler. Bu söz sunucu dışına alınan yedekleri ve e-posta gönderim hizmetini de
-kapsar. Yurt dışındaki bir hizmet kullanmaya karar verirseniz KVKK'nın 9. maddesindeki yurt dışına
-aktarım kuralları uygulanır ve aydınlatma metni de değişmelidir.
+**Bir sunucu (şu anki karar: Hostinger, Almanya).** Aydınlatma metni sunucunun Hostinger'ın Almanya'daki
+veri merkezinde olduğunu ve siteye gönderilen bilgilerin bu yüzden yurt dışına aktarıldığını söyler.
+Başka bir sağlayıcı ya da ülke seçerseniz önce aydınlatma metnini (`src/content/legal/index.ts`)
+değiştirin. Sunucu yurt dışında olduğu için KVKK'nın 9. maddesindeki yurt dışına aktarım kuralları
+uygulanır: yeterlilik kararı yoksa genellikle Kurulun yayımladığı standart sözleşme sağlayıcıyla
+imzalanır ve imzadan sonra 5 iş günü içinde Kurula bildirilir. Bu adımı hukuk danışmanınızla birlikte
+yapın.
 
 - En az 2 vCPU, 4 GB bellek, 40 GB SSD sistem diski
 - Veriler için ayrı bir disk: en az 20 GB (sağlayıcılarda "ek disk" ya da "blok depolama" adıyla
-  sunulur). Bu disk şifrelenecek ([bölüm 4](#4-şifreli-veri-diski)). Ek disk alınamıyorsa şifreli alan
-  bir dosya olarak da oluşturulabilir.
+  sunulur). Bu disk şifrelenecek ([bölüm 4](#4-şifreli-veri-diski)). Sağlayıcı ek disk sunmuyorsa
+  şifreli alan sistem diskinde bir dosya olarak oluşturulur.
 - Ubuntu 24.04 LTS ya da 26.04 LTS
 
 **Alan adı** ve DNS kayıtlarını düzenleme yetkisi.
 
-**E-posta gönderim hizmeti (SMTP).** Doğrulama, şifre yenileme, okul daveti ve veli onayı e-postaları
-bununla gider. E-postalarda veli ve öğretmen adresleri, bazılarında öğrencinin adı bulunur: sağlayıcının
-sunucuları Türkiye'de olmalı. Gönderen adres kendi alan adınızda olmalı (ör. `bilgi@olcekhane.com`) ve
-sağlayıcının verdiği SPF, DKIM ve DMARC kayıtları DNS'e eklenmeli; yoksa veli onayı e-postaları
-istenmeyen klasörüne düşer.
+**E-posta gönderim hizmeti (SMTP).** Hesaplar kapalıyken (hızlı test modu, `ACCOUNTS_ENABLED=false`)
+yalnızca iletişim formu bildirimleri ve yönetici e-postaları (şifre belirleme, güvenlik uyarıları) gider.
+Hesaplar açıldığında doğrulama, şifre yenileme, okul daveti ve veli onayı e-postaları da bununla gider;
+bunlarda veli ve öğretmen adresleri, bazılarında öğrencinin adı bulunur. Sağlayıcının sunucuları yurt
+dışındaysa bu da yurt dışına aktarımdır ve aydınlatma metnine yazılmalıdır. Gönderen adres kendi alan
+adınızda olmalı (ör. `bilgi@olcekhane.com`) ve sağlayıcının verdiği SPF, DKIM ve DMARC kayıtları DNS'e
+eklenmeli; yoksa e-postalar istenmeyen klasörüne düşer.
 
 **Şirket bilgileri:** ticaret unvanı, adres, MERSİS numarası, vergi dairesi ve numarası, telefon,
 e-posta, KVKK başvuruları için e-posta ve KEP adresi. Aydınlatma metninde ve sitenin altbilgisinde
@@ -274,6 +279,7 @@ nano .env
 | `MAIL_RATE_PER_HOUR`, `MAIL_RATE_PER_DAY` | Sağlayıcının saatlik ve günlük gönderim sınırının biraz altında (varsayılan 90 ve 900). Sınırı aşan e-postalar sırada bekler ve sınır açıldıkça gönderilir (**Yönetim → E-postalar**). |
 | `COMPANY_*` | Şirket bilgileri (hepsi zorunlu) |
 | `ALLOW_INDEXING` | Hazırlık süresince `false`, yayına çıkarken `true` |
+| `ACCOUNTS_ENABLED` | Veli, okul ve öğrenci hesapları. `false` (varsayılan): site yalnızca hızlı testle çalışır; kayıt, öğrenci girişi, okul daveti ve yeni veli onayları kapalıdır, giriş sayfası yalnızca yöneticiler içindir. `true` yapmadan önce aydınlatma metninin ve kullanım koşullarının hesapları anlatan sürümlerini yayımlayın. |
 | `SCHEDULED_JOBS` | `true` kalmalı (günlük temizlik görevi) |
 | `BACKUP_KEEP_DAYS` | Yedeklerin kaç gün saklanacağı: 1–28 (varsayılan 14) |
 | `BACKUP_TIME` | Yedek saati, Türkiye saatiyle (varsayılan `03:15`) |
@@ -396,8 +402,9 @@ bir veritabanında öğrenci giriş kodları ve iki aşamalı doğrulama kurulum
 
 ### 9.3 Sunucu dışı şifreli kopya
 
-Sunucunun diski ya da kendisi kaybolursa yedekler de gider. Yedekler **age** ile şifrelenip Türkiye'deki
-ayrı bir depolama sunucusunda da saklanır. Şifreleme bir açık anahtarla yapılır; yedeği açacak gizli
+Sunucunun diski ya da kendisi kaybolursa yedekler de gider. Yedekler **age** ile şifrelenip ayrı bir
+depolama sunucusunda da saklanabilir (isteğe bağlı; şu an kurulu değil). Depolama sunucusunun konumu
+aydınlatma metnine yazılmalıdır; ana sunucudan farklı bir ülkedeyse bu da ayrı bir yurt dışına aktarımdır. Şifreleme bir açık anahtarla yapılır; yedeği açacak gizli
 anahtar hiçbir sunucuda bulunmaz.
 
 Önerilen düzende depolama sunucusu kopyaları **kendisi çeker**. Ölçekhane sunucusunda depolama
@@ -422,7 +429,7 @@ kopyalar 26 gün sonra silinir.
    sudo install -m 644 sunucu/olcekhane.cron /etc/cron.d/olcekhane
    ```
 
-3. **Depolama sunucusunda** (Türkiye'de) bir SSH anahtarı üretin ve açık anahtarı Ölçekhane
+3. **Depolama sunucusunda** bir SSH anahtarı üretin ve açık anahtarı Ölçekhane
    sunucusundaki okuma hesabına tanımlayın:
 
    ```bash
@@ -567,8 +574,12 @@ saatte yeniden başlatıp diski açın).
 
 Bu bölüm teknik bir özettir, hukuki görüş değildir; kararları hukuk danışmanınızla birlikte verin.
 
-- **Veri konumu:** sunucu, sunucu dışı yedekler ve e-posta hizmeti Türkiye'de olmalı (aydınlatma
-  metnindeki söz).
+- **Veri konumu:** aydınlatma metni sunucunun Almanya'da (Hostinger) olduğunu söyler. Sunucu dışı yedek
+  sunucusu ya da yurt dışında sunuculu bir e-posta hizmeti eklenirse bunlar da metne yazılmalıdır.
+  Yurt dışına aktarım için standart sözleşme ve Kurula bildirim gerekir ([bölüm 1](#1-gerekenler)).
+- **Hızlı test:** hesaplar kapalıyken test cevapları ve raporlar hiçbir yere yazılmaz (veritabanı, dosya,
+  günlük); hız sınırı için IP adresi yalnızca bellekte, en geç 11 dakika tutulur. Bu davranışı değiştiren
+  her geliştirmede aydınlatma metni de güncellenmelidir.
 - **Saklama ve imha:** saklama süreleri aydınlatma metninde yazılıdır ve günlük temizlik göreviyle
   uygulanır; yedekler en fazla 28 gün tutulur. Saklama ve imha politikanıza bu görevi ve süreleri yazın.
 - **Kurulun 2018/10 sayılı kararındaki önlemler:** şifreli saklama ve anahtarların ayrı tutulması
@@ -584,8 +595,8 @@ Bu bölüm teknik bir özettir, hukuki görüş değildir; kararları hukuk dan�
   sayılıp sayılmayacağını ve hangi gruba girdiğinizi hukuk danışmanınızla değerlendirin.
 - **Veri ihlali:** ihlali öğrendiğiniz andan itibaren en geç 72 saat içinde Kurula bildirim gerekir;
   etkilenen kişilere de en kısa sürede bilgi verilir. Önceden bir müdahale planı hazırlayın.
-- **İlgili kişi başvuruları:** en geç 30 gün içinde yanıtlanır. Veliler çocuklarının verilerini veli
-  panelinden görebilir, rızalarını geri alabilir ve silinmesini isteyebilir. Hesabını kapatan kullanıcının
+- **İlgili kişi başvuruları:** en geç 30 gün içinde yanıtlanır. Hesaplar açıkken veliler çocuklarının
+  verilerini veli panelinden görebilir, rızalarını geri alabilir ve silinmesini isteyebilir. Hesabını kapatan kullanıcının
   hesap bilgileri hemen anonimleştirilir; çocuk profilleri ve ölçme verileri temizlik göreviyle silinir.
 
 ## 14. Sorun giderme

@@ -72,12 +72,12 @@ export const ozSaygi: LikertInstrument = {
     basedOn: 'Rosenberg Öz-saygı Ölçeği (Rosenberg, 1965), 10 madde.',
     whatItMeasures: 'Kişinin kendine yönelik genel tutumu: kendini ne kadar değerli, yeterli ve saygıya layık gördüğü.',
     turkishVersion:
-      'Ölçeğin ergenlerle yapılmış bir Türkçe uyarlaması vardır (Çuhadaroğlu, 1986). Platformdaki metin Ölçekhane’nin kendi çevirisidir; özgün ölçek serbestçe kullanılabildiği için yeni bir çeviri yapıldı ve Türkçe geçerlik çalışması platform verisiyle sürdürülüyor.',
+      'Ölçeğin ergenlerle yapılmış bir Türkçe uyarlaması vardır (Çuhadaroğlu, 1986). Platformdaki metin Ölçekhane’nin kendi çevirisidir; özgün ölçek serbestçe kullanılabildiği için yeni bir çeviri yapıldı. Bu çevirinin Türkçe geçerlik çalışması henüz yapılmadı.',
     reliability:
       '53 ülkede eş zamanlı uygulamada ölçeğin iç tutarlılığı ortalama α = .81 bulunmuştur (Schmitt ve Allik, 2005).',
     normStatus: 'none',
     normNote:
-      'Türkiye ergen normları platform verisiyle oluşturuluyor. Şimdilik toplam puan, ölçeğin yaygın kullanılan aralıklarına göre yorumlanıyor (0–14, 15–25, 26–30). Bu aralıklar klinik bir eşik değildir.',
+      'Türkiye ergen normları henüz yok. Toplam puan, ölçeğin yaygın kullanılan aralıklarına göre yorumlanıyor (0–14, 15–25, 26–30). Bu aralıklar klinik bir eşik değildir.',
     ageNote: '6. sınıftan itibaren uygundur.',
     license: 'Ücretsiz: ölçek izin almadan ve bildirim yapmadan kullanılabilir.',
     licenseUrl: 'https://socy.umd.edu/about-us/using-rosenberg-self-esteem-scale',
