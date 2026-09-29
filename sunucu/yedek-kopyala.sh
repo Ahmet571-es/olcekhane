@@ -18,6 +18,7 @@
 # (depolama sunucusunun bağlandığı kullanıcının grubu); göndermede YEDEK_HEDEF (kullanici@sunucu:klasor/)
 # ve YEDEK_SSH_ANAHTARI.
 set -eu
+# shellcheck source=/dev/null
 . "${OLCEKHANE_CONF:-/etc/olcekhane.conf}"
 : "${YEDEK_ALICI:?/etc/olcekhane.conf içinde YEDEK_ALICI tanımlı değil}"
 BAGLAMA=${VERI_BAGLAMA:-/srv/olcekhane}

@@ -1,0 +1,115 @@
+# Denetim: her gönderimde tür denetimi, biçim denetimi, birim ve veritabanı testleri, üretim derlemesi ve
+# Docker görüntüsünün derlenip çalıştırılması.
+name: Denetim
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: denetim-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  kod:
+    name: Kod denetimi ve testler
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: olcekhane_test
+          POSTGRES_USER: olcekhane
+          POSTGRES_PASSWORD: olcekhane
+        ports: ['127.0.0.1:5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U olcekhane -d olcekhane_test"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Bağımlılıklar
+        run: npm ci --no-audit --no-fund
+      - name: Tür denetimi
+        run: npm run typecheck
+      - name: Biçim denetimi
+        run: npm run lint
+      - name: Birim testleri
+        run: npm test
+      - name: Veritabanı testleri
+        env:
+          DATABASE_URL: postgres://olcekhane:olcekhane@127.0.0.1:5432/olcekhane_test
+          APP_URL: http://localhost:3000
+          SESSION_COOKIE_SECURE: 'false'
+        run: |
+          APP_SECRET=$(openssl rand -hex 32); echo "::add-mask::$APP_SECRET"; export APP_SECRET
+          node scripts/migrate.mjs
+          npm run test:db
+      - name: Üretim derlemesi (ortam değişkeni olmadan)
+        run: env -i PATH="$PATH" HOME="$HOME" NEXT_TELEMETRY_DISABLED=1 sh -c 'npm run build && npm run build:scripts'
+
+  goruntu:
+    name: Docker görüntüsü
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Görüntüyü derle
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: olcekhane-app:denetim
+          cache-from: type=gha,scope=olcekhane-app
+          cache-to: type=gha,mode=max,scope=olcekhane-app
+      - name: Görüntüyü çalıştır (veritabanı geçişi, sağlık denetimi, ana sayfa)
+        run: |
+          set -eu
+          SIFRE=$(openssl rand -hex 16); SIR=$(openssl rand -hex 32)
+          echo "::add-mask::$SIFRE"; echo "::add-mask::$SIR"
+          docker network create deneme
+          docker run -d --name db --network deneme -e POSTGRES_DB=olcekhane -e POSTGRES_USER=olcekhane \
+            -e POSTGRES_PASSWORD="$SIFRE" postgres:18 -c log_error_verbosity=terse
+          for _ in $(seq 1 60); do docker exec db pg_isready -U olcekhane -d olcekhane >/dev/null 2>&1 && break; sleep 1; done
+          docker run -d --name app --network deneme -p 127.0.0.1:3000:3000 \
+            -e DATABASE_URL="postgres://olcekhane:$SIFRE@db:5432/olcekhane" -e APP_SECRET="$SIR" \
+            -e APP_URL=http://localhost:3000 -e SESSION_COOKIE_SECURE=false -e ALLOW_INDEXING=false \
+            -e SCHEDULED_JOBS=false -e TZ=Europe/Istanbul olcekhane-app:denetim
+          ok=0
+          for _ in $(seq 1 90); do
+            if curl -fsS -m 3 http://127.0.0.1:3000/api/saglik >/dev/null 2>&1; then ok=1; break; fi
+            sleep 2
+          done
+          [ "$ok" = 1 ] || { echo "::error title=Uygulama açılmadı::Sağlık denetimi 180 saniyede yanıt vermedi"; exit 1; }
+          curl -fsS http://127.0.0.1:3000/api/saglik; echo
+          for yol in / /testler /hakkimizda /yasal/aydinlatma-metni /giris /robots.txt /sitemap.xml; do
+            kod=$(curl -s -o /dev/null -w '%{http_code}' -m 20 "http://127.0.0.1:3000$yol")
+            echo "$yol -> $kod"
+            [ "$kod" = 200 ] || { echo "::error title=Sayfa açılmadı::$yol $kod döndü"; exit 1; }
+          done
+          docker run --rm --network deneme -e DATABASE_URL="postgres://olcekhane:$SIFRE@db:5432/olcekhane" \
+            -e ADMIN_EMAIL=deneme@ornek.test -e ADMIN_PASSWORD="$(openssl rand -hex 12)" \
+            olcekhane-app:denetim node dist/create-admin.mjs
+      - name: Hata ayrıntıları
+        if: failure()
+        run: |
+          # Kayıtların son satırları uyarı olarak da yazılır: çalışma kayıtlarına erişilemediğinde de okunabilsinler.
+          for c in app db; do
+            docker logs "$c" > "/tmp/$c.log" 2>&1 || continue
+            echo "===== $c ====="; tail -n 80 "/tmp/$c.log"
+            msg=$(tail -n 40 "/tmp/$c.log" | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}')
+            echo "::error title=$c kaydı (son 40 satır)::$msg"
+          done

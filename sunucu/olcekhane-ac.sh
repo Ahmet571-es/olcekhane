@@ -4,6 +4,7 @@
 # Ayarlar /etc/olcekhane.conf dosyasından okunur: VERI_KAYNAK (şifreli disk ya da dosya).
 set -eu
 [ "$(id -u)" -eq 0 ] || { echo "sudo ile çalıştırın: sudo olcekhane-ac" >&2; exit 1; }
+# shellcheck source=/dev/null
 . "${OLCEKHANE_CONF:-/etc/olcekhane.conf}"
 : "${VERI_KAYNAK:?/etc/olcekhane.conf içinde VERI_KAYNAK tanımlı değil}"
 AD=olcekhane-veri

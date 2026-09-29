@@ -16,6 +16,7 @@
 #   DEPO_SAKLAMA_GUN=26                         (isteğe bağlı, en fazla 26: aydınlatma metnindeki 30 günlük
 #                                                silme sözü, temizlik görevi ve günlük çalışma payıyla)
 set -eu
+# shellcheck source=/dev/null
 . "${DEPO_CONF:-/etc/olcekhane-depo.conf}"
 : "${DEPO_KAYNAK:?/etc/olcekhane-depo.conf içinde DEPO_KAYNAK tanımlı değil}"
 : "${DEPO_KLASOR:?/etc/olcekhane-depo.conf içinde DEPO_KLASOR tanımlı değil}"
