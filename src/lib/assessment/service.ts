@@ -17,6 +17,7 @@ import {
 } from '@/db/schema';
 import { getInstrumentDef } from '@/content/instruments';
 import { hasActiveConsent, lockStudentConsent } from '@/lib/consent';
+import { cancellationSheet } from '@/lib/instruments/cancellation';
 import type { InstrumentDef, LikertInstrument, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
 import { buildReport, type Audience, type ReportContent, type StoredScore } from '@/lib/reports/build';
 import { likertQuality, scoreLikert, type LikertAnswer, type NormStat } from '@/lib/scoring/likert';
@@ -24,10 +25,13 @@ import { formForGrade, isQuizChoice, scoreQuiz, type QuizAnswer, type QuizChoice
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
 import {
   TaskInputError,
+  scoreCancellation,
   scoreFlanker,
   scoreSpan,
   scoreSymbol,
   taskQualityNotes,
+  type CancellationResult,
+  type CancellationSectionInput,
   type FlankerResult,
   type FlankerTrialInput,
   type SpanTrialInput,
@@ -444,6 +448,27 @@ function taskRows(def: TaskInstrument, attemptId: string, block: string, input: 
         rtMs: t.rtMs === null ? null : Math.round(t.rtMs),
       }));
     }
+    if (task.kind === 'cancellation') {
+      // Sayfa uygulama kimliğinden yeniden üretilir; tarayıcının gönderdiği harflere güvenilmez. Kayda
+      // sayfanın kendisi de yazılır: üretim kuralı ileride değişse de eski veriler yorumlanabilsin.
+      const sheet = cancellationSheet(task, attemptId);
+      const { sections } = scoreCancellation(task, sheet, input as CancellationSectionInput[]);
+      // Aynı bölüm iki kez geldiyse puanlamadaki gibi ilki kullanılır.
+      const byIndex = new Map<number, CancellationSectionInput>();
+      for (const t of input as CancellationSectionInput[]) if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+      return sections.map((sec) => {
+        const t = byIndex.get(sec.index)!;
+        return {
+          attemptId,
+          block,
+          trialIndex: sec.index,
+          stimulus: { section: sec.index, letters: sheet[sec.index].join('') },
+          response: { marks: t.response.marks, times: t.response.times.map((v) => Math.round(v)), unmarks: t.response.unmarks },
+          correct: null,
+          rtMs: sec.ms,
+        };
+      });
+    }
     const { trials } = scoreSymbol(task, input as SymbolTrialInput[]);
     return trials.map((t) => ({
       attemptId,
@@ -503,12 +528,13 @@ export async function completeTaskAttempt(attemptId: string): Promise<void> {
   const scoreRows: (typeof scores.$inferInsert)[] = [];
   let flankerRes: FlankerResult | undefined;
   let symbolRes: SymbolResult | undefined;
+  let cancellationRes: CancellationResult | undefined;
   const scaleOf: Record<string, string> = {};
   for (const t of def.tasks) {
     if (t.kind === 'digit_span') scaleOf[t.key] = t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
     else if (t.kind === 'spatial_span') scaleOf[t.key] = 'spatial';
     else if (t.kind === 'flanker') scaleOf[t.key] = 'attention';
-    else scaleOf[t.key] = 'speed';
+    else if (t.kind === 'symbol_match') scaleOf[t.key] = 'speed';
   }
 
   for (const task of def.tasks) {
@@ -549,6 +575,43 @@ export async function completeTaskAttempt(attemptId: string): Promise<void> {
         band: null,
         extra: result as unknown as Record<string, unknown>,
       });
+    } else if (task.kind === 'cancellation') {
+      const input: CancellationSectionInput[] = tr.map((r) => {
+        const resp = r.response as { marks?: number[]; times?: number[]; unmarks?: number };
+        return {
+          index: r.trialIndex,
+          response: { marks: (resp.marks ?? []).map(Number), times: (resp.times ?? []).map(Number), unmarks: Number(resp.unmarks ?? 0) },
+          rtMs: r.rtMs,
+        };
+      });
+      const { result } = scoreCancellation(task, cancellationSheet(task, attemptId), input);
+      cancellationRes = result;
+      const n = task.rows * task.columns * task.sections;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "tempo" satırında, diğerlerinde özet durur.
+      scoreRows.push(
+        { attemptId, scaleKey: 'tempo', raw: result.perMinute, mean: null, nAnswered: result.processed, nItems: n, band: null, extra: result as unknown as Record<string, unknown> },
+        {
+          attemptId,
+          scaleKey: 'isabet',
+          raw: Math.round(result.hitRate * 1000) / 10,
+          mean: null,
+          nAnswered: result.hits,
+          nItems: result.hits + result.omissions,
+          band: null,
+          extra: { hits: result.hits, omissions: result.omissions, commissions: result.commissions, falseAlarmRate: result.falseAlarmRate },
+        },
+        { attemptId, scaleKey: 'net', raw: result.net, mean: null, nAnswered: result.hits, nItems: result.processed, band: null, extra: { net: result.net } },
+        {
+          attemptId,
+          scaleKey: 'surdurme',
+          raw: result.sustainChange,
+          mean: null,
+          nAnswered: result.sections.length,
+          nItems: task.sections,
+          band: null,
+          extra: { sections: result.sections.map((s) => ({ net: s.net, ms: s.ms })) },
+        },
+      );
     } else {
       const input: SymbolTrialInput[] = tr.map((r) => ({
         index: r.trialIndex,
@@ -570,7 +633,7 @@ export async function completeTaskAttempt(attemptId: string): Promise<void> {
     }
   }
 
-  const notes = taskQualityNotes({ flanker: flankerRes, symbol: symbolRes });
+  const notes = taskQualityNotes({ flanker: flankerRes, symbol: symbolRes, cancellation: cancellationRes });
   const now = new Date();
   await runFinish(attempt, async (tx) => {
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));

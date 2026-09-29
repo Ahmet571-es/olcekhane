@@ -145,7 +145,7 @@ export interface ReadingInstrument extends InstrumentBase {
 
 /* ---------- Bilişsel görevler ---------- */
 
-export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match';
+export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match' | 'cancellation';
 
 interface TaskBase {
   /** Veritabanındaki blok anahtarı (task_trials.block). */
@@ -204,7 +204,33 @@ export interface SymbolMatchTask extends TaskBase {
   sequence: number[];
 }
 
-export type CognitiveTask = DigitSpanTask | SpatialSpanTask | FlankerTask | SymbolMatchTask;
+/**
+ * Harf işaretleme (Burdon tipi sürekli dikkat görevi): süreli bölümlerde, satır satır dizilmiş harfler
+ * arasında aranan harfler işaretlenir. Harf sayfaları her uygulama için uygulama kimliğinden
+ * belirlenimci olarak üretilir (src/lib/instruments/cancellation.ts): öğrenci sayfayı ezberleyemez,
+ * sunucu aynı sayfayı yeniden üretip puanlar. Her bölümde hedef sayısı ve harflerin dağılımı aynıdır.
+ */
+export interface CancellationTask extends TaskBase {
+  kind: 'cancellation';
+  /** Aranan harfler. */
+  targets: string[];
+  /** Çeldirici harfler (aranan harflere benzeyen işaretli harfler, ör. ğ, bilerek dışarıda bırakılır). */
+  distractors: string[];
+  /** Satırdaki harf sayısı. */
+  columns: number;
+  /** Bir bölümdeki satır sayısı; kimse süre bitmeden bitiremesin diye uzun tutulur. */
+  rows: number;
+  /** Satır başına hedef sayısı: her değer eşit sayıda satırda kullanılır (ortalaması sabit kalır). */
+  targetsPerRow: number[];
+  sections: number;
+  sectionMs: number;
+  /** Alıştırma satırları (sabit, puanlanmaz). */
+  practice: string[][];
+  /** Sayfa üretim kuralının sürümü; kural değişirse test sürümü de artırılmalı. */
+  generator: 1;
+}
+
+export type CognitiveTask = DigitSpanTask | SpatialSpanTask | FlankerTask | SymbolMatchTask | CancellationTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

@@ -2,6 +2,7 @@ import type { InstrumentDef } from '@/lib/instruments/types';
 import { besFaktor } from './bes-faktor';
 import { calismaAliskanliklari } from './calisma-aliskanliklari';
 import { dikkatBellek } from './dikkat-bellek';
+import { harfIsaretleme } from './harf-isaretleme';
 import { matematik } from './matematik';
 import { meslekiIlgi } from './mesleki-ilgi';
 import { okumaHizi } from './okuma-hizi';
@@ -16,6 +17,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   okumaHizi,
   matematik,
   dikkatBellek,
+  harfIsaretleme,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export function getInstrumentDef(slug: string): InstrumentDef | undefined {

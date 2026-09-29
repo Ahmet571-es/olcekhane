@@ -1,4 +1,4 @@
-import type { DigitSpanTask, FlankerTask, SpatialSpanTask, SymbolMatchTask } from '@/lib/instruments/types';
+import type { CancellationTask, DigitSpanTask, FlankerTask, SpatialSpanTask, SymbolMatchTask } from '@/lib/instruments/types';
 import { median, round } from './stats';
 
 /**
@@ -212,9 +212,140 @@ export function scoreSymbol(task: SymbolMatchTask, input: SymbolTrialInput[]): {
   };
 }
 
+/* ---------- Harf işaretleme (sürekli dikkat) ---------- */
+
+export interface CancellationSectionInput {
+  /** Bölüm sırası (0'dan başlar). */
+  index: number;
+  response: {
+    /** Bölüm bittiğinde işaretli olan harflerin sayfadaki sırası. */
+    marks: number[];
+    /** Her işaretin bölüm başından itibaren zamanı (ms), marks ile aynı sırada. */
+    times: number[];
+    /** İşaretin kaldırılma sayısı (düzeltmeler). */
+    unmarks: number;
+  };
+  /** Bölümde geçen süre (ms); sayfa süre bitmeden bitirilirse daha kısadır. */
+  rtMs: number | null;
+}
+
+export interface CancellationSectionScored {
+  index: number;
+  /** Taranan harf: sayfanın başından son işarete kadar. */
+  processed: number;
+  /** Taranan kısımdaki hedef sayısı. */
+  targets: number;
+  hits: number;
+  /** Taranan kısımda işaretlenmeyen hedefler. */
+  omissions: number;
+  /** İşaretlenen çeldiriciler. */
+  commissions: number;
+  /** Doğru işaretlerden yanlış işaretler çıkınca kalan. */
+  net: number;
+  ms: number;
+  unmarks: number;
+}
+
+export interface CancellationResult {
+  sections: CancellationSectionScored[];
+  processed: number;
+  hits: number;
+  omissions: number;
+  commissions: number;
+  net: number;
+  /** Dakikada taranan harf. */
+  perMinute: number;
+  /** Taranan kısımdaki hedeflerden bulunanların oranı (0–1). */
+  hitRate: number;
+  /** Taranan çeldiricilerden yanlışlıkla işaretlenenlerin oranı (0–1). */
+  falseAlarmRate: number;
+  /**
+   * İkinci yarıdaki bölümlerin dakikadaki net doğrusunun ilk yarıya göre değişimi (%). İlk yarıda net
+   * doğru yoksa hesaplanmaz.
+   */
+  sustainChange: number | null;
+  /** Bir bölümün sayfası son satırına kadar tarandı (sayfa bu kişi için kısa kaldı). */
+  ceiling: boolean;
+}
+
+export function scoreCancellation(
+  task: CancellationTask,
+  sheet: string[][],
+  input: CancellationSectionInput[],
+): { sections: CancellationSectionScored[]; result: CancellationResult } {
+  const n = task.rows * task.columns;
+  const maxMs = task.sectionMs + 5_000;
+  const seen = new Set<number>();
+  const sections: CancellationSectionScored[] = [];
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= task.sections) throw new TaskInputError('Geçersiz bölüm.');
+    const r = t.response;
+    if (!r || !Array.isArray(r.marks) || !Array.isArray(r.times) || r.marks.length !== r.times.length || r.marks.length > n) {
+      throw new TaskInputError('Geçersiz cevap.');
+    }
+    if (r.marks.some((m) => !Number.isInteger(m) || m < 0 || m >= n) || new Set(r.marks).size !== r.marks.length) {
+      throw new TaskInputError('Geçersiz işaret.');
+    }
+    if (r.times.some((v) => !Number.isFinite(v) || v < 0 || v > maxMs)) throw new TaskInputError('Geçersiz süre.');
+    if (!Number.isInteger(r.unmarks) || r.unmarks < 0 || r.unmarks > 100_000) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0 || t.rtMs > maxMs)) throw new TaskInputError('Geçersiz süre.');
+    if (seen.has(t.index)) continue;
+    seen.add(t.index);
+
+    const letters = sheet[t.index];
+    const marked = new Set(r.marks);
+    const last = r.marks.length ? Math.max(...r.marks) : -1;
+    let targets = 0;
+    let hits = 0;
+    let commissions = 0;
+    for (let i = 0; i <= last; i++) {
+      const isT = task.targets.includes(letters[i]);
+      if (isT) {
+        targets++;
+        if (marked.has(i)) hits++;
+      } else if (marked.has(i)) commissions++;
+    }
+    const ms = Math.min(task.sectionMs, Math.max(1_000, Math.round(t.rtMs ?? task.sectionMs)));
+    sections.push({ index: t.index, processed: last + 1, targets, hits, omissions: targets - hits, commissions, net: hits - commissions, ms, unmarks: r.unmarks });
+  }
+  if (sections.length !== task.sections) throw new TaskInputError('Bölümlerin hepsi gönderilmedi.');
+  sections.sort((a, b) => a.index - b.index);
+
+  const sum = (f: (s: CancellationSectionScored) => number) => sections.reduce((a, s) => a + f(s), 0);
+  const processed = sum((s) => s.processed);
+  const hits = sum((s) => s.hits);
+  const omissions = sum((s) => s.omissions);
+  const commissions = sum((s) => s.commissions);
+  const minutes = sum((s) => s.ms) / 60_000;
+  const distractorsSeen = processed - sum((s) => s.targets);
+  const rate = (s: CancellationSectionScored) => s.net / (s.ms / 60_000);
+  const half = Math.floor(sections.length / 2);
+  const first = sections.slice(0, half).map(rate);
+  const second = sections.slice(half).map(rate);
+  const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const base = first.length ? avg(first) : 0;
+  return {
+    sections,
+    result: {
+      sections,
+      processed,
+      hits,
+      omissions,
+      commissions,
+      net: hits - commissions,
+      perMinute: round(processed / minutes, 1),
+      hitRate: hits + omissions ? round(hits / (hits + omissions), 3) : 0,
+      falseAlarmRate: distractorsSeen > 0 ? round(commissions / distractorsSeen, 3) : 0,
+      sustainChange: base > 0 && second.length ? round(((avg(second) - base) / base) * 100, 1) : null,
+      // Son satıra ulaşıldıysa sayfa bu kişi için kısa kalmıştır: çalışma hızı olduğundan düşük görünür.
+      ceiling: sections.some((s) => s.processed > n - task.columns),
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
-export function taskQualityNotes(parts: { flanker?: FlankerResult; symbol?: SymbolResult }): string[] {
+export function taskQualityNotes(parts: { flanker?: FlankerResult; symbol?: SymbolResult; cancellation?: CancellationResult }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
   if (f && f.n > 0) {
@@ -226,6 +357,13 @@ export function taskQualityNotes(parts: { flanker?: FlankerResult; symbol?: Symb
   if (s) {
     if (s.attempted < 10) notes.push('Sembol eşleştirme görevinde çok az cevap verilmiş; görev yarıda bırakılmış olabilir.');
     else if (s.accuracy < 0.7) notes.push('Sembol eşleştirme görevinde hata oranı yüksek; hızdan çok doğruluğa odaklanmak gerekebilir.');
+  }
+  const c = parts.cancellation;
+  if (c) {
+    if (c.hits < 10) notes.push('Harf işaretleme görevinde çok az harf işaretlenmiş; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.');
+    else if (c.commissions > c.hits) notes.push('Harf işaretleme görevinde yanlış işaretler doğru işaretlerden fazla; harflere rastgele dokunulmuş olabilir.');
+    else if (c.hitRate < 0.5) notes.push('Harf işaretleme görevinde aranan harflerin yarısından azı bulunmuş; satırlar atlanmış ya da çok hızlı gidilmiş olabilir.');
+    if (c.ceiling) notes.push('Harf işaretleme görevinde en az bir bölümde sayfanın sonuna ulaşılmış; çalışma hızı olduğundan düşük görünebilir.');
   }
   return notes;
 }

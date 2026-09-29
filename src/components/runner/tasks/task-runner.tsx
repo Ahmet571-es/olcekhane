@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { childAssentAction } from '@/app/uygulama/actions';
 import type { CognitiveTask } from '@/lib/instruments/types';
 import { AssentStep, IntroStep } from '../likert-runner';
+import { Cancellation } from './cancellation';
 import { useLeaveWarning } from './common';
 import { DigitSpan } from './digit-span';
 import { Flanker } from './flanker';
@@ -222,6 +223,9 @@ export function TaskRunner(props: {
       {task.kind === 'spatial_span' && <SpatialSpan key={task.key} task={task} onDone={(t) => void save(task.key, t)} />}
       {task.kind === 'flanker' && <Flanker key={task.key} task={task} onDone={(t) => void save(task.key, t)} />}
       {task.kind === 'symbol_match' && <SymbolMatch key={task.key} task={task} onDone={(t) => void save(task.key, t)} />}
+      {task.kind === 'cancellation' && (
+        <Cancellation key={task.key} task={task} attemptId={attemptId} onDone={(t) => void save(task.key, t)} />
+      )}
     </div>
   );
 }

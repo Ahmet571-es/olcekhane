@@ -31,14 +31,17 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   if (!def || (def.status !== 'active' && def.status !== 'pilot')) notFound();
   const sc = def.science;
   const guides = guidesForTest(slug);
+  const cancellation = def.engine === 'tasks' && def.tasks.length === 1 && def.tasks[0].kind === 'cancellation' ? def.tasks[0] : null;
   const itemCount =
     def.engine === 'likert'
       ? `${def.items.length} ${def.profile === 'riasec' ? 'etkinlik' : 'cümle'}`
-      : def.engine === 'tasks'
-        ? `${def.tasks.length} görev`
-        : def.engine === 'quiz'
-          ? `${def.forms[0].items.length} soru`
-          : '1 metin, 8 soru';
+      : cancellation
+        ? `${cancellation.sections} bölüm, her biri ${Math.round(cancellation.sectionMs / 1000)} saniye`
+        : def.engine === 'tasks'
+          ? `${def.tasks.length} görev`
+          : def.engine === 'quiz'
+            ? `${def.forms[0].items.length} soru`
+            : '1 metin, 8 soru';
   const scales = def.scales.filter((s) => s.key !== 'total');
 
   const jsonLd = breadcrumbLd([
@@ -154,7 +157,14 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             </>
           )}
           {def.engine === 'reading' && <li>Okuma hızı, anlama oranı ve soru türlerine göre sonuç</li>}
-          {def.engine === 'tasks' && (
+          {cancellation && (
+            <>
+              <li>Çalışma hızı, bulunan ve atlanan harfler, yanlış işaretlemeler ve net doğru sayısı</li>
+              <li>Bölümler ilerledikçe dikkatin korunup korunmadığını gösteren bölüm bölüm grafik</li>
+              <li>Evde ve okulda işe yarayacak somut öneriler</li>
+            </>
+          )}
+          {def.engine === 'tasks' && !cancellation && (
             <>
               <li>Her görevde ulaşılan dizi uzunluğu, doğruluk ve tepki süresi</li>
               <li>Görevlerin ölçtüğü becerilerin gündelik okul hayatındaki karşılığı</li>

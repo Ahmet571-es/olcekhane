@@ -190,7 +190,9 @@ export async function buildGroupReport(
   if (def.engine === 'tasks') {
     const out: { key: string; name: string; value: string }[] = [];
     for (const s of def.scales) {
-      const ex = (byScale.get(s.key) ?? []).map((r) => r.extra).filter(Boolean);
+      const rs = byScale.get(s.key) ?? [];
+      const ex = rs.map((r) => r.extra).filter(Boolean);
+      const raw = rs.map((r) => r.raw).filter((x): x is number => x !== null);
       if (!ex.length) continue;
       if (s.key === 'attention') {
         const acc = mean(ex.map((e) => (e as unknown as FlankerResult).accuracy));
@@ -199,6 +201,20 @@ export async function buildGroupReport(
       } else if (s.key === 'speed') {
         const pm = mean(ex.map((e) => (e as unknown as SymbolResult).perMinute));
         out.push({ key: s.key, name: s.name, value: `dakikada ortalama ${nf1.format(pm ?? 0)} doğru eşleştirme` });
+      } else if (s.key === 'tempo') {
+        out.push({ key: s.key, name: s.name, value: `dakikada ortalama ${nf0.format(mean(raw) ?? 0)} harf` });
+      } else if (s.key === 'isabet') {
+        out.push({ key: s.key, name: s.name, value: `aranan harflerin ortalama %${nf0.format(mean(raw) ?? 0)} kadarı bulundu` });
+      } else if (s.key === 'net') {
+        out.push({ key: s.key, name: s.name, value: `ortanca ${nf0.format(median(raw) ?? 0)} net doğru` });
+      } else if (s.key === 'surdurme') {
+        // Değişim, ilk bölümlerde net doğrusu olmayanlarda hesaplanmaz.
+        const md = median(raw);
+        out.push({
+          key: s.key,
+          name: s.name,
+          value: md === null ? '—' : `son bölümlerde ilk bölümlere göre ortanca %${nf0.format(Math.abs(md))} ${md < 0 ? 'düşüş' : 'artış'}`,
+        });
       } else {
         const spans = ex.map((e) => (e as unknown as SpanResult).span).filter((x) => x > 0);
         const md = median(spans);

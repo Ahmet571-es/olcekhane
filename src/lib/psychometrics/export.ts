@@ -1,8 +1,9 @@
 import 'server-only';
 import { randomInt } from 'node:crypto';
 import { plainMath } from '@/components/quiz/math-text';
-import type { LikertInstrument, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
+import type { CancellationTask, InstrumentDef, LikertInstrument, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
 import { toCsv, type CsvOptions } from '@/lib/csv';
+import type { CancellationResult, CancellationSectionScored } from '@/lib/scoring/tasks';
 import { currentVersionDef, researchSample, responsesFor, scoresFor } from './data';
 
 function shuffle<T>(xs: T[]): T[] {
@@ -45,10 +46,14 @@ export async function researchCsv(slug: string, opts: CsvOptions = {}): Promise<
   const scaleKeys = [...new Set([...def.scales.map((s) => s.key), ...(def.engine === 'quiz' ? ['total'] : [])])];
   const isMeanScale = def.engine === 'likert' && (def as LikertInstrument).scoring.method === 'mean';
   const scaleCols = scaleKeys.map((k) => `puan_${k}`);
+  // Harf işaretleme: dikkatin bölümler boyunca değişimi incelenebilsin diye bölüm bölüm sayılar.
+  const canc = cancellationTaskOf(def);
+  const sectionCols = canc ? sectionColumns(canc.sections).map((c) => c.col) : [];
 
   const rows = sample.map((s, i) => {
     const r = resp.get(s.attemptId) ?? {};
     const scRow = sc.get(s.attemptId) ?? {};
+    const sections = (scRow.tempo?.extra as unknown as CancellationResult | undefined)?.sections ?? [];
     return [
       `P${String(i + 1).padStart(4, '0')}`,
       s.grade,
@@ -63,9 +68,33 @@ export async function researchCsv(slug: string, opts: CsvOptions = {}): Promise<
         if (def.engine === 'likert') return isMeanScale ? x.mean : x.raw;
         return x.raw;
       }),
+      ...(canc ? sectionColumns(canc.sections).map((c) => c.value(sections.find((x) => x.index === c.index))) : []),
     ];
   });
-  return { csv: toCsv([...base, ...itemCols, ...scaleCols], rows, opts), n: rows.length };
+  return { csv: toCsv([...base, ...itemCols, ...scaleCols, ...sectionCols], rows, opts), n: rows.length };
+}
+
+function cancellationTaskOf(def: InstrumentDef): CancellationTask | undefined {
+  return def.engine === 'tasks' ? def.tasks.find((t): t is CancellationTask => t.kind === 'cancellation') : undefined;
+}
+
+const SECTION_FIELDS: { key: string; label: string; value: (s: CancellationSectionScored) => number }[] = [
+  { key: 'taranan', label: 'Taranan harf (sayfa başından son işarete kadar)', value: (s) => s.processed },
+  { key: 'bulunan', label: 'İşaretlenen aranan harf', value: (s) => s.hits },
+  { key: 'atlanan', label: 'Taranan kısımda işaretlenmeyen aranan harf', value: (s) => s.omissions },
+  { key: 'yanlis', label: 'İşaretlenen çeldirici harf', value: (s) => s.commissions },
+  { key: 'duzeltme', label: 'Kaldırılan işaret sayısı', value: (s) => s.unmarks },
+];
+
+function sectionColumns(sections: number) {
+  return Array.from({ length: sections }, (_, index) =>
+    SECTION_FIELDS.map((f) => ({
+      index,
+      col: `bolum${index + 1}_${f.key}`,
+      label: `${index + 1}. bölüm: ${f.label.charAt(0).toLocaleLowerCase('tr-TR')}${f.label.slice(1)}`,
+      value: (s: CancellationSectionScored | undefined) => (s ? f.value(s) : ''),
+    })),
+  ).flat();
 }
 
 /** Değişken sözlüğü: sütunların anlamı, maddelerin metni, ters maddeler ve cevap anahtarları. */
@@ -122,8 +151,16 @@ export async function codebookCsv(slug: string, opts: CsvOptions = {}): Promise<
       spatial: 'Art arda başarılan en uzun dizi',
       attention: 'Doğru yüzdesi',
       speed: 'Dakikada doğru eşleştirme',
+      tempo: 'Dakikada taranan harf (sayfa başından son işarete kadar)',
+      isabet: 'Taranan kısımdaki aranan harflerden bulunanların yüzdesi',
+      net: 'Doğru işaret sayısı eksi yanlış işaret sayısı',
+      surdurme: 'Son bölümlerin dakikadaki net doğrusunun ilk bölümlere göre değişimi (%)',
     };
     for (const s of def.scales) rows.push([`puan_${s.key}`, 'görev puanı', s.name, units[s.key] ?? '', '', '', '']);
+    const canc = cancellationTaskOf(def);
+    if (canc) {
+      for (const c of sectionColumns(canc.sections)) rows.push([c.col, 'bölüm sayısı', canc.name, c.label, '', '', '']);
+    }
   }
   return toCsv(['degisken', 'tur', 'olcek_alan', 'aciklama_metin', 'ters', 'anahtar', 'secenekler'], rows, opts);
 }

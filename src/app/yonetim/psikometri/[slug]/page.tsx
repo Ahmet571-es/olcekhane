@@ -502,9 +502,9 @@ function TasksView({ tasks }: { tasks: TaskScaleStat[] }) {
           Görev puanları
         </h2>
         <p className="t-small measure text-ink-2">
-          Sınıf düzeyine göre betimsel istatistikler. Ok görevinde güvenirlik, denemeler tek ve çift sıralı olarak ikiye ayrılıp
-          Spearman-Brown düzeltmesiyle hesaplanır. Süreli sembol eşleştirme ve uyarlamalı dizi görevleri yarılamaya uygun değildir; bunlar için
-          test-tekrar test çalışması gerekir.
+          Sınıf düzeyine göre betimsel istatistikler. Güvenirliğin nasıl hesaplandığı ya da neden hesaplanmadığı her puanın altında yazılıdır:
+          yarılama yalnızca denemeleri ya da bölümleri ayrı ayrı puanlanabilen görevlerde yapılır; tek süreli ve uyarlamalı görevler için test-tekrar
+          test çalışması gerekir.
         </p>
       </div>
       {tasks.map((t) => (

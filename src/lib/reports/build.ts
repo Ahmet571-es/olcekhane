@@ -5,6 +5,7 @@ import { GRADE_LABELS, gradeRangeLabel } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import type {
   Band,
+  CancellationTask,
   InstrumentDef,
   QuizChart,
   QuizFigure,
@@ -15,7 +16,7 @@ import type {
   TaskInstrument,
 } from '@/lib/instruments/types';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
-import type { FlankerResult, SpanResult, SymbolResult } from '@/lib/scoring/tasks';
+import type { CancellationResult, FlankerResult, SpanResult, SymbolResult } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
 export type Audience = 'student' | 'parent';
@@ -132,10 +133,14 @@ export interface CognitiveBlock {
   plain: string;
   /** Kısa sonuç: "6 rakamlık diziye kadar" gibi. */
   headline: string;
+  /** Başlığın altındaki kısa ayrıntı satırı (sayılar). */
+  detail?: string;
   text: string;
   ladder?: { length: number; results: boolean[] }[];
   flanker?: { accCongruent: number; accIncongruent: number; rtCongruent: number | null; rtIncongruent: number | null };
   symbol?: { correct: number; errors: number; perMinute: number };
+  /** Harf işaretleme: bölüm bölüm net doğru sayısı. */
+  sections?: { label: string; value: number }[];
 }
 
 export interface CognitiveReport {
@@ -525,6 +530,131 @@ function spanText(r: SpanResult, audience: Audience, what: { student: string; pa
   return `${base}${ceiling} ${what.everyday}`;
 }
 
+/** Bölümler arasındaki değişim bu yüzdeyi aşınca "arttı" ya da "düştü" denir; daha küçük farklar ölçüm hatası içindedir. */
+const SUSTAIN_THRESHOLD = 15;
+
+const SUSTAINED_TIPS: Record<Audience, string[]> = {
+  student: [
+    'Uzun bir işi kısa parçalara böl (ör. 15–20 dakika); aralarda birkaç dakika kalkıp hareket et.',
+    'Ders çalışırken telefonunu başka bir odaya koy; bildirimler dikkatini böler.',
+    'Sınavda bir soruyu bitirince cevabını kısaca kontrol et; gözden kaçan ayrıntılar çoğu zaman acele etmekten olur.',
+    'Okurken satırı kaybediyorsan parmağınla ya da bir cetvelle takip et.',
+    'İyi uyumak, dikkat için en basit ve en etkili desteklerden biridir.',
+  ],
+  parent: [
+    'Ödevleri kısa ve net parçalara bölün; parçalar arasında kısa hareket molaları verin.',
+    'Çalışma ortamından dikkat dağıtıcıları, özellikle telefonu ve açık ekranları uzaklaştırın.',
+    'Düzenli uyku, dikkat performansını doğrudan etkiler.',
+    '“Dikkati geliştirdiğini” söyleyen bilgisayar oyunlarının okul başarısına etkisine dair kanıtlar zayıftır; gündelik düzenlemeler daha güvenilir bir destektir.',
+    'Dikkatle ilgili süreğen bir endişeniz varsa bu sonuca değil, okulun rehberlik servisine ya da bir uzmana başvurun.',
+  ],
+};
+
+/** Harf işaretleme görevinin dört sonuç kartı: hız, bulma, net doğru ve dikkati sürdürme. */
+function cancellationBlocks(
+  r: CancellationResult,
+  task: CancellationTask,
+  audience: Audience,
+  scale: (k: string) => { name: string; plain: string },
+): CognitiveBlock[] {
+  const you = audience === 'student';
+  const n = nf0.format;
+  const card = (key: string) => ({ key, name: scale(key).name, plain: scale(key).plain });
+
+  const ceiling = r.ceiling
+    ? you
+      ? ' En az bir bölümde sayfanın sonuna ulaştın; gerçek hızın bundan da yüksek olabilir.'
+      : ' En az bir bölümde sayfanın sonuna ulaşıldı; gerçek çalışma hızı bundan yüksek olabilir.'
+    : '';
+  const tempo: CognitiveBlock = {
+    ...card('tempo'),
+    headline: `Dakikada ${n(r.perMinute)} harf`,
+    detail: `${task.sections} bölümde toplam ${n(r.processed)} harf tarandı.`,
+    text:
+      (you
+        ? `Harf sayfalarında dakikada ortalama ${n(r.perMinute)} harfe baktın. Bu, işi ne kadar hızlı yürüttüğünü gösterir. Hız tek başına iyi ya da kötü değildir; önemli olan, hızlı giderken aranan harfleri kaçırmamaktır.`
+        : `Çocuğunuz harf sayfalarında dakikada ortalama ${n(r.perMinute)} harf taradı. Bu, basit ama dikkat gerektiren bir işi ne kadar hızlı yürütebildiğini gösterir. Hız, doğrulukla birlikte değerlendirilmelidir: çok harf atlayarak hızlı çalışmak da, hiç hata yapmadan ama çok yavaş çalışmak da üzerinde durulması gereken bir örüntüdür.`) +
+      ceiling,
+  };
+
+  const found =
+    r.hitRate >= 0.9
+      ? you
+        ? `Taradığın satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsini' : 'neredeyse hepsini'} buldun; dikkatli çalıştığını gösteriyor.`
+        : `Taranan satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsi' : 'neredeyse hepsi'} bulundu; görev dikkatle yürütülmüş.`
+      : r.hitRate >= 0.75
+        ? you
+          ? 'Taradığın satırlardaki aranan harflerin çoğunu buldun ama bir kısmını atladın. Hızlı giderken bazı harflerin gözden kaçması çok yaygındır; satır satır, harf harf ilerlemek atlamaları azaltır.'
+          : 'Taranan satırlardaki aranan harflerin çoğu bulundu, bir kısmı atlandı. Hızlı çalışırken bazı harflerin gözden kaçması yaygındır.'
+        : you
+          ? 'Taradığın satırlardaki aranan harflerin önemli bir kısmını atladın. Bu; hızlı gitmekten, satır atlamaktan ya da o an dikkatinin dağılmasından kaynaklanabilir. Acele etmeden, harf harf ilerlemek işine yarar.'
+          : 'Taranan satırlardaki aranan harflerin önemli bir kısmı atlandı. Bu; çok hızlı çalışmaktan, satır atlamaktan ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.';
+  const falseMarks =
+    r.falseAlarmRate >= 0.02
+      ? you
+        ? ' Bazı harfleri de yanlışlıkla işaretledin; p ile b ya da d, o ile a gibi birbirine benzeyen harfler kolayca karışabilir.'
+        : ' Aranan harflere benzeyen bazı harfler de işaretlenmiş (ör. p ile b ya da d); bu, acele etmekten ya da benzer harfleri ayırt etmekte zorlanmaktan kaynaklanabilir.'
+      : r.commissions === 0
+        ? you
+          ? ' Hiç yanlış işaret yapmadın.'
+          : ' Hiç yanlış işaret yok.'
+        : '';
+  const isabet: CognitiveBlock = {
+    ...card('isabet'),
+    headline: `Bulma oranı ${pct(r.hitRate)}`,
+    detail: `${n(r.hits)} harf bulundu · ${n(r.omissions)} harf atlandı · ${n(r.commissions)} yanlış işaret`,
+    text: found + falseMarks,
+  };
+
+  const net: CognitiveBlock = {
+    ...card('net'),
+    headline: `${n(r.net)} net doğru`,
+    detail: `${n(r.hits)} doğru işaret − ${n(r.commissions)} yanlış işaret`,
+    text: you
+      ? 'Net doğru, doğru işaretlerinden yanlış işaretlerin çıkarılmasıyla bulunur. Hızını ve dikkatini birlikte gösterir: harfleri kaçırmadan ve yanlış işaretlemeden ne kadar iş çıkardığını anlatır.'
+      : 'Net doğru (doğru işaretler eksi yanlış işaretler), hızı ve dikkati birlikte yansıtan özet puandır; rastgele işaretleme bu puanı yükseltmez. Henüz norm olmadığı için akranlarla karşılaştırılamaz. İleride aynı tür cihazla yapılacak uygulamalarda değişimi izlemek için kullanılabilir; tekrarda alıştırma etkisiyle bir miktar artış beklenir.',
+  };
+
+  const change = r.sustainChange;
+  const x = change === null ? '' : `%${n(Math.abs(change))}`;
+  const [headline, sustainText] =
+    change === null
+      ? [
+          'Değişim hesaplanamadı',
+          you
+            ? 'İlk bölümlerde yeterli işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.'
+            : 'İlk bölümlerde yeterli doğru işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.',
+        ]
+      : change <= -SUSTAIN_THRESHOLD
+        ? [
+            'Son bölümlerde düştü',
+            you
+              ? `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} azaldı. Uzun bir işte yorulmak ya da sıkılmak herkeste olur; uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`
+              : `Son bölümlerde net doğru sayısı ilk bölümlere göre yaklaşık ${x} azaldı. Bu, dikkati uzun süre aynı düzeyde tutmakta zorlanıldığını düşündürebilir; yorgunluk ya da isteksizlik de aynı etkiyi yapar. Uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`,
+          ]
+        : change >= SUSTAIN_THRESHOLD
+          ? [
+              'Görev ilerledikçe arttı',
+              you
+                ? `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} arttı: görevi yaptıkça ısındın ve hızlandın.`
+                : `Son bölümlerde net doğru sayısı ilk bölümlere göre yaklaşık ${x} arttı: görev ilerledikçe ısınma ve alışma görülüyor.`,
+            ]
+          : [
+              'Görev boyunca korundu',
+              you
+                ? `${task.sections} bölüm boyunca benzer bir performans gösterdin; dikkatini görev boyunca koruyabildin.`
+                : `Performans ${task.sections} bölüm boyunca benzer kaldı; dikkat görev süresince korunabildi.`,
+            ];
+  const surdurme: CognitiveBlock = {
+    ...card('surdurme'),
+    headline,
+    text: you ? sustainText : `${sustainText} Bölümler arasındaki küçük farklar ölçüm hatası sınırları içindedir; yalnızca belirgin değişimler yorumlanmalıdır.`,
+    sections: r.sections.map((s) => ({ label: `${s.index + 1}. bölüm`, value: s.net })),
+  };
+
+  return [tempo, isabet, net, surdurme];
+}
+
 function buildCognitive(def: TaskInstrument, byKey: Map<string, StoredScore>, audience: Audience): CognitiveReport {
   const you = audience === 'student';
   const blocks: CognitiveBlock[] = [];
@@ -614,6 +744,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, StoredScore>, au
       symbol: { correct: spd.correct, errors: spd.errors, perMinute: spd.perMinute },
     });
   }
+
+  const cz = byKey.get('tempo')?.extra as unknown as CancellationResult | undefined;
+  const ct = def.tasks.find((t): t is CancellationTask => t.kind === 'cancellation');
+  if (cz && ct) blocks.push(...cancellationBlocks(cz, ct, audience, scale));
+
+  if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[audience] };
 
   const tips = you
     ? [

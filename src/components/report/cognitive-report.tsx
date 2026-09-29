@@ -49,6 +49,35 @@ function FlankerBars({ f }: { f: NonNullable<CognitiveBlock['flanker']> }) {
   );
 }
 
+/** Harf işaretleme: her bölümün net doğru sayısı, aynı ölçekte dikey çubuklar. */
+function SectionBars({ sections, label }: { sections: NonNullable<CognitiveBlock['sections']>; label: string }) {
+  const max = Math.max(1, ...sections.map((s) => s.value));
+  return (
+    <div className="flex flex-col gap-2">
+      <div
+        className="flex h-32 items-end gap-3"
+        role="img"
+        aria-label={`${label}: ${sections.map((s) => `${s.label} ${nf0.format(s.value)}`).join(', ')}`}
+      >
+        {sections.map((s) => (
+          <div key={s.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+            <span className="tabular text-[0.875rem] font-bold">{nf0.format(s.value)}</span>
+            <div className="w-full max-w-12 rounded-t-md bg-ink" style={{ height: `${(Math.max(0, s.value) / max) * 100}%` }} />
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-3 border-t border-rule-strong pt-1" aria-hidden="true">
+        {sections.map((s) => (
+          <span key={s.label} className="tabular flex-1 text-center text-[0.8125rem] text-ink-3">
+            {s.label}
+          </span>
+        ))}
+      </div>
+      <p className="t-meta">Her çubuk bir bölümdeki net doğru sayısı; bölümlerin süresi eşittir.</p>
+    </div>
+  );
+}
+
 export function CognitiveReportView({ report }: { report: ReportContent }) {
   const c = report.cognitive!;
   const forStudent = report.audience === 'student';
@@ -71,8 +100,12 @@ export function CognitiveReportView({ report }: { report: ReportContent }) {
                 <h3 className="t-h3">{b.name}</h3>
                 <p className="t-meta mt-1">{b.plain}</p>
               </div>
-              <p className="font-display text-2xl font-bold leading-snug">{b.headline}</p>
+              <div className="flex flex-col gap-1">
+                <p className="font-display text-2xl font-bold leading-snug">{b.headline}</p>
+                {b.detail && <p className="tabular text-ink-2">{b.detail}</p>}
+              </div>
               {b.ladder && b.ladder.length > 0 && <Ladder ladder={b.ladder} label={`${b.name}: ${b.headline}`} />}
+              {b.sections && b.sections.length > 0 && <SectionBars sections={b.sections} label={b.name} />}
               {b.flanker && <FlankerBars f={b.flanker} />}
               {b.symbol && (
                 <p className="tabular text-ink-2">

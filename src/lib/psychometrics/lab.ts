@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { taskTrials } from '@/db/schema';
 import type { InstrumentDef, LikertInstrument, QuizInstrument, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
 import { mean, median } from '@/lib/scoring/stats';
+import type { CancellationResult, CancellationSectionScored } from '@/lib/scoring/tasks';
 import {
   analyzeDichotomous,
   analyzeLikert,
@@ -155,7 +156,21 @@ export async function labReport(slug: string): Promise<LabReport | null> {
     spatial: 'dizi uzunluğu',
     attention: '% doğru',
     speed: 'dakikada doğru',
+    tempo: 'dakikada harf',
+    isabet: '% bulunan',
+    net: 'net doğru',
+    surdurme: '% değişim',
   };
+  const NOTES: Record<string, string> = {
+    attention: 'Denemeler tek ve çift sıralı olarak ikiye ayrılır; Spearman-Brown düzeltmesiyle.',
+    speed: 'Süreli bir görev olduğu için yarılama güvenirliği hesaplanmaz (hıza bağlı olarak şişkin çıkar); test-tekrar test çalışması gerekir.',
+    tempo: 'Bölümler ayrı süreyle uygulandığı için 1. ve 3. bölümler 2. ve 4. bölümlerle karşılaştırılır; Spearman-Brown düzeltmesiyle.',
+    isabet: 'Bölümler ayrı süreyle uygulandığı için 1. ve 3. bölümler 2. ve 4. bölümlerle karşılaştırılır; Spearman-Brown düzeltmesiyle.',
+    net: 'Bölümler ayrı süreyle uygulandığı için 1. ve 3. bölümler 2. ve 4. bölümlerle karşılaştırılır; Spearman-Brown düzeltmesiyle.',
+    surdurme: 'İki yarının farkına dayanan bir puandır; fark puanlarının güvenirliği düşük olur. Test-tekrar test çalışması gerekir.',
+  };
+  // Harf işaretleme: bölüm ayrıntıları "tempo" puanının ek verisinde durur.
+  const sectionsOf = (id: string) => (sc.get(id)?.tempo?.extra as unknown as CancellationResult | undefined)?.sections ?? [];
   const tasks: TaskScaleStat[] = t.scales.map((s) => {
     const byGrade = new Map<number, number[]>();
     for (const id of ids) {
@@ -165,15 +180,29 @@ export async function labReport(slug: string): Promise<LabReport | null> {
       byGrade.set(g, [...(byGrade.get(g) ?? []), v]);
     }
     const splits: TaskScaleStat['splitHalf'] = [];
-    // Yarılama yalnızca ok görevinde yapılır: süreli görevlerde (sembol eşleştirme) tek-çift yarılama
-    // hıza bağlı olarak güvenirliği olduğundan yüksek gösterir; dizi görevleri uyarlamalı ilerler.
+    // Yarılama yalnızca ok görevinde ve ayrı süreli bölümlerde yapılır: tek süreli görevlerde (sembol
+    // eşleştirme) tek-çift yarılama hıza bağlı olarak güvenirliği olduğundan yüksek gösterir; dizi görevleri
+    // uyarlamalı ilerler.
     const task = s.key === 'attention' ? t.tasks.find((x) => x.kind === 'flanker') : undefined;
-    const note =
-      s.key === 'speed'
-        ? 'Süreli bir görev olduğu için yarılama güvenirliği hesaplanmaz (hıza bağlı olarak şişkin çıkar); test-tekrar test çalışması gerekir.'
-        : s.key !== 'attention'
-          ? 'Uyarlamalı ilerleyen dizi görevlerinde yarılama uygun değildir; test-tekrar test çalışması gerekir.'
-          : undefined;
+    const note = NOTES[s.key] ?? 'Uyarlamalı ilerleyen dizi görevlerinde yarılama uygun değildir; test-tekrar test çalışması gerekir.';
+    const halfScore: Record<string, (ss: CancellationSectionScored[]) => number | null> = {
+      tempo: (ss) => ss.reduce((a, x) => a + x.processed, 0) / (ss.reduce((a, x) => a + x.ms, 0) / 60_000),
+      isabet: (ss) => {
+        const found = ss.reduce((a, x) => a + x.hits, 0);
+        const all = found + ss.reduce((a, x) => a + x.omissions, 0);
+        return all ? found / all : null;
+      },
+      net: (ss) => ss.reduce((a, x) => a + x.net, 0),
+    };
+    const half = halfScore[s.key];
+    if (half) {
+      const pairs = ids
+        .map((id) => sectionsOf(id))
+        .filter((ss) => ss.length >= 2)
+        .map((ss) => [half(ss.filter((x) => x.index % 2 === 0)), half(ss.filter((x) => x.index % 2 === 1))] as const)
+        .filter((p): p is readonly [number, number] => p[0] !== null && p[1] !== null && Number.isFinite(p[0]) && Number.isFinite(p[1]));
+      splits.push({ label: 'Bölümler', n: pairs.length, r: splitHalf(pairs.map((p) => p[0]), pairs.map((p) => p[1])) });
+    }
     if (task) {
       const per = new Map<string, { odd: { c: number; n: number; rt: number[] }; even: { c: number; n: number; rt: number[] } }>();
       for (const tr of trials) {
