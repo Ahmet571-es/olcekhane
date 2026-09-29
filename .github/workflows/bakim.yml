@@ -1,0 +1,83 @@
+# Bakım: üç saatte bir sitenin açık olduğunu denetler. Sunucu yeniden başladıysa (şifreli veri alanı
+# kapalı kalır) alanı ANA_SIFRE'den türetilen parolayla açar ve uygulamayı başlatır. Site yine de
+# açılmazsa iş başarısız olur ve GitHub depo sahibine e-posta gönderir.
+name: Bakım
+
+on:
+  schedule:
+    - cron: '41 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bakim
+  cancel-in-progress: false
+
+jobs:
+  denetle:
+    name: Site açık mı
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            yayin
+            sunucu
+
+      - name: Ayarlar hazır mı
+        id: hazir
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+        run: |
+          deger() { sed -n "s/^$1=//p" yayin/ayarlar.env | tail -n1 | tr -d "'\" "; }
+          if [ -z "$(deger SUNUCU_ADRESI)" ] || [ -z "$ANA_SIFRE" ]; then
+            echo "hazir=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "hazir=true" >> "$GITHUB_OUTPUT"
+          echo "alan=$(deger SITE_DOMAIN)" >> "$GITHUB_OUTPUT"
+
+      - name: Sağlık denetimi
+        id: saglik
+        if: steps.hazir.outputs.hazir == 'true'
+        env:
+          ALAN: ${{ steps.hazir.outputs.alan }}
+        run: |
+          # Kısa kesintiler (ör. yayın sırasında kapsayıcıların yenilenmesi) için üç deneme.
+          for _ in 1 2 3; do
+            if curl -fsS -m 15 "https://$ALAN/api/saglik" >/dev/null 2>&1; then
+              echo "acik=true" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+            sleep 40
+          done
+          echo "acik=false" >> "$GITHUB_OUTPUT"
+          echo "::warning title=Site yanıt vermiyor::https://$ALAN/api/saglik yanıt vermiyor; sunucu denetleniyor."
+
+      - name: Araçlar
+        if: steps.hazir.outputs.hazir == 'true' && (steps.saglik.outputs.acik == 'false' || github.event_name == 'workflow_dispatch')
+        run: |
+          python3 -m venv "$RUNNER_TEMP/py"
+          "$RUNNER_TEMP/py/bin/pip" install -q cryptography
+          echo "$RUNNER_TEMP/py/bin" >> "$GITHUB_PATH"
+
+      - name: Veri alanını aç ve uygulamayı başlat
+        if: steps.hazir.outputs.hazir == 'true' && steps.saglik.outputs.acik == 'false'
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+          ALAN: ${{ steps.hazir.outputs.alan }}
+        run: |
+          bash yayin/yayinla.sh ac
+          for _ in 1 2 3 4 5 6; do
+            curl -fsS -m 15 "https://$ALAN/api/saglik" >/dev/null 2>&1 && { echo "::notice title=Site yeniden açıldı::https://$ALAN"; exit 0; }
+            sleep 20
+          done
+          echo "::error title=Site açılamadı::Sunucuda veri alanı açıldı ama site dışarıdan yanıt vermiyor."
+          exit 1
+
+      - name: Sunucu durumu
+        if: steps.hazir.outputs.hazir == 'true' && (steps.saglik.outputs.acik == 'false' || github.event_name == 'workflow_dispatch')
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+        run: bash yayin/yayinla.sh durum

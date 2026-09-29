@@ -1,0 +1,35 @@
+name: Uygulama görüntüsü
+description: Uygulamanın Docker görüntüsünü derler ve sunucuya aktarılmak üzere zstd ile sıkıştırıp kaydeder.
+inputs:
+  cikti:
+    description: Kaydedilecek dosyanın yolu (.tar.zst)
+    required: true
+  tazele:
+    description: Temel görüntüler (node) yeniden indirilsin mi (haftalık güvenlik güncellemesi)
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Sürüm
+      id: surum
+      shell: bash
+      run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+    - uses: docker/setup-buildx-action@v4
+      with:
+        cleanup: false
+    - uses: docker/build-push-action@v7
+      with:
+        context: .
+        load: true
+        pull: ${{ inputs.tazele == 'true' }}
+        tags: |
+          olcekhane-app:latest
+          olcekhane-app:${{ steps.surum.outputs.sha }}
+        labels: org.opencontainers.image.revision=${{ steps.surum.outputs.sha }}
+        cache-from: type=gha,scope=olcekhane-app
+        cache-to: type=gha,mode=max,scope=olcekhane-app
+    - name: Kaydet
+      shell: bash
+      run: |
+        docker save olcekhane-app:latest "olcekhane-app:${{ steps.surum.outputs.sha }}" | zstd -T0 -3 -q -o "${{ inputs.cikti }}"
+        echo "::notice title=Görüntü::olcekhane-app ${{ steps.surum.outputs.sha }} derlendi ($(du -h "${{ inputs.cikti }}" | cut -f1))."

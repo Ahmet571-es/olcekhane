@@ -3,6 +3,9 @@
 
 {
 	email {$ACME_EMAIL}
+	# Yalnızca deneme kurulumlarında (kurulum provası): "local_certs" ile sertifikalar Caddy'nin kendi
+	# yerel sertifika yetkilisinden alınır. Gerçek kurulumda boştur (Let's Encrypt).
+	{$CADDY_GENEL_AYAR}
 }
 
 {$SITE_DOMAIN} {

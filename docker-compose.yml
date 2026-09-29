@@ -67,6 +67,7 @@ services:
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN:?SITE_DOMAIN .env dosyasında tanımlı olmalı}
       ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL .env dosyasında tanımlı olmalı}
+      CADDY_GENEL_AYAR: ${CADDY_GENEL_AYAR:-}
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

@@ -1,0 +1,119 @@
+# Yayın: Denetim'den geçen her işlemeyi Türkiye'deki sunucuya kurar (yayin/yayinla.sh → sunucu/kur.sh).
+# Sunucu adresi (yayin/ayarlar.env) ya da ANA_SIFRE (GitHub Secrets) henüz yoksa hiçbir şey yapmaz.
+# Elle çalıştırma (Actions → Yayın → Run workflow): yeniden yayın, şifreli veri alanını açma, durum, depolama
+# sunucusu kurulumu.
+name: Yayın
+
+on:
+  workflow_run:
+    workflows: [Denetim]
+    types: [completed]
+    branches: [main]
+  schedule:
+    # Pazartesi 04:07 (Türkiye): temel görüntülerin (Node, PostgreSQL, Caddy) güvenlik güncellemeleri.
+    - cron: '7 1 * * 1'
+  workflow_dispatch:
+    inputs:
+      islem:
+        description: Yapılacak iş
+        type: choice
+        default: yayinla
+        options: [yayinla, diski-ac, durum, depo]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yayin
+  cancel-in-progress: false
+
+jobs:
+  yayin:
+    name: Sunucuya yayın
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      ISLEM: ${{ inputs.islem || 'yayinla' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Ayarlar hazır mı
+        id: hazir
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+        run: |
+          deger() { sed -n "s/^$1=//p" yayin/ayarlar.env | tail -n1 | tr -d "'\" "; }
+          if [ -z "$(deger SUNUCU_ADRESI)" ]; then
+            echo "::notice title=Yayın atlandı::Sunucu adresi henüz yazılmadı (yayin/ayarlar.env: SUNUCU_ADRESI)."
+            echo "hazir=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ -z "$ANA_SIFRE" ]; then
+            echo "::warning title=Yayın atlandı::GitHub Secrets'ta ANA_SIFRE tanımlı değil (yayin/REHBER.md)."
+            echo "hazir=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          {
+            echo "hazir=true"
+            echo "depo=$([ -n "$(deger DEPO_ADRESI)" ] && echo true || echo false)"
+            echo "alan=$(deger SITE_DOMAIN)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Araçlar
+        if: steps.hazir.outputs.hazir == 'true'
+        run: |
+          sudo apt-get install -y -q sshpass >/dev/null
+          python3 -m venv "$RUNNER_TEMP/py"
+          "$RUNNER_TEMP/py/bin/pip" install -q cryptography
+          echo "$RUNNER_TEMP/py/bin" >> "$GITHUB_PATH"
+
+      - name: Uygulama görüntüsü
+        if: steps.hazir.outputs.hazir == 'true' && env.ISLEM == 'yayinla'
+        uses: ./.github/actions/goruntu
+        with:
+          cikti: ${{ runner.temp }}/goruntu.tar.zst
+          tazele: ${{ github.event_name == 'schedule' }}
+
+      - name: Sunucuya kur ve yayına al
+        if: steps.hazir.outputs.hazir == 'true' && env.ISLEM == 'yayinla'
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+          SUNUCU_ROOT_SIFRE: ${{ secrets.SUNUCU_ROOT_SIFRE }}
+          SMTP_KULLANICI: ${{ secrets.SMTP_KULLANICI }}
+          SMTP_SIFRE: ${{ secrets.SMTP_SIFRE }}
+          GORUNTU: ${{ runner.temp }}/goruntu.tar.zst
+        run: bash yayin/yayinla.sh kur
+
+      - name: Depolama sunucusu
+        if: steps.hazir.outputs.hazir == 'true' && steps.hazir.outputs.depo == 'true' && (env.ISLEM == 'yayinla' || env.ISLEM == 'depo')
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+          DEPO_ROOT_SIFRE: ${{ secrets.DEPO_ROOT_SIFRE }}
+        run: bash yayin/yayinla.sh depo
+
+      - name: Şifreli veri alanını aç
+        if: steps.hazir.outputs.hazir == 'true' && env.ISLEM == 'diski-ac'
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+        run: bash yayin/yayinla.sh ac
+
+      - name: Sunucu durumu
+        if: steps.hazir.outputs.hazir == 'true'
+        env:
+          ANA_SIFRE: ${{ secrets.ANA_SIFRE }}
+        run: bash yayin/yayinla.sh durum
+
+      - name: Site dışarıdan açılıyor mu
+        if: steps.hazir.outputs.hazir == 'true' && env.ISLEM == 'yayinla'
+        env:
+          ALAN: ${{ steps.hazir.outputs.alan }}
+        run: |
+          for _ in 1 2 3 4 5 6; do
+            if curl -fsS -m 15 "https://$ALAN/api/saglik" >/dev/null 2>&1; then
+              echo "::notice title=Site açık::https://$ALAN yanıt veriyor."
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::warning title=Site dışarıdan açılmıyor::https://$ALAN yanıt vermiyor. Alan adının DNS kaydı sunucuyu henüz göstermiyor ya da sertifika alınamadı olabilir (yayin/REHBER.md, DNS)."
