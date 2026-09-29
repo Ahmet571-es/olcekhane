@@ -3,11 +3,13 @@
 
 {
 	email {$ACME_EMAIL}
-	# İstek hataları (ör. uygulama yeniden başlarken dönen 502) Caddy'nin varsayılan günlüğüne istemcinin IP
-	# adresi, istenen adres ve başlıklarla yazılır. Erişim günlüğü gibi bunlar da yazılmaz (aydınlatma metni:
-	# ziyaretlerin kaydı tutulmaz). Sertifika ve sunucu iletileri günlükte kalır.
+	# Günlüğe yalnızca ayar, yönetim ve sertifika iletileri yazılır (izin listesi). Caddy isteklerle ilgili
+	# iletileri (ör. uygulama yeniden başlarken dönen 502: http.log.error; ziyaretçi PDF inerken sayfadan
+	# ayrılınca: http.handlers.reverse_proxy) istemcinin IP adresi, istenen adres ve başlıklarıyla birlikte
+	# yazar; bunlar ve Caddy'nin ileride ekleyebileceği başka istek günlükleri de yazılmaz (aydınlatma metni:
+	# ziyaretlerin kaydı tutulmaz). Erişim günlüğü de kapalıdır.
 	log default {
-		exclude http.log.error
+		include admin caddyfile tls pki http.auto_https
 	}
 	# Yalnızca deneme kurulumlarında (kurulum provası): "local_certs" ile sertifikalar Caddy'nin kendi
 	# yerel sertifika yetkilisinden alınır. Gerçek kurulumda boştur (Let's Encrypt).
@@ -25,13 +27,12 @@
 
 	reverse_proxy app:3000 {
 		# İstemcinin IP adresi: istemcinin kendisinin gönderebileceği X-Forwarded-For değerine güvenilmez,
-		# Caddy'nin gördüğü adresle değiştirilir (hız sınırları ve güvenlik kayıtları bu adresi kullanır).
+		# Caddy'nin gördüğü adresle değiştirilir (bellekteki hız sınırı bu adresi kullanır).
 		header_up X-Forwarded-For {remote_host}
 		header_up X-Real-IP {remote_host}
 	}
 
-	# Erişim günlüğü bilerek kapalıdır: adreslerde tek kullanımlık bağlantılar (veli onayı, şifre
-	# yenileme) bulunur. Güvenlik kayıtları uygulamanın kendi veritabanında tutulur.
+	# Erişim günlüğü bilerek kapalıdır: ziyaretlerin kaydı tutulmaz (aydınlatma metni).
 }
 
 www.{$SITE_DOMAIN} {

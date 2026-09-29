@@ -2,12 +2,9 @@
 .github
 node_modules
 .next
-dist
 coverage
 tests
 .e2e-tmp
-.pgdata
-yedekler
 *.log
 *.tsbuildinfo
 next-env.d.ts

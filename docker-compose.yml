@@ -1,11 +1,13 @@
 # Ölçekhane: tek sunucuda çalışan kurulum (bkz. KURULUM.md).
 #   docker compose up -d --build
 # Değişkenler .env dosyasından okunur (.env.example'dan kopyalayın).
+#
+# Sitede veritabanı yoktur ve hiçbir şey saklanmaz: yalnızca uygulama ve önündeki Caddy (HTTPS) çalışır.
 
 name: olcekhane
 
-# Kapsayıcı günlükleri boyutla sınırlı ve döngüseldir; kapsayıcı yeniden oluşturulunca silinir. Hata
-# ayrıntılarında seyrek de olsa kişisel veri bulunabilir (bkz. KURULUM.md, Güvenlik notları).
+# Kapsayıcı günlükleri boyutla sınırlı ve döngüseldir. Uygulama günlüğe yalnızca hata özeti yazar (istek
+# gövdesi, test cevapları ya da IP adresi yazılmaz); Caddy isteklerle ilgili hiçbir şey yazmaz (Caddyfile).
 x-gunluk: &gunluk
   driver: local
   options:
@@ -13,30 +15,6 @@ x-gunluk: &gunluk
     max-file: "3"
 
 services:
-  db:
-    image: postgres:18
-    restart: unless-stopped
-    # Hata kayıtlarına ayrıntı satırı (ör. "Key (email)=(...) already exists") yazılmasın.
-    command: ["postgres", "-c", "log_error_verbosity=terse"]
-    logging: *gunluk
-    environment:
-      POSTGRES_DB: olcekhane
-      POSTGRES_USER: olcekhane
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD .env dosyasında tanımlı olmalı}
-      TZ: Europe/Istanbul
-    volumes:
-      # PostgreSQL 18 görüntüsü veriyi /var/lib/postgresql/18/docker altında tutar.
-      - db-data:/var/lib/postgresql
-    healthcheck:
-      # TCP üzerinden denetlenir: ilk kurulumda geçici olarak açılan başlatma sunucusu yalnızca yerel
-      # sokette dinler; bu denetim ancak asıl sunucu bağlantı kabul ettiğinde başarılı olur.
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U olcekhane -d olcekhane"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    networks: [ic]
-    # Veritabanı dışarıya açılmaz: yalnızca iç ağdaki uygulama ve yedek kapsayıcısı erişir.
-
   app:
     build: .
     image: olcekhane-app:latest
@@ -45,13 +23,19 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://olcekhane:${POSTGRES_PASSWORD}@db:5432/olcekhane
       TZ: Europe/Istanbul
-    depends_on:
-      db:
-        condition: service_healthy
+    # Salt okunur dosya sistemi: uygulama diske hiçbir şey yazamaz. Next.js'in geçici dosyaları için
+    # yalnızca bellekte duran (tmpfs) iki klasör vardır.
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+      - /app/.next/cache:size=64m,uid=1001,gid=1001
+    # Uygulama çökse bile belleğinin dökümü (içinde işlenmekte olan cevaplar olabilir) diske yazılmaz.
+    ulimits:
+      core: 0
     networks: [ic]
-    # Uygulama dışarıya açılmaz: yalnızca Caddy üzerinden erişilir (IP adresleri buna güvenir).
+    # Uygulama dışarıya açılmaz: yalnızca Caddy üzerinden erişilir (hız sınırı Caddy'nin ilettiği IP
+    # adresine güvenir).
 
   caddy:
     image: caddy:2
@@ -59,7 +43,7 @@ services:
     logging: *gunluk
     # Yalnızca IPv4: kapsayıcı ağı IPv6 kullanmadığı için Docker, IPv6 bağlantılarını ağ geçidi
     # adresinden iletirdi ve bütün IPv6 ziyaretçileri tek bir IP adresinden geliyormuş gibi görünürdü
-    # (hız sınırları hepsine birlikte uygulanırdı). Alan adına AAAA kaydı eklemeyin (KURULUM.md, 5.3).
+    # (hız sınırı hepsine birlikte uygulanırdı). Alan adına AAAA kaydı eklemeyin (KURULUM.md).
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
@@ -70,35 +54,14 @@ services:
       CADDY_GENEL_AYAR: ${CADDY_GENEL_AYAR:-}
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Yalnızca HTTPS sertifikaları ve Caddy'nin kendi ayarları (ziyaretçi verisi değil).
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
       - app
     networks: [ic]
 
-  yedek:
-    image: postgres:18
-    restart: unless-stopped
-    logging: *gunluk
-    environment:
-      PGHOST: db
-      PGUSER: olcekhane
-      PGDATABASE: olcekhane
-      PGPASSWORD: ${POSTGRES_PASSWORD}
-      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
-      BACKUP_TIME: ${BACKUP_TIME:-03:15}
-      TZ: Europe/Istanbul
-    volumes:
-      - ./yedekler:/yedekler
-      - ./docker/backup.sh:/usr/local/bin/yedekle:ro
-    entrypoint: ["bash", "/usr/local/bin/yedekle"]
-    depends_on:
-      db:
-        condition: service_healthy
-    networks: [ic]
-
 volumes:
-  db-data:
   caddy-data:
   caddy-config:
 

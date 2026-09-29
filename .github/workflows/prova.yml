@@ -1,8 +1,9 @@
 # Kurulum provası: GitHub'ın Ubuntu 24.04 makinesini yeni kiralanmış bir sunucu gibi hazırlar (root şifresiyle
-# SSH, alan adı) ve gerçek yayının betikleriyle (yayin/yayinla.sh, sunucu/kur.sh, sunucu/depo-kur.sh) baştan
-# sona kurar. Ardından HTTPS, güvenlik ayarları, yedek ve şifreli kopya, depolama sunucusu, yeniden başlatma
-# sonrası kilit açma, ikinci yayın (güncelleme) ve ANA_SIFRE değişikliğine karşı koruma denenir.
-# Gerçek sunuculara dokunmaz; gizli değerler her çalışmada rastgele üretilir.
+# SSH, alan adı) ve gerçek yayının betikleriyle (yayin/yayinla.sh, sunucu/kur.sh) baştan sona kurar. Ardından
+# HTTPS, güvenlik ayarları, "hiçbir şey saklanmaz" sözü (salt okunur uygulama, kapalı takas, günlüklerde
+# ziyaretçi bilgisi olmaması, çerez olmaması), yeniden başlatma sonrası kendiliğinden açılma, ikinci yayın
+# (güncelleme) ve ANA_SIFRE değişikliğine karşı koruma denenir.
+# Gerçek sunucuya dokunmaz; gizli değerler her çalışmada rastgele üretilir.
 name: Kurulum provası
 
 on:
@@ -15,8 +16,6 @@ on:
       - 'docker/**'
       - 'docker-compose.yml'
       - 'Dockerfile'
-      - 'scripts/migrate.mjs'
-      - 'scripts/create-admin.mjs'
       - '.github/actions/**'
       - '.github/workflows/prova.yml'
       - '.github/workflows/yayin.yml'
@@ -32,10 +31,10 @@ jobs:
   prova:
     name: Uçtan uca kurulum
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 45
     env:
       ALAN: olcekhane.test
-      U: /srv/olcekhane/uygulama
+      U: /srv/olcekhane
     steps:
       - uses: actions/checkout@v7
 
@@ -43,12 +42,11 @@ jobs:
         run: |
           set -eu
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
-          df -h / /mnt || true
-          # Büyük dosyalar için en çok boş alanı olan disk.
-          if [ "$(df --output=avail -B1G /mnt 2>/dev/null | tail -n1 | tr -d ' ' || echo 0)" -ge 30 ]; then YER=/mnt/prova; else YER=/var/prova; fi
+          if [ "$(df --output=avail -B1G /mnt 2>/dev/null | tail -n1 | tr -d ' ' || echo 0)" -ge 10 ]; then YER=/mnt/prova; else YER=/var/prova; fi
           sudo mkdir -p "$YER" && sudo chown "$USER" "$YER"
           echo "YER=$YER" >> "$GITHUB_ENV"
-          sudo apt-get install -y -q openssh-server sshpass age >/dev/null
+          sudo apt-get update -q >/dev/null
+          sudo apt-get install -y -q openssh-server sshpass >/dev/null
           python3 -m venv "$RUNNER_TEMP/py"
           "$RUNNER_TEMP/py/bin/pip" install -q cryptography
           echo "$RUNNER_TEMP/py/bin" >> "$GITHUB_PATH"
@@ -68,15 +66,13 @@ jobs:
           printf 'PermitRootLogin yes\nPasswordAuthentication yes\nKbdInteractiveAuthentication yes\n' | sudo tee /etc/ssh/sshd_config.d/60-saglayici.conf >/dev/null
           sudo systemctl enable ssh >/dev/null 2>&1 || true
           sudo systemctl restart ssh
-          { echo "SUNUCU_ROOT_SIFRE=$KOK"; echo "DEPO_ROOT_SIFRE=$KOK"; echo "ANA_SIFRE=$ANA"; } >> "$GITHUB_ENV"
+          { echo "SUNUCU_ROOT_SIFRE=$KOK"; echo "ANA_SIFRE=$ANA"; } >> "$GITHUB_ENV"
           echo "127.0.0.1 $ALAN www.$ALAN" | sudo tee -a /etc/hosts >/dev/null
           python3 - "$RUNNER_TEMP/prova.env" <<'EOF'
           import re, sys
           s = open("yayin/ayarlar.env", encoding="utf-8").read()
           deger = {
-              "SUNUCU_ADRESI": "127.0.0.1", "DEPO_ADRESI": "127.0.0.1", "SITE_DOMAIN": "olcekhane.test",
-              "ACME_EMAIL": "teknik@olcekhane.test", "MAIL_FROM": "'Ölçekhane <bilgi@olcekhane.test>'",
-              "ADMIN_EMAIL": "yonetici@olcekhane.test",
+              "SUNUCU_ADRESI": "127.0.0.1", "SITE_DOMAIN": "olcekhane.test", "ACME_EMAIL": "teknik@olcekhane.test",
               "COMPANY_LEGAL_NAME": "'Prova Eğitim Teknolojileri A.Ş.'", "COMPANY_ADDRESS": "'Prova Cad. No: 1 #2, Çankaya/Ankara'",
               "COMPANY_MERSIS": "0000000000000000", "COMPANY_TAX_OFFICE": "Çankaya", "COMPANY_TAX_NO": "0000000000",
               "COMPANY_PHONE": "'+90 312 000 00 00'", "COMPANY_EMAIL": "bilgi@olcekhane.test",
@@ -93,7 +89,6 @@ jobs:
         env:
           AYARLAR: ${{ runner.temp }}/prova.env
           GORUNTU: ${{ env.YER }}/goruntu.tar.zst
-          SUNUCU_ORTAM: OLCEKHANE_VERI_DOSYASI=${{ env.YER }}/veri/veri.img OLCEKHANE_VERI_GB=12
         run: bash yayin/yayinla.sh kur
 
       - name: 2 · HTTPS, sayfalar ve güvenlik ayarları
@@ -104,13 +99,15 @@ jobs:
           C=(curl --cacert "$RUNNER_TEMP/kok.crt" -sS -m 20)
           for _ in $(seq 1 30); do "${C[@]}" -f "https://$ALAN/api/saglik" >/dev/null 2>&1 && break; sleep 2; done
           test "$("${C[@]}" "https://$ALAN/api/saglik")" = '{"durum":"ok"}'
-          for yol in / /testler /hakkimizda /yasal/aydinlatma-metni /giris /sifremi-unuttum /robots.txt /sitemap.xml; do
+          for yol in / /testler /testler/oz-saygi/coz /hakkimizda /iletisim /yasal/aydinlatma-metni /robots.txt /sitemap.xml; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol")
             echo "$yol -> $kod"; test "$kod" = 200
           done
           "${C[@]}" "https://$ALAN/yasal/aydinlatma-metni" | grep -q 'Prova Eğitim Teknolojileri A.Ş.'
           "${C[@]}" "https://$ALAN/yasal/aydinlatma-metni" | grep -q 'Prova Cad. No: 1 #2'
-          "${C[@]}" "https://$ALAN/robots.txt" | grep -qi 'disallow: /'
+          "${C[@]}" "https://$ALAN/iletisim" | grep -q 'bilgi@olcekhane.test'
+          # Hazırlık ayarı (ALLOW_INDEXING=false): bütün site taranmaya kapalı.
+          "${C[@]}" "https://$ALAN/robots.txt" | grep -qiE '^disallow: /[[:space:]]*$'
           "${C[@]}" -D - -o /dev/null "https://$ALAN/" | grep -qi '^strict-transport-security: max-age=31536000'
           "${C[@]}" -D - -o /dev/null "https://www.$ALAN/hakkimizda" | grep -qi "^location: https://$ALAN/hakkimizda"
           curl -sS -m 10 -D - -o /dev/null "http://$ALAN/" | grep -qi "^location: https://$ALAN/"
@@ -119,68 +116,68 @@ jobs:
           if SSHPASS=$SUNUCU_ROOT_SIFRE sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no -o ConnectTimeout=10 root@127.0.0.1 true 2>/dev/null; then
             echo "::error title=Güvenlik::Kurulumdan sonra root hâlâ şifreyle SSH ile girebiliyor."; exit 1
           fi
-          sudo ufw status | grep -q '^Status: active'
-          test "$(sudo docker info --format '{{.DockerRootDir}}')" = /srv/olcekhane/docker
-          test "$(findmnt -no SOURCE /srv/olcekhane)" = /dev/mapper/olcekhane-veri
-          sudo cryptsetup status olcekhane-veri | grep -q 'LUKS2'
+          sudo ufw status verbose | grep -q '^Status: active'
+          sudo ufw status verbose | grep -q '^Logging: off'
           test "$(sudo stat -c %a "$U/.env")" = 600
-          if sudo ss -ltnH | grep -E '(0\.0\.0\.0|\*|\[::\]):(5432|3000)\b'; then echo "::error title=Güvenlik::Veritabanı ya da uygulama portu dışarı açık."; exit 1; fi
-          test "$(dc exec -T db psql -U olcekhane -d olcekhane -Atc "select role from users where email = 'yonetici@olcekhane.test'")" = admin
-          if systemctl is-enabled docker.service >/dev/null 2>&1; then echo "::error title=Güvenlik::Docker açılışta kendiliğinden başlıyor."; exit 1; fi
-          echo "::notice title=Prova 2::HTTPS, sayfalar, şirket bilgileri, yönlendirmeler, SSH/UFW/şifreli disk/portlar ve yönetici hesabı doğru. Docker depolama sürücüsü: $(sudo docker info --format '{{.Driver}}'); /var/lib/containerd: $(sudo du -sh /var/lib/containerd 2>/dev/null | cut -f1)."
+          if sudo ss -ltnH | grep -E '(0\.0\.0\.0|\*|\[::\]):3000\b'; then echo "::error title=Güvenlik::Uygulama portu dışarı açık."; exit 1; fi
+          systemctl is-enabled docker.service >/dev/null
+          echo "::notice title=Prova 2::HTTPS, sayfalar, şirket bilgileri, yönlendirmeler, SSH, güvenlik duvarı ve portlar doğru."
 
-      - name: 3 · Yedek, şifreli kopya ve depolama sunucusu
-        env:
-          AYARLAR: ${{ runner.temp }}/prova.env
+      - name: 3 · Hiçbir şey saklanmaz (salt okunur uygulama, takas, günlükler, çerez)
         run: |
           set -eu
           dc() { sudo docker compose --project-directory "$U" -f "$U/docker-compose.yml" "$@"; }
-          dc exec -T yedek bash /usr/local/bin/yedekle simdi
-          bash yayin/yayinla.sh depo
-          f=$(sudo ls /srv/olcekhane-yedek | grep -E '^olcekhane-[0-9]{8}-[0-9]{6}\.dump\.age$' | tail -n1)
-          test -n "$f"
-          python3 yayin/turet.py "$RUNNER_TEMP/anahtar"
-          sudo cat "/srv/olcekhane-yedek/$f" | age -d -i "$RUNNER_TEMP/anahtar/yedek.key" > "$RUNNER_TEMP/yedek.dump"
-          tablo=$(dc exec -T yedek pg_restore --list < "$RUNNER_TEMP/yedek.dump" | grep -c 'TABLE DATA')
-          test "$tablo" -ge 10
-          # Depolama sunucusunun anahtarı yalnızca okuyabilir: yazma ve kabuk reddedilir.
-          if sudo rsync -e "ssh -i /root/.ssh/olcekhane_cek -o BatchMode=yes" /etc/hostname yedekci@127.0.0.1: 2>/dev/null; then echo "::error title=Güvenlik::Yedek okuma hesabıyla yazılabildi."; exit 1; fi
-          if sudo ssh -i /root/.ssh/olcekhane_cek -o BatchMode=yes yedekci@127.0.0.1 'cat /etc/passwd' 2>/dev/null | grep -q root; then echo "::error title=Güvenlik::Yedek okuma hesabıyla kabuk açılabildi."; exit 1; fi
-          echo "::notice title=Prova 3::Yedek alındı; şifreli kopya depolama sunucusuna çekildi ve ANA_SIFRE'den türetilen anahtarla açıldı ($tablo tablo). Okuma hesabı yazamıyor, kabuk açamıyor."
-
-      - name: 4 · Yeniden başlatma benzetimi ve kilit açma
-        env:
-          AYARLAR: ${{ runner.temp }}/prova.env
-        run: |
-          set -eu
-          dc() { sudo docker compose --project-directory "$U" -f "$U/docker-compose.yml" "$@"; }
-          C=(curl --cacert "$RUNNER_TEMP/kok.crt" -sS -m 10)
-          dc exec -T db psql -U olcekhane -d olcekhane -qc "create table if not exists prova_isareti (deger text)" -c "insert into prova_isareti values ('$GITHUB_RUN_ID')"
-          sudo systemctl stop docker.socket docker.service
-          if swapon --show=NAME --noheadings | grep -q /srv/olcekhane; then sudo swapoff /srv/olcekhane/swapfile; fi
-          sudo umount /srv/olcekhane
-          sudo cryptsetup close olcekhane-veri
-          if "${C[@]}" -f "https://$ALAN/api/saglik" >/dev/null 2>&1; then echo "::error::Veri alanı kapalıyken site açık kaldı."; exit 1; fi
-          sudo systemctl start docker.service || true
-          if systemctl is-active --quiet docker; then echo "::error title=Güvenlik::Veri alanı kapalıyken Docker başlayabildi."; exit 1; fi
-          bash yayin/yayinla.sh ac
+          C=(curl --cacert "$RUNNER_TEMP/kok.crt" -sS -m 30 -A 'prova-ajan')
+          test "$(sudo docker inspect -f '{{.HostConfig.ReadonlyRootfs}}' "$(dc ps -q app)")" = true
+          test "$(swapon --show=NAME --noheadings | wc -l)" = 0
+          test "$(cat /proc/sys/kernel/core_pattern)" = '|/bin/false'
+          GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 7, "data": {"engine": "likert", "answers": {f"R{i}": {"value": i % 4, "rtMs": 2500} for i in range(1, 11)}}}))')
+          "${C[@]}" -f -D "$RUNNER_TEMP/rapor.baslik" -H 'content-type: application/json' -d "$GOVDE" "https://$ALAN/api/rapor/oz-saygi" | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["student"]["items"]'
+          PDF_GOVDE=$(printf '%s' "$GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["audience"]="student"; print(json.dumps(b))')
+          "${C[@]}" -f -H 'content-type: application/json' -d "$PDF_GOVDE" -o "$RUNNER_TEMP/rapor.pdf" "https://$ALAN/api/rapor/oz-saygi/pdf"
+          head -c 5 "$RUNNER_TEMP/rapor.pdf" | grep -q '%PDF-'
+          "${C[@]}" -o /dev/null "https://$ALAN/testler/oz-saygi/coz?sinif=7"
+          # Yarıda kalan yanıt: ziyaretçi PDF inerken bağlantıyı keser (Caddy bu durumu ayrı bir günlüğe yazar).
+          "${C[@]}" -m 0.3 -H 'content-type: application/json' -d "$PDF_GOVDE" -o /dev/null "https://$ALAN/api/rapor/oz-saygi/pdf?sinif=7" || true
+          # Uygulama kapalıyken gelen istek (Caddy'nin istek hatası günlüğü).
+          dc stop app >/dev/null
+          "${C[@]}" -o /dev/null "https://$ALAN/testler?sinif=7" || true
+          dc start app >/dev/null
           for _ in $(seq 1 30); do "${C[@]}" -f "https://$ALAN/api/saglik" >/dev/null 2>&1 && break; sleep 2; done
-          "${C[@]}" -f "https://$ALAN/api/saglik"
-          test "$(dc exec -T db psql -U olcekhane -d olcekhane -Atc 'select count(*) from prova_isareti')" -ge 1
-          echo "::notice title=Prova 4::Veri alanı kapanınca site ve Docker durdu; kilit açma sonrası site döndü, veriler yerinde."
+          if grep -qi '^set-cookie:' "$RUNNER_TEMP/rapor.baslik"; then echo "::error title=Çerez::Rapor ucu çerez gönderdi"; exit 1; fi
+          if "${C[@]}" -D - -o /dev/null "https://$ALAN/" | grep -qi '^set-cookie:'; then echo "::error title=Çerez::Ana sayfa çerez gönderdi"; exit 1; fi
+          dc logs --no-color app caddy > "$RUNNER_TEMP/gunluk.txt" 2>&1
+          # Caddy'nin gördüğü istemci adresi: bu makineden gelen istekler Docker ağının geçidinden gelir.
+          GW=$(sudo docker network inspect olcekhane_ic -f '{{(index .IPAM.Config 0).Gateway}}')
+          test -n "$GW"
+          for iz in prova-ajan sinif=7 rtMs remote_ip "$GW"; do
+            if grep -qE -- "$(printf '%s' "$iz" | sed 's/[.]/[.]/g')([^0-9]|$)" "$RUNNER_TEMP/gunluk.txt"; then
+              echo "::error title=Günlükte ziyaretçi bilgisi::'$iz' günlükte geçiyor"; grep -- "$iz" "$RUNNER_TEMP/gunluk.txt" | head -5; exit 1
+            fi
+          done
+          echo "::notice title=Prova 3::Uygulama salt okunur, takas ve bellek dökümleri kapalı, çerez yok; rapor, PDF, yarıda kalan indirme ve uygulama kapalıyken gelen istek günlüklere ziyaretçi bilgisi yazmadı ($(wc -l < "$RUNNER_TEMP/gunluk.txt") satır)."
 
-      - name: 5 · İkinci yayın (güncelleme; veriler korunur)
+      - name: 4 · Yeniden başlatma benzetimi (kapsayıcılar kendiliğinden açılır)
+        run: |
+          set -eu
+          C=(curl --cacert "$RUNNER_TEMP/kok.crt" -sS -m 10)
+          sudo systemctl restart docker
+          ok=0
+          for _ in $(seq 1 60); do "${C[@]}" -f "https://$ALAN/api/saglik" >/dev/null 2>&1 && { ok=1; break; }; sleep 2; done
+          test "$ok" = 1 || { echo "::error title=Prova 4::Docker yeniden başladıktan sonra site kendiliğinden açılmadı."; exit 1; }
+          echo "::notice title=Prova 4::Docker yeniden başlayınca site kendiliğinden açıldı."
+
+      - name: 5 · İkinci yayın (güncelleme)
         env:
           AYARLAR: ${{ runner.temp }}/prova.env
           GORUNTU: ${{ env.YER }}/goruntu.tar.zst
         run: |
           set -eu
-          dc() { sudo docker compose --project-directory "$U" -f "$U/docker-compose.yml" "$@"; }
           bash yayin/yayinla.sh kur
-          test "$(dc exec -T db psql -U olcekhane -d olcekhane -Atc 'select count(*) from prova_isareti')" -ge 1
-          test "$(sudo find "$U/yedekler" -name 'olcekhane-*.dump' | wc -l)" -ge 2
           curl --cacert "$RUNNER_TEMP/kok.crt" -fsS "https://$ALAN/api/saglik"
-          echo "::notice title=Prova 5::İkinci yayın sorunsuz; güncellemeden önce yedek alındı, veriler korundu."
+          bash yayin/yayinla.sh durum | tee "$RUNNER_TEMP/durum.txt"
+          grep -q '^kapsayici_app=running/healthy' "$RUNNER_TEMP/durum.txt"
+          echo "::notice title=Prova 5::İkinci yayın sorunsuz."
 
       - name: 6 · ANA_SIFRE değişirse yayın durur, site etkilenmez
         env:
@@ -188,7 +185,7 @@ jobs:
         run: |
           set -eu
           # Çıktı atılır: beklenen bağlantı hatası özet uyarısı olarak görünmesin.
-          if ANA_SIFRE=$(openssl rand -hex 32) bash yayin/yayinla.sh ac >/dev/null 2>&1; then
+          if ANA_SIFRE=$(openssl rand -hex 32) bash yayin/yayinla.sh durum >/dev/null 2>&1; then
             echo "::error title=Güvenlik::Farklı bir ANA_SIFRE ile sunucuya bağlanılabildi."; exit 1
           fi
           curl --cacert "$RUNNER_TEMP/kok.crt" -fsS "https://$ALAN/api/saglik"
@@ -200,5 +197,5 @@ jobs:
           dc() { sudo docker compose --project-directory "$U" -f "$U/docker-compose.yml" "$@"; }
           not() { local m; m=$(tail -n 40 | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}'); echo "::error title=$1::$m"; }
           dc ps -a 2>&1 | not "kapsayıcılar" || true
-          for s in app caddy db yedek; do dc logs --no-color --tail 40 "$s" 2>&1 | not "$s kaydı"; done
+          for s in app caddy; do dc logs --no-color --tail 40 "$s" 2>&1 | not "$s kaydı"; done
           sudo journalctl -u docker -u ssh --no-pager -n 40 2>&1 | not "sistem kaydı" || true

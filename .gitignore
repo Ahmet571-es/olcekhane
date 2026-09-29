@@ -41,13 +41,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# yerel veritabanı ve ekran görüntüleri
-.pgdata/
+# yerel ekran görüntüleri
 /tmp/
 
 # Yerel uçtan uca test yardımcıları
 .e2e-tmp/
-
-# Docker kurulumu: derlenmiş betikler ve yerel yedekler
-/dist/
-/yedekler/

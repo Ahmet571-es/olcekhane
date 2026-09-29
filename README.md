@@ -1,61 +1,51 @@
 # Ölçekhane
 
-Öğrenciler için bilimsel ölçme platformu: akademik tanı testleri, kişilik, ilgi ve çalışma alışkanlığı
-ölçekleri ile dikkat ve çalışma belleği görevleri. Veliler çocukları için tek başına kullanabilir; okullar
-rehberlik servisi aracılığıyla sınıflarına uygular. Raporlar veli, öğrenci ve rehber öğretmen için ayrı
-dille yazılır; her testin bilimsel dayanağı, güvenirliği ve sınırlılıkları raporda açıkça yazar.
+Öğrenciler için bilimsel test platformu: kişilik, ilgi, çalışma alışkanlıkları, okuma, matematik, dikkat ve
+çalışma belleği. Testler hesap açmadan ve ücretsiz çözülür; öğrenci ve veli için iki ayrı rapor ekranda
+gösterilir ve PDF olarak indirilir. Her testin bilimsel dayanağı, güvenirliği ve sınırlılıkları test
+sayfasındaki bilim kartında ve raporda açıkça yazar.
 
-Bu belge geliştiriciler içindir. Sunucuya kurulum için **[KURULUM.md](KURULUM.md)** dosyasına bakın.
+**Hiçbir veri saklanmaz.** Sitede veritabanı, hesap, iletişim formu ve çerez yoktur. Cevaplar yalnızca test
+sayfasında durur; test bitince tek istekte sunucuya gelir, puanlanır ve rapor geri döner. Hiçbir şey diske
+ya da günlüğe yazılmaz (`src/lib/assessment`, `src/app/api/rapor`). Sunucuda uygulama kapsayıcısı salt okunur
+çalışır, takas alanı ve bellek dökümleri kapalıdır, Caddy isteklerle ilgili hiçbir şey günlüğe yazmaz. `tests/site.test.ts`
+bu sözü bozacak kodu (veritabanı ya da e-posta kitaplığı, dosyaya yazma, çerez, tarayıcı deposu, günlüğe
+istek yazma) ve bu gerçekle çelişen site metinlerini yakalar.
 
-**Site modu.** Varsayılan olarak site **hızlı test** modunda çalışır (`ACCOUNTS_ENABLED=false`): testler
-hesap açmadan çözülür, cevaplar tek istekte sunucuya gelir, puanlanır ve rapor (ekranda ve PDF olarak)
-döndürülür; hiçbir şey veritabanına, dosyaya ya da günlüğe yazılmaz (`src/lib/assessment/quick*.ts`,
-`src/app/api/hizli-test`). Veli, okul ve öğrenci hesapları kodda hazırdır ama kapalıdır: kayıt, öğrenci
-girişi, okul daveti ve yeni veli onayları reddedilir; giriş sayfası yalnızca yöneticiler içindir.
-`ACCOUNTS_ENABLED=true` ile açılır; açmadan önce aydınlatma metninin hesapları anlatan sürümü yayımlanmalıdır.
+Bu belge geliştiriciler içindir. Sunucuya kurulum için **[yayin/REHBER.md](yayin/REHBER.md)** (GitHub ile
+otomatik) ya da **[KURULUM.md](KURULUM.md)** (elle) dosyasına bakın.
 
 ## Neler var?
 
 - **Testler:** Beş Faktör Kişilik Profili, Öz-saygı Ölçeği (Rosenberg), Mesleki İlgi Profili (RIASEC),
   Çalışma Alışkanlıkları Envanteri, Okuma Hızı ve Anlama, Matematik Tanı Testi (5–8. sınıf, hata türü
-  analiziyle), Dikkat ve Çalışma Belleği Görevleri, Sürekli Dikkat: Harf İşaretleme. Test tanımları kodda sürümlüdür
-  (`src/content/instruments`); puanlama sunucuda yapılır.
-- **Hızlı test:** hesapsız ve saklamasız çözme; öğrenci ve veli için basit rapor (teste uygun tek grafik),
-  ekranda ve PDF olarak (`@react-pdf/renderer`, yazı tipleri `src/assets/fonts`).
-- **Veli paneli** (hesaplar açıkken): çocuk profili, açık rıza, test çözme, veli ve öğrenci raporları.
-- **Okul paneli** (hesaplar açıkken): okul yöneticisi, rehber öğretmen ve öğretmen görevleri; e-Okul listesinden öğrenci
-  aktarma; veli onayını e-postayla alma; öğrenci giriş kodları; test atama; en az 5 öğrencilik ve
-  küçük hücreleri gizleyen grup raporları. Okulda bireysel sonuçları yalnızca rehber öğretmen görür;
-  öğretmen ve okul yöneticisi grup özetlerini görür.
-- **KVKK:** aydınlatma ve açık rıza ayrı; rıza geri alınınca uygulamalar geçersiz sayılır ve günlük
-  temizlik göreviyle silinir; saklama süreleri görevle uygulanır; bireysel verilere erişen görevlerde
-  iki aşamalı doğrulama zorunludur; önemli işlemler denetim kaydına yazılır.
-- **Yönetim paneli:** yayına hazırlık listesi, okullar, kullanıcı desteği, e-posta kutusu, denetim
-  kaydı, günlük temizlik ve psikometri laboratuvarı (madde analizi, güvenirlik, anonim araştırma
-  verisi, ön norm).
+  analiziyle), Dikkat ve Çalışma Belleği Görevleri, Sürekli Dikkat: Harf İşaretleme. Test tanımları kodda
+  sürümlüdür (`src/content/instruments`); puanlama sunucuda yapılır, cevap anahtarı tarayıcıya gönderilmez.
+- **Ücretsiz rapor:** öğrenci ve veli için ayrı dille yazılmış basit rapor (teste uygun tek grafik, her
+  ölçek için düzey ve yorum), ekranda ve PDF olarak (`@react-pdf/renderer`, yazı tipleri `src/assets/fonts`).
+- **Rehber yazıları** (`src/content/rehber`), bilimsel yaklaşım ve veliler için sayfaları.
+- **Kapsamlı rapor görünümü** (`src/components/report`): ileride ücretli sunulacak kapsamlı rapor için
+  hazır bileşenler; şu an hiçbir sayfada kullanılmıyor.
 
 ## Teknoloji
 
-Next.js 16 (App Router, sunucu eylemleri), React 19, TypeScript, PostgreSQL 18 ve Drizzle ORM,
-Tailwind CSS 4, three.js (tanıtım sayfalarındaki 3B sahneler). Üretimde Docker, Caddy (HTTPS) ve
-PostgreSQL.
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, zod, three.js (tanıtım sayfalarındaki 3B
+sahne), `@react-pdf/renderer`. Üretimde Docker ve Caddy (HTTPS). Veritabanı yoktur.
 
 Sayfalar istek anında üretilir: site adresi (`APP_URL`), dizine ekleme ayarı (`ALLOW_INDEXING`) ve şirket
-bilgileri (`COMPANY_*`) sunucu çalışırken ortam değişkenlerinden okunur. Derleme için veritabanı ya da
-`.env` gerekmez; veritabanı bağlantısı ilk sorguda kurulur. Yalnızca paylaşım görselleri derlemede
-üretilir.
+bilgileri (`COMPANY_*`) sunucu çalışırken ortam değişkenlerinden okunur. Derleme için `.env` gerekmez;
+yalnızca paylaşım görselleri derlemede üretilir.
 
 ```
-src/app          sayfalar ve sunucu eylemleri ((site) tanıtım, (auth) giriş ve veli onayı,
-                 panel veli, okul okul paneli, ogrenci öğrenci, uygulama test ekranları,
-                 hesap Hesabım, yonetim platform yönetimi, api sağlık denetimi)
+src/app          sayfalar: (site) tanıtım sayfaları, (test) test çözme ekranı (/testler/[slug]/coz),
+                 api/rapor puanlama ve PDF, api/saglik sağlık denetimi
 src/content      test tanımları, rapor metinleri, rehber yazıları, hukuki metinler
-src/lib          puanlama, rapor üretimi, kimlik doğrulama, okul kuralları, psikometri, görevler
-src/db           veritabanı şeması (Drizzle); geçişler drizzle/ klasöründe
-docker/          Caddy yapılandırması, kapsayıcı açılış ve yedek betikleri
-sunucu/          sunucu betikleri: şifreli veri diskini açma, yedeklerin sunucu dışına şifreli kopyası
-scripts/         geliştirme veritabanı, şema geçişi, tohum verisi, yönetici oluşturma
-tests/           birim testleri; tests/db veritabanıyla çalışan testler
+src/lib          puanlama, rapor üretimi, PDF, bellekteki hız sınırı
+src/components   test ekranları (runner), rapor görünümleri, site bileşenleri
+docker/          Caddy yapılandırması
+sunucu/          sunucu kurulum betiği (kur.sh)
+yayin/           GitHub ile otomatik yayın: ayarlar, SSH anahtarı türetme, yayın betiği
+tests/           birim testleri
 ```
 
 ## Geliştirme ortamı
@@ -64,65 +54,37 @@ Node.js 22 gerekir.
 
 ```bash
 npm ci
-npm run db:start          # yerel PostgreSQL'i başlatır (gömülü, 54329 portu; ayrı bir terminalde açık kalır)
-```
-
-Kök klasörde `.env.local` dosyası oluşturun:
-
-```bash
-DATABASE_URL=postgres://olcekhane:olcekhane@127.0.0.1:54329/olcekhane
-APP_URL=http://localhost:3000
-APP_SECRET=gelistirme-icin-en-az-32-karakterlik-rastgele-bir-deger
-SESSION_COOKIE_SECURE=false
-# SMTP_URL tanımlı değilse e-postalar gönderilmez, yönetim panelindeki e-posta kutusuna yazılır.
-```
-
-```bash
-npm run db:migrate        # şemayı kurar
-ADMIN_EMAIL=siz@ornek.com ADMIN_PASSWORD='uzun-bir-sifre' npm run db:seed   # tanımlar + ilk yönetici
 npm run dev               # http://localhost:3000
 ```
 
-Yönetici ilk girişte iki aşamalı doğrulamayı kurar (herhangi bir kimlik doğrulama uygulamasıyla).
-Geliştirmede günlük temizlik görevi kapalıdır; `SCHEDULED_JOBS=true` ile açılır ya da yönetim
-panelinden elle çalıştırılır.
+İsteğe bağlı olarak kök klasörde `.env.local` dosyası oluşturabilirsiniz (ör. `APP_URL=http://localhost:3000`
+ya da altbilgide görmek için `COMPANY_*` değerleri). Gizli bir değer gerekmez.
 
 ### Denetimler ve testler
 
 ```bash
 npm run typecheck
 npm run lint
-npm test                  # birim testleri
-npm run test:db           # veritabanı testleri (yalnızca yerel veritabanında çalışır)
+npm test
 npm run build
 ```
 
-### Veritabanı değişiklikleri
+### Test tanımları
 
-Şemayı `src/db/schema` altında değiştirin, sonra `npm run db:generate` ile geçiş dosyası üretin.
-Üretilen dosyaya anlamlı bir ad verin (`drizzle/000N_ad.sql`) ve `drizzle/meta/_journal.json`
-içindeki `tag` alanını aynı adla güncelleyin; `npm run db:migrate` ile uygulayın. Üretimde geçişler
-uygulama açılırken kendiliğinden uygulanır.
+Kodda sürümlüdür (`src/content/instruments`). Bir testin maddesi, anahtarı ya da puanlaması değişince sürüm
+numarasını artırın. Yeni bir test eklerken kullanım izni netleşmiş olmalı ve bilim kartı eksiksiz
+doldurulmalıdır; yapılmamış çalışmaları “sürüyor” ya da “yapılacak” diye anlatan metinler testlerde yakalanır.
 
-### Test tanımları ve hukuki metinler
+## Güvenlik ve gizlilik notları
 
-Kodda tanımlıdır ve sunucu her açıldığında veritabanına eşitlenir. Bir test sürümüyle yapılmış
-uygulama varsa ya da bir hukuki metin sürümüne bağlı onay kaydı varsa o sürümün üzerine yazılmaz:
-değişiklik için sürüm numarasını artırın (sunucu günlüğünde uyarı görünür).
-
-## Güvenlik notları
-
-- Bağımlılık denetimi: `npm audit --omit=dev` temiz. Geliştirme aracı `drizzle-kit`'in içindeki eski
-  esbuild sürümü için orta düzey bir uyarı vardır; yalnızca geliştirme sırasında kullanılır, üretim
-  görüntüsüne girmez.
-- `APP_SECRET` kurulumdan sonra değiştirilmemelidir: öğrenci giriş kodları, kurtarma kodları ve iki
-  aşamalı doğrulama sırları buna bağlıdır.
-- Uygulama yalnızca Caddy arkasında çalışmalıdır: istemcinin IP adresi `X-Forwarded-For` başlığının
-  son değerinden okunur ve Caddy bu başlığı gerçek adresle değiştirir.
-- İki aşamalı doğrulama oturum düzeyindedir: bir oturum, ikinci adımı kullanıcının doğrulamayı açtığı
-  andan sonra doğrulanmışsa (`sessions.two_factor_at`) iki aşamalı sayılır. Doğrulaması açık bir
-  kullanıcının kodla doğrulanmamış oturumu `getSession()` içinde `kind: 'unverified'` olarak döner ve
-  oturum açılmamış gibi davranılır; yalnızca oturumu doğrulama sayfası ve çıkış kullanılabilir.
-  Bekleyen kurulum sırrı da oturuma bağlıdır; şifreyi bilen başka bir oturum onu göremez.
-- Veritabanı sorgu hataları (Drizzle, iletide parametreleri taşır) günlüğe parametresiz yazılır
-  (`src/lib/log.ts`; `console.error` sunucu açılışında sarılır).
+- Bağımlılık denetimi: `npm audit` temiz.
+- Uygulama yalnızca Caddy arkasında çalışmalıdır: istemcinin IP adresi `X-Forwarded-For` başlığının son
+  değerinden okunur ve Caddy bu başlığı gerçek adresle değiştirir. IP adresi yalnızca bellekteki hız
+  sınırında kullanılır ve en geç 11 dakikada silinir (`src/lib/memory-rate-limit.ts`).
+- Günlüğe yalnızca hata özeti yazılır (`src/lib/log.ts`); istek gövdesi, cevaplar ve IP adresi yazılmaz.
+- İçerik güvenliği politikası (`next.config.ts`): dış kaynaktan komut dosyası, yazı tipi ya da görsel
+  yüklenmez.
+- Caddy'nin günlüğüne yalnızca ayar, yönetim ve sertifika iletileri yazılır (izin listesi,
+  `docker/Caddyfile`). İsteği IP adresi ve başlıklarıyla birlikte yazan iletileri (istek hatası
+  `http.log.error`, yarıda kalan yanıt `http.handlers.reverse_proxy` ve ileride eklenebilecek başkaları)
+  bu yüzden yazılmaz.

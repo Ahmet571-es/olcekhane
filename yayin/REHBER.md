@@ -7,6 +7,10 @@ kopyala-yapıştır işi beklenir.
 Teknik ayrıntılar ve elle kurulum: [KURULUM.md](../KURULUM.md). Otomasyonun kendisi: `yayin/yayinla.sh`,
 `sunucu/kur.sh`, `.github/workflows/`.
 
+Sitede veritabanı, hesap ve iletişim formu yoktur; hiçbir veri saklanmaz. Bu yüzden yedek, şifreli disk ya
+da sitede bir yönetim paneli yoktur: sunucu kaybolsa bile kaybolacak bir veri yoktur, site yenisine dakikalar
+içinde yeniden kurulur.
+
 ## 1. Satın alınacaklar
 
 Aydınlatma metni sunucunun **Hostinger'ın Almanya'daki veri merkezinde** olduğunu söyler. Başka bir
@@ -14,33 +18,31 @@ sağlayıcı ya da ülke seçilirse önce metnin değişmesi gerekir.
 
 | Kalem | Seçilen | Not |
 |---|---|---|
-| Ana sunucu | Hostinger VPS **KVM 2**, veri merkezi **Almanya** (2 çekirdek / 8 GB bellek / 100 GB disk) | İşletim sistemi **Ubuntu 24.04**, eklentisiz ("Plain OS"). Veriler sistem diskinde şifreli bir alanda tutulur. |
-| Yedek sunucusu | İsteğe bağlı, şimdilik yok | Yedeklerin şifreli bir kopyasını ayrı bir yerde tutmak için. Eklenirse konumu aydınlatma metnine yazılır. |
+| Sunucu | Hostinger VPS **KVM 2**, veri merkezi **Almanya** | İşletim sistemi **Ubuntu 24.04**, eklentisiz ("Plain OS"). Site az kaynak kullanır; KVM 1 de yeter, gerekirse sonradan yükseltilir. |
 | Alan adı | `olcekhane.com` (Namecheap) | DNS kayıtlarını düzenleyebilmelisiniz. |
-| E-posta gönderimi | SMTP destekli kurumsal e-posta | Tek adres yeter: `bilgi@olcekhane.com`. Hesaplar kapalıyken yalnızca iletişim formu bildirimleri ve yönetici e-postaları için kullanılır. |
+| E-posta kutusu | Yalnızca gelen e-postalar için tek adres, ör. `bilgi@olcekhane.com` | Site e-posta göndermez. Ziyaretçiler size bu adrese yazar; adres iletişim sayfasında görünür. |
 
-Ana sunucunun **root şifresini** Hostinger'da kurulum sırasında siz belirlersiniz. Bu şifreyi kimseyle
+Sunucunun **root şifresini** Hostinger'da kurulum sırasında siz belirlersiniz. Bu şifreyi kimseyle
 paylaşmayın; yalnızca 3. adımda GitHub'a gireceksiniz.
 
-> **KVKK:** Sunucu yurt dışında olduğu için siteye gönderilen bilgiler (iletişim formu mesajları, giriş
-> denemeleri, IP adresleri) yurt dışına aktarılmış sayılır. Bunun için genellikle Kişisel Verileri Koruma
+> **KVKK:** Sunucu yurt dışında olduğu için siteye gönderilen bilgiler (kaydedilmeden işlenen test
+> cevapları ve IP adresleri) yurt dışına aktarılmış sayılır. Bunun için genellikle Kişisel Verileri Koruma
 > Kurulunun yayımladığı standart sözleşmenin Hostinger ile imzalanması ve imzadan sonra 5 iş günü içinde
-> Kurula bildirilmesi gerekir. Bu adımı bir hukukçuyla birlikte yapın.
-
-Site **hızlı test modunda** açılır: veli, okul ve öğrenci hesapları kapalıdır (`yayin/ayarlar.env` →
-`ACCOUNTS_ENABLED=false`), testler hesap açmadan çözülür ve cevaplar hiçbir yere kaydedilmez.
+> Kurula bildirilmesi gerekir. Bu adımı bir hukukçuyla birlikte yapın; aydınlatma metni ve kullanım
+> koşulları da yayından önce bir hukukçuya okutulmalıdır.
 
 ## 2. Ana parola (ANA_SIFRE)
 
-Kurulumun bütün anahtarları (sunuculara bağlanan anahtar, şifreli diskin parolası, uygulama anahtarı,
-yedeklerin anahtarı) bu tek paroladan üretilir.
+GitHub'daki yayın iş akışının sunucuya bağlandığı SSH anahtarı bu paroladan üretilir; anahtar hiçbir yerde
+saklanmaz.
 
 1. Uzun ve rastgele bir parola üretin (Claude'un verdiği parola üretme sayfasını kullanabilirsiniz; parola
    yalnızca sizin tarayıcınızda üretilir, hiçbir yere gönderilmez).
-2. Parolayı **iki ayrı güvenli yere** kaydedin (ör. bir parola yöneticisi ve kâğıda yazılıp kasada).
+2. Parolayı güvenli bir yere kaydedin (ör. bir parola yöneticisi).
 
-> **Bu parola hiçbir zaman değiştirilmemeli ve kaybedilmemeli.** Kaybolursa sunucudaki şifreli veriler
-> ve yedekler açılamaz; değiştirilirse yayın kendini durdurur.
+> Parola kurulumdan sonra değiştirilirse yayın iş akışı sunucuya bağlanamaz ve durur; eski değeri geri
+> girmek yeter. Parola kaybolursa sunucu Hostinger panelinden sıfırlanıp yeni bir root şifresi ve yeni bir
+> ANA_SIFRE ile yeniden kurulur; saklanan veri olmadığı için hiçbir şey kaybolmaz.
 
 ## 3. GitHub'a gizli bilgileri girme
 
@@ -50,54 +52,54 @@ adresini açın, **Name** kutusuna adı, **Secret** kutusuna değeri yapıştır
 | Name | Secret (değer) |
 |---|---|
 | `ANA_SIFRE` | 2. adımdaki parola |
-| `SUNUCU_ROOT_SIFRE` | Ana sunucunun root şifresi (ilk kurulumdan sonra silinebilir) |
-| `DEPO_ROOT_SIFRE` | Yalnızca yedek sunucusu alınırsa: onun root şifresi (ilk kurulumdan sonra silinebilir) |
-| `SMTP_KULLANICI` | E-posta adresi, ör. `bilgi@olcekhane.com` |
-| `SMTP_SIFRE` | O e-posta adresinin şifresi |
+| `SUNUCU_ROOT_SIFRE` | Sunucunun root şifresi (ilk kurulumdan sonra silinebilir) |
 
-Girilen değerler GitHub'da bir daha görüntülenemez; yanlış girildiyse aynı adla yeniden girin.
+Girilen değerler GitHub'da bir daha görüntülenemez; yanlış girildiyse aynı adla yeniden girin. Daha önce
+`DEPO_ROOT_SIFRE`, `SMTP_KULLANICI` ya da `SMTP_SIFRE` girdiyseniz artık kullanılmıyorlar; silebilirsiniz.
+
+İlk kurulumdan sonra Claude, sunucunun SSH anahtarını depoya (`yayin/bilinen-sunucular`) ekler; böylece yayın
+iş akışı yalnızca bu sunucuya bağlanır. Ardından `SUNUCU_ROOT_SIFRE`'yi silin: kurulum root hesabıyla şifreli
+girişi zaten kapatır ve şifre bir daha gerekmez.
 
 ## 4. Claude'a yazılacaklar (gizli değildir)
 
 Bunlar sitede ve depoda görünebilir; `yayin/ayarlar.env` dosyasına işlenir:
 
-- Ana sunucunun (ve alınırsa yedek sunucusunun) **IP adresi**
-- Alan adı ve yönetici hesabı açılacak **e-posta adresi**
+- Sunucunun **IP adresi** (IPv4)
+- Sertifika bildirimleri için bir **e-posta adresi** (şirket e-postası olabilir)
 - Şirket bilgileri: ticaret unvanı, adres, MERSİS numarası, vergi dairesi ve numarası, telefon, e-posta,
   KVKK başvuruları için e-posta, KEP adresi
 
 ## 5. DNS kayıtları
 
-Alan adı panelinde (ör. Namecheap → Domain List → Manage → Advanced DNS):
+Alan adı panelinde (Namecheap → Domain List → Manage → Advanced DNS):
 
 | Tür | Ad (Host) | Değer |
 |---|---|---|
-| A | `@` | Ana sunucunun IP adresi |
-| A | `www` | Ana sunucunun IP adresi |
+| A | `@` | Sunucunun IP adresi |
+| A | `www` | Sunucunun IP adresi |
 
-**AAAA (IPv6) kaydı eklemeyin.** E-posta için sağlayıcının verdiği MX, SPF (TXT), DKIM (TXT) ve DMARC
-(TXT) kayıtları da buraya eklenir; değerleri Claude sağlayıcının belgelerine göre tek tek yazar.
+**AAAA (IPv6) kaydı eklemeyin.** E-posta kutusu için sağlayıcının verdiği MX ve SPF (TXT) kayıtları da
+buraya eklenir; değerleri Claude sağlayıcının belgelerine göre tek tek yazar.
 
 ## 6. Yayın
 
-IP adresleri ve gizli bilgiler girildiğinde yayın kendiliğinden başlar (GitHub → **Actions** → **Yayın**).
-İlk kurulum 10–20 dakika sürer. Site açılınca:
+IP adresi ve gizli bilgiler girildiğinde yayın kendiliğinden başlar (GitHub → **Actions** → **Yayın**).
+İlk kurulum 10–15 dakika sürer. Site açılınca yapmanız gereken başka bir şey yoktur: giriş yapılacak bir
+yönetim paneli yoktur.
 
-1. `https://olcekhane.com/sifremi-unuttum` adresine yönetici e-postanızı yazın; gelen bağlantıyla
-   şifrenizi belirleyin.
-2. Giriş yapın; iki aşamalı doğrulamayı telefonunuzdaki doğrulama uygulamasıyla (Google Authenticator,
-   Microsoft Authenticator, 2FAS) kurun ve verilen **kurtarma kodlarını** güvenli bir yere kaydedin.
-3. **Yönetim → Genel bakış** sayfasındaki hazırlık listesine bakın.
+Site ilk açıldığında arama motorlarına kapalıdır (`ALLOW_INDEXING=false`). Her şey hazır olduğunda (şirket
+bilgileri, KVKK adımları) bu ayar açılır ve site Google Search Console'a eklenir (sahiplik doğrulaması için
+DNS'e bir TXT kaydı girilir).
 
 ## 7. Sonrası
 
 - **Güncellemeler:** GitHub'a gönderilen her değişiklik testlerden geçince kendiliğinden yayına alınır.
-  Güncellemeden önce veritabanının yedeği alınır.
 - **Güvenlik güncellemeleri:** sistem paketleri her gün, Docker görüntüleri her pazartesi kendiliğinden
-  güncellenir.
-- **Sunucu yeniden başlarsa:** şifreli disk kapalı kalır ve site açılmaz. **Bakım** iş akışı üç saatte
-  bir siteyi denetler ve diski kendiliğinden açar. Beklemek istemezseniz: GitHub → **Actions** →
-  **Yayın** → **Run workflow** → `diski-ac` → **Run workflow**.
+  güncellenir. Güncelleme yeniden başlatma gerektirirse sunucu gece 04:30'da kendiliğinden yeniden başlar;
+  site birkaç dakika içinde kendiliğinden açılır.
+- **İzleme:** **Bakım** iş akışı üç saatte bir siteyi denetler; site yanıt vermiyorsa uygulamayı yeniden
+  başlatır. Elle yeniden başlatmak için: GitHub → **Actions** → **Yayın** → **Run workflow** → `baslat`.
 - **Uyarılar:** bir iş akışı başarısız olursa GitHub size e-posta gönderir.
-- **Yedekler:** her gece alınır, 14 gün saklanır; yedek sunucusu kurulduysa şifreli kopyaları her sabah
-  oraya çekilir.
+- **E-postalar:** size gelen e-postaları, yazışma bittikten sonra en geç 1 yıl içinde silin (aydınlatma
+  metni bu süreyi söyler).

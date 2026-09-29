@@ -1,5 +1,5 @@
-# Denetim: her gönderimde tür denetimi, biçim denetimi, birim ve veritabanı testleri, üretim derlemesi ve
-# Docker görüntüsünün derlenip çalıştırılması.
+# Denetim: her gönderimde tür denetimi, biçim denetimi, birim testleri, üretim derlemesi ve Docker
+# görüntüsünün derlenip sunucudaki gibi (salt okunur dosya sistemiyle) çalıştırılması.
 name: Denetim
 
 on:
@@ -22,18 +22,7 @@ jobs:
   kod:
     name: Kod denetimi ve testler
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    services:
-      postgres:
-        image: postgres:18
-        env:
-          POSTGRES_DB: olcekhane_test
-          POSTGRES_USER: olcekhane
-          POSTGRES_PASSWORD: olcekhane
-        ports: ['127.0.0.1:5432:5432']
-        options: >-
-          --health-cmd "pg_isready -U olcekhane -d olcekhane_test"
-          --health-interval 5s --health-timeout 5s --health-retries 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -48,18 +37,8 @@ jobs:
         run: npm run lint
       - name: Birim testleri
         run: npm test
-      - name: Veritabanı testleri
-        env:
-          DATABASE_URL: postgres://olcekhane:olcekhane@127.0.0.1:5432/olcekhane_test
-          APP_URL: http://localhost:3000
-          SESSION_COOKIE_SECURE: 'false'
-        run: |
-          APP_SECRET=$(openssl rand -hex 32); echo "::add-mask::$APP_SECRET"; export APP_SECRET
-          node scripts/migrate.mjs
-          npx tsx --conditions=react-server scripts/seed.ts
-          npm run test:db
       - name: Üretim derlemesi (ortam değişkeni olmadan)
-        run: env -i PATH="$PATH" HOME="$HOME" NEXT_TELEMETRY_DISABLED=1 sh -c 'npm run build && npm run build:scripts'
+        run: env -i PATH="$PATH" HOME="$HOME" NEXT_TELEMETRY_DISABLED=1 sh -c 'npm run build'
 
   goruntu:
     name: Docker görüntüsü
@@ -76,44 +55,39 @@ jobs:
           tags: olcekhane-app:denetim
           cache-from: type=gha,scope=olcekhane-app
           cache-to: type=gha,mode=max,scope=olcekhane-app
-      - name: Görüntüyü çalıştır (veritabanı geçişi, sağlık denetimi, ana sayfa)
+      - name: Görüntüyü çalıştır (salt okunur; sayfalar, rapor, PDF, çerez ve günlük denetimi)
         run: |
           set -eu
-          SIFRE=$(openssl rand -hex 16); SIR=$(openssl rand -hex 32)
-          echo "::add-mask::$SIFRE"; echo "::add-mask::$SIR"
-          docker network create deneme
-          docker run -d --name db --network deneme -e POSTGRES_DB=olcekhane -e POSTGRES_USER=olcekhane \
-            -e POSTGRES_PASSWORD="$SIFRE" postgres:18 -c log_error_verbosity=terse
-          for _ in $(seq 1 60); do docker exec db pg_isready -h 127.0.0.1 -U olcekhane -d olcekhane >/dev/null 2>&1 && break; sleep 1; done
-          docker run -d --name app --network deneme -p 127.0.0.1:3000:3000 \
-            -e DATABASE_URL="postgres://olcekhane:$SIFRE@db:5432/olcekhane" -e APP_SECRET="$SIR" \
-            -e APP_URL=http://localhost:3000 -e SESSION_COOKIE_SECURE=false -e ALLOW_INDEXING=false \
-            -e SCHEDULED_JOBS=false -e TZ=Europe/Istanbul olcekhane-app:denetim
+          # Sunucudaki ayarlarla (docker-compose.yml): salt okunur dosya sistemi, bellekte geçici klasörler.
+          docker run -d --name app -p 127.0.0.1:3000:3000 --read-only \
+            --tmpfs /tmp:size=64m --tmpfs /app/.next/cache:size=64m,uid=1001,gid=1001 --ulimit core=0 \
+            -e APP_URL=http://localhost:3000 -e ALLOW_INDEXING=false -e TZ=Europe/Istanbul olcekhane-app:denetim
           ok=0
-          for _ in $(seq 1 90); do
+          for _ in $(seq 1 60); do
             if curl -fsS -m 3 http://127.0.0.1:3000/api/saglik >/dev/null 2>&1; then ok=1; break; fi
             sleep 2
           done
-          [ "$ok" = 1 ] || { echo "::error title=Uygulama açılmadı::Sağlık denetimi 180 saniyede yanıt vermedi"; exit 1; }
+          [ "$ok" = 1 ] || { echo "::error title=Uygulama açılmadı::Sağlık denetimi 120 saniyede yanıt vermedi"; exit 1; }
           curl -fsS http://127.0.0.1:3000/api/saglik; echo
-          for yol in / /testler /testler/oz-saygi /hizli-test/oz-saygi '/hizli-test/oz-saygi?sinif=7' /veliler-icin /okullar-icin \
-            /hakkimizda /yasal/aydinlatma-metni /giris /kayit /robots.txt /sitemap.xml; do
-            kod=$(curl -s -o /dev/null -w '%{http_code}' -m 20 "http://127.0.0.1:3000$yol")
+          C=(curl -s -m 20 -A 'denetim-ajan' -H 'X-Forwarded-For: 203.0.113.77')
+          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz '/testler/oz-saygi/coz?sinif=7' /veliler-icin /bilimsel-yaklasim \
+            /rehber /hakkimizda /iletisim /yasal/aydinlatma-metni /yasal/kullanim-kosullari /yasal/cerez-politikasi /robots.txt /sitemap.xml; do
+            kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000$yol")
             echo "$yol -> $kod"
             [ "$kod" = 200 ] || { echo "::error title=Sayfa açılmadı::$yol $kod döndü"; exit 1; }
           done
-          # Hesaplar varsayılan olarak kapalı (hızlı test modu): kayıt sayfası kapalı olduğunu söyler, yalnızca
-          # hesap bölümünde kullanılan açık rıza metni yayında değildir.
-          curl -fsS -m 20 http://127.0.0.1:3000/kayit | grep -q 'Hesap açma şu an kapalı' ||
-            { echo "::error title=Hesaplar kapalı değil::/kayit kapalı sayfasını göstermedi"; exit 1; }
-          kod=$(curl -s -o /dev/null -w '%{http_code}' -m 20 http://127.0.0.1:3000/yasal/acik-riza-olcme)
-          [ "$kod" = 404 ] || { echo "::error title=Hesap metni yayında::/yasal/acik-riza-olcme $kod döndü (404 bekleniyordu)"; exit 1; }
-          # Hızlı test: saklamadan puanlama ve PDF (öz-saygı ölçeği, 7. sınıf, örnek cevaplar).
+          # Kaldırılan bölümler (hesap, giriş, okul, yönetim, iletişim formu) yoktur.
+          for yol in /giris /kayit /panel /okul /okullar-icin /yonetim /hesap /hizli-test/oz-saygi /yasal/acik-riza-olcme; do
+            kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000$yol")
+            echo "$yol -> $kod"
+            [ "$kod" = 404 ] || { echo "::error title=Kaldırılan sayfa açık::$yol $kod döndü (404 bekleniyordu)"; exit 1; }
+          done
+          # Rapor: saklamadan puanlama ve PDF (öz-saygı ölçeği, 7. sınıf, örnek cevaplar).
           GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 7, "data": {"engine": "likert", "answers": {f"R{i}": {"value": i % 4, "rtMs": 2500} for i in range(1, 11)}}}))')
-          curl -fsS -m 30 -H 'content-type: application/json' -d "$GOVDE" http://127.0.0.1:3000/api/hizli-test/oz-saygi \
-            | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["student"]["items"] and r["parent"]["items"], r; print("hızlı test raporu:", r["student"]["chartTitle"])'
+          "${C[@]}" -f -D /tmp/rapor.baslik -H 'content-type: application/json' -d "$GOVDE" http://127.0.0.1:3000/api/rapor/oz-saygi \
+            | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["student"]["items"] and r["parent"]["items"], r; print("rapor:", r["student"]["chartTitle"])'
           PDF_GOVDE=$(printf '%s' "$GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["audience"]="parent"; print(json.dumps(b))')
-          curl -fsS -m 60 -H 'content-type: application/json' -d "$PDF_GOVDE" -o /tmp/rapor.pdf http://127.0.0.1:3000/api/hizli-test/oz-saygi/pdf
+          "${C[@]}" -f -m 60 -H 'content-type: application/json' -d "$PDF_GOVDE" -o /tmp/rapor.pdf http://127.0.0.1:3000/api/rapor/oz-saygi/pdf
           head -c 5 /tmp/rapor.pdf | grep -q '%PDF-' || { echo "::error title=PDF üretilemedi::Yanıt bir PDF değil"; exit 1; }
           echo "PDF: $(wc -c < /tmp/rapor.pdf) bayt"
           # PDF'teki metin okunabilir olmalı: Türkçe harfler, saklamama notu ve sayfa numarası (alt bilgi).
@@ -122,16 +96,27 @@ jobs:
           for ifade in 'Öz-saygı Ölçeği' 'hiçbir' 'Sayfa 1 / ' 'Veli raporu'; do
             grep -q "$ifade" /tmp/rapor.txt || { echo "::error title=PDF metni eksik::'$ifade' bulunamadı"; cat /tmp/rapor.txt; exit 1; }
           done
-          docker run --rm --network deneme -e DATABASE_URL="postgres://olcekhane:$SIFRE@db:5432/olcekhane" \
-            -e ADMIN_EMAIL=deneme@ornek.test -e ADMIN_PASSWORD="$(openssl rand -hex 12)" \
-            olcekhane-app:denetim node dist/create-admin.mjs
+          # Çerez yoktur: sayfalar ve rapor ucu Set-Cookie göndermez.
+          for yol in / '/testler/oz-saygi/coz?sinif=7' /yasal/aydinlatma-metni; do
+            if "${C[@]}" -D - -o /dev/null "http://127.0.0.1:3000$yol" | grep -qi '^set-cookie:'; then echo "::error title=Çerez::$yol çerez gönderdi"; exit 1; fi
+          done
+          if grep -qi '^set-cookie:' /tmp/rapor.baslik; then echo "::error title=Çerez::Rapor ucu çerez gönderdi"; exit 1; fi
+          # Hiçbir şey saklanmaz: dosya sistemi salt okunur (her yazma reddedilir); yazılabilen tek yerler olan
+          # bellekteki geçici klasörlerde de dosya oluşmadı; günlükte istek bilgisi yok.
+          test "$(docker inspect -f '{{.HostConfig.ReadonlyRootfs}}' app)" = true
+          if docker exec app sh -c 'touch /app/deneme' 2>/dev/null; then echo "::error title=Diske yazıldı::Kapsayıcının dosya sistemine yazılabildi"; exit 1; fi
+          dosyalar=$(docker exec app find /tmp /app/.next/cache -type f)
+          [ -z "$dosyalar" ] || { echo "::error title=Geçici dosya::$dosyalar"; exit 1; }
+          docker logs app > /tmp/app.log 2>&1
+          for iz in 203.0.113.77 denetim-ajan sinif=7 rtMs '"R1"'; do
+            if grep -q -- "$iz" /tmp/app.log; then echo "::error title=Günlükte istek bilgisi::'$iz' günlükte geçiyor"; cat /tmp/app.log; exit 1; fi
+          done
+          echo "Günlük ($(wc -l < /tmp/app.log) satır):"; cat /tmp/app.log
       - name: Hata ayrıntıları
         if: failure()
         run: |
           # Kayıtların son satırları uyarı olarak da yazılır: çalışma kayıtlarına erişilemediğinde de okunabilsinler.
-          for c in app db; do
-            docker logs "$c" > "/tmp/$c.log" 2>&1 || continue
-            echo "===== $c ====="; tail -n 80 "/tmp/$c.log"
-            msg=$(tail -n 40 "/tmp/$c.log" | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}')
-            echo "::error title=$c kaydı (son 40 satır)::$msg"
-          done
+          docker logs app > /tmp/app.log 2>&1 || exit 0
+          echo "===== app ====="; tail -n 80 /tmp/app.log
+          msg=$(tail -n 40 /tmp/app.log | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}')
+          echo "::error title=app kaydı (son 40 satır)::$msg"
