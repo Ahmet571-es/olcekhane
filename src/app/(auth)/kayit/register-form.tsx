@@ -5,11 +5,12 @@ import { useActionState } from 'react';
 import { Field, FormMessage, SubmitButton, describedBy } from '@/components/ui/form';
 import { registerAction, type FormState } from '../actions';
 
-export function RegisterForm() {
+export function RegisterForm({ next = '' }: { next?: string }) {
   const [state, action] = useActionState<FormState, FormData>(registerAction, {});
   const e = state.errors ?? {};
   return (
     <form action={action} className="flex flex-col gap-5" noValidate>
+      {next && <input type="hidden" name="sonra" value={next} />}
       <FormMessage ok={state.ok} message={state.message} />
       <Field id="fullName" label="Adınız soyadınız" error={e.fullName}>
         <input
@@ -67,7 +68,7 @@ export function RegisterForm() {
       </div>
       <SubmitButton pendingText="Hesap açılıyor…">Hesabımı aç</SubmitButton>
       <p className="text-[0.95rem]">
-        Zaten hesabınız var mı? <Link href="/giris">Giriş yapın</Link>
+        Zaten hesabınız var mı? <Link href={next ? `/giris?sonra=${encodeURIComponent(next)}` : '/giris'}>Giriş yapın</Link>
       </p>
     </form>
   );

@@ -12,6 +12,7 @@ const MESSAGES: Record<string, { ok: boolean; text: string }> = {
   'dogrulama=gecersiz': { ok: false, text: 'Doğrulama bağlantısının süresi dolmuş ya da daha önce kullanılmış. Aşağıdan yeni bir bağlantı isteyebilirsiniz.' },
   'sifre=yenilendi': { ok: true, text: 'Şifreniz yenilendi.' },
   'silindi=1': { ok: true, text: 'Profil silindi. Profile ait veriler en geç 30 gün içinde kalıcı olarak silinecek.' },
+  'kaldirildi=1': { ok: true, text: 'Öğrenci veli panelinizden kaldırıldı. Okuldaki kaydı değişmedi.' },
 };
 
 export default async function PanelHome(props: PageProps<'/panel'>) {
@@ -65,6 +66,7 @@ export default async function PanelHome(props: PageProps<'/panel'>) {
                   </p>
                   <p className="t-meta">
                     {GRADE_LABELS[c.grade]}
+                    {c.orgName && ` · ${c.orgName}`}
                     {c.completed > 0
                       ? ` · ${c.completed} test tamamlandı, son test ${dateFmt.format(new Date(c.lastCompletedAt!))}`
                       : ' · Henüz test çözülmedi'}

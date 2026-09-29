@@ -6,6 +6,7 @@ import { ReportView } from '@/components/report/report-view';
 import { generateReports, getAttempt, getReport } from '@/lib/assessment/service';
 import { audit } from '@/lib/audit';
 import { requireUser, studentAccess } from '@/lib/auth/dal';
+import { hasActiveConsent } from '@/lib/consent';
 
 export const metadata: Metadata = { title: 'Rapor', robots: { index: false, follow: false } };
 
@@ -17,8 +18,13 @@ export default async function ReportPage(props: PageProps<'/panel/rapor/[attempt
   const attempt = await getAttempt(attemptId);
   if (!attempt || attempt.status !== 'completed') notFound();
   const access = await studentAccess(attempt.studentId);
-  if (!access.allowed || access.via === 'self') notFound();
+  // Veli paneli yalnızca velinin (ve denetim için platform yöneticisinin) raporudur; rehber öğretmen
+  // raporları okul panelinden, rıza denetimiyle açar.
+  if (!access.allowed || (access.via !== 'guardian' && access.via !== 'admin')) notFound();
 
+  const consent = await hasActiveConsent(attempt.studentId, 'consent_assessment');
+  // Rıza geri alınmış verileri yalnızca veli (kendi erişim hakkı için) silinene kadar görebilir.
+  if (!consent && access.via !== 'guardian') notFound();
   const audience = q.gorunum === 'ogrenci' ? 'student' : 'parent';
   let report = await getReport(attemptId, audience);
   if (!report) {
@@ -62,6 +68,12 @@ export default async function ReportPage(props: PageProps<'/panel/rapor/[attempt
           <PrintButton />
         </div>
       </div>
+      {!consent && (
+        <p className="notice notice-warn print:hidden">
+          Bu öğrenci için geçerli bir açık rıza yok. Rıza geri alındıysa bu sonuçlar en geç 30 gün içinde kalıcı olarak silinir; bu sürede okul
+          sonuçları göremez.
+        </p>
+      )}
       {audience === 'student' && (
         <p className="notice notice-info print:hidden">
           Bu, {access.student.firstName} için yazılmış sürüm. Raporu birlikte okumanızı öneririz; çocuğunuzun yorumlarını dinlemek sonucu anlamanın en iyi yoludur.

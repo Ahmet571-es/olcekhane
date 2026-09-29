@@ -3,7 +3,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { db } from '@/db';
-import { guardianships, memberships, students } from '@/db/schema';
+import { guardianships, memberships, organizations, students } from '@/db/schema';
+import { isUuid } from '@/lib/uuid';
 import { getSession, type SessionStudent, type SessionUser } from './session';
 
 /** Oturum açmış yetişkin kullanıcıyı döndürür; yoksa giriş sayfasına yönlendirir. */
@@ -22,6 +23,13 @@ export async function requireAdmin(): Promise<SessionUser> {
 export async function optionalUser(): Promise<SessionUser | null> {
   const s = await getSession();
   return s?.kind === 'user' ? s.user : null;
+}
+
+/** Öğrenci oturumu (okul koduyla giriş); yoksa öğrenci girişine yönlendirir. */
+export async function requireStudent(next?: string): Promise<SessionStudent> {
+  const s = await getSession();
+  if (s?.kind === 'student') return s.student;
+  redirect(`/ogrenci-girisi${next ? `?sonra=${encodeURIComponent(next)}` : ''}`);
 }
 
 export async function optionalStudent(): Promise<SessionStudent | null> {
@@ -47,7 +55,7 @@ export type StudentAccess =
  */
 export const studentAccess = cache(async (studentId: string): Promise<StudentAccess> => {
   const s = await getSession();
-  if (!s) return { allowed: false };
+  if (!s || !isUuid(studentId)) return { allowed: false };
   const [student] = await db
     .select({
       id: students.id,
@@ -74,11 +82,19 @@ export const studentAccess = cache(async (studentId: string): Promise<StudentAcc
   if (g) return { allowed: true, via: 'guardian', student };
 
   if (student.orgId) {
+    // Rehber öğretmen erişimi, okul etkin olduğu sürece geçerlidir.
     const [m] = await db
       .select({ id: memberships.id })
       .from(memberships)
+      .innerJoin(organizations, eq(organizations.id, memberships.orgId))
       .where(
-        and(eq(memberships.userId, user.id), eq(memberships.orgId, student.orgId), eq(memberships.role, 'counselor')),
+        and(
+          eq(memberships.userId, user.id),
+          eq(memberships.orgId, student.orgId),
+          eq(memberships.role, 'counselor'),
+          eq(organizations.isActive, true),
+          isNull(organizations.deletedAt),
+        ),
       )
       .limit(1);
     if (m) return { allowed: true, via: 'counselor', student };

@@ -1,6 +1,6 @@
 import 'server-only';
 import { and, desc, eq, gt, gte, isNull, lte, or, sql } from 'drizzle-orm';
-import { db } from '@/db';
+import { db, type Tx } from '@/db';
 import {
   attempts,
   entitlements,
@@ -16,7 +16,7 @@ import {
   taskTrials,
 } from '@/db/schema';
 import { getInstrumentDef } from '@/content/instruments';
-import { hasActiveConsent } from '@/lib/consent';
+import { hasActiveConsent, lockStudentConsent } from '@/lib/consent';
 import type { InstrumentDef, LikertInstrument, ReadingInstrument, TaskInstrument } from '@/lib/instruments/types';
 import { buildReport, type Audience, type ReportContent, type StoredScore } from '@/lib/reports/build';
 import { likertQuality, scoreLikert, type LikertAnswer, type NormStat } from '@/lib/scoring/likert';
@@ -49,6 +49,55 @@ export class AssessmentError extends Error {
   ) {
     super(message);
   }
+}
+
+/** Aynı uygulama için ikinci bir bitirme isteği geldiğinde (çift tıklama) işlemi sessizce bırakmak için. */
+class AlreadyFinished extends Error {}
+
+
+/**
+ * Uygulamayı yalnızca hâlâ sürüyorsa "tamamlandı" yapar. Puanlar hesaplanırken velinin rızası geri
+ * alındıysa (uygulama geçersiz sayıldıysa) işlem bütünüyle geri alınır ve puan kaydedilmez.
+ */
+async function finishAttempt(tx: Tx, attemptId: string, set: Omit<Partial<typeof attempts.$inferInsert>, 'status'>): Promise<void> {
+  const done = await tx
+    .update(attempts)
+    .set({ ...set, status: 'completed' })
+    .where(and(eq(attempts.id, attemptId), eq(attempts.status, 'in_progress')))
+    .returning({ id: attempts.id });
+  if (done.length > 0) return;
+  const [current] = await tx.select({ status: attempts.status }).from(attempts).where(eq(attempts.id, attemptId));
+  if (current?.status === 'completed') throw new AlreadyFinished();
+  throw new AssessmentError('not_in_progress', 'Bu uygulama kapatılmış.');
+}
+
+/**
+ * Bitirme işlemini öğrencinin rıza kilidiyle tek bir veritabanı işleminde yapar ve raporları üretir.
+ * Rıza bu arada geri alındıysa uygulama geçersiz sayılır ve puan kaydedilmez.
+ */
+async function runFinish(attempt: { id: string; studentId: string }, work: (tx: Tx) => Promise<void>): Promise<void> {
+  let outcome: 'done' | 'no_consent';
+  try {
+    outcome = await db.transaction(async (tx) => {
+      await lockStudentConsent(tx, attempt.studentId);
+      if (!(await hasActiveConsent(attempt.studentId, 'consent_assessment', tx))) {
+        await tx
+          .update(attempts)
+          .set({ status: 'invalidated' })
+          .where(and(eq(attempts.id, attempt.id), eq(attempts.status, 'in_progress')));
+        return 'no_consent' as const;
+      }
+      await work(tx);
+      return 'done' as const;
+    });
+  } catch (err) {
+    if (err instanceof AlreadyFinished) return;
+    throw err;
+  }
+  if (outcome === 'no_consent') {
+    throw new AssessmentError('no_consent', 'Velinin açık rızası geri alındığı için bu uygulama tamamlanamadı.');
+  }
+  await generateReports(attempt.id);
 }
 
 export async function currentVersion(slug: string) {
@@ -96,55 +145,67 @@ export async function startOrResumeAttempt(input: {
   const cv = await currentVersion(input.slug);
   if (!cv) throw new AssessmentError('not_found', 'Test sürümü bulunamadı.');
 
-  const [open] = await db
-    .select({ id: attempts.id })
-    .from(attempts)
-    .where(
-      and(
-        eq(attempts.studentId, input.studentId),
-        eq(attempts.versionId, cv.versionId),
-        eq(attempts.status, 'in_progress'),
-      ),
-    )
-    .orderBy(desc(attempts.startedAt))
-    .limit(1);
-  if (open) return open.id;
-
-  if (!def.isFree) {
-    const now = new Date();
-    const [ent] = await db
-      .select({ id: entitlements.id })
-      .from(entitlements)
+  // Rıza denetimi ve uygulamanın oluşturulması öğrencinin rıza kilidiyle tek işlemde yapılır: aynı anda
+  // rıza geri alınırsa yeni uygulama ya geri almadan önce oluşur (ve geri almayla geçersiz sayılır) ya
+  // da hiç oluşmaz.
+  return db.transaction(async (tx) => {
+    await lockStudentConsent(tx, input.studentId);
+    if (!(await hasActiveConsent(input.studentId, 'consent_assessment', tx))) {
+      throw new AssessmentError('no_consent', 'Test çözülebilmesi için velinin açık rızası gerekiyor.');
+    }
+    const [open] = await tx
+      .select({ id: attempts.id })
+      .from(attempts)
       .where(
         and(
-          eq(entitlements.studentId, input.studentId),
-          eq(entitlements.instrumentId, cv.instrumentId),
-          gt(entitlements.remainingUses, 0),
-          or(isNull(entitlements.expiresAt), gt(entitlements.expiresAt, now)),
+          eq(attempts.studentId, input.studentId),
+          eq(attempts.versionId, cv.versionId),
+          eq(attempts.status, 'in_progress'),
         ),
       )
+      .orderBy(desc(attempts.startedAt))
       .limit(1);
-    if (!ent) throw new AssessmentError('no_entitlement', 'Bu test için kullanım hakkı bulunmuyor.');
-    await db
-      .update(entitlements)
-      .set({ remainingUses: sql`${entitlements.remainingUses} - 1` })
-      .where(eq(entitlements.id, ent.id));
-  }
+    if (open) return open.id;
 
-  const research = await hasActiveConsent(input.studentId, 'consent_research');
-  const [created] = await db
-    .insert(attempts)
-    .values({
-      studentId: input.studentId,
-      versionId: cv.versionId,
-      assignmentId: input.assignmentId ?? null,
-      startedByUserId: input.startedByUserId,
-      mode: def.status === 'pilot' ? 'pilot' : 'standard',
-      gradeAtAttempt: input.grade,
-      researchConsent: research,
-    })
-    .returning({ id: attempts.id });
-  return created.id;
+    if (!def.isFree) {
+      const now = new Date();
+      const [ent] = await tx
+        .select({ id: entitlements.id })
+        .from(entitlements)
+        .where(
+          and(
+            eq(entitlements.studentId, input.studentId),
+            eq(entitlements.instrumentId, cv.instrumentId),
+            gt(entitlements.remainingUses, 0),
+            or(isNull(entitlements.expiresAt), gt(entitlements.expiresAt, now)),
+          ),
+        )
+        .limit(1);
+      if (!ent) throw new AssessmentError('no_entitlement', 'Bu test için kullanım hakkı bulunmuyor.');
+      // Hak eksiye düşmesin: yalnızca hâlâ hak varsa azaltılır.
+      const used = await tx
+        .update(entitlements)
+        .set({ remainingUses: sql`${entitlements.remainingUses} - 1` })
+        .where(and(eq(entitlements.id, ent.id), gt(entitlements.remainingUses, 0)))
+        .returning({ id: entitlements.id });
+      if (used.length === 0) throw new AssessmentError('no_entitlement', 'Bu test için kullanım hakkı bulunmuyor.');
+    }
+
+    const research = await hasActiveConsent(input.studentId, 'consent_research', tx);
+    const [created] = await tx
+      .insert(attempts)
+      .values({
+        studentId: input.studentId,
+        versionId: cv.versionId,
+        assignmentId: input.assignmentId ?? null,
+        startedByUserId: input.startedByUserId,
+        mode: def.status === 'pilot' ? 'pilot' : 'standard',
+        gradeAtAttempt: input.grade,
+        researchConsent: research,
+      })
+      .returning({ id: attempts.id });
+    return created.id;
+  });
 }
 
 export async function getAttempt(attemptId: string) {
@@ -240,7 +301,7 @@ export async function completeLikertAttempt(attemptId: string): Promise<void> {
   const quality = likertQuality(likert, answers);
   const now = new Date();
 
-  await db.transaction(async (tx) => {
+  await runFinish(attempt, async (tx) => {
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));
     await tx.insert(scores).values(
       scaleScores.map((s) => ({
@@ -259,22 +320,17 @@ export async function completeLikertAttempt(attemptId: string): Promise<void> {
         ciHigh: s.ciHigh ?? null,
       })),
     );
-    await tx
-      .update(attempts)
-      .set({
-        status: 'completed',
-        completedAt: now,
-        durationMs: now.getTime() - attempt.startedAt.getTime(),
-        qualityFlags: {
-          tooFast: quality.tooFast,
-          straightLining: quality.straightLining,
-          incomplete: quality.incomplete,
-          notes: quality.notes,
-        },
-      })
-      .where(eq(attempts.id, attemptId));
+    await finishAttempt(tx, attemptId, {
+      completedAt: now,
+      durationMs: now.getTime() - attempt.startedAt.getTime(),
+      qualityFlags: {
+        tooFast: quality.tooFast,
+        straightLining: quality.straightLining,
+        incomplete: quality.incomplete,
+        notes: quality.notes,
+      },
+    });
   });
-  await generateReports(attemptId);
 }
 
 export async function completeReadingAttempt(
@@ -302,7 +358,7 @@ export async function completeReadingAttempt(
   const itemIdByKey = new Map(itemRows.map((i) => [i.key, i.id]));
   const now = new Date();
 
-  await db.transaction(async (tx) => {
+  await runFinish(attempt, async (tx) => {
     for (const q of passage.questions) {
       const key = `${passage.key}.${q.key}`;
       const itemId = itemIdByKey.get(key);
@@ -347,17 +403,12 @@ export async function completeReadingAttempt(
         extra: { wpm: result.wpm, effectiveWpm: result.effectiveWpm, wordCount: result.wordCount },
       },
     ]);
-    await tx
-      .update(attempts)
-      .set({
-        status: 'completed',
-        completedAt: now,
-        durationMs: now.getTime() - attempt.startedAt.getTime(),
-        qualityFlags: { tooFast: result.flags.tooFast, notes: result.flags.notes },
-      })
-      .where(eq(attempts.id, attemptId));
+    await finishAttempt(tx, attemptId, {
+      completedAt: now,
+      durationMs: now.getTime() - attempt.startedAt.getTime(),
+      qualityFlags: { tooFast: result.flags.tooFast, notes: result.flags.notes },
+    });
   });
-  await generateReports(attemptId);
 }
 
 /* ---------- Bilişsel görevler ---------- */
@@ -521,20 +572,15 @@ export async function completeTaskAttempt(attemptId: string): Promise<void> {
 
   const notes = taskQualityNotes({ flanker: flankerRes, symbol: symbolRes });
   const now = new Date();
-  await db.transaction(async (tx) => {
+  await runFinish(attempt, async (tx) => {
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));
     await tx.insert(scores).values(scoreRows);
-    await tx
-      .update(attempts)
-      .set({
-        status: 'completed',
-        completedAt: now,
-        durationMs: now.getTime() - attempt.startedAt.getTime(),
-        qualityFlags: { notes },
-      })
-      .where(eq(attempts.id, attemptId));
+    await finishAttempt(tx, attemptId, {
+      completedAt: now,
+      durationMs: now.getTime() - attempt.startedAt.getTime(),
+      qualityFlags: { notes },
+    });
   });
-  await generateReports(attemptId);
 }
 
 /* ---------- Akademik tanı testleri ---------- */
@@ -604,7 +650,7 @@ export async function completeQuizAttempt(attemptId: string): Promise<void> {
 
   const result = scoreQuiz(form, answers);
   const now = new Date();
-  await db.transaction(async (tx) => {
+  await runFinish(attempt, async (tx) => {
     await tx.delete(scores).where(eq(scores.attemptId, attemptId));
     await tx.insert(scores).values([
       {
@@ -628,17 +674,12 @@ export async function completeQuizAttempt(attemptId: string): Promise<void> {
         extra: { wrong: d.wrong, dontKnow: d.dontKnow, formKey: form.key } as Record<string, unknown>,
       })),
     ]);
-    await tx
-      .update(attempts)
-      .set({
-        status: 'completed',
-        completedAt: now,
-        durationMs: now.getTime() - attempt.startedAt.getTime(),
-        qualityFlags: { tooFast: result.flags.tooFast, notes: result.flags.notes },
-      })
-      .where(eq(attempts.id, attemptId));
+    await finishAttempt(tx, attemptId, {
+      completedAt: now,
+      durationMs: now.getTime() - attempt.startedAt.getTime(),
+      qualityFlags: { tooFast: result.flags.tooFast, straightLining: result.flags.sameLetter, notes: result.flags.notes },
+    });
   });
-  await generateReports(attemptId);
 }
 
 /** Motor türüne göre uygulamayı tamamlar (ölçekler, akademik testler ve bilişsel görevler). */
@@ -682,6 +723,14 @@ export async function generateReports(attemptId: string, studentName?: string): 
     .limit(1);
   const name = studentName ?? st?.firstName ?? '';
   const hasNorms = stored.some((s) => s.normSetId);
+  const normSetId = stored.find((s) => s.normSetId)?.normSetId;
+  const [norm] = normSetId
+    ? await db
+        .select({ status: normSets.status, n: normSets.n, gradeMin: normSets.gradeMin, gradeMax: normSets.gradeMax, source: normSets.source })
+        .from(normSets)
+        .where(eq(normSets.id, normSetId))
+        .limit(1)
+    : [];
   for (const audience of ['student', 'parent'] as Audience[]) {
     const content = buildReport({
       def,
@@ -692,6 +741,7 @@ export async function generateReports(attemptId: string, studentName?: string): 
       completedAt: attempt.completedAt ?? new Date(),
       qualityNotes: attempt.qualityFlags?.notes ?? [],
       hasNorms,
+      norm: norm ?? null,
     });
     await db
       .insert(reports)

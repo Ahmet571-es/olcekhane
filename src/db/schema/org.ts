@@ -7,6 +7,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
@@ -61,6 +62,30 @@ export const memberships = pgTable(
     uniqueIndex('memberships_uq').on(t.orgId, t.userId, t.role),
     index('memberships_user_idx').on(t.userId),
   ],
+);
+
+/**
+ * Okul ekibine davet. Bağlantı e-postayla gönderilir; veritabanında belirtecin yalnızca özeti tutulur.
+ * Davet kabul edilince `memberships` kaydı oluşur.
+ */
+export const orgInvites = pgTable(
+  'org_invites',
+  {
+    id: id(),
+    orgId: uuid('org_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    role: membershipRole('role').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    invitedByUserId: uuid('invited_by_user_id').references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    acceptedByUserId: uuid('accepted_by_user_id').references(() => users.id, { onDelete: 'set null' }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('org_invites_token_uq').on(t.tokenHash), index('org_invites_org_idx').on(t.orgId)],
 );
 
 export const classes = pgTable(

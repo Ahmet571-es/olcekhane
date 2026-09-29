@@ -1,7 +1,7 @@
 import 'server-only';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { attempts, guardianships, instrumentVersions, instruments, students } from '@/db/schema';
+import { attempts, guardianships, instrumentVersions, instruments, organizations, students } from '@/db/schema';
 import { hasActiveConsent } from '@/lib/consent';
 
 export async function listChildren(userId: string) {
@@ -11,12 +11,14 @@ export async function listChildren(userId: string) {
       firstName: students.firstName,
       lastName: students.lastName,
       grade: students.grade,
+      orgName: organizations.name,
       createdAt: students.createdAt,
       completed: sql<number>`(select count(*)::int from ${attempts} a where a.student_id = ${students.id} and a.status = 'completed')`,
       lastCompletedAt: sql<Date | null>`(select max(a.completed_at) from ${attempts} a where a.student_id = ${students.id} and a.status = 'completed')`,
     })
     .from(guardianships)
     .innerJoin(students, eq(students.id, guardianships.studentId))
+    .leftJoin(organizations, eq(organizations.id, students.orgId))
     .where(and(eq(guardianships.userId, userId), isNull(students.deletedAt)))
     .orderBy(students.createdAt);
   return Promise.all(

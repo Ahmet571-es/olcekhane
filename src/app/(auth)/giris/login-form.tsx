@@ -40,7 +40,7 @@ export function LoginForm({ next }: { next: string }) {
       <SubmitButton pendingText="Giriş yapılıyor…">Giriş yap</SubmitButton>
       <div className="flex flex-wrap justify-between gap-3 text-[0.95rem]">
         <Link href="/sifremi-unuttum">Şifremi unuttum</Link>
-        <Link href="/kayit">Hesabınız yok mu? Ücretsiz kaydolun</Link>
+        <Link href={next ? `/kayit?sonra=${encodeURIComponent(next)}` : '/kayit'}>Hesabınız yok mu? Ücretsiz kaydolun</Link>
       </div>
       <p className="t-meta">Okulunuzun verdiği öğrenci koduyla giriş için <Link href="/ogrenci-girisi">öğrenci girişi</Link> sayfasını kullanın.</p>
     </form>

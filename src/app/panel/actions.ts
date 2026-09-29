@@ -5,11 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { db } from '@/db';
-import { attempts, guardianships, students } from '@/db/schema';
+import { guardianships, students } from '@/db/schema';
 import { AssessmentError, startOrResumeAttempt } from '@/lib/assessment/service';
 import { audit } from '@/lib/audit';
 import { requireUser, studentAccess } from '@/lib/auth/dal';
-import { hasActiveConsent, recordConsent, revokeConsent } from '@/lib/consent';
+import { hasActiveConsent, lockStudentConsent, recordConsent, revokeConsent } from '@/lib/consent';
 import { rateLimit } from '@/lib/rate-limit';
 
 export type ActionState = { ok?: boolean; message?: string; errors?: Record<string, string>; values?: Record<string, string> };
@@ -95,7 +95,9 @@ export async function startTestAction(formData: FormData): Promise<void> {
   const studentId = String(formData.get('studentId') ?? '');
   const slug = String(formData.get('slug') ?? '');
   const access = await studentAccess(studentId);
-  if (!access.allowed || (access.via !== 'guardian' && access.via !== 'counselor')) redirect('/panel');
+  if (!access.allowed || access.via !== 'guardian') redirect('/panel');
+  // Okulun eklediği öğrencinin testlerini okul atar; veli panelinden test başlatılmaz.
+  if (access.student.orgId) redirect(`/panel/cocuk/${studentId}?hata=okul`);
   if (!user.emailVerified) redirect(`/panel/cocuk/${studentId}?hata=dogrulama`);
   let attemptId: string;
   try {
@@ -120,21 +122,27 @@ export async function setConsentAction(formData: FormData): Promise<void> {
   if (kind !== 'consent_assessment' && kind !== 'consent_research') redirect('/panel');
   const access = await studentAccess(studentId);
   if (!access.allowed || access.via !== 'guardian') redirect('/panel');
-  if (grant) {
-    if (formData.get('confirm') !== 'on') redirect(`/panel/cocuk/${studentId}?hata=onay`);
-    if (!(await hasActiveConsent(studentId, kind))) {
-      await recordConsent({ kind: 'explicit_consent', docKind: kind, granted: true, studentId, actorUserId: user.id });
+  if (grant && formData.get('confirm') !== 'on') redirect(`/panel/cocuk/${studentId}?hata=onay`);
+  // Öğrencinin rıza kilidiyle: okul aynı anda bu hesabın bağını kaldırıyor ya da onayı geçersiz sayıyorsa
+  // bağ kilitten sonra yeniden denetlenir.
+  const ok = await db.transaction(async (tx) => {
+    await lockStudentConsent(tx, studentId);
+    const [link] = await tx
+      .select({ id: guardianships.id })
+      .from(guardianships)
+      .where(and(eq(guardianships.studentId, studentId), eq(guardianships.userId, user.id)))
+      .limit(1);
+    if (!link) return false;
+    const active = await hasActiveConsent(studentId, kind, tx);
+    if (grant && !active) {
+      await recordConsent({ kind: 'explicit_consent', docKind: kind, granted: true, studentId, actorUserId: user.id }, tx);
+    } else if (!grant && active) {
+      // Ölçme rızası geri alınınca çocuğun uygulamaları geçersiz sayılır ve silinir (revokeConsent).
+      await revokeConsent(studentId, kind, user.id, tx);
     }
-  } else {
-    await revokeConsent(studentId, kind, user.id);
-    if (kind === 'consent_assessment') {
-      // Rıza geri alınınca yarım kalan uygulamalar kapatılır; ölçme verileri silme sürecine alınır.
-      await db
-        .update(attempts)
-        .set({ status: 'abandoned' })
-        .where(and(eq(attempts.studentId, studentId), eq(attempts.status, 'in_progress')));
-    }
-  }
+    return true;
+  });
+  if (!ok) redirect('/panel');
   await audit({
     actorUserId: user.id,
     action: grant ? 'consent.grant' : 'consent.revoke',
@@ -162,6 +170,7 @@ export async function updateChildAction(_: ActionState, formData: FormData): Pro
   const studentId = String(formData.get('studentId') ?? '');
   const access = await studentAccess(studentId);
   if (!access.allowed || access.via !== 'guardian') return { message: 'Bu profili düzenleme yetkiniz yok.' };
+  if (access.student.orgId) return { message: 'Bu öğrencinin bilgilerini okul yönetir.' };
   const parsed = updateSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { message: 'Bilgileri kontrol edin.' };
   await db
@@ -182,6 +191,8 @@ export async function deleteChildAction(formData: FormData): Promise<void> {
   if (formData.get('confirm') !== 'SİL') redirect(`/panel/cocuk/${studentId}?hata=silme-onayi`);
   const access = await studentAccess(studentId);
   if (!access.allowed || access.via !== 'guardian') redirect('/panel');
+  // Okulun eklediği öğrenci veli tarafından silinmez; veli bağını kaldırabilir ya da rızasını geri alabilir.
+  if (access.student.orgId) redirect(`/panel/cocuk/${studentId}`);
   await db
     .update(students)
     .set({ deletedAt: new Date() })
@@ -189,4 +200,17 @@ export async function deleteChildAction(formData: FormData): Promise<void> {
   await revokeConsent(studentId, 'consent_assessment', user.id);
   await audit({ actorUserId: user.id, action: 'student.delete', entity: 'student', entityId: studentId });
   redirect('/panel?silindi=1');
+}
+
+/** Okulun eklediği öğrenciyi veli panelinden kaldırır (yalnızca veli bağı silinir). */
+export async function unlinkChildAction(formData: FormData): Promise<void> {
+  const user = await requireUser();
+  const studentId = String(formData.get('studentId') ?? '');
+  const access = await studentAccess(studentId);
+  if (!access.allowed || access.via !== 'guardian') redirect('/panel');
+  // Velinin kendi açtığı profil bağdan koparılmaz (sahipsiz kalır); o profil “Profili sil” ile silinir.
+  if (!access.student.orgId) redirect(`/panel/cocuk/${studentId}`);
+  await db.delete(guardianships).where(and(eq(guardianships.studentId, studentId), eq(guardianships.userId, user.id)));
+  await audit({ actorUserId: user.id, action: 'guardian.unlink', entity: 'student', entityId: studentId });
+  redirect('/panel?kaldirildi=1');
 }

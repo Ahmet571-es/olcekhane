@@ -15,7 +15,7 @@ import {
 import { createdAt, id } from './_common';
 import { users } from './auth';
 import { instruments, instrumentVersions, items, normSets } from './instruments';
-import { organizations } from './org';
+import { classes, organizations } from './org';
 import { students } from './students';
 
 export const assignmentStatus = pgEnum('assignment_status', ['assigned', 'started', 'completed', 'cancelled']);
@@ -38,6 +38,28 @@ export const assignments = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('assignments_student_idx').on(t.studentId)],
+);
+
+/**
+ * Okulda bir sınıfa atanan test. Sınıftaki bütün öğrenciler (sonradan eklenenler de) için geçerlidir;
+ * tamamlanma, atamadan sonra tamamlanan uygulamalardan hesaplanır.
+ */
+export const classAssignments = pgTable(
+  'class_assignments',
+  {
+    id: id(),
+    classId: uuid('class_id')
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    instrumentId: uuid('instrument_id')
+      .notNull()
+      .references(() => instruments.id, { onDelete: 'cascade' }),
+    assignedByUserId: uuid('assigned_by_user_id').references(() => users.id, { onDelete: 'set null' }),
+    dueAt: timestamp('due_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('class_assignments_class_idx').on(t.classId)],
 );
 
 export const attemptStatus = pgEnum('attempt_status', ['in_progress', 'completed', 'abandoned', 'invalidated']);
@@ -162,4 +184,29 @@ export const reports = pgTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('reports_uq').on(t.attemptId, t.audience)],
+);
+
+/**
+ * Öğretmenlere gösterilen grup raporunun yayımlanmış hâli. Rapor her yeni sonuçla yeniden
+ * hesaplanırsa, önceki ve sonraki rapor karşılaştırılarak tek bir öğrencinin sonucu bulunabilir
+ * (fark alma). Bu yüzden öğretmen görünümü, yeni sonuçlar en az birkaç öğrencilik gruplar hâlinde
+ * eklendiğinde güncellenen bu kayıtlardan okunur.
+ */
+export const groupReportSnapshots = pgTable(
+  'group_report_snapshots',
+  {
+    id: id(),
+    classId: uuid('class_id')
+      .notNull()
+      .references(() => classes.id, { onDelete: 'cascade' }),
+    instrumentId: uuid('instrument_id')
+      .notNull()
+      .references(() => instruments.id, { onDelete: 'cascade' }),
+    /** Rapora giren uygulamalar (sıralı). Fark hesabı için tutulur. */
+    attemptIds: jsonb('attempt_ids').$type<string[]>().notNull(),
+    n: integer('n').notNull(),
+    report: jsonb('report').$type<Record<string, unknown>>().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('group_report_snapshots_idx').on(t.classId, t.instrumentId, t.createdAt)],
 );

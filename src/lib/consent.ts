@@ -1,14 +1,14 @@
 import 'server-only';
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
-import { db } from '@/db';
-import { consentRecords, legalDocuments } from '@/db/schema';
+import { and, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
+import { db, type Exec, type Tx } from '@/db';
+import { attempts, consentRecords, legalDocuments } from '@/db/schema';
 import { clientIp, userAgent } from '@/lib/request';
 
 export type DocKind = (typeof legalDocuments.$inferSelect)['kind'];
 
 /** Bir hukuki metnin yürürlükteki (en yüksek sürümlü, etkin) kaydı. */
-export async function currentDocument(kind: DocKind) {
-  const [doc] = await db
+export async function currentDocument(kind: DocKind, exec: Exec = db) {
+  const [doc] = await exec
     .select()
     .from(legalDocuments)
     .where(and(eq(legalDocuments.kind, kind), eq(legalDocuments.isActive, true)))
@@ -22,8 +22,8 @@ export async function currentDocument(kind: DocKind) {
  * Öğrenci için belirli türdeki açık rızanın geçerli olup olmadığı.
  * Kural: o türdeki metinlerle ilgili en son kayıt "verildi" ve geri alınmamış olmalı.
  */
-export async function hasActiveConsent(studentId: string, kind: DocKind): Promise<boolean> {
-  const [latest] = await db
+export async function hasActiveConsent(studentId: string, kind: DocKind, exec: Exec = db): Promise<boolean> {
+  const [latest] = await exec
     .select({ granted: consentRecords.granted, revokedAt: consentRecords.revokedAt })
     .from(consentRecords)
     .innerJoin(legalDocuments, eq(legalDocuments.id, consentRecords.documentId))
@@ -48,9 +48,11 @@ export async function recordConsent(entry: {
   actorEmail?: string | null;
   method?: 'form' | 'email_link';
   meta?: Record<string, unknown>;
-}) {
-  const doc = await currentDocument(entry.docKind);
-  await db.insert(consentRecords).values({
+}, exec: Exec = db) {
+  const doc = await currentDocument(entry.docKind, exec);
+  await exec.insert(consentRecords).values({
+    // İşlemin başlangıç zamanı değil, yazma anı: kayıtlar kilit sırasıyla sıralanmalı (hasActiveConsent).
+    createdAt: sql`clock_timestamp()`,
     kind: entry.kind,
     documentId: doc.id,
     subjectStudentId: entry.studentId ?? null,
@@ -64,11 +66,22 @@ export async function recordConsent(entry: {
   });
 }
 
-/** Geri alma: yeni bir "verilmedi" kaydı eklenir ve açık kayıtlar geri alınmış olarak işaretlenir. */
-export async function revokeConsent(studentId: string, docKind: DocKind, actorUserId: string) {
-  const doc = await currentDocument(docKind);
-  const docs = await db.select({ id: legalDocuments.id }).from(legalDocuments).where(eq(legalDocuments.kind, docKind));
-  await db
+type Actor = string | { userId?: string | null; email?: string | null; method?: 'form' | 'email_link'; meta?: Record<string, unknown> };
+
+/**
+ * Geri alma: yeni bir "verilmedi" kaydı eklenir ve açık kayıtlar geri alınmış olarak işaretlenir.
+ * `actor`: veli hesabının kimliği ya da (okul üzerinden gelen veliler için) e-posta bağlantısı bilgisi.
+ *
+ * Ölçme rızası geri alınınca (ya da okul onayı geçersiz sayınca) öğrencinin bütün uygulamaları
+ * "geçersiz" olur: raporlarda, grup özetlerinde ve araştırma verisinde bir daha kullanılmaz, rıza
+ * sonradan yeniden verilse de geri gelmez ve günlük temizlik görevinde kalıcı olarak silinir.
+ * Yeni rızayla yapılan uygulamalar yeni kayıtlardır.
+ */
+export async function revokeConsent(studentId: string, docKind: DocKind, actor: Actor, exec: Exec = db) {
+  const a = typeof actor === 'string' ? { userId: actor } : actor;
+  const doc = await currentDocument(docKind, exec);
+  const docs = await exec.select({ id: legalDocuments.id }).from(legalDocuments).where(eq(legalDocuments.kind, docKind));
+  await exec
     .update(consentRecords)
     .set({ revokedAt: new Date() })
     .where(
@@ -81,13 +94,51 @@ export async function revokeConsent(studentId: string, docKind: DocKind, actorUs
         isNull(consentRecords.revokedAt),
       ),
     );
-  await db.insert(consentRecords).values({
+  await exec.insert(consentRecords).values({
+    createdAt: sql`clock_timestamp()`,
     kind: 'explicit_consent',
     documentId: doc.id,
     subjectStudentId: studentId,
-    actorUserId,
+    actorUserId: a.userId ?? null,
+    actorEmail: a.email ?? null,
+    method: a.method ?? 'form',
     granted: false,
     ip: await clientIp(),
     userAgent: await userAgent(),
+    meta: a.meta,
   });
+  if (docKind === 'consent_assessment') {
+    await exec
+      .update(attempts)
+      .set({ status: 'invalidated' })
+      .where(and(eq(attempts.studentId, studentId), ne(attempts.status, 'invalidated')));
+  }
+}
+
+/**
+ * Öğrencinin rıza durumunu ve veli bağlarını değiştiren işlemleri sıraya sokar (kilit işlem bitene
+ * kadar tutulur): okulun onayı geçersiz sayması, velinin bağlantıdan ya da panelden karar vermesi,
+ * hesap bağlama ve bağ kaldırma aynı anda çalışıp birbirinin denetimini boşa çıkaramaz. Denetimler
+ * kilitten sonra, aynı işlem içinde yapılmalıdır.
+ */
+export async function lockStudentConsent(tx: Tx, studentId: string): Promise<void> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`consent:${studentId}`}, 0))`);
+}
+
+/** Öğrencinin en son rıza kaydının zamanı ve durumu (veli onayı sayfasında göstermek için). */
+export async function latestConsent(studentId: string, kind: DocKind) {
+  const [latest] = await db
+    .select({ granted: consentRecords.granted, revokedAt: consentRecords.revokedAt, createdAt: consentRecords.createdAt })
+    .from(consentRecords)
+    .innerJoin(legalDocuments, eq(legalDocuments.id, consentRecords.documentId))
+    .where(
+      and(
+        eq(consentRecords.subjectStudentId, studentId),
+        eq(legalDocuments.kind, kind),
+        inArray(consentRecords.kind, ['explicit_consent', 'child_assent']),
+      ),
+    )
+    .orderBy(desc(consentRecords.createdAt))
+    .limit(1);
+  return latest ?? null;
 }

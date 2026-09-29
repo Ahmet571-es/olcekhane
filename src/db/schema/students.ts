@@ -6,6 +6,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
@@ -32,8 +33,9 @@ export const students = pgTable(
     gender: genderEnum('gender'),
     orgId: uuid('org_id').references(() => organizations.id, { onDelete: 'set null' }),
     schoolStudentNo: text('school_student_no'),
-    /** Okul hesabıyla giriş yapan öğrenciler için kısa giriş kodunun özeti. */
+    /** Okul hesabıyla giriş yapan öğrenciler için kısa giriş kodunun özeti (HMAC). Kodun kendisi saklanmaz. */
     loginCodeHash: text('login_code_hash'),
+    loginCodeIssuedAt: timestamp('login_code_issued_at', { withTimezone: true }),
     createdByUserId: uuid('created_by_user_id').references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

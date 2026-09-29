@@ -43,3 +43,6 @@ next-env.d.ts
 # yerel veritabanı ve ekran görüntüleri
 .pgdata/
 /tmp/
+
+# Yerel uçtan uca test yardımcıları
+.e2e-tmp/

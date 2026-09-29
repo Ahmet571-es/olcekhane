@@ -134,101 +134,113 @@ function itemRows(def: InstrumentDef, versionId: string) {
   }
 }
 
-/**
- * Koddaki test tanımlarını ve hukuki metinleri veritabanına eşitler. Her sunucu açılışında
- * güvenle çalıştırılabilir. Bir sürümün içeriği değişmişse ve o sürümle tamamlanmış uygulama
- * varsa tanım üzerine yazılmaz: yeni sürüm numarası verilmesi gerekir.
- */
-export async function syncDefinitions(log: (m: string) => void = console.log): Promise<void> {
-  for (const def of INSTRUMENTS) {
-    const values = {
-      slug: def.slug,
-      name: def.name,
-      shortName: def.shortName,
-      domain: def.domain,
-      status: def.status,
-      engine: def.engine,
-      minGrade: def.minGrade,
-      maxGrade: def.maxGrade,
-      estimatedMinutes: def.estimatedMinutes,
-      licenseStatus: def.licenseStatus,
-      isFree: def.isFree,
-      sortOrder: def.sortOrder,
-    };
-    const [inst] = await db
-      .insert(instruments)
-      .values(values)
-      .onConflictDoUpdate({ target: instruments.slug, set: values })
-      .returning({ id: instruments.id });
+/** Tek bir testin tanımını eşitler (bkz. syncDefinitions). */
+async function syncInstrument(def: InstrumentDef, log: (m: string) => void): Promise<void> {
+  const values = {
+    slug: def.slug,
+    name: def.name,
+    shortName: def.shortName,
+    domain: def.domain,
+    status: def.status,
+    engine: def.engine,
+    minGrade: def.minGrade,
+    maxGrade: def.maxGrade,
+    estimatedMinutes: def.estimatedMinutes,
+    licenseStatus: def.licenseStatus,
+    isFree: def.isFree,
+    sortOrder: def.sortOrder,
+  };
+  const [inst] = await db
+    .insert(instruments)
+    .values(values)
+    .onConflictDoUpdate({ target: instruments.slug, set: values })
+    .returning({ id: instruments.id });
 
-    const hash = hashDef(def);
-    const [existing] = await db
-      .select({ id: instrumentVersions.id, contentHash: instrumentVersions.contentHash, definition: instrumentVersions.definition })
-      .from(instrumentVersions)
-      .where(and(eq(instrumentVersions.instrumentId, inst.id), eq(instrumentVersions.version, def.version)))
-      .limit(1);
+  const hash = hashDef(def);
+  const [existing] = await db
+    .select({ id: instrumentVersions.id, contentHash: instrumentVersions.contentHash, definition: instrumentVersions.definition })
+    .from(instrumentVersions)
+    .where(and(eq(instrumentVersions.instrumentId, inst.id), eq(instrumentVersions.version, def.version)))
+    .limit(1);
 
-    if (existing) {
-      if (existing.contentHash === hash) continue;
-      const stored = existing.definition as unknown as InstrumentDef;
-      if (scoringHash(stored) === scoringHash(def)) {
-        // Yalnızca sunum metinleri değişmiş: aynı sürümün üzerine yaz.
-        await db
-          .update(instrumentVersions)
-          .set({ definition: def as unknown as Record<string, unknown>, contentHash: hash })
-          .where(eq(instrumentVersions.id, existing.id));
-        log(`${def.slug} v${def.version}: açıklama metinleri güncellendi.`);
-        continue;
-      }
-      const [{ n }] = await db
-        .select({ n: count() })
-        .from(attempts)
-        .where(and(eq(attempts.versionId, existing.id), eq(attempts.status, 'completed')));
-      if (n > 0) {
-        log(`UYARI: ${def.slug} v${def.version} değişmiş ama bu sürümle ${n} tamamlanmış uygulama var. Sürüm numarasını artırın.`);
-        continue;
-      }
-      await db.transaction(async (tx) => {
-        await tx
-          .update(instrumentVersions)
-          .set({ definition: def as unknown as Record<string, unknown>, contentHash: hash })
-          .where(eq(instrumentVersions.id, existing.id));
-        await tx.delete(scales).where(eq(scales.versionId, existing.id));
-        await tx.delete(items).where(eq(items.versionId, existing.id));
-        await tx.insert(scales).values(def.scales.map((s) => ({ versionId: existing.id, key: s.key, name: s.name })));
-        const rowsForItems = itemRows(def, existing.id);
-        if (rowsForItems.length) await tx.insert(items).values(rowsForItems);
-      });
-      log(`${def.slug} v${def.version} güncellendi (henüz uygulama yoktu).`);
-      continue;
+  if (existing) {
+    if (existing.contentHash === hash) return;
+    const stored = existing.definition as unknown as InstrumentDef;
+    if (scoringHash(stored) === scoringHash(def)) {
+      // Yalnızca sunum metinleri değişmiş: aynı sürümün üzerine yaz.
+      await db
+        .update(instrumentVersions)
+        .set({ definition: def as unknown as Record<string, unknown>, contentHash: hash })
+        .where(eq(instrumentVersions.id, existing.id));
+      log(`${def.slug} v${def.version}: açıklama metinleri güncellendi.`);
+      return;
     }
-
+    // Durumu ne olursa olsun (yarım, geçersiz sayılmış) bu sürümle yapılmış bir uygulama varsa sürümün
+    // üzerine yazılmaz: cevaplar maddelere bağlıdır ve puanlama o sürümün tanımına göre yapılmıştır.
+    const [{ n }] = await db.select({ n: count() }).from(attempts).where(eq(attempts.versionId, existing.id));
+    if (n > 0) {
+      log(`UYARI: ${def.slug} v${def.version} değişmiş ama bu sürümle ${n} uygulama var. Sürüm numarasını artırın.`);
+      return;
+    }
     await db.transaction(async (tx) => {
       await tx
         .update(instrumentVersions)
-        .set({ isCurrent: false })
-        .where(eq(instrumentVersions.instrumentId, inst.id));
-      const [v] = await tx
-        .insert(instrumentVersions)
-        .values({
-          instrumentId: inst.id,
-          version: def.version,
-          definition: def as unknown as Record<string, unknown>,
-          contentHash: hash,
-          isCurrent: true,
-        })
-        .returning({ id: instrumentVersions.id });
-      await tx.insert(scales).values(def.scales.map((s) => ({ versionId: v.id, key: s.key, name: s.name })));
-      const newItems = itemRows(def, v.id);
-      if (newItems.length) await tx.insert(items).values(newItems);
+        .set({ definition: def as unknown as Record<string, unknown>, contentHash: hash })
+        .where(eq(instrumentVersions.id, existing.id));
+      await tx.delete(scales).where(eq(scales.versionId, existing.id));
+      await tx.delete(items).where(eq(items.versionId, existing.id));
+      await tx.insert(scales).values(def.scales.map((s) => ({ versionId: existing.id, key: s.key, name: s.name })));
+      const rowsForItems = itemRows(def, existing.id);
+      if (rowsForItems.length) await tx.insert(items).values(rowsForItems);
     });
-    log(`${def.slug} v${def.version} eklendi.`);
+    log(`${def.slug} v${def.version} güncellendi (henüz uygulama yoktu).`);
+    return;
   }
 
+  await db.transaction(async (tx) => {
+    await tx
+      .update(instrumentVersions)
+      .set({ isCurrent: false })
+      .where(eq(instrumentVersions.instrumentId, inst.id));
+    const [v] = await tx
+      .insert(instrumentVersions)
+      .values({
+        instrumentId: inst.id,
+        version: def.version,
+        definition: def as unknown as Record<string, unknown>,
+        contentHash: hash,
+        isCurrent: true,
+      })
+      .returning({ id: instrumentVersions.id });
+    await tx.insert(scales).values(def.scales.map((s) => ({ versionId: v.id, key: s.key, name: s.name })));
+    const newItems = itemRows(def, v.id);
+    if (newItems.length) await tx.insert(items).values(newItems);
+  });
+  log(`${def.slug} v${def.version} eklendi.`);
+}
+
+/**
+ * Koddaki test tanımlarını ve hukuki metinleri veritabanına eşitler. Her sunucu açılışında
+ * güvenle çalıştırılabilir. Bir sürümün içeriği değişmişse ve o sürümle yapılmış herhangi bir
+ * uygulama varsa tanım üzerine yazılmaz: yeni sürüm numarası verilmesi gerekir.
+ */
+export async function syncDefinitions(log: (m: string) => void = console.log): Promise<void> {
+  // Hukuki metinler önce ve bağımsız eşitlenir: bir testteki sorun, yeni metin sürümlerini engellememeli.
   for (const doc of LEGAL_DOCS) {
     await db
       .insert(legalDocuments)
       .values({ kind: doc.kind, version: doc.version, title: doc.title, bodyMd: doc.bodyMd })
       .onConflictDoNothing({ target: [legalDocuments.kind, legalDocuments.version] });
   }
+  // Bir testin eşitlenememesi diğerlerini durdurmaz; hatalar sonda topluca bildirilir.
+  const failed: string[] = [];
+  for (const def of INSTRUMENTS) {
+    try {
+      await syncInstrument(def, log);
+    } catch (err) {
+      failed.push(def.slug);
+      log(`HATA: ${def.slug} v${def.version} eşitlenemedi: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  if (failed.length) throw new Error(`Eşitlenemeyen testler: ${failed.join(', ')}`);
 }

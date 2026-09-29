@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { homeFor, safeNextPath } from '@/lib/auth/home';
 import { getSession } from '@/lib/auth/session';
 import { RegisterForm } from './register-form';
 
@@ -14,15 +15,17 @@ const STEPS = [
   { t: 'Testi birlikte başlatın', d: 'Çocuğunuz testi çözer; öğrenciye ve veliye özel iki rapor hemen hazırlanır.' },
 ];
 
-export default async function RegisterPage() {
+export default async function RegisterPage(props: PageProps<'/kayit'>) {
   const s = await getSession();
-  if (s?.kind === 'user') redirect('/panel');
+  const q = await props.searchParams;
+  const next = safeNextPath(q.sonra) ?? '';
+  if (s?.kind === 'user') redirect(next || (await homeFor(s.user)));
   return (
     <div className="grid w-full max-w-5xl gap-12 md:grid-cols-[minmax(0,26rem)_1fr] md:gap-16">
       <div>
         <h1 className="t-h1 mb-2">Veli hesabı aç</h1>
         <p className="mb-8 text-ink-2">Hesap ücretsizdir. Ücretsiz testler için ödeme bilgisi istemiyoruz.</p>
-        <RegisterForm />
+        <RegisterForm next={next} />
       </div>
       <aside className="hidden md:block">
         <div className="panel p-8">

@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { eq } from 'drizzle-orm';
 import { publicInstruments } from '@/content/instruments';
+import { db } from '@/db';
+import { organizations } from '@/db/schema';
 import { requireUser, studentAccess } from '@/lib/auth/dal';
 import { DOMAIN_LABELS, GRADE_LABELS } from '@/lib/config';
 import { currentDocument, hasActiveConsent } from '@/lib/consent';
 import { renderMarkdown } from '@/lib/markdown';
 import { studentAttempts } from '@/lib/panel/queries';
 import { fillCompany } from '@/lib/site';
-import { deleteChildAction, setConsentAction, startTestAction } from '../../actions';
+import { deleteChildAction, setConsentAction, startTestAction, unlinkChildAction } from '../../actions';
 import { EditChildForm } from './edit-child-form';
 
 export const metadata: Metadata = { title: 'Çocuk profili' };
@@ -23,6 +26,7 @@ const ERRORS: Record<string, string> = {
   dogrulama: 'Test başlatmadan önce e-posta adresinizi doğrulamanız gerekiyor. Panel ana sayfasından doğrulama bağlantısını yeniden isteyebilirsiniz.',
   onay: 'Açık rıza vermek için metni okuduğunuzu belirten kutuyu işaretleyin.',
   'silme-onayi': 'Profili silmek için kutuya büyük harflerle SİL yazın.',
+  okul: 'Bu öğrencinin testleri okulunun rehberlik servisi tarafından atanır.',
 };
 
 export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
@@ -33,12 +37,17 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
   if (!access.allowed || access.via !== 'guardian') notFound();
   const child = access.student;
 
-  const [consent, research, attemptsList, consentDoc] = await Promise.all([
+  const [consent, research, attemptsList, consentDoc, [org]] = await Promise.all([
     hasActiveConsent(id, 'consent_assessment'),
     hasActiveConsent(id, 'consent_research'),
     studentAttempts(id),
     currentDocument('consent_assessment'),
+    child.orgId
+      ? db.select({ name: organizations.name }).from(organizations).where(eq(organizations.id, child.orgId)).limit(1)
+      : Promise.resolve([] as { name: string }[]),
   ]);
+  // Okulun eklediği öğrencide testleri okul atar ve profil bilgilerini okul yönetir; veli sonuçları ve rızaları görür.
+  const school = child.orgId ? (org?.name ?? 'Okul') : null;
   const tests = publicInstruments().filter((t) => child.grade >= t.minGrade && child.grade <= t.maxGrade);
   const completed = attemptsList.filter((a) => a.status === 'completed');
   const error = typeof q.hata === 'string' ? ERRORS[q.hata] : undefined;
@@ -54,7 +63,10 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
             <h1 className="t-h1">
               {child.firstName} {child.lastName ?? ''}
             </h1>
-            <p className="mt-1 text-ink-2">{GRADE_LABELS[child.grade]}</p>
+            <p className="mt-1 text-ink-2">
+              {GRADE_LABELS[child.grade]}
+              {school && ` · ${school}`}
+            </p>
           </div>
         </div>
         {q.yeni === '1' && (
@@ -63,9 +75,17 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
             {consent ? 'Aşağıdan ilk testi başlatabilirsiniz.' : 'Test başlatmak için aşağıdan açık rıza verebilirsiniz.'}
           </p>
         )}
+        {q.baglandi === '1' && (
+          <p className="notice notice-ok">
+            {child.firstName} hesabınıza bağlandı. Okulda tamamladığı testlerin raporlarını aşağıda görebilirsiniz.
+          </p>
+        )}
         {q.riza === 'verildi' && <p className="notice notice-ok">Açık rızanız kaydedildi.</p>}
         {q.riza === 'geri-alindi' && (
-          <p className="notice notice-ok">Açık rızanız geri alındı. Bu rızaya dayanan veriler en geç 30 gün içinde silinecek.</p>
+          <p className="notice notice-ok">
+            Açık rızanız geri alındı. Sonuçlar gizlendi ve bu rızaya dayanan veriler en geç 30 gün içinde silinecek; yeniden onay verseniz de eski
+            sonuçlar geri gelmez.
+          </p>
         )}
         {error && <p className="notice notice-danger">{error}</p>}
       </div>
@@ -101,6 +121,17 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
         </section>
       )}
 
+      {school ? (
+        <section aria-labelledby="testler" className="panel flex flex-col gap-2 p-6">
+          <h2 id="testler" className="t-h3">
+            Testler
+          </h2>
+          <p className="measure text-ink-2">
+            Bu öğrencinin testleri {school} rehberlik servisi tarafından atanır; öğrenci testleri okulda, kendi öğrenci koduyla çözer.
+            Okulun rehber öğretmeni de bu öğrencinin sonuçlarını görebilir.
+          </p>
+        </section>
+      ) : (
       <section aria-labelledby="testler" className="flex flex-col gap-5">
         <div>
           <h2 id="testler" className="t-h2">
@@ -153,6 +184,7 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
           Yeni testler ekleniyor. Tüm testleri ve bilimsel dayanaklarını <Link href="/testler">testler sayfasında</Link> görebilirsiniz.
         </p>
       </section>
+      )}
 
       <section aria-labelledby="sonuclar" className="flex flex-col gap-5">
         <h2 id="sonuclar" className="t-h2">
@@ -181,7 +213,11 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="panel flex flex-col gap-4 p-6">
             <h3 className="t-h3">Profil bilgileri</h3>
-            <EditChildForm studentId={id} firstName={child.firstName} lastName={child.lastName ?? ''} grade={child.grade} />
+            {school ? (
+              <p className="text-ink-2">Ad, soyad ve sınıf bilgilerini okul yönetir. Bir yanlışlık varsa okulunuzun rehberlik servisine bildirin.</p>
+            ) : (
+              <EditChildForm studentId={id} firstName={child.firstName} lastName={child.lastName ?? ''} grade={child.grade} />
+            )}
           </div>
           <div className="panel flex flex-col gap-4 p-6">
             <h3 className="t-h3">Açık rızalar</h3>
@@ -190,7 +226,7 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
               kind="consent_assessment"
               active={consent}
               title="Ölçme verilerinin işlenmesi"
-              revokeNote="Geri alırsanız yeni test çözülemez ve ölçme verileri 30 gün içinde silinir."
+              revokeNote="Geri alırsanız yeni test çözülemez, sonuçlar hemen gizlenir ve ölçme verileri en geç 30 gün içinde silinir. Saklamak istediğiniz raporları önce yazdırın ya da PDF olarak kaydedin."
             />
             <ConsentRow
               studentId={id}
@@ -202,21 +238,39 @@ export default async function ChildPage(props: PageProps<'/panel/cocuk/[id]'>) {
             />
           </div>
         </div>
-        <details className="panel p-6">
-          <summary className="cursor-pointer font-bold text-danger">Profili sil</summary>
-          <form action={deleteChildAction} className="mt-4 flex flex-col gap-4">
-            <input type="hidden" name="studentId" value={id} />
-            <p className="measure">
-              Profil ve bütün test sonuçları silinir. Bu işlem geri alınamaz. Onaylamak için kutuya büyük harflerle <strong>SİL</strong> yazın.
-            </p>
-            <input name="confirm" className="input max-w-48" aria-label="Onay" autoComplete="off" />
-            <div>
-              <button type="submit" className="btn btn-danger">
-                Profili ve verileri sil
-              </button>
-            </div>
-          </form>
-        </details>
+        {school ? (
+          <details className="panel p-6">
+            <summary className="cursor-pointer font-bold">Hesabımdan kaldır</summary>
+            <form action={unlinkChildAction} className="mt-4 flex flex-col gap-4">
+              <input type="hidden" name="studentId" value={id} />
+              <p className="measure">
+                Öğrenci veli panelinizden kaldırılır; okuldaki kaydı ve sonuçları silinmez. Ölçme verilerinin silinmesini istiyorsanız önce
+                yukarıdan açık rızanızı geri alın: veriler en geç 30 gün içinde silinir.
+              </p>
+              <div>
+                <button type="submit" className="btn btn-secondary">
+                  Hesabımdan kaldır
+                </button>
+              </div>
+            </form>
+          </details>
+        ) : (
+          <details className="panel p-6">
+            <summary className="cursor-pointer font-bold text-danger">Profili sil</summary>
+            <form action={deleteChildAction} className="mt-4 flex flex-col gap-4">
+              <input type="hidden" name="studentId" value={id} />
+              <p className="measure">
+                Profil ve bütün test sonuçları silinir. Bu işlem geri alınamaz. Onaylamak için kutuya büyük harflerle <strong>SİL</strong> yazın.
+              </p>
+              <input name="confirm" className="input max-w-48" aria-label="Onay" autoComplete="off" />
+              <div>
+                <button type="submit" className="btn btn-danger">
+                  Profili ve verileri sil
+                </button>
+              </div>
+            </form>
+          </details>
+        )}
       </section>
     </div>
   );

@@ -12,19 +12,12 @@ function getTransport(): Transporter | null {
 }
 
 /**
- * E-postayı kuyruğa yazar ve SMTP tanımlıysa hemen gönderir.
- * SMTP yoksa (geliştirme ortamı) e-posta yalnızca yönetim panelindeki e-posta kutusunda görünür.
+ * Gönderilen e-postanın gövdesi kuyrukta saklanmaz: gövdelerde tek kullanımlık bağlantılar (şifre
+ * yenileme, davet, veli onayı) bulunur. Kayıtta yalnızca alıcı, konu ve durum kalır.
  */
-export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }): Promise<void> {
-  const [row] = await db
-    .insert(emailOutbox)
-    .values({ toEmail: msg.to, subject: msg.subject, html: msg.html, text: msg.text })
-    .returning({ id: emailOutbox.id });
-  const transport = getTransport();
-  if (!transport) {
-    await db.update(emailOutbox).set({ status: 'logged' }).where(eq(emailOutbox.id, row.id));
-    return;
-  }
+const SENT_BODY = '';
+
+async function deliver(id: string, msg: { to: string; subject: string; html: string; text: string }, transport: Transporter): Promise<boolean> {
   try {
     await transport.sendMail({
       from: process.env.MAIL_FROM ?? 'Ölçekhane <bilgi@olcekhane.com>',
@@ -33,12 +26,40 @@ export async function sendEmail(msg: { to: string; subject: string; html: string
       html: msg.html,
       text: msg.text,
     });
-    await db.update(emailOutbox).set({ status: 'sent', sentAt: new Date() }).where(eq(emailOutbox.id, row.id));
+    await db.update(emailOutbox).set({ status: 'sent', sentAt: new Date(), error: null, html: SENT_BODY, text: SENT_BODY }).where(eq(emailOutbox.id, id));
+    return true;
   } catch (err) {
     await db
       .update(emailOutbox)
       .set({ status: 'failed', error: String(err).slice(0, 500) })
-      .where(eq(emailOutbox.id, row.id));
+      .where(eq(emailOutbox.id, id));
     console.error('e-posta gönderilemedi', err);
+    return false;
   }
+}
+
+/**
+ * E-postayı kuyruğa yazar ve SMTP tanımlıysa hemen gönderir.
+ * SMTP yoksa (geliştirme ortamı) e-posta yalnızca yönetim panelindeki e-posta kutusunda görünür.
+ */
+export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }): Promise<{ id: string; status: 'sent' | 'failed' | 'logged' }> {
+  const [row] = await db
+    .insert(emailOutbox)
+    .values({ toEmail: msg.to, subject: msg.subject, html: msg.html, text: msg.text })
+    .returning({ id: emailOutbox.id });
+  const transport = getTransport();
+  if (!transport) {
+    await db.update(emailOutbox).set({ status: 'logged' }).where(eq(emailOutbox.id, row.id));
+    return { id: row.id, status: 'logged' };
+  }
+  return { id: row.id, status: (await deliver(row.id, msg, transport)) ? 'sent' : 'failed' };
+}
+
+/** Gönderilemeyen bir e-postayı yeniden dener (yönetim panelinden). */
+export async function retryEmail(id: string): Promise<'sent' | 'failed' | 'no_smtp' | 'not_found'> {
+  const [row] = await db.select().from(emailOutbox).where(eq(emailOutbox.id, id)).limit(1);
+  if (!row || row.status !== 'failed') return 'not_found';
+  const transport = getTransport();
+  if (!transport) return 'no_smtp';
+  return (await deliver(row.id, { to: row.toEmail, subject: row.subject, html: row.html, text: row.text }, transport)) ? 'sent' : 'failed';
 }

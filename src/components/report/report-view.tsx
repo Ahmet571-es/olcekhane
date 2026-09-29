@@ -211,6 +211,8 @@ export function ReportView({ report }: { report: ReportContent }) {
 
 function SectionDetail({ s, forStudent, showRuler }: { s: ReportSection; forStudent: boolean; showRuler: boolean }) {
   const st = rulerSteps(s);
+  // Yüzdelik yalnızca norm varken vardır; uçlarda 1–99 aralığında gösterilir.
+  const pct = s.percentile === null ? null : Math.min(99, Math.max(1, Math.round(s.percentile)));
   return (
     <section className="grid gap-4 md:grid-cols-[13rem_1fr] md:gap-8" aria-labelledby={`b-${s.scaleKey}`}>
       <div className="flex flex-col gap-1">
@@ -236,9 +238,17 @@ function SectionDetail({ s, forStudent, showRuler }: { s: ReportSection; forStud
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <p className="font-display text-xl font-bold">{s.summary || s.bandLabel}</p>
           <p className="t-meta tabular">
-            {s.bandLabel} · puan {s.valueLabel}
+            {s.summary && s.summary !== s.bandLabel ? `${s.bandLabel} · ` : ''}puan {s.valueLabel}
+            {pct !== null && ` · yüzdelik ${pct}`}
           </p>
         </div>
+        {pct !== null && (
+          <p className="t-small text-ink-2">
+            {forStudent
+              ? `Karşılaştırma grubunda bu puanın altında kalan öğrencilerin oranı yaklaşık %${pct}.`
+              : `Karşılaştırma grubunda bu puanın altında kalan öğrencilerin oranı yaklaşık %${pct}. Grubun kimlerden oluştuğu raporun sonundaki “bilimsel dayanak” bölümünde yazılı.`}
+          </p>
+        )}
         <p className="measure">{s.text}</p>
         {s.tips.length > 0 && (
           <div>

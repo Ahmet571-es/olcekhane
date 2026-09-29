@@ -5,7 +5,7 @@ import { db } from '@/db';
 import { contactMessages } from '@/db/schema';
 import { sendEmail } from '@/lib/email/send';
 import { rateLimit } from '@/lib/rate-limit';
-import { clientIp } from '@/lib/request';
+import { clientIp, clientIpBucket } from '@/lib/request';
 
 export type ContactState = { ok?: boolean; message?: string; errors?: Record<string, string>; values?: Record<string, string> };
 
@@ -38,7 +38,7 @@ export async function contactAction(_: ContactState, formData: FormData): Promis
     return { errors, values };
   }
   const ip = (await clientIp()) ?? 'bilinmiyor';
-  if (!(await rateLimit(`iletisim:${ip}`, 5, 3600))) {
+  if (!(await rateLimit(`iletisim:${await clientIpBucket()}`, 5, 3600))) {
     return { message: 'Kısa sürede çok fazla mesaj gönderildi. Lütfen daha sonra tekrar deneyin.', values };
   }
   const d = parsed.data;

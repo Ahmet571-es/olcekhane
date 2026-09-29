@@ -38,6 +38,7 @@ export function SiteFooter() {
           <FooterLink href="/bilimsel-yaklasim">Bilimsel yaklaşım</FooterLink>
           <FooterLink href="/veliler-icin">Veliler için</FooterLink>
           <FooterLink href="/okullar-icin">Okullar için</FooterLink>
+          <FooterLink href="/ogrenci-girisi">Öğrenci girişi</FooterLink>
           <FooterLink href="/hakkimizda">Hakkımızda</FooterLink>
           <FooterLink href="/iletisim">İletişim</FooterLink>
         </FooterCol>

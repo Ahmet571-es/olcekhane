@@ -12,6 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { createdAt, id } from './_common';
 import { users } from './auth';
+import { organizations } from './org';
 import { students } from './students';
 
 /**
@@ -75,4 +76,31 @@ export const consentRecords = pgTable(
     index('consent_records_student_idx').on(t.subjectStudentId),
     index('consent_records_actor_idx').on(t.actorUserId),
   ],
+);
+
+export const consentDecision = pgEnum('consent_decision', ['granted', 'declined', 'revoked']);
+
+/**
+ * Okulun veliye e-postayla gönderdiği onay isteği. Bağlantı, velinin rızasını vermesi ve daha sonra
+ * geri alabilmesi için geçerlilik süresi boyunca birden fazla kez açılabilir. Rızanın kendisi
+ * `consent_records` tablosuna yazılır; bu tablo yalnızca isteğin durumunu izler.
+ */
+export const consentRequests = pgTable(
+  'consent_requests',
+  {
+    id: id(),
+    studentId: uuid('student_id')
+      .notNull()
+      .references(() => students.id, { onDelete: 'cascade' }),
+    orgId: uuid('org_id').references(() => organizations.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    requestedByUserId: uuid('requested_by_user_id').references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    openedAt: timestamp('opened_at', { withTimezone: true }),
+    respondedAt: timestamp('responded_at', { withTimezone: true }),
+    decision: consentDecision('decision'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('consent_requests_token_uq').on(t.tokenHash), index('consent_requests_student_idx').on(t.studentId)],
 );

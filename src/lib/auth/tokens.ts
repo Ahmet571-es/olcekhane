@@ -17,11 +17,14 @@ export function safeEqual(a: string, b: string): boolean {
   return ab.length === bb.length && timingSafeEqual(ab, bb);
 }
 
-/** Okul öğrencileri için karışmayan karakterlerden kısa giriş kodu (ör. K7PX-M3QD). */
+/**
+ * Okul öğrencileri için karışmayan karakterlerden giriş kodu (ör. K7PXM-3QD2A): 10 karakter, 32 harfli
+ * alfabe, yaklaşık 10¹⁵ olasılık. Alfabe 32 harf olduğu için bayt değerinin 32’ye göre kalanı eşit dağılır.
+ */
 export function studentLoginCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = randomBytes(8);
+  const bytes = randomBytes(10);
   let code = '';
-  for (let i = 0; i < 8; i++) code += alphabet[bytes[i] % alphabet.length];
-  return `${code.slice(0, 4)}-${code.slice(4)}`;
+  for (let i = 0; i < 10; i++) code += alphabet[bytes[i] % alphabet.length];
+  return `${code.slice(0, 5)}-${code.slice(5)}`;
 }

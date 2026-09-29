@@ -1,6 +1,6 @@
 'use server';
 
-import { and, count, eq, gt, isNull } from 'drizzle-orm';
+import { and, count, eq, gt, isNull, ne } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -14,7 +14,8 @@ import { hashToken, randomToken } from '@/lib/auth/tokens';
 import { sendEmail } from '@/lib/email/send';
 import { passwordResetTemplate, verifyEmailTemplate } from '@/lib/email/templates';
 import { rateLimit } from '@/lib/rate-limit';
-import { appUrl, clientIp } from '@/lib/request';
+import { appUrl, clientIpBucket } from '@/lib/request';
+import { homeFor, safeNextPath } from '@/lib/auth/home';
 
 export type FormState = {
   ok?: boolean;
@@ -35,10 +36,6 @@ async function setHintCookie() {
   });
 }
 
-function safeNext(next: FormDataEntryValue | null): string {
-  const v = typeof next === 'string' ? next : '';
-  return v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/\\') ? v : '/panel';
-}
 
 function fieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
@@ -81,7 +78,7 @@ export async function registerAction(_: FormState, formData: FormData): Promise<
   const policy = checkPasswordPolicy(password, email);
   if (policy) return { errors: { password: policy }, values };
 
-  const ip = (await clientIp()) ?? 'bilinmiyor';
+  const ip = await clientIpBucket();
   if (!(await rateLimit(`kayit:${ip}`, 10, 3600))) {
     return { message: 'Çok fazla kayıt denemesi yapıldı. Lütfen bir saat sonra tekrar deneyin.', values };
   }
@@ -102,7 +99,7 @@ export async function registerAction(_: FormState, formData: FormData): Promise<
   await audit({ actorUserId: user.id, action: 'user.register', entity: 'user', entityId: user.id });
   await createUserSession(user.id);
   await setHintCookie();
-  redirect('/panel?hosgeldiniz=1');
+  redirect(safeNextPath(formData.get('sonra')) ?? '/panel?hosgeldiniz=1');
 }
 
 /* ---------------- Giriş ---------------- */
@@ -118,7 +115,7 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
   const parsed = loginSchema.safeParse(raw);
   if (!parsed.success) return { errors: fieldErrors(parsed.error), values };
   const { email, password } = parsed.data;
-  const ip = (await clientIp()) ?? 'bilinmiyor';
+  const ip = await clientIpBucket();
 
   // Hesap başına 15 dakikada 8, IP başına 30 başarısız deneme.
   const since = new Date(Date.now() - 15 * 60_000);
@@ -130,14 +127,15 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
     db
       .select({ n: count() })
       .from(loginAttempts)
-      .where(and(eq(loginAttempts.ip, ip), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, since))),
+      // Öğrenci kodu denemeleri (okulda aynı IP’den) yetişkin girişlerini kilitlemesin.
+      .where(and(eq(loginAttempts.ip, ip), ne(loginAttempts.key, 'ogrenci-kodu'), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, since))),
   ]);
   if (byKey.n >= 8 || byIp.n >= 30) {
     return { message: 'Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar deneyin ya da şifrenizi yenileyin.', values };
   }
 
   const [user] = await db
-    .select({ id: users.id, passwordHash: users.passwordHash })
+    .select({ id: users.id, passwordHash: users.passwordHash, role: users.role })
     .from(users)
     .where(and(eq(users.email, email), isNull(users.deletedAt)))
     .limit(1);
@@ -150,7 +148,7 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
   await createUserSession(user.id);
   await setHintCookie();
-  redirect(safeNext(formData.get('sonra')));
+  redirect(safeNextPath(formData.get('sonra')) ?? (await homeFor(user)));
 }
 
 /* ---------------- Çıkış ---------------- */
@@ -168,7 +166,7 @@ export async function forgotPasswordAction(_: FormState, formData: FormData): Pr
   const values = { email: String(formData.get('email') ?? '') };
   if (!parsed.success) return { errors: { email: 'Geçerli bir e-posta adresi yazın.' }, values };
   const email = parsed.data;
-  const ip = (await clientIp()) ?? 'bilinmiyor';
+  const ip = await clientIpBucket();
   const allowed = (await rateLimit(`sifre:${email}`, 3, 3600)) && (await rateLimit(`sifre-ip:${ip}`, 10, 3600));
   if (allowed) {
     const [user] = await db
@@ -219,7 +217,7 @@ export async function resetPasswordAction(_: FormState, formData: FormData): Pro
   await audit({ actorUserId: row.userId, action: 'user.password_reset', entity: 'user', entityId: row.userId });
   await createUserSession(row.userId);
   await setHintCookie();
-  redirect('/panel?sifre=yenilendi');
+  redirect('/hesap?sifre=yenilendi');
 }
 
 /* ---------------- E-posta doğrulama ---------------- */

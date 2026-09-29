@@ -1,7 +1,8 @@
 import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type RiasecKey } from '@/content/careers/riasec';
 import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText } from '@/content/reports/types';
-import { GRADE_LABELS } from '@/lib/config';
+import { GRADE_LABELS, gradeRangeLabel } from '@/lib/config';
+import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import type {
   Band,
   InstrumentDef,
@@ -186,6 +187,27 @@ function pickText(bt: BandText | undefined, audience: Audience) {
     : { text: bt.parent, tips: bt.tipsParent, summary: bt.summary };
 }
 
+/** Raporda kullanılan norm grubunun özeti (norm varken). */
+export interface NormInfo {
+  status: 'provisional' | 'final';
+  n: number;
+  gradeMin: number;
+  gradeMax: number;
+  source: string;
+}
+
+/**
+ * Norm açıklaması. Ön normlar platformu kullanan öğrencilerden oluşur ve Türkiye’yi temsil etmez;
+ * rapor bunu açıkça söyler. Kesin normlarda kaynağı (örneklem çalışması) belirtilir.
+ */
+export function normNoteText(norm: NormInfo): string {
+  const range = gradeRangeLabel(norm.gradeMin, norm.gradeMax);
+  const n = new Intl.NumberFormat('tr-TR').format(norm.n);
+  return norm.status === 'final'
+    ? `Puanlar, ${range} öğrencilerinden oluşan norm grubuyla (${n} öğrenci; ${norm.source}) karşılaştırılarak yorumlanmıştır.`
+    : `Puanlar, Ölçekhane’de bu testi çözen ${range} öğrencilerinden oluşan ön norm grubuyla (${n} öğrenci) karşılaştırılarak yorumlanmıştır. Bu grup Türkiye’yi temsil eden bir örneklem değildir; veri arttıkça norm güncellenecektir.`;
+}
+
 export function buildReport(input: {
   def: InstrumentDef;
   scores: StoredScore[];
@@ -195,6 +217,7 @@ export function buildReport(input: {
   completedAt: Date;
   qualityNotes?: string[];
   hasNorms: boolean;
+  norm?: NormInfo | null;
 }): ReportContent {
   const { def, audience } = input;
   const template = REPORT_TEMPLATES[def.slug];
@@ -212,7 +235,8 @@ export function buildReport(input: {
     const optMax = Math.max(...optVals);
     for (const scale of def.scales) {
       const s = byKey.get(scale.key);
-      const band = (s?.band ?? null) as Band | null;
+      const rawBand = (s?.band ?? null) as Band | null;
+      const band = rawBand ? nearestBand(rawBand, (b) => !!template?.scales[scale.key]?.[b]) : null;
       const bt = band ? template?.scales[scale.key]?.[band] : undefined;
       if (bt?.support) support = true;
       const picked = pickText(bt, audience);
@@ -227,7 +251,7 @@ export function buildReport(input: {
         plain: scale.plain,
         poles: scale.poles,
         band,
-        bandLabel: band ? (template?.bandLabels[band] ?? band) : 'Hesaplanamadı',
+        bandLabel: band ? (template?.bandLabels[band] ?? DEFAULT_BAND_LABELS[band]) : 'Hesaplanamadı',
         summary: picked.summary,
         text: s && band ? picked.text : 'Bu bölümdeki maddelerin yeterince cevaplanmadığı için puan hesaplanamadı.',
         tips: s && band ? picked.tips : [],
@@ -248,7 +272,8 @@ export function buildReport(input: {
     const rDef = def as ReadingInstrument;
     const comp = byKey.get('comprehension');
     const rr = comp?.extra as unknown as (ReadingResult & { passageTitle?: string }) | undefined;
-    const band = (comp?.band ?? null) as Band | null;
+    const rawBand = (comp?.band ?? null) as Band | null;
+    const band = rawBand ? nearestBand(rawBand, (b) => !!template?.scales.comprehension?.[b]) : null;
     const bt = band ? template?.scales.comprehension?.[band] : undefined;
     const picked = pickText(bt, audience);
     if (rr) {
@@ -257,7 +282,7 @@ export function buildReport(input: {
         name: 'Anlama',
         plain: def.scales[0].plain,
         band,
-        bandLabel: band ? (template?.bandLabels[band] ?? band) : '—',
+        bandLabel: band ? (template?.bandLabels[band] ?? DEFAULT_BAND_LABELS[band]) : '—',
         summary: picked.summary,
         text: picked.text,
         tips: picked.tips,
@@ -329,9 +354,11 @@ export function buildReport(input: {
     gradeLabel: GRADE_LABELS[input.grade] ?? `${input.grade}. sınıf`,
     completedAt: input.completedAt.toISOString(),
     isPilot: def.status === 'pilot',
-    normNote: input.hasNorms
-      ? 'Puanlar, Türkiye’de aynı sınıf düzeyindeki öğrencilerden oluşan norm grubuyla karşılaştırılarak yorumlanmıştır.'
-      : science.normNote,
+    normNote: input.norm
+      ? normNoteText(input.norm)
+      : input.hasNorms
+        ? 'Puanlar, aynı sınıf düzeyindeki öğrencilerden oluşan bir norm grubuyla karşılaştırılarak yorumlanmıştır.'
+        : science.normNote,
     qualityNotes: input.qualityNotes ?? [],
     sections,
     highlights,

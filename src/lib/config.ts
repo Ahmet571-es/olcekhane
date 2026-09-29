@@ -15,6 +15,7 @@ export const GRADE_LABELS: Record<number, string> = {
 };
 
 export function gradeRangeLabel(min: number, max: number): string {
+  if (min === max) return min === 13 ? 'mezun' : `${min}. sınıf`;
   const a = min === 13 ? 'mezun' : `${min}.`;
   if (max >= 13) return `${a} sınıf ve üzeri`;
   return `${a}–${max}. sınıf`;

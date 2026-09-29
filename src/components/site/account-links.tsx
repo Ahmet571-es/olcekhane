@@ -17,8 +17,9 @@ function hasSession() {
 export function AccountLinks({ compact = false }: { compact?: boolean }) {
   const loggedIn = useSyncExternalStore(subscribe, hasSession, () => false);
   if (loggedIn) {
+    // Giriş sayfası, oturumu açık kullanıcıyı kendi paneline (veli, okul ya da yönetim) yönlendirir.
     return (
-      <Link href="/panel" className="btn btn-primary whitespace-nowrap">
+      <Link href="/giris" className="btn btn-primary whitespace-nowrap">
         Panelim
       </Link>
     );

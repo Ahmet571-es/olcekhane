@@ -22,4 +22,8 @@ if (process.env.NODE_ENV !== 'production') globalForDb.__olcekhaneSql = sql;
 
 export const db = drizzle(sql, { schema, casing: 'snake_case' });
 export type DB = typeof db;
+/** Bir veritabanı işlemi (transaction). */
+export type Tx = Parameters<Parameters<DB['transaction']>[0]>[0];
+/** Sorgu çalıştırabilen her şey: doğrudan bağlantı ya da süren bir işlem. Yardımcılar ikisiyle de çalışır. */
+export type Exec = DB | Tx;
 export { schema };

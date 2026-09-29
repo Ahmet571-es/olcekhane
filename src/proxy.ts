@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  * İyimser oturum kontrolü: korunan sayfalara oturum çerezi olmadan gelen ziyaretçiyi giriş
  * sayfasına yönlendirir. Asıl yetki kontrolü her sayfada ve API'de veritabanıyla yapılır.
  */
-const PROTECTED = ['/panel', '/uygulama', '/yonetim', '/ogrenci'];
+const PROTECTED = ['/panel', '/uygulama', '/yonetim', '/ogrenci', '/okul', '/hesap'];
 
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -18,5 +18,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/panel/:path*', '/uygulama/:path*', '/yonetim/:path*', '/ogrenci/:path*'],
+  matcher: ['/panel/:path*', '/uygulama/:path*', '/yonetim/:path*', '/ogrenci/:path*', '/okul/:path*', '/hesap/:path*'],
 };

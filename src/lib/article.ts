@@ -1,26 +1,12 @@
 import MarkdownIt from 'markdown-it';
+import { slugifyTr } from './slug';
 
 /**
  * Rehber yazıları için Markdown işleyici: ham HTML kapalı, başlıklara Türkçe karakterlerden
  * arındırılmış kimlik (id) eklenir ve içindekiler listesi çıkarılır; dış bağlantılar yeni sekmede açılır.
  */
 
-export function slugifyTr(text: string): string {
-  return text
-    .toLocaleLowerCase('tr-TR')
-    .replace(/ç/g, 'c')
-    .replace(/ğ/g, 'g')
-    .replace(/ı/g, 'i')
-    .replace(/ö/g, 'o')
-    .replace(/ş/g, 's')
-    .replace(/ü/g, 'u')
-    .replace(/â/g, 'a')
-    .replace(/î/g, 'i')
-    .replace(/û/g, 'u')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-}
+export { slugifyTr };
 
 const md = new MarkdownIt({ html: false, linkify: true, typographer: false });
 

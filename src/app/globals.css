@@ -364,6 +364,11 @@
     color: var(--ok);
     background: var(--ok-bg);
   }
+  .chip-danger {
+    border-color: color-mix(in oklab, var(--danger) 45%, transparent);
+    color: var(--danger);
+    background: var(--danger-bg);
+  }
 
   /* Soru metinlerinde kesir gösterimi: {3/4} → alt alta pay ve payda */
   .frac {
