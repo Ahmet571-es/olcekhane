@@ -5,7 +5,7 @@ import { researchCsv } from '@/lib/psychometrics/export';
 /** Araştırma verisi (yalnızca platform yöneticisi). Her indirme denetim kaydına yazılır. */
 export async function GET(req: Request, ctx: RouteContext<'/yonetim/psikometri/[slug]/csv'>) {
   const s = await getSession();
-  if (s?.kind !== 'user' || s.user.role !== 'admin') return new Response('Bulunamadı', { status: 404 });
+  if (s?.kind !== 'user' || s.user.role !== 'admin' || !s.user.twoFactor) return new Response('Bulunamadı', { status: 404 });
   const { slug } = await ctx.params;
   const out = await researchCsv(slug, { excel: new URL(req.url).searchParams.get('bicim') === 'excel' });
   if (!out) return new Response('Bulunamadı', { status: 404 });

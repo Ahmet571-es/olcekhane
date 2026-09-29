@@ -17,6 +17,8 @@ export async function requireUser(next?: string): Promise<SessionUser> {
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await requireUser('/yonetim');
   if (user.role !== 'admin') redirect('/panel');
+  // Bireysel verilere erişebildiği için iki aşamalı doğrulama zorunlu (KVKK Kurulu 2018/10).
+  if (!user.twoFactor) redirect('/hesap/iki-asamali?zorunlu=1&sonra=%2Fyonetim');
   return user;
 }
 
@@ -97,8 +99,9 @@ export const studentAccess = cache(async (studentId: string): Promise<StudentAcc
         ),
       )
       .limit(1);
-    if (m) return { allowed: true, via: 'counselor', student };
+    // Rehber öğretmen ve yönetici bireysel sonuçları yalnızca iki aşamalı doğrulamayla açılmış oturumda görür.
+    if (m && user.twoFactor) return { allowed: true, via: 'counselor', student };
   }
-  if (user.role === 'admin') return { allowed: true, via: 'admin', student };
+  if (user.role === 'admin' && user.twoFactor) return { allowed: true, via: 'admin', student };
   return { allowed: false };
 });

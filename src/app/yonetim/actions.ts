@@ -5,10 +5,12 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { db } from '@/db';
-import { contactMessages, orgInvites, organizations, sessions, students } from '@/db/schema';
+import { contactMessages, orgInvites, organizations, recoveryCodes, sessions, students, users } from '@/db/schema';
 import { audit } from '@/lib/audit';
 import { requireAdmin } from '@/lib/auth/dal';
-import { retryEmail } from '@/lib/email/send';
+import { retryEmail, sendEmail } from '@/lib/email/send';
+import { twoFactorChangedTemplate } from '@/lib/email/templates';
+import { appUrl } from '@/lib/request';
 import { runPurgeJob } from '@/lib/jobs/purge';
 import { sendInvite } from '@/lib/school/invites';
 import { slugifyTr } from '@/lib/slug';
@@ -165,4 +167,32 @@ export async function runPurgeAction(): Promise<void> {
   await audit({ actorUserId: admin.id, action: 'job.purge_manual', entity: 'job', entityId: 'temizlik', meta: report ?? { skipped: 1 } });
   revalidatePath('/yonetim');
   redirect(`/yonetim?temizlik=${report ? 'tamam' : 'mesgul'}#temizlik`);
+}
+
+/**
+ * Telefonunu ve kurtarma kodlarını kaybeden kullanıcı için: iki aşamalı doğrulama sıfırlanır, bütün
+ * oturumları kapatılır ve kullanıcıya e-postayla bildirilir. Zorunlu görevdeki kullanıcı bir sonraki
+ * girişinde yeniden kurar. Kimliği doğrulandıktan sonra (ör. okulun resmî yazısı) yapılmalıdır.
+ */
+export async function resetTwoFactorAction(userId: string, formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  if (!isUuid(userId)) redirect('/yonetim/kullanicilar');
+  const [u] = await db
+    .select({ email: users.email, fullName: users.fullName, enabledAt: users.totpEnabledAt })
+    .from(users)
+    .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+    .limit(1);
+  if (!u) redirect('/yonetim/kullanicilar');
+  const back = `/yonetim/kullanicilar?e=${encodeURIComponent(u.email)}`;
+  if (userId === admin.id) redirect(`${back}&hata=kendi`);
+  if (formData.get('confirm') !== 'on') redirect(`${back}&hata=onay`);
+  await db
+    .update(users)
+    .set({ totpSecret: null, totpPendingSecret: null, totpEnabledAt: null, totpLastStep: null })
+    .where(eq(users.id, userId));
+  await db.delete(recoveryCodes).where(eq(recoveryCodes.userId, userId));
+  await db.delete(sessions).where(eq(sessions.userId, userId));
+  await audit({ actorUserId: admin.id, action: 'user.2fa_reset_by_admin', entity: 'user', entityId: userId, meta: { reason: String(formData.get('reason') ?? '').slice(0, 300) } });
+  await sendEmail({ to: u.email, ...twoFactorChangedTemplate({ name: u.fullName, change: 'reset', link: appUrl('/hesap/iki-asamali') }) });
+  redirect(`${back}&sifirlandi=1`);
 }

@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { EXPERTS } from '@/content/experts';
 import { publicInstruments } from '@/content/instruments';
 import { db } from '@/db';
@@ -128,6 +128,23 @@ export async function readinessChecks(): Promise<ReadinessCheck[]> {
       : `${lastPurge ? 'Son 36 saatte başarılı çalışma yok' : 'Henüz hiç çalışmadı'}. Rıza geri alınınca verilerin 30 gün içinde silinmesi sözü bu görevle yerine getirilir.${
           jobsOff ? ' Zamanlayıcı kapalı (SCHEDULED_JOBS=false).' : ''
         } Aşağıdan elle de çalıştırabilirsiniz.`,
+  });
+
+  // Bireysel sonuçlara erişen görevlerde iki aşamalı doğrulama zorunlu; kurmamış olanlar ilk girişte yönlendirilir.
+  const [pending2fa] = await db.execute<{ n: number }>(sql`
+    select count(distinct u.id)::int as n from users u
+    where u.deleted_at is null and u.totp_enabled_at is null
+      and (u.role = 'admin' or exists (
+        select 1 from memberships m join organizations o on o.id = m.org_id
+        where m.user_id = u.id and m.role = 'counselor' and o.is_active and o.deleted_at is null))`);
+  out.push({
+    key: '2fa',
+    label: 'İki aşamalı doğrulama',
+    status: 'info',
+    detail:
+      Number(pending2fa?.n ?? 0) === 0
+        ? 'Platform yöneticileri ve rehber öğretmenlerin hepsi kurmuş (KVKK Kurulu 2018/10: özel nitelikli verilere uzaktan erişimde zorunlu).'
+        : `${pending2fa.n} platform yöneticisi ya da rehber öğretmen henüz kurmadı; bireysel sonuçlara erişmeden önce kurmaları istenecek.`,
   });
 
   out.push({

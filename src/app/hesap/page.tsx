@@ -85,6 +85,25 @@ export default async function AccountPage(props: PageProps<'/hesap'>) {
         <PasswordForm />
       </section>
 
+      <section className="panel flex flex-col gap-4 p-6 md:p-8" aria-labelledby="iki-asama">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="iki-asama" className="t-h3">
+            İki aşamalı doğrulama
+          </h2>
+          {user.twoFactor ? <span className="chip chip-ok">Açık</span> : <span className="chip">Kapalı</span>}
+        </div>
+        <p className="t-small text-ink-2">
+          {user.twoFactor
+            ? 'Girişte şifrenizin yanında telefonunuzdaki kimlik doğrulama uygulamasının kodu da isteniyor.'
+            : 'Şifrenizin yanında telefonunuzdaki bir kodla giriş yaparak hesabınızı daha güvenli hale getirin. Rehber öğretmenler ve platform yöneticileri için zorunludur.'}
+        </p>
+        <div>
+          <Link href="/hesap/iki-asamali" className="btn btn-secondary">
+            {user.twoFactor ? 'Ayarları aç' : 'Kurulumu başlat'}
+          </Link>
+        </div>
+      </section>
+
       <section className="panel flex flex-col gap-5 p-6 md:p-8" aria-labelledby="oturumlar">
         <div className="flex flex-col gap-1">
           <h2 id="oturumlar" className="t-h3">

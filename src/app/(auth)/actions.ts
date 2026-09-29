@@ -11,8 +11,9 @@ import { recordConsent } from '@/lib/consent';
 import { checkPasswordPolicy, dummyVerify, hashPassword, verifyPassword } from '@/lib/auth/password';
 import { createUserSession, destroyAllUserSessions, destroySession, getSession } from '@/lib/auth/session';
 import { hashToken, randomToken } from '@/lib/auth/tokens';
+import { finishSecondStep, pendingSecondStep, startSecondStep, unusedRecoveryCodes, verifySecondFactor } from '@/lib/auth/two-factor';
 import { sendEmail } from '@/lib/email/send';
-import { passwordResetTemplate, verifyEmailTemplate } from '@/lib/email/templates';
+import { passwordResetTemplate, recoveryCodeUsedTemplate, secondStepFailedTemplate, verifyEmailTemplate } from '@/lib/email/templates';
 import { rateLimit } from '@/lib/rate-limit';
 import { appUrl, clientIpBucket } from '@/lib/request';
 import { homeFor, safeNextPath } from '@/lib/auth/home';
@@ -135,7 +136,7 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
   }
 
   const [user] = await db
-    .select({ id: users.id, passwordHash: users.passwordHash, role: users.role })
+    .select({ id: users.id, passwordHash: users.passwordHash, role: users.role, totpEnabledAt: users.totpEnabledAt })
     .from(users)
     .where(and(eq(users.email, email), isNull(users.deletedAt)))
     .limit(1);
@@ -145,10 +146,76 @@ export async function loginAction(_: FormState, formData: FormData): Promise<For
   await db.insert(loginAttempts).values({ key: email, ip, success: !!(user && ok) });
   if (!user || !ok) return { message: 'E-posta adresi ya da şifre hatalı.', values };
 
+  // İki aşamalı doğrulama açıksa oturum ikinci adımdan sonra açılır.
+  if (user.totpEnabledAt) {
+    await startSecondStep(user.id, safeNextPath(formData.get('sonra')));
+    redirect('/giris/dogrulama');
+  }
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
   await createUserSession(user.id);
   await setHintCookie();
   redirect(safeNextPath(formData.get('sonra')) ?? (await homeFor(user)));
+}
+
+/* ---------------- Girişin ikinci adımı ---------------- */
+
+/**
+ * İki aşamalı doğrulamanın ikinci adımı: kimlik doğrulama uygulamasındaki 6 haneli kod ya da bir
+ * kurtarma kodu. Bekleyen giriş 10 dakika geçerlidir; hesap başına 15 dakikada 8 hatalı deneme.
+ */
+export async function secondStepAction(_: FormState, formData: FormData): Promise<FormState> {
+  const pending = await pendingSecondStep();
+  if (!pending) return { message: 'Girişin süresi doldu. Lütfen e-posta ve şifrenizle yeniden giriş yapın.' };
+  const code = String(formData.get('code') ?? '').trim();
+  if (!code) return { errors: { code: 'Kodu yazın.' } };
+  const ip = await clientIpBucket();
+  const key = `iki-asama:${pending.email}`;
+  // Şifresi bilinen bir hesapta kod tahminini sınırlamak için: hesap başına 15 dakikada 8 ve günde 20,
+  // IP başına 15 dakikada 30 hatalı deneme.
+  const since = new Date(Date.now() - 15 * 60_000);
+  const day = new Date(Date.now() - 86400_000);
+  const failed = (from: Date) => and(eq(loginAttempts.key, key), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, from));
+  const [[byKey], [byDay], [byIp]] = await Promise.all([
+    db.select({ n: count() }).from(loginAttempts).where(failed(since)),
+    db.select({ n: count() }).from(loginAttempts).where(failed(day)),
+    db
+      .select({ n: count() })
+      .from(loginAttempts)
+      .where(and(eq(loginAttempts.ip, ip), ne(loginAttempts.key, 'ogrenci-kodu'), eq(loginAttempts.success, false), gt(loginAttempts.createdAt, since))),
+  ]);
+  if (byDay.n >= 20) return { message: 'Bugün çok fazla hatalı kod girildi. Yarın tekrar deneyin ya da şifrenizi yenileyin.' };
+  if (byKey.n >= 8 || byIp.n >= 30) return { message: 'Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar deneyin.' };
+
+  const method = await verifySecondFactor(pending.userId, code);
+  await db.insert(loginAttempts).values({ key, ip, success: !!method });
+  if (!method) {
+    // Şifre doğru girilip kod tekrar tekrar yanlışsa şifre başkasının elinde olabilir: sahibini uyar (6 saatte bir).
+    if (byKey.n + 1 >= 3 && (await rateLimit(`iki-asama-uyari:${pending.userId}`, 1, 6 * 3600))) {
+      const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, pending.userId)).limit(1);
+      await sendEmail({ to: pending.email, ...secondStepFailedTemplate(u?.fullName ?? '', appUrl('/sifremi-unuttum')) });
+    }
+    return { errors: { code: 'Kod doğru değil ya da süresi geçmiş. Uygulamadaki güncel kodu yazın.' } };
+  }
+
+  await finishSecondStep(pending.id);
+  await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, pending.userId));
+  await createUserSession(pending.userId);
+  await setHintCookie();
+  if (method === 'recovery') {
+    const left = await unusedRecoveryCodes(pending.userId);
+    await audit({ actorUserId: pending.userId, action: 'user.recovery_code_used', entity: 'user', entityId: pending.userId, meta: { left } });
+    const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, pending.userId)).limit(1);
+    await sendEmail({ to: pending.email, ...recoveryCodeUsedTemplate(u?.fullName ?? '', left, appUrl('/hesap/iki-asamali')) });
+    redirect(`/hesap/iki-asamali?kurtarma=${left}`);
+  }
+  const [u] = await db.select({ id: users.id, role: users.role }).from(users).where(eq(users.id, pending.userId)).limit(1);
+  redirect(pending.next ?? (await homeFor(u)));
+}
+
+export async function cancelSecondStepAction(): Promise<void> {
+  const pending = await pendingSecondStep();
+  await finishSecondStep(pending?.id ?? null);
+  redirect('/giris');
 }
 
 /* ---------------- Çıkış ---------------- */
@@ -215,6 +282,12 @@ export async function resetPasswordAction(_: FormState, formData: FormData): Pro
   await db.update(authTokens).set({ usedAt: new Date() }).where(eq(authTokens.id, row.id));
   await destroyAllUserSessions(row.userId);
   await audit({ actorUserId: row.userId, action: 'user.password_reset', entity: 'user', entityId: row.userId });
+  // E-posta kutusuna erişim tek başına yetmesin: iki aşamalı doğrulama açıksa oturum ikinci adımdan sonra açılır.
+  const [u] = await db.select({ totpEnabledAt: users.totpEnabledAt }).from(users).where(eq(users.id, row.userId)).limit(1);
+  if (u?.totpEnabledAt) {
+    await startSecondStep(row.userId, '/hesap?sifre=yenilendi');
+    redirect('/giris/dogrulama');
+  }
   await createUserSession(row.userId);
   await setHintCookie();
   redirect('/hesap?sifre=yenilendi');

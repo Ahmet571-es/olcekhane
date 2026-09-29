@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -30,11 +31,33 @@ export const users = pgTable(
     role: userRole('role').notNull().default('parent'),
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+    /** İki aşamalı doğrulama (TOTP) sırrı; APP_SECRET’ten türetilen anahtarla AES-256-GCM ile şifreli. */
+    totpSecret: text('totp_secret'),
+    /** Kurulum sürerken, kod doğrulanana kadar bekleyen yeni sır (şifreli). */
+    totpPendingSecret: text('totp_pending_secret'),
+    totpEnabledAt: timestamp('totp_enabled_at', { withTimezone: true }),
+    /** En son kabul edilen zaman adımı: aynı kod ikinci kez kullanılamaz. */
+    totpLastStep: bigint('totp_last_step', { mode: 'number' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     deletedAt: deletedAt(),
   },
   (t) => [uniqueIndex('users_email_uq').on(t.email)],
+);
+
+/** İki aşamalı doğrulama için tek kullanımlık kurtarma kodları (yalnızca HMAC özetleri saklanır). */
+export const recoveryCodes = pgTable(
+  'recovery_codes',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    codeHash: text('code_hash').notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('recovery_codes_uq').on(t.userId, t.codeHash)],
 );
 
 export const sessionKind = pgEnum('session_kind', ['user', 'student']);
@@ -68,6 +91,8 @@ export const authTokenKind = pgEnum('auth_token_kind', [
   'password_reset',
   'consent_request',
   'invite',
+  /** Şifre doğrulandıktan sonra iki aşamalı doğrulamanın ikinci adımını bekleyen giriş. */
+  'login_2fa',
 ]);
 
 /** E-posta doğrulama, şifre yenileme, veli onayı ve davet bağlantıları için tek kullanımlık belirteçler. */

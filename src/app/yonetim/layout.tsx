@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: 'Yönetim', robots: { index: false, f
 const NAV: NavItem[] = [
   { href: '/yonetim', label: 'Genel bakış' },
   { href: '/yonetim/okullar', label: 'Okullar' },
+  { href: '/yonetim/kullanicilar', label: 'Kullanıcılar' },
   { href: '/yonetim/psikometri', label: 'Psikometri' },
   { href: '/yonetim/mesajlar', label: 'Mesajlar' },
   { href: '/yonetim/eposta', label: 'E-postalar' },

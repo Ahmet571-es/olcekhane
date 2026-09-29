@@ -43,6 +43,13 @@
       "when": 1790652736735,
       "tag": "0005_gorev_kayitlari",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790653622654,
+      "tag": "0006_iki_asamali_dogrulama",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import 'server-only';
 import { and, asc, eq, isNull } from 'drizzle-orm';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { cache } from 'react';
 import { db } from '@/db';
 import { classTeachers, classes, memberships, organizations } from '@/db/schema';
@@ -91,6 +91,10 @@ export const requireOrg = cache(async (slug: string): Promise<OrgContext> => {
   const orgs = await userOrgs(user.id);
   const o = orgs.find((x) => x.slug === slug);
   if (!o) notFound();
+  // Rehber öğretmen bireysel sonuçları gördüğü için iki aşamalı doğrulama zorunlu (KVKK Kurulu 2018/10).
+  if (o.roles.includes('counselor') && !user.twoFactor) {
+    redirect(`/hesap/iki-asamali?zorunlu=1&sonra=${encodeURIComponent(`/okul/${slug}`)}`);
+  }
   const [org] = await db
     .select({
       id: organizations.id,

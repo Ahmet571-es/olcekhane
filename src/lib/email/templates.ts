@@ -119,6 +119,53 @@ export function accountClosedTemplate(name: string, deletedProfiles: number) {
   return { subject, html, text };
 }
 
+export function twoFactorChangedTemplate(p: { name: string; change: 'enabled' | 'disabled' | 'reset' | 'codes'; link: string }) {
+  const subject =
+    p.change === 'enabled'
+      ? 'İki aşamalı doğrulama açıldı'
+      : p.change === 'codes'
+        ? 'Kurtarma kodlarınız yenilendi'
+        : 'İki aşamalı doğrulama kapatıldı';
+  const what = {
+    enabled: 'Ölçekhane hesabınızda iki aşamalı doğrulama açıldı. Bundan sonra girişte şifrenizin yanında kimlik doğrulama uygulamanızdaki kodu da yazacaksınız. Diğer cihazlardaki oturumlarınız kapatıldı.',
+    disabled: 'Ölçekhane hesabınızda iki aşamalı doğrulama kapatıldı. Girişte artık yalnızca şifreniz istenecek.',
+    reset: 'Ölçekhane hesabınızın iki aşamalı doğrulaması platform yöneticisi tarafından sıfırlandı ve oturumlarınız kapatıldı. Bir sonraki girişinizde yeniden kurmanız istenecek.',
+    codes: 'Ölçekhane hesabınız için yeni kurtarma kodları oluşturuldu; eski kodlar artık geçerli değil.',
+  }[p.change];
+  const html = layout(
+    subject,
+    `<p>Merhaba ${esc(p.name)},</p><p>${esc(what)}</p><p>Bu değişikliği siz yapmadıysanız hemen şifrenizi yenileyin ve bize yazın.</p>${button(p.link, 'Hesabımı görüntüle')}`,
+    'Bu e-postayı hesabınızın güvenliğiyle ilgili bir değişiklik yapıldığı için aldınız.',
+  );
+  const text = `Merhaba ${p.name},\n\n${what}\n\nBu değişikliği siz yapmadıysanız hemen şifrenizi yenileyin ve bize yazın.\n${p.link}\n`;
+  return { subject, html, text };
+}
+
+export function recoveryCodeUsedTemplate(name: string, left: number, link: string) {
+  const subject = 'Hesabınıza kurtarma koduyla giriş yapıldı';
+  const what = `Ölçekhane hesabınıza bir kurtarma koduyla giriş yapıldı. Kullanılmamış ${left} kurtarma kodunuz kaldı.`;
+  const html = layout(
+    subject,
+    `<p>Merhaba ${esc(name)},</p><p>${esc(what)} Telefonunuzu değiştirdiyseniz iki aşamalı doğrulamayı yeni cihazınızda yeniden kurun.</p><p>Bu girişi siz yapmadıysanız hemen şifrenizi yenileyin ve bize yazın.</p>${button(link, 'İki aşamalı doğrulama ayarları')}`,
+    'Bu e-postayı hesabınızın güvenliğiyle ilgili bir işlem yapıldığı için aldınız.',
+  );
+  const text = `Merhaba ${name},\n\n${what}\n\nBu girişi siz yapmadıysanız hemen şifrenizi yenileyin.\n${link}\n`;
+  return { subject, html, text };
+}
+
+export function secondStepFailedTemplate(name: string, resetLink: string) {
+  const subject = 'Hesabınızda doğrulama kodu birkaç kez yanlış girildi';
+  const what =
+    'Ölçekhane hesabınıza şifrenizle giriş yapılmaya çalışıldı ama iki aşamalı doğrulama kodu birkaç kez yanlış girildi. Bunu siz yapmadıysanız şifreniz başkasının elinde olabilir.';
+  const html = layout(
+    subject,
+    `<p>Merhaba ${esc(name)},</p><p>${esc(what)} Hesabınız doğrulama kodu sayesinde korundu; yine de şifrenizi hemen değiştirmenizi öneririz.</p>${button(resetLink, 'Şifremi yenile')}`,
+    'Bu e-postayı hesabınızın güvenliğiyle ilgili bir durum nedeniyle aldınız.',
+  );
+  const text = `Merhaba ${name},\n\n${what} Şifrenizi hemen değiştirmenizi öneririz:\n${resetLink}\n`;
+  return { subject, html, text };
+}
+
 export function passwordResetTemplate(name: string, link: string) {
   const subject = 'Şifrenizi yenileyin';
   const html = layout(

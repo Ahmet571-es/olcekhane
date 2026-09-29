@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, eq, gt, ne } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import { db } from '@/db';
@@ -61,6 +61,8 @@ export type SessionUser = {
   fullName: string;
   role: 'parent' | 'staff' | 'admin';
   emailVerified: boolean;
+  /** İki aşamalı doğrulama açık mı (açıksa bu oturum ikinci adımla açılmıştır). */
+  twoFactor: boolean;
 };
 
 export type SessionStudent = { id: string; firstName: string; grade: number; orgId: string | null };
@@ -90,6 +92,7 @@ export const getSession = cache(async (): Promise<CurrentSession | null> => {
       fullName: users.fullName,
       role: users.role,
       emailVerifiedAt: users.emailVerifiedAt,
+      totpEnabledAt: users.totpEnabledAt,
       userDeletedAt: users.deletedAt,
       studentId: students.id,
       studentFirstName: students.firstName,
@@ -120,6 +123,7 @@ export const getSession = cache(async (): Promise<CurrentSession | null> => {
         fullName: row.fullName!,
         role: row.role!,
         emailVerified: !!row.emailVerifiedAt,
+        twoFactor: !!row.totpEnabledAt,
       },
     };
   }
@@ -150,4 +154,9 @@ export async function destroySession(): Promise<void> {
 /** Şifre değişince kullanıcının diğer tüm oturumlarını kapatır. */
 export async function destroyAllUserSessions(userId: string): Promise<void> {
   await db.delete(sessions).where(eq(sessions.userId, userId));
+}
+
+/** Bu oturum dışındaki bütün oturumları kapatır (ör. iki aşamalı doğrulama açılınca). */
+export async function destroyOtherUserSessions(userId: string, keepSessionId: string): Promise<void> {
+  await db.delete(sessions).where(and(eq(sessions.userId, userId), ne(sessions.id, keepSessionId)));
 }

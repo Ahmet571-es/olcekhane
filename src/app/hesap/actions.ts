@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { db } from '@/db';
-import { attempts, authTokens, classTeachers, emailOutbox, guardianships, memberships, organizations, sessions, students, users } from '@/db/schema';
+import { attempts, authTokens, classTeachers, emailOutbox, guardianships, memberships, organizations, recoveryCodes, sessions, students, users } from '@/db/schema';
 import { audit } from '@/lib/audit';
 import { checkPasswordPolicy, hashPassword, verifyPassword } from '@/lib/auth/password';
 import { SESSION_COOKIE, getSession } from '@/lib/auth/session';
@@ -183,8 +183,13 @@ export async function closeAccountAction(_: AccountFormState, formData: FormData
       phone: null,
       emailVerifiedAt: null,
       passwordHash: await hashPassword(randomToken()),
+      totpSecret: null,
+      totpPendingSecret: null,
+      totpEnabledAt: null,
+      totpLastStep: null,
     })
     .where(eq(users.id, s.user.id));
+  await db.delete(recoveryCodes).where(eq(recoveryCodes.userId, s.user.id));
   await db.delete(sessions).where(eq(sessions.userId, s.user.id));
   await audit({ actorUserId: s.user.id, action: 'user.close_account', entity: 'user', entityId: s.user.id, meta: { deletedProfiles: toDelete.length } });
   const store = await cookies();
