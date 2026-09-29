@@ -9,10 +9,9 @@ VERI_BAGLAMA=/srv/olcekhane
 # Sunucu dışı yedek kopyası:
 # Yedeklerin şifreleneceği age açık anahtarı (age1 ile başlar; gizli anahtar sizde kalır).
 YEDEK_ALICI=age1...
-# Kopyaların gönderileceği yer (Türkiye'de bir sunucu): kullanici@sunucu:klasor/
-YEDEK_HEDEF=yedek@yedek.ornek.com.tr:olcekhane/
-# Karşı sunucuya bağlanırken kullanılan SSH anahtarı.
+# Çekme (önerilen): depolama sunucusunun bağlandığı, yalnızca okuyabilen kullanıcının grubu.
+YEDEK_OKUYUCU=yedekci
+# Gönderme (yalnızca çekme kurulamıyorsa): kopyaların gönderileceği yer ve SSH anahtarı. Boş bırakılırsa
+# betik yalnızca aynayı hazırlar, depolama sunucusu çeker.
+YEDEK_HEDEF=
 YEDEK_SSH_ANAHTARI=/root/.ssh/olcekhane_yedek
-# Süresi dolan kopyaları kim siler? evet: bu betik (varsayılan). hayir: betik yalnızca ekler; anahtar
-# karşıda rrsync -wo -no-del ile kısıtlanır ve süresi dolanları karşıdaki bir görev siler (önerilen).
-YEDEK_KARSIDA_SIL=evet

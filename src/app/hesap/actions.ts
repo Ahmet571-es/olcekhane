@@ -19,8 +19,13 @@ import { appUrl } from '@/lib/request';
 
 export type AccountFormState = { ok?: boolean; message?: string; errors?: Record<string, string>; values?: Record<string, string> };
 
+/**
+ * Hesap işlemleri (şifre, oturumlar, hesap kapatma) yalnızca doğrulanmış oturumdan yapılır: iki aşamalı
+ * doğrulaması açık kullanıcının bu oturumda kodu girilmemişse önce oturumu doğrulama sayfasına gider.
+ */
 async function userSession() {
   const s = await getSession();
+  if (s?.kind === 'unverified') redirect('/hesap/iki-asamali?sonra=%2Fhesap');
   if (s?.kind !== 'user') redirect('/giris?sonra=/hesap');
   return s;
 }

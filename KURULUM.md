@@ -395,59 +395,76 @@ bir veritabanında öğrenci giriş kodları ve iki aşamalı doğrulama kurulum
 
 ### 9.3 Sunucu dışı şifreli kopya
 
-Sunucunun diski ya da kendisi kaybolursa yedekler de gider. `sunucu/yedek-kopyala.sh` betiği her gün
-yedekleri **age** ile şifreler ve Türkiye'deki başka bir sunucuya gönderir. Şifreleme bir açık anahtarla
-yapılır; yedeği açacak gizli anahtar sunucuda bulunmaz. Karşı taraftaki kopyalar da en fazla 28 gün
-saklanır.
+Sunucunun diski ya da kendisi kaybolursa yedekler de gider. Yedekler **age** ile şifrelenip Türkiye'deki
+ayrı bir depolama sunucusunda da saklanır. Şifreleme bir açık anahtarla yapılır; yedeği açacak gizli
+anahtar hiçbir sunucuda bulunmaz.
 
-1. **Anahtar çifti** (kendi bilgisayarınızda, sunucuda değil):
+Önerilen düzende depolama sunucusu kopyaları **kendisi çeker**. Ölçekhane sunucusunda depolama
+sunucusuna ait hiçbir anahtar bulunmaz; depolama sunucusunun bağlandığı hesap ise yalnızca şifreli
+kopyaları okuyabilir. Böylece Ölçekhane sunucusu ele geçirilse bile depodaki kopyalar silinemez ya da
+değiştirilemez; depolama sunucusu ele geçirilirse de yalnızca şifreli dosyalar okunabilir. Depodaki
+kopyalar 26 gün sonra silinir.
+
+1. **Anahtar çifti** (kendi bilgisayarınızda, sunucularda değil):
    `age-keygen -o olcekhane-yedek.key`. Çıktıdaki `age1…` ile başlayan açık anahtarı not edin; anahtar
    dosyasını parola yöneticisine ve çevrim dışı bir yere kaydedin.
-2. **Sunucuda bir SSH anahtarı:**
+2. **Ölçekhane sunucusunda** şifreli ayna ve yalnızca okuyabilen bir hesap:
 
    ```bash
    sudo apt install -y age rsync
-   sudo ssh-keygen -t ed25519 -N '' -C olcekhane-yedek -f /root/.ssh/olcekhane_yedek
-   sudo cat /root/.ssh/olcekhane_yedek.pub
-   ```
-
-3. **Depolama sunucusunda** (Türkiye'de, `rsync` kurulu) yalnızca yedeğe ayrılmış bir kullanıcı açın ve
-   anahtarı **yalnızca yazabilecek, silemeyecek** biçimde tanımlayın. Böylece Ölçekhane sunucusu ele
-   geçirilse bile karşıdaki kopyalar silinemez; süresi dolanları depolama sunucusundaki bir görev siler:
-
-   ```bash
-   sudo adduser --disabled-password --comment '' yedek
-   sudo -u yedek mkdir -p -m 700 /home/yedek/olcekhane /home/yedek/.ssh
-   sudo -u yedek nano /home/yedek/.ssh/authorized_keys
-   #   tek satır (sondaki anahtar, 2. adımdaki çıktı):
-   #   command="/usr/bin/rrsync -wo -no-del /home/yedek/olcekhane",restrict ssh-ed25519 AAAA… olcekhane-yedek
-   sudo crontab -u yedek -e
-   #   30 6 * * * find /home/yedek/olcekhane -maxdepth 1 -name 'olcekhane-*.dump.age' -mtime +27 -delete
-   ```
-
-4. **Ölçekhane sunucusunda** ayarları yazın ve betiği kurun:
-
-   ```bash
-   sudo ssh -i /root/.ssh/olcekhane_yedek yedek@yedek.ornek.com.tr   # sunucu anahtarını bir kez onaylayın (komutun reddedilmesi beklenir)
-   sudo nano /etc/olcekhane.conf      # YEDEK_ALICI=age1…, YEDEK_HEDEF=yedek@yedek.ornek.com.tr:, YEDEK_KARSIDA_SIL=hayir
+   sudo adduser --disabled-password --comment '' yedekci
+   sudo install -d -o root -g root -m 755 /home/yedekci/.ssh
+   sudo install -o root -g root -m 644 /dev/null /home/yedekci/.ssh/authorized_keys
+   sudo nano /etc/olcekhane.conf      # YEDEK_ALICI=age1… (YEDEK_OKUYUCU=yedekci, YEDEK_HEDEF boş kalır)
    sudo install -m 700 sunucu/yedek-kopyala.sh /usr/local/sbin/olcekhane-yedek-kopyala
-   sudo olcekhane-yedek-kopyala       # ilk kopya
+   sudo olcekhane-yedek-kopyala       # ilk şifreli kopyalar: /srv/olcekhane/yedek-kopya
    sudo install -m 644 sunucu/olcekhane.cron /etc/cron.d/olcekhane
    ```
 
-Betik her gün 04:30'da çalışır (sunucu saatiyle); kaydı `/var/log/olcekhane-yedek-kopya.log`
-dosyasındadır. Şifreli disk açık değilse ya da hiç yedek yoksa hiçbir şey yapmaz. Karşı sunucuda
-yukarıdaki kısıtlamayı yapamıyorsanız `YEDEK_KARSIDA_SIL=evet` bırakın ve `YEDEK_HEDEF` olarak bir
-klasör verin (`yedek@yedek.ornek.com.tr:olcekhane/`): o zaman süresi dolan kopyaları bu betik siler.
-Bu kipte de yalnızca `olcekhane-*.dump.age` dosyalarına dokunulur, saklama süresi içindeki kopyalar
-(yeni kurulmuş bir sunucuda karşılığı olmasa bile) silinmez ve bir çalışmada en fazla 10 dosya silinir.
+3. **Depolama sunucusunda** (Türkiye'de) bir SSH anahtarı üretin ve açık anahtarı Ölçekhane
+   sunucusundaki okuma hesabına tanımlayın:
 
-Şifreli disk kullanmıyorsanız ayar dosyasını `sudo install -m 644 sunucu/olcekhane.conf.example
-/etc/olcekhane.conf` ile kurun ve içine `VERI_BAGLAMA=/`,
-`YEDEK_KAYNAK=/srv/olcekhane/uygulama/yedekler`, `YEDEK_AYNA=/srv/olcekhane/yedek-kopya` ve
-`UYGULAMA_ENV=/srv/olcekhane/uygulama/.env` satırlarını ekleyin.
+   ```bash
+   sudo apt install -y rsync
+   sudo ssh-keygen -t ed25519 -N '' -C olcekhane-depo -f /root/.ssh/olcekhane_cek
+   sudo cat /root/.ssh/olcekhane_cek.pub
+   # Ölçekhane sunucusunda: sudo nano /home/yedekci/.ssh/authorized_keys ve tek satır:
+   #   command="/usr/bin/rrsync -ro -munge /srv/olcekhane/yedek-kopya",restrict ssh-ed25519 AAAA… olcekhane-depo
+   ```
 
-Karşıdaki bir kopyayı açmak için (kendi bilgisayarınızda):
+4. **Depolama sunucusunda** çekme görevini kurun (`sunucu/depo-cek.sh` dosyasını oraya kopyalayın):
+
+   ```bash
+   sudo install -m 700 depo-cek.sh /usr/local/sbin/olcekhane-depo-cek
+   sudo tee /etc/olcekhane-depo.conf >/dev/null <<'EOF'
+   DEPO_KAYNAK=yedekci@olcekhane.com:
+   DEPO_KLASOR=/srv/olcekhane-yedek
+   DEPO_SSH_ANAHTARI=/root/.ssh/olcekhane_cek
+   EOF
+   sudo ssh -i /root/.ssh/olcekhane_cek yedekci@olcekhane.com   # sunucu anahtarını bir kez onaylayın (komutun reddedilmesi beklenir)
+   sudo olcekhane-depo-cek            # ilk çekme
+   echo '0 6 * * * root /usr/local/sbin/olcekhane-depo-cek >> /var/log/olcekhane-depo.log 2>&1' | sudo tee /etc/cron.d/olcekhane-depo
+   ```
+
+Ölçekhane sunucusundaki görev her gün 04:30'da yeni yedekleri şifreler (kaydı
+`/var/log/olcekhane-yedek-kopya.log`); depolama sunucusu 06:00'da çeker (kaydı
+`/var/log/olcekhane-depo.log`). Depolama sunucusu var olan bir kopyanın üzerine hiçbir zaman yazmaz,
+bağlantıları (symlink) ve yedek adı taşımayan dosyaları almaz; süresi dolan kopyaları çekme başarısız
+olsa da siler.
+
+**Gönderme kipi** (depolama sunucusu Ölçekhane sunucusuna bağlanamıyorsa): `/etc/olcekhane.conf` içinde
+`YEDEK_HEDEF=kullanici@depo.ornek.com.tr:olcekhane/` ve `YEDEK_SSH_ANAHTARI` tanımlanırsa betik kopyaları
+kendisi gönderir ve saklama süresi dolanları karşıda siler. Yalnızca `olcekhane-*.dump.age` dosyalarına
+dokunulur, saklama süresi içindeki kopyalar (yeni kurulmuş bir sunucuda karşılığı olmasa bile)
+silinmez, bir çalışmada en fazla 10 dosya silinir. Bu kipte Ölçekhane sunucusunun anahtarı depoda
+yazma ve silme yetkisine sahiptir: sunucu ele geçirilirse depodaki kopyalar da silinebilir.
+
+Şifreli disk kullanmıyorsanız `/etc/olcekhane.conf` içine `VERI_BAGLAMA=/`,
+`YEDEK_KAYNAK=/srv/olcekhane/uygulama/yedekler`, `YEDEK_AYNA=/srv/olcekhane/yedek-kopya`,
+`YEDEK_GECICI=/srv/olcekhane/.yedek-kopya-gecici` ve `UYGULAMA_ENV=/srv/olcekhane/uygulama/.env`
+satırlarını da ekleyin.
+
+Bir kopyayı açmak için (kendi bilgisayarınızda):
 `age -d -i olcekhane-yedek.key -o olcekhane-20261001-031500.dump olcekhane-20261001-031500.dump.age`.
 
 ### 9.4 Deneme geri yüklemesi
@@ -514,7 +531,10 @@ saatte yeniden başlatıp diski açın).
 - Disk: `df -h / /srv/olcekhane` (yüzde 80'i geçmesin).
 - Hazırlık listesi: temizlik görevi ya da veritabanı yedeği son 36 saatte başarıyla çalışmadıysa ya da
   `SMTP_URL` tanımlı değilse "Eksik" gösterir. Gönderilemeyen e-postalar **Yönetim → E-postalar**
-  sayfasında görünür. Sunucu dışı kopyanın kaydı: `sudo tail /var/log/olcekhane-yedek-kopya.log`.
+  sayfasında görünür.
+- Sunucu dışı kopya hazırlık listesinde görünmez: haftada bir depolama sunucusunda
+  `sudo tail /var/log/olcekhane-depo.log` ile her gün yeni bir kopyanın geldiğini denetleyin (Ölçekhane
+  sunucusundaki kayıt: `sudo tail /var/log/olcekhane-yedek-kopya.log`).
 
 ## 12. Güvenlik notları
 

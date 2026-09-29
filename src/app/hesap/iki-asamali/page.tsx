@@ -17,8 +17,10 @@ const dateFmt = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long'
 
 export default async function TwoFactorPage(props: PageProps<'/hesap/iki-asamali'>) {
   const s = await getSession();
-  if (s?.kind !== 'user') redirect(`/giris?sonra=${encodeURIComponent('/hesap/iki-asamali')}`);
-  const user = s.user;
+  if (s?.kind !== 'user' && s?.kind !== 'unverified') redirect(`/giris?sonra=${encodeURIComponent('/hesap/iki-asamali')}`);
+  // Doğrulanmamış oturum (iki aşamalı doğrulama açık, bu oturumda kod girilmemiş) yalnızca oturumu
+  // doğrulama formunu görür.
+  const user = s.kind === 'user' ? s.user : s.unverifiedUser;
   const q = await props.searchParams;
   const zorunlu = q.zorunlu === '1';
   const next = safeNextPath(q.sonra) ?? undefined;
@@ -29,7 +31,7 @@ export default async function TwoFactorPage(props: PageProps<'/hesap/iki-asamali
     twoFactorRequired(user),
   ]);
   const enabled = !!u?.enabledAt;
-  const verified = user.twoFactor;
+  const verified = s.kind === 'user' && user.twoFactor;
   const left = enabled ? await unusedRecoveryCodes(user.id) : 0;
 
   // Bu oturumda kurulum sürüyorsa karekod ve elle girilecek anahtar.

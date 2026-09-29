@@ -1,5 +1,6 @@
 # Ölçekhane: günlük yedeklerin şifreli kopyası. /etc/cron.d/olcekhane olarak kopyalayın (KURULUM.md, 9.3).
-# Yedek her gün BACKUP_TIME saatinde (varsayılan 03:15, Türkiye saati) alınır; kopya ondan sonra gönderilir.
-# Sunucunun saat dilimi UTC ise 04:30, Türkiye saatiyle 07:30'dur. BACKUP_TIME'ı değiştirirseniz bu saati
-# de ondan sonraya alın.
+# Yedek her gün BACKUP_TIME saatinde (varsayılan 03:15, Türkiye saati) alınır; şifreli kopya ondan sonra
+# hazırlanır (çekme kipinde depolama sunucusu sonra çeker, gönderme kipinde hemen gönderilir). Sunucunun
+# saat dilimi UTC ise 04:30, Türkiye saatiyle 07:30'dur. BACKUP_TIME'ı değiştirirseniz bu saati de ondan
+# sonraya alın.
 30 4 * * * root /usr/local/sbin/olcekhane-yedek-kopyala >>/var/log/olcekhane-yedek-kopya.log 2>&1

@@ -30,8 +30,10 @@ export type TwoFactorState = { ok?: boolean; message?: string; errors?: Record<s
 const PAGE = '/hesap/iki-asamali';
 const TOO_MANY = 'Çok fazla deneme yapıldı. 15 dakika sonra tekrar deneyin.';
 
+/** Kodla doğrulanmış oturum; doğrulanmamışsa oturumu doğrulama sayfasına, oturum yoksa girişe gider. */
 async function userSession() {
   const s = await getSession();
+  if (s?.kind === 'unverified') redirect(PAGE);
   if (s?.kind !== 'user') redirect(`/giris?sonra=${encodeURIComponent(PAGE)}`);
   return s;
 }
@@ -128,17 +130,22 @@ export async function confirmSetupAction(_: TwoFactorState, formData: FormData):
  * yerde kuruldu). Girişin ikinci adımıyla aynı sınırlar uygulanır.
  */
 export async function verifySessionAction(_: TwoFactorState, formData: FormData): Promise<TwoFactorState> {
-  const s = await userSession();
+  const s = await getSession();
   const next = safeNextPath(formData.get('sonra'));
-  if (!s.user.twoFactorEnabled || s.user.twoFactor) redirect(next ?? PAGE);
+  if (s?.kind === 'user') redirect(next ?? PAGE);
+  if (s?.kind !== 'unverified') redirect(`/giris?sonra=${encodeURIComponent(next ?? PAGE)}`);
+  const user = s.unverifiedUser;
   const code = String(formData.get('code') ?? '').trim();
   if (!code) return { errors: { code: 'Kodu yazın.' } };
-  const attempt = await attemptSecondFactor(s.user.id, s.user.email, code, await clientIpBucket());
+  // Oturum, kodun kontrol edilmeye başlandığı anla işaretlenir: bu arada doğrulama yeni cihaza taşınırsa
+  // oturum iki aşamalı sayılmaz.
+  const verifiedAt = new Date();
+  const attempt = await attemptSecondFactor(user.id, user.email, code, await clientIpBucket());
   if (!attempt.ok) return attempt.codeError ? { errors: { code: attempt.codeError } } : { message: attempt.message };
-  await db.update(sessions).set({ twoFactorAt: new Date() }).where(eq(sessions.id, s.sessionId));
-  await audit({ actorUserId: s.user.id, action: 'user.2fa_session_verified', entity: 'user', entityId: s.user.id, meta: { method: attempt.method } });
+  await db.update(sessions).set({ twoFactorAt: verifiedAt }).where(eq(sessions.id, s.sessionId));
+  await audit({ actorUserId: user.id, action: 'user.2fa_session_verified', entity: 'user', entityId: user.id, meta: { method: attempt.method } });
   if (attempt.method === 'recovery') {
-    const left = await recoveryCodeUsed(s.user.id, s.user.email);
+    const left = await recoveryCodeUsed(user.id, user.email);
     redirect(`${PAGE}?kurtarma=${left}`);
   }
   redirect(next ?? PAGE);

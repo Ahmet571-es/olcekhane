@@ -111,7 +111,9 @@ değişiklik için sürüm numarasını artırın (sunucu günlüğünde uyarı 
 - Uygulama yalnızca Caddy arkasında çalışmalıdır: istemcinin IP adresi `X-Forwarded-For` başlığının
   son değerinden okunur ve Caddy bu başlığı gerçek adresle değiştirir.
 - İki aşamalı doğrulama oturum düzeyindedir: bir oturum, ikinci adımı kullanıcının doğrulamayı açtığı
-  andan sonra doğrulanmışsa (`sessions.two_factor_at`) iki aşamalı sayılır. Bekleyen kurulum sırrı da
-  oturuma bağlıdır; şifreyi bilen başka bir oturum onu göremez.
+  andan sonra doğrulanmışsa (`sessions.two_factor_at`) iki aşamalı sayılır. Doğrulaması açık bir
+  kullanıcının kodla doğrulanmamış oturumu `getSession()` içinde `kind: 'unverified'` olarak döner ve
+  oturum açılmamış gibi davranılır; yalnızca oturumu doğrulama sayfası ve çıkış kullanılabilir.
+  Bekleyen kurulum sırrı da oturuma bağlıdır; şifreyi bilen başka bir oturum onu göremez.
 - Veritabanı sorgu hataları (Drizzle, iletide parametreleri taşır) günlüğe parametresiz yazılır
   (`src/lib/log.ts`; `console.error` sunucu açılışında sarılır).

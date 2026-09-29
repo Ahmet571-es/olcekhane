@@ -7,11 +7,27 @@ import { guardianships, memberships, organizations, students } from '@/db/schema
 import { isUuid } from '@/lib/uuid';
 import { getSession, type SessionStudent, type SessionUser } from './session';
 
-/** Oturum açmış yetişkin kullanıcıyı döndürür; yoksa giriş sayfasına yönlendirir. */
+/**
+ * Oturum açmış yetişkin kullanıcıyı döndürür; yoksa giriş sayfasına yönlendirir. İki aşamalı doğrulaması
+ * açık ama bu oturumda ikinci adımı doğrulanmamış kullanıcı, oturumu doğrulama sayfasına gider.
+ */
 export async function requireUser(next?: string): Promise<SessionUser> {
   const s = await getSession();
   if (s?.kind === 'user') return s.user;
-  redirect(`/giris${next ? `?sonra=${encodeURIComponent(next)}` : ''}`);
+  const q = next ? `?sonra=${encodeURIComponent(next)}` : '';
+  if (s?.kind === 'unverified') redirect(`/hesap/iki-asamali${q}`);
+  redirect(`/giris${q}`);
+}
+
+/**
+ * Hesabım bölümünün çerçevesi için: doğrulanmamış oturumlar da kabul edilir (oturumu doğrulama sayfası
+ * bu bölümdedir). Sayfaların kendisi requireUser ile korunur.
+ */
+export async function requireAccountHolder(next: string): Promise<SessionUser> {
+  const s = await getSession();
+  if (s?.kind === 'user') return s.user;
+  if (s?.kind === 'unverified') return s.unverifiedUser;
+  redirect(`/giris?sonra=${encodeURIComponent(next)}`);
 }
 
 export async function requireAdmin(): Promise<SessionUser> {
@@ -75,6 +91,8 @@ export const studentAccess = cache(async (studentId: string): Promise<StudentAcc
   if (s.kind === 'student') {
     return s.student.id === student.id ? { allowed: true, via: 'self', student } : { allowed: false };
   }
+  // İkinci adımı doğrulanmamış oturum hiçbir öğrencinin verisine erişemez.
+  if (s.kind !== 'user') return { allowed: false };
   const user = s.user;
   const [g] = await db
     .select({ id: guardianships.id })

@@ -28,10 +28,11 @@ async function setSessionCookie(token: string, expiresAt: Date) {
 }
 
 /**
- * Yetişkin oturumu açar. `twoFactor`: oturum girişin ikinci adımı (kod ya da kurtarma kodu)
- * doğrulanarak açılıyor; yalnızca bu durumda oturum bireysel sonuçlara erişebilir.
+ * Yetişkin oturumu açar. `twoFactorAt`: girişin ikinci adımı (kod ya da kurtarma kodu) doğrulanarak
+ * açılıyorsa, doğrulamaya başlanan an. Kod kontrolünden hemen önce alınır: kontrolle oturumun yazılması
+ * arasında iki aşamalı doğrulama yeni cihaza taşınırsa oturum iki aşamalı sayılmaz.
  */
-export async function createUserSession(userId: string, opts: { twoFactor?: boolean } = {}): Promise<void> {
+export async function createUserSession(userId: string, opts: { twoFactorAt?: Date } = {}): Promise<void> {
   const token = randomToken();
   const expiresAt = new Date(Date.now() + USER_SESSION_DAYS * 86400_000);
   await db.insert(sessions).values({
@@ -41,7 +42,7 @@ export async function createUserSession(userId: string, opts: { twoFactor?: bool
     expiresAt,
     ip: await clientIp(),
     userAgent: await userAgent(),
-    twoFactorAt: opts.twoFactor ? new Date() : null,
+    twoFactorAt: opts.twoFactorAt ?? null,
   });
   await setSessionCookie(token, expiresAt);
 }
@@ -85,7 +86,14 @@ export type SessionStudent = { id: string; firstName: string; grade: number; org
 
 export type CurrentSession =
   | { kind: 'user'; sessionId: string; user: SessionUser }
-  | { kind: 'student'; sessionId: string; student: SessionStudent };
+  | { kind: 'student'; sessionId: string; student: SessionStudent }
+  /**
+   * İki aşamalı doğrulaması açık bir kullanıcının, ikinci adımı doğrulanmamış oturumu (ör. doğrulama
+   * başka bir cihazda açılırken açık kalmış). Oturum açılmamış gibi davranılır; yalnızca oturumu
+   * doğrulama sayfası ve çıkış kullanılabilir. Alan adı bilerek `user` değildir: kullanıcıya erişen
+   * kod, oturumun türünü açıkça 'user' olarak denetlemek zorunda kalır.
+   */
+  | { kind: 'unverified'; sessionId: string; unverifiedUser: SessionUser };
 
 /**
  * Geçerli oturum. Aynı istek içinde tekrar sorgulanmaması için React `cache` ile saklanır.
@@ -131,19 +139,17 @@ export const getSession = cache(async (): Promise<CurrentSession | null> => {
   }
 
   if (row.kind === 'user' && row.userId && !row.userDeletedAt) {
-    return {
-      kind: 'user',
-      sessionId: row.id,
-      user: {
-        id: row.userId,
-        email: row.email!,
-        fullName: row.fullName!,
-        role: row.role!,
-        emailVerified: !!row.emailVerifiedAt,
-        twoFactorEnabled: !!row.totpEnabledAt,
-        twoFactor: sessionHasTwoFactor(row.totpEnabledAt, row.twoFactorAt),
-      },
+    const user: SessionUser = {
+      id: row.userId,
+      email: row.email!,
+      fullName: row.fullName!,
+      role: row.role!,
+      emailVerified: !!row.emailVerifiedAt,
+      twoFactorEnabled: !!row.totpEnabledAt,
+      twoFactor: sessionHasTwoFactor(row.totpEnabledAt, row.twoFactorAt),
     };
+    if (user.twoFactorEnabled && !user.twoFactor) return { kind: 'unverified', sessionId: row.id, unverifiedUser: user };
+    return { kind: 'user', sessionId: row.id, user };
   }
   if (row.kind === 'student' && row.studentId && !row.studentDeletedAt) {
     return {

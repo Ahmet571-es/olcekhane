@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
 import { AppHeader, type NavItem } from '@/components/app/app-header';
-import { requireUser } from '@/lib/auth/dal';
+import { requireAccountHolder } from '@/lib/auth/dal';
 import { homeFor } from '@/lib/auth/home';
 import { userOrgs } from '@/lib/school/access';
 
 export const metadata: Metadata = { title: 'Hesabım', robots: { index: false, follow: false } };
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser('/hesap');
+  // Doğrulanmamış oturumlar da çerçeveyi görür: oturumu doğrulama sayfası (/hesap/iki-asamali) buradadır.
+  // Sayfalar kendileri requireUser ile korunur.
+  const user = await requireAccountHolder('/hesap');
   const [orgs, home] = await Promise.all([userOrgs(user.id), homeFor(user)]);
   const switchLinks: NavItem[] = [{ href: '/panel', label: 'Veli paneli' }];
   if (orgs.length > 0) switchLinks.push({ href: '/okul', label: 'Okul paneli' });
