@@ -56,6 +56,7 @@ jobs:
         run: |
           APP_SECRET=$(openssl rand -hex 32); echo "::add-mask::$APP_SECRET"; export APP_SECRET
           node scripts/migrate.mjs
+          npx tsx --conditions=react-server scripts/seed.ts
           npm run test:db
       - name: Üretim derlemesi (ortam değişkeni olmadan)
         run: env -i PATH="$PATH" HOME="$HOME" NEXT_TELEMETRY_DISABLED=1 sh -c 'npm run build && npm run build:scripts'
