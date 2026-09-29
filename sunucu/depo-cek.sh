@@ -28,9 +28,10 @@ mkdir -p "$DEPO_KLASOR"
 BUGUN=$(date +%Y%m%d)
 SINIR=$(date -d "-$GUN days" +%Y%m%d)
 
-# Yalnızca saklama aralığındaki günlerin (SINIR..BUGÜN) yedek adları alınır.
+# Klasörler hiç alınmaz; yalnızca saklama aralığındaki günlerin (SINIR..BUGÜN) yedek adları alınır.
 KURALLAR=$(mktemp)
 trap 'rm -f "$KURALLAR"' EXIT
+echo '- */' > "$KURALLAR"
 i=0
 while [ "$i" -le "$GUN" ]; do
   echo "+ olcekhane-$(date -d "-$i days" +%Y%m%d)-*.dump.age" >> "$KURALLAR"
@@ -57,8 +58,9 @@ for f in "$DEPO_KLASOR"/olcekhane-*.dump.age; do
     *) gun=0 ;;
   esac
   if [ -L "$f" ] || [ ! -f "$f" ] || [ "$gun" -lt "$SINIR" ] || [ "$gun" -gt "$BUGUN" ]; then
-    rm -f "$f"
-    echo "[depo] silindi: $ad"
+    # Düzenli dosya olmayan (ör. yedek adı taşıyan bir klasör) girdiler de kaldırılır; bir girdi
+    # silinemezse diğerlerinin saklaması yine uygulanır.
+    if rm -rf -- "$f"; then echo "[depo] silindi: $ad"; else echo "[depo] UYARI: silinemedi: $ad" >&2; fi
   else
     n=$((n + 1))
   fi

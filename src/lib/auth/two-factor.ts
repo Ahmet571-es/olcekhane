@@ -91,7 +91,8 @@ export async function verifySecondFactorAt(userId: string, input: string): Promi
       .where(
         and(
           eq(users.id, userId),
-          eq(users.totpEnabledAt, enabledAt),
+          // Karşılaştırma milisaniye düzeyinde: JavaScript tarihleri mikrosaniye taşımaz.
+          sql`date_trunc('milliseconds', ${users.totpEnabledAt}) = ${enabledAt.toISOString()}::timestamptz`,
           or(isNull(users.totpLastStep), lt(users.totpLastStep, step)),
         ),
       )
