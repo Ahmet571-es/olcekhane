@@ -376,6 +376,7 @@ export async function sendConsentRequestsAction(slug: string, classId: string, _
   }
   if (!(await rateLimit(`onay:${ctx.org.id}`, 600, 86400))) return { message: 'Bugün çok sayıda onay isteği gönderildi. Yarın tekrar deneyin.' };
 
+  let queued = 0;
   for (const t of targets) {
     const token = randomToken();
     await db.insert(consentRequests).values({
@@ -392,7 +393,7 @@ export async function sendConsentRequestsAction(slug: string, classId: string, _
       link: appUrl(`/veli-onayi/${token}`),
       days: CONSENT_REQUEST_DAYS,
     });
-    await sendEmail({ to: t.email!, ...mail });
+    if ((await sendEmail({ to: t.email!, ...mail })).status === 'queued') queued++;
   }
   await audit({
     actorUserId: ctx.user.id,
@@ -406,6 +407,7 @@ export async function sendConsentRequestsAction(slug: string, classId: string, _
   if (noEmail) notes.push(`${noEmail} öğrencinin veli e-postası kayıtlı değil`);
   if (recent) notes.push(`${recent} veliye son üç gün içinde zaten gönderilmişti`);
   if (declined) notes.push(`${declined} veli daha önce karar verdiği için yeniden sorulmadı`);
+  if (queued) notes.push(`${queued} e-posta, e-posta sağlayıcısının saatlik gönderim sınırı nedeniyle sırada; birkaç saat içinde kendiliğinden gönderilecek`);
   return { ok: true, message: `${targets.length} veliye onay isteği gönderildi.${notes.length ? ` ${notes.join('; ')}.` : ''}` };
 }
 

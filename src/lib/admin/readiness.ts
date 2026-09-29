@@ -61,8 +61,25 @@ export async function readinessChecks(): Promise<ReadinessCheck[]> {
     label: 'E-posta gönderimi (SMTP_URL)',
     status: env.SMTP_URL ? 'ok' : prod ? 'fail' : 'warn',
     detail: env.SMTP_URL
-      ? `Tanımlı. Gönderen: ${env.MAIL_FROM ?? 'Ölçekhane <bilgi@olcekhane.com> (varsayılan)'}`
+      ? `Tanımlı. Gönderen: ${env.MAIL_FROM ?? 'Ölçekhane <bilgi@olcekhane.com> (varsayılan)'}. Gönderim sınırı: saatte ${env.MAIL_RATE_PER_HOUR || 90}, günde ${env.MAIL_RATE_PER_DAY || 900} e-posta (MAIL_RATE_PER_HOUR, MAIL_RATE_PER_DAY; sağlayıcının sınırının biraz altında olmalı).`
       : 'Tanımlı değil: doğrulama, şifre yenileme, davet ve veli onayı e-postaları gönderilmiyor, yalnızca bu paneldeki e-posta kutusuna yazılıyor.',
+  });
+
+  // E-posta kuyruğu: sınır dolunca ya da geçici hatalarda e-postalar sırada bekler; uzun süre bekleyen
+  // e-posta, sınırın sağlayıcınınkinden düşük kaldığını ya da SMTP'nin çalışmadığını gösterir.
+  const [queue] = await db.execute<{ n: number; wait_h: number | null }>(
+    sql`select count(*)::int as n, (extract(epoch from now() - min(created_at)) / 3600)::float8 as wait_h
+          from email_outbox where status = 'queued'`,
+  );
+  const waitH = Number(queue.wait_h ?? 0);
+  out.push({
+    key: 'mail_queue',
+    label: 'E-posta kuyruğu',
+    status: queue.n === 0 || waitH < 6 ? 'ok' : waitH < 24 ? 'warn' : 'fail',
+    detail:
+      queue.n === 0
+        ? 'Bekleyen e-posta yok.'
+        : `${queue.n} e-posta sırada; en eskisi ${Math.floor(waitH)} saattir bekliyor.${waitH >= 6 ? ' SMTP bilgilerini ve Yönetim → E-postalar sayfasındaki hata iletilerini denetleyin; gerekirse sağlayıcıdan gönderim sınırını artırmasını isteyin.' : ''}`,
   });
 
   const missing = missingCompanyFields();

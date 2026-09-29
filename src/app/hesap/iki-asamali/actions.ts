@@ -51,7 +51,7 @@ function back(formData: FormData, extra = ''): string {
 
 async function notify(userId: string, change: 'enabled' | 'moved' | 'disabled' | 'codes') {
   const [u] = await db.select({ email: users.email, fullName: users.fullName }).from(users).where(eq(users.id, userId)).limit(1);
-  if (u) await sendEmail({ to: u.email, ...twoFactorChangedTemplate({ name: u.fullName, change, link: appUrl(PAGE) }) });
+  if (u) await sendEmail({ to: u.email, ...twoFactorChangedTemplate({ name: u.fullName, change, link: appUrl(PAGE) }) }, { priority: true });
 }
 
 /**

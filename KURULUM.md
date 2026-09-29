@@ -271,6 +271,7 @@ nano .env
 | `APP_SECRET` | `openssl rand -hex 32` çıktısı. **Kurulumdan sonra değiştirmeyin** ve parola yöneticisine de kaydedin: öğrenci giriş kodları, kurtarma kodları ve iki aşamalı doğrulama sırları buna bağlıdır. |
 | `SMTP_URL` | 465 portu: `smtps://kullanici:sifre@smtp.saglayici.com.tr:465` · 587 portu: `smtp://kullanici:sifre@smtp.saglayici.com.tr:587?requireTLS=true`. Kullanıcı adında ya da şifrede `@`, `:`, `/` varsa kodlayarak yazın (`%40`, `%3A`, `%2F`). |
 | `MAIL_FROM` | `Ölçekhane <bilgi@olcekhane.com>` |
+| `MAIL_RATE_PER_HOUR`, `MAIL_RATE_PER_DAY` | Sağlayıcının saatlik ve günlük gönderim sınırının biraz altında (varsayılan 90 ve 900). Sınırı aşan e-postalar sırada bekler ve sınır açıldıkça gönderilir (**Yönetim → E-postalar**). |
 | `COMPANY_*` | Şirket bilgileri (hepsi zorunlu) |
 | `ALLOW_INDEXING` | Hazırlık süresince `false`, yayına çıkarken `true` |
 | `SCHEDULED_JOBS` | `true` kalmalı (günlük temizlik görevi) |

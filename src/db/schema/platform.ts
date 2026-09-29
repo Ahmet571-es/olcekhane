@@ -188,9 +188,21 @@ export const emailOutbox = pgTable(
     status: emailStatus('status').notNull().default('queued'),
     error: text('error'),
     sentAt: timestamp('sent_at', { withTimezone: true }),
+    /** Gönderim denemesi sayısı (geçici hatalarda artan aralıklarla yeniden denenir). */
+    attempts: integer('attempts').notNull().default(0),
+    /** Sıradaki e-postanın en erken ne zaman denenebileceği (boşsa hemen). */
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    /** Son deneme zamanı: sağlayıcının saatlik ve günlük gönderim sınırı bununla hesaplanır. */
+    lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+    /** Gönderilince alıcı adresi silinsin (ör. kapatılan hesabın bilgilendirme e-postası). */
+    redactAfterSend: boolean('redact_after_send').notNull().default(false),
     createdAt: createdAt(),
   },
-  (t) => [index('email_outbox_status_idx').on(t.status, t.createdAt)],
+  (t) => [
+    index('email_outbox_status_idx').on(t.status, t.createdAt),
+    index('email_outbox_queue_idx').on(t.status, t.nextAttemptAt),
+    index('email_outbox_attempt_idx').on(t.lastAttemptAt),
+  ],
 );
 
 /** Her ölçeğin kullanım izninin kaydı: kimden, ne zaman, hangi kapsamda. */

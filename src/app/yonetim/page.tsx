@@ -29,6 +29,7 @@ export default async function AdminHome(props: PageProps<'/yonetim'>) {
       completed30: number;
       messages: number;
       failedMail: number;
+      queuedMail: number;
       research: number;
     }>(sql`
       select
@@ -39,6 +40,7 @@ export default async function AdminHome(props: PageProps<'/yonetim'>) {
         (select count(*)::int from attempts where status = 'completed' and completed_at > now() - interval '30 days') as "completed30",
         (select count(*)::int from contact_messages where handled_at is null) as messages,
         (select count(*)::int from email_outbox where status = 'failed') as "failedMail",
+        (select count(*)::int from email_outbox where status = 'queued') as "queuedMail",
         (select count(distinct cr.subject_student_id)::int from consent_records cr join legal_documents d on d.id = cr.document_id
           where d.kind = 'consent_research' and cr.granted and cr.revoked_at is null) as research
     `),
@@ -63,7 +65,7 @@ export default async function AdminHome(props: PageProps<'/yonetim'>) {
         <p className="text-ink-2">Platformun durumu ve yayına hazırlık listesi.</p>
       </div>
 
-      {(c.messages > 0 || c.failedMail > 0) && (
+      {(c.messages > 0 || c.failedMail > 0 || c.queuedMail > 0) && (
         <div className="flex flex-wrap gap-3">
           {c.messages > 0 && (
             <Link href="/yonetim/mesajlar" className="notice notice-info no-underline">
@@ -73,6 +75,11 @@ export default async function AdminHome(props: PageProps<'/yonetim'>) {
           {c.failedMail > 0 && (
             <Link href="/yonetim/eposta?durum=failed" className="notice notice-danger no-underline">
               {c.failedMail} e-posta gönderilemedi.
+            </Link>
+          )}
+          {c.queuedMail > 0 && (
+            <Link href="/yonetim/eposta?durum=queued" className="notice notice-info no-underline">
+              {c.queuedMail} e-posta gönderim sırasında bekliyor.
             </Link>
           )}
         </div>

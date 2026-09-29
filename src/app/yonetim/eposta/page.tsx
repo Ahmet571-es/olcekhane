@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { and, desc, eq, ilike, type SQL } from 'drizzle-orm';
+import { and, desc, eq, ilike, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/db';
 import { emailOutbox } from '@/db/schema';
 import { requireAdmin } from '@/lib/auth/dal';
@@ -9,11 +9,12 @@ const STATUS: Record<string, { label: string; chip: string }> = {
   sent: { label: 'Gönderildi', chip: 'chip chip-ok' },
   logged: { label: 'Yalnızca kayıt', chip: 'chip chip-brass' },
   failed: { label: 'Gönderilemedi', chip: 'chip chip-danger' },
-  queued: { label: 'Sırada', chip: 'chip' },
+  queued: { label: 'Sırada', chip: 'chip chip-brass' },
 };
 
 const RETRY: Record<string, { ok: boolean; text: string }> = {
   sent: { ok: true, text: 'E-posta gönderildi.' },
+  queued: { ok: true, text: 'E-posta sıraya alındı: gönderim sınırı dolduğu ya da geçici bir hata olduğu için birazdan yeniden denenecek.' },
   failed: { ok: false, text: 'E-posta yine gönderilemedi. Hata ayrıntısına bakın.' },
   no_smtp: { ok: false, text: 'SMTP tanımlı olmadığı için yeniden denenemedi.' },
   not_found: { ok: false, text: 'E-posta bulunamadı ya da zaten gönderilmiş.' },
@@ -36,6 +37,9 @@ export default async function AdminOutbox(props: PageProps<'/yonetim/eposta'>) {
       subject: emailOutbox.subject,
       status: emailOutbox.status,
       error: emailOutbox.error,
+      attempts: emailOutbox.attempts,
+      nextAttemptAt: emailOutbox.nextAttemptAt,
+      due: sql<boolean>`coalesce(${emailOutbox.nextAttemptAt} <= now(), true)`,
       createdAt: emailOutbox.createdAt,
     })
     .from(emailOutbox)
@@ -50,7 +54,8 @@ export default async function AdminOutbox(props: PageProps<'/yonetim/eposta'>) {
         <h1 className="t-h1">E-postalar</h1>
         <p className="measure text-ink-2">
           Platformun gönderdiği son 100 e-posta. Gönderilen e-postaların içeriği güvenlik için saklanmaz; SMTP tanımlı değilken yalnızca
-          kaydedilen e-postaların içeriği burada açılabilir.
+          kaydedilen e-postaların içeriği burada açılabilir. E-posta sağlayıcısının gönderim sınırı dolunca e-postalar sırada bekler ve
+          sınır açıldıkça gönderilir; geçici hatalarda iki güne kadar artan aralıklarla yeniden denenir.
         </p>
       </div>
       {retry && (
@@ -95,6 +100,12 @@ export default async function AdminOutbox(props: PageProps<'/yonetim/eposta'>) {
                 <p className="t-meta break-all">
                   {r.toEmail} · {dateFmt.format(r.createdAt)}
                 </p>
+                {r.status === 'queued' && (
+                  <p className="t-small text-ink-2">
+                    {r.attempts > 0 ? `${r.attempts}. deneme başarısız; ` : 'Gönderim sınırı nedeniyle bekliyor; '}
+                    {r.nextAttemptAt && !r.due ? `sıradaki deneme ${dateFmt.format(r.nextAttemptAt)}` : 'ilk fırsatta gönderilecek'}.
+                  </p>
+                )}
                 {r.error && <p className="t-small break-words text-danger">{r.error}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-2">

@@ -153,7 +153,7 @@ export async function attemptSecondFactor(userId: string, email: string, input: 
   if (verified) return { ok: true, ...verified };
   if (byKey.n + 1 >= 3 && (await rateLimit(`iki-asama-uyari:${userId}`, 1, 6 * 3600))) {
     const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, userId)).limit(1);
-    await sendEmail({ to: email, ...secondStepFailedTemplate(u?.fullName ?? '', appUrl('/sifremi-unuttum')) });
+    await sendEmail({ to: email, ...secondStepFailedTemplate(u?.fullName ?? '', appUrl('/sifremi-unuttum')) }, { priority: true });
   }
   return { ok: false, codeError: 'Kod doğru değil ya da süresi geçmiş. Uygulamadaki güncel kodu yazın.' };
 }
@@ -163,7 +163,7 @@ export async function recoveryCodeUsed(userId: string, email: string): Promise<n
   const left = await unusedRecoveryCodes(userId);
   await audit({ actorUserId: userId, action: 'user.recovery_code_used', entity: 'user', entityId: userId, meta: { left } });
   const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, userId)).limit(1);
-  await sendEmail({ to: email, ...recoveryCodeUsedTemplate(u?.fullName ?? '', left, appUrl('/hesap/iki-asamali')) });
+  await sendEmail({ to: email, ...recoveryCodeUsedTemplate(u?.fullName ?? '', left, appUrl('/hesap/iki-asamali')) }, { priority: true });
   return left;
 }
 

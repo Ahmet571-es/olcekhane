@@ -74,7 +74,7 @@ export async function changePasswordAction(_: AccountFormState, formData: FormDa
     .set({ usedAt: new Date() })
     .where(and(eq(authTokens.userId, s.user.id), inArray(authTokens.kind, ['password_reset', 'login_2fa']), isNull(authTokens.usedAt)));
   await audit({ actorUserId: s.user.id, action: 'user.password_change', entity: 'user', entityId: s.user.id });
-  await sendEmail({ to: s.user.email, ...passwordChangedTemplate(s.user.fullName, appUrl('/sifremi-unuttum')) });
+  await sendEmail({ to: s.user.email, ...passwordChangedTemplate(s.user.fullName, appUrl('/sifremi-unuttum')) }, { priority: true });
   revalidatePath('/hesap');
   return { ok: true, message: 'Şifreniz değiştirildi. Diğer cihazlardaki oturumlarınız kapatıldı.' };
 }
@@ -173,13 +173,20 @@ export async function closeAccountAction(_: AccountFormState, formData: FormData
 
   // Bilgilendirme e-postası, adres silinmeden önce gönderilir; ardından e-posta kayıtlarındaki adres de silinir.
   const anonEmail = `kapali-${s.user.id}@hesap.invalid`;
-  const notice = await sendEmail({ to: s.user.email, ...accountClosedTemplate(s.user.fullName, toDelete.length) });
-  // Gönderilemeyen kapanış bildirimi yeniden denenebilsin diye yalnızca o kayıtta adres kalır; günlük
-  // temizlik görevi başarısız e-postaları belirli bir süre sonra siler.
+  const notice = await sendEmail({ to: s.user.email, ...accountClosedTemplate(s.user.fullName, toDelete.length) }, { priority: true, redactAfterSend: true });
+  // Henüz gönderilemeyen (kuyrukta bekleyen ya da başarısız) kapanış bildiriminin kaydında adres, gönderilene
+  // kadar kalır; gönderilince silinir. Günlük temizlik görevi gönderilemeyen e-postaların içeriğini ve
+  // eski kayıtları siler.
+  const noticePending = notice.status === 'queued' || notice.status === 'failed';
   await db
     .update(emailOutbox)
     .set({ toEmail: anonEmail })
-    .where(and(eq(emailOutbox.toEmail, s.user.email), notice.status === 'failed' ? ne(emailOutbox.id, notice.id) : undefined));
+    .where(and(eq(emailOutbox.toEmail, s.user.email), noticePending ? ne(emailOutbox.id, notice.id) : undefined));
+  // Bu adrese kuyrukta bekleyen diğer e-postalar gönderilmez (tek kullanımlık bağlantılar içerebilir).
+  await db
+    .update(emailOutbox)
+    .set({ status: 'failed', error: 'Hesap kapatıldığı için gönderilmedi.', html: '', text: '', nextAttemptAt: null })
+    .where(and(eq(emailOutbox.toEmail, anonEmail), eq(emailOutbox.status, 'queued')));
   await db
     .update(users)
     .set({

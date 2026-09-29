@@ -57,7 +57,7 @@ async function sendVerification(userId: string, email: string, name: string) {
     expiresAt: new Date(Date.now() + 48 * 3600_000),
   });
   const t = verifyEmailTemplate(name, appUrl(`/eposta-dogrula?t=${token}`));
-  await sendEmail({ to: email, ...t });
+  await sendEmail({ to: email, ...t }, { priority: true });
 }
 
 /* ---------------- Kayıt ---------------- */
@@ -228,7 +228,7 @@ export async function forgotPasswordAction(_: FormState, formData: FormData): Pr
         expiresAt: new Date(Date.now() + 3600_000),
       });
       const t = passwordResetTemplate(user.fullName, appUrl(`/sifre-yenile?t=${token}`));
-      await sendEmail({ to: email, ...t });
+      await sendEmail({ to: email, ...t }, { priority: true });
     }
   }
   // Hesabın var olup olmadığını belli etmemek için her durumda aynı mesaj.

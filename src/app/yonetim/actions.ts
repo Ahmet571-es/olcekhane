@@ -195,6 +195,6 @@ export async function resetTwoFactorAction(userId: string, formData: FormData): 
     await revokePendingLogins(userId, tx);
   });
   await audit({ actorUserId: admin.id, action: 'user.2fa_reset_by_admin', entity: 'user', entityId: userId, meta: { reason: String(formData.get('reason') ?? '').slice(0, 300) } });
-  await sendEmail({ to: u.email, ...twoFactorChangedTemplate({ name: u.fullName, change: 'reset', link: appUrl('/hesap/iki-asamali') }) });
+  await sendEmail({ to: u.email, ...twoFactorChangedTemplate({ name: u.fullName, change: 'reset', link: appUrl('/hesap/iki-asamali') }) }, { priority: true });
   redirect(`${back}&sifirlandi=1`);
 }
