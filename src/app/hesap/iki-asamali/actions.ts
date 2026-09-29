@@ -137,12 +137,11 @@ export async function verifySessionAction(_: TwoFactorState, formData: FormData)
   const user = s.unverifiedUser;
   const code = String(formData.get('code') ?? '').trim();
   if (!code) return { errors: { code: 'Kodu yazın.' } };
-  // Oturum, kodun kontrol edilmeye başlandığı anla işaretlenir: bu arada doğrulama yeni cihaza taşınırsa
-  // oturum iki aşamalı sayılmaz.
-  const verifiedAt = new Date();
   const attempt = await attemptSecondFactor(user.id, user.email, code, await clientIpBucket());
   if (!attempt.ok) return attempt.codeError ? { errors: { code: attempt.codeError } } : { message: attempt.message };
-  await db.update(sessions).set({ twoFactorAt: verifiedAt }).where(eq(sessions.id, s.sessionId));
+  // Oturum, kodun doğrulandığı kurulumun zamanıyla işaretlenir: bu arada doğrulama yeni cihaza taşındıysa
+  // oturum iki aşamalı sayılmaz.
+  await db.update(sessions).set({ twoFactorAt: attempt.enabledAt }).where(eq(sessions.id, s.sessionId));
   await audit({ actorUserId: user.id, action: 'user.2fa_session_verified', entity: 'user', entityId: user.id, meta: { method: attempt.method } });
   if (attempt.method === 'recovery') {
     const left = await recoveryCodeUsed(user.id, user.email);

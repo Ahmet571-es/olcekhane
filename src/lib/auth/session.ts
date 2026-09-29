@@ -29,8 +29,8 @@ async function setSessionCookie(token: string, expiresAt: Date) {
 
 /**
  * Yetişkin oturumu açar. `twoFactorAt`: girişin ikinci adımı (kod ya da kurtarma kodu) doğrulanarak
- * açılıyorsa, doğrulamaya başlanan an. Kod kontrolünden hemen önce alınır: kontrolle oturumun yazılması
- * arasında iki aşamalı doğrulama yeni cihaza taşınırsa oturum iki aşamalı sayılmaz.
+ * açılıyorsa, kodun doğrulandığı kurulumun zamanı (verifySecondFactorAt). Doğrulama bu arada yeni cihaza
+ * taşınırsa kurulum zamanı değişir ve oturum iki aşamalı sayılmaz.
  */
 export async function createUserSession(userId: string, opts: { twoFactorAt?: Date } = {}): Promise<void> {
   const token = randomToken();

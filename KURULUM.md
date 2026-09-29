@@ -428,8 +428,9 @@ kopyalar 26 gün sonra silinir.
    sudo apt install -y rsync
    sudo ssh-keygen -t ed25519 -N '' -C olcekhane-depo -f /root/.ssh/olcekhane_cek
    sudo cat /root/.ssh/olcekhane_cek.pub
-   # Ölçekhane sunucusunda: sudo nano /home/yedekci/.ssh/authorized_keys ve tek satır:
-   #   command="/usr/bin/rrsync -ro -munge /srv/olcekhane/yedek-kopya",restrict ssh-ed25519 AAAA… olcekhane-depo
+   # Ölçekhane sunucusunda: sudo nano /home/yedekci/.ssh/authorized_keys ve tek satır
+   # (from= ile anahtar yalnızca depolama sunucusunun IP adresinden kullanılabilir):
+   #   from="DEPO_IP",command="/usr/bin/rrsync -ro -munge /srv/olcekhane/yedek-kopya",restrict ssh-ed25519 AAAA… olcekhane-depo
    ```
 
 4. **Depolama sunucusunda** çekme görevini kurun (`sunucu/depo-cek.sh` dosyasını oraya kopyalayın):
@@ -448,9 +449,11 @@ kopyalar 26 gün sonra silinir.
 
 Ölçekhane sunucusundaki görev her gün 04:30'da yeni yedekleri şifreler (kaydı
 `/var/log/olcekhane-yedek-kopya.log`); depolama sunucusu 06:00'da çeker (kaydı
-`/var/log/olcekhane-depo.log`). Depolama sunucusu var olan bir kopyanın üzerine hiçbir zaman yazmaz,
-bağlantıları (symlink) ve yedek adı taşımayan dosyaları almaz; süresi dolan kopyaları çekme başarısız
-olsa da siler.
+`/var/log/olcekhane-depo.log`). Depolama sunucusu var olan bir kopyanın üzerine hiçbir zaman yazmaz;
+bağlantıları (symlink), yedek adı taşımayan ve adındaki tarih saklama aralığı dışında (ör. gelecekte)
+olan dosyaları almaz. Saklama süresini dosyanın adındaki tarihe göre uygular ve süresi dolan kopyaları
+çekme başarısız olsa da siler. Ölçekhane sunucusu kaybolur da 26 gün içinde geri yüklenmezse depodaki
+kopyalar da silinir: haftalık kontrolü ([bölüm 11](#11-sistemi-izleme)) atlamayın.
 
 **Gönderme kipi** (depolama sunucusu Ölçekhane sunucusuna bağlanamıyorsa): `/etc/olcekhane.conf` içinde
 `YEDEK_HEDEF=kullanici@depo.ornek.com.tr:olcekhane/` ve `YEDEK_SSH_ANAHTARI` tanımlanırsa betik kopyaları

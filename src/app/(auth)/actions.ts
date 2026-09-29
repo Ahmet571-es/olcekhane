@@ -170,8 +170,6 @@ export async function secondStepAction(_: FormState, formData: FormData): Promis
   if (!pending) return { message: 'Girişin süresi doldu. Lütfen e-posta ve şifrenizle yeniden giriş yapın.' };
   const code = String(formData.get('code') ?? '').trim();
   if (!code) return { errors: { code: 'Kodu yazın.' } };
-  // Oturum, kodun kontrol edilmeye başlandığı anla işaretlenir (bkz. createUserSession).
-  const verifiedAt = new Date();
   const attempt = await attemptSecondFactor(pending.userId, pending.email, code, await clientIpBucket());
   if (!attempt.ok) return attempt.codeError ? { errors: { code: attempt.codeError } } : { message: attempt.message };
 
@@ -179,7 +177,9 @@ export async function secondStepAction(_: FormState, formData: FormData): Promis
   // değişmişse (bekleyen girişler geçersiz kılınır) oturum açılmaz.
   if (!(await finishSecondStep(pending.id))) return { message: 'Girişin süresi doldu. Lütfen e-posta ve şifrenizle yeniden giriş yapın.' };
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, pending.userId));
-  await createUserSession(pending.userId, { twoFactorAt: verifiedAt });
+  // Oturum, kodun doğrulandığı kurulumun zamanıyla işaretlenir: bu arada doğrulama yeni cihaza
+  // taşındıysa oturum iki aşamalı sayılmaz.
+  await createUserSession(pending.userId, { twoFactorAt: attempt.enabledAt });
   await setHintCookie();
   if (attempt.method === 'recovery') {
     const left = await recoveryCodeUsed(pending.userId, pending.email);

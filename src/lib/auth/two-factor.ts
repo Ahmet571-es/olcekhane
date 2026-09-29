@@ -68,25 +68,35 @@ export async function twoFactorRequired(user: { id: string; role: string }): Pro
 
 /**
  * İkinci adımı doğrular: 6 haneli kod ya da kurtarma kodu. Aynı kodun iki kez kullanılmaması için
- * adım ve kurtarma kodu veritabanında koşullu güncellemeyle işaretlenir. Başarılıysa yöntemi döndürür.
+ * adım ve kurtarma kodu veritabanında koşullu güncellemeyle işaretlenir. Başarılıysa yöntemi ve kodun
+ * doğrulandığı kurulumun zamanını (totp_enabled_at) döndürür: oturum bu zamanla işaretlenir, böylece
+ * doğrulama bu arada yeni cihaza taşınırsa (zaman değişir) oturum iki aşamalı sayılmaz.
  */
-export async function verifySecondFactor(userId: string, input: string): Promise<'totp' | 'recovery' | null> {
+export async function verifySecondFactorAt(userId: string, input: string): Promise<{ method: 'totp' | 'recovery'; enabledAt: Date } | null> {
   const [u] = await db
     .select({ secret: users.totpSecret, lastStep: users.totpLastStep, enabledAt: users.totpEnabledAt })
     .from(users)
     .where(and(eq(users.id, userId), isNull(users.deletedAt)))
     .limit(1);
   if (!u?.secret || !u.enabledAt) return null;
+  const enabledAt = u.enabledAt;
   const digits = input.replace(/\s/g, '');
   if (/^\d{6}$/.test(digits)) {
     const step = verifyTotp(base32Decode(openSecret(u.secret)), digits, u.lastStep);
     if (step === null) return null;
+    // Kurulum okunduğundan beri değişmediyse (aynı sır) adım işaretlenir.
     const [ok] = await db
       .update(users)
       .set({ totpLastStep: step })
-      .where(and(eq(users.id, userId), or(isNull(users.totpLastStep), lt(users.totpLastStep, step))))
+      .where(
+        and(
+          eq(users.id, userId),
+          eq(users.totpEnabledAt, enabledAt),
+          or(isNull(users.totpLastStep), lt(users.totpLastStep, step)),
+        ),
+      )
       .returning({ id: users.id });
-    return ok ? 'totp' : null;
+    return ok ? { method: 'totp', enabledAt } : null;
   }
   const code = normalizeRecoveryCode(input);
   if (!code) return null;
@@ -95,7 +105,12 @@ export async function verifySecondFactor(userId: string, input: string): Promise
     .set({ usedAt: new Date() })
     .where(and(eq(recoveryCodes.userId, userId), eq(recoveryCodes.codeHash, hashRecoveryCode(code)), isNull(recoveryCodes.usedAt)))
     .returning({ id: recoveryCodes.id });
-  return used ? 'recovery' : null;
+  return used ? { method: 'recovery', enabledAt } : null;
+}
+
+/** verifySecondFactorAt'in yalnızca yöntemi döndüren biçimi (oturum işaretlemeyen işlemler için). */
+export async function verifySecondFactor(userId: string, input: string): Promise<'totp' | 'recovery' | null> {
+  return (await verifySecondFactorAt(userId, input))?.method ?? null;
 }
 
 /**
@@ -107,7 +122,7 @@ export async function secondFactorAttemptAllowed(userId: string): Promise<boolea
   return (await rateLimit(`iki-asama-deneme:${userId}`, 8, 900)) && (await rateLimit(`iki-asama-gun:${userId}`, 40, 86400));
 }
 
-export type SecondFactorAttempt = { ok: true; method: 'totp' | 'recovery' } | { ok: false; message?: string; codeError?: string };
+export type SecondFactorAttempt = { ok: true; method: 'totp' | 'recovery'; enabledAt: Date } | { ok: false; message?: string; codeError?: string };
 
 /**
  * İkinci adımı sınırlarıyla birlikte dener (girişte ve kodla doğrulanmamış bir oturumu doğrularken):
@@ -132,9 +147,9 @@ export async function attemptSecondFactor(userId: string, email: string, input: 
   if (byKey.n >= 8 || byIp.n >= 30 || !(await secondFactorAttemptAllowed(userId))) {
     return { ok: false, message: 'Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar deneyin.' };
   }
-  const method = await verifySecondFactor(userId, input);
-  await db.insert(loginAttempts).values({ key, ip, success: !!method });
-  if (method) return { ok: true, method };
+  const verified = await verifySecondFactorAt(userId, input);
+  await db.insert(loginAttempts).values({ key, ip, success: !!verified });
+  if (verified) return { ok: true, ...verified };
   if (byKey.n + 1 >= 3 && (await rateLimit(`iki-asama-uyari:${userId}`, 1, 6 * 3600))) {
     const [u] = await db.select({ fullName: users.fullName }).from(users).where(eq(users.id, userId)).limit(1);
     await sendEmail({ to: email, ...secondStepFailedTemplate(u?.fullName ?? '', appUrl('/sifremi-unuttum')) });

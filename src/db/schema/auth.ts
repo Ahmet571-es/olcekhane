@@ -77,8 +77,10 @@ export const sessions = pgTable(
     ip: text('ip'),
     userAgent: text('user_agent'),
     /**
-     * Bu oturumda ikinci adımın (kod ya da kurtarma kodu) doğrulandığı an. Oturum ancak bu an,
-     * kullanıcının iki aşamalı doğrulamayı açtığı andan sonraysa "iki aşamalı" sayılır.
+     * Bu oturumda ikinci adım (kod ya da kurtarma kodu) doğrulandıysa, kodun ait olduğu kurulumun
+     * zamanı (kurulumu yapan oturumda kurulum anı). Oturum ancak bu zaman kullanıcının şu anki kurulum
+     * zamanından (totp_enabled_at) eski değilse "iki aşamalı" sayılır: yeni cihaza taşıma ya da yeniden
+     * kurulum eski oturumları düşürür.
      */
     twoFactorAt: timestamp('two_factor_at', { withTimezone: true }),
     /** Kurulum sürerken, kod doğrulanana kadar bekleyen yeni sır (şifreli): yalnızca kurulumu başlatan oturum görür. */
