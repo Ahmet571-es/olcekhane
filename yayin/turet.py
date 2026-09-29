@@ -62,7 +62,11 @@ def main() -> int:
     if len(sys.argv) != 2:
         print("kullanım: ANA_SIFRE=... turet.py <klasör>", file=sys.stderr)
         return 2
-    ana = os.environ.get("ANA_SIFRE", "").strip()
+    # Kâğıttan geri yazılırken yapılabilecek farklar yok sayılır: boşluklar atılır; parola yalnızca onaltılık
+    # rakamlardan oluşuyorsa (parola üretme sayfasının verdiği biçim) büyük/küçük harf farkı da önemsenmez.
+    ana = "".join(os.environ.get("ANA_SIFRE", "").split())
+    if ana and all(c in "0123456789abcdefABCDEF" for c in ana):
+        ana = ana.lower()
     if len(ana) < 32:
         print(
             "HATA: ANA_SIFRE tanımlı değil ya da 32 karakterden kısa. GitHub'da depo ayarlarındaki "

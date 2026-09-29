@@ -18,6 +18,10 @@ runs:
       with:
         cleanup: false
     - uses: docker/build-push-action@v7
+      env:
+        # Derleme özeti ve kaydı bu iş akışında kullanılmıyor (yalnızca uyarı üretiyordu).
+        DOCKER_BUILD_SUMMARY: 'false'
+        DOCKER_BUILD_RECORD_UPLOAD: 'false'
       with:
         context: .
         load: true
