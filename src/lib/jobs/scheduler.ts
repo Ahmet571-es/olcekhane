@@ -1,4 +1,5 @@
 import 'server-only';
+import { errorSummary } from '@/lib/log';
 import { lastSuccessfulRun, runPurgeJob } from './purge';
 
 const HOUR = 3600_000;
@@ -21,7 +22,7 @@ export function startScheduler(log: (m: string) => void = console.log): void {
         log(`temizlik tamam${done.length ? `: ${done.map(([k, n]) => `${k}=${n}`).join(', ')}` : ' (silinecek kayıt yoktu)'}`);
       }
     } catch (err) {
-      console.error('[görevler] temizlik başarısız', err);
+      console.error(`[görevler] temizlik başarısız: ${errorSummary(err)}`);
     }
   };
   globalForJobs.__olcekhaneJobs = setInterval(tick, HOUR);

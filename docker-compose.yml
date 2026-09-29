@@ -4,10 +4,21 @@
 
 name: olcekhane
 
+# Kapsayıcı günlükleri boyutla sınırlı ve döngüseldir; kapsayıcı yeniden oluşturulunca silinir. Hata
+# ayrıntılarında seyrek de olsa kişisel veri bulunabilir (bkz. KURULUM.md, Güvenlik notları).
+x-gunluk: &gunluk
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
     image: postgres:18
     restart: unless-stopped
+    # Hata kayıtlarına ayrıntı satırı (ör. "Key (email)=(...) already exists") yazılmasın.
+    command: ["postgres", "-c", "log_error_verbosity=terse"]
+    logging: *gunluk
     environment:
       POSTGRES_DB: olcekhane
       POSTGRES_USER: olcekhane
@@ -28,6 +39,7 @@ services:
     build: .
     image: olcekhane-app:latest
     restart: unless-stopped
+    logging: *gunluk
     env_file: .env
     environment:
       NODE_ENV: production
@@ -42,6 +54,7 @@ services:
   caddy:
     image: caddy:2
     restart: unless-stopped
+    logging: *gunluk
     ports:
       - "80:80"
       - "443:443"
@@ -60,6 +73,7 @@ services:
   yedek:
     image: postgres:18
     restart: unless-stopped
+    logging: *gunluk
     environment:
       PGHOST: db
       PGUSER: olcekhane

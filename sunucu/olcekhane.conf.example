@@ -1,0 +1,15 @@
+# Ölçekhane sunucu ayarları. /etc/olcekhane.conf olarak kopyalayıp doldurun (KURULUM.md, 4.3 ve 9.3).
+# Bu dosyada gizli bilgi yoktur: disk parolası ve yedeklerin gizli anahtarı sunucuda tutulmaz.
+
+# Şifreli veri diski: LUKS bölümü (kimliği için: sudo cryptsetup luksUUID /dev/vdb) ya da dosya yolu.
+VERI_KAYNAK=/dev/disk/by-uuid/00000000-0000-0000-0000-000000000000
+# Şifreli diskin bağlandığı klasör.
+VERI_BAGLAMA=/srv/olcekhane
+
+# Sunucu dışı yedek kopyası:
+# Yedeklerin şifreleneceği age açık anahtarı (age1 ile başlar; gizli anahtar sizde kalır).
+YEDEK_ALICI=age1...
+# Kopyaların gönderileceği yer (Türkiye'de bir sunucu): kullanici@sunucu:klasor/
+YEDEK_HEDEF=yedek@yedek.ornek.com.tr:olcekhane/
+# Karşı sunucuya bağlanırken kullanılan SSH anahtarı.
+YEDEK_SSH_ANAHTARI=/root/.ssh/olcekhane_yedek

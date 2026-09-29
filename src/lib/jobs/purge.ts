@@ -2,6 +2,7 @@ import 'server-only';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db, type Tx } from '@/db';
 import { jobRuns } from '@/db/schema';
+import { errorSummary } from '@/lib/log';
 
 /**
  * Saklama süreleri. Aydınlatma metnindeki sözlerle uyumlu olmalıdır (src/content/legal: "Ne kadar
@@ -233,7 +234,7 @@ export async function runPurgeJob(trigger: 'zamanlayıcı' | 'yönetici'): Promi
   } catch (err) {
     await db
       .update(jobRuns)
-      .set({ finishedAt: new Date(), ok: false, error: String(err instanceof Error ? err.message : err).slice(0, 1000) })
+      .set({ finishedAt: new Date(), ok: false, error: errorSummary(err) })
       .where(eq(jobRuns.id, run.id));
     throw err;
   }

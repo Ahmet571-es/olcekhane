@@ -53,7 +53,7 @@ export async function readinessChecks(): Promise<ReadinessCheck[]> {
     detail:
       secret.length >= 32
         ? 'Tanımlı (değer gösterilmez).'
-        : 'Öğrenci giriş kodlarının özetleri bu anahtarla alınır. En az 32 karakterlik rastgele bir değer tanımlayın: openssl rand -base64 48',
+        : 'Öğrenci giriş kodlarının özetleri bu anahtarla alınır. En az 32 karakterlik rastgele bir değer tanımlayın: openssl rand -hex 32',
   });
 
   out.push({

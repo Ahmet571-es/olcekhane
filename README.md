@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ölçekhane
 
-## Getting Started
+Öğrenciler için bilimsel ölçme platformu: akademik tanı testleri, kişilik, ilgi ve çalışma alışkanlığı
+ölçekleri ile dikkat ve çalışma belleği görevleri. Veliler çocukları için tek başına kullanabilir; okullar
+rehberlik servisi aracılığıyla sınıflarına uygular. Raporlar veli, öğrenci ve rehber öğretmen için ayrı
+dille yazılır; her testin bilimsel dayanağı, güvenirliği ve sınırlılıkları raporda açıkça yazar.
 
-First, run the development server:
+Bu belge geliştiriciler içindir. Sunucuya kurulum için **[KURULUM.md](KURULUM.md)** dosyasına bakın.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Neler var?
+
+- **Testler:** Beş Faktör Kişilik Profili, Öz-saygı Ölçeği (Rosenberg), Mesleki İlgi Profili (RIASEC),
+  Çalışma Alışkanlıkları Envanteri, Okuma Hızı ve Anlama, Matematik Tanı Testi (5–8. sınıf, hata türü
+  analiziyle), Dikkat ve Çalışma Belleği Görevleri. Test tanımları kodda sürümlüdür
+  (`src/content/instruments`); puanlama sunucuda yapılır.
+- **Veli paneli:** çocuk profili, açık rıza, test çözme, veli ve öğrenci raporları.
+- **Okul paneli:** okul yöneticisi, rehber öğretmen ve öğretmen görevleri; e-Okul listesinden öğrenci
+  aktarma; veli onayını e-postayla alma; öğrenci giriş kodları; test atama; en az 5 öğrencilik ve
+  küçük hücreleri gizleyen grup raporları. Okulda bireysel sonuçları yalnızca rehber öğretmen görür;
+  öğretmen ve okul yöneticisi grup özetlerini görür.
+- **KVKK:** aydınlatma ve açık rıza ayrı; rıza geri alınınca uygulamalar geçersiz sayılır ve günlük
+  temizlik göreviyle silinir; saklama süreleri görevle uygulanır; bireysel verilere erişen görevlerde
+  iki aşamalı doğrulama zorunludur; önemli işlemler denetim kaydına yazılır.
+- **Yönetim paneli:** yayına hazırlık listesi, okullar, kullanıcı desteği, e-posta kutusu, denetim
+  kaydı, günlük temizlik ve psikometri laboratuvarı (madde analizi, güvenirlik, anonim araştırma
+  verisi, ön norm).
+
+## Teknoloji
+
+Next.js 16 (App Router, sunucu eylemleri), React 19, TypeScript, PostgreSQL 18 ve Drizzle ORM,
+Tailwind CSS 4, three.js (tanıtım sayfalarındaki 3B sahneler). Üretimde Docker, Caddy (HTTPS) ve
+PostgreSQL.
+
+```
+src/app          sayfalar ve sunucu eylemleri ((site) tanıtım, (auth) giriş ve veli onayı,
+                 panel veli, okul okul paneli, ogrenci öğrenci, uygulama test ekranları,
+                 hesap Hesabım, yonetim platform yönetimi, api sağlık denetimi)
+src/content      test tanımları, rapor metinleri, rehber yazıları, hukuki metinler
+src/lib          puanlama, rapor üretimi, kimlik doğrulama, okul kuralları, psikometri, görevler
+src/db           veritabanı şeması (Drizzle); geçişler drizzle/ klasöründe
+docker/          Caddy yapılandırması, kapsayıcı açılış ve yedek betikleri
+sunucu/          sunucu betikleri: şifreli veri diskini açma, yedeklerin sunucu dışına şifreli kopyası
+scripts/         geliştirme veritabanı, şema geçişi, tohum verisi, yönetici oluşturma
+tests/           birim testleri; tests/db veritabanıyla çalışan testler
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Geliştirme ortamı
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Node.js 22 gerekir.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm ci
+npm run db:start          # yerel PostgreSQL'i başlatır (gömülü, 54329 portu; ayrı bir terminalde açık kalır)
+```
 
-## Learn More
+Kök klasörde `.env.local` dosyası oluşturun:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+DATABASE_URL=postgres://olcekhane:olcekhane@127.0.0.1:54329/olcekhane
+APP_URL=http://localhost:3000
+APP_SECRET=gelistirme-icin-en-az-32-karakterlik-rastgele-bir-deger
+SESSION_COOKIE_SECURE=false
+# SMTP_URL tanımlı değilse e-postalar gönderilmez, yönetim panelindeki e-posta kutusuna yazılır.
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:migrate        # şemayı kurar
+ADMIN_EMAIL=siz@ornek.com ADMIN_PASSWORD='uzun-bir-sifre' npm run db:seed   # tanımlar + ilk yönetici
+npm run dev               # http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Yönetici ilk girişte iki aşamalı doğrulamayı kurar (herhangi bir kimlik doğrulama uygulamasıyla).
+Geliştirmede günlük temizlik görevi kapalıdır; `SCHEDULED_JOBS=true` ile açılır ya da yönetim
+panelinden elle çalıştırılır.
 
-## Deploy on Vercel
+### Denetimler ve testler
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run typecheck
+npm run lint
+npm test                  # birim testleri
+npm run test:db           # veritabanı testleri (yalnızca yerel veritabanında çalışır)
+npm run build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Veritabanı değişiklikleri
+
+Şemayı `src/db/schema` altında değiştirin, sonra `npm run db:generate` ile geçiş dosyası üretin.
+Üretilen dosyaya anlamlı bir ad verin (`drizzle/000N_ad.sql`) ve `drizzle/meta/_journal.json`
+içindeki `tag` alanını aynı adla güncelleyin; `npm run db:migrate` ile uygulayın. Üretimde geçişler
+uygulama açılırken kendiliğinden uygulanır.
+
+### Test tanımları ve hukuki metinler
+
+Kodda tanımlıdır ve sunucu her açıldığında veritabanına eşitlenir. Bir test sürümüyle yapılmış
+uygulama varsa ya da bir hukuki metin sürümüne bağlı onay kaydı varsa o sürümün üzerine yazılmaz:
+değişiklik için sürüm numarasını artırın (sunucu günlüğünde uyarı görünür).
+
+## Güvenlik notları
+
+- Bağımlılık denetimi: `npm audit --omit=dev` temiz. Geliştirme aracı `drizzle-kit`'in içindeki eski
+  esbuild sürümü için orta düzey bir uyarı vardır; yalnızca geliştirme sırasında kullanılır, üretim
+  görüntüsüne girmez.
+- `APP_SECRET` kurulumdan sonra değiştirilmemelidir: öğrenci giriş kodları, kurtarma kodları ve iki
+  aşamalı doğrulama sırları buna bağlıdır.
+- Uygulama yalnızca Caddy arkasında çalışmalıdır: istemcinin IP adresi `X-Forwarded-For` başlığının
+  son değerinden okunur ve Caddy bu başlığı gerçek adresle değiştirir.

@@ -1,6 +1,7 @@
 import 'server-only';
 import { db } from '@/db';
 import { auditLogs } from '@/db/schema';
+import { errorSummary } from '@/lib/log';
 import { clientIp } from '@/lib/request';
 
 export async function audit(entry: {
@@ -22,7 +23,7 @@ export async function audit(entry: {
       ip: await clientIp(),
     });
   } catch (err) {
-    // Denetim kaydı yazılamazsa işlemi durdurmayız ama sunucu günlüğüne düşeriz.
-    console.error('audit log yazılamadı', err);
+    // Denetim kaydı yazılamazsa işlemi durdurmayız ama sunucu günlüğüne düşeriz (parametreler olmadan).
+    console.error(`denetim kaydı yazılamadı (${entry.action}): ${errorSummary(err)}`);
   }
 }

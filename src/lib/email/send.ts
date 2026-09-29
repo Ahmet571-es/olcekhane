@@ -33,7 +33,10 @@ async function deliver(id: string, msg: { to: string; subject: string; html: str
       .update(emailOutbox)
       .set({ status: 'failed', error: String(err).slice(0, 500) })
       .where(eq(emailOutbox.id, id));
-    console.error('e-posta gönderilemedi', err);
+    // SMTP hata iletisi alıcı adresini içerebilir: ayrıntı e-posta kutusundaki kayıtta (saklama süresiyle)
+    // durur, sunucu günlüğüne yalnızca hata türü yazılır.
+    const e = err as { code?: unknown; responseCode?: unknown; command?: unknown };
+    console.error(`e-posta gönderilemedi (kayıt ${id}): ${[e?.code, e?.command, e?.responseCode].filter(Boolean).join(' ') || 'bilinmeyen hata'}`);
     return false;
   }
 }
