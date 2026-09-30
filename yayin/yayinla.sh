@@ -56,6 +56,17 @@ temizle() {
   rm -rf "$IS"
 }
 trap temizle EXIT
+# Gizli bilgilerin kutuya yanlış bir şey yapıştırılarak girildiği sık durumlar. Değerlerin kendisi yazılmaz.
+yanlis_deger() { # ad değer — yalnızca bilinen yanlış değerleri adlandırır
+  local d
+  d=$(printf '%s' "$2" | tr -d '[:space:]')
+  case "$d" in
+    ANA_SIFRE | SUNUCU_ROOT_SIFRE) echo "$1 kutusuna şifre yerine bir gizli bilginin adı ($d) yapıştırılmış." ;;
+    undefined | null) echo "$1 kutusuna '$d' yapıştırılmış: kopyalama çalışmamış." ;;
+  esac
+}
+neden=$(yanlis_deger ANA_SIFRE "${ANA_SIFRE:-}")
+[ -z "$neden" ] || hata "$neden Değeri GitHub Secrets'ta yeniden girin (yayin/REHBER.md)."
 turet_cikti=$(python3 "$KOK/yayin/turet.py" "$IS/anahtar" 2>&1) ||
   hata "ANA_SIFRE okunamadı (GitHub Secrets: ANA_SIFRE): ${turet_cikti#HATA: }"
 gh_not notice "Anahtarlar" "ANA_SIFRE parmak izi: $(cat "$IS/anahtar/parmak_izi") (değişmemeli; ANA_SIFRE'nin kendisi değildir)."
@@ -74,12 +85,18 @@ baglan() { # ip root_sifresi
   local ip=$1 sifre=$2 pub
   if "${SSH[@]}" "yonetici@$ip" 'sudo -n true' 2>/dev/null; then return 0; fi
   [ -n "$sifre" ] || hata "Sunucu ($ip): yayın anahtarıyla bağlanılamadı. Sunucu henüz kurulmadıysa GitHub Secrets'a root şifresini (SUNUCU_ROOT_SIFRE) girin; ilk kurulumdan sonra gerekmez. Sunucu daha önce kurulduysa ANA_SIFRE değiştirilmiş olabilir: eski değeri geri girin."
+  local neden ipucu=""
+  neden=$(yanlis_deger SUNUCU_ROOT_SIFRE "$sifre")
+  [ -z "$neden" ] || hata "$neden Değeri GitHub Secrets'ta yeniden girin (yayin/REHBER.md)."
+  # Ana Parola sayfasının ürettiği biçimde (64 onaltılık karakter) bir root şifresi büyük olasılıkla ANA_SIFRE'dir.
+  [[ "$(printf '%s' "$sifre" | tr -d '[:space:]')" =~ ^[0-9a-fA-F]{64}$ ]] &&
+    ipucu=" SUNUCU_ROOT_SIFRE, Ana Parola sayfasının ürettiği parolaya benziyor: iki gizli bilgi yer değiştirmiş olabilir."
   command -v sshpass >/dev/null || hata "sshpass kurulu değil."
   pub=$(cat "$IS/anahtar/ssh_anahtari.pub")
   gh_not notice "Sunucu" "$ip: ilk kurulum, root şifresiyle bağlanılıyor."
   SSHPASS=$sifre sshpass -e ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password,keyboard-interactive \
     -o UserKnownHostsFile="$KH" -o HashKnownHosts=no -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 \
-    "root@$ip" bash -s <<EOF || hata "Sunucu ($ip): ne yayın anahtarıyla ne de root şifresiyle bağlanılabildi. İlk kurulumsa şifreyi ve sağlayıcının root ile SSH girişine izin verdiğini denetleyin. Sunucu daha önce kurulduysa (root girişi artık kapalıdır) ANA_SIFRE değiştirilmiş olabilir: eski değeri geri girin."
+    "root@$ip" bash -s <<EOF || hata "Sunucu ($ip): ne yayın anahtarıyla ne de root şifresiyle bağlanılabildi. İlk kurulumsa şifreyi ve sağlayıcının root ile SSH girişine izin verdiğini denetleyin. Sunucu daha önce kurulduysa (root girişi artık kapalıdır) ANA_SIFRE değiştirilmiş olabilir: eski değeri geri girin.$ipucu"
 set -e
 id yonetici >/dev/null 2>&1 || useradd --create-home --shell /bin/bash yonetici
 install -d -m 700 -o yonetici -g yonetici /home/yonetici/.ssh
