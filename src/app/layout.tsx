@@ -9,7 +9,7 @@ import { OG_DEFAULTS, indexingAllowed } from '@/lib/seo';
 
 /*
  * Sayfalar istek anında üretilir: site adresi (APP_URL), dizine ekleme ayarı (ALLOW_INDEXING) ve
- * aydınlatma metniyle altbilgideki şirket bilgileri (COMPANY_*) sunucunun çalışırken okuduğu ortam
+ * hukuki metinlerle İletişim sayfasındaki site sahibi bilgileri (OWNER_*) sunucunun çalışırken okuduğu ortam
  * değişkenlerinden gelir. Derleme anında sayfalara gömülselerdi Docker görüntüsü .env dosyası olmadan
  * derlendiği için boş kalır, .env değişince de güncellenmezdi.
  */

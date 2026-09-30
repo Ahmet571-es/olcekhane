@@ -1,11 +1,12 @@
 /**
- * Hukuki metinler. {{company.*}} yer tutucuları, şirket bilgileriyle (COMPANY_* ortam değişkenleri)
- * görüntüleme anında doldurulur. Metinler yayına alınmadan önce bir avukat tarafından gözden
- * geçirilmelidir. Bir metin değiştirildiğinde sürüm numarası artırılır.
+ * Hukuki metinler. {{owner.*}} yer tutucuları, site sahibinin bilgileriyle (OWNER_* ortam değişkenleri,
+ * bkz. lib/site.ts) görüntüleme anında doldurulur; boş kalabilen alanları (KEP, vergi) anan satırlar bu
+ * alanlar boşken gösterilmez. Metinler yayına alınmadan önce bir avukat tarafından gözden geçirilmelidir.
+ * Bir metin değiştirildiğinde sürüm numarası artırılır.
  *
- * Metinler sitenin gerçek işleyişini anlatır: veritabanı, hesap, iletişim formu ve çerez yoktur; test
- * cevapları ve raporlar saklanmaz; sunucu Almanya'dadır (Hostinger). İşleyiş değişirse (ör. ücretli
- * rapor ve ödeme) metinler, değişiklik yayına alınmadan önce güncellenmelidir.
+ * Metinler sitenin gerçek işleyişini anlatır: siteyi bir kişi bireysel olarak işletir; veritabanı, hesap,
+ * iletişim formu ve çerez yoktur; test cevapları ve raporlar saklanmaz; sunucu Almanya'dadır (Hostinger).
+ * İşleyiş değişirse (ör. ücretli rapor ve ödeme) metinler, değişiklik yayına alınmadan önce güncellenmelidir.
  */
 
 export type LegalKind = 'privacy_notice' | 'terms' | 'cookie_policy';
@@ -36,11 +37,13 @@ Bu metin bilgilendirme amaçlıdır; sizden onay istemez.
 
 ## 1. Veri sorumlusu
 
-{{company.legalName}}
-Adres: {{company.address}}
-MERSİS No: {{company.mersisNo}}
-E-posta: {{company.kvkkEmail}}
-KEP: {{company.kepAddress}}
+Ölçekhane’yi bir kişi bireysel olarak işletir; KVKK kapsamında veri sorumlusu sitenin sahibidir:
+
+- Adı ve soyadı: {{owner.name}}
+- Adres: {{owner.address}}
+- E-posta: {{owner.kvkkEmail}}
+- Telefon: {{owner.phone}}
+- KEP adresi: {{owner.kepAddress}}
 
 ## 2. Test çözerken
 
@@ -84,7 +87,7 @@ Veriler; sitedeki test ekranları ve tarayıcınızın her istekte gönderdiği 
 
 ## 7. Verileri kimlere aktarıyoruz?
 
-- **Barındırma hizmeti (yurt dışı):** Sitemizin sunucusu, barındırma hizmeti aldığımız Hostinger’ın Almanya’daki (Avrupa Birliği) veri merkezinde bulunur. Siteye gönderdiğiniz bilgiler (kaydedilmeden işlenen test cevapları ve bağlantı bilgileri) bu sunucuda işlendiği için yurt dışına aktarılmış olur. Sunucuyu biz yönetiriz; sunucuda veritabanı yoktur ve bu bilgiler sunucuya kaydedilmez. Barındırma sağlayıcısı, kendi ağının güvenliği için bağlantı bilgilerini işleyebilir.
+- **Barındırma hizmeti (yurt dışı):** Sitemizin sunucusu, barındırma hizmeti aldığımız Hostinger’ın (Hostinger International Limited) Almanya’daki (Avrupa Birliği) veri merkezinde bulunur. Siteye gönderdiğiniz bilgiler (kaydedilmeden işlenen test cevapları ve bağlantı bilgileri) bu sunucuda işlendiği için yurt dışına aktarılmış olur. Sunucuyu biz yönetiriz; sunucuda veritabanı yoktur ve bu bilgiler sunucuya kaydedilmez. Barındırma sağlayıcısı, kendi ağının güvenliği için bağlantı bilgilerini işleyebilir.
 - **E-posta hizmeti:** Bize gönderdiğiniz e-postalar, e-posta hizmeti aldığımız sağlayıcının sunucularında bulunur.
 - **Yetkili kamu kurum ve kuruluşları:** yalnızca hukuken zorunlu olduğunda.
 
@@ -100,7 +103,13 @@ Kişisel verileri satmıyor, reklam ya da pazarlama amacıyla kimseyle paylaşm�
 
 KVKK’nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini, KVKK’nın 7. maddesindeki şartlar çerçevesinde silinmesini veya yok edilmesini ve bu işlemlerin aktarıldığı kişilere bildirilmesini isteme, münhasıran otomatik sistemlerle analiz edilmesi sonucu aleyhinize bir sonucun ortaya çıkmasına itiraz etme ve kanuna aykırı işleme sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme haklarına sahipsiniz.
 
-Başvurularınızı {{company.kvkkEmail}} adresine e-posta ile, {{company.kepAddress}} adresine KEP ile ya da {{company.address}} adresine yazılı olarak iletebilirsiniz. Başvurular en geç 30 gün içinde ücretsiz olarak sonuçlandırılır. Başvurunuzun sonucunu yeterli bulmazsanız Kişisel Verileri Koruma Kurulu’na şikâyette bulunabilirsiniz.
+Başvurunuzu şu yollardan biriyle iletebilirsiniz:
+
+- E-postayla: {{owner.kvkkEmail}}
+- KEP ile: {{owner.kepAddress}}
+- Yazılı olarak (posta ya da elden): {{owner.address}}
+
+Başvurular en geç 30 gün içinde ücretsiz olarak sonuçlandırılır. Başvurunuzun sonucunu yeterli bulmazsanız Kişisel Verileri Koruma Kurulu’na şikâyette bulunabilirsiniz.
 
 Test cevaplarını ve raporları saklamadığımız için bunlarla ilgili bir başvuruda size gösterebileceğimiz bir kayıt bulunmaz.
 
@@ -148,7 +157,14 @@ Bu koşullara Türkiye Cumhuriyeti hukuku uygulanır. Tüketici işlemlerinden d
 
 ## 8. İletişim
 
-{{company.legalName}} · {{company.address}} · {{company.email}}`;
+Platformu bir kişi bireysel olarak işletir:
+
+- Adı ve soyadı: {{owner.name}}
+- Adres: {{owner.address}}
+- E-posta: {{owner.email}}
+- Telefon: {{owner.phone}}
+
+İletişim bilgilerinin tamamı [İletişim](/iletisim) sayfasındadır.`;
 
 const cookiePolicy = `Ölçekhane çerez kullanmaz.
 
@@ -161,7 +177,7 @@ Sitede başka sitelerden yüklenen yazı tipi, komut dosyası, reklam ya da ziya
 export const LEGAL_DOCS: LegalDocDef[] = [
   {
     kind: 'privacy_notice',
-    version: 3,
+    version: 4,
     slug: 'aydinlatma-metni',
     title: 'KVKK Aydınlatma Metni',
     summary: 'Ölçekhane’de hangi kişisel verilerin, hangi amaçla ve ne kadar süre işlendiği. Test cevapları ve raporlar saklanmaz; sunucu Almanya’dadır.',
@@ -169,7 +185,7 @@ export const LEGAL_DOCS: LegalDocDef[] = [
   },
   {
     kind: 'terms',
-    version: 3,
+    version: 4,
     slug: 'kullanim-kosullari',
     title: 'Kullanım Koşulları',
     summary: 'Ölçekhane’nin kullanım koşulları: testlerin niteliği, raporlar ve kullanım kuralları.',

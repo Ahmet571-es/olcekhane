@@ -32,8 +32,8 @@ otomatik) ya da **[KURULUM.md](KURULUM.md)** (elle) dosyasına bakın.
 Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, zod, three.js (tanıtım sayfalarındaki 3B
 sahne), `@react-pdf/renderer`. Üretimde Docker ve Caddy (HTTPS). Veritabanı yoktur.
 
-Sayfalar istek anında üretilir: site adresi (`APP_URL`), dizine ekleme ayarı (`ALLOW_INDEXING`) ve şirket
-bilgileri (`COMPANY_*`) sunucu çalışırken ortam değişkenlerinden okunur. Derleme için `.env` gerekmez;
+Sayfalar istek anında üretilir: site adresi (`APP_URL`), dizine ekleme ayarı (`ALLOW_INDEXING`) ve site
+sahibinin bilgileri (`OWNER_*`, bkz. `src/lib/site.ts`) sunucu çalışırken ortam değişkenlerinden okunur. Derleme için `.env` gerekmez;
 yalnızca paylaşım görselleri derlemede üretilir.
 
 ```
@@ -58,7 +58,7 @@ npm run dev               # http://localhost:3000
 ```
 
 İsteğe bağlı olarak kök klasörde `.env.local` dosyası oluşturabilirsiniz (ör. `APP_URL=http://localhost:3000`
-ya da altbilgide görmek için `COMPANY_*` değerleri). Gizli bir değer gerekmez.
+ya da İletişim sayfasında görmek için `OWNER_*` değerleri). Gizli bir değer gerekmez.
 
 ### Denetimler ve testler
 

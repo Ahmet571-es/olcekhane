@@ -35,9 +35,11 @@ Bu adımı hukuk danışmanınızla birlikte yapın.
 **Bir e-posta kutusu** (yalnızca gelen e-postalar için; site e-posta göndermez). Adresi iletişim sayfasında
 ve aydınlatma metninde görünür. Sağlayıcının sunucuları yurt dışındaysa bu da yurt dışına aktarımdır.
 
-**Şirket bilgileri:** ticaret unvanı, adres, MERSİS numarası, vergi dairesi ve numarası, telefon,
-e-posta, KVKK başvuruları için e-posta ve KEP adresi. Aydınlatma metninde ve sitenin altbilgisinde
-gösterilir.
+**Site sahibinin bilgileri.** Ölçekhane'yi bir kişi bireysel olarak işletir. 5651 sayılı Kanun'a dayanan
+yönetmeliğin 5. maddesi gereği adı ve soyadı, adresi, telefonu ve e-postası İletişim sayfasında ve aydınlatma
+metninde gösterilir (bu dördü zorunludur); yer sağlayıcının (Hostinger) bilgileri de altbilgide ve İletişim
+sayfasında yer alır (`src/lib/site.ts`). İsteğe bağlı olarak KVKK başvuruları için ayrı bir e-posta ve KEP
+adresi; ücretli rapor satışına başlamadan önce yapılacak vergi kaydından sonra vergi dairesi ve numarası.
 
 ## 2. Sunucunun hazırlanması
 
@@ -174,13 +176,13 @@ nano .env
 | `SITE_DOMAIN` | Alan adı, `www` olmadan: `olcekhane.com` |
 | `ACME_EMAIL` | Sertifika bildirimleri için e-posta |
 | `APP_URL` | `https://olcekhane.com` (site haritası, PDF raporların alt bilgisi ve paylaşım kartları bununla üretilir) |
-| `COMPANY_*` | Şirket bilgileri (hepsi zorunlu) |
+| `OWNER_*` | Site sahibinin bilgileri: `OWNER_NAME`, `OWNER_ADDRESS`, `OWNER_PHONE`, `OWNER_EMAIL` zorunlu; `OWNER_KVKK_EMAIL`, `OWNER_KEP`, `OWNER_TAX_OFFICE`, `OWNER_TAX_NO` isteğe bağlı |
 | `ALLOW_INDEXING` | Hazırlık süresince `false`, yayına çıkarken `true` |
 
 Gizli bir değer (parola, anahtar) yoktur. İçinde `#` geçen bir değeri tırnak içine yazın
-(`COMPANY_ADDRESS="..."`). `.env` değiştikten sonra `docker compose up -d` çalıştırın. Sayfalar istek anında
-üretildiği için şirket bilgileri, site adresi ve `ALLOW_INDEXING` yeniden derleme gerekmeden aydınlatma
-metnine, altbilgiye, `robots.txt` ve site haritasına yansır.
+(`OWNER_ADDRESS="..."`). `.env` değiştikten sonra `docker compose up -d` çalıştırın. Sayfalar istek anında
+üretildiği için site sahibinin bilgileri, site adresi ve `ALLOW_INDEXING` yeniden derleme gerekmeden
+aydınlatma metnine, İletişim sayfasına, `robots.txt` ve site haritasına yansır.
 
 ### 4.3 DNS
 
@@ -206,8 +208,9 @@ curl -sS https://olcekhane.com/api/saglik            # {"durum":"ok"}
 
 ## 5. Yayına çıkmadan önce
 
-- Şirket bilgileri `.env` dosyasında eksiksiz; aydınlatma metni (`/yasal/aydinlatma-metni`) ve altbilgi
-  doğru görünüyor.
+- Site sahibinin bilgileri `.env` dosyasında eksiksiz; İletişim sayfası (`/iletisim`), aydınlatma metni
+  (`/yasal/aydinlatma-metni`) ve altbilgi doğru görünüyor. (Yayın iş akışı, zorunlu bilgiler boşken
+  `ALLOW_INDEXING=true` yapılmasına izin vermez.)
 - Aydınlatma metni ve kullanım koşulları bir hukukçuya okutuldu; yurt dışına aktarım için standart
   sözleşme imzalandı ve Kurula bildirildi.
 - "Hiçbir şey saklanmaz" denetimi:

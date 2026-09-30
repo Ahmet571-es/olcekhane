@@ -73,10 +73,10 @@ jobs:
           s = open("yayin/ayarlar.env", encoding="utf-8").read()
           deger = {
               "SUNUCU_ADRESI": "127.0.0.1", "SITE_DOMAIN": "olcekhane.test", "ACME_EMAIL": "teknik@olcekhane.test",
-              "COMPANY_LEGAL_NAME": "'Prova Eğitim Teknolojileri A.Ş.'", "COMPANY_ADDRESS": "'Prova Cad. No: 1 #2, Çankaya/Ankara'",
-              "COMPANY_MERSIS": "0000000000000000", "COMPANY_TAX_OFFICE": "Çankaya", "COMPANY_TAX_NO": "0000000000",
-              "COMPANY_PHONE": "'+90 312 000 00 00'", "COMPANY_EMAIL": "bilgi@olcekhane.test",
-              "COMPANY_KVKK_EMAIL": "kvkk@olcekhane.test", "COMPANY_KEP": "prova@hs01.kep.tr",
+              "OWNER_NAME": "'Ayşe Prova'", "OWNER_ADDRESS": "'Prova Cad. No: 1 #2, Çankaya/Ankara'",
+              "OWNER_PHONE": "'+90 312 000 00 00'", "OWNER_EMAIL": "bilgi@olcekhane.test",
+              "OWNER_KVKK_EMAIL": "kvkk@olcekhane.test", "OWNER_KEP": "prova@hs01.kep.tr",
+              "OWNER_TAX_OFFICE": "Çankaya", "OWNER_TAX_NO": "0000000000",
           }
           for k, v in deger.items():
               s, n = re.subn(rf"^{k}=.*$", f"{k}={v}", s, flags=re.M)
@@ -103,9 +103,16 @@ jobs:
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol")
             echo "$yol -> $kod"; test "$kod" = 200
           done
-          "${C[@]}" "https://$ALAN/yasal/aydinlatma-metni" | grep -q 'Prova Eğitim Teknolojileri A.Ş.'
+          # Site sahibinin bilgileri (5651 Yönetmeliği m.5): aydınlatma metninde, İletişim sayfasında; yer sağlayıcı
+          # ana sayfanın altbilgisinde.
+          "${C[@]}" "https://$ALAN/yasal/aydinlatma-metni" | grep -q 'Ayşe Prova'
           "${C[@]}" "https://$ALAN/yasal/aydinlatma-metni" | grep -q 'Prova Cad. No: 1 #2'
-          "${C[@]}" "https://$ALAN/iletisim" | grep -q 'bilgi@olcekhane.test'
+          "${C[@]}" "https://$ALAN/iletisim" > "$RUNNER_TEMP/iletisim.html"
+          for ifade in 'Ayşe Prova' 'Prova Cad. No: 1 #2' '+90 312 000 00 00' 'bilgi@olcekhane.test' 'kvkk@olcekhane.test' \
+            'Çankaya Vergi Dairesi, 0000000000' 'Hostinger International Limited'; do
+            grep -qF "$ifade" "$RUNNER_TEMP/iletisim.html" || { echo "::error title=İletişim sayfası::'$ifade' yok"; exit 1; }
+          done
+          "${C[@]}" "https://$ALAN/" | grep -q 'Hostinger International Limited'
           # Hazırlık ayarı (ALLOW_INDEXING=false): bütün site taranmaya kapalı.
           "${C[@]}" "https://$ALAN/robots.txt" | grep -qiE '^disallow: /[[:space:]]*$'
           "${C[@]}" -D - -o /dev/null "https://$ALAN/" | grep -qi '^strict-transport-security: max-age=31536000'
@@ -121,7 +128,7 @@ jobs:
           test "$(sudo stat -c %a "$U/.env")" = 600
           if sudo ss -ltnH | grep -E '(0\.0\.0\.0|\*|\[::\]):3000\b'; then echo "::error title=Güvenlik::Uygulama portu dışarı açık."; exit 1; fi
           systemctl is-enabled docker.service >/dev/null
-          echo "::notice title=Prova 2::HTTPS, sayfalar, şirket bilgileri, yönlendirmeler, SSH, güvenlik duvarı ve portlar doğru."
+          echo "::notice title=Prova 2::HTTPS, sayfalar, site sahibinin bilgileri, yönlendirmeler, SSH, güvenlik duvarı ve portlar doğru."
 
       - name: 3 · Hiçbir şey saklanmaz (salt okunur uygulama, takas, günlükler, çerez)
         run: |

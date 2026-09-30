@@ -1,20 +1,11 @@
 import Link from 'next/link';
 import { publicInstruments } from '@/content/instruments';
-import { getCompany } from '@/lib/site';
+import { HOSTING_PROVIDER, getOwner } from '@/lib/site';
 import { Logo } from './logo';
 
 export function SiteFooter() {
-  const c = getCompany();
+  const owner = getOwner();
   const tests = publicInstruments();
-  const companyLines = [
-    c.legalName,
-    c.address,
-    c.mersisNo && `MERSİS: ${c.mersisNo}`,
-    c.taxOffice && c.taxNo && `${c.taxOffice} V.D. ${c.taxNo}`,
-    c.phone && `Telefon: ${c.phone}`,
-    c.email && `E-posta: ${c.email}`,
-    c.kepAddress && `KEP: ${c.kepAddress}`,
-  ].filter(Boolean) as string[];
 
   return (
     <footer className="mt-24 border-t border-rule bg-surface">
@@ -48,7 +39,16 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-rule">
         <div className="container-page flex flex-col gap-3 py-6 text-[0.8125rem] leading-relaxed text-ink-3 md:flex-row md:items-start md:justify-between">
-          <p>{companyLines.length ? companyLines.join(' · ') : 'Ölçekhane'}</p>
+          {/* 5651 Yönetmeliği m.5: site sahibinin bilgileri İletişim sayfasında, yer sağlayıcının bilgileri
+              onlarla birlikte ana sayfada gösterilir (bkz. lib/site.ts). */}
+          <p>
+            {owner.name && <>Ölçekhane’yi {owner.name} bireysel olarak işletir. </>}
+            Adres, telefon ve e-posta{' '}
+            <Link href="/iletisim" className="text-ink-2 hover:text-ink">
+              İletişim
+            </Link>{' '}
+            sayfasındadır. Yer sağlayıcı: {HOSTING_PROVIDER.name}, {HOSTING_PROVIDER.address}.
+          </p>
           <p className="shrink-0">© {new Date().getFullYear()} Ölçekhane</p>
         </div>
       </div>

@@ -1,23 +1,33 @@
 import { PageHeader } from '@/components/site/page-header';
 import { pageMeta } from '@/lib/seo';
-import { getCompany } from '@/lib/site';
+import { HOSTING_PROVIDER, getOwner, taxLine } from '@/lib/site';
 
 export const metadata = pageMeta({
   title: 'İletişim',
-  description: 'Ölçekhane ile iletişime geçin: sorularınız, önerileriniz ve kişisel veri başvurularınız için e-posta adresimiz.',
+  description:
+    'Ölçekhane ile iletişim: sorularınız, önerileriniz ve kişisel veri başvurularınız için e-posta adresi; sitenin sahibi ve barındırma hizmeti sağlayıcısı.',
   path: '/iletisim',
 });
 
+/*
+ * 5651 sayılı Kanun'a dayanan yönetmeliğin 5. maddesi gereği site sahibinin adı ve soyadı, adresi, telefonu
+ * ve e-postası ile yer sağlayıcının bilgileri bu sayfada, "İletişim" başlığı altında gösterilir. Sayfaya
+ * ana sayfadaki altbilgiden doğrudan ulaşılır (bkz. lib/site.ts).
+ */
 export default function ContactPage() {
-  const c = getCompany();
-  const kvkkEmail = c.kvkkEmail || c.email;
-  const rows = [
-    { k: 'Unvan', v: c.legalName },
-    { k: 'Adres', v: c.address },
-    { k: 'Telefon', v: c.phone },
-    { k: 'KEP adresi', v: c.kepAddress },
-    { k: 'MERSİS', v: c.mersisNo },
-    { k: 'Vergi dairesi ve numarası', v: c.taxOffice && c.taxNo ? `${c.taxOffice}, ${c.taxNo}` : '' },
+  const o = getOwner();
+  const ownerRows = [
+    { k: 'Adı ve soyadı', v: o.name },
+    { k: 'Adres', v: o.address },
+    { k: 'Telefon', v: o.phone, href: o.phone ? `tel:${o.phone.replace(/[^\d+]/g, '')}` : undefined },
+    { k: 'E-posta', v: o.email, href: o.email ? `mailto:${o.email}` : undefined },
+    { k: 'KEP adresi', v: o.kepAddress },
+    { k: 'Vergi dairesi ve numarası', v: taxLine(o) },
+  ].filter((r) => r.v);
+  const applyRows = [
+    { k: 'E-postayla', v: o.kvkkEmail },
+    { k: 'KEP ile', v: o.kepAddress },
+    { k: 'Yazılı olarak (posta ya da elden)', v: o.address },
   ].filter((r) => r.v);
 
   return (
@@ -29,9 +39,9 @@ export default function ContactPage() {
             <h2 id="eposta" className="t-meta">
               E-posta
             </h2>
-            {c.email ? (
-              <a href={`mailto:${c.email}`} className="break-words font-display text-[clamp(1.5rem,4vw,2.25rem)] font-bold">
-                {c.email}
+            {o.email ? (
+              <a href={`mailto:${o.email}`} className="break-words font-display text-[clamp(1.5rem,4vw,2.25rem)] font-bold">
+                {o.email}
               </a>
             ) : (
               <p className="text-ink-2">E-posta adresimiz çok yakında burada yazacak.</p>
@@ -54,29 +64,50 @@ export default function ContactPage() {
         </section>
         <aside className="flex flex-col gap-6">
           <div className="panel p-6">
-            <h2 className="t-h3 mb-2">Kişisel veri başvuruları</h2>
-            <p className="t-small text-ink-2">
-              KVKK’nın 11. maddesindeki haklarınızı kullanmak için
-              {kvkkEmail ? ` ${kvkkEmail} adresine yazabilir` : ' bize e-postayla yazabilir'}
-              {c.kepAddress ? ` ya da KEP adresimize (${c.kepAddress}) başvurabilirsiniz` : 'siniz'}. Başvurular en geç 30 gün içinde ücretsiz
-              sonuçlandırılır. Sitemiz test cevaplarını ve raporları saklamadığı için bunlarla ilgili size ait bir kayıt bulunmaz.
-            </p>
+            <h2 className="t-h3 mb-2">Site sahibi</h2>
+            <p className="t-small mb-4 text-ink-2">Ölçekhane’yi bir kişi bireysel olarak işletir; KVKK kapsamında veri sorumlusu da odur.</p>
+            {ownerRows.length > 0 ? (
+              <Rows rows={ownerRows} />
+            ) : (
+              <p className="t-small text-ink-2">Site sahibinin bilgileri çok yakında burada yer alacak.</p>
+            )}
           </div>
-          {rows.length > 0 && (
-            <div className="panel p-6">
-              <h2 className="t-h3 mb-4">Şirket bilgileri</h2>
-              <dl className="flex flex-col gap-3">
-                {rows.map((r) => (
-                  <div key={r.k}>
-                    <dt className="t-meta">{r.k}</dt>
-                    <dd className="break-words">{r.v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          )}
+          <div className="panel p-6">
+            <h2 className="t-h3 mb-2">Kişisel veri başvuruları</h2>
+            <p className="t-small mb-4 text-ink-2">
+              KVKK’nın 11. maddesindeki haklarınızı kullanmak için başvurunuzu {applyRows.length > 1 ? 'şu yollardan biriyle' : 'bize'} iletebilirsiniz.
+              Başvurular en geç 30 gün içinde ücretsiz sonuçlandırılır. Sitemiz test cevaplarını ve raporları saklamadığı için bunlarla ilgili size
+              ait bir kayıt bulunmaz.
+            </p>
+            {applyRows.length > 0 && <Rows rows={applyRows} />}
+          </div>
+          <div className="panel p-6">
+            <h2 className="t-h3 mb-2">Yer sağlayıcı</h2>
+            <p className="t-small mb-4 text-ink-2">Sitemizin sunucusu bu şirketten barındırma hizmeti olarak kiralanır.</p>
+            <Rows
+              rows={[
+                { k: 'Unvan', v: HOSTING_PROVIDER.name },
+                { k: 'Adres', v: HOSTING_PROVIDER.address },
+                { k: 'İnternet sitesi', v: HOSTING_PROVIDER.website.replace(/^https:\/\/(www\.)?/, ''), href: HOSTING_PROVIDER.website },
+                { k: 'Sunucunun bulunduğu yer', v: HOSTING_PROVIDER.serverLocation },
+              ]}
+            />
+          </div>
         </aside>
       </div>
     </>
+  );
+}
+
+function Rows({ rows }: { rows: { k: string; v: string; href?: string }[] }) {
+  return (
+    <dl className="flex flex-col gap-3">
+      {rows.map((r) => (
+        <div key={r.k}>
+          <dt className="t-meta">{r.k}</dt>
+          <dd className="break-words">{r.href ? <a href={r.href}>{r.v}</a> : r.v}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }

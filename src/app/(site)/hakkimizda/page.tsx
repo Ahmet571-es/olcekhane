@@ -4,12 +4,12 @@ import { PageHeader, Section } from '@/components/site/page-header';
 import { EXPERTS } from '@/content/experts';
 import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from '@/lib/config';
 import { pageMeta } from '@/lib/seo';
-import { getCompany } from '@/lib/site';
+import { getOwner } from '@/lib/site';
 
 export const metadata = pageMeta({
   title: 'Hakkımızda',
   description:
-    'Ölçekhane neden kuruldu, testleri nasıl seçiyor ve çocukların verilerini nasıl koruyor? Çalışma ilkelerimiz ve şirket bilgilerimiz.',
+    'Ölçekhane neden kuruldu, testleri nasıl seçiyor ve çocukların verilerini nasıl koruyor? Çalışma ilkelerimiz ve sitenin sahibi.',
   path: '/hakkimizda',
 });
 
@@ -37,18 +37,10 @@ const PRINCIPLES = [
 ];
 
 export default function AboutPage() {
-  const c = getCompany();
-  const rows = [
-    ['Ticari unvan', c.legalName],
-    ['Adres', c.address],
-    ['MERSİS numarası', c.mersisNo],
-    ['Vergi dairesi ve numarası', c.taxOffice && c.taxNo ? `${c.taxOffice} / ${c.taxNo}` : ''],
-    ['Telefon', c.phone],
-    ['E-posta', c.email],
-    ['KVKK başvuruları', c.kvkkEmail],
-    ['KEP adresi', c.kepAddress],
-  ].filter(([, v]) => Boolean(v)) as [string, string][];
+  const owner = getOwner();
 
+  // Yapılandırılmış veride site sahibinin yalnızca adı ve sitenin e-posta adresi yer alır; adres ve telefon
+  // yasa gereği İletişim sayfasında gösterilir, arama motorlarına ayrıca bildirilmez.
   const org: Record<string, unknown> = {
     '@type': 'Organization',
     name: SITE_NAME,
@@ -56,10 +48,8 @@ export default function AboutPage() {
     logo: siteUrl('/icon.svg'),
     description: SITE_DESCRIPTION,
   };
-  if (c.legalName) org.legalName = c.legalName;
-  if (c.email) org.email = c.email;
-  if (c.phone) org.telephone = c.phone;
-  if (c.address) org.address = { '@type': 'PostalAddress', streetAddress: c.address, addressCountry: 'TR' };
+  if (owner.name) org.founder = { '@type': 'Person', name: owner.name };
+  if (owner.email) org.email = owner.email;
   const jsonLd = { '@context': 'https://schema.org', '@type': 'AboutPage', url: siteUrl('/hakkimizda'), inLanguage: 'tr-TR', mainEntity: org };
 
   return (
@@ -114,21 +104,13 @@ export default function AboutPage() {
         </Section>
       )}
 
-      <Section id="sirket" title="Şirket bilgileri" className="border-t border-rule">
-        {rows.length > 0 ? (
-          <dl className="panel divide-y divide-rule">
-            {rows.map(([k, v]) => (
-              <div key={k} className="grid gap-1 px-5 py-3 sm:grid-cols-[14rem_1fr] sm:gap-6">
-                <dt className="font-bold">{k}</dt>
-                <dd className="break-words text-ink-2">{v}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : (
-          <p className="measure text-ink-2">Şirket bilgileri yakında burada yer alacak.</p>
-        )}
+      <Section id="site-sahibi" title="Sitenin sahibi" className="border-t border-rule">
+        <p className="measure">
+          {owner.name ? <>Ölçekhane’yi {owner.name} bireysel olarak işletir.</> : <>Ölçekhane’yi bir kişi bireysel olarak işletir.</>} Sitenin
+          içeriğinden ve kişisel verilerin korunmasından (KVKK kapsamında veri sorumlusu olarak) site sahibi sorumludur.
+        </p>
         <p>
-          Bize ulaşmak için: <Link href="/iletisim">İletişim</Link>
+          Adres, telefon ve e-posta: <Link href="/iletisim">İletişim</Link>
         </p>
       </Section>
     </>

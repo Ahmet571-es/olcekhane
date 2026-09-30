@@ -183,18 +183,26 @@ env_yaz() {
   site=$(ayar SITE_DOMAIN)
   [[ "$site" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$ ]] || hata "SITE_DOMAIN geçersiz: '$site'"
   [ -n "$(ayar ACME_EMAIL)" ] || hata "ayarlar.env: ACME_EMAIL boş."
+  # Site sahibinin bilgileri (src/lib/site.ts). İlk dördü yasa gereği (5651 sayılı Kanun'a dayanan yönetmelik,
+  # m.5) İletişim sayfasında gösterilir: bunlar boşken site arama motorlarına açılmaz.
+  local -a sahip=(OWNER_NAME OWNER_ADDRESS OWNER_PHONE OWNER_EMAIL OWNER_KVKK_EMAIL OWNER_KEP OWNER_TAX_OFFICE
+    OWNER_TAX_NO)
   local eksik=""
-  for alan in COMPANY_LEGAL_NAME COMPANY_ADDRESS COMPANY_MERSIS COMPANY_TAX_OFFICE COMPANY_TAX_NO COMPANY_PHONE \
-    COMPANY_EMAIL COMPANY_KVKK_EMAIL COMPANY_KEP; do
+  for alan in "${sahip[@]:0:4}"; do
     [ -n "$(ayar "$alan")" ] || eksik="$eksik $alan"
   done
-  [ -z "$eksik" ] || uyari "Şirket bilgileri eksik (aydınlatma metninde ve site altbilgisinde gösterilir):$eksik"
+  if [ -n "$eksik" ]; then
+    # Uygulama "false" dışındaki her değeri "arama motorlarına açık" sayar (src/lib/seo.ts).
+    local indeksleme
+    indeksleme=$(ayar ALLOW_INDEXING false)
+    [ "${indeksleme,,}" = false ] ||
+      hata "ayarlar.env: site sahibinin bilgileri eksik, site arama motorlarına açılamaz (ALLOW_INDEXING=$indeksleme):$eksik"
+    uyari "Site sahibinin bilgileri eksik (yasa gereği İletişim sayfasında gösterilir):$eksik"
+  fi
 
-  local -a adlar=(SITE_DOMAIN ACME_EMAIL APP_URL COMPANY_LEGAL_NAME COMPANY_ADDRESS COMPANY_MERSIS COMPANY_TAX_OFFICE
-    COMPANY_TAX_NO COMPANY_PHONE COMPANY_EMAIL COMPANY_KVKK_EMAIL COMPANY_KEP ALLOW_INDEXING CADDY_GENEL_AYAR)
+  local -a adlar=(SITE_DOMAIN ACME_EMAIL APP_URL "${sahip[@]}" ALLOW_INDEXING CADDY_GENEL_AYAR)
   local -a degerler=("$site" "$(ayar ACME_EMAIL)" "https://$site")
-  for alan in COMPANY_LEGAL_NAME COMPANY_ADDRESS COMPANY_MERSIS COMPANY_TAX_OFFICE COMPANY_TAX_NO COMPANY_PHONE \
-    COMPANY_EMAIL COMPANY_KVKK_EMAIL COMPANY_KEP; do
+  for alan in "${sahip[@]}"; do
     degerler+=("$(ayar "$alan")")
   done
   degerler+=("$(ayar ALLOW_INDEXING false)" "$(ayar CADDY_GENEL_AYAR)")

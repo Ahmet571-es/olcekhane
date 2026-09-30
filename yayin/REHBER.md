@@ -66,9 +66,11 @@ girişi zaten kapatır ve şifre bir daha gerekmez.
 Bunlar sitede ve depoda görünebilir; `yayin/ayarlar.env` dosyasına işlenir:
 
 - Sunucunun **IP adresi** (IPv4)
-- Sertifika bildirimleri için bir **e-posta adresi** (şirket e-postası olabilir)
-- Şirket bilgileri: ticaret unvanı, adres, MERSİS numarası, vergi dairesi ve numarası, telefon, e-posta,
-  KVKK başvuruları için e-posta, KEP adresi
+- Sertifika bildirimleri için bir **e-posta adresi** (sitenin e-postası olabilir)
+- **Site sahibinin bilgileri** (siteyi bireysel olarak işleten kişi): adı ve soyadı, adresi, telefonu ve
+  e-postası. Yasa gereği sitenin İletişim sayfasında herkese açık görünür. İsteğe bağlı: KVKK başvuruları
+  için ayrı bir e-posta ve KEP adresi. Vergi dairesi ve numarası, ücretli rapor satışına başlamadan önce
+  yapılacak vergi kaydından sonra eklenir.
 
 ## 5. DNS kayıtları
 
@@ -88,9 +90,10 @@ IP adresi ve gizli bilgiler girildiğinde yayın kendiliğinden başlar (GitHub 
 İlk kurulum 10–15 dakika sürer. Site açılınca yapmanız gereken başka bir şey yoktur: giriş yapılacak bir
 yönetim paneli yoktur.
 
-Site ilk açıldığında arama motorlarına kapalıdır (`ALLOW_INDEXING=false`). Her şey hazır olduğunda (şirket
-bilgileri, KVKK adımları) bu ayar açılır ve site Google Search Console'a eklenir (sahiplik doğrulaması için
-DNS'e bir TXT kaydı girilir).
+Site ilk açıldığında arama motorlarına kapalıdır (`ALLOW_INDEXING=false`). Her şey hazır olduğunda (site
+sahibinin bilgileri, KVKK adımları) bu ayar açılır ve site Google Search Console'a eklenir (sahiplik
+doğrulaması için DNS'e bir TXT kaydı girilir). Site sahibinin zorunlu bilgileri boşken yayın iş akışı bu
+ayarın açılmasına izin vermez.
 
 ## 7. Sonrası
 

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { LEGAL_DOCS, legalDocBySlug } from '@/content/legal';
 import { renderMarkdown } from '@/lib/markdown';
 import { pageMeta } from '@/lib/seo';
-import { fillCompany } from '@/lib/site';
+import { fillOwner } from '@/lib/site';
 
 export function generateStaticParams() {
   return LEGAL_DOCS.map((d) => ({ slug: d.slug }));
@@ -25,7 +25,7 @@ export default async function LegalPage(props: PageProps<'/yasal/[slug]'>) {
         <h1 className="t-h1">{doc.title}</h1>
         <p className="t-meta">Sürüm {doc.version}</p>
       </header>
-      <div className="prose-olc" dangerouslySetInnerHTML={{ __html: renderMarkdown(fillCompany(doc.bodyMd)) }} />
+      <div className="prose-olc" dangerouslySetInnerHTML={{ __html: renderMarkdown(fillOwner(doc.bodyMd)) }} />
     </article>
   );
 }
