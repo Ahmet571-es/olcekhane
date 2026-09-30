@@ -60,6 +60,10 @@ adresini açın, **Name** kutusuna adı, **Secret** kutusuna değeri yapıştır
 | `ANA_SIFRE` | 2. adımdaki parola |
 | `SUNUCU_ROOT_SIFRE` | Sunucunun root şifresi (ilk kurulumdan sonra silinebilir) |
 
+Root şifresi Hostinger panelinde bir daha görüntülenemez. Unutulduysa ya da yayın "sunucu root şifresini kabul
+etmedi" diyorsa: Hostinger panelinde **VPS → Manage → Root password → Change** ile yeni bir şifre belirleyin
+(kâğıda yazıp klavyeyle; Caps Lock kapalı) ve aynısını `SUNUCU_ROOT_SIFRE`'ye girin.
+
 Girilen değerler GitHub'da bir daha görüntülenemez. Yanlış girildiyse listede o satırdaki kalem simgesine
 (**Update**) basıp yeni değeri **Value** kutusuna yapıştırın ve **Update secret**'a basın. Yayın, yanlış
 girilen bir değeri özet uyarısında adlandırır (ör. "ANA_SIFRE 9 karakter"); değerin kendisini hiçbir yere
