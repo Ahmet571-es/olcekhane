@@ -76,6 +76,8 @@ export interface ReportContent {
   support: boolean;
   science: { basedOn: string; reliability: string; limitations: string[]; license: string };
   interests?: InterestProfile;
+  /** Sıralı ilgi profili (profil: interests). */
+  ranking?: InterestRanking;
   cognitive?: CognitiveReport;
   academic?: AcademicReport;
   reading?: {
@@ -146,6 +148,23 @@ export interface CognitiveBlock {
 export interface CognitiveReport {
   blocks: CognitiveBlock[];
   tips: string[];
+}
+
+/**
+ * Sıralı ilgi profili: alanlar puana göre en yüksekten en düşüğe dizilir (bölümler de bu sıraya konur) ve en
+ * belirgin alanlar ayrıca açıklanır. Türkiye normu olmadığı için sıralama kişinin kendi profili içindedir.
+ */
+export interface InterestRanking {
+  /** Puanı hesaplanan alanların anahtarları, en yüksekten en düşüğe. */
+  order: string[];
+  /** Belirgin (yüksek düzeydeki) en çok üç alan; hiçbiri yoksa en yüksek iki alan. */
+  top: string[];
+  /** Hiçbir alanda belirgin ilgi yok. */
+  noneHigh: boolean;
+  /** En yüksek ile en düşük alan arasındaki fark küçük: ilgiler henüz ayrışmamış. */
+  flat: boolean;
+  /** Bütün alanlar düşük düzeyde. */
+  allLow: boolean;
 }
 
 export interface InterestProfile {
@@ -306,6 +325,7 @@ export function buildReport(input: {
 
   const interests =
     def.engine === 'likert' && def.profile === 'riasec' ? buildInterestProfile(sections, audience, input.grade) : undefined;
+  const ranking = def.engine === 'likert' && def.profile === 'interests' ? rankInterests(sections) : undefined;
 
   // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
   let strengths: string[] | undefined;
@@ -317,7 +337,12 @@ export function buildReport(input: {
 
   // Öne çıkanlar: ortadan en uzak düzeydeki ölçekler (çok ölçekli testlerde).
   const highlights: string[] = [];
-  if (sections.length > 2 && !interests && !template?.evaluative) {
+  if (ranking) {
+    for (const key of ranking.top) {
+      const s = sections.find((x) => x.scaleKey === key);
+      if (s) highlights.push(`${s.name}: ${s.summary.toLocaleLowerCase('tr-TR')}`);
+    }
+  } else if (sections.length > 2 && !interests && !template?.evaluative) {
     const rank: Record<string, number> = { very_high: 2, very_low: 2, high: 1, low: 1, average: 0 };
     const notable = sections
       .filter((s) => s.band && rank[s.band] > 0)
@@ -353,12 +378,33 @@ export function buildReport(input: {
     },
     reading,
     interests,
+    ranking,
     cognitive,
     academic,
   };
 }
 
-/* ---------- Akademik tanı testleri ---------- */
+/**
+ * Sıralı ilgi profili. Bölümler yerinde sıralanır: puanı olanlar en yüksekten en düşüğe, hesaplanamayanlar sonda.
+ * Aynı puandaki alanlar testteki sıralarını korur. Düzeyler şablondaki düzeylerdir (düşük, orta, yüksek).
+ */
+function rankInterests(sections: ReportSection[]): InterestRanking {
+  sections.sort((a, b) => (b.value ?? Number.NEGATIVE_INFINITY) - (a.value ?? Number.NEGATIVE_INFINITY));
+  const scored = sections.filter((s) => s.value !== null);
+  const high = scored.filter((s) => s.band === 'high' || s.band === 'very_high');
+  const noneHigh = high.length === 0;
+  const values = scored.map((s) => s.value as number);
+  const spread = values.length > 1 ? Math.max(...values) - Math.min(...values) : 0;
+  return {
+    order: scored.map((s) => s.scaleKey),
+    top: (noneHigh ? scored.slice(0, 2) : high.slice(0, 3)).map((s) => s.scaleKey),
+    noneHigh,
+    flat: values.length > 1 && spread < 0.8,
+    allLow: scored.length > 0 && scored.every((s) => s.band === 'low' || s.band === 'very_low'),
+  };
+}
+
+/* ---------- Akademik konu tarama testleri ---------- */
 
 /** Genel sonuç metinleri. {g}: soruların ait olduğu sınıf, {s}: ders adı (küçük harfle). */
 const ACADEMIC_TEXT: Record<'high' | 'average' | 'low', { student: string; parent: string }> = {

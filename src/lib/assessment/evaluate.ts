@@ -1,5 +1,5 @@
 import 'server-only';
-import { getInstrumentDef } from '@/content/instruments';
+import { getInstrumentDef, isSolvable } from '@/content/instruments';
 import type { InstrumentDef } from '@/lib/instruments/types';
 import { buildReport } from '@/lib/reports/build';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
@@ -30,10 +30,10 @@ export interface EvaluationResult {
   parent: SimpleReport;
 }
 
-/** Sitede çözülebilen test (yayında ya da pilot). */
+/** Sitede çözülebilen test (yayında, pilot ya da uzman incelemesinde). */
 export function solvableInstrument(slug: string): InstrumentDef | null {
   const def = getInstrumentDef(slug);
-  return def && (def.status === 'active' || def.status === 'pilot') ? def : null;
+  return isSolvable(def) ? def : null;
 }
 
 /**

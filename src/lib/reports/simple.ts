@@ -1,5 +1,5 @@
 import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
-import type { Audience, InterestProfile, ReportContent } from './build';
+import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
 
 /**
  * Basit rapor: test bitince ekranda gösterilen ve PDF olarak indirilen ücretsiz rapor (hiçbir yerde
@@ -113,6 +113,34 @@ export function interestNotes(p: InterestProfile, audience: Audience): string[] 
   return notes;
 }
 
+/** Sıralı ilgi profilinde yorumu etkileyen durumlar. */
+export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
+  const you = audience === 'student';
+  if (p.allLow) {
+    return [
+      you
+        ? 'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşecek.'
+        : 'Çocuğunuz işlerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
+    ];
+  }
+  const notes: string[] = [];
+  if (p.noneHigh) {
+    notes.push(
+      you
+        ? 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alanı görüyorsun. İlgiler denedikçe netleşir.'
+        : 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alan yer alıyor. İlgiler yeni deneyimlerle netleşir.',
+    );
+  }
+  if (p.flat) {
+    notes.push(
+      you
+        ? 'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.'
+        : 'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
+    );
+  }
+  return notes;
+}
+
 export function toSimpleReport(r: ReportContent): SimpleReport {
   const you = r.audience === 'student';
   const base = {
@@ -153,6 +181,52 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
           : []),
       ],
       cautions: [...base.cautions, ...interestNotes(p, r.audience)],
+    };
+  }
+
+  if (r.ranking) {
+    const p = r.ranking;
+    const top = p.top.map((k) => r.sections.find((s) => s.scaleKey === k)).filter((s): s is NonNullable<typeof s> => !!s);
+    const rest = r.sections.filter((s) => s.value !== null && !p.top.includes(s.scaleKey));
+    return {
+      ...base,
+      chartTitle: you ? 'İlgi alanların' : 'İlgi alanları',
+      chartNote: 'Alanlar en yüksekten en düşüğe sıralandı. Değerler 1 (hiç hoşlanmam) ile 5 (çok hoşlanırım) arasındadır.',
+      chart: {
+        type: 'rulers',
+        rows: r.sections.map((s) => ({
+          label: s.name,
+          value: s.value,
+          min: s.min,
+          max: s.max,
+          ciLow: s.ciLow,
+          ciHigh: s.ciHigh,
+          valueLabel: s.valueLabel,
+          band: s.bandLabel,
+        })),
+      },
+      keyFigures: top.length
+        ? [
+            {
+              label: p.noneHigh ? (you ? 'En yüksek çıkan alanın' : 'En yüksek çıkan alan') : you ? 'En belirgin ilgi alanın' : 'En belirgin ilgi alanı',
+              value: top[0].name,
+              note: top.length > 1 ? `Ardından: ${top.slice(1).map((s) => s.name).join(' · ')}` : undefined,
+            },
+          ]
+        : [],
+      itemsTitle: p.noneHigh ? (you ? 'En yüksek çıkan alanların' : 'En yüksek çıkan alanlar') : you ? 'En belirgin ilgi alanların' : 'En belirgin ilgi alanları',
+      items: [
+        ...top.map((s, i) => ({ title: `${i + 1}. ${s.name}`, badge: s.bandLabel, text: s.text })),
+        ...(rest.length
+          ? [
+              {
+                title: you ? 'Diğer alanların' : 'Diğer alanlar',
+                text: `${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}. Alan örnekleri yol göstermek içindir; bir meslek seçimi önerisi değildir.`,
+              },
+            ]
+          : []),
+      ],
+      cautions: [...base.cautions, ...rankingNotes(p, r.audience)],
     };
   }
 

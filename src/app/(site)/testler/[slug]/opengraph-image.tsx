@@ -1,4 +1,4 @@
-import { getInstrumentDef, publicInstruments } from '@/content/instruments';
+import { getInstrumentDef, solvableInstruments } from '@/content/instruments';
 import { DOMAIN_LABELS } from '@/lib/config';
 import { OG_SIZE, renderOgImage } from '@/lib/og';
 
@@ -8,7 +8,7 @@ export const contentType = 'image/png';
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return publicInstruments().map((t) => ({ slug: t.slug }));
+  return solvableInstruments().map((t) => ({ slug: t.slug }));
 }
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {

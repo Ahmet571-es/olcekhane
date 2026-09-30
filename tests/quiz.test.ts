@@ -28,7 +28,7 @@ function answersFor(form: QuizForm, pick: (i: number) => QuizChoice, rtMs = 30_0
   return Object.fromEntries(form.items.map((it, i) => [it.key, { choice: pick(i), rtMs }]));
 }
 
-describe('Matematik Tanı Testi formları', () => {
+describe('Matematik Konu Tarama Testi formları', () => {
   it('her sınıf için bir form var; öğrenci bir önceki sınıfın konularını çözüyor', () => {
     expect(forms.map((f) => f.grade)).toEqual([5, 6, 7, 8]);
     for (const f of forms) expect(f.contentGrade).toBe(f.grade - 1);

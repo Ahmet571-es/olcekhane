@@ -1,7 +1,7 @@
 import type { Misconception } from '@/lib/instruments/types';
 
 /**
- * Ortaokul matematiğinde sık görülen hatalar ve kavram yanılgıları. Tanı testindeki yanlış
+ * Ortaokul matematiğinde sık görülen hatalar ve kavram yanılgıları. Konu tarama testindeki yanlış
  * seçenekler bu hatalara göre yazılmıştır: öğrenci bir seçeneği seçtiğinde raporda ilgili açıklama
  * ve öneri gösterilir. Metinlerde kesirler {3/4} biçiminde yazılır.
  */

@@ -34,5 +34,6 @@ export const STATUS_LABELS: Record<string, string> = {
   active: 'Yayında',
   pilot: 'Pilot',
   draft: 'Hazırlanıyor',
+  review: 'Uzman incelemesinde',
   retired: 'Kullanımdan kalktı',
 };

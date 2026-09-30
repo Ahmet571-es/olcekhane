@@ -35,6 +35,13 @@ const nextConfig: NextConfig = {
       './src/assets/fonts/*.ttf',
     ],
   },
+  // Test adları değişince eski adresler kalıcı olarak yenisine yönlendirilir (arama motorları ve paylaşılmış bağlantılar için).
+  async redirects() {
+    return [
+      { source: '/testler/matematik-tani-testi', destination: '/testler/matematik-konu-tarama-testi', permanent: true },
+      { source: '/testler/matematik-tani-testi/:rest*', destination: '/testler/matematik-konu-tarama-testi/:rest*', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

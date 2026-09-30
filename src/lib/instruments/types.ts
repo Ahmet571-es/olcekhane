@@ -6,7 +6,11 @@
  */
 
 export type Domain = 'personality' | 'career' | 'academic' | 'cognitive' | 'wellbeing' | 'skills';
-export type InstrumentStatus = 'draft' | 'pilot' | 'active' | 'retired';
+/**
+ * draft: hazırlanıyor, sitede yok · review: uzman incelemesinde; yalnızca doğrudan bağlantıyla açılır, listelerde ve
+ * site haritasında yer almaz, arama motorlarına kapalıdır · pilot / active: yayında · retired: kullanımdan kalktı.
+ */
+export type InstrumentStatus = 'draft' | 'review' | 'pilot' | 'active' | 'retired';
 export type LicenseStatus =
   | 'public_domain'
   | 'open_license'
@@ -100,9 +104,10 @@ export interface LikertInstrument extends InstrumentBase {
   engine: 'likert';
   /**
    * Özel rapor düzeni. "riasec": ilgi profili (altıgen grafik, ilgi kodu, meslek örnekleri).
+   * "interests": sıralı ilgi profili (alanlar en yüksekten en düşüğe; en belirgin alanların açıklaması).
    * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
    */
-  profile?: 'riasec';
+  profile?: 'riasec' | 'interests';
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];
@@ -236,7 +241,7 @@ export interface TaskInstrument extends InstrumentBase {
   tasks: CognitiveTask[];
 }
 
-/* ---------- Akademik tanı testleri (çoktan seçmeli, cevap anahtarlı) ---------- */
+/* ---------- Akademik konu tarama testleri (çoktan seçmeli, cevap anahtarlı) ---------- */
 
 export type QuizOptionKey = 'A' | 'B' | 'C' | 'D';
 

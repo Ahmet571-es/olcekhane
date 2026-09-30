@@ -63,10 +63,10 @@ describe('test raporları', () => {
   });
 
   it('matematik: konu alanlarına göre doğru sayıları; cevap anahtarı sunucuda', () => {
-    const r = evaluate('matematik-tani-testi', quizBody(6, 4));
+    const r = evaluate('matematik-konu-tarama-testi', quizBody(6, 4));
     expect(r.student.chart?.type).toBe('bars');
     const total = r.student.keyFigures.find((f) => f.label === 'Doğru')!.value;
-    const form = formForGrade(def<QuizInstrument>('matematik-tani-testi'), 6);
+    const form = formForGrade(def<QuizInstrument>('matematik-konu-tarama-testi'), 6);
     const wrong = form.items.filter((_, i) => i % 4 === 0).length;
     expect(total).toBe(`${form.items.length - wrong}/${form.items.length}`);
   });
@@ -93,7 +93,7 @@ describe('test raporları', () => {
     expect(() => evaluate('oz-saygi', half)).toThrow('maddelerin çoğunu');
     const quiz = quizBody(6);
     if (quiz.data.engine === 'quiz') delete quiz.data.answers[Object.keys(quiz.data.answers)[0]];
-    expect(() => evaluate('matematik-tani-testi', quiz)).toThrow('Bütün soruları');
+    expect(() => evaluate('matematik-konu-tarama-testi', quiz)).toThrow('Bütün soruları');
     const bad = cancellationBody();
     if (bad.data.engine === 'tasks') bad.data.blocks = {};
     expect(() => evaluate('surekli-dikkat', bad)).toThrow(AssessmentError);
@@ -137,7 +137,7 @@ describe('PDF rapor', () => {
       ['oz-saygi', likertBody('oz-saygi', 8, (i) => i % 4)],
       ['mesleki-ilgi-profili', likertBody('mesleki-ilgi-profili', 10, (i) => i % 5)],
       ['okuma-hizi-ve-anlama', readingBody(7)],
-      ['matematik-tani-testi', quizBody(7, 3)],
+      ['matematik-konu-tarama-testi', quizBody(7, 3)],
       ['surekli-dikkat', cancellationBody()],
     ];
     for (const [slug, body] of bodies) {

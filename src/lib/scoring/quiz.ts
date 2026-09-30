@@ -1,7 +1,7 @@
 import type { Band, QuizForm, QuizInstrument, QuizOptionKey } from '@/lib/instruments/types';
 
 /**
- * Akademik tanı testlerinin (çoktan seçmeli, cevap anahtarlı) puanlaması.
+ * Akademik konu tarama testlerinin (çoktan seçmeli, cevap anahtarlı) puanlaması.
  * Öğrenci her soruda A–D seçeneklerinden birini ya da “Bilmiyorum”u (X) seçer. Puanlama ölçüt
  * temellidir: norm yoktur, doğru cevap oranı sabit eşiklerle yorumlanır.
  */

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import { notFound } from 'next/navigation';
-import { getInstrumentDef, publicInstruments } from '@/content/instruments';
+import { getInstrumentDef, isSolvable, publicInstruments } from '@/content/instruments';
 import { JsonLd } from '@/components/seo/json-ld';
 import { GuideList } from '@/components/site/guide-list';
 import { guidesForTest } from '@/content/rehber';
@@ -17,26 +17,29 @@ export function generateStaticParams() {
 export async function generateMetadata(props: PageProps<'/testler/[slug]'>): Promise<Metadata> {
   const { slug } = await props.params;
   const def = getInstrumentDef(slug);
-  if (!def) return {};
-  return pageMeta({
+  if (!isSolvable(def)) return {};
+  const meta = pageMeta({
     title: `${def.name}${def.isFree ? ' (ücretsiz)' : ''}`,
     ogTitle: def.name,
     description: `${def.tagline} ${def.estimatedMinutes} dakika sürer, ${gradeRangeLabel(def.minGrade, def.maxGrade)} öğrenciler için. Bilimsel dayanağı, güvenirliği ve sınırları açıkça yazılı.`,
     path: `/testler/${slug}`,
     ownImage: true,
   });
+  // Uzman incelemesindeki test arama motorlarına kapalıdır.
+  return def.status === 'review' ? { ...meta, robots: { index: false, follow: false } } : meta;
 }
 
 export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const { slug } = await props.params;
   const def = getInstrumentDef(slug);
-  if (!def || (def.status !== 'active' && def.status !== 'pilot')) notFound();
+  if (!isSolvable(def)) notFound();
+  const inReview = def.status === 'review';
   const sc = def.science;
   const guides = guidesForTest(slug);
   const cancellation = def.engine === 'tasks' && def.tasks.length === 1 && def.tasks[0].kind === 'cancellation' ? def.tasks[0] : null;
   const itemCount =
     def.engine === 'likert'
-      ? `${def.items.length} ${def.profile === 'riasec' ? 'etkinlik' : 'cümle'}`
+      ? `${def.items.length} ${def.profile ? 'etkinlik' : 'cümle'}`
       : cancellation
         ? `${cancellation.sections} bölüm, her biri ${Math.round(cancellation.sectionMs / 1000)} saniye`
         : def.engine === 'tasks'
@@ -66,6 +69,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   return (
     <article className="container-page py-12 md:py-16">
       <JsonLd data={jsonLd} />
+      {inReview && (
+        <p className="notice notice-warn mb-8">
+          <strong>Bu test uzman incelemesinde.</strong> Henüz yayında değildir; bu sayfa yalnızca bağlantıyı bilenler tarafından
+          açılabilir ve arama motorlarında görünmez. İnceleme bitince maddeler ve rapor metinleri son hâlini alır.
+        </p>
+      )}
       <nav aria-label="Konum" className="t-small mb-8 text-ink-3">
         <Link href="/testler">Testler</Link> <span aria-hidden="true">/</span> {DOMAIN_LABELS[def.domain]}
       </nav>
@@ -81,7 +90,13 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <span className="size-2 rounded-full" style={{ background: color }} aria-hidden="true" />
               {DOMAIN_LABELS[def.domain]}
             </span>
-            {def.status === 'pilot' ? <span className="chip chip-brass">Pilot</span> : <span className="chip chip-ok">Yayında</span>}
+            {inReview ? (
+              <span className="chip chip-brass">Uzman incelemesinde</span>
+            ) : def.status === 'pilot' ? (
+              <span className="chip chip-brass">Pilot</span>
+            ) : (
+              <span className="chip chip-ok">Yayında</span>
+            )}
           </div>
           <h1 className="t-section text-[clamp(2.3rem,4.8vw,4.1rem)]">{def.name}</h1>
           <p className="t-lede measure">{def.description}</p>
@@ -163,6 +178,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Altı ilgi alanının Holland altıgeni üzerinde gösterimi ve üç harfli ilgi kodu</li>
                 <li>En belirgin üç ilgi alanının açıklaması</li>
+              </>
+            )}
+            {def.engine === 'likert' && def.profile === 'interests' && (
+              <>
+                <li>Sekiz ilgi alanının en yüksekten en düşüğe sıralanması</li>
+                <li>En belirgin ilgi alanlarının açıklaması ve bu ilgilerle ilişkili okul ve meslek alanlarına örnekler</li>
               </>
             )}
             {def.engine === 'likert' && !def.profile && (

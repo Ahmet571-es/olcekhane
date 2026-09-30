@@ -6,18 +6,18 @@ import { form8 } from './form8';
 import { MISCONCEPTIONS } from './misconceptions';
 
 /**
- * Matematik Tanı Testi
+ * Matematik Konu Tarama Testi (eski adı: Matematik Tanı Testi; eski adres kalıcı olarak yönlendirilir)
  * Özgün test (Ölçekhane, 2026). Her öğrenci, bulunduğu sınıftan bir önceki sınıfın temel konularını
  * yoklayan 20 soruluk formu çözer (hazırbulunuşluk). Yanlış seçenekler yaygın hatalara göre yazılmıştır;
  * rapor hem konu alanlarındaki başarıyı hem de yanlış cevapların işaret ettiği hata türlerini gösterir.
  * Durum: pilot.
  */
 export const matematik: QuizInstrument = {
-  slug: 'matematik-tani-testi',
+  slug: 'matematik-konu-tarama-testi',
   version: 1,
   engine: 'quiz',
   subject: 'Matematik',
-  name: 'Matematik Tanı Testi',
+  name: 'Matematik Konu Tarama Testi',
   shortName: 'Matematik',
   domain: 'academic',
   status: 'pilot',
@@ -32,7 +32,7 @@ export const matematik: QuizInstrument = {
   description:
     'Matematikte her konu bir öncekinin üzerine kurulur; bu yüzden eksikleri erken fark etmek önemlidir. Bu testte öğrenci, bulunduğu sınıftan bir önceki sınıfın temel konularını yoklayan 20 soru çözer. Yanlış seçenekler, öğrencilerin sık yaptığı hatalara göre hazırlanmıştır. Rapor yalnızca kaç sorunun doğru olduğunu değil, yanlışların hangi hata türüne işaret ettiğini de gösterir.',
   intro: {
-    title: 'Matematik tanı testi',
+    title: 'Matematik konu tarama testi',
     paragraphs: [
       'Birazdan 20 matematik sorusu göreceksin. Sorular bir önceki sınıfta öğrendiğin konulardan seçildi.',
       'Kâğıt ve kalem kullanabilirsin; hesap makinesi kullanma. Acele etmene gerek yok.',
@@ -52,7 +52,7 @@ export const matematik: QuizInstrument = {
   misconceptions: MISCONCEPTIONS,
   science: {
     basedOn:
-      'Özgün tanı testi (Ölçekhane, 2026). Sorular ortaokul matematik öğretim programının temel konularına göre yazılmış; yanlış seçenekler, matematik eğitimi araştırmalarında sık rastlanan hata türlerine göre hazırlanmıştır.',
+      'Özgün konu tarama testi (Ölçekhane, 2026). Sorular ortaokul matematik öğretim programının temel konularına göre yazılmış; yanlış seçenekler, matematik eğitimi araştırmalarında sık rastlanan hata türlerine göre hazırlanmıştır.',
     whatItMeasures:
       'Öğrencinin bir önceki sınıfta öğrendiği temel matematik konularındaki hâkimiyetini beş alanda ölçer ve yanlış cevapların hangi hata türüne işaret ettiğini gösterir. Böylece yalnızca “kaç doğru” sorusuna değil, “neden yanlış” sorusuna da cevap verir.',
     turkishVersion:

@@ -14,6 +14,10 @@ kadar yürütülür. Rehber yazılarında her mesajda bir yazı hazırlanır.
   robots.txt ve site haritası). Sunucu ya da yayın dosyaları değişince **Kurulum provası** da çalışır.
 - Göndermeden önce: `npm run typecheck`, `npm run lint`, `npm test`; arayüz değiştiyse `npm run build` ve
   gerçek bir tarayıcıda (Playwright, telefon ve masaüstü genişliği) deneme.
+- Yeni bir test önce `status: 'review'` (uzman incelemesinde) olarak yayına alınır: yalnızca doğrudan
+  bağlantıyla açılır, listelerde ve site haritasında yoktur, arama motorlarına kapalıdır. Hoca onaylayınca
+  `active` (kaynağı doğrulanmış ölçek) ya da `pilot` (özgün test) yapılır. Test adlarında "tanı" sözcüğü kullanılmaz;
+  bir testin adresi değişirse eski adres `next.config.ts` içinde kalıcı olarak yönlendirilir.
 - Çalışmaların sonucu GitHub API'den özet uyarılarıyla (check-run annotations) okunur; çalışma kayıtları bu
   ortamdan indirilemez. `workflow_dispatch` bu ortamdan tetiklenemez: yeniden yayın için `main`'e bir işleme
   gönderilir. Site bu ortamdan açılamaz (vekil sunucu engeller); dış sınamayı Yayın iş akışı yapar.

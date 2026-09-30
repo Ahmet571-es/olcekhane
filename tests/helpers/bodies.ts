@@ -20,7 +20,7 @@ export function likertBody(slug: string, grade: number, pick: (i: number) => num
 }
 
 export function quizBody(grade: number, wrongEvery = 0): AnswersBody {
-  const form = formForGrade(def<QuizInstrument>('matematik-tani-testi'), grade);
+  const form = formForGrade(def<QuizInstrument>('matematik-konu-tarama-testi'), grade);
   return {
     grade,
     data: {

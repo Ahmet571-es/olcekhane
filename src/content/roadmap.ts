@@ -13,19 +13,11 @@ export interface UpcomingTest {
 
 export const UPCOMING: UpcomingTest[] = [
   {
-    key: 'sinav-kaygisi',
-    name: 'Sınav Kaygısı (lise ve YKS)',
-    domain: 'academic',
-    measures: 'Sınav sırasında ve öncesinde yaşanan bilişsel kaygı',
-    basedOn: 'Bilişsel Sınav Kaygısı Ölçeği (Cassady), Türkçe uyarlama: Bozkurt ve ark., 2017',
-    grades: '11. sınıf ve üzeri',
-  },
-  {
-    key: 'turkce-tani',
-    name: 'Türkçe Tanı Testi',
+    key: 'turkce-konu-tarama',
+    name: 'Türkçe Konu Tarama Testi',
     domain: 'academic',
     measures: 'Bir önceki sınıfın dil bilgisi, yazım-noktalama ve sözcük bilgisi konularında güçlü ve eksik noktalar',
-    basedOn: 'Özgün sorular; ortaokul Türkçe öğretim programının temel konularına göre, Matematik Tanı Testi ile aynı yapıda',
+    basedOn: 'Özgün sorular; ortaokul Türkçe öğretim programının temel konularına göre, Matematik Konu Tarama Testi ile aynı yapıda',
     grades: '5.–8. sınıf',
   },
 ];
