@@ -37,7 +37,10 @@ GitHub'daki yayın iş akışının sunucuya bağlandığı SSH anahtarı bu par
 saklanmaz.
 
 1. Uzun ve rastgele bir parola üretin (Claude'un verdiği "Ölçekhane Ana Parola" sayfasını kullanabilirsiniz;
-   parola yalnızca sizin tarayıcınızda üretilir, hiçbir yere gönderilmez). Parola 64 karakterdir.
+   parola yalnızca sizin tarayıcınızda üretilir, hiçbir yere gönderilmez; sayfanın ürettiği parola 64
+   karakterdir). Sayfayı kullanamıyorsanız parolayı kendiniz uydurup klavyeyle yazabilirsiniz: birbiriyle
+   alakasız 7 kelime (her biri en az 4 harf) ve sonuna 4 rastgele rakam; yalnızca küçük harf (a–z) ve rakam.
+   Boşluklar sayılmaz; en az 32 karakter olmalıdır.
 2. Parolayı güvenli bir yere kaydedin (kâğıda ya da bir parola yöneticisine).
 3. Sayfadaki **Kopyala** düğmesine basın ve kopyaladığınızı aynı sayfadaki denetim kutusuna yapıştırın: yeşil
    onay görmeden GitHub'a geçmeyin. Kopyalama bazı görünümlerde sessizce çalışmayabilir; o zaman GitHub'a
