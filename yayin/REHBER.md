@@ -36,9 +36,12 @@ paylaşmayın; yalnızca 3. adımda GitHub'a gireceksiniz.
 GitHub'daki yayın iş akışının sunucuya bağlandığı SSH anahtarı bu paroladan üretilir; anahtar hiçbir yerde
 saklanmaz.
 
-1. Uzun ve rastgele bir parola üretin (Claude'un verdiği parola üretme sayfasını kullanabilirsiniz; parola
-   yalnızca sizin tarayıcınızda üretilir, hiçbir yere gönderilmez).
-2. Parolayı güvenli bir yere kaydedin (ör. bir parola yöneticisi).
+1. Uzun ve rastgele bir parola üretin (Claude'un verdiği "Ölçekhane Ana Parola" sayfasını kullanabilirsiniz;
+   parola yalnızca sizin tarayıcınızda üretilir, hiçbir yere gönderilmez). Parola 64 karakterdir.
+2. Parolayı güvenli bir yere kaydedin (kâğıda ya da bir parola yöneticisine).
+3. Sayfadaki **Kopyala** düğmesine basın ve kopyaladığınızı aynı sayfadaki denetim kutusuna yapıştırın: yeşil
+   onay görmeden GitHub'a geçmeyin. Kopyalama bazı görünümlerde sessizce çalışmayabilir; o zaman GitHub'a
+   panoda duran başka bir şey (ör. daha önce kopyalanmış bir şifre) yapıştırılır ve yayın durur.
 
 > Parola kurulumdan sonra değiştirilirse yayın iş akışı sunucuya bağlanamaz ve durur; eski değeri geri
 > girmek yeter. Parola kaybolursa sunucu Hostinger panelinden sıfırlanıp yeni bir root şifresi ve yeni bir
@@ -54,8 +57,11 @@ adresini açın, **Name** kutusuna adı, **Secret** kutusuna değeri yapıştır
 | `ANA_SIFRE` | 2. adımdaki parola |
 | `SUNUCU_ROOT_SIFRE` | Sunucunun root şifresi (ilk kurulumdan sonra silinebilir) |
 
-Girilen değerler GitHub'da bir daha görüntülenemez; yanlış girildiyse aynı adla yeniden girin. Daha önce
-`DEPO_ROOT_SIFRE`, `SMTP_KULLANICI` ya da `SMTP_SIFRE` girdiyseniz artık kullanılmıyorlar; silebilirsiniz.
+Girilen değerler GitHub'da bir daha görüntülenemez. Yanlış girildiyse listede o satırdaki kalem simgesine
+(**Update**) basıp yeni değeri **Value** kutusuna yapıştırın ve **Update secret**'a basın. Yayın, yanlış
+girilen bir değeri özet uyarısında adlandırır (ör. "ANA_SIFRE 9 karakter"); değerin kendisini hiçbir yere
+yazmaz. Daha önce `DEPO_ROOT_SIFRE`, `SMTP_KULLANICI` ya da `SMTP_SIFRE` girdiyseniz artık kullanılmıyorlar;
+silebilirsiniz.
 
 İlk kurulumdan sonra Claude, sunucunun SSH anahtarını depoya (`yayin/bilinen-sunucular`) ekler; böylece yayın
 iş akışı yalnızca bu sunucuya bağlanır. Ardından `SUNUCU_ROOT_SIFRE`'yi silin: kurulum root hesabıyla şifreli
