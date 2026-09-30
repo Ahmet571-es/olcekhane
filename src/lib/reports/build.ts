@@ -889,13 +889,25 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
   let durmaText: string;
   if (r.hitRate < GO_HIT_FOR_STOP) {
     const q = r.hitRate < 0.5 ? 'çoğunda' : 'önemli bir kısmında';
+    // "0 kez durdun" ya da "30 kez durdun" yerine "hiç durmadın" ve "her seferinde durdun".
+    const didStop = you
+      ? stopped === 0
+        ? `${x} geldiğinde hiç durmadın`
+        : r.commissions === 0
+          ? `${x} geldiğinde her seferinde durdun`
+          : `${x} geldiğinde ${stopped} kez durdun, ${r.commissions} kez bastın`
+      : stopped === 0
+        ? `Çocuğunuz ${x} geldiğinde hiç durmadı`
+        : r.commissions === 0
+          ? `Çocuğunuz ${x} geldiğinde her seferinde durdu`
+          : `Çocuğunuz ${x} geldiğinde ${stopped} kez durdu, ${r.commissions} kez bastı`;
     durmaText = early
       ? you
-        ? `${x} geldiğinde ${stopped} kez durdun, ${r.commissions} kez bastın. Ama basman gereken harflerin ${q} harfe bakmadan, çok erken bastığın için bu oran tek başına bir şey söylemez.`
-        : `Çocuğunuz ${x} geldiğinde ${stopped} kez durdu, ${r.commissions} kez bastı. Ancak basması gereken harflerin ${q} harfe bakmadan, çok erken bastığı için bu oran tek başına yorumlanamaz.`
+        ? `${didStop}. Ama basman gereken harflerin ${q} harfe bakmadan, çok erken bastığın için bu oran tek başına bir şey söylemez.`
+        : `${didStop}. Ancak basması gereken harflerin ${q} harfe bakmadan, çok erken bastığı için bu oran tek başına yorumlanamaz.`
       : you
-        ? `${x} geldiğinde ${stopped} kez durdun. Ama basman gereken harflerin ${q} zamanında basmadığın için bu oran tek başına bir şey söylemez: hiç basmayan biri de ${x}’te durmuş görünür.`
-        : `Çocuğunuz ${x} geldiğinde ${stopped} kez durdu. Ancak basması gereken harflerin ${q} zamanında basmadığı için bu oran tek başına yorumlanamaz: hiç basmayan biri de ${x}’te durmuş görünür.`;
+        ? `${didStop}. Ama basman gereken harflerin ${q} zamanında basmadığın için bu oran tek başına bir şey söylemez: hiç basmayan biri de ${x}’te durmuş görünür.`
+        : `${didStop}. Ancak basması gereken harflerin ${q} zamanında basmadığı için bu oran tek başına yorumlanamaz: hiç basmayan biri de ${x}’te durmuş görünür.`;
   } else if (r.stopRate === 1) {
     durmaText = you
       ? `${x} geldiğinde her seferinde durabildin. Sık sık basarken birden durmak kolay değildir; bu, hızlı çalışırken bile kendini frenleyebildiğini gösterir.`
