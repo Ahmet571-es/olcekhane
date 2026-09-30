@@ -315,7 +315,8 @@ describe('Görev raporları', () => {
     expect(timeouts.student.items[0].text).not.toContain('kelimenin söylediği renge');
     // Uyumsuzların hiçbirinde cevap yok (düşük doğruluk): çoğunda süre aşımı.
     const none = evaluate('renk-kelime-gorevi', colorWordBody((t) => (t.word === t.ink ? { choice: t.ink, rtMs: 650 } : { choice: null, rtMs: null })));
-    expect(none.parent.items[0].text).toContain('süre içinde cevap verilmedi');
+    expect(none.parent.items[0].text).toContain('süre içinde cevap vermedi ya da kelimeye bakmadan çok erken bastı');
+    expect(none.parent.items[0].text).not.toContain('rengini bulmakta zorlandı');
     expect(none.parent.items[0].text).not.toContain('başka bir renge');
     // Hiç doğru cevap yoksa "bir kısmında" değil "çoğunda" denir.
     const zero = evaluate('renk-kelime-gorevi', colorWordBody((t) => ({ choice: (t.ink + 1) % 4 === t.word ? (t.ink + 2) % 4 : (t.ink + 1) % 4, rtMs: 700 })));
@@ -342,7 +343,7 @@ describe('Görev raporları', () => {
     const fast = evaluate('dur-git-gorevi', goNoGoBody(() => 300));
     expect(fast.student.items[0].badge).toBe('Durma oranı %0');
     expect(fast.student.items[2].text).toContain('hız öne çıkıyor');
-    expect(fast.parent.cautions.join(' ')).toContain('X harflerinde de');
+    expect(fast.parent.cautions.join(' ')).toContain('X harflerinin çoğunda da basılmış');
     // Bas harflerinin çoğunda harfe bakmadan erken basılır.
     const early = evaluate('dur-git-gorevi', goNoGoBody((t, i) => (t.go ? (i % 3 ? 90 : 420) : null)));
     expect(early.student.items[1].text).toContain('ona bakmadan bastın');

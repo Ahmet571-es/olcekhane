@@ -701,7 +701,7 @@ export function taskQualityNotes(parts: {
             ? `${late}; bunların çoğunda harfe bakılmadan, çok erken basılmış. Düğmeye harfi beklemeden basılmış olabilir.`
             : `${late}; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.`,
       );
-    } else if (g.stopRate < 0.2) notes.push('Dur-git görevinde X harflerinde de hemen her seferinde basılmış; yönerge anlaşılmamış olabilir.');
+    } else if (g.stopRate < 0.2) notes.push('Dur-git görevinde X harflerinin çoğunda da basılmış; yönerge anlaşılmamış olabilir.');
     if (g.hitRate >= 0.5 && g.anticipations / g.goTrials > 0.1) {
       notes.push('Dur-git görevinde bazı basışlar harf görünür görünmez, ona bakmadan yapılmış; düğmeye harfi beklemeden basılmış olabilir.');
     }

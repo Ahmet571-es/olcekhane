@@ -771,6 +771,13 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
   } else if (r.accuracy >= 0.75) {
     accText = you ? 'Yazıların rengini çoğu zaman doğru buldun, bazı denemelerde yanıldın.' : 'Çocuğunuz yazıların rengini çoğu zaman doğru buldu, bazı denemelerde yanıldı.';
     if (drop) accText += incongruentNote;
+  } else if (mostlyMissed && !(drop && errorKind === 'reading')) {
+    // Doğru olmayan cevapların çoğu süre aşımı ya da çok erken cevap: "rengi bulmakta zorlandı" denmez.
+    const missed = r.timeouts + r.anticipations;
+    const some = missed > r.n / 2 ? 'denemelerin çoğunda' : 'denemelerin bir kısmında';
+    accText = you
+      ? `Görevde ${some} süre içinde cevap vermedin ya da kelimeye bakmadan çok erken bastın. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin.`
+      : `Çocuğunuz görevde ${some} süre içinde cevap vermedi ya da kelimeye bakmadan çok erken bastı; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`;
   } else {
     const some = r.accuracy < 0.5 ? 'Denemelerin çoğunda' : 'Denemelerin bir kısmında';
     accText = you ? `${some} yazının rengini bulmakta zorlandın.` : `Çocuğunuz ${some.toLocaleLowerCase('tr-TR')} yazının rengini bulmakta zorlandı.`;
@@ -778,10 +785,6 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
       accText += you
         ? ' Hatalarının çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge bastın: kelimeyi okumak, yazının rengine bakmanın önüne geçti. Acele etmeden, önce yazının rengine bakmak işine yarar.'
         : ' Hataların çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge basıldı: kelimeyi okumak yazının rengine bakmanın önüne geçmiş ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.';
-    } else if (mostlyMissed) {
-      accText += you
-        ? ' Bu denemelerin çoğunda süre içinde cevap vermedin ya da kelimeye bakmadan çok erken bastın; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin.'
-        : ' Bu denemelerin çoğunda süre içinde cevap verilmedi ya da kelimeye bakmadan çok erken basıldı; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.';
     } else {
       accText += you
         ? ' Bu; acele etmekten, yönergeyi tam anlamamaktan ya da renkleri ayırt etmekte zorlanmaktan kaynaklanabilir.'
