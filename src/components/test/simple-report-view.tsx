@@ -1,5 +1,5 @@
 import { ScaleRuler } from '@/components/report/scale-ruler';
-import type { SimpleChart, SimpleReport } from '@/lib/reports/simple';
+import type { RulerRow, SimpleChart, SimpleGroup, SimpleReport } from '@/lib/reports/simple';
 
 /**
  * Basit raporun ekrandaki hâli. PDF'teki raporla aynı içeriği gösterir: teste uygun tek
@@ -18,32 +18,57 @@ function rulerSteps(min: number, max: number) {
   return { major: 10, minor: 2 };
 }
 
-function Rulers({ rows }: { rows: Extract<SimpleChart, { type: 'rulers' }>['rows'] }) {
+/** Cetvel satırları; satırın yorumu varsa (ayrıntılı profilde alt özellikler) cetvelin altında gösterilir. */
+function Rulers({ rows }: { rows: (RulerRow & { text?: string })[] }) {
   return (
     <ul className="flex flex-col divide-y divide-rule border-y border-rule">
       {rows.map((r) => {
         const st = rulerSteps(r.min, r.max);
         return (
-          <li key={r.label} className="grid gap-x-6 gap-y-2 py-4 sm:grid-cols-[11rem_1fr_7rem] sm:items-center">
+          // Telefonda ad ve puan aynı satırda, cetvel altta; geniş ekranda üçü yan yana.
+          <li
+            key={r.label}
+            className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-2 py-4 sm:grid-cols-[11rem_1fr_7rem] sm:items-center sm:gap-x-6"
+          >
             <p className="font-bold">{r.label}</p>
-            <ScaleRuler
-              min={r.min}
-              max={r.max}
-              value={r.value}
-              ciLow={r.ciLow}
-              ciHigh={r.ciHigh}
-              majorStep={st.major}
-              minorStep={st.minor}
-              srLabel={`${r.label}: ${r.valueLabel}, ${r.band}`}
-            />
-            <p className="flex flex-col sm:text-right">
+            <div className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto">
+              <ScaleRuler
+                min={r.min}
+                max={r.max}
+                value={r.value}
+                ciLow={r.ciLow}
+                ciHigh={r.ciHigh}
+                majorStep={st.major}
+                minorStep={st.minor}
+                srLabel={`${r.label}: ${r.valueLabel}, ${r.band}`}
+              />
+            </div>
+            <p className="flex items-baseline gap-2 text-right sm:flex-col sm:items-end sm:gap-0">
               <span className="tabular font-bold">{r.valueLabel}</span>
               <span className="t-small text-ink-2">{r.band}</span>
             </p>
+            {r.text && <p className="measure col-span-2 text-[0.975rem] text-ink-2 sm:col-span-3">{r.text}</p>}
           </li>
         );
       })}
     </ul>
+  );
+}
+
+function Groups({ groups }: { groups: SimpleGroup[] }) {
+  return (
+    <div className="flex flex-col gap-10">
+      {groups.map((g) => (
+        <section key={g.title} aria-label={g.title} className="flex flex-col gap-3">
+          <h3 className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="font-display text-xl font-bold">{g.title}</span>
+            <span className="t-small font-bold text-brass-ink">{g.badge}</span>
+          </h3>
+          <p className="measure text-ink-2">{g.text}</p>
+          <Rulers rows={g.facets} />
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -201,17 +226,22 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
         <h2 id="ogeler" className="t-h2">
           {report.itemsTitle}
         </h2>
-        <ul className="flex flex-col divide-y divide-rule border-y border-rule">
-          {report.items.map((it) => (
-            <li key={it.title} className="flex flex-col gap-1.5 py-5">
-              <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="font-display text-lg font-bold">{it.title}</span>
-                {it.badge && <span className="t-small font-bold text-brass-ink">{it.badge}</span>}
-              </p>
-              <p className="measure text-ink-2">{it.text}</p>
-            </li>
-          ))}
-        </ul>
+        {report.groupsNote && <p className="t-meta measure">{report.groupsNote}</p>}
+        {report.groups ? (
+          <Groups groups={report.groups} />
+        ) : (
+          <ul className="flex flex-col divide-y divide-rule border-y border-rule">
+            {report.items.map((it) => (
+              <li key={it.title} className="flex flex-col gap-1.5 py-5">
+                <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="font-display text-lg font-bold">{it.title}</span>
+                  {it.badge && <span className="t-small font-bold text-brass-ink">{it.badge}</span>}
+                </p>
+                <p className="measure text-ink-2">{it.text}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {report.support && (

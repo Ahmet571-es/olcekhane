@@ -1,7 +1,7 @@
 import 'server-only';
 import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
-import type { SimpleChart, SimpleReport } from '@/lib/reports/simple';
+import type { RulerRow, SimpleChart, SimpleReport } from '@/lib/reports/simple';
 
 /**
  * Basit raporun PDF'i. Sunucuda bellekte üretilir ve doğrudan indirilir; dosya hiçbir yere kaydedilmez.
@@ -110,7 +110,8 @@ function tickStep(span: number) {
   return 10;
 }
 
-function Rulers({ rows }: { rows: Extract<SimpleChart, { type: 'rulers' }>['rows'] }) {
+/** Cetvel satırları; satırın yorumu varsa (ayrıntılı profilde alt özellikler) cetvelin altında yazılır. */
+function Rulers({ rows }: { rows: (RulerRow & { text?: string })[] }) {
   const W = 250;
   const pad = 8;
   return (
@@ -122,34 +123,37 @@ function Rulers({ rows }: { rows: Extract<SimpleChart, { type: 'rulers' }>['rows
         const ticks: number[] = [];
         for (let v = Math.ceil(row.min / step) * step; v <= row.max + 1e-9; v += step) ticks.push(r1(v));
         return (
-          <View key={row.label} wrap={false} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5, borderTopWidth: 1, borderTopColor: C.rule }}>
-            <Text style={{ width: 128, fontWeight: 700, paddingRight: 6 }}>{row.label}</Text>
-            <Svg width={W} height={30}>
-              {row.value !== null && row.ciLow !== null && row.ciHigh !== null && (
-                <Rect
-                  x={x(Math.max(row.min, row.ciLow))}
-                  y={7}
-                  width={Math.max(1.5, x(Math.min(row.max, row.ciHigh)) - x(Math.max(row.min, row.ciLow)))}
-                  height={10}
-                  rx={2}
-                  fill={C.band}
-                />
-              )}
-              <Line x1={pad} y1={12} x2={W - pad} y2={12} stroke={C.ruleStrong} strokeWidth={2} />
-              {ticks.map((t) => (
-                <G key={t}>
-                  <Line x1={x(t)} y1={8} x2={x(t)} y2={16} stroke={C.ruleStrong} strokeWidth={1} />
-                  <Text x={x(t)} y={27} style={{ fontFamily: 'Atkinson', fontSize: 7, fill: C.ink3 }} textAnchor="middle">
-                    {String(t).replace('.', ',')}
-                  </Text>
-                </G>
-              ))}
-              {row.value !== null && <Circle cx={x(Math.min(row.max, Math.max(row.min, row.value)))} cy={12} r={5.5} fill={C.marker} stroke={C.paper} strokeWidth={1.5} />}
-            </Svg>
-            <View style={{ flex: 1, paddingLeft: 10 }}>
-              <Text style={{ fontWeight: 700 }}>{row.valueLabel}</Text>
-              <Text style={{ fontSize: 9, color: C.ink2 }}>{row.band}</Text>
+          <View key={row.label} wrap={false} style={{ paddingVertical: 5, borderTopWidth: 1, borderTopColor: C.rule }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ width: 128, fontWeight: 700, paddingRight: 6 }}>{row.label}</Text>
+              <Svg width={W} height={30}>
+                {row.value !== null && row.ciLow !== null && row.ciHigh !== null && (
+                  <Rect
+                    x={x(Math.max(row.min, row.ciLow))}
+                    y={7}
+                    width={Math.max(1.5, x(Math.min(row.max, row.ciHigh)) - x(Math.max(row.min, row.ciLow)))}
+                    height={10}
+                    rx={2}
+                    fill={C.band}
+                  />
+                )}
+                <Line x1={pad} y1={12} x2={W - pad} y2={12} stroke={C.ruleStrong} strokeWidth={2} />
+                {ticks.map((t) => (
+                  <G key={t}>
+                    <Line x1={x(t)} y1={8} x2={x(t)} y2={16} stroke={C.ruleStrong} strokeWidth={1} />
+                    <Text x={x(t)} y={27} style={{ fontFamily: 'Atkinson', fontSize: 7, fill: C.ink3 }} textAnchor="middle">
+                      {String(t).replace('.', ',')}
+                    </Text>
+                  </G>
+                ))}
+                {row.value !== null && <Circle cx={x(Math.min(row.max, Math.max(row.min, row.value)))} cy={12} r={5.5} fill={C.marker} stroke={C.paper} strokeWidth={1.5} />}
+              </Svg>
+              <View style={{ flex: 1, paddingLeft: 10 }}>
+                <Text style={{ fontWeight: 700 }}>{row.valueLabel}</Text>
+                <Text style={{ fontSize: 9, color: C.ink2 }}>{row.band}</Text>
+              </View>
             </View>
+            {row.text && <Text style={[s.paraSmall, { color: C.ink2, marginTop: 2 }]}>{row.text}</Text>}
           </View>
         );
       })}
@@ -325,6 +329,7 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
         <Text style={s.h2} minPresenceAhead={60}>
           {report.itemsTitle}
         </Text>
+        {report.groupsNote && <Text style={[s.note, { marginTop: 0, marginBottom: 6 }]}>{report.groupsNote}</Text>}
         {report.items.map((it) => (
           <View key={it.title} style={s.item} wrap={false}>
             <View style={s.itemHead}>
@@ -332,6 +337,18 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
               {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
             </View>
             <Text style={s.para}>{it.text}</Text>
+          </View>
+        ))}
+        {report.groups?.map((g) => (
+          <View key={g.title} style={{ marginTop: 12 }}>
+            <View wrap={false} minPresenceAhead={70}>
+              <View style={s.itemHead}>
+                <Text style={[s.itemTitle, { fontFamily: 'Bricolage', fontSize: 12.5 }]}>{g.title}</Text>
+                <Text style={s.itemBadge}>{g.badge}</Text>
+              </View>
+              <Text style={[s.para, { marginBottom: 6 }]}>{g.text}</Text>
+            </View>
+            <Rulers rows={g.facets} />
           </View>
         ))}
 

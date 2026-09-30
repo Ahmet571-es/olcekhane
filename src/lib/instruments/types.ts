@@ -52,6 +52,11 @@ export interface ScaleDef {
   alpha?: number;
   /** Ortalama puan ölçeğinde başvuru standart sapması; ölçüm payını hesaplamak için. */
   sdRef?: number;
+  /**
+   * Bileşik ölçek: puanı, listelenen ölçeklerin bütün maddelerinden hesaplanır (ör. bir kişilik boyutu,
+   * alt özelliklerinin maddelerinden). Bileşik ölçeğe doğrudan madde bağlanmaz.
+   */
+  of?: string[];
 }
 
 export interface LikertOption {
@@ -105,9 +110,10 @@ export interface LikertInstrument extends InstrumentBase {
   /**
    * Özel rapor düzeni. "riasec": ilgi profili (altıgen grafik, ilgi kodu, meslek örnekleri).
    * "interests": sıralı ilgi profili (alanlar en yüksekten en düşüğe; en belirgin alanların açıklaması).
+   * "facets": ayrıntılı profil (bileşik ölçekler genel bakışta; her birinin altında alt ölçeklerin cetvelleri).
    * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
    */
-  profile?: 'riasec' | 'interests';
+  profile?: 'riasec' | 'interests' | 'facets';
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];

@@ -36,7 +36,11 @@ describe('test tanımları tutarlı', () => {
         const keys = def.items.map((i) => i.key);
         expect(new Set(keys).size).toBe(keys.length);
         for (const item of def.items) expect(scaleKeys.has(item.scale)).toBe(true);
-        for (const s of def.scales) expect(def.items.some((i) => i.scale === s.key)).toBe(true);
+        for (const s of def.scales) {
+          // Bileşik ölçek (boyut) alt ölçeklerinden oluşur; ona doğrudan madde bağlanmaz.
+          if (s.of) for (const k of s.of) expect(def.items.some((i) => i.scale === k), `${s.key}/${k}`).toBe(true);
+          else expect(def.items.some((i) => i.scale === s.key), s.key).toBe(true);
+        }
         expect(def.options.length).toBeGreaterThanOrEqual(2);
       } else if (def.engine === 'reading') {
         for (const p of def.passages) {

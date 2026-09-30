@@ -1,4 +1,5 @@
 import type { InstrumentDef } from '@/lib/instruments/types';
+import { ayrintiliKisilik } from './ayrintili-kisilik';
 import { besFaktor } from './bes-faktor';
 import { calismaAliskanliklari } from './calisma-aliskanliklari';
 import { dikkatBellek } from './dikkat-bellek';
@@ -12,6 +13,7 @@ import { ozSaygi } from './oz-saygi';
 /** Platformdaki tüm test tanımları. Sıralama katalogdaki varsayılan sıradır. */
 export const INSTRUMENTS: InstrumentDef[] = [
   besFaktor,
+  ayrintiliKisilik,
   ozSaygi,
   meslekiIlgi,
   meslekIlgiAlanlari,

@@ -15,6 +15,7 @@ import type {
   ReadingInstrument,
   TaskInstrument,
 } from '@/lib/instruments/types';
+import { scaleItems } from '@/lib/scoring/likert';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
 import type { CancellationResult, FlankerResult, SpanResult, SymbolResult } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
@@ -78,6 +79,8 @@ export interface ReportContent {
   interests?: InterestProfile;
   /** Sıralı ilgi profili (profil: interests). */
   ranking?: InterestRanking;
+  /** Ayrıntılı profil (profil: facets): her bileşik ölçek ve alt ölçekleri, testteki sırayla. */
+  facetGroups?: { domain: string; facets: string[] }[];
   cognitive?: CognitiveReport;
   academic?: AcademicReport;
   reading?: {
@@ -241,7 +244,7 @@ export function buildReport(input: {
       const bt = band ? template?.scales[scale.key]?.[band] : undefined;
       if (bt?.support) support = true;
       const picked = pickText(bt, audience);
-      const nItems = def.items.filter((i) => i.scale === scale.key).length;
+      const nItems = scaleItems(def, scale).length;
       const isMean = def.scoring.method === 'mean';
       const min = isMean ? optMin : optMin * nItems;
       const max = isMean ? optMax : optMax * nItems;
@@ -326,6 +329,10 @@ export function buildReport(input: {
   const interests =
     def.engine === 'likert' && def.profile === 'riasec' ? buildInterestProfile(sections, audience, input.grade) : undefined;
   const ranking = def.engine === 'likert' && def.profile === 'interests' ? rankInterests(sections) : undefined;
+  const facetGroups =
+    def.engine === 'likert' && def.profile === 'facets'
+      ? def.scales.filter((s) => s.of?.length).map((s) => ({ domain: s.key, facets: s.of ?? [] }))
+      : undefined;
 
   // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
   let strengths: string[] | undefined;
@@ -342,7 +349,7 @@ export function buildReport(input: {
       const s = sections.find((x) => x.scaleKey === key);
       if (s) highlights.push(`${s.name}: ${s.summary.toLocaleLowerCase('tr-TR')}`);
     }
-  } else if (sections.length > 2 && !interests && !template?.evaluative) {
+  } else if (sections.length > 2 && !interests && !facetGroups && !template?.evaluative) {
     const rank: Record<string, number> = { very_high: 2, very_low: 2, high: 1, low: 1, average: 0 };
     const notable = sections
       .filter((s) => s.band && rank[s.band] > 0)
@@ -379,6 +386,7 @@ export function buildReport(input: {
     reading,
     interests,
     ranking,
+    facetGroups,
     cognitive,
     academic,
   };

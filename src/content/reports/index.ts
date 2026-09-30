@@ -1,3 +1,4 @@
+import { ayrintiliKisilikReport } from './ayrintili-kisilik';
 import { besFaktorReport } from './bes-faktor';
 import { calismaAliskanliklariReport } from './calisma-aliskanliklari';
 import { meslekIlgiAlanlariReport } from './meslek-ilgi-alanlari';
@@ -8,6 +9,7 @@ import type { ReportTemplate } from './types';
 
 export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'bes-faktor-kisilik': besFaktorReport,
+  'ayrintili-kisilik-profili': ayrintiliKisilikReport,
   'oz-saygi': ozSaygiReport,
   'okuma-hizi-ve-anlama': okumaReport,
   'mesleki-ilgi-profili': meslekiIlgiReport,

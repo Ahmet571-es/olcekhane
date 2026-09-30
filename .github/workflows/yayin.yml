@@ -128,7 +128,9 @@ jobs:
           # Bir ziyaretçinin yapacağı gibi: sayfalar, test raporu ve PDF (örnek cevaplarla; hiçbir şey saklanmaz).
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
-          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz /testler/meslek-ilgi-alanlari /iletisim /yasal/aydinlatma-metni; do
+          # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
+          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili"
+          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
           done
@@ -143,12 +145,20 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert len(r["student"]["chart"]["rows"]) == 8 and r["parent"]["items"]'; then
             sorun="$sorun ilgi-raporu"
           fi
-          # Uzman incelemesindeki testler bağlantıyla açılır ama arama motorlarına kapalıdır.
-          if "${C[@]}" "https://$ALAN/testler/meslek-ilgi-alanlari" | grep -qi 'name="robots" content="noindex'; then
-            echo "::notice title=Önizleme::/testler/meslek-ilgi-alanlari açılıyor; uzman incelemesinde, arama motorlarına kapalı."
-          else
-            echo "::notice title=Önizleme::/testler/meslek-ilgi-alanlari açılıyor ve herkese açık."
+          # Ayrıntılı Kişilik Profili: 116 madde (Liberalizm alt boyutu çıkarıldı), beş boyut ve alt özellikleri.
+          KISILIK_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"k{i:03d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 121) if i not in (28, 58, 88, 118)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$KISILIK_GOVDE" "https://$ALAN/api/rapor/ayrintili-kisilik-profili" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert [len(g["facets"]) for g in r["parent"]["groups"]] == [6, 6, 6, 6, 5]'; then
+            sorun="$sorun kisilik-raporu"
           fi
+          # Uzman incelemesindeki testler bağlantıyla açılır ama arama motorlarına kapalıdır.
+          for slug in $ONIZLEME; do
+            if "${C[@]}" "https://$ALAN/testler/$slug" | grep -qi 'name="robots" content="noindex'; then
+              echo "::notice title=Önizleme::/testler/$slug açılıyor; uzman incelemesinde, arama motorlarına kapalı."
+            else
+              echo "::notice title=Önizleme::/testler/$slug açılıyor ve herkese açık."
+            fi
+          done
           PDF_GOVDE=$(printf '%s' "$GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["audience"]="parent"; print(json.dumps(b))')
           if ! "${C[@]}" -f -m 60 -H 'content-type: application/json' -d "$PDF_GOVDE" -o "$RUNNER_TEMP/rapor.pdf" \
             "https://$ALAN/api/rapor/oz-saygi/pdf" || [ "$(head -c 5 "$RUNNER_TEMP/rapor.pdf")" != '%PDF-' ]; then

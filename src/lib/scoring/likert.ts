@@ -1,5 +1,11 @@
-import type { AnchoredBands, Band, LikertInstrument } from '@/lib/instruments/types';
+import type { AnchoredBands, Band, LikertInstrument, LikertItemDef, ScaleDef } from '@/lib/instruments/types';
 import { clamp, median, normalCdf, round, standardError, Z90 } from './stats';
+
+/** Bir ölçeğin maddeleri; bileşik ölçekte (`of`) alt ölçeklerin bütün maddeleri. */
+export function scaleItems(def: LikertInstrument, scale: ScaleDef): LikertItemDef[] {
+  const keys = scale.of ?? [scale.key];
+  return def.items.filter((i) => keys.includes(i.scale));
+}
 
 export interface NormStat {
   normSetId: string;
@@ -74,10 +80,10 @@ export function scoreLikert(
   const optMax = Math.max(...values);
 
   return def.scales.map((scale) => {
-    const scaleItems = def.items.filter((i) => i.scale === scale.key);
-    const nItems = scaleItems.length;
+    const items = scaleItems(def, scale);
+    const nItems = items.length;
     const keyed: number[] = [];
-    for (const item of scaleItems) {
+    for (const item of items) {
       const a = answers[item.key];
       if (!a || !Number.isFinite(a.value)) continue;
       const v = clamp(a.value, optMin, optMax);

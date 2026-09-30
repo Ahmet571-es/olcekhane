@@ -10,6 +10,9 @@ import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
 import { domainColor } from '@/lib/domain-style';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
+/** Cümle başında sayıların yazıyla gösterimi ("Beş boyutun…"). */
+const NUMBER_WORDS: Record<number, string> = { 2: 'İki', 3: 'Üç', 4: 'Dört', 5: 'Beş', 6: 'Altı', 7: 'Yedi', 8: 'Sekiz' };
+
 export function generateStaticParams() {
   return publicInstruments().map((t) => ({ slug: t.slug }));
 }
@@ -39,7 +42,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const cancellation = def.engine === 'tasks' && def.tasks.length === 1 && def.tasks[0].kind === 'cancellation' ? def.tasks[0] : null;
   const itemCount =
     def.engine === 'likert'
-      ? `${def.items.length} ${def.profile ? 'etkinlik' : 'cümle'}`
+      ? `${def.items.length} ${def.profile === 'riasec' || def.profile === 'interests' ? 'etkinlik' : 'cümle'}`
       : cancellation
         ? `${cancellation.sections} bölüm, her biri ${Math.round(cancellation.sectionMs / 1000)} saniye`
         : def.engine === 'tasks'
@@ -48,6 +51,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             ? `${def.forms[0].items.length} soru`
             : '1 metin, 8 soru';
   const scales = def.scales.filter((s) => s.key !== 'total');
+  // Ayrıntılı profil: boyutlar (bileşik ölçekler) ve altlarındaki alt özellikler birlikte anlatılır.
+  const composites = scales.filter((s) => s.of?.length);
+  const facetCount = composites.reduce((n, d) => n + (d.of?.length ?? 0), 0);
   // Güvenirliği ve başvuru standart sapması bilinen ölçeklerde cetvelde ölçüm payı da gösterilir.
   const showsMargin = def.engine === 'likert' && def.scales.some((s) => s.alpha !== undefined && s.sdRef !== undefined);
   const solveUrl = `/testler/${def.slug}/coz`;
@@ -125,21 +131,42 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
         </h2>
         <div className="flex flex-col gap-6">
           <p className="measure text-ink-2">{sc.whatItMeasures}</p>
-          <ul className="divide-y divide-rule border-y border-rule">
-            {scales.map((s) => (
-              <li key={s.key} className="grid gap-1 py-4 sm:grid-cols-[12rem_1fr] sm:gap-6">
-                <p className="font-bold">{s.name}</p>
-                <div>
-                  <p>{s.plain}</p>
-                  {s.poles && (
-                    <p className="t-meta mt-1">
-                      Bir uçta: {s.poles.low.toLocaleLowerCase('tr-TR')}. Öbür uçta: {s.poles.high.toLocaleLowerCase('tr-TR')}.
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+          {composites.length > 0 ? (
+            <ul className="divide-y divide-rule border-y border-rule">
+              {composites.map((d) => (
+                <li key={d.key} className="grid gap-3 py-5 sm:grid-cols-[12rem_1fr] sm:gap-6">
+                  <p className="font-bold">{d.name}</p>
+                  <div className="flex flex-col gap-3">
+                    <p>{d.plain}</p>
+                    <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                      {(d.of ?? []).flatMap((k) => scales.filter((f) => f.key === k)).map((f) => (
+                        <li key={f.key} className="flex flex-col">
+                          <span className="text-[0.975rem] font-bold">{f.name}</span>
+                          <span className="t-small text-ink-2">{f.plain}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul className="divide-y divide-rule border-y border-rule">
+              {scales.map((s) => (
+                <li key={s.key} className="grid gap-1 py-4 sm:grid-cols-[12rem_1fr] sm:gap-6">
+                  <p className="font-bold">{s.name}</p>
+                  <div>
+                    <p>{s.plain}</p>
+                    {s.poles && (
+                      <p className="t-meta mt-1">
+                        Bir uçta: {s.poles.low.toLocaleLowerCase('tr-TR')}. Öbür uçta: {s.poles.high.toLocaleLowerCase('tr-TR')}.
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </section>
 
@@ -184,6 +211,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Sekiz ilgi alanının en yüksekten en düşüğe sıralanması</li>
                 <li>En belirgin ilgi alanlarının açıklaması ve bu ilgilerle ilişkili okul ve meslek alanlarına örnekler</li>
+              </>
+            )}
+            {def.engine === 'likert' && def.profile === 'facets' && (
+              <>
+                <li>{`${NUMBER_WORDS[composites.length] ?? composites.length} boyutun, puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi`}</li>
+                <li>{`Her boyutun altında alt özelliklerinin (toplam ${facetCount}) cetveli ve her biri için kısa bir yorum`}</li>
               </>
             )}
             {def.engine === 'likert' && !def.profile && (

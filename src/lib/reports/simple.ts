@@ -20,11 +20,21 @@ export type SimpleChart =
   /** Dikey sütunlar: eşit süreli bölümler (harf işaretleme). */
   | { type: 'columns'; rows: { label: string; value: number }[]; caption: string };
 
+export type RulerRow = Extract<SimpleChart, { type: 'rulers' }>['rows'][number];
+
 export interface SimpleItem {
   title: string;
   /** Düzey adı ya da kısa sonuç ("Olumlu", "Dakikada 127 harf"). */
   badge?: string;
   text: string;
+}
+
+/** Ayrıntılı profilde bir boyut: boyutun yorumu ve alt özelliklerinin cetvelleri (her cetvelin altında kısa yorum). */
+export interface SimpleGroup {
+  title: string;
+  badge: string;
+  text: string;
+  facets: (RulerRow & { text: string })[];
 }
 
 export interface SimpleReport {
@@ -41,6 +51,10 @@ export interface SimpleReport {
   keyFigures: { label: string; value: string; note?: string }[];
   itemsTitle: string;
   items: SimpleItem[];
+  /** Ayrıntılı profil: boyut boyut alt özellikler (varsa `items` yerine gösterilir). */
+  groups?: SimpleGroup[];
+  /** `groups` başlığının altındaki açıklama. */
+  groupsNote?: string;
   /** Sonucu dikkatle yorumlamayı gerektiren durumlar. */
   cautions: string[];
   support: { title: string; lines: string[] } | null;
@@ -325,26 +339,50 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
   const poles = you
     ? 'Uçlardan biri iyi, öteki kötü değil; her tarzın kendine özgü güçlü yanları var.'
     : 'Uçlardan biri iyi, öteki kötü değildir; her tarzın kendine özgü güçlü yanları vardır.';
+  const ruler = (s: ReportContent['sections'][number]): RulerRow => ({
+    label: s.name,
+    value: s.value,
+    min: s.min,
+    max: s.max,
+    ciLow: s.ciLow,
+    ciHigh: s.ciHigh,
+    valueLabel: s.valueLabel,
+    band: s.bandLabel,
+  });
+  const badge = (s: ReportContent['sections'][number]) => (s.summary && s.summary !== s.bandLabel ? `${s.bandLabel} · ${s.summary}` : s.bandLabel);
+
+  // Ayrıntılı profil: genel bakışta boyutlar, ardından her boyutun altında alt özellikleri.
+  if (r.facetGroups) {
+    const byKey = new Map(r.sections.map((s) => [s.scaleKey, s]));
+    const domains = r.facetGroups.flatMap((g) => byKey.get(g.domain) ?? []);
+    const groups = r.facetGroups.flatMap((g) => {
+      const d = byKey.get(g.domain);
+      if (!d) return [];
+      const facets = g.facets.flatMap((k) => byKey.get(k) ?? []).map((f) => ({ ...ruler(f), text: f.text }));
+      return [{ title: d.name, badge: badge(d), text: d.text, facets }];
+    });
+    return {
+      ...base,
+      chartTitle: 'Genel bakış',
+      chartNote: ['Her satır bir boyut.', marks, poles].filter(Boolean).join(' '),
+      chart: { type: 'rulers', rows: domains.map(ruler) },
+      keyFigures: [],
+      itemsTitle: 'Boyut boyut ayrıntılar',
+      items: [],
+      groups,
+      groupsNote:
+        'Her boyut, dörder cümleyle ölçülen alt özelliklerden oluşur. Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; sarı bantların daha geniş olması bundandır.',
+    };
+  }
+
   return {
     ...base,
     chartTitle: one ? r.sections[0].name : 'Genel bakış',
     chartNote: one ? marks || undefined : [you ? 'Her satır bir özellik.' : 'Her satır bir boyut.', marks, poles].filter(Boolean).join(' '),
-    chart: {
-      type: 'rulers',
-      rows: r.sections.map((s) => ({
-        label: s.name,
-        value: s.value,
-        min: s.min,
-        max: s.max,
-        ciLow: s.ciLow,
-        ciHigh: s.ciHigh,
-        valueLabel: s.valueLabel,
-        band: s.bandLabel,
-      })),
-    },
+    chart: { type: 'rulers', rows: r.sections.map(ruler) },
     keyFigures: [],
     itemsTitle: one ? 'Sonuç' : 'Boyutlar',
-    items: r.sections.map((s) => ({ title: s.name, badge: s.summary && s.summary !== s.bandLabel ? `${s.bandLabel} · ${s.summary}` : s.bandLabel, text: s.text })),
+    items: r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text })),
   };
 }
 
