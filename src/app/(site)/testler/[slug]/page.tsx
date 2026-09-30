@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { notFound } from 'next/navigation';
 import { getInstrumentDef, publicInstruments } from '@/content/instruments';
 import { JsonLd } from '@/components/seo/json-ld';
 import { GuideList } from '@/components/site/guide-list';
 import { guidesForTest } from '@/content/rehber';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
+import { domainColor } from '@/lib/domain-style';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
 export function generateStaticParams() {
@@ -46,6 +48,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   // Güvenirliği ve başvuru standart sapması bilinen ölçeklerde cetvelde ölçüm payı da gösterilir.
   const showsMargin = def.engine === 'likert' && def.scales.some((s) => s.alpha !== undefined && s.sdRef !== undefined);
   const solveUrl = `/testler/${def.slug}/coz`;
+  const color = domainColor(def.domain);
 
   const jsonLd = breadcrumbLd([
     { name: 'Ana sayfa', path: '/' },
@@ -66,15 +69,24 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
       <nav aria-label="Konum" className="t-small mb-8 text-ink-3">
         <Link href="/testler">Testler</Link> <span aria-hidden="true">/</span> {DOMAIN_LABELS[def.domain]}
       </nav>
-      <header className="grid gap-10 border-b border-rule pb-12 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+      <header className="relative isolate grid gap-10 border-b border-rule pb-12 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+        <div
+          aria-hidden="true"
+          className="test-sekil pointer-events-none absolute -right-28 -top-48 -z-10 size-[30rem]"
+          style={{ '--vurgu': color } as CSSProperties}
+        />
         <div className="flex flex-col gap-5">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-rule bg-surface px-3 py-1 text-[0.8125rem] font-bold text-ink-2">
+              <span className="size-2 rounded-full" style={{ background: color }} aria-hidden="true" />
+              {DOMAIN_LABELS[def.domain]}
+            </span>
             {def.status === 'pilot' ? <span className="chip chip-brass">Pilot</span> : <span className="chip chip-ok">Yayında</span>}
           </div>
-          <h1 className="t-h1">{def.name}</h1>
+          <h1 className="t-section text-[clamp(2.3rem,4.8vw,4.1rem)]">{def.name}</h1>
           <p className="t-lede measure">{def.description}</p>
           <div className="flex flex-wrap gap-3">
-            <Link href={solveUrl} className="btn btn-primary btn-lg">
+            <Link href={solveUrl} className="btn btn-primary btn-lg btn-tayf" data-magnet>
               {def.isFree ? 'Ücretsiz çöz' : 'Testi çöz'}
             </Link>
             <a href="#bilim-karti" className="btn btn-secondary btn-lg">
@@ -82,9 +94,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             </a>
           </div>
         </div>
-        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-rule bg-rule">
+        <dl className="grid grid-cols-2 gap-3">
           {facts.map((f) => (
-            <div key={f.k} className="bg-surface p-4">
+            <div key={f.k} className="glass rounded-2xl p-4">
               <dt className="t-meta">{f.k}</dt>
               <dd className="font-bold">{f.v}</dd>
             </div>

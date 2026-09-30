@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { UPCOMING } from '@/content/roadmap';
 import { publicInstruments } from '@/content/instruments';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
+import { domainColor } from '@/lib/domain-style';
 
 const DOMAIN_ORDER = ['personality', 'career', 'academic', 'cognitive', 'wellbeing', 'skills'] as const;
 export const DOMAIN_ANCHORS: Record<string, string> = {
@@ -28,7 +29,10 @@ export function TestShelf({ showUpcoming = true, headingLevel = 3 }: { showUpcom
         if (liveHere.length + soon.length === 0) return null;
         return (
           <section key={domain} id={DOMAIN_ANCHORS[domain]} className="scroll-mt-24">
-            <H className="t-h3 mb-3">{DOMAIN_LABELS[domain]}</H>
+            <H className="t-h3 mb-3 flex items-center gap-2.5">
+              <span className="size-3 rounded-full" style={{ background: domainColor(domain) }} aria-hidden="true" />
+              {DOMAIN_LABELS[domain]}
+            </H>
             <div className="overflow-x-auto rounded-xl border border-rule bg-surface">
               <table className="w-full min-w-[46rem] table-fixed border-collapse text-left">
                 <thead>

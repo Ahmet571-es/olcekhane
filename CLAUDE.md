@@ -37,6 +37,18 @@ kadar yürütülür. Rehber yazılarında her mesajda bir yazı hazırlanır.
 - Açık hukuki işler: Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim, metinlerin avukat kontrolü,
   e-posta sağlayıcısının aydınlatma metninde anılması.
 
+## Görsel dil
+
+- Tanıtım sayfaları (`src/app/(site)`) "canlı şekil" dilini kullanır: beş kişilik boyutunun renkleri
+  (`--dim-*`, `src/app/globals.css`), yuvarlak düğmeler, cam paneller, kaydırınca belirme (`data-reveal`),
+  eğilen kartlar (`data-tilt`) ve mıknatıs düğmeler (`data-magnet`). Efektler tek yerdedir
+  (`components/site/site-effects.tsx`) ve hareketi azaltmayı seçenlerde kapanır.
+- Açılıştaki üç boyutlu şekil kütüphanesiz, doğrudan WebGL ile çizilir (`components/persona`); WebGL yoksa
+  CSS ile çizilmiş yedek şekil görünür. Kaydırıcılar "oyun, ölçüm değil" diye anlatılır ve hiçbir yere
+  kaydedilmez.
+- Test çözme ve rapor ekranları (`src/app/(test)`) sade kalır; hareketli efektler oraya taşınmaz. Tayf
+  renkleri bir boyutu ya da alanı tanıtır; puan, iyi ya da kötü anlamı taşımaz.
+
 ## Git
 
 - İşlemeler ortamın varsayılan kimliğiyle (Claude, noreply@anthropic.com) ve imzalı yapılır; `-c user.*` ile

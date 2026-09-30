@@ -129,7 +129,7 @@ describe('İletişim sayfası ve altbilgi', () => {
     vi.stubEnv('OWNER_TAX_OFFICE', 'Çankaya');
     vi.stubEnv('OWNER_TAX_NO', '1234567890');
     const html = renderToStaticMarkup(createElement(ContactPage));
-    expect(html).toContain('<h1 class="t-h1 max-w-4xl">İletişim</h1>');
+    expect(html).toMatch(/<h1[^>]*>İletişim<\/h1>/);
     for (const text of [
       'Ayşe Yılmaz',
       'Atatürk Cad. No: 5 D: 3, Çankaya/Ankara',

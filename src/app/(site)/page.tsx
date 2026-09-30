@@ -1,10 +1,14 @@
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { JsonLd } from '@/components/seo/json-ld';
+import { CountUp } from '@/components/site/count-up';
+import { Marquee } from '@/components/site/marquee';
+import { MeasureStory } from '@/components/site/measure-story';
 import { ReportPreview } from '@/components/site/report-preview';
-import { TestShelf } from '@/components/site/test-shelf';
+import { TestCards } from '@/components/site/test-cards';
+import { PersonaHero } from '@/components/persona/persona-hero';
 import { publicInstruments } from '@/content/instruments';
 import { GUIDE_CATEGORIES, guideBySlug } from '@/content/rehber';
-import { HeroVisual } from '@/components/three/hero-visual';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, siteUrl } from '@/lib/config';
 import { pageMeta } from '@/lib/seo';
 
@@ -93,6 +97,55 @@ const STEPS = [
   },
 ];
 
+const DOTS = ['var(--dim-ext)', 'var(--dim-agr)', 'var(--dim-con)', 'var(--dim-emo)', 'var(--dim-int)'];
+
+function HeroIntro() {
+  return (
+    <div className="flex flex-col gap-7">
+      <p className="kicker flex items-center gap-3">
+        <span className="flex -space-x-1" aria-hidden="true">
+          {DOTS.map((c) => (
+            <span key={c} className="size-3 rounded-full ring-2 ring-paper" style={{ background: c }} />
+          ))}
+        </span>
+        Öğrenciler için bilimsel kişilik, ilgi ve öğrenme testleri
+      </p>
+      <h1 className="t-hero">
+        <span className="satir">
+          <span style={{ '--i': 0 } as CSSProperties}>Her insanın</span>
+        </span>
+        <span className="satir">
+          <span style={{ '--i': 1 } as CSSProperties}>şekli</span>
+        </span>
+        <span className="satir">
+          <span className="tayf-yazi" style={{ '--i': 2 } as CSSProperties}>
+            farklı.
+          </span>
+        </span>
+      </h1>
+      <p className="t-lede measure">
+        Ölçekhane; kişiliği, ilgi alanlarını ve öğrenme becerilerini araştırmalarla desteklenmiş ölçeklerle ölçer. Sonucu öğrenciye ve
+        veliye ayrı ayrı, herkesin anlayacağı bir dille anlatır.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <Link href="/testler" className="btn btn-primary btn-lg btn-tayf" data-magnet>
+          Ücretsiz test çöz
+        </Link>
+        <a href="#olcum-baslik" className="btn btn-secondary btn-lg">
+          Nasıl ölçüyoruz?
+        </a>
+      </div>
+      <ul className="flex flex-wrap gap-2" aria-label="Kısaca">
+        {['Hesap yok', 'Testler ücretsiz', 'Cevaplar saklanmaz'].map((b) => (
+          <li key={b} className="glass rounded-full px-3.5 py-1.5 text-[0.875rem] font-bold text-ink-2">
+            {b}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function Home() {
   const jsonLd = [
     {
@@ -112,170 +165,210 @@ export default function Home() {
     },
   ];
 
+  const stats = [
+    { n: LIVE.length, t: 'ücretsiz test, hepsi hesap açmadan' },
+    { n: 0, t: 'saklanan cevap: cevaplar hiçbir yere yazılmaz' },
+    { n: 0, t: 'çerez ya da izleme aracı' },
+    { n: 2, t: 'ayrı rapor: öğrenciye ve veliye' },
+  ];
+
   return (
     <>
       <JsonLd data={jsonLd} />
 
-      {/* Açılış */}
-      <section className="relative overflow-hidden border-b border-rule">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.55]"
-          aria-hidden="true"
-          style={{
-            backgroundImage:
-              'linear-gradient(var(--rule) 1px, transparent 1px), linear-gradient(90deg, var(--rule) 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-            maskImage: 'radial-gradient(ellipse 70% 80% at 72% 40%, black 30%, transparent 75%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 80% at 72% 40%, black 30%, transparent 75%)',
-          }}
-        />
-        <div className="container-page relative grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:py-24">
-          <div className="flex flex-col gap-7">
-            <h1 className="flex flex-col gap-5">
-              <span className="t-display">Tahmin değil, ölçüm.</span>
-              <span className="font-body text-[clamp(1.2rem,2vw,1.45rem)] font-bold tracking-normal text-brass-ink">
-                Öğrenciler için bilimsel kişilik, ilgi ve öğrenme testleri
-              </span>
-            </h1>
-            <p className="t-lede measure">
-              Çocuğunuzun güçlü yanlarını, ilgi alanlarını ve öğrenme alışkanlıklarını araştırmalarla desteklenmiş ölçeklerle inceliyoruz.
-              Sonucu öğrenciye ve veliye ayrı ayrı, herkesin anlayacağı bir dille anlatıyoruz.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/testler" className="btn btn-primary btn-lg">
-                Ücretsiz test çöz
-              </Link>
-              <a href="#rapor" className="btn btn-secondary btn-lg">
-                Örnek rapor
-              </a>
-            </div>
-            <p className="t-meta measure">Bütün testler ücretsiz ve hesap açmadan çözülür. Ad, e-posta ya da kredi kartı bilgisi istemiyoruz; cevaplar saklanmaz.</p>
-          </div>
-          <HeroVisual />
+      {/* Açılış: canlı kişilik şekli */}
+      <section className="relative overflow-hidden" aria-label="Giriş">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div className="bulut -left-32 top-4 size-[26rem]" style={{ background: 'var(--dim-con)', opacity: 0.16 }} />
+          <div className="bulut -right-24 -top-20 size-[32rem]" style={{ background: 'var(--dim-int)', opacity: 0.2, animationDelay: '-7s' }} />
+          <div className="bulut bottom-[-10rem] left-[38%] size-[26rem]" style={{ background: 'var(--dim-agr)', opacity: 0.13, animationDelay: '-12s' }} />
+        </div>
+        <div className="container-page relative pb-16 pt-4 sm:pt-8 md:pb-24 md:pt-12">
+          <PersonaHero intro={<HeroIntro />} />
         </div>
       </section>
 
-      {/* Ölçek rafı */}
-      <section className="container-page py-20 md:py-28" aria-labelledby="raf">
-        <div className="mb-10 grid gap-4 lg:grid-cols-[1fr_1.2fr] lg:items-end">
-          <h2 id="raf" className="t-h1">
-            Neyi, hangi araçla ölçüyoruz?
-          </h2>
-          <p className="t-lede measure">
-            Her testin hangi bilimsel ölçeğe dayandığını, Türkçe sürümünün durumunu ve sınırlarını açıkça yazıyoruz. Hazırlanmakta olan testleri
-            de burada gösteriyoruz.
-          </p>
+      <Marquee />
+
+      <MeasureStory />
+
+      {/* Testler */}
+      <section className="container-page py-24 md:py-32" aria-labelledby="testler-baslik">
+        <div className="mb-12 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end" data-reveal>
+          <div>
+            <p className="kicker">Testler</p>
+            <h2 id="testler-baslik" className="t-section mt-3">
+              Neyi ölçüyoruz?
+            </h2>
+          </div>
+          <div className="flex flex-col gap-4">
+            <p className="t-lede">
+              Her test, yayımlanmış bir bilimsel ölçeğe ya da bizim geliştirip belgelediğimiz özgün bir göreve dayanır. Hepsi ücretsiz,
+              hepsi hesap açmadan çözülür.
+            </p>
+            <Link href="/testler" className="self-start font-bold">
+              Bütün testler ve bilimsel dayanakları →
+            </Link>
+          </div>
         </div>
-        <TestShelf />
+        <TestCards />
       </section>
 
       {/* Rapor önizleme */}
-      <section className="border-y border-rule bg-surface-2/60" aria-labelledby="rapor">
-        <div className="container-page py-20 md:py-28">
-          <div className="mb-10 grid gap-4 lg:grid-cols-[1fr_1.2fr] lg:items-end">
-            <h2 id="rapor" className="t-h1">
-              Aynı sonuç, iki ayrı dil
-            </h2>
-            <p className="t-lede measure">
+      <section className="relative border-y border-rule bg-surface-2/55" aria-labelledby="rapor">
+        <div className="container-page py-24 md:py-32">
+          <div className="mb-12 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end" data-reveal>
+            <div>
+              <p className="kicker">Rapor</p>
+              <h2 id="rapor" className="t-section mt-3 scroll-mt-28">
+                Aynı sonuç, <span className="tayf-yazi">iki ayrı dil.</span>
+              </h2>
+            </div>
+            <p className="t-lede">
               On üç yaşındaki bir öğrencinin okuyacağı rapor ile velisinin okuyacağı rapor aynı olmamalı. Her sonucu öğrenciye kendi diliyle,
               veliye de ayrıca anlatıyoruz. İki raporu da PDF olarak indirebilirsiniz.
             </p>
           </div>
-          <ReportPreview />
+          <div data-reveal>
+            <ReportPreview />
+          </div>
         </div>
       </section>
 
-      {/* İlkeler */}
-      <section className="container-page py-20 md:py-28" aria-labelledby="ilkeler">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
-          <div className="flex flex-col gap-5">
-            <h2 id="ilkeler" className="t-h1">
+      {/* Güven */}
+      <section className="container-page py-24 md:py-32" aria-labelledby="ilkeler">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.55fr] lg:gap-16">
+          <div className="flex flex-col gap-5 lg:sticky lg:top-28 lg:self-start" data-reveal>
+            <p className="kicker">Güven</p>
+            <h2 id="ilkeler" className="t-section">
               Neden güvenebilirsiniz?
             </h2>
             <p className="t-lede">Çocuğunuz hakkında söylenen her cümlenin arkasında durabilmemiz gerekiyor.</p>
             <Link href="/bilimsel-yaklasim" className="self-start font-bold">
-              Bilimsel yaklaşımımızı okuyun
+              Bilimsel yaklaşımımızı okuyun →
             </Link>
           </div>
-          <dl className="grid gap-x-10 gap-y-9 sm:grid-cols-2">
-            {PRINCIPLES.map((p) => (
-              <div key={p.t} className="flex flex-col gap-2 border-t-2 border-ink pt-4">
-                <dt className="font-display text-xl font-bold">{p.t}</dt>
-                <dd className="text-ink-2">{p.d}</dd>
-              </div>
-            ))}
-          </dl>
+          <div>
+            <ul className="grid gap-5 sm:grid-cols-2">
+              {PRINCIPLES.map((p, i) => (
+                <li key={p.t} data-reveal style={{ '--reveal-gecikme': `${(i % 2) * 90}ms` } as CSSProperties}>
+                  <article className="kart flex h-full flex-col gap-3 p-6" data-tilt style={{ '--vurgu': DOTS[i + 1] } as CSSProperties}>
+                    <span className="grid size-10 place-items-center rounded-full font-display text-lg font-bold text-white" style={{ background: DOTS[i + 1] }} aria-hidden="true">
+                      {i + 1}
+                    </span>
+                    <h3 className="font-display text-xl font-bold">{p.t}</h3>
+                    <p className="text-ink-2">{p.d}</p>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
+        <dl className="mt-16 grid grid-cols-2 gap-y-10 border-y border-rule py-10 lg:grid-cols-4">
+          {stats.map((s, i) => (
+            <div
+              key={s.t}
+              className={`flex flex-col-reverse gap-3 pr-4 lg:px-8 ${i > 0 ? 'lg:border-l lg:border-rule' : 'lg:pl-0'}`}
+              data-reveal
+              style={{ '--reveal-gecikme': `${i * 80}ms` } as CSSProperties}
+            >
+              <dt className="t-small max-w-[22ch] text-ink-2">{s.t}</dt>
+              <dd className="font-display text-[clamp(3.6rem,6.4vw,6rem)] font-bold leading-[0.85] tracking-[-0.04em]" style={{ color: DOTS[(i + 2) % DOTS.length] }}>
+                <CountUp to={s.n} />
+              </dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       {/* Nasıl çalışır */}
-      <section className="container-page pb-20 md:pb-28" aria-labelledby="nasil">
-        <div className="grid gap-10 rounded-2xl bg-ink p-8 text-paper md:p-12 lg:grid-cols-[1fr_1.6fr]">
-          <div className="flex flex-col gap-4">
-            <h2 id="nasil" className="t-h1">
-              Nasıl çalışır?
-            </h2>
-            <p className="opacity-85">Testi çocuğunuzla birlikte seçin, o çözsün, raporu birlikte okuyun.</p>
-            <div className="mt-auto flex flex-wrap gap-3 pt-2">
-              <Link href="/testler" className="btn bg-paper text-ink hover:bg-surface-2">
-                Testlere göz atın
-              </Link>
-              <Link href="/veliler-icin" className="btn border-paper/40 bg-transparent text-paper hover:border-paper">
-                Veliler için
-              </Link>
-            </div>
+      <section className="container-page pb-24 md:pb-32" aria-labelledby="nasil">
+        <div className="gece relative overflow-hidden rounded-[2.5rem] p-8 md:p-14" data-reveal>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="bulut -right-20 -top-24 size-80" style={{ background: 'var(--dim-int)', opacity: 0.35 }} />
+            <div className="bulut -bottom-28 left-10 size-72" style={{ background: 'var(--dim-ext)', opacity: 0.25, animationDelay: '-9s' }} />
           </div>
-          <ol className="grid gap-8 sm:grid-cols-3">
-            {STEPS.map((st, i) => (
-              <li key={st.t} className="flex flex-col gap-2 border-t border-paper/30 pt-4">
-                <span className="font-display text-3xl font-bold tabular opacity-70" aria-hidden="true">
-                  {i + 1}
-                </span>
-                <p className="font-display text-xl font-bold">{st.t}</p>
-                <p className="opacity-85">{st.d}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="relative grid gap-12 lg:grid-cols-[1fr_1.6fr]">
+            <div className="flex flex-col gap-4">
+              <p className="kicker text-[color:var(--gece-soluk)]">Nasıl çalışır?</p>
+              <h2 id="nasil" className="t-section">
+                Üç adımda hazır.
+              </h2>
+              <p className="text-[color:var(--gece-soluk)]">Testi çocuğunuzla birlikte seçin, o çözsün, raporu birlikte okuyun.</p>
+              <div className="mt-auto flex flex-wrap gap-3 pt-4">
+                <Link href="/testler" className="btn btn-acik btn-tayf" data-magnet>
+                  Testlere göz atın
+                </Link>
+                <Link href="/veliler-icin" className="btn border-[color:var(--gece-cizgi)] bg-transparent text-[color:var(--gece-yazi)] hover:border-[color:var(--gece-yazi)]">
+                  Veliler için
+                </Link>
+              </div>
+            </div>
+            <ol className="grid gap-8 sm:grid-cols-3">
+              {STEPS.map((st, i) => (
+                <li key={st.t} className="flex flex-col gap-3 border-t border-[color:var(--gece-cizgi)] pt-5">
+                  <span className="font-display text-6xl font-bold leading-none tabular" style={{ color: DOTS[(i * 2) % DOTS.length] }} aria-hidden="true">
+                    0{i + 1}
+                  </span>
+                  <p className="font-display text-xl font-bold">{st.t}</p>
+                  <p className="text-[color:var(--gece-soluk)]">{st.d}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </section>
 
       {/* Rehber */}
-      <section className="container-page pb-20 md:pb-28" aria-labelledby="rehberden">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <h2 id="rehberden" className="t-h1">
-            Rehberden
-          </h2>
+      <section className="container-page pb-24 md:pb-32" aria-labelledby="rehberden">
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-4" data-reveal>
+          <div>
+            <p className="kicker">Rehber</p>
+            <h2 id="rehberden" className="t-section mt-3">
+              Rehberden
+            </h2>
+          </div>
           <Link href="/rehber" className="font-bold">
-            Bütün yazılar
+            Bütün yazılar →
           </Link>
         </div>
-        <ul className="grid gap-x-10 gap-y-10 md:grid-cols-3">
-          {FEATURED_GUIDES.map((g) => (
-            <li key={g.slug} className="flex flex-col gap-2 border-t-2 border-ink pt-4">
-              <p className="t-meta font-bold text-brass-ink">{GUIDE_CATEGORIES[g.category]}</p>
-              <h3 className="font-display text-xl font-bold leading-snug">
-                <Link href={`/rehber/${g.slug}`} className="no-underline hover:underline">
-                  {g.title}
-                </Link>
-              </h3>
-              <p className="text-ink-2">{g.description}</p>
+        <ul className="grid gap-5 md:grid-cols-3">
+          {FEATURED_GUIDES.map((g, i) => (
+            <li key={g.slug} data-reveal style={{ '--reveal-gecikme': `${i * 80}ms` } as CSSProperties}>
+              <article className="kart flex h-full flex-col gap-3 p-6" data-tilt style={{ '--vurgu': DOTS[(i + 2) % DOTS.length] } as CSSProperties}>
+                <p className="t-meta font-bold" style={{ color: DOTS[(i + 2) % DOTS.length] }}>
+                  {GUIDE_CATEGORIES[g.category]}
+                </p>
+                <h3 className="font-display text-xl font-bold leading-snug">
+                  <Link href={`/rehber/${g.slug}`} className="no-underline after:absolute after:inset-0 after:content-['']">
+                    {g.title}
+                  </Link>
+                </h3>
+                <p className="text-ink-2">{g.description}</p>
+                <span className="mt-auto pt-2 font-bold" aria-hidden="true">
+                  Oku →
+                </span>
+              </article>
             </li>
           ))}
         </ul>
       </section>
 
       {/* SSS */}
-      <section className="container-page pb-8" aria-labelledby="sss">
+      <section className="container-page" aria-labelledby="sss">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr]">
-          <h2 id="sss" className="t-h1">
-            Sık sorulanlar
-          </h2>
-          <div className="divide-y divide-rule border-y border-rule">
+          <div data-reveal>
+            <p className="kicker">Sorular</p>
+            <h2 id="sss" className="t-section mt-3">
+              Sık sorulanlar
+            </h2>
+          </div>
+          <div className="sss divide-y divide-rule border-y border-rule" data-reveal>
             {FAQ.map((f) => (
               <details key={f.q} className="group py-5">
                 <summary className="flex cursor-pointer list-none items-start justify-between gap-6 font-display text-lg font-bold">
                   {f.q}
-                  <span aria-hidden="true" className="mt-1 text-ink-3 transition-transform group-open:rotate-45">
+                  <span aria-hidden="true" className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border border-rule-strong text-ink-2 transition-transform duration-300 group-open:rotate-45">
                     +
                   </span>
                 </summary>

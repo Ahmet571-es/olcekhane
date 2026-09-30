@@ -12,16 +12,17 @@ export const NAV = [
 /** Üst bölümdeki tek eylem düğmesi: hesap ya da giriş yoktur, testler doğrudan çözülür. */
 export function TestsCta() {
   return (
-    <Link href="/testler" className="btn btn-primary whitespace-nowrap">
+    <Link href="/testler" className="btn btn-primary btn-tayf whitespace-nowrap" data-magnet>
       Ücretsiz test çöz
     </Link>
   );
 }
 
+/** Yapışkan, buzlu cam üst menü. Aşağı kaydırınca gizlenir, yukarı kaydırınca geri gelir (site-effects). */
 export function SiteHeader() {
   return (
-    <header className="relative z-20 border-b border-rule/70 bg-paper/85 backdrop-blur supports-[backdrop-filter]:bg-paper/70">
-      <div className="container-page flex h-[4.25rem] items-center justify-between gap-6">
+    <header id="site-ust" className="site-ust sticky top-0 z-30">
+      <div className="container-page flex h-[4.5rem] items-center justify-between gap-6">
         <Link href="/" className="no-underline" aria-label="Ölçekhane ana sayfa">
           <Logo />
         </Link>
@@ -29,7 +30,7 @@ export function SiteHeader() {
           <ul className="flex items-center gap-1">
             {NAV.map((n) => (
               <li key={n.href}>
-                <Link href={n.href} className="whitespace-nowrap rounded-md px-3 py-2 text-[0.975rem] font-semibold text-ink-2 no-underline hover:bg-surface-2 hover:text-ink">
+                <Link href={n.href} className="menu-baglanti">
                   {n.label}
                 </Link>
               </li>
@@ -39,7 +40,7 @@ export function SiteHeader() {
         <div className="hidden xl:block">
           <TestsCta />
         </div>
-        <MobileNav items={NAV} cta={<TestsCta />} />
+        <MobileNav items={NAV} />
       </div>
     </header>
   );
