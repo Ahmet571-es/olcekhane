@@ -94,9 +94,12 @@ baglan() { # ip root_sifresi
   command -v sshpass >/dev/null || hata "sshpass kurulu değil."
   pub=$(cat "$IS/anahtar/ssh_anahtari.pub")
   gh_not notice "Sunucu" "$ip: ilk kurulum, root şifresiyle bağlanılıyor."
-  SSHPASS=$sifre sshpass -e ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password,keyboard-interactive \
-    -o UserKnownHostsFile="$KH" -o HashKnownHosts=no -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 \
-    "root@$ip" bash -s <<EOF || hata "Sunucu ($ip): ne yayın anahtarıyla ne de root şifresiyle bağlanılabildi. İlk kurulumsa şifreyi ve sağlayıcının root ile SSH girişine izin verdiğini denetleyin. Sunucu daha önce kurulduysa (root girişi artık kapalıdır) ANA_SIFRE değiştirilmiş olabilir: eski değeri geri girin.$ipucu"
+  # Bağlanılamazsa nedeni özete yazılır: sshpass 5 = şifre kabul edilmedi; diğer durumlarda ssh'nin son iletileri
+  # (ör. "Connection timed out", "Permission denied (publickey)"). Bu iletilerde şifre yer almaz.
+  local cikis=0 ssh_iletisi ayrinti
+  ssh_iletisi=$(SSHPASS=$sifre sshpass -e ssh -o PubkeyAuthentication=no \
+    -o PreferredAuthentications=password,keyboard-interactive -o UserKnownHostsFile="$KH" -o HashKnownHosts=no \
+    -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 "root@$ip" bash -s 2>&1 >/dev/null <<EOF
 set -e
 id yonetici >/dev/null 2>&1 || useradd --create-home --shell /bin/bash yonetici
 install -d -m 700 -o yonetici -g yonetici /home/yonetici/.ssh
@@ -107,6 +110,16 @@ echo 'yonetici ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/90-olcekhane-yonetici
 chmod 440 /etc/sudoers.d/90-olcekhane-yonetici
 visudo -cqf /etc/sudoers.d/90-olcekhane-yonetici
 EOF
+  ) || cikis=$?
+  if [ "$cikis" -ne 0 ]; then
+    ayrinti=$(printf '%s\n' "$ssh_iletisi" | { grep -v '^Warning: Permanently added' || true; } | tail -n 3 | tr '\n' ' ' |
+      sed 's/  */ /g; s/ $//')
+    case "$cikis" in
+      5) neden="sunucu root şifresini kabul etmedi: SUNUCU_ROOT_SIFRE, sunucunun root şifresiyle aynı değil" ;;
+      *) neden="ssh çıkış kodu $cikis${ayrinti:+: $ayrinti}" ;;
+    esac
+    hata "Sunucu ($ip): ne yayın anahtarıyla ne de root şifresiyle bağlanılabildi ($neden). İlk kurulumsa şifreyi ve sağlayıcının root ile SSH girişine izin verdiğini denetleyin. Sunucu daha önce kurulduysa (root girişi artık kapalıdır) ANA_SIFRE değiştirilmiş olabilir: eski değeri geri girin.$ipucu"
+  fi
   "${SSH[@]}" "yonetici@$ip" 'sudo -n true' || hata "Sunucu ($ip): hesap açıldı ama anahtarla bağlanılamadı."
 }
 
