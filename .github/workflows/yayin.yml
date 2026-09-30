@@ -129,7 +129,7 @@ jobs:
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
           # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
-          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili"
+          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi"
           for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"

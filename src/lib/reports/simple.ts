@@ -348,6 +348,20 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
 
   if (r.cognitive) {
     const blocks = r.cognitive.blocks;
+    const items = blocks.map((b) => ({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') }));
+    // Tek görevli testler (renk-kelime, dur-git, sırayla birleştirme): sonucu görevin kendi grafiği özetler.
+    const own = r.cognitive.chart;
+    if (own) {
+      return {
+        ...base,
+        chartTitle: own.title,
+        chartNote: own.note,
+        chart: { type: 'bars', rows: own.rows },
+        keyFigures: [],
+        itemsTitle: you ? 'Sonuçların' : 'Sonuçlar',
+        items,
+      };
+    }
     const sections = blocks.find((b) => b.sections)?.sections;
     return {
       ...base,
@@ -367,8 +381,9 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
             }
           : null,
       keyFigures: [],
-      itemsTitle: sections ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Görevler',
-      items: blocks.map((b) => ({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') })),
+      // Tek görevli testlerde kartlar görevin sonuçlarıdır; çok görevli testte her kart bir görevdir.
+      itemsTitle: sections || blocks.some((b) => /^(renk|dg|iz)_/.test(b.key)) ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Görevler',
+      items,
     };
   }
 

@@ -3,12 +3,15 @@ import { ayrintiliKisilik } from './ayrintili-kisilik';
 import { besFaktor } from './bes-faktor';
 import { calismaAliskanliklari } from './calisma-aliskanliklari';
 import { dikkatBellek } from './dikkat-bellek';
+import { durGitGorevi } from './dur-git';
 import { harfIsaretleme } from './harf-isaretleme';
 import { matematik } from './matematik';
 import { meslekIlgiAlanlari } from './meslek-ilgi-alanlari';
 import { meslekiIlgi } from './mesleki-ilgi';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
+import { renkKelimeGorevi } from './renk-kelime';
+import { siraylaBirlestirme } from './sirayla-birlestirme';
 
 /** Platformdaki tüm test tanımları. Sıralama katalogdaki varsayılan sıradır. */
 export const INSTRUMENTS: InstrumentDef[] = [
@@ -22,6 +25,9 @@ export const INSTRUMENTS: InstrumentDef[] = [
   matematik,
   dikkatBellek,
   harfIsaretleme,
+  renkKelimeGorevi,
+  durGitGorevi,
+  siraylaBirlestirme,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export function getInstrumentDef(slug: string): InstrumentDef | undefined {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** İptal edilebilir bekleme: bileşen kaldırıldığında ya da görev değiştiğinde zamanlayıcılar durur. */
 export function wait(ms: number, signal: AbortSignal): Promise<void> {
@@ -34,6 +34,69 @@ export function useLeaveWarning(active: boolean) {
     return () => window.removeEventListener('beforeunload', warn);
   }, [active]);
 }
+
+/**
+ * Sayfa gizlenince (başka bir sekmeye ya da uygulamaya geçilince, ekran kilitlenince) çağrılır. Süreli görevler
+ * bunu duraklamak için kullanır: gizli sayfada geçen denemeler ve süre ölçüme karışmasın.
+ */
+export function usePageHidden(active: boolean, onHidden: () => void) {
+  const ref = useRef(onHidden);
+  useEffect(() => {
+    ref.current = onHidden;
+  });
+  useEffect(() => {
+    if (!active) return;
+    const on = () => {
+      if (document.visibilityState === 'hidden') ref.current();
+    };
+    document.addEventListener('visibilitychange', on);
+    return () => document.removeEventListener('visibilitychange', on);
+  }, [active]);
+}
+
+/**
+ * Ekrana geldikten kısa bir süre sonra çalışmaya başlayan düğme: görevdeki son basış ya da dokunuş, yanlışlıkla
+ * bir sonraki adımı (asıl görevi, sonraki bölümü) başlatmasın.
+ */
+export function ArmedButton({ delayMs = 900, onClick, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { delayMs?: number }) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setArmed(true), delayMs);
+    return () => window.clearTimeout(t);
+  }, [delayMs]);
+  return (
+    <button
+      type="button"
+      {...props}
+      onClick={(e) => {
+        if (armed) onClick?.(e);
+      }}
+    />
+  );
+}
+
+/** Görev duraklatıldığında gösterilen ekran. */
+export function PausedScreen({ note, onResume, autoFocus = true }: { note: string; onResume: () => void; autoFocus?: boolean }) {
+  return (
+    <div className="flex flex-col items-center gap-6 text-center">
+      <h2 className="t-h2">Görev duraklatıldı</h2>
+      <p className="measure text-lg">Başka bir sekmeye ya da uygulamaya geçtiğin için görev durdu. {note}</p>
+      <ArmedButton className="btn btn-primary btn-lg" autoFocus={autoFocus} onClick={onResume}>
+        Kaldığın yerden devam et
+      </ArmedButton>
+    </div>
+  );
+}
+
+/** Bölüm sıra adları: "Birinci bölüm bitti". */
+export const ORDINALS = ['Birinci', 'İkinci', 'Üçüncü', 'Dördüncü', 'Beşinci', 'Altıncı'];
+export const ordinal = (i: number) => ORDINALS[i] ?? `${i + 1}.`;
+
+/** Fareyle yapılan basışlarda yalnızca sol tuş sayılır (sağ tık cevap sayılmaz). */
+export const primaryPointer = (e: React.PointerEvent) => e.pointerType !== 'mouse' || e.button === 0;
+
+/** Görev düğmeleri: dokunmatik ekranda çift dokunmayla yakınlaştırma ve gri dokunma parlaması olmasın. */
+export const TOUCH_CLASSES = 'touch-manipulation select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]';
 
 /** Klavye kısayolu dinleyicisi; en güncel işleyiciyi ref ile tutar. */
 export function useKeys(active: boolean, handler: (e: KeyboardEvent) => void) {

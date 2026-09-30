@@ -41,12 +41,25 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const inReview = def.status === 'review';
   const sc = def.science;
   const guides = guidesForTest(slug);
-  const cancellation = def.engine === 'tasks' && def.tasks.length === 1 && def.tasks[0].kind === 'cancellation' ? def.tasks[0] : null;
+  // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme).
+  const single = def.engine === 'tasks' && def.tasks.length === 1 ? def.tasks[0] : null;
+  const cancellation = single?.kind === 'cancellation' ? single : null;
+  const taskLength = !single
+    ? null
+    : single.kind === 'cancellation'
+      ? `${single.sections} bölüm, her biri ${Math.round(single.sectionMs / 1000)} saniye`
+      : single.kind === 'color_word' || single.kind === 'go_nogo'
+        ? `${single.trials.length} deneme, ${single.blocks} bölüm`
+        : single.kind === 'trail'
+          ? new Set(single.parts.map((p) => p.labels.length)).size === 1
+            ? `${single.parts.length} bölüm, her birinde ${single.parts[0].labels.length} daire`
+            : `${single.parts.length} bölüm: ${single.parts.map((p) => p.labels.length).join(' ve ')} daire`
+          : null;
   const itemCount =
     def.engine === 'likert'
       ? `${def.items.length} ${def.profile === 'riasec' || def.profile === 'interests' ? 'etkinlik' : 'cümle'}`
-      : cancellation
-        ? `${cancellation.sections} bölüm, her biri ${Math.round(cancellation.sectionMs / 1000)} saniye`
+      : taskLength
+        ? taskLength
         : def.engine === 'tasks'
           ? `${def.tasks.length} görev`
           : def.engine === 'quiz'
@@ -238,7 +251,25 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                 <li>Bölümler ilerledikçe dikkatin korunup korunmadığını gösteren bölüm bölüm grafik</li>
               </>
             )}
-            {def.engine === 'tasks' && !cancellation && <li>Her görevin sonucu ve ne anlama geldiği</li>}
+            {single?.kind === 'color_word' && (
+              <>
+                <li>Doğru cevap oranı ve tipik cevap süresi; kelime ile renk aynıyken ve farklıyken ayrı ayrı</li>
+                <li>Kelime ile renk farklıyken cevapların ne kadar yavaşladığını (renk-kelime etkisi) gösteren grafik ve açıklaması</li>
+              </>
+            )}
+            {single?.kind === 'go_nogo' && (
+              <>
+                <li>{`${single.stop} harfinde durabilme ve diğer harflere kaçırmadan tepki verme oranları`}</li>
+                <li>Tipik tepki süresi ve hız ile durabilme arasındaki dengenin açıklaması</li>
+              </>
+            )}
+            {single?.kind === 'trail' && (
+              <>
+                <li>İki bölümün süreleri ve yanlış dokunuş sayıları</li>
+                <li>Sayılar ile harfler arasında geçiş yapmanın ne kadar ek süre getirdiğinin açıklaması</li>
+              </>
+            )}
+            {def.engine === 'tasks' && !single && <li>Her görevin sonucu ve ne anlama geldiği</li>}
             {def.engine === 'quiz' && (
               <>
                 <li>Genel sonuç ve konu alanlarının her birinde “sağlam”, “pekiştirilmeli” ya da “öncelikli” değerlendirmesi</li>

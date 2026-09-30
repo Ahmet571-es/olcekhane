@@ -1,7 +1,20 @@
 import { getInstrumentDef } from '@/content/instruments';
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
-import type { CancellationTask, DigitSpanTask, FlankerTask, LikertInstrument, QuizInstrument, ReadingInstrument, SpatialSpanTask, SymbolMatchTask, TaskInstrument } from '@/lib/instruments/types';
+import type {
+  CancellationTask,
+  ColorWordTask,
+  DigitSpanTask,
+  FlankerTask,
+  GoNoGoTask,
+  LikertInstrument,
+  QuizInstrument,
+  ReadingInstrument,
+  SpatialSpanTask,
+  SymbolMatchTask,
+  TaskInstrument,
+  TrailTask,
+} from '@/lib/instruments/types';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
 import { expectedSpanResponse, spanStimulus } from '@/lib/scoring/tasks';
@@ -79,4 +92,51 @@ export function memoryTasksBody(): AnswersBody {
     }
   }
   return { grade: 7, data: { engine: 'tasks', seed: SEED, blocks: blocks as Extract<AnswersBody['data'], { engine: 'tasks' }>['blocks'] } };
+}
+
+/**
+ * Renk-kelime: her denemede doğru renk; uyumlu denemelerde 650 ms, uyumsuzlarda 800 ms (ya da verilen seçici).
+ * Renk denemesi (asıl denemelerden sonraki sıra numaralarıyla) varsayılan olarak hatasızdır; `checkPick` ile değişir.
+ */
+export function colorWordBody(
+  pick: (t: { word: number; ink: number }, i: number) => { choice: number | null; rtMs: number | null } = (t) => ({
+    choice: t.ink,
+    rtMs: t.word === t.ink ? 650 : 800,
+  }),
+  checkPick: (ink: number, k: number) => number | null = (ink) => ink,
+): AnswersBody {
+  const task = def<TaskInstrument>('renk-kelime-gorevi').tasks[0] as ColorWordTask;
+  const trials = task.trials.map((t, index) => {
+    const p = pick(t, index);
+    return { index, response: p.choice === null ? null : p.choice + 1, rtMs: p.rtMs };
+  });
+  const check = task.check.map((ink, k) => {
+    const choice = checkPick(ink, k);
+    return { index: task.trials.length + k, response: choice === null ? null : choice + 1, rtMs: choice === null ? null : 700 };
+  });
+  return { grade: 5, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: [...trials, ...check] } } };
+}
+
+/** Dur-git: bas harflerinde 420 ms'de basılır, X'te basılmaz (ya da verilen seçici). */
+export function goNoGoBody(
+  pick: (t: { letter: string; go: boolean }, i: number) => number | null = (t) => (t.go ? 420 : null),
+): AnswersBody {
+  const task = def<TaskInstrument>('dur-git-gorevi').tasks[0] as GoNoGoTask;
+  const trials = task.trials.map((t, index) => {
+    const rt = pick(t, index);
+    return { index, response: rt === null ? null : 1, rtMs: rt };
+  });
+  return { grade: 5, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Sırayla birleştirme: her bölümde daireler sırayla, her dokunuş arasında `stepMs` (ikinci bölümde iki katı); hatasız. */
+export function trailBody(stepMs = 2000): AnswersBody {
+  const task = def<TaskInstrument>('sirayla-birlestirme-gorevi').tasks[0] as TrailTask;
+  const parts = task.parts.map((p, index) => {
+    const step = index === 0 ? stepMs : stepMs * 2;
+    const taps = p.labels.map((_, i) => i);
+    const times = taps.map((i) => (i + 1) * step);
+    return { index, response: { taps, times }, rtMs: times[times.length - 1] };
+  });
+  return { grade: 5, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: parts } } };
 }

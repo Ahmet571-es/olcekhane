@@ -161,7 +161,7 @@ export interface ReadingInstrument extends InstrumentBase {
 
 /* ---------- Bilişsel görevler ---------- */
 
-export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match' | 'cancellation';
+export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match' | 'cancellation' | 'color_word' | 'go_nogo' | 'trail';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -246,7 +246,83 @@ export interface CancellationTask extends TaskBase {
   generator: 1;
 }
 
-export type CognitiveTask = DigitSpanTask | SpatialSpanTask | FlankerTask | SymbolMatchTask | CancellationTask;
+/**
+ * Renk-kelime görevi (Stroop düzeni): renk adları farklı renklerde yazılır; kelimenin anlamına değil, yazının
+ * rengine göre cevap verilir. Kelimeyle rengin aynı olduğu (uyumlu) ve farklı olduğu (uyumsuz) denemeler eşit
+ * sayıdadır. Deneme sırası sabittir (tohumla üretilir): herkes aynı denemeleri görür.
+ */
+export interface ColorWordTask extends TaskBase {
+  kind: 'color_word';
+  /** Renkler: ad (kelime olarak da yazılır) ve yazı rengi. Sıra, cevap düğmelerinin sırasıdır. */
+  colors: { name: string; ink: string }[];
+  fixationMs: number;
+  timeoutMs: number;
+  itiMs: [number, number];
+  /** Denemeler bu kadar eşit bölüme ayrılır; bölümler arasında kısa mola verilir. */
+  blocks: number;
+  /**
+   * Renk denemesi (alıştırmadan önce): kelime olmadan yalnızca renkli bir şerit gösterilir ve aynı düğmelerle rengi
+   * bulunur. Değerler `colors` içindeki sıradır. Tarayıcı bu denemeleri, asıl denemelerden sonra gelen sıra
+   * numaralarıyla (trials.length + k) gönderir; puana katılmaz, yalnızca rapordaki uyarı için kullanılır.
+   */
+  check: number[];
+  /** Renk denemesinde bu kadar ya da daha çok yanlış cevap, renklerin bu ekranda ayırt edilmekte zorlanıldığını düşündürür. */
+  checkLimit: number;
+  /** Alıştırma denemeleri (geri bildirimli, puanlanmaz): kelime ve yazı renginin `colors` içindeki sırası. */
+  practice: { word: number; ink: number }[];
+  trials: { word: number; ink: number }[];
+}
+
+/**
+ * Dur-git görevi (go/no-go düzeni): ekranda harfler art arda belirir; her harfte düğmeye basılır, yalnızca
+ * durma harfinde basılmaz. Durma harfi denemelerin dörtte biridir; basma alışkanlığı oluştuğu için durmak çaba ister.
+ */
+export interface GoNoGoTask extends TaskBase {
+  kind: 'go_nogo';
+  /** Durma harfi (basılmaz). */
+  stop: string;
+  /** Uyaranın ekranda kalma süresi (ms). */
+  stimulusMs: number;
+  /** Cevap penceresi: uyaranın başlangıcından itibaren (ms). */
+  responseMs: number;
+  itiMs: [number, number];
+  blocks: number;
+  practice: { letter: string; go: boolean }[];
+  trials: { letter: string; go: boolean }[];
+}
+
+/**
+ * Sırayla birleştirme (iz sürme düzeni): ekrana dağılmış daireler sırayla dokunularak birleştirilir. Birinci
+ * bölümde yalnızca sayılar (1, 2, 3…), ikinci bölümde sayılar ve harfler sırayla (1, A, 2, B…). Yerleşimler
+ * Ölçekhane'nindir; konumlar 0–100 arası yüzde koordinatlardır. İki bölümün daire sayısı ve yol uzunluğu aynıdır.
+ */
+export interface TrailPart {
+  key: 'a' | 'b';
+  name: string;
+  /** Dairelerin sırası: labels[i], sıradaki i. dairedir. */
+  labels: string[];
+  points: { x: number; y: number }[];
+  practice: { labels: string[]; points: { x: number; y: number }[] };
+}
+
+export interface TrailTask extends TaskBase {
+  kind: 'trail';
+  parts: TrailPart[];
+  /** Bir bölümün en uzun süresi (ms); süre dolunca bölüm biter. */
+  maxMs: number;
+  /** Yerleşim üretim kuralının sürümü; kural değişirse test sürümü de artırılmalı. */
+  generator: 1;
+}
+
+export type CognitiveTask =
+  | DigitSpanTask
+  | SpatialSpanTask
+  | FlankerTask
+  | SymbolMatchTask
+  | CancellationTask
+  | ColorWordTask
+  | GoNoGoTask
+  | TrailTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

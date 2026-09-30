@@ -7,17 +7,26 @@ import type { ReadingResult } from '@/lib/scoring/reading';
 import {
   TaskInputError,
   scoreCancellation,
+  scoreColorWord,
   scoreFlanker,
+  scoreGoNoGo,
   scoreSpan,
   scoreSymbol,
+  scoreTrail,
   taskQualityNotes,
   type CancellationResult,
   type CancellationSectionInput,
+  type ColorWordResult,
+  type ColorWordTrialInput,
   type FlankerResult,
   type FlankerTrialInput,
+  type GoNoGoResult,
+  type GoNoGoTrialInput,
   type SpanTrialInput,
   type SymbolResult,
   type SymbolTrialInput,
+  type TrailPartInput,
+  type TrailResult,
 } from '@/lib/scoring/tasks';
 
 /** Ölçek puanı satırları: puanlamanın sonucu. Hiçbir yere yazılmaz, doğrudan rapora verilir. */
@@ -118,7 +127,14 @@ export function readingRows(result: ReadingResult, answered: number): ScoreRow[]
 }
 
 /** Bir görevin tarayıcıdan gelen denemeleri (ya da kayıtlı denemelerden kurulan aynı biçim). */
-export type TaskInputs = SpanTrialInput[] | FlankerTrialInput[] | SymbolTrialInput[] | CancellationSectionInput[];
+export type TaskInputs =
+  | SpanTrialInput[]
+  | FlankerTrialInput[]
+  | SymbolTrialInput[]
+  | CancellationSectionInput[]
+  | ColorWordTrialInput[]
+  | GoNoGoTrialInput[]
+  | TrailPartInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -135,6 +151,10 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let flankerRes: FlankerResult | undefined;
   let symbolRes: SymbolResult | undefined;
   let cancellationRes: CancellationResult | undefined;
+  let colorWordRes: ColorWordResult | undefined;
+  let goNoGoRes: GoNoGoResult | undefined;
+  let trailRes: TrailResult | undefined;
+  const pct = (x: number) => Math.round(x * 1000) / 10;
 
   for (const task of def.tasks) {
     const input = inputs.get(task.key);
@@ -189,6 +209,42 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
           extra: { sections: result.sections.map((s) => ({ net: s.net, ms: s.ms })) },
         },
       );
+    } else if (task.kind === 'color_word') {
+      const { result } = scoreColorWord(task, input as ColorWordTrialInput[]);
+      colorWordRes = result;
+      const correct = Math.round(result.accuracy * result.n);
+      // Üç ölçek tek görevden hesaplanır; ayrıntının tamamı "renk_dogruluk" satırında durur.
+      rows.push(
+        { scaleKey: 'renk_dogruluk', raw: pct(result.accuracy), mean: null, nAnswered: correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'renk_hiz', raw: result.medianRt, mean: null, nAnswered: correct, nItems: result.n, band: null },
+        { scaleKey: 'renk_etki', raw: result.interferenceMs, mean: null, nAnswered: correct, nItems: result.n, band: null },
+      );
+    } else if (task.kind === 'go_nogo') {
+      const { result } = scoreGoNoGo(task, input as GoNoGoTrialInput[]);
+      goNoGoRes = result;
+      rows.push(
+        {
+          scaleKey: 'dg_durma',
+          raw: pct(result.stopRate),
+          mean: null,
+          nAnswered: result.stopTrials - result.commissions,
+          nItems: result.stopTrials,
+          band: null,
+          extra: result as unknown as Record<string, unknown>,
+        },
+        { scaleKey: 'dg_tepki', raw: pct(result.hitRate), mean: null, nAnswered: result.hits, nItems: result.goTrials, band: null },
+        { scaleKey: 'dg_hiz', raw: result.medianRt, mean: null, nAnswered: result.hits, nItems: result.goTrials, band: null },
+      );
+    } else if (task.kind === 'trail') {
+      const { result } = scoreTrail(task, input as TrailPartInput[]);
+      trailRes = result;
+      const [a, b] = result.parts;
+      const secs = (p: typeof a) => (p.completed ? Math.round(p.timeMs / 100) / 10 : null);
+      rows.push(
+        { scaleKey: 'iz_a', raw: secs(a), mean: null, nAnswered: a.reached, nItems: a.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'iz_b', raw: secs(b), mean: null, nAnswered: b.reached, nItems: b.n, band: null },
+        { scaleKey: 'iz_gecis', raw: result.ratio, mean: null, nAnswered: a.reached + b.reached, nItems: a.n + b.n, band: null },
+      );
     } else {
       const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
@@ -203,5 +259,15 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       });
     }
   }
-  return { rows, notes: taskQualityNotes({ flanker: flankerRes, symbol: symbolRes, cancellation: cancellationRes }) };
+  return {
+    rows,
+    notes: taskQualityNotes({
+      flanker: flankerRes,
+      symbol: symbolRes,
+      cancellation: cancellationRes,
+      colorWord: colorWordRes,
+      goNoGo: goNoGoRes,
+      trail: trailRes,
+    }),
+  };
 }

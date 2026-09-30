@@ -8,6 +8,12 @@ const cancellationResponse = z.object({
   unmarks: z.number().int().min(0).max(100_000),
 });
 
+/** Sırayla birleştirme bölümü: dokunulan dairelerin sıradaki yerleri ve dokunuş zamanları. */
+const trailResponse = z.object({
+  taps: z.array(z.number().int().min(0).max(49)).max(400),
+  times: z.array(z.number().min(0).max(600_000)).max(400),
+});
+
 /** Bilişsel görevin bir denemesi (tarayıcının gönderdiği biçim); doğruluk sunucuda yeniden hesaplanır. */
 export const taskTrial = z.object({
   length: z.number().int().min(1).max(20).optional(),
@@ -17,6 +23,7 @@ export const taskTrial = z.object({
     z.enum(['L', 'R']),
     z.number().int().min(1).max(9),
     cancellationResponse,
+    trailResponse,
     z.null(),
   ]),
   rtMs: z.number().min(0).max(120_000).nullable(),

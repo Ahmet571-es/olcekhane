@@ -4,11 +4,14 @@ import { useRef, useState } from 'react';
 import type { CognitiveTask } from '@/lib/instruments/types';
 import { IntroStep } from '../likert-runner';
 import { Cancellation } from './cancellation';
+import { ColorWord } from './color-word';
 import { useLeaveWarning } from './common';
 import { DigitSpan } from './digit-span';
 import { Flanker } from './flanker';
+import { GoNoGo } from './go-nogo';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
+import { Trail } from './trail';
 
 type Phase = 'intro' | 'task-intro' | 'task' | 'between' | 'finishing';
 
@@ -149,6 +152,9 @@ export function TaskRunner(props: {
       {task.kind === 'cancellation' && (
         <Cancellation key={task.key} task={task} seed={seed} onDone={(t) => save(task.key, t)} />
       )}
+      {task.kind === 'color_word' && <ColorWord key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'go_nogo' && <GoNoGo key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'trail' && <Trail key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

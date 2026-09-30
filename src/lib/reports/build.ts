@@ -6,6 +6,7 @@ import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import type {
   Band,
   CancellationTask,
+  GoNoGoTask,
   InstrumentDef,
   QuizChart,
   QuizFigure,
@@ -14,10 +15,19 @@ import type {
   QuizTable,
   ReadingInstrument,
   TaskInstrument,
+  TrailTask,
 } from '@/lib/instruments/types';
 import { scaleItems } from '@/lib/scoring/likert';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
-import type { CancellationResult, FlankerResult, SpanResult, SymbolResult } from '@/lib/scoring/tasks';
+import type {
+  CancellationResult,
+  ColorWordResult,
+  FlankerResult,
+  GoNoGoResult,
+  SpanResult,
+  SymbolResult,
+  TrailResult,
+} from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
 /**
@@ -159,6 +169,8 @@ export interface CognitiveBlock {
 export interface CognitiveReport {
   blocks: CognitiveBlock[];
   tips: string[];
+  /** Görevin sonucunu özetleyen çubuk grafik (renk-kelime, dur-git, sırayla birleştirme). */
+  chart?: { title: string; note: string; rows: { label: string; value: number; max: number; valueLabel: string }[] };
 }
 
 /**
@@ -697,6 +709,398 @@ function cancellationBlocks(
   return [tempo, isabet, net, surdurme];
 }
 
+/* ---------- Renk-kelime, dur-git ve sırayla birleştirme ---------- */
+
+const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+/** Milisaniyeyi saniye olarak yazar: 820 → "0,82". */
+const sn = (ms: number) => nf2.format(ms / 1000);
+/** Çubuk grafiğin üst sınırı: en büyük değerden büyük ya da ona eşit ilk yuvarlak sayı. */
+const roundUp = (v: number, step: number) => Math.max(step, Math.ceil(v / step) * step);
+
+type CardOf = (k: string) => { key: string; name: string; plain: string };
+type TaskReport = { blocks: CognitiveBlock[]; chart?: CognitiveReport['chart'] };
+
+/** Renk-kelime görevinde bu kadardan (ms) küçük farklar "belirgin değil" sayılır. */
+const INTERFERENCE_MIN_MS = 50;
+
+/** Renk-kelime görevinin üç sonuç kartı: doğru cevaplar, cevap hızı ve renk-kelime etkisi. */
+function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const drop = r.accCongruent - r.accIncongruent >= 0.1;
+  // Kelime ile renk farklıyken yapılan hataların türü, çoğunluğa göre belirlenir: kelimenin söylediği renge basmak
+  // (okuma alışkanlığı), başka bir renge basmak (renkler karışmış ya da acele), süre içinde cevap vermemek ya da
+  // kelimeye bakmadan çok erken basmak. Renk denemesinde renkler karıştırıldıysa kelime hataları da renklerin
+  // karışmasından olabileceği için okuma yorumu yapılmaz.
+  const incErr = r.incongruentErrors;
+  const missedInc = incErr - r.wordErrors - r.otherErrors;
+  const errorKind: 'reading' | 'other' | 'missed' | 'mixed' =
+    incErr === 0
+      ? 'mixed'
+      : !r.checkFlag && r.wordErrors > incErr / 2
+        ? 'reading'
+        : r.otherErrors > incErr / 2
+          ? 'other'
+          : missedInc > incErr / 2
+            ? 'missed'
+            : 'mixed';
+  const incongruentNote = {
+    reading: you
+      ? ' Hataların çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge bastın: kelimeyi okuma alışkanlığı zaman zaman öne geçti.'
+      : ' Hataların çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge basıldı; bu, kelimeyi okuma alışkanlığının zaman zaman öne geçtiğini gösterir.',
+    other: you
+      ? ' Hataların çoğu kelime ile renk farklıyken oldu; bu hatalarda çoğunlukla kelimeye değil, başka bir renge bastın. Renkleri birbirine karıştırmış ya da acele etmiş olabilirsin.'
+      : ' Hataların çoğu kelime ile renk farklıyken oldu; bu hatalarda çoğunlukla kelimeye değil, başka bir renge basıldı. Renkler birbirine karıştırılmış ya da acele edilmiş olabilir.',
+    missed: you
+      ? ' Hataların çoğu kelime ile renk farklıyken oldu; bu denemelerin çoğunda süre içinde cevap vermedin ya da kelimeye bakmadan çok erken bastın.'
+      : ' Hataların çoğu kelime ile renk farklıyken oldu; bu denemelerin çoğunda süre içinde cevap verilmedi ya da kelimeye bakmadan çok erken basıldı.',
+    mixed: ' Hataların çoğu kelime ile renk farklıyken oldu.',
+  }[errorKind];
+  // Doğruluk düşükken hataların çoğu süre aşımı ya da çok erken cevapsa bu ayrıca söylenir.
+  const errors = r.n - r.correct;
+  const mostlyMissed = errors > 0 && r.timeouts + r.anticipations > errors / 2;
+  let accText: string;
+  if (r.accuracy === 1) {
+    accText = you ? 'Yazıların rengini her seferinde doğru buldun.' : 'Çocuğunuz yazıların rengini her seferinde doğru buldu.';
+  } else if (r.accuracy >= 0.9) {
+    accText = you ? 'Yazıların rengini neredeyse her seferinde doğru buldun.' : 'Çocuğunuz yazıların rengini neredeyse her seferinde doğru buldu.';
+    if (drop) {
+      accText += you
+        ? ' Kelime ile renk farklıyken biraz daha çok hata yaptın; görevin zor kısmı budur ve çoğu kişide görülür.'
+        : ' Kelime ile renk farklıyken biraz daha çok hata yapması beklenen bir durumdur; görevin zor kısmı budur.';
+    }
+  } else if (r.accuracy >= 0.75) {
+    accText = you ? 'Yazıların rengini çoğu zaman doğru buldun, bazı denemelerde yanıldın.' : 'Çocuğunuz yazıların rengini çoğu zaman doğru buldu, bazı denemelerde yanıldı.';
+    if (drop) accText += incongruentNote;
+  } else {
+    const some = r.accuracy < 0.5 ? 'Denemelerin çoğunda' : 'Denemelerin bir kısmında';
+    accText = you ? `${some} yazının rengini bulmakta zorlandın.` : `Çocuğunuz ${some.toLocaleLowerCase('tr-TR')} yazının rengini bulmakta zorlandı.`;
+    if (drop && errorKind === 'reading') {
+      accText += you
+        ? ' Hatalarının çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge bastın: kelimeyi okumak, yazının rengine bakmanın önüne geçti. Acele etmeden, önce yazının rengine bakmak işine yarar.'
+        : ' Hataların çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge basıldı: kelimeyi okumak yazının rengine bakmanın önüne geçmiş ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.';
+    } else if (mostlyMissed) {
+      accText += you
+        ? ' Bu denemelerin çoğunda süre içinde cevap vermedin ya da kelimeye bakmadan çok erken bastın; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin.'
+        : ' Bu denemelerin çoğunda süre içinde cevap verilmedi ya da kelimeye bakmadan çok erken basıldı; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.';
+    } else {
+      accText += you
+        ? ' Bu; acele etmekten, yönergeyi tam anlamamaktan ya da renkleri ayırt etmekte zorlanmaktan kaynaklanabilir.'
+        : ' Bu; acele etmekten, yönergenin tam anlaşılmamasından ya da renkleri ayırt etmekte zorlanmaktan (renk körlüğü) kaynaklanabilir ve tek başına yorumlanmamalıdır.';
+    }
+  }
+  if (r.checkFlag) {
+    accText += you
+      ? ' Görevin başındaki renk denemesinde bazı renkleri birbirine karıştırdın. Renkleri ayırt etmekte zorlanıyorsan bu sonuç seni doğru yansıtmayabilir.'
+      : ' Görevin başındaki renk denemesinde bazı renkler birbirine karıştırıldı. Renkleri ayırt etmekte zorlanan (ör. renk körlüğü olan) biri için bu görevin sonucu geçerli değildir.';
+  }
+  const dogruluk: CognitiveBlock = {
+    ...card('renk_dogruluk'),
+    headline: `${pct(r.accuracy)} doğru`,
+    detail: `Kelime ile renk aynıyken ${pct(r.accCongruent)}, farklıyken ${pct(r.accIncongruent)} doğru`,
+    text: accText,
+  };
+
+  const hiz: CognitiveBlock =
+    r.medianRt === null
+      ? {
+          ...card('renk_hiz'),
+          headline: 'Hesaplanamadı',
+          text: you ? 'Yeterince doğru cevap olmadığı için cevap süren hesaplanamadı.' : 'Yeterince doğru cevap olmadığı için cevap süresi hesaplanamadı.',
+        }
+      : {
+          ...card('renk_hiz'),
+          headline: `Tipik cevap süresi ${sn(r.medianRt)} saniye`,
+          text: you
+            ? `Doğru cevaplarında yazının rengini bulup düğmeye basman tipik olarak ${sn(r.medianRt)} saniye sürdü. Hız tek başına iyi ya da kötü değildir; önemli olan, hızlı giderken doğru cevap verebilmektir.`
+            : `Çocuğunuzun doğru cevaplarında tipik cevap süresi ${sn(r.medianRt)} saniye oldu. Bu süre; yazının rengini fark etmeyi, doğru düğmeyi bulmayı ve basmayı içerir; yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir. Hız, doğrulukla birlikte değerlendirilmelidir.`,
+        };
+
+  // Süreler raporda saniyenin yüzde biri (10 ms) duyarlılığıyla yazılır; fark da yuvarlanmış sürelerden hesaplanır
+  // ki yazılan iki süre ile yazılan fark birbirini tutsun.
+  const to10 = (ms: number | null) => (ms === null ? null : Math.round(ms / 10) * 10);
+  const c = to10(r.medianRtCongruent);
+  const i = to10(r.medianRtIncongruent);
+  let etki: CognitiveBlock;
+  let chart: CognitiveReport['chart'];
+  if (c === null || i === null) {
+    etki = {
+      ...card('renk_etki'),
+      headline: 'Hesaplanamadı',
+      text: 'Kelime ile rengin aynı ya da farklı olduğu denemelerin birinde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.',
+    };
+  } else {
+    const diff = i - c;
+    const detail = `Aynıyken ${sn(c)} sn · farklıyken ${sn(i)} sn`;
+    if (diff >= INTERFERENCE_MIN_MS) {
+      etki = {
+        ...card('renk_etki'),
+        headline: `Kelime ile renk farklıyken ${sn(diff)} sn daha yavaş`,
+        detail,
+        text: you
+          ? 'Kelime ile renk farklı olduğunda cevapların biraz yavaşladı. Bu çoğu kişide olur: okumak o kadar otomatik bir alışkanlıktır ki kelime, rengi bulmanın önüne geçer. Bu yavaşlama, alışkanlığa direnip doğru cevabı vermenin ne kadar çaba istediğini gösterir. Bu fark bir seferden ötekine değişebilir; küçük farklara takılma.'
+          : 'Kelime ile renk farklı olduğunda çocuğunuzun cevapları biraz yavaşladı. Bu, çoğu kişide görülen bir etkidir (renk-kelime etkisi): okuma otomatik bir alışkanlık olduğu için kelime, rengi bulmanın önüne geçer. Yavaşlamanın büyüklüğü, alışkanlığa direnip doğru cevabı vermenin ne kadar çaba istediğini gösterir; bu etki çocuklukta büyüktür ve yaşla azalır. Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.',
+      };
+    } else if (diff <= -INTERFERENCE_MIN_MS) {
+      etki = {
+        ...card('renk_etki'),
+        headline: 'Kelime ile renk farklıyken daha hızlı',
+        detail,
+        text: you
+          ? 'Kelime ile renk farklıyken cevapların, aynıyken olduğundan biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır ve bir seferden ötekine değişebilir.'
+          : 'Kelime ile renk farklıyken çocuğunuzun cevapları, aynıyken olduğundan biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+      };
+    } else {
+      etki = {
+        ...card('renk_etki'),
+        headline: 'Belirgin bir fark görülmedi',
+        detail,
+        text: you
+          ? 'Kelime ile renk farklıyken cevapların, aynıyken olduğundan belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlama, bu uygulamada sende belirgin olarak ortaya çıkmadı. Bu fark bir seferden ötekine değişebilir.'
+          : 'Kelime ile renk farklıyken çocuğunuzun cevapları, aynıyken olduğundan belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlamanın belirgin olmaması; kelimelerin henüz çok otomatik okunmamasından, hızdan çok doğruluğa önem verilmesinden ya da ölçümün doğal payından kaynaklanabilir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+      };
+    }
+    const max = roundUp(Math.max(c, i), 500);
+    chart = {
+      title: 'Tipik cevap süresi',
+      note: you
+        ? 'Çubuklar doğru cevaplarındaki tipik cevap süresini gösterir; kısa çubuk daha hızlı demek.'
+        : 'Çubuklar doğru cevaplardaki tipik (ortanca) cevap süresini gösterir; kısa çubuk daha hızlı demektir.',
+      rows: [
+        { label: 'Kelime ile renk aynıyken', value: c, max, valueLabel: `${sn(c)} sn` },
+        { label: 'Kelime ile renk farklıyken', value: i, max, valueLabel: `${sn(i)} sn` },
+      ],
+    };
+  }
+  return { blocks: [dogruluk, hiz, etki], chart };
+}
+
+/** Basma oranı bunun altındaysa durma oranı tek başına yorumlanamaz: hiç basmayan biri de X'te "durmuş" görünür. */
+const GO_HIT_FOR_STOP = 0.7;
+
+/** Dur-git görevinin üç sonuç kartı: durabilme, kaçırmadan tepki ve tepki hızı. */
+function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const x = task.stop;
+  const stopped = r.stopTrials - r.commissions;
+  const early = r.anticipations > r.omissions;
+  let durmaText: string;
+  if (r.hitRate < GO_HIT_FOR_STOP) {
+    const q = r.hitRate < 0.5 ? 'çoğunda' : 'önemli bir kısmında';
+    durmaText = early
+      ? you
+        ? `${x} geldiğinde ${stopped} kez durdun, ${r.commissions} kez bastın. Ama basman gereken harflerin ${q} harfe bakmadan, çok erken bastığın için bu oran tek başına bir şey söylemez.`
+        : `Çocuğunuz ${x} geldiğinde ${stopped} kez durdu, ${r.commissions} kez bastı. Ancak basması gereken harflerin ${q} harfe bakmadan, çok erken bastığı için bu oran tek başına yorumlanamaz.`
+      : you
+        ? `${x} geldiğinde ${stopped} kez durdun. Ama basman gereken harflerin ${q} zamanında basmadığın için bu oran tek başına bir şey söylemez: hiç basmayan biri de ${x}’te durmuş görünür.`
+        : `Çocuğunuz ${x} geldiğinde ${stopped} kez durdu. Ancak basması gereken harflerin ${q} zamanında basmadığı için bu oran tek başına yorumlanamaz: hiç basmayan biri de ${x}’te durmuş görünür.`;
+  } else if (r.stopRate === 1) {
+    durmaText = you
+      ? `${x} geldiğinde her seferinde durabildin. Sık sık basarken birden durmak kolay değildir; bu, hızlı çalışırken bile kendini frenleyebildiğini gösterir.`
+      : `Çocuğunuz ${x} geldiğinde her seferinde durabildi. Sık tekrarlanan bir tepkiyi gerektiğinde vermeden durabilmek (tepki ketlemesi), hızlı çalışırken kendini frenleyebilmeyi gösterir.`;
+  } else if (r.stopRate >= 0.8) {
+    durmaText = you
+      ? `${x} geldiğinde çoğu zaman durabildin. Sık sık basarken birden durmak kolay değildir; bu, hızlı çalışırken bile kendini frenleyebildiğini gösterir.`
+      : `Çocuğunuz ${x} geldiğinde çoğu zaman durabildi. Sık tekrarlanan bir tepkiyi gerektiğinde vermeden durabilmek (tepki ketlemesi), hızlı çalışırken kendini frenleyebilmeyi gösterir.`;
+  } else if (r.stopRate >= 0.6) {
+    durmaText = you
+      ? `${x} geldiğinde çoğu zaman durabildin, bazen de istemeden bastın. Sık sık basarken birden durmak çoğu kişi için zordur; özellikle hızlı gittiğinde elin gözünden önce davranabilir.`
+      : `Çocuğunuz ${x} geldiğinde çoğu zaman durabildi, bazen de istemeden bastı. Sık tekrarlanan bir tepkiyi gerektiğinde vermeden durabilmek çoğu kişi için zordur; hızlı çalışıldığında bu tür hatalar artar.`;
+  } else {
+    durmaText = you
+      ? `${x} geldiğinde birçok kez istemeden bastın. Sık sık basarken birden durmak çoğu kişi için zordur; biraz daha yavaş ve dikkatli gitmek durmayı kolaylaştırır.`
+      : `Çocuğunuz ${x} geldiğinde birçok kez istemeden bastı. Bu; çok hızlı çalışmaktan, yönergenin tam anlaşılmamasından ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır. Tepki ketlemesi çocukluk ve ergenlik boyunca gelişmeye devam eder.`;
+  }
+  const durma: CognitiveBlock = {
+    ...card('dg_durma'),
+    headline: `Durma oranı ${pct(r.stopRate)}`,
+    detail: `${x} harfi ${r.stopTrials} kez geldi: ${stopped} kez basılmadı, ${r.commissions} kez basıldı`,
+    text: durmaText,
+  };
+
+  let tepkiText: string;
+  if (r.hitRate === 1) {
+    tepkiText = you
+      ? 'Basman gereken harflerin hepsinde zamanında bastın: dikkatini görev boyunca açık tuttun.'
+      : 'Çocuğunuz basması gereken harflerin hepsinde zamanında bastı; dikkati görev boyunca açık kaldı.';
+  } else if (r.hitRate >= 0.95) {
+    tepkiText = you
+      ? 'Basman gereken harflerin neredeyse hepsinde zamanında bastın: dikkatini görev boyunca açık tuttun.'
+      : 'Çocuğunuz basması gereken harflerin neredeyse hepsinde zamanında bastı; dikkati görev boyunca açık kaldı.';
+  } else if (r.hitRate >= 0.85) {
+    tepkiText = early
+      ? you
+        ? 'Basman gereken harflerin çoğunda zamanında bastın; birkaçında harfe bakmadan, çok erken bastın.'
+        : 'Çocuğunuz basması gereken harflerin çoğunda zamanında bastı; birkaçında harfe bakmadan, çok erken bastı.'
+      : you
+        ? 'Basman gereken harflerin çoğunda zamanında bastın, birkaçını kaçırdın.'
+        : 'Çocuğunuz basması gereken harflerin çoğunda zamanında bastı, birkaçını kaçırdı.';
+  } else if (early) {
+    const q = r.anticipations > r.goTrials / 2 ? 'çoğunda' : 'bir kısmında';
+    tepkiText = you
+      ? `Basman gereken harflerin ${q} harf görünür görünmez, ona bakmadan bastın. Harfi görüp öyle basmak, hem doğru tepki vermeni hem de ${x}’te durmanı kolaylaştırır.`
+      : `Çocuğunuz basması gereken harflerin ${q} harf görünür görünmez, ona bakmadan bastı; düğmeye harfi beklemeden basılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`;
+  } else {
+    const q = r.omissions > r.goTrials / 2 ? 'çoğunu' : 'bir kısmını';
+    tepkiText = you
+      ? `Basman gereken harflerin ${q} kaçırdın. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan ya da ${x}’e takılmamak için çok dikkatli gitmekten kaynaklanabilir.`
+      : `Çocuğunuz basması gereken harflerin ${q} kaçırdı. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan, isteksizlikten ya da çok dikkatli davranmaya çalışmaktan kaynaklanabilir ve tek başına yorumlanmamalıdır.`;
+  }
+  const earlyNote = r.anticipations ? `, ${r.anticipations} kez çok erken basıldı` : '';
+  const tepki: CognitiveBlock = {
+    ...card('dg_tepki'),
+    headline: `Basma oranı ${pct(r.hitRate)}`,
+    detail: `Diğer harfler ${r.goTrials} kez geldi: ${r.hits} kez zamanında basıldı, ${r.omissions} kez kaçırıldı${earlyNote}`,
+    text: tepkiText,
+  };
+
+  let hiz: CognitiveBlock;
+  if (r.medianRt === null) {
+    hiz = { ...card('dg_hiz'), headline: 'Hesaplanamadı', text: 'Zamanında basış çok az olduğu için tepki süresi hesaplanamadı.' };
+  } else {
+    const speedy = r.stopRate < 0.6 && r.hitRate >= 0.95;
+    const careful = r.stopRate >= 0.8 && r.hitRate >= GO_HIT_FOR_STOP && r.hitRate < 0.85 && !early;
+    const pattern = speedy
+      ? you
+        ? ` Senin sonucunda hız öne çıkıyor: biraz yavaşlamak ${x}’te durmanı kolaylaştırabilir.`
+        : ` Çocuğunuzun sonucunda hız öne çıkıyor: hızlı tepki verirken ${x}’te durmakta zorlandı.`
+      : careful
+        ? you
+          ? ` Senin sonucunda dikkatli davranmak öne çıkıyor: ${x}’te durmayı başardın ama bazı harfleri kaçırdın.`
+          : ` Çocuğunuzun sonucunda dikkatli davranmak öne çıkıyor: ${x}’te durmayı başardı ama bazı harfleri kaçırdı.`
+        : '';
+    hiz = {
+      ...card('dg_hiz'),
+      headline: `Tipik tepki süresi ${sn(r.medianRt)} saniye`,
+      text:
+        (you
+          ? `Doğru bastığın harflerde tepki süren tipik olarak ${sn(r.medianRt)} saniyeydi. Bu görevde hız ile durabilme arasında bir denge vardır: çok hızlı gidenler ${x}’te daha sık yanılır, çok dikkatli gidenler ise bazı harfleri kaçırır.`
+          : `Çocuğunuzun doğru basışlarında tipik tepki süresi ${sn(r.medianRt)} saniye oldu. Bu görevde hız ile durabilme arasında bir denge vardır: çok hızlı çalışanlar ${x}’te daha sık yanılır, çok dikkatli çalışanlar bazı harfleri kaçırır.`) + pattern,
+    };
+  }
+  return {
+    blocks: [durma, tepki, hiz],
+    chart: {
+      title: 'Doğru tepki oranları',
+      note: you
+        ? 'Çubuklar, durman ve basman gereken harflerde doğru tepki oranını gösterir.'
+        : 'Çubuklar, durması ve basması gereken harflerde doğru tepki oranını gösterir.',
+      rows: [
+        { label: `${x} geldiğinde durma`, value: Math.round(r.stopRate * 100), max: 100, valueLabel: pct(r.stopRate) },
+        { label: 'Diğer harflerde basma', value: Math.round(r.hitRate * 100), max: 100, valueLabel: pct(r.hitRate) },
+      ],
+    },
+  };
+}
+
+/** İki bölümün oranı bu aralıktaysa "yaklaşık aynı sürdü" denir. */
+const TRAIL_SAME: [number, number] = [0.9, 1.1];
+
+/** Sırayla birleştirme görevinin üç sonuç kartı: iki bölümün süreleri ve sayılarla harfler arasında geçiş. */
+function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  /** Süreyi saniyenin onda biri duyarlılığında yazar (önce yuvarlanır ki her yerde aynı sayı çıksın). */
+  const s1 = (ms: number) => nf1.format(Math.round(ms / 100) / 10);
+  const maxSec = nf0.format(task.maxMs / 1000);
+  const errText = (errors: number) =>
+    errors === 0
+      ? you
+        ? ' Hiç yanlış daireye dokunmadın.'
+        : ' Hiç yanlış daireye dokunulmadı.'
+      : you
+        ? ` ${errors} kez yanlış daireye dokundun; hızlı giderken bu sık olur.`
+        : ` ${errors} kez yanlış daireye dokunuldu; hızlı çalışırken bu sık olur.`;
+  const incomplete = (p: TrailResult['parts'][number]) =>
+    you
+      ? `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.n} dairenin ${p.reached} tanesini birleştirdin). Acele etmeden, sıradakini arayarak ilerlemek işine yarar.`
+      : `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.n} dairenin ${p.reached} tanesi birleştirildi). Bu; cihazdan, yönergenin tam anlaşılmamasından ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.`;
+  const [a, b] = r.parts;
+
+  const blockA: CognitiveBlock = a.completed
+    ? {
+        ...card('iz_a'),
+        headline: `${s1(a.timeMs)} saniye`,
+        detail: `${a.n} daire · ${a.errors} yanlış dokunuş`,
+        text: you
+          ? `Sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdin.${errText(a.errors)} Bu bölüm, ekranı tarayıp aradığını hızla bulabilmeyi ve el-göz uyumunu gösterir.`
+          : `Çocuğunuz sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdi.${errText(a.errors)} Bu bölüm görsel taramayı, işlem hızını ve el-göz uyumunu yansıtır; süre, kullanılan cihazdan (dokunmatik ekran ya da fare) belirgin biçimde etkilenir.`,
+      }
+    : { ...card('iz_a'), headline: 'Süre içinde tamamlanamadı', detail: `${a.n} dairenin ${a.reached} tanesi birleştirildi`, text: incomplete(a) };
+
+  const blockB: CognitiveBlock = b.completed
+    ? {
+        ...card('iz_b'),
+        headline: `${s1(b.timeMs)} saniye`,
+        detail: `${b.n} daire · ${b.errors} yanlış dokunuş`,
+        text: you
+          ? `Sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdin.${errText(b.errors)} Bu bölümde bir sayıya bir harfe geçerek iki sırayı birlikte izlemen gerekir; bu yüzden genellikle birinci bölümden daha uzun sürer.`
+          : `Çocuğunuz sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdi.${errText(b.errors)} Bu bölümde sayılar ile harfler arasında gidip gelerek iki sırayı birlikte izlemek gerekir; bu yüzden genellikle birinci bölümden daha uzun sürer. Alfabe sırasını akıcı bilmek de bu süreyi etkiler.`,
+      }
+    : { ...card('iz_b'), headline: 'Süre içinde tamamlanamadı', detail: `${b.n} dairenin ${b.reached} tanesi birleştirildi`, text: incomplete(b) };
+
+  let gecis: CognitiveBlock;
+  if (r.ratio === null || r.diffMs === null) {
+    gecis = {
+      ...card('iz_gecis'),
+      headline: 'Hesaplanamadı',
+      text: 'Bölümlerden biri süre içinde tamamlanamadığı için iki bölüm karşılaştırılamadı.',
+    };
+  } else {
+    // Oran ve fark, raporda yazılan (saniyenin onda biri duyarlılığında) sürelerden hesaplanır ki birbirini tutsun.
+    const tA = Math.round(a.timeMs / 100) * 100;
+    const tB = Math.round(b.timeMs / 100) * 100;
+    const ratio = tB / tA;
+    const diff = tB - tA;
+    const x = nf1.format(ratio);
+    const detail = `Birinci bölüm ${s1(tA)} sn · ikinci bölüm ${s1(tB)} sn · ${diff >= 0 ? `fark ${s1(diff)} sn` : `ikinci bölüm ${s1(-diff)} sn daha kısa`}`;
+    if (ratio >= TRAIL_SAME[1]) {
+      gecis = {
+        ...card('iz_gecis'),
+        headline: `Birinci bölümün ${x} katı`,
+        detail,
+        text: you
+          ? `İkinci bölüm, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında gidip gelmek, iki sırayı aynı anda akılda tutmayı gerektirir ve tek bir sırayı izlemekten daha çok çaba ister; bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu fark bir seferden ötekine değişebilir; küçük farklara takılma.`
+          : `Çocuğunuzun ikinci bölümü, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında geçiş yapmak, iki sırayı aynı anda akılda tutmayı (çalışma belleği) ve aralarında gidip gelmeyi gerektirir; bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu oran, geçiş yapmanın getirdiği ek süreyi gösterir. Tek bir uygulamada kesinliği düşüktür ve alfabe sırasını akıcı bilmekten de etkilenir; tek başına yorumlanmamalıdır.`,
+      };
+    } else if (ratio > TRAIL_SAME[0]) {
+      gecis = {
+        ...card('iz_gecis'),
+        headline: 'İki bölüm yaklaşık aynı sürdü',
+        detail,
+        text: you
+          ? 'İki bölüm yaklaşık aynı sürede bitti: sayılarla harfler arasında gidip gelmek sana belirgin bir ek süre getirmedi. Genellikle ikinci bölüm daha uzun sürer; bu sonuç bir seferden ötekine değişebilir.'
+          : 'Çocuğunuzun iki bölümü yaklaşık aynı sürede bitti: sayılarla harfler arasında gidip gelmek belirgin bir ek süre getirmedi. Genellikle ikinci bölüm daha uzun sürer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+      };
+    } else {
+      gecis = {
+        ...card('iz_gecis'),
+        headline: 'İkinci bölüm daha kısa sürdü',
+        detail,
+        text: you
+          ? 'İkinci bölüm birinci bölümden kısa sürdü. Bu sık görülmez; birinci bölümde bir aksaklık olmuş ya da ikinci bölüme gelene kadar göreve alışmış olabilirsin. Bu sonuç bir seferden ötekine değişebilir.'
+          : 'Çocuğunuzun ikinci bölümü birinci bölümden kısa sürdü. Bu sık görülmez; birinci bölümde bir aksaklık olmuş ya da göreve alışma etkisi görülmüş olabilir. Tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+      };
+    }
+  }
+
+  const secs = r.parts.map((p) => (p.completed ? p.timeMs : task.maxMs) / 1000);
+  const max = roundUp(Math.max(...secs), 30);
+  return {
+    blocks: [blockA, blockB, gecis],
+    chart: {
+      title: 'Bölüm süreleri',
+      note: you
+        ? 'Çubuklar her bölümün kaç saniye sürdüğünü gösterir; kısa çubuk daha hızlı demek.'
+        : 'Çubuklar her bölümün kaç saniye sürdüğünü gösterir; kısa çubuk daha hızlı demektir.',
+      rows: r.parts.map((p, k) => ({
+        label: task.parts[p.index]?.name ?? `${k + 1}. bölüm`,
+        value: secs[k],
+        max,
+        valueLabel: p.completed ? `${s1(p.timeMs)} sn` : 'tamamlanmadı',
+      })),
+    },
+  };
+}
+
 function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
   const you = audience !== 'parent';
   const blocks: CognitiveBlock[] = [];
@@ -791,7 +1195,25 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const ct = def.tasks.find((t): t is CancellationTask => t.kind === 'cancellation');
   if (cz && ct) blocks.push(...cancellationBlocks(cz, ct, audience, scale));
 
+  // Renk-kelime, dur-git ve sırayla birleştirme: her biri tek görevli bir testtir, sonucunu bir grafik özetler.
+  const card: CardOf = (k) => ({ key: k, name: scale(k).name, plain: scale(k).plain });
+  let chart: CognitiveReport['chart'];
+  const add = (x: TaskReport) => {
+    blocks.push(...x.blocks);
+    chart = x.chart;
+  };
+  const cw = byKey.get('renk_dogruluk')?.extra as unknown as ColorWordResult | undefined;
+  if (cw && def.tasks.some((t) => t.kind === 'color_word')) add(colorWordBlocks(cw, audience, card));
+  const gn = byKey.get('dg_durma')?.extra as unknown as GoNoGoResult | undefined;
+  const gt = def.tasks.find((t): t is GoNoGoTask => t.kind === 'go_nogo');
+  if (gn && gt) add(goNoGoBlocks(gn, gt, audience, card));
+  const tr = byKey.get('iz_a')?.extra as unknown as TrailResult | undefined;
+  const tt = def.tasks.find((t): t is TrailTask => t.kind === 'trail');
+  if (tr && tt) add(trailBlocks(tr, tt, audience, card));
+
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
+  // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
+  if (def.tasks.every((t) => t.kind === 'color_word' || t.kind === 'go_nogo' || t.kind === 'trail')) return { blocks, tips: [], chart };
 
   const tips = you
     ? [
