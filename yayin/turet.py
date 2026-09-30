@@ -25,6 +25,13 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 
+# Parolanın neye benzediğini göstermek için sohbette yazılan örnekler. Herkesin görebildiği yerde yazıldıkları
+# için gizli değildirler; biri yanlışlıkla ANA_SIFRE olarak girilirse yayın durur.
+ORNEK_PAROLALAR = {
+    "7f3a9c2e1b8d4f60a5e2c9b73d1f8e04c6b2a9175e8d3f0a9b4c7e21d0f6a8b3",
+}
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("kullanım: ANA_SIFRE=... turet.py <klasör>", file=sys.stderr)
@@ -34,6 +41,13 @@ def main() -> int:
     ana = "".join(os.environ.get("ANA_SIFRE", "").split())
     if ana and all(c in "0123456789abcdefABCDEF" for c in ana):
         ana = ana.lower()
+    if ana in ORNEK_PAROLALAR:
+        print(
+            "HATA: ANA_SIFRE, Claude'un sohbette biçimini göstermek için yazdığı örnek parola; bu parola gizli "
+            "değildir. Ana Parola sayfasında kendi parolanızı üretip GitHub'a yeniden girin.",
+            file=sys.stderr,
+        )
+        return 1
     if len(ana) < 32:
         # Değerin kendisi yazılmaz; yalnızca uzunluğu ve karakter türü (yanlış kutuya yapıştırılan bir değeri
         # ya da çalışmayan bir kopyalamayı ayırt etmek için).
