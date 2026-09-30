@@ -137,7 +137,7 @@ describe('Ayrıntılı Kişilik Profili raporu', () => {
     expect(low.student.support?.title).toBe('Konuşmak istersen');
     expect(low.parent.support?.title).toBe('Destek almak isterseniz');
     const es = low.student.groups!.find((g) => g.title === 'Duygusal Denge')!;
-    expect(es.badge).toBe('Düşük · Duyguları yoğun yaşayan');
+    expect(es.badge).toBe('Düşük · Stresten kolay etkilenen');
     expect(es.facets.every((f) => f.band === 'Düşük')).toBe(true);
 
     const high = evaluate(SLUG, { grade: 11, data: { engine: 'likert', answers: keyedAnswers(() => 'high') } });

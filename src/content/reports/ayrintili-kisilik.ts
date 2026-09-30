@@ -4,7 +4,7 @@ import type { BandText, ReportTemplate } from './types';
  * Ayrıntılı Kişilik Profili rapor metinleri.
  * İlkeler (Beş Faktör Kişilik Profili ile aynı): kişilik boyutlarında "iyi" ya da "kötü" uç yoktur; her tarzın güçlü
  * yanı anlatılır. Etiketleme yapılmaz; sonuç öz bildirime dayandığı için öğrenciye "... söylüyorsun", veliye
- * "Çocuğunuz ... belirtiyor" dili kullanılır. Dürüstlük, uzlaşmacılık ve görev bilinci gibi değer yüklü alt
+ * "Çocuğunuz ... belirtiyor" dili kullanılır. Adil davranma, uzlaşmacılık ve görev bilinci gibi değer yüklü alt
  * özelliklerde düşük düzey suçlamadan, gelişime açık bir dille anlatılır.
  * Boyut metinleri iki üç cümle, alt özellik metinleri tek cümledir. Öneri listeleri (kapsamlı rapor için) bu testte
  * henüz yazılmadı; basit raporda gösterilmez.
@@ -31,59 +31,59 @@ export const ayrintiliKisilikReport: ReportTemplate = {
     extraversion: {
       high: t(
         'Sosyal ve enerjik',
-        'İnsanlarla birlikte olmaktan, hareketten ve yeni deneyimlerden enerji aldığını söylüyorsun. Sosyal ortamlarda rahatsın ve genellikle ortamı canlandıranlardan birisin.',
-        'Çocuğunuz insanlarla birlikte olmaktan ve hareketli ortamlardan enerji aldığını belirtiyor. Sosyal ortamlarda rahat olduğunu ve etkinliklerde öne çıkmaktan hoşlandığını söylüyor.',
+        'Genel olarak insanlarla birlikte olmaktan, hareketten ve heyecandan enerji aldığını söylüyorsun. Hangi yönlerinin öne çıktığını aşağıdaki alt özelliklerde görebilirsin.',
+        'Çocuğunuz genel olarak insanlarla birlikte olmaktan, hareketten ve heyecandan enerji aldığını belirtiyor. Hangi yönlerinin öne çıktığı aşağıdaki alt özelliklerde görülüyor.',
       ),
       average: t(
         'Duruma göre sosyal',
-        'Sosyal ortamlarla kendi başına kalmak arasında dengeli bir yerdesin. Duruma göre hem kalabalıktan hem de sakin anlardan keyif alabiliyorsun.',
-        'Çocuğunuz sosyal ortamlarla kendi başına geçirdiği zaman arasında dengeli bir tarz tanımlıyor. Duruma göre her ikisinden de keyif alabildiğini belirtiyor.',
+        'İnsanlarla birlikte olmakla kendi başına kalmak arasında dengeli bir yerdesin; duruma göre ikisinden de keyif alabiliyorsun. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz insanlarla birlikte olmakla kendi başına kalmak arasında dengeli bir tarz tanımlıyor; duruma göre ikisinden de keyif alabildiğini belirtiyor.',
       ),
       low: t(
-        'Sakin, dinlemeyi seven',
-        'Kalabalık ve hareketli ortamlar yerine sakin ortamları, küçük grupları ya da kendi başına olmayı tercih ettiğini söylüyorsun. Dinlemek ve konuşmadan önce düşünmek senin güçlü yanların arasında.',
-        'Çocuğunuz sakin ortamları, küçük grupları ve kendi başına geçirdiği zamanı tercih ettiğini belirtiyor. Bu bir eksiklik değildir; dikkatli dinleme ve derinlemesine düşünme gibi güçlü yanlarla birlikte gelir.',
+        'Sakin, kendi alanını seven',
+        'Genel olarak kalabalık ve hareketli ortamlar yerine sakin ortamları ya da kendi başına olmayı tercih ettiğini söylüyorsun. Bu bir eksiklik değil; sakin ortamlar birçok kişiye odaklanmak ve düşünmek için alan açar.',
+        'Çocuğunuz genel olarak kalabalık ve hareketli ortamlar yerine sakin ortamları ya da kendi başına olmayı tercih ettiğini belirtiyor. Bu bir eksiklik değildir; birçok kişi sakin ortamlarda daha iyi odaklanır.',
       ),
     },
     agreeableness: {
       high: t(
         'Anlayışlı ve uyumlu',
-        'İnsanlara güvendiğini, yardım etmekten hoşlandığını ve anlaşmazlıklarda uzlaşma yolu aradığını söylüyorsun. Başkalarının duygularını önemsemen ilişkilerinde güçlü bir yan.',
-        'Çocuğunuz insanlara güvendiğini, yardımsever olduğunu ve anlaşmazlıklarda uzlaşmayı tercih ettiğini belirtiyor. Başkalarının duygularını önemsediğini söylüyor.',
+        'Genel olarak insanlarla güvene dayalı, anlayışlı ve uyumlu ilişkiler kurduğunu söylüyorsun. Hangi yönlerinin öne çıktığını aşağıdaki alt özelliklerde görebilirsin.',
+        'Çocuğunuz genel olarak insanlarla güvene dayalı, anlayışlı ve uyumlu ilişkiler kurduğunu belirtiyor.',
       ),
       average: t(
         'Duruma göre uzlaşan',
-        'Başkalarını önemsemekle kendi görüşünü savunmak arasında dengeli bir yerdesin. Gerektiğinde uzlaşabiliyor, gerektiğinde de fikrini açıkça söyleyebiliyorsun.',
-        'Çocuğunuz başkalarını önemsemekle kendi görüşünü savunmak arasında dengeli bir tarz tanımlıyor. Duruma göre uzlaşabildiğini ya da fikrini açıkça söyleyebildiğini belirtiyor.',
+        'Başkalarını gözetmekle kendi ihtiyaçlarını gözetmek arasında dengeli bir yerdesin; duruma göre uzlaşabiliyorsun. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz başkalarını gözetmekle kendi ihtiyaçlarını gözetmek arasında dengeli bir tarz tanımlıyor; duruma göre uzlaşabildiğini belirtiyor.',
       ),
       low: t(
-        'Doğrudan, kendi görüşünü savunan',
-        'Kendi görüşünü açıkça savunduğunu, insanlara kolay kolay güvenmediğini ve gerektiğinde karşı çıkmaktan çekinmediğini söylüyorsun. Doğrudan olmak bir güçtür; karşındakinin duygularını da hesaba kattığında ilişkilerin daha da güçlenir.',
-        'Çocuğunuz kendi görüşünü açıkça savunduğunu, insanlara kolay kolay güvenmediğini ve gerektiğinde karşı çıkmaktan çekinmediğini belirtiyor. Bu tarz doğrudanlık ve bağımsızlıkla birlikte gelir; ilişkilerde karşısındakinin duygularını gözetmesi için onu destekleyebilirsiniz.',
+        'Kendi bakış açısını gözeten',
+        'Genel olarak ilişkilerde önce kendi bakış açını ve ihtiyaçlarını gözettiğini söylüyorsun. Karşındakinin bakış açısını da hesaba kattığında ilişkilerin daha da güçlenir.',
+        'Çocuğunuz ilişkilerde genel olarak önce kendi bakış açısını ve ihtiyaçlarını gözettiğini belirtiyor; karşısındakinin duygularını da gözetmesi için onu destekleyebilirsiniz.',
       ),
     },
     conscientiousness: {
       high: t(
         'Planlı ve kararlı',
-        'Planlı, düzenli ve çalışkan olduğunu, sözünü tuttuğunu ve işleri bitirmeye kararlı olduğunu söylüyorsun. Bu özellikler okulda ve hedeflerine ulaşmada sana güç veriyor.',
-        'Çocuğunuz planlı, düzenli ve çalışkan olduğunu, sorumluluklarını yerine getirdiğini ve işleri bitirmeye kararlı olduğunu belirtiyor.',
+        'Genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu söylüyorsun. Bu eğilim okulda ve hedeflerine ulaşmada sana güç verir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu belirtiyor.',
       ),
       average: t(
         'Çoğu zaman planlı',
-        'Çoğu zaman planlı ve sorumlu davranıyorsun; bazı durumlarda ise esnek ve kendiliğinden hareket etmeyi tercih ediyorsun. Hangi alt özelliklerinin öne çıktığını aşağıda görebilirsin.',
-        'Çocuğunuz çoğu zaman planlı ve sorumlu davrandığını, bazı durumlarda ise daha esnek ve kendiliğinden hareket ettiğini belirtiyor.',
+        'Çoğu zaman planlı ve sorumlu davranıyor, bazı durumlarda ise daha esnek hareket ediyorsun. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz çoğu zaman planlı ve sorumlu davrandığını, bazı durumlarda ise daha esnek hareket ettiğini belirtiyor.',
       ),
       low: t(
-        'Esnek, anlık karar veren',
-        'Planlara bağlı kalmak yerine esnek ve anlık hareket etmeyi tercih ettiğini söylüyorsun. Bu esneklik yeni durumlara uyum sağlamanı kolaylaştırır; önemli işlerde küçük planlar ve hatırlatıcılar ise işini epey kolaylaştırabilir.',
-        'Çocuğunuz planlara bağlı kalmak yerine esnek ve anlık hareket etmeyi tercih ettiğini belirtiyor. Bu esneklik uyum sağlamayı kolaylaştırır; ödev ve sınav gibi önemli işlerde birlikte küçük planlar yapmak ona destek olabilir.',
+        'Esnek, anlık hareket eden',
+        'Genel olarak planlara bağlı kalmak yerine esnek ve anlık hareket etmeyi tercih ettiğini söylüyorsun. Bu esneklik bazı durumlarda avantaj olabilir; önemli işlerde küçük planlar ve hatırlatıcılar ise işini epey kolaylaştırır.',
+        'Çocuğunuz genel olarak planlara bağlı kalmak yerine esnek ve anlık hareket etmeyi tercih ettiğini belirtiyor. Ödev ve sınav gibi önemli işlerde birlikte küçük planlar yapmak ona destek olabilir.',
       ),
     },
     emotional_stability: {
       high: t(
         'Sakin, kolay sarsılmayan',
-        'Stresli ve zor anlarda sakin kalabildiğini, kolay kolay endişelenmediğini ve çabuk toparlandığını söylüyorsun. Bu, sınav gibi baskılı durumlarda sana güç veren bir özellik.',
-        'Çocuğunuz stresli ve zor anlarda sakin kalabildiğini, kolay kolay endişelenmediğini ve çabuk toparlandığını belirtiyor.',
+        'Genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını söylüyorsun. Bu, sınav gibi baskılı durumlarda sana güç veren bir özellik. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını belirtiyor.',
       ),
       average: t(
         'Çoğu zaman dengeli',
@@ -91,27 +91,27 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Çocuğunuz çoğu zaman dengeli olduğunu, bazı durumlarda ise daha çok gerildiğini ya da üzüldüğünü belirtiyor. Bu, ergenlikte olağan bir durumdur.',
       ),
       low: t(
-        'Duyguları yoğun yaşayan',
-        'Duyguları yoğun yaşadığını ve stresli durumlardan kolayca etkilendiğini söylüyorsun. Duyguları derin yaşamak bir hassasiyettir ve onlarla baş etmeyi öğrenmek mümkün. Bu duygular seni zorluyorsa güvendiğin bir yetişkinle konuşmak iyi gelir.',
-        'Çocuğunuz duyguları yoğun yaşadığını ve stresli durumlardan kolayca etkilendiğini belirtiyor. Bu sonuç bir tanı değildir; ancak bu duyguların ne kadar süredir devam ettiğini ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir.',
+        'Stresten kolay etkilenen',
+        'Endişe, öfke ya da hüzün gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini söylüyorsun. Bu duygularla baş etmeyi öğrenmek mümkün; seni zorluyorsa güvendiğin bir yetişkinle konuşmak iyi gelir.',
+        'Çocuğunuz endişe, öfke ya da hüzün gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini belirtiyor. Bu sonuç bir tanı değildir; ancak bu duyguların ne kadar süredir devam ettiğini ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir.',
         true,
       ),
     },
     openness: {
       high: t(
         'Meraklı ve yeniliğe açık',
-        'Hayal kurmayı, sanatı, yeni deneyimleri ve fikirler üzerine düşünmeyi sevdiğini söylüyorsun. Merakın ve yeniliğe açık olman öğrenmede ve yaratıcı işlerde sana güç veriyor.',
-        'Çocuğunuz hayal gücüne, sanata, yeni deneyimlere ve fikirlere açık olduğunu belirtiyor. Bu merak öğrenmede ve yaratıcı işlerde önemli bir güçtür.',
+        'Genel olarak hayal gücüne, sanata, duygulara, yeniliklere ve fikirlere açık olduğunu söylüyorsun. Bu merak öğrenmede ve yaratıcı işlerde sana güç verir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz genel olarak hayal gücüne, sanata, yeni deneyimlere ve fikirlere açık olduğunu belirtiyor. Bu merak öğrenmede ve yaratıcı işlerde önemli bir güçtür.',
       ),
       average: t(
-        'Yeniye de bilinene de açık',
-        'Yeni deneyimlerle bildiğin yollar arasında dengeli bir yerdesin. Bazı alanlarda meraklı ve yeniliğe açıksın, bazı alanlarda ise alışık olduğun yolları tercih ediyorsun.',
+        'Yeniyle bilineni dengeleyen',
+        'Yeni deneyimlerle bildiğin yollar arasında dengeli bir yerdesin: bazı alanlarda meraklı ve yeniliğe açıksın, bazılarında ise alışık olduğun yolları tercih ediyorsun. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
         'Çocuğunuz yeni deneyimlere ve fikirlere belli ölçüde açık olduğunu, bazı alanlarda ise alışık olduğu yolları tercih ettiğini belirtiyor.',
       ),
       low: t(
         'Somut ve pratik',
-        'Hayaller ve soyut fikirler yerine somut, pratik ve bildiğin konuları tercih ettiğini söylüyorsun. Gerçekçi ve ayağı yere basan bir bakış birçok işte büyük bir güçtür.',
-        'Çocuğunuz soyut fikirler ve yenilikler yerine somut, pratik ve bildiği konuları tercih ettiğini belirtiyor. Gerçekçi ve ayağı yere basan bu tarz birçok alanda bir güçtür.',
+        'Genel olarak soyut fikirler ve yenilikler yerine somut, pratik ve bildiğin konuları tercih ettiğini söylüyorsun. Gerçekçi ve ayağı yere basan bir bakış birçok işte işe yarar.',
+        'Çocuğunuz genel olarak soyut fikirler ve yenilikler yerine somut, pratik ve bildiği konuları tercih ettiğini belirtiyor. Gerçekçi ve ayağı yere basan bu tarz birçok alanda işe yarar.',
       ),
     },
 
@@ -175,7 +175,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       average: t(
         'Dengeli bir tempo',
-        'Hareketli dönemlerle dinlenme zamanları arasında dengeli bir tempon var.',
+        'Hareketli dönemlerle dinlenme zamanları arasında dengeli bir tempoda yaşıyorsun.',
         'Çocuğunuz hareketli dönemlerle dinlenme zamanları arasında dengeli bir tempo tanımlıyor.',
       ),
       low: t(
@@ -215,7 +215,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       low: t(
         'Ciddi ve sakin',
         'Kendini coşkulu ya da çok neşeli biri olarak görmediğini, daha sakin ve ciddi bir tarzın olduğunu söylüyorsun.',
-        'Çocuğunuz kendini coşkulu biri olarak görmediğini, daha sakin ve ciddi bir tarzı olduğunu belirtiyor; keyifsizlik uzun süredir devam ediyorsa bunu onunla konuşmanız iyi olur.',
+        'Çocuğunuz kendini coşkulu biri olarak görmediğini, daha sakin ve ciddi bir tarzı olduğunu belirtiyor.',
       ),
     },
 
@@ -233,25 +233,25 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Kolay güvenmeyen',
-        'İnsanlara kolay kolay güvenmediğini ve karşındakini tanımadan temkinli durmayı tercih ettiğini söylüyorsun.',
+        'İnsanlara kolay kolay güvenmediğini ve karşındakini tanıyana kadar temkinli durmayı tercih ettiğini söylüyorsun.',
         'Çocuğunuz insanlara kolay kolay güvenmediğini ve temkinli durmayı tercih ettiğini belirtiyor.',
       ),
     },
     morality: {
       high: t(
-        'Açık ve dürüst',
+        'Adil davranan',
         'Başkalarını kendi çıkarın için kullanmadığını ve öne geçmek için hileye başvurmadığını söylüyorsun.',
         'Çocuğunuz başkalarını kendi çıkarı için kullanmadığını ve öne geçmek için hileye başvurmadığını belirtiyor.',
       ),
       average: t(
-        'Çoğu zaman dürüst',
-        'Çoğu zaman açık ve dürüst davrandığını, bazı durumlarda ise kendi çıkarını öne alabildiğini söylüyorsun.',
-        'Çocuğunuz çoğu zaman açık ve dürüst davrandığını, bazı durumlarda ise kendi çıkarını öne alabildiğini belirtiyor.',
+        'Çoğu zaman adil',
+        'Çoğu zaman adil davrandığını, bazı durumlarda ise kendi çıkarını öne alabildiğini söylüyorsun.',
+        'Çocuğunuz çoğu zaman adil davrandığını, bazı durumlarda ise kendi çıkarını öne alabildiğini belirtiyor.',
       ),
       low: t(
         'Kendi çıkarını öne alabilen',
-        'Kazanmak ya da öne geçmek için zaman zaman kuralları esnetebildiğini söylüyorsun; bunun karşındakileri nasıl etkilediğini düşünmek ilişkilerini güçlendirir.',
-        'Çocuğunuz öne geçmek için zaman zaman kuralları esnetebildiğini ya da kendi çıkarını öne alabildiğini belirtiyor; bunu suçlamadan, farklı durumlar üzerinden birlikte konuşmanız yararlı olabilir.',
+        'Kazanmak ya da öne geçmek için zaman zaman kendi çıkarını başkalarınınkinin önüne koyabildiğini söylüyorsun; bunun karşındakileri nasıl etkilediğini düşünmek ilişkilerini güçlendirir.',
+        'Çocuğunuz öne geçmek için zaman zaman kendi çıkarını başkalarınınkinin önüne koyabildiğini belirtiyor; bunu suçlamadan, farklı durumlar üzerinden birlikte konuşmanız yararlı olabilir.',
       ),
     },
     altruism: {
@@ -301,7 +301,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Kendine çok güvenen',
-        'Kendini çok beğendiğini ve iyi yönlerini açıkça ortaya koyduğunu söylüyorsun; özgüven bir güçtür, başkalarının katkısını da görmek bu gücü artırır.',
+        'Kendine yüksek bir değer biçtiğini ve iyi yönlerini açıkça ortaya koyduğunu söylüyorsun; özgüven bir güçtür, başkalarının katkısını da görmek bu gücü artırır.',
         'Çocuğunuz kendine yüksek bir değer biçtiğini ve iyi yönlerini açıkça ortaya koyduğunu belirtiyor; özgüvenini korurken başkalarının katkılarını da görmesini destekleyebilirsiniz.',
       ),
     },
@@ -317,9 +317,9 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Çocuğunuz zor durumdaki insanlara duyarlı olduğunu, bu duyarlılığın duruma göre değiştiğini belirtiyor.',
       ),
       low: t(
-        'Mantıkla yaklaşan',
-        'Başkalarının sorunlarına duygularınla değil daha çok mantıkla yaklaştığını ve bu konulara pek kafa yormadığını söylüyorsun.',
-        'Çocuğunuz başkalarının sorunlarına duygularla değil daha çok mantıkla yaklaştığını ve bu konulara pek kafa yormadığını belirtiyor.',
+        'Kolay etkilenmeyen',
+        'Zor durumdaki insanların hâlinin seni çok fazla etkilemediğini ve bu konulara pek kafa yormadığını söylüyorsun.',
+        'Çocuğunuz zor durumdaki insanların hâlinin onu çok fazla etkilemediğini ve bu konulara pek kafa yormadığını belirtiyor.',
       ),
     },
 
@@ -371,8 +371,8 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Kuralları esneten',
-        'Kuralları ve verdiğin sözleri zaman zaman esnetebildiğini söylüyorsun; sözlerini tutmak, insanların sana güvenmesini kolaylaştırır.',
-        'Çocuğunuz kuralları ve verdiği sözleri zaman zaman esnetebildiğini belirtiyor; kuralların nedenlerini onunla birlikte konuşmak, kurala uymayı bir zorunluluktan çok kendi seçimi hâline getirebilir.',
+        'Kuralları zaman zaman esnetebildiğini ve verdiğin sözleri her zaman tutamadığını söylüyorsun; sözlerini tutmak, insanların sana güvenmesini kolaylaştırır.',
+        'Çocuğunuz kuralları zaman zaman esnetebildiğini ve verdiği sözleri her zaman tutamadığını belirtiyor; kuralların nedenlerini onunla birlikte konuşmak, kurala uymayı bir zorunluluktan çok kendi seçimi hâline getirebilir.',
       ),
     },
     achievement: {
@@ -382,9 +382,9 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Çocuğunuz çok çalıştığını ve kendisinden beklenenden fazlasını yapmaya çalıştığını belirtiyor; çabasının yanında dinlenmesine de alan açmak önemlidir.',
       ),
       average: t(
-        'Gerektiği kadar çalışan',
-        'Gerektiği kadar çalışıyorsun; önemli bulduğun işlerde daha fazla çaba gösteriyorsun.',
-        'Çocuğunuz gerektiği kadar çalıştığını, önemli bulduğu işlerde daha fazla çaba gösterdiğini belirtiyor.',
+        'Çoğu zaman emek veren',
+        'Çoğu zaman emek veriyorsun; özellikle önemli bulduğun işlerde daha fazla çaba gösteriyorsun.',
+        'Çocuğunuz çoğu zaman emek verdiğini, özellikle önemli bulduğu işlerde daha fazla çaba gösterdiğini belirtiyor.',
       ),
       low: t(
         'İdare edecek kadar çalışan',
@@ -458,8 +458,8 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Çabuk öfkelenen',
-        'Çabuk sinirlendiğini ve öfkelendiğinde kendini kaybedebildiğini söylüyorsun; öfkeni fark ettiğin anda kısa bir ara vermek işine yarar.',
-        'Çocuğunuz çabuk sinirlendiğini ve öfkelendiğinde kendini kaybedebildiğini belirtiyor; sakin bir anda, öfkesini fark etmenin ve yönetmenin yollarını birlikte konuşabilirsiniz.',
+        'Çabuk sinirlendiğini ve öfkeni kontrol etmekte zorlanabildiğini söylüyorsun; öfkeni fark ettiğin anda kısa bir ara vermek işine yarar.',
+        'Çocuğunuz çabuk sinirlendiğini ve öfkesini kontrol etmekte zorlanabildiğini belirtiyor; sakin bir anda, öfkesini fark etmenin ve yönetmenin yollarını birlikte konuşabilirsiniz.',
       ),
     },
     contentment: {
@@ -488,7 +488,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       average: t(
         'Duruma göre rahat',
-        'Tanıdık ortamlarda rahatsın; yeni insanlara yaklaşmak ya da dikkat çekmek ise bazen seni çekindirebiliyor.',
+        'Tanıdık ortamlarda rahatsın; yeni insanlara yaklaşırken ya da dikkatler üzerindeyken bazen çekinebiliyorsun.',
         'Çocuğunuz tanıdık ortamlarda rahat olduğunu, yeni insanlara yaklaşırken ise bazen çekindiğini belirtiyor.',
       ),
       low: t(
@@ -541,8 +541,8 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       average: t(
         'Ara sıra hayale dalan',
-        'Zaman zaman hayallere dalıyorsun, ama çoğu zaman aklın somut işlerde oluyor.',
-        'Çocuğunuz zaman zaman hayallere daldığını, ancak çoğu zaman aklının somut işlerde olduğunu belirtiyor.',
+        'Zaman zaman hayallere dalıyor, zaman zaman da somut işlere odaklanıyorsun.',
+        'Çocuğunuz zaman zaman hayallere daldığını, zaman zaman da somut işlere odaklandığını belirtiyor.',
       ),
       low: t(
         'Gerçekçi ve somut',
@@ -563,8 +563,8 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Sanata pek ilgi duymayan',
-        'Şiir, müze ya da sergi gibi sanat etkinliklerinin sana pek hitap etmediğini söylüyorsun.',
-        'Çocuğunuz şiir, müze ya da sergi gibi sanat etkinliklerinin ona pek hitap etmediğini belirtiyor.',
+        'Şiirin ve sanat sergilerinin sana pek hitap etmediğini söylüyorsun.',
+        'Çocuğunuz şiirin ve sanat sergilerinin ona pek hitap etmediğini belirtiyor.',
       ),
     },
     emotionality: {
@@ -598,7 +598,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       low: t(
         'Alışık olduğu düzeni seven',
         'Bildiğin yolları ve alışık olduğun düzeni değişikliğe tercih ettiğini söylüyorsun; düzenin sana güven veriyor.',
-        'Çocuğunuz bildiği yolları ve alışık olduğu düzeni değişikliğe tercih ettiğini belirtiyor; büyük değişikliklerden önce onu hazırlamak işini kolaylaştırır.',
+        'Çocuğunuz bildiği yolları ve alışık olduğu düzeni değişikliğe tercih ettiğini belirtiyor; büyük değişikliklerden önce onu hazırlamak uyum sağlamasını kolaylaştırır.',
       ),
     },
     intellect: {
