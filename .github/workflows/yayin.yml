@@ -129,7 +129,7 @@ jobs:
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
           # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
-          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi"
+          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili alti-boyutlu-kisilik-profili renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi"
           for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
@@ -150,6 +150,12 @@ jobs:
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$KISILIK_GOVDE" "https://$ALAN/api/rapor/ayrintili-kisilik-profili" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert [len(g["facets"]) for g in r["parent"]["groups"]] == [6, 6, 6, 6, 5]'; then
             sorun="$sorun kisilik-raporu"
+          fi
+          # Altı Boyutlu Kişilik Profili: 240 madde (24 alt özellik × 10), altı boyut ve dörder alt özellik.
+          ALTI_GOVDE=$(python3 -c 'import json; p="sinc fair gree mode fear anxi depe sent expr socb soci live forg gent flex pati orga dili perf prud aesa inqu crea unco".split(); print(json.dumps({"grade": 11, "data": {"engine": "likert", "answers": {f"{k}{n:02d}": {"value": (i + n) % 5 + 1, "rtMs": 2500} for i, k in enumerate(p) for n in range(1, 11)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$ALTI_GOVDE" "https://$ALAN/api/rapor/alti-boyutlu-kisilik-profili" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert [len(g["facets"]) for g in r["parent"]["groups"]] == [4, 4, 4, 4, 4, 4]'; then
+            sorun="$sorun alti-boyutlu-rapor"
           fi
           # Aynı test yetişkin olarak ("Yetişkinim", 14): yalnızca kişisel rapor.
           YETISKIN_GOVDE=$(printf '%s' "$KISILIK_GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["grade"]=14; print(json.dumps(b))')
