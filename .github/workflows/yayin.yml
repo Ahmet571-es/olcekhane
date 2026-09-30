@@ -128,7 +128,7 @@ jobs:
           # Bir ziyaretçinin yapacağı gibi: sayfalar, test raporu ve PDF (örnek cevaplarla; hiçbir şey saklanmaz).
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
-          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz /iletisim /yasal/aydinlatma-metni; do
+          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz /testler/meslek-ilgi-alanlari /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
           done
@@ -136,6 +136,18 @@ jobs:
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$GOVDE" "https://$ALAN/api/rapor/oz-saygi" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["student"]["items"] and r["parent"]["items"]'; then
             sorun="$sorun rapor"
+          fi
+          # Meslek İlgi Alanları: 91 madde (35. madde çıkarıldı), sıralı ilgi raporu.
+          ILGI_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"o{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 93) if i != 35}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$ILGI_GOVDE" "https://$ALAN/api/rapor/meslek-ilgi-alanlari" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert len(r["student"]["chart"]["rows"]) == 8 and r["parent"]["items"]'; then
+            sorun="$sorun ilgi-raporu"
+          fi
+          # Uzman incelemesindeki testler bağlantıyla açılır ama arama motorlarına kapalıdır.
+          if "${C[@]}" "https://$ALAN/testler/meslek-ilgi-alanlari" | grep -qi 'name="robots" content="noindex'; then
+            echo "::notice title=Önizleme::/testler/meslek-ilgi-alanlari açılıyor; uzman incelemesinde, arama motorlarına kapalı."
+          else
+            echo "::notice title=Önizleme::/testler/meslek-ilgi-alanlari açılıyor ve herkese açık."
           fi
           PDF_GOVDE=$(printf '%s' "$GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["audience"]="parent"; print(json.dumps(b))')
           if ! "${C[@]}" -f -m 60 -H 'content-type: application/json' -d "$PDF_GOVDE" -o "$RUNNER_TEMP/rapor.pdf" \

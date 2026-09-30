@@ -104,6 +104,9 @@ describe('Meslek İlgi Alanları raporu', () => {
     expect(r.parent.items[0].text).toContain('Çocuğunuz');
     expect(r.student.items[2].text).toContain('Dil ve Edebiyat (orta düzeyde ilgi)');
     expect(r.student.keyFigures[0]).toMatchObject({ label: 'En belirgin ilgi alanın', value: 'Bilim ve Analiz' });
+    // Grafiğin altındaki açıklama ilginin yetenek olmadığını hatırlatır.
+    expect(r.student.chartNote).toContain('İlgi, yetenek demek değildir');
+    expect(r.parent.chartNote).toContain('çocuğunuzun');
     expect(r.student.isPilot).toBe(false);
     expect(r.student.cautions).toEqual([]);
   });

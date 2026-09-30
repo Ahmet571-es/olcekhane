@@ -191,7 +191,8 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     return {
       ...base,
       chartTitle: you ? 'İlgi alanların' : 'İlgi alanları',
-      chartNote: 'Alanlar en yüksekten en düşüğe sıralandı. Değerler 1 (hiç hoşlanmam) ile 5 (çok hoşlanırım) arasındadır.',
+      // Şablonun genel açıklaması "ilgi, yetenek demek değildir" uyarısını da taşır.
+      chartNote: r.overview ?? 'Alanlar en yüksekten en düşüğe sıralandı. Değerler 1 (hiç hoşlanmam) ile 5 (çok hoşlanırım) arasındadır.',
       chart: {
         type: 'rulers',
         rows: r.sections.map((s) => ({
