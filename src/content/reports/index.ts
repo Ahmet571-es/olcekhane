@@ -1,3 +1,4 @@
+import { altiBoyutluKisilikReport } from './alti-boyutlu-kisilik';
 import { ayrintiliKisilikReport } from './ayrintili-kisilik';
 import { besFaktorReport } from './bes-faktor';
 import { calismaAliskanliklariReport } from './calisma-aliskanliklari';
@@ -10,6 +11,7 @@ import type { ReportTemplate } from './types';
 export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'bes-faktor-kisilik': besFaktorReport,
   'ayrintili-kisilik-profili': ayrintiliKisilikReport,
+  'alti-boyutlu-kisilik-profili': altiBoyutluKisilikReport,
   'oz-saygi': ozSaygiReport,
   'okuma-hizi-ve-anlama': okumaReport,
   'mesleki-ilgi-profili': meslekiIlgiReport,

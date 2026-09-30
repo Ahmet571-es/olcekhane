@@ -1,4 +1,5 @@
 import type { InstrumentDef } from '@/lib/instruments/types';
+import { altiBoyutluKisilik } from './alti-boyutlu-kisilik';
 import { ayrintiliKisilik } from './ayrintili-kisilik';
 import { besFaktor } from './bes-faktor';
 import { calismaAliskanliklari } from './calisma-aliskanliklari';
@@ -17,6 +18,7 @@ import { siraylaBirlestirme } from './sirayla-birlestirme';
 export const INSTRUMENTS: InstrumentDef[] = [
   besFaktor,
   ayrintiliKisilik,
+  altiBoyutluKisilik,
   ozSaygi,
   meslekiIlgi,
   meslekIlgiAlanlari,

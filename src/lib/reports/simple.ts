@@ -68,6 +68,18 @@ const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFr
 /** Cümle sonunda nokta yoksa ekler ("141 harf bulundu · 0 yanlış işaret" gibi satırlar metne eklenirken). */
 const sentence = (s: string) => (/[.!?…]$/.test(s.trim()) ? s.trim() : `${s.trim()}.`);
 
+/** Üleştirme sayıları: "dörder cümleyle", "onar cümleyle". */
+const DISTRIBUTIVE: Record<number, string> = { 3: 'üçer', 4: 'dörder', 5: 'beşer', 6: 'altışar', 8: 'sekizer', 10: 'onar' };
+
+/** Ayrıntılı profilde alt özelliklerin boyutlardan daha az kesin olduğunu anlatan not. */
+function facetNote(facetItems: number, margin: boolean): string {
+  const each = DISTRIBUTIVE[facetItems];
+  const first = each ? `Her boyut, ${each} cümleyle ölçülen alt özelliklerden oluşur.` : 'Her boyut, birkaç alt özellikten oluşur.';
+  return margin
+    ? `${first} Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; sarı bantların daha geniş olması bundandır.`
+    : `${first} Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; tek bir alt özelliğe bakarak sonuç çıkarılmamalıdır.`;
+}
+
 /** "Destek almak isterseniz" kutusu (tam raporla aynı metin). */
 const SUPPORT: Record<Audience, { title: string; lines: string[] }> = {
   student: {
@@ -429,8 +441,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       itemsTitle: 'Boyut boyut ayrıntılar',
       items: [],
       groups,
-      groupsNote:
-        'Her boyut, dörder cümleyle ölçülen alt özelliklerden oluşur. Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; sarı bantların daha geniş olması bundandır.',
+      groupsNote: facetNote(r.facetGroups[0]?.facetItems ?? 0, margin),
     };
   }
 

@@ -234,7 +234,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             )}
             {def.engine === 'likert' && def.profile === 'facets' && (
               <>
-                <li>{`${NUMBER_WORDS[composites.length] ?? composites.length} boyutun, puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi`}</li>
+                <li>
+                  {`${NUMBER_WORDS[composites.length] ?? composites.length} boyutun${showsMargin ? ', puanın ölçüm payıyla birlikte' : ''} cetvel üzerinde gösterimi`}
+                </li>
                 <li>{`Her boyutun altında alt özelliklerinin (toplam ${facetCount}) cetveli ve her biri için kısa bir yorum`}</li>
               </>
             )}

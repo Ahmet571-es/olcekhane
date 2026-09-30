@@ -8,6 +8,7 @@ import type { SimpleReport } from '@/lib/reports/simple';
 import { def, likertBody } from './helpers/bodies';
 
 const KISILIK = 'ayrintili-kisilik-profili';
+const ALTI = 'alti-boyutlu-kisilik-profili';
 const ILGI = 'meslek-ilgi-alanlari';
 
 /**
@@ -55,7 +56,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ILGI].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, ILGI].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);

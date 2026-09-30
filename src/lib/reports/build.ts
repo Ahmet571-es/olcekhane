@@ -98,7 +98,8 @@ export interface ReportContent {
   /** Sıralı ilgi profili (profil: interests). */
   ranking?: InterestRanking;
   /** Ayrıntılı profil (profil: facets): her bileşik ölçek ve alt ölçekleri, testteki sırayla. */
-  facetGroups?: { domain: string; facets: string[] }[];
+  /** Ayrıntılı profil: her boyutun alt özellikleri; `facetItems`, bir alt özelliğin kaç maddeyle ölçüldüğüdür. */
+  facetGroups?: { domain: string; facets: string[]; facetItems: number }[];
   cognitive?: CognitiveReport;
   academic?: AcademicReport;
   reading?: {
@@ -353,7 +354,13 @@ export function buildReport(input: {
   const ranking = def.engine === 'likert' && def.profile === 'interests' ? rankInterests(sections) : undefined;
   const facetGroups =
     def.engine === 'likert' && def.profile === 'facets'
-      ? def.scales.filter((s) => s.of?.length).map((s) => ({ domain: s.key, facets: s.of ?? [] }))
+      ? def.scales
+          .filter((s) => s.of?.length)
+          .map((s) => {
+            const facets = s.of ?? [];
+            const first = def.scales.find((x) => x.key === facets[0]);
+            return { domain: s.key, facets, facetItems: first ? scaleItems(def, first).length : 0 };
+          })
       : undefined;
 
   // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
