@@ -106,7 +106,9 @@ yönetim paneli yoktur.
 Site ilk açıldığında arama motorlarına kapalıdır (`ALLOW_INDEXING=false`). Her şey hazır olduğunda (site
 sahibinin bilgileri, KVKK adımları) bu ayar açılır ve site Google Search Console'a eklenir (sahiplik
 doğrulaması için DNS'e bir TXT kaydı girilir). Site sahibinin zorunlu bilgileri boşken yayın iş akışı bu
-ayarın açılmasına izin vermez.
+ayarın açılmasına izin vermez. Site sahibi, bilgileri kısa süre içinde ekleyeceğini bilerek siteyi yine de
+açtırmak isterse `yayin/ayarlar.env` dosyasına `SAHIP_BILGILERI_SONRA=true` yazılır; yayın o zaman yalnızca
+uyarır. Bilgiler girilince bu satır silinir.
 
 ## 7. Sonrası
 

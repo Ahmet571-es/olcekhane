@@ -147,3 +147,10 @@ jobs:
             exit 1
           fi
           echo "::notice title=Site dışarıdan sınandı::Sayfalar, test raporu ve PDF indirme internetten çalışıyor."
+          # Arama motorları: robots.txt bütün siteyi kapatıyor mu, site haritasında kaç sayfa var.
+          if "${C[@]}" "https://$ALAN/robots.txt" | grep -qiE '^disallow: /[[:space:]]*$'; then
+            echo "::notice title=Arama motorları::Kapalı (ALLOW_INDEXING=false): site Google'da görünmez."
+          else
+            sayfa=$("${C[@]}" "https://$ALAN/sitemap.xml" | grep -o '<loc>' | wc -l)
+            echo "::notice title=Arama motorları::Açık: robots.txt taramaya izin veriyor, site haritasında $sayfa sayfa var."
+          fi

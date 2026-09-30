@@ -216,12 +216,15 @@ env_yaz() {
     [ -n "$(ayar "$alan")" ] || eksik="$eksik $alan"
   done
   if [ -n "$eksik" ]; then
-    # Uygulama "false" dışındaki her değeri "arama motorlarına açık" sayar (src/lib/seo.ts).
-    local indeksleme
+    # Uygulama "false" dışındaki her değeri "arama motorlarına açık" sayar (src/lib/seo.ts). Site sahibi,
+    # bilgileri sonra ekleyeceğini bilerek siteyi açtırdıysa (SAHIP_BILGILERI_SONRA=true) yalnızca uyarılır.
+    local indeksleme sonra
     indeksleme=$(ayar ALLOW_INDEXING false)
-    [ "${indeksleme,,}" = false ] ||
+    sonra=$(ayar SAHIP_BILGILERI_SONRA false)
+    if [ "${indeksleme,,}" != false ] && [ "${sonra,,}" != true ]; then
       hata "ayarlar.env: site sahibinin bilgileri eksik, site arama motorlarına açılamaz (ALLOW_INDEXING=$indeksleme):$eksik"
-    uyari "Site sahibinin bilgileri eksik (yasa gereği İletişim sayfasında gösterilir):$eksik"
+    fi
+    uyari "Site sahibinin bilgileri eksik (yasa gereği İletişim sayfasında ve aydınlatma metninde gösterilir):$eksik"
   fi
 
   local -a adlar=(SITE_DOMAIN ACME_EMAIL APP_URL "${sahip[@]}" ALLOW_INDEXING CADDY_GENEL_AYAR)

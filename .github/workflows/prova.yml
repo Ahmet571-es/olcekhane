@@ -113,8 +113,21 @@ jobs:
             grep -qF "$ifade" "$RUNNER_TEMP/iletisim.html" || { echo "::error title=İletişim sayfası::'$ifade' yok"; exit 1; }
           done
           "${C[@]}" "https://$ALAN/" | grep -q 'Hostinger International Limited'
-          # Hazırlık ayarı (ALLOW_INDEXING=false): bütün site taranmaya kapalı.
-          "${C[@]}" "https://$ALAN/robots.txt" | grep -qiE '^disallow: /[[:space:]]*$'
+          # Arama motorları: ayarlar.env'deki ALLOW_INDEXING'e göre. Kapalıyken bütün site taranmaya kapalı; açıkken
+          # site haritası gösterilir ve sayfalarda "noindex" yoktur.
+          "${C[@]}" "https://$ALAN/robots.txt" > "$RUNNER_TEMP/robots.txt"
+          if grep -qiE '^ALLOW_INDEXING=.?false.?[[:space:]]*$' "$RUNNER_TEMP/prova.env"; then
+            grep -qiE '^disallow: /[[:space:]]*$' "$RUNNER_TEMP/robots.txt"
+          else
+            if grep -qiE '^disallow: /[[:space:]]*$' "$RUNNER_TEMP/robots.txt"; then
+              echo "::error title=Arama motorları::ALLOW_INDEXING açıkken robots.txt bütün siteyi kapatıyor."; exit 1
+            fi
+            grep -qiE "^sitemap: https://$ALAN/sitemap.xml" "$RUNNER_TEMP/robots.txt"
+            "${C[@]}" "https://$ALAN/sitemap.xml" | grep -q "<loc>https://$ALAN/testler/oz-saygi</loc>"
+            if "${C[@]}" "https://$ALAN/" | grep -qi 'name="robots" content="noindex'; then
+              echo "::error title=Arama motorları::ALLOW_INDEXING açıkken ana sayfada noindex var."; exit 1
+            fi
+          fi
           "${C[@]}" -D - -o /dev/null "https://$ALAN/" | grep -qi '^strict-transport-security: max-age=31536000'
           "${C[@]}" -D - -o /dev/null "https://www.$ALAN/hakkimizda" | grep -qi "^location: https://$ALAN/hakkimizda"
           curl -sS -m 10 -D - -o /dev/null "http://$ALAN/" | grep -qi "^location: https://$ALAN/"
