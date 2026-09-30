@@ -145,7 +145,7 @@ export default async function GuidePage(props: PageProps<'/rehber/[slug]'>) {
                     </Link>
                     <span className="text-ink-2">{t.tagline}</span>
                     <span className="t-meta">
-                      Yaklaşık {t.estimatedMinutes} dakika · {gradeRangeLabel(t.minGrade, t.maxGrade)}
+                      Yaklaşık {t.estimatedMinutes} dakika · {gradeRangeLabel(t.minGrade, t.maxGrade, t.adults)}
                       {t.isFree ? ' · ücretsiz' : ''}
                     </span>
                   </li>

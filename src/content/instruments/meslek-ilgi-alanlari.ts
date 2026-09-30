@@ -148,6 +148,7 @@ export const meslekIlgiAlanlari: LikertInstrument = {
   isFree: true,
   minGrade: 9,
   maxGrade: 13,
+  adults: true,
   estimatedMinutes: 10,
   sortOrder: 31,
   tagline:
@@ -205,12 +206,12 @@ export const meslekIlgiAlanlari: LikertInstrument = {
     normNote:
       'Türkiye normu yok. Puanlar 1–5 cevap aralığına göre ve kişinin kendi profili içinde, en yüksekten en düşüğe sıralanarak yorumlanır; sonuç başkalarıyla karşılaştırılmaz.',
     ageNote:
-      '9. sınıftan itibaren uygulanır; mezunlar da çözebilir. Kaynak çalışma üniversite öğrencileri ve yetişkinlerle yapılmıştır. İlgiler ergenlik boyunca gelişmeye devam ettiği için lise öğrencilerinde sonuçlar bir keşif aracı olarak sunulur.',
+      '9. sınıftan itibaren uygulanır; mezunlar ve yetişkinler de çözebilir. Kaynak çalışma üniversite öğrencileri ve yetişkinlerle yapılmıştır. İlgiler ergenlik boyunca gelişmeye devam ettiği için lise öğrencilerinde sonuçlar bir keşif aracı olarak sunulur.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',
     licenseUrl: 'https://ipip.ori.org/',
     limitations: [
       'İlgi, yetenek demek değildir. Bir alana ilgi duymak o alanda şimdiden başarılı olmak anlamına gelmez; tersi de doğrudur.',
-      'İlgiler ergenlikte değişebilir. Testi bir iki yılda bir tekrarlamak önerilir.',
+      'İlgiler ergenlikte ve genç yetişkinlikte değişebilir; yaş ilerledikçe daha kararlı hâle gelir. Lise öğrencilerinin testi bir iki yılda bir tekrarlaması önerilir.',
       'Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı; kaynak çalışmadaki değerler bu çeviri için doğrudan geçerli sayılmamalıdır.',
       'Alan örnekleri yol gösterici niteliktedir, bir meslek önerisi değildir. Meslek seçiminde değerler, beceriler, olanaklar ve yaşam koşulları da önemlidir.',
       'Bazı maddeler yetişkin iş hayatından örnekler içerir; hiç tanımadığın bir işte kendini hayal ederek cevap vermen yeterlidir.',

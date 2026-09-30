@@ -47,7 +47,7 @@ Bu metin bilgilendirme amaçlıdır; sizden onay istemez.
 
 ## 2. Test çözerken
 
-Teste başlarken seçtiğiniz sınıf düzeyi test sayfasının adresinde yer alır (bu yüzden tarayıcınızın geçmişinde de görünür). Cevaplarınız ve cevap süreleri (dikkat ve bellek görevlerinde görevdeki performansınız) test bitene kadar yalnızca açık olan sayfada, cihazınızın belleğinde durur. Test bittiğinde sınıf düzeyiyle birlikte tek seferde sunucumuza gönderilir. Sunucu puanları ve raporu hesaplayıp size geri gönderir. Raporu her PDF olarak indirişinizde aynı bilgiler yeniden gönderilir; PDF sunucunun belleğinde hazırlanıp doğrudan size iletilir.
+Teste başlarken yaptığınız seçim (sınıf düzeyi ya da yetişkinlere de uygun testlerde “Yetişkinim”) test sayfasının adresinde yer alır; bu yüzden tarayıcınızın geçmişinde de görünür. Cevaplarınız ve cevap süreleri (dikkat ve bellek görevlerinde görevdeki performansınız) test bitene kadar yalnızca açık olan sayfada, cihazınızın belleğinde durur. Test bittiğinde bu seçimle birlikte tek seferde sunucumuza gönderilir. Sunucu puanları ve raporu hesaplayıp size geri gönderir. Raporu her PDF olarak indirişinizde aynı bilgiler yeniden gönderilir; PDF sunucunun belleğinde hazırlanıp doğrudan size iletilir.
 
 Bu bilgiler:
 
@@ -121,9 +121,9 @@ const terms = `Bu kullanım koşulları, Ölçekhane’yi ("Platform") kullanan 
 
 ## 1. Hizmetin niteliği
 
-Platform, öğrencilerin kişilik, ilgi, öğrenme ve bilişsel beceriler gibi alanlarda bilimsel ölçme araçlarını çevrim içi olarak doldurmasını ve sonuçların öğrenci ve veli için sade bir dille raporlanmasını sağlar.
+Platform, öğrencilerin kişilik, ilgi, öğrenme ve bilişsel beceriler gibi alanlarda bilimsel ölçme araçlarını çevrim içi olarak doldurmasını ve sonuçların sade bir dille raporlanmasını sağlar; bazı testleri yetişkinler de kendileri için çözebilir. Sınıf düzeyi seçildiğinde öğrenciye ve veliye ayrı raporlar, “Yetişkinim” seçildiğinde testi çözen kişiye yazılmış tek bir rapor hazırlanır.
 
-**Platform tanı koymaz.** Raporlar tıbbi, psikiyatrik ya da psikolojik bir teşhis, tedavi veya klinik değerlendirme değildir ve bunların yerine geçmez. Çocuğunuzun ruh sağlığı ya da gelişimiyle ilgili bir endişeniz varsa bir uzmana başvurun.
+**Platform tanı koymaz.** Raporlar tıbbi, psikiyatrik ya da psikolojik bir teşhis, tedavi veya klinik değerlendirme değildir ve bunların yerine geçmez. Kendi ruh sağlığınızla ya da çocuğunuzun ruh sağlığı veya gelişimiyle ilgili bir endişeniz varsa bir uzmana başvurun.
 
 Testlerin Türkiye normları yoktur; sonuçlar bir norm grubuyla karşılaştırılmadan yorumlanır. "Pilot" olarak işaretlenen testler Ölçekhane tarafından geliştirilmiştir; güvenirlik ve geçerlik çalışmaları henüz yapılmamıştır. Her testin durumu test sayfasındaki bilim kartında ve raporunda açıkça belirtilir.
 
@@ -132,6 +132,7 @@ Testlerin Türkiye normları yoktur; sonuçlar bir norm grubuyla karşılaştır
 - Testler hesap açmadan ve ücretsiz çözülür. Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz (ayrıntılar KVKK Aydınlatma Metni’nde).
 - Rapor ekranda gösterilir ve PDF olarak indirilebilir. Raporu saklamak size aittir: sayfa kapatıldıktan sonra rapor yeniden üretilemez ve Platform’dan istenemez.
 - 18 yaşından küçükler testleri velilerinin bilgisiyle çözmelidir. Test bir çocuk için çözülüyorsa bir yetişkinin yanında çözülmesini öneririz.
+- “Yetişkinim” seçeneği, 18 yaşını doldurmuş ve testi kendisi için çözen kişiler içindir.
 
 ## 3. Kullanım kuralları
 
@@ -141,7 +142,7 @@ Testlerin Türkiye normları yoktur; sonuçlar bir norm grubuyla karşılaştır
 
 ## 4. Sorumluluk
 
-Raporlar, öğrencinin kendi cevaplarına ve görevlerdeki performansına dayanır; bu nedenle cevapların içtenliğinden ve uygulama koşullarından etkilenir. Raporlar, eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.
+Raporlar, testi çözen kişinin kendi cevaplarına ve görevlerdeki performansına dayanır; bu nedenle cevapların içtenliğinden ve uygulama koşullarından etkilenir. Raporlar eğitim, iş ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.
 
 ## 5. Ücretli hizmetler
 
@@ -177,7 +178,7 @@ Sitede başka sitelerden yüklenen yazı tipi, komut dosyası, reklam ya da ziya
 export const LEGAL_DOCS: LegalDocDef[] = [
   {
     kind: 'privacy_notice',
-    version: 4,
+    version: 5,
     slug: 'aydinlatma-metni',
     title: 'KVKK Aydınlatma Metni',
     summary: 'Ölçekhane’de hangi kişisel verilerin, hangi amaçla ve ne kadar süre işlendiği. Test cevapları ve raporlar saklanmaz; sunucu Almanya’dadır.',
@@ -185,7 +186,7 @@ export const LEGAL_DOCS: LegalDocDef[] = [
   },
   {
     kind: 'terms',
-    version: 4,
+    version: 5,
     slug: 'kullanim-kosullari',
     title: 'Kullanım Koşulları',
     summary: 'Ölçekhane’nin kullanım koşulları: testlerin niteliği, raporlar ve kullanım kuralları.',

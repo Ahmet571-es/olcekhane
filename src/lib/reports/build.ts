@@ -20,7 +20,15 @@ import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
 import type { CancellationResult, FlankerResult, SpanResult, SymbolResult } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
-export type Audience = 'student' | 'parent';
+/**
+ * Raporun kime yazıldığı. Okul çağındaki biri için iki rapor hazırlanır: öğrenciye (ikinci tekil şahısla) ve veliye
+ * (çocuğunu anlatarak). Testi kendisi için çözen yetişkine tek, kişisel rapor hazırlanır (ikinci tekil şahısla).
+ */
+export type Audience = 'student' | 'parent' | 'adult';
+
+/** Metnin dili: öğrenci ve yetişkin raporları ikinci tekil şahısla ("sen"), veli raporu üçüncü şahısla yazılır. */
+type Voice = 'student' | 'parent';
+const voice = (a: Audience): Voice => (a === 'parent' ? 'parent' : 'student');
 
 /** Puanlamadan gelen ölçek puanının rapora gereken kısmı. */
 export interface ReportScore {
@@ -209,9 +217,11 @@ const SKILL_LABELS: Record<string, string> = {
 
 function pickText(bt: BandText | undefined, audience: Audience) {
   if (!bt) return { text: '', tips: [] as string[], summary: '' };
-  return audience === 'student'
-    ? { text: bt.student, tips: bt.tipsStudent, summary: bt.summary }
-    : { text: bt.parent, tips: bt.tipsParent, summary: bt.summary };
+  if (audience === 'parent') return { text: bt.parent, tips: bt.tipsParent, summary: bt.summary };
+  // Yetişkine, öğrenci metni okula ya da ergenliğe özgüyse yazılmış yetişkin metni. Öneriler (kapsamlı rapor)
+  // öğrencilere göre yazıldığı için yetişkine gösterilmez.
+  if (audience === 'adult') return { text: bt.adult ?? bt.student, tips: [] as string[], summary: bt.summary };
+  return { text: bt.student, tips: bt.tipsStudent, summary: bt.summary };
 }
 
 export function buildReport(input: {
@@ -302,10 +312,10 @@ export function buildReport(input: {
       const ref = rDef.referenceRates.find((r) => r.grade === input.grade);
       const secs = Math.round(rr.readingMs / 1000);
       const speedNote = rr.flags?.tooFast
-        ? audience === 'student'
+        ? audience !== 'parent'
           ? 'Metni çok hızlı geçmişsin; hızın gerçek okuma hızını yansıtmıyor olabilir. Bir dahaki sefere metni anlayarak okumaya odaklan.'
           : 'Metin çok hızlı geçilmiş görünüyor; bu nedenle ölçülen hız gerçek okuma hızını yansıtmıyor olabilir.'
-        : audience === 'student'
+        : audience !== 'parent'
           ? `Metni ${nf0.format(secs)} saniyede okudun. Hızını, anladığın kadarıyla birlikte düşünmek önemli: anlamadan hızlı okumak işe yaramaz.`
           : `Metin ${nf0.format(secs)} saniyede okundu. Hız, anlama düzeyiyle birlikte değerlendirilmelidir; anlamadan hızlı okumak bir avantaj değildir.`;
       reading = {
@@ -375,7 +385,11 @@ export function buildReport(input: {
     highlights,
     strengths,
     growth,
-    overview: template?.overview ? (audience === 'student' ? template.overview.student : template.overview.parent) : undefined,
+    overview: template?.overview
+      ? audience === 'parent'
+        ? template.overview.parent
+        : ((audience === 'adult' ? template.overview.adult : undefined) ?? template.overview.student)
+      : undefined,
     support,
     science: {
       basedOn: science.basedOn,
@@ -437,7 +451,7 @@ const ACADEMIC_TEXT: Record<'high' | 'average' | 'low', { student: string; paren
 };
 
 /** Derse özgü çalışma önerileri (şimdilik matematik). */
-const ACADEMIC_TIPS: Record<string, Record<Audience, string[]>> = {
+const ACADEMIC_TIPS: Record<string, Record<Voice, string[]>> = {
   Matematik: {
     student: [
       'Yanlış yaptığın her soruyu açıklamasını okuduktan sonra birkaç gün içinde kâğıda bakmadan yeniden çöz.',
@@ -454,7 +468,7 @@ const ACADEMIC_TIPS: Record<string, Record<Audience, string[]>> = {
   },
 };
 
-const GENERIC_ACADEMIC_TIPS: Record<Audience, string[]> = {
+const GENERIC_ACADEMIC_TIPS: Record<Voice, string[]> = {
   student: [
     'Yanlış yaptığın her soruyu açıklamasını okuduktan sonra birkaç gün içinde yeniden çöz.',
     'Kısa ama sık çalış: her gün 15–20 dakika, haftada bir uzun oturumdan daha etkilidir.',
@@ -485,7 +499,7 @@ function buildAcademic(
     .filter((m) => def.misconceptions[m.key])
     .map((m) => ({ key: m.key, ...def.misconceptions[m.key], count: m.count, itemNumbers: m.itemNumbers }));
   const repeated = misconceptions.some((m) => m.count > 1);
-  const you = audience === 'student';
+  const you = audience !== 'parent';
   const misconceptionNote =
     misconceptions.length === 0
       ? you
@@ -508,7 +522,7 @@ function buildAcademic(
     dontKnow: result.dontKnow,
     band,
     bandLabel: label(band),
-    text: ACADEMIC_TEXT[band][audience]
+    text: ACADEMIC_TEXT[band][voice(audience)]
       .replaceAll('{g}', String(form.contentGrade))
       .replaceAll('{s}', def.subject.toLocaleLowerCase('tr-TR')),
     domains: form.domains.map((d) => {
@@ -536,14 +550,14 @@ function buildAcademic(
         explain: it.explain,
       };
     }),
-    tips: (ACADEMIC_TIPS[def.subject] ?? GENERIC_ACADEMIC_TIPS)[audience],
+    tips: (ACADEMIC_TIPS[def.subject] ?? GENERIC_ACADEMIC_TIPS)[voice(audience)],
   };
 }
 
 const pct = (x: number) => `%${nf0.format(Math.round(x * 100))}`;
 
 function spanText(r: SpanResult, audience: Audience, what: { student: string; parent: string; unit: string; everyday: string }): string {
-  const you = audience === 'student';
+  const you = audience !== 'parent';
   if (r.belowFloor) {
     return you
       ? `En kısa ${what.unit} dizilerinde bile zorlandın. Bu, o an dikkatinin dağılmasından ya da görevi ilk kez yapıyor olmaktan kaynaklanabilir. ${what.everyday}`
@@ -561,7 +575,7 @@ function spanText(r: SpanResult, audience: Audience, what: { student: string; pa
 /** Bölümler arasındaki değişim bu yüzdeyi aşınca "arttı" ya da "düştü" denir; daha küçük farklar ölçüm hatası içindedir. */
 const SUSTAIN_THRESHOLD = 15;
 
-const SUSTAINED_TIPS: Record<Audience, string[]> = {
+const SUSTAINED_TIPS: Record<Voice, string[]> = {
   student: [
     'Uzun bir işi kısa parçalara böl (ör. 15–20 dakika); aralarda birkaç dakika kalkıp hareket et.',
     'Ders çalışırken telefonunu başka bir odaya koy; bildirimler dikkatini böler.',
@@ -585,7 +599,7 @@ function cancellationBlocks(
   audience: Audience,
   scale: (k: string) => { name: string; plain: string },
 ): CognitiveBlock[] {
-  const you = audience === 'student';
+  const you = audience !== 'parent';
   const n = nf0.format;
   const card = (key: string) => ({ key, name: scale(key).name, plain: scale(key).plain });
 
@@ -684,7 +698,7 @@ function cancellationBlocks(
 }
 
 function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
-  const you = audience === 'student';
+  const you = audience !== 'parent';
   const blocks: CognitiveBlock[] = [];
   const scale = (k: string) => def.scales.find((s) => s.key === k)!;
 
@@ -777,7 +791,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const ct = def.tasks.find((t): t is CancellationTask => t.kind === 'cancellation');
   if (cz && ct) blocks.push(...cancellationBlocks(cz, ct, audience, scale));
 
-  if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[audience] };
+  if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
 
   const tips = you
     ? [
@@ -816,7 +830,7 @@ function buildInterestProfile(sections: ReportSection[], audience: Audience, gra
   let closeCall: string | null = null;
   if (ranked.length >= 4 && Math.abs(ranked[2].mean! - ranked[3].mean!) < 0.15) {
     closeCall =
-      audience === 'student'
+      audience !== 'parent'
         ? `${ranked[2].name} ve ${ranked[3].name} alanlarındaki puanların neredeyse aynı; üçüncü alanını bu ikisinden biri olarak düşünebilirsin.`
         : `${ranked[2].name} ve ${ranked[3].name} alanlarındaki puanlar neredeyse aynıdır; üçüncü alan bu ikisinden biri olarak düşünülebilir.`;
   }
@@ -830,7 +844,7 @@ function buildInterestProfile(sections: ReportSection[], audience: Audience, gra
         key: k,
         name: t.name,
         plain: t.plain,
-        text: audience === 'student' ? t.student : t.parent,
+        text: audience === 'parent' ? t.parent : t.student,
         likes: t.likes,
         explore: t.explore,
         paths: t.paths,

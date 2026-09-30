@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ADULT_GRADE } from '@/lib/config';
 
 /** Harf işaretleme bölümü: bölüm sonunda işaretli harflerin sırası ve işaretlenme zamanları. */
 const cancellationResponse = z.object({
@@ -29,7 +30,8 @@ const fewKeys = (max: number) => (o: Record<string, unknown>) => Object.keys(o).
  * hazırlamak için kullanılır. Ad, e-posta gibi kimlik bilgisi istenmez: cevaplar kimseye bağlanamaz.
  */
 export const answersBody = z.object({
-  grade: z.number().int().min(1).max(13),
+  /** Sınıf düzeyi (1–12, 13: mezun) ya da testi kendisi için çözen yetişkin (ADULT_GRADE). */
+  grade: z.number().int().min(1).max(ADULT_GRADE),
   data: z.discriminatedUnion('engine', [
     z.object({
       engine: z.literal('likert'),
@@ -54,7 +56,7 @@ export const answersBody = z.object({
   ]),
 });
 
-/** PDF isteği: aynı cevaplar ve raporun kimin için olduğu (öğrenci ya da veli). */
-export const pdfBody = answersBody.extend({ audience: z.enum(['student', 'parent']) });
+/** PDF isteği: aynı cevaplar ve raporun kimin için olduğu (öğrenci, veli ya da yetişkin). */
+export const pdfBody = answersBody.extend({ audience: z.enum(['student', 'parent', 'adult']) });
 
 export type AnswersBody = z.infer<typeof answersBody>;

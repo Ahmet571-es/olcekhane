@@ -1,4 +1,5 @@
 import { ScaleRuler } from '@/components/report/scale-ruler';
+import { AUDIENCE_LABELS } from '@/lib/config';
 import type { RulerRow, SimpleChart, SimpleGroup, SimpleReport } from '@/lib/reports/simple';
 
 /**
@@ -171,12 +172,13 @@ function Chart({ chart }: { chart: SimpleChart }) {
 }
 
 export function SimpleReportView({ report }: { report: SimpleReport }) {
-  const forStudent = report.audience === 'student';
+  // Öğrenci ve yetişkin raporları ikinci tekil şahısla yazılır.
+  const you = report.audience !== 'parent';
   return (
     <article className="flex flex-col gap-9">
       <header className="flex flex-col gap-3 border-b border-rule pb-7">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="chip">{forStudent ? 'Öğrenci raporu' : 'Veli raporu'}</span>
+          <span className="chip">{AUDIENCE_LABELS[report.audience].name}</span>
           {report.isPilot && <span className="chip chip-brass">Pilot test</span>}
         </div>
         <h1 className="t-h1">{report.instrumentName}</h1>
@@ -187,7 +189,7 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
 
       {report.cautions.length > 0 && (
         <div className="notice notice-warn flex flex-col gap-2">
-          <p className="font-bold">{forStudent ? 'Sonucunu okurken dikkat' : 'Bu sonucu dikkatle yorumlayın'}</p>
+          <p className="font-bold">{you ? 'Sonucunu okurken dikkat' : 'Bu sonucu dikkatle yorumlayın'}</p>
           <ul className="flex list-disc flex-col gap-1 pl-5">
             {report.cautions.map((c) => (
               <li key={c}>{c}</li>

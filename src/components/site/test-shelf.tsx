@@ -2,9 +2,7 @@ import Link from 'next/link';
 import { UPCOMING } from '@/content/roadmap';
 import { publicInstruments } from '@/content/instruments';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
-import { domainColor } from '@/lib/domain-style';
-
-const DOMAIN_ORDER = ['personality', 'career', 'academic', 'cognitive', 'wellbeing', 'skills'] as const;
+import { DOMAIN_ORDER, domainColor } from '@/lib/domain-style';
 export const DOMAIN_ANCHORS: Record<string, string> = {
   personality: 'kisilik',
   career: 'ilgi-ve-meslek',
@@ -37,10 +35,10 @@ export function TestShelf({ showUpcoming = true, headingLevel = 3 }: { showUpcom
               <table className="w-full min-w-[46rem] table-fixed border-collapse text-left">
                 <thead>
                   <tr className="border-b border-rule-strong text-[0.8125rem] text-ink-3">
-                    <th scope="col" className="w-[22%] px-5 py-3 font-bold">Test</th>
-                    <th scope="col" className="w-[28%] px-5 py-3 font-bold">Ne ölçer?</th>
-                    <th scope="col" className="w-[26%] px-5 py-3 font-bold">Dayandığı kaynak</th>
-                    <th scope="col" className="w-[11%] px-5 py-3 font-bold">Sınıf</th>
+                    <th scope="col" className="w-[21%] px-5 py-3 font-bold">Test</th>
+                    <th scope="col" className="w-[27%] px-5 py-3 font-bold">Ne ölçer?</th>
+                    <th scope="col" className="w-[25%] px-5 py-3 font-bold">Dayandığı kaynak</th>
+                    <th scope="col" className="w-[14%] px-5 py-3 font-bold">Kimler için</th>
                     <th scope="col" className="w-[13%] px-5 py-3 font-bold">Durum</th>
                   </tr>
                 </thead>
@@ -55,7 +53,7 @@ export function TestShelf({ showUpcoming = true, headingLevel = 3 }: { showUpcom
                       </th>
                       <td className="t-small px-5 py-4 text-ink-2">{t.tagline}</td>
                       <td className="t-small px-5 py-4 text-ink-2">{t.science.basedOn}</td>
-                      <td className="t-small px-5 py-4">{gradeRangeLabel(t.minGrade, t.maxGrade)}</td>
+                      <td className="t-small px-5 py-4">{gradeRangeLabel(t.minGrade, t.maxGrade, t.adults)}</td>
                       <td className="px-5 py-4">
                         {t.status === 'pilot' ? (
                           <span className="chip chip-brass">Pilot</span>

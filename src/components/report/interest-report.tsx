@@ -77,7 +77,7 @@ export function InterestHexagon({ profile, forStudent }: { profile: InterestProf
 
 export function InterestReport({ report }: { report: ReportContent }) {
   const p = report.interests!;
-  const forStudent = report.audience === 'student';
+  const forStudent = report.audience !== 'parent';
   const sorted = [...report.sections].sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
   return (

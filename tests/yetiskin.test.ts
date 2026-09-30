@@ -1,0 +1,147 @@
+import { describe, expect, it } from 'vitest';
+import { INSTRUMENTS } from '@/content/instruments';
+import { REPORT_TEMPLATES } from '@/content/reports';
+import { AssessmentError, evaluate, evaluateAdult, evaluateReports } from '@/lib/assessment/evaluate';
+import { ADULT_GRADE, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
+import type { LikertInstrument } from '@/lib/instruments/types';
+import type { SimpleReport } from '@/lib/reports/simple';
+import { def, likertBody } from './helpers/bodies';
+
+const KISILIK = 'ayrintili-kisilik-profili';
+const ILGI = 'meslek-ilgi-alanlari';
+
+/**
+ * Yetişkine yazılan metinlerde yeri olmayan, okula ya da ergenliğe özgü sözcükler (sözcük başı). Meslek adı olarak
+ * "öğretmenlik" (ilgi alanlarıyla ilişkili meslekler arasında) yetişkin için de doğrudur; spor ya da kitap kulübü de
+ * yetişkinlere uygun olduğu için "kulüp" aranmaz.
+ */
+const SCHOOL = [
+  'okul', 'öğretmen', 'sınav', 'sınıf', 'ders', 'ödev', 'öğrenci', 'lise', 'ergen', 'veli', 'ailen', 'münazara', 'olimpiyat', 'tübitak',
+  'izcilik', 'harçlık', 'yaşıt', 'yaşında', 'yetişkinle', 'yetişkine', 'yetişkinden',
+];
+const ALLOWED = ['öğretmenlik'];
+function schoolWords(text: string): string[] {
+  const words = text.toLocaleLowerCase('tr-TR').match(/\p{L}+/gu) ?? [];
+  return words.filter((w) => !ALLOWED.includes(w) && SCHOOL.some((p) => w.startsWith(p)));
+}
+
+/** Raporda kişiye gösterilen bütün metinler. */
+function reportText(r: SimpleReport): string {
+  return JSON.stringify(r);
+}
+
+/** Her maddeye aynı cevabı veren gövde (yetişkin olarak). */
+function adultBody(slug: string, pick: (i: number) => number) {
+  return { ...likertBody(slug, 10, pick), grade: ADULT_GRADE };
+}
+
+describe('yetişkinler', () => {
+  it('sınıf seçenekleri ve etiketler', () => {
+    expect(GRADE_LABELS[ADULT_GRADE]).toBe('Yetişkin');
+    expect(gradeRangeLabel(9, 13, true)).toBe('9. sınıftan yetişkinlere');
+    expect(gradeRangeLabel(9, 13)).toBe('9. sınıf ve üzeri');
+    expect(gradeRangeLabel(5, 8)).toBe('5.–8. sınıf');
+    const t = { minGrade: 9, maxGrade: 13 };
+    expect(gradeAllowed(t, 9)).toBe(true);
+    expect(gradeAllowed(t, 8)).toBe(false);
+    expect(gradeAllowed(t, ADULT_GRADE)).toBe(false);
+    expect(gradeAllowed({ ...t, adults: true }, ADULT_GRADE)).toBe(true);
+    expect(gradeAllowed(t, 9.5)).toBe(false);
+    // Çözme sayfasının adresindeki seçim: yalnızca 1–13 ya da "yetiskin".
+    expect(parseGradeParam('yetiskin')).toBe(ADULT_GRADE);
+    expect(parseGradeParam('9')).toBe(9);
+    expect(parseGradeParam('13')).toBe(13);
+    for (const bad of ['14', '0', '9.0', ' 9', '1e1', '0x9', '', 'Yetiskin', undefined]) expect(parseGradeParam(bad), String(bad)).toBeNull();
+  });
+
+  it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ILGI].sort());
+    for (const d of INSTRUMENTS.filter((x) => x.adults)) {
+      // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
+      expect(d.maxGrade, d.slug).toBe(13);
+      expect(d.science.ageNote, d.slug).toContain('yetişkinler de çözebilir');
+      // Sınıfa göre form ya da metin seçen testlerde (konu tarama, okuma) ve Holland profilinde (lise ve üniversite
+      // yolları) yetişkin kipi henüz yok: bu testler açılmadan önce yetişkin için ayrı hazırlık gerekir.
+      expect(d.engine, d.slug).toBe('likert');
+      if (d.engine === 'likert') expect(d.profile, d.slug).not.toBe('riasec');
+    }
+  });
+
+  it('yetişkine giden rapor metinlerinde okula ya da ergenliğe özgü sözcük yok', () => {
+    for (const d of INSTRUMENTS.filter((x) => x.adults)) {
+      const t = REPORT_TEMPLATES[d.slug];
+      for (const [scale, bands] of Object.entries(t.scales)) {
+        for (const [band, bt] of Object.entries(bands)) {
+          if (!bt) continue;
+          const text = bt.adult ?? bt.student;
+          expect(schoolWords(text), `${d.slug} ${scale}/${band}`).toEqual([]);
+          expect(text, `${d.slug} ${scale}/${band}`).not.toContain('Çocuğunuz');
+          // Yetişkin metni, öğrenci metninin yerine geçer; aynı olması gereksizdir.
+          if (bt.adult) expect(bt.adult, `${d.slug} ${scale}/${band}`).not.toBe(bt.student);
+        }
+      }
+      if (t.overview) expect(schoolWords(t.overview.adult ?? t.overview.student), d.slug).toEqual([]);
+    }
+  });
+
+  it('kişilik profili: yetişkine tek, kişisel rapor', () => {
+    const r = evaluateAdult(KISILIK, adultBody(KISILIK, (i) => i % 5));
+    expect(Object.keys(r)).toEqual(['adult']);
+    expect(r.adult.audience).toBe('adult');
+    expect(r.adult.gradeLabel).toBe('Yetişkin');
+    expect(r.adult.groups?.map((g) => g.facets.length)).toEqual([6, 6, 6, 6, 5]);
+    expect(reportText(r.adult)).not.toContain('Çocuğunuz');
+    expect(schoolWords(reportText(r.adult))).toEqual([]);
+    expect(r.adult.disclaimer.text).toContain('iş ve kariyer');
+  });
+
+  it('kişilik profili: okula özgü cümleler yetişkin raporunda yetişkine göre yazılı; destek kutusu yetişkine göre', () => {
+    const d = def<LikertInstrument>(KISILIK);
+    const domainOf = (facet: string) => d.scales.find((s) => s.of?.includes(facet))?.key;
+    // Sorumluluk yüksek, duygusal denge düşük.
+    const answers = Object.fromEntries(
+      d.items.map((it) => {
+        const high = domainOf(it.scale) !== 'emotional_stability';
+        return [it.key, { value: high !== !!it.reverse ? 5 : 1, rtMs: 2600 }];
+      }),
+    );
+    const body = { grade: ADULT_GRADE, data: { engine: 'likert' as const, answers } };
+    const adult = evaluateAdult(KISILIK, body).adult;
+    const student = evaluate(KISILIK, { ...body, grade: 12 }).student;
+    const text = (r: SimpleReport, title: string) => r.groups!.find((g) => g.title === title)!.text;
+    expect(text(student, 'Sorumluluk')).toContain('okulda');
+    expect(text(adult, 'Sorumluluk')).toContain('işinde, eğitiminde');
+    expect(text(student, 'Duygusal Denge')).toContain('güvendiğin bir yetişkinle');
+    expect(text(adult, 'Duygusal Denge')).toContain('ruh sağlığı uzmanıyla');
+    expect(adult.support?.title).toBe('Destek almak istersen');
+    expect(adult.support?.lines.join(' ')).toContain('Aile hekimine');
+    expect(adult.support?.lines.join(' ')).toContain('112');
+    expect(schoolWords(reportText(adult))).toEqual([]);
+  });
+
+  it('meslek ilgi alanları: yetişkin raporunda okul etkinlikleri yerine yetişkinlere uygun örnekler', () => {
+    for (const pick of [() => 4, () => 0, (i: number) => i % 5, (i: number) => (i * 3) % 5]) {
+      const r = evaluateAdult(ILGI, adultBody(ILGI, pick)).adult;
+      expect(r.audience).toBe('adult');
+      expect(reportText(r)).not.toContain('Çocuğunuz');
+      expect(schoolWords(reportText(r)), reportText(r)).toEqual([]);
+    }
+    // Bütün alanlar düşük: yetişkin notu "henüz denememiş olabilirsin" demez.
+    const low = evaluateAdult(ILGI, adultBody(ILGI, () => 0)).adult;
+    expect(low.cautions.join(' ')).toContain('başka bir gün yeniden çözmek');
+    expect(low.cautions.join(' ')).not.toContain('Henüz pek çok şeyi');
+  });
+
+  it('seçime göre raporlar: sınıf seçildiyse öğrenci ve veli, "Yetişkinim" seçildiyse kişisel rapor', () => {
+    expect(Object.keys(evaluateReports(ILGI, adultBody(ILGI, (i) => i % 5)))).toEqual(['adult']);
+    expect(Object.keys(evaluateReports(ILGI, likertBody(ILGI, 11, (i) => i % 5))).sort()).toEqual(['parent', 'student']);
+  });
+
+  it('yetişkinlere açık olmayan testte yetişkin seçimi reddedilir; kişisel rapor yalnızca yetişkine', () => {
+    const oz = { ...likertBody('oz-saygi', 8, () => 1), grade: ADULT_GRADE };
+    expect(() => evaluateAdult('oz-saygi', oz)).toThrow('yetişkinler için uygun değil');
+    expect(() => evaluateReports('oz-saygi', oz)).toThrow(AssessmentError);
+    expect(() => evaluate(KISILIK, adultBody(KISILIK, () => 2))).toThrow(AssessmentError);
+    expect(() => evaluateAdult(KISILIK, likertBody(KISILIK, 10, () => 2))).toThrow('yalnızca yetişkinler');
+  });
+});

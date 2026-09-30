@@ -93,6 +93,12 @@ interface InstrumentBase {
   isFree: boolean;
   minGrade: number;
   maxGrade: number;
+  /**
+   * Yetişkinler de (18 yaş ve üzeri) kendileri için çözebilir: çözme sayfasında "Yetişkinim" seçeneği çıkar ve
+   * yetişkine öğrenci ve veli raporu yerine tek, kişisel rapor hazırlanır (rapor şablonundaki `adult` metinleri,
+   * yoksa öğrenci metinleri). Yalnızca maddeleri ve rapor metinleri yetişkinlere de uyan testlerde açılır.
+   */
+  adults?: boolean;
   estimatedMinutes: number;
   /** Katalogda tek satırlık açıklama. */
   tagline: string;

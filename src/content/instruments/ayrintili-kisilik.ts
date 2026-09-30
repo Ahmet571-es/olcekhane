@@ -209,11 +209,12 @@ export const ayrintiliKisilik: LikertInstrument = {
   isFree: true,
   minGrade: 9,
   maxGrade: 13,
+  adults: true,
   estimatedMinutes: 15,
   sortOrder: 11,
   tagline: 'Kişiliğin beş temel boyutunu ve bu boyutların altındaki 29 alt özelliği ayrı ayrı gösterir.',
   description:
-    'Kamu malı bir kişilik envanteri olan IPIP-NEO-120’ye dayanan bu profil, kişiliğin beş temel boyutunun her birini beş ya da altı alt özelliğe ayırır. Böylece örneğin sorumluluk boyutunda düzenli, çalışkan ya da temkinli olmanın ayrı ayrı nerede durduğu görülür. Her boyut ve alt özellik öğrenciye ve veliye sade bir dille anlatılır.',
+    'Kamu malı bir kişilik envanteri olan IPIP-NEO-120’ye dayanan bu profil, kişiliğin beş temel boyutunun her birini beş ya da altı alt özelliğe ayırır. Böylece örneğin sorumluluk boyutunda düzenli, çalışkan ya da temkinli olmanın ayrı ayrı nerede durduğu görülür. Her boyut ve alt özellik sade bir dille anlatılır: öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır.',
   intro: {
     title: 'Kendini nasıl tanımlıyorsun?',
     paragraphs: [
@@ -328,13 +329,13 @@ export const ayrintiliKisilik: LikertInstrument = {
     normNote:
       'Türkiye normu yok. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç kişinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
     ageNote:
-      '9. sınıftan itibaren uygulanır; mezunlar da çözebilir. Kaynak çalışmalar ağırlıkla genç yetişkinlerle yapılmıştır (yaş ortalaması 25 civarında). Kişilik ergenlikte gelişmeye devam ettiği için lise öğrencilerinde sonuçlar kendini tanımaya yönelik bir başlangıç olarak sunulur.',
+      '9. sınıftan itibaren uygulanır; mezunlar ve yetişkinler de çözebilir. Kaynak çalışmalar ağırlıkla genç yetişkinlerle yapılmıştır (yaş ortalaması 25 civarında). Kişilik ergenlikte gelişmeye devam ettiği için lise öğrencilerinde sonuçlar kendini tanımaya yönelik bir başlangıç olarak sunulur.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',
     licenseUrl: 'https://ipip.ori.org/',
     limitations: [
       'Öz bildirime dayanır; sonuç kişinin kendini nasıl gördüğünü yansıtır.',
       'Alt özellikler dörder cümleyle ölçüldüğü için boyut puanlarından daha az kesindir; tek bir alt özelliğe bakarak sonuç çıkarılmamalıdır.',
-      'Kişilik ergenlikte gelişmeye devam eder; sonuç kalıcı bir etiket değildir.',
+      'Kişilik yaşam boyu değişmeye devam eder; en belirgin değişimler genç yetişkinlikte (yaklaşık 20–40 yaş) görülür. Sonuç kalıcı bir etiket değildir.',
       'Tanı koymaz; ruh sağlığı ya da kişilik bozukluğu değerlendirmesi değildir. Duygusal denge alt özellikleri bir tarama aracı değildir.',
       'Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı; kaynak çalışmadaki değerler bu çeviri için doğrudan geçerli sayılmamalıdır.',
     ],
@@ -353,6 +354,10 @@ export const ayrintiliKisilik: LikertInstrument = {
       {
         text: 'Goldberg, L. R. ve ark. (2006). The International Personality Item Pool and the future of public-domain personality measures. Journal of Research in Personality, 40(1), 84–96.',
         url: 'https://doi.org/10.1016/j.jrp.2005.08.007',
+      },
+      {
+        text: 'Roberts, B. W., Walton, K. E. ve Viechtbauer, W. (2006). Patterns of mean-level change in personality traits across the life course: A meta-analysis of longitudinal studies. Psychological Bulletin, 132(1), 1–25 (kişiliğin yaşam boyu değişimi).',
+        url: 'https://doi.org/10.1037/0033-2909.132.1.1',
       },
     ],
   },

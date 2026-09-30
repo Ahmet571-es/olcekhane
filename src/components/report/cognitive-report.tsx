@@ -80,7 +80,7 @@ function SectionBars({ sections, label }: { sections: NonNullable<CognitiveBlock
 
 export function CognitiveReportView({ report }: { report: ReportContent }) {
   const c = report.cognitive!;
-  const forStudent = report.audience === 'student';
+  const forStudent = report.audience !== 'parent';
   return (
     <div className="flex flex-col gap-10">
       <p className="notice notice-info">

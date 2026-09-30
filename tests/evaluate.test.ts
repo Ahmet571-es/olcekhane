@@ -104,7 +104,11 @@ describe('test raporları', () => {
     expect(answersBody.safeParse(ok).success).toBe(true);
     expect(answersBody.parse({ ...ok, name: 'Deniz' })).not.toHaveProperty('name');
     expect(pdfBody.safeParse({ ...ok, audience: 'teacher' }).success).toBe(false);
-    expect(answersBody.safeParse({ ...ok, grade: 14 }).success).toBe(false);
+    expect(pdfBody.safeParse({ ...ok, audience: 'adult' }).success).toBe(true);
+    // 14: testi kendisi için çözen yetişkin; daha büyük değer yok.
+    expect(answersBody.safeParse({ ...ok, grade: 14 }).success).toBe(true);
+    expect(answersBody.safeParse({ ...ok, grade: 15 }).success).toBe(false);
+    expect(answersBody.safeParse({ ...ok, grade: 0 }).success).toBe(false);
     const many = { grade: 8, data: { engine: 'likert', answers: Object.fromEntries(Array.from({ length: 301 }, (_, i) => [`m${i}`, { value: 1, rtMs: 1 }])) } };
     expect(answersBody.safeParse(many).success).toBe(false);
   });

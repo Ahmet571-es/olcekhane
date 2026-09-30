@@ -6,6 +6,7 @@ import { QuizRunner, type QuizClientItem } from '@/components/runner/quiz-runner
 import { ReadingRunner } from '@/components/runner/reading-runner';
 import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
+import { AUDIENCE_LABELS } from '@/lib/config';
 import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { SimpleReportView } from './simple-report-view';
@@ -23,9 +24,18 @@ export type TestPayload =
     }
   | { engine: 'tasks'; intro: Intro; tasks: CognitiveTask[] };
 
-type Reports = { student: SimpleReport; parent: SimpleReport };
+type Audience = 'student' | 'parent' | 'adult';
+/** Okul çağındaki biri için öğrenci ve veli raporu, yetişkin için yalnızca kişisel rapor gelir. */
+type Reports = Partial<Record<Audience, SimpleReport>>;
 type Body = { grade: number; data: Record<string, unknown> };
-type Audience = 'student' | 'parent';
+
+const AUDIENCES: Audience[] = ['student', 'parent', 'adult'];
+/** İndirme düğmesi ve bilgilendirme cümlesi ("Saklamak için … PDF olarak indir"). */
+const DOWNLOAD: Record<Audience, { button: string; object: string }> = {
+  student: { button: 'Öğrenci raporunu PDF olarak indir', object: 'öğrenci raporunu' },
+  parent: { button: 'Veli raporunu PDF olarak indir', object: 'veli raporunu' },
+  adult: { button: 'Raporunu PDF olarak indir', object: 'raporunu' },
+};
 
 /** Rastgele UUID (v4). Harf işaretleme sayfalarının tohumu; kimseye bağlı değildir. */
 function uuid4(): string {
@@ -101,12 +111,15 @@ export function TestSession({ slug, grade, gradeLabel, payload }: { slug: string
 }
 
 function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLabel: string; reports: Reports; body: Body }) {
-  const [audience, setAudience] = useState<Audience>('student');
+  const available = AUDIENCES.filter((a) => reports[a]);
+  const [chosen, setAudience] = useState<Audience>(available[0] ?? 'student');
+  const audience = reports[chosen] ? chosen : (available[0] ?? chosen);
+  const report = reports[audience];
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<Set<Audience>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   // Rapor saklanmadığı için PDF indirilmeden sayfadan ayrılmak raporu kaybettirir.
-  useLeaveWarning(saved.size === 0);
+  useLeaveWarning(!!report && saved.size === 0);
 
   async function download() {
     setBusy(true);
@@ -118,7 +131,7 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `olcekhane-${slug}-${audience === 'student' ? 'ogrenci' : 'veli'}-raporu.pdf`;
+      a.download = `olcekhane-${slug}-${AUDIENCE_LABELS[audience].file}-raporu.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -131,13 +144,15 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
     }
   }
 
-  const report = reports[audience];
-  const label = audience === 'student' ? 'öğrenci raporunu' : 'veli raporunu';
+  if (!report) {
+    return <p className="notice notice-danger mx-auto w-full max-w-3xl">Rapor gösterilemedi. Lütfen sayfayı yenileyip testi yeniden çözmeyi dene.</p>;
+  }
+  const other = available.find((a) => a !== audience);
   const downloadBox = (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className="btn btn-primary btn-lg" onClick={download} disabled={busy}>
-          {busy ? 'PDF hazırlanıyor…' : `${audience === 'student' ? 'Öğrenci' : 'Veli'} raporunu PDF olarak indir`}
+          {busy ? 'PDF hazırlanıyor…' : DOWNLOAD[audience].button}
         </button>
         {saved.has(audience) && <span className="chip chip-ok">İndirildi</span>}
       </div>
@@ -151,28 +166,34 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
       <div className="notice notice-ok flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <p className="font-bold">Raporun hazır. Bu rapor hiçbir yerde saklanmıyor.</p>
-          <p>Sayfayı kapatınca rapor kaybolur. Saklamak için {label} PDF olarak indir; istersen veli raporunu da indirebilirsin.</p>
+          <p>
+            Sayfayı kapatınca rapor kaybolur. Saklamak için {DOWNLOAD[audience].object} PDF olarak indir
+            {other ? `; istersen ${DOWNLOAD[other].object} da indirebilirsin.` : '.'}
+          </p>
         </div>
         {downloadBox}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg border border-rule-strong bg-surface p-1" role="tablist" aria-label="Rapor türü">
-          {(['student', 'parent'] as const).map((a) => (
-            <button
-              key={a}
-              type="button"
-              role="tab"
-              aria-selected={audience === a}
-              onClick={() => setAudience(a)}
-              className={`rounded-md px-4 py-2 text-[0.95rem] font-bold ${audience === a ? 'bg-ink text-paper' : 'text-ink-2 hover:bg-surface-2'}`}
-            >
-              {a === 'student' ? 'Öğrenci raporu' : 'Veli raporu'}
-            </button>
-          ))}
+      {/* Tek rapor (yetişkin) varsa sekme gerekmez; raporun başlığı türünü ve tarihini zaten gösterir. */}
+      {available.length > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex rounded-lg border border-rule-strong bg-surface p-1" role="tablist" aria-label="Rapor türü">
+            {available.map((a) => (
+              <button
+                key={a}
+                type="button"
+                role="tab"
+                aria-selected={audience === a}
+                onClick={() => setAudience(a)}
+                className={`rounded-md px-4 py-2 text-[0.95rem] font-bold ${audience === a ? 'bg-ink text-paper' : 'text-ink-2 hover:bg-surface-2'}`}
+              >
+                {AUDIENCE_LABELS[a].name}
+              </button>
+            ))}
+          </div>
+          <p className="t-meta">{gradeLabel}</p>
         </div>
-        <p className="t-meta">{gradeLabel}</p>
-      </div>
+      )}
 
       <SimpleReportView report={report} />
 
@@ -183,18 +204,21 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
         {downloadBox}
       </section>
 
-      <section aria-labelledby="kapsamli" className="flex flex-col gap-2 rounded-xl border border-dashed border-rule-strong p-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 id="kapsamli" className="t-h3">
-            Kapsamlı rapor
-          </h2>
-          <span className="chip chip-brass">Çok yakında</span>
-        </div>
-        <p className="text-ink-2">
-          Ayrıntılı açıklamalar, günlük hayat için öneriler, veliye özel rehber ve görsellerle zenginleştirilmiş PDF. Hazır olduğunda testi
-          çözdükten sonra bu ekrandan alınabilecek.
-        </p>
-      </section>
+      {/* Kapsamlı rapor öğrenci ve veli için hazırlanıyor; yetişkinlere yönelik bir sürümü henüz planlanmadı. */}
+      {!reports.adult && (
+        <section aria-labelledby="kapsamli" className="flex flex-col gap-2 rounded-xl border border-dashed border-rule-strong p-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 id="kapsamli" className="t-h3">
+              Kapsamlı rapor
+            </h2>
+            <span className="chip chip-brass">Çok yakında</span>
+          </div>
+          <p className="text-ink-2">
+            Ayrıntılı açıklamalar, günlük hayat için öneriler, veliye özel rehber ve görsellerle zenginleştirilmiş PDF. Hazır olduğunda testi
+            çözdükten sonra bu ekrandan alınabilecek.
+          </p>
+        </section>
+      )}
 
       <div className="flex flex-wrap gap-3">
         {/* Tam sayfa geçişi: PDF indirilmediyse tarayıcı "sayfadan ayrılıyorsunuz" uyarısını göstersin. */}

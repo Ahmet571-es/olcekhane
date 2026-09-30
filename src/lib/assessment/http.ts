@@ -1,11 +1,13 @@
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { jsonError, sameOrigin } from '@/lib/api-guard';
-import { siteUrl } from '@/lib/config';
+import { ADULT_GRADE, AUDIENCE_LABELS, siteUrl } from '@/lib/config';
 import { errorSummary } from '@/lib/log';
 import { memoryRateLimit } from '@/lib/memory-rate-limit';
 import { clientIpBucket } from '@/lib/request';
-import { AssessmentError, evaluate } from './evaluate';
+import type { Audience } from '@/lib/reports/build';
+import type { SimpleReport } from '@/lib/reports/simple';
+import { AssessmentError, evaluateReports } from './evaluate';
 import { answersBody, pdfBody } from './schemas';
 
 /**
@@ -72,14 +74,14 @@ async function limited(kind: 'rapor' | 'pdf'): Promise<boolean> {
   return false;
 }
 
-/** Cevapları puanlayıp öğrenci ve veli için basit raporu döndürür. */
+/** Cevapları puanlayıp basit raporları döndürür: öğrenci ve veli raporu ya da yetişkinin kişisel raporu. */
 export async function reportResponse(req: NextRequest, slug: string) {
   if (!sameOrigin(req)) return jsonError(403, 'İstek reddedildi.');
   if (await limited('rapor')) return jsonError(429, 'Çok sık istek gönderildi. Lütfen birkaç dakika sonra tekrar deneyin.');
   const parsed = answersBody.safeParse(await readJson(req));
   if (!parsed.success) return jsonError(400, 'Geçersiz istek.');
   try {
-    return NextResponse.json(evaluate(slug, parsed.data), { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(evaluateReports(slug, parsed.data), { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     if (err instanceof AssessmentError) return assessmentError(err);
     return unexpected('rapor', err);
@@ -94,10 +96,14 @@ export async function pdfResponse(req: NextRequest, slug: string) {
   if (!parsed.success) return jsonError(400, 'Geçersiz istek.');
   try {
     const { audience, ...body } = parsed.data;
-    const result = evaluate(slug, body);
+    // Yetişkine yalnızca kişisel rapor, okul çağındakine yalnızca öğrenci ve veli raporu: uyuşmayan istek puanlanmadan reddedilir.
+    if ((audience === 'adult') !== (body.grade === ADULT_GRADE)) return jsonError(400, 'Geçersiz istek.');
+    const reports: Partial<Record<Audience, SimpleReport>> = evaluateReports(slug, body);
+    const report = reports[audience];
+    if (!report) return jsonError(400, 'Geçersiz istek.');
     const { renderSimpleReportPdf } = await import('@/lib/pdf/simple-report');
-    const pdf = await renderSimpleReportPdf(result[audience], new URL(siteUrl()).host);
-    const file = `olcekhane-${slug}-${audience === 'student' ? 'ogrenci' : 'veli'}-raporu.pdf`;
+    const pdf = await renderSimpleReportPdf(report, new URL(siteUrl()).host);
+    const file = `olcekhane-${slug}-${AUDIENCE_LABELS[audience].file}-raporu.pdf`;
     return new Response(new Uint8Array(pdf), {
       headers: {
         'Content-Type': 'application/pdf',

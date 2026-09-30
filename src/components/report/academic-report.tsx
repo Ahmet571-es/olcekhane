@@ -78,7 +78,7 @@ function ItemReview({ it, forStudent }: { it: ReviewItem; forStudent: boolean })
 
 export function AcademicReportView({ report }: { report: ReportContent }) {
   const a = report.academic!;
-  const forStudent = report.audience === 'student';
+  const forStudent = report.audience !== 'parent';
   const missed = a.review.filter((r) => !r.correct);
   const right = a.review.filter((r) => r.correct);
   return (

@@ -130,7 +130,7 @@ jobs:
           sorun=""
           # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
           ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili"
-          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) /iletisim /yasal/aydinlatma-metni; do
+          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
           done
@@ -150,6 +150,12 @@ jobs:
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$KISILIK_GOVDE" "https://$ALAN/api/rapor/ayrintili-kisilik-profili" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert [len(g["facets"]) for g in r["parent"]["groups"]] == [6, 6, 6, 6, 5]'; then
             sorun="$sorun kisilik-raporu"
+          fi
+          # Aynı test yetişkin olarak ("Yetişkinim", 14): yalnızca kişisel rapor.
+          YETISKIN_GOVDE=$(printf '%s' "$KISILIK_GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["grade"]=14; print(json.dumps(b))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$YETISKIN_GOVDE" "https://$ALAN/api/rapor/ayrintili-kisilik-profili" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert list(r) == ["adult"] and r["adult"]["gradeLabel"] == "Yetişkin"'; then
+            sorun="$sorun yetiskin-raporu"
           fi
           # Uzman incelemesindeki testler bağlantıyla açılır ama arama motorlarına kapalıdır.
           for slug in $ONIZLEME; do

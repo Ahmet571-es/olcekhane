@@ -1,4 +1,6 @@
+import { AUDIENCE_LABELS } from '@/lib/config';
 import type { ReportContent, ReportSection } from '@/lib/reports/build';
+import { disclaimerText, supportText } from '@/lib/reports/simple';
 import { AcademicReportView } from './academic-report';
 import { CognitiveReportView } from './cognitive-report';
 import { InterestReport } from './interest-report';
@@ -16,13 +18,16 @@ function rulerSteps(s: ReportSection) {
 }
 
 export function ReportView({ report }: { report: ReportContent }) {
-  const forStudent = report.audience === 'student';
+  const forStudent = report.audience !== 'parent';
+  // Destek kutusu ve son not, basit raporla aynı metinler (yetişkin raporu dahil).
+  const support = supportText(report.audience);
+  const disclaimer = disclaimerText(report);
   const multi = report.sections.length > 1 && !report.reading && !report.interests;
   return (
     <article className="flex flex-col gap-10">
       <header className="flex flex-col gap-3 border-b border-rule pb-8">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="chip">{forStudent ? 'Öğrenci raporu' : 'Veli raporu'}</span>
+          <span className="chip">{AUDIENCE_LABELS[report.audience].name}</span>
           {report.isPilot && <span className="chip chip-brass">Pilot test</span>}
         </div>
         <h1 className="t-h1">{report.instrumentName}</h1>
@@ -150,39 +155,24 @@ export function ReportView({ report }: { report: ReportContent }) {
       {report.support && (
         <aside className="notice notice-info" aria-labelledby="destek">
           <h2 id="destek" className="font-body text-base font-bold">
-            {forStudent ? 'Konuşmak istersen' : 'Destek almak isterseniz'}
+            {support.title}
           </h2>
-          {forStudent ? (
-            <p className="mt-1">
-              Kendini zor hissettiğinde bunu tek başına taşımak zorunda değilsin. Ailenle, okulundaki rehber öğretmeninle ya da güvendiğin bir
-              yetişkinle konuşabilirsin. Acil bir durumda 112’yi arayabilirsin.
-            </p>
+          {support.lines.length === 1 ? (
+            <p className="mt-1">{support.lines[0]}</p>
           ) : (
             <ul className="mt-1 list-disc pl-5">
-              <li>Okulun rehberlik servisi (psikolojik danışman) ilk başvuru adresidir ve ücretsizdir.</li>
-              <li>Aile hekiminiz, gerekirse çocuk ve ergen ruh sağlığı uzmanına yönlendirebilir.</li>
-              <li>Acil bir durum olduğunu düşünüyorsanız 112’yi arayın.</li>
+              {support.lines.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
             </ul>
           )}
         </aside>
       )}
 
       <footer className="flex flex-col gap-4 border-t border-rule pt-8">
-        {report.academic ? (
-          <p className="notice notice-info">
-            <strong>Bu rapor bir sınav notu değildir.</strong>{' '}
-            {forStudent
-              ? 'Tek bir testteki cevaplarına dayanır ve bugün neyi bildiğini gösterir. Eksikler çalışarak tamamlanır.'
-              : 'Tek bir testteki cevaplara dayanır ve bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli; sınıf geçme ya da okul seçimi gibi kararlarda tek başına dayanak olarak kullanılmamalıdır.'}
-          </p>
-        ) : (
-          <p className="notice notice-info">
-            <strong>Bu rapor bir tanı değildir.</strong>{' '}
-            {forStudent
-              ? 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.'
-              : 'Çocuğunuzun kendi cevaplarına ya da görevdeki performansına dayanır; bugünkü hâlini anlatır. Eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.'}
-          </p>
-        )}
+        <p className="notice notice-info">
+          <strong>{disclaimer.title}</strong> {disclaimer.text}
+        </p>
         <details className="panel p-5">
           <summary className="cursor-pointer font-bold">Bu testin bilimsel dayanağı</summary>
           <dl className="mt-4 grid gap-3 text-[0.975rem] md:grid-cols-[12rem_1fr]">
@@ -269,7 +259,7 @@ function SectionDetail({ s, forStudent, showRuler }: { s: ReportSection; forStud
 
 function ReadingSummary({ report }: { report: ReportContent }) {
   const r = report.reading!;
-  const forStudent = report.audience === 'student';
+  const forStudent = report.audience !== 'parent';
   return (
     <section aria-labelledby="okuma-ozet" className="flex flex-col gap-5">
       <h2 id="okuma-ozet" className="t-h2">

@@ -1,6 +1,7 @@
 import 'server-only';
 import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
+import { AUDIENCE_LABELS } from '@/lib/config';
 import type { RulerRow, SimpleChart, SimpleReport } from '@/lib/reports/simple';
 
 /**
@@ -264,11 +265,13 @@ function Chart({ chart }: { chart: SimpleChart }) {
 /* ---------- Belge ---------- */
 
 export function SimpleReportDocument({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
-  const you = report.audience === 'student';
+  const kind = AUDIENCE_LABELS[report.audience].name;
+  // Öğrenci ve yetişkin raporları ikinci tekil şahısla yazılır.
+  const you = report.audience !== 'parent';
   const date = dateFmt.format(new Date(report.completedAt));
   const meta = [report.studentName, report.gradeLabel, date].filter(Boolean).join(' · ');
   return (
-    <Document title={`${report.instrumentName}: ${you ? 'öğrenci' : 'veli'} raporu`} author="Ölçekhane" creator="Ölçekhane" producer="Ölçekhane" language="tr-TR">
+    <Document title={`${report.instrumentName}: ${kind.toLocaleLowerCase('tr-TR')}`} author="Ölçekhane" creator="Ölçekhane" producer="Ölçekhane" language="tr-TR">
       <Page size="A4" style={s.page}>
         <View style={s.top} fixed>
           <View>
@@ -276,7 +279,7 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
             <Text style={s.tag}>Tahmin değil, ölçüm.</Text>
           </View>
           <View style={s.topRight}>
-            <Text style={s.audience}>{you ? 'Öğrenci raporu' : 'Veli raporu'}</Text>
+            <Text style={s.audience}>{kind}</Text>
             <Text style={{ fontSize: 8.5, color: C.ink3 }}>{date}</Text>
           </View>
         </View>
@@ -296,7 +299,7 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
 
         {report.cautions.length > 0 && (
           <View style={s.caution} wrap={false}>
-            <Text style={s.cautionTitle}>Bu sonucu dikkatle yorumlayın</Text>
+            <Text style={s.cautionTitle}>{you ? 'Sonucunu okurken dikkat' : 'Bu sonucu dikkatle yorumlayın'}</Text>
             {report.cautions.map((c) => (
               <View key={c} style={s.bullet}>
                 <Text>•</Text>

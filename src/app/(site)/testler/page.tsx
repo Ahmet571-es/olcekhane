@@ -32,7 +32,7 @@ export default function TestsPage() {
             Kaynaklarıyla karşılaştırın ↓
           </a>
         </div>
-        <TestCards showUpcoming={false} />
+        <TestCards showUpcoming={false} filterable />
       </section>
 
       <section className="border-t border-rule bg-surface-2/55" aria-labelledby="karsilastir">
@@ -42,7 +42,7 @@ export default function TestsPage() {
               Kaynaklarıyla birlikte
             </h2>
             <p className="text-ink-2">
-              Her testin neyi ölçtüğü, dayandığı kaynak, uygun olduğu sınıflar ve durumu alan alan. Hazırlanan testler de burada.
+              Her testin neyi ölçtüğü, dayandığı kaynak, kimler için uygun olduğu ve durumu alan alan. Hazırlanan testler de burada.
             </p>
           </div>
           <TestShelf />

@@ -9,18 +9,21 @@ import type { BandText, ReportTemplate } from './types';
  * Boyut metinleri iki üç cümle, alt özellik metinleri tek cümledir. Öneri listeleri (kapsamlı rapor için) bu testte
  * henüz yazılmadı; basit raporda gösterilmez.
  * Destek kutusu: Duygusal Denge boyutu ve İç huzuru alt özelliği düşük düzeydeyse gösterilir.
+ * Yetişkin raporu öğrenci metinlerini kullanır; öğrenci metni okula ya da ergenliğe özgü olduğunda yetişkin metni
+ * (`adult`) ayrıca yazılmıştır.
  */
-const t = (summary: string, student: string, parent: string, support?: boolean): BandText => ({
+const t = (summary: string, student: string, parent: string, extra?: { support?: boolean; adult?: string }): BandText => ({
   summary,
   student,
   parent,
   tipsStudent: [],
   tipsParent: [],
-  ...(support ? { support: true } : {}),
+  ...(extra?.adult ? { adult: extra.adult } : {}),
+  ...(extra?.support ? { support: true } : {}),
 });
 
 export const ayrintiliKisilikReport: ReportTemplate = {
-  version: 'ayrintili-kisilik-rapor-1',
+  version: 'ayrintili-kisilik-rapor-2',
   bandLabels: {
     low: 'Düşük',
     average: 'Orta',
@@ -67,6 +70,10 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Planlı ve kararlı',
         'Genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu söylüyorsun. Bu eğilim okulda ve hedeflerine ulaşmada sana güç verir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
         'Çocuğunuz genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu belirtiyor.',
+        {
+          adult:
+            'Genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu söylüyorsun. Bu eğilim işinde, eğitiminde ve hedeflerine ulaşmada sana güç verir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        },
       ),
       average: t(
         'Çoğu zaman planlı',
@@ -84,6 +91,10 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Sakin, kolay sarsılmayan',
         'Genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını söylüyorsun. Bu, sınav gibi baskılı durumlarda sana güç veren bir özellik. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
         'Çocuğunuz genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını belirtiyor.',
+        {
+          adult:
+            'Genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını söylüyorsun. Bu, baskı altında kaldığın dönemlerde sana güç veren bir özellik. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        },
       ),
       average: t(
         'Çoğu zaman dengeli',
@@ -94,7 +105,11 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Stresten kolay etkilenen',
         'Endişe, öfke ya da hüzün gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini söylüyorsun. Bu duygularla baş etmeyi öğrenmek mümkün; seni zorluyorsa güvendiğin bir yetişkinle konuşmak iyi gelir.',
         'Çocuğunuz endişe, öfke ya da hüzün gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini belirtiyor. Bu sonuç bir tanı değildir; ancak bu duyguların ne kadar süredir devam ettiğini ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir.',
-        true,
+        {
+          support: true,
+          adult:
+            'Endişe, öfke ya da hüzün gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini söylüyorsun. Bu duygularla baş etmeyi öğrenmek mümkün; seni zorluyorsa güvendiğin biriyle ya da bir ruh sağlığı uzmanıyla konuşmak iyi gelir.',
+        },
       ),
     },
     openness: {
@@ -477,7 +492,11 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Sık sık hüzünlenen',
         'Sık sık hüzünlü hissettiğini ya da kendinden hoşnut olmadığını söylüyorsun; bu duygularla tek başına baş etmek zorunda değilsin, güvendiğin bir yetişkinle konuşmak iyi gelir.',
         'Çocuğunuz sık sık hüzünlü hissettiğini ya da kendinden hoşnut olmadığını belirtiyor; bu bir tanı değildir, ancak bu duyguların ne kadar süredir devam ettiğini onunla konuşmanız ve gerekirse okulun rehber öğretmeninden destek almanız önemlidir.',
-        true,
+        {
+          support: true,
+          adult:
+            'Sık sık hüzünlü hissettiğini ya da kendinden hoşnut olmadığını söylüyorsun; bu duygularla tek başına baş etmek zorunda değilsin, güvendiğin biriyle ya da bir ruh sağlığı uzmanıyla konuşmak iyi gelir.',
+        },
       ),
     },
     social_ease: {

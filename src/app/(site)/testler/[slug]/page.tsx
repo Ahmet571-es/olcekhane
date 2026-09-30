@@ -24,7 +24,9 @@ export async function generateMetadata(props: PageProps<'/testler/[slug]'>): Pro
   const meta = pageMeta({
     title: `${def.name}${def.isFree ? ' (ücretsiz)' : ''}`,
     ogTitle: def.name,
-    description: `${def.tagline} ${def.estimatedMinutes} dakika sürer, ${gradeRangeLabel(def.minGrade, def.maxGrade)} öğrenciler için. Bilimsel dayanağı, güvenirliği ve sınırları açıkça yazılı.`,
+    description: `${def.tagline} ${def.estimatedMinutes} dakika sürer, ${
+      def.adults ? `${def.minGrade}. sınıftan itibaren öğrenciler ve yetişkinler için` : `${gradeRangeLabel(def.minGrade, def.maxGrade)} öğrenciler için`
+    }. Bilimsel dayanağı, güvenirliği ve sınırları açıkça yazılı.`,
     path: `/testler/${slug}`,
     ownImage: true,
   });
@@ -67,7 +69,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
 
   const facts = [
     { k: 'Süre', v: `yaklaşık ${def.estimatedMinutes} dakika` },
-    { k: 'Kimler için', v: gradeRangeLabel(def.minGrade, def.maxGrade) },
+    { k: 'Kimler için', v: gradeRangeLabel(def.minGrade, def.maxGrade, def.adults) },
     { k: 'Uzunluk', v: itemCount },
     { k: 'Ücret', v: def.isFree ? 'Ücretsiz, hesap gerekmez' : 'Ücretli' },
   ];
@@ -200,7 +202,11 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
         </h2>
         <div className="flex flex-col gap-5">
           <ul className="measure flex list-disc flex-col gap-2 pl-5">
-            <li>Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor; ikisi de PDF olarak indirilebilir</li>
+            <li>
+              {def.adults
+                ? 'Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor; testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor. Raporlar PDF olarak indirilebilir'
+                : 'Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor; ikisi de PDF olarak indirilebilir'}
+            </li>
             {def.engine === 'likert' && def.profile === 'riasec' && (
               <>
                 <li>Altı ilgi alanının Holland altıgeni üzerinde gösterimi ve üç harfli ilgi kodu</li>
@@ -244,7 +250,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           </ul>
           <p className="measure t-small text-ink-2">
             Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz; raporun tek kopyası size verilen PDF’tir. Ayrıntılı açıklamaların
-            ve evde, okulda işe yarayacak önerilerin yer alacağı kapsamlı rapor yakında sunulacak.
+            ve evde, okulda işe yarayacak önerilerin yer alacağı kapsamlı rapor{def.adults ? ' öğrenciler ve veliler için' : ''} yakında sunulacak.
           </p>
         </div>
       </section>

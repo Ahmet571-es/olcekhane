@@ -1,7 +1,8 @@
 import 'server-only';
 import { getInstrumentDef, isSolvable } from '@/content/instruments';
+import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
 import type { InstrumentDef } from '@/lib/instruments/types';
-import { buildReport } from '@/lib/reports/build';
+import { buildReport, type Audience } from '@/lib/reports/build';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { likertQuality, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
@@ -12,8 +13,9 @@ import { likertRows, quizRows, readingRows, taskScoreRows, toReportScore, type S
 
 /**
  * Testin değerlendirilmesi. Sitede veritabanı yoktur: testin bütün cevapları tek istekte gelir,
- * puanlanır ve öğrenci ile veli raporu hazırlanıp geri verilir. Cevap, puan ve rapor hiçbir yere
- * (diske, günlüğe) yazılmaz; istek bitince bellekten de silinir. Ad gibi kimlik bilgisi alınmaz.
+ * puanlanır ve raporlar hazırlanıp geri verilir: okul çağındaki biri için öğrenci ve veli raporu, testi
+ * kendisi için çözen yetişkin için tek, kişisel rapor. Cevap, puan ve rapor hiçbir yere (diske, günlüğe)
+ * yazılmaz; istek bitince bellekten de silinir. Ad gibi kimlik bilgisi alınmaz.
  */
 
 export class AssessmentError extends Error {
@@ -25,9 +27,15 @@ export class AssessmentError extends Error {
   }
 }
 
+/** Okul çağındaki biri için iki rapor: öğrenciye ve veliye. */
 export interface EvaluationResult {
   student: SimpleReport;
   parent: SimpleReport;
+}
+
+/** Testi kendisi için çözen yetişkin için tek, kişisel rapor. */
+export interface AdultEvaluationResult {
+  adult: SimpleReport;
 }
 
 /** Sitede çözülebilen test (yayında, pilot ya da uzman incelemesinde). */
@@ -97,16 +105,16 @@ function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes
   throw new AssessmentError('invalid', 'Geçersiz istek.');
 }
 
-/** Testin öğrenci ve veli raporları (ücretsiz, basit rapor). Hiçbir şey kaydedilmez. */
-export function evaluate(slug: string, body: AnswersBody, now = new Date()): EvaluationResult {
+/** Cevapları doğrulayıp puanlar; aynı puanlardan istenen kişiye yazılmış raporu hazırlayan işlevi döndürür. */
+function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Date) => SimpleReport {
   const def = solvableInstrument(slug);
   if (!def) throw new AssessmentError('not_found', 'Test bulunamadı.');
-  if (body.grade < def.minGrade || body.grade > def.maxGrade) {
-    throw new AssessmentError('grade', 'Bu test seçilen sınıf düzeyine uygun değil.');
+  if (!gradeAllowed(def, body.grade)) {
+    throw new AssessmentError('grade', body.grade === ADULT_GRADE ? 'Bu test yetişkinler için uygun değil.' : 'Bu test seçilen sınıf düzeyine uygun değil.');
   }
   const { rows, notes } = score(def, body);
   const scores = rows.map(toReportScore);
-  const build = (audience: 'student' | 'parent') =>
+  return (audience, now) =>
     toSimpleReport(
       buildReport({
         def,
@@ -118,5 +126,22 @@ export function evaluate(slug: string, body: AnswersBody, now = new Date()): Eva
         qualityNotes: notes,
       }),
     );
-  return { student: build('student'), parent: build('parent') };
+}
+
+/** Okul çağındaki biri için öğrenci ve veli raporları (ücretsiz, basit rapor). Hiçbir şey kaydedilmez. */
+export function evaluate(slug: string, body: AnswersBody, now = new Date()): EvaluationResult {
+  if (body.grade === ADULT_GRADE) throw new AssessmentError('grade', 'Yetişkin için tek, kişisel rapor hazırlanır.');
+  const build = prepare(slug, body);
+  return { student: build('student', now), parent: build('parent', now) };
+}
+
+/** Testi kendisi için çözen yetişkin için tek, kişisel rapor. Hiçbir şey kaydedilmez. */
+export function evaluateAdult(slug: string, body: AnswersBody, now = new Date()): AdultEvaluationResult {
+  if (body.grade !== ADULT_GRADE) throw new AssessmentError('grade', 'Kişisel rapor yalnızca yetişkinler için hazırlanır.');
+  return { adult: prepare(slug, body)('adult', now) };
+}
+
+/** Seçime göre raporlar: sınıf seçildiyse öğrenci ve veli raporu, "Yetişkinim" seçildiyse kişisel rapor. */
+export function evaluateReports(slug: string, body: AnswersBody, now = new Date()): EvaluationResult | AdultEvaluationResult {
+  return body.grade === ADULT_GRADE ? evaluateAdult(slug, body, now) : evaluate(slug, body, now);
 }

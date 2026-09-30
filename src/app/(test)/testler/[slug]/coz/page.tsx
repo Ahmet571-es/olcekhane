@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/site/logo';
 import { TestSession, type TestPayload } from '@/components/test/test-session';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
-import { GRADE_LABELS, gradeRangeLabel } from '@/lib/config';
+import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
 import type { InstrumentDef } from '@/lib/instruments/types';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
@@ -65,8 +65,10 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
   const q = await props.searchParams;
   const def = solvableInstrument(slug);
   if (!def) notFound();
-  const grade = Number(typeof q.sinif === 'string' ? q.sinif : NaN);
-  const ready = Number.isInteger(grade) && grade >= def.minGrade && grade <= def.maxGrade;
+  // Sınıf düzeyi ya da (yetişkinlere de uygun testlerde) "Yetişkinim" seçimi.
+  const grade = parseGradeParam(typeof q.sinif === 'string' ? q.sinif : undefined);
+  const ready = grade !== null && gradeAllowed(def, grade);
+  const adultRefused = grade === ADULT_GRADE && !def.adults;
   const grades = Array.from({ length: def.maxGrade - def.minGrade + 1 }, (_, i) => def.minGrade + i);
   const backUrl = `/testler/${def.slug}`;
 
@@ -91,7 +93,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
           <div className="mx-auto flex w-full max-w-2xl flex-col gap-7">
             <div className="flex flex-col gap-3">
               <p className="t-meta">
-                {def.isFree ? 'Ücretsiz · ' : ''}yaklaşık {def.estimatedMinutes} dakika · {gradeRangeLabel(def.minGrade, def.maxGrade)}
+                {def.isFree ? 'Ücretsiz · ' : ''}yaklaşık {def.estimatedMinutes} dakika · {gradeRangeLabel(def.minGrade, def.maxGrade, def.adults)}
               </p>
               <h1 className="t-h1">{def.name}</h1>
               <p className="t-lede">{def.tagline}</p>
@@ -109,22 +111,33 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
               </p>
             </div>
 
+            {adultRefused && (
+              <p className="notice notice-warn">
+                Bu test yetişkinler için hazırlanmadı. Testi bir öğrenci çözecekse aşağıdan sınıfını seçin.
+              </p>
+            )}
+
             <form method="get" className="panel flex flex-col gap-5 p-6">
               <div className="field">
                 <label htmlFor="sinif" className="field-label">
-                  Testi çözen öğrencinin sınıfı
+                  {def.adults ? 'Testi kim çözüyor?' : 'Testi çözen öğrencinin sınıfı'}
                 </label>
-                <select id="sinif" name="sinif" className="input" defaultValue="" required>
+                <select id="sinif" name="sinif" className="input" defaultValue="" required aria-describedby="sinif-ipucu">
                   <option value="" disabled>
-                    Sınıf seçin
+                    {def.adults ? 'Seç' : 'Sınıf seçin'}
                   </option>
                   {grades.map((g) => (
                     <option key={g} value={g}>
                       {GRADE_LABELS[g] ?? `${g}. sınıf`}
                     </option>
                   ))}
+                  {def.adults && <option value={ADULT_PARAM}>Yetişkinim (18 yaş ve üzeri)</option>}
                 </select>
-                <p className="field-hint">Sorular ve rapor sınıf düzeyine göre hazırlanır.</p>
+                <p id="sinif-ipucu" className="field-hint">
+                  {def.adults
+                    ? 'Okula gidiyorsan ya da mezun olup üniversiteye hazırlanıyorsan sınıfını seç: sana ve veline ayrı ayrı yazılmış iki rapor hazırlanır. 18 yaşını doldurduysan ve testi kendin için çözüyorsan “Yetişkinim”i seç: sana yazılmış tek bir rapor hazırlanır, veli raporu olmaz.'
+                    : 'Sorular ve rapor sınıf düzeyine göre hazırlanır.'}
+                </p>
               </div>
               <div>
                 <button type="submit" className="btn btn-primary btn-lg">

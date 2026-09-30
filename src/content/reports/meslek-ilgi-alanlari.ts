@@ -6,9 +6,10 @@ import type { ReportTemplate } from './types';
  * maddelerin içeriğinden çıkarılmış, yol gösterici örneklerdir; bir meslek önerisi değildir. Veliye
  * "çocuğunuz ... belirtiyor" dili kullanılır, çünkü sonuç öz bildirime dayanır.
  * Rapor alanları en yüksekten en düşüğe sıralar (profil: interests); "yüksek" metni en belirgin alanlarda gösterilir.
+ * Yetişkin raporu öğrenci metinlerini kullanır; öğrenci metni okula özgü bir örnek içerdiğinde `adult` metni yazılmıştır.
  */
 export const meslekIlgiAlanlariReport: ReportTemplate = {
-  version: 'meslek-ilgi-alanlari-rapor-1',
+  version: 'meslek-ilgi-alanlari-rapor-2',
   bandLabels: {
     low: 'Az ilgi',
     average: 'Orta düzeyde ilgi',
@@ -26,6 +27,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'Yön vermekten ve ikna etmekten hoşlanıyor',
         student:
           'Bir işin başına geçmek, insanları bir hedef etrafında toplamak ve onları ikna etmek sana çekici geliyor. Bu ilgi; yönetim ve işletme, girişimcilik, satış ve pazarlama, hukuk, siyaset bilimi ve medya gibi alanlarla ilişkilidir. Kulüp başkanlığı, münazara, öğrenci meclisi ya da bir etkinliği baştan sona organize etmek bu ilgiyi denemen için iyi fırsatlar.',
+        adult:
+          'Bir işin başına geçmek, insanları bir hedef etrafında toplamak ve onları ikna etmek sana çekici geliyor. Bu ilgi; yönetim ve işletme, girişimcilik, satış ve pazarlama, hukuk, siyaset bilimi ve medya gibi alanlarla ilişkilidir. İş yerinde ya da bir sivil toplum kuruluşunda bir projenin sorumluluğunu almak, bir ekibi yönlendirmek ya da bir etkinliği baştan sona organize etmek bu ilgiyi denemen için iyi fırsatlar.',
         parent:
           'Çocuğunuz bir işin başına geçmekten, insanları bir hedef etrafında toplamaktan ve onları ikna etmekten hoşlanacağını belirtiyor. Bu ilgi; yönetim ve işletme, girişimcilik, satış ve pazarlama, hukuk, siyaset bilimi ve medya gibi alanlarla ilişkilidir. Kulüp başkanlığı, münazara ya da bir okul etkinliğinin sorumluluğunu almak bu ilgiyi denemesi için iyi fırsatlardır.',
         tipsStudent: [
@@ -73,6 +76,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'Planlamaktan ve düzen kurmaktan hoşlanıyor',
         student:
           'Plan yapmak, bütçe hesaplamak, kayıt tutmak ve bir işi düzene sokmak sana keyif veriyor. Bu ilgi; işletme, muhasebe ve finans, bankacılık, lojistik, insan kaynakları, yönetim bilişim sistemleri ve kamu yönetimi gibi alanlarla ilişkilidir. Bir etkinliğin bütçesini tutmak ya da bir kulübün kayıtlarını düzenlemek bu ilgiyi denemen için iyi bir başlangıç.',
+        adult:
+          'Plan yapmak, bütçe hesaplamak, kayıt tutmak ve bir işi düzene sokmak sana keyif veriyor. Bu ilgi; işletme, muhasebe ve finans, bankacılık, lojistik, insan kaynakları, yönetim bilişim sistemleri ve kamu yönetimi gibi alanlarla ilişkilidir. Bir projenin bütçesini ya da planını üstlenmek, ev bütçeni bir hesap tablosunda tutmak ya da bu alanlarda çalışan biriyle konuşmak bu ilgiyi denemen için iyi bir başlangıç.',
         parent:
           'Çocuğunuz plan yapmaktan, bütçe hesaplamaktan, kayıt tutmaktan ve işleri düzene sokmaktan hoşlanacağını belirtiyor. Bu ilgi; işletme, muhasebe ve finans, bankacılık, lojistik, insan kaynakları, yönetim bilişim sistemleri ve kamu yönetimi gibi alanlarla ilişkilidir. Bir etkinliğin bütçesini tutmak ya da harçlığını planlamak bu ilgiyi denemesi için iyi fırsatlardır.',
         tipsStudent: [
@@ -117,6 +122,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'İnsanlara yardım etmekten hoşlanıyor',
         student:
           'İnsanlara yardım etmek, bir şey öğretmek, bakım vermek ve destek olmak sana anlamlı geliyor. Bu ilgi; öğretmenlik, psikolojik danışmanlık, sosyal hizmet, hemşirelik, tıp, fizyoterapi, çocuk gelişimi ve sağlık yönetimi gibi alanlarla ilişkilidir. Gönüllü çalışmalar, arkadaşlarına ders anlatmak ya da bir yardım kampanyası bu ilgiyi denemen için iyi fırsatlar.',
+        adult:
+          'İnsanlara yardım etmek, bir şey öğretmek, bakım vermek ve destek olmak sana anlamlı geliyor. Bu ilgi; öğretmenlik, psikolojik danışmanlık, sosyal hizmet, hemşirelik, tıp, fizyoterapi, çocuk gelişimi ve sağlık yönetimi gibi alanlarla ilişkilidir. Bir sivil toplum kuruluşunda gönüllü çalışmak, birine bildiğin bir şeyi öğretmek ya da bir yardım kampanyasında görev almak bu ilgiyi denemen için iyi fırsatlar.',
         parent:
           'Çocuğunuz insanlara yardım etmekten, öğretmekten, bakım vermekten ve destek olmaktan hoşlanacağını belirtiyor. Bu ilgi; öğretmenlik, psikolojik danışmanlık, sosyal hizmet, hemşirelik, tıp, fizyoterapi, çocuk gelişimi ve sağlık yönetimi gibi alanlarla ilişkilidir. Gönüllü çalışmalar ya da arkadaşlarına ders anlatmak bu ilgiyi denemesi için iyi fırsatlardır.',
         tipsStudent: [
@@ -155,6 +162,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'Yaratıcı işlerden hoşlanıyor',
         student:
           'Resim, müzik, yazı, sahne ya da tasarım gibi yaratıcı işler seni çekiyor. Bu ilgi; görsel sanatlar, grafik ve moda tasarımı, mimarlık ve iç mimarlık, müzik, sahne sanatları, yazarlık, sinema ve dijital tasarım gibi alanlarla ilişkilidir. Bir kulübe katılmak, kısa bir film çekmek ya da yaptıklarından bir portfolyo hazırlamak bu ilgiyi denemen için iyi fırsatlar.',
+        adult:
+          'Resim, müzik, yazı, sahne ya da tasarım gibi yaratıcı işler seni çekiyor. Bu ilgi; görsel sanatlar, grafik ve moda tasarımı, mimarlık ve iç mimarlık, müzik, sahne sanatları, yazarlık, sinema ve dijital tasarım gibi alanlarla ilişkilidir. Bir kursa ya da atölyeye katılmak, kısa bir film çekmek ya da yaptıklarından bir portfolyo hazırlamak bu ilgiyi denemen için iyi fırsatlar.',
         parent:
           'Çocuğunuz resim, müzik, yazı, sahne ya da tasarım gibi yaratıcı işlerden hoşlanacağını belirtiyor. Bu ilgi; görsel sanatlar, grafik ve moda tasarımı, mimarlık ve iç mimarlık, müzik, sahne sanatları, yazarlık, sinema ve dijital tasarım gibi alanlarla ilişkilidir. Sanat kulüpleri, kurslar ya da yaptıklarından bir portfolyo hazırlaması bu ilgiyi denemesi için iyi fırsatlardır.',
         tipsStudent: [
@@ -190,6 +199,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'Bilimden ve problem çözmekten hoşlanıyor',
         student:
           'Bilimsel sorular sormak, deney yapmak, matematik ve karmaşık problemlerle uğraşmak sana keyif veriyor. Bu ilgi; fizik, kimya ve biyoloji gibi temel bilimler, matematik ve istatistik, mühendislik, bilgisayar bilimleri, tıp ve eczacılık gibi alanlarla ilişkilidir. Bilim olimpiyatları, TÜBİTAK proje yarışmaları, kodlama ya da kendi deneyini tasarlamak bu ilgiyi denemen için iyi fırsatlar.',
+        adult:
+          'Bilimsel sorular sormak, deney yapmak, matematik ve karmaşık problemlerle uğraşmak sana keyif veriyor. Bu ilgi; fizik, kimya ve biyoloji gibi temel bilimler, matematik ve istatistik, mühendislik, bilgisayar bilimleri, tıp ve eczacılık gibi alanlarla ilişkilidir. Kodlama ya da veri analizi öğrenmek, bir araştırma projesinde yer almak ya da merak ettiğin bir soruyu kendi deneyinle sınamak bu ilgiyi denemen için iyi fırsatlar.',
         parent:
           'Çocuğunuz bilimsel sorular sormaktan, deney yapmaktan, matematik ve karmaşık problemlerle uğraşmaktan hoşlanacağını belirtiyor. Bu ilgi; fizik, kimya ve biyoloji gibi temel bilimler, matematik ve istatistik, mühendislik, bilgisayar bilimleri, tıp ve eczacılık gibi alanlarla ilişkilidir. Bilim olimpiyatları, TÜBİTAK proje yarışmaları ya da kodlama çalışmaları bu ilgiyi denemesi için iyi fırsatlardır.',
         tipsStudent: [
@@ -214,6 +225,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'Bilimsel araştırma işleri pek çekici gelmiyor',
         student:
           'Deney, matematik ve bilimsel araştırma gerektiren işler sana pek çekici gelmiyor. Bu, bu derslerde başarılı olamayacağın anlamına gelmez; yalnızca bu tür işleri meslek olarak yapmaya ilgi duymadığını gösterir.',
+        adult:
+          'Deney, matematik ve bilimsel araştırma gerektiren işler sana pek çekici gelmiyor. Bu sonuç, bu konularda başarılı olamayacağın anlamına gelmez; yalnızca bu tür işleri meslek olarak yapmaya ilgi duymadığını gösterir.',
         parent:
           'Çocuğunuz deney, matematik ve bilimsel araştırma gerektiren işlerden pek hoşlanmayacağını belirtiyor. Bu, bu derslerde başarılı olamayacağı anlamına gelmez; yalnızca bu tür işleri meslek olarak yapmaya ilgi duymadığını gösterir.',
         tipsStudent: ['Derslerde başarılı olmak için ilgi şart değil; düzenli çalışma yeter.', 'Enerjini en çok ilgi duyduğun alanlara ayır.'],
@@ -260,6 +273,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'Heyecan ve hareket içeren işlerden hoşlanıyor',
         student:
           'Heyecan, hareket, fiziksel mücadele ve biraz risk içeren işler seni canlandırıyor. Bu ilgi; spor bilimleri ve antrenörlük, profesyonel spor, güvenlik ve askerlik meslekleri, arama-kurtarma, pilotluk ve doğa turizmi gibi alanlarla ilişkilidir. Bir spor kulübü, izcilik ya da doğa sporları bu ilgiyi güvenli biçimde denemen için iyi fırsatlar.',
+        adult:
+          'Heyecan, hareket, fiziksel mücadele ve biraz risk içeren işler seni canlandırıyor. Bu ilgi; spor bilimleri ve antrenörlük, profesyonel spor, güvenlik ve askerlik meslekleri, arama-kurtarma, pilotluk ve doğa turizmi gibi alanlarla ilişkilidir. Bir spor kulübü, bir doğa yürüyüşü grubu ya da eğitmen eşliğinde doğa sporları bu ilgiyi güvenli biçimde denemen için iyi fırsatlar.',
         parent:
           'Çocuğunuz heyecan, hareket, fiziksel mücadele ve biraz risk içeren işlerden hoşlanacağını belirtiyor. Bu ilgi; spor bilimleri ve antrenörlük, profesyonel spor, güvenlik ve askerlik meslekleri, arama-kurtarma, pilotluk ve doğa turizmi gibi alanlarla ilişkilidir. Spor kulüpleri, izcilik ya da eğitmen eşliğinde doğa sporları bu ilgiyi güvenli biçimde denemesi için iyi fırsatlardır.',
         tipsStudent: [
@@ -295,6 +310,8 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         summary: 'Okumaktan, yazmaktan ve dillerden hoşlanıyor',
         student:
           'Okumak, yazmak, diller öğrenmek ve bilgi biriktirmek sana keyif veriyor. Bu ilgi; dil ve edebiyat, çeviri ve tercümanlık, gazetecilik ve editörlük, bilgi ve belge yönetimi, tarih, felsefe, hukuk ve akademik araştırma gibi alanlarla ilişkilidir. Okul gazetesi, münazara, yabancı dil kulüpleri ya da günlük tutmak bu ilgiyi denemen için iyi fırsatlar.',
+        adult:
+          'Okumak, yazmak, diller öğrenmek ve bilgi biriktirmek sana keyif veriyor. Bu ilgi; dil ve edebiyat, çeviri ve tercümanlık, gazetecilik ve editörlük, bilgi ve belge yönetimi, tarih, felsefe, hukuk ve akademik araştırma gibi alanlarla ilişkilidir. Düzenli yazmak (ör. blog ya da günlük tutmak), bir kitap kulübüne katılmak ya da yeni bir dil öğrenmek bu ilgiyi denemen için iyi fırsatlar.',
         parent:
           'Çocuğunuz okumaktan, yazmaktan, dil öğrenmekten ve bilgi biriktirmekten hoşlanacağını belirtiyor. Bu ilgi; dil ve edebiyat, çeviri ve tercümanlık, gazetecilik ve editörlük, bilgi ve belge yönetimi, tarih, felsefe, hukuk ve akademik araştırma gibi alanlarla ilişkilidir. Okul gazetesi, münazara ya da yabancı dil kulüpleri bu ilgiyi denemesi için iyi fırsatlardır.',
         tipsStudent: [

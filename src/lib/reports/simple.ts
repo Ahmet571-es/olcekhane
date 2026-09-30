@@ -69,58 +69,93 @@ const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFr
 const sentence = (s: string) => (/[.!?…]$/.test(s.trim()) ? s.trim() : `${s.trim()}.`);
 
 /** "Destek almak isterseniz" kutusu (tam raporla aynı metin). */
+const SUPPORT: Record<Audience, { title: string; lines: string[] }> = {
+  student: {
+    title: 'Konuşmak istersen',
+    lines: [
+      'Kendini zor hissettiğinde bunu tek başına taşımak zorunda değilsin. Ailenle, okulundaki rehber öğretmeninle ya da güvendiğin bir yetişkinle konuşabilirsin. Acil bir durumda 112’yi arayabilirsin.',
+    ],
+  },
+  parent: {
+    title: 'Destek almak isterseniz',
+    lines: [
+      'Okulun rehberlik servisi (psikolojik danışman) ilk başvuru adresidir ve ücretsizdir.',
+      'Aile hekiminiz, gerekirse çocuk ve ergen ruh sağlığı uzmanına yönlendirebilir.',
+      'Acil bir durum olduğunu düşünüyorsanız 112’yi arayın.',
+    ],
+  },
+  adult: {
+    title: 'Destek almak istersen',
+    lines: [
+      'Kendini zor hissettiğinde bunu tek başına taşımak zorunda değilsin; güvendiğin biriyle konuşmak iyi gelir.',
+      'Aile hekimine başvurabilirsin; gerekirse seni bir ruh sağlığı uzmanına yönlendirebilir. Üniversitede okuyorsan kampüsteki psikolojik danışmanlık biriminden de destek alabilirsin.',
+      'Acil bir durum olduğunu düşünüyorsan 112’yi ara.',
+    ],
+  },
+};
+
 export function supportText(audience: Audience): { title: string; lines: string[] } {
-  return audience === 'student'
-    ? {
-        title: 'Konuşmak istersen',
-        lines: [
-          'Kendini zor hissettiğinde bunu tek başına taşımak zorunda değilsin. Ailenle, okulundaki rehber öğretmeninle ya da güvendiğin bir yetişkinle konuşabilirsin. Acil bir durumda 112’yi arayabilirsin.',
-        ],
-      }
-    : {
-        title: 'Destek almak isterseniz',
-        lines: [
-          'Okulun rehberlik servisi (psikolojik danışman) ilk başvuru adresidir ve ücretsizdir.',
-          'Aile hekiminiz, gerekirse çocuk ve ergen ruh sağlığı uzmanına yönlendirebilir.',
-          'Acil bir durum olduğunu düşünüyorsanız 112’yi arayın.',
-        ],
-      };
+  const { title, lines } = SUPPORT[audience];
+  return { title, lines: [...lines] };
+}
+
+/** Kime yazıldığına göre metin; yetişkin metni verilmezse öğrenci metni kullanılır (ikisi de "sen" diliyle). */
+function byAudience(audience: Audience, t: { student: string; parent: string; adult?: string }): string {
+  if (audience === 'parent') return t.parent;
+  return audience === 'adult' ? (t.adult ?? t.student) : t.student;
 }
 
 /** Raporun sonundaki "bu bir tanı değildir" notu (tam raporla aynı metin). */
 export function disclaimerText(report: Pick<ReportContent, 'audience' | 'academic'>): { title: string; text: string } {
-  const you = report.audience === 'student';
   if (report.academic) {
     return {
       title: 'Bu rapor bir sınav notu değildir.',
-      text: you
-        ? 'Tek bir testteki cevaplarına dayanır ve bugün neyi bildiğini gösterir. Eksikler çalışarak tamamlanır.'
-        : 'Tek bir testteki cevaplara dayanır ve bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli; sınıf geçme ya da okul seçimi gibi kararlarda tek başına dayanak olarak kullanılmamalıdır.',
+      text: byAudience(report.audience, {
+        student: 'Tek bir testteki cevaplarına dayanır ve bugün neyi bildiğini gösterir. Eksikler çalışarak tamamlanır.',
+        parent:
+          'Tek bir testteki cevaplara dayanır ve bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli; sınıf geçme ya da okul seçimi gibi kararlarda tek başına dayanak olarak kullanılmamalıdır.',
+      }),
     };
   }
   return {
     title: 'Bu rapor bir tanı değildir.',
-    text: you
-      ? 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.'
-      : 'Çocuğunuzun kendi cevaplarına ya da görevdeki performansına dayanır; bugünkü hâlini anlatır. Eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.',
+    text: byAudience(report.audience, {
+      student: 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.',
+      parent:
+        'Çocuğunuzun kendi cevaplarına ya da görevdeki performansına dayanır; bugünkü hâlini anlatır. Eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.',
+      adult:
+        'Senin cevaplarına dayanır ve bugünkü hâlini anlatır; insanlar zamanla değişir ve gelişir. Eğitim, iş ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.',
+    }),
   };
 }
 
+/** Yetişkinde ilgilerin ayrışmamış olması (iki ilgi profilinde de aynı metin). */
+const FLAT_ADULT =
+  'Alanlar arasındaki farklar küçük: ilgilerin belirgin bir yönde toplanmıyor. Bu, ilgilerinin geniş bir alana yayıldığını ya da henüz netleşmediğini gösterebilir. En üstteki alanları yakından tanımak iyi bir adım olur.';
+
 /** İlgi profilinde yorumu etkileyen durumlar (tam raporla aynı metinler). */
 export function interestNotes(p: InterestProfile, audience: Audience): string[] {
-  const you = audience === 'student';
   const notes: string[] = [];
   if (p.allLow) {
     notes.push(
-      you
-        ? 'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşecek.'
-        : 'Çocuğunuz etkinliklerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
+      byAudience(audience, {
+        student:
+          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşecek.',
+        parent:
+          'Çocuğunuz etkinliklerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
+        adult:
+          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu, listedeki etkinliklerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Keyif aldığın işleri düşünerek testi başka bir gün yeniden çözmek ilgilerini daha net gösterebilir.',
+      }),
     );
   } else if (p.flat) {
     notes.push(
-      you
-        ? 'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu senin yaşında çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.'
-        : 'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu yaşta olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
+      byAudience(audience, {
+        student:
+          'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu senin yaşında çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.',
+        parent:
+          'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu yaşta olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
+        adult: FLAT_ADULT,
+      }),
     );
   }
   if (p.closeCall) notes.push(p.closeCall);
@@ -129,34 +164,43 @@ export function interestNotes(p: InterestProfile, audience: Audience): string[] 
 
 /** Sıralı ilgi profilinde yorumu etkileyen durumlar. */
 export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
-  const you = audience === 'student';
   if (p.allLow) {
     return [
-      you
-        ? 'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşecek.'
-        : 'Çocuğunuz işlerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
+      byAudience(audience, {
+        student:
+          'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşecek.',
+        parent:
+          'Çocuğunuz işlerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
+        adult:
+          'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu, listedeki işlerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Keyif aldığın işleri ve etkinlikleri düşünerek testi başka bir gün yeniden çözmek ilgilerini daha net gösterebilir.',
+      }),
     ];
   }
   const notes: string[] = [];
   if (p.noneHigh) {
     notes.push(
-      you
-        ? 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alanı görüyorsun. İlgiler denedikçe netleşir.'
-        : 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alan yer alıyor. İlgiler yeni deneyimlerle netleşir.',
+      byAudience(audience, {
+        student: 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alanı görüyorsun. İlgiler denedikçe netleşir.',
+        parent: 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alan yer alıyor. İlgiler yeni deneyimlerle netleşir.',
+      }),
     );
   }
   if (p.flat) {
     notes.push(
-      you
-        ? 'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.'
-        : 'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
+      byAudience(audience, {
+        student:
+          'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.',
+        parent:
+          'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
+        adult: FLAT_ADULT,
+      }),
     );
   }
   return notes;
 }
 
 export function toSimpleReport(r: ReportContent): SimpleReport {
-  const you = r.audience === 'student';
+  const you = r.audience !== 'parent';
   const base = {
     instrumentName: r.instrumentName,
     audience: r.audience,

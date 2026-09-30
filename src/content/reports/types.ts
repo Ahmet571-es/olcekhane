@@ -8,6 +8,11 @@ export interface BandText {
   student: string;
   /** Veliye, çocuğu üçüncü şahısla anlatarak. */
   parent: string;
+  /**
+   * Testi kendisi için çözen yetişkine (ikinci tekil şahısla). Yalnızca öğrenci metni okula ya da ergenliğe özgü
+   * olduğunda yazılır; verilmezse öğrenci metni kullanılır.
+   */
+  adult?: string;
   tipsStudent: string[];
   tipsParent: string[];
   /** true ise raporda "destek almak için" kutusu gösterilir. */
@@ -20,7 +25,7 @@ export interface ReportTemplate {
   version: string;
   bandLabels: Partial<Record<Band, string>>;
   /** Çok ölçekli raporlarda "Genel bakış" başlığının altındaki açıklama. Verilmezse kişilik metni kullanılır. */
-  overview?: { student: string; parent: string };
+  overview?: { student: string; parent: string; adult?: string };
   /**
    * Yüksek puanın gelişmiş bir beceri anlamına geldiği ölçekler (ör. çalışma alışkanlıkları). Bu durumda
    * "Öne çıkanlar" yerine "Güçlü yanlar" ve "Geliştirilebilecek alanlar" ayrı ayrı gösterilir.

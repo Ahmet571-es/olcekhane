@@ -49,6 +49,27 @@ describe('rapor uçları', () => {
     expect(logs).toEqual([]);
   }, 60_000);
 
+  it('yetişkine yalnızca kişisel rapor ve onun PDF’i; yetişkinlere açık olmayan testte yetişkin seçimi reddedilir', async () => {
+    const slug = 'ayrintili-kisilik-profili';
+    const body = { ...likertBody(slug, 10, (i) => i % 5), grade: 14 };
+    const res = await reportResponse(post(`/api/rapor/${slug}`, body), slug);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as Record<string, { audience: string }>;
+    expect(Object.keys(json)).toEqual(['adult']);
+    expect(json.adult.audience).toBe('adult');
+
+    const pdf = await pdfResponse(post(`/api/rapor/${slug}/pdf`, { ...body, audience: 'adult' }), slug);
+    expect(pdf.status).toBe(200);
+    expect(pdf.headers.get('content-disposition')).toContain(`olcekhane-${slug}-kisisel-raporu.pdf`);
+    expect(Buffer.from(await pdf.arrayBuffer()).subarray(0, 5).toString()).toBe('%PDF-');
+    // Yetişkin için veli raporu, okul çağındaki için kişisel rapor hazırlanmaz.
+    expect((await pdfResponse(post(`/api/rapor/${slug}/pdf`, { ...body, audience: 'parent' }), slug)).status).toBe(400);
+    expect((await pdfResponse(post(`/api/rapor/${slug}/pdf`, { ...body, grade: 10, audience: 'adult' }), slug)).status).toBe(400);
+    const oz = { ...likertBody('oz-saygi', 8, () => 1), grade: 14 };
+    expect((await reportResponse(post('/api/rapor/oz-saygi', oz), 'oz-saygi')).status).toBe(400);
+    expect(logs).toEqual([]);
+  }, 60_000);
+
   it('başka siteden gelen istek, bozuk gövde ve bilinmeyen test reddedilir', async () => {
     const body = likertBody('oz-saygi', 8, () => 1);
     expect((await reportResponse(post('/api/rapor/oz-saygi', body, 'https://baska.example'), 'oz-saygi')).status).toBe(403);
