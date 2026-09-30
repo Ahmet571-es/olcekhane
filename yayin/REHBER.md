@@ -18,7 +18,7 @@ sağlayıcı ya da ülke seçilirse önce metnin değişmesi gerekir.
 
 | Kalem | Seçilen | Not |
 |---|---|---|
-| Sunucu | Hostinger VPS **KVM 2**, veri merkezi **Almanya** | İşletim sistemi **Ubuntu 24.04**, eklentisiz ("Plain OS"). Site az kaynak kullanır; KVM 1 de yeter, gerekirse sonradan yükseltilir. |
+| Sunucu | Hostinger VPS **KVM 1**, veri merkezi **Almanya** (Düsseldorf) | İşletim sistemi **Ubuntu 24.04**, eklentisiz ("Plain OS"). Site az kaynak kullanır (tek çekirdekte bir PDF rapor yaklaşık 0,15 saniyede hazırlanır); trafik çok artarsa KVM 2'ye yükseltilir. |
 | Alan adı | `olcekhane.com` (Namecheap) | DNS kayıtlarını düzenleyebilmelisiniz. |
 | E-posta kutusu | Yalnızca gelen e-postalar için tek adres, ör. `bilgi@olcekhane.com` | Site e-posta göndermez. Ziyaretçiler size bu adrese yazar; adres iletişim sayfasında görünür. |
 
