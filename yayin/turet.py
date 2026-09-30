@@ -35,9 +35,18 @@ def main() -> int:
     if ana and all(c in "0123456789abcdefABCDEF" for c in ana):
         ana = ana.lower()
     if len(ana) < 32:
+        # Değerin kendisi yazılmaz; yalnızca uzunluğu ve karakter türü (yanlış kutuya yapıştırılan bir değeri
+        # ya da çalışmayan bir kopyalamayı ayırt etmek için).
+        if not ana:
+            neden = "tanımlı değil"
+        else:
+            tur = "yalnızca 0-9 ve a-f" if all(c in "0123456789abcdef" for c in ana) else "başka karakterler de"
+            neden = (
+                f"{len(ana)} karakter ({tur} içeriyor); en az 32 olmalı. Ana Parola sayfasının ürettiği "
+                "parola 64 karakterdir"
+            )
         print(
-            "HATA: ANA_SIFRE tanımlı değil ya da 32 karakterden kısa. GitHub'da depo ayarlarındaki "
-            "Secrets bölümüne rehberdeki gibi girin.",
+            f"HATA: ANA_SIFRE {neden}. GitHub'da depo ayarlarındaki Secrets bölümüne rehberdeki gibi yeniden girin.",
             file=sys.stderr,
         )
         return 1

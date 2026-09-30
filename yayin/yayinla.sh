@@ -56,7 +56,8 @@ temizle() {
   rm -rf "$IS"
 }
 trap temizle EXIT
-python3 "$KOK/yayin/turet.py" "$IS/anahtar" || hata "ANA_SIFRE okunamadı (GitHub Secrets: ANA_SIFRE)."
+turet_cikti=$(python3 "$KOK/yayin/turet.py" "$IS/anahtar" 2>&1) ||
+  hata "ANA_SIFRE okunamadı (GitHub Secrets: ANA_SIFRE): ${turet_cikti#HATA: }"
 gh_not notice "Anahtarlar" "ANA_SIFRE parmak izi: $(cat "$IS/anahtar/parmak_izi") (değişmemeli; ANA_SIFRE'nin kendisi değildir)."
 
 # Sunucunun SSH anahtarı: depoda kayıtlıysa yalnızca o kabul edilir; değilse ilk bağlantıda öğrenilir ve
