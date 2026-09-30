@@ -124,7 +124,7 @@ export const durGitGorevi: TaskInstrument = {
     normNote:
       'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Tepki ketlemesi çocukluk ve ergenlik boyunca gelişir; çocuklar bu tür görevlerde yetişkinlerden daha çok yanlışlıkla basar (Casey ve ark., 1997). Bu yüzden bir norm yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
     ageNote:
-      '3. sınıftan itibaren uygulanır. Klavyeyle (boşluk tuşu) ya da dokunmatik ekranla yapılabilir; aynı kişinin sonuçları karşılaştırılacaksa aynı tür cihaz kullanılmalıdır.',
+      '3. sınıftan itibaren uygulanır. Dokunmatik ekranla, fareyle ya da klavyeyle (boşluk tuşu) yapılabilir; aynı kişinin sonuçları karşılaştırılacaksa aynı tür cihaz kullanılmalıdır.',
     license: 'Özgün görev. Ölçekhane tarafından geliştirilmiştir.',
     limitations: [
       'Dikkat eksikliği ve hiperaktivite bozukluğu (DEHB) gibi durumlar için tanı koymaz; tanı yalnızca uzman değerlendirmesiyle konur.',

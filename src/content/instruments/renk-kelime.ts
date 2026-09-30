@@ -142,7 +142,7 @@ export const renkKelimeGorevi: TaskInstrument = {
       'Dikkat eksikliği ve hiperaktivite bozukluğu (DEHB) gibi durumlar için tanı koymaz; tanı yalnızca uzman değerlendirmesiyle konur.',
       'Renk körlüğü (özellikle kırmızı ile yeşili ayırt etme güçlüğü) olan kişilerde sonuç geçerli değildir. Renkler, kırmızı-yeşil renk körlüğünde de daha kolay ayrılacak biçimde seçildi ve görev kısa bir renk denemesiyle başlar; bu deneme bir renk körlüğü testi değildir, yalnızca renklerin o ekranda ayırt edilip edilmediğine bakar.',
       'Okumayı yeni öğrenen ya da yavaş okuyan çocuklarda kelime yeterince otomatik okunmadığı için renk-kelime etkisi küçük çıkabilir; bu, ketlemenin güçlü olduğu anlamına gelmez.',
-      'Sonuç; yorgunluk, ortamdaki gürültü, isteklilik ve cihaz (dokunmatik ekran ya da fare) gibi etkenlerden etkilenir.',
+      'Sonuç; yorgunluk, ortamdaki gürültü, isteklilik ve cihaz (dokunmatik ekran, fare ya da klavye) gibi etkenlerden etkilenir.',
       'Bu görevin güvenirlik ve norm çalışması henüz yapılmadı.',
     ],
     citations: [
