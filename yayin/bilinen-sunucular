@@ -1,0 +1,4 @@
+# Yayın iş akışının bağlandığı sunucunun SSH anahtarı (ilk kurulumda öğrenildi, 30 Eylül 2026). Yayın yalnızca
+# bu anahtarı gösteren sunucuya bağlanır. Sunucu yeniden kurulursa bu satır silinir; yeni anahtar ilk kurulumda
+# yeniden öğrenilir.
+179.198.215.72 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILsYpBP9q/+XYwjtWAAgIhu/HRTUKD4mXciUUctfZiiD

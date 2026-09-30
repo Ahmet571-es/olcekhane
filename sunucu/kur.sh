@@ -57,8 +57,20 @@ env_deger() {
 
 # --- Paketler ve temel güvenlik ----------------------------------------------------------------------
 
+# apt hatalarında nedeni (E:/Err: satırları) özete yazar; yalnızca çıkış kodu anlamak için yetmez.
+apt_hatasi() { # başlık çıktı
+  hata "$1: $(printf '%s\n' "$2" | { grep -E '^(E:|Err:|W:)' || true; } | tail -n 5 | tr '\n' ' ')"
+}
+apt_guncelle() {
+  local cikti
+  cikti=$(apt-get -o DPkg::Lock::Timeout=900 -q update 2>&1) || apt_hatasi "Paket listeleri güncellenemedi (apt-get update)" "$cikti"
+  # apt, bazı depo hatalarında da 0 ile çıkar; o hatalar uyarı olarak görünür.
+  printf '%s\n' "$cikti" | { grep -E '^(E:|W:)' || true; } | while IFS= read -r satir; do uyari "apt: $satir"; done
+}
 apt_kur() {
-  apt-get -o DPkg::Lock::Timeout=900 -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold install "$@" >/dev/null
+  local cikti
+  cikti=$(apt-get -o DPkg::Lock::Timeout=900 -y -q -o Dpkg::Options::=--force-confdef \
+    -o Dpkg::Options::=--force-confold install "$@" 2>&1) || apt_hatasi "Paketler kurulamadı ($*)" "$cikti"
 }
 
 paketler() {
@@ -69,7 +81,7 @@ paketler() {
     *) uyari "Denenmemiş işletim sistemi: ${PRETTY_NAME:-bilinmiyor}. Ubuntu 24.04 LTS önerilir." ;;
   esac
   [ "$(dpkg --print-architecture)" = amd64 ] || hata "Uygulama görüntüsü amd64 için derleniyor; bu sunucunun mimarisi $(dpkg --print-architecture)."
-  apt-get -o DPkg::Lock::Timeout=900 -q update >/dev/null
+  apt_guncelle
   apt_kur ca-certificates curl ufw zstd jq unattended-upgrades cron
   # Güvenlik güncellemeleri kendiliğinden kurulur. Çekirdek güncellemesi gibi yeniden başlatma gerektiren
   # bir güncelleme olursa sunucu gece 04:30'da (Türkiye saati) kendiliğinden yeniden başlar; Docker ve
@@ -150,8 +162,20 @@ bellek_dokumu_kapat() {
 docker_kur() {
   if ! command -v docker >/dev/null || ! docker compose version >/dev/null 2>&1; then
     install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc ||
+      hata "Docker'ın paket imzası anahtarı indirilemedi (download.docker.com)."
     chmod a+r /etc/apt/keyrings/docker.asc
+    # Sağlayıcının hazır kalıbında Docker deposu başka bir dosyada ya da başka bir anahtarla tanımlı olabilir;
+    # apt o zaman "Conflicting values set for option Signed-By" diyerek bütün güncellemeyi durdurur. Böyle
+    # tanımlar devre dışı bırakılır (dosya adına .olcekhane-devredisi eklenir; apt bu dosyaları okumaz).
+    local kaynak
+    for kaynak in /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+      [ -f "$kaynak" ] && [ "$kaynak" != /etc/apt/sources.list.d/docker.sources ] || continue
+      if grep -q 'download\.docker\.com' "$kaynak"; then
+        mv "$kaynak" "$kaynak.olcekhane-devredisi"
+        uyari "Sunucudaki eski Docker deposu tanımı devre dışı bırakıldı: $kaynak"
+      fi
+    done
     . /etc/os-release
     cat > /etc/apt/sources.list.d/docker.sources <<EOF
 Types: deb
@@ -161,7 +185,7 @@ Components: stable
 Architectures: $(dpkg --print-architecture)
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
-    apt-get -o DPkg::Lock::Timeout=900 -q update >/dev/null
+    apt_guncelle
     apt_kur docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     bilgi "Docker kuruldu: $(docker --version)"
   fi
