@@ -115,11 +115,35 @@ jobs:
         env:
           ALAN: ${{ steps.hazir.outputs.alan }}
         run: |
+          acik=0
           for _ in 1 2 3 4 5 6; do
-            if curl -fsS -m 15 "https://$ALAN/api/saglik" >/dev/null 2>&1; then
-              echo "::notice title=Site açık::https://$ALAN yanıt veriyor."
-              exit 0
-            fi
+            if curl -fsS -m 15 "https://$ALAN/api/saglik" >/dev/null 2>&1; then acik=1; break; fi
             sleep 20
           done
-          echo "::warning title=Site dışarıdan açılmıyor::https://$ALAN yanıt vermiyor. Alan adının DNS kaydı sunucuyu henüz göstermiyor ya da sertifika alınamadı olabilir (yayin/REHBER.md, DNS)."
+          if [ "$acik" != 1 ]; then
+            echo "::warning title=Site dışarıdan açılmıyor::https://$ALAN yanıt vermiyor. Alan adının DNS kaydı sunucuyu henüz göstermiyor ya da sertifika alınamadı olabilir (yayin/REHBER.md, DNS)."
+            exit 0
+          fi
+          echo "::notice title=Site açık::https://$ALAN yanıt veriyor."
+          # Bir ziyaretçinin yapacağı gibi: sayfalar, test raporu ve PDF (örnek cevaplarla; hiçbir şey saklanmaz).
+          C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
+          sorun=""
+          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz /iletisim /yasal/aydinlatma-metni; do
+            kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
+            [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
+          done
+          GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 7, "data": {"engine": "likert", "answers": {f"R{i}": {"value": i % 4, "rtMs": 2500} for i in range(1, 11)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$GOVDE" "https://$ALAN/api/rapor/oz-saygi" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["student"]["items"] and r["parent"]["items"]'; then
+            sorun="$sorun rapor"
+          fi
+          PDF_GOVDE=$(printf '%s' "$GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["audience"]="parent"; print(json.dumps(b))')
+          if ! "${C[@]}" -f -m 60 -H 'content-type: application/json' -d "$PDF_GOVDE" -o "$RUNNER_TEMP/rapor.pdf" \
+            "https://$ALAN/api/rapor/oz-saygi/pdf" || [ "$(head -c 5 "$RUNNER_TEMP/rapor.pdf")" != '%PDF-' ]; then
+            sorun="$sorun pdf"
+          fi
+          if [ -n "$sorun" ]; then
+            echo "::error title=Site dışarıdan sınandı::Açılmayan ya da hatalı yanıt veren bölümler:$sorun"
+            exit 1
+          fi
+          echo "::notice title=Site dışarıdan sınandı::Sayfalar, test raporu ve PDF indirme internetten çalışıyor."
