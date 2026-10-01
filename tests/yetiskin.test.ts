@@ -9,6 +9,7 @@ import { def, likertBody } from './helpers/bodies';
 
 const KISILIK = 'ayrintili-kisilik-profili';
 const ALTI = 'alti-boyutlu-kisilik-profili';
+const DUYGU = 'duygusal-zeka-bilesenleri';
 const ILGI = 'meslek-ilgi-alanlari';
 
 /**
@@ -56,7 +57,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, ILGI].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, ILGI].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);
@@ -82,6 +83,15 @@ describe('yetişkinler', () => {
         }
       }
       if (t.overview) expect(schoolWords(t.overview.adult ?? t.overview.student), d.slug).toEqual([]);
+    }
+  });
+
+  it('yetişkinin çözerken gördüğü yönerge ve soru metninde okula özgü sözcük yok', () => {
+    // Tanıtım metni (description) öğrenci ve veli raporlarını da anlattığı için burada aranmaz; maddeler de aranmaz,
+    // çünkü ilgi testinde "ilkokul öğretmeni olmak" gibi meslekler yetişkin için de doğrudur.
+    for (const d of INSTRUMENTS.filter((x) => x.adults)) {
+      const texts = [d.intro.title, ...d.intro.paragraphs, d.engine === 'likert' ? d.prompt : ''];
+      for (const text of texts) expect(schoolWords(text), `${d.slug}: ${text}`).toEqual([]);
     }
   });
 

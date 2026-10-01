@@ -1,5 +1,6 @@
 import { inflateSync } from 'node:zlib';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { REPORT_TEMPLATES } from '@/content/reports';
 import { AssessmentError, evaluate } from '@/lib/assessment/evaluate';
 import { answersBody, pdfBody, type AnswersBody } from '@/lib/assessment/schemas';
 import type { LikertInstrument, QuizInstrument } from '@/lib/instruments/types';
@@ -42,6 +43,11 @@ describe('test raporları', () => {
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((row) => row.ciLow === null && row.ciHigh === null)).toBe(true);
     expect(r.parent.chartNote ?? '').not.toContain('bant');
+    // Değerlendirici ölçekte "uçlardan biri iyi, öteki kötü değil" denmez; şablonun kendi açıklaması gösterilir.
+    const t = REPORT_TEMPLATES['calisma-aliskanliklari'].overview!;
+    expect(r.parent.chartNote).toBe(t.parent);
+    expect(r.student.chartNote).toBe(t.student);
+    expect(r.student.chartNote).not.toContain('Uçlardan biri');
   });
 
   it('mesleki ilgi: altıgen grafik ve üç harfli ilgi kodu', () => {

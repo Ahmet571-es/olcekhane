@@ -445,10 +445,18 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     };
   }
 
+  // Şablonun kendi genel açıklaması varsa o kullanılır: değerlendirici ölçeklerde "uçlardan biri iyi, öteki kötü değil"
+  // cümlesi yanlış olur (çalışma alışkanlıkları); bazı testler de toplam puan olmadığını ya da ölçeklerin kısa olduğunu
+  // söylemelidir (duygusal zekâ bileşenleri). Açıklama kırmızı işareti zaten anlatabildiği için ölçüm payı varsa
+  // yalnızca sarı bant cümlesi eklenir.
+  const band = margin ? (you ? 'Sarı bant ölçümün doğal payı.' : 'Sarı bant ölçümün doğal payını gösterir.') : '';
+  const overview = r.overview ? [r.overview, band].filter(Boolean).join(' ') : undefined;
   return {
     ...base,
     chartTitle: one ? r.sections[0].name : 'Genel bakış',
-    chartNote: one ? marks || undefined : [you ? 'Her satır bir özellik.' : 'Her satır bir boyut.', marks, poles].filter(Boolean).join(' '),
+    chartNote: one
+      ? marks || undefined
+      : (overview ?? [you ? 'Her satır bir özellik.' : 'Her satır bir boyut.', marks, poles].filter(Boolean).join(' ')),
     chart: { type: 'rulers', rows: r.sections.map(ruler) },
     keyFigures: [],
     itemsTitle: one ? 'Sonuç' : 'Boyutlar',

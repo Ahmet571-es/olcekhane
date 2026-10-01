@@ -5,6 +5,7 @@ import { besFaktor } from './bes-faktor';
 import { calismaAliskanliklari } from './calisma-aliskanliklari';
 import { dikkatBellek } from './dikkat-bellek';
 import { durGitGorevi } from './dur-git';
+import { duygusalZekaBilesenleri } from './duygusal-zeka-bilesenleri';
 import { harfIsaretleme } from './harf-isaretleme';
 import { matematik } from './matematik';
 import { meslekIlgiAlanlari } from './meslek-ilgi-alanlari';
@@ -30,6 +31,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   renkKelimeGorevi,
   durGitGorevi,
   siraylaBirlestirme,
+  duygusalZekaBilesenleri,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export function getInstrumentDef(slug: string): InstrumentDef | undefined {
