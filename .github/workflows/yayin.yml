@@ -129,7 +129,7 @@ jobs:
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
           # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
-          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili alti-boyutlu-kisilik-profili duygusal-zeka-bilesenleri kisilerarasi-tarz hobi-ve-serbest-zaman-ilgileri renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi geriye-donuk-hatirlama"
+          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili alti-boyutlu-kisilik-profili duygusal-zeka-bilesenleri kisilerarasi-tarz hobi-ve-serbest-zaman-ilgileri renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi geriye-donuk-hatirlama zihinde-dondurme"
           for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
@@ -180,6 +180,12 @@ jobs:
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$GERI_GOVDE" "https://$ALAN/api/rapor/geriye-donuk-hatirlama" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 4 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Bir geri ve iki geri"'; then
             sorun="$sorun geriye-donuk-hatirlama-raporu"
+          fi
+          # Zihinde Döndürme: 80 deneme; cevaplar sırayla "Aynı" ve "Ayna görüntüsü".
+          ZD_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"zihinde-dondurme": [{"index": i, "response": 1 + i % 2, "rtMs": 1500} for i in range(80)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$ZD_GOVDE" "https://$ALAN/api/rapor/zihinde-dondurme" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Döndürme açısına göre tipik karar süresi"'; then
+            sorun="$sorun zihinde-dondurme-raporu"
           fi
           # Aynı test yetişkin olarak ("Yetişkinim", 14): yalnızca kişisel rapor.
           YETISKIN_GOVDE=$(printf '%s' "$KISILIK_GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["grade"]=14; print(json.dumps(b))')

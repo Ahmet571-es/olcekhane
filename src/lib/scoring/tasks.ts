@@ -4,11 +4,13 @@ import type {
   DigitSpanTask,
   FlankerTask,
   GoNoGoTask,
+  MentalRotationTask,
   NBackTask,
   SpatialSpanTask,
   SymbolMatchTask,
   TrailTask,
 } from '@/lib/instruments/types';
+import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { median, round } from './stats';
 
@@ -799,6 +801,129 @@ export function scoreNBack(task: NBackTask, input: NBackTrialInput[]): { result:
   return { result: { levels, blocks } };
 }
 
+/* ---------- Zihinde döndürme ---------- */
+
+export interface RotationTrialInput {
+  index: number;
+  /** 1: "Aynı", 2: "Ayna görüntüsü"; null: süre içinde cevap verilmedi. */
+  response: number | null;
+  rtMs: number | null;
+}
+
+export interface RotationAngleResult {
+  /** Döndürme farkı (derece, 0–180). */
+  angle: number;
+  /** Bu farktaki deneme sayısı ("aynı" ve "ayna görüntüsü" birlikte). */
+  n: number;
+  correct: number;
+  accuracy: number;
+  /** Bu farkta doğru bulunan "aynı" şekillerde tipik (ortanca) karar süresi (ms); yeterince doğru cevap yoksa null. */
+  medianRt: number | null;
+}
+
+export interface RotationResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  /** "Aynı" şekillerde ve ayna görüntülerinde doğru cevap oranı. */
+  accSame: number;
+  accMirror: number;
+  timeouts: number;
+  /** Şekiller görünür görünmez (300 ms'den önce) verilen cevaplar: doğru sayılmaz. */
+  anticipations: number;
+  /** Süre içinde verilen cevaplardan "Aynı" olanların oranı (0–1); hiç cevap yoksa null. */
+  sameShare: number | null;
+  /** Aynı şekillerde süre içinde ve erken olmadan "Ayna görüntüsü" denen denemeler; bunlardan 135–180 derecede olanlar. */
+  sameSaidMirror: number;
+  sameSaidMirrorLarge: number;
+  /** Ayna görüntülerinde süre içinde ve erken olmadan "Aynı" denen denemeler. */
+  mirrorSaidSame: number;
+  byAngle: RotationAngleResult[];
+  /** Doğru bulunan "aynı" şekillerde tipik karar süresi (ms), bütün açılarda. */
+  medianRt: number | null;
+  /** Az (0 ve 45 derece) ve çok (135 ve 180 derece) döndürülmüş, doğru bulunan "aynı" şekillerde tipik karar süresi (ms). */
+  rtSmall: number | null;
+  rtLarge: number | null;
+  /** Çok ve az döndürülmüş şekillerdeki tipik karar süreleri arasındaki fark (ms): döndürme etkisi. */
+  rotationCostMs: number | null;
+}
+
+/** İki şekli karşılaştırmak zaman alır: 300 ms'den kısa cevaplar şekillere bakmadan verilmiş sayılır. */
+export const ROTATION_ANTICIPATION_MS = 300;
+/** Bütün açılardaki tipik süre en az bu kadar doğru cevaptan hesaplanır. */
+export const ROTATION_MIN_CORRECT = 10;
+/** Bir açıdaki tipik süre en az bu kadar, az ve çok döndürülmüş gruplarınki en az bu kadar doğru cevaptan hesaplanır. */
+export const ROTATION_MIN_PER_ANGLE = 3;
+export const ROTATION_MIN_PER_GROUP = 6;
+
+export function scoreRotation(task: MentalRotationTask, input: RotationTrialInput[]): { result: RotationResult } {
+  const seen = new Set<number>();
+  type Scored = { angle: number; mirror: boolean; correct: boolean; timeout: boolean; anticipation: boolean; response: number | null; rt: number | null };
+  const trials: Scored[] = [];
+  let sameSaidMirror = 0;
+  let sameSaidMirrorLarge = 0;
+  let mirrorSaidSame = 0;
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= task.trials.length) throw new TaskInputError('Geçersiz deneme.');
+    if (t.response !== null && t.response !== 1 && t.response !== 2) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (seen.has(t.index)) continue;
+    seen.add(t.index);
+    const stim = task.trials[t.index];
+    // Süre dolduktan sonra gelen (tarayıcının zamanlayıcısı gecikmiş) cevap, süre aşımı sayılır.
+    const timeout = t.response === null || t.rtMs === null || t.rtMs > task.timeoutMs;
+    const anticipation = !timeout && (t.rtMs as number) < ROTATION_ANTICIPATION_MS;
+    const correct = !timeout && !anticipation && t.response === (stim.mirror ? 2 : 1);
+    trials.push({ angle: disparity(stim.angle), mirror: stim.mirror, correct, timeout, anticipation, response: timeout ? null : t.response, rt: t.rtMs });
+    if (!timeout && !anticipation && !correct) {
+      if (stim.mirror) mirrorSaidSame++;
+      else {
+        sameSaidMirror++;
+        if (disparity(stim.angle) >= 135) sameSaidMirrorLarge++;
+      }
+    }
+  }
+  if (trials.length !== task.trials.length) throw new TaskInputError('Denemelerin hepsi gönderilmedi.');
+  const acc = (xs: Scored[]) => (xs.length ? round(xs.filter((t) => t.correct).length / xs.length, 3) : 0);
+  const rtOf = (xs: Scored[], min: number) =>
+    medianOrNull(
+      xs.filter((t) => t.correct && !t.mirror).map((t) => t.rt as number),
+      min,
+    );
+  const answered = trials.filter((t) => t.response !== null);
+  const rtSmall = rtOf(
+    trials.filter((t) => t.angle <= 45),
+    ROTATION_MIN_PER_GROUP,
+  );
+  const rtLarge = rtOf(
+    trials.filter((t) => t.angle >= 135),
+    ROTATION_MIN_PER_GROUP,
+  );
+  return {
+    result: {
+      n: trials.length,
+      correct: trials.filter((t) => t.correct).length,
+      accuracy: acc(trials),
+      accSame: acc(trials.filter((t) => !t.mirror)),
+      accMirror: acc(trials.filter((t) => t.mirror)),
+      timeouts: trials.filter((t) => t.timeout).length,
+      anticipations: trials.filter((t) => t.anticipation).length,
+      sameShare: answered.length ? round(answered.filter((t) => t.response === 1).length / answered.length, 3) : null,
+      sameSaidMirror,
+      sameSaidMirrorLarge,
+      mirrorSaidSame,
+      byAngle: DISPARITIES.map((angle) => {
+        const here = trials.filter((t) => t.angle === angle);
+        return { angle, n: here.length, correct: here.filter((t) => t.correct).length, accuracy: acc(here), medianRt: rtOf(here, ROTATION_MIN_PER_ANGLE) };
+      }),
+      medianRt: rtOf(trials, ROTATION_MIN_CORRECT),
+      rtSmall,
+      rtLarge,
+      rotationCostMs: rtSmall !== null && rtLarge !== null ? rtLarge - rtSmall : null,
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -812,6 +937,7 @@ export function taskQualityNotes(parts: {
   goNoGo?: GoNoGoResult;
   trail?: TrailResult;
   nBack?: NBackResult;
+  rotation?: RotationResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -895,6 +1021,31 @@ export function taskQualityNotes(parts: {
         );
       }
     }
+  }
+  const ro = parts.rotation;
+  if (ro && ro.n > 0) {
+    const errors = ro.n - ro.correct;
+    const wrong = ro.sameSaidMirror + ro.mirrorSaidSame;
+    const mostlyTimeouts = errors > 0 && ro.timeouts > errors / 2;
+    if (ro.timeouts / ro.n > 0.5) {
+      notes.push('Zihinde döndürme görevinde denemelerin yarısından çoğunda süre içinde cevap verilmemiş; görev yarıda bırakılmış olabilir. Bu görevin sonucu yorumlanmamalıdır.');
+    } else {
+      if (ro.accuracy < 0.6 && mostlyTimeouts) {
+        notes.push('Zihinde döndürme görevinde denemelerin birçoğunda süre içinde cevap verilmemiş; doğru cevaplar bu yüzden az.');
+      } else if (ro.accuracy < 0.4 && wrong > ro.correct) {
+        notes.push('Zihinde döndürme görevinde cevapların çoğu yanlış: “Aynı” ile “Ayna görüntüsü” düğmeleri birbirine karıştırılmış olabilir.');
+      } else if (ro.accuracy < 0.6 && ro.anticipations <= errors / 2) {
+        notes.push('Zihinde döndürme görevinde doğru cevaplar yarıya yakın: rastgele basan biri de yaklaşık yarısını doğru bulur. Yönerge anlaşılmamış ya da düğmelere rastgele basılmış olabilir.');
+      }
+      if (ro.sameShare !== null && (ro.sameShare > 0.85 || ro.sameShare < 0.15)) {
+        notes.push('Zihinde döndürme görevinde cevapların çoğunda aynı düğmeye basılmış; yönerge anlaşılmamış olabilir.');
+      }
+      if (ro.timeouts / ro.n > 0.2 && !(ro.accuracy < 0.6 && mostlyTimeouts)) {
+        notes.push('Zihinde döndürme görevinde denemelerin bir kısmında süre içinde cevap verilmemiş.');
+      }
+    }
+    if (ro.anticipations / ro.n > 0.5) notes.push('Zihinde döndürme görevinde cevapların çoğu şekiller görünür görünmez, onlara bakmadan verilmiş.');
+    else if (ro.anticipations / ro.n > 0.1) notes.push('Zihinde döndürme görevinde bazı cevaplar şekiller görünür görünmez, onlara bakmadan verilmiş.');
   }
   return notes;
 }

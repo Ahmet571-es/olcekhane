@@ -11,6 +11,7 @@ import {
   scoreFlanker,
   scoreGoNoGo,
   scoreNBack,
+  scoreRotation,
   scoreSpan,
   scoreSymbol,
   scoreTrail,
@@ -25,6 +26,8 @@ import {
   type GoNoGoTrialInput,
   type NBackResult,
   type NBackTrialInput,
+  type RotationResult,
+  type RotationTrialInput,
   type SpanTrialInput,
   type SymbolResult,
   type SymbolTrialInput,
@@ -138,7 +141,8 @@ export type TaskInputs =
   | ColorWordTrialInput[]
   | GoNoGoTrialInput[]
   | TrailPartInput[]
-  | NBackTrialInput[];
+  | NBackTrialInput[]
+  | RotationTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -159,6 +163,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let goNoGoRes: GoNoGoResult | undefined;
   let trailRes: TrailResult | undefined;
   let nBackRes: NBackResult | undefined;
+  let rotationRes: RotationResult | undefined;
   const pct = (x: number) => Math.round(x * 1000) / 10;
 
   for (const task of def.tasks) {
@@ -263,6 +268,15 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'gh_iki', raw: pct(two.pr), mean: null, nAnswered: two.hits, nItems: two.targets, band: null },
         { scaleKey: 'gh_yuk', raw: pct(one.pr - two.pr), mean: null, nAnswered: one.hits + two.hits, nItems: one.targets + two.targets, band: null },
       );
+    } else if (task.kind === 'mental_rotation') {
+      const { result } = scoreRotation(task, input as RotationTrialInput[]);
+      rotationRes = result;
+      // Üç ölçek tek görevden hesaplanır; ayrıntının tamamı "zd_dogruluk" satırında durur.
+      rows.push(
+        { scaleKey: 'zd_dogruluk', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'zd_hiz', raw: result.medianRt, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+        { scaleKey: 'zd_aci', raw: result.rotationCostMs, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+      );
     } else {
       const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
@@ -287,6 +301,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       goNoGo: goNoGoRes,
       trail: trailRes,
       nBack: nBackRes,
+      rotation: rotationRes,
     }),
   };
 }

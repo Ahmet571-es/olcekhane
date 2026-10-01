@@ -1,6 +1,7 @@
 import { getInstrumentDef } from '@/content/instruments';
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
+import { disparity } from '@/lib/instruments/rotation';
 import { nBackRoles, type NBackRole } from '@/lib/instruments/sequences';
 import type {
   CancellationTask,
@@ -9,6 +10,7 @@ import type {
   FlankerTask,
   GoNoGoTask,
   LikertInstrument,
+  MentalRotationTask,
   NBackTask,
   QuizInstrument,
   ReadingInstrument,
@@ -156,6 +158,25 @@ export function nBackBody(
   const trials = cells.map((c, index) => {
     const rt = pick(c.role, c.n, index);
     return { index, response: rt === null ? null : 1, rtMs: rt };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/**
+ * Zihinde döndürme: varsayılan olarak her denemede doğru cevap; karar süresi açıyla artar (1200 ms + 5 ms/derece).
+ * Seçici; denemenin açısını, ayna görüntüsü olup olmadığını, döndürme farkını ve sırasını alır.
+ */
+export function rotationBody(
+  pick: (t: { angle: number; mirror: boolean; disparity: number }, i: number) => { choice: 1 | 2 | null; rtMs: number | null } = (t) => ({
+    choice: t.mirror ? 2 : 1,
+    rtMs: 1200 + 5 * t.disparity,
+  }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('zihinde-dondurme').tasks[0] as MentalRotationTask;
+  const trials = task.trials.map((t, index) => {
+    const p = pick({ angle: t.angle, mirror: t.mirror, disparity: disparity(t.angle) }, index);
+    return { index, response: p.choice, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

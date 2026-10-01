@@ -42,14 +42,15 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const inReview = def.status === 'review';
   const sc = def.science;
   const guides = guidesForTest(slug);
-  // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama).
+  // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama,
+  // zihinde döndürme).
   const single = def.engine === 'tasks' && def.tasks.length === 1 ? def.tasks[0] : null;
   const cancellation = single?.kind === 'cancellation' ? single : null;
   const taskLength = !single
     ? null
     : single.kind === 'cancellation'
       ? `${single.sections} bölüm, her biri ${Math.round(single.sectionMs / 1000)} saniye`
-      : single.kind === 'color_word' || single.kind === 'go_nogo'
+      : single.kind === 'color_word' || single.kind === 'go_nogo' || single.kind === 'mental_rotation'
         ? `${single.trials.length} deneme, ${single.blocks} bölüm`
         : single.kind === 'trail'
           ? new Set(single.parts.map((p) => p.labels.length)).size === 1
@@ -284,6 +285,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>İki bölümün süreleri ve yanlış dokunuş sayıları</li>
                 <li>Sayılar ile harfler arasında geçiş yapmanın ne kadar ek süre getirdiğinin açıklaması</li>
+              </>
+            )}
+            {single?.kind === 'mental_rotation' && (
+              <>
+                <li>Doğru cevap oranı; aynı şekillerde ve ayna görüntülerinde ayrı ayrı</li>
+                <li>Döndürme açısına göre tipik karar süresi grafiği ve şekil daha çok döndürüldüğünde karar süresinin nasıl değiştiğinin açıklaması</li>
               </>
             )}
             {single?.kind === 'n_back' && (

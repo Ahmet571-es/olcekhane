@@ -17,6 +17,7 @@ import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
+import { zihindeDondurme } from './zihinde-dondurme';
 
 /** Platformdaki tüm test tanımları. Sıralama katalogdaki varsayılan sıradır. */
 export const INSTRUMENTS: InstrumentDef[] = [
@@ -35,6 +36,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   durGitGorevi,
   siraylaBirlestirme,
   geriyeDonukHatirlama,
+  zihindeDondurme,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   hobiIlgileri,

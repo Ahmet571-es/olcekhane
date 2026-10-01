@@ -8,6 +8,7 @@ import type {
   CancellationTask,
   GoNoGoTask,
   InstrumentDef,
+  MentalRotationTask,
   QuizChart,
   QuizFigure,
   QuizInstrument,
@@ -29,6 +30,7 @@ import {
   type GoNoGoResult,
   type NBackLevelResult,
   type NBackResult,
+  type RotationResult,
   type SpanResult,
   type SymbolResult,
   type TrailResult,
@@ -177,7 +179,7 @@ export interface CognitiveBlock {
 export interface CognitiveReport {
   blocks: CognitiveBlock[];
   tips: string[];
-  /** Görevin sonucunu özetleyen çubuk grafik (renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama). */
+  /** Görevin sonucunu özetleyen çubuk grafik (renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme). */
   chart?: { title: string; note: string; rows: { label: string; value: number; max: number; valueLabel: string }[] };
 }
 
@@ -744,7 +746,7 @@ function cancellationBlocks(
   return [tempo, isabet, net, surdurme];
 }
 
-/* ---------- Renk-kelime, dur-git, sırayla birleştirme ve geriye dönük hatırlama ---------- */
+/* ---------- Tek görevli testler: renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme ---------- */
 
 const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 /** Milisaniyeyi saniye olarak yazar: 820 → "0,82". */
@@ -1399,6 +1401,210 @@ function nBackBlocks(r: NBackResult, audience: Audience, card: CardOf): TaskRepo
   };
 }
 
+/** Zihinde döndürmede az ve çok döndürülmüş şekillerdeki karar süreleri bu kadardan (ms) az farklıysa "belirgin değil" sayılır. */
+const ROTATION_COST_MIN_MS = 250;
+/** Çok döndürülmüş (135–180°) şekillerde doğruluk bunun altındaysa oradaki karar süreleri tahmine dayanabilir: karşılaştırılmaz. */
+const ROTATION_LARGE_MIN_ACC = 0.65;
+
+/** Zihinde döndürmenin üç sonuç kartı: doğru cevaplar, karar süresi ve döndürme etkisi. */
+function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const limit = nf0.format(task.timeoutMs / 1000);
+  const abandoned = r.timeouts > r.n / 2;
+  const low = r.accuracy < 0.6;
+  const errors = r.n - r.correct;
+  const wrong = r.sameSaidMirror + r.mirrorSaidSame;
+  const missed = r.timeouts + r.anticipations;
+  const mostlyMissed = errors > 0 && missed > errors / 2;
+  // Doğruluk düşükken yanlış cevaplar doğrulardan çoksa düğmeler karıştırılmış olabilir (rastgele basan biri yarısını bulur).
+  const reversed = low && !mostlyMissed && r.accuracy < 0.4 && wrong > r.correct;
+
+  let accText: string;
+  if (abandoned) {
+    accText = v(
+      'Görevde denemelerin çoğunda süre içinde cevap vermedin; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
+      'Çocuğunuz denemelerin çoğunda süre içinde cevap vermedi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu sonuç yorumlanmamalıdır.',
+    );
+  } else if (low && mostlyMissed) {
+    accText =
+      r.timeouts >= r.anticipations
+        ? v(
+            `Görevde denemelerin birçoğunda süre (${limit} saniye) dolmadan cevap vermedin; doğru cevaplar bu yüzden az. Şekilleri karşılaştırmak uzun sürmüş ya da yönergeyi tam anlamamış olabilirsin. Bu sonuç tek başına bir şey söylemez.`,
+            `Çocuğunuz denemelerin birçoğunda süre (${limit} saniye) dolmadan cevap vermedi; doğru cevaplar bu yüzden az. Şekilleri karşılaştırmak uzun sürmüş ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+          )
+        : v(
+            'Görevde denemelerin birçoğunda şekillere bakmadan, çok erken bastın; doğru cevaplar bu yüzden az. Acele etmeden, önce iki şekli karşılaştırıp öyle basmak işine yarar.',
+            'Çocuğunuz denemelerin birçoğunda şekillere bakmadan, çok erken bastı; doğru cevaplar bu yüzden az. Bu sonuç tek başına yorumlanmamalıdır.',
+          );
+  } else if (reversed) {
+    accText = v(
+      'Cevaplarının çoğu yanlıştı: “Aynı” ile “Ayna görüntüsü” düğmelerini birbirine karıştırmış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
+      'Çocuğunuzun cevaplarının çoğu yanlıştı: “Aynı” ile “Ayna görüntüsü” düğmeleri birbirine karıştırılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  } else if (low) {
+    accText = v(
+      'Şekilleri karşılaştırmakta zorlandın: bu görevde rastgele basan biri de yaklaşık yarısını doğru bulur. Bu; yönergeyi tam anlamamaktan, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir; tek başına bir şey söylemez.',
+      'Çocuğunuz şekilleri karşılaştırmakta zorlandı: bu görevde rastgele basan biri de yaklaşık yarısını doğru bulur. Bu; yönergenin tam anlaşılmamasından, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+    );
+  } else {
+    accText =
+      r.accuracy === 1
+        ? v('Şekillerin aynı mı yoksa ayna görüntüsü mü olduğunu her seferinde doğru buldun.', 'Çocuğunuz şekillerin aynı mı yoksa ayna görüntüsü mü olduğunu her seferinde doğru buldu.')
+        : r.accuracy >= 0.9
+          ? v(
+              'Şekillerin aynı mı yoksa ayna görüntüsü mü olduğunu neredeyse her seferinde doğru buldun.',
+              'Çocuğunuz şekillerin aynı mı yoksa ayna görüntüsü mü olduğunu neredeyse her seferinde doğru buldu.',
+            )
+          : r.accuracy >= 0.75
+            ? v(
+                'Şekillerin aynı mı yoksa ayna görüntüsü mü olduğunu çoğu zaman doğru buldun.',
+                'Çocuğunuz şekillerin aynı mı yoksa ayna görüntüsü mü olduğunu çoğu zaman doğru buldu.',
+              )
+            : v('Şekilleri karşılaştırmakta zaman zaman zorlandın.', 'Çocuğunuz şekilleri karşılaştırmakta zaman zaman zorlandı.');
+    // Doğru sayılmayan denemelerin türü: süre aşımı ya da çok erken basış mı, yanlış cevap mı? Yanlış cevaplar çoğunlukla
+    // bir türdeyse (ayna görüntüsüne "Aynı" ya da aynı şekle "Ayna görüntüsü") bu söylenir.
+    if (errors > 0) {
+      if (mostlyMissed) {
+        accText +=
+          r.timeouts >= r.anticipations
+            ? v(
+                ` Doğru sayılmayan denemelerin çoğunda süre (${limit} saniye) dolmadan cevap vermedin: bazı şekilleri karşılaştırmak uzun sürmüş olabilir.`,
+                ` Doğru sayılmayan denemelerin çoğunda süre (${limit} saniye) dolmadan cevap vermedi: bazı şekilleri karşılaştırmak uzun sürmüş olabilir.`,
+              )
+            : v(' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastın.', ' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastı.');
+      } else if (r.mirrorSaidSame >= 3 && r.mirrorSaidSame >= 2 * r.sameSaidMirror) {
+        accText += v(
+          ' Yanıldığın denemelerin çoğunda ayna görüntüsüne “Aynı” dedin: ayna görüntüsünü fark etmek için şekli dikkatle döndürüp karşılaştırmak gerekir.',
+          ' Yanıldığı denemelerin çoğunda ayna görüntüsüne “Aynı” dedi; ayna görüntüsünü fark etmek, şekli dikkatle döndürüp karşılaştırmayı gerektirir.',
+        );
+      } else if (r.sameSaidMirror >= 3 && r.sameSaidMirror >= 2 * r.mirrorSaidSame) {
+        const large = r.sameSaidMirrorLarge > r.sameSaidMirror / 2;
+        accText += v(
+          ` Yanıldığın denemelerin çoğunda aynı şekle “Ayna görüntüsü” dedin${large ? '; bunların çoğu çok döndürülmüş şekillerdeydi. Çok döndürülmüş bir şekli tanımak daha zordur.' : '.'}`,
+          ` Yanıldığı denemelerin çoğunda aynı şekle “Ayna görüntüsü” dedi${large ? '; bunların çoğu çok döndürülmüş şekillerdeydi. Çok döndürülmüş bir şekli tanımak daha zordur.' : '.'}`,
+        );
+      } else if (wrong > 0) {
+        accText += v(' Bazı denemelerde yanıldın.', ' Bazı denemelerde yanıldı.');
+      }
+      if (r.accuracy < 0.75 && !mostlyMissed) {
+        accText += v(
+          ' Bu; acele etmekten, dikkatin dağılmasından ya da şekli zihinde döndürmenin zor gelmesinden kaynaklanabilir.',
+          ' Bu; acele etmekten, dikkatin dağılmasından ya da şekli zihinde döndürmenin zor gelmesinden kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+        );
+      }
+    }
+  }
+  const dogruluk: CognitiveBlock = {
+    ...card('zd_dogruluk'),
+    headline: `${pct(r.accuracy)} doğru`,
+    detail: `Aynı şekillerde ${pct(r.accSame)}, ayna görüntülerinde ${pct(r.accMirror)} doğru`,
+    text: accText,
+  };
+
+  // Görev yarıda bırakıldıysa ya da doğru cevaplar azsa süreler yorumlanmaz; grafikte de gösterilmez.
+  const usable = !abandoned && !low && r.medianRt !== null;
+  const hiz: CognitiveBlock =
+    r.medianRt === null || abandoned || low
+      ? {
+          ...card('zd_hiz'),
+          headline: 'Hesaplanamadı',
+          text: abandoned
+            ? 'Denemelerin çoğunda süre içinde cevap verilmediği için karar süresi yorumlanmadı.'
+            : low
+              ? 'Doğru cevaplar yarıya yakın ya da daha az olduğu için karar süresi yorumlanmadı.'
+              : v(
+                  'Doğru bulduğun aynı şekiller yeterince çok olmadığı için karar süren hesaplanamadı.',
+                  'Doğru bulunan aynı şekiller yeterince çok olmadığı için karar süresi hesaplanamadı.',
+                ),
+        }
+      : {
+          ...card('zd_hiz'),
+          headline: `Tipik karar süresi ${sn(r.medianRt)} saniye`,
+          text: v(
+            `Doğru bulduğun aynı şekillerde karar vermen tipik olarak ${sn(r.medianRt)} saniye sürdü. Hız tek başına iyi ya da kötü değildir; önemli olan, doğru karar verebilmektir.`,
+            `Çocuğunuzun doğru bulduğu aynı şekillerde tipik karar süresi ${sn(r.medianRt)} saniye oldu. Bu süre; şekilleri görmeyi, karşılaştırmayı ve düğmeye basmayı içerir; yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir. Hız, doğrulukla birlikte değerlendirilmelidir.`,
+          ),
+        };
+
+  // Süreler raporda saniyenin yüzde biri (10 ms) duyarlılığıyla yazılır; fark da yuvarlanmış sürelerden hesaplanır.
+  const to10 = (ms: number | null) => (ms === null ? null : Math.round(ms / 10) * 10);
+  const small = to10(r.rtSmall);
+  const large = to10(r.rtLarge);
+  const bigAngles = r.byAngle.filter((a) => a.angle >= 135);
+  const accLarge = bigAngles.reduce((s, a) => s + a.correct, 0) / Math.max(1, bigAngles.reduce((s, a) => s + a.n, 0));
+  const no = (text: string): CognitiveBlock => ({ ...card('zd_aci'), headline: 'Karşılaştırılamadı', text });
+  let aci: CognitiveBlock;
+  if (abandoned) {
+    aci = no('Denemelerin çoğunda süre içinde cevap verilmediği için karar süreleri karşılaştırılmadı.');
+  } else if (low) {
+    aci = no('Doğru cevaplar yarıya yakın ya da daha az olduğu için karar süreleri karşılaştırılmadı.');
+  } else if (accLarge < ROTATION_LARGE_MIN_ACC) {
+    aci = no('Çok döndürülmüş şekillerde doğru cevaplar az olduğu için karar süreleri karşılaştırılmadı.');
+  } else if (small === null || large === null) {
+    aci = no('Az ya da çok döndürülmüş aynı şekillerde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.');
+  } else {
+    const diff = large - small;
+    const detail = `Az döndürülmüş (0–45°) ${sn(small)} sn · çok döndürülmüş (135–180°) ${sn(large)} sn`;
+    aci =
+      diff >= ROTATION_COST_MIN_MS
+        ? {
+            ...card('zd_aci'),
+            headline: `Çok döndürülmüş şekillerde ${sn(diff)} sn daha uzun`,
+            detail,
+            text: v(
+              'Şekil daha çok döndürülmüşken karar vermen daha uzun sürdü. Bu çoğu kişide görülür: şekil ne kadar çok döndürülmüşse onu zihinde döndürüp karşılaştırmak o kadar uzun sürer. Bu fark bir seferden ötekine değişebilir.',
+              'Şekil daha çok döndürülmüşken çocuğunuzun kararı daha uzun sürdü. Bu, zihinsel döndürmenin bilinen bir özelliğidir: karar süresi, iki şekil arasındaki açı büyüdükçe uzar (Shepard ve Metzler, 1971). Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.',
+            ),
+          }
+        : diff > -ROTATION_COST_MIN_MS
+          ? {
+              ...card('zd_aci'),
+              headline: 'Belirgin bir fark yok',
+              detail,
+              text: v(
+                'Az ve çok döndürülmüş şekillerde karar süren belirgin biçimde farklı değildi. Genellikle şekil daha çok döndürüldüğünde karar daha uzun sürer; bu fark bir seferden ötekine değişebilir.',
+                'Az ve çok döndürülmüş şekillerde çocuğunuzun karar süresi belirgin biçimde farklı değildi. Genellikle şekil daha çok döndürüldüğünde karar daha uzun sürer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+              ),
+            }
+          : {
+              ...card('zd_aci'),
+              headline: 'Çok döndürülmüş şekillerde daha kısa',
+              detail,
+              text: v(
+                'Çok döndürülmüş şekillerde karar vermen, az döndürülmüş şekillerdekinden daha kısa sürdü; genellikle bunun tersi olur. Bu fark bir seferden ötekine değişebilir.',
+                'Çok döndürülmüş şekillerde çocuğunuzun kararı, az döndürülmüş şekillerdekinden daha kısa sürdü; genellikle bunun tersi olur. Tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+              ),
+            };
+  }
+
+  const values = r.byAngle.map((a) => (usable ? to10(a.medianRt) : null));
+  const max = roundUp(Math.max(0, ...values.map((x) => x ?? 0)), 500);
+  const note = abandoned
+    ? 'Denemelerin çoğunda süre içinde cevap verilmediği için açılara göre süreler gösterilmedi.'
+    : low
+      ? 'Doğru cevaplar yarıya yakın ya da daha az olduğu için açılara göre süreler gösterilmedi.'
+      : !usable
+        ? 'Doğru bulunan aynı şekil sayısı az olduğu için açılara göre süreler gösterilmedi.'
+        : v(
+        'Çubuklar, doğru bulduğun aynı şekillerdeki tipik karar süresini gösterir; kısa çubuk daha hızlı demek.',
+        'Çubuklar, doğru bulunan aynı şekillerdeki tipik (ortanca) karar süresini gösterir; kısa çubuk daha hızlı demektir.',
+      ) + (values.some((x) => x === null) ? ' “Yetersiz”: o açıda doğru bulunan aynı şekil sayısı yetersiz.' : '');
+  return {
+    blocks: [dogruluk, hiz, aci],
+    chart: {
+      title: 'Döndürme açısına göre tipik karar süresi',
+      note,
+      rows: r.byAngle.map((a, i) => ({
+        label: a.angle === 0 ? '0° (döndürülmemiş)' : `${a.angle}°`,
+        value: values[i] ?? 0,
+        max,
+        valueLabel: values[i] === null ? 'yetersiz' : `${sn(values[i] as number)} sn`,
+      })),
+    },
+  };
+}
+
 function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
   const you = audience !== 'parent';
   const blocks: CognitiveBlock[] = [];
@@ -1493,8 +1699,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const ct = def.tasks.find((t): t is CancellationTask => t.kind === 'cancellation');
   if (cz && ct) blocks.push(...cancellationBlocks(cz, ct, audience, scale));
 
-  // Renk-kelime, dur-git, sırayla birleştirme ve geriye dönük hatırlama: her biri tek görevli bir testtir, sonucunu bir
-  // grafik özetler.
+  // Renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama ve zihinde döndürme: her biri tek görevli bir
+  // testtir, sonucunu bir grafik özetler.
   const card: CardOf = (k) => ({ key: k, name: scale(k).name, plain: scale(k).plain });
   let chart: CognitiveReport['chart'];
   const add = (x: TaskReport) => {
@@ -1511,10 +1717,13 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (tr && tt) add(trailBlocks(tr, tt, audience, card));
   const nb = byKey.get('gh_bir')?.extra as unknown as NBackResult | undefined;
   if (nb && def.tasks.some((t) => t.kind === 'n_back')) add(nBackBlocks(nb, audience, card));
+  const zd = byKey.get('zd_dogruluk')?.extra as unknown as RotationResult | undefined;
+  const zt = def.tasks.find((t): t is MentalRotationTask => t.kind === 'mental_rotation');
+  if (zd && zt) add(mentalRotationBlocks(zd, zt, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => t.kind === 'color_word' || t.kind === 'go_nogo' || t.kind === 'trail' || t.kind === 'n_back')) return { blocks, tips: [], chart };
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation'].includes(t.kind))) return { blocks, tips: [], chart };
 
   const tips = you
     ? [

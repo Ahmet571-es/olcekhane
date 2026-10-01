@@ -173,7 +173,17 @@ export interface ReadingInstrument extends InstrumentBase {
 
 /* ---------- Bilişsel görevler ---------- */
 
-export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match' | 'cancellation' | 'color_word' | 'go_nogo' | 'trail' | 'n_back';
+export type TaskKind =
+  | 'digit_span'
+  | 'spatial_span'
+  | 'flanker'
+  | 'symbol_match'
+  | 'cancellation'
+  | 'color_word'
+  | 'go_nogo'
+  | 'trail'
+  | 'n_back'
+  | 'mental_rotation';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -350,6 +360,40 @@ export interface NBackTask extends TaskBase {
   blocks: NBackBlock[];
 }
 
+/**
+ * Zihinde döndürme: yan yana iki şekil gösterilir; sağdaki, soldakinin döndürülmüş hâli ya da döndürülmüş ayna
+ * görüntüsüdür. "Aynı" ya da "Ayna görüntüsü" düğmesine basılır. Şekiller birim karelerden oluşan özgün şekillerdir;
+ * hiçbirinin döndürme ya da ayna simetrisi yoktur (ayna görüntüsü, döndürülerek şeklin kendisi yapılamaz).
+ */
+export interface RotationShape {
+  /** Karelerin ızgaradaki konumları (x sağa, y aşağı doğru). */
+  cells: [number, number][];
+}
+
+export interface RotationTrial {
+  /** Şeklin `shapes` içindeki sırası. */
+  shape: number;
+  /** Sağdaki şeklin döndürülme açısı (derece; artı saat yönünde). */
+  angle: number;
+  /** Sağdaki şekil soldakinin ayna görüntüsü mü (önce yansıtılır, sonra döndürülür)? */
+  mirror: boolean;
+}
+
+export interface MentalRotationTask extends TaskBase {
+  kind: 'mental_rotation';
+  shapes: RotationShape[];
+  /** Alıştırmada kullanılan, asıl görevde olmayan şekil. */
+  practiceShape: RotationShape;
+  /** Alıştırma denemeleri (geri bildirimli, puanlanmaz). */
+  practice: { angle: number; mirror: boolean }[];
+  trials: RotationTrial[];
+  /** Denemeler bu kadar eşit bölüme ayrılır; bölümler arasında kısa mola verilir. */
+  blocks: number;
+  /** Cevap için en uzun süre (ms); şekiller bu süre boyunca ekranda kalır. */
+  timeoutMs: number;
+  itiMs: [number, number];
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -359,7 +403,8 @@ export type CognitiveTask =
   | ColorWordTask
   | GoNoGoTask
   | TrailTask
-  | NBackTask;
+  | NBackTask
+  | MentalRotationTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';
