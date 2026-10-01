@@ -100,6 +100,8 @@ export interface ReportContent {
   /** Ayrıntılı profil (profil: facets): her bileşik ölçek ve alt ölçekleri, testteki sırayla. */
   /** Ayrıntılı profil: her boyutun alt özellikleri; `facetItems`, bir alt özelliğin kaç maddeyle ölçüldüğüdür. */
   facetGroups?: { domain: string; facets: string[]; facetItems: number }[];
+  /** Kişilerarası çember (profil: circumplex): her ölçeğin çemberdeki açısı ve grafikteki kısa adı. */
+  circumplex?: { key: string; angle: number; short: string }[];
   cognitive?: CognitiveReport;
   academic?: AcademicReport;
   reading?: {
@@ -362,6 +364,10 @@ export function buildReport(input: {
             return { domain: s.key, facets, facetItems: first ? scaleItems(def, first).length : 0 };
           })
       : undefined;
+  const circumplex =
+    def.engine === 'likert' && def.profile === 'circumplex'
+      ? def.scales.flatMap((s) => (s.angle === undefined ? [] : [{ key: s.key, angle: s.angle, short: s.short ?? s.name }]))
+      : undefined;
 
   // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
   let strengths: string[] | undefined;
@@ -378,7 +384,7 @@ export function buildReport(input: {
       const s = sections.find((x) => x.scaleKey === key);
       if (s) highlights.push(`${s.name}: ${s.summary.toLocaleLowerCase('tr-TR')}`);
     }
-  } else if (sections.length > 2 && !interests && !facetGroups && !template?.evaluative) {
+  } else if (sections.length > 2 && !interests && !facetGroups && !circumplex && !template?.evaluative) {
     const rank: Record<string, number> = { very_high: 2, very_low: 2, high: 1, low: 1, average: 0 };
     const notable = sections
       .filter((s) => s.band && rank[s.band] > 0)
@@ -420,6 +426,7 @@ export function buildReport(input: {
     interests,
     ranking,
     facetGroups,
+    circumplex,
     cognitive,
     academic,
   };

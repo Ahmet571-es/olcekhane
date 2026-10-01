@@ -240,6 +240,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                 <li>{`Her boyutun altında alt özelliklerinin (toplam ${facetCount}) cetveli ve her biri için kısa bir yorum`}</li>
               </>
             )}
+            {def.engine === 'likert' && def.profile === 'circumplex' && (
+              <>
+                <li>{`${NUMBER_WORDS[scales.length] ?? scales.length} kişilerarası tarzın çember üzerinde gösterimi`}</li>
+                <li>Her tarz için düzey ve sade bir açıklama</li>
+              </>
+            )}
             {def.engine === 'likert' && !def.profile && (
               <>
                 <li>{showsMargin ? 'Her boyutun, puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi' : 'Her boyutun cetvel üzerinde gösterimi'}</li>

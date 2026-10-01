@@ -9,6 +9,8 @@ import type { RulerRow, SimpleChart, SimpleGroup, SimpleReport } from '@/lib/rep
 
 const dateFmt = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Istanbul' });
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
+/** Çember grafiğinde değerler hep bir ondalıkla (3,0 gibi), cetvellerdeki gibi. */
+const nf1fixed = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 const r2 = (v: number) => Math.round(v * 100) / 100;
 
 function rulerSteps(min: number, max: number) {
@@ -83,7 +85,8 @@ function Hexagon({ chart }: { chart: Extract<SimpleChart, { type: 'hexagon' }> }
     return [r2(cx + Math.cos(angle(i)) * r), r2(cy + Math.sin(angle(i)) * r)] as const;
   };
   const ring = (v: number) => chart.axes.map((_, i) => pt(i, v).join(',')).join(' ');
-  const poly = chart.axes.map((a, i) => pt(i, a.value ?? 1).join(',')).join(' ');
+  // Puanı hesaplanamayan alan çizilmez; 1 gibi görünmesin.
+  const poly = chart.axes.flatMap((a, i) => (a.value === null ? [] : [pt(i, a.value).join(',')])).join(' ');
   const top = new Set(chart.highlight);
   const label = chart.axes.map((a) => `${a.label} ${a.value === null ? 'hesaplanamadı' : nf1.format(a.value)}`).join(', ');
   return (
@@ -114,6 +117,55 @@ function Hexagon({ chart }: { chart: Extract<SimpleChart, { type: 'hexagon' }> }
             </text>
             <text x={lx} y={ly + 17} textAnchor={anchor} fontSize="12" fill="var(--ink-3)">
               {a.key} · {a.value === null ? '—' : nf1.format(a.value)}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/** Kişilerarası çember: her tarz kendi açısında; halkalar 1–5 değerlerini gösterir. */
+function Circumplex({ chart }: { chart: Extract<SimpleChart, { type: 'circle' }> }) {
+  const cx = 230;
+  const cy = 205;
+  const rMax = 128;
+  const pt = (angle: number, v: number) => {
+    const r = (rMax * v) / 5;
+    const t = (angle * Math.PI) / 180;
+    return [r2(cx + Math.cos(t) * r), r2(cy - Math.sin(t) * r)] as const;
+  };
+  const ring = (v: number) => chart.axes.map((a) => pt(a.angle, v).join(',')).join(' ');
+  // Puanı hesaplanamayan tarz (yeterince cevaplanmadıysa) çizilmez; 1 gibi görünmesin.
+  const poly = chart.axes.flatMap((a) => (a.value === null ? [] : [pt(a.angle, a.value).join(',')])).join(' ');
+  const label = `Kişilerarası çember (1–5): ${chart.axes.map((a) => `${a.label} ${a.value === null ? 'hesaplanamadı' : nf1fixed.format(a.value)}`).join('; ')}`;
+  return (
+    <svg viewBox="0 0 460 410" className="mx-auto h-auto w-full max-w-[30rem]" role="img" aria-label={label}>
+      {[1, 2, 3, 4, 5].map((v) => (
+        <polygon key={v} points={ring(v)} fill="none" stroke="var(--rule)" strokeWidth={v === 5 ? 1.5 : 1} />
+      ))}
+      {chart.axes.map((a) => {
+        const [x, y] = pt(a.angle, 5);
+        return <line key={a.key} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--rule)" strokeWidth={1} />;
+      })}
+      <polygon points={poly} fill="color-mix(in oklab, var(--brass) 22%, transparent)" stroke="var(--brass)" strokeWidth={2.5} strokeLinejoin="round" />
+      {chart.axes.map((a) => {
+        if (a.value === null) return null;
+        const [x, y] = pt(a.angle, a.value);
+        return <circle key={a.key} cx={x} cy={y} r={4.5} fill="var(--ink)" />;
+      })}
+      {chart.axes.map((a) => {
+        const t = (a.angle * Math.PI) / 180;
+        const lx = r2(cx + Math.cos(t) * (rMax + 26));
+        const ly = r2(cy - Math.sin(t) * (rMax + 22) + (Math.sin(t) < -0.2 ? 10 : 0));
+        const anchor = Math.abs(Math.cos(t)) < 0.2 ? 'middle' : Math.cos(t) > 0 ? 'start' : 'end';
+        return (
+          <g key={a.key}>
+            <text x={lx} y={ly} textAnchor={anchor} fontSize="16" fontWeight={600} fill="var(--ink)">
+              {a.label}
+            </text>
+            <text x={lx} y={ly + 18} textAnchor={anchor} fontSize="14" fill="var(--ink-3)">
+              {a.value === null ? '—' : nf1fixed.format(a.value)}
             </text>
           </g>
         );
@@ -167,6 +219,7 @@ function Columns({ chart }: { chart: Extract<SimpleChart, { type: 'columns' }> }
 function Chart({ chart }: { chart: SimpleChart }) {
   if (chart.type === 'rulers') return <Rulers rows={chart.rows} />;
   if (chart.type === 'hexagon') return <Hexagon chart={chart} />;
+  if (chart.type === 'circle') return <Circumplex chart={chart} />;
   if (chart.type === 'bars') return <Bars rows={chart.rows} />;
   return <Columns chart={chart} />;
 }

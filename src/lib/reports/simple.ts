@@ -15,6 +15,8 @@ export type SimpleChart =
     }
   /** Holland altıgeni: altı ilgi alanının ortalaması (1–5). */
   | { type: 'hexagon'; highlight: string[]; axes: { key: string; label: string; value: number | null }[] }
+  /** Kişilerarası çember: her tarzın ortalaması (1–5) kendi açısında (derece; 0 = sağ, 90 = üst). */
+  | { type: 'circle'; axes: { key: string; label: string; value: number | null; angle: number }[] }
   /** Yatay çubuklar: değer / en çok (ör. doğru / soru). */
   | { type: 'bars'; rows: { label: string; value: number; max: number; valueLabel: string }[] }
   /** Dikey sütunlar: eşit süreli bölümler (harf işaretleme). */
@@ -78,6 +80,37 @@ function facetNote(facetItems: number, margin: boolean): string {
   return margin
     ? `${first} Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; sarı bantların daha geniş olması bundandır.`
     : `${first} Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; tek bir alt özelliğe bakarak sonuç çıkarılmamalıdır.`;
+}
+
+/**
+ * Kişilerarası çemberde karşı karşıya duran (180° arayla) iki tarzın ikisi de yüksek ya da ikisi de düşük çıkan en az iki
+ * çift varsa uyarı. Maddelerin hepsi düz yönlü olduğu için cümlelerin çoğuna katılma (ya da katılmama) eğilimi bütün
+ * tarzları birlikte yükseltir (ya da düşürür); olağan cevaplarda iki çiftin birden böyle çıkması seyrektir.
+ */
+function circumplexNotes(
+  axes: { key: string; angle: number }[],
+  byKey: Map<string, ReportContent['sections'][number]>,
+  audience: Audience,
+): string[] {
+  const band = (key: string) => byKey.get(key)?.band ?? null;
+  let bothHigh = 0;
+  let bothLow = 0;
+  for (const a of axes.filter((x) => x.angle < 180)) {
+    const b = axes.find((x) => x.angle === a.angle + 180);
+    if (!b) continue;
+    const [x, y] = [band(a.key), band(b.key)];
+    if ((x === 'high' || x === 'very_high') && (y === 'high' || y === 'very_high')) bothHigh++;
+    if ((x === 'low' || x === 'very_low') && (y === 'low' || y === 'very_low')) bothLow++;
+  }
+  const notes: string[] = [];
+  const note = (level: string, tendency: string) =>
+    byAudience(audience, {
+      student: `Birbirinin tersi olan bazı tarzlarda ikisi de ${level} çıktı. Bu, cümlelerin çoğuna ${tendency} eğiliminden kaynaklanabilir; bu tarzları yorumlarken dikkatli ol.`,
+      parent: `Birbirinin tersi olan bazı tarzlarda ikisi de ${level} çıktı. Bu, cümlelerin çoğuna ${tendency} eğiliminden kaynaklanabilir; bu tarzlar dikkatle yorumlanmalıdır.`,
+    });
+  if (bothHigh >= 2) notes.push(note('yüksek', 'katılma'));
+  if (bothLow >= 2) notes.push(note('düşük', 'katılmama'));
+  return notes;
 }
 
 /** "Destek almak isterseniz" kutusu (tam raporla aynı metin). */
@@ -421,6 +454,24 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     band: s.bandLabel,
   });
   const badge = (s: ReportContent['sections'][number]) => (s.summary && s.summary !== s.bandLabel ? `${s.bandLabel} · ${s.summary}` : s.bandLabel);
+
+  // Kişilerarası çember: tarzlar çemberde üstten (öne çıkma) başlayarak saat yönünde sıralanır; grafik ve metinler
+  // aynı sırayla. Genel açıklama şablondan gelir (çemberin nasıl okunacağı ve sonuçların yaklaşık olduğu).
+  if (r.circumplex) {
+    const byKey = new Map(r.sections.map((s) => [s.scaleKey, s]));
+    const clockwise = (angle: number) => (((90 - angle) % 360) + 360) % 360;
+    const order = [...r.circumplex].sort((a, b) => clockwise(a.angle) - clockwise(b.angle));
+    return {
+      ...base,
+      cautions: [...base.cautions, ...circumplexNotes(r.circumplex, byKey, r.audience)],
+      chartTitle: you ? 'Kişilerarası tarzın' : 'Kişilerarası tarzı',
+      chartNote: r.overview,
+      chart: { type: 'circle', axes: order.map((a) => ({ key: a.key, label: a.short, value: byKey.get(a.key)?.value ?? null, angle: a.angle })) },
+      keyFigures: [],
+      itemsTitle: 'Tarzlar',
+      items: order.flatMap((a) => byKey.get(a.key) ?? []).map((s) => ({ title: s.name, badge: badge(s), text: s.text })),
+    };
+  }
 
   // Ayrıntılı profil: genel bakışta boyutlar, ardından her boyutun altında alt özellikleri.
   if (r.facetGroups) {

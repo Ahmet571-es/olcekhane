@@ -48,6 +48,10 @@ export interface ScaleDef {
   plain: string;
   /** Ölçeğin iki ucu: düşük ve yüksek puanın gündelik dildeki karşılığı. */
   poles?: { low: string; high: string };
+  /** Grafikte adın yerine gösterilen kısa ad (ör. kişilerarası çemberde "Sıcak"). */
+  short?: string;
+  /** Kişilerarası çemberdeki yeri (derece; 0 = sağ, 90 = üst, saat yönünün tersine artar). */
+  angle?: number;
   /** Kaynak çalışmada bildirilen iç tutarlılık (Cronbach α); ölçüm payını hesaplamak için. */
   alpha?: number;
   /** Ortalama puan ölçeğinde başvuru standart sapması; ölçüm payını hesaplamak için. */
@@ -117,9 +121,10 @@ export interface LikertInstrument extends InstrumentBase {
    * Özel rapor düzeni. "riasec": ilgi profili (altıgen grafik, ilgi kodu, meslek örnekleri).
    * "interests": sıralı ilgi profili (alanlar en yüksekten en düşüğe; en belirgin alanların açıklaması).
    * "facets": ayrıntılı profil (bileşik ölçekler genel bakışta; her birinin altında alt ölçeklerin cetvelleri).
+   * "circumplex": kişilerarası çember (ölçekler `angle` açılarıyla bir çember üzerinde; her biri için düzey metni).
    * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
    */
-  profile?: 'riasec' | 'interests' | 'facets';
+  profile?: 'riasec' | 'interests' | 'facets' | 'circumplex';
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];

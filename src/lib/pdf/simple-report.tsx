@@ -174,7 +174,8 @@ function Hexagon({ chart }: { chart: Extract<SimpleChart, { type: 'hexagon' }> }
     return [r1(cx + Math.cos(angle(i)) * r), r1(cy + Math.sin(angle(i)) * r)] as const;
   };
   const ring = (v: number) => chart.axes.map((_, i) => pt(i, v).join(',')).join(' ');
-  const poly = chart.axes.map((a, i) => pt(i, a.value ?? 1).join(',')).join(' ');
+  // Puanı hesaplanamayan alan çizilmez; 1 gibi görünmesin.
+  const poly = chart.axes.flatMap((a, i) => (a.value === null ? [] : [pt(i, a.value).join(',')])).join(' ');
   const hi = new Set(chart.highlight);
   return (
     <View style={{ alignItems: 'center' }}>
@@ -188,7 +189,8 @@ function Hexagon({ chart }: { chart: Extract<SimpleChart, { type: 'hexagon' }> }
         })}
         <Polygon points={poly} fill={C.brassSoft} stroke={C.ink} strokeWidth={1.5} />
         {chart.axes.map((a, i) => {
-          const [x, y] = pt(i, a.value ?? 1);
+          if (a.value === null) return null;
+          const [x, y] = pt(i, a.value);
           return <Circle key={a.key} cx={x} cy={y} r={hi.has(a.key) ? 3.6 : 2.4} fill={hi.has(a.key) ? C.marker : C.ink} />;
         })}
         {chart.axes.map((a, i) => {
@@ -197,6 +199,52 @@ function Hexagon({ chart }: { chart: Extract<SimpleChart, { type: 'hexagon' }> }
           const label = `${a.label} ${a.value === null ? '—' : String(r1(a.value)).replace('.', ',')}`;
           return (
             <Text key={a.key} x={x} y={y + 3} textAnchor={anchor} style={{ fontFamily: 'Atkinson', fontSize: 9, fontWeight: hi.has(a.key) ? 700 : 400, fill: hi.has(a.key) ? C.ink : C.ink2 }}>
+              {label}
+            </Text>
+          );
+        })}
+      </Svg>
+    </View>
+  );
+}
+
+/** Kişilerarası çember: her tarz kendi açısında; halkalar 1–5 değerlerini gösterir. */
+function Circumplex({ chart }: { chart: Extract<SimpleChart, { type: 'circle' }> }) {
+  const W = 340;
+  const H = 260;
+  const cx = W / 2;
+  const cy = H / 2 + 2;
+  const rMax = 90;
+  const pt = (angle: number, v: number) => {
+    const r = (rMax * v) / 5;
+    const t = (angle * Math.PI) / 180;
+    return [r1(cx + Math.cos(t) * r), r1(cy - Math.sin(t) * r)] as const;
+  };
+  const ring = (v: number) => chart.axes.map((a) => pt(a.angle, v).join(',')).join(' ');
+  // Puanı hesaplanamayan tarz çizilmez; 1 gibi görünmesin.
+  const poly = chart.axes.flatMap((a) => (a.value === null ? [] : [pt(a.angle, a.value).join(',')])).join(' ');
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <Svg width={W} height={H}>
+        {[1, 2, 3, 4, 5].map((v) => (
+          <Polygon key={v} points={ring(v)} fill="none" stroke={C.rule} strokeWidth={v === 5 ? 1.2 : 0.8} />
+        ))}
+        {chart.axes.map((a) => {
+          const [x, y] = pt(a.angle, 5);
+          return <Line key={a.key} x1={cx} y1={cy} x2={x} y2={y} stroke={C.rule} strokeWidth={0.8} />;
+        })}
+        <Polygon points={poly} fill={C.brassSoft} stroke={C.ink} strokeWidth={1.5} />
+        {chart.axes.map((a) => {
+          if (a.value === null) return null;
+          const [x, y] = pt(a.angle, a.value);
+          return <Circle key={a.key} cx={x} cy={y} r={2.6} fill={C.ink} />;
+        })}
+        {chart.axes.map((a) => {
+          const [x, y] = pt(a.angle, 5.85);
+          const anchor = Math.abs(x - cx) < 5 ? 'middle' : x > cx ? 'start' : 'end';
+          const label = `${a.label} ${a.value === null ? '—' : r1(a.value).toFixed(1).replace('.', ',')}`;
+          return (
+            <Text key={a.key} x={x} y={y + 3} textAnchor={anchor} style={{ fontFamily: 'Atkinson', fontSize: 9, fill: C.ink }}>
               {label}
             </Text>
           );
@@ -258,6 +306,7 @@ function Columns({ chart }: { chart: Extract<SimpleChart, { type: 'columns' }> }
 function Chart({ chart }: { chart: SimpleChart }) {
   if (chart.type === 'rulers') return <Rulers rows={chart.rows} />;
   if (chart.type === 'hexagon') return <Hexagon chart={chart} />;
+  if (chart.type === 'circle') return <Circumplex chart={chart} />;
   if (chart.type === 'bars') return <Bars rows={chart.rows} />;
   return <Columns chart={chart} />;
 }
