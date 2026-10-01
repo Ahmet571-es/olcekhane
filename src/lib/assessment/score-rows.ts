@@ -10,6 +10,7 @@ import {
   scoreColorWord,
   scoreFlanker,
   scoreGoNoGo,
+  scoreNBack,
   scoreSpan,
   scoreSymbol,
   scoreTrail,
@@ -22,6 +23,8 @@ import {
   type FlankerTrialInput,
   type GoNoGoResult,
   type GoNoGoTrialInput,
+  type NBackResult,
+  type NBackTrialInput,
   type SpanTrialInput,
   type SymbolResult,
   type SymbolTrialInput,
@@ -134,7 +137,8 @@ export type TaskInputs =
   | CancellationSectionInput[]
   | ColorWordTrialInput[]
   | GoNoGoTrialInput[]
-  | TrailPartInput[];
+  | TrailPartInput[]
+  | NBackTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -154,6 +158,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let colorWordRes: ColorWordResult | undefined;
   let goNoGoRes: GoNoGoResult | undefined;
   let trailRes: TrailResult | undefined;
+  let nBackRes: NBackResult | undefined;
   const pct = (x: number) => Math.round(x * 1000) / 10;
 
   for (const task of def.tasks) {
@@ -245,6 +250,19 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'iz_b', raw: secs(b), mean: null, nAnswered: b.reached, nItems: b.n, band: null },
         { scaleKey: 'iz_gecis', raw: result.ratio, mean: null, nAnswered: a.reached + b.reached, nItems: a.n + b.n, band: null },
       );
+    } else if (task.kind === 'n_back') {
+      const { result } = scoreNBack(task, input as NBackTrialInput[]);
+      nBackRes = result;
+      const one = result.levels.find((l) => l.n === 1);
+      const two = result.levels.find((l) => l.n === 2);
+      if (!one || !two) throw new TaskInputError('Görevde bir geri ve iki geri bölümleri bulunmalı.');
+      // Üç ölçek tek görevden hesaplanır; ayrıntının tamamı "gh_bir" satırında durur. Puanlar ayırt etmedir (yakalama
+      // oranı eksi yanlış basma oranı, yüzde olarak); yükün etkisi bir geriden iki geriye düşüştür.
+      rows.push(
+        { scaleKey: 'gh_bir', raw: pct(one.pr), mean: null, nAnswered: one.hits, nItems: one.targets, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'gh_iki', raw: pct(two.pr), mean: null, nAnswered: two.hits, nItems: two.targets, band: null },
+        { scaleKey: 'gh_yuk', raw: pct(one.pr - two.pr), mean: null, nAnswered: one.hits + two.hits, nItems: one.targets + two.targets, band: null },
+      );
     } else {
       const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
@@ -268,6 +286,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       colorWord: colorWordRes,
       goNoGo: goNoGoRes,
       trail: trailRes,
+      nBack: nBackRes,
     }),
   };
 }

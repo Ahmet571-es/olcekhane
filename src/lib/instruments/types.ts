@@ -173,7 +173,7 @@ export interface ReadingInstrument extends InstrumentBase {
 
 /* ---------- Bilişsel görevler ---------- */
 
-export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match' | 'cancellation' | 'color_word' | 'go_nogo' | 'trail';
+export type TaskKind = 'digit_span' | 'spatial_span' | 'flanker' | 'symbol_match' | 'cancellation' | 'color_word' | 'go_nogo' | 'trail' | 'n_back';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -326,6 +326,30 @@ export interface TrailTask extends TaskBase {
   generator: 1;
 }
 
+/**
+ * Geriye dönük hatırlama (n-geri düzeni): harfler sabit bir hızla art arda gösterilir; harf, n adım önceki harfle
+ * aynıysa düğmeye basılır, değilse basılmaz. Bölümler sırayla yapılır (önce bir geri, sonra iki geri); her yeni n
+ * düzeyinden önce geri bildirimli bir alıştırma vardır. Hedefler (n önceki harfle aynı) harflerden belirlenir:
+ * tarayıcı yalnızca basılıp basılmadığını gönderir, doğruluk sunucuda hesaplanır.
+ */
+export interface NBackBlock {
+  n: 1 | 2;
+  /** Bölümdeki harfler, gösterilme sırasıyla. */
+  letters: string[];
+}
+
+export interface NBackTask extends TaskBase {
+  kind: 'n_back';
+  /** Harfin ekranda kalma süresi (ms). */
+  stimulusMs: number;
+  /** Bir denemenin süresi: harfin belirmesinden bir sonraki harfin belirmesine kadar (ms); cevap penceresi de budur. */
+  trialMs: number;
+  /** Alıştırmalar (geri bildirimli, puanlanmaz): her n düzeyi için bir dizi; o düzeyin ilk bölümünden önce yapılır. */
+  practice: NBackBlock[];
+  /** Asıl bölümler, yapılma sırasıyla; denemeler bölümler boyunca 0'dan başlayarak numaralanır. */
+  blocks: NBackBlock[];
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -334,7 +358,8 @@ export type CognitiveTask =
   | CancellationTask
   | ColorWordTask
   | GoNoGoTask
-  | TrailTask;
+  | TrailTask
+  | NBackTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

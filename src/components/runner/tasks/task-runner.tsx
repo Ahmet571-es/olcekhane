@@ -9,6 +9,7 @@ import { useLeaveWarning } from './common';
 import { DigitSpan } from './digit-span';
 import { Flanker } from './flanker';
 import { GoNoGo } from './go-nogo';
+import { NBack } from './n-back';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
 import { Trail } from './trail';
@@ -155,6 +156,7 @@ export function TaskRunner(props: {
       {task.kind === 'color_word' && <ColorWord key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'go_nogo' && <GoNoGo key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'trail' && <Trail key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'n_back' && <NBack key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

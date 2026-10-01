@@ -19,14 +19,19 @@ import type {
 } from '@/lib/instruments/types';
 import { scaleItems } from '@/lib/scoring/likert';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
-import type {
-  CancellationResult,
-  ColorWordResult,
-  FlankerResult,
-  GoNoGoResult,
-  SpanResult,
-  SymbolResult,
-  TrailResult,
+import {
+  NBACK_RANDOM_FA,
+  nBackKeptOneBack,
+  nBackSilent,
+  type CancellationResult,
+  type ColorWordResult,
+  type FlankerResult,
+  type GoNoGoResult,
+  type NBackLevelResult,
+  type NBackResult,
+  type SpanResult,
+  type SymbolResult,
+  type TrailResult,
 } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
@@ -172,7 +177,7 @@ export interface CognitiveBlock {
 export interface CognitiveReport {
   blocks: CognitiveBlock[];
   tips: string[];
-  /** Görevin sonucunu özetleyen çubuk grafik (renk-kelime, dur-git, sırayla birleştirme). */
+  /** Görevin sonucunu özetleyen çubuk grafik (renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama). */
   chart?: { title: string; note: string; rows: { label: string; value: number; max: number; valueLabel: string }[] };
 }
 
@@ -739,7 +744,7 @@ function cancellationBlocks(
   return [tempo, isabet, net, surdurme];
 }
 
-/* ---------- Renk-kelime, dur-git ve sırayla birleştirme ---------- */
+/* ---------- Renk-kelime, dur-git, sırayla birleştirme ve geriye dönük hatırlama ---------- */
 
 const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 /** Milisaniyeyi saniye olarak yazar: 820 → "0,82". */
@@ -1146,6 +1151,254 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
   };
 }
 
+/** Geriye dönük hatırlamada ayırt etme (yakalama oranı eksi yanlış basma oranı) düzeylerinin alt sınırları. */
+const NBACK_PR = { good: 0.8, fair: 0.55, low: 0.3 };
+/**
+ * Bir geriden iki geriye ayırt etme puanındaki (100 üzerinden) değişimin sınırları. Bir geride 10 aynı harf vardır:
+ * tek bir kaçırma puanı 10 değiştirir. Bu yüzden 10 puandan küçük düşüşler "belirgin bir fark yok" sayılır, 20 puan ve
+ * üstü "belirgin düşüş"tür; iki gerideki daha yüksek sonuç da ancak en az 15 puan farkla söylenir.
+ */
+const NBACK_DROP = { clear: 20, some: 10, higher: 15 };
+const NBACK_ORDINALS = ['birinci', 'ikinci', 'üçüncü'];
+
+/** Ayırt etme puanı: 100 üzerinden, 0'ın altına inmez (yanlış basmaları yakalamalarından çok olan biri de 0 alır). */
+const nBackScore = (l: NBackLevelResult) => Math.max(0, Math.round(l.pr * 100));
+
+/** Hataların türü: çoğunlukla kaçırma (yanlış basma az), karışık ya da aynı olmayan harflerin çoğunda da basma. */
+function nBackPattern(l: NBackLevelResult): 'misses' | 'mixed' | 'random' {
+  if (l.falseAlarmRate > NBACK_RANDOM_FA) return 'random';
+  return l.falseAlarmRate <= 0.1 ? 'misses' : 'mixed';
+}
+
+/**
+ * Geriye dönük hatırlamanın bir düzeyi (bir geri ya da iki geri bölümleri) için sonuç kartı. İlk cümle yakalananları ve
+ * yanlış basmaları olduğu gibi anlatır; ikinci cümle ayırt etmeye göre yorumlar ve olası nedeni hataların türünden seçer.
+ */
+function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], audience: Audience, card: CardOf): CognitiveBlock {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const key = l.n === 1 ? 'gh_bir' : 'gh_iki';
+  const ref = l.n === 1 ? 'bir önceki harfle aynı olan' : 'iki önceki harfle aynı olan';
+  const where = l.n === 1 ? 'bu bölümde' : 'iki geri bölümlerinde';
+  const headline = `Yakalama ${pct(l.hitRate)} · yanlış basma ${pct(l.falseAlarmRate)}`;
+  const detail =
+    (l.hits === 0 ? `Aynı olan ${l.targets} harfin hiçbiri yakalanmadı` : `Aynı olan ${l.targets} harfin ${l.hits} tanesi yakalandı`) +
+    (l.falseAlarms === 0 ? ` · aynı olmayan ${l.nonTargets} harfte hiç basılmadı` : ` · aynı olmayan ${l.nonTargets} harfin ${l.falseAlarms} tanesinde basıldı`);
+
+  if (nBackSilent(l)) {
+    const W = where.charAt(0).toLocaleUpperCase('tr-TR') + where.slice(1);
+    return {
+      ...card(key),
+      headline,
+      detail,
+      text: v(
+        `${W} hiç basmadın; bu yüzden aynı harfleri yakalayıp yakalayamadığın anlaşılamadı. Yönergeyi tam anlamamış ya da görevi yarıda bırakmış olabilirsin.`,
+        `Çocuğunuz ${where} hiç basmadı; bu yüzden aynı harfleri yakalayıp yakalayamadığı anlaşılamadı. Yönerge tam anlaşılmamış ya da görev yarıda bırakılmış olabilir; bu sonuç yorumlanmamalıdır.`,
+      ),
+    };
+  }
+
+  const caught =
+    l.hits === l.targets
+      ? v('hepsini yakaladın', 'hepsini yakaladı')
+      : l.hitRate >= 0.9
+        ? v('neredeyse hepsini yakaladın', 'neredeyse hepsini yakaladı')
+        : l.hitRate >= 0.7
+          ? v('çoğunu yakaladın', 'çoğunu yakaladı')
+          : l.hitRate > 0.3
+            ? v('bir kısmını yakaladın, bir kısmını kaçırdın', 'bir kısmını yakaladı, bir kısmını kaçırdı')
+            : l.hits > 0
+              ? v('çoğunu kaçırdın', 'çoğunu kaçırdı')
+              : v('hiçbirini yakalamadın', 'hiçbirini yakalamadı');
+  const pressed =
+    l.falseAlarms === 0
+      ? v('aynı olmayanlarda ise hiç basmadın', 'aynı olmayanlarda ise hiç basmadı')
+      : l.falseAlarmRate <= 0.1
+        ? v('aynı olmayanlarda ise nadiren bastın', 'aynı olmayanlarda ise nadiren bastı')
+        : l.falseAlarmRate <= 0.25
+          ? v('aynı olmayanlarda da ara sıra bastın', 'aynı olmayanlarda da ara sıra bastı')
+          : l.falseAlarmRate <= NBACK_RANDOM_FA
+            ? v('aynı olmayanlarda da sık sık bastın', 'aynı olmayanlarda da sık sık bastı')
+            : v('aynı olmayanların çoğunda da bastın', 'aynı olmayanların çoğunda da bastı');
+  const first = you ? `${ref.charAt(0).toLocaleUpperCase('tr-TR')}${ref.slice(1)} harflerin ${caught}; ${pressed}.` : `Çocuğunuz ${ref} harflerin ${caught}; ${pressed}.`;
+
+  const pattern = nBackPattern(l);
+  const hard = l.n === 2 ? 'İki geri görevin en zor bölümüdür. ' : '';
+  const here = l.n === 1 ? 'Bu bölümde' : 'Bu bölümlerde';
+  let second: string;
+  if (pattern === 'random') {
+    second = v(
+      'Aynı olmayan harflerin çoğunda da bastığın için bu sonuç, aynı harfleri ayırt edebildiğini göstermez: düğmeye harfe bakmadan basmış ya da kuralı karıştırmış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
+      'Aynı olmayan harflerin çoğunda da bastığı için bu sonuç, aynı harfleri ayırt edebildiğini göstermez: düğmeye harfe bakmadan basılmış ya da kural karıştırılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  } else if (l.pr >= NBACK_PR.good) {
+    second =
+      l.n === 1
+        ? v(
+            'Az önce gördüğün harfi aklında tutup yeni gelenle karşılaştırmayı rahatça yaptın.',
+            'Az önce gördüğü harfi akılda tutup yeni gelen harfle karşılaştırmayı rahatça yaptı.',
+          )
+        : v(
+            'Son iki harfi aklında tutup her yeni harfte güncellemek zordur; bunu rahatça yaptın.',
+            'Son iki harfi akılda tutup her yeni harfte güncellemek zordur; çocuğunuz bunu rahatça yaptı.',
+          );
+  } else if (l.pr >= NBACK_PR.fair) {
+    second =
+      (l.n === 1
+        ? v('Bu, görevi büyük ölçüde doğru yaptığını gösterir.', 'Bu, görevin büyük ölçüde doğru yapıldığını gösterir.')
+        : v(
+            'İki geri çoğu kişi için zordur: son iki harfi aklında tutup her yeni harfte güncellemek gerekir. Bunu büyük ölçüde başardın.',
+            'İki geri çoğu kişi için zordur: son iki harfi akılda tutup her yeni harfte güncellemek gerekir. Çocuğunuz bunu büyük ölçüde başardı.',
+          )) +
+      (l.falseAlarmRate > 0.25
+        ? v(
+            ' Aynı olmayanlarda daha az basmak için acele etmeden, harfi karşılaştırıp öyle basmak işine yarar.',
+            ' Aynı olmayan harflerde basmak, acele etmekten kaynaklanabilir.',
+          )
+        : l.n === 1
+          ? v(' Ara sıra yanılmak çok normaldir.', ' Ara sıra yanılmak olağandır.')
+          : '');
+  } else if (l.pr >= NBACK_PR.low) {
+    second =
+      hard +
+      (pattern === 'misses'
+        ? v(
+            'Aynı harfleri yakalamakta zaman zaman zorlandın. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan ya da kuralı karıştırmaktan kaynaklanabilir.',
+            'Aynı harfleri yakalamakta zaman zaman zorlandı. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan ya da kuralın karıştırılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+          )
+        : v(
+            'Aynı harfleri aynı olmayanlardan ayırmakta zaman zaman zorlandın. Bu; acele etmekten, dikkatin dağılmasından ya da kuralı karıştırmaktan kaynaklanabilir.',
+            'Aynı harfleri aynı olmayanlardan ayırmakta zaman zaman zorlandı. Bu; acele etmekten, dikkatin dağılmasından ya da kuralın karıştırılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+          ));
+  } else {
+    second =
+      hard +
+      (pattern === 'misses'
+        ? v(
+            `${here} aynı harfleri yakalamakta zorlandın. Bu; yönergeyi tam anlamamaktan, dikkatin dağılmasından ya da yorgunluktan kaynaklanabilir; tek başına bir şey söylemez.`,
+            `${here} aynı harfleri yakalamakta zorlandı. Bu; yönergenin tam anlaşılmamasından, dikkatin dağılmasından ya da yorgunluktan kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
+          )
+        : v(
+            `${here} aynı harfleri aynı olmayanlardan ayırmakta zorlandın. Bu; yönergeyi tam anlamamaktan, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir; tek başına bir şey söylemez.`,
+            `${here} aynı harfleri aynı olmayanlardan ayırmakta zorlandı. Bu; yönergenin tam anlaşılmamasından, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
+          ));
+  }
+  if (l.n === 2 && pattern !== 'random' && l.lureFalseAlarms >= 2) {
+    second += v(
+      ' Bir önceki harfle aynı olan (ama iki önceki harfle aynı olmayan) harflerde de birkaç kez bastın; bu harfler tanıdık geldiği için yanıltıcıdır.',
+      ' Bir önceki harfle aynı olan (ama iki önceki harfle aynı olmayan) harflerde de birkaç kez bastı; bu harfler tanıdık geldiği için yanıltıcıdır.',
+    );
+  }
+  // Düzeyin bir bölümünde hiç basılmadıysa birleşik sonuç kişiyi tam yansıtmaz.
+  for (const b of blocks.filter((x) => x.n === l.n && nBackSilent(x))) {
+    const which = NBACK_ORDINALS[b.index] ?? `${b.index + 1}.`;
+    second += v(
+      ` ${which.charAt(0).toLocaleUpperCase('tr-TR')}${which.slice(1)} bölümde hiç basmadın; bu bölümü yarıda bırakmış olabilirsin. Bu yüzden bu sonuç seni tam yansıtmayabilir.`,
+      ` Çocuğunuz ${which} bölümde hiç basmadı; bu bölüm yarıda bırakılmış olabilir. Bu yüzden bu sonuç onu tam yansıtmayabilir.`,
+    );
+  }
+  return { ...card(key), headline, detail, text: `${first} ${second}` };
+}
+
+/** "Zorluk artınca" kartı: bir geriden iki geriye ayırt etme puanı nasıl değişti? Güvenilmeyen durumlarda karşılaştırılmaz. */
+function nBackLoadBlock(r: NBackResult, audience: Audience, card: CardOf): CognitiveBlock {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const one = r.levels.find((l) => l.n === 1)!;
+  const two = r.levels.find((l) => l.n === 2)!;
+  const no = (text: string): CognitiveBlock => ({ ...card('gh_yuk'), headline: 'Karşılaştırılamadı', text });
+  if (nBackSilent(one) && nBackSilent(two)) return no('Hiçbir bölümde basılmadığı için bir geri ile iki geri karşılaştırılamadı.');
+  if (r.blocks.some(nBackSilent)) return no('Bölümlerden birinde hiç basılmadığı için bir geri ile iki geri karşılaştırılamadı.');
+  if (one.falseAlarmRate > NBACK_RANDOM_FA || two.falseAlarmRate > NBACK_RANDOM_FA) {
+    return no(
+      v(
+        'Bölümlerden birinde aynı olmayan harflerin çoğunda da bastığın için bir geri ile iki geriyi karşılaştırmak anlamlı değil.',
+        'Bölümlerden birinde aynı olmayan harflerin çoğunda da basıldığı için bir geri ile iki geriyi karşılaştırmak anlamlı değildir.',
+      ),
+    );
+  }
+  if (nBackKeptOneBack(two)) {
+    return no(
+      v(
+        'İki geri bölümlerinde bir geri kuralına göre basmaya devam etmiş olabileceğin için bir geri ile iki geriyi karşılaştırmak anlamlı değil.',
+        'İki geri bölümlerinde bir geri kuralına göre basılmaya devam edilmiş olabileceği için bir geri ile iki geriyi karşılaştırmak anlamlı değildir.',
+      ),
+    );
+  }
+  if (one.pr < NBACK_PR.low) {
+    return no(
+      v(
+        'Bir geri bölümünde zorlandığın için bir geri ile iki geriyi karşılaştırmak anlamlı değil.',
+        'Bir geri bölümünde zorlandığı için bir geri ile iki geriyi karşılaştırmak anlamlı değildir.',
+      ),
+    );
+  }
+  const s1 = nBackScore(one);
+  const s2 = nBackScore(two);
+  const drop = s1 - s2;
+  const how =
+    'Ayırt etme puanı, aynı harfleri yakalama oranından aynı olmayanlarda basma oranı çıkarılarak hesaplanır: hiç yanılmayan biri 100, rastgele basan ya da hiç basmayan biri 0 civarında alır.';
+  const [headline, text] =
+    drop >= NBACK_DROP.clear
+      ? [
+          'İki geride belirgin düşüş',
+          v(
+            'Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun belirgin biçimde düştü. Bu çoğu kişide görülür: iki geri, çalışma belleğini çok daha fazla zorlar. Düşüşün büyüklüğü, ek yükün senin için ne kadar zorlayıcı olduğunu gösterir; bu fark bir seferden ötekine değişebilir.',
+            'Akılda tutulacak harf sayısı birden ikiye çıkınca çocuğunuzun sonucu belirgin biçimde düştü. Bu çoğu kişide görülür: iki geri, çalışma belleğini çok daha fazla zorlar. Düşüşün büyüklüğü, ek yükün ne kadar zorlayıcı olduğunu gösterir; tek bir uygulamada bu farkın kesinliği düşüktür ve tek başına yorumlanmamalıdır.',
+          ),
+        ]
+      : drop >= NBACK_DROP.some
+        ? [
+            'İki geride biraz düşüş',
+            v(
+              'Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun biraz düştü. Bu beklenen bir durumdur: iki geri, bir geriden daha zordur. Bu fark bir seferden ötekine değişebilir.',
+              'Akılda tutulacak harf sayısı birden ikiye çıkınca çocuğunuzun sonucu biraz düştü. Bu beklenen bir durumdur: iki geri, bir geriden daha zordur. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+            ),
+          ]
+        : drop > -NBACK_DROP.higher
+          ? [
+              'Belirgin bir fark yok',
+              v(
+                'Bir geride ve iki geride benzer sonuç aldın: akılda tutulacak harf sayısının artması, sonucunu belirgin biçimde değiştirmedi. Genellikle iki geride sonuç biraz düşer; bu fark bir seferden ötekine değişebilir.',
+                'Çocuğunuz bir geride ve iki geride benzer sonuç aldı: akılda tutulacak harf sayısının artması, sonucunu belirgin biçimde değiştirmedi. Genellikle iki geride sonuç biraz düşer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+              ),
+            ]
+          : [
+              'İki geride daha yüksek',
+              v(
+                'İki geride bir geriden daha yüksek sonuç aldın; genellikle bunun tersi olur. Bir geri görevin ilk bölümüydü: sonrasında göreve alışmış olabilirsin ya da bir geride dikkatin dağılmış olabilir. Bu fark bir seferden ötekine değişebilir.',
+                'Çocuğunuz iki geride bir geriden daha yüksek sonuç aldı; genellikle bunun tersi olur. Göreve alışma etkisi (bir geri görevin ilk bölümüydü) ya da bir geri bölümündeki bir dikkat dağınıklığı bu sonucu açıklayabilir. Tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+              ),
+            ];
+  return {
+    ...card('gh_yuk'),
+    headline,
+    detail: `Ayırt etme puanı bir geride ${s1}, iki geride ${s2} (100 üzerinden)`,
+    text: `${text} ${how}`,
+  };
+}
+
+/** Geriye dönük hatırlamanın üç sonuç kartı: bir geri, iki geri ve zorluk artınca sonucun nasıl değiştiği. */
+function nBackBlocks(r: NBackResult, audience: Audience, card: CardOf): TaskReport {
+  const one = r.levels.find((l) => l.n === 1)!;
+  const two = r.levels.find((l) => l.n === 2)!;
+  const row = (l: NBackLevelResult, label: string) => [
+    { label: `${label}: aynıları yakalama`, value: Math.round(l.hitRate * 100), max: 100, valueLabel: pct(l.hitRate) },
+    { label: `${label}: aynı olmayanlarda basmama`, value: Math.round((1 - l.falseAlarmRate) * 100), max: 100, valueLabel: pct(1 - l.falseAlarmRate) },
+  ];
+  const silentNote = r.levels.some(nBackSilent)
+    ? ' Hiç basılmayan bir düzeyde “aynı olmayanlarda basmama” %100 görünür; bu oran tek başına bir şey söylemez.'
+    : '';
+  return {
+    blocks: [nBackLevelBlock(one, r.blocks, audience, card), nBackLevelBlock(two, r.blocks, audience, card), nBackLoadBlock(r, audience, card)],
+    chart: {
+      title: 'Bir geri ve iki geri',
+      note: `Çubuklar, aynı harfleri yakalama ve aynı olmayan harflerde basmadan geçme oranlarını gösterir.${silentNote}`,
+      rows: [...row(one, 'Bir geri'), ...row(two, 'İki geri')],
+    },
+  };
+}
+
 function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
   const you = audience !== 'parent';
   const blocks: CognitiveBlock[] = [];
@@ -1240,7 +1493,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const ct = def.tasks.find((t): t is CancellationTask => t.kind === 'cancellation');
   if (cz && ct) blocks.push(...cancellationBlocks(cz, ct, audience, scale));
 
-  // Renk-kelime, dur-git ve sırayla birleştirme: her biri tek görevli bir testtir, sonucunu bir grafik özetler.
+  // Renk-kelime, dur-git, sırayla birleştirme ve geriye dönük hatırlama: her biri tek görevli bir testtir, sonucunu bir
+  // grafik özetler.
   const card: CardOf = (k) => ({ key: k, name: scale(k).name, plain: scale(k).plain });
   let chart: CognitiveReport['chart'];
   const add = (x: TaskReport) => {
@@ -1255,10 +1509,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const tr = byKey.get('iz_a')?.extra as unknown as TrailResult | undefined;
   const tt = def.tasks.find((t): t is TrailTask => t.kind === 'trail');
   if (tr && tt) add(trailBlocks(tr, tt, audience, card));
+  const nb = byKey.get('gh_bir')?.extra as unknown as NBackResult | undefined;
+  if (nb && def.tasks.some((t) => t.kind === 'n_back')) add(nBackBlocks(nb, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => t.kind === 'color_word' || t.kind === 'go_nogo' || t.kind === 'trail')) return { blocks, tips: [], chart };
+  if (def.tasks.every((t) => t.kind === 'color_word' || t.kind === 'go_nogo' || t.kind === 'trail' || t.kind === 'n_back')) return { blocks, tips: [], chart };
 
   const tips = you
     ? [
@@ -1271,7 +1527,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
         'Çok adımlı yönergeleri parçalara bölün ya da yazılı bir liste olarak verin.',
         'Ödev ve ders çalışma sırasında dikkat dağıtıcıları, özellikle telefonu, ortamdan uzaklaştırın.',
         'Düzenli uyku, dikkat ve bellek performansını doğrudan etkiler.',
-        'Çalışma belleğini “geliştirdiğini” söyleyen bilgisayar oyunlarının etkisinin okul başarısına aktarıldığına dair güçlü bir kanıt yoktur (Melby-Lervåg ve Hulme, 2013). Gündelik hayattaki destekler daha yararlıdır.',
+        'Çalışma belleğini geliştirmeyi amaçlayan bilgisayarlı alıştırma programlarının etkisinin okul başarısına aktarıldığına dair güçlü bir kanıt yoktur (Melby-Lervåg ve Hulme, 2013). Gündelik hayattaki destekler daha yararlıdır.',
         'Dikkat, öğrenme ya da davranışla ilgili süreğen bir endişeniz varsa bu sonuca değil, okulun rehberlik servisine ya da bir uzmana başvurun.',
       ];
   return { blocks, tips };

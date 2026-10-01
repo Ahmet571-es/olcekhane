@@ -159,3 +159,65 @@ export function trailLayout(n: number, rand: () => number): Point[] {
 export function mirrorLayout(pts: readonly Point[]): Point[] {
   return pts.map((p) => ({ x: r1(100 - p.y), y: r1(100 - p.x) }));
 }
+
+/* ---------- Geriye dönük hatırlama (n-geri düzeni) ---------- */
+
+/**
+ * Bir harfin n-geri dizisindeki rolü: hedef (n önceki harfle aynı; basılır), tuzak (iki geri bölümünde bir önceki
+ * harfle aynı; basılmaz ama tanıdık geldiği için yanıltır) ya da diğer.
+ */
+export type NBackRole = 'target' | 'lure' | 'other';
+
+/** Rolleri harflerden çıkarır; puanlama da bunu kullanır (tarayıcının söylediğine değil, harflere bakılır). */
+export function nBackRoles(letters: readonly string[], n: number): NBackRole[] {
+  return letters.map((l, i) => (i >= n && letters[i - n] === l ? 'target' : n > 1 && i >= 1 && letters[i - 1] === l ? 'lure' : 'other'));
+}
+
+/**
+ * n-geri dizisi. Önce roller sıralanır: bölümün başında en az bir karşılaştırma hedefsiz geçer (ilk hedef bir geride en
+ * erken üçüncü, iki geride en erken dördüncü harftir); hedef ve tuzak yalnızca "diğer" bir harfin aynısı olabilir:
+ * hedefin n önceki harfi, tuzağın bir önceki harfi diğer harftir (aynı harf zincirleme tekrarlanmasın: bir geride K K K,
+ * iki geride K M K S K gibi); tuzaktan hemen sonra hedef gelmez (hedef aynı zamanda bir önceki harfin aynısı olmasın).
+ * Sonra harfler rollere göre seçilir: hedef n önceki harfin, tuzak bir önceki harfin aynısıdır; diğer harfler son üç
+ * harften farklıdır (yanlışlıkla hedef ya da tuzak oluşmasın) ve aralarından o ana kadar en az kullanılanlardan biri
+ * seçilir (harfler dizide dengeli dağılsın).
+ */
+export function nBackSequence(
+  opts: { n: 1 | 2; length: number; targets: number; lures: number; letters: readonly string[] },
+  rand: () => number,
+): string[] {
+  const { n, length, targets, lures, letters } = opts;
+  if (n === 1 && lures > 0) throw new Error('Bir geri bölümünde tuzak olmaz.');
+  const cells: NBackRole[] = [
+    ...Array<NBackRole>(targets).fill('target'),
+    ...Array<NBackRole>(lures).fill('lure'),
+    ...Array<NBackRole>(length - targets - lures).fill('other'),
+  ];
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const roles = constrainedOrder(cells, rand, (before, next) => {
+      const i = before.length;
+      const last = before[i - 1];
+      if (next === 'target') return i > n && before[i - n] === 'other' && last !== 'lure';
+      if (next === 'lure') return i >= 2 && last === 'other';
+      return true;
+    });
+    const out: string[] = [];
+    const used = new Map(letters.map((l) => [l, 0]));
+    roles.forEach((role, i) => {
+      if (role === 'target') out.push(out[i - n]);
+      else if (role === 'lure') out.push(out[i - 1]);
+      else {
+        const recent = new Set(out.slice(Math.max(0, i - 3)));
+        const pool = letters.filter((l) => !recent.has(l));
+        const least = Math.min(...pool.map((l) => used.get(l)!));
+        const pick = pool.filter((l) => used.get(l) === least);
+        out.push(pick[Math.floor(rand() * pick.length)]);
+      }
+      used.set(out[i], used.get(out[i])! + 1);
+    });
+    // Roller, harflerden yeniden çıkarıldığında da aynı olmalı.
+    const back = nBackRoles(out, n);
+    if (back.every((r, i) => r === roles[i])) return out;
+  }
+  throw new Error('Kurallara uyan bir n-geri dizisi üretilemedi.');
+}

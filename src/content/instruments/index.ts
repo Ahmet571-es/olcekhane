@@ -6,6 +6,7 @@ import { calismaAliskanliklari } from './calisma-aliskanliklari';
 import { dikkatBellek } from './dikkat-bellek';
 import { durGitGorevi } from './dur-git';
 import { duygusalZekaBilesenleri } from './duygusal-zeka-bilesenleri';
+import { geriyeDonukHatirlama } from './geriye-donuk-hatirlama';
 import { harfIsaretleme } from './harf-isaretleme';
 import { hobiIlgileri } from './hobi-ilgileri';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
@@ -33,6 +34,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   renkKelimeGorevi,
   durGitGorevi,
   siraylaBirlestirme,
+  geriyeDonukHatirlama,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   hobiIlgileri,

@@ -75,14 +75,24 @@ export function ArmedButton({ delayMs = 900, onClick, ...props }: React.ButtonHT
   );
 }
 
-/** Görev duraklatıldığında gösterilen ekran. */
-export function PausedScreen({ note, onResume, autoFocus = true }: { note: string; onResume: () => void; autoFocus?: boolean }) {
+/** Görev duraklatıldığında gösterilen ekran. `cta`: düğmenin yazısı (görev baştan başlayacaksa ona göre). */
+export function PausedScreen({
+  note,
+  onResume,
+  autoFocus = true,
+  cta = 'Kaldığın yerden devam et',
+}: {
+  note: string;
+  onResume: () => void;
+  autoFocus?: boolean;
+  cta?: string;
+}) {
   return (
     <div className="flex flex-col items-center gap-6 text-center">
       <h2 className="t-h2">Görev duraklatıldı</h2>
       <p className="measure text-lg">Başka bir sekmeye ya da uygulamaya geçtiğin için görev durdu. {note}</p>
       <ArmedButton className="btn btn-primary btn-lg" autoFocus={autoFocus} onClick={onResume}>
-        Kaldığın yerden devam et
+        {cta}
       </ArmedButton>
     </div>
   );

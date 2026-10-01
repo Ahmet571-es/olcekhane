@@ -42,7 +42,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const inReview = def.status === 'review';
   const sc = def.science;
   const guides = guidesForTest(slug);
-  // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme).
+  // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama).
   const single = def.engine === 'tasks' && def.tasks.length === 1 ? def.tasks[0] : null;
   const cancellation = single?.kind === 'cancellation' ? single : null;
   const taskLength = !single
@@ -55,7 +55,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           ? new Set(single.parts.map((p) => p.labels.length)).size === 1
             ? `${single.parts.length} bölüm, her birinde ${single.parts[0].labels.length} daire`
             : `${single.parts.length} bölüm: ${single.parts.map((p) => p.labels.length).join(' ve ')} daire`
-          : null;
+          : single.kind === 'n_back'
+            ? `${single.blocks.length} bölüm, toplam ${single.blocks.reduce((s, b) => s + b.letters.length, 0)} harf`
+            : null;
   const itemCount =
     def.engine === 'likert'
       ? `${def.items.length} ${likertItemNoun(def)}`
@@ -282,6 +284,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>İki bölümün süreleri ve yanlış dokunuş sayıları</li>
                 <li>Sayılar ile harfler arasında geçiş yapmanın ne kadar ek süre getirdiğinin açıklaması</li>
+              </>
+            )}
+            {single?.kind === 'n_back' && (
+              <>
+                <li>Bir geri ve iki geri bölümlerinde aynı harfleri yakalama ve aynı olmayan harflerde basmadan geçme oranları</li>
+                <li>Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun nasıl değiştiğinin açıklaması</li>
               </>
             )}
             {def.engine === 'tasks' && !single && <li>Her görevin sonucu ve ne anlama geldiği</li>}

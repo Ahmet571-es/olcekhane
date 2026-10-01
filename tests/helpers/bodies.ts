@@ -1,6 +1,7 @@
 import { getInstrumentDef } from '@/content/instruments';
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
+import { nBackRoles, type NBackRole } from '@/lib/instruments/sequences';
 import type {
   CancellationTask,
   ColorWordTask,
@@ -8,6 +9,7 @@ import type {
   FlankerTask,
   GoNoGoTask,
   LikertInstrument,
+  NBackTask,
   QuizInstrument,
   ReadingInstrument,
   SpatialSpanTask,
@@ -139,4 +141,21 @@ export function trailBody(stepMs = 2000): AnswersBody {
     return { index, response: { taps, times }, rtMs: times[times.length - 1] };
   });
   return { grade: 5, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: parts } } };
+}
+
+/**
+ * Geriye dönük hatırlama: varsayılan olarak her hedefte (n önceki harfle aynı olan harf) 650 ms'de basılır, öteki
+ * harflerde basılmaz. Seçici; harfin rolünü, bölümün n'ini ve denemenin sırasını alır, basış süresini ya da null döner.
+ */
+export function nBackBody(
+  pick: (role: NBackRole, n: 1 | 2, i: number) => number | null = (role) => (role === 'target' ? 650 : null),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('geriye-donuk-hatirlama').tasks[0] as NBackTask;
+  const cells = task.blocks.flatMap((b) => nBackRoles(b.letters, b.n).map((role) => ({ role, n: b.n })));
+  const trials = cells.map((c, index) => {
+    const rt = pick(c.role, c.n, index);
+    return { index, response: rt === null ? null : 1, rtMs: rt };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

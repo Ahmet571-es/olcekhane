@@ -4,10 +4,12 @@ import type {
   DigitSpanTask,
   FlankerTask,
   GoNoGoTask,
+  NBackTask,
   SpatialSpanTask,
   SymbolMatchTask,
   TrailTask,
 } from '@/lib/instruments/types';
+import { nBackRoles } from '@/lib/instruments/sequences';
 import { median, round } from './stats';
 
 /**
@@ -646,7 +648,161 @@ export function scoreTrail(task: TrailTask, input: TrailPartInput[]): { result: 
   };
 }
 
+/* ---------- Geriye dönük hatırlama (n-geri düzeni) ---------- */
+
+export interface NBackTrialInput {
+  /** Denemenin sırası: bölümler boyunca 0'dan başlayarak (birinci bölümün ilk harfi 0). */
+  index: number;
+  /** 1: cevap penceresinde düğmeye basıldı; null: basılmadı. */
+  response: number | null;
+  /** Basıldıysa harfin görünmesinden basışa kadar geçen süre (ms). */
+  rtMs: number | null;
+}
+
+export interface NBackLevelResult {
+  n: 1 | 2;
+  /** Hedef harf sayısı: n önceki harfle aynı olan (basılması gereken) harfler. */
+  targets: number;
+  /** Hedef olmayan harf sayısı (tuzaklar dahil). */
+  nonTargets: number;
+  /** Tuzak harf sayısı: iki geride bir önceki harfle aynı olan (ama iki önceki harfle aynı olmayan) harfler. */
+  lures: number;
+  /** Hedefte zamanında basış. */
+  hits: number;
+  /** Hedefte basılmayan. */
+  misses: number;
+  /** Hedef olmayan harfte basılan (tuzaklar dahil). */
+  falseAlarms: number;
+  /** Tuzak harfte basılan. */
+  lureFalseAlarms: number;
+  /** Harf görünür görünmez (150 ms'den önce) yapılan basışlar: harfe verilmiş cevap sayılmaz. */
+  anticipations: number;
+  /** Hedeflerden yakalananların oranı (0–1). */
+  hitRate: number;
+  /** Hedef olmayan harflerden basılanların oranı (0–1). */
+  falseAlarmRate: number;
+  /**
+   * Ayırt etme: yakalama oranı eksi yanlış basma oranı (−1 ile 1 arası). Hiç yanılmayan biri 1, rastgele basan ya da
+   * hiç basmayan biri 0 civarında alır.
+   */
+  pr: number;
+  /** Yakalanan hedeflerde tipik (ortanca) tepki süresi (ms); yeterince yakalama yoksa null. */
+  medianRt: number | null;
+}
+
+/** Tek bir bölümün özeti: bölüm yarıda bırakıldı mı (hiç basılmadı mı) anlaşılsın diye. */
+export interface NBackBlockResult {
+  /** Bölümün sırası (0: birinci bölüm). */
+  index: number;
+  n: 1 | 2;
+  targets: number;
+  hits: number;
+  falseAlarms: number;
+}
+
+export interface NBackResult {
+  /** Düzeyler, n'e göre sıralı (önce bir geri, sonra iki geri); aynı n'deki bölümler birleştirilir. */
+  levels: NBackLevelResult[];
+  /** Bölüm bölüm özet, yapılma sırasıyla. */
+  blocks: NBackBlockResult[];
+}
+
+/**
+ * Harf göründükten sonra bu süreden önceki basışlar harfe bakılmadan yapılmış (çoğunlukla bir önceki harfe geç kalmış)
+ * sayılır. Sitenin görev ekranı bu basışları zaten yok sayar ve göndermez; sunucudaki sayım, başka biçimde gelen
+ * isteklerde de aynı kuralın uygulanması içindir.
+ */
+export const NBACK_ANTICIPATION_MS = 150;
+/** Tipik tepki süresi en az bu kadar yakalamadan hesaplanır. */
+export const NBACK_MIN_HITS = 5;
+/** Aynı olmayan harflerin bundan çoğunda basıldıysa sonuç, aynı harfleri ayırt edebilmeyi göstermez. */
+export const NBACK_RANDOM_FA = 0.5;
+
+/** Düzeyde ya da bölümde hiç basılmadı mı? */
+export const nBackSilent = (x: { hits: number; falseAlarms: number }) => x.hits + x.falseAlarms === 0;
+
+/**
+ * İki geride bir geri kuralına göre basılmaya devam edilmiş olabilir mi? Tuzakların (bir önceki harfle aynı olan
+ * harfler) en az yarısında basılıp hedeflerin çoğu kaçırıldıysa.
+ */
+export const nBackKeptOneBack = (l: NBackLevelResult) => l.n === 2 && l.lures > 0 && l.lureFalseAlarms / l.lures >= 0.5 && l.hitRate < 0.3;
+
+export function scoreNBack(task: NBackTask, input: NBackTrialInput[]): { result: NBackResult } {
+  // Bütün bölümlerin harfleri tek bir sırada: her denemenin bölümü, rolü ve n'i.
+  const cells = task.blocks.flatMap((b, block) => nBackRoles(b.letters, b.n).map((role) => ({ n: b.n, role, block })));
+  const blocks: NBackBlockResult[] = task.blocks.map((b, index) => ({
+    index,
+    n: b.n,
+    targets: nBackRoles(b.letters, b.n).filter((r) => r === 'target').length,
+    hits: 0,
+    falseAlarms: 0,
+  }));
+  const seen = new Set<number>();
+  type Acc = { targets: number; nonTargets: number; lures: number; hits: number; falseAlarms: number; lureFalseAlarms: number; anticipations: number; rts: number[] };
+  const acc = new Map<1 | 2, Acc>();
+  for (const c of cells) {
+    if (!acc.has(c.n)) acc.set(c.n, { targets: 0, nonTargets: 0, lures: 0, hits: 0, falseAlarms: 0, lureFalseAlarms: 0, anticipations: 0, rts: [] });
+    const a = acc.get(c.n)!;
+    if (c.role === 'target') a.targets++;
+    else {
+      a.nonTargets++;
+      if (c.role === 'lure') a.lures++;
+    }
+  }
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= cells.length) throw new TaskInputError('Geçersiz deneme.');
+    if (t.response !== null && t.response !== 1) throw new TaskInputError('Geçersiz cevap.');
+    if (t.response === 1 && (t.rtMs === null || !Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (seen.has(t.index)) continue;
+    seen.add(t.index);
+    const c = cells[t.index];
+    const a = acc.get(c.n)!;
+    const rt = t.rtMs as number;
+    // Cevap penceresinden sonra gelen (tarayıcının zamanlayıcısı gecikmiş) basış sayılmaz.
+    if (t.response !== 1 || rt > task.trialMs + 100) continue;
+    if (rt < NBACK_ANTICIPATION_MS) {
+      a.anticipations++;
+      continue;
+    }
+    if (c.role === 'target') {
+      a.hits++;
+      a.rts.push(rt);
+      blocks[c.block].hits++;
+    } else {
+      a.falseAlarms++;
+      blocks[c.block].falseAlarms++;
+      if (c.role === 'lure') a.lureFalseAlarms++;
+    }
+  }
+  if (seen.size !== cells.length) throw new TaskInputError('Denemelerin hepsi gönderilmedi.');
+  const levels = [...acc.entries()]
+    .sort(([x], [y]) => x - y)
+    .map(([n, a]): NBackLevelResult => {
+      const hitRate = a.targets ? a.hits / a.targets : 0;
+      const falseAlarmRate = a.nonTargets ? a.falseAlarms / a.nonTargets : 0;
+      return {
+        n,
+        targets: a.targets,
+        nonTargets: a.nonTargets,
+        lures: a.lures,
+        hits: a.hits,
+        misses: a.targets - a.hits,
+        falseAlarms: a.falseAlarms,
+        lureFalseAlarms: a.lureFalseAlarms,
+        anticipations: a.anticipations,
+        hitRate: round(hitRate, 3),
+        falseAlarmRate: round(falseAlarmRate, 3),
+        pr: round(hitRate - falseAlarmRate, 3),
+        medianRt: medianOrNull(a.rts, NBACK_MIN_HITS),
+      };
+    });
+  return { result: { levels, blocks } };
+}
+
 /* ---------- Cevap kalitesi ---------- */
+
+const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
+const ordinalLower = (i: number) => ORDINALS_LOWER[i] ?? `${i + 1}.`;
 
 export function taskQualityNotes(parts: {
   flanker?: FlankerResult;
@@ -655,6 +811,7 @@ export function taskQualityNotes(parts: {
   colorWord?: ColorWordResult;
   goNoGo?: GoNoGoResult;
   trail?: TrailResult;
+  nBack?: NBackResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -712,6 +869,31 @@ export function taskQualityNotes(parts: {
       const which = p.index === 0 ? 'birinci' : 'ikinci';
       if (!p.completed) notes.push(`Sırayla birleştirme görevinin ${which} bölümü süre dolmadan tamamlanamadı; bu bölümün süresi yorumlanmamalıdır.`);
       else if (p.errors > p.n) notes.push(`Sırayla birleştirme görevinin ${which} bölümünde çok sayıda yanlış daireye dokunulmuş; dairelere rastgele dokunulmuş olabilir.`);
+    }
+  }
+  const nb = parts.nBack;
+  if (nb) {
+    for (const l of nb.levels) {
+      const where = l.n === 1 ? 'Geriye dönük hatırlama görevinin bir geri bölümünde' : 'Geriye dönük hatırlama görevinin iki geri bölümlerinde';
+      if (nBackSilent(l)) {
+        notes.push(
+          `${where} hiç basılmamış; yönerge anlaşılmamış ya da görev yarıda bırakılmış olabilir. ${l.n === 1 ? 'Bu bölümün' : 'Bu bölümlerin'} sonucu yorumlanmamalıdır.`,
+        );
+        continue;
+      }
+      // Düzeyin bir bölümünde hiç basılmadıysa (ör. son bölüm yarıda bırakıldıysa) düzeyin birleşik sonucu yanıltır.
+      for (const b of nb.blocks.filter((x) => x.n === l.n && nBackSilent(x))) {
+        notes.push(
+          `Geriye dönük hatırlama görevinin ${ordinalLower(b.index)} bölümünde hiç basılmamış; bu bölüm yarıda bırakılmış olabilir. ${l.n === 1 ? 'Bir' : 'İki'} geri sonucu dikkatle yorumlanmalıdır.`,
+        );
+      }
+      if (l.falseAlarmRate > NBACK_RANDOM_FA) {
+        notes.push(`${where} aynı olmayan harflerin yarısından çoğunda da basılmış; düğmeye harflere bakılmadan basılmış ya da yönerge anlaşılmamış olabilir.`);
+      } else if (nBackKeptOneBack(l)) {
+        notes.push(
+          `${where} bir önceki harfle aynı olan harflerde sık basılmış, iki önceki harfle aynı olanlar ise çoğunlukla kaçırılmış: bir geri kuralına göre basılmaya devam edilmiş olabilir.`,
+        );
+      }
     }
   }
   return notes;
