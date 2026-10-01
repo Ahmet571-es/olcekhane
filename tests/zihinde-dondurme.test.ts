@@ -274,6 +274,32 @@ describe('Zihinde döndürme: rapor', () => {
     expect(allSame.parent.items[1].text).toBe('Doğru cevaplar yarıya yakın ya da daha az olduğu için karar süresi yorumlanmadı.');
   });
 
+  it('süre aşımı ile çok erken basış birlikte çoğunluktaysa ikisi birlikte söylenir; uyarılar kartla çelişmez', () => {
+    const answer = (t: { mirror: boolean }, kind: 'timeout' | 'early' | 'wrong' | 'right') =>
+      kind === 'timeout'
+        ? { choice: null, rtMs: null }
+        : { choice: ((kind === 'wrong') === t.mirror ? 1 : 2) as 1 | 2, rtMs: kind === 'early' ? 150 : 1500 };
+    // Doğruluk %85: 4 süre aşımı, 3 çok erken, 5 yanlış. İkisi de tek başına çoğunluk değil.
+    const mixed = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 4 ? 'timeout' : i < 7 ? 'early' : i < 12 ? 'wrong' : 'right')));
+    expect(mixed.student.items[0].badge).toBe('%85 doğru');
+    expect(mixed.student.items[0].text).toContain(
+      'Doğru sayılmayan denemelerin çoğunda ya süre (7 saniye) dolmadan cevap vermedin ya da şekillere bakmadan, çok erken bastın.',
+    );
+    expect(mixed.parent.items[0].text).toContain('ya süre (7 saniye) dolmadan cevap vermedi ya da şekillere bakmadan, çok erken bastı.');
+    // Doğruluk %50: 12 süre aşımı, 10 çok erken, 18 yanlış.
+    const lowMixed = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 12 ? 'timeout' : i < 22 ? 'early' : i < 40 ? 'wrong' : 'right')));
+    expect(lowMixed.parent.items[0].badge).toBe('%50 doğru');
+    expect(lowMixed.parent.items[0].text).toContain('%50 doğru. Çocuğunuz doğru sayılmayan denemelerin çoğunda ya süre (7 saniye) dolmadan cevap vermedi ya da');
+    expect(lowMixed.parent.cautions.join(' ')).toContain('doğru sayılmayan denemelerin çoğunda ya süre içinde cevap verilmemiş ya da çok erken basılmış');
+    expect(all(lowMixed.parent)).not.toMatch(/rastgele|karıştırılmış/);
+    // Doğruluk %25: 35 çok erken, 25 yanlış. Kart erken basışı söyler; uyarılar da düğmelerin karıştırıldığını söylemez.
+    const lowEarly = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 35 ? 'early' : i < 60 ? 'wrong' : 'right')));
+    expect(lowEarly.student.items[0].text).toContain('denemelerin birçoğunda şekillere bakmadan, çok erken bastın');
+    expect(lowEarly.student.cautions.join(' ')).toContain('bazı cevaplar şekiller görünür görünmez');
+    expect(all(lowEarly.student)).not.toMatch(/rastgele|karıştırılmış/);
+    expect(lowEarly.student.cautions.join(' ')).not.toContain('yarıya yakın');
+  });
+
   it('çok döndürülmüş şekillerde tahmin edilmişse süreler karşılaştırılmaz', () => {
     let k = 0;
     const r = evaluate(SLUG, rotationBody((t) => (t.disparity >= 135 ? { choice: (k++ % 2 ? 1 : 2) as 1 | 2, rtMs: 900 } : { choice: t.mirror ? 2 : 1, rtMs: 1300 })));

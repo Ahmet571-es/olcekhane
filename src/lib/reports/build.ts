@@ -1417,6 +1417,9 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
   const wrong = r.sameSaidMirror + r.mirrorSaidSame;
   const missed = r.timeouts + r.anticipations;
   const mostlyMissed = errors > 0 && missed > errors / 2;
+  // Doğru sayılmayan denemelerin çoğu süre aşımı ya da çok erken basışsa hangisi olduğu söylenir; ikisi de tek başına
+  // çoğunluk değilse ("karışık") ikisi birlikte söylenir.
+  const missedKind = r.timeouts > errors / 2 ? 'timeouts' : r.anticipations > errors / 2 ? 'early' : 'mixed';
   // Doğruluk düşükken yanlış cevaplar doğrulardan çoksa düğmeler karıştırılmış olabilir (rastgele basan biri yarısını bulur).
   const reversed = low && !mostlyMissed && r.accuracy < 0.4 && wrong > r.correct;
 
@@ -1428,15 +1431,20 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
     );
   } else if (low && mostlyMissed) {
     accText =
-      r.timeouts >= r.anticipations
+      missedKind === 'timeouts'
         ? v(
             `Görevde denemelerin birçoğunda süre (${limit} saniye) dolmadan cevap vermedin; doğru cevaplar bu yüzden az. Şekilleri karşılaştırmak uzun sürmüş ya da yönergeyi tam anlamamış olabilirsin. Bu sonuç tek başına bir şey söylemez.`,
             `Çocuğunuz denemelerin birçoğunda süre (${limit} saniye) dolmadan cevap vermedi; doğru cevaplar bu yüzden az. Şekilleri karşılaştırmak uzun sürmüş ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
           )
-        : v(
-            'Görevde denemelerin birçoğunda şekillere bakmadan, çok erken bastın; doğru cevaplar bu yüzden az. Acele etmeden, önce iki şekli karşılaştırıp öyle basmak işine yarar.',
-            'Çocuğunuz denemelerin birçoğunda şekillere bakmadan, çok erken bastı; doğru cevaplar bu yüzden az. Bu sonuç tek başına yorumlanmamalıdır.',
-          );
+        : missedKind === 'early'
+          ? v(
+              'Görevde denemelerin birçoğunda şekillere bakmadan, çok erken bastın; doğru cevaplar bu yüzden az. Acele etmeden, önce iki şekli karşılaştırıp öyle basmak işine yarar.',
+              'Çocuğunuz denemelerin birçoğunda şekillere bakmadan, çok erken bastı; doğru cevaplar bu yüzden az. Bu sonuç tek başına yorumlanmamalıdır.',
+            )
+          : v(
+              `Görevde doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedin ya da şekillere bakmadan, çok erken bastın; doğru cevaplar bu yüzden az. Bu sonuç tek başına bir şey söylemez.`,
+              `Çocuğunuz doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedi ya da şekillere bakmadan, çok erken bastı; doğru cevaplar bu yüzden az. Bu sonuç tek başına yorumlanmamalıdır.`,
+            );
   } else if (reversed) {
     accText = v(
       'Cevaplarının çoğu yanlıştı: “Aynı” ile “Ayna görüntüsü” düğmelerini birbirine karıştırmış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
@@ -1467,12 +1475,17 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
     if (errors > 0) {
       if (mostlyMissed) {
         accText +=
-          r.timeouts >= r.anticipations
+          missedKind === 'timeouts'
             ? v(
                 ` Doğru sayılmayan denemelerin çoğunda süre (${limit} saniye) dolmadan cevap vermedin: bazı şekilleri karşılaştırmak uzun sürmüş olabilir.`,
                 ` Doğru sayılmayan denemelerin çoğunda süre (${limit} saniye) dolmadan cevap vermedi: bazı şekilleri karşılaştırmak uzun sürmüş olabilir.`,
               )
-            : v(' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastın.', ' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastı.');
+            : missedKind === 'early'
+              ? v(' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastın.', ' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastı.')
+              : v(
+                  ` Doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedin ya da şekillere bakmadan, çok erken bastın.`,
+                  ` Doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedi ya da şekillere bakmadan, çok erken bastı.`,
+                );
       } else if (r.mirrorSaidSame >= 3 && r.mirrorSaidSame >= 2 * r.sameSaidMirror) {
         accText += v(
           ' Yanıldığın denemelerin çoğunda ayna görüntüsüne “Aynı” dedin: ayna görüntüsünü fark etmek için şekli dikkatle döndürüp karşılaştırmak gerekir.',

@@ -1026,21 +1026,31 @@ export function taskQualityNotes(parts: {
   if (ro && ro.n > 0) {
     const errors = ro.n - ro.correct;
     const wrong = ro.sameSaidMirror + ro.mirrorSaidSame;
+    const low = ro.accuracy < 0.6;
+    // Rapordaki doğruluk kartıyla aynı ayrım: düşük doğrulukta doğru sayılmayan denemelerin çoğu süre aşımı ya da çok
+    // erken basışsa düğmelerin karıştırıldığı ya da rastgele basıldığı söylenmez.
+    const mostlyMissed = errors > 0 && ro.timeouts + ro.anticipations > errors / 2;
     const mostlyTimeouts = errors > 0 && ro.timeouts > errors / 2;
+    const mostlyEarly = errors > 0 && ro.anticipations > errors / 2;
     if (ro.timeouts / ro.n > 0.5) {
       notes.push('Zihinde döndürme görevinde denemelerin yarısından çoğunda süre içinde cevap verilmemiş; görev yarıda bırakılmış olabilir. Bu görevin sonucu yorumlanmamalıdır.');
     } else {
-      if (ro.accuracy < 0.6 && mostlyTimeouts) {
-        notes.push('Zihinde döndürme görevinde denemelerin birçoğunda süre içinde cevap verilmemiş; doğru cevaplar bu yüzden az.');
+      if (low && mostlyMissed) {
+        if (mostlyTimeouts) {
+          notes.push('Zihinde döndürme görevinde denemelerin birçoğunda süre içinde cevap verilmemiş; doğru cevaplar bu yüzden az.');
+        } else if (!mostlyEarly) {
+          notes.push('Zihinde döndürme görevinde doğru sayılmayan denemelerin çoğunda ya süre içinde cevap verilmemiş ya da çok erken basılmış; doğru cevaplar bu yüzden az.');
+        }
+        // Çoğu çok erken basışsa aşağıdaki erken basış uyarısı bunu söyler.
       } else if (ro.accuracy < 0.4 && wrong > ro.correct) {
         notes.push('Zihinde döndürme görevinde cevapların çoğu yanlış: “Aynı” ile “Ayna görüntüsü” düğmeleri birbirine karıştırılmış olabilir.');
-      } else if (ro.accuracy < 0.6 && ro.anticipations <= errors / 2) {
+      } else if (low) {
         notes.push('Zihinde döndürme görevinde doğru cevaplar yarıya yakın: rastgele basan biri de yaklaşık yarısını doğru bulur. Yönerge anlaşılmamış ya da düğmelere rastgele basılmış olabilir.');
       }
       if (ro.sameShare !== null && (ro.sameShare > 0.85 || ro.sameShare < 0.15)) {
         notes.push('Zihinde döndürme görevinde cevapların çoğunda aynı düğmeye basılmış; yönerge anlaşılmamış olabilir.');
       }
-      if (ro.timeouts / ro.n > 0.2 && !(ro.accuracy < 0.6 && mostlyTimeouts)) {
+      if (ro.timeouts / ro.n > 0.2 && !(low && mostlyTimeouts)) {
         notes.push('Zihinde döndürme görevinde denemelerin bir kısmında süre içinde cevap verilmemiş.');
       }
     }
