@@ -129,7 +129,7 @@ jobs:
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
           # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
-          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili alti-boyutlu-kisilik-profili duygusal-zeka-bilesenleri renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi"
+          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili alti-boyutlu-kisilik-profili duygusal-zeka-bilesenleri kisilerarasi-tarz renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi"
           for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
@@ -162,6 +162,12 @@ jobs:
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$DZ_GOVDE" "https://$ALAN/api/rapor/duygusal-zeka-bilesenleri" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert len(r["parent"]["chart"]["rows"]) == 7 and len(r["student"]["items"]) == 7 and "toplam bir puan yoktur" in r["student"]["chartNote"]'; then
             sorun="$sorun duygusal-zeka-raporu"
+          fi
+          # Kişilerarası Tarz: 32 madde, sekiz tarz çember grafiğinde.
+          TARZ_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"ipc{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 33)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TARZ_GOVDE" "https://$ALAN/api/rapor/kisilerarasi-tarz" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["student"]["chart"]; assert c["type"] == "circle" and len(c["axes"]) == 8 and len(r["parent"]["items"]) == 8'; then
+            sorun="$sorun kisilerarasi-tarz-raporu"
           fi
           # Aynı test yetişkin olarak ("Yetişkinim", 14): yalnızca kişisel rapor.
           YETISKIN_GOVDE=$(printf '%s' "$KISILIK_GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["grade"]=14; print(json.dumps(b))')
