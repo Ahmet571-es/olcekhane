@@ -41,7 +41,7 @@ const nBack: NBackTask = {
   measures: 'Akıldaki bilgiyi sürekli güncelleyebilme: az önce gördüklerini aklında tutup her yeni harfle karşılaştırabilme (çalışma belleği).',
   instructions: [
     'Ekranda harfler tek tek, belli bir hızla belirecek. Her harfi daha önce gördüğün harflerle karşılaştıracaksın.',
-    'Birinci bölümde: harf bir önceki harfle aynıysa AYNI düğmesine (ya da boşluk tuşuna) bas. Farklıysa hiçbir şeye basma.',
+    'Birinci bölümde: harf bir önceki harfle aynıysa AYNI düğmesine (ya da boşluk tuşuna) bas. Aynı değilse hiçbir şeye basma.',
     'İkinci ve üçüncü bölümde: harf iki önceki harfle aynıysa bas. Örneğin K, M, K dizisinde ikinci K’de basarsın.',
     'Her yeni kuraldan önce kısa bir alıştırma var. Ara sıra yanılmak çok normal; özellikle iki geri çoğu kişi için zordur.',
   ],
@@ -74,7 +74,7 @@ export const geriyeDonukHatirlama: TaskInstrument = {
   sortOrder: 59,
   tagline: 'Art arda gelen harflerde bir ya da iki önceki harfi aklında tutup karşılaştırabilmeyi, yani çalışma belleğini sürekli güncelleyebilmeyi ölçer.',
   description:
-    'Bu görev, psikolojide çalışma belleğini ölçmek için yaygın olarak kullanılan “n-geri” (n-back) düzenine dayanır: harfler art arda belirir; birinci bölümde harf bir önceki harfle, sonraki iki bölümde iki önceki harfle aynıysa düğmeye basılır. Bunu yapabilmek için son harfler akılda tutulur ve her yeni harfle güncellenir. Görev üç bölümden oluşur ve yaklaşık 7 dakika sürer. Rapor; aynı harfleri yakalamayı, farklı harflerde basmamayı ve akılda tutulacak harf sayısı artınca sonucun nasıl değiştiğini sade bir dille anlatır. Tanı koymaz.',
+    'Bu görev, psikolojide çalışma belleğini ölçmek için yaygın olarak kullanılan “n-geri” (n-back) düzenine dayanır: harfler art arda belirir; birinci bölümde harf bir önceki harfle, sonraki iki bölümde iki önceki harfle aynıysa düğmeye basılır. Bunu yapabilmek için son harfler akılda tutulur ve her yeni harfle güncellenir. Görev üç bölümden oluşur ve yaklaşık 7 dakika sürer. Rapor; aynı harfleri yakalamayı, aynı olmayan harflerde basmamayı ve akılda tutulacak harf sayısı artınca sonucun nasıl değiştiğini sade bir dille anlatır. Tanı koymaz.',
   intro: {
     title: 'Az önceki harf neydi?',
     paragraphs: [
@@ -84,7 +84,7 @@ export const geriyeDonukHatirlama: TaskInstrument = {
     ],
   },
   scales: [
-    { key: 'gh_bir', name: 'Bir geri', plain: 'Harfi bir önceki harfle karşılaştırma: aynı harfleri yakalama ve farklı harflerde basmama.' },
+    { key: 'gh_bir', name: 'Bir geri', plain: 'Harfi bir önceki harfle karşılaştırma: aynı harfleri yakalama ve aynı olmayan harflerde basmama.' },
     { key: 'gh_iki', name: 'İki geri', plain: 'Harfi iki önceki harfle karşılaştırma: son iki harfi akılda tutup her yeni harfle güncelleyebilme.' },
     { key: 'gh_yuk', name: 'Zorluk artınca', plain: 'Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun ne kadar değiştiği.' },
   ],
