@@ -13,6 +13,7 @@ import type {
   MentalRotationTask,
   NBackTask,
   QuizInstrument,
+  ReactionTimeTask,
   ReadingInstrument,
   SpatialSpanTask,
   SymbolMatchTask,
@@ -176,6 +177,29 @@ export function rotationBody(
   const task = def<TaskInstrument>('zihinde-dondurme').tasks[0] as MentalRotationTask;
   const trials = task.trials.map((t, index) => {
     const p = pick({ angle: t.angle, mirror: t.mirror, disparity: disparity(t.angle) }, index);
+    return { index, response: p.choice, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Tepki hızının bir denemesi: bölüm, dairenin kutusu (0 sol, 1 sağ), bekleme ve bölüm içindeki sırası. */
+export type ReactionCell = { part: 'simple' | 'choice'; box: number; waitMs: number; i: number };
+
+/**
+ * Tepki hızı: varsayılan olarak her denemede doğru tepki; basit bölümde 280–356 ms, seçmeli bölümde 420–537 ms.
+ * Seçici; denemenin bölümünü, kutusunu, beklemesini, bölüm içindeki sırasını ve genel sırasını alır.
+ */
+export function reactionBody(
+  pick: (t: ReactionCell, index: number) => { choice: 1 | 2 | null; rtMs: number | null } = (t) => ({
+    choice: (t.box + 1) as 1 | 2,
+    rtMs: t.part === 'simple' ? 280 + 4 * t.i : 420 + 3 * t.i,
+  }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('tepki-hizi').tasks[0] as ReactionTimeTask;
+  const cells: ReactionCell[] = task.parts.flatMap((p) => p.trials.map((t, i) => ({ part: p.key, box: t.box, waitMs: t.waitMs, i })));
+  const trials = cells.map((c, index) => {
+    const p = pick(c, index);
     return { index, response: p.choice, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };

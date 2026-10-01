@@ -183,7 +183,8 @@ export type TaskKind =
   | 'go_nogo'
   | 'trail'
   | 'n_back'
-  | 'mental_rotation';
+  | 'mental_rotation'
+  | 'reaction_time';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -394,6 +395,35 @@ export interface MentalRotationTask extends TaskBase {
   itiMs: [number, number];
 }
 
+/**
+ * Tepki hızı: kutuda bir daire belirince olabildiğince hızlı basılır. Basit bölümde tek kutu ve tek düğme; seçmeli
+ * bölümde iki kutu, daire hangi kutuda belirirse o taraftaki düğmeye basılır. Daire, bir önceki tepkiden sonra
+ * değişken bir beklemeyle belirir; daire belirmeden basmak o denemeyi geçersiz kılar.
+ */
+export interface ReactionTrial {
+  /** Dairenin belirmesinden önceki bekleme (ms). */
+  waitMs: number;
+  /** Dairenin belirdiği kutu: 0 sol (basit bölümde tek kutu), 1 sağ. */
+  box: number;
+}
+
+export interface ReactionPart {
+  key: 'simple' | 'choice';
+  /** Kutu sayısı. */
+  boxes: 1 | 2;
+  /** Alıştırma denemeleri (geri bildirimli, puanlanmaz). */
+  practice: ReactionTrial[];
+  trials: ReactionTrial[];
+}
+
+export interface ReactionTimeTask extends TaskBase {
+  kind: 'reaction_time';
+  /** Bölümler sırayla: önce basit, sonra seçmeli. Denemelerin sırası (index) bölümler boyunca birleşik sayılır. */
+  parts: ReactionPart[];
+  /** Daire belirdikten sonra tepki için en uzun süre (ms); daire bu süre boyunca kutuda kalır. */
+  timeoutMs: number;
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -404,7 +434,8 @@ export type CognitiveTask =
   | GoNoGoTask
   | TrailTask
   | NBackTask
-  | MentalRotationTask;
+  | MentalRotationTask
+  | ReactionTimeTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

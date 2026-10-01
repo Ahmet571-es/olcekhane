@@ -31,6 +31,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'sirayla-birlestirme-gorevi': { version: 'sirayla-birlestirme-rapor-1', bandLabels: {}, scales: {} },
   'geriye-donuk-hatirlama': { version: 'geriye-donuk-hatirlama-rapor-1', bandLabels: {}, scales: {} },
   'zihinde-dondurme': { version: 'zihinde-dondurme-rapor-1', bandLabels: {}, scales: {} },
+  'tepki-hizi': { version: 'tepki-hizi-rapor-1', bandLabels: {}, scales: {} },
   // Akademik konu tarama raporu ölçüt temellidir; düzey adları eyleme yöneliktir (neyin öncelikli olduğu).
   'matematik-konu-tarama-testi': {
     version: 'matematik-konu-tarama-rapor-1',

@@ -27,6 +27,8 @@ export const taskTrial = z.object({
     z.null(),
   ]),
   rtMs: z.number().min(0).max(120_000).nullable(),
+  /** Cevabın nasıl verildiği (tepki hızı görevinde): fareyle verilen cevaplarda süreye imlecin yolu da eklenir. */
+  input: z.enum(['mouse', 'touch', 'pen', 'key']).optional(),
 });
 
 const rt = z.number().min(0).max(3_600_000).nullable();

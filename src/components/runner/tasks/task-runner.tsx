@@ -11,6 +11,7 @@ import { Flanker } from './flanker';
 import { GoNoGo } from './go-nogo';
 import { MentalRotation } from './mental-rotation';
 import { NBack } from './n-back';
+import { ReactionTime } from './reaction-time';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
 import { Trail } from './trail';
@@ -159,6 +160,7 @@ export function TaskRunner(props: {
       {task.kind === 'trail' && <Trail key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'n_back' && <NBack key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'mental_rotation' && <MentalRotation key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'reaction_time' && <ReactionTime key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

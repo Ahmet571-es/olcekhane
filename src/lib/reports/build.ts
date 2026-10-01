@@ -22,6 +22,8 @@ import { scaleItems } from '@/lib/scoring/likert';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
 import {
   NBACK_RANDOM_FA,
+  REACTION_MIN_VALID,
+  REACTION_MOUSE_SHARE,
   nBackKeptOneBack,
   nBackSilent,
   type CancellationResult,
@@ -30,6 +32,8 @@ import {
   type GoNoGoResult,
   type NBackLevelResult,
   type NBackResult,
+  type ReactionPartResult,
+  type ReactionResult,
   type RotationResult,
   type SpanResult,
   type SymbolResult,
@@ -746,7 +750,7 @@ function cancellationBlocks(
   return [tempo, isabet, net, surdurme];
 }
 
-/* ---------- Tek görevli testler: renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme ---------- */
+/* ---------- Tek görevli testler: renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme, tepki hızı ---------- */
 
 const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 /** Milisaniyeyi saniye olarak yazar: 820 → "0,82". */
@@ -1618,6 +1622,231 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
   };
 }
 
+/** Tepki hızında seçmeli ile basit bölümün tipik süreleri bu kadardan (ms) az farklıysa "belirgin değil" sayılır. */
+const REACTION_COST_MIN_MS = 50;
+
+/**
+ * Bir bölümün durumu; kartlar, grafik ve seçimin etkisi buna göre yazılır. Sıra ve eşikler, uyarılarla
+ * (lib/scoring/tasks.ts, taskQualityNotes) aynıdır: önce süre aşımı ve çok erken basış (tek tek ve birlikte), sonra
+ * (seçmeli bölümde) öteki taraftaki ya da hep aynı düğmeye basma, en son yeterli doğru tepki olup olmadığı.
+ */
+type ReactionStatus = 'ok' | 'missed' | 'early' | 'mixed' | 'reversed' | 'oneSide' | 'chance' | 'errors' | 'few';
+
+function reactionStatus(p: ReactionPartResult): ReactionStatus {
+  if (p.misses > p.n / 2) return 'missed';
+  if (p.early > p.n / 2) return 'early';
+  if (p.early + p.misses > p.n / 2) return 'mixed';
+  if (p.key === 'choice' && p.answered >= REACTION_MIN_VALID) {
+    const acc = p.correct / p.answered;
+    const left = p.left / p.answered;
+    if (acc < 0.4) return 'reversed';
+    if (left > 0.85 || left < 0.15) return 'oneSide';
+    if (acc < 0.6) return 'chance';
+    if (acc < 0.8) return 'errors';
+  }
+  return p.medianRt === null ? 'few' : 'ok';
+}
+
+/** Seçmeli bölümün süresine imlecin düğmeler arasındaki yolu karıştı mı (cevapların en az dörtte biri fareyle)? */
+const reactionByMouse = (p: ReactionPartResult) => p.key === 'choice' && p.answered > 0 && p.mouse / p.answered >= REACTION_MOUSE_SHARE;
+
+/** Süreler raporda saniyenin yüzde biri (10 ms) duyarlılığıyla yazılır; fark da yuvarlanmış sürelerden hesaplanır. */
+const to10 = (ms: number) => Math.round(ms / 10) * 10;
+/** "Kaç denemede": 1 → "birinde", 5 → "5 tanesinde". */
+const inHowMany = (k: number) => (k === 1 ? 'birinde' : `${k} tanesinde`);
+
+/** Tepki hızının bir bölümünün kartı: basit ya da seçmeli tepki. */
+function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: CardOf): CognitiveBlock {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const choice = p.key === 'choice';
+  const base = card(choice ? 'th_secmeli' : 'th_basit');
+  const detail = !choice
+    ? undefined
+    : p.correct === 0
+      ? `${p.n} denemenin hiçbirinde dairenin olduğu taraftaki düğmeye basılmadı`
+      : `${p.n} denemenin ${p.correct === p.n ? 'hepsinde' : `${p.correct} tanesinde`} dairenin olduğu taraftaki düğmeye basıldı`;
+  // Tepki sayılmayan denemelerin sayıları: çok erken, süre aşımı ve (seçmeli bölümde) öteki taraf.
+  const counts = (withWrong = true) => {
+    const parts: string[] = [];
+    if (p.early) parts.push(v(`${inHowMany(p.early)} daire belirmeden ya da belirir belirmez bastın`, `${inHowMany(p.early)} daire belirmeden ya da belirir belirmez bastı`));
+    if (p.misses) parts.push(v(`${inHowMany(p.misses)} süre içinde basmadın`, `${inHowMany(p.misses)} süre içinde basmadı`));
+    if (withWrong && p.wrong) parts.push(v(`${inHowMany(p.wrong)} öteki taraftaki düğmeye bastın`, `${inHowMany(p.wrong)} öteki taraftaki düğmeye bastı`));
+    return parts.join(', ');
+  };
+  // Süre hesaplandıysa ama güvenilir değilse "yorumlanmadı", hiç hesaplanamadıysa "hesaplanamadı".
+  const computed = p.medianRt !== null;
+  const headline = computed ? 'Yorumlanmadı' : 'Hesaplanamadı';
+  const verdict = v(computed ? 'tepki süren yorumlanmadı' : 'tepki süren hesaplanamadı', computed ? 'tepki süresi yorumlanmadı' : 'tepki süresi hesaplanamadı');
+  // Erken basış ve süre aşımları, öteki taraf kartlarına da sayılarla eklenir.
+  const extra = p.early || p.misses ? v(` Ayrıca ${p.n} denemenin ${counts(false)}.`, ` Ayrıca ${p.n} denemenin ${counts(false)}.`) : '';
+  const no = (text: string): CognitiveBlock => ({ ...base, headline, detail, text });
+  switch (reactionStatus(p)) {
+    case 'missed':
+      return no(
+        v(
+          `Denemelerin yarısından çoğunda süre içinde basmadın; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu yüzden ${verdict}.`,
+          `Çocuğunuz denemelerin yarısından çoğunda süre içinde basmadı; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu yüzden ${verdict}.`,
+        ),
+      );
+    case 'early':
+      return no(
+        v(
+          `Denemelerin yarısından çoğunda daire belirmeden ya da belirir belirmez bastın; bu yüzden ${verdict}. Daireyi bekleyip, görür görmez basmak gerekir.`,
+          `Çocuğunuz denemelerin yarısından çoğunda daire belirmeden ya da belirir belirmez bastı; bu yüzden ${verdict}.`,
+        ),
+      );
+    case 'mixed':
+      return no(
+        v(
+          `Denemelerin yarısından çoğu tepki sayılmadı: ${p.n} denemenin ${counts(false)}. Bu yüzden ${verdict}.`,
+          `Denemelerin yarısından çoğu tepki sayılmadı: çocuğunuz ${p.n} denemenin ${counts(false)}. Bu yüzden ${verdict}.`,
+        ),
+      );
+    case 'reversed':
+      return no(
+        v(
+          `Cevaplarının çoğunda dairenin olmadığı taraftaki düğmeye bastın; yönergeyi ters anlamış olabilirsin. Daire hangi taraftaysa o taraftaki düğmeye basmak gerekir. Bu yüzden ${verdict}.${extra}`,
+          `Çocuğunuz cevaplarının çoğunda dairenin olmadığı taraftaki düğmeye bastı; yönerge ters anlaşılmış olabilir. Bu yüzden ${verdict}.${extra}`,
+        ),
+      );
+    case 'oneSide':
+      return no(
+        v(
+          `Cevaplarının çoğunda, dairenin hangi tarafta olduğuna bakmadan hep aynı düğmeye bastın. Daire hangi taraftaysa o taraftaki düğmeye basmak gerekir. Bu yüzden ${verdict}.${extra}`,
+          `Çocuğunuz cevaplarının çoğunda dairenin hangi tarafta olduğuna bakmadan hep aynı düğmeye bastı; yönerge anlaşılmamış olabilir. Bu yüzden ${verdict}.${extra}`,
+        ),
+      );
+    case 'chance':
+      return no(
+        v(
+          `Cevaplarının ancak yarıya yakınında dairenin olduğu taraftaki düğmeye bastın; rastgele basan biri de yaklaşık yarısını doğru bulur. Bu yüzden ${verdict}. Acele etmeden, daireyi görüp o taraftaki düğmeye basmak gerekir.${extra}`,
+          `Çocuğunuz cevaplarının ancak yarıya yakınında dairenin olduğu taraftaki düğmeye bastı; rastgele basan biri de yaklaşık yarısını doğru bulur. Bu yüzden ${verdict}; yönergenin tam anlaşılmaması ya da acele etmek bunun nedeni olabilir.${extra}`,
+        ),
+      );
+    case 'errors':
+      return no(
+        v(
+          `Cevap verdiğin ${p.answered} denemenin ${p.wrong} tanesinde öteki taraftaki düğmeye bastın. Yanlış tarafa bu kadar sık basılınca süre, ne kadar hızlı olduğunu doğru göstermez; bu yüzden ${verdict}. Acele etmiş ya da sol ile sağı karıştırmış olabilirsin.${extra}`,
+          `Çocuğunuz cevap verdiği ${p.answered} denemenin ${p.wrong} tanesinde öteki taraftaki düğmeye bastı. Yanlış tarafa bu kadar sık basıldığı için ${verdict}; acele edilmiş ya da sol ile sağ karıştırılmış olabilir.${extra}`,
+        ),
+      );
+    case 'few':
+      return no(v(`Tepki süren hesaplanamadı: ${p.n} denemenin ${counts()}.`, `Tepki süresi hesaplanamadı: çocuğunuz ${p.n} denemenin ${counts()}.`));
+  }
+  const m = sn(to10(p.medianRt as number));
+  // Aralığın uçları aşağı ve yukarı yuvarlanır: doğru tepkilerin en az yarısı gerçekten bu aralıktadır.
+  const lo = Math.floor((p.midLow as number) / 10) * 10;
+  const hi = Math.ceil((p.midHigh as number) / 10) * 10;
+  const range = lo === hi ? `${sn(lo)} saniye sürdü` : `${sn(lo)} ile ${sn(hi)} saniye arasındaydı`;
+  const excluded = p.early + p.misses + p.wrong;
+  const issues = excluded
+    ? v(
+        ` ${p.n} denemenin ${counts()}; ${excluded === 1 ? 'bu deneme' : 'bu denemeler'} hesaba katılmadı.`,
+        ` Çocuğunuz ${p.n} denemenin ${counts()}; ${excluded === 1 ? 'bu deneme' : 'bu denemeler'} hesaba katılmadı.`,
+      )
+    : '';
+  const spread = v(' Bu aralık ne kadar darsa tepkilerin birbirine o kadar yakın demektir.', ' Bu aralığın darlığı, tepkilerin ne kadar tutarlı olduğunu gösterir.');
+  const mouse = reactionByMouse(p)
+    ? v(
+        ' Bu bölümde fareyle bastığın için bu süreye imlecin iki düğme arasındaki yolu da eklendi; bilgisayarda ok tuşlarıyla daha doğru ölçülür.',
+        ' Bu bölümde fare kullanıldığı için bu süreye imlecin iki düğme arasındaki yolu da eklendi; bilgisayarda ok tuşlarıyla daha doğru ölçülür.',
+      )
+    : '';
+  const text = choice
+    ? v(
+        `Dairenin olduğu taraftaki düğmeye basman tipik olarak ${m} saniye sürdü; hesaba katılan tepkilerinin en az yarısı ${range}.${spread}${issues}${mouse} Burada hem hızlı hem doğru olmak önemlidir.`,
+        `Çocuğunuzun dairenin olduğu taraftaki düğmeye basması tipik olarak ${m} saniye sürdü; hesaba katılan tepkilerinin en az yarısı ${range}.${spread}${issues}${mouse} Bu süre, basit tepkiye ek olarak hangi düğmeye basılacağını seçmeyi de içerir; hız, doğrulukla birlikte değerlendirilmelidir.`,
+      )
+    : v(
+        `Daire belirince düğmeye basman tipik olarak ${m} saniye sürdü; hesaba katılan tepkilerinin en az yarısı ${range}.${spread}${issues} Hız tek başına iyi ya da kötü değildir; tepki süresi yaşla ve kullanılan cihazla değişir.`,
+        `Çocuğunuzun daire belirince düğmeye basması tipik olarak ${m} saniye sürdü; hesaba katılan tepkilerinin en az yarısı ${range}.${spread}${issues} Bu süre, daireyi görmeyi ve düğmeye basmayı içerir; yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir. Akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.`,
+      );
+  return { ...base, headline: `Tipik tepki süresi ${m} saniye`, detail, text };
+}
+
+/** Tepki hızının üç sonuç kartı (basit tepki, seçmeli tepki, seçimin etkisi) ve iki bölümün grafiği. */
+function reactionBlocks(r: ReactionResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const ss = reactionStatus(r.simple);
+  const cs = reactionStatus(r.choice);
+  const no = (text: string): CognitiveBlock => ({ ...card('th_fark'), headline: 'Karşılaştırılamadı', text });
+  const notOk = (p: ReactionPartResult, where: string) =>
+    p.medianRt === null ? `${where} tepki süresi hesaplanamadığı için karşılaştırma yapılamadı.` : `${where} tepki süresi yorumlanmadığı için karşılaştırma yapılmadı.`;
+  let fark: CognitiveBlock;
+  if (ss !== 'ok') fark = no(notOk(r.simple, 'Basit bölümde'));
+  else if (cs === 'reversed' || cs === 'chance' || cs === 'errors') fark = no('Seçmeli bölümde öteki taraftaki düğmeye sık basıldığı için karşılaştırma yapılmadı.');
+  else if (cs === 'oneSide') fark = no('Seçmeli bölümde cevapların çoğunda aynı düğmeye basıldığı için karşılaştırma yapılmadı.');
+  else if (cs !== 'ok') fark = no(notOk(r.choice, 'Seçmeli bölümde'));
+  else if (reactionByMouse(r.choice)) fark = no('Seçmeli bölümde fare kullanıldığı için karşılaştırma yapılmadı: süreye imlecin iki düğme arasındaki yolu da eklendi.');
+  else {
+    const a = to10(r.simple.medianRt as number);
+    const b = to10(r.choice.medianRt as number);
+    const diff = b - a;
+    const detail = `Basit ${sn(a)} sn · seçmeli ${sn(b)} sn`;
+    fark =
+      diff >= REACTION_COST_MIN_MS
+        ? {
+            ...card('th_fark'),
+            headline: `Seçmeli bölümde ${sn(diff)} sn daha uzun`,
+            detail,
+            text: v(
+              'İki kutudan hangisinde daire belirdiğine göre seçim yapmak, tepki süreni uzattı. Bu çoğu kişide görülür: seçenek arttıkça tepki vermek daha uzun sürer. Bu fark bir seferden ötekine değişebilir.',
+              'Seçmeli bölümde çocuğunuzun tepkisi, basit bölümdekinden daha uzun sürdü. Bu, tepki süresi çalışmalarının bilinen bir bulgusudur: seçenek sayısı arttıkça tepki süresi uzar (Hick, 1952). Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.',
+            ),
+          }
+        : diff > -REACTION_COST_MIN_MS
+          ? {
+              ...card('th_fark'),
+              headline: 'Belirgin bir fark yok',
+              detail,
+              text: v(
+                'Basit ve seçmeli bölümlerde tepki süren belirgin biçimde farklı değildi. Genellikle seçmeli bölümde tepki daha uzun sürer; bu fark bir seferden ötekine değişebilir.',
+                'Basit ve seçmeli bölümlerde çocuğunuzun tepki süresi belirgin biçimde farklı değildi. Genellikle seçmeli bölümde tepki daha uzun sürer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+              ),
+            }
+          : {
+              ...card('th_fark'),
+              headline: 'Seçmeli bölümde daha kısa',
+              detail,
+              text: v(
+                'Seçmeli bölümde tepki vermen, basit bölümdekinden daha kısa sürdü; genellikle bunun tersi olur. Bu fark bir seferden ötekine değişebilir.',
+                'Seçmeli bölümde çocuğunuzun tepkisi, basit bölümdekinden daha kısa sürdü; genellikle bunun tersi olur. Tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
+              ),
+            };
+  }
+
+  // Grafikte yalnızca yorumlanan bölümlerin süresi gösterilir; ötekilerin nedeni kartlarında yazar.
+  const parts = [
+    { label: 'Basit tepki', p: r.simple, status: ss },
+    { label: 'Seçmeli tepki', p: r.choice, status: cs },
+  ];
+  const values = parts.map(({ p, status }) => (status === 'ok' ? to10(p.medianRt as number) : null));
+  const max = roundUp(Math.max(0, ...values.map((x) => x ?? 0)), 250);
+  const missing = values.filter((x) => x === null).length;
+  const note =
+    v('Çubuklar, tipik tepki süreni gösterir; kısa çubuk daha hızlı demek.', 'Çubuklar, tipik (ortanca) tepki süresini gösterir; kısa çubuk daha hızlı demektir.') +
+    (missing === 2
+      ? ' İki bölümün süresi de yazmıyor; nedeni bölümlerin kartlarında açıklanır.'
+      : missing === 1
+        ? ' Süresi yazmayan bölümün nedeni, o bölümün kartında açıklanır.'
+        : '');
+  return {
+    blocks: [reactionPartBlock(r.simple, audience, card), reactionPartBlock(r.choice, audience, card), fark],
+    chart: {
+      title: 'Bölümlere göre tipik tepki süresi',
+      note,
+      rows: parts.map(({ label, p }, i) => ({
+        label,
+        value: values[i] ?? 0,
+        max,
+        valueLabel: values[i] !== null ? `${sn(values[i] as number)} sn` : p.medianRt === null ? 'hesaplanamadı' : 'yorumlanmadı',
+      })),
+    },
+  };
+}
+
 function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
   const you = audience !== 'parent';
   const blocks: CognitiveBlock[] = [];
@@ -1712,8 +1941,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const ct = def.tasks.find((t): t is CancellationTask => t.kind === 'cancellation');
   if (cz && ct) blocks.push(...cancellationBlocks(cz, ct, audience, scale));
 
-  // Renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama ve zihinde döndürme: her biri tek görevli bir
-  // testtir, sonucunu bir grafik özetler.
+  // Renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme ve tepki hızı: her biri tek
+  // görevli bir testtir, sonucunu bir grafik özetler.
   const card: CardOf = (k) => ({ key: k, name: scale(k).name, plain: scale(k).plain });
   let chart: CognitiveReport['chart'];
   const add = (x: TaskReport) => {
@@ -1733,10 +1962,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const zd = byKey.get('zd_dogruluk')?.extra as unknown as RotationResult | undefined;
   const zt = def.tasks.find((t): t is MentalRotationTask => t.kind === 'mental_rotation');
   if (zd && zt) add(mentalRotationBlocks(zd, zt, audience, card));
+  const th = byKey.get('th_basit')?.extra as unknown as ReactionResult | undefined;
+  if (th && def.tasks.some((t) => t.kind === 'reaction_time')) add(reactionBlocks(th, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation'].includes(t.kind))) return { blocks, tips: [], chart };
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time'].includes(t.kind))) return { blocks, tips: [], chart };
 
   const tips = you
     ? [

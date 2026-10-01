@@ -6,6 +6,7 @@ import type {
   GoNoGoTask,
   MentalRotationTask,
   NBackTask,
+  ReactionTimeTask,
   SpatialSpanTask,
   SymbolMatchTask,
   TrailTask,
@@ -924,6 +925,123 @@ export function scoreRotation(task: MentalRotationTask, input: RotationTrialInpu
   };
 }
 
+/* ---------- Tepki hızı ---------- */
+
+export interface ReactionTrialInput {
+  index: number;
+  /** Basılan düğme: 1 (basit bölümde tek düğme, seçmeli bölümde sol), 2 (seçmeli bölümde sağ); null: süre içinde basılmadı. */
+  response: number | null;
+  /** Dairenin ekrana çizildiği andan basışa kadar geçen süre (ms); daire belirmeden basıldıysa 0. */
+  rtMs: number | null;
+  /** Cevabın nasıl verildiği: fareyle verilen cevaplarda seçmeli bölümün süresine imlecin yolu da eklenir. */
+  input?: 'mouse' | 'touch' | 'pen' | 'key';
+}
+
+export interface ReactionPartResult {
+  key: 'simple' | 'choice';
+  n: number;
+  /** Süre içinde ve çok erken olmadan verilen tepkiler (seçmeli bölümde doğru ya da öteki taraf). */
+  answered: number;
+  /** Bunlardan (seçmeli bölümde) dairenin olduğu taraftaki düğmeye basılanlar; basit bölümde hepsi. */
+  correct: number;
+  /** Seçmeli bölümde öteki taraftaki düğmeye basılan denemeler. */
+  wrong: number;
+  /** Daire belirmeden ya da belirdikten sonraki 100 ms içinde basılan denemeler: tepki sayılmaz. */
+  early: number;
+  /** Süre içinde basılmayan denemeler. */
+  misses: number;
+  /** Süre içinde ve çok erken olmadan verilen tepkilerden sol (ya da basit bölümdeki tek) düğmeye basılanlar. */
+  left: number;
+  /** Süre içinde ve çok erken olmadan verilen tepkilerden fareyle verilenler. */
+  mouse: number;
+  /** Doğru tepkilerde tipik (ortanca) süre (ms); yeterince doğru tepki yoksa null. */
+  medianRt: number | null;
+  /**
+   * Doğru tepkiler sıralandığında, iki uçtan dörtte birer (aşağı yuvarlanmış) atıldıktan sonra kalanların en kısası ve
+   * en uzunu (ms): doğru tepkilerin en az yarısı bu ikisinin arasındadır. Tepkilerin ne kadar tutarlı olduğunu gösterir.
+   */
+  midLow: number | null;
+  midHigh: number | null;
+}
+
+export interface ReactionResult {
+  simple: ReactionPartResult;
+  choice: ReactionPartResult;
+  /** Seçmeli ile basit bölümün tipik süreleri arasındaki fark (ms): seçimin etkisi. */
+  choiceCostMs: number | null;
+}
+
+/**
+ * Daireyi görüp tepki vermek zaman alır: 150 ms'den kısa tepkiler (daire belirmeden basışlar dahil) daireye bakmadan
+ * verilmiş sayılır. Tarayıcıda ölçülen süreler gerçek süreden uzun çıktığı için bu sınır, bir çocuğun gerçek bir tepkisini
+ * "çok erken" saymaz (öteki görevlerdeki sınırla aynı).
+ */
+export const REACTION_EARLY_MS = 150;
+/** Bir bölümün tipik süresi ve tutarlılığı en az bu kadar doğru tepkiden hesaplanır. */
+export const REACTION_MIN_VALID = 10;
+/** Seçmeli bölümde cevapların en az bu kadarı fareyle verildiyse süreye imlecin yolu da karışmıştır. */
+export const REACTION_MOUSE_SHARE = 0.25;
+
+export function scoreReaction(task: ReactionTimeTask, input: ReactionTrialInput[]): { result: ReactionResult } {
+  const cells = task.parts.flatMap((p) => p.trials.map((t) => ({ part: p.key, boxes: p.boxes, box: t.box })));
+  const tally = new Map(
+    task.parts.map((p) => [p.key, { n: p.trials.length, answered: 0, correct: 0, wrong: 0, early: 0, misses: 0, left: 0, mouse: 0, rts: [] as number[] }]),
+  );
+  const seen = new Set<number>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= cells.length) throw new TaskInputError('Geçersiz deneme.');
+    const cell = cells[t.index];
+    if (t.response !== null && (!Number.isInteger(t.response) || t.response < 1 || t.response > cell.boxes)) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (seen.has(t.index)) continue;
+    seen.add(t.index);
+    const part = tally.get(cell.part)!;
+    // Süre dolduktan sonra gelen (tarayıcının zamanlayıcısı gecikmiş) basış, süre aşımı sayılır.
+    if (t.response === null || t.rtMs === null || t.rtMs > task.timeoutMs) part.misses++;
+    else if (t.rtMs < REACTION_EARLY_MS) part.early++;
+    else {
+      part.answered++;
+      if (t.response === 1) part.left++;
+      if (t.input === 'mouse') part.mouse++;
+      if (t.response === cell.box + 1) {
+        part.correct++;
+        part.rts.push(t.rtMs);
+      } else part.wrong++;
+    }
+  }
+  if (seen.size !== cells.length) throw new TaskInputError('Denemelerin hepsi gönderilmedi.');
+  const result = (key: 'simple' | 'choice'): ReactionPartResult => {
+    const p = tally.get(key);
+    if (!p) throw new TaskInputError('Görevde basit ve seçmeli bölümler bulunmalı.');
+    const s = [...p.rts].sort((a, b) => a - b);
+    const enough = s.length >= REACTION_MIN_VALID;
+    const k = Math.floor(s.length / 4);
+    return {
+      key,
+      n: p.n,
+      answered: p.answered,
+      correct: p.correct,
+      wrong: p.wrong,
+      early: p.early,
+      misses: p.misses,
+      left: p.left,
+      mouse: p.mouse,
+      medianRt: medianOrNull(s, REACTION_MIN_VALID),
+      midLow: enough ? Math.round(s[k]) : null,
+      midHigh: enough ? Math.round(s[s.length - 1 - k]) : null,
+    };
+  };
+  const simple = result('simple');
+  const choice = result('choice');
+  return {
+    result: {
+      simple,
+      choice,
+      choiceCostMs: simple.medianRt !== null && choice.medianRt !== null ? choice.medianRt - simple.medianRt : null,
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -938,6 +1056,7 @@ export function taskQualityNotes(parts: {
   trail?: TrailResult;
   nBack?: NBackResult;
   rotation?: RotationResult;
+  reaction?: ReactionResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -1056,6 +1175,49 @@ export function taskQualityNotes(parts: {
     }
     if (ro.anticipations / ro.n > 0.5) notes.push('Zihinde döndürme görevinde cevapların çoğu şekiller görünür görünmez, onlara bakmadan verilmiş.');
     else if (ro.anticipations / ro.n > 0.1) notes.push('Zihinde döndürme görevinde bazı cevaplar şekiller görünür görünmez, onlara bakmadan verilmiş.');
+  }
+  const re = parts.reaction;
+  if (re) {
+    // Rapordaki kartlarla aynı sıra ve eşikler (lib/reports/build.ts, reactionStatus).
+    for (const p of [re.simple, re.choice]) {
+      if (!p.n) continue;
+      const where = `Tepki hızı görevinin ${p.key === 'simple' ? 'basit' : 'seçmeli'} bölümünde`;
+      if (p.misses > p.n / 2) {
+        notes.push(`${where} denemelerin yarısından çoğunda süre içinde basılmamış; görev yarıda bırakılmış olabilir. Bu bölümün sonucu yorumlanmamalıdır.`);
+        continue;
+      }
+      if (p.early > p.n / 2) {
+        notes.push(
+          `${where} denemelerin yarısından çoğunda daire belirmeden ya da belirir belirmez basılmış; düğmeye daireyi beklemeden basılmış olabilir. Bu bölümün sonucu yorumlanmamalıdır.`,
+        );
+        continue;
+      }
+      if (p.early + p.misses > p.n / 2) {
+        notes.push(
+          `${where} denemelerin yarısından çoğunda ya daire belirmeden ya da belirir belirmez basılmış ya da süre içinde basılmamış. Bu bölümün sonucu yorumlanmamalıdır.`,
+        );
+        continue;
+      }
+      if (p.key === 'choice' && p.answered >= REACTION_MIN_VALID) {
+        const acc = p.correct / p.answered;
+        const left = p.left / p.answered;
+        if (acc < 0.4) notes.push(`${where} cevapların çoğunda dairenin olmadığı taraftaki düğmeye basılmış; yönerge anlaşılmamış olabilir.`);
+        else if (left > 0.85 || left < 0.15) notes.push(`${where} cevapların çoğunda aynı düğmeye basılmış; yönerge anlaşılmamış olabilir.`);
+        else if (acc < 0.6) {
+          notes.push(`${where} dairenin olduğu taraftaki düğmeye cevapların yarıya yakınında basılmış: rastgele basan biri de yaklaşık yarısını doğru bulur. Düğmelere rastgele basılmış olabilir.`);
+        } else if (acc < 0.8) notes.push(`${where} öteki taraftaki düğmeye sık basılmış; acele edilmiş ya da sol ile sağ karıştırılmış olabilir.`);
+      }
+      if (p.misses / p.n > 0.25) notes.push(`${where} denemelerin birçoğunda süre içinde basılmamış; sonuç dikkatle yorumlanmalıdır.`);
+      else if (p.misses / p.n > 0.1) notes.push(`${where} denemelerin bir kısmında süre içinde basılmamış.`);
+      if (p.early / p.n > 0.25) notes.push(`${where} denemelerin birçoğunda daire belirmeden ya da belirir belirmez basılmış; sonuç dikkatle yorumlanmalıdır.`);
+      else if (p.early / p.n > 0.1) notes.push(`${where} bazı denemelerde daire belirmeden ya da belirir belirmez basılmış.`);
+      if (p.key === 'choice' && p.answered && p.mouse / p.answered >= REACTION_MOUSE_SHARE) {
+        const who = p.mouse === p.answered ? 'cevaplar' : p.mouse / p.answered > 0.5 ? 'cevapların çoğu' : 'cevapların bir kısmı';
+        notes.push(
+          `${where} ${who} fareyle verilmiş; fareyle verilen cevaplarda süreye imlecin iki düğme arasındaki yolu da eklenir. Bilgisayarda ok tuşlarıyla yapılırsa daha doğru ölçülür.`,
+        );
+      }
+    }
   }
   return notes;
 }

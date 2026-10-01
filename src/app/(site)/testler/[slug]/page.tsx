@@ -43,7 +43,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const sc = def.science;
   const guides = guidesForTest(slug);
   // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama,
-  // zihinde döndürme).
+  // zihinde döndürme, tepki hızı).
   const single = def.engine === 'tasks' && def.tasks.length === 1 ? def.tasks[0] : null;
   const cancellation = single?.kind === 'cancellation' ? single : null;
   const taskLength = !single
@@ -58,7 +58,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             : `${single.parts.length} bölüm: ${single.parts.map((p) => p.labels.length).join(' ve ')} daire`
           : single.kind === 'n_back'
             ? `${single.blocks.length} bölüm, toplam ${single.blocks.reduce((s, b) => s + b.letters.length, 0)} harf`
-            : null;
+            : single.kind === 'reaction_time'
+              ? single.parts.map((p) => `${p.trials.length} ${p.boxes === 1 ? 'basit' : 'seçmeli'}`).join(', ') + ' deneme'
+              : null;
   const itemCount =
     def.engine === 'likert'
       ? `${def.items.length} ${likertItemNoun(def)}`
@@ -291,6 +293,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap oranı; aynı şekillerde ve ayna görüntülerinde ayrı ayrı</li>
                 <li>Döndürme açısına göre tipik karar süresi grafiği ve şekil daha çok döndürüldüğünde karar süresinin nasıl değiştiğinin açıklaması</li>
+              </>
+            )}
+            {single?.kind === 'reaction_time' && (
+              <>
+                <li>Basit ve seçmeli bölümlerde tipik tepki süresi ve tepkilerin ne kadar tutarlı olduğu</li>
+                <li>Seçmeli bölümde doğru taraftaki düğmeye basma ve seçim yapmanın tepkiyi ne kadar uzattığının açıklaması</li>
               </>
             )}
             {single?.kind === 'n_back' && (

@@ -11,6 +11,7 @@ import {
   scoreFlanker,
   scoreGoNoGo,
   scoreNBack,
+  scoreReaction,
   scoreRotation,
   scoreSpan,
   scoreSymbol,
@@ -26,6 +27,8 @@ import {
   type GoNoGoTrialInput,
   type NBackResult,
   type NBackTrialInput,
+  type ReactionResult,
+  type ReactionTrialInput,
   type RotationResult,
   type RotationTrialInput,
   type SpanTrialInput,
@@ -142,7 +145,8 @@ export type TaskInputs =
   | GoNoGoTrialInput[]
   | TrailPartInput[]
   | NBackTrialInput[]
-  | RotationTrialInput[];
+  | RotationTrialInput[]
+  | ReactionTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -164,6 +168,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let trailRes: TrailResult | undefined;
   let nBackRes: NBackResult | undefined;
   let rotationRes: RotationResult | undefined;
+  let reactionRes: ReactionResult | undefined;
   const pct = (x: number) => Math.round(x * 1000) / 10;
 
   for (const task of def.tasks) {
@@ -277,6 +282,16 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'zd_hiz', raw: result.medianRt, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
         { scaleKey: 'zd_aci', raw: result.rotationCostMs, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'reaction_time') {
+      const { result } = scoreReaction(task, input as ReactionTrialInput[]);
+      reactionRes = result;
+      const { simple, choice } = result;
+      // Üç ölçek tek görevden hesaplanır; ayrıntının tamamı "th_basit" satırında durur.
+      rows.push(
+        { scaleKey: 'th_basit', raw: simple.medianRt, mean: null, nAnswered: simple.correct, nItems: simple.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'th_secmeli', raw: choice.medianRt, mean: null, nAnswered: choice.correct, nItems: choice.n, band: null },
+        { scaleKey: 'th_fark', raw: result.choiceCostMs, mean: null, nAnswered: simple.correct + choice.correct, nItems: simple.n + choice.n, band: null },
+      );
     } else {
       const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
@@ -302,6 +317,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       trail: trailRes,
       nBack: nBackRes,
       rotation: rotationRes,
+      reaction: reactionRes,
     }),
   };
 }

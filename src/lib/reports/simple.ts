@@ -466,8 +466,8 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
   if (r.cognitive) {
     const blocks = r.cognitive.blocks;
     const items = blocks.map((b) => ({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') }));
-    // Tek görevli testler (renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme): sonucu
-    // görevin kendi grafiği özetler.
+    // Tek görevli testler (renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme, tepki
+    // hızı): sonucu görevin kendi grafiği özetler.
     const own = r.cognitive.chart;
     if (own) {
       return {
@@ -500,7 +500,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
           : null,
       keyFigures: [],
       // Tek görevli testlerde kartlar görevin sonuçlarıdır; çok görevli testte her kart bir görevdir.
-      itemsTitle: sections || blocks.some((b) => /^(renk|dg|iz|gh|zd)_/.test(b.key)) ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Görevler',
+      itemsTitle: sections || blocks.some((b) => /^(renk|dg|iz|gh|zd|th)_/.test(b.key)) ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Görevler',
       items,
     };
   }
