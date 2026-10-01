@@ -181,9 +181,18 @@ export interface CognitiveReport {
  * belirgin alanlar ayrıca açıklanır. Türkiye normu olmadığı için sıralama kişinin kendi profili içindedir.
  */
 export interface InterestRanking {
+  /**
+   * Neyin sıralandığı: "interests" işlerden ve etkinliklerden ne kadar hoşlanıldığı (meslek ilgileri), "activities"
+   * serbest zaman etkinliklerinin son bir yılda ne sıklıkla yapıldığı. Rapordaki başlıklar ve notlar buna göre yazılır.
+   */
+  kind: 'interests' | 'activities';
   /** Puanı hesaplanan alanların anahtarları, en yüksekten en düşüğe. */
   order: string[];
-  /** Belirgin (yüksek düzeydeki) en çok üç alan; hiçbiri yoksa en yüksek iki alan. */
+  /**
+   * Belirgin (yüksek düzeydeki) en çok üç alan; hiçbiri yoksa en yüksek iki alan (etkinliklerde yalnızca orta düzeydekiler:
+   * az yapılan bir alan "en sık uğraşılan" diye gösterilmez). Bütün alanların puanı aynıysa boştur: öne çıkan alan yoktur
+   * (ör. her etkinliğe aynı cevap verildiğinde).
+   */
   top: string[];
   /** Hiçbir alanda belirgin ilgi yok. */
   noneHigh: boolean;
@@ -353,7 +362,8 @@ export function buildReport(input: {
 
   const interests =
     def.engine === 'likert' && def.profile === 'riasec' ? buildInterestProfile(sections, audience, input.grade) : undefined;
-  const ranking = def.engine === 'likert' && def.profile === 'interests' ? rankInterests(sections) : undefined;
+  const ranking =
+    def.engine === 'likert' && (def.profile === 'interests' || def.profile === 'activities') ? rankInterests(sections, def.profile) : undefined;
   const facetGroups =
     def.engine === 'likert' && def.profile === 'facets'
       ? def.scales
@@ -433,10 +443,10 @@ export function buildReport(input: {
 }
 
 /**
- * Sıralı ilgi profili. Bölümler yerinde sıralanır: puanı olanlar en yüksekten en düşüğe, hesaplanamayanlar sonda.
- * Aynı puandaki alanlar testteki sıralarını korur. Düzeyler şablondaki düzeylerdir (düşük, orta, yüksek).
+ * Sıralı ilgi ya da etkinlik profili. Bölümler yerinde sıralanır: puanı olanlar en yüksekten en düşüğe, hesaplanamayanlar
+ * sonda. Aynı puandaki alanlar testteki sıralarını korur. Düzeyler şablondaki düzeylerdir (ör. düşük, orta, yüksek).
  */
-function rankInterests(sections: ReportSection[]): InterestRanking {
+function rankInterests(sections: ReportSection[], kind: InterestRanking['kind']): InterestRanking {
   sections.sort((a, b) => (b.value ?? Number.NEGATIVE_INFINITY) - (a.value ?? Number.NEGATIVE_INFINITY));
   const scored = sections.filter((s) => s.value !== null);
   const high = scored.filter((s) => s.band === 'high' || s.band === 'very_high');
@@ -444,8 +454,14 @@ function rankInterests(sections: ReportSection[]): InterestRanking {
   const values = scored.map((s) => s.value as number);
   const spread = values.length > 1 ? Math.max(...values) - Math.min(...values) : 0;
   return {
+    kind,
     order: scored.map((s) => s.scaleKey),
-    top: (noneHigh ? scored.slice(0, 2) : high.slice(0, 3)).map((s) => s.scaleKey),
+    top:
+      values.length > 1 && spread === 0
+        ? []
+        : (noneHigh ? (kind === 'activities' ? scored.filter((s) => s.band === 'average') : scored).slice(0, 2) : high.slice(0, 3)).map(
+            (s) => s.scaleKey,
+          ),
     noneHigh,
     flat: values.length > 1 && spread < 0.8,
     allLow: scored.length > 0 && scored.every((s) => s.band === 'low' || s.band === 'very_low'),

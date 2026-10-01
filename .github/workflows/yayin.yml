@@ -129,7 +129,7 @@ jobs:
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
           # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
-          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili alti-boyutlu-kisilik-profili duygusal-zeka-bilesenleri kisilerarasi-tarz renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi"
+          ONIZLEME="meslek-ilgi-alanlari ayrintili-kisilik-profili alti-boyutlu-kisilik-profili duygusal-zeka-bilesenleri kisilerarasi-tarz hobi-ve-serbest-zaman-ilgileri renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi"
           for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
@@ -168,6 +168,12 @@ jobs:
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TARZ_GOVDE" "https://$ALAN/api/rapor/kisilerarasi-tarz" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["student"]["chart"]; assert c["type"] == "circle" and len(c["axes"]) == 8 and len(r["parent"]["items"]) == 8'; then
             sorun="$sorun kisilerarasi-tarz-raporu"
+          fi
+          # Hobi ve Serbest Zaman İlgileri: 92 etkinlik (ORAIS'teki numaralarıyla), 16 alan sıklığa göre sıralı.
+          HOBI_GOVDE=$(python3 -c 'import json; n=[4,6,7,8,9,11,12,13,14,17,28,29,31,35,39,40,41,42,44,45,46,47,50,52,54,63,64,67,68,71,72,73,74,76,77,78,79,82,84,86,89,94,95,100,104,105,106,107,109,110,111,112,113,115,117,119,127,128,129,133,136,137,138,139,140,141,142,143,147,149,151,159,160,161,165,168,169,170,171,173,174,175,176,178,182,190,194,196,199,200,208,209]; print(json.dumps({"grade": 7, "data": {"engine": "likert", "answers": {f"h{k:03d}": {"value": (i * 3) % 5 + 1, "rtMs": 2500} for i, k in enumerate(n)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$HOBI_GOVDE" "https://$ALAN/api/rapor/hobi-ve-serbest-zaman-ilgileri" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["student"]["chart"]; assert c["type"] == "rulers" and len(c["rows"]) == 16 and r["student"]["chartTitle"] == "Serbest zaman etkinliklerin"'; then
+            sorun="$sorun hobi-raporu"
           fi
           # Aynı test yetişkin olarak ("Yetişkinim", 14): yalnızca kişisel rapor.
           YETISKIN_GOVDE=$(printf '%s' "$KISILIK_GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["grade"]=14; print(json.dumps(b))')

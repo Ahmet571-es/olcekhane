@@ -103,6 +103,7 @@ describe('Meslek İlgi Alanları raporu', () => {
     expect(r.student.items[0].text).toContain('alanlarla ilişkilidir');
     expect(r.parent.items[0].text).toContain('Çocuğunuz');
     expect(r.student.items[2].text).toContain('Dil ve Edebiyat (orta düzeyde ilgi)');
+    expect(r.student.items[2].text).toContain('Alan örnekleri yol göstermek içindir; bir meslek seçimi önerisi değildir.');
     expect(r.student.keyFigures[0]).toMatchObject({ label: 'En belirgin ilgi alanın', value: 'Bilim ve Analiz' });
     // Grafiğin altındaki açıklama ilginin yetenek olmadığını hatırlatır.
     expect(r.student.chartNote).toContain('İlgi, yetenek demek değildir');
@@ -125,6 +126,21 @@ describe('Meslek İlgi Alanları raporu', () => {
     expect(r.parent.cautions.some((c) => c.includes('Çocuğunuz işlerin çoğundan'))).toBe(true);
     // Bütün alanlar düşükken "belirgin ilgi çıkmadı" ve "farklar küçük" notları ayrıca eklenmez.
     expect(r.student.cautions.some((c) => c.includes('belirgin bir ilgi çıkmadı') || c.includes('farklar küçük'))).toBe(false);
+    // Her işe aynı cevap verildiği için alanların hepsi aynı puanda: "en yüksek çıkan" bir alan seçilmez.
+    expect(r.student.keyFigures).toEqual([]);
+    expect(r.student.items.map((i) => i.title)).toEqual(['Bütün alanlar']);
+    expect(r.parent.itemsTitle).toBe('Alanlar');
+  });
+
+  it('her işe "çok hoşlanırım" denirse öne çıkan alan seçilmez; alan örnekleri notu ve "en üstteki alanlar" önerisi yazılmaz', () => {
+    const r = evaluate(SLUG, likertBody(SLUG, 12, () => 4));
+    expect(r.student.keyFigures).toEqual([]);
+    expect(r.student.items.map((i) => i.title)).toEqual(['Bütün alanlar']);
+    expect(r.student.items[0].text).not.toContain('Alan örnekleri');
+    const notes = [...r.student.cautions, ...r.parent.cautions].join(' ');
+    expect(notes).toContain('Farklı alanları denemek');
+    expect(notes).toContain('Farklı alanlarda deneyim fırsatları');
+    expect(notes).not.toContain('En üstteki');
   });
 });
 

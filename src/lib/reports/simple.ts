@@ -207,8 +207,45 @@ export function interestNotes(p: InterestProfile, audience: Audience): string[] 
   return notes;
 }
 
+/** Sıralı etkinlik profilinde (serbest zaman) yorumu etkileyen durumlar: sıklık, ilgiyle birlikte imkânlara da bağlıdır. */
+function activityNotes(p: InterestRanking, audience: Audience): string[] {
+  if (p.allLow) {
+    return [
+      byAudience(audience, {
+        student:
+          'Son bir yılda bu etkinliklerin çoğunu pek yapmamışsın. Bu, ilgi duymadığın anlamına gelmeyebilir: etkinlikler zamana, imkânlara ve çevrende nelerin bulunduğuna bağlıdır. İlgini çeken bir alanı seçip küçük bir adımla denemeye başlayabilirsin.',
+        parent:
+          'Çocuğunuz son bir yılda bu etkinliklerin çoğunu pek yapmadığını belirtmiş. Bu, ilgi duymadığı anlamına gelmeyebilir: etkinlikler zamana, imkânlara ve çevrede nelerin bulunduğuna bağlıdır. İlgisini çeken alanları onunla konuşmanızı ve denemesi için fırsat yaratmanızı öneririz.',
+        adult:
+          'Son bir yılda bu etkinliklerin çoğunu pek yapmamışsın. Bu, yoğunluktan, imkânlardan ya da listedeki etkinliklerin sana uzak olmasından kaynaklanabilir. Merak ettiğin ya da eskiden keyif aldığın bir alanı seçip küçük bir adım atmak iyi bir başlangıç olabilir.',
+      }),
+    ];
+  }
+  const notes: string[] = [];
+  // Sık yapılan alan yoksa yalnızca ara sıra yapılan (en çok iki) alan açıklanır.
+  if (p.noneHigh && p.top.length) {
+    const two = p.top.length > 1;
+    notes.push(
+      byAudience(audience, {
+        student: `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan ${two ? 'iki alanı' : 'alanı'} görüyorsun.`,
+        parent: `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan ${two ? 'iki alan' : 'alan'} yer alıyor.`,
+      }),
+    );
+  }
+  if (p.flat) {
+    notes.push(
+      byAudience(audience, {
+        student: 'Alanlar arasındaki farklar küçük: hiçbir alan ötekilerden belirgin biçimde ayrılmıyor.',
+        parent: 'Alanlar arasındaki farklar küçüktür: hiçbir alan ötekilerden belirgin biçimde ayrılmıyor.',
+      }),
+    );
+  }
+  return notes;
+}
+
 /** Sıralı ilgi profilinde yorumu etkileyen durumlar. */
 export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
+  if (p.kind === 'activities') return activityNotes(p, audience);
   if (p.allLow) {
     return [
       byAudience(audience, {
@@ -222,7 +259,7 @@ export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
     ];
   }
   const notes: string[] = [];
-  if (p.noneHigh) {
+  if (p.noneHigh && p.top.length) {
     notes.push(
       byAudience(audience, {
         student: 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alanı görüyorsun. İlgiler denedikçe netleşir.',
@@ -231,18 +268,43 @@ export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
     );
   }
   if (p.flat) {
+    // Bütün alanlar aynı puandaysa (öne çıkan alan gösterilmez) "en üstteki alanlar" yerine farklı alanlar önerilir.
+    const top = p.top.length > 0;
     notes.push(
       byAudience(audience, {
-        student:
-          'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.',
-        parent:
-          'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
-        adult: FLAT_ADULT,
+        student: `Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu çok olağan. ${top ? 'En üstteki alanları denemeye başlamak' : 'Farklı alanları denemek'} iyi bir adım olur.`,
+        parent: `Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu olağandır. ${top ? 'En üstteki alanlarda' : 'Farklı alanlarda'} deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.`,
+        adult: top ? FLAT_ADULT : FLAT_ADULT.replace('En üstteki alanları', 'Farklı alanları'),
       }),
     );
   }
   return notes;
 }
+
+/**
+ * Sıralı profillerin başlıkları ([öğrenciye ya da yetişkine, veliye]): meslek ilgilerinde puan işlerden ne kadar
+ * hoşlanıldığı, serbest zaman etkinliklerinde etkinliklerin son bir yılda ne sıklıkla yapıldığıdır.
+ */
+const RANKING_TEXT: Record<
+  InterestRanking['kind'],
+  { chartTitle: [string, string]; chartNote: string; topLabel: [string, string]; itemsTitle: [string, string]; restNote: string }
+> = {
+  interests: {
+    chartTitle: ['İlgi alanların', 'İlgi alanları'],
+    chartNote: 'Alanlar en yüksekten en düşüğe sıralandı. Değerler 1 (hiç hoşlanmam) ile 5 (çok hoşlanırım) arasındadır.',
+    topLabel: ['En belirgin ilgi alanın', 'En belirgin ilgi alanı'],
+    itemsTitle: ['En belirgin ilgi alanların', 'En belirgin ilgi alanları'],
+    restNote: 'Alan örnekleri yol göstermek içindir; bir meslek seçimi önerisi değildir.',
+  },
+  activities: {
+    chartTitle: ['Serbest zaman etkinliklerin', 'Serbest zaman etkinlikleri'],
+    chartNote:
+      'Alanlar, o alandaki etkinliklerin son bir yılda ne sıklıkla yapıldığına göre sıralandı. Değerler, o alandaki cevapların ortalamasıdır: 1 hiç yapmadım, 2 son bir yılda yapmadım, 3 son bir yılda 1 ya da 2 kez, 4 son bir yılda 3 ile 10 kez arası, 5 son bir yılda 10 kezden fazla.',
+    topLabel: ['En sık uğraştığın alan', 'En sık uğraşılan alan'],
+    itemsTitle: ['En sık uğraştığın alanlar', 'En sık uğraşılan alanlar'],
+    restNote: '',
+  },
+};
 
 export function toSimpleReport(r: ReportContent): SimpleReport {
   const you = r.audience !== 'parent';
@@ -289,13 +351,15 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
 
   if (r.ranking) {
     const p = r.ranking;
+    const t = RANKING_TEXT[p.kind];
+    const pick = ([forYou, forParent]: [string, string]) => (you ? forYou : forParent);
     const top = p.top.map((k) => r.sections.find((s) => s.scaleKey === k)).filter((s): s is NonNullable<typeof s> => !!s);
     const rest = r.sections.filter((s) => s.value !== null && !p.top.includes(s.scaleKey));
     return {
       ...base,
-      chartTitle: you ? 'İlgi alanların' : 'İlgi alanları',
-      // Şablonun genel açıklaması "ilgi, yetenek demek değildir" uyarısını da taşır.
-      chartNote: r.overview ?? 'Alanlar en yüksekten en düşüğe sıralandı. Değerler 1 (hiç hoşlanmam) ile 5 (çok hoşlanırım) arasındadır.',
+      chartTitle: pick(t.chartTitle),
+      // Şablonun genel açıklaması ("ilgi, yetenek demek değildir" ya da "sıklık imkânlara da bağlıdır") önceliklidir.
+      chartNote: r.overview ?? t.chartNote,
       chart: {
         type: 'rulers',
         rows: r.sections.map((s) => ({
@@ -312,20 +376,28 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       keyFigures: top.length
         ? [
             {
-              label: p.noneHigh ? (you ? 'En yüksek çıkan alanın' : 'En yüksek çıkan alan') : you ? 'En belirgin ilgi alanın' : 'En belirgin ilgi alanı',
+              label: p.noneHigh ? pick(['En yüksek çıkan alanın', 'En yüksek çıkan alan']) : pick(t.topLabel),
               value: top[0].name,
               note: top.length > 1 ? `Ardından: ${top.slice(1).map((s) => s.name).join(' · ')}` : undefined,
             },
           ]
         : [],
-      itemsTitle: p.noneHigh ? (you ? 'En yüksek çıkan alanların' : 'En yüksek çıkan alanlar') : you ? 'En belirgin ilgi alanların' : 'En belirgin ilgi alanları',
+      // Bütün alanların puanı aynıysa öne çıkan alan yoktur: alanlar düzeyleriyle tek listede gösterilir.
+      itemsTitle: !top.length
+        ? pick(['Alanların', 'Alanlar'])
+        : p.noneHigh
+          ? pick(['En yüksek çıkan alanların', 'En yüksek çıkan alanlar'])
+          : pick(t.itemsTitle),
       items: [
         ...top.map((s, i) => ({ title: `${i + 1}. ${s.name}`, badge: s.bandLabel, text: s.text })),
         ...(rest.length
           ? [
               {
-                title: you ? 'Diğer alanların' : 'Diğer alanlar',
-                text: `${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}. Alan örnekleri yol göstermek içindir; bir meslek seçimi önerisi değildir.`,
+                title: top.length ? pick(['Diğer alanların', 'Diğer alanlar']) : 'Bütün alanlar',
+                // Alan örnekleri öne çıkan alanların metinlerindedir; öne çıkan alan yoksa not da yazılmaz.
+                text: [`${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}.`, top.length ? t.restNote : '']
+                  .filter(Boolean)
+                  .join(' '),
               },
             ]
           : []),

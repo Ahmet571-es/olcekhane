@@ -5,6 +5,7 @@ import { LogoMark } from '@/components/site/logo';
 import { TestSession, type TestPayload } from '@/components/test/test-session';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
+import { likertItemNoun } from '@/lib/instruments/nouns';
 import type { InstrumentDef } from '@/lib/instruments/types';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
@@ -29,6 +30,7 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
         prompt: def.prompt,
         options: def.options,
         items: def.items.map((i) => ({ key: i.key, text: i.text })),
+        itemNoun: likertItemNoun(def),
         minAnswered: Math.ceil(def.items.length * def.scoring.minAnsweredRatio),
       };
     case 'quiz': {

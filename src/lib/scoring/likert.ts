@@ -1,10 +1,14 @@
+import { ITEM_NOUN_PLURAL, likertItemNoun } from '@/lib/instruments/nouns';
 import type { AnchoredBands, Band, LikertInstrument, LikertItemDef, ScaleDef } from '@/lib/instruments/types';
 import { clamp, median, normalCdf, round, standardError, Z90 } from './stats';
 
-/** Bir ölçeğin maddeleri; bileşik ölçekte (`of`) alt ölçeklerin bütün maddeleri. */
+/**
+ * Bir ölçeğin maddeleri; bileşik ölçekte (`of`) alt ölçeklerin bütün maddeleri. Birden çok ölçekte yer alan madde
+ * (`alsoScales`) her ölçeğin listesine bir kez girer.
+ */
 export function scaleItems(def: LikertInstrument, scale: ScaleDef): LikertItemDef[] {
   const keys = scale.of ?? [scale.key];
-  return def.items.filter((i) => keys.includes(i.scale));
+  return def.items.filter((i) => keys.includes(i.scale) || !!i.alsoScales?.some((k) => keys.includes(k)));
 }
 
 export interface NormStat {
@@ -163,19 +167,23 @@ export function scoreLikert(
 /**
  * Cevap kalitesi göstergeleri. Sonucu geçersiz kılmaz; raporda dikkat notu olarak gösterilir.
  * - Çok hızlı: madde başına ortanca cevap süresi 700 ms'den kısa (cümleyi okumaya yetmeyecek kadar).
- * - Düz çizgi: 12 veya daha fazla madde üst üste aynı seçenek (ters maddeler olduğu için anlamlı değildir).
+ * - Düz çizgi: 12 veya daha fazla madde üst üste aynı seçenek (ters maddeler olduğu için anlamlı değildir). Sıklık
+ *   soran etkinlik testlerinde (profil: activities) "hiç yapmadım" ve "son bir yılda yapmadım" cevaplarının üst üste
+ *   gelmesi olağandır (az etkinlik yapan biri için); bu iki cevabın dizileri sayılmaz.
  */
 export function likertQuality(def: LikertInstrument, answers: Record<string, LikertAnswer>): QualityReport {
   const ordered = def.items.map((i) => answers[i.key]);
   const answered = ordered.filter((a): a is LikertAnswer => !!a && Number.isFinite(a.value));
   const rts = answered.map((a) => a.rtMs).filter((v): v is number => typeof v === 'number' && v > 0);
   const medianRtMs = rts.length ? median(rts) : null;
+  const lowest = Math.min(...def.options.map((o) => o.value));
+  const ignoredRun = (v: number) => def.profile === 'activities' && v <= lowest + 1;
 
   let longestRun = 0;
   let run = 0;
   let prev: number | undefined;
   for (const a of ordered) {
-    if (!a) {
+    if (!a || ignoredRun(a.value)) {
       run = 0;
       prev = undefined;
       continue;
@@ -189,7 +197,7 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   const tooFast = medianRtMs !== null && rts.length >= 5 && medianRtMs < 700;
   const straightLining = def.items.length >= 20 && longestRun >= 12;
   const incomplete = answered.length < def.items.length;
-  if (tooFast) notes.push('Cevaplar çok hızlı verilmiş; bazı cümleler okunmadan işaretlenmiş olabilir.');
+  if (tooFast) notes.push(`Cevaplar çok hızlı verilmiş; bazı ${ITEM_NOUN_PLURAL[likertItemNoun(def)]} okunmadan işaretlenmiş olabilir.`);
   if (straightLining) notes.push('Uzun bir bölümde hep aynı seçenek işaretlenmiş.');
   if (incomplete) notes.push('Bazı maddeler cevaplanmamış.');
   return { tooFast, straightLining, incomplete, medianRtMs, longestRun, notes };

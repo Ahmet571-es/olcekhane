@@ -72,6 +72,11 @@ export interface LikertItemDef {
   key: string;
   text: string;
   scale: string;
+  /**
+   * Kaynaktaki anahtarda madde birden çok ölçekte yer alıyorsa öteki ölçekler (ör. hobi ölçeklerinde "Şiir yazmak"
+   * hem yaratıcı etkinliklerde hem yazma ölçeğinde). Madde bir kez sorulur, her ölçeğin puanına katılır.
+   */
+  alsoScales?: string[];
   reverse?: boolean;
   /** Özgün madde metni (çeviri denetimi için belgelenir, kullanıcıya gösterilmez). */
   source?: string;
@@ -122,9 +127,11 @@ export interface LikertInstrument extends InstrumentBase {
    * "interests": sıralı ilgi profili (alanlar en yüksekten en düşüğe; en belirgin alanların açıklaması).
    * "facets": ayrıntılı profil (bileşik ölçekler genel bakışta; her birinin altında alt ölçeklerin cetvelleri).
    * "circumplex": kişilerarası çember (ölçekler `angle` açılarıyla bir çember üzerinde; her biri için düzey metni).
+   * "activities": sıralı etkinlik profili (serbest zaman alanları, etkinliklerin ne sıklıkla yapıldığına göre en sıktan
+   * en seyreğe; en çok zaman ayrılan alanların açıklaması).
    * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
    */
-  profile?: 'riasec' | 'interests' | 'facets' | 'circumplex';
+  profile?: 'riasec' | 'interests' | 'facets' | 'circumplex' | 'activities';
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];

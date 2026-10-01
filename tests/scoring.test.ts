@@ -35,7 +35,15 @@ describe('test tanımları tutarlı', () => {
       if (def.engine === 'likert') {
         const keys = def.items.map((i) => i.key);
         expect(new Set(keys).size).toBe(keys.length);
-        for (const item of def.items) expect(scaleKeys.has(item.scale)).toBe(true);
+        for (const item of def.items) {
+          expect(scaleKeys.has(item.scale)).toBe(true);
+          // Birden çok ölçekte yer alan madde: öteki ölçekler de tanımlı, bileşik değil ve tekrar yok.
+          for (const k of item.alsoScales ?? []) {
+            expect(scaleKeys.has(k), `${item.key}/${k}`).toBe(true);
+            expect(def.scales.find((x) => x.key === k)?.of, `${item.key}/${k}`).toBeUndefined();
+            expect(k, item.key).not.toBe(item.scale);
+          }
+        }
         for (const s of def.scales) {
           // Bileşik ölçek (boyut) alt ölçeklerinden oluşur; ona doğrudan madde bağlanmaz.
           if (s.of) for (const k of s.of) expect(def.items.some((i) => i.scale === k), `${s.key}/${k}`).toBe(true);

@@ -7,6 +7,7 @@ import { ReadingRunner } from '@/components/runner/reading-runner';
 import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
 import { AUDIENCE_LABELS } from '@/lib/config';
+import type { ItemNoun } from '@/lib/instruments/nouns';
 import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { SimpleReportView } from './simple-report-view';
@@ -15,7 +16,7 @@ type Intro = { title: string; paragraphs: string[] };
 
 /** Testi çözmek için tarayıcıya gönderilenler (cevap anahtarı ve puanlama yok). */
 export type TestPayload =
-  | { engine: 'likert'; intro: Intro; prompt: string; options: LikertOption[]; items: { key: string; text: string }[]; minAnswered: number }
+  | { engine: 'likert'; intro: Intro; prompt: string; options: LikertOption[]; items: { key: string; text: string }[]; itemNoun: ItemNoun; minAnswered: number }
   | { engine: 'quiz'; intro: Intro; contentGrade: number; items: QuizClientItem[] }
   | {
       engine: 'reading';
@@ -90,6 +91,7 @@ export function TestSession({ slug, grade, gradeLabel, payload }: { slug: string
           prompt={payload.prompt}
           options={payload.options}
           items={payload.items}
+          itemNoun={payload.itemNoun}
           minAnswered={payload.minAnswered}
           onFinish={(answers) => submit({ engine: 'likert', answers })}
         />

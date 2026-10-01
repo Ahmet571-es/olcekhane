@@ -6,27 +6,14 @@ import { ADULT_GRADE, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradePar
 import type { LikertInstrument } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { def, likertBody } from './helpers/bodies';
+import { schoolWords } from './helpers/school';
 
 const KISILIK = 'ayrintili-kisilik-profili';
 const ALTI = 'alti-boyutlu-kisilik-profili';
 const DUYGU = 'duygusal-zeka-bilesenleri';
 const TARZ = 'kisilerarasi-tarz';
+const HOBI = 'hobi-ve-serbest-zaman-ilgileri';
 const ILGI = 'meslek-ilgi-alanlari';
-
-/**
- * Yetişkine yazılan metinlerde yeri olmayan, okula ya da ergenliğe özgü sözcükler (sözcük başı). Meslek adı olarak
- * "öğretmenlik" (ilgi alanlarıyla ilişkili meslekler arasında) yetişkin için de doğrudur; spor ya da kitap kulübü de
- * yetişkinlere uygun olduğu için "kulüp" aranmaz.
- */
-const SCHOOL = [
-  'okul', 'öğretmen', 'sınav', 'sınıf', 'ders', 'ödev', 'öğrenci', 'lise', 'ergen', 'veli', 'ailen', 'münazara', 'olimpiyat', 'tübitak',
-  'izcilik', 'harçlık', 'yaşıt', 'yaşında', 'yetişkinle', 'yetişkine', 'yetişkinden',
-];
-const ALLOWED = ['öğretmenlik'];
-function schoolWords(text: string): string[] {
-  const words = text.toLocaleLowerCase('tr-TR').match(/\p{L}+/gu) ?? [];
-  return words.filter((w) => !ALLOWED.includes(w) && SCHOOL.some((p) => w.startsWith(p)));
-}
 
 /** Raporda kişiye gösterilen bütün metinler. */
 function reportText(r: SimpleReport): string {
@@ -58,7 +45,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, ILGI].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);

@@ -147,6 +147,8 @@ describe('PDF rapor', () => {
       ['oz-saygi', likertBody('oz-saygi', 8, (i) => i % 4)],
       ['mesleki-ilgi-profili', likertBody('mesleki-ilgi-profili', 10, (i) => i % 5)],
       ['kisilerarasi-tarz', likertBody('kisilerarasi-tarz', 10, (i) => i % 5)],
+      // 16 cetvelli uzun sıralama (serbest zaman etkinlikleri).
+      ['hobi-ve-serbest-zaman-ilgileri', likertBody('hobi-ve-serbest-zaman-ilgileri', 7, (i) => (i * 3) % 5)],
       ['okuma-hizi-ve-anlama', readingBody(7)],
       ['matematik-konu-tarama-testi', quizBody(7, 3)],
       ['surekli-dikkat', cancellationBody()],

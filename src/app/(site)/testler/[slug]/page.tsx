@@ -8,6 +8,7 @@ import { GuideList } from '@/components/site/guide-list';
 import { guidesForTest } from '@/content/rehber';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
 import { domainColor } from '@/lib/domain-style';
+import { likertItemNoun } from '@/lib/instruments/nouns';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
 /** Cümle başında sayıların yazıyla gösterimi ("Beş boyutun…"). */
@@ -57,7 +58,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           : null;
   const itemCount =
     def.engine === 'likert'
-      ? `${def.items.length} ${def.profile === 'riasec' || def.profile === 'interests' ? 'etkinlik' : 'cümle'}`
+      ? `${def.items.length} ${likertItemNoun(def)}`
       : taskLength
         ? taskLength
         : def.engine === 'tasks'
@@ -230,6 +231,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Sekiz ilgi alanının en yüksekten en düşüğe sıralanması</li>
                 <li>En belirgin ilgi alanlarının açıklaması ve bu ilgilerle ilişkili okul ve meslek alanlarına örnekler</li>
+              </>
+            )}
+            {def.engine === 'likert' && def.profile === 'activities' && (
+              <>
+                <li>{`${scales.length} serbest zaman alanının, etkinliklerin son bir yılda ne sıklıkla yapıldığına göre sıralanması`}</li>
+                <li>En sık uğraşılan alanların açıklaması ve öteki alanların düzeyi</li>
               </>
             )}
             {def.engine === 'likert' && def.profile === 'facets' && (

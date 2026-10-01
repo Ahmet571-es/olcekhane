@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ITEM_NOUN_ACCUSATIVE, type ItemNoun } from '@/lib/instruments/nouns';
 import { useLeaveWarning } from './tasks/common';
 
 type Option = { value: number; label: string };
@@ -56,6 +57,8 @@ export function LikertRunner(props: {
   prompt: string;
   options: Option[];
   items: Item[];
+  /** Maddelerin adı ("etkinlik" ya da "cümle"); atlanan maddeler anlatılırken kullanılır. */
+  itemNoun: ItemNoun;
   minAnswered: number;
   onFinish: (answers: Record<string, { value: number; rtMs: number | null }>) => Promise<void>;
 }) {
@@ -141,7 +144,7 @@ export function LikertRunner(props: {
         {missing.length > 0 ? (
           <div className="flex flex-col gap-3">
             <p className="text-lg">
-              {missing.length} cümleyi atlamışsın. {canFinish ? 'İstersen bunları cevaplayabilir ya da testi bitirebilirsin.' : 'Testi bitirmek için bunları da cevaplaman gerekiyor.'}
+              {missing.length} {ITEM_NOUN_ACCUSATIVE[props.itemNoun]} atlamışsın. {canFinish ? 'İstersen bunları cevaplayabilir ya da testi bitirebilirsin.' : 'Testi bitirmek için bunları da cevaplaman gerekiyor.'}
             </p>
             <ul className="flex flex-col gap-2">
               {missing.slice(0, 10).map((m) => (
