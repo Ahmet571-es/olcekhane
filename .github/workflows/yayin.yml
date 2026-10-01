@@ -181,14 +181,23 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert list(r) == ["adult"] and r["adult"]["gradeLabel"] == "Yetişkin"'; then
             sorun="$sorun yetiskin-raporu"
           fi
-          # Uzman incelemesindeki testler bağlantıyla açılır ama arama motorlarına kapalıdır.
+          # Uzman incelemesindeki testler bağlantıyla açılır ama arama motorlarına kapalıdır. GitHub bir adımda en çok 10
+          # bilgi notu gösterdiği için önizlemeler tek notta toplanır (yoksa sondaki "Site dışarıdan sınandı" notu görünmez).
+          kapali=""
+          acik=""
           for slug in $ONIZLEME; do
             if "${C[@]}" "https://$ALAN/testler/$slug" | grep -qi 'name="robots" content="noindex'; then
-              echo "::notice title=Önizleme::/testler/$slug açılıyor; uzman incelemesinde, arama motorlarına kapalı."
+              kapali="$kapali $slug"
             else
-              echo "::notice title=Önizleme::/testler/$slug açılıyor ve herkese açık."
+              acik="$acik $slug"
             fi
           done
+          if [ -n "$kapali" ]; then
+            echo "::notice title=Önizleme::Uzman incelemesinde; bağlantıyla açılıyor, arama motorlarına kapalı:$kapali"
+          fi
+          if [ -n "$acik" ]; then
+            echo "::notice title=Önizleme::Açılıyor ve herkese açık:$acik"
+          fi
           PDF_GOVDE=$(printf '%s' "$GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["audience"]="parent"; print(json.dumps(b))')
           if ! "${C[@]}" -f -m 60 -H 'content-type: application/json' -d "$PDF_GOVDE" -o "$RUNNER_TEMP/rapor.pdf" \
             "https://$ALAN/api/rapor/oz-saygi/pdf" || [ "$(head -c 5 "$RUNNER_TEMP/rapor.pdf")" != '%PDF-' ]; then
