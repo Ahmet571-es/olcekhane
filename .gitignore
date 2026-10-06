@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Yerel uçtan uca test yardımcıları
 .e2e-tmp/
+
+# Python önbelleği (araclar/)
+__pycache__/
