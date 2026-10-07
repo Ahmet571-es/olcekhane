@@ -14,11 +14,11 @@ export const passages: OralPassage[] = [
     questions: [
       {
         key: 'q1', skill: 'literal', answer: 'b',
-        text: 'Kardan adamın neyi yoktu?',
+        text: 'Elif kardan adamın boynuna ne sardı?',
         options: [
-          { key: 'a', text: 'Gözleri' },
-          { key: 'b', text: 'Burnu' },
-          { key: 'c', text: 'Başı' },
+          { key: 'a', text: 'Mavi bir şal' },
+          { key: 'b', text: 'Kırmızı bir atkı' },
+          { key: 'c', text: 'Sarı bir kurdele' },
         ],
       },
       {
@@ -75,8 +75,8 @@ export const passages: OralPassage[] = [
     paragraphs: [
       'Emir bahçede top oynuyordu. Topa çok sert vurdu. Top çitin üstünden uçtu. Komşunun bahçesine düştü.',
       'Emir çitin önüne koştu. Ama çit çok yüksekti. Emir topu göremedi.',
-      'Birden komşu kızı Defne seslendi: "Bu top senin mi?" Defne topu çitin üstünden geri attı. Emir topu tuttu. Defne’ye teşekkür etti.',
-      'Sonra Defne de Emir’in bahçesine geldi. İki çocuk birlikte oynadı.',
+      'Birden komşu kızı Defne seslendi. Defne topu çitin üstünden geri attı. Emir topu tuttu. Komşu kızına teşekkür etti.',
+      'Sonra Defne de Emir ile oynamaya geldi. İki çocuk birlikte oynadı.',
     ],
     questions: [
       {
@@ -166,7 +166,7 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q3', skill: 'inference', answer: 'b',
-        text: 'Salyangoz, ona bir şey değince neden kabuğuna girer?',
+        text: 'Salyangoz, ona bir şey değince neden saklanır?',
         options: [
           { key: 'a', text: 'Uyumak için' },
           { key: 'b', text: 'Korunmak için' },
@@ -227,7 +227,7 @@ export const passages: OralPassage[] = [
         text: 'Liste nerede kalmıştı?',
         options: [
           { key: 'a', text: 'Babasının cebinde' },
-          { key: 'b', text: 'Pazardaki tezgâhta' },
+          { key: 'b', text: 'Babasının çantasında' },
           { key: 'c', text: 'Evdeki masada' },
         ],
       },
@@ -237,7 +237,7 @@ export const passages: OralPassage[] = [
         options: [
           { key: 'a', text: 'Can listeyi yolda düşürdüğü için' },
           { key: 'b', text: 'Can her şeyi hatırladığı için' },
-          { key: 'c', text: 'Can pazarda çok koştuğu için' },
+          { key: 'c', text: 'Can torbaları taşıdığı için' },
         ],
       },
       {
@@ -254,8 +254,8 @@ export const passages: OralPassage[] = [
         text: 'Bu metin en çok neyi anlatıyor?',
         options: [
           { key: 'a', text: 'Can’ın listeyi hatırlamasını' },
-          { key: 'b', text: 'Pazarda hangi sebzelerin satıldığını' },
-          { key: 'c', text: 'Pazara hangi gün gittiklerini' },
+          { key: 'b', text: 'Sebzelerin tarlada nasıl yetiştiğini' },
+          { key: 'c', text: 'Can’ın annesiyle yemek yapmasını' },
         ],
       },
     ],

@@ -173,7 +173,7 @@ export const sesliOkumaRoadmap: OralRoadmapTemplate = {
       },
       {
         title: 'Sesli okuma keyfi',
-        text: 'Küçük bir kardeşine ya da aileye sesli kitap okuması hem akıcılığını hem okuma sevgisini besler.',
+        text: 'Küçük bir kardeşine ya da ailesine kitaptan sesli okuma yapması hem akıcılığını hem okuma sevgisini besler.',
       },
     ],
   },

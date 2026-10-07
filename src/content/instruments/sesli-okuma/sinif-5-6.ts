@@ -129,7 +129,7 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q2', skill: 'literal', answer: 'a',
-        text: 'Ahtapot derisini pürüzlü hâle getirince neye benzeyebilir?',
+        text: 'Metne göre ahtapot derisini pürüzlü hâle getirince neye benzeyebilir?',
         options: [
           { key: 'a', text: 'Bir taşa' },
           { key: 'b', text: 'Bir balığa' },
@@ -215,7 +215,7 @@ export const passages: OralPassage[] = [
     genre: 'narrative',
     title: 'Yusuf’un Domatesleri',
     paragraphs: [
-      'Yusuf, baharın başında camlı balkonlarına iki saksı domates fidesi dikti. Her sabah okula gitmeden önce fidelerini suluyor, akşamları da ne kadar uzadıklarına bakıyordu. Birkaç hafta içinde fideler boy attı ve dallarında küçük, sarı çiçekler açtı.',
+      'Yusuf, baharın başında camlı balkonlarındaki iki saksıya domates fidesi dikti. Her sabah okula gitmeden önce fidelerini suluyor, akşamları da ne kadar uzadıklarına bakıyordu. Birkaç hafta içinde fideler boy attı ve dallarında küçük, sarı çiçekler açtı.',
       'Yusuf artık domateslerin çıkmasını sabırsızlıkla bekliyordu. Ama günler geçtikçe çiçekler kuruyup birer birer döküldü. Dallarda tek bir domates bile oluşmadı. Yusuf nerede hata yaptığını anlayamıyordu. Fidelerini ne az ne çok suluyordu, saksılar da bol güneş alıyordu.',
       'Hafta sonu babaannesi onlara geldi. Yusuf ona kuruyan çiçekleri gösterdi. Babaannesi önce fidelere, sonra balkonun kapalı camlarına baktı ve gülümsedi: "Domates çiçeklerinin meyve verebilmesi için hafifçe sallanması gerekir. Bahçede bu işi rüzgâr ve böcekler yapar. Senin balkonuna ise ne rüzgâr giriyor ne de böcek."',
       'O günden sonra Yusuf her sabah çiçekli dallara parmağıyla hafifçe vurdu. Havanın güzel olduğu günlerde camları açıp içeri rüzgâr girmesini de sağladı. Kısa süre sonra bazı çiçeklerin yerinde nohut büyüklüğünde yeşil domatesler belirdi. Yusuf hemen telefona koştu: "Babaanne, ilk domateslerimiz geliyor!"',
@@ -425,19 +425,19 @@ export const passages: OralPassage[] = [
     title: 'Bilim Şenliğine Hazırlık',
     paragraphs: [
       'Okuldaki bilim şenliğine iki hafta kalmıştı. Nehir ile Emir, rüzgârın hızını ölçen basit bir alet yapmaya karar verdiler. Önce iki çubuğu artı işareti gibi birleştirip dört ucuna birer plastik bardak yapıştırdılar. Sonra çubukların ortasını, dönebilecek biçimde bir raptiyeyle kalemin silgili ucuna tutturdular.',
-      'Aleti balkona çıkardıklarında ikisi de hayal kırıklığına uğradı. Rüzgâr esiyordu ama bardaklar bir türlü dönmüyordu; alet yalnızca biraz sallanıyor, sonra yeniden duruyordu. Emir rüzgârın yeterince güçlü olmadığını düşünürken Nehir sorunun aletin kendisinde olduğundan şüpheleniyordu.',
-      'Ertesi gün aleti masaya koyup dikkatle incelediler. Bir süre sonra Nehir, bardaklardan üçünün ağzının aynı yöne baktığını, dördüncüsünün ise ters yapıştırıldığını fark etti. Rüzgâr öteki bardakları ileri iterken bu bardağı geriye doğru itiyordu. Bu yüzden alet dönmek yerine olduğu yerde sallanıp duruyordu.',
-      'Emir ters bardağı söküp doğru yönde yeniden yapıştırdı. Nehir de turları kolayca sayabilmek için bardaklardan birini kırmızıya boyadı. Balkona çıktıklarında bardaklar hızla dönmeye başladı. İki arkadaş bir hafta boyunca her gün, aletin bir dakikada kaç tur attığını sayıp bir tabloya yazdı. Bilim şenliğinde, rüzgârlı ve sakin günleri karşılaştıran bu tablo büyük ilgi gördü.',
+      'Aleti balkona çıkardıklarında ikisi de hayal kırıklığına uğradı. Rüzgâr esiyordu ama bardaklar bir türlü düzgün dönmüyordu; alet çok zor ve kesik kesik dönüyordu. Emir rüzgârın yeterince güçlü olmadığını düşünürken Nehir sorunun aletin kendisinde olduğundan şüpheleniyordu.',
+      'Ertesi gün aleti masaya koyup dikkatle incelediler. Bir süre sonra Nehir, bardaklardan üçünün ağzının aynı yöne baktığını, dördüncüsünün ise ters yapıştırıldığını fark etti. Rüzgâr öteki bardakları ileri iterken bu bardağı geriye doğru itiyordu. Bu yüzden alet hızla dönmek yerine ancak zorlanarak dönebiliyordu.',
+      'Emir ters bardağı söküp doğru yönde yeniden yapıştırdı. Nehir de turları kolayca sayabilmek için bardaklardan birini kırmızıya boyadı. Balkona çıktıklarında bu kez bardaklar hızla ve düzgün dönmeye başladı. İki arkadaş bir hafta boyunca her gün, aletin bir dakikada kaç tur attığını sayıp bir tabloya yazdı. Bilim şenliğinde, rüzgârlı ve sakin günleri karşılaştıran bu tablo büyük ilgi gördü.',
     ],
     questions: [
       {
         key: 'q1', skill: 'literal', answer: 'c',
         text: 'Nehir ile Emir’in yaptığı alet neyi ölçmek içindi?',
         options: [
-          { key: 'a', text: 'Havanın sıcaklığını' },
+          { key: 'a', text: 'Rüzgârın yönünü' },
           { key: 'b', text: 'Yağmurun miktarını' },
           { key: 'c', text: 'Rüzgârın hızını' },
-          { key: 'd', text: 'Havadaki nemi' },
+          { key: 'd', text: 'Havanın sıcaklığını' },
         ],
       },
       {
@@ -472,12 +472,12 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q5', skill: 'inference', answer: 'c',
-        text: 'Bilim şenliğindeki tablo ziyaretçilere en çok neyi gösteriyor olabilir?',
+        text: 'İki arkadaş ölçümü neden tek bir gün değil, bir hafta boyunca her gün yaptı?',
         options: [
-          { key: 'a', text: 'Aletin hangi malzemelerle yapıldığını' },
-          { key: 'b', text: 'Aletin kaç günde yapıldığını' },
-          { key: 'c', text: 'Rüzgârın günden güne değiştiğini' },
-          { key: 'd', text: 'Okulda kaç öğrenci olduğunu' },
+          { key: 'a', text: 'Alet her gün yeniden bozulduğu için' },
+          { key: 'b', text: 'Turları ilk gün sayamadıkları için' },
+          { key: 'c', text: 'Farklı günleri karşılaştırabilmek için' },
+          { key: 'd', text: 'Şenlik bir hafta ertelendiği için' },
         ],
       },
       {
@@ -492,11 +492,11 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q7', skill: 'vocabulary', answer: 'a',
-        text: 'Metindeki "Rüzgâr esiyordu ama bardaklar bir türlü dönmüyordu" sözünde "bir türlü" ne anlama gelir?',
+        text: 'Metindeki "bardaklar bir türlü düzgün dönmüyordu" sözünde "bir türlü" ne anlama gelir?',
         options: [
           { key: 'a', text: 'Ne yapılsa da' },
           { key: 'b', text: 'Yalnızca bir kez' },
-          { key: 'c', text: 'Çok yavaş bir şekilde' },
+          { key: 'c', text: 'Tek bir yöne doğru' },
           { key: 'd', text: 'Ara sıra' },
         ],
       },
@@ -514,7 +514,7 @@ export const passages: OralPassage[] = [
     ideas: [
       { key: 'i1', text: 'Nehir ile Emir, bilim şenliği için rüzgârın hızını ölçen bir alet yapar.', core: true },
       { key: 'i2', text: 'Aleti çubuklar, dört plastik bardak, bir kalem ve raptiyeyle hazırlarlar.', core: false },
-      { key: 'i3', text: 'Rüzgâr esmesine rağmen alet bir türlü dönmez.', core: true },
+      { key: 'i3', text: 'Rüzgâr esmesine rağmen alet bir türlü düzgün dönmez, ancak zorlanarak döner.', core: true },
       { key: 'i4', text: 'Emir rüzgârı zayıf bulur, Nehir ise sorunun alette olduğunu düşünür.', core: false },
       { key: 'i5', text: 'Aleti inceleyince bir bardağın ters yapıştırıldığını bulurlar.', core: true },
       { key: 'i6', text: 'Bardağı düzeltince alet hızla dönmeye başlar.', core: true },
@@ -577,12 +577,12 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q5', skill: 'inference', answer: 'd',
-        text: 'Tüccarların kervansaraylarda haber alışverişi yapması onlara nasıl yarardı?',
+        text: 'Anadolu Selçuklularının yolların üzerine çok sayıda kervansaray yaptırması neyi gösterir?',
         options: [
-          { key: 'a', text: 'Yolculuklarını daha da kısaltırdı.' },
-          { key: 'b', text: 'Develerin daha hızlı yürümesini sağlardı.' },
-          { key: 'c', text: 'Duvarları daha sağlam hâle getirirdi.' },
-          { key: 'd', text: 'Yeni bilgiler edinmelerini sağlardı.' },
+          { key: 'a', text: 'Kervanların artık hiç yolculuk etmediğini' },
+          { key: 'b', text: 'Yük taşımak için develer yerine atları seçtiklerini' },
+          { key: 'c', text: 'Şehirlerde yeterince ev olmadığını' },
+          { key: 'd', text: 'Ticarete büyük önem verdiklerini' },
         ],
       },
       {

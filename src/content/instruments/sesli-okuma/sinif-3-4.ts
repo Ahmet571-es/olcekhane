@@ -44,12 +44,12 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q4', skill: 'inference', answer: 'd',
-        text: 'Annesi Kerem’e kapıyla ilgili soruyu neden sordu?',
+        text: 'Annesinin sorusu Kerem’e nasıl yardım etti?',
         options: [
-          { key: 'a', text: 'Kapıyı tamir ettirmek istediği için' },
-          { key: 'b', text: 'Kerem’in kapıyı kapatmasını istediği için' },
-          { key: 'c', text: 'Kapının çok eski olduğunu düşündüğü için' },
-          { key: 'd', text: 'Kerem’in sorunun nedenini bulması için' },
+          { key: 'a', text: 'Yemliği nasıl yapacağını öğrenmesini sağladı.' },
+          { key: 'b', text: 'Kuşlara daha çok yem koymasını sağladı.' },
+          { key: 'c', text: 'Kuşların adlarını öğrenmesini sağladı.' },
+          { key: 'd', text: 'Kuşların neden gelmediğini anlamasını sağladı.' },
         ],
       },
       {
@@ -89,7 +89,7 @@ export const passages: OralPassage[] = [
           { key: 'a', text: 'Kerem’in annesiyle bahçede erik toplamasını' },
           { key: 'b', text: 'Kerem’in yemlik için doğru yeri bulmasını' },
           { key: 'c', text: 'Kuşların yuvalarını nasıl yaptığını' },
-          { key: 'd', text: 'Kerem’in bozuk bir kapıyı onarmasını' },
+          { key: 'd', text: 'Kerem’in kışın kardan adam yapmasını' },
         ],
       },
     ],
@@ -110,7 +110,7 @@ export const passages: OralPassage[] = [
     title: 'Bayrak Yarışı',
     paragraphs: [
       'Okulda spor şenliği yapılacaktı. Zeynep, Emir, Ece ve Ali bayrak yarışında aynı takımda koşacaklardı. Bu yarışta her çocuk biraz koşar, sonra elindeki kısa çubuğu sıradaki arkadaşına verir. Elden ele geçen bu çubuğa bayrak denir.',
-      'Ama antrenmanda bir sorun çıktı. Çubuk her seferinde yere düşüyordu. Ece çok hızlı koşuyor ama çubuğu uzatırken telaşlanıyordu. Ali de arkasına hiç bakmadan elini açıyordu. Takım bu yüzden her turda zaman kaybediyordu.',
+      'Ama antrenmanda bir sorun çıktı. Çubuk her seferinde yere düşüyordu. Ece çok hızlı koşuyor ama çubuğu uzatırken telaşlanıyordu. Ali de elini ya çok erken ya da çok geç açıyordu. Takım bu yüzden her turda zaman kaybediyordu.',
       'Zeynep bir gün güzel bir fikir buldu. Çubuğu veren kişi yüksek sesle "şimdi" diyecekti. Alan kişi de elini geriye uzatıp avucunu açık tutacaktı. Dört arkadaş bu yolu bütün hafta denediler. Önce yavaş yavaş koştular, sonra giderek hızlandılar.',
       'Sonunda yarış günü geldi. Çubuk yarış boyunca bir kez bile yere düşmedi. Takım yarışı ikinci sırada bitirdi. Yine de dört arkadaş sevinçle birbirlerine sarıldılar.',
     ],
@@ -132,7 +132,7 @@ export const passages: OralPassage[] = [
           { key: 'a', text: 'Çubuk sık sık yere düşüyordu.' },
           { key: 'b', text: 'Takımın koşu ayakkabısı yoktu.' },
           { key: 'c', text: 'Koşu pisti çamurla doluydu.' },
-          { key: 'd', text: 'Çocuklar sırasını unutuyordu.' },
+          { key: 'd', text: 'Çocuklar sıralarını unutuyordu.' },
         ],
       },
       {
@@ -200,7 +200,7 @@ export const passages: OralPassage[] = [
       { key: 'i1', text: 'Zeynep ve üç arkadaşı okul şenliğinde bayrak yarışında koşacaktır.', core: true },
       { key: 'i2', text: 'Bu yarışta koşucular kısa bir çubuğu elden ele verir.', core: false },
       { key: 'i3', text: 'Antrenmanda çubuk sık sık yere düşer.', core: true },
-      { key: 'i4', text: 'Ece telaşlanır, Ali de arkasına bakmadan elini açar.', core: false },
+      { key: 'i4', text: 'Ece telaşlanır, Ali de elini ya erken ya da geç açar.', core: false },
       { key: 'i5', text: 'Zeynep, veren kişinin "şimdi" demesini ve alanın avucunu açık tutmasını önerir.', core: true },
       { key: 'i6', text: 'Dört arkadaş bu yolu bütün hafta dener.', core: false },
       { key: 'i7', text: 'Yarışta çubuk hiç düşmez ve takım ikinci olur.', core: true },
@@ -216,7 +216,7 @@ export const passages: OralPassage[] = [
       'Bir ağaç kütüğüne hiç yakından baktın mı? Kütüğün üstünde iç içe halkalar görürsün. Bu halkalar, ağacın nasıl büyüdüğünü anlatır. Onlara yıllık halka denir.',
       'Dört mevsimin yaşandığı yerlerde ağaçlar her yıl gövdelerine yeni bir kat ekler. İlkbaharda ağaç hızlı büyür ve açık renkli bir kat oluşur. Yaz sonunda büyüme yavaşlar ve koyu renkli bir kat oluşur. Bir açık ve bir koyu kat birlikte bir yıllık halkayı yapar.',
       'Bu yüzden halkaları sayarak ağacın yaşını bulabiliriz. Halkalar bize geçmiş yılların havasını da anlatır. Yağmurlu yıllarda ağaç bol su bulur. O yıl oluşan halka genellikle geniş olur. Kurak yıllarda ise halka dar kalır.',
-      'Bilim insanları bir ağacın yaşını öğrenmek için onu kesmek zorunda değildir. Özel bir aletle gövdeden kalem kadar ince bir parça çıkarırlar. Sonra bu parçadaki açık ve koyu çizgileri sayarlar. Ağaç da yaşamaya devam eder.',
+      'Bilim insanları bir ağacın yaşını öğrenmek için onu kesmek zorunda değildir. Özel bir aletle gövdeden kalem kadar ince bir parça çıkarırlar. Sonra bu parçadaki yıllık halkaları sayarlar. Ağaç da yaşamaya devam eder.',
     ],
     questions: [
       {
@@ -243,7 +243,7 @@ export const passages: OralPassage[] = [
         key: 'q3', skill: 'literal', answer: 'a',
         text: 'Bilim insanları gövdeden çıkardıkları parçada neleri sayar?',
         options: [
-          { key: 'a', text: 'Açık ve koyu çizgileri' },
+          { key: 'a', text: 'Yıllık halkaları' },
           { key: 'b', text: 'Kabuktaki küçük çatlakları' },
           { key: 'c', text: 'İçindeki küçük delikleri' },
           { key: 'd', text: 'Üstündeki yosun lekelerini' },
@@ -316,7 +316,7 @@ export const passages: OralPassage[] = [
     title: 'Eğri Fincan',
     paragraphs: [
       'Nehir, yaz tatilinin bir haftasını teyzesinin çömlek atölyesinde geçirdi. Atölyenin rafları tabaklarla, vazolarla ve kâselerle doluydu. Nehir de annesi için bir fincan yapmaya karar verdi. Teyzesi onu çömlekçi çarkının başına oturttu. Çark, üstüne konan çamuru hızla döndüren yuvarlak bir tablaydı.',
-      'Teyzesi çarkın ortasına bir top çamur koydu. Nehir çamuru hemen şekillendirmek istiyordu. Parmaklarıyla hızlıca bastırınca çamur bir yana yattı. İkinci denemede fincanın kenarları yırtıldı. Üçüncü denemede ise fincan birden çöküverdi. Nehir’in elleri, yanakları, hatta saçları bile çamur olmuştu.',
+      'Teyzesi çarkın ortasına bir top çamur koydu. Nehir çamuru hemen şekillendirmek istiyordu. Parmaklarıyla hızlıca bastırınca çamur bir yana yattı. İkinci denemede fincanın kenarları çatladı. Üçüncü denemede ise fincan birden çöküverdi. Nehir’in elleri, yanakları, hatta saçları bile çamur olmuştu.',
       'Teyzesi gülümseyerek yanına oturdu. Ellerini suyla ıslatmasını ve acele etmemesini söyledi. Sonra ekledi: "Çamur, sabırlı elleri sever." Nehir bu kez avuçlarını çamurun iki yanına koydu ve onu yavaşça yukarı çekti. Çamur azar azar yükseldi ve sonunda bir fincana dönüştü.',
       'Fincan biraz eğri olmuştu ama Nehir ondan çok hoşlandı. Birkaç gün kuruyan fincanın üstünü maviye boyadı, teyzesi de onu fırında pişirdi. Annesi şimdi her sabah kahvesini o eğri fincanla içiyor.',
     ],
@@ -343,12 +343,12 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q3', skill: 'literal', answer: 'b',
-        text: 'Teyzesi Nehir’e ne yapmasını söyledi?',
+        text: 'Son denemesinde Nehir avuçlarını nereye koydu?',
         options: [
-          { key: 'a', text: 'Çarkı her seferinde daha hızlı döndürmesini' },
-          { key: 'b', text: 'Ellerini ıslatıp acele etmemesini' },
-          { key: 'c', text: 'Daha çok çamur kullanmasını' },
-          { key: 'd', text: 'Önce küçük bir tabak denemesini' },
+          { key: 'a', text: 'Çarkın iki kenarına' },
+          { key: 'b', text: 'Çamurun iki yanına' },
+          { key: 'c', text: 'Çamurun tam tepesine' },
+          { key: 'd', text: 'Teyzesinin ellerinin üstüne' },
         ],
       },
       {
@@ -543,7 +543,7 @@ export const passages: OralPassage[] = [
         text: 'Metne göre pusulanın iğnesi neden hep kuzeyi gösterir?',
         options: [
           { key: 'a', text: 'Dünya iğneyi etkilediği için' },
-          { key: 'b', text: 'Gökteki bir yıldız iğneyi çektiği için' },
+          { key: 'b', text: 'Kuzey her zaman daha soğuk olduğu için' },
           { key: 'c', text: 'Rüzgâr hep kuzeyden estiği için' },
           { key: 'd', text: 'İğnenin o ucu daha ağır olduğu için' },
         ],
@@ -602,9 +602,9 @@ export const passages: OralPassage[] = [
         key: 'q8', skill: 'main_idea', answer: 'b',
         text: 'Bu metin en çok neyi anlatıyor?',
         options: [
-          { key: 'a', text: 'Denizcilerin hangi yıldızları izlediğini' },
+          { key: 'a', text: 'Gemilerin nasıl yapıldığını' },
           { key: 'b', text: 'Pusulanın nasıl yön gösterdiğini' },
-          { key: 'c', text: 'Mıknatısların nerede bulunduğunu' },
+          { key: 'c', text: 'Saatlerin nasıl çalıştığını' },
           { key: 'd', text: 'Haritaların nasıl çizildiğini' },
         ],
       },
