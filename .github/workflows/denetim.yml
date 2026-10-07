@@ -93,8 +93,14 @@ jobs:
           head -c 5 /tmp/rapor.pdf | grep -q '%PDF-' || { echo "::error title=PDF üretilemedi::Yanıt bir PDF değil"; exit 1; }
           echo "PDF: $(wc -c < /tmp/rapor.pdf) bayt"
           # PDF'teki metin okunabilir olmalı: Türkçe harfler, saklamama notu ve sayfa numarası (alt bilgi).
-          command -v pdftotext >/dev/null || { sudo timeout 240 apt-get update -qq && sudo timeout 240 apt-get install -y -qq poppler-utils >/dev/null; }
-          pdftotext /tmp/rapor.pdf /tmp/rapor.txt
+          # Metin pdftotext varsa onunla, yoksa pip'ten kurulan pypdf ile çıkarılır: 2026-10-07'de çalıştırıcıda pdftotext
+          # yoktu ve paket deposundan (apt) kurulum önce takıldı, sonra kurulmadan geçildi.
+          if command -v pdftotext >/dev/null; then
+            pdftotext /tmp/rapor.pdf /tmp/rapor.txt
+          else
+            timeout 180 python3 -m pip install -q --disable-pip-version-check --user --break-system-packages pypdf
+            python3 -c 'import pypdf, sys; r = pypdf.PdfReader(sys.argv[1]); open(sys.argv[2], "w", encoding="utf-8").write("\n".join(p.extract_text() or "" for p in r.pages))' /tmp/rapor.pdf /tmp/rapor.txt
+          fi
           for ifade in 'Öz-saygı Ölçeği' 'hiçbir' 'Sayfa 1 / ' 'Veli raporu'; do
             grep -q "$ifade" /tmp/rapor.txt || { echo "::error title=PDF metni eksik::'$ifade' bulunamadı"; cat /tmp/rapor.txt; exit 1; }
           done
