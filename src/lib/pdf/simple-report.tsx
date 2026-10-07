@@ -321,7 +321,14 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
   const H = 285;
   const scene = bars3dScene(
     rm.bars.map((b) => ({ ...b, valueLabel: b.valueLabel.split(' / ')[0] })),
-    { yaw: 180 / Math.max(1, rm.bars.length), width: W, height: H, floor: { top: C.surface2, side: C.rule, stroke: C.ruleStrong }, band: C.brass },
+    {
+      yaw: 180 / Math.max(1, rm.bars.length),
+      width: W,
+      height: H,
+      floor: { top: C.surface2, side: C.rule, stroke: C.ruleStrong },
+      band: C.brass,
+      label: { charWidth: 7.2, height: 13 },
+    },
   );
   return (
     <View>

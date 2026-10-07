@@ -50,6 +50,11 @@ export interface SceneOptions {
   floor?: { top: string; side: string; stroke: string };
   /** Ölçüm payı kılıfının rengi. */
   band?: string;
+  /**
+   * Puan yazılarının yaklaşık boyutu (çizimin birimiyle): üst üste binen yazılar birbirinden ayrılır. Varsayılan ekrandaki
+   * 20 birimlik yazıdır; PDF kendi boyutunu verir.
+   */
+  label?: { charWidth: number; height: number };
 }
 
 const BAR_W = 0.8;
@@ -199,6 +204,19 @@ export function bars3dScene(bars: Bar3DInput[], opts: SceneOptions): Scene3D {
     const lab = view([cx, top, cz]);
     marks.push({ key: b.key, baseY: base.sy, topY: tip.sy });
     labels.push({ key: b.key, x: lab.sx, y: lab.sy - 10, text: b.valueLabel });
+  }
+
+  // Arkadaki bir sütunun puanı öndekinin puanıyla üst üste binerse yukarı kaydırılır (önce öndekiler yerleşir). Yazı
+  // yine kendi sütununun hizasında kalır; çizimin üst kenarından taşmaz.
+  const { charWidth, height: labelH } = opts.label ?? { charWidth: 11.5, height: 20 };
+  const placed: Scene3D['labels'] = [];
+  for (const l of [...labels].reverse()) {
+    const clash = () =>
+      placed.find(
+        (o) => Math.abs(o.x - l.x) < ((o.text.length + l.text.length) * charWidth) / 2 + 2 && Math.abs(o.y - l.y) < labelH,
+      );
+    for (let o = clash(); o && o.y - labelH >= labelH * 0.8; o = clash()) l.y = o.y - labelH;
+    placed.push(l);
   }
 
   return { width, height, polys, labels, bars: marks };

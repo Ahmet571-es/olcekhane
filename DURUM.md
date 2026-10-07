@@ -27,7 +27,7 @@ Basamaklar:
 1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
    aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör, Ayrıntılı Kişilik ve Altı Boyutlu Kişilik'te yayında
-   (hoca onayı 2026-10-07; site sahibi beğendi). Duygusal Zekâ Bileşenleri'nde önizlemede. Sırada öteki testlerin yol haritaları: her biri önce önizlemede,
+   (hoca onayı 2026-10-07; site sahibi beğendi). Duygusal Zekâ Bileşenleri ve Kişilerarası Tarz'da önizlemede. Sırada öteki testlerin yol haritaları: her biri önce önizlemede,
    hoca onayıyla herkese açılır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
@@ -50,8 +50,9 @@ Basamaklar:
    Kişilik yayında. Yeni yol haritası önizlemede (`?onizleme=yol-haritasi`) başlar, hoca onaylayınca
    `ROADMAP_IN_REVIEW`'dan çıkarılır. Duygusal Zekâ Bileşenleri önizlemede, hocanın kararı bekleniyor (2. hafta
    "Duygularına dikkat", iyi oluş haftası Üzücü olaylardan etkilenme yüksekken; şablonda `planningTitle` ve
-   `wellbeing.link`). Sırada: Kişilerarası Tarz, Öz-saygı, Çalışma Alışkanlıkları; sonra ilgi testleri ve zihinsel
-   görevler (bunların bölümleri kişilik testlerinden farklı tasarlanır).
+   `wellbeing.link`). Kişilerarası Tarz önizlemede, hocanın kararı bekleniyor (sekiz tarz çemberin sırasıyla; 2. hafta
+   "Birlikte çalışırken" = Öne çıkma; iyi oluş haftası yok). Sırada: Öz-saygı, Çalışma Alışkanlıkları; sonra ilgi
+   testleri ve zihinsel görevler (bunların bölümleri kişilik testlerinden farklı tasarlanır).
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -114,6 +115,7 @@ Her incelemedeki test için Claude Docs'ta bir belge vardır; sonunda Onay tablo
 | [Beş Faktör Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/HaGkWkUNY9q6jJasEDk8gt) | Beş Faktör Kişilik Profili (yol haritası) | Onaylandı (2026-10-07), yayında |
 | [Ayrıntılı ve Altı Boyutlu Kişilik Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/UwsHRuzXgxSWkf6qrbZUWC) | Ayrıntılı Kişilik Profili, Altı Boyutlu Kişilik Profili (yol haritası) | Onaylandı (2026-10-07), yayında |
 | [Duygusal Zekâ Bileşenleri Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/QWByT2popLrQ6t1fd3C3nd) | Duygusal Zekâ Bileşenleri (yol haritası) | Site sahibinin hocayla paylaşması bekleniyor |
+| [Kişilerarası Tarz Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/KbBPXJx5AB8o9cPifJXo8k) | Kişilerarası Tarz (yol haritası) | Site sahibinin hocayla paylaşması bekleniyor |
 
 ## Rehber yazıları
 
@@ -188,8 +190,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
-- **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı ve Duygusal Zekâ Bileşenleri Gelişim Yol
-  Haritası incelemelerinin hocaya iletilmesi;
+- **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı, Duygusal Zekâ Bileşenleri Gelişim Yol
+  Haritası ve Kişilerarası Tarz Gelişim Yol Haritası incelemelerinin hocaya iletilmesi;
   hocanın kararları (Renk-Kelime, Dur-Git, Sırayla Birleştirme dahil zihinsel görevlerin hepsi kararı bekliyor).
 - **Açık soru:** Katalogda Türkçe Konu Tarama Testi "Hazırlanıyor" diye görünüyor, oysa 4. dalgada. İlgili bir iş
   gelince etiketin kalıp kalmayacağı site sahibine sorulur.
@@ -198,6 +200,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Kişilerarası Tarz gelişim yol haritası önizlemede (sekiz tarz; öğrenci, veli ve yetişkin raporu;
+  ekranda ve PDF'te); hoca belgesi hazır. Üç boyutlu grafikte üst üste binen puan yazıları ayrılıyor; telefonda uzun
+  boyut adlarında puan adın hemen ardından geliyor.
 - 2026-10-07: Duygusal Zekâ Bileşenleri gelişim yol haritası önizlemede (yedi bileşen; öğrenci, veli ve yetişkin
   raporu; ekranda ve PDF'te); hoca belgesi hazır. Üç boyutlu grafiğin altındaki açıklamada puanlar artık iki satıra
   bölünmüyor.
@@ -223,4 +228,3 @@ En yeni üstte; en çok 10 madde tutulur.
   (`araclar/`), rehber yazıları ve yayın denetimi testleri; yayın denetimi artık site haritasındaki bütün sayfaları
   internetten açıyor.
 - 2026-10-01: Tepki Hızı uzman incelemesinde; hoca belgesi hazır.
-- 2026-10-01: Zihinde Döndürme uzman incelemesinde; hoca belgesi hazır.

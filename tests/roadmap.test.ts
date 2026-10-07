@@ -179,6 +179,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'ayrintili-kisilik-profili': 3 ** 5 * 3,
       'alti-boyutlu-kisilik-profili': 3 ** 6 * 3,
       'duygusal-zeka-bilesenleri': 3 ** 7 * 3,
+      'kisilerarasi-tarz': 3 ** 8 * 3,
     });
   }, 60_000);
 });
@@ -258,6 +259,55 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(high.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri']);
   });
 
+  it('Kişilerarası Tarz: uzman incelemesinde, yalnızca önizleme isteğinde; çemberin sırasıyla, yetişkine de hazırlanır', () => {
+    const slug = 'kisilerarasi-tarz';
+    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(true);
+    expect(hasPublicRoadmap(slug)).toBe(false);
+    const b = likertBody(slug, 10, (i) => (i * 7) % 5);
+    expect(evaluate(slug, b).student.roadmap).toBeUndefined();
+    const r = evaluate(slug, { ...b, roadmapPreview: true });
+    const rm = r.student.roadmap!;
+    expect(rm.preview).toBe(true);
+    // Sütunlar çemberdeki sırayla (üstten saat yönünde) dizilir; her tarzın kendi rengi vardır.
+    expect(rm.bars.map((x) => x.key)).toEqual(def<LikertInstrument>(slug).scales.map((s) => s.key));
+    expect(new Set(rm.bars.map((x) => x.color)).size).toBe(8);
+    expect(rm.weeks[1].title).toBe('Birlikte çalışırken');
+    // Ölçeklerin hiçbiri sıkıntı ölçmez: iyi oluş haftası ve "Sınav kaygısı" bağlantısı yoktur.
+    expect(rm.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri']);
+    expect(r.parent.roadmap?.approach?.items).toHaveLength(8);
+    // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
+    expect(rm.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
+    const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE, roadmapPreview: true }).adult.roadmap!;
+    expect(adult.settings.title).toBe('İş ve meslek planı için');
+    expect(adult.approach).toBeNull();
+    for (const x of texts(adult)) expect(x).not.toMatch(SCHOOL);
+    // Rapordaki veli metinlerinde geçen öneriler veliye yaklaşımda tekrar edilmez.
+    const tpl = REPORT_TEMPLATES[slug];
+    for (const [key, byGroup] of Object.entries(ROADMAPS[slug].approach!)) {
+      for (const g of ['low', 'average', 'high'] as const) {
+        const parentText = tpl.scales[key][g]!.parent;
+        for (const sentence of byGroup[g].split(/;\s*/)) expect(parentText, `${key} ${g}`).not.toContain(sentence.replace(/\.$/, ''));
+      }
+    }
+  });
+
+  it('bir şablondaki metinler birbirini tekrar etmez (aynı raporda yan yana okunurlar)', () => {
+    for (const slug of Object.keys(ROADMAPS)) {
+      const t = ROADMAPS[slug];
+      const scales = Object.values(t.scales);
+      const unique = (xs: string[], what: string) => expect(new Set(xs).size, `${slug} ${what}`).toBe(xs.length);
+      for (const a of AUDIENCES) {
+        for (const g of ['low', 'average', 'high'] as const) {
+          const pickA = (x: AudienceText) => (a === 'parent' ? x.parent : a === 'adult' ? (x.adult ?? x.student) : x.student);
+          unique(scales.map((s) => pickA(s.study[g])), `${a} ${g} nasıl çalışabilir`);
+          unique(scales.map((s) => pickA(s.action[g])), `${a} ${g} bu hafta dene`);
+        }
+      }
+      unique(scales.flatMap((s) => [s.settings.low!, s.settings.high!]), 'ortamlar');
+      if (t.approach) unique(Object.values(t.approach).flatMap((x) => [x.low, x.average, x.high]), 'veliye yaklaşım');
+    }
+  });
+
   it('son haftada yalnızca kişinin sınıfına uyan, yayındaki ilgi testleri önerilir', () => {
     const sixth = evaluate(SLUG, { ...likertBody(SLUG, 6, (i) => i % 5), roadmapPreview: true }).student.roadmap!;
     expect(sixth.weeks[3].text).not.toContain('testini');
@@ -325,6 +375,31 @@ describe('üç boyutlu sütun grafiği', () => {
     expect(h3 / h2).toBeCloseTo(2, 6);
     expect(h4 / h2).toBeCloseTo(3, 6);
     expect(h5 / h2).toBeCloseTo(4, 6);
+  });
+
+  it('puan yazıları hiçbir açıda üst üste binmez ve çizimin içinde kalır (ekranda ve PDF boyutunda)', () => {
+    const sizes = [
+      { width: 560, height: 420, label: { charWidth: 11.5, height: 20 } },
+      { width: 380, height: 285, label: { charWidth: 7.2, height: 13 } },
+    ];
+    for (const size of sizes) {
+      for (let k = 0; k < 60; k++) {
+        const n = 5 + (k % 4);
+        const values = Array.from({ length: n }, (_, i) => 1 + Math.round(((Math.sin(k * 13.7 + i * 7.3) + 1) / 2) * 40) / 10);
+        const input = values.map((v, i) => ({ ...bars[0], key: `b${i}`, value: v, ciLow: null, ciHigh: null, valueLabel: v.toFixed(1) }));
+        for (let yaw = 0; yaw < 360; yaw += 15) {
+          const { labels } = bars3dScene(input, { yaw, ...size });
+          const { charWidth, height } = size.label;
+          for (const [i, a] of labels.entries()) {
+            expect(a.y, `${n} sütun, ${yaw}°`).toBeGreaterThanOrEqual(height * 0.8);
+            for (const b of labels.slice(i + 1)) {
+              const apart = Math.abs(a.x - b.x) >= ((a.text.length + b.text.length) * charWidth) / 2 || Math.abs(a.y - b.y) >= height;
+              expect(apart, `${n} sütun, ${yaw}°: ${a.key} ve ${b.key}`).toBe(true);
+            }
+          }
+        }
+      }
+    }
   });
 
   it('ölçüm payı yarı saydam bir kılıf olarak çizilir; değeri olmayan sütun çizilmez', () => {
