@@ -84,7 +84,7 @@ const FAQ = [
   },
   {
     q: 'Ücretli mi?',
-    a: 'Testler ve ekranda gösterilen, PDF olarak indirilen rapor ücretsizdir. Önerilerle zenginleştirilmiş kapsamlı rapor ileride ücretli olarak sunulacak; ödeme yapmadan önce fiyatı açıkça göreceksiniz.',
+    a: 'Testler ve ekranda gösterilen, PDF olarak indirilen raporlar ücretsizdir. Bazı testlerin raporunun sonunda öneriler ve dört haftalık adımlarla bir gelişim yol haritası da ücretsiz olarak yer alır; bu bölüm zamanla öteki testlere de eklenecek. İleride ek, ücretli bir rapor seçeneği sunulursa ödeme yapmadan önce fiyatı açıkça göreceksiniz.',
   },
 ];
 

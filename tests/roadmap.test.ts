@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { REPORT_TEMPLATES } from '@/content/reports';
-import { ROADMAPS, ROADMAP_IN_REVIEW } from '@/content/roadmaps';
+import { ROADMAPS, ROADMAP_IN_REVIEW, hasPublicRoadmap } from '@/content/roadmaps';
 import type { AudienceText } from '@/content/roadmaps/types';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import { answersBody } from '@/lib/assessment/schemas';
@@ -143,18 +143,29 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
 describe('gelişim yol haritası: rapora eklenmesi', () => {
   const body = likertBody(SLUG, 8, (i) => (i * 7) % 5);
 
-  it('incelemedeyken yalnızca önizleme isteğinde eklenir; başka testlerde önizleme isteği bir şey değiştirmez', () => {
-    expect(ROADMAP_IN_REVIEW.has(SLUG)).toBe(true);
-    const plain = evaluate(SLUG, body);
-    expect(plain.student.roadmap).toBeUndefined();
-    expect(plain.parent.roadmap).toBeUndefined();
-    const preview = evaluate(SLUG, { ...body, roadmapPreview: true });
-    expect(preview.student.roadmap?.preview).toBe(true);
-    expect(preview.parent.roadmap?.approach?.items.length).toBe(5);
+  it('hoca onayladı: herkese açık raporda vardır; önizleme isteği bir şey değiştirmez', () => {
+    expect(ROADMAP_IN_REVIEW.has(SLUG)).toBe(false);
+    expect(hasPublicRoadmap(SLUG)).toBe(true);
+    const now = new Date('2026-10-07T10:00:00Z');
+    const plain = evaluate(SLUG, body, now);
+    expect(plain.student.roadmap?.preview).toBe(false);
+    expect(plain.parent.roadmap?.approach?.items.length).toBe(5);
+    expect(evaluate(SLUG, { ...body, roadmapPreview: true }, now)).toEqual(plain);
     const other = evaluate('oz-saygi', { ...likertBody('oz-saygi', 8, (i) => i % 4), roadmapPreview: true });
     expect(other.student.roadmap).toBeUndefined();
     expect(answersBody.safeParse({ ...body, roadmapPreview: true }).success).toBe(true);
     expect(answersBody.safeParse({ ...body, roadmapPreview: false }).success).toBe(false);
+  });
+
+  it('incelemedeki bir yol haritası yalnızca önizleme isteğinde eklenir', () => {
+    ROADMAP_IN_REVIEW.add(SLUG);
+    try {
+      expect(hasPublicRoadmap(SLUG)).toBe(false);
+      expect(evaluate(SLUG, body).student.roadmap).toBeUndefined();
+      expect(evaluate(SLUG, { ...body, roadmapPreview: true }).student.roadmap?.preview).toBe(true);
+    } finally {
+      ROADMAP_IN_REVIEW.delete(SLUG);
+    }
   });
 
   it('son haftada yalnızca kişinin sınıfına uyan, yayındaki ilgi testleri önerilir', () => {
@@ -165,9 +176,11 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
   });
 
   it('PDF yol haritası sayfasıyla birlikte üretilir', async () => {
-    const r = evaluate(SLUG, { ...body, roadmapPreview: true });
+    const r = evaluate(SLUG, body);
     for (const audience of ['student', 'parent'] as const) {
-      const plain = await renderSimpleReportPdf(evaluate(SLUG, body)[audience], 'olcekhane.com');
+      const { roadmap, ...withoutRoadmap } = r[audience];
+      expect(roadmap).toBeDefined();
+      const plain = await renderSimpleReportPdf(withoutRoadmap, 'olcekhane.com');
       const pdf = await renderSimpleReportPdf(r[audience], 'olcekhane.com');
       expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
       expect(pdf.length).toBeGreaterThan(plain.length);

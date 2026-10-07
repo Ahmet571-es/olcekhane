@@ -7,6 +7,7 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { GuideList } from '@/components/site/guide-list';
 import { PageGuide } from '@/components/site/page-guide';
 import { guidesForTest } from '@/content/rehber';
+import { hasPublicRoadmap } from '@/content/roadmaps';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
 import { domainColor } from '@/lib/domain-style';
 import { likertItemNoun } from '@/lib/instruments/nouns';
@@ -79,6 +80,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   // Güvenirliği ve başvuru standart sapması bilinen ölçeklerde cetvelde ölçüm payı da gösterilir.
   const showsMargin = def.engine === 'likert' && def.scales.some((s) => s.alpha !== undefined && s.sdRef !== undefined);
   const solveUrl = `/testler/${def.slug}/coz`;
+  const roadmap = hasPublicRoadmap(def.slug);
   const color = domainColor(def.domain);
 
   const jsonLd = breadcrumbLd([
@@ -330,10 +332,22 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             )}
             <li>Sonucu dikkatle yorumlamayı gerektiren durumlar için uyarılar (ör. çok hızlı cevaplama)</li>
             <li>Norm durumu ve sonucun sınırları hakkında not</li>
+            {roadmap && (
+              <li>
+                <strong>Gelişim yol haritası:</strong> parmakla döndürülebilen üç boyutlu profil, nasıl çalışılabileceğine dair öneriler, rahat
+                edilebilecek ortamlar, veliye yaklaşım önerileri ve dört haftalık küçük adımlar
+              </li>
+            )}
           </ul>
           <p className="measure t-small text-ink-2">
-            Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz; raporun tek kopyası size verilen PDF’tir. Ayrıntılı açıklamaların
-            ve evde, okulda işe yarayacak önerilerin yer alacağı kapsamlı rapor{def.adults ? ' öğrenciler ve veliler için' : ''} yakında sunulacak.
+            Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz; raporun tek kopyası size verilen PDF’tir.
+            {!roadmap && (
+              <>
+                {' '}
+                Ayrıntılı açıklamaların ve evde, okulda işe yarayacak önerilerin yer alacağı kapsamlı rapor
+                {def.adults ? ' öğrenciler ve veliler için' : ''} yakında sunulacak.
+              </>
+            )}
           </p>
         </div>
       </section>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { besFaktorReport } from '@/content/reports/bes-faktor';
 import { besFaktor } from '@/content/instruments/bes-faktor';
+import { besFaktorRoadmap } from '@/content/roadmaps/bes-faktor';
 import { ScaleRuler } from '@/components/report/scale-ruler';
 import type { Band } from '@/lib/instruments/types';
 
@@ -21,7 +22,10 @@ export function ReportPreview() {
   const scale = besFaktor.scales.find((s) => s.key === focus)!;
   const bt = besFaktorReport.scales[focus][SAMPLE[focus].band]!;
   const text = audience === 'parent' ? bt.parent.replace('Çocuğunuz', 'Deniz') : bt.student;
-  const tips = audience === 'parent' ? bt.tipsParent : bt.tipsStudent;
+  // Raporun sonundaki gelişim yol haritasından: bu boyutun düzeyine göre çalışma önerisi.
+  const v = SAMPLE[focus].band;
+  const group = v === 'very_low' || v === 'low' ? 'low' : v === 'average' ? 'average' : 'high';
+  const study = besFaktorRoadmap.scales[focus].study[group][audience];
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
@@ -89,22 +93,17 @@ export function ReportPreview() {
             <p className="font-display text-2xl font-bold">{bt.summary}</p>
           </div>
           <p className="measure">{text}</p>
-          <div>
+          <div className="flex flex-col gap-1">
             <p className="flex flex-wrap items-center gap-2 font-bold">
-              {audience === 'parent' ? 'Evde neler yapılabilir?' : 'Deneyebileceklerin'}
-              {/* Öneriler ücretsiz basit raporda yoktur; ileride sunulacak kapsamlı raporun parçasıdır. */}
-              <span className="chip chip-brass font-bold">Kapsamlı raporda</span>
+              {audience === 'parent' ? 'Çocuğunuz nasıl çalışabilir?' : 'Nasıl çalışabilirsin?'}
+              <span className="chip chip-brass font-bold">Gelişim yol haritasında</span>
             </p>
-            <ul className="mt-1 flex list-disc flex-col gap-1 pl-5">
-              {tips.map((t) => (
-                <li key={t}>{t}</li>
-              ))}
-            </ul>
+            <p className="measure text-ink-2">{study}</p>
           </div>
         </div>
         <p className="t-meta">
-          Soldaki satırlara dokunarak diğer boyutların metinlerini görebilirsiniz. Ücretsiz raporda her boyutun düzeyi ve açıklaması yer alır;
-          öneriler yakında sunulacak kapsamlı rapordadır.
+          Soldaki satırlara dokunarak diğer boyutların metinlerini görebilirsiniz. Ücretsiz raporda her boyutun düzeyi ve açıklaması, sonunda da
+          öneriler ve dört haftalık adımlarla gelişim yol haritası yer alır.
         </p>
       </div>
     </div>
