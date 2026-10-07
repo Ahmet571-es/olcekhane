@@ -55,7 +55,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *    ("sanat eseri" yerine sanat çalışması; koşu bandı; tempolu yürüyüş), 208 halk ya da belediye kütüphanesi.
  *  - Bağımsız inceleme: madde çevirileri, düzey sınırları, yönerge ve rapor dili bu incelemeyle düzeltildi.
  *  - Yaptığımız aramada ORAIS'in yayımlanmış bir Türkçe uyarlamasına ulaşılamadı.
- * Durum: uzman incelemesinde. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
+ * Durum: yayında; hoca 2026-10-07'de onayladı. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
  */
 
 const CH = 'children';
@@ -196,7 +196,7 @@ export const hobiIlgileri: LikertInstrument = {
   name: 'Hobi ve Serbest Zaman İlgileri',
   shortName: 'Hobi ilgileri',
   domain: 'career',
-  status: 'review',
+  status: 'active',
   licenseStatus: 'public_domain',
   isFree: true,
   minGrade: 7,

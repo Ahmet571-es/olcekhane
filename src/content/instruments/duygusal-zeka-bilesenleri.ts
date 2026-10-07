@@ -39,7 +39,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *
  * Güvenirlik: IPIP tablosunda iç tutarlılık kadınlar (N = 432) ve erkekler (N = 317) için ayrı verilir; tek bir değer
  * olmadığı ve standart sapmalar verilmediği için `alpha` ve `sdRef` yoktur; raporda ölçüm payı gösterilmez.
- * Durum: uzman incelemesinde. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
+ * Durum: yayında; hoca 2026-10-07'de onayladı. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
  */
 
 const PE = 'positive_expressivity';
@@ -138,7 +138,7 @@ export const duygusalZekaBilesenleri: LikertInstrument = {
   name: 'Duygusal Zekâ Bileşenleri',
   shortName: 'Duygusal zekâ bileşenleri',
   domain: 'skills',
-  status: 'review',
+  status: 'active',
   licenseStatus: 'public_domain',
   isFree: true,
   minGrade: 9,

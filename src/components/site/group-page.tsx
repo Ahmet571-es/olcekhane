@@ -60,7 +60,7 @@ export function GroupPage({ groupKey }: { groupKey: AgeGroupKey }) {
           { name: g.name, path: g.path },
         ])}
       />
-      <PageHeader kicker={`Sınıfına göre testler · ${g.range}`} title={g.name} lede={g.lede}>
+      <PageHeader kicker={`Grubuna göre testler · ${g.range}`} title={g.name} lede={g.lede}>
         <PageGuide steps={steps}>
           <p>
             Burada {g.forWhom} uygun{' '}

@@ -32,7 +32,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *    deyimi, "yerden yere vurmak"ın dövmek anlamına da gelebileceği için "acımasızca eleştirmek" (ipc07) oldu.
  *  - Yaptığımız aramada bu ölçeğin yayımlanmış bir Türkçe uyarlamasına ulaşılamadı.
  * Tarzların adları gündelik dille verilir; çember grafiğinde kısa adları (`short`) kullanılır.
- * Durum: uzman incelemesinde. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
+ * Durum: yayında; hoca 2026-10-07'de onayladı. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
  */
 
 const PA = 'assured_dominant';
@@ -95,7 +95,7 @@ export const kisilerarasiTarz: LikertInstrument = {
   name: 'Kişilerarası Tarz',
   shortName: 'Kişilerarası tarz',
   domain: 'personality',
-  status: 'review',
+  status: 'active',
   licenseStatus: 'public_domain',
   isFree: true,
   minGrade: 9,

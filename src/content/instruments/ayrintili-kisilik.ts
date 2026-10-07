@@ -23,7 +23,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  * Ölçüm payı için güvenirlik (α) ve başvuru standart sapmaları (sdRef, 1–5 madde ortalaması ölçeğinde):
  * Kajonius ve Johnson (2018), N = 320.128, 19–69 yaş; standart sapmalar kadın ve erkek değerlerinden birleştirildi.
  * Deneyime Açıklık boyutunun değerleri Liberalizm'i de içeren 24 maddelik boyuta aittir (yaklaşık değer).
- * Durum: uzman incelemesinde. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
+ * Durum: yayında; hoca 2026-10-07'de onayladı. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
  */
 
 // Duygusal Denge (kaynakta Nevrotiklik; ters yönde)
@@ -204,7 +204,7 @@ export const ayrintiliKisilik: LikertInstrument = {
   name: 'Ayrıntılı Kişilik Profili',
   shortName: 'Ayrıntılı kişilik',
   domain: 'personality',
-  status: 'review',
+  status: 'active',
   licenseStatus: 'public_domain',
   isFree: true,
   minGrade: 9,

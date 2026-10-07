@@ -24,7 +24,8 @@ istedi. Kararları:
 
 Basamaklar:
 
-1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07).
+1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
+   aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
@@ -71,15 +72,15 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Mesleki İlgi Profili | mesleki-ilgi-profili | Yayında (pilot) |
 | Okuma Hızı ve Anlama | okuma-hizi-ve-anlama | Yayında (pilot) |
 | Matematik Konu Tarama Testi | matematik-konu-tarama-testi | Yayında (pilot) |
-| Ayrıntılı Kişilik Profili | ayrintili-kisilik-profili | İncelemede (1. dalga) |
-| Meslek İlgi Alanları | meslek-ilgi-alanlari | İncelemede (1. dalga) |
+| Ayrıntılı Kişilik Profili | ayrintili-kisilik-profili | Yayında (active) |
+| Meslek İlgi Alanları | meslek-ilgi-alanlari | Yayında (active) |
 | Renk-Kelime Görevi | renk-kelime-gorevi | İncelemede (1. dalga) |
 | Dur-Git Görevi | dur-git-gorevi | İncelemede (1. dalga) |
 | Sırayla Birleştirme Görevi | sirayla-birlestirme-gorevi | İncelemede (1. dalga) |
-| Altı Boyutlu Kişilik Profili | alti-boyutlu-kisilik-profili | İncelemede (2. dalga) |
-| Duygusal Zekâ Bileşenleri | duygusal-zeka-bilesenleri | İncelemede (2. dalga) |
-| Kişilerarası Tarz | kisilerarasi-tarz | İncelemede (2. dalga) |
-| Hobi ve Serbest Zaman İlgileri | hobi-ve-serbest-zaman-ilgileri | İncelemede (2. dalga) |
+| Altı Boyutlu Kişilik Profili | alti-boyutlu-kisilik-profili | Yayında (active) |
+| Duygusal Zekâ Bileşenleri | duygusal-zeka-bilesenleri | Yayında (active) |
+| Kişilerarası Tarz | kisilerarasi-tarz | Yayında (active) |
+| Hobi ve Serbest Zaman İlgileri | hobi-ve-serbest-zaman-ilgileri | Yayında (active) |
 | Geriye Dönük Hatırlama | geriye-donuk-hatirlama | İncelemede (2. dalga) |
 | Zihinde Döndürme | zihinde-dondurme | İncelemede (2. dalga) |
 | Tepki Hızı | tepki-hizi | İncelemede (2. dalga) |
@@ -93,13 +94,13 @@ Her incelemedeki test için Claude Docs'ta bir belge vardır; sonunda Onay tablo
 
 | Belge | Testler | Durum |
 | --- | --- | --- |
-| [Ayrıntılı Kişilik Profili İncelemesi](https://claude.ai/artifact/6hgnALjSe966eXfd51gJQq) | Ayrıntılı Kişilik Profili | Hocanın kararı bekleniyor |
-| [Meslek İlgi Alanları İncelemesi](https://claude.ai/artifact/C9wjSAB8DeA3CqP6XHSCQr) | Meslek İlgi Alanları | Hocanın kararı bekleniyor |
+| [Ayrıntılı Kişilik Profili İncelemesi](https://claude.ai/artifact/6hgnALjSe966eXfd51gJQq) | Ayrıntılı Kişilik Profili | Onaylandı (2026-10-07), yayında |
+| [Meslek İlgi Alanları İncelemesi](https://claude.ai/artifact/C9wjSAB8DeA3CqP6XHSCQr) | Meslek İlgi Alanları | Onaylandı (2026-10-07), yayında |
 | [Zihinsel Görevler İncelemesi](https://claude.ai/artifact/NsQwxqSdN2JMQzc4Q14L3f) | Renk-Kelime Görevi, Dur-Git Görevi, Sırayla Birleştirme Görevi | Hocanın kararı bekleniyor |
-| [Altı Boyutlu Kişilik Profili İncelemesi](https://claude.ai/artifact/7CyxdkAJK6YeCGWJxyToJ1) | Altı Boyutlu Kişilik Profili | Hocanın kararı bekleniyor |
-| [Duygusal Zekâ Bileşenleri İncelemesi](https://claude.ai/artifact/VRC7jJQhpMUPcmw9cHnSup) | Duygusal Zekâ Bileşenleri | Hocanın kararı bekleniyor |
-| [Kişilerarası Tarz İncelemesi](https://claude.ai/artifact/KjJpTLotNssmP2X2vGrWM4) | Kişilerarası Tarz | Hocanın kararı bekleniyor |
-| [Hobi ve Serbest Zaman İlgileri İncelemesi](https://claude.ai/artifact/Q3jafRsMG6HesnzBrw93VP) | Hobi ve Serbest Zaman İlgileri | Hocanın kararı bekleniyor |
+| [Altı Boyutlu Kişilik Profili İncelemesi](https://claude.ai/artifact/7CyxdkAJK6YeCGWJxyToJ1) | Altı Boyutlu Kişilik Profili | Onaylandı (2026-10-07), yayında |
+| [Duygusal Zekâ Bileşenleri İncelemesi](https://claude.ai/artifact/VRC7jJQhpMUPcmw9cHnSup) | Duygusal Zekâ Bileşenleri | Onaylandı (2026-10-07), yayında |
+| [Kişilerarası Tarz İncelemesi](https://claude.ai/artifact/KjJpTLotNssmP2X2vGrWM4) | Kişilerarası Tarz | Onaylandı (2026-10-07), yayında |
+| [Hobi ve Serbest Zaman İlgileri İncelemesi](https://claude.ai/artifact/Q3jafRsMG6HesnzBrw93VP) | Hobi ve Serbest Zaman İlgileri | Onaylandı (2026-10-07), yayında |
 | [Geriye Dönük Hatırlama İncelemesi](https://claude.ai/artifact/659BWzuYohtcK9QfCvZbEV) | Geriye Dönük Hatırlama | Site sahibinin hocayla paylaşması bekleniyor |
 | [Zihinde Döndürme İncelemesi](https://claude.ai/artifact/Aftf1twHWeuaLpfQLgwZRv) | Zihinde Döndürme | Site sahibinin hocayla paylaşması bekleniyor |
 | [Tepki Hızı İncelemesi](https://claude.ai/artifact/Nkt8WiGPtSfpvbppwmF1Hy) | Tepki Hızı | Site sahibinin hocayla paylaşması bekleniyor |
@@ -178,7 +179,7 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
 - **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme ve Tepki Hızı incelemelerinin hocaya iletilmesi;
-  hocanın kararları.
+  hocanın kararları (Renk-Kelime, Dur-Git, Sırayla Birleştirme dahil zihinsel görevlerin hepsi kararı bekliyor).
 - **Açık soru:** Katalogda Türkçe Konu Tarama Testi "Hazırlanıyor" diye görünüyor, oysa 4. dalgada. İlgili bir iş
   gelince etiketin kalıp kalmayacağı site sahibine sorulur.
 
@@ -186,6 +187,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Hoca onayıyla Ayrıntılı Kişilik Profili, Meslek İlgi Alanları, Altı Boyutlu Kişilik Profili, Duygusal
+  Zekâ Bileşenleri, Kişilerarası Tarz, Hobi ve Serbest Zaman İlgileri yayında (active); Üniversite ve yetişkin
+  grubu (`/yetiskin`) açıldı.
 - 2026-10-07: Yaş ve sınıf düzeni: İlkokul, Ortaokul, Lise ve mezun sayfaları (`/ilkokul`, `/ortaokul`, `/lise`;
   Üniversite ve yetişkin sayfası `/yetiskin` yetişkin testleri onaylanınca kendiliğinden açılır); grup sayfasında
   sınıf seçimi ve "Nereden başlamalı?" önerileri; ana sayfada, Testler'de, menüde ve altbilgide grup seçimi; her

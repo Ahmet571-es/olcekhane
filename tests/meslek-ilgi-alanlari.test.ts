@@ -144,13 +144,13 @@ describe('Meslek İlgi Alanları raporu', () => {
   });
 });
 
-describe('Uzman incelemesindeki testler', () => {
-  it('bağlantıyla çözülebilir ama listelerde ve site haritasında yer almaz', () => {
+describe('Yayın durumu', () => {
+  it('hoca onayladı: yayında; uzman incelemesindeki testler ise listelerde ve site haritasında yer almaz', () => {
     expect(isSolvable(d)).toBe(true);
     expect(solvableInstruments().some((i) => i.slug === SLUG)).toBe(true);
-    expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(false);
+    expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(true);
     const urls = sitemap().map((u) => u.url);
-    expect(urls.some((u) => u.includes(`/testler/${SLUG}`))).toBe(false);
+    expect(urls.some((u) => u.endsWith(`/testler/${SLUG}`))).toBe(true);
     for (const i of INSTRUMENTS.filter((x) => x.status === 'review')) {
       expect(urls.some((u) => u.endsWith(`/testler/${i.slug}`))).toBe(false);
     }

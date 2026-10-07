@@ -150,7 +150,7 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Siteye giren kişi önce grubunu seçer: İlkokul (3–4. sınıf), Ortaokul (5–8), Lise ve mezun (9–12 ve mezun),
   Üniversite ve yetişkin (18+). Gruplar `src/content/age-groups.ts`'te, sayfaları `src/app/(site)/<grup>`'tadır.
   Yeni test sınıf aralığına göre gruplarda kendiliğinden görünür; "Nereden başlamalı?" önerisi gerekiyorsa grubun
-  `starters` listesine eklenir. Yayında testi olmayan grup (şimdilik Üniversite ve yetişkin) açılmaz, listelenmez.
+  `starters` listesine eklenir. Yayında testi olmayan grup açılmaz, listelenmez.
 - Her sayfanın başında yol gösterici kutu (`PageGuide`, `components/site/page-guide.tsx`) bulunur: sayfada ne
   yapılacağı ve sıradaki adım. Yeni sayfa eklenirken kutusu da eklenir; `tests/age-groups.test.ts` denetler.
 - Zihinsel beceri alanının adı "Zekâ ve zihinsel beceriler"dir; zekâ puanı (IQ) verilmez, her beceri ayrı anlatılır.

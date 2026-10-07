@@ -248,9 +248,9 @@ describe('Kişilerarası Tarz raporu', () => {
     }
   });
 
-  it('uzman incelemesinde: bağlantıyla çözülür, listelerde ve site haritasında yok', () => {
+  it('hoca onayladı: yayında, listelerde ve site haritasında', () => {
     expect(solvableInstruments().some((i) => i.slug === SLUG)).toBe(true);
-    expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(false);
-    expect(sitemap().some((u) => u.url.includes(`/testler/${SLUG}`))).toBe(false);
+    expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(true);
+    expect(sitemap().some((u) => u.url.endsWith(`/testler/${SLUG}`))).toBe(true);
   });
 });

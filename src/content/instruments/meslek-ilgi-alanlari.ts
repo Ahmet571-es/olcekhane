@@ -13,7 +13,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *  - Çıkarılan madde: 35 "Be a minister, priest, rabbi, or other religious teacher" (Yardım ölçeği). Din ve
  *    inançla ilgili bilgi istememe ilkemiz gereği kullanılmaz; ölçekte 12 madde kalır.
  * Bütün maddeler olumlu yönlüdür (ters puanlanan madde yoktur).
- * Durum: uzman incelemesinde. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
+ * Durum: yayında; hoca 2026-10-07'de onayladı. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
  */
 
 const L = 'leadership';
@@ -143,7 +143,7 @@ export const meslekIlgiAlanlari: LikertInstrument = {
   name: 'Meslek İlgi Alanları',
   shortName: 'Meslek ilgi alanları',
   domain: 'career',
-  status: 'review',
+  status: 'active',
   licenseStatus: 'public_domain',
   isFree: true,
   minGrade: 9,

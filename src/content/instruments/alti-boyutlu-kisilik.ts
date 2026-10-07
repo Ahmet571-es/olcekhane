@@ -32,7 +32,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *
  * Güvenirlik (α): IPIP sayfasında her alt boyut için bildirilen değer. Sayfada standart sapmalar verilmediği için
  * `sdRef` yoktur; raporda ölçüm payı gösterilmez.
- * Durum: uzman incelemesinde. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
+ * Durum: yayında; hoca 2026-10-07'de onayladı. Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.
  */
 
 // Dürüstlük-Alçakgönüllülük
@@ -354,7 +354,7 @@ export const altiBoyutluKisilik: LikertInstrument = {
   name: 'Altı Boyutlu Kişilik Profili',
   shortName: 'Altı boyutlu kişilik',
   domain: 'personality',
-  status: 'review',
+  status: 'active',
   licenseStatus: 'public_domain',
   isFree: true,
   minGrade: 9,
