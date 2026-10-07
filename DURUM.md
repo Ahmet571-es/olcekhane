@@ -32,7 +32,7 @@ Basamaklar:
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör, Ayrıntılı Kişilik, Altı Boyutlu Kişilik, Duygusal Zekâ
    Bileşenleri, Kişilerarası Tarz, Öz-saygı, Çalışma Alışkanlıkları ve üç ilgi testinde (Mesleki İlgi Profili, Meslek
    İlgi Alanları, Hobi ve Serbest Zaman İlgileri) yayında (ilk üçü hoca onaylı; ötekiler 2026-10-07 kararıyla onay
-   beklenmeden). Yol haritası olmayanlar: zihinsel görevler, okuma ve matematik konu tarama.
+   beklenmeden), Matematik Konu Tarama ve Okuma Hızı ve Anlama'da yayında. Yol haritası olmayanlar: zihinsel görevler.
    Sırada öteki testlerin yol haritaları; doğrudan yayına alınır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
@@ -59,10 +59,12 @@ Basamaklar:
    şablondaki `extraWeek`, "Öz-saygı nedir?" bağlantısı), Çalışma Alışkanlıkları (ortamlar yok; 3. hafta en düşük
    puanlı alışkanlık, `thirdWeek: 'lowest'`), üç ilgi testi (keşif yol haritası, `INTEREST_ROADMAPS`: öne çıkan
    alanlar için keşif önerileri, Holland profilinde eğitim yolları, haftalık denemeler; öne çıkan alan yoksa yalnızca
-   kısa not ve genel denemeler). Sırada: zihinsel görevler (Renk-Kelime, Dur-Git, Sırayla Birleştirme, Geriye Dönük
-   Hatırlama, Zihinde Döndürme, Tepki Hızı, Dikkat ve Bellek, Sürekli Dikkat), okuma ve matematik. Zihinsel
-   görevlerde "beyni çalıştırma" vaadi verilmez (çalışma belleği alıştırmalarının başka becerilere aktarılmadığı
-   gösterildi); ne tür bir bölüm yazılacağı önce site sahibine sorulur.
+   kısa not ve genel denemeler), Matematik Konu Tarama (`ACADEMIC_ROADMAPS`: konu alanlarına göre çalışma kartları
+   her formun konularına göre, haftalık çalışma düzeni, 1. hafta hata defteri) ve Okuma Hızı ve Anlama
+   (`READING_ROADMAPS`: soru türlerine göre öneriler, hız ve anlama dengesi, okuma alışkanlığı). Sırada: zihinsel
+   görevler (Renk-Kelime, Dur-Git, Sırayla Birleştirme, Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı, Dikkat
+   ve Bellek, Sürekli Dikkat; `TASK_ROADMAPS`). Site sahibinin seçimi (2026-10-07): becerinin günlük hayatta nerede
+   kullanıldığı ve o işleri kolaylaştıran yollar; "beyni çalıştırma" ya da puanı yükseltme vaadi verilmez.
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -210,6 +212,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Matematik Konu Tarama ve Okuma Hızı ve Anlama gelişim yol haritaları yayında (öğrenci ve veli raporu,
+  ekranda ve PDF'te): konu alanlarına ve okuma becerilerine göre çalışma önerileri, haftalık çalışma düzeni ve okuma
+  alışkanlığı, veliye destek, dört haftalık plan. Yayın denetimi iki raporun yol haritasını dışarıdan sınıyor.
 - 2026-10-07: İlgi testlerinin gelişim yol haritaları yayında (Mesleki İlgi Profili, Meslek İlgi Alanları, Hobi ve
   Serbest Zaman İlgileri; öğrenci, veli ve yetişkin raporu, ekranda ve PDF'te): öne çıkan alanlar için keşif
   önerileri, Holland profilinde eğitim yolları, veliye yaklaşım, dört haftalık denemeler. Yayın denetimi iki ilgi
@@ -236,6 +241,3 @@ En yeni üstte; en çok 10 madde tutulur.
   dışarıdan sınıyor.
 - 2026-10-07: Gelişim yol haritası (Beş Faktör, önizlemede): döndürülebilir üç boyutlu profil, nasıl çalışabilir,
   rahat edilebilecek ortamlar, veliye yaklaşım, dört haftalık adımlar; ekranda ve PDF'te. Hoca belgesi hazır.
-- 2026-10-07: Hoca onayıyla Ayrıntılı Kişilik Profili, Meslek İlgi Alanları, Altı Boyutlu Kişilik Profili, Duygusal
-  Zekâ Bileşenleri, Kişilerarası Tarz, Hobi ve Serbest Zaman İlgileri yayında (active); Üniversite ve yetişkin
-  grubu (`/yetiskin`) açıldı.

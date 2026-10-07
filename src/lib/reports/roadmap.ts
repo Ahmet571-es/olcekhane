@@ -67,6 +67,16 @@ export function joinNames(names: string[]): string {
   return `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`;
 }
 
+/** Son haftanın sonundaki öneri: kişinin sınıfına uyan, yayındaki testler; uyan test yoksa boş. */
+export function nextStep(next: NextTest[], purpose: { you: string; parent: string }, parent: boolean): string {
+  // "Matematik Konu Tarama Testi testini" denmez: addaki "Testi" sözcüğü cümledeki "testini" ile birleşir.
+  const names = next.map((n) => n.name.replace(/ Testi$/, ''));
+  if (names.length === 0) return '';
+  return parent
+    ? ` Bir sonraki adım olarak ${purpose.parent} için ${joinNames(names)} ${names.length > 1 ? 'testlerini' : 'testini'} önerebilirsiniz.`
+    : ` Bir sonraki adım olarak ${purpose.you} için ${joinNames(names)} ${names.length > 1 ? 'testlerinden birini' : 'testini'} çözebilirsin.`;
+}
+
 export function buildRoadmap(
   r: ReportContent,
   t: RoadmapTemplate,

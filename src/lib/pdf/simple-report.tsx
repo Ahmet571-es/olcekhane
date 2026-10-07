@@ -406,9 +406,16 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
       <View wrap={false}>
         <Text style={s.h2}>Kısaca</Text>
         {rm.standout.length > 0 ? (
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          // Üçten çok kart (ör. zihinsel görevlerde beş sonuç) iki sütunda sıralanır; tek satırda okunmaz hâle gelir.
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {rm.standout.map((x) => (
-              <View key={x.title} style={{ flex: 1, borderWidth: 1, borderColor: C.rule, borderRadius: 6, padding: 8 }}>
+              <View
+                key={x.title}
+                style={[
+                  { borderWidth: 1, borderColor: C.rule, borderRadius: 6, padding: 8 },
+                  rm.standout.length > 3 ? { width: '48.5%' } : { flex: 1 },
+                ]}
+              >
                 <Text style={{ fontSize: 8.5, color: C.ink3 }}>{x.title}</Text>
                 <Text style={{ fontFamily: 'Bricolage', fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{x.text}</Text>
               </View>

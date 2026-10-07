@@ -124,9 +124,11 @@ export interface ReportContent {
     total: number;
     comprehensionPct: number;
     effectiveWpm: number;
-    skills: { label: string; correct: number; total: number }[];
+    skills: { key: string; label: string; correct: number; total: number }[];
     referenceNote: string | null;
     speedNote: string;
+    /** Metin çok hızlı geçildi: ölçülen hız gerçek okuma hızını yansıtmıyor olabilir. */
+    tooFast: boolean;
   };
 }
 
@@ -362,11 +364,12 @@ export function buildReport(input: {
         total: rr.total,
         comprehensionPct: rr.comprehensionPct,
         effectiveWpm: rr.effectiveWpm,
-        skills: Object.entries(rr.skills).map(([k, v]) => ({ label: SKILL_LABELS[k] ?? k, correct: v.correct, total: v.total })),
+        skills: Object.entries(rr.skills).map(([k, v]) => ({ key: k, label: SKILL_LABELS[k] ?? k, correct: v.correct, total: v.total })),
         referenceNote: ref
           ? `Türkiye’de ${ref.grade}. sınıf öğrencilerinin sesli okumada dakikada ortalama ${ref.wpm} kelime okuduğu bildirilmiştir (${ref.source}). Sessiz okuma genellikle sesli okumadan hızlıdır; bu değer yalnızca kaba bir fikir verir.`
           : null,
         speedNote,
+        tooFast: !!rr.flags?.tooFast,
       };
     }
   }

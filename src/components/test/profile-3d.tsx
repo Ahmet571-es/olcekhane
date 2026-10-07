@@ -43,7 +43,7 @@ export function Profile3D({ bars, you }: { bars: RoadmapBar[]; you: boolean }) {
     else return;
     e.preventDefault();
   };
-  const summary = bars.map((b) => `${b.label}: ${b.valueLabel}, ${b.band}`).join('; ');
+  const summary = bars.map((b) => `${b.label}: ${b.valueLabel}${b.band ? `, ${b.band}` : ''}`).join('; ');
 
   return (
     <figure className="flex flex-col gap-4">

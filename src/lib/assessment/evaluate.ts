@@ -1,12 +1,15 @@
 import 'server-only';
 import { getInstrumentDef, isSolvable, publicInstruments } from '@/content/instruments';
-import { INTEREST_ROADMAPS, ROADMAPS, ROADMAP_IN_REVIEW } from '@/content/roadmaps';
+import { ACADEMIC_ROADMAPS, INTEREST_ROADMAPS, READING_ROADMAPS, ROADMAPS, ROADMAP_IN_REVIEW, TASK_ROADMAPS } from '@/content/roadmaps';
 import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
 import type { InstrumentDef } from '@/lib/instruments/types';
+import { buildAcademicRoadmap } from '@/lib/reports/academic-roadmap';
 import { buildReport, type Audience, type ReportContent } from '@/lib/reports/build';
 import { buildInterestRoadmap } from '@/lib/reports/interest-roadmap';
+import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
 import { buildRoadmap, type Roadmap } from '@/lib/reports/roadmap';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
+import { buildTaskRoadmap } from '@/lib/reports/task-roadmap';
 import { likertQuality, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
@@ -113,17 +116,22 @@ function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes
  * (`roadmapPreview`) eklenir. Son haftada önerilen testler kişinin sınıfına uyan, yayındaki testlerdir.
  */
 function roadmapFor(def: InstrumentDef, content: ReportContent, body: AnswersBody): Roadmap | undefined {
-  const template = ROADMAPS[def.slug];
-  const interest = INTEREST_ROADMAPS[def.slug];
-  if (!template && !interest) return undefined;
-  const preview = ROADMAP_IN_REVIEW.has(def.slug);
+  const s = def.slug;
+  const any = ROADMAPS[s] ?? INTEREST_ROADMAPS[s] ?? ACADEMIC_ROADMAPS[s] ?? READING_ROADMAPS[s] ?? TASK_ROADMAPS[s];
+  if (!any) return undefined;
+  const preview = ROADMAP_IN_REVIEW.has(s);
   if (preview && !body.roadmapPreview) return undefined;
   const live = publicInstruments();
-  const next = (template ?? interest).nextTests
-    .flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== def.slug && gradeAllowed(t, body.grade)))
+  const next = any.nextTests
+    .flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== s && gradeAllowed(t, body.grade)))
     .slice(0, 2)
     .map((t) => ({ name: t.name, href: `/testler/${t.slug}` }));
-  return template ? buildRoadmap(content, template, { preview, next }) : buildInterestRoadmap(content, interest, { preview, next });
+  const opts = { preview, next };
+  if (ROADMAPS[s]) return buildRoadmap(content, ROADMAPS[s], opts);
+  if (INTEREST_ROADMAPS[s]) return buildInterestRoadmap(content, INTEREST_ROADMAPS[s], opts);
+  if (ACADEMIC_ROADMAPS[s]) return buildAcademicRoadmap(content, ACADEMIC_ROADMAPS[s], opts);
+  if (READING_ROADMAPS[s]) return buildReadingRoadmap(content, READING_ROADMAPS[s], opts);
+  return buildTaskRoadmap(content, TASK_ROADMAPS[s], opts);
 }
 
 /** Cevapları doğrulayıp puanlar; aynı puanlardan istenen kişiye yazılmış raporu hazırlayan işlevi döndürür. */

@@ -12,7 +12,7 @@ import type { Band, LikertInstrument } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import type { Audience, ReportContent } from '@/lib/reports/build';
 import { bandGroup, buildRoadmap, type Roadmap } from '@/lib/reports/roadmap';
-import { def, likertBody, quizBody } from './helpers/bodies';
+import { def, likertBody, reactionBody } from './helpers/bodies';
 
 const SLUG = 'bes-faktor-kisilik';
 const ALL_BANDS: Band[] = ['very_low', 'low', 'average', 'high', 'very_high'];
@@ -238,8 +238,8 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(plain.student.roadmap?.preview).toBe(false);
     expect(plain.parent.roadmap?.approach?.items.length).toBe(5);
     expect(evaluate(SLUG, { ...body, roadmapPreview: true }, now)).toEqual(plain);
-    // Yol haritası olmayan bir testte (konu tarama) önizleme isteği bir şey eklemez.
-    const other = evaluate('matematik-konu-tarama-testi', { ...quizBody(6), roadmapPreview: true });
+    // Yol haritası olmayan bir testte (zihinsel görev) önizleme isteği bir şey eklemez.
+    const other = evaluate('tepki-hizi', { ...reactionBody(), roadmapPreview: true });
     expect(other.student.roadmap).toBeUndefined();
     expect(answersBody.safeParse({ ...body, roadmapPreview: true }).success).toBe(true);
     expect(answersBody.safeParse({ ...body, roadmapPreview: false }).success).toBe(false);

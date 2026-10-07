@@ -110,3 +110,114 @@ export interface InterestRoadmapTemplate {
   links: { label: string; href: string }[];
   sources: { text: string; url?: string }[];
 }
+
+/** Öğrenciye ve veliye ayrı yazılmış madde listesi (ör. haftalık çalışma düzeni). */
+export interface AudienceList {
+  student: string[];
+  parent: string[];
+}
+
+/** Ortamlar bölümünün yerine geçen bilgi kutusu: başlık, giriş, maddeler ve sondaki not. */
+export interface InfoBox {
+  title: string;
+  intro: AudienceText;
+  items: AudienceList;
+  note: AudienceText;
+}
+
+/** Konu tarama testinde bir konu alanının metinleri (sınıf formuna göre). */
+export interface AcademicDomainText {
+  /** Pekiştirilmeli ya da öncelikli alanda nasıl çalışılabileceği. */
+  need: AudienceText;
+  /** Haftalık deneme. */
+  action: AudienceText;
+  /** Veliye: evde nasıl destek olunabileceği. */
+  approach: string;
+}
+
+/**
+ * Konu tarama testlerinin (ör. matematik) yol haritası: konu alanlarına göre nasıl çalışılacağı, haftalık çalışma
+ * düzeni ve yanlış yapılan sorulardan başlayan dört haftalık plan.
+ */
+export interface AcademicRoadmapTemplate {
+  version: string;
+  /** Konu alanının anahtarına göre renk (bütün formlarda aynı). */
+  colors: Record<string, string>;
+  /** Formun içerik sınıfına göre (ör. 5. sınıf formunda 4) alan metinleri. */
+  forms: Record<number, Record<string, AcademicDomainText>>;
+  /** Sağlam alanlar için ileri taşıma önerisi (bütün formlarda). */
+  solid: Record<string, AudienceText>;
+  /** Öncelikli ve pekiştirilmeli alanlarda alan metninden önce gelen cümle. */
+  lead: { low: AudienceText; average: AudienceText };
+  studyTitle: { you: string; parent: string };
+  studyIntro: AudienceText;
+  routine: InfoBox;
+  /** 1. hafta: yanlış ya da boş bırakılan soru varsa ({k}: sayısı) ve hiç yoksa. */
+  firstWeek: { wrong: AudienceText; none: AudienceText };
+  /** Pekiştirilecek alan yoksa 2. hafta, ikinci alan yoksa 3. hafta. */
+  extraWeeks: [{ title: string; text: AudienceText }, { title: string; text: AudienceText }];
+  lastWeek: AudienceText;
+  /** Pekiştirilecek alan yoksa veliye yaklaşım önerileri. */
+  approachSolid: { title: string; text: string }[];
+  nextTests: string[];
+  nextPurpose: { you: string; parent: string };
+  links: { label: string; href: string }[];
+  sources: { text: string; url?: string }[];
+}
+
+/** Okuma testinde bir soru türünün (beceri) metinleri. */
+export interface ReadingSkillText {
+  color: string;
+  /** Bazı soruları yanlışsa nasıl çalışılabileceği. */
+  need: AudienceText;
+  /** Hepsi doğruysa ileri taşıma önerisi. */
+  full: AudienceText;
+  /** Haftalık deneme. */
+  action: AudienceText;
+}
+
+/** Okuma hızı ve anlama düzenine göre öneri: metin çok hızlı geçildiyse, anlama gelişiyorsa ya da iyiyse. */
+export type ReadingPace = 'rush' | 'build' | 'extend';
+
+export interface ReadingRoadmapTemplate {
+  version: string;
+  /** Soru türünün anahtarına göre (literal, inference, vocabulary, main_idea). */
+  skills: Record<string, ReadingSkillText>;
+  pace: Record<ReadingPace, { text: AudienceText; week: { title: string; text: AudienceText } }>;
+  studyTitle: { you: string; parent: string };
+  studyIntro: AudienceText;
+  habits: InfoBox;
+  /** Veliye yaklaşım, anlama düzeyine göre. */
+  approach: Record<BandGroup, { title: string; text: string }[]>;
+  firstWeek: AudienceText;
+  /** Bütün soru türleri doğruysa 2. hafta. */
+  extraWeek: { title: string; text: AudienceText };
+  lastWeek: AudienceText;
+  nextTests: string[];
+  nextPurpose: { you: string; parent: string };
+  links: { label: string; href: string }[];
+  sources: { text: string; url?: string }[];
+}
+
+/**
+ * Zihinsel görevlerin yol haritası: becerinin günlük hayatta nerede kullanıldığı ve o işleri kolaylaştıran yollar.
+ * Puanı yükseltmeyi ya da "beyni çalıştırmayı" vaat etmez; sonuç raporun kendi kartlarından özetlenir.
+ */
+export interface TaskRoadmapTemplate {
+  version: string;
+  /** Girişte ve test sayfasının tanıtımında bu bölümün ne olduğu. */
+  what: AudienceText & { summary: string };
+  studyTitle: { you: string; parent: string };
+  studyIntro: AudienceText;
+  /** Günlük hayatı kolaylaştıran yollar (kartlar). */
+  supports: { key: string; title: string; tag: string; color: string; text: AudienceText }[];
+  facts: InfoBox;
+  approach: { title: string; text: string }[];
+  /** 1., 2. ve 3. hafta. */
+  weeks: [{ title: string; text: AudienceText }, { title: string; text: AudienceText }, { title: string; text: AudienceText }];
+  lastWeek: AudienceText;
+  nextTests: string[];
+  nextPurpose: { you: string; parent: string };
+  links: { label: string; href: string }[];
+  sources: { text: string; url?: string }[];
+}

@@ -157,6 +157,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - İlgi testlerinde (`INTEREST_ROADMAPS`) yol haritası ilgilerin keşfidir: raporun öne çıkardığı alanlar için keşif
   önerileri, (Holland profilinde) eğitim yolları, veliye yaklaşım ve haftalık denemeler. Kurulum
   `src/lib/reports/interest-roadmap.ts`, denetim `tests/ilgi-yol-haritasi.test.ts`. Öneriler meslek seçmez.
+- Konu tarama (`ACADEMIC_ROADMAPS`), okuma (`READING_ROADMAPS`) ve zihinsel görev (`TASK_ROADMAPS`) yol haritaları
+  kendi kurulumlarındadır (`lib/reports/academic-roadmap.ts`, `reading-roadmap.ts`, `task-roadmap.ts`); denetim
+  `tests/beceri-yol-haritasi.test.ts`. Kaynaklar `src/content/roadmaps/kaynaklar.ts`'teki, sitede zaten kullanılan
+  kaynaklardır. Zihinsel görevlerde puanı yükseltme ya da "beyni çalıştırma" vaadi verilmez.
 - Yeni yol haritası doğrudan yayına alınır (2026-10-07 kararı). Site sahibi isterse önce `ROADMAP_IN_REVIEW`'a
   konur: yalnızca `/testler/<adres>/coz?onizleme=yol-haritasi` bağlantısıyla görünür. Hoca belgesi istenirse
   "<Test adı> Gelişim Yol Haritası İncelemesi" hazırlanır (metinler içerik dosyasından üretilip belgeyle

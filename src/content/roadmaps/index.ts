@@ -3,12 +3,17 @@ import { ayrintiliKisilikRoadmap } from './ayrintili-kisilik';
 import { besFaktorRoadmap } from './bes-faktor';
 import { calismaAliskanliklariRoadmap } from './calisma-aliskanliklari';
 import { duygusalZekaBilesenleriRoadmap } from './duygusal-zeka-bilesenleri';
+import { TASK_ROADMAPS } from './gorevler';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
 import { kisilerarasiTarzRoadmap } from './kisilerarasi-tarz';
+import { matematikRoadmap } from './matematik';
 import { meslekIlgiAlanlariRoadmap } from './meslek-ilgi-alanlari';
 import { meslekiIlgiProfiliRoadmap } from './mesleki-ilgi-profili';
+import { okumaRoadmap } from './okuma';
 import { ozSaygiRoadmap } from './oz-saygi';
-import type { InterestRoadmapTemplate, RoadmapTemplate } from './types';
+import type { AcademicRoadmapTemplate, InterestRoadmapTemplate, ReadingRoadmapTemplate, RoadmapTemplate } from './types';
+
+export { TASK_ROADMAPS };
 
 /** Gelişim yol haritası olan testler. */
 export const ROADMAPS: Record<string, RoadmapTemplate> = {
@@ -39,9 +44,19 @@ export const INTEREST_ROADMAPS: Record<string, InterestRoadmapTemplate> = {
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriRoadmap,
 };
 
-/** Testin gelişim yol haritası şablonu var mı (kişilik ya da ilgi)? */
+/** Konu tarama testlerinin yol haritaları: konu alanlarına göre çalışma planı (lib/reports/academic-roadmap.ts). */
+export const ACADEMIC_ROADMAPS: Record<string, AcademicRoadmapTemplate> = {
+  'matematik-konu-tarama-testi': matematikRoadmap,
+};
+
+/** Okuma testinin yol haritası: okuma becerilerine göre öneriler (lib/reports/reading-roadmap.ts). */
+export const READING_ROADMAPS: Record<string, ReadingRoadmapTemplate> = {
+  'okuma-hizi-ve-anlama': okumaRoadmap,
+};
+
+/** Testin gelişim yol haritası şablonu var mı (kişilik, ilgi, konu tarama, okuma ya da zihinsel görev)? */
 export function hasRoadmap(slug: string): boolean {
-  return !!ROADMAPS[slug] || !!INTEREST_ROADMAPS[slug];
+  return !!(ROADMAPS[slug] ?? INTEREST_ROADMAPS[slug] ?? ACADEMIC_ROADMAPS[slug] ?? READING_ROADMAPS[slug] ?? TASK_ROADMAPS[slug]);
 }
 
 /** Herkese açık raporda gelişim yol haritası var mı (şablonu var ve incelemede değil)? */
@@ -51,6 +66,14 @@ export function hasPublicRoadmap(slug: string): boolean {
 
 /** Test sayfasındaki tanıtım: yol haritasının bu testte hangi bölümlerden oluştuğu. */
 export function roadmapSummary(slug: string): string {
+  if (ACADEMIC_ROADMAPS[slug]) {
+    return 'parmakla döndürülebilen üç boyutlu profil, konu alanlarına göre çalışma önerileri, haftalık çalışma düzeni, veliye destek önerileri ve yanlış yapılan sorulardan başlayan dört haftalık plan';
+  }
+  if (READING_ROADMAPS[slug]) {
+    return 'parmakla döndürülebilen üç boyutlu profil, okuma becerilerine göre çalışma önerileri, okuma alışkanlığı için öneriler, veliye destek önerileri ve dört haftalık küçük adımlar';
+  }
+  const task = TASK_ROADMAPS[slug];
+  if (task) return `${task.what.summary}, bilmekte yarar olanlar, veliye yaklaşım önerileri ve dört haftalık küçük adımlar`;
   const it = INTEREST_ROADMAPS[slug];
   if (it) {
     const parts = [

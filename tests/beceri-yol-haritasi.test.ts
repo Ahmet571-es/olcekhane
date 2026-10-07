@@ -1,0 +1,242 @@
+import { describe, expect, it } from 'vitest';
+import { ACADEMIC_ROADMAPS, READING_ROADMAPS, hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
+import type { AudienceText } from '@/content/roadmaps/types';
+import { evaluate } from '@/lib/assessment/evaluate';
+import type { Band, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
+import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
+import { buildAcademicRoadmap } from '@/lib/reports/academic-roadmap';
+import type { Audience, ReportContent } from '@/lib/reports/build';
+import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
+import { pick, type Roadmap } from '@/lib/reports/roadmap';
+import { quizBand } from '@/lib/scoring/quiz';
+import { def, quizBody, readingBody } from './helpers/bodies';
+
+const MAT = 'matematik-konu-tarama-testi';
+const OKUMA = 'okuma-hizi-ve-anlama';
+const AUDIENCES = ['student', 'parent'] as const;
+const NEXT = [{ name: 'Çalışma Alışkanlıkları Envanteri', href: '/testler/calisma-aliskanliklari' }];
+
+/** Yol haritasındaki bütün metinler (boş metin, kalmış yer tutucu ya da "undefined" olmamalı). */
+function texts(rm: Roadmap): string[] {
+  return [
+    rm.intro,
+    ...rm.standout.flatMap((s) => [s.title, s.text]),
+    rm.study.title,
+    rm.study.intro,
+    ...rm.study.items.flatMap((i) => [i.title, i.badge, i.text]),
+    ...(rm.settings ? [rm.settings.title, rm.settings.intro, ...rm.settings.items, rm.settings.note] : []),
+    ...(rm.approach?.items.flatMap((i) => [i.title, i.text]) ?? []),
+    ...rm.weeks.flatMap((w) => [w.title, w.text]),
+  ];
+}
+
+/** Boş metin, kalmış yer tutucu, çift boşluk, yinelenen hafta ya da kart metni. */
+function problems(rm: Roadmap): string[] {
+  const out = texts(rm).flatMap((x) => (x.trim() === '' || /undefined|null|NaN|\{k\}|  /.test(x) ? [`metin: "${x.slice(0, 40)}"`] : []));
+  if (new Set(rm.weeks.map((w) => w.text)).size !== 4) out.push('haftalar yineleniyor');
+  if (new Set(rm.study.items.map((i) => i.text)).size !== rm.study.items.length) out.push('kartlar yineleniyor');
+  return out;
+}
+
+function expectClean(rm: Roadmap, what: string) {
+  expect(problems(rm), what).toEqual([]);
+}
+
+function* product(sizes: number[]): Generator<number[]> {
+  const total = sizes.reduce((a, b) => a * b, 1);
+  for (let k = 0; k < total; k++) {
+    let rest = k;
+    yield sizes.map((n) => {
+      const v = rest % n;
+      rest = Math.floor(rest / n);
+      return v;
+    });
+  }
+}
+
+describe('matematik konu tarama: yol haritası şablonu', () => {
+  const t = ACADEMIC_ROADMAPS[MAT];
+  const d = def<QuizInstrument>(MAT);
+
+  it('her formun her konu alanı için metin, renk ve sağlam alan önerisi var; veli metinleri çocuğunuzu anar', () => {
+    for (const form of d.forms) {
+      const texts = t.forms[form.contentGrade];
+      expect(Object.keys(texts).sort(), form.key).toEqual(form.domains.map((x) => x.key).sort());
+      for (const dom of form.domains) {
+        const x = texts[dom.key];
+        expect(t.colors[dom.key], dom.key).toMatch(/^#[0-9a-f]{6}$/);
+        expect(t.solid[dom.key], dom.key).toBeDefined();
+        for (const a of [x.need, x.action, t.solid[dom.key]]) {
+          expect(a.student, dom.key).not.toMatch(/çocuğunuz/i);
+          expect(a.parent, dom.key).not.toBe(a.student);
+        }
+        expect(x.action.parent, `${form.key} ${dom.key}`).toMatch(/çocuğunuz/i);
+        expect(x.approach.length).toBeGreaterThan(30);
+      }
+      for (const a of AUDIENCES) {
+        const unique = (xs: string[], what: string) => expect(new Set(xs).size, `${form.key} ${a} ${what}`).toBe(xs.length);
+        unique(form.domains.map((x) => pick(texts[x.key].need, a)), 'çalışma');
+        unique(form.domains.map((x) => pick(texts[x.key].action, a)), 'deneme');
+      }
+      expect(new Set(form.domains.map((x) => texts[x.key].approach)).size, form.key).toBe(form.domains.length);
+    }
+    expect(t.routine.items.student).toHaveLength(t.routine.items.parent.length);
+  });
+
+  it('bütün formlarda her doğru sayısı birleşiminde bölümler eksiksiz ve birbiriyle tutarlı', () => {
+    // 25 000 birleşim: her biri için ayrı expect yavaş olduğundan sorunlar toplanıp en sonda karşılaştırılır.
+    const bad: string[] = [];
+    const check = (ok: boolean, what: string, msg: string) => {
+      if (!ok && bad.length < 20) bad.push(`${what}: ${msg}`);
+    };
+    const labels: Record<string, string> = { high: 'Sağlam', average: 'Pekiştirilmeli', low: 'Öncelikli' };
+    const rank: Record<string, number> = { low: 0, average: 1, high: 2 };
+    let n = 0;
+    for (const form of d.forms) {
+      for (const counts of product(form.domains.map(() => 5))) {
+        const domains = form.domains.map((dom, i) => {
+          const band = quizBand(counts[i] / 4);
+          return { key: dom.key, name: dom.name, plain: dom.plain, correct: counts[i], n: 4, dontKnow: 0, band, bandLabel: labels[band] };
+        });
+        const correct = counts.reduce((x, y) => x + y, 0);
+        for (const audience of AUDIENCES) {
+          const content = { audience, academic: { contentGrade: form.contentGrade, n: 20, correct, domains } } as unknown as ReportContent;
+          const rm = buildAcademicRoadmap(content, t, { preview: false, next: NEXT })!;
+          const what = `${form.key} ${counts.join('')} ${audience}`;
+          n++;
+          const byKey = (k: string) => domains.find((x) => x.key === k)!;
+          check(rm.bars.length === 5 && rm.study.items.length === 5, what, 'beş alan');
+          // Alanlar öncelik sırasıyla (öncelikli, pekiştirilmeli, sağlam); aynı düzeyde doğru sayısı az olan önce.
+          const order = rm.study.items.map((i) => rank[byKey(i.key).band] * 10 + byKey(i.key).correct);
+          check(order.every((x, i) => i === 0 || order[i - 1] <= x), what, 'sıra');
+          const need = rm.study.items.filter((i) => byKey(i.key).band !== 'high');
+          for (const it of rm.study.items) {
+            const dom = byKey(it.key);
+            check(it.badge === `${dom.bandLabel} · ${dom.correct} / 4 doğru`, what, `rozet ${it.badge}`);
+            const ok = dom.band === 'high' ? it.text === pick(t.solid[dom.key], audience) : it.text.startsWith(pick(t.lead[dom.band as 'low' | 'average'], audience));
+            check(ok, what, `kart ${it.key}`);
+          }
+          const titles = [correct < 20 ? 'Hata defteri' : 'Bir adım ileri', need[0]?.title ?? t.extraWeeks[0].title, need[1]?.title ?? t.extraWeeks[1].title, 'Gözden geçir'];
+          check(rm.weeks.map((w) => w.title).join('|') === titles.join('|'), what, 'haftalar');
+          check(correct === 20 || rm.weeks[0].text.includes(` ${20 - correct} soru`), what, '1. hafta sayısı');
+          check(rm.standout[0].title === 'Genel sonuç' && rm.standout[0].text === `${correct} / 20 doğru`, what, 'genel sonuç');
+          const groups = (['low', 'average', 'high'] as const).filter((b) => domains.some((x) => x.band === b)).map((b) => labels[b]);
+          check(rm.standout.slice(1).map((x) => x.title).join('|') === groups.join('|'), what, 'kısaca');
+          if (audience === 'parent') {
+            const want = need.length ? need.map((i) => i.title) : t.approachSolid.map((i) => i.title);
+            check(rm.approach?.items.map((i) => i.title).join('|') === want.join('|'), what, 'yaklaşım');
+            check(rm.intro.includes('evde nasıl destek olabileceğiniz'), what, 'giriş');
+          } else {
+            check(rm.approach === null && !/çocuğunuz/i.test(texts(rm).join(' ')), what, 'öğrenci metni');
+          }
+          check(rm.weeks[3].text.includes('Çalışma Alışkanlıkları Envanteri testini'), what, 'sonraki test');
+          for (const p of problems(rm)) check(false, what, p);
+        }
+      }
+    }
+    expect(bad).toEqual([]);
+    expect(n).toBe(4 * 5 ** 5 * 2);
+  });
+
+  it('rapora eklenir: her sınıfta öğrenci ve veli raporunda; PDF yol haritasıyla üretilir', async () => {
+    expect(hasPublicRoadmap(MAT)).toBe(true);
+    for (const grade of [5, 6, 7, 8]) {
+      const r = evaluate(MAT, quizBody(grade, 4));
+      for (const a of AUDIENCES) {
+        const rm = r[a].roadmap!;
+        expect(rm.preview, String(grade)).toBe(false);
+        expect(rm.bars, String(grade)).toHaveLength(5);
+        expect(rm.sources.length).toBe(4);
+      }
+    }
+    const r = evaluate(MAT, quizBody(8, 2));
+    const pdf = await renderSimpleReportPdf(r.parent, 'olcekhane.com');
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+    expect(roadmapSummary(MAT)).toContain('yanlış yapılan sorulardan başlayan dört haftalık plan');
+  }, 60_000);
+
+  it('son haftada önerilen testin adında "Testi" iki kez geçmez', () => {
+    const rm = evaluate(OKUMA, readingBody(6)).student.roadmap!;
+    expect(rm.weeks[3].text).not.toMatch(/Testi test/);
+  });
+});
+
+describe('okuma hızı ve anlama: yol haritası şablonu', () => {
+  const t = READING_ROADMAPS[OKUMA];
+  const d = def<ReadingInstrument>(OKUMA);
+
+  it('bütün soru türlerinin metinleri var; her metnin soruları bu türlerden', () => {
+    for (const p of d.passages) for (const q of p.questions) expect(t.skills[q.skill], `${p.key} ${q.key}`).toBeDefined();
+    for (const [key, s] of Object.entries(t.skills)) {
+      for (const x of [s.need, s.full, s.action] as AudienceText[]) {
+        expect(x.student, key).not.toMatch(/çocuğunuz/i);
+        expect(x.parent, key).not.toBe(x.student);
+      }
+      expect(s.action.parent, key).toMatch(/çocuğunuz/i);
+    }
+    for (const g of ['low', 'average', 'high'] as const) expect(t.approach[g].length, g).toBeGreaterThan(1);
+  });
+
+  it('her doğru sayısı, anlama düzeyi ve hız birleşiminde bölümler eksiksiz ve tutarlı', () => {
+    const keys = ['literal', 'inference', 'vocabulary', 'main_idea'];
+    const totals = [3, 2, 2, 1];
+    const labels: Record<string, string> = { literal: 'Metindeki bilgiyi bulma', inference: 'Çıkarım yapma', vocabulary: 'Kelime anlamı', main_idea: 'Ana fikir' };
+    let n = 0;
+    for (const counts of product(totals.map((x) => x + 1))) {
+      for (const band of ['low', 'average', 'high', 'very_high'] as Band[]) {
+        for (const tooFast of [false, true]) {
+          for (const audience of AUDIENCES) {
+            const skills = keys.map((k, i) => ({ key: k, label: labels[k], correct: counts[i], total: totals[i] }));
+            const content = {
+              audience: audience as Audience,
+              sections: [{ scaleKey: 'comprehension', band, summary: 'Özet', bandLabel: 'Düzey' }],
+              reading: { wpm: 120, skills, tooFast },
+            } as unknown as ReportContent;
+            const rm = buildReadingRoadmap(content, t, { preview: false, next: NEXT })!;
+            const what = `${counts.join('')} ${band} ${tooFast} ${audience}`;
+            n++;
+            expect(rm.bars, what).toHaveLength(4);
+            expect(rm.study.items, what).toHaveLength(5);
+            const ratios = rm.study.items.slice(0, 4).map((i) => skills.find((s) => s.key === i.key)!).map((s) => s.correct / s.total);
+            expect(ratios, what).toEqual([...ratios].sort((x, y) => x - y));
+            const pace = tooFast ? 'rush' : band === 'high' || band === 'very_high' ? 'extend' : 'build';
+            expect(rm.study.items[4].text, what).toBe(pick(t.pace[pace].text, audience));
+            const weakest = skills.filter((s) => s.correct < s.total).sort((x, y) => x.correct / x.total - y.correct / y.total)[0];
+            expect(rm.weeks.map((w) => w.title), what).toEqual([
+              'Okuma günlüğü',
+              weakest ? weakest.label : t.extraWeek.title,
+              t.pace[pace].week.title,
+              'Gözden geçir',
+            ]);
+            expect(rm.standout.length, what).toBe(weakest && weakest.correct / weakest.total < 0.5 ? 3 : 2);
+            if (audience === 'parent') {
+              const g = band === 'low' ? 'low' : band === 'average' ? 'average' : 'high';
+              expect(rm.approach!.items, what).toEqual(t.approach[g]);
+            } else {
+              expect(rm.approach, what).toBeNull();
+              expect(texts(rm).join(' '), what).not.toMatch(/çocuğunuz/i);
+            }
+            expectClean(rm, what);
+          }
+        }
+      }
+    }
+    expect(n).toBe(4 * 3 * 3 * 2 * 4 * 2 * 2);
+  });
+
+  it('rapora eklenir: her metinde öğrenci ve veli raporunda; PDF yol haritasıyla üretilir', async () => {
+    expect(hasPublicRoadmap(OKUMA)).toBe(true);
+    for (const grade of [3, 5, 7, 10, 13]) {
+      const r = evaluate(OKUMA, readingBody(grade));
+      for (const a of AUDIENCES) {
+        const rm = r[a].roadmap!;
+        expect(rm.preview).toBe(false);
+        expect(rm.bars, String(grade)).toHaveLength(4);
+        expect(rm.standout[1].text).toMatch(/^Dakikada \d+ kelime$/);
+      }
+    }
+    const pdf = await renderSimpleReportPdf(evaluate(OKUMA, readingBody(4)).parent, 'olcekhane.com');
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+    expect(roadmapSummary(OKUMA)).toContain('okuma becerilerine göre çalışma önerileri');
+  }, 60_000);
+});
