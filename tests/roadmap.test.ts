@@ -152,11 +152,13 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
           expect(rm.settings.items.length, label).toBe(extremes);
           // Dört hafta: fark et, çalışma düzeni, (iyi oluş gerekiyorsa) iyi oluş ya da en belirgin boyut, gözden geçir.
           expect(rm.weeks.map((w) => w.label), label).toEqual(['1. hafta', '2. hafta', '3. hafta', '4. hafta']);
-          expect(rm.weeks[1].title, label).toBe('Çalışma düzeni');
+          expect(rm.weeks[1].title, label).toBe(t.planningTitle ?? 'Çalışma düzeni');
           const wb = t.wellbeing;
           if (wb && groups[keys.indexOf(wb.scale)] === wb.group) {
             expect(rm.weeks[2].title, label).toBe(scales[keys.indexOf(wb.scale)].name);
-            expect(rm.study.links.some((l) => l.href === '/rehber/sinav-kaygisi'), label).toBe(true);
+            // İyi oluş bağlantısı: verilmezse "Sınav kaygısı" yazısı, `null` ise hiç bağlantı yok.
+            const href = wb.link === undefined ? '/rehber/sinav-kaygisi' : wb.link?.href;
+            expect(rm.study.links.map((l) => l.href), label).toEqual(['/rehber/etkili-ders-calisma-yontemleri', ...(href ? [href] : [])]);
           } else {
             expect(rm.weeks[2].title, label).not.toBe(scales[keys.indexOf(t.planningScale)].name);
             expect(rm.study.links.some((l) => l.href === '/rehber/sinav-kaygisi'), label).toBe(false);
@@ -176,6 +178,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'bes-faktor-kisilik': 5 ** 5 * 3,
       'ayrintili-kisilik-profili': 3 ** 5 * 3,
       'alti-boyutlu-kisilik-profili': 3 ** 6 * 3,
+      'duygusal-zeka-bilesenleri': 3 ** 7 * 3,
     });
   }, 60_000);
 });
@@ -225,6 +228,34 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
       expect(adult.approach, slug).toBeNull();
       for (const x of texts(adult)) expect(x, slug).not.toMatch(SCHOOL);
     }
+  });
+
+  it('Duygusal Zekâ Bileşenleri: uzman incelemesinde, yalnızca önizleme isteğinde; yetişkine de hazırlanır', () => {
+    const slug = 'duygusal-zeka-bilesenleri';
+    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(true);
+    expect(hasPublicRoadmap(slug)).toBe(false);
+    const b = likertBody(slug, 10, (i) => (i * 7) % 5);
+    expect(evaluate(slug, b).student.roadmap).toBeUndefined();
+    const r = evaluate(slug, { ...b, roadmapPreview: true });
+    expect(r.student.roadmap?.preview).toBe(true);
+    expect(r.student.roadmap?.bars).toHaveLength(7);
+    expect(r.student.roadmap?.weeks[1].title).toBe('Duygularına dikkat');
+    expect(r.parent.roadmap?.approach?.items).toHaveLength(7);
+    // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
+    expect(r.student.roadmap?.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
+    const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE, roadmapPreview: true }).adult.roadmap!;
+    expect(adult.settings.title).toBe('İş ve meslek planı için');
+    expect(adult.approach).toBeNull();
+    for (const x of texts(adult)) expect(x).not.toMatch(SCHOOL);
+    // Üzücü olaylardan etkilenme yüksekken 3. hafta iyi oluşa ayrılır; bu ölçek kaygı ölçmediği için "Sınav kaygısı"
+    // yazısına bağlantı verilmez.
+    const d = def<LikertInstrument>(slug);
+    const answers = Object.fromEntries(
+      d.items.map((it) => [it.key, { value: it.scale !== 'responsive_distress' ? 3 : it.reverse ? 1 : 5, rtMs: 2600 }]),
+    );
+    const high = evaluate(slug, { grade: 10, data: { engine: 'likert', answers }, roadmapPreview: true }).student.roadmap!;
+    expect(high.weeks[2].title).toBe('Üzücü olaylardan etkilenme');
+    expect(high.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri']);
   });
 
   it('son haftada yalnızca kişinin sınıfına uyan, yayındaki ilgi testleri önerilir', () => {

@@ -100,9 +100,9 @@ export function Profile3D({ bars, you }: { bars: RoadmapBar[]; you: boolean }) {
           {bars.map((b) => (
             <li key={b.key} className="flex items-baseline gap-2.5">
               <span className="size-3 shrink-0 translate-y-0.5 rounded-sm" style={{ background: b.color }} aria-hidden="true" />
-              <span className="font-bold">{b.label}</span>
-              <span className="tabular text-ink-2">{b.valueLabel}</span>
-              <span className="t-small text-ink-3">{b.band}</span>
+              <span className="min-w-0 font-bold">{b.label}</span>
+              <span className="tabular shrink-0 whitespace-nowrap text-ink-2">{b.valueLabel}</span>
+              <span className="t-small shrink-0 whitespace-nowrap text-ink-3">{b.band}</span>
             </li>
           ))}
         </ul>

@@ -121,7 +121,8 @@ export function buildRoadmap(
   });
   const stress = t.wellbeing ? sections.find((s) => s.scaleKey === t.wellbeing!.scale && bandGroup(s.band) === t.wellbeing!.group) : undefined;
   const links = [{ label: 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
-  if (stress) links.push({ label: 'Sınav kaygısı', href: '/rehber/sinav-kaygisi' });
+  const stressLink = t.wellbeing?.link === undefined ? { label: 'Sınav kaygısı', href: '/rehber/sinav-kaygisi' } : t.wellbeing.link;
+  if (stress && stressLink) links.push(stressLink);
 
   const settingItems = sections.flatMap((s) => {
     const g = bandGroup(s.band);
@@ -129,7 +130,8 @@ export function buildRoadmap(
     return text ? [text] : [];
   });
 
-  // Dört hafta: fark et → çalışma düzeni (ör. sorumluluk) → iyi oluş ya da en belirgin boyut → gözden geçir.
+  // Dört hafta: fark et → çalışma düzeni (ör. sorumluluk; başlık şablondan) → iyi oluş ya da en belirgin boyut → gözden
+  // geçir.
   const action = (key: string) => {
     const s = sections.find((x) => x.scaleKey === key);
     const g = s ? bandGroup(s.band) : null;
@@ -151,7 +153,7 @@ export function buildRoadmap(
         : ` Bir sonraki adım olarak ilgilerini görmek için ${joinNames(nextNames)} ${nextNames.length > 1 ? 'testlerinden birini' : 'testini'} çözebilirsin.`;
   const weeks = [
     { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a) },
-    ...(planning ? [{ label: '2. hafta', title: 'Çalışma düzeni', text: planning.text }] : []),
+    ...(planning ? [{ label: '2. hafta', title: t.planningTitle ?? 'Çalışma düzeni', text: planning.text }] : []),
     ...(third ? [{ label: `${planning ? 3 : 2}. hafta`, title: third.name, text: third.text }] : []),
   ];
   weeks.push({ label: `${weeks.length + 1}. hafta`, title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextSentence });
