@@ -14,6 +14,8 @@ import type { RoadmapTemplate } from './types';
  */
 export const besFaktorRoadmap: RoadmapTemplate = {
   version: 'bes-faktor-yol-haritasi-1',
+  planningScale: 'conscientiousness',
+  wellbeing: { scale: 'emotional_stability', group: 'low' },
   studyIntro: {
     student:
       'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Kişiliğin, bu yöntemleri hangi düzende ve hangi ortamda kullanmanın sana kolay geleceğini gösterir.',

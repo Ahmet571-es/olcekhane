@@ -4,7 +4,8 @@ import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from
 import { bars3dScene } from '@/lib/charts/bars3d';
 import type { RoadmapBar } from '@/lib/reports/roadmap';
 
-const DEFAULT_YAW = 36;
+/** Başlangıç açısı: iki sütun önde, ötekiler arkada simetrik dizilir (beşgende 36°, altıgende 30°). */
+const startYaw = (n: number) => 180 / Math.max(1, n);
 /** Açıyı -180…180 aralığında tutar (grafik her yöne serbestçe döner). */
 const wrap = (v: number) => ((((v + 180) % 360) + 360) % 360) - 180;
 
@@ -14,7 +15,7 @@ const wrap = (v: number) => ((((v + 180) % 360) + 360) % 360) - 180;
  * da düz cetveller bulunur.
  */
 export function Profile3D({ bars, you }: { bars: RoadmapBar[]; you: boolean }) {
-  const [yaw, setYaw] = useState(DEFAULT_YAW);
+  const [yaw, setYaw] = useState(() => startYaw(bars.length));
   const drag = useRef<{ x: number; yaw: number } | null>(null);
   const scene = useMemo(
     () =>
@@ -90,7 +91,7 @@ export function Profile3D({ bars, you }: { bars: RoadmapBar[]; you: boolean }) {
         <button type="button" className="btn btn-secondary min-h-10 px-4" onClick={() => setYaw((y) => wrap(y + 36))} aria-label="Grafiği sağa döndür">
           Döndür →
         </button>
-        <button type="button" className="btn btn-quiet min-h-10" onClick={() => setYaw(DEFAULT_YAW)}>
+        <button type="button" className="btn btn-quiet min-h-10" onClick={() => setYaw(startYaw(bars.length))}>
           Başa dön
         </button>
       </div>
@@ -106,7 +107,10 @@ export function Profile3D({ bars, you }: { bars: RoadmapBar[]; you: boolean }) {
           ))}
         </ul>
         <p className="t-meta">
-          Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir. Grafiği {you ? 'parmağınla ya da fareyle' : 'parmağınızla ya da fareyle'}{' '}
+          {bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
+            ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
+            : 'Sütunun yüksekliği puanı gösterir.'}{' '}
+          Grafiği {you ? 'parmağınla ya da fareyle' : 'parmağınızla ya da fareyle'}{' '}
           sürükleyerek döndürebilir{you ? 'sin' : 'siniz'}.
         </p>
       </figcaption>

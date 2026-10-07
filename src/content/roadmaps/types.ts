@@ -30,6 +30,18 @@ export interface RoadmapScale {
 export interface RoadmapTemplate {
   version: string;
   scales: Record<string, RoadmapScale>;
+  /** Dört haftalık yol haritasının 2. haftası ("Çalışma düzeni") bu boyutun denemesidir. */
+  planningScale: string;
+  /**
+   * Bu boyut bu düzey grubundayken 3. hafta iyi oluşa ayrılır ve "Sınav kaygısı" yazısına bağlantı verilir
+   * (ör. Duygusal Denge düşük, Duygusallık yüksek).
+   */
+  wellbeing?: { scale: string; group: BandGroup };
+  /**
+   * Veliye yaklaşım önerileri. Verilmezse rapor şablonundaki veli önerilerinin ilki kullanılır (Beş Faktör); rapor
+   * şablonunda öneri yazılmamış testlerde burada verilir.
+   */
+  approach?: Record<string, Record<BandGroup, string>>;
   /** "Nasıl çalışmalı?" bölümünün girişi: etkili yöntemler herkes için aynıdır. */
   studyIntro: AudienceText;
   /** "Okul ve meslek planı için" bölümünün sonundaki uyarı: kişilik tek başına meslek seçtirmez. */

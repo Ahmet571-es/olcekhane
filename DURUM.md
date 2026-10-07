@@ -27,7 +27,8 @@ Basamaklar:
 1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
    aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör Kişilik'te yayında (hoca onayı 2026-10-07; site sahibi
-   beğendi). Sırada öteki testlerin yol haritaları: her biri önce önizlemede, hoca onayıyla herkese açılır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
+   beğendi). Ayrıntılı Kişilik ve Altı Boyutlu Kişilik'te önizlemede, hocanın kararı bekleniyor. Sırada öteki
+   testlerin yol haritaları: her biri önce önizlemede, hoca onayıyla herkese açılır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
    derinlikli ve döndürülebilir; değerler her zaman düz yazıyla da okunur; PDF'te derinlikli resim. Öğrenci ve veli
@@ -45,7 +46,10 @@ Basamaklar:
 
 ## Sıradaki işler
 
-1. **Büyük planın 2. basamağı:** öteki testlerin gelişim yol haritaları (Beş Faktör yayında).
+1. **Büyük planın 2. basamağı:** öteki testlerin gelişim yol haritaları. Beş Faktör yayında; Ayrıntılı ve Altı
+   Boyutlu Kişilik önizlemede (`?onizleme=yol-haritasi`), hoca onaylayınca `ROADMAP_IN_REVIEW`'dan çıkarılır.
+   Sırada: Duygusal Zekâ Bileşenleri, Kişilerarası Tarz, Öz-saygı, Çalışma Alışkanlıkları; sonra ilgi testleri ve
+   zihinsel görevler (bunların bölümleri kişilik testlerinden farklı tasarlanır).
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -106,6 +110,7 @@ Her incelemedeki test için Claude Docs'ta bir belge vardır; sonunda Onay tablo
 | [Zihinde Döndürme İncelemesi](https://claude.ai/artifact/Aftf1twHWeuaLpfQLgwZRv) | Zihinde Döndürme | Site sahibinin hocayla paylaşması bekleniyor |
 | [Tepki Hızı İncelemesi](https://claude.ai/artifact/Nkt8WiGPtSfpvbppwmF1Hy) | Tepki Hızı | Site sahibinin hocayla paylaşması bekleniyor |
 | [Beş Faktör Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/HaGkWkUNY9q6jJasEDk8gt) | Beş Faktör Kişilik Profili (yol haritası) | Onaylandı (2026-10-07), yayında |
+| [Ayrıntılı ve Altı Boyutlu Kişilik Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/UwsHRuzXgxSWkf6qrbZUWC) | Ayrıntılı Kişilik Profili, Altı Boyutlu Kişilik Profili (yol haritası) | Site sahibinin hocayla paylaşması bekleniyor |
 
 ## Rehber yazıları
 
@@ -180,7 +185,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
-- **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme ve Tepki Hızı incelemelerinin hocaya iletilmesi;
+- **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı ve Ayrıntılı ve Altı Boyutlu Kişilik
+  Gelişim Yol Haritası incelemelerinin hocaya iletilmesi;
   hocanın kararları (Renk-Kelime, Dur-Git, Sırayla Birleştirme dahil zihinsel görevlerin hepsi kararı bekliyor).
 - **Açık soru:** Katalogda Türkçe Konu Tarama Testi "Hazırlanıyor" diye görünüyor, oysa 4. dalgada. İlgili bir iş
   gelince etiketin kalıp kalmayacağı site sahibine sorulur.
@@ -189,6 +195,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Ayrıntılı Kişilik ve Altı Boyutlu Kişilik gelişim yol haritaları önizlemede (öğrenci, veli ve
+  yetişkin raporu; Altı Boyutlu'da Dürüstlük-Alçakgönüllülük ve Duygusallık için yeni metinler, altıgen üç
+  boyutlu profil); hoca belgesi hazır. Üç boyutlu grafiğin açıklaması ölçüm payı olmayan testlerde kısalıyor.
 - 2026-10-07: Beş Faktör gelişim yol haritası hoca onayıyla herkese açık raporda; SSS'deki "Ücretli mi?" cevabı,
   test sayfasının rapor listesi ve ana sayfadaki örnek rapor buna göre güncellendi; yayın denetimi yol haritasını
   dışarıdan sınıyor.
@@ -210,4 +219,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-01: Geriye Dönük Hatırlama uzman incelemesinde; hoca belgesi hazır.
 - 2026-10-01: Hobi ve Serbest Zaman İlgileri, Kişilerarası Tarz, Duygusal Zekâ Bileşenleri, Altı Boyutlu Kişilik
   Profili uzman incelemesinde; hoca belgeleri hazır.
-- 2026-10-01: Renk-Kelime, Dur-Git ve Sırayla Birleştirme uzman incelemesinde (1. dalganın tamamı).

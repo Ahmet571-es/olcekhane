@@ -119,7 +119,7 @@ export function buildRoadmap(
       },
     ];
   });
-  const stress = sections.find((s) => s.scaleKey === 'emotional_stability' && bandGroup(s.band) === 'low');
+  const stress = t.wellbeing ? sections.find((s) => s.scaleKey === t.wellbeing!.scale && bandGroup(s.band) === t.wellbeing!.group) : undefined;
   const links = [{ label: 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
   if (stress) links.push({ label: 'Sınav kaygısı', href: '/rehber/sinav-kaygisi' });
 
@@ -129,17 +129,17 @@ export function buildRoadmap(
     return text ? [text] : [];
   });
 
-  // Dört hafta: fark et → çalışma düzeni (sorumluluk) → iyi oluş ya da en belirgin boyut → gözden geçir.
+  // Dört hafta: fark et → çalışma düzeni (ör. sorumluluk) → iyi oluş ya da en belirgin boyut → gözden geçir.
   const action = (key: string) => {
     const s = sections.find((x) => x.scaleKey === key);
     const g = s ? bandGroup(s.band) : null;
     return s && g ? { name: s.name, text: pick(t.scales[key].action[g], a) } : null;
   };
-  const planning = action('conscientiousness');
+  const planning = action(t.planningScale);
   const thirdKey =
     stress?.scaleKey ??
     sections
-      .filter((s) => s.scaleKey !== 'conscientiousness' && s.value !== null)
+      .filter((s) => s.scaleKey !== t.planningScale && s.value !== null)
       .sort((x, y) => distance(y) - distance(x))[0]?.scaleKey;
   const third = thirdKey ? action(thirdKey) : null;
   const nextNames = opts.next.map((n) => n.name);
@@ -186,7 +186,11 @@ export function buildRoadmap(
     approach: parent
       ? {
           title: 'Çocuğunuza nasıl yaklaşabilirsiniz?',
-          items: sections.flatMap((s) => (s.tips[0] ? [{ title: s.name, text: s.tips[0] }] : [])),
+          items: sections.flatMap((s) => {
+            const g = bandGroup(s.band);
+            const text = (g && t.approach?.[s.scaleKey]?.[g]) || s.tips[0];
+            return text ? [{ title: s.name, text }] : [];
+          }),
         }
       : null,
     weeks,

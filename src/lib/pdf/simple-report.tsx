@@ -321,7 +321,7 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
   const H = 285;
   const scene = bars3dScene(
     rm.bars.map((b) => ({ ...b, valueLabel: b.valueLabel.split(' / ')[0] })),
-    { yaw: 36, width: W, height: H, floor: { top: C.surface2, side: C.rule, stroke: C.ruleStrong }, band: C.brass },
+    { yaw: 180 / Math.max(1, rm.bars.length), width: W, height: H, floor: { top: C.surface2, side: C.rule, stroke: C.ruleStrong }, band: C.brass },
   );
   return (
     <View>
@@ -337,6 +337,10 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
             fillOpacity={p.opacity ?? 1}
             strokeOpacity={p.opacity === undefined ? 0.6 : 0.8}
           />
+        ))}
+        {/* Değer yazısının arkasında beyaz zemin: öndeki sütunun yazısı arkadaki sütunun üstüne düşse de okunur. */}
+        {scene.labels.map((l) => (
+          <Rect key={`z-${l.key}`} x={l.x - l.text.length * 3.6 - 3} y={l.y - 10} width={l.text.length * 7.2 + 6} height={13} rx={3} fill={C.paper} fillOpacity={0.9} />
         ))}
         {scene.labels.map((l) => (
           <Text key={l.key} x={l.x} y={l.y} textAnchor="middle" style={{ fontFamily: 'Atkinson', fontSize: 11, fontWeight: 700, fill: C.ink }}>
@@ -355,7 +359,11 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
           </View>
         ))}
       </View>
-      <Text style={s.note}>Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.</Text>
+      <Text style={s.note}>
+        {rm.bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
+          ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
+          : 'Sütunun yüksekliği puanı gösterir.'}
+      </Text>
     </View>
   );
 }

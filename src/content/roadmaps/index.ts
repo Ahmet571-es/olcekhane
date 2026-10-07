@@ -1,16 +1,20 @@
+import { altiBoyutluKisilikRoadmap } from './alti-boyutlu-kisilik';
+import { ayrintiliKisilikRoadmap } from './ayrintili-kisilik';
 import { besFaktorRoadmap } from './bes-faktor';
 import type { RoadmapTemplate } from './types';
 
 /** Gelişim yol haritası olan testler. */
 export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'bes-faktor-kisilik': besFaktorRoadmap,
+  'ayrintili-kisilik-profili': ayrintiliKisilikRoadmap,
+  'alti-boyutlu-kisilik-profili': altiBoyutluKisilikRoadmap,
 };
 
 /**
  * Uzman incelemesindeki yol haritaları: yalnızca önizleme bağlantısıyla (`/testler/<adres>/coz?onizleme=yol-haritasi`)
  * gösterilir; herkese açık raporda yer almaz. Hoca onaylayınca test buradan çıkarılır (Beş Faktör: 2026-10-07).
  */
-export const ROADMAP_IN_REVIEW = new Set<string>([]);
+export const ROADMAP_IN_REVIEW = new Set<string>(['ayrintili-kisilik-profili', 'alti-boyutlu-kisilik-profili']);
 
 /** Çözme sayfasının adresindeki önizleme seçimi (`?onizleme=`). */
 export const ROADMAP_PREVIEW_PARAM = 'yol-haritasi';
