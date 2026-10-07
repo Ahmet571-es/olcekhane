@@ -72,7 +72,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           ? `${def.tasks.length} görev`
           : def.engine === 'quiz'
             ? `${def.forms[0].items.length} soru`
-            : '1 metin, 8 soru';
+            : def.engine === 'oral'
+              ? '1 metin: sesli okuma, anlatma ve 5–8 soru'
+              : '1 metin, 8 soru';
   const scales = def.scales.filter((s) => s.key !== 'total');
   // Ayrıntılı profil: boyutlar (bileşik ölçekler) ve altlarındaki alt özellikler birlikte anlatılır.
   const composites = scales.filter((s) => s.of?.length);
@@ -238,7 +240,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
         <div className="flex flex-col gap-5">
           <ul className="measure flex list-disc flex-col gap-2 pl-5">
             <li>
-              {def.adults
+              {def.engine === 'oral'
+                ? 'Öğrenciye ve yetişkine (veli ya da öğretmen) ayrı ayrı yazılmış iki rapor; ikisi de PDF olarak indirilebilir'
+                : def.adults
                 ? 'Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor; testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor. Raporlar PDF olarak indirilebilir'
                 : 'Öğrenciye ve veliye ayrı ayrı yazılmış iki rapor; ikisi de PDF olarak indirilebilir'}
             </li>
@@ -281,6 +285,16 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               </>
             )}
             {def.engine === 'reading' && <li>Okuma hızı, anlama oranı ve soru türlerine göre sonuç</li>}
+            {def.engine === 'oral' && (
+              <>
+                <li>Metnin öğrenci için düzeyi: rahat, destekle ya da şimdilik zor; doğru okuma ve anlamaya göre</li>
+                <li>Dakikada doğru okunan kelime, doğru okuma oranı ve okuma süresi</li>
+                <li>İşaretlenmiş metin: hangi kelimede hangi hata yapıldı; hata türleri, kendi düzeltmeleri ve yanlış okunan kelimeler</li>
+                <li>Okumanın ritmi: kayıttan ölçülen duraklamalar</li>
+                <li>Akıcılık (vurgu ve tonlama, öbekleme, düzgünlük, tempo), soru türlerine göre anlama ve yeniden anlatma</li>
+                <li>Bir sonraki değerlendirme için öneri: aynı, bir alt ya da bir üst sınıfın metni</li>
+              </>
+            )}
             {cancellation && (
               <>
                 <li>Çalışma hızı, bulunan ve atlanan harfler, yanlış işaretlemeler ve net doğru sayısı</li>
@@ -340,7 +354,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           </ul>
           <p className="measure t-small text-ink-2">
             Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz; raporun tek kopyası size verilen PDF’tir.
-            {!roadmap && (
+            {def.engine === 'oral' && ' Ses kaydı yalnızca cihazınızda kalır; sunucuya ya da başka bir yere gönderilmez.'}
+            {!roadmap && def.engine !== 'oral' && (
               <>
                 {' '}
                 Ayrıntılı açıklamaların ve evde, okulda işe yarayacak önerilerin yer alacağı kapsamlı rapor

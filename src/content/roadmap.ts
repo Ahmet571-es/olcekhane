@@ -5,7 +5,7 @@
 export interface UpcomingTest {
   key: string;
   name: string;
-  domain: 'personality' | 'career' | 'academic' | 'cognitive' | 'wellbeing' | 'skills';
+  domain: 'personality' | 'career' | 'academic' | 'reading' | 'cognitive' | 'wellbeing' | 'skills';
   measures: string;
   basedOn: string;
   grades: string;

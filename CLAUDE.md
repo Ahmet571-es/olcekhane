@@ -86,6 +86,9 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Madde testinde ayrıca: `src/content/reports/<ad>.ts`; yeni bir grafik türü gerekiyorsa
   `src/components/test/simple-report-view.tsx` ve `src/lib/pdf/simple-report.tsx`; `tests/evaluate.test.ts`;
   yetişkinlere de açıksa (`adults: true`) `tests/yetiskin.test.ts`.
+- Sesli okuma (Okuma sekmesi, `engine: 'oral'`): yeni metin `src/content/instruments/sesli-okuma/sinif-*.ts`'e eklenir;
+  kurallar (kelime sayısı, soru ve fikir düzeni, yazım) `tests/sesli-okuma.test.ts`'tedir. Metin özgündür, sınıfına
+  göre yazılır ve eklenmeden önce bilgi doğruluğu ile soruların birbirini ele vermemesi denetlenir.
 - Rapordaki kartlar, uyarılar ve kalite notları birbiriyle çelişmez: bütün durum birleşimleri `tests/<ad>.test.ts`
   içinde bir döngüyle tek tek denenir. Test telefon ve masaüstünde baştan sona çözülür; rapor ve PDF açılır.
 - `.github/workflows/yayin.yml`: örnek cevaplarla bir rapor denetimi dış sınamaya eklenir; incelemede tutulan
@@ -119,6 +122,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Hiçbir veri saklanmaz: veritabanı, hesap, çerez, tarayıcı deposu ve analiz aracı yoktur; test cevapları
   kaydedilmez ve günlüğe yazılmaz (`tests/site.test.ts` bunu denetler). Bu ilkeyi bozacak bir istek gelirse
   önce site sahibine ne değişeceği anlatılır; kabul ederse hukuki metinler de aynı değişiklikte güncellenir.
+- Sesli okumada ses kaydı yalnızca kullanıcının cihazında kalır: sunucuya, dış bir hizmete ya da yapay zekâya
+  gönderilmez; mikrofon izni yalnızca sitenin kendisine açıktır (`next.config.ts`).
 - Sitedeki metinler gerçeği söyler: sunucu Almanya'dadır; Türkiye normu olmayan testte norm varmış gibi
   anlatılmaz; yapılmamış çalışmalar yapılıyormuş gibi yazılmaz.
 - Hukuki metinler `src/content/legal`, site sahibinin bilgileri `OWNER_*` (`src/lib/site.ts`). Bilgiler henüz

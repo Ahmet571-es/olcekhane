@@ -11,6 +11,7 @@ import { meslekIlgiAlanlariRoadmap } from './meslek-ilgi-alanlari';
 import { meslekiIlgiProfiliRoadmap } from './mesleki-ilgi-profili';
 import { okumaRoadmap } from './okuma';
 import { ozSaygiRoadmap } from './oz-saygi';
+import { sesliOkumaRoadmap, type OralRoadmapTemplate } from './sesli-okuma';
 import type { AcademicRoadmapTemplate, InterestRoadmapTemplate, ReadingRoadmapTemplate, RoadmapTemplate } from './types';
 
 export { TASK_ROADMAPS };
@@ -54,9 +55,14 @@ export const READING_ROADMAPS: Record<string, ReadingRoadmapTemplate> = {
   'okuma-hizi-ve-anlama': okumaRoadmap,
 };
 
+/** Sesli okumanın yol haritası: okumanın yönlerine göre öneriler (lib/reports/oral-roadmap.ts). */
+export const ORAL_ROADMAPS: Record<string, OralRoadmapTemplate> = {
+  'sesli-okuma-degerlendirmesi': sesliOkumaRoadmap,
+};
+
 /** Testin gelişim yol haritası şablonu var mı (kişilik, ilgi, konu tarama, okuma ya da zihinsel görev)? */
 export function hasRoadmap(slug: string): boolean {
-  return !!(ROADMAPS[slug] ?? INTEREST_ROADMAPS[slug] ?? ACADEMIC_ROADMAPS[slug] ?? READING_ROADMAPS[slug] ?? TASK_ROADMAPS[slug]);
+  return !!(ROADMAPS[slug] ?? INTEREST_ROADMAPS[slug] ?? ACADEMIC_ROADMAPS[slug] ?? READING_ROADMAPS[slug] ?? TASK_ROADMAPS[slug] ?? ORAL_ROADMAPS[slug]);
 }
 
 /** Herkese açık raporda gelişim yol haritası var mı (şablonu var ve incelemede değil)? */
@@ -68,6 +74,9 @@ export function hasPublicRoadmap(slug: string): boolean {
 export function roadmapSummary(slug: string): string {
   if (ACADEMIC_ROADMAPS[slug]) {
     return 'parmakla döndürülebilen üç boyutlu profil, konu alanlarına göre çalışma önerileri, haftalık çalışma düzeni, veliye destek önerileri ve yanlış yapılan sorulardan başlayan dört haftalık plan';
+  }
+  if (ORAL_ROADMAPS[slug]) {
+    return 'parmakla döndürülebilen üç boyutlu profil, okumanın yönlerine göre çalışma önerileri, okuma alışkanlığı için öneriler, veliye destek önerileri ve dört haftalık küçük adımlar';
   }
   if (READING_ROADMAPS[slug]) {
     return 'parmakla döndürülebilen üç boyutlu profil, okuma becerilerine göre çalışma önerileri, okuma alışkanlığı için öneriler, veliye destek önerileri ve dört haftalık küçük adımlar';

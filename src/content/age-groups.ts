@@ -7,7 +7,7 @@ import type { InstrumentDef } from '@/lib/instruments/types';
  * düzeyi tam olarak bir gruptadır (tests/age-groups.test.ts). Seçim hiçbir yere kaydedilmez; grup yalnızca hangi
  * sayfanın açıldığıdır.
  */
-export type AgeGroupKey = 'ilkokul' | 'ortaokul' | 'lise' | 'yetiskin';
+export type AgeGroupKey = 'ilkokul12' | 'ilkokul' | 'ortaokul' | 'lise' | 'yetiskin';
 
 export interface AgeGroup {
   key: AgeGroupKey;
@@ -35,9 +35,27 @@ export interface AgeGroup {
 
 export const AGE_GROUPS: AgeGroup[] = [
   {
+    key: 'ilkokul12',
+    path: '/ilkokul-1-2',
+    name: 'İlkokul 1–2',
+    range: '1. ve 2. sınıf',
+    forWhom: '1. ve 2. sınıf öğrencilerine',
+    grades: [1, 2],
+    color: 'var(--dim-emo)',
+    lede: '1. ve 2. sınıf öğrencilerine uygun değerlendirmeler. Bu yaşta değerlendirmeyi bir yetişkin (öğretmen ya da veli) yapar: Öğrenci okur, anlatır ve soruları cevaplar; yetişkin dinleyerek değerlendirir.',
+    parentNote:
+      'Bu gruptaki değerlendirmeleri çocuğunuzla birlikte yaparsınız: Çocuğunuz kısa bir metni sesli okur, siz kaydı dinleyerek değerlendirirsiniz. Ses kaydı yalnızca sizin cihazınızda kalır; hiçbir yere gönderilmez.',
+    starters: [
+      {
+        slug: 'sesli-okuma-degerlendirmesi',
+        why: 'Çocuğunuz kısa bir metni sesli okur; siz kaydı dinleyerek doğru okumayı, akıcılığı ve okuduğunu anlamayı değerlendirirsiniz.',
+      },
+    ],
+  },
+  {
     key: 'ilkokul',
     path: '/ilkokul',
-    name: 'İlkokul',
+    name: 'İlkokul 3–4',
     range: '3. ve 4. sınıf',
     forWhom: '3. ve 4. sınıf öğrencilerine',
     grades: [3, 4],
@@ -46,6 +64,10 @@ export const AGE_GROUPS: AgeGroup[] = [
     parentNote:
       'Yönergeleri çocuğunuzla birlikte okuyun, ama cevapları onun yerine vermeyin. Testi sakin bir yerde ve tek seferde bitirin. Raporda size ayrı yazılmış bir veli raporu da bulunur.',
     starters: [
+      {
+        slug: 'sesli-okuma-degerlendirmesi',
+        why: 'Öğrenci sınıfına uygun bir metni sesli okur; öğretmen ya da veli kaydı dinleyerek okumayı ayrıntılı değerlendirir.',
+      },
       { slug: 'okuma-hizi-ve-anlama', why: 'Okuma hızını ve okuduğunu anlamayı birlikte gösterir; metin sınıfa göre seçilir.' },
       { slug: 'surekli-dikkat', why: 'Harf bulma görevi: dikkatin birkaç dakika boyunca nasıl sürdüğünü gösterir.' },
     ],
@@ -104,7 +126,9 @@ export const AGE_GROUPS: AgeGroup[] = [
 export const AREA_INTROS: Record<string, string> = {
   personality: 'Nasıl biri olduğunu; insanlarla, işlerle ve duygularla nasıl ilişki kurduğunu anlatır.',
   career: 'Hangi etkinliklerden hoşlandığını ve bunlara uyan alanları, meslekleri gösterir.',
-  academic: 'Okuma, ders konuları ve ders çalışma yöntemleri: neyin sağlam olduğunu, neyin geliştirilebileceğini gösterir.',
+  academic: 'Ders konuları ve ders çalışma yöntemleri: neyin sağlam olduğunu, neyin geliştirilebileceğini gösterir.',
+  reading:
+    'Sesli ve sessiz okuma: kelimeleri doğru ve akıcı okumayı, okuma hızını ve okuduğunu anlamayı gösterir. Sesli okumayı bir öğretmen ya da veli dinleyerek değerlendirir.',
   cognitive:
     'Dikkat, bellek, hız ve algı gibi becerileri kısa görevlerle ölçer. Zekâ puanı (IQ) verilmez; her beceri ayrı ayrı anlatılır.',
   wellbeing: 'Kendini nasıl hissettiğini ve gündelik hayatta nelerin iyi geldiğini anlatır.',

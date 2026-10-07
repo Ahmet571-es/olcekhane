@@ -5,7 +5,7 @@
  * tutulur. Bir tanım değiştiğinde (madde, anahtar ya da puanlama) sürüm numarası artırılmalıdır.
  */
 
-export type Domain = 'personality' | 'career' | 'academic' | 'cognitive' | 'wellbeing' | 'skills';
+export type Domain = 'personality' | 'career' | 'academic' | 'reading' | 'cognitive' | 'wellbeing' | 'skills';
 /**
  * draft: hazırlanıyor, sitede yok · review: uzman incelemesinde; yalnızca doğrudan bağlantıyla açılır, listelerde ve
  * site haritasında yer almaz, arama motorlarına kapalıdır · pilot / active: yayında · retired: kullanımdan kalktı.
@@ -169,6 +169,51 @@ export interface ReadingInstrument extends InstrumentBase {
   passages: ReadingPassage[];
   /** Sınıf düzeyine göre başvuru okuma hızları (dakikada kelime), yalnızca yayımlanmış Türkiye verisi. */
   referenceRates: { grade: number; wpm: number; source: string; mode: 'oral' | 'silent' }[];
+}
+
+/* ---------- Sesli okuma ---------- */
+
+/**
+ * Sesli okuma metninin bir sorusu (metin kapandıktan sonra, çoktan seçmeli). 1–2. sınıfta üç, üst sınıflarda dört
+ * seçenek vardır.
+ */
+export interface OralQuestion {
+  key: string;
+  text: string;
+  options: { key: string; text: string }[];
+  answer: string;
+  skill: ReadingQuestion['skill'];
+}
+
+/** Yeniden anlatmada söylenmesi beklenen anlam birimi; `core`, metni anlamış birinin mutlaka söyleyeceği temel fikir. */
+export interface OralIdea {
+  key: string;
+  text: string;
+  core: boolean;
+}
+
+export interface OralPassage {
+  /** Benzersiz anahtar: "g<sınıf>-" ile başlar. */
+  key: string;
+  /** Metnin yazıldığı sınıf düzeyi. */
+  grade: number;
+  genre: 'narrative' | 'informational';
+  title: string;
+  paragraphs: string[];
+  questions: OralQuestion[];
+  ideas: OralIdea[];
+}
+
+/**
+ * Sesli okuma değerlendirmesi: öğrenci sınıf düzeyindeki bir metni sesli okur (ses yalnızca cihazda kaydedilir),
+ * metni kendi cümleleriyle anlatır ve soruları cevaplar; bir yetişkin kaydı dinleyerek okuma hatalarını işaretler,
+ * anlatmada söylenen fikirleri ve okumanın akıcılığını değerlendirir.
+ */
+export interface OralReadingInstrument extends InstrumentBase {
+  engine: 'oral';
+  passages: OralPassage[];
+  /** Sınıf düzeyine göre başvuru sesli okuma hızları (dakikada kelime), yalnızca yayımlanmış Türkiye verisi. */
+  referenceRates: { grade: number; wpm: number; source: string }[];
 }
 
 /* ---------- Bilişsel görevler ---------- */
@@ -535,4 +580,4 @@ export interface QuizInstrument extends InstrumentBase {
   misconceptions: Record<string, Misconception>;
 }
 
-export type InstrumentDef = LikertInstrument | ReadingInstrument | TaskInstrument | QuizInstrument;
+export type InstrumentDef = LikertInstrument | ReadingInstrument | OralReadingInstrument | TaskInstrument | QuizInstrument;

@@ -1,5 +1,6 @@
 import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
 import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
+import type { OralReportBlock } from './oral';
 import type { Roadmap } from './roadmap';
 
 /**
@@ -43,6 +44,8 @@ export interface SimpleGroup {
 export interface SimpleReport {
   instrumentName: string;
   audience: Audience;
+  /** Raporun adı ("Öğrenci raporu" gibi) testin kendi adlandırmasıysa (ör. sesli okumada "Veli ve öğretmen raporu"). */
+  audienceName?: string;
   studentName: string;
   gradeLabel: string;
   completedAt: string;
@@ -65,6 +68,8 @@ export interface SimpleReport {
   disclaimer: { title: string; text: string };
   /** Gelişim yol haritası (yalnızca şablonu olan testlerde; incelemedeyken yalnızca önizlemede). */
   roadmap?: Roadmap;
+  /** Sesli okuma değerlendirmesinin bölümleri (işaretli metin, hata türleri, duraklamalar, akıcılık, anlama, öneriler). */
+  oral?: OralReportBlock;
 }
 
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });

@@ -31,7 +31,7 @@ export function GroupPicker({ current, compact = false, headingLevel = 3 }: { cu
   }
 
   return (
-    <ul className={`grid gap-4 sm:grid-cols-2 ${groups.length >= 4 ? 'xl:grid-cols-4' : 'lg:grid-cols-3'}`}>
+    <ul className={`grid gap-4 sm:grid-cols-2 ${groups.length >= 5 ? 'lg:grid-cols-3 xl:grid-cols-5' : groups.length === 4 ? 'xl:grid-cols-4' : 'lg:grid-cols-3'}`}>
       {groups.map(({ group: g, count }, i) => (
         <li key={g.key} data-reveal style={{ '--reveal-gecikme': `${i * 70}ms` } as CSSProperties}>
           <article className="kart group flex h-full flex-col gap-3 overflow-hidden p-6" data-tilt style={{ '--vurgu': g.color } as CSSProperties}>

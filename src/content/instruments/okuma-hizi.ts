@@ -12,7 +12,7 @@ export const okumaHizi: ReadingInstrument = {
   engine: 'reading',
   name: 'Okuma Hızı ve Anlama',
   shortName: 'Okuma',
-  domain: 'academic',
+  domain: 'reading',
   status: 'pilot',
   licenseStatus: 'original',
   isFree: true,

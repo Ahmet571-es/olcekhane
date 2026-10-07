@@ -7,6 +7,7 @@ export const DOMAIN_ANCHORS: Record<string, string> = {
   personality: 'kisilik',
   career: 'ilgi-ve-meslek',
   academic: 'ogrenme',
+  reading: 'okuma',
   cognitive: 'bilissel',
   wellbeing: 'iyi-olus',
   skills: 'beceriler',

@@ -31,6 +31,7 @@ Bu metin bilgilendirme amaçlıdır; sizden onay istemez.
 - Testleri çözerken sizden ya da çocuğunuzdan ad, e-posta, telefon ya da kimlik numarası istemiyoruz.
 - Test cevapları yalnızca raporu hazırlamak için sunucumuza gönderilir; veritabanına, dosyaya ya da sunucu kayıtlarına yazılmaz ve işlem bitince sunucunun belleğinden silinir.
 - Raporun tek kopyası, ekranınızda gösterilen ve indirdiğiniz PDF dosyasıdır. Sayfayı kapattıktan sonra raporu size yeniden gösteremeyiz.
+- Sesli okuma değerlendirmesinde ses kaydı yalnızca sizin cihazınızda kalır; sunucumuza ya da başka bir yere gönderilmez.
 - Sitemizin sunucusu Almanya’dadır (Avrupa Birliği).
 - Çerez, reklam, izleme ya da ziyaretçi istatistiği (analiz) aracı kullanmıyoruz.
 - Bize e-posta gönderirseniz e-postanızı yalnızca size yanıt vermek için kullanırız.
@@ -54,6 +55,8 @@ Bu bilgiler:
 - veritabanına, dosyaya ya da sunucu kayıtlarına (günlüklere) yazılmaz; işlem bitince sunucunun belleğinden de silinir,
 - IP adresiniz ya da cihazınız dahil hiçbir kimlik bilgisiyle eşleştirilmez,
 - kimseyle paylaşılmaz; reklam, pazarlama, profil çıkarma ya da yapay zekâ modellerinin eğitimi için kullanılmaz.
+
+**Sesli okuma değerlendirmesinde** mikrofon yalnızca siz düğmeye bastığınızda ve tarayıcınız sizden izin istedikten sonra açılır; öğrencinin bölümü bitince kapanır. Ses kaydı yalnızca açık olan sayfada, cihazınızın belleğinde tutulur: sunucumuza ya da başka bir yere gönderilmez, hiçbir yere kaydedilmez ve sayfayı kapattığınızda silinir. Konuşma, yapay zekâ ya da konuşma tanıma hizmetiyle çözümlenmez. Kayıttan cihazınızda yalnızca okuma süresi, duraklamaların başlangıç ve bitişleri ve kaba bir ses yüksekliği eğrisi hesaplanır; bu sayılardan ses geri elde edilemez. Bu sayılar, kaydı dinleyerek işaretlediğiniz okuma hataları ve cevaplarla birlikte öteki test cevapları gibi raporu hazırlamak için sunucumuza gönderilir ve saklanmaz.
 
 Kimliğinizi sormadığımız ve cevapları saklamadığımız için test cevapları ve raporlarla ilgili size gösterebileceğimiz, düzeltebileceğimiz ya da silebileceğimiz bir kayıt bulunmaz.
 
@@ -96,6 +99,7 @@ Kişisel verileri satmıyor, reklam ya da pazarlama amacıyla kimseyle paylaşm�
 ## 8. Ne kadar süre saklıyoruz?
 
 - Test cevapları ve raporlar: saklanmaz; işlem bitince sunucunun belleğinden silinir.
+- Sesli okuma kaydı: sunucumuza hiç gelmez; yalnızca cihazınızda, sayfa açık kaldığı sürece durur.
 - IP adresi (hız sınırı): yalnızca sunucunun belleğinde, en geç 11 dakika.
 - Bize gönderdiğiniz e-postalar: yazışma bittikten sonra en geç 1 yıl.
 
@@ -178,7 +182,7 @@ Sitede başka sitelerden yüklenen yazı tipi, komut dosyası, reklam ya da ziya
 export const LEGAL_DOCS: LegalDocDef[] = [
   {
     kind: 'privacy_notice',
-    version: 5,
+    version: 6,
     slug: 'aydinlatma-metni',
     title: 'KVKK Aydınlatma Metni',
     summary: 'Ölçekhane’de hangi kişisel verilerin, hangi amaçla ve ne kadar süre işlendiği. Test cevapları ve raporlar saklanmaz; sunucu Almanya’dadır.',

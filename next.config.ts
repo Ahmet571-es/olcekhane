@@ -13,6 +13,8 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
+  // Sesli okuma: kayıt yalnızca sayfanın belleğinde (blob:) tutulup oradan dinlenir.
+  "media-src 'self' blob:",
   `connect-src 'self'${isDev ? ' ws: wss:' : ''}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -53,7 +55,8 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+            // Mikrofon yalnızca kendi sayfalarımızda açılabilir (sesli okuma); kayıt cihazdan çıkmaz.
+            value: 'camera=(), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()',
           },
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
         ],

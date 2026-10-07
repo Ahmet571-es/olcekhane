@@ -38,12 +38,21 @@ Basamaklar:
    (CC BY-SA 4.0, kaynak gösterilerek; FBX). **Engel:** bu ortamdan openstax.org, ncbi.nlm.nih.gov, ninds.nih.gov
    ve wikipedia.org açılmıyor; site sahibi ortamın ağ erişimini açmadan dersler yazılmaz (bilgi yalnızca açılıp
    okunmuş kaynaklardan alınır).
-4. **Yeni testler (sürekli):** aşağıdaki dalgalar; yanında zekâ, algı ve okuma tarafı genişler (şekil, sayı ve sözel
+4. **Okuma bölümü (site sahibinin 2026-10-07 isteği):** kişilik ve zekâ testlerinden ayrı "Okuma" sekmesi
+   (`/okuma`). Kararlar: ses yalnızca cihazda kaydedilir, hataları öğretmen ya da veli dinleyerek işaretler (yapay
+   zekâyla ses tanıma ve dış hizmet yok); 1–8. sınıflar ("İlkokul 1–2" grubu açıldı). İlk değerlendirme yayında:
+   Sesli Okuma Değerlendirmesi (her sınıfa 3 metin; sayı sınırı yok, metin eklenebilir).
+5. **Yeni testler (sürekli):** aşağıdaki dalgalar; yanında zekâ, algı ve okuma tarafı genişler (şekil, sayı ve sözel
    akıl yürütme, görsel algı hızı, örüntü bulma, sınıfa özel okuma metinleri, kelime bilgisi). Sonunda yaş grubuna
    göre "Kendini Tanı Paketi": birkaç test art arda, tek büyük PDF rapor.
 
 ## Sıradaki işler
 
+0. **Okuma bölümü:** (a) yeni metinler (her sınıfa öykü ve bilgilendirici; `src/content/instruments/sesli-okuma/`,
+   kurallar `tests/sesli-okuma.test.ts`'te); (b) aynı kayıt ve işaretleme altyapısıyla yeni değerlendirmeler: 1 dakikalık
+   kelime listesi okuma, anlamsız kelime okuma (kod çözme), 1. sınıf için harf ve hece okuma; (c) düzey eşikleri
+   (doğru okuma %97/%90, anlama %80/%60) Ölçekhane'nin pilot ölçütüdür: kaynak sitelerine erişim açılınca (bkz. site
+   sahibinin bekleyen işleri) Türkiye'de kullanılan ölçütlerle karşılaştırılır; hocaya da sorulabilir.
 1. **Büyük planın 2. basamağı: tamamlandı (2026-10-07).** Bütün testlerin gelişim yol haritaları doğrudan yayına
    alındı (2026-10-07 kararı); hocanın düzeltme istekleri 2026-10-11'deki buluşmadan sonra gelecek. Yayında: Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik, Duygusal Zekâ
    Bileşenleri (2. hafta "Duygularına dikkat", iyi oluş haftası Üzücü olaylardan etkilenme yüksekken; şablonda
@@ -97,6 +106,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Geriye Dönük Hatırlama | geriye-donuk-hatirlama | Yayında (pilot; hoca onayı beklenmeden) |
 | Zihinde Döndürme | zihinde-dondurme | Yayında (pilot; hoca onayı beklenmeden) |
 | Tepki Hızı | tepki-hizi | Yayında (pilot; hoca onayı beklenmeden) |
+| Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
 
@@ -188,9 +198,11 @@ söylenir ve buraya yazılır.
 Bunları yalnızca site sahibi yapar. Sohbetler bunları yalnızca o anki işle ilgiliyse ya da tarihi yaklaştıysa
 hatırlatır; şifre ya da ödeme bilgisi istemez.
 
-- **Nörobilim bölümü için ağ erişimi:** sohbetin ortam menüsü → Düzenle → Ağ erişimi; erişimi genişletmek ya da
-  openstax.org, ncbi.nlm.nih.gov, ninds.nih.gov, wikipedia.org adreslerini izinli listeye eklemek
-  (https://code.claude.com/docs/en/cloud-environments#network-access). 3. basamağa gelince hatırlatılır.
+- **Nörobilim bölümü ve okuma ölçütleri için ağ erişimi:** sohbetin ortam menüsü → Düzenle → Ağ erişimi; erişimi
+  genişletmek ya da openstax.org, ncbi.nlm.nih.gov, ninds.nih.gov, wikipedia.org, dergipark.org.tr,
+  turkpsikiyatri.com, eric.ed.gov adreslerini izinli listeye eklemek
+  (https://code.claude.com/docs/en/cloud-environments#network-access). 3. basamağa gelince ya da okuma
+  ölçütleri kaynaklarla karşılaştırılacağı zaman hatırlatılır.
 - **Site sahibi bilgileri** (ad, adres, telefon, e-posta): yasa gereği İletişim sayfasında ve aydınlatma metninde
   gösterilir; her yayında uyarı olarak çıkar. Gelince `yayin/ayarlar.env`'e yazılır (CLAUDE.md).
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
@@ -205,6 +217,14 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Okuma sekmesi (`/okuma`) ve Sesli Okuma Değerlendirmesi yayında (1–8. sınıf, 24 özgün metin; "İlkokul
+  1–2" grubu açıldı). Adım adım: metin seçimi, mikrofon denemesi (dinlemeden geçilmez), sesli okuma kaydı (yalnızca
+  cihazda; sunucuya gitmez), kayıt denetimi (ses yok, kısık, gürültü, kesinti), yeniden anlatma, sorular; yetişkin
+  kaydı dinleyip kelime kelime işaretler (yanlış, atlama, yardım, ekleme; kendi düzeltme, tekrar, hece, duraksama),
+  anlatmayı ve akıcılığı değerlendirir. Rapor (ekran ve PDF): metnin düzeyi, dakikada doğru kelime, işaretli metin,
+  duraklama çizelgesi, akıcılık, anlama; gelişim yol haritası (okumanın yönlerine göre kartlar, alışkanlıklar, veliye
+  öneriler, dört hafta; `ORAL_ROADMAPS`). Aydınlatma metni (sürüm 6) ses kaydını anlatıyor; mikrofon izni yalnızca
+  sitenin kendisine açık.
 - 2026-10-07: Zihinsel görevlerin (sekiz görev) gelişim yol haritaları yayında; artık çözülebilen her testin raporunda
   yol haritası var. SSS'deki "Ücretli mi?" cevabı buna göre güncellendi; yayın denetimi görev yol haritasını da sınıyor.
 - 2026-10-07: Matematik Konu Tarama ve Okuma Hızı ve Anlama gelişim yol haritaları yayında (öğrenci ve veli raporu,
@@ -231,6 +251,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Ayrıntılı Kişilik ve Altı Boyutlu Kişilik gelişim yol haritaları önizlemede (öğrenci, veli ve
   yetişkin raporu; Altı Boyutlu'da Dürüstlük-Alçakgönüllülük ve Duygusallık için yeni metinler, altıgen üç
   boyutlu profil); hoca belgesi hazır. Üç boyutlu grafiğin açıklaması ölçüm payı olmayan testlerde kısalıyor.
-- 2026-10-07: Beş Faktör gelişim yol haritası hoca onayıyla herkese açık raporda; SSS'deki "Ücretli mi?" cevabı,
-  test sayfasının rapor listesi ve ana sayfadaki örnek rapor buna göre güncellendi; yayın denetimi yol haritasını
-  dışarıdan sınıyor.

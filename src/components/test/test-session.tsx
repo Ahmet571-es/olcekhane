@@ -4,6 +4,8 @@ import { useCallback, useState } from 'react';
 import { LikertRunner } from '@/components/runner/likert-runner';
 import { QuizRunner, type QuizClientItem } from '@/components/runner/quiz-runner';
 import { ReadingRunner } from '@/components/runner/reading-runner';
+import { OralRunner } from '@/components/runner/oral/oral-runner';
+import type { OralClientPassage, OralProsodyDimension } from '@/components/runner/oral/types';
 import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
 import { PageGuide } from '@/components/site/page-guide';
@@ -25,7 +27,8 @@ export type TestPayload =
       intro: Intro;
       passage: { key: string; title: string; paragraphs: string[]; questions: { key: string; text: string; options: { key: string; text: string }[] }[] };
     }
-  | { engine: 'tasks'; intro: Intro; tasks: CognitiveTask[] };
+  | { engine: 'tasks'; intro: Intro; tasks: CognitiveTask[] }
+  | { engine: 'oral'; intro: Intro; passages: OralClientPassage[]; prosody: OralProsodyDimension[] };
 
 type Audience = 'student' | 'parent' | 'adult';
 /** Okul çağındaki biri için öğrenci ve veli raporu, yetişkin için yalnızca kişisel rapor gelir. */
@@ -151,6 +154,16 @@ export function TestSession({
       );
     case 'reading':
       return <ReadingRunner intro={payload.intro} passage={payload.passage} onFinish={(r) => submit({ engine: 'reading', ...r })} />;
+    case 'oral':
+      return (
+        <OralRunner
+          intro={payload.intro}
+          grade={grade}
+          passages={payload.passages}
+          prosody={payload.prosody}
+          onFinish={(data) => submit({ engine: 'oral', ...data })}
+        />
+      );
     case 'tasks':
       return <TaskRunner intro={payload.intro} tasks={payload.tasks} seed={seed} onFinish={(blocks) => submit({ engine: 'tasks', seed, blocks })} />;
   }
@@ -194,11 +207,16 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
     return <p className="notice notice-danger mx-auto w-full max-w-3xl">Rapor gösterilemedi. Lütfen sayfayı yenileyip testi yeniden çözmeyi dene.</p>;
   }
   const other = available.find((a) => a !== audience);
+  // Testin kendi rapor adı varsa (ör. "Veli ve öğretmen raporu") düğme ve cümle onunla yazılır: "… raporunu".
+  const named = (a: Audience) => {
+    const n = reports[a]?.audienceName;
+    return n ? { button: `${n}nu PDF olarak indir`, object: `${n.toLocaleLowerCase('tr-TR')}nu` } : DOWNLOAD[a];
+  };
   const downloadBox = (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className="btn btn-primary btn-lg" onClick={download} disabled={busy}>
-          {busy ? 'PDF hazırlanıyor…' : DOWNLOAD[audience].button}
+          {busy ? 'PDF hazırlanıyor…' : named(audience).button}
         </button>
         {saved.has(audience) && <span className="chip chip-ok">İndirildi</span>}
       </div>
@@ -213,8 +231,8 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
         <div className="flex flex-col gap-1">
           <p className="font-bold">Raporun hazır. Bu rapor hiçbir yerde saklanmıyor.</p>
           <p>
-            Sayfayı kapatınca rapor kaybolur. Saklamak için {DOWNLOAD[audience].object} PDF olarak indir
-            {other ? `; istersen ${DOWNLOAD[other].object} da indirebilirsin.` : '.'}
+            Sayfayı kapatınca rapor kaybolur. Saklamak için {named(audience).object} PDF olarak indir
+            {other ? `; istersen ${named(other).object} da indirebilirsin.` : '.'}
           </p>
         </div>
         {downloadBox}
@@ -233,7 +251,7 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
                 onClick={() => setAudience(a)}
                 className={`rounded-md px-4 py-2 text-[0.95rem] font-bold ${audience === a ? 'bg-ink text-paper' : 'text-ink-2 hover:bg-surface-2'}`}
               >
-                {AUDIENCE_LABELS[a].name}
+                {reports[a]?.audienceName ?? AUDIENCE_LABELS[a].name}
               </button>
             ))}
           </div>
@@ -255,7 +273,7 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
       </section>
 
       {/* Kapsamlı rapor öğrenci ve veli için hazırlanıyor; yetişkinlere yönelik bir sürümü henüz planlanmadı. */}
-      {!reports.adult && !report.roadmap && (
+      {!reports.adult && !report.roadmap && !report.oral && (
         <section aria-labelledby="kapsamli" className="flex flex-col gap-2 rounded-xl border border-dashed border-rule-strong p-6">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id="kapsamli" className="t-h3">

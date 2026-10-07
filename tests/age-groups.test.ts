@@ -18,14 +18,18 @@ function pages(dir: string): string[] {
 }
 
 describe('yaş grupları', () => {
-  it('3. sınıftan yetişkine her sınıf düzeyi tam olarak bir gruptadır', () => {
-    for (const grade of [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, ADULT_GRADE]) {
+  it('1. sınıftan yetişkine her sınıf düzeyi tam olarak bir gruptadır', () => {
+    for (const grade of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, ADULT_GRADE]) {
       const inGroups = AGE_GROUPS.filter((g) => g.grades.includes(grade)).map((g) => g.key);
       expect(inGroups, `sınıf ${grade}`).toHaveLength(1);
     }
-    // 1. ve 2. sınıf bilerek yok: yönergeleri tek başına okuyamayacakları için.
-    expect(AGE_GROUPS.some((g) => g.grades.includes(1) || g.grades.includes(2))).toBe(false);
     expect(new Set(AGE_GROUPS.map((g) => g.path)).size).toBe(AGE_GROUPS.length);
+  });
+
+  it('1. ve 2. sınıfa yalnızca bir yetişkinin yaptığı değerlendirmeler açılır (yönergeleri tek başına okuyamazlar)', () => {
+    const small = INSTRUMENTS.filter((t) => t.minGrade <= 2);
+    expect(small.length).toBeGreaterThan(0);
+    for (const t of small) expect(t.engine, t.slug).toBe('oral');
   });
 
   it('yayındaki her test en az bir grupta listelenir', () => {

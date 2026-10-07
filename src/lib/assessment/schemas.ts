@@ -32,6 +32,22 @@ export const taskTrial = z.object({
 });
 
 const rt = z.number().min(0).max(3_600_000).nullable();
+
+/** Sesli okumada bir kelimenin işareti (yetişkin kaydı dinleyerek koyar). */
+const oralMark = z
+  .object({
+    s: z.enum(['sub', 'omit', 'help', 'self']).optional(),
+    said: z.string().max(40).optional(),
+    kind: z.enum(['suffix', 'similar', 'reversal', 'nonword']).optional(),
+    meaning: z.boolean().optional(),
+    rep: z.literal(true).optional(),
+    syl: z.literal(true).optional(),
+    hes: z.literal(true).optional(),
+    ins: z.number().int().min(1).max(9).optional(),
+  })
+  .strict();
+const durationMs = z.number().min(0).max(1_800_000);
+const level4 = z.number().int().min(1).max(4);
 const fewKeys = (max: number) => (o: Record<string, unknown>) => Object.keys(o).length <= max;
 
 /**
@@ -55,6 +71,28 @@ export const answersBody = z.object({
       passageKey: z.string().max(40),
       readingMs: z.number().min(0).max(3_600_000),
       answers: z.record(z.string().max(10), z.string().max(4)).refine(fewKeys(30)),
+    }),
+    z.object({
+      engine: z.literal('oral'),
+      passageKey: z.string().max(40),
+      recordMs: durationMs,
+      readingMs: z.number().min(1000).max(1_800_000),
+      timingAuto: z.boolean(),
+      /** Kayıttan cihazda hesaplanan özet (ses değil): duraklamalar ve kaba ses yüksekliği eğrisi. */
+      audio: z
+        .object({
+          quality: z.enum(['good', 'quiet', 'noisy', 'clipped', 'silent']),
+          pauses: z.array(z.tuple([durationMs, durationMs])).max(1000),
+          speechMs: durationMs,
+          contour: z.array(z.number().int().min(0).max(100)).max(120),
+          interrupted: z.boolean(),
+        })
+        .nullable(),
+      marks: z.record(z.string().max(5), oralMark).refine(fewKeys(1000)),
+      listened: z.number().min(0).max(1),
+      retell: z.object({ recorded: z.boolean(), ideas: z.array(z.string().max(10)).max(30) }).nullable(),
+      answers: z.record(z.string().max(10), z.string().max(4)).refine(fewKeys(30)),
+      prosody: z.object({ expression: level4, phrasing: level4, smoothness: level4, pace: level4 }),
     }),
     z.object({
       engine: z.literal('tasks'),

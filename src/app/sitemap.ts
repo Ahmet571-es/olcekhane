@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: MetadataRoute.Sitemap = [
     '/',
     '/testler',
+    '/okuma',
     '/rehber',
     '/veliler-icin',
     '/bilimsel-yaklasim',

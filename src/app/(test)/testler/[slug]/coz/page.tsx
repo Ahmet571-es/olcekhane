@@ -4,11 +4,14 @@ import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/site/logo';
 import { PageGuide } from '@/components/site/page-guide';
 import { TestSession, type TestPayload } from '@/components/test/test-session';
+import { PROSODY_DIMENSIONS } from '@/content/reports/sesli-okuma';
 import { ROADMAP_IN_REVIEW, ROADMAP_PREVIEW_PARAM, hasRoadmap } from '@/content/roadmaps';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
 import { likertItemNoun } from '@/lib/instruments/nouns';
 import type { InstrumentDef } from '@/lib/instruments/types';
+import { oralWordCount } from '@/lib/oral/words';
+import { oralPassagesFor } from '@/lib/scoring/oral';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
 
@@ -61,6 +64,22 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
     }
     case 'tasks':
       return { engine: 'tasks', intro, tasks: def.tasks };
+    case 'oral':
+      return {
+        engine: 'oral',
+        intro: def.intro,
+        passages: oralPassagesFor(def, grade).map((p) => ({
+          key: p.key,
+          grade: p.grade,
+          genre: p.genre,
+          title: p.title,
+          paragraphs: p.paragraphs,
+          words: oralWordCount(p.paragraphs),
+          questions: p.questions.map((q) => ({ key: q.key, text: q.text, options: q.options })),
+          ideas: p.ideas,
+        })),
+        prosody: PROSODY_DIMENSIONS.map((d) => ({ key: d.key, name: d.name, question: d.question, levels: d.levels.map((l) => l.parent) })),
+      };
   }
 }
 
@@ -114,14 +133,25 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
               <p className="t-lede">{def.tagline}</p>
             </div>
 
-            <PageGuide plain title="Nasıl ilerler?">
-              <p>Test üç adımda biter:</p>
-              <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
-                <li>{def.adults ? 'Testi kimin çözdüğünü seç' : 'Sınıfını seç'} ve “Teste başla” düğmesine bas.</li>
-                <li>Yönergeyi oku ve testi tek seferde bitir; yaklaşık {def.estimatedMinutes} dakika sürer.</li>
-                <li>Bitince raporun ekranda açılır. Saklamak için PDF olarak indir.</li>
-              </ol>
-            </PageGuide>
+            {def.engine === 'oral' ? (
+              <PageGuide plain title="Nasıl ilerler?">
+                <p>Değerlendirmeyi öğrenci ve bir yetişkin (öğretmen ya da veli) birlikte yapar:</p>
+                <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
+                  <li>Öğrencinin sınıfını seçin ve “Teste başla” düğmesine basın; sonra metni seçip mikrofonu deneyin.</li>
+                  <li>Öğrenci metni sesli okur, kendi cümleleriyle anlatır ve soruları cevaplar.</li>
+                  <li>Siz kaydı dinleyerek hataları işaretler, anlatmayı ve akıcılığı değerlendirirsiniz; rapor ekranda açılır. Yaklaşık {def.estimatedMinutes} dakika sürer.</li>
+                </ol>
+              </PageGuide>
+            ) : (
+              <PageGuide plain title="Nasıl ilerler?">
+                <p>Test üç adımda biter:</p>
+                <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
+                  <li>{def.adults ? 'Testi kimin çözdüğünü seç' : 'Sınıfını seç'} ve “Teste başla” düğmesine bas.</li>
+                  <li>Yönergeyi oku ve testi tek seferde bitir; yaklaşık {def.estimatedMinutes} dakika sürer.</li>
+                  <li>Bitince raporun ekranda açılır. Saklamak için PDF olarak indir.</li>
+                </ol>
+              </PageGuide>
+            )}
 
             <div className="notice notice-ok flex flex-col gap-2">
               <p className="font-bold">Hiçbir bilgin saklanmaz.</p>
@@ -129,6 +159,9 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
                 <li>Hesap açman gerekmez; ad, e-posta ya da telefon istemiyoruz.</li>
                 <li>Cevapların yalnızca raporu hazırlamak için kullanılır, hiçbir yere kaydedilmez.</li>
                 <li>Rapor ekranda gösterilir ve PDF olarak sana verilir. Sayfayı kapatınca cevapların ve rapor kaybolur; saklamak istersen PDF’i indir.</li>
+                {def.engine === 'oral' && (
+                  <li>Ses kaydı yalnızca bu cihazda, açık olan sayfada durur; sunucumuza ya da başka bir yere gönderilmez ve sayfa kapanınca silinir.</li>
+                )}
               </ul>
               <p className="t-small">
                 Ayrıntılar: <Link href="/yasal/aydinlatma-metni">KVKK aydınlatma metni</Link>

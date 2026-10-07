@@ -33,7 +33,7 @@ export function cardInfo(t: InstrumentDef): TestCardInfo {
     minGrade: t.minGrade,
     maxGrade: t.maxGrade,
     adults: !!t.adults,
-    perGrade: t.engine === 'reading' || t.engine === 'quiz',
+    perGrade: t.engine === 'reading' || t.engine === 'quiz' || t.engine === 'oral',
   };
 }
 
@@ -66,7 +66,7 @@ export function TestCard({ t, headingLevel = 3, solveHref }: { t: TestCardInfo; 
         <div className="flex flex-col items-start gap-1.5">
           <div className="flex flex-wrap gap-1.5">
             {t.status === 'pilot' && <span className="chip chip-brass">Pilot</span>}
-            {t.perGrade && <span className="chip">Sınıfa göre sorular</span>}
+            {t.perGrade && <span className="chip">{t.domain === 'reading' ? 'Sınıfa göre metin' : 'Sınıfa göre sorular'}</span>}
           </div>
           <p className="t-meta leading-snug">
             {t.minutes} dk · {gradeRangeLabel(t.minGrade, t.maxGrade, t.adults)}

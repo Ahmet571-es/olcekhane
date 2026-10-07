@@ -18,6 +18,12 @@ describe('yayın iş akışının dış sınaması', () => {
     expect(liste).toEqual(inceleme);
   });
 
+  it('sesli okuma: mikrofon izni, kayıt işleyicisi ve örnek rapor dışarıdan sınanır', () => {
+    expect(yml).toContain('/okuma/kayit-isleyici.js');
+    expect(yml).toContain('microphone=(self)');
+    expect(yml).toContain('/api/rapor/sesli-okuma-degerlendirmesi');
+  });
+
   it('site haritasındaki her sayfa dışarıdan açılır (yeni rehber yazıları dahil)', () => {
     expect(yml).toMatch(/sitemap\.xml" \| grep -o '<loc>/);
   });

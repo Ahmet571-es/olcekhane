@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { bars3dScene } from '@/lib/charts/bars3d';
 import { AUDIENCE_LABELS } from '@/lib/config';
+import type { OralReportBlock } from '@/lib/reports/oral';
 import type { Roadmap } from '@/lib/reports/roadmap';
+import type { OralMarkedToken } from '@/lib/scoring/oral';
 import type { RulerRow, SimpleChart, SimpleReport } from '@/lib/reports/simple';
 
 /**
@@ -60,6 +62,10 @@ const C = {
   band: '#ecd49b',
   marker: '#c23a30',
   warnBg: '#fbefd9',
+  warn: '#8a5300',
+  danger: '#b3261e',
+  ok: '#1b6e42',
+  pause: '#ee6a36',
   paper: '#ffffff',
 };
 
@@ -313,6 +319,193 @@ function Chart({ chart }: { chart: SimpleChart }) {
   return <Columns chart={chart} />;
 }
 
+/* ---------- Sesli okuma ---------- */
+
+const ORAL_TAGS = { sub: 'yanlış', omit: 'atladı', help: 'yardım', self: 'düzeltti' } as const;
+
+function OralWord({ t }: { t: OralMarkedToken }) {
+  const tags = [...(t.s ? [ORAL_TAGS[t.s]] : []), ...(t.hes ? ['durak'] : []), ...(t.syl ? ['hece'] : []), ...(t.rep ? ['tekrar'] : [])];
+  const error = t.s === 'sub' || t.s === 'omit' || t.s === 'help';
+  if (!tags.length && !t.ins) return <Text>{t.text} </Text>;
+  const color = error ? C.danger : C.warn;
+  return (
+    <Text>
+      <Text style={{ color, fontWeight: 700, textDecoration: t.s === 'omit' ? 'line-through' : error ? 'underline' : 'none' }}>{t.text}</Text>
+      {tags.length > 0 && <Text style={{ fontSize: 7, color }}> ({tags.join(', ')})</Text>}
+      {t.ins ? <Text style={{ fontSize: 7, color: C.danger, fontWeight: 700 }}> +{t.ins} ekleme</Text> : null}
+      <Text> </Text>
+    </Text>
+  );
+}
+
+function OralTimelinePdf({ t }: { t: NonNullable<OralReportBlock['timeline']> }) {
+  const W = 507;
+  const H = 54;
+  const bw = W / Math.max(1, t.contour.length);
+  const secs = Math.round(t.totalMs / 1000);
+  const step = secs > 120 ? 30 : secs > 40 ? 10 : 5;
+  const ticks: number[] = [];
+  for (let x = 0; x <= secs; x += step) ticks.push(x);
+  return (
+    <View wrap={false}>
+      <Svg width={W} height={H + 14}>
+        <Rect x={0} y={0} width={W} height={H} rx={5} fill={C.surface2} />
+        {t.pauses.map(([a, b]) => (
+          <Rect key={a} x={(a / t.totalMs) * W} y={0} width={Math.max(2, ((b - a) / t.totalMs) * W)} height={H} fill={C.pause} fillOpacity={0.35} />
+        ))}
+        {t.contour.map((v, i) => {
+          const h = Math.max(1, (v / 100) * (H - 8));
+          return <Rect key={i} x={i * bw + bw * 0.15} y={(H - h) / 2} width={bw * 0.7} height={h} fill={C.ink} />;
+        })}
+        {ticks.map((x) => (
+          <Text key={x} x={Math.min(W - 10, (x / Math.max(1, secs)) * W)} y={H + 11} textAnchor={x === 0 ? 'start' : 'middle'} style={{ fontFamily: 'Atkinson', fontSize: 7, fill: C.ink3 }}>
+            {x === 0 ? '0 sn' : String(x)}
+          </Text>
+        ))}
+      </Svg>
+      <Text style={s.note}>{t.caption}</Text>
+    </View>
+  );
+}
+
+function OralLevelPdf({ oral, you }: { oral: OralReportBlock; you: boolean }) {
+  return (
+    <View style={{ marginTop: 14, borderWidth: 1.2, borderColor: C.brass, backgroundColor: C.brassSoft, borderRadius: 8, padding: 12 }} wrap={false}>
+      <Text style={{ fontSize: 8.5, color: C.ink2 }}>
+        {you ? 'Okuduğun metin' : 'Okunan metin'}: “{oral.passage.title}” · {oral.passage.gradeLabel} · {oral.passage.genre} · {oral.passage.words} kelime
+      </Text>
+      <Text style={{ fontFamily: 'Bricolage', fontWeight: 700, fontSize: 18, lineHeight: 1.2, marginTop: 4 }}>{oral.level.label}</Text>
+      <Text style={[s.para, { marginTop: 4 }]}>{oral.level.text}</Text>
+      {oral.level.profile && <Text style={[s.para, { marginTop: 4, color: C.ink2 }]}>{oral.level.profile}</Text>}
+    </View>
+  );
+}
+
+function OralSectionsPdf({ report }: { report: SimpleReport }) {
+  const oral = report.oral!;
+  const you = report.audience !== 'parent';
+  const cell = { paddingVertical: 4, paddingHorizontal: 6 };
+  return (
+    <View>
+      <View wrap={false}>
+        <Text style={s.h2}>Düzey nasıl belirlendi?</Text>
+        {oral.criteria.map((c) => (
+          <View key={c.label} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.rule }}>
+            <View style={[cell, { flex: 1 }]}>
+              <Text style={{ fontWeight: 700 }}>{c.label}</Text>
+              <Text style={{ fontSize: 8, color: C.ink3 }}>{c.rule}</Text>
+            </View>
+            <Text style={[cell, { width: 60, fontWeight: 700 }]}>{c.value}</Text>
+            <Text style={[cell, { width: 70 }]}>{c.level}</Text>
+          </View>
+        ))}
+        <Text style={s.note}>Metnin düzeyi, iki ölçütten düşük olanıdır. Eşikler Ölçekhane’nin pilot ölçütleridir; bir norm değildir.</Text>
+      </View>
+
+      <Text style={s.h2} minPresenceAhead={80}>
+        {you ? 'Okuman, kelime kelime' : 'Okuma, kelime kelime'}
+      </Text>
+      <Text style={[s.paraSmall, { color: C.ink2, marginBottom: 6 }]}>
+        Kırmızı kelimeler hata sayılanlar (yanlış okuma, atlama, yardımla okuma, ekleme), sarı kelimeler hata sayılmayan gözlemlerdir (kendi düzeltme,
+        tekrar, heceleme, duraksama); işaretin adı kelimenin yanında yazılıdır.
+      </Text>
+      <View style={{ borderWidth: 1, borderColor: C.rule, borderRadius: 6, padding: 10 }}>
+        {oral.marked.map((p, i) => (
+          <Text key={i} style={{ fontSize: 11, lineHeight: 1.7, marginBottom: i < oral.marked.length - 1 ? 6 : 0 }}>
+            {p.map((t, j) => (
+              <OralWord key={j} t={t} />
+            ))}
+          </Text>
+        ))}
+      </View>
+      <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }} wrap={false}>
+        {[
+          { title: 'Hata sayılanlar', rows: oral.counted, color: C.danger },
+          { title: 'Hata sayılmayanlar', rows: oral.notCounted, color: C.warn },
+        ].map((g) => (
+          <View key={g.title} style={{ flex: 1 }}>
+            <Text style={{ fontWeight: 700, color: g.color, marginBottom: 2 }}>{g.title}</Text>
+            {g.rows.map((r) => (
+              <View key={r.label} style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: C.rule, paddingVertical: 3 }}>
+                <Text>{r.label}</Text>
+                <Text style={{ fontWeight: 700 }}>{String(r.value)}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+      {oral.substitutions.length > 0 && (
+        <Text style={[s.paraSmall, { marginTop: 6 }]}>
+          <Text style={{ fontWeight: 700 }}>{you ? 'Yanlış okuduğun kelimeler: ' : 'Yanlış okunan kelimeler: '}</Text>
+          {oral.substitutions.map((x) => (x.said ? `${x.word} › ${x.said}` : x.word)).join(' · ')}
+        </Text>
+      )}
+
+      {oral.timeline && (
+        <View wrap={false}>
+          <Text style={s.h2}>Okumanın ritmi</Text>
+          <OralTimelinePdf t={oral.timeline} />
+        </View>
+      )}
+
+      <Text style={s.h2} minPresenceAhead={60}>
+        {report.itemsTitle}
+      </Text>
+      {report.items.map((it) => (
+        <View key={it.title} style={s.item} wrap={false}>
+          <View style={s.itemHead}>
+            <Text style={s.itemTitle}>{it.title}</Text>
+            {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
+          </View>
+          <Text style={s.para}>{it.text}</Text>
+        </View>
+      ))}
+
+      <View wrap={false}>
+        <Text style={s.h2}>
+          Akıcılık: {oral.prosodyTotal} / 16 · {oral.prosodyLabel}
+        </Text>
+        {oral.prosody.map((p) => (
+          <View key={p.name} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.rule, paddingVertical: 4 }}>
+            <Text style={{ width: 180, fontWeight: 700 }}>
+              {p.name} · {p.value} / 4
+            </Text>
+            <Text style={[s.para, { flex: 1, color: C.ink2 }]}>{p.text}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View wrap={false}>
+        <Text style={s.h2}>{you ? 'Okuduğunu anlaman' : 'Okuduğunu anlama'}</Text>
+        <Bars rows={oral.skills.map((x) => ({ label: x.label, value: x.correct, max: x.total, valueLabel: `${x.correct} / ${x.total}` }))} />
+      </View>
+      {oral.retell && (
+        <View wrap={false} style={{ marginTop: 8 }}>
+          <Text style={{ fontWeight: 700, marginBottom: 3 }}>{you ? 'Metni anlatırken söylediğin fikirler' : 'Yeniden anlatmada söylenen fikirler'}</Text>
+          {oral.retell.map((x) => (
+            <View key={x.text} style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', marginBottom: 2 }}>
+              <View style={{ width: 8, height: 8, marginTop: 3, borderRadius: 4, borderWidth: 1.2, borderColor: x.said ? C.ok : C.ruleStrong, backgroundColor: x.said ? C.ok : C.paper }} />
+              <Text style={[s.para, { flex: 1, color: x.said ? C.ink : C.ink3 }]}>
+                {x.text}
+                {x.core ? <Text style={{ fontSize: 8, fontWeight: 700, color: C.brassInk }}> (temel)</Text> : null}
+                <Text style={{ fontSize: 8, color: C.ink3 }}>{x.said ? ' söylendi' : ' söylenmedi'}</Text>
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <View style={s.support} wrap={false}>
+        <Text style={{ fontWeight: 700, marginBottom: 3 }}>Sonraki değerlendirme</Text>
+        <Text style={s.para}>{oral.next}</Text>
+        <Text style={[s.paraSmall, { marginTop: 4, color: C.ink2 }]}>
+          {you ? 'Okumanı geliştirmek için öneriler gelişim yol haritasında.' : 'Okumayı geliştirmek için öneriler gelişim yol haritasındadır.'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 /* ---------- Gelişim yol haritası ---------- */
 
 /** Üç boyutlu profil: ekrandakiyle aynı hesap, sabit bir açıdan. */
@@ -508,7 +701,7 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
 /* ---------- Belge ---------- */
 
 export function SimpleReportDocument({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
-  const kind = AUDIENCE_LABELS[report.audience].name;
+  const kind = report.audienceName ?? AUDIENCE_LABELS[report.audience].name;
   // Öğrenci ve yetişkin raporları ikinci tekil şahısla yazılır.
   const you = report.audience !== 'parent';
   const date = dateFmt.format(new Date(report.completedAt));
@@ -552,17 +745,23 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
           </View>
         )}
 
-        {report.keyFigures.length > 0 && (
-          <View style={s.figures} wrap={false}>
-            {report.keyFigures.map((f, i) => (
-              <View key={f.label} style={i === report.keyFigures.length - 1 ? s.figureLast : s.figure}>
-                <Text style={s.figureLabel}>{f.label}</Text>
-                <Text style={s.figureValue}>{f.value}</Text>
-                {f.note && <Text style={s.figureNote}>{f.note}</Text>}
-              </View>
-            ))}
-          </View>
-        )}
+        {report.oral && <OralLevelPdf oral={report.oral} you={you} />}
+
+        {/* Dörtten çok sayı varsa üçerli satırlara bölünür (sayfa genişliğine sığsın). */}
+        {report.keyFigures.length > 0 &&
+          (report.keyFigures.length > 4 ? [report.keyFigures.slice(0, 3), report.keyFigures.slice(3)] : [report.keyFigures]).map((row, r) => (
+            <View key={r} style={[s.figures, r > 0 ? { marginTop: 6 } : {}]} wrap={false}>
+              {row.map((f, i) => (
+                <View key={f.label} style={i === row.length - 1 ? s.figureLast : s.figure}>
+                  <Text style={s.figureLabel}>{f.label}</Text>
+                  <Text style={s.figureValue}>{f.value}</Text>
+                  {f.note && <Text style={s.figureNote}>{f.note}</Text>}
+                </View>
+              ))}
+            </View>
+          ))}
+
+        {report.oral && <OralSectionsPdf report={report} />}
 
         {report.chart && (
           <View wrap={false}>
@@ -572,11 +771,13 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
           </View>
         )}
 
-        <Text style={s.h2} minPresenceAhead={60}>
-          {report.itemsTitle}
-        </Text>
+        {!report.oral && (
+          <Text style={s.h2} minPresenceAhead={60}>
+            {report.itemsTitle}
+          </Text>
+        )}
         {report.groupsNote && <Text style={[s.note, { marginTop: 0, marginBottom: 6 }]}>{report.groupsNote}</Text>}
-        {report.items.map((it) => (
+        {!report.oral && report.items.map((it) => (
           <View key={it.title} style={s.item} wrap={false}>
             <View style={s.itemHead}>
               <Text style={s.itemTitle}>{it.title}</Text>

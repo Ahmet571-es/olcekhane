@@ -1,6 +1,7 @@
 import { ScaleRuler } from '@/components/report/scale-ruler';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { RulerRow, SimpleChart, SimpleGroup, SimpleReport } from '@/lib/reports/simple';
+import { OralLevelBanner, OralReportSections } from './oral-report';
 
 /**
  * Basit raporun ekrandaki hâli. PDF'teki raporla aynı içeriği gösterir: teste uygun tek
@@ -231,7 +232,7 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
     <article className="flex flex-col gap-9">
       <header className="flex flex-col gap-3 border-b border-rule pb-7">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="chip">{AUDIENCE_LABELS[report.audience].name}</span>
+          <span className="chip">{report.audienceName ?? AUDIENCE_LABELS[report.audience].name}</span>
           {report.isPilot && <span className="chip chip-brass">Pilot test</span>}
         </div>
         <h1 className="t-h1">{report.instrumentName}</h1>
@@ -251,10 +252,18 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
         </div>
       )}
 
+      {report.oral && <OralLevelBanner oral={report.oral} you={you} />}
+
       {report.keyFigures.length > 0 && (
         <dl
           className={`grid gap-px overflow-hidden rounded-xl border border-rule bg-rule ${
-            report.keyFigures.length === 1 ? 'grid-cols-1' : report.keyFigures.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'
+            report.keyFigures.length === 1
+              ? 'grid-cols-1'
+              : report.keyFigures.length === 2
+                ? 'grid-cols-2'
+                : report.keyFigures.length > 4
+                  ? 'grid-cols-2 sm:grid-cols-3'
+                  : 'grid-cols-1 sm:grid-cols-3'
           }`}
         >
           {report.keyFigures.map((f) => (
@@ -267,6 +276,8 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
         </dl>
       )}
 
+      {report.oral && <OralReportSections report={report} />}
+
       {report.chart && (
         <section aria-labelledby="grafik" className="flex flex-col gap-4">
           <h2 id="grafik" className="t-h2">
@@ -277,27 +288,29 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
         </section>
       )}
 
-      <section aria-labelledby="ogeler" className="flex flex-col gap-4">
-        <h2 id="ogeler" className="t-h2">
-          {report.itemsTitle}
-        </h2>
-        {report.groupsNote && <p className="t-meta measure">{report.groupsNote}</p>}
-        {report.groups ? (
-          <Groups groups={report.groups} />
-        ) : (
-          <ul className="flex flex-col divide-y divide-rule border-y border-rule">
-            {report.items.map((it) => (
-              <li key={it.title} className="flex flex-col gap-1.5 py-5">
-                <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="font-display text-lg font-bold">{it.title}</span>
-                  {it.badge && <span className="t-small font-bold text-brass-ink">{it.badge}</span>}
-                </p>
-                <p className="measure text-ink-2">{it.text}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {!report.oral && (
+        <section aria-labelledby="ogeler" className="flex flex-col gap-4">
+          <h2 id="ogeler" className="t-h2">
+            {report.itemsTitle}
+          </h2>
+          {report.groupsNote && <p className="t-meta measure">{report.groupsNote}</p>}
+          {report.groups ? (
+            <Groups groups={report.groups} />
+          ) : (
+            <ul className="flex flex-col divide-y divide-rule border-y border-rule">
+              {report.items.map((it) => (
+                <li key={it.title} className="flex flex-col gap-1.5 py-5">
+                  <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="font-display text-lg font-bold">{it.title}</span>
+                    {it.badge && <span className="t-small font-bold text-brass-ink">{it.badge}</span>}
+                  </p>
+                  <p className="measure text-ink-2">{it.text}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       {report.support && (
         <section className="panel flex flex-col gap-2 p-6">

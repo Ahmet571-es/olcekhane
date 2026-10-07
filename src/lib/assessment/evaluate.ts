@@ -1,16 +1,19 @@
 import 'server-only';
 import { getInstrumentDef, isSolvable, publicInstruments } from '@/content/instruments';
-import { ACADEMIC_ROADMAPS, INTEREST_ROADMAPS, READING_ROADMAPS, ROADMAPS, ROADMAP_IN_REVIEW, TASK_ROADMAPS } from '@/content/roadmaps';
+import { ACADEMIC_ROADMAPS, INTEREST_ROADMAPS, ORAL_ROADMAPS, READING_ROADMAPS, ROADMAPS, ROADMAP_IN_REVIEW, TASK_ROADMAPS } from '@/content/roadmaps';
 import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
 import type { InstrumentDef } from '@/lib/instruments/types';
 import { buildAcademicRoadmap } from '@/lib/reports/academic-roadmap';
 import { buildReport, type Audience, type ReportContent } from '@/lib/reports/build';
 import { buildInterestRoadmap } from '@/lib/reports/interest-roadmap';
+import { buildOralReport } from '@/lib/reports/oral';
+import { buildOralRoadmap } from '@/lib/reports/oral-roadmap';
 import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
 import { buildRoadmap, type Roadmap } from '@/lib/reports/roadmap';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { buildTaskRoadmap } from '@/lib/reports/task-roadmap';
 import { likertQuality, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
+import { OralInputError, scoreOral, type OralResult } from '@/lib/scoring/oral';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
 import { TaskInputError } from '@/lib/scoring/tasks';
@@ -121,17 +124,21 @@ function roadmapFor(def: InstrumentDef, content: ReportContent, body: AnswersBod
   if (!any) return undefined;
   const preview = ROADMAP_IN_REVIEW.has(s);
   if (preview && !body.roadmapPreview) return undefined;
-  const live = publicInstruments();
-  const next = any.nextTests
-    .flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== s && gradeAllowed(t, body.grade)))
-    .slice(0, 2)
-    .map((t) => ({ name: t.name, href: `/testler/${t.slug}` }));
-  const opts = { preview, next };
+  const opts = { preview, next: nextTestsFor(any.nextTests, s, body.grade) };
   if (ROADMAPS[s]) return buildRoadmap(content, ROADMAPS[s], opts);
   if (INTEREST_ROADMAPS[s]) return buildInterestRoadmap(content, INTEREST_ROADMAPS[s], opts);
   if (ACADEMIC_ROADMAPS[s]) return buildAcademicRoadmap(content, ACADEMIC_ROADMAPS[s], opts);
   if (READING_ROADMAPS[s]) return buildReadingRoadmap(content, READING_ROADMAPS[s], opts);
   return buildTaskRoadmap(content, TASK_ROADMAPS[s], opts);
+}
+
+/** Yol haritasının son haftasında önerilecek testler: kişinin sınıfına uyan, yayındaki en çok iki test. */
+function nextTestsFor(slugs: string[], self: string, grade: number) {
+  const live = publicInstruments();
+  return slugs
+    .flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== self && gradeAllowed(t, grade)))
+    .slice(0, 2)
+    .map((t) => ({ name: t.name, href: `/testler/${t.slug}` }));
 }
 
 /** Cevapları doğrulayıp puanlar; aynı puanlardan istenen kişiye yazılmış raporu hazırlayan işlevi döndürür. */
@@ -140,6 +147,26 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
   if (!def) throw new AssessmentError('not_found', 'Test bulunamadı.');
   if (!gradeAllowed(def, body.grade)) {
     throw new AssessmentError('grade', body.grade === ADULT_GRADE ? 'Bu test yetişkinler için uygun değil.' : 'Bu test seçilen sınıf düzeyine uygun değil.');
+  }
+  // Sesli okuma: işaretlerden, sürelerden ve cevaplardan kendi raporu kurulur (ses kaydı sunucuya hiç gelmez).
+  if (def.engine === 'oral') {
+    if (body.data.engine !== 'oral') throw new AssessmentError('invalid', 'Geçersiz istek.');
+    let result: OralResult;
+    try {
+      result = scoreOral(def, body.grade, body.data);
+    } catch (err) {
+      if (err instanceof OralInputError) throw new AssessmentError('invalid', err.message);
+      throw err;
+    }
+    const passage = def.passages.find((p) => p.key === result.passageKey)!;
+    const template = ORAL_ROADMAPS[def.slug];
+    const preview = ROADMAP_IN_REVIEW.has(def.slug);
+    const withRoadmap = !!template && (!preview || !!body.roadmapPreview);
+    const next = withRoadmap ? nextTestsFor(template.nextTests, def.slug, body.grade) : [];
+    return (audience, now) => {
+      const report = buildOralReport({ def, passage, result, audience, grade: body.grade, completedAt: now });
+      return withRoadmap ? { ...report, roadmap: buildOralRoadmap(result, audience, template, { preview, next }) } : report;
+    };
   }
   const { rows, notes } = score(def, body);
   const scores = rows.map(toReportScore);

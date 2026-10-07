@@ -61,6 +61,7 @@ export const DOMAIN_LABELS: Record<string, string> = {
   personality: 'Kişilik',
   career: 'İlgi ve meslek',
   academic: 'Öğrenme ve akademik beceriler',
+  reading: 'Okuma',
   cognitive: 'Zekâ ve zihinsel beceriler',
   wellbeing: 'İyi oluş',
   skills: 'Sosyal-duygusal beceriler',

@@ -16,6 +16,7 @@ import { meslekiIlgi } from './mesleki-ilgi';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
+import { sesliOkuma } from './sesli-okuma';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
 import { tepkiHizi } from './tepki-hizi';
 import { zihindeDondurme } from './zihinde-dondurme';
@@ -29,6 +30,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   meslekiIlgi,
   meslekIlgiAlanlari,
   calismaAliskanliklari,
+  sesliOkuma,
   okumaHizi,
   matematik,
   dikkatBellek,

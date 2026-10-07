@@ -131,7 +131,7 @@ jobs:
           # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı. Site sahibinin 2026-10-07 kararıyla testler
           # hoca onayı beklenmeden yayına alındığı için liste şimdilik boştur.
           ONIZLEME=""
-          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz ${ONIZLEME:+$(printf ' /testler/%s' $ONIZLEME)} '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
+          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz ${ONIZLEME:+$(printf ' /testler/%s' $ONIZLEME)} '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /okuma /ilkokul-1-2 '/testler/sesli-okuma-degerlendirmesi/coz?sinif=3' /okuma/kayit-isleyici.js /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
           done
@@ -212,6 +212,14 @@ jobs:
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TH_GOVDE" "https://$ALAN/api/rapor/tepki-hizi" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 2 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Bölümlere göre tipik tepki süresi" and r["student"]["items"][2]["badge"] == "Seçmeli bölümde 0,16 sn daha uzun"; m=r["parent"]["roadmap"]; assert m["bars"] == [] and len(m["standout"]) == 3 and m["settings"]["title"] == "Bilmekte yarar var" and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
             sorun="$sorun tepki-hizi-raporu"
+          fi
+          # Sesli okuma: tarayıcı mikrofonu yalnızca izin başlığı açıksa kullanabilir; ses cihazda kalır, sunucuya yalnızca
+          # işaretler, süreler ve cevaplar gelir. Örnek: 3. sınıf metni, iki yanlış okuma, bir yeniden anlatma fikri.
+          "${C[@]}" -I "https://$ALAN/okuma" | grep -qi '^permissions-policy:.*microphone=(self)' || sorun="$sorun mikrofon-izni"
+          SO_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 3, "data": {"engine": "oral", "passageKey": "g3-kus-yemligi", "recordMs": 110000, "readingMs": 100000, "timingAuto": True, "audio": {"quality": "good", "pauses": [[1000, 2500]], "speechMs": 80000, "contour": [50] * 120, "interrupted": False}, "marks": {"0": {"s": "sub"}, "5": {"s": "omit"}}, "listened": 1, "retell": {"recorded": True, "ideas": ["i1"]}, "answers": {f"q{i}": "a" for i in range(1, 9)}, "prosody": {"expression": 3, "phrasing": 3, "smoothness": 3, "pace": 3}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$SO_GOVDE" "https://$ALAN/api/rapor/sesli-okuma-degerlendirmesi" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); o=r["parent"]["oral"]; assert r["parent"]["audienceName"] == "Veli ve öğretmen raporu" and len(r["student"]["keyFigures"]) == 6 and o["level"]["key"] in ("easy", "support", "hard") and o["counted"][0]["value"] == 1 and o["timeline"]'; then
+            sorun="$sorun sesli-okuma-raporu"
           fi
           # Aynı test yetişkin olarak ("Yetişkinim", 14): yalnızca kişisel rapor.
           YETISKIN_GOVDE=$(printf '%s' "$KISILIK_GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["grade"]=14; print(json.dumps(b))')
