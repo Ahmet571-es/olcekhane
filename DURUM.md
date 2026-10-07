@@ -30,7 +30,7 @@ Basamaklar:
 1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
    aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör, Ayrıntılı Kişilik, Altı Boyutlu Kişilik, Duygusal Zekâ
-   Bileşenleri ve Kişilerarası Tarz'da yayında (ilk üçü hoca onaylı; son ikisi 2026-10-07 kararıyla onay beklenmeden).
+   Bileşenleri, Kişilerarası Tarz, Öz-saygı ve Çalışma Alışkanlıkları'nda yayında (ilk üçü hoca onaylı; son ikisi 2026-10-07 kararıyla onay beklenmeden).
    Sırada öteki testlerin yol haritaları; doğrudan yayına alınır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
@@ -53,8 +53,10 @@ Basamaklar:
    doğrudan yayına (2026-10-07 kararı). Yayında: Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik, Duygusal Zekâ
    Bileşenleri (2. hafta "Duygularına dikkat", iyi oluş haftası Üzücü olaylardan etkilenme yüksekken; şablonda
    `planningTitle` ve `wellbeing.link`), Kişilerarası Tarz (sekiz tarz çemberin sırasıyla; 2. hafta "Birlikte
-   çalışırken" = Öne çıkma; iyi oluş haftası yok). Sırada: Öz-saygı, Çalışma Alışkanlıkları; sonra ilgi testleri ve
-   zihinsel görevler (bunların bölümleri kişilik testlerinden farklı tasarlanır).
+   çalışırken" = Öne çıkma; iyi oluş haftası yok), Öz-saygı (tek boyut: üç boyutlu profil ve ortamlar yok, 3. hafta
+   şablondaki `extraWeek`, "Öz-saygı nedir?" bağlantısı), Çalışma Alışkanlıkları (ortamlar yok; 3. hafta en düşük
+   puanlı alışkanlık, `thirdWeek: 'lowest'`). Sırada: ilgi testleri (Meslek İlgi Alanları, Mesleki İlgi Profili, Hobi
+   ve Serbest Zaman İlgileri) ve zihinsel görevler; bunların bölümleri kişilik testlerinden farklı tasarlanır.
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -202,6 +204,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Öz-saygı ve Çalışma Alışkanlıkları gelişim yol haritaları yayında (doğrudan). Yol haritasında ortamlar
+  bölümü isteğe bağlı, tek boyutlu testte üç boyutlu profil gösterilmiyor; test sayfasındaki tanıtım testin kendi
+  bölümlerini sayıyor.
 - 2026-10-07: Site sahibinin kararıyla hoca onayı beklenmeden yayına alındı: Renk-Kelime, Dur-Git, Sırayla
   Birleştirme, Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı (pilot) ile Duygusal Zekâ Bileşenleri ve
   Kişilerarası Tarz yol haritaları. Çalışma kuralları buna göre güncellendi (CLAUDE.md).
@@ -229,6 +234,3 @@ En yeni üstte; en çok 10 madde tutulur.
   sınıf seçimi ve "Nereden başlamalı?" önerileri; ana sayfada, Testler'de, menüde ve altbilgide grup seçimi; her
   sayfanın başında yol gösterici kutu (test başlatma ve rapor ekranı dahil), bulunamayan sayfa için yönlendirme;
   "Bilişsel beceriler" alanı "Zekâ ve zihinsel beceriler" oldu ve sırada ikinciye alındı.
-- 2026-10-06: Yeni sohbetlerin aynı düzende çalışması için çalışma döngüsü (CLAUDE.md), bu dosya, yardımcı araçlar
-  (`araclar/`), rehber yazıları ve yayın denetimi testleri; yayın denetimi artık site haritasındaki bütün sayfaları
-  internetten açıyor.

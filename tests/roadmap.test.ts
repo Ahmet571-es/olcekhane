@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { REPORT_TEMPLATES } from '@/content/reports';
-import { ROADMAPS, ROADMAP_IN_REVIEW, hasPublicRoadmap } from '@/content/roadmaps';
+import { ROADMAPS, ROADMAP_IN_REVIEW, hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
 import type { AudienceText } from '@/content/roadmaps/types';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import { answersBody } from '@/lib/assessment/schemas';
@@ -28,6 +28,21 @@ function setup(slug: string) {
   const scales = def<LikertInstrument>(slug).scales.filter((s) => t.scales[s.key]);
   const bands = ALL_BANDS.filter((b) => tpl.bandLabels[b]);
   return { t, tpl, scales, bands };
+}
+
+/**
+ * Yetişkin metinleri denetlenen şablonlar: test yetişkinlere açıksa ya da şablonda yetişkin metni yazılmışsa (Beş Faktör
+ * yetişkin metinleri ileride açılınca hazır). Yalnızca öğrencilere açık testlerde öğrenci metni okula özgü olabilir.
+ */
+function adultReady(slug: string): boolean {
+  const t = ROADMAPS[slug];
+  const anyAdult = Object.values(t.scales).some((s) => [...Object.values(s.study), ...Object.values(s.action)].some((x) => x.adult));
+  return !!def<LikertInstrument>(slug).adults || anyAdult;
+}
+
+/** Şablonda ortam metni var mı (kişilik testleri); yoksa ortamlar bölümü gösterilmez. */
+function hasSettings(slug: string): boolean {
+  return Object.values(ROADMAPS[slug].scales).some((s) => s.settings);
 }
 
 /** Bir düzey birleşimi için yol haritası (rapor metinleri sitedeki şablondan). */
@@ -71,8 +86,7 @@ function texts(rm: Roadmap): string[] {
     rm.standoutNote ?? '',
     rm.study.intro,
     ...rm.study.items.map((i) => i.text),
-    rm.settings.intro,
-    rm.settings.note,
+    ...(rm.settings ? [rm.settings.intro, rm.settings.note] : []),
     ...rm.weeks.map((w) => w.text),
     ...(rm.approach?.items.map((i) => i.text) ?? []),
   ].filter(Boolean);
@@ -97,7 +111,7 @@ describe('gelişim yol haritası: şablonlar', () => {
               expect(y.length, `${label} ${g}`).toBeGreaterThan(30);
               expect(y.trim(), `${label} ${g}`).toMatch(/[.!?]$/);
             }
-            expect(x.adult ?? x.student, `${label} ${g}`).not.toMatch(SCHOOL);
+            if (adultReady(slug)) expect(x.adult ?? x.student, `${label} ${g}`).not.toMatch(SCHOOL);
             expect(x.parent, `${label} ${g}`).toMatch(/[Çç]ocuğunuz/);
             expect(x.student, `${label} ${g}`).not.toMatch(/[Çç]ocuğunuz/);
           }
@@ -105,10 +119,17 @@ describe('gelişim yol haritası: şablonlar', () => {
           if (t.approach) expect(tip, `${label} ${g} veliye yaklaşım`).toBeTruthy();
           if (tip) expect(tip.trim(), `${label} ${g}`).toMatch(/[.!?]$/);
         }
-        // Orta düzeyde belirgin bir ortam yoktur; uçlarda vardır.
-        expect(r.settings.average).toBeUndefined();
-        expect(r.settings.low && r.settings.high, label).toBeTruthy();
+        // Orta düzeyde belirgin bir ortam yoktur; uçlarda vardır. Ortamı olan şablonda her boyutun ortamı ve notu vardır.
+        if (hasSettings(slug)) {
+          expect(r.settings?.average).toBeUndefined();
+          expect(r.settings?.low && r.settings?.high, label).toBeTruthy();
+        } else {
+          expect(r.settings, label).toBeUndefined();
+        }
       }
+      expect(!!t.settingsNote, slug).toBe(hasSettings(slug));
+      // Tek boyutlu testte 3. hafta şablondaki ek denemedir.
+      expect(!!t.extraWeek, slug).toBe(scales.length === 1);
     }
   });
 
@@ -139,17 +160,21 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       const keys = scales.map((s) => s.key);
       counts[slug] = 0;
       for (const combo of combos(bands, scales.length)) {
-        for (const a of AUDIENCES) {
+        for (const a of AUDIENCES.filter((x) => x !== 'adult' || adultReady(slug))) {
           const rm = roadmapFor(slug, combo, a);
           const label = `${slug} ${combo.join(',')} ${a}`;
           const groups = combo.map(bandGroup);
           expect(rm.bars, label).toHaveLength(scales.length);
           expect(rm.study.items, label).toHaveLength(scales.length);
-          // Öne çıkanlar yalnızca orta düzeyde olmayan boyutlardır; hiç yoksa dengeli profil cümlesi gösterilir.
+          // Öne çıkanlar yalnızca orta düzeyde olmayan boyutlardır; hiç yoksa dengeli profil cümlesi gösterilir. Tek
+          // boyutlu testte o boyut her zaman gösterilir.
           const extremes = groups.filter((g) => g !== 'average').length;
-          expect(rm.standout.length, label).toBe(Math.min(2, extremes));
-          expect(rm.standoutNote === null, label).toBe(extremes > 0);
-          expect(rm.settings.items.length, label).toBe(extremes);
+          expect(rm.standout.length, label).toBe(scales.length === 1 ? 1 : Math.min(2, extremes));
+          expect(rm.standoutNote === null, label).toBe(scales.length === 1 || extremes > 0);
+          if (hasSettings(slug)) expect(rm.settings?.items.length, label).toBe(extremes);
+          else expect(rm.settings, label).toBeNull();
+          // Rozette düzey ile kısa ad aynıysa bir kez yazılır.
+          for (const it of rm.study.items) expect(it.badge, label).not.toMatch(/^(.+) · \1$/);
           // Dört hafta: fark et, çalışma düzeni, (iyi oluş gerekiyorsa) iyi oluş ya da en belirgin boyut, gözden geçir.
           expect(rm.weeks.map((w) => w.label), label).toEqual(['1. hafta', '2. hafta', '3. hafta', '4. hafta']);
           expect(rm.weeks[1].title, label).toBe(t.planningTitle ?? 'Çalışma düzeni');
@@ -158,10 +183,26 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
             expect(rm.weeks[2].title, label).toBe(scales[keys.indexOf(wb.scale)].name);
             // İyi oluş bağlantısı: verilmezse "Sınav kaygısı" yazısı, `null` ise hiç bağlantı yok.
             const href = wb.link === undefined ? '/rehber/sinav-kaygisi' : wb.link?.href;
-            expect(rm.study.links.map((l) => l.href), label).toEqual(['/rehber/etkili-ders-calisma-yontemleri', ...(href ? [href] : [])]);
+            expect(rm.study.links.map((l) => l.href), label).toEqual([
+              '/rehber/etkili-ders-calisma-yontemleri',
+              ...(href ? [href] : []),
+              ...(t.links ?? []).map((l) => l.href),
+            ]);
           } else {
-            expect(rm.weeks[2].title, label).not.toBe(scales[keys.indexOf(t.planningScale)].name);
-            expect(rm.study.links.some((l) => l.href === '/rehber/sinav-kaygisi'), label).toBe(false);
+            expect(rm.study.links.map((l) => l.href), label).toEqual([
+              '/rehber/etkili-ders-calisma-yontemleri',
+              ...(t.links ?? []).map((l) => l.href),
+            ]);
+            const others = keys.map((k, i) => ({ k, i })).filter((x) => x.k !== t.planningScale);
+            if (others.length === 0) {
+              expect(rm.weeks[2].title, label).toBe(t.extraWeek!.title);
+            } else if (t.thirdWeek === 'lowest') {
+              // En düşük puanlı (eşitlikte ilk) alışkanlık.
+              const lowest = others.reduce((m, x) => (VALUE[combo[x.i]] < VALUE[combo[m.i]] ? x : m));
+              expect(rm.weeks[2].title, label).toBe(scales[lowest.i].name);
+            } else {
+              expect(rm.weeks[2].title, label).not.toBe(scales[keys.indexOf(t.planningScale)].name);
+            }
           }
           expect(rm.approach !== null, label).toBe(a === 'parent');
           if (a === 'parent') expect(rm.approach!.items, label).toHaveLength(scales.length);
@@ -180,6 +221,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'alti-boyutlu-kisilik-profili': 3 ** 6 * 3,
       'duygusal-zeka-bilesenleri': 3 ** 7 * 3,
       'kisilerarasi-tarz': 3 ** 8 * 3,
+      'oz-saygi': 3 * 2,
+      'calisma-aliskanliklari': 5 ** 5 * 2,
     });
   }, 60_000);
 });
@@ -195,7 +238,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(plain.student.roadmap?.preview).toBe(false);
     expect(plain.parent.roadmap?.approach?.items.length).toBe(5);
     expect(evaluate(SLUG, { ...body, roadmapPreview: true }, now)).toEqual(plain);
-    const other = evaluate('oz-saygi', { ...likertBody('oz-saygi', 8, (i) => i % 4), roadmapPreview: true });
+    const other = evaluate('mesleki-ilgi-profili', { ...likertBody('mesleki-ilgi-profili', 8, (i) => i % 5), roadmapPreview: true });
     expect(other.student.roadmap).toBeUndefined();
     expect(answersBody.safeParse({ ...body, roadmapPreview: true }).success).toBe(true);
     expect(answersBody.safeParse({ ...body, roadmapPreview: false }).success).toBe(false);
@@ -225,7 +268,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
       expect(r.parent.roadmap?.approach?.items, slug).toHaveLength(n);
       const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;
       expect(adult.preview, slug).toBe(false);
-      expect(adult.settings.title, slug).toBe('İş ve meslek planı için');
+      expect(adult.settings?.title, slug).toBe('İş ve meslek planı için');
       expect(adult.approach, slug).toBeNull();
       for (const x of texts(adult)) expect(x, slug).not.toMatch(SCHOOL);
     }
@@ -246,7 +289,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
     expect(r.student.roadmap?.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
     const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;
-    expect(adult.settings.title).toBe('İş ve meslek planı için');
+    expect(adult.settings?.title).toBe('İş ve meslek planı için');
     expect(adult.approach).toBeNull();
     for (const x of texts(adult)) expect(x).not.toMatch(SCHOOL);
     // Üzücü olaylardan etkilenme yüksekken 3. hafta iyi oluşa ayrılır; bu ölçek kaygı ölçmediği için "Sınav kaygısı"
@@ -280,7 +323,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
     expect(rm.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
     const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;
-    expect(adult.settings.title).toBe('İş ve meslek planı için');
+    expect(adult.settings?.title).toBe('İş ve meslek planı için');
     expect(adult.approach).toBeNull();
     for (const x of texts(adult)) expect(x).not.toMatch(SCHOOL);
     // Rapordaki veli metinlerinde geçen öneriler veliye yaklaşımda tekrar edilmez.
@@ -305,9 +348,72 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
           unique(scales.map((s) => pickA(s.action[g])), `${a} ${g} bu hafta dene`);
         }
       }
-      unique(scales.flatMap((s) => [s.settings.low!, s.settings.high!]), 'ortamlar');
+      if (hasSettings(slug)) unique(scales.flatMap((s) => [s.settings!.low!, s.settings!.high!]), 'ortamlar');
       if (t.approach) unique(Object.values(t.approach).flatMap((x) => [x.low, x.average, x.high]), 'veliye yaklaşım');
     }
+  });
+
+  it('Öz-saygı: tek boyutlu; üç boyutlu profil ve ortamlar yok, 3. hafta ek deneme, "Öz-saygı nedir?" bağlantısı', async () => {
+    const slug = 'oz-saygi';
+    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(false);
+    expect(hasPublicRoadmap(slug)).toBe(true);
+    const d = def<LikertInstrument>(slug);
+    // Her cümleye en olumsuz (low) ya da en olumlu cevap; ters maddeler dikkate alınır.
+    const body = (low: boolean) => ({
+      grade: 8,
+      data: {
+        engine: 'likert' as const,
+        answers: Object.fromEntries(d.items.map((it) => [it.key, { value: (it.reverse ? !low : low) ? 0 : 3, rtMs: 2600 }])),
+      },
+    });
+    const low = evaluate(slug, body(true));
+    const rm = low.student.roadmap!;
+    expect(rm.bars).toHaveLength(1);
+    expect(rm.settings).toBeNull();
+    expect(rm.intro).not.toContain('ortamlarda');
+    expect(rm.standout).toEqual([{ title: 'Öz-saygı', text: 'Kendine karşı eleştirel' }]);
+    expect(rm.study.items[0].badge).toBe('Kendine karşı eleştirel');
+    expect(rm.weeks.map((w) => w.title)).toEqual(['Fark et', 'Kendine bakış', 'Gerçek bir sorumluluk', 'Gözden geçir']);
+    expect(rm.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri', '/rehber/oz-saygi-nedir']);
+    expect(low.parent.roadmap!.approach!.items).toHaveLength(1);
+    // Düşük düzeyde raporun kendi destek kutusu durur; yol haritası onun yerine geçmez.
+    expect(low.student.support).not.toBeNull();
+    expect(evaluate(slug, body(false)).student.roadmap!.standout[0].text).toBe('Kendine olumlu bakıyor');
+    // PDF üç boyutlu profil ve ortamlar olmadan da üretilir.
+    const pdf = await renderSimpleReportPdf(low.parent, 'olcekhane.com');
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  }, 60_000);
+
+  it('Çalışma Alışkanlıkları: ortamlar yok; 2. hafta Planlama, 3. hafta en düşük puanlı alışkanlık', async () => {
+    const slug = 'calisma-aliskanliklari';
+    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(false);
+    expect(hasPublicRoadmap(slug)).toBe(true);
+    const d = def<LikertInstrument>(slug);
+    // Odaklanma en düşük, Planlama orta, ötekiler yüksek (ters maddeler dikkate alınarak).
+    const target = (scale: string) => (scale === 'focus' ? 1 : scale === 'planning' ? 3 : 5);
+    const answers = Object.fromEntries(
+      d.items.map((it) => [it.key, { value: it.reverse ? 6 - target(it.scale) : target(it.scale), rtMs: 2600 }]),
+    );
+    const r = evaluate(slug, { grade: 8, data: { engine: 'likert', answers } });
+    const rm = r.student.roadmap!;
+    expect(rm.bars).toHaveLength(5);
+    expect(rm.settings).toBeNull();
+    expect(rm.intro).not.toContain('ortamlarda');
+    expect(rm.weeks.map((w) => w.title)).toEqual(['Fark et', 'Çalışma düzeni', 'Odaklanma', 'Gözden geçir']);
+    expect(r.parent.roadmap!.approach!.items).toHaveLength(5);
+    expect(r.parent.roadmap!.intro).toContain('ona nasıl yaklaşabileceğiniz');
+    const pdf = await renderSimpleReportPdf(r.parent, 'olcekhane.com');
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  }, 60_000);
+
+  it('test sayfasındaki tanıtım yalnızca o testte olan bölümleri sayar', () => {
+    expect(roadmapSummary(SLUG)).toBe(
+      'parmakla döndürülebilen üç boyutlu profil, nasıl çalışılabileceğine dair öneriler, rahat edilebilecek ortamlar, veliye yaklaşım önerileri ve dört haftalık küçük adımlar',
+    );
+    expect(roadmapSummary('calisma-aliskanliklari')).toBe(
+      'parmakla döndürülebilen üç boyutlu profil, nasıl çalışılabileceğine dair öneriler, veliye yaklaşım önerileri ve dört haftalık küçük adımlar',
+    );
+    expect(roadmapSummary('oz-saygi')).toBe('nasıl çalışılabileceğine dair öneriler, veliye yaklaşım önerileri ve dört haftalık küçük adımlar');
   });
 
   it('son haftada yalnızca kişinin sınıfına uyan, yayındaki ilgi testleri önerilir', () => {

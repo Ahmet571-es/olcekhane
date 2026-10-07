@@ -396,10 +396,12 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
       <Text style={[s.title, { marginTop: 8 }]}>{you ? 'Senin yol haritan' : 'Çocuğunuz için yol haritası'}</Text>
       <Text style={[s.para, { color: C.ink2, marginTop: 6 }]}>{rm.intro}</Text>
 
-      <View wrap={false}>
-        <Text style={s.h2}>{you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu'}</Text>
-        <Profile3DPdf rm={rm} />
-      </View>
+      {rm.bars.length >= 3 && (
+        <View wrap={false}>
+          <Text style={s.h2}>{you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu'}</Text>
+          <Profile3DPdf rm={rm} />
+        </View>
+      )}
 
       <View wrap={false}>
         <Text style={s.h2}>Kısaca</Text>
@@ -432,17 +434,19 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
       ))}
       <Text style={s.note}>Ayrıntılı bilgi: {rm.study.links.map((l) => `${l.label} (${siteHost}${l.href})`).join(' · ')}</Text>
 
-      <View wrap={false}>
-        <Text style={s.h2}>{rm.settings.title}</Text>
-        <Text style={[s.para, { marginBottom: 3 }]}>{rm.settings.intro}</Text>
-        {rm.settings.items.map((x) => (
-          <View key={x} style={s.bullet}>
-            <Text>•</Text>
-            <Text style={[s.para, { flex: 1 }]}>{x}</Text>
-          </View>
-        ))}
-        <Text style={s.privacy}>{rm.settings.note}</Text>
-      </View>
+      {rm.settings && (
+        <View wrap={false}>
+          <Text style={s.h2}>{rm.settings.title}</Text>
+          <Text style={[s.para, { marginBottom: 3 }]}>{rm.settings.intro}</Text>
+          {rm.settings.items.map((x) => (
+            <View key={x} style={s.bullet}>
+              <Text>•</Text>
+              <Text style={[s.para, { flex: 1 }]}>{x}</Text>
+            </View>
+          ))}
+          <Text style={s.privacy}>{rm.settings.note}</Text>
+        </View>
+      )}
 
       {rm.approach && rm.approach.items.length > 0 && (
         <View>

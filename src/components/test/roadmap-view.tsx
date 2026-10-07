@@ -25,12 +25,15 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
         )}
       </header>
 
-      <section aria-labelledby="profil-3b" className="flex flex-col gap-4">
-        <h3 id="profil-3b" className="t-h2">
-          {you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu'}
-        </h3>
-        <Profile3D bars={rm.bars} you={you} />
-      </section>
+      {/* Tek boyutlu testte (ör. öz-saygı) üç boyutlu profil bir şey anlatmaz; puan raporun başında yazılıdır. */}
+      {rm.bars.length >= 3 && (
+        <section aria-labelledby="profil-3b" className="flex flex-col gap-4">
+          <h3 id="profil-3b" className="t-h2">
+            {you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu'}
+          </h3>
+          <Profile3D bars={rm.bars} you={you} />
+        </section>
+      )}
 
       <section aria-labelledby="kisaca" className="flex flex-col gap-3">
         <h3 id="kisaca" className="t-h2">
@@ -79,20 +82,22 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
         </p>
       </section>
 
-      <section aria-labelledby="ortamlar" className="flex flex-col gap-3">
-        <h3 id="ortamlar" className="t-h2">
-          {rm.settings.title}
-        </h3>
-        <p className="measure text-ink-2">{rm.settings.intro}</p>
-        {rm.settings.items.length > 0 && (
-          <ul className="flex list-disc flex-col gap-1.5 pl-5">
-            {rm.settings.items.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ul>
-        )}
-        <p className="notice notice-info measure t-small">{rm.settings.note}</p>
-      </section>
+      {rm.settings && (
+        <section aria-labelledby="ortamlar" className="flex flex-col gap-3">
+          <h3 id="ortamlar" className="t-h2">
+            {rm.settings.title}
+          </h3>
+          <p className="measure text-ink-2">{rm.settings.intro}</p>
+          {rm.settings.items.length > 0 && (
+            <ul className="flex list-disc flex-col gap-1.5 pl-5">
+              {rm.settings.items.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+          )}
+          <p className="notice notice-info measure t-small">{rm.settings.note}</p>
+        </section>
+      )}
 
       {rm.approach && rm.approach.items.length > 0 && (
         <section aria-labelledby="yaklasim" className="flex flex-col gap-3">

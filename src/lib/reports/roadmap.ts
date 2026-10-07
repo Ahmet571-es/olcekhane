@@ -34,7 +34,8 @@ export interface Roadmap {
     items: { key: string; title: string; badge: string; color: string; text: string }[];
     links: { label: string; href: string }[];
   };
-  settings: { title: string; intro: string; items: string[]; note: string };
+  /** Ortamı olmayan şablonlarda (ör. çalışma alışkanlıkları) yoktur. */
+  settings: { title: string; intro: string; items: string[]; note: string } | null;
   /** Yalnızca veli raporunda. */
   approach: { title: string; items: { title: string; text: string }[] } | null;
   weeks: { label: string; title: string; text: string }[];
@@ -90,14 +91,17 @@ export function buildRoadmap(
     band: s.bandLabel,
   }));
 
-  // Öne çıkanlar: ortadan en uzak, orta düzeyde olmayan en çok iki boyut.
-  const notable = sections
-    .filter((s) => {
-      const g = bandGroup(s.band);
-      return g !== null && g !== 'average';
-    })
-    .sort((x, y) => distance(y) - distance(x))
-    .slice(0, 2);
+  // Öne çıkanlar: ortadan en uzak, orta düzeyde olmayan en çok iki boyut. Tek boyutlu testte (ör. öz-saygı) o boyut.
+  const notable =
+    sections.length === 1
+      ? sections.filter((s) => s.value !== null)
+      : sections
+          .filter((s) => {
+            const g = bandGroup(s.band);
+            return g !== null && g !== 'average';
+          })
+          .sort((x, y) => distance(y) - distance(x))
+          .slice(0, 2);
   const standout = notable.map((s) => ({ title: s.name, text: s.summary }));
   const standoutNote =
     standout.length > 0
@@ -113,7 +117,7 @@ export function buildRoadmap(
       {
         key: s.scaleKey,
         title: s.name,
-        badge: `${s.bandLabel} · ${s.summary}`,
+        badge: s.bandLabel === s.summary ? s.bandLabel : `${s.bandLabel} · ${s.summary}`,
         color: t.scales[s.scaleKey].color,
         text: pick(t.scales[s.scaleKey].study[g], a),
       },
@@ -123,10 +127,12 @@ export function buildRoadmap(
   const links = [{ label: 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
   const stressLink = t.wellbeing?.link === undefined ? { label: 'Sınav kaygısı', href: '/rehber/sinav-kaygisi' } : t.wellbeing.link;
   if (stress && stressLink) links.push(stressLink);
+  links.push(...(t.links ?? []));
 
+  const hasSettings = Object.values(t.scales).some((x) => x.settings) && !!t.settingsNote;
   const settingItems = sections.flatMap((s) => {
     const g = bandGroup(s.band);
-    const text = g ? t.scales[s.scaleKey].settings[g] : undefined;
+    const text = g ? t.scales[s.scaleKey].settings?.[g] : undefined;
     return text ? [text] : [];
   });
 
@@ -138,12 +144,14 @@ export function buildRoadmap(
     return s && g ? { name: s.name, text: pick(t.scales[key].action[g], a) } : null;
   };
   const planning = action(t.planningScale);
-  const thirdKey =
-    stress?.scaleKey ??
-    sections
-      .filter((s) => s.scaleKey !== t.planningScale && s.value !== null)
-      .sort((x, y) => distance(y) - distance(x))[0]?.scaleKey;
-  const third = thirdKey ? action(thirdKey) : null;
+  // 3. hafta: iyi oluş gerekiyorsa o boyut; değilse ortadan en uzak (şablon isterse en düşük puanlı) boyut; tek boyutlu
+  // testte şablondaki ek deneme.
+  const rel = (s: (typeof sections)[number]) => (s.value === null ? Infinity : (s.value - s.min) / (s.max - s.min || 1));
+  const others = sections.filter((s) => s.scaleKey !== t.planningScale && s.value !== null);
+  const ordered =
+    t.thirdWeek === 'lowest' ? others.sort((x, y) => rel(x) - rel(y)) : others.sort((x, y) => distance(y) - distance(x));
+  const thirdKey = stress?.scaleKey ?? ordered[0]?.scaleKey;
+  const third = thirdKey ? action(thirdKey) : t.extraWeek ? { name: t.extraWeek.title, text: pick(t.extraWeek.text, a) } : null;
   const nextNames = opts.next.map((n) => n.name);
   const nextSentence =
     nextNames.length === 0
@@ -158,11 +166,15 @@ export function buildRoadmap(
   ];
   weeks.push({ label: `${weeks.length + 1}. hafta`, title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextSentence });
 
+  const contents = parent
+    ? ['çocuğunuzun nasıl çalışabileceği', ...(hasSettings ? ['hangi ortamlarda rahat edebileceği'] : []), 'ona nasıl yaklaşabileceğiniz']
+    : ['nasıl çalışabileceğin', ...(hasSettings ? ['hangi ortamlarda rahat edebileceğin'] : [])];
+
   return {
     preview: opts.preview,
     intro: parent
-      ? 'Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: çocuğunuzun nasıl çalışabileceği, hangi ortamlarda rahat edebileceği, ona nasıl yaklaşabileceğiniz ve dört haftalık küçük adımlar. Öneriler bir tanı ya da kesin hüküm değildir; çocuğunuza uyanları birlikte seçin.'
-      : 'Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: nasıl çalışabileceğin, hangi ortamlarda rahat edebileceğin ve dört haftalık küçük adımlar. Öneriler bir tanı ya da kesin hüküm değildir; sana uyanları seç.',
+      ? `Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: ${contents.join(', ')} ve dört haftalık küçük adımlar. Öneriler bir tanı ya da kesin hüküm değildir; çocuğunuza uyanları birlikte seçin.`
+      : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${contents.join(', ')} ve dört haftalık küçük adımlar. Öneriler bir tanı ya da kesin hüküm değildir; sana uyanları seç.`,
     bars,
     standout,
     standoutNote,
@@ -172,19 +184,21 @@ export function buildRoadmap(
       items: study,
       links,
     },
-    settings: {
-      title: a === 'adult' ? 'İş ve meslek planı için' : 'Okul ve meslek planı için',
-      intro:
-        settingItems.length === 0
-          ? parent
-            ? 'Çocuğunuzun profili dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
-            : 'Profilin dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
-          : parent
-            ? 'Çocuğunuzun kendini daha rahat hissedebileceği ortamlar:'
-            : 'Kendini daha rahat hissedebileceğin ortamlar:',
-      items: settingItems,
-      note: pick(t.settingsNote, a),
-    },
+    settings: !hasSettings
+      ? null
+      : {
+          title: a === 'adult' ? 'İş ve meslek planı için' : 'Okul ve meslek planı için',
+          intro:
+            settingItems.length === 0
+              ? parent
+                ? 'Çocuğunuzun profili dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
+                : 'Profilin dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
+              : parent
+                ? 'Çocuğunuzun kendini daha rahat hissedebileceği ortamlar:'
+                : 'Kendini daha rahat hissedebileceğin ortamlar:',
+          items: settingItems,
+          note: pick(t.settingsNote!, a),
+        },
     approach: parent
       ? {
           title: 'Çocuğunuza nasıl yaklaşabilirsiniz?',

@@ -23,8 +23,11 @@ export interface RoadmapScale {
   study: Record<BandGroup, AudienceText>;
   /** Bu hafta dene: dört haftalık yol haritasında bir haftalık küçük deneme. */
   action: Record<BandGroup, AudienceText>;
-  /** Kendini rahat hissedebileceği ortamlar (kişiye göre değişmeyen dil); orta düzeyde belirgin bir yön yoktur. */
-  settings: Partial<Record<BandGroup, string>>;
+  /**
+   * Kendini rahat hissedebileceği ortamlar (kişiye göre değişmeyen dil); orta düzeyde belirgin bir yön yoktur. Kişilik
+   * dışındaki testlerde (ör. çalışma alışkanlıkları, öz-saygı) verilmez; o zaman ortamlar bölümü gösterilmez.
+   */
+  settings?: Partial<Record<BandGroup, string>>;
 }
 
 export interface RoadmapTemplate {
@@ -34,6 +37,15 @@ export interface RoadmapTemplate {
   planningScale: string;
   /** 2. haftanın başlığı; verilmezse "Çalışma düzeni" (ör. Sorumluluk). */
   planningTitle?: string;
+  /**
+   * 3. haftanın boyutu (iyi oluş haftası yoksa): "farthest" (varsayılan) 2. hafta dışında ortadan en uzak boyut;
+   * "lowest" en düşük puanlı boyut (ör. çalışma alışkanlıkları: en çok geliştirilebilecek alışkanlık).
+   */
+  thirdWeek?: 'farthest' | 'lowest';
+  /** Tek boyutlu testlerde 3. hafta: 2. hafta dışında boyut olmadığında bu deneme verilir. */
+  extraWeek?: { title: string; text: AudienceText };
+  /** "Etkili ders çalışma yöntemleri"nin ardından her raporda verilen rehber yazıları. */
+  links?: { label: string; href: string }[];
   /**
    * Bu boyut bu düzey grubundayken 3. hafta iyi oluşa ayrılır ve bir rehber yazısına bağlantı verilir (ör. Duygusal
    * Denge düşük, Duygusallık yüksek). Bağlantı verilmezse "Sınav kaygısı" yazısıdır; `null` ise bağlantı verilmez.
@@ -46,8 +58,8 @@ export interface RoadmapTemplate {
   approach?: Record<string, Record<BandGroup, string>>;
   /** "Nasıl çalışmalı?" bölümünün girişi: etkili yöntemler herkes için aynıdır. */
   studyIntro: AudienceText;
-  /** "Okul ve meslek planı için" bölümünün sonundaki uyarı: kişilik tek başına meslek seçtirmez. */
-  settingsNote: AudienceText;
+  /** "Okul ve meslek planı için" bölümünün sonundaki uyarı: kişilik tek başına meslek seçtirmez (ortamı olan şablonda). */
+  settingsNote?: AudienceText;
   /** Dört haftalık yol haritasının ilk ve son haftası (ortadaki iki hafta profilden seçilir). */
   firstWeek: AudienceText;
   lastWeek: AudienceText;

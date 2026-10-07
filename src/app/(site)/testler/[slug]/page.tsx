@@ -7,7 +7,7 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { GuideList } from '@/components/site/guide-list';
 import { PageGuide } from '@/components/site/page-guide';
 import { guidesForTest } from '@/content/rehber';
-import { hasPublicRoadmap } from '@/content/roadmaps';
+import { hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
 import { domainColor } from '@/lib/domain-style';
 import { likertItemNoun } from '@/lib/instruments/nouns';
@@ -334,8 +334,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             <li>Norm durumu ve sonucun sınırları hakkında not</li>
             {roadmap && (
               <li>
-                <strong>Gelişim yol haritası:</strong> parmakla döndürülebilen üç boyutlu profil, nasıl çalışılabileceğine dair öneriler, rahat
-                edilebilecek ortamlar, veliye yaklaşım önerileri ve dört haftalık küçük adımlar
+                <strong>Gelişim yol haritası:</strong> {roadmapSummary(def.slug)}
               </li>
             )}
           </ul>
