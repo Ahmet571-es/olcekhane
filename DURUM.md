@@ -29,16 +29,9 @@ Basamaklar:
 
 1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
    aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
-2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör, Ayrıntılı Kişilik, Altı Boyutlu Kişilik, Duygusal Zekâ
-   Bileşenleri, Kişilerarası Tarz, Öz-saygı, Çalışma Alışkanlıkları ve üç ilgi testinde (Mesleki İlgi Profili, Meslek
-   İlgi Alanları, Hobi ve Serbest Zaman İlgileri) yayında (ilk üçü hoca onaylı; ötekiler 2026-10-07 kararıyla onay
-   beklenmeden), Matematik Konu Tarama ve Okuma Hızı ve Anlama'da yayında. Yol haritası olmayanlar: zihinsel görevler.
-   Sırada öteki testlerin yol haritaları; doğrudan yayına alınır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
-   testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
-   yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
-   derinlikli ve döndürülebilir; değerler her zaman düz yazıyla da okunur; PDF'te derinlikli resim. Öğrenci ve veli
-   önerilerinin metinleri (`tipsStudent`, `tipsParent`) birçok testte yazılı ama bugünkü raporda görünmüyor. Bu
-   basamakta CLAUDE.md'deki "rapor ekranları sade kalır" kuralı site sahibinin isteğine göre güncellenir.
+2. **Rapor yenileme ("Gelişim Yol Haritası"):** bitti (2026-10-07). Çözülebilen her testin raporunda (öğrenci, veli
+   ve yetişkinlere açık testlerde yetişkin) yol haritası var; Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik hoca onaylı,
+   ötekiler 2026-10-07 kararıyla onay beklenmeden yayında (hoca yayındaki siteyi inceleyecek).
 3. **Nörobilim bölümü:** iki dal: Beyin Anatomisi (~40 ders) ve Beyin Nasıl Çalışır? (~40 ders); iskelet ve 3B beyin
    2–3 oturum, sonra her mesajda bir ders. Her derste sade anlatım, hareketli çizimler, 3B modelde ilgili yerin
    parlaması, sözlük, kısa alıştırma (cevaplar saklanmaz) ve kaynaklar. 3B model adayı: Z-Anatomy modelleri
@@ -51,8 +44,8 @@ Basamaklar:
 
 ## Sıradaki işler
 
-1. **Büyük planın 2. basamağı (2026-10-11'deki hoca buluşmasına kadar):** öteki testlerin gelişim yol haritaları,
-   doğrudan yayına (2026-10-07 kararı). Yayında: Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik, Duygusal Zekâ
+1. **Büyük planın 2. basamağı: tamamlandı (2026-10-07).** Bütün testlerin gelişim yol haritaları doğrudan yayına
+   alındı (2026-10-07 kararı); hocanın düzeltme istekleri 2026-10-11'deki buluşmadan sonra gelecek. Yayında: Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik, Duygusal Zekâ
    Bileşenleri (2. hafta "Duygularına dikkat", iyi oluş haftası Üzücü olaylardan etkilenme yüksekken; şablonda
    `planningTitle` ve `wellbeing.link`), Kişilerarası Tarz (sekiz tarz çemberin sırasıyla; 2. hafta "Birlikte
    çalışırken" = Öne çıkma; iyi oluş haftası yok), Öz-saygı (tek boyut: üç boyutlu profil ve ortamlar yok, 3. hafta
@@ -61,10 +54,10 @@ Basamaklar:
    alanlar için keşif önerileri, Holland profilinde eğitim yolları, haftalık denemeler; öne çıkan alan yoksa yalnızca
    kısa not ve genel denemeler), Matematik Konu Tarama (`ACADEMIC_ROADMAPS`: konu alanlarına göre çalışma kartları
    her formun konularına göre, haftalık çalışma düzeni, 1. hafta hata defteri) ve Okuma Hızı ve Anlama
-   (`READING_ROADMAPS`: soru türlerine göre öneriler, hız ve anlama dengesi, okuma alışkanlığı). Sırada: zihinsel
-   görevler (Renk-Kelime, Dur-Git, Sırayla Birleştirme, Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı, Dikkat
-   ve Bellek, Sürekli Dikkat; `TASK_ROADMAPS`). Site sahibinin seçimi (2026-10-07): becerinin günlük hayatta nerede
-   kullanıldığı ve o işleri kolaylaştıran yollar; "beyni çalıştırma" ya da puanı yükseltme vaadi verilmez.
+   (`READING_ROADMAPS`: soru türlerine göre öneriler, hız ve anlama dengesi, okuma alışkanlığı). Zihinsel
+   görevler (`TASK_ROADMAPS`, sekiz görev): site sahibinin seçimiyle becerinin günlük hayatta nerede kullanıldığı ve o
+   işleri kolaylaştıran yollar, "Bilmekte yarar var" kutusu; "beyni çalıştırma" ya da puanı yükseltme vaadi yok. 2.
+   basamak tamamlandı; hoca buluşmasında (2026-10-11) yayındaki yol haritaları incelenecek.
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -212,6 +205,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Zihinsel görevlerin (sekiz görev) gelişim yol haritaları yayında; artık çözülebilen her testin raporunda
+  yol haritası var. SSS'deki "Ücretli mi?" cevabı buna göre güncellendi; yayın denetimi görev yol haritasını da sınıyor.
 - 2026-10-07: Matematik Konu Tarama ve Okuma Hızı ve Anlama gelişim yol haritaları yayında (öğrenci ve veli raporu,
   ekranda ve PDF'te): konu alanlarına ve okuma becerilerine göre çalışma önerileri, haftalık çalışma düzeni ve okuma
   alışkanlığı, veliye destek, dört haftalık plan. Yayın denetimi iki raporun yol haritasını dışarıdan sınıyor.
@@ -239,5 +234,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Beş Faktör gelişim yol haritası hoca onayıyla herkese açık raporda; SSS'deki "Ücretli mi?" cevabı,
   test sayfasının rapor listesi ve ana sayfadaki örnek rapor buna göre güncellendi; yayın denetimi yol haritasını
   dışarıdan sınıyor.
-- 2026-10-07: Gelişim yol haritası (Beş Faktör, önizlemede): döndürülebilir üç boyutlu profil, nasıl çalışabilir,
-  rahat edilebilecek ortamlar, veliye yaklaşım, dört haftalık adımlar; ekranda ve PDF'te. Hoca belgesi hazır.

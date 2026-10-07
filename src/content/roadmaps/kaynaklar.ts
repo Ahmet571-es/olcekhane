@@ -67,6 +67,10 @@ export const KAYNAK = {
     text: 'Frick, A., Möhring, W. ve Newcombe, N. S. (2014). Development of mental transformation abilities. Trends in Cognitive Sciences, 18(10), 536–542.',
     url: 'https://doi.org/10.1016/j.tics.2014.05.011',
   },
+  shepard: {
+    text: 'Shepard, R. N. ve Metzler, J. (1971). Mental rotation of three-dimensional objects. Science, 171(3972), 701–703.',
+    url: 'https://doi.org/10.1126/science.171.3972.701',
+  },
   hick: {
     text: 'Hick, W. E. (1952). On the rate of gain of information. Quarterly Journal of Experimental Psychology, 4(1), 11–26.',
     url: 'https://doi.org/10.1080/17470215208416600',

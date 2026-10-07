@@ -203,14 +203,14 @@ jobs:
           # Zihinde Döndürme: 80 deneme; cevaplar sırayla "Aynı" ve "Ayna görüntüsü".
           ZD_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"zihinde-dondurme": [{"index": i, "response": 1 + i % 2, "rtMs": 1500} for i in range(80)]}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$ZD_GOVDE" "https://$ALAN/api/rapor/zihinde-dondurme" |
-            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Döndürme açısına göre tipik karar süresi"'; then
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Döndürme açısına göre tipik karar süresi"; m=r["student"]["roadmap"]; assert len(m["study"]["items"]) == 4 and m["approach"] is None'; then
             sorun="$sorun zihinde-dondurme-raporu"
           fi
           # Tepki Hızı: 20 basit ve 40 seçmeli deneme, hepsi doğru taraf (seçmeli bölümdeki kutu sırası testin kendi
           # dizisidir; tests/tepki-hizi.test.ts bunun güncel olduğunu denetler).
           TH_GOVDE=$(python3 -c 'import json; s="0001101110001110010011011011000110101001"; print(json.dumps({"grade": 4, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"tepki-hizi": [{"index": i, "response": 1 if i < 20 else 1 + int(s[i - 20]), "rtMs": 320 if i < 20 else 480} for i in range(60)]}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TH_GOVDE" "https://$ALAN/api/rapor/tepki-hizi" |
-            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 2 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Bölümlere göre tipik tepki süresi" and r["student"]["items"][2]["badge"] == "Seçmeli bölümde 0,16 sn daha uzun"'; then
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 2 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Bölümlere göre tipik tepki süresi" and r["student"]["items"][2]["badge"] == "Seçmeli bölümde 0,16 sn daha uzun"; m=r["parent"]["roadmap"]; assert m["bars"] == [] and len(m["standout"]) == 3 and m["settings"]["title"] == "Bilmekte yarar var" and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
             sorun="$sorun tepki-hizi-raporu"
           fi
           # Aynı test yetişkin olarak ("Yetişkinim", 14): yalnızca kişisel rapor.

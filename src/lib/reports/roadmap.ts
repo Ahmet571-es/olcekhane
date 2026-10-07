@@ -69,8 +69,8 @@ export function joinNames(names: string[]): string {
 
 /** Son haftanın sonundaki öneri: kişinin sınıfına uyan, yayındaki testler; uyan test yoksa boş. */
 export function nextStep(next: NextTest[], purpose: { you: string; parent: string }, parent: boolean): string {
-  // "Matematik Konu Tarama Testi testini" denmez: addaki "Testi" sözcüğü cümledeki "testini" ile birleşir.
-  const names = next.map((n) => n.name.replace(/ Testi$/, ''));
+  // "Matematik Konu Tarama Testi testini" ya da "Dur-Git Görevi testini" denmez: addaki sözcük cümledeki "testini" ile birleşir.
+  const names = next.map((n) => n.name.replace(/ (Testi|Görevi)$/, ''));
   if (names.length === 0) return '';
   return parent
     ? ` Bir sonraki adım olarak ${purpose.parent} için ${joinNames(names)} ${names.length > 1 ? 'testlerini' : 'testini'} önerebilirsiniz.`

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ACADEMIC_ROADMAPS, READING_ROADMAPS, hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
+import { solvableInstruments } from '@/content/instruments';
+import { ACADEMIC_ROADMAPS, READING_ROADMAPS, TASK_ROADMAPS, hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
 import type { AudienceText } from '@/content/roadmaps/types';
 import { evaluate } from '@/lib/assessment/evaluate';
 import type { Band, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
@@ -9,7 +10,19 @@ import type { Audience, ReportContent } from '@/lib/reports/build';
 import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
 import { pick, type Roadmap } from '@/lib/reports/roadmap';
 import { quizBand } from '@/lib/scoring/quiz';
-import { def, quizBody, readingBody } from './helpers/bodies';
+import {
+  cancellationBody,
+  colorWordBody,
+  def,
+  goNoGoBody,
+  memoryTasksBody,
+  nBackBody,
+  quizBody,
+  reactionBody,
+  readingBody,
+  rotationBody,
+  trailBody,
+} from './helpers/bodies';
 
 const MAT = 'matematik-konu-tarama-testi';
 const OKUMA = 'okuma-hizi-ve-anlama';
@@ -155,9 +168,11 @@ describe('matematik konu tarama: yol haritası şablonu', () => {
     expect(roadmapSummary(MAT)).toContain('yanlış yapılan sorulardan başlayan dört haftalık plan');
   }, 60_000);
 
-  it('son haftada önerilen testin adında "Testi" iki kez geçmez', () => {
+  it('son haftada önerilen testin adında "Testi" ya da "Görevi" sözcüğü "testini" ile yinelenmez', () => {
     const rm = evaluate(OKUMA, readingBody(6)).student.roadmap!;
     expect(rm.weeks[3].text).not.toMatch(/Testi test/);
+    const task = evaluate('renk-kelime-gorevi', colorWordBody()).student.roadmap!;
+    expect(task.weeks[3].text).toContain('Dur-Git ve Sırayla Birleştirme testlerinden birini');
   });
 });
 
@@ -239,4 +254,68 @@ describe('okuma hızı ve anlama: yol haritası şablonu', () => {
     expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
     expect(roadmapSummary(OKUMA)).toContain('okuma becerilerine göre çalışma önerileri');
   }, 60_000);
+});
+
+describe('zihinsel görevler: yol haritası şablonları', () => {
+  const BODIES: Record<string, () => ReturnType<typeof reactionBody>> = {
+    'dikkat-ve-bellek': memoryTasksBody,
+    'surekli-dikkat': cancellationBody,
+    'renk-kelime-gorevi': colorWordBody,
+    'dur-git-gorevi': goNoGoBody,
+    'sirayla-birlestirme-gorevi': trailBody,
+    'geriye-donuk-hatirlama': nBackBody,
+    'zihinde-dondurme': rotationBody,
+    'tepki-hizi': reactionBody,
+  };
+
+  it('her zihinsel görevin yol haritası var; metinler eksiksiz, veli metinleri çocuğunuzu anar, öğrenci metinleri anmaz', () => {
+    const tasks = solvableInstruments().filter((d) => d.engine === 'tasks').map((d) => d.slug);
+    expect(Object.keys(TASK_ROADMAPS).sort()).toEqual([...tasks].sort());
+    expect(Object.keys(BODIES).sort()).toEqual([...tasks].sort());
+    for (const [slug, t] of Object.entries(TASK_ROADMAPS)) {
+      const all: AudienceText[] = [t.what, t.studyIntro, t.lastWeek, t.facts.intro, t.facts.note, ...t.supports.map((x) => x.text), ...t.weeks.map((w) => w.text)];
+      for (const x of all) expect(x.student, slug).not.toMatch(/çocuğunuz/i);
+      for (const w of [...t.weeks.map((x) => x.text), ...t.supports.map((x) => x.text)]) expect(w.parent, slug).toMatch(/çocuğunuz/i);
+      expect(t.supports, slug).toHaveLength(4);
+      expect(new Set(t.supports.map((x) => x.key)).size, slug).toBe(4);
+      for (const a of AUDIENCES) {
+        const unique = (xs: string[], what: string) => expect(new Set(xs).size, `${slug} ${a} ${what}`).toBe(xs.length);
+        unique(t.supports.map((x) => pick(x.text, a)), 'kartlar');
+        unique([...t.weeks.map((x) => pick(x.text, a)), pick(t.lastWeek, a)], 'haftalar');
+        unique(a === 'parent' ? t.facts.items.parent : t.facts.items.student, 'bilgiler');
+      }
+      expect(new Set(t.approach.map((x) => x.text)).size, slug).toBe(t.approach.length);
+      // Puanı yükseltme ya da beyni çalıştırma vaadi yoktur.
+      expect(JSON.stringify(t), slug).not.toMatch(/beyni(ni)? çalıştır|puanını yükselt|zekânı geliştir/i);
+      expect(roadmapSummary(slug), slug).toContain('bilmekte yarar olanlar');
+    }
+  });
+
+  it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu profil yoktur; PDF yol haritasıyla üretilir', async () => {
+    for (const [slug, body] of Object.entries(BODIES)) {
+      expect(hasPublicRoadmap(slug), slug).toBe(true);
+      const r = evaluate(slug, body());
+      for (const a of AUDIENCES) {
+        const rm = r[a].roadmap!;
+        expect(rm, `${slug} ${a}`).toBeDefined();
+        expect(rm.preview).toBe(false);
+        expect(rm.bars).toEqual([]);
+        expect(rm.standout.map((x) => x.title), slug).toEqual(r[a].items.map((i) => i.title));
+        expect(rm.study.items, slug).toHaveLength(4);
+        expect(rm.settings?.title, slug).toBe('Bilmekte yarar var');
+        expect(rm.intro, slug).toContain('puanı yükseltmek için değil');
+        if (a === 'parent') expect(rm.approach!.items.length, slug).toBe(3);
+        else expect(texts(rm).join(' '), slug).not.toMatch(/çocuğunuz/i);
+        expectClean(rm, `${slug} ${a}`);
+      }
+    }
+    const pdf = await renderSimpleReportPdf(evaluate('dikkat-ve-bellek', memoryTasksBody()).parent, 'olcekhane.com');
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  }, 120_000);
+});
+
+describe('bütün testlerde yol haritası', () => {
+  it('çözülebilen her testin herkese açık bir yol haritası var', () => {
+    for (const d of solvableInstruments()) expect(hasPublicRoadmap(d.slug), d.slug).toBe(true);
+  });
 });
