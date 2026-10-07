@@ -73,8 +73,8 @@ const dikkatBellek: TaskRoadmapTemplate = {
       'Ödev sırasında telefonu ve televizyonu ortamdan uzaklaştırmak ve masada yalnızca o işe gereken şeyleri bırakmak, çocuğunuzun dikkatini ve belleğini asıl işe ayırmasını kolaylaştırır.',
     )),
     support(3, 'dinlen', 'Dinlenmiş bir zihin', 'Alışkanlık', t(
-      'Yorgunken herkesin dikkati ve belleği zayıflar. Düzenli uyumak, uzun çalışmalara kısa molalar vermek ve zor işleri zihninin en açık olduğu saate koymak işini kolaylaştırır.',
-      'Yorgunken herkesin dikkati ve belleği zayıflar. Düzenli uyku, uzun çalışmalarda kısa molalar ve zor işlerin günün dinç saatlerine konması çocuğunuzun işini kolaylaştırır.',
+      'Yorgunken çoğu kişinin dikkati ve belleği zayıflar. Düzenli uyumak, uzun çalışmalara kısa molalar vermek ve zor işleri zihninin en açık olduğu saate koymak işini kolaylaştırır.',
+      'Yorgunken çoğu kişinin dikkati ve belleği zayıflar. Düzenli uyku, uzun çalışmalarda kısa molalar ve zor işlerin günün dinç saatlerine konması çocuğunuzun işini kolaylaştırır.',
     )),
   ],
   facts: facts(
@@ -134,8 +134,8 @@ const surekliDikkat: TaskRoadmapTemplate = {
   },
   studyTitle,
   studyIntro: t(
-    'Dikkati sürdürmek, uzun ya da tekdüze bir işte bile odağını bir süre koruyabilmektir. Herkesin dikkati zamanla yorulur; önemli olan bunu fark edip işini buna göre düzenleyebilmek.',
-    'Dikkati sürdürmek, uzun ya da tekdüze bir işte bile odağı bir süre koruyabilmektir. Herkesin dikkati zamanla yorulur; önemli olan bunu fark edip işi buna göre düzenleyebilmektir.',
+    'Dikkati sürdürmek, uzun ya da tekdüze bir işte bile odağını bir süre koruyabilmektir. Çoğu kişinin dikkati zamanla yorulur; önemli olan bunu fark edip işini buna göre düzenleyebilmek.',
+    'Dikkati sürdürmek, uzun ya da tekdüze bir işte bile odağı bir süre koruyabilmektir. Çoğu kişinin dikkati zamanla yorulur; önemli olan bunu fark edip işi buna göre düzenleyebilmektir.',
   ),
   supports: [
     support(0, 'bolum', 'Kısa bölümler', 'Yöntem', t(
@@ -158,11 +158,11 @@ const surekliDikkat: TaskRoadmapTemplate = {
   facts: facts(
     [
       'Dikkati uzun süre koruyabilme çocukluk boyunca gelişir; küçük yaşlarda dikkatin daha çabuk dağılması olağandır.',
-      'Uzun bir görevin sonlarına doğru hız ya da doğruluk biraz düşebilir; dikkatin zamanla yorulması herkeste görülür.',
+      'Uzun bir görevin sonlarına doğru hız ya da doğruluk biraz düşebilir; dikkatin zamanla yorulması çoğu kişide görülür, ama herkeste aynı ölçüde olmayabilir.',
     ],
     [
       'Dikkati uzun süre koruyabilme çocukluk boyunca gelişir; küçük yaşlarda dikkatin daha çabuk dağılması olağandır.',
-      'Uzun bir görevin sonlarına doğru hız ya da doğruluk biraz düşebilir; dikkatin zamanla yorulması herkeste görülür.',
+      'Uzun bir görevin sonlarına doğru hız ya da doğruluk biraz düşebilir; dikkatin zamanla yorulması çoğu kişide görülür, ama herkeste aynı ölçüde olmayabilir.',
     ],
   ),
   approach: [
@@ -212,8 +212,8 @@ const renkKelime: TaskRoadmapTemplate = {
   },
   studyTitle,
   studyIntro: t(
-    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeyi değil rengini söylemek zor gelir. Günlük hayatta da aklına ilk gelen cevap her zaman doğru olmayabilir.',
-    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeyi değil rengini söylemek zor gelir. Günlük hayatta da akla ilk gelen cevap her zaman doğru olmayabilir.',
+    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeyi değil rengini söylemek çoğu kişiye zor gelir. Günlük hayatta da aklına ilk gelen cevap her zaman doğru olmayabilir.',
+    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeyi değil rengini söylemek çoğu kişiye zor gelir. Günlük hayatta da akla ilk gelen cevap her zaman doğru olmayabilir.',
   ),
   supports: [
     support(0, 'dur', 'Önce dur, sonra cevap ver', 'Yöntem', t(
@@ -235,16 +235,16 @@ const renkKelime: TaskRoadmapTemplate = {
   ],
   facts: facts(
     [
-      'Kelime ile renk farklıyken yavaşlamak herkeste görülen olağan bir etkidir; bu etki çocukluk boyunca yaşla azalır.',
+      'Kelime ile renk farklıyken yavaşlamak çoğu kişide görülen olağan bir etkidir; büyüklüğü kişiden kişiye değişir ve çocukluk boyunca genellikle yaşla azalır.',
     ],
     [
-      'Kelime ile renk farklıyken yavaşlamak herkeste görülen olağan bir etkidir; alışkanlıkla gelen cevabı durdurabilme çocukluk boyunca gelişir ve bu etki yaşla azalır.',
+      'Kelime ile renk farklıyken yavaşlamak çoğu kişide görülen olağan bir etkidir ve büyüklüğü kişiden kişiye değişir; alışkanlıkla gelen cevabı durdurabilme çocukluk boyunca gelişir ve bu etki genellikle yaşla azalır.',
     ],
   ),
   approach: [
     { title: 'Sakin hatırlatma', text: 'Aceleyle hata yaptığında eleştirmek yerine "Bir dur, soruya yeniden bak" gibi kısa ve sakin bir hatırlatma yapın.' },
     { title: 'Örnek olun', text: 'Kendi kararlarınızda da "Bir dakika düşüneyim" diyerek acele etmeden düşünmenin örneğini gösterin.' },
-    { title: 'Soru kökü', text: 'Sorulardaki olumsuz ifadelerin altını çizmesini hatırlatın; bu küçük alışkanlık dikkatsizlik hatalarını azaltır.' },
+    { title: 'Soru kökü', text: 'Sorulardaki olumsuz ifadelerin altını çizmesini hatırlatın; bu küçük alışkanlık dikkatsizlik hatalarını azaltabilir.' },
   ],
   weeks: [
     {
@@ -312,11 +312,11 @@ const durGit: TaskRoadmapTemplate = {
   facts: facts(
     [
       'Bir tepkiyi son anda durdurabilme çocukluk ve ergenlik boyunca gelişir; küçük yaşta daha çok yanlışlıkla basmak olağandır.',
-      'Hızlı basmaya alışınca herkes zaman zaman yanlışlıkla basar; birkaç yanlış basma olağandır.',
+      'Hızlı basmaya alışınca çoğu kişi zaman zaman yanlışlıkla basar; birkaç yanlış basma olağandır.',
     ],
     [
       'Bir tepkiyi son anda durdurabilme çocukluk ve ergenlik boyunca gelişir; küçük yaşta daha çok yanlışlıkla basmak olağandır.',
-      'Hızlı basmaya alışınca herkes zaman zaman yanlışlıkla basar; birkaç yanlış basma olağandır.',
+      'Hızlı basmaya alışınca çoğu kişi zaman zaman yanlışlıkla basar; birkaç yanlış basma olağandır.',
     ],
   ),
   approach: [
@@ -366,8 +366,8 @@ const siraylaBirlestirme: TaskRoadmapTemplate = {
   },
   studyTitle,
   studyIntro: t(
-    'Bu görev, bir sayfayı gözle tarayıp sırayı takip etmeyi ve iki farklı kural (sayılar ve harfler) arasında geçiş yapabilmeyi ölçer. Günlük hayatta da iki iş arasında gidip gelmek, tek bir işe odaklanmaktan daha çok zaman alır.',
-    'Bu görev, bir sayfayı gözle tarayıp sırayı takip etmeyi ve iki farklı kural (sayılar ve harfler) arasında geçiş yapabilmeyi ölçer. Günlük hayatta da iki iş arasında gidip gelmek, tek bir işe odaklanmaktan daha çok zaman alır.',
+    'Bu görev, bir sayfayı gözle tarayıp sırayı takip etmeyi ve iki farklı kural (sayılar ve harfler) arasında geçiş yapabilmeyi ölçer. Günlük hayatta da iki iş arasında gidip gelmek, tek bir işe odaklanmaktan genellikle daha çok zaman alır.',
+    'Bu görev, bir sayfayı gözle tarayıp sırayı takip etmeyi ve iki farklı kural (sayılar ve harfler) arasında geçiş yapabilmeyi ölçer. Günlük hayatta da iki iş arasında gidip gelmek, tek bir işe odaklanmaktan genellikle daha çok zaman alır.',
   ),
   supports: [
     support(0, 'tek', 'Bir seferde bir iş', 'Yöntem', t(
@@ -389,17 +389,17 @@ const siraylaBirlestirme: TaskRoadmapTemplate = {
   ],
   facts: facts(
     [
-      'İki kural arasında geçiş yapmak herkes için tek kurala göre daha uzun sürer; ikinci bölümün daha uzun sürmesi olağandır.',
+      'İki kural arasında geçiş yapmak çoğu kişide tek kurala göre daha uzun sürer; ikinci bölümün daha uzun sürmesi olağandır, ama aradaki fark herkeste aynı olmayabilir.',
       'Bu görevde parmağın ya da farenin hızı da süreyi etkiler; telefonda ve bilgisayarda sonuçlar farklı olabilir.',
     ],
     [
-      'İki kural arasında geçiş yapmak herkes için tek kurala göre daha uzun sürer; ikinci bölümün daha uzun sürmesi olağandır.',
+      'İki kural arasında geçiş yapmak çoğu kişide tek kurala göre daha uzun sürer; ikinci bölümün daha uzun sürmesi olağandır, ama aradaki fark herkeste aynı olmayabilir.',
       'Bu görevde parmağın ya da farenin hızı da süreyi etkiler; telefonda ve bilgisayarda sonuçlar farklı olabilir.',
     ],
   ),
   approach: [
     { title: 'Tek iş', text: 'Ödev sırasında telefon ve televizyon gibi sık geçişe yol açan şeyleri ortamdan uzaklaştırın.' },
-    { title: 'Geçişten önce haber', text: 'Bir işten ötekine geçmesi gerektiğinde birkaç dakika önceden haber verin; ani geçişler herkes için zordur.' },
+    { title: 'Geçişten önce haber', text: 'Bir işten ötekine geçmesi gerektiğinde birkaç dakika önceden haber verin; ani geçişler çoğu kişiye zor gelir.' },
     { title: 'Düzen', text: 'Defter ve masa düzenini birlikte kurun; neyin nerede olduğunu bilmek zaman kazandırır.' },
   ],
   weeks: [
@@ -467,12 +467,12 @@ const geriyeDonuk: TaskRoadmapTemplate = {
   ],
   facts: facts(
     [
-      'Çalışma belleği çocukluk ve ergenlik boyunca gelişir; iki geride bir geriye göre daha çok zorlanmak herkeste görülür.',
+      'Çalışma belleği çocukluk ve ergenlik boyunca gelişir; iki geride bir geriye göre daha çok zorlanmak çoğu kişide görülür, ama herkeste aynı olmayabilir.',
       'Bu görev, çalışma belleğini ölçen başka görevlerle yalnızca kısmen örtüşür; tek bir görev bu beceriyi bütünüyle göstermez.',
       'Bilgisayarda bu tür alıştırmaları yapmak, alıştırılan görevde puanı yükseltebilir; ama bunun derslere ve günlük işlere yansıdığına dair güçlü bir kanıt yoktur.',
     ],
     [
-      'Çalışma belleği çocukluk ve ergenlik boyunca gelişir; iki geride bir geriye göre daha çok zorlanmak herkeste görülür.',
+      'Çalışma belleği çocukluk ve ergenlik boyunca gelişir; iki geride bir geriye göre daha çok zorlanmak çoğu kişide görülür, ama herkeste aynı olmayabilir.',
       'Bu görev, çalışma belleğini ölçen başka görevlerle yalnızca kısmen örtüşür; tek bir görev bu beceriyi bütünüyle göstermez.',
       'Bilgisayarda çalışma belleği alıştırmaları yapmak, alıştırılan görevde puanı yükseltebilir; ama bunun derslere ve günlük işlere yansıdığına dair güçlü bir kanıt yoktur.',
     ],
@@ -524,8 +524,8 @@ const zihindeDondurme: TaskRoadmapTemplate = {
   },
   studyTitle,
   studyIntro: t(
-    'Bu görev, şekilleri zihninde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır. Şekil ne kadar çok döndürülmüşse karar vermek o kadar uzun sürer; bu herkeste böyledir.',
-    'Bu görev, şekilleri zihinde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır. Şekil ne kadar çok döndürülmüşse karar vermek o kadar uzun sürer; bu herkeste böyledir.',
+    'Bu görev, şekilleri zihninde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır. Şekil ne kadar çok döndürülmüşse karar vermek çoğu kişide o kadar uzun sürer; bu fark herkeste aynı ölçüde görülmeyebilir.',
+    'Bu görev, şekilleri zihinde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır. Şekil ne kadar çok döndürülmüşse karar vermek çoğu kişide o kadar uzun sürer; bu fark herkeste aynı ölçüde görülmeyebilir.',
   ),
   supports: [
     support(0, 'ciz', 'Çizerek düşün', 'Araç', t(
@@ -548,11 +548,11 @@ const zihindeDondurme: TaskRoadmapTemplate = {
   facts: facts(
     [
       'Şekilleri zihinde döndürebilme yaşla gelişir; küçük yaşta daha uzun düşünmek olağandır.',
-      'Çok döndürülmüş şekillerde daha uzun düşünmek herkeste görülen olağan bir etkidir.',
+      'Çok döndürülmüş şekillerde daha uzun düşünmek çoğu kişide görülen olağan bir etkidir; herkeste aynı ölçüde olmayabilir.',
     ],
     [
       'Şekilleri zihinde döndürebilme yaşla gelişir; küçük yaşta daha uzun düşünmek olağandır.',
-      'Çok döndürülmüş şekillerde daha uzun düşünmek herkeste görülen olağan bir etkidir.',
+      'Çok döndürülmüş şekillerde daha uzun düşünmek çoğu kişide görülen olağan bir etkidir; herkeste aynı ölçüde olmayabilir.',
     ],
   ),
   approach: [
@@ -602,21 +602,21 @@ const tepkiHizi: TaskRoadmapTemplate = {
   },
   studyTitle,
   studyIntro: t(
-    'Bu görev, bir şeyi görür görmez ne kadar çabuk tepki verebildiğini ve iki seçenekten doğrusunu ne kadar hızlı seçebildiğini ölçer. Seçenek arttıkça karar vermek herkes için biraz daha uzun sürer.',
-    'Bu görev, bir şeyi görür görmez ne kadar çabuk tepki verilebildiğini ve iki seçenekten doğrusunun ne kadar hızlı seçilebildiğini ölçer. Seçenek arttıkça karar vermek herkes için biraz daha uzun sürer.',
+    'Bu görev, bir şeyi görür görmez ne kadar çabuk tepki verebildiğini ve iki seçenekten doğrusunu ne kadar hızlı seçebildiğini ölçer. Seçenek arttıkça karar vermek çoğu kişide biraz daha uzun sürer.',
+    'Bu görev, bir şeyi görür görmez ne kadar çabuk tepki verilebildiğini ve iki seçenekten doğrusunun ne kadar hızlı seçilebildiğini ölçer. Seçenek arttıkça karar vermek çoğu kişide biraz daha uzun sürer.',
   ),
   supports: [
     support(0, 'dogru', 'Önce doğruluk', 'Yöntem', t(
-      'Sınavda ve ödevde hızdan önce doğruluğa odaklan; doğru yapmaya alıştığın işler zamanla hızlanır.',
-      'Çocuğunuzun sınavda ve ödevde hızdan önce doğruluğa odaklanmasını destekleyin; doğru yapmaya alıştığı işler zamanla hızlanır.',
+      'Sınavda ve ödevde hızdan önce doğruluğa odaklan; doğru yapmaya alıştığın işler çoğu zaman kendiliğinden hızlanır.',
+      'Çocuğunuzun sınavda ve ödevde hızdan önce doğruluğa odaklanmasını destekleyin; doğru yapmaya alıştığı işler çoğu zaman kendiliğinden hızlanır.',
     )),
     support(1, 'secenek', 'Seçenekleri azalt', 'Araç', t(
       'Karar vermen gereken seçenekleri azaltmak işini hızlandırır: ödevden önce gerekenleri masaya hazırlamak ya da ertesi günün kıyafetini bir gece önceden seçmek gibi.',
       'Karar verilmesi gereken seçenekleri azaltmak işleri hızlandırır: çocuğunuzla ödevden önce gerekenleri masaya hazırlamak ya da ertesi günün kıyafetini bir gece önceden seçmek gibi.',
     )),
     support(2, 'dinc', 'Dinç olmak', 'Alışkanlık', t(
-      'Yorgunken herkes daha yavaş tepki verir. Düzenli uyku ve uzun çalışmalarda kısa molalar işini kolaylaştırır.',
-      'Yorgunken herkes daha yavaş tepki verir. Düzenli uyku ve uzun çalışmalarda kısa molalar çocuğunuzun işini kolaylaştırır.',
+      'Yorgunken çoğu kişi daha yavaş tepki verir. Düzenli uyku ve uzun çalışmalarda kısa molalar işini kolaylaştırır.',
+      'Yorgunken çoğu kişi daha yavaş tepki verir. Düzenli uyku ve uzun çalışmalarda kısa molalar çocuğunuzun işini kolaylaştırır.',
     )),
     support(3, 'guvenlik', 'Dikkat dağıtıcılardan uzak', 'Ortam', t(
       'Hızlı tepki gereken işlerde (ör. bisiklet sürerken ya da karşıdan karşıya geçerken) telefon ve kulaklık gibi dikkatini dağıtan şeyleri bırak.',
@@ -634,7 +634,7 @@ const tepkiHizi: TaskRoadmapTemplate = {
     ],
   ),
   approach: [
-    { title: 'Acele ettirmeyin', text: 'Hızlı olmasını istemek yerine doğru yapmasını övün; hız, alıştıkça gelir.' },
+    { title: 'Acele ettirmeyin', text: 'Hızlı olmasını istemek yerine doğru yapmasını övün; bir işe alıştıkça hız da çoğu zaman kendiliğinden gelir.' },
     { title: 'Güvenlik', text: 'Trafikte ve sporda dikkat dağıtıcıları (telefon, kulaklık) bırakmanın önemini konuşun.' },
     { title: 'Küçük hazırlıklar', text: 'Sabahları ve ödevden önce seçimleri azaltan küçük hazırlıkları (çanta, kıyafet) birlikte alışkanlık hâline getirin.' },
   ],

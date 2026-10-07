@@ -33,13 +33,13 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
   },
   openNote: {
     student:
-      'Son bir yılda hiçbir alan öne çıkmıyor. Bu, zamanının ya da imkânlarının kısıtlı olmasıyla da ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.',
+      'Son bir yılda hiçbir alan ötekilerden öne çıkmıyor. Bu, zamanının ya da imkânlarının kısıtlı olmasıyla da, zamanını birçok alana benzer ölçüde ayırmanla da ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.',
     parent:
-      'Çocuğunuzun son bir yılda yaptığı etkinliklerde hiçbir alan öne çıkmıyor. Bu, zamanın ya da imkânların kısıtlı olmasıyla da ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.',
+      'Son bir yılda yapılan etkinliklerde hiçbir alan ötekilerden öne çıkmıyor. Bu, zamanın ya da imkânların kısıtlı olmasıyla da, çocuğunuzun zamanını birçok alana benzer ölçüde ayırmasıyla da ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.',
   },
   firstWeek: {
     student:
-      'Raporundaki en sık alanları düşün. Bu hafta her akşam boş zamanını neyle geçirdiğini bir cümleyle bir deftere yaz: hangi etkinlik sana iyi geldi, hangisi seni yordu?',
+      'Raporundaki alanlara bir kez daha göz at. Bu hafta her akşam boş zamanını neyle geçirdiğini bir cümleyle bir deftere yaz: hangi etkinlik sana iyi geldi, hangisi seni yordu?',
     parent: bf.firstWeek.parent,
   },
   openWeeks: [
@@ -47,8 +47,9 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
       title: 'Yeni bir etkinlik dene',
       text: {
         student:
-          'Bu hafta raporunda az görünen alanlardan birini seç ve o alandan küçük bir etkinliği bir kez dene (ör. bir doğa yürüyüşü, bir masa oyunu ya da bir müze); sana nasıl geldiğini yaz.',
-        parent: 'Bu hafta raporda az görünen alanlardan birini çocuğunuzla seçin ve o alandan küçük bir etkinliği birlikte bir kez deneyin.',
+          'Bu hafta raporunda daha az öne çıkan ya da hiç denemediğin alanlardan birini seç ve o alandan küçük bir etkinliği bir kez dene (ör. bir doğa yürüyüşü, bir masa oyunu ya da bir müze); sana nasıl geldiğini yaz.',
+        parent:
+          'Bu hafta raporda daha az öne çıkan ya da çocuğunuzun hiç denemediği alanlardan birini onunla birlikte seçin ve o alandan küçük bir etkinliği birlikte bir kez deneyin.',
       },
     },
     {
@@ -60,7 +61,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
     },
   ],
   lastWeek: {
-    student: 'Dört haftada hangi etkinliğin sana en iyi geldiğini yaz ve onu sürdürmek için haftanda küçük ama düzenli bir zaman ayır.',
+    student: 'Dört haftada hangi etkinliğin sana en iyi geldiğini yaz ve onu sürdürmek için haftada küçük ama düzenli bir zaman ayır.',
     parent: 'Dört haftada hangi etkinliğin ona en iyi geldiğini çocuğunuzla konuşun ve onu sürdürmesi için haftada küçük ama düzenli bir zamanı birlikte belirleyin.',
   },
   nextTests: ['mesleki-ilgi-profili', 'meslek-ilgi-alanlari'],
@@ -85,7 +86,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
         student:
           'Koleksiyonunu bir adım ileri taşımak için parçalarını bir düzene göre sıralayıp küçük bir katalog hazırlayabilir, topladığın şeylerin tarihini ve hikâyesini araştırabilirsin. Aynı şeyi toplayan insanlarla tanışmak ya da bir koleksiyon sergisini gezmek yeni şeyler öğrenmeni sağlar.',
         parent:
-          'Çocuğunuzun koleksiyonunu anlatmasını dinlemek ve ona soru sormak bu uğraşı destekler. Koleksiyonunu sergileyebileceği bir raf ya da kutu ayırmak, bir müzede benzer koleksiyonları birlikte görmek ilgisini derinleştirebilir. Harcamaları birlikte belirlediğiniz bir sınır içinde tutmak da iyi bir alışkanlıktır.',
+          'Çocuğunuzun koleksiyonunu anlatmasını dinlemek ve ona soru sormak bu uğraşı destekler. Koleksiyonunu sergileyebileceği bir raf ya da kutu ayırmak, bir müzede benzer koleksiyonları birlikte görmek merakını derinleştirebilir. Harcamaları birlikte belirlediğiniz bir sınır içinde tutmak da iyi bir alışkanlıktır.',
       },
       action: {
         student: 'Bu hafta koleksiyonundaki en ilginç üç parçayı seç ve her birinin hikâyesini birkaç cümleyle yaz.',
@@ -98,7 +99,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
         student:
           'Yaratıcı etkinliklerini ileri taşımak için ürettiklerini bir dosyada ya da defterde biriktirebilir, kendine küçük bir proje belirleyebilirsin (ör. bir ay boyunca her hafta bir çizim ya da bir şiir). Bir atölyeye, bir koroya ya da bir tiyatro topluluğuna katılmak ve ürettiklerini güvendiğin insanlarla paylaşmak yeni fikirler getirir.',
         parent:
-          'Çocuğunuzun yaratıcı etkinlikleri için evde küçük bir köşe, zaman ve basit malzemeler ayırabilirsiniz. Ürettiklerini değerlendirmek yerine onları nasıl yaptığını sormak, bir atölyeye ya da koroya katılmasını desteklemek ilgisini besler.',
+          'Çocuğunuzun yaratıcı etkinlikleri için evde küçük bir köşe, zaman ve basit malzemeler ayırabilirsiniz. Ürettiklerini değerlendirmek yerine onları nasıl yaptığını sormak, bir atölyeye ya da koroya katılmasını desteklemek merakını besler.',
       },
       action: {
         student: 'Bu hafta yaratıcı bir işe en az bir saat ayır, ortaya çıkanı biriktirdiğin dosyaya ekle ve bir sonraki denemende neyi değiştirmek istediğini not et.',
@@ -124,7 +125,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
         student:
           'Egzersizi ileri taşımak için kendine ulaşılabilir bir hedef koyabilir (ör. her hafta biraz daha uzun yürümek ya da koşmak) ve yaptıklarını bir çizelgede işaretleyebilirsin. Yeni bir hareket türüne başlarken doğru tekniği bir eğitmenden ya da güvenilir bir kaynaktan öğrenmek sakatlanmayı önlemeye yardım eder.',
         parent:
-          'Çocuğunuzun düzenli egzersizini takdir edebilir, ona güvenli bir ortam ve uygun ekipman sağlamaya yardım edebilirsiniz. Yeni bir hareket türüne başlarken bir eğitmenin ya da güvenilir bir kaynağın rehberliği önemlidir; dinlenmeye ve uykuya da yer kalmasını birlikte gözetin.',
+          'Çocuğunuzun egzersize ayırdığı zamanı takdir edebilir, ona güvenli bir ortam ve uygun ekipman sağlamaya yardım edebilirsiniz. Yeni bir hareket türüne başlarken bir eğitmenin ya da güvenilir bir kaynağın rehberliği önemlidir; dinlenmeye ve uykuya da yer kalmasını birlikte gözetin.',
       },
       action: {
         student: 'Bu hafta yaptığın egzersizleri her gün bir çizelgeye işaretle ve hafta sonunda kendine bir sonraki hafta için küçük bir hedef koy.',
@@ -135,9 +136,9 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
     fashion: area('#c2459b', {
       explore: {
         student:
-          'Moda ve giyime ilgini ileri taşımak için beğendiğin kombinleri bir defterde ya da panoda biriktirebilir, renk uyumu ve kumaşlar hakkında okuyabilirsin. Eski bir kıyafeti yeniden düzenlemek, dikiş ya da moda çizimi denemek bu ilgiyi yaratıcı bir beceriye dönüştürebilir.',
+          'Moda ve giyimle uğraşını ileri taşımak için beğendiğin kombinleri bir defterde ya da panoda biriktirebilir, renk uyumu ve kumaşlar hakkında okuyabilirsin. Eski bir kıyafeti yeniden düzenlemek, dikiş ya da moda çizimi denemek bu uğraşı yaratıcı bir beceriye dönüştürebilir.',
         parent:
-          'Çocuğunuzun giyimle ilgili seçimlerine saygı göstermek ve tarzını anlatmasını dinlemek onu destekler. Bu ilgiyi harcamadan çok üretmeye yönlendirebilirsiniz: eski kıyafetleri birlikte yeniden düzenlemek, dikiş ya da moda çizimi denemek gibi.',
+          'Çocuğunuzun giyimle ilgili seçimlerine saygı göstermek ve tarzını anlatmasını dinlemek onu destekler. Bu uğraşı harcamadan çok üretmeye yönlendirebilirsiniz: eski kıyafetleri birlikte yeniden düzenlemek, dikiş ya da moda çizimi denemek gibi.',
       },
       action: {
         student: 'Bu hafta yeni bir şey almadan, dolabındaki parçalarla üç farklı kombin oluştur ve hangisinde kendini en rahat hissettiğini yaz.',
@@ -174,9 +175,9 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
     gatherings: area('#e0a10b', {
       explore: {
         student:
-          'Kutlamalara ve buluşmalara ilgini ileri taşımak için küçük bir buluşmayı baştan sona planlayabilirsin: davetlileri, yiyecekleri, bir oyun ya da etkinliği ve bütçeyi düşünmek gibi. Bu, insanları bir araya getirme ve düzenleme becerisi kazandırır.',
+          'Kutlama ve buluşmalarla uğraşını ileri taşımak için küçük bir buluşmayı baştan sona planlayabilirsin: davetlileri, yiyecekleri, bir oyun ya da etkinliği ve bütçeyi düşünmek gibi. Bu, insanları bir araya getirme ve düzenleme becerisi kazandırır.',
         parent:
-          'Çocuğunuza aile buluşmalarında ya da kutlamalarda bir görev vermek (ör. bir etkinliği ya da sofrayı hazırlamak) bu ilgiyi destekler. Misafir ağırladıktan sonra nelerin iyi gittiğini birlikte konuşmak planlama becerisini geliştirebilir.',
+          'Çocuğunuza aile buluşmalarında ya da kutlamalarda bir görev vermek (ör. bir etkinliği ya da sofrayı hazırlamak) bu uğraşı destekler. Misafir ağırladıktan sonra nelerin iyi gittiğini birlikte konuşmak planlama becerisini geliştirebilir.',
       },
       action: {
         student: 'Bu hafta yakınlarınla ya da arkadaşlarınla küçük bir buluşma planla: kimlerin geleceğini, ne yapacağınızı ve neler gerektiğini bir listeye yaz.',
@@ -187,9 +188,9 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
     pets: area('#9a5b34', {
       explore: {
         student:
-          'Hayvanlarla uğraşını ileri taşımak için baktığın hayvanın ihtiyaçlarını (beslenme, sağlık, davranış) güvenilir kaynaklardan araştırabilirsin. Hayvan barınaklarının gönüllü etkinliklerini araştırmak ya da hayvanlarla çalışan meslekleri yakından tanımak da bir sonraki adım olabilir.',
+          'Hayvanlarla uğraşını ileri taşımak için baktığın ya da merak ettiğin bir hayvanın ihtiyaçlarını (beslenme, sağlık, davranış) güvenilir kaynaklardan araştırabilirsin. Hayvan barınaklarının gönüllü etkinliklerini araştırmak ya da hayvanlarla çalışan meslekleri yakından tanımak da bir sonraki adım olabilir.',
         parent:
-          'Çocuğunuza evcil hayvanın bakımında yaşına uygun ve düzenli görevler vermek sorumluluk duygusunu destekler. Hayvanlarla ilgili bir belgeseli birlikte izlemek ya da bir veteriner hekimle konuşma fırsatı yaratmak ilgisini derinleştirebilir.',
+          'Çocuğunuza evcil hayvanın bakımında yaşına uygun ve düzenli görevler vermek sorumluluk duygusunu destekler. Hayvanlarla ilgili bir belgeseli birlikte izlemek ya da bir veteriner hekimle konuşma fırsatı yaratmak merakını derinleştirebilir.',
       },
       action: {
         student: 'Bu hafta bir hayvan türünün (kendi evcil hayvanın ya da merak ettiğin bir hayvan) ihtiyaçlarını araştır ve öğrendiğin üç şeyi yaz.',
@@ -229,7 +230,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
         student:
           'Sporu ileri taşımak için düzenli antrenman yapan bir takıma ya da bir spor kulübüne katılabilir, sevdiğin sporun kurallarını ve tekniklerini daha ayrıntılı öğrenebilirsin. Belediyelerin spor kursları ücretsiz ya da düşük ücretli olabilir.',
         parent:
-          'Çocuğunuzun spora ilgisini, onu bir takıma ya da düzenli bir spor etkinliğine katılmaya teşvik ederek destekleyebilirsiniz. Maçlarına ya da antrenmanlarına zaman zaman eşlik etmek ve sonucu değil çabasını konuşmak onu yüreklendirir.',
+          'Çocuğunuzu bir takıma ya da düzenli bir spor etkinliğine katılmaya teşvik ederek bu uğraşı destekleyebilirsiniz. Maçlarına ya da antrenmanlarına zaman zaman eşlik etmek ve sonucu değil çabasını konuşmak onu yüreklendirir.',
       },
       action: {
         student: 'Bu hafta sevdiğin sporda geliştirmek istediğin bir hareketi seç ve her gün birkaç dakika onun üzerinde çalış; hafta sonunda nasıl değiştiğini yaz.',
@@ -242,7 +243,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
         student:
           'Açık hava etkinliklerini ileri taşımak için yakınındaki doğa yürüyüşü yollarını keşfedebilir, kuşları ya da bitkileri tanımayı öğrenebilirsin. Kamp ya da yüzme gibi etkinliklerde güvenlik kurallarını öğrenmek ve deneyimli biriyle gitmek önemlidir.',
         parent:
-          'Çocuğunuzla birlikte düzenli doğa yürüyüşleri ya da piknikler planlamak bu ilgiyi destekler. Yüzme ve kamp gibi etkinliklerde güvenlik kurallarını birlikte konuşmak ve deneyimli bir rehber eşliğinde katılmak önemlidir.',
+          'Çocuğunuzla birlikte düzenli doğa yürüyüşleri ya da piknikler planlamak bu uğraşı destekler. Yüzme ve kamp gibi etkinliklerde güvenlik kurallarını birlikte konuşmak ve deneyimli bir rehber eşliğinde katılmak önemlidir.',
       },
       action: {
         student: 'Bu hafta açık havada en az bir saat geçir (bir park, bir sahil ya da bir doğa yolu) ve gördüğün üç canlıyı ya da yeri yaz.',
@@ -253,9 +254,9 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
     travel: area('#139fb5', {
       explore: {
         student:
-          'Gezi ve seyahat ilgini ileri taşımak için gideceğin yerlerin tarihini ve kültürünü önceden araştırabilir, gezilerin için küçük bir gezi defteri tutabilirsin. Uzaklara gitmek gerekmez: yaşadığın şehirde hiç görmediğin bir semti, bir tarihî yeri ya da bir müzeyi keşfetmek de bir gezidir.',
+          'Gezilerini bir adım ileri taşımak için gideceğin yerlerin tarihini ve kültürünü önceden araştırabilir, küçük bir gezi defteri tutabilirsin. Uzaklara gitmek gerekmez: yaşadığın şehirde hiç görmediğin bir semti, bir tarihî yeri ya da bir müzeyi keşfetmek de bir gezidir.',
         parent:
-          'Çocuğunuza bir gezinin planlanmasında görev vermek (rota, gezilecek yerler, bütçe) bu ilgiyi destekler. Yakındaki tarihî yerleri ve semtleri birlikte keşfetmek, uzun yolculuklar gerektirmeden yeni yerler görmesini sağlar.',
+          'Çocuğunuza bir gezinin planlanmasında görev vermek (rota, gezilecek yerler, bütçe) bu uğraşı destekler. Yakındaki tarihî yerleri ve semtleri birlikte keşfetmek, uzun yolculuklar gerektirmeden yeni yerler görmesini sağlar.',
       },
       action: {
         student: 'Bu hafta yaşadığın yerde daha önce görmediğin bir yeri araştır ve mümkünse gez; orada öğrendiğin bir şeyi yaz.',
@@ -268,7 +269,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
         student:
           'Yazmayı ve anı biriktirmeyi ileri taşımak için düzenli bir günlük tutabilir, fotoğraflarını ve hatıralarını bir albümde ya da defterde düzenleyebilirsin. Sevdiğin birine elle bir mektup ya da teşekkür notu yazmak da bu uğraşa yeni bir boyut katar.',
         parent:
-          'Çocuğunuza güzel bir defter ya da albüm hediye etmek bu ilgiyi destekler. Aile fotoğraflarını birlikte düzenlemek ve onların hikâyelerini anlatmak anı biriktirmeyi ortak bir etkinliğe dönüştürür.',
+          'Çocuğunuza güzel bir defter ya da albüm hediye etmek bu uğraşı destekler. Aile fotoğraflarını birlikte düzenlemek ve onların hikâyelerini anlatmak anı biriktirmeyi ortak bir etkinliğe dönüştürür.',
       },
       action: {
         student: 'Bu hafta her gün o güne dair üç cümle yaz ve hafta sonunda bir anını bir fotoğraf ya da çizimle birlikte sayfaya ekle.',

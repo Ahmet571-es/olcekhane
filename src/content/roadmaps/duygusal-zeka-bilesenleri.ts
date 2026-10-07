@@ -10,8 +10,10 @@ import type { RoadmapTemplate } from './types';
  *    olacağını seçmeye yardım eder; "duygusal zekâya uygun öğrenme yolu" gibi bir eşleştirme vaat edilmez.
  *  - Puanlar bir not değildir: iki ucun da işe yarayan ve dikkat edilecek yanları vardır (rapor metinleriyle aynı dil).
  *  - Üzücü olaylardan etkilenme yüksekken 3. hafta iyi oluşa ayrılır. Bu ölçek kaygı ölçmediği için "Sınav kaygısı"
- *    yazısına bağlantı verilmez; sınav öncesi öneriler Beş Faktör'de onaylanan önerilerle aynı kaynaklara dayanır
- *    (Ramirez ve Beilock, 2011; Jamieson ve ark., 2010).
+ *    yazısına bağlantı verilmez ve sınav kaygısı önerisi verilmez; öneriler duygusal yükü hafifletmeye ve kendine iyi
+ *    bakmaya (dinlenme, uyku, üzücü haberlere ara verme, güvenilen biriyle konuşma) yöneliktir.
+ *  - Veliye yaklaşım önerileri rapordaki veli metinlerini ve aynı raporda yan yana okunan "Bu hafta dene"
+ *    metinlerini tekrar etmez.
  *  - 2. hafta "Duygularına dikkat": bu testte çalışma düzenini ölçen bir ölçek yoktur; duyguları fark etmek öteki
  *    bütün önerilerin başlangıcıdır.
  *  - Ortamlar bir meslek önerisi değildir; meslek için ilgi testlerine yönlendirilir.
@@ -45,39 +47,39 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
   nextTests: bf.nextTests,
   approach: {
     positive_expressivity: {
-      low: 'Duygularını göstermesi için onu zorlamayın; sevgisini kendi yoluyla gösterdiği küçük davranışları fark edin.',
+      low: 'Duygularını göstermesi için onu zorlamayın; birlikte yürümek ya da yemek hazırlamak gibi sakin ortak işler, söze dökmeden yakınlık kurmanıza fırsat verebilir.',
       average: 'Sevinçli anları birlikte paylaşabileceğiniz küçük aile alışkanlıkları oluşturabilirsiniz.',
       high: 'Sevincine ve coşkusuna ortak olun; neşesini paylaştığında ona zaman ayırın.',
     },
     negative_expressivity: {
-      low: 'Duygularını anlatması için baskı yapmayın; sakin ve güvenli anlarda nasıl olduğunu sorun.',
+      low: 'Duygularını anlatması için baskı yapmayın; yazarak ya da bir mesajla anlatmanın da bir yol olduğunu söyleyin.',
       average: 'Olumsuz duygularını gösterdiğinde de onu dinlediğinizi hissettirin.',
-      high: 'Öfkeli anlarda önce sakinleşmesini bekleyin; sonra yaşadıklarını birlikte konuşun.',
+      high: 'Duygularını açıkça söylemesini olağan karşılayın; öfkeli bir anda sesinizi alçak ve sakin tutmanız ona da yol gösterir.',
     },
     attending_emotions: {
-      low: 'Gün içinde neler hissettiğini sorun ve cevabını yorum yapmadan dinleyin.',
+      low: 'Kendi duygularınızı da günlük konuşmalarda adlandırın: "Bugün biraz yorgunum" ya da "Buna çok sevindim" gibi.',
       average: 'Duygularını adlandırmasına yardım edebilirsiniz: örneğin kızgın mı yoksa kırgın mı olduğunu birlikte ayırt edin.',
       high: 'Duygularını anlattığında onları ciddiye alın ve dinleyin.',
     },
     emotion_decisions: {
-      low: 'Kararlarında mantığına güvenin; neyin ona gerçekten önemli geldiğini de sorun.',
+      low: 'Kararlarında mantığına güvenin; aile kararlarında siz de gerekçenizin yanında ne hissettiğinizi söyleyerek örnek olabilirsiniz.',
       average: 'Kararlarında hem gerekçelerini hem de ne hissettiğini konuşabilirsiniz.',
-      high: 'Büyük kararlarda duygularını küçümsemeden, gerçekleri de birlikte gözden geçirin.',
+      high: 'Bir karar verirken içinden gelene saygı gösterin; önemli bir kararı bir gece bekletip ertesi gün yeniden konuşmayı önerebilirsiniz.',
     },
     responsive_joy: {
-      low: 'Sevinci kendi yoluyla yaşamasına saygı gösterin; neşeli anlara katılması için onu zorlamayın.',
+      low: 'Neşeli ortamlara katılması için onu zorlamayın; kendi sevdiği şeyleri (bir oyun, bir müzik, bir başarı) anlattığında ilgiyle dinleyin.',
       average: 'Hem kalabalık hem sakin etkinliklere yer açmak ona iyi gelebilir.',
       high: 'Arkadaşlarıyla birlikte yapabileceği etkinliklere fırsat verin.',
     },
     responsive_distress: {
-      low: 'Sakinliğini takdir edin; başkalarının duygularını dinlemenin değerini de onunla konuşun.',
+      low: 'Sakinliğini takdir edin; zor bir dönem geçiren bir arkadaşı olduğunda ona nasıl destek olabileceğini birlikte düşünün.',
       average: 'Zor zamanlarda onu dinlemeye hazır olduğunuzu hissettirin.',
-      high: 'Üzüldüğünde duygularını küçümsemeden dinleyin; çok üzücü haberleri art arda izlemesini sınırlamak da iyi gelebilir.',
+      high: 'Üzüldüğünde duygularını küçümsemeden dinleyin; hemen çözüm önermek yerine önce ne hissettiğini anlatmasına fırsat verin.',
     },
     empathic_concern: {
-      low: 'Yardımlaşma gerektiren ortak işlere (ör. bir yardım kampanyası) birlikte katılabilirsiniz.',
+      low: 'Öğüt vermek yerine, bir yakınınızı ziyaret ettiğinizde ya da birine yardım ettiğinizde onu da yanınıza alın.',
       average: 'Başkalarına yardım ettiği anları fark ettiğinizi ona söyleyin.',
-      high: 'Başkalarına yardım ederken kendi ihtiyaçlarını da gözetmesini hatırlatın.',
+      high: 'Başkalarının derdini dert edindiğinde onu dinleyin; her sorunu onun çözmesi gerekmediğini hatırlatın.',
     },
   },
   scales: {
@@ -144,11 +146,9 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Olumsuz duygularını çoğu zaman kendine saklıyorsun; bu, sakin görünmeni sağlar ama zorlandığını başkalarının fark etmesini güçleştirebilir. Takıldığın bir konuyu birine sormayı kendine küçük bir görev olarak ver. Önemli bir sınavdan önce endişelerini birkaç dakika kâğıda yazmak da içindeki yükü hafifletebilir.',
+            'Olumsuz duygularını çoğu zaman kendine saklıyorsun; bu, sakin görünmeni sağlayabilir ama zorlandığını başkalarının fark etmesini güçleştirebilir. Takıldığın bir konuyu birine sormayı kendine küçük bir görev olarak ver. Zor bir günün sonunda yaşadıklarını birkaç dakika kâğıda yazmak da duygularını toparlamana yardım edebilir.',
           parent:
-            'Çocuğunuz olumsuz duygularını çoğu zaman kendine saklıyor olabilir; bu yüzden zorlandığını fark etmek güç olabilir. Ona baskı yapmadan, sakin anlarda "Bu hafta seni en çok ne zorladı?" diye sorabilirsiniz. Önemli bir sınavdan önce endişelerini birkaç dakika yazması da içindeki yükü hafifletebilir.',
-          adult:
-            'Olumsuz duygularını çoğu zaman kendine saklıyorsun; bu, sakin görünmeni sağlar ama zorlandığını başkalarının fark etmesini güçleştirebilir. Takıldığın bir konuyu birine sormayı kendine küçük bir görev olarak ver. Önemli bir sınav ya da sunumdan önce endişelerini birkaç dakika kâğıda yazmak da içindeki yükü hafifletebilir.',
+            'Çocuğunuz olumsuz duygularını çoğu zaman kendine saklıyor olabilir; bu yüzden zorlandığını fark etmek güç olabilir. Takıldığı bir konuyu birine sormayı kendine küçük bir görev olarak vermesini önerebilirsiniz. Zor bir günün sonunda yaşadıklarını birkaç dakika bir kâğıda yazması da duygularını toparlamasına yardım edebilir.',
         },
       },
       action: {
@@ -204,7 +204,7 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
         },
         average: {
           student: 'Bu hafta her akşam günün en güçlü duygusunu ve nedenini tek cümleyle yaz.',
-          parent: 'Bu hafta akşam yemeğinde, çocuğunuz da dahil herkesin günün en güçlü duygusunu ve nedenini tek cümleyle söylemesini deneyin.',
+          parent: 'Bu hafta akşam yemeğinde, çocuğunuz da dâhil herkesin günün en güçlü duygusunu ve nedenini tek cümleyle söylemesini deneyin.',
         },
         low: {
           student: 'Bu hafta günde iki kez kendine "Şu an ne hissediyorum?" diye sor ve cevabı tek kelimeyle not et.',
@@ -291,10 +291,13 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
         high: {
           student: 'Bu hafta bir arkadaşınla 20 dakikalık bir soru-cevap çalışması yapın; sonunda ikinizin de öğrendiği bir şeyi birbirinize söyleyin.',
           parent: 'Çocuğunuza bu hafta bir arkadaşıyla 20 dakikalık bir soru-cevap çalışması yapmasını önerin.',
+          adult:
+            'Bu hafta öğrendiğin bir konuyu biriyle 20 dakika soru-cevap yaparak tekrar edin; sonunda ikinizin de öğrendiği bir şeyi birbirinize söyleyin.',
         },
         average: {
           student: 'Bu hafta bir konuyu yalnız, bir konuyu bir arkadaşınla çalış; hangisinde daha keyifli ve verimli olduğunu not et.',
           parent: 'Bu hafta çocuğunuzla, yalnız mı yoksa bir arkadaşıyla mı daha keyifli ve verimli çalıştığını konuşun.',
+          adult: 'Bu hafta bir konuyu tek başına, bir konuyu biriyle birlikte çalış; hangisinde daha keyifli ve verimli olduğunu not et.',
         },
         low: {
           student: 'Bu hafta kendine üç küçük çalışma hedefi koy ve her birini bitirdiğinde çizelgende işaretle.',
@@ -311,27 +314,27 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun. Bu duyarlılık başkalarını anlamana yardım eder; ama yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir tekrar bile işe yarar. Önemli bir sınavdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir.',
+            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun. Bu duyarlılık başkalarını anlamana yardım edebilir; ama yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir tekrar bile işe yarayabilir. Başkalarının acısı seni çok yorduğunda üzücü haberlere ve görüntülere bir süre ara vermek, yeterince uyumak ve sevdiğin sakin bir işle dinlenmek yükünü hafifletebilir.',
           parent:
-            'Çocuğunuz üzücü olaylardan ve gergin anlardan derinden etkilenebiliyor. Bu duyarlılık başkalarını anlamasına yardım eder; ama yorgun düştüğü günlerde çalışmak zorlaşabilir. Böyle günlerde planı küçültmesine ama bırakmamasına destek olun. Sınavdan hemen önce endişelerini birkaç dakika yazması ve uykusunu koruması da yardımcı olabilir.',
+            'Çocuğunuz üzücü olaylardan ve gergin anlardan derinden etkilenebiliyor. Bu duyarlılık başkalarını anlamasına yardım edebilir; ama yorgun düştüğü günlerde çalışmak zorlaşabilir. Böyle günlerde planı küçültmesine ama bırakmamasına destek olun. Başkalarının acısı onu çok yorduğunda üzücü haberlere bir süre ara vermesi, uykusunu koruması ve sevdiği sakin bir işle dinlenmesi yükünü hafifletebilir.',
           adult:
-            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun. Bu duyarlılık başkalarını anlamana yardım eder; ama yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir çalışma bile işe yarar. Önemli bir sınav ya da sunumdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir.',
+            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun. Bu duyarlılık başkalarını anlamana yardım edebilir; ama yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir çalışma bile işe yarayabilir. Başkalarının acısı seni çok yorduğunda üzücü haberlere ve görüntülere bir süre ara vermek, yeterince uyumak ve sevdiğin sakin bir işle dinlenmek yükünü hafifletebilir.',
         },
         average: {
           student:
-            'Üzücü olaylardan etkileniyor, ama çoğu zaman sakinliğini koruyabiliyorsun. Seni zorlayan konulara erken başlamak, sınav dönemlerinde de bu sakinliği korumana yardım eder.',
+            'Üzücü olaylardan etkileniyor, ama çoğu zaman sakinliğini koruyabiliyorsun. Seni zorlayan konulara erken başlamak, sınav dönemlerinde de bu sakinliği korumana yardım edebilir.',
           parent:
-            'Çocuğunuz üzücü olaylardan etkileniyor, ama çoğu zaman sakinliğini koruyabiliyor. Zorlandığı konulara erken başlaması, sınav dönemlerinde de sakin kalmasına yardım eder.',
+            'Çocuğunuz üzücü olaylardan etkileniyor, ama çoğu zaman sakinliğini koruyabiliyor. Zorlandığı konulara erken başlaması, sınav dönemlerinde de sakin kalmasına yardım edebilir.',
           adult:
-            'Üzücü olaylardan etkileniyor, ama çoğu zaman sakinliğini koruyabiliyorsun. Seni zorlayan işlere erken başlamak, yoğun dönemlerde de bu sakinliği korumana yardım eder.',
+            'Üzücü olaylardan etkileniyor, ama çoğu zaman sakinliğini koruyabiliyorsun. Seni zorlayan işlere erken başlamak, yoğun dönemlerde de bu sakinliği korumana yardım edebilir.',
         },
         low: {
           student:
-            'Gergin anlarda sakin kalabiliyorsun; bu, sınav gibi baskılı durumlarda işine yarar. Sakinliğin "Nasılsa yetişir" düşüncesine dönüşmesin: tekrarlarını günlere yay ve kendini düzenli olarak sına. Zorlanan bir arkadaşına destek olmak da hem ona hem sana iyi gelebilir.',
+            'Gergin anlarda sakin kalabiliyorsun; bu, sınav gibi baskılı durumlarda işine yarayabilir. Sakinliğin "Nasılsa yetişir" düşüncesine dönüşmesin: tekrarlarını günlere yay ve kendini düzenli olarak sına. Zorlanan bir arkadaşına destek olmak da hem ona hem sana iyi gelebilir.',
           parent:
-            'Çocuğunuz gergin anlarda sakin kalabiliyor olabilir; bu, sınav gibi baskılı durumlarda işine yarar. Sakinliğin son ana bırakmaya dönüşmemesi için tekrarlarını günlere yayan küçük bir plan yapmasına destek olabilirsiniz.',
+            'Çocuğunuz gergin anlarda sakin kalabiliyor olabilir; bu, sınav gibi baskılı durumlarda işine yarayabilir. Sakinliğin son ana bırakmaya dönüşmemesi için tekrarlarını günlere yayan küçük bir plan yapmasına destek olabilirsiniz.',
           adult:
-            'Gergin anlarda sakin kalabiliyorsun; bu, baskılı durumlarda işine yarar. Sakinliğin "Nasılsa yetişir" düşüncesine dönüşmesin: işlerini günlere yay ve kendini düzenli olarak sına. Zorlanan birine destek olmak da hem ona hem sana iyi gelebilir.',
+            'Gergin anlarda sakin kalabiliyorsun; bu, baskılı durumlarda işine yarayabilir. Sakinliğin "Nasılsa yetişir" düşüncesine dönüşmesin: işlerini günlere yay ve kendini düzenli olarak sına. Zorlanan birine destek olmak da hem ona hem sana iyi gelebilir.',
         },
       },
       action: {
@@ -406,6 +409,7 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       },
     },
   },
-  // Poropat (2009) Sorumluluk boyutuyla ilgilidir; bu testte kullanılmaz.
-  sources: bf.sources.filter((s) => !s.text.startsWith('Poropat')),
+  // Poropat (2009) Sorumluluk boyutuyla, Jamieson ve ark. (2010) ile Ramirez ve Beilock (2011) sınav kaygısı önerileriyle
+  // ilgilidir; bu testte kullanılmaz.
+  sources: bf.sources.filter((s) => !/^(Poropat|Jamieson|Ramirez)/.test(s.text)),
 };

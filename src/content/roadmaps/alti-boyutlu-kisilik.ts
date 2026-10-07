@@ -6,13 +6,15 @@ import type { BandGroup, RoadmapTemplate } from './types';
  * Altı Boyutlu Kişilik Profili: gelişim yol haritası.
  *
  * Dışadönüklük, Sorumluluk ve Deneyime Açıklık için hocanın onayladığı Beş Faktör metinleri kullanılır (Deneyime
- * Açıklık: Merak ve Hayal Gücü metinleri). Uyumluluk'ta "Nasıl çalışabilir?", "Bu hafta dene" ve ortam metinleri Beş
- * Faktör'ünkülerdir; bu modelde uyumluluk sabır, hoşgörü ve bağışlamayı anlattığı için veliye yaklaşım önerileri ayrı
- * yazıldı. Dürüstlük-Alçakgönüllülük ve Duygusallık bu modele özgüdür; metinleri yenidir.
+ * Açıklık: Merak ve Hayal Gücü metinleri). Bu modelde Uyumluluk yardımseverliği değil bağışlamayı, yumuşaklığı,
+ * esnekliği ve sabrı anlatır (rapor: "Hoşgörülü ve sabırlı" / "Tepkilerini saklamayan"); bu yüzden bütün metinleri bu
+ * modele göre ayrı yazıldı. Dürüstlük-Alçakgönüllülük ve Duygusallık da bu modele özgüdür; metinleri yenidir.
  *
- * Duygusallık, Duygusal Denge'nin tersi yönündedir: yüksek düzey kaygı, korku ve destek aramayı anlatır. Bu yüzden
- * Duygusallık yüksekken 3. hafta iyi oluşa ayrılır. Düşük Dürüstlük-Alçakgönüllülük suçlamadan, görünür başarıyı
- * önemseme olarak anlatılır.
+ * Duygusallık bir kaygı ölçüsü değildir: duyguları yoğun yaşamayı, sevdiklerine bağlılığı ve zor zamanlarda destek
+ * aramayı da kapsar; rapordaki gibi bir sorun belirtisi olarak anlatılmaz. Duygusallık yüksekken 3. hafta iyi oluşa
+ * ayrılır: duyguları fark etmek, dinlenmek, uyku ve güvenilen biriyle konuşmak. Sınav kaygısı önerisi verilmez ve
+ * "Sınav kaygısı" yazısına bağlantı verilmez. Düşük Dürüstlük-Alçakgönüllülük suçlamadan, görünür başarıyı önemseme
+ * olarak anlatılır.
  */
 const parentTip = (key: string): Record<BandGroup, string> => ({
   low: besFaktorReport.scales[key].low!.tipsParent[0],
@@ -24,7 +26,7 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
   ...bf,
   version: 'alti-boyutlu-kisilik-yol-haritasi-1',
   planningScale: 'conscientiousness',
-  wellbeing: { scale: 'emotionality', group: 'high' },
+  wellbeing: { scale: 'emotionality', group: 'high', link: null },
   scales: {
     honesty_humility: {
       color: '#5a9e2f',
@@ -45,9 +47,9 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Başarının görünmesini, tanınmayı ve kazanmayı önemsiyor olabilirsin. Bu isteği öğrenmeye çevir: çalışmanı sunum, proje ya da yarışma gibi görünür bir hedefe bağla. Yine de ilerlemeni başkalarıyla değil kendi geçen haftanla karşılaştır; kalıcı öğrenme orada görünür.',
+            'Başarının görünmesini, tanınmayı ve kazanmayı önemsiyor olabilirsin. Bu isteği öğrenmeye çevir: çalışmanı sunum, proje ya da yarışma gibi görünür bir hedefe bağla. Hazırlanırken kendini sorularla sınamak, neyi gerçekten öğrendiğini görmeni kolaylaştırır.',
           parent:
-            'Çocuğunuz başarının görünmesini, tanınmayı ve kazanmayı önemsiyor olabilir. Bu isteği öğrenmeye yönlendirebilirsiniz: çalışmasını sunum, proje ya da yarışma gibi görünür bir hedefe bağlamak. Onu başkalarıyla değil kendi geçen haftasıyla karşılaştırmak kalıcı öğrenmeyi destekler.',
+            'Çocuğunuz başarının görünmesini, tanınmayı ve kazanmayı önemsiyor olabilir. Bu isteği öğrenmeye yönlendirebilirsiniz: çalışmasını sunum, proje ya da yarışma gibi görünür bir hedefe bağlamak. Hazırlanırken kendini sorularla sınaması, neyi gerçekten öğrendiğini görmesini kolaylaştırabilir ve kalıcı öğrenmeyi destekleyebilir.',
         },
       },
       action: {
@@ -67,7 +69,7 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
           student:
             'Görünür bir hedef seç (bir sunum, bir proje ya da bir deneme sınavı) ve ona hazırlanırken kendini geçen haftanla karşılaştırarak ilerle.',
           parent:
-            'Çocuğunuzla görünür bir hedef belirleyin (bir sunum, bir proje ya da bir deneme sınavı); ilerlemesini başkalarıyla değil kendi geçen haftasıyla karşılaştırın.',
+            'Çocuğunuzla görünür bir hedef belirleyin (bir sunum, bir proje ya da bir deneme sınavı); hafta sonunda o hedef için neleri tamamladığını birlikte bir listeye yazın.',
           adult: 'Görünür bir hedef seç (bir sunum ya da bir proje) ve ona hazırlanırken kendini geçen haftanla karşılaştırarak ilerle.',
         },
       },
@@ -81,19 +83,19 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Duyguları yoğun yaşamak ve zor zamanlarda destek aramak senin özelliklerin. Destek istemek bir güçtür: zorlandığın konuyu bir arkadaşınla ya da öğretmeninle çalış. Sınavdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir.',
+            'Duygularını yoğun yaşıyor ve zor zamanlarda destek arıyorsun. Destek istemek bir güçtür: zorlandığın bir konuyu bir arkadaşınla ya da öğretmeninle birlikte çalışmak işini kolaylaştırabilir. Duygularının seni yorduğu günlerde planını küçült ama bırakma; kısa bir tekrar bile işe yarayabilir.',
           parent:
-            'Çocuğunuz duyguları yoğun yaşıyor ve zor zamanlarda destek arıyor olabilir. Destek istemesi bir güçtür; zorlandığı konuyu bir arkadaşıyla ya da öğretmeniyle çalışması işine yarar. Sınavdan hemen önce endişelerini birkaç dakika yazması ve uykusunu koruması da yardımcı olabilir.',
+            'Çocuğunuz duygularını yoğun yaşıyor ve zor zamanlarda destek arıyor olabilir. Destek istemesi bir güçtür; zorlandığı bir konuyu bir arkadaşıyla ya da öğretmeniyle birlikte çalışması işini kolaylaştırabilir. Duygularının onu yorduğu günlerde planını küçültmesine ama bırakmamasına destek olabilirsiniz.',
           adult:
-            'Duyguları yoğun yaşamak ve zor zamanlarda destek aramak senin özelliklerin. Destek istemek bir güçtür: zorlandığın konuyu biriyle birlikte çalış. Önemli bir sınav ya da sunumdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir.',
+            'Duygularını yoğun yaşıyor ve zor zamanlarda destek arıyorsun. Destek istemek bir güçtür: zorlandığın bir konuyu güvendiğin biriyle birlikte çalışmak işini kolaylaştırabilir. Duygularının seni yorduğu günlerde planını küçült ama bırakma; kısa bir çalışma bile işe yarayabilir.',
         },
         average: {
           student:
-            'Çoğu zaman sakinsin; bazı konular seni daha çok kaygılandırabilir. Seni zorlayan konulara erken başla ve gerektiğinde bir arkadaşından ya da öğretmeninden yardım iste. İyi hazırlanmış hissetmek kaygıyı azaltır.',
+            'Duygularının yoğunluğu duruma göre değişiyor. Seni zorlayan konulara erken başla ve gerektiğinde bir arkadaşından ya da öğretmeninden yardım iste; iyi hazırlanmış hissetmek zor anları kolaylaştırabilir.',
           parent:
-            'Çocuğunuz çoğu zaman sakin; bazı konular onu daha çok kaygılandırabilir. Zorlandığı konulara erken başlaması ve gerektiğinde yardım istemesi iyi hazırlanmış hissetmesini sağlar.',
+            'Çocuğunuzun duygularının yoğunluğu duruma göre değişiyor olabilir. Zorlandığı konulara erken başlaması ve gerektiğinde yardım istemesi, kendini iyi hazırlanmış hissetmesine yardım edebilir.',
           adult:
-            'Çoğu zaman sakinsin; bazı işler seni daha çok kaygılandırabilir. Seni zorlayan işlere erken başla ve gerektiğinde yardım iste. İyi hazırlanmış hissetmek kaygıyı azaltır.',
+            'Duygularının yoğunluğu duruma göre değişiyor. Seni zorlayan işlere erken başla ve gerektiğinde yardım iste; iyi hazırlanmış hissetmek zor anları kolaylaştırabilir.',
         },
         low: {
           student:
@@ -105,16 +107,14 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
       action: {
         high: {
           student:
-            'Gergin hissettiğinde 4 saniye nefes al, 4 saniye tut, 6 saniyede ver; birkaç kez tekrarla. Zorlandığın bir konuyu güvendiğin biriyle birlikte çalış.',
+            'Bu hafta her akşam günün sende en çok iz bırakan duygusunu tek cümleyle yaz. Yorgun hissettiğin günlerde kısa bir mola ver, uyku saatini koru ve seni zorlayan bir şeyi güvendiğin biriyle konuş.',
           parent:
-            'Çocuğunuzu dinlemek için sakin bir zaman ayırın: "Bu hafta seni en çok ne kaygılandırdı?" diye sorun ve uyku saatini birlikte koruyun.',
-          adult:
-            'Gergin hissettiğinde 4 saniye nefes al, 4 saniye tut, 6 saniyede ver; birkaç kez tekrarla. Seni zorlayan bir işi güvendiğin biriyle konuş.',
+            'Bu hafta çocuğunuzla akşamları kısa bir sohbet zamanı ayırın ve günün onda en çok iz bırakan duygusunu sorun. Yorgun günlerinde dinlenmesine fırsat verin ve uyku saatini birlikte koruyun.',
         },
         average: {
-          student: 'Seni en çok kaygılandıran dersi belirle ve ona haftada üç kez 15 dakika ayır.',
-          parent: 'Çocuğunuza onu en çok neyin kaygılandırdığını yargılamadan sorun ve o konuya erken başlaması için küçük bir plan yapın.',
-          adult: 'Seni en çok kaygılandıran işi belirle ve ona haftada üç kez 15 dakika ayır.',
+          student: 'Seni en çok zorlayan dersi belirle ve ona haftada üç kez 15 dakika ayır.',
+          parent: 'Çocuğunuzla, onu en çok zorlayan derse erken başlaması için küçük bir plan yapın.',
+          adult: 'Seni en çok zorlayan işi belirle ve ona haftada üç kez 15 dakika ayır.',
         },
         low: {
           student: 'Takıldığın bir konuda birinden yardım iste ve onunla birlikte bir soru çöz.',
@@ -128,7 +128,52 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
       },
     },
     extraversion: bf.scales.extraversion,
-    agreeableness: bf.scales.agreeableness,
+    agreeableness: {
+      color: bf.scales.agreeableness.color,
+      study: {
+        high: {
+          student:
+            'Sabırlı ve hoşgörülüsün; uzlaşmaya açıksın. Bu sabrı kendi öğrenmene de uygula: zor bir konuda hemen sonuç beklemeden aynı konuya birkaç gün arayla kısa tekrarlarla dön. Ortak çalışmalarda uzlaşmak sana kolay gelir; katılmadığın bir noktayı sakin bir dille söylemek de işin daha iyi olmasına katkı sağlayabilir.',
+          parent:
+            'Çocuğunuz sabırlı, hoşgörülü ve uzlaşmaya açık olabilir. Bu sabrı kendi öğrenmesine de uygulayabilir: zor bir konuda hemen sonuç beklemeden aynı konuya birkaç gün arayla kısa tekrarlarla dönmesi işine yarayabilir. Ortak çalışmalarda uzlaşırken kendi payına düşen işi baştan netleştirmesini önerebilirsiniz.',
+        },
+        average: {
+          student:
+            'Bazı durumlarda uzlaşmayı, bazılarında kendi doğrunu savunmayı seçiyorsun. Bu dengeyi öğrenirken de kullan: bir arkadaşınla birbirinize soru sorarken yanlışları sakin bir dille düzeltin; emin olmadığınız bir noktada tartışmayı uzatmak yerine kaynağa birlikte bakın.',
+          parent:
+            'Çocuğunuz bazı durumlarda uzlaşmayı, bazılarında kendi doğrusunu savunmayı seçiyor olabilir. Bir arkadaşıyla birbirlerine soru sorarak çalışırken yanlışları sakin bir dille düzeltmeleri ve emin olmadıkları bir noktada kaynağa birlikte bakmaları bu dengeyi öğrenmeye taşır.',
+        },
+        low: {
+          student:
+            'Eleştiriye ve hatalara çabuk tepki veriyor, doğru bildiğinde ısrar ediyorsun. Bu kararlılığı öğrenmeye çevirebilirsin: doğru olduğunu düşündüğün bir cevabın gerekçesini yazarak açıkla; yazamadığın yer, yeniden bakman gereken yerdir. Bir yanlış sinirini bozduğunda soruyu hemen bırakma; kısa bir ara verip sakinleşince yeniden dene.',
+          parent:
+            'Çocuğunuz eleştiriye ve hatalara çabuk tepki veriyor, doğru bildiğinde ısrar ediyor olabilir. Doğru olduğunu düşündüğü bir cevabın gerekçesini yazarak açıklamasını isteyerek bu kararlılığı öğrenmeye çevirebilirsiniz. Bir yanlış sinirini bozduğunda soruyu bırakmak yerine kısa bir ara verip sakinleşince yeniden denemesini önerebilirsiniz.',
+        },
+      },
+      action: {
+        high: {
+          student:
+            'Bu hafta zorlandığın bir konuyu tek oturumda bitirmeye çalışma: üç ayrı günde 15’er dakika çalış ve üçüncü günün sonunda kendini beş soruyla sına.',
+          parent:
+            'Bu hafta çocuğunuzla, zorlandığı bir konuyu üç ayrı günde kısa sürelerle çalışmasını planlayın; üçüncü gün kendini birkaç soruyla sınamasını önerin.',
+        },
+        average: {
+          student: 'Bu hafta bir anlaşmazlıkta önce karşındakinin haklı olabileceği bir noktayı söyle, sonra kendi görüşünü gerekçesiyle ekle.',
+          parent:
+            'Bu hafta çocuğunuzla bir film ya da kitaptaki bir anlaşmazlığı konuşun: karakterler nerede uzlaşabilirdi, nerede kendi görüşlerinde durmaları doğruydu?',
+        },
+        low: {
+          student:
+            'Bu hafta bir tartışmada sinirlendiğinde hemen cevap verme: kısa bir ara ver (biraz yürü ya da birkaç derin nefes al), sakinleşince konuya dön ve görüşünü gerekçesiyle söyle.',
+          parent:
+            'Bu hafta çocuğunuzla, bir tartışmada sinirlendiğinde kısa bir ara verip sakinleşince konuşmayı birlikte deneyin; siz de aynı yolu kullanın.',
+        },
+      },
+      settings: {
+        high: 'Sabrın, hoşgörünün ve uzlaşmanın değer gördüğü ortamlar',
+        low: 'Açık sözlülüğün olağan karşılandığı, görüşlerin doğrudan söylendiği ortamlar',
+      },
+    },
     conscientiousness: bf.scales.conscientiousness,
     openness: bf.scales.intellect,
   },
@@ -139,17 +184,19 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
       low: 'Başarıyı başkalarıyla karşılaştırmak yerine kendi gelişimi üzerinden konuşun.',
     },
     emotionality: {
-      high: 'Kaygılarını küçümsemeden dinleyin ve zor zamanlarda yanında olduğunuzu hissettirin.',
-      average: 'Onu neyin kaygılandırdığını yargılamadan sorun.',
-      low: 'Bağımsızlığına saygı gösterin; yine de zorlandığında yardım istemenin güçlü olmak olduğunu hatırlatın.',
+      high: 'Duygularını küçümsemeden dinleyin ve zor zamanlarda yanında olduğunuzu hissettirin.',
+      average: 'Hangi durumların onu daha çok etkilediğini yargılamadan sorun.',
+      low: 'Bağımsızlığına saygı gösterin; yine de zorlandığında yardım istemenin de bir güç olduğunu hatırlatın.',
     },
     extraversion: parentTip('extraversion'),
     agreeableness: {
       high: 'Sabrını ve hoşgörüsünü takdir edin; kendi isteklerini de dile getirmesini destekleyin.',
       average: 'Anlaşmazlıklarda nasıl uzlaştığını birlikte konuşabilirsiniz.',
-      low: 'Öfkelendiğinde önce sakinleşip sonra konuşmayı birlikte deneyin; eleştirilerini kırmadan söylemesine destek olun.',
+      low: 'Bir kırgınlığı uzun süre aklında tuttuğunda onu dinleyin; kendi hatalarınızı kabul edip özür dileyerek bağışlamanın nasıl göründüğünü gösterin.',
     },
     conscientiousness: parentTip('conscientiousness'),
     openness: parentTip('intellect'),
   },
+  // Jamieson ve ark. (2010) ile Ramirez ve Beilock (2011) sınav kaygısı önerilerinin kaynaklarıdır; bu testte kullanılmaz.
+  sources: bf.sources.filter((s) => !/^(Jamieson|Ramirez)/.test(s.text)),
 };

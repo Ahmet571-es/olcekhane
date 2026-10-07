@@ -134,7 +134,7 @@ export const RIASEC_TYPES: Record<RiasecKey, RiasecType> = {
     likes: ['Liderlik etmek ve yönetmek', 'İkna etmek ve müzakere etmek', 'Proje ve etkinlik organize etmek', 'Hedef koyup rekabet etmek'],
     explore: [
       'Bir okul etkinliğinin ya da kulübünün organizasyonunu üstlen.',
-      'Münazara ya da model birleşmiş milletler gibi etkinliklere katıl.',
+      'Münazara ya da Model Birleşmiş Milletler gibi etkinliklere katıl.',
       'Küçük bir girişim fikri geliştir: maliyet, fiyat ve müşteri hesabı yap.',
       'Bir işletme sahibiyle ya da yöneticiyle işini nasıl yürüttüğünü konuş.',
     ],

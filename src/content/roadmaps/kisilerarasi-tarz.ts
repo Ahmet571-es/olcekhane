@@ -61,12 +61,12 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
       high: 'Sosyal enerjisini takdir edin; arkadaşlarıyla geçirdiği zamanla dinlenme zamanı arasında denge kurmasına yardım edin.',
     },
     warm_agreeable: {
-      low: 'Onu insanlarla ilgilenmeye zorlamayın; sevdiği bir etkinliği başkalarıyla birlikte yapabileceği fırsatlar yaratın.',
+      low: 'Onu insanlarla ilgilenmeye zorlamayın; bir yakınınızın hâlini sorarken ya da birine teşekkür ederken siz örnek olun.',
       average: 'Başkalarıyla ilgilendiği anları fark ettiğinizi ona söyleyin.',
       high: 'Sıcaklığını ve başkalarına gösterdiği ilgiyi fark ettiğinizi ona söyleyin.',
     },
     unassuming_ingenuous: {
-      low: 'Kendi isteklerini savunmasına saygı gösterin; karşısındakini dinlemenin değerini de konuşun.',
+      low: 'Kendi isteklerini savunmasına saygı gösterin; aile içinde bir plan yaparken (ör. hafta sonu) başkalarının isteklerini de hesaba katan bir çözüm önermesini isteyin.',
       average: 'Ne zaman başkalarına uyduğunu, ne zaman kendi isteğini söylediğini yargılamadan konuşabilirsiniz.',
       high: 'Hoşgörüsünü takdir edin; evde kendi isteğini söylediğinde bunu dikkate aldığınızı gösterin.',
     },
@@ -83,12 +83,12 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
     cold_hearted: {
       low: 'Başkalarına duyarlılığını takdir edin; yardım ederken kendini yormamasını da hatırlatın.',
       average: 'Bir arkadaşı zor durumdayken neler yapılabileceğini birlikte konuşabilirsiniz.',
-      high: 'Başkalarının zor durumları hakkında ne düşündüğünü yargılamadan sorun; birlikte küçük bir yardım işine katılabilirsiniz.',
+      high: 'Başkalarının zor durumları hakkında ne düşündüğünü yargılamadan sorun; kendi bakışınızı öğüt vermeden, yaşadığınız bir örnekle anlatın.',
     },
     arrogant_calculating: {
       low: 'Nazik dilini takdir edin; katılmadığı konularda görüşünü söylemesini de destekleyin.',
       average: 'Farklı görüşleri saygıyla tartışabildiğiniz aile sohbetleri bu dengeyi destekler.',
-      high: 'Eleştirilerini dinleyin ve haklı olduğu yanları kabul edin; kırıcı olduğu anları sakin bir zamanda konuşun.',
+      high: 'Eleştirilerini sonuna kadar dinleyin ve haklı olduğu yanları açıkça kabul edin; bir tartışma sertleştiğinde ara verip ikiniz de sakinleşince konuya dönün.',
     },
   },
   scales: {
@@ -126,9 +126,11 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
           parent: 'Bu hafta çocuğunuzla, bir grup içinde ne zaman söz almanın, ne zaman dinlemenin işe yaradığını konuşun.',
         },
         low: {
-          student: 'Bu hafta derste ya da bir grup çalışmasında en az bir fikrini ya da sorunu yüksek sesle söyle; küçük bir adım yeterlidir.',
+          student:
+            'Bu hafta derste ya da bir grup çalışmasında en az bir fikrini söyle ya da bir soru sor. Dinlerken aklına gelenleri kısaca not etmek, söylemek istediğini seçmeni kolaylaştırır.',
           parent: 'Bu hafta çocuğunuzla, bir grup içinde söylemek istediği bir fikri önceden bir cümleyle not etmesini konuşun; söylemesi için onu zorlamayın.',
-          adult: 'Bu hafta bir toplantıda ya da ortak bir işte en az bir fikrini ya da sorunu yüksek sesle söyle; küçük bir adım yeterlidir.',
+          adult:
+            'Bu hafta bir toplantıda ya da ortak bir işte en az bir fikrini söyle ya da bir soru sor. Dinlerken aklına gelenleri kısaca not etmek, söylemek istediğini seçmeni kolaylaştırır.',
         },
       },
       settings: {
@@ -153,15 +155,16 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Kalabalık ortamları pek aramıyorsun; bu bir eksiklik değil. Sessiz bir yerde tek başına çalışmak sana kolay gelebilir: aynı konuya birkaç gün arayla dönmek, tek seferde uzun çalışmaktan daha kalıcıdır. Bir konuda takılırsan, güvendiğin tek bir kişiyle birlikte çalışmak kalabalık bir gruptan daha rahat olabilir.',
+            'Kalabalık ortamları pek aramıyorsun. Sessiz bir yerde tek başına çalışmak sana kolay gelebilir: aynı konuya birkaç gün arayla dönmek, tek seferde uzun çalışmaktan çoğu zaman daha kalıcıdır. Bir konuda takılırsan, güvendiğin tek bir kişiyle birlikte çalışmak kalabalık bir gruptan daha rahat olabilir.',
           parent:
-            'Çocuğunuz kalabalık ortamları pek aramıyor olabilir; bu bir eksiklik değildir. Sessiz bir yerde tek başına çalışmak ona kolay gelebilir; aynı konuya birkaç gün arayla dönmesi, tek seferde uzun çalışmaktan daha kalıcıdır. Takıldığı konularda kalabalık bir grup yerine güvendiği tek bir arkadaşıyla çalışması daha rahat olabilir.',
+            'Çocuğunuz kalabalık ortamları pek aramıyor olabilir. Sessiz bir yerde tek başına çalışmak ona kolay gelebilir; aynı konuya birkaç gün arayla dönmesi, tek seferde uzun çalışmaktan çoğu zaman daha kalıcıdır. Takıldığı konularda kalabalık bir grup yerine güvendiği tek bir arkadaşıyla çalışması daha rahat olabilir.',
         },
       },
       action: {
         high: {
           student: 'Bu hafta bir arkadaşınla 25 dakikalık bir çalışma yapın: ilk 20 dakikada birbirinize soru sorun, son 5 dakikada sohbet edin.',
           parent: 'Bu hafta çocuğunuzla, arkadaşlarıyla çalışırken süreyi çalışma ve sohbet diye nasıl bölebileceklerini konuşun.',
+          adult: 'Bu hafta öğrendiğin bir konuyu biriyle 25 dakika birlikte tekrar edin: ilk 20 dakikada birbirinize soru sorun, son 5 dakikada sohbet edin.',
         },
         average: {
           student: 'Bu hafta bir konuyu önce tek başına çalış, ertesi gün bir arkadaşınla birbirinize beşer soru sorun.',
@@ -194,9 +197,9 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'İnsanlara ilgini çok göstermiyorsun. Çalışırken ilerlemeni sorularla izlemek işini kolaylaştırır: bir konuyu bitirdiğinde kendine üç soru sor ve cevaplarını kontrol et. Takıldığın bir konuda birine sormak zamandan kazandırır; yardım istemek bir ilişkiyi de güçlendirebilir.',
+            'İnsanlara ilgini çok göstermiyorsun. Çalışırken ilerlemeni sorularla izlemek işini kolaylaştırır: bir konuyu bitirdiğinde kendine üç soru sor ve cevaplarını kontrol et. Takıldığın bir konuda birine sormak zaman kazandırabilir; yardım istemek bir ilişkiyi de güçlendirebilir.',
           parent:
-            'Çocuğunuz insanlara ilgisini çok göstermiyor olabilir. Bir konuyu bitirdiğinde kendine birkaç soru sorup cevaplarını kontrol etmesi, ilerlemesini görmesini kolaylaştırır. Takıldığı yerde birine sormanın hem zaman kazandırdığını hem de ilişkileri güçlendirdiğini onunla konuşabilirsiniz.',
+            'Çocuğunuz insanlara ilgisini çok göstermiyor olabilir. Bir konuyu bitirdiğinde kendine birkaç soru sorup cevaplarını kontrol etmesi, ilerlemesini görmesini kolaylaştırır. Takıldığı yerde birine sormanın hem zaman kazandırabileceğini hem de ilişkileri güçlendirebileceğini onunla konuşabilirsiniz.',
         },
       },
       action: {
@@ -312,11 +315,11 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Az konuşuyor ve özel hayatını kolay paylaşmıyorsun; bu bir eksiklik değil. Düşüncelerini yazıya dökmek senin için rahat bir yol olabilir: her oturumun sonunda kitabı kapatıp hatırladıklarını yazmak, kendini sınamanın etkili bir yoludur. Sormak istediklerini önce yazmak, onları sormanı da kolaylaştırır.',
+            'Az konuşuyor ve özel hayatını kolay paylaşmıyorsun. Düşüncelerini yazıya dökmek senin için rahat bir yol olabilir: her oturumun sonunda kitabı kapatıp hatırladıklarını yazmak, kendini sınamanın etkili bir yoludur. Sormak istediklerini önce yazmak, onları sormanı da kolaylaştırır.',
           parent:
-            'Çocuğunuz az konuşuyor ve özel hayatını kolay paylaşmıyor olabilir; bu bir eksiklik değildir. Düşüncelerini yazıya dökmek onun için rahat bir yol olabilir: kitaba bakmadan hatırladıklarını yazması, kendini sınamanın etkili bir yoludur. Sormak istediklerini önce yazmasını önerebilirsiniz.',
+            'Çocuğunuz az konuşuyor ve özel hayatını kolay paylaşmıyor olabilir. Düşüncelerini yazıya dökmek onun için rahat bir yol olabilir: kitaba bakmadan hatırladıklarını yazması, kendini sınamanın etkili bir yoludur. Sormak istediklerini önce yazmasını önerebilirsiniz.',
           adult:
-            'Az konuşuyor ve özel hayatını kolay paylaşmıyorsun; bu bir eksiklik değil. Düşüncelerini yazıya dökmek senin için rahat bir yol olabilir: her oturumun sonunda kaynağı kapatıp hatırladıklarını yazmak, kendini sınamanın etkili bir yoludur. Sormak istediklerini önce yazmak, onları sormanı da kolaylaştırır.',
+            'Az konuşuyor ve özel hayatını kolay paylaşmıyorsun. Düşüncelerini yazıya dökmek senin için rahat bir yol olabilir: her oturumun sonunda kaynağı kapatıp hatırladıklarını yazmak, kendini sınamanın etkili bir yoludur. Sormak istediklerini önce yazmak, onları sormanı da kolaylaştırır.',
         },
         average: {
           student:
@@ -340,7 +343,7 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
           adult: 'Bu hafta her çalışmanın sonunda kaynağı kapatıp hatırladıklarını beş cümleyle yaz; anlamadığın bir yeri de yazıyla birine sor.',
         },
         average: {
-          student: 'Bu hafta bir konuyu bir gün yazarak, başka bir gün sesli anlatarak tekrar et; hafta sonunda kendini sınayarak hangisinin daha çok hatırlattığını karşılaştır.',
+          student: 'Bu hafta bir konuyu bir gün yazarak, başka bir gün sesli anlatarak tekrar et; hafta sonunda kendini sınayarak hangisinden sonra daha çok hatırladığını karşılaştır.',
           parent: 'Bu hafta çocuğunuzla, bir konuyu yazarak mı yoksa sesli anlatarak mı daha iyi hatırladığını birlikte gözlemleyin.',
         },
         low: {

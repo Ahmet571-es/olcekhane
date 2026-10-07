@@ -37,7 +37,7 @@ export const meslekIlgiAlanlariReport: ReportTemplate = {
         ],
         tipsParent: [
           'Bir aile gezisi ya da doğum günü gibi küçük bir etkinliğin planlanmasını ona bırakın.',
-          'Münazara, model BM ya da öğrenci meclisi gibi etkinliklere katılmasını destekleyin.',
+          'Münazara, Model BM ya da öğrenci meclisi gibi etkinliklere katılmasını destekleyin.',
         ],
       },
       average: {

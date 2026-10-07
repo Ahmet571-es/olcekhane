@@ -32,25 +32,26 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
       parent: 'Bu alan pekiştirilmeli: temel var, eksik kalan noktaların tamamlanması yeterli.',
     },
   },
+  // Sağlam alan metinleri bütün formlarda ortaktır: belli bir sınıfın konusunu (ör. yüzde, denklem, hacim) anmaz.
   solid: {
     sayilar: {
       student: 'Bu alan sağlam. Bir adım ileri gitmek için zihinden işlem yapmayı ve sonuçları tahmin etmeyi dene; daha zorlayıcı, çok adımlı problemler seçebilirsin.',
       parent: 'Bu alan sağlam. Çocuğunuza zihinden işlem ve tahmin gerektiren, biraz daha zorlayıcı problemler önerebilirsiniz.',
     },
     kesirler: {
-      student: 'Bu alan sağlam. Kesir, ondalık gösterim ve yüzde arasında rahatça geçiş yapabilmek için gündelik hesaplarda (indirim, tarif) bu gösterimleri kullanmayı sürdür.',
-      parent: 'Bu alan sağlam. Gündelik hesaplarda (indirim, tarif) kesir ve yüzdeyi kullanmasına fırsat vererek bu beceriyi canlı tutabilirsiniz.',
+      student: 'Bu alan sağlam. Bu alandaki konuları gündelik hesaplarda (ör. bir tarifte ya da bir şeyi paylaştırırken) kullanmayı sürdür; birkaç adımlı problemler seçip çözümünü birine anlatmak bu beceriyi ileri taşır.',
+      parent: 'Bu alan sağlam. Bir tarif ya da bir şeyi paylaştırma gibi gündelik hesaplarda bu alandaki konuları kullanmasına fırsat vererek beceriyi canlı tutabilirsiniz.',
     },
     oran: {
       student: 'Bu alan sağlam. Harita ölçekleri ve hız problemleri gibi oran gerektiren yeni durumlarda kendini dene.',
       parent: 'Bu alan sağlam. Harita ölçeği, hız ve fiyat karşılaştırması gibi yeni durumlarda oran kullanmasına fırsat verebilirsiniz.',
     },
     cebir: {
-      student: 'Bu alan sağlam. Bir problemi hem işlemle hem de bir denklemle çözüp iki yolu karşılaştırmak düşünceni esnekleştirir.',
+      student: 'Bu alan sağlam. Bir problemi iki farklı yolla çözüp yolları karşılaştırmak düşünceni esnekleştirir; biraz daha zorlayıcı örüntü ve problemlerle de kendini deneyebilirsin.',
       parent: 'Bu alan sağlam. Bir problemi farklı yollarla çözmesini ve bu yolları karşılaştırmasını önerebilirsiniz.',
     },
     geometri: {
-      student: 'Bu alan sağlam. Kendi şekillerini tasarlayıp onlarla ilgili çevre, alan ya da hacim problemleri yazmak bu beceriyi daha da güçlendirir.',
+      student: 'Bu alan sağlam. Kendi şekillerini çizip onlarla ilgili problemler yazmak ve bu problemleri bir arkadaşına çözdürmek bu beceriyi daha da güçlendirir.',
       parent: 'Bu alan sağlam. Kendi şekillerini tasarlayıp onlarla ilgili problemler yazmasını önerebilirsiniz.',
     },
     veri: {
@@ -226,9 +227,9 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
       cebir: {
         need: {
           student:
-            'Bir harfin bilmediğimiz bir sayının yerini tuttuğunu düşün ve sözel ifadeleri adım adım cebire çevir (ör. "bir sayının 3 fazlası" → x + 3). Bir ifadenin değerini bulurken harfin yerine sayıyı parantez içinde yaz. Örüntülerde adım numarasını ve terimi bir tabloya yazarak kuralı bul.',
+            'Bir harfin bilmediğimiz bir sayının yerini tuttuğunu düşün ve sözel ifadeleri adım adım cebire çevir (ör. "bir sayının 3 fazlası", yani x + 3). Bir ifadenin değerini bulurken harfin yerine sayıyı parantez içinde yaz. Örüntülerde adım numarasını ve terimi bir tabloya yazarak kuralı bul.',
           parent:
-            'Çocuğunuzla sözel ifadeleri cebire çevirmeyi oyunlaştırabilirsiniz (ör. "yaşımın iki katı" → 2 × y). Bir harfin bilmediğimiz bir sayının yerini tuttuğunu ve örüntülerde adım numarası ile terimi bir tabloya yazmanın kuralı bulmayı kolaylaştırdığını konuşabilirsiniz.',
+            'Çocuğunuzla sözel ifadeleri cebire çevirmeyi oyunlaştırabilirsiniz (ör. "yaşımın iki katı", yani 2 × y). Bir harfin bilmediğimiz bir sayının yerini tuttuğunu ve örüntülerde adım numarası ile terimi bir tabloya yazmanın kuralı bulmayı kolaylaştırdığını konuşabilirsiniz.',
         },
         action: {
           student: 'Bu hafta her gün iki sözel ifadeyi cebirsel ifadeye çevir ve harfe bir sayı vererek değerini hesapla.',
@@ -369,9 +370,9 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
   firstWeek: {
     wrong: {
       student:
-        'Raporundaki yanlış ya da boş bıraktığın {k} soruyu bir deftere yaz: sorunun konusu, doğru çözüm ve hatanın nedeni (işlem hatası, kavram ya da soruyu yanlış okuma). Hafta sonunda en çok hangi nedenin tekrarlandığına bak.',
+        'Raporundaki yanlış yaptığın ya da "Bilmiyorum" olarak işaretlediğin {k} soruyu bir deftere yaz: sorunun konusu, doğru çözüm ve hatanın nedeni (işlem hatası, kavram ya da soruyu yanlış okuma). Hafta sonunda en çok hangi nedenin tekrarlandığına bak.',
       parent:
-        'Raporu çocuğunuzla birlikte inceleyin ve yanlış ya da boş bırakılan {k} soruyu bir deftere yazmasını isteyin: sorunun konusu, doğru çözüm ve hatanın nedeni. Hafta sonunda en sık tekrarlanan nedeni birlikte konuşun.',
+        'Raporu çocuğunuzla birlikte inceleyin ve yanlış yapılan ya da "Bilmiyorum" olarak işaretlenen {k} soruyu bir deftere yazmasını isteyin: sorunun konusu, doğru çözüm ve hatanın nedeni. Hafta sonunda en sık tekrarlanan nedeni birlikte konuşun.',
     },
     none: {
       student: 'Bütün soruları doğru yaptın. Bu hafta her gün biraz daha zor bir soru seç ya da kendin bir soru yaz ve çözümünü açıkla.',

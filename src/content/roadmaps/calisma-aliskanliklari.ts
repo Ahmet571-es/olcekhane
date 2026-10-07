@@ -62,21 +62,21 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
       study: {
         low: {
           student:
-            'Çalışmaya genellikle plansız başlıyorsun; bu çok yaygın ve küçük adımlarla değişir. İşe en kısa planla başla: her akşam beş dakika ayırıp ertesi gün neyi çalışacağını üç madde olarak yaz. Büyük bir ödevi parçalara bölüp her parçaya bir gün vermek, son güne kalan işi azaltır.',
+            'İşe kısa bir planla başla: her akşam beş dakika ayırıp ertesi gün neyi çalışacağını üç madde olarak yaz. Büyük bir ödevi parçalara bölüp her parçaya bir gün vermek, son güne kalan işi azaltabilir.',
           parent:
-            'Çocuğunuz çalışmaya genellikle plansız başlıyor olabilir; bu yaygındır ve küçük adımlarla değişir. Her akşam beş dakika ayırıp ertesi gün neyi çalışacağını üç madde olarak yazmasını önerebilirsiniz. Bunu birkaç hafta birlikte sürdürmek alışkanlığa dönüşmesini kolaylaştırır.',
+            'Çocuğunuzun kısa bir planla başlaması yeterli: her akşam beş dakika ayırıp ertesi gün neyi çalışacağını üç madde olarak yazabilir. Bunu birkaç hafta birlikte sürdürmek, planlamanın alışkanlığa dönüşmesini kolaylaştırabilir.',
         },
         average: {
           student:
-            'Bazen planlı çalışıyorsun, bazen işler son güne kalıyor. Sınav ve ödev tarihlerini öğrenir öğrenmez takvimine yaz ve geriye doğru çalışma günleri belirle. Gün sonunda planının ne kadarını yaptığına bakıp kalanı ertesi güne aktarmak, planı alışkanlığa çevirir.',
+            'Sınav ve ödev tarihlerini öğrenir öğrenmez takvimine yaz ve geriye doğru çalışma günleri belirle. Gün sonunda planının ne kadarını yaptığına bakıp kalanı ertesi güne aktarmak, planı alışkanlığa çevirmene yardım eder.',
           parent:
-            'Çocuğunuz bazen planlı çalışıyor, bazen işler son güne kalıyor. Sınav ve ödev tarihlerini öğrenir öğrenmez takvime yazıp geriye doğru çalışma günleri belirlemesi, planlamayı alışkanlığa çevirir.',
+            'Çocuğunuzun sınav ve ödev tarihlerini öğrenir öğrenmez takvime yazıp geriye doğru çalışma günleri belirlemesi, planlamayı alışkanlığa çevirmesine yardım edebilir. Gün sonunda planın ne kadarının yapıldığına birlikte kısaca bakabilirsiniz.',
         },
         high: {
           student:
-            'Çalışmanı önceden planlıyorsun. Planını bir adım ileri taşı: öğrendiğin konulara birkaç gün ve bir hafta sonra dönen kısa tekrarlar ekle. Planına dinlenme ve boş zamanları da yazmak, temponu uzun süre korumanı sağlar.',
+            'Planını bir adım ileri taşı: öğrendiğin konulara birkaç gün ve bir hafta sonra dönen kısa tekrarlar ekle. Planına dinlenme ve boş zamanları da yazmak, temponu uzun süre korumana yardım eder.',
           parent:
-            'Çocuğunuz çalışmasını önceden planlıyor. Planına öğrendiği konulara birkaç gün sonra dönen kısa tekrarlar eklemesi ve dinlenme zamanlarına da yer ayırması bu alışkanlığı daha da verimli kılar.',
+            'Çocuğunuzun planına, öğrendiği konulara birkaç gün sonra dönen kısa tekrarlar eklemesi ve dinlenme zamanlarına da yer ayırması bu alışkanlığı daha da verimli kılabilir.',
         },
       },
       action: {
@@ -99,21 +99,21 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
       study: {
         low: {
           student:
-            'Tekrar yaparken daha çok notlarını yeniden okuyorsun. Bunu küçük bir değişiklikle güçlendirebilirsin: bir konuyu okuduktan sonra kitabı kapat, hatırladığın her şeyi boş bir kâğıda yaz ve sonra kitapla karşılaştır. Aynı konuyu tek günde üç kez okumak yerine üç ayrı günde kısaca tekrar etmek de daha kalıcıdır.',
+            'Yeniden okumayı küçük bir değişiklikle güçlendirebilirsin: bir konuyu okuduktan sonra kitabı kapat, hatırladığın her şeyi boş bir kâğıda yaz ve sonra kitapla karşılaştır. Aynı konuyu tek günde üç kez okumak yerine üç ayrı günde kısaca tekrar etmek de çoğu zaman daha kalıcıdır.',
           parent:
-            'Çocuğunuz tekrar yaparken daha çok notlarını yeniden okuyor olabilir. Okuduğu bir konudan sonra kitabı kapatıp hatırladıklarını boş bir kâğıda yazması ve sonra kitapla karşılaştırması, aynı süreyle çok daha kalıcı öğrenmesini sağlar.',
+            'Çocuğunuzun okuduğu bir konudan sonra kitabı kapatıp hatırladıklarını boş bir kâğıda yazması ve sonra kitapla karşılaştırması, aynı süreyle daha kalıcı öğrenmesini kolaylaştırabilir.',
         },
         average: {
           student:
-            'Bazen kendini sınıyor, bazen yalnızca yeniden okuyorsun. Her çalışma oturumunu kitaba bakmadan cevaplayacağın birkaç soruyla bitir. Öğrendiğin konulara ertesi gün, birkaç gün sonra ve bir hafta sonra kısaca dönmek, aynı sürede daha kalıcı öğrenmeni sağlar.',
+            'Her çalışma oturumunu kitaba bakmadan cevaplayacağın birkaç soruyla bitir. Öğrendiğin konulara ertesi gün, birkaç gün sonra ve bir hafta sonra kısaca dönmek de onları daha uzun süre hatırlamana yardım eder.',
           parent:
-            'Çocuğunuz bazen kendini sınıyor, bazen yalnızca yeniden okuyor. Her çalışmayı kitaba bakmadan cevaplayacağı birkaç soruyla bitirmesi ve konulara ertesi gün, birkaç gün sonra ve bir hafta sonra dönmesi daha kalıcı öğrenmesini sağlar.',
+            'Çocuğunuzun her çalışmayı kitaba bakmadan cevaplayacağı birkaç soruyla bitirmesi ve konulara ertesi gün, birkaç gün sonra ve bir hafta sonra dönmesi, öğrendiklerini daha uzun süre hatırlamasına yardım edebilir.',
         },
         high: {
           student:
-            'Kendini sınamak ve tekrarı günlere yaymak zaten alışkanlığın. Bir adım ileri git: farklı konulardan soruları karışık sırayla çöz. Takıldığın soruları ayrı bir yere not edip birkaç gün sonra yeniden denemek, eksiklerini kapatmanın en kısa yoludur.',
+            'Kendini sınamayı bir adım ileri taşı: farklı konulardan soruları karışık sırayla çöz. Takıldığın soruları ayrı bir yere not edip birkaç gün sonra yeniden denemek, eksiklerini kapatmana yardım edebilir.',
           parent:
-            'Kendini sınamak ve tekrarı günlere yaymak çocuğunuzun alışkanlığı. Farklı ünitelerden soruları karışık sırayla çözmesi ve takıldığı soruları birkaç gün sonra yeniden denemesi bu güçlü alışkanlığı bir adım ileri taşır.',
+            'Çocuğunuzun farklı ünitelerden soruları karışık sırayla çözmesi ve takıldığı soruları birkaç gün sonra yeniden denemesi, bu güçlü alışkanlığı bir adım ileri taşıyabilir.',
         },
       },
       action: {
@@ -136,21 +136,21 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
       study: {
         low: {
           student:
-            'Konuları çoğu zaman ezberleyerek çalışıyorsun. Anlamaya geçmenin en kolay yolu soru sormaktır: her yeni bilgi için kendine “Bu neden böyle?” diye sor ve cevabını bir cümleyle yaz. Öğrendiğin konuyu kendi cümlelerinle birine anlatmak da nerede anlamadığını gösterir.',
+            'Anlamaya geçmenin kolay bir yolu soru sormaktır: her yeni bilgi için kendine “Bu neden böyle?” diye sor ve cevabını bir cümleyle yaz. Öğrendiğin konuyu kendi cümlelerinle birine anlatmak da nerede anlamadığını gösterir.',
           parent:
-            'Çocuğunuz konuları çoğu zaman ezberleyerek çalışıyor olabilir. Anlamaya geçmenin en kolay yolu soru sormaktır: her yeni bilgi için kendine “Bu neden böyle?” diye sormasını ve cevabını bir cümleyle yazmasını önerebilirsiniz.',
+            'Anlamaya geçmenin kolay bir yolu soru sormaktır: çocuğunuza her yeni bilgi için kendine “Bu neden böyle?” diye sormasını ve cevabını bir cümleyle yazmasını önerebilirsiniz.',
         },
         average: {
           student:
-            'Bazen konuları anlamaya çalışıyor, bazen ezberliyorsun. Yeni bir konuyu daha önce bildiğin bir şeye benzetmeye çalış; bir problemin çözüm adımlarını da kendine sesli açıkla. Bu iki alışkanlık, öğrendiğin bilgileri birbirine bağlar.',
+            'Yeni bir konuyu daha önce bildiğin bir şeye benzetmeye çalış; bir problemin çözüm adımlarını da kendine sesli açıkla. Bu iki alışkanlık, öğrendiğin bilgileri birbirine bağlamana yardım eder.',
           parent:
-            'Çocuğunuz bazen konuları anlamaya çalışıyor, bazen ezberliyor. Yeni bir konuyu daha önce bildiği bir şeye benzetmesi ve çözüm adımlarını sesli açıklaması anlamaya dayalı çalışmayı güçlendirir.',
+            'Çocuğunuzun yeni bir konuyu daha önce bildiği bir şeye benzetmesi ve çözüm adımlarını sesli açıklaması, anlamaya dayalı çalışmayı güçlendirebilir.',
         },
         high: {
           student:
-            'Konuları anlamaya ve bildiklerinle ilişkilendirmeye çalışıyorsun. Anlamak ile hatırlamak birbirini tamamlar: anladığın konuları kendini sınayarak pekiştir. Merak ettiğin konularda ders kitabının ötesine geçen kaynaklar aramak da öğrenmeni derinleştirir.',
+            'Anlamak ile hatırlamak birbirini tamamlar: anladığın konuları kendini sınayarak pekiştir. Merak ettiğin konularda ders kitabının ötesine geçen kaynaklar aramak da öğrenmeni derinleştirebilir.',
           parent:
-            'Çocuğunuz konuları anlamaya ve bildikleriyle ilişkilendirmeye çalışıyor. Anladığı konuları kendini sınayarak pekiştirmesi önemlidir; merak ettiği konularda farklı kaynaklara ulaşmasına da destek olabilirsiniz.',
+            'Çocuğunuzun anladığı konuları kendini sınayarak pekiştirmesi önemlidir; merak ettiği konularda farklı kaynaklara ulaşmasına da destek olabilirsiniz.',
         },
       },
       action: {
@@ -173,21 +173,21 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
       study: {
         low: {
           student:
-            'Ders çalışırken dikkatin sık sık dağılıyor; bu çok yaygın. Kendini zorlamak yerine ortamı değiştir: çalışırken telefonunu başka bir odaya koy ve yalnızca molada bak. 25 dakika çalışıp 5 dakika mola vermek de dikkatini toplamayı kolaylaştırır.',
+            'Kendini zorlamak yerine ortamı değiştir: çalışırken telefonunu başka bir odaya koy ve yalnızca molada bak. 25 dakika çalışıp 5 dakika mola vermek de dikkatini toplamayı kolaylaştırabilir.',
           parent:
-            'Çocuğunuz ders çalışırken dikkatinin sık sık dağıldığını belirtiyor. Telefonun çalışma süresince başka bir odada durması ve 25 dakika çalışıp 5 dakika mola vermesi odaklanmasını kolaylaştırabilir.',
+            'Çalışma süresince telefonun başka bir odada durması ve çocuğunuzun 25 dakika çalışıp 5 dakika mola vermesi odaklanmasını kolaylaştırabilir.',
         },
         average: {
           student:
-            'Bazen dikkatini toplayabiliyor, bazen dağılıyorsun. Çalışmaya başlamadan önce masandan ilgisiz her şeyi kaldır ve bildirimleri kapat. Zor konuları günün dikkatinin en iyi olduğu saatlerine koymak da işini kolaylaştırır.',
+            'Çalışmaya başlamadan önce masandan ilgisiz her şeyi kaldır ve bildirimleri kapat. Zor konuları günün dikkatinin en iyi olduğu saatlerine koymak da işini kolaylaştırır.',
           parent:
-            'Çocuğunuz bazen dikkatini toplayabiliyor, bazen dağılıyor. Çalışmaya başlamadan masasını düzenlemesi, bildirimleri kapatması ve zor konuları dikkatinin en iyi olduğu saatlere koyması odaklanmasını destekler.',
+            'Çocuğunuzun çalışmaya başlamadan masasını düzenlemesi, bildirimleri kapatması ve zor konuları dikkatinin en iyi olduğu saatlere koyması odaklanmasını destekleyebilir.',
         },
         high: {
           student:
-            'Dikkat dağıtıcıları uzak tutabiliyorsun. Bu gücü en zor işlere ayır: yeni ve zor konuları dikkatinin taze olduğu saatlerde çalış. Uzun çalışmalarda düzenli mola vermek ve yeterince uyumak, odaklanmanı gün boyu korur.',
+            'Odaklanma gücünü en zor işlere ayır: yeni ve zor konuları dikkatinin taze olduğu saatlerde çalış. Uzun çalışmalarda düzenli mola vermek ve yeterince uyumak, odaklanmanı gün boyu korumana yardım edebilir.',
           parent:
-            'Çocuğunuz dikkat dağıtıcıları uzak tutabiliyor. Yeterli uyku ve düzenli molalar bu gücü korur; yeni ve zor konuları dikkatinin taze olduğu saatlerde çalışmasını önerebilirsiniz.',
+            'Yeterli uyku ve düzenli molalar çocuğunuzun odaklanma gücünü korumasına yardım edebilir; yeni ve zor konuları dikkatinin taze olduğu saatlerde çalışmasını önerebilirsiniz.',
         },
       },
       action: {
@@ -210,21 +210,21 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
       study: {
         low: {
           student:
-            'Takıldığında ya da yanlış yaptığında çoğu zaman üzerinde durmadan geçiyorsun. Yanlışların, neyi yeniden çalışman gerektiğini gösteren en iyi rehberdir: her sınavdan ya da denemeden sonra yanlışlarını bir deftere yaz ve nedenini not et. Anlamadığın bir şeyi aynı gün öğretmenine ya da bir arkadaşına sormak da konuların birikmesini önler.',
+            'Yanlışların, neyi yeniden çalışman gerektiğini gösteren iyi bir rehberdir: her sınavdan ya da denemeden sonra yanlışlarını bir deftere yaz ve nedenini not et. Anlamadığın bir şeyi aynı gün öğretmenine ya da bir arkadaşına sormak da konuların birikmesini önlemeye yardım eder.',
           parent:
-            'Çocuğunuz takıldığında ya da yanlış yaptığında çoğu zaman üzerinde durmadan geçiyor olabilir. Her sınavdan sonra yanlışlarını bir deftere yazıp nedenini not etmesi ve anlamadığını aynı gün sorması konuların birikmesini önler.',
+            'Çocuğunuzun her sınavdan sonra yanlışlarını bir deftere yazıp nedenini not etmesi ve anlamadığını aynı gün sorması, konuların birikmesini önlemeye yardım edebilir.',
         },
         average: {
           student:
-            'Bazen yanlışlarını inceliyor ve yardım istiyorsun. Takıldığında önce ne bildiğini yaz, sonra soruyu sor; böylece aldığın yardım daha çok işine yarar. Bir yanlışın nedenini tek cümleyle not etmek de aynı hatayı tekrarlamanı önler.',
+            'Takıldığında önce ne bildiğini yaz, sonra soruyu sor; böylece aldığın yardım daha çok işine yarar. Bir yanlışın nedenini tek cümleyle not etmek de aynı hatayı yeniden yapma olasılığını azaltabilir.',
           parent:
-            'Çocuğunuz bazen yanlışlarını inceliyor ve yardım istiyor. Takıldığında önce ne bildiğini yazıp sonra soru sorması ve yanlışlarının nedenini tek cümleyle not etmesi bu alışkanlığı güçlendirir.',
+            'Çocuğunuzun takıldığında önce ne bildiğini yazıp sonra soru sorması ve yanlışlarının nedenini tek cümleyle not etmesi bu alışkanlığı güçlendirebilir.',
         },
         high: {
           student:
-            'Takıldığında soruyor, farklı kaynaklara başvuruyor ve yanlışlarından öğreniyorsun. Öğrendiğini başkalarına anlatmak hem onlara yardım eder hem de seni sınar. Kaynak seçerken güvenilir olanları tercih etmeyi de unutma.',
+            'Öğrendiğini başkalarına anlatmak hem onlara yardım eder hem de seni sınar. Kaynak seçerken güvenilir olanları tercih etmeyi de unutma.',
           parent:
-            'Çocuğunuz takıldığında soru soruyor, farklı kaynaklara başvuruyor ve yanlışlarından öğreniyor. Öğrendiğini başkalarına anlatması kendi öğrenmesini de pekiştirir; güvenilir kaynakları ayırt etmeyi birlikte konuşabilirsiniz.',
+            'Çocuğunuzun öğrendiğini başkalarına anlatması kendi öğrenmesini de pekiştirebilir; güvenilir kaynakları ayırt etmeyi birlikte konuşabilirsiniz.',
         },
       },
       action: {
@@ -233,7 +233,7 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
           parent: 'Bu hafta çocuğunuz bir yanlışını paylaştığında “Buradan ne öğrendin?” diye sakin ve meraklı bir şekilde sorun.',
         },
         average: {
-          student: 'Bu hafta geçen hafta yanlış yaptığın soruları yeniden çöz ve hâlâ takıldıklarını birine sor.',
+          student: 'Bu hafta, geçen hafta yanlış yaptığın soruları yeniden çöz ve hâlâ takıldıklarını birine sor.',
           parent: 'Bu hafta çocuğunuzla takıldığında soru sorabileceği kişileri ve kaynakları birlikte bir listeye yazın.',
         },
         high: {

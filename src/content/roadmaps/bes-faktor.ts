@@ -18,11 +18,11 @@ export const besFaktorRoadmap: RoadmapTemplate = {
   wellbeing: { scale: 'emotional_stability', group: 'low' },
   studyIntro: {
     student:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Kişiliğin, bu yöntemleri hangi düzende ve hangi ortamda kullanmanın sana kolay geleceğini gösterir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Kişiliğin, bu yöntemleri hangi düzende ve hangi ortamda kullanmanın sana kolay geleceği konusunda ipucu verebilir.',
     parent:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun kişiliği, bu yöntemleri hangi düzende ve hangi ortamda kullanmanın ona kolay geleceğini gösterir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun kişiliği, bu yöntemleri hangi düzende ve hangi ortamda kullanmanın ona kolay geleceği konusunda ipucu verebilir.',
     adult:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Kişiliğin, bu yöntemleri hangi düzende ve hangi ortamda kullanmanın sana kolay geleceğini gösterir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Kişiliğin, bu yöntemleri hangi düzende ve hangi ortamda kullanmanın sana kolay geleceği konusunda ipucu verebilir.',
   },
   settingsNote: {
     student:
@@ -197,7 +197,7 @@ export const besFaktorRoadmap: RoadmapTemplate = {
       },
       settings: {
         high: 'Planlama, takip ve titizlik isteyen; sorumlulukların net olduğu ortamlar',
-        low: 'Esneklik ve çeşitlilik olan; kısa sürede sonuç alınan işler',
+        low: 'Esnekliğin ve çeşitliliğin olduğu, kısa sürede sonuç alınan işlerin yapıldığı ortamlar',
       },
     },
     emotional_stability: {
@@ -221,11 +221,11 @@ export const besFaktorRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Duyguları yoğun yaşamak ders çalışırken ve sınavlarda da hissedilebilir. Sınavdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir. Uyku ve düzenli molalar da ders çalışmanın bir parçasıdır.',
+            'Duygularını yoğun yaşaman ders çalışırken ve sınavlarda da kendini gösterebilir. Sınavdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir. Uyku ve düzenli molalar da ders çalışmanın bir parçasıdır.',
           parent:
-            'Çocuğunuz duyguları yoğun yaşıyor; bu ders çalışırken ve sınavlarda da hissedilebilir. Sınavdan hemen önce endişelerini birkaç dakika yazması ve uykusunu koruması işine yarayabilir. Sınavı hayat meselesine çevirmemek ve sonuçtan çok emeği konuşmak baskıyı azaltır.',
+            'Çocuğunuz duyguları yoğun yaşıyor olabilir; bu, ders çalışırken ve sınavlarda da kendini gösterebilir. Sınavdan hemen önce endişelerini birkaç dakika yazması ve uykusunu koruması işine yarayabilir. Sınavı hayat meselesine çevirmemek ve sonuçtan çok emeği konuşmak baskıyı azaltabilir.',
           adult:
-            'Duyguları yoğun yaşamak çalışırken de hissedilebilir. Önemli bir sınav ya da sunumdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir. Uyku ve düzenli molalar da çalışmanın bir parçasıdır.',
+            'Duygularını yoğun yaşaman çalışırken de kendini gösterebilir. Önemli bir sınav ya da sunumdan hemen önce endişelerini birkaç dakika kâğıda yazmak ve kalp çarpıntısını "vücudum bu işe hazırlanıyor" diye yorumlamak işine yarayabilir. Uyku ve düzenli molalar da çalışmanın bir parçasıdır.',
         },
       },
       action: {
@@ -274,11 +274,11 @@ export const besFaktorRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol örnek soru çözmek ve farklı türde soruları karışık sırayla çalışmak öğrendiğini kalıcı hâle getirir.',
+            'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol örnek soru çözmek ve farklı türde soruları karışık sırayla çalışmak, öğrendiğini kalıcı hâle getirmene yardım eder.',
           parent:
-            'Çocuğunuz somut ve işe yarar konulara odaklanmayı seviyor. Soyut bir konuyu gerçek hayattan bir örnekle ya da bir çizimle başlatmak işini kolaylaştırır. Bol örnek soru çözmesi ve farklı türde soruları karışık çalışması kalıcı öğrenmeyi destekler.',
+            'Çocuğunuz somut ve işe yarar konulara odaklanmayı seviyor. Soyut bir konuyu gerçek hayattan bir örnekle ya da bir çizimle başlatmak işini kolaylaştırır. Bol örnek soru çözmesi ve farklı türde soruları karışık çalışması kalıcı öğrenmeyi destekleyebilir.',
           adult:
-            'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol uygulama yapmak ve farklı türde örnekleri karışık sırayla çalışmak öğrendiğini kalıcı hâle getirir.',
+            'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol uygulama yapmak ve farklı türde örnekleri karışık sırayla çalışmak, öğrendiğini kalıcı hâle getirmene yardım eder.',
         },
       },
       action: {
@@ -300,7 +300,7 @@ export const besFaktorRoadmap: RoadmapTemplate = {
       },
       settings: {
         high: 'Yeni fikirlerin, araştırmanın, tasarımın ya da sanatın öne çıktığı ortamlar',
-        low: 'Somut sonuç veren, adımları net ve uygulamalı işler',
+        low: 'Somut sonuç veren, adımları net ve uygulamalı işlerin yapıldığı ortamlar',
       },
     },
   },

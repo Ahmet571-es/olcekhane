@@ -56,7 +56,7 @@ export const ozSaygiRoadmap: RoadmapTemplate = {
           student:
             'Kendine bakışın, çalışırken takıldığın anlarda “Ben yapamam” düşüncesine dönüşebilir. Böyle anlarda zor işi küçük parçalara böl ve yalnızca ilk adıma odaklan; ilerlemeni başkalarıyla değil kendi geçen haftanla karşılaştır. Takıldığında güvendiğin birinden yardım istemek de bir güçtür.',
           parent:
-            'Çocuğunuzun kendine eleştirel bakışı, çalışırken takıldığı anlarda “Ben yapamam” düşüncesine dönüşebilir. Zor işleri küçük parçalara bölmesine yardım etmek ve ilerlemesini başkalarıyla değil kendi geçen haftasıyla karşılaştırmak işini kolaylaştırır. Abartılı övgü yerine çabasını ve yöntemini somut olarak takdir edin.',
+            'Çocuğunuzun kendine eleştirel bakışı, çalışırken takıldığı anlarda “Ben yapamam” düşüncesine dönüşebilir. Zor işleri küçük parçalara bölmesine yardım etmek ve ilerlemesini başkalarıyla değil kendi geçen haftasıyla karşılaştırmak işini kolaylaştırabilir. Abartılı övgü yerine çabasını ve yöntemini somut olarak takdir edin.',
         },
         average: {
           student:

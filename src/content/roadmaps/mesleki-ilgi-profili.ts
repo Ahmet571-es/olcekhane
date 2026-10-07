@@ -50,7 +50,7 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
       'İlgi tek başına meslek seçtirmez: çocuğunuzun yetenekleri, değerleri ve gerçek deneyimleri de önemlidir. Bu yollar yalnızca yol gösterici örneklerdir; tercih döneminde okulun rehber öğretmeniyle görüşmenizi öneririz.',
   },
   firstWeek: {
-    student: 'Raporundaki en belirgin ilgi alanlarını düşün. Bu hafta hangi işleri yaparken zamanın nasıl geçtiğini fark etmediğini her gün bir cümleyle bir deftere yaz.',
+    student: 'Raporundaki ilgi alanlarına bir kez daha göz at. Bu hafta hangi işleri yaparken zamanın nasıl geçtiğini fark etmediğini her gün bir cümleyle bir deftere yaz.',
     parent: bf.firstWeek.parent,
   },
   openWeeks: [
@@ -79,7 +79,7 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
   areas: {
     realistic: area('R', '#5a9e2f', {
       parent:
-        'Çocuğunuzun bu ilgisini yaparak keşfetmesi için robotik, maket ya da tasarım-beceri atölyeleri iyi fırsatlar olabilir. Evdeki bir tamir işine katılması, bir bitki yetiştirmesi ya da bir atölyeyi veya çiftliği görmesi de bu ilgiyi somutlaştırır.',
+        'Çocuğunuzun bu alanı yaparak tanıması için robotik, maket ya da tasarım-beceri atölyeleri iyi fırsatlar olabilir. Evdeki bir tamir işine katılması, bir bitki yetiştirmesi ya da bir atölyeyi veya çiftliği görmesi de bu alanı somutlaştırır.',
       action: {
         student: 'Bu hafta evde bozuk bir eşyayı bir büyüğünle birlikte tamir etmeyi dene ya da basit bir maket yap; en çok hangi aşamadan keyif aldığını yaz.',
         parent: 'Bu hafta çocuğunuzla evde birlikte yapabileceğiniz küçük bir tamir ya da yapım işi seçin ve işin bir bölümünü ona bırakın.',
@@ -88,7 +88,7 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
     }),
     investigative: area('I', '#0e9c8c', {
       parent:
-        'Çocuğunuzun merakını beslemek için bir bilim fuarı projesi hazırlamasını ya da TÜBİTAK proje yarışmalarını incelemesini destekleyebilirsiniz. Kodlama ya da veri analizi üzerine ücretsiz bir çevrim içi kurs, bir bilim merkezi ya da üniversite laboratuvarı ziyareti de bu ilgiyi denemesi için iyi fırsatlardır.',
+        'Bu alanı denemesi için çocuğunuzun bir bilim fuarı projesi hazırlamasını ya da TÜBİTAK proje yarışmalarını incelemesini destekleyebilirsiniz. Kodlama ya da veri analizi üzerine ücretsiz bir çevrim içi kurs, bir bilim merkezi ya da üniversite laboratuvarı ziyareti de iyi fırsatlardır.',
       action: {
         student: 'Bu hafta merak ettiğin bir soruyu seç; en az üç farklı kaynaktan araştır ve öğrendiklerini bir sayfada özetle.',
         parent: 'Bu hafta çocuğunuzdan merak ettiği bir soruyu araştırmasını ve bulduklarını size anlatmasını isteyin.',
@@ -97,7 +97,7 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
     }),
     artistic: area('A', '#2f5ce0', {
       parent:
-        'Çocuğunuzun sanat, müzik, tiyatro ya da dergi kulübüne katılmasını destekleyebilirsiniz. Bir kısa film, podcast ya da fotoğraf serisi hazırlaması; bir sergiyi, konseri ya da atölyeyi görmesi de yaratıcı ilgisini denemesi için iyi fırsatlardır.',
+        'Çocuğunuzun sanat, müzik, tiyatro ya da dergi kulübüne katılmasını destekleyebilirsiniz. Bir kısa film, podcast ya da fotoğraf serisi hazırlaması; bir sergiyi, konseri ya da atölyeyi görmesi de bu alanı denemesi için iyi fırsatlardır.',
       action: {
         student: 'Bu hafta bir saatini kendi tasarımın olan bir işe ayır: bir çizim, bir kısa yazı, bir fotoğraf serisi ya da bir müzik denemesi.',
         parent: 'Bu hafta çocuğunuza yaratıcı bir iş için bir saat ve basit malzemeler ayırın; ortaya çıkanı yargılamadan birlikte konuşun.',
@@ -106,16 +106,16 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
     }),
     social: area('S', '#7a4ee6', {
       parent:
-        'Çocuğunuzun akran yardımında, küçük sınıflara okuma desteğinde ya da bir sosyal sorumluluk projesinde gönüllü olmasını destekleyebilirsiniz. Bir öğretmenle, hemşireyle ya da psikolojik danışmanla işleri üzerine konuşması da bu ilgiyi tanımasına yardım eder.',
+        'Çocuğunuzun akran yardımında, küçük sınıflara okuma desteğinde ya da bir sosyal sorumluluk projesinde gönüllü olmasını destekleyebilirsiniz. Bir öğretmenle, hemşireyle ya da psikolojik danışmanla işleri üzerine konuşması da bu alanı tanımasına yardım eder.',
       action: {
         student: 'Bu hafta okulda ya da çevrende birine bir konuda yardım et (ör. bir arkadaşına konu anlat) ve bunun sana nasıl hissettirdiğini yaz.',
         parent: 'Bu hafta çocuğunuzla birlikte birine yardım edebileceğiniz küçük bir gönüllü iş bulun.',
       },
-      approach: 'Başkalarına yardım etme isteğini takdir edin; kendi ihtiyaçlarını da gözetmesini hatırlatın.',
+      approach: 'Başkalarına yardım ettiği anları fark edip takdir edin; kendi ihtiyaçlarını da gözetmesini hatırlatın.',
     }),
     enterprising: area('E', '#df4777', {
       parent:
-        'Çocuğunuzun bir okul etkinliğinin ya da kulübünün organizasyonunu üstlenmesini, münazara ya da model birleşmiş milletler gibi etkinliklere katılmasını destekleyebilirsiniz. Küçük bir girişim fikrinin maliyet ve fiyat hesabını birlikte yapmak da bu ilgiyi denemesi için iyi bir fırsattır.',
+        'Çocuğunuzun bir okul etkinliğinin ya da kulübünün organizasyonunu üstlenmesini, münazara ya da Model Birleşmiş Milletler gibi etkinliklere katılmasını destekleyebilirsiniz. Küçük bir girişim fikrinin maliyet ve fiyat hesabını birlikte yapmak da bu alanı denemesi için iyi bir fırsattır.',
       action: {
         student: 'Bu hafta küçük bir etkinliği baştan sona organize et (ör. bir sınıf etkinliği ya da aile gezisi): planla, görev dağıt ve sonucu değerlendir.',
         parent: 'Bu hafta küçük bir aile etkinliğinin (bir gezi ya da bir doğum günü) planlanmasını çocuğunuza bırakın.',
@@ -124,12 +124,12 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
     }),
     conventional: area('C', '#d28a14', {
       parent:
-        'Çocuğunuzun bir okul etkinliğinin bütçesini ya da kayıtlarını tutmayı üstlenmesini destekleyebilirsiniz. Kendi harcamaları için bir tablo hazırlayıp bir ay takip etmesi ya da bir hesap tablosu programını ileri düzeyde öğrenmesi de bu ilgiyi denemesi için iyi fırsatlardır.',
+        'Çocuğunuzun bir okul etkinliğinin bütçesini ya da kayıtlarını tutmayı üstlenmesini destekleyebilirsiniz. Kendi harcamaları için bir tablo hazırlayıp bir ay takip etmesi ya da bir hesap tablosu programını ileri düzeyde öğrenmesi de bu alanı denemesi için iyi fırsatlardır.',
       action: {
         student: 'Bu hafta harcamaların ya da çalışma saatlerin için basit bir tablo oluştur ve her gün doldur; hafta sonunda neler gördüğünü yaz.',
         parent: 'Bu hafta çocuğunuzun kendi harcamaları ya da ders programı için bir tablo hazırlamasını ve bir hafta takip etmesini destekleyin.',
       },
-      approach: 'Düzen ve ayrıntıya verdiği önemi takdir edin; bunun pek çok meslekte değerli olduğunu hatırlatın.',
+      approach: 'Düzen ve ayrıntı gerektiren işlerde ona görev verin; bu becerilerin pek çok meslekte değerli olduğunu hatırlatın.',
     }),
   },
   sources: [
