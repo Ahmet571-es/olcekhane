@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/site/logo';
 import { PageGuide } from '@/components/site/page-guide';
 import { TestSession, type TestPayload } from '@/components/test/test-session';
+import { ROADMAPS, ROADMAP_IN_REVIEW, ROADMAP_PREVIEW_PARAM } from '@/content/roadmaps';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
 import { likertItemNoun } from '@/lib/instruments/nouns';
@@ -77,6 +78,8 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
   const adultRefused = grade === ADULT_GRADE && !def.adults;
   const grades = Array.from({ length: def.maxGrade - def.minGrade + 1 }, (_, i) => def.minGrade + i);
   const backUrl = `/testler/${def.slug}`;
+  // İncelemedeki gelişim yol haritası yalnızca önizleme bağlantısıyla eklenir; seçim sınıf formunda da korunur.
+  const roadmapPreview = q.onizleme === ROADMAP_PREVIEW_PARAM && !!ROADMAPS[def.slug] && ROADMAP_IN_REVIEW.has(def.slug);
 
   return (
     <>
@@ -94,7 +97,13 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
       </header>
       <main id="icerik" className="container-page flex flex-1 flex-col py-8 md:py-12">
         {ready ? (
-          <TestSession slug={def.slug} grade={grade} gradeLabel={GRADE_LABELS[grade] ?? `${grade}. sınıf`} payload={payloadFor(def, grade)} />
+          <TestSession
+            slug={def.slug}
+            grade={grade}
+            gradeLabel={GRADE_LABELS[grade] ?? `${grade}. sınıf`}
+            payload={payloadFor(def, grade)}
+            roadmapPreview={roadmapPreview}
+          />
         ) : (
           <div className="mx-auto flex w-full max-w-2xl flex-col gap-7">
             <div className="flex flex-col gap-3">
@@ -126,6 +135,12 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
               </p>
             </div>
 
+            {roadmapPreview && (
+              <p className="notice notice-info">
+                <strong>Önizleme:</strong> Raporun sonunda uzman incelemesindeki gelişim yol haritası da gösterilecek.
+              </p>
+            )}
+
             {adultRefused && (
               <p className="notice notice-warn">
                 Bu test yetişkinler için hazırlanmadı. Testi bir öğrenci çözecekse aşağıdan sınıfını seçin.
@@ -133,6 +148,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
             )}
 
             <form method="get" className="panel flex flex-col gap-5 p-6">
+              {roadmapPreview && <input type="hidden" name="onizleme" value={ROADMAP_PREVIEW_PARAM} />}
               <div className="field">
                 <label htmlFor="sinif" className="field-label">
                   {def.adults ? 'Testi kim çözüyor?' : 'Testi çözen öğrencinin sınıfı'}

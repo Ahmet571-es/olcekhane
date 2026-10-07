@@ -1,8 +1,10 @@
 import 'server-only';
-import { getInstrumentDef, isSolvable } from '@/content/instruments';
+import { getInstrumentDef, isSolvable, publicInstruments } from '@/content/instruments';
+import { ROADMAPS, ROADMAP_IN_REVIEW } from '@/content/roadmaps';
 import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
 import type { InstrumentDef } from '@/lib/instruments/types';
-import { buildReport, type Audience } from '@/lib/reports/build';
+import { buildReport, type Audience, type ReportContent } from '@/lib/reports/build';
+import { buildRoadmap, type Roadmap } from '@/lib/reports/roadmap';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { likertQuality, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
@@ -105,6 +107,23 @@ function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes
   throw new AssessmentError('invalid', 'Geçersiz istek.');
 }
 
+/**
+ * Gelişim yol haritası: yalnızca şablonu olan testlerde. Uzman incelemesindeki şablon yalnızca önizleme isteğinde
+ * (`roadmapPreview`) eklenir. Son haftada önerilen testler kişinin sınıfına uyan, yayındaki testlerdir.
+ */
+function roadmapFor(def: InstrumentDef, content: ReportContent, body: AnswersBody): Roadmap | undefined {
+  const template = ROADMAPS[def.slug];
+  if (!template) return undefined;
+  const preview = ROADMAP_IN_REVIEW.has(def.slug);
+  if (preview && !body.roadmapPreview) return undefined;
+  const live = publicInstruments();
+  const next = template.nextTests
+    .flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== def.slug && gradeAllowed(t, body.grade)))
+    .slice(0, 2)
+    .map((t) => ({ name: t.name, href: `/testler/${t.slug}` }));
+  return buildRoadmap(content, template, { preview, next });
+}
+
 /** Cevapları doğrulayıp puanlar; aynı puanlardan istenen kişiye yazılmış raporu hazırlayan işlevi döndürür. */
 function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Date) => SimpleReport {
   const def = solvableInstrument(slug);
@@ -114,18 +133,20 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
   }
   const { rows, notes } = score(def, body);
   const scores = rows.map(toReportScore);
-  return (audience, now) =>
-    toSimpleReport(
-      buildReport({
-        def,
-        scores,
-        audience,
-        studentName: '',
-        grade: body.grade,
-        completedAt: now,
-        qualityNotes: notes,
-      }),
-    );
+  return (audience, now) => {
+    const content = buildReport({
+      def,
+      scores,
+      audience,
+      studentName: '',
+      grade: body.grade,
+      completedAt: now,
+      qualityNotes: notes,
+    });
+    const report = toSimpleReport(content);
+    const roadmap = roadmapFor(def, content, body);
+    return roadmap ? { ...report, roadmap } : report;
+  };
 }
 
 /** Okul çağındaki biri için öğrenci ve veli raporları (ücretsiz, basit rapor). Hiçbir şey kaydedilmez. */

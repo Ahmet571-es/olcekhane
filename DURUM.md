@@ -26,7 +26,9 @@ Basamaklar:
 
 1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
    aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
-2. **Rapor yenileme ("Gelişim Yol Haritası"):** önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
+2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör Kişilik'te örnek önizlemede (2026-10-07):
+   https://olcekhane.com/testler/bes-faktor-kisilik/coz?onizleme=yol-haritasi — site sahibinin görüşü ve hocanın onayı
+   bekleniyor; ondan sonra öteki testler. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
    derinlikli ve döndürülebilir; değerler her zaman düz yazıyla da okunur; PDF'te derinlikli resim. Öğrenci ve veli
@@ -44,7 +46,10 @@ Basamaklar:
 
 ## Sıradaki işler
 
-1. **Büyük planın 2. basamağı:** rapor yenileme (yukarıda).
+1. **Büyük planın 2. basamağı:** Beş Faktör yol haritasına site sahibinin görüşü ve hocanın kararı gelince düzeltmeler
+   ve herkese açma (`ROADMAP_IN_REVIEW`'dan çıkarma); sonra öteki testlerin yol haritaları. Herkese açılırken ana
+   sayfadaki SSS'nin "kapsamlı rapor ileride ücretli" cümlesi ve rapor ekranındaki "Kapsamlı rapor çok yakında" kutusu
+   site sahibine sorulur.
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -104,6 +109,7 @@ Her incelemedeki test için Claude Docs'ta bir belge vardır; sonunda Onay tablo
 | [Geriye Dönük Hatırlama İncelemesi](https://claude.ai/artifact/659BWzuYohtcK9QfCvZbEV) | Geriye Dönük Hatırlama | Site sahibinin hocayla paylaşması bekleniyor |
 | [Zihinde Döndürme İncelemesi](https://claude.ai/artifact/Aftf1twHWeuaLpfQLgwZRv) | Zihinde Döndürme | Site sahibinin hocayla paylaşması bekleniyor |
 | [Tepki Hızı İncelemesi](https://claude.ai/artifact/Nkt8WiGPtSfpvbppwmF1Hy) | Tepki Hızı | Site sahibinin hocayla paylaşması bekleniyor |
+| [Beş Faktör Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/HaGkWkUNY9q6jJasEDk8gt) | Beş Faktör Kişilik Profili (yol haritası) | Site sahibinin hocayla paylaşması bekleniyor |
 
 ## Rehber yazıları
 
@@ -178,7 +184,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
-- **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme ve Tepki Hızı incelemelerinin hocaya iletilmesi;
+- **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı ve Beş Faktör Gelişim Yol Haritası
+  incelemelerinin hocaya iletilmesi;
   hocanın kararları (Renk-Kelime, Dur-Git, Sırayla Birleştirme dahil zihinsel görevlerin hepsi kararı bekliyor).
 - **Açık soru:** Katalogda Türkçe Konu Tarama Testi "Hazırlanıyor" diye görünüyor, oysa 4. dalgada. İlgili bir iş
   gelince etiketin kalıp kalmayacağı site sahibine sorulur.
@@ -187,6 +194,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Gelişim yol haritası (Beş Faktör, önizlemede): döndürülebilir üç boyutlu profil, nasıl çalışabilir,
+  rahat edilebilecek ortamlar, veliye yaklaşım, dört haftalık adımlar; ekranda ve PDF'te. Hoca belgesi hazır.
 - 2026-10-07: Hoca onayıyla Ayrıntılı Kişilik Profili, Meslek İlgi Alanları, Altı Boyutlu Kişilik Profili, Duygusal
   Zekâ Bileşenleri, Kişilerarası Tarz, Hobi ve Serbest Zaman İlgileri yayında (active); Üniversite ve yetişkin
   grubu (`/yetiskin`) açıldı.

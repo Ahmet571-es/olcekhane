@@ -11,6 +11,7 @@ import { AUDIENCE_LABELS } from '@/lib/config';
 import type { ItemNoun } from '@/lib/instruments/nouns';
 import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
+import { RoadmapView } from './roadmap-view';
 import { SimpleReportView } from './simple-report-view';
 
 type Intro = { title: string; paragraphs: string[] };
@@ -29,7 +30,7 @@ export type TestPayload =
 type Audience = 'student' | 'parent' | 'adult';
 /** Okul çağındaki biri için öğrenci ve veli raporu, yetişkin için yalnızca kişisel rapor gelir. */
 type Reports = Partial<Record<Audience, SimpleReport>>;
-type Body = { grade: number; data: Record<string, unknown> };
+type Body = { grade: number; data: Record<string, unknown>; roadmapPreview?: true };
 
 const AUDIENCES: Audience[] = ['student', 'parent', 'adult'];
 /** İndirme düğmesi ve bilgilendirme cümlesi ("Saklamak için … PDF olarak indir"). */
@@ -95,20 +96,33 @@ async function failure(res: Response, fallback: string): Promise<Error> {
  * gönderilir; sunucu puanlayıp raporu döndürür, hiçbir şeyi kaydetmez. PDF istenince aynı cevaplar
  * yeniden gönderilir ve PDF bellekte üretilip indirilir.
  */
-export function TestSession({ slug, grade, gradeLabel, payload }: { slug: string; grade: number; gradeLabel: string; payload: TestPayload }) {
+export function TestSession({
+  slug,
+  grade,
+  gradeLabel,
+  payload,
+  roadmapPreview = false,
+}: {
+  slug: string;
+  grade: number;
+  gradeLabel: string;
+  payload: TestPayload;
+  /** Uzman incelemesindeki gelişim yol haritasının önizlemesi (`?onizleme=yol-haritasi`). */
+  roadmapPreview?: boolean;
+}) {
   const [seed] = useState(uuid4);
   const [result, setResult] = useState<{ reports: Reports; body: Body } | null>(null);
 
   const submit = useCallback(
     async (data: Record<string, unknown>) => {
-      const body: Body = { grade, data };
+      const body: Body = roadmapPreview ? { grade, data, roadmapPreview: true } : { grade, data };
       const res = await post(`/api/rapor/${slug}`, body);
       if (!res.ok) throw await failure(res, 'Rapor hazırlanamadı. Lütfen tekrar deneyin.');
       const reports = (await res.json()) as Reports;
       setResult({ reports, body });
       window.scrollTo({ top: 0 });
     },
-    [grade, slug],
+    [grade, slug, roadmapPreview],
   );
 
   if (result) return <ResultView slug={slug} gradeLabel={gradeLabel} reports={result.reports} body={result.body} />;
@@ -231,6 +245,8 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
 
       <SimpleReportView report={report} />
 
+      {report.roadmap && <RoadmapView roadmap={report.roadmap} you={audience !== 'parent'} />}
+
       <section aria-labelledby="indir" className="panel flex flex-col gap-4 p-6">
         <h2 id="indir" className="t-h3">
           Raporu sakla
@@ -239,7 +255,7 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
       </section>
 
       {/* Kapsamlı rapor öğrenci ve veli için hazırlanıyor; yetişkinlere yönelik bir sürümü henüz planlanmadı. */}
-      {!reports.adult && (
+      {!reports.adult && !report.roadmap && (
         <section aria-labelledby="kapsamli" className="flex flex-col gap-2 rounded-xl border border-dashed border-rule-strong p-6">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id="kapsamli" className="t-h3">

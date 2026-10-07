@@ -1,7 +1,9 @@
 import 'server-only';
 import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
+import { bars3dScene } from '@/lib/charts/bars3d';
 import { AUDIENCE_LABELS } from '@/lib/config';
+import type { Roadmap } from '@/lib/reports/roadmap';
 import type { RulerRow, SimpleChart, SimpleReport } from '@/lib/reports/simple';
 
 /**
@@ -311,6 +313,166 @@ function Chart({ chart }: { chart: SimpleChart }) {
   return <Columns chart={chart} />;
 }
 
+/* ---------- Gelişim yol haritası ---------- */
+
+/** Üç boyutlu profil: ekrandakiyle aynı hesap, sabit bir açıdan. */
+function Profile3DPdf({ rm }: { rm: Roadmap }) {
+  const W = 380;
+  const H = 285;
+  const scene = bars3dScene(
+    rm.bars.map((b) => ({ ...b, valueLabel: b.valueLabel.split(' / ')[0] })),
+    { yaw: 36, width: W, height: H, floor: { top: C.surface2, side: C.rule, stroke: C.ruleStrong }, band: C.brass },
+  );
+  return (
+    <View>
+      <View style={{ alignItems: 'center' }}>
+        <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        {scene.polys.map((p, i) => (
+          <Polygon
+            key={i}
+            points={p.points}
+            fill={p.fill}
+            stroke={p.stroke}
+            strokeWidth={0.6}
+            fillOpacity={p.opacity ?? 1}
+            strokeOpacity={p.opacity === undefined ? 0.6 : 0.8}
+          />
+        ))}
+        {scene.labels.map((l) => (
+          <Text key={l.key} x={l.x} y={l.y} textAnchor="middle" style={{ fontFamily: 'Atkinson', fontSize: 11, fontWeight: 700, fill: C.ink }}>
+            {l.text}
+          </Text>
+        ))}
+        </Svg>
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
+        {rm.bars.map((b) => (
+          <View key={b.key} style={{ width: '50%', flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 2 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 1.5, backgroundColor: b.color }} />
+            <Text style={{ fontSize: 9.5, fontWeight: 700 }}>{b.label}</Text>
+            <Text style={{ fontSize: 9.5, color: C.ink2 }}>{b.valueLabel}</Text>
+            <Text style={{ fontSize: 8.5, color: C.ink3 }}>{b.band}</Text>
+          </View>
+        ))}
+      </View>
+      <Text style={s.note}>Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.</Text>
+    </View>
+  );
+}
+
+function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: boolean; siteHost: string; kind: string; date: string }) {
+  return (
+    <Page size="A4" style={s.page}>
+      <View style={s.top} fixed>
+        <View>
+          <Text style={s.brand}>Ölçekhane</Text>
+          <Text style={s.tag}>Tahmin değil, ölçüm.</Text>
+        </View>
+        <View style={s.topRight}>
+          <Text style={s.audience}>{kind}</Text>
+          <Text style={{ fontSize: 8.5, color: C.ink3 }}>{date}</Text>
+        </View>
+      </View>
+
+      <View style={s.chips}>
+        <Text style={s.chip}>Gelişim yol haritası</Text>
+        {rm.preview && <Text style={[s.chip, { color: C.ink2, backgroundColor: C.surface2 }]}>Önizleme · uzman incelemesinde</Text>}
+      </View>
+      <Text style={[s.title, { marginTop: 8 }]}>{you ? 'Senin yol haritan' : 'Çocuğunuz için yol haritası'}</Text>
+      <Text style={[s.para, { color: C.ink2, marginTop: 6 }]}>{rm.intro}</Text>
+
+      <View wrap={false}>
+        <Text style={s.h2}>{you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu'}</Text>
+        <Profile3DPdf rm={rm} />
+      </View>
+
+      <View wrap={false}>
+        <Text style={s.h2}>Kısaca</Text>
+        {rm.standout.length > 0 ? (
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {rm.standout.map((x) => (
+              <View key={x.title} style={{ flex: 1, borderWidth: 1, borderColor: C.rule, borderRadius: 6, padding: 8 }}>
+                <Text style={{ fontSize: 8.5, color: C.ink3 }}>{x.title}</Text>
+                <Text style={{ fontFamily: 'Bricolage', fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{x.text}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={s.para}>{rm.standoutNote}</Text>
+        )}
+      </View>
+
+      <Text style={s.h2} minPresenceAhead={80}>
+        {rm.study.title}
+      </Text>
+      <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{rm.study.intro}</Text>
+      {rm.study.items.map((it) => (
+        <View key={it.key} style={[s.item, { borderTopColor: it.color, borderTopWidth: 2 }]} wrap={false}>
+          <View style={s.itemHead}>
+            <Text style={s.itemTitle}>{it.title}</Text>
+            <Text style={s.itemBadge}>{it.badge}</Text>
+          </View>
+          <Text style={s.para}>{it.text}</Text>
+        </View>
+      ))}
+      <Text style={s.note}>Ayrıntılı bilgi: {rm.study.links.map((l) => `${l.label} (${siteHost}${l.href})`).join(' · ')}</Text>
+
+      <View wrap={false}>
+        <Text style={s.h2}>{rm.settings.title}</Text>
+        <Text style={[s.para, { marginBottom: 3 }]}>{rm.settings.intro}</Text>
+        {rm.settings.items.map((x) => (
+          <View key={x} style={s.bullet}>
+            <Text>•</Text>
+            <Text style={[s.para, { flex: 1 }]}>{x}</Text>
+          </View>
+        ))}
+        <Text style={s.privacy}>{rm.settings.note}</Text>
+      </View>
+
+      {rm.approach && rm.approach.items.length > 0 && (
+        <View>
+          <Text style={s.h2} minPresenceAhead={150}>
+            {rm.approach.title}
+          </Text>
+          {rm.approach.items.map((it) => (
+            <View key={it.title} style={s.item} wrap={false}>
+              <Text style={s.itemTitle}>{it.title}</Text>
+              <Text style={s.para}>{it.text}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <Text style={s.h2} minPresenceAhead={80}>
+        Dört haftalık küçük adımlar
+      </Text>
+      {rm.weeks.map((w) => (
+        <View key={w.label} style={{ flexDirection: 'row', gap: 10, paddingVertical: 5 }} wrap={false}>
+          <View style={{ width: 84 }}>
+            <Text style={{ fontSize: 8.5, fontWeight: 700, color: C.ink3 }}>{w.label.toLocaleUpperCase('tr-TR')}</Text>
+            <Text style={{ fontWeight: 700, fontSize: 10.5 }}>{w.title}</Text>
+          </View>
+          <Text style={[s.para, { flex: 1 }]}>{w.text}</Text>
+        </View>
+      ))}
+
+      <View wrap={false}>
+        <Text style={[s.h2, { fontSize: 11.5 }]}>Dayandığı araştırmalar</Text>
+        {rm.sources.map((x, i) => (
+          <Text key={x.text} style={[s.paraSmall, { color: C.ink2, marginBottom: 2 }]}>
+            {i + 1}. {x.text} {x.url ?? ''}
+          </Text>
+        ))}
+      </View>
+
+      <View style={s.footer} fixed>
+        <Text>{siteHost}</Text>
+        <Text render={({ pageNumber, totalPages }) => `Sayfa ${pageNumber} / ${totalPages}`} />
+      </View>
+    </Page>
+  );
+}
+
 /* ---------- Belge ---------- */
 
 export function SimpleReportDocument({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
@@ -428,6 +590,7 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
           <Text render={({ pageNumber, totalPages }) => `Sayfa ${pageNumber} / ${totalPages}`} />
         </View>
       </Page>
+      {report.roadmap && <RoadmapPage rm={report.roadmap} you={you} siteHost={siteHost} kind={kind} date={date} />}
     </Document>
   );
 }

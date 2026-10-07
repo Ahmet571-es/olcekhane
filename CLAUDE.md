@@ -142,8 +142,21 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Açılıştaki üç boyutlu şekil kütüphanesiz, doğrudan WebGL ile çizilir (`components/persona`); WebGL yoksa
   CSS ile çizilmiş yedek şekil görünür. Kaydırıcılar "oyun, ölçüm değil" diye anlatılır ve hiçbir yere
   kaydedilmez.
-- Test çözme ve rapor ekranları (`src/app/(test)`) sade kalır; hareketli efektler oraya taşınmaz. Tayf
-  renkleri bir boyutu ya da alanı tanıtır; puan, iyi ya da kötü anlamı taşımaz.
+- Test çözme ve rapor ekranları (`src/app/(test)`) sade kalır; hareketli efektler oraya taşınmaz. Rapordaki üç
+  boyutlu profil grafiği (`lib/charts/bars3d.ts`; ekranda ve PDF'te aynı hesap) yalnızca kişi sürükleyince ya da
+  düğmeye basınca döner. Tayf renkleri bir boyutu ya da alanı tanıtır; puan, iyi ya da kötü anlamı taşımaz.
+
+## Gelişim yol haritası
+
+- Raporun sonundaki öneri bölümleri: üç boyutlu profil, kısaca, nasıl çalışabilir, rahat edilebilecek ortamlar,
+  (veliye) yaklaşım önerileri, dört haftalık küçük adımlar, kaynaklar. Metinler `src/content/roadmaps/<ad>.ts`
+  (kayıt `index.ts`), kurulum `src/lib/reports/roadmap.ts`, ekran `components/test/roadmap-view.tsx`, PDF
+  `lib/pdf/simple-report.tsx`; `tests/roadmap.test.ts` bütün düzey birleşimlerini dener.
+- Yeni yol haritası önce `ROADMAP_IN_REVIEW`'a konur: yalnızca `/testler/<adres>/coz?onizleme=yol-haritasi`
+  bağlantısıyla görünür. Hoca için "<Test adı> Gelişim Yol Haritası İncelemesi" belgesi hazırlanır (metinler içerik
+  dosyasından üretilip belgeyle karşılaştırılır). Onaylanınca adres `ROADMAP_IN_REVIEW`'dan çıkarılır.
+- Etkili çalışma yöntemleri herkes için aynı anlatılır; kişiliğe göre "öğrenme stili" eşleştirmesi vaat edilmez.
+  Ortamlar meslek önerisi değildir; meslek için ilgi testlerine yönlendirilir.
 
 ## Yaş grupları ve yol gösterme
 

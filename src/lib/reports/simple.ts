@@ -1,5 +1,6 @@
 import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
 import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
+import type { Roadmap } from './roadmap';
 
 /**
  * Basit rapor: test bitince ekranda gösterilen ve PDF olarak indirilen ücretsiz rapor (hiçbir yerde
@@ -62,6 +63,8 @@ export interface SimpleReport {
   support: { title: string; lines: string[] } | null;
   normNote: string;
   disclaimer: { title: string; text: string };
+  /** Gelişim yol haritası (yalnızca şablonu olan testlerde; incelemedeyken yalnızca önizlemede). */
+  roadmap?: Roadmap;
 }
 
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });

@@ -63,6 +63,8 @@ export const answersBody = z.object({
       blocks: z.record(z.string().max(40), z.array(taskTrial).min(1).max(400)).refine(fewKeys(12)),
     }),
   ]),
+  /** Uzman incelemesindeki gelişim yol haritasının önizlemesi (`?onizleme=yol-haritasi`). */
+  roadmapPreview: z.literal(true).optional(),
 });
 
 /** PDF isteği: aynı cevaplar ve raporun kimin için olduğu (öğrenci, veli ya da yetişkin). */
