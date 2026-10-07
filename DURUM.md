@@ -48,6 +48,31 @@ Basamaklar:
 
 ## Sıradaki işler
 
+**ÖNCE BU — Sesli okumada otomatik analiz (site sahibinin 2026-10-07 akşam isteği; karar ve hazırlık bekliyor).**
+Bugünkü Sesli Okuma Değerlendirmesi (yetişkinin kaydı dinleyip kelime kelime işaretlemesi) isteğin yanlış
+anlaşılmasıydı. Site sahibinin istediği:
+- Öğrenci kendisi okur; **yetişkin kaydı dinlemez** (öğrenci mahremiyeti). Parça ekranda çıkar, öğrenci sesli okur,
+  okuma bitince kayıt durur; ekranda "Okumanı analiz etmemizi ister misin?" sorusu çıkar; "Evet" denince sistem kaydın
+  tamamını **otomatik** inceler ve rapor verir. Rapor verilince ses de analiz de silinir; **hiçbir şey saklanmaz**.
+- Öncelik **doğruluk**: kaydın eksiksiz ve hatasız incelenmesi.
+
+Önerilen ve konuşulan yol (site sahibi henüz kesin onay vermedi):
+- Kendi sunucumuzda büyük bir Türkçe konuşma tanıma modeli; ses yalnızca bellekte işlenir, diske ya da günlüğe
+  yazılmaz, dış hizmete gitmez. İki dinleyiş: metni bilmeden yazıya dökme ve metindeki kelimeleri kayıtta hizalayıp ses
+  ses denetleme; ikisi ayrışırsa kelime "net anlaşılamadı" diye gösterilir, hata sayılmaz. Kayıt kötüyse (gürültü,
+  kısık, kesinti) rapor verilmez, yeniden okuma istenir. Ölçülenler: doğru okuma oranı, dakikada doğru kelime, yanlış /
+  atlanan / eklenen kelime, tekrar, duraksama, ritim; anlama soruları kalabilir.
+- Yayından önce doğruluk ölçümü: site sahibinin velilerden izinle toplayacağı 30–50 çocuk kaydı, bir öğretmenin
+  işaretlemesiyle karşılaştırılır (kayıtlar siteden toplanmaz, iş bitince silinir). Ölçülene kadar "pilot".
+- Sunucu: canlı sunucu KVM 1 (1 çekirdek, 3,8 GB) büyük modeli kaldırmaz; KVM 4 gerekir. Site sahibi KVM 4 almış
+  olabileceğini söyledi; Hostinger panelinden bakacak (yeni ayrı sunucuysa site oraya taşınır, KVM 1 yenilenmez;
+  30 Ekim yenilemesiyle birleştirilebilir). Aylık ek abonelik istemediğini söyledi; KVM 1 → KVM 4 farkı anlatıldı.
+- Konuşulan öteki seçenekler: öğrencinin cihazında (tarayıcıda) analiz — ücretsiz, ses cihazdan çıkmaz, daha az
+  isabetli; dış hizmet (OpenAI vb.) — önerilmedi (çocuk sesi yurt dışındaki bir şirkete gider).
+- Bu iş "Sesli okumada ses kaydı yalnızca kullanıcının cihazında kalır" ilkesini (CLAUDE.md) değiştirir: aydınlatma
+  metni ve "Evet" ekranındaki onay cümlesi (18 yaş altı için veli izni) aynı değişiklikte güncellenir; avukat kontrolü
+  gerekir. İlke, site sahibi yolu onaylayınca CLAUDE.md'de de güncellenir.
+
 0. **Okuma bölümü:** (a) yeni metinler (her sınıfa öykü ve bilgilendirici; `src/content/instruments/sesli-okuma/`,
    kurallar `tests/sesli-okuma.test.ts`'te); (b) aynı kayıt ve işaretleme altyapısıyla yeni değerlendirmeler: 1 dakikalık
    kelime listesi okuma, anlamsız kelime okuma (kod çözme), 1. sınıf için harf ve hece okuma; (c) düzey eşikleri
