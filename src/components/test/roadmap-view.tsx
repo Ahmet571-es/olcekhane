@@ -53,34 +53,39 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
         )}
       </section>
 
-      <section aria-labelledby="calisma" className="flex flex-col gap-4">
-        <h3 id="calisma" className="t-h2">
-          {rm.study.title}
-        </h3>
-        <p className="measure text-ink-2">{rm.study.intro}</p>
-        <ul className="grid gap-4 md:grid-cols-2">
-          {rm.study.items.map((it) => (
-            <li key={it.key} className="panel flex flex-col gap-2 border-t-4 p-5" style={{ borderTopColor: it.color }}>
-              <p className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                <span className="font-display text-lg font-bold">{it.title}</span>
-                <span className="t-small font-bold text-brass-ink">{it.badge}</span>
-              </p>
-              <p className="text-ink-2">{it.text}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="t-small text-ink-2">
-          Ayrıntılı bilgi:{' '}
-          {rm.study.links.map((l, i) => (
-            <span key={l.href}>
-              {i > 0 && ' · '}
-              <Link href={l.href} target="_blank" rel="noopener">
-                {l.label}
-              </Link>
-            </span>
-          ))}
-        </p>
-      </section>
+      {/* İlgi testinde öne çıkan alan yoksa keşif önerisi de yoktur; haftalık denemeler kalır. */}
+      {rm.study.items.length > 0 && (
+        <section aria-labelledby="calisma" className="flex flex-col gap-4">
+          <h3 id="calisma" className="t-h2">
+            {rm.study.title}
+          </h3>
+          <p className="measure text-ink-2">{rm.study.intro}</p>
+          <ul className="grid gap-4 md:grid-cols-2">
+            {rm.study.items.map((it) => (
+              <li key={it.key} className="panel flex flex-col gap-2 border-t-4 p-5" style={{ borderTopColor: it.color }}>
+                <p className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                  <span className="font-display text-lg font-bold">{it.title}</span>
+                  <span className="t-small font-bold text-brass-ink">{it.badge}</span>
+                </p>
+                <p className="text-ink-2">{it.text}</p>
+              </li>
+            ))}
+          </ul>
+          {rm.study.links.length > 0 && (
+            <p className="t-small text-ink-2">
+              Ayrıntılı bilgi:{' '}
+              {rm.study.links.map((l, i) => (
+                <span key={l.href}>
+                  {i > 0 && ' · '}
+                  <Link href={l.href} target="_blank" rel="noopener">
+                    {l.label}
+                  </Link>
+                </span>
+              ))}
+            </p>
+          )}
+        </section>
+      )}
 
       {rm.settings && (
         <section aria-labelledby="ortamlar" className="flex flex-col gap-3">

@@ -30,7 +30,9 @@ Basamaklar:
 1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
    aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör, Ayrıntılı Kişilik, Altı Boyutlu Kişilik, Duygusal Zekâ
-   Bileşenleri, Kişilerarası Tarz, Öz-saygı ve Çalışma Alışkanlıkları'nda yayında (ilk üçü hoca onaylı; son ikisi 2026-10-07 kararıyla onay beklenmeden).
+   Bileşenleri, Kişilerarası Tarz, Öz-saygı, Çalışma Alışkanlıkları ve üç ilgi testinde (Mesleki İlgi Profili, Meslek
+   İlgi Alanları, Hobi ve Serbest Zaman İlgileri) yayında (ilk üçü hoca onaylı; ötekiler 2026-10-07 kararıyla onay
+   beklenmeden). Yol haritası olmayanlar: zihinsel görevler, okuma ve matematik konu tarama.
    Sırada öteki testlerin yol haritaları; doğrudan yayına alınır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
@@ -55,8 +57,12 @@ Basamaklar:
    `planningTitle` ve `wellbeing.link`), Kişilerarası Tarz (sekiz tarz çemberin sırasıyla; 2. hafta "Birlikte
    çalışırken" = Öne çıkma; iyi oluş haftası yok), Öz-saygı (tek boyut: üç boyutlu profil ve ortamlar yok, 3. hafta
    şablondaki `extraWeek`, "Öz-saygı nedir?" bağlantısı), Çalışma Alışkanlıkları (ortamlar yok; 3. hafta en düşük
-   puanlı alışkanlık, `thirdWeek: 'lowest'`). Sırada: ilgi testleri (Meslek İlgi Alanları, Mesleki İlgi Profili, Hobi
-   ve Serbest Zaman İlgileri) ve zihinsel görevler; bunların bölümleri kişilik testlerinden farklı tasarlanır.
+   puanlı alışkanlık, `thirdWeek: 'lowest'`), üç ilgi testi (keşif yol haritası, `INTEREST_ROADMAPS`: öne çıkan
+   alanlar için keşif önerileri, Holland profilinde eğitim yolları, haftalık denemeler; öne çıkan alan yoksa yalnızca
+   kısa not ve genel denemeler). Sırada: zihinsel görevler (Renk-Kelime, Dur-Git, Sırayla Birleştirme, Geriye Dönük
+   Hatırlama, Zihinde Döndürme, Tepki Hızı, Dikkat ve Bellek, Sürekli Dikkat), okuma ve matematik. Zihinsel
+   görevlerde "beyni çalıştırma" vaadi verilmez (çalışma belleği alıştırmalarının başka becerilere aktarılmadığı
+   gösterildi); ne tür bir bölüm yazılacağı önce site sahibine sorulur.
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -204,6 +210,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: İlgi testlerinin gelişim yol haritaları yayında (Mesleki İlgi Profili, Meslek İlgi Alanları, Hobi ve
+  Serbest Zaman İlgileri; öğrenci, veli ve yetişkin raporu, ekranda ve PDF'te): öne çıkan alanlar için keşif
+  önerileri, Holland profilinde eğitim yolları, veliye yaklaşım, dört haftalık denemeler. Yayın denetimi iki ilgi
+  raporunun yol haritasını dışarıdan sınıyor.
 - 2026-10-07: Öz-saygı ve Çalışma Alışkanlıkları gelişim yol haritaları yayında (doğrudan). Yol haritasında ortamlar
   bölümü isteğe bağlı, tek boyutlu testte üç boyutlu profil gösterilmiyor; test sayfasındaki tanıtım testin kendi
   bölümlerini sayıyor.
@@ -229,8 +239,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Hoca onayıyla Ayrıntılı Kişilik Profili, Meslek İlgi Alanları, Altı Boyutlu Kişilik Profili, Duygusal
   Zekâ Bileşenleri, Kişilerarası Tarz, Hobi ve Serbest Zaman İlgileri yayında (active); Üniversite ve yetişkin
   grubu (`/yetiskin`) açıldı.
-- 2026-10-07: Yaş ve sınıf düzeni: İlkokul, Ortaokul, Lise ve mezun sayfaları (`/ilkokul`, `/ortaokul`, `/lise`;
-  Üniversite ve yetişkin sayfası `/yetiskin` yetişkin testleri onaylanınca kendiliğinden açılır); grup sayfasında
-  sınıf seçimi ve "Nereden başlamalı?" önerileri; ana sayfada, Testler'de, menüde ve altbilgide grup seçimi; her
-  sayfanın başında yol gösterici kutu (test başlatma ve rapor ekranı dahil), bulunamayan sayfa için yönlendirme;
-  "Bilişsel beceriler" alanı "Zekâ ve zihinsel beceriler" oldu ve sırada ikinciye alındı.

@@ -62,7 +62,7 @@ export function pick(t: AudienceText, audience: Audience): string {
 }
 
 /** "Ayrıntılı Kişilik Profili ve Meslek İlgi Alanları" gibi. */
-function joinNames(names: string[]): string {
+export function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('');
   return `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`;
 }

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/site/logo';
 import { PageGuide } from '@/components/site/page-guide';
 import { TestSession, type TestPayload } from '@/components/test/test-session';
-import { ROADMAPS, ROADMAP_IN_REVIEW, ROADMAP_PREVIEW_PARAM } from '@/content/roadmaps';
+import { ROADMAP_IN_REVIEW, ROADMAP_PREVIEW_PARAM, hasRoadmap } from '@/content/roadmaps';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
 import { likertItemNoun } from '@/lib/instruments/nouns';
@@ -79,7 +79,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
   const grades = Array.from({ length: def.maxGrade - def.minGrade + 1 }, (_, i) => def.minGrade + i);
   const backUrl = `/testler/${def.slug}`;
   // İncelemedeki gelişim yol haritası yalnızca önizleme bağlantısıyla eklenir; seçim sınıf formunda da korunur.
-  const roadmapPreview = q.onizleme === ROADMAP_PREVIEW_PARAM && !!ROADMAPS[def.slug] && ROADMAP_IN_REVIEW.has(def.slug);
+  const roadmapPreview = q.onizleme === ROADMAP_PREVIEW_PARAM && hasRoadmap(def.slug) && ROADMAP_IN_REVIEW.has(def.slug);
 
   return (
     <>

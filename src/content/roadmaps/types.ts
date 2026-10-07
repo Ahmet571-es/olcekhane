@@ -67,3 +67,46 @@ export interface RoadmapTemplate {
   nextTests: string[];
   sources: { text: string; url?: string }[];
 }
+
+/**
+ * İlgi testlerinin (meslek ilgileri, serbest zaman etkinlikleri) gelişim yol haritası. Ders çalışma yerine ilgilerin
+ * nasıl keşfedileceğini anlatır: en belirgin alanlar için keşif önerileri, (meslek ilgilerinde) ilişkili eğitim yolları,
+ * veliye yaklaşım ve dört haftalık keşif planı. Raporun en belirgin alanları (ilgi profili ya da sıralama) kullanılır.
+ */
+export interface InterestArea {
+  /** Üç boyutlu grafikteki renk. */
+  color: string;
+  /** "Nasıl keşfedebilirsin?" kartı: yalnızca en belirgin alanlarda gösterilir. */
+  explore: AudienceText;
+  /** Dört haftalık planda bu alanın bir haftalık keşif denemesi. */
+  action: AudienceText;
+  /** Veliye yaklaşım önerisi (en belirgin alanlarda). */
+  approach: string;
+  /** Okul ve meslek planı için: bu alanla ilişkili eğitim yolları (yalnızca meslek ilgi testlerinde). */
+  paths?: AudienceText;
+}
+
+export interface InterestRoadmapTemplate {
+  version: string;
+  areas: Record<string, InterestArea>;
+  /** Serbest zaman testi: girişte "meslek seçimi değildir" denmez (öneriler meslekle ilgili değildir). */
+  leisure?: boolean;
+  /** Yol haritasının girişinde ve test sayfasının tanıtımında bu bölümün ne olduğu. */
+  what: AudienceText & { summary: string };
+  /** Keşif bölümünün başlığı. */
+  studyTitle: { you: string; parent: string };
+  studyIntro: AudienceText;
+  /** Öne çıkan alan yoksa (ilgiler henüz ayrışmamışsa) "Kısaca" bölümündeki cümle. */
+  openNote: AudienceText;
+  /** Eğitim yolları bölümünün sonundaki uyarı (yolu olan şablonda). */
+  pathsNote?: AudienceText;
+  firstWeek: AudienceText;
+  /** Öne çıkan ikinci (ya da hiç) alan yoksa 2. ve 3. haftanın genel denemeleri. */
+  openWeeks: [{ title: string; text: AudienceText }, { title: string; text: AudienceText }];
+  lastWeek: AudienceText;
+  /** Son haftada önerilecek testler ve neden önerildikleri (ör. "kişilik özelliklerini görmek"). */
+  nextTests: string[];
+  nextPurpose: { you: string; parent: string };
+  links: { label: string; href: string }[];
+  sources: { text: string; url?: string }[];
+}

@@ -1,9 +1,10 @@
 import 'server-only';
 import { getInstrumentDef, isSolvable, publicInstruments } from '@/content/instruments';
-import { ROADMAPS, ROADMAP_IN_REVIEW } from '@/content/roadmaps';
+import { INTEREST_ROADMAPS, ROADMAPS, ROADMAP_IN_REVIEW } from '@/content/roadmaps';
 import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
 import type { InstrumentDef } from '@/lib/instruments/types';
 import { buildReport, type Audience, type ReportContent } from '@/lib/reports/build';
+import { buildInterestRoadmap } from '@/lib/reports/interest-roadmap';
 import { buildRoadmap, type Roadmap } from '@/lib/reports/roadmap';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { likertQuality, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
@@ -113,15 +114,16 @@ function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes
  */
 function roadmapFor(def: InstrumentDef, content: ReportContent, body: AnswersBody): Roadmap | undefined {
   const template = ROADMAPS[def.slug];
-  if (!template) return undefined;
+  const interest = INTEREST_ROADMAPS[def.slug];
+  if (!template && !interest) return undefined;
   const preview = ROADMAP_IN_REVIEW.has(def.slug);
   if (preview && !body.roadmapPreview) return undefined;
   const live = publicInstruments();
-  const next = template.nextTests
+  const next = (template ?? interest).nextTests
     .flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== def.slug && gradeAllowed(t, body.grade)))
     .slice(0, 2)
     .map((t) => ({ name: t.name, href: `/testler/${t.slug}` }));
-  return buildRoadmap(content, template, { preview, next });
+  return template ? buildRoadmap(content, template, { preview, next }) : buildInterestRoadmap(content, interest, { preview, next });
 }
 
 /** Cevapları doğrulayıp puanlar; aynı puanlardan istenen kişiye yazılmış raporu hazırlayan işlevi döndürür. */

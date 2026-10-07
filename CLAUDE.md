@@ -154,6 +154,9 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   (veliye) yaklaşım önerileri, dört haftalık küçük adımlar, kaynaklar. Metinler `src/content/roadmaps/<ad>.ts`
   (kayıt `index.ts`), kurulum `src/lib/reports/roadmap.ts`, ekran `components/test/roadmap-view.tsx`, PDF
   `lib/pdf/simple-report.tsx`; `tests/roadmap.test.ts` bütün düzey birleşimlerini dener.
+- İlgi testlerinde (`INTEREST_ROADMAPS`) yol haritası ilgilerin keşfidir: raporun öne çıkardığı alanlar için keşif
+  önerileri, (Holland profilinde) eğitim yolları, veliye yaklaşım ve haftalık denemeler. Kurulum
+  `src/lib/reports/interest-roadmap.ts`, denetim `tests/ilgi-yol-haritasi.test.ts`. Öneriler meslek seçmez.
 - Yeni yol haritası doğrudan yayına alınır (2026-10-07 kararı). Site sahibi isterse önce `ROADMAP_IN_REVIEW`'a
   konur: yalnızca `/testler/<adres>/coz?onizleme=yol-haritasi` bağlantısıyla görünür. Hoca belgesi istenirse
   "<Test adı> Gelişim Yol Haritası İncelemesi" hazırlanır (metinler içerik dosyasından üretilip belgeyle

@@ -419,20 +419,26 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
         )}
       </View>
 
-      <Text style={s.h2} minPresenceAhead={80}>
-        {rm.study.title}
-      </Text>
-      <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{rm.study.intro}</Text>
-      {rm.study.items.map((it) => (
-        <View key={it.key} style={[s.item, { borderTopColor: it.color, borderTopWidth: 2 }]} wrap={false}>
-          <View style={s.itemHead}>
-            <Text style={s.itemTitle}>{it.title}</Text>
-            <Text style={s.itemBadge}>{it.badge}</Text>
-          </View>
-          <Text style={s.para}>{it.text}</Text>
-        </View>
-      ))}
-      <Text style={s.note}>Ayrıntılı bilgi: {rm.study.links.map((l) => `${l.label} (${siteHost}${l.href})`).join(' · ')}</Text>
+      {rm.study.items.length > 0 && (
+        <>
+          <Text style={s.h2} minPresenceAhead={80}>
+            {rm.study.title}
+          </Text>
+          <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{rm.study.intro}</Text>
+          {rm.study.items.map((it) => (
+            <View key={it.key} style={[s.item, { borderTopColor: it.color, borderTopWidth: 2 }]} wrap={false}>
+              <View style={s.itemHead}>
+                <Text style={s.itemTitle}>{it.title}</Text>
+                <Text style={s.itemBadge}>{it.badge}</Text>
+              </View>
+              <Text style={s.para}>{it.text}</Text>
+            </View>
+          ))}
+          {rm.study.links.length > 0 && (
+            <Text style={s.note}>Ayrıntılı bilgi: {rm.study.links.map((l) => `${l.label} (${siteHost}${l.href})`).join(' · ')}</Text>
+          )}
+        </>
+      )}
 
       {rm.settings && (
         <View wrap={false}>
