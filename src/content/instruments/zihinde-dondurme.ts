@@ -105,7 +105,7 @@ export const zihindeDondurme: TaskInstrument = {
   name: 'Zihinde Döndürme',
   shortName: 'Zihinde döndürme',
   domain: 'cognitive',
-  status: 'review',
+  status: 'pilot',
   licenseStatus: 'original',
   isFree: true,
   minGrade: 5,

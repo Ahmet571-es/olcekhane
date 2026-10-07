@@ -65,7 +65,7 @@ export const geriyeDonukHatirlama: TaskInstrument = {
   name: 'Geriye Dönük Hatırlama',
   shortName: 'Geriye dönük hatırlama',
   domain: 'cognitive',
-  status: 'review',
+  status: 'pilot',
   licenseStatus: 'original',
   isFree: true,
   minGrade: 5,

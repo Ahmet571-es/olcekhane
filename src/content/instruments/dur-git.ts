@@ -88,7 +88,7 @@ export const durGitGorevi: TaskInstrument = {
   name: 'Dur-Git Görevi',
   shortName: 'Dur-git',
   domain: 'cognitive',
-  status: 'review',
+  status: 'pilot',
   licenseStatus: 'original',
   isFree: true,
   minGrade: 3,

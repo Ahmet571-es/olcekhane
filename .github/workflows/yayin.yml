@@ -128,9 +128,10 @@ jobs:
           # Bir ziyaretçinin yapacağı gibi: sayfalar, test raporu ve PDF (örnek cevaplarla; hiçbir şey saklanmaz).
           C=(curl -sS -m 30 -A 'olcekhane-yayin-denetimi')
           sorun=""
-          # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı.
-          ONIZLEME="renk-kelime-gorevi dur-git-gorevi sirayla-birlestirme-gorevi geriye-donuk-hatirlama zihinde-dondurme tepki-hizi"
-          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz $(printf ' /testler/%s' $ONIZLEME) '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
+          # Uzman incelemesindeki (önizleme) testler de bağlantıyla açılmalı. Site sahibinin 2026-10-07 kararıyla testler
+          # hoca onayı beklenmeden yayına alındığı için liste şimdilik boştur.
+          ONIZLEME=""
+          for yol in / /testler /testler/oz-saygi /testler/oz-saygi/coz ${ONIZLEME:+$(printf ' /testler/%s' $ONIZLEME)} '/testler/ayrintili-kisilik-profili/coz?sinif=yetiskin' /iletisim /yasal/aydinlatma-metni; do
             kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
             [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
           done
@@ -157,10 +158,10 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert [len(g["facets"]) for g in r["parent"]["groups"]] == [4, 4, 4, 4, 4, 4]; m=r["student"]["roadmap"]; assert len(m["bars"]) == 6 and len(m["weeks"]) == 4 and not m["preview"]'; then
             sorun="$sorun alti-boyutlu-rapor"
           fi
-          # Duygusal Zekâ Bileşenleri: 66 madde (empc04 ve empc07 çıkarıldı), yedi ayrı ölçek, toplam puan yok.
+          # Duygusal Zekâ Bileşenleri: 66 madde (empc04 ve empc07 çıkarıldı), yedi ayrı ölçek, toplam puan yok; yol haritası.
           DZ_GOVDE=$(python3 -c 'import json; n={"pexp": 9, "nexp": 10, "atte": 10, "edec": 9, "rjoy": 10, "rdis": 10, "empc": 10}; print(json.dumps({"grade": 9, "data": {"engine": "likert", "answers": {f"{k}{i:02d}": {"value": (j + i) % 5 + 1, "rtMs": 2500} for j, k in enumerate(n) for i in range(1, n[k] + 1) if f"{k}{i:02d}" not in ("empc04", "empc07")}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$DZ_GOVDE" "https://$ALAN/api/rapor/duygusal-zeka-bilesenleri" |
-            python3 -c 'import json,sys; r=json.load(sys.stdin); assert len(r["parent"]["chart"]["rows"]) == 7 and len(r["student"]["items"]) == 7 and "toplam bir puan yoktur" in r["student"]["chartNote"]'; then
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert len(r["parent"]["chart"]["rows"]) == 7 and len(r["student"]["items"]) == 7 and "toplam bir puan yoktur" in r["student"]["chartNote"]; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 7 and len(m["approach"]["items"]) == 7 and not m["preview"]'; then
             sorun="$sorun duygusal-zeka-raporu"
           fi
           # Beş Faktör: raporun sonunda gelişim yol haritası (beş boyutlu üç boyutlu profil, dört hafta, veliye öneriler).
@@ -169,10 +170,10 @@ jobs:
             python3 -c 'import json,sys; m=json.load(sys.stdin)["parent"]["roadmap"]; assert len(m["bars"]) == 5 and len(m["weeks"]) == 4 and len(m["approach"]["items"]) == 5 and not m["preview"]'; then
             sorun="$sorun yol-haritasi"
           fi
-          # Kişilerarası Tarz: 32 madde, sekiz tarz çember grafiğinde.
+          # Kişilerarası Tarz: 32 madde, sekiz tarz çember grafiğinde; yol haritası.
           TARZ_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"ipc{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 33)}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TARZ_GOVDE" "https://$ALAN/api/rapor/kisilerarasi-tarz" |
-            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["student"]["chart"]; assert c["type"] == "circle" and len(c["axes"]) == 8 and len(r["parent"]["items"]) == 8'; then
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["student"]["chart"]; assert c["type"] == "circle" and len(c["axes"]) == 8 and len(r["parent"]["items"]) == 8; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 8 and m["weeks"][1]["title"] == "Birlikte çalışırken" and not m["preview"]'; then
             sorun="$sorun kisilerarasi-tarz-raporu"
           fi
           # Hobi ve Serbest Zaman İlgileri: 92 etkinlik (ORAIS'teki numaralarıyla), 16 alan sıklığa göre sıralı.

@@ -61,7 +61,7 @@ export const siraylaBirlestirme: TaskInstrument = {
   name: 'Sırayla Birleştirme Görevi',
   shortName: 'Sırayla birleştirme',
   domain: 'cognitive',
-  status: 'review',
+  status: 'pilot',
   licenseStatus: 'original',
   isFree: true,
   minGrade: 3,

@@ -278,10 +278,11 @@ describe('Tepki hızı: rapor', () => {
     expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
   }, 60_000);
 
-  it('uzman incelemesinde: bağlantıyla çözülür, listelerde ve site haritasında yok', () => {
+  it('pilot olarak yayında (site sahibinin 2026-10-07 kararı: hoca onayı beklenmeden): listelerde ve site haritasında; adında "tanı" yok', () => {
+    expect(tepkiHizi.status).toBe('pilot');
     expect(solvableInstruments().some((i) => i.slug === SLUG)).toBe(true);
-    expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(false);
-    expect(sitemap().some((u) => u.url.includes(`/testler/${SLUG}`))).toBe(false);
+    expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(true);
+    expect(sitemap().some((u) => u.url.endsWith(`/testler/${SLUG}`))).toBe(true);
     expect(tepkiHizi.name.toLocaleLowerCase('tr-TR')).not.toContain('tanı');
     expect(tepkiHizi.science.citations.every((c) => c.url?.startsWith('https://doi.org/'))).toBe(true);
   });

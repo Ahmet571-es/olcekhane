@@ -95,7 +95,7 @@ export const renkKelimeGorevi: TaskInstrument = {
   name: 'Renk-Kelime Görevi',
   shortName: 'Renk-kelime',
   domain: 'cognitive',
-  status: 'review',
+  status: 'pilot',
   licenseStatus: 'original',
   isFree: true,
   minGrade: 3,

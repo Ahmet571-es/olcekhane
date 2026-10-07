@@ -366,10 +366,13 @@ describe('Duygusal Zekâ Bileşenleri raporu', () => {
     expect(JSON.stringify(adult)).not.toContain('Çocuğunuz');
     expect(adult.chartNote).toContain('toplam bir puan yoktur');
     expect(adult.support).toBeNull();
-    // Yetişkine giden raporda okula ya da ergenliğe özgü sözcük yok (yetiskin.test.ts ile aynı liste).
+    // Yetişkine giden raporda okula ya da ergenliğe özgü sözcük yok (yetiskin.test.ts ile aynı liste). Gelişim yol
+    // haritasının yetişkin metinleri tests/roadmap.test.ts içinde ayrıca denetlenir: bağlantı adları rehber yazılarının
+    // adlarıdır ("Etkili ders çalışma yöntemleri").
     const school = ['okul', 'öğretmen', 'sınav', 'sınıf', 'ders', 'ödev', 'öğrenci', 'lise', 'ergen', 'veli', 'ailen', 'yaşıt', 'yaşında', 'yetişkinle', 'yetişkine', 'yetişkinden'];
     for (const level of ['high', 'low', 'mid'] as const) {
-      const r = evaluateAdult(SLUG, { grade: ADULT_GRADE, data: { engine: 'likert', answers: keyedAnswers(() => level) } }).adult;
+      const { roadmap, ...r } = evaluateAdult(SLUG, { grade: ADULT_GRADE, data: { engine: 'likert', answers: keyedAnswers(() => level) } }).adult;
+      expect(roadmap?.approach, level).toBeNull();
       const words = (JSON.stringify(r).toLocaleLowerCase('tr-TR').match(/\p{L}+/gu) ?? []).filter((w) => school.some((p) => w.startsWith(p)));
       expect(words, level).toEqual([]);
     }

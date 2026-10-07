@@ -19,6 +19,9 @@ istedi. Kararları:
   ticari olmayan kullanım" izinli ölçekler yine kullanılmaz). Kod herkese açık değildir.
 - Yaş grupları: 3. sınıftan yetişkine (İlkokul 3–4, Ortaokul, Lise ve mezun, Üniversite ve yetişkin).
 - Beyin derslerini testleri onaylayan hocamız okur.
+- **2026-10-07 kararı:** hoca onayı beklenmez; testler ve yol haritaları doğrudan yayına alınır (özgün testler
+  `pilot`). Site sahibi hocayla 2026-10-11'de buluşacak ve platformu bitmiş hâliyle sunacak; hoca yayındaki siteyi
+  inceleyip düzeltme isteyecek. Platformun o güne hazır olması gerekiyor.
 - Zekâ tarafı "Zekâ ve zihinsel beceriler" adıyla kurulur: telifli zekâ testleri kullanılmaz, IQ puanı verilmez;
   akıl yürütme, sözel, sayısal, uzamsal, bellek, dikkat ve hız ayrı ayrı ölçülür, sonuç güçlü yanlar haritasıdır.
 
@@ -26,9 +29,9 @@ Basamaklar:
 
 1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07). Hoca yetişkinlere de uygun 6 testi
    aynı gün onayladı; Üniversite ve yetişkin grubu açıldı.
-2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör, Ayrıntılı Kişilik ve Altı Boyutlu Kişilik'te yayında
-   (hoca onayı 2026-10-07; site sahibi beğendi). Duygusal Zekâ Bileşenleri ve Kişilerarası Tarz'da önizlemede. Sırada öteki testlerin yol haritaları: her biri önce önizlemede,
-   hoca onayıyla herkese açılır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
+2. **Rapor yenileme ("Gelişim Yol Haritası"):** Beş Faktör, Ayrıntılı Kişilik, Altı Boyutlu Kişilik, Duygusal Zekâ
+   Bileşenleri ve Kişilerarası Tarz'da yayında (ilk üçü hoca onaylı; son ikisi 2026-10-07 kararıyla onay beklenmeden).
+   Sırada öteki testlerin yol haritaları; doğrudan yayına alınır. İlk tasarım: önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
    testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
    yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
    derinlikli ve döndürülebilir; değerler her zaman düz yazıyla da okunur; PDF'te derinlikli resim. Öğrenci ve veli
@@ -46,13 +49,12 @@ Basamaklar:
 
 ## Sıradaki işler
 
-1. **Büyük planın 2. basamağı:** öteki testlerin gelişim yol haritaları. Beş Faktör, Ayrıntılı ve Altı Boyutlu
-   Kişilik yayında. Yeni yol haritası önizlemede (`?onizleme=yol-haritasi`) başlar, hoca onaylayınca
-   `ROADMAP_IN_REVIEW`'dan çıkarılır. Duygusal Zekâ Bileşenleri önizlemede, hocanın kararı bekleniyor (2. hafta
-   "Duygularına dikkat", iyi oluş haftası Üzücü olaylardan etkilenme yüksekken; şablonda `planningTitle` ve
-   `wellbeing.link`). Kişilerarası Tarz önizlemede, hocanın kararı bekleniyor (sekiz tarz çemberin sırasıyla; 2. hafta
-   "Birlikte çalışırken" = Öne çıkma; iyi oluş haftası yok). Sırada: Öz-saygı, Çalışma Alışkanlıkları; sonra ilgi
-   testleri ve zihinsel görevler (bunların bölümleri kişilik testlerinden farklı tasarlanır).
+1. **Büyük planın 2. basamağı (2026-10-11'deki hoca buluşmasına kadar):** öteki testlerin gelişim yol haritaları,
+   doğrudan yayına (2026-10-07 kararı). Yayında: Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik, Duygusal Zekâ
+   Bileşenleri (2. hafta "Duygularına dikkat", iyi oluş haftası Üzücü olaylardan etkilenme yüksekken; şablonda
+   `planningTitle` ve `wellbeing.link`), Kişilerarası Tarz (sekiz tarz çemberin sırasıyla; 2. hafta "Birlikte
+   çalışırken" = Öne çıkma; iyi oluş haftası yok). Sırada: Öz-saygı, Çalışma Alışkanlıkları; sonra ilgi testleri ve
+   zihinsel görevler (bunların bölümleri kişilik testlerinden farklı tasarlanır).
 2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
@@ -68,7 +70,7 @@ Basamaklar:
 ## Testler
 
 Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** listelerde ve arama motorlarında.
-**İncelemede:** yalnızca doğrudan bağlantıyla açılır, hocanın onayını bekler.
+**İncelemede:** yalnızca doğrudan bağlantıyla açılır (2026-10-07'den beri kullanılmıyor; şu an incelemede test yok).
 
 | Test | Adres | Durum |
 | --- | --- | --- |
@@ -82,40 +84,41 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Matematik Konu Tarama Testi | matematik-konu-tarama-testi | Yayında (pilot) |
 | Ayrıntılı Kişilik Profili | ayrintili-kisilik-profili | Yayında (active) |
 | Meslek İlgi Alanları | meslek-ilgi-alanlari | Yayında (active) |
-| Renk-Kelime Görevi | renk-kelime-gorevi | İncelemede (1. dalga) |
-| Dur-Git Görevi | dur-git-gorevi | İncelemede (1. dalga) |
-| Sırayla Birleştirme Görevi | sirayla-birlestirme-gorevi | İncelemede (1. dalga) |
+| Renk-Kelime Görevi | renk-kelime-gorevi | Yayında (pilot; hoca onayı beklenmeden) |
+| Dur-Git Görevi | dur-git-gorevi | Yayında (pilot; hoca onayı beklenmeden) |
+| Sırayla Birleştirme Görevi | sirayla-birlestirme-gorevi | Yayında (pilot; hoca onayı beklenmeden) |
 | Altı Boyutlu Kişilik Profili | alti-boyutlu-kisilik-profili | Yayında (active) |
 | Duygusal Zekâ Bileşenleri | duygusal-zeka-bilesenleri | Yayında (active) |
 | Kişilerarası Tarz | kisilerarasi-tarz | Yayında (active) |
 | Hobi ve Serbest Zaman İlgileri | hobi-ve-serbest-zaman-ilgileri | Yayında (active) |
-| Geriye Dönük Hatırlama | geriye-donuk-hatirlama | İncelemede (2. dalga) |
-| Zihinde Döndürme | zihinde-dondurme | İncelemede (2. dalga) |
-| Tepki Hızı | tepki-hizi | İncelemede (2. dalga) |
+| Geriye Dönük Hatırlama | geriye-donuk-hatirlama | Yayında (pilot; hoca onayı beklenmeden) |
+| Zihinde Döndürme | zihinde-dondurme | Yayında (pilot; hoca onayı beklenmeden) |
+| Tepki Hızı | tepki-hizi | Yayında (pilot; hoca onayı beklenmeden) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
 
 ## Hoca incelemesi
 
-Her incelemedeki test için Claude Docs'ta bir belge vardır; sonunda Onay tablosu bulunur. Hoca onaylayınca test
-`active` ya da `pilot` yapılır (CLAUDE.md, "Yeni test"). Yeni belgelerde en yenisi örnek alınır.
+Claude Docs'taki inceleme belgeleri (sonunda Onay tablosu). 2026-10-07 kararıyla onay beklenmeden yayına alınanlar
+hocanın 2026-10-11 buluşmasında incelenebilir; belgeleri hocaya site sahibi iletir. Yeni belge yalnızca site sahibi
+isterse hazırlanır (CLAUDE.md, "Yeni test"); en yenisi örnek alınır.
 
 | Belge | Testler | Durum |
 | --- | --- | --- |
 | [Ayrıntılı Kişilik Profili İncelemesi](https://claude.ai/artifact/6hgnALjSe966eXfd51gJQq) | Ayrıntılı Kişilik Profili | Onaylandı (2026-10-07), yayında |
 | [Meslek İlgi Alanları İncelemesi](https://claude.ai/artifact/C9wjSAB8DeA3CqP6XHSCQr) | Meslek İlgi Alanları | Onaylandı (2026-10-07), yayında |
-| [Zihinsel Görevler İncelemesi](https://claude.ai/artifact/NsQwxqSdN2JMQzc4Q14L3f) | Renk-Kelime Görevi, Dur-Git Görevi, Sırayla Birleştirme Görevi | Hocanın kararı bekleniyor |
+| [Zihinsel Görevler İncelemesi](https://claude.ai/artifact/NsQwxqSdN2JMQzc4Q14L3f) | Renk-Kelime Görevi, Dur-Git Görevi, Sırayla Birleştirme Görevi | Onay beklenmeden yayında (2026-10-07); hocanın görüşü bekleniyor |
 | [Altı Boyutlu Kişilik Profili İncelemesi](https://claude.ai/artifact/7CyxdkAJK6YeCGWJxyToJ1) | Altı Boyutlu Kişilik Profili | Onaylandı (2026-10-07), yayında |
 | [Duygusal Zekâ Bileşenleri İncelemesi](https://claude.ai/artifact/VRC7jJQhpMUPcmw9cHnSup) | Duygusal Zekâ Bileşenleri | Onaylandı (2026-10-07), yayında |
 | [Kişilerarası Tarz İncelemesi](https://claude.ai/artifact/KjJpTLotNssmP2X2vGrWM4) | Kişilerarası Tarz | Onaylandı (2026-10-07), yayında |
 | [Hobi ve Serbest Zaman İlgileri İncelemesi](https://claude.ai/artifact/Q3jafRsMG6HesnzBrw93VP) | Hobi ve Serbest Zaman İlgileri | Onaylandı (2026-10-07), yayında |
-| [Geriye Dönük Hatırlama İncelemesi](https://claude.ai/artifact/659BWzuYohtcK9QfCvZbEV) | Geriye Dönük Hatırlama | Site sahibinin hocayla paylaşması bekleniyor |
-| [Zihinde Döndürme İncelemesi](https://claude.ai/artifact/Aftf1twHWeuaLpfQLgwZRv) | Zihinde Döndürme | Site sahibinin hocayla paylaşması bekleniyor |
-| [Tepki Hızı İncelemesi](https://claude.ai/artifact/Nkt8WiGPtSfpvbppwmF1Hy) | Tepki Hızı | Site sahibinin hocayla paylaşması bekleniyor |
+| [Geriye Dönük Hatırlama İncelemesi](https://claude.ai/artifact/659BWzuYohtcK9QfCvZbEV) | Geriye Dönük Hatırlama | Onay beklenmeden yayında (2026-10-07); hocanın görüşü bekleniyor |
+| [Zihinde Döndürme İncelemesi](https://claude.ai/artifact/Aftf1twHWeuaLpfQLgwZRv) | Zihinde Döndürme | Onay beklenmeden yayında (2026-10-07); hocanın görüşü bekleniyor |
+| [Tepki Hızı İncelemesi](https://claude.ai/artifact/Nkt8WiGPtSfpvbppwmF1Hy) | Tepki Hızı | Onay beklenmeden yayında (2026-10-07); hocanın görüşü bekleniyor |
 | [Beş Faktör Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/HaGkWkUNY9q6jJasEDk8gt) | Beş Faktör Kişilik Profili (yol haritası) | Onaylandı (2026-10-07), yayında |
 | [Ayrıntılı ve Altı Boyutlu Kişilik Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/UwsHRuzXgxSWkf6qrbZUWC) | Ayrıntılı Kişilik Profili, Altı Boyutlu Kişilik Profili (yol haritası) | Onaylandı (2026-10-07), yayında |
-| [Duygusal Zekâ Bileşenleri Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/QWByT2popLrQ6t1fd3C3nd) | Duygusal Zekâ Bileşenleri (yol haritası) | Site sahibinin hocayla paylaşması bekleniyor |
-| [Kişilerarası Tarz Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/KbBPXJx5AB8o9cPifJXo8k) | Kişilerarası Tarz (yol haritası) | Site sahibinin hocayla paylaşması bekleniyor |
+| [Duygusal Zekâ Bileşenleri Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/QWByT2popLrQ6t1fd3C3nd) | Duygusal Zekâ Bileşenleri (yol haritası) | Onay beklenmeden yayında (2026-10-07); hocanın görüşü bekleniyor |
+| [Kişilerarası Tarz Gelişim Yol Haritası İncelemesi](https://claude.ai/artifact/KbBPXJx5AB8o9cPifJXo8k) | Kişilerarası Tarz (yol haritası) | Onay beklenmeden yayında (2026-10-07); hocanın görüşü bekleniyor |
 
 ## Rehber yazıları
 
@@ -190,9 +193,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
-- **Hoca belgeleri:** Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı, Duygusal Zekâ Bileşenleri Gelişim Yol
-  Haritası ve Kişilerarası Tarz Gelişim Yol Haritası incelemelerinin hocaya iletilmesi;
-  hocanın kararları (Renk-Kelime, Dur-Git, Sırayla Birleştirme dahil zihinsel görevlerin hepsi kararı bekliyor).
+- **Hoca buluşması (2026-10-11):** platform bitmiş hâliyle sunulacak; hocanın düzeltme istekleri gelince yapılır.
+  İsterse hazır inceleme belgeleri (Hoca incelemesi tablosu) hocaya iletilebilir.
 - **Açık soru:** Katalogda Türkçe Konu Tarama Testi "Hazırlanıyor" diye görünüyor, oysa 4. dalgada. İlgili bir iş
   gelince etiketin kalıp kalmayacağı site sahibine sorulur.
 
@@ -200,6 +202,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Site sahibinin kararıyla hoca onayı beklenmeden yayına alındı: Renk-Kelime, Dur-Git, Sırayla
+  Birleştirme, Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı (pilot) ile Duygusal Zekâ Bileşenleri ve
+  Kişilerarası Tarz yol haritaları. Çalışma kuralları buna göre güncellendi (CLAUDE.md).
 - 2026-10-07: Kişilerarası Tarz gelişim yol haritası önizlemede (sekiz tarz; öğrenci, veli ve yetişkin raporu;
   ekranda ve PDF'te); hoca belgesi hazır. Üç boyutlu grafikte üst üste binen puan yazıları ayrılıyor; telefonda uzun
   boyut adlarında puan adın hemen ardından geliyor.
@@ -227,4 +232,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-06: Yeni sohbetlerin aynı düzende çalışması için çalışma döngüsü (CLAUDE.md), bu dosya, yardımcı araçlar
   (`araclar/`), rehber yazıları ve yayın denetimi testleri; yayın denetimi artık site haritasındaki bütün sayfaları
   internetten açıyor.
-- 2026-10-01: Tepki Hızı uzman incelemesinde; hoca belgesi hazır.

@@ -231,20 +231,21 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     }
   });
 
-  it('Duygusal Zekâ Bileşenleri: uzman incelemesinde, yalnızca önizleme isteğinde; yetişkine de hazırlanır', () => {
+  it('Duygusal Zekâ Bileşenleri: yayında (hoca onayı beklenmeden); yetişkine de hazırlanır', () => {
     const slug = 'duygusal-zeka-bilesenleri';
-    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(true);
-    expect(hasPublicRoadmap(slug)).toBe(false);
+    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(false);
+    expect(hasPublicRoadmap(slug)).toBe(true);
     const b = likertBody(slug, 10, (i) => (i * 7) % 5);
-    expect(evaluate(slug, b).student.roadmap).toBeUndefined();
-    const r = evaluate(slug, { ...b, roadmapPreview: true });
-    expect(r.student.roadmap?.preview).toBe(true);
+    const now = new Date('2026-10-07T10:00:00Z');
+    const r = evaluate(slug, b, now);
+    expect(evaluate(slug, { ...b, roadmapPreview: true }, now)).toEqual(r);
+    expect(r.student.roadmap?.preview).toBe(false);
     expect(r.student.roadmap?.bars).toHaveLength(7);
     expect(r.student.roadmap?.weeks[1].title).toBe('Duygularına dikkat');
     expect(r.parent.roadmap?.approach?.items).toHaveLength(7);
     // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
     expect(r.student.roadmap?.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
-    const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE, roadmapPreview: true }).adult.roadmap!;
+    const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;
     expect(adult.settings.title).toBe('İş ve meslek planı için');
     expect(adult.approach).toBeNull();
     for (const x of texts(adult)) expect(x).not.toMatch(SCHOOL);
@@ -254,20 +255,21 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     const answers = Object.fromEntries(
       d.items.map((it) => [it.key, { value: it.scale !== 'responsive_distress' ? 3 : it.reverse ? 1 : 5, rtMs: 2600 }]),
     );
-    const high = evaluate(slug, { grade: 10, data: { engine: 'likert', answers }, roadmapPreview: true }).student.roadmap!;
+    const high = evaluate(slug, { grade: 10, data: { engine: 'likert', answers } }).student.roadmap!;
     expect(high.weeks[2].title).toBe('Üzücü olaylardan etkilenme');
     expect(high.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri']);
   });
 
-  it('Kişilerarası Tarz: uzman incelemesinde, yalnızca önizleme isteğinde; çemberin sırasıyla, yetişkine de hazırlanır', () => {
+  it('Kişilerarası Tarz: yayında (hoca onayı beklenmeden); çemberin sırasıyla, yetişkine de hazırlanır', () => {
     const slug = 'kisilerarasi-tarz';
-    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(true);
-    expect(hasPublicRoadmap(slug)).toBe(false);
+    expect(ROADMAP_IN_REVIEW.has(slug)).toBe(false);
+    expect(hasPublicRoadmap(slug)).toBe(true);
     const b = likertBody(slug, 10, (i) => (i * 7) % 5);
-    expect(evaluate(slug, b).student.roadmap).toBeUndefined();
-    const r = evaluate(slug, { ...b, roadmapPreview: true });
+    const now = new Date('2026-10-07T10:00:00Z');
+    const r = evaluate(slug, b, now);
+    expect(evaluate(slug, { ...b, roadmapPreview: true }, now)).toEqual(r);
     const rm = r.student.roadmap!;
-    expect(rm.preview).toBe(true);
+    expect(rm.preview).toBe(false);
     // Sütunlar çemberdeki sırayla (üstten saat yönünde) dizilir; her tarzın kendi rengi vardır.
     expect(rm.bars.map((x) => x.key)).toEqual(def<LikertInstrument>(slug).scales.map((s) => s.key));
     expect(new Set(rm.bars.map((x) => x.color)).size).toBe(8);
@@ -277,7 +279,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(r.parent.roadmap?.approach?.items).toHaveLength(8);
     // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
     expect(rm.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
-    const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE, roadmapPreview: true }).adult.roadmap!;
+    const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;
     expect(adult.settings.title).toBe('İş ve meslek planı için');
     expect(adult.approach).toBeNull();
     for (const x of texts(adult)) expect(x).not.toMatch(SCHOOL);

@@ -79,7 +79,7 @@ export const tepkiHizi: TaskInstrument = {
   name: 'Tepki Hızı',
   shortName: 'Tepki hızı',
   domain: 'cognitive',
-  status: 'review',
+  status: 'pilot',
   licenseStatus: 'original',
   isFree: true,
   minGrade: 3,

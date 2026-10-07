@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { publicInstruments, solvableInstruments } from '@/content/instruments';
+import { INSTRUMENTS, publicInstruments, solvableInstruments } from '@/content/instruments';
 import { durGitGorevi } from '@/content/instruments/dur-git';
 import { renkKelimeGorevi } from '@/content/instruments/renk-kelime';
 import { siraylaBirlestirme } from '@/content/instruments/sirayla-birlestirme';
@@ -430,11 +430,12 @@ describe('Görev raporları', () => {
     }
   }, 60_000);
 
-  it('uzman incelemesinde: bağlantıyla çözülür, listelerde ve site haritasında yok', () => {
+  it('pilot olarak yayında (site sahibinin 2026-10-07 kararı: hoca onayı beklenmeden): listelerde ve site haritasında', () => {
     for (const slug of SLUGS) {
+      expect(INSTRUMENTS.find((i) => i.slug === slug)?.status, slug).toBe('pilot');
       expect(solvableInstruments().some((i) => i.slug === slug), slug).toBe(true);
-      expect(publicInstruments().some((i) => i.slug === slug), slug).toBe(false);
-      expect(sitemap().some((u) => u.url.includes(`/testler/${slug}`)), slug).toBe(false);
+      expect(publicInstruments().some((i) => i.slug === slug), slug).toBe(true);
+      expect(sitemap().some((u) => u.url.endsWith(`/testler/${slug}`)), slug).toBe(true);
     }
   });
 });

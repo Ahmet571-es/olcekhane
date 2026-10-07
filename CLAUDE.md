@@ -57,10 +57,12 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   görüntüsü) → **Yayın** (sunucuya kurulum; ardından site dışarıdan sınanır: sayfalar, site haritasındaki bütün
   sayfalar, test raporları, PDF ve robots.txt). Sunucu ya da yayın dosyaları değişince **Kurulum provası** da
   çalışır.
-- Yeni bir test önce `status: 'review'` (uzman incelemesinde) olarak yayına alınır: yalnızca doğrudan
-  bağlantıyla açılır, listelerde ve site haritasında yoktur, arama motorlarına kapalıdır. Hoca onaylayınca
-  `active` (kaynağı doğrulanmış ölçek) ya da `pilot` (özgün test) yapılır. Test adlarında "tanı" sözcüğü kullanılmaz;
-  bir testin adresi değişirse eski adres `next.config.ts` içinde kalıcı olarak yönlendirilir.
+- Site sahibinin 2026-10-07 kararı: yeni testler ve yol haritaları hoca onayı beklenmeden doğrudan yayına alınır:
+  `pilot` (özgün test; sitede güvenirlik kanıtının henüz olmadığı yazar) ya da `active` (kaynağı doğrulanmış ölçek).
+  Hoca yayındaki siteyi inceler; istediği düzeltmeler yapılıp yayına alınır. `status: 'review'` (yalnızca doğrudan
+  bağlantıyla açılır, listelerde ve site haritasında yoktur, arama motorlarına kapalıdır) yalnızca site sahibi
+  isterse kullanılır. Test adlarında "tanı" sözcüğü kullanılmaz; bir testin adresi değişirse eski adres
+  `next.config.ts` içinde kalıcı olarak yönlendirilir.
 - Çalışmaların sonucu GitHub API'den özet uyarılarıyla (check-run annotations) okunur
   (`araclar/yayin-durumu.py`); çalışma kayıtları bu ortamdan indirilemez. `workflow_dispatch` bu ortamdan
   tetiklenemez: yeniden yayın için `main`'e bir işleme gönderilir. Site bu ortamdan açılamaz (vekil sunucu
@@ -73,7 +75,7 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 
 - Örnek işlemeler: görev testi için `git show --stat 4610314` (Tepki Hızı), madde (anket) testi için
   `git show --stat 398d368 0711cf0` (Kişilerarası Tarz).
-- Her testte: `src/content/instruments/<ad>.ts` (`status: 'review'`) ve `src/content/instruments/index.ts` kaydı,
+- Her testte: `src/content/instruments/<ad>.ts` (`status: 'pilot'` ya da `'active'`) ve `src/content/instruments/index.ts` kaydı,
   `src/content/reports/index.ts`, test sayfasının tanıtımı (`src/app/(site)/testler/[slug]/page.tsx`),
   `tests/<ad>.test.ts`.
 - Görev testinde ayrıca: `src/lib/instruments/types.ts` ve `src/lib/instruments/<görev>.ts`,
@@ -86,18 +88,18 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   yetişkinlere de açıksa (`adults: true`) `tests/yetiskin.test.ts`.
 - Rapordaki kartlar, uyarılar ve kalite notları birbiriyle çelişmez: bütün durum birleşimleri `tests/<ad>.test.ts`
   içinde bir döngüyle tek tek denenir. Test telefon ve masaüstünde baştan sona çözülür; rapor ve PDF açılır.
-- `.github/workflows/yayin.yml`: yeni adres `ONIZLEME`'ye, örnek cevaplarla bir rapor denetimi dış sınamaya
-  eklenir (`tests/yayin.test.ts` ONIZLEME'yi denetler). O adıma yeni `::notice` satırı eklenmez: GitHub adım başına
+- `.github/workflows/yayin.yml`: örnek cevaplarla bir rapor denetimi dış sınamaya eklenir; incelemede tutulan
+  (`review`) testlerin adresleri `ONIZLEME`'dedir (`tests/yayin.test.ts` denetler). O adıma yeni `::notice` satırı eklenmez: GitHub adım başına
   10 not gösterir ve sondaki "Site dışarıdan sınandı" notu kaybolur. yayin.yml değişince Kurulum provası da çalışır.
-- Hoca için Claude Docs'ta "<Test adı> İncelemesi" belgesi hazırlanır (bağlantılar DURUM.md'de; en yenisi örnek):
+- Hoca için ayrı bir inceleme belgesi yalnızca site sahibi isterse hazırlanır (2026-10-07 kararı; hoca yayındaki
+  siteyi inceler). İstenirse Claude Docs'ta "<Test adı> İncelemesi" (bağlantılar DURUM.md'de; en yenisi örnek):
   inceleme adımları ve testin bağlantısı, görevin ya da maddelerin düzeni, yönergeler, puanlama, öğrenci ve veli
   rapor metinleri (bütün durumlar), bilim kartı, hocaya sorular, en sonda Onay tablosu (Kısım | Karar | Not; Karar
   sütunu açılır listedir: Onaylıyorum / Düzeltmeyle onaylıyorum / Onaylamıyorum). Belgedeki metinler sitedekilerle
   karşılaştırılarak birebir aynı olduğu doğrulanır. Claude Docs araçları yoksa site sahibine söylenir. Belgeyi
   hocaya site sahibi iletir; Claude paylaşmaz.
-- Hocanın kararı gelince: "Onaylıyorum" → `status` `active` ya da `pilot` olur, adres `ONIZLEME`'den çıkar.
-  "Düzeltmeyle onaylıyorum" → düzeltmeler yapılır, belge güncellenir, sonra aynı şekilde yayına alınır.
-  "Onaylamıyorum" → test incelemede kalır; ne yapılacağı site sahibine sorulur. Her durumda `DURUM.md` güncellenir.
+- Hocanın düzeltme istekleri gelince düzeltmeler yapılır ve yayına alınır; bir testin ya da metnin yayından
+  kaldırılması istenirse ne yapılacağı site sahibine sorulur. Her durumda `DURUM.md` güncellenir.
 
 ## Rehber yazısı
 
@@ -152,9 +154,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   (veliye) yaklaşım önerileri, dört haftalık küçük adımlar, kaynaklar. Metinler `src/content/roadmaps/<ad>.ts`
   (kayıt `index.ts`), kurulum `src/lib/reports/roadmap.ts`, ekran `components/test/roadmap-view.tsx`, PDF
   `lib/pdf/simple-report.tsx`; `tests/roadmap.test.ts` bütün düzey birleşimlerini dener.
-- Yeni yol haritası önce `ROADMAP_IN_REVIEW`'a konur: yalnızca `/testler/<adres>/coz?onizleme=yol-haritasi`
-  bağlantısıyla görünür. Hoca için "<Test adı> Gelişim Yol Haritası İncelemesi" belgesi hazırlanır (metinler içerik
-  dosyasından üretilip belgeyle karşılaştırılır). Onaylanınca adres `ROADMAP_IN_REVIEW`'dan çıkarılır.
+- Yeni yol haritası doğrudan yayına alınır (2026-10-07 kararı). Site sahibi isterse önce `ROADMAP_IN_REVIEW`'a
+  konur: yalnızca `/testler/<adres>/coz?onizleme=yol-haritasi` bağlantısıyla görünür. Hoca belgesi istenirse
+  "<Test adı> Gelişim Yol Haritası İncelemesi" hazırlanır (metinler içerik dosyasından üretilip belgeyle
+  karşılaştırılır).
 - Etkili çalışma yöntemleri herkes için aynı anlatılır; kişiliğe göre "öğrenme stili" eşleştirmesi vaat edilmez.
   Ortamlar meslek önerisi değildir; meslek için ilgi testlerine yönlendirilir.
 
