@@ -12,9 +12,10 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
 
 /**
  * Uzman incelemesindeki yol haritaları: yalnızca önizleme bağlantısıyla (`/testler/<adres>/coz?onizleme=yol-haritasi`)
- * gösterilir; herkese açık raporda yer almaz. Hoca onaylayınca test buradan çıkarılır (Beş Faktör: 2026-10-07).
+ * gösterilir; herkese açık raporda yer almaz. Hoca onaylayınca test buradan çıkarılır (Beş Faktör, Ayrıntılı Kişilik ve
+ * Altı Boyutlu Kişilik: 2026-10-07).
  */
-export const ROADMAP_IN_REVIEW = new Set<string>(['ayrintili-kisilik-profili', 'alti-boyutlu-kisilik-profili']);
+export const ROADMAP_IN_REVIEW = new Set<string>([]);
 
 /** Çözme sayfasının adresindeki önizleme seçimi (`?onizleme=`). */
 export const ROADMAP_PREVIEW_PARAM = 'yol-haritasi';

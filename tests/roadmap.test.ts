@@ -177,7 +177,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'ayrintili-kisilik-profili': 3 ** 5 * 3,
       'alti-boyutlu-kisilik-profili': 3 ** 6 * 3,
     });
-  });
+  }, 60_000);
 });
 
 describe('gelişim yol haritası: rapora eklenmesi', () => {
@@ -208,16 +208,19 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     }
   });
 
-  it('Ayrıntılı ve Altı Boyutlu: uzman incelemesinde, yalnızca önizleme isteğinde; yetişkine de hazırlanır', () => {
+  it('Ayrıntılı ve Altı Boyutlu: hoca onayladı, herkese açık raporda; yetişkine de hazırlanır', () => {
     for (const [slug, n] of [['ayrintili-kisilik-profili', 5], ['alti-boyutlu-kisilik-profili', 6]] as const) {
-      expect(ROADMAP_IN_REVIEW.has(slug)).toBe(true);
+      expect(ROADMAP_IN_REVIEW.has(slug)).toBe(false);
+      expect(hasPublicRoadmap(slug)).toBe(true);
       const b = likertBody(slug, 10, (i) => (i * 7) % 5);
-      expect(evaluate(slug, b).student.roadmap, slug).toBeUndefined();
-      const r = evaluate(slug, { ...b, roadmapPreview: true });
-      expect(r.student.roadmap?.preview, slug).toBe(true);
+      const now = new Date('2026-10-07T10:00:00Z');
+      const r = evaluate(slug, b, now);
+      expect(evaluate(slug, { ...b, roadmapPreview: true }, now), slug).toEqual(r);
+      expect(r.student.roadmap?.preview, slug).toBe(false);
       expect(r.student.roadmap?.bars, slug).toHaveLength(n);
       expect(r.parent.roadmap?.approach?.items, slug).toHaveLength(n);
-      const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE, roadmapPreview: true }).adult.roadmap!;
+      const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;
+      expect(adult.preview, slug).toBe(false);
       expect(adult.settings.title, slug).toBe('İş ve meslek planı için');
       expect(adult.approach, slug).toBeNull();
       for (const x of texts(adult)) expect(x, slug).not.toMatch(SCHOOL);

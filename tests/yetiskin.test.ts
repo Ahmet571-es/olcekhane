@@ -20,6 +20,16 @@ function reportText(r: SimpleReport): string {
   return JSON.stringify(r);
 }
 
+/**
+ * Gelişim yol haritası dışındaki rapor metni. Yol haritasının yetişkin metinleri `tests/roadmap.test.ts` içinde ayrıca
+ * denetlenir: orada "önemli bir sınav ya da sunum" bilerek geçer ve bağlantı adları rehber yazılarının adlarıdır.
+ */
+function reportTextWithoutRoadmap(r: SimpleReport): string {
+  const { roadmap, ...rest } = r;
+  void roadmap;
+  return JSON.stringify(rest);
+}
+
 /** Her maddeye aynı cevabı veren gövde (yetişkin olarak). */
 function adultBody(slug: string, pick: (i: number) => number) {
   return { ...likertBody(slug, 10, pick), grade: ADULT_GRADE };
@@ -90,7 +100,8 @@ describe('yetişkinler', () => {
     expect(r.adult.gradeLabel).toBe('Yetişkin');
     expect(r.adult.groups?.map((g) => g.facets.length)).toEqual([6, 6, 6, 6, 5]);
     expect(reportText(r.adult)).not.toContain('Çocuğunuz');
-    expect(schoolWords(reportText(r.adult))).toEqual([]);
+    expect(schoolWords(reportTextWithoutRoadmap(r.adult))).toEqual([]);
+    expect(r.adult.roadmap?.approach).toBeNull();
     expect(r.adult.disclaimer.text).toContain('iş ve kariyer');
   });
 
@@ -115,7 +126,7 @@ describe('yetişkinler', () => {
     expect(adult.support?.title).toBe('Destek almak istersen');
     expect(adult.support?.lines.join(' ')).toContain('Aile hekimine');
     expect(adult.support?.lines.join(' ')).toContain('112');
-    expect(schoolWords(reportText(adult))).toEqual([]);
+    expect(schoolWords(reportTextWithoutRoadmap(adult))).toEqual([]);
   });
 
   it('meslek ilgi alanları: yetişkin raporunda okul etkinlikleri yerine yetişkinlere uygun örnekler', () => {
