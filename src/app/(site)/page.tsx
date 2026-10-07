@@ -2,11 +2,14 @@ import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import { JsonLd } from '@/components/seo/json-ld';
 import { CountUp } from '@/components/site/count-up';
+import { GroupPicker } from '@/components/site/group-picker';
 import { Marquee } from '@/components/site/marquee';
 import { MeasureStory } from '@/components/site/measure-story';
+import { PageGuide } from '@/components/site/page-guide';
 import { ReportPreview } from '@/components/site/report-preview';
 import { TestCards } from '@/components/site/test-cards';
 import { PersonaHero } from '@/components/persona/persona-hero';
+import { liveGroups } from '@/content/age-groups';
 import { publicInstruments } from '@/content/instruments';
 import { GUIDE_CATEGORIES, guideBySlug } from '@/content/rehber';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, siteUrl } from '@/lib/config';
@@ -44,6 +47,9 @@ const FEATURED_GUIDES = ['sinav-kaygisi', 'etkili-ders-calisma-yontemleri', 'kis
   .filter((g) => g !== undefined);
 
 const LIVE = publicInstruments();
+const GROUP_NAMES = liveGroups()
+  .map(({ group }) => group.name)
+  .join(', ');
 const SHORTEST = Math.min(...LIVE.map((t) => t.estimatedMinutes));
 const LONGEST = Math.max(...LIVE.map((t) => t.estimatedMinutes));
 
@@ -62,7 +68,7 @@ const FAQ = [
   },
   {
     q: 'Hangi yaşlar için uygun?',
-    a: 'Testlerin çoğu ortaokul ve lise öğrencileri içindir; okuma görevi ve harf işaretleme görevi 3. sınıftan itibaren uygulanabilir. Her testin uygun olduğu sınıf aralığı test sayfasında yazıyor; teste başlarken yalnızca bu aralıktaki sınıflar seçilebilir.',
+    a: `Testler 3. sınıftan itibaren uygulanabilir. Ana sayfanın başında ya da Testler sayfasında grubunuzu (${GROUP_NAMES}) seçerseniz o gruba uygun testler bölüm bölüm listelenir. Her testin uygun olduğu sınıf aralığı test sayfasında da yazıyor; teste başlarken yalnızca bu aralıktaki sınıflar seçilebilir.`,
   },
   {
     q: 'Bir test ne kadar sürüyor?',
@@ -85,7 +91,7 @@ const FAQ = [
 const STEPS = [
   {
     t: 'Testi seçin',
-    d: 'Her testin neyi ölçtüğü, ne kadar sürdüğü ve hangi sınıflara uygun olduğu test sayfasında yazıyor.',
+    d: 'Önce grubunuzu seçin; size uygun testler bölüm bölüm açılır. Her testin neyi ölçtüğü ve ne kadar sürdüğü test sayfasında yazıyor.',
   },
   {
     t: 'Sınıfı işaretleyip çözün',
@@ -186,6 +192,35 @@ export default function Home() {
         <div className="container-page relative pb-16 pt-4 sm:pt-8 md:pb-24 md:pt-12">
           <PersonaHero intro={<HeroIntro />} />
         </div>
+      </section>
+
+      {/* Nereden başlamalı: önce grup seçilir */}
+      <section className="container-page pb-20 md:pb-28" aria-labelledby="baslangic-baslik">
+        <div className="mb-8 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end" data-reveal>
+          <div>
+            <p className="kicker">Nereden başlamalı?</p>
+            <h2 id="baslangic-baslik" className="t-section mt-3">
+              Önce sınıfını seç.
+            </h2>
+          </div>
+          <p className="t-lede">Sana uygun testleri bölüm bölüm gösterelim. Veliyseniz çocuğunuzun sınıfını seçin.</p>
+        </div>
+        <GroupPicker />
+        <PageGuide
+          title="Bu sitede neler var?"
+          className="mt-8"
+          next={[
+            { href: '/testler', label: 'Bütün testler' },
+            { href: '/veliler-icin', label: 'Veliler için' },
+            { href: '/rehber', label: 'Rehber' },
+          ]}
+        >
+          <p>
+            <strong>Testler:</strong> kişilik, zekâ ve zihinsel beceriler, okuma ve dersler, ilgi ve meslek. <strong>Rehber:</strong>{' '}
+            öğrenciler ve veliler için bilimsel kaynaklara dayanan yazılar. <strong>Veliler için:</strong> raporu çocuğunuzla nasıl
+            okuyacağınız ve ne zaman bir uzmana başvuracağınız.
+          </p>
+        </PageGuide>
       </section>
 
       <Marquee />

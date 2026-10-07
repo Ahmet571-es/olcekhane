@@ -3,6 +3,7 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { PageHeader, Section } from '@/components/site/page-header';
 import { ReliabilityDemo } from '@/components/site/reliability-demo';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const metadata = pageMeta({
   title: 'Bilimsel yaklaşımımız: hangi testleri neden kullanıyoruz',
@@ -111,7 +112,14 @@ export default function SciencePage() {
       <PageHeader
         title="Bilimsel yaklaşımımız"
         lede="Bir test, arkasındaki kanıt kadar güvenilirdir. Hangi araçları neden seçtiğimizi, neleri bilerek kullanmadığımızı ve sonuçları nasıl yorumladığımızı burada açıkça anlatıyoruz."
-      />
+      >
+        <PageGuide next={[{ href: '/testler', label: 'Testlere göz at' }, { href: '/rehber/kisilik-testleri-guvenilir-mi', label: 'Testler güvenilir mi?' }]}>
+          <p>
+            Bu sayfada testlerimizin hangi kaynaklara dayandığını, neyi ölçüp neyi ölçmediğini ve sonuçların nasıl yorumlanacağını
+            okuyabilirsiniz. Her testin kendi bilimsel dayanağı, test sayfasındaki bilim kartında ayrıca yazar.
+          </p>
+        </PageGuide>
+      </PageHeader>
 
       <Section id="olcutler" title="Bir testi hangi ölçütlerle seçiyoruz?">
         <dl className="flex flex-col gap-7">

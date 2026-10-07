@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { getInstrumentDef, isSolvable, publicInstruments } from '@/content/instruments';
 import { JsonLd } from '@/components/seo/json-ld';
 import { GuideList } from '@/components/site/guide-list';
+import { PageGuide } from '@/components/site/page-guide';
 import { guidesForTest } from '@/content/rehber';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
 import { domainColor } from '@/lib/domain-style';
@@ -145,6 +146,19 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           ))}
         </dl>
       </header>
+
+      <PageGuide
+        className="mt-10"
+        steps={[
+          `“${def.isFree ? 'Ücretsiz çöz' : 'Testi çöz'}” düğmesine basın.`,
+          def.adults ? 'Testi kimin çözdüğünü seçin: sınıf ya da “Yetişkinim”.' : 'Testi çözecek öğrencinin sınıfını seçin.',
+          `Testi tek seferde bitirin; yaklaşık ${def.estimatedMinutes} dakika sürer.`,
+          'Raporu ekranda okuyun ve PDF olarak indirin.',
+        ]}
+        next={[{ href: solveUrl, label: 'Teste başla' }]}
+      >
+        <p>Bu sayfada testin neyi ölçtüğünü, raporda neler bulacağınızı ve bilimsel dayanağını okuyabilirsiniz. Testi çözmek dört adımdır:</p>
+      </PageGuide>
 
       <section className="grid gap-10 py-14 lg:grid-cols-[1fr_1.6fr]" aria-labelledby="olcer">
         <h2 id="olcer" className="t-h2">

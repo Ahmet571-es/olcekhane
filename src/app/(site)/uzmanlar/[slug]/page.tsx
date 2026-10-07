@@ -6,6 +6,7 @@ import { EXPERTS, expertBySlug } from '@/content/experts';
 import { guidesByExpert } from '@/content/rehber';
 import { siteUrl } from '@/lib/config';
 import { pageMeta } from '@/lib/seo';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const dynamicParams = false;
 
@@ -48,6 +49,9 @@ export default async function ExpertPage(props: PageProps<'/uzmanlar/[slug]'>) {
         <h1 className="t-h1">{e.fullName}</h1>
         <p className="t-lede">{e.title}</p>
         <p className="t-meta">{e.role}</p>
+        <PageGuide next={[{ href: '/uzmanlar', label: 'Bütün uzmanlar' }, { href: '/rehber', label: 'Rehber yazıları' }]}>
+          <p>Bu sayfada uzmanımızın özgeçmişini, yazdığı ve incelediği yazıları bulabilirsiniz.</p>
+        </PageGuide>
       </header>
       <div className="grid gap-12 pt-10 lg:grid-cols-[1.6fr_1fr]">
         <div className="prose-olc">

@@ -1,7 +1,9 @@
+import { GroupPicker } from '@/components/site/group-picker';
 import { PageHeader } from '@/components/site/page-header';
 import { TestCards } from '@/components/site/test-cards';
 import { TestShelf } from '@/components/site/test-shelf';
 import { pageMeta } from '@/lib/seo';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const metadata = pageMeta({
   title: 'Testler: kişilik, ilgi, okuma ve öğrenme testleri',
@@ -21,6 +23,15 @@ export default function TestsPage() {
         <p className="measure text-ink-2">
           Bütün testler ücretsiz ve hesap açmadan çözülür. Cevaplar saklanmaz; rapor ekranda gösterilir ve PDF olarak size verilir.
         </p>
+        <PageGuide>
+          <p>
+            Burada sitedeki bütün testler var. <strong>En kolay yol:</strong> önce grubunuzu seçin; size uygun testler bölüm bölüm açılır.
+          </p>
+          <GroupPicker compact />
+          <p className="t-small text-ink-2">
+            Ya da aşağıdan alan, sınıf ve süreye göre süzün. Testin adına basınca neyi ölçtüğünü okursunuz; “Çöz” düğmesi testi başlatır.
+          </p>
+        </PageGuide>
       </PageHeader>
 
       <section className="container-page py-14 md:py-20" aria-labelledby="yayindakiler">

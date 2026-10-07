@@ -11,7 +11,7 @@ import { createPortal } from 'react-dom';
  * (backdrop-filter) sabit konumlu içeriği kendi kutusuna hapsettiği için menü orada görünmezdi.
  * Menü açıkken sayfanın geri kalanı klavye ve ekran okuyucu için devre dışı kalır (inert).
  */
-export function MobileNav({ items }: { items: { href: string; label: string }[] }) {
+export function MobileNav({ items, groups = [] }: { items: { href: string; label: string }[]; groups?: { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [lastPath, setLastPath] = useState(pathname);
@@ -86,6 +86,24 @@ export function MobileNav({ items }: { items: { href: string; label: string }[] 
                   </li>
                 ))}
               </ul>
+              {groups.length > 0 && (
+                <div className="mobil-menu-oge flex flex-col gap-3" style={{ '--sira': all.length } as CSSProperties}>
+                  <p className="kicker">Sınıfına göre testler</p>
+                  <ul className="flex flex-wrap gap-2">
+                    {groups.map((g) => (
+                      <li key={g.href}>
+                        <Link
+                          href={g.href}
+                          aria-current={pathname === g.href ? 'page' : undefined}
+                          className="inline-flex min-h-11 items-center rounded-full border-[1.5px] border-rule-strong px-4 font-bold no-underline aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-paper"
+                        >
+                          {g.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <Link href="/testler" className="btn btn-primary btn-lg btn-tayf self-start">
                 Ücretsiz test çöz
               </Link>

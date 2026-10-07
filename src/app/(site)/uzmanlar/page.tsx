@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/site/page-header';
 import { EXPERTS } from '@/content/experts';
 import { pageMeta } from '@/lib/seo';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const metadata = pageMeta({
   title: 'Uzman kadromuz',
@@ -17,7 +18,11 @@ export default function ExpertsPage() {
       <PageHeader
         title="Uzman kadromuz"
         lede="Testlerin seçimi, Türkçe uyarlamaları ve rehber yazıları alanında uzman kişiler tarafından incelenir."
-      />
+      >
+        <PageGuide next={[{ href: '/rehber', label: 'Rehber yazıları' }]}>
+          <p>Bu sayfada testleri ve yazıları inceleyen uzmanlarımızı görebilirsiniz. Bir uzmanın adına basınca özgeçmişini ve yazılarını okursunuz.</p>
+        </PageGuide>
+      </PageHeader>
       <div className="container-page py-14">
         <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {EXPERTS.map((e) => (

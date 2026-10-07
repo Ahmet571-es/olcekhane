@@ -157,7 +157,7 @@ export const dikkatBellek: TaskInstrument = {
   maxGrade: 13,
   estimatedMinutes: 15,
   sortOrder: 50,
-  tagline: 'Beş kısa görevle çalışma belleğini, seçici dikkati ve işlem hızını ölçer. Bir zekâ testi değildir.',
+  tagline: 'Beş kısa görevle çalışma belleğini, seçici dikkati ve işlem hızını ölçer; zekâ puanı vermez.',
   description:
     'Bu görevler, bilişsel psikolojide onlarca yıldır kullanılan deney düzenlerine dayanır: sayı ve kutu dizilerini akılda tutmak, dikkat dağıtan uyaranlara rağmen doğru cevabı vermek ve basit bir işi hızlı yapmak. Görevler oyun gibi hissettirir ve yaklaşık 15 dakika sürer; görevler arasında dinlenilebilir. Rapor, her görevde ne yapıldığını sade bir dille anlatır; bir zekâ puanı vermez, tanı koymaz.',
   intro: {

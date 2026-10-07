@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { PageHeader, Section } from '@/components/site/page-header';
 import { pageMeta } from '@/lib/seo';
+import { GroupPicker } from '@/components/site/group-picker';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const metadata = pageMeta({
   title: 'Veliler için: çocuğunuzu bilimsel testlerle tanıyın',
@@ -44,9 +46,22 @@ export default function ParentsPage() {
         title="Veliler için"
         lede="Çocuğunuzu en iyi siz tanırsınız. Ölçekhane bu bilgiye bilimsel ölçümlerden gelen ikinci bir bakış ekler: çocuğunuzun kendini nasıl gördüğü, neye ilgi duyduğu ve nasıl öğrendiği."
       >
+        <PageGuide
+          steps={[
+            'Çocuğunuzun sınıfına uygun testleri açın ve birlikte birini seçin.',
+            'Testi çocuğunuz çözsün; siz yanında olun ama cevap vermeyin.',
+            'Öğrenci ve veli raporunu birlikte okuyun, PDF olarak saklayın.',
+          ]}
+        >
+          <p>
+            Bu sayfada çocuğunuzla test seçmeyi, raporu birlikte okumayı ve ne zaman bir uzmana başvuracağınızı bulacaksınız. Önce
+            çocuğunuzun grubunu seçin:
+          </p>
+          <GroupPicker compact />
+        </PageGuide>
         <div className="flex flex-wrap gap-3">
           <Link href="/testler" className="btn btn-primary btn-lg">
-            Ücretsiz test çöz
+            Bütün testler
           </Link>
           <a href="#nasil" className="btn btn-secondary btn-lg">
             Nasıl işler?

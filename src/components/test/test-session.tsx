@@ -6,6 +6,7 @@ import { QuizRunner, type QuizClientItem } from '@/components/runner/quiz-runner
 import { ReadingRunner } from '@/components/runner/reading-runner';
 import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
+import { PageGuide } from '@/components/site/page-guide';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { ItemNoun } from '@/lib/instruments/nouns';
 import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
@@ -37,6 +38,35 @@ const DOWNLOAD: Record<Audience, { button: string; object: string }> = {
   parent: { button: 'Veli raporunu PDF olarak indir', object: 'veli raporunu' },
   adult: { button: 'Raporunu PDF olarak indir', object: 'raporunu' },
 };
+
+/** Raporun başındaki yol gösterici kutu: raporun nasıl okunacağı (öğrenciye ve yetişkine "sen", veliye "siz"). */
+function readingGuide(audience: Audience, report: SimpleReport) {
+  const parent = audience === 'parent';
+  const steps: string[] = [];
+  if (report.cautions.length > 0) {
+    steps.push(
+      parent
+        ? 'Önce uyarıları okuyun: sonucu dikkatle yorumlamayı gerektiren bir durum var.'
+        : 'Önce uyarıları oku: sonucu dikkatle yorumlamanı gerektiren bir durum var.',
+    );
+  }
+  const when = steps.length > 0 ? 'Sonra' : 'Önce';
+  if (report.chart) steps.push(parent ? `${when} grafiğe bakın: sonuçların genel resmini gösterir.` : `${when} grafiğe bak: sonuçlarının genel resmini gösterir.`);
+  else steps.push(parent ? `${when} öne çıkan sayılara bakın.` : `${when} öne çıkan sayılara bak.`);
+  steps.push(parent ? 'Ardından her başlığın altındaki açıklamayı okuyun.' : 'Ardından her başlığın altındaki açıklamayı oku.');
+  steps.push(
+    audience === 'student'
+      ? 'Merak ettiklerini velinle ya da öğretmeninle konuş; veli raporunu birlikte okuyabilirsiniz.'
+      : parent
+        ? 'Raporu çocuğunuzla sakin bir zamanda konuşun; sonuçları bir etiket gibi kullanmayın.'
+        : 'Sonuçları bir etiket değil, kendini tanımak için bir başlangıç olarak düşün.',
+  );
+  return (
+    <PageGuide plain title={parent ? 'Raporu nasıl okumalısınız?' : 'Raporunu nasıl okumalısın?'} steps={steps}>
+      <p>Bu rapor bir tanı değildir; {parent ? 'çocuğunuzun' : 'yalnızca'} bu testteki cevaplarına dayanır.</p>
+    </PageGuide>
+  );
+}
 
 /** Rastgele UUID (v4). Harf işaretleme sayfalarının tohumu; kimseye bağlı değildir. */
 function uuid4(): string {
@@ -196,6 +226,8 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
           <p className="t-meta">{gradeLabel}</p>
         </div>
       )}
+
+      {readingGuide(audience, report)}
 
       <SimpleReportView report={report} />
 

@@ -5,6 +5,7 @@ import { EXPERTS } from '@/content/experts';
 import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from '@/lib/config';
 import { pageMeta } from '@/lib/seo';
 import { getOwner } from '@/lib/site';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const metadata = pageMeta({
   title: 'Hakkımızda',
@@ -58,7 +59,11 @@ export default function AboutPage() {
       <PageHeader
         title="Hakkımızda"
         lede="Ölçekhane, öğrencilerin kendini tanımasına yardım eden testleri bilimsel bir temele oturtmak ve sonuçlarını herkesin anlayacağı bir dille anlatmak için kuruldu."
-      />
+      >
+        <PageGuide next={[{ href: '/testler', label: 'Testlere göz at' }, { href: '/iletisim', label: 'Bize yazın' }]}>
+          <p>Bu sayfada Ölçekhane’nin neden kurulduğunu, nasıl çalıştığını ve kimlerin emeğiyle hazırlandığını okuyabilirsiniz.</p>
+        </PageGuide>
+      </PageHeader>
 
       <Section id="neden" title="Neden Ölçekhane?">
         <p className="measure">

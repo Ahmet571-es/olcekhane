@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/site/page-header';
 import { GUIDE_CATEGORIES, guidesByCategory, type GuideCategory } from '@/content/rehber';
 import { siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const metadata = pageMeta({
   title: 'Rehber: kişilik, öğrenme ve sınav kaygısı üzerine sade yazılar',
@@ -31,6 +32,12 @@ export default function GuidesPage() {
         title="Rehber"
         lede="Kişilik, öğrenme, sınav kaygısı ve meslek seçimi üzerine araştırmalara dayanan, sade yazılar. Her yazının sonunda dayandığı kaynakları bulabilirsiniz."
       >
+        <PageGuide next={[{ href: '/testler', label: 'Testlere göz at' }]}>
+          <p>
+            Burada öğrenciler ve veliler için araştırmalara dayanan yazılar var. Aşağıdan bir konu seçin; her yazının başında ana fikirler,
+            sonunda kaynaklar ve konuyla ilgili test bulunur.
+          </p>
+        </PageGuide>
         <nav aria-label="Konular">
           <ul className="flex flex-wrap gap-2">
             {groups.map(({ c }) => (

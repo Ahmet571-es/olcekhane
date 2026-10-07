@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { liveGroups } from '@/content/age-groups';
 import { Logo } from './logo';
 import { MobileNav } from './mobile-nav';
 
@@ -40,7 +41,7 @@ export function SiteHeader() {
         <div className="hidden xl:block">
           <TestsCta />
         </div>
-        <MobileNav items={NAV} />
+        <MobileNav items={NAV} groups={liveGroups().map(({ group }) => ({ href: group.path, label: group.name }))} />
       </div>
     </header>
   );

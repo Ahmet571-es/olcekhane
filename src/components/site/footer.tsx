@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { liveGroups } from '@/content/age-groups';
 import { publicInstruments } from '@/content/instruments';
 import { HOSTING_PROVIDER, getOwner } from '@/lib/site';
 import { Logo } from './logo';
@@ -28,13 +29,20 @@ export function SiteFooter() {
         </Link>
       </div>
 
-      <div className="container-page relative grid gap-10 border-t border-[color:var(--gece-cizgi)] py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="container-page relative grid gap-10 border-t border-[color:var(--gece-cizgi)] py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-4">
           <Logo />
           <p className="t-small max-w-[34ch] text-[color:var(--gece-soluk)]">
             Araştırmalarla desteklenen ölçekler, Türkçeye özenle uyarlanmış hâliyle. Tanı koymaz, tanımaya yardım eder.
           </p>
         </div>
+        <FooterCol title="Sınıfına göre">
+          {liveGroups().map(({ group }) => (
+            <FooterLink key={group.key} href={group.path}>
+              {group.name}
+            </FooterLink>
+          ))}
+        </FooterCol>
         <FooterCol title="Testler">
           {tests.map((t) => (
             <FooterLink key={t.slug} href={`/testler/${t.slug}`}>

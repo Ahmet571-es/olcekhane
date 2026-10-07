@@ -1,6 +1,7 @@
 import { PageHeader } from '@/components/site/page-header';
 import { pageMeta } from '@/lib/seo';
 import { HOSTING_PROVIDER, getOwner, taxLine } from '@/lib/site';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const metadata = pageMeta({
   title: 'İletişim',
@@ -32,7 +33,14 @@ export default function ContactPage() {
 
   return (
     <>
-      <PageHeader title="İletişim" lede="Sorularınız, önerileriniz ve kişisel verilerinizle ilgili başvurularınız için bize e-postayla yazabilirsiniz." />
+      <PageHeader title="İletişim" lede="Sorularınız, önerileriniz ve kişisel verilerinizle ilgili başvurularınız için bize e-postayla yazabilirsiniz.">
+        <PageGuide next={[{ href: '/#sss', label: 'Sık sorulanlar' }]}>
+          <p>
+            Bu sayfada bize nasıl ulaşacağınız yazıyor. Testler ve raporlar hakkındaki soruların çoğunun cevabı ana sayfadaki “Sık
+            sorulanlar” bölümündedir.
+          </p>
+        </PageGuide>
+      </PageHeader>
       <div className="container-page grid gap-14 py-14 md:py-16 lg:grid-cols-[1.5fr_1fr]">
         <section aria-labelledby="eposta" className="flex flex-col gap-6">
           <div className="panel flex flex-col gap-3 p-6 md:p-8">

@@ -9,6 +9,7 @@ import { GUIDE_CATEGORIES, allGuides, guideBySlug, relatedGuides } from '@/conte
 import { readingMinutes, renderArticle } from '@/lib/article';
 import { SITE_NAME, gradeRangeLabel, siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
+import { PageGuide } from '@/components/site/page-guide';
 
 export const dynamicParams = false;
 
@@ -107,6 +108,17 @@ export default async function GuidePage(props: PageProps<'/rehber/[slug]'>) {
           </span>
           <span>· {minutes} dakikalık okuma</span>
         </p>
+        <PageGuide
+          next={[
+            tests.length > 0 ? { href: `/testler/${tests[0].slug}`, label: 'İlgili teste git' } : { href: '/testler', label: 'Testlere göz at' },
+            { href: '/rehber', label: 'Başka bir yazı seç' },
+          ]}
+        >
+          <p>
+            Önce “Kısaca” kutusundaki ana fikirlere bakın, sonra yazıyı okuyun. Yazının sonunda
+            {tests.length > 0 ? ' konuyla ilgili testi ve' : ''} dayandığı kaynakları bulacaksınız.
+          </p>
+        </PageGuide>
       </header>
 
       <div className="grid gap-12 pt-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-16">

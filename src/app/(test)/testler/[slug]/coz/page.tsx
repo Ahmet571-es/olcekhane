@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/site/logo';
+import { PageGuide } from '@/components/site/page-guide';
 import { TestSession, type TestPayload } from '@/components/test/test-session';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
@@ -70,6 +71,9 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
   // Sınıf düzeyi ya da (yetişkinlere de uygun testlerde) "Yetişkinim" seçimi.
   const grade = parseGradeParam(typeof q.sinif === 'string' ? q.sinif : undefined);
   const ready = grade !== null && gradeAllowed(def, grade);
+  // Yaş grubu sayfasında seçilen sınıf (`?secili=`) seçim kutusunda hazır gelir; test yine "Teste başla" ile başlar.
+  const preset = parseGradeParam(typeof q.secili === 'string' ? q.secili : undefined);
+  const presetValue = preset !== null && gradeAllowed(def, preset) ? (preset === ADULT_GRADE ? ADULT_PARAM : String(preset)) : '';
   const adultRefused = grade === ADULT_GRADE && !def.adults;
   const grades = Array.from({ length: def.maxGrade - def.minGrade + 1 }, (_, i) => def.minGrade + i);
   const backUrl = `/testler/${def.slug}`;
@@ -101,6 +105,15 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
               <p className="t-lede">{def.tagline}</p>
             </div>
 
+            <PageGuide plain title="Nasıl ilerler?">
+              <p>Test üç adımda biter:</p>
+              <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
+                <li>{def.adults ? 'Testi kimin çözdüğünü seç' : 'Sınıfını seç'} ve “Teste başla” düğmesine bas.</li>
+                <li>Yönergeyi oku ve testi tek seferde bitir; yaklaşık {def.estimatedMinutes} dakika sürer.</li>
+                <li>Bitince raporun ekranda açılır. Saklamak için PDF olarak indir.</li>
+              </ol>
+            </PageGuide>
+
             <div className="notice notice-ok flex flex-col gap-2">
               <p className="font-bold">Hiçbir bilgin saklanmaz.</p>
               <ul className="flex list-disc flex-col gap-1 pl-5">
@@ -124,7 +137,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
                 <label htmlFor="sinif" className="field-label">
                   {def.adults ? 'Testi kim çözüyor?' : 'Testi çözen öğrencinin sınıfı'}
                 </label>
-                <select id="sinif" name="sinif" className="input" defaultValue="" required aria-describedby="sinif-ipucu">
+                <select id="sinif" name="sinif" className="input" defaultValue={presetValue} required aria-describedby="sinif-ipucu">
                   <option value="" disabled>
                     {def.adults ? 'Seç' : 'Sınıf seçin'}
                   </option>

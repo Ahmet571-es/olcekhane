@@ -4,20 +4,56 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-06
+Son güncelleme: 2026-10-07
+
+## Büyük plan (site sahibinin 2026-10-07 isteği)
+
+Hedef: Türkiye'nin en büyük ücretsiz kişilik ve zekâ testleri platformu. Testler yaş ve sınıf gruplarına göre
+düzenlenir, her sayfada kullanıcıyı yönlendiren açıklamalar bulunur, raporlar bol (3B görünümlü) grafikli, tanı
+koymayan, öğrenciye yol haritası çizen ve PDF olarak verilen raporlardır; test sayısında sınır yoktur (telife dikkat);
+ayrıca iki dallı, bol animasyonlu ve 3B görselli bir nörobilim bölümü kurulur. Site sahibi "acele etmeden, adım adım"
+istedi. Kararları:
+
+- Sıra: 1 → 2 → 3; yeni testler her basamağın yanında sürer.
+- "Açık kaynak": testler ve raporlar ücretsiz, ileride ücretli rapor seçeneği açık kalır (bugünkü plan; "yalnızca
+  ticari olmayan kullanım" izinli ölçekler yine kullanılmaz). Kod herkese açık değildir.
+- Yaş grupları: 3. sınıftan yetişkine (İlkokul 3–4, Ortaokul, Lise ve mezun, Üniversite ve yetişkin).
+- Beyin derslerini testleri onaylayan hocamız okur.
+- Zekâ tarafı "Zekâ ve zihinsel beceriler" adıyla kurulur: telifli zekâ testleri kullanılmaz, IQ puanı verilmez;
+  akıl yürütme, sözel, sayısal, uzamsal, bellek, dikkat ve hız ayrı ayrı ölçülür, sonuç güçlü yanlar haritasıdır.
+
+Basamaklar:
+
+1. **Yaş ve sınıf düzeni, her sayfada yol gösterme:** bitti (2026-10-07).
+2. **Rapor yenileme ("Gelişim Yol Haritası"):** önce Beş Faktör Kişilik'te örnek rapor, site sahibi beğenince öteki
+   testler. Bölümler: güçlü yanlar, nasıl çalışmalı, okul ve meslek planı için öneriler, veli ve öğretmen için
+   yaklaşım, dört haftalık küçük adımlar, ne zaman uzmana başvurmalı (hepsi tavsiye dili). Grafikler ekranda ışıklı,
+   derinlikli ve döndürülebilir; değerler her zaman düz yazıyla da okunur; PDF'te derinlikli resim. Öğrenci ve veli
+   önerilerinin metinleri (`tipsStudent`, `tipsParent`) birçok testte yazılı ama bugünkü raporda görünmüyor. Bu
+   basamakta CLAUDE.md'deki "rapor ekranları sade kalır" kuralı site sahibinin isteğine göre güncellenir.
+3. **Nörobilim bölümü:** iki dal: Beyin Anatomisi (~40 ders) ve Beyin Nasıl Çalışır? (~40 ders); iskelet ve 3B beyin
+   2–3 oturum, sonra her mesajda bir ders. Her derste sade anlatım, hareketli çizimler, 3B modelde ilgili yerin
+   parlaması, sözlük, kısa alıştırma (cevaplar saklanmaz) ve kaynaklar. 3B model adayı: Z-Anatomy modelleri
+   (CC BY-SA 4.0, kaynak gösterilerek; FBX). **Engel:** bu ortamdan openstax.org, ncbi.nlm.nih.gov, ninds.nih.gov
+   ve wikipedia.org açılmıyor; site sahibi ortamın ağ erişimini açmadan dersler yazılmaz (bilgi yalnızca açılıp
+   okunmuş kaynaklardan alınır).
+4. **Yeni testler (sürekli):** aşağıdaki dalgalar; yanında zekâ, algı ve okuma tarafı genişler (şekil, sayı ve sözel
+   akıl yürütme, görsel algı hızı, örüntü bulma, sınıfa özel okuma metinleri, kelime bilgisi). Sonunda yaş grubuna
+   göre "Kendini Tanı Paketi": birkaç test art arda, tek büyük PDF rapor.
 
 ## Sıradaki işler
 
-1. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
-2. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
+1. **Büyük planın 2. basamağı:** rapor yenileme (yukarıda).
+2. **Rehber yazıları:** aşağıdaki 35 konu, listedeki sırayla, her mesajda bir yazı.
+3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
    sıfırdan yazılır.
-3. **4. dalga:** Türkçe ve Fen Konu Tarama, Kelime Bilgisi, Alan ve Bölüm Seçimi Rehberi, Hızlı Kişilik Testi;
+4. **4. dalga:** Türkçe ve Fen Konu Tarama, Kelime Bilgisi, Alan ve Bölüm Seçimi Rehberi, Hızlı Kişilik Testi;
    test paketleri (birkaç testi art arda çözüp tek PDF almak; cevaplar yine saklanmaz).
-4. **Etkileşimli anlatımlar (5, test değil):** unutma eğrisinde tekrar zamanlarını deneme, Stroop etkisini kendin
+5. **Etkileşimli anlatımlar (5, test değil):** unutma eğrisinde tekrar zamanlarını deneme, Stroop etkisini kendin
    görme, ölçüm payını cetvel üzerinde görme, kişiliğin 30 alt boyutlu haritası, beyinle ilgili bilinenler ve
    efsaneler.
-5. **Bekleyen:** Karakter Güçlü Yanları (2. dalga) avukat görüşünü bekliyor; görüş gelmeden başlanmaz. Maneviyat
+6. **Bekleyen:** Karakter Güçlü Yanları (2. dalga) avukat görüşünü bekliyor; görüş gelmeden başlanmaz. Maneviyat
    ölçeği kullanılmaz, test 23 güçlü yanla sunulur. Görüş gelene kadar sitede bu test için "yakında" denmez.
 
 ## Testler
@@ -133,6 +169,9 @@ söylenir ve buraya yazılır.
 Bunları yalnızca site sahibi yapar. Sohbetler bunları yalnızca o anki işle ilgiliyse ya da tarihi yaklaştıysa
 hatırlatır; şifre ya da ödeme bilgisi istemez.
 
+- **Nörobilim bölümü için ağ erişimi:** sohbetin ortam menüsü → Düzenle → Ağ erişimi; erişimi genişletmek ya da
+  openstax.org, ncbi.nlm.nih.gov, ninds.nih.gov, wikipedia.org adreslerini izinli listeye eklemek
+  (https://code.claude.com/docs/en/cloud-environments#network-access). 3. basamağa gelince hatırlatılır.
 - **Site sahibi bilgileri** (ad, adres, telefon, e-posta): yasa gereği İletişim sayfasında ve aydınlatma metninde
   gösterilir; her yayında uyarı olarak çıkar. Gelince `yayin/ayarlar.env`'e yazılır (CLAUDE.md).
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
@@ -147,6 +186,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07: Yaş ve sınıf düzeni: İlkokul, Ortaokul, Lise ve mezun sayfaları (`/ilkokul`, `/ortaokul`, `/lise`;
+  Üniversite ve yetişkin sayfası `/yetiskin` yetişkin testleri onaylanınca kendiliğinden açılır); grup sayfasında
+  sınıf seçimi ve "Nereden başlamalı?" önerileri; ana sayfada, Testler'de, menüde ve altbilgide grup seçimi; her
+  sayfanın başında yol gösterici kutu (test başlatma ve rapor ekranı dahil), bulunamayan sayfa için yönlendirme;
+  "Bilişsel beceriler" alanı "Zekâ ve zihinsel beceriler" oldu ve sırada ikinciye alındı.
 - 2026-10-06: Yeni sohbetlerin aynı düzende çalışması için çalışma döngüsü (CLAUDE.md), bu dosya, yardımcı araçlar
   (`araclar/`), rehber yazıları ve yayın denetimi testleri; yayın denetimi artık site haritasındaki bütün sayfaları
   internetten açıyor.
