@@ -36,7 +36,7 @@ export function SiteFooter() {
             Araştırmalarla desteklenen ölçekler, Türkçeye özenle uyarlanmış hâliyle. Tanı koymaz, tanımaya yardım eder.
           </p>
         </div>
-        <FooterCol title="Sınıfına göre">
+        <FooterCol title="Grubuna göre">
           {liveGroups().map(({ group }) => (
             <FooterLink key={group.key} href={group.path}>
               {group.name}

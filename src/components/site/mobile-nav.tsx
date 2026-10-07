@@ -88,7 +88,7 @@ export function MobileNav({ items, groups = [] }: { items: { href: string; label
               </ul>
               {groups.length > 0 && (
                 <div className="mobil-menu-oge flex flex-col gap-3" style={{ '--sira': all.length } as CSSProperties}>
-                  <p className="kicker">Sınıfına göre testler</p>
+                  <p className="kicker">Grubuna göre testler</p>
                   <ul className="flex flex-wrap gap-2">
                     {groups.map((g) => (
                       <li key={g.href}>

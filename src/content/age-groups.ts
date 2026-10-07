@@ -1,5 +1,6 @@
 import { publicInstruments } from '@/content/instruments';
 import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
+import { DOMAIN_ORDER } from '@/lib/domain-style';
 import type { InstrumentDef } from '@/lib/instruments/types';
 
 /**
@@ -27,8 +28,13 @@ export interface AgeGroup {
   /** Veliye kısa not (yetişkin grubunda yok). */
   parentNote?: string;
   /**
-   * İlk kez gelenlere önerilen testler, sırayla. Yalnızca yayındakiler gösterilir: incelemedeki bir test onaylanınca
-   * kendiliğinden görünür.
+   * Değerlendirmeyi öğrenci değil bir yetişkin (öğretmen ya da veli) yürütür: sayfa öğrenciye "sen" diye değil,
+   * yetişkine "siz" diye seslenir.
+   */
+  adultLed?: boolean;
+  /**
+   * İlk kez gelenlere önerilen testler, sırayla. Her biri gruptaki her sınıfa uygun olmalıdır (tests/age-groups.test.ts).
+   * Yalnızca yayındakiler gösterilir: incelemedeki bir test onaylanınca kendiliğinden görünür.
    */
   starters: { slug: string; why: string }[];
 }
@@ -44,7 +50,8 @@ export const AGE_GROUPS: AgeGroup[] = [
     color: 'var(--dim-emo)',
     lede: '1. ve 2. sınıf öğrencilerine uygun değerlendirmeler. Bu yaşta değerlendirmeyi bir yetişkin (öğretmen ya da veli) yapar: Öğrenci okur, anlatır ve soruları cevaplar; yetişkin dinleyerek değerlendirir.',
     parentNote:
-      'Bu gruptaki değerlendirmeleri çocuğunuzla birlikte yaparsınız: Çocuğunuz kısa bir metni sesli okur, siz kaydı dinleyerek değerlendirirsiniz. Ses kaydı yalnızca sizin cihazınızda kalır; hiçbir yere gönderilmez.',
+      'Değerlendirmeyi çocuğunuzla birlikte yaparsınız: Çocuğunuz kısa bir metni sesli okur, siz kaydı dinleyerek değerlendirirsiniz. Ses kaydı yalnızca sizin cihazınızda kalır; hiçbir yere gönderilmez.',
+    adultLed: true,
     starters: [
       {
         slug: 'sesli-okuma-degerlendirmesi',
@@ -84,8 +91,8 @@ export const AGE_GROUPS: AgeGroup[] = [
     parentNote:
       'Testi çocuğunuzla birlikte seçin; çözen o olsun. Raporda size ayrı yazılmış bir veli raporu da bulunur; raporu birlikte okumanızı öneririz.',
     starters: [
-      { slug: 'oz-saygi', why: 'En kısa test: kendine genel bakışını yaklaşık 3 dakikada gösterir.' },
-      { slug: 'calisma-aliskanliklari', why: 'Ders çalışırken hangi yöntemleri ne sıklıkla kullandığını gösterir.' },
+      { slug: 'okuma-hizi-ve-anlama', why: 'Kısa bir metinle okuma hızını ve okuduğunu anlamayı birlikte gösterir; metin sınıfına göre seçilir.' },
+      { slug: 'dikkat-ve-bellek', why: 'Beş kısa görevle çalışma belleğini, seçici dikkati ve işlem hızını ayrı ayrı gösterir.' },
       { slug: 'matematik-konu-tarama-testi', why: 'Bir önceki sınıfın matematik konularında neyin sağlam, neyin eksik olduğunu gösterir.' },
     ],
   },
@@ -135,6 +142,17 @@ export const AREA_INTROS: Record<string, string> = {
   skills: 'Duyguları anlama, ilişkiler ve iş birliği gibi becerileri anlatır.',
 };
 
+/** Bölümlerin cümle içindeki kısa adları: "kişilik, okuma ve ilgi testleri" (grup sayfalarının açıklaması). */
+export const AREA_SHORT: Record<string, string> = {
+  personality: 'kişilik',
+  cognitive: 'zihinsel beceri',
+  reading: 'okuma',
+  academic: 'akademik beceri',
+  career: 'ilgi',
+  wellbeing: 'iyi oluş',
+  skills: 'sosyal-duygusal beceri',
+};
+
 export function ageGroup(key: AgeGroupKey): AgeGroup {
   const g = AGE_GROUPS.find((x) => x.key === key);
   if (!g) throw new Error(`Bilinmeyen yaş grubu: ${key}`);
@@ -149,6 +167,25 @@ export function fitsGroup(t: Pick<InstrumentDef, 'minGrade' | 'maxGrade' | 'adul
 /** Listedeki testlerden bu gruba uygun olanlar (sıra korunur). */
 export function testsForGroup<T extends Pick<InstrumentDef, 'minGrade' | 'maxGrade' | 'adults'>>(list: T[], g: AgeGroup): T[] {
   return list.filter((t) => fitsGroup(t, g));
+}
+
+/**
+ * Sınıf seçimi listeyi değiştirir mi? Gruptaki her sınıfa aynı testler uyuyorsa "Kaçıncı sınıftasın?" seçimi
+ * gösterilmez (ör. İlkokul 1–2'deki tek değerlendirme iki sınıfa da uyar).
+ */
+export function gradeChoiceMatters(list: Pick<InstrumentDef, 'minGrade' | 'maxGrade' | 'adults'>[], g: AgeGroup): boolean {
+  const options = g.grades.filter((grade) => list.some((t) => gradeAllowed(t, grade)));
+  return options.length > 1 && options.some((grade) => list.some((t) => !gradeAllowed(t, grade)));
+}
+
+/** Grup sayfasının arama motorlarına giden açıklaması: yalnızca grupta yayında testi olan bölümler anılır. */
+export function groupDescription(g: AgeGroup): string {
+  const tests = testsForGroup(publicInstruments(), g);
+  const how = `Hesap açmadan ${g.adultLed ? 'yapılır' : 'çözülür'}; cevaplar saklanmaz, rapor PDF olarak verilir.`;
+  if (tests.length === 1) return `${g.range} için ücretsiz ${tests[0].name}. ${tests[0].tagline} ${how}`;
+  const areas = DOMAIN_ORDER.filter((d) => tests.some((t) => t.domain === d)).map((d) => AREA_SHORT[d]);
+  const list = areas.length > 1 ? `${areas.slice(0, -1).join(', ')} ve ${areas[areas.length - 1]}` : areas[0];
+  return `${g.range} için ücretsiz ${list} testleri${areas.length > 1 ? ', bölüm bölüm' : ''}. ${how}`;
 }
 
 /** Yayında en az bir testi olan yaş grupları ve test sayıları. Testi olmayan grup ne gösterilir ne de açılır. */

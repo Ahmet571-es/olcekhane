@@ -1,10 +1,19 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { AGE_GROUPS, AREA_INTROS, fitsGroup, liveGroups, testsForGroup } from '@/content/age-groups';
+import {
+  AGE_GROUPS,
+  AREA_INTROS,
+  AREA_SHORT,
+  fitsGroup,
+  gradeChoiceMatters,
+  groupDescription,
+  liveGroups,
+  testsForGroup,
+} from '@/content/age-groups';
 import { INSTRUMENTS, getInstrumentDef, publicInstruments } from '@/content/instruments';
 import { cardInfo } from '@/components/site/test-card';
-import { ADULT_GRADE, DOMAIN_LABELS } from '@/lib/config';
+import { ADULT_GRADE, DOMAIN_LABELS, gradeAllowed } from '@/lib/config';
 import { DOMAIN_ORDER } from '@/lib/domain-style';
 
 const APP = path.join(__dirname, '..', 'src', 'app');
@@ -65,6 +74,45 @@ describe('yaş grupları', () => {
     }
   });
 
+  it('"Nereden başlamalı?" önerileri gruptaki her sınıfa uygundur (5. sınıftaki biri başlayamayacağı bir teste gönderilmez)', () => {
+    for (const g of AGE_GROUPS) {
+      for (const s of g.starters) {
+        const def = getInstrumentDef(s.slug)!;
+        for (const grade of g.grades) expect(gradeAllowed(def, grade), `${g.key}: ${s.slug}, sınıf ${grade}`).toBe(true);
+      }
+    }
+  });
+
+  it('sınıf seçimi yalnızca listeyi değiştirecekse gösterilir', () => {
+    const live = publicInstruments();
+    const group = (key: string) => AGE_GROUPS.find((g) => g.key === key)!;
+    // İlkokul 1–2'deki testler iki sınıfa da uyar: seçim listeyi değiştirmez.
+    const small = group('ilkokul12');
+    const smallTests = testsForGroup(live, small);
+    expect(small.grades.every((grade) => smallTests.every((t) => gradeAllowed(t, grade)))).toBe(true);
+    expect(gradeChoiceMatters(smallTests, small)).toBe(false);
+    // Ortaokulda 5. sınıfa açılmayan testler var: seçim gösterilir.
+    expect(gradeChoiceMatters(testsForGroup(live, group('ortaokul')), group('ortaokul'))).toBe(true);
+    // Tek sınıflı grupta seçim yoktur.
+    expect(gradeChoiceMatters(testsForGroup(live, group('yetiskin')), group('yetiskin'))).toBe(false);
+  });
+
+  it('grup sayfasının açıklaması yalnızca grupta yayında testi olan bölümleri anar', () => {
+    for (const { group } of liveGroups()) {
+      const tests = testsForGroup(publicInstruments(), group);
+      const text = groupDescription(group);
+      if (tests.length === 1) {
+        expect(text, group.key).toContain(tests[0].name);
+        continue;
+      }
+      const named = /için ücretsiz (.+) testleri/.exec(text)?.[1].split(/, | ve /);
+      const areas = DOMAIN_ORDER.filter((d) => tests.some((t) => t.domain === d)).map((d) => AREA_SHORT[d]);
+      expect(named, group.key).toEqual(areas);
+    }
+    const yetiskin = groupDescription(AGE_GROUPS.find((g) => g.key === 'yetiskin')!);
+    expect(yetiskin).not.toMatch(/okuma|zihinsel/);
+  });
+
   it('her grubun sayfası vardır; testi olmayan grup listelerde ve site haritasında yer almaz', () => {
     for (const g of AGE_GROUPS) {
       const file = path.join(APP, '(site)', g.path.slice(1), 'page.tsx');
@@ -82,6 +130,7 @@ describe('yaş grupları', () => {
     for (const d of DOMAIN_ORDER) {
       expect(DOMAIN_LABELS[d], d).toBeTruthy();
       expect(AREA_INTROS[d], d).toBeTruthy();
+      expect(AREA_SHORT[d], d).toBeTruthy();
     }
     expect(AREA_INTROS.cognitive).toContain('Zekâ puanı (IQ) verilmez');
   });

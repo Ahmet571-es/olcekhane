@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/seo/json-ld';
-import { AREA_INTROS, ageGroup, testsForGroup, type AgeGroupKey } from '@/content/age-groups';
+import { AREA_INTROS, ageGroup, gradeChoiceMatters, groupDescription, testsForGroup, type AgeGroupKey } from '@/content/age-groups';
 import { getInstrumentDef, publicInstruments } from '@/content/instruments';
-import { DOMAIN_LABELS } from '@/lib/config';
+import { DOMAIN_LABELS, gradeAllowed } from '@/lib/config';
 import { DOMAIN_ORDER, domainColor } from '@/lib/domain-style';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 import { GroupPicker } from './group-picker';
@@ -17,7 +17,7 @@ export function groupMeta(key: AgeGroupKey) {
   const g = ageGroup(key);
   return pageMeta({
     title: `${g.name} için testler (${g.range})`,
-    description: `${g.range} için ücretsiz kişilik, zihinsel beceri, okuma ve ilgi testleri, bölüm bölüm. Hesap açmadan çözülür; cevaplar saklanmaz, rapor PDF olarak verilir.`,
+    description: groupDescription(g),
     path: g.path,
   });
 }
@@ -44,12 +44,27 @@ export function GroupPage({ groupKey }: { groupKey: AgeGroupKey }) {
     .map((s) => ({ ...s, def: getInstrumentDef(s.slug) }))
     .filter((s) => s.def && tests.includes(s.def));
 
-  const steps = [
-    sections.length > 1 ? 'Aşağıdaki bölümlerden ilgini çekeni seç.' : 'Aşağıdaki testlerden birini seç.',
-    'Testin adına basarsan neyi ölçtüğünü okursun; “Çöz” düğmesine basarsan test başlar.',
-    'Test bitince raporun ekranda açılır. Saklamak için PDF olarak indir.',
-  ];
-  if (g.grades.length > 1) steps.unshift('Önce sınıfını seç: yalnızca sana uygun testler görünür.');
+  // Değerlendirmeyi bir yetişkinin yürüttüğü grupta sayfa yetişkine "siz" diye seslenir.
+  const formal = !!g.adultLed;
+  // Sınıf seçimi listeyi daraltıyorsa gösterilir; daraltmasa da (ör. lisede) seçilen sınıf testin başında hazır geldiği
+  // için öğrencinin çözdüğü gruplarda kalır. Yetişkinin yürüttüğü grupta yalnızca listeyi daraltıyorsa gösterilir.
+  const filters = gradeChoiceMatters(tests, g);
+  const picker = filters || (!formal && g.grades.filter((grade) => tests.some((t) => gradeAllowed(t, grade))).length > 1);
+  const only = tests.length === 1 ? tests[0] : null;
+
+  const steps: string[] = [];
+  if (filters) steps.push(formal ? 'Önce öğrencinin sınıfını seçin: yalnızca uygun testler görünür.' : 'Önce sınıfını seç: yalnızca sana uygun testler görünür.');
+  else if (picker) steps.push('Önce sınıfını seç: test, sınıfın seçili olarak açılır.');
+  if (sections.length > 1) steps.push(formal ? 'Aşağıdaki bölümlerden ilginizi çekeni seçin.' : 'Aşağıdaki bölümlerden ilgini çekeni seç.');
+  else if (!only) steps.push(formal ? 'Aşağıdaki testlerden birini seçin.' : 'Aşağıdaki testlerden birini seç.');
+  const which = only ? 'Aşağıdaki testin' : 'Testin';
+  steps.push(
+    formal
+      ? `${which} adına basarsanız neyi ölçtüğünü okursunuz; “Çöz” düğmesine basarsanız test başlar.`
+      : `${which} adına basarsan neyi ölçtüğünü okursun; “Çöz” düğmesine basarsan test başlar.`,
+  );
+  steps.push(formal ? 'Test bitince rapor ekranda açılır. Saklamak için PDF olarak indirin.' : 'Test bitince raporun ekranda açılır. Saklamak için PDF olarak indir.');
+  const verb = formal ? 'yapılır' : 'çözülür';
 
   return (
     <>
@@ -62,10 +77,17 @@ export function GroupPage({ groupKey }: { groupKey: AgeGroupKey }) {
       />
       <PageHeader kicker={`Grubuna göre testler · ${g.range}`} title={g.name} lede={g.lede}>
         <PageGuide steps={steps}>
-          <p>
-            Burada {g.forWhom} uygun{' '}
-            <strong>{tests.length} test</strong> var. Hepsi ücretsiz, hesap açmadan çözülür; cevaplar hiçbir yere kaydedilmez.
-          </p>
+          {only ? (
+            <p>
+              Burada {g.forWhom} uygun bir test var: <strong>{only.name}</strong>. Ücretsizdir, hesap açmadan {verb}; cevaplar hiçbir
+              yere kaydedilmez.
+            </p>
+          ) : (
+            <p>
+              Burada {g.forWhom} uygun <strong>{tests.length} test</strong> var. Hepsi ücretsiz, hesap açmadan {verb}; cevaplar hiçbir
+              yere kaydedilmez.
+            </p>
+          )}
         </PageGuide>
       </PageHeader>
 
@@ -109,18 +131,7 @@ export function GroupPage({ groupKey }: { groupKey: AgeGroupKey }) {
       )}
 
       <section className="container-page py-14 md:py-20" aria-label="Testler">
-        {sections.length > 1 && (
-          <nav aria-label="Bölümler" className="mb-8 flex flex-wrap items-center gap-2">
-            <span className="t-small mr-1 font-bold text-ink-2">Bölümler:</span>
-            {sections.map((s) => (
-              <a key={s.id} href={`#${s.id}`} className="chip no-underline hover:border-ink">
-                <span className="size-2 rounded-full" style={{ background: s.color }} aria-hidden="true" />
-                {s.title}
-              </a>
-            ))}
-          </nav>
-        )}
-        <GroupTests grades={g.grades} sections={sections} />
+        <GroupTests grades={g.grades} sections={sections} picker={picker} filters={filters} formal={formal} />
       </section>
 
       <section className="border-t border-rule bg-surface-2/55" aria-labelledby="diger-gruplar">

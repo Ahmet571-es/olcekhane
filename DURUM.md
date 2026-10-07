@@ -217,6 +217,20 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-07 (akşam): Günün işleri baştan sona denetlendi, bulunan hatalar düzeltildi. Kod: ilgi testlerinde bütün
+  alanlar düşükken alan öne çıkarılmıyor ve eğitim yolu önerilmiyor (yalnızca görece yüksek alanlarda da yol yok); bir
+  boyut hesaplanamasa da plan dört hafta, başlık haftaların sayısını söylüyor; sesli okumada mikrofon koparsa yeniden
+  açılıyor (mikrofon ve anlatma adımında), çift dokunuşta tek kayıt, "Ne okudu?" kutusuna boşluk yazılabiliyor,
+  işaretleme seçeneklerine klavye odağı ve Escape, doğru okuma oranı aşağı yuvarlanıyor, 5. sınıf karşılaştırma değeri
+  (Erden ve ark., 2002: 121) eklendi, bir üst/alt metin yalnızca seçilebiliyorsa öneriliyor; testten çıkaran bağlantılar
+  (ör. "Vazgeç") iPhone'da da onay soruyor; okuma hızı yol haritasında anlama düşük ve hız yüksekse "yavaşla ve anla",
+  kalite uyarısı varsa yol haritasında not; kırık rehber bağlantısı düzeldi (eski adres yönlendiriliyor). İçerik: sesli
+  okuma metinlerinde birbirini ele veren sorular, ağaç halkaları, domates cümlesi ve rapor cümleleri; kişilik, duygusal
+  zekâ, kişilerarası tarz, çalışma alışkanlıkları, matematik, okuma, zihinsel görev ve ilgi yol haritası metinleri (vaat
+  ve kesin dil, rapor metnini tekrar, yanlış hedef kitle, sınav kaygısı önerileri). Altı Boyutlu Kişilik'te Duygusallık
+  ve Uyumluluk metinleri HEXACO'ya göre yeniden yazıldı (önceden Beş Faktör'ün onaylı metinleri kullanılıyordu; hoca
+  buluşmasında gösterilmeli). Sayfalar: ortaokul önerileri 5. sınıfa da uygun, İlkokul 1–2 sayfası tek değerlendirmeye
+  ve yetişkine göre, grup açıklamaları gruptaki testlere göre, bölüm düğmeleri sınıf seçimine göre, "Grubuna göre".
 - 2026-10-07: Okuma sekmesi (`/okuma`) ve Sesli Okuma Değerlendirmesi yayında (1–8. sınıf, 24 özgün metin; "İlkokul
   1–2" grubu açıldı). Adım adım: metin seçimi, mikrofon denemesi (dinlemeden geçilmez), sesli okuma kaydı (yalnızca
   cihazda; sunucuya gitmez), kayıt denetimi (ses yok, kısık, gürültü, kesinti), yeniden anlatma, sorular; yetişkin
@@ -248,6 +262,3 @@ En yeni üstte; en çok 10 madde tutulur.
   bölünmüyor.
 - 2026-10-07: Ayrıntılı Kişilik ve Altı Boyutlu Kişilik gelişim yol haritaları hoca onayıyla herkese açık raporda
   (öğrenci, veli ve yetişkin); yayın denetimi üç raporu dışarıdan sınıyor.
-- 2026-10-07: Ayrıntılı Kişilik ve Altı Boyutlu Kişilik gelişim yol haritaları önizlemede (öğrenci, veli ve
-  yetişkin raporu; Altı Boyutlu'da Dürüstlük-Alçakgönüllülük ve Duygusallık için yeni metinler, altıgen üç
-  boyutlu profil); hoca belgesi hazır. Üç boyutlu grafiğin açıklaması ölçüm payı olmayan testlerde kısalıyor.

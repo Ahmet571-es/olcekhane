@@ -200,10 +200,10 @@ export default function Home() {
           <div>
             <p className="kicker">Nereden başlamalı?</p>
             <h2 id="baslangic-baslik" className="t-section mt-3">
-              Önce sınıfını seç.
+              Önce grubunu seç.
             </h2>
           </div>
-          <p className="t-lede">Sana uygun testleri bölüm bölüm gösterelim. Veliyseniz çocuğunuzun sınıfını seçin.</p>
+          <p className="t-lede">Sana uygun testleri bölüm bölüm gösterelim. Veliyseniz çocuğunuzun sınıfına uyan grubu seçin.</p>
         </div>
         <GroupPicker />
         <PageGuide
