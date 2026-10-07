@@ -177,7 +177,8 @@ export interface ReadingSkillText {
 }
 
 /** Okuma hızı ve anlama düzenine göre öneri: metin çok hızlı geçildiyse, anlama gelişiyorsa ya da iyiyse. */
-export type ReadingPace = 'rush' | 'build' | 'extend';
+/** rush: rapor metnin çok hızlı geçildiğini söylüyor; quick: anlama düşükken hız yüksek (yalnızca olasılık olarak söylenir). */
+export type ReadingPace = 'rush' | 'quick' | 'build' | 'extend';
 
 export interface ReadingRoadmapTemplate {
   version: string;

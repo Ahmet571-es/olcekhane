@@ -431,7 +431,8 @@ describe('Sesli okuma: sitede', () => {
     const t = getInstrumentDef(SLUG)!;
     expect(publicInstruments()).toContain(t);
     expect([t.domain, t.engine, t.minGrade, t.maxGrade, !!t.adults]).toEqual(['reading', 'oral', 1, 8, false]);
-    expect(def.referenceRates.every((r) => r.grade <= 4)).toBe(true);
+    // Erden, Kurdoğlu ve Uslu (2002) 1–5. sınıfları bildirir.
+    expect(def.referenceRates.map((r) => r.grade)).toEqual([1, 2, 3, 4, 5]);
     expect(def.science.normNote).toContain(`%${ORAL_CRITERIA.accuracy.easy}`);
   });
 

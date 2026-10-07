@@ -165,7 +165,7 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     const next = withRoadmap ? nextTestsFor(template.nextTests, def.slug, body.grade) : [];
     return (audience, now) => {
       const report = buildOralReport({ def, passage, result, audience, grade: body.grade, completedAt: now });
-      return withRoadmap ? { ...report, roadmap: buildOralRoadmap(result, audience, template, { preview, next }) } : report;
+      return withRoadmap ? { ...report, roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : report;
     };
   }
   const { rows, notes } = score(def, body);

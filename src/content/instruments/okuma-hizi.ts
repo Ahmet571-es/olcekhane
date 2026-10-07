@@ -48,6 +48,7 @@ export const okumaHizi: ReadingInstrument = {
     { grade: 2, wpm: 73, mode: 'oral', source: 'Erden, Kurdoğlu ve Uslu (2002), Türk Psikiyatri Dergisi 13(1)' },
     { grade: 3, wpm: 91, mode: 'oral', source: 'Erden, Kurdoğlu ve Uslu (2002), Türk Psikiyatri Dergisi 13(1)' },
     { grade: 4, wpm: 97, mode: 'oral', source: 'Erden, Kurdoğlu ve Uslu (2002), Türk Psikiyatri Dergisi 13(1)' },
+    { grade: 5, wpm: 121, mode: 'oral', source: 'Erden, Kurdoğlu ve Uslu (2002), Türk Psikiyatri Dergisi 13(1)' },
   ],
   passages: [
     {
@@ -439,7 +440,7 @@ export const okumaHizi: ReadingInstrument = {
       'Görev pilot aşamasındadır. Anlama sorularının madde analizi ve metinlerin sınıf düzeyine uygunluğu henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye’de 1–4. sınıflar için sesli okuma hızı çalışmaları vardır (ör. 1–4. sınıflarda dakikada ortalama 45, 73, 91 ve 97 kelime); bu test sessiz okumayı ölçtüğü için 3. ve 4. sınıf raporlarında bu ortalama yalnızca kaba bir fikir olarak verilir. 5. sınıf ve üzeri ile sessiz okuma için yayımlanmış bir Türkiye normu bulunmamaktadır. Bu nedenle hız bir norma göre değerlendirilmez; anlama düzeyiyle birlikte yorumlanır.',
+      'Türkiye’de 1–5. sınıflar için sesli okuma hızı çalışmaları vardır (ör. 1–5. sınıflarda dakikada ortalama 45, 73, 91, 97 ve 121 kelime); bu test sessiz okumayı ölçtüğü için 3–5. sınıf raporlarında bu ortalama yalnızca kaba bir fikir olarak verilir. 6. sınıf ve üzeri ile sessiz okuma için yayımlanmış bir Türkiye normu bulunmamaktadır. Bu nedenle hız bir norma göre değerlendirilmez; anlama düzeyiyle birlikte yorumlanır.',
     ageNote: '3. sınıftan itibaren uygundur. Her sınıf grubu kendi düzeyine göre yazılmış farklı bir metin okur.',
     license: 'Özgün içerik: metinler ve sorular Ölçekhane’ye aittir.',
     limitations: [

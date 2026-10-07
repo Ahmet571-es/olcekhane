@@ -25,14 +25,41 @@ export function afterPaint(): Promise<number> {
 
 export const isAbort = (e: unknown) => e instanceof DOMException && e.name === 'AbortError';
 
-/** Görev sürerken sayfadan ayrılmaya çalışıldığında uyarı. */
-export function useLeaveWarning(active: boolean) {
+const LEAVE_TEXT = 'Sayfadan ayrılırsan bu testteki ilerlemen silinir; hiçbir yere kaydedilmez. Yine de ayrılmak istiyor musun?';
+
+/**
+ * Görev sürerken sayfadan ayrılmaya çalışıldığında uyarı. Tarayıcının kendi uyarısı (beforeunload) iPhone ve iPad'de
+ * çıkmadığı için sayfadan çıkaran bağlantılarda (ör. "Vazgeç") ayrıca sorulur; onaylanırsa tarayıcı ikinci kez sormaz.
+ * Geri kaydırma hareketi gibi tarayıcının kendi düğmeleri yakalanamaz.
+ */
+export function useLeaveWarning(active: boolean, text: string = LEAVE_TEXT) {
   useEffect(() => {
     if (!active) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    let confirmed = false;
+    const warn = (e: BeforeUnloadEvent) => {
+      if (!confirmed) e.preventDefault();
+    };
+    const click = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
+      if (!(a instanceof HTMLAnchorElement) || a.target === '_blank' || a.hasAttribute('download')) return;
+      const url = new URL(a.href, window.location.href);
+      // Aynı sayfadaki bir bölüme giden bağlantı (#...) sayfadan çıkarmaz.
+      if (url.origin === window.location.origin && url.pathname === window.location.pathname && url.search === window.location.search) return;
+      if (window.confirm(text)) {
+        confirmed = true;
+      } else {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
     window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [active]);
+    document.addEventListener('click', click, true);
+    return () => {
+      window.removeEventListener('beforeunload', warn);
+      document.removeEventListener('click', click, true);
+    };
+  }, [active, text]);
 }
 
 /**

@@ -67,10 +67,23 @@ export function joinNames(names: string[]): string {
   return `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`;
 }
 
+const SAYILAR = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'];
+
+/** "dört haftalık küçük adımlar": haftaların sayısı yol haritasındaki haftalardan gelir (başlıklar ve giriş aynı sayıyı söyler). */
+export function weeksPhrase(n: number): string {
+  return `${SAYILAR[n] ?? String(n)} haftalık küçük adımlar`;
+}
+
+/** Bölüm başlığı: "Dört haftalık küçük adımlar". */
+export function weeksTitle(n: number): string {
+  const p = weeksPhrase(n);
+  return p.charAt(0).toLocaleUpperCase('tr-TR') + p.slice(1);
+}
+
 /** Son haftanın sonundaki öneri: kişinin sınıfına uyan, yayındaki testler; uyan test yoksa boş. */
 export function nextStep(next: NextTest[], purpose: { you: string; parent: string }, parent: boolean): string {
   // "Matematik Konu Tarama Testi testini" ya da "Dur-Git Görevi testini" denmez: addaki sözcük cümledeki "testini" ile birleşir.
-  const names = next.map((n) => n.name.replace(/ (Testi|Görevi)$/, ''));
+  const names = next.map((n) => n.name.replace(/ (Testi|Görevi|Görevleri|Envanteri|Ölçeği)$/, ''));
   if (names.length === 0) return '';
   return parent
     ? ` Bir sonraki adım olarak ${purpose.parent} için ${joinNames(names)} ${names.length > 1 ? 'testlerini' : 'testini'} önerebilirsiniz.`
@@ -134,7 +147,7 @@ export function buildRoadmap(
     ];
   });
   const stress = t.wellbeing ? sections.find((s) => s.scaleKey === t.wellbeing!.scale && bandGroup(s.band) === t.wellbeing!.group) : undefined;
-  const links = [{ label: 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
+  const links = [{ label: a === 'adult' ? 'Etkili çalışma yöntemleri' : 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
   const stressLink = t.wellbeing?.link === undefined ? { label: 'Sınav kaygısı', href: '/rehber/sinav-kaygisi' } : t.wellbeing.link;
   if (stress && stressLink) links.push(stressLink);
   links.push(...(t.links ?? []));
@@ -162,19 +175,26 @@ export function buildRoadmap(
     t.thirdWeek === 'lowest' ? others.sort((x, y) => rel(x) - rel(y)) : others.sort((x, y) => distance(y) - distance(x));
   const thirdKey = stress?.scaleKey ?? ordered[0]?.scaleKey;
   const third = thirdKey ? action(thirdKey) : t.extraWeek ? { name: t.extraWeek.title, text: pick(t.extraWeek.text, a) } : null;
-  const nextNames = opts.next.map((n) => n.name);
-  const nextSentence =
-    nextNames.length === 0
-      ? ''
-      : parent
-        ? ` Bir sonraki adım olarak çocuğunuzun ilgilerini görmek için ${joinNames(nextNames)} ${nextNames.length > 1 ? 'testlerini' : 'testini'} önerebilirsiniz.`
-        : ` Bir sonraki adım olarak ilgilerini görmek için ${joinNames(nextNames)} ${nextNames.length > 1 ? 'testlerinden birini' : 'testini'} çözebilirsin.`;
+  // Çalışma düzeni boyutu hesaplanamadıysa (ör. o boyutta çok madde boş bırakıldı) 2. hafta sıradaki boyuta ayrılır; plan
+  // dört hafta kalır.
+  const secondKey = planning ? null : ordered.find((s) => s.scaleKey !== thirdKey && action(s.scaleKey))?.scaleKey;
+  const second = planning
+    ? { name: t.planningTitle ?? 'Çalışma düzeni', text: planning.text }
+    : secondKey
+      ? action(secondKey)
+      : null;
+  const nextSentence = nextStep(
+    opts.next,
+    { you: 'ilgilerini görmek', parent: 'çocuğunuzun ilgilerini görmek' },
+    parent,
+  );
+  const middle = [second, third].filter((x): x is { name: string; text: string } => x !== null);
   const weeks = [
     { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a) },
-    ...(planning ? [{ label: '2. hafta', title: t.planningTitle ?? 'Çalışma düzeni', text: planning.text }] : []),
-    ...(third ? [{ label: `${planning ? 3 : 2}. hafta`, title: third.name, text: third.text }] : []),
+    ...middle.map((x, i) => ({ label: `${i + 2}. hafta`, title: x.name, text: x.text })),
   ];
   weeks.push({ label: `${weeks.length + 1}. hafta`, title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextSentence });
+  const span = weeksPhrase(weeks.length);
 
   const contents = parent
     ? ['çocuğunuzun nasıl çalışabileceği', ...(hasSettings ? ['hangi ortamlarda rahat edebileceği'] : []), 'ona nasıl yaklaşabileceğiniz']
@@ -183,8 +203,8 @@ export function buildRoadmap(
   return {
     preview: opts.preview,
     intro: parent
-      ? `Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: ${contents.join(', ')} ve dört haftalık küçük adımlar. Öneriler bir tanı ya da kesin hüküm değildir; çocuğunuza uyanları birlikte seçin.`
-      : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${contents.join(', ')} ve dört haftalık küçük adımlar. Öneriler bir tanı ya da kesin hüküm değildir; sana uyanları seç.`,
+      ? `Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: ${contents.join(', ')} ve ${span}. Öneriler bir tanı ya da kesin hüküm değildir; çocuğunuza uyanları birlikte seçin.`
+      : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${contents.join(', ')} ve ${span}. Öneriler bir tanı ya da kesin hüküm değildir; sana uyanları seç.`,
     bars,
     standout,
     standoutNote,

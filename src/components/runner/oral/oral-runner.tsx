@@ -55,6 +55,7 @@ const MIC_HELP: Record<MicErrorKind, string> = {
     'Mikrofon izni verilmedi. Adres çubuğundaki kilit ya da ayar simgesine dokunup bu site için mikrofona izin verin ve sayfayı yenileyin. iPhone ve iPad’de: Ayarlar › Safari › Mikrofon; Android’de: tarayıcının site ayarları › Mikrofon.',
   notfound: 'Bu cihazda mikrofon bulunamadı. Mikrofonlu bir kulaklık takın ya da mikrofonu olan bir telefon, tablet veya bilgisayar kullanın.',
   busy: 'Mikrofon şu an kullanılamıyor: Başka bir uygulama (ör. görüntülü arama) kullanıyor olabilir. O uygulamayı kapatıp yeniden deneyin.',
+  lost: 'Mikrofonla bağlantı kesildi (ör. kulaklık çıkarıldı ya da başka bir uygulama mikrofonu aldı). Mikrofonu yeniden açıp devam edin.',
   unknown: 'Mikrofon açılamadı. Sayfayı yenileyip yeniden deneyin; olmazsa başka bir tarayıcı ya da cihaz kullanın.',
 };
 
@@ -170,8 +171,14 @@ export function OralRunner(props: {
   const heading = useRef<HTMLHeadingElement>(null);
   const urls = useRef<string[]>([]);
   const autoStop = useRef<number | null>(null);
+  const testTimer = useRef<number | null>(null);
+  // Düğmeye iki kez basılınca iki kayıt başlamasın.
+  const starting = useRef(false);
 
-  useLeaveWarning(step !== 'intro' && step !== 'passage');
+  useLeaveWarning(
+    step !== 'intro' && step !== 'passage',
+    'Sayfadan ayrılırsanız kayıtlar ve işaretler silinir; hiçbir yere kaydedilmez. Yine de ayrılmak istiyor musunuz?',
+  );
 
   // Her adımda sayfanın başına dön ve başlığa odaklan (ekran okuyucular yeni adımı duyurur).
   useEffect(() => {
@@ -190,6 +197,7 @@ export function OralRunner(props: {
   useEffect(
     () => () => {
       if (autoStop.current) window.clearTimeout(autoStop.current);
+      if (testTimer.current) window.clearTimeout(testTimer.current);
     },
     [],
   );
@@ -198,6 +206,26 @@ export function OralRunner(props: {
     urls.current.push(t.url);
     return t;
   };
+  // Yerine yenisi alınan kaydı bellekten hemen bırak (uzun kayıtlar sayfa kapanana kadar bellekte kalmasın).
+  const drop = (t: Take | null) => {
+    if (!t) return;
+    URL.revokeObjectURL(t.url);
+    const i = urls.current.indexOf(t.url);
+    if (i >= 0) urls.current.splice(i, 1);
+  };
+
+  /** Mikrofonu kapatıp mikrofon adımını baştan açar: bağlantı koparsa kullanıcı sayfayı yenilemeden devam edebilir. */
+  function resetMic(kind: MicErrorKind | null) {
+    if (testTimer.current) window.clearTimeout(testTimer.current);
+    recorder?.close();
+    setRecorder(null);
+    drop(testTake);
+    setTestTake(null);
+    setTestHeard(null);
+    setTestListened(false);
+    setTesting(false);
+    setMicError(kind);
+  }
 
   async function openMic() {
     setOpening(true);
@@ -213,13 +241,19 @@ export function OralRunner(props: {
   }
 
   async function micTest() {
-    if (!recorder) return;
+    if (!recorder || testing || recorder.isRecording) return;
+    if (recorder.lost) {
+      resetMic('lost');
+      return;
+    }
     setTesting(true);
     setTestHeard(null);
+    drop(testTake);
     setTestTake(null);
     setTestListened(false);
     await recorder.start();
-    window.setTimeout(() => {
+    testTimer.current = window.setTimeout(() => {
+      testTimer.current = null;
       const rec = recorder.stop();
       setTestTake(keep(makeTake(rec)));
       setTesting(false);
@@ -227,16 +261,23 @@ export function OralRunner(props: {
   }
 
   async function startReading() {
-    if (!recorder) return;
-    if (!(await recorder.wake())) {
-      setMicError('busy');
-      setStep('mic');
-      return;
+    if (!recorder || starting.current || recorder.isRecording) return;
+    starting.current = true;
+    try {
+      if (!(await recorder.wake())) {
+        // Mikrofon koptuysa ya da ses sistemi yeniden başlatılamıyorsa mikrofon adımı baştan açılır.
+        resetMic(recorder.lost ? 'lost' : 'busy');
+        setStep('mic');
+        return;
+      }
+      await recorder.start();
+      setRecStart(performance.now());
+      setStep('reading');
+      if (autoStop.current) window.clearTimeout(autoStop.current);
+      autoStop.current = window.setTimeout(() => stopReading(), MAX_READING_MS);
+    } finally {
+      starting.current = false;
     }
-    await recorder.start();
-    setRecStart(performance.now());
-    setStep('reading');
-    autoStop.current = window.setTimeout(() => stopReading(), MAX_READING_MS);
   }
 
   function stopReading() {
@@ -247,11 +288,23 @@ export function OralRunner(props: {
   }
 
   async function startRetell() {
-    if (!recorder) return;
-    await recorder.start();
-    setRecStart(performance.now());
-    setRecordingRetell(true);
-    autoStop.current = window.setTimeout(() => stopRetell(), MAX_RETELL_MS);
+    if (!recorder || starting.current || recorder.isRecording) return;
+    starting.current = true;
+    try {
+      // Okumadan sonra mikrofon koptuysa (ör. kulaklık çıkarıldı) anlatma sessiz kaydedilmesin: yeniden açılması istenir.
+      if (!(await recorder.wake())) {
+        setMicError(recorder.lost ? 'lost' : 'busy');
+        return;
+      }
+      setMicError(null);
+      await recorder.start();
+      setRecStart(performance.now());
+      setRecordingRetell(true);
+      if (autoStop.current) window.clearTimeout(autoStop.current);
+      autoStop.current = window.setTimeout(() => stopRetell(), MAX_RETELL_MS);
+    } finally {
+      starting.current = false;
+    }
   }
 
   function stopRetell() {
@@ -259,6 +312,20 @@ export function OralRunner(props: {
     if (autoStop.current) window.clearTimeout(autoStop.current);
     setRetell(keep(makeTake(recorder.stop())));
     setRecordingRetell(false);
+  }
+
+  /** Anlatma adımında mikrofonu yeniden açar: eski kayıtlar korunur, yalnızca mikrofon yenilenir. */
+  async function reopenMic() {
+    setOpening(true);
+    try {
+      const r = await MicRecorder.open();
+      setRecorder(r);
+      setMicError(null);
+    } catch (err) {
+      setMicError(err instanceof MicError ? err.kind : 'unknown');
+    } finally {
+      setOpening(false);
+    }
   }
 
   function toHandoff() {
@@ -298,7 +365,7 @@ export function OralRunner(props: {
               contour: a.contour,
               interrupted: reading.rec.interrupted,
             },
-      marks: Object.fromEntries(Object.entries(marks).map(([k, v]) => [k, v])),
+      marks: Object.fromEntries(Object.entries(marks).map(([k, v]) => [k, v.said === undefined ? v : { ...v, said: v.said.trim() }])),
       listened,
       retell: retellSkipped ? null : { recorded: !!retell, ideas: [...ideas] },
       answers,
@@ -648,9 +715,20 @@ export function OralRunner(props: {
                   type="button"
                   className="btn btn-secondary"
                   onClick={() => {
+                    drop(reading);
                     setReading(null);
+                    if (silent) {
+                      // Ses alınamadıysa deneme kaydı da yinelenir; mikrofon koptuysa yeniden açılır.
+                      if (recorder?.lost) {
+                        resetMic('lost');
+                      } else {
+                        drop(testTake);
+                        setTestTake(null);
+                        setTestHeard(null);
+                        setTestListened(false);
+                      }
+                    }
                     setStep(silent ? 'mic' : 'ready');
-                    if (silent) setTestHeard(null);
                   }}
                 >
                   {silent ? 'Mikrofonu yeniden dene' : 'Aynı metni yeniden kaydet'}
@@ -659,6 +737,7 @@ export function OralRunner(props: {
                   type="button"
                   className="btn btn-quiet"
                   onClick={() => {
+                    drop(reading);
                     setReading(null);
                     setPassageKey(null);
                     setStep('passage');
@@ -679,6 +758,16 @@ export function OralRunner(props: {
       <>
         <p className="t-meta">Öğrenciye</p>
         {title('Şimdi metni kendi cümlelerinle anlat')}
+        {micError && !recordingRetell && (
+          <div className="notice notice-danger flex flex-col gap-2" role="alert">
+            <p>{MIC_HELP[micError]}</p>
+            <div>
+              <button type="button" className="btn btn-secondary" onClick={reopenMic} disabled={opening}>
+                {opening ? 'Mikrofon açılıyor…' : 'Mikrofonu yeniden aç'}
+              </button>
+            </div>
+          </div>
+        )}
         {!retell && !recordingRetell && (
           <>
             <p className="text-xl leading-relaxed">
@@ -730,7 +819,10 @@ export function OralRunner(props: {
               <button type="button" className="btn btn-primary btn-lg" onClick={() => setStep('questions')}>
                 Sorulara geç
               </button>
-              <button type="button" className="btn btn-quiet" onClick={() => setRetell(null)}>
+              <button type="button" className="btn btn-quiet" onClick={() => {
+                  drop(retell);
+                  setRetell(null);
+                }}>
                 Yeniden kaydet
               </button>
             </div>

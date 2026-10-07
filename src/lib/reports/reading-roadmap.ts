@@ -8,6 +8,19 @@ import { bandGroup, joinNames, nextStep, pick, type NextTest, type Roadmap } fro
  * başlayarak sıralanır (doğru oranı düşük olan önce, eşitlikte testteki sıra). Her beceri bir ile üç soruyla ölçüldüğü
  * için rozet yalnızca sayıyı söyler; düzey adı verilmez. Tek bir kısa metne dayandığı için kesin hüküm verilmez.
  */
+/**
+ * Sessiz okumada yetişkinlerin tipik hızının biraz üstü (Brysbaert, 2019: İngilizce kurgu dışı metinlerde dakikada ~238
+ * kelime). Türkçe kelimeler ortalamada daha uzun olduğu için bu eşik Türkçede daha da yüksek bir hıza denk gelir.
+ */
+const RUSH_WPM = 250;
+
+/** Rapordaki kalite uyarıları varken yol haritası da aynı dikkatle okunmalı (konu tarama ve okuma testlerinde). */
+export function cautionText(parent: boolean): string {
+  return parent
+    ? ' Raporda sonucun dikkatle yorumlanmasını gerektiren uyarılar var; bu öneriler de aynı dikkatle okunmalı.'
+    : ' Raporunda sonucunu dikkatle yorumlamayı gerektiren uyarılar var; bu önerileri de buna göre oku.';
+}
+
 export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate, opts: { preview: boolean; next: NextTest[] }): Roadmap | undefined {
   const rd = r.reading;
   const section = r.sections.find((s) => s.scaleKey === 'comprehension');
@@ -19,7 +32,12 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
   const sorted = [...skills].sort((x, y) => ratio(x) - ratio(y));
   const need = sorted.filter((s) => s.correct < s.total);
   const group = bandGroup(section.band) ?? 'average';
-  const pace: ReadingPace = rd.tooFast ? 'rush' : group === 'high' ? 'extend' : 'build';
+  // Anlama düşükken hız, yetişkinlerin sessiz okumadaki tipik hızının da üstündeyse (dakikada ~240 kelime; Brysbaert, 2019)
+  // metin büyük olasılıkla hızlı geçilmiştir: akıcılık çalışması yerine "yavaşla ve anla" önerilir.
+  const pace: ReadingPace = rd.tooFast ? 'rush' : group === 'low' && rd.wpm >= RUSH_WPM ? 'quick' : group === 'high' ? 'extend' : 'build';
+  const caution = (r.qualityNotes?.length ?? 0) > 0 || rd.tooFast ? cautionText(parent) : '';
+  const all = rd.skills;
+  const sum = (f: (s: (typeof all)[number]) => number) => all.reduce((n, s) => n + f(s), 0);
   const badge = (s: (typeof skills)[number]) =>
     s.total === 1
       ? s.correct
@@ -44,8 +62,8 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
   return {
     preview: opts.preview,
     intro: parent
-      ? `Bu bölüm sonuçları günlük okumaya taşımanız için öneriler içerir: ${joinNames(contents)}. Öneriler tek bir kısa metne dayanır; kesin hüküm değildir.`
-      : `Bu bölüm sonuçlarını günlük okumana taşıman için öneriler içerir: ${joinNames(contents)}. Öneriler tek bir kısa metne dayanır; kesin hüküm değildir.`,
+      ? `Bu bölüm sonuçları günlük okumaya taşımanız için öneriler içerir: ${joinNames(contents)}. Öneriler tek bir kısa metne dayanır; kesin hüküm değildir.${caution}`
+      : `Bu bölüm sonuçlarını günlük okumana taşıman için öneriler içerir: ${joinNames(contents)}. Öneriler tek bir kısa metne dayanır; kesin hüküm değildir.${caution}`,
     bars: skills.map((s) => ({
       key: s.key,
       label: s.label,
@@ -59,7 +77,8 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
       band: s.correct === s.total ? 'hepsi doğru' : '',
     })),
     standout: [
-      { title: 'Anlama', text: section.summary || section.bandLabel },
+      // Rapor şablonundaki özet üçüncü kişiyle yazılmıştır ("Anlamakta zorlandı"): öğrenciye doğru sayısı gösterilir.
+      { title: 'Anlama', text: parent ? section.summary || section.bandLabel : `${sum((x) => x.total)} sorudan ${sum((x) => x.correct)} doğru` },
       { title: 'Okuma hızı', text: `Dakikada ${rd.wpm} kelime` },
       ...(need[0] && ratio(need[0]) < 0.5 ? [{ title: 'En çok zorlanılan soru türü', text: need[0].label }] : []),
     ],

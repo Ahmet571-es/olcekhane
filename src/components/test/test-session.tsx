@@ -178,7 +178,7 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
   const [saved, setSaved] = useState<Set<Audience>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   // Rapor saklanmadığı için PDF indirilmeden sayfadan ayrılmak raporu kaybettirir.
-  useLeaveWarning(!!report && saved.size === 0);
+  useLeaveWarning(!!report && saved.size === 0, 'Raporu PDF olarak indirmeden ayrılırsan rapor silinir; hiçbir yere kaydedilmez. Yine de ayrılmak istiyor musun?');
 
   async function download() {
     setBusy(true);

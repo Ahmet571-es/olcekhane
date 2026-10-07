@@ -1,7 +1,7 @@
 import { RIASEC_TYPES, type RiasecKey } from '@/content/careers/riasec';
 import type { InterestRoadmapTemplate } from '@/content/roadmaps/types';
 import type { ReportContent } from './build';
-import { joinNames, pick, type NextTest, type Roadmap } from './roadmap';
+import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
 
 /**
  * İlgi testlerinin gelişim yol haritası: ders çalışma yerine ilgilerin nasıl keşfedileceği. Raporun en belirgin alanları
@@ -9,6 +9,18 @@ import { joinNames, pick, type NextTest, type Roadmap } from './roadmap';
  * Öneri niteliğindedir: meslek seçmez, kesin hüküm vermez. Ekranda ve PDF'te kişilik yol haritasıyla aynı bölümler
  * kullanılır.
  */
+/** Bütün alanlar düşük düzeydeyken "Kısaca" bölümündeki not (etkinlik sıklığında ve ilgi düzeyinde ayrı). */
+function lowNote(leisure: boolean, parent: boolean): string {
+  if (leisure) {
+    return parent
+      ? 'Çocuğunuz son bir yılda bu etkinliklerin çoğunu pek yapmamış; bu yüzden hiçbir alan öne çıkarılmadı. Bu, zamanının ya da imkânlarının kısıtlı olmasıyla ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.'
+      : 'Son bir yılda bu etkinliklerin çoğunu pek yapmamışsın; bu yüzden hiçbir alan öne çıkarılmadı. Bu, zamanının ya da imkânlarının kısıtlı olmasıyla ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.';
+  }
+  return parent
+    ? 'Etkinliklerin çoğundan pek hoşlanmayacağını belirttiği için hiçbir alan öne çıkarılmadı.'
+    : 'Etkinliklerin çoğundan pek hoşlanmayacağını belirttiğin için hiçbir alan öne çıkarılmadı.';
+}
+
 export function buildInterestRoadmap(
   r: ReportContent,
   t: InterestRoadmapTemplate,
@@ -23,8 +35,12 @@ export function buildInterestRoadmap(
       ? []
       : r.interests.top.map((x) => RIASEC_TYPES[x.key as RiasecKey].scaleKey)
     : (r.ranking?.top ?? []);
-  const top = topKeys.flatMap((k) => sections.filter((s) => s.scaleKey === k));
-  const hasPaths = Object.values(t.areas).some((x) => x.paths) && !!t.pathsNote;
+  // Bütün alanlar düşük düzeydeyse hiçbir alan "belirgin ilgi" diye öne çıkarılmaz: raporun kendi uyarısıyla çelişmez.
+  const allLow = r.interests ? r.interests.allLow : !!r.ranking?.allLow;
+  const top = allLow ? [] : topKeys.flatMap((k) => sections.filter((s) => s.scaleKey === k));
+  // Yüksek düzeyde alan yoksa (yalnızca görece en yüksek alanlar) eğitim ve meslek yolları önerilmez.
+  const noneHigh = !!r.ranking?.noneHigh;
+  const hasPaths = Object.values(t.areas).some((x) => x.paths) && !!t.pathsNote && !noneHigh;
 
   const area = (key: string) => t.areas[key];
   // Holland profilinin rapor şablonunda alanların kısa adı yoktur: o zaman düzey adı gösterilir.
@@ -36,13 +52,7 @@ export function buildInterestRoadmap(
   const second = week(0);
   const third = week(1);
 
-  const nextNames = opts.next.map((n) => n.name);
-  const nextSentence =
-    nextNames.length === 0
-      ? ''
-      : parent
-        ? ` Bir sonraki adım olarak ${t.nextPurpose.parent} için ${joinNames(nextNames)} ${nextNames.length > 1 ? 'testlerini' : 'testini'} önerebilirsiniz.`
-        : ` Bir sonraki adım olarak ${t.nextPurpose.you} için ${joinNames(nextNames)} ${nextNames.length > 1 ? 'testlerinden birini' : 'testini'} çözebilirsin.`;
+  const nextSentence = nextStep(opts.next, t.nextPurpose, parent);
 
   // Öne çıkan alan yoksa keşif, eğitim yolları ve yaklaşım bölümleri de yoktur; giriş yalnızca olanları sayar.
   const contents = top.length
@@ -69,7 +79,7 @@ export function buildInterestRoadmap(
       band: s.bandLabel,
     })),
     standout: top.map((s) => ({ title: s.name, text: summary(s) })),
-    standoutNote: top.length ? null : pick(t.openNote, a),
+    standoutNote: top.length ? null : allLow ? lowNote(!!t.leisure, parent) + (t.leisure ? '' : ` ${pick(t.openNote, a)}`) : pick(t.openNote, a),
     study: {
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
       intro: pick(t.studyIntro, a),

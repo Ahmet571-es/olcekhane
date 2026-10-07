@@ -11,6 +11,9 @@ import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadma
  */
 
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
+// Doğru okuma oranı aşağı yuvarlanarak gösterilir: düzey yuvarlanmamış değere göre verildiği için %96,99 "%97" görünüp
+// "destekle" yazmasın.
+const accText = (x: number) => nf1.format(Math.floor(x * 10 + 1e-9) / 10);
 
 interface AspectState {
   key: OralAspect;
@@ -28,8 +31,8 @@ export function oralAspects(r: OralResult): AspectState[] {
       key: 'accuracy',
       ratio: r.accuracyPct / 100,
       need: r.accuracyLevel !== 'easy',
-      badge: `Doğru okuma %${nf1.format(r.accuracyPct)}`,
-      bar: { value: r.accuracyPct, min: 0, max: 100, valueLabel: `%${nf1.format(r.accuracyPct)}`, band: LEVEL_TEXT[r.accuracyLevel].short },
+      badge: `Doğru okuma %${accText(r.accuracyPct)}`,
+      bar: { value: r.accuracyPct, min: 0, max: 100, valueLabel: `%${accText(r.accuracyPct)}`, band: LEVEL_TEXT[r.accuracyLevel].short },
     },
     {
       key: 'prosody',
@@ -70,7 +73,7 @@ export function buildOralRoadmap(
   r: OralResult,
   audience: Audience,
   t: OralRoadmapTemplate,
-  opts: { preview: boolean; next: NextTest[] },
+  opts: { preview: boolean; next: NextTest[]; grade: number },
 ): Roadmap {
   const parent = audience === 'parent';
   const aspects = oralAspects(r);
@@ -87,7 +90,9 @@ export function buildOralRoadmap(
   const third = need[1]
     ? { title: t.aspects[need[1].key].title, text: pick(t.aspects[need[1].key].action, audience) }
     : { title: t.thirdWeek[r.level].title, text: pick(t.thirdWeek[r.level].text, audience) };
-  const last = r.level === 'easy' && r.passageGrade < 8 ? t.lastWeek.up : t.lastWeek.same;
+  // Öğrenci yalnızca kendi sınıfının ve bir alt, bir üst sınıfın metinlerini seçebilir: seçebileceği bir üst metin yoksa üst
+  // düzey önerilmez.
+  const last = r.level === 'easy' && r.passageGrade < Math.min(8, opts.grade + 1) ? t.lastWeek.up : t.lastWeek.same;
 
   return {
     preview: opts.preview,

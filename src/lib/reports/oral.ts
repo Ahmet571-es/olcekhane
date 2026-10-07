@@ -6,6 +6,7 @@ import {
   GENRE_LABELS,
   LEVEL_TEXT,
   NEXT_TEXT,
+  NEXT_TEXT_NO_OTHER,
   PROFILE_TEXT,
   PROSODY_DIMENSIONS,
   SKILL_LABELS,
@@ -46,6 +47,9 @@ export interface OralReportBlock {
 
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
+// Doğru okuma oranı aşağı yuvarlanarak gösterilir: düzey yuvarlanmamış değere göre verildiği için %96,99 "%97" görünüp
+// "destekle" yazmasın.
+const accText = (x: number) => nf1.format(Math.floor(x * 10 + 1e-9) / 10);
 const pick = (audience: Audience, t: { student: string; parent: string }) => (audience === 'parent' ? t.parent : t.student);
 
 /** "1 dakika 12 saniye", "48 saniye". */
@@ -97,8 +101,8 @@ function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
   const parent = audience === 'parent';
   const parts = [
     parent
-      ? `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudu; hata sayısı ${r.errors} (doğru okuma %${nf1.format(r.accuracyPct)}).`
-      : `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudun (doğru okuma %${nf1.format(r.accuracyPct)}).`,
+      ? `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudu; hata sayısı ${r.errors} (doğru okuma %${accText(r.accuracyPct)}).`
+      : `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudun (doğru okuma %${accText(r.accuracyPct)}).`,
     pick(audience, ACCURACY_TEXT[r.accuracyLevel]),
   ];
   const c = r.counts;
@@ -255,6 +259,16 @@ function timeline(r: OralResult, audience: Audience): OralReportBlock['timeline'
   };
 }
 
+/**
+ * Bir sonraki değerlendirme için öneri. Öğrenci kendi sınıfının ve bir alt, bir üst sınıfın metinlerini seçebilir
+ * (1–8. sınıf): seçebileceği bir üst ya da alt metin yoksa onu önermeyen cümle verilir.
+ */
+function nextText(r: OralResult, grade: number) {
+  if (r.level === 'easy' && r.passageGrade >= Math.min(8, grade + 1)) return NEXT_TEXT_NO_OTHER.easy;
+  if (r.level === 'hard' && r.passageGrade <= Math.max(1, grade - 1)) return NEXT_TEXT_NO_OTHER.hard;
+  return NEXT_TEXT[r.level];
+}
+
 export function buildOralReport(input: {
   def: OralReadingInstrument;
   passage: OralPassage;
@@ -285,15 +299,15 @@ export function buildOralReport(input: {
     criteria: [
       {
         label: 'Doğru okuma',
-        value: `%${nf1.format(r.accuracyPct)}`,
+        value: `%${accText(r.accuracyPct)}`,
         level: LEVEL_TEXT[r.accuracyLevel].short,
-        rule: `%${ORAL_CRITERIA.accuracy.easy} ve üzeri rahat, %${ORAL_CRITERIA.accuracy.support}–${ORAL_CRITERIA.accuracy.easy - 1} destekle, %${ORAL_CRITERIA.accuracy.support}’ın altı zor`,
+        rule: `%${ORAL_CRITERIA.accuracy.easy} ve üzeri rahat, %${ORAL_CRITERIA.accuracy.support} ile %${ORAL_CRITERIA.accuracy.easy} arası destekle, %${ORAL_CRITERIA.accuracy.support}’ın altı zor`,
       },
       {
         label: 'Anlama (sorular)',
         value: `%${nf0.format(r.comprehension.pct)}`,
         level: LEVEL_TEXT[r.comprehension.level].short,
-        rule: `%${ORAL_CRITERIA.comprehension.easy} ve üzeri rahat, %${ORAL_CRITERIA.comprehension.support}–${ORAL_CRITERIA.comprehension.easy - 1} destekle, %${ORAL_CRITERIA.comprehension.support}’ın altı zor`,
+        rule: `%${ORAL_CRITERIA.comprehension.easy} ve üzeri rahat, %${ORAL_CRITERIA.comprehension.support} ile %${ORAL_CRITERIA.comprehension.easy} arası destekle, %${ORAL_CRITERIA.comprehension.support}’ın altı zor`,
       },
     ],
     marked: r.marked,
@@ -318,7 +332,7 @@ export function buildOralReport(input: {
       .filter(([, v]) => v.total > 0)
       .map(([k, v]) => ({ label: SKILL_LABELS[k], correct: v.correct, total: v.total })),
     retell: r.retell ? passage.ideas.map((x) => ({ text: x.text, said: r.retell!.mentioned.includes(x.key), core: x.core })) : null,
-    next: pick(audience, NEXT_TEXT[r.level]),
+    next: pick(audience, nextText(r, grade)),
   };
 
   return {
@@ -333,7 +347,7 @@ export function buildOralReport(input: {
     chart: null,
     keyFigures: [
       { label: 'Dakikada doğru okunan kelime', value: nf0.format(r.wcpm), note: `Okuma hızı: dakikada ${r.wpm} kelime` },
-      { label: 'Doğru okuma', value: `%${nf1.format(r.accuracyPct)}`, note: `${r.wordCount} kelimede ${r.errors} hata` },
+      { label: 'Doğru okuma', value: `%${accText(r.accuracyPct)}`, note: `${r.wordCount} kelimede ${r.errors} hata` },
       { label: 'Okuma süresi', value: durationText(r.readingMs).replace(' dakika', ' dk').replace(' saniye', ' sn'), note: `${r.wordCount} kelimelik metin` },
       { label: 'Anlama', value: `${r.comprehension.correct} / ${r.comprehension.total}`, note: 'doğru cevap' },
       { label: 'Yeniden anlatma', value: r.retell ? `${r.retell.mentioned.length} / ${r.retell.total}` : '—', note: r.retell ? 'fikir söylendi' : 'yapılmadı' },

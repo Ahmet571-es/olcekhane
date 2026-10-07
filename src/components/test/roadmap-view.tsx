@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { Roadmap } from '@/lib/reports/roadmap';
+import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
 import { Profile3D } from './profile-3d';
 
 /**
@@ -122,7 +122,7 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
 
       <section aria-labelledby="haftalar" className="flex flex-col gap-4">
         <h3 id="haftalar" className="t-h2">
-          Dört haftalık küçük adımlar
+          {weeksTitle(rm.weeks.length)}
         </h3>
         <ol className="relative flex flex-col gap-5 border-l-2 border-rule pl-6">
           {rm.weeks.map((w) => (

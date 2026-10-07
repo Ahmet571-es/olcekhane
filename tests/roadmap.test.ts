@@ -46,7 +46,7 @@ function hasSettings(slug: string): boolean {
 }
 
 /** Bir düzey birleşimi için yol haritası (rapor metinleri sitedeki şablondan). */
-function roadmapFor(slug: string, bands: Band[], audience: Audience): Roadmap {
+function roadmapFor(slug: string, bands: Band[], audience: Audience, edit?: (sections: Record<string, unknown>[]) => void): Roadmap {
   const { t, tpl, scales } = setup(slug);
   const sections = scales.map((sc, i) => {
     const band = bands[i];
@@ -70,6 +70,7 @@ function roadmapFor(slug: string, bands: Band[], audience: Audience): Roadmap {
       percentile: null,
     };
   });
+  edit?.(sections);
   const content = { audience, sections } as unknown as ReportContent;
   return buildRoadmap(content, t, { preview: true, next: [{ name: 'Meslek İlgi Alanları', href: '/testler/meslek-ilgi-alanlari' }] });
 }
@@ -515,5 +516,31 @@ describe('üç boyutlu sütun grafiği', () => {
     expect(empty.polys.every((p) => p.opacity === undefined)).toBe(true);
     expect(shade('#808080', 0.5)).toBe('#404040');
     expect(shade('#808080', 2)).toBe('#ffffff');
+  });
+});
+
+describe('Yol haritası: hesaplanamayan boyut', () => {
+  it('çalışma düzeni boyutu hesaplanamasa da (ör. o boyutta çok madde boş) plan dört haftadır; giriş aynı sayıyı söyler', () => {
+    let n = 0;
+    for (const slug of Object.keys(ROADMAPS)) {
+      const { t, scales, bands } = setup(slug);
+      if (scales.length < 3) continue;
+      for (const audience of AUDIENCES) {
+        const rm = roadmapFor(
+          slug,
+          scales.map((_, i) => bands[i % bands.length]),
+          audience,
+          (sections) => {
+            const p = sections.find((s) => s.scaleKey === t.planningScale)!;
+            Object.assign(p, { value: null, band: null, ciLow: null, ciHigh: null });
+          },
+        );
+        n++;
+        expect(rm.weeks.map((w) => w.label), slug).toEqual(['1. hafta', '2. hafta', '3. hafta', '4. hafta']);
+        expect(new Set(rm.weeks.map((w) => w.title)).size, slug).toBe(4);
+        expect(rm.intro, slug).toContain('dört haftalık küçük adımlar');
+      }
+    }
+    expect(n).toBeGreaterThan(10);
   });
 });

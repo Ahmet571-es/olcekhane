@@ -142,7 +142,8 @@ describe('matematik konu tarama: yol haritası şablonu', () => {
           } else {
             check(rm.approach === null && !/çocuğunuz/i.test(texts(rm).join(' ')), what, 'öğrenci metni');
           }
-          check(rm.weeks[3].text.includes('Çalışma Alışkanlıkları Envanteri testini'), what, 'sonraki test');
+          // Addaki "Envanteri" cümledeki "testini" ile yinelenmez.
+          check(rm.weeks[3].text.includes('Çalışma Alışkanlıkları testini'), what, 'sonraki test');
           for (const p of problems(rm)) check(false, what, p);
         }
       }

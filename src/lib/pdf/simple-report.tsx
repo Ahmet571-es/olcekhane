@@ -4,7 +4,7 @@ import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, 
 import { bars3dScene } from '@/lib/charts/bars3d';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { OralReportBlock } from '@/lib/reports/oral';
-import type { Roadmap } from '@/lib/reports/roadmap';
+import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
 import type { OralMarkedToken } from '@/lib/scoring/oral';
 import type { RulerRow, SimpleChart, SimpleReport } from '@/lib/reports/simple';
 
@@ -669,7 +669,7 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
       )}
 
       <Text style={s.h2} minPresenceAhead={80}>
-        Dört haftalık küçük adımlar
+        {weeksTitle(rm.weeks.length)}
       </Text>
       {rm.weeks.map((w) => (
         <View key={w.label} style={{ flexDirection: 'row', gap: 10, paddingVertical: 5 }} wrap={false}>

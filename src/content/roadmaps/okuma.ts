@@ -11,6 +11,8 @@ import type { ReadingRoadmapTemplate } from './types';
  *    okuma teknikleri önerilmez: anlamayı azaltır; hız, okuma deneyimi ve kelime bilgisiyle artar (Rayner ve ark., 2016).
  *  - Her soru türü bir ile üç soruyla ölçülür; rozet yalnızca sayıyı söyler, düzey adı verilmez.
  *  - Rapordaki metinler ve öneriler tekrar edilmez; tanı koyan dil kullanılmaz. Test yetişkinlere açık değildir.
+ *  - Test 3. sınıftan mezunlara kadar açıktır ve metinler sınıfa göre ayrılmaz: veli önerileri her yaşa uyacak biçimde
+ *    yazılır; yalnızca küçük çocuklara uyan bir öneri "küçük yaştaysa" diye ayrıca verilir.
  */
 export const okumaRoadmap: ReadingRoadmapTemplate = {
   version: 'okuma-yol-haritasi-1',
@@ -46,7 +48,7 @@ export const okumaRoadmap: ReadingRoadmapTemplate = {
       },
       action: {
         student: 'Bu hafta okuduğun bir öyküde ya da haberde açıkça yazmayan üç şeyi çıkar ve her birinin hangi cümleden anlaşıldığını yaz.',
-        parent: 'Bu hafta birlikte okuduğunuz bir öyküde çocuğunuza "Bu kişi neden böyle davrandı, bunu nereden anladın?" diye sorun.',
+        parent: 'Bu hafta çocuğunuzla okuduğu bir öykü ya da haber üzerine konuşurken ona "Bu kişi neden böyle davrandı, bunu nereden anladın?" diye sorun.',
       },
     },
     vocabulary: {
@@ -100,25 +102,41 @@ export const okumaRoadmap: ReadingRoadmapTemplate = {
         },
       },
     },
+    quick: {
+      text: {
+        student:
+          'Metni oldukça hızlı okudun ama anlama soruları seni zorladı. Biraz yavaşlayıp her paragrafın sonunda ne anlatıldığını kendine söylemek anlamanı kolaylaştırabilir.',
+        parent:
+          'Çocuğunuz metni oldukça hızlı okumuş ama anlama soruları onu zorlamış. Biraz yavaşlayıp paragraf aralarında ne anlatıldığını kendine söylemesi anlamasını kolaylaştırabilir.',
+      },
+      week: {
+        title: 'Yavaşla ve anla',
+        text: {
+          student: 'Bu hafta her gün kısa bir metni acele etmeden oku; her paragraftan sonra durup ne anlatıldığını bir cümleyle söyle.',
+          parent: 'Bu hafta çocuğunuzla her gün kısa bir metni acele etmeden okuyun; her paragraftan sonra ne anlatıldığını size bir cümleyle söylemesini isteyin.',
+        },
+      },
+    },
     build: {
       text: {
         student:
           'Akıcı okumak, kelimeleri tek tek çözmeye uğraşmadan okuyabilmektir; akıcılık arttıkça zihnin anlamaya daha çok yer açar. Kısa bir metni sesli olarak birkaç kez okumak (tekrarlı okuma), akıcılığı geliştirmenin en çok araştırılmış yollarından biridir.',
         parent:
-          'Akıcı okumak, kelimeleri tek tek çözmeye uğraşmadan okuyabilmektir; akıcılık arttıkça anlamaya daha çok zihinsel kaynak kalır. Kısa bir metni sesli olarak birkaç kez okumak ya da sizinle sırayla okumak, akıcılığı geliştirmenin en çok araştırılmış yollarındandır.',
+          'Akıcı okumak, kelimeleri tek tek çözmeye uğraşmadan okuyabilmektir; akıcılık arttıkça anlamaya daha çok zihinsel kaynak kalır. Kısa bir metni sesli olarak birkaç kez okumak (tekrarlı okuma), akıcılığı geliştirmenin en çok araştırılmış yollarındandır; küçük yaştaki çocuklar için bir yetişkinle sırayla okumak da işe yarar.',
       },
       week: {
         title: 'Tekrarlı okuma',
         text: {
           student: 'Bu hafta her gün kısa bir paragrafı sesli olarak üç kez oku; her seferinde daha akıcı okuduğunu fark et.',
-          parent: 'Bu hafta her gün kısa bir paragrafı önce siz sesli okuyun, sonra çocuğunuz aynı paragrafı iki üç kez okusun.',
+          parent:
+            'Bu hafta çocuğunuz her gün kısa bir paragrafı sesli olarak iki üç kez okusun. Küçük yaştaysa paragrafı önce siz okuyarak örnek olabilirsiniz; daha büyükse her okumadan sonra neyin daha kolay geldiğini kendisi fark etsin.',
         },
       },
     },
     extend: {
       text: {
-        student: 'Metni anlayarak okudun. Farklı türlerde bol okumak ve kelime bilgini genişletmek, hem hızını hem anlamanı zamanla daha da geliştirir.',
-        parent: 'Çocuğunuz metni anlayarak okudu. Farklı türlerde bol okuması ve kelime bilgisinin genişlemesi, hem hızını hem anlamasını zamanla daha da geliştirir.',
+        student: 'Metni anlayarak okudun. Farklı türlerde bol okumak ve kelime bilgini genişletmek, hem hızını hem anlamanı zamanla geliştirebilir.',
+        parent: 'Çocuğunuz metni anlayarak okudu. Farklı türlerde bol okuması ve kelime bilgisinin genişlemesi, hem hızını hem anlamasını zamanla geliştirebilir.',
       },
       week: {
         title: 'Yeni türler',
@@ -165,7 +183,7 @@ export const okumaRoadmap: ReadingRoadmapTemplate = {
     low: [
       {
         title: 'Destekli okuma',
-        text: 'Kısa bir metni önce siz sesli okuyun, sonra aynı metni o okusun; bu tür destekli ve tekrarlı okuma akıcılığı geliştirir.',
+        text: 'Küçük yaştaysa kısa bir metni önce siz sesli okuyun, sonra aynı metni o okusun; bu tür destekli ve tekrarlı okuma akıcılığı geliştirmeye yardım eder. Daha büyükse ilgisini çeken kısa yazıları (ör. bir haber ya da bir dergi yazısı) birlikte seçip okuduklarınız üzerine konuşmak hem akıcılığı hem anlamayı destekler.',
       },
       {
         title: 'Baskı yapmadan',
@@ -173,7 +191,7 @@ export const okumaRoadmap: ReadingRoadmapTemplate = {
       },
       {
         title: 'Öğretmenle birlikte',
-        text: 'Gözlemlerinizi sınıf öğretmeniyle paylaşın; okuldaki okuma çalışmalarıyla evdekiler birbirini tamamlar.',
+        text: 'Gözlemlerinizi öğretmenleriyle paylaşın; okuldaki okuma çalışmalarıyla evdekiler birbirini tamamlar.',
       },
     ],
     average: [
@@ -183,7 +201,7 @@ export const okumaRoadmap: ReadingRoadmapTemplate = {
       },
       {
         title: 'Kelime merakı',
-        text: 'Bilmediği kelimelerin anlamını birlikte tahmin edip sözlükten kontrol etmeyi bir oyuna dönüştürün.',
+        text: 'Bilmediği kelimelerin anlamını önce cümleden tahmin edip sonra sözlükten kontrol etmesini önerin; küçük yaştaysa bunu birlikte bir oyuna dönüştürebilirsiniz.',
       },
     ],
     high: [
@@ -219,6 +237,6 @@ export const okumaRoadmap: ReadingRoadmapTemplate = {
     you: 'derslerdeki öteki güçlü ve eksik yanlarını da görmek',
     parent: 'çocuğunuzun derslerdeki öteki güçlü ve eksik yanlarını da görmek',
   },
-  links: [{ label: 'Okuma hızı ve anlama', href: '/rehber/okuma-hizi-ve-anlama' }],
+  links: [{ label: 'Okuma hızı mı, okuduğunu anlama mı?', href: '/rehber/okuma-hizi-ve-okudugunu-anlama' }],
   sources: [KAYNAK.gough, KAYNAK.kuhn, KAYNAK.nrp, KAYNAK.rayner],
 };

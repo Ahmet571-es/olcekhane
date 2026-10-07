@@ -37,7 +37,8 @@ function clean(m: OralMark): OralMark | null {
   const out: OralMark = {};
   if (m.s) out.s = m.s;
   if (m.s === 'sub') {
-    if (m.said?.trim()) out.said = m.said.trim().slice(0, 40);
+    // Yazarken boşluk silinmez ("su içti" yazılabilsin); baştaki boşluk atılır, sondaki gönderirken atılır.
+    if (m.said?.trim()) out.said = m.said.trimStart().slice(0, 40);
     if (m.kind) out.kind = m.kind;
     if (m.meaning !== undefined) out.meaning = m.meaning;
   }
@@ -64,6 +65,7 @@ export function MarkStep(props: {
   const [sel, setSel] = useState<number | null>(null);
   const [confirm, setConfirm] = useState<'listen' | 'none' | null>(null);
   const player = useRef<PlayerHandle>(null);
+  const sheet = useRef<HTMLDivElement>(null);
 
   const counts = useMemo(() => {
     let errors = 0;
@@ -88,6 +90,15 @@ export function MarkStep(props: {
     player.current?.pause();
     setSel(i);
     setConfirm(null);
+    // Klavye ve ekran okuyucu kullananlar seçeneklere doğrudan geçsin (seçenekler sayfanın sonunda değil, hemen açılır).
+    requestAnimationFrame(() => sheet.current?.focus({ preventScroll: true }));
+  }
+
+  /** Seçenekleri kapatır ve odağı işaretlenen kelimeye geri verir. */
+  function close() {
+    const i = sel;
+    setSel(null);
+    if (i !== null) requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(`[data-kelime="${i}"]`)?.focus({ preventScroll: true }));
   }
 
   function finish() {
@@ -173,6 +184,7 @@ export function MarkStep(props: {
               <span key={t.i}>
                 <button
                   type="button"
+                  data-kelime={t.i}
                   onClick={() => pick(t.i)}
                   aria-pressed={sel === t.i}
                   className={`relative inline-block rounded-md px-0.5 transition-colors hover:bg-surface-2 focus-visible:outline-2 ${sel === t.i ? 'outline outline-2 outline-offset-1 outline-[var(--focus)]' : ''}`}
@@ -227,6 +239,14 @@ export function MarkStep(props: {
           className="fixed inset-x-0 bottom-0 z-40 max-h-[70vh] overflow-y-auto border-t border-rule-strong bg-surface shadow-[0_-12px_32px_-12px_rgb(19_32_59/0.35)]"
           role="dialog"
           aria-label={`“${flat[sel].text}” kelimesinin işareti`}
+          ref={sheet}
+          tabIndex={-1}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.stopPropagation();
+              close();
+            }
+          }}
         >
           <div className="container-page mx-auto flex max-w-3xl flex-col gap-3 py-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -249,7 +269,7 @@ export function MarkStep(props: {
                 >
                   →
                 </button>
-                <button type="button" className="btn btn-primary min-h-10" onClick={() => setSel(null)}>
+                <button type="button" className="btn btn-primary min-h-10" onClick={close}>
                   Tamam
                 </button>
               </div>

@@ -50,6 +50,7 @@ export const sesliOkuma: OralReadingInstrument = {
     { grade: 2, wpm: 73, source: ERDEN },
     { grade: 3, wpm: 91, source: ERDEN },
     { grade: 4, wpm: 97, source: ERDEN },
+    { grade: 5, wpm: 121, source: ERDEN },
   ],
   passages: [...sinif12, ...sinif34, ...sinif56, ...sinif78],
   science: {
@@ -62,7 +63,7 @@ export const sesliOkuma: OralReadingInstrument = {
       'Değerlendirme pilot aşamadadır. Metinlerin sınıf düzeyine uygunluğu, soruların madde analizi ve iki dinleyicinin işaretlemelerinin ne kadar uyuştuğu henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Bu değerlendirmenin Türkiye normu yoktur; sonuçlar akranlarla karşılaştırılmaz. Metnin öğrenci için düzeyi Ölçekhane’nin pilot ölçütlerine göre belirlenir: Doğru okunan kelime oranı %97 ve üzerindeyse rahat, %90–96 arasındaysa destekle, %90’ın altındaysa zor; sorularda doğru oranı %80 ve üzerindeyse rahat, %60–79 arasındaysa destekle, %60’ın altındaysa zor. İkisinden düşük olanı metnin düzeyidir. 1–4. sınıflarda okuma hızı, Türkiye’de yayımlanmış bir çalışmadaki ortalamayla yalnızca kaba bir fikir vermek için karşılaştırılır.',
+      'Bu değerlendirmenin Türkiye normu yoktur; sonuçlar akranlarla karşılaştırılmaz. Metnin öğrenci için düzeyi Ölçekhane’nin pilot ölçütlerine göre belirlenir: Doğru okunan kelime oranı %97 ve üzerindeyse rahat, %90 ile %97 arasındaysa destekle, %90’ın altındaysa zor; sorularda doğru oranı %80 ve üzerindeyse rahat, %60 ile %80 arasındaysa destekle, %60’ın altındaysa zor. İkisinden düşük olanı metnin düzeyidir. 1–5. sınıflarda okuma hızı, Türkiye’de yayımlanmış bir çalışmadaki ortalamayla yalnızca kaba bir fikir vermek için karşılaştırılır.',
     ageNote:
       '1–8. sınıflar için. Her sınıfa üç metin vardır; öğrenci kendi sınıfının ya da bir alt ve bir üst sınıfın metnini okuyabilir. 1. sınıf metinleri ikinci dönem için yazılmıştır. Değerlendirmeyi bir yetişkin (öğretmen ya da veli) yapar.',
     license: 'Özgün içerik: metinler, sorular ve derecelendirmeler Ölçekhane’ye aittir.',

@@ -110,7 +110,7 @@ export const LEVEL_TEXT: Record<OralLevel, { label: string; short: string } & Tw
     label: 'Destekle okuyor',
     short: 'Destekle',
     student:
-      'Bu metni okudun ama bazı yerlerde zorlandın. Bu düzeydeki metinler gelişimin için çok uygun: Bir yetişkinle birlikte okursan hızla ilerlersin.',
+      'Bu metni okudun ama bazı yerlerde zorlandın. Bu düzeydeki metinler gelişimin için çok uygun: Bir yetişkinle birlikte okursan ilerlemen kolaylaşır.',
     parent:
       'Öğrenci bu metni okudu ve büyük ölçüde anladı, ama bazı yerlerde zorlandı. Bu, bir yetişkinin desteğiyle çalışmak için uygun bir düzeydir: Metin ne çok kolay ne de çok zor. Okuma çalışmaları bu düzeydeki metinlerle, birlikte okuyarak yapılabilir.',
   },
@@ -153,9 +153,9 @@ export const PROFILE_TEXT: Record<string, Two> = {
       'Kelimeleri çözmekte belirgin biçimde zorlansa da metni anladı. Anlama becerisi iyi görünüyor; öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır.',
   },
   'hard-support': {
-    student: 'Kelimeleri okumakta zorlandın, metnin bir kısmını anladın. Kelimeleri daha rahat okudukça anlaman da artacak.',
+    student: 'Kelimeleri okumakta zorlandın ama metnin çoğunu anladın. Kelimeleri daha rahat okudukça anlaman da artacak.',
     parent:
-      'Kelimeleri çözmekte belirgin biçimde zorlandı ve metnin bir kısmını anladı. Öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır; bu kolaylaştıkça anlama da güçlenir.',
+      'Kelimeleri çözmekte belirgin biçimde zorlansa da metni büyük ölçüde anladı. Öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır; bu kolaylaştıkça anlama da güçlenir.',
   },
 };
 
@@ -194,12 +194,12 @@ export const COMPREHENSION_TEXT: Record<OralLevel, Two> = {
     parent: 'Metinle ilgili soruların çoğunu doğru cevapladı: Okuduğunu iyi anlamış.',
   },
   support: {
-    student: 'Soruların bir kısmını doğru cevapladın. Okurken "Burada ne anlatılıyor?" diye düşünmek anlamanı güçlendirir.',
-    parent: 'Soruların bir kısmını doğru cevapladı; metni büyük ölçüde anladı ama bazı noktaları kaçırdı.',
+    student: 'Soruların çoğunu doğru cevapladın; bazı noktaları kaçırdın. Okurken "Burada ne anlatılıyor?" diye düşünmek anlamanı güçlendirir.',
+    parent: 'Soruların çoğunu doğru cevapladı; metni büyük ölçüde anladı ama bazı noktaları kaçırdı.',
   },
   hard: {
-    student: 'Soruların çoğunda zorlandın. Bir metni okuduktan sonra birlikte konuşmak anlamanı geliştirir.',
-    parent: 'Soruların çoğunda zorlandı: Metni anlamakta güçlük çekti.',
+    student: 'Soruların en az yarısında zorlandın. Bir metni okuduktan sonra birlikte konuşmak anlamanı geliştirir.',
+    parent: 'Soruların en az yarısında zorlandı: Metni anlamakta güçlük çekti.',
   },
 };
 
@@ -224,17 +224,32 @@ export const NEXT_TEXT: Record<OralLevel, Two> = {
   easy: {
     student: 'Bir dahaki sefere bir üst sınıfın metinlerinden birini deneyebilirsin.',
     parent:
-      'Rahat okuduğu en üst düzeyi bulmak için bir üst sınıfın metniyle de değerlendirme yapabilirsiniz. Gelişimini izlemek için birkaç hafta sonra başka bir metinle yeniden değerlendirin.',
+      'Rahat okuduğu en üst düzeyi bulmak için bir üst sınıfın metinlerinden biriyle de değerlendirme yapabilirsiniz. Gelişimini izlemek için birkaç hafta sonra başka bir metinle yeniden değerlendirin.',
   },
   support: {
     student: 'Birkaç hafta birlikte okuyarak çalıştıktan sonra aynı düzeyden başka bir metni dene; ne kadar ilerlediğini görürsün.',
     parent:
-      'Bu düzeydeki metinlerle birlikte okumaya devam edin. Dört-altı hafta sonra aynı sınıf düzeyinden başka bir metinle yeniden değerlendirerek gelişimi izleyebilirsiniz.',
+      'Bu düzeydeki metinlerle birlikte okumaya devam edin. Dört ila altı hafta sonra aynı sınıf düzeyinden başka bir metinle yeniden değerlendirerek gelişimi izleyebilirsiniz.',
   },
   hard: {
-    student: 'Bir dahaki sefere daha kolay bir metinle başla; rahat okuduğun düzeyden adım adım yukarı çıkarsın.',
+    student: 'Bir dahaki sefere bir alt sınıfın metinlerinden biriyle başla.',
     parent:
-      'Bir alt sınıfın metniyle yeniden değerlendirme yaparak rahat ya da destekle okuduğu düzeyi bulun; çalışmaları o düzeydeki metinlerle sürdürün.',
+      'Bir alt sınıfın metinlerinden biriyle yeniden değerlendirme yaparak rahat ya da destekle okuduğu düzeyi bulun ve çalışmaları o düzeydeki metinlerle sürdürün.',
+  },
+};
+
+/**
+ * Öğrenci yalnızca kendi sınıfının ve bir alt, bir üst sınıfın metinlerini seçebilir (1–8. sınıf). Seçebileceği bir üst
+ * (rahat okuduysa) ya da alt (zorlandıysa) metin yoksa bu cümleler kullanılır.
+ */
+export const NEXT_TEXT_NO_OTHER: Record<'easy' | 'hard', Two> = {
+  easy: {
+    student: 'Bir dahaki sefere aynı düzeyden başka bir metinle kendini dene.',
+    parent: 'Gelişimini izlemek için birkaç hafta sonra aynı düzeyden başka bir metinle yeniden değerlendirin.',
+  },
+  hard: {
+    student: 'Birkaç hafta kısa ve kolay metinlerle çalıştıktan sonra yeniden dene.',
+    parent: 'Birkaç hafta kısa ve kolay metinlerle birlikte çalıştıktan sonra yeniden değerlendirin.',
   },
 };
 

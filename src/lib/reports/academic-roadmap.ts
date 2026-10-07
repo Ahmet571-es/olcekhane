@@ -1,5 +1,6 @@
 import type { AcademicRoadmapTemplate } from '@/content/roadmaps/types';
 import type { ReportContent } from './build';
+import { cautionText } from './reading-roadmap';
 import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
 
 /**
@@ -21,6 +22,7 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
   const sorted = [...domains].sort((x, y) => rank[level(x.band)] - rank[level(y.band)] || ratio(x) - ratio(y));
   const need = sorted.filter((d) => level(d.band) !== 'high');
   const missed = ac.n - ac.correct;
+  const caution = (r.qualityNotes?.length ?? 0) > 0 ? cautionText(parent) : '';
 
   // Kısaca: genel sonuç ve düzeylerine göre alanlar (öncelikli, pekiştirilmeli, sağlam).
   const groups = (['low', 'average', 'high'] as const)
@@ -46,8 +48,8 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
   return {
     preview: opts.preview,
     intro: parent
-      ? `Bu bölüm sonuçları derslere taşımanız için öneriler içerir: ${joinNames(contents)}. Öneriler öğretmenin planının yerine geçmez; onunla birlikte kullanın.`
-      : `Bu bölüm sonuçlarını derslerine taşıman için öneriler içerir: ${joinNames(contents)}. Öneriler öğretmeninin planının yerine geçmez; onunla birlikte kullan.`,
+      ? `Bu bölüm sonuçları derslere taşımanız için öneriler içerir: ${joinNames(contents)}. Öneriler öğretmenin planının yerine geçmez; onunla birlikte kullanın.${caution}`
+      : `Bu bölüm sonuçlarını derslerine taşıman için öneriler içerir: ${joinNames(contents)}. Öneriler öğretmeninin planının yerine geçmez; onunla birlikte kullan.${caution}`,
     bars: domains.map((d) => ({
       key: d.key,
       label: d.name,

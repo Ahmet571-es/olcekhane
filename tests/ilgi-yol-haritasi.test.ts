@@ -161,6 +161,34 @@ describe('ilgi testlerinin yol haritası: rapora eklenmesi', () => {
     }
   }, 120_000);
 
+  it('bütün alanlar düşükken hiçbir alan "belirgin ilgi" diye öne çıkmaz; eğitim yolu ve yaklaşım önerilmez', () => {
+    for (const slug of SLUGS) {
+      const d = def<LikertInstrument>(slug);
+      const vals = d.options.map((o) => o.value);
+      const lo = Math.min(...vals);
+      const hi = Math.max(...vals);
+      const next = vals.filter((v) => v > lo).sort((a, b) => a - b)[0];
+      const first = d.scales[0].key;
+      let k = 0;
+      // İlk alanda cevapların yarısı bir basamak yukarıda: alanlar eşit değil ama hepsi düşük düzeyde.
+      const answers = Object.fromEntries(
+        d.items.map((it) => {
+          const x = it.scale === first && k++ % 2 === 0 ? next : lo;
+          return [it.key, { value: it.reverse ? hi + lo - x : x, rtMs: 2600 }];
+        }),
+      );
+      const r = evaluate(slug, { grade: gradeFor(slug), data: { engine: 'likert', answers } } as AnswersBody);
+      for (const audience of ['student', 'parent'] as const) {
+        const rm = r[audience].roadmap!;
+        expect(rm.standout, slug).toEqual([]);
+        expect(rm.study.items, slug).toEqual([]);
+        expect(rm.settings, slug).toBeNull();
+        expect(rm.approach, slug).toBeNull();
+        expect(rm.standoutNote, slug).toContain('hiçbir alan öne çıkarılmadı');
+      }
+    }
+  });
+
   it('hobi: sık yapılan alan yoksa ara sıra yapılanlar öne çıkar; az yapılanlar öne çıkmaz', () => {
     const [a, b] = scaleKeys(HOBI);
     const rm = evaluate(HOBI, bodyFor(HOBI, 9, (s) => (s === a || s === b ? 'mid' : 'lo'))).student.roadmap!;

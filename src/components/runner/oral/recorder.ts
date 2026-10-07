@@ -13,7 +13,7 @@ import { Resampler, TARGET_RATE, chunkLevel, joinChunks } from '@/lib/oral/audio
  *   kapanır, sekme arka plana geçer ya da başka bir uygulama mikrofonu alırsa kesinti olarak işaretlenir.
  */
 
-export type MicErrorKind = 'unsupported' | 'denied' | 'notfound' | 'busy' | 'unknown';
+export type MicErrorKind = 'unsupported' | 'denied' | 'notfound' | 'busy' | 'lost' | 'unknown';
 
 export class MicError extends Error {
   constructor(readonly kind: MicErrorKind) {

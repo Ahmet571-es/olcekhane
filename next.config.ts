@@ -42,6 +42,8 @@ const nextConfig: NextConfig = {
     return [
       { source: '/testler/matematik-tani-testi', destination: '/testler/matematik-konu-tarama-testi', permanent: true },
       { source: '/testler/matematik-tani-testi/:rest*', destination: '/testler/matematik-konu-tarama-testi/:rest*', permanent: true },
+      // 2026-10-07'de indirilen Okuma Hızı ve Anlama PDF'lerinde rehber yazısının adresi yanlış basıldı.
+      { source: '/rehber/okuma-hizi-ve-anlama', destination: '/rehber/okuma-hizi-ve-okudugunu-anlama', permanent: true },
     ];
   },
   async headers() {
