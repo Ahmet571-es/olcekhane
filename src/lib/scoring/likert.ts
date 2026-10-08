@@ -156,7 +156,9 @@ export function scoreLikert(
       value: round(value, 3),
       valueMin,
       valueMax,
-      band: anchoredBand(value, def.anchoredBands),
+      // Ortalama puan raporda bir ondalıkla gösterilir (ör. 2,6 / 5); düzey de gösterilen sayıdan belirlenir. Yoksa 8 ya da 9
+      // maddelik bir ölçekte 23/9 = 2,556 "2,6 / 5 · Düşük" diye görünürdü (eşik 2,6).
+      band: anchoredBand(def.scoring.method === 'mean' ? round(round(itemMean, 3), 1) : value, def.anchoredBands),
       basis: 'anchored' as const,
       ciLow: sem !== undefined ? round(clamp(value - Z90 * sem, valueMin, valueMax), 3) : undefined,
       ciHigh: sem !== undefined ? round(clamp(value + Z90 * sem, valueMin, valueMax), 3) : undefined,

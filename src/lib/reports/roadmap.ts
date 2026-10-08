@@ -202,11 +202,7 @@ export function buildRoadmap(
     : secondKey
       ? action(secondKey)
       : null;
-  const nextSentence = nextStep(
-    opts.next,
-    { you: 'ilgilerini görmek', parent: 'çocuğunuzun ilgilerini görmek' },
-    parent,
-  );
+  const nextSentence = nextStep(opts.next, t.nextPurpose ?? { you: 'ilgilerini görmek', parent: 'çocuğunuzun ilgilerini görmek' }, parent);
   const middle = [second, third].filter((x): x is { name: string; text: string } => x !== null);
   const weeks = [
     { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a) },

@@ -128,9 +128,20 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    olur. Bağımsız incelemeden sonra: hızlı ama doğru cevaplar artık "tahmin" sayılmıyor; fareyle tıklanan düğme odakta
    kalıp sonraki cevabı bozmuyor; çift dokunuş soru atlatmıyor; kural türlerinde ölçüt "yarıdan fazlası" (şekil akıl
    yürütmede de; 9 soruluk türde 5/9 artık "çoğu doğru"); "daha az zaman ayırdın" yalnızca belirgin farkta (iki testte de).
-4. Öğrenme ve Başarı Özellikleri (IPIP kısa ölçekleri; VIA dışı kaynaklar). 5. Sözel Akıl Yürütme (özgün Türkçe).
-   6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için
-   çocuk diliyle kısa kişilik testi.
+4. **Öğrenme ve Başarı Özellikleri: yayında (2026-10-08, active).** IPIP'in altı kamu malı ölçeği (VIA kullanılmadı):
+   Çaba ve sebat (HEXACO Diligence), İşe hemen koyulma (TCI benzeri Initiative), Planlı ve dikkatli çalışma (MPQ benzeri
+   Planfulness), Zorlukla başa çıkma (TCI benzeri Competence), Düşünmekten hoşlanma (Need for Cognition), Öğrenmeye
+   açıklık (6FPQ benzeri Intellectual Openness); 56 madde (iki ölçekte birden olan üç madde yalnızca birinde sorulur), 9.
+   sınıftan yetişkine, ~8 dakika, kişilik bölümünde (`content/instruments/ogrenme-ve-basari.ts`). 32 madde öteki testlerin
+   çevirisiyle aynı, 24 madde iki taslakla çevrildi. Rapor: 6 özellik × 3 düzey (öğrenci, veli; yetişkin öğrenci metnini
+   görür); metinler başka ölçekteki bir davranışı anlatmaz (aynı sayfada çelişmesin). Yol haritası: 6 sütunlu 3B grafik,
+   ortamlar yok, 2. hafta Planlı çalışma, 3. hafta en düşük özellik, son hafta Çalışma Alışkanlıkları önerilir
+   (`nextPurpose` yeni, isteğe bağlı alan). Bağımsız incelemeden sonra: kesinlik bildiren öneriler olasılığa çevrildi,
+   tekrar eden öneriler ayrıldı, bilim kartındaki kaynak cümleleri düzeltildi. Ortak düzeltme: bütün ortalama puanlı
+   testlerde düzey artık raporda gösterilen (bir ondalığa yuvarlanmış) puandan belirlenir (ör. 8–9 maddelik ölçekte
+   "2,6 / 5 · Düşük" görünmesin; `lib/scoring/likert.ts`).
+5. Sözel Akıl Yürütme (özgün Türkçe). 6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi
+   Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -264,6 +275,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Şekil Akıl Yürütme | sekil-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | 16 Faktörlü Kişilik Profili | 16-faktorlu-kisilik-profili | Yayında (active; 9. sınıftan yetişkine) |
 | Sayı Dizileri | sayi-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
+| Öğrenme ve Başarı Özellikleri | ogrenme-ve-basari-ozellikleri | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -375,6 +387,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (10): Öğrenme ve Başarı Özellikleri yayında: 56 madde, 6 özellik (çaba, işe koyulma, planlı çalışma,
+  zorlukla başa çıkma, düşünmekten hoşlanma, öğrenmeye açıklık), öğrenci, veli ve yetişkin raporu, 3B grafikli yol
+  haritası; telefonda ve masaüstünde çözüldü, rapor ve PDF açıldı. Ortak: düzey, gösterilen yuvarlanmış puandan.
 - 2026-10-08 (9): Beyin Akademisi Ders 1 öğrenciden profesöre derinleştirildi (site sahibinin isteği; beğenirse bütün
   dersler böyle): üç okuma katmanı (Temel, Lisans, Uzman), görüntüleme, beyin cerrahisi ve araştırma kutuları, 5 klinik
   vaka, dermatom, refleks, üst-alt motor nöron, otonom sinaps, kanama ve kesecik tabloları, 6 yeni sahne (beş
@@ -418,17 +433,3 @@ En yeni üstte; en çok 10 madde tutulur.
   mikrofon denemesi, cihazda çalışan Türkçe konuşma tanıma (Whisper small, kendi sunucumuzdan), metinle karşılaştırma
   ve doğrulama ("net anlaşılamadı" hata sayılmaz), otomatik rapor ve PDF, aydınlatma metni sürüm 7. Herkese açık sürüm
   değişmedi.
-- 2026-10-07 (akşam): Günün işleri baştan sona denetlendi, bulunan hatalar düzeltildi. Kod: ilgi testlerinde bütün
-  alanlar düşükken alan öne çıkarılmıyor ve eğitim yolu önerilmiyor (yalnızca görece yüksek alanlarda da yol yok); bir
-  boyut hesaplanamasa da plan dört hafta, başlık haftaların sayısını söylüyor; sesli okumada mikrofon koparsa yeniden
-  açılıyor (mikrofon ve anlatma adımında), çift dokunuşta tek kayıt, "Ne okudu?" kutusuna boşluk yazılabiliyor,
-  işaretleme seçeneklerine klavye odağı ve Escape, doğru okuma oranı aşağı yuvarlanıyor, 5. sınıf karşılaştırma değeri
-  (Erden ve ark., 2002: 121) eklendi, bir üst/alt metin yalnızca seçilebiliyorsa öneriliyor; testten çıkaran bağlantılar
-  (ör. "Vazgeç") iPhone'da da onay soruyor; okuma hızı yol haritasında anlama düşük ve hız yüksekse "yavaşla ve anla",
-  kalite uyarısı varsa yol haritasında not; kırık rehber bağlantısı düzeldi (eski adres yönlendiriliyor). İçerik: sesli
-  okuma metinlerinde birbirini ele veren sorular, ağaç halkaları, domates cümlesi ve rapor cümleleri; kişilik, duygusal
-  zekâ, kişilerarası tarz, çalışma alışkanlıkları, matematik, okuma, zihinsel görev ve ilgi yol haritası metinleri (vaat
-  ve kesin dil, rapor metnini tekrar, yanlış hedef kitle, sınav kaygısı önerileri). Altı Boyutlu Kişilik'te Duygusallık
-  ve Uyumluluk metinleri HEXACO'ya göre yeniden yazıldı (önceden Beş Faktör'ün onaylı metinleri kullanılıyordu; hoca
-  buluşmasında gösterilmeli). Sayfalar: ortaokul önerileri 5. sınıfa da uygun, İlkokul 1–2 sayfası tek değerlendirmeye
-  ve yetişkine göre, grup açıklamaları gruptaki testlere göre, bölüm düğmeleri sınıf seçimine göre, "Grubuna göre".

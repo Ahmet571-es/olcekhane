@@ -14,6 +14,7 @@ import { kisilerarasiTarz } from './kisilerarasi-tarz';
 import { matematik } from './matematik';
 import { meslekIlgiAlanlari } from './meslek-ilgi-alanlari';
 import { meslekiIlgi } from './mesleki-ilgi';
+import { ogrenmeVeBasari } from './ogrenme-ve-basari';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
@@ -49,6 +50,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   onAltiFaktorKisilik,
+  ogrenmeVeBasari,
   hobiIlgileri,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 

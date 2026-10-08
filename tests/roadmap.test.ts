@@ -290,6 +290,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       '16-faktorlu-kisilik-profili': comboCount(3, 16) * 3,
       'oz-saygi': 3 * 2,
       'calisma-aliskanliklari': 5 ** 5 * 2,
+      'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,
     });
   }, 60_000);
 });

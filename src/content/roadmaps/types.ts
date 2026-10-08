@@ -83,6 +83,8 @@ export interface RoadmapTemplate {
   lastWeek: AudienceText;
   /** Son haftada önerilecek testler (yalnızca yayındakiler ve kişinin sınıfına uyanlar gösterilir). */
   nextTests: string[];
+  /** Önerilen testlerin ne için önerildiği; verilmezse "ilgilerini görmek" (kişilik testlerinden sonra ilgi testleri). */
+  nextPurpose?: { you: string; parent: string };
   sources: { text: string; url?: string }[];
 }
 
