@@ -168,7 +168,7 @@ export interface ReadingInstrument extends InstrumentBase {
   engine: 'reading';
   passages: ReadingPassage[];
   /** Sınıf düzeyine göre başvuru okuma hızları (dakikada kelime), yalnızca yayımlanmış Türkiye verisi. */
-  referenceRates: { grade: number; wpm: number; source: string; mode: 'oral' | 'silent' }[];
+  referenceRates: { grade: number; wpm: number; sd?: number; source: string; mode: 'oral' | 'silent' }[];
 }
 
 /* ---------- Sesli okuma ---------- */

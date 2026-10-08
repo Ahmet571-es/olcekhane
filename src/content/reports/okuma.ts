@@ -3,7 +3,7 @@ import type { ReportTemplate } from './types';
 export const okumaReport: ReportTemplate = {
   version: 'okuma-rapor-1',
   bandLabels: {
-    low: 'Zorlanmış',
+    low: 'Zorlandı',
     average: 'Gelişiyor',
     high: 'İyi',
     very_high: 'Çok iyi',
@@ -25,7 +25,7 @@ export const okumaReport: ReportTemplate = {
       },
       high: {
         summary: 'Metni büyük ölçüde anladı',
-        student: 'Metni büyük ölçüde anladın. Kaçırdığın birkaç ayrıntı, dikkatli okumayla kolayca yakalanabilir.',
+        student: 'Metni büyük ölçüde anladın. Kaçırdığın birkaç ayrıntı, dikkatli okumayla yakalanabilir.',
         parent: 'Çocuğunuz metni büyük ölçüde anladı; bir iki soruda ayrıntıyı ya da çıkarımı kaçırdı.',
         tipsStudent: [
           'Her paragrafın sonunda durup "Burada ne anlatıldı?" diye kendine sor.',
@@ -37,11 +37,11 @@ export const okumaReport: ReportTemplate = {
         ],
       },
       average: {
-        summary: 'Ana hatlarını anladı',
+        summary: 'Metni kısmen anladı',
         student:
-          'Metnin ana hatlarını anladın; bazı ayrıntılar ve çıkarımlar zor gelmiş olabilir. Bu beceri okudukça gelişir.',
+          'Metindeki bilgilerin bir kısmını anladın; bazı ayrıntılar ve çıkarımlar zor gelmiş olabilir. Bu beceri okudukça gelişir.',
         parent:
-          'Çocuğunuz metnin ana hatlarını anladı; ayrıntıları hatırlamakta ya da metinde açıkça yazmayanı çıkarmakta zorlanmış olabilir.',
+          'Çocuğunuz metni kısmen anladı; ayrıntıları hatırlamakta ya da metinde açıkça yazmayanı çıkarmakta zorlanmış olabilir.',
         tipsStudent: [
           'Okurken önemli gördüğün cümlelerin altını çiz ya da kısa notlar al.',
           'Bir metni bitirince ana fikrini tek cümleyle söylemeyi dene.',

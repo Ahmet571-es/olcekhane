@@ -32,9 +32,12 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
   const sorted = [...skills].sort((x, y) => ratio(x) - ratio(y));
   const need = sorted.filter((s) => s.correct < s.total);
   const group = bandGroup(section.band) ?? 'average';
-  // Anlama düşükken hız, yetişkinlerin sessiz okumadaki tipik hızının da üstündeyse (dakikada ~240 kelime; Brysbaert, 2019)
-  // metin büyük olasılıkla hızlı geçilmiştir: akıcılık çalışması yerine "yavaşla ve anla" önerilir.
-  const pace: ReadingPace = rd.tooFast ? 'rush' : group === 'low' && rd.wpm >= RUSH_WPM ? 'quick' : group === 'high' ? 'extend' : 'build';
+  // Hız metnin sınıf düzeyine göre değerlendirilir (lib/scoring/reading.ts, READING_PACE): anlama zayıfken hız belirgin
+  // yüksekse "yavaşla ve anla"; anlama iyiyken hız belirgin düşükse "bol okuma" yerine akıcılık (tekrarlı okuma) önerilir.
+  // Eski raporlarda sınıfa göre hız bilgisi yoksa yetişkinlerin tipik sessiz okuma hızı kullanılır.
+  const fast = rd.pace ? rd.pace === 'fast' : rd.wpm >= RUSH_WPM;
+  const slow = rd.pace === 'slow' && !rd.tooSlow;
+  const pace: ReadingPace = rd.tooFast ? 'rush' : group !== 'high' && fast ? 'quick' : group === 'high' && !slow ? 'extend' : 'build';
   const caution = (r.qualityNotes?.length ?? 0) > 0 || rd.tooFast ? cautionText(parent) : '';
   const all = rd.skills;
   const sum = (f: (s: (typeof all)[number]) => number) => all.reduce((n, s) => n + f(s), 0);

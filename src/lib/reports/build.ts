@@ -123,12 +123,17 @@ export interface ReportContent {
     correct: number;
     total: number;
     comprehensionPct: number;
-    effectiveWpm: number;
+    /** Şansla düzeltilmiş anlayarak okuma hızı; yorumlanamıyorsa (anlama 6/8'in altı, süre güvenilmez) null. */
+    effectiveWpm: number | null;
     skills: { key: string; label: string; correct: number; total: number }[];
     referenceNote: string | null;
     speedNote: string;
     /** Metin çok hızlı geçildi: ölçülen hız gerçek okuma hızını yansıtmıyor olabilir. */
     tooFast: boolean;
+    /** Okuma süresi çok uzun ölçüldü (ara verilmiş olabilir): hız yorumlanmaz. */
+    tooSlow?: boolean;
+    /** Okuma hızı metnin sınıf düzeyine göre (lib/scoring/reading.ts, READING_PACE). */
+    pace?: 'fast' | 'slow' | 'ok';
   };
 }
 
@@ -366,7 +371,11 @@ export function buildReport(input: {
         ? audience !== 'parent'
           ? 'Metni çok hızlı geçmişsin; hızın gerçek okuma hızını yansıtmıyor olabilir. Bir dahaki sefere metni anlayarak okumaya odaklan.'
           : 'Metin çok hızlı geçilmiş görünüyor; bu nedenle ölçülen hız gerçek okuma hızını yansıtmıyor olabilir.'
-        : audience !== 'parent'
+        : rr.flags?.tooSlow
+          ? audience !== 'parent'
+            ? 'Okuma süren çok uzun ölçüldü; okurken ara vermiş olabilirsin. Bu yüzden hızın yorumlanmadı.'
+            : 'Okuma süresi çok uzun ölçüldü; okurken ara verilmiş olabilir. Bu yüzden hız yorumlanmadı.'
+          : audience !== 'parent'
           ? `Metni ${nf0.format(secs)} saniyede okudun. Hızını, anladığın kadarıyla birlikte düşünmek önemli: anlamadan hızlı okumak işe yaramaz.`
           : `Metin ${nf0.format(secs)} saniyede okundu. Hız, anlama düzeyiyle birlikte değerlendirilmelidir; anlamadan hızlı okumak bir avantaj değildir.`;
       reading = {
@@ -379,11 +388,16 @@ export function buildReport(input: {
         comprehensionPct: rr.comprehensionPct,
         effectiveWpm: rr.effectiveWpm,
         skills: Object.entries(rr.skills).map(([k, v]) => ({ key: k, label: SKILL_LABELS[k] ?? k, correct: v.correct, total: v.total })),
-        referenceNote: ref
-          ? `Türkiye’de ${ref.grade}. sınıf öğrencilerinin sesli okumada dakikada ortalama ${ref.wpm} kelime okuduğu bildirilmiştir (${ref.source}). Sessiz okuma genellikle sesli okumadan hızlıdır; bu değer yalnızca kaba bir fikir verir.`
-          : null,
+        // Yayımlanmış Türkiye verisi sesli okumada dakikada doğru okunan kelimedir; bu test sessiz okumayı ölçtüğü için
+        // doğrudan karşılaştırılamaz, yalnızca bağlam olarak verilir.
+        referenceNote:
+          ref && !rr.flags?.tooFast && !rr.flags?.tooSlow
+            ? `Bağlam için: Türkiye’de yapılan bir çalışmada ${ref.grade}. sınıf öğrencilerinin sesli okumada dakikada ortalama ${ref.wpm} kelimeyi doğru okuduğu bildirilmiştir${ref.sd ? `; öğrencilerin çoğu yaklaşık ${Math.max(0, ref.wpm - ref.sd)} ile ${ref.wpm + ref.sd} arasındadır` : ''} (${ref.source}). Bu test sessiz okumayı ölçtüğü için bu değerler doğrudan karşılaştırılamaz; sessiz okuma her yaşta sesli okumadan hızlı olmayabilir.`
+            : null,
         speedNote,
         tooFast: !!rr.flags?.tooFast,
+        tooSlow: !!rr.flags?.tooSlow,
+        pace: rr.pace,
       };
     }
   }

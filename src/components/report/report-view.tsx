@@ -280,8 +280,8 @@ function ReadingSummary({ report }: { report: ReportContent }) {
         </div>
         <div className="bg-surface p-5">
           <dt className="t-meta">Anlayarak okuma</dt>
-          <dd className="font-display text-3xl font-bold tabular">{nf0.format(r.effectiveWpm)}</dd>
-          <dd className="t-meta">hız × anlama oranı</dd>
+          <dd className="font-display text-3xl font-bold tabular">{r.effectiveWpm === null ? '—' : nf0.format(r.effectiveWpm)}</dd>
+          <dd className="t-meta">{r.effectiveWpm === null ? 'yorumlanmadı' : 'hız × şansla düzeltilmiş anlama'}</dd>
         </div>
       </dl>
       <p className="measure">{r.speedNote}</p>

@@ -9,11 +9,39 @@ export interface ReadingResult {
   correct: number;
   total: number;
   comprehensionPct: number;
-  /** Anlayarak okuma hızı: dakikada kelime × anlama oranı. */
-  effectiveWpm: number;
+  /**
+   * Anlayarak okuma hızı: dakikada kelime × şansla düzeltilmiş anlama oranı ((doğru − yanlış ÷ 3) ÷ soru; dört seçenekte
+   * tahminle beklenen doğrular çıkarılır). Yalnızca anlama en az 6/8 ve süre güvenilirken hesaplanır; yoksa null
+   * (göz gezdirip tahminle cevaplayan, dikkatle okuyandan yüksek görünmesin).
+   */
+  effectiveWpm: number | null;
   band: Band;
   skills: Record<ReadingQuestion['skill'], { correct: number; total: number }>;
-  flags: { tooFast: boolean; notes: string[] };
+  /** Okuma hızı metnin sınıf düzeyine göre: belirgin hızlı, belirgin yavaş ya da ikisi arası (bkz. READING_PACE). */
+  pace: 'fast' | 'slow' | 'ok';
+  flags: { tooFast: boolean; tooSlow: boolean; notes: string[] };
+}
+
+/**
+ * Sessiz okuma hızı sınırları (dakikada kelime), metnin sınıf düzeyine göre (metnin en küçük sınıfı). Türkiye'de sessiz
+ * okuma için yayımlanmış bir norm olmadığından bunlar Ölçekhane'nin pilot ölçütüdür; sesli okuma ortalamaları (Erden ve
+ * ark., 2002: 3. sınıf 91, 5. sınıf 121 doğru kelime) ve yetişkinlerin sessiz okuma hızı (Brysbaert, 2019: İngilizce kurgu
+ * dışı metinde ~238) göz önünde tutularak konuldu. `max`: bunun üstü göz gezdirme sayılır, hız yorumlanmaz; `fast`: anlama
+ * zayıfken "yavaşla ve anla" önerilir; `slow`: anlama iyi olsa da akıcılık çalışması önerilir.
+ */
+export const READING_PACE: { minGrade: number; slow: number; fast: number; max: number }[] = [
+  { minGrade: 3, slow: 60, fast: 150, max: 300 },
+  { minGrade: 5, slow: 80, fast: 180, max: 350 },
+  { minGrade: 7, slow: 100, fast: 210, max: 400 },
+  { minGrade: 9, slow: 120, fast: 250, max: 450 },
+];
+/** Bundan yavaşı (dakikada kelime) okurken uzun bir ara verildiğini düşündürür: hız yorumlanmaz. */
+export const READING_TOO_SLOW = 15;
+/** "Anlayarak okuma" en az bu kadar doğruda hesaplanır (8 soruda 6). */
+export const EFFECTIVE_MIN_RATIO = 0.75;
+
+export function readingPace(passage: Pick<ReadingPassage, 'minGrade'>) {
+  return [...READING_PACE].reverse().find((x) => passage.minGrade >= x.minGrade) ?? READING_PACE[0];
 }
 
 /** Türkçe metinde kelime sayımı: boşluklarla ayrılmış ve en az bir harf ya da rakam içeren parçalar. */
@@ -64,9 +92,16 @@ export function scoreReading(
   const total = passage.questions.length;
   const comprehension = total ? correct / total : 0;
   const notes: string[] = [];
-  // Sessiz okumada dakikada 600 kelimenin üzeri, metnin göz gezdirilerek geçildiğini düşündürür.
-  const tooFast = wpm > 600;
+  const limits = readingPace(passage);
+  // Metnin sınıf düzeyine göre çok yüksek bir hız, metnin göz gezdirilerek geçildiğini düşündürür.
+  const tooFast = wpm > limits.max;
   if (tooFast) notes.push('Metin çok hızlı geçilmiş; anlamaya yetecek kadar okunmamış olabilir.');
+  const tooSlow = !tooFast && wpm < READING_TOO_SLOW;
+  if (tooSlow) notes.push('Okuma süresi çok uzun ölçüldü; okurken uzun bir ara verilmiş olabilir. Okuma hızı yorumlanmadı.');
+  // Şansla düzeltilmiş anlama oranı: dört seçenekte her üç yanlışa karşılık bir doğru tahminle gelmiş sayılır.
+  const wrong = total - correct;
+  const corrected = total ? Math.max(0, correct - wrong / 3) / total : 0;
+  const effectiveWpm = !tooFast && !tooSlow && comprehension >= EFFECTIVE_MIN_RATIO - 1e-9 ? round(wpm * corrected, 0) : null;
   return {
     passageKey: passage.key,
     wordCount,
@@ -75,9 +110,10 @@ export function scoreReading(
     correct,
     total,
     comprehensionPct: round(comprehension * 100, 0),
-    effectiveWpm: round(wpm * comprehension, 0),
+    effectiveWpm,
     band: comprehensionBand(correct, total),
     skills,
-    flags: { tooFast, notes },
+    pace: wpm >= limits.fast ? 'fast' : wpm < limits.slow ? 'slow' : 'ok',
+    flags: { tooFast, tooSlow, notes },
   };
 }

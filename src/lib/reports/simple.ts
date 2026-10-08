@@ -511,7 +511,10 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       keyFigures: [
         { label: 'Anlama', value: `${x.correct}/${x.total}`, note: 'doğru cevap' },
         { label: 'Okuma hızı', value: nf0.format(x.wpm), note: 'kelime/dakika' },
-        { label: 'Anlayarak okuma', value: nf0.format(x.effectiveWpm), note: 'hız × anlama oranı' },
+        // Anlama 6/8'in altındaysa ya da süre güvenilmezse yorumlanmaz: göz gezdirip tahminle cevaplayan yüksek görünmesin.
+        x.effectiveWpm === null
+          ? { label: 'Anlayarak okuma', value: '—', note: 'anlama 6/8’in altında ya da süre güvenilmez: yorumlanmadı' }
+          : { label: 'Anlayarak okuma', value: nf0.format(x.effectiveWpm), note: 'hız × şansla düzeltilmiş anlama' },
       ],
       itemsTitle: x.passageTitle ? `“${x.passageTitle}” metni` : 'Okuma sonucu',
       items: [

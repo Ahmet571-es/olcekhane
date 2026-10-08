@@ -7,7 +7,11 @@ import { useLeaveWarning } from './tasks/common';
 type Question = { key: string; text: string; options: { key: string; text: string }[] };
 type Phase = 'intro' | 'ready' | 'reading' | 'questions' | 'submitting';
 
-/** Okuma süresi ve cevaplar yalnızca bu sayfada tutulur; test bitince `onFinish` ile verilir. */
+/**
+ * Okuma süresi ve cevaplar yalnızca bu sayfada tutulur; test bitince `onFinish` ile verilir. Sayfa gizliyken (başka
+ * sekme ya da uygulama, ekran kilidi) geçen süre okuma süresine sayılmaz. Sorular birer birer gelir; geçilen soruya geri
+ * dönülmez (sonraki soruların kökleri öncekilerin cevabına ipucu olmasın).
+ */
 export function ReadingRunner(props: {
   intro: { title: string; paragraphs: string[] };
   passage: { key: string; title: string; paragraphs: string[]; questions: Question[] };
@@ -19,6 +23,9 @@ export function ReadingRunner(props: {
   const [error, setError] = useState<string | null>(null);
   const startedAt = useRef(0);
   const readingMs = useRef(0);
+  /** Okuma sırasında sayfanın gizli kaldığı toplam süre ve gizlendiği an. */
+  const hiddenMs = useRef(0);
+  const hiddenAt = useRef<number | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const qs = props.passage.questions;
 
@@ -31,6 +38,20 @@ export function ReadingRunner(props: {
 
   // Okuma başladıktan sonra sayfadan ayrılmak bütün cevapları siler.
   useLeaveWarning(phase === 'reading' || phase === 'questions' || phase === 'submitting');
+
+  // Okurken sayfa gizlenirse o süre okuma süresinden düşülür.
+  useEffect(() => {
+    if (phase !== 'reading') return;
+    const on = () => {
+      if (document.visibilityState === 'hidden') hiddenAt.current = performance.now();
+      else if (hiddenAt.current !== null) {
+        hiddenMs.current += performance.now() - hiddenAt.current;
+        hiddenAt.current = null;
+      }
+    };
+    document.addEventListener('visibilitychange', on);
+    return () => document.removeEventListener('visibilitychange', on);
+  }, [phase]);
 
   async function submit() {
     setPhase('submitting');
@@ -57,6 +78,8 @@ export function ReadingRunner(props: {
           autoFocus
           onClick={() => {
             startedAt.current = performance.now();
+            hiddenMs.current = 0;
+            hiddenAt.current = null;
             setPhase('reading');
           }}
         >
@@ -82,7 +105,9 @@ export function ReadingRunner(props: {
             type="button"
             className="btn btn-primary btn-lg w-full shadow-[var(--shadow)]"
             onClick={() => {
-              readingMs.current = Math.round(performance.now() - startedAt.current);
+              const now = performance.now();
+              const hidden = hiddenMs.current + (hiddenAt.current !== null ? now - hiddenAt.current : 0);
+              readingMs.current = Math.max(1000, Math.round(now - startedAt.current - hidden));
               setPhase('questions');
             }}
           >
@@ -136,9 +161,7 @@ export function ReadingRunner(props: {
       </fieldset>
       {error && <p className="notice notice-danger">{error}</p>}
       <div className="mt-auto flex items-center justify-between gap-3">
-        <button type="button" className="btn btn-quiet" disabled={qIndex === 0} onClick={() => setQIndex(qIndex - 1)}>
-          Önceki soru
-        </button>
+        <p className="t-meta">Seçimini kontrol et: geçtiğin soruya geri dönülmez.</p>
         {isLast ? (
           <button
             type="button"

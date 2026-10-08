@@ -42,7 +42,7 @@ Akıcılık, anlamanın ön koşuludur ama kendisi amaç değildir. Kelimeleri �
 
 Yetişkinlerde sessiz okuma hızını inceleyen bir meta-analiz, İngilizce bilgilendirici metinlerde ortalama hızı dakikada yaklaşık 238, öykü türü metinlerde yaklaşık 260 kelime olarak bulmuştur. Aynı çalışmaya göre diller arasındaki hız farkının önemli bir kısmı kelime uzunluğundan kaynaklanır (Brysbaert, 2019). Türkçe kelimeler ekler aldığı için ortalamada daha uzundur; bu yüzden İngilizce için verilen rakamlar Türkçeye doğrudan uyarlanamaz.
 
-Türkiye’de 1–5. sınıf öğrencilerinin sesli okuma hızı için yayımlanmış bir norm çalışması vardır. Bu çalışmada öğrencilerin dakikada ortalama 1. sınıfta 45, 2. sınıfta 73, 3. sınıfta 91, 4. sınıfta 97 ve 5. sınıfta 121 kelime okuduğu bildirilmiştir (Erden, Kurdoğlu ve Uslu, 2002). Daha üst sınıflar ve sessiz okuma için ise geniş örneklemlere dayanan güncel normlar sınırlıdır.
+Türkiye’de 1–5. sınıf öğrencilerinin sesli okuma hızı için yayımlanmış bir norm çalışması vardır. Bu çalışmada öğrencilerin bir dakikada ortalama 1. sınıfta 45, 2. sınıfta 73, 3. sınıfta 91, 4. sınıfta 97 ve 5. sınıfta 121 kelimeyi doğru okuduğu bildirilmiştir (Erden, Kurdoğlu ve Uslu, 2002). Daha üst sınıflar ve sessiz okuma için ise geniş örneklemlere dayanan güncel normlar sınırlıdır.
 
 Bu nedenle Ölçekhane’deki [Okuma Hızı ve Anlama](/testler/okuma-hizi-ve-anlama) görevi şu anda pilot aşamadadır. Rapor, 5. sınıfa kadar yukarıdaki değerleri yalnızca kaba bir fikir vermek için gösterir; daha üst sınıflarda hızı akranlarla karşılaştırmaz. Bunun yerine hızı anlamayla birlikte, “etkili okuma hızı” olarak verir: Anlaşılmadan okunan kelime sayılmaz.
 

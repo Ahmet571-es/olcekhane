@@ -77,7 +77,14 @@ sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce k
    okuyor" yerine "Doğru okuyor, akıcılığı gelişiyor"; yol haritasında "Tekrarlı okuma" haftası, üst düzey önerilmez.
    Erden cümlesi "doğru okuduğu" ve aralıkla (ort. ± SD). Sondaki atlanan kelimeler hızı zaten şişirmiyordu (`unread`,
    ece076a); ortadaki atlamalar hata sayılır, hız "denenen kelime" düzenindedir.
-6. Okuma Hızı ve Anlama: sorular birbirinin cevabını ele veriyor; "Anlayarak okuma" göz gezdireni ödüllendiriyor.
+6. Okuma Hızı ve Anlama: **düzeltildi (2026-10-08).** Dört metnin soruları yeniden yazıldı: hiçbir soru başka bir
+   sorunun cevabını ele vermez, çıkarım soruları gerçekten çıkarım ister; cevap anahtarları ve beceriler dengeli;
+   kesin olmayan bilgiler yumuşatıldı. `tests/okuma-hizi.test.ts` sızıntıyı (eski soruları yakaladığı denendi),
+   anahtar dengesini, puanlamayı ve raporu denetler. Okurken başka sekmeye geçilen süre okuma süresine katılmaz;
+   sorularda geri dönüş yok (tanıtımda söylenir). Sınıfa göre hız sınırları (`READING_PACE`); dakikada 15
+   kelimenin altı `tooSlow`. "Anlayarak okuma" tahmin düzeltmeli (doğru − yanlış/3) ve çok hızlı, çok yavaş ya da
+   anlama %75'in altındaysa verilmez ("—" ve not). Kaynak hızlar yalnızca bağlam için anılır (doğrudan
+   karşılaştırılamaz). Yol haritasında hız sınıfa göre yorumlanır; orta bant "Metni kısmen anladı".
 Sonra raporun Öncelik 2 ve 3 maddeleri (site sahibi yeni görevler verecek).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
