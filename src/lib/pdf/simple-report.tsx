@@ -2,7 +2,7 @@ import 'server-only';
 import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { plainMath } from '@/components/quiz/math-text';
-import { bars3dScene } from '@/lib/charts/bars3d';
+import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene } from '@/lib/charts/bars3d';
 import type { QuizChart, QuizTable } from '@/lib/instruments/types';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { OralReportBlock } from '@/lib/reports/oral';
@@ -608,6 +608,7 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
           (rm.bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
             ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
             : 'Sütunun yüksekliği puanı gösterir.')}
+        {rm.bars.length > LABEL_ALL_MAX ? ` ${FRONT_LABELS_NOTE}` : ''}
       </Text>
     </View>
   );
@@ -923,8 +924,12 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
         {report.oral && <OralSectionsPdf report={report} />}
 
         {report.chart && (
-          <View wrap={false}>
-            <Text style={s.h2}>{report.chartTitle}</Text>
+          // Uzun cetvel listeleri (ör. 16 özellik) sayfaya sığmayınca bütün grafik bir sonraki sayfaya atlamasın, ilk
+          // sayfa boş kalmasın diye bölünebilir; her cetvel satırı kendi içinde bölünmez.
+          <View wrap={report.chart.type === 'rulers' && report.chart.rows.length > 10}>
+            <Text style={s.h2} minPresenceAhead={120}>
+              {report.chartTitle}
+            </Text>
             <Chart chart={report.chart} />
             {report.chartNote && <Text style={s.note}>{report.chartNote}</Text>}
           </View>

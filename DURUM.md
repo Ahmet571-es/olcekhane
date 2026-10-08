@@ -102,7 +102,22 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    Aynı gün bağımsız bir incelemeden sonra sürüm 2: 4. ve 5. düzey düzey tanımlarına göre yeniden sıralandı, yanlış
    seçeneklerde tablodaki değerler daha çok kullanıldı (`cycle`), rapor metinlerinde bazı cevap düzenlerinde yanlış
    olan cümleler düzeltildi (her durum testte), klavyeyle ok tuşları ve Enter, gri renk karşıtlığı artırıldı.
-2. 16 Faktörlü Kişilik Profili (IPIP-16PF karşılıkları, 163 madde, 9. sınıftan yetişkine).
+2. **16 Faktörlü Kişilik Profili: yayında (2026-10-08, active).** IPIP'in 16PF'e benzeyen 16 ön ölçeği; 160 madde
+   (Kurallara bağlılık'tan yasalar, din ve millî marşla ilgili üç madde siyasi ve dinî görüş sormama ilkesiyle
+   çıkarıldı), 9. sınıftan yetişkine, ~20 dakika. Adında "16PF" geçmez. 75 madde öteki kişilik testlerindeki
+   çevirilerle aynı, 85 madde iki taslakla çevrildi. B ölçeğinin adı "Düşünsel özgüven": zekâ ölçmediği her metinde
+   yazılı. Rapor: 16 özellik × 3 düzey (öğrenci, veli; destek kutusu Duygusal denge düşük ve Endişeye yatkınlık
+   yüksekken, bu ikisinin yetişkin metni ayrı). Yol haritası: 16 sütunlu 3B grafik (çok sütunda sütunlar inceliyor,
+   16 ayrı renk), öneri kartları, ortamlar ve veliye yaklaşım yalnızca en belirgin altı özellik için (`focus`), 2. hafta
+   Düzen ve titizlik, iyi oluş haftası önce Duygusal denge düşük sonra Endişe yüksek (`wellbeing` artık liste
+   olabiliyor; varsayılan "Sınav kaygısı" bağlantısı artık yetişkine verilmiyor, Ayrıntılı Kişilik'te de). Düşünsel
+   özgüven ve Duyarlılık için ortam önerisi yazılmadı. Öneri kartlarında önce uçtaki özellikler gelir (2,6 orta, 3,4
+   yüksekten önce gelmez). 16 boyutun bütün birleşimleri denenemediği için yol haritası testi 16 boyutta seçilmiş ve
+   sabit tohumlu rastgele birleşimleri dener (`tests/roadmap.test.ts`). Bağımsız incelemeden sonra beş madde, Duyarlılık
+   ve Yeniliğe açıklık düşük metinleri (maddelerin söylemediği "somut ve gerçekçi" çıkarıldı), bazı çalışma kartları
+   (özetleme yerine kapatıp hatırlama; birbirini tekrar eden kartlar) düzeltildi. Ortak değişiklik: 3B grafikte 10'dan
+   çok sütun varsa yalnızca öndeki ve yandaki sütunların puanı yazılır, sütunlar incelir; PDF'te 10'dan uzun cetvel
+   listesi sayfalara bölünür (Hobi ve Serbest Zaman İlgileri de böyle görünür).
 3. Sayı Dizileri (özgün). 4. Öğrenme ve Başarı Özellikleri (IPIP kısa ölçekleri; VIA dışı kaynaklar). 5. Sözel Akıl
    Yürütme (özgün Türkçe). 6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi
    Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
@@ -214,6 +229,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Zihinde Döndürme | zihinde-dondurme | Yayında (pilot; hoca onayı beklenmeden) |
 | Tepki Hızı | tepki-hizi | Yayında (pilot; hoca onayı beklenmeden) |
 | Şekil Akıl Yürütme | sekil-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
+| 16 Faktörlü Kişilik Profili | 16-faktorlu-kisilik-profili | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -325,6 +341,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (6): 16 Faktörlü Kişilik Profili yayında: 160 madde, 16 özellik, öğrenci, veli ve yetişkin raporu,
+  16 sütunlu 3B grafikli yol haritası (öneriler en belirgin altı özellik için); telefonda ve masaüstünde baştan sona
+  çözüldü, rapor ve PDF açıldı.
+- 2026-10-08 (5): Şekil Akıl Yürütme yayında (sürüm 2): 24 özgün matris sorusu, 5 düzey; 3. sınıftan yetişkine.
 - 2026-10-08 (4): Beyin Akademisi kuruldu (site sahibinin isteği; 5 gün sonra uzmanlara tanıtılacak): ana sayfa,
   iki dal (Beyin Anatomisi, Beyin Nasıl Çalışır?) ve 2 × 20 derslik program, üç boyutlu beyin gezgini (135 parça,
   BodyParts3D 4.0, CC BY 4.0; döndürme, katmanlar, kesit, parçalara ayırma, iç yüz, renkler, dokununca bilgi kartı),
@@ -377,10 +397,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Matematik Konu Tarama ve Okuma Hızı ve Anlama gelişim yol haritaları yayında (öğrenci ve veli raporu,
   ekranda ve PDF'te): konu alanlarına ve okuma becerilerine göre çalışma önerileri, haftalık çalışma düzeni ve okuma
   alışkanlığı, veliye destek, dört haftalık plan. Yayın denetimi iki raporun yol haritasını dışarıdan sınıyor.
-- 2026-10-07: İlgi testlerinin gelişim yol haritaları yayında (Mesleki İlgi Profili, Meslek İlgi Alanları, Hobi ve
-  Serbest Zaman İlgileri; öğrenci, veli ve yetişkin raporu, ekranda ve PDF'te): öne çıkan alanlar için keşif
-  önerileri, Holland profilinde eğitim yolları, veliye yaklaşım, dört haftalık denemeler. Yayın denetimi iki ilgi
-  raporunun yol haritasını dışarıdan sınıyor.
-- 2026-10-07: Öz-saygı ve Çalışma Alışkanlıkları gelişim yol haritaları yayında (doğrudan). Yol haritasında ortamlar
-  bölümü isteğe bağlı, tek boyutlu testte üç boyutlu profil gösterilmiyor; test sayfasındaki tanıtım testin kendi
-  bölümlerini sayıyor.

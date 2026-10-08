@@ -1,4 +1,5 @@
 import type { InstrumentDef } from '@/lib/instruments/types';
+import { onAltiFaktorKisilik } from './16-faktorlu-kisilik';
 import { altiBoyutluKisilik } from './alti-boyutlu-kisilik';
 import { ayrintiliKisilik } from './ayrintili-kisilik';
 import { besFaktor } from './bes-faktor';
@@ -45,6 +46,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   sekilAkilYurutme,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
+  onAltiFaktorKisilik,
   hobiIlgileri,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 

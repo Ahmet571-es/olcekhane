@@ -136,7 +136,17 @@ export function buildRoadmap(
         ? 'Çocuğunuzun profili dengeli: hiçbir boyut belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyor.'
         : 'Profilin dengeli: hiçbir boyut belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyorsun.';
 
-  const study = sections.flatMap((s) => {
+  // Çok boyutlu testlerde öneriler yalnızca en belirgin boyutlar için verilir: önce orta düzeyde olmayanlar (eşiğe eşit
+  // uzaklıktaki bir orta puan, yüksek ya da düşük bir puanın önüne geçmesin diye), sonra ortadan en uzaktan başlayarak;
+  // eşitlikte profildeki sıra korunur.
+  const scored = sections.filter((s) => s.value !== null);
+  const focusing = !!t.focus && scored.length > t.focus.count;
+  const extreme = (s: (typeof sections)[number]) => (bandGroup(s.band) === 'average' ? 0 : 1);
+  const focused = focusing
+    ? [...scored].sort((x, y) => extreme(y) - extreme(x) || distance(y) - distance(x)).slice(0, t.focus!.count)
+    : sections;
+
+  const study = focused.flatMap((s) => {
     const g = bandGroup(s.band);
     if (!g) return [];
     return [
@@ -149,14 +159,20 @@ export function buildRoadmap(
       },
     ];
   });
-  const stress = t.wellbeing ? sections.find((s) => s.scaleKey === t.wellbeing!.scale && bandGroup(s.band) === t.wellbeing!.group) : undefined;
+  // İyi oluş: şablondaki sırayla ilk uyan boyut (ör. Duygusal denge düşük, sonra Endişeye yatkınlık yüksek).
+  const wellbeing = (t.wellbeing ? [t.wellbeing].flat() : [])
+    .map((w) => ({ w, s: sections.find((s) => s.scaleKey === w.scale && bandGroup(s.band) === w.group) }))
+    .find((x) => x.s);
+  const stress = wellbeing?.s;
   const links = [{ label: a === 'adult' ? 'Etkili çalışma yöntemleri' : 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
-  const stressLink = t.wellbeing?.link === undefined ? { label: 'Sınav kaygısı', href: '/rehber/sinav-kaygisi' } : t.wellbeing.link;
+  // Varsayılan bağlantı "Sınav kaygısı" yazısıdır; öğrencilere ve velilere yazıldığı için yetişkine verilmez.
+  const stressLink =
+    wellbeing?.w.link === undefined ? (a === 'adult' ? null : { label: 'Sınav kaygısı', href: '/rehber/sinav-kaygisi' }) : wellbeing.w.link;
   if (stress && stressLink) links.push(stressLink);
   links.push(...(t.links ?? []));
 
   const hasSettings = Object.values(t.scales).some((x) => x.settings) && !!t.settingsNote;
-  const settingItems = sections.flatMap((s) => {
+  const settingItems = focused.flatMap((s) => {
     const g = bandGroup(s.band);
     const text = g ? t.scales[s.scaleKey].settings?.[g] : undefined;
     return text ? [text] : [];
@@ -213,7 +229,9 @@ export function buildRoadmap(
     standoutNote,
     study: {
       title: parent ? 'Çocuğunuz nasıl çalışabilir?' : 'Nasıl çalışabilirsin?',
-      intro: pick(t.studyIntro, a),
+      intro: focusing
+        ? `${pick(t.studyIntro, a)} ${pick(t.focus!.note, a).replace('{n}', SAYILAR[study.length] ?? String(study.length))}`
+        : pick(t.studyIntro, a),
       items: study,
       links,
     },
@@ -235,7 +253,7 @@ export function buildRoadmap(
     approach: parent
       ? {
           title: 'Çocuğunuza nasıl yaklaşabilirsiniz?',
-          items: sections.flatMap((s) => {
+          items: focused.flatMap((s) => {
             const g = bandGroup(s.band);
             const text = (g && t.approach?.[s.scaleKey]?.[g]) || s.tips[0];
             return text ? [{ title: s.name, text }] : [];

@@ -6,7 +6,7 @@ import { ROADMAPS, ROADMAP_IN_REVIEW, hasPublicRoadmap, roadmapSummary } from '@
 import type { AudienceText } from '@/content/roadmaps/types';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import { answersBody } from '@/lib/assessment/schemas';
-import { bars3dScene, shade } from '@/lib/charts/bars3d';
+import { LABEL_ALL_MAX, bars3dScene, shade } from '@/lib/charts/bars3d';
 import { ADULT_GRADE } from '@/lib/config';
 import type { Band, LikertInstrument } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
@@ -45,6 +45,13 @@ function hasSettings(slug: string): boolean {
   return Object.values(ROADMAPS[slug].scales).some((s) => s.settings);
 }
 
+/**
+ * Ortamı olan şablonda ortamı bilerek yazılmayan boyutlar. 16 Faktörlü Kişilik Profili: Düşünsel özgüven (kendine bakış;
+ * ortam önerisi beceriye göre yönlendirme gibi okunur) ve Duyarlılık (maddeler sanat ve edebiyat zevkini sorar, ortam
+ * tercihini değil).
+ */
+const NO_SETTINGS: Record<string, string[]> = { '16-faktorlu-kisilik-profili': ['intellect', 'sensitivity'] };
+
 /** Bir düzey birleşimi için yol haritası (rapor metinleri sitedeki şablondan). */
 function roadmapFor(slug: string, bands: Band[], audience: Audience, edit?: (sections: Record<string, unknown>[]) => void): Roadmap {
   const { t, tpl, scales } = setup(slug);
@@ -81,6 +88,44 @@ function* combos(bands: Band[], n: number): Generator<Band[]> {
   }
 }
 
+/** Örneklemdeki rastgele birleşim sayısı (çok boyutlu testlerde). */
+const SAMPLE = 3000;
+
+/**
+ * Sınanan düzey birleşimleri: sekiz boyuta kadar bütün birleşimler. Daha çok boyutlu testlerde (ör. 16 özellik: 3^16 ≈ 43
+ * milyon birleşim) bütün birleşimler denenemez; bunun yerine yol haritasının seçim kurallarını zorlayan birleşimler
+ * denenir: hepsi aynı düzeyde, her boyut tek başına uçta, her iki boyut birlikte uçta (dört yön) ve sabit tohumlu
+ * 3000 rastgele birleşim.
+ */
+function* combosFor(bands: Band[], n: number): Generator<Band[]> {
+  if (n <= 8) {
+    yield* combos(bands, n);
+    return;
+  }
+  const mid = bands.find((b) => b === 'average')!;
+  const ends = bands.filter((b) => b !== mid);
+  for (const b of bands) yield Array.from({ length: n }, () => b);
+  for (let i = 0; i < n; i++) for (const e of ends) yield Array.from({ length: n }, (_, k) => (k === i ? e : mid));
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (const a of ends) for (const b of ends) yield Array.from({ length: n }, (_, k) => (k === i ? a : k === j ? b : mid));
+    }
+  }
+  let seed = 20261008;
+  const rand = () => {
+    seed = (seed * 1103515245 + 12345) % 2 ** 31;
+    return seed / 2 ** 31;
+  };
+  for (let s = 0; s < SAMPLE; s++) yield Array.from({ length: n }, () => bands[Math.floor(rand() * bands.length)]);
+}
+
+/** combosFor'un ürettiği birleşim sayısı. */
+function comboCount(bands: number, n: number): number {
+  if (n <= 8) return bands ** n;
+  const ends = bands - 1;
+  return bands + n * ends + ((n * (n - 1)) / 2) * ends * ends + SAMPLE;
+}
+
 function texts(rm: Roadmap): string[] {
   return [
     rm.intro,
@@ -101,7 +146,7 @@ describe('gelişim yol haritası: şablonlar', () => {
       // Şablondaki her boyut testte vardır; çalışma düzeni ve iyi oluş boyutları da.
       expect(scales.map((s) => s.key).sort(), slug).toEqual(Object.keys(t.scales).sort());
       expect(t.scales[t.planningScale], slug).toBeDefined();
-      if (t.wellbeing) expect(t.scales[t.wellbeing.scale], slug).toBeDefined();
+      for (const w of t.wellbeing ? [t.wellbeing].flat() : []) expect(t.scales[w.scale], slug).toBeDefined();
       for (const sc of scales) {
         const r = t.scales[sc.key];
         const label = `${slug} ${sc.key}`;
@@ -123,7 +168,7 @@ describe('gelişim yol haritası: şablonlar', () => {
         // Orta düzeyde belirgin bir ortam yoktur; uçlarda vardır. Ortamı olan şablonda her boyutun ortamı ve notu vardır.
         if (hasSettings(slug)) {
           expect(r.settings?.average).toBeUndefined();
-          expect(r.settings?.low && r.settings?.high, label).toBeTruthy();
+          expect(!!(r.settings?.low && r.settings?.high), label).toBe(!(NO_SETTINGS[slug] ?? []).includes(sc.key));
         } else {
           expect(r.settings, label).toBeUndefined();
         }
@@ -160,30 +205,50 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       const { t, scales, bands } = setup(slug);
       const keys = scales.map((s) => s.key);
       counts[slug] = 0;
-      for (const combo of combos(bands, scales.length)) {
+      for (const combo of combosFor(bands, scales.length)) {
         for (const a of AUDIENCES.filter((x) => x !== 'adult' || adultReady(slug))) {
           const rm = roadmapFor(slug, combo, a);
           const label = `${slug} ${combo.join(',')} ${a}`;
           const groups = combo.map(bandGroup);
           expect(rm.bars, label).toHaveLength(scales.length);
-          expect(rm.study.items, label).toHaveLength(scales.length);
+          // Çok boyutlu testte (focus) öneri kartları yalnızca en belirgin boyutlar içindir; uçtaki boyutlar ortadakilerden
+          // önce gelir, eşitlikte profildeki sıra korunur.
+          const shown = t.focus && scales.length > t.focus.count ? t.focus.count : scales.length;
+          expect(rm.study.items, label).toHaveLength(shown);
           // Öne çıkanlar yalnızca orta düzeyde olmayan boyutlardır; hiç yoksa dengeli profil cümlesi gösterilir. Tek
           // boyutlu testte o boyut her zaman gösterilir.
           const extremes = groups.filter((g) => g !== 'average').length;
+          const dist = (i: number) => Math.abs(VALUE[combo[i]] - 3);
+          const ext = (i: number) => (groups[i] === 'average' ? 0 : 1);
+          const focusKeys = keys
+            .map((k, i) => ({ k, i }))
+            .sort((x, y) => (shown < scales.length ? ext(y.i) - ext(x.i) || dist(y.i) - dist(x.i) : 0) || x.i - y.i)
+            .slice(0, shown);
+          if (shown < scales.length) {
+            expect(rm.study.items.map((x) => x.key), label).toEqual(focusKeys.map((x) => x.k));
+            expect(rm.study.intro, label).toContain(
+              a === 'parent' ? 'Aşağıda çocuğunuzun puanı ortadan en uzak altı özelliği' : 'Aşağıda puanı ortadan en uzak altı özelliğin',
+            );
+          }
           expect(rm.standout.length, label).toBe(scales.length === 1 ? 1 : Math.min(2, extremes));
           expect(rm.standoutNote === null, label).toBe(scales.length === 1 || extremes > 0);
-          if (hasSettings(slug)) expect(rm.settings?.items.length, label).toBe(extremes);
+          // Ortamlar: gösterilen boyutlardan uçta olanlar (ortamı yazılmamış boyutlar hariç).
+          const noSettings = NO_SETTINGS[slug] ?? [];
+          const settingCount = focusKeys.filter((x) => ext(x.i) && !noSettings.includes(x.k)).length;
+          if (hasSettings(slug)) expect(rm.settings?.items.length, label).toBe(settingCount);
           else expect(rm.settings, label).toBeNull();
           // Rozette düzey ile kısa ad aynıysa bir kez yazılır.
           for (const it of rm.study.items) expect(it.badge, label).not.toMatch(/^(.+) · \1$/);
           // Dört hafta: fark et, çalışma düzeni, (iyi oluş gerekiyorsa) iyi oluş ya da en belirgin boyut, gözden geçir.
           expect(rm.weeks.map((w) => w.label), label).toEqual(['1. hafta', '2. hafta', '3. hafta', '4. hafta']);
           expect(rm.weeks[1].title, label).toBe(t.planningTitle ?? 'Çalışma düzeni');
-          const wb = t.wellbeing;
-          if (wb && groups[keys.indexOf(wb.scale)] === wb.group) {
+          // İyi oluş: şablondaki sırayla ilk uyan boyut.
+          const wb = (t.wellbeing ? [t.wellbeing].flat() : []).find((w) => groups[keys.indexOf(w.scale)] === w.group);
+          if (wb) {
             expect(rm.weeks[2].title, label).toBe(scales[keys.indexOf(wb.scale)].name);
             // İyi oluş bağlantısı: verilmezse "Sınav kaygısı" yazısı, `null` ise hiç bağlantı yok.
-            const href = wb.link === undefined ? '/rehber/sinav-kaygisi' : wb.link?.href;
+            // Varsayılan "Sınav kaygısı" yazısı öğrencilere ve velilere yazılmıştır; yetişkine verilmez.
+            const href = wb.link === undefined ? (a === 'adult' ? undefined : '/rehber/sinav-kaygisi') : wb.link?.href;
             expect(rm.study.links.map((l) => l.href), label).toEqual([
               '/rehber/etkili-ders-calisma-yontemleri',
               ...(href ? [href] : []),
@@ -206,7 +271,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
             }
           }
           expect(rm.approach !== null, label).toBe(a === 'parent');
-          if (a === 'parent') expect(rm.approach!.items, label).toHaveLength(scales.length);
+          if (a === 'parent') expect(rm.approach!.items, label).toHaveLength(shown);
           for (const x of texts(rm)) {
             expect(x, label).not.toMatch(/undefined|null|\s{2}/);
             if (a === 'adult') expect(x, label).not.toMatch(SCHOOL);
@@ -222,6 +287,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'alti-boyutlu-kisilik-profili': 3 ** 6 * 3,
       'duygusal-zeka-bilesenleri': 3 ** 7 * 3,
       'kisilerarasi-tarz': 3 ** 8 * 3,
+      '16-faktorlu-kisilik-profili': comboCount(3, 16) * 3,
       'oz-saygi': 3 * 2,
       'calisma-aliskanliklari': 5 ** 5 * 2,
     });
@@ -347,7 +413,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
           unique(scales.map((s) => pickA(s.action[g])), `${a} ${g} bu hafta dene`);
         }
       }
-      if (hasSettings(slug)) unique(scales.flatMap((s) => [s.settings!.low!, s.settings!.high!]), 'ortamlar');
+      if (hasSettings(slug)) unique(scales.flatMap((s) => (s.settings ? [s.settings.low!, s.settings.high!] : [])), 'ortamlar');
       if (t.approach) unique(Object.values(t.approach).flatMap((x) => [x.low, x.average, x.high]), 'veliye yaklaşım');
     }
   });
@@ -502,6 +568,35 @@ describe('üç boyutlu sütun grafiği', () => {
             for (const b of labels.slice(i + 1)) {
               const apart = Math.abs(a.x - b.x) >= ((a.text.length + b.text.length) * charWidth) / 2 || Math.abs(a.y - b.y) >= height;
               expect(apart, `${n} sütun, ${yaw}°: ${a.key} ve ${b.key}`).toBe(true);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it('çok sütunda (16 özellik) yalnızca öndeki ve yandaki sütunların puanı yazılır; yazılar üst üste binmez', () => {
+    const sizes = [
+      { width: 560, height: 420, label: { charWidth: 11.5, height: 20 } },
+      { width: 380, height: 285, label: { charWidth: 7.2, height: 13 } },
+    ];
+    expect(LABEL_ALL_MAX).toBe(10);
+    for (const size of sizes) {
+      for (let k = 0; k < 20; k++) {
+        const values = Array.from({ length: 16 }, (_, i) => 1 + Math.round(((Math.sin(k * 13.7 + i * 7.3) + 1) / 2) * 40) / 10);
+        const input = values.map((v, i) => ({ ...bars[0], key: `b${i}`, value: v, ciLow: null, ciHigh: null, valueLabel: v.toFixed(1) }));
+        for (let yaw = 0; yaw < 360; yaw += 15) {
+          const sc = bars3dScene(input, { yaw, ...size });
+          expect(sc.bars).toHaveLength(16);
+          // Arkadaki sütunların yazısı yoktur; öndekilerin ve yandakilerin vardır (yaklaşık yarısından biraz fazlası).
+          expect(sc.labels.length, `${yaw}°`).toBeGreaterThanOrEqual(8);
+          expect(sc.labels.length, `${yaw}°`).toBeLessThan(16);
+          const { charWidth, height } = size.label;
+          for (const [i, a] of sc.labels.entries()) {
+            expect(a.y, `${yaw}°`).toBeGreaterThanOrEqual(height * 0.8);
+            for (const b of sc.labels.slice(i + 1)) {
+              const apart = Math.abs(a.x - b.x) >= ((a.text.length + b.text.length) * charWidth) / 2 || Math.abs(a.y - b.y) >= height;
+              expect(apart, `${yaw}°: ${a.key} ve ${b.key}`).toBe(true);
             }
           }
         }

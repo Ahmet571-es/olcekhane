@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { bars3dScene } from '@/lib/charts/bars3d';
+import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene } from '@/lib/charts/bars3d';
 import type { RoadmapBar } from '@/lib/reports/roadmap';
 
 /** Başlangıç açısı: iki sütun önde, ötekiler arkada simetrik dizilir (beşgende 36°, altıgende 30°). */
@@ -114,6 +114,7 @@ export function Profile3D({ bars, you, note }: { bars: RoadmapBar[]; you: boolea
             (bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
               ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
               : 'Sütunun yüksekliği puanı gösterir.')}{' '}
+          {bars.length > LABEL_ALL_MAX && `${FRONT_LABELS_NOTE} `}
           Grafiği {you ? 'parmağınla ya da fareyle' : 'parmağınızla ya da fareyle'}{' '}
           sürükleyerek döndürebilir{you ? 'sin' : 'siniz'}.
         </p>

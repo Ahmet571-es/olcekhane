@@ -57,6 +57,11 @@ export interface SceneOptions {
   label?: { charWidth: number; height: number };
 }
 
+/** Bu sayıdan çok sütunda yalnızca öndeki ve yandaki sütunların puanı yazılır (ör. 16 özellik). */
+export const LABEL_ALL_MAX = 10;
+/** Puanı yazılmayan sütunlar olduğunda grafiğin açıklamasına eklenen cümle (ekranda ve PDF'te; liste grafiğin altındadır). */
+export const FRONT_LABELS_NOTE = 'Kalabalık olmasın diye yalnızca öndeki ve yandaki sütunların puanı yazılır; bütün puanlar yukarıdaki listede.';
+
 const BAR_W = 0.8;
 const BAR_H = 3.6;
 const RING = 2.3;
@@ -167,8 +172,11 @@ export function bars3dScene(bars: Bar3DInput[], opts: SceneOptions): Scene3D {
   }
   polys.push({ points: pts(ring.map((a): V3 => [PLATE * Math.cos(a), 0, PLATE * Math.sin(a)])), fill: floor.top, stroke: floor.stroke });
 
-  // İlk sütun öndedir; ötekiler saat yönünde çembere dizilir. Uzaktaki sütun önce çizilir.
+  // İlk sütun öndedir; ötekiler saat yönünde çembere dizilir. Uzaktaki sütun önce çizilir. Sütun çoksa (ör. 16 özellik)
+  // sütunlar birbirine değmesin diye incelir: genişlik, çember üzerindeki aralığın en çok %55'idir (dokuz sütuna kadar
+  // genişlik değişmez).
   const n = bars.length;
+  const barW = Math.min(BAR_W, (0.55 * 2 * Math.PI * RING) / Math.max(1, n));
   const items = bars.map((b, i) => {
     const theta = -Math.PI / 2 + (i * 2 * Math.PI) / Math.max(1, n);
     const cx = RING * Math.cos(theta);
@@ -177,13 +185,17 @@ export function bars3dScene(bars: Bar3DInput[], opts: SceneOptions): Scene3D {
   });
   items.sort((p, q) => q.depth - p.depth);
 
-  for (const { b, cx, cz, theta } of items) {
+  // Çok sütunlu grafikte (ör. 16 özellik) arkadaki sütunların puan yazıları öndekilerin arasına düşüp karışıyor: yalnızca
+  // öndeki ve yandaki sütunların puanı yazılır. Grafik döndükçe öne gelen sütunun puanı görünür; bütün puanlar grafiğin
+  // altındaki açıklamada da yazılıdır.
+  const labelled = (depth: number) => n <= LABEL_ALL_MAX || depth <= RING * 0.3;
+  for (const { b, cx, cz, theta, depth } of items) {
     const span = b.max - b.min || 1;
     const t = (v: number) => Math.max(0, Math.min(1, (v - b.min) / span));
     // En düşük puanlı sütun da görünsün diye çok ince bir taban kalır.
     const h = b.value === null ? 0 : Math.max(0.04, t(b.value) * BAR_H);
     if (b.value !== null) {
-      for (const f of box(cx, cz, BAR_W / 2, theta, 0, h)) {
+      for (const f of box(cx, cz, barW / 2, theta, 0, h)) {
         if (f.n[1] === 0 && !facing(f.n)) continue;
         const k = f.n[1] === 1 ? 1.2 : intensity(f.n);
         polys.push({ points: pts(f.pts), fill: shade(b.color, k), stroke: shade(b.color, 0.68) });
@@ -193,7 +205,7 @@ export function bars3dScene(bars: Bar3DInput[], opts: SceneOptions): Scene3D {
     if (b.value !== null && b.ciLow != null && b.ciHigh != null) {
       const lo = t(b.ciLow) * BAR_H;
       const hi = t(b.ciHigh) * BAR_H;
-      for (const f of box(cx, cz, BAR_W / 2 + 0.11, theta, lo, hi)) {
+      for (const f of box(cx, cz, barW / 2 + 0.11, theta, lo, hi)) {
         if (f.n[1] === 0 && !facing(f.n)) continue;
         polys.push({ points: pts(f.pts), fill: bandColor, opacity: f.n[1] === 1 ? 0.34 : 0.24, stroke: bandColor });
       }
@@ -203,7 +215,7 @@ export function bars3dScene(bars: Bar3DInput[], opts: SceneOptions): Scene3D {
     const tip = view([cx, h, cz]);
     const lab = view([cx, top, cz]);
     marks.push({ key: b.key, baseY: base.sy, topY: tip.sy });
-    labels.push({ key: b.key, x: lab.sx, y: lab.sy - 10, text: b.valueLabel });
+    if (labelled(depth)) labels.push({ key: b.key, x: lab.sx, y: lab.sy - 10, text: b.valueLabel });
   }
 
   // Arkadaki bir sütunun puanı öndekinin puanıyla üst üste binerse yukarı kaydırılır (önce öndekiler yerleşir). Yazı

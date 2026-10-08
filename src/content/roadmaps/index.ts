@@ -1,3 +1,4 @@
+import { onAltiFaktorKisilikRoadmap } from './16-faktorlu-kisilik';
 import { altiBoyutluKisilikRoadmap } from './alti-boyutlu-kisilik';
 import { ayrintiliKisilikRoadmap } from './ayrintili-kisilik';
 import { besFaktorRoadmap } from './bes-faktor';
@@ -23,6 +24,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'alti-boyutlu-kisilik-profili': altiBoyutluKisilikRoadmap,
   'duygusal-zeka-bilesenleri': duygusalZekaBilesenleriRoadmap,
   'kisilerarasi-tarz': kisilerarasiTarzRoadmap,
+  '16-faktorlu-kisilik-profili': onAltiFaktorKisilikRoadmap,
   'oz-saygi': ozSaygiRoadmap,
   'calisma-aliskanliklari': calismaAliskanliklariRoadmap,
 };
@@ -96,7 +98,7 @@ export function roadmapSummary(slug: string): string {
   const t = ROADMAPS[slug];
   const parts = [
     ...(Object.keys(t.scales).length >= 3 ? ['parmakla döndürülebilen üç boyutlu profil'] : []),
-    'nasıl çalışılabileceğine dair öneriler',
+    t.focus ? 'en belirgin boyutlara göre nasıl çalışılabileceğine dair öneriler' : 'nasıl çalışılabileceğine dair öneriler',
     ...(Object.values(t.scales).some((x) => x.settings) ? ['rahat edilebilecek ortamlar'] : []),
     'veliye yaklaşım önerileri',
   ];

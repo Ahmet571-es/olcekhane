@@ -1,3 +1,4 @@
+import { onAltiFaktorKisilikReport } from './16-faktorlu-kisilik';
 import { altiBoyutluKisilikReport } from './alti-boyutlu-kisilik';
 import { ayrintiliKisilikReport } from './ayrintili-kisilik';
 import { besFaktorReport } from './bes-faktor';
@@ -22,6 +23,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'calisma-aliskanliklari': calismaAliskanliklariReport,
   'duygusal-zeka-bilesenleri': duygusalZekaBilesenleriReport,
   'kisilerarasi-tarz': kisilerarasiTarzReport,
+  '16-faktorlu-kisilik-profili': onAltiFaktorKisilikReport,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriReport,
   'dikkat-ve-bellek': { version: 'dikkat-bellek-rapor-1', bandLabels: {}, scales: {} },
   'surekli-dikkat': { version: 'surekli-dikkat-rapor-1', bandLabels: {}, scales: {} },

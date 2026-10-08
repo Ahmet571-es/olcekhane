@@ -15,6 +15,7 @@ const TARZ = 'kisilerarasi-tarz';
 const HOBI = 'hobi-ve-serbest-zaman-ilgileri';
 const ILGI = 'meslek-ilgi-alanlari';
 const SEKIL = 'sekil-akil-yurutme';
+const ONALTI = '16-faktorlu-kisilik-profili';
 
 /** Raporda kişiye gösterilen bütün metinler. */
 function reportText(r: SimpleReport): string {
@@ -56,7 +57,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);

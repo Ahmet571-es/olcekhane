@@ -30,6 +30,17 @@ export interface RoadmapScale {
   settings?: Partial<Record<BandGroup, string>>;
 }
 
+/**
+ * Bu boyut bu düzey grubundayken 3. hafta iyi oluşa ayrılır. Birden çok verilirse ilk uyan kullanılır (ör. Duygusal denge
+ * düşük, sonra Endişeye yatkınlık yüksek).
+ */
+export interface Wellbeing {
+  scale: string;
+  group: BandGroup;
+  /** Rehber yazısı bağlantısı: verilmezse öğrenciye ve veliye "Sınav kaygısı" yazısıdır; `null` ise bağlantı verilmez. */
+  link?: { label: string; href: string } | null;
+}
+
 export interface RoadmapTemplate {
   version: string;
   scales: Record<string, RoadmapScale>;
@@ -48,9 +59,16 @@ export interface RoadmapTemplate {
   links?: { label: string; href: string }[];
   /**
    * Bu boyut bu düzey grubundayken 3. hafta iyi oluşa ayrılır ve bir rehber yazısına bağlantı verilir (ör. Duygusal
-   * Denge düşük, Duygusallık yüksek). Bağlantı verilmezse "Sınav kaygısı" yazısıdır; `null` ise bağlantı verilmez.
+   * Denge düşük, Duygusallık yüksek). Birden çok verilirse şablondaki sırayla ilk uyan kullanılır. Bağlantı verilmezse
+   * öğrenciye ve veliye "Sınav kaygısı" yazısıdır (yetişkine verilmez); `null` ise bağlantı verilmez.
    */
-  wellbeing?: { scale: string; group: BandGroup; link?: { label: string; href: string } | null };
+  wellbeing?: Wellbeing | Wellbeing[];
+  /**
+   * Çok boyutlu testlerde (ör. 16 özellik) "Nasıl çalışabilirsin?" kartları, ortamlar ve veliye yaklaşım önerileri
+   * yalnızca ortadan en uzak `count` boyut için verilir (en belirgin olandan başlayarak); grafik bütün boyutları gösterir.
+   * Hesaplanan boyut sayısı `count`tan fazlaysa `note` ("{n}" yerine sayı yazılır) çalışma bölümünün girişine eklenir.
+   */
+  focus?: { count: number; note: AudienceText };
   /**
    * Veliye yaklaşım önerileri. Verilmezse rapor şablonundaki veli önerilerinin ilki kullanılır (Beş Faktör); rapor
    * şablonunda öneri yazılmamış testlerde burada verilir.
