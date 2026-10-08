@@ -14,7 +14,7 @@ const wrap = (v: number) => ((((v + 180) % 360) + 360) % 360) - 180;
  * etmez (test ve rapor ekranları sade kalır). Değerlerin kesin okunması için altında sayılarla bir açıklama, raporda
  * da düz cetveller bulunur.
  */
-export function Profile3D({ bars, you }: { bars: RoadmapBar[]; you: boolean }) {
+export function Profile3D({ bars, you, note }: { bars: RoadmapBar[]; you: boolean; note?: string }) {
   const [yaw, setYaw] = useState(() => startYaw(bars.length));
   const drag = useRef<{ x: number; yaw: number } | null>(null);
   const scene = useMemo(
@@ -110,9 +110,10 @@ export function Profile3D({ bars, you }: { bars: RoadmapBar[]; you: boolean }) {
           ))}
         </ul>
         <p className="t-meta">
-          {bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
-            ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
-            : 'Sütunun yüksekliği puanı gösterir.'}{' '}
+          {note ??
+            (bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
+              ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
+              : 'Sütunun yüksekliği puanı gösterir.')}{' '}
           Grafiği {you ? 'parmağınla ya da fareyle' : 'parmağınızla ya da fareyle'}{' '}
           sürükleyerek döndürebilir{you ? 'sin' : 'siniz'}.
         </p>

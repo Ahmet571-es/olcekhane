@@ -6,7 +6,8 @@ import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadma
  * Zihinsel görevlerin gelişim yol haritası: becerinin günlük hayatta nerede kullanıldığı ve o işleri kolaylaştıran
  * yollar. Görevlerde Türkiye normu olmadığı ve tek oturumluk sonuçlar güvenilir bir düzey sınıflaması vermediği için
  * öneriler sonuca göre değişmez; "Kısaca" bölümü raporun kendi kartlarının başlıklarını özetler. Puanı yükseltmeyi ya da
- * beyni çalıştırmayı vaat etmez; üç boyutlu profil yoktur (sonuçlar farklı birimlerdedir).
+ * beyni çalıştırmayı vaat etmez. Üç boyutlu grafik yalnızca sonuçları aynı birimde olan görevlerde vardır (şekil akıl
+ * yürütmede kural türlerine göre doğru cevap oranı); öteki görevlerde sonuçlar farklı birimlerde olduğu için yoktur.
  */
 export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts: { preview: boolean; next: NextTest[] }): Roadmap | undefined {
   const blocks = r.cognitive?.blocks ?? [];
@@ -20,7 +21,8 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
     intro: parent
       ? `Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: ${joinNames(contents)}. Öneriler puanı yükseltmek için değil, bu becerinin gerektiği işleri kolaylaştırmak içindir.`
       : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${joinNames(contents)}. Öneriler puanı yükseltmek için değil, bu becerinin gerektiği işleri kolaylaştırmak içindir.`,
-    bars: [],
+    bars: (r.cognitive?.profile?.bars ?? []).map((b) => ({ ...b, ciLow: null, ciHigh: null })),
+    ...(r.cognitive?.profile ? { barsTitle: r.cognitive.profile.title, barsNote: r.cognitive.profile.note } : {}),
     standout: blocks.map((b) => ({ title: b.name, text: b.headline })),
     standoutNote: null,
     study: {
@@ -32,7 +34,7 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
     settings: {
       title: t.facts.title,
       intro: pick(t.facts.intro, a),
-      items: parent ? t.facts.items.parent : t.facts.items.student,
+      items: parent ? t.facts.items.parent : a === 'adult' ? (t.facts.items.adult ?? t.facts.items.student) : t.facts.items.student,
       note: pick(t.facts.note, a),
     },
     approach: parent ? { title: 'Çocuğunuza nasıl yaklaşabilirsiniz?', items: t.approach } : null,

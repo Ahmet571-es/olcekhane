@@ -110,7 +110,9 @@ describe('yaş grupları', () => {
       expect(named, group.key).toEqual(areas);
     }
     const yetiskin = groupDescription(AGE_GROUPS.find((g) => g.key === 'yetiskin')!);
-    expect(yetiskin).not.toMatch(/okuma|zihinsel/);
+    // Yetişkinlere açık zihinsel beceri testi: şekil akıl yürütme. Okuma testleri yetişkinlere açık değil.
+    expect(yetiskin).not.toMatch(/okuma/);
+    expect(yetiskin).toContain('zihinsel beceri');
   });
 
   it('her grubun sayfası vardır; testi olmayan grup listelerde ve site haritasında yer almaz', () => {

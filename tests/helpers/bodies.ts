@@ -10,6 +10,7 @@ import type {
   FlankerTask,
   GoNoGoTask,
   LikertInstrument,
+  MatrixReasoningTask,
   MentalRotationTask,
   NBackTask,
   QuizInstrument,
@@ -181,6 +182,35 @@ export function rotationBody(
     return { index, response: p.choice, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Şekil akıl yürütmenin bir sorusu: düzeyi, kural türü, doğru seçeneğin sırası (1–8) ve sorunun sırası. */
+export type MatrixCellInfo = { level: number; rule: string; answer: number; i: number };
+
+/**
+ * Şekil akıl yürütme: varsayılan olarak ilk üç düzeyin sorularında doğru, 4. ve 5. düzeyde ilk iki soruda doğru, ötekilerde
+ * doğru cevabın bir sonrasındaki seçenek; cevap süresi düzeyle artar (6 sn + 4 sn/düzey). Seçici; sorunun düzeyini,
+ * kural türünü, doğru seçeneğini ve sırasını alır.
+ */
+export function matrixBody(
+  pick: (q: MatrixCellInfo) => { choice: number; rtMs: number | null } = (q) => {
+    const firstTwo = q.level <= 3 || matrixRank(q) < 2;
+    return { choice: firstTwo ? q.answer : (q.answer % 8) + 1, rtMs: 6000 + 4000 * q.level };
+  },
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('sekil-akil-yurutme').tasks[0] as MatrixReasoningTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, rule: it.rule, answer: task.answers[index], i: index });
+    return { index, response: p.choice, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function matrixRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('sekil-akil-yurutme').tasks[0] as MatrixReasoningTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
 }
 
 /** Tepki hızının bir denemesi: bölüm, dairenin kutusu (0 sol, 1 sağ), bekleme ve bölüm içindeki sırası. */

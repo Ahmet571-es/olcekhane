@@ -232,7 +232,8 @@ export type TaskKind =
   | 'trail'
   | 'n_back'
   | 'mental_rotation'
-  | 'reaction_time';
+  | 'reaction_time'
+  | 'matrix_reasoning';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -472,6 +473,87 @@ export interface ReactionTimeTask extends TaskBase {
   timeoutMs: number;
 }
 
+/**
+ * Şekil akıl yürütme (matris düzeni): 3×3'lük bir tablonun sağ alttaki parçası eksiktir; tablodaki kuralı bulup eksik
+ * parçayı sekiz seçenek arasından seçmek gerekir. Bir parça (hücre) şu düzenlerden birini taşır: aynı şekillerden bir
+ * ya da birkaçı; büyük bir çerçeve ve içinde küçük bir şekil; çizgiler; ya da sekiz yuvalı bir halka ve halkadaki
+ * noktalar (ortasında küçük bir şekil olabilir). Bütün sorular ve seçenekler Ölçekhane'nindir
+ * (lib/instruments/matrix.ts).
+ */
+export type MatrixShape = 'circle' | 'square' | 'triangle' | 'diamond' | 'star' | 'cross' | 'arrow';
+export type MatrixFill = 'empty' | 'gray' | 'black';
+export type MatrixFrame = 'circle' | 'square' | 'triangle' | 'diamond';
+
+export interface MatrixCell {
+  /** Şekil: tek başına ya da (çerçeve ve halka düzenlerinde) ortadaki küçük şekil. */
+  shape?: MatrixShape;
+  /** Aynı şekillerden kaç tane (1–5); verilmezse 1. */
+  count?: number;
+  /** Büyüklük: 1 küçük, 2 orta, 3 büyük (yalnızca tek şekilli sorularda değişir). */
+  size?: 1 | 2 | 3;
+  fill?: MatrixFill;
+  /** Okun yönü: derece, saat yönünde; 0 yukarı. */
+  angle?: number;
+  /** Dıştaki büyük çerçeve (içi boş). */
+  frame?: MatrixFrame;
+  /** Çizgiler: 0 üst, 1 sağ, 2 alt, 3 sol kenar, 4 sol üstten sağ alta, 5 sağ üstten sol alta çapraz, 6 ortadaki yatay, 7 ortadaki dikey. */
+  lines?: number[];
+  /** Halkadaki siyah noktaların yuvaları: 0 üstte, saat yönünde 0–7. */
+  dots?: number[];
+  /** Halkadaki gri noktaların yuvaları. */
+  grayDots?: number[];
+}
+
+/**
+ * Kural türleri (Carpenter, Just ve Shell, 1990): değişmeyen özellik, düzenli değişim (sayı, büyüklük, yön ya da yer
+ * adım adım değişir), üçlü dağılım (üç değer her satırda birer kez), ekleme-çıkarma (üçüncü parça ilk ikisinin
+ * birleşimi, farkı ya da toplamıdır), ortak olanın silinmesi (iki parçada da olan öğeler silinir, yalnızca birinde
+ * olanlar kalır; "iki değerin dağılımı").
+ */
+export type MatrixRule = 'constant' | 'progression' | 'distribution' | 'addition' | 'xor';
+
+export interface MatrixItem {
+  key: string;
+  /** Zorluk düzeyi (1–5): izlenmesi gereken kuralların sayısına ve türüne göre. */
+  level: 1 | 2 | 3 | 4 | 5;
+  /** Sorudaki en zor kural (raporda kural türlerine göre sonuçlar bununla hesaplanır). */
+  rule: MatrixRule;
+  /** Tablonun ilk sekiz parçası, satır satır; dokuzuncusu (sağ alttaki) eksiktir. */
+  cells: MatrixCell[];
+  /** Sekiz seçenek, ekranda gösterilme sırasıyla. */
+  options: MatrixCell[];
+}
+
+export interface MatrixPracticeItem extends MatrixItem {
+  /** Doğru seçeneğin sırası (1–8). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  /** Cevaptan sonra gösterilen açıklama. */
+  explain: string;
+}
+
+export interface MatrixReasoningTask extends TaskBase {
+  kind: 'matrix_reasoning';
+  /** Geri bildirimli alıştırma soruları (puanlanmaz). */
+  practice: MatrixPracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: MatrixItem[];
+  /**
+   * Cevap anahtarı: items[i] sorusunun doğru seçeneğinin sırası (1–8). Puanlama sunucuda yapılır; tarayıcıya giden
+   * test bilgisinde bu liste boş gönderilir (testler/[slug]/coz).
+   */
+  answers: number[];
+  /**
+   * Her sorunun her seçeneğinin doğru cevaptan kaç özellikte ayrıldığı (0–3; doğru cevapta 0). Yanlış cevapların
+   * "yakın" (tek özellikte ayrılan) olup olmadığı raporda bununla anlatılır. Cevap anahtarını içerdiği için o da
+   * tarayıcıya boş gönderilir.
+   */
+  optionDistance: number[][];
+  /** Zorluk düzeylerinin adları ve kısa açıklamaları (raporda). */
+  levels: { level: number; name: string; plain: string }[];
+  /** Düzeyi 3 ve üstündeki sorularda bu süreden (ms) kısa cevaplar "çok hızlı" sayılır: soruya bakmadan seçilmiş olabilir. */
+  rapidMs: number;
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -483,7 +565,8 @@ export type CognitiveTask =
   | TrailTask
   | NBackTask
   | MentalRotationTask
-  | ReactionTimeTask;
+  | ReactionTimeTask
+  | MatrixReasoningTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

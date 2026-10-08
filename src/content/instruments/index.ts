@@ -16,6 +16,7 @@ import { meslekiIlgi } from './mesleki-ilgi';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
+import { sekilAkilYurutme } from './sekil-akil-yurutme';
 import { sesliOkuma } from './sesli-okuma';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
 import { tepkiHizi } from './tepki-hizi';
@@ -41,6 +42,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   geriyeDonukHatirlama,
   zihindeDondurme,
   tepkiHizi,
+  sekilAkilYurutme,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   hobiIlgileri,

@@ -125,6 +125,7 @@ export const AGE_GROUPS: AgeGroup[] = [
     starters: [
       { slug: 'meslek-ilgi-alanlari', why: 'Meslek ve bölüm seçerken sekiz ilgi alanını sıralı olarak gösterir.' },
       { slug: 'ayrintili-kisilik-profili', why: 'Kişiliğin beş boyutunu ve alt özelliklerini ayrıntılı gösterir.' },
+      { slug: 'sekil-akil-yurutme', why: 'Şekillerle kurulmuş bulmacalarla akıl yürütmeyi kolaydan zora beş düzeyde gösterir; zekâ puanı vermez.' },
     ],
   },
 ];

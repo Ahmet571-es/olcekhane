@@ -29,9 +29,9 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
       {rm.bars.length >= 3 && (
         <section aria-labelledby="profil-3b" className="flex flex-col gap-4">
           <h3 id="profil-3b" className="t-h2">
-            {you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu'}
+            {rm.barsTitle ?? (you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu')}
           </h3>
-          <Profile3D bars={rm.bars} you={you} />
+          <Profile3D bars={rm.bars} you={you} note={rm.barsNote} />
         </section>
       )}
 

@@ -12,7 +12,8 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    (Hedge ve ark., 2018); bu yüzden öneriler sonuca göre değişmez, sonuç "Kısaca" bölümünde raporun kendi kartlarından
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
- *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevler yetişkinlere açık değildir.
+ *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme
+ *    yetişkinlere de açıktır; onun metinleri okula özgü değildir, yetişkine öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
@@ -671,6 +672,104 @@ const tepkiHizi: TaskRoadmapTemplate = {
   sources: [KAYNAK.hick, KAYNAK.kail, KAYNAK.hedge],
 };
 
+const sekilBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca şekillerle yapılan yönünü gösterir.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; küçük yaşta üst düzeylerdeki sorularda zorlanmak olağandır.',
+    'Bu tür bulmacalara alışkın olmak ve okul deneyimi sonucu etkileyebilir.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca şekillerle yapılan yönünü gösterir.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; küçük yaşta üst düzeylerdeki sorularda zorlanmak olağandır.',
+    'Bu tür bulmacalara alışkın olmak ve okul deneyimi sonucu etkileyebilir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine eğitim ve alışkanlıkla ilgili bilgi. */
+const sekilFacts: InfoBox = {
+  ...sekilBase,
+  items: {
+    ...sekilBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca şekillerle yapılan yönünü gösterir.',
+      'Bu tür bulmacalara alışkın olmak ve eğitim deneyimi sonucu etkileyebilir.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const sekilAkilYurutme: TaskRoadmapTemplate = {
+  version: 'sekil-akil-yurutme-yol-haritasi-1',
+  what: {
+    student: 'kuralları bulmayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun kuralları bulmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'kuralları bulmayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Kuralları bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun kuralları bulmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, şekillerdeki kuralı bulup yeni bir duruma uygulayabilmeyi ölçer. Bu beceri; bir örüntüyü fark etmek, bir problemi adımlara ayırmak ve yeni karşılaşılan bir durumda ne yapılacağını kestirmek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım eder.',
+    'Bu test, şekillerdeki kuralı bulup yeni bir duruma uygulayabilmeyi ölçer. Bu beceri; bir örüntüyü fark etmek, bir problemi adımlara ayırmak ve yeni karşılaşılan bir durumda ne yapılacağını kestirmek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım eder.',
+  ),
+  supports: [
+    support(0, 'ozellik', 'Özellikleri tek tek izle', 'Yöntem', t(
+      'Karmaşık bir soruda her şeye birden bakmak yerine özellikleri tek tek izle: önce şekle, sonra sayıya, sonra renge ve yöne bak. Her özelliğin kuralını ayrı ayrı bul; birden çok kuralı akılda tutmak böyle kolaylaşır.',
+      'Karmaşık bir soruda her şeye birden bakmak yerine özellikleri tek tek izlemesini önerin: önce şekle, sonra sayıya, sonra renge ve yöne. Her özelliğin kuralını ayrı ayrı bulmak, çocuğunuzun birden çok kuralı karıştırmadan akılda tutmasını kolaylaştırır.',
+    )),
+    support(1, 'kur', 'Cevabı önce kendin kur', 'Yöntem', t(
+      'Seçeneklere bakmadan önce eksik parçanın nasıl olması gerektiğini zihninde kur; sonra seçeneklerde onu ara. Araştırmalar, cevabı önce zihinde kurmanın seçenekleri tek tek karşılaştırmaktan daha iyi sonuç verdiğini düşündürür.',
+      'Çocuğunuza seçeneklere bakmadan önce eksik parçanın nasıl olması gerektiğini zihninde kurmasını, sonra seçeneklerde onu aramasını önerin. Araştırmalar, cevabı önce zihinde kurmanın seçenekleri tek tek karşılaştırmaktan daha iyi sonuç verdiğini düşündürür.',
+    )),
+    support(2, 'soyle', 'Kuralı söyle ya da yaz', 'Alışkanlık', t(
+      'Bir örüntünün kuralını bulduğunda onu kısa bir cümleyle söyle ya da yaz: “Her adımda bir artıyor.” Kuralı sözcüklerle söylemek, onu akılda tutmanı ve doğru olup olmadığını kontrol etmeni kolaylaştırabilir.',
+      'Çocuğunuz bir örüntünün kuralını bulduğunda onu kısa bir cümleyle söylemesini isteyin: “Her adımda bir artıyor.” Kuralı sözcüklerle söylemek, onu akılda tutmasını ve doğru olup olmadığını kontrol etmesini kolaylaştırabilir.',
+    )),
+    support(3, 'oyun', 'Kurallı oyunlar', 'Etkinlik', t(
+      'Sudoku, tangram, satranç ve örüntü tamamlama gibi kurallı oyunlar, kural aramayı keyifli bir uğraş hâline getirir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir; asıl kazanç, düşünmekten keyif almaktır.',
+      'Sudoku, tangram, satranç ve örüntü tamamlama gibi kurallı oyunlar, çocuğunuz için kural aramayı keyifli bir uğraş hâline getirir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir; asıl kazanç, düşünmekten keyif almaktır.',
+    )),
+  ],
+  facts: sekilFacts,
+  approach: [
+    { title: 'Acele ettirmeyin', text: 'Zor bir soruda uzun düşünmesine izin verin; hızlı olmasından çok, kuralı kendisinin bulmasını övün.' },
+    { title: 'Birlikte kural arayın', text: 'Günlük hayattaki örüntüleri (takvim, döşeme desenleri, bir şarkıdaki tekrarlar) birlikte fark edin ve kuralını sözcüklerle söyleyin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Fark et',
+      text: t(
+        'Bu hafta karşına çıkan üç örüntüyü (bir döşeme deseni, bir sayı dizisi, bir şarkıdaki tekrar) not et ve her birinin kuralını tek cümleyle yaz.',
+        'Bu hafta çocuğunuzla çevrenizdeki üç örüntüyü (bir döşeme deseni, bir sayı dizisi, bir şarkıdaki tekrar) birlikte bulun ve her birinin kuralını tek cümleyle söyleyin.',
+      ),
+    },
+    {
+      title: 'Önce kur, sonra seç',
+      text: t(
+        'Bu hafta bir bulmaca ya da soru çözerken, seçeneklere bakmadan önce cevabın nasıl olması gerektiğini kısaca yaz; sonra seçeneklerle karşılaştır.',
+        'Bu hafta çocuğunuzdan bir bulmaca ya da soru çözerken, seçeneklere bakmadan önce cevabın nasıl olması gerektiğini söylemesini isteyin; sonra seçeneklerle birlikte karşılaştırın.',
+      ),
+    },
+    {
+      title: 'Kendi bulmacanı yap',
+      text: t(
+        'Bu hafta kâğıda 3 satır ve 3 sütunluk kendi şekil bulmacanı çiz: bir ya da iki kural seç, son parçayı boş bırak ve birine çözdür.',
+        'Bu hafta çocuğunuzdan kâğıda 3 satır ve 3 sütunluk kendi şekil bulmacasını çizmesini, son parçayı boş bırakıp size çözdürmesini isteyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun kuralları bulmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun kuralları bulmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['zihinde-dondurme', 'dikkat-ve-bellek'],
+  nextPurpose: {
+    you: 'şekilleri zihinde döndürmeyi ve bellek becerilerini de görmek',
+    parent: 'çocuğunuzun şekilleri zihinde döndürmesini ve bellek becerilerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.carpenter, KAYNAK.laurence, KAYNAK.ferrer],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -681,4 +780,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'geriye-donuk-hatirlama': geriyeDonuk,
   'zihinde-dondurme': zihindeDondurme,
   'tepki-hizi': tepkiHizi,
+  'sekil-akil-yurutme': sekilAkilYurutme,
 };

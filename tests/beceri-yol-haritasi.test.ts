@@ -18,6 +18,7 @@ import {
   memoryTasksBody,
   nBackBody,
   quizBody,
+  matrixBody,
   reactionBody,
   readingBody,
   rotationBody,
@@ -267,6 +268,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'geriye-donuk-hatirlama': nBackBody,
     'zihinde-dondurme': rotationBody,
     'tepki-hizi': reactionBody,
+    'sekil-akil-yurutme': matrixBody,
   };
 
   it('her zihinsel görevin yol haritası var; metinler eksiksiz, veli metinleri çocuğunuzu anar, öğrenci metinleri anmaz', () => {
@@ -292,7 +294,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     }
   });
 
-  it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu profil yoktur; PDF yol haritasıyla üretilir', async () => {
+  it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu grafik yalnızca şekil akıl yürütmede; PDF yol haritasıyla üretilir', async () => {
     for (const [slug, body] of Object.entries(BODIES)) {
       expect(hasPublicRoadmap(slug), slug).toBe(true);
       const r = evaluate(slug, body());
@@ -300,7 +302,12 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
         const rm = r[a].roadmap!;
         expect(rm, `${slug} ${a}`).toBeDefined();
         expect(rm.preview).toBe(false);
-        expect(rm.bars).toEqual([]);
+        if (slug === 'sekil-akil-yurutme') {
+          // Kural türlerine göre doğru cevap oranı (aynı birim): beş sütun, kendi başlığı ve açıklamasıyla.
+          expect(rm.bars.map((b) => b.key)).toEqual(['constant', 'progression', 'distribution', 'addition', 'xor']);
+          expect(rm.barsTitle).toMatch(/^Kural türlerine göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('kural türüdür');
+        } else expect(rm.bars).toEqual([]);
         expect(rm.standout.map((x) => x.title), slug).toEqual(r[a].items.map((i) => i.title));
         expect(rm.study.items, slug).toHaveLength(4);
         expect(rm.settings?.title, slug).toBe('Bilmekte yarar var');

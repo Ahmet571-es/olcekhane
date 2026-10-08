@@ -604,9 +604,10 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
         ))}
       </View>
       <Text style={s.note}>
-        {rm.bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
-          ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
-          : 'Sütunun yüksekliği puanı gösterir.'}
+        {rm.barsNote ??
+          (rm.bars.some((b) => b.ciLow !== null && b.ciHigh !== null)
+            ? 'Sütunun yüksekliği puanı, sarı kılıf ölçüm payını gösterir.'
+            : 'Sütunun yüksekliği puanı gösterir.')}
       </Text>
     </View>
   );
@@ -635,7 +636,7 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
 
       {rm.bars.length >= 3 && (
         <View wrap={false}>
-          <Text style={s.h2}>{you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu'}</Text>
+          <Text style={s.h2}>{rm.barsTitle ?? (you ? 'Profilin üç boyutlu' : 'Profil üç boyutlu')}</Text>
           <Profile3DPdf rm={rm} />
         </View>
       )}

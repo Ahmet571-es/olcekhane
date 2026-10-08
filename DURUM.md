@@ -87,6 +87,23 @@ sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce k
    karşılaştırılamaz). Yol haritasında hız sınıfa göre yorumlanır; orta bant "Metni kısmen anladı".
 Sonra raporun Öncelik 2 ve 3 maddeleri (site sahibi yeni görevler verecek).
 
+**Yeni kişilik ve zekâ testleri, adım adım (site sahibinin 2026-10-08 isteği):** lisans sorunu olmayan testler
+araştırılıp her adımda bir test eklenir; her test çözülüp hataları giderilir, rapor bilimsel ama sade ve 3B grafikli
+olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) ölçekleri; zekâ sorularının hepsi özgün
+(ICAR "yalnızca akademik kullanım", SWLS ve GSE ticari olmayan/araştırma izinli olduğu için kullanılmaz; "16PF" ve
+"Raven" marka olduğu için test adlarında geçmez). Sıra (site sahibi önerilen sırayı seçti):
+1. **Şekil Akıl Yürütme: yayında (2026-10-08, pilot).** 24 özgün matris sorusu, 5 düzey, 8 seçenek; 3. sınıftan
+   yetişkine (görevlerden yetişkinlere açık ilk test). Sorular kural tanımlarıyla yazılır (`lib/instruments/matrix.ts`,
+   `content/instruments/sekil-akil-yurutme.ts`); seçenekler I-RAVEN düzeninde (2×2×2, tabloya bakmadan bulunamaz).
+   Her sorunun tek doğru cevabı bağımsız çözücüyle denetlenir (`tests/helpers/matrix-solver.ts`); soruların izi testte
+   sabittir, sorular değişirse sürüm artırılır. Cevap anahtarı tarayıcıya gitmez (yayın denetimi de bakar). Rapor:
+   doğru sayısı, düzeylere göre grafik, ulaşılan düzey, kural türleri (yol haritasında 3B grafik), çalışma biçimi
+   (çok hızlı cevap, hep aynı sıra, yakın hatalar). Tablo ve seçenekler aynı ölçekte çizilir (büyüklük kuralı için).
+2. 16 Faktörlü Kişilik Profili (IPIP-16PF karşılıkları, 163 madde, 9. sınıftan yetişkine).
+3. Sayı Dizileri (özgün). 4. Öğrenme ve Başarı Özellikleri (IPIP kısa ölçekleri; VIA dışı kaynaklar). 5. Sözel Akıl
+   Yürütme (özgün Türkçe). 6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi
+   Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
+
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
 misin?" → "Evet" → sistem kaydı kendisi inceler ve rapor verir; hiçbir şey saklanmaz; öncelik doğruluk. Aylık ek sunucu
@@ -177,6 +194,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Geriye Dönük Hatırlama | geriye-donuk-hatirlama | Yayında (pilot; hoca onayı beklenmeden) |
 | Zihinde Döndürme | zihinde-dondurme | Yayında (pilot; hoca onayı beklenmeden) |
 | Tepki Hızı | tepki-hizi | Yayında (pilot; hoca onayı beklenmeden) |
+| Şekil Akıl Yürütme | sekil-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).

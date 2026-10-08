@@ -14,6 +14,7 @@ const DUYGU = 'duygusal-zeka-bilesenleri';
 const TARZ = 'kisilerarasi-tarz';
 const HOBI = 'hobi-ve-serbest-zaman-ilgileri';
 const ILGI = 'meslek-ilgi-alanlari';
+const SEKIL = 'sekil-akil-yurutme';
 
 /** Raporda kişiye gösterilen bütün metinler. */
 function reportText(r: SimpleReport): string {
@@ -55,14 +56,16 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);
       expect(d.science.ageNote, d.slug).toContain('yetişkinler de çözebilir');
       // Sınıfa göre form ya da metin seçen testlerde (konu tarama, okuma) ve Holland profilinde (lise ve üniversite
-      // yolları) yetişkin kipi henüz yok: bu testler açılmadan önce yetişkin için ayrı hazırlık gerekir.
-      expect(d.engine, d.slug).toBe('likert');
+      // yolları) yetişkin kipi henüz yok: bu testler açılmadan önce yetişkin için ayrı hazırlık gerekir. Görevlerden
+      // yalnızca şekil akıl yürütme yetişkinlere açıktır: soruları sınıfa göre değişmez, rapor metinleri okula özgü değildir.
+      if (d.engine === 'tasks') expect(d.tasks.map((t) => t.kind), d.slug).toEqual(['matrix_reasoning']);
+      else expect(d.engine, d.slug).toBe('likert');
       if (d.engine === 'likert') expect(d.profile, d.slug).not.toBe('riasec');
     }
   });

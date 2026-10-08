@@ -69,7 +69,8 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       };
     }
     case 'tasks':
-      return { engine: 'tasks', intro, tasks: def.tasks };
+      // Şekil akıl yürütmenin cevap anahtarı (ve seçeneklerin doğru cevaba uzaklığı) tarayıcıya gönderilmez.
+      return { engine: 'tasks', intro, tasks: def.tasks.map((t) => (t.kind === 'matrix_reasoning' ? { ...t, answers: [], optionDistance: [] } : t)) };
     case 'oral':
       return {
         engine: 'oral',

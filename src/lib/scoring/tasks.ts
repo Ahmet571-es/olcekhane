@@ -4,6 +4,8 @@ import type {
   DigitSpanTask,
   FlankerTask,
   GoNoGoTask,
+  MatrixReasoningTask,
+  MatrixRule,
   MentalRotationTask,
   NBackTask,
   ReactionTimeTask,
@@ -1094,6 +1096,127 @@ export function scoreReaction(task: ReactionTimeTask, input: ReactionTrialInput[
   };
 }
 
+/* ---------- Şekil akıl yürütme ---------- */
+
+export interface MatrixTrialInput {
+  index: number;
+  /** Seçilen seçeneğin sırası (1–8). */
+  response: number;
+  /** Sorunun ekrana çizildiği andan cevabın verildiği ana kadar geçen süre (ms); tarayıcı 2 dakikada keser. */
+  rtMs: number | null;
+}
+
+export interface MatrixLevelResult {
+  level: number;
+  n: number;
+  correct: number;
+}
+
+export interface MatrixRuleResult {
+  rule: MatrixRule;
+  n: number;
+  correct: number;
+}
+
+export interface MatrixResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  /** Kural türlerine göre (sorudaki en zor kural); soruları olmayan türler listede yoktur. */
+  rules: MatrixRuleResult[];
+  /**
+   * Ulaşılan düzey: soruların en az %60'ının doğru olduğu en yüksek düzey; o düzeye kadarki bütün sorularda da en az %60
+   * doğru olmalıdır (üst düzeylerdeki şans eseri doğrular düzeyi yükseltmesin, alt düzeylerdeki bir iki dikkatsizlik de
+   * düşürmesin). Hiçbir düzey bu ölçüte uymuyorsa 0.
+   */
+  reached: number;
+  /** Bütün sorularda tipik (ortanca) cevap süresi (ms). */
+  medianRt: number | null;
+  /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
+  rtEasy: number | null;
+  rtHard: number | null;
+  /** 3. düzey ve üstündeki sorularda `rapidMs`'den kısa cevapların sayısı ve bu soruların sayısı. */
+  rapid: number;
+  rapidOf: number;
+  /** Yanlış cevaplar ve bunlardan doğru cevaptan tek özellikte ayrılan seçeneklerin seçildikleri ("yakın" hatalar). */
+  wrong: number;
+  nearMisses: number;
+  /** En sık seçilen seçenek sırasının seçilme sayısı (hep aynı yere basılıp basılmadığı). */
+  samePosition: number;
+}
+
+/** Ulaşılan düzey için o düzeydeki ve o düzeye kadarki soruların en az bu kadarı doğru olmalı. */
+export const MATRIX_LEVEL_PASS = 0.6;
+/**
+ * Bu kadar ya da daha az doğru, sekiz seçenekli 24 soruda rastgele seçimle de ulaşılabilir: rastgele seçen birinin 7 ya
+ * da daha çok doğru bulma olasılığı %5'in altındadır (binom dağılımı, p = 1/8).
+ */
+export const MATRIX_CHANCE_MAX = 6;
+/** Rastgele seçimde yanlış cevapların yaklaşık 3/7'si yakın hatadır; yakın hataların payı bunun belirgin üstündeyse yorumlanır. */
+export const MATRIX_NEAR_SHARE = 0.7;
+export const MATRIX_NEAR_MIN = 4;
+
+export function scoreMatrix(task: MatrixReasoningTask, input: MatrixTrialInput[]): { result: MatrixResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.optionDistance.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, MatrixTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (!Number.isInteger(t.response) || t.response < 1 || t.response > 8) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    return { item, correct: t.response === task.answers[i], distance: task.optionDistance[i][t.response - 1], response: t.response, rt: t.rtMs };
+  });
+  const correct = scored.filter((s) => s.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((s) => s.item.level === level);
+      return { level, n: here.length, correct: here.filter((s) => s.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const RULES: MatrixRule[] = ['constant', 'progression', 'distribution', 'addition', 'xor'];
+  const rules = RULES.flatMap((rule) => {
+    const here = scored.filter((s) => s.item.rule === rule);
+    return here.length ? [{ rule, n: here.length, correct: here.filter((s) => s.correct).length }] : [];
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const hardOnes = scored.filter((s) => s.item.level >= 3);
+  const wrong = scored.filter((s) => !s.correct);
+  const positions = new Map<number, number>();
+  for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      rules,
+      reached,
+      medianRt: medianOrNull(rts(scored)),
+      rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
+      rapid: hardOnes.filter((s) => s.rt !== null && s.rt < task.rapidMs).length,
+      rapidOf: hardOnes.length,
+      wrong: wrong.length,
+      nearMisses: wrong.filter((s) => s.distance === 1).length,
+      samePosition: Math.max(0, ...positions.values()),
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -1109,6 +1232,7 @@ export function taskQualityNotes(parts: {
   nBack?: NBackResult;
   rotation?: RotationResult;
   reaction?: ReactionResult;
+  matrix?: MatrixResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -1272,5 +1396,34 @@ export function taskQualityNotes(parts: {
       }
     }
   }
+  const mx = parts.matrix;
+  if (mx) notes.push(...matrixQualityNotes(mx));
   return notes;
 }
+
+/**
+ * Şekil akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar. Rapordaki kartlar aynı eşikleri kullanır
+ * (lib/reports/build.ts, matrixBlocks).
+ */
+export function matrixQualityNotes(mx: MatrixResult): string[] {
+  const notes: string[] = [];
+  if (mx.correct <= MATRIX_CHANCE_MAX) {
+    notes.push(
+      'Şekil akıl yürütme testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorulara bakmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (matrixRapid(mx)) {
+    notes.push(
+      `Şekil akıl yürütme testinde 3. düzey ve üstündeki ${mx.rapidOf} sorunun ${mx.rapid} tanesinde 2,5 saniyeden kısa sürede cevap verilmiş; bu sorularda tabloya bakmadan seçilmiş olabilir.`,
+    );
+  }
+  if (matrixSamePosition(mx)) {
+    notes.push('Şekil akıl yürütme testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; sorulara bakmadan hep aynı yere basılmış olabilir.');
+  }
+  return notes;
+}
+
+/** Zor sorularda çok hızlı cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
+export const matrixRapid = (mx: MatrixResult) => mx.rapidOf > 0 && mx.rapid >= Math.max(2, Math.ceil(mx.rapidOf / 4));
+/** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
+export const matrixSamePosition = (mx: MatrixResult) => mx.samePosition >= Math.ceil(mx.n / 2);

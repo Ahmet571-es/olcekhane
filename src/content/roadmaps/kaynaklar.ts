@@ -87,4 +87,16 @@ export const KAYNAK = {
     text: 'Redick, T. S. ve Lindsey, D. R. B. (2013). Complex span and n-back measures of working memory: A meta-analysis. Psychonomic Bulletin & Review, 20(6), 1102–1113.',
     url: 'https://doi.org/10.3758/s13423-013-0453-9',
   },
+  carpenter: {
+    text: 'Carpenter, P. A., Just, M. A. ve Shell, P. (1990). What one intelligence test measures: A theoretical account of the processing in the Raven Progressive Matrices Test. Psychological Review, 97(3), 404–431.',
+    url: 'https://doi.org/10.1037/0033-295X.97.3.404',
+  },
+  ferrer: {
+    text: 'Ferrer, E., O’Hare, E. D. ve Bunge, S. A. (2009). Fluid reasoning and the developing brain. Frontiers in Neuroscience, 3(1), 46–51.',
+    url: 'https://doi.org/10.3389/neuro.01.003.2009',
+  },
+  laurence: {
+    text: 'Laurence, P. G., Mecca, T. P., Serpa, A., Martin, R. ve Macedo, E. C. (2018). Eye movements and cognitive strategy in a fluid intelligence test: Item type analysis. Frontiers in Psychology, 9, 380.',
+    url: 'https://doi.org/10.3389/fpsyg.2018.00380',
+  },
 } satisfies Record<string, { text: string; url: string }>;

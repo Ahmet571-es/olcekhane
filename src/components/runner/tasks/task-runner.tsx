@@ -9,6 +9,7 @@ import { ArmedButton, useLeaveWarning } from './common';
 import { DigitSpan } from './digit-span';
 import { Flanker } from './flanker';
 import { GoNoGo } from './go-nogo';
+import { MatrixReasoning } from './matrix-reasoning';
 import { MentalRotation } from './mental-rotation';
 import { NBack } from './n-back';
 import { ReactionTime } from './reaction-time';
@@ -162,6 +163,7 @@ export function TaskRunner(props: {
       {task.kind === 'n_back' && <NBack key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'mental_rotation' && <MentalRotation key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'reaction_time' && <ReactionTime key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'matrix_reasoning' && <MatrixReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

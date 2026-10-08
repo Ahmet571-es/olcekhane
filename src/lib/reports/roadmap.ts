@@ -25,6 +25,9 @@ export interface Roadmap {
   preview: boolean;
   intro: string;
   bars: RoadmapBar[];
+  /** Üç boyutlu grafiğin başlığı ve açıklaması; verilmezse "Profilin üç boyutlu" ve sütunun puanı gösterdiği söylenir. */
+  barsTitle?: string;
+  barsNote?: string;
   standout: { title: string; text: string }[];
   /** Hiçbir boyut belirgin biçimde öne çıkmıyorsa gösterilen cümle. */
   standoutNote: string | null;

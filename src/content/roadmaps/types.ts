@@ -115,6 +115,8 @@ export interface InterestRoadmapTemplate {
 export interface AudienceList {
   student: string[];
   parent: string[];
+  /** Yetişkine; verilmezse öğrenci listesi kullanılır. */
+  adult?: string[];
 }
 
 /** Ortamlar bölümünün yerine geçen bilgi kutusu: başlık, giriş, maddeler ve sondaki not. */
