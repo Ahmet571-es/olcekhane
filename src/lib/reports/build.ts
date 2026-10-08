@@ -1941,8 +1941,11 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       key: 'speed',
       name: scale('speed').name,
       plain: scale('speed').plain,
-      headline: `${secs} saniyede ${spd.correct} doğru eşleştirme`,
-      text: you
+      headline: spd.attempted === 0 ? 'Cevap verilmedi' : `${secs} saniyede ${spd.correct} doğru eşleştirme`,
+      // Süre boyunca hiç cevap verilmediyse (yönerge anlaşılmamış, görev yarıda kalmış) yalnızca bu görev yorumlanmaz.
+      text: spd.attempted === 0
+        ? `${secs} saniye boyunca hiçbir sembol eşleştirilmedi; bu yüzden bu görevin sonucu yorumlanmadı. Görev yarıda kalmış ya da yönerge anlaşılmamış olabilir. Öteki görevlerin sonuçları bundan etkilenmez.`
+        : you
         ? `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdin (${spd.errors} hata). Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer; örneğin tahtadan bir şeyi deftere geçirmek ya da sınavda basit işlemleri yapmak gibi.`
         : `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdi (${spd.errors} hata). Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer; tahtadan yazmak ya da sınavda basit işlemleri yapmak gibi işlerde kullanılır. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
       symbol: { correct: spd.correct, errors: spd.errors, perMinute: spd.perMinute },

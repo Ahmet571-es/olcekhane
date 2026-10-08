@@ -1067,7 +1067,8 @@ export function taskQualityNotes(parts: {
   }
   const s = parts.symbol;
   if (s) {
-    if (s.attempted < 10) notes.push('Sembol eşleştirme görevinde çok az cevap verilmiş; görev yarıda bırakılmış olabilir.');
+    if (s.attempted === 0) notes.push('Sembol eşleştirme görevinde hiç cevap verilmedi; bu görevin sonucu yorumlanmadı.');
+    else if (s.attempted < 10) notes.push('Sembol eşleştirme görevinde çok az cevap verilmiş; görev yarıda bırakılmış olabilir.');
     else if (s.accuracy < 0.7) notes.push('Sembol eşleştirme görevinde hata oranı yüksek; hızdan çok doğruluğa odaklanmak gerekebilir.');
   }
   const c = parts.cancellation;

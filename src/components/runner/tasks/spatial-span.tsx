@@ -3,13 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SpatialSpanTask } from '@/lib/instruments/types';
 import type { SpanTrialInput } from '@/lib/scoring/tasks';
-import { StatusLine, isAbort, wait } from './common';
+import { PausedScreen, StatusLine, isAbort, usePageHidden, wait } from './common';
 
 type Step = 'ready' | 'show' | 'input' | 'feedback' | 'practice-done';
 
 /**
+ * Cevap girme süresi puana girmez; sunucu en çok 2 dakikalık süre kabul eder. Uzun bir aradan (ör. çocuk ekrandan
+ * kalktı) sonra verilen cevap da geçerli olsun diye süre bu sınırda kesilir.
+ */
+const MAX_INPUT_MS = 120_000;
+
+/**
  * Kutu dizisi: dokuz kutudan bazıları sırayla yanar; öğrenci aynı sırayla kutulara dokunur.
- * Kutu yerleşimi ve diziler özgündür.
+ * Kutu yerleşimi ve diziler özgündür. Dizi gösterilirken sayfa gizlenirse sunum durur; dönülünce aynı dizi baştan
+ * gösterilir.
  */
 export function SpatialSpan({ task, onDone }: { task: SpatialSpanTask; onDone: (trials: SpanTrialInput[]) => void }) {
   const [step, setStep] = useState<Step>('ready');
@@ -21,6 +28,7 @@ export function SpatialSpan({ task, onDone }: { task: SpatialSpanTask; onDone: (
   const [flash, setFlash] = useState<number | null>(null);
   const [lastCorrect, setLastCorrect] = useState(false);
   const [showKey, setShowKey] = useState(0);
+  const [paused, setPaused] = useState(false);
   const inputStart = useRef(0);
   const results = useRef<SpanTrialInput[]>([]);
   const levelHits = useRef<boolean[]>([]);
@@ -28,7 +36,7 @@ export function SpatialSpan({ task, onDone }: { task: SpatialSpanTask; onDone: (
   const sequence = practice ? task.practice : task.sequences[level][trial];
 
   useEffect(() => {
-    if (step !== 'show') return;
+    if (step !== 'show' || paused) return;
     const ac = new AbortController();
     (async () => {
       await wait(700, ac.signal);
@@ -46,7 +54,12 @@ export function SpatialSpan({ task, onDone }: { task: SpatialSpanTask; onDone: (
     });
     return () => ac.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showKey]);
+  }, [showKey, paused]);
+
+  usePageHidden(step === 'show' && !paused, () => {
+    setLit(null);
+    setPaused(true);
+  });
 
   function present() {
     setShowKey((k) => k + 1);
@@ -62,7 +75,7 @@ export function SpatialSpan({ task, onDone }: { task: SpatialSpanTask; onDone: (
 
   function submit() {
     if (step !== 'input' || tapped.length === 0) return;
-    const rtMs = Math.round(performance.now() - inputStart.current);
+    const rtMs = Math.min(MAX_INPUT_MS, Math.round(performance.now() - inputStart.current));
     const correct = tapped.length === sequence.length && tapped.every((b, i) => b === sequence[i]);
     if (practice) {
       setLastCorrect(correct);
@@ -85,6 +98,19 @@ export function SpatialSpan({ task, onDone }: { task: SpatialSpanTask; onDone: (
     setLevel(level + 1);
     setTrial(0);
     present();
+  }
+
+  if (paused) {
+    return (
+      <PausedScreen
+        note="Dizi yarıda kaldığı için aynı dizi baştan gösterilecek."
+        cta="Diziyi yeniden göster"
+        onResume={() => {
+          setPaused(false);
+          present();
+        }}
+      />
+    );
   }
 
   if (step === 'ready' || step === 'practice-done') {

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FlankerTask } from '@/lib/instruments/types';
 import type { FlankerTrialInput } from '@/lib/scoring/tasks';
-import { Arrow, Stage, StatusLine, afterPaint, isAbort, useKeys, wait } from './common';
+import { Arrow, PausedScreen, Stage, StatusLine, afterPaint, isAbort, primaryPointer, useKeys, usePageHidden, wait } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 type View =
@@ -14,7 +14,8 @@ type View =
 
 /**
  * Ok görevi (flanker düzeni): ortadaki okun yönüne, yanlardaki oklara aldırmadan cevap verilir.
- * Tepki süresi uyaranın ekrana çizildiği andan cevaba kadar ölçülür.
+ * Tepki süresi uyaranın ekrana çizildiği andan cevaba kadar ölçülür. Sayfa gizlenince görev durur: asıl görevde
+ * dönülünce yarıda kalan denemeden devam edilir, alıştırma baştan başlar.
  */
 export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: FlankerTrialInput[]) => void }) {
   const [step, setStep] = useState<Step>('ready');
@@ -22,6 +23,8 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
   const [count, setCount] = useState(0);
   const [practiceScore, setPracticeScore] = useState(0);
   const [runKey, setRunKey] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const out = useRef<FlankerTrialInput[]>([]);
   const responder = useRef<((key: 'L' | 'R', t: number) => void) | null>(null);
   const onDoneRef = useRef(onDone);
   useEffect(() => {
@@ -29,15 +32,14 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
   });
 
   useEffect(() => {
-    if (step !== 'practice' && step !== 'test') return;
+    if ((step !== 'practice' && step !== 'test') || paused) return;
     const isPractice = step === 'practice';
     const list = isPractice ? task.practice : task.trials;
     const ac = new AbortController();
-    const out: FlankerTrialInput[] = [];
     let hits = 0;
     (async () => {
       await wait(900, ac.signal);
-      for (let i = 0; i < list.length; i++) {
+      for (let i = isPractice ? 0 : out.current.length; i < list.length; i++) {
         const trial = list[i];
         setView({ kind: 'fixation' });
         await wait(task.fixationMs, ac.signal);
@@ -61,7 +63,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
           setView({ kind: 'feedback', correct, timeout: !resp });
           await wait(900, ac.signal);
         } else {
-          out.push({ index: i, response: resp ? resp.key : null, rtMs });
+          out.current.push({ index: i, response: resp ? resp.key : null, rtMs });
           setCount(i + 1);
         }
         setView({ kind: 'blank' });
@@ -72,7 +74,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
         setPracticeScore(hits);
         setStep('practice-done');
       } else {
-        onDoneRef.current(out);
+        onDoneRef.current(out.current);
       }
     })().catch((e) => {
       if (!isAbort(e)) throw e;
@@ -83,20 +85,37 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
     };
     // runKey aynı adımı (ör. alıştırmayı) yeniden başlatmak için kullanılır.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, runKey]);
+  }, [step, runKey, paused]);
+
+  const running = (step === 'practice' || step === 'test') && !paused;
+  usePageHidden(running, () => {
+    responder.current = null;
+    setView({ kind: 'blank' });
+    setPaused(true);
+  });
 
   const respond = (key: 'L' | 'R', t: number) => responder.current?.(key, t);
 
-  useKeys(step === 'practice' || step === 'test', (e) => {
+  useKeys(running, (e) => {
     const k = e.key.toLocaleLowerCase('tr-TR');
     if (k === 'f' || e.key === 'ArrowLeft') {
       e.preventDefault();
-      respond('L', e.timeStamp);
+      // Basılı tutulan tuş art arda cevap sayılmaz.
+      if (!e.repeat) respond('L', e.timeStamp);
     } else if (k === 'j' || e.key === 'ArrowRight') {
       e.preventDefault();
-      respond('R', e.timeStamp);
+      if (!e.repeat) respond('R', e.timeStamp);
     }
   });
+
+  if (paused) {
+    return (
+      <PausedScreen
+        note={step === 'test' ? 'Yarıda kalan denemeden devam edeceksin.' : 'Alıştırma baştan başlayacak.'}
+        onResume={() => setPaused(false)}
+      />
+    );
+  }
 
   if (step === 'ready' || step === 'practice-done') {
     const first = step === 'ready';
@@ -130,6 +149,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
             autoFocus
             onClick={() => {
               setCount(0);
+              if (!first) out.current = [];
               setStep(first ? 'practice' : 'test');
             }}
           >
@@ -165,7 +185,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
           className="btn btn-secondary h-20 text-lg"
           onPointerDown={(e) => {
             e.preventDefault();
-            respond('L', e.timeStamp);
+            if (primaryPointer(e)) respond('L', e.timeStamp);
           }}
         >
           <Arrow dir="L" size={28} /> Sol <span className="t-meta hidden sm:inline">(F)</span>
@@ -175,7 +195,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
           className="btn btn-secondary h-20 text-lg"
           onPointerDown={(e) => {
             e.preventDefault();
-            respond('R', e.timeStamp);
+            if (primaryPointer(e)) respond('R', e.timeStamp);
           }}
         >
           <span className="t-meta hidden sm:inline">(J)</span> Sağ <Arrow dir="R" size={28} />

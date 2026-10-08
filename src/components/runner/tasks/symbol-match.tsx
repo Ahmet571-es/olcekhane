@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SymbolMatchTask } from '@/lib/instruments/types';
 import type { SymbolTrialInput } from '@/lib/scoring/tasks';
-import { Stage, StatusLine, SymbolGlyph, afterPaint, useKeys } from './common';
+import { PausedScreen, Stage, StatusLine, SymbolGlyph, afterPaint, primaryPointer, useKeys, usePageHidden } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
 /**
  * Sembol eşleştirme: ortadaki sembolün anahtardaki rakamı bulunur. Asıl görev süre sınırlıdır;
- * süre dolduğunda o ana kadar verilen cevaplar puanlanır.
+ * süre dolduğunda o ana kadar verilen cevaplar puanlanır (hiç cevap yoksa boş liste: bu görev yorumlanmaz).
+ * Sayfa gizlenince görev ve süre durur; dönülünce kalan süreyle aynı sembolden devam edilir.
  */
 export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (trials: SymbolTrialInput[]) => void }) {
   const [step, setStep] = useState<Step>('ready');
@@ -20,12 +21,15 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
   const onset = useRef(0);
   const trials = useRef<SymbolTrialInput[]>([]);
   const finished = useRef(false);
+  const [paused, setPaused] = useState(false);
+  /** Asıl görevde, duraklatmalardan önce geçen süre (ms). */
+  const used = useRef(0);
   const onDoneRef = useRef(onDone);
   useEffect(() => {
     onDoneRef.current = onDone;
   });
 
-  const running = step === 'practice' || step === 'test';
+  const running = (step === 'practice' || step === 'test') && !paused;
   const list = step === 'practice' ? task.practice : task.sequence;
   const current = list[Math.min(index, list.length - 1)];
 
@@ -42,12 +46,12 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
     };
   }, [index, running]);
 
-  // Asıl görevin süresi.
+  // Asıl görevin süresi; duraklatılınca durur, dönülünce kalan süreden devam eder.
   useEffect(() => {
-    if (step !== 'test') return;
+    if (step !== 'test' || paused) return;
     const start = performance.now();
     const id = window.setInterval(() => {
-      const left = Math.max(0, task.durationMs - (performance.now() - start));
+      const left = Math.max(0, task.durationMs - used.current - (performance.now() - start));
       setRemaining(left);
       if (left <= 0 && !finished.current) {
         finished.current = true;
@@ -55,8 +59,13 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
         onDoneRef.current(trials.current);
       }
     }, 200);
-    return () => window.clearInterval(id);
-  }, [step, task.durationMs]);
+    return () => {
+      window.clearInterval(id);
+      used.current += performance.now() - start;
+    };
+  }, [step, paused, task.durationMs]);
+
+  usePageHidden(running, () => setPaused(true));
 
   function answer(digit: number, t: number) {
     if (!running || feedback !== null || finished.current) return;
@@ -85,9 +94,19 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
     const n = Number(e.key);
     if (Number.isInteger(n) && n >= 1 && n <= task.symbols.length) {
       e.preventDefault();
-      answer(n, e.timeStamp);
+      // Basılı tutulan tuş art arda cevap sayılmaz.
+      if (!e.repeat) answer(n, e.timeStamp);
     }
   });
+
+  if (paused) {
+    return (
+      <PausedScreen
+        note={step === 'test' ? 'Süre de durdu; kaldığın sembolden, kalan sürenle devam edeceksin.' : 'Alıştırmaya kaldığın yerden devam edeceksin.'}
+        onResume={() => setPaused(false)}
+      />
+    );
+  }
 
   const key = (
     <div className="grid grid-cols-9 gap-1 rounded-xl border border-rule bg-surface p-2 sm:gap-2" aria-label="Sembol anahtarı">
@@ -123,6 +142,7 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
               finished.current = false;
               trials.current = [];
               setRemaining(task.durationMs);
+              used.current = 0;
               setStep('test');
             }
           }}
@@ -165,7 +185,7 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
             className="tabular h-16 rounded-xl border-[1.5px] border-rule-strong bg-surface font-display text-xl font-bold hover:border-ink active:translate-y-px"
             onPointerDown={(e) => {
               e.preventDefault();
-              answer(i + 1, e.timeStamp);
+              if (primaryPointer(e)) answer(i + 1, e.timeStamp);
             }}
           >
             {i + 1}

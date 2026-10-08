@@ -174,6 +174,8 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   for (const task of def.tasks) {
     const input = inputs.get(task.key);
     if (!input) throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
+    // Yalnızca süreli sembol eşleştirmede hiç cevap verilmemiş olabilir; öteki görevler her denemeyi kaydeder.
+    if (input.length === 0 && task.kind !== 'symbol_match') throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
     if (task.kind === 'digit_span' || task.kind === 'spatial_span') {
       const { result } = scoreSpan(task, input as SpanTrialInput[]);
       rows.push({

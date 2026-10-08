@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { REPORT_TEMPLATES } from '@/content/reports';
 import { AssessmentError, evaluate } from '@/lib/assessment/evaluate';
 import { answersBody, pdfBody, type AnswersBody } from '@/lib/assessment/schemas';
-import type { LikertInstrument, QuizInstrument } from '@/lib/instruments/types';
+import type { LikertInstrument, QuizInstrument, TaskInstrument } from '@/lib/instruments/types';
 import { memoryRateLimit, memoryRateLimitSize, resetMemoryRateLimit } from '@/lib/memory-rate-limit';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import { formForGrade } from '@/lib/scoring/quiz';
@@ -91,6 +91,32 @@ describe('test raporları', () => {
     const r = evaluate('dikkat-ve-bellek', memoryTasksBody());
     expect(r.student.items).toHaveLength(5);
     expect(r.student.chart?.type).toBe('bars');
+  });
+
+  it('dikkat ve bellek: sembol görevinde hiç cevap yoksa rapor yine hazırlanır, yalnızca o görev yorumlanmaz', async () => {
+    const body = memoryTasksBody();
+    if (body.data.engine !== 'tasks') throw new Error('görev gövdesi bekleniyordu');
+    const tasks = def<TaskInstrument>('dikkat-ve-bellek').tasks;
+    const symbolKey = tasks.find((t) => t.kind === 'symbol_match')!.key;
+    body.data.blocks[symbolKey] = [];
+    // Sunucunun istek denetimi boş sembol bloğunu kabul eder (önceden bütün rapor "Geçersiz istek" ile kayboluyordu).
+    expect(answersBody.safeParse({ slug: 'dikkat-ve-bellek', ...body }).success).toBe(true);
+    const r = evaluate('dikkat-ve-bellek', answersBody.parse({ slug: 'dikkat-ve-bellek', ...body }));
+    for (const rep of [r.student, r.parent]) {
+      const card = rep.items.find((i) => i.badge === 'Cevap verilmedi')!;
+      expect(card.text).toContain('yorumlanmadı');
+      expect(rep.items).toHaveLength(5);
+      expect(rep.cautions.join(' ')).toContain('Sembol eşleştirme görevinde hiç cevap verilmedi');
+      expect(JSON.stringify(rep)).not.toMatch(/NaN|undefined/);
+    }
+    const pdf = await renderSimpleReportPdf(r.parent, 'olcekhane.com');
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+    // Öteki görevlerde boş blok kabul edilmez.
+    const other = memoryTasksBody();
+    if (other.data.engine !== 'tasks') throw new Error('görev gövdesi bekleniyordu');
+    const flankerKey = tasks.find((t) => t.kind === 'flanker')!.key;
+    other.data.blocks[flankerKey] = [];
+    expect(() => evaluate('dikkat-ve-bellek', other)).toThrow(AssessmentError);
   });
 
   it('geçersiz istekler reddedilir', () => {

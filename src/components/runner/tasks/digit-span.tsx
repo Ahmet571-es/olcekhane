@@ -3,13 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import type { DigitSpanTask } from '@/lib/instruments/types';
 import type { SpanTrialInput } from '@/lib/scoring/tasks';
-import { Keypad, Stage, StatusLine, isAbort, useKeys, wait } from './common';
+import { Keypad, PausedScreen, Stage, StatusLine, isAbort, useKeys, usePageHidden, wait } from './common';
 
 type Step = 'ready' | 'show' | 'input' | 'feedback' | 'practice-done';
 
 /**
+ * Cevap girme süresi puana girmez; sunucu en çok 2 dakikalık süre kabul eder. Uzun bir aradan (ör. çocuk ekrandan
+ * kalktı) sonra verilen cevap da geçerli olsun diye süre bu sınırda kesilir.
+ */
+const MAX_INPUT_MS = 120_000;
+
+/**
  * Sayı dizisi: rakamlar tek tek gösterilir, sonra öğrenci diziyi (ileri ya da geri) tuşlar.
  * Önce geri bildirimli bir alıştırma yapılır. Her uzunlukta iki deneme vardır; ikisi de yanlışsa görev biter.
+ * Dizi gösterilirken sayfa gizlenirse sunum durur; dönülünce aynı dizi baştan gösterilir.
  */
 export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (trials: SpanTrialInput[]) => void }) {
   const [step, setStep] = useState<Step>('ready');
@@ -20,6 +27,7 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
   const [entered, setEntered] = useState<number[]>([]);
   const [lastCorrect, setLastCorrect] = useState(false);
   const [showKey, setShowKey] = useState(0);
+  const [paused, setPaused] = useState(false);
   const inputStart = useRef(0);
   const results = useRef<SpanTrialInput[]>([]);
   const levelHits = useRef<boolean[]>([]);
@@ -28,7 +36,7 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
   const expected = task.direction === 'backward' ? [...sequence].reverse() : sequence;
 
   useEffect(() => {
-    if (step !== 'show') return;
+    if (step !== 'show' || paused) return;
     const ac = new AbortController();
     (async () => {
       await wait(600, ac.signal);
@@ -47,7 +55,12 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
     return () => ac.abort();
     // showKey yeni bir sunumu tetikler; sequence her sunumda o anki denemeye aittir.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showKey]);
+  }, [showKey, paused]);
+
+  usePageHidden(step === 'show' && !paused, () => {
+    setShown(null);
+    setPaused(true);
+  });
 
   function present() {
     setShowKey((k) => k + 1);
@@ -56,7 +69,7 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
 
   function submit() {
     if (step !== 'input' || entered.length === 0) return;
-    const rtMs = Math.round(performance.now() - inputStart.current);
+    const rtMs = Math.min(MAX_INPUT_MS, Math.round(performance.now() - inputStart.current));
     const correct = entered.length === expected.length && entered.every((d, i) => d === expected[i]);
     if (practice) {
       setLastCorrect(correct);
@@ -85,7 +98,8 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
     const n = Number(e.key);
     if (Number.isInteger(n) && n >= 1 && n <= 9) {
       e.preventDefault();
-      setEntered((x) => (x.length < 12 ? [...x, n] : x));
+      // Basılı tutulan tuş art arda rakam yazmaz.
+      if (!e.repeat) setEntered((x) => (x.length < 12 ? [...x, n] : x));
     } else if (e.key === 'Backspace') {
       e.preventDefault();
       setEntered((x) => x.slice(0, -1));
@@ -94,6 +108,19 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
       submit();
     }
   });
+
+  if (paused) {
+    return (
+      <PausedScreen
+        note="Dizi yarıda kaldığı için aynı dizi baştan gösterilecek."
+        cta="Diziyi yeniden göster"
+        onResume={() => {
+          setPaused(false);
+          present();
+        }}
+      />
+    );
+  }
 
   if (step === 'ready' || step === 'practice-done') {
     const first = step === 'ready';

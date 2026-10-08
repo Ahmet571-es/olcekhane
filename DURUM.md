@@ -55,7 +55,10 @@ sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce k
    yalnızca en az bir alan yüksekken; hiçbir alan yüksek değilse en yüksek iki orta alan (kod yok); hepsi düşük ya da
    hepsi eşitse öne çıkan alan yok; eğitim yolları yalnızca yüksek alanlar için; eşitlikler notla söylenir. Bütün düzey
    birleşimleri `tests/mesleki-ilgi-rapor.test.ts`'te.
-2. Dikkat ve Çalışma Belleği: boş sembol bölümü ve 2 dk'yı aşan dizi girişi bütün raporu kaybettiriyor.
+2. Dikkat ve Çalışma Belleği: **düzeltildi (2026-10-08).** Boş sembol bölümü kabul edilir (o görev "Cevap verilmedi",
+   yorumlanmaz; öteki görevlerde boş blok yine reddedilir); dizi girişinde süre 2 dk'da kesilir. Eski görevlere
+   (sayı/kutu dizisi, ok, sembol) sekme değişince duraklatma, basılı tuş ve sağ tık koruması; görevler arası
+   düğmeler gecikmeli. Tarayıcıda baştan sona denendi (duraklatma ekranları, sayaç, kalan süre, rapor).
 3. Harf İşaretleme: tek kopuk yanlış dokunuş taranan alanı uzatıp puanı bozuyor.
 4. Matematik: soru soru inceleme ve "neden yanlış" açıklamaları raporda/PDF'te gösterilmiyor.
 5. Sesli okuma: doğru ama çok yavaş okuyana "Rahat okuyor"; atlanan kelimeler hızı şişiriyor.

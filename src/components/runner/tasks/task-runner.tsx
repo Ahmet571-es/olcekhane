@@ -5,7 +5,7 @@ import type { CognitiveTask } from '@/lib/instruments/types';
 import { IntroStep } from '../likert-runner';
 import { Cancellation } from './cancellation';
 import { ColorWord } from './color-word';
-import { useLeaveWarning } from './common';
+import { ArmedButton, useLeaveWarning } from './common';
 import { DigitSpan } from './digit-span';
 import { Flanker } from './flanker';
 import { GoNoGo } from './go-nogo';
@@ -111,9 +111,10 @@ export function TaskRunner(props: {
           Sıradaki görev: <strong>{task.name}</strong>. İstersen biraz dinlenebilirsin; hazır olduğunda devam et.
         </p>
         <div>
-          <button type="button" className="btn btn-primary btn-lg" autoFocus onClick={() => setPhase('task-intro')}>
+          {/* Kısa bir gecikmeyle çalışır: görevin son tuşu (ör. Enter) bir sonraki görevin yönergesini atlatmasın. */}
+          <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={() => setPhase('task-intro')}>
             Sonraki göreve geç
-          </button>
+          </ArmedButton>
         </div>
       </div>
     );
@@ -136,9 +137,9 @@ export function TaskRunner(props: {
           ))}
         </ul>
         <div>
-          <button type="button" className="btn btn-primary btn-lg" autoFocus onClick={() => setPhase('task')}>
+          <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={() => setPhase('task')}>
             Anladım
-          </button>
+          </ArmedButton>
         </div>
       </div>
     );
