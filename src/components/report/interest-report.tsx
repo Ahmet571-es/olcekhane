@@ -114,7 +114,7 @@ export function InterestReport({ report }: { report: ReportContent }) {
         </div>
       </section>
 
-      {(p.flat || p.allLow || p.closeCall) && (
+      {(p.flat || p.allLow || p.closeCalls.length > 0) && (
         <div className="notice notice-warn measure flex flex-col gap-2">
           {p.allLow && (
             <p>
@@ -130,7 +130,9 @@ export function InterestReport({ report }: { report: ReportContent }) {
                 : 'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu yaşta olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.'}
             </p>
           )}
-          {p.closeCall && <p>{p.closeCall}</p>}
+          {p.closeCalls.map((n) => (
+            <p key={n}>{n}</p>
+          ))}
         </div>
       )}
 

@@ -216,14 +216,21 @@ export interface InterestRanking {
 }
 
 export interface InterestProfile {
-  /** En belirgin üç alanın harfleri, ör. "SAE". */
+  /**
+   * Öne çıkan alanların harfleri, ör. "SAE" (en çok üç; orta düzeyin altındaki alan girmez). Hiçbir alan yüksek
+   * değilse, bütün alanlar düşükse ya da bütün puanlar aynıysa boştur: kod ve örnek meslek verilmez.
+   */
   code: string;
   types: { key: RiasecKey; name: string; mean: number | null; rank: number }[];
+  /** Öne çıkan alanlar: kod varsa kodun alanları, yoksa (hiçbir alan yüksek değilken) en yüksek iki orta düzey alan. */
   top: {
     key: RiasecKey;
     name: string;
     plain: string;
+    /** Yüksek düzeydeki alanda kişiye yazılmış açıklama, öteki alanlarda tek cümlelik tanım. */
     text: string;
+    bandLabel: string;
+    high: boolean;
     likes: string[];
     explore: string[];
     paths: { lise: string; universite: string };
@@ -233,12 +240,14 @@ export interface InterestProfile {
   differentiation: number;
   /** Profil henüz belirginleşmemiş (fark küçük). */
   flat: boolean;
-  /** Hiçbir alanda belirgin ilgi yok. */
+  /** Hiçbir alan yüksek düzeyde değil. */
+  noneHigh: boolean;
+  /** Bütün alanlar düşük düzeyde: hiçbir alanda belirgin ilgi yok. */
   allLow: boolean;
   /** 8. ve 9. sınıflarda sonuç keşif çerçevesinde sunulur. */
   exploration: boolean;
-  /** Üçüncü ve dördüncü alan birbirine çok yakınsa uyarı. */
-  closeCall: string | null;
+  /** Öne çıkan alanların sırasını ya da seçimini etkileyen eşitlikler (puanları neredeyse aynı alanlar). */
+  closeCalls: string[];
   occupations: Occupation[];
 }
 
@@ -1989,41 +1998,84 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   return { blocks, tips };
 }
 
+/** Puanları birbirine bu kadar yakın alanların sırası güvenilir değildir (8 maddelik alanda bir cevabın farkı 0,125). */
+const INTEREST_TIE = 0.15;
+const isHighBand = (b: Band | null) => b === 'high' || b === 'very_high';
+const ORDINAL = ['birinci', 'ikinci', 'üçüncü'];
+const joinTr = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} ve ${xs[xs.length - 1]}`);
+
+/**
+ * Holland profili. Öne çıkan alanlar puanın düzeyine bakılarak seçilir: en az orta düzeyde olmayan alan hiçbir zaman öne
+ * çıkarılmaz. En az bir alan yüksekse en çok üç alan öne çıkar, Holland kodu ve örnek meslekler bunlardan oluşur. Hiçbir
+ * alan yüksek değilse en yüksek iki orta düzey alan gösterilir, kod ve meslek verilmez. Bütün alanlar düşükse ya da
+ * bütün alanların puanı aynıysa öne çıkan alan yoktur. Puanları neredeyse aynı olan alanlar (eşitlikler) notla söylenir.
+ */
 function buildInterestProfile(sections: ReportSection[], audience: Audience, grade: number): InterestProfile {
-  const byScale = new Map(sections.map((s) => [s.scaleKey, s.value]));
-  const rows = RIASEC_ORDER.map((key, order) => ({
-    key,
-    order,
-    name: RIASEC_TYPES[key].name,
-    mean: byScale.get(RIASEC_TYPES[key].scaleKey) ?? null,
-  }));
+  const byScale = new Map(sections.map((s) => [s.scaleKey, s]));
+  const rows = RIASEC_ORDER.map((key, order) => {
+    const s = byScale.get(RIASEC_TYPES[key].scaleKey);
+    return { key, order, name: RIASEC_TYPES[key].name, mean: s?.value ?? null, band: s?.band ?? null, bandLabel: s?.bandLabel ?? '' };
+  });
   // Eşit puanlarda altıgendeki sıra korunur; sıralama kararlıdır.
   const ranked = [...rows].filter((r) => r.mean !== null).sort((a, b) => b.mean! - a.mean! || a.order - b.order);
   const rankOf = new Map(ranked.map((r, i) => [r.key, i + 1]));
-  const topKeys = ranked.slice(0, 3).map((r) => r.key);
   const means = ranked.map((r) => r.mean!);
   const max = means.length ? Math.max(...means) : 0;
   const min = means.length ? Math.min(...means) : 0;
   const differentiation = Math.round((max - min) * 100) / 100;
 
-  let closeCall: string | null = null;
-  if (ranked.length >= 4 && Math.abs(ranked[2].mean! - ranked[3].mean!) < 0.15) {
-    closeCall =
-      audience !== 'parent'
-        ? `${ranked[2].name} ve ${ranked[3].name} alanlarındaki puanların neredeyse aynı; üçüncü alanını bu ikisinden biri olarak düşünebilirsin.`
-        : `${ranked[2].name} ve ${ranked[3].name} alanlarındaki puanlar neredeyse aynıdır; üçüncü alan bu ikisinden biri olarak düşünülebilir.`;
+  const tied = ranked.length > 1 && differentiation === 0;
+  const noneHigh = !ranked.some((r) => isHighBand(r.band));
+  const allLow = !ranked.some((r) => r.band === 'average' || isHighBand(r.band));
+  // Öne çıkabilecek alanlar: en az orta düzeyde olanlar.
+  const eligible = tied ? [] : ranked.filter((r) => r.band === 'average' || isHighBand(r.band));
+  const topRows = eligible.slice(0, noneHigh ? 2 : 3);
+  const topKeys = topRows.map((r) => r.key);
+  const hasCode = !noneHigh && topKeys.length > 0;
+
+  // Eşitlikler: puanları art arda birbirine çok yakın olan alanlar bir küme oluşturur. Küme öne çıkan alanlara
+  // dokunuyorsa sıranın (ya da hangi alanın öne çıktığının) küçük bir farka dayandığı söylenir.
+  const you = audience !== 'parent';
+  const closeCalls: string[] = [];
+  for (let i = 0; i < eligible.length && i < topRows.length; ) {
+    let j = i;
+    while (j + 1 < eligible.length && Math.abs(eligible[j].mean! - eligible[j + 1].mean!) < INTEREST_TIE) j++;
+    if (j > i) {
+      const names = joinTr(eligible.slice(i, j + 1).map((r) => r.name));
+      const lead = you ? `${names} alanlarındaki puanların neredeyse aynı; ` : `${names} alanlarındaki puanlar neredeyse aynıdır; `;
+      const where = hasCode ? 'ilgi kodunda ' : '';
+      let tail: string;
+      if (j < topRows.length) {
+        tail = `${where}bu alanların sırası yer değiştirebilir.`;
+      } else if (i === topRows.length - 1) {
+        const nth = hasCode ? ORDINAL[i] : 'en yüksek çıkan';
+        tail = you
+          ? `${hasCode ? `${nth} alanını` : 'en yüksek çıkan alanlarından birini'} bu alanlardan herhangi biri olarak düşünebilirsin.`
+          : `${hasCode ? `${nth} alan` : 'en yüksek çıkan alanlardan biri'} bu alanlardan herhangi biri olarak düşünülebilir.`;
+      } else {
+        tail = you
+          ? 'bu yüzden öne çıkan alanlarının seçimi küçük bir farka dayanıyor, bu alanların hepsini birlikte düşünebilirsin.'
+          : 'bu yüzden öne çıkan alanların seçimi küçük bir farka dayanır, bu alanların hepsi birlikte düşünülebilir.';
+      }
+      closeCalls.push(lead + tail);
+    }
+    i = j + 1;
   }
 
   return {
-    code: topKeys.join(''),
+    code: hasCode ? topKeys.join('') : '',
     types: rows.map((r) => ({ key: r.key, name: r.name, mean: r.mean, rank: rankOf.get(r.key) ?? 0 })),
-    top: topKeys.map((k) => {
-      const t = RIASEC_TYPES[k];
+    top: topRows.map((r) => {
+      const t = RIASEC_TYPES[r.key];
+      const high = isHighBand(r.band);
       return {
-        key: k,
+        key: r.key,
         name: t.name,
         plain: t.plain,
-        text: audience === 'parent' ? t.parent : t.student,
+        // Kişiye yazılmış metin ("…hoşlanıyorsun") yalnızca yüksek düzeydeki alanda kullanılır.
+        text: high ? (audience === 'parent' ? t.parent : t.student) : t.plain,
+        bandLabel: r.bandLabel,
+        high,
         likes: t.likes,
         explore: t.explore,
         paths: t.paths,
@@ -2032,9 +2084,10 @@ function buildInterestProfile(sections: ReportSection[], audience: Audience, gra
     lowest: ranked.slice(-2).reverse().map((r) => ({ key: r.key, name: r.name })),
     differentiation,
     flat: differentiation < 0.8,
-    allLow: max < 2.6,
+    noneHigh,
+    allLow,
     exploration: grade <= 9,
-    closeCall,
-    occupations: occupationsFor(topKeys, 8),
+    closeCalls,
+    occupations: hasCode ? occupationsFor(topKeys, 8) : [],
   };
 }

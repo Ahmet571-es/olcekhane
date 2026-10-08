@@ -40,9 +40,9 @@ export const RIASEC_TYPES: Record<RiasecKey, RiasecType> = {
     english: 'Realistic',
     plain: 'Elleriyle, aletlerle, makinelerle ya da doğada somut işler yapmaktan hoşlanmak.',
     student:
-      'Bir şeyi yaparak, dokunarak, söküp takarak öğrenmekten hoşlanıyorsun. Sonucu elle tutulur işler, makineler, araçlar, bitkiler ya da açık hava sana daha çekici geliyor.',
+      'Elleriyle bir şey yapmaktan, söküp takmaktan, kurmaktan ve onarmaktan hoşlanıyorsun. Sonucu elle tutulur işler, makineler, araçlar, bitkiler ya da açık hava sana daha çekici geliyor.',
     parent:
-      'Çocuğunuz somut, elle yapılan işlerden hoşlandığını belirtiyor: bir şeyi tamir etmek, kurmak, yetiştirmek ya da açık havada çalışmak. Uzun teorik anlatımlar yerine yaparak öğrenme ona daha uygun gelebilir.',
+      'Çocuğunuz somut, elle yapılan işlerden hoşlandığını belirtiyor: bir şeyi tamir etmek, kurmak, yetiştirmek ya da açık havada çalışmak. Atölye, tamir, yapım ve açık hava etkinliklerinde deneme fırsatları onun için değerli olabilir.',
     likes: ['Tamir etmek, kurmak, monte etmek', 'Makinelerle ve aletlerle çalışmak', 'Açık havada ve doğada olmak', 'Sonucu gözle görülen işler'],
     explore: [
       'Robotik, maket ya da tasarım-beceri atölyelerine katıl.',
@@ -106,7 +106,7 @@ export const RIASEC_TYPES: Record<RiasecKey, RiasecType> = {
     english: 'Social',
     plain: 'İnsanlara yardım etmekten, öğretmekten ve onlarla birlikte çalışmaktan hoşlanmak.',
     student:
-      'İnsanlarla birlikte olmak, onlara yardım etmek ve bir şeyler öğretmek sana iyi geliyor. Başkalarının sorununu dinlemek ve birlikte çözüm bulmak senin güçlü olduğun bir alan olabilir.',
+      'İnsanlarla birlikte olmak, onlara yardım etmek ve bir şeyler öğretmek sana iyi geliyor. Başkalarının sorununu dinlemek ve birlikte çözüm bulmak da ilgini çekiyor.',
     parent:
       'Çocuğunuz insanlara yardım etmekten, öğretmekten ve iş birliği yapmaktan hoşlandığını belirtiyor. Gönüllülük, akran yardımı ve grup çalışmaları onun için anlamlı deneyimler olabilir.',
     likes: ['Yardım etmek ve destek olmak', 'Öğretmek ve anlatmak', 'İnsanlarla birlikte çalışmak', 'Dinlemek ve anlamak'],

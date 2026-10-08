@@ -193,25 +193,47 @@ export function interestNotes(p: InterestProfile, audience: Audience): string[] 
     notes.push(
       byAudience(audience, {
         student:
-          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşecek.',
+          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşebilir. Bu yüzden hiçbir alan öne çıkarılmadı; ilgi kodu ve örnek meslekler verilmedi.',
         parent:
-          'Çocuğunuz etkinliklerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
+          'Çocuğunuz etkinliklerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz. Bu yüzden hiçbir alan öne çıkarılmadı; ilgi kodu ve örnek meslekler verilmedi.',
         adult:
           'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu, listedeki etkinliklerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Keyif aldığın işleri düşünerek testi başka bir gün yeniden çözmek ilgilerini daha net gösterebilir.',
       }),
     );
-  } else if (p.flat) {
+  } else if (p.flat && !p.top.length) {
+    // Bütün alanların puanı aynı (ör. her etkinliğe aynı cevap): öne çıkan alan yoktur.
     notes.push(
       byAudience(audience, {
         student:
-          'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu senin yaşında çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.',
+          'Bütün alanlarda aynı puan çıktı; bu yüzden hiçbir alan öne çıkarılmadı, ilgi kodu ve örnek meslekler verilmedi. Farklı alanlardaki etkinlikleri denemek ilgilerinin netleşmesine yardım edebilir.',
         parent:
-          'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu yaşta olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
-        adult: FLAT_ADULT,
+          'Bütün alanlarda aynı puan çıktı; bu yüzden hiçbir alan öne çıkarılmadı, ilgi kodu ve örnek meslekler verilmedi. Farklı alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım edebilir.',
       }),
     );
+  } else {
+    if (p.noneHigh && p.top.length) {
+      notes.push(
+        byAudience(audience, {
+          student:
+            'Hiçbir alanda belirgin (yüksek düzeyde) bir ilgi çıkmadı; aşağıda en yüksek çıkan alanları görüyorsun. İlgi kodu ve örnek meslekler yalnızca belirgin bir ilgi olduğunda verilir. İlgiler denedikçe netleşir.',
+          parent:
+            'Hiçbir alanda belirgin (yüksek düzeyde) bir ilgi çıkmadı; aşağıda en yüksek çıkan alanlar yer alıyor. İlgi kodu ve örnek meslekler yalnızca belirgin bir ilgi olduğunda verilir. İlgiler yeni deneyimlerle netleşir.',
+        }),
+      );
+    }
+    if (p.flat) {
+      notes.push(
+        byAudience(audience, {
+          student:
+            'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu senin yaşında çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.',
+          parent:
+            'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu yaşta olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
+          adult: FLAT_ADULT,
+        }),
+      );
+    }
   }
-  if (p.closeCall) notes.push(p.closeCall);
+  notes.push(...p.closeCalls);
   return notes;
 }
 
@@ -331,24 +353,52 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
 
   if (r.interests) {
     const p = r.interests;
+    const pick = ([forYou, forParent]: [string, string]) => (you ? forYou : forParent);
+    const shown = new Set(p.top.map((t) => t.key));
+    // Öne çıkan alanların dışındakiler düzeyleriyle tek satırda (öne çıkan alan yoksa bütün alanlar).
+    const rest = r.sections
+      .filter((s) => s.value !== null && !p.top.some((t) => RIASEC_TYPES[t.key].scaleKey === s.scaleKey))
+      .sort((a, b) => b.value! - a.value!);
     return {
       ...base,
       chartTitle: you ? 'İlgi profilin' : 'İlgi profili',
       chartNote: 'Altıgende yan yana duran alanlar birbirine benzer. Değerler 1 ile 5 arasındadır.',
       chart: {
         type: 'hexagon',
-        highlight: p.code.split(''),
+        highlight: RIASEC_ORDER.filter((k) => shown.has(k)),
         axes: RIASEC_ORDER.map((k) => ({ key: k, label: RIASEC_TYPES[k].name, value: p.types.find((t) => t.key === k)?.mean ?? null })),
       },
-      keyFigures: [{ label: 'İlgi kodu', value: p.code, note: p.top.map((t) => t.name).join(' · ') }],
-      itemsTitle: you ? 'En belirgin ilgi alanların' : 'En belirgin ilgi alanları',
+      keyFigures: p.code
+        ? [{ label: 'İlgi kodu', value: p.code, note: p.top.map((t) => t.name).join(' · ') }]
+        : p.top.length
+          ? [
+              {
+                label: pick(['En yüksek çıkan alanın', 'En yüksek çıkan alan']),
+                value: p.top[0].name,
+                note: p.top.length > 1 ? `Ardından: ${p.top.slice(1).map((t) => t.name).join(' · ')}` : undefined,
+              },
+            ]
+          : [],
+      itemsTitle: !p.top.length
+        ? pick(['Alanların', 'Alanlar'])
+        : p.code
+          ? pick(['En belirgin ilgi alanların', 'En belirgin ilgi alanları'])
+          : pick(['En yüksek çıkan alanların', 'En yüksek çıkan alanlar']),
       items: [
-        ...p.top.map((t, i) => ({ title: `${i + 1}. ${t.name}`, text: t.plain })),
+        ...p.top.map((t, i) => ({ title: `${i + 1}. ${t.name}`, badge: t.bandLabel, text: t.text })),
         ...(p.occupations.length
           ? [
               {
                 title: you ? 'Sana uyabilecek örnek meslekler' : 'Profile uyan örnek meslekler',
                 text: `${p.occupations.map((o) => o.name).join(' · ')}. Liste, meslekleri en çok hitap ettikleri ilgi alanlarına göre sınıflandıran Holland kodlarına dayanır; yol göstermek içindir, bir meslek seçimi önerisi değildir.`,
+              },
+            ]
+          : []),
+        ...(rest.length
+          ? [
+              {
+                title: p.top.length ? pick(['Diğer alanların', 'Diğer alanlar']) : 'Bütün alanlar',
+                text: `${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}.`,
               },
             ]
           : []),

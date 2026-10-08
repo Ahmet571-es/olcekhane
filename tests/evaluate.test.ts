@@ -54,11 +54,14 @@ describe('test raporları', () => {
     const r = evaluate('mesleki-ilgi-profili', likertBody('mesleki-ilgi-profili', 10, (i) => (i % 6 === 0 ? 4 : i % 3)));
     expect(r.student.chart?.type).toBe('hexagon');
     expect(r.student.keyFigures[0].value).toMatch(/^[RIASEC]{3}$/);
-    // En belirgin üç alan ve profile uyan örnek meslekler (test sayfasındaki söz).
-    expect(r.student.items).toHaveLength(4);
+    // En belirgin üç alan (düzeyleriyle), profile uyan örnek meslekler (test sayfasındaki söz) ve öteki alanlar.
+    expect(r.student.items).toHaveLength(5);
+    for (const it of r.student.items.slice(0, 3)) expect(it.badge).toMatch(/ilgi$/);
     expect(r.student.items[3].title).toBe('Sana uyabilecek örnek meslekler');
     expect(r.parent.items[3].title).toBe('Profile uyan örnek meslekler');
     expect(r.parent.items[3].text).toContain(' · ');
+    expect(r.student.items[4].title).toBe('Diğer alanların');
+    expect(r.parent.items[4].title).toBe('Diğer alanlar');
   });
 
   it('okuma: anlama, hız ve soru türleri', () => {

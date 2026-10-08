@@ -29,18 +29,19 @@ export function buildInterestRoadmap(
   const a = r.audience;
   const parent = a === 'parent';
   const sections = r.sections.filter((s) => t.areas[s.scaleKey]);
-  // Holland kodu her zaman üç harflidir; bütün alanların puanı aynıysa (ör. her maddeye aynı cevap) öne çıkan alan yoktur.
+  // Öne çıkan alanlar raporunkilerdir (Holland profilinde orta düzeyin altındaki alan girmez; bütün alanların puanı aynıysa
+  // ya da hepsi düşükse öne çıkan alan yoktur).
   const topKeys = r.interests
-    ? r.interests.differentiation === 0
-      ? []
-      : r.interests.top.map((x) => RIASEC_TYPES[x.key as RiasecKey].scaleKey)
+    ? r.interests.top.map((x) => RIASEC_TYPES[x.key as RiasecKey].scaleKey)
     : (r.ranking?.top ?? []);
   // Bütün alanlar düşük düzeydeyse hiçbir alan "belirgin ilgi" diye öne çıkarılmaz: raporun kendi uyarısıyla çelişmez.
   const allLow = r.interests ? r.interests.allLow : !!r.ranking?.allLow;
   const top = allLow ? [] : topKeys.flatMap((k) => sections.filter((s) => s.scaleKey === k));
-  // Yüksek düzeyde alan yoksa (yalnızca görece en yüksek alanlar) eğitim ve meslek yolları önerilmez.
-  const noneHigh = !!r.ranking?.noneHigh;
-  const hasPaths = Object.values(t.areas).some((x) => x.paths) && !!t.pathsNote && !noneHigh;
+  // Yüksek düzeyde alan yoksa (yalnızca görece en yüksek alanlar) eğitim ve meslek yolları önerilmez; varsa yalnızca
+  // yüksek düzeydeki alanların yolları gösterilir.
+  const noneHigh = r.interests ? r.interests.noneHigh : !!r.ranking?.noneHigh;
+  const highTop = top.filter((s) => s.band === 'high' || s.band === 'very_high');
+  const hasPaths = Object.values(t.areas).some((x) => x.paths) && !!t.pathsNote && !noneHigh && highTop.length > 0;
 
   const area = (key: string) => t.areas[key];
   // Holland profilinin rapor şablonunda alanların kısa adı yoktur: o zaman düzey adı gösterilir.
@@ -102,7 +103,7 @@ export function buildInterestRoadmap(
               : a === 'adult'
                 ? 'En belirgin ilgi alanlarınla ilişkili alanlar ve programlar:'
                 : 'En belirgin ilgi alanlarınla ilişkili eğitim yolları:',
-            items: top.map((s) => `${s.name}: ${pick(area(s.scaleKey).paths!, a)}`),
+            items: highTop.map((s) => `${s.name}: ${pick(area(s.scaleKey).paths!, a)}`),
             note: pick(t.pathsNote!, a),
           },
     approach:

@@ -48,6 +48,20 @@ Basamaklar:
 
 ## Sıradaki işler
 
+**Kalite incelemesi (2026-10-08): 6 acil hata, site sahibinin isteğiyle her işlemede bir hata düzeltilip yayına
+alınıyor.** Rapor: Claude Docs'taki **Ölçekhane Test Kalite Raporu** (https://claude.ai/artifact/8btJRknY53xATRsLhX2HsH;
+sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce kodda yeniden doğrulanır). Sıra:
+1. Mesleki İlgi Profili: **düzeltildi (2026-10-08).** Öne çıkan alan en az "Orta" düzeyde olmalı; kod ve örnek meslek
+   yalnızca en az bir alan yüksekken; hiçbir alan yüksek değilse en yüksek iki orta alan (kod yok); hepsi düşük ya da
+   hepsi eşitse öne çıkan alan yok; eğitim yolları yalnızca yüksek alanlar için; eşitlikler notla söylenir. Bütün düzey
+   birleşimleri `tests/mesleki-ilgi-rapor.test.ts`'te.
+2. Dikkat ve Çalışma Belleği: boş sembol bölümü ve 2 dk'yı aşan dizi girişi bütün raporu kaybettiriyor.
+3. Harf İşaretleme: tek kopuk yanlış dokunuş taranan alanı uzatıp puanı bozuyor.
+4. Matematik: soru soru inceleme ve "neden yanlış" açıklamaları raporda/PDF'te gösterilmiyor.
+5. Sesli okuma: doğru ama çok yavaş okuyana "Rahat okuyor"; atlanan kelimeler hızı şişiriyor.
+6. Okuma Hızı ve Anlama: sorular birbirinin cevabını ele veriyor; "Anlayarak okuma" göz gezdireni ödüllendiriyor.
+Sonra raporun Öncelik 2 ve 3 maddeleri (site sahibi yeni görevler verecek).
+
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
 misin?" → "Evet" → sistem kaydı kendisi inceler ve rapor verir; hiçbir şey saklanmaz; öncelik doğruluk. Aylık ek sunucu
