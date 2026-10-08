@@ -437,6 +437,8 @@ describe('Sözel akıl yürütme: rapor', () => {
               if (!chance) expect(/okumadan seçmiş|okunmadan seçilmiş/.test(r.items[0].text), label).toBe(rapidNote || sameNote);
               // Çeldirici yorumu yalnızca yeterince yanlış varsa ve yanlışların en az %60'ı çeldiriciyse.
               expect(r.items[0].text.includes('ilk bakışta doğru görünen'), label).toBe(!chance && verbalLurePattern(result));
+              // Yanlışlar çeldiricilerden geliyorsa kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz.
+              if (!chance && verbalLurePattern(result)) expect(r.items[0].text + r.items[1].text, label).not.toMatch(/dağılmasından/);
               // Ulaşılan düzey kartı ile öne çıkan sayı aynı.
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
               if (chance) expect(fig, label).toBe('Yorumlanmadı');

@@ -13,6 +13,7 @@ import { MatrixReasoning } from './matrix-reasoning';
 import { MentalRotation } from './mental-rotation';
 import { NBack } from './n-back';
 import { NumberSeries } from './number-series';
+import { PaperFolding } from './paper-folding';
 import { ReactionTime } from './reaction-time';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
@@ -168,6 +169,7 @@ export function TaskRunner(props: {
       {task.kind === 'matrix_reasoning' && <MatrixReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'number_series' && <NumberSeries key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'verbal_reasoning' && <VerbalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'paper_folding' && <PaperFolding key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import type { Fold, Pt } from './folding';
 /**
  * Test tanımları için ortak türler.
  *
@@ -235,7 +236,8 @@ export type TaskKind =
   | 'reaction_time'
   | 'matrix_reasoning'
   | 'number_series'
-  | 'verbal_reasoning';
+  | 'verbal_reasoning'
+  | 'paper_folding';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -654,6 +656,52 @@ export interface VerbalReasoningTask extends TaskBase {
   levels: { level: number; name: string; plain: string }[];
 }
 
+/**
+ * Kâğıt katlama: kare bir kâğıt katlanıp delinir; kâğıt açılınca deliklerin nerede olacağı beş seçenekten seçilir
+ * (content/instruments/kagit-katlama.ts, geometri lib/instruments/folding.ts). Türler sorudaki en zor katlamaya göredir:
+ * ortadan (`half`), kenardan (`partial`; kâğıdın bir kısmı tek kat kalır), çapraz (`diagonal`).
+ */
+export type FoldingType = 'half' | 'partial' | 'diagonal';
+/**
+ * Çeldiricinin yanılgısı: bir katlamayı açmayı unutmak (`skip`), deliği aynalamak yerine kaydırmak (`slide`), kenardan
+ * katlamayı kâğıdın ortasından katlanmış gibi açmak (`half`), kenardan katlamada tek kat olan yeri iki kat sanmak
+ * (`single`), deliği yanlış çizgiye göre aynalamak (`axis`).
+ */
+export type FoldingLure = 'skip' | 'slide' | 'half' | 'single' | 'axis';
+
+export interface FoldingItem {
+  key: string;
+  level: 1 | 2 | 3 | 4 | 5;
+  type: FoldingType;
+  folds: Fold[];
+  /** Katlanmış kâğıtta delinen yerler. */
+  punches: Pt[];
+  /** Beş seçenek: kâğıt açılınca deliklerin yerleri. */
+  options: Pt[][];
+}
+
+export interface FoldingPracticeItem extends FoldingItem {
+  /** Doğru seçeneğin sırası (1–5). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+}
+
+export interface PaperFoldingTask extends TaskBase {
+  kind: 'paper_folding';
+  practice: FoldingPracticeItem[];
+  items: FoldingItem[];
+  /** Cevap anahtarı (1–5). Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /**
+   * Her sorunun "ilk bakışta doğru görünen" yanlış seçeneği (1–5): bir katın deliğini unutmak, deliği aynalamak yerine
+   * kaydırmak, kenardan katlamada tek kat olan yerde de delik var sanmak gibi. Tarayıcıya boş gönderilir.
+   */
+  lures: number[];
+  /** Çeldiricilerin yanılgısı (raporda anlatılır). Tarayıcıya boş gönderilir. */
+  lureKinds: FoldingLure[];
+  levels: { level: number; name: string; plain: string }[];
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -668,7 +716,8 @@ export type CognitiveTask =
   | ReactionTimeTask
   | MatrixReasoningTask
   | NumberSeriesTask
-  | VerbalReasoningTask;
+  | VerbalReasoningTask
+  | PaperFoldingTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

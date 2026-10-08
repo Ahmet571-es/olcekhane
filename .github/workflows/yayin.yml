@@ -260,6 +260,17 @@ jobs:
           if ! grep -q 'Doğru seçeneği bul' <<<"$sz_sayfa" || ! grep -qF '\"answers\":[]' <<<"$sz_sayfa" || ! grep -qF '\"lures\":[]' <<<"$sz_sayfa" || ! grep -qF '\"levels\":[]' <<<"$sz_sayfa"; then
             sorun="$sorun sozel-akil-yurutme-anahtar"
           fi
+          # Kâğıt Katlama: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/kagit-katlama.test.ts güncel olduğunu
+          # denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve yanılgı türleri gitmez.
+          KK_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kagit-katlama": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$KK_GOVDE" "https://$ALAN/api/rapor/kagit-katlama" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 4 and r["student"]["items"][0]["badge"] == "24 soruda 24 doğru"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun kagit-katlama-raporu"
+          fi
+          kk_sayfa=$("${C[@]}" -f "https://$ALAN/testler/kagit-katlama/coz?sinif=6") || kk_sayfa=""
+          if ! grep -q 'Kâğıdı aç, delikleri bul' <<<"$kk_sayfa" || ! grep -qF '\"answers\":[]' <<<"$kk_sayfa" || ! grep -qF '\"lures\":[]' <<<"$kk_sayfa" || ! grep -qF '\"lureKinds\":[]' <<<"$kk_sayfa"; then
+            sorun="$sorun kagit-katlama-anahtar"
+          fi
           # Sesli okuma: tarayıcı mikrofonu yalnızca izin başlığı açıksa kullanabilir; ses cihazda kalır, sunucuya yalnızca
           # işaretler, süreler ve cevaplar gelir. Örnek: 3. sınıf metni, iki yanlış okuma, bir yeniden anlatma fikri.
           "${C[@]}" -I "https://$ALAN/okuma" | grep -qi '^permissions-policy:.*microphone=(self)' || sorun="$sorun mikrofon-izni"

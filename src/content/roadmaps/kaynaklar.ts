@@ -115,4 +115,12 @@ export const KAYNAK = {
     text: 'Evans, J. St. B. T., Barston, J. L. ve Pollard, P. (1983). On the conflict between logic and belief in syllogistic reasoning. Memory & Cognition, 11(3), 295–306.',
     url: 'https://doi.org/10.3758/BF03196976',
   },
+  uttal: {
+    text: 'Uttal, D. H., Meadow, N. G., Tipton, E., Hand, L. L., Alden, A. R., Warren, C. ve Newcombe, N. S. (2013). The malleability of spatial skills: A meta-analysis of training studies. Psychological Bulletin, 139(2), 352–402.',
+    url: 'https://doi.org/10.1037/a0028446',
+  },
+  wai: {
+    text: 'Wai, J., Lubinski, D. ve Benbow, C. P. (2009). Spatial ability for STEM domains: Aligning over 50 years of cumulative psychological knowledge solidifies its importance. Journal of Educational Psychology, 101(4), 817–835.',
+    url: 'https://doi.org/10.1037/a0016127',
+  },
 } satisfies Record<string, { text: string; url: string }>;

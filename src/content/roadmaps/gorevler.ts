@@ -13,8 +13,8 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri ve Sözel Akıl Yürütme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine öğrenci metni
- *    (ya da `adult` metni) gösterilir.
+ *    Dizileri, Sözel Akıl Yürütme ve Kâğıt Katlama yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
@@ -967,6 +967,104 @@ const sozelAkilYurutme: TaskRoadmapTemplate = {
   sources: [KAYNAK.thibaut, KAYNAK.evans, KAYNAK.ferrer],
 };
 
+const katlamaBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (zihinde katlama ve canlandırma) gösterir.',
+    'Bu tür sorulara alışkın olmak (ör. origami, yapı oyunları) sonucu etkileyebilir.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir; küçük yaşta üç katlamalı sorularda zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (zihinde katlama ve canlandırma) gösterir.',
+    'Bu tür sorulara alışkın olmak (ör. origami, yapı oyunları) sonucu etkileyebilir.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const katlamaFacts: InfoBox = {
+  ...katlamaBase,
+  items: {
+    ...katlamaBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (zihinde katlama ve canlandırma) gösterir.',
+      'Bu tür sorulara alışkın olmak (ör. origami, yapı oyunları, teknik çizim) sonucu etkileyebilir.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const kagitKatlama: TaskRoadmapTemplate = {
+  version: 'kagit-katlama-yol-haritasi-1',
+  what: {
+    student: 'şekilleri zihinde canlandırmayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun şekilleri zihinde canlandırmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'şekilleri zihinde canlandırmayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Şekilleri zihinde canlandırmayı ne kolaylaştırır?', parent: 'Çocuğunuzun şekilleri zihinde canlandırmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, katlanan bir kâğıdı zihninde açabilmeyi, yani şekilleri zihinde canlandırıp dönüştürebilmeyi ölçer. Bu beceri; bir kutunun açınımını düşünmek, bir haritayı ya da krokiyi okumak, bir eşyayı kurmak ve geometri problemleri çözmek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım eder.',
+    'Bu test, katlanan bir kâğıdı zihinde açabilmeyi, yani şekilleri zihinde canlandırıp dönüştürebilmeyi ölçer. Bu beceri; bir kutunun açınımını düşünmek, bir haritayı ya da krokiyi okumak, bir eşyayı kurmak ve geometri problemleri çözmek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım eder.',
+  ),
+  supports: [
+    support(0, 'adim', 'Adım adım aç', 'Yöntem', t(
+      'Katlanmış bir kâğıdı zihninde açarken son katlamadan başla ve her seferinde tek bir katlamayı aç. Her açışta delik, katlama çizgisinin öbür yanına, çizgiye aynı uzaklıkta aynalanır; ama yalnızca orada kâğıt varsa.',
+      'Çocuğunuza katlanmış bir kâğıdı zihninde açarken son katlamadan başlamasını ve her seferinde tek bir katlamayı açmasını önerin. Her açışta delik, katlama çizgisinin öbür yanına, çizgiye aynı uzaklıkta aynalanır; ama yalnızca orada kâğıt varsa.',
+    )),
+    support(1, 'dene', 'Gerçek kâğıtla dene', 'Etkinlik', t(
+      'Bir kâğıdı bir iki kez katla, delik açacağın yeri seç ve açmadan önce deliklerin nerede olacağını kâğıda çizerek tahmin et. Sonra kurşun kalemin ucuyla küçük bir delik açıp kâğıdı aç ve tahminini kontrol et.',
+      'Çocuğunuzla bir kâğıdı bir iki kez katlayın, delik açılacak yeri seçin ve açmadan önce deliklerin nerede olacağını tahmin etmesini isteyin. Sonra kurşun kalemin ucuyla küçük bir delik açıp kâğıdı açın ve tahmini birlikte kontrol edin.',
+    )),
+    support(2, 'ciz', 'Çiz ve aynala', 'Yöntem', t(
+      'Kâğıda bir kare çiz, katlama çizgisini ve deliği işaretle. Deliğin çizgiye uzaklığını ölç ve öbür yana aynı uzaklıkta yeni bir delik çiz; çapraz katlamada da aynı kural geçerlidir.',
+      'Çocuğunuza kâğıda bir kare çizip katlama çizgisini ve deliği işaretlemesini, sonra deliğin çizgiye uzaklığını ölçüp öbür yana aynı uzaklıkta yeni bir delik çizmesini önerin; çapraz katlamada da aynı kural geçerlidir.',
+    )),
+    support(3, 'oyun', 'Uzamsal oyunlar', 'Etkinlik', t(
+      'Origami, tangram, yapı oyunları ve harita okumak, şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Origami, tangram, yapı oyunları ve harita okumak, çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+    )),
+  ],
+  facts: katlamaFacts,
+  approach: [
+    { title: 'Birlikte katlayın', text: 'Bir kâğıdı birlikte katlayıp delmeden önce deliklerin nerede olacağını tahmin edin; sonra açıp bakın ve tahmini konuşun.' },
+    { title: 'Acele ettirmeyin', text: 'Zor bir soruda uzun düşünmesine izin verin; hızlı olmasından çok, kâğıdı adım adım açarak düşünmesini övün.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Tahmin et ve aç',
+      text: t(
+        'Bu hafta bir kâğıdı üç farklı biçimde katla; her seferinde delikleri önce tahmin et, sonra kâğıdı açıp kontrol et.',
+        'Bu hafta çocuğunuzla bir kâğıdı üç farklı biçimde katlayın; her seferinde delikleri önce tahmin etmesini, sonra kâğıdı açıp kontrol etmesini isteyin.',
+      ),
+    },
+    {
+      title: 'Kendi sorunu yap',
+      text: t(
+        'Bu hafta bir kâğıt katlama sorusu çiz: katlama adımlarını ve deliği göster, birine çözdür ve onun nasıl düşündüğünü sor.',
+        'Bu hafta çocuğunuzdan bir kâğıt katlama sorusu çizmesini ve size çözdürmesini isteyin; sonra rolleri değiştirin.',
+      ),
+    },
+    {
+      title: 'Adım adım aç',
+      text: t(
+        'Bu hafta bir şekli zihninde değiştirmen gereken bir işte (ör. bir kutunun açınımı, bir krokiyi okumak) her adımı kâğıda kısaca çiz ve sonucu kontrol et.',
+        'Bu hafta çocuğunuzla bir şekli zihinde değiştirmeyi gerektiren bir işte (ör. bir kutunun açınımı, bir krokiyi okumak) her adımı kâğıda kısaca çizin ve sonucu kontrol edin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun şekilleri zihninde canlandırmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun şekilleri zihninde canlandırmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['zihinde-dondurme', 'sekil-akil-yurutme'],
+  nextPurpose: {
+    you: 'şekilleri zihinde döndürmeyi ve şekillerle akıl yürütmeyi de görmek',
+    parent: 'çocuğunuzun şekilleri zihinde döndürmesini ve şekillerle akıl yürütmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.uttal, KAYNAK.wai],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -980,4 +1078,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'sekil-akil-yurutme': sekilAkilYurutme,
   'sayi-dizileri': sayiDizileri,
   'sozel-akil-yurutme': sozelAkilYurutme,
+  'kagit-katlama': kagitKatlama,
 };

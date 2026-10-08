@@ -155,8 +155,22 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    doğru cevaplar uyarı almaz, yanılgılar olasılık olarak söylenir, Thibaut ve ark. (2010) çalışmasının şekil ve
    renklerle yapıldığı yazılır, klavyede Enter ve odak düzeltildi. Ortak: 3B grafikte çift sayıda sütunda ilk açı 90/n
    (`defaultYaw`; dört ve altı sütunda sütunlar artık üst üste görünmüyor, Öğrenme ve Başarı'da da).
-6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk
-   diliyle kısa kişilik testi.
+6. **Kâğıt Katlama: yayında (2026-10-09, pilot).** 24 özgün soru, üç katlama türü (ortadan, kenardan, çapraz; her türden
+   sekiz soru ve bir alıştırma), bir, iki ya da üç katlama, bir ya da iki delik, beş düzey; 3. sınıftan yetişkine, ~12
+   dakika (`content/instruments/kagit-katlama.ts`, geometri `lib/instruments/folding.ts`, çizim `folding-draw.ts`,
+   `components/runner/tasks/paper-folding.tsx`). Doğru seçenek kâğıdı adım adım açarak hesaplanır ve bağımsız bir
+   benzetimle (`tests/helpers/fold-sim.ts`: kâğıdın her noktası katlanıp deliğe düşenler) doğrulanır. Yanlış seçenekler
+   olası yanılgılardan (katlamayı atlamak, aynalamak yerine kaydırmak, yanlış çizgiye göre aynalamak, kenardan katlamayı
+   ortadan sanmak, tek kat yeri iki kat sanmak, deliğin yerini yanlış görmek) ve ters çevirip döndürmekten üretilir; her
+   soruda doğru seçenekle aynı sayıda delikli bir yanlış seçenek var ve seçenekleri delik sayısına, ortak deliklere,
+   simetriye ya da kapsamaya göre seçen basit tahmin yolları 24 soruda en çok 6,5 doğru bulur (rastgele sınırı 8;
+   `tests/helpers/folding-check.ts`). Delikler kat kenarlarına denk gelmez. Resimlerde katlanan parçanın kâğıdın
+   üstüne geldiği yer çizilir. Rapor: doğru sayısı, düzeyler, ulaşılan düzey, katlama türleri (3B grafik), çalışma
+   biçimi; yanılgı türleri olasılık olarak anlatılır. Bağımsız incelemeden sonra: "kâğıt alıp katlayabilirsin" yönergesi
+   kaldırıldı (zihinde çözülür), yukarıdaki seçenek düzeni, düzey anlatımları, çapraz alıştırma. Ortak (Sözel Akıl
+   Yürütme'de de): yanlışların çoğu çeldiriciyse kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz.
+7. Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik
+   testi.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -296,6 +310,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Sayı Dizileri | sayi-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öğrenme ve Başarı Özellikleri | ogrenme-ve-basari-ozellikleri | Yayında (active; 9. sınıftan yetişkine) |
 | Sözel Akıl Yürütme | sozel-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
+| Kâğıt Katlama | kagit-katlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -407,6 +422,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (1): Kâğıt Katlama yayında: 24 özgün soru (ortadan, kenardan ve çapraz katlama), 5 düzey, üç alıştırma;
+  öğrenci, veli ve yetişkin raporu, katlama türlerine göre 3B grafikli yol haritası; telefonda ve masaüstünde baştan
+  sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: Sözel Akıl Yürütme raporunda yanlışların çoğu çeldiriciyse
+  kolay sorulardaki yanlışlar artık dikkatsizliğe bağlanmıyor.
 - 2026-10-08 (12): Sözel Akıl Yürütme yayında: 24 özgün soru (kelime ilişkileri, sınıflama, sıralama, mantıksal
   çıkarım), 5 düzey; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; telefonda ve
   masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: 3B grafiğin ilk açısı çift sütunda düzeldi.
@@ -442,9 +461,3 @@ En yeni üstte; en çok 10 madde tutulur.
   ders kalıbı (sade metin, sahneler, hareketli çizimler, kutular, sayılar, tablolar, sözlük, kendini dene, kaynaklar)
   ve ilk ders: "Sinir sistemine ilk bakış ve anatominin dili". Menüde, alt bilgide ve ana sayfadaki yol gösterici
   kutuda bağlantısı var.
-- 2026-10-08 (3): Sesli okumada otomatik analiz gürültüye dayanıklı hâle getirildi: mikrofon denemesinde asıl ölçüt
-  yapay zekânın cümleyi anlaması (gürültü, kısık ses ve sessizlik ölçümü engellemiyor, ne yapılacağını söylüyor; üç
-  denemede anlaşılmazsa yine de okumaya geçilebiliyor), cümle süresi 7 sn; metne dokununca doğrudan mikrofon
-  denemesine geçiliyor (iki sürümde); "Başla" ve kayıt düğmeleri takılmıyor; ses 90 Hz'in altı süzülerek inceleniyor
-  (iş makinesi uğultusu); gürültülü kayıtta ek ve ses farkları hata sayılmıyor, uzun kelimede birkaç ses farkı da;
-  yetişkinli sürümde "Okumayı bitirdim"e çift dokunuş kaydı bitirmiyor.

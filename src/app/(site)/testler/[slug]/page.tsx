@@ -45,7 +45,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const sc = def.science;
   const guides = guidesForTest(slug);
   // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama,
-  // zihinde döndürme, tepki hızı, şekil akıl yürütme, sayı dizileri, sözel akıl yürütme).
+  // zihinde döndürme, tepki hızı, şekil akıl yürütme, sayı dizileri, sözel akıl yürütme, kâğıt katlama).
   const single = def.engine === 'tasks' && def.tasks.length === 1 ? def.tasks[0] : null;
   const cancellation = single?.kind === 'cancellation' ? single : null;
   const taskLength = !single
@@ -66,6 +66,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                 ? `${single.items.length} soru, ${single.levels.length} düzey`
                 : single.kind === 'verbal_reasoning'
                   ? `${single.items.length} soru, ${single.levels.length} düzey, 4 soru türü`
+                  : single.kind === 'paper_folding'
+                    ? `${single.items.length} soru, ${single.levels.length} düzey`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -339,6 +341,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Hangi tür kuralların daha kolay bulunduğu (üç boyutlu grafikle) ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'paper_folding' && (
+              <>
+                <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
+                <li>Ortadan, kenardan ve çapraz katlamalardan hangilerinin daha kolay geldiği (üç boyutlu grafikle), yanlış cevapların neyi düşündürdüğü ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'verbal_reasoning' && (

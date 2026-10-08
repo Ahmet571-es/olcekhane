@@ -22,6 +22,7 @@ import type {
   TaskInstrument,
   TrailTask,
   VerbalReasoningTask,
+  PaperFoldingTask,
 } from '@/lib/instruments/types';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
@@ -272,6 +273,34 @@ export function verbalBody(
 /** Sözel akıl yürütmede sorunun kendi düzeyindeki sırası (0'dan başlar). */
 export function verbalRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('sozel-akil-yurutme').tasks[0] as VerbalReasoningTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Kâğıt katlamanın bir sorusu: düzeyi, türü, doğru seçeneği, çeldiricisi (1–5) ve sırası. */
+export type FoldingCell = { level: number; type: string; answer: number; lure: number; i: number };
+
+/** Ne doğru cevap ne çeldirici olan ilk seçenek (1–5). */
+export const foldingOther = (q: FoldingCell) => [1, 2, 3, 4, 5].find((o) => o !== q.answer && o !== q.lure)!;
+
+/** Kâğıt katlama: varsayılan olarak ilk üç düzeyde doğru; 4. ve 5. düzeyde ilk iki soruda doğru, ötekilerde başka bir yanlış. */
+export function foldingBody(
+  pick: (q: FoldingCell) => { response: number; rtMs: number | null } = (q) => {
+    const firstTwo = q.level <= 3 || foldingRank(q) < 2;
+    return { response: firstTwo ? q.answer : foldingOther(q), rtMs: 6000 + 4000 * q.level };
+  },
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('kagit-katlama').tasks[0] as PaperFoldingTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, type: it.type, answer: task.answers[index], lure: task.lures[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Kâğıt katlamada sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function foldingRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('kagit-katlama').tasks[0] as PaperFoldingTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
 }
 
