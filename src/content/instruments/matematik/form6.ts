@@ -83,7 +83,7 @@ export const form6: QuizForm = {
       'M6-06',
       'cebir',
       '36 + 47 = 40 + □ eşitliğinde □ yerine hangi sayı gelmelidir?',
-      [['43', true], ['51', 'esitlik_anlami'], ['83', 'esitlik_anlami'], ['123', 'esitlik_anlami']],
+      [['43', true], ['51'], ['83', 'esitlik_anlami'], ['123', 'esitlik_anlami']],
       'Sol taraf 36 + 47 = 83’tür; sağ taraf da 83 olmalıdır: 40 + 43 = 83. Kısa yol: 36, 4 artırılıp 40 yapıldığında toplamın değişmemesi için 47’nin 4 azaltılması gerekir.',
     ),
     q(
@@ -113,8 +113,8 @@ export const form6: QuizForm = {
       'M6-10',
       'kesirler',
       'Aşağıdaki sayılardan hangisi en büyüktür?',
-      [['0,09'], ['0,58', 'ondalik_uzunluk'], ['0,65', 'ondalik_uzunluk'], ['0,7', true]],
-      'Ondalık gösterimler basamak basamak karşılaştırılır. Onda birler basamağında en büyük rakam 7’dir: 0,7 = 0,70 > 0,65. Virgülden sonra çok basamak olması sayıyı büyük yapmaz.',
+      [['0,09'], ['0,125', 'ondalik_uzunluk'], ['0,65', 'ondalik_uzunluk'], ['0,7', true]],
+      'Ondalık gösterimler basamak basamak karşılaştırılır. Onda birler basamağında en büyük rakam 7’dir: 0,7 = 0,700 > 0,650 > 0,125. Virgülden sonra çok basamak olması sayıyı büyük yapmaz: 0,125’te üç basamak olsa da onda birler basamağı yalnızca 1’dir.',
     ),
     q(
       'M6-11',

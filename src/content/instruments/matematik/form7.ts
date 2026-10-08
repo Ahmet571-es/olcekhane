@@ -36,7 +36,7 @@ export const form7: QuizForm = {
       'M7-01',
       'sayilar',
       'Dört basamaklı 52□4 sayısı 9 ile kalansız bölünebildiğine göre □ yerine hangi rakam gelmelidir?',
-      [['1', 'bolunebilme'], ['4', 'bolunebilme'], ['7', true], ['9', 'bolunebilme']],
+      [['1', 'bolunebilme'], ['4', 'bolunebilme'], ['7', true], ['9']],
       'Bir sayının 9 ile kalansız bölünebilmesi için rakamlarının toplamı 9’un katı olmalıdır. 5 + 2 + 4 = 11; buna 7 eklenirse 18 olur ve 18, 9’un katıdır. 1 ya da 4 yazılırsa rakamların toplamı 3’ün katı olur ama 9’un katı olmaz.',
     ),
     q(

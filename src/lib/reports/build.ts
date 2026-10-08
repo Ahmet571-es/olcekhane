@@ -144,9 +144,12 @@ export interface AcademicReport {
   bandLabel: string;
   text: string;
   domains: { key: string; name: string; plain: string; correct: number; n: number; dontKnow: number; band: Band; bandLabel: string }[];
-  /** Yanlış cevapların işaret ettiği hata türleri; en sık görülenden başlayarak. */
+  /**
+   * Yanlış cevapların işaret ettiği hata türleri; en sık görülenden başlayarak. Cevaplar çok hızlı verildiyse ya da
+   * aynı seçenekte toplandıysa boştur (tahminle seçilen seçenek bir hata türünü göstermez; `misconceptionNote` söyler).
+   */
   misconceptions: { key: string; name: string; explain: string; tip: string; count: number; itemNumbers: number[] }[];
-  /** Hata türleri yalnızca birer soruda görüldüyse temkinli yorum notu gösterilir. */
+  /** Hata türleri yalnızca birer soruda görüldüyse ya da yorumlanmadıysa temkinli yorum notu gösterilir. */
   misconceptionNote: string;
   review: {
     no: number;
@@ -162,6 +165,8 @@ export interface AcademicReport {
     answer: QuizOptionKey;
     correct: boolean;
     explain: string;
+    /** Seçilen yanlış seçeneğin işaret ettiği hata türünün adı (hata türleri yorumlanıyorsa). */
+    misconception: string | null;
   }[];
   tips: string[];
 }
@@ -494,12 +499,23 @@ function rankInterests(sections: ReportSection[], kind: InterestRanking['kind'])
 /* ---------- Akademik konu tarama testleri ---------- */
 
 /** Genel sonuç metinleri. {g}: soruların ait olduğu sınıf, {s}: ders adı (küçük harfle). */
-const ACADEMIC_TEXT: Record<'high' | 'average' | 'low', { student: string; parent: string }> = {
+const ACADEMIC_TEXT: Record<'perfect' | 'high' | 'highGap' | 'average' | 'low' | 'allLow', { student: string; parent: string }> = {
+  perfect: {
+    student: '{g}. sınıf {s} konularındaki soruların hepsini doğru yaptın. Bu tarama, bu konularda belirgin bir eksik göstermiyor.',
+    parent: 'Çocuğunuz {g}. sınıf {s} konularındaki soruların hepsini doğru yaptı. Bu tarama, bu konularda belirgin bir eksik göstermiyor.',
+  },
   high: {
     student:
       '{g}. sınıf {s} konularının çoğunu sağlam biliyorsun. Aşağıda yanlış yaptığın ya da bilmediğin az sayıdaki soruya ve varsa hata türlerine göz atman yeterli.',
     parent:
       'Çocuğunuz {g}. sınıfın temel {s} konularının büyük bölümüne hâkim görünüyor. Aşağıdaki yanlış yapılan sorular ve hata türleri, pekiştirilebilecek küçük noktaları gösteriyor.',
+  },
+  // Genel sonuç iyi ama bir alanda soruların çoğu yanlış ya da boş: o alan öne çıkarılır ({d}: alan adları).
+  highGap: {
+    student:
+      '{g}. sınıf {s} konularının çoğunu sağlam biliyorsun. Ancak {d} soruların çoğunda zorlandın; aşağıdaki sorularla önce bu konuya bakman iyi olur.',
+    parent:
+      'Çocuğunuz {g}. sınıfın temel {s} konularının büyük bölümüne hâkim görünüyor. Ancak {d} soruların çoğunda zorlandı; bu konuya öncelik verilmesi iyi olur.',
   },
   average: {
     student:
@@ -513,7 +529,20 @@ const ACADEMIC_TEXT: Record<'high' | 'average' | 'low', { student: string; paren
     parent:
       'Çocuğunuz {g}. sınıf {s} konularının birçoğunda zorlandı. Yeni konular öncekilerin üzerine kurulduğu için bu eksikler bu yılın konularını da zorlaştırabilir. Sonucu dersin öğretmeniyle paylaşmanızı ve aşağıdaki alanlardan başlayarak planlı bir tekrar yapılmasını öneririz. Tek bir testin sonucu kesin bir yargı değildir.',
   },
+  // Bütün alanlar öncelikli: eksikler belirli konularda toplanmıyor.
+  allLow: {
+    student:
+      '{g}. sınıf {s} konularının birçoğunda zorlandın. Bu, bu konuları öğrenemeyeceğin anlamına gelmez: eksikler adım adım tamamlanabilir. Aşağıdaki sorulardan ve öğretmeninin önerdiği konulardan başlayabilir, ondan destek isteyebilirsin.',
+    parent:
+      'Çocuğunuz {g}. sınıf {s} konularının birçoğunda zorlandı. Yeni konular öncekilerin üzerine kurulduğu için bu eksikler bu yılın konularını da zorlaştırabilir. Sonucu dersin öğretmeniyle paylaşmanızı ve öğretmenin önerdiği konulardan başlayarak planlı bir tekrar yapılmasını öneririz. Tek bir testin sonucu kesin bir yargı değildir.',
+  },
 };
+
+/** "Veri alanındaki" / "Veri ve Geometri ve ölçme alanlarındaki" */
+function domainPhrase(names: string[]): string {
+  if (names.length === 1) return `${names[0]} alanındaki`;
+  return `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]} alanlarındaki`;
+}
 
 /** Derse özgü çalışma önerileri (şimdilik matematik). */
 const ACADEMIC_TIPS: Record<string, Record<Voice, string[]>> = {
@@ -559,14 +588,35 @@ function buildAcademic(
   const label = (b: Band) => bandLabels[b] ?? b;
   const band = result.band === 'high' || result.band === 'average' ? result.band : 'low';
   const byItem = new Map(result.items.map((r) => [r.key, r]));
+  // Genel metin: bütün sorular doğruysa ayrı metin; genel sonuç iyi ama bir alan öncelikliyse o alan söylenir; bütün
+  // alanlar öncelikliyse eksiklerin "belirli konularda toplandığı" söylenmez.
+  const lowDomains = form.domains.filter((d) => result.domains.find((x) => x.key === d.key)?.band === 'low').map((d) => d.name);
+  const textKey: keyof typeof ACADEMIC_TEXT =
+    result.correct === result.n
+      ? 'perfect'
+      : band === 'high'
+        ? lowDomains.length
+          ? 'highGap'
+          : 'high'
+        : band === 'low' && lowDomains.length === form.domains.length
+          ? 'allLow'
+          : band;
 
-  const misconceptions = result.misconceptions
-    .filter((m) => def.misconceptions[m.key])
-    .map((m) => ({ key: m.key, ...def.misconceptions[m.key], count: m.count, itemNumbers: m.itemNumbers }));
+  // Cevaplar çok hızlı verildiyse ya da aynı seçenekte toplandıysa seçilen seçenekler tahmin olabilir: bir hata
+  // türünü göstermez, hata türleri yorumlanmaz.
+  const guessed = result.flags.tooFast || result.flags.sameLetter;
+  const misconceptions = guessed
+    ? []
+    : result.misconceptions
+        .filter((m) => def.misconceptions[m.key])
+        .map((m) => ({ key: m.key, ...def.misconceptions[m.key], count: m.count, itemNumbers: m.itemNumbers }));
   const repeated = misconceptions.some((m) => m.count > 1);
   const you = audience !== 'parent';
-  const misconceptionNote =
-    misconceptions.length === 0
+  const misconceptionNote = guessed
+    ? you
+      ? 'Cevaplar çok hızlı verildiği ya da çoğu aynı seçenekte toplandığı için hata türleri yorumlanmadı: seçilen seçenekler tahmin olabilir.'
+      : 'Cevaplar çok hızlı verildiği ya da çoğu aynı seçenekte toplandığı için hata türleri yorumlanmadı: seçilen seçenekler tahmin olabilir.'
+    : misconceptions.length === 0
       ? you
         ? 'Yanlış cevapların belirli bir hata türünde toplanmıyor.'
         : 'Yanlış cevaplar belirli bir hata türünde toplanmıyor.'
@@ -587,9 +637,10 @@ function buildAcademic(
     dontKnow: result.dontKnow,
     band,
     bandLabel: label(band),
-    text: ACADEMIC_TEXT[band][voice(audience)]
+    text: ACADEMIC_TEXT[textKey][voice(audience)]
       .replaceAll('{g}', String(form.contentGrade))
-      .replaceAll('{s}', def.subject.toLocaleLowerCase('tr-TR')),
+      .replaceAll('{s}', def.subject.toLocaleLowerCase('tr-TR'))
+      .replaceAll('{d}', domainPhrase(lowDomains)),
     domains: form.domains.map((d) => {
       const r = result.domains.find((x) => x.key === d.key);
       const b = r?.band ?? 'low';
@@ -613,6 +664,7 @@ function buildAcademic(
         answer: it.answer,
         correct: r?.correct ?? false,
         explain: it.explain,
+        misconception: !guessed && r?.misconception ? (def.misconceptions[r.misconception]?.name ?? null) : null,
       };
     }),
     tips: (ACADEMIC_TIPS[def.subject] ?? GENERIC_ACADEMIC_TIPS)[voice(audience)],

@@ -1,6 +1,8 @@
+import { MathText } from '@/components/quiz/math-text';
+import { QuizVisual } from '@/components/quiz/quiz-visuals';
 import { ScaleRuler } from '@/components/report/scale-ruler';
 import { AUDIENCE_LABELS } from '@/lib/config';
-import type { RulerRow, SimpleChart, SimpleGroup, SimpleReport } from '@/lib/reports/simple';
+import type { RulerRow, SimpleChart, SimpleGroup, SimpleQuizReview, SimpleReport } from '@/lib/reports/simple';
 import { OralLevelBanner, OralReportSections } from './oral-report';
 
 /**
@@ -225,6 +227,91 @@ function Chart({ chart }: { chart: SimpleChart }) {
   return <Columns chart={chart} />;
 }
 
+const QUIZ_STATUS = { wrong: 'Yanlış', dontKnow: '“Bilmiyorum”', missing: 'Boş' } as const;
+
+/** Konu tarama testinde yanlış yapılan soruların incelemesi (doğru cevap ve çözüm) ve hata türleri. */
+function QuizReview({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) {
+  return (
+    <>
+      <section aria-labelledby="soru-inceleme" className="flex flex-col gap-4">
+        <h2 id="soru-inceleme" className="t-h2">
+          {quiz.title}
+        </h2>
+        <p className="measure text-ink-2">{quiz.intro}</p>
+        {quiz.questions.length > 0 && (
+          <ol className="flex flex-col gap-5">
+            {quiz.questions.map((q) => (
+              <li key={q.no} className="panel flex flex-col gap-3 p-5">
+                <p className="t-meta">
+                  {q.no}. soru · {q.domainName} · {QUIZ_STATUS[q.status]}
+                </p>
+                <p className="text-[1.0625rem] font-semibold">
+                  <MathText text={q.text} />
+                </p>
+                <QuizVisual item={q} />
+                <dl className="flex flex-col gap-1.5">
+                  {q.chosen && (
+                    <div className="flex flex-wrap gap-x-2">
+                      <dt className="font-bold text-danger">{you ? 'Senin cevabın:' : 'Verilen cevap:'}</dt>
+                      <dd>
+                        <MathText text={q.chosen} />
+                      </dd>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-x-2">
+                    <dt className="font-bold text-ok">Doğru cevap:</dt>
+                    <dd>
+                      <MathText text={q.answer} />
+                    </dd>
+                  </div>
+                  {q.misconception && (
+                    <div className="flex flex-wrap gap-x-2">
+                      <dt className="font-bold">Hata türü:</dt>
+                      <dd>{q.misconception}</dd>
+                    </div>
+                  )}
+                </dl>
+                <div className="rounded-lg bg-surface-2 p-4">
+                  <p className="font-bold">Çözüm</p>
+                  <p className="mt-1">
+                    <MathText text={q.explain} />
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+      {(quiz.errors.length > 0 || quiz.questions.length > 0) && (
+        <section aria-labelledby="hata-turleri" className="flex flex-col gap-4">
+          <h2 id="hata-turleri" className="t-h2">
+            {quiz.errorsTitle}
+          </h2>
+          <p className="measure text-ink-2">{quiz.errorsNote}</p>
+          {quiz.errors.length > 0 && (
+            <ul className="flex flex-col divide-y divide-rule border-y border-rule">
+              {quiz.errors.map((e) => (
+                <li key={e.name} className="flex flex-col gap-1.5 py-5">
+                  <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="font-display text-lg font-bold">{e.name}</span>
+                    <span className="t-small font-bold text-brass-ink">{e.seen}</span>
+                  </p>
+                  <p className="measure text-ink-2">
+                    <MathText text={e.explain} />
+                  </p>
+                  <p className="measure">
+                    <strong>Öneri:</strong> <MathText text={e.tip} />
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+    </>
+  );
+}
+
 export function SimpleReportView({ report }: { report: SimpleReport }) {
   // Öğrenci ve yetişkin raporları ikinci tekil şahısla yazılır.
   const you = report.audience !== 'parent';
@@ -311,6 +398,8 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
           )}
         </section>
       )}
+
+      {report.quiz && <QuizReview quiz={report.quiz} you={you} />}
 
       {report.support && (
         <section className="panel flex flex-col gap-2 p-6">

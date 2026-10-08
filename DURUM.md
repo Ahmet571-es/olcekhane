@@ -64,7 +64,13 @@ sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce k
    söylenir). "Son bölümlerde düştü/arttı" yalnızca %15'i ve sayım oynaklığının iki standart hatasını aşınca
    (`sustainClear`); yoksa "Belirgin değişim yok". Çok yanlış işarette "dikkatli çalıştın" denmez. Bölüm sırasında
    sekme değişince süre durur, sayfa yerinde kalır; geri sayımda gizlenirse geri sayım yeniden başlar.
-4. Matematik: soru soru inceleme ve "neden yanlış" açıklamaları raporda/PDF'te gösterilmiyor.
+4. Matematik: **düzeltildi (2026-10-08).** Raporda ve PDF'te "Yanlış yaptığın ve bilmediğin sorular" (soru, verilen
+   ve doğru cevap, hata türü, çözüm; PDF'te tablo, grafik değerleri ve şeklin sözlü anlatımı) ve "Yanlışların neyi
+   gösteriyor?" (hata türü, kaç soruda görüldüğü, açıklama, öneri). Cevaplar çok hızlı ya da aynı harfte toplanınca hata
+   türleri yorumlanmaz. Genel metin: hepsi doğruysa ayrı metin, iyi sonuçta öncelikli alan adıyla söylenir, bütün
+   alanlar öncelikliyse "belirli konularda toplanıyor" denmez; alan grafiğinde "4 soruya dayanır, kaba gösterge" notu.
+   Yanlış etiketli 7 seçenek düzeltildi (M5-10, M5-15, M6-06, M6-10 seçenekleri değişti, M7-01, M8-13, M8-14).
+   `tests/matematik-rapor.test.ts`.
 5. Sesli okuma: doğru ama çok yavaş okuyana "Rahat okuyor"; atlanan kelimeler hızı şişiriyor.
 6. Okuma Hızı ve Anlama: sorular birbirinin cevabını ele veriyor; "Anlayarak okuma" göz gezdireni ödüllendiriyor.
 Sonra raporun Öncelik 2 ve 3 maddeleri (site sahibi yeni görevler verecek).

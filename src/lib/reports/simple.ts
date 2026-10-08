@@ -1,4 +1,5 @@
 import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
+import type { QuizChart, QuizFigure, QuizTable } from '@/lib/instruments/types';
 import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
 import type { OralReportBlock } from './oral';
 import type { Roadmap } from './roadmap';
@@ -6,7 +7,7 @@ import type { Roadmap } from './roadmap';
 /**
  * Basit rapor: test bitince ekranda gösterilen ve PDF olarak indirilen ücretsiz rapor (hiçbir yerde
  * saklanmaz). Tam rapordan (ReportContent) türetilir: teste uygun tek bir grafik, her ölçek ya da alan için
- * düzey ve kısa yorum. Öneriler, ayrıntılı açıklamalar ve soru soru inceleme kapsamlı rapordadır.
+ * düzey ve kısa yorum; konu tarama testlerinde ayrıca yanlış yapılan soruların incelemesi ve hata türleri.
  */
 
 export type SimpleChart =
@@ -41,6 +42,37 @@ export interface SimpleGroup {
   facets: (RulerRow & { text: string })[];
 }
 
+/** Konu tarama testinde yanlış yapılan, "Bilmiyorum" denen ya da boş bırakılan bir soru. */
+export interface SimpleQuizQuestion {
+  /** Formdaki sıra numarası (1'den başlar). */
+  no: number;
+  domainName: string;
+  /** Soru metni; kesirler {3/4} biçimindedir (ekranda alt alta, PDF'te 3/4 olarak yazılır). */
+  text: string;
+  table?: QuizTable;
+  chart?: QuizChart;
+  figure?: QuizFigure;
+  status: 'wrong' | 'dontKnow' | 'missing';
+  /** Seçilen yanlış seçenek, ör. "B) 0,125" (yanlış cevapta). */
+  chosen: string | null;
+  /** Doğru seçenek, ör. "D) 0,7". */
+  answer: string;
+  explain: string;
+  /** Seçilen seçeneğin işaret ettiği hata türünün adı (varsa). */
+  misconception: string | null;
+}
+
+/** Konu tarama testinin soru soru incelemesi ve hata türleri. */
+export interface SimpleQuizReview {
+  title: string;
+  intro: string;
+  questions: SimpleQuizQuestion[];
+  errorsTitle: string;
+  /** Hata türlerinin nasıl okunacağı (tek soruda görülen, yorumlanmayan). */
+  errorsNote: string;
+  errors: { name: string; seen: string; explain: string; tip: string }[];
+}
+
 export interface SimpleReport {
   instrumentName: string;
   audience: Audience;
@@ -70,6 +102,8 @@ export interface SimpleReport {
   roadmap?: Roadmap;
   /** Sesli okuma değerlendirmesinin bölümleri (işaretli metin, hata türleri, duraklamalar, akıcılık, anlama, öneriler). */
   oral?: OralReportBlock;
+  /** Konu tarama testinde yanlış yapılan soruların incelemesi ve hata türleri. */
+  quiz?: SimpleQuizReview;
 }
 
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
@@ -489,10 +523,50 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
 
   if (r.academic) {
     const a = r.academic;
+    const perDomain = Math.max(...a.domains.map((d) => d.n));
+    const optionText = (it: (typeof a.review)[number], key: string) => `${key}) ${it.options.find((o) => o.key === key)?.text ?? ''}`;
+    const missed = a.review.filter((it) => !it.correct);
+    const questions: SimpleQuizQuestion[] = missed.map((it) => ({
+      no: it.no,
+      domainName: it.domainName,
+      text: it.text,
+      ...(it.table ? { table: it.table } : {}),
+      ...(it.chart ? { chart: it.chart } : {}),
+      ...(it.figure ? { figure: it.figure } : {}),
+      status: it.choice === null ? 'missing' : it.choice === 'X' ? 'dontKnow' : 'wrong',
+      chosen: it.choice && it.choice !== 'X' ? optionText(it, it.choice) : null,
+      answer: optionText(it, it.answer),
+      explain: it.explain,
+      misconception: it.misconception,
+    }));
+    const quiz: SimpleQuizReview = {
+      title: you ? 'Yanlış yaptığın ve bilmediğin sorular' : 'Yanlış yapılan ve bilinmeyen sorular',
+      intro: missed.length
+        ? you
+          ? `${missed.length} sorunun her birinde doğru cevabı ve kısa çözümünü görüyorsun. Çözümü okuduktan birkaç gün sonra soruyu kâğıda bakmadan yeniden çözmeye çalış.`
+          : `${missed.length} sorunun her birinde doğru cevap ve kısa çözüm yer alıyor. Soruları çocuğunuzla birlikte, çözümü ona anlattırarak gözden geçirebilirsiniz.`
+        : you
+          ? 'Bütün soruları doğru yaptın; incelenecek yanlış soru yok.'
+          : 'Bütün sorular doğru cevaplandı; incelenecek yanlış soru yok.',
+      questions,
+      errorsTitle: you ? 'Yanlışların neyi gösteriyor?' : 'Yanlışlar neyi gösteriyor?',
+      errorsNote: a.misconceptionNote,
+      errors: a.misconceptions.map((m) => ({
+        name: m.name,
+        seen:
+          m.count > 1
+            ? `${m.count} soruda görüldü (${m.itemNumbers.join(', ')}. sorular)`
+            : `1 soruda görüldü (${m.itemNumbers[0]}. soru)`,
+        explain: m.explain,
+        tip: m.tip,
+      })),
+    };
     return {
       ...base,
       chartTitle: 'Konu alanlarına göre',
-      chartNote: `${a.contentGrade}. sınıf konuları`,
+      // Her alan birkaç soruya dayanır: alan düzeyleri kaba bir göstergedir.
+      chartNote: `${a.contentGrade}. sınıf konuları. Her alan ${perDomain} soruya dayanır; alan düzeyleri kaba bir göstergedir, bir iki sorudaki dikkatsizlik düzeyi değiştirebilir.`,
+      quiz,
       chart: {
         type: 'bars',
         rows: a.domains.map((d) => ({ label: d.name, value: d.correct, max: d.n, valueLabel: `${d.correct}/${d.n}` })),
@@ -506,17 +580,6 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       items: [
         { title: 'Genel sonuç', badge: a.bandLabel, text: a.text },
         ...a.domains.map((d) => ({ title: d.name, badge: d.bandLabel, text: `${d.correct}/${d.n} doğru${d.dontKnow ? `, ${d.dontKnow} soruda “Bilmiyorum”` : ''}. ${d.plain}` })),
-        ...(a.misconceptions.length
-          ? [
-              {
-                title: you ? 'Dikkat etmen gereken hata türleri' : 'Görülen hata türleri',
-                text: a.misconceptions
-                  .slice(0, 4)
-                  .map((m) => m.name)
-                  .join(' · '),
-              },
-            ]
-          : []),
       ],
     };
   }

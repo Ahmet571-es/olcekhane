@@ -112,7 +112,7 @@ export const form5: QuizForm = {
       'M5-10',
       'kesirler',
       'Aşağıdaki kesirlerden hangisi en büyüktür?',
-      [['{1/3}', true], ['{1/5}'], ['{1/8}', 'kesir_buyukluk_payda'], ['{1/10}', 'kesir_buyukluk_payda']],
+      [['{1/3}', true], ['{1/5}'], ['{1/8}'], ['{1/10}', 'kesir_buyukluk_payda']],
       'Payları aynı olan kesirlerde paydası küçük olan daha büyüktür: bir bütün 3 eşit parçaya bölündüğünde her parça, 10 eşit parçaya bölündüğündekinden büyük olur.',
     ),
     q(
@@ -149,7 +149,7 @@ export const form5: QuizForm = {
       'M5-15',
       'geometri',
       'Bir film saat 14.45’te başlamış ve 1 saat 50 dakika sürmüştür. Film saat kaçta bitmiştir?',
-      [['15.35', 'zaman_donusum'], ['15.95', 'zaman_donusum'], ['16.35', true], ['16.45']],
+      [['15.35'], ['15.95', 'zaman_donusum'], ['16.35', true], ['16.45']],
       '14.45’e önce 1 saat eklenir: 15.45. Sonra 50 dakika eklenir: 15 dakika sonra saat 16.00 olur, kalan 35 dakikayla 16.35. Bir saatin 60 dakika olduğunu unutmamak gerekir.',
     ),
     q(

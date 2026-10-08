@@ -1,12 +1,14 @@
 import 'server-only';
 import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
+import { plainMath } from '@/components/quiz/math-text';
 import { bars3dScene } from '@/lib/charts/bars3d';
+import type { QuizChart, QuizTable } from '@/lib/instruments/types';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { OralReportBlock } from '@/lib/reports/oral';
 import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
 import type { OralMarkedToken } from '@/lib/scoring/oral';
-import type { RulerRow, SimpleChart, SimpleReport } from '@/lib/reports/simple';
+import type { RulerRow, SimpleChart, SimpleQuizReview, SimpleReport } from '@/lib/reports/simple';
 
 /**
  * Basit raporun PDF'i. Sunucuda bellekte üretilir ve doğrudan indirilir; dosya hiçbir yere kaydedilmez.
@@ -740,6 +742,120 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
   );
 }
 
+/* ---------- Konu tarama: soru soru inceleme ---------- */
+
+/**
+ * Soru metinleri PDF'te düz yazıyla: kesirler 3/4 biçiminde; yazı tipinde bulunmayan işaretler (sayılardaki dar boşluk,
+ * kutu, alt simge, ok) karşılıklarıyla değiştirilir.
+ */
+function pdfMath(text: string): string {
+  return plainMath(text)
+    .replaceAll('\u202f', '\u00a0')
+    .replaceAll('□', '[ ]')
+    .replaceAll('₁', '1')
+    .replaceAll('₂', '2')
+    .replaceAll('→', '»');
+}
+
+const QUIZ_STATUS_PDF = { wrong: 'Yanlış', dontKnow: '“Bilmiyorum”', missing: 'Boş' } as const;
+
+function PdfTable({ head, rows, caption }: { head: string[]; rows: string[][]; caption?: string }) {
+  return (
+    <View style={{ marginTop: 4, marginBottom: 2 }}>
+      {caption && <Text style={[s.paraSmall, { color: C.ink3 }]}>{pdfMath(caption)}</Text>}
+      <View style={{ borderWidth: 0.75, borderColor: C.rule, borderRadius: 4 }}>
+        {[head, ...rows].map((row, i) => (
+          <View key={i} style={{ flexDirection: 'row', borderTopWidth: i ? 0.75 : 0, borderTopColor: C.rule, backgroundColor: i ? C.paper : C.surface2 }}>
+            {row.map((cell, j) => (
+              <Text key={j} style={[s.paraSmall, { flex: 1, paddingHorizontal: 5, paddingVertical: 2, fontWeight: i ? 400 : 700 }]}>
+                {pdfMath(cell)}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/** Sorudaki tablo, grafik (değerleriyle) ya da şekil (sözlü anlatımıyla). */
+function QuizVisualPdf({ table, chart, figure }: { table?: QuizTable; chart?: QuizChart; figure?: { alt: string } }) {
+  return (
+    <>
+      {chart && (
+        <PdfTable
+          caption={`${chart.title} (grafikteki değerler)`}
+          head={chart.labels}
+          rows={[chart.values.map((v) => new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 }).format(v))]}
+        />
+      )}
+      {table && <PdfTable caption={table.caption} head={table.head} rows={table.rows} />}
+      {figure && <Text style={[s.paraSmall, { color: C.ink2, marginTop: 2 }]}>Şekil: {pdfMath(figure.alt)}</Text>}
+    </>
+  );
+}
+
+function QuizReviewPdf({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) {
+  return (
+    <View>
+      <Text style={s.h2} minPresenceAhead={80}>
+        {quiz.title}
+      </Text>
+      <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{quiz.intro}</Text>
+      {quiz.questions.map((q) => (
+        <View key={q.no} style={s.item} wrap={false}>
+          <Text style={{ fontSize: 8.5, color: C.ink3 }}>
+            {q.no}. soru · {q.domainName} · {QUIZ_STATUS_PDF[q.status]}
+          </Text>
+          <Text style={[s.para, { fontWeight: 700, marginTop: 2 }]}>{pdfMath(q.text)}</Text>
+          <QuizVisualPdf table={q.table} chart={q.chart} figure={q.figure} />
+          {q.chosen && (
+            <Text style={[s.para, { marginTop: 3 }]}>
+              <Text style={{ fontWeight: 700, color: C.danger }}>{you ? 'Senin cevabın: ' : 'Verilen cevap: '}</Text>
+              {pdfMath(q.chosen)}
+            </Text>
+          )}
+          <Text style={s.para}>
+            <Text style={{ fontWeight: 700, color: C.ok }}>Doğru cevap: </Text>
+            {pdfMath(q.answer)}
+          </Text>
+          {q.misconception && (
+            <Text style={s.para}>
+              <Text style={{ fontWeight: 700 }}>Hata türü: </Text>
+              {q.misconception}
+            </Text>
+          )}
+          <Text style={[s.para, { marginTop: 3, backgroundColor: C.surface2, padding: 5, borderRadius: 4 }]}>
+            <Text style={{ fontWeight: 700 }}>Çözüm: </Text>
+            {pdfMath(q.explain)}
+          </Text>
+        </View>
+      ))}
+      {(quiz.errors.length > 0 || quiz.questions.length > 0) && (
+        <View>
+          <Text style={s.h2} minPresenceAhead={80}>
+            {quiz.errorsTitle}
+          </Text>
+          <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{quiz.errorsNote}</Text>
+          {quiz.errors.map((e) => (
+            <View key={e.name} style={s.item} wrap={false}>
+              <View style={s.itemHead}>
+                <Text style={s.itemTitle}>{e.name}</Text>
+                <Text style={s.itemBadge}>{e.seen}</Text>
+              </View>
+              <Text style={s.para}>{pdfMath(e.explain)}</Text>
+              <Text style={[s.para, { marginTop: 2 }]}>
+                <Text style={{ fontWeight: 700 }}>Öneri: </Text>
+                {pdfMath(e.tip)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
 /* ---------- Belge ---------- */
 
 export function SimpleReportDocument({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
@@ -840,6 +956,8 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
             <Rulers rows={g.facets} />
           </View>
         ))}
+
+        {report.quiz && <QuizReviewPdf quiz={report.quiz} you={you} />}
 
         {report.support && (
           <View style={s.support} wrap={false}>
