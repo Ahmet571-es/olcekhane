@@ -71,7 +71,12 @@ sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce k
    alanlar öncelikliyse "belirli konularda toplanıyor" denmez; alan grafiğinde "4 soruya dayanır, kaba gösterge" notu.
    Yanlış etiketli 7 seçenek düzeltildi (M5-10, M5-15, M6-06, M6-10 seçenekleri değişti, M7-01, M8-13, M8-14).
    `tests/matematik-rapor.test.ts`.
-5. Sesli okuma: doğru ama çok yavaş okuyana "Rahat okuyor"; atlanan kelimeler hızı şişiriyor.
+5. Sesli okuma: **düzeltildi (2026-10-08).** Akıcılık işaretleri (`fluency`, `flags.fluencyConcern`): kendi ya da alt
+   sınıf metninde dakikada doğru kelime Erden ortalamasının bir standart sapma altı (1–5. sınıf; SD'ler kaynağın Tablo
+   3'ünden, `referenceRates.sd`), tempo 1 ya da akıcılık toplamı ≤ 8. Doğru ve anlayarak okuyup işareti olana "Rahat
+   okuyor" yerine "Doğru okuyor, akıcılığı gelişiyor"; yol haritasında "Tekrarlı okuma" haftası, üst düzey önerilmez.
+   Erden cümlesi "doğru okuduğu" ve aralıkla (ort. ± SD). Sondaki atlanan kelimeler hızı zaten şişirmiyordu (`unread`,
+   ece076a); ortadaki atlamalar hata sayılır, hız "denenen kelime" düzenindedir.
 6. Okuma Hızı ve Anlama: sorular birbirinin cevabını ele veriyor; "Anlayarak okuma" göz gezdireni ödüllendiriyor.
 Sonra raporun Öncelik 2 ve 3 maddeleri (site sahibi yeni görevler verecek).
 

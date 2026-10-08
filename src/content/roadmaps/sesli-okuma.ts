@@ -28,6 +28,11 @@ export interface OralRoadmapTemplate {
   thirdWeek: Record<'hard' | 'support' | 'easy', { title: string; text: AudienceText }>;
   /** Hiçbir yön çalışma gerektirmiyorsa ikinci hafta. */
   extraWeek: { title: string; text: AudienceText };
+  /**
+   * Doğru okuyan ama okuması yavaş ya da akıcı olmayan öğrenci (lib/scoring/oral.ts, akıcılık işaretleri): bir üst
+   * düzeye geçmek yerine aynı düzeydeki metinlerle tekrarlı okuma.
+   */
+  fluencyWeek: { title: string; text: AudienceText };
   lastWeek: { same: AudienceText; up: AudienceText };
   nextTests: string[];
   nextPurpose: { you: string; parent: string };
@@ -213,6 +218,15 @@ export const sesliOkumaRoadmap: OralRoadmapTemplate = {
     text: {
       student: 'Bu hafta daha önce az okuduğun bir türde (ör. bilim yazısı, biyografi ya da şiir) bir metin seç ve bir yetişkine sesli oku.',
       parent: 'Bu hafta daha önce az okuduğu bir türde (ör. bilim yazısı ya da biyografi) bir metin seçin; size sesli okusun, sonra konuşun.',
+    },
+  },
+  fluencyWeek: {
+    title: 'Tekrarlı okuma',
+    text: {
+      student:
+        'Bu hafta her gün aynı kısa metni (yarım sayfa kadar) üç kez sesli oku: ilkinde dikkatle, sonrakilerde biraz daha akıcı. Bir yetişkin ilk ve son okumanın süresini tutsun; aynı metni okudukça ne kadar kolaylaştığını görürsün.',
+      parent:
+        'Bu hafta her gün aynı kısa metni (yarım sayfa kadar) ona üç kez sesli okutun: ilkinde dikkatle, sonrakilerde biraz daha akıcı. İlk ve son okumanın süresini tutun. Aynı metni tekrar tekrar okumak, akıcılığı geliştirmenin en iyi bilinen yollarından biridir; hız için acele ettirmeyin, anlamı da konuşun.',
     },
   },
   lastWeek: {

@@ -7,6 +7,8 @@ import {
   GENRE_LABELS,
   LEVEL_TEXT,
   NEXT_TEXT,
+  FLUENCY_LEVEL_TEXT,
+  NEXT_TEXT_FLUENCY,
   NEXT_TEXT_NO_OTHER,
   PROFILE_TEXT,
   PROSODY_DIMENSIONS,
@@ -182,8 +184,22 @@ function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audi
   if (r.flags.tooFast) {
     // Süre güvenilmezse karşılaştırma yapılmaz (uyarılarda açıklanır).
   } else if (ref && r.passageGrade === grade) {
+    // Çalışma, sınıf düzeyine uygun metinde 1 dakikada doğru okunan kelimeyi saydı: karşılaştırma dakikada doğru kelimeyledir.
     parts.push(
-      `Türkiye’de yapılan bir çalışmada ${grade}. sınıf öğrencilerinin sesli okumada dakikada ortalama ${ref.wpm} kelime okuduğu bildirilmiştir (${ref.source}). Bu değer bir sınır değildir; yalnızca kaba bir fikir verir.`,
+      `Türkiye’de yapılan bir çalışmada ${grade}. sınıf öğrencilerinin sesli okumada dakikada ortalama ${ref.wpm} kelimeyi doğru okuduğu bildirilmiştir; öğrencilerin çoğu yaklaşık ${Math.max(0, ref.wpm - ref.sd)} ile ${ref.wpm + ref.sd} arasındadır (${ref.source}). Bu değerler bir sınır değildir; yalnızca kaba bir fikir verir.`,
+    );
+    if (r.fluency.slowRate) {
+      parts.push(
+        parent
+          ? `Dakikada ${r.wcpm} doğru kelime, bu aralığın altındadır: okuma hızı yaşıtlarının çoğundan belirgin biçimde yavaş.`
+          : `Dakikada ${r.wcpm} doğru kelime, bu aralığın altında: okuman yaşıtlarının çoğundan yavaş. Aynı metinleri tekrar tekrar okumak hızını artırır.`,
+      );
+    }
+  } else if (r.fluency.slowRate && ref) {
+    parts.push(
+      parent
+        ? `Daha kolay bir metinde dakikada ${r.wcpm} doğru kelime, ${grade}. sınıfların çoğunun kendi sınıf metinlerinde okuduğundan (yaklaşık ${Math.max(0, ref.wpm - ref.sd)}–${ref.wpm + ref.sd}) yavaştır (${ref.source}).`
+        : `Okuman, ${grade}. sınıfların çoğunun okuma hızından yavaştı. Aynı metinleri tekrar tekrar okumak hızını artırır.`,
     );
   } else if (parent && !ref) {
     parts.push('Bu sınıf düzeyi için yayımlanmış bir Türkiye karşılaştırma değeri bulunmadığından hız bir ortalamayla karşılaştırılmadı.');
@@ -307,9 +323,18 @@ function timeline(r: OralResult, audience: Audience): OralReportBlock['timeline'
  * (1–8. sınıf): seçebileceği bir üst ya da alt metin yoksa onu önermeyen cümle verilir.
  */
 function nextText(r: OralResult, grade: number) {
+  if (r.level === 'easy' && r.flags.fluencyConcern) return NEXT_TEXT_FLUENCY;
   if (r.level === 'easy' && r.passageGrade >= Math.min(8, grade + 1)) return NEXT_TEXT_NO_OTHER.easy;
   if (r.level === 'hard' && r.passageGrade <= Math.max(1, grade - 1)) return NEXT_TEXT_NO_OTHER.hard;
   return NEXT_TEXT[r.level];
+}
+
+/**
+ * Metnin öğrenci için düzeyinin metni. Doğru ve anlayarak okuyan ama akıcılık işareti olan öğrenciye "rahat okuyor"
+ * denmez (FLUENCY_LEVEL_TEXT).
+ */
+export function levelText(r: OralResult) {
+  return r.level === 'easy' && r.flags.fluencyConcern ? FLUENCY_LEVEL_TEXT : LEVEL_TEXT[r.level];
 }
 
 export function buildOralReport(input: {
@@ -346,8 +371,8 @@ export function buildOralReport(input: {
     passage: { title: passage.title, gradeLabel: GRADE_LABELS[passage.grade] ?? `${passage.grade}. sınıf`, genre: GENRE_LABELS[passage.genre], words: r.wordCount },
     level: {
       key: r.level,
-      label: LEVEL_TEXT[r.level].label,
-      text: pick(audience, LEVEL_TEXT[r.level]),
+      label: levelText(r).label,
+      text: pick(audience, levelText(r)),
       profile: PROFILE_TEXT[profileKey] ? pick(audience, PROFILE_TEXT[profileKey]) : null,
     },
     criteria: [

@@ -1,4 +1,4 @@
-import { LEVEL_TEXT, prosodyLabel } from '@/content/reports/sesli-okuma';
+import { FLUENCY_LEVEL_TEXT, LEVEL_TEXT, prosodyLabel } from '@/content/reports/sesli-okuma';
 import type { OralAspect, OralRoadmapTemplate } from '@/content/roadmaps/sesli-okuma';
 import type { OralResult } from '@/lib/scoring/oral';
 import type { Audience } from './build';
@@ -92,13 +92,23 @@ export function buildOralRoadmap(
     ...(parent ? ['ona nasıl destek olabileceğiniz'] : []),
     'dört haftalık küçük adımlar',
   ];
-  const second = need[0] ? { title: t.aspects[need[0].key].title, text: pick(t.aspects[need[0].key].action, audience) } : { title: t.extraWeek.title, text: pick(t.extraWeek.text, audience) };
+  // Doğru ve anlayarak okuyup okuması yavaş ya da akıcı olmayan öğrenci: tekrarlı okuma haftası, bir üst düzey önerilmez.
+  const fluency = r.flags.fluencyConcern;
+  const fluencyWeek = { title: t.fluencyWeek.title, text: pick(t.fluencyWeek.text, audience) };
+  const second = need[0]
+    ? { title: t.aspects[need[0].key].title, text: pick(t.aspects[need[0].key].action, audience) }
+    : fluency
+      ? fluencyWeek
+      : { title: t.extraWeek.title, text: pick(t.extraWeek.text, audience) };
+  const levelKey = fluency && r.level === 'easy' ? 'support' : r.level;
   const third = need[1]
     ? { title: t.aspects[need[1].key].title, text: pick(t.aspects[need[1].key].action, audience) }
-    : { title: t.thirdWeek[r.level].title, text: pick(t.thirdWeek[r.level].text, audience) };
+    : fluency && second !== fluencyWeek
+      ? fluencyWeek
+      : { title: t.thirdWeek[levelKey].title, text: pick(t.thirdWeek[levelKey].text, audience) };
   // Öğrenci yalnızca kendi sınıfının ve bir alt, bir üst sınıfın metinlerini seçebilir: seçebileceği bir üst metin yoksa üst
   // düzey önerilmez.
-  const last = r.level === 'easy' && r.passageGrade < Math.min(8, opts.grade + 1) ? t.lastWeek.up : t.lastWeek.same;
+  const last = r.level === 'easy' && !fluency && r.passageGrade < Math.min(8, opts.grade + 1) ? t.lastWeek.up : t.lastWeek.same;
 
   // Otomatik analizde öneriler yapay zekânın yaklaşık sonuçlarına dayanır; bu, girişte söylenir.
   const basis = r.flags.auto ? pick(t.autoBasis, audience) : 'Öneriler tek bir metnin sesli okunmasına dayanır; kesin hüküm değildir.';
@@ -109,7 +119,7 @@ export function buildOralRoadmap(
       : `Bu bölüm sonuçlarını günlük okumana taşıman için öneriler içerir: ${joinNames(contents)}. ${basis}`,
     bars: aspects.map((x) => ({ key: x.key, label: t.aspects[x.key].title, ciLow: null, ciHigh: null, color: t.aspects[x.key].color, ...x.bar })),
     standout: [
-      { title: 'Metnin düzeyi', text: LEVEL_TEXT[r.level].label },
+      { title: 'Metnin düzeyi', text: r.level === 'easy' && fluency ? FLUENCY_LEVEL_TEXT.label : LEVEL_TEXT[r.level].label },
       { title: 'Dakikada doğru okunan kelime', text: String(r.wcpm) },
       ...(need[0] ? [{ title: parent ? 'Öncelikli çalışma' : 'Önce bunu çalış', text: t.aspects[need[0].key].title }] : []),
     ],

@@ -127,6 +127,26 @@ export const LEVEL_TEXT: Record<OralLevel, { label: string; short: string } & Tw
 };
 
 /**
+ * Doğru ve anlayarak okuyan ama okuması belirgin biçimde yavaş ya da akıcı olmayan öğrenci (bkz. FLUENCY_LOW_TOTAL,
+ * lib/scoring/oral.ts): metin "rahat" sayılmaz, bir üst düzey önerilmez; çalışma aynı düzeyde tekrarlı okumadır.
+ */
+export const FLUENCY_LEVEL_TEXT: { label: string; short: string } & Two = {
+  label: 'Doğru okuyor, akıcılığı gelişiyor',
+  short: 'Akıcılık gelişiyor',
+  student:
+    'Bu metni doğru okudun ve iyi anladın; ama okuman yavaştı ya da yer yer kesik kesikti. Kelimeleri doğru okuman çok iyi bir temel. Şimdi aynı düzeydeki metinleri birkaç kez sesli okuyarak daha akıcı okumayı çalışabilirsin; okudukça hızın da artar.',
+  parent:
+    'Öğrenci bu metni doğru okudu ve iyi anladı; ancak okuması yaşıtlarına göre belirgin biçimde yavaş ya da akıcılıktan uzaktı. Kelimeleri doğru çözmesi iyi bir temeldir; akıcılık ise bu düzeydeki metinlerle yapılan tekrarlı okumayla (aynı metni birkaç kez, her seferinde biraz daha akıcı okumak) gelişir. Daha zor metinlere geçmek için acele etmeyin ve sonucu sınıf öğretmeniyle paylaşın.',
+};
+
+/** Akıcılığı gelişen öğrenci için bir sonraki değerlendirme önerisi. */
+export const NEXT_TEXT_FLUENCY: Two = {
+  student: 'Birkaç hafta aynı düzeydeki metinleri tekrar tekrar sesli okuduktan sonra aynı düzeyden başka bir metni dene; ne kadar akıcılaştığını görürsün.',
+  parent:
+    'Dört ila altı hafta tekrarlı okuma çalıştıktan sonra aynı sınıf düzeyinden başka bir metinle yeniden değerlendirin. Okuma hızının (dakikada doğru okunan kelime) artışı gelişimin en açık göstergesidir.',
+};
+
+/**
  * Doğru okuma ile anlamanın birlikte okunuşu: zorluk kelimeleri çözmekte mi, okuduğunu anlamakta mı? Anahtar
  * "<doğruluk>-<anlama>" düzeyleridir. Aynı düzeydeyse ayrıca açıklanmaz (boş).
  */

@@ -50,11 +50,13 @@ export const sesliOkuma: OralReadingInstrument = {
     { key: 'retell', name: 'Yeniden anlatma', plain: 'Metni kendi cümleleriyle anlatırken önemli fikirlerin ne kadarının söylendiği.' },
   ],
   referenceRates: [
-    { grade: 1, wpm: 45, source: ERDEN },
-    { grade: 2, wpm: 73, source: ERDEN },
-    { grade: 3, wpm: 91, source: ERDEN },
-    { grade: 4, wpm: 97, source: ERDEN },
-    { grade: 5, wpm: 121, source: ERDEN },
+    // Erden, Kurdoğlu ve Uslu (2002), Tablo 3: 1 dakikada doğru okunan kelime, ortalama ve standart sapma (Ankara,
+    // N = 2481). 3. sınıfın standart sapması kaynakta 2. sınıfınkiyle aynı (31,16) yazılmıştır.
+    { grade: 1, wpm: 45, sd: 27, source: ERDEN },
+    { grade: 2, wpm: 73, sd: 31, source: ERDEN },
+    { grade: 3, wpm: 91, sd: 31, source: ERDEN },
+    { grade: 4, wpm: 97, sd: 46, source: ERDEN },
+    { grade: 5, wpm: 121, sd: 53, source: ERDEN },
   ],
   passages: [...sinif12, ...sinif34, ...sinif56, ...sinif78],
   science: {

@@ -108,6 +108,15 @@ export const UNCLEAR_MAX = 0.3;
  * kısımdan hesaplanır ve raporda belirtilir (atlanan kelimeler yine atlama hatasıdır).
  */
 export const UNFINISHED_MIN = 3;
+/**
+ * Akıcılık: doğru ve anlayarak okusa bile okuması belirgin biçimde yavaş ya da akıcı değilse metin "rahat" sayılmaz.
+ * Üç işaretten biri yeter: (1) öğrencinin kendi sınıfının ya da daha alt bir sınıfın metninde dakikada doğru okunan
+ * kelime, yayımlanmış Türkiye ortalamasının bir standart sapma altından azsa (yalnızca verisi olan 1–5. sınıflar);
+ * (2) yetişkin tempoyu "çok yavaş ve zorlanarak" diye derecelendirdiyse; (3) akıcılık toplamı bu değer ya da altındaysa
+ * (4–16; Zutell ve Rasinski, 1991 ölçeğinin Türkçe uyarlamasında "desteğe ihtiyaç var" aralığı).
+ */
+export const FLUENCY_LOW_TOTAL = 8;
+
 /** Duraklama sayımı: bu süreden uzun sessizlikler; ve uzun duraklamalar. */
 export const PAUSE_MS = 1000;
 export const LONG_PAUSE_MS = 3000;
@@ -168,6 +177,11 @@ export interface OralResult {
   /** Akıcılık derecelendirmesi; otomatik analizde yoktur (null). */
   prosody: (OralProsody & { total: number }) | null;
   level: OralLevel;
+  /**
+   * Akıcılık işaretleri (bkz. FLUENCY_LOW_TOTAL). `refWcpm` ve `refSd`: karşılaştırılan sınıf ortalaması (yoksa null).
+   * Doğru ve anlayarak okuyan ama akıcılık işareti olan öğrenciye metin "rahat" denmez, bir üst düzey önerilmez.
+   */
+  fluency: { slowRate: boolean; slowPace: boolean; lowProsody: boolean; refWcpm: number | null; refSd: number | null };
   pauses: { count: number; long: number; longestMs: number; perMinute: number } | null;
   audio: OralAudioSummary | null;
   marked: OralMarkedToken[][];
@@ -183,6 +197,8 @@ export interface OralResult {
     tooFast: boolean;
     /** Okuma metin bitmeden durdu (sondaki `unread` kelime okunmadı). */
     unfinished: boolean;
+    /** Akıcılık işaretlerinden en az biri var (yavaş hız, çok yavaş tempo ya da düşük akıcılık toplamı). */
+    fluencyConcern: boolean;
     /** Okuma süresi düğmelere göre ölçüldü (kayıtta konuşmanın başı ve sonu bulunamadı). */
     manualTiming: boolean;
     /** Ses kalitesi duraklamaları ölçmeye elverişli değil. */
@@ -317,6 +333,17 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
   const prosody = p ? { ...p, total: p.expression + p.phrasing + p.smoothness + p.pace } : null;
   const accLevel = accuracyLevel(accuracy);
   const compLevel = comprehensionLevel(compPct);
+  // Akıcılık: kendi sınıfının ya da daha kolay bir metinde, süre güvenilirken sınıf ortalamasının bir standart sapma
+  // altı; ya da yetişkinin derecelendirmesi.
+  const ref = passage.grade <= grade ? def.referenceRates.find((x) => x.grade === grade) : undefined;
+  const tooFast = wpm > ORAL_MAX_WPM;
+  const fluency = {
+    slowRate: !!ref && !tooFast && wcpm < ref.wpm - ref.sd,
+    slowPace: prosody?.pace === 1,
+    lowProsody: !!prosody && prosody.total <= FLUENCY_LOW_TOTAL,
+    refWcpm: ref?.wpm ?? null,
+    refSd: ref?.sd ?? null,
+  };
 
   const audio = input.audio;
   const pausesUnreliable = !audio || audio.quality !== 'good' || audio.interrupted || !input.timingAuto;
@@ -368,6 +395,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     retell,
     prosody,
     level: lowerLevel(accLevel, compLevel),
+    fluency,
     pauses,
     audio,
     marked,
@@ -376,8 +404,9 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
       unclearHigh: auto && counts.unclear > n * UNCLEAR_HIGH,
       partialListen: !auto && (input.listened ?? 0) < MIN_LISTENED,
       interrupted: !!audio?.interrupted,
-      tooFast: wpm > ORAL_MAX_WPM,
+      tooFast,
       unfinished: unread > 0,
+      fluencyConcern: fluency.slowRate || fluency.slowPace || fluency.lowProsody,
       manualTiming: !input.timingAuto,
       pausesUnreliable,
     },

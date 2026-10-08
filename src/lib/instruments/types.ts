@@ -212,8 +212,11 @@ export interface OralPassage {
 export interface OralReadingInstrument extends InstrumentBase {
   engine: 'oral';
   passages: OralPassage[];
-  /** Sınıf düzeyine göre başvuru sesli okuma hızları (dakikada kelime), yalnızca yayımlanmış Türkiye verisi. */
-  referenceRates: { grade: number; wpm: number; source: string }[];
+  /**
+   * Sınıf düzeyine göre başvuru sesli okuma hızları, yalnızca yayımlanmış Türkiye verisi: dakikada doğru okunan
+   * kelimenin ortalaması (`wpm`) ve standart sapması (`sd`).
+   */
+  referenceRates: { grade: number; wpm: number; sd: number; source: string }[];
 }
 
 /* ---------- Bilişsel görevler ---------- */
