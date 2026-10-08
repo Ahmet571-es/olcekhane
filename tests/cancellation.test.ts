@@ -133,6 +133,43 @@ describe('Harf işaretleme puanlama', () => {
     expect(none.sections[0].processed).toBe(0);
   });
 
+  it('yanlışlıkla tek dokunuş taranan kısmı uzatmaz; satır atlayıp devam etmek ise taranan kısma girer', () => {
+    const upTo = sheet.map((s) => upToTarget(s, 120));
+    const clean = scoreCancellation(task, sheet, [0, 1, 2, 3].map((i) => section(sheet, i, { upTo: upTo[i] }))).result;
+    // Her bölümde sayfanın çok ilerisine (ör. telefonda kaydırırken) bir ya da iki yanlışlıkla dokunuş.
+    const stray = (i: number, extra: number[]): CancellationSectionInput => {
+      const s = section(sheet, i, { upTo: upTo[i] });
+      const marks = [...s.response.marks, ...extra].sort((a, b) => a - b);
+      return { ...s, response: { marks, times: marks.map((_, k) => 500 + k * 400), unmarks: 0 } };
+    };
+    const tapped = scoreCancellation(task, sheet, [stray(0, [550]), stray(1, [400, 401]), stray(2, [N - 1]), stray(3, [300])]).result;
+    expect(tapped.processed).toBe(clean.processed);
+    expect(tapped.hitRate).toBe(clean.hitRate);
+    expect(tapped.perMinute).toBe(clean.perMinute);
+    expect(tapped.commissions).toBe(clean.commissions);
+    expect(tapped.ceiling).toBe(false);
+    expect(tapped.strays).toBe(5);
+    expect(tapped.sections.map((s) => s.strays)).toEqual([1, 2, 1, 1]);
+
+    // Dört satır atlayıp hedefleri işaretlemeye devam eden: sonraki öbek gerçek çalışmadır.
+    const skip = section(sheet, 0, { upTo: upToTarget(sheet[0], 200) });
+    const marks = skip.response.marks.filter((m) => m < 60 || m >= 100);
+    const skipped = scoreCancellation(task, sheet, [{ ...skip, response: { marks, times: marks.map((_, k) => 500 + k * 400), unmarks: 0 } }, ...[1, 2, 3].map((i) => section(sheet, i, { upTo: upTo[i] }))]).result;
+    expect(skipped.sections[0].processed).toBe(upToTarget(sheet[0], 200));
+    expect(skipped.sections[0].omissions).toBeGreaterThan(0);
+    expect(skipped.sections[0].strays).toBe(0);
+  });
+
+  it('dikkatin sürdürülmesi: küçük farklar ölçümün oynaklığı içinde kalır', () => {
+    const at = (i: number, approx: number) => section(sheet, i, { upTo: upToTarget(sheet[i], approx) });
+    // Az işaret yapan küçük öğrenci: ilk yarı ~120, ikinci yarı ~100 harf (%15'ten büyük ama rastlantı sınırında).
+    const small = scoreCancellation(task, sheet, [at(0, 120), at(1, 120), at(2, 100), at(3, 100)]).result;
+    expect(Math.abs(small.sustainChange!)).toBeGreaterThan(15);
+    expect(small.sustainClear).toBe(false);
+    const big = scoreCancellation(task, sheet, [at(0, 300), at(1, 300), at(2, 150), at(3, 150)]).result;
+    expect(big.sustainClear).toBe(true);
+  });
+
   it('son satıra ulaşılırsa tavan etkisi işaretlenir', () => {
     const last = sheet[0].reduce((acc, l, i) => (task.targets.includes(l) ? i : acc), -1);
     expect(last).toBeGreaterThan(N - task.columns - 1);
@@ -183,7 +220,7 @@ describe('Harf işaretleme puanlama', () => {
 
 describe('Harf işaretleme raporu', () => {
   const sheet = cancellationSheet(task, ids[2]);
-  const input = [0, 1, 2, 3].map((i) => section(sheet, i, { upTo: upToTarget(sheet[i], i < 2 ? 260 : 170), skipEvery: 8, wrong: 1 }));
+  const input = [0, 1, 2, 3].map((i) => section(sheet, i, { upTo: upToTarget(sheet[i], i < 2 ? 280 : 130), skipEvery: 8, wrong: 1 }));
   const { result } = scoreCancellation(task, sheet, input);
   const stored = (scaleKey: string, raw: number | null, extra: Record<string, unknown>): ReportScore => ({
     scaleKey,
@@ -223,5 +260,25 @@ describe('Harf işaretleme raporu', () => {
     }
     expect(report('student').cognitive!.blocks[0].text).toContain('baktın');
     expect(report('parent').cognitive!.blocks[0].text).toContain('Çocuğunuz');
+  });
+
+  it('çok yanlış işaret varken "dikkatli çalıştın" denmez; belirgin olmayan değişim yorumlanmaz', () => {
+    // Bütün hedefler bulundu ama çeldiricilerin de bir kısmı işaretlendi.
+    const noisy = [0, 1, 2, 3].map((i) => section(sheet, i, { upTo: upToTarget(sheet[i], 200), wrong: 12 }));
+    const r = scoreCancellation(task, sheet, noisy).result;
+    expect(r.hitRate).toBe(1);
+    expect(r.falseAlarmRate).toBeGreaterThanOrEqual(0.02);
+    const scoresOf = (x: typeof r) => [
+      stored('tempo', x.perMinute, x as unknown as Record<string, unknown>),
+      stored('isabet', x.hitRate * 100, {}),
+      stored('net', x.net, {}),
+      stored('surdurme', x.sustainChange, {}),
+    ];
+    for (const audience of ['student', 'parent'] as const) {
+      const c = buildReport({ def: harfIsaretleme, scores: scoresOf(r), audience, studentName: 'Deneme', grade: 5, completedAt: new Date() }).cognitive!;
+      expect(c.blocks[1].text).not.toMatch(/dikkatli|dikkatle/);
+      expect(c.blocks[1].text).toMatch(/yanlışlıkla işaretledin|işaretlenmiş/);
+      expect(c.blocks[3].headline).toBe('Belirgin değişim yok');
+    }
   });
 });

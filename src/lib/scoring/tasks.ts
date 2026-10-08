@@ -245,7 +245,10 @@ export interface CancellationSectionInput {
 
 export interface CancellationSectionScored {
   index: number;
-  /** Taranan harf: sayfanın başından son işarete kadar. */
+  /**
+   * Taranan harf: sayfanın başından, kesintisiz çalışmanın son işaretine kadar. Bu çalışmanın çok ilerisinde tek
+   * başına kalan bir iki işaret (ör. telefonda kaydırırken yanlışlıkla dokunma) taranan kısmı uzatmaz.
+   */
   processed: number;
   /** Taranan kısımdaki hedef sayısı. */
   targets: number;
@@ -258,6 +261,33 @@ export interface CancellationSectionScored {
   net: number;
   ms: number;
   unmarks: number;
+  /** Taranan kısmın ötesinde kalan, yanlışlıkla dokunma sayılan işaretler (puana girmez). */
+  strays: number;
+}
+
+/** İki işaret arasında bu kadar satırdan uzun boşluk varsa sonraki işaretler ayrı bir öbektir. */
+const STRAY_GAP_ROWS = 3;
+/** Uzun bir boşluktan sonra en az bu kadar işaretlik öbek gerçek çalışmadır (ör. satır atlayıp devam etmek). */
+const MIN_RUN = 3;
+
+/**
+ * Taranan kısmın son harfi. İşaretler sayfadaki sıralarına göre öbeklere ayrılır: aralarında üç satırdan uzun boşluk
+ * olan işaretler ayrı öbektir. Taranan kısım, en az üç işaretli son öbeğin sonunda biter; ondan sonra gelen küçük
+ * öbekler yanlışlıkla dokunma sayılır. Her satırda en az bir aranan harf olduğu için kesintisiz çalışan biri üç satır
+ * boyunca hiç işaret koymaz. Hiçbir öbek üç işaretli değilse ilk öbeğin sonu alınır.
+ */
+export function scannedEnd(marks: number[], columns: number): number {
+  if (!marks.length) return -1;
+  const sorted = [...marks].sort((a, b) => a - b);
+  const gap = STRAY_GAP_ROWS * columns;
+  const runs: number[][] = [[sorted[0]]];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] - sorted[i - 1] > gap) runs.push([sorted[i]]);
+    else runs[runs.length - 1].push(sorted[i]);
+  }
+  let end = 0;
+  for (let k = 1; k < runs.length; k++) if (runs[k].length >= MIN_RUN) end = k;
+  return runs[end][runs[end].length - 1];
 }
 
 export interface CancellationResult {
@@ -278,6 +308,15 @@ export interface CancellationResult {
    * doğru yoksa hesaplanmaz.
    */
   sustainChange: number | null;
+  /**
+   * Değişim ölçümün kendi oynaklığını aşıyor mu: iki yarının dakikadaki net doğrusu arasındaki fark, işaret sayılarından
+   * hesaplanan standart hatanın iki katından büyük (sayım verisinde bir sayının varyansı yaklaşık kendisidir; net
+   * doğrunun varyansı doğru ve yanlış işaretlerin toplamıdır). Az işaret yapan küçük öğrencilerde bölümler arası
+   * farkların büyük kısmı rastlantıdır; yalnızca bu sınırı aşan değişim yorumlanır.
+   */
+  sustainClear: boolean;
+  /** Taranan kısmın ötesinde kalan, puana katılmayan işaretlerin toplamı. */
+  strays: number;
   /** Bir bölümün sayfası son satırına kadar tarandı (sayfa bu kişi için kısa kaldı). */
   ceiling: boolean;
 }
@@ -308,7 +347,7 @@ export function scoreCancellation(
 
     const letters = sheet[t.index];
     const marked = new Set(r.marks);
-    const last = r.marks.length ? Math.max(...r.marks) : -1;
+    const last = scannedEnd(r.marks, task.columns);
     let targets = 0;
     let hits = 0;
     let commissions = 0;
@@ -320,7 +359,8 @@ export function scoreCancellation(
       } else if (marked.has(i)) commissions++;
     }
     const ms = Math.min(task.sectionMs, Math.max(1_000, Math.round(t.rtMs ?? task.sectionMs)));
-    sections.push({ index: t.index, processed: last + 1, targets, hits, omissions: targets - hits, commissions, net: hits - commissions, ms, unmarks: r.unmarks });
+    const strays = r.marks.filter((m) => m > last).length;
+    sections.push({ index: t.index, processed: last + 1, targets, hits, omissions: targets - hits, commissions, net: hits - commissions, ms, unmarks: r.unmarks, strays });
   }
   if (sections.length !== task.sections) throw new TaskInputError('Bölümlerin hepsi gönderilmedi.');
   sections.sort((a, b) => a.index - b.index);
@@ -338,6 +378,16 @@ export function scoreCancellation(
   const second = sections.slice(half).map(rate);
   const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   const base = first.length ? avg(first) : 0;
+  // İki yarının dakikadaki net doğru hızı ve sayım oynaklığından standart hata.
+  const halfOf = (xs: CancellationSectionScored[]) => {
+    const mins = xs.reduce((a, s) => a + s.ms, 0) / 60_000;
+    const marks = xs.reduce((a, s) => a + s.hits + s.commissions, 0);
+    const netSum = xs.reduce((a, s) => a + s.net, 0);
+    return { rate: mins > 0 ? netSum / mins : 0, varRate: mins > 0 ? marks / (mins * mins) : 0 };
+  };
+  const h1 = halfOf(sections.slice(0, half));
+  const h2 = halfOf(sections.slice(half));
+  const sustainClear = base > 0 && second.length > 0 && Math.abs(h2.rate - h1.rate) > 2 * Math.sqrt(h1.varRate + h2.varRate);
   return {
     sections,
     result: {
@@ -351,6 +401,8 @@ export function scoreCancellation(
       hitRate: hits + omissions ? round(hits / (hits + omissions), 3) : 0,
       falseAlarmRate: distractorsSeen > 0 ? round(commissions / distractorsSeen, 3) : 0,
       sustainChange: base > 0 && second.length ? round(((avg(second) - base) / base) * 100, 1) : null,
+      sustainClear,
+      strays: sum((s) => s.strays),
       // Son satıra ulaşıldıysa sayfa bu kişi için kısa kalmıştır: çalışma hızı olduğundan düşük görünür.
       ceiling: sections.some((s) => s.processed > n - task.columns),
     },

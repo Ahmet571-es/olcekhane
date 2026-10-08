@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cancellationSheet, isTarget } from '@/lib/instruments/cancellation';
 import type { CancellationTask } from '@/lib/instruments/types';
 import type { CancellationSectionInput } from '@/lib/scoring/tasks';
-import { afterPaint } from './common';
+import { PausedScreen, afterPaint, usePageHidden } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-check' | 'countdown' | 'section' | 'done';
 type CellState = 'off' | 'on' | 'hit' | 'miss' | 'wrong';
@@ -140,7 +140,9 @@ function SectionTimer({ startedAt, durationMs }: { startedAt: number | null; dur
  * Harf işaretleme: süreli bölümlerde, satır satır dizilmiş harfler arasında aranan harflere dokunulur.
  * Sayfalar tarayıcıda rastgele üretilen tohumdan üretilir (sunucu aynı tohumla aynı sayfayı üretip puanlar).
  * Her bölüm tam süre sürer; süre dolunca işaretler ve işaretlenme zamanları sayfada tutulur, sonraki bölüm
- * kısa bir geri sayımla başlar.
+ * kısa bir geri sayımla başlar. Sayfa gizlenince (başka sekme ya da uygulama) süre durur: dönülünce aynı sayfada,
+ * kaldığı yerden ve kalan süreyle devam edilir; gizli kalınan süre ölçüme girmez. Geri sayımda gizlenirse geri sayım
+ * yeniden başlar.
  */
 export function Cancellation({
   task,
@@ -158,6 +160,9 @@ export function Cancellation({
   const [count, setCount] = useState(COUNTDOWN);
   const [marked, setMarked] = useState<ReadonlySet<number>>(() => new Set());
   const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
+  /** Bölüm duraklatıldıysa duraklatmanın başladığı an. */
+  const pausedAt = useRef<number | null>(null);
 
   // İşaretler ve zamanları olay işleyicilerinde güncellenir; ekrandaki durum `marked` ile çizilir.
   const marks = useRef(new Map<number, number>());
@@ -208,7 +213,7 @@ export function Cancellation({
 
   // Geri sayım; sıfıra gelince yeni sayfa açılır.
   useEffect(() => {
-    if (step !== 'countdown') return;
+    if (step !== 'countdown' || paused) return;
     wrap.current?.scrollIntoView({ block: 'start' });
     let n = COUNTDOWN;
     const id = window.setInterval(() => {
@@ -222,7 +227,7 @@ export function Cancellation({
       setStep('section');
     }, 1000);
     return () => window.clearInterval(id);
-  }, [step, clearMarks]);
+  }, [step, clearMarks, paused]);
 
   // Bölüm: süre, sayfanın ekrana gerçekten çizildiği andan başlar ve tam süre sürer.
   useEffect(() => {
@@ -256,6 +261,7 @@ export function Cancellation({
       active.current = true;
       setStartedAt(t);
       id = window.setInterval(() => {
+        if (pausedAt.current !== null) return;
         if (performance.now() >= deadline.current) {
           window.clearInterval(id);
           finish();
@@ -268,6 +274,29 @@ export function Cancellation({
       window.clearInterval(id);
     };
   }, [step, section, task.sectionMs, task.sections, startCountdown]);
+
+  usePageHidden((step === 'section' && startedAt !== null) || step === 'countdown', () => {
+    if (paused) return;
+    if (step === 'section') {
+      pausedAt.current = performance.now();
+      active.current = false;
+    }
+    setPaused(true);
+  });
+
+  /** Bölüme kaldığı yerden devam: gizli kalınan süre kadar başlangıç ve bitiş ileri alınır. */
+  function resume() {
+    if (step === 'section' && pausedAt.current !== null) {
+      const d = performance.now() - pausedAt.current;
+      start.current += d;
+      deadline.current += d;
+      pausedAt.current = null;
+      active.current = true;
+      setStartedAt(start.current);
+    }
+    if (step === 'countdown') setCount(COUNTDOWN);
+    setPaused(false);
+  }
 
   const targetList = task.targets.join(', ');
 
@@ -359,6 +388,10 @@ export function Cancellation({
     );
   }
 
+  if (step === 'countdown' && paused) {
+    return <PausedScreen note="Bölüm başlamadan önceki geri sayım yeniden başlayacak." cta="Devam et" onResume={resume} />;
+  }
+
   if (step === 'countdown') {
     return (
       <div ref={wrap} className="flex flex-col items-center gap-5 py-6 text-center" aria-live="polite">
@@ -400,6 +433,12 @@ export function Cancellation({
         label={`Harf sayfası, bölüm ${section + 1}: ${targetList} harflerine dokun`}
       />
       <p className="t-small py-6 text-center text-ink-3">Sayfanın sonuna geldin. Süre dolunca sonraki bölüm kendiliğinden başlar.</p>
+      {paused && (
+        // Sayfa yerinde kalır (kaydırma konumu korunur); üstünü duraklatma ekranı örter.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-paper p-4">
+          <PausedScreen note="Süre de durdu; sayfada kaldığın yerden, kalan sürenle devam edeceksin." onResume={resume} />
+        </div>
+      )}
     </div>
   );
 }

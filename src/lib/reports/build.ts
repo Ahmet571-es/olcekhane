@@ -637,7 +637,10 @@ function spanText(r: SpanResult, audience: Audience, what: { student: string; pa
   return `${base}${ceiling} ${what.everyday}`;
 }
 
-/** Bölümler arasındaki değişim bu yüzdeyi aşınca "arttı" ya da "düştü" denir; daha küçük farklar ölçüm hatası içindedir. */
+/**
+ * Bölümler arasındaki değişim hem bu yüzdeyi aşınca hem de işaret sayılarına göre ölçümün oynaklığını aşınca
+ * (`sustainClear`) "arttı" ya da "düştü" denir; daha küçük farklar ölçüm hatası içindedir.
+ */
 const SUSTAIN_THRESHOLD = 15;
 
 const SUSTAINED_TIPS: Record<Voice, string[]> = {
@@ -684,11 +687,13 @@ function cancellationBlocks(
       ceiling,
   };
 
+  // Çok sayıda yanlış işaret varken (harflere gelişigüzel dokunmak da bütün hedefleri bulur) "dikkatli" denmez.
+  const manyFalse = r.falseAlarmRate >= 0.02;
   const found =
     r.hitRate >= 0.9
       ? you
-        ? `Taradığın satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsini' : 'neredeyse hepsini'} buldun; dikkatli çalıştığını gösteriyor.`
-        : `Taranan satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsi' : 'neredeyse hepsi'} bulundu; görev dikkatle yürütülmüş.`
+        ? `Taradığın satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsini' : 'neredeyse hepsini'} buldun${manyFalse ? '.' : '; dikkatli çalıştığını gösteriyor.'}`
+        : `Taranan satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsi' : 'neredeyse hepsi'} bulundu${manyFalse ? '.' : '; görev dikkatle yürütülmüş.'}`
       : r.hitRate >= 0.75
         ? you
           ? 'Taradığın satırlardaki aranan harflerin çoğunu buldun ama bir kısmını atladın. Hızlı giderken bazı harflerin gözden kaçması çok yaygındır; satır satır, harf harf ilerlemek atlamaları azaltır.'
@@ -697,7 +702,7 @@ function cancellationBlocks(
           ? 'Taradığın satırlardaki aranan harflerin önemli bir kısmını atladın. Bu; hızlı gitmekten, satır atlamaktan ya da o an dikkatinin dağılmasından kaynaklanabilir. Acele etmeden, harf harf ilerlemek işine yarar.'
           : 'Taranan satırlardaki aranan harflerin önemli bir kısmı atlandı. Bu; çok hızlı çalışmaktan, satır atlamaktan ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.';
   const falseMarks =
-    r.falseAlarmRate >= 0.02
+    manyFalse
       ? you
         ? ' Bazı harfleri de yanlışlıkla işaretledin; p ile b ya da d, o ile a gibi birbirine benzeyen harfler kolayca karışabilir.'
         : ' Aranan harflere benzeyen bazı harfler de işaretlenmiş (ör. p ile b ya da d); bu, acele etmekten ya da benzer harfleri ayırt etmekte zorlanmaktan kaynaklanabilir.'
@@ -709,7 +714,9 @@ function cancellationBlocks(
   const isabet: CognitiveBlock = {
     ...card('isabet'),
     headline: `Bulma oranı ${pct(r.hitRate)}`,
-    detail: `${n(r.hits)} harf bulundu · ${n(r.omissions)} harf atlandı · ${n(r.commissions)} yanlış işaret`,
+    detail: `${n(r.hits)} harf bulundu · ${n(r.omissions)} harf atlandı · ${n(r.commissions)} yanlış işaret${
+      r.strays ? ` · taranan kısmın çok ilerisindeki ${n(r.strays)} dokunuş yanlışlıkla dokunma sayıldı, puana katılmadı` : ''
+    }`,
     text: found + falseMarks,
   };
 
@@ -732,25 +739,25 @@ function cancellationBlocks(
             ? 'İlk bölümlerde yeterli işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.'
             : 'İlk bölümlerde yeterli doğru işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.',
         ]
-      : change <= -SUSTAIN_THRESHOLD
+      : change <= -SUSTAIN_THRESHOLD && r.sustainClear
         ? [
             'Son bölümlerde düştü',
             you
               ? `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} azaldı. Uzun bir işte yorulmak ya da sıkılmak herkeste olur; uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`
               : `Son bölümlerde net doğru sayısı ilk bölümlere göre yaklaşık ${x} azaldı. Bu, dikkati uzun süre aynı düzeyde tutmakta zorlanıldığını düşündürebilir; yorgunluk ya da isteksizlik de aynı etkiyi yapar. Uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`,
           ]
-        : change >= SUSTAIN_THRESHOLD
+        : change >= SUSTAIN_THRESHOLD && r.sustainClear
           ? [
               'Görev ilerledikçe arttı',
               you
-                ? `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} arttı: görevi yaptıkça ısındın ve hızlandın.`
+                ? `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} arttı: görevi yaptıkça ısındın.`
                 : `Son bölümlerde net doğru sayısı ilk bölümlere göre yaklaşık ${x} arttı: görev ilerledikçe ısınma ve alışma görülüyor.`,
             ]
           : [
-              'Görev boyunca korundu',
+              'Belirgin değişim yok',
               you
-                ? `${task.sections} bölüm boyunca benzer bir performans gösterdin; dikkatini görev boyunca koruyabildin.`
-                : `Performans ${task.sections} bölüm boyunca benzer kaldı; dikkat görev süresince korunabildi.`,
+                ? `${task.sections} bölüm boyunca belirgin bir değişim görülmedi; dikkatini görev boyunca koruyabildiğini düşündürüyor. Bölümler arasındaki küçük farklar ölçümün doğal oynaklığıdır.`
+                : `${task.sections} bölüm boyunca belirgin bir değişim görülmedi; dikkat görev süresince korunabilmiş görünüyor.`,
             ];
   const surdurme: CognitiveBlock = {
     ...card('surdurme'),

@@ -67,7 +67,8 @@ export function cancellationBody(): AnswersBody {
   const task = d.tasks[0] as CancellationTask;
   const sheet = cancellationSheet(task, SEED);
   const sections = sheet.map((letters, index) => {
-    const upTo = [220, 210, 160, 150][index];
+    // Son iki bölümde belirgin düşüş (ölçümün oynaklığını aşan).
+    const upTo = [240, 230, 130, 120][index];
     const marks = letters.slice(0, upTo).flatMap((l, i) => (task.targets.includes(l) ? [i] : []));
     return { index, response: { marks, times: marks.map((_, k) => 300 + k * 700), unmarks: 0 }, rtMs: task.sectionMs };
   });

@@ -59,7 +59,11 @@ sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce k
    yorumlanmaz; öteki görevlerde boş blok yine reddedilir); dizi girişinde süre 2 dk'da kesilir. Eski görevlere
    (sayı/kutu dizisi, ok, sembol) sekme değişince duraklatma, basılı tuş ve sağ tık koruması; görevler arası
    düğmeler gecikmeli. Tarayıcıda baştan sona denendi (duraklatma ekranları, sayaç, kalan süre, rapor).
-3. Harf İşaretleme: tek kopuk yanlış dokunuş taranan alanı uzatıp puanı bozuyor.
+3. Harf İşaretleme: **düzeltildi (2026-10-08).** Taranan kısım kesintisiz çalışmanın sonunda biter (`scannedEnd`:
+   üç satırdan uzun boşluktan sonra 3 işareti bulmayan öbek yanlışlıkla dokunma sayılır, puana girmez, kartta
+   söylenir). "Son bölümlerde düştü/arttı" yalnızca %15'i ve sayım oynaklığının iki standart hatasını aşınca
+   (`sustainClear`); yoksa "Belirgin değişim yok". Çok yanlış işarette "dikkatli çalıştın" denmez. Bölüm sırasında
+   sekme değişince süre durur, sayfa yerinde kalır; geri sayımda gizlenirse geri sayım yeniden başlar.
 4. Matematik: soru soru inceleme ve "neden yanlış" açıklamaları raporda/PDF'te gösterilmiyor.
 5. Sesli okuma: doğru ama çok yavaş okuyana "Rahat okuyor"; atlanan kelimeler hızı şişiriyor.
 6. Okuma Hızı ve Anlama: sorular birbirinin cevabını ele veriyor; "Anlayarak okuma" göz gezdireni ödüllendiriyor.
