@@ -1,8 +1,14 @@
 'use client';
 
 import type { AnimasyonAdi } from '@/content/beyin/types';
+import { Bingildaklar } from './animasyonlar/bingildaklar';
 import { GriBeyazCevher } from './animasyonlar/gri-beyaz-cevher';
+import { KafaDerisiKatmanlari } from './animasyonlar/kafa-derisi-katmanlari';
 import { KafaIciKanamalar } from './animasyonlar/kafa-ici-kanamalar';
+import { KafatasiKiriklari } from './animasyonlar/kafatasi-kiriklari';
+import { KafatasiTabani } from './animasyonlar/kafatasi-tabani';
+import { Kraniosinostoz } from './animasyonlar/kraniosinostoz';
+import { Kraniotomi } from './animasyonlar/kraniotomi';
 import { MonroKellie } from './animasyonlar/monro-kellie';
 import { MrGosterimi } from './animasyonlar/mr-gosterimi';
 import { OmurilikSinirleri } from './animasyonlar/omurilik-sinirleri';
@@ -31,5 +37,17 @@ export function Animasyon({ ad }: { ad: AnimasyonAdi }) {
       return <KafaIciKanamalar />;
     case 'monro-kellie':
       return <MonroKellie />;
+    case 'kafatasi-tabani':
+      return <KafatasiTabani />;
+    case 'bingildaklar':
+      return <Bingildaklar />;
+    case 'kraniosinostoz':
+      return <Kraniosinostoz />;
+    case 'kafa-derisi-katmanlari':
+      return <KafaDerisiKatmanlari />;
+    case 'kafatasi-kiriklari':
+      return <KafatasiKiriklari />;
+    case 'kraniotomi':
+      return <Kraniotomi />;
   }
 }

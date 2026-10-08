@@ -149,7 +149,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Üç boyutlu model: BodyParts3D 4.0 (CC BY 4.0, atıf `components/beyin/model-notu.tsx`'te). Yapı kataloğu
   `src/content/beyin/yapilar.ts` (Türkçe ad, Latince ad, bölge, lob, paket, parça dosyaları, görev). Yeni yapı
   eklenince `node araclar/beyin-modeli.mjs` çalıştırılır: arşivi indirip SHA-256 ile doğrular, yalnızca katalogdaki
-  parçaları sıkıştırıp `public/beyin/model/<sürüm>/`'e yazar (git'e girer, ~2,3 MB) ve `model-surum.ts`'i günceller.
+  parçaları sıkıştırıp `public/beyin/model/<sürüm>/`'e yazar (git'e girer, ~2,5 MB) ve `model-surum.ts`'i günceller.
+  Paketler: kabuk, beyaz, derin, sap, karincik, damar, kemik (beyin kutusunun 8 kemiği) ve yuz (yüz kemikleri, dil
+  kemiği, atlas, aksis). Kemik paketleri kamera çerçevesine ve kesit sınırına girmez; yalnızca kemik yüklü sahnede
+  kesit kemiklerin kutusuna göre konur. Bütün sahneyi (kemikler dahil) çerçevelemek için görünenler `vurgula`ya da yazılır.
 - Çizici `components/beyin/motor.ts` (three.js; sayfada tek WebGL bağlamı, tuval en çok görünen sahneye taşınır,
   kare yalnızca bir şey değişince çizilir), sahne kutusu `beyin-sahnesi.tsx`, iki boyutlu hareketli çizimler
   `components/beyin/animasyonlar/` (hareketi azaltmayı seçenlerde adım adım). Sahne ayarı (`Sahne`): paketler,

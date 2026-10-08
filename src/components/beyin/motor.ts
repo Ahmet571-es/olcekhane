@@ -36,6 +36,9 @@ import { seciciUyar, tarafsiz, uyar } from './secici';
  * Eksenler model dosyasındaki gibidir: X hastanın solu, Y yukarı, Z ön (milimetre, merkez beynin ortası).
  */
 
+/** Kafatası ve yüz kemikleri beyni sarar; kamera çerçevesi ve kesit sınırı onlara göre değil, beyne göre kurulur. */
+const KEMIK_KATMANLARI = new Set<Katman>(['kemik', 'yuz']);
+
 const BAKIS_YONU: Record<Bakis, [number, number, number]> = {
   sol: [1, 0.12, 0],
   sag: [-1, 0.12, 0],
@@ -376,7 +379,7 @@ export class BeyinMotoru {
     const hepsi = [...this.nesneler.values()];
     const net = hepsi.filter((n) => n.hedefOpaklik > 0.5);
     if (net.length > 0 && (this.ayar.vurgula?.length ?? 0) > 0) return net;
-    const gorunen = hepsi.filter((n) => n.hedefOpaklik > 0 && n.yapi.katman !== 'kemik');
+    const gorunen = hepsi.filter((n) => n.hedefOpaklik > 0 && !KEMIK_KATMANLARI.has(n.yapi.katman));
     return gorunen.length > 0 ? gorunen : hepsi.filter((n) => n.hedefOpaklik > 0);
   }
 
@@ -441,9 +444,11 @@ export class BeyinMotoru {
     );
   }
 
+  /** Kesitin sınır kutusu: beyin katmanları yüklüyse onların kutusu; yalnızca kemik sahnesinde kemiklerin kutusu. */
   private tumKutu(): Box3 {
     const k = new Box3();
-    for (const n of this.nesneler.values()) if (this.ayar.katmanlar.includes(n.yapi.katman) && n.yapi.katman !== 'kemik') k.union(n.kutu);
+    for (const n of this.nesneler.values()) if (this.ayar.katmanlar.includes(n.yapi.katman) && !KEMIK_KATMANLARI.has(n.yapi.katman)) k.union(n.kutu);
+    if (k.isEmpty()) for (const n of this.nesneler.values()) if (this.ayar.katmanlar.includes(n.yapi.katman)) k.union(n.kutu);
     return k.isEmpty() ? new Box3(new Vector3(-70, -90, -90), new Vector3(70, 90, 90)) : k;
   }
 

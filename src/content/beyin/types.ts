@@ -68,7 +68,13 @@ export type AnimasyonAdi =
   | 'mr-gosterimi'
   | 'otonom-cikis'
   | 'kafa-ici-kanamalar'
-  | 'monro-kellie';
+  | 'monro-kellie'
+  | 'kafatasi-tabani'
+  | 'bingildaklar'
+  | 'kraniosinostoz'
+  | 'kafa-derisi-katmanlari'
+  | 'kafatasi-kiriklari'
+  | 'kraniotomi';
 
 /**
  * Kutu çeşitleri. "aklinda-kalsin", "biliyor-muydun" ve "dikkat" temel katmandadır. "derinles", "klinik",

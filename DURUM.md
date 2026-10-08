@@ -271,9 +271,17 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
 - Hazır: Anatomi 1 "Sinir sistemine ilk bakış ve anatominin dili" (sürüm 3: 7 bölüm; 17 sahne, 9 hareketli çizim
   (yeni: otonom çıkış düzeyleri, kafa içi kanamalar, Monro–Kellie), 5 vaka, 36 soru, 130 terim, 157 kaynak; okuma
   süresi temel ~31, lisans ~79, tamamı ~98 dk; UÇEP: 127, 138, 154, 156, 164, 166, 224, 227, 291).
-- **Sıradaki ders:** önce site sahibinin Ders 1'in yeni ölçüsü hakkındaki görüşü beklenir. Beğenirse Anatomi 2
-  "Kafatası: beynin kemik kalesi" (kafatası paketi modelde hazır: 8 kemik) aynı ölçüyle; sonra program sırasıyla.
+- Hazır: Anatomi 2 "Kafatası: beynin kemik kalesi" (2026-10-09; 7 bölüm: genel bakış, kubbe ve dikişler, kafa
+  derisi ve kemiğin katmanları, kafatası tabanı ve delikler, yüz-sinüsler-atlas, bebeklikten yaşlılığa ve
+  kraniosinostoz, kırıklar-görüntüleme-kafatası cerrahisi; 7 sahne, 6 hareketli çizim, 5 vaka, 36 soru, 100 terim,
+  167 kaynak; okuma süresi temel ~34, lisans ~72, tamamı ~95 dk; UÇEP: 138, 164, 165, 166). Bağımsız denetimde 6
+  yanlış ve 37 küçük sorun bulundu, hepsi düzeltildi. Modelde yeni "yuz" paketi: yüz kemikleri, dil kemiği, atlas
+  ve aksis (sürüm c5d7ea847e); kemik sahneleri kesitte kemiklerin kutusunu kullanır.
+- **Sıradaki ders:** Anatomi 3 "Beyin zarları ve zarlar arası boşluklar", aynı ölçüyle; sonra program sırasıyla.
   Site sahibi başka bir ders isterse o yapılır.
+- **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
+  eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
+  cerrahi kutuları sürer.
 - Doğrulanamayan, derse girmeyen bilgiler: hemiparezi terimleri; kabuk kalınlığının 1–4,5 mm aralığı; lakünar
   arter çapları; nimodipinin etkisi (bağımsız denetimde çıkarıldı).
 - Hiçbir şey saklanmaz: ilerleme işaretlenmez, "Kendini dene" cevapları yalnızca sayfanın belleğinde durur.
@@ -422,6 +430,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (2): Beyin Akademisi Anatomi 2 "Kafatası: beynin kemik kalesi" yayında: üç düzeyde 7 bölüm; kemikler,
+  dikişler ve pterion, kafa derisi, kafatası tabanı ve 13 delik, yüz ve sinüsler, bıngıldaklar ve kraniosinostoz,
+  kırıklar, BOS sızıntısı, BT kuralları, kraniotomi, dekompresif kraniektomi ve kranioplasti; 7 üç boyutlu sahne
+  (yüz kemikleri ve ilk iki omur modele eklendi), 6 hareketli çizim, 5 vaka, 36 soru, 167 kaynak.
 - 2026-10-09 (1): Kâğıt Katlama yayında: 24 özgün soru (ortadan, kenardan ve çapraz katlama), 5 düzey, üç alıştırma;
   öğrenci, veli ve yetişkin raporu, katlama türlerine göre 3B grafikli yol haritası; telefonda ve masaüstünde baştan
   sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: Sözel Akıl Yürütme raporunda yanlışların çoğu çeldiriciyse
@@ -455,9 +467,3 @@ En yeni üstte; en çok 10 madde tutulur.
   16 sütunlu 3B grafikli yol haritası (öneriler en belirgin altı özellik için); telefonda ve masaüstünde baştan sona
   çözüldü, rapor ve PDF açıldı.
 - 2026-10-08 (5): Şekil Akıl Yürütme yayında (sürüm 2): 24 özgün matris sorusu, 5 düzey; 3. sınıftan yetişkine.
-- 2026-10-08 (4): Beyin Akademisi kuruldu (site sahibinin isteği; 5 gün sonra uzmanlara tanıtılacak): ana sayfa,
-  iki dal (Beyin Anatomisi, Beyin Nasıl Çalışır?) ve 2 × 20 derslik program, üç boyutlu beyin gezgini (135 parça,
-  BodyParts3D 4.0, CC BY 4.0; döndürme, katmanlar, kesit, parçalara ayırma, iç yüz, renkler, dokununca bilgi kartı),
-  ders kalıbı (sade metin, sahneler, hareketli çizimler, kutular, sayılar, tablolar, sözlük, kendini dene, kaynaklar)
-  ve ilk ders: "Sinir sistemine ilk bakış ve anatominin dili". Menüde, alt bilgide ve ana sayfadaki yol gösterici
-  kutuda bağlantısı var.

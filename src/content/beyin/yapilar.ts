@@ -11,7 +11,7 @@
  */
 
 /** Modelin paket dosyaları: bir ders yalnızca gerektirdiği paketleri indirir. */
-export type Katman = 'kabuk' | 'beyaz' | 'derin' | 'sap' | 'karincik' | 'damar' | 'kemik';
+export type Katman = 'kabuk' | 'beyaz' | 'derin' | 'sap' | 'karincik' | 'damar' | 'kemik' | 'yuz';
 
 /** Gelişimsel ve anatomik bölge (Ders 1'deki dört ana bölüm ve ek gruplar). */
 export type Bolge = 'serebrum' | 'diensefalon' | 'beyin-sapi' | 'beyincik' | 'karincik' | 'damar' | 'kemik' | 'sinir';
@@ -891,7 +891,8 @@ export const YAPILAR: Yapi[] = [
       latince: 'Os occipitale',
       bolge: 'kemik',
       katman: 'kemik',
-      gorev: 'Kafatasının arka ve alt bölümünü oluşturan kemik; omurilik, tabanındaki büyük delikten geçer.',
+      gorev:
+        'Kafatasının arka ve alt bölümünü oluşturan kemik; omurilik soğanı, tabanındaki büyük delikten (foramen magnum) geçerek omuriliğe devam eder.',
     },
     ['FJ3309'],
   ),
@@ -915,9 +916,155 @@ export const YAPILAR: Yapi[] = [
       latince: 'Os ethmoidale',
       bolge: 'kemik',
       katman: 'kemik',
-      gorev: 'Burun boşluğunun tavanındaki süngerimsi kemik; koku liflerinin geçtiği delikli bir plak taşır.',
+      gorev: 'Burun boşluğunun tavanını ve yan duvarlarının üst kısmını yapan kemik; koku liflerinin geçtiği delikli bir plak taşır.',
     },
     ['FJ3199'],
+  ),
+
+  // ——— Yüz kemikleri, dil kemiği ve üst boyun omurları (ayrı katman: "yuz") ———
+  tek(
+    {
+      id: 'alt-cene-kemigi',
+      ad: 'Alt çene kemiği',
+      sade: 'mandibula',
+      latince: 'Mandibula',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev:
+        'Alt çeneyi oluşturan, kafatasının tek hareketli kemiği. Alt dişleri taşır; kondili şakak kemiğiyle çene eklemini (temporomandibular eklem) yapar. Doğumda iki parçadır, ilk yılda kaynaşır.',
+    },
+    ['FJ3289'],
+  ),
+  ...cift(
+    {
+      id: 'ust-cene-kemigi',
+      ad: 'Üst çene kemiği',
+      sade: 'maksilla',
+      latince: 'Maxilla',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev:
+        'Üst çeneyi, sert damağın büyük bölümünü ve göz çukuru tabanının bir kısmını oluşturan çift kemik. Üst dişleri taşır; içinde burun çevresi sinüslerinin en büyüğü (maksiller sinüs) bulunur.',
+    },
+    ['FJ3269'],
+    ['FJ3375'],
+  ),
+  ...cift(
+    {
+      id: 'elmacik-kemigi',
+      ad: 'Elmacık kemiği',
+      sade: 'zigomatik kemik',
+      latince: 'Os zygomaticum',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev: 'Yanak kemiği. Göz çukurunun dış duvarının çoğunu yapar; şakak kemiğinin çıkıntısıyla birleşip elmacık kemerini oluşturur.',
+    },
+    ['FJ3287'],
+    ['FJ3392'],
+  ),
+  ...cift(
+    {
+      id: 'burun-kemigi',
+      ad: 'Burun kemiği',
+      sade: 'nazal kemik',
+      latince: 'Os nasale',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev: 'Sağ ve sol burun kemikleri birleşerek burun kemerinin kemik tabanını oluşturur.',
+    },
+    ['FJ3272'],
+    ['FJ3378'],
+  ),
+  ...cift(
+    {
+      id: 'gozyasi-kemigi',
+      ad: 'Gözyaşı kemiği',
+      sade: 'lakrimal kemik',
+      latince: 'Os lacrimale',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev: 'Göz çukurunun ön iç duvarındaki küçük, dikdörtgen kemik. Gözyaşını burun boşluğuna ileten kanal buradan başlar.',
+    },
+    ['FJ3265'],
+    ['FJ3371'],
+  ),
+  ...cift(
+    {
+      id: 'damak-kemigi',
+      ad: 'Damak kemiği',
+      sade: 'palatin kemik',
+      latince: 'Os palatinum',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev:
+        'Sert damağın arka dörtte birini yapan çift kemik; burun boşluğunun yan duvarına ve göz çukurunun tabanının iç kısmına küçük birer parça verir.',
+    },
+    ['FJ3273'],
+    ['FJ3379'],
+  ),
+  tek(
+    {
+      id: 'sapan-kemigi',
+      ad: 'Sapan kemiği',
+      sade: 'vomer',
+      latince: 'Vomer',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev: 'Burun bölmesinin (septum) arka ve alt kısmını oluşturan üçgen biçimli tek kemik; üst kısmı kalbur kemiğinin dik plağıdır.',
+    },
+    ['FJ3395'],
+  ),
+  ...cift(
+    {
+      id: 'alt-burun-kavkasi',
+      ad: 'Alt burun kavkası',
+      sade: 'alt nazal konka',
+      latince: 'Concha nasalis inferior',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev:
+        'Burun boşluğunun yan duvarından içeri kıvrılan, kavkaların en büyüğü. Üst ve orta kavkalar kalbur kemiğinin parçasıyken bu ayrı bir kemiktir.',
+    },
+    ['FJ3263'],
+    ['FJ3369'],
+  ),
+  tek(
+    {
+      id: 'dil-kemigi',
+      ad: 'Dil kemiği',
+      sade: 'hiyoid',
+      latince: 'Os hyoideum',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev:
+        'Boynun üst kısmındaki U biçimli kemik. Hiçbir kemikle eklem yapmadığı için kafatasına sayılmaz; dilin tabanıdır, yutarken ve konuşurken kaslarla hareket eder.',
+    },
+    ['FJ3201'],
+  ),
+  tek(
+    {
+      id: 'atlas',
+      ad: 'Atlas (1. boyun omuru)',
+      sade: 'C1',
+      latince: 'Atlas (vertebra cervicalis I)',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev:
+        'Kafatasını taşıyan ilk boyun omuru; adını gökyüzünü omuzlarında taşıyan mitolojik Atlas’tan alır. Art kafa kemiğinin kondilleriyle eklem yapar; gövdesi ve dikensi çıkıntısı yoktur.',
+    },
+    ['FJ3176'],
+  ),
+  tek(
+    {
+      id: 'aksis',
+      ad: 'Aksis (2. boyun omuru)',
+      sade: 'C2',
+      latince: 'Axis (vertebra cervicalis II)',
+      bolge: 'kemik',
+      katman: 'yuz',
+      gorev: 'İkinci boyun omuru. Yukarı uzanan dişi (dens) atlasın ön kemerine eklemlenir; baş sağa sola dönerken eksen görevi görür.',
+    },
+    ['FJ3177'],
   ),
 ];
 
@@ -938,6 +1085,7 @@ export const KATMAN_ADLARI: Record<Katman, string> = {
   karincik: 'Karıncıklar',
   damar: 'Atardamarlar',
   kemik: 'Kafatası',
+  yuz: 'Yüz ve boyun kemikleri',
 };
 
 export const BOLGE_ADLARI: Record<Bolge, string> = {
@@ -947,7 +1095,7 @@ export const BOLGE_ADLARI: Record<Bolge, string> = {
   beyincik: 'Beyincik (serebellum)',
   karincik: 'Karıncıklar',
   damar: 'Atardamarlar',
-  kemik: 'Kafatası kemikleri',
+  kemik: 'Kafatası ve boyun kemikleri',
   sinir: 'Kafa sinirleri',
 };
 

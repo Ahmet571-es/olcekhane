@@ -1,3 +1,4 @@
+import { kafatasi } from './dersler/anatomi/kafatasi';
 import { sinirSistemineIlkBakis } from './dersler/anatomi/sinir-sistemine-ilk-bakis';
 import type { Dal, DalId, Ders, ProgramDersi, Seviye } from './types';
 
@@ -9,7 +10,7 @@ export { SEVIYE_ADLARI, SEVIYE_KITLESI } from './types';
  * ders hazırlanır. Hazır dersin içeriği `ders` alanındadır; olmayanlar programda "Hazırlanıyor" diye görünür, kendi
  * sayfaları açılmaz ve site haritasına girmez.
  */
-const HAZIR: Ders[] = [sinirSistemineIlkBakis];
+const HAZIR: Ders[] = [sinirSistemineIlkBakis, kafatasi];
 
 type Satir = [slug: string, baslik: string, ozet: string, seviye: Seviye];
 
@@ -35,7 +36,7 @@ export const DALLAR: Dal[] = [
       'Kafatasından omuriliğe, beyni oluşturan bütün yapılar: loblar ve kıvrımlar, derin çekirdekler, beyin sapı, beyincik, karıncıklar, damarlar, kafa sinirleri ve sinir yolları. Her ders gerçek bir beyin modeli üzerinde.',
     program: program('anatomi', [
       ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış ve anatominin dili', 'Merkezî ve çevresel sinir sistemi, beynin bölümleri, gri ve beyaz cevher, yönler ve kesitler.', 'temel'],
-      ['kafatasi', 'Kafatası: beynin kemik kalesi', 'Beyni saran sekiz kemik, kafatası tabanı, delikler ve içlerinden geçenler.', 'temel'],
+      ['kafatasi', 'Kafatası: beynin kemik kalesi', 'Kafatasının 22 kemiği, dikişler, kafa tabanı ve delikler, bıngıldaklar, kırıklar ve kafatası cerrahisi.', 'temel'],
       ['beyin-zarlari', 'Beyin zarları ve zarlar arası boşluklar', 'Sert zar, örümcek ağı zar ve yumuşak zar; kıvrımları ve boşlukları.', 'lisans'],
       ['karinciklar-ve-beyin-omurilik-sivisi', 'Karıncıklar ve beyin-omurilik sıvısı', 'Dört karıncık; sıvının yapılışı, dolaşımı ve emilmesi.', 'lisans'],
       ['beynin-atardamarlari', 'Beynin atardamarları ve Willis halkası', 'Karotis ve vertebrobaziler sistem; halkanın parçaları.', 'lisans'],
