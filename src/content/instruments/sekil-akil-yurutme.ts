@@ -5,6 +5,7 @@ import {
   byCol,
   byRow,
   change,
+  cycle,
   latin,
   prog,
   rotate,
@@ -27,15 +28,17 @@ import type { MatrixItem, MatrixPracticeItem, MatrixReasoningTask, TaskInstrumen
  * üçlü dağılım, ekleme-çıkarma ve iki değerin dağılımı (burada "ortak olanı silme"). Ticari testlerin soruları,
  * puanlama kuralları ya da normları kullanılmaz.
  *
- * Düzeyler (her biri 4–5 soru): 1) tek kural, tek özellik değişir; 2) dönme, ilerleme ya da üçlü dağılım gibi tek bir
- * kural; 3) iki kural; 4) ekleme-çıkarma, ortak olanı silme ya da üç kural; 5) bunların birlikte kullanıldığı sorular.
+ * Düzeyler (her biri 4–5 soru): 1) tek kural, bütün satırlarda aynı düzen; 2) dönme, ilerleme ya da üçlü dağılım gibi
+ * satırdan satıra değişen tek bir kural; 3) iki kural; 4) ekleme-çıkarma ya da ortak olanı silme, ya da ters yönlerde
+ * ilerleyen iki nokta; 5) üç kural, bu kuralların başka bir kuralla birlikte kullanılması ya da çok sayıda çizgi.
  * Zorluk, izlenmesi gereken kural sayısına ve kuralın türüne göre sıralanmıştır (Carpenter ve ark., 1990; Matzen ve
  * ark., 2010); gerçek zorluk sırası henüz veriyle denetlenmedi.
  *
- * Seçenekler (lib/instruments/matrix.ts): doğru cevabın üç özelliği birer yanlış değerle değiştirilerek 2 × 2 × 2 = 8
- * seçenek üretilir (Hu ve ark., 2021). Doğru cevabın yeri her sırada (1–8) üçer kez olacak biçimde sabit bir tohumla
+ * Seçenekler (lib/instruments/matrix.ts): doğru cevaba üç değişiklik uygulanarak 2 × 2 × 2 = 8 seçenek üretilir (Hu ve
+ * ark., 2021); yanlış değerler olabildiğince tablodaki değerlerden seçilir. Doğru cevabın yeri her sırada (1–8) üçer kez olacak biçimde sabit bir tohumla
  * belirlenir. Her sorunun tek doğru cevabı olduğu tests/sekil-akil-yurutme.test.ts'teki bağımsız çözücüyle denetlenir.
- * Sorular ya da üretim kuralı değişirse testin sürüm numarası artırılmalıdır.
+ * Sorular ya da üretim kuralı değişirse testin sürüm numarası artırılmalıdır. Sürüm 2 (2026-10-08): 4. ve 5. düzeyin
+ * soruları düzey tanımlarına göre yeniden sıralandı, yanlış seçeneklerde tablodaki değerler daha çok kullanıldı.
  *
  * Puanlama (lib/scoring/tasks.ts, scoreMatrix): doğru sayısı; düzeylere ve kural türlerine göre doğrular; ulaşılan
  * düzey (soruların en az %60'ının doğru olduğu en yüksek düzey; o düzeye kadarki sorularda da en az %60 doğru); soru
@@ -55,7 +58,7 @@ const PRACTICE_SPECS: { spec: MatrixSpec; answerAt: number; explain: string }[] 
     },
     answerAt: 2,
     explain:
-      'Her satırda aynı şekil üç kez yer alıyor: birinci satırda daireler, ikincide kareler, üçüncüde üçgenler. Hepsi siyah ve aynı büyüklükte. Eksik parça bu yüzden siyah, orta boy bir üçgen.',
+      'Her satırda aynı şekil üç kez yer alıyor: birinci satırda daireler, ikincide kareler, üçüncüde üçgenler. Hepsi siyah ve aynı büyüklükte. Eksik parça bu yüzden ötekilerle aynı büyüklükte, siyah bir üçgen.',
   },
   {
     spec: {
@@ -108,21 +111,21 @@ const SPECS: MatrixSpec[] = [
     level: 2,
     rule: 'progression',
     grid: { shape: all('arrow'), angle: prog([0, 90, 180], 90, 360), fill: all('black'), size: all(2) },
-    variants: [change('angle', 180), change('fill', 'gray'), change('size', 3)],
+    variants: [rotate(90), rotate(180), change('fill', 'gray')],
   },
   {
     key: 'sa06',
     level: 2,
     rule: 'distribution',
     grid: { shape: latin(['circle', 'square', 'triangle'], 1), fill: all('black'), size: all(2) },
-    variants: [change('shape', 'circle'), change('fill', 'gray'), change('size', 3)],
+    variants: [cycle('shape', ['square', 'circle', 'triangle', 'diamond'], 1), cycle('shape', ['square', 'circle', 'triangle', 'diamond'], 2), change('fill', 'gray')],
   },
   {
     key: 'sa07',
     level: 2,
     rule: 'progression',
     grid: { shape: all('square'), count: prog([1, 2, 3], 1), fill: all('gray') },
-    variants: [change('count', 4), change('shape', 'circle'), change('fill', 'black')],
+    variants: [cycle('count', [5, 4, 3, 2], 1), cycle('count', [5, 4, 3, 2], 2), change('fill', 'black')],
   },
   {
     key: 'sa08',
@@ -145,14 +148,14 @@ const SPECS: MatrixSpec[] = [
     level: 3,
     rule: 'distribution',
     grid: { shape: latin(['triangle', 'circle', 'cross'], 1), count: byCol([1, 2, 3]), fill: all('black') },
-    variants: [change('count', 2), change('shape', 'triangle'), change('fill', 'gray')],
+    variants: [change('count', 2), cycle('shape', ['circle', 'triangle', 'cross', 'star'], 1), cycle('shape', ['circle', 'triangle', 'cross', 'star'], 2)],
   },
   {
     key: 'sa11',
     level: 3,
     rule: 'distribution',
     grid: { shape: latin(['square', 'diamond', 'star'], 1), fill: latin(['black', 'empty', 'gray'], 2), size: all(2) },
-    variants: [change('shape', 'square'), change('fill', 'gray'), change('size', 3)],
+    variants: [cycle('shape', ['diamond', 'square', 'star', 'circle'], 1), cycle('shape', ['diamond', 'square', 'star', 'circle'], 2), change('fill', 'gray')],
   },
   {
     key: 'sa12',
@@ -166,17 +169,17 @@ const SPECS: MatrixSpec[] = [
     level: 3,
     rule: 'distribution',
     grid: { frame: latin(['circle', 'square', 'triangle'], 1), shape: latin(['star', 'cross', 'diamond'], 2), fill: all('black') },
-    variants: [change('frame', 'circle'), change('shape', 'diamond'), change('fill', 'gray')],
+    variants: [cycle('frame', ['square', 'circle', 'triangle', 'diamond'], 1), cycle('frame', ['square', 'circle', 'triangle', 'diamond'], 2), change('shape', 'diamond')],
   },
   {
     key: 'sa14',
     level: 3,
     rule: 'distribution',
     grid: { shape: all('circle'), count: byCol([3, 2, 1]), fill: latin(['gray', 'black', 'empty'], 1) },
-    variants: [change('count', 2), change('fill', 'gray'), change('shape', 'square')],
+    variants: [cycle('count', [1, 2, 3, 4], 1), cycle('count', [1, 2, 3, 4], 2), change('fill', 'gray')],
   },
 
-  /* ---------- 4. düzey: ekleme-çıkarma, ortak olanı silme ya da üç kural ---------- */
+  /* ---------- 4. düzey: ekleme-çıkarma, ortak olanı silme ya da ters yönlerde ilerleyen iki nokta ---------- */
   {
     key: 'sa15',
     level: 4,
@@ -198,14 +201,14 @@ const SPECS: MatrixSpec[] = [
     level: 4,
     rule: 'addition',
     grid: { shape: byRow(['square', 'triangle', 'circle']), count: arith([[1, 2], [2, 2], [2, 3]], '+'), fill: all('black') },
-    variants: [change('count', 4), change('shape', 'triangle'), change('fill', 'gray')],
+    variants: [cycle('count', [5, 4, 3, 2], 1), cycle('count', [5, 4, 3, 2], 2), change('shape', 'triangle')],
   },
   {
     key: 'sa17',
     level: 4,
     rule: 'addition',
     grid: { shape: byRow(['diamond', 'cross', 'circle']), count: arith([[5, 2], [4, 1], [3, 1]], '-'), fill: all('black') },
-    variants: [change('count', 4), change('shape', 'cross'), change('fill', 'gray')],
+    variants: [cycle('count', [2, 4, 3, 1], 1), cycle('count', [2, 4, 3, 1], 2), change('shape', 'cross')],
   },
   {
     key: 'sa18',
@@ -226,14 +229,21 @@ const SPECS: MatrixSpec[] = [
   {
     key: 'sa19',
     level: 4,
+    rule: 'progression',
+    grid: { dots: turn([[0], [3], [5]], 1), grayDots: turn([[5], [1], [2]], -1) },
+    variants: [change('dots', [6]), change('grayDots', [1]), swapDots()],
+  },
+
+  /* ---------- 5. düzey: üç kural, zor bir kuralla birlikte başka bir kural ya da çok sayıda çizgi ---------- */
+  {
+    key: 'sa20',
+    level: 5,
     rule: 'distribution',
     grid: { shape: latin(['circle', 'triangle', 'square'], 1), fill: latin(['black', 'gray', 'empty'], 2), count: byCol([1, 2, 3]) },
     variants: [change('shape', 'circle'), change('fill', 'empty'), change('count', 2)],
   },
-
-  /* ---------- 5. düzey: birden çok kural birlikte ---------- */
   {
-    key: 'sa20',
+    key: 'sa21',
     level: 5,
     rule: 'xor',
     grid: {
@@ -252,7 +262,7 @@ const SPECS: MatrixSpec[] = [
     variants: [toggle('dots', 6), change('shape', 'triangle'), toggle('dots', 3)],
   },
   {
-    key: 'sa21',
+    key: 'sa22',
     level: 5,
     rule: 'addition',
     grid: {
@@ -261,13 +271,6 @@ const SPECS: MatrixSpec[] = [
       fill: byRow(['gray', 'black', 'empty']),
     },
     variants: [change('count', 3), change('shape', 'star'), change('fill', 'gray')],
-  },
-  {
-    key: 'sa22',
-    level: 5,
-    rule: 'progression',
-    grid: { dots: turn([[0], [3], [5]], 1), grayDots: turn([[5], [1], [2]], -1) },
-    variants: [change('dots', [6]), change('grayDots', [1]), swapDots()],
   },
   {
     key: 'sa23',
@@ -324,7 +327,7 @@ const matrix: MatrixReasoningTask = {
   instructions: [
     'Her soruda 3 satır ve 3 sütundan oluşan bir tablo göreceksin. Tablonun sağ alttaki parçası eksik.',
     'Satırlarda şekillerin nasıl değiştiğine bak ve kuralı bul. Sonra eksik parçayı aşağıdaki sekiz seçenekten seç ve “Cevabı ver” düğmesine bas.',
-    'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok olağan. Emin olamadığında sana en uygun gelen seçeneği seç. Süre sınırı yok.',
+    'Sorular kolaydan zora doğru gider; sona doğru zorlanman olağandır. Emin olamadığında sana en uygun gelen seçeneği seç. Süre sınırı yok.',
     'Önce doğru cevabı gösterilen iki alıştırma sorusu çözeceksin.',
   ],
   practice: PRACTICE,
@@ -332,22 +335,30 @@ const matrix: MatrixReasoningTask = {
   answers: BUILT.map((b) => b.answer),
   optionDistance: BUILT.map((b) => b.distance),
   levels: [
-    { level: 1, name: '1. düzey', plain: 'Bir özelliğin satır boyunca aynı kaldığını ya da düzenli değiştiğini fark etmek.' },
-    { level: 2, name: '2. düzey', plain: 'Okun dönmesi, noktanın ilerlemesi ya da üç şeklin her satırda birer kez yer alması gibi tek bir kuralı bulmak.' },
+    { level: 1, name: '1. düzey', plain: 'Bir özelliğin satır boyunca aynı kaldığını ya da her satırda aynı biçimde değiştiğini fark etmek.' },
+    {
+      level: 2,
+      name: '2. düzey',
+      plain: 'Okun dönmesi, sayının ya da noktanın adım adım ilerlemesi, üç şeklin ya da rengin her satırda birer kez yer alması gibi tek bir kuralı bulmak.',
+    },
     { level: 3, name: '3. düzey', plain: 'Aynı parçada iki özelliğin iki ayrı kurala göre değiştiğini görüp ikisini birlikte izlemek.' },
     {
       level: 4,
       name: '4. düzey',
-      plain: 'Parçaları üst üste koyma, sayıları toplama ya da çıkarma, ortak olanı silme gibi kuralları bulmak ya da üç kuralı birlikte izlemek.',
+      plain: 'Parçaları üst üste koyma, sayıları toplama ya da çıkarma, ortak olanı silme gibi kuralları bulmak ya da ters yönlerde ilerleyen iki noktayı birlikte izlemek.',
     },
-    { level: 5, name: '5. düzey', plain: 'Bu kuralların birkaçını aynı soruda birlikte izlemek.' },
+    {
+      level: 5,
+      name: '5. düzey',
+      plain: 'Üç kuralı birlikte izlemek, ortak olanı silme ya da toplama gibi bir kuralı başka bir kuralla birlikte kullanmak ya da çok sayıda çizgiyi tek tek karşılaştırmak.',
+    },
   ],
   rapidMs: 2500,
 };
 
 export const sekilAkilYurutme: TaskInstrument = {
   slug: 'sekil-akil-yurutme',
-  version: 1,
+  version: 2,
   engine: 'tasks',
   name: 'Şekil Akıl Yürütme',
   shortName: 'Şekil akıl yürütme',
@@ -362,7 +373,7 @@ export const sekilAkilYurutme: TaskInstrument = {
   sortOrder: 49,
   tagline: 'Şekillerle kurulmuş tablolarda kuralı bulup eksik parçayı tamamlayabilmeyi, yani şekillerle akıl yürütebilmeyi ölçer.',
   description:
-    'Bu test, akıl yürütmeyi ölçmek için psikolojide yaygın olarak kullanılan “matris” düzenine dayanır: üç satır ve üç sütundan oluşan bir tablonun son parçası eksiktir; satırlardaki kuralı bulup eksik parçayı seçeneklerden seçmek gerekir. Sorular sözcük ya da sayı bilgisi gerektirmez ve kolaydan zora doğru beş düzeyde ilerler. Sorular ve seçenekler Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, akıl yürütmeyi ölçmek için psikolojide yaygın olarak kullanılan “matris” düzenine dayanır: üç satır ve üç sütundan oluşan bir tablonun son parçası eksiktir; satırlardaki kuralı bulup eksik parçayı seçeneklerden seçmek gerekir. Sorular okuma bilgisi gerektirmez (yalnızca birkaç soruda şekilleri saymak ve küçük sayıları toplayıp çıkarmak gerekir) ve kolaydan zora doğru beş düzeyde ilerler. Sorular ve seçenekler Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Eksik parçayı bul',
     paragraphs: [
@@ -373,31 +384,31 @@ export const sekilAkilYurutme: TaskInstrument = {
   },
   scales: [
     { key: 'sa_dogru', name: 'Doğru cevaplar', plain: 'Kuralı bulup eksik parçanın doğru seçildiği soruların sayısı.' },
-    { key: 'sa_duzey', name: 'Ulaşılan düzey', plain: 'Soruların çoğunun doğru cevaplandığı en yüksek zorluk düzeyi.' },
+    { key: 'sa_duzey', name: 'Ulaşılan düzey', plain: 'Soruların en az %60’ının doğru cevaplandığı en yüksek düzey; o düzeye kadarki soruların da en az %60’ı doğru olmalıdır.' },
     { key: 'sa_kural', name: 'Kural türleri', plain: 'Hangi tür kuralların daha kolay, hangilerinin daha zor bulunduğu.' },
     { key: 'sa_calisma', name: 'Çalışma biçimi', plain: 'Sorulara ne kadar zaman ayrıldığı ve zor sorularda acele edilip edilmediği.' },
   ],
   tasks: [matrix],
   science: {
     basedOn:
-      'Matris akıl yürütme düzeni: Raven Progresif Matrisler Testi’nden bu yana akıl yürütmeyi ölçmek için yaygın olarak kullanılan düzen (Raven, 2000); 3×3’lük bir tablodaki kuralı bulup eksik parçayı seçeneklerden seçmek. Sorular, Carpenter, Just ve Shell’in (1990) bu tür sorularda tanımladığı beş kural türüyle (değişmeyen özellik, düzenli değişim, üçlü dağılım, ekleme-çıkarma ve iki değerin dağılımı) Ölçekhane tarafından özgün olarak yazılmıştır; ticari testlerin soruları, puanlama kuralları ya da normları kullanılmaz. Seçenekler, tabloya bakmadan yalnızca seçeneklerden doğru cevabın bulunamayacağı bir düzenle üretilmiştir (Hu ve ark., 2021).',
+      'Matris akıl yürütme düzeni: Raven Progresif Matrisler Testi’nden bu yana akıl yürütmeyi ölçmek için yaygın olarak kullanılan düzen (Raven, 2000); 3×3’lük bir tablodaki kuralı bulup eksik parçayı seçeneklerden seçmek. Sorular, Carpenter, Just ve Shell’in (1990) bu tür sorularda tanımladığı beş kural türüyle (değişmeyen özellik, düzenli değişim, üçlü dağılım, ekleme-çıkarma ve iki değerin dağılımı, bu testte “ortak olanı silme”) Ölçekhane tarafından özgün olarak yazılmıştır; ticari testlerin soruları, puanlama kuralları ya da normları kullanılmaz. Seçenekler, tabloya bakmadan yalnızca seçeneklerden doğru cevabın bulunamayacağı bir düzenle üretilmiştir (Hu ve ark., 2021).',
     whatItMeasures:
-      'Şekillerle akıl yürütmeyi, yani daha önce görülmemiş bir düzende kuralı bulup onu yeni bir duruma uygulayabilmeyi ölçer. Carpenter ve arkadaşlarına (1990) göre bu tür sorularda kişiler arasındaki farkları en çok iki beceri belirler: soyut ilişkileri (kuralları) bulabilmek ve birden çok kuralı aynı anda akılda tutup yönetebilmek. Bu yüzden sorular, izlenmesi gereken kural sayısı arttıkça ve kural türü zorlaştıkça zorlaşır. Göz hareketleriyle yapılan çalışmalar, cevabı önce zihinde kurup sonra seçeneklere bakmanın, seçenekleri tek tek karşılaştırmaktan daha iyi sonuç verdiğini düşündürür (Laurence ve ark., 2018). Sorular sözcük ve sayı bilgisi gerektirmez; ancak hiçbir test kültürden ve eğitimden tümüyle bağımsız değildir.',
+      'Şekillerle akıl yürütmeyi, yani daha önce görülmemiş bir düzende kuralı bulup onu yeni bir duruma uygulayabilmeyi ölçer. Carpenter ve arkadaşlarına (1990) göre bu tür sorularda kişiler arasındaki farkları en çok iki beceri belirler: soyut ilişkileri (kuralları) bulabilmek ve birden çok kuralı aynı anda akılda tutup yönetebilmek. Bu yüzden sorular, izlenmesi gereken kural sayısı arttıkça ve kural türü zorlaştıkça zorlaşır. Üniversite öğrencileriyle yapılan bir göz hareketi çalışmasında, tabloyu inceleyip cevabı önce zihinde kuranların (seçenekler arasında daha az gidip gelenlerin) daha çok soruyu doğru cevapladığı görülmüştür (Laurence ve ark., 2018). Sorular okuma bilgisi gerektirmez; yalnızca birkaç soruda şekilleri saymak ve küçük sayıları toplayıp çıkarmak gerekir. Hiçbir test kültürden ve eğitimden tümüyle bağımsız değildir.',
     turkishVersion: 'Özgün test. Sorular şekillerle yazılmıştır; yönergeler Türkçedir.',
     reliability:
-      'Bu testin güvenirlik ve norm çalışması henüz yapılmadı. Sorular, izlenmesi gereken kural sayısına ve kuralın türüne göre kolaydan zora beş düzeye ayrılmıştır. Bu sıralama araştırma bulgularına dayanır: Raven matrislerinde soruların zorluğu kural sayısıyla birlikte artar (Carpenter ve ark., 1990); benzer kurallarla üretilen sorularda da ilişki sayısı arttıkça doğru cevap oranı düşer (Matzen ve ark., 2010). Soruların bu testteki gerçek zorluk sırası henüz veriyle denetlenmedi. Her sorunun tek doğru cevabı olduğu, bilinen kural türlerinin satırlarda, sütunlarda ve çaprazlarda akla gelebilecek yorumlarını tek tek deneyen bir bilgisayar programıyla denetlenmiştir.',
+      'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Sorular, izlenmesi gereken kural sayısına ve kuralın türüne göre kolaydan zora beş düzeye ayrılmıştır. Bu sıralama araştırma bulgularına dayanır: Raven matrislerinde soruların zorluğu kural sayısıyla birlikte artar (Carpenter ve ark., 1990); benzer kurallarla üretilen sorularda da ilişki sayısı arttıkça doğru cevap oranı düşer (Matzen ve ark., 2010). Soruların bu testteki gerçek zorluk sırası henüz veriyle denetlenmedi. Her sorunun tek doğru cevabı olduğu, bu kural türlerinin satırlardaki, sütunlardaki ve çaprazlardaki yorumlarını her özellik (şekil, sayı, büyüklük, renk, yön, çizgiler, noktalar) için ayrı ayrı deneyen bir bilgisayar programıyla denetlenmiştir.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi tür kurallarda ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Akıl yürütme becerisi erken ve orta çocuklukta hızla, sonra daha yavaş gelişmeyi sürdürür ve gençlik yıllarının ortasıyla sonu arasında durulur (Ferrer, O’Hare ve Bunge, 2009); bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir. Raven matrislerindeki puanların ülkeler arasında ve yıllar içinde eğitimle ilişkili olarak değiştiği gösterilmiştir (Brouwers, Van de Vijver ve Van Hemert, 2009). Bir norm Türkiye’de, yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi tür kurallarda ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Akıl yürütme becerisi erken ve orta çocuklukta hızla gelişir, gençliğin ilk yıllarına kadar daha yavaş da olsa gelişmeyi sürdürür ve gençlik yıllarının ortasıyla sonu arasında durağanlaşır (Ferrer, O’Hare ve Bunge, 2009); bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir. Raven matrislerindeki puanların ülkeler arasında ve yıllar içinde eğitimle ilişkili olarak değiştiği gösterilmiştir (Brouwers, Van de Vijver ve Van Hemert, 2009). Bir norm Türkiye’de, yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
     ageNote:
-      '3. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Süre sınırı yoktur. Sorular beş düzeyde kolaydan zora gider; en üst düzeylerdeki sorular yetişkinleri de zorlar, küçük yaştakilerin bu sorularda zorlanması beklenen bir durumdur. Telefonla da çözülebilir; şekillerin rahat görülmesi için büyük bir ekran önerilir.',
+      '3. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Süre sınırı yoktur. Sorular beş düzeyde kolaydan zora gider; en üst düzeylerdeki sorular yetişkinleri de zorlayabilir, küçük yaştakilerin bu sorularda zorlanması beklenen bir durumdur. Telefonla da çözülebilir; şekillerin rahat görülmesi için büyük bir ekran önerilir.',
     license: 'Özgün test. Sorular, seçenekler, puanlama ve rapor Ölçekhane tarafından geliştirilmiştir.',
     limitations: [
       'Zekâ puanı (IQ) vermez ve tanı koymaz; kapsamlı bir değerlendirme yalnızca uzmanlarca, geçerliği gösterilmiş testlerle yapılabilir.',
       'Akıl yürütmenin yalnızca şekillerle yapılan yönünü ölçer; sözel ve sayısal akıl yürütme, bilgi, bellek ve hız gibi öteki beceriler hakkında bilgi vermez.',
       'Sonuç; o günkü yorgunluk, isteklilik, dikkat ve ekranın büyüklüğünden etkilenir. Test yeniden çözüldüğünde soruları hatırlamak sonucu yükseltebilir.',
       'Okul deneyimi ve bu tür bulmacalara alışkın olmak sonucu etkileyebilir; test kültürden ve eğitimden tümüyle bağımsız değildir (Brouwers ve ark., 2009).',
-      'Bu testin güvenirlik ve norm çalışması henüz yapılmadı.',
+      'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı.',
     ],
     citations: [
       {

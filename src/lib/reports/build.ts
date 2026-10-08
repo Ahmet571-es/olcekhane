@@ -1992,6 +1992,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const doubt = rapid || samePos;
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
+  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
 
   /* Doğru cevaplar */
   let accText: string;
@@ -2000,8 +2001,8 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   const higherPassed = r.levels.slice(1).some(passed);
   if (chance) {
     accText = v(
-      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${MATRIX_CHANCE_MAX} ya da daha az). Sorular çok zor gelmiş, yönergeyi tam anlamamış ya da sorulara yeterince bakmadan seçmiş olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.`,
-      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${MATRIX_CHANCE_MAX} ya da daha az). Sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorulara yeterince bakılmadan seçilmiş olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.`,
+      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${MATRIX_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da sorulara yeterince bakmadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.`,
+      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${MATRIX_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da sorulara yeterince bakılmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.`,
     );
   } else {
     const allHigh = r.levels.every((l) => l.n - l.correct <= 1);
@@ -2011,27 +2012,39 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
         `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor sorulardaki birden çok kuralı da birlikte izleyebildi.`,
       );
     } else if (easyMissed >= 2 && higherPassed) {
+      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hepsini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
       accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. 1. düzeydeki kolay sorulardan ${easyMissed} tanesini yanlış cevapladın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun. Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz 1. düzeydeki kolay sorulardan ${easyMissed} tanesini yanlış cevapladı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu. Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
+        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. ${capTr(which)} yanlış cevapladın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun. Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
+        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz ${which} yanlış cevapladı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu. Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
       );
     } else {
+      // Kolay (1–2) ve zor (4–5) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
       const share = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const declined = share(r.levels.filter((l) => l.level <= 2)) - share(r.levels.filter((l) => l.level >= 4)) >= 0.15;
-      accText = declined
-        ? v(
-            `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır.`,
-            `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır (Carpenter, Just ve Shell, 1990).`,
-          )
-        : v(
-            `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı. Genellikle sorular zorlaştıkça doğru cevaplar azalır; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-            `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı. Genellikle sorular zorlaştıkça doğru cevaplar azalır; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-          );
+      const easyLevels = r.levels.filter((l) => l.level <= 2);
+      const gap = share(easyLevels) - share(r.levels.filter((l) => l.level >= 4));
+      const easySlips = easyLevels.some((l) => l.correct < l.n);
+      if (gap >= 0.15) {
+        accText = v(
+          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır.`,
+          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır (Carpenter, Just ve Shell, 1990).`,
+        );
+      } else if (gap <= -0.15) {
+        accText = v(
+          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
+          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
+        );
+      } else {
+        const slip = easySlips ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '';
+        accText = v(
+          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
+          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
+        );
+      }
     }
     if (r.wrong >= MATRIX_NEAR_MIN && r.nearMisses / r.wrong >= MATRIX_NEAR_SHARE) {
       accText += v(
-        ` Yanlış cevaplarının ${r.nearMisses === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.nearMisses} tanesinde)`} seçtiğin parça doğru cevaptan yalnızca bir özellikte ayrılıyordu: kuralların çoğunu bulup birini gözden kaçırmışsın. Cevabı vermeden önce şekli, sayıyı, rengi ve yönü tek tek kontrol etmek işine yarar.`,
-        ` Yanlış cevaplarının ${r.nearMisses === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.nearMisses} tanesinde)`} seçtiği parça doğru cevaptan yalnızca bir özellikte ayrılıyordu: kuralların çoğunu bulup birini gözden kaçırmış. Bu tür sorularda birden çok kuralı aynı anda akılda tutmak gerekir.`,
+        ` Yanlış cevaplarının ${r.nearMisses === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.nearMisses} tanesinde)`} seçtiğin parça doğru cevaptan yalnızca bir özellikte ayrılıyordu: kuralların çoğunu bulup birini gözden kaçırmış olabilirsin. Cevabı vermeden önce şekli, sayıyı, rengi ve yönü tek tek kontrol etmek işine yarar.`,
+        ` Yanlış cevaplarının ${r.nearMisses === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.nearMisses} tanesinde)`} seçtiği parça doğru cevaptan yalnızca bir özellikte ayrılıyordu: kuralların çoğunu bulup birini gözden kaçırmış olabilir. Bu tür sorularda birden çok kuralı aynı anda akılda tutmak gerekir.`,
       );
     }
     if (doubt) {
@@ -2053,8 +2066,8 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
       headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
       detail: `1. düzey ${first.correct}/${first.n}`,
       text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct} tanesini doğru buldun ve hiçbir düzeyde soruların çoğunu doğru bulamadın; bu yüzden bir düzey belirtilmedi. Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct} tanesini doğru buldu ve hiçbir düzeyde soruların çoğunu doğru bulamadı; bu yüzden bir düzey belirtilmedi. Bu; dikkatin dağılmasından, acele etmekten ya da yönergenin tam anlaşılmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
+        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.`,
+        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. Bu; dikkatin dağılmasından, acele etmekten ya da yönergenin tam anlaşılmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
       ),
     };
   } else {
@@ -2086,7 +2099,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
     duzey = {
       ...card('sa_duzey'),
       headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${Math.round(MATRIX_LEVEL_PASS * 100)}’ı doğru`,
+      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${pass}’ı doğru`,
       text,
     };
   }
@@ -2095,10 +2108,14 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   const ruleLine = r.rules.map((x) => `${MATRIX_RULES[x.rule].name} ${x.correct}/${x.n}`).join(' · ');
   const good = r.rules.filter(passed).map((x) => x.rule);
   const hard = r.rules.filter((x) => !passed(x)).map((x) => x.rule);
-  const rough = v(
-    ' Her kural türü birkaç soruya dayanır ve türler farklı düzeylere dağılmıştır; bu karşılaştırma kaba bir göstergedir.',
-    ' Her kural türü birkaç soruya dayanır ve türler farklı zorluk düzeylerine dağılmıştır; bu yüzden bu karşılaştırma kaba bir göstergedir.',
-  );
+  // Kural türleri düzeylerle iç içedir (ör. değişmeyen özellik en kolay, ortak olanı silme en zor düzeylerde); bu söylenir.
+  const levelsOf = (rule: MatrixRule) => [...new Set(task.items.filter((it) => it.rule === rule).map((it) => it.level))].sort((a, b) => a - b);
+  const where = (rule: MatrixRule) => {
+    const ls = levelsOf(rule);
+    return ls.length === 1 ? `yalnızca ${ls[0]}. düzeyde` : `${joinTr(ls.map((l) => `${l}.`))} düzeylerde`;
+  };
+  const example = `ör. ${ruleList(['constant'])} soruları ${where('constant')}, ${ruleList(['xor'])} soruları ${where('xor')}`;
+  const rough = ` Her kural türü birkaç soruya dayanır ve türler düzeylerle iç içedir (${example}); bu yüzden bu karşılaştırma kaba bir göstergedir.`;
   let kural: CognitiveBlock;
   if (chance) {
     kural = { ...card('sa_kural'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.' };
@@ -2123,8 +2140,8 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
       text = v(`Hiçbir kural türünde soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz hiçbir kural türünde soruların çoğunu doğru bulamadı. ${needs}`);
     } else {
       text = v(
-        `${ruleList(good)} ${good.length > 1 ? 'kurallarını' : 'kuralını'} içeren soruların çoğunu doğru buldun; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandın. ${needs}`,
-        `Çocuğunuz ${ruleList(good)} ${good.length > 1 ? 'kurallarını' : 'kuralını'} içeren soruların çoğunu doğru buldu; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandı. ${needs}`,
+        `${ruleList(good)} ${good.length > 1 ? 'kurallarına' : 'kuralına'} dayanan soruların çoğunu doğru buldun; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandın. ${needs}`,
+        `Çocuğunuz ${ruleList(good)} ${good.length > 1 ? 'kurallarına' : 'kuralına'} dayanan soruların çoğunu doğru buldu; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandı. ${needs}`,
       );
       if (hard.includes('addition') || hard.includes('xor')) {
         text +=
@@ -2145,16 +2162,16 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   if (rapid) {
     issues.push(
       v(
-        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid} tanesinde 2,5 saniyeden kısa sürede cevap verdin. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid} tanesinde 2,5 saniyeden kısa sürede cevap verdi. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin edilmiş olabilir.`,
+        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} 2,5 saniyeden kısa sürede cevap verdin. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} 2,5 saniyeden kısa sürede cevap verdi. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin edilmiş olabilir.`,
       ),
     );
   }
   if (samePos) {
     issues.push(
       v(
-        `Cevaplarının ${r.samePosition} tanesinde aynı sıradaki seçeneği seçtin; sorulara bakmadan hep aynı yere basmış olabilirsin.`,
-        `Çocuğunuz cevaplarının ${r.samePosition} tanesinde aynı sıradaki seçeneği seçti; sorulara bakılmadan hep aynı yere basılmış olabilir.`,
+        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; sorulara bakmadan hep aynı yere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; sorulara bakılmadan hep aynı yere basılmış olabilir.`,
       ),
     );
   }
@@ -2172,10 +2189,15 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
           'Zor sorulara kolay sorulardan daha çok zaman ayırdın. Zor bir soruda daha uzun düşünmek iyi bir çalışma biçimidir: kuralları tek tek bulmak zaman alır.',
           'Çocuğunuz zor sorulara kolay sorulardan daha çok zaman ayırdı. Zor bir soruda daha uzun düşünmek iyi bir çalışma biçimidir: kuralları tek tek bulmak zaman alır.',
         );
-      } else if (r.rtHard < r.rtEasy && hardAcc < 0.5) {
+      } else if (r.rtHard < r.rtEasy && hardAcc <= 0.5) {
         pace = v(
           'Zor sorularda kolay sorulardakinden daha kısa sürede cevap verdin ve bu sorularda doğru cevaplar azdı. Zor sorulara daha çok zaman ayırmak, kuralları tek tek bulmana yardım edebilir.',
           'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu sorularda doğru cevaplar azdı. Zor sorularda vazgeçmiş ya da acele etmiş olabilir; daha çok zaman ayırmak kuralları bulmasına yardım edebilir.',
+        );
+      } else if (r.rtHard * 1.5 <= r.rtEasy) {
+        pace = v(
+          'Zor sorularda kolay sorulardakinden daha kısa sürede cevap verdin ve bu soruların çoğunu yine doğru buldun.',
+          'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
         pace = v('Kolay ve zor sorularda birbirine yakın sürelerde cevap verdin.', 'Çocuğunuz kolay ve zor sorularda birbirine yakın sürelerde cevap verdi.');

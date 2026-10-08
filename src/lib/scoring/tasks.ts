@@ -1414,7 +1414,7 @@ export function matrixQualityNotes(mx: MatrixResult): string[] {
   }
   if (matrixRapid(mx)) {
     notes.push(
-      `Şekil akıl yürütme testinde 3. düzey ve üstündeki ${mx.rapidOf} sorunun ${mx.rapid} tanesinde 2,5 saniyeden kısa sürede cevap verilmiş; bu sorularda tabloya bakmadan seçilmiş olabilir.`,
+      `Şekil akıl yürütme testinde 3. düzey ve üstündeki ${mx.rapidOf} sorunun ${mx.rapid === mx.rapidOf ? 'hepsinde' : `${mx.rapid} tanesinde`} 2,5 saniyeden kısa sürede cevap verilmiş; bu sorularda tabloya bakmadan seçilmiş olabilir.`,
     );
   }
   if (matrixSamePosition(mx)) {

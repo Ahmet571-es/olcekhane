@@ -716,8 +716,8 @@ const sekilAkilYurutme: TaskRoadmapTemplate = {
       'Karmaşık bir soruda her şeye birden bakmak yerine özellikleri tek tek izlemesini önerin: önce şekle, sonra sayıya, sonra renge ve yöne. Her özelliğin kuralını ayrı ayrı bulmak, çocuğunuzun birden çok kuralı karıştırmadan akılda tutmasını kolaylaştırır.',
     )),
     support(1, 'kur', 'Cevabı önce kendin kur', 'Yöntem', t(
-      'Seçeneklere bakmadan önce eksik parçanın nasıl olması gerektiğini zihninde kur; sonra seçeneklerde onu ara. Araştırmalar, cevabı önce zihinde kurmanın seçenekleri tek tek karşılaştırmaktan daha iyi sonuç verdiğini düşündürür.',
-      'Çocuğunuza seçeneklere bakmadan önce eksik parçanın nasıl olması gerektiğini zihninde kurmasını, sonra seçeneklerde onu aramasını önerin. Araştırmalar, cevabı önce zihinde kurmanın seçenekleri tek tek karşılaştırmaktan daha iyi sonuç verdiğini düşündürür.',
+      'Seçeneklere bakmadan önce eksik parçanın nasıl olması gerektiğini zihninde kur; sonra seçeneklerde onu ara. Bir araştırmada, cevabı önce zihinde kurup seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
+      'Çocuğunuza seçeneklere bakmadan önce eksik parçanın nasıl olması gerektiğini zihninde kurmasını, sonra seçeneklerde onu aramasını önerin. Bir araştırmada, cevabı önce zihinde kurup seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
     )),
     support(2, 'soyle', 'Kuralı söyle ya da yaz', 'Alışkanlık', t(
       'Bir örüntünün kuralını bulduğunda onu kısa bir cümleyle söyle ya da yaz: “Her adımda bir artıyor.” Kuralı sözcüklerle söylemek, onu akılda tutmanı ve doğru olup olmadığını kontrol etmeni kolaylaştırabilir.',

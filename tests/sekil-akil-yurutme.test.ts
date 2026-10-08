@@ -175,12 +175,12 @@ describe('Şekil akıl yürütme: sorular', () => {
       .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, distance: task.optionDistance }))
       .digest('hex')
       .slice(0, 16);
-    expect({ version: sekilAkilYurutme.version, hash }).toEqual({ version: 1, hash: SORU_IZI });
+    expect({ version: sekilAkilYurutme.version, hash }).toEqual({ version: 2, hash: SORU_IZI });
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = 'f0c200732735e561';
+/** Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
+const SORU_IZI = 'b5889e3e11e0f1cd';
 
 describe('Şekil akıl yürütme: puanlama', () => {
   const all = (fn: (i: number) => Partial<MatrixTrialInput> = () => ({})): MatrixTrialInput[] =>
@@ -289,7 +289,10 @@ describe('Şekil akıl yürütme: rapor', () => {
     expect(r.student.items[1].text).toContain('3. düzeye kadar soruların çoğunu doğru cevapladın');
     expect(r.student.items[1].text).toContain('4. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda parçaları üst üste koyma');
     expect(r.parent.items[0].text).toContain('(Carpenter, Just ve Shell, 1990)');
-    expect(r.student.items[2].text).toContain('“ortak olanı silme” kuralında zorlandın. Bu kuralda iki parçada da bulunan');
+    expect(r.student.items[2].text).toContain('“ekleme ve çıkarma” ve “ortak olanı silme” kurallarında zorlandın. “Ekleme ve çıkarma” kuralında üçüncü parçanın');
+    // Kural türlerinin düzeylerle iç içe olduğu, soruların gerçek düzeylerine göre söylenir.
+    expect(r.student.items[2].text).toContain('ör. “değişmeyen özellik” soruları yalnızca 1. düzeyde, “ortak olanı silme” soruları 4. ve 5. düzeylerde');
+    expect(task.items.filter((it) => it.rule === 'constant').every((it) => it.level === 1)).toBe(true);
   });
 
   it('durumlar: rastgele düzey, kolay sorularda yanılma, düz profil; yakın hata; çok hızlı; hep aynı sıra', () => {
@@ -316,8 +319,8 @@ describe('Şekil akıl yürütme: rapor', () => {
     expect(far.student.items[0].text).not.toContain('bir özellikte ayrılıyordu');
     // Zor sorularda çok hızlı: uyarı ve kartlar aynı şeyi söyler; hız karşılaştırması yapılmaz.
     const rapid = evaluate(SLUG, matrixBody((q) => ({ choice: q.level >= 3 ? optionAt(q.i, 2) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })));
-    expect(rapid.student.cautions.join(' ')).toContain('15 sorunun 15 tanesinde 2,5 saniyeden kısa sürede');
-    expect(rapid.student.items[3].text).toContain('15 sorunun 15 tanesinde 2,5 saniyeden kısa sürede cevap verdin');
+    expect(rapid.student.cautions.join(' ')).toContain('15 sorunun hepsinde 2,5 saniyeden kısa sürede');
+    expect(rapid.student.items[3].text).toContain('15 sorunun hepsinde 2,5 saniyeden kısa sürede cevap verdin');
     expect(rapid.student.items[3].text).not.toMatch(/zaman ayırdın|yakın sürelerde/);
     // Bir saniyeden kısa tipik süre "0 saniye" diye yazılmaz.
     const blink = evaluate(SLUG, matrixBody((q) => ({ choice: q.answer, rtMs: 300 })));
@@ -327,7 +330,21 @@ describe('Şekil akıl yürütme: rapor', () => {
     // Hep aynı sıra.
     const same = evaluate(SLUG, matrixBody(() => ({ choice: 1, rtMs: 4000 })));
     expect(same.parent.cautions.join(' ')).toContain('aynı sıradaki seçenek seçilmiş');
-    expect(same.student.items[3].text).toContain('Cevaplarının 24 tanesinde aynı sıradaki seçeneği seçtin');
+    expect(same.student.items[3].text).toContain('Bütün cevaplarında aynı sıradaki seçeneği seçtin');
+    // Zor düzeylerde kolaylardan daha çok doğru: "birbirine yakın" denmez.
+    const upside = evaluate(SLUG, matrixBody((q) => ({ choice: q.level === 2 && matrixRank(q) < 4 ? optionAt(q.i, 2) : q.answer, rtMs: 15_000 })));
+    expect(upside.student.items[0].text).toContain('Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin');
+    // Kolay sorularda yanlış yokken "kolay sorulardaki yanlışlar" denmez.
+    const dip = evaluate(SLUG, matrixBody((q) => ({ choice: q.level === 3 && matrixRank(q) < 4 ? optionAt(q.i, 2) : q.answer, rtMs: 15_000 })));
+    expect(dip.student.items[0].text).toContain('birbirine yakındı');
+    expect(dip.student.items[0].text).not.toContain('Kolay sorulardaki yanlışlar');
+    // Zor sorular hızlı ve doğru: "yakın sürelerde" denmez.
+    const quickHard = evaluate(SLUG, matrixBody((q) => ({ choice: q.answer, rtMs: q.level <= 2 ? 26_000 : 9000 })));
+    expect(quickHard.student.items[3].text).toContain('Zor sorularda kolay sorulardakinden daha kısa sürede cevap verdin ve bu soruların çoğunu yine doğru buldun.');
+    // Hiçbir düzey ölçüte uymuyorsa bunun nedeni ölçütle söylenir (bir düzeyde soruların çoğu doğru olsa bile).
+    const none = evaluate(SLUG, matrixBody((q) => ({ choice: matrixRank(q) < [2, 3, 2, 1, 0][q.level - 1] ? q.answer : optionAt(q.i, 2), rtMs: 15_000 })));
+    expect(none.student.items[1].badge).toBe('1. düzeyde zorlandın');
+    expect(none.student.items[1].text).toContain('bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {

@@ -9,11 +9,13 @@ import type { MatrixCell, MatrixFill, MatrixFrame, MatrixItem, MatrixRule, Matri
  * dokuzuncu parçası doğru cevaptır.
  *
  * Seçenekler (Hu ve ark., 2021, "attribute bisection tree" düzeni): doğru cevabın üç özelliği için birer yanlış değer
- * seçilir ve sekiz seçenek, bu üç değişikliğin bütün birleşimleridir (2 × 2 × 2). Böylece her değiştirilen özellikte
- * seçeneklerin yarısı doğru, yarısı yanlış değeri taşır: seçeneklere bakarak (tabloyu çözmeden) doğru cevabı bulmanın
- * bir yolu yoktur ve hiçbir yanlış seçenek, tablodaki kural düşünülmeden elenemez. Yanlış değerler çoğunlukla tablodaki
- * değerlerdir (ör. soldaki parçanın tekrarı, kuralın ters yönde uygulanması, birleştirmede ortak çizginin silinmemesi):
- * bunlar bu tür sorularda sık yapılan hatalardır.
+ * seçilir ve sekiz seçenek, bu üç değişikliğin bütün birleşimleridir (2 × 2 × 2; aynı özelliğe iki değişiklik de
+ * uygulanabilir, ör. `cycle`). Böylece her özellikte doğru cevabın değeri seçeneklerin en çok yarısında bulunur:
+ * seçeneklere bakarak (tabloyu çözmeden) doğru cevabı bulmanın bir yolu yoktur. Yanlış değerler olabildiğince tablodaki
+ * değerlerdir (ör. soldaki parçanın tekrarı, kuralın ters yönde uygulanması, birleştirmede ortak çizginin silinmemesi,
+ * çıkarmada toplama): bunlar bu tür sorularda sık yapılan hatalardır. Tek özelliğin değiştiği kolay sorularda tabloda
+ * başka değer olmadığı için bazı yanlış seçenekler tabloda hiç görülmeyen bir özellik taşır (ör. hepsi siyahken gri);
+ * bu seçenekler kural bulunmadan da elenebilir.
  *
  * Her sorunun tek doğru cevabı olduğu, tablodan bağımsız bir çözücüyle denetlenir (tests/sekil-akil-yurutme.test.ts):
  * bilinen kural türlerinin satır, sütun ve çapraz yönlerdeki bütün yorumları aynı cevabı vermelidir.
@@ -93,6 +95,22 @@ export function shift(attr: 'dots' | 'grayDots', by: number): Variant {
 export function rotate(by: number): Variant {
   return { name: `angle+${by}`, apply: (c) => ({ ...c, angle: ((((c.angle ?? 0) + by) % 360) + 360) % 360 }) };
 }
+/**
+ * Bir özelliğin değeri, verilen dört değerlik listede `steps` adım ileri kaydırılır (sonda başa döner). Aynı listeyle +1
+ * ve +2 adımlık iki değişiklik birlikte kullanılınca dört farklı değer çıkar: doğru cevap listenin başında olmalıdır.
+ * Böylece yanlış değerlerin çoğu tablodaki değerlerden seçilebilir.
+ */
+export function cycle<K extends 'shape' | 'count' | 'frame'>(attr: K, values: readonly NonNullable<MatrixCell[K]>[], steps: number): Variant {
+  return {
+    name: `${attr}~${steps}`,
+    apply: (c) => {
+      const i = values.indexOf(c[attr] as NonNullable<MatrixCell[K]>);
+      if (i < 0) throw new Error(`cycle: ${String(c[attr])} listede yok`);
+      return { ...c, [attr]: values[(i + steps) % values.length] };
+    },
+  };
+}
+
 /** Siyah ve gri noktalar yer değiştirir. */
 export function swapDots(): Variant {
   return { name: 'dots<->grayDots', apply: (c) => ({ ...c, dots: c.grayDots ?? [], grayDots: c.dots ?? [] }) };
@@ -164,7 +182,8 @@ export function buildMatrixItem(spec: MatrixSpec, answerAt: number, rand: () => 
 
 /** Çizimde kullanılan renkler: kâğıt gibi her temada aynı (siyah, gri ve beyaz). */
 export const MATRIX_INK = '#1b2333';
-export const MATRIX_GRAY = '#9aa1ad';
+/** Gri: beyaz zeminde 3:1'in üstünde karşıtlık (WCAG, çizimler), siyahtan da açıkça ayrılır. */
+export const MATRIX_GRAY = '#8b929e';
 export const MATRIX_PAPER = '#ffffff';
 
 export type MatrixPrim =
@@ -199,7 +218,7 @@ const LAYOUT: Record<number, [number, number][]> = {
   ],
 };
 /** Sorudaki en büyük şekil sayısına göre şekillerin yarıçapı: bir sorudaki bütün şekiller aynı büyüklükte çizilir. */
-const RADIUS: Record<number, number> = { 1: 34, 2: 18, 3: 15, 4: 15, 5: 12.5 };
+const RADIUS: Record<number, number> = { 1: 34, 2: 18, 3: 15, 4: 15, 5: 11.5 };
 /** Büyüklük özelliğinin yarıçapa etkisi (yalnızca tek şekilli sorularda değişir). */
 const SIZE: Record<number, number> = { 1: 0.5, 2: 0.75, 3: 1 };
 const STROKE = 2.6;

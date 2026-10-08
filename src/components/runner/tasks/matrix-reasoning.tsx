@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MATRIX_INK, MATRIX_PAPER, cellPrims, describeCell, itemMaxCount } from '@/lib/instruments/matrix';
+import { MATRIX_GRAY, MATRIX_INK, MATRIX_PAPER, cellPrims, describeCell, itemMaxCount } from '@/lib/instruments/matrix';
 import type { MatrixCell, MatrixItem, MatrixPracticeItem, MatrixReasoningTask } from '@/lib/instruments/types';
 import type { MatrixTrialInput } from '@/lib/scoring/tasks';
 import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
@@ -58,9 +58,13 @@ function Grid({ item, filled, tone }: { item: MatrixItem; filled: MatrixCell | n
         aria-live="polite"
       >
         {filled ? (
-          <MatrixCellView cell={filled} maxCount={max} label={`3. satır, 3. sütun (eksik parça): seçtiğin ${describeCell(filled)}`} />
+          <MatrixCellView
+            cell={filled}
+            maxCount={max}
+            label={`3. satır, 3. sütun (eksik parça): ${tone === 'right' ? 'doğru cevap' : 'seçtiğin'} ${describeCell(filled)}`}
+          />
         ) : (
-          <span className="font-display text-4xl font-bold text-[#9aa1ad]" role="img" aria-label="3. satır, 3. sütun: eksik parça">
+          <span className="font-display text-4xl font-bold" style={{ color: MATRIX_GRAY }} role="img" aria-label="3. satır, 3. sütun: eksik parça">
             ?
           </span>
         )}
@@ -69,20 +73,39 @@ function Grid({ item, filled, tone }: { item: MatrixItem; filled: MatrixCell | n
   );
 }
 
-/** Sekiz seçenek: dokununca seçilir; cevap "Cevabı ver" ile verilir. */
+/**
+ * Sekiz seçenek: dokununca seçilir; cevap "Cevabı ver" ile verilir. Klavyede seçenekler tek bir sekme durağıdır: ok
+ * tuşları seçimi değiştirir, Enter cevabı verir (1–8 tuşları da seçer).
+ */
 function Options({
   item,
   selected,
   onSelect,
+  onConfirm,
   marks,
 }: {
   item: MatrixItem;
   selected: number | null;
   onSelect?: (i: number) => void;
+  onConfirm?: (now: number) => void;
   /** Alıştırmanın geri bildiriminde: doğru seçenek ve (yanlışsa) seçilen seçenek. */
   marks?: { right: number; chosen: number };
 }) {
   const max = itemMaxCount(item);
+  const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const n = item.options.length;
+  const onKey = (e: React.KeyboardEvent<HTMLButtonElement>, i: number) => {
+    const step: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 4, ArrowUp: -4 };
+    if (e.key in step) {
+      e.preventDefault();
+      const next = (i + step[e.key] + n) % n;
+      onSelect?.(next);
+      refs.current[next]?.focus();
+    } else if (e.key === 'Enter' && selected !== null) {
+      e.preventDefault();
+      onConfirm?.(e.timeStamp);
+    }
+  };
   return (
     <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Seçenekler">
       {item.options.map((o, i) => {
@@ -93,9 +116,14 @@ function Options({
         return (
           <button
             key={i}
+            ref={(el) => {
+              refs.current[i] = el;
+            }}
             type="button"
             role="radio"
             aria-checked={on}
+            tabIndex={(selected ?? 0) === i ? 0 : -1}
+            onKeyDown={(e) => onKey(e, i)}
             aria-label={`Seçenek ${i + 1}: ${describeCell(o)}${right ? ' (doğru cevap)' : wrongPick ? ' (senin seçtiğin)' : ''}`}
             disabled={!onSelect}
             onClick={() => onSelect?.(i)}
@@ -131,6 +159,8 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
   const hiddenMs = useRef(0);
   const hiddenSince = useRef<number | null>(null);
   const top = useRef<HTMLDivElement>(null);
+  /** Cevap verildikten sonra klavye odağı yeni sorunun seçeneklerine taşınır ("Cevabı ver" düğmesi devre dışı kalır). */
+  const refocus = useRef(false);
   const running = step === 'practice' || step === 'test';
   const list: MatrixItem[] = step === 'practice' ? task.practice : task.items;
   const item = list[index];
@@ -147,6 +177,10 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
     });
     const el = top.current;
     if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: 'start' });
+    if (refocus.current && el) {
+      refocus.current = false;
+      el.querySelector<HTMLButtonElement>('[role="radio"][tabindex="0"]')?.focus({ preventScroll: true });
+    }
     return () => {
       alive = false;
     };
@@ -166,9 +200,9 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
     return () => document.removeEventListener('visibilitychange', on);
   }, [running]);
 
-  function confirm() {
+  /** `now`: cevabın verildiği an (olayın zaman damgası; performance.now ile aynı saat). */
+  function confirm(now: number) {
     if (selected === null || !item || feedback) return;
-    const now = performance.now();
     const hidden = hiddenMs.current + (hiddenSince.current !== null ? now - hiddenSince.current : 0);
     const rtMs = Math.min(MAX_RT_MS, Math.max(0, Math.round(now - shownAt.current - hidden)));
     if (step === 'practice') {
@@ -178,9 +212,15 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
       return;
     }
     out.current.push({ index, response: selected + 1, rtMs });
+    refocus.current = focusInside(top.current);
     setSelected(null);
     if (index + 1 < task.items.length) setIndex(index + 1);
     else onDone(out.current);
+  }
+
+  /** Odak görevin içinde mi (klavyeyle çözülüyorsa)? */
+  function focusInside(box: HTMLElement | null): boolean {
+    return !!box && box.contains(document.activeElement);
   }
 
   function nextPractice() {
@@ -196,7 +236,7 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
       setSelected(Number(e.key) - 1);
     } else if (e.key === 'Enter' && selected !== null && !(e.target instanceof HTMLButtonElement)) {
       e.preventDefault();
-      confirm();
+      confirm(e.timeStamp);
     }
   });
 
@@ -222,11 +262,14 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {task.practice.length} sorunun {practiceScore === 0 ? 'hiçbirini' : practiceScore === task.practice.length ? 'hepsini' : `${practiceScore} tanesini`} doğru
-          cevapladın.{' '}
+          {practiceScore === 0
+            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            : practiceScore === task.practice.length
+              ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
+              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
           {low
             ? 'Satırlarda neyin aynı kaldığına ve neyin değiştiğine dikkatle bak. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
         </p>
         <p className="measure text-ink-2">
           {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
@@ -282,9 +325,9 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
         ) : (
           <>
             <p className="text-center text-ink-2">{selected === null ? 'Eksik parçaya uyan seçeneğe dokun.' : `${selected + 1}. seçeneği seçtin. Emin olunca cevabı ver.`}</p>
-            <Options item={item} selected={selected} onSelect={setSelected} />
+            <Options item={item} selected={selected} onSelect={setSelected} onConfirm={confirm} />
             <div className="flex justify-center">
-              <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={confirm}>
+              <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>
                 Cevabı ver
               </button>
             </div>
