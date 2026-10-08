@@ -4,9 +4,10 @@ import { notFound } from 'next/navigation';
 import { DersIcerigi, dersSuresi } from '@/components/beyin/ders-icerigi';
 import { KendiniDene } from '@/components/beyin/kendini-dene';
 import { ModelNotu } from '@/components/beyin/model-notu';
+import { OkumaDuzeyiSaglayici, OkumaDuzeyiSecici } from '@/components/beyin/okuma-duzeyi';
 import { JsonLd } from '@/components/seo/json-ld';
 import { PageGuide } from '@/components/site/page-guide';
-import { BEYIN_YOLU, dalBul, dersBul, hazirDersler, komsuDersler } from '@/content/beyin';
+import { BEYIN_YOLU, SEVIYE_ADLARI, dalBul, dersBul, hazirDersler, komsuDersler } from '@/content/beyin';
 import { SITE_NAME, siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
@@ -80,12 +81,17 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
 
       <header className="flex max-w-4xl flex-col gap-5 border-b border-rule pb-10">
         <p className="kicker">
-          {dalBilgisi.ad} · Ders {d.sira} / {dalBilgisi.program.length}
+          {dalBilgisi.sira}. bölüm: {dalBilgisi.kisaAd} · Ders {d.sira} / {dalBilgisi.program.length}
         </p>
         <h1 className="t-h1 font-display font-bold">{d.baslik}</h1>
         <p className="t-lede measure">{d.giris}</p>
-        <p className="t-meta">
-          Yaklaşık {dakika} dakika · Güncelleme: <time dateTime={d.guncelleme}>{tarih(d.guncelleme)}</time>
+        <p className="t-meta flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="beyin-seviye">Seviye: {SEVIYE_ADLARI[d.seviye]}</span>
+          <span>Yaklaşık {dakika} dakika</span>
+          <span>
+            Güncelleme: <time dateTime={d.guncelleme}>{tarih(d.guncelleme)}</time>
+          </span>
+          <span>Uzman incelemesi bekliyor</span>
         </p>
         <PageGuide
           next={[
@@ -100,7 +106,7 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
         </PageGuide>
       </header>
 
-      <div className="grid gap-12 pt-10 lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-14">
+      <OkumaDuzeyiSaglayici className="grid gap-12 pt-10 lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-14">
         <div className="flex min-w-0 flex-col gap-16">
           <section aria-labelledby="hedefler" className="beyin-kutu beyin-kutu-aklinda-kalsin measure">
             <h2 id="hedefler" className="mb-3 font-bold">
@@ -113,7 +119,37 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
             </ul>
           </section>
 
+          <OkumaDuzeyiSecici />
+
           <DersIcerigi bolumler={d.bolumler} />
+
+          {d.ucep && d.ucep.length > 0 && (
+            <section aria-labelledby="ucep-baslik" className="beyin-kutu katman-ileri measure flex flex-col gap-3">
+              <p className="kicker">Tıp öğrencileri için</p>
+              <h2 id="ucep-baslik" className="font-bold">
+                Ulusal Çekirdek Eğitim Programı (UÇEP 2020) ile ilişkisi
+              </h2>
+              <p className="t-small text-ink-2">
+                Bu dersin temel bilgisi, UÇEP 2020’deki şu çekirdek hastalık ve klinik problemlerin anlaşılmasında kullanılır
+                (Sinir–Davranış sistemi; harfler mezun hekimden beklenen öğrenme düzeyidir):
+              </p>
+              <ul className="flex flex-col gap-1.5">
+                {d.ucep.map((u) => (
+                  <li key={u.no}>
+                    <b>
+                      {u.no}. {u.ad}
+                    </b>{' '}
+                    <span className="text-ink-2">({u.duzey})</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="t-meta">
+                A: acil durumu tanımlayıp ilk tedaviyi yapabilmeli · ÖnT: ön tanı koyup uzmana yönlendirebilmeli · T: tanı koyup
+                tedavi hakkında bilgi sahibi olmalı · TT: tanı koyup tedavi edebilmeli · İ: izlem yapabilmeli · K: korunma
+                önlemlerini uygulayabilmeli.
+              </p>
+            </section>
+          )}
 
           <section id="sozluk" aria-labelledby="sozluk-baslik" className="flex scroll-mt-24 flex-col gap-5">
             <h2 id="sozluk-baslik" className="t-h2 font-display font-bold">
@@ -213,7 +249,7 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
             </ol>
           </nav>
         </aside>
-      </div>
+      </OkumaDuzeyiSaglayici>
     </article>
   );
 }

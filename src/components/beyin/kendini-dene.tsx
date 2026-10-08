@@ -1,30 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import type { Soru } from '@/content/beyin/types';
+import { SEVIYE_ADLARI, type Soru } from '@/content/beyin/types';
+import { useOkumaDuzeyi } from './okuma-duzeyi';
 
 /**
- * Dersin sonundaki sorular. Cevaplar yalnızca bu sayfanın belleğinde durur; hiçbir yere gönderilmez ya da
- * kaydedilmez. Her sorunun açıklaması cevaplanınca açılır.
+ * Dersin sonundaki sorular. Okuma düzeyi "Temel" seçiliyse yalnızca temel sorular görünür. Cevaplar yalnızca bu
+ * sayfanın belleğinde durur; hiçbir yere gönderilmez ya da kaydedilmez. Her sorunun açıklaması cevaplanınca açılır.
  */
 export function KendiniDene({ sorular }: { sorular: Soru[] }) {
+  const { duzey } = useOkumaDuzeyi();
   const [cevaplar, setCevaplar] = useState<(number | null)[]>(() => sorular.map(() => null));
-  const cevaplanan = cevaplar.filter((c) => c !== null).length;
-  const dogru = cevaplar.filter((c, i) => c === sorular[i].dogru).length;
-  const bitti = cevaplanan === sorular.length;
+  const gorunen = sorular.map((s, i) => ({ s, i })).filter(({ s }) => duzey === 'tam' || s.seviye === 'temel');
+  const cevaplanan = gorunen.filter(({ i }) => cevaplar[i] !== null).length;
+  const dogru = gorunen.filter(({ s, i }) => cevaplar[i] === s.dogru).length;
+  const bitti = cevaplanan === gorunen.length;
 
   return (
     <div className="flex flex-col gap-5">
+      <p className="t-small text-ink-2">
+        {gorunen.length} soru{duzey === 'temel' && gorunen.length < sorular.length ? ` (ileri düzeydeki ${sorular.length - gorunen.length} soru gizli)` : ''}. Her
+        sorunun yanında seviyesi yazar.
+      </p>
       <ol className="flex flex-col gap-5">
-        {sorular.map((s, i) => {
+        {gorunen.map(({ s, i }, sira) => {
           const c = cevaplar[i];
           return (
             <li key={s.soru} className="beyin-kutu flex flex-col gap-3">
-              <p className="font-bold">
-                <span className="text-ink-3">{i + 1}. </span>
-                {s.soru}
-              </p>
-              <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label={`${i + 1}. sorunun seçenekleri`}>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <p className="font-bold">
+                  <span className="text-ink-3">{sira + 1}. </span>
+                  {s.soru}
+                </p>
+                <span className="beyin-seviye">{SEVIYE_ADLARI[s.seviye]}</span>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label={`${sira + 1}. sorunun seçenekleri`}>
                 {s.secenekler.map((sec, j) => {
                   const secildi = c === j;
                   const durum = c === null ? '' : j === s.dogru ? 'dogru' : secildi ? 'yanlis' : '';
@@ -61,7 +71,7 @@ export function KendiniDene({ sorular }: { sorular: Soru[] }) {
       </ol>
       <div className="flex flex-wrap items-center gap-3" aria-live="polite">
         <p className="font-bold">
-          {bitti ? `Sonuç: ${sorular.length} sorudan ${dogru} doğru.` : `${cevaplanan} / ${sorular.length} soru cevaplandı.`}
+          {bitti ? `Sonuç: ${gorunen.length} sorudan ${dogru} doğru.` : `${cevaplanan} / ${gorunen.length} soru cevaplandı.`}
         </p>
         {cevaplanan > 0 && (
           <button type="button" className="btn btn-secondary rounded-full" onClick={() => setCevaplar(sorular.map(() => null))}>

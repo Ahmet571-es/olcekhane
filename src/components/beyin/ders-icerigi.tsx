@@ -1,25 +1,41 @@
-import type { Blok, DersBolumu } from '@/content/beyin/types';
+import { type Blok, type DersBolumu, ILERI_KUTULAR, type KutuCesidi } from '@/content/beyin/types';
 import { renderMarkdown } from '@/lib/markdown';
 import { Animasyon } from './animasyon';
 import { BeyinSahnesi } from './beyin-sahnesi';
 
-const KUTU_BASLIGI = {
+const KUTU_BASLIGI: Record<KutuCesidi, string> = {
   'aklinda-kalsin': 'Aklında kalsın',
   'biliyor-muydun': 'Biliyor muydun?',
   dikkat: 'Dikkat',
-} as const;
+  derinles: 'Derinleş',
+  klinik: 'Klinik bağlantı',
+  'sinav-notu': 'Sınav notu',
+};
+
+const KUTU_USTU: Partial<Record<KutuCesidi, string>> = {
+  derinles: 'İleri katman · tıp ve nörobilim düzeyi',
+  klinik: 'İleri katman · hastalıkla bağlantı (eğitim amaçlı)',
+  'sinav-notu': 'İleri katman · sınavlarda en çok sorulanlar',
+};
+
+/** İleri katmandaki bloklar okuma düzeyi "Temel" seçilince gizlenir (globals.css: [data-duzey="temel"] .katman-ileri). */
+function ileriMi(blok: Blok): boolean {
+  if (blok.tur === 'kutu') return ILERI_KUTULAR.includes(blok.cesit);
+  if (blok.tur === 'sahne' || blok.tur === 'animasyon') return Boolean(blok.ileri);
+  return false;
+}
 
 function BlokGoster({ blok }: { blok: Blok }) {
   switch (blok.tur) {
     case 'metin':
       return <div className="prose-olc" dangerouslySetInnerHTML={{ __html: renderMarkdown(blok.md) }} />;
     case 'sahne':
-      return <BeyinSahnesi sahne={blok.sahne} baslik={blok.baslik} aciklama={blok.aciklama} araclar={blok.araclar} />;
+      return <BeyinSahnesi sahne={blok.sahne} baslik={blok.baslik} aciklama={blok.aciklama} araclar={blok.araclar} ileri={blok.ileri} />;
     case 'animasyon':
       return (
         <figure className="beyin-cizim flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <p className="kicker">Hareketli çizim</p>
+            <p className="kicker">{blok.ileri ? 'Hareketli çizim · ileri katman' : 'Hareketli çizim'}</p>
             <h3 className="font-display text-xl font-bold leading-tight">{blok.baslik}</h3>
           </div>
           <Animasyon ad={blok.ad} />
@@ -29,6 +45,7 @@ function BlokGoster({ blok }: { blok: Blok }) {
     case 'kutu':
       return (
         <aside className={`beyin-kutu beyin-kutu-${blok.cesit} measure`}>
+          {KUTU_USTU[blok.cesit] && <p className="kicker mb-1">{KUTU_USTU[blok.cesit]}</p>}
           <p className="mb-2 font-bold">{blok.baslik ?? KUTU_BASLIGI[blok.cesit]}</p>
           <div className="prose-olc text-[1rem]" dangerouslySetInnerHTML={{ __html: renderMarkdown(blok.md) }} />
         </aside>
@@ -98,9 +115,15 @@ export function DersIcerigi({ bolumler }: { bolumler: DersBolumu[] }) {
             <span className="mr-3 text-ink-3">{i + 1}.</span>
             {b.baslik}
           </h2>
-          {b.bloklar.map((blok, j) => (
-            <BlokGoster key={j} blok={blok} />
-          ))}
+          {b.bloklar.map((blok, j) =>
+            ileriMi(blok) ? (
+              <div key={j} className="katman-ileri">
+                <BlokGoster blok={blok} />
+              </div>
+            ) : (
+              <BlokGoster key={j} blok={blok} />
+            ),
+          )}
         </section>
       ))}
     </div>

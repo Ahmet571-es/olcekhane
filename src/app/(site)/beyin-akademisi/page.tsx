@@ -3,42 +3,51 @@ import { BeyinSahnesi } from '@/components/beyin/beyin-sahnesi';
 import { ModelNotu } from '@/components/beyin/model-notu';
 import { JsonLd } from '@/components/seo/json-ld';
 import { PageGuide } from '@/components/site/page-guide';
-import { BEYIN_YOLU, DALLAR } from '@/content/beyin';
+import { BEYIN_YOLU, DALLAR, SEVIYE_ADLARI, hazirDersler, toplamDers } from '@/content/beyin';
+import { YAPILAR } from '@/content/beyin/yapilar';
 import { siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
 export const metadata = pageMeta({
-  title: 'Beyin Akademisi: beyin anatomisi ve beynin çalışması, üç boyutlu modelle',
+  title: 'Beyin Akademisi: Türkçe beyin atlası, ansiklopedisi ve dersleri',
   description:
-    'Beyni sıfırdan, gerçek bir üç boyutlu modelle öğrenin: beyin anatomisi ve beynin nasıl çalıştığı, sade Türkçe, hareketli çizimler ve kaynaklarla.',
+    'Beyni sıfırdan uzman düzeyine: anatomi, hücresel nörobilim, sistemler, bilişsel nörobilim ve klinik bağlantılar. Üç boyutlu model, hareketli çizimler, kaynaklar.',
   path: BEYIN_YOLU,
 });
 
-const OZELLIKLER = [
+const AYAKLAR = [
   {
-    baslik: 'Gerçek bir beyin modeli',
-    metin: 'Bir insan beyninin üç boyutlu modelini parmağınla döndür, yakınlaştır, kes ve parçalarına ayır. Her yapıya dokununca adı ve görevi açılır.',
+    baslik: 'Dersler',
+    durum: 'Hazırlanıyor: her işlemede bir ders',
+    metin:
+      '8 bölüm, 100 ders. Her ders katmanlı: herkes için sade anlatım, tıp ve nörobilim düzeyi için "Derinleş", "Klinik bağlantı" ve "Sınav notu" kutuları.',
+    href: `${BEYIN_YOLU}/anatomi/sinir-sistemine-ilk-bakis`,
+    bag: 'İlk derse başla',
   },
   {
-    baslik: 'Hareketli çizimler',
-    metin: 'Sinir sinyalinin yolculuğu, yön terimleri, gri ve beyaz cevher… Okuduğunu hareket ederken gör.',
+    baslik: 'Atlas',
+    durum: 'Üç boyutlu atlas açık; kesit, yol ve damar atlasları hazırlanıyor',
+    metin: 'Beyni döndür, kes, parçalarına ayır. Dilim dilim kesit atlası, sinir yolları ve damar alanları ders ders eklenecek.',
+    href: `${BEYIN_YOLU}/beyin-gezgini`,
+    bag: 'Beyin gezginini aç',
   },
   {
-    baslik: 'Sıfırdan, sade Türkçe',
-    metin: 'Hiç bilmeyen biri için yazıldı. Tıpta kullanılan terimler ve Latince adları da yanında; tıp öğrencisine de yeter.',
+    baslik: 'Ansiklopedi',
+    durum: 'Hazırlanıyor',
+    metin:
+      'Her yapı ve her kavram için ayrı madde: nerede durur, bağlantıları, görevi, kanlanması, hasar görünce ne olur. Dersler ilerledikçe maddeler eklenecek.',
   },
   {
-    baslik: 'Kendini dene',
-    metin: 'Her dersin sonunda açıklamalı sorular ve bir sözlük var. Cevapların hiçbir yere kaydedilmez.',
-  },
-  {
-    baslik: 'Kaynakları belli',
-    metin: 'Her bilgi açık ve güvenilir kaynaklardan denetlenir; kaynaklar dersin sonunda yazılıdır.',
+    baslik: 'Pratik',
+    durum: 'Her dersin sonunda açık; soru bankası hazırlanıyor',
+    metin:
+      'Seviyesi belli, açıklamalı sorular. Sırada üç boyutlu modelde "yapıyı bul", kesit tanıma ve pratik anatomi sınavına benzer çalışmalar var.',
   },
 ];
 
 export default function BeyinAkademisiPage() {
   const ilk = DALLAR[0].program[0];
+  const hazir = hazirDersler().length;
   return (
     <>
       <JsonLd
@@ -75,11 +84,12 @@ export default function BeyinAkademisiPage() {
           <div className="flex flex-col gap-6">
             <p className="kicker">Beyin Akademisi</p>
             <h1 className="t-section">
-              Beyni gerçek bir modelde, <span className="tayf-yazi">adım adım</span> öğren
+              Beyni sıfırdan, <span className="tayf-yazi">uzman düzeyine</span> öğren
             </h1>
             <p className="t-lede measure">
-              İki dal, kırk derslik bir program: beynin bütün parçaları ve beynin nasıl çalıştığı. Hiç bilmeyen biri için sade Türkçeyle; tıp
-              öğrencisine yetecek ayrıntıyla. Her derste döndürüp kesebileceğin üç boyutlu bir beyin ve hareketli çizimler var.
+              Türkçe beyin atlası, ansiklopedisi ve dersleri. Anatomiden hücreye, duyulardan belleğe, gelişimden klinik
+              bağlantılara: beyni hiç bilmeyen biri için sade bir dille başlar, tıp ve nörobilim öğrencisinin ihtiyaç
+              duyduğu ayrıntıya kadar iner. Her derste döndürüp kesebileceğin gerçek bir beyin modeli var.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href={`${BEYIN_YOLU}/anatomi/${ilk.slug}`} className="btn btn-primary btn-tayf" data-magnet>
@@ -89,6 +99,12 @@ export default function BeyinAkademisiPage() {
                 Beyin gezginini aç
               </Link>
             </div>
+            <ul className="flex flex-wrap gap-2 text-[0.9rem]">
+              <li className="beyin-seviye">8 bölüm · {toplamDers()} ders</li>
+              <li className="beyin-seviye">{hazir} ders hazır</li>
+              <li className="beyin-seviye">Modelde {YAPILAR.length} yapı</li>
+              <li className="beyin-seviye">Ücretsiz, kayıt yok</li>
+            </ul>
           </div>
           <BeyinSahnesi
             sahne={{ katmanlar: ['kabuk', 'sap', 'derin'], renk: 'lob', gizle: ['bolge:sinir'], bakis: 'egik', donme: true }}
@@ -102,82 +118,81 @@ export default function BeyinAkademisiPage() {
       <div className="container-page flex flex-col gap-16 py-12 md:py-16">
         <PageGuide
           steps={[
-            'Bir dal seç: önce anatomi, sonra beynin işleyişi önerilir.',
-            'Dersleri sırayla oku; üç boyutlu sahneleri döndür ve parçalara dokun.',
-            'Her dersin sonunda kendini dene ve sözlüğe göz at.',
+            'Yeni başlıyorsan 1. bölümün ilk dersinden başla.',
+            'Her derste önce temel anlatımı oku; hazırsan "Derinleş" ve "Klinik bağlantı" kutularına geç.',
+            'Üç boyutlu sahneleri döndür, parçalara dokun, kesit al.',
+            'Ders sonunda kendini dene ve sözlüğe göz at.',
           ]}
           next={[
-            { href: `${BEYIN_YOLU}/anatomi`, label: 'Beyin Anatomisi' },
-            { href: `${BEYIN_YOLU}/nasil-calisir`, label: 'Beyin Nasıl Çalışır?' },
+            { href: `${BEYIN_YOLU}/anatomi/${ilk.slug}`, label: 'İlk derse başla' },
+            { href: `${BEYIN_YOLU}/beyin-gezgini`, label: 'Beyin gezgini' },
           ]}
         >
           <p>
-            Burada beyni sıfırdan öğrenebilirsin. Dersler hazırlandıkça eklenir; hazır olanlar aşağıdaki listelerde
-            bağlantılıdır. Hiçbir şey kaydedilmez; ilerlemen işaretlenmez.
+            Beyin Akademisi, beyni sıfırdan uzman düzeyine öğretmek için kuruluyor: dersler, atlas, ansiklopedi ve pratik.
+            Dersler sırayla hazırlanır; hazır olanlar bağlantılıdır, ötekiler “Hazırlanıyor” diye görünür. Hiçbir şey
+            kaydedilmez.
           </p>
         </PageGuide>
 
-        <section aria-labelledby="dallar" className="flex flex-col gap-6">
-          <h2 id="dallar" className="t-h2">
-            İki dal
+        <section aria-labelledby="dort-ayak" className="flex flex-col gap-6">
+          <h2 id="dort-ayak" className="t-h2">
+            Dört ayak
           </h2>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {DALLAR.map((d, i) => {
-              const hazir = d.program.filter((p) => p.ders).length;
-              return (
-                <article key={d.id} className="panel flex flex-col gap-4 p-6 md:p-8">
-                  <p className="kicker">
-                    {i + 1}. dal · {d.program.length} ders · {hazir} ders hazır
-                  </p>
-                  <h3 className="font-display text-[1.9rem] font-bold leading-tight">
-                    <Link href={`${BEYIN_YOLU}/${d.id}`} className="no-underline hover:underline">
-                      {d.ad}
-                    </Link>
-                  </h3>
-                  <p className="text-ink-2">{d.aciklama}</p>
-                  <ol className="flex flex-col gap-1.5 text-[0.95rem]">
-                    {d.program.slice(0, 6).map((p) => (
-                      <li key={p.slug} className="flex gap-2">
-                        <span className="w-6 shrink-0 text-right font-bold text-ink-3 tabular">{p.sira}</span>
-                        {p.ders ? (
-                          <Link href={`${BEYIN_YOLU}/${d.id}/${p.slug}`}>{p.baslik}</Link>
-                        ) : (
-                          <span className="text-ink-2">{p.baslik}</span>
-                        )}
-                      </li>
-                    ))}
-                    <li className="pl-8 text-ink-3">ve {d.program.length - 6} ders daha</li>
-                  </ol>
+          <ul className="grid gap-4 md:grid-cols-2">
+            {AYAKLAR.map((a) => (
+              <li key={a.baslik} className="panel flex flex-col gap-2 p-6">
+                <p className="kicker">{a.durum}</p>
+                <h3 className="font-display text-2xl font-bold">{a.baslik}</h3>
+                <p className="text-ink-2">{a.metin}</p>
+                {a.href && (
                   <div className="mt-auto pt-2">
-                    <Link href={`${BEYIN_YOLU}/${d.id}`} className="btn btn-secondary">
-                      Bütün dersleri gör
+                    <Link href={a.href} className="btn btn-secondary">
+                      {a.bag}
                     </Link>
                   </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section aria-labelledby="her-derste" className="flex flex-col gap-6">
-          <h2 id="her-derste" className="t-h2">
-            Her derste neler var?
-          </h2>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {OZELLIKLER.map((o) => (
-              <li key={o.baslik} className="beyin-kutu flex flex-col gap-2">
-                <p className="font-bold">{o.baslik}</p>
-                <p className="t-small text-ink-2">{o.metin}</p>
+                )}
               </li>
             ))}
-            <li className="beyin-kutu flex flex-col gap-2">
-              <p className="font-bold">Beyin gezgini</p>
-              <p className="t-small text-ink-2">
-                Bütün yapılar tek sayfada: katmanları aç-kapa, istediğin yerden kes, ara.{' '}
-                <Link href={`${BEYIN_YOLU}/beyin-gezgini`}>Gezgini aç</Link>
-              </p>
-            </li>
           </ul>
+        </section>
+
+        <section aria-labelledby="bolumler" className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <h2 id="bolumler" className="t-h2">
+              Sekiz bölüm, yüz ders
+            </h2>
+            <p className="measure text-ink-2">
+              Bölümler birbirinin üstüne kurulur. Seviyeler: {SEVIYE_ADLARI.temel} (meraklı herkes, lise ve sağlık lisesi),{' '}
+              {SEVIYE_ADLARI.lisans} (tıp, psikoloji ve nörobilimin ilk yılları), {SEVIYE_ADLARI.ileri} (ayrıntılı nöroanatomi
+              ve hastalıklarla bağlantılar).
+            </p>
+          </div>
+          <ol className="grid gap-4 md:grid-cols-2">
+            {DALLAR.map((d) => {
+              const hazirSayi = d.program.filter((p) => p.ders).length;
+              return (
+                <li key={d.id}>
+                  <Link href={`${BEYIN_YOLU}/${d.id}`} className="panel group flex h-full gap-4 p-5 no-underline hover:border-ink">
+                    <span
+                      className="grid size-12 shrink-0 place-items-center rounded-full font-display text-xl font-bold text-white"
+                      style={{ background: d.renk }}
+                      aria-hidden="true"
+                    >
+                      {d.sira}
+                    </span>
+                    <span className="flex flex-col gap-1">
+                      <span className="font-display text-xl font-bold leading-snug group-hover:underline">{d.ad}</span>
+                      <span className="t-small text-ink-2">{d.aciklama}</span>
+                      <span className="t-meta">
+                        {d.program.length} ders{hazirSayi > 0 ? ` · ${hazirSayi} ders hazır` : ' · hazırlanıyor'}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
         </section>
 
         <ModelNotu />

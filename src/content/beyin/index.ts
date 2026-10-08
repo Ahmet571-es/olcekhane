@@ -1,20 +1,25 @@
 import { sinirSistemineIlkBakis } from './dersler/anatomi/sinir-sistemine-ilk-bakis';
-import type { Dal, DalId, Ders, ProgramDersi } from './types';
+import type { Dal, DalId, Ders, ProgramDersi, Seviye } from './types';
 
-export type { Dal, DalId, Ders } from './types';
+export type { Dal, DalId, Ders, Seviye } from './types';
+export { SEVIYE_ADLARI } from './types';
 
 /**
- * Beyin Akademisi'nin iki dalı ve programları. Hazır olan dersin içeriği `ders` alanındadır; olmayanlar programda
- * "hazırlanıyor" diye görünür, kendi sayfaları açılmaz ve site haritasına girmez.
+ * Beyin Akademisi'nin programı: 8 bölüm, 100 ders (site sahibinin 2026-10-08 onayladığı harita). Her işlemede bir
+ * ders hazırlanır. Hazır dersin içeriği `ders` alanındadır; olmayanlar programda "Hazırlanıyor" diye görünür, kendi
+ * sayfaları açılmaz ve site haritasına girmez.
  */
 const HAZIR: Ders[] = [sinirSistemineIlkBakis];
 
-function program(dal: DalId, satirlar: [string, string, string][]): ProgramDersi[] {
-  return satirlar.map(([slug, baslik, ozet], i) => ({
+type Satir = [slug: string, baslik: string, ozet: string, seviye: Seviye];
+
+function program(dal: DalId, satirlar: Satir[]): ProgramDersi[] {
+  return satirlar.map(([slug, baslik, ozet, seviye], i) => ({
     sira: i + 1,
     slug,
     baslik,
     ozet,
+    seviye,
     ders: HAZIR.find((d) => d.dal === dal && d.slug === slug),
   }));
 }
@@ -22,60 +27,187 @@ function program(dal: DalId, satirlar: [string, string, string][]): ProgramDersi
 export const DALLAR: Dal[] = [
   {
     id: 'anatomi',
-    ad: 'Beyin Anatomisi',
+    sira: 1,
+    ad: 'Beyin ve Sinir Sistemi Anatomisi',
     kisaAd: 'Anatomi',
+    renk: '#4f7cf0',
     aciklama:
-      'Beyni oluşturan bütün yapılar, sıfırdan ve adım adım: loblar ve kıvrımlar, derin çekirdekler, beyin sapı, beyincik, karıncıklar, damarlar ve sinirler. Her ders gerçek bir beyin modeli üzerinde.',
+      'Kafatasından omuriliğe, beyni oluşturan bütün yapılar: loblar ve kıvrımlar, derin çekirdekler, beyin sapı, beyincik, karıncıklar, damarlar, kafa sinirleri ve sinir yolları. Her ders gerçek bir beyin modeli üzerinde.',
     program: program('anatomi', [
-      ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış ve anatominin dili', 'Merkezî ve çevresel sinir sistemi, beynin dört ana bölümü, gri ve beyaz cevher, yönler ve kesitler.'],
-      ['beyni-koruyan-yapilar', 'Beyni koruyanlar', 'Kafatası kemikleri, beyin zarları, beyin-omurilik sıvısı ve kan-beyin engeli.'],
-      ['beyin-nasil-olusur', 'Beyin nasıl oluşur?', 'Sinir borusundan beyne: ön, orta ve arka beyin keseciklerinin yetişkindeki karşılıkları.'],
-      ['buyuk-beyin', 'Büyük beyin: yarımküreler, kıvrımlar ve oluklar', 'Yarımküreler, büyük yarıklar, girus ve sulkuslar; beyin kabuğunun genel planı.'],
-      ['frontal-lob', 'Frontal (alın) lob', 'Hareket kabuğu, prefrontal kabuk ve Broca alanı.'],
-      ['parietal-lob', 'Parietal (yan kafa) lob', 'Bedensel duyu kabuğu ve duyuların birleştirilmesi.'],
-      ['temporal-lob', 'Temporal (şakak) lob', 'İşitme kabuğu, Wernicke alanı, görsel tanıma ve iç yüzdeki bellek yapıları.'],
-      ['oksipital-lob-ve-insula', 'Oksipital (art kafa) lob ve insula', 'Görme kabuğu ve yan yarığın derinindeki gizli lob.'],
-      ['beyin-kabugunun-haritalari', 'Beyin kabuğunun haritaları', 'Kabuğun katmanları, Brodmann alanları ve bedenin kabuktaki haritası.'],
-      ['beyaz-cevher-ve-lif-yollari', 'Beyaz cevher ve lif yolları', 'Korpus kallozum, iç kapsül, komissürler ve bağlantı demetleri.'],
-      ['bazal-cekirdekler', 'Bazal çekirdekler', 'Kaudat çekirdek, putamen, globus pallidus ve hareketin düzenlenmesi.'],
-      ['ara-beyin', 'Ara beyin', 'Talamus, hipotalamus, epifiz ve hipofiz bezi.'],
-      ['limbik-sistem', 'Limbik sistem', 'Hipokampus, amigdala, singulat girus, forniks ve mamiller cisimler.'],
-      ['beyin-sapi', 'Beyin sapı', 'Orta beyin, pons ve omurilik soğanı; yaşamsal merkezler.'],
-      ['kafa-ciftleri', '12 kafa çifti siniri', 'Kokudan dil hareketlerine on iki kafa sinirinin yolları ve görevleri.'],
-      ['beyincik', 'Beyincik', 'Beyinciğin bölümleri, katmanları, bağlantıları ve hareketteki rolü.'],
-      ['karinciklar', 'Karıncıklar ve beyin-omurilik sıvısı', 'Dört karıncık, sıvının yapılışı ve dolaşımı.'],
-      ['beynin-damarlari', 'Beynin damarları ve Willis halkası', 'Karotis ve vertebral sistem, beyin arterleri ve toplardamar sinüsleri.'],
-      ['omurilik-ve-sinir-yollari', 'Omurilik ve sinir yolları', 'Omuriliğin yapısı, çıkan duyu yolları ve inen hareket yolları.'],
-      ['goruntulemede-beyin', 'MR ve tomografide beyin', 'Kesit görüntülerinde yapıları tanımak.'],
+      ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış ve anatominin dili', 'Merkezî ve çevresel sinir sistemi, beynin bölümleri, gri ve beyaz cevher, yönler ve kesitler.', 'temel'],
+      ['kafatasi', 'Kafatası: beynin kemik kalesi', 'Beyni saran sekiz kemik, kafatası tabanı, delikler ve içlerinden geçenler.', 'temel'],
+      ['beyin-zarlari', 'Beyin zarları ve zarlar arası boşluklar', 'Sert zar, örümcek ağı zar ve yumuşak zar; kıvrımları ve boşlukları.', 'lisans'],
+      ['karinciklar-ve-beyin-omurilik-sivisi', 'Karıncıklar ve beyin-omurilik sıvısı', 'Dört karıncık; sıvının yapılışı, dolaşımı ve emilmesi.', 'lisans'],
+      ['beynin-atardamarlari', 'Beynin atardamarları ve Willis halkası', 'Karotis ve vertebrobaziler sistem; halkanın parçaları.', 'lisans'],
+      ['damar-alanlari-ve-toplardamarlar', 'Atardamar alanları ve toplardamarlar', 'Hangi atardamar nereyi besler; toplardamar sinüsleri ve kan-beyin engeli.', 'ileri'],
+      ['beyin-nasil-olusur', 'Beyin nasıl oluşur?', 'Sinir borusundan beyne: keseciklerin yetişkin beyindeki karşılıkları.', 'lisans'],
+      ['buyuk-beyin', 'Büyük beyin: yarımküreler, yarıklar, kıvrımlar', 'Yarımkürelerin yüzleri, büyük yarıklar ve oluklar, lobların sınırları.', 'temel'],
+      ['frontal-lob', 'Frontal (alın) lob', 'Hareket kabuğu, prefrontal kabuk, Broca alanı ve göz alanları.', 'lisans'],
+      ['parietal-lob', 'Parietal (yan kafa) lob', 'Bedensel duyu kabuğu ve duyuların birleştirilmesi.', 'lisans'],
+      ['temporal-lob', 'Temporal (şakak) lob', 'İşitme kabuğu, Wernicke alanı ve görsel tanıma.', 'lisans'],
+      ['oksipital-lob', 'Oksipital (art kafa) lob', 'Birincil ve ikincil görme alanları.', 'lisans'],
+      ['insula-ve-limbik-lob', 'İnsula ve limbik lob', 'Yan yarığın derinindeki lob ve iç yüzdeki kuşak.', 'lisans'],
+      ['beyin-kabugunun-yapisi', 'Beyin kabuğunun yapısı', 'Altı katman, hücre tipleri, sütunlar ve Brodmann alanları.', 'ileri'],
+      ['beyaz-cevher-ve-lif-yollari', 'Beyaz cevher ve lif yolları', 'Komissür, bağlantı ve projeksiyon lifleri; korpus kallozum ve iç kapsül.', 'lisans'],
+      ['bazal-cekirdekler', 'Bazal çekirdekler', 'Striatum, globus pallidus, subtalamik çekirdek ve substantia nigra.', 'lisans'],
+      ['talamus', 'Talamus', 'Çekirdek grupları ve kabuğa açılan kapılar.', 'ileri'],
+      ['hipotalamus-hipofiz-epifiz', 'Hipotalamus, hipofiz ve epifiz', 'Vücudun iç dengesinin ve hormonların yönetim merkezi.', 'lisans'],
+      ['hipokampus-ve-amigdala', 'Hipokampus ve amigdala', 'Bellek ve duygunun temporal lobdaki merkezleri.', 'lisans'],
+      ['orta-beyin', 'Orta beyin', 'Tepecikler, beyin sapçıkları, substantia nigra ve kırmızı çekirdek.', 'lisans'],
+      ['pons', 'Pons', 'Beyinciğe köprü; çekirdekleri ve yolları.', 'lisans'],
+      ['omurilik-sogani', 'Omurilik soğanı', 'Yaşamsal merkezler, piramitler ve olivler.', 'lisans'],
+      ['beyin-sapi-kesitleri', 'Beyin sapı kesitleri ve retiküler formasyon', 'Sınavların vazgeçilmezi: dört düzeyde kesit ve içlerindeki yapılar.', 'ileri'],
+      ['kafa-sinirleri-1', 'Kafa sinirleri I: I–VI', 'Koku, görme ve göz hareketlerinin sinirleri.', 'lisans'],
+      ['kafa-sinirleri-2', 'Kafa sinirleri II: VII–XII', 'Yüz, işitme ve denge, yutma, konuşma ve dil hareketlerinin sinirleri.', 'lisans'],
+      ['beyincik', 'Beyincik', 'Lobları, katmanları, çekirdekleri ve sapçıkları.', 'lisans'],
+      ['omurilik', 'Omurilik', 'Bölümleri, gri ve beyaz cevheri, kökleri ve zarları.', 'lisans'],
+      ['cikan-duyu-yollari', 'Çıkan duyu yolları', 'Arka kolon, spinotalamik ve spinoserebellar yollar.', 'ileri'],
+      ['inen-hareket-yollari', 'İnen hareket yolları', 'Kortikospinal ve kortikobulber yollar; üst ve alt motor nöron.', 'ileri'],
+      ['kesit-anatomisi', 'Kesit anatomisi: MR ve tomografide beyin', 'Aksiyel, koronal ve sagital kesitlerde yapıları tanımak.', 'ileri'],
     ]),
   },
   {
-    id: 'nasil-calisir',
-    ad: 'Beyin Nasıl Çalışır?',
-    kisaAd: 'İşleyiş',
+    id: 'hucre-ve-molekul',
+    sira: 2,
+    ad: 'Hücreden Sinyale: Hücresel ve Moleküler Nörobilim',
+    kisaAd: 'Hücre ve molekül',
+    renk: '#7a4ee6',
     aciklama:
-      'Nöronlardan düşünceye: sinir sinyali, sinaps, kimyasal haberciler, duyular, hareket, uyku, dikkat, bellek, duygular ve öğrenmenin beyindeki temeli. Sade bir dille, hareketli çizimlerle.',
-    program: program('nasil-calisir', [
-      ['noron', 'Nöron: beynin temel hücresi', 'Gövde, dendritler, akson ve uç düğmeleri; nöron çeşitleri.'],
-      ['glia', 'Glia: beynin yardımcı hücreleri', 'Astrositler, oligodendrositler, mikroglia ve diğerleri.'],
-      ['dinlenim-gerilimi', 'Hücre zarı, iyonlar ve dinlenim gerilimi', 'İyon kanalları, pompalar ve nöronun içindeki eksi yük.'],
-      ['sinir-sinyali', 'Sinir sinyali nasıl doğar ve iletilir?', 'Aksiyon potansiyeli, eşik ve miyelinli aksonda sıçrayarak iletim.'],
-      ['sinaps', 'Sinaps: nöronlar nasıl konuşur?', 'Kimyasal ve elektriksel sinapslar; habercinin salınması ve alınması.'],
-      ['kimyasal-haberciler', 'Kimyasal haberciler', 'Glutamat, GABA, dopamin, serotonin, asetilkolin, noradrenalin ve diğerleri.'],
-      ['noron-aglari-ve-refleksler', 'Nöron ağları ve refleksler', 'Uyarıcı ve baskılayıcı bağlantılar, devreler ve refleks yayı.'],
-      ['gorme', 'Görme: gözden beyne', 'Retina, görme yolu ve görme kabuğunda görüntünün kurulması.'],
-      ['diger-duyular', 'İşitme, denge, dokunma, ağrı, tat ve koku', 'Duyu almaçlarından kabuğa diğer duyular.'],
-      ['hareket', 'Hareket: plandan kasa', 'Hareket kabuğu, bazal çekirdekler, beyincik ve omurilik birlikte.'],
-      ['uyku-ve-biyolojik-saat', 'Uyku ve biyolojik saat', 'Uyku evreleri, gece-gündüz ritmi ve melatonin.'],
-      ['dikkat-ve-bilinc', 'Dikkat ve bilinç', 'Uyanıklık, dikkat ağları ve bilincin beyindeki izleri.'],
-      ['bellek-turleri', 'Bellek türleri', 'Çalışma belleği, olay belleği, anlam belleği ve beceri belleği.'],
-      ['ogrenmenin-hucresel-temeli', 'Öğrenmenin hücresel temeli', 'Sinapsların güçlenmesi: "birlikte ateşlenen birlikte bağlanır".'],
-      ['bellek-nasil-kalici-olur', 'Bellek nasıl kalıcı olur?', 'Pekiştirme, tekrar ve uykunun bellekteki rolü.'],
-      ['duygular-odul-ve-motivasyon', 'Duygular, ödül ve motivasyon', 'Amigdala, ödül sistemi ve dopamin.'],
-      ['dil-ve-beyin', 'Dil ve beyin', 'Konuşmayı anlamak ve üretmek; dil ağları.'],
-      ['planlama-ve-kendini-kontrol', 'Planlama ve kendini kontrol', 'Prefrontal kabuk ve yürütücü işlevler.'],
-      ['gelisen-beyin', 'Bebeklikten ergenliğe gelişen beyin', 'Sinaps budaması, miyelinleşme ve kritik dönemler.'],
-      ['etkili-ogrenme-ve-beyin-efsaneleri', 'Bilime göre etkili öğrenme ve beyin efsaneleri', 'Aralıklı tekrar, hatırlama pratiği; "%10 efsanesi" gibi yanlışlar.'],
+      'Nöron ve glia, iyon kanalları, sinir sinyali, sinaps, alıcılar ve kimyasal haberciler; nöronların nasıl hesap yaptığı ve sinapsların nasıl güçlendiği.',
+    program: program('hucre-ve-molekul', [
+      ['noron', 'Nöron: beynin temel hücresi', 'Gövde, dendritler, akson, uç düğmeleri; nöron çeşitleri.', 'temel'],
+      ['glia', 'Glia hücreleri', 'Astrosit, oligodendrosit, mikroglia, ependim ve Schwann hücreleri.', 'temel'],
+      ['dinlenim-gerilimi', 'Hücre zarı, iyonlar ve dinlenim gerilimi', 'Sodyum-potasyum pompası ve nöronun içindeki eksi yük.', 'lisans'],
+      ['iyon-kanallari', 'İyon kanalları', 'Gerilime, kimyasala ve mekanik uyarıya duyarlı kanallar.', 'lisans'],
+      ['sinir-sinyali', 'Sinir sinyali: aksiyon potansiyeli', 'Eşik, ya hep ya hiç kuralı, refrakter dönem.', 'lisans'],
+      ['miyelin-ve-iletim-hizi', 'Miyelin ve iletim hızı', 'Ranvier boğumları ve sıçrayarak iletim.', 'lisans'],
+      ['sinaps', 'Sinaps: nöronlar nasıl konuşur?', 'Kimyasal ve elektriksel sinapslar.', 'temel'],
+      ['habercinin-salinmasi', 'Habercinin salınması', 'Kesecikler, kalsiyum ve habercinin geri alınması.', 'ileri'],
+      ['alicilar', 'Alıcılar', 'İyon kanalı alıcıları ve G proteinine bağlı alıcılar.', 'ileri'],
+      ['glutamat-ve-gaba', 'Glutamat ve GABA', 'Beynin ana uyarıcı ve baskılayıcı habercileri.', 'lisans'],
+      ['asetilkolin-ve-monoaminler', 'Asetilkolin ve monoaminler', 'Dopamin, noradrenalin ve serotonin sistemleri.', 'lisans'],
+      ['noropeptidler', 'Nöropeptidler ve diğer haberciler', 'Endorfinler, endokannabinoidler ve gaz haberciler.', 'ileri'],
+      ['sinir-kas-kavsagi', 'Sinir-kas kavşağı', 'Nöronun kasa komut verdiği özel sinaps.', 'lisans'],
+      ['sinaptik-butunlestirme', 'Nöron nasıl karar verir?', 'Uyarıcı ve baskılayıcı sinyallerin toplanması.', 'ileri'],
+      ['sinaptik-esneklik', 'Sinaptik esneklik', 'Uzun süreli güçlenme ve zayıflama: öğrenmenin hücresel temeli.', 'ileri'],
+      ['beynin-enerjisi', 'Beynin enerjisi ve metabolizması', 'Glikoz, oksijen ve beynin enerji bütçesi.', 'lisans'],
+    ]),
+  },
+  {
+    id: 'sistemler',
+    sira: 3,
+    ad: 'Duyular, Hareket ve Beden: Sistem Nörobilimi',
+    kisaAd: 'Sistemler',
+    renk: '#0e9c8c',
+    aciklama:
+      'Duyu almaçlarından kabuğa bütün duyular, hareketin planlanıp uygulanması, otonom sistem, hormonlar ve uyku. Sinyalin bedende izlediği yollar canlandırmalarla.',
+    program: program('sistemler', [
+      ['duyularin-ortak-dili', 'Duyuların ortak dili', 'Almaçlar, uyarının sinyale çevrilmesi ve kodlama.', 'lisans'],
+      ['gorme-1', 'Görme I: göz ve retina', 'Işığın sinyale dönüşmesi; çubuklar ve koniler.', 'lisans'],
+      ['gorme-2', 'Görme II: görme yolu ve görme kabuğu', 'Kiazmadan görme kabuğuna; görme alanı kayıpları.', 'lisans'],
+      ['isitme', 'İşitme', 'Kulaktan işitme kabuğuna sesin yolculuğu.', 'lisans'],
+      ['denge', 'Denge', 'İç kulak, vestibüler çekirdekler ve göz-baş uyumu.', 'lisans'],
+      ['dokunma-ve-vucut-duyusu', 'Dokunma ve vücut duyusu', 'Dokunma, titreşim, konum duyusu ve bedenin kabuktaki haritası.', 'lisans'],
+      ['agri', 'Ağrı ve ağrının kontrolü', 'Ağrı yolları, kapı kontrolü ve beynin kendi ağrı kesicileri.', 'lisans'],
+      ['tat-ve-koku', 'Tat ve koku', 'Kimyasal duyular ve talamusu atlayan koku.', 'lisans'],
+      ['omurilik-refleksleri', 'Omurilik refleksleri', 'Germe refleksi, çekme refleksi ve refleks yayı.', 'temel'],
+      ['hareket-kabugu', 'Hareket kabuğu ve hareketin planlanması', 'Birincil ve ikincil hareket alanları.', 'lisans'],
+      ['hareketin-ince-ayari', 'Hareketin ince ayarı', 'Bazal çekirdekler ve beyincik hareketi nasıl düzenler?', 'ileri'],
+      ['goz-hareketleri', 'Göz hareketleri', 'Sıçramalar, izleme ve bakış merkezleri.', 'ileri'],
+      ['otonom-sinir-sistemi', 'Otonom sinir sistemi', 'Sempatik ve parasempatik sistem; organlara etkileri.', 'temel'],
+      ['hipotalamus-ve-hormonlar', 'Hipotalamus, hormonlar ve iç denge', 'Açlık, susuzluk, vücut ısısı ve stres yanıtı.', 'lisans'],
+      ['uyku-ve-biyolojik-saat', 'Uyku, uyanıklık ve biyolojik saat', 'Uyku evreleri, gece-gündüz ritmi ve melatonin.', 'temel'],
+    ]),
+  },
+  {
+    id: 'zihin-ve-davranis',
+    sira: 4,
+    ad: 'Zihin ve Davranış: Bilişsel Nörobilim ve Psikoloji',
+    kisaAd: 'Zihin ve davranış',
+    renk: '#df4777',
+    aciklama:
+      'Dikkat, bellek, öğrenme, dil, duygular, motivasyon, karar verme, planlama, sosyal beyin ve bilinç: düşünce ve davranışın beyindeki temelleri.',
+    program: program('zihin-ve-davranis', [
+      ['dikkat', 'Dikkat', 'Uyanıklık, seçici dikkat ve dikkat ağları.', 'temel'],
+      ['calisma-bellegi', 'Çalışma belleği', 'Aklımızda tuttuklarımız ve sınırları.', 'temel'],
+      ['uzun-sureli-bellek', 'Uzun süreli bellek türleri', 'Olay, anlam ve beceri belleği.', 'temel'],
+      ['bellek-nasil-olusur', 'Bellek nasıl oluşur ve pekişir?', 'Kodlama, pekiştirme, uyku ve hatırlama.', 'lisans'],
+      ['ogrenme', 'Öğrenme: koşullanma, ödül ve alışkanlık', 'Öğrenmenin farklı yolları ve beyindeki karşılıkları.', 'lisans'],
+      ['dil', 'Dil', 'Konuşmayı anlamak ve üretmek; dil ağları ve afaziler.', 'lisans'],
+      ['duygular', 'Duygular', 'Amigdala, insula ve duyguların bedenle ilişkisi.', 'lisans'],
+      ['motivasyon-ve-odul', 'Motivasyon ve ödül sistemi', 'Dopamin, istek ve hoşlanma.', 'lisans'],
+      ['karar-verme', 'Karar verme', 'Değer biçme, risk ve seçim.', 'ileri'],
+      ['yurutucu-islevler', 'Yürütücü işlevler', 'Planlama, kendini durdurma ve esneklik; prefrontal kabuk.', 'lisans'],
+      ['sosyal-beyin', 'Sosyal beyin', 'Yüz tanıma, başkalarının zihnini anlama ve empati.', 'lisans'],
+      ['bilinc', 'Bilinç', 'Uyanıklık, farkındalık ve bilincin beyindeki izleri.', 'ileri'],
+    ]),
+  },
+  {
+    id: 'yasam-boyu',
+    sira: 5,
+    ad: 'Yaşam Boyu Beyin',
+    kisaAd: 'Yaşam boyu',
+    renk: '#ee6a36',
+    aciklama: 'Anne karnından yaşlılığa beynin gelişimi, değişimi ve kendini onarma gücü.',
+    program: program('yasam-boyu', [
+      ['anne-karninda-beyin', 'Anne karnında beyin', 'Nöronların doğuşu, göçü ve ilk bağlantılar.', 'lisans'],
+      ['bebeklik-ve-cocukluk', 'Bebeklik ve çocukluk', 'Sinaps patlaması, budama ve kritik dönemler.', 'temel'],
+      ['ergen-beyni', 'Ergen beyni', 'Miyelinleşme, ödül sistemi ve prefrontal kabuğun olgunlaşması.', 'temel'],
+      ['yaslanan-beyin', 'Yetişkinlik ve yaşlanan beyin', 'Sağlıklı yaşlanma ve bilişsel rezerv.', 'temel'],
+      ['noroplastisite', 'Beyin değişebilir mi?', 'Nöroplastisite, onarım ve rehabilitasyon.', 'lisans'],
+    ]),
+  },
+  {
+    id: 'klinik',
+    sira: 6,
+    ad: 'Klinik Nörobilim',
+    kisaAd: 'Klinik',
+    renk: '#c23a30',
+    aciklama:
+      'Sinir sistemi hastalıklarının anatomik ve hücresel temeli: nörolojik muayenenin mantığı, inme, epilepsi, hareket bozuklukları, bunamalar, MS ve ruhsal bozuklukların beyindeki izleri. Eğitim amaçlıdır; tanı ya da tedavi önerisi değildir.',
+    program: program('klinik', [
+      ['norolojik-muayene', 'Nörolojik muayenenin mantığı', 'Belirtiden yere: hasar nerede?', 'ileri'],
+      ['inme', 'İnme', 'Damar tıkanması ve kanama; damar alanlarına göre belirtiler.', 'ileri'],
+      ['epilepsi', 'Epilepsi', 'Nöbetin hücresel ve ağ düzeyinde temeli.', 'ileri'],
+      ['bas-agrilari', 'Baş ağrıları', 'Migren ve gerilim tipi baş ağrısının mekanizmaları.', 'lisans'],
+      ['beyin-travmasi', 'Beyin travması ve sarsıntı', 'Darbe beyinde ne yapar?', 'lisans'],
+      ['parkinson-ve-hareket-bozukluklari', 'Parkinson hastalığı ve hareket bozuklukları', 'Bazal çekirdek devrelerinin bozulması.', 'ileri'],
+      ['alzheimer-ve-bunamalar', 'Alzheimer hastalığı ve bunamalar', 'Beyinde biriken proteinler ve bellek kaybı.', 'ileri'],
+      ['multipl-skleroz', 'Multipl skleroz ve beyaz cevher hastalıkları', 'Bağışıklık sisteminin miyeline saldırması.', 'ileri'],
+      ['beyin-tumorleri', 'Beyin tümörlerine genel bakış', 'Hücre kökenleri ve belirtilerin yere bağlılığı.', 'ileri'],
+      ['sinir-sistemi-enfeksiyonlari', 'Sinir sistemi enfeksiyonları', 'Menenjit ve ensefalit.', 'ileri'],
+      ['ruhsal-bozukluklarin-beyindeki-izleri', 'Ruhsal bozuklukların beyindeki izleri', 'Depresyon, kaygı, şizofreni: bugün bildiklerimiz.', 'ileri'],
+      ['bagimlilik-ve-beyin', 'Bağımlılık ve beyin', 'Ödül sisteminin ele geçirilmesi.', 'lisans'],
+    ]),
+  },
+  {
+    id: 'yontemler',
+    sira: 7,
+    ad: 'Beyni İnceleme Yöntemleri',
+    kisaAd: 'Yöntemler',
+    renk: '#2f5ce0',
+    aciklama: 'Beyni nasıl görüyor ve ölçüyoruz? EEG, tomografi, MR, fonksiyonel MR, PET, beyin uyarımı ve nöropsikolojik testler.',
+    program: program('yontemler', [
+      ['eeg', 'EEG ve beyin dalgaları', 'Kafa derisinden beynin elektriğini dinlemek.', 'lisans'],
+      ['tomografi-ve-mr', 'Tomografi ve MR', 'Beynin yapısını görüntülemek.', 'lisans'],
+      ['fonksiyonel-mr-ve-pet', 'Fonksiyonel MR ve PET', 'Çalışan beyni görüntülemek ve sınırları.', 'lisans'],
+      ['beyin-uyarimi', 'Beyni uyarmak', 'Manyetik uyarım ve derin beyin uyarımı.', 'ileri'],
+      ['noropsikolojik-degerlendirme', 'Nöropsikolojik değerlendirme', 'Dikkat, bellek ve yürütücü işlevler nasıl ölçülür?', 'lisans'],
+      ['hucre-duzeyinde-yontemler', 'Hücre düzeyinde yöntemler', 'Elektrotlar, boyamalar ve ışıkla nöron kontrolü.', 'ileri'],
+    ]),
+  },
+  {
+    id: 'tarih-ve-efsaneler',
+    sira: 8,
+    ad: 'Nörobilimin Tarihi, Efsaneler ve Etkili Öğrenme',
+    kisaAd: 'Tarih ve efsaneler',
+    renk: '#b07f22',
+    aciklama: 'Beyni anlama serüveni, beynin sırlarını açan hastalar, yaygın beyin efsaneleri ve bilime göre etkili öğrenme.',
+    program: program('tarih-ve-efsaneler', [
+      ['norobilimin-tarihi', 'Nörobilimin tarihi', 'Antik çağdan Cajal’a ve bugüne.', 'temel'],
+      ['beynin-sirlarini-acan-hastalar', 'Beynin sırlarını açan hastalar', 'Phineas Gage, Leborgne ve H.M.', 'temel'],
+      ['beyin-efsaneleri', 'Beyin efsaneleri', '"Beynimizin %10’u", "sağ beyin-sol beyin" ve öğrenme stilleri.', 'temel'],
+      ['bilime-gore-etkili-ogrenme', 'Bilime göre etkili öğrenme', 'Aralıklı tekrar, hatırlama pratiği ve uyku.', 'temel'],
     ]),
   },
 ];
@@ -92,7 +224,11 @@ export function dersBul(dal: string, slug: string): Ders | undefined {
   return hazirDersler().find((d) => d.dal === dal && d.slug === slug);
 }
 
-/** Aynı daldaki önceki ve sonraki hazır ders. */
+export function toplamDers(): number {
+  return DALLAR.reduce((t, d) => t + d.program.length, 0);
+}
+
+/** Aynı bölümdeki önceki ve sonraki hazır ders. */
 export function komsuDersler(ders: Ders): { onceki?: Ders; sonraki?: Ders } {
   const hazir = dalBul(ders.dal)!.program.flatMap((p) => (p.ders ? [p.ders] : []));
   const i = hazir.findIndex((d) => d.slug === ders.slug);

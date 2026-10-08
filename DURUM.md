@@ -193,12 +193,27 @@ bilgi verecek düzeyde; (2) beyin nasıl çalışır: nöronlar, öğrenme ve ç
 hareketli. Site sahibi bölümü **2026-10-13 dolayında alanında uzman kişilere tanıtacak**; adım adım, acele etmeden.
 Kararları: üç boyutlu model + hareketli çizimler; ad "Beyin Akademisi"; dersler hazır oldukça doğrudan yayına.
 
-- Adresler: `/beyin-akademisi`, `/beyin-akademisi/anatomi`, `/beyin-akademisi/nasil-calisir`,
-  `/beyin-akademisi/<dal>/<ders>`, `/beyin-akademisi/beyin-gezgini`.
-- Program (2 × 20 ders) ve hazır derslerin kaydı: `src/content/beyin/index.ts`. Hazır: Anatomi 1.
-- Sıradaki dersler (öneri): Nasıl Çalışır 1 (Nöron), Anatomi 2 (Beyni koruyanlar; kafatası paketi modelde hazır,
-  zarlar ve beyin-omurilik sıvısı için hareketli çizim), Nasıl Çalışır 2–5 (glia, dinlenim gerilimi, sinir sinyali,
-  sinaps), Anatomi 3–4. Her mesajda bir iki ders.
+Genişletilmiş hedef (site sahibinin 2026-10-08 ikinci isteği, onaylı): kişiyi sıfırdan uzman düzeyine taşıyan en
+büyük Türkçe beyin kaynağı; tıp, nörobilim ve psikoloji bir arada; lise ve sağlık lisesi öğrencileri, tıp, nörobilim
+ve psikoloji öğrencileri, meraklılar için; tıp fakültelerinin de kullanabileceği ücretsiz kaynak. Dört ayak: Dersler,
+Atlas, Ansiklopedi, Pratik. **Her işlemede bir ders**, acele yok, tek ölçüt kalite. Uzmanlarla site sahibi görüşür.
+Yanıtlanmamış iki soru (sorulmadan değiştirilmez): uzman adları sayfalarda görünsün mü (şimdilik "Uzman incelemesi
+bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
+
+- Adresler: `/beyin-akademisi`, `/beyin-akademisi/<bölüm>` (8 bölüm), `/beyin-akademisi/<bölüm>/<ders>`,
+  `/beyin-akademisi/beyin-gezgini`. Eski `/beyin-akademisi/nasil-calisir` adresleri `hucre-ve-molekul`'e kalıcı yönlenir.
+- Program: 8 bölüm, 100 ders (`src/content/beyin/index.ts`): Anatomi 30, Hücreden Sinyale 16, Sistem Nörobilimi 15,
+  Zihin ve Davranış 12, Yaşam Boyu Beyin 5, Klinik Nörobilim 12, İnceleme Yöntemleri 6, Tarih, Efsaneler ve Etkili
+  Öğrenme 4. Her dersin seviyesi var: Temel, Lisans, İleri ve klinik.
+- Ders standardı: katmanlı anlatım (temel metin + "Derinleş", "Klinik bağlantı", "Sınav notu" kutuları; ileri
+  sahne ve çizimler `ileri: true`); okuyucu "Yalnızca temel anlatım" seçince ileri katman ve ileri sorular gizlenir
+  (hiçbir yere kaydedilmez). Her derste birkaç üç boyutlu sahne ve hareketli çizim, sözlük, en az 10 seviyeli soru
+  (en az 5'i temel), açılıp okunmuş kaynaklar, ilgiliyse UÇEP 2020 maddeleri (öğrenme düzeyiyle).
+- Hazır: Anatomi 1 "Sinir sistemine ilk bakış ve anatominin dili" (sürüm 2: 7 bölüm, 11 sahne, 6 hareketli çizim, 44
+  terim, 16 soru, 17 kaynak; UÇEP: İnme, Multipl skleroz).
+- **Sıradaki ders:** Anatomi 2 "Kafatası: beynin kemik kalesi" (kafatası paketi modelde hazır: 8 kemik). Sonra program
+  sırasıyla Anatomi 3, 4, ...; site sahibi başka bir ders isterse o yapılır.
+- Doğrulanamayan, derse girmeyen bilgiler: "Sylvius yarığı" adı (yalnızca Vikipedi), hemiparezi terimleri.
 - Hiçbir şey saklanmaz: ilerleme işaretlenmez, "Kendini dene" cevapları yalnızca sayfanın belleğinde durur.
 
 ## Testler
@@ -341,6 +356,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (7): Beyin Akademisi büyütüldü (site sahibinin onayladığı yapı): 8 bölüm, 100 derslik program, ders
+  seviyeleri, katmanlı ders ("Derinleş", "Klinik bağlantı", "Sınav notu"), okuma düzeyi seçici, UÇEP 2020 eşlemesi,
+  dört ayaklı ana sayfa. İlk ders baştan genişletildi (omurilik sinirleri, otonom sistemin iki kolu, MR'da sağ-sol
+  çizimleri; insula, lif türleri, kafatası ve atardamar sahneleri). Üç boyutlu sahnelerde etiket noktaları yapının
+  görünen yüzüne oturuyor, kesitte kaldırılan parçanın etiketi gizleniyor, kesik yüze dokununca yapı seçiliyor,
+  telefonda kesit paneli kısaldı; sahneye özel boya.
 - 2026-10-08 (6): 16 Faktörlü Kişilik Profili yayında: 160 madde, 16 özellik, öğrenci, veli ve yetişkin raporu,
   16 sütunlu 3B grafikli yol haritası (öneriler en belirgin altı özellik için); telefonda ve masaüstünde baştan sona
   çözüldü, rapor ve PDF açıldı.
@@ -394,6 +415,3 @@ En yeni üstte; en çok 10 madde tutulur.
   sitenin kendisine açık.
 - 2026-10-07: Zihinsel görevlerin (sekiz görev) gelişim yol haritaları yayında; artık çözülebilen her testin raporunda
   yol haritası var. SSS'deki "Ücretli mi?" cevabı buna göre güncellendi; yayın denetimi görev yol haritasını da sınıyor.
-- 2026-10-07: Matematik Konu Tarama ve Okuma Hızı ve Anlama gelişim yol haritaları yayında (öğrenci ve veli raporu,
-  ekranda ve PDF'te): konu alanlarına ve okuma becerilerine göre çalışma önerileri, haftalık çalışma düzeni ve okuma
-  alışkanlığı, veliye destek, dört haftalık plan. Yayın denetimi iki raporun yol haritasını dışarıdan sınıyor.

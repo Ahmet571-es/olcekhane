@@ -1,6 +1,6 @@
 import type { Sahne } from '@/content/beyin/types';
 import type { Bolge, Lob, Yapi } from '@/content/beyin/yapilar';
-import { tarafsiz } from './secici';
+import { tarafsiz, uyar } from './secici';
 
 /**
  * Üç boyutlu beynin renkleri. Renkler yapıyı ya da bölgeyi tanıtır; iyi ya da kötü anlamı taşımaz. Lob renkleri
@@ -85,4 +85,10 @@ export function yapiRengi(y: Yapi, sema: NonNullable<Sahne['renk']>): string {
     return DOGAL[y.bolge] ?? '#e8b7ab';
   }
   return YAPI_RENGI[tarafsiz(y.id)] ?? (y.lob ? LOB_RENGI[y.lob] : BOLGE_RENGI[y.bolge]);
+}
+
+/** Sahnedeki rengi: sahneye özel boya varsa o, yoksa renk şemasının rengi. */
+export function sahneRengi(y: Yapi, ayar: Pick<Sahne, 'renk' | 'boya'>): string {
+  const boya = ayar.boya?.find((b) => uyar(y, b.secici));
+  return boya?.renk ?? yapiRengi(y, ayar.renk ?? 'lob');
 }

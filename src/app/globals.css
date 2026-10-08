@@ -1408,6 +1408,70 @@
   .beyin-kutu-dikkat {
     border-left: 5px solid var(--brass);
   }
+  .beyin-kutu-derinles {
+    border-left: 5px solid var(--dim-int);
+    background: color-mix(in srgb, var(--dim-int) 6%, var(--surface));
+  }
+  .beyin-kutu-klinik {
+    border-left: 5px solid var(--marker);
+    background: color-mix(in srgb, var(--marker) 5%, var(--surface));
+  }
+  .beyin-kutu-sinav-notu {
+    border-left: 5px solid var(--brass);
+    background: color-mix(in srgb, var(--brass) 7%, var(--surface));
+  }
+  /* Yardımcı sınıflar (ör. flex) bu kuralı ezmesin diye !important. */
+  [data-duzey="temel"] .katman-ileri {
+    display: none !important;
+  }
+  .beyin-seviye {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid var(--rule-strong);
+    color: var(--ink-2);
+    background: var(--surface);
+  }
+}
+@keyframes otonom-kalp {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.14);
+  }
+}
+@keyframes otonom-damla {
+  0% {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+}
+@keyframes otonom-bagirsak {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+.otonom-kalp {
+  animation: otonom-kalp 0.9s ease-in-out infinite;
+}
+.otonom-damla {
+  animation: otonom-damla 1.1s ease-in infinite;
+}
+.otonom-bagirsak {
+  animation: otonom-bagirsak 1s linear infinite;
 }
 @keyframes beyin-don {
   to {

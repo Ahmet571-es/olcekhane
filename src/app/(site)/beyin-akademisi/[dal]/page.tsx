@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/seo/json-ld';
 import { PageGuide } from '@/components/site/page-guide';
-import { BEYIN_YOLU, DALLAR, dalBul } from '@/content/beyin';
+import { BEYIN_YOLU, DALLAR, SEVIYE_ADLARI, dalBul } from '@/content/beyin';
 import { siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
@@ -26,7 +26,7 @@ export default async function DalPage(props: PageProps<'/beyin-akademisi/[dal]'>
   if (!d) notFound();
   const hazir = d.program.filter((p) => p.ders);
   const ilkHazir = hazir[0];
-  const obur = DALLAR.find((x) => x.id !== d.id)!;
+  const sonraki = DALLAR.find((x) => x.sira === d.sira + 1) ?? DALLAR[0];
 
   return (
     <>
@@ -63,18 +63,19 @@ export default async function DalPage(props: PageProps<'/beyin-akademisi/[dal]'>
             <Link href={BEYIN_YOLU}>Beyin Akademisi</Link>
           </nav>
           <p className="kicker">
-            {d.program.length} ders · {hazir.length} ders hazır
+            {d.sira}. bölüm · {d.program.length} ders · {hazir.length > 0 ? `${hazir.length} ders hazır` : 'hazırlanıyor'}
           </p>
           <h1 className="t-section max-w-4xl">{d.ad}</h1>
           <p className="t-lede measure">{d.aciklama}</p>
           <PageGuide
             next={[
               ...(ilkHazir ? [{ href: `${BEYIN_YOLU}/${d.id}/${ilkHazir.slug}`, label: `${ilkHazir.sira}. derse başla` }] : []),
-              { href: `${BEYIN_YOLU}/${obur.id}`, label: obur.ad },
+              { href: `${BEYIN_YOLU}/${sonraki.id}`, label: `${sonraki.sira}. bölüm: ${sonraki.kisaAd}` },
             ]}
           >
             <p>
               Dersler birbirinin üstüne kurulur; sırayla okuman önerilir. Bağlantılı olanlar hazırdır, ötekiler hazırlanıyor.
+              Her dersin yanında seviyesi yazar; her ders yine de sade bir temel anlatımla başlar.
             </p>
           </PageGuide>
         </div>
@@ -89,12 +90,18 @@ export default async function DalPage(props: PageProps<'/beyin-akademisi/[dal]'>
                   href={`${BEYIN_YOLU}/${d.id}/${p.slug}`}
                   className="panel group flex h-full gap-4 p-5 no-underline transition-colors hover:border-ink"
                 >
-                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-ink font-display text-lg font-bold text-paper">
+                  <span
+                    className="grid size-11 shrink-0 place-items-center rounded-full font-display text-lg font-bold text-white"
+                    style={{ background: d.renk }}
+                  >
                     {p.sira}
                   </span>
                   <span className="flex flex-col gap-1">
                     <span className="font-display text-lg font-bold leading-snug group-hover:underline">{p.baslik}</span>
                     <span className="t-small text-ink-2">{p.ozet}</span>
+                    <span className="mt-1">
+                      <span className="beyin-seviye">{SEVIYE_ADLARI[p.seviye]}</span>
+                    </span>
                   </span>
                 </Link>
               ) : (
@@ -105,7 +112,7 @@ export default async function DalPage(props: PageProps<'/beyin-akademisi/[dal]'>
                   <span className="flex flex-col gap-1">
                     <span className="font-display text-lg font-bold leading-snug text-ink-2">{p.baslik}</span>
                     <span className="t-small text-ink-3">{p.ozet}</span>
-                    <span className="t-meta">Hazırlanıyor</span>
+                    <span className="t-meta">{SEVIYE_ADLARI[p.seviye]} · Hazırlanıyor</span>
                   </span>
                 </div>
               )}

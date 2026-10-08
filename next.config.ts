@@ -48,6 +48,10 @@ const nextConfig: NextConfig = {
       { source: '/testler/matematik-tani-testi/:rest*', destination: '/testler/matematik-konu-tarama-testi/:rest*', permanent: true },
       // 2026-10-07'de indirilen Okuma Hızı ve Anlama PDF'lerinde rehber yazısının adresi yanlış basıldı.
       { source: '/rehber/okuma-hizi-ve-anlama', destination: '/rehber/okuma-hizi-ve-okudugunu-anlama', permanent: true },
+      // Beyin Akademisi 2026-10-08'de iki daldan sekiz bölüme geçti; "Beyin Nasıl Çalışır?" dalının yerini
+      // "Hücreden Sinyale" bölümü aldı.
+      { source: '/beyin-akademisi/nasil-calisir', destination: '/beyin-akademisi/hucre-ve-molekul', permanent: true },
+      { source: '/beyin-akademisi/nasil-calisir/:rest*', destination: '/beyin-akademisi/hucre-ve-molekul', permanent: true },
     ];
   },
   async headers() {

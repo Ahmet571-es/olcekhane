@@ -1,10 +1,11 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import nextConfig from '../next.config';
 import sitemap from '@/app/sitemap';
-import { BEYIN_YOLU, DALLAR, hazirDersler } from '@/content/beyin';
+import { BEYIN_YOLU, DALLAR, hazirDersler, SEVIYE_ADLARI, toplamDers } from '@/content/beyin';
 import { MODEL_SURUMU, MODEL_YOLU } from '@/content/beyin/model-surum';
-import type { Sahne } from '@/content/beyin/types';
+import { ILERI_KUTULAR, type KutuCesidi, type Sahne } from '@/content/beyin/types';
 import { BOLGE_ADLARI, KATMAN_ADLARI, LOB_ADLARI, YAPILAR } from '@/content/beyin/yapilar';
 
 /**
@@ -91,11 +92,32 @@ describe('yapı kataloğu ve model', () => {
 });
 
 describe('dersler', () => {
-  it('her dalın programı 20 derstir; kısa adlar benzersiz', () => {
+  it('program 8 bölüm, 100 derstir; sıralar ardışık, adresler benzersiz', () => {
+    expect(DALLAR).toHaveLength(8);
+    expect(DALLAR.map((d) => d.sira)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(new Set(DALLAR.map((d) => d.id)).size).toBe(8);
+    expect(toplamDers()).toBe(100);
+    expect(DALLAR.reduce((t, d) => t + d.program.length, 0)).toBe(100);
     for (const d of DALLAR) {
-      expect(d.program).toHaveLength(20);
-      expect(new Set(d.program.map((p) => p.slug)).size).toBe(20);
-      expect(d.program.map((p) => p.sira)).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
+      expect(d.renk, d.id).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(d.aciklama.length, d.id).toBeGreaterThan(60);
+      expect(new Set(d.program.map((p) => p.slug)).size, d.id).toBe(d.program.length);
+      expect(d.program.map((p) => p.sira)).toEqual(Array.from({ length: d.program.length }, (_, i) => i + 1));
+      for (const p of d.program) {
+        expect(p.slug, p.slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+        expect(p.seviye in SEVIYE_ADLARI, p.slug).toBe(true);
+        expect(p.ozet.length, p.slug).toBeGreaterThan(20);
+      }
+    }
+  });
+
+  it('eski "nasıl çalışır" adresleri yeni bölüme kalıcı yönlenir', async () => {
+    const yonler = await nextConfig.redirects!();
+    const eski = yonler.filter((y) => y.source.startsWith(`${BEYIN_YOLU}/nasil-calisir`));
+    expect(eski.length).toBeGreaterThan(0);
+    for (const y of eski) {
+      expect(y.permanent).toBe(true);
+      expect(y.destination).toBe(`${BEYIN_YOLU}/hucre-ve-molekul`);
     }
   });
 
@@ -104,7 +126,14 @@ describe('dersler', () => {
     for (const d of hazirDersler()) {
       const yer = DALLAR.find((x) => x.id === d.dal)!.program.find((p) => p.slug === d.slug)!;
       expect(yer.sira, d.slug).toBe(d.sira);
+      expect(yer.seviye, d.slug).toBe(d.seviye);
       expect(yer.baslik.length).toBeGreaterThan(5);
+      expect(d.yayin, d.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(d.guncelleme >= d.yayin, d.slug).toBe(true);
+      for (const u of d.ucep ?? []) {
+        expect(u.no, d.slug).toBeGreaterThan(0);
+        expect(u.duzey, d.slug).toMatch(/^(A|ÖnT|T|TT|İ|K)(-(A|ÖnT|T|TT|İ|K))*$/);
+      }
       expect(d.aciklama.length, d.slug).toBeLessThanOrEqual(160);
       expect(d.hedefler.length).toBeGreaterThanOrEqual(3);
       expect(d.bolumler.length).toBeGreaterThanOrEqual(3);
@@ -121,6 +150,27 @@ describe('dersler', () => {
     }
   });
 
+  it('katmanlı ders: temel anlatım tek başına da tamdır; ileri katman kutuları geçerli', () => {
+    const CESITLER: KutuCesidi[] = ['aklinda-kalsin', 'biliyor-muydun', 'dikkat', ...ILERI_KUTULAR];
+    for (const d of hazirDersler()) {
+      for (const b of d.bolumler) {
+        const bloklar = b.bloklar;
+        // Her bölümde temel okuyucunun gördüğü en az bir metin bloğu bulunur.
+        expect(bloklar.some((k) => k.tur === 'metin'), `${d.slug}#${b.id}`).toBe(true);
+        for (const k of bloklar) {
+          if (k.tur === 'kutu') {
+            expect(CESITLER, `${d.slug}#${b.id}`).toContain(k.cesit);
+            expect(k.md.length, `${d.slug}#${b.id}`).toBeGreaterThan(40);
+          }
+        }
+      }
+      // Temel düzeyde de en az bir sahne ve bir hareketli çizim kalır.
+      const temel = d.bolumler.flatMap((b) => b.bloklar).filter((k) => !((k.tur === 'sahne' || k.tur === 'animasyon') && k.ileri));
+      expect(temel.some((k) => k.tur === 'sahne'), d.slug).toBe(true);
+      expect(temel.some((k) => k.tur === 'animasyon'), d.slug).toBe(true);
+    }
+  });
+
   it('sorular: doğru cevap seçeneklerde, açıklaması var, doğru şıklar tek bir yere yığılmamış', () => {
     for (const d of hazirDersler()) {
       expect(d.sorular.length, d.slug).toBeGreaterThanOrEqual(6);
@@ -131,9 +181,12 @@ describe('dersler', () => {
         expect(s.dogru).toBeGreaterThanOrEqual(0);
         expect(s.dogru).toBeLessThan(s.secenekler.length);
         expect(s.aciklama.length).toBeGreaterThan(20);
+        expect(s.seviye in SEVIYE_ADLARI, s.soru).toBe(true);
         yerler.set(s.dogru, (yerler.get(s.dogru) ?? 0) + 1);
       }
       expect(Math.max(...yerler.values()), d.slug).toBeLessThanOrEqual(Math.ceil(d.sorular.length / 2));
+      // "Yalnızca temel anlatım" seçen de sınanabilsin.
+      expect(d.sorular.filter((s) => s.seviye === 'temel').length, d.slug).toBeGreaterThanOrEqual(5);
     }
   });
 
@@ -147,6 +200,10 @@ describe('dersler', () => {
         expect(seciciGecerli(e.yapi), `${ders}: etiket ${e.yapi}`).toBe(true);
         const y = YAPILAR.find((x) => x.id === e.yapi || x.id.replace(/-(sol|sag)$/, '') === e.yapi)!;
         expect(sahne.katmanlar, `${ders}: ${e.yapi} paketi yüklenmiyor`).toContain(y.katman);
+      }
+      for (const b of sahne.boya ?? []) {
+        expect(b.renk, ders).toMatch(/^#[0-9a-f]{6}$/i);
+        for (const s of b.secici) expect(seciciGecerli(s), `${ders}: boya ${s}`).toBe(true);
       }
       if (sahne.kesit) expect(Math.abs(sahne.kesit.konum)).toBeLessThanOrEqual(1);
       // Etiketli sahneler dönmez (dönerken etiketler gizlenir).

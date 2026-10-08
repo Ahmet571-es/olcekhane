@@ -13,6 +13,8 @@ interface Sahip {
 let sahip: Sahip | null = null;
 let sayac = 0;
 const gorunurluk = new Map<number, { oran: number; sec: () => void }>();
+/** Araç paneli açık olan kutular: kullanıcı onunla uğraşırken çizici, kutu az da olsa görünüyorsa başkasına geçmez. */
+const mesgul = new Set<number>();
 let secimZamanlayici: number | null = null;
 
 export function yeniNo(): number {
@@ -53,6 +55,12 @@ export function sahipMi(no: number): boolean {
 export function birakildi(no: number) {
   if (sahip?.no === no) sahip = null;
   gorunurluk.delete(no);
+  mesgul.delete(no);
+}
+
+export function mesgulBildir(no: number, acik: boolean) {
+  if (acik) mesgul.add(no);
+  else mesgul.delete(no);
 }
 
 /** Görünürlük oranı değişince en çok görünen kutu çiziciyi alır (kısa bir beklemeyle, kaydırırken titremesin diye). */
@@ -68,6 +76,7 @@ export function gorunurlukBildir(no: number, oran: number, sec: () => void) {
     // Şu anki sahip hâlâ iyi görünüyorsa değiştirme.
     const simdiki = sahip ? gorunurluk.get(sahip.no) : undefined;
     if (simdiki && simdiki.oran >= 0.6 && simdiki.oran >= enIyi[1].oran - 0.15) return;
+    if (simdiki && sahip && mesgul.has(sahip.no) && simdiki.oran >= 0.15) return;
     enIyi[1].sec();
   }, 180);
 }

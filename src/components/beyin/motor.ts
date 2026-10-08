@@ -26,7 +26,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import type { Bakis, KesitDuzlemi, Sahne } from '@/content/beyin/types';
 import { YAPILAR, type Katman, type Yapi, yapiAdi } from '@/content/beyin/yapilar';
 import { katmanYukle } from './model';
-import { yapiRengi } from './renkler';
+import { sahneRengi } from './renkler';
 import { seciciUyar, tarafsiz, uyar } from './secici';
 
 /**
@@ -73,6 +73,19 @@ interface Etiket {
   metin: HTMLSpanElement;
   cizgi: SVGLineElement;
   ortulu: boolean;
+  /** Son görünürlük denetiminde seçilen nokta adayı. */
+  aday: number;
+}
+
+/**
+ * Etiket noktası için hedef: kutunun merkezi, beynin ortasından dışarı doğru biraz itilir. Böylece kemik gibi kabuk
+ * biçimli yapılarda nokta iç yüze değil dış yüze, kıvrımlarda görünen yüze düşer.
+ */
+function disaDogru(kutu: Box3): Vector3 {
+  const m = kutu.getCenter(new Vector3());
+  const u = m.length();
+  if (u < 1) return m;
+  return m.clone().addScaledVector(m.clone().divideScalar(u), kutu.getSize(new Vector3()).length() * 0.25);
 }
 
 const gecis = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
@@ -98,6 +111,8 @@ export class BeyinMotoru {
   private secili: string | null = null;
   private uzerinde: string | null = null;
   private etiketler: Etiket[] = [];
+  /** Etiket noktası önbelleği (yapı ve aday → kesit, konum ve kamera anahtarı, nokta). */
+  private readonly kesitNoktalari = new Map<string, { anahtar: string; nokta: Vector3 | null }>();
   private etiketGoster = true;
   private ayristirma = 0;
   private hedefAyristirma = 0;
@@ -289,6 +304,7 @@ export class BeyinMotoru {
         ag.userData.yapi = y.id;
         grup.add(ag);
         const kesitAgi = new Mesh(g, kesitMalzeme);
+        kesitAgi.userData.yapi = y.id;
         kesitAgi.visible = false;
         kesitAgi.renderOrder = -1;
         grup.add(kesitAgi);
@@ -434,7 +450,7 @@ export class BeyinMotoru {
   private renkleriUygula(yeni: boolean) {
     const sema = this.ayar.renk ?? 'lob';
     for (const n of this.nesneler.values()) {
-      n.hedefRenk.set(yapiRengi(n.yapi, sema));
+      n.hedefRenk.set(sahneRengi(n.yapi, this.ayar));
       if (yeni && n.opaklik === 0) n.renk.copy(n.hedefRenk);
       const kesitRengi = n.hedefRenk.clone().multiplyScalar(n.yapi.katman === 'beyaz' || sema === 'dogal' ? 0.97 : 0.86);
       n.kesitMalzeme.color.copy(kesitRengi);
@@ -465,7 +481,9 @@ export class BeyinMotoru {
     const hedefler: Mesh[] = [];
     for (const n of this.nesneler.values()) {
       if (!n.grup.visible || n.opaklik < 0.08) continue;
-      for (const c of n.grup.children) if (c instanceof Mesh && c.material === n.malzeme) hedefler.push(c);
+      // Kesit varken kesik yüze dokunmak da o yapıyı seçer.
+      for (const c of n.grup.children)
+        if (c instanceof Mesh && (c.material === n.malzeme || (this.duzlemler.length > 0 && c.material === n.kesitMalzeme))) hedefler.push(c);
     }
     const vuruslar = this.isinci.intersectObjects(hedefler, false);
     const vurguVar = (this.ayar.vurgula?.length ?? 0) > 0;
@@ -563,9 +581,84 @@ export class BeyinMotoru {
       const cizgi = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       svg.append(cizgi);
       this.etiketKati.append(nokta, metin);
-      this.etiketler.push({ id: ilk.yapi.id, nokta, metin, cizgi, ortulu: false });
+      this.etiketler.push({ id: ilk.yapi.id, nokta, metin, cizgi, ortulu: false, aday: 0 });
     }
     this.etiketleriYerlestir(true);
+  }
+
+  /**
+   * Etiket noktası adayının hedefi (dünya koordinatı): 0 kameraya bakan yüz, 1 beynin ortasından dışa bakan yüz
+   * (kemik gibi kabuk biçimli yapılarda dış yüz), 2 kutunun merkezi. Nokta, yapının bu hedefe en yakın köşesidir.
+   */
+  private etiketHedefi(n: YapiNesnesi, aday: number): Vector3 {
+    const g = n.grup.position;
+    if (aday === 1) return disaDogru(n.kutu).add(g);
+    const m = n.merkez.clone().add(g);
+    if (aday === 2) return m;
+    const yon = this.kamera.position.clone().sub(m).normalize();
+    return m.addScaledVector(yon, n.kutu.getSize(new Vector3()).length() * 0.5);
+  }
+
+  /**
+   * Etiketin dünya koordinatındaki noktası: yapının, adayın hedefine en yakın köşesi (kıvrık bir damarda bile nokta
+   * damarın üstündedir). Kesitle kaldırılan köşeler atlanır; yapının hepsi kaldırıldıysa null (etiket boşlukta asılı
+   * kalmasın).
+   */
+  private etiketNoktasi(n: YapiNesnesi, aday: number): Vector3 | null {
+    const g = n.grup.position;
+    const yuvarla = (v: Vector3) => v.toArray().map((x) => Math.round(x * 2) / 2).join(',');
+    const anahtar = [
+      this.duzlemler.map((d) => `${d.normal.toArray().join(',')},${d.constant}`).join('|'),
+      yuvarla(g),
+      aday === 0 ? yuvarla(this.kamera.position) : '',
+    ].join('/');
+    const kayit = `${n.yapi.id}#${aday}`;
+    const onceki = this.kesitNoktalari.get(kayit);
+    if (onceki?.anahtar === anahtar) return onceki.nokta?.clone() ?? null;
+    const hedef = this.etiketHedefi(n, aday);
+    const v = new Vector3();
+    let enIyi = Infinity;
+    let nokta: Vector3 | null = null;
+    for (const m of n.kesitAglari) {
+      const k = m.geometry.getAttribute('position');
+      for (let i = 0; i < k.count; i++) {
+        v.set(k.getX(i), k.getY(i), k.getZ(i)).add(g);
+        if (this.duzlemler.some((d) => d.distanceToPoint(v) < 0)) continue;
+        const u = v.distanceToSquared(hedef);
+        if (u < enIyi) {
+          enIyi = u;
+          nokta = v.clone();
+        }
+      }
+    }
+    this.kesitNoktalari.set(kayit, { anahtar, nokta });
+    return nokta?.clone() ?? null;
+  }
+
+  /** Bu noktanın önünü (kameradan bakınca) başka bir yapı kapatıyor mu? */
+  private onuKapali(n: YapiNesnesi, p: Vector3): boolean {
+    const kesitVar = this.duzlemler.length > 0;
+    const yon = p.clone().sub(this.kamera.position);
+    const uzak = yon.length();
+    this.isinci.set(this.kamera.position, yon.normalize());
+    const engel = this.isinci
+      .intersectObjects(
+        [...this.nesneler.values()]
+          .filter((m) => m.grup.visible && m.opaklik > 0.6)
+          // Kesit varken kesik yüzler de önü kapatır (kesit yüzünün altında kalan noktanın etiketi gizlenir).
+          .flatMap((m) => m.grup.children.filter((c) => c instanceof Mesh && (c.material === m.malzeme || (kesitVar && c.material === m.kesitMalzeme)))),
+        false,
+      )
+      .find((v) => !this.duzlemler.some((d) => d.distanceToPoint(v.point) < 0));
+    // Nokta yüzeyde durduğundan pay küçüktür; oluğun dibindeki nokta komşu kıvrımın kenarına takılmasın diye biraz pay.
+    const pay = Math.min(n.kutu.getSize(new Vector3()).length() * 0.35, 15);
+    return Boolean(engel && engel.object.userData.yapi !== n.yapi.id && engel.distance < uzak - pay);
+  }
+
+  /** Ekranın içinde mi? */
+  private ekranda(p: Vector3): boolean {
+    const e = p.clone().project(this.kamera);
+    return e.z < 1 && Math.abs(e.x) <= 1.05 && Math.abs(e.y) <= 1.05;
   }
 
   /**
@@ -585,24 +678,22 @@ export class BeyinMotoru {
     const H = r.height;
     const yerler = this.etiketler.map((e) => {
       const n = this.nesneler.get(e.id)!;
-      const p = n.merkez.clone().add(n.grup.position);
-      const ekran = p.clone().project(this.kamera);
-      let gorunur = ekran.z < 1 && Math.abs(ekran.x) <= 1.05 && Math.abs(ekran.y) <= 1.05 && n.opaklik > 0.05;
-      if (gorunur && ortu) {
-        const yon = p.clone().sub(this.kamera.position);
-        const uzak = yon.length();
-        this.isinci.set(this.kamera.position, yon.normalize());
-        const engel = this.isinci
-          .intersectObjects(
-            [...this.nesneler.values()]
-              .filter((m) => m.grup.visible && m.opaklik > 0.6)
-              .flatMap((m) => m.grup.children.filter((c) => c instanceof Mesh && c.material === m.malzeme)),
-            false,
-          )
-          .find((v) => !this.duzlemler.some((d) => d.distanceToPoint(v.point) < 0));
-        e.ortulu = Boolean(engel && engel.object.userData.yapi !== e.id && engel.distance < uzak - n.kutu.getSize(new Vector3()).length() * 0.35);
+      if (ortu) {
+        // Kamera dururken adaylar sırayla denenir: kesilmemiş, ekranda ve önü açık olan ilk nokta seçilir.
+        e.ortulu = true;
+        for (let a = 0; a < 3; a++) {
+          const q = this.etiketNoktasi(n, a);
+          if (q && this.ekranda(q) && !this.onuKapali(n, q)) {
+            e.aday = a;
+            e.ortulu = false;
+            break;
+          }
+        }
       }
-      gorunur = gorunur && !e.ortulu;
+      const nokta = this.etiketNoktasi(n, e.aday);
+      const p = nokta ?? n.merkez.clone().add(n.grup.position);
+      const ekran = p.clone().project(this.kamera);
+      const gorunur = nokta !== null && !e.ortulu && this.ekranda(p) && n.opaklik > 0.05;
       return { e, x: ((ekran.x + 1) / 2) * W, y: ((1 - ekran.y) / 2) * H, gorunur };
     });
     const gorunen = yerler.filter((y) => y.gorunur);
@@ -622,7 +713,8 @@ export class BeyinMotoru {
       let ty = y.y + dy * 30;
       let sol = sagda ? tx : tx - gen;
       sol = Math.min(Math.max(sol, 6), W - gen - 6);
-      ty = Math.min(Math.max(ty, yuk / 2 + 6), H - yuk / 2 - 6);
+      // Üstteki yuvarlak düğmelerin altında kalmasın.
+      ty = Math.min(Math.max(ty, yuk / 2 + 58), H - yuk / 2 - 6);
       return { y, sol, ust: ty - yuk / 2, gen, yuk, sagda };
     });
     // Çakışma giderme: yukarıdan aşağıya sırayla, üst üste binen kutuyu aşağı kaydır.

@@ -4,8 +4,8 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { Bakis, KesitDuzlemi, Sahne, SahneAraci } from '@/content/beyin/types';
 import { BOLGE_ADLARI, KATMAN_ADLARI, LOB_ADLARI, type Katman, type Yapi, yapiAdi, yapiById } from '@/content/beyin/yapilar';
 import type { BeyinMotoru } from './motor';
-import { birakildi, gorunurlukBildir, sahiplen, sahipMi, yeniNo } from './paylasim';
-import { yapiRengi } from './renkler';
+import { birakildi, gorunurlukBildir, mesgulBildir, sahiplen, sahipMi, yeniNo } from './paylasim';
+import { sahneRengi } from './renkler';
 import { oneCikanlar, sahnedekiYapilar } from './secici';
 
 /**
@@ -80,6 +80,7 @@ export function BeyinSahnesi({
   araclar = ['bakis', 'liste'],
   buyuk = false,
   basliksiz = false,
+  ileri = false,
 }: {
   sahne: Sahne;
   baslik?: string;
@@ -88,6 +89,8 @@ export function BeyinSahnesi({
   buyuk?: boolean;
   /** Başlık ve açıklama sayfada başka yerde yazıyorsa. */
   basliksiz?: boolean;
+  /** İleri katmana ait sahne. */
+  ileri?: boolean;
 }) {
   const no = useMemo(() => yeniNo(), []);
   const kimlik = useId();
@@ -175,6 +178,11 @@ export function BeyinSahnesi({
     };
   }, [no, etkinlestir]);
 
+  // Araç paneli açıkken kullanıcı bu sahneyle uğraşıyordur: çizici başka kutuya kolay kolay geçmesin.
+  useEffect(() => {
+    mesgulBildir(no, panel !== null);
+  }, [no, panel]);
+
   // Tam ekranda sayfa kaymasın; Esc ile çıkılır.
   useEffect(() => {
     if (!tamEkran) return;
@@ -257,12 +265,11 @@ export function BeyinSahnesi({
   }, [etkinAyar]);
   const seciliYapi = secili ? yapiById(secili) : undefined;
   const paneller = [...new Set(araclar.map((a) => ARAC_PANELI[a]).filter((p): p is Panel => Boolean(p)))];
-  const renkSemasi = etkinAyar.renk ?? 'lob';
   const yukleniyor = durum === 'yukleniyor' || durum === 'bos';
   const bilgiKarti = seciliYapi ? (
     <div className={`beyin-bilgi ${genis ? 'beyin-bilgi-ust' : 'beyin-bilgi-alt'}`} role="dialog" aria-label={yapiAdi(seciliYapi)}>
       <div className="flex items-start gap-3">
-        <span className="mt-1.5 size-3 shrink-0 rounded-full" style={{ background: yapiRengi(seciliYapi, renkSemasi) }} aria-hidden="true" />
+        <span className="mt-1.5 size-3 shrink-0 rounded-full" style={{ background: sahneRengi(seciliYapi, etkinAyar) }} aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <p className="font-display text-lg font-bold leading-tight">{yapiAdi(seciliYapi)}</p>
           <p className="t-small text-[var(--beyin-soluk)]">
@@ -292,7 +299,7 @@ export function BeyinSahnesi({
     >
       {baslik && !basliksiz && (
         <div className="flex flex-col gap-1 px-1 pb-3">
-          <p className="kicker">Üç boyutlu sahne</p>
+          <p className="kicker">{ileri ? 'Üç boyutlu sahne · ileri katman' : 'Üç boyutlu sahne'}</p>
           <h3 id={`${kimlik}-b`} className="font-display text-xl font-bold leading-tight">
             {baslik}
           </h3>
@@ -427,19 +434,24 @@ export function BeyinSahnesi({
 
           {panel === 'kesit' && (
             <div id={`${kimlik}-kesit`} className="beyin-panel">
-              <label className="beyin-onay">
-                <input type="checkbox" checked={kesitAcik} onChange={(e) => kesitDegis(e.target.checked)} />
-                <span>Beyni kes</span>
-              </label>
-              <div className="flex flex-wrap gap-2">
+              {/* Telefonda sahne ile kaydırıcı aynı ekrana sığsın diye panel kısa tutulur. */}
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="beyin-onay">
+                  <input type="checkbox" checked={kesitAcik} onChange={(e) => kesitDegis(e.target.checked)} />
+                  <span>Kes</span>
+                </label>
                 {DUZLEMLER.map(({ d, ad, aciklama: a }) => (
                   <button key={d} type="button" className="beyin-secenek" aria-pressed={kesitAcik && duzlem === d} onClick={() => kesitDegis(true, d, konum)} title={a}>
-                    {ad} <span className="text-ink-3">· {a}</span>
+                    {ad}
                   </button>
                 ))}
               </div>
               <label className="flex flex-col gap-1">
-                <span className="t-small text-ink-2">Kesitin yeri</span>
+                <span className="t-small text-ink-2" aria-live="polite">
+                  {kesitAcik
+                    ? `${DUZLEMLER.find((x) => x.d === duzlem)?.ad} kesit ${DUZLEMLER.find((x) => x.d === duzlem)?.aciklama}. Kaydırarak kesitin yerini değiştir.`
+                    : 'Bir düzlem seç; sonra kaydırarak kesitin yerini değiştir.'}
+                </span>
                 <input
                   type="range"
                   min={-0.95}
@@ -495,7 +507,7 @@ export function BeyinSahnesi({
                     <div className="flex flex-wrap gap-1.5">
                       {ys.map((y) => (
                         <button key={y.id} type="button" className="beyin-secenek" aria-pressed={secili === y.id} onClick={() => yapiSec(secili === y.id ? null : y.id)}>
-                          <span className="inline-block size-2.5 rounded-full" style={{ background: yapiRengi(y, renkSemasi) }} aria-hidden="true" /> {yapiAdi(y)}
+                          <span className="inline-block size-2.5 rounded-full" style={{ background: sahneRengi(y, etkinAyar) }} aria-hidden="true" /> {yapiAdi(y)}
                         </button>
                       ))}
                     </div>
