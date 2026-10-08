@@ -169,8 +169,17 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    biçimi; yanılgı türleri olasılık olarak anlatılır. Bağımsız incelemeden sonra: "kâğıt alıp katlayabilirsin" yönergesi
    kaldırıldı (zihinde çözülür), yukarıdaki seçenek düzeni, düzey anlatımları, çapraz alıştırma. Ortak (Sözel Akıl
    Yürütme'de de): yanlışların çoğu çeldiriciyse kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz.
-7. Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik
-   testi.
+7. **Kelime Bilgisi: yayında (2026-10-09, pilot).** 24 özgün soru, dört tür (eş anlam, zıt anlam, cümlede anlam,
+   deyimler; her türden altı soru, her düzeyde her tür), beş seçenek, her türden bir alıştırma; 3. sınıftan yetişkine, ~8
+   dakika (`content/instruments/kelime-bilgisi.ts`, `lib/instruments/vocabulary.ts`, `components/runner/tasks/vocabulary.tsx`).
+   Anlamlar TDK Güncel Türkçe Sözlük'le tek tek denetlendi (bir ajan sözlüğe bakarak: ihtiyaç–"istek" ve hızlı–"güçlü"
+   sözlükte de geçtiği için değiştirildi); sorular iki kez kör çözüldü (önce iki ajan, değişikliklerden sonra bir ajan
+   daha), hepsi anahtarla aynı. Her sorunun yanılgısı belli bir çeldiricisi var (eş/zıt karıştırma, ilgili kelime, ses
+   benzerliği, kelimenin başka anlamı, deyimin gerçek anlamı); seçenekler doğru cevabı uzunluğundan, virgülünden ya da
+   yazılışından ele vermez (uzunluğa, kelime sayısına, soruyla ortak köke göre seçen tahmin yolları 24 soruda en çok 6,5
+   doğru bulur). Rapor ve yol haritası Sözel Akıl Yürütme düzeninde; kaynaklar Nation (2009), Wright ve Cervetti (2017),
+   TDK. Aynı değişiklikte Kâğıt Katlama yol haritasında "delik aynalanır" yerine "deliğin bir eşi açılır".
+8. Sonra: Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -324,6 +333,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Öğrenme ve Başarı Özellikleri | ogrenme-ve-basari-ozellikleri | Yayında (active; 9. sınıftan yetişkine) |
 | Sözel Akıl Yürütme | sozel-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kâğıt Katlama | kagit-katlama | Yayında (pilot; 3. sınıftan yetişkine) |
+| Kelime Bilgisi | kelime-bilgisi | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -435,6 +445,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (4): Kelime Bilgisi yayında: 24 özgün soru (eş anlam, zıt anlam, cümlede anlam, deyimler), 5 düzey,
+  dört alıştırma; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; anlamlar TDK
+  sözlüğüyle denetlendi; telefonda ve masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı.
 - 2026-10-09 (3): Site sahibi kafatası dersini yeterince derin bulmadı; kalıcı istekleri kaydedildi (açık erişimli tam
   metinler ve ders kitaplarıyla derinlik; büyük konular üniteye bölünür). Program 106 derse çıktı: kafatası dersi ünitenin
   genel bakışı oldu, altı ders "Hazırlanıyor" olarak programa eklendi.
@@ -471,6 +484,3 @@ En yeni üstte; en çok 10 madde tutulur.
   çizimleri; insula, lif türleri, kafatası ve atardamar sahneleri). Üç boyutlu sahnelerde etiket noktaları yapının
   görünen yüzüne oturuyor, kesitte kaldırılan parçanın etiketi gizleniyor, kesik yüze dokununca yapı seçiliyor,
   telefonda kesit paneli kısaldı; sahneye özel boya.
-- 2026-10-08 (6): 16 Faktörlü Kişilik Profili yayında: 160 madde, 16 özellik, öğrenci, veli ve yetişkin raporu,
-  16 sütunlu 3B grafikli yol haritası (öneriler en belirgin altı özellik için); telefonda ve masaüstünde baştan sona
-  çözüldü, rapor ve PDF açıldı.

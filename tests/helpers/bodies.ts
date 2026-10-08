@@ -23,6 +23,7 @@ import type {
   TrailTask,
   VerbalReasoningTask,
   PaperFoldingTask,
+  VocabularyTask,
 } from '@/lib/instruments/types';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
@@ -325,4 +326,32 @@ export function reactionBody(
     return { index, response: p.choice, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Kelime bilgisinin bir sorusu: düzeyi, türü, doğru seçeneği, çeldiricisi (1–5) ve sırası. */
+export type VocabularyCell = { level: number; type: string; answer: number; lure: number; i: number };
+
+/** Ne doğru cevap ne çeldirici olan ilk seçenek (1–5). */
+export const vocabularyOther = (q: VocabularyCell) => [1, 2, 3, 4, 5].find((o) => o !== q.answer && o !== q.lure)!;
+
+/** Kelime bilgisi: varsayılan olarak ilk üç düzeyde doğru; 4. ve 5. düzeyde ilk iki soruda doğru, ötekilerde başka bir yanlış. */
+export function vocabularyBody(
+  pick: (q: VocabularyCell) => { response: number; rtMs: number | null } = (q) => {
+    const firstTwo = q.level <= 3 || vocabularyRank(q) < 2;
+    return { response: firstTwo ? q.answer : vocabularyOther(q), rtMs: 5000 + 2000 * q.level };
+  },
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('kelime-bilgisi').tasks[0] as VocabularyTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, type: it.type, answer: task.answers[index], lure: task.lures[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Kelime bilgisinde sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function vocabularyRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('kelime-bilgisi').tasks[0] as VocabularyTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
 }

@@ -83,7 +83,7 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
               ? { ...t, answers: [], traps: [] }
               : t.kind === 'verbal_reasoning'
                 ? { ...t, answers: [], lures: [], levels: [] }
-                : t.kind === 'paper_folding'
+                : t.kind === 'paper_folding' || t.kind === 'vocabulary'
                   ? { ...t, answers: [], lures: [], lureKinds: [], levels: [] }
                   : t,
         ),

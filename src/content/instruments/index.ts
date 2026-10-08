@@ -23,6 +23,7 @@ import { sekilAkilYurutme } from './sekil-akil-yurutme';
 import { sesliOkuma } from './sesli-okuma';
 import { sozelAkilYurutme } from './sozel-akil-yurutme';
 import { kagitKatlama } from './kagit-katlama';
+import { kelimeBilgisi } from './kelime-bilgisi';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
 import { tepkiHizi } from './tepki-hizi';
 import { zihindeDondurme } from './zihinde-dondurme';
@@ -51,6 +52,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   sayiDizileri,
   sozelAkilYurutme,
   kagitKatlama,
+  kelimeBilgisi,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   onAltiFaktorKisilik,

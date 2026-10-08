@@ -64,7 +64,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               ? single.parts.map((p) => `${p.trials.length} ${p.boxes === 1 ? 'basit' : 'seçmeli'}`).join(', ') + ' deneme'
               : single.kind === 'matrix_reasoning' || single.kind === 'number_series'
                 ? `${single.items.length} soru, ${single.levels.length} düzey`
-                : single.kind === 'verbal_reasoning'
+                : single.kind === 'verbal_reasoning' || single.kind === 'vocabulary'
                   ? `${single.items.length} soru, ${single.levels.length} düzey, 4 soru türü`
                   : single.kind === 'paper_folding'
                     ? `${single.items.length} soru, ${single.levels.length} düzey`
@@ -347,6 +347,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Ortadan, kenardan ve çapraz katlamalardan hangilerinin daha kolay geldiği (üç boyutlu grafikle), yanlış cevapların neyi düşündürdüğü ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'vocabulary' && (
+              <>
+                <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
+                <li>Eş anlam, zıt anlam, cümlede anlam ve deyim sorularından hangilerinin daha kolay geldiği (üç boyutlu grafikle), yanlış cevapların neyi düşündürdüğü ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'verbal_reasoning' && (

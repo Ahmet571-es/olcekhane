@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme ve Kâğıt Katlama yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama ve Kelime Bilgisi yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1007,8 +1007,8 @@ const kagitKatlama: TaskRoadmapTemplate = {
   ),
   supports: [
     support(0, 'adim', 'Adım adım aç', 'Yöntem', t(
-      'Katlanmış bir kâğıdı zihninde açarken son katlamadan başla ve her seferinde tek bir katlamayı aç. Her açışta delik, katlama çizgisinin öbür yanına, çizgiye aynı uzaklıkta aynalanır; ama yalnızca orada kâğıt varsa.',
-      'Çocuğunuza katlanmış bir kâğıdı zihninde açarken son katlamadan başlamasını ve her seferinde tek bir katlamayı açmasını önerin. Her açışta delik, katlama çizgisinin öbür yanına, çizgiye aynı uzaklıkta aynalanır; ama yalnızca orada kâğıt varsa.',
+      'Katlanmış bir kâğıdı zihninde açarken son katlamadan başla ve her seferinde tek bir katlamayı aç. Her açışta deliğin bir eşi, katlama çizgisinin öbür yanında ve çizgiye aynı uzaklıkta açılır; ama yalnızca katlanan parça o deliğe ulaşmışsa.',
+      'Çocuğunuza katlanmış bir kâğıdı zihninde açarken son katlamadan başlamasını ve her seferinde tek bir katlamayı açmasını önerin. Her açışta deliğin bir eşi, katlama çizgisinin öbür yanında ve çizgiye aynı uzaklıkta açılır; ama yalnızca katlanan parça o deliğe ulaşmışsa.',
     )),
     support(1, 'dene', 'Gerçek kâğıtla dene', 'Etkinlik', t(
       'Bir kâğıdı bir iki kez katla, delik açacağın yeri seç ve açmadan önce deliklerin nerede olacağını kâğıda çizerek tahmin et. Sonra kurşun kalemin ucuyla küçük bir delik açıp kâğıdı aç ve tahminini kontrol et.',
@@ -1065,6 +1065,105 @@ const kagitKatlama: TaskRoadmapTemplate = {
   sources: [KAYNAK.uttal, KAYNAK.wai],
 };
 
+const kelimeBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; Türkçe kelime bilgisinin küçük bir örneğini gösterir.',
+    'Kelime bilgisi okudukça ve yeni kelimelerle karşılaştıkça gelişir; küçük yaşta üst düzeylerdeki kelimeleri bilmemek olağandır.',
+    'Evde başka bir dil de konuşuluyorsa ya da Türkçeyi sonradan öğrendiysen sonuç, düşünme becerini değil Türkçe kelime bilgini gösterir.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; Türkçe kelime bilgisinin küçük bir örneğini gösterir.',
+    'Kelime bilgisi okudukça ve yeni kelimelerle karşılaştıkça gelişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+    'Evde başka bir dil de konuşuluyorsa ya da Türkçe sonradan öğrenildiyse sonuç, düşünme becerisini değil Türkçe kelime bilgisini gösterir.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine okuma alışkanlığıyla ilgili bilgi. */
+const kelimeFacts: InfoBox = {
+  ...kelimeBase,
+  items: {
+    ...kelimeBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; Türkçe kelime bilgisinin küçük bir örneğini gösterir.',
+      'Kelime bilgisi okuma alışkanlığıyla ve yeni kelimelerle karşılaştıkça hayat boyu gelişir.',
+      'Türkçeyi sonradan öğrendiysen sonuç, düşünme becerini değil Türkçe kelime bilgini gösterir.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const kelimeBilgisi: TaskRoadmapTemplate = {
+  version: 'kelime-bilgisi-yol-haritasi-1',
+  what: {
+    student: 'yeni kelimeler öğrenmeyi ve okurken bilmediğin bir kelimenin anlamını bulmayı nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun yeni kelimeler öğrenmesini ve okurken bilmediği bir kelimenin anlamını bulmasını nasıl kolaylaştırabileceği',
+    summary: 'yeni kelimeler öğrenmeyi ve bilinmeyen bir kelimenin anlamını bulmayı kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Yeni kelimeler öğrenmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun yeni kelimeler öğrenmesini ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, Türkçe kelimelerin ve deyimlerin anlamlarını bilmeyi ölçer. Kelime bilgisi okuduğunu anlamakla yakından ilişkilidir ve okudukça gelişir. Aşağıdaki yollar, yeni kelimeler öğrenmeyi ve okurken bilmediğin bir kelimenin anlamını bulmayı kolaylaştırır.',
+    'Bu test, Türkçe kelimelerin ve deyimlerin anlamlarını bilmeyi ölçer. Kelime bilgisi okuduğunu anlamakla yakından ilişkilidir ve okudukça gelişir. Aşağıdaki yollar, çocuğunuzun yeni kelimeler öğrenmesini ve okurken bilmediği bir kelimenin anlamını bulmasını kolaylaştırır.',
+  ),
+  supports: [
+    support(0, 'oku', 'Düzenli ve çeşitli oku', 'Alışkanlık', t(
+      'Her gün biraz ve farklı türlerde (hikâye, bilgilendirici yazı, gazete) okumak, yeni kelimelerle karşılaşmanın en doğal yoludur. Araştırmalar, okumanın yeni kelimeler öğrenmenin temel yollarından biri olduğunu gösteriyor.',
+      'Çocuğunuzun her gün biraz ve farklı türlerde (hikâye, bilgilendirici yazı, gazete) okuması, yeni kelimelerle karşılaşmasının en doğal yoludur. Araştırmalar, okumanın yeni kelimeler öğrenmenin temel yollarından biri olduğunu gösteriyor.',
+    )),
+    support(1, 'cumle', 'Önce cümleye bak', 'Yöntem', t(
+      'Bilmediğin bir kelimeyle karşılaşınca önce cümlenin ve paragrafın bütününe bak, anlamını tahmin et; sonra sözlükten kontrol et. Birden çok anlamı olan kelimelerde hangi anlamın kastedildiğini cümle gösterir.',
+      'Çocuğunuza bilmediği bir kelimeyle karşılaşınca önce cümlenin ve paragrafın bütününe bakıp anlamını tahmin etmesini, sonra sözlükten kontrol etmesini önerin. Birden çok anlamı olan kelimelerde hangi anlamın kastedildiğini cümle gösterir.',
+    )),
+    support(2, 'kullan', 'Yeni kelimeyi kullan', 'Yöntem', t(
+      'Öğrendiğin bir kelimeyi kendi cümlelerinde kullan ve biriyle üzerine konuş. Araştırmalarda kelimeleri böyle etkin biçimde işlemek, yalnızca tanımlarını okumaktan genellikle daha etkili bulunmuştur.',
+      'Çocuğunuzu öğrendiği bir kelimeyi kendi cümlelerinde kullanmaya ve üzerine sizinle konuşmaya teşvik edin. Araştırmalarda kelimeleri böyle etkin biçimde işlemek, yalnızca tanımlarını okumaktan genellikle daha etkili bulunmuştur.',
+    )),
+    support(3, 'sozluk', 'Kelime defteri ve sözlük', 'Araç', t(
+      'Yeni kelimeleri ve deyimleri anlamı ve bir örnek cümleyle bir deftere yaz; anlamlarını Türk Dil Kurumunun Güncel Türkçe Sözlüğü’nden (sozluk.gov.tr) kontrol et. Deyimlerin anlamı, içindeki kelimelerden çoğu zaman tahmin edilemez.',
+      'Çocuğunuza yeni kelimeleri ve deyimleri anlamı ve bir örnek cümleyle bir deftere yazmasını, anlamlarını Türk Dil Kurumunun Güncel Türkçe Sözlüğü’nden (sozluk.gov.tr) kontrol etmesini önerin. Deyimlerin anlamı, içindeki kelimelerden çoğu zaman tahmin edilemez.',
+    )),
+  ],
+  facts: kelimeFacts,
+  approach: [
+    { title: 'Birlikte okuyun', text: 'Birlikte okurken bilmediği bir kelimeyi sorduğunda hemen söylemek yerine önce cümleden tahmin etmesini isteyin; sonra birlikte sözlüğe bakın.' },
+    { title: 'Sohbette yeni kelimeler', text: 'Günlük konuşmada yeni kelimeler ve deyimler kullanın, anlamlarını birlikte konuşun; bilmediği bir kelimeyi sormasını cesaretlendirin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Kelime avı',
+      text: t(
+        'Bu hafta okuduğun yazılarda bilmediğin beş kelimeyi işaretle; her birinin anlamını önce cümleden tahmin et, sonra sözlükten kontrol et ve deftere yaz.',
+        'Bu hafta çocuğunuzla okuduğunuz yazılarda bilmediği beş kelimeyi işaretleyin; anlamlarını önce cümleden tahmin etmesini, sonra sözlükten kontrol etmesini isteyin.',
+      ),
+    },
+    {
+      title: 'Kullan ve konuş',
+      text: t(
+        'Bu hafta deftere yazdığın kelimelerden her gün birini kendi cümlende kullan ve birine anlat.',
+        'Bu hafta çocuğunuzun deftere yazdığı kelimelerden her gün birini birlikte bir cümle içinde kullanın.',
+      ),
+    },
+    {
+      title: 'Deyim haftası',
+      text: t(
+        'Bu hafta duyduğun ya da okuduğun üç deyimi yaz; anlamlarını sözlükten bul ve her biri için bir örnek cümle kur.',
+        'Bu hafta çocuğunuzla günlük konuşmada geçen üç deyimi bulun; anlamlarını konuşun ve birlikte örnek cümleler kurun.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda defterindeki kelimelere bak; hangilerini artık kendiliğinden kullandığını işaretle ve en çok işine yarayan yolu sürdür.',
+    'Dört haftanın sonunda çocuğunuzla defterdeki kelimelere bakın; hangilerini artık kendiliğinden kullandığını konuşun ve en çok işe yarayan yolu sürdürün.',
+  ),
+  nextTests: ['sozel-akil-yurutme', 'sekil-akil-yurutme'],
+  nextPurpose: {
+    you: 'kelimelerle ve şekillerle akıl yürütmeyi de görmek',
+    parent: 'çocuğunuzun kelimelerle ve şekillerle akıl yürütmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.nation, KAYNAK.wright, KAYNAK.tdk],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -1079,4 +1178,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'sayi-dizileri': sayiDizileri,
   'sozel-akil-yurutme': sozelAkilYurutme,
   'kagit-katlama': kagitKatlama,
+  'kelime-bilgisi': kelimeBilgisi,
 };

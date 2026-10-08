@@ -123,4 +123,13 @@ export const KAYNAK = {
     text: 'Wai, J., Lubinski, D. ve Benbow, C. P. (2009). Spatial ability for STEM domains: Aligning over 50 years of cumulative psychological knowledge solidifies its importance. Journal of Educational Psychology, 101(4), 817–835.',
     url: 'https://doi.org/10.1037/a0016127',
   },
+  nation: {
+    text: 'Nation, K. (2009). Reading comprehension and vocabulary: What’s the connection? R. K. Wagner, C. Schatschneider ve C. Phythian-Sence (Ed.), Beyond decoding: The behavioral and biological foundations of reading comprehension içinde. Guilford Press.',
+    url: 'https://readoxford.site.ox.ac.uk/article/reading-comprehension-and-vocab-connection',
+  },
+  wright: {
+    text: 'Wright, T. S. ve Cervetti, G. N. (2017). A systematic review of the research on vocabulary instruction that impacts text comprehension. Reading Research Quarterly, 52(2), 203–226.',
+    url: 'https://doi.org/10.1002/rrq.163',
+  },
+  tdk: { text: 'Türk Dil Kurumu. (t.y.). Güncel Türkçe Sözlük.', url: 'https://sozluk.gov.tr/' },
 } satisfies Record<string, { text: string; url: string }>;

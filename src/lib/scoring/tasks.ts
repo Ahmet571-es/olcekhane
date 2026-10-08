@@ -19,9 +19,13 @@ import type {
   FoldingLure,
   FoldingType,
   PaperFoldingTask,
+  VocabularyLure,
+  VocabularyTask,
+  VocabularyType,
 } from '@/lib/instruments/types';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
 import { verbalRapidMs } from '@/lib/instruments/verbal';
+import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { median, round } from './stats';
 
@@ -1576,6 +1580,108 @@ export function scoreFolding(task: PaperFoldingTask, input: FoldingTrialInput[])
   };
 }
 
+/* ---------- Kelime bilgisi ---------- */
+
+export interface VocabularyTrialInput {
+  index: number;
+  /** Seçilen seçeneğin sırası (1–5). */
+  response: number;
+  rtMs: number | null;
+}
+
+export interface VocabularyTypeResult {
+  type: VocabularyType;
+  n: number;
+  correct: number;
+}
+
+export interface VocabularyResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  /** Soru türlerine göre (eş anlam, zıt anlam, cümlede anlam, deyimler). */
+  types: VocabularyTypeResult[];
+  reached: number;
+  medianRt: number | null;
+  rtEasy: number | null;
+  rtHard: number | null;
+  /** 3. düzey ve üstündeki sorulardan okunamayacak kadar kısa sürede (`vocabularyRapidMs`) yanlış cevaplananlar ve bu soruların sayısı. */
+  rapid: number;
+  rapidOf: number;
+  wrong: number;
+  /** Yanlışlardan, sorunun "ilk bakışta doğru görünen" seçeneğinin seçildikleri; yanılgı türüne göre de sayılır. */
+  lures: number;
+  luresByKind: Record<VocabularyLure, number>;
+  samePosition: number;
+}
+
+export const VOCABULARY_LURES_ORDER: VocabularyLure[] = ['swap', 'related', 'sound', 'meaning', 'literal'];
+export const VOCABULARY_TYPES_ORDER: VocabularyType[] = ['synonym', 'antonym', 'context', 'idiom'];
+/** Beş seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (sözel akıl yürütmedeki gibi; %5 sınırı). */
+export const VOCABULARY_CHANCE_MAX = 8;
+
+export function scoreVocabulary(task: VocabularyTask, input: VocabularyTrialInput[]): { result: VocabularyResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.lures.length !== n || task.lureKinds.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, VocabularyTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (!Number.isInteger(t.response) || t.response < 1 || t.response > task.items[t.index].options.length) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const correct = t.response === task.answers[i];
+    return { item, correct, lure: !correct && t.response === task.lures[i], kind: task.lureKinds[i], response: t.response, rt: t.rtMs };
+  });
+  const correct = scored.filter((s) => s.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((s) => s.item.level === level);
+      return { level, n: here.length, correct: here.filter((s) => s.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const luresByKind = Object.fromEntries(VOCABULARY_LURES_ORDER.map((k) => [k, scored.filter((s) => s.lure && s.kind === k).length])) as Record<VocabularyLure, number>;
+  const types = VOCABULARY_TYPES_ORDER.flatMap((type) => {
+    const here = scored.filter((s) => s.item.type === type);
+    return here.length ? [{ type, n: here.length, correct: here.filter((s) => s.correct).length }] : [];
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const hardOnes = scored.filter((s) => s.item.level >= 3);
+  const positions = new Map<number, number>();
+  for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      types,
+      reached,
+      medianRt: medianOrNull(rts(scored)),
+      rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
+      rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < vocabularyRapidMs(s.item)).length,
+      rapidOf: hardOnes.length,
+      wrong: n - correct,
+      lures: scored.filter((s) => s.lure).length,
+      luresByKind,
+      samePosition: Math.max(0, ...positions.values()),
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -1595,6 +1701,7 @@ export function taskQualityNotes(parts: {
   numberSeries?: NumberSeriesResult;
   verbal?: VerbalResult;
   folding?: FoldingResult;
+  vocabulary?: VocabularyResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -1766,6 +1873,8 @@ export function taskQualityNotes(parts: {
   if (vr) notes.push(...verbalQualityNotes(vr));
   const kf = parts.folding;
   if (kf) notes.push(...foldingQualityNotes(kf));
+  const kb = parts.vocabulary;
+  if (kb) notes.push(...vocabularyQualityNotes(kb));
   return notes;
 }
 
@@ -1794,6 +1903,32 @@ export const foldingRapid = (kf: FoldingResult) => kf.rapidOf > 0 && kf.rapid >=
 export const foldingSamePosition = (kf: FoldingResult) => kf.samePosition >= Math.ceil(kf.n / 2);
 /** Yanlışların yorumlanması: sözel akıl yürütmedeki eşikler (en az 4 çeldirici ve yanlışların en az %60'ı). */
 export const foldingLurePattern = (kf: FoldingResult) => kf.lures >= VERBAL_LURE_MIN && kf.lures >= VERBAL_LURE_SHARE * kf.wrong;
+
+/** Kelime bilgisinde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, vocabularyBlocks aynı eşikleri kullanır). */
+export function vocabularyQualityNotes(kb: VocabularyResult): string[] {
+  const notes: string[] = [];
+  if (kb.correct <= VOCABULARY_CHANCE_MAX) {
+    notes.push(
+      'Kelime bilgisi testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorular okunmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (vocabularyRapid(kb)) {
+    notes.push(
+      `Kelime bilgisi testinde 3. düzey ve üstündeki ${kb.rapidOf} sorunun ${kb.rapid === kb.rapidOf ? 'hepsinde' : `${kb.rapid} tanesinde`} yanlış bir cevap, soru ve seçenekler okunamayacak kadar kısa sürede verilmiş; bu sorularda okunmadan seçilmiş olabilir.`,
+    );
+  }
+  if (vocabularySamePosition(kb)) {
+    notes.push('Kelime bilgisi testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; sorulara bakmadan hep aynı yere basılmış olabilir.');
+  }
+  return notes;
+}
+
+/** Zor sorularda okunamayacak kadar hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri (en az 2). */
+export const vocabularyRapid = (kb: VocabularyResult) => kb.rapidOf > 0 && kb.rapid >= Math.max(2, Math.ceil(kb.rapidOf / 4));
+/** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
+export const vocabularySamePosition = (kb: VocabularyResult) => kb.samePosition >= Math.ceil(kb.n / 2);
+/** Yanlışların yorumlanması: sözel akıl yürütmedeki eşikler (en az 4 çeldirici ve yanlışların en az %60'ı). */
+export const vocabularyLurePattern = (kb: VocabularyResult) => kb.lures >= VERBAL_LURE_MIN && kb.lures >= VERBAL_LURE_SHARE * kb.wrong;
 
 /**
  * Sözel akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar. Rapordaki kartlar aynı eşikleri kullanır

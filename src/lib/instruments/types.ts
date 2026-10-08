@@ -237,6 +237,7 @@ export type TaskKind =
   | 'matrix_reasoning'
   | 'number_series'
   | 'verbal_reasoning'
+  | 'vocabulary'
   | 'paper_folding';
 
 interface TaskBase {
@@ -702,6 +703,55 @@ export interface PaperFoldingTask extends TaskBase {
   levels: { level: number; name: string; plain: string }[];
 }
 
+/**
+ * Kelime bilgisi: dört soru türü (Ölçekhane'nin özgün soruları, content/instruments/kelime-bilgisi.ts).
+ *  - Eş anlam (`synonym`): kelimeye anlamca en yakın kelimeyi seçmek.
+ *  - Zıt anlam (`antonym`): kelimenin zıt anlamlısını seçmek.
+ *  - Cümlede anlam (`context`): birden çok anlamı olan bir kelimenin cümlede hangi anlamda kullanıldığını seçmek.
+ *  - Deyimler (`idiom`): cümlede geçen deyimin anlamını seçmek.
+ */
+export type VocabularyType = 'synonym' | 'antonym' | 'context' | 'idiom';
+/**
+ * Çeldiricinin yanılgısı: eş anlamlıyla zıt anlamlıyı karıştırmak (`swap`), aynı konuyla ilgili ama anlamı farklı bir
+ * kelimeyle karıştırmak (`related`), sesçe benzeyen bir kelimeyle karıştırmak (`sound`), kelimenin cümledeki anlamı yerine
+ * başka (çoğu zaman en bilinen) anlamını seçmek (`meaning`), deyimi içindeki kelimelerin gerçek anlamıyla düşünmek
+ * (`literal`).
+ */
+export type VocabularyLure = 'swap' | 'related' | 'sound' | 'meaning' | 'literal';
+
+export interface VocabularyItem {
+  key: string;
+  level: 1 | 2 | 3 | 4 | 5;
+  type: VocabularyType;
+  /** Eş ve zıt anlamda sorulan kelime; cümlede anlam ve deyimlerde cümle. */
+  stem: string;
+  /** Cümlede vurgulanan kısım (cümlede geçtiği biçimiyle); eş ve zıt anlamda yok. */
+  mark?: string;
+  /** Soruda adı geçen biçim: kelimenin ya da deyimin sözlükteki biçimi (ör. "göz", "kulak asmamak"). */
+  lemma: string;
+  /** Beş seçenek. */
+  options: string[];
+}
+
+export interface VocabularyPracticeItem extends VocabularyItem {
+  /** Doğru seçeneğin sırası (1–5). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+}
+
+export interface VocabularyTask extends TaskBase {
+  kind: 'vocabulary';
+  practice: VocabularyPracticeItem[];
+  items: VocabularyItem[];
+  /** Cevap anahtarı (1–5). Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /** Her sorunun "ilk bakışta doğru görünen" yanlış seçeneği (1–5). Tarayıcıya boş gönderilir. */
+  lures: number[];
+  /** Çeldiricilerin yanılgısı (raporda anlatılır). Tarayıcıya boş gönderilir. */
+  lureKinds: VocabularyLure[];
+  levels: { level: number; name: string; plain: string }[];
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -717,7 +767,8 @@ export type CognitiveTask =
   | MatrixReasoningTask
   | NumberSeriesTask
   | VerbalReasoningTask
-  | PaperFoldingTask;
+  | PaperFoldingTask
+  | VocabularyTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

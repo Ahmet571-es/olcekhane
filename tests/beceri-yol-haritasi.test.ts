@@ -22,6 +22,7 @@ import {
   numberSeriesBody,
   verbalBody,
   foldingBody,
+  vocabularyBody,
   reactionBody,
   readingBody,
   rotationBody,
@@ -275,6 +276,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'sayi-dizileri': numberSeriesBody,
     'sozel-akil-yurutme': verbalBody,
     'kagit-katlama': foldingBody,
+    'kelime-bilgisi': vocabularyBody,
   };
 
   it('her zihinsel görevin yol haritası var; metinler eksiksiz, veli metinleri çocuğunuzu anar, öğrenci metinleri anmaz', () => {
@@ -312,6 +314,10 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['half', 'partial', 'diagonal']);
           expect(rm.barsTitle).toMatch(/^Katlama türlerine göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('katlama türüdür');
+        } else if (slug === 'kelime-bilgisi') {
+          expect(rm.bars.map((b) => b.key)).toEqual(['synonym', 'antonym', 'context', 'idiom']);
+          expect(rm.barsTitle).toMatch(/^Soru türlerine göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('soru türüdür');
         } else if (slug === 'sozel-akil-yurutme') {
           // Soru türlerine göre doğru cevap oranı (aynı birim): dört sütun.
           expect(rm.bars.map((b) => b.key)).toEqual(['analogy', 'classification', 'ordering', 'deduction']);
