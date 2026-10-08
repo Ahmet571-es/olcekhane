@@ -82,7 +82,8 @@ const nextConfig: NextConfig = {
       })),
       // Model ve çalışma dosyaları büyüktür ve adresleri sürümlerini içerir (src/lib/oral/auto.ts): tarayıcı bir kez
       // indirip HTTP önbelleğinde tutabilir; sürüm değişince adres de değişir.
-      ...['/model/:path*', '/ort/:path*', '/vendor/:path*'].map((source) => ({
+      // Beyin Akademisi'nin üç boyutlu modeli de sürümlü adreste durur (araclar/beyin-modeli.mjs).
+      ...['/model/:path*', '/ort/:path*', '/vendor/:path*', '/beyin/model/:path*'].map((source) => ({
         source,
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       })),

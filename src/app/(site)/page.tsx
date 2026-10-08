@@ -211,14 +211,15 @@ export default function Home() {
           className="mt-8"
           next={[
             { href: '/testler', label: 'Bütün testler' },
-            { href: '/veliler-icin', label: 'Veliler için' },
+            { href: '/beyin-akademisi', label: 'Beyin Akademisi' },
             { href: '/rehber', label: 'Rehber' },
           ]}
         >
           <p>
-            <strong>Testler:</strong> kişilik, zekâ ve zihinsel beceriler, okuma ve dersler, ilgi ve meslek. <strong>Rehber:</strong>{' '}
-            öğrenciler ve veliler için bilimsel kaynaklara dayanan yazılar. <strong>Veliler için:</strong> raporu çocuğunuzla nasıl
-            okuyacağınız ve ne zaman bir uzmana başvuracağınız.
+            <strong>Testler:</strong> kişilik, zekâ ve zihinsel beceriler, okuma ve dersler, ilgi ve meslek.{' '}
+            <strong>Beyin Akademisi:</strong> beynin anatomisi ve nasıl çalıştığı, üç boyutlu bir beyin modeliyle.{' '}
+            <strong>Rehber:</strong> öğrenciler ve veliler için bilimsel kaynaklara dayanan yazılar. <strong>Veliler için:</strong>{' '}
+            raporu çocuğunuzla nasıl okuyacağınız ve ne zaman bir uzmana başvuracağınız.
           </p>
         </PageGuide>
       </section>

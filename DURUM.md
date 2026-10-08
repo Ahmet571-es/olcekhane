@@ -170,6 +170,22 @@ okumada otomatik analiz").
 6. **Bekleyen:** Karakter Güçlü Yanları (2. dalga) avukat görüşünü bekliyor; görüş gelmeden başlanmaz. Maneviyat
    ölçeği kullanılmaz, test 23 güçlü yanla sunulur. Görüş gelene kadar sitede bu test için "yakında" denmez.
 
+## Beyin Akademisi (site sahibinin 2026-10-08 isteği)
+
+İstek: kişilik ve zekâ testlerinin yanında ayrı bir bölümde çok kapsamlı bir nörobilim dalı: (1) beyin anatomisi:
+beyni oluşturan bütün yapılar, sıfırdan anlaşılır sade Türkçeyle ama tıp fakültesine yeni başlayan birine çok ayrıntılı
+bilgi verecek düzeyde; (2) beyin nasıl çalışır: nöronlar, öğrenme ve çalışma biçimleri. Bol görsel, üç boyutlu ve
+hareketli. Site sahibi bölümü **2026-10-13 dolayında alanında uzman kişilere tanıtacak**; adım adım, acele etmeden.
+Kararları: üç boyutlu model + hareketli çizimler; ad "Beyin Akademisi"; dersler hazır oldukça doğrudan yayına.
+
+- Adresler: `/beyin-akademisi`, `/beyin-akademisi/anatomi`, `/beyin-akademisi/nasil-calisir`,
+  `/beyin-akademisi/<dal>/<ders>`, `/beyin-akademisi/beyin-gezgini`.
+- Program (2 × 20 ders) ve hazır derslerin kaydı: `src/content/beyin/index.ts`. Hazır: Anatomi 1.
+- Sıradaki dersler (öneri): Nasıl Çalışır 1 (Nöron), Anatomi 2 (Beyni koruyanlar; kafatası paketi modelde hazır,
+  zarlar ve beyin-omurilik sıvısı için hareketli çizim), Nasıl Çalışır 2–5 (glia, dinlenim gerilimi, sinir sinyali,
+  sinaps), Anatomi 3–4. Her mesajda bir iki ders.
+- Hiçbir şey saklanmaz: ilerleme işaretlenmez, "Kendini dene" cevapları yalnızca sayfanın belleğinde durur.
+
 ## Testler
 
 Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** listelerde ve arama motorlarında.
@@ -309,6 +325,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (4): Beyin Akademisi kuruldu (site sahibinin isteği; 5 gün sonra uzmanlara tanıtılacak): ana sayfa,
+  iki dal (Beyin Anatomisi, Beyin Nasıl Çalışır?) ve 2 × 20 derslik program, üç boyutlu beyin gezgini (135 parça,
+  BodyParts3D 4.0, CC BY 4.0; döndürme, katmanlar, kesit, parçalara ayırma, iç yüz, renkler, dokununca bilgi kartı),
+  ders kalıbı (sade metin, sahneler, hareketli çizimler, kutular, sayılar, tablolar, sözlük, kendini dene, kaynaklar)
+  ve ilk ders: "Sinir sistemine ilk bakış ve anatominin dili". Menüde, alt bilgide ve ana sayfadaki yol gösterici
+  kutuda bağlantısı var.
 - 2026-10-08 (3): Sesli okumada otomatik analiz gürültüye dayanıklı hâle getirildi: mikrofon denemesinde asıl ölçüt
   yapay zekânın cümleyi anlaması (gürültü, kısık ses ve sessizlik ölçümü engellemiyor, ne yapılacağını söylüyor; üç
   denemede anlaşılmazsa yine de okumaya geçilebiliyor), cümle süresi 7 sn; metne dokununca doğrudan mikrofon
@@ -362,6 +384,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Öz-saygı ve Çalışma Alışkanlıkları gelişim yol haritaları yayında (doğrudan). Yol haritasında ortamlar
   bölümü isteğe bağlı, tek boyutlu testte üç boyutlu profil gösterilmiyor; test sayfasındaki tanıtım testin kendi
   bölümlerini sayıyor.
-- 2026-10-07: Site sahibinin kararıyla hoca onayı beklenmeden yayına alındı: Renk-Kelime, Dur-Git, Sırayla
-  Birleştirme, Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı (pilot) ile Duygusal Zekâ Bileşenleri ve
-  Kişilerarası Tarz yol haritaları. Çalışma kuralları buna göre güncellendi (CLAUDE.md).

@@ -6,6 +6,7 @@ import { MobileNav } from './mobile-nav';
 export const NAV = [
   { href: '/testler', label: 'Testler' },
   { href: '/okuma', label: 'Okuma' },
+  { href: '/beyin-akademisi', label: 'Beyin Akademisi' },
   { href: '/veliler-icin', label: 'Veliler için' },
   { href: '/rehber', label: 'Rehber' },
   { href: '/bilimsel-yaklasim', label: 'Bilimsel yaklaşım' },

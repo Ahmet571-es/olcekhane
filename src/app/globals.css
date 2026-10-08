@@ -1082,3 +1082,340 @@
     animation: none !important;
   }
 }
+
+/*
+ * Beyin Akademisi: üç boyutlu sahne (components/beyin). Sahne her temada koyu bir zemin üzerinde çizilir; renkler
+ * yapıları tanıtır. Araç düğmeleri ve paneller sitenin olağan renklerini kullanır.
+ */
+@layer components {
+  .beyin-figur {
+    --beyin-metin: #e9eef7;
+    --beyin-soluk: #aab7cd;
+    position: relative;
+    margin: 0;
+  }
+  .beyin-sahne {
+    position: relative;
+    height: clamp(330px, 64vw, 470px);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    isolation: isolate;
+    color: var(--beyin-metin);
+    background:
+      radial-gradient(110% 85% at 50% 32%, #1c2b4d 0%, #0e1830 52%, #070d1a 100%);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.06),
+      var(--shadow);
+  }
+  .beyin-sahne-buyuk {
+    height: clamp(380px, 78vh, 700px);
+  }
+  .beyin-tuval-kok {
+    position: absolute;
+    inset: 0;
+  }
+  .beyin-tuval {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: grab;
+    outline: none;
+  }
+  .beyin-tuval:active {
+    cursor: grabbing;
+  }
+  .beyin-etiketler {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .beyin-etiketler-gizli {
+    opacity: 0;
+  }
+  .beyin-etiket-cizgiler {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .beyin-etiket-cizgiler line {
+    stroke: rgb(255 255 255 / 0.6);
+    stroke-width: 1.2;
+    transition: opacity 0.25s ease;
+  }
+  .beyin-etiket-nokta {
+    position: absolute;
+    left: -5px;
+    top: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow:
+      0 0 0 3px rgb(255 255 255 / 0.22),
+      0 0 14px rgb(255 255 255 / 0.65);
+    transition: opacity 0.25s ease;
+  }
+  .beyin-etiket-metin {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: rgb(8 14 28 / 0.78);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgb(255 255 255 / 0.2);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+    color: #fff;
+    transition: opacity 0.25s ease;
+  }
+  .beyin-pasif {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .beyin-pasif-etiket,
+  .beyin-cip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgb(255 255 255 / 0.11);
+    border: 1px solid rgb(255 255 255 / 0.18);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .beyin-pasif-etiket {
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
+    font-size: 0.875rem;
+  }
+  .beyin-cip-dugme:hover {
+    background: rgb(255 255 255 / 0.2);
+  }
+  .beyin-yukleme {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    padding: 1rem;
+    color: var(--beyin-soluk);
+    font-size: 0.9375rem;
+  }
+  .beyin-yukleme-halka {
+    width: 54px;
+    height: 54px;
+    border-radius: 999px;
+    border: 3px solid rgb(255 255 255 / 0.12);
+    border-top-color: #7aa7ff;
+    animation: beyin-don 1s linear infinite;
+  }
+  .beyin-yukleme-cubuk {
+    width: min(220px, 60%);
+    height: 4px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.1);
+    overflow: hidden;
+  }
+  .beyin-yukleme-cubuk span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #5b84f2, #25b9a3);
+    transition: width 0.2s ease;
+  }
+  .beyin-ust-araclar {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .beyin-yuvarlak {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    color: #fff;
+    background: rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.18);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .beyin-yuvarlak:hover {
+    background: rgb(255 255 255 / 0.18);
+  }
+  .beyin-yuvarlak[aria-pressed="true"] {
+    background: rgb(122 167 255 / 0.38);
+  }
+  .beyin-bilgi {
+    padding: 0.95rem 1.05rem;
+    border-radius: 1.1rem;
+    color: var(--beyin-metin);
+    background: rgb(8 14 28 / 0.84);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgb(255 255 255 / 0.15);
+    box-shadow: 0 12px 40px -12px rgb(0 0 0 / 0.6);
+  }
+  .beyin-bilgi-ust {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    width: min(26rem, calc(100% - 1.5rem));
+    max-height: 62%;
+    overflow: auto;
+  }
+  .beyin-bilgi-alt {
+    margin-top: 0.6rem;
+    background: #0d1629;
+  }
+  .beyin-kapat {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    font-size: 1.35rem;
+    line-height: 1;
+    color: #fff;
+    background: rgb(255 255 255 / 0.1);
+  }
+  .beyin-arac-cubugu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+  }
+  .beyin-arac {
+    min-height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--rule-strong);
+    background: var(--surface);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--ink);
+  }
+  .beyin-arac[aria-expanded="true"],
+  .beyin-arac[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+  .beyin-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+  }
+  .beyin-secenek {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--rule-strong);
+    background: var(--paper);
+    font-size: 0.9rem;
+    text-align: left;
+    color: var(--ink);
+  }
+  .beyin-secenek[aria-pressed="true"] {
+    border-color: var(--focus);
+    box-shadow: inset 0 0 0 1px var(--focus);
+    background: color-mix(in srgb, var(--focus) 10%, var(--paper));
+  }
+  .beyin-onay {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.5rem;
+    font-size: 0.95rem;
+  }
+  .beyin-onay input {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--focus);
+  }
+  .beyin-kaydirac {
+    width: 100%;
+    min-height: 2rem;
+    accent-color: var(--focus);
+  }
+  .beyin-tam-ekran {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    overflow: auto;
+    background: var(--paper);
+  }
+  .beyin-tam-ekran .beyin-sahne {
+    flex: 1 0 auto;
+    height: auto;
+    min-height: 62vh;
+  }
+
+  /* İki boyutlu hareketli çizimler */
+  .beyin-cizim {
+    border-radius: 1.5rem;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    padding: 1rem;
+  }
+  .beyin-cizim svg text {
+    font-family: var(--font-body);
+  }
+  .beyin-kutu {
+    border-radius: 1.25rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+  }
+  .beyin-kutu-aklinda-kalsin {
+    border-left: 5px solid var(--dim-con);
+  }
+  .beyin-kutu-biliyor-muydun {
+    border-left: 5px solid var(--dim-emo);
+  }
+  .beyin-kutu-dikkat {
+    border-left: 5px solid var(--brass);
+  }
+}
+@keyframes beyin-don {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .beyin-yukleme-halka {
+    animation: none !important;
+  }
+}

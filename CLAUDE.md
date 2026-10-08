@@ -117,6 +117,25 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - İlgili testler `relatedTests` ile verilir: yalnızca yayındakiler görünür, incelemedekiler onaydan sonra
   kendiliğinden görünür. Yazı yayına girince adresi: `https://olcekhane.com/rehber/<adres>`.
 
+## Beyin Akademisi
+
+- Nörobilim bölümü (site sahibinin 2026-10-08 isteği; durum ve sıradaki dersler `DURUM.md`'de): iki dal, 2 × 20 ders.
+  Program ve hazır derslerin kaydı `src/content/beyin/index.ts`; ders dosyaları `src/content/beyin/dersler/<dal>/<ders>.ts`
+  (türler `types.ts`; örnek ilk ders). Hazır olmayan ders programda "Hazırlanıyor" görünür, sayfası ve site haritası
+  kaydı olmaz. Her mesajda bir iki ders; her derste en az bir üç boyutlu sahne ve bir hareketli çizim, sözlük, en az
+  6 soru (doğru şıklar dağıtılır), kaynaklar. Bilgi açılıp okunmuş kaynaklardan alınır (rehber yazılarındaki kural);
+  sade Türkçe, tıp terimi ilk geçtiği yerde Latince adıyla. `tests/beyin.test.ts` katalog, model ve dersleri denetler.
+- Üç boyutlu model: BodyParts3D 4.0 (CC BY 4.0, atıf `components/beyin/model-notu.tsx`'te). Yapı kataloğu
+  `src/content/beyin/yapilar.ts` (Türkçe ad, Latince ad, bölge, lob, paket, parça dosyaları, görev). Yeni yapı
+  eklenince `node araclar/beyin-modeli.mjs` çalıştırılır: arşivi indirip SHA-256 ile doğrular, yalnızca katalogdaki
+  parçaları sıkıştırıp `public/beyin/model/<sürüm>/`'e yazar (git'e girer, ~2,3 MB) ve `model-surum.ts`'i günceller.
+- Çizici `components/beyin/motor.ts` (three.js; sayfada tek WebGL bağlamı, tuval en çok görünen sahneye taşınır,
+  kare yalnızca bir şey değişince çizilir), sahne kutusu `beyin-sahnesi.tsx`, iki boyutlu hareketli çizimler
+  `components/beyin/animasyonlar/` (hareketi azaltmayı seçenlerde adım adım). Sahne ayarı (`Sahne`): paketler,
+  göster/gizle/vurgula/saydam seçicileri, renk, etiketler, bakış, yarım küre, kesit, ayrıştırma. Etiketli sahne dönmez.
+- Etkileşimli deneme: `tarayiciAc()` ile açılan Chromium'a WebGL için `--use-gl=angle --use-angle=swiftshader
+  --enable-unsafe-swiftshader` verilir; her sahne kutusunun ekran görüntüsü alınıp gözle denetlenir.
+
 ## Değişmez ilkeler
 
 - Hiçbir veri saklanmaz: veritabanı, hesap, çerez, tarayıcı deposu ve analiz aracı yoktur; test cevapları
