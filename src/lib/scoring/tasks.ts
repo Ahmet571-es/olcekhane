@@ -8,6 +8,8 @@ import type {
   MatrixRule,
   MentalRotationTask,
   NBackTask,
+  NumberSeriesRule,
+  NumberSeriesTask,
   ReactionTimeTask,
   SpatialSpanTask,
   SymbolMatchTask,
@@ -1217,6 +1219,130 @@ export function scoreMatrix(task: MatrixReasoningTask, input: MatrixTrialInput[]
   };
 }
 
+/* ---------- Sayı dizileri ---------- */
+
+export interface NumberSeriesTrialInput {
+  index: number;
+  /** Yazılan sayı; "Bilmiyorum" denirse `null`. */
+  response: { answer: number } | null;
+  /** Dizinin ekrana çizildiği andan cevabın verildiği ana kadar geçen süre (ms); tarayıcı 2 dakikada keser. */
+  rtMs: number | null;
+}
+
+export interface NumberSeriesRuleResult {
+  rule: NumberSeriesRule;
+  n: number;
+  correct: number;
+}
+
+export interface NumberSeriesResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  /** Kural türlerine göre; soruları olmayan türler listede yoktur. */
+  rules: NumberSeriesRuleResult[];
+  /** Ulaşılan düzey: şekil akıl yürütmedeki ölçütle aynı (o düzeyde ve o düzeye kadarki sorularda en az %60 doğru). */
+  reached: number;
+  medianRt: number | null;
+  /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
+  rtEasy: number | null;
+  rtHard: number | null;
+  /**
+   * 3. düzey ve üstündeki sorularda `rapidMs`'den kısa sürede yazılan yanlış cevaplar ve bu düzeylerde cevap yazılan soru
+   * sayısı. Doğru cevaplar sayılmaz: cevap yazıldığı için hızlı ama doğru bir cevap tahminle bulunmuş olamaz.
+   */
+  rapid: number;
+  rapidOf: number;
+  /** "Bilmiyorum" denen sorular. */
+  skipped: number;
+  /** Yazılan ama yanlış olan cevaplar. */
+  wrong: number;
+  /** Yanlışlardan, dizinin bir bölümüne uyan daha basit bir kuralla bulunanlar (sorunun tuzak cevapları). */
+  traps: number;
+  /**
+   * Yanlışlardan, tuzak olmayan ve doğru cevaba çok yakın olanlar (hesaplamada küçük bir kayma olabilir). Dizide zaten
+   * görünen bir sayıyı yazmak (ör. son sayıyı tekrarlamak) yakın cevap sayılmaz.
+   */
+  nearMisses: number;
+  /** En sık yazılan sayının kaç soruda yazıldığı (hep aynı sayının yazılıp yazılmadığı). */
+  sameAnswer: number;
+}
+
+/** "Yakın" cevap: doğru cevaptan en çok bu kadar uzak (en az 2, büyük sayılarda doğru cevabın %5'i). */
+export const nearMissTolerance = (answer: number) => Math.max(2, Math.round(answer * 0.05));
+/** Yanlışların yorumlanması için en az bu kadar ve yanlışların en az yarısı aynı türden olmalı. */
+export const NUMBER_PATTERN_MIN = 3;
+
+export function scoreNumberSeries(task: NumberSeriesTask, input: NumberSeriesTrialInput[]): { result: NumberSeriesResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.traps.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, NumberSeriesTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (t.response !== null) {
+      const a = t.response?.answer;
+      if (typeof a !== 'number' || !Number.isInteger(a) || a < 0 || a >= 10 ** task.maxDigits) throw new TaskInputError('Geçersiz cevap.');
+    }
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const value = t.response === null ? null : t.response.answer;
+    const answer = task.answers[i];
+    const correct = value === answer;
+    const trap = value !== null && !correct && task.traps[i].includes(value);
+    const near = value !== null && !correct && !trap && !item.terms.includes(value) && Math.abs(value - answer) <= nearMissTolerance(answer);
+    return { item, value, correct, trap, near, rt: t.rtMs };
+  });
+  const correct = scored.filter((s) => s.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((s) => s.item.level === level);
+      return { level, n: here.length, correct: here.filter((s) => s.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const RULES: NumberSeriesRule[] = ['step', 'ratio', 'growing', 'alternating', 'combined'];
+  const rules = RULES.flatMap((rule) => {
+    const here = scored.filter((s) => s.item.rule === rule);
+    return here.length ? [{ rule, n: here.length, correct: here.filter((s) => s.correct).length }] : [];
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const hardAnswered = scored.filter((s) => s.item.level >= 3 && s.value !== null);
+  const values = new Map<number, number>();
+  for (const s of scored) if (s.value !== null) values.set(s.value, (values.get(s.value) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      rules,
+      reached,
+      medianRt: medianOrNull(rts(scored)),
+      rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
+      rapid: hardAnswered.filter((s) => !s.correct && s.rt !== null && s.rt < task.rapidMs).length,
+      rapidOf: hardAnswered.length,
+      skipped: scored.filter((s) => s.value === null).length,
+      wrong: scored.filter((s) => s.value !== null && !s.correct).length,
+      traps: scored.filter((s) => s.trap).length,
+      nearMisses: scored.filter((s) => s.near).length,
+      sameAnswer: Math.max(0, ...values.values()),
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -1233,6 +1359,7 @@ export function taskQualityNotes(parts: {
   rotation?: RotationResult;
   reaction?: ReactionResult;
   matrix?: MatrixResult;
+  numberSeries?: NumberSeriesResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -1398,8 +1525,39 @@ export function taskQualityNotes(parts: {
   }
   const mx = parts.matrix;
   if (mx) notes.push(...matrixQualityNotes(mx));
+  const ns = parts.numberSeries;
+  if (ns) notes.push(...numberSeriesQualityNotes(ns));
   return notes;
 }
+
+/**
+ * Sayı dizilerinde sonucu dikkatle yorumlamayı gerektiren durumlar. Rapordaki kartlar aynı eşikleri kullanır
+ * (lib/reports/build.ts, numberSeriesBlocks).
+ */
+export function numberSeriesQualityNotes(ns: NumberSeriesResult): string[] {
+  const notes: string[] = [];
+  if (numberSeriesMostlySkipped(ns)) {
+    notes.push(
+      `Sayı dizileri testinde ${ns.n} sorunun ${ns.skipped === ns.n ? 'hepsinde' : `${ns.skipped} tanesinde`} “Bilmiyorum” denmiş; sorular çok zor gelmiş ya da test yarıda bırakılmak istenmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+    );
+  }
+  if (numberSeriesRapid(ns)) {
+    notes.push(
+      `Sayı dizileri testinde 3. düzey ve üstündeki sorulardan cevap yazılan ${ns.rapidOf} sorunun ${ns.rapid === ns.rapidOf ? 'hepsinde' : `${ns.rapid} tanesinde`} yanlış bir cevap 2,5 saniyeden kısa sürede yazılmış; bu sorularda diziye bakmadan yazılmış olabilir.`,
+    );
+  }
+  if (numberSeriesSameAnswer(ns)) {
+    notes.push('Sayı dizileri testinde cevapların yarısında ya da daha çoğunda aynı sayı yazılmış; sorulara bakmadan cevap verilmiş olabilir.');
+  }
+  return notes;
+}
+
+/** Soruların yarısından çoğunda "Bilmiyorum". */
+export const numberSeriesMostlySkipped = (ns: NumberSeriesResult) => ns.skipped > ns.n / 2;
+/** Zor sorularda çok hızlı yazılan yanlış cevaplar: 3. düzey ve üstünde cevap yazılan soruların en az dörtte biri (en az 2). */
+export const numberSeriesRapid = (ns: NumberSeriesResult) => ns.rapidOf > 0 && ns.rapid >= Math.max(2, Math.ceil(ns.rapidOf / 4));
+/** Hep aynı sayıyı yazma: soruların en az yarısında aynı sayı (en az 6 cevapta). */
+export const numberSeriesSameAnswer = (ns: NumberSeriesResult) => ns.sameAnswer >= Math.max(6, Math.ceil(ns.n / 2));
 
 /**
  * Şekil akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar. Rapordaki kartlar aynı eşikleri kullanır

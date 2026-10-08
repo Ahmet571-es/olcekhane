@@ -13,6 +13,7 @@ import type {
   MatrixReasoningTask,
   MentalRotationTask,
   NBackTask,
+  NumberSeriesTask,
   QuizInstrument,
   ReactionTimeTask,
   ReadingInstrument,
@@ -210,6 +211,35 @@ export function matrixBody(
 /** Sorunun kendi düzeyindeki sırası (0'dan başlar). */
 export function matrixRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('sekil-akil-yurutme').tasks[0] as MatrixReasoningTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Sayı dizilerinin bir sorusu: düzeyi, kural türü, doğru cevabı, tuzak cevapları ve sırası. */
+export type NumberSeriesCell = { level: number; rule: string; answer: number; traps: number[]; i: number };
+
+/**
+ * Sayı dizileri: varsayılan olarak ilk üç düzeyin sorularında doğru; 4. ve 5. düzeyde ilk iki soruda doğru, ötekilerde
+ * doğru cevaptan 7 fazla (ne tuzak ne yakın cevap); cevap süresi düzeyle artar (8 sn + 6 sn/düzey). Seçici `answer: null`
+ * döndürürse "Bilmiyorum" denmiş olur.
+ */
+export function numberSeriesBody(
+  pick: (q: NumberSeriesCell) => { answer: number | null; rtMs: number | null } = (q) => {
+    const firstTwo = q.level <= 3 || numberSeriesRank(q) < 2;
+    return { answer: firstTwo ? q.answer : q.answer + 7, rtMs: 8000 + 6000 * q.level };
+  },
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('sayi-dizileri').tasks[0] as NumberSeriesTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, rule: it.rule, answer: task.answers[index], traps: task.traps[index], i: index });
+    return { index, response: p.answer === null ? null : { answer: p.answer }, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Sayı dizilerinde sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function numberSeriesRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('sayi-dizileri').tasks[0] as NumberSeriesTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
 }
 

@@ -118,9 +118,22 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    (özetleme yerine kapatıp hatırlama; birbirini tekrar eden kartlar) düzeltildi. Ortak değişiklik: 3B grafikte 10'dan
    çok sütun varsa yalnızca öndeki ve yandaki sütunların puanı yazılır, sütunlar incelir; PDF'te 10'dan uzun cetvel
    listesi sayfalara bölünür (Hobi ve Serbest Zaman İlgileri de böyle görünür).
-3. Sayı Dizileri (özgün). 4. Öğrenme ve Başarı Özellikleri (IPIP kısa ölçekleri; VIA dışı kaynaklar). 5. Sözel Akıl
-   Yürütme (özgün Türkçe). 6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi
-   Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
+3. **Sayı Dizileri: yayında (2026-10-08, pilot).** 24 özgün dizi, 5 düzey (4, 5, 5, 5, 5), 2 alıştırma; cevap tuş
+   takımıyla yazılır, "Bilmiyorum" denebilir; 3. sınıftan yetişkine, ~12 dakika (`content/instruments/sayi-dizileri.ts`,
+   `components/runner/tasks/number-series.tsx`). Beş kural türü: sabit artış ya da azalış, çarpma ve bölme, değişen
+   artış, iç içe diziler, birleşik kurallar. Her sorunun tek doğru cevabı bağımsız çözücüyle denetlenir
+   (`tests/helpers/series-solver.ts`: eksik yere −2000…9999 konur, sabit fark ve oran, 2. ve 3. derece, farklarda oran,
+   k·a+b, iki ve üç sayının toplamı, p·a+q·b, iç içe diziler, sırayla değişen iki ve üç işlem); bir soru (sd23) bu yüzden
+   değiştirildi. "Tuzak" cevaplar (daha basit bir kuralla bulunan) her soruda tanımlı ve nasıl bulunduğu testte denetlenir.
+   Cevap anahtarı ve tuzaklar tarayıcıya gitmez (yayın denetimi de bakar). Rapor: doğru sayısı, düzeylere göre grafik,
+   ulaşılan düzey (şekil akıl yürütmedeki ölçüt), kural türleri (3B grafik), çalışma biçimi; yanlışların çoğu tuzaksa ya
+   da doğru cevaba çok yakınsa bu söylenir; çok hızlı yazılan yanlışlar, hep aynı sayı ve çoğunda "Bilmiyorum" uyarı
+   olur. Bağımsız incelemeden sonra: hızlı ama doğru cevaplar artık "tahmin" sayılmıyor; fareyle tıklanan düğme odakta
+   kalıp sonraki cevabı bozmuyor; çift dokunuş soru atlatmıyor; kural türlerinde ölçüt "yarıdan fazlası" (şekil akıl
+   yürütmede de; 9 soruluk türde 5/9 artık "çoğu doğru"); "daha az zaman ayırdın" yalnızca belirgin farkta (iki testte de).
+4. Öğrenme ve Başarı Özellikleri (IPIP kısa ölçekleri; VIA dışı kaynaklar). 5. Sözel Akıl Yürütme (özgün Türkçe).
+   6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için
+   çocuk diliyle kısa kişilik testi.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -245,6 +258,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Tepki Hızı | tepki-hizi | Yayında (pilot; hoca onayı beklenmeden) |
 | Şekil Akıl Yürütme | sekil-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | 16 Faktörlü Kişilik Profili | 16-faktorlu-kisilik-profili | Yayında (active; 9. sınıftan yetişkine) |
+| Sayı Dizileri | sayi-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -356,6 +370,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (8): Sayı Dizileri yayında: 24 özgün sayı dizisi, 5 düzey, cevap yazılarak; öğrenci, veli ve yetişkin
+  raporu, kural türlerine göre 3B grafikli yol haritası; telefonda ve masaüstünde baştan sona çözüldü, rapor ve PDF
+  açıldı. Aynı değişiklikte Şekil Akıl Yürütme raporunda iki küçük metin tutarlılığı düzeltmesi.
 - 2026-10-08 (7): Beyin Akademisi büyütüldü (site sahibinin onayladığı yapı): 8 bölüm, 100 derslik program, ders
   seviyeleri, katmanlı ders ("Derinleş", "Klinik bağlantı", "Sınav notu"), okuma düzeyi seçici, UÇEP 2020 eşlemesi,
   dört ayaklı ana sayfa. İlk ders baştan genişletildi (omurilik sinirleri, otonom sistemin iki kolu, MR'da sağ-sol
@@ -413,5 +430,3 @@ En yeni üstte; en çok 10 madde tutulur.
   duraklama çizelgesi, akıcılık, anlama; gelişim yol haritası (okumanın yönlerine göre kartlar, alışkanlıklar, veliye
   öneriler, dört hafta; `ORAL_ROADMAPS`). Aydınlatma metni (sürüm 6) ses kaydını anlatıyor; mikrofon izni yalnızca
   sitenin kendisine açık.
-- 2026-10-07: Zihinsel görevlerin (sekiz görev) gelişim yol haritaları yayında; artık çözülebilen her testin raporunda
-  yol haritası var. SSS'deki "Ücretli mi?" cevabı buna göre güncellendi; yayın denetimi görev yol haritasını da sınıyor.

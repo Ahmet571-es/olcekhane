@@ -12,8 +12,8 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    (Hedge ve ark., 2018); bu yüzden öneriler sonuca göre değişmez, sonuç "Kısaca" bölümünde raporun kendi kartlarından
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
- *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme
- *    yetişkinlere de açıktır; onun metinleri okula özgü değildir, yetişkine öğrenci metni (ya da `adult` metni) gösterilir.
+ *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme ve
+ *    Sayı Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
@@ -770,6 +770,104 @@ const sekilAkilYurutme: TaskRoadmapTemplate = {
   sources: [KAYNAK.carpenter, KAYNAK.laurence, KAYNAK.ferrer],
 };
 
+const sayiBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca sayılarla yapılan yönünü gösterir.',
+    'Sayı dizilerinde sayı bilgisi ve hesap rahatlığı da rol oynar; henüz rahatça yapamadığın işlemlerin gerektiği sorularda zorlanmak olağandır.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; küçük yaşta üst düzeylerdeki sorularda zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca sayılarla yapılan yönünü gösterir.',
+    'Sayı dizilerinde sayı bilgisi ve hesap rahatlığı da rol oynar; çocuğunuzun henüz rahatça yapamadığı işlemlerin gerektiği sorularda zorlanması olağandır.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const sayiFacts: InfoBox = {
+  ...sayiBase,
+  items: {
+    ...sayiBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca sayılarla yapılan yönünü gösterir.',
+      'Sayı dizilerinde sayı bilgisi, hesap rahatlığı ve bu tür sorulara alışkın olmak da rol oynar.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const sayiDizileri: TaskRoadmapTemplate = {
+  version: 'sayi-dizileri-yol-haritasi-1',
+  what: {
+    student: 'sayılarla kural bulmayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun sayılarla kural bulmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'sayılarla kural bulmayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Sayılarla kural bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun sayılarla kural bulmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, sayı dizilerindeki kuralı bulup sürdürebilmeyi ölçer. Bu beceri; bir sayı örüntüsünü fark etmek, bir tablodaki ya da grafikteki değişimi yorumlamak ve bir problemi adımlara ayırmak gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım eder.',
+    'Bu test, sayı dizilerindeki kuralı bulup sürdürebilmeyi ölçer. Bu beceri; bir sayı örüntüsünü fark etmek, bir tablodaki ya da grafikteki değişimi yorumlamak ve bir problemi adımlara ayırmak gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım eder.',
+  ),
+  supports: [
+    support(0, 'fark', 'Farkları yaz', 'Yöntem', t(
+      'Bir sayı dizisinde kuralı ararken ardışık sayıların arasına farkı ya da işlemi yaz: “+3”, “×2” gibi. Farklar da bir düzen oluşturuyorsa onların altına yeni bir satır aç. Yirmili yaşlardaki kişilerle yapılan bir araştırmada, sayılar arasındaki ilişkiler bu şekilde not alınarak çözülen soruların sayısıyla toplam puan arasında güçlü bir ilişki bulunmuştur.',
+      'Çocuğunuza bir sayı dizisinde kuralı ararken ardışık sayıların arasına farkı ya da işlemi yazmasını önerin: “+3”, “×2” gibi. Farklar da bir düzen oluşturuyorsa onların altına yeni bir satır açabilir. Yirmili yaşlardaki kişilerle yapılan bir araştırmada, sayılar arasındaki ilişkiler bu şekilde not alınarak çözülen soruların sayısıyla toplam puan arasında güçlü bir ilişki bulunmuştur.',
+    )),
+    support(1, 'dene', 'Kuralı bütün dizide dene', 'Alışkanlık', t(
+      'Bir kural bulduğunda cevabı yazmadan önce onu dizinin başından sonuna dene. Yalnızca son iki sayıya uyan bir kural çoğu zaman yanlış çıkar: örneğin 3, 4, 6, 9, 13 dizisinde son artışı (4) aynen eklemek 17 verir; oysa artışlar her adımda 1 büyüyor ve sıradaki sayı 18’dir.',
+      'Çocuğunuza bir kural bulduğunda cevabı yazmadan önce onu dizinin başından sonuna denemesini önerin. Yalnızca son iki sayıya uyan bir kural çoğu zaman yanlış çıkar: örneğin 3, 4, 6, 9, 13 dizisinde son artışı (4) aynen eklemek 17 verir; oysa artışlar her adımda 1 büyüyor ve sıradaki sayı 18’dir.',
+    )),
+    support(2, 'ayir', 'İki diziye ayır', 'Yöntem', t(
+      'Sayılar bir büyüyüp bir küçülüyorsa ya da düzen bir türlü bulunamıyorsa birinci, üçüncü, beşinci sayıları ve ikinci, dördüncü, altıncı sayıları ayrı ayrı yaz: bazen iç içe geçmiş iki basit dizi ortaya çıkar. Sayıların arasına yazdığın işlemler sırayla değişiyorsa (ör. önce +3, sonra ×2) kural iki işlemin sırayla uygulanması olabilir.',
+      'Sayılar bir büyüyüp bir küçülüyorsa ya da düzen bir türlü bulunamıyorsa çocuğunuza birinci, üçüncü, beşinci sayıları ve ikinci, dördüncü, altıncı sayıları ayrı ayrı yazmasını önerin: bazen iç içe geçmiş iki basit dizi ortaya çıkar. Sayıların arasına yazdığı işlemler sırayla değişiyorsa (ör. önce +3, sonra ×2) kural iki işlemin sırayla uygulanması olabilir.',
+    )),
+    support(3, 'oyna', 'Sayılarla rahat ol', 'Etkinlik', t(
+      'Bir araştırmada, sayı dizilerinde başarılı olanların tanıdık sayı dizilerini daha kolay tanıdığı ve hesabı daha verimli yaptığı görülmüştür. Zihinden işlem yapmak, çarpım tablosunu rahat bilmek ve kakuro gibi toplama gerektiren sayı bulmacaları bu rahatlığı destekleyebilir; bu bulmacalarda ustalaşmak her işe kendiliğinden yansımayabilir, asıl kazanç sayılarla düşünmekten keyif almaktır.',
+      'Bir araştırmada, sayı dizilerinde başarılı olanların tanıdık sayı dizilerini daha kolay tanıdığı ve hesabı daha verimli yaptığı görülmüştür. Zihinden işlem yapmak, çarpım tablosunu rahat bilmek ve kakuro gibi toplama gerektiren sayı bulmacaları çocuğunuzun bu rahatlığını destekleyebilir; bu bulmacalarda ustalaşmak her işe kendiliğinden yansımayabilir, asıl kazanç sayılarla düşünmekten keyif almaktır.',
+    )),
+  ],
+  facts: sayiFacts,
+  approach: [
+    { title: 'Acele ettirmeyin', text: 'Zor bir dizide uzun düşünmesine ve kâğıt kalem kullanmasına izin verin; hızlı olmasından çok, kuralı kendisinin bulmasını övün.' },
+    { title: 'Sayı oyunları oynayın', text: '“Bir kural düşündüm: 2, 5, 8… Sıradaki sayı ne?” gibi kısa sayı oyunlarını sırayla kural koyarak oynayın; kuralı sözcüklerle söylemesini isteyin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki matematik çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Farkları yaz',
+      text: t(
+        'Bu hafta karşına çıkan ya da kendin yazdığın üç kısa sayı dizisinde sayıların arasına farkları yaz ve her birinin kuralını tek cümleyle söyle.',
+        'Bu hafta çocuğunuzla üç kısa sayı dizisi bulun ya da yazın; sayıların arasına farkları yazıp her birinin kuralını tek cümleyle söyleyin.',
+      ),
+    },
+    {
+      title: 'Kendi dizini yap',
+      text: t(
+        'Bu hafta bir kural seç (ör. “iki katının bir eksiği”), o kurala göre beş sayı yaz, altıncıyı boş bırak ve birine çözdür; sonra onun nasıl düşündüğünü sor.',
+        'Bu hafta çocuğunuzdan bir kural seçip (ör. “her adımda 4 fazla”) beş sayılık bir dizi yazmasını, altıncı sayıyı boş bırakıp size çözdürmesini isteyin; sonra rolleri değiştirin.',
+      ),
+    },
+    {
+      title: 'Kontrol et',
+      text: t(
+        'Bu hafta bir sayı bulmacası ya da problem çözerken, cevabı yazmadan önce bulduğun kuralı baştan sona bir kez dene ve kaç hatayı böyle yakaladığını say.',
+        'Bu hafta çocuğunuzdan bir sayı bulmacası ya da problem çözerken cevabı yazmadan önce bulduğu kuralı baştan sona bir kez denemesini ve kaç hatayı böyle yakaladığını saymasını isteyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun sayılarla kural bulmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun sayılarla kural bulmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['sekil-akil-yurutme', 'dikkat-ve-bellek'],
+  nextPurpose: {
+    you: 'şekillerle akıl yürütmeyi ve bellek becerilerini de görmek',
+    parent: 'çocuğunuzun şekillerle akıl yürütmesini ve bellek becerilerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.schneider, KAYNAK.lefevre, KAYNAK.ferrer],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -781,4 +879,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'zihinde-dondurme': zihindeDondurme,
   'tepki-hizi': tepkiHizi,
   'sekil-akil-yurutme': sekilAkilYurutme,
+  'sayi-dizileri': sayiDizileri,
 };

@@ -231,6 +231,17 @@ jobs:
           if ! grep -q 'Eksik parçayı bul' <<<"$sa_sayfa" || ! grep -qF '\"answers\":[]' <<<"$sa_sayfa" || ! grep -qF '\"optionDistance\":[]' <<<"$sa_sayfa"; then
             sorun="$sorun sekil-akil-yurutme-anahtar"
           fi
+          # Sayı Dizileri: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/sayi-dizileri.test.ts güncel olduğunu
+          # denetler). Çözme sayfasına cevap anahtarı ve tuzak cevaplar gitmez.
+          SD_GOVDE=$(python3 -c 'import json; s=[13, 29, 6, 26, 52, 50, 96, 5, 16, 32, 162, 4, 33, 35, 58, 12, 63, 34, 17, 37, 122, 42, 55, 56]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"sayi-dizileri": [{"index": i, "response": {"answer": s[i]}, "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$SD_GOVDE" "https://$ALAN/api/rapor/sayi-dizileri" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 4 and r["student"]["chartTitle"] == "Düzeylere göre doğru cevaplar" and r["student"]["items"][0]["badge"] == "24 soruda 24 doğru" and len(r["student"]["keyFigures"]) == 3; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 5 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun sayi-dizileri-raporu"
+          fi
+          sd_sayfa=$("${C[@]}" -f "https://$ALAN/testler/sayi-dizileri/coz?sinif=6") || sd_sayfa=""
+          if ! grep -q 'Eksik sayıyı bul' <<<"$sd_sayfa" || ! grep -qF '\"answers\":[]' <<<"$sd_sayfa" || ! grep -qF '\"traps\":[]' <<<"$sd_sayfa"; then
+            sorun="$sorun sayi-dizileri-anahtar"
+          fi
           # Sesli okuma: tarayıcı mikrofonu yalnızca izin başlığı açıksa kullanabilir; ses cihazda kalır, sunucuya yalnızca
           # işaretler, süreler ve cevaplar gelir. Örnek: 3. sınıf metni, iki yanlış okuma, bir yeniden anlatma fikri.
           "${C[@]}" -I "https://$ALAN/okuma" | grep -qi '^permissions-policy:.*microphone=(self)' || sorun="$sorun mikrofon-izni"

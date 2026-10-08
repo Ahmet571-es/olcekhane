@@ -12,6 +12,7 @@ import { GoNoGo } from './go-nogo';
 import { MatrixReasoning } from './matrix-reasoning';
 import { MentalRotation } from './mental-rotation';
 import { NBack } from './n-back';
+import { NumberSeries } from './number-series';
 import { ReactionTime } from './reaction-time';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
@@ -164,6 +165,7 @@ export function TaskRunner(props: {
       {task.kind === 'mental_rotation' && <MentalRotation key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'reaction_time' && <ReactionTime key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'matrix_reasoning' && <MatrixReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'number_series' && <NumberSeries key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

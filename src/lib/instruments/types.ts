@@ -233,7 +233,8 @@ export type TaskKind =
   | 'n_back'
   | 'mental_rotation'
   | 'reaction_time'
-  | 'matrix_reasoning';
+  | 'matrix_reasoning'
+  | 'number_series';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -554,6 +555,54 @@ export interface MatrixReasoningTask extends TaskBase {
   rapidMs: number;
 }
 
+/**
+ * Sayı dizileri: bir kurala göre ilerleyen sayı dizisinin eksik sayısını (çoğunlukla sonuncusunu, bazen ortadakini)
+ * bulmak. Cevap ekrandaki tuş takımıyla yazılır; "Bilmiyorum" da denebilir (yanlış sayılır). Bütün sorular
+ * Ölçekhane'nindir (content/instruments/sayi-dizileri.ts).
+ *
+ * Kural türleri: sabit artış ya da azalış (her adımda aynı sayıyı ekleme ya da çıkarma), çarpma ve bölme (her adımda aynı
+ * sayıyla çarpma ya da bölme), değişen artış (artışların kendisi düzenli büyür ya da küçülür), iç içe diziler (sırayla
+ * değişen iki işlem ya da iç içe geçmiş iki dizi), birleşik kurallar (iki adımlı kurallar, önceki iki ya da üç sayının
+ * toplamı, artışların kendi kuralı olan bir dizi oluşturması).
+ */
+export type NumberSeriesRule = 'step' | 'ratio' | 'growing' | 'alternating' | 'combined';
+
+export interface NumberSeriesItem {
+  key: string;
+  /** Zorluk düzeyi (1–5): kuralın türüne ve izlenmesi gereken adım sayısına göre. */
+  level: 1 | 2 | 3 | 4 | 5;
+  rule: NumberSeriesRule;
+  /** Dizinin sayıları; eksik olan (bulunacak) sayının yerinde `null` vardır (tam bir tane). */
+  terms: (number | null)[];
+}
+
+export interface NumberSeriesPracticeItem extends NumberSeriesItem {
+  /** Eksik sayı. Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  /** Cevaptan sonra gösterilen açıklama. */
+  explain: string;
+}
+
+export interface NumberSeriesTask extends TaskBase {
+  kind: 'number_series';
+  practice: NumberSeriesPracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: NumberSeriesItem[];
+  /** Cevap anahtarı: items[i] sorusunun eksik sayısı. Tarayıcıya giden test bilgisinde boş gönderilir (testler/[slug]/coz). */
+  answers: number[];
+  /**
+   * Her sorunun "basit kural tuzakları": dizinin yalnızca bir bölümüne uyan daha basit bir kuralla bulunan yanlış
+   * cevaplar (ör. artış büyürken son artışı sürdürmek). Yanlış cevapların ne kadarının böyle olduğu raporda anlatılır.
+   * Tarayıcıya boş gönderilir.
+   */
+  traps: number[][];
+  levels: { level: number; name: string; plain: string }[];
+  /** Düzeyi 3 ve üstündeki sorularda bu süreden (ms) kısa cevaplar "çok hızlı" sayılır: diziye bakmadan yazılmış olabilir. */
+  rapidMs: number;
+  /** Cevabın en çok kaç basamaklı olabileceği (tuş takımı bundan uzun sayı yazdırmaz). */
+  maxDigits: number;
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -566,7 +615,8 @@ export type CognitiveTask =
   | NBackTask
   | MentalRotationTask
   | ReactionTimeTask
-  | MatrixReasoningTask;
+  | MatrixReasoningTask
+  | NumberSeriesTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

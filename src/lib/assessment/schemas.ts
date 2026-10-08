@@ -22,6 +22,8 @@ export const taskTrial = z.object({
     z.array(z.number().int().min(0).max(9)).max(12),
     z.enum(['L', 'R']),
     z.number().int().min(1).max(9),
+    /** Sayı dizilerinde yazılan cevap ("Bilmiyorum" denirse `null`). */
+    z.object({ answer: z.number().int().min(0).max(99_999) }),
     cancellationResponse,
     trailResponse,
     z.null(),

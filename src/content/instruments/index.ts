@@ -17,6 +17,7 @@ import { meslekiIlgi } from './mesleki-ilgi';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
+import { sayiDizileri } from './sayi-dizileri';
 import { sekilAkilYurutme } from './sekil-akil-yurutme';
 import { sesliOkuma } from './sesli-okuma';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
@@ -44,6 +45,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   zihindeDondurme,
   tepkiHizi,
   sekilAkilYurutme,
+  sayiDizileri,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   onAltiFaktorKisilik,

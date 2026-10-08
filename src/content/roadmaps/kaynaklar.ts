@@ -99,4 +99,12 @@ export const KAYNAK = {
     text: 'Laurence, P. G., Mecca, T. P., Serpa, A., Martin, R. ve Macedo, E. C. (2018). Eye movements and cognitive strategy in a fluid intelligence test: Item type analysis. Frontiers in Psychology, 9, 380.',
     url: 'https://doi.org/10.3389/fpsyg.2018.00380',
   },
+  lefevre: {
+    text: 'LeFevre, J.-A. ve Bisanz, J. (1986). A cognitive analysis of number-series problems: Sources of individual differences in performance. Memory & Cognition, 14(4), 287–298.',
+    url: 'https://doi.org/10.3758/BF03202506',
+  },
+  schneider: {
+    text: 'Schneider, B. ve Sparfeldt, J. R. (2021). How to get better: Taking notes mediates the effect of a video tutorial on number series. Journal of Intelligence, 9(4), 55.',
+    url: 'https://doi.org/10.3390/jintelligence9040055',
+  },
 } satisfies Record<string, { text: string; url: string }>;

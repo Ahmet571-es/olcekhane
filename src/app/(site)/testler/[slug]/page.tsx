@@ -45,7 +45,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
   const sc = def.science;
   const guides = guidesForTest(slug);
   // Tek görevli bilişsel testler (harf işaretleme, renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama,
-  // zihinde döndürme, tepki hızı, şekil akıl yürütme).
+  // zihinde döndürme, tepki hızı, şekil akıl yürütme, sayı dizileri).
   const single = def.engine === 'tasks' && def.tasks.length === 1 ? def.tasks[0] : null;
   const cancellation = single?.kind === 'cancellation' ? single : null;
   const taskLength = !single
@@ -62,7 +62,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             ? `${single.blocks.length} bölüm, toplam ${single.blocks.reduce((s, b) => s + b.letters.length, 0)} harf`
             : single.kind === 'reaction_time'
               ? single.parts.map((p) => `${p.trials.length} ${p.boxes === 1 ? 'basit' : 'seçmeli'}`).join(', ') + ' deneme'
-              : single.kind === 'matrix_reasoning'
+              : single.kind === 'matrix_reasoning' || single.kind === 'number_series'
                 ? `${single.items.length} soru, ${single.levels.length} düzey`
                 : null;
   const itemCount =
@@ -337,6 +337,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Hangi tür kuralların daha kolay bulunduğu (üç boyutlu grafikle) ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'number_series' && (
+              <>
+                <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
+                <li>Hangi tür kuralların daha kolay bulunduğu (üç boyutlu grafikle), yanlış cevapların neyi düşündürdüğü ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'n_back' && (
