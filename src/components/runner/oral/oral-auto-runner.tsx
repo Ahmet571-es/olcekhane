@@ -49,6 +49,8 @@ const ORDER: Step[] = ['intro', 'passage', 'mic', 'ready', 'check', 'consent', '
 const SHOWN: Partial<Record<Step, Step>> = { reading: 'ready', declined: 'consent', failed: 'waiting' };
 
 const MAX_READING_MS = 10 * 60_000;
+/** Kayıtta konuşma ayırt edilemese de en yüksek düzey bundan yüksekse ses geliyordur (gürültülü ortam). */
+const LOUD_ENOUGH_DB = -50;
 /** "Bitirdim"e kayıt başladıktan hemen sonra (ör. çift dokunuşla) basılırsa yok sayılır. */
 const TAP_GUARD_MS = 1500;
 /** Okuma sırasında mikrofonun kopup kopmadığı bu aralıkla denetlenir. */
@@ -81,6 +83,9 @@ const HARD: Issue[] = ['silent', 'interrupted', 'fast'];
 /** Okuma kaydında incelemeyi bozacak bir sorun var mı: ses yok, kesinti, metnin tamamı için çok kısa süre ya da ses kalitesi. */
 function readingIssue(r: Reading, passage: OralClientPassage): Issue | null {
   const a = r.analysis;
+  // Ses geliyor ama konuşma arka plandan ayırt edilemiyor (ör. sürekli makine sesi): gürültü; yapay zekâ yine de
+  // deneyebilir (okuma anlaşılamazsa inceleme yeniden okumayı ister). Hiç ses yoksa yeniden okunmalı.
+  if (a.quality === 'silent' && a.speechDb >= LOUD_ENOUGH_DB && !r.interrupted) return 'noisy';
   if (a.quality === 'silent' || a.speechStartMs === null || a.speechEndMs === null || a.speechMs < 1000) return 'silent';
   if (r.interrupted) return 'interrupted';
   const ms = a.speechEndMs - a.speechStartMs >= 1000 ? a.speechEndMs - a.speechStartMs : r.durationMs;
@@ -226,6 +231,7 @@ export function OralAutoRunner(props: {
   const vault = useRef<{ samples: Float32Array | null }>({ samples: null });
   const autoStop = useRef<number | null>(null);
   const starting = useRef(false);
+  const [startError, setStartError] = useState(false);
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   // Cevapların ait olduğu metin: okuma anlaşılamayıp aynı metin yeniden okununca sorular yeniden sorulmaz (öğrenci
@@ -351,6 +357,7 @@ export function OralAutoRunner(props: {
   async function startReading() {
     if (!recorder || starting.current || recorder.isRecording) return;
     starting.current = true;
+    setStartError(false);
     try {
       if (!(await recorder.wake())) {
         toMic(recorder.lost ? 'lost' : 'busy');
@@ -362,6 +369,9 @@ export function OralAutoRunner(props: {
       setStep('reading');
       if (autoStop.current) window.clearTimeout(autoStop.current);
       autoStop.current = window.setTimeout(() => stopReading(true), MAX_READING_MS);
+    } catch {
+      // Kayıt başlatılamadı: düğme sessizce takılı kalmasın.
+      setStartError(true);
     } finally {
       starting.current = false;
     }
@@ -646,7 +656,11 @@ export function OralAutoRunner(props: {
           <button
             type="button"
             aria-pressed={on}
-            onClick={() => setPassageKey(p.key)}
+            onClick={() => {
+              // Metne dokununca seçilir ve hemen devam edilir (ayrı bir "devam" düğmesi aranmaz).
+              setPassageKey(p.key);
+              fromPassage();
+            }}
             className={`flex w-full flex-col items-start gap-1 rounded-xl border-[1.5px] p-4 text-left transition-colors ${on ? 'border-ink bg-ink text-paper' : 'border-rule-strong bg-surface hover:border-ink'}`}
           >
             <span className="font-display text-xl font-bold">{p.title}</span>
@@ -660,7 +674,11 @@ export function OralAutoRunner(props: {
     return shell(
       <>
         {title('Bir metin seç')}
-        <p className="text-lg">{simple ? 'Daha önce okumadığın bir metin seç.' : `Kendi sınıfının (${grade}. sınıf) metinlerinden, daha önce okumadığın birini seç.`}</p>
+        <p className="text-lg">
+          {simple
+            ? 'Daha önce okumadığın bir metne dokun.'
+            : `Kendi sınıfının (${grade}. sınıf) metinlerinden, daha önce okumadığın birine dokun. Sonra mikrofonu deneyeceğiz; metin, okumaya başlayınca açılacak.`}
+        </p>
         <ul className="flex flex-col gap-2.5">{own.map(card)}</ul>
         {other.length > 0 && (
           <details className="flex flex-col gap-3" open={!!passageKey && !own.some((p) => p.key === passageKey)}>
@@ -671,11 +689,6 @@ export function OralAutoRunner(props: {
             <ul className="flex flex-col gap-2.5">{other.map(card)}</ul>
           </details>
         )}
-        <div className="flex flex-wrap gap-3">
-          <button type="button" className="btn btn-primary btn-lg" disabled={!passage} onClick={fromPassage}>
-            Bu metinle devam et
-          </button>
-        </div>
       </>,
     );
   }
@@ -746,10 +759,20 @@ export function OralAutoRunner(props: {
         </ul>
         <p className="notice notice-info">Okurken kimse sana kelime söylemesin ya da yardım etmesin. Kaydını kimse dinlemez.</p>
         {micError && <p className="notice notice-danger">{MIC_HELP[micError]}</p>}
-        <div>
+        {startError && (
+          <p className="notice notice-danger" role="alert">
+            Kayıt başlatılamadı. Yeniden “Başla”ya bas; olmazsa mikrofonu yeniden deneyelim.
+          </p>
+        )}
+        <div className="flex flex-wrap gap-3">
           <button type="button" className="btn btn-primary btn-lg" onClick={startReading}>
             Başla
           </button>
+          {startError && (
+            <button type="button" className="btn btn-secondary" onClick={() => toMic()}>
+              Mikrofonu yeniden dene
+            </button>
+          )}
         </div>
       </>,
     );

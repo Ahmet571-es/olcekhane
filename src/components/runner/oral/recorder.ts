@@ -141,9 +141,14 @@ export class MicRecorder {
     this.chunks.push(this.resampler.push(x));
   }
 
-  /** Ses bağlamı durmuşsa (iPhone'da ekran kilitlenince olur) yeniden başlatmayı dener. */
+  /**
+   * Ses bağlamı durmuşsa (iPhone'da ekran kilitlenince ya da arama gelince olur) yeniden başlatmayı dener. Bazı
+   * tarayıcılarda resume() hiç sonuçlanmayabiliyor: en çok 2 sn beklenir, düğme takılı kalmaz.
+   */
   async wake(): Promise<boolean> {
-    if (this.ctx.state !== 'running') await this.ctx.resume().catch(() => {});
+    if (this.ctx.state !== 'running') {
+      await Promise.race([this.ctx.resume().catch(() => {}), new Promise((r) => setTimeout(r, 2000))]);
+    }
     return this.ctx.state === 'running' && !this.lost;
   }
 
@@ -157,9 +162,19 @@ export class MicRecorder {
     this.broken = this.lost || this.ctx.state !== 'running';
     this.startedAt = performance.now();
     this.recording = true;
+    // Ekranın kararmaması istenir ama beklenmez: bazı tarayıcılarda istek geç ya da hiç sonuçlanmıyor, kayıt beklemesin.
     try {
       const nav = navigator as Navigator & { wakeLock?: { request: (t: 'screen') => Promise<{ release: () => Promise<void> }> } };
-      this.wakeLock = (await nav.wakeLock?.request('screen')) ?? null;
+      const req = nav.wakeLock?.request('screen');
+      if (req) {
+        req.then(
+          (lock) => {
+            if (this.recording && !this.wakeLock) this.wakeLock = lock;
+            else void lock.release().catch(() => {});
+          },
+          () => {},
+        );
+      }
     } catch {
       this.wakeLock = null;
     }

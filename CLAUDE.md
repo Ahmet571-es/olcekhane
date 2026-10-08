@@ -161,8 +161,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Doğruluk ilkesi: konuşma tanıma hatası çocuğun hatası sayılmaz. Şüpheli yerler kısa parçalar hâlinde yeniden
   yazıya dökülüp doğrulanır; doğrulanmayan ya da tek harf farkı olan kelime "net anlaşılamadı" (`unclear`) olur, hata
   sayılmaz. Okuma metinle eşleşmezse (tanınan kelimelerin %30'undan azı metinde) ya da kelimelerin %30'undan çoğu net
-  anlaşılamazsa rapor verilmez, yeniden okuma istenir (cevaplar korunur, sorular yeniden sorulmaz). Mikrofon denemesi
-  sıkıdır: sessizlik ölçümü, ses düzeyi ve kırpılma, sonra yapay zekâ cümleyi tanımalı.
+  anlaşılamazsa rapor verilmez, yeniden okuma istenir (cevaplar korunur, sorular yeniden sorulmaz). Gürültülü kayıtta
+  ek farkı ve benzer kelime hata sayılmaz. Mikrofon denemesinde asıl ölçüt yapay zekânın cümleyi tanımasıdır (site
+  sahibinin 2026-10-08 isteği: kuş, iş makinesi, tadilat sesi olan ortamda da çalışmalı): gürültü, kısıklık ve
+  sessizlik ölçümü engellemez, yalnızca anlaşılmazsa ne yapılacağını söyler; ses 90 Hz'in altı süzülerek incelenir.
 - Test sayfası çok iş parçacığı için COEP ile açılır (`next.config.ts`); model ve çalışma dosyaları sürümlü adreslerle
   süresiz HTTP önbelleğinde tutulur. Denetim ve Yayın, dosyaların sunulduğunu ve COEP başlığını dışarıdan sınar.
 - Gerçek çocuk kayıtlarıyla doğruluk ölçümü henüz yapılmadı (ölçümler sentetik ses ve yetişkin FLEURS kayıtlarıyla);

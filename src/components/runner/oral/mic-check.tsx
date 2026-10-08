@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { analyzeRecording, frameLevels, FRAME_MS } from '@/lib/oral/audio';
+import { analyzeRecording, frameLevels, highPass, FRAME_MS } from '@/lib/oral/audio';
 import { MIC_CHECK_SENTENCE } from '@/lib/oral/auto';
 import type { AsrClient, AsrProgress } from './asr-client';
 import { MIC_PASS_RATIO, sentenceMatch, wipeAudio, type AnalysisErrorKind } from './auto-analysis';
@@ -9,8 +9,11 @@ import { micSupported, type MicErrorKind, type MicRecorder, type Recording } fro
 
 /**
  * Öğrencinin tek başına okuduğu akışta mikrofon denemesi: mikrofonu açma, 2 saniyelik sessizlik ölçümü ve ekrandaki
- * cümleyi söyleme. Cümle hem ses ölçümlerinden (konuşma var mı, gürültü, kırpılma, kısıklık, kesinti) hem de yapay
- * zekânın onu tanımasından geçmeden okumaya geçilmez. Deneme kayıtları yalnızca bellekte durur ve hemen silinir.
+ * cümleyi söyleme. Asıl ölçüt, yapay zekânın cümleyi tanımasıdır: kayıtta ses varsa (kesinti ya da tam sessizlik
+ * değilse) cümle yapay zekâya verilir; gürültü, kısıklık, kırpılma gibi ölçümler okumayı engellemez, yalnızca yapay
+ * zekâ anlayamazsa ne yapılacağını söyler (gürültülü bir ortamda da insan sesi seçilebiliyorsa geçilir). Sessizlik
+ * ölçümü de bilgi verir, engellemez. Üç denemede tanınmayan ama sesi gelen öğrenci yine de okumaya geçebilir; okuma
+ * anlaşılamazsa inceleme yeniden okumayı ister. Deneme kayıtları yalnızca bellekte durur ve hemen silinir.
  */
 
 export type ModelState =
@@ -45,7 +48,12 @@ export const MODEL_HELP: Record<AnalysisErrorKind, string> = {
 /** Düğmeye basma sesi ölçüme girmesin: sessizlik kaydının başından atılan süre. */
 const LEAD_MS = 300;
 const SILENCE_MS = 2000;
-const SENTENCE_MS = 5000;
+/** Cümle için kayıt süresi: düğmeye basıp cümleyi okumaya başlamak zaman alır (özellikle küçük sınıflarda). */
+export const SENTENCE_MS = 7000;
+/** Kaydın en yüksek düzeyi bundan düşükse hiç ses gelmiyor (mikrofon kapalı ya da kapatılmış). */
+const NO_SOUND_DB = -50;
+/** Bu kadar denemede cümle tanınmazsa (ses geliyorsa) öğrenci yine de okumaya geçebilir. */
+const FAILS_BEFORE_SKIP = 3;
 /** Sessizlik: çerçevelerin ortancası bundan yüksekse ortam gürültülü; en yüksek %5'i bundan yüksekse ölçerken bir ses var. */
 const QUIET_FLOOR_MAX_DB = -45;
 const QUIET_PEAK_MAX_DB = -32;
@@ -58,7 +66,9 @@ const MIN_SENTENCE_SPEECH_MS = 600;
 const END_MARGIN_MS = 120;
 
 type SilenceState = 'todo' | 'rec' | 'ok' | 'noisy' | 'sound' | 'cut';
-type SentenceFail = 'interrupted' | 'silent' | 'loud' | 'quiet' | 'noisy' | 'short' | 'cut' | 'unrecognised' | 'asrError';
+/** Ses ölçümlerinin ipucu: yapay zekâ cümleyi anlayamazsa nedeni olabilir. */
+export type SentenceHint = 'loud' | 'quiet' | 'noisy' | 'short' | 'cut';
+type SentenceFail = 'interrupted' | 'silent' | SentenceHint | 'unrecognised' | 'asrError';
 type SentenceState = 'todo' | 'rec' | 'asr' | 'ok' | SentenceFail;
 
 function percentile(values: Float32Array, p: number): number {
@@ -69,29 +79,43 @@ function percentile(values: Float32Array, p: number): number {
 
 function judgeSilence(rec: Recording): SilenceState {
   if (rec.interrupted) return 'cut';
-  const levels = frameLevels(rec.samples, rec.sampleRate).subarray(Math.round(LEAD_MS / FRAME_MS));
+  const levels = frameLevels(highPass(rec.samples, rec.sampleRate), rec.sampleRate).subarray(Math.round(LEAD_MS / FRAME_MS));
   if (levels.length < 20) return 'cut';
   if (percentile(levels, 50) > QUIET_FLOOR_MAX_DB) return 'noisy';
   if (percentile(levels, 95) > QUIET_PEAK_MAX_DB) return 'sound';
   return 'ok';
 }
 
-function judgeSentence(rec: Recording): SentenceFail | null {
-  if (rec.interrupted) return 'interrupted';
+/**
+ * Deneme cümlesinin ses ölçümleri. Yalnızca kesinti ve hiç ses gelmemesi denemeyi bitirir (`fail`); öteki durumlarda
+ * cümle yapay zekâya verilir, `hint` yapay zekâ anlayamazsa gösterilecek nedendir.
+ */
+export function judgeSentence(rec: Recording): { fail: 'interrupted' | 'silent' | null; hint: SentenceHint | null } {
+  if (rec.interrupted) return { fail: 'interrupted', hint: null };
   const a = analyzeRecording(rec.samples, rec.sampleRate);
-  if (a.quality === 'silent' || a.speechStartMs === null || a.speechEndMs === null) return 'silent';
-  if (a.clipRatio > MAX_CLIP_RATIO) return 'loud';
-  if (a.speechDb < MIN_SPEECH_DB) return 'quiet';
-  if (a.snrDb < MIN_SNR_DB) return 'noisy';
-  if (a.speechMs < MIN_SENTENCE_SPEECH_MS) return 'short';
-  if (a.speechEndMs >= a.durationMs - END_MARGIN_MS) return 'cut';
-  return null;
+  if (a.speechDb < NO_SOUND_DB) return { fail: 'silent', hint: null };
+  let hint: SentenceHint | null = null;
+  if (a.clipRatio > MAX_CLIP_RATIO) hint = 'loud';
+  else if (a.speechDb < MIN_SPEECH_DB) hint = 'quiet';
+  // Konuşma arka plandan ayırt edilemiyor (ör. sürekli makine sesi) ya da fark az: gürültü.
+  else if (a.quality === 'silent' || a.snrDb < MIN_SNR_DB) hint = 'noisy';
+  else if (a.speechMs < MIN_SENTENCE_SPEECH_MS) hint = 'short';
+  else if (a.speechEndMs !== null && a.speechEndMs >= a.durationMs - END_MARGIN_MS) hint = 'cut';
+  return { fail: null, hint };
 }
 
 const SILENCE_TEXT: Record<'noisy' | 'sound' | 'cut', string> = {
-  noisy: 'Ortam biraz gürültülü. Daha sessiz bir yere geç ya da televizyon, müzik gibi sesleri kapattır. Sonra yeniden ölç.',
-  sound: 'Sessiz kalırken bir ses duyduk (konuşma, öksürük, kapı sesi gibi). Biraz bekle ve yeniden ölç; ölçerken hiç konuşma.',
+  noisy:
+    'Ortam biraz gürültülü. Mümkünse daha sessiz bir yere geç ya da televizyon, müzik gibi sesleri kapattır. Olmuyorsa devam edebilirsin: Yapay zekâ gürültünün içinden sesini ayırmaya çalışır.',
+  sound: 'Sessiz kalırken bir ses duyduk (konuşma, öksürük, kapı sesi gibi). İstersen yeniden ölç; istersen 3. adıma geçebilirsin.',
   cut: 'Ölçüm kesildi. Ekranı açık tut ve bu sayfada kal; sonra yeniden ölç.',
+};
+
+/** Yapay zekâ cümleyi anladı ama ses kısık ya da cızırtılıydı: okurken dikkat etsin. */
+const OK_NOTE: Partial<Record<SentenceHint, string>> = {
+  quiet: 'Sesin biraz kısık geliyordu: Okurken cihaza bir karış yakın dur ve normal sesinle oku.',
+  loud: 'Sesin biraz cızırtılı geliyordu: Okurken cihazı biraz uzakta tut.',
+  noisy: 'Ortam biraz gürültülü ama yapay zekâ sesini ayırabildi. Mümkünse okurken gürültüyü azaltın.',
 };
 
 const SENTENCE_TEXT: Record<SentenceFail, string> = {
@@ -100,7 +124,8 @@ const SENTENCE_TEXT: Record<SentenceFail, string> = {
     'Sesini duyamadık. Mikrofonun üstünü elinle ya da kılıfla kapatmadığından emin ol. Görüntülü arama gibi mikrofonu kullanan başka bir uygulama açıksa kapat.',
   loud: 'Sesin çok yüksek geliyor, cızırtılı olabilir. Cihazı biraz uzaklaştır ya da biraz daha yumuşak söyle.',
   quiet: 'Sesin kısık geliyor. Cihaza biraz yaklaş (bir karış uzaklık iyidir) ve biraz daha yüksek sesle söyle.',
-  noisy: 'Arka planda gürültü var. Daha sessiz bir yere geç; televizyon, müzik ya da konuşma varsa kapatılmasını iste.',
+  noisy:
+    'Arka planda gürültü var ve yapay zekâ cümleni seçemedi. Cihaza bir karış kadar yaklaş ve biraz daha yüksek sesle söyle; mümkünse daha sessiz bir yere geç.',
   short: 'Cümlenin tamamını duyamadık. Düğmeye bastıktan sonra cümlenin hepsini söyle.',
   cut: 'Kayıt bitmeden cümleyi bitiremedin gibi görünüyor. Düğmeye basınca hemen söylemeye başla.',
   unrecognised: 'Yapay zekâ cümleni tam anlayamadı. Cümleyi ekrandaki gibi, tane tane ve normal sesinle söyle. Cihaza bir karış kadar yaklaş.',
@@ -277,6 +302,9 @@ export function MicCheck(props: {
   const [recAt, setRecAt] = useState(0);
   const [heard, setHeard] = useState<string | null>(null);
   const [fails, setFails] = useState(0);
+  // Son denemenin ses ipucu (yapay zekâ anlayamazsa gösterilir) ve sesi gelen başarısız deneme sayısı.
+  const [hint, setHint] = useState<SentenceHint | null>(null);
+  const [soundFails, setSoundFails] = useState(0);
   // Deneme cümlesinin sesi (tanınana kadar) ve süren zamanlayıcı; bileşen kaldırılınca silinir.
   const vault = useRef<{ clip: Float32Array | null; timer: number | null }>({ clip: null, timer: null });
   const busy = useRef(false);
@@ -342,15 +370,16 @@ export function MicCheck(props: {
         setSentence('rec');
       },
       (rec) => {
-        const fail = judgeSentence(rec);
-        if (fail) {
+        const j = judgeSentence(rec);
+        if (j.fail) {
           wipeAudio(rec.samples);
-          setSentence(fail);
+          setSentence(j.fail);
           setFails((n) => n + 1);
           return;
         }
         attempt.current += 1;
         vault.current.clip = rec.samples;
+        setHint(j.hint);
         setSentence('asr');
       },
     );
@@ -372,9 +401,11 @@ export function MicCheck(props: {
         if (m.ratio >= MIC_PASS_RATIO) {
           setSentence('ok');
         } else {
+          // Anlaşılmadı: ses ölçümleri bir neden gösteriyorsa onu, yoksa "anlaşılmadı" der.
           setHeard(m.heard);
-          setSentence('unrecognised');
+          setSentence((cur) => (cur === 'asr' ? (hint ?? 'unrecognised') : cur));
           setFails((n) => n + 1);
+          setSoundFails((n) => n + 1);
         }
       })
       .catch(() => {
@@ -386,11 +417,13 @@ export function MicCheck(props: {
         wipeAudio(clip);
         if (vault.current.clip === clip) vault.current.clip = null;
       });
-  }, [sentence, modelReady, client]);
+  }, [sentence, modelReady, client, hint]);
 
   const recording = silence === 'rec' || sentence === 'rec';
-  const silenceOk = silence === 'ok';
+  // Sessizlik ölçümü engellemez: gürültülü ortamda da 3. adıma geçilir (yalnızca kesilen ölçüm yinelenir).
+  const silenceOk = silence === 'ok' || silence === 'noisy' || silence === 'sound';
   const sentenceFail = sentence !== 'todo' && sentence !== 'rec' && sentence !== 'asr' && sentence !== 'ok' ? sentence : null;
+  const canSkip = soundFails >= FAILS_BEFORE_SKIP && !!sentenceFail && !recording && !!recorder;
 
   return (
     <div className="flex flex-col gap-5">
@@ -429,8 +462,19 @@ export function MicCheck(props: {
         <StepHead id="mik-2" n={2} done={silenceOk}>
           Sessizliği ölç
         </StepHead>
-        {silenceOk ? (
+        {silence === 'ok' ? (
           <p className="font-bold text-ok">Ortam sessiz ✓</p>
+        ) : silenceOk ? (
+          <div className="flex flex-col gap-2">
+            <p className="notice notice-warn" role="status">
+              {SILENCE_TEXT[silence as 'noisy' | 'sound']}
+            </p>
+            <div>
+              <button type="button" className="btn btn-quiet" onClick={measureSilence} disabled={!recorder || recording}>
+                Yeniden ölç
+              </button>
+            </div>
+          </div>
         ) : (
           <>
             <p>{simple ? 'Düğmeye bas. 2 saniye hiç konuşma.' : 'Düğmeye bas ve 2 saniye hiç konuşmadan bekle. Ortamın ne kadar sessiz olduğunu ölçeceğiz.'}</p>
@@ -438,9 +482,9 @@ export function MicCheck(props: {
               <Countdown startedAt={recAt} ms={LEAD_MS + SILENCE_MS} label="Sessiz kal…" />
             ) : (
               <>
-                {(silence === 'noisy' || silence === 'sound' || silence === 'cut') && (
+                {silence === 'cut' && (
                   <p className="notice notice-warn" role="alert">
-                    {SILENCE_TEXT[silence]}
+                    {SILENCE_TEXT.cut}
                   </p>
                 )}
                 <div>
@@ -464,21 +508,22 @@ export function MicCheck(props: {
         {sentence === 'asr' && (
           <div className="flex flex-col gap-2" role="status">
             <p className="font-bold">
-              {modelReady ? 'Sesin iyi geliyor. Yapay zekâ cümleni tanımaya çalışıyor…' : 'Sesin iyi geliyor. Yapay zekâ hazır olunca cümleni tanıyacak…'}
+              {modelReady ? 'Sesin geldi. Yapay zekâ cümleni tanımaya çalışıyor…' : 'Sesin geldi. Yapay zekâ hazır olunca cümleni tanıyacak…'}
             </p>
             <ProgressBar ratio={null} label="Cümlenin tanınması" />
           </div>
         )}
         {sentence === 'ok' && (
           <div className="notice notice-ok flex flex-col gap-1" role="status">
-            <p className="text-lg font-bold">Sesin çok net geliyor ✓</p>
+            <p className="text-lg font-bold">{hint && OK_NOTE[hint] ? 'Yapay zekâ cümleni anladı ✓' : 'Sesin çok net geliyor ✓'}</p>
             <p>Yapay zekâ cümleni doğru anladı. Okumaya hazırsın.</p>
+            {hint && OK_NOTE[hint] && <p className="t-small">{OK_NOTE[hint]}</p>}
           </div>
         )}
         {sentenceFail && (
           <div className="notice notice-warn flex flex-col gap-2" role="alert">
             <p>{SENTENCE_TEXT[sentenceFail]}</p>
-            {sentenceFail === 'unrecognised' && (
+            {heard !== null && (
               <p className="t-small">{heard ? `Yapay zekânın anladığı: “${heard}”` : 'Yapay zekâ hiçbir kelime anlayamadı.'}</p>
             )}
             {fails >= 2 && (
@@ -499,6 +544,19 @@ export function MicCheck(props: {
             <button type="button" className="btn btn-secondary" onClick={recordSentence} disabled={!recorder || !silenceOk || recording}>
               {sentence === 'todo' ? 'Kaydı başlat' : 'Yeniden dene'}
             </button>
+          </div>
+        )}
+        {canSkip && (
+          <div className="flex flex-col gap-2 border-t border-rule pt-4">
+            <p className="t-small text-ink-2">
+              Sesin geliyor ama yapay zekâ cümleni {soundFails} denemede anlayamadı. İstersen yine de okumaya geçebilirsin; okumanı da anlayamazsa
+              yeniden okuman istenir.
+            </p>
+            <div>
+              <button type="button" className="btn btn-quiet" onClick={props.onContinue}>
+                Yine de okumaya geç
+              </button>
+            </div>
           </div>
         )}
       </section>

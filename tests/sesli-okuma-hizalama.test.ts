@@ -158,6 +158,20 @@ describe('hizalama ve işaretler (yapay örnekler)', () => {
     const one = say(READ.replace('baktın', 'bakın'));
     expect(run(one).marks).toEqual({ 5: { s: 'unclear' } });
     expect(run(one, { verify: true }).marks).toEqual({ 5: { s: 'unclear' } });
+    // Uzun kelimede birkaç ses farkı (≥ %80 benzer): doğrulama aynısını duysa da hata yazılmaz.
+    const para = ['Serçeler yemliğe konmuş, yemleri gagalıyordu. Kerem sevindi.'];
+    const gaga = say('Serçeler yemliğe konmuş, yemleri dadalıyordu. Kerem sevindi.');
+    expect(run(gaga, { paragraphs: para, verify: true }).marks).toEqual({ 4: { s: 'unclear' } });
+    // Daha az benzer yanlış okuma doğrulanırsa yine hatadır.
+    const far = say('Serçeler yemliğe konmuş, yemleri dağıtıyordu. Kerem sevindi.');
+    expect(run(far, { paragraphs: para, verify: true }).marks[4]).toMatchObject({ s: 'sub', said: 'dağıtıyordu' });
+    // Gürültülü kayıtta ek farkı ve benzer kelime hiç hata yazılmaz; belirgin yanlış okuma yazılır.
+    const noisy = { ...timingOf(ws), noisy: true };
+    expect(run(ws, { verify: true, timing: noisy }).marks).toEqual({ 4: { s: 'unclear' } });
+    const suffix = say(READ.replace('görürsün.', 'görürsünüz.'));
+    expect(run(suffix, { verify: true, timing: { ...timingOf(suffix), noisy: true } }).marks).toEqual({ 12: { s: 'unclear' } });
+    const other = say(READ.replace('üstünde', 'üzerinde'));
+    expect(run(other, { verify: true, timing: { ...timingOf(other), noisy: true } }).marks).toEqual({ 8: { s: 'sub', said: 'üzerinde' } });
   });
 
   it('farklı kelime: doğrulama olmadan da yanlış okuma; doğrulama doğru kelimeyi duyarsa unclear', () => {

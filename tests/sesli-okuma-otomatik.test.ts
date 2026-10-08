@@ -1,11 +1,14 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { sesliOkuma } from '@/content/instruments/sesli-okuma';
-import { TARGET_RATE, analyzeRecording } from '@/lib/oral/audio';
+import { TARGET_RATE, analyzeRecording, highPass } from '@/lib/oral/audio';
 import type { AsrRequest, AsrWord } from '@/lib/oral/auto';
 import { oralTokens } from '@/lib/oral/words';
 import { UNCLEAR_MAX } from '@/lib/scoring/oral';
 import { AsrClient, AsrError } from '../src/components/runner/oral/asr-client';
 import { AutoAnalysisError, runAutoAnalysis } from '../src/components/runner/oral/auto-analysis';
+import { SENTENCE_MS, judgeSentence } from '../src/components/runner/oral/mic-check';
 
 /**
  * Sesli okumada otomatik analizin sayfa tarafı (components/runner/oral): Worker'la konuşan istemci ve incelemenin
@@ -167,5 +170,73 @@ describe('yapay zekâ istemcisi', () => {
     expect(err).toBeInstanceOf(AsrError);
     expect((err as AsrError).kind).toBe('memory');
     vi.stubGlobal('Worker', FakeWorker);
+  });
+});
+
+/* ---------- Gürültüye dayanıklılık ---------- */
+
+describe('gürültülü ortam', () => {
+  const sine = (hz: number, sec: number, amp: number) =>
+    Float32Array.from({ length: Math.round(sec * TARGET_RATE) }, (_, i) => amp * Math.sin((2 * Math.PI * hz * i) / TARGET_RATE));
+  const rmsDb = (x: Float32Array, from = 0) => {
+    let s = 0;
+    for (let i = from; i < x.length; i++) s += x[i] * x[i];
+    return 10 * Math.log10(s / (x.length - from));
+  };
+
+  it('yüksek geçiren süzgeç makine uğultusunu atar, konuşma bandını geçirir; Worker’daki süzgeçle aynı', () => {
+    const skip = TARGET_RATE / 2; // süzgecin oturması
+    expect(rmsDb(sine(300, 2, 0.3), skip) - rmsDb(highPass(sine(300, 2, 0.3), TARGET_RATE), skip)).toBeLessThan(1);
+    expect(rmsDb(sine(40, 2, 0.3), skip) - rmsDb(highPass(sine(40, 2, 0.3), TARGET_RATE), skip)).toBeGreaterThan(20);
+    // Worker (paketlenmeyen düz JS) aynı katsayılarla süzer.
+    const src = readFileSync(path.join(import.meta.dirname, '..', 'public/okuma/analiz-isci.js'), 'utf8');
+    const fn = src.slice(src.indexOf('function highPass('), src.indexOf('\n}\n', src.indexOf('function highPass(')) + 2);
+    const workerHighPass = new Function('SR', `${fn}; return highPass;`)(TARGET_RATE) as (x: Float32Array) => Float32Array;
+    let seed = 3;
+    const noise = Float32Array.from({ length: 16000 }, () => ((seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5) * 0.4);
+    const a = highPass(noise, TARGET_RATE);
+    const b = workerHighPass(Float32Array.from(noise));
+    expect(Math.max(...a.map((v, i) => Math.abs(v - b[i])))).toBeLessThan(1e-5);
+  });
+
+  it('ses çözümlemesi konuşmayı yüksek makine uğultusundan ayırır (duraklamalar bulunur)', () => {
+    // 1 sn konuşma, 1,5 sn duraklama, 1 sn konuşma; üstünde konuşmadan yüksek 40 Hz uğultu.
+    const speech = new Float32Array(TARGET_RATE * 4.5);
+    const on = (a: number, b: number) => {
+      for (let i = Math.round(a * TARGET_RATE); i < Math.round(b * TARGET_RATE); i++) speech[i] = 0.2 * Math.sin((2 * Math.PI * 220 * i) / TARGET_RATE);
+    };
+    on(0.5, 1.5);
+    on(3, 4);
+    const rumble = sine(40, 4.5, 0.5);
+    const a = analyzeRecording(speech.map((v, i) => v + rumble[i]), TARGET_RATE);
+    expect(a.quality).not.toBe('silent');
+    expect(a.pauses.filter(([x, y]) => y - x >= 1000)).toHaveLength(1);
+    expect(Math.abs((a.speechStartMs ?? 0) - 500)).toBeLessThanOrEqual(40);
+  });
+
+  it('mikrofon denemesi: gürültü cümleyi engellemez, yapay zekâya gider; yalnızca kesinti ve hiç ses gelmemesi engeller', () => {
+    const rec = (samples: Float32Array, interrupted = false) => ({
+      samples,
+      sampleRate: TARGET_RATE,
+      durationMs: (samples.length / TARGET_RATE) * 1000,
+      wallMs: (samples.length / TARGET_RATE) * 1000,
+      interrupted,
+    });
+    let seed = 11;
+    const noise = (amp: number) =>
+      Float32Array.from({ length: Math.round(TARGET_RATE * (SENTENCE_MS / 1000)) }, () => ((seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5) * 2 * amp);
+    const withSpeech = (base: Float32Array, amp: number) => {
+      const x = Float32Array.from(base);
+      const s = sine(220, 2.5, amp);
+      x.set(s.map((v, i) => v + x[TARGET_RATE + i]), TARGET_RATE);
+      return x;
+    };
+    expect(judgeSentence(rec(withSpeech(noise(0.001), 0.2)))).toEqual({ fail: null, hint: null });
+    // Sürekli yüksek gürültünün üstünde konuşma: engel değil, ipucu.
+    expect(judgeSentence(rec(withSpeech(noise(0.1), 0.15)))).toEqual({ fail: null, hint: 'noisy' });
+    // Kısık ama sesi gelen konuşma: yapay zekâ karar verir.
+    expect(judgeSentence(rec(withSpeech(noise(0.0003), 0.008))).fail).toBeNull();
+    expect(judgeSentence(rec(noise(0.0005)))).toEqual({ fail: 'silent', hint: null });
+    expect(judgeSentence(rec(withSpeech(noise(0.001), 0.2), true))).toEqual({ fail: 'interrupted', hint: null });
   });
 });

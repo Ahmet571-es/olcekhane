@@ -14,6 +14,8 @@
 // (env.fetch) bu dosyalar için parçaları sırayla indirip tek akış olarak verir; kopan parça kaldığı yerden yeniden istenir.
 //
 // Uzun okumalar için önlemler (Node'da FLEURS ve yanlış okuma kayıtlarıyla denendi):
+//  - Ses önce 90 Hz yüksek geçiren süzgeçten geçer (iş makinesi, trafik uğultusu, rüzgâr gibi alçak frekanslı
+//    gürültü atılır; konuşma etkilenmez; src/lib/oral/audio.ts'teki highPass ile aynı).
 //  - Ses yavaş bir otomatik kazançla dengelenir: Whisper her 30 sn'lik pencereyi kendi içinde ölçekler; yüksek sesli bir
 //    cümlenin yanındaki kısık cümle hiç yazılmayabiliyordu.
 //  - Ses en çok 28 sn'lik pencerelerle, sessiz yerlerden bölünerek yürünür; Whisper erken durursa son tanınan kelimeden
@@ -148,10 +150,39 @@ async function handle(req) {
   }
 }
 
+/** Gelen ses (Worker'a devredilmiş ya da kopyalanmış; yerinde değiştirilir) yüksek geçiren süzgeçten geçmiş olarak. */
 function toAudio(x) {
-  if (x instanceof Float32Array) return x;
-  if (x instanceof Float64Array) return new Float32Array(x);
+  if (x instanceof Float32Array) return highPass(x);
+  if (x instanceof Float64Array) return highPass(new Float32Array(x));
   throw new AsrFail('unknown', 'Ses Float32Array olmalı (16 kHz, tek kanal)');
+}
+
+/** 4. dereceden Butterworth yüksek geçiren süzgeç, 90 Hz, yerinde (src/lib/oral/audio.ts: highPass). */
+function highPass(x, fc = 90) {
+  const w0 = (2 * Math.PI * fc) / SR;
+  const cos = Math.cos(w0);
+  for (const q of [0.5412, 1.3066]) {
+    const alpha = Math.sin(w0) / (2 * q);
+    const a0 = 1 + alpha;
+    const b0 = (1 + cos) / 2 / a0;
+    const b1 = -(1 + cos) / a0;
+    const a1 = (-2 * cos) / a0;
+    const a2 = (1 - alpha) / a0;
+    let x1 = 0;
+    let x2 = 0;
+    let y1 = 0;
+    let y2 = 0;
+    for (let i = 0; i < x.length; i++) {
+      const v = x[i];
+      const y = b0 * v + b1 * x1 + b0 * x2 - a1 * y1 - a2 * y2;
+      x2 = x1;
+      x1 = v;
+      y2 = y1;
+      y1 = y;
+      x[i] = y;
+    }
+  }
+  return x;
 }
 
 async function dropPipeline() {

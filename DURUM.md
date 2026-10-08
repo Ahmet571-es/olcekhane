@@ -99,6 +99,14 @@ okumada otomatik analiz").
   bulundu, yanlış alarm yok), başka metin okuma ("anlayamadık" → yeniden okuma, cevaplar korundu), yarım bırakma,
   hızlı bitirme, sessiz kayıt, "Hayır", mikrofon hataları (gürültü, yanlış cümle, sessizlik, kısık ses), 1. sınıf
   metni; ikinci ziyarette model önbellekten geldi (sunucuya istek yok). Düzeltilenler bir önceki maddede.
+- 2026-10-08 öğleden sonra: site sahibi denedi, mikrofon denemesini geçemedi ve metne ulaşamadı (büyük olasılıkla
+  düzeltmeden önceki sürümle: kısa seste kelime zamanları kayıyor, cümle "anlaşılamadı" çıkıyordu). İsteği: kuş,
+  iş makinesi, tadilat sesi olan ortamda da öğrencinin sesi seçilsin. Yapılan: mikrofon denemesi yapay zekâ önce
+  (gürültü/kısıklık/sessizlik ölçümü engellemiyor, üç denemede anlaşılmazsa "Yine de okumaya geç"), 7 sn cümle
+  süresi, metne dokununca doğrudan geçiş, "Başla" takılmasın diye zaman sınırları, 90 Hz yüksek geçiren süzgeç,
+  gürültülü kayıtta ek/ses farkı hata sayılmıyor. Yapay gürültüyle denendi (iş makinesi, tadilat, kuş; konuşmayla eşit
+  yükseklikte, tarayıcının gürültü bastırması olmadan): mikrofon ilk denemede geçti, planlı üç hata bulundu, doğru
+  okumada hata yazılmadı. Site sahibi yeniden deneyecek; olmazsa cihazını ve ekrandaki yazıyı soracağız.
 - Bekleyen: aydınlatma metni sürüm 7 avukat kontrolü; "Evet" ekranına 18 yaş altı için veli izni cümlesi; WebGPU
   (q4 dosyaları) denenmedi, şimdilik yalnızca WebAssembly.
 - Sunucu: canlı sunucu KVM 1 (aylık, 30 Eylül'de alındı, 30 Ekim civarı yenilenecek). KVM 4 fiyatları site sahibine
@@ -273,6 +281,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (3): Sesli okumada otomatik analiz gürültüye dayanıklı hâle getirildi: mikrofon denemesinde asıl ölçüt
+  yapay zekânın cümleyi anlaması (gürültü, kısık ses ve sessizlik ölçümü engellemiyor, ne yapılacağını söylüyor; üç
+  denemede anlaşılmazsa yine de okumaya geçilebiliyor), cümle süresi 7 sn; metne dokununca doğrudan mikrofon
+  denemesine geçiliyor (iki sürümde); "Başla" ve kayıt düğmeleri takılmıyor; ses 90 Hz'in altı süzülerek inceleniyor
+  (iş makinesi uğultusu); gürültülü kayıtta ek ve ses farkları hata sayılmıyor, uzun kelimede birkaç ses farkı da;
+  yetişkinli sürümde "Okumayı bitirdim"e çift dokunuş kaydı bitirmiyor.
 - 2026-10-08 (2): Otomatik analiz uçtan uca denendi ve hatalar düzeltildi: model dosyaları 8 MiB'lık parçalar
   hâlinde (tarayıcı önbelleğinde tutulsun, her girişte 250 MB inmesin; kopan parça kaldığı yerden iner);
   transformers.js'in kısa seste kelime zamanlarını kaydıran hatası düzeltildi (doğrulama parçaları hiç sonuç
@@ -323,6 +337,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Site sahibinin kararıyla hoca onayı beklenmeden yayına alındı: Renk-Kelime, Dur-Git, Sırayla
   Birleştirme, Geriye Dönük Hatırlama, Zihinde Döndürme, Tepki Hızı (pilot) ile Duygusal Zekâ Bileşenleri ve
   Kişilerarası Tarz yol haritaları. Çalışma kuralları buna göre güncellendi (CLAUDE.md).
-- 2026-10-07: Kişilerarası Tarz gelişim yol haritası önizlemede (sekiz tarz; öğrenci, veli ve yetişkin raporu;
-  ekranda ve PDF'te); hoca belgesi hazır. Üç boyutlu grafikte üst üste binen puan yazıları ayrılıyor; telefonda uzun
-  boyut adlarında puan adın hemen ardından geliyor.

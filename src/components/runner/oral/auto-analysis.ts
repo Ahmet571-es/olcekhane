@@ -132,6 +132,8 @@ export async function runAutoAnalysis({
     speechStartMs: start,
     speechEndMs: analysis.speechEndMs,
     pauses: start === null ? [] : analysis.pauses.map(([s, e]) => [s + start, e + start] as [number, number]),
+    // Gürültülü ya da cızırtılı kayıtta ek ve ses farkları hata yazılmaz (bkz. ReadingTiming.noisy).
+    noisy: analysis.quality === 'noisy' || analysis.quality === 'clipped' || analysis.quality === 'silent',
   });
   // Kelimelerin çoğu net anlaşılamadıysa rapor yanıltır (net anlaşılamayan kelime doğru sayılır): yeniden okunmalı.
   if (auto.unclear > UNCLEAR_MAX * oralWordCount(paragraphs)) throw new AutoAnalysisError('nomatch');

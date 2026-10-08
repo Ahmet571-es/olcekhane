@@ -131,6 +131,42 @@ export function chunkLevel(x: Float32Array): { db: number; peak: number } {
 export const toDb = (rms: number) => Math.max(-100, 20 * Math.log10(rms + 1e-10));
 
 /** 20 ms'lik çerçevelerin ses düzeyleri (dBFS). */
+/** Yüksek geçiren süzgecin kesim frekansı (Hz); Worker'daki (public/okuma/analiz-isci.js) süzgeçle aynı. */
+export const HIGH_PASS_HZ = 90;
+
+/**
+ * 4. dereceden Butterworth yüksek geçiren süzgeç (iki ikinci derece bölüm): iş makinesi ve trafik uğultusu, rüzgâr ve
+ * cihazı tutarken çıkan sesler gibi alçak frekanslı gürültüyü atar; konuşma (çocuk sesinde perde ~200 Hz ve üstü,
+ * anlaşılırlığı taşıyan sesler 300 Hz üstü) etkilenmez. Yeni dizi döner; verilen dizi değişmez.
+ */
+export function highPass(samples: Float32Array, sampleRate: number, fc = HIGH_PASS_HZ): Float32Array {
+  const out = Float32Array.from(samples);
+  const w0 = (2 * Math.PI * fc) / sampleRate;
+  const cos = Math.cos(w0);
+  for (const q of [0.5412, 1.3066]) {
+    const alpha = Math.sin(w0) / (2 * q);
+    const a0 = 1 + alpha;
+    const b0 = (1 + cos) / 2 / a0;
+    const b1 = -(1 + cos) / a0;
+    const a1 = (-2 * cos) / a0;
+    const a2 = (1 - alpha) / a0;
+    let x1 = 0;
+    let x2 = 0;
+    let y1 = 0;
+    let y2 = 0;
+    for (let i = 0; i < out.length; i++) {
+      const x = out[i];
+      const y = b0 * x + b1 * x1 + b0 * x2 - a1 * y1 - a2 * y2;
+      x2 = x1;
+      x1 = x;
+      y2 = y1;
+      y1 = y;
+      out[i] = y;
+    }
+  }
+  return out;
+}
+
 export function frameLevels(samples: Float32Array, sampleRate: number, frameMs = FRAME_MS): Float32Array {
   const size = Math.max(1, Math.round((sampleRate * frameMs) / 1000));
   const n = Math.floor(samples.length / size);
@@ -207,7 +243,12 @@ const CONTOUR_POINTS = 120;
  */
 export function analyzeRecording(samples: Float32Array, sampleRate: number, within?: { startMs: number; endMs: number }): AudioAnalysis {
   const durationMs = (samples.length / sampleRate) * 1000;
-  const levels = frameLevels(samples, sampleRate);
+  // Düzeyler alçak frekanslı gürültüden (uğultu, rüzgâr) arındırılmış sesten: konuşma ile arka plan daha iyi ayrılır.
+  // Süzgeç ani biten seslerde birkaç ms "çınlar"; her çerçevede ham düzeyle süzülmüş düzeyin küçüğü alınır (süzgeç
+  // enerji ekleyemez, yalnızca atar).
+  const raw = frameLevels(samples, sampleRate);
+  const filtered = frameLevels(highPass(samples, sampleRate), sampleRate);
+  const levels = raw.map((v, i) => Math.min(v, filtered[i]));
   let clipped = 0;
   for (let i = 0; i < samples.length; i++) if (Math.abs(samples[i]) >= 0.985) clipped++;
   const clipRatio = samples.length ? clipped / samples.length : 0;

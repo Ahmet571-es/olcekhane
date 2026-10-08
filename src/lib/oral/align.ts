@@ -40,8 +40,9 @@
  *    - Farklı kelime: aday yanlış okuma; `said` tanınan kelime (en çok 40 harf), `kind`: kök aynı ve yalnızca sonu
  *      farklıysa (ortak baş en az 4 harf ya da kısa kelimede %70) `suffix`, benzerlik ≥ 0,6 ise `similar`, harfleri
  *      aynı ama sırası farklıysa `reversal`, Türkçe kelimeye benzemiyorsa (ünlüsüz, q/w/x, dört ünsüz yan yana)
- *      `nonword`; hiçbiri değilse boş. Katlanmış hâlleri tek harf farklı yanlış okumalar (bakın ↔ baktın) konuşma
- *      tanımanın sık yaptığı yanlışlardır: doğrulama aynı şeyi duysa da `unclear` kalır.
+ *      `nonword`; hiçbiri değilse boş. Katlanmış hâlleri tek harf farklı yanlış okumalar (bakın ↔ baktın) ve en az
+ *      %80 benzer `similar` yanlış okumalar (gagalıyordu ↔ dadalıyordu) konuşma tanımanın sık yaptığı yanlışlardır:
+ *      doğrulama aynı şeyi duysa da `unclear` kalır.
  *    - Okunmamış görünen kelime: aday atlama. Fazla tanınan kelime: önceki ya da sonraki metin kelimeleriyle aynıysa
  *      tekrar (`rep`, hata değil; cümleyi baştan okuma da böyle bulunur); doğru kelimeden hemen önce gelen yarım ya
  *      da benzer bir söyleyişse öğrencinin kendi düzeltmesi (`self`, hata değil); hece okumasının parçasıysa ya da
@@ -123,6 +124,12 @@ export interface ReadingTiming {
   speechStartMs: number | null;
   speechEndMs: number | null;
   pauses: [number, number][];
+  /**
+   * Kayıt gürültülü (ya da cızırtılı): gürültüde konuşma tanıma duyamadığı yeri dilin olağan kalıbıyla doldurur ve iki
+   * yazıya dökme aynı yanlışta birleşebilir. Ek farkı ve benzer kelime (`suffix`, `similar`) bu durumda hiç hata
+   * yazılmaz, `unclear` olur; yalnızca belirgin yanlış okumalar, atlamalar ve eklemeler sayılır.
+   */
+  noisy?: boolean;
 }
 
 export interface AutoMarks {
@@ -852,7 +859,12 @@ function analyze(al: WordAlignment, timing: ReadingTiming | null): Analysis {
       fallback: kind === 'suffix' || kind === 'similar' ? 'unclear' : 'error',
       said: saidOf(U, [w]),
       kind,
-      minor: lev(T[t].key, U[w].key) <= 1,
+      // Tek harf farkı ya da uzun kelimede birkaç ses farkı (benzerlik ≥ 0,8; ör. gagalıyordu ↔ dadalıyordu): konuşma
+      // tanımanın en sık karıştırdığı durum; doğrulama aynı şeyi duysa da hata yazılmaz (iki yazıya dökme aynı modelden).
+      minor:
+        lev(T[t].key, U[w].key) <= 1 ||
+        (kind === 'similar' && similarity(T[t].key, U[w].key) >= 0.8) ||
+        (!!timing?.noisy && (kind === 'suffix' || kind === 'similar')),
     });
   }
   const aligned = (t: number) => t >= 0 && t < m && st[t].op !== 'omit';

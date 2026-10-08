@@ -45,6 +45,8 @@ const STEP_TITLES: Record<Step, string> = {
 const ORDER: Step[] = ['intro', 'passage', 'mic', 'reading', 'check', 'retell', 'questions', 'mark', 'retellScore', 'prosody'];
 
 const MAX_READING_MS = 10 * 60_000;
+/** "Okumayı bitirdim"e kayıt başladıktan hemen sonra (ör. çift dokunuşla) basılırsa yok sayılır. */
+const TAP_GUARD_MS = 1500;
 const MAX_RETELL_MS = 5 * 60_000;
 const MIC_TEST_MS = 4000;
 
@@ -274,14 +276,16 @@ export function OralRunner(props: {
       setRecStart(performance.now());
       setStep('reading');
       if (autoStop.current) window.clearTimeout(autoStop.current);
-      autoStop.current = window.setTimeout(() => stopReading(), MAX_READING_MS);
+      autoStop.current = window.setTimeout(() => stopReading(true), MAX_READING_MS);
     } finally {
       starting.current = false;
     }
   }
 
-  function stopReading() {
+  function stopReading(auto = false) {
     if (!recorder?.isRecording) return;
+    // "Bitirdim" kayıt başladıktan hemen sonra (ör. başlat düğmesine çift dokunuşla) basılırsa yok sayılır.
+    if (!auto && performance.now() - recStart < TAP_GUARD_MS) return;
     if (autoStop.current) window.clearTimeout(autoStop.current);
     setReading(keep(makeTake(recorder.stop())));
     setStep('check');
@@ -460,7 +464,11 @@ export function OralRunner(props: {
           <button
             type="button"
             aria-pressed={on}
-            onClick={() => setPassageKey(p.key)}
+            onClick={() => {
+              // Metne dokununca seçilir ve hemen mikrofon denemesine geçilir.
+              setPassageKey(p.key);
+              setStep('mic');
+            }}
             className={`flex w-full flex-col items-start gap-1 rounded-xl border-[1.5px] p-4 text-left transition-colors ${on ? 'border-ink bg-ink text-paper' : 'border-rule-strong bg-surface hover:border-ink'}`}
           >
             <span className="font-display text-xl font-bold">{p.title}</span>
@@ -475,8 +483,8 @@ export function OralRunner(props: {
       <>
         {title('Metni seçin')}
         <p className="text-lg">
-          Önce öğrencinin kendi sınıfının ({grade}. sınıf) metinlerinden birini seçin. Öğrencinin daha önce okumadığı bir metin olmalı. Öteki metinleri,
-          aynı öğrenciyi birkaç hafta sonra yeniden değerlendirmek için kullanabilirsiniz.
+          Öğrencinin kendi sınıfının ({grade}. sınıf) metinlerinden birine dokunun; ardından mikrofon denemesine geçilir. Öğrencinin daha önce okumadığı bir
+          metin olmalı. Öteki metinleri, aynı öğrenciyi birkaç hafta sonra yeniden değerlendirmek için kullanabilirsiniz.
         </p>
         {grade === 1 && (
           <p className="notice notice-info">1. sınıf metinleri, okumayı söken öğrenciler için, ikinci dönem düşünülerek yazıldı.</p>
@@ -492,11 +500,6 @@ export function OralRunner(props: {
             <ul className="flex flex-col gap-2.5">{other.map(card)}</ul>
           </details>
         )}
-        <div className="flex flex-wrap gap-3">
-          <button type="button" className="btn btn-primary btn-lg" disabled={!passage} onClick={() => setStep('mic')}>
-            Bu metinle devam et
-          </button>
-        </div>
       </>,
     );
   }
@@ -638,7 +641,7 @@ export function OralRunner(props: {
           ))}
         </div>
         <div className="sticky bottom-4 mt-4">
-          <button type="button" className="btn btn-primary btn-lg w-full shadow-[var(--shadow)]" onClick={stopReading}>
+          <button type="button" className="btn btn-primary btn-lg w-full shadow-[var(--shadow)]" onClick={() => stopReading()}>
             Okumayı bitirdim
           </button>
         </div>
