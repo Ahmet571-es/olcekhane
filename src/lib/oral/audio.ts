@@ -199,7 +199,13 @@ const BRIDGE_MS = 160;
 export const MIN_PAUSE_MS = 250;
 const CONTOUR_POINTS = 120;
 
-export function analyzeRecording(samples: Float32Array, sampleRate: number): AudioAnalysis {
+/**
+ * Kaydın ses çözümlemesi. `within` verilirse (otomatik analizde ilk ve son tanınan kelime, kaydın başından ms) okuma o
+ * aralık sayılır: ses yüksekliği eğrisi ve duraklamalar o aralık üzerinden, okumanın başı aralığın başıdır; arka plan
+ * ve konuşma düzeyi ile kalite yine bütün kayıttan ölçülür. Böylece raporun zaman çizelgesindeki eğri ve duraklamalar
+ * okuma süresiyle (ilk ve son tanınan kelime arası) aynı ölçekte olur.
+ */
+export function analyzeRecording(samples: Float32Array, sampleRate: number, within?: { startMs: number; endMs: number }): AudioAnalysis {
   const durationMs = (samples.length / sampleRate) * 1000;
   const levels = frameLevels(samples, sampleRate);
   let clipped = 0;
@@ -241,11 +247,20 @@ export function analyzeRecording(samples: Float32Array, sampleRate: number): Aud
   };
   for (const r of runs(voiced)) if (!r.v && r.s > 0 && r.e < voiced.length && r.e - r.s <= bridge) voiced.fill(true, r.s, r.e);
   for (const r of runs(voiced)) if (r.v && r.e - r.s < minVoice) voiced.fill(false, r.s, r.e);
-  const segs = runs(voiced).filter((r) => r.v);
+  let segs = runs(voiced).filter((r) => r.v);
   if (segs.length === 0) return { ...empty, quality: 'silent' };
 
-  const start = segs[0].s;
-  const end = segs[segs.length - 1].e;
+  let start = segs[0].s;
+  let end = segs[segs.length - 1].e;
+  if (within) {
+    const a = Math.max(0, Math.round(within.startMs / FRAME_MS));
+    const b = Math.min(levels.length, Math.round(within.endMs / FRAME_MS));
+    if (b > a) {
+      segs = segs.map((r) => ({ ...r, s: Math.max(r.s, a), e: Math.min(r.e, b) })).filter((r) => r.e > r.s);
+      start = a;
+      end = b;
+    }
+  }
   const speechStartMs = start * FRAME_MS;
   const speechEndMs = end * FRAME_MS;
   const speechMs = segs.reduce((n, r) => n + (r.e - r.s) * FRAME_MS, 0);

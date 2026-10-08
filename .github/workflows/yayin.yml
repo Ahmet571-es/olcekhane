@@ -218,7 +218,7 @@ jobs:
           "${C[@]}" -I "https://$ALAN/okuma" | grep -qi '^permissions-policy:.*microphone=(self)' || sorun="$sorun mikrofon-izni"
           # Otomatik analiz: model ve ONNX Runtime dosyaları kendi sunucumuzdan iner (yalnızca başlıklar; büyük dosyalar
           # indirilmez); test sayfası cross-origin isolated (COEP) açılır.
-          analiz=$(node araclar/model-hazirla.mjs --adresler | awk '$1 ~ /\/config\.json$/ || $1 ~ /\.wasm$/ {print $1}') || analiz=""
+          analiz=$(node araclar/model-hazirla.mjs --adresler | awk '$1 ~ /\/(config|parcalar)\.json$/ || $1 ~ /\.parca-00$/ || $1 ~ /\.wasm$/ {print $1}') || analiz=""
           [ -n "$analiz" ] || sorun="$sorun model-adresleri"
           for yol in $analiz; do
             kod=$("${C[@]}" -I -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000

@@ -60,8 +60,13 @@ okumada otomatik analiz").
   sırada iner, ~250 MB, ilk seferde) → okuma → kayıt denetimi → izin sorusu → analiz arka planda, öğrenci bu sırada
   soruları cevaplar → ses silinir → rapor ("net anlaşılamadı" kelimeler hata sayılmaz).
 - Ölçümler: Whisper small q8, FLEURS Türkçe WER %15; sentetik yanlış okumalarda hata yakalama ve yanlış alarm
-  tests/sesli-okuma-hizalama.test.ts'te. Bu ortamda (2 çekirdek) 72 sn'lik okuma ~1,5 dk'da incelendi; telefonda daha
-  uzun sürebilir. **Gerçek çocuk kayıtlarıyla ölçüm yapılmadı**: site sahibinden izinli 30–50 kayıt istendi.
+  tests/sesli-okuma-hizalama.test.ts'te. Bu ortamda (2 çekirdek) 72 sn'lik okuma ~1,5–2 dk'da incelendi; telefonda
+  daha uzun sürebilir. **Gerçek çocuk kayıtlarıyla ölçüm yapılmadı**: site sahibinden izinli 30–50 kayıt istendi.
+- 2026-10-08 uçtan uca deneme (gerçek Chromium, telefon ve masaüstü, sahte mikrofona gTTS Türkçe ses; betik
+  depo dışında): doğru okuma (0 hata), planlı hatalar (3 kelimelik atlama, erik→elma, fazladan "küçük": üçü de
+  bulundu, yanlış alarm yok), başka metin okuma ("anlayamadık" → yeniden okuma, cevaplar korundu), yarım bırakma,
+  hızlı bitirme, sessiz kayıt, "Hayır", mikrofon hataları (gürültü, yanlış cümle, sessizlik, kısık ses), 1. sınıf
+  metni; ikinci ziyarette model önbellekten geldi (sunucuya istek yok). Düzeltilenler bir önceki maddede.
 - Bekleyen: aydınlatma metni sürüm 7 avukat kontrolü; "Evet" ekranına 18 yaş altı için veli izni cümlesi; WebGPU
   (q4 dosyaları) denenmedi, şimdilik yalnızca WebAssembly.
 - Sunucu: canlı sunucu KVM 1 (aylık, 30 Eylül'de alındı, 30 Ekim civarı yenilenecek). KVM 4 fiyatları site sahibine
@@ -236,6 +241,15 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (2): Otomatik analiz uçtan uca denendi ve hatalar düzeltildi: model dosyaları 8 MiB'lık parçalar
+  hâlinde (tarayıcı önbelleğinde tutulsun, her girişte 250 MB inmesin; kopan parça kaldığı yerden iner);
+  transformers.js'in kısa seste kelime zamanlarını kaydıran hatası düzeltildi (doğrulama parçaları hiç sonuç
+  vermiyordu); boş ya da güvenilmez doğrulama artık atlamayı "doğrulanmış" saymıyor; başka bir metin okununca ya da
+  kelimelerin %30'undan çoğu net anlaşılamayınca rapor verilmiyor, yeniden okuma isteniyor ve sorular yeniden
+  sorulmuyor; metin bitmeden durulursa hız okunan kısımdan hesaplanıyor ve raporda söyleniyor (iki sürümde);
+  zaman çizelgesindeki duraklamalar okuma süresiyle aynı ölçekte; bellek hatasında tek iş parçacığıyla yeniden
+  deneniyor; inceleme biter bitmez yapay zekâ kapatılıyor; mikrofon denemesinde yanlış "sesini duyamıyoruz" uyarısı ve
+  adım göstergesi (Rapor) düzeldi.
 - 2026-10-08: Sesli okumada otomatik analiz önizlemede (`?onizleme=otomatik`): öğrencinin kendi okuduğu akış, sıkı
   mikrofon denemesi, cihazda çalışan Türkçe konuşma tanıma (Whisper small, kendi sunucumuzdan), metinle karşılaştırma
   ve doğrulama ("net anlaşılamadı" hata sayılmaz), otomatik rapor ve PDF, aydınlatma metni sürüm 7. Herkese açık sürüm
@@ -280,6 +294,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Kişilerarası Tarz gelişim yol haritası önizlemede (sekiz tarz; öğrenci, veli ve yetişkin raporu;
   ekranda ve PDF'te); hoca belgesi hazır. Üç boyutlu grafikte üst üste binen puan yazıları ayrılıyor; telefonda uzun
   boyut adlarında puan adın hemen ardından geliyor.
-- 2026-10-07: Duygusal Zekâ Bileşenleri gelişim yol haritası önizlemede (yedi bileşen; öğrenci, veli ve yetişkin
-  raporu; ekranda ve PDF'te); hoca belgesi hazır. Üç boyutlu grafiğin altındaki açıklamada puanlar artık iki satıra
-  bölünmüyor.

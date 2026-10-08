@@ -6,6 +6,11 @@
 //   public/model/<sürümün ilk 8 harfi>/onnx-community/whisper-small_timestamped/...
 //       Konuşma tanıma modeli (~250 MB): Hugging Face'ten sabit sürümüyle indirilir, her dosya aşağıdaki SHA-256 ile
 //       doğrulanır. Adres sürümü içerdiği için tarayıcıda süresiz önbelleklenebilir (next.config.ts).
+//       8 MiB'tan büyük dosyalar (iki .onnx) 8 MiB'lık parçalar hâlinde sunulur (<dosya>.parca-00, -01, ...); hangi
+//       dosyanın kaç parça olduğu parcalar.json'dadır. Worker parçaları sırayla indirip tek dosya olarak birleştirir.
+//       Neden: site tarayıcı deposu kullanmaz, yalnızca olağan HTTP önbelleği kalır; tarayıcılar bu önbelleğe tek
+//       dosya olarak önbellek boyunun en çok sekizde birini (Chrome) ya da 50 MB'ı (Firefox) alır. 92 ve 156 MB'lık
+//       dosyalar hiç önbelleğe girmez, her girişte yeniden inerdi; 8 MiB'lık parçalar girer.
 //   public/ort/<transformers sürümü>/      ONNX Runtime Web'in wasm dosyaları ve yükleyicileri (node_modules'tan)
 //   public/vendor/<transformers sürümü>/   transformers.js'in tarayıcı derlemesi (node_modules'tan; tek parça, ONNX
 //                                          Runtime'ın JavaScript tarafı içinde)
@@ -18,7 +23,8 @@
 //   MODEL_KAYNAK=<klasör> node araclar/model-hazirla.mjs
 //       Model dosyaları indirilmez, bu klasörden kopyalanır (içinde config.json ve onnx/ bulunur); yine doğrulanır.
 //
-// Yeniden çalıştırmak güvenlidir: doğru dosya zaten varsa atlanır; yönetilen klasörlerdeki eski sürümler silinir.
+// Yeniden çalıştırmak güvenlidir: doğru dosya (ya da parçaları) zaten varsa atlanır; yönetilen klasörlerdeki eski sürümler
+// silinir. Parça boyu değişirse model klasörünün adı da değişmeli (adresler tarayıcıda süresiz önbellekte kalır).
 // Modelin sürümü değişirse: MODEL_REVIZYON ve DOSYALAR'daki boyut ve SHA-256 değerleri
 // (https://huggingface.co/api/models/<model>/tree/<sürüm>/onnx?expand=true; küçük dosyalar için indirip sha256sum) ile
 // src/lib/oral/auto.ts'teki ASR_MODEL ve ASR_MODEL_BASE birlikte değişir; tests/model-dosyalari.test.ts denetler.
@@ -26,7 +32,7 @@
 // TRANSFORMERS_URL birlikte değişir.
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream, existsSync, readFileSync } from 'node:fs';
-import { copyFile, mkdir, readdir, rename, rm, stat } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -61,6 +67,32 @@ export const DOSYALAR = [
     sha256: 'c831996a6d5a535cf17447b0d7ecc36da6b72696e6fb906852ba6136b9199abb',
   },
 ];
+
+/** Bundan büyük model dosyaları bu boyda parçalar hâlinde sunulur (bkz. dosya başı). */
+export const PARCA_BOYU = 8 * 1024 * 1024;
+/** Parçaların listesi (model klasöründe); Worker okur. */
+export const PARCA_LISTESI = 'parcalar.json';
+
+/** Bir dosyanın parçaları: [{ yol, boyut }]; parçalanmayan dosya için boş dizi. */
+export function parcalari(dosya) {
+  if (dosya.boyut <= PARCA_BOYU) return [];
+  const adet = Math.ceil(dosya.boyut / PARCA_BOYU);
+  return Array.from({ length: adet }, (_, i) => ({
+    yol: `${dosya.yol}.parca-${String(i).padStart(2, '0')}`,
+    boyut: i < adet - 1 ? PARCA_BOYU : dosya.boyut - PARCA_BOYU * (adet - 1),
+  }));
+}
+
+/** parcalar.json'ın içeriği: parçalanan her dosya için toplam boyut ve parça sayısı (parça boyu sabit, son parça kısa). */
+export function parcaListesi() {
+  /** @type {Record<string, { boyut: number, adet: number }>} */
+  const dosyalar = {};
+  for (const d of DOSYALAR) {
+    const p = parcalari(d);
+    if (p.length) dosyalar[d.yol] = { boyut: d.boyut, adet: p.length };
+  }
+  return { parcaBoyu: PARCA_BOYU, dosyalar };
+}
 
 /** package.json'daki @huggingface/transformers sürümü (tam sürüm); ort/ ve vendor/ adresleri bunu içerir. */
 export const TRANSFORMERS_SURUMU = '4.3.0';
@@ -123,10 +155,50 @@ async function indir(adres, hedef) {
   return { boyut, sha256: h.digest('hex') };
 }
 
+/** Parçalar var, boyları doğru ve birleşimlerinin SHA-256'sı beklenen değerse true. */
+async function parcalarDogruMu(hedef, dosya) {
+  const h = createHash('sha256');
+  for (const p of parcalari(dosya)) {
+    const yol = path.join(path.dirname(hedef), path.basename(p.yol));
+    try {
+      const s = await stat(yol);
+      if (!s.isFile() || s.size !== p.boyut) return false;
+    } catch {
+      return false;
+    }
+    await pipeline(createReadStream(yol), new Transform({
+      transform(parca, _kod, sonra) {
+        h.update(parca);
+        sonra();
+      },
+    }));
+  }
+  return h.digest('hex') === dosya.sha256;
+}
+
+/** Doğrulanmış dosyayı parçalara böler ve kendisini siler (sunucuda yalnızca parçalar durur). */
+async function parcala(gecici, hedef, dosya) {
+  const klasor = path.dirname(hedef);
+  for (const ad of await readdir(klasor)) {
+    if (ad.startsWith(`${path.basename(hedef)}.parca-`)) await rm(path.join(klasor, ad), { force: true });
+  }
+  let bas = 0;
+  for (const p of parcalari(dosya)) {
+    const yol = path.join(klasor, path.basename(p.yol));
+    await pipeline(createReadStream(gecici, { start: bas, end: bas + p.boyut - 1 }), createWriteStream(`${yol}.hazirlaniyor`));
+    await rename(`${yol}.hazirlaniyor`, yol);
+    bas += p.boyut;
+  }
+  await rm(gecici, { force: true });
+  await rm(hedef, { force: true });
+}
+
 async function modelDosyasi(dosya, kaynakKlasor) {
   const hedef = path.join(PUBLIC, MODEL_KLASORU, MODEL_ID, dosya.yol);
-  if (await dogruMu(hedef, dosya)) {
-    satir('hazır', dosya.yol);
+  const parcali = parcalari(dosya).length > 0;
+  if (parcali ? await parcalarDogruMu(hedef, dosya) : await dogruMu(hedef, dosya)) {
+    if (parcali) await rm(hedef, { force: true });
+    satir('hazır', parcali ? `${dosya.yol} (${parcalari(dosya).length} parça)` : dosya.yol);
     return;
   }
   await mkdir(path.dirname(hedef), { recursive: true });
@@ -151,8 +223,10 @@ async function modelDosyasi(dosya, kaynakKlasor) {
       continue;
     }
     if (sonuc.boyut === dosya.boyut && sonuc.sha256 === dosya.sha256) {
-      await rename(gecici, hedef);
-      satir(kaynakKlasor ? 'kopyalandı' : 'indirildi', `${dosya.yol} (${mb(dosya.boyut)}, SHA-256 doğru)`);
+      if (parcali) await parcala(gecici, hedef, dosya);
+      else await rename(gecici, hedef);
+      const ek = parcali ? `, ${parcalari(dosya).length} parça` : '';
+      satir(kaynakKlasor ? 'kopyalandı' : 'indirildi', `${dosya.yol} (${mb(dosya.boyut)}, SHA-256 doğru${ek})`);
       return;
     }
     await rm(gecici, { force: true });
@@ -183,6 +257,8 @@ async function modeliHazirla() {
   console.log(`Model: ${MODEL_ID}@${MODEL_REVIZYON.slice(0, 8)} → public/${MODEL_KLASORU}/ (${kaynak ? `kaynak: ${kaynak}` : 'Hugging Face'})`);
   await eskileriSil('model', MODEL_REVIZYON.slice(0, 8));
   for (const dosya of DOSYALAR) await modelDosyasi(dosya, kaynak);
+  await writeFile(path.join(PUBLIC, MODEL_KLASORU, MODEL_ID, PARCA_LISTESI), `${JSON.stringify(parcaListesi())}\n`);
+  satir('yazıldı', PARCA_LISTESI);
 }
 
 function paketSurumu(ad) {
@@ -224,8 +300,13 @@ async function calismaDosyalariniHazirla() {
 
 /** Sitede sunulan dosyaların adresleri; model dosyalarında beklenen boyutla ("-": boyut node_modules'a bağlı). */
 export function adresler() {
+  const kok = `/${MODEL_KLASORU}/${MODEL_ID}/`;
   return [
-    ...DOSYALAR.map((d) => `/${MODEL_KLASORU}/${MODEL_ID}/${d.yol} ${d.boyut}`),
+    ...DOSYALAR.flatMap((d) => {
+      const p = parcalari(d);
+      return p.length ? p.map((x) => `${kok}${x.yol} ${x.boyut}`) : [`${kok}${d.yol} ${d.boyut}`];
+    }),
+    `${kok}${PARCA_LISTESI} ${Buffer.byteLength(`${JSON.stringify(parcaListesi())}\n`)}`,
     ...CALISMA_DOSYALARI.map((d) => `/${d.hedef} -`),
   ];
 }

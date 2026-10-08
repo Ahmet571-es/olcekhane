@@ -152,13 +152,17 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   (yetişkinin dinleyip işaretlediği sürüm herkese açık kalır; site sahibi onaylayınca otomatik sürüm varsayılan olur).
 - Parçalar: ortak türler ve sabitler `src/lib/oral/auto.ts`; model Whisper small (`onnx-community/whisper-small_timestamped`,
   q8, ~250 MB, sabit sürüm ve SHA-256: `araclar/model-hazirla.mjs`, Docker'da ayrı katman; `public/model|ort|vendor`
-  git'e girmez); Worker `public/okuma/analiz-isci.js` (yalnızca WebAssembly, ipucu/prompt yok, 28 sn'lik pencereler,
-  uydurma ve döngü önlemleri) ve istemcisi `src/components/runner/oral/asr-client.ts`; metinle karşılaştırma
+  git'e girmez; büyük dosyalar HTTP önbelleğine sığsın diye 8 MiB'lık parçalar hâlinde sunulur, liste `parcalar.json`);
+  Worker `public/okuma/analiz-isci.js` (yalnızca WebAssembly, ipucu/prompt yok, 28 sn'lik pencereler, uydurma ve döngü
+  önlemleri, parçaları birleştiren `env.fetch`, transformers.js 4.3.0'ın kısa seste kelime zamanlarını kaydıran hatasının
+  düzeltmesi `fixWordTimes`) ve istemcisi `src/components/runner/oral/asr-client.ts`; metinle karşılaştırma
   `src/lib/oral/align.ts` (`tests/sesli-okuma-hizalama.test.ts`); öğrenci akışı `oral-auto-runner.tsx`, `mic-check.tsx`,
   `auto-analysis.ts`; puanlama ve rapor `auto: true` ile (`tests/sesli-okuma.test.ts`).
 - Doğruluk ilkesi: konuşma tanıma hatası çocuğun hatası sayılmaz. Şüpheli yerler kısa parçalar hâlinde yeniden
   yazıya dökülüp doğrulanır; doğrulanmayan ya da tek harf farkı olan kelime "net anlaşılamadı" (`unclear`) olur, hata
-  sayılmaz. Mikrofon denemesi sıkıdır: sessizlik ölçümü, ses düzeyi ve kırpılma, sonra yapay zekâ cümleyi tanımalı.
+  sayılmaz. Okuma metinle eşleşmezse (tanınan kelimelerin %30'undan azı metinde) ya da kelimelerin %30'undan çoğu net
+  anlaşılamazsa rapor verilmez, yeniden okuma istenir (cevaplar korunur, sorular yeniden sorulmaz). Mikrofon denemesi
+  sıkıdır: sessizlik ölçümü, ses düzeyi ve kırpılma, sonra yapay zekâ cümleyi tanımalı.
 - Test sayfası çok iş parçacığı için COEP ile açılır (`next.config.ts`); model ve çalışma dosyaları sürümlü adreslerle
   süresiz HTTP önbelleğinde tutulur. Denetim ve Yayın, dosyaların sunulduğunu ve COEP başlığını dışarıdan sınar.
 - Gerçek çocuk kayıtlarıyla doğruluk ölçümü henüz yapılmadı (ölçümler sentetik ses ve yetişkin FLEURS kayıtlarıyla);

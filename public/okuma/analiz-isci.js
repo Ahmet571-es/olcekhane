@@ -9,6 +9,10 @@
 //   /okuma/analiz-isci.js?m=<ASR_MODEL_BASE>&o=<ORT_BASE>&t=<TRANSFORMERS_URL>&id=<model kimliği>&q=<dtype JSON>[&th=<en çok iş parçacığı>]
 // İleti düzeni: auto.ts'teki AsrRequest / AsrResponse. İstekler sırayla işlenir; tek bir model örneği tutulur.
 //
+// Büyük model dosyaları 8 MiB'lık parçalar hâlinde sunulur (araclar/model-hazirla.mjs; liste: model klasöründeki
+// parcalar.json): tarayıcılar HTTP önbelleğine çok büyük dosyaları almaz, parçaları alır. transformers.js'in istekleri
+// (env.fetch) bu dosyalar için parçaları sırayla indirip tek akış olarak verir; kopan parça kaldığı yerden yeniden istenir.
+//
 // Uzun okumalar için önlemler (Node'da FLEURS ve yanlış okuma kayıtlarıyla denendi):
 //  - Ses yavaş bir otomatik kazançla dengelenir: Whisper her 30 sn'lik pencereyi kendi içinde ölçekler; yüksek sesli bir
 //    cümlenin yanındaki kısık cümle hiç yazılmayabiliyordu.
@@ -20,6 +24,10 @@
 //    uyduruldu); 6 sn'den uzun pencerede bu olursa pencere bölünüp yeniden işlenir.
 //  - Dil 'turkish', görev 'transcribe', kelime zamanları; ipucu (prompt) yok, tekrar cezası yok (öğrencinin
 //    tekrarlarını görmek isteriz).
+//  - transformers.js 4.3.0'da kelime zamanları (çapraz dikkat + DTW) sesin gerçek boyuyla değil, 30 sn'ye doldurulmuş
+//    girdinin tamamıyla hesaplanıyor (_generate_with_seek, num_frames = 1500). Kısa seste kelimeler sesin sonrasına,
+//    30. saniyeye kadar yayılıyordu: doğrulama parçalarının kelimeleri "sesin bitiminden sonra" diye atılıyor,
+//    doğrulama hiç sonuç vermiyordu. Worker hesaplamayı sesin gerçek boyuyla sınırlar (fixWordTimes).
 
 const SR = 16000;
 const FRAME = 320; // 20 ms
@@ -27,16 +35,27 @@ const MAX_SEC = 28;
 const MIN_SEC = 15;
 /** Kısa parçalar birleştirilirken araya konan sessizlik (sn). */
 const CLIP_GAP_SEC = 1;
+/**
+ * Doğrulama parçalarında üretilecek en çok belirteç: saniyede 16 (hızlı bir okumanın üstünde) + 16. Kısa parçada
+ * Whisper döngüye girer ya da sessizlikte metin uydurursa 448 belirtece kadar uzar (telefonda dakikalar); sınır bunu
+ * keser, döngü yine looksLooped ile anlaşılır.
+ */
+const clipTokens = (samples) => Math.min(400, Math.ceil((samples / SR) * 16) + 16);
 /** ONNX Runtime Web dosyalarının adı (ORT_BASE altında .mjs ve .wasm). Yalnızca WebAssembly kullanıldığı için WebGPU'suz derleme. */
 const ORT_FILE = 'ort-wasm-simd-threaded';
 const GEN = { language: 'turkish', task: 'transcribe', return_timestamps: 'word' };
 const HALLUCINATIONS = /altyazı|abone ol|izlediğiniz için|teşekkür ederim\.?$|www\.|\.com/i;
 const DTYPES = new Set(['auto', 'fp32', 'fp16', 'q8', 'int8', 'uint8', 'q4', 'bnb4', 'q4f16']);
+const PARTS_FILE = 'parcalar.json';
+/** Bir parça en çok bu kadar kez istenir (mobil bağlantı koparsa). */
+const PART_TRIES = 3;
 
 class AsrFail extends Error {
-  constructor(kind, message) {
+  constructor(kind, message, fatal = false) {
     super(message);
     this.kind = kind;
+    /** Yeniden denemekle düzelmez (ör. parça beklenenden büyük). */
+    this.fatal = fatal;
   }
 }
 
@@ -86,6 +105,8 @@ try {
 
 let asr = null;
 let info = null;
+/** Şu an yazıya dökülen sesin kodlayıcı çerçevesi sayısı (20 ms; bkz. fixWordTimes). */
+let realFrames = Infinity;
 let threads = 1;
 let queue = Promise.resolve();
 
@@ -202,6 +223,7 @@ async function ensureLoaded(id) {
   const wasmUrl = ortBase + ORT_FILE + '.wasm';
   wasm.wasmPaths = { mjs: ortBase + ORT_FILE + '.mjs', wasm: wasmUrl };
 
+  parts = await loadParts();
   const meter = makeMeter(id, Object.keys(cfg.dtype).length);
   env.fetch = meter.fetch;
   // ONNX Runtime'ın .wasm dosyası da indirme ilerlemesine girsin diye burada indirilir ve ORT'ye verilir; model
@@ -227,11 +249,141 @@ async function ensureLoaded(id) {
   }
   await wasmReady;
   delete wasm.wasmBinary; // ORT derledi; 14 MB'lık kopya bellekte kalmasın
+  fixWordTimes(p);
   meter.finish();
   asr = p;
   info = { backend: 'wasm', threads, loadMs: Math.round(performance.now() - t0), downloadedBytes: meter.bytes() };
   post({ id, type: 'progress', stage: 'load', ratio: 1 });
   return info;
+}
+
+// ---- Parçalı dosyalar ---------------------------------------------------------------------------------------------
+
+/** Parçalı sunulan dosyalar: tam adres → { size, count, partSize } (parcalar.json). */
+let parts = new Map();
+
+async function loadParts() {
+  const base = new URL(cfg.modelBase + cfg.id + '/', self.location.origin);
+  const url = new URL(PARTS_FILE, base).href;
+  let res;
+  try {
+    res = await fetch(url);
+  } catch (err) {
+    throw new AsrFail('network', `İndirilemedi: ${url} (${(err && err.message) || err})`);
+  }
+  if (!res.ok) throw new AsrFail('network', `HTTP ${res.status}: ${url}`);
+  let j;
+  try {
+    j = await res.json();
+  } catch (err) {
+    throw new AsrFail('network', `${PARTS_FILE} okunamadı (${(err && err.message) || err})`);
+  }
+  const map = new Map();
+  const ps = j && j.parcaBoyu;
+  const files = j && j.dosyalar;
+  if (!Number.isInteger(ps) || ps <= 0 || !files || typeof files !== 'object') throw new AsrFail('unknown', `${PARTS_FILE} geçersiz`);
+  for (const [path, e] of Object.entries(files)) {
+    const ok = /^[\w./-]+$/.test(path) && !path.includes('..') && e && Number.isInteger(e.boyut) && e.boyut > 0 && e.adet === Math.ceil(e.boyut / ps);
+    if (!ok) throw new AsrFail('unknown', `${PARTS_FILE} geçersiz: ${path}`);
+    map.set(new URL(path, base).href, { size: e.boyut, count: e.adet, partSize: ps });
+  }
+  return map;
+}
+
+/** transformers.js'in istekleri: parçalı dosyalar birleştirilerek, ötekiler olduğu gibi. */
+function fetchAny(input, init) {
+  const href = new URL(input instanceof Request ? input.url : String(input), self.location.href).href;
+  const p = parts.get(href);
+  return p ? fetchParts(href, p) : fetch(input, init);
+}
+
+/**
+ * Parçaları sırayla indirip tek dosya gibi akıtır (Content-Length: dosyanın tamamı). İlk parçanın sunucu hatası
+ * (ör. 404) olduğu gibi döner. Bir parça yarıda koparsa ya da eksik inerse kaldığı yerden (Range) yeniden istenir;
+ * sunucu aralık desteklemezse parça baştan gelir ve alınmış baytlar atlanır.
+ */
+async function fetchParts(url, p) {
+  const partUrl = (k) => `${url}.parca-${String(k).padStart(2, '0')}`;
+  const partLen = (k) => (k < p.count - 1 ? p.partSize : p.size - p.partSize * (p.count - 1));
+  const first = await fetch(partUrl(0));
+  if (!first.ok || !first.body) return first;
+  let k = 0;
+  let got = 0; // bu parçadan alınan bayt
+  let skip = 0;
+  let tries = 1;
+  let reader = first.body.getReader();
+  const open = async () => {
+    const u = partUrl(k);
+    const res = await fetch(u, got > 0 ? { headers: { Range: `bytes=${got}-` } } : undefined);
+    if (got > 0 && res.status === 206) skip = 0;
+    else if (res.status === 200) skip = got;
+    else throw new AsrFail('network', `HTTP ${res.status}: ${u}`);
+    if (!res.body) throw new AsrFail('network', `Boş yanıt: ${u}`);
+    reader = res.body.getReader();
+  };
+  const body = new ReadableStream({
+    async pull(c) {
+      for (;;) {
+        try {
+          if (!reader) await open();
+          const { done, value } = await reader.read();
+          if (done) {
+            reader = null;
+            if (got < partLen(k)) throw new AsrFail('network', `Eksik indi: ${partUrl(k)} (${got}/${partLen(k)} bayt)`);
+            k++;
+            got = 0;
+            tries = 1;
+            if (k >= p.count) {
+              c.close();
+              return;
+            }
+            continue;
+          }
+          let v = value;
+          if (skip > 0) {
+            const n = Math.min(skip, v.byteLength);
+            skip -= n;
+            v = v.subarray(n);
+            if (!v.byteLength) continue;
+          }
+          if (got + v.byteLength > partLen(k)) throw new AsrFail('network', `Parça beklenenden büyük: ${partUrl(k)}`, true);
+          got += v.byteLength;
+          c.enqueue(v);
+          return;
+        } catch (err) {
+          if (reader) reader.cancel().catch(() => {});
+          reader = null;
+          if ((err && err.fatal) || tries >= PART_TRIES) {
+            throw err instanceof AsrFail ? err : new AsrFail('network', `İndirilemedi: ${partUrl(k)} (${(err && err.message) || err})`);
+          }
+          tries++;
+        }
+      }
+    },
+    cancel(reason) {
+      if (reader) reader.cancel(reason).catch(() => {});
+    },
+  });
+  return new Response(body, { status: 200, headers: { 'content-type': 'application/octet-stream', 'content-length': String(p.size) } });
+}
+
+// ---- İndirme ilerlemesi -------------------------------------------------------------------------------------------
+
+/**
+ * Kelime zamanlarının hesabını (çapraz dikkat + DTW) sesin gerçek boyuyla sınırlar: transformers.js 4.3.0 30 sn'ye
+ * doldurulmuş girdinin 1500 çerçevesinin hepsini kullanıyor (Python'daki gibi gerçek boy değil); kısa seste kelimeler
+ * sesin sonrasına yayılıyordu. transformers.js değişip bu yöntem kalmazsa düzeltme atlanır (zamanlar yine
+ * transcribePiece'te sesin süresine kırpılır).
+ */
+function fixWordTimes(p) {
+  const model = p && p.model;
+  if (!model || typeof model._extract_token_timestamps !== 'function' || model.__realFrames) return;
+  const orig = model._extract_token_timestamps;
+  model._extract_token_timestamps = function (outputs, heads, numFrames, ...rest) {
+    const n = Math.min(numFrames == null ? Infinity : numFrames, realFrames);
+    return orig.call(this, outputs, heads, Number.isFinite(n) ? n : numFrames, ...rest);
+  };
+  model.__realFrames = true;
 }
 
 /** İndirme ilerlemesi: transformers.js'in isteklerini (env.fetch) ve .wasm'ı sayar; toplam, Content-Length'lerden. */
@@ -269,7 +421,7 @@ function makeMeter(id, expectedOnnx) {
     async fetch(input, init) {
       let res;
       try {
-        res = await fetch(input, init);
+        res = await fetchAny(input, init);
       } catch (err) {
         throw new AsrFail('network', `İndirilemedi: ${String(input)} (${(err && err.message) || err})`);
       }
@@ -422,33 +574,46 @@ function quietestPoint({ rms }, a, b) {
   return best * FRAME;
 }
 
-/** Aynı 1–4 kelimelik öbek art arda ≥ 4 kez ya da saniyede 6'dan çok kelime: çözümleme döngüye girmiş. */
+/**
+ * Çözümleme döngüye girmiş: aynı 1–2 kelimelik öbek art arda ≥ 4 kez, 3–10 kelimelik öbek ≥ 3 kez ya da saniyede
+ * 6'dan çok kelime. (Öğrenci bir cümleyi en çok bir iki kez yeniden okur.)
+ */
 function looksLooped(words, sec) {
   const t = words.map((w) => w.text.toLocaleLowerCase('tr-TR').replace(/[^\p{L}\p{N}]/gu, ''));
-  for (let n = 1; n <= 4; n++) {
-    for (let i = 0; i + 4 * n <= t.length; i++) {
+  for (let n = 1; n <= 10; n++) {
+    const need = n <= 2 ? 4 : 3;
+    for (let i = 0; i + need * n <= t.length; i++) {
       let rep = 1;
       while (i + (rep + 1) * n <= t.length && t.slice(i, i + n).join(' ') === t.slice(i + rep * n, i + (rep + 1) * n).join(' ')) rep++;
-      if (rep >= 4) return true;
+      if (rep >= need) return true;
     }
   }
   return sec > 0 && words.length / sec > 6;
 }
 
 /**
- * audio[s, e) parçasını yazıya döker; zamanlar audio'nun başından itibaren saniye. Sesin bitiminde ya da sonrasında
- * başlayan "kelimeler" alınmaz (`overflow`): ya hizalama bozulmuştur ya da metin uydurulmuştur (ör. okumanın sonundaki
- * nefeste "Bu sefer de nektidir?").
+ * audio[s, e) parçasını yazıya döker; zamanlar audio'nun başından itibaren saniye. Sesin son 60 ms'sinde ya da
+ * sonrasında başlayan "kelimeler" alınmaz (`overflow`): zamanlar sesin boyuyla sınırlı olduğundan (fixWordTimes) sesin
+ * karşılığı olmayan sözler sona yığılır; ya metin uydurulmuştur (ör. okumanın sonundaki nefeste "Bu sefer de
+ * nektidir?") ya da parçanın sonunda kesilen kelime tamamlanmıştır.
  */
-async function transcribePiece(audio, s, e, ticker) {
-  const out = await asr(audio.subarray(s, e), { ...GEN, streamer: ticker.streamer });
+async function transcribePiece(audio, s, e, ticker, maxTokens = 0) {
+  realFrames = Math.max(1, Math.ceil((e - s) / FRAME)); // 20 ms'lik çerçeve = kodlayıcının bir çıktısı
+  let out;
+  try {
+    const opts = { ...GEN, streamer: ticker.streamer };
+    if (maxTokens > 0) opts.max_new_tokens = maxTokens;
+    out = await asr(audio.subarray(s, e), opts);
+  } finally {
+    realFrames = Infinity;
+  }
   const pieceSec = (e - s) / SR;
   const words = [];
   const overflow = [];
   for (const c of out.chunks || []) {
     const text = String(c.text || '').trim();
     if (!text) continue;
-    if ((c.timestamp[0] ?? 0) > pieceSec - 0.02) {
+    if ((c.timestamp[0] ?? 0) >= pieceSec - 0.06) {
       overflow.push(text);
       continue;
     }
@@ -523,30 +688,42 @@ function rmsFrames(audio) {
   return rms;
 }
 
-/** Bir parçayı tek başına yazıya döker; zamanlar parçanın başından itibaren. Kısa parçalar dengelenmez (bkz. transcribeClips). */
+/**
+ * Konuşma sesi olan bir parçayı tek başına yazıya döker; zamanlar parçanın başından itibaren. Kısa parçalar
+ * dengelenmez (bkz. transcribeClips). Sonuç güvenilir değilse (döngü, bilinen uydurma metin, hiç kelime) `words` null:
+ * boş liste "parçada kelime yok" diye okunup atlamayı doğrulamasın.
+ */
 async function transcribeOne(clip, ticker, base) {
   ticker.offset = base;
-  if (clip.length > MAX_SEC * SR) return transcribeReading(clip, ticker);
+  if (clip.length > MAX_SEC * SR) {
+    const r = await transcribeReading(clip, ticker);
+    return { words: r.words.length ? r.words : null, warnings: r.warnings };
+  }
   const dur = clip.length / SR;
   ticker.begin(0, dur);
-  const r = await transcribePiece(clip, 0, clip.length, ticker);
+  const r = await transcribePiece(clip, 0, clip.length, ticker, clipTokens(clip.length));
   ticker.end(0, dur, true);
   const warnings = [];
   if (r.overflow.length) warnings.push(`dropped words past the end: ${r.overflow.join(' ')}`);
   if (looksLooped(r.words, clip.length / SR)) {
-    warnings.push('loop in clip');
-    return { words: [], warnings };
+    warnings.push('loop in clip: no result');
+    return { words: null, warnings };
   }
-  if (HALLUCINATIONS.test(r.text)) warnings.push(`possible hallucination: ${r.text.trim()}`);
-  return { words: r.words, warnings };
+  if (HALLUCINATIONS.test(r.text)) {
+    warnings.push(`hallucination in clip: no result: ${r.text.trim()}`);
+    return { words: null, warnings };
+  }
+  if (!r.words.length) warnings.push('no words in clip: no result');
+  return { words: r.words.length ? r.words : null, warnings };
 }
 
 /**
  * Kısa parçalar, araya 1 sn sessizlik konarak ≤ 28 sn'lik tamponlarda birlikte yazıya dökülür (kodlayıcı daha az
- * çalışır); kelimeler ortalarının düştüğü parçaya dağıtılır. Konuşma enerjisi olmayan parça boş döner.
- * Whisper birleştirilmiş kısa parçalarda bazen ilk birkaç parçadan sonra durur ve kelime zamanlarını sesin sonuna
- * (sessiz dolguya) yığar; tampon döngüye girerse ya da sesin bitiminden sonra başlayan kelime çıkarsa bütün parçalar,
- * kelimesi çıkmayan ya da kelimesi aradaki sessizliğe düşen parçalar ise tek tek yeniden işlenir. Parçalar dengelenmez:
+ * çalışır); kelimeler ortalarının düştüğü parçaya dağıtılır. Konuşma enerjisi olmayan parça boş liste, güvenilir sonuç
+ * çıkmayan parça null döner (transcribeOne).
+ * Tampon döngüye girerse ya da bilinen bir uydurma metin çıkarsa bütün parçalar; kelimesi çıkmayan ya da kelimesi
+ * aradaki sessizliğe düşen parçalar ise tek tek yeniden işlenir (Whisper birleştirilmiş kısa parçalarda bazen ilk
+ * birkaç parçadan sonra durur; kalan sözler sona yığılır ve atılır, bkz. transcribePiece). Parçalar dengelenmez:
  * kısa parçada yavaş kazancın gürültü tabanı yanlış ölçülüyor ve denemelerde birleştirilmiş tamponu bozdu.
  */
 async function transcribeClips(clips, ticker) {
@@ -562,7 +739,9 @@ async function transcribeClips(clips, ticker) {
   }
   const floor = Float32Array.from(all).sort()[Math.floor(n * 0.1)] || 0;
   const thr = Math.max(0.001, floor * 3);
-  const speech = clips.map((c, i) => c.length >= 0.3 * SR && speechRatio({ rms: rmsOf[i], thr }, 0, c.length) >= 0.05);
+  // Konuşma payı %15'ten az olan parça işlenmez (boş döner): ör. okumanın sonundaki atlamada son kelimenin kuyruğu ve
+  // sessizlik; kısa sessizlikte Whisper metin uyduruyor. Atlama ve yanlış okuma parçalarında komşu kelimeler vardır.
+  const speech = clips.map((c, i) => c.length >= 0.3 * SR && speechRatio({ rms: rmsOf[i], thr }, 0, c.length) >= 0.15);
 
   const base = []; // ilerleme için her parçanın sanal başlangıcı (sn)
   let acc = 0;
@@ -616,14 +795,19 @@ async function transcribeClips(clips, ticker) {
     const first = base[g[0]];
     const last = base[g[g.length - 1]] + clips[g[g.length - 1]].length / SR;
     ticker.begin(first, last);
-    const r = await transcribePiece(buf, 0, len, ticker);
+    const r = await transcribePiece(buf, 0, len, ticker, clipTokens(len));
     ticker.end(first, last, true);
-    if (looksLooped(r.words, len / SR) || r.overflow.length) {
-      warnings.push(`${r.overflow.length ? 'words past the end' : 'loop'} in clip group ${g.join(',')}: clips redone one by one`);
+    // Sona yığılan çok sayıda söz de döngüdür (Whisper son parçadan sonra tekrara düşmüş; parçalara yanlış kelime dağılır).
+    const bad =
+      looksLooped(r.words, len / SR) || r.overflow.length >= 4 ? 'loop' : HALLUCINATIONS.test(r.text) ? 'hallucination' : '';
+    if (bad) {
+      warnings.push(`${bad} in clip group ${g.join(',')}: clips redone one by one`);
       for (const i of g) await single(i);
       continue;
     }
-    if (HALLUCINATIONS.test(r.text)) warnings.push(`possible hallucination: ${r.text.trim()}`);
+    // Sona yığılan sözler (son parçanın kesilen kelimesinin tamamlanması ya da erken durma) atılır; kelimesi çıkmayan
+    // parçalar aşağıda tek tek yeniden işlenir.
+    if (r.overflow.length) warnings.push(`clip group ${g.join(',')}: dropped words past the end: ${r.overflow.join(' ')}`);
     const redo = new Set();
     for (const w of r.words) {
       const mid = ((w.start + w.end) / 2) * SR;
@@ -632,21 +816,26 @@ async function transcribeClips(clips, ticker) {
       const i = g[j];
       const dur = clips[i].length / SR;
       const o = offs[j] / SR;
-      // Kelimenin yarısından çoğu aradaki sessizliğe düşüyorsa hizalama güvenilmez: parça tek başına yeniden işlenir.
+      // Kelimenin yarısından çoğu aradaki sessizliğe düşüyorsa sesin karşılığı yoktur: parçanın kenarında kesilen bir
+      // kelimenin tamamlanması ya da uydurma. Alınmaz (parçanın kelimesi kalmazsa parça aşağıda tek başına işlenir).
       const ws = w.start * SR;
       const we = w.end * SR;
       const cs = offs[j];
       const ce = offs[j] + clips[i].length;
       const inGap = we - ws > 0.02 * SR ? Math.min(we, ce) - Math.max(ws, cs) < 0.5 * (we - ws) : mid < cs - 0.1 * SR || mid > ce + 0.1 * SR;
-      if (inGap) redo.add(i);
+      if (inGap) {
+        warnings.push(`clip ${i}: dropped word in the gap: ${w.text}`);
+        continue;
+      }
       const st = Math.min(dur, Math.max(0, w.start - o));
       const en = Math.min(dur, Math.max(st, w.end - o));
       out[i].push({ text: w.text, start: +st.toFixed(2), end: +en.toFixed(2) });
     }
     for (const i of g) if (!out[i].length && clips[i].length >= 0.5 * SR) redo.add(i);
+    for (const i of g) if (!out[i].length && !redo.has(i)) out[i] = null; // çok kısa ve kelimesiz: sonuç yok
     for (const i of g) {
       if (!redo.has(i)) continue;
-      warnings.push(`clip ${i}: ${out[i].length ? 'word in the gap' : 'no words'} in group, redone alone`);
+      warnings.push(`clip ${i}: no words in group, redone alone`);
       await single(i);
     }
   }

@@ -52,8 +52,11 @@
  *      payla; yakın parçalar birleşir; toplam en çok 50 sn, önce doğrulanmadan hata sayılacak adaylar) yeniden yazıya
  *      dökülür ve parçanın kelimeleri metnin o bölümüyle yeniden hizalanır. Aday ancak parça aynı şeyi söylerse hata
  *      olur: yanlış okumada katlanmış hâli aynı kelime, atlamada kelime yine yok, eklemede kelime yine var. Parça
- *      farklı söylerse (ör. doğru kelimeyi duyarsa) kelime `unclear` olur; ekleme sayılmaz.
- *    - Doğrulama yapılamazsa (clipWords null ya da aday bir parçaya düşmedi) temkinli kurallar: ek farkı ya da çok
+ *      farklı söylerse (ör. doğru kelimeyi duyarsa) kelime `unclear` olur; ekleme sayılmaz. Atlama ancak parçada
+ *      atlanan kelimelerin dışında en az bir metin kelimesi de tanınmışsa (dayanak) doğrulanmış sayılır: boş ya da
+ *      metinle hiç örtüşmeyen bir sonuç "kelime yine yok" demek değildir, doğrulama sonuç vermemiş demektir.
+ *    - Doğrulama yapılamazsa (clipWords null; parçanın sonucu null ya da boş, yani Worker güvenilir bir sonuç
+ *      çıkaramadı; atlamada dayanak yok; ya da aday bir parçaya düşmedi) temkinli kurallar: ek farkı ya da çok
  *      benzer yanlış okuma `unclear`; arasında konuşma sesi bulunan atlama `unclear`; konuşma sesi olmayan 3 ve daha
  *      uzun atlama dizisi `omit`; 1–2 kelimelik atlama, komşu kelimeler kendi boylarından belirgin uzun sürmüyorsa
  *      (Whisper atladığı kelimeyi komşusuna katar) `omit`, sürüyorsa `unclear`. Konuşma süreleri bilinmiyorsa
@@ -657,6 +660,18 @@ export function alignWords(paragraphs: string[], words: AsrWord[]): WordAlignmen
   return { tokens, words: clean, ops };
 }
 
+/**
+ * Tanınan kelimelerin kaçta kaçı metindeki bir kelimeyle aynı ya da yakın eşleşti. Öğrenci ekrandaki metni okuduysa
+ * (hatalı da olsa) yüksektir: bilerek hatalı okunmuş kayıtlarda en az 0,75, doğru okunmuş FLEURS cümlelerinde en az
+ * 0,40; başka bir metin okunduğunda ya da konuşulduğunda en çok 0,11 (tests/sesli-okuma-hizalama.test.ts). Hiç kelime
+ * tanınmadıysa 0.
+ */
+export function matchedShare(al: WordAlignment): number {
+  if (!al.words.length) return 0;
+  const matched = al.ops.filter((op) => op.token !== undefined && (op.kind === 'match' || op.kind === 'near')).length;
+  return matched / al.words.length;
+}
+
 // ---------------------------------------------------------------------------------------------------------------
 // Sınıflandırma
 
@@ -1017,7 +1032,8 @@ function mergeWindows(ws: { start: number; end: number; tokens: number[] }[]): V
 const totalSec = (cs: VerifyClip[]) => cs.reduce((n, c) => n + (c.end - c.start), 0);
 
 /**
- * Doğrulanacak parçalar: her aday hata bölgesi iki yandan ~0,6 sn payla; yakın parçalar birleşir. Toplam süre
+ * Doğrulanacak parçalar: her aday hata bölgesi iki yandan ~0,6 sn payla (okumanın sonundaki atlamada yalnızca sonda);
+ * yakın parçalar birleşir. Toplam süre
  * `maxTotalSec`'i aşarsa önce doğrulanmadan hata sayılacak adaylar (öğrencinin aleyhine olanlar), sonra öteki adaylar
  * okuma sırasıyla alınır. Doğrulamada her parça ayrı yazıya dökülür; süreler parçanın başından itibaren saniyedir.
  */
@@ -1028,7 +1044,9 @@ export function planVerification(al: WordAlignment, durationSec: number, maxTota
   let chosen: { start: number; end: number; tokens: number[] }[] = [];
   let clips: VerifyClip[] = [];
   for (const c of order) {
-    const start = Math.max(0, c.start - PAD_SEC);
+    // Okumanın sonundaki atlama: parça son okunan kelimenin bitiminden başlar (o kelime yeniden dinlenmez). Parçada
+    // konuşma yoksa doğrulama yapılmaz (temkinli kural); kısa bir sessizlikte Whisper metin uydurabiliyor.
+    const start = Math.max(0, c.start - (c.tail ? 0 : PAD_SEC));
     const end = Math.min(dur, c.end + PAD_SEC);
     if (!(end > start)) continue;
     const next = [...chosen, { start, end, tokens: c.tokens.filter((t) => t >= 0) }];
@@ -1042,13 +1060,20 @@ export function planVerification(al: WordAlignment, durationSec: number, maxTota
 
 type Verdict = 'confirm' | 'reject' | 'none';
 
-function verify(al: WordAlignment, an: Analysis, clips: VerifyClip[], clipWords: AsrWord[][] | null): Verdict[] {
+/**
+ * Parçaların sonuçları: her parça için tanınan kelimeler; null, Worker'ın o parçada güvenilir bir sonuç çıkaramadığı
+ * (döngü, uydurma metin, konuşma varken hiç kelime) anlamına gelir. Boş dizi: parçada konuşma sesi yok.
+ */
+export type ClipWords = (AsrWord[] | null)[];
+
+function verify(al: WordAlignment, an: Analysis, clips: VerifyClip[], clipWords: ClipWords | null): Verdict[] {
   const out: Verdict[] = an.cands.map(() => 'none');
   if (!clipWords) return out;
   const passageNorm = al.tokens.map((t) => t.norm).join(' ');
   clips.forEach((clip, k) => {
     const words = clipWords[k];
-    if (!Array.isArray(words)) return;
+    // Sonuç yoksa ya da boşsa doğrulama sonuç vermedi (boş parçayla hizalamada her kelime "atlanmış" çıkardı).
+    if (!Array.isArray(words) || !words.length) return;
     const inside = an.cands
       .map((c, x) => ({ c, x }))
       .filter(({ c }) => clip.start <= c.start + 0.01 && clip.end >= (c.tail ? Math.min(c.end, c.start + 0.5) : c.end) - 0.01);
@@ -1067,6 +1092,7 @@ function verify(al: WordAlignment, an: Analysis, clips: VerifyClip[], clipWords:
       passageNorm,
     );
     const CU = unitInfos(abs);
+    if (!CU.length) return; // temizlikten sonra (ör. yalnızca uydurma kalıp) kelime kalmadı
     const ops = alignCore(an.T.slice(lo, hi + 1), CU, 0.2);
     const byTok = new Map<number, AlignOp>();
     const insKeys: { key: string; start: number }[] = [];
@@ -1077,14 +1103,20 @@ function verify(al: WordAlignment, an: Analysis, clips: VerifyClip[], clipWords:
     for (const { c, x } of inside) {
       if (c.type === 'sub') {
         const op = byTok.get(c.tokens[0]);
-        if (!op || op.kind !== 'sub') {
-          out[x] = 'reject';
-          continue;
-        }
-        const said = foldWord((op.words ?? []).map((w) => CU[w].ns).join(''));
         const orig = an.U[c.words[0]].key;
-        out[x] = said === orig ? 'confirm' : 'reject';
+        if (op?.kind === 'sub') {
+          const said = foldWord((op.words ?? []).map((w) => CU[w].ns).join(''));
+          out[x] = said === orig ? 'confirm' : 'reject';
+        } else if (op?.kind === 'omit') {
+          // Kısa parçanın başında ya da sonunda hizalama yanlış okumayı "atlama + ekleme" diye ayırabilir: parça aynı
+          // yanlış kelimeyi yine söylediyse doğrulanmış sayılır.
+          out[x] = insKeys.some((w) => w.key === orig) ? 'confirm' : 'reject';
+        } else out[x] = 'reject';
       } else if (c.type === 'omit') {
+        // Dayanak: atlanan kelimelerin dışında, parçada yine tanınan bir metin kelimesi.
+        const run = new Set(c.tokens);
+        const anchored = [...byTok].some(([t, op]) => !run.has(t) && (op.kind === 'match' || op.kind === 'near'));
+        if (!anchored) continue;
         out[x] = c.tokens.every((t) => byTok.get(t)?.kind === 'omit') ? 'confirm' : 'reject';
       } else {
         const key = an.U[c.words[0]].key;
@@ -1102,12 +1134,13 @@ function verify(al: WordAlignment, an: Analysis, clips: VerifyClip[], clipWords:
 
 /**
  * Hizalamadan kelime işaretleri (bkz. dosya başı, 3). `clips` planVerification'ın döndürdüğü parçalar, `clipWords`
- * her parçanın ayrı yazıya dökülmüş kelimeleri (süreler parçanın başından itibaren); doğrulama yapılmadıysa null.
+ * her parçanın ayrı yazıya dökülmüş kelimeleri (süreler parçanın başından itibaren; bkz. ClipWords); doğrulama
+ * yapılmadıysa null.
  */
 export function buildAutoMarks(
   al: WordAlignment,
   clips: VerifyClip[],
-  clipWords: AsrWord[][] | null,
+  clipWords: ClipWords | null,
   timing: ReadingTiming,
 ): AutoMarks {
   const an = analyze(al, timing);

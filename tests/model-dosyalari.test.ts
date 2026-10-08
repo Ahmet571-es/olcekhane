@@ -10,9 +10,13 @@ import {
   MODEL_KLASORU,
   MODEL_REVIZYON,
   ORT_KLASORU,
+  PARCA_BOYU,
+  PARCA_LISTESI,
   TRANSFORMERS_SURUMU,
   VENDOR_KLASORU,
   adresler,
+  parcaListesi,
+  parcalari,
 } from '../araclar/model-hazirla.mjs';
 
 // Sesli okumada otomatik analiz: konuşma tanıma modeli ve tarayıcıda çalıştıran dosyalar kendi sunucumuzdan sunulur.
@@ -48,6 +52,31 @@ describe('model dosyaları', () => {
       expect(d.sha256, d.yol).toMatch(/^[0-9a-f]{64}$/);
       expect(d.boyut, d.yol).toBeGreaterThan(0);
     }
+  });
+
+  it('büyük model dosyaları HTTP önbelleğine sığan parçalar hâlinde sunulur; Worker parçaları birleştirir', () => {
+    // Chrome HTTP önbelleğine tek dosya olarak önbellek boyunun en çok 1/8'ini alır (en az 5 MB); Firefox 50 MB.
+    expect(PARCA_BOYU).toBeLessThanOrEqual(8 * 1024 * 1024);
+    const buyukler = DOSYALAR.filter((d) => d.boyut > PARCA_BOYU);
+    expect(buyukler.map((d) => d.yol).sort()).toEqual(['onnx/decoder_model_merged_quantized.onnx', 'onnx/encoder_model_quantized.onnx']);
+    for (const d of DOSYALAR) {
+      const p = parcalari(d);
+      if (d.boyut <= PARCA_BOYU) {
+        expect(p, d.yol).toEqual([]);
+        continue;
+      }
+      expect(p.reduce((n, x) => n + x.boyut, 0), d.yol).toBe(d.boyut);
+      expect(p.every((x, i) => x.yol === `${d.yol}.parca-${String(i).padStart(2, '0')}` && x.boyut > 0 && x.boyut <= PARCA_BOYU)).toBe(true);
+      expect(parcaListesi().dosyalar[d.yol]).toEqual({ boyut: d.boyut, adet: p.length });
+      expect(adresler()).toContain(`${ASR_MODEL_BASE}${ASR_MODEL.id}/${p[0].yol} ${PARCA_BOYU}`);
+      expect(adresler().some((a) => a.startsWith(`${ASR_MODEL_BASE}${ASR_MODEL.id}/${d.yol} `)), d.yol).toBe(false);
+    }
+    expect(parcaListesi().parcaBoyu).toBe(PARCA_BOYU);
+    expect(adresler().some((a) => a.startsWith(`${ASR_MODEL_BASE}${ASR_MODEL.id}/${PARCA_LISTESI} `))).toBe(true);
+    const isci = oku('public/okuma/analiz-isci.js');
+    expect(isci).toContain(`const PARTS_FILE = '${PARCA_LISTESI}';`);
+    expect(isci).toContain('.parca-${String(k).padStart(2, \'0\')}');
+    expect(isci).toMatch(/res = await fetchAny\(input, init\)/);
   });
 
   it('ONNX Runtime ve transformers.js adresleri package.json’daki tam sürümü içerir', () => {
@@ -139,7 +168,12 @@ describe('sunucu başlıkları', () => {
 
   it('sürümlü adresler süresiz önbelleklenir; başka sayfalar değil', async () => {
     const cc = async (yol: string) => (await basliklar(yol))['cache-control'];
-    for (const yol of [`${ASR_MODEL_BASE}${ASR_MODEL.id}/onnx/encoder_model_quantized.onnx`, `${ORT_BASE}ort-wasm-simd-threaded.wasm`, TRANSFORMERS_URL]) {
+    for (const yol of [
+      `${ASR_MODEL_BASE}${ASR_MODEL.id}/onnx/encoder_model_quantized.onnx.parca-00`,
+      `${ASR_MODEL_BASE}${ASR_MODEL.id}/${PARCA_LISTESI}`,
+      `${ORT_BASE}ort-wasm-simd-threaded.wasm`,
+      TRANSFORMERS_URL,
+    ]) {
       expect(await cc(yol), yol).toBe('public, max-age=31536000, immutable');
     }
     for (const yol of ['/', '/okuma/analiz-isci.js', '/okuma/kayit-isleyici.js']) {

@@ -97,6 +97,17 @@ export const ORAL_MAX_WPM = 250;
 export const MIN_LISTENED = 0.9;
 /** Otomatik analizde kelimelerin bundan çoğu net anlaşılamadıysa sonuçlar yaklaşıktır (uyarı verilir). */
 export const UNCLEAR_HIGH = 0.1;
+/**
+ * Otomatik analizde kelimelerin bundan çoğu net anlaşılamadıysa rapor verilmez: net anlaşılamayan kelimeler doğru
+ * sayıldığı için doğruluk ve hız yanıltıcı olurdu. Öğrencinin ekranı bu durumda yeniden okumayı önerir
+ * (components/runner/oral/auto-analysis.ts); sunucu da kabul etmez.
+ */
+export const UNCLEAR_MAX = 0.3;
+/**
+ * Metnin sonunda en az bu kadar kelime art arda atlandıysa okuma metin bitmeden durmuş sayılır: okuma hızı okunan
+ * kısımdan hesaplanır ve raporda belirtilir (atlanan kelimeler yine atlama hatasıdır).
+ */
+export const UNFINISHED_MIN = 3;
 /** Duraklama sayımı: bu süreden uzun sessizlikler; ve uzun duraklamalar. */
 export const PAUSE_MS = 1000;
 export const LONG_PAUSE_MS = 3000;
@@ -134,6 +145,8 @@ export interface OralResult {
   genre: OralPassage['genre'];
   title: string;
   wordCount: number;
+  /** Metnin sonunda art arda atlanan (okunmayan) kelimeler; UNFINISHED_MIN'den azsa 0. */
+  unread: number;
   recordMs: number;
   readingMs: number;
   timingAuto: boolean;
@@ -168,6 +181,8 @@ export interface OralResult {
     interrupted: boolean;
     /** Okuma süresi metne göre çok kısa. */
     tooFast: boolean;
+    /** Okuma metin bitmeden durdu (sondaki `unread` kelime okunmadı). */
+    unfinished: boolean;
     /** Okuma süresi düğmelere göre ölçüldü (kayıtta konuşmanın başı ve sonu bulunamadı). */
     manualTiming: boolean;
     /** Ses kalitesi duraklamaları ölçmeye elverişli değil. */
@@ -244,13 +259,20 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     if (m.hes) counts.hes += 1;
     if (m.ins) counts.ins += m.ins;
   }
+  if (auto && counts.unclear > n * UNCLEAR_MAX) {
+    throw new OralInputError('Okumanın çoğu net anlaşılamadı; bu okumadan rapor hazırlanamaz. Metni yeniden okuyabilirsin.');
+  }
   // Net anlaşılamayan kelimeler hata sayılmaz (doğru okunmuş gibi hesaba katılır).
   const missed = counts.sub + counts.omit + counts.help;
   const errors = missed + counts.ins;
   const wordsCorrect = n - missed;
   const accuracy = Math.max(0, ((n - errors) / n) * 100);
   const minutes = Math.max(input.readingMs, 1000) / 60000;
-  const wpm = n / minutes;
+  // Okuma metin bitmeden durduysa hız okunan kısımdan: okunmayan kelimeler sürede yoktur.
+  let trailing = 0;
+  for (let i = n - 1; i >= 0 && input.marks[String(i)]?.s === 'omit'; i--) trailing++;
+  const unread = trailing >= UNFINISHED_MIN ? trailing : 0;
+  const wpm = (n - unread) / minutes;
   const wcpm = wordsCorrect / minutes;
 
   const skills: OralResult['comprehension']['skills'] = {
@@ -331,6 +353,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     genre: passage.genre,
     title: passage.title,
     wordCount: n,
+    unread,
     recordMs: Math.round(input.recordMs),
     readingMs: Math.round(input.readingMs),
     timingAuto: input.timingAuto,
@@ -354,6 +377,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
       partialListen: !auto && (input.listened ?? 0) < MIN_LISTENED,
       interrupted: !!audio?.interrupted,
       tooFast: wpm > ORAL_MAX_WPM,
+      unfinished: unread > 0,
       manualTiming: !input.timingAuto,
       pausesUnreliable,
     },

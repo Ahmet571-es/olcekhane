@@ -418,8 +418,9 @@ export function MicCheck(props: {
         ) : (
           <>
             <p>Mikrofon açık. Cihazı önüne, ağzına bir karış uzaklıkta koy.</p>
-            {/* Deneme geçince "sesini duyamıyoruz" uyarısı çıkmaz: öğrenci sessizce beklerken başarı mesajıyla çelişmesin. */}
-            <MicLevel recorder={recorder} quietAfterMs={sentence === 'ok' ? Infinity : 6000} />
+            {/* "Sesini duyamıyoruz" uyarısı yalnızca cümle kaydedilirken çıkar: öğrenci sessizliği ölçerken, yapay zekânın
+                cümleyi tanımasını beklerken ya da deneme geçtikten sonra sessiz durur; uyarı bunlarla çelişmesin. */}
+            <MicLevel recorder={recorder} quietAfterMs={sentence === 'rec' ? 2500 : Infinity} />
           </>
         )}
       </section>

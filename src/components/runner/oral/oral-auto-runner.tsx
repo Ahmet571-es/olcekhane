@@ -26,7 +26,8 @@ type Step = 'intro' | 'passage' | 'mic' | 'ready' | 'reading' | 'check' | 'conse
 const PARTS: { name: string; steps: Step[] }[] = [
   { name: 'Hazırlık', steps: ['intro', 'passage', 'mic'] },
   { name: 'Okuma', steps: ['ready', 'reading', 'check', 'consent', 'declined'] },
-  { name: 'Sorular', steps: ['questions', 'waiting', 'failed'] },
+  { name: 'Sorular', steps: ['questions'] },
+  { name: 'Rapor', steps: ['waiting', 'failed'] },
 ];
 
 const STEP_TITLES: Record<Step, string> = {
@@ -109,7 +110,7 @@ const ANALYSIS_HELP: Record<AnalysisErrorKind, string> = {
   unsupported: 'Bu cihaz incelemeyi yapamıyor. Bir bilgisayarda ya da başka bir cihazda yeniden deneyebilirsin.',
   unknown: 'Okumanı incelerken bir sorun çıktı. Yeniden dene; metni yeniden okuman gerekmez.',
   nomatch:
-    'Yapay zekâ okumanı yeterince anlayamadı. Sesin kısık ya da ortam gürültülü olmuş olabilir. Daha sessiz bir yerde, cihaza yakın ve net bir sesle yeniden okuyabilirsin.',
+    'Yapay zekâ okumanı ekrandaki metinle eşleştiremedi. Sesin kısık ya da ortam gürültülü olmuş olabilir. Daha sessiz bir yerde, cihaza yakın ve net bir sesle ekrandaki metni yeniden okuyabilirsin.',
 };
 
 type Job =
@@ -125,7 +126,7 @@ function Stepper({ step }: { step: Step }) {
   return (
     <div className="flex flex-col gap-2.5">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.8125rem] font-bold" aria-label="Bölümler">
-        {[...PARTS.map((p) => p.name), 'Rapor'].map((name, i, all) => (
+        {PARTS.map((p) => p.name).map((name, i, all) => (
           <li key={name} className="flex items-center gap-2">
             <span className={name === part.name ? 'rounded-full bg-ink px-2.5 py-0.5 text-paper' : 'text-ink-3'} aria-current={name === part.name ? 'step' : undefined}>
               {name}
@@ -227,6 +228,9 @@ export function OralAutoRunner(props: {
   const starting = useRef(false);
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Cevapların ait olduğu metin: okuma anlaşılamayıp aynı metin yeniden okununca sorular yeniden sorulmaz (öğrenci
+  // soruları görmüştür; ikinci cevaplar anlamayı olduğundan yüksek gösterirdi).
+  const answersFor = useRef<string | null>(null);
   const [qIndex, setQIndex] = useState(0);
   const [questionsDone, setQuestionsDone] = useState(false);
   const [job, setJob] = useState<Job>({ status: 'idle' });
@@ -402,8 +406,16 @@ export function OralAutoRunner(props: {
     else toMic(recorder ? 'lost' : null);
   }
 
+  function forgetAnswers() {
+    answersFor.current = null;
+    setAnswers({});
+    setQIndex(0);
+    setQuestionsDone(false);
+  }
+
   function otherPassage() {
     discardReading();
+    forgetAnswers();
     setPassageKey(null);
     setStep('passage');
   }
@@ -440,6 +452,13 @@ export function OralAutoRunner(props: {
         if (jobId.current !== id) return;
         wipeAudio(samples);
         if (vault.current.samples === samples) vault.current.samples = null;
+        // Yapay zekâ artık gerekmiyor: Worker kapanır, belleğindeki ses kopyaları ve model hemen boşalır.
+        c.dispose();
+        if (clientRef.current === c) {
+          clientRef.current = null;
+          setClient(null);
+          setModel({ status: 'idle' });
+        }
         setAudioGone(true);
         setJob({ status: 'done', result });
       },
@@ -459,19 +478,23 @@ export function OralAutoRunner(props: {
   }
 
   function analyse() {
+    if (!passage) return;
     // Kayıt bitti: mikrofon kapatılır (tarayıcıdaki kayıt simgesi söner).
     recorder?.close();
     setRecorder(null);
     setMicPassed(false);
     setMicRound((n) => n + 1);
-    setAnswers({});
-    setQIndex(0);
-    setQuestionsDone(false);
+    // Aynı metnin soruları zaten cevaplandıysa (okuma anlaşılamayıp yeniden okundu) cevaplar korunur.
+    const answered = answersFor.current === passage.key && passage.questions.every((q) => answers[q.key]);
+    if (!answered) {
+      forgetAnswers();
+      answersFor.current = passage.key;
+    }
     setSendError(null);
     setJobFails(0);
     sent.current = false;
     startJob();
-    setStep('questions');
+    setStep(answered ? 'waiting' : 'questions');
   }
 
   function decline() {
@@ -494,14 +517,15 @@ export function OralAutoRunner(props: {
 
   function restart() {
     setPassageKey(null);
-    setQuestionsDone(false);
+    forgetAnswers();
     setJob({ status: 'idle' });
     setStep('passage');
   }
 
   async function send(result: AutoAnalysisResult) {
     if (!passage || !reading) return;
-    const a = reading.analysis;
+    // Ses özeti okuma süresinin aralığından (ilk ve son tanınan kelime): eğri ve duraklamalar süreyle aynı ölçekte.
+    const a = result.audio;
     const data: OralFinish = {
       auto: true,
       passageKey: passage.key,
@@ -845,7 +869,9 @@ export function OralAutoRunner(props: {
     job.status === 'done'
       ? '✓ Okumanın incelemesi bitti. Ses kaydın silindi.'
       : job.status === 'error'
-        ? 'İncelemede bir sorun çıktı. Soruları bitirince yeniden deneyebilirsin.'
+        ? job.kind === 'nomatch'
+          ? 'Yapay zekâ okumanı yeterince anlayamadı. Soruları bitirince metni yeniden okuyabilirsin; cevapların kaybolmaz.'
+          : 'İncelemede bir sorun çıktı. Soruları bitirince ne yapabileceğini göstereceğiz.'
         : 'Sen soruları cevaplarken okumanı inceliyoruz.';
 
   if (step === 'questions' && passage) {
@@ -952,11 +978,19 @@ export function OralAutoRunner(props: {
               : ANALYSIS_HELP[job.kind]}
           </p>
           {audioGone && <p className="t-small text-ink-2">Ses kaydın silindi.</p>}
+          {nomatch && (
+            <p className="t-small text-ink-2">Aynı metni yeniden okursan soruları yeniden cevaplaman gerekmez: cevapların kaybolmadı.</p>
+          )}
           <div className="flex flex-wrap gap-3">
             {nomatch ? (
-              <button type="button" className="btn btn-primary btn-lg" onClick={() => toMic()}>
-                Yeniden oku
-              </button>
+              <>
+                <button type="button" className="btn btn-primary btn-lg" onClick={() => toMic()}>
+                  Yeniden oku
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={otherPassage}>
+                  Başka metin seç
+                </button>
+              </>
             ) : (
               <>
                 {!giveUpNow && (

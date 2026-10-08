@@ -18,6 +18,7 @@ import {
   ORAL_CRITERIA,
   OralInputError,
   UNCLEAR_HIGH,
+  UNCLEAR_MAX,
   accuracyLevel,
   comprehensionLevel,
   lowerLevel,
@@ -360,6 +361,7 @@ describe('Sesli okuma: rapor', () => {
                     expect(r.cautions.some((c) => /kesinti/.test(c)), tag).toBe(flag === 'interrupted');
                     expect(r.cautions.some((c) => /çok kısa/.test(c)), tag).toBe(flag === 'fast');
                     expect(r.cautions.some((c) => /düğmelere/.test(c)), tag).toBe(flag === 'manual');
+                  expect(r.cautions.some((c) => /son \d+ kelime/.test(c)), tag).toBe(false);
                     // Süre güvenilmezse ortalamayla karşılaştırma yapılmaz; karşılaştırma yalnızca 1–4. sınıfta ve kendi sınıfının metninde.
                     const rate = r.items.find((x) => x.title === 'Okuma hızı')!.text;
                     expect(/Erden/.test(rate), tag).toBe(flag !== 'fast' && grade <= 4 && grade === p.grade);
@@ -491,6 +493,17 @@ describe('Sesli okuma: otomatik analiz (cihazdaki yapay zekâ)', () => {
     }
   });
 
+  it(`kelimelerin %${UNCLEAR_MAX * 100}'undan çoğu net anlaşılamadıysa rapor verilmez`, () => {
+    for (const k of ['g1-kacan-top', key, 'g7-peri-bacalari']) {
+      const p = passage(k);
+      const words = oralWordCount(p.paragraphs);
+      const limit = Math.floor(words * UNCLEAR_MAX);
+      expect(scoreOral(def, p.grade, autoInput(k, { marks: unclear(0, limit) })).flags.unclearHigh, k).toBe(true);
+      expect(() => scoreOral(def, p.grade, autoInput(k, { marks: unclear(0, limit + 1) })), k).toThrow(OralInputError);
+      expect(() => evaluate(SLUG, body(p.grade, autoInput(k, { marks: unclear(0, limit + 1) }))), k).toThrow(AssessmentError);
+    }
+  });
+
   it('akıcılık derecelendirmesi yalnızca otomatik analizde boş olabilir; her sürüm yalnızca kendi işaretlerini kabul eder', () => {
     const adultNoProsody = input(key, { prosody: null });
     expect(() => scoreOral(def, 3, adultNoProsody)).toThrow(OralInputError);
@@ -516,6 +529,30 @@ describe('Sesli okuma: otomatik analiz (cihazdaki yapay zekâ)', () => {
     expect(answersBody.safeParse({ ...b, data: { ...b.data, auto: 'evet' } }).success).toBe(false);
     // Yetişkinin işaretlediği eski istekler aynen kabul edilir.
     expect(answersBody.safeParse(body(3, input(key))).success).toBe(true);
+  });
+
+  it('okuma metin bitmeden durduysa hız okunan kısımdan hesaplanır ve raporda söylenir', () => {
+    const p = passage(key);
+    const n = oralWordCount(p.paragraphs);
+    const tail = (k: number) => Object.fromEntries(Array.from({ length: k }, (_, j) => [String(n - 1 - j), { s: 'omit' as const }]));
+    for (const make of [autoInput, (k: string, o: Partial<OralInput>) => input(k, o)]) {
+      const r = scoreOral(def, 3, make(key, { readingMs: 60_000, marks: { ...tail(40), '0': { s: 'sub' } } }));
+      expect([r.unread, r.flags.unfinished, r.wpm, r.wcpm]).toEqual([40, true, n - 40, n - 41]);
+      expect(r.errors).toBe(41);
+      // İki kelimelik atlama metnin sonunda da olsa yalnızca atlamadır.
+      const two = scoreOral(def, 3, make(key, { readingMs: 60_000, marks: tail(2) }));
+      expect([two.unread, two.flags.unfinished, two.wpm]).toEqual([0, false, n]);
+      // Atlama dizisi sondan önce bitiyorsa (son kelime okunmuş) okuma bitmiştir.
+      const mid = scoreOral(def, 3, make(key, { readingMs: 60_000, marks: Object.fromEntries(Object.entries(tail(10)).filter(([i]) => Number(i) !== n - 1)) }));
+      expect(mid.flags.unfinished).toBe(false);
+      const reps = evaluate(SLUG, body(3, make(key, { readingMs: 60_000, marks: tail(40) })));
+      expect(reps.parent.cautions.some((c) => c.startsWith(`Metnin son 40 kelimesi okunmadı`))).toBe(true);
+      expect(reps.student.cautions.some((c) => c.startsWith(`Metnin son 40 kelimesini okumadın`))).toBe(true);
+      expect(reps.student.items[1].text.startsWith(`Metnin ${n - 40} kelimesini 1 dakika sürede okudun: dakikada ${n - 40} kelime`)).toBe(true);
+      expect(reps.student.keyFigures[2].note).toBe(`${n} kelimenin ${n - 40} tanesi okundu`);
+      expect(reps.student.items[0].text).toContain('Hataların 40 tanesi, metnin sonunda okumadığın kelimeler.');
+      expect(reps.parent.items[0].text).toContain('Hataların 40 tanesi metnin sonundaki okunmayan kelimelerdir');
+    }
   });
 
   /** Doğruluk düzeyi için hata sayısı ve anlama düzeyi için yanlış soru sayısı. */

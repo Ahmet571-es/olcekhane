@@ -143,14 +143,19 @@ export class AsrClient {
     return ok;
   }
 
-  /** Modeli indirir ve kurar (bir kez; sonraki çağrılar hemen döner). Çok iş parçacığıyla kurulamazsa bir kez tek iş parçacığıyla yeniden dener. */
+  /**
+   * Modeli indirir ve kurar (bir kez; sonraki çağrılar hemen döner). Çok iş parçacığıyla kurulamazsa (bellek yetmedi,
+   * ör. iOS'ta paylaşılan bellek ayrılamadı; ya da başka bir hata) bir kez tek iş parçacığıyla yeniden dener.
+   */
   async load(onProgress?: AsrProgressHandler): Promise<AsrLoadInfo> {
     if (this.loaded && this.worker) return this.loaded;
+    const single = this.maxThreads === 1; // bellek hatasında onMessage bunu 1 yapar: önceki değer gerekir
     try {
       return await this.loadOnce(onProgress);
     } catch (err) {
       const e = err as AsrError;
-      if (e instanceof AsrError && (e.kind === 'unknown' || e.kind === 'unsupported') && (e.threads ?? 1) > 1 && !this.maxThreads) {
+      const retry = e instanceof AsrError && (e.kind === 'unknown' || e.kind === 'unsupported' || e.kind === 'memory');
+      if (retry && (e.threads ?? 1) > 1 && !single) {
         this.terminate();
         this.maxThreads = 1;
         return this.loadOnce(onProgress);
@@ -167,8 +172,16 @@ export class AsrClient {
     return res.words;
   }
 
-  /** Kısa parçaları (ör. doğrulama ya da mikrofon denemesi) yazıya döker; her parça için zamanlar o parçanın başından. */
-  async transcribeClips(clips: Float32Array[], onProgress?: AsrProgressHandler, options?: AsrSendOptions): Promise<AsrWord[][]> {
+  /**
+   * Kısa parçaları (ör. doğrulama ya da mikrofon denemesi) yazıya döker; her parça için zamanlar o parçanın başından.
+   * Bir parçanın sonucu null ise Worker orada güvenilir bir sonuç çıkaramadı (döngü, uydurma metin, konuşma varken
+   * kelime yok); boş dizi, parçada konuşma sesi olmadığı anlamına gelir.
+   */
+  async transcribeClips(
+    clips: Float32Array[],
+    onProgress?: AsrProgressHandler,
+    options?: AsrSendOptions,
+  ): Promise<(AsrWord[] | null)[]> {
     if (!clips.length) return [];
     const list = clips.map((c) => prepare(c, options?.transfer));
     const res = await this.request(
@@ -252,8 +265,12 @@ export class AsrClient {
       const err = new AsrError(msg.kind, msg.message);
       err.threads = msg.threads;
       p.reject(err);
-      // Bellek yetmediyse Worker'ın belleği ancak kapatılınca boşalır; sonraki load() yenisini açar.
-      if (msg.kind === 'memory') this.terminate(new AsrError('memory', msg.message));
+      // Bellek yetmediyse Worker'ın belleği ancak kapatılınca boşalır; sonraki istek yenisini açar. Çok iş
+      // parçacığı daha çok bellek ister: yeni Worker tek iş parçacığıyla açılır.
+      if (msg.kind === 'memory') {
+        if ((msg.threads ?? 1) > 1) this.maxThreads = 1;
+        this.terminate(new AsrError('memory', msg.message));
+      }
       return;
     }
     p.resolve(msg);

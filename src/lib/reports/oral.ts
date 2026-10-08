@@ -87,6 +87,13 @@ function cautions(r: OralResult, audience: Audience): string[] {
         : 'Kaydının tamamı dinlenmeden işaretleme yapıldı; bu yüzden sonuçlar tam olmayabilir.',
     );
   }
+  if (r.flags.unfinished) {
+    out.push(
+      parent
+        ? `Metnin son ${r.unread} kelimesi okunmadı (okuma metin bitmeden durdu ya da kayıt erken bitirildi). Bu kelimeler atlama sayıldığı için doğru okuma oranı düşük çıktı; okuma hızı okunan ${r.wordCount - r.unread} kelimeden hesaplandı. Metnin tamamının okunduğu bir değerlendirme daha doğru bir sonuç verir.`
+        : `Metnin son ${r.unread} kelimesini okumadın; bu kelimeler atlama sayıldı. Okuma hızın, okuduğun kısımdan hesaplandı.`,
+    );
+  }
   if (r.flags.interrupted) {
     out.push(
       parent
@@ -126,6 +133,16 @@ function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
         : `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudun (doğru okuma %${accText(r.accuracyPct)}).`,
     pick(audience, ACCURACY_TEXT[r.accuracyLevel]),
   ];
+  // Okuma metin bitmeden durduysa okunmayan kelimeler de atlama sayılır: düşük oranın nedeni söylenir.
+  if (r.unread > 0) {
+    parts.splice(
+      1,
+      0,
+      parent
+        ? `Hataların ${r.unread} tanesi metnin sonundaki okunmayan kelimelerdir (okuma metin bitmeden durdu).`
+        : `Hataların ${r.unread} tanesi, metnin sonunda okumadığın kelimeler.`,
+    );
+  }
   if (c.self > 0) {
     parts.push(
       parent
@@ -152,12 +169,14 @@ function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
 
 function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audience: Audience): SimpleItem {
   const parent = audience === 'parent';
+  // Okuma metin bitmeden durduysa süre okunan kısmındır.
+  const what = r.unread > 0 ? `Metnin ${r.wordCount - r.unread} kelimesini` : 'Metni';
   const parts = [
     r.counts.unclear > 0
-      ? `Metni ${durationText(r.readingMs)} sürede ${parent ? 'okudu' : 'okudun'}: dakikada ${r.wpm} kelime; hata sayılan kelimeler çıkarılınca dakikada ${r.wcpm} kelime.`
+      ? `${what} ${durationText(r.readingMs)} sürede ${parent ? 'okudu' : 'okudun'}: dakikada ${r.wpm} kelime; hata sayılan kelimeler çıkarılınca dakikada ${r.wcpm} kelime.`
       : parent
-        ? `Metni ${durationText(r.readingMs)} sürede okudu: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesi doğru okundu.`
-        : `Metni ${durationText(r.readingMs)} sürede okudun: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesini doğru okudun.`,
+        ? `${what} ${durationText(r.readingMs)} sürede okudu: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesi doğru okundu.`
+        : `${what} ${durationText(r.readingMs)} sürede okudun: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesini doğru okudun.`,
   ];
   const ref = def.referenceRates.find((x) => x.grade === grade);
   if (r.flags.tooFast) {
@@ -387,7 +406,11 @@ export function buildOralReport(input: {
     keyFigures: [
       { label: 'Dakikada doğru okunan kelime', value: nf0.format(r.wcpm), note: `Okuma hızı: dakikada ${r.wpm} kelime` },
       { label: 'Doğru okuma', value: `%${accText(r.accuracyPct)}`, note: `${r.wordCount} kelimede ${r.errors} hata` },
-      { label: 'Okuma süresi', value: durationText(r.readingMs).replace(' dakika', ' dk').replace(' saniye', ' sn'), note: `${r.wordCount} kelimelik metin` },
+      {
+        label: 'Okuma süresi',
+        value: durationText(r.readingMs).replace(' dakika', ' dk').replace(' saniye', ' sn'),
+        note: r.unread > 0 ? `${r.wordCount} kelimenin ${r.wordCount - r.unread} tanesi okundu` : `${r.wordCount} kelimelik metin`,
+      },
       { label: 'Anlama', value: `${r.comprehension.correct} / ${r.comprehension.total}`, note: 'doğru cevap' },
       // Otomatik analizde akıcılık ve yeniden anlatmanın yerine okumanın ritmi ve net anlaşılamayan kelimeler.
       ...(auto

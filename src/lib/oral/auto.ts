@@ -45,7 +45,8 @@ export type AsrResponse =
   | { id: number; type: 'progress'; stage: 'download' | 'load' | 'transcribe'; ratio: number; loadedBytes?: number; totalBytes?: number }
   | { id: number; type: 'loaded'; backend: 'wasm' | 'webgpu'; threads: number }
   | { id: number; type: 'words'; words: AsrWord[] }
-  | { id: number; type: 'clipWords'; words: AsrWord[][] }
+  /** Her parça için kelimeler; null: o parçada güvenilir sonuç yok (döngü, uydurma metin, konuşma varken kelime yok). */
+  | { id: number; type: 'clipWords'; words: (AsrWord[] | null)[] }
   | { id: number; type: 'error'; kind: 'memory' | 'network' | 'unsupported' | 'unknown'; message: string };
 
 /** Mikrofon denemesinde öğrencinin söylediği cümle; yapay zekâ bunu anlaşılır duymalı. */

@@ -6,8 +6,10 @@ import {
   alignWords,
   buildAutoMarks,
   foldWord,
+  matchedShare,
   normalizeWord,
   planVerification,
+  type ClipWords,
   type ReadingTiming,
   type VerifyClip,
   type WordAlignment,
@@ -63,7 +65,7 @@ function timingOf(ws: AsrWord[], extra: Partial<ReadingTiming> = {}): ReadingTim
 }
 
 /** Doğrulama parçalarının, verilen kelimelerden (yoksa ilk yazıya dökmeden) kesilmiş hâli. */
-function clipWordsOf(clips: VerifyClip[], words: AsrWord[]): AsrWord[][] {
+function clipWordsOf(clips: VerifyClip[], words: AsrWord[]): ClipWords {
   return clips.map((c) =>
     words
       .filter((w) => (w.start + w.end) / 2 >= c.start && (w.start + w.end) / 2 <= c.end)
@@ -73,8 +75,8 @@ function clipWordsOf(clips: VerifyClip[], words: AsrWord[]): AsrWord[][] {
 
 interface RunOpts {
   timing?: ReadingTiming;
-  /** Doğrulama: true → parçalar ilk yazıya dökmenin aynısı; dizi → parçalar bu kelimelerden kesilir. */
-  verify?: true | AsrWord[];
+  /** Doğrulama: true → parçalar ilk yazıya dökmenin aynısı; dizi → parçalar bu kelimelerden kesilir; işlev → parçaların sonucu. */
+  verify?: true | AsrWord[] | ((clips: VerifyClip[]) => ClipWords);
   paragraphs?: string[];
   duration?: number;
 }
@@ -83,7 +85,8 @@ function run(words: AsrWord[], o: RunOpts = {}) {
   const al = alignWords(o.paragraphs ?? PASSAGE, words);
   const last = words.length ? words[words.length - 1].end : 0;
   const clips = planVerification(al, o.duration ?? last + 2);
-  const clipWords = o.verify ? clipWordsOf(clips, o.verify === true ? al.words : o.verify) : null;
+  const clipWords =
+    typeof o.verify === 'function' ? o.verify(clips) : o.verify ? clipWordsOf(clips, o.verify === true ? al.words : o.verify) : null;
   const res = buildAutoMarks(al, clips, clipWords, o.timing ?? timingOf(words));
   return { al, clips, ...res };
 }
@@ -162,6 +165,15 @@ describe('hizalama ve işaretler (yapay örnekler)', () => {
     expect(run(ws).marks).toEqual({ 8: { s: 'sub', said: 'üzerinde' } });
     expect(run(ws, { verify: true }).marks).toEqual({ 8: { s: 'sub', said: 'üzerinde' } });
     expect(run(ws, { verify: say(READ) }).marks).toEqual({ 8: { s: 'unclear' } });
+    // Kısa doğrulama parçası kelimenin hemen önünden kesilir: hizalama yanlış okumayı "atlama + baştaki fazla söz"
+    // diye ayırsa da parça aynı yanlış kelimeyi söylediyse yanlış okuma doğrulanmıştır.
+    const elma = say(READ.replace('üstünde', 'elma'));
+    const clip = [
+      { text: 'Elma', start: 0.6, end: 0.95 },
+      { text: 'iç', start: 1.0, end: 1.2 },
+    ];
+    expect(run(elma, { verify: (cs) => cs.map(() => clip) }).marks[8]).toMatchObject({ s: 'sub', said: 'elma' });
+    expect(run(elma, { verify: (cs) => cs.map(() => [{ ...clip[0], text: 'üstünde' }, clip[1]]) }).marks[8]).toEqual({ s: 'unclear' });
   });
 
   it('yanlış okumanın türü: harf yer değiştirmesi ve Türkçeye benzemeyen söyleyiş', () => {
@@ -180,6 +192,27 @@ describe('hizalama ve işaretler (yapay örnekler)', () => {
     const t = timingOf(gap);
     expect(run(gap, { timing: { ...t, pauses: [] } }).marks).toEqual({ 3: { s: 'unclear' } });
     expect(run(gap).marks).toEqual({ 3: { s: 'omit' } });
+  });
+
+  it('atlama: doğrulama boş, güvenilmez (null) ya da metinle örtüşmeyen sonuç verirse atlama doğrulanmış sayılmaz', () => {
+    // Arada konuşma sesi var: doğrulamasız unclear. Boş parça "kelime yine yok" sayılırsa omit olurdu.
+    const gap = say(READ.replace('hiç ', '|0.4 '));
+    const timing = { ...timingOf(gap), pauses: [] };
+    expect(run(gap, { timing }).marks).toEqual({ 3: { s: 'unclear' } });
+    expect(run(gap, { timing, verify: (cs) => cs.map(() => []) }).marks).toEqual({ 3: { s: 'unclear' } });
+    expect(run(gap, { timing, verify: (cs) => cs.map(() => null) }).marks).toEqual({ 3: { s: 'unclear' } });
+    // Metinle hiç örtüşmeyen sonuç (dayanak yok): doğrulama sonuç vermedi.
+    expect(run(gap, { timing, verify: (cs) => cs.map(() => [{ text: 'Altyazı', start: 0.1, end: 0.6 }]) }).marks).toEqual({
+      3: { s: 'unclear' },
+    });
+    expect(run(gap, { timing, verify: (cs) => cs.map(() => [{ text: 'zırp', start: 0.1, end: 0.6 }]) }).marks).toEqual({
+      3: { s: 'unclear' },
+    });
+    // Komşu kelimeler yine duyuldu ve aradaki kelime yine yok: atlama.
+    expect(run(gap, { timing, verify: true }).marks).toEqual({ 3: { s: 'omit' } });
+    // Doğrulamasız omit olan atlama boş sonuçla da omit kalır (doğrulama yokmuş gibi).
+    const ws = say(READ.replace('hiç ', ''));
+    expect(run(ws, { verify: (cs) => cs.map(() => null) }).marks).toEqual({ 3: { s: 'omit' } });
   });
 
   it('atlama: komşu kelime belirgin uzun sürerse (Whisper atladığı kelimeyi komşusuna katmış) unclear', () => {
@@ -300,6 +333,11 @@ describe('hizalama ve işaretler (yapay örnekler)', () => {
     const spoken = run(ws, { timing: { ...t, speechEndMs: (t.speechEndMs ?? 0) + 3000 } });
     expect(Object.values(spoken.marks).every((m) => m.s === 'unclear')).toBe(true);
     expect(spoken.counts).toMatchObject({ unclear: 11, omit: 0 });
+    // Doğrulama parçası son okunan kelimenin bitiminden başlar (o kelime yeniden dinlenmez); parça sessizse (sonuç
+    // boş) karar temkinli kurala kalır.
+    const last = ws[ws.length - 1];
+    expect(r.clips.at(-1)!.start).toBeCloseTo(last.end, 5);
+    expect(run(ws, { verify: (cs) => cs.map(() => []) }).marks).toEqual(r.marks);
   });
 
   it('hiçbir kelime tanınmadıysa her kelime unclear; okuma süresi ses çözümlemesinden', () => {
@@ -564,6 +602,27 @@ describe('Whisper small çıktıları: bilerek hatalı okunmuş kayıtlar', () =
   it('ses yoksa (yalnızca gürültü) hiçbir kelimeye hata yazılmaz', () => {
     const { r } = marksOf('c11_noise_only_adult');
     expect(r.counts).toMatchObject({ sub: 0, omit: 0, ins: 0, unclear: r.al.tokens.length });
+  });
+});
+
+describe('okunan metinle eşleşme payı (başka metin okunduysa rapor verilmez)', () => {
+  it('okunan metinde yüksek, başka bir metin okunduğunda düşük', () => {
+    const real = mis.cases.filter((c) => c.words.length).map((c) => matchedShare(alignWords([mis.passages[c.passage]], asWords(c.words))));
+    expect(Math.min(...real)).toBeGreaterThanOrEqual(0.7);
+    const fl = fleurs.items.map((it) => matchedShare(alignWords([it.ref], asWords(it.words))));
+    expect(Math.min(...fl)).toBeGreaterThanOrEqual(0.35);
+    // Başka metin: FLEURS sözleri sesli okuma metinleriyle; her metnin doğru okunuşu bir sonraki metinle.
+    const fw = fleurs.items.flatMap((it, k) => asWords(it.words).map((w) => ({ ...w, start: w.start + k * 30, end: w.end + k * 30 })));
+    const ps = sesliOkuma.passages;
+    const other = ps.flatMap((p, i) => {
+      const next = ps[(i + 1) % ps.length].paragraphs.join(' ').split(/\s+/);
+      return [
+        matchedShare(alignWords(p.paragraphs, fw.slice((i * 37) % 400, ((i * 37) % 400) + 120))),
+        matchedShare(alignWords(p.paragraphs, next.map((text, k) => ({ text, start: k * 0.4, end: k * 0.4 + 0.35 })))),
+      ];
+    });
+    expect(Math.max(...other)).toBeLessThanOrEqual(0.15);
+    expect(matchedShare(alignWords(PASSAGE, []))).toBe(0);
   });
 });
 

@@ -1,8 +1,17 @@
-import { alignWords, buildAutoMarks, foldWord, normalizeWord, planVerification, similarity } from '@/lib/oral/align';
-import { TARGET_RATE, type AudioAnalysis } from '@/lib/oral/audio';
+import {
+  alignWords,
+  buildAutoMarks,
+  foldWord,
+  matchedShare,
+  normalizeWord,
+  planVerification,
+  similarity,
+  type ClipWords,
+} from '@/lib/oral/align';
+import { TARGET_RATE, analyzeRecording, type AudioAnalysis } from '@/lib/oral/audio';
 import { MIC_CHECK_SENTENCE, type AsrWord } from '@/lib/oral/auto';
 import { oralWordCount } from '@/lib/oral/words';
-import type { OralMark } from '@/lib/scoring/oral';
+import { UNCLEAR_MAX, type OralMark } from '@/lib/scoring/oral';
 import type { AsrClient, AsrProgress } from './asr-client';
 
 /**
@@ -16,13 +25,21 @@ export type AnalysisErrorKind = 'memory' | 'network' | 'unsupported' | 'unknown'
 
 /** Yazıya dökülen kelimeler metnin bu oranından azsa (konuşma varken) tanıma başarısız sayılır: rapor yanıltmasın. */
 const MIN_WORD_SHARE = 0.15;
+/**
+ * Tanınan kelimelerin bu oranından azı metinle eşleştiyse öğrenci ekrandaki metni okumamış (başka bir şey okumuş ya da
+ * konuşmuş) ya da tanıma bozulmuştur: rapor verilmez (bkz. matchedShare; okunan metinlerde ≥ 0,75, başka metinde ≤ 0,11).
+ */
+export const MIN_MATCH_SHARE = 0.3;
 /** Tek ilerleme çubuğunda yazıya dökmenin payı; kalanı belirsiz yerlerin yeniden dinlenmesi. */
 const TRANSCRIBE_SHARE = 0.8;
 /** Mikrofon denemesi: cümlenin kelimelerinin en az bu oranı tanınmalı; kelime benzerliği (katlanmış biçimde) en az bu kadar. */
 export const MIC_PASS_RATIO = 0.6;
 const MIC_WORD_SIMILARITY = 0.8;
 
-/** Yapay zekâ okumayı metinle eşleştiremedi (ör. çok az kelime tanındı); yeniden incelemek sonucu değiştirmez. */
+/**
+ * Yapay zekâ okumayı metinle eşleştiremedi (çok az kelime tanındı, tanınanların çoğu metinde yok ya da kelimelerin
+ * %30'undan çoğu net anlaşılamadı); yeniden incelemek sonucu değiştirmez, metin yeniden okunmalı.
+ */
 export class AutoAnalysisError extends Error {
   constructor(readonly kind: 'nomatch') {
     super(kind);
@@ -51,6 +68,11 @@ export interface AutoAnalysisResult {
   timingAuto: true;
   /** Konuşma tanımanın net ayırt edemediği kelime sayısı (hata sayılmaz, raporda ayrıca gösterilir). */
   unclear: number;
+  /**
+   * Ses çözümlemesi, okuma süresinin aralığı (ilk ve son tanınan kelime) üzerinden: rapordaki ses yüksekliği eğrisi ve
+   * duraklamalar okuma süresiyle aynı ölçekte olsun (bkz. analyzeRecording).
+   */
+  audio: AudioAnalysis;
 }
 
 /**
@@ -69,7 +91,7 @@ export async function runAutoAnalysis({
   paragraphs: string[];
   /** Okuma kaydı, 16 kHz tek kanal. Değiştirilmez; istemci kendi kopyasını Worker'a devreder. */
   samples: Float32Array;
-  /** Aynı kaydın cihazdaki ses çözümlemesi (konuşmanın başı, sonu ve duraklamalar). */
+  /** Aynı kaydın cihazdaki ses çözümlemesi (konuşmanın başı, sonu ve duraklamalar; `samples` ile aynı hızda, 16 kHz). */
   analysis: AudioAnalysis;
   onProgress: (ratio: number, preparing: boolean) => void;
 }): Promise<AutoAnalysisResult> {
@@ -89,8 +111,9 @@ export async function runAutoAnalysis({
   if (analysis.speechMs > 0 && words.length < MIN_WORD_SHARE * oralWordCount(paragraphs)) throw new AutoAnalysisError('nomatch');
 
   const al = alignWords(paragraphs, words);
+  if (al.words.length > 0 && matchedShare(al) < MIN_MATCH_SHARE) throw new AutoAnalysisError('nomatch');
   const clips = planVerification(al, samples.length / TARGET_RATE);
-  let clipWords: AsrWord[][] | null = null;
+  let clipWords: ClipWords | null = null;
   if (clips.length > 0) {
     const parts = clips.map((c) =>
       samples.subarray(Math.max(0, Math.floor(c.start * TARGET_RATE)), Math.min(samples.length, Math.ceil(c.end * TARGET_RATE))),
@@ -110,13 +133,15 @@ export async function runAutoAnalysis({
     speechEndMs: analysis.speechEndMs,
     pauses: start === null ? [] : analysis.pauses.map(([s, e]) => [s + start, e + start] as [number, number]),
   });
+  // Kelimelerin çoğu net anlaşılamadıysa rapor yanıltır (net anlaşılamayan kelime doğru sayılır): yeniden okunmalı.
+  if (auto.unclear > UNCLEAR_MAX * oralWordCount(paragraphs)) throw new AutoAnalysisError('nomatch');
+  const readingMs = Math.max(1000, Math.round(auto.readingEndMs - auto.readingStartMs));
+  const audio =
+    analysis.quality === 'silent'
+      ? analysis
+      : analyzeRecording(samples, TARGET_RATE, { startMs: auto.readingStartMs, endMs: auto.readingStartMs + readingMs });
   report(1);
-  return {
-    marks: auto.marks,
-    readingMs: Math.max(1000, Math.round(auto.readingEndMs - auto.readingStartMs)),
-    timingAuto: true,
-    unclear: auto.unclear,
-  };
+  return { marks: auto.marks, readingMs, timingAuto: true, unclear: auto.unclear, audio };
 }
 
 /**
