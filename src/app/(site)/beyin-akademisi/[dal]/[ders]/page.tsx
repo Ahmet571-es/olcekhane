@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DersIcerigi, dersSuresi, hedefBilgisi, KATMAN_ADI } from '@/components/beyin/ders-icerigi';
+import { DuzeyCipi, DuzeyNoktalari } from '@/components/beyin/duzey';
 import { KendiniDene } from '@/components/beyin/kendini-dene';
 import { ModelNotu } from '@/components/beyin/model-notu';
-import { OkumaDuzeyiSaglayici, OkumaDuzeyiSecici } from '@/components/beyin/okuma-duzeyi';
+import { DuzeySeridi, OkumaDuzeyiSaglayici, OkumaDuzeyiSecici } from '@/components/beyin/okuma-duzeyi';
 import { JsonLd } from '@/components/seo/json-ld';
 import { PageGuide } from '@/components/site/page-guide';
-import { BEYIN_YOLU, SEVIYE_ADLARI, dalBul, dersBul, hazirDersler, komsuDersler } from '@/content/beyin';
+import { BEYIN_YOLU, dalBul, dersBul, hazirDersler, komsuDersler } from '@/content/beyin';
 import { SITE_NAME, siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
@@ -32,7 +33,12 @@ export async function generateMetadata(props: PageProps<'/beyin-akademisi/[dal]/
   });
 }
 
-const tarihBicimi = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Istanbul' });
+const tarihBicimi = new Intl.DateTimeFormat('tr-TR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'Europe/Istanbul',
+});
 const tarih = (iso: string) => tarihBicimi.format(new Date(`${iso}T12:00:00+03:00`));
 
 export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/[ders]'>) {
@@ -43,7 +49,11 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
   const { onceki, sonraki } = komsuDersler(d);
   const sonrakiProgram = dalBilgisi.program.find((p) => p.sira === d.sira + 1);
   const yol = `${BEYIN_YOLU}/${d.dal}/${d.slug}`;
-  const sureler = { temel: dersSuresi(d.bolumler, 'temel'), lisans: dersSuresi(d.bolumler, 'lisans'), ileri: dersSuresi(d.bolumler, 'ileri') };
+  const sureler = {
+    temel: dersSuresi(d.bolumler, 'temel'),
+    lisans: dersSuresi(d.bolumler, 'lisans'),
+    ileri: dersSuresi(d.bolumler, 'ileri'),
+  };
   const hedefler = d.hedefler.map(hedefBilgisi);
 
   return (
@@ -69,8 +79,16 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
           teaches: hedefler.map((h) => h.metin),
           datePublished: d.yayin,
           dateModified: d.guncelleme,
-          isPartOf: { '@type': 'Course', name: dalBilgisi.ad, url: siteUrl(`${BEYIN_YOLU}/${d.dal}`) },
-          publisher: { '@type': 'Organization', name: SITE_NAME, url: siteUrl('/') },
+          isPartOf: {
+            '@type': 'Course',
+            name: dalBilgisi.ad,
+            url: siteUrl(`${BEYIN_YOLU}/${d.dal}`),
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: SITE_NAME,
+            url: siteUrl('/'),
+          },
           citation: d.kaynaklar.map((k) => k.metin),
         }}
       />
@@ -87,11 +105,7 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
         <h1 className="t-h1 font-display font-bold">{d.baslik}</h1>
         <p className="t-lede measure">{d.giris}</p>
         <p className="t-meta flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="beyin-seviye">Başlangıç: {SEVIYE_ADLARI[d.seviye]}</span>
-          <span className="beyin-seviye">Üç katman: Temel · Lisans · Uzman</span>
-          <span>
-            Okuma: temel {sureler.temel} dk, tamamı {sureler.ileri} dk
-          </span>
+          <span className="beyin-seviye">Üç düzeyde okunur: Temel · Lisans · Uzman</span>
           <span>
             Güncelleme: <time dateTime={d.guncelleme}>{tarih(d.guncelleme)}</time>
           </span>
@@ -99,19 +113,28 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
         </p>
         <PageGuide
           next={[
-            ...(sonraki ? [{ href: `${BEYIN_YOLU}/${d.dal}/${sonraki.slug}`, label: 'Sonraki derse geç' }] : []),
+            ...(sonraki
+              ? [
+                  {
+                    href: `${BEYIN_YOLU}/${d.dal}/${sonraki.slug}`,
+                    label: 'Sonraki derse geç',
+                  },
+                ]
+              : []),
             { href: `${BEYIN_YOLU}/${d.dal}`, label: 'Bütün dersler' },
           ]}
         >
           <p>
-            Dersi baştan sona oku. Üç boyutlu sahneleri parmağınla ya da fareyle döndür, iki parmakla yakınlaştır; bir yapıya
-            dokununca adı ve görevi açılır. Sonunda kendini dene.
+            Önce aşağıdaki kartlardan sana uyan düzeyi seç (yeni başlıyorsan <b>Temel</b>), sonra dersi yukarıdan aşağı oku. Üç
+            boyutlu sahneleri parmağınla döndür; bir yapıya dokununca adı ve görevi açılır. En sonda kendini dene.
           </p>
         </PageGuide>
       </header>
 
       <OkumaDuzeyiSaglayici className="grid gap-12 pt-10 lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-14">
         <div className="flex min-w-0 flex-col gap-16">
+          <OkumaDuzeyiSecici sureler={sureler} />
+
           <section aria-labelledby="hedefler" className="beyin-kutu beyin-kutu-aklinda-kalsin measure">
             <h2 id="hedefler" className="mb-3 font-bold">
               Bu derste öğreneceklerin
@@ -120,42 +143,46 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
               {hedefler.map((h) => (
                 <li key={h.metin} className={h.duzey === 'temel' ? undefined : `katman-${h.duzey}`}>
                   {h.metin}
-                  {h.duzey !== 'temel' && <span className="beyin-seviye ml-2 align-middle">{KATMAN_ADI[h.duzey]}</span>}
+                  {h.duzey !== 'temel' && <DuzeyCipi d={h.duzey} className="ml-2 align-middle" />}
                 </li>
               ))}
             </ul>
           </section>
 
-          <OkumaDuzeyiSecici sureler={sureler} />
-
           <DersIcerigi bolumler={d.bolumler} />
 
           {d.ucep && d.ucep.length > 0 && (
-            <section aria-labelledby="ucep-baslik" className="beyin-kutu katman-lisans measure flex flex-col gap-3">
-              <p className="kicker">Tıp öğrencileri için</p>
-              <h2 id="ucep-baslik" className="font-bold">
-                Ulusal Çekirdek Eğitim Programı (UÇEP 2020) ile ilişkisi
-              </h2>
-              <p className="t-small text-ink-2">
-                Bu dersin temel bilgisi, UÇEP 2020’deki şu çekirdek hastalık ve klinik problemlerin anlaşılmasında kullanılır
-                (Sinir–Davranış sistemi; harfler mezun hekimden beklenen öğrenme düzeyidir):
+            <div className="katman-lisans katman-grup duzey-renk-lisans">
+              <p className="katman-grup-baslik">
+                <DuzeyNoktalari d="lisans" />
+                <b>{KATMAN_ADI.lisans}</b>
+                <span className="katman-grup-kitle">tıp öğrencileri için</span>
               </p>
-              <ul className="flex flex-col gap-1.5">
-                {d.ucep.map((u) => (
-                  <li key={u.no}>
-                    <b>
-                      {u.no}. {u.ad}
-                    </b>{' '}
-                    <span className="text-ink-2">({u.duzey})</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="t-meta">
-                A: acil durumu tanımlayıp ilk tedaviyi yapabilmeli · ÖnT: ön tanı koyup uzmana yönlendirebilmeli · T: tanı koyup
-                tedavi hakkında bilgi sahibi olmalı · TT: tanı koyup tedavi edebilmeli · İ: izlem yapabilmeli · K: korunma
-                önlemlerini uygulayabilmeli.
-              </p>
-            </section>
+              <section aria-labelledby="ucep-baslik" className="beyin-kutu measure flex flex-col gap-3">
+                <h2 id="ucep-baslik" className="font-bold">
+                  Ulusal Çekirdek Eğitim Programı (UÇEP 2020) ile ilişkisi
+                </h2>
+                <p className="t-small text-ink-2">
+                  Bu dersin temel bilgisi, UÇEP 2020’deki şu çekirdek hastalık ve klinik problemlerin anlaşılmasında kullanılır
+                  (Sinir–Davranış sistemi; harfler mezun hekimden beklenen öğrenme düzeyidir):
+                </p>
+                <ul className="flex flex-col gap-1.5">
+                  {d.ucep.map((u) => (
+                    <li key={u.no}>
+                      <b>
+                        {u.no}. {u.ad}
+                      </b>{' '}
+                      <span className="text-ink-2">({u.duzey})</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="t-meta">
+                  A: acil durumu tanımlayıp ilk tedaviyi yapabilmeli · ÖnT: ön tanı koyup uzmana yönlendirebilmeli · T: tanı koyup tedavi
+                  hakkında bilgi sahibi olmalı · TT: tanı koyup tedavi edebilmeli · İ: izlem yapabilmeli · K: korunma önlemlerini
+                  uygulayabilmeli.
+                </p>
+              </section>
+            </div>
           )}
 
           <section id="sozluk" aria-labelledby="sozluk-baslik" className="flex scroll-mt-24 flex-col gap-5">
@@ -197,7 +224,10 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
               <span />
             )}
             {sonraki ? (
-              <Link href={`${BEYIN_YOLU}/${d.dal}/${sonraki.slug}`} className="panel flex flex-col gap-1 p-5 text-right no-underline hover:border-ink">
+              <Link
+                href={`${BEYIN_YOLU}/${d.dal}/${sonraki.slug}`}
+                className="panel flex flex-col gap-1 p-5 text-right no-underline hover:border-ink"
+              >
                 <span className="t-meta">Sonraki ders →</span>
                 <span className="font-bold">{sonraki.baslik}</span>
               </Link>
@@ -256,6 +286,7 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
             </ol>
           </nav>
         </aside>
+        <DuzeySeridi />
       </OkumaDuzeyiSaglayici>
     </article>
   );

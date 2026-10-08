@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { dersSuresi } from '@/components/beyin/ders-icerigi';
 import { JsonLd } from '@/components/seo/json-ld';
 import { PageGuide } from '@/components/site/page-guide';
-import { BEYIN_YOLU, DALLAR, SEVIYE_ADLARI, dalBul } from '@/content/beyin';
+import { BEYIN_YOLU, DALLAR, dalBul } from '@/content/beyin';
 import { siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
 
@@ -75,7 +76,7 @@ export default async function DalPage(props: PageProps<'/beyin-akademisi/[dal]'>
           >
             <p>
               Dersler birbirinin üstüne kurulur; sırayla okuman önerilir. Bağlantılı olanlar hazırdır, ötekiler hazırlanıyor.
-              Her dersin yanında seviyesi yazar; her ders yine de sade bir temel anlatımla başlar.
+              Her ders üç düzeyde okunur: dersin başında sana uyan düzeyi seçersin; emin değilsen Temel ile başla.
             </p>
           </PageGuide>
         </div>
@@ -99,8 +100,9 @@ export default async function DalPage(props: PageProps<'/beyin-akademisi/[dal]'>
                   <span className="flex flex-col gap-1">
                     <span className="font-display text-lg font-bold leading-snug group-hover:underline">{p.baslik}</span>
                     <span className="t-small text-ink-2">{p.ozet}</span>
-                    <span className="mt-1">
-                      <span className="beyin-seviye">{SEVIYE_ADLARI[p.seviye]}</span>
+                    <span className="t-meta mt-1">
+                      Temel {dersSuresi(p.ders.bolumler, 'temel')} dk · Lisans {dersSuresi(p.ders.bolumler, 'lisans')} dk · Uzman{' '}
+                      {dersSuresi(p.ders.bolumler, 'ileri')} dk
                     </span>
                   </span>
                 </Link>
@@ -112,7 +114,7 @@ export default async function DalPage(props: PageProps<'/beyin-akademisi/[dal]'>
                   <span className="flex flex-col gap-1">
                     <span className="font-display text-lg font-bold leading-snug text-ink-2">{p.baslik}</span>
                     <span className="t-small text-ink-3">{p.ozet}</span>
-                    <span className="t-meta">{SEVIYE_ADLARI[p.seviye]} · Hazırlanıyor</span>
+                    <span className="t-meta">Hazırlanıyor</span>
                   </span>
                 </div>
               )}

@@ -128,6 +128,13 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   örnek ilk ders): üç okuma katmanı **Temel** (meraklı herkes, lise), **Lisans** (tıp, nörobilim, psikoloji
   öğrencisi), **Uzman** (asistan hekim, beyin cerrahı, araştırmacı). Her blok `duzey` taşır (kutularda varsayılan
   `KUTU_DUZEYI`); okuyucu düzey seçer, üstündeki katmanlar, hedefler ve sorular gizlenir (hiçbir yere kaydedilmez).
+  Kolay kullanım (site sahibinin 2026-10-08 isteği: ilk kez gelen neyin ne olduğunu hemen anlasın): ders Temel ile
+  açılır; en başta "Sen kimsin?" kartları (`components/beyin/duzey.tsx`, `okuma-duzeyi.tsx`); ardışık Lisans/Uzman
+  blokları bir grupta, kenarında düzeyin çizgisi (mavi Lisans, mor Uzman) ve başında adı; kutuların türü yalnızca üst
+  kenar rengiyle gösterilir ve düzey renklerini kullanmaz (test denetler); her konunun sonunda gizli kalan kısım haber
+  verilir; okurken ekranın altında düzey şeridi kalır; düzey değişince okunan yer kaymaz; düzey adreste durur
+  (`?duzey=lisans|uzman`, paylaşılabilir; depo ya da çerez yok). Arayüzde "katman" değil "düzey" denir ("katman"
+  anatomide ve modelde başka anlamda kullanılır).
   Temel anlatım tek başına tam olmalı ve en az bir sahne ile çizim içermeli. Kutular: Aklında kalsın, Biliyor muydun,
   Dikkat (temel); Derinleş, Klinik bağlantı, Sınav notu, Görüntülemede (lisans); Beyin cerrahisinde, Araştırma sınırı
   (uzman). Klinik vakalar (`vaka`: öykü, soru, çözüm; eğitim için kurgulanmıştır). Tablolar, birkaç üç boyutlu sahne ve

@@ -28,6 +28,10 @@
   --danger: #b3261e;
   --danger-bg: #fbe6e4;
   --shadow: 0 1px 2px rgb(19 32 59 / 0.06), 0 8px 24px -12px rgb(19 32 59 / 0.18);
+  /* Beyin Akademisi okuma düzeyleri: Temel, Lisans, Uzman (components/beyin/duzey) */
+  --katman-temel: #0b8068;
+  --katman-lisans: #2f5ce0;
+  --katman-uzman: #7a4ee6;
   color-scheme: light;
 }
 
@@ -53,6 +57,9 @@
     --danger: #ff8f86;
     --danger-bg: #331614;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    --katman-temel: #3ccab7;
+    --katman-lisans: #7597ff;
+    --katman-uzman: #a78bff;
     color-scheme: dark;
   }
 }
@@ -1207,6 +1214,37 @@
     transform: translateX(-50%);
     font-size: 0.875rem;
   }
+  /* Sahnede ilk dokunuşa kadar duran kullanım ipucu */
+  /* Sol üst köşede: etiketler üstten en az 58 piksel aşağıda durduğu için burada etiketle çakışmaz. */
+  .beyin-dokunma-ipucu {
+    position: absolute;
+    top: 1.1rem;
+    left: 0.85rem;
+    max-width: calc(100% - 11rem);
+    overflow: hidden;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background: rgb(5 10 22 / 0.6);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
+  }
+  .beyin-dokunma-ipucu .ipucu-dokunmatik {
+    display: none;
+  }
+  @media (pointer: coarse) {
+    .beyin-dokunma-ipucu .ipucu-dokunmatik {
+      display: inline;
+    }
+    .beyin-dokunma-ipucu .ipucu-fare {
+      display: none;
+    }
+  }
   .beyin-cip-dugme:hover {
     background: rgb(255 255 255 / 0.2);
   }
@@ -1400,37 +1438,37 @@
     background: var(--surface);
   }
   .beyin-kutu-aklinda-kalsin {
-    border-left: 5px solid var(--dim-con);
+    border-top: 4px solid var(--brass);
   }
   .beyin-kutu-biliyor-muydun {
-    border-left: 5px solid var(--dim-emo);
+    border-top: 4px solid var(--dim-ext);
   }
   .beyin-kutu-dikkat {
-    border-left: 5px solid var(--brass);
+    border-top: 4px solid var(--marker);
   }
   .beyin-kutu-derinles {
-    border-left: 5px solid var(--dim-int);
-    background: color-mix(in srgb, var(--dim-int) 6%, var(--surface));
+    border-top: 4px solid var(--ink-3);
+    background: color-mix(in srgb, var(--ink-3) 5%, var(--surface));
   }
   .beyin-kutu-klinik {
-    border-left: 5px solid var(--marker);
+    border-top: 4px solid var(--marker);
     background: color-mix(in srgb, var(--marker) 5%, var(--surface));
   }
   .beyin-kutu-sinav-notu {
-    border-left: 5px solid var(--brass);
+    border-top: 4px solid var(--brass);
     background: color-mix(in srgb, var(--brass) 7%, var(--surface));
   }
   .beyin-kutu-goruntuleme {
-    border-left: 5px solid var(--dim-con);
-    background: color-mix(in srgb, var(--dim-con) 6%, var(--surface));
+    border-top: 4px solid var(--ink-3);
+    background: color-mix(in srgb, var(--ink-3) 5%, var(--surface));
   }
   .beyin-kutu-cerrahi {
-    border-left: 5px solid var(--dim-agr);
+    border-top: 4px solid var(--dim-agr);
     background: color-mix(in srgb, var(--dim-agr) 6%, var(--surface));
   }
   .beyin-kutu-arastirma {
-    border-left: 5px solid var(--dim-emo);
-    background: color-mix(in srgb, var(--dim-emo) 6%, var(--surface));
+    border-top: 4px solid var(--dim-ext);
+    background: color-mix(in srgb, var(--dim-ext) 6%, var(--surface));
   }
   /* Klinik vaka kartı */
   .beyin-vaka {
@@ -1460,6 +1498,212 @@
   [data-duzey="temel"] .katman-ileri,
   [data-duzey="lisans"] .katman-ileri {
     display: none !important;
+  }
+  /* Okuma düzeyleri. Kenardaki renkli çizgi yalnızca düzeyi gösterir (mavi Lisans, mor Uzman); kutuların türünü üst
+     kenarlarındaki renk gösterir. */
+  .duzey-renk-temel {
+    --k: var(--katman-temel);
+  }
+  .duzey-renk-lisans {
+    --k: var(--katman-lisans);
+  }
+  .duzey-renk-ileri {
+    --k: var(--katman-uzman);
+  }
+  .duzey-noktalari {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 3px;
+    color: var(--k, var(--ink-3));
+  }
+  .duzey-noktalari i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    border: 1.5px solid currentColor;
+  }
+  .duzey-noktalari i.dolu {
+    background: currentColor;
+  }
+  .duzey-cip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--k) 45%, var(--rule));
+    background: color-mix(in srgb, var(--k) 8%, var(--surface));
+    color: var(--ink);
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .duzey-kart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 1rem 1.1rem 0.9rem;
+    border-radius: 1.25rem;
+    border: 1.5px solid var(--rule-strong);
+    border-top: 5px solid var(--k);
+    background: var(--surface);
+    color: var(--ink);
+    text-align: left;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  button.duzey-kart:hover {
+    border-color: var(--k);
+  }
+  .duzey-kart[aria-pressed="true"] {
+    border-color: var(--k);
+    background: color-mix(in srgb, var(--k) 9%, var(--surface));
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--k) 40%, transparent),
+      var(--shadow);
+  }
+  .duzey-kart-ad {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .duzey-kart-durum {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .duzey-ornek {
+    padding-left: 0.4rem;
+    border-left: 4px solid var(--k);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  /* Lisans ve Uzman blokları: ardışık olanlar bir grupta, kenarda düzeyin çizgisi, başta düzeyin adı. */
+  .katman-grup {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 1.75rem;
+    padding-left: 0.85rem;
+    border-left: 4px solid var(--k);
+  }
+  @media (min-width: 768px) {
+    .katman-grup {
+      padding-left: 1.4rem;
+    }
+  }
+  .katman-grup-baslik {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-self: flex-start;
+    gap: 0.2rem 0.5rem;
+    margin-bottom: -0.75rem;
+    padding: 0.3rem 0.85rem 0.3rem 0.65rem;
+    border-radius: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--k) 35%, var(--rule));
+    background: color-mix(in srgb, var(--k) 11%, var(--surface));
+    font-size: 0.875rem;
+  }
+  .katman-grup-kitle {
+    flex-basis: 100%;
+    color: var(--ink-2);
+  }
+  @media (min-width: 640px) {
+    .katman-grup-kitle {
+      flex-basis: auto;
+    }
+    .katman-grup-kitle::before {
+      content: "· ";
+    }
+  }
+  .katman-ipucu {
+    padding: 1rem 1.15rem;
+    border-radius: 1.25rem;
+    border: 1.5px dashed var(--rule-strong);
+    background: var(--surface-2);
+  }
+  .katman-ipucu .duzey-seridi-dugme {
+    border-color: color-mix(in srgb, var(--k) 55%, var(--rule));
+    background: var(--surface);
+  }
+  /* Okurken ekranın altında kalan düzey şeridi (baştaki kartlar görünürken gizli). */
+  .duzey-seridi {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+    left: 50%;
+    z-index: 35;
+    display: flex;
+    max-width: calc(100vw - 1rem);
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--rule-strong);
+    background: color-mix(in oklab, var(--paper) 84%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow: var(--shadow);
+    transform: translate3d(-50%, 0, 0);
+    transition:
+      transform 0.3s var(--ease-out),
+      opacity 0.2s ease;
+  }
+  .duzey-seridi[data-acik="0"] {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(-50%, 140%, 0);
+  }
+  .duzey-seridi-ad {
+    padding: 0 0.35rem 0 0.55rem;
+    color: var(--ink-2);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .duzey-seridi-dugme {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+    background: transparent;
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .duzey-seridi-dugme:hover {
+    background: color-mix(in srgb, var(--k) 10%, transparent);
+  }
+  .duzey-seridi-dugme[aria-pressed="true"] {
+    border-color: var(--k);
+    background: color-mix(in srgb, var(--k) 16%, var(--surface));
+  }
+  @media (max-width: 420px) {
+    .duzey-seridi-dugme {
+      gap: 0.3rem;
+      padding: 0.3rem 0.55rem;
+      font-size: 0.85rem;
+    }
+  }
+  @media (max-width: 359px) {
+    .duzey-seridi-ad {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .duzey-seridi,
+    .duzey-kart {
+      transition: none;
+    }
   }
   .beyin-seviye {
     display: inline-flex;

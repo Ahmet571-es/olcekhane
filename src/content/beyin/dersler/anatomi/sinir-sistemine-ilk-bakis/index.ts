@@ -22,9 +22,9 @@ export const sinirSistemineIlkBakis: Ders = {
   seviye: 'temel',
   baslik: 'Sinir sistemine ilk bakış ve anatominin dili',
   aciklama:
-    'Üç katmanlı giriş: sinir sisteminin bölümleri, gelişim, loblar, beyaz cevher yolları, yönler, MR ve BT, zarlar, BOS, kafa içi basıncı ve beyin dolaşımı.',
+    'Üç düzeyli giriş: sinir sisteminin bölümleri, gelişim, loblar, beyaz cevher yolları, yönler, MR ve BT, zarlar, BOS, kafa içi basıncı ve beyin dolaşımı.',
   giris:
-    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım: sinir sistemi hangi parçalardan oluşur, beyin bu sistemin neresindedir, onu ne korur ve besler, anatomistler bir yapının yerini nasıl tarif eder? Ders üç katmanlıdır: temel anlatımla başla; hazır olduğunda lisans ve uzman katmanlarında hasta vakalarına, görüntülemeye ve beyin cerrahisine geç.',
+    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım: sinir sistemi hangi parçalardan oluşur, beyin bu sistemin neresindedir, onu ne korur ve besler, anatomistler bir yapının yerini nasıl tarif eder? Ders üç düzeyde okunur: Temel ile başla; hazır olduğunda Lisans ve Uzman düzeylerinde hasta vakalarına, görüntülemeye ve beyin cerrahisine geç.',
   hedefler: [
     'Merkezî ve çevresel sinir sistemini; somatik ve otonom sistemi ayırt etmek',
     'Omurilik sinirlerinin sayısını, köklerini ve karma yapısını açıklamak',

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import nextConfig from '../next.config';
 import sitemap from '@/app/sitemap';
+import { adrestenDuzey, DUZEY_ADRESI, DUZEY_KARTI, DUZEY_SIRASI } from '@/components/beyin/duzey';
 import { BEYIN_YOLU, DALLAR, hazirDersler, SEVIYE_ADLARI, toplamDers } from '@/content/beyin';
 import { MODEL_SURUMU, MODEL_YOLU } from '@/content/beyin/model-surum';
 import { blokDuzeyi, KUTU_DUZEYI, type Sahne } from '@/content/beyin/types';
@@ -234,6 +235,23 @@ describe('dersler', () => {
     for (const d of DALLAR) {
       expect(adresler).toContain(`${BEYIN_YOLU}/${d.id}`);
       for (const p of d.program) expect(adresler.includes(`${BEYIN_YOLU}/${d.id}/${p.slug}`), p.slug).toBe(Boolean(p.ders));
+    }
+  });
+
+  it('okuma düzeyleri: üç düzey, adresteki adları geri çözülür, Temel adreste yazmaz', () => {
+    expect(DUZEY_SIRASI).toEqual(['temel', 'lisans', 'ileri']);
+    for (const d of DUZEY_SIRASI) {
+      expect(adrestenDuzey(DUZEY_ADRESI[d])).toBe(d);
+      expect(DUZEY_KARTI[d].kim.length, d).toBeGreaterThan(5);
+      expect(DUZEY_KARTI[d].icerik.length, d).toBeGreaterThan(20);
+    }
+    expect(adrestenDuzey('uzman')).toBe('ileri');
+    expect(adrestenDuzey('ileri')).toBeNull();
+    expect(adrestenDuzey(null)).toBeNull();
+    // Kutuların türünü gösteren üst kenar renkleri düzey renkleriyle (mavi, mor, yeşil) karışmamalı.
+    const css = readFileSync(path.join(process.cwd(), 'src/app/globals.css'), 'utf8');
+    for (const m of css.matchAll(/\.beyin-kutu-[a-z-]+ \{([^}]*)\}/g)) {
+      expect(m[1], m[0]).not.toMatch(/var\(--(dim-con|dim-int|dim-emo|katman-[a-z]+)\)/);
     }
   });
 });

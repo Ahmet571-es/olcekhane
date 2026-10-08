@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { SEVIYE_ADLARI, type Soru } from '@/content/beyin/types';
+import { DuzeyCipi } from './duzey';
 import { gorunurMu, useOkumaDuzeyi } from './okuma-duzeyi';
 
 /**
@@ -19,8 +20,10 @@ export function KendiniDene({ sorular }: { sorular: Soru[] }) {
   return (
     <div className="flex flex-col gap-5">
       <p className="t-small text-ink-2">
-        {gorunen.length} soru{gorunen.length < sorular.length ? ` (üst katmanlardaki ${sorular.length - gorunen.length} soru gizli; okuma düzeyini değiştirerek açabilirsin)` : ''}.
-        Her sorunun yanında katmanı yazar.
+        {SEVIYE_ADLARI[duzey]} düzeyinde {gorunen.length} soru.
+        {gorunen.length < sorular.length &&
+          ` Üst düzeylerde ${sorular.length - gorunen.length} soru daha var; dersin başındaki kartlardan ya da ekranın altındaki düğmeden düzeyi değiştirerek açabilirsin.`}{' '}
+        Her sorunun yanında düzeyi yazar.
       </p>
       <ol className="flex flex-col gap-5">
         {gorunen.map(({ s, i }, sira) => {
@@ -32,7 +35,7 @@ export function KendiniDene({ sorular }: { sorular: Soru[] }) {
                   <span className="text-ink-3">{sira + 1}. </span>
                   {s.soru}
                 </p>
-                <span className="beyin-seviye">{SEVIYE_ADLARI[s.seviye]}</span>
+                <DuzeyCipi d={s.seviye} />
               </div>
               <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label={`${sira + 1}. sorunun seçenekleri`}>
                 {s.secenekler.map((sec, j) => {

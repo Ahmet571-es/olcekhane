@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { Bakis, KesitDuzlemi, Sahne, SahneAraci, Seviye } from '@/content/beyin/types';
+import type { Bakis, KesitDuzlemi, Sahne, SahneAraci } from '@/content/beyin/types';
 import { BOLGE_ADLARI, KATMAN_ADLARI, LOB_ADLARI, type Katman, type Yapi, yapiAdi, yapiById } from '@/content/beyin/yapilar';
 import type { BeyinMotoru } from './motor';
 import { birakildi, gorunurlukBildir, mesgulBildir, sahiplen, sahipMi, yeniNo } from './paylasim';
@@ -80,7 +80,6 @@ export function BeyinSahnesi({
   araclar = ['bakis', 'liste'],
   buyuk = false,
   basliksiz = false,
-  duzey = 'temel',
 }: {
   sahne: Sahne;
   baslik?: string;
@@ -89,8 +88,6 @@ export function BeyinSahnesi({
   buyuk?: boolean;
   /** Başlık ve açıklama sayfada başka yerde yazıyorsa. */
   basliksiz?: boolean;
-  /** Sahnenin katmanı (temel dışındaysa üst satırda yazar). */
-  duzey?: Seviye;
 }) {
   const no = useMemo(() => yeniNo(), []);
   const kimlik = useId();
@@ -104,6 +101,8 @@ export function BeyinSahnesi({
   const [yalniz, setYalniz] = useState<string | null>(null);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [tamEkran, setTamEkran] = useState(false);
+  /** İlk dokunuştan sonra "nasıl döndürülür" ipucu kalkar. */
+  const [dokunuldu, setDokunuldu] = useState(false);
   const [bakis, setBakis] = useState<Bakis>(sahne.bakis ?? 'sol');
   const [katmanlar, setKatmanlar] = useState<Katman[]>(sahne.katmanlar);
   const [kesitAcik, setKesitAcik] = useState(Boolean(sahne.kesit));
@@ -299,13 +298,13 @@ export function BeyinSahnesi({
     >
       {baslik && !basliksiz && (
         <div className="flex flex-col gap-1 px-1 pb-3">
-          <p className="kicker">{duzey === 'temel' ? 'Üç boyutlu sahne' : `Üç boyutlu sahne · ${duzey === 'lisans' ? 'lisans' : 'uzman'} katmanı`}</p>
+          <p className="kicker">Üç boyutlu sahne</p>
           <h3 id={`${kimlik}-b`} className="font-display text-xl font-bold leading-tight">
             {baslik}
           </h3>
         </div>
       )}
-      <div className={`beyin-sahne ${buyuk ? 'beyin-sahne-buyuk' : ''}`}>
+      <div className={`beyin-sahne ${buyuk ? 'beyin-sahne-buyuk' : ''}`} onPointerDown={() => setDokunuldu(true)}>
         <div ref={kapRef} className="absolute inset-0" />
         {durum === 'pasif' && (
           <button type="button" className="beyin-pasif" onClick={() => void etkinlestir()} aria-label="Bu sahneyi canlandır">
@@ -365,6 +364,13 @@ export function BeyinSahnesi({
               <span className="sr-only">{tamEkran ? 'Tam ekrandan çık' : 'Tam ekran'}</span>
             </button>
           </div>
+        )}
+
+        {durum === 'etkin' && !dokunuldu && !seciliYapi && (
+          <p className="beyin-dokunma-ipucu" aria-hidden="true">
+            <span className="ipucu-dokunmatik">☝ Parmağınla döndür</span>
+            <span className="ipucu-fare">Sürükle: döndür · tekerlek: yakınlaştır</span>
+          </p>
         )}
 
         {seciliYapi && durum === 'etkin' && genis && bilgiKarti}

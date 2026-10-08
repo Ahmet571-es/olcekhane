@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { BeyinSahnesi } from '@/components/beyin/beyin-sahnesi';
+import { DuzeyTanitimi } from '@/components/beyin/duzey';
 import { ModelNotu } from '@/components/beyin/model-notu';
 import { JsonLd } from '@/components/seo/json-ld';
 import { PageGuide } from '@/components/site/page-guide';
-import { BEYIN_YOLU, DALLAR, SEVIYE_ADLARI, SEVIYE_KITLESI, hazirDersler, toplamDers } from '@/content/beyin';
+import { BEYIN_YOLU, DALLAR, hazirDersler, toplamDers } from '@/content/beyin';
 import { YAPILAR } from '@/content/beyin/yapilar';
 import { siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
@@ -20,7 +21,7 @@ const AYAKLAR = [
     baslik: 'Dersler',
     durum: 'Hazırlanıyor: her işlemede bir ders',
     metin:
-      '8 bölüm, 100 ders. Her ders üç katmanlı: Temel (meraklı herkes), Lisans (tıp, nörobilim ve psikoloji öğrencisi) ve Uzman (asistan hekim, beyin cerrahı, araştırmacı). Klinik vakalar, cerrahi ve görüntüleme notları derslerin içinde.',
+      '8 bölüm, 100 ders. Her ders üç düzeyde okunur: Temel (meraklı herkes), Lisans (tıp, nörobilim ve psikoloji öğrencisi) ve Uzman (asistan hekim, beyin cerrahı, araştırmacı). Klinik vakalar, cerrahi ve görüntüleme notları derslerin içinde.',
     href: `${BEYIN_YOLU}/anatomi/sinir-sistemine-ilk-bakis`,
     bag: 'İlk derse başla',
   },
@@ -119,7 +120,7 @@ export default function BeyinAkademisiPage() {
         <PageGuide
           steps={[
             'Yeni başlıyorsan 1. bölümün ilk dersinden başla.',
-            'Her derste okuma düzeyini seç: Temel, Lisans ya da Uzman. Önce temel anlatımı oku, hazırsan üst katmanlara geç.',
+            'Her dersin başında sana uyan düzeyi seç: Temel, Lisans ya da Uzman. Emin değilsen Temel ile başla; istediğin an değiştirebilirsin.',
             'Üç boyutlu sahneleri döndür, parçalara dokun, kesit al.',
             'Ders sonunda kendini dene ve sözlüğe göz at.',
           ]}
@@ -134,6 +135,19 @@ export default function BeyinAkademisiPage() {
             kaydedilmez.
           </p>
         </PageGuide>
+
+        <section aria-labelledby="uc-duzey" className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <h2 id="uc-duzey" className="t-h2">
+              Her ders üç düzeyde okunur
+            </h2>
+            <p className="measure text-ink-2">
+              Aynı ders, okuyana göre kısalır ya da derinleşir. Dersin başında kendine uyan kartı seçersin; üst düzeylerin
+              bölümleri derste mavi ve mor çizgiyle ayrılır.
+            </p>
+          </div>
+          <DuzeyTanitimi />
+        </section>
 
         <section aria-labelledby="dort-ayak" className="flex flex-col gap-6">
           <h2 id="dort-ayak" className="t-h2">
@@ -163,9 +177,8 @@ export default function BeyinAkademisiPage() {
               Sekiz bölüm, yüz ders
             </h2>
             <p className="measure text-ink-2">
-              Bölümler birbirinin üstüne kurulur. Her ders üç katmanlıdır: {SEVIYE_ADLARI.temel} ({SEVIYE_KITLESI.temel}),{' '}
-              {SEVIYE_ADLARI.lisans} ({SEVIYE_KITLESI.lisans}) ve {SEVIYE_ADLARI.ileri} ({SEVIYE_KITLESI.ileri}). Aşağıda her
-              dersin yanında başlangıç seviyesi yazar.
+              Bölümler birbirinin üstüne kurulur; yeni başlıyorsan 1. bölümün ilk dersinden başla. Her ders Temel düzeyde
+              herkesin anlayacağı sade bir anlatımla başlar.
             </p>
           </div>
           <ol className="grid gap-4 md:grid-cols-2">

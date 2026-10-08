@@ -235,6 +235,10 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   (uzman). Klinik vakalar (öykü, soru, "Çözümü göster"). Metin içinde yazar-yıl atıfları, sonda APA künyeleri. Ders
   klasörü: `bolum-*.ts`, `sozluk.ts`, `sorular.ts` (her düzeyde 12, doğru şıklar dağıtılmış), `kaynaklar.ts`. Yayından
   önce dersi yazmamış ayrı bir ajan bilgileri kaynaklarla karşılaştırır; bulduğu yanlışlar düzeltilir.
+- Kolay kullanım (2026-10-08, site sahibinin isteği): ders Temel ile açılır; en başta "Sen kimsin?" kartları; Lisans
+  ve Uzman bölümleri mavi ve mor kenar çizgisiyle ayrılır; her konunun sonunda "devamı var" kutusu; okurken altta
+  düzey şeridi; sahnelerde ilk dokunuşa kadar "Parmağınla döndür" ipucu. Uzmanlara gösterilecek doğrudan bağlantı:
+  https://olcekhane.com/beyin-akademisi/anatomi/sinir-sistemine-ilk-bakis?duzey=uzman
 - Hazır: Anatomi 1 "Sinir sistemine ilk bakış ve anatominin dili" (sürüm 3: 7 bölüm; 17 sahne, 9 hareketli çizim
   (yeni: otonom çıkış düzeyleri, kafa içi kanamalar, Monro–Kellie), 5 vaka, 36 soru, 130 terim, 157 kaynak; okuma
   süresi temel ~31, lisans ~79, tamamı ~98 dk; UÇEP: 127, 138, 154, 156, 164, 166, 224, 227, 291).
@@ -387,6 +391,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (11): Beyin Akademisi yeni gelen için kolaylaştırıldı (site sahibi düzeyleri karışık buldu): ders Temel
+  ile açılıyor, başta "Sen kimsin?" kartları, Lisans ve Uzman bölümleri renkli kenar çizgisi ve başlıkla ayrılıyor,
+  her konunun sonunda gizli kısım haber veriliyor, okurken altta düzey şeridi, düzey değişince sayfa kaymıyor, düzey
+  bağlantıyla paylaşılabiliyor; ana sayfada "Her ders üç düzeyde okunur" tanıtımı, bölüm sayfasında ders başına
+  okuma süreleri; sahnelerde kullanım ipucu.
 - 2026-10-08 (10): Öğrenme ve Başarı Özellikleri yayında: 56 madde, 6 özellik (çaba, işe koyulma, planlı çalışma,
   zorlukla başa çıkma, düşünmekten hoşlanma, öğrenmeye açıklık), öğrenci, veli ve yetişkin raporu, 3B grafikli yol
   haritası; telefonda ve masaüstünde çözüldü, rapor ve PDF açıldı. Ortak: düzey, gösterilen yuvarlanmış puandan.
@@ -429,7 +438,3 @@ En yeni üstte; en çok 10 madde tutulur.
   zaman çizelgesindeki duraklamalar okuma süresiyle aynı ölçekte; bellek hatasında tek iş parçacığıyla yeniden
   deneniyor; inceleme biter bitmez yapay zekâ kapatılıyor; mikrofon denemesinde yanlış "sesini duyamıyoruz" uyarısı ve
   adım göstergesi (Rapor) düzeldi.
-- 2026-10-08: Sesli okumada otomatik analiz önizlemede (`?onizleme=otomatik`): öğrencinin kendi okuduğu akış, sıkı
-  mikrofon denemesi, cihazda çalışan Türkçe konuşma tanıma (Whisper small, kendi sunucumuzdan), metinle karşılaştırma
-  ve doğrulama ("net anlaşılamadı" hata sayılmaz), otomatik rapor ve PDF, aydınlatma metni sürüm 7. Herkese açık sürüm
-  değişmedi.
