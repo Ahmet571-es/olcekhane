@@ -5,7 +5,7 @@ import nextConfig from '../next.config';
 import sitemap from '@/app/sitemap';
 import { BEYIN_YOLU, DALLAR, hazirDersler, SEVIYE_ADLARI, toplamDers } from '@/content/beyin';
 import { MODEL_SURUMU, MODEL_YOLU } from '@/content/beyin/model-surum';
-import { ILERI_KUTULAR, type KutuCesidi, type Sahne } from '@/content/beyin/types';
+import { blokDuzeyi, KUTU_DUZEYI, type Sahne } from '@/content/beyin/types';
 import { BOLGE_ADLARI, KATMAN_ADLARI, LOB_ADLARI, YAPILAR } from '@/content/beyin/yapilar';
 
 /**
@@ -150,22 +150,30 @@ describe('dersler', () => {
     }
   });
 
-  it('katmanlı ders: temel anlatım tek başına da tamdır; ileri katman kutuları geçerli', () => {
-    const CESITLER: KutuCesidi[] = ['aklinda-kalsin', 'biliyor-muydun', 'dikkat', ...ILERI_KUTULAR];
+  it('katmanlı ders: temel anlatım tek başına da tamdır; kutular, vakalar ve katmanlar geçerli', () => {
     for (const d of hazirDersler()) {
       for (const b of d.bolumler) {
         const bloklar = b.bloklar;
         // Her bölümde temel okuyucunun gördüğü en az bir metin bloğu bulunur.
-        expect(bloklar.some((k) => k.tur === 'metin'), `${d.slug}#${b.id}`).toBe(true);
+        expect(
+          bloklar.some((k) => k.tur === 'metin' && blokDuzeyi(k) === 'temel'),
+          `${d.slug}#${b.id}`,
+        ).toBe(true);
         for (const k of bloklar) {
           if (k.tur === 'kutu') {
-            expect(CESITLER, `${d.slug}#${b.id}`).toContain(k.cesit);
+            expect(k.cesit in KUTU_DUZEYI, `${d.slug}#${b.id}`).toBe(true);
             expect(k.md.length, `${d.slug}#${b.id}`).toBeGreaterThan(40);
           }
+          if (k.tur === 'vaka') {
+            expect(k.oyku.length, k.baslik).toBeGreaterThan(80);
+            expect(k.soru, k.baslik).toMatch(/\?$/);
+            expect(k.cozum.length, k.baslik).toBeGreaterThan(120);
+          }
+          if (k.tur === 'tablo') for (const r of k.satirlar) expect(r.length, k.baslik).toBe(k.sutunlar.length);
         }
       }
       // Temel düzeyde de en az bir sahne ve bir hareketli çizim kalır.
-      const temel = d.bolumler.flatMap((b) => b.bloklar).filter((k) => !((k.tur === 'sahne' || k.tur === 'animasyon') && k.ileri));
+      const temel = d.bolumler.flatMap((b) => b.bloklar).filter((k) => blokDuzeyi(k) === 'temel');
       expect(temel.some((k) => k.tur === 'sahne'), d.slug).toBe(true);
       expect(temel.some((k) => k.tur === 'animasyon'), d.slug).toBe(true);
     }
@@ -185,8 +193,16 @@ describe('dersler', () => {
         yerler.set(s.dogru, (yerler.get(s.dogru) ?? 0) + 1);
       }
       expect(Math.max(...yerler.values()), d.slug).toBeLessThanOrEqual(Math.ceil(d.sorular.length / 2));
-      // "Yalnızca temel anlatım" seçen de sınanabilsin.
+      // Her okuma düzeyinde sınanacak kadar soru olsun.
       expect(d.sorular.filter((s) => s.seviye === 'temel').length, d.slug).toBeGreaterThanOrEqual(5);
+      for (const sev of ['temel', 'lisans', 'ileri'] as const) {
+        const grup = d.sorular.filter((s) => s.seviye === sev);
+        if (grup.length < 4) continue;
+        const yer = new Map<number, number>();
+        for (const s of grup) yer.set(s.dogru, (yer.get(s.dogru) ?? 0) + 1);
+        // Her katmanın kendi içinde de doğru şıklar tek yere yığılmaz.
+        expect(Math.max(...yer.values()), `${d.slug} ${sev}`).toBeLessThanOrEqual(Math.ceil(grup.length / 2));
+      }
     }
   });
 

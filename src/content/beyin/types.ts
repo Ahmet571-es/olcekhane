@@ -65,30 +65,69 @@ export type AnimasyonAdi =
   | 'gri-beyaz-cevher'
   | 'otonom-terazi'
   | 'omurilik-sinirleri'
-  | 'mr-gosterimi';
+  | 'mr-gosterimi'
+  | 'otonom-cikis'
+  | 'kafa-ici-kanamalar'
+  | 'monro-kellie';
 
 /**
- * Kutu çeşitleri. İlk üçü herkes içindir; "derinles", "klinik" ve "sinav-notu" ileri katmandır: okuma düzeyi
- * "Temel" seçilince gizlenir.
+ * Kutu çeşitleri. "aklinda-kalsin", "biliyor-muydun" ve "dikkat" temel katmandadır. "derinles", "klinik",
+ * "sinav-notu" ve "goruntuleme" lisans katmanında (tıp, nörobilim ve psikoloji öğrencisi); "cerrahi" ve "arastirma"
+ * uzman katmanındadır (asistan hekim, cerrah, araştırmacı). Blokta `duzey` verilirse çeşidin varsayılanının yerine geçer.
  */
-export type KutuCesidi = 'aklinda-kalsin' | 'biliyor-muydun' | 'dikkat' | 'derinles' | 'klinik' | 'sinav-notu';
-export const ILERI_KUTULAR: KutuCesidi[] = ['derinles', 'klinik', 'sinav-notu'];
+export type KutuCesidi =
+  | 'aklinda-kalsin'
+  | 'biliyor-muydun'
+  | 'dikkat'
+  | 'derinles'
+  | 'klinik'
+  | 'sinav-notu'
+  | 'goruntuleme'
+  | 'cerrahi'
+  | 'arastirma';
 
+export const KUTU_DUZEYI: Record<KutuCesidi, Seviye> = {
+  'aklinda-kalsin': 'temel',
+  'biliyor-muydun': 'temel',
+  dikkat: 'temel',
+  derinles: 'lisans',
+  klinik: 'lisans',
+  'sinav-notu': 'lisans',
+  goruntuleme: 'lisans',
+  cerrahi: 'ileri',
+  arastirma: 'ileri',
+};
+
+/**
+ * Bloklar. `duzey` verilmezse blok temel katmandadır (kutularda çeşidin varsayılanı). Okuyucu "Temel" seçince
+ * yalnızca temel bloklar, "Lisans" seçince temel ve lisans blokları, "Uzman" seçince hepsi görünür.
+ */
 export type Blok =
-  | { tur: 'metin'; md: string }
+  | { tur: 'metin'; md: string; duzey?: Seviye }
   | {
       tur: 'sahne';
       baslik: string;
       aciklama: string;
       sahne: Sahne;
       araclar?: SahneAraci[];
-      /** İleri katmana ait sahne (okuma düzeyi "Temel" seçilince gizlenir). */
-      ileri?: boolean;
+      duzey?: Seviye;
     }
-  | { tur: 'animasyon'; ad: AnimasyonAdi; baslik: string; aciklama: string; ileri?: boolean }
-  | { tur: 'kutu'; cesit: KutuCesidi; baslik?: string; md: string }
-  | { tur: 'sayilar'; baslik: string; ogeler: { deger: string; birim?: string; aciklama: string }[]; not?: string }
-  | { tur: 'tablo'; baslik: string; sutunlar: string[]; satirlar: string[][]; not?: string };
+  | { tur: 'animasyon'; ad: AnimasyonAdi; baslik: string; aciklama: string; duzey?: Seviye }
+  | { tur: 'kutu'; cesit: KutuCesidi; baslik?: string; md: string; duzey?: Seviye }
+  | { tur: 'sayilar'; baslik: string; ogeler: { deger: string; birim?: string; aciklama: string }[]; not?: string; duzey?: Seviye }
+  | { tur: 'tablo'; baslik: string; sutunlar: string[]; satirlar: string[][]; not?: string; duzey?: Seviye }
+  /**
+   * Klinik vaka: öykü ve bulgular, okuyucuya soru, "Çözümü göster" ile açılan akıl yürütme. Vakalar eğitim için
+   * kurgulanmıştır; gerçek bir hastayı anlatmaz.
+   */
+  | { tur: 'vaka'; baslik: string; oyku: string; soru: string; cozum: string; duzey?: Seviye };
+
+/** Bloğun katmanı. */
+export function blokDuzeyi(b: Blok): Seviye {
+  if (b.duzey) return b.duzey;
+  if (b.tur === 'kutu') return KUTU_DUZEYI[b.cesit];
+  return 'temel';
+}
 
 export interface DersBolumu {
   /** Sayfa içi bağlantı kimliği. */
@@ -135,8 +174,8 @@ export interface Ders {
   aciklama: string;
   /** Başlığın altındaki giriş cümlesi. */
   giris: string;
-  /** "Bu derste öğreneceklerin" listesi. */
-  hedefler: string[];
+  /** "Bu derste öğreneceklerin" listesi; katmanı verilmeyen hedef temeldir. */
+  hedefler: (string | { metin: string; duzey: Seviye })[];
   bolumler: DersBolumu[];
   sozluk: Terim[];
   sorular: Soru[];
@@ -171,5 +210,12 @@ export interface Dal {
 export const SEVIYE_ADLARI: Record<Seviye, string> = {
   temel: 'Temel',
   lisans: 'Lisans',
-  ileri: 'İleri ve klinik',
+  ileri: 'Uzman',
+};
+
+/** Katmanların kime seslendiği (okuma düzeyi seçicisinde ve ders başında). */
+export const SEVIYE_KITLESI: Record<Seviye, string> = {
+  temel: 'meraklı herkes, lise ve sağlık lisesi',
+  lisans: 'tıp, nörobilim ve psikoloji öğrencisi',
+  ileri: 'asistan hekim, beyin cerrahı, araştırmacı ve akademisyen',
 };

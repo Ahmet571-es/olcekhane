@@ -2,7 +2,7 @@ import { sinirSistemineIlkBakis } from './dersler/anatomi/sinir-sistemine-ilk-ba
 import type { Dal, DalId, Ders, ProgramDersi, Seviye } from './types';
 
 export type { Dal, DalId, Ders, Seviye } from './types';
-export { SEVIYE_ADLARI } from './types';
+export { SEVIYE_ADLARI, SEVIYE_KITLESI } from './types';
 
 /**
  * Beyin Akademisi'nin programı: 8 bölüm, 100 ders (site sahibinin 2026-10-08 onayladığı harita). Her işlemede bir

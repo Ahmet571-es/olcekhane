@@ -121,17 +121,24 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 
 - Nörobilim bölümü (site sahibinin 2026-10-08 istekleri; durum ve sıradaki ders `DURUM.md`'de): sıfırdan uzman
   düzeyine en büyük Türkçe beyin kaynağı; 8 bölüm, 100 ders, **her işlemede bir ders**, tek ölçüt kalite. Program ve
-  hazır derslerin kaydı `src/content/beyin/index.ts`; ders dosyaları `src/content/beyin/dersler/<bölüm>/<ders>.ts`
-  (türler `types.ts`; örnek ilk ders). Hazır olmayan ders programda "Hazırlanıyor" görünür, sayfası ve site haritası
+  hazır derslerin kaydı `src/content/beyin/index.ts`; her ders bir klasördür: `src/content/beyin/dersler/<bölüm>/<ders>/`
+  (`index.ts`, `bolum-*.ts`, `sozluk.ts`, `sorular.ts`, `kaynaklar.ts`; türler `types.ts`; örnek ilk ders). Hazır olmayan ders programda "Hazırlanıyor" görünür, sayfası ve site haritası
   kaydı olmaz. Bölüm adresi değişirse eski adres `next.config.ts`'te kalıcı yönlendirilir.
-- Ders standardı: dersin seviyesi (`temel`/`lisans`/`ileri`); katmanlı anlatım: temel metin herkes için, "Derinleş",
-  "Klinik bağlantı", "Sınav notu" kutuları ve `ileri: true` sahne/çizimler tıp ve nörobilim düzeyi (okuma düzeyi
-  "Yalnızca temel anlatım" seçilince gizlenir; temel anlatım tek başına da tam olmalı). Birkaç üç boyutlu sahne ve
-  hareketli çizim, sözlük, en az 10 seviyeli soru (en az 5'i temel; doğru şıklar dağıtılır), kaynaklar, ilgiliyse
-  UÇEP 2020 Sinir–Davranış maddeleri ve öğrenme düzeyi (`ucep`). Bilgi açılıp okunmuş kaynaklardan alınır (rehber
-  yazılarındaki kural); sade Türkçe, tıp terimi ilk geçtiği yerde Latince adıyla; doğrulanamayan bilgi derse girmez.
+- Ders standardı (site sahibinin isteği: öğrenciden profesöre, tıp ve beyin cerrahisi dahil, çok kapsamlı ve derin;
+  örnek ilk ders): üç okuma katmanı **Temel** (meraklı herkes, lise), **Lisans** (tıp, nörobilim, psikoloji
+  öğrencisi), **Uzman** (asistan hekim, beyin cerrahı, araştırmacı). Her blok `duzey` taşır (kutularda varsayılan
+  `KUTU_DUZEYI`); okuyucu düzey seçer, üstündeki katmanlar, hedefler ve sorular gizlenir (hiçbir yere kaydedilmez).
+  Temel anlatım tek başına tam olmalı ve en az bir sahne ile çizim içermeli. Kutular: Aklında kalsın, Biliyor muydun,
+  Dikkat (temel); Derinleş, Klinik bağlantı, Sınav notu, Görüntülemede (lisans); Beyin cerrahisinde, Araştırma sınırı
+  (uzman). Klinik vakalar (`vaka`: öykü, soru, çözüm; eğitim için kurgulanmıştır). Tablolar, birkaç üç boyutlu sahne ve
+  hareketli çizim, sözlük, her düzeyde ~12 soru (doğru şıklar her düzeyde dağıtılır), metin içinde yazar-yıl atıfları
+  ve sonda APA künyeleri (bağlantılı), ilgiliyse UÇEP 2020 Sinir–Davranış maddeleri ve öğrenme düzeyi (`ucep`). Bilgi
+  açılıp okunmuş kaynaklardan alınır (rehber yazılarındaki kural); sade Türkçe, tıp terimi ilk geçtiği yerde Latince
+  adıyla; doğrulanamayan bilgi derse girmez. Yayından önce dersi yazmamış ayrı bir ajan her sayıyı ve iddiayı
+  kaynaklarla karşılaştırır; bulduğu yanlışlar düzeltilir. Kaynak erişimi: OpenStax, UTHealth, NINDS, MedlinePlus
+  tarayıcı kimliğiyle; makaleler Europe PMC REST'ten (StatPearls özetleri dahil); NCBI ve CDC açılmaz.
   Sayfada "Uzman incelemesi bekliyor" yazar; uzman adları ve içerik lisansı site sahibine sorulmadan değiştirilmez.
-  `tests/beyin.test.ts` program, katalog, model, sahneler ve dersleri denetler.
+  `tests/beyin.test.ts` program, katalog, model, sahneler, katmanlar, vakalar, tablolar ve soruları denetler.
 - Üç boyutlu model: BodyParts3D 4.0 (CC BY 4.0, atıf `components/beyin/model-notu.tsx`'te). Yapı kataloğu
   `src/content/beyin/yapilar.ts` (Türkçe ad, Latince ad, bölge, lob, paket, parça dosyaları, görev). Yeni yapı
   eklenince `node araclar/beyin-modeli.mjs` çalıştırılır: arşivi indirip SHA-256 ile doğrular, yalnızca katalogdaki

@@ -1420,8 +1420,45 @@
     border-left: 5px solid var(--brass);
     background: color-mix(in srgb, var(--brass) 7%, var(--surface));
   }
-  /* Yardımcı sınıflar (ör. flex) bu kuralı ezmesin diye !important. */
-  [data-duzey="temel"] .katman-ileri {
+  .beyin-kutu-goruntuleme {
+    border-left: 5px solid var(--dim-con);
+    background: color-mix(in srgb, var(--dim-con) 6%, var(--surface));
+  }
+  .beyin-kutu-cerrahi {
+    border-left: 5px solid var(--dim-agr);
+    background: color-mix(in srgb, var(--dim-agr) 6%, var(--surface));
+  }
+  .beyin-kutu-arastirma {
+    border-left: 5px solid var(--dim-emo);
+    background: color-mix(in srgb, var(--dim-emo) 6%, var(--surface));
+  }
+  /* Klinik vaka kartı */
+  .beyin-vaka {
+    border-radius: 1.25rem;
+    padding: 1.15rem 1.3rem;
+    border: 1px solid var(--rule-strong);
+    border-top: 5px solid var(--marker);
+    background: var(--surface);
+  }
+  .beyin-vaka-soru {
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--marker) 7%, var(--surface));
+  }
+  .beyin-vaka-cozum {
+    padding: 0.8rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px dashed var(--rule-strong);
+  }
+  /* Uzun tablolar telefonda yatay kaydırılır; sayfa taşmaz. */
+  .beyin-tablo {
+    overflow-x: auto;
+  }
+  /* Okuma düzeyi: Temel yalnızca temel katmanı, Lisans temel ve lisans katmanını gösterir.
+     Yardımcı sınıflar (ör. flex) bu kuralı ezmesin diye !important. */
+  [data-duzey="temel"] .katman-lisans,
+  [data-duzey="temel"] .katman-ileri,
+  [data-duzey="lisans"] .katman-ileri {
     display: none !important;
   }
   .beyin-seviye {

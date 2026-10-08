@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { DersIcerigi, dersSuresi } from '@/components/beyin/ders-icerigi';
+import { DersIcerigi, dersSuresi, hedefBilgisi, KATMAN_ADI } from '@/components/beyin/ders-icerigi';
 import { KendiniDene } from '@/components/beyin/kendini-dene';
 import { ModelNotu } from '@/components/beyin/model-notu';
 import { OkumaDuzeyiSaglayici, OkumaDuzeyiSecici } from '@/components/beyin/okuma-duzeyi';
@@ -43,7 +43,8 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
   const { onceki, sonraki } = komsuDersler(d);
   const sonrakiProgram = dalBilgisi.program.find((p) => p.sira === d.sira + 1);
   const yol = `${BEYIN_YOLU}/${d.dal}/${d.slug}`;
-  const dakika = dersSuresi(d.bolumler);
+  const sureler = { temel: dersSuresi(d.bolumler, 'temel'), lisans: dersSuresi(d.bolumler, 'lisans'), ileri: dersSuresi(d.bolumler, 'ileri') };
+  const hedefler = d.hedefler.map(hedefBilgisi);
 
   return (
     <article className="container-page py-10 md:py-14">
@@ -65,7 +66,7 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
           inLanguage: 'tr-TR',
           isAccessibleForFree: true,
           learningResourceType: 'Ders',
-          teaches: d.hedefler,
+          teaches: hedefler.map((h) => h.metin),
           datePublished: d.yayin,
           dateModified: d.guncelleme,
           isPartOf: { '@type': 'Course', name: dalBilgisi.ad, url: siteUrl(`${BEYIN_YOLU}/${d.dal}`) },
@@ -86,8 +87,11 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
         <h1 className="t-h1 font-display font-bold">{d.baslik}</h1>
         <p className="t-lede measure">{d.giris}</p>
         <p className="t-meta flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="beyin-seviye">Seviye: {SEVIYE_ADLARI[d.seviye]}</span>
-          <span>Yaklaşık {dakika} dakika</span>
+          <span className="beyin-seviye">Başlangıç: {SEVIYE_ADLARI[d.seviye]}</span>
+          <span className="beyin-seviye">Üç katman: Temel · Lisans · Uzman</span>
+          <span>
+            Okuma: temel {sureler.temel} dk, tamamı {sureler.ileri} dk
+          </span>
           <span>
             Güncelleme: <time dateTime={d.guncelleme}>{tarih(d.guncelleme)}</time>
           </span>
@@ -113,18 +117,21 @@ export default async function DersPage(props: PageProps<'/beyin-akademisi/[dal]/
               Bu derste öğreneceklerin
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5">
-              {d.hedefler.map((h) => (
-                <li key={h}>{h}</li>
+              {hedefler.map((h) => (
+                <li key={h.metin} className={h.duzey === 'temel' ? undefined : `katman-${h.duzey}`}>
+                  {h.metin}
+                  {h.duzey !== 'temel' && <span className="beyin-seviye ml-2 align-middle">{KATMAN_ADI[h.duzey]}</span>}
+                </li>
               ))}
             </ul>
           </section>
 
-          <OkumaDuzeyiSecici />
+          <OkumaDuzeyiSecici sureler={sureler} />
 
           <DersIcerigi bolumler={d.bolumler} />
 
           {d.ucep && d.ucep.length > 0 && (
-            <section aria-labelledby="ucep-baslik" className="beyin-kutu katman-ileri measure flex flex-col gap-3">
+            <section aria-labelledby="ucep-baslik" className="beyin-kutu katman-lisans measure flex flex-col gap-3">
               <p className="kicker">Tıp öğrencileri için</p>
               <h2 id="ucep-baslik" className="font-bold">
                 Ulusal Çekirdek Eğitim Programı (UÇEP 2020) ile ilişkisi

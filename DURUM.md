@@ -32,12 +32,9 @@ Basamaklar:
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** bitti (2026-10-07). Çözülebilen her testin raporunda (öğrenci, veli
    ve yetişkinlere açık testlerde yetişkin) yol haritası var; Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik hoca onaylı,
    ötekiler 2026-10-07 kararıyla onay beklenmeden yayında (hoca yayındaki siteyi inceleyecek).
-3. **Nörobilim bölümü:** iki dal: Beyin Anatomisi (~40 ders) ve Beyin Nasıl Çalışır? (~40 ders); iskelet ve 3B beyin
-   2–3 oturum, sonra her mesajda bir ders. Her derste sade anlatım, hareketli çizimler, 3B modelde ilgili yerin
-   parlaması, sözlük, kısa alıştırma (cevaplar saklanmaz) ve kaynaklar. 3B model adayı: Z-Anatomy modelleri
-   (CC BY-SA 4.0, kaynak gösterilerek; FBX). **Engel:** bu ortamdan openstax.org, ncbi.nlm.nih.gov, ninds.nih.gov
-   ve wikipedia.org açılmıyor; site sahibi ortamın ağ erişimini açmadan dersler yazılmaz (bilgi yalnızca açılıp
-   okunmuş kaynaklardan alınır).
+3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 100 ders, üç boyutlu model (BodyParts3D),
+   her işlemede bir ders; ayrıntı ve sıradaki ders aşağıdaki "Beyin Akademisi" bölümünde. Kaynak erişimi: OpenStax,
+   UTHealth (Neuroscience Online), NINDS, MedlinePlus ve Europe PMC açılıyor; NCBI/PubMed ve CDC açılmıyor.
 4. **Okuma bölümü (site sahibinin 2026-10-07 isteği):** kişilik ve zekâ testlerinden ayrı "Okuma" sekmesi
    (`/okuma`). Kararlar: ses yalnızca cihazda kaydedilir, hataları öğretmen ya da veli dinleyerek işaretler (yapay
    zekâyla ses tanıma ve dış hizmet yok); 1–8. sınıflar ("İlkokul 1–2" grubu açıldı). İlk değerlendirme yayında:
@@ -218,15 +215,23 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
 - Program: 8 bölüm, 100 ders (`src/content/beyin/index.ts`): Anatomi 30, Hücreden Sinyale 16, Sistem Nörobilimi 15,
   Zihin ve Davranış 12, Yaşam Boyu Beyin 5, Klinik Nörobilim 12, İnceleme Yöntemleri 6, Tarih, Efsaneler ve Etkili
   Öğrenme 4. Her dersin seviyesi var: Temel, Lisans, İleri ve klinik.
-- Ders standardı: katmanlı anlatım (temel metin + "Derinleş", "Klinik bağlantı", "Sınav notu" kutuları; ileri
-  sahne ve çizimler `ileri: true`); okuyucu "Yalnızca temel anlatım" seçince ileri katman ve ileri sorular gizlenir
-  (hiçbir yere kaydedilmez). Her derste birkaç üç boyutlu sahne ve hareketli çizim, sözlük, en az 10 seviyeli soru
-  (en az 5'i temel), açılıp okunmuş kaynaklar, ilgiliyse UÇEP 2020 maddeleri (öğrenme düzeyiyle).
-- Hazır: Anatomi 1 "Sinir sistemine ilk bakış ve anatominin dili" (sürüm 2: 7 bölüm, 11 sahne, 6 hareketli çizim, 44
-  terim, 16 soru, 17 kaynak; UÇEP: İnme, Multipl skleroz).
-- **Sıradaki ders:** Anatomi 2 "Kafatası: beynin kemik kalesi" (kafatası paketi modelde hazır: 8 kemik). Sonra program
-  sırasıyla Anatomi 3, 4, ...; site sahibi başka bir ders isterse o yapılır.
-- Doğrulanamayan, derse girmeyen bilgiler: "Sylvius yarığı" adı (yalnızca Vikipedi), hemiparezi terimleri.
+- Ders standardı (site sahibinin 2026-10-08 üçüncü isteği: "öğrenciden profesöre, tıp ve beyin cerrahisi dahil, çok
+  kapsamlı ve çok derin"; Ders 1 bu ölçüyle yeniden yazıldı, **site sahibi beğenirse bütün dersler böyle yapılacak**):
+  üç katman: **Temel** (meraklı herkes, lise), **Lisans** (tıp, nörobilim, psikoloji öğrencisi), **Uzman** (asistan
+  hekim, beyin cerrahı, araştırmacı). Her blok `duzey` taşır; okuyucu düzey seçer, üstündeki katmanlar ve sorular
+  gizlenir (hiçbir yere kaydedilmez; temel anlatım tek başına tam). Kutular: Aklında kalsın, Biliyor muydun, Dikkat
+  (temel); Derinleş, Klinik bağlantı, Sınav notu, Görüntülemede (lisans); Beyin cerrahisinde, Araştırma sınırı
+  (uzman). Klinik vakalar (öykü, soru, "Çözümü göster"). Metin içinde yazar-yıl atıfları, sonda APA künyeleri. Ders
+  klasörü: `bolum-*.ts`, `sozluk.ts`, `sorular.ts` (her düzeyde 12, doğru şıklar dağıtılmış), `kaynaklar.ts`. Yayından
+  önce dersi yazmamış ayrı bir ajan bilgileri kaynaklarla karşılaştırır; bulduğu yanlışlar düzeltilir.
+- Hazır: Anatomi 1 "Sinir sistemine ilk bakış ve anatominin dili" (sürüm 3: 7 bölüm; 17 sahne, 9 hareketli çizim
+  (yeni: otonom çıkış düzeyleri, kafa içi kanamalar, Monro–Kellie), 5 vaka, 36 soru, 130 terim, 157 kaynak; okuma
+  süresi temel ~31, lisans ~79, tamamı ~98 dk; UÇEP: 127, 138, 154, 156, 164, 166, 224, 227, 291).
+- **Sıradaki ders:** önce site sahibinin Ders 1'in yeni ölçüsü hakkındaki görüşü beklenir. Beğenirse Anatomi 2
+  "Kafatası: beynin kemik kalesi" (kafatası paketi modelde hazır: 8 kemik) aynı ölçüyle; sonra program sırasıyla.
+  Site sahibi başka bir ders isterse o yapılır.
+- Doğrulanamayan, derse girmeyen bilgiler: hemiparezi terimleri; kabuk kalınlığının 1–4,5 mm aralığı; lakünar
+  arter çapları; nimodipinin etkisi (bağımsız denetimde çıkarıldı).
 - Hiçbir şey saklanmaz: ilerleme işaretlenmez, "Kendini dene" cevapları yalnızca sayfanın belleğinde durur.
 
 ## Testler
@@ -370,6 +375,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (9): Beyin Akademisi Ders 1 öğrenciden profesöre derinleştirildi (site sahibinin isteği; beğenirse bütün
+  dersler böyle): üç okuma katmanı (Temel, Lisans, Uzman), görüntüleme, beyin cerrahisi ve araştırma kutuları, 5 klinik
+  vaka, dermatom, refleks, üst-alt motor nöron, otonom sinaps, kanama ve kesecik tabloları, 6 yeni sahne (beş
+  kesecik, birincil alanlar, iç kapsül, AC–PC, karıncıklar, Willis halkası), 3 yeni hareketli çizim, 36 soru, 157
+  kaynak. Bilgiler ayrı bir ajanla kaynaklara karşı denetlendi, bulunan yanlışlar düzeltildi.
 - 2026-10-08 (8): Sayı Dizileri yayında: 24 özgün sayı dizisi, 5 düzey, cevap yazılarak; öğrenci, veli ve yetişkin
   raporu, kural türlerine göre 3B grafikli yol haritası; telefonda ve masaüstünde baştan sona çözüldü, rapor ve PDF
   açıldı. Aynı değişiklikte Şekil Akıl Yürütme raporunda iki küçük metin tutarlılığı düzeltmesi.
@@ -422,11 +432,3 @@ En yeni üstte; en çok 10 madde tutulur.
   ve Uyumluluk metinleri HEXACO'ya göre yeniden yazıldı (önceden Beş Faktör'ün onaylı metinleri kullanılıyordu; hoca
   buluşmasında gösterilmeli). Sayfalar: ortaokul önerileri 5. sınıfa da uygun, İlkokul 1–2 sayfası tek değerlendirmeye
   ve yetişkine göre, grup açıklamaları gruptaki testlere göre, bölüm düğmeleri sınıf seçimine göre, "Grubuna göre".
-- 2026-10-07: Okuma sekmesi (`/okuma`) ve Sesli Okuma Değerlendirmesi yayında (1–8. sınıf, 24 özgün metin; "İlkokul
-  1–2" grubu açıldı). Adım adım: metin seçimi, mikrofon denemesi (dinlemeden geçilmez), sesli okuma kaydı (yalnızca
-  cihazda; sunucuya gitmez), kayıt denetimi (ses yok, kısık, gürültü, kesinti), yeniden anlatma, sorular; yetişkin
-  kaydı dinleyip kelime kelime işaretler (yanlış, atlama, yardım, ekleme; kendi düzeltme, tekrar, hece, duraksama),
-  anlatmayı ve akıcılığı değerlendirir. Rapor (ekran ve PDF): metnin düzeyi, dakikada doğru kelime, işaretli metin,
-  duraklama çizelgesi, akıcılık, anlama; gelişim yol haritası (okumanın yönlerine göre kartlar, alışkanlıklar, veliye
-  öneriler, dört hafta; `ORAL_ROADMAPS`). Aydınlatma metni (sürüm 6) ses kaydını anlatıyor; mikrofon izni yalnızca
-  sitenin kendisine açık.

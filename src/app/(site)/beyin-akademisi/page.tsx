@@ -3,7 +3,7 @@ import { BeyinSahnesi } from '@/components/beyin/beyin-sahnesi';
 import { ModelNotu } from '@/components/beyin/model-notu';
 import { JsonLd } from '@/components/seo/json-ld';
 import { PageGuide } from '@/components/site/page-guide';
-import { BEYIN_YOLU, DALLAR, SEVIYE_ADLARI, hazirDersler, toplamDers } from '@/content/beyin';
+import { BEYIN_YOLU, DALLAR, SEVIYE_ADLARI, SEVIYE_KITLESI, hazirDersler, toplamDers } from '@/content/beyin';
 import { YAPILAR } from '@/content/beyin/yapilar';
 import { siteUrl } from '@/lib/config';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
@@ -20,7 +20,7 @@ const AYAKLAR = [
     baslik: 'Dersler',
     durum: 'Hazırlanıyor: her işlemede bir ders',
     metin:
-      '8 bölüm, 100 ders. Her ders katmanlı: herkes için sade anlatım, tıp ve nörobilim düzeyi için "Derinleş", "Klinik bağlantı" ve "Sınav notu" kutuları.',
+      '8 bölüm, 100 ders. Her ders üç katmanlı: Temel (meraklı herkes), Lisans (tıp, nörobilim ve psikoloji öğrencisi) ve Uzman (asistan hekim, beyin cerrahı, araştırmacı). Klinik vakalar, cerrahi ve görüntüleme notları derslerin içinde.',
     href: `${BEYIN_YOLU}/anatomi/sinir-sistemine-ilk-bakis`,
     bag: 'İlk derse başla',
   },
@@ -119,7 +119,7 @@ export default function BeyinAkademisiPage() {
         <PageGuide
           steps={[
             'Yeni başlıyorsan 1. bölümün ilk dersinden başla.',
-            'Her derste önce temel anlatımı oku; hazırsan "Derinleş" ve "Klinik bağlantı" kutularına geç.',
+            'Her derste okuma düzeyini seç: Temel, Lisans ya da Uzman. Önce temel anlatımı oku, hazırsan üst katmanlara geç.',
             'Üç boyutlu sahneleri döndür, parçalara dokun, kesit al.',
             'Ders sonunda kendini dene ve sözlüğe göz at.',
           ]}
@@ -163,9 +163,9 @@ export default function BeyinAkademisiPage() {
               Sekiz bölüm, yüz ders
             </h2>
             <p className="measure text-ink-2">
-              Bölümler birbirinin üstüne kurulur. Seviyeler: {SEVIYE_ADLARI.temel} (meraklı herkes, lise ve sağlık lisesi),{' '}
-              {SEVIYE_ADLARI.lisans} (tıp, psikoloji ve nörobilimin ilk yılları), {SEVIYE_ADLARI.ileri} (ayrıntılı nöroanatomi
-              ve hastalıklarla bağlantılar).
+              Bölümler birbirinin üstüne kurulur. Her ders üç katmanlıdır: {SEVIYE_ADLARI.temel} ({SEVIYE_KITLESI.temel}),{' '}
+              {SEVIYE_ADLARI.lisans} ({SEVIYE_KITLESI.lisans}) ve {SEVIYE_ADLARI.ileri} ({SEVIYE_KITLESI.ileri}). Aşağıda her
+              dersin yanında başlangıç seviyesi yazar.
             </p>
           </div>
           <ol className="grid gap-4 md:grid-cols-2">

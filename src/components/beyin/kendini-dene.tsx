@@ -2,16 +2,16 @@
 
 import { useState } from 'react';
 import { SEVIYE_ADLARI, type Soru } from '@/content/beyin/types';
-import { useOkumaDuzeyi } from './okuma-duzeyi';
+import { gorunurMu, useOkumaDuzeyi } from './okuma-duzeyi';
 
 /**
- * Dersin sonundaki sorular. Okuma düzeyi "Temel" seçiliyse yalnızca temel sorular görünür. Cevaplar yalnızca bu
+ * Dersin sonundaki sorular, okuma düzeyine göre süzülür (Temel: temel; Lisans: temel ve lisans; Uzman: hepsi). Cevaplar yalnızca bu
  * sayfanın belleğinde durur; hiçbir yere gönderilmez ya da kaydedilmez. Her sorunun açıklaması cevaplanınca açılır.
  */
 export function KendiniDene({ sorular }: { sorular: Soru[] }) {
   const { duzey } = useOkumaDuzeyi();
   const [cevaplar, setCevaplar] = useState<(number | null)[]>(() => sorular.map(() => null));
-  const gorunen = sorular.map((s, i) => ({ s, i })).filter(({ s }) => duzey === 'tam' || s.seviye === 'temel');
+  const gorunen = sorular.map((s, i) => ({ s, i })).filter(({ s }) => gorunurMu(duzey, s.seviye));
   const cevaplanan = gorunen.filter(({ i }) => cevaplar[i] !== null).length;
   const dogru = gorunen.filter(({ s, i }) => cevaplar[i] === s.dogru).length;
   const bitti = cevaplanan === gorunen.length;
@@ -19,8 +19,8 @@ export function KendiniDene({ sorular }: { sorular: Soru[] }) {
   return (
     <div className="flex flex-col gap-5">
       <p className="t-small text-ink-2">
-        {gorunen.length} soru{duzey === 'temel' && gorunen.length < sorular.length ? ` (ileri düzeydeki ${sorular.length - gorunen.length} soru gizli)` : ''}. Her
-        sorunun yanında seviyesi yazar.
+        {gorunen.length} soru{gorunen.length < sorular.length ? ` (üst katmanlardaki ${sorular.length - gorunen.length} soru gizli; okuma düzeyini değiştirerek açabilirsin)` : ''}.
+        Her sorunun yanında katmanı yazar.
       </p>
       <ol className="flex flex-col gap-5">
         {gorunen.map(({ s, i }, sira) => {

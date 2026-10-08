@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { Bakis, KesitDuzlemi, Sahne, SahneAraci } from '@/content/beyin/types';
+import type { Bakis, KesitDuzlemi, Sahne, SahneAraci, Seviye } from '@/content/beyin/types';
 import { BOLGE_ADLARI, KATMAN_ADLARI, LOB_ADLARI, type Katman, type Yapi, yapiAdi, yapiById } from '@/content/beyin/yapilar';
 import type { BeyinMotoru } from './motor';
 import { birakildi, gorunurlukBildir, mesgulBildir, sahiplen, sahipMi, yeniNo } from './paylasim';
@@ -80,7 +80,7 @@ export function BeyinSahnesi({
   araclar = ['bakis', 'liste'],
   buyuk = false,
   basliksiz = false,
-  ileri = false,
+  duzey = 'temel',
 }: {
   sahne: Sahne;
   baslik?: string;
@@ -89,8 +89,8 @@ export function BeyinSahnesi({
   buyuk?: boolean;
   /** Başlık ve açıklama sayfada başka yerde yazıyorsa. */
   basliksiz?: boolean;
-  /** İleri katmana ait sahne. */
-  ileri?: boolean;
+  /** Sahnenin katmanı (temel dışındaysa üst satırda yazar). */
+  duzey?: Seviye;
 }) {
   const no = useMemo(() => yeniNo(), []);
   const kimlik = useId();
@@ -299,7 +299,7 @@ export function BeyinSahnesi({
     >
       {baslik && !basliksiz && (
         <div className="flex flex-col gap-1 px-1 pb-3">
-          <p className="kicker">{ileri ? 'Üç boyutlu sahne · ileri katman' : 'Üç boyutlu sahne'}</p>
+          <p className="kicker">{duzey === 'temel' ? 'Üç boyutlu sahne' : `Üç boyutlu sahne · ${duzey === 'lisans' ? 'lisans' : 'uzman'} katmanı`}</p>
           <h3 id={`${kimlik}-b`} className="font-display text-xl font-bold leading-tight">
             {baslik}
           </h3>
