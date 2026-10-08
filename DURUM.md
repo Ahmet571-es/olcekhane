@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-07
+Son güncelleme: 2026-10-08
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -48,30 +48,24 @@ Basamaklar:
 
 ## Sıradaki işler
 
-**ÖNCE BU — Sesli okumada otomatik analiz (site sahibinin 2026-10-07 akşam isteği; karar ve hazırlık bekliyor).**
-Bugünkü Sesli Okuma Değerlendirmesi (yetişkinin kaydı dinleyip kelime kelime işaretlemesi) isteğin yanlış
-anlaşılmasıydı. Site sahibinin istediği:
-- Öğrenci kendisi okur; **yetişkin kaydı dinlemez** (öğrenci mahremiyeti). Parça ekranda çıkar, öğrenci sesli okur,
-  okuma bitince kayıt durur; ekranda "Okumanı analiz etmemizi ister misin?" sorusu çıkar; "Evet" denince sistem kaydın
-  tamamını **otomatik** inceler ve rapor verir. Rapor verilince ses de analiz de silinir; **hiçbir şey saklanmaz**.
-- Öncelik **doğruluk**: kaydın eksiksiz ve hatasız incelenmesi.
-
-Önerilen ve konuşulan yol (site sahibi henüz kesin onay vermedi):
-- Kendi sunucumuzda büyük bir Türkçe konuşma tanıma modeli; ses yalnızca bellekte işlenir, diske ya da günlüğe
-  yazılmaz, dış hizmete gitmez. İki dinleyiş: metni bilmeden yazıya dökme ve metindeki kelimeleri kayıtta hizalayıp ses
-  ses denetleme; ikisi ayrışırsa kelime "net anlaşılamadı" diye gösterilir, hata sayılmaz. Kayıt kötüyse (gürültü,
-  kısık, kesinti) rapor verilmez, yeniden okuma istenir. Ölçülenler: doğru okuma oranı, dakikada doğru kelime, yanlış /
-  atlanan / eklenen kelime, tekrar, duraksama, ritim; anlama soruları kalabilir.
-- Yayından önce doğruluk ölçümü: site sahibinin velilerden izinle toplayacağı 30–50 çocuk kaydı, bir öğretmenin
-  işaretlemesiyle karşılaştırılır (kayıtlar siteden toplanmaz, iş bitince silinir). Ölçülene kadar "pilot".
-- Sunucu: canlı sunucu KVM 1 (1 çekirdek, 3,8 GB) büyük modeli kaldırmaz; KVM 4 gerekir. Site sahibi KVM 4 almış
-  olabileceğini söyledi; Hostinger panelinden bakacak (yeni ayrı sunucuysa site oraya taşınır, KVM 1 yenilenmez;
-  30 Ekim yenilemesiyle birleştirilebilir). Aylık ek abonelik istemediğini söyledi; KVM 1 → KVM 4 farkı anlatıldı.
-- Konuşulan öteki seçenekler: öğrencinin cihazında (tarayıcıda) analiz — ücretsiz, ses cihazdan çıkmaz, daha az
-  isabetli; dış hizmet (OpenAI vb.) — önerilmedi (çocuk sesi yurt dışındaki bir şirkete gider).
-- Bu iş "Sesli okumada ses kaydı yalnızca kullanıcının cihazında kalır" ilkesini (CLAUDE.md) değiştirir: aydınlatma
-  metni ve "Evet" ekranındaki onay cümlesi (18 yaş altı için veli izni) aynı değişiklikte güncellenir; avukat kontrolü
-  gerekir. İlke, site sahibi yolu onaylayınca CLAUDE.md'de de güncellenir.
+**ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
+Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
+misin?" → "Evet" → sistem kaydı kendisi inceler ve rapor verir; hiçbir şey saklanmaz; öncelik doğruluk. Aylık ek sunucu
+ücreti istemediği için (KVM 4 konuşuldu, pahalı bulundu) analiz **öğrencinin cihazında** yapılır (CLAUDE.md, "Sesli
+okumada otomatik analiz").
+- Önizleme: https://olcekhane.com/testler/sesli-okuma-degerlendirmesi/coz?onizleme=otomatik (herkese açık sürüm hâlâ
+  yetişkinin dinlediği sürüm). Site sahibi bilgisayardan ve telefondan deneyecek; beğenirse otomatik sürüm varsayılan
+  olur, Okuma sayfası ve yetişkin sürümünü anlatan metinler ("konuşmayı yapay zekâyla tanımaya çalışmaz" vb.) güncellenir.
+- Akış: metin seçimi → sıkı mikrofon denemesi (izin, sessizlik ölçümü, cümle; yapay zekâ cümleyi tanımalı; model bu
+  sırada iner, ~250 MB, ilk seferde) → okuma → kayıt denetimi → izin sorusu → analiz arka planda, öğrenci bu sırada
+  soruları cevaplar → ses silinir → rapor ("net anlaşılamadı" kelimeler hata sayılmaz).
+- Ölçümler: Whisper small q8, FLEURS Türkçe WER %15; sentetik yanlış okumalarda hata yakalama ve yanlış alarm
+  tests/sesli-okuma-hizalama.test.ts'te. Bu ortamda (2 çekirdek) 72 sn'lik okuma ~1,5 dk'da incelendi; telefonda daha
+  uzun sürebilir. **Gerçek çocuk kayıtlarıyla ölçüm yapılmadı**: site sahibinden izinli 30–50 kayıt istendi.
+- Bekleyen: aydınlatma metni sürüm 7 avukat kontrolü; "Evet" ekranına 18 yaş altı için veli izni cümlesi; WebGPU
+  (q4 dosyaları) denenmedi, şimdilik yalnızca WebAssembly.
+- Sunucu: canlı sunucu KVM 1 (aylık, 30 Eylül'de alındı, 30 Ekim civarı yenilenecek). KVM 4 fiyatları site sahibine
+  çıkarıldı (24 ay peşin 15.926 TL, aylık ~2.300 TL tahmini); şimdilik gerek yok.
 
 0. **Okuma bölümü:** (a) yeni metinler (her sınıfa öykü ve bilgilendirici; `src/content/instruments/sesli-okuma/`,
    kurallar `tests/sesli-okuma.test.ts`'te); (b) aynı kayıt ve işaretleme altyapısıyla yeni değerlendirmeler: 1 dakikalık
@@ -242,6 +236,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08: Sesli okumada otomatik analiz önizlemede (`?onizleme=otomatik`): öğrencinin kendi okuduğu akış, sıkı
+  mikrofon denemesi, cihazda çalışan Türkçe konuşma tanıma (Whisper small, kendi sunucumuzdan), metinle karşılaştırma
+  ve doğrulama ("net anlaşılamadı" hata sayılmaz), otomatik rapor ve PDF, aydınlatma metni sürüm 7. Herkese açık sürüm
+  değişmedi.
 - 2026-10-07 (akşam): Günün işleri baştan sona denetlendi, bulunan hatalar düzeltildi. Kod: ilgi testlerinde bütün
   alanlar düşükken alan öne çıkarılmıyor ve eğitim yolu önerilmiyor (yalnızca görece yüksek alanlarda da yol yok); bir
   boyut hesaplanamasa da plan dört hafta, başlık haftaların sayısını söylüyor; sesli okumada mikrofon koparsa yeniden
@@ -285,5 +283,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-07: Duygusal Zekâ Bileşenleri gelişim yol haritası önizlemede (yedi bileşen; öğrenci, veli ve yetişkin
   raporu; ekranda ve PDF'te); hoca belgesi hazır. Üç boyutlu grafiğin altındaki açıklamada puanlar artık iki satıra
   bölünmüyor.
-- 2026-10-07: Ayrıntılı Kişilik ve Altı Boyutlu Kişilik gelişim yol haritaları hoca onayıyla herkese açık raporda
-  (öğrenci, veli ve yetişkin); yayın denetimi üç raporu dışarıdan sınıyor.

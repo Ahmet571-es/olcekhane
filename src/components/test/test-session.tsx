@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
 import { LikertRunner } from '@/components/runner/likert-runner';
 import { QuizRunner, type QuizClientItem } from '@/components/runner/quiz-runner';
@@ -15,6 +16,11 @@ import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { RoadmapView } from './roadmap-view';
 import { SimpleReportView } from './simple-report-view';
+
+/** Öğrencinin tek başına okuduğu, okumayı cihazdaki yapay zekânın incelediği sesli okuma (önizleme): yalnızca gerekince yüklenir. */
+const OralAutoRunner = dynamic(() => import('@/components/runner/oral/oral-auto-runner').then((m) => m.OralAutoRunner), {
+  loading: () => <p className="t-meta mx-auto w-full max-w-2xl">Yükleniyor…</p>,
+});
 
 type Intro = { title: string; paragraphs: string[] };
 
@@ -105,6 +111,7 @@ export function TestSession({
   gradeLabel,
   payload,
   roadmapPreview = false,
+  oralAuto = false,
 }: {
   slug: string;
   grade: number;
@@ -112,6 +119,8 @@ export function TestSession({
   payload: TestPayload;
   /** Uzman incelemesindeki gelişim yol haritasının önizlemesi (`?onizleme=yol-haritasi`). */
   roadmapPreview?: boolean;
+  /** Sesli okumada otomatik analiz önizlemesi (`?onizleme=otomatik`): öğrenci tek başına okur, kaydı kimse dinlemez. */
+  oralAuto?: boolean;
 }) {
   const [seed] = useState(uuid4);
   const [result, setResult] = useState<{ reports: Reports; body: Body } | null>(null);
@@ -155,6 +164,16 @@ export function TestSession({
     case 'reading':
       return <ReadingRunner intro={payload.intro} passage={payload.passage} onFinish={(r) => submit({ engine: 'reading', ...r })} />;
     case 'oral':
+      if (oralAuto) {
+        return (
+          <OralAutoRunner
+            intro={payload.intro}
+            grade={grade}
+            passages={payload.passages}
+            onFinish={(data) => submit({ engine: 'oral', ...data })}
+          />
+        );
+      }
       return (
         <OralRunner
           intro={payload.intro}

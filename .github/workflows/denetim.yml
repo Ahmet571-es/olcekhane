@@ -84,6 +84,21 @@ jobs:
             echo "$yol -> $kod"
             [ "$kod" = 404 ] || { echo "::error title=Kaldırılan sayfa açık::$yol $kod döndü (404 bekleniyordu)"; exit 1; }
           done
+          # Sesli okumada otomatik analiz: konuşma tanıma modeli ve ONNX Runtime dosyaları görüntüde eksiksiz ve kendi
+          # sunucumuzdan iniyor (yalnızca başlıklar; model dosyalarının boyutu betikteki sabit boyutla karşılaştırılır).
+          node araclar/model-hazirla.mjs --adresler > /tmp/adresler.txt || { echo "::error title=Otomatik analiz::Dosya adresleri alınamadı (araclar/model-hazirla.mjs --adresler)"; exit 1; }
+          while read -r yol boyut; do
+            "${C[@]}" -I "http://127.0.0.1:3000$yol" | tr -d '\r' > /tmp/dosya.baslik || true
+            kod=$(awk 'NR==1 {print $2}' /tmp/dosya.baslik)
+            uzunluk=$(awk -F': ' 'tolower($1) == "content-length" {print $2}' /tmp/dosya.baslik)
+            [ "$kod" = 200 ] || { echo "::error title=Otomatik analiz dosyası::$yol $kod döndü"; exit 1; }
+            [ "$boyut" = - ] || [ "$uzunluk" = "$boyut" ] || { echo "::error title=Otomatik analiz dosyası::$yol $uzunluk bayt (beklenen $boyut)"; exit 1; }
+            case "$yol" in
+              *.wasm) grep -qi '^content-type: application/wasm' /tmp/dosya.baslik || { echo "::error title=Otomatik analiz dosyası::$yol application/wasm olarak sunulmuyor"; exit 1; } ;;
+            esac
+          done < /tmp/adresler.txt
+          "${C[@]}" -D - -o /dev/null 'http://127.0.0.1:3000/testler/sesli-okuma-degerlendirmesi/coz?sinif=3' | grep -qi '^cross-origin-embedder-policy: require-corp' ||
+            { echo "::error title=Otomatik analiz::Sesli okuma testi cross-origin isolated değil (COEP başlığı yok)"; exit 1; }
           # Rapor: saklamadan puanlama ve PDF (öz-saygı ölçeği, 7. sınıf, örnek cevaplar).
           GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 7, "data": {"engine": "likert", "answers": {f"R{i}": {"value": i % 4, "rtMs": 2500} for i in range(1, 11)}}}))')
           "${C[@]}" -f -D /tmp/rapor.baslik -H 'content-type: application/json' -d "$GOVDE" http://127.0.0.1:3000/api/rapor/oz-saygi \

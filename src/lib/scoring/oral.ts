@@ -10,10 +10,18 @@ import { round } from './stats';
  * Hata sayılanlar (kelime tanıma hatası): yanlış okuma, atlama, yardımla okuma (kelimeyi yetişkin söyledi) ve ekleme
  * (metinde olmayan bir kelime söyleme; her ekleme bir hata). Hata sayılmayanlar (ayrıca gösterilir): öğrencinin kendi
  * düzelttiği okuma, tekrar, heceleyerek okuma ve kelimeden önce duraksama.
+ *
+ * Otomatik analiz (`auto`, bkz. lib/oral/auto.ts): işaretleri öğrencinin cihazındaki konuşma tanıma modelinin çıktısı
+ * verir; yetişkin yoktur. Bu yüzden akıcılık derecelendirmesi, yeniden anlatma, "yardımla okuma" ve dinleme oranı
+ * gelmez. Konuşma tanımanın net ayırt edemediği kelimeler (`unclear`) hata sayılmaz: doğru okuma oranında ve dakikada
+ * doğru kelimede doğru okunmuş gibi hesaba katılır (öğrencinin lehine), ayrıca sayılır ve raporda gösterilir.
  */
 
-/** Kelimenin durumu: yanlış okudu, atladı, yardımla okudu, önce yanlış okuyup kendisi düzeltti. */
-export type OralStatus = 'sub' | 'omit' | 'help' | 'self';
+/**
+ * Kelimenin durumu: yanlış okudu, atladı, yardımla okudu, önce yanlış okuyup kendisi düzeltti; otomatik analizde
+ * `unclear`: konuşma tanıma bu kelimeyi net ayırt edemedi (hata sayılmaz, ayrıca gösterilir).
+ */
+export type OralStatus = 'sub' | 'omit' | 'help' | 'self' | 'unclear';
 
 /** Yanlış okumanın türü (isteğe bağlı ayrıntı). */
 export type OralSubKind = 'suffix' | 'similar' | 'reversal' | 'nonword';
@@ -52,17 +60,23 @@ export interface OralProsody {
 
 export interface OralInput {
   passageKey: string;
+  /**
+   * Otomatik analiz: işaretleri cihazdaki konuşma tanıma verdi, yetişkin dinlemedi. Bu durumda `prosody` ve `retell`
+   * null, `listened` gönderilmez (gönderilirse yok sayılır), işaretlerde `help` olmaz, `unclear` olabilir.
+   */
+  auto?: boolean;
   /** Kaydın tamamı ve okuma süresi (ilk sesten son sese; bulunamazsa düğmeler arası). */
   recordMs: number;
   readingMs: number;
   timingAuto: boolean;
   audio: OralAudioSummary | null;
   marks: Record<string, OralMark>;
-  /** İşaretleme sırasında kaydın ne kadarının dinlendiği (0–1). */
-  listened: number;
+  /** İşaretleme sırasında kaydın ne kadarının dinlendiği (0–1); yetişkinin işaretlediği sürümde zorunlu. */
+  listened?: number;
   retell: { recorded: boolean; ideas: string[] } | null;
   answers: Record<string, string>;
-  prosody: OralProsody;
+  /** Yetişkinin akıcılık derecelendirmesi; yalnızca otomatik analizde null. */
+  prosody: OralProsody | null;
 }
 
 /** Bu metin öğrenci için: rahat (tek başına), destekle, şimdilik zor. */
@@ -81,6 +95,8 @@ export const ORAL_CRITERIA = {
 export const ORAL_MAX_WPM = 250;
 /** İşaretleme sırasında kaydın en az bu kadarı dinlenmeli. */
 export const MIN_LISTENED = 0.9;
+/** Otomatik analizde kelimelerin bundan çoğu net anlaşılamadıysa sonuçlar yaklaşıktır (uyarı verilir). */
+export const UNCLEAR_HIGH = 0.1;
 /** Duraklama sayımı: bu süreden uzun sessizlikler; ve uzun duraklamalar. */
 export const PAUSE_MS = 1000;
 export const LONG_PAUSE_MS = 3000;
@@ -94,6 +110,8 @@ export interface OralCounts {
   rep: number;
   syl: number;
   hes: number;
+  /** Otomatik analizde konuşma tanımanın net ayırt edemediği kelimeler (hata sayılmaz). */
+  unclear: number;
   /** Anlamı bozan yanlış okumalar (yalnızca anlam sorusu cevaplananlar arasında). */
   meaningChanged: number;
   meaningKept: number;
@@ -134,13 +152,18 @@ export interface OralResult {
     skills: Record<ReadingQuestion['skill'], { correct: number; total: number }>;
   };
   retell: { recorded: boolean; mentioned: string[]; total: number; core: number; coreTotal: number } | null;
-  prosody: OralProsody & { total: number };
+  /** Akıcılık derecelendirmesi; otomatik analizde yoktur (null). */
+  prosody: (OralProsody & { total: number }) | null;
   level: OralLevel;
   pauses: { count: number; long: number; longestMs: number; perMinute: number } | null;
   audio: OralAudioSummary | null;
   marked: OralMarkedToken[][];
   flags: {
-    /** Kaydın tamamı dinlenmeden işaretlendi. */
+    /** Otomatik analiz: işaretleri cihazdaki konuşma tanıma verdi. */
+    auto: boolean;
+    /** Otomatik analizde kelimelerin %10'undan çoğu net anlaşılamadı: sonuçlar yaklaşıktır. */
+    unclearHigh: boolean;
+    /** Kaydın tamamı dinlenmeden işaretlendi (yalnızca yetişkinin işaretlediği sürümde). */
     partialListen: boolean;
     interrupted: boolean;
     /** Okuma süresi metne göre çok kısa. */
@@ -182,6 +205,14 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
   if (!passage) throw new OralInputError('Metin bu sınıf düzeyi için seçilemez.');
   const tokens = oralTokens(passage.paragraphs);
   const n = tokens.reduce((k, p) => k + p.length, 0);
+  const auto = input.auto === true;
+  if (auto) {
+    if (input.prosody !== null) throw new OralInputError('Otomatik analizde akıcılık derecelendirmesi gönderilmez.');
+    if (input.retell !== null) throw new OralInputError('Otomatik analizde yeniden anlatma gönderilmez.');
+  } else {
+    if (!input.prosody) throw new OralInputError('Akıcılık derecelendirmesi gerekiyor.');
+    if (input.listened === undefined) throw new OralInputError('Dinleme oranı gerekiyor.');
+  }
 
   const counts: OralCounts = {
     sub: 0,
@@ -192,6 +223,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     rep: 0,
     syl: 0,
     hes: 0,
+    unclear: 0,
     meaningChanged: 0,
     meaningKept: 0,
     kinds: { suffix: 0, similar: 0, reversal: 0, nonword: 0 },
@@ -199,6 +231,8 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
   for (const [k, m] of Object.entries(input.marks)) {
     const i = Number(k);
     if (!Number.isInteger(i) || i < 0 || i >= n || String(i) !== k) throw new OralInputError('Geçersiz işaret.');
+    // "Net anlaşılamadı" yalnızca konuşma tanımadan, "yardımla okuma" yalnızca yanındaki yetişkinden gelebilir.
+    if ((m.s === 'unclear' && !auto) || (m.s === 'help' && auto)) throw new OralInputError('Geçersiz işaret.');
     if (m.s) counts[m.s] += 1;
     if (m.s === 'sub') {
       if (m.kind) counts.kinds[m.kind] += 1;
@@ -210,6 +244,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     if (m.hes) counts.hes += 1;
     if (m.ins) counts.ins += m.ins;
   }
+  // Net anlaşılamayan kelimeler hata sayılmaz (doğru okunmuş gibi hesaba katılır).
   const missed = counts.sub + counts.omit + counts.help;
   const errors = missed + counts.ins;
   const wordsCorrect = n - missed;
@@ -257,7 +292,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
   }
 
   const p = input.prosody;
-  const prosody = { ...p, total: p.expression + p.phrasing + p.smoothness + p.pace };
+  const prosody = p ? { ...p, total: p.expression + p.phrasing + p.smoothness + p.pace } : null;
   const accLevel = accuracyLevel(accuracy);
   const compLevel = comprehensionLevel(compPct);
 
@@ -314,7 +349,9 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     audio,
     marked,
     flags: {
-      partialListen: input.listened < MIN_LISTENED,
+      auto,
+      unclearHigh: auto && counts.unclear > n * UNCLEAR_HIGH,
+      partialListen: !auto && (input.listened ?? 0) < MIN_LISTENED,
       interrupted: !!audio?.interrupted,
       tooFast: wpm > ORAL_MAX_WPM,
       manualTiming: !input.timingAuto,

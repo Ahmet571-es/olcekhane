@@ -6,6 +6,9 @@
 #   ORNEK_SAHIP=1 bash araclar/yerel-sunucu.sh   site sahibi bilgileri örnek değerlerle dolu (İletişim, yasal metinler)
 #   bash araclar/yerel-sunucu.sh --derlemeden    son derlemeyi yeniden aç
 #   bash araclar/yerel-sunucu.sh durdur
+#   MODEL_KAYNAK=<klasör> bash araclar/yerel-sunucu.sh
+#       Sesli okumadaki otomatik analizin modeli Hugging Face'ten indirilmez, bu klasörden kopyalanır
+#       (araclar/model-hazirla.mjs; dosyalar public/ altında zaten doğruysa hiçbiri yeniden alınmaz).
 #
 # Ardından: node araclar/tarayici-dene.mjs / /testler ...   (telefon ve masaüstü genişliğinde gerçek tarayıcı)
 # Kurulum depo dışındadır (${TMPDIR:-/tmp}/olcekhane-yerel); depoda yalnızca .next/ değişir (git'e girmez).
@@ -70,6 +73,14 @@ if [ "$DERLE" = 1 ]; then
   fi
 fi
 [ -f "$KOK/.next/standalone/server.js" ] || { echo "Derleme çıktısı yok: --derlemeden olmadan çalıştırın." >&2; exit 1; }
+
+# Sesli okumada otomatik analiz: model ve tarayıcı çalışma dosyaları (public/model, public/ort, public/vendor; git'e
+# girmez). Hazırlanamazsa (ör. ağ yok) site yine açılır; yalnızca otomatik analiz bu yerel sunucuda çalışmaz.
+# NODE_USE_ENV_PROXY: ortamda vekil sunucu varsa Node'un fetch'i onu kullansın (Node 22.21 ve sonrası).
+if ! (cd "$KOK" && NODE_USE_ENV_PROXY="${NODE_USE_ENV_PROXY:-1}" node --no-warnings araclar/model-hazirla.mjs) > "$YER/model.log" 2>&1; then
+  tail -n 5 "$YER/model.log" >&2
+  echo "Uyarı: otomatik analiz dosyaları hazırlanamadı (tamamı: $YER/model.log); sesli okumada otomatik analiz bu yerel sunucuda çalışmaz." >&2
+fi
 
 durdur
 if kapi_dolu; then

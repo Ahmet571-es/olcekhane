@@ -1,6 +1,7 @@
 import {
   ACCURACY_LABEL,
   ACCURACY_TEXT,
+  AUTO_TEXT,
   COMPREHENSION_LABEL,
   COMPREHENSION_TEXT,
   GENRE_LABELS,
@@ -22,9 +23,17 @@ import { disclaimerText, type SimpleItem, type SimpleReport } from './simple';
 /**
  * Sesli Okuma Değerlendirmesinin raporu. Öğrenciye ("sen") ve yetişkine (veli ya da öğretmen; öğrenciyi üçüncü kişi
  * olarak anlatır) ayrı ayrı yazılır. Ekranda ve PDF'te aynı içerik gösterilir.
+ *
+ * Otomatik analizde (cihazdaki yapay zekâ işaretledi) akıcılık derecelendirmesi ve yeniden anlatma yoktur: o bölümler
+ * çıkarılır, yerine okumanın ritmi (duraklamalar) ve net anlaşılamayan kelimelerin sayısı gösterilir. Raporun başında
+ * okumanın nasıl incelendiği bir kez anlatılır.
  */
 
 export interface OralReportBlock {
+  /** Otomatik analiz (cihazdaki yapay zekâ işaretledi). */
+  auto: boolean;
+  /** Okumanın nasıl incelendiği (yalnızca otomatik analizde). */
+  method: { title: string; text: string } | null;
   passage: { title: string; gradeLabel: string; genre: string; words: number };
   level: { key: OralLevel; label: string; text: string; profile: string | null };
   /** Düzeyi belirleyen iki ölçüt. */
@@ -33,12 +42,15 @@ export interface OralReportBlock {
   /** Hata sayılanlar ve sayılmayanlar. */
   counted: { label: string; value: number }[];
   notCounted: { label: string; value: number }[];
+  /** Otomatik analizde net anlaşılamayan kelimeler: gösterge adı ve sayı (hata sayılmaz). */
+  unclear: { label: string; value: number } | null;
   /** Yanlış okunan kelimeler ve (yazıldıysa) öğrencinin söylediği. */
   substitutions: { word: string; said: string | null }[];
   timeline: { totalMs: number; contour: number[]; pauses: [number, number][]; caption: string } | null;
+  /** Akıcılık derecelendirmesi; otomatik analizde yoktur (boş liste, toplam ve etiket null). */
   prosody: { name: string; value: number; text: string }[];
-  prosodyTotal: number;
-  prosodyLabel: string;
+  prosodyTotal: number | null;
+  prosodyLabel: string | null;
   skills: { label: string; correct: number; total: number }[];
   retell: { text: string; said: boolean; core: boolean }[] | null;
   /** Bir sonraki değerlendirme önerisi (öneriler gelişim yol haritasındadır). */
@@ -67,6 +79,7 @@ const bare = (t: string) => t.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}’']+$/gu, '
 function cautions(r: OralResult, audience: Audience): string[] {
   const parent = audience === 'parent';
   const out: string[] = [];
+  if (r.flags.unclearHigh) out.push(pick(audience, AUTO_TEXT.unclearHigh(r.counts.unclear, r.wordCount)));
   if (r.flags.partialListen) {
     out.push(
       parent
@@ -99,13 +112,20 @@ function cautions(r: OralResult, audience: Audience): string[] {
 
 function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
   const parent = audience === 'parent';
+  const c = r.counts;
+  // Otomatik analizde net anlaşılamayan kelimeler hata sayılmaz ama "doğru okundu" diye de anlatılmaz.
+  const u = c.unclear;
+  const clear = r.wordsCorrect - u;
   const parts = [
-    parent
-      ? `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudu; hata sayısı ${r.errors} (doğru okuma %${accText(r.accuracyPct)}).`
-      : `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudun (doğru okuma %${accText(r.accuracyPct)}).`,
+    u > 0
+      ? parent
+        ? `Metindeki ${r.wordCount} kelimenin ${clear} tanesini doğru okudu, ${u} kelime net anlaşılamadı; hata sayısı ${r.errors} (doğru okuma %${accText(r.accuracyPct)}). Net anlaşılamayan kelimeler hata sayılmadı.`
+        : `Metindeki ${r.wordCount} kelimenin ${clear} tanesini doğru okudun; ${u} kelime net anlaşılamadı ve hata sayılmadı (doğru okuma %${accText(r.accuracyPct)}).`
+      : parent
+        ? `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudu; hata sayısı ${r.errors} (doğru okuma %${accText(r.accuracyPct)}).`
+        : `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudun (doğru okuma %${accText(r.accuracyPct)}).`,
     pick(audience, ACCURACY_TEXT[r.accuracyLevel]),
   ];
-  const c = r.counts;
   if (c.self > 0) {
     parts.push(
       parent
@@ -133,9 +153,11 @@ function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
 function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audience: Audience): SimpleItem {
   const parent = audience === 'parent';
   const parts = [
-    parent
-      ? `Metni ${durationText(r.readingMs)} sürede okudu: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesi doğru okundu.`
-      : `Metni ${durationText(r.readingMs)} sürede okudun: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesini doğru okudun.`,
+    r.counts.unclear > 0
+      ? `Metni ${durationText(r.readingMs)} sürede ${parent ? 'okudu' : 'okudun'}: dakikada ${r.wpm} kelime; hata sayılan kelimeler çıkarılınca dakikada ${r.wcpm} kelime.`
+      : parent
+        ? `Metni ${durationText(r.readingMs)} sürede okudu: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesi doğru okundu.`
+        : `Metni ${durationText(r.readingMs)} sürede okudun: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesini doğru okudun.`,
   ];
   const ref = def.referenceRates.find((x) => x.grade === grade);
   if (r.flags.tooFast) {
@@ -171,15 +193,17 @@ function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audi
   return { title: 'Okuma hızı', badge: `Dakikada ${r.wcpm} doğru kelime`, text: parts.join(' ') };
 }
 
-function prosodyItem(r: OralResult, audience: Audience): SimpleItem {
+function prosodyItem(r: OralResult, audience: Audience): SimpleItem | null {
+  if (!r.prosody) return null;
   const parent = audience === 'parent';
-  const rows = PROSODY_DIMENSIONS.map((d) => ({ d, v: r.prosody[d.key] }));
+  const prosody = r.prosody;
+  const rows = PROSODY_DIMENSIONS.map((d) => ({ d, v: prosody[d.key] }));
   const min = Math.min(...rows.map((x) => x.v));
   const weakest = rows.filter((x) => x.v === min).map((x) => x.d.name.toLocaleLowerCase('tr-TR'));
   const parts = [
     parent
-      ? `Dinleyen yetişkin, okumanın dört yönünü 1 ile 4 arasında derecelendirdi; toplam ${r.prosody.total} / 16.`
-      : `Okuman dört yönden 1 ile 4 arasında derecelendirildi; toplamın ${r.prosody.total} / 16.`,
+      ? `Dinleyen yetişkin, okumanın dört yönünü 1 ile 4 arasında derecelendirdi; toplam ${prosody.total} / 16.`
+      : `Okuman dört yönden 1 ile 4 arasında derecelendirildi; toplamın ${prosody.total} / 16.`,
   ];
   if (min === 4) {
     parts.push(parent ? 'Dört yönde de en yüksek düzeyde okudu.' : 'Dört yönde de en yüksek düzeyde okudun. Çok güzel!');
@@ -192,7 +216,7 @@ function prosodyItem(r: OralResult, audience: Audience): SimpleItem {
       ? 'Anlama uygun vurgu ve tonlamayla okumak, okuyanın metni anladığının da bir işaretidir.'
       : 'Anlamına uygun vurgu ve tonlamayla okumak, okuduğunu anladığını da gösterir.',
   );
-  return { title: 'Akıcılık', badge: prosodyLabel(r.prosody.total), text: parts.join(' ') };
+  return { title: 'Akıcılık', badge: prosodyLabel(prosody.total), text: parts.join(' ') };
 }
 
 function comprehensionItem(r: OralResult, audience: Audience): SimpleItem {
@@ -286,9 +310,20 @@ export function buildOralReport(input: {
     .filter((t) => t.s === 'sub')
     .map((t) => ({ word: bare(t.text), said: t.said ?? null }));
 
-  const items: SimpleItem[] = [accuracyItem(r, audience), rateItem(r, def, grade, audience), prosodyItem(r, audience), comprehensionItem(r, audience), retellItem(r, audience)];
+  const auto = r.flags.auto;
+  const prosody = r.prosody;
+  // Otomatik analizde akıcılık derecelendirmesi ve yeniden anlatma yoktur; o kartlar çıkarılır.
+  const items: SimpleItem[] = [
+    accuracyItem(r, audience),
+    rateItem(r, def, grade, audience),
+    prosodyItem(r, audience),
+    comprehensionItem(r, audience),
+    auto ? null : retellItem(r, audience),
+  ].filter((x): x is SimpleItem => x !== null);
 
   const oral: OralReportBlock = {
+    auto,
+    method: auto ? { ...AUTO_TEXT.method[parent ? 'parent' : 'student'] } : null,
     passage: { title: passage.title, gradeLabel: GRADE_LABELS[passage.grade] ?? `${passage.grade}. sınıf`, genre: GENRE_LABELS[passage.genre], words: r.wordCount },
     level: {
       key: r.level,
@@ -311,10 +346,11 @@ export function buildOralReport(input: {
       },
     ],
     marked: r.marked,
+    // Otomatik analizde yanında yetişkin olmadığı için "yardımla okuma" yoktur.
     counted: [
       { label: 'Yanlış okuma', value: c.sub },
       { label: 'Atlama', value: c.omit },
-      { label: 'Yardımla okuma', value: c.help },
+      ...(auto ? [] : [{ label: 'Yardımla okuma', value: c.help }]),
       { label: 'Ekleme', value: c.ins },
     ],
     notCounted: [
@@ -323,11 +359,14 @@ export function buildOralReport(input: {
       { label: 'Heceleyerek okuma', value: c.syl },
       { label: 'Duraksama', value: c.hes },
     ],
+    unclear: auto ? { label: AUTO_TEXT.legend, value: c.unclear } : null,
     substitutions: subs,
     timeline: timeline(r, audience),
-    prosody: PROSODY_DIMENSIONS.map((d) => ({ name: d.name, value: r.prosody[d.key], text: d.levels[r.prosody[d.key] - 1][parent ? 'parent' : 'student'] })),
-    prosodyTotal: r.prosody.total,
-    prosodyLabel: prosodyLabel(r.prosody.total),
+    prosody: prosody
+      ? PROSODY_DIMENSIONS.map((d) => ({ name: d.name, value: prosody[d.key], text: d.levels[prosody[d.key] - 1][parent ? 'parent' : 'student'] }))
+      : [],
+    prosodyTotal: prosody ? prosody.total : null,
+    prosodyLabel: prosody ? prosodyLabel(prosody.total) : null,
     skills: Object.entries(r.comprehension.skills)
       .filter(([, v]) => v.total > 0)
       .map(([k, v]) => ({ label: SKILL_LABELS[k], correct: v.correct, total: v.total })),
@@ -350,20 +389,30 @@ export function buildOralReport(input: {
       { label: 'Doğru okuma', value: `%${accText(r.accuracyPct)}`, note: `${r.wordCount} kelimede ${r.errors} hata` },
       { label: 'Okuma süresi', value: durationText(r.readingMs).replace(' dakika', ' dk').replace(' saniye', ' sn'), note: `${r.wordCount} kelimelik metin` },
       { label: 'Anlama', value: `${r.comprehension.correct} / ${r.comprehension.total}`, note: 'doğru cevap' },
-      { label: 'Yeniden anlatma', value: r.retell ? `${r.retell.mentioned.length} / ${r.retell.total}` : '—', note: r.retell ? 'fikir söylendi' : 'yapılmadı' },
-      { label: 'Akıcılık', value: `${r.prosody.total} / 16`, note: prosodyLabel(r.prosody.total) },
+      // Otomatik analizde akıcılık ve yeniden anlatmanın yerine okumanın ritmi ve net anlaşılamayan kelimeler.
+      ...(auto
+        ? [
+            { label: 'Duraklama', value: r.pauses ? String(r.pauses.count) : '—', note: r.pauses ? '1 saniyeden uzun' : 'ölçülemedi' },
+            { label: 'Net anlaşılamadı', value: String(c.unclear), note: 'kelime; hata sayılmadı' },
+          ]
+        : [
+            { label: 'Yeniden anlatma', value: r.retell ? `${r.retell.mentioned.length} / ${r.retell.total}` : '—', note: r.retell ? 'fikir söylendi' : 'yapılmadı' },
+            ...(prosody ? [{ label: 'Akıcılık', value: `${prosody.total} / 16`, note: prosodyLabel(prosody.total) }] : []),
+          ]),
     ],
     itemsTitle: parent ? 'Okumanın yönleri' : 'Okumanın yönleri',
     items,
     cautions: cautions(r, audience),
     support: parent && needsSpecialistNote(r, grade) ? { title: SPECIALIST.title, lines: [...SPECIALIST.lines] } : null,
     normNote: def.science.normNote,
-    disclaimer: parent
-      ? {
-          title: 'Bu rapor bir tanı değildir.',
-          text: 'Tek bir metnin sesli okunmasına ve dinleyen yetişkinin işaretlemelerine dayanır; bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli ve gelişimi izlemek için farklı metinlerle tekrarlanmalıdır.',
-        }
-      : disclaimerText({ audience, academic: undefined }),
+    disclaimer: auto
+      ? { title: 'Bu rapor bir tanı değildir.', text: pick(audience, AUTO_TEXT.disclaimer) }
+      : parent
+        ? {
+            title: 'Bu rapor bir tanı değildir.',
+            text: 'Tek bir metnin sesli okunmasına ve dinleyen yetişkinin işaretlemelerine dayanır; bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli ve gelişimi izlemek için farklı metinlerle tekrarlanmalıdır.',
+          }
+        : disclaimerText({ audience, academic: undefined }),
     oral,
   };
 }

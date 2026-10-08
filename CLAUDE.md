@@ -122,8 +122,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Hiçbir veri saklanmaz: veritabanı, hesap, çerez, tarayıcı deposu ve analiz aracı yoktur; test cevapları
   kaydedilmez ve günlüğe yazılmaz (`tests/site.test.ts` bunu denetler). Bu ilkeyi bozacak bir istek gelirse
   önce site sahibine ne değişeceği anlatılır; kabul ederse hukuki metinler de aynı değişiklikte güncellenir.
-- Sesli okumada ses kaydı yalnızca kullanıcının cihazında kalır: sunucuya, dış bir hizmete ya da yapay zekâya
-  gönderilmez; mikrofon izni yalnızca sitenin kendisine açıktır (`next.config.ts`).
+- Sesli okumada ses kaydı yalnızca kullanıcının cihazında kalır: sunucuya ya da dış bir hizmete gönderilmez.
+  Otomatik analizde (site sahibinin 2026-10-07 isteği) kayıt, öğrenci "Evet, analiz et" dedikten sonra yalnızca
+  cihazda, tarayıcıda çalışan konuşma tanıma modeliyle yazıya dökülür ve analiz bitince bellekten silinir; model
+  dosyaları kendi sunucumuzdan iner, tarayıcı deposuna hiçbir şey yazılmaz. Mikrofon izni yalnızca sitenin kendisine
+  açıktır (`next.config.ts`).
 - Sitedeki metinler gerçeği söyler: sunucu Almanya'dadır; Türkiye normu olmayan testte norm varmış gibi
   anlatılmaz; yapılmamış çalışmalar yapılıyormuş gibi yazılmaz.
 - Hukuki metinler `src/content/legal`, site sahibinin bilgileri `OWNER_*` (`src/lib/site.ts`). Bilgiler henüz
@@ -139,6 +142,27 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   dokunulmaz.
 - Açık hukuki işler: Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim, metinlerin avukat kontrolü,
   e-posta sağlayıcısının aydınlatma metninde anılması.
+
+## Sesli okumada otomatik analiz
+
+- Site sahibinin isteği (2026-10-07): öğrenci kendisi okur, **yetişkin kaydı dinlemez** (öğrenci mahremiyeti); okuma
+  bitince "Okumanı analiz etmemizi ister misin?" sorulur, "Evet" denince sistem kaydı kendisi inceler ve rapor verir;
+  hiçbir şey saklanmaz; öncelik doğruluktur. Aylık ek sunucu ücreti istemediği için analiz öğrencinin cihazında yapılır.
+- Şimdilik yalnızca önizleme bağlantısıyla açılır: `/testler/sesli-okuma-degerlendirmesi/coz?onizleme=otomatik`
+  (yetişkinin dinleyip işaretlediği sürüm herkese açık kalır; site sahibi onaylayınca otomatik sürüm varsayılan olur).
+- Parçalar: ortak türler ve sabitler `src/lib/oral/auto.ts`; model Whisper small (`onnx-community/whisper-small_timestamped`,
+  q8, ~250 MB, sabit sürüm ve SHA-256: `araclar/model-hazirla.mjs`, Docker'da ayrı katman; `public/model|ort|vendor`
+  git'e girmez); Worker `public/okuma/analiz-isci.js` (yalnızca WebAssembly, ipucu/prompt yok, 28 sn'lik pencereler,
+  uydurma ve döngü önlemleri) ve istemcisi `src/components/runner/oral/asr-client.ts`; metinle karşılaştırma
+  `src/lib/oral/align.ts` (`tests/sesli-okuma-hizalama.test.ts`); öğrenci akışı `oral-auto-runner.tsx`, `mic-check.tsx`,
+  `auto-analysis.ts`; puanlama ve rapor `auto: true` ile (`tests/sesli-okuma.test.ts`).
+- Doğruluk ilkesi: konuşma tanıma hatası çocuğun hatası sayılmaz. Şüpheli yerler kısa parçalar hâlinde yeniden
+  yazıya dökülüp doğrulanır; doğrulanmayan ya da tek harf farkı olan kelime "net anlaşılamadı" (`unclear`) olur, hata
+  sayılmaz. Mikrofon denemesi sıkıdır: sessizlik ölçümü, ses düzeyi ve kırpılma, sonra yapay zekâ cümleyi tanımalı.
+- Test sayfası çok iş parçacığı için COEP ile açılır (`next.config.ts`); model ve çalışma dosyaları sürümlü adreslerle
+  süresiz HTTP önbelleğinde tutulur. Denetim ve Yayın, dosyaların sunulduğunu ve COEP başlığını dışarıdan sınar.
+- Gerçek çocuk kayıtlarıyla doğruluk ölçümü henüz yapılmadı (ölçümler sentetik ses ve yetişkin FLEURS kayıtlarıyla);
+  site sahibi izinli kayıt sağlayınca ölçülür. Aydınlatma metni (sürüm 7) avukat kontrolü bekliyor.
 
 ## Görsel dil
 

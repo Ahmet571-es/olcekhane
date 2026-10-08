@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { getInstrumentDef, publicInstruments } from '@/content/instruments';
 import { sesliOkuma } from '@/content/instruments/sesli-okuma';
-import { LEVEL_TEXT, PROFILE_TEXT, PROSODY_DIMENSIONS } from '@/content/reports/sesli-okuma';
+import { legalDocBySlug } from '@/content/legal';
+import { AUTO_TEXT, LEVEL_TEXT, PROFILE_TEXT, PROSODY_DIMENSIONS } from '@/content/reports/sesli-okuma';
 import { hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
 import { sesliOkumaRoadmap } from '@/content/roadmaps/sesli-okuma';
 import { AssessmentError, evaluate, evaluateReports } from '@/lib/assessment/evaluate';
@@ -16,6 +17,7 @@ import type { SimpleReport } from '@/lib/reports/simple';
 import {
   ORAL_CRITERIA,
   OralInputError,
+  UNCLEAR_HIGH,
   accuracyLevel,
   comprehensionLevel,
   lowerLevel,
@@ -395,7 +397,10 @@ describe('Sesli okuma: rapor', () => {
                     expect(r.keyFigures[0].value, tag).toBe(String(result.wcpm));
                     expect(r.keyFigures[3].value, tag).toBe(`${result.comprehension.correct} / ${result.comprehension.total}`);
                     expect(r.keyFigures[4].value, tag).toBe(retell === 'none' ? '—' : `${result.retell!.mentioned.length} / ${result.retell!.total}`);
-                    expect(o.prosodyTotal, tag).toBe(result.prosody.total);
+                    expect(o.prosodyTotal, tag).toBe(result.prosody!.total);
+                    // Yetişkinin işaretlediği sürümde otomatik analize ait bir şey görünmez.
+                    expect([o.auto, o.method, o.unclear, result.flags.auto, result.flags.unclearHigh], tag).toEqual([false, null, null, false, false]);
+                    expect(o.counted.map((x) => x.label), tag).toContain('Yardımla okuma');
                     expect(o.prosody.map((x) => x.name), tag).toEqual(PROSODY_DIMENSIONS.map((d) => d.name));
                     expect(r.audienceName, tag).toBe(audience === 'parent' ? 'Veli ve öğretmen raporu' : 'Öğrenci raporu');
                     checked++;
@@ -408,7 +413,7 @@ describe('Sesli okuma: rapor', () => {
       }
     }
     expect(checked).toBe(3 * 2 * 3 * 3 * 3 * 3 * 6 * 2);
-  });
+  }, 60_000);
 
   it('hatasız okumada işaretli metin boş, ölçüt tablosu iki satır; PDF üretilir', async () => {
     const reps = evaluate(SLUG, body(5, input('g5-ahtapot')));
@@ -424,6 +429,218 @@ describe('Sesli okuma: rapor', () => {
       expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
     }
   }, 60_000);
+});
+
+describe('Sesli okuma: otomatik analiz (cihazdaki yapay zekâ)', () => {
+  /** Otomatik analizin gönderdiği istek: akıcılık ve yeniden anlatma yok, dinleme oranı gönderilmez. */
+  function autoInput(key: string, o: Partial<OralInput> = {}): OralInput {
+    const i = input(key, { auto: true, prosody: null, retell: null, ...o });
+    delete i.listened;
+    return i;
+  }
+  /** `from` numaralı kelimeden başlayarak `n` kelimeyi "net anlaşılamadı" olarak işaretler. */
+  function unclear(from: number, n: number): Record<string, OralMark> {
+    return Object.fromEntries(Array.from({ length: n }, (_, i) => [String(from + i), { s: 'unclear' as const }]));
+  }
+  /** Raporun bütün metinleri (otomatik analize özgü bölümler dahil). */
+  const autoText = (r: SimpleReport) =>
+    [
+      text(r),
+      r.oral?.method?.title ?? '',
+      r.oral?.method?.text ?? '',
+      r.oral?.unclear?.label ?? '',
+      r.oral?.timeline?.caption ?? '',
+      ...r.keyFigures.flatMap((f) => [f.label, f.value, f.note ?? '']),
+      ...r.oral!.counted.map((c) => c.label),
+      ...r.oral!.notCounted.map((c) => c.label),
+      r.roadmap?.settings?.intro ?? '',
+      r.roadmap?.settings?.note ?? '',
+      r.roadmap?.study.intro ?? '',
+    ].join(' ');
+  /** Yetişkinin okumayı dinlediğini, işaretlediğini ya da derecelendirdiğini anlatan sözler. */
+  const ADULT_LISTENING = /dinle|işaretleme|işaretleyen|işaretlediğ|derecelendir|yardımla okuma/i;
+  const key = 'g3-kus-yemligi';
+  const n = oralWordCount(passage(key).paragraphs);
+
+  it('net anlaşılamayan kelimeler hata sayılmaz ama ayrıca sayılır; akıcılık yoktur', () => {
+    const r = scoreOral(def, 3, autoInput(key, { readingMs: 60_000, marks: { ...unclear(10, 4), '0': { s: 'sub', said: 'kuş' }, '1': { s: 'omit' }, '2': { s: 'self' }, '3': { ins: 1 } } }));
+    expect([r.counts.sub, r.counts.omit, r.counts.help, r.counts.ins, r.counts.self, r.counts.unclear]).toEqual([1, 1, 0, 1, 1, 4]);
+    expect(r.errors).toBe(3);
+    expect(r.wordsCorrect).toBe(n - 2);
+    expect(r.accuracyPct).toBe(Math.round(((n - 3) / n) * 1000) / 10);
+    expect(r.wcpm).toBe(n - 2);
+    expect(r.prosody).toBeNull();
+    expect(r.retell).toBeNull();
+    expect(r.flags).toMatchObject({ auto: true, unclearHigh: false, partialListen: false });
+    expect(r.marked.flat()[10]).toEqual({ text: passage(key).paragraphs[0].split(/\s+/)[10], s: 'unclear' });
+    // Aynı işaretler "net anlaşılamadı" olmadan: doğruluk ve dakikada doğru kelime değişmez.
+    const clean = scoreOral(def, 3, autoInput(key, { readingMs: 60_000, marks: { '0': { s: 'sub' }, '1': { s: 'omit' }, '3': { ins: 1 } } }));
+    expect([clean.accuracyPct, clean.wcpm]).toEqual([r.accuracyPct, r.wcpm]);
+    // Denetim anlamlı: yetişkinin işaretlediği sürümün raporu bu sözleri içerir.
+    const adult = evaluate(SLUG, body(3, input(key)));
+    for (const a of [adult.student, adult.parent]) expect(autoText(a)).toMatch(ADULT_LISTENING);
+  });
+
+  it(`kelimelerin %${UNCLEAR_HIGH * 100}'undan çoğu net anlaşılamadıysa sonuçlar yaklaşıktır`, () => {
+    for (const k of ['g1-kacan-top', key, 'g7-peri-bacalari']) {
+      const p = passage(k);
+      const words = oralWordCount(p.paragraphs);
+      const limit = Math.floor(words * UNCLEAR_HIGH);
+      expect(scoreOral(def, p.grade, autoInput(k, { marks: unclear(0, limit) })).flags.unclearHigh, k).toBe(false);
+      expect(scoreOral(def, p.grade, autoInput(k, { marks: unclear(0, limit + 1) })).flags.unclearHigh, k).toBe(true);
+    }
+  });
+
+  it('akıcılık derecelendirmesi yalnızca otomatik analizde boş olabilir; her sürüm yalnızca kendi işaretlerini kabul eder', () => {
+    const adultNoProsody = input(key, { prosody: null });
+    expect(() => scoreOral(def, 3, adultNoProsody)).toThrow(OralInputError);
+    expect(() => evaluate(SLUG, body(3, adultNoProsody))).toThrow(AssessmentError);
+    const adultNoListened = input(key);
+    delete adultNoListened.listened;
+    expect(() => scoreOral(def, 3, adultNoListened)).toThrow(OralInputError);
+    expect(() => scoreOral(def, 3, input(key, { marks: unclear(0, 1) }))).toThrow(OralInputError);
+    expect(() => scoreOral(def, 3, autoInput(key, { prosody: { expression: 3, phrasing: 3, smoothness: 3, pace: 3 } }))).toThrow(OralInputError);
+    expect(() => scoreOral(def, 3, autoInput(key, { retell: { recorded: true, ideas: [] } }))).toThrow(OralInputError);
+    expect(() => scoreOral(def, 3, autoInput(key, { marks: { '0': { s: 'help' } } }))).toThrow(OralInputError);
+    // Dinleme oranı gönderilse de yok sayılır.
+    expect(scoreOral(def, 3, autoInput(key, { listened: 0 })).flags.partialListen).toBe(false);
+    expect(scoreOral(def, 3, input(key, { auto: false, listened: 0.5 })).flags.partialListen).toBe(true);
+  });
+
+  it('istek şeması otomatik analizi ve "net anlaşılamadı" işaretini kabul eder', () => {
+    const b = body(3, autoInput(key, { marks: { ...unclear(0, 3), '5': { s: 'unclear', hes: true }, '6': { s: 'sub', said: 'kuşlar', kind: 'suffix' } } }));
+    const parsed = answersBody.parse(b).data;
+    expect(parsed.engine === 'oral' && [parsed.auto, parsed.prosody, parsed.retell, parsed.listened]).toEqual([true, null, null, undefined]);
+    expect(parsed.engine === 'oral' && parsed.marks['5']).toEqual({ s: 'unclear', hes: true });
+    expect(answersBody.safeParse(body(3, autoInput(key, { marks: { '0': { s: 'xyz' as 'sub' } } }))).success).toBe(false);
+    expect(answersBody.safeParse({ ...b, data: { ...b.data, auto: 'evet' } }).success).toBe(false);
+    // Yetişkinin işaretlediği eski istekler aynen kabul edilir.
+    expect(answersBody.safeParse(body(3, input(key))).success).toBe(true);
+  });
+
+  /** Doğruluk düzeyi için hata sayısı ve anlama düzeyi için yanlış soru sayısı. */
+  const errorsFor = (level: OralLevel, words: number) => (level === 'easy' ? 0 : Math.ceil(words * (level === 'support' ? 0.05 : 0.15)));
+  const wrongFor = (level: OralLevel, total: number) => (level === 'easy' ? 0 : level === 'support' ? Math.round(total * 0.3) : total - 1);
+
+  it('bütün durum birleşimlerinde rapor yetişkinin dinlediğini anlatmaz; yapay zekâyı bir kez açıklar, akıcılık ve yeniden anlatma yoktur', () => {
+    let checked = 0;
+    for (const k of ['g1-kacan-top', 'g4-deve', 'g7-peri-bacalari']) {
+      const p = passage(k);
+      const words = oralWordCount(p.paragraphs);
+      for (const grade of [p.grade, Math.min(8, p.grade + 1)]) {
+        for (const acc of LEVELS) {
+          for (const comp of LEVELS) {
+            for (const amount of ['none', 'some', 'high'] as const) {
+              for (const flag of ['', 'interrupted', 'fast', 'manual', 'noisy'] as const) {
+                const errs = errorsFor(acc, words);
+                const u = amount === 'none' ? 0 : amount === 'some' ? 2 : Math.floor(words * UNCLEAR_HIGH) + 1;
+                const i = autoInput(k, {
+                  marks: { ...subs(errs), ...unclear(errs, u) },
+                  answers: answersFor(k, wrongFor(comp, p.questions.length)),
+                  readingMs: flag === 'fast' ? Math.round((words / 400) * 60_000) + 1000 : Math.round((words / 70) * 60_000),
+                  timingAuto: flag !== 'manual',
+                });
+                if (flag === 'interrupted') i.audio = { ...i.audio!, interrupted: true };
+                if (flag === 'noisy') i.audio = { ...i.audio!, quality: 'noisy' };
+                const result = scoreOral(def, grade, i);
+                expect(result.accuracyLevel, k).toBe(acc);
+                expect(result.comprehension.level, k).toBe(comp);
+                expect(result.counts.unclear, k).toBe(u);
+                expect(result.flags.unclearHigh, k).toBe(amount === 'high');
+                const reps = evaluate(SLUG, body(grade, i));
+                for (const audience of ['student', 'parent'] as const) {
+                  const r = reps[audience];
+                  const o = r.oral!;
+                  const all = autoText(r);
+                  const tag = `${k} ${grade} ${acc}-${comp} ${amount} ${flag || '-'} ${audience}`;
+                  expect(all, tag).not.toMatch(/undefined|NaN|null|\{|\}/);
+                  expect(all, tag).not.toMatch(ADULT_LISTENING);
+                  // Okumanın nasıl incelendiği bir kez, raporun başında anlatılır.
+                  expect(o.auto, tag).toBe(true);
+                  expect(o.method, tag).toEqual(AUTO_TEXT.method[audience]);
+                  expect(o.method!.text, tag).toMatch(/yapay zekâ/);
+                  expect(o.method!.text, tag).toMatch(/cihaz/);
+                  expect(o.method!.text, tag).toMatch(/yanlış duyabilir/);
+                  expect(o.method!.text, tag).toMatch(/“net anlaşılamadı”/);
+                  expect(o.method!.text, tag).toMatch(/hata sayılmaz/);
+                  expect(o.method!.text, tag).toMatch(/yaklaşık/);
+                  expect(all.split(o.method!.text).length - 1, tag).toBe(1);
+                  expect(o.unclear, tag).toEqual({ label: 'Net anlaşılamadı (hata sayılmadı)', value: u });
+                  // Akıcılık derecelendirmesi ve yeniden anlatma yoktur; ritim (duraklamalar) gösterilir.
+                  expect([o.prosody, o.prosodyTotal, o.prosodyLabel, o.retell], tag).toEqual([[], null, null, null]);
+                  expect(r.items.map((x) => x.title), tag).toEqual(['Doğru okuma', 'Okuma hızı', 'Okuduğunu anlama']);
+                  expect(r.keyFigures.map((x) => x.label), tag).toEqual(['Dakikada doğru okunan kelime', 'Doğru okuma', 'Okuma süresi', 'Anlama', 'Duraklama', 'Net anlaşılamadı']);
+                  const pausesShown = !['interrupted', 'manual', 'noisy'].includes(flag);
+                  expect(o.timeline !== null, tag).toBe(pausesShown);
+                  expect(r.keyFigures[4].value, tag).toBe(pausesShown ? String(result.pauses!.count) : '—');
+                  expect(r.keyFigures[5].value, tag).toBe(String(u));
+                  expect(o.counted.map((x) => x.label), tag).toEqual(['Yanlış okuma', 'Atlama', 'Ekleme']);
+                  // Net anlaşılamayan kelime varsa "doğru okudu" sayısına katılmaz; hata da sayılmaz.
+                  const accText = r.items[0].text;
+                  if (u > 0) expect(accText, tag).toContain(`${result.wordsCorrect - u} tanesini doğru okudu`);
+                  if (u > 0) expect(accText, tag).toContain(`${u} kelime net anlaşılamadı`);
+                  else expect(accText, tag).not.toMatch(/net anlaşılamadı/);
+                  // Uyarılar yalnızca gerçekten olan durumlarda; yaklaşık sonuç uyarısı en başta.
+                  expect(r.cautions.some((c) => /net (ayırt edemedi|anlayamadı)/.test(c)), tag).toBe(amount === 'high');
+                  if (amount === 'high') expect(r.cautions[0], tag).toBe(AUTO_TEXT.unclearHigh(u, words)[audience]);
+                  expect(r.cautions.some((c) => /kesinti/.test(c)), tag).toBe(flag === 'interrupted');
+                  expect(r.cautions.some((c) => /çok kısa/.test(c)), tag).toBe(flag === 'fast');
+                  expect(r.cautions.some((c) => /düğmelere/.test(c)), tag).toBe(flag === 'manual');
+                  expect(r.disclaimer.text, tag).toBe(AUTO_TEXT.disclaimer[audience]);
+                  expect(r.support !== null, tag).toBe(audience === 'parent' && needsSpecialistNote(result, grade));
+                  // Yol haritası: akıcılık yönü yok, giriş otomatik analizi söyler.
+                  const rm = r.roadmap!;
+                  const asp = oralAspects(result);
+                  expect(asp.map((x) => x.key).sort(), tag).toEqual(['accuracy', 'comprehension']);
+                  expect(rm.study.items.map((x) => x.key), tag).toEqual(asp.map((x) => x.key));
+                  expect(rm.bars.length, tag).toBe(2);
+                  expect(rm.intro, tag).toContain(sesliOkumaRoadmap.autoBasis[audience]);
+                  expect(new Set(rm.weeks.map((w) => w.text)).size, tag).toBe(4);
+                  // Kişi dili: öğrenciye "sen", yetişkine üçüncü kişi.
+                  if (audience === 'parent') expect(all, tag).not.toMatch(/\b(okudun|anladın|zorlandın|söyledin|cevapladın|durdun|düzelttin|sen|senin)\b/);
+                  else expect(all, tag).not.toMatch(/Öğrenci |öğrencinin|Okumadaki zorluk/);
+                  checked++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(checked).toBe(3 * 2 * 3 * 3 * 3 * 5 * 2);
+  }, 60_000);
+
+  it('PDF otomatik analizde de üretilir (net anlaşılamayan kelimeler, akıcılıksız)', async () => {
+    const p = passage('g2-mavi-leke');
+    const words = oralWordCount(p.paragraphs);
+    const marks: Record<string, OralMark> = {
+      ...unclear(20, Math.floor(words * UNCLEAR_HIGH) + 1),
+      '0': { s: 'sub', said: 'mavili' },
+      '3': { s: 'omit', rep: true },
+      '7': { s: 'self', syl: true, hes: true },
+      '9': { ins: 1 },
+      '12': { s: 'unclear', hes: true },
+    };
+    const reps = [evaluate(SLUG, body(2, autoInput('g2-mavi-leke', { marks }))), evaluate(SLUG, body(2, autoInput('g2-mavi-leke')))];
+    expect(reps[0].parent.cautions.length).toBeGreaterThan(0);
+    for (const rep of reps) {
+      for (const r of [rep.student, rep.parent]) {
+        const pdf = await renderSimpleReportPdf(r, 'olcekhane.com');
+        expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+      }
+    }
+  }, 60_000);
+
+  it('aydınlatma metni otomatik analizi doğru anlatır', () => {
+    const doc = legalDocBySlug('aydinlatma-metni')!;
+    expect(doc.version).toBeGreaterThanOrEqual(7);
+    expect(doc.bodyMd).toContain('Kayıt yalnızca “Evet” cevabından sonra, tarayıcınızda, kendi cihazınızda çalışan bir konuşma tanıma (yapay zekâ) modeliyle yazıya dökülür.');
+    expect(doc.bodyMd).toContain('Model dosyası sitemizin sunucusundan indirilir');
+    expect(doc.bodyMd).toContain('Ses kaydı, analiz biter bitmez sayfanın belleğinden silinir');
+    expect(doc.bodyMd).toContain('yerel depolama alanlarına yazılmaz');
+    // Eski, artık her durumda doğru olmayan cümle kalmadı.
+    expect(doc.bodyMd).not.toContain('Konuşma, yapay zekâ ya da konuşma tanıma hizmetiyle çözümlenmez.');
+  });
 });
 
 describe('Sesli okuma: sitede', () => {

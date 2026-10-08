@@ -216,6 +216,15 @@ jobs:
           # Sesli okuma: tarayıcı mikrofonu yalnızca izin başlığı açıksa kullanabilir; ses cihazda kalır, sunucuya yalnızca
           # işaretler, süreler ve cevaplar gelir. Örnek: 3. sınıf metni, iki yanlış okuma, bir yeniden anlatma fikri.
           "${C[@]}" -I "https://$ALAN/okuma" | grep -qi '^permissions-policy:.*microphone=(self)' || sorun="$sorun mikrofon-izni"
+          # Otomatik analiz: model ve ONNX Runtime dosyaları kendi sunucumuzdan iner (yalnızca başlıklar; büyük dosyalar
+          # indirilmez); test sayfası cross-origin isolated (COEP) açılır.
+          analiz=$(node araclar/model-hazirla.mjs --adresler | awk '$1 ~ /\/config\.json$/ || $1 ~ /\.wasm$/ {print $1}') || analiz=""
+          [ -n "$analiz" ] || sorun="$sorun model-adresleri"
+          for yol in $analiz; do
+            kod=$("${C[@]}" -I -o /dev/null -w '%{http_code}' "https://$ALAN$yol") || kod=000
+            [ "$kod" = 200 ] || sorun="$sorun $yol=$kod"
+          done
+          "${C[@]}" -D - -o /dev/null "https://$ALAN/testler/sesli-okuma-degerlendirmesi/coz?sinif=3" | grep -qi '^cross-origin-embedder-policy: require-corp' || sorun="$sorun coep"
           SO_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 3, "data": {"engine": "oral", "passageKey": "g3-kus-yemligi", "recordMs": 110000, "readingMs": 100000, "timingAuto": True, "audio": {"quality": "good", "pauses": [[1000, 2500]], "speechMs": 80000, "contour": [50] * 120, "interrupted": False}, "marks": {"0": {"s": "sub"}, "5": {"s": "omit"}}, "listened": 1, "retell": {"recorded": True, "ideas": ["i1"]}, "answers": {f"q{i}": "a" for i in range(1, 9)}, "prosody": {"expression": 3, "phrasing": 3, "smoothness": 3, "pace": 3}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$SO_GOVDE" "https://$ALAN/api/rapor/sesli-okuma-degerlendirmesi" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); o=r["parent"]["oral"]; assert r["parent"]["audienceName"] == "Veli ve öğretmen raporu" and len(r["student"]["keyFigures"]) == 6 and o["level"]["key"] in ("easy", "support", "hard") and o["counted"][0]["value"] == 1 and o["timeline"]'; then

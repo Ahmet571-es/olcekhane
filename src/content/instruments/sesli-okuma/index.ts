@@ -12,6 +12,10 @@ const ERDEN = 'Erden, Kurdoğlu ve Uslu, 2002';
  * yazılmıştır. Öğrenci sınıfına uygun bir metni sesli okur (ses yalnızca cihazda kayda alınır), metni kendi
  * cümleleriyle anlatır ve metne bakmadan soruları cevaplar. Bir yetişkin kaydı dinleyerek okuma hatalarını işaretler,
  * anlatmada söylenen fikirleri ve okumanın akıcılığını değerlendirir. Her sınıfa üç metin vardır; sayı artırılabilir.
+ *
+ * Otomatik analiz sürümünde (önizleme bağlantısıyla; lib/oral/auto.ts) öğrenci tek başına okur ve soruları cevaplar;
+ * kaydı öğrencinin cihazında çalışan bir konuşma tanıma modeli inceler, yetişkin dinlemez. Bu sürümde akıcılık
+ * derecelendirmesi ve yeniden anlatma yoktur. Bilim kartındaki metinler iki sürümü de doğru anlatır.
  */
 export const sesliOkuma: OralReadingInstrument = {
   slug: 'sesli-okuma-degerlendirmesi',
@@ -55,22 +59,23 @@ export const sesliOkuma: OralReadingInstrument = {
   passages: [...sinif12, ...sinif34, ...sinif56, ...sinif78],
   science: {
     basedOn:
-      'Özgün değerlendirme: sınıf düzeyine göre yazılmış metinlerin sesli okunması, yetişkinin kaydı dinleyerek okuma hatalarını işaretlemesi, yeniden anlatma ve anlama soruları (Ölçekhane, 2026). Akıcı okumanın üç yönü (doğruluk, hız, vurgu ve tonlama) Ulusal Okuma Paneli’nin (2000) tanımına dayanır.',
+      'Özgün değerlendirme: sınıf düzeyine göre yazılmış metinlerin sesli okunması, yetişkinin kaydı dinleyerek okuma hatalarını işaretlemesi, yeniden anlatma ve anlama soruları (Ölçekhane, 2026). Deneme aşamasındaki otomatik analiz sürümünde okuma hatalarını yetişkin değil, öğrencinin cihazında çalışan bir yapay zekâ modeli (konuşma tanıma) işaretler. Akıcı okumanın üç yönü (doğruluk, hız, vurgu ve tonlama) Ulusal Okuma Paneli’nin (2000) tanımına dayanır.',
     whatItMeasures:
-      'Doğru okuma (doğru okunan kelime oranı), okuma hızı (dakikada doğru okunan kelime), akıcılık (vurgu ve tonlama, öbekleme, düzgünlük, tempo), okuduğunu anlama (bilgi, çıkarım, kelime anlamı ve ana fikir soruları) ve yeniden anlatma.',
+      'Doğru okuma (doğru okunan kelime oranı), okuma hızı (dakikada doğru okunan kelime), akıcılık (vurgu ve tonlama, öbekleme, düzgünlük, tempo), okuduğunu anlama (bilgi, çıkarım, kelime anlamı ve ana fikir soruları) ve yeniden anlatma. Otomatik analiz sürümünde akıcılık derecelendirilmez ve yeniden anlatma yoktur; okumanın ritmi duraklamalarla gösterilir.',
     turkishVersion: 'Metinler, sorular ve derecelendirmeler doğrudan Türkçe yazılmıştır; çeviri değildir.',
     reliability:
-      'Değerlendirme pilot aşamadadır. Metinlerin sınıf düzeyine uygunluğu, soruların madde analizi ve iki dinleyicinin işaretlemelerinin ne kadar uyuştuğu henüz incelenmedi.',
+      'Değerlendirme pilot aşamadadır. Metinlerin sınıf düzeyine uygunluğu, soruların madde analizi, iki dinleyicinin işaretlemelerinin ne kadar uyuştuğu ve otomatik analizin işaretlerinin bir öğretmenin işaretlemesiyle ne kadar uyuştuğu henüz incelenmedi.',
     normStatus: 'none',
     normNote:
       'Bu değerlendirmenin Türkiye normu yoktur; sonuçlar akranlarla karşılaştırılmaz. Metnin öğrenci için düzeyi Ölçekhane’nin pilot ölçütlerine göre belirlenir: Doğru okunan kelime oranı %97 ve üzerindeyse rahat, %90 ile %97 arasındaysa destekle, %90’ın altındaysa zor; sorularda doğru oranı %80 ve üzerindeyse rahat, %60 ile %80 arasındaysa destekle, %60’ın altındaysa zor. İkisinden düşük olanı metnin düzeyidir. 1–5. sınıflarda okuma hızı, Türkiye’de yayımlanmış bir çalışmadaki ortalamayla yalnızca kaba bir fikir vermek için karşılaştırılır.',
     ageNote:
-      '1–8. sınıflar için. Her sınıfa üç metin vardır; öğrenci kendi sınıfının ya da bir alt ve bir üst sınıfın metnini okuyabilir. 1. sınıf metinleri ikinci dönem için yazılmıştır. Değerlendirmeyi bir yetişkin (öğretmen ya da veli) yapar.',
+      '1–8. sınıflar için. Her sınıfa üç metin vardır; öğrenci kendi sınıfının ya da bir alt ve bir üst sınıfın metnini okuyabilir. 1. sınıf metinleri ikinci dönem için yazılmıştır. Değerlendirmeyi bir yetişkin (öğretmen ya da veli) yapar; otomatik analiz sürümünde öğrenci tek başına okur ve kaydını bir yetişkin dinlemez.',
     license: 'Özgün içerik: metinler, sorular ve derecelendirmeler Ölçekhane’ye aittir.',
     limitations: [
       'Okuma hatalarını dinleyen yetişkin işaretler: İki dinleyici aynı okumayı biraz farklı işaretleyebilir. Kaydı gerektiğinde yavaşlatıp yeniden dinleyerek işaretlemek bu farkı azaltır.',
       'Tek bir metne dayanır; konuya ilgi, metnin türü ve o günkü yorgunluk sonucu etkileyebilir. Gelişimi izlemek için farklı metinlerle tekrarlanmalıdır.',
-      'Uygulama konuşmayı tanımaz; ses kaydından yalnızca süre ve duraklamalar ölçülür. Bu ölçümler arka plan gürültüsünden etkilenebilir.',
+      'Yetişkinin işaretlediği sürümde uygulama konuşmayı tanımaz; ses kaydından yalnızca süre ve duraklamalar ölçülür. Bu ölçümler arka plan gürültüsünden etkilenebilir.',
+      'Otomatik analiz sürümü deneme aşamasındadır: Okumayı, öğrencinin cihazında (tarayıcıda) çalışan bir yapay zekâ modeli inceler; ses cihazdan çıkmaz ve analiz bitince silinir. Model, özellikle çocuk seslerinde ve gürültülü ortamlarda bazı kelimeleri yanlış duyabilir; doğru okunmuş bir kelimeyi hata sayabilir ya da bir hatayı fark etmeyebilir. Net ayırt edemediği kelimeler hata sayılmaz; bu yüzden doğru okuma oranı olduğundan yüksek çıkabilir. Sonuçlar yaklaşıktır.',
       'Okuma güçlüğü (disleksi) gibi bir durumu teşhis etmez. Kalıcı zorluk görülürse okulun rehberlik servisiyle görüşülmelidir.',
     ],
     citations: [

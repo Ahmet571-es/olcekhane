@@ -31,7 +31,7 @@ Bu metin bilgilendirme amaçlıdır; sizden onay istemez.
 - Testleri çözerken sizden ya da çocuğunuzdan ad, e-posta, telefon ya da kimlik numarası istemiyoruz.
 - Test cevapları yalnızca raporu hazırlamak için sunucumuza gönderilir; veritabanına, dosyaya ya da sunucu kayıtlarına yazılmaz ve işlem bitince sunucunun belleğinden silinir.
 - Raporun tek kopyası, ekranınızda gösterilen ve indirdiğiniz PDF dosyasıdır. Sayfayı kapattıktan sonra raporu size yeniden gösteremeyiz.
-- Sesli okuma değerlendirmesinde ses kaydı yalnızca sizin cihazınızda kalır; sunucumuza ya da başka bir yere gönderilmez.
+- Sesli okuma değerlendirmesinde ses kaydı yalnızca sizin cihazınızda kalır; sunucumuza ya da başka bir yere gönderilmez. Otomatik analizde kayıt, yine cihazınızda, tarayıcınızda çalışan bir konuşma tanıma modeliyle çözümlenir.
 - Sitemizin sunucusu Almanya’dadır (Avrupa Birliği).
 - Çerez, reklam, izleme ya da ziyaretçi istatistiği (analiz) aracı kullanmıyoruz.
 - Bize e-posta gönderirseniz e-postanızı yalnızca size yanıt vermek için kullanırız.
@@ -56,7 +56,12 @@ Bu bilgiler:
 - IP adresiniz ya da cihazınız dahil hiçbir kimlik bilgisiyle eşleştirilmez,
 - kimseyle paylaşılmaz; reklam, pazarlama, profil çıkarma ya da yapay zekâ modellerinin eğitimi için kullanılmaz.
 
-**Sesli okuma değerlendirmesinde** mikrofon yalnızca siz düğmeye bastığınızda ve tarayıcınız sizden izin istedikten sonra açılır; öğrencinin bölümü bitince kapanır. Ses kaydı yalnızca açık olan sayfada, cihazınızın belleğinde tutulur: sunucumuza ya da başka bir yere gönderilmez, hiçbir yere kaydedilmez ve sayfayı kapattığınızda silinir. Konuşma, yapay zekâ ya da konuşma tanıma hizmetiyle çözümlenmez. Kayıttan cihazınızda yalnızca okuma süresi, duraklamaların başlangıç ve bitişleri ve kaba bir ses yüksekliği eğrisi hesaplanır; bu sayılardan ses geri elde edilemez. Bu sayılar, kaydı dinleyerek işaretlediğiniz okuma hataları ve cevaplarla birlikte öteki test cevapları gibi raporu hazırlamak için sunucumuza gönderilir ve saklanmaz.
+**Sesli okuma değerlendirmesinde** mikrofon yalnızca siz düğmeye bastığınızda ve tarayıcınız sizden izin istedikten sonra açılır; öğrencinin bölümü bitince kapanır. Ses kaydı yalnızca açık olan sayfada, cihazınızın belleğinde tutulur: sunucumuza ya da başka bir yere gönderilmez, hiçbir yere kaydedilmez ve en geç sayfayı kapattığınızda silinir. Kayıttan cihazınızda okuma süresi, duraklamaların başlangıç ve bitişleri ve kaba bir ses yüksekliği eğrisi hesaplanır; bu sayılardan ses geri elde edilemez. Değerlendirme iki biçimde yapılabilir:
+
+- **Yetişkinin işaretlemesiyle:** Okuma hatalarını, kaydı dinleyen yetişkin (öğretmen ya da veli) işaretler. Bu biçimde konuşma, yapay zekâ ya da konuşma tanımayla çözümlenmez.
+- **Otomatik analizle:** Öğrenci okumayı bitirince kaydının analiz edilmesini isteyip istemediği sorulur. Kayıt yalnızca “Evet” cevabından sonra, tarayıcınızda, kendi cihazınızda çalışan bir konuşma tanıma (yapay zekâ) modeliyle yazıya dökülür. Model dosyası sitemizin sunucusundan indirilir; tarayıcınız bu dosyayı olağan önbelleğinde tutabilir, dosya kişisel veri içermez. Ses kaydı analiz için ne sunucumuza ne de başka bir yere gönderilir. Yazıya dökülen kelimeler okunan metinle karşılaştırılıp kelime işaretlerine (ör. yanlış okunan, atlanan ya da net anlaşılamayan kelime) çevrilir. Ses kaydı, analiz biter bitmez sayfanın belleğinden silinir; yazıya dökülen kelimeler de en geç sayfayı kapattığınızda silinir.
+
+Her iki biçimde de sunucumuza yalnızca kelime işaretleri, okuma süresi ve yukarıdaki sayılar, soruların cevapları ve (yetişkinin işaretlemesinde) akıcılık değerlendirmesi ile yeniden anlatmada söylenen fikirler gönderilir. Bunlar öteki test cevapları gibi yalnızca raporu hazırlamak için kullanılır ve saklanmaz. Kayıt, yazıya dökülen kelimeler ve işaretler tarayıcınızın yerel depolama alanlarına yazılmaz.
 
 Kimliğinizi sormadığımız ve cevapları saklamadığımız için test cevapları ve raporlarla ilgili size gösterebileceğimiz, düzeltebileceğimiz ya da silebileceğimiz bir kayıt bulunmaz.
 
@@ -99,7 +104,7 @@ Kişisel verileri satmıyor, reklam ya da pazarlama amacıyla kimseyle paylaşm�
 ## 8. Ne kadar süre saklıyoruz?
 
 - Test cevapları ve raporlar: saklanmaz; işlem bitince sunucunun belleğinden silinir.
-- Sesli okuma kaydı: sunucumuza hiç gelmez; yalnızca cihazınızda, sayfa açık kaldığı sürece durur.
+- Sesli okuma kaydı: sunucumuza hiç gelmez; yalnızca cihazınızda, sayfa açık kaldığı sürece durur. Otomatik analizde analiz biter bitmez silinir.
 - IP adresi (hız sınırı): yalnızca sunucunun belleğinde, en geç 11 dakika.
 - Bize gönderdiğiniz e-postalar: yazışma bittikten sonra en geç 1 yıl.
 
@@ -182,7 +187,7 @@ Sitede başka sitelerden yüklenen yazı tipi, komut dosyası, reklam ya da ziya
 export const LEGAL_DOCS: LegalDocDef[] = [
   {
     kind: 'privacy_notice',
-    version: 6,
+    version: 7,
     slug: 'aydinlatma-metni',
     title: 'KVKK Aydınlatma Metni',
     summary: 'Ölçekhane’de hangi kişisel verilerin, hangi amaçla ve ne kadar süre işlendiği. Test cevapları ve raporlar saklanmaz; sunucu Almanya’dadır.',

@@ -5,11 +5,15 @@ const isDev = process.env.NODE_ENV !== 'production';
 /**
  * İçerik güvenliği politikası. Dış kaynaklardan komut dosyası, yazı tipi ya da görsel yüklenmez;
  * her şey kendi sunucumuzdan gelir. Next.js'in satır içi başlatma komutları için 'unsafe-inline'
- * gereklidir; geliştirme ortamında hızlı yenileme için 'unsafe-eval' eklenir.
+ * gereklidir; geliştirme ortamında hızlı yenileme için 'unsafe-eval' eklenir. 'wasm-unsafe-eval' yalnızca
+ * WebAssembly derlemesine izin verir (sesli okumada otomatik analiz: konuşma tanıma modeli tarayıcıda, ONNX Runtime
+ * Web ile çalışır); JavaScript'te eval açılmaz. Worker'lar (analiz ve ONNX Runtime'ın iş parçacıkları) yalnızca
+ * kendi sunucumuzdaki dosyalardan açılır.
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`,
+  "worker-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
@@ -63,6 +67,25 @@ const nextConfig: NextConfig = {
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
         ],
       },
+      // Sesli okumada otomatik analiz: konuşma tanıma modeli çok iş parçacığıyla (SharedArrayBuffer) ancak sayfa
+      // "cross-origin isolated" olduğunda çalışır: COOP (yukarıda, bütün sitede) ve COEP birlikte. COEP yalnızca
+      // test sayfasında açılır (yalnızca sayfa tam yüklenince geçerli olur; site içinde bağlantıyla gelinince önceki sayfanınki kalır).
+      // Sayfanın açtığı Worker'ların betikleri de aynı COEP'i taşımalı; yoksa tarayıcı Worker'ı yüklemez.
+      ...[
+        '/testler/sesli-okuma-degerlendirmesi/coz',
+        '/okuma/analiz-isci.js',
+        '/ort/:path*',
+        '/vendor/:path*',
+      ].map((source) => ({
+        source,
+        headers: [{ key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' }],
+      })),
+      // Model ve çalışma dosyaları büyüktür ve adresleri sürümlerini içerir (src/lib/oral/auto.ts): tarayıcı bir kez
+      // indirip HTTP önbelleğinde tutabilir; sürüm değişince adres de değişir.
+      ...['/model/:path*', '/ort/:path*', '/vendor/:path*'].map((source) => ({
+        source,
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      })),
     ];
   },
 };

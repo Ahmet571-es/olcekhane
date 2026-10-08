@@ -33,10 +33,14 @@ export const taskTrial = z.object({
 
 const rt = z.number().min(0).max(3_600_000).nullable();
 
-/** Sesli okumada bir kelimenin işareti (yetişkin kaydı dinleyerek koyar). */
+/**
+ * Sesli okumada bir kelimenin işareti: yetişkin kaydı dinleyerek koyar ya da (otomatik analizde) cihazdaki konuşma
+ * tanımanın çıktısından çıkarılır. `unclear` (net anlaşılamadı) yalnızca otomatik analizde, `help` yalnızca yetişkinin
+ * işaretlediği sürümde geçerlidir (puanlamada denetlenir).
+ */
 const oralMark = z
   .object({
-    s: z.enum(['sub', 'omit', 'help', 'self']).optional(),
+    s: z.enum(['sub', 'omit', 'help', 'self', 'unclear']).optional(),
     said: z.string().max(40).optional(),
     kind: z.enum(['suffix', 'similar', 'reversal', 'nonword']).optional(),
     meaning: z.boolean().optional(),
@@ -74,6 +78,8 @@ export const answersBody = z.object({
     }),
     z.object({
       engine: z.literal('oral'),
+      /** Otomatik analiz (cihazdaki konuşma tanıma): akıcılık ve yeniden anlatma null, dinleme oranı yok. */
+      auto: z.boolean().optional(),
       passageKey: z.string().max(40),
       recordMs: durationMs,
       readingMs: z.number().min(1000).max(1_800_000),
@@ -89,10 +95,12 @@ export const answersBody = z.object({
         })
         .nullable(),
       marks: z.record(z.string().max(5), oralMark).refine(fewKeys(1000)),
-      listened: z.number().min(0).max(1),
+      /** Yetişkinin işaretlediği sürümde zorunlu (puanlamada denetlenir); otomatik analizde gönderilmez. */
+      listened: z.number().min(0).max(1).optional(),
       retell: z.object({ recorded: z.boolean(), ideas: z.array(z.string().max(10)).max(30) }).nullable(),
       answers: z.record(z.string().max(10), z.string().max(4)).refine(fewKeys(30)),
-      prosody: z.object({ expression: level4, phrasing: level4, smoothness: level4, pace: level4 }),
+      /** Yalnızca otomatik analizde null olabilir (puanlamada denetlenir). */
+      prosody: z.object({ expression: level4, phrasing: level4, smoothness: level4, pace: level4 }).nullable(),
     }),
     z.object({
       engine: z.literal('tasks'),

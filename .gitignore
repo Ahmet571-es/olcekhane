@@ -49,3 +49,9 @@ next-env.d.ts
 
 # Python önbelleği (araclar/)
 __pycache__/
+
+# Sesli okumada otomatik analiz: konuşma tanıma modeli ve tarayıcı çalışma dosyaları (büyük; derlenirken
+# araclar/model-hazirla.mjs ile oluşturulur)
+/public/model/
+/public/ort/
+/public/vendor/

@@ -1,10 +1,11 @@
 import type { OralReportBlock } from '@/lib/reports/oral';
 import type { SimpleReport } from '@/lib/reports/simple';
-import { MarkedText } from './oral-word';
+import { MarkedText, UnclearSample } from './oral-word';
 
 /**
  * Sesli okuma raporunun ekrandaki bölümleri (PDF'teki raporla aynı içerik): metnin öğrenci için düzeyi, işaretli metin,
- * hata türleri, duraklamalar, okumanın yönleri, akıcılık, anlama, yeniden anlatma ve öneriler.
+ * hata türleri, duraklamalar, okumanın yönleri, akıcılık, anlama, yeniden anlatma ve öneriler. Otomatik analizde önce
+ * okumanın nasıl incelendiği anlatılır; akıcılık ve yeniden anlatma yoktur, net anlaşılamayan kelimeler ayrıca gösterilir.
  */
 
 export function OralLevelBanner({ oral, you }: { oral: OralReportBlock; you: boolean }) {
@@ -65,9 +66,18 @@ function Dots({ value }: { value: number }) {
 export function OralReportSections({ report }: { report: SimpleReport }) {
   const oral = report.oral!;
   const you = report.audience !== 'parent';
-  const anyMark = oral.counted.some((c) => c.value > 0) || oral.notCounted.some((c) => c.value > 0);
+  const anyMark = oral.counted.some((c) => c.value > 0) || oral.notCounted.some((c) => c.value > 0) || (oral.unclear?.value ?? 0) > 0;
   return (
     <>
+      {oral.method && (
+        <section aria-labelledby="inceleme" className="notice notice-info flex flex-col gap-2">
+          <h2 id="inceleme" className="font-bold">
+            {oral.method.title}
+          </h2>
+          <p className="measure">{oral.method.text}</p>
+        </section>
+      )}
+
       <section aria-labelledby="olcutler" className="flex flex-col gap-3">
         <h2 id="olcutler" className="t-h2">
           Düzey nasıl belirlendi?
@@ -109,17 +119,33 @@ export function OralReportSections({ report }: { report: SimpleReport }) {
           {you ? 'Okuman, kelime kelime' : 'Okuma, kelime kelime'}
         </h2>
         <p className="measure text-ink-2">
-          {anyMark
-            ? you
-              ? 'Kırmızı kelimeler hata sayılanlar, sarılar hata sayılmayan gözlemlerdir. Her işaretin adı kelimenin üstünde yazıyor.'
-              : 'Kırmızı kelimeler hata sayılanlar (yanlış okuma, atlama, yardımla okuma, ekleme), sarılar hata sayılmayan gözlemlerdir (kendi düzeltme, tekrar, heceleme, duraksama). Her işaretin adı kelimenin üstünde yazılıdır.'
-            : you
-              ? 'Hiçbir kelimede işaret yok: Metni hatasız okudun.'
-              : 'Hiçbir kelimede işaret yok: Metin hatasız okundu.'}
+          {oral.auto
+            ? anyMark
+              ? you
+                ? 'Kırmızı kelimeler hata sayılanlar, sarılar hata sayılmayan gözlemlerdir; gri, noktalı çizgili kelimeler net anlaşılamadı ve hata sayılmadı. Her işaretin adı kelimenin üstünde yazıyor.'
+                : 'Kırmızı kelimeler hata sayılanlar (yanlış okuma, atlama, ekleme), sarılar hata sayılmayan gözlemlerdir (kendi düzeltme, tekrar, heceleme, duraksama); gri, noktalı çizgili kelimeler net anlaşılamadı ve hata sayılmadı. Her işaretin adı kelimenin üstünde yazılıdır.'
+              : you
+                ? 'Hiçbir kelimede işaret yok: Yapay zekâ okumanda hata bulmadı.'
+                : 'Hiçbir kelimede işaret yok: Otomatik analiz okumada hata bulmadı.'
+            : anyMark
+              ? you
+                ? 'Kırmızı kelimeler hata sayılanlar, sarılar hata sayılmayan gözlemlerdir. Her işaretin adı kelimenin üstünde yazıyor.'
+                : 'Kırmızı kelimeler hata sayılanlar (yanlış okuma, atlama, yardımla okuma, ekleme), sarılar hata sayılmayan gözlemlerdir (kendi düzeltme, tekrar, heceleme, duraksama). Her işaretin adı kelimenin üstünde yazılıdır.'
+              : you
+                ? 'Hiçbir kelimede işaret yok: Metni hatasız okudun.'
+                : 'Hiçbir kelimede işaret yok: Metin hatasız okundu.'}
         </p>
         <div className="panel p-5 text-[1.125rem] sm:p-6">
           <MarkedText paragraphs={oral.marked} />
         </div>
+        {oral.unclear && (
+          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <UnclearSample>kelime</UnclearSample>
+            <span>
+              {oral.unclear.label}: <span className="tabular font-bold">{oral.unclear.value}</span>
+            </span>
+          </p>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <h3 className="font-bold text-danger">Hata sayılanlar</h3>
@@ -191,24 +217,26 @@ export function OralReportSections({ report }: { report: SimpleReport }) {
         </ul>
       </section>
 
-      <section aria-labelledby="akicilik" className="flex flex-col gap-3">
-        <h2 id="akicilik" className="t-h2">
-          Akıcılık: {oral.prosodyTotal} / 16 · {oral.prosodyLabel}
-        </h2>
-        <ul className="flex flex-col divide-y divide-rule border-y border-rule">
-          {oral.prosody.map((p) => (
-            <li key={p.name} className="grid gap-1 py-3.5 sm:grid-cols-[14rem_1fr] sm:gap-4">
-              <p className="flex flex-col gap-1">
-                <span className="font-bold">{p.name}</span>
-                <span className="flex items-center gap-2 whitespace-nowrap">
-                  <Dots value={p.value} /> <span className="tabular t-small text-ink-3">{p.value} / 4</span>
-                </span>
-              </p>
-              <p className="text-ink-2">{p.text}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {oral.prosodyTotal !== null && (
+        <section aria-labelledby="akicilik" className="flex flex-col gap-3">
+          <h2 id="akicilik" className="t-h2">
+            Akıcılık: {oral.prosodyTotal} / 16 · {oral.prosodyLabel}
+          </h2>
+          <ul className="flex flex-col divide-y divide-rule border-y border-rule">
+            {oral.prosody.map((p) => (
+              <li key={p.name} className="grid gap-1 py-3.5 sm:grid-cols-[14rem_1fr] sm:gap-4">
+                <p className="flex flex-col gap-1">
+                  <span className="font-bold">{p.name}</span>
+                  <span className="flex items-center gap-2 whitespace-nowrap">
+                    <Dots value={p.value} /> <span className="tabular t-small text-ink-3">{p.value} / 4</span>
+                  </span>
+                </p>
+                <p className="text-ink-2">{p.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="anlama" className="flex flex-col gap-4">
         <h2 id="anlama" className="t-h2">

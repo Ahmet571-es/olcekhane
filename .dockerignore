@@ -15,7 +15,13 @@ docker-compose*.yml
 KURULUM.md
 sunucu
 yayin
-araclar
+# Araçlardan yalnızca otomatik analiz dosyalarını hazırlayan betik görüntü derlemesinde kullanılır.
+araclar/*
+!araclar/model-hazirla.mjs
 DURUM.md
 CLAUDE.md
 AGENTS.md
+# Otomatik analiz dosyaları görüntü derlenirken yeniden hazırlanır (büyük; derleme bağlamına girmez).
+public/model
+public/ort
+public/vendor

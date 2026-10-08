@@ -12,6 +12,8 @@ import type { AudienceText } from './types';
  *    Hızlı okuma teknikleri önerilmez: anlamayı azaltır (Rayner ve ark., 2016).
  *  - Öneriler okumanın dört yönüne göre yazıldı ve en çok çalışılacak yönden başlayarak sıralanır; rapordaki metinler
  *    tekrar edilmez. Tanı koyan, korkutan ya da kesin hüküm veren dil kullanılmaz. Değerlendirme yetişkinlere açık değildir.
+ *  - Otomatik analizde (cihazdaki yapay zekâ; yetişkin dinlemez) akıcılık yönü yoktur; metinler yetişkinin okumayı
+ *    dinlediğini ya da işaretlediğini anlatmaz.
  */
 
 export type OralAspect = 'accuracy' | 'prosody' | 'comprehension' | 'retell';
@@ -29,6 +31,8 @@ export interface OralRoadmapTemplate {
   lastWeek: { same: AudienceText; up: AudienceText };
   nextTests: string[];
   nextPurpose: { you: string; parent: string };
+  /** Otomatik analizde girişin son cümlesi: önerilerin neye dayandığı. */
+  autoBasis: AudienceText;
   sources: Citation[];
 }
 
@@ -223,5 +227,9 @@ export const sesliOkumaRoadmap: OralRoadmapTemplate = {
   },
   nextTests: ['okuma-hizi-ve-anlama'],
   nextPurpose: { you: 'sessiz okumada hızını ve anlamanı görmek', parent: 'sessiz okumadaki hızını ve anlamasını görmek' },
+  autoBasis: {
+    student: 'Öneriler, tek bir metni sesli okumanın yapay zekâyla yapılan otomatik analizine dayanır; sonuçlar yaklaşık olduğu için kesin hüküm değildir.',
+    parent: 'Öneriler, tek bir metnin sesli okunmasının yapay zekâyla yapılan otomatik analizine dayanır; sonuçlar yaklaşık olduğu için kesin hüküm değildir.',
+  },
   sources: [KAYNAK.nrp, KAYNAK.kuhn, KAYNAK.gough, KAYNAK.rayner],
 };

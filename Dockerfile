@@ -5,15 +5,24 @@
 
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
+# .npmrc: onnxruntime-node (transformers.js'in sitede kullanılmayan bağımlılığı) GPU dosyalarını indirmesin.
+COPY package.json package-lock.json .npmrc ./
 RUN npm ci --no-audit --no-fund
+
+# Sesli okumada otomatik analiz: konuşma tanıma modeli (~250 MB) Hugging Face'ten sabit sürümüyle indirilir ve SHA-256
+# ile doğrulanır. Bu aşama yalnızca betiğe bağlıdır: betik değişmedikçe katman önbellekten gelir, model yeniden inmez.
+FROM node:22-bookworm-slim AS model
+WORKDIR /app
+COPY araclar/model-hazirla.mjs ./araclar/
+RUN node araclar/model-hazirla.mjs --model
 
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+# ONNX Runtime Web ve transformers.js'in tarayıcı dosyaları node_modules'tan public/ altına (ort/, vendor/).
+RUN node araclar/model-hazirla.mjs --calisma && npm run build
 
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app
@@ -23,6 +32,8 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 RUN groupadd --system --gid 1001 olcekhane \
  && useradd --system --uid 1001 --gid olcekhane --no-create-home --shell /usr/sbin/nologin olcekhane
+# Model, uygulamadan önce kopyalanır: her derlemede değişen katmanlardan önce durduğu için önbellekten gelir.
+COPY --from=model --chown=olcekhane:olcekhane /app/public/model ./public/model
 COPY --from=build --chown=olcekhane:olcekhane /app/.next/standalone ./
 COPY --from=build --chown=olcekhane:olcekhane /app/.next/static ./.next/static
 COPY --from=build --chown=olcekhane:olcekhane /app/public ./public

@@ -7,7 +7,8 @@ import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadma
 /**
  * Sesli Okuma Değerlendirmesinin gelişim yol haritası: okumanın dört yönüne (doğru okuma, akıcılık, anlama, yeniden
  * anlatma) göre nasıl çalışılacağı, okuma alışkanlığı, veliye yaklaşım ve dört haftalık plan. Yönler en çok çalışılacak
- * olandan başlayarak sıralanır (oranı düşük olan önce, eşitlikte bu sırayla). Yeniden anlatma yapılmadıysa o yön yoktur.
+ * olandan başlayarak sıralanır (oranı düşük olan önce, eşitlikte bu sırayla). Yeniden anlatma yapılmadıysa o yön yoktur;
+ * otomatik analizde akıcılık derecelendirilmediği için akıcılık yönü de yoktur.
  */
 
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
@@ -26,6 +27,7 @@ interface AspectState {
 }
 
 export function oralAspects(r: OralResult): AspectState[] {
+  const p = r.prosody;
   const list: AspectState[] = [
     {
       key: 'accuracy',
@@ -34,13 +36,17 @@ export function oralAspects(r: OralResult): AspectState[] {
       badge: `Doğru okuma %${accText(r.accuracyPct)}`,
       bar: { value: r.accuracyPct, min: 0, max: 100, valueLabel: `%${accText(r.accuracyPct)}`, band: LEVEL_TEXT[r.accuracyLevel].short },
     },
-    {
-      key: 'prosody',
-      ratio: (r.prosody.total - 4) / 12,
-      need: r.prosody.total < 13,
-      badge: `${r.prosody.total} / 16`,
-      bar: { value: r.prosody.total, min: 4, max: 16, valueLabel: `${r.prosody.total} / 16`, band: prosodyLabel(r.prosody.total) },
-    },
+    ...(p
+      ? [
+          {
+            key: 'prosody' as const,
+            ratio: (p.total - 4) / 12,
+            need: p.total < 13,
+            badge: `${p.total} / 16`,
+            bar: { value: p.total, min: 4, max: 16, valueLabel: `${p.total} / 16`, band: prosodyLabel(p.total) },
+          },
+        ]
+      : []),
     {
       key: 'comprehension',
       ratio: r.comprehension.correct / r.comprehension.total,
@@ -94,11 +100,13 @@ export function buildOralRoadmap(
   // düzey önerilmez.
   const last = r.level === 'easy' && r.passageGrade < Math.min(8, opts.grade + 1) ? t.lastWeek.up : t.lastWeek.same;
 
+  // Otomatik analizde öneriler yapay zekânın yaklaşık sonuçlarına dayanır; bu, girişte söylenir.
+  const basis = r.flags.auto ? pick(t.autoBasis, audience) : 'Öneriler tek bir metnin sesli okunmasına dayanır; kesin hüküm değildir.';
   return {
     preview: opts.preview,
     intro: parent
-      ? `Bu bölüm sonuçları günlük okumaya taşımanız için öneriler içerir: ${joinNames(contents)}. Öneriler tek bir metnin sesli okunmasına dayanır; kesin hüküm değildir.`
-      : `Bu bölüm sonuçlarını günlük okumana taşıman için öneriler içerir: ${joinNames(contents)}. Öneriler tek bir metnin sesli okunmasına dayanır; kesin hüküm değildir.`,
+      ? `Bu bölüm sonuçları günlük okumaya taşımanız için öneriler içerir: ${joinNames(contents)}. ${basis}`
+      : `Bu bölüm sonuçlarını günlük okumana taşıman için öneriler içerir: ${joinNames(contents)}. ${basis}`,
     bars: aspects.map((x) => ({ key: x.key, label: t.aspects[x.key].title, ciLow: null, ciHigh: null, color: t.aspects[x.key].color, ...x.bar })),
     standout: [
       { title: 'Metnin düzeyi', text: LEVEL_TEXT[r.level].label },

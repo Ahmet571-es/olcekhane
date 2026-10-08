@@ -321,12 +321,28 @@ function Chart({ chart }: { chart: SimpleChart }) {
 
 /* ---------- Sesli okuma ---------- */
 
-const ORAL_TAGS = { sub: 'yanlış', omit: 'atladı', help: 'yardım', self: 'düzeltti' } as const;
+const ORAL_TAGS = { sub: 'yanlış', omit: 'atladı', help: 'yardım', self: 'düzeltti', unclear: 'net değil' } as const;
+
+/** Net anlaşılamayan kelime (otomatik analiz): gri, noktalı alt çizgi; hata sayılmaz. */
+const UNCLEAR_STYLE = { color: C.ink3, textDecoration: 'underline', textDecorationStyle: 'dotted', textDecorationColor: C.ink3 } as const;
 
 function OralWord({ t }: { t: OralMarkedToken }) {
   const tags = [...(t.s ? [ORAL_TAGS[t.s]] : []), ...(t.hes ? ['durak'] : []), ...(t.syl ? ['hece'] : []), ...(t.rep ? ['tekrar'] : [])];
   const error = t.s === 'sub' || t.s === 'omit' || t.s === 'help';
   if (!tags.length && !t.ins) return <Text>{t.text} </Text>;
+  if (t.s === 'unclear') {
+    const other = tags.slice(1);
+    return (
+      <Text>
+        <Text style={UNCLEAR_STYLE}>{t.text}</Text>
+        <Text style={{ fontSize: 7, color: C.ink3 }}> (net değil</Text>
+        {other.length > 0 && <Text style={{ fontSize: 7, color: C.warn }}>, {other.join(', ')}</Text>}
+        <Text style={{ fontSize: 7, color: C.ink3 }}>)</Text>
+        {t.ins ? <Text style={{ fontSize: 7, color: C.danger, fontWeight: 700 }}> +{t.ins} ekleme</Text> : null}
+        <Text> </Text>
+      </Text>
+    );
+  }
   const color = error ? C.danger : C.warn;
   return (
     <Text>
@@ -387,6 +403,13 @@ function OralSectionsPdf({ report }: { report: SimpleReport }) {
   const cell = { paddingVertical: 4, paddingHorizontal: 6 };
   return (
     <View>
+      {oral.method && (
+        <View style={{ marginTop: 12, borderWidth: 1, borderColor: C.rule, backgroundColor: C.surface2, borderRadius: 6, padding: 10 }} wrap={false}>
+          <Text style={{ fontWeight: 700, marginBottom: 3 }}>{oral.method.title}</Text>
+          <Text style={s.para}>{oral.method.text}</Text>
+        </View>
+      )}
+
       <View wrap={false}>
         <Text style={s.h2}>Düzey nasıl belirlendi?</Text>
         {oral.criteria.map((c) => (
@@ -405,10 +428,17 @@ function OralSectionsPdf({ report }: { report: SimpleReport }) {
       <Text style={s.h2} minPresenceAhead={80}>
         {you ? 'Okuman, kelime kelime' : 'Okuma, kelime kelime'}
       </Text>
-      <Text style={[s.paraSmall, { color: C.ink2, marginBottom: 6 }]}>
-        Kırmızı kelimeler hata sayılanlar (yanlış okuma, atlama, yardımla okuma, ekleme), sarı kelimeler hata sayılmayan gözlemlerdir (kendi düzeltme,
-        tekrar, heceleme, duraksama); işaretin adı kelimenin yanında yazılıdır.
-      </Text>
+      {oral.auto ? (
+        <Text style={[s.paraSmall, { color: C.ink2, marginBottom: 6 }]}>
+          Kırmızı kelimeler hata sayılanlar (yanlış okuma, atlama, ekleme), sarı kelimeler hata sayılmayan gözlemlerdir (kendi düzeltme, tekrar, heceleme,
+          duraksama); gri, noktalı çizgili kelimeler net anlaşılamadı ve hata sayılmadı. İşaretin adı kelimenin yanında yazılıdır.
+        </Text>
+      ) : (
+        <Text style={[s.paraSmall, { color: C.ink2, marginBottom: 6 }]}>
+          Kırmızı kelimeler hata sayılanlar (yanlış okuma, atlama, yardımla okuma, ekleme), sarı kelimeler hata sayılmayan gözlemlerdir (kendi düzeltme,
+          tekrar, heceleme, duraksama); işaretin adı kelimenin yanında yazılıdır.
+        </Text>
+      )}
       <View style={{ borderWidth: 1, borderColor: C.rule, borderRadius: 6, padding: 10 }}>
         {oral.marked.map((p, i) => (
           <Text key={i} style={{ fontSize: 11, lineHeight: 1.7, marginBottom: i < oral.marked.length - 1 ? 6 : 0 }}>
@@ -434,6 +464,16 @@ function OralSectionsPdf({ report }: { report: SimpleReport }) {
           </View>
         ))}
       </View>
+      {oral.unclear && (
+        <Text style={[s.paraSmall, { marginTop: 6 }]}>
+          <Text style={UNCLEAR_STYLE}>kelime</Text>
+          <Text>
+            {'  '}
+            {oral.unclear.label}:{' '}
+          </Text>
+          <Text style={{ fontWeight: 700 }}>{String(oral.unclear.value)}</Text>
+        </Text>
+      )}
       {oral.substitutions.length > 0 && (
         <Text style={[s.paraSmall, { marginTop: 6 }]}>
           <Text style={{ fontWeight: 700 }}>{you ? 'Yanlış okuduğun kelimeler: ' : 'Yanlış okunan kelimeler: '}</Text>
@@ -461,19 +501,21 @@ function OralSectionsPdf({ report }: { report: SimpleReport }) {
         </View>
       ))}
 
-      <View wrap={false}>
-        <Text style={s.h2}>
-          Akıcılık: {oral.prosodyTotal} / 16 · {oral.prosodyLabel}
-        </Text>
-        {oral.prosody.map((p) => (
-          <View key={p.name} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.rule, paddingVertical: 4 }}>
-            <Text style={{ width: 180, fontWeight: 700 }}>
-              {p.name} · {p.value} / 4
-            </Text>
-            <Text style={[s.para, { flex: 1, color: C.ink2 }]}>{p.text}</Text>
-          </View>
-        ))}
-      </View>
+      {oral.prosodyTotal !== null && (
+        <View wrap={false}>
+          <Text style={s.h2}>
+            Akıcılık: {oral.prosodyTotal} / 16 · {oral.prosodyLabel}
+          </Text>
+          {oral.prosody.map((p) => (
+            <View key={p.name} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.rule, paddingVertical: 4 }}>
+              <Text style={{ width: 180, fontWeight: 700 }}>
+                {p.name} · {p.value} / 4
+              </Text>
+              <Text style={[s.para, { flex: 1, color: C.ink2 }]}>{p.text}</Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       <View wrap={false}>
         <Text style={s.h2}>{you ? 'Okuduğunu anlaman' : 'Okuduğunu anlama'}</Text>

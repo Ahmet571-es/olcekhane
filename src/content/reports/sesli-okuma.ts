@@ -3,6 +3,8 @@ import type { OralLevel } from '@/lib/scoring/oral';
 /**
  * Sesli Okuma Değerlendirmesi rapor metinleri. Öğrenci raporu "sen" diliyle; yetişkin raporu (veli ya da öğretmen
  * okur) öğrenciyi üçüncü kişi olarak anlatır. Bütün durum birleşimleri tests/sesli-okuma.test.ts içinde denenir.
+ * Otomatik analizde (cihazdaki yapay zekâ; yetişkin dinlemez) AUTO_TEXT kullanılır; o raporda yetişkinin dinlediğini ya
+ * da işaretlediğini anlatan bir söz geçmez.
  */
 
 type Two = { student: string; parent: string };
@@ -252,6 +254,36 @@ export const NEXT_TEXT_NO_OTHER: Record<'easy' | 'hard', Two> = {
     parent: 'Birkaç hafta kısa ve kolay metinlerle birlikte çalıştıktan sonra yeniden değerlendirin.',
   },
 };
+
+/**
+ * Otomatik analiz: okumayı, öğrencinin cihazında (tarayıcıda) çalışan bir konuşma tanıma modeli inceler. Ses cihazdan
+ * çıkmaz; analiz bitince silinir. Model bazı kelimeleri yanlış duyabilir; net ayırt edemediği kelimeler hata sayılmaz.
+ */
+export const AUTO_TEXT = {
+  /** Raporun başında, bir kez: okumanın nasıl incelendiği. */
+  method: {
+    student: {
+      title: 'Okuman nasıl incelendi?',
+      text: 'Okuman, senin cihazında çalışan bir yapay zekâ modeliyle otomatik olarak incelendi: Yapay zekâ okuduklarını yazıya döktü ve metindeki kelimelerle tek tek karşılaştırdı. Ses kaydın cihazından hiç çıkmadı ve inceleme biter bitmez silindi. Yapay zekâ bazı kelimeleri yanlış duyabilir. Net ayırt edemediği kelimeler metinde “net anlaşılamadı” diye gösterilir ve hata sayılmaz. Bu değerlendirme deneme aşamasında olduğu için sonuçların yaklaşıktır.',
+    },
+    parent: {
+      title: 'Okuma nasıl incelendi?',
+      text: 'Kayıt, okumanın yapıldığı cihazda (tarayıcıda) çalışan bir yapay zekâ modeliyle (konuşma tanıma) otomatik olarak incelendi: Model okunanları yazıya döktü, yazıya dökülen kelimeler metindeki kelimelerle tek tek karşılaştırıldı. Ses kaydı cihazdan çıkmadı ve inceleme biter bitmez silindi; sunucumuza yalnızca kelime işaretleri, süre ve duraklama ölçümleri ve cevaplar gönderildi, bunlar da saklanmadı. Yapay zekâ, özellikle çocuk seslerinde ve gürültülü ortamlarda, bazı kelimeleri yanlış duyabilir: Doğru okunmuş bir kelimeyi hata sayabilir ya da bir hatayı fark etmeyebilir. Net ayırt edemediği kelimeler metinde “net anlaşılamadı” diye gösterilir ve hata sayılmaz. Değerlendirme pilot aşamadadır; otomatik analizin bir öğretmenin değerlendirmesiyle ne kadar uyuştuğu henüz ölçülmedi. Sonuçları yaklaşık olarak yorumlayın.',
+    },
+  },
+  /** İşaretli metindeki gösterge. */
+  legend: 'Net anlaşılamadı (hata sayılmadı)',
+  /** Kelimelerin %10'undan çoğu net anlaşılamadıysa (uyarılarda, raporun başında). */
+  unclearHigh: (unclear: number, words: number): Two => ({
+    student: `Yapay zekâ metindeki ${words} kelimenin ${unclear} tanesini net anlayamadı. Bu kelimeler hata sayılmadığı için sonuçların yaklaşık. Sessiz bir yerde, cihaza yakın durup net bir sesle yeniden okursan daha doğru bir sonuç alırsın.`,
+    parent: `Yapay zekâ metindeki ${words} kelimenin ${unclear} tanesini net ayırt edemedi (ortam gürültülü ya da ses kısık olabilir). Bu kelimeler hata sayılmadığı için doğru okuma oranı ve dakikada doğru okunan kelime sayısı olduğundan yüksek görünebilir; sonuçları yaklaşık olarak yorumlayın. Sessiz bir ortamda yeniden yapılacak bir değerlendirme daha net bir sonuç verir.`,
+  }),
+  disclaimer: {
+    student: 'Tek bir metni sesli okumana ve yapay zekânın otomatik analizine dayanır; bugünkü okumanı yaklaşık olarak gösterir. Okudukça okuman da gelişir.',
+    parent:
+      'Tek bir metnin sesli okunmasına ve cihazdaki yapay zekânın otomatik analizine dayanır; bugünkü durumu yaklaşık olarak gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli ve gelişimi izlemek için farklı metinlerle tekrarlanmalıdır.',
+  },
+} as const;
 
 /** Okumadaki zorluk sürdüğünde (yalnızca yetişkin raporunda). */
 export const SPECIALIST = {

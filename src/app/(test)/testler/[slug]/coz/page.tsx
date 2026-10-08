@@ -21,6 +21,12 @@ export async function generateMetadata(props: PageProps<'/testler/[slug]/coz'>):
   return { title: def ? `${def.name}: testi çöz` : 'Testi çöz' };
 }
 
+/**
+ * Sesli okumada öğrencinin tek başına okuduğu, okumayı cihazdaki yapay zekânın incelediği akışın önizlemesi
+ * (`?onizleme=otomatik`). Bağlantı olmadan herkes yetişkinin kaydı dinlediği sürümü görür.
+ */
+const ORAL_AUTO_PREVIEW_PARAM = 'otomatik';
+
 /** Cevaplar yalnızca sayfada tutulur: sayfa kapanırsa kaybolur. */
 const SESSION_NOTE = 'Testi tek seferde bitir: sayfayı kapatır ya da yenilersen cevapların silinir ve baştan başlaman gerekir.';
 
@@ -99,6 +105,8 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
   const backUrl = `/testler/${def.slug}`;
   // İncelemedeki gelişim yol haritası yalnızca önizleme bağlantısıyla eklenir; seçim sınıf formunda da korunur.
   const roadmapPreview = q.onizleme === ROADMAP_PREVIEW_PARAM && hasRoadmap(def.slug) && ROADMAP_IN_REVIEW.has(def.slug);
+  const oralAuto = def.engine === 'oral' && q.onizleme === ORAL_AUTO_PREVIEW_PARAM;
+  const preview = roadmapPreview ? ROADMAP_PREVIEW_PARAM : oralAuto ? ORAL_AUTO_PREVIEW_PARAM : null;
 
   return (
     <>
@@ -122,6 +130,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
             gradeLabel={GRADE_LABELS[grade] ?? `${grade}. sınıf`}
             payload={payloadFor(def, grade)}
             roadmapPreview={roadmapPreview}
+            oralAuto={oralAuto}
           />
         ) : (
           <div className="mx-auto flex w-full max-w-2xl flex-col gap-7">
@@ -130,10 +139,21 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
                 {def.isFree ? 'Ücretsiz · ' : ''}yaklaşık {def.estimatedMinutes} dakika · {gradeRangeLabel(def.minGrade, def.maxGrade, def.adults)}
               </p>
               <h1 className="t-h1">{def.name}</h1>
-              <p className="t-lede">{def.tagline}</p>
+              <p className="t-lede">
+                {oralAuto ? 'Bir metni sesli oku; okumanı bu cihazdaki yapay zekâ incelesin. Sonra soruları cevapla ve raporunu gör.' : def.tagline}
+              </p>
             </div>
 
-            {def.engine === 'oral' ? (
+            {oralAuto ? (
+              <PageGuide plain title="Nasıl ilerler?">
+                <p>Okumayı öğrenci tek başına yapar; kaydı kimse dinlemez:</p>
+                <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
+                  <li>Sınıfını seç ve “Teste başla” düğmesine bas; sonra metni seç ve mikrofonu dene.</li>
+                  <li>Metni sesli oku. İstersen okumanı bu cihazdaki yapay zekâ inceler; sen bu sırada soruları cevaplarsın.</li>
+                  <li>İnceleme bitince ses kaydın silinir ve raporun ekranda açılır. Yapay zekâ ilk seferde yaklaşık 250 MB indirir.</li>
+                </ol>
+              </PageGuide>
+            ) : def.engine === 'oral' ? (
               <PageGuide plain title="Nasıl ilerler?">
                 <p>Değerlendirmeyi öğrenci ve bir yetişkin (öğretmen ya da veli) birlikte yapar:</p>
                 <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
@@ -159,9 +179,12 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
                 <li>Hesap açman gerekmez; ad, e-posta ya da telefon istemiyoruz.</li>
                 <li>Cevapların yalnızca raporu hazırlamak için kullanılır, hiçbir yere kaydedilmez.</li>
                 <li>Rapor ekranda gösterilir ve PDF olarak sana verilir. Sayfayı kapatınca cevapların ve rapor kaybolur; saklamak istersen PDF’i indir.</li>
-                {def.engine === 'oral' && (
-                  <li>Ses kaydı yalnızca bu cihazda, açık olan sayfada durur; sunucumuza ya da başka bir yere gönderilmez ve sayfa kapanınca silinir.</li>
-                )}
+                {def.engine === 'oral' &&
+                  (oralAuto ? (
+                    <li>Ses kaydı yalnızca bu cihazda durur ve bu cihazda incelenir; sunucumuza ya da başka bir yere gönderilmez, inceleme bitince silinir.</li>
+                  ) : (
+                    <li>Ses kaydı yalnızca bu cihazda, açık olan sayfada durur; sunucumuza ya da başka bir yere gönderilmez ve sayfa kapanınca silinir.</li>
+                  ))}
               </ul>
               <p className="t-small">
                 Ayrıntılar: <Link href="/yasal/aydinlatma-metni">KVKK aydınlatma metni</Link>
@@ -173,6 +196,11 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
                 <strong>Önizleme:</strong> Raporun sonunda uzman incelemesindeki gelişim yol haritası da gösterilecek.
               </p>
             )}
+            {oralAuto && (
+              <p className="notice notice-info">
+                <strong>Önizleme:</strong> Okumayı yetişkin yerine bu cihazdaki yapay zekâ inceler. Bu sürüm deneme aşamasındadır.
+              </p>
+            )}
 
             {adultRefused && (
               <p className="notice notice-warn">
@@ -181,7 +209,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
             )}
 
             <form method="get" className="panel flex flex-col gap-5 p-6">
-              {roadmapPreview && <input type="hidden" name="onizleme" value={ROADMAP_PREVIEW_PARAM} />}
+              {preview && <input type="hidden" name="onizleme" value={preview} />}
               <div className="field">
                 <label htmlFor="sinif" className="field-label">
                   {def.adults ? 'Testi kim çözüyor?' : 'Testi çözen öğrencinin sınıfı'}
