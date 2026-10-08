@@ -59,6 +59,13 @@ export interface SceneOptions {
 
 /** Bu sayıdan çok sütunda yalnızca öndeki ve yandaki sütunların puanı yazılır (ör. 16 özellik). */
 export const LABEL_ALL_MAX = 10;
+
+/**
+ * Grafiğin ilk açısı (ekranda ve PDF'te). Tek sayıda sütunda 180/n: iki sütun önde, ötekiler arkada simetrik dizilir
+ * (beşgende 36°). Dört ve daha çok çift sayıda sütunda 180/n bazı sütunları başka bir sütunun tam arkasına düşürür (dört
+ * sütunda ikişer ikişer üst üste görünür); 90/n ile hiçbir iki sütun aynı dikey çizgiye düşmez.
+ */
+export const defaultYaw = (n: number) => (n % 2 === 1 ? 180 : 90) / Math.max(1, n);
 /** Puanı yazılmayan sütunlar olduğunda grafiğin açıklamasına eklenen cümle (ekranda ve PDF'te; liste grafiğin altındadır). */
 export const FRONT_LABELS_NOTE = 'Kalabalık olmasın diye yalnızca öndeki ve yandaki sütunların puanı yazılır; bütün puanlar yukarıdaki listede.';
 

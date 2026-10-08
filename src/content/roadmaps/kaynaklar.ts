@@ -107,4 +107,12 @@ export const KAYNAK = {
     text: 'Schneider, B. ve Sparfeldt, J. R. (2021). How to get better: Taking notes mediates the effect of a video tutorial on number series. Journal of Intelligence, 9(4), 55.',
     url: 'https://doi.org/10.3390/jintelligence9040055',
   },
+  thibaut: {
+    text: 'Thibaut, J.-P., French, R. ve Vezneva, M. (2010). The development of analogy making in children: Cognitive load and executive functions. Journal of Experimental Child Psychology, 106(1), 1–19.',
+    url: 'https://doi.org/10.1016/j.jecp.2010.01.001',
+  },
+  evans: {
+    text: 'Evans, J. St. B. T., Barston, J. L. ve Pollard, P. (1983). On the conflict between logic and belief in syllogistic reasoning. Memory & Cognition, 11(3), 295–306.',
+    url: 'https://doi.org/10.3758/BF03196976',
+  },
 } satisfies Record<string, { text: string; url: string }>;

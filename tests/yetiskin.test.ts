@@ -17,6 +17,7 @@ const ILGI = 'meslek-ilgi-alanlari';
 const SEKIL = 'sekil-akil-yurutme';
 const ONALTI = '16-faktorlu-kisilik-profili';
 const SAYI = 'sayi-dizileri';
+const SOZEL = 'sozel-akil-yurutme';
 const OGRENME = 'ogrenme-ve-basari-ozellikleri';
 
 /** Raporda kişiye gösterilen bütün metinler. */
@@ -59,16 +60,16 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, OGRENME].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, OGRENME].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);
       expect(d.science.ageNote, d.slug).toContain('yetişkinler de çözebilir');
       // Sınıfa göre form ya da metin seçen testlerde (konu tarama, okuma) ve Holland profilinde (lise ve üniversite
       // yolları) yetişkin kipi henüz yok: bu testler açılmadan önce yetişkin için ayrı hazırlık gerekir. Görevlerden
-      // yalnızca şekil akıl yürütme ve sayı dizileri yetişkinlere açıktır: soruları sınıfa göre değişmez, rapor metinleri okula
+      // yalnızca şekil akıl yürütme, sayı dizileri ve sözel akıl yürütme yetişkinlere açıktır: soruları sınıfa göre değişmez, rapor metinleri okula
       // özgü değildir.
-      if (d.engine === 'tasks') expect([['matrix_reasoning'], ['number_series']], d.slug).toContainEqual(d.tasks.map((t) => t.kind));
+      if (d.engine === 'tasks') expect([['matrix_reasoning'], ['number_series'], ['verbal_reasoning']], d.slug).toContainEqual(d.tasks.map((t) => t.kind));
       else expect(d.engine, d.slug).toBe('likert');
       if (d.engine === 'likert') expect(d.profile, d.slug).not.toBe('riasec');
     }

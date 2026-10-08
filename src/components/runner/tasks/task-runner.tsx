@@ -16,6 +16,7 @@ import { NumberSeries } from './number-series';
 import { ReactionTime } from './reaction-time';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
+import { VerbalReasoning } from './verbal-reasoning';
 import { Trail } from './trail';
 
 type Phase = 'intro' | 'task-intro' | 'task' | 'between' | 'finishing';
@@ -166,6 +167,7 @@ export function TaskRunner(props: {
       {task.kind === 'reaction_time' && <ReactionTime key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'matrix_reasoning' && <MatrixReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'number_series' && <NumberSeries key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'verbal_reasoning' && <VerbalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

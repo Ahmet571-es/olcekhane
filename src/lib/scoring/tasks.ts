@@ -14,8 +14,11 @@ import type {
   SpatialSpanTask,
   SymbolMatchTask,
   TrailTask,
+  VerbalItemType,
+  VerbalReasoningTask,
 } from '@/lib/instruments/types';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
+import { verbalRapidMs } from '@/lib/instruments/verbal';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { median, round } from './stats';
 
@@ -1343,6 +1346,129 @@ export function scoreNumberSeries(task: NumberSeriesTask, input: NumberSeriesTri
   };
 }
 
+/* ---------- Sözel akıl yürütme ---------- */
+
+export interface VerbalTrialInput {
+  index: number;
+  /** Seçilen seçeneğin sırası (1–5). */
+  response: number;
+  /** Sorunun ekrana çizildiği andan cevabın verildiği ana kadar geçen süre (ms); tarayıcı 2 dakikada keser. */
+  rtMs: number | null;
+}
+
+export interface VerbalTypeResult {
+  type: VerbalItemType;
+  n: number;
+  correct: number;
+}
+
+export interface VerbalResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  /** Soru türlerine göre (kelime ilişkileri, sınıflama, sıralama, mantıksal çıkarım). */
+  types: VerbalTypeResult[];
+  /** Ulaşılan düzey: şekil akıl yürütmedeki ölçütle aynı (o düzeyde ve o düzeye kadarki sorularda en az %60 doğru). */
+  reached: number;
+  medianRt: number | null;
+  /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
+  rtEasy: number | null;
+  rtHard: number | null;
+  /**
+   * 3. düzey ve üstündeki sorulardan, soru ve seçenekler okunamayacak kadar kısa sürede (`verbalRapidMs`) yanlış
+   * cevaplananlar ve bu soruların sayısı. Doğru cevaplar sayılmaz: kısa kelime sorularını hızla doğru cevaplayan biri
+   * uyarı almaz.
+   */
+  rapid: number;
+  rapidOf: number;
+  wrong: number;
+  /** Yanlışlardan, sorunun "ilk bakışta doğru görünen" seçeneğinin seçildikleri; türlere göre de sayılır. */
+  lures: number;
+  luresByType: Record<VerbalItemType, number>;
+  /** En sık seçilen seçenek sırasının seçilme sayısı (hep aynı yere basılıp basılmadığı). */
+  samePosition: number;
+}
+
+export const VERBAL_TYPES_ORDER: VerbalItemType[] = ['analogy', 'classification', 'ordering', 'deduction'];
+/** Seçenek sayısı. */
+export const VERBAL_OPTIONS = 5;
+/**
+ * Bu kadar ya da daha az doğru, beş seçenekli 24 soruda rastgele seçimle de ulaşılabilir: rastgele seçen birinin 9 ya
+ * da daha çok doğru bulma olasılığı %5'in altındadır (binom dağılımı, p = 1/5; %3,6).
+ */
+export const VERBAL_CHANCE_MAX = 8;
+/**
+ * Rastgele seçimde yanlış cevapların dörtte biri çeldiricidir (dört yanlış seçenekten biri); yanlışların en az %60'ı
+ * ve en az 4 yanlış çeldiriciyse bu yorumlanır (rastgele seçimde 5 yanlıştan en az 4'ünün çeldirici olma olasılığı %2'nin altındadır).
+ */
+export const VERBAL_LURE_SHARE = 0.6;
+export const VERBAL_LURE_MIN = 4;
+
+export function scoreVerbal(task: VerbalReasoningTask, input: VerbalTrialInput[]): { result: VerbalResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.lures.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, VerbalTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (!Number.isInteger(t.response) || t.response < 1 || t.response > task.items[t.index].options.length) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const correct = t.response === task.answers[i];
+    return { item, correct, lure: !correct && t.response === task.lures[i], response: t.response, rt: t.rtMs };
+  });
+  const correct = scored.filter((s) => s.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((s) => s.item.level === level);
+      return { level, n: here.length, correct: here.filter((s) => s.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const types = VERBAL_TYPES_ORDER.flatMap((type) => {
+    const here = scored.filter((s) => s.item.type === type);
+    return here.length ? [{ type, n: here.length, correct: here.filter((s) => s.correct).length }] : [];
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const hardOnes = scored.filter((s) => s.item.level >= 3);
+  const positions = new Map<number, number>();
+  for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
+  const luresByType = Object.fromEntries(VERBAL_TYPES_ORDER.map((type) => [type, scored.filter((s) => s.lure && s.item.type === type).length])) as Record<
+    VerbalItemType,
+    number
+  >;
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      types,
+      reached,
+      medianRt: medianOrNull(rts(scored)),
+      rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
+      rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < verbalRapidMs(s.item)).length,
+      rapidOf: hardOnes.length,
+      wrong: n - correct,
+      lures: scored.filter((s) => s.lure).length,
+      luresByType,
+      samePosition: Math.max(0, ...positions.values()),
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -1360,6 +1486,7 @@ export function taskQualityNotes(parts: {
   reaction?: ReactionResult;
   matrix?: MatrixResult;
   numberSeries?: NumberSeriesResult;
+  verbal?: VerbalResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -1527,8 +1654,39 @@ export function taskQualityNotes(parts: {
   if (mx) notes.push(...matrixQualityNotes(mx));
   const ns = parts.numberSeries;
   if (ns) notes.push(...numberSeriesQualityNotes(ns));
+  const vr = parts.verbal;
+  if (vr) notes.push(...verbalQualityNotes(vr));
   return notes;
 }
+
+/**
+ * Sözel akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar. Rapordaki kartlar aynı eşikleri kullanır
+ * (lib/reports/build.ts, verbalBlocks).
+ */
+export function verbalQualityNotes(vr: VerbalResult): string[] {
+  const notes: string[] = [];
+  if (vr.correct <= VERBAL_CHANCE_MAX) {
+    notes.push(
+      'Sözel akıl yürütme testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorular okunmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (verbalRapid(vr)) {
+    notes.push(
+      `Sözel akıl yürütme testinde 3. düzey ve üstündeki ${vr.rapidOf} sorunun ${vr.rapid === vr.rapidOf ? 'hepsinde' : `${vr.rapid} tanesinde`} yanlış bir cevap, soru ve seçenekler okunamayacak kadar kısa sürede verilmiş; bu sorularda okunmadan seçilmiş olabilir.`,
+    );
+  }
+  if (verbalSamePosition(vr)) {
+    notes.push('Sözel akıl yürütme testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; sorulara bakmadan hep aynı yere basılmış olabilir.');
+  }
+  return notes;
+}
+
+/** Zor sorularda okunamayacak kadar hızlı cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri (en az 2). */
+export const verbalRapid = (vr: VerbalResult) => vr.rapidOf > 0 && vr.rapid >= Math.max(2, Math.ceil(vr.rapidOf / 4));
+/** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
+export const verbalSamePosition = (vr: VerbalResult) => vr.samePosition >= Math.ceil(vr.n / 2);
+/** Yanlışların yorumlanması: en az 4 çeldirici ve yanlışların en az %60'ı çeldirici. */
+export const verbalLurePattern = (vr: VerbalResult) => vr.lures >= VERBAL_LURE_MIN && vr.lures >= VERBAL_LURE_SHARE * vr.wrong;
 
 /**
  * Sayı dizilerinde sonucu dikkatle yorumlamayı gerektiren durumlar. Rapordaki kartlar aynı eşikleri kullanır

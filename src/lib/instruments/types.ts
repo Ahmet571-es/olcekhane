@@ -234,7 +234,8 @@ export type TaskKind =
   | 'mental_rotation'
   | 'reaction_time'
   | 'matrix_reasoning'
-  | 'number_series';
+  | 'number_series'
+  | 'verbal_reasoning';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -603,6 +604,56 @@ export interface NumberSeriesTask extends TaskBase {
   maxDigits: number;
 }
 
+/**
+ * Sözel akıl yürütme: dört soru türü (Ölçekhane'nin özgün soruları, content/instruments/sozel-akil-yurutme.ts).
+ *  - Kelime ilişkileri (`analogy`): iki kelime arasındaki ilişkiyi bulup üçüncü kelimeyle aynı ilişkiyi kuran kelimeyi seçmek.
+ *  - Sınıflama (`classification`): üç kelimenin ortak özelliğini bulup bu özelliği taşıyan kelimeyi seçmek.
+ *  - Sıralama (`ordering`): karşılaştırmaları birleştirip bir sıralama kurmak; bilgiler yetmiyorsa bunu fark etmek.
+ *  - Mantıksal çıkarım (`deduction`): verilen bilgilerden kesinlikle çıkan cümleyi "olabilir" olanlardan ayırmak.
+ */
+export type VerbalItemType = 'analogy' | 'classification' | 'ordering' | 'deduction';
+
+export interface VerbalItem {
+  key: string;
+  /** Zorluk düzeyi (1–5). */
+  level: 1 | 2 | 3 | 4 | 5;
+  type: VerbalItemType;
+  /**
+   * Kelime ilişkilerinde üç kelime (ilk ikisi örnek çift, üçüncüsü eksik çiftin ilk kelimesi); sınıflamada gruptaki üç
+   * kelime; sıralama ve mantıksal çıkarımda verilen bilgiler (her biri bir cümle).
+   */
+  stem: string[];
+  /** Sıralama sorularının sorusu (ör. "En yavaş koşan kimdir?"); öteki türlerde soru türün sabit yönergesidir. */
+  question?: string;
+  /** Beş seçenek. */
+  options: string[];
+}
+
+export interface VerbalPracticeItem extends VerbalItem {
+  /** Doğru seçeneğin sırası (1–5). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  /** Cevaptan sonra gösterilen açıklama. */
+  explain: string;
+}
+
+export interface VerbalReasoningTask extends TaskBase {
+  kind: 'verbal_reasoning';
+  practice: VerbalPracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: VerbalItem[];
+  /** Cevap anahtarı: items[i] sorusunun doğru seçeneğinin sırası (1–5). Tarayıcıya giden test bilgisinde boş gönderilir. */
+  answers: number[];
+  /**
+   * Her sorunun "ilk bakışta doğru görünen" yanlış seçeneği (1–5): kelime ilişkilerinde üçüncü kelimeyle ilgili ama aynı
+   * ilişkiyi kurmayan kelime, sınıflamada gruba bir yönüyle benzeyen ama ortak özelliği taşımayan kelime, sıralamada
+   * bilgilerin yalnızca bir bölümüne uyan ya da olabilir ama kesin olmayan cevap, mantıksal çıkarımda olabilir (ya da
+   * gerçekte doğru) ama verilen bilgilerden kesin olarak çıkmayan cümle. Yanlışların ne kadarının böyle olduğu raporda
+   * anlatılır. Tarayıcıya boş gönderilir.
+   */
+  lures: number[];
+  levels: { level: number; name: string; plain: string }[];
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -616,7 +667,8 @@ export type CognitiveTask =
   | MentalRotationTask
   | ReactionTimeTask
   | MatrixReasoningTask
-  | NumberSeriesTask;
+  | NumberSeriesTask
+  | VerbalReasoningTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

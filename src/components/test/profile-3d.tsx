@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene } from '@/lib/charts/bars3d';
+import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene, defaultYaw } from '@/lib/charts/bars3d';
 import type { RoadmapBar } from '@/lib/reports/roadmap';
 
-/** Başlangıç açısı: iki sütun önde, ötekiler arkada simetrik dizilir (beşgende 36°, altıgende 30°). */
-const startYaw = (n: number) => 180 / Math.max(1, n);
+/** Başlangıç açısı: hiçbir sütun bir başkasının tam arkasına düşmez (lib/charts/bars3d.ts, defaultYaw). */
+const startYaw = defaultYaw;
 /** Açıyı -180…180 aralığında tutar (grafik her yöne serbestçe döner). */
 const wrap = (v: number) => ((((v + 180) % 360) + 360) % 360) - 180;
 

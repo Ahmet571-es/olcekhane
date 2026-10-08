@@ -69,13 +69,20 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       };
     }
     case 'tasks':
-      // Şekil akıl yürütmenin ve sayı dizilerinin cevap anahtarı (seçeneklerin doğru cevaba uzaklığı, tuzak cevaplar)
-      // tarayıcıya gönderilmez.
+      // Şekil akıl yürütmenin, sayı dizilerinin ve sözel akıl yürütmenin cevap anahtarı (seçeneklerin doğru cevaba
+      // uzaklığı, tuzak cevaplar, çeldiriciler) tarayıcıya gönderilmez. Sözel akıl yürütmede düzeylerin anlatımı da
+      // gönderilmez: bazı soruların ipucunu verir (ör. "durduranlar") ve çözme ekranında kullanılmaz.
       return {
         engine: 'tasks',
         intro,
         tasks: def.tasks.map((t) =>
-          t.kind === 'matrix_reasoning' ? { ...t, answers: [], optionDistance: [] } : t.kind === 'number_series' ? { ...t, answers: [], traps: [] } : t,
+          t.kind === 'matrix_reasoning'
+            ? { ...t, answers: [], optionDistance: [] }
+            : t.kind === 'number_series'
+              ? { ...t, answers: [], traps: [] }
+              : t.kind === 'verbal_reasoning'
+                ? { ...t, answers: [], lures: [], levels: [] }
+                : t,
         ),
       };
     case 'oral':

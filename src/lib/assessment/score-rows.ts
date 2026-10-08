@@ -13,6 +13,7 @@ import {
   scoreMatrix,
   scoreNBack,
   scoreNumberSeries,
+  scoreVerbal,
   scoreReaction,
   scoreRotation,
   scoreSpan,
@@ -33,6 +34,8 @@ import {
   type NBackTrialInput,
   type NumberSeriesResult,
   type NumberSeriesTrialInput,
+  type VerbalResult,
+  type VerbalTrialInput,
   type ReactionResult,
   type ReactionTrialInput,
   type RotationResult,
@@ -154,7 +157,8 @@ export type TaskInputs =
   | RotationTrialInput[]
   | ReactionTrialInput[]
   | MatrixTrialInput[]
-  | NumberSeriesTrialInput[];
+  | NumberSeriesTrialInput[]
+  | VerbalTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -179,6 +183,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let reactionRes: ReactionResult | undefined;
   let matrixRes: MatrixResult | undefined;
   let numberSeriesRes: NumberSeriesResult | undefined;
+  let verbalRes: VerbalResult | undefined;
   const pct = (x: number) => Math.round(x * 1000) / 10;
 
   for (const task of def.tasks) {
@@ -324,6 +329,16 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'sd_kural', raw: null, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
         { scaleKey: 'sd_calisma', raw: result.medianRt, mean: null, nAnswered: result.n - result.skipped, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'verbal_reasoning') {
+      const { result } = scoreVerbal(task, input as VerbalTrialInput[]);
+      verbalRes = result;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "sz_dogru" satırında durur.
+      rows.push(
+        { scaleKey: 'sz_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'sz_duzey', raw: result.reached, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+        { scaleKey: 'sz_tur', raw: null, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+        { scaleKey: 'sz_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
+      );
     } else {
       const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
@@ -352,6 +367,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       reaction: reactionRes,
       matrix: matrixRes,
       numberSeries: numberSeriesRes,
+      verbal: verbalRes,
     }),
   };
 }

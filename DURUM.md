@@ -140,8 +140,23 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    tekrar eden öneriler ayrıldı, bilim kartındaki kaynak cümleleri düzeltildi. Ortak düzeltme: bütün ortalama puanlı
    testlerde düzey artık raporda gösterilen (bir ondalığa yuvarlanmış) puandan belirlenir (ör. 8–9 maddelik ölçekte
    "2,6 / 5 · Düşük" görünmesin; `lib/scoring/likert.ts`).
-5. Sözel Akıl Yürütme (özgün Türkçe). 6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi
-   Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
+5. **Sözel Akıl Yürütme: yayında (2026-10-08, pilot).** 24 özgün soru, dört tür (kelime ilişkileri, sınıflama, sıralama,
+   mantıksal çıkarım; her türden altı soru, türler beş düzeye yayılır), beş seçenek, her türden bir alıştırma; 3. sınıftan
+   yetişkine, ~15 dakika (`content/instruments/sozel-akil-yurutme.ts`, `components/runner/tasks/verbal-reasoning.tsx`).
+   Sıralama ve çıkarım sorularının tek doğru cevabı bütün olasılıkları deneyen bir denetleyiciyle doğrulanır
+   (`tests/helpers/verbal-logic.ts`: sıralamalarda bütün dizilişler, çıkarımlarda bütün küme durumları); kelime ve sınıflama
+   soruları üç ayrı kör çözümle denetlendi (üçü de anahtarla aynı; bulunan belirsizlikler düzeltildi: çıkarım yönergesi
+   "yalnızca bu bilgileri kullan", fotoğrafta sol ve sağ, "rüzgâr", "radyo", "bariyer", çocuklar için kısa yönergeler).
+   Her sorunun bir "ilk bakışta doğru görünen" çeldiricisi var; doğru cevaplar ve çeldiriciler beş seçeneğe dengeli.
+   Cevap anahtarı, çeldiriciler ve düzey anlatımları tarayıcıya gitmez (yayın denetimi de bakar). Rapor: doğru sayısı,
+   düzeyler, ulaşılan düzey, soru türleri (3B grafik), çalışma biçimi; rastgele seçim düzeyinde (8/24 ve altı) düzey ve
+   türler yorumlanmaz; yanlışların en az %60'ı ve en az 4'ü çeldiriciyse olası yanılgılar anlatılır; okunamayacak kadar hızlı
+   yanlış cevaplar (sınır soru uzunluğuna göre 2–7 sn) ve hep aynı seçenek uyarı olur. Bağımsız incelemeden sonra: hızlı
+   doğru cevaplar uyarı almaz, yanılgılar olasılık olarak söylenir, Thibaut ve ark. (2010) çalışmasının şekil ve
+   renklerle yapıldığı yazılır, klavyede Enter ve odak düzeltildi. Ortak: 3B grafikte çift sayıda sütunda ilk açı 90/n
+   (`defaultYaw`; dört ve altı sütunda sütunlar artık üst üste görünmüyor, Öğrenme ve Başarı'da da).
+6. Kâğıt Katlama (özgün). Sonra: Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk
+   diliyle kısa kişilik testi.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -280,6 +295,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | 16 Faktörlü Kişilik Profili | 16-faktorlu-kisilik-profili | Yayında (active; 9. sınıftan yetişkine) |
 | Sayı Dizileri | sayi-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öğrenme ve Başarı Özellikleri | ogrenme-ve-basari-ozellikleri | Yayında (active; 9. sınıftan yetişkine) |
+| Sözel Akıl Yürütme | sozel-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -391,6 +407,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-08 (12): Sözel Akıl Yürütme yayında: 24 özgün soru (kelime ilişkileri, sınıflama, sıralama, mantıksal
+  çıkarım), 5 düzey; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; telefonda ve
+  masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: 3B grafiğin ilk açısı çift sütunda düzeldi.
 - 2026-10-08 (11): Beyin Akademisi yeni gelen için kolaylaştırıldı (site sahibi düzeyleri karışık buldu): ders Temel
   ile açılıyor, başta "Sen kimsin?" kartları, Lisans ve Uzman bölümleri renkli kenar çizgisi ve başlıkla ayrılıyor,
   her konunun sonunda gizli kısım haber veriliyor, okurken altta düzey şeridi, düzey değişince sayfa kaymıyor, düzey
@@ -429,12 +448,3 @@ En yeni üstte; en çok 10 madde tutulur.
   denemesine geçiliyor (iki sürümde); "Başla" ve kayıt düğmeleri takılmıyor; ses 90 Hz'in altı süzülerek inceleniyor
   (iş makinesi uğultusu); gürültülü kayıtta ek ve ses farkları hata sayılmıyor, uzun kelimede birkaç ses farkı da;
   yetişkinli sürümde "Okumayı bitirdim"e çift dokunuş kaydı bitirmiyor.
-- 2026-10-08 (2): Otomatik analiz uçtan uca denendi ve hatalar düzeltildi: model dosyaları 8 MiB'lık parçalar
-  hâlinde (tarayıcı önbelleğinde tutulsun, her girişte 250 MB inmesin; kopan parça kaldığı yerden iner);
-  transformers.js'in kısa seste kelime zamanlarını kaydıran hatası düzeltildi (doğrulama parçaları hiç sonuç
-  vermiyordu); boş ya da güvenilmez doğrulama artık atlamayı "doğrulanmış" saymıyor; başka bir metin okununca ya da
-  kelimelerin %30'undan çoğu net anlaşılamayınca rapor verilmiyor, yeniden okuma isteniyor ve sorular yeniden
-  sorulmuyor; metin bitmeden durulursa hız okunan kısımdan hesaplanıyor ve raporda söyleniyor (iki sürümde);
-  zaman çizelgesindeki duraklamalar okuma süresiyle aynı ölçekte; bellek hatasında tek iş parçacığıyla yeniden
-  deneniyor; inceleme biter bitmez yapay zekâ kapatılıyor; mikrofon denemesinde yanlış "sesini duyamıyoruz" uyarısı ve
-  adım göstergesi (Rapor) düzeldi.

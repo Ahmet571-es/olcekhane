@@ -21,6 +21,7 @@ import { renkKelimeGorevi } from './renk-kelime';
 import { sayiDizileri } from './sayi-dizileri';
 import { sekilAkilYurutme } from './sekil-akil-yurutme';
 import { sesliOkuma } from './sesli-okuma';
+import { sozelAkilYurutme } from './sozel-akil-yurutme';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
 import { tepkiHizi } from './tepki-hizi';
 import { zihindeDondurme } from './zihinde-dondurme';
@@ -47,6 +48,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   tepkiHizi,
   sekilAkilYurutme,
   sayiDizileri,
+  sozelAkilYurutme,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   onAltiFaktorKisilik,

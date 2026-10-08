@@ -20,6 +20,7 @@ import {
   quizBody,
   matrixBody,
   numberSeriesBody,
+  verbalBody,
   reactionBody,
   readingBody,
   rotationBody,
@@ -271,6 +272,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'tepki-hizi': reactionBody,
     'sekil-akil-yurutme': matrixBody,
     'sayi-dizileri': numberSeriesBody,
+    'sozel-akil-yurutme': verbalBody,
   };
 
   it('her zihinsel görevin yol haritası var; metinler eksiksiz, veli metinleri çocuğunuzu anar, öğrenci metinleri anmaz', () => {
@@ -296,7 +298,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     }
   });
 
-  it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu grafik yalnızca şekil akıl yürütmede ve sayı dizilerinde; PDF yol haritasıyla üretilir', async () => {
+  it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu grafik yalnızca şekil akıl yürütmede, sayı dizilerinde ve sözel akıl yürütmede; PDF yol haritasıyla üretilir', async () => {
     for (const [slug, body] of Object.entries(BODIES)) {
       expect(hasPublicRoadmap(slug), slug).toBe(true);
       const r = evaluate(slug, body());
@@ -304,7 +306,12 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
         const rm = r[a].roadmap!;
         expect(rm, `${slug} ${a}`).toBeDefined();
         expect(rm.preview).toBe(false);
-        if (slug === 'sekil-akil-yurutme' || slug === 'sayi-dizileri') {
+        if (slug === 'sozel-akil-yurutme') {
+          // Soru türlerine göre doğru cevap oranı (aynı birim): dört sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['analogy', 'classification', 'ordering', 'deduction']);
+          expect(rm.barsTitle).toMatch(/^Soru türlerine göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('soru türüdür');
+        } else if (slug === 'sekil-akil-yurutme' || slug === 'sayi-dizileri') {
           // Kural türlerine göre doğru cevap oranı (aynı birim): beş sütun, kendi başlığı ve açıklamasıyla.
           expect(rm.bars.map((b) => b.key)).toEqual(
             slug === 'sekil-akil-yurutme' ? ['constant', 'progression', 'distribution', 'addition', 'xor'] : ['step', 'ratio', 'growing', 'alternating', 'combined'],

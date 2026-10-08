@@ -21,6 +21,7 @@ import type {
   SymbolMatchTask,
   TaskInstrument,
   TrailTask,
+  VerbalReasoningTask,
 } from '@/lib/instruments/types';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
@@ -240,6 +241,37 @@ export function numberSeriesBody(
 /** Sayı dizilerinde sorunun kendi düzeyindeki sırası (0'dan başlar). */
 export function numberSeriesRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('sayi-dizileri').tasks[0] as NumberSeriesTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Sözel akıl yürütmenin bir sorusu: düzeyi, türü, doğru seçeneği, çeldiricisi (1–5) ve sırası. */
+export type VerbalCell = { level: number; type: string; answer: number; lure: number; i: number };
+
+/** Ne doğru cevap ne çeldirici olan ilk seçenek (1–5). */
+export const verbalOther = (q: VerbalCell) => [1, 2, 3, 4, 5].find((o) => o !== q.answer && o !== q.lure)!;
+
+/**
+ * Sözel akıl yürütme: varsayılan olarak ilk üç düzeyin sorularında doğru; 4. ve 5. düzeyde ilk iki soruda doğru,
+ * ötekilerde ne doğru cevap ne çeldirici olan bir seçenek; cevap süresi düzeyle artar (6 sn + 4 sn/düzey).
+ */
+export function verbalBody(
+  pick: (q: VerbalCell) => { response: number; rtMs: number | null } = (q) => {
+    const firstTwo = q.level <= 3 || verbalRank(q) < 2;
+    return { response: firstTwo ? q.answer : verbalOther(q), rtMs: 6000 + 4000 * q.level };
+  },
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('sozel-akil-yurutme').tasks[0] as VerbalReasoningTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, type: it.type, answer: task.answers[index], lure: task.lures[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Sözel akıl yürütmede sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function verbalRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('sozel-akil-yurutme').tasks[0] as VerbalReasoningTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
 }
 

@@ -6,7 +6,7 @@ import { ROADMAPS, ROADMAP_IN_REVIEW, hasPublicRoadmap, roadmapSummary } from '@
 import type { AudienceText } from '@/content/roadmaps/types';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import { answersBody } from '@/lib/assessment/schemas';
-import { LABEL_ALL_MAX, bars3dScene, shade } from '@/lib/charts/bars3d';
+import { LABEL_ALL_MAX, bars3dScene, defaultYaw, shade } from '@/lib/charts/bars3d';
 import { ADULT_GRADE } from '@/lib/config';
 import type { Band, LikertInstrument } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
@@ -603,6 +603,23 @@ describe('üç boyutlu sütun grafiği', () => {
         }
       }
     }
+  });
+
+  it('ilk açıda hiçbir sütun bir başkasının tam arkasına düşmez (ör. dört soru türü, altı özellik)', () => {
+    for (let n = 2; n <= LABEL_ALL_MAX; n++) {
+      const input = Array.from({ length: n }, (_, i) => ({ ...bars[0], key: `k${i}`, ciLow: null, ciHigh: null }));
+      const { labels } = bars3dScene(input, { yaw: defaultYaw(n), width: 560, height: 420 });
+      const xs = labels.map((l) => l.x).sort((a, b) => a - b);
+      const gap = Math.min(...xs.slice(1).map((x, i) => x - xs[i]));
+      expect(gap, `${n} sütun`).toBeGreaterThan(10);
+      // Eski açıda (180/n) çift sayıda sütunda sütunlar ikişer ikişer üst üste düşüyordu.
+      if (n % 2 === 0 && n >= 4) {
+        const old = bars3dScene(input, { yaw: 180 / n, width: 560, height: 420 }).labels.map((l) => l.x).sort((a, b) => a - b);
+        expect(Math.min(...old.slice(1).map((x, i) => x - old[i])), `${n} sütun, eski açı`).toBeLessThan(1);
+      }
+    }
+    // Tek sayıda sütunda eski açı korunur: iki sütun önde, ötekiler simetrik (beşgende 36°).
+    expect([defaultYaw(5), defaultYaw(4), defaultYaw(6)]).toEqual([36, 22.5, 15]);
   });
 
   it('ölçüm payı yarı saydam bir kılıf olarak çizilir; değeri olmayan sütun çizilmez', () => {

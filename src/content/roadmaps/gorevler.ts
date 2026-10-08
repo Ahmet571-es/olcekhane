@@ -12,8 +12,9 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    (Hedge ve ark., 2018); bu yüzden öneriler sonuca göre değişmez, sonuç "Kısaca" bölümünde raporun kendi kartlarından
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
- *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme ve
- *    Sayı Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine öğrenci metni (ya da `adult` metni) gösterilir.
+ *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
+ *    Dizileri ve Sözel Akıl Yürütme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine öğrenci metni
+ *    (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
@@ -868,6 +869,104 @@ const sayiDizileri: TaskRoadmapTemplate = {
   sources: [KAYNAK.schneider, KAYNAK.lefevre, KAYNAK.ferrer],
 };
 
+const sozelBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca sözcüklerle yapılan yönünü gösterir.',
+    'Sözel sorularda kelime bilgisi ve okuma rahatlığı da rol oynar; bilmediğin bir kelimenin geçtiği soruda zorlanmak olağandır.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; küçük yaşta üst düzeylerdeki sorularda zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca sözcüklerle yapılan yönünü gösterir.',
+    'Sözel sorularda kelime bilgisi ve okuma rahatlığı da rol oynar; çocuğunuzun bilmediği bir kelimenin geçtiği soruda zorlanması olağandır.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const sozelFacts: InfoBox = {
+  ...sozelBase,
+  items: {
+    ...sozelBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca sözcüklerle yapılan yönünü gösterir.',
+      'Sözel sorularda kelime bilgisi, okuma rahatlığı ve bu tür sorulara alışkın olmak da rol oynar.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const sozelAkilYurutme: TaskRoadmapTemplate = {
+  version: 'sozel-akil-yurutme-yol-haritasi-1',
+  what: {
+    student: 'sözcüklerle akıl yürütmeyi gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun sözcüklerle akıl yürütmeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'sözcüklerle akıl yürütmeyi gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Sözcüklerle akıl yürütmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun sözcüklerle akıl yürütmesini ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, kelimeler arasındaki ilişkileri bulmayı ve verilen bilgilerden kesin sonuç çıkarmayı ölçer. Bu beceri; bir metindeki fikirler arasındaki bağı görmek, bir konuşmada hangi sonucun gerçekten söylenenlerden çıktığını ayırt etmek ve bir problemi adım adım çözmek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım eder.',
+    'Bu test, kelimeler arasındaki ilişkileri bulmayı ve verilen bilgilerden kesin sonuç çıkarmayı ölçer. Bu beceri; bir metindeki fikirler arasındaki bağı görmek, bir konuşmada hangi sonucun gerçekten söylenenlerden çıktığını ayırt etmek ve bir problemi adım adım çözmek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım eder.',
+  ),
+  supports: [
+    support(0, 'iliski', 'İlişkiyi cümleyle söyle', 'Yöntem', t(
+      'İki kelime arasındaki ilişkiyi ararken onu bir cümleyle söyle: “Anahtar kilidi açar.” Sonra aynı cümleyi yeni kelimeyle kur ve ona uyanı ara. Şekil ve renklerle kurulan benzetme sorularıyla çocuklarla yapılan bir araştırmada, üçüncü öğeye benzeyen yanlış seçeneklerin sık seçildiği görülmüştür; ilişkiyi açıkça söylemek, yalnızca benzerliğe bakmamana yardım edebilir.',
+      'Çocuğunuza iki kelime arasındaki ilişkiyi ararken onu bir cümleyle söylemesini önerin: “Anahtar kilidi açar.” Sonra aynı cümleyi yeni kelimeyle kurup ona uyanı arayabilir. Şekil ve renklerle kurulan benzetme sorularıyla çocuklarla yapılan bir araştırmada, üçüncü öğeye benzeyen yanlış seçeneklerin sık seçildiği görülmüştür; ilişkiyi açıkça söylemek, yalnızca benzerliğe bakmamasına yardım edebilir.',
+    )),
+    support(1, 'ciz', 'Bilgileri çiz', 'Yöntem', t(
+      'Sıralama sorularında kişileri bir çizgi üzerine yerleştir ve her bilgiyi tek tek ekle. Bilgiler tek bir sıralamaya yetmiyorsa olası sıralamaların hepsini ayrı ayrı çiz: hepsinde doğru olan cevap kesindir, yalnızca birinde doğru olan ise yalnızca olabilir.',
+      'Çocuğunuza sıralama sorularında kişileri bir çizgi üzerine yerleştirmesini ve her bilgiyi tek tek eklemesini önerin. Bilgiler tek bir sıralamaya yetmiyorsa olası sıralamaların hepsini ayrı ayrı çizebilir: hepsinde doğru olan cevap kesindir, yalnızca birinde doğru olan ise yalnızca olabilir.',
+    )),
+    support(2, 'kesin', '“Kesin mi, olabilir mi?”', 'Alışkanlık', t(
+      'Bir sonucu doğru saymadan önce kendine sor: “Bu, verilen bilgilerden kesinlikle çıkıyor mu, yoksa yalnızca olabilir mi?” İnsanlar inandırıcı buldukları sonuçları, verilen bilgilerden çıkmasalar bile kabul etmeye yatkındır; bu soruyu sormak bu yanılgıyı fark etmene yardım edebilir.',
+      'Çocuğunuza bir sonucu doğru saymadan önce kendine şunu sormasını önerin: “Bu, verilen bilgilerden kesinlikle çıkıyor mu, yoksa yalnızca olabilir mi?” İnsanlar inandırıcı buldukları sonuçları, verilen bilgilerden çıkmasalar bile kabul etmeye yatkındır; bu soruyu sormak bu yanılgıyı fark etmesine yardım edebilir.',
+    )),
+    support(3, 'oyun', 'Kelime ve mantık oyunları', 'Etkinlik', t(
+      '“Hangisi gruba uymuyor?” oyunu, bilmeceler ve mantık bulmacaları kelimelerle düşünmeyi keyifli bir uğraş hâline getirir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir; asıl kazanç kelimelerle düşünmekten keyif almaktır.',
+      '“Hangisi gruba uymuyor?” oyunu, bilmeceler ve mantık bulmacaları çocuğunuz için kelimelerle düşünmeyi keyifli bir uğraş hâline getirir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir; asıl kazanç kelimelerle düşünmekten keyif almaktır.',
+    )),
+  ],
+  facts: sozelFacts,
+  approach: [
+    { title: 'Acele ettirmeyin', text: 'Uzun sorularda bilgileri kâğıda yazmasına izin verin; hızlı olmasından çok, cevabının nedenini söyleyebilmesini övün.' },
+    { title: '“Nereden biliyoruz?” diye sorun', text: 'Bir sonuca vardığında “Bunu nereden biliyoruz?” diye sorun; kesin olanla yalnızca olabilecek olanı birlikte ayırın.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'İlişkiyi söyle',
+      text: t(
+        'Bu hafta üç kelime çifti bul (ör. “anahtar — kilit”), aralarındaki ilişkiyi bir cümleyle yaz ve aynı ilişkiye uyan yeni bir çift kur.',
+        'Bu hafta çocuğunuzla üç kelime çifti bulun (ör. “anahtar — kilit”); aralarındaki ilişkiyi bir cümleyle söyleyin ve aynı ilişkiye uyan yeni bir çift kurun.',
+      ),
+    },
+    {
+      title: 'Çiz ve sırala',
+      text: t(
+        'Bu hafta kendi sıralama bulmacanı yaz (ör. evde kimin kimden önce uyandığı): üç bilgi ver, birine çözdür ve onun bilgileri nasıl çizdiğine bak.',
+        'Bu hafta çocuğunuzdan kendi sıralama bulmacasını yazmasını isteyin (ör. evde kimin kimden önce uyandığı): üç bilgi versin, siz çözün; sonra rolleri değiştirin.',
+      ),
+    },
+    {
+      title: '“Kesin mi?” oyunu',
+      text: t(
+        'Bu hafta okuduğun ya da duyduğun üç cümle için kendine sor: “Bu kesin mi, yoksa yalnızca olabilir mi?” Nedenini bir cümleyle yaz.',
+        'Bu hafta çocuğunuzla okuduğunuz ya da duyduğunuz üç cümle için “Bu kesin mi, yoksa yalnızca olabilir mi?” diye konuşun; nedenini bir cümleyle söyleyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun sözcüklerle düşünmeni en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun sözcüklerle düşünmesini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['sekil-akil-yurutme', 'sayi-dizileri'],
+  nextPurpose: {
+    you: 'şekillerle ve sayılarla akıl yürütmeyi de görmek',
+    parent: 'çocuğunuzun şekillerle ve sayılarla akıl yürütmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.thibaut, KAYNAK.evans, KAYNAK.ferrer],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -880,4 +979,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'tepki-hizi': tepkiHizi,
   'sekil-akil-yurutme': sekilAkilYurutme,
   'sayi-dizileri': sayiDizileri,
+  'sozel-akil-yurutme': sozelAkilYurutme,
 };

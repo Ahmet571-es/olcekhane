@@ -38,6 +38,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'tepki-hizi': { version: 'tepki-hizi-rapor-1', bandLabels: {}, scales: {} },
   'sekil-akil-yurutme': { version: 'sekil-akil-yurutme-rapor-1', bandLabels: {}, scales: {} },
   'sayi-dizileri': { version: 'sayi-dizileri-rapor-1', bandLabels: {}, scales: {} },
+  'sozel-akil-yurutme': { version: 'sozel-akil-yurutme-rapor-1', bandLabels: {}, scales: {} },
   // Akademik konu tarama raporu ölçüt temellidir; düzey adları eyleme yöneliktir (neyin öncelikli olduğu).
   'matematik-konu-tarama-testi': {
     version: 'matematik-konu-tarama-rapor-1',

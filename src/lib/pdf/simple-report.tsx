@@ -2,7 +2,7 @@ import 'server-only';
 import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { plainMath } from '@/components/quiz/math-text';
-import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene } from '@/lib/charts/bars3d';
+import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene, defaultYaw } from '@/lib/charts/bars3d';
 import type { QuizChart, QuizTable } from '@/lib/instruments/types';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { OralReportBlock } from '@/lib/reports/oral';
@@ -559,7 +559,7 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
   const scene = bars3dScene(
     rm.bars.map((b) => ({ ...b, valueLabel: b.valueLabel.split(' / ')[0] })),
     {
-      yaw: 180 / Math.max(1, rm.bars.length),
+      yaw: defaultYaw(rm.bars.length),
       width: W,
       height: H,
       floor: { top: C.surface2, side: C.rule, stroke: C.ruleStrong },
