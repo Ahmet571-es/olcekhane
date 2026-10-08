@@ -24,7 +24,7 @@ export const kafatasi: Ders = {
   aciklama:
     'Üç düzeyli ders: kafatasının 22 kemiği, dikişler ve pterion, kafa tabanı ve delikleri, bıngıldaklar, kraniosinostoz, kırıklar ve kafatası cerrahisi.',
   giris:
-    'Beyin yumuşak bir dokudur ve katman katman korunur: önce beş katlı kafa derisi, sonra iki tablalı bir kemik kalkan, en içte zarlar. Bu derste o kalkanı tanıyacağız: kemiklerini, dikişlerini, tabanındaki delikleri ve bebeklikten yaşlılığa nasıl değiştiğini. Temel ile başla; Lisans ve Uzman düzeylerinde kafa tabanı sendromları, kırıklar, görüntüleme ve kafatasının cerrahi anatomisi var.',
+    'Beyin yumuşak bir dokudur ve katman katman korunur: önce beş katlı kafa derisi, sonra iki tablalı bir kemik kalkan, en içte zarlar. Bu derste o kalkanı tanıyacağız: kemiklerini, dikişlerini, tabanındaki delikleri ve bebeklikten yaşlılığa nasıl değiştiğini. Temel ile başla; Lisans ve Uzman düzeylerinde kafa tabanı sendromları, kırıklar, görüntüleme ve kafatasının cerrahi anatomisi var. Bu ders kafatası ünitesinin genel bakışıdır; her konu ünitenin sonraki altı dersinde çok daha ayrıntılı işlenecek; hazır olanlar bölüm sayfasında açılır.',
   hedefler: [
     'Kafatasının 22 kemiğini beyin kutusu ve yüz olarak ayırmak; hareket eden tek kemiği bilmek',
     'Beyin kutusunun sekiz kemiğini üç boyutlu modelde bulmak',
@@ -56,5 +56,5 @@ export const kafatasi: Ders = {
     { no: 166, ad: 'Kafa travması', duzey: 'A' },
   ],
   yayin: '2026-10-08',
-  guncelleme: '2026-10-08',
+  guncelleme: '2026-10-09',
 };

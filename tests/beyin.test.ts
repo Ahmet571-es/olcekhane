@@ -93,12 +93,13 @@ describe('yapı kataloğu ve model', () => {
 });
 
 describe('dersler', () => {
-  it('program 8 bölüm, 100 derstir; sıralar ardışık, adresler benzersiz', () => {
+  // 2026-10-08: 100 ders; 2026-10-09: kafatası ünitesinin altı dersiyle 106 (site sahibinin isteği).
+  it('program 8 bölüm, 106 derstir; sıralar ardışık, adresler benzersiz', () => {
     expect(DALLAR).toHaveLength(8);
     expect(DALLAR.map((d) => d.sira)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(new Set(DALLAR.map((d) => d.id)).size).toBe(8);
-    expect(toplamDers()).toBe(100);
-    expect(DALLAR.reduce((t, d) => t + d.program.length, 0)).toBe(100);
+    expect(toplamDers()).toBe(106);
+    expect(DALLAR.reduce((t, d) => t + d.program.length, 0)).toBe(106);
     for (const d of DALLAR) {
       expect(d.renk, d.id).toMatch(/^#[0-9a-f]{6}$/i);
       expect(d.aciklama.length, d.id).toBeGreaterThan(60);

@@ -120,7 +120,7 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 ## Beyin Akademisi
 
 - Nörobilim bölümü (site sahibinin 2026-10-08 istekleri; durum ve sıradaki ders `DURUM.md`'de): sıfırdan uzman
-  düzeyine en büyük Türkçe beyin kaynağı; 8 bölüm, 100 ders, **her işlemede bir ders**, tek ölçüt kalite. Program ve
+  düzeyine en büyük Türkçe beyin kaynağı; 8 bölüm, 106 ders (kafatası ünitesiyle), **her işlemede bir ders**, tek ölçüt kalite. Program ve
   hazır derslerin kaydı `src/content/beyin/index.ts`; her ders bir klasördür: `src/content/beyin/dersler/<bölüm>/<ders>/`
   (`index.ts`, `bolum-*.ts`, `sozluk.ts`, `sorular.ts`, `kaynaklar.ts`; türler `types.ts`; örnek ilk ders). Hazır olmayan ders programda "Hazırlanıyor" görünür, sayfası ve site haritası
   kaydı olmaz. Bölüm adresi değişirse eski adres `next.config.ts`'te kalıcı yönlendirilir.
@@ -146,6 +146,16 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   tarayıcı kimliğiyle; makaleler Europe PMC REST'ten (StatPearls özetleri dahil); NCBI ve CDC açılmaz.
   Sayfada "Uzman incelemesi bekliyor" yazar; uzman adları ve içerik lisansı site sahibine sorulmadan değiştirilmez.
   `tests/beyin.test.ts` program, katalog, model, sahneler, katmanlar, vakalar, tablolar ve soruları denetler.
+- **Derinlik** (site sahibinin 2026-10-09 kalıcı isteği): derinlik sınırı açık erişimli tam metinler ve ders kitaplarıyla
+  aşılır; makale özetiyle yetinilmez. Kaynak yolları: Gray's Anatomy 1918 (kamu malı; tam metin archive.org
+  `anatomyofhumanbo1918gray`, ayrıca Wikisource), OpenStax, LibreTexts'teki açık anatomi kitapları, Europe PMC'deki açık
+  erişimli makalelerin tam metni (`fullTextXML`; 500 verirse dergi sayfası ya da başka kaynak), açık kılavuzlar (NICE vb.).
+  Özet yalnızca tam metni bulunmayan kaynakta ve özette yazanla sınırlı kullanılır. Eski kitaptaki (Gray 1918) terim ve
+  bilgiler güncel kaynakla (Terminologia Anatomica, güncel kitap ya da makale) karşılaştırılır; eskimiş bilgi derse girmez.
+- **Ünite** (site sahibinin 2026-10-09 isteği): büyük konular tek derse sıkıştırılmaz, birkaç derslik üniteye bölünerek
+  büyütülür; ünitenin ilk dersi genel bakıştır. Kafatası ünitesi: genel bakış (`kafatasi`) ve altı ders (kemikler tek tek,
+  beş yönden kafatası ve iç taban, delikler ve derin çukurlar, kafatası–boyun bileşkesi, gelişim ve hastalıklar, kırıklar
+  ve cerrahi anatomi). Ayrı bir beyin cerrahisi bölümü eklenmez; site sahibi en son karar verecek.
 - Üç boyutlu model: BodyParts3D 4.0 (CC BY 4.0, atıf `components/beyin/model-notu.tsx`'te). Yapı kataloğu
   `src/content/beyin/yapilar.ts` (Türkçe ad, Latince ad, bölge, lob, paket, parça dosyaları, görev). Yeni yapı
   eklenince `node araclar/beyin-modeli.mjs` çalıştırılır: arşivi indirip SHA-256 ile doğrular, yalnızca katalogdaki

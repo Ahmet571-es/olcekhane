@@ -6,7 +6,8 @@ export type { Dal, DalId, Ders, Seviye } from './types';
 export { SEVIYE_ADLARI, SEVIYE_KITLESI } from './types';
 
 /**
- * Beyin Akademisi'nin programı: 8 bölüm, 100 ders (site sahibinin 2026-10-08 onayladığı harita). Her işlemede bir
+ * Beyin Akademisi'nin programı: 8 bölüm; 2026-10-08'de onaylanan 100 derslik harita, 2026-10-09'da kafatası ünitesinin
+ * altı dersiyle 106 derse çıktı (site sahibinin isteği: büyük konular üniteye bölünür). Her işlemede bir
  * ders hazırlanır. Hazır dersin içeriği `ders` alanındadır; olmayanlar programda "Hazırlanıyor" diye görünür, kendi
  * sayfaları açılmaz ve site haritasına girmez.
  */
@@ -36,7 +37,13 @@ export const DALLAR: Dal[] = [
       'Kafatasından omuriliğe, beyni oluşturan bütün yapılar: loblar ve kıvrımlar, derin çekirdekler, beyin sapı, beyincik, karıncıklar, damarlar, kafa sinirleri ve sinir yolları. Her ders gerçek bir beyin modeli üzerinde.',
     program: program('anatomi', [
       ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış ve anatominin dili', 'Merkezî ve çevresel sinir sistemi, beynin bölümleri, gri ve beyaz cevher, yönler ve kesitler.', 'temel'],
-      ['kafatasi', 'Kafatası: beynin kemik kalesi', 'Kafatasının 22 kemiği, dikişler, kafa tabanı ve delikler, bıngıldaklar, kırıklar ve kafatası cerrahisi.', 'temel'],
+      ['kafatasi', 'Kafatası: beynin kemik kalesi', 'Kafatası ünitesine genel bakış: 22 kemik, dikişler, kafa tabanı ve delikler, bıngıldaklar, kırıklar ve kafatası cerrahisi.', 'temel'],
+      ['kafatasinin-kemikleri', 'Kafatası 1: Kemikler tek tek', 'Beyin kutusunun 8, yüzün 14 kemiği ve dil kemiği tek tek: bölümleri, çıkıntıları, delikleri ve komşulukları.', 'lisans'],
+      ['kafatasina-bes-yonden-bakis', 'Kafatası 2: Beş yönden kafatası ve iç taban', 'Önden, yandan, üstten, arkadan ve alttan kafatası; içeriden üç kafa çukuru, oluklar ve ölçüm noktaları.', 'lisans'],
+      ['kafatasi-delikleri-ve-derin-cukurlar', 'Kafatası 3: Delikler, kanallar ve derin çukurlar', 'Her delikten geçen sinirler ve damarlar; göz çukuru, infratemporal ve pterigopalatin çukur, delik sendromları.', 'lisans'],
+      ['kafatasi-boyun-bileskesi', 'Kafatası 4: Kafatası–boyun bileşkesi', 'Art kafa kemiği, atlas ve aksis; eklemler, bağlar, ölçüm çizgileri ve bileşkenin hastalıkları.', 'ileri'],
+      ['kafatasinin-gelisimi-ve-hastaliklari', 'Kafatası 5: Gelişim ve hastalıklar', 'Kemikleşme, bıngıldaklar ve dikişler; kraniosinostoz; kafatası tümörleri ve kemik hastalıkları.', 'lisans'],
+      ['kafatasi-travma-ve-cerrahi-anatomi', 'Kafatası 6: Kırıklar, görüntüleme ve cerrahi anatomi', 'Kırıklar ve karar kuralları, BT ve MR, kafatası üzerindeki cerrahi giriş noktaları ve yaklaşımlar.', 'ileri'],
       ['beyin-zarlari', 'Beyin zarları ve zarlar arası boşluklar', 'Sert zar, örümcek ağı zar ve yumuşak zar; kıvrımları ve boşlukları.', 'lisans'],
       ['karinciklar-ve-beyin-omurilik-sivisi', 'Karıncıklar ve beyin-omurilik sıvısı', 'Dört karıncık; sıvının yapılışı, dolaşımı ve emilmesi.', 'lisans'],
       ['beynin-atardamarlari', 'Beynin atardamarları ve Willis halkası', 'Karotis ve vertebrobaziler sistem; halkanın parçaları.', 'lisans'],

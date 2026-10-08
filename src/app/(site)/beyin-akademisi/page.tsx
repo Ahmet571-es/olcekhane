@@ -21,7 +21,7 @@ const AYAKLAR = [
     baslik: 'Dersler',
     durum: 'Hazırlanıyor: her işlemede bir ders',
     metin:
-      '8 bölüm, 100 ders. Her ders üç düzeyde okunur: Temel (meraklı herkes), Lisans (tıp, nörobilim ve psikoloji öğrencisi) ve Uzman (asistan hekim, beyin cerrahı, araştırmacı). Klinik vakalar, cerrahi ve görüntüleme notları derslerin içinde.',
+      `8 bölüm, ${toplamDers()} ders. Her ders üç düzeyde okunur: Temel (meraklı herkes), Lisans (tıp, nörobilim ve psikoloji öğrencisi) ve Uzman (asistan hekim, beyin cerrahı, araştırmacı). Klinik vakalar, cerrahi ve görüntüleme notları derslerin içinde.`,
     href: `${BEYIN_YOLU}/anatomi/sinir-sistemine-ilk-bakis`,
     bag: 'İlk derse başla',
   },
@@ -174,7 +174,7 @@ export default function BeyinAkademisiPage() {
         <section aria-labelledby="bolumler" className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h2 id="bolumler" className="t-h2">
-              Sekiz bölüm, yüz ders
+              Sekiz bölüm, {toplamDers()} ders
             </h2>
             <p className="measure text-ink-2">
               Bölümler birbirinin üstüne kurulur; yeni başlıyorsan 1. bölümün ilk dersinden başla. Her ders Temel düzeyde

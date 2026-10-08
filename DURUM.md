@@ -32,7 +32,7 @@ Basamaklar:
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** bitti (2026-10-07). Çözülebilen her testin raporunda (öğrenci, veli
    ve yetişkinlere açık testlerde yetişkin) yol haritası var; Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik hoca onaylı,
    ötekiler 2026-10-07 kararıyla onay beklenmeden yayında (hoca yayındaki siteyi inceleyecek).
-3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 100 ders, üç boyutlu model (BodyParts3D),
+3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 106 ders (2026-10-09: kafatası ünitesi), üç boyutlu model (BodyParts3D),
    her işlemede bir ders; ayrıntı ve sıradaki ders aşağıdaki "Beyin Akademisi" bölümünde. Kaynak erişimi: OpenStax,
    UTHealth (Neuroscience Online), NINDS, MedlinePlus ve Europe PMC açılıyor; NCBI/PubMed ve CDC açılmıyor.
 4. **Okuma bölümü (site sahibinin 2026-10-07 isteği):** kişilik ve zekâ testlerinden ayrı "Okuma" sekmesi
@@ -252,7 +252,7 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
 
 - Adresler: `/beyin-akademisi`, `/beyin-akademisi/<bölüm>` (8 bölüm), `/beyin-akademisi/<bölüm>/<ders>`,
   `/beyin-akademisi/beyin-gezgini`. Eski `/beyin-akademisi/nasil-calisir` adresleri `hucre-ve-molekul`'e kalıcı yönlenir.
-- Program: 8 bölüm, 100 ders (`src/content/beyin/index.ts`): Anatomi 30, Hücreden Sinyale 16, Sistem Nörobilimi 15,
+- Program: 8 bölüm, 106 ders (`src/content/beyin/index.ts`; 2026-10-09'da kafatası ünitesiyle 100'den 106'ya): Anatomi 36, Hücreden Sinyale 16, Sistem Nörobilimi 15,
   Zihin ve Davranış 12, Yaşam Boyu Beyin 5, Klinik Nörobilim 12, İnceleme Yöntemleri 6, Tarih, Efsaneler ve Etkili
   Öğrenme 4. Her dersin seviyesi var: Temel, Lisans, İleri ve klinik.
 - Ders standardı (site sahibinin 2026-10-08 üçüncü isteği: "öğrenciden profesöre, tıp ve beyin cerrahisi dahil, çok
@@ -277,8 +277,13 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   167 kaynak; okuma süresi temel ~34, lisans ~72, tamamı ~95 dk; UÇEP: 138, 164, 165, 166). Bağımsız denetimde 6
   yanlış ve 37 küçük sorun bulundu, hepsi düzeltildi. Modelde yeni "yuz" paketi: yüz kemikleri, dil kemiği, atlas
   ve aksis (sürüm c5d7ea847e); kemik sahneleri kesitte kemiklerin kutusunu kullanır.
-- **Sıradaki ders:** Anatomi 3 "Beyin zarları ve zarlar arası boşluklar", aynı ölçüyle; sonra program sırasıyla.
-  Site sahibi başka bir ders isterse o yapılır.
+- **Site sahibinin 2026-10-09 kararı:** kafatası dersi istediği kapsam ve derinlikte bulunmadı. Kalıcı istekleri: derinlik
+  sınırı açık erişimli tam metinler ve ders kitaplarıyla aşılacak (özetle yetinilmez); büyük konular birkaç derslik
+  üniteye bölünerek büyütülecek. Program 106 derse çıktı: mevcut kafatası dersi ünitenin genel bakışı oldu, ardından
+  altı ders: (1) kemikler tek tek, (2) beş yönden kafatası ve iç taban, (3) delikler, kanallar ve derin çukurlar,
+  (4) kafatası–boyun bileşkesi, (5) gelişim ve hastalıklar, (6) kırıklar, görüntüleme ve cerrahi anatomi.
+- **Sıradaki ders:** Kafatası 1 "Kemikler tek tek"; ünite sırayla bitince Anatomi "Beyin zarları". Site sahibi başka
+  bir ders isterse o yapılır. Ünite dersleri hazır oldukça genel bakıştaki tekrarlar gözden geçirilir.
 - **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
   eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
   cerrahi kutuları sürer.
@@ -430,6 +435,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (3): Site sahibi kafatası dersini yeterince derin bulmadı; kalıcı istekleri kaydedildi (açık erişimli tam
+  metinler ve ders kitaplarıyla derinlik; büyük konular üniteye bölünür). Program 106 derse çıktı: kafatası dersi ünitenin
+  genel bakışı oldu, altı ders "Hazırlanıyor" olarak programa eklendi.
 - 2026-10-09 (2): Beyin Akademisi Anatomi 2 "Kafatası: beynin kemik kalesi" yayında: üç düzeyde 7 bölüm; kemikler,
   dikişler ve pterion, kafa derisi, kafatası tabanı ve 13 delik, yüz ve sinüsler, bıngıldaklar ve kraniosinostoz,
   kırıklar, BOS sızıntısı, BT kuralları, kraniotomi, dekompresif kraniektomi ve kranioplasti; 7 üç boyutlu sahne
@@ -466,4 +474,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-08 (6): 16 Faktörlü Kişilik Profili yayında: 160 madde, 16 özellik, öğrenci, veli ve yetişkin raporu,
   16 sütunlu 3B grafikli yol haritası (öneriler en belirgin altı özellik için); telefonda ve masaüstünde baştan sona
   çözüldü, rapor ve PDF açıldı.
-- 2026-10-08 (5): Şekil Akıl Yürütme yayında (sürüm 2): 24 özgün matris sorusu, 5 düzey; 3. sınıftan yetişkine.
