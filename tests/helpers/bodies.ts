@@ -24,7 +24,9 @@ import type {
   VerbalReasoningTask,
   PaperFoldingTask,
   VocabularyTask,
+  RuleSwitchTask,
 } from '@/lib/instruments/types';
+import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
 import { expectedSpanResponse, spanStimulus } from '@/lib/scoring/tasks';
@@ -354,4 +356,24 @@ export function vocabularyBody(
 export function vocabularyRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('kelime-bilgisi').tasks[0] as VocabularyTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Kural değiştirmenin bir denemesi: sırası, kuralı, türü (tek kural, bölümün ilki, kural sürüyor, değişti), uyumlu mu, doğru düğme (1 sol, 2 sağ). */
+export type RuleSwitchCell = { i: number; rule: 'color' | 'shape'; kind: RuleSwitchKind; congruent: boolean; answer: number; block: number };
+
+/** Kural değiştirme: varsayılan olarak hepsi doğru; tek kuralda 650, kural sürerken 750, kural değişince 950 ms. */
+export function ruleSwitchBody(
+  pick: (q: RuleSwitchCell) => { response: number | null; rtMs: number | null } = (q) => ({
+    response: q.answer,
+    rtMs: q.kind === 'pure' ? 650 : q.kind === 'repeat' ? 750 : q.kind === 'switch' ? 950 : 900,
+  }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('kural-degistirme').tasks[0] as RuleSwitchTask;
+  const kinds = ruleSwitchKinds(task.trials);
+  const trials = task.trials.map((t, index) => {
+    const p = pick({ i: index, rule: t.rule, kind: kinds[index], congruent: ruleCongruent(t), answer: ruleAnswer(t) + 1, block: t.block });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

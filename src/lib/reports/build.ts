@@ -55,6 +55,10 @@ import {
   vocabularyLurePattern,
   vocabularyRapid,
   vocabularySamePosition,
+  ruleSwitchChance,
+  ruleSwitchFast,
+  ruleSwitchOneSide,
+  ruleSwitchTimeouts,
   matrixRapid,
   matrixSamePosition,
   nBackKeptOneBack,
@@ -82,6 +86,7 @@ import {
   type VerbalResult,
   type FoldingResult,
   type VocabularyResult,
+  type RuleSwitchResult,
 } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
@@ -3509,6 +3514,245 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
+/* ---------- Kural değiştirme ---------- */
+
+/** Kural değiştirmede iki tipik süre arasındaki farkın "belirgin" sayılması için en az bu kadar olması gerekir (ms). */
+const RULE_COST_MIN_MS = 50;
+
+/** Kural değiştirmenin dört sonuç kartı, üç koşulun tipik süreleri ve öne çıkan sayılar. */
+function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const chance = ruleSwitchChance(r);
+  const timeouts = ruleSwitchTimeouts(r);
+  const fast = ruleSwitchFast(r);
+  const oneSide = ruleSwitchOneSide(r);
+
+  /* Doğruluk */
+  let accText: string;
+  if (chance) {
+    accText = v(
+      'Doğru cevapların, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az. Kuralları tam anlamamış, şekillere bakmadan basmış ya da görevi yarıda bırakmış olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.',
+      'Çocuğunuzun doğru cevapları, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az. Kurallar tam anlaşılmamış, şekillere bakılmadan basılmış ya da görev yarıda bırakılmış olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.',
+    );
+  } else {
+    accText =
+      r.accuracy >= 0.95
+        ? v('Şekillere, işaretin söylediği kurala göre neredeyse her seferinde doğru cevap verdin.', 'Çocuğunuz şekillere, işaretin söylediği kurala göre neredeyse her seferinde doğru cevap verdi.')
+        : r.accuracy >= 0.85
+          ? v('Çoğu denemede kurala göre doğru düğmeye bastın; bazı denemelerde yanıldın.', 'Çocuğunuz çoğu denemede kurala göre doğru düğmeye bastı; bazı denemelerde yanıldı.')
+          : v('Denemelerin bir kısmında kurala göre doğru düğmeyi bulmakta zorlandın.', 'Çocuğunuz denemelerin bir kısmında kurala göre doğru düğmeyi bulmakta zorlandı.');
+    // Karışık bölümdeki hataların türü: iki kuralın farklı düğmeyi istediği şekillerde yanlış düğme, öteki kurala göre
+    // basmak demektir. Rastgele hatalar iki tür şekle eşit dağılır; hataların en az üçte ikisi (en az 4) bu şekillerdeyse söylenir.
+    if (r.ruleErrors >= 4 && r.ruleErrors >= 2 * r.otherErrors) {
+      accText += v(
+        ' İki kuralın karıştığı bölümdeki hatalarının çoğu, iki kuralın farklı düğmeyi istediği şekillerde oldu: bu hatalarda öteki kurala göre bastın. Bu, kuralı akılda tutmanın zorlaştığı anlarda olur; basmadan önce şeklin üstündeki işarete bir an bakmak işine yarar.',
+        ' İki kuralın karıştığı bölümdeki hataların çoğu, iki kuralın farklı düğmeyi istediği şekillerde oldu: bu hatalarda öteki kurala göre basıldı. Bu, kuralı akılda tutmanın zorlaştığı anlarda olur; basmadan önce şeklin üstündeki işarete bir an bakmak ona yardım edebilir.',
+      );
+    }
+    if (timeouts || fast || oneSide) {
+      accText += v(
+        ' Bazı denemelerde şekle bakmadan ya da süre içinde basmamış olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
+        ' Bazı denemelerde şekle bakılmadan ya da süre içinde basılmamış olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+      );
+    }
+  }
+  const dogruluk: CognitiveBlock = {
+    ...card('kd_dogruluk'),
+    headline: `${pct(r.accuracy)} doğru`,
+    detail: `Tek kural ${pct(r.pure.accuracy)} · kural sürerken ${pct(r.repeat.accuracy)} · kural değişince ${pct(r.switch.accuracy)}`,
+    text: accText,
+  };
+
+  /* Kural değiştirme */
+  let degisim: CognitiveBlock;
+  let switchFig: { value: string; note?: string } = { value: 'Yorumlanmadı' };
+  if (chance) {
+    degisim = { ...card('kd_degisim'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için kural değiştirmenin etkisi yorumlanmadı.' };
+  } else if (r.repeat.medianRt === null || r.switch.medianRt === null) {
+    degisim = {
+      ...card('kd_degisim'),
+      headline: 'Hesaplanamadı',
+      text: 'Kuralın sürdüğü ya da değiştiği denemelerden birinde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.',
+    };
+    switchFig = { value: 'Hesaplanamadı' };
+  } else {
+    const a = to10(r.repeat.medianRt);
+    const b = to10(r.switch.medianRt);
+    const diff = b - a;
+    switchFig =
+      diff >= RULE_COST_MIN_MS
+        ? { value: `${sn(diff)} sn`, note: 'kural değişince daha yavaş' }
+        : diff <= -RULE_COST_MIN_MS
+          ? { value: `${sn(-diff)} sn`, note: 'kural değişince daha hızlı' }
+          : { value: 'Belirgin fark yok' };
+    const detail = `Kural sürerken ${sn(a)} sn · kural değişince ${sn(b)} sn`;
+    // Kural değişince doğruluk da en az 10 puan düşerse söylenir.
+    const accDrop =
+      r.repeat.accuracy - r.switch.accuracy >= 0.1
+        ? v(
+            ` Kural değiştiğinde hataların da arttı: doğru cevapların ${pct(r.repeat.accuracy)} yerine ${pct(r.switch.accuracy)} oldu.`,
+            ` Kural değiştiğinde hatalar da arttı: doğru cevaplar ${pct(r.repeat.accuracy)} yerine ${pct(r.switch.accuracy)} oldu.`,
+          )
+        : '';
+    if (diff >= RULE_COST_MIN_MS) {
+      degisim = {
+        ...card('kd_degisim'),
+        headline: `Kural değişince ${sn(diff)} sn daha yavaş`,
+        detail,
+        text:
+          v(
+            'Kural değiştiğinde cevapların, aynı kural sürerkenkinden biraz daha yavaştı. Bu herkeste görülür: yeni kurala geçmek için zihnin kendini yeniden ayarlaması gerekir; çok uzun alıştırmalardan sonra bile bu fark tamamen kaybolmaz.',
+            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerkenkinden biraz daha yavaştı. Bu, kural değiştirme çalışmalarının bilinen bir bulgusudur: kural değiştikten sonra verilen cevaplar daha yavaştır ve daha çok hata içerir; çok uzun alıştırmalar bile bu farkı ortadan kaldırmaz (Stoet ve Snyder, 2007).',
+          ) +
+          accDrop +
+          v(' Bu fark bir seferden ötekine değişebilir; küçük farklara takılma.', ' Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.'),
+      };
+    } else if (diff <= -RULE_COST_MIN_MS) {
+      degisim = {
+        ...card('kd_degisim'),
+        headline: 'Kural değişince daha hızlı',
+        detail,
+        text:
+          v(
+            'Kural değiştiğinde cevapların, aynı kural sürerkenkinden biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır ve bir seferden ötekine değişebilir.',
+            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerkenkinden biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+          ) + accDrop,
+      };
+    } else {
+      degisim = {
+        ...card('kd_degisim'),
+        headline: 'Belirgin bir fark görülmedi',
+        detail,
+        text:
+          v(
+            'Kural değiştiğinde cevapların, aynı kural sürerkenkinden belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlama, bu uygulamada sende belirgin olarak ortaya çıkmadı. Bu fark bir seferden ötekine değişebilir.',
+            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerkenkinden belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlamanın belirgin olmaması ölçümün doğal payından da kaynaklanabilir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+          ) + accDrop,
+      };
+    }
+  }
+
+  /* İki kuralı akılda tutma */
+  let karisik: CognitiveBlock;
+  if (chance) {
+    karisik = { ...card('kd_karisik'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için iki kuralın karıştığı bölüm yorumlanmadı.' };
+  } else if (r.pure.medianRt === null || r.repeat.medianRt === null) {
+    karisik = {
+      ...card('kd_karisik'),
+      headline: 'Hesaplanamadı',
+      text: 'Tek kurallı bölümlerde ya da iki kuralın karıştığı bölümde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.',
+    };
+  } else {
+    const a = to10(r.pure.medianRt);
+    const b = to10(r.repeat.medianRt);
+    const diff = b - a;
+    const detail = `Tek kurallı bölümlerde ${sn(a)} sn · iki kural karışınca (kural sürerken) ${sn(b)} sn`;
+    if (diff >= RULE_COST_MIN_MS) {
+      karisik = {
+        ...card('kd_karisik'),
+        headline: `İki kural karışınca ${sn(diff)} sn daha yavaş`,
+        detail,
+        text: v(
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile cevapların tek kurallı bölümlerdekinden daha yavaştı. Bunun nedeni, iki kuralı birden akılda tutup her denemede işarete bakmanın gerektirdiği çabadır; çoğu kişide görülür. Bu fark bir seferden ötekine değişebilir.',
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile çocuğunuzun cevapları tek kurallı bölümlerdekinden daha yavaştı. Bu fark, iki kuralı birden akılda tutmanın gerektirdiği genel çabayı gösterir ve çoğu kişide görülür. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+        ),
+      };
+    } else if (diff <= -RULE_COST_MIN_MS) {
+      karisik = {
+        ...card('kd_karisik'),
+        headline: 'İki kural karışınca daha hızlı',
+        detail,
+        text: v(
+          'İki kuralın karıştığı bölümde cevapların, tek kurallı bölümlerdekinden daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışıp ısınmaktan kaynaklanmış olabilir.',
+          'İki kuralın karıştığı bölümde çocuğunuzun cevapları, tek kurallı bölümlerdekinden daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışmaktan kaynaklanmış olabilir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+        ),
+      };
+    } else {
+      karisik = {
+        ...card('kd_karisik'),
+        headline: 'Belirgin bir fark görülmedi',
+        detail,
+        text: v(
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerdeki cevapların tek kurallı bölümlerdekinden belirgin biçimde yavaş değildi. Bu fark bir seferden ötekine değişebilir.',
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde çocuğunuzun cevapları tek kurallı bölümlerdekinden belirgin biçimde yavaş değildi. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+        ),
+      };
+    }
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (timeouts) {
+    issues.push(
+      v(
+        `${r.n} denemenin ${r.timeouts} tanesinde süre içinde basmadın; görevi yarıda bırakmış ya da dikkatin dağılmış olabilir.`,
+        `Çocuğunuz ${r.n} denemenin ${r.timeouts} tanesinde süre içinde basmadı; görev yarıda bırakılmış ya da dikkat dağılmış olabilir.`,
+      ),
+    );
+  }
+  if (fast) {
+    issues.push(
+      v(
+        `${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde bastın; bu denemelerde şekle bakmadan basmış olabilirsin.`,
+        `Çocuğunuz ${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde bastı; bu denemelerde şekle bakılmadan basılmış olabilir.`,
+      ),
+    );
+  }
+  if (oneSide) {
+    issues.push(
+      v(
+        'Cevaplarının çoğunda aynı düğmeye bastın; şekillere bakmadan hep aynı düğmeye basmış olabilirsin.',
+        'Çocuğunuz cevaplarının çoğunda aynı düğmeye bastı; şekillere bakılmadan hep aynı düğmeye basılmış olabilir.',
+      ),
+    );
+  }
+  const noLimit = v(
+    ' Hız tek başına iyi ya da kötü değildir; bu görevde önemli olan, kurala göre doğru düğmeye basabilmektir.',
+    ' Hız tek başına iyi ya da kötü değildir; bu görevde önemli olan, kurala göre doğru düğmeye basabilmektir.',
+  );
+  const calisma: CognitiveBlock =
+    r.medianRt === null
+      ? { ...card('kd_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Yeterince doğru cevap olmadığı için cevap süreleri yorumlanmadı.'].join(' ') }
+      : {
+          ...card('kd_calisma'),
+          headline: `Tipik cevap süresi ${sn(to10(r.medianRt))} sn`,
+          text:
+            [
+              v(
+                `Doğru cevaplarında şekli görüp düğmeye basman tipik olarak ${sn(to10(r.medianRt))} saniye sürdü.`,
+                `Çocuğunuzun doğru cevaplarında şekli görüp düğmeye basması tipik olarak ${sn(to10(r.medianRt))} saniye sürdü.`,
+              ),
+              ...issues,
+            ].join(' ') + noLimit,
+        };
+
+  /* Grafik ve öne çıkan sayılar */
+  let chart: CognitiveReport['chart'];
+  if (!chance && r.pure.medianRt !== null && r.repeat.medianRt !== null && r.switch.medianRt !== null) {
+    const rows = [
+      { label: 'Tek kurallı bölümler', ms: to10(r.pure.medianRt) },
+      { label: 'İki kural karışınca: kural sürerken', ms: to10(r.repeat.medianRt) },
+      { label: 'İki kural karışınca: kural değişince', ms: to10(r.switch.medianRt) },
+    ];
+    const max = roundUp(Math.max(...rows.map((x) => x.ms)), 500);
+    chart = {
+      title: 'Tipik cevap süresi',
+      note: v(
+        'Çubuklar doğru cevaplarındaki tipik cevap süresini gösterir; kısa çubuk daha hızlı demek.',
+        'Çubuklar doğru cevaplardaki tipik (ortanca) cevap süresini gösterir; kısa çubuk daha hızlı demektir.',
+      ),
+      rows: rows.map((x) => ({ label: x.label, value: x.ms, max, valueLabel: `${sn(x.ms)} sn` })),
+    };
+  }
+  const figures: CognitiveReport['figures'] = [
+    { label: 'Doğru', value: pct(r.accuracy) },
+    { label: 'Kural değiştirmenin etkisi', ...switchFig },
+    ...(r.medianRt !== null ? [{ label: 'Tipik cevap süresi', value: `${sn(to10(r.medianRt))} sn` }] : []),
+  ];
+  return { blocks: [dogruluk, degisim, karisik, calisma], ...(chart ? { chart } : {}), figures };
+}
+
 function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
   const you = audience !== 'parent';
   const blocks: CognitiveBlock[] = [];
@@ -3648,10 +3892,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const kb = byKey.get('kb_dogru')?.extra as unknown as VocabularyResult | undefined;
   const kbt = def.tasks.find((t): t is VocabularyTask => t.kind === 'vocabulary');
   if (kb && kbt) add(vocabularyBlocks(kb, kbt, audience, card));
+  const kd = byKey.get('kd_dogruluk')?.extra as unknown as RuleSwitchResult | undefined;
+  if (kd && def.tasks.some((t) => t.kind === 'rule_switch')) add(ruleSwitchBlocks(kd, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

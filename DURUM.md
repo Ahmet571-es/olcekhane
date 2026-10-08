@@ -179,7 +179,16 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    yazılışından ele vermez (uzunluğa, kelime sayısına, soruyla ortak köke göre seçen tahmin yolları 24 soruda en çok 6,5
    doğru bulur). Rapor ve yol haritası Sözel Akıl Yürütme düzeninde; kaynaklar Nation (2009), Wright ve Cervetti (2017),
    TDK. Aynı değişiklikte Kâğıt Katlama yol haritasında "delik aynalanır" yerine "deliğin bir eşi açılır".
-8. Sonra: Kural Değiştirme, Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
+8. **Kural Değiştirme: yayında (2026-10-09, pilot).** Görev değiştirme düzeni: mavi ya da turuncu daire ya da kare;
+   üstündeki işaret (RENK ya da ŞEKİL) kuralı söyler, sol ve sağ düğme. Bölümler: yalnızca renk (16), yalnızca şekil (16),
+   iki karışık bölüm (33 + 33; kuralın değiştiği ve sürdüğü denemeler 16 + 16, uyumlu ve uyumsuz şekiller ile düğmeler
+   dengeli); her bölümden önce geri bildirimli alıştırma (8, 8, 10). İşaret şekilden 0,6 sn önce belirir, şekil 4 sn bekler;
+   diziler sabit tohumla (`lib/instruments/rule-switch.ts`, `components/runner/tasks/rule-switch.tsx`). Puanlama: 0,2 sn'den
+   kısa ve süresi geçen cevaplar doğru sayılmaz; bölümün ilk denemesi ve hatadan sonraki deneme süreye katılmaz.
+   Rapor: doğruluk ve hataların türü (uyumsuz şekillerde öteki kurala göre basma), kural değiştirmenin bedeli, iki
+   kuralı akılda tutmanın bedeli (0,05 sn'den küçük farklar belirgin sayılmaz), çalışma biçimi; tipik süreler grafiği.
+   3. sınıftan yetişkine. Kaynaklar Stoet ve Snyder (2007), Zinke ve ark. (2012), Hedge ve ark. (2018).
+9. Sonra: Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -334,6 +343,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Sözel Akıl Yürütme | sozel-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kâğıt Katlama | kagit-katlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kelime Bilgisi | kelime-bilgisi | Yayında (pilot; 3. sınıftan yetişkine) |
+| Kural Değiştirme | kural-degistirme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -445,6 +455,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (5): Kural Değiştirme yayında: renk ve şekil kuralı arasında geçiş, 98 deneme, dört bölüm; öğrenci, veli ve
+  yetişkin raporu (doğruluk, kural değiştirmenin ve iki kuralı akılda tutmanın bedeli, hataların türü), yol haritası;
+  telefonda dokunarak ve masaüstünde ok tuşlarıyla baştan sona yapıldı, rapor ve PDF açıldı.
 - 2026-10-09 (4): Kelime Bilgisi yayında: 24 özgün soru (eş anlam, zıt anlam, cümlede anlam, deyimler), 5 düzey,
   dört alıştırma; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; anlamlar TDK
   sözlüğüyle denetlendi; telefonda ve masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı.
@@ -478,9 +491,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-08 (8): Sayı Dizileri yayında: 24 özgün sayı dizisi, 5 düzey, cevap yazılarak; öğrenci, veli ve yetişkin
   raporu, kural türlerine göre 3B grafikli yol haritası; telefonda ve masaüstünde baştan sona çözüldü, rapor ve PDF
   açıldı. Aynı değişiklikte Şekil Akıl Yürütme raporunda iki küçük metin tutarlılığı düzeltmesi.
-- 2026-10-08 (7): Beyin Akademisi büyütüldü (site sahibinin onayladığı yapı): 8 bölüm, 100 derslik program, ders
-  seviyeleri, katmanlı ders ("Derinleş", "Klinik bağlantı", "Sınav notu"), okuma düzeyi seçici, UÇEP 2020 eşlemesi,
-  dört ayaklı ana sayfa. İlk ders baştan genişletildi (omurilik sinirleri, otonom sistemin iki kolu, MR'da sağ-sol
-  çizimleri; insula, lif türleri, kafatası ve atardamar sahneleri). Üç boyutlu sahnelerde etiket noktaları yapının
-  görünen yüzüne oturuyor, kesitte kaldırılan parçanın etiketi gizleniyor, kesik yüze dokununca yapı seçiliyor,
-  telefonda kesit paneli kısaldı; sahneye özel boya.

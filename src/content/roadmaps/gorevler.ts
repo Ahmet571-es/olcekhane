@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama ve Kelime Bilgisi yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi ve Kural Değiştirme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1164,6 +1164,104 @@ const kelimeBilgisi: TaskRoadmapTemplate = {
   sources: [KAYNAK.nation, KAYNAK.wright, KAYNAK.tdk],
 };
 
+const kuralBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; bilişsel esnekliğin yalnızca bir yönünü (iki basit kural arasında geçiş) gösterir.',
+    'Kural değiştiğinde biraz yavaşlamak herkeste görülür; çok uzun alıştırmalardan sonra bile bu yavaşlama tamamen kaybolmaz.',
+    'Bu tür beceriler ergenlik boyunca gelişmeyi sürdürür; küçük yaşta kurallar karışınca zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; bilişsel esnekliğin yalnızca bir yönünü (iki basit kural arasında geçiş) gösterir.',
+    'Kural değiştiğinde biraz yavaşlamak herkeste görülür; çok uzun alıştırmalardan sonra bile bu yavaşlama tamamen kaybolmaz.',
+    'Bu tür beceriler ergenlik boyunca gelişmeyi sürdürür; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine cihazla ilgili bilgi. */
+const kuralFacts: InfoBox = {
+  ...kuralBase,
+  items: {
+    ...kuralBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; bilişsel esnekliğin yalnızca bir yönünü (iki basit kural arasında geçiş) gösterir.',
+      'Kural değiştiğinde biraz yavaşlamak herkeste görülür; çok uzun alıştırmalardan sonra bile bu yavaşlama tamamen kaybolmaz.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const kuralDegistirme: TaskRoadmapTemplate = {
+  version: 'kural-degistirme-yol-haritasi-1',
+  what: {
+    student: 'bir işten ötekine ya da bir kuraldan ötekine geçmeyi gerektiren durumları nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun bir işten ötekine ya da bir kuraldan ötekine geçmesini nasıl kolaylaştırabileceği',
+    summary: 'bir işten ötekine geçmeyi kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Bir işten ötekine geçmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun bir işten ötekine geçmesini ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu görev, bir kuraldan ötekine geçebilmeyi (bilişsel esneklik) ölçer. Bu beceri; bir işten ötekine geçmek, bir problemin çözüm yolunu değiştirmek ya da kuralları değişen bir oyuna uyum sağlamak gibi durumlarda kullanılır. Aşağıdaki yollar, bu geçişleri kolaylaştırmaya yardım eder.',
+    'Bu görev, bir kuraldan ötekine geçebilmeyi (bilişsel esneklik) ölçer. Bu beceri; bir işten ötekine geçmek, bir problemin çözüm yolunu değiştirmek ya da kuralları değişen bir oyuna uyum sağlamak gibi durumlarda kullanılır. Aşağıdaki yollar, çocuğunuzun bu geçişleri kolaylaştırmasına yardım eder.',
+  ),
+  supports: [
+    support(0, 'isaret', 'Geçişi fark et', 'Yöntem', t(
+      'Bir işten ötekine geçerken bir an dur ve yeni işin kuralını kendine kısaca söyle (ör. “Şimdi renge bakıyorum.”). Kural değişince zihnin kendini yeniden ayarlaması zaman alır; geçişi fark edip hazırlanmak için kendine bir an tanımak işini kolaylaştırabilir.',
+      'Çocuğunuza bir işten ötekine geçerken bir an durmasını ve yeni işin kuralını kendine kısaca söylemesini önerin (ör. “Şimdi renge bakıyorum.”). Kural değişince zihnin kendini yeniden ayarlaması zaman alır; geçişi fark edip hazırlanmak için bir an tanımak işini kolaylaştırabilir.',
+    )),
+    support(1, 'tek', 'Bir seferde tek iş', 'Alışkanlık', t(
+      'Mümkün olduğunda işleri sırayla yap: birini bitirip ötekine geç. Araştırmalar, iş değiştirdikten hemen sonra daha yavaş ve daha çok hatayla çalışıldığını gösteriyor; sık sık iş değiştirmek bu kaybı çoğaltır.',
+      'Çocuğunuzu mümkün olduğunda işleri sırayla yapmaya, birini bitirip ötekine geçmeye teşvik edin. Araştırmalar, iş değiştirdikten hemen sonra daha yavaş ve daha çok hatayla çalışıldığını gösteriyor; sık sık iş değiştirmek bu kaybı çoğaltır.',
+    )),
+    support(2, 'liste', 'Kuralları görünür kıl', 'Araç', t(
+      'Kuralların ya da adımların değiştiği işlerde (ör. bir oyunun kuralları, bir tarifin adımları) kuralları kısa bir listeye yaz ve göz önünde tut; böylece hepsini aynı anda akılda tutmak zorunda kalmazsın.',
+      'Çocuğunuza kuralların ya da adımların değiştiği işlerde (ör. bir oyunun kuralları, bir tarifin adımları) kuralları kısa bir listeye yazıp göz önünde tutmasını önerin; böylece hepsini aynı anda akılda tutmak zorunda kalmaz.',
+    )),
+    support(3, 'oyun', 'Kuralı değişen oyunlar', 'Etkinlik', t(
+      '“Simon der” gibi ya da oyunun ortasında kuralı değişen kart oyunları, esnek düşünmeyi keyifli bir uğraş hâline getirir. Bir çalışmada kural değiştirme alıştırması yapan gençlerin alıştırılan görevdeki yavaşlaması azalmış, ama bu kazanç başka işlere sınırlı yansımıştır; asıl kazanç bu oyunlardan keyif almaktır.',
+      '“Simon der” gibi ya da oyunun ortasında kuralı değişen kart oyunları, çocuğunuz için esnek düşünmeyi keyifli bir uğraş hâline getirir. Bir çalışmada kural değiştirme alıştırması yapan gençlerin alıştırılan görevdeki yavaşlaması azalmış, ama bu kazanç başka işlere sınırlı yansımıştır; asıl kazanç bu oyunlardan keyif almaktır.',
+    )),
+  ],
+  facts: kuralFacts,
+  approach: [
+    { title: 'Geçişleri önceden haber verin', text: 'Bir işten ötekine geçmeden birkaç dakika önce haber verin; bu, yeni işe hazırlanmasına yardım eder.' },
+    { title: 'Kuralları tek tek söyleyin', text: 'Yeni kuralları ya da adımları tek tek söyleyin; gerekiyorsa kısa, yazılı bir liste verin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Geçişi söyle',
+      text: t(
+        'Bu hafta bir işten ötekine her geçişinde, yeni işin kuralını ya da ilk adımını kendine bir cümleyle söyle.',
+        'Bu hafta çocuğunuzla, bir işten ötekine her geçişte yeni işin kuralını ya da ilk adımını bir cümleyle söyleme alışkanlığı edinmeye çalışın.',
+      ),
+    },
+    {
+      title: 'Tek iş',
+      text: t(
+        'Bu hafta günde bir kez, yarım saat boyunca tek bir işle uğraş; bildirimleri kapat ve işi bitirmeden başka işe geçme.',
+        'Bu hafta çocuğunuzla günde bir kez, yarım saat boyunca tek bir işle uğraşmayı deneyin; dikkat dağıtıcıları kaldırın ve işi bitirmeden başka işe geçmeyin.',
+      ),
+    },
+    {
+      title: 'Kuralı değişen oyun',
+      text: t(
+        'Bu hafta “Simon der” ya da kart eşleştirme gibi bir oyunu, oyunun ortasında kuralı değiştirerek birileriyle oyna.',
+        'Bu hafta çocuğunuzla “Simon der” ya da kart eşleştirme gibi bir oyunu, oyunun ortasında kuralı değiştirerek oynayın.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun bir işten ötekine geçmeni en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun bir işten ötekine geçmesini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['renk-kelime-gorevi', 'dur-git-gorevi'],
+  nextPurpose: {
+    you: 'dikkatini yönetme becerilerinin başka yönlerini de görmek',
+    parent: 'çocuğunuzun dikkatini yönetme becerilerinin başka yönlerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.stoet, KAYNAK.zinke, KAYNAK.hedge],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -1179,4 +1277,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'sozel-akil-yurutme': sozelAkilYurutme,
   'kagit-katlama': kagitKatlama,
   'kelime-bilgisi': kelimeBilgisi,
+  'kural-degistirme': kuralDegistirme,
 };

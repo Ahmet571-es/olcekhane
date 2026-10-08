@@ -23,6 +23,7 @@ import {
   verbalBody,
   foldingBody,
   vocabularyBody,
+  ruleSwitchBody,
   reactionBody,
   readingBody,
   rotationBody,
@@ -277,6 +278,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'sozel-akil-yurutme': verbalBody,
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
+    'kural-degistirme': ruleSwitchBody,
   };
 
   it('her zihinsel görevin yol haritası var; metinler eksiksiz, veli metinleri çocuğunuzu anar, öğrenci metinleri anmaz', () => {

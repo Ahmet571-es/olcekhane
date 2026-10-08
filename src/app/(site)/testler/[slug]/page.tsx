@@ -68,6 +68,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                   ? `${single.items.length} soru, ${single.levels.length} düzey, 4 soru türü`
                   : single.kind === 'paper_folding'
                     ? `${single.items.length} soru, ${single.levels.length} düzey`
+                    : single.kind === 'rule_switch'
+                      ? `${single.trials.length} deneme, 4 bölüm`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -347,6 +349,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Ortadan, kenardan ve çapraz katlamalardan hangilerinin daha kolay geldiği (üç boyutlu grafikle), yanlış cevapların neyi düşündürdüğü ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'rule_switch' && (
+              <>
+                <li>Doğruluk ve hataların türü (iki kuralın farklı düğmeyi istediği şekillerde öteki kurala göre basmak)</li>
+                <li>Kural değiştiğinde ve iki kural karıştığında cevabın ne kadar yavaşladığı (tipik süreler grafiğiyle) ve görevin nasıl yapıldığı</li>
               </>
             )}
             {single?.kind === 'vocabulary' && (

@@ -15,6 +15,7 @@ import { NBack } from './n-back';
 import { NumberSeries } from './number-series';
 import { PaperFolding } from './paper-folding';
 import { Vocabulary } from './vocabulary';
+import { RuleSwitch } from './rule-switch';
 import { ReactionTime } from './reaction-time';
 import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
@@ -172,6 +173,7 @@ export function TaskRunner(props: {
       {task.kind === 'verbal_reasoning' && <VerbalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'paper_folding' && <PaperFolding key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'vocabulary' && <Vocabulary key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'rule_switch' && <RuleSwitch key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

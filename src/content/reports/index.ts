@@ -41,6 +41,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'sozel-akil-yurutme': { version: 'sozel-akil-yurutme-rapor-1', bandLabels: {}, scales: {} },
   'kagit-katlama': { version: 'kagit-katlama-rapor-1', bandLabels: {}, scales: {} },
   'kelime-bilgisi': { version: 'kelime-bilgisi-rapor-1', bandLabels: {}, scales: {} },
+  'kural-degistirme': { version: 'kural-degistirme-rapor-1', bandLabels: {}, scales: {} },
   // Akademik konu tarama raporu ölçüt temellidir; düzey adları eyleme yöneliktir (neyin öncelikli olduğu).
   'matematik-konu-tarama-testi': {
     version: 'matematik-konu-tarama-rapor-1',

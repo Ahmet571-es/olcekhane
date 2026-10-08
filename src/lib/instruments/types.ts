@@ -238,6 +238,7 @@ export type TaskKind =
   | 'number_series'
   | 'verbal_reasoning'
   | 'vocabulary'
+  | 'rule_switch'
   | 'paper_folding';
 
 interface TaskBase {
@@ -752,6 +753,36 @@ export interface VocabularyTask extends TaskBase {
   levels: { level: number; name: string; plain: string }[];
 }
 
+/**
+ * Kural değiştirme (görev değiştirme düzeni): her denemede mavi ya da turuncu bir daire ya da kare görünür; üstündeki
+ * işaret (RENK ya da ŞEKİL) hangi kurala göre cevap verileceğini söyler (lib/instruments/rule-switch.ts). Önce iki tek
+ * kurallı bölüm, sonra iki kuralın karıştığı iki bölüm gelir.
+ */
+export type RuleSwitchRule = 'color' | 'shape';
+
+export interface RuleSwitchTrial {
+  rule: RuleSwitchRule;
+  /** 0 mavi (sol düğme), 1 turuncu (sağ düğme). */
+  color: 0 | 1;
+  /** 0 daire (sol düğme), 1 kare (sağ düğme). */
+  shape: 0 | 1;
+  /** Bölüm: 0 yalnızca renk, 1 yalnızca şekil, 2 ve 3 karışık. */
+  block: number;
+}
+
+export interface RuleSwitchTask extends TaskBase {
+  kind: 'rule_switch';
+  /** Alıştırmalar (geri bildirimli, puanlanmaz): renk kuralı, şekil kuralı ve karışık bölümden önce. */
+  practice: { color: RuleSwitchTrial[]; shape: RuleSwitchTrial[]; mixed: RuleSwitchTrial[] };
+  /** Asıl denemeler bölüm sırasıyla; denemelerin sırası (index) bölümler boyunca birleşik sayılır. */
+  trials: RuleSwitchTrial[];
+  /** Kural işaretinin şekilden önce ekranda kaldığı süre (ms); işaret şekille birlikte de kalır. */
+  cueMs: number;
+  /** Şekil göründükten sonra cevap için en uzun süre (ms). */
+  timeoutMs: number;
+  itiMs: [number, number];
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -768,7 +799,8 @@ export type CognitiveTask =
   | NumberSeriesTask
   | VerbalReasoningTask
   | PaperFoldingTask
-  | VocabularyTask;
+  | VocabularyTask
+  | RuleSwitchTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

@@ -282,6 +282,13 @@ jobs:
           if ! grep -q 'Kelimelerin anlamını bul' <<<"$kb_sayfa" || ! grep -qF '\"answers\":[]' <<<"$kb_sayfa" || ! grep -qF '\"lures\":[]' <<<"$kb_sayfa" || ! grep -qF '\"lureKinds\":[]' <<<"$kb_sayfa"; then
             sorun="$sorun kelime-bilgisi-anahtar"
           fi
+          # Kural Değiştirme: 98 denemenin hepsi doğru (s, her denemenin doğru düğmesidir; tests/kural-degistirme.test.ts güncel
+          # olduğunu denetler); kural değişince daha yavaş cevaplar.
+          KD_GOVDE=$(python3 -c 'import json; s=[1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 2, 1, 2, 2, 1, 1, 1, 2, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 2, 1, 1, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 2, 2, 1, 2]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kural-degistirme": [{"index": i, "response": s[i], "rtMs": 700 + 200 * (i >= 32 and i not in (32, 65) and i % 2 == 0)} for i in range(98)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$KD_GOVDE" "https://$ALAN/api/rapor/kural-degistirme" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 3 and len(r["student"]["items"]) == 4 and r["student"]["items"][0]["badge"] == "%100 doğru"; m=r["parent"]["roadmap"]; assert m["bars"] == [] and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun kural-degistirme-raporu"
+          fi
           # Sesli okuma: tarayıcı mikrofonu yalnızca izin başlığı açıksa kullanabilir; ses cihazda kalır, sunucuya yalnızca
           # işaretler, süreler ve cevaplar gelir. Örnek: 3. sınıf metni, iki yanlış okuma, bir yeniden anlatma fikri.
           "${C[@]}" -I "https://$ALAN/okuma" | grep -qi '^permissions-policy:.*microphone=(self)' || sorun="$sorun mikrofon-izni"

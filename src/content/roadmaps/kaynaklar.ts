@@ -132,4 +132,12 @@ export const KAYNAK = {
     url: 'https://doi.org/10.1002/rrq.163',
   },
   tdk: { text: 'Türk Dil Kurumu. (t.y.). Güncel Türkçe Sözlük.', url: 'https://sozluk.gov.tr/' },
+  stoet: {
+    text: 'Stoet, G. ve Snyder, L. H. (2007). Extensive practice does not eliminate human switch costs. Cognitive, Affective, & Behavioral Neuroscience, 7(3), 192–197.',
+    url: 'https://doi.org/10.3758/CABN.7.3.192',
+  },
+  zinke: {
+    text: 'Zinke, K., Einert, M., Pfennig, L. ve Kliegel, M. (2012). Plasticity of executive control through task switching training in adolescents. Frontiers in Human Neuroscience, 6, 41.',
+    url: 'https://doi.org/10.3389/fnhum.2012.00041',
+  },
 } satisfies Record<string, { text: string; url: string }>;

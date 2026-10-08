@@ -22,10 +22,12 @@ import type {
   VocabularyLure,
   VocabularyTask,
   VocabularyType,
+  RuleSwitchTask,
 } from '@/lib/instruments/types';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
 import { verbalRapidMs } from '@/lib/instruments/verbal';
 import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
+import { ruleAnswer, ruleCongruent, ruleSwitchKinds } from '@/lib/instruments/rule-switch';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { median, round } from './stats';
 
@@ -1682,6 +1684,127 @@ export function scoreVocabulary(task: VocabularyTask, input: VocabularyTrialInpu
   };
 }
 
+/* ---------- Kural değiştirme ---------- */
+
+export interface RuleSwitchTrialInput {
+  index: number;
+  /** Basılan düğme: 1 sol, 2 sağ; null: süre içinde basılmadı. */
+  response: number | null;
+  /** Şeklin ekrana çizildiği andan basışa kadar geçen süre (ms). */
+  rtMs: number | null;
+}
+
+export interface RuleSwitchCondition {
+  /** Bu türdeki deneme sayısı. */
+  n: number;
+  correct: number;
+  accuracy: number;
+  /** Tipik (ortanca) cevap süresi: geçerli doğru cevaplardan; yeterli cevap yoksa null. */
+  medianRt: number | null;
+  /** Ortancaya katılan cevap sayısı. */
+  nRt: number;
+}
+
+export interface RuleSwitchResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  /** Tek kurallı bölümler (her bölümün ilk denemesi süreye katılmaz). */
+  pure: RuleSwitchCondition;
+  /** Karışık bölümlerde kuralın sürdüğü ve değiştiği denemeler (bölümün ilk denemesi sayılmaz). */
+  repeat: RuleSwitchCondition;
+  switch: RuleSwitchCondition;
+  /** Kural değiştirmenin bedeli: kuralın değiştiği ve sürdüğü denemelerin tipik süreleri arasındaki fark (ms). */
+  switchCost: number | null;
+  /** İki kuralı birlikte akılda tutmanın bedeli: karışık bölümde kuralın sürdüğü denemeler ile tek kurallı bölümlerin farkı (ms). */
+  mixingCost: number | null;
+  /** Bütün geçerli doğru cevapların tipik süresi (ms). */
+  medianRt: number | null;
+  answered: number;
+  timeouts: number;
+  /** `RULE_TOO_FAST_MS`'den kısa cevaplar (şekle bakmadan basılmış olabilir); doğru sayılmaz. */
+  tooFast: number;
+  /** Karışık bölümde iki kuralın farklı düğmeyi istediği şekillerde öteki kurala göre basılan düğme sayısı ve bu şekillerdeki cevap sayısı. */
+  ruleErrors: number;
+  ruleErrorsOf: number;
+  /** Karışık bölümde iki kuralın aynı düğmeyi istediği şekillerdeki yanlışlar ve bu şekillerdeki cevap sayısı. */
+  otherErrors: number;
+  otherErrorsOf: number;
+  /** En çok basılan düğmenin basılma sayısı. */
+  sameSide: number;
+}
+
+/** Bundan kısa cevaplar şekle bakmadan basılmış sayılır. */
+export const RULE_TOO_FAST_MS = 200;
+/** Bir koşulun tipik süresi için en az bu kadar geçerli doğru cevap gerekir. */
+export const RULE_MIN_RTS = 5;
+/** İki düğmeli görevde doğruluk bunun altında ya da eşitse rastgele basmaktan ayırt edilemez (98 denemede en çok 58 doğru; rastgele basan birinin 59 ya da daha çok doğru yapma olasılığı %3'ün altındadır). */
+export const RULE_CHANCE_ACC = 0.6;
+
+const ruleCond = (xs: { correct: boolean; rt: number | null }[]): RuleSwitchCondition => {
+  const correct = xs.filter((x) => x.correct).length;
+  const rts = xs.flatMap((x) => (x.correct && x.rt !== null ? [x.rt] : []));
+  return { n: xs.length, correct, accuracy: xs.length ? round(correct / xs.length, 3) : 0, medianRt: rts.length >= RULE_MIN_RTS ? medianOrNull(rts) : null, nRt: rts.length };
+};
+
+export function scoreRuleSwitch(task: RuleSwitchTask, input: RuleSwitchTrialInput[]): { result: RuleSwitchResult } {
+  const n = task.trials.length;
+  const byIndex = new Map<number, RuleSwitchTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz deneme.');
+    if (t.response !== null && (!Number.isInteger(t.response) || t.response < 1 || t.response > 2)) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Denemelerin hepsi gelmedi.');
+  const kinds = ruleSwitchKinds(task.trials);
+  const scored = task.trials.map((trial, i) => {
+    const t = byIndex.get(i)!;
+    const answered = t.response !== null;
+    const fast = answered && t.rtMs !== null && t.rtMs < RULE_TOO_FAST_MS;
+    const correct = answered && !fast && t.response === ruleAnswer(trial) + 1;
+    return { trial, kind: kinds[i], answered, fast, correct, response: t.response, rt: answered && !fast ? t.rtMs : null };
+  });
+  const correct = scored.filter((s) => s.correct).length;
+  // Süre için: tek kurallı bölümün ilk denemesi ve bir hatadan (ya da cevapsız, çok erken denemeden) hemen sonraki deneme katılmaz.
+  const timed = scored.map((s, i) => {
+    const prev = scored[i - 1];
+    const afterError = !!prev && prev.trial.block === s.trial.block && !prev.correct;
+    const firstOfBlock = !prev || prev.trial.block !== s.trial.block;
+    return { correct: s.correct, rt: afterError || firstOfBlock ? null : s.rt };
+  });
+  const cond = (kind: string) => ruleCond(scored.flatMap((s, i) => (s.kind === kind ? [{ correct: s.correct, rt: timed[i].rt }] : [])));
+  const pure = cond('pure');
+  const repeat = cond('repeat');
+  const sw = cond('switch');
+  const mixed = scored.filter((s) => s.kind === 'repeat' || s.kind === 'switch' || s.kind === 'first');
+  const inc = mixed.filter((s) => !ruleCongruent(s.trial) && s.answered && !s.fast);
+  const con = mixed.filter((s) => ruleCongruent(s.trial) && s.answered && !s.fast);
+  const sides = [1, 2].map((r) => scored.filter((s) => s.response === r).length);
+  const allRts = scored.flatMap((s, i) => (s.correct && timed[i].rt !== null ? [timed[i].rt as number] : []));
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      pure,
+      repeat,
+      switch: sw,
+      switchCost: sw.medianRt !== null && repeat.medianRt !== null ? Math.round(sw.medianRt - repeat.medianRt) : null,
+      mixingCost: repeat.medianRt !== null && pure.medianRt !== null ? Math.round(repeat.medianRt - pure.medianRt) : null,
+      medianRt: allRts.length >= RULE_MIN_RTS ? medianOrNull(allRts) : null,
+      answered: scored.filter((s) => s.answered).length,
+      timeouts: scored.filter((s) => !s.answered).length,
+      tooFast: scored.filter((s) => s.fast).length,
+      ruleErrors: inc.filter((s) => !s.correct).length,
+      ruleErrorsOf: inc.length,
+      otherErrors: con.filter((s) => !s.correct).length,
+      otherErrorsOf: con.length,
+      sameSide: Math.max(...sides),
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -1702,6 +1825,7 @@ export function taskQualityNotes(parts: {
   verbal?: VerbalResult;
   folding?: FoldingResult;
   vocabulary?: VocabularyResult;
+  ruleSwitch?: RuleSwitchResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -1875,6 +1999,8 @@ export function taskQualityNotes(parts: {
   if (kf) notes.push(...foldingQualityNotes(kf));
   const kb = parts.vocabulary;
   if (kb) notes.push(...vocabularyQualityNotes(kb));
+  const kd = parts.ruleSwitch;
+  if (kd) notes.push(...ruleSwitchQualityNotes(kd));
   return notes;
 }
 
@@ -1903,6 +2029,29 @@ export const foldingRapid = (kf: FoldingResult) => kf.rapidOf > 0 && kf.rapid >=
 export const foldingSamePosition = (kf: FoldingResult) => kf.samePosition >= Math.ceil(kf.n / 2);
 /** Yanlışların yorumlanması: sözel akıl yürütmedeki eşikler (en az 4 çeldirici ve yanlışların en az %60'ı). */
 export const foldingLurePattern = (kf: FoldingResult) => kf.lures >= VERBAL_LURE_MIN && kf.lures >= VERBAL_LURE_SHARE * kf.wrong;
+
+/** Kural değiştirmede doğruluk rastgele basmaktan ayırt edilemiyor. */
+export const ruleSwitchChance = (r: RuleSwitchResult) => r.correct <= RULE_CHANCE_ACC * r.n;
+/** Denemelerin en az dörtte birinde süre içinde cevap verilmedi. */
+export const ruleSwitchTimeouts = (r: RuleSwitchResult) => r.timeouts >= 0.25 * r.n;
+/** Çok erken basışlar: denemelerin en az onda biri (en az 3). */
+export const ruleSwitchFast = (r: RuleSwitchResult) => r.tooFast >= Math.max(3, Math.ceil(0.1 * r.n));
+/** Cevapların en az %85'inde aynı düğme. */
+export const ruleSwitchOneSide = (r: RuleSwitchResult) => r.answered >= 20 && r.sameSide >= 0.85 * r.answered;
+
+/** Kural değiştirmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, ruleSwitchBlocks aynı eşikleri kullanır). */
+export function ruleSwitchQualityNotes(r: RuleSwitchResult): string[] {
+  const notes: string[] = [];
+  if (ruleSwitchChance(r)) {
+    notes.push(
+      'Kural değiştirme görevinde doğru cevaplar, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az; yönerge tam anlaşılmamış ya da şekillere bakılmadan basılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (ruleSwitchTimeouts(r)) notes.push(`Kural değiştirme görevinde ${r.n} denemenin ${r.timeouts} tanesinde süre içinde cevap verilmedi; görev yarıda bırakılmış ya da dikkat dağılmış olabilir.`);
+  if (ruleSwitchFast(r)) notes.push(`Kural değiştirme görevinde ${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde basıldı; bu denemelerde şekle bakmadan basılmış olabilir.`);
+  if (ruleSwitchOneSide(r)) notes.push('Kural değiştirme görevinde cevapların çoğunda aynı düğmeye basıldı; şekillere bakılmadan hep aynı düğmeye basılmış olabilir.');
+  return notes;
+}
 
 /** Kelime bilgisinde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, vocabularyBlocks aynı eşikleri kullanır). */
 export function vocabularyQualityNotes(kb: VocabularyResult): string[] {
