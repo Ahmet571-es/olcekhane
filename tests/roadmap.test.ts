@@ -297,6 +297,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'ders-calisma-motivasyonu': 3 ** 5 * 2,
       // Yetişkinlere de açık: öğrenci, veli ve yetişkin.
       'erteleme-ve-zaman-yonetimi': 3 ** 5 * 3,
+      zihniyet: 3 ** 4 * 3,
     });
   }, 60_000);
 });

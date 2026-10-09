@@ -235,8 +235,19 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    düzeltildi (Buehler'de yalnızca hatırlamanın yetmediği, Aeon'da "biraz daha güçlü", çelişen cümleler, çift olumsuzlar,
    iki maddenin benzerliği). Kaynaklar Steel (2007), Sirois ve Pychyl (2013), Macan ve ark. (1990), Buehler, Griffin ve
    Ross (1994), Gollwitzer ve Sheeran (2006), Aeon, Faber ve Panaccio (2021).
-13. Sıradaki (site sahibinin 2026-10-09 isteği, maddeler sıfırdan): Zihniyet, Çalışma Değerleri. Sonra site sahibine
-   sorulacak: Akıl Yürütme mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
+13. **Zihniyet: Zekâ ve Öğrenme İnançları: yayında (2026-10-09, pilot; 5. sınıftan yetişkine).** Sıfırdan yazılmış 24
+   madde (Dweck'in örtük zekâ ölçeği, Blackwell ve ark. çaba inancı ve Haimovitz ve Dweck başarısızlık maddelerine
+   benzememesi bağımsız ajanla denetlendi; benzer bulunan beş madde yeniden yazıldı), dört alan, hepsinde yüksek = gelişim
+   yönü: Zekâya bakış, Çabaya bakış, Hataya bakış, Zorluğa yaklaşım; her alanda üç ters madde, beş karşıt çift (gerçekten
+   birbirinin tersi olanlar: sabit zekâ görüşündeki biri "öğrenince beceriler gelişir"e de katılabilir). "Birlikte bakınca"
+   zekâ inancıyla diğer üç alanın örtüşüp örtüşmediğini yorumlar (zekâ orta iken de). Zihniyet abartılmaz: başarıyla
+   ilişkisi küçük (Sisk ve ark. 2018: r = .10; üniversite öğrencileri gibi erişkinlerde neredeyse yok), kısa çalışmaların
+   etkisi çok küçük; "zorlanma anlarında belirginleşir" yalnızca hedefler ve yollar için söylenir (Burnette ve ark. 2013) ve
+   bir raporda bir kez geçer (test denetler). Yol haritası: 2. hafta "Hatadan öğrenmek", 3. hafta en düşük alan. Kaynaklar
+   Blackwell ve ark. (2007), Burnette ve ark. (2013), Haimovitz ve Dweck (2016), Sisk ve ark. (2018), Burgoyne ve ark.
+   (2020), Yeager ve ark. (2019), Dunlosky ve ark. (2013).
+14. Sıradaki (site sahibinin 2026-10-09 isteği, maddeler sıfırdan): Çalışma Değerleri. Sonra site sahibine sorulacak:
+   Akıl Yürütme mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -411,6 +422,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Çocuk Kişilik Profili | cocuk-kisilik-profili | Yayında (pilot; 3–5. sınıf) |
 | Ders Çalışma Motivasyonu | ders-calisma-motivasyonu | Yayında (pilot; 5. sınıftan mezuna) |
 | Erteleme ve Zaman Yönetimi | erteleme-ve-zaman-yonetimi | Yayında (pilot; 6. sınıftan yetişkine) |
+| Zihniyet: Zekâ ve Öğrenme İnançları | zihniyet | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -522,6 +534,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (12): Zihniyet: Zekâ ve Öğrenme İnançları yayında (5. sınıftan yetişkine): 24 özgün madde, dört alan
+  (zekâ, çaba, hata, zorluk); "Birlikte bakınca" inançların örtüşüp örtüşmediğini yorumlar; araştırmaların ne bulduğu
+  abartılmadan anlatılır; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde
+  klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
 - 2026-10-09 (11): Erteleme ve Zaman Yönetimi yayında (6. sınıftan yetişkine): 25 özgün madde, beş alan; alanları
   birlikte yorumlayan "Birlikte bakınca" bölümü (ertelemenin hangi alışkanlıklarla birlikte görüldüğü); öğrenci, veli ve
   yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü,
@@ -553,7 +569,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (3): Site sahibi kafatası dersini yeterince derin bulmadı; kalıcı istekleri kaydedildi (açık erişimli tam
   metinler ve ders kitaplarıyla derinlik; büyük konular üniteye bölünür). Program 106 derse çıktı: kafatası dersi ünitenin
   genel bakışı oldu, altı ders "Hazırlanıyor" olarak programa eklendi.
-- 2026-10-09 (2): Beyin Akademisi Anatomi 2 "Kafatası: beynin kemik kalesi" yayında: üç düzeyde 7 bölüm; kemikler,
-  dikişler ve pterion, kafa derisi, kafatası tabanı ve 13 delik, yüz ve sinüsler, bıngıldaklar ve kraniosinostoz,
-  kırıklar, BOS sızıntısı, BT kuralları, kraniotomi, dekompresif kraniektomi ve kranioplasti; 7 üç boyutlu sahne
-  (yüz kemikleri ve ilk iki omur modele eklendi), 6 hareketli çizim, 5 vaka, 36 soru, 167 kaynak.

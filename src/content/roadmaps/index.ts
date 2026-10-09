@@ -14,6 +14,7 @@ import { ogrenmeVeBasariRoadmap } from './ogrenme-ve-basari';
 import { cocukKisilikRoadmap } from './cocuk-kisilik';
 import { dersCalismaMotivasyonuRoadmap } from './ders-calisma-motivasyonu';
 import { ertelemeZamanYonetimiRoadmap } from './erteleme-zaman-yonetimi';
+import { zihniyetRoadmap } from './zihniyet';
 import { okumaRoadmap } from './okuma';
 import { ozSaygiRoadmap } from './oz-saygi';
 import { sesliOkumaRoadmap, type OralRoadmapTemplate } from './sesli-okuma';
@@ -35,6 +36,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'cocuk-kisilik-profili': cocukKisilikRoadmap,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuRoadmap,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiRoadmap,
+  zihniyet: zihniyetRoadmap,
 };
 
 /**

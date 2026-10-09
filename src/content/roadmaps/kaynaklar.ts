@@ -176,4 +176,16 @@ export const KAYNAK = {
     text: 'Aeon, B., Faber, A. ve Panaccio, A. (2021). Does time management work? A meta-analysis. PLOS ONE, 16(1), e0245066.',
     url: 'https://doi.org/10.1371/journal.pone.0245066',
   },
+  burnette: {
+    text: 'Burnette, J. L., O’Boyle, E. H., VanEpps, E. M., Pollack, J. M. ve Finkel, E. J. (2013). Mind-sets matter: A meta-analytic review of implicit theories and self-regulation. Psychological Bulletin, 139(3), 655–701.',
+    url: 'https://doi.org/10.1037/a0029531',
+  },
+  haimovitz: {
+    text: 'Haimovitz, K. ve Dweck, C. S. (2016). Parents’ views of failure predict children’s fixed and growth intelligence mind-sets. Psychological Science, 27(6), 859–869.',
+    url: 'https://doi.org/10.1177/0956797616639727',
+  },
+  sisk: {
+    text: 'Sisk, V. F., Burgoyne, A. P., Sun, J., Butler, J. L. ve Macnamara, B. N. (2018). To what extent and under which circumstances are growth mind-sets important to academic achievement? Two meta-analyses. Psychological Science, 29(4), 549–571.',
+    url: 'https://doi.org/10.1177/0956797617739704',
+  },
 } satisfies Record<string, { text: string; url: string }>;
