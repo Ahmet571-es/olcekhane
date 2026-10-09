@@ -256,7 +256,8 @@ export type TaskKind =
   | 'paper_folding'
   | 'logical_reasoning'
   | 'numerical_reasoning'
-  | 'cube_net';
+  | 'cube_net'
+  | 'cognitive_reflection';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -896,6 +897,48 @@ export interface CubeNetTask extends TaskBase {
 }
 
 /**
+ * Düşünerek karar verme (bilişsel yansıtma): kısa bir durum ve soru, dört seçenek (content/instruments/
+ * dusunerek-karar-verme.ts). Tuzaklı sorularda ilk akla gelen cevap yanlıştır; tuzaksız eş sorular aynı sayılarla ya da
+ * benzer bir durumla tuzak olmadan sorar, ilk akla gelen cevap doğrudur.
+ */
+export type ReflectionDomain = 'num' | 'verb';
+export type ReflectionRole = 'lure' | 'control';
+
+export interface ReflectionItem {
+  key: string;
+  /** Durumun cümleleri. */
+  stem: string[];
+  question: string;
+  /** Dört seçenek. */
+  options: string[];
+}
+
+export interface ReflectionPracticeItem extends ReflectionItem {
+  /** Doğru seçeneğin sırası (1–4). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+}
+
+export interface CognitiveReflectionTask extends TaskBase {
+  kind: 'cognitive_reflection';
+  practice: ReflectionPracticeItem[];
+  items: ReflectionItem[];
+  /** Cevap anahtarı (1–4). Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /** Sorunun sayısal ya da sözel olduğu. Tarayıcıya boş gönderilir. */
+  domains: ReflectionDomain[];
+  /** Tuzaklı ya da tuzaksız (eş) soru. Tarayıcıya boş gönderilir. */
+  roles: ReflectionRole[];
+  /**
+   * Tuzaklı soruda ilk akla gelen (sezgisel) yanlış seçenek; tuzaksız soruda, tuzak varmış gibi düşününce seçilen
+   * yanlış seçenek (1–4). Tarayıcıya boş gönderilir.
+   */
+  lures: number[];
+  /** Eşli sorularda eşinin sırası (yoksa `null`). Tarayıcıya boş gönderilir. */
+  pairs: (number | null)[];
+}
+
+/**
  * Kural değiştirme (görev değiştirme düzeni): her denemede mavi ya da turuncu bir daire ya da kare görünür; üstündeki
  * işaret (RENK ya da ŞEKİL) hangi kurala göre cevap verileceğini söyler (lib/instruments/rule-switch.ts). Önce iki tek
  * kurallı bölüm, sonra iki kuralın karıştığı iki bölüm gelir.
@@ -977,7 +1020,8 @@ export type CognitiveTask =
   | WordListTask
   | LogicalReasoningTask
   | NumericalReasoningTask
-  | CubeNetTask;
+  | CubeNetTask
+  | CognitiveReflectionTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

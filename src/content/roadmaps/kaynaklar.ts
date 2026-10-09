@@ -212,6 +212,22 @@ export const KAYNAK = {
     text: 'De Neys, W. ve Van Gelder, E. (2009). Logic and belief across the lifespan: The rise and fall of belief inhibition during syllogistic reasoning. Developmental Science, 12(1), 123–130.',
     url: 'https://doi.org/10.1111/j.1467-7687.2008.00746.x',
   },
+  deNeysBats: {
+    text: 'De Neys, W., Rossi, S. ve Houdé, O. (2013). Bats, balls, and substitution sensitivity: Cognitive misers are no happy fools. Psychonomic Bulletin & Review, 20(2), 269–273.',
+    url: 'https://doi.org/10.3758/s13423-013-0384-5',
+  },
+  youngShtulman2020: {
+    text: 'Young, A. G. ve Shtulman, A. (2020). Children’s cognitive reflection predicts conceptual understanding in science and mathematics. Psychological Science, 31(11), 1396–1408.',
+    url: 'https://doi.org/10.1177/0956797620954449',
+  },
+  stagnaro2018: {
+    text: 'Stagnaro, M. N., Pennycook, G. ve Rand, D. G. (2018). Performance on the Cognitive Reflection Test is stable across time. Judgment and Decision Making, 13(3), 260–267.',
+    url: 'https://doi.org/10.1017/S1930297500007695',
+  },
+  bialek2018: {
+    text: 'Bialek, M. ve Pennycook, G. (2018). The cognitive reflection test is robust to multiple exposures. Behavior Research Methods, 50(5), 1953–1959.',
+    url: 'https://doi.org/10.3758/s13428-017-0963-x',
+  },
   markovits2014: {
     text: 'Markovits, H. (2014). Development and necessary norms of reasoning. Frontiers in Psychology, 5, Article 488.',
     url: 'https://doi.org/10.3389/fpsyg.2014.00488',

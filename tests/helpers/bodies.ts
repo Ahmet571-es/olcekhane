@@ -34,6 +34,9 @@ import type {
   NumericRatio,
   CubeNetTask,
   CubeType,
+  CognitiveReflectionTask,
+  ReflectionDomain,
+  ReflectionRole,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
@@ -494,4 +497,22 @@ export function cubeBody(
 export function cubeRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('kup-acinimi').tasks[0] as CubeNetTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+export type ReflectionCell = { domain: ReflectionDomain; role: ReflectionRole; answer: number; lure: number; pair: number | null; i: number };
+
+/** Düşünerek karar vermede doğru da tuzak da olmayan ilk seçenek. */
+export const reflectionOther = (q: ReflectionCell) => [1, 2, 3, 4].find((o) => o !== q.answer && o !== q.lure)!;
+
+/** Düşünerek karar verme: varsayılan olarak her soruda doğru cevap, soru başına 12 saniye. */
+export function reflectionBody(
+  pick: (q: ReflectionCell) => { response: number; rtMs: number | null } = (q) => ({ response: q.answer, rtMs: 12_000 }),
+  grade = 7,
+): AnswersBody {
+  const task = def<TaskInstrument>('dusunerek-karar-verme').tasks[0] as CognitiveReflectionTask;
+  const trials = task.items.map((_, index) => {
+    const p = pick({ domain: task.domains[index], role: task.roles[index], answer: task.answers[index], lure: task.lures[index], pair: task.pairs[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

@@ -23,6 +23,7 @@ import { VerbalReasoning } from './verbal-reasoning';
 import { LogicalReasoning } from './logical-reasoning';
 import { NumericalReasoning } from './numerical-reasoning';
 import { CubeNet } from './cube-net';
+import { CognitiveReflection } from './cognitive-reflection';
 import { Trail } from './trail';
 import { WordList } from './word-list';
 
@@ -182,6 +183,7 @@ export function TaskRunner(props: {
       {task.kind === 'logical_reasoning' && <LogicalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'numerical_reasoning' && <NumericalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cube_net' && <CubeNet key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'cognitive_reflection' && <CognitiveReflection key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

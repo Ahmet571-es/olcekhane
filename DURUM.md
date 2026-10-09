@@ -287,8 +287,21 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    doğruda) uyarıları. Üç boyutlu profil yok (iki tür). Kaynaklar Dahm ve Sachse (2025), Harris ve ark. (2013), Hilton ve
    ark. (2022), Hodgkiss ve ark. (2018), Pawlak-Jakubowska ve Terczyńska (2023), Shepard ve Feng (1972); yol haritasında
    Uttal ve ark. (2013), Wai ve ark. (2009).
-18. Sıradaki (Akıl Yürütme dalgası, site sahibinin 2026-10-09 seçimi): Düşünerek Karar Verme (özgün sezgi tuzağı
-   soruları; rapor sezgisel yanlışı öteki yanlışlardan ayırır).
+18. **Düşünerek Karar Verme: yayında (2026-10-09, pilot; 5. sınıftan yetişkine).** Akıl Yürütme dalgasının dördüncü ve
+   son testi (dalga tamamlandı). 24 özgün kısa soru, dört seçenek (Sirota ve Juanchich, 2018'deki biçim), ~15 dakika, 2
+   tuzaksız alıştırma (`content/instruments/dusunerek-karar-verme.ts`, `components/runner/tasks/cognitive-reflection.tsx`).
+   16 tuzaklı soru (8 sayısal, 8 sözel; ilk akla gelen cevap yanlış) ve bunların 8'inin tuzaksız eşi (De Neys ve ark., 2013;
+   tuzaksız soru önce gelen eşlerde öykü farklı). Yönerge ve çözme ekranları tuzaktan söz etmez; test sayfasındaki bilim
+   kartı testin mantığını açıkça anlatır (şeffaflık; site sahibi isterse kısaltılabilir). Sayısal soruların cevapları
+   `tests/helpers/reflection-check.ts`'te bağımsızca hesaplanır. Rapor: doğru cevaplar (sayısal–sözel), yanlışların türü
+   (ilk akla gelen cevap ya da başka yanlış), benzer soru çiftleri (tuzaksızı doğru, tuzaklısında ilk akla gelen cevap),
+   çalışma biçimi; tuzaksızların çoğu yanlışsa yorumlanmaz, rastgele seçen biri neredeyse her zaman uyarı alır (test
+   denetler), her yerde tuzak aramak ayrıca anlatılır. Kaynaklar Bialek ve Pennycook (2018), De Neys ve ark. (2013),
+   Pennycook ve ark. (2016), Sirota ve ark. (2021), Sirota ve Juanchich (2018), Stagnaro ve ark. (2018), Thomson ve
+   Oppenheimer (2016), Young ve Shtulman (2020a, 2020b).
+19. Pilot veriler gelince (hiçbir şey saklanmadığı için ancak site sahibinin izinli bir denemesiyle): Düşünerek Karar
+   Verme'de her tuzaklı soruda ilk akla gelen cevabın gerçekten en sık yanlış olduğu sınanmalı (Young ve Shtulman,
+   2020a'daki ölçüt); şimdilik tasarım varsayımıdır ve bilim kartında böyle yazar.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -484,6 +497,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Mantıksal Akıl Yürütme | mantiksal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sayısal Akıl Yürütme | sayisal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Küp Açınımı | kup-acinimi | Yayında (pilot; 5. sınıftan yetişkine) |
+| Düşünerek Karar Verme | dusunerek-karar-verme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -595,6 +609,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (21): Düşünerek Karar Verme yayında (5. sınıftan yetişkine), Akıl Yürütme dalgası tamamlandı: 24 özgün
+  kısa soru; tuzaklı sorularda ilk akla gelen yanlış cevap öteki yanlışlardan ayrılır ve tuzaksız eş sorularla
+  karşılaştırılır; sayısal sorular bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası;
+  telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları
+  (iki tur) düzeltildi.
 - 2026-10-09 (20): Beyin Akademisi Anatomi 2 "Anatominin dili: beyinde yön bulmak" yayında: 9 bölüm, üç düzey, 21
   sahne, 5 yeni hareketli çizim, 18 vaka, 54 soru, 267 kaynak; dört bağımsız denetim ve iki doğrulama; dil sade (cümle
   ortalaması ~9 sözcük). Sıradaki ders "Beyin zarları ve zarlar arası boşluklar".
@@ -631,7 +650,3 @@ En yeni üstte; en çok 10 madde tutulur.
   (zekâ, çaba, hata, zorluk); "Birlikte bakınca" inançların örtüşüp örtüşmediğini yorumlar; araştırmaların ne bulduğu
   abartılmadan anlatılır; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde
   klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
-- 2026-10-09 (11): Erteleme ve Zaman Yönetimi yayında (6. sınıftan yetişkine): 25 özgün madde, beş alan; alanları
-  birlikte yorumlayan "Birlikte bakınca" bölümü (ertelemenin hangi alışkanlıklarla birlikte görüldüğü); öğrenci, veli ve
-  yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü,
-  rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.

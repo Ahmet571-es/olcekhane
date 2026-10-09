@@ -75,7 +75,8 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       // çeldiriciler, yanılgı türleri ve düzey anlatımları gönderilmez. Kelime listesinde tanıma bölümünün anahtarı,
       // mantıksal akıl yürütmede de sorunun türü (cevabı ele verir) gönderilmez. Sayısal akıl yürütmede cevap anahtarı, soru
       // türleri ve yanılgı cevapları gönderilmez. Küp açınımında cevap anahtarı, seçeneklerin yanılgı türleri ve düzey
-      // anlatımları gönderilmez.
+      // anlatımları gönderilmez. Düşünerek karar vermede cevap anahtarı, soruların türü (sayısal ya da sözel, tuzaklı ya da
+      // tuzaksız), tuzak seçenekleri ve eşler gönderilmez.
       return {
         engine: 'tasks',
         intro,
@@ -96,7 +97,9 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
                         ? { ...t, answers: [], kinds: [], ratios: [], lures: [] }
                         : t.kind === 'cube_net'
                           ? { ...t, answers: [], optionLures: [], levels: [] }
-                          : t,
+                          : t.kind === 'cognitive_reflection'
+                            ? { ...t, answers: [], domains: [], roles: [], lures: [], pairs: [] }
+                            : t,
         ),
       };
     case 'oral':

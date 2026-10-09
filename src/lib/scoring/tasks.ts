@@ -32,11 +32,13 @@ import type {
   NumericalReasoningTask,
   CubeNetTask,
   CubeType,
+  CognitiveReflectionTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
 import { NUMERIC_EQUAL, NUMERIC_KINDS, NUMERIC_NONPROP, NUMERIC_PROP, numericRapidMs } from '@/lib/instruments/numeric';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
+import { reflectionRapidMs } from '@/lib/instruments/reflection';
 import { verbalRapidMs } from '@/lib/instruments/verbal';
 import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds } from '@/lib/instruments/rule-switch';
@@ -2468,6 +2470,157 @@ export function cubeQualityNotes(r: CubeResult): string[] {
   return notes;
 }
 
+/* ---------- Düşünerek karar verme ---------- */
+
+export interface ReflectionTrialInput {
+  index: number;
+  /** Seçilen seçeneğin sırası (1–4). */
+  response: number;
+  rtMs: number | null;
+}
+
+/** Bir soru grubunda doğru, tuzak (tuzaklı soruda ilk akla gelen cevap; tuzaksız soruda tuzak varmış gibi cevap) ve başka yanlış sayıları. */
+export interface ReflectionGroup {
+  n: number;
+  correct: number;
+  lure: number;
+  other: number;
+}
+
+export interface ReflectionResult {
+  n: number;
+  correct: number;
+  /** Tuzaklı sorular: hepsi, sayısal ve sözel. */
+  lure: ReflectionGroup;
+  numLure: ReflectionGroup;
+  verbLure: ReflectionGroup;
+  /** Tuzaksız eş sorular: hepsi, sayısal ve sözel. */
+  control: ReflectionGroup;
+  numControl: ReflectionGroup;
+  verbControl: ReflectionGroup;
+  /** Eşli soru sayısı; tuzaksızı doğru, tuzaklısında ilk akla gelen cevap; ikisi de doğru. */
+  pairs: number;
+  pairControlOnly: number;
+  pairBoth: number;
+  medianRt: number | null;
+  /** Tuzaklı sorularda doğru cevapların ve ilk akla gelen cevapların tipik süresi (en az üç cevap varsa). */
+  rtLureCorrect: number | null;
+  rtLureIntuitive: number | null;
+  /** Soru ve seçenekleri okumaya yetmeyecek kadar kısa sürede verilen cevaplar ve bunların doğru olanları. */
+  rapid: number;
+  rapidCorrect: number;
+  samePosition: number;
+}
+
+/** Tuzaksız eş sorularda bu kadar ya da daha az doğru: sonuç dikkatle yorumlanır. */
+export const REFLECTION_CONTROL_LOW = 5;
+/** Tuzaksız eş sorularda bu kadar ya da daha az doğru (ve yanlışlar çoğunlukla tuzak aramaktan değilse): sonuç yorumlanmaz. */
+export const REFLECTION_CONTROL_NONE = 3;
+/** Tuzaksız sorularda tuzak varmış gibi en az bu kadar ve başka yanlışlardan çok cevap: "her yerde tuzak aramak" anlatılır. */
+export const REFLECTION_TRAP_NOTE = 2;
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const REFLECTION_SAME_MAX_CORRECT = 15;
+/** Tipik sürelerin karşılaştırılması için en az bu kadar cevap gerekir. */
+export const REFLECTION_RT_MIN = 3;
+
+export function scoreReflection(task: CognitiveReflectionTask, input: ReflectionTrialInput[]): { result: ReflectionResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.roles.length !== n || task.domains.length !== n || task.lures.length !== n || task.pairs.length !== n) {
+    throw new TaskInputError('Cevap anahtarı eksik.');
+  }
+  const byIndex = new Map<number, ReflectionTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (!Number.isInteger(t.response) || t.response < 1 || t.response > task.items[t.index].options.length) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const kind: 'correct' | 'lure' | 'other' = t.response === task.answers[i] ? 'correct' : t.response === task.lures[i] ? 'lure' : 'other';
+    return { i, item, kind, role: task.roles[i], domain: task.domains[i], response: t.response, rt: t.rtMs };
+  });
+  const group = (xs: typeof scored): ReflectionGroup => ({
+    n: xs.length,
+    correct: xs.filter((s) => s.kind === 'correct').length,
+    lure: xs.filter((s) => s.kind === 'lure').length,
+    other: xs.filter((s) => s.kind === 'other').length,
+  });
+  const lures = scored.filter((s) => s.role === 'lure');
+  const controls = scored.filter((s) => s.role === 'control');
+  const pairsOf = controls.flatMap((c) => {
+    const j = task.pairs[c.i];
+    return j === null ? [] : [{ control: c, lure: scored[j] }];
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const enough = (xs: number[]) => (xs.length >= REFLECTION_RT_MIN ? medianOrNull(xs) : null);
+  const fast = scored.filter((s) => s.rt !== null && s.rt < reflectionRapidMs(s.item));
+  const positions = new Map<number, number>();
+  for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct: scored.filter((s) => s.kind === 'correct').length,
+      lure: group(lures),
+      numLure: group(lures.filter((s) => s.domain === 'num')),
+      verbLure: group(lures.filter((s) => s.domain === 'verb')),
+      control: group(controls),
+      numControl: group(controls.filter((s) => s.domain === 'num')),
+      verbControl: group(controls.filter((s) => s.domain === 'verb')),
+      pairs: pairsOf.length,
+      pairControlOnly: pairsOf.filter((p) => p.control.kind === 'correct' && p.lure.kind === 'lure').length,
+      pairBoth: pairsOf.filter((p) => p.control.kind === 'correct' && p.lure.kind === 'correct').length,
+      medianRt: medianOrNull(rts(scored)),
+      rtLureCorrect: enough(rts(lures.filter((s) => s.kind === 'correct'))),
+      rtLureIntuitive: enough(rts(lures.filter((s) => s.kind === 'lure'))),
+      rapid: fast.length,
+      rapidCorrect: fast.filter((s) => s.kind === 'correct').length,
+      samePosition: Math.max(0, ...positions.values()),
+    },
+  };
+}
+
+/**
+ * Tuzaksız eş soruların da çoğu yanlış ve bu yanlışlar çoğunlukla tuzak aramaktan değil: sonuç yorumlanmaz. Rastgele seçen
+ * biri tuzaksız soruların yaklaşık dörtte birinde tuzak seçeneğini de seçer; bu yüzden tuzak seçeneği başka yanlışlardan
+ * çok olmadıkça tuzak arama sayılmaz.
+ */
+export const reflectionChance = (r: ReflectionResult) => r.control.correct <= REFLECTION_CONTROL_NONE && r.control.lure <= r.control.other;
+/** Tuzaksız sorularda tuzak varmış gibi cevap: en az iki ve başka yanlışlardan çok. */
+export const reflectionSuspicious = (r: ReflectionResult) => !reflectionChance(r) && r.control.lure >= REFLECTION_TRAP_NOTE && r.control.lure > r.control.other;
+/** Tuzaksız eş soruların bir kısmı da yanlış: sonuç dikkatle yorumlanır. */
+export const reflectionControlLow = (r: ReflectionResult) => !reflectionChance(r) && r.control.correct <= REFLECTION_CONTROL_LOW;
+/** Soruların en az dörtte biri okumaya yetmeyecek kadar kısa sürede ve bu cevapların dörtte üçünden azı doğru. */
+export const reflectionRapid = (r: ReflectionResult) => r.rapid >= Math.ceil(r.n / 4) && r.rapidCorrect < 0.75 * r.rapid;
+/** Cevapların en az yarısı aynı sırada ve doğru cevaplar çok değil. */
+export const reflectionSamePosition = (r: ReflectionResult) => r.samePosition >= Math.ceil(r.n / 2) && r.correct <= REFLECTION_SAME_MAX_CORRECT;
+
+/** Düşünerek karar vermede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, reflectionBlocks aynı eşikleri kullanır). */
+export function reflectionQualityNotes(r: ReflectionResult): string[] {
+  const notes: string[] = [];
+  if (reflectionChance(r)) {
+    notes.push(
+      `Düşünerek karar verme testinde tuzaksız eş soruların da çoğu (${r.control.n} sorunun ${r.control.n - r.control.correct} tanesi) yanlış cevaplanmış; sorular dikkatle okunmamış ya da rastgele seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+    );
+  } else if (reflectionControlLow(r)) {
+    notes.push(
+      reflectionSuspicious(r)
+        ? `Düşünerek karar verme testinde tuzaksız eş soruların ${r.control.n - r.control.correct} tanesi yanlış cevaplanmış; bunların ${r.control.other === 0 ? 'hepsinde' : `${r.control.lure} tanesinde`} tuzak olmadığı hâlde tuzak varmış gibi cevap verilmiş. Sonuç dikkatle yorumlanmalıdır.`
+        : `Düşünerek karar verme testinde tuzaksız eş soruların ${r.control.n - r.control.correct} tanesi yanlış cevaplanmış; tuzaklı sorulardaki yanlışların bir kısmı da dikkatin dağılmasından ya da soruyu yanlış okumaktan kaynaklanmış olabilir. Sonuç dikkatle yorumlanmalıdır.`,
+    );
+  }
+  if (reflectionRapid(r)) {
+    notes.push(
+      `Düşünerek karar verme testinde ${r.n} sorunun ${r.rapid} tanesinde cevap, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verilmiş ve ${r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değil' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğru`}; bu sorulara okumadan cevap verilmiş olabilir.`,
+    );
+  }
+  if (reflectionSamePosition(r)) {
+    notes.push('Düşünerek karar verme testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
+  }
+  return notes;
+}
+
 export function taskQualityNotes(parts: {
   flanker?: FlankerResult;
   symbol?: SymbolResult;
@@ -2485,6 +2638,7 @@ export function taskQualityNotes(parts: {
   logic?: LogicResult;
   numeric?: NumericResult;
   cube?: CubeResult;
+  reflection?: ReflectionResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -2671,6 +2825,8 @@ export function taskQualityNotes(parts: {
   if (sy) notes.push(...numericQualityNotes(sy));
   const kp = parts.cube;
   if (kp) notes.push(...cubeQualityNotes(kp));
+  const dk = parts.reflection;
+  if (dk) notes.push(...reflectionQualityNotes(dk));
   return notes;
 }
 

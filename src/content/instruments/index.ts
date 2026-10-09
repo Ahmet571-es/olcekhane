@@ -31,6 +31,7 @@ import { kagitKatlama } from './kagit-katlama';
 import { mantiksalAkilYurutme } from './mantiksal-akil-yurutme';
 import { sayisalAkilYurutme } from './sayisal-akil-yurutme';
 import { kupAcinimi } from './kup-acinimi';
+import { dusunerekKararVerme } from './dusunerek-karar-verme';
 import { kelimeBilgisi } from './kelime-bilgisi';
 import { kelimeListesi } from './kelime-listesi';
 import { kuralDegistirme } from './kural-degistirme';
@@ -65,6 +66,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   mantiksalAkilYurutme,
   sayisalAkilYurutme,
   kupAcinimi,
+  dusunerekKararVerme,
   kelimeBilgisi,
   kuralDegistirme,
   kelimeListesi,

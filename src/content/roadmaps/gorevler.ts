@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme ve Küp Açınımı yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı ve Düşünerek Karar Verme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1592,6 +1592,104 @@ const kupAcinimi: TaskRoadmapTemplate = {
   sources: [KAYNAK.uttal, KAYNAK.hodgkiss2018, KAYNAK.wai],
 };
 
+const dusunerekBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; düşünerek karar vermenin yalnızca bir yönünü (kısa sorulardaki tuzakları fark etmeyi) gösterir.',
+    'Bu tür sorularda ilk akla gelen cevap çok güçlüdür; birçok kişi bu cevabı verir.',
+    'Bu tür soruları ya da benzerlerini daha önce görmüş olmak sonucu yükseltebilir.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; düşünerek karar vermenin yalnızca bir yönünü (kısa sorulardaki tuzakları fark etmeyi) gösterir.',
+    'Okul çağındaki çocuklarla yapılan bir çalışmada bu tür sorulardaki sonuçlar, yaş hesaba katıldıktan sonra da fen ve matematik kavramlarını anlamayla ilişkili bulunmuştur; bu bir ilişkidir, tek başına neden sonuç anlamına gelmez.',
+    'Bu tür soruları ya da benzerlerini daha önce görmüş olmak sonucu yükseltebilir.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine sonucun zaman içindeki kararlılığı. */
+const dusunerekFacts: InfoBox = {
+  ...dusunerekBase,
+  items: {
+    ...dusunerekBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; düşünerek karar vermenin yalnızca bir yönünü (kısa sorulardaki tuzakları fark etmeyi) gösterir.',
+      'Bu tür sorularda ilk akla gelen cevap çok güçlüdür; birçok kişi bu cevabı verir. Bu tür soruları ya da benzerlerini daha önce görmüş olmak sonucu yükseltebilir.',
+      'Bu tür sorulardaki sonuçlar yıllar içinde oldukça kararlı bulunmuştur; yine de tek bir oturuma dayanarak kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const dusunerekKararVerme: TaskRoadmapTemplate = {
+  version: 'dusunerek-karar-verme-yol-haritasi-1',
+  what: {
+    student: 'ilk akla gelen cevabı denetlemeyi gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun ilk akla gelen cevabı denetlemeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'ilk akla gelen cevabı denetlemeyi kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'İlk akla gelen cevabı denetlemeyi ne kolaylaştırır?', parent: 'Çocuğunuzun ilk akla gelen cevabı denetlemesini ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, ilk akla gelen ama yanlış olan cevabı fark edip durup düşünerek doğru cevaba ulaşabilmeyi ölçer. Bu beceri; bir indirimin gerçekten ucuz olup olmadığını hesaplamak, bir haberin ya da iddianın doğru olup olmadığını sorgulamak, bir yönergeyi yanlış anlamamak ve aceleyle karar vermemek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+    'Bu test, ilk akla gelen ama yanlış olan cevabı fark edip durup düşünerek doğru cevaba ulaşabilmeyi ölçer. Bu beceri; bir indirimin gerçekten ucuz olup olmadığını hesaplamak, bir haberin ya da iddianın doğru olup olmadığını sorgulamak, bir yönergeyi yanlış anlamamak ve aceleyle karar vermemek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'sina', 'Cevabı sına', 'Yöntem', t(
+      'Bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koy ve uyuyor mu diye bak. Örneğin bir sopa ile bir top birlikte 110 lira ve sopa toptan 100 lira pahalıysa “top 10 lira” cevabını sınamak için sopanın fiyatını bul: 110 lira olur ve ikisi birlikte 120 lira eder; demek ki cevap yanlış.',
+      'Çocuğunuza, bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koyup uyup uymadığına bakmasını önerin. Örneğin bir sopa ile bir top birlikte 110 lira ve sopa toptan 100 lira pahalıysa “top 10 lira” cevabını sınamak için sopanın fiyatı bulunur: 110 lira olur ve ikisi birlikte 120 lira eder; demek ki cevap yanlış.',
+    )),
+    support(1, 'oku', 'Soruyu sonuna kadar oku', 'Yöntem', t(
+      'Kısa sorularda tuzak bazen tek bir sözcüktedir: “hariç”, “en az”, “daha fazla” gibi. Soruyu sonuna kadar oku ve sorunun gerçekten ne istediğini kendi cümlelerinle söyle; bazen soru, olmayan bir şeyi varmış gibi de sorabilir.',
+      'Çocuğunuza kısa sorularda tuzağın bazen tek bir sözcükte (“hariç”, “en az”, “daha fazla” gibi) olduğunu gösterin. Soruyu sonuna kadar okuyup sorunun ne istediğini kendi cümleleriyle söylemesi yardımcı olabilir; bazen soru, olmayan bir şeyi varmış gibi de sorabilir.',
+    )),
+    support(2, 'suphe', 'Şüphe sesini dinle', 'Bilgi', t(
+      'Bir araştırmada ilk akla gelen yanlış cevabı verenlerin bile bu cevaba, tuzaksız eş sorudaki cevaplarından daha az güvendiği görülmüştür. Bir cevaptan tam emin değilsen bu his bir şeyin gözden kaçtığını gösterebilir: soruyu bir kez daha oku.',
+      'Bir araştırmada ilk akla gelen yanlış cevabı verenlerin bile bu cevaba, tuzaksız eş sorudaki cevaplarından daha az güvendiği görülmüştür. Çocuğunuza, bir cevaptan tam emin olmadığında bu hissin bir şeyin gözden kaçtığını gösterebileceğini ve soruyu bir kez daha okumasını söyleyebilirsiniz.',
+    )),
+    support(3, 'ciz', 'Çiz ya da tablo yap', 'Araç', t(
+      'Sayılarla ilgili kısa sorularda küçük bir çizim (ör. bir çitin direkleri ve aralarındaki boşluklar) ya da birkaç satırlık bir tablo, ilk akla gelen cevabın soruya uyup uymadığını görmeyi kolaylaştırabilir.',
+      'Sayılarla ilgili kısa sorularda küçük bir çizim (ör. bir çitin direkleri ve aralarındaki boşluklar) ya da birkaç satırlık bir tablo, çocuğunuzun ilk akla gelen cevabın soruya uyup uymadığını görmesini kolaylaştırabilir.',
+    )),
+  ],
+  facts: dusunerekFacts,
+  approach: [
+    { title: 'Hemen düzeltmeyin, sorun', text: 'Çocuğunuz bir bilmecede ilk akla gelen cevabı verdiğinde hemen düzeltmek yerine “Bu cevabı nasıl sınarsın?” diye sorun.' },
+    { title: 'Yanılmayı olağan görün', text: 'Tuzaklı bilmeceleri birlikte çözün ve yanılmanın herkesin başına geldiğini konuşun; önemli olan cevabı sınamayı alışkanlık edinmektir.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Tuzaklı bilmeceler',
+      text: t(
+        'Bu hafta üç tuzaklı bilmece bul ya da kendin uydur; her birinde önce ilk akla gelen cevabı yaz, sonra cevabı sorudaki bilgilerle sına.',
+        'Bu hafta çocuğunuzla üç tuzaklı bilmece bulun ya da uydurun; her birinde önce ilk akla gelen cevabı yazmasını, sonra cevabı sorudaki bilgilerle sınamasını isteyin.',
+      ),
+    },
+    {
+      title: 'Cevabı geri koy',
+      text: t(
+        'Bu hafta sayılarla ilgili kısa bir soruyu çözünce cevabını sorudaki bilgilere geri koy ve her bilgiye uyup uymadığına bak.',
+        'Bu hafta çocuğunuz sayılarla ilgili kısa bir soruyu çözünce cevabını sorudaki bilgilere geri koysun ve her bilgiye uyup uymadığına birlikte bakın.',
+      ),
+    },
+    {
+      title: 'Anlamı değiştiren sözcükler',
+      text: t(
+        'Bu hafta okuduğun yönergelerde ve sorularda anlamı değiştiren sözcükleri (“hariç”, “en az”, “daha fazla” gibi) bul ve altını çiz.',
+        'Bu hafta çocuğunuzla okuduğunuz yönergelerde ve sorularda anlamı değiştiren sözcükleri (“hariç”, “en az”, “daha fazla” gibi) bulup altını çizin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (cevabı sınamak, soruyu sonuna kadar okumak, şüphe sesini dinlemek ya da çizmek) ilk akla gelen cevabı denetlemeni en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun ilk akla gelen cevabı denetlemesini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['mantiksal-akil-yurutme', 'sayisal-akil-yurutme'],
+  nextPurpose: {
+    you: 'akıl yürütmenin başka yönlerini de görmek',
+    parent: 'çocuğunuzun akıl yürütmesinin başka yönlerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.deNeysBats, KAYNAK.youngShtulman2020, KAYNAK.stagnaro2018, KAYNAK.bialek2018],
+};
+
 const kelimeListesiBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
@@ -1714,4 +1812,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'mantiksal-akil-yurutme': mantiksalAkilYurutme,
   'sayisal-akil-yurutme': sayisalAkilYurutme,
   'kup-acinimi': kupAcinimi,
+  'dusunerek-karar-verme': dusunerekKararVerme,
 };

@@ -79,6 +79,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                             ? `${single.items.length} soru, 3 soru grubu`
                             : single.kind === 'cube_net'
                               ? `${single.items.length} soru, ${single.levels.length} düzey`
+                              : single.kind === 'cognitive_reflection'
+                                ? `${single.items.length} kısa soru, dört seçenekli`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -405,6 +407,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Yalnızca yüzlerin yerinin önemli olduğu sorularla şekillerin yönünün de önemli olduğu soruların karşılaştırması, yanlış cevaplarda öne çıkan yanılgılar (karşılıklı yüzleri yan yana görmek, köşedeki sırayı ters görmek, şeklin yönünü yanlış görmek) ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'cognitive_reflection' && (
+              <>
+                <li>Soruların kaçında doğru cevaba ulaşıldığı (sayısal ve sözel sorular ayrı; grafik ve üç boyutlu grafikle)</li>
+                <li>Yanlışların türü, benzer soru çiftlerinin karşılaştırılması ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'word_list' && (

@@ -24,6 +24,7 @@ import {
   logicBody,
   numericBody,
   cubeBody,
+  reflectionBody,
   foldingBody,
   vocabularyBody,
   ruleSwitchBody,
@@ -283,6 +284,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'mantiksal-akil-yurutme': () => logicBody(),
     'sayisal-akil-yurutme': () => numericBody(),
     'kup-acinimi': () => cubeBody(),
+    'dusunerek-karar-verme': () => reflectionBody(),
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
@@ -338,6 +340,10 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['analogy', 'classification', 'ordering', 'deduction']);
           expect(rm.barsTitle).toMatch(/^Soru türlerine göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('soru türüdür');
+        } else if (slug === 'dusunerek-karar-verme') {
+          expect(rm.bars.map((b) => b.key)).toEqual(['numLure', 'verbLure', 'control']);
+          expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('sekiz soruluk bir gruptur');
         } else if (slug === 'sayisal-akil-yurutme') {
           // Sekiz soruluk üç grupta doğru cevap oranı (aynı birim): üç sütun.
           expect(rm.bars.map((b) => b.key)).toEqual(['prop', 'nonProp', 'equal']);
