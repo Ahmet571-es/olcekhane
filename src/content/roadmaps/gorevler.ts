@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama ve Mantıksal Akıl Yürütme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme ve Sayısal Akıl Yürütme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1394,6 +1394,105 @@ const mantiksalAkilYurutme: TaskRoadmapTemplate = {
   sources: [KAYNAK.markovits2014, KAYNAK.evansThompsonOver, KAYNAK.trippas, KAYNAK.deNeys],
 };
 
+const sayisalBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; sayılarla akıl yürütmenin yalnızca iki yönünü (orantı ile farkı ayırt etmeyi ve eşitliği dengelemeyi) gösterir.',
+    'Orantı kurulacak yerde farkı korumak ya da orantılı olmayan bir durumda orantı kurmak araştırmalarda sık görülmüştür; bu yanılgılar düşünme biçimini fark etmek için birer fırsattır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; sayılarla akıl yürütmenin yalnızca iki yönünü (orantı ile farkı ayırt etmeyi ve eşitliği dengelemeyi) gösterir.',
+    'Araştırmalarda orantılı durumlarda farkı koruma yanılgısının ilkokulda yaygın olduğu ve lise yıllarında azaldığı, orantılı olmayan durumlarda orantı kurma yanılgısının ise orantının öğretildiği yıllarda arttığı görülmüştür; bu yüzden aynı yanılgı farklı yaşlarda farklı anlama gelir.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine yanılgıların neyle ilişkili olabileceği. */
+const sayisalFacts: InfoBox = {
+  ...sayisalBase,
+  items: {
+    ...sayisalBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; sayılarla akıl yürütmenin yalnızca iki yönünü (orantı ile farkı ayırt etmeyi ve eşitliği dengelemeyi) gösterir.',
+      'Orantı kurulacak yerde farkı korumak ya da orantılı olmayan bir durumda orantı kurmak araştırmalarda sık görülmüştür; araştırmacılar orantılı olmayan durumda orantı kurmayı, durumu düşünmek yerine öğrenilmiş bir yöntemi uygulamaya bağlamıştır.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const sayisalAkilYurutme: TaskRoadmapTemplate = {
+  version: 'sayisal-akil-yurutme-yol-haritasi-1',
+  what: {
+    student: 'sayılar arasındaki ilişkiyi kurmayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun sayılar arasındaki ilişkiyi kurmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'sayılar arasındaki ilişkiyi kurmayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: {
+    you: 'Sayılarla düşünmeyi ne kolaylaştırır?',
+    parent: 'Çocuğunuzun sayılarla düşünmesini ne kolaylaştırır?',
+  },
+  studyIntro: t(
+    'Bu test, bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görebilmeyi ölçer. Bu beceri; bir tarifi kalabalık bir sofraya göre büyütmek, fiyatları karşılaştırmak, bir haritada uzaklığı hesaplamak, bir yolculuğun ne kadar süreceğini kestirmek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+    'Bu test, bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görebilmeyi ölçer. Bu beceri; bir tarifi kalabalık bir sofraya göre büyütmek, fiyatları karşılaştırmak, bir haritada uzaklığı hesaplamak, bir yolculuğun ne kadar süreceğini kestirmek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'iki-kat', 'İki katı sorusu', 'Yöntem', t(
+      'Bir durumda orantı kurmadan önce kendine sor: “Biri iki katına çıkınca öteki de iki katına çıkar mı?” Çıkıyorsa durum orantılıdır. Çıkmıyorsa aradaki fark korunuyor, bir başlangıç miktarı var ya da sonuç hiç değişmiyor olabilir. Örneğin bir tarifteki un iki katına çıkınca şeker de iki katına çıkar; ama pişme süresi iki katına çıkmaz.',
+      'Çocuğunuza bir durumda orantı kurmadan önce şunu sormasını önerin: “Biri iki katına çıkınca öteki de iki katına çıkar mı?” Çıkıyorsa durum orantılıdır; çıkmıyorsa aradaki fark korunuyor, bir başlangıç miktarı var ya da sonuç hiç değişmiyor olabilir. Örneğin bir tarifteki un iki katına çıkınca şeker de iki katına çıkar; ama pişme süresi iki katına çıkmaz.',
+    )),
+    support(1, 'tablo', 'Tablo yap', 'Araç', t(
+      'İki niceliği yan yana küçük bir tabloya yaz (ör. kişi sayısı ile pilav için bardak pirinç: 2 – 1, 4 – 2, 6 – 3). Satırdan satıra neyin aynı kaldığına bak: iki sayının oranı mı, aradaki fark mı? Tablo, durumun hangi türden olduğunu görmeni kolaylaştırabilir.',
+      'Çocuğunuza iki niceliği yan yana küçük bir tabloya yazmasını önerin (ör. kişi sayısı ile pilav için bardak pirinç: 2 – 1, 4 – 2, 6 – 3). Satırdan satıra neyin aynı kaldığına bakmak (iki sayının oranı mı, aradaki fark mı) durumun hangi türden olduğunu görmesini kolaylaştırabilir.',
+    )),
+    support(2, 'terazi', 'Eşittir işaretini terazi gibi düşün', 'Yöntem', t(
+      '“=” işaretini “sonuç şudur” diye değil, “iki yan aynı ağırlıkta” diye oku. Bir yanda bir sayı değişince, terazi dengede kalsın diye öbür yanda neyin değişmesi gerektiğini düşün.',
+      'Çocuğunuza “=” işaretini “sonuç şudur” diye değil, “iki yan aynı ağırlıkta” diye okumasını önerin. Bir yanda bir sayı değişince terazi dengede kalsın diye öbür yanda neyin değişmesi gerektiğini birlikte konuşabilirsiniz.',
+    )),
+    support(3, 'kontrol', 'Cevabı durumla karşılaştır', 'Yöntem', t(
+      'Bir sayı bulunca durumu yeniden oku ve cevabın mantıklı olup olmadığına bak. Örneğin iki kardeşten küçüğü 5’ten 10 yaşına geldiğinde büyüğü 8’den 16’ya değil, 13 yaşına gelir: küçüğün yaşı iki katına çıktı diye büyüğün yaşı da iki katına çıkmaz, aradaki fark hep aynı kalır.',
+      'Çocuğunuza bir sayı bulunca durumu yeniden okuyup cevabın mantıklı olup olmadığına bakmasını önerin. Örneğin iki kardeşten küçüğü 5’ten 10 yaşına geldiğinde büyüğü 8’den 16’ya değil, 13 yaşına gelir: küçüğün yaşı iki katına çıktı diye büyüğün yaşı da iki katına çıkmaz, aradaki fark hep aynı kalır.',
+    )),
+  ],
+  facts: sayisalFacts,
+  approach: [
+    { title: 'Günlük durumlardan sorun', text: 'Mutfakta, alışverişte ya da yolculukta “Bu iki katına çıkınca şu da iki katına çıkar mı?” diye sorun: tarif büyüyünce malzemeler artar ama pişme süresi aynı kalabilir.' },
+    { title: 'Nasıl bulduğunu sorun', text: 'Cevabın doğru olup olmadığından önce nasıl bulunduğunu sorun; farkı mı, oranı mı kullandığını birlikte konuşun.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Orantı mı, değil mi?',
+      text: t(
+        'Bu hafta günlük hayatta iki niceliğin birlikte değiştiği üç durum bul ve her biri için “Biri iki katına çıkınca öteki de iki katına çıkar mı?” sorusunu cevapla. En az birinin orantılı olmamasına dikkat et.',
+        'Bu hafta çocuğunuzla günlük hayatta iki niceliğin birlikte değiştiği üç durum bulun ve her biri için “Biri iki katına çıkınca öteki de iki katına çıkar mı?” sorusunu birlikte cevaplayın. En az birinin orantılı olmamasına dikkat edin.',
+      ),
+    },
+    {
+      title: 'Tarifi büyüt',
+      text: t(
+        'Bu hafta sevdiğin bir tarifi iki ya da üç katına göre yeniden yaz. Hangi malzemenin orantılı arttığını, hangi şeyin (ör. fırının ısısı) değişmediğini not et.',
+        'Bu hafta çocuğunuzla sevdiği bir tarifi iki ya da üç katına göre yeniden yazın. Hangi malzemenin orantılı arttığını, hangi şeyin (ör. fırının ısısı) değişmediğini birlikte not edin.',
+      ),
+    },
+    {
+      title: 'Terazi bulmacaları',
+      text: t(
+        'Bu hafta “7 + 5 = □ + 4” gibi iki yanı dengede olan üç eşitlik yaz ve birine sor; cevabı terazi gibi düşünerek açıkla.',
+        'Bu hafta çocuğunuz “7 + 5 = □ + 4” gibi iki yanı dengede olan üç eşitlik yazsın ve size sorsun; cevabı terazi gibi düşünerek açıklasın.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (iki katı sorusu, tablo, terazi ya da cevabı durumla karşılaştırmak) sayılarla düşünmeni en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun sayılarla düşünmesini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['sayi-dizileri', 'mantiksal-akil-yurutme'],
+  nextPurpose: {
+    you: 'sayılarla ve sözcüklerle akıl yürütmenin başka yönlerini de görmek',
+    parent: 'çocuğunuzun sayılarla ve sözcüklerle akıl yürütmesinin başka yönlerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.fernandez2012, KAYNAK.vanDooren2004, KAYNAK.knuth2006],
+};
+
 const kelimeListesiBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
@@ -1514,4 +1613,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'kural-degistirme': kuralDegistirme,
   'kelime-listesi-hatirlama': kelimeListesi,
   'mantiksal-akil-yurutme': mantiksalAkilYurutme,
+  'sayisal-akil-yurutme': sayisalAkilYurutme,
 };

@@ -54,8 +54,8 @@ function Series({ item, value, tone }: { item: NumberSeriesItem; value: string; 
   );
 }
 
-/** 0–9 tuş takımı (telefondaki gibi 1–2–3 üstte, 0 altta geniş) ve Sil düğmesi. */
-function DigitPad({ onDigit, onDelete, disabled }: { onDigit: (d: number) => void; onDelete: () => void; disabled?: boolean }) {
+/** 0–9 tuş takımı (telefondaki gibi 1–2–3 üstte, 0 altta geniş) ve Sil düğmesi. Sayısal akıl yürütme de kullanır. */
+export function DigitPad({ onDigit, onDelete, disabled }: { onDigit: (d: number) => void; onDelete: () => void; disabled?: boolean }) {
   const key = `tabular h-14 rounded-xl border-[1.5px] border-rule-strong bg-surface font-display text-2xl font-bold hover:border-ink active:translate-y-px disabled:opacity-40 ${TOUCH_CLASSES}`;
   return (
     <div className="mx-auto grid w-full max-w-[18rem] grid-cols-3 gap-2" role="group" aria-label="Tuş takımı" data-tuslar="">

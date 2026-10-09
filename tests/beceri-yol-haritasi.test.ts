@@ -22,6 +22,7 @@ import {
   numberSeriesBody,
   verbalBody,
   logicBody,
+  numericBody,
   foldingBody,
   vocabularyBody,
   ruleSwitchBody,
@@ -279,6 +280,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'sayi-dizileri': numberSeriesBody,
     'sozel-akil-yurutme': verbalBody,
     'mantiksal-akil-yurutme': () => logicBody(),
+    'sayisal-akil-yurutme': () => numericBody(),
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
@@ -334,6 +336,11 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['analogy', 'classification', 'ordering', 'deduction']);
           expect(rm.barsTitle).toMatch(/^Soru türlerine göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('soru türüdür');
+        } else if (slug === 'sayisal-akil-yurutme') {
+          // Sekiz soruluk üç grupta doğru cevap oranı (aynı birim): üç sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['prop', 'nonProp', 'equal']);
+          expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('sekiz soruluk bir gruptur');
         } else if (slug === 'mantiksal-akil-yurutme') {
           // Sekiz soruluk dört grupta doğru cevap oranı (aynı birim): dört sütun.
           expect(rm.bars.map((b) => b.key)).toEqual(['condValid', 'condInvalid', 'noConflict', 'conflict']);

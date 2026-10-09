@@ -73,7 +73,8 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       // uzaklığı, tuzak cevaplar, çeldiriciler) tarayıcıya gönderilmez. Sözel akıl yürütmede düzeylerin anlatımı da
       // gönderilmez: bazı soruların ipucunu verir (ör. "durduranlar") ve çözme ekranında kullanılmaz. Kâğıt katlamada da
       // çeldiriciler, yanılgı türleri ve düzey anlatımları gönderilmez. Kelime listesinde tanıma bölümünün anahtarı,
-      // mantıksal akıl yürütmede de sorunun türü (cevabı ele verir) gönderilmez.
+      // mantıksal akıl yürütmede de sorunun türü (cevabı ele verir) gönderilmez. Sayısal akıl yürütmede cevap anahtarı, soru
+      // türleri ve yanılgı cevapları gönderilmez.
       return {
         engine: 'tasks',
         intro,
@@ -90,7 +91,9 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
                     ? { ...t, recognitionKey: [] }
                     : t.kind === 'logical_reasoning'
                       ? { ...t, answers: [], forms: [] }
-                      : t,
+                      : t.kind === 'numerical_reasoning'
+                        ? { ...t, answers: [], kinds: [], ratios: [], lures: [] }
+                        : t,
         ),
       };
     case 'oral':

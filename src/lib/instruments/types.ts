@@ -253,7 +253,8 @@ export type TaskKind =
   | 'rule_switch'
   | 'word_list'
   | 'paper_folding'
-  | 'logical_reasoning';
+  | 'logical_reasoning'
+  | 'numerical_reasoning';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -804,6 +805,59 @@ export interface LogicalReasoningTask extends TaskBase {
 }
 
 /**
+ * Sayısal akıl yürütme: her soruda bir sayı yazılır (seçenek yoktur; "Bilmiyorum" da denebilir). Soru türleri
+ * (content/instruments/sayisal-akil-yurutme.ts):
+ *  - Orantılı durumlar (`p`): iki nicelik aynı oranda büyür (eksik değer problemi). Yanılgı: aradaki farkı korumak.
+ *  - Orantılı olmayan durumlar: aradaki farkın korunduğu (`a`), miktar artsa da sonucun değişmediği (`c`) ve bir başlangıç
+ *    miktarının olduğu (`f`) durumlar. Yanılgı: orantı kurmak (Van Dooren ve ark., 2004; Fernández ve ark., 2012).
+ *  - Eşitlik ve denge: eşittir işaretinin iki yanı (`eq`), bir sayı değişince ötekinin nasıl değişeceği (`comp`) ve
+ *    terazi (`bal`). Yanılgılar: eşittir işaretinin solundaki işlemin sonucunu yazmak (Knuth ve ark., 2006), ters yönde
+ *    denkleştirmek ve terazinin bir kefesine bakmamak.
+ */
+export type NumericKind = 'p' | 'a' | 'c' | 'f' | 'eq' | 'comp' | 'bal';
+
+/** Orantılı ve fark korunan durumlarda sayıların birbirinin tam katı olup olmadığı (`int`) ya da olmadığı (`frac`). */
+export type NumericRatio = 'int' | 'frac';
+
+/**
+ * Yanılgıyla bulunan yanlış cevapların türü: fark korunarak (`additive`), orantı kurularak (`proportional`), ters orantı
+ * kurularak (`inverse`), eşittir işaretinin solundaki işlemin ya da bütün sayıların sonucu yazılarak (`operational`), ters
+ * yönde denkleştirilerek (`reverse`) ve terazinin bir kefesindeki ortak şey hesaba katılmadan (`partial`).
+ */
+export type NumericLureKind = 'additive' | 'proportional' | 'inverse' | 'operational' | 'reverse' | 'partial';
+
+export interface NumericItem {
+  key: string;
+  /** Durumun cümleleri; eşitlik sorularında tek satırlık eşitlik (`equation`). */
+  stem: string[];
+  /** Eşitlik sorusu: `stem[0]` büyük yazılan bir eşitliktir (□ eksik sayının yeridir). */
+  equation?: boolean;
+  question: string;
+  /** Cevap kutusunun yanında yazan birim (ör. "lira"); eşitliklerde yoktur. */
+  unit?: string;
+}
+
+export interface NumericPracticeItem extends NumericItem {
+  /** Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+}
+
+export interface NumericalReasoningTask extends TaskBase {
+  kind: 'numerical_reasoning';
+  practice: NumericPracticeItem[];
+  items: NumericItem[];
+  /** Cevap anahtarı. Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /** Her sorunun türü, sayıların tam katlı olup olmadığı (orantılı ve fark korunan durumlarda) ve yanılgı cevapları. Tarayıcıya boş gönderilir. */
+  kinds: NumericKind[];
+  ratios: (NumericRatio | null)[];
+  lures: Partial<Record<NumericLureKind, number[]>>[];
+  /** Cevabın en çok kaç basamaklı olabileceği (tuş takımı bundan uzun sayı yazdırmaz). */
+  maxDigits: number;
+}
+
+/**
  * Kural değiştirme (görev değiştirme düzeni): her denemede mavi ya da turuncu bir daire ya da kare görünür; üstündeki
  * işaret (RENK ya da ŞEKİL) hangi kurala göre cevap verileceğini söyler (lib/instruments/rule-switch.ts). Önce iki tek
  * kurallı bölüm, sonra iki kuralın karıştığı iki bölüm gelir.
@@ -883,7 +937,8 @@ export type CognitiveTask =
   | VocabularyTask
   | RuleSwitchTask
   | WordListTask
-  | LogicalReasoningTask;
+  | LogicalReasoningTask
+  | NumericalReasoningTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

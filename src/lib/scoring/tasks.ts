@@ -27,8 +27,12 @@ import type {
   WordListTask,
   LogicForm,
   LogicalReasoningTask,
+  NumericKind,
+  NumericLureKind,
+  NumericalReasoningTask,
 } from '@/lib/instruments/types';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
+import { NUMERIC_EQUAL, NUMERIC_KINDS, NUMERIC_NONPROP, NUMERIC_PROP, numericRapidMs } from '@/lib/instruments/numeric';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
 import { verbalRapidMs } from '@/lib/instruments/verbal';
 import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
@@ -2156,6 +2160,156 @@ export function logicQualityNotes(r: LogicResult): string[] {
   }
   return notes;
 }
+/* ---------- Sayısal akıl yürütme ---------- */
+
+export interface NumericTrialInput {
+  index: number;
+  /** Yazılan sayı; "Bilmiyorum" denirse `null`. */
+  response: { answer: number } | null;
+  rtMs: number | null;
+}
+
+/** Bir soru grubunda soru sayısı, doğru cevap ve "Bilmiyorum" sayısı. */
+export interface NumericGroup {
+  n: number;
+  correct: number;
+  blank: number;
+}
+
+export const NUMERIC_LURE_KINDS: NumericLureKind[] = ['additive', 'proportional', 'inverse', 'operational', 'reverse', 'partial'];
+
+export interface NumericResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  /** "Bilmiyorum" denen sorular. */
+  blank: number;
+  /** Soru türlerine göre (p, a, c, f, eq, comp, bal). */
+  kinds: Record<NumericKind, NumericGroup>;
+  /** Orantılı durumlar (p), orantılı olmayan durumlar (a, c, f) ve eşitlik ve denge soruları (eq, comp, bal). */
+  prop: NumericGroup;
+  nonProp: NumericGroup;
+  equal: NumericGroup;
+  /** Orantılı ve fark korunan durumlar, sayıların birbirinin tam katı olup olmamasına göre. */
+  pInt: NumericGroup;
+  pFrac: NumericGroup;
+  aInt: NumericGroup;
+  aFrac: NumericGroup;
+  /**
+   * Sayıların doğru yönteme çektiği sorular (tam katlı orantılı, tam katlı olmayan fark korunan) ve yanlış yönteme
+   * çektiği sorular (tam katlı olmayan orantılı, tam katlı fark korunan; Fernández ve ark., 2012).
+   */
+  congruent: NumericGroup;
+  incongruent: NumericGroup;
+  /** Yanılgı cevaplarının sayısı, türüne göre. */
+  lures: Record<NumericLureKind, number>;
+  /** Orantı kuran cevaplar, orantılı olmayan durumun türüne göre (fark korunan, değişmeyen, başlangıçlı). */
+  propLures: { a: number; c: number; f: number };
+  /** Sayıların yanlış yönteme çektiği sorulardaki yanılgı cevapları: tam katlı olmayan orantılıda fark, tam katlı fark korunanda orantı. */
+  fracAdditive: number;
+  intProportional: number;
+  medianRt: number | null;
+  /** Sorunun uzunluğuna göre okunamayacak kadar kısa sürede verilen cevaplar ("Bilmiyorum" dahil) ve bunların doğruları. */
+  rapid: number;
+  rapidCorrect: number;
+}
+
+/** Sekiz soruluk bir grupta "çoğunu doğru" en az 6; bir yanılgı türü en az iki cevapta görülünce anlatılır. */
+export const NUMERIC_GOOD = 6;
+export const NUMERIC_LURE_NOTE = 2;
+/** "Bilmiyorum" soruların yarısında ya da daha çoğunda denmişse sonuç dikkatle yorumlanır. */
+export const NUMERIC_BLANK_MANY = 12;
+
+export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialInput[]): { result: NumericResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.kinds.length !== n || task.ratios.length !== n || task.lures.length !== n) {
+    throw new TaskInputError('Cevap anahtarı eksik.');
+  }
+  const byIndex = new Map<number, NumericTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (t.response !== null) {
+      const a = t.response?.answer;
+      if (typeof a !== 'number' || !Number.isInteger(a) || a < 0 || a >= 10 ** task.maxDigits) throw new TaskInputError('Geçersiz cevap.');
+    }
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const value = t.response === null ? null : t.response.answer;
+    const correct = value === task.answers[i];
+    const lure = value === null || correct ? null : (NUMERIC_LURE_KINDS.find((k) => task.lures[i][k]?.includes(value)) ?? null);
+    return { item, kind: task.kinds[i], ratio: task.ratios[i], value, correct, lure, rt: t.rtMs };
+  });
+  type Scored = (typeof scored)[number];
+  const group = (pick: (s: Scored) => boolean): NumericGroup => {
+    const here = scored.filter(pick);
+    return { n: here.length, correct: here.filter((s) => s.correct).length, blank: here.filter((s) => s.value === null).length };
+  };
+  const kinds = Object.fromEntries(NUMERIC_KINDS.map((k) => [k, group((s) => s.kind === k)])) as Record<NumericKind, NumericGroup>;
+  const lures = Object.fromEntries(NUMERIC_LURE_KINDS.map((k) => [k, scored.filter((s) => s.lure === k).length])) as Record<NumericLureKind, number>;
+  const isIncongruent = (s: Scored) => (s.kind === 'p' && s.ratio === 'frac') || (s.kind === 'a' && s.ratio === 'int');
+  const isCongruent = (s: Scored) => (s.kind === 'p' && s.ratio === 'int') || (s.kind === 'a' && s.ratio === 'frac');
+  const correct = scored.filter((s) => s.correct).length;
+  const rts = scored.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const fast = scored.filter((s) => s.rt !== null && s.rt < numericRapidMs(s.item));
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      blank: scored.filter((s) => s.value === null).length,
+      kinds,
+      prop: group((s) => NUMERIC_PROP.includes(s.kind)),
+      nonProp: group((s) => NUMERIC_NONPROP.includes(s.kind)),
+      equal: group((s) => NUMERIC_EQUAL.includes(s.kind)),
+      pInt: group((s) => s.kind === 'p' && s.ratio === 'int'),
+      pFrac: group((s) => s.kind === 'p' && s.ratio === 'frac'),
+      aInt: group((s) => s.kind === 'a' && s.ratio === 'int'),
+      aFrac: group((s) => s.kind === 'a' && s.ratio === 'frac'),
+      congruent: group(isCongruent),
+      incongruent: group(isIncongruent),
+      lures,
+      propLures: {
+        a: scored.filter((s) => s.kind === 'a' && s.lure === 'proportional').length,
+        c: scored.filter((s) => s.kind === 'c' && s.lure === 'proportional').length,
+        f: scored.filter((s) => s.kind === 'f' && s.lure === 'proportional').length,
+      },
+      fracAdditive: scored.filter((s) => s.kind === 'p' && s.ratio === 'frac' && s.lure === 'additive').length,
+      intProportional: scored.filter((s) => s.kind === 'a' && s.ratio === 'int' && s.lure === 'proportional').length,
+      medianRt: medianOrNull(rts),
+      rapid: fast.length,
+      rapidCorrect: fast.filter((s) => s.correct).length,
+    },
+  };
+}
+
+/** Okunamayacak kadar hızlı cevaplar: soruların en az dörtte biri ve bu cevapların dörtte üçünden azı doğru. */
+export const numericRapid = (r: NumericResult) => r.rapid >= Math.ceil(r.n / 4) && r.rapidCorrect < 0.75 * r.rapid;
+/**
+ * Sayılara göre yöntem seçme: sayıların doğru yönteme çektiği altı sorunun en az beşi doğru; tam katlı olmayan dört
+ * orantılı durumun en az üçünde fark, tam katlı iki fark korunan durumun en az birinde orantı kurulmuş.
+ */
+export const numericNumberDriven = (r: NumericResult) => r.congruent.correct >= r.congruent.n - 1 && r.fracAdditive >= 3 && r.intProportional >= 1;
+
+/** Sayısal akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, numericBlocks aynı eşikleri kullanır). */
+export function numericQualityNotes(r: NumericResult): string[] {
+  const notes: string[] = [];
+  if (r.blank >= NUMERIC_BLANK_MANY) {
+    notes.push(
+      `Sayısal akıl yürütme testinde ${r.n} sorunun ${r.blank} tanesinde “Bilmiyorum” denmiş; cevaplanan soru az olduğu için soru türlerine göre sonuçlar dikkatle yorumlanmalıdır.`,
+    );
+  }
+  if (numericRapid(r)) {
+    notes.push(
+      `Sayısal akıl yürütme testinde ${r.n} sorunun ${r.rapid} tanesinde cevap, soruyu okumaya yetmeyecek kadar kısa sürede verilmiş ve ${r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değil' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğru`}; bu sorulara okumadan cevap verilmiş olabilir.`,
+    );
+  }
+  return notes;
+}
+
 export function taskQualityNotes(parts: {
   flanker?: FlankerResult;
   symbol?: SymbolResult;
@@ -2171,6 +2325,7 @@ export function taskQualityNotes(parts: {
   verbal?: VerbalResult;
   folding?: FoldingResult;
   logic?: LogicResult;
+  numeric?: NumericResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -2353,6 +2508,8 @@ export function taskQualityNotes(parts: {
   if (kl) notes.push(...wordListQualityNotes(kl));
   const ma = parts.logic;
   if (ma) notes.push(...logicQualityNotes(ma));
+  const sy = parts.numeric;
+  if (sy) notes.push(...numericQualityNotes(sy));
   return notes;
 }
 

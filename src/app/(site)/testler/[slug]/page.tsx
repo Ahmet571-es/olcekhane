@@ -75,6 +75,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                         ? `${single.listA.length} kelimelik iki liste, 5 hatırlama ve 1 tanıma bölümü`
                         : single.kind === 'logical_reasoning'
                           ? `${single.items.length} soru, 2 soru türü`
+                          : single.kind === 'numerical_reasoning'
+                            ? `${single.items.length} soru, 3 soru grubu`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -389,6 +391,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı ve soru gruplarına göre doğru cevaplar grafiği</li>
                 <li>“Eğer–ise” kurallarında kesin olanla olmayanın ayırt edilip edilmediği ve sonuç gerçek hayatta doğru ya da yanlış göründüğünde bu bilginin kararı etkileyip etkilemediği (üç boyutlu grafikle)</li>
+              </>
+            )}
+            {single?.kind === 'numerical_reasoning' && (
+              <>
+                <li>Doğru cevap sayısı ve soru gruplarına göre doğru cevaplar (grafik ve üç boyutlu grafikle)</li>
+                <li>Orantılı ve orantılı olmayan durumların ayırt edilip edilmediği, eşittir işaretinin nasıl okunduğu ve görülen yanılgılar</li>
               </>
             )}
             {single?.kind === 'word_list' && (

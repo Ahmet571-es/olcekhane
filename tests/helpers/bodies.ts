@@ -28,6 +28,10 @@ import type {
   WordListTask,
   LogicalReasoningTask,
   LogicForm,
+  NumericalReasoningTask,
+  NumericKind,
+  NumericLureKind,
+  NumericRatio,
 } from '@/lib/instruments/types';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
 import { formForGrade } from '@/lib/scoring/quiz';
@@ -440,6 +444,21 @@ export function logicBody(
   const trials = task.items.map((_, index) => {
     const p = pick({ form: task.forms[index], answer: task.answers[index], i: index });
     return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+export type NumericCell = { kind: NumericKind; ratio: NumericRatio | null; answer: number; lures: Partial<Record<NumericLureKind, number[]>>; i: number };
+
+/** Sayısal akıl yürütme: varsayılan olarak her soruda doğru cevap, soru başına 9 saniye. `null` "Bilmiyorum"dur. */
+export function numericBody(
+  pick: (q: NumericCell) => { response: number | null; rtMs: number | null } = (q) => ({ response: q.answer, rtMs: 9000 }),
+  grade = 7,
+): AnswersBody {
+  const task = def<TaskInstrument>('sayisal-akil-yurutme').tasks[0] as NumericalReasoningTask;
+  const trials = task.items.map((_, index) => {
+    const p = pick({ kind: task.kinds[index], ratio: task.ratios[index], answer: task.answers[index], lures: task.lures[index], i: index });
+    return { index, response: p.response === null ? null : { answer: p.response }, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

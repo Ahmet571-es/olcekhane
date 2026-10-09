@@ -192,6 +192,18 @@ export const KAYNAK = {
     text: 'Trippas, D., Kellen, D., Singmann, H., Pennycook, G., Koehler, D. J., Fugelsang, J. A. ve Dubé, C. (2018). Characterizing belief bias in syllogistic reasoning: A hierarchical Bayesian meta-analysis of ROC data. Psychonomic Bulletin & Review, 25(6), 2141–2174.',
     url: 'https://doi.org/10.3758/s13423-018-1460-7',
   },
+  fernandez2012: {
+    text: 'Fernández, C., Llinares, S., Van Dooren, W., De Bock, D. ve Verschaffel, L. (2012). The development of students’ use of additive and proportional methods along primary and secondary school. European Journal of Psychology of Education, 27(3), 421–438.',
+    url: 'https://doi.org/10.1007/s10212-011-0087-0',
+  },
+  vanDooren2004: {
+    text: 'Van Dooren, W., De Bock, D., Hessels, A., Janssens, D. ve Verschaffel, L. (2004). Students’ overreliance on proportionality: Evidence from primary school pupils solving arithmetic word problems. M. J. Høines ve A. B. Fuglestad (Ed.), Proceedings of the 28th Conference of the International Group for the Psychology of Mathematics Education (C. 4, s. 385–392). Bergen University College.',
+    url: 'https://emis.univie.ac.at/proceedings/PME28/RR/RR005_VanDooren.pdf',
+  },
+  knuth2006: {
+    text: 'Knuth, E. J., Stephens, A. C., McNeil, N. M. ve Alibali, M. W. (2006). Does understanding the equal sign matter? Evidence from solving equations. Journal for Research in Mathematics Education, 37(4), 297–312.',
+    url: 'https://www.nctm.org/Publications/journal-for-research-in-mathematics-education/2006/Vol37/Issue4/Does-Understanding-the-Equal-Sign-Matter_-Evidence-from-Solving-Equations/',
+  },
   deNeys: {
     text: 'De Neys, W. ve Van Gelder, E. (2009). Logic and belief across the lifespan: The rise and fall of belief inhibition during syllogistic reasoning. Developmental Science, 12(1), 123–130.',
     url: 'https://doi.org/10.1111/j.1467-7687.2008.00746.x',

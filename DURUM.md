@@ -266,9 +266,18 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    (28/32), rastgele seçimin altı (≤10/32) ve okumadan seçme (hızlı ve çoğu yanlış) uyarıları. Kaynaklar Datsogianni ve
    ark. (2020), De Neys ve Van Gelder (2009), Evans, Barston ve Pollard (1983), Evans, Thompson ve Over (2015), Trippas ve
    ark. (2018), Markovits (2014).
-16. Sıradaki (Akıl Yürütme dalgası, site sahibinin 2026-10-09 seçimi, bu sırayla): Sayısal Akıl Yürütme (sınıfa göre
-   formlar, özgün oran ve problem soruları), Küp Açınımı (SVG açınımlar, çözücüyle doğrulama), Düşünerek Karar Verme
-   (özgün sezgi tuzağı soruları; rapor sezgisel yanlışı öteki yanlışlardan ayırır).
+16. **Sayısal Akıl Yürütme: yayında (2026-10-09, pilot; 5. sınıftan yetişkine).** 24 özgün soru, cevap yazılır (tuş
+   takımı, "Bilmiyorum" da var), ~20 dakika, 2 nötr alıştırma (`content/instruments/sayisal-akil-yurutme.ts`,
+   `components/runner/tasks/numerical-reasoning.tsx`). Üç grup: 8 orantılı durum (4 sayılar birbirinin katı, 4 değil), 8
+   orantılı olmayan durum (4 fark korunan, 2 değişmeyen, 2 başta bir miktar olan) ve 8 eşitlik ve denge sorusu (eşittir
+   işareti, denkleştirme, terazi). Her sorunun cevabı ve yanılgı cevapları `tests/helpers/numeric-check.ts`'te sorunun
+   sayılarından bağımsızca hesaplanır; yanılgı cevapları sorudaki bir sayı, çarpan ya da sayıların toplamıyla karışmaz
+   (test denetler). Rapor: fark yanılgısı, orantı yanılgısı (türüne göre), sayılara göre yöntem seçme, eşittir işaretini
+   "sonuç" diye okuma, ters denkleştirme, terazi; "Bilmiyorum" (≥12) ve okumadan cevap (hızlı ve çoğu yanlış) uyarıları.
+   Kaynaklar Fernández ve ark. (2012), Van Dooren ve ark. (2004), Knuth ve ark. (2006).
+17. Sıradaki (Akıl Yürütme dalgası, site sahibinin 2026-10-09 seçimi, bu sırayla): Küp Açınımı (SVG açınımlar,
+   çözücüyle doğrulama), Düşünerek Karar Verme (özgün sezgi tuzağı soruları; rapor sezgisel yanlışı öteki yanlışlardan
+   ayırır).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -454,6 +463,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Zihniyet: Zekâ ve Öğrenme İnançları | zihniyet | Yayında (pilot; 5. sınıftan yetişkine) |
 | Çalışma Değerleri | calisma-degerleri | Yayında (pilot; 7. sınıftan yetişkine) |
 | Mantıksal Akıl Yürütme | mantiksal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
+| Sayısal Akıl Yürütme | sayisal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -565,6 +575,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (18): Sayısal Akıl Yürütme yayında (5. sınıftan yetişkine): 24 özgün soru, cevap yazılır; orantılı ve
+  orantılı olmayan durumların ayırt edilip edilmediği, sayılara göre yöntem seçme ve eşittir işaretinin nasıl okunduğu
+  sayılarıyla anlatılır; cevaplar ve yanılgı cevapları bağımsızca hesaplanarak doğrulandı; öğrenci, veli ve yetişkin raporu,
+  3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı;
+  bağımsız inceleme bulguları (iki tur) düzeltildi.
 - 2026-10-09 (17): Mantıksal Akıl Yürütme yayında (5. sınıftan yetişkine): 32 özgün soru; "eğer–ise" kurallarında
   kesin olanla olmayanın ayrılıp ayrılmadığı ve sonucun gerçek hayatta doğru ya da yanlış görünmesinin kararı etkileyip
   etkilemediği ayrı ayrı yorumlanır; her sorunun cevabı bağımsız bir denetleyiciyle doğrulandı; öğrenci, veli ve yetişkin
@@ -599,7 +614,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (9): Site sahibi ilk dersi de yeterince derin bulmadı; sinir sistemi ünitesi kuruldu: "Sinir sistemine
   ilk bakış" ünitenin genel bakışı oldu, dört ders (anatominin dili, omurilik sinirleri, boyun-kol ağı, bel-sakral ağ)
   "Hazırlanıyor" olarak programa eklendi; program 110 ders.
-- 2026-10-09 (8): Beyin Akademisi Anatomi 3 "Kafatası 1: Kemikler tek tek" yayında: her kemik ayrı bölümde, üç
-  düzeyde; 39 üç boyutlu sahnede kemik tek başına, çıkıntıları, delikleri ve çukurları 131 işaret noktasıyla
-  işaretli; 3 yeni hareketli çizim, 20 vaka, 74 soru, 187 kaynak (açık tam metinler, Gray 1918, OpenStax, TA2).
-  Sahnelerde etiket yazıları artık noktaların ve birbirinin üstüne binmiyor (bütün derslerde).

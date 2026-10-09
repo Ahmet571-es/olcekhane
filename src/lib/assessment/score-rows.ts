@@ -19,6 +19,7 @@ import {
   scoreRuleSwitch,
   scoreWordList,
   scoreLogic,
+  scoreNumeric,
   scoreReaction,
   scoreRotation,
   scoreSpan,
@@ -51,6 +52,8 @@ import {
   type WordListTrialInput,
   type LogicResult,
   type LogicTrialInput,
+  type NumericResult,
+  type NumericTrialInput,
   type ReactionResult,
   type ReactionTrialInput,
   type RotationResult,
@@ -178,7 +181,8 @@ export type TaskInputs =
   | VocabularyTrialInput[]
   | RuleSwitchTrialInput[]
   | WordListTrialInput[]
-  | LogicTrialInput[];
+  | LogicTrialInput[]
+  | NumericTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -205,6 +209,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let numberSeriesRes: NumberSeriesResult | undefined;
   let verbalRes: VerbalResult | undefined;
   let logicRes: LogicResult | undefined;
+  let numericRes: NumericResult | undefined;
   let foldingRes: FoldingResult | undefined;
   let vocabularyRes: VocabularyResult | undefined;
   let ruleSwitchRes: RuleSwitchResult | undefined;
@@ -404,6 +409,16 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'ma_inanc', raw: result.beliefIndex, mean: null, nAnswered: result.categorical.correct, nItems: result.categorical.n, band: null },
         { scaleKey: 'ma_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'numerical_reasoning') {
+      const { result } = scoreNumeric(task, input as NumericTrialInput[]);
+      numericRes = result;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "sy_dogru" satırında durur.
+      rows.push(
+        { scaleKey: 'sy_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'sy_oranti', raw: null, mean: null, nAnswered: result.prop.correct + result.nonProp.correct, nItems: result.prop.n + result.nonProp.n, band: null },
+        { scaleKey: 'sy_esitlik', raw: null, mean: null, nAnswered: result.equal.correct, nItems: result.equal.n, band: null },
+        { scaleKey: 'sy_calisma', raw: result.medianRt, mean: null, nAnswered: result.n - result.blank, nItems: result.n, band: null },
+      );
     } else if (task.kind === 'word_list') {
       const { result } = scoreWordList(task, input as WordListTrialInput[]);
       wordListRes = result;
@@ -449,6 +464,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       ruleSwitch: ruleSwitchRes,
       wordList: wordListRes,
       logic: logicRes,
+      numeric: numericRes,
     }),
   };
 }

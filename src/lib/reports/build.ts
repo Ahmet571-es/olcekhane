@@ -29,6 +29,7 @@ import type {
   PaperFoldingTask,
   LogicalReasoningTask,
   LogicForm,
+  NumericalReasoningTask,
   VocabularyLure,
   VocabularyTask,
   VocabularyType,
@@ -99,6 +100,13 @@ import {
   type WordListResult,
   LOGIC_GOOD,
   LOGIC_WEAK,
+  NUMERIC_BLANK_MANY,
+  NUMERIC_GOOD,
+  NUMERIC_LURE_NOTE,
+  numericNumberDriven,
+  numericRapid,
+  type NumericGroup,
+  type NumericResult,
   logicBelowChance,
   logicRapid,
   logicSameSide,
@@ -3783,6 +3791,242 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
   };
 }
 
+/* ---------- Sayısal akıl yürütme ---------- */
+
+/** Soru grupları (grafikte ve üç boyutlu grafikte): adı, rengi ve sonuçtaki yeri. */
+export const NUMERIC_GROUPS: { key: 'prop' | 'nonProp' | 'equal'; name: string; color: string }[] = [
+  { key: 'prop', name: 'Orantılı durumlar', color: '#2f5ce0' },
+  { key: 'nonProp', name: 'Orantılı olmayan durumlar', color: '#0e9c8c' },
+  { key: 'equal', name: 'Eşitlik ve denge', color: '#d28a14' },
+];
+
+/**
+ * Sayısal akıl yürütmenin dört sonuç kartı, soru gruplarına göre grafik, öne çıkan sayılar ve soru gruplarının üç
+ * boyutlu grafiği. Cevaplar yazıldığı için rastgele seçim düzeyi yoktur; yanılgılar, yanılgı cevaplarının sayısıyla
+ * anlatılır: bir tür en az iki cevapta görülünce; yalnızca iki soruda olabilen ters orantı ve terazi yanılgıları tek
+ * cevapta. Sekiz soruluk bir grupta en az 6 doğru "çoğu"dur.
+ */
+function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  // Yetişkine öğrencilerle yapılan araştırmaların sınıflara göre bulguları yazılmaz.
+  const adult = audience === 'adult';
+  const rapid = numericRapid(r);
+  const good = (g: NumericGroup) => g.correct >= NUMERIC_GOOD;
+  const k = r.kinds;
+  const manyBlank = r.blank >= NUMERIC_BLANK_MANY;
+
+  /* Doğru cevaplar */
+  let accText: string;
+  if (r.correct >= r.n - 2) {
+    // "Hem … hem …" yalnızca üç grubun her birinde en çok bir yanlış varken: ötekinde aşağıdaki kartlar yanılgıyı anlatır.
+    const allGroups = [r.prop, r.nonProp, r.equal].every((g) => g.correct >= g.n - 1);
+    accText = allGroups
+      ? v(
+          'Soruların hemen hepsinde doğru cevap verdin: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdun.',
+          'Çocuğunuz soruların hemen hepsinde doğru cevap verdi: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdu.',
+        )
+      : v(
+          `${r.n} sorunun ${r.correct} tanesinde doğru cevap verdin; aşağıdaki kartlar yanıldığın birkaç sorunun hangi türden olduğunu gösterir.`,
+          `Çocuğunuz ${r.n} sorunun ${r.correct} tanesinde doğru cevap verdi; aşağıdaki kartlar yanıldığı birkaç sorunun hangi türden olduğunu gösterir.`,
+        );
+  } else {
+    accText = v(
+      `${r.n} sorunun ${r.correct} tanesinde doğru cevap verdin. Toplamdan çok, aşağıdaki kartlarda hangi tür sorularda hangi yanılgının görüldüğü daha çok şey söyler.`,
+      `Çocuğunuz ${r.n} sorunun ${r.correct} tanesinde doğru cevap verdi. Toplamdan çok, aşağıdaki kartlarda hangi tür sorularda hangi yanılgının görüldüğü daha çok şey söyler.`,
+    );
+  }
+  if (manyBlank) {
+    accText += v(
+      ` Soruların ${r.blank} tanesinde “Bilmiyorum” dediğin için türlere göre sonuçlar dikkatle okunmalı.`,
+      ` Soruların ${r.blank} tanesinde “Bilmiyorum” denildiği için türlere göre sonuçlar dikkatle okunmalı.`,
+    );
+  }
+  if (rapid) {
+    accText += v(
+      ' Bazı sorulara soruyu okumadan cevap vermiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
+      ' Bazı sorulara soru okunmadan cevap verilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+    );
+  }
+  const dogru: CognitiveBlock = {
+    ...card('sy_dogru'),
+    headline: `${r.n} soruda ${r.correct} doğru`,
+    detail: `Durum soruları ${r.prop.correct + r.nonProp.correct}/${r.prop.n + r.nonProp.n} · Eşitlik soruları ${r.equal.correct}/${r.equal.n}`,
+    text: accText,
+  };
+
+  /* Orantı mı, fark mı? */
+  const P = r.prop;
+  const N = r.nonProp;
+  const add = r.lures.additive;
+  const pro = r.lures.proportional;
+  const inv = r.lures.inverse;
+  let oText: string;
+  if (good(P) && good(N)) {
+    const how = P.correct + N.correct === P.n + N.n ? 'her soruda' : 'çoğunlukla';
+    oText = v(
+      `İki niceliğin aynı oranda büyüdüğü durumları, aradaki farkın korunduğu, bir başlangıç miktarının olduğu ya da sonucun hiç değişmediği durumlardan ${how} ayırt ettin.`,
+      `Çocuğunuz iki niceliğin aynı oranda büyüdüğü durumları, aradaki farkın korunduğu, bir başlangıç miktarının olduğu ya da sonucun hiç değişmediği durumlardan ${how} ayırt etti.`,
+    );
+  } else {
+    oText = v(
+      `Orantılı ${P.n} durumun ${P.correct} tanesinde, orantılı olmayan ${N.n} durumun ${N.correct} tanesinde doğru cevap verdin.`,
+      `Çocuğunuz orantılı ${P.n} durumun ${P.correct} tanesinde, orantılı olmayan ${N.n} durumun ${N.correct} tanesinde doğru cevap verdi.`,
+    );
+  }
+  if (add >= NUMERIC_LURE_NOTE) {
+    oText += v(
+      ` Orantılı durumların ${add} tanesinde iki sayı arasındaki farkı korudun. Oysa bu durumlarda fark değil oran korunur: biri iki katına çıkınca öteki de iki katına çıkar (3 bardak suya 1 limon sıkılıyorsa 6 bardak suya 2 limon sıkılır).`,
+      ` Çocuğunuz orantılı durumların ${add} tanesinde iki sayı arasındaki farkı korudu. Oysa bu durumlarda fark değil oran korunur: biri iki katına çıkınca öteki de iki katına çıkar (3 bardak suya 1 limon sıkılıyorsa 6 bardak suya 2 limon sıkılır).`,
+    );
+    if (!adult) oText += ' Araştırmalarda bu yanılgının ilkokulda ve ortaokulun ilk yıllarında çok yaygın olduğu, lise yıllarında azaldığı görülmüştür.';
+  }
+  if (pro >= NUMERIC_LURE_NOTE) {
+    const why = [
+      ...(r.propLures.a ? ['aynı hızla ilerleyen iki şeyde aradaki fark hep aynı kalır'] : []),
+      ...(r.propLures.f ? ['başlangıçta var olan miktar katlanmaz, yalnızca sonradan eklenen kısım artar'] : []),
+      ...(r.propLures.c ? ['bazı durumlarda miktar artsa da sonuç hiç değişmez'] : []),
+    ];
+    oText += v(
+      ` Orantılı olmayan durumların ${pro} tanesinde orantı kurdun. Oysa her durum orantılı değildir: ${why.join('; ')}.`,
+      ` Çocuğunuz orantılı olmayan durumların ${pro} tanesinde orantı kurdu. Oysa her durum orantılı değildir: ${why.join('; ')}.`,
+    );
+    if (!adult) oText += ' Araştırmalarda bu yanılgının orantının öğretildiği yıllarda arttığı, lisede de sık görüldüğü bulunmuştur.';
+  }
+  // Bu yanılgı yalnızca bir soruda (değişmeyen durum) olabildiği için tek cevapta anlatılır.
+  if (inv >= 1) {
+    oText += v(
+      ' Bir soruda miktar artınca süreyi kısalttın; oysa o durumda süre hiç değişmiyordu.',
+      ' Çocuğunuz bir soruda miktar artınca süreyi kısalttı; oysa o durumda süre hiç değişmiyordu.',
+    );
+  }
+  if (numericNumberDriven(r)) {
+    const counts = `sayıların birbirinin katı olmadığı ${r.pFrac.n} orantılı durumun ${r.fracAdditive} tanesinde fark, sayıların birbirinin katı olduğu ve farkın korunduğu ${r.aInt.n} durumun ${r.intProportional} tanesinde orantı`;
+    oText += v(
+      ` Yöntemi durumdan çok sayılara bakarak seçmiş olabilirsin: ${counts} kurdun.${adult ? '' : ' Araştırmalarda da sayılar birbirinin katı olduğunda orantının, olmadığında farkın daha sık kullanıldığı görülmüştür.'}`,
+      ` Çocuğunuz yöntemi durumdan çok sayılara bakarak seçmiş olabilir: ${counts} kurdu. Araştırmalarda da sayılar birbirinin katı olduğunda orantının, olmadığında farkın daha sık kullanıldığı görülmüştür.`,
+    );
+  }
+  if (add >= NUMERIC_LURE_NOTE || pro >= NUMERIC_LURE_NOTE) {
+    oText += v(
+      ' Böyle sorularda önce “Biri iki katına çıkınca öteki de iki katına çıkar mı?” diye sormak işine yarayabilir.',
+      ' Böyle sorularda önce “Biri iki katına çıkınca öteki de iki katına çıkar mı?” diye sormak çocuğunuza yardım edebilir.',
+    );
+  }
+  const oranti: CognitiveBlock = {
+    ...card('sy_oranti'),
+    headline: `Orantılı ${P.correct}/${P.n} · Orantılı olmayan ${N.correct}/${N.n}`,
+    detail: `Orantılı: sayılar birbirinin katı ${r.pInt.correct}/${r.pInt.n}; katı değil ${r.pFrac.correct}/${r.pFrac.n} · Orantılı olmayan: fark korunan ${k.a.correct}/${k.a.n}; başta bir miktar olan ${k.f.correct}/${k.f.n}; değişmeyen ${k.c.correct}/${k.c.n}`,
+    text: oText + ' Her tür birkaç soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
+  };
+
+  /* Eşitlik ve denge */
+  const E = r.equal;
+  const op = r.lures.operational;
+  const rev = r.lures.reverse;
+  const part = r.lures.partial;
+  let eText: string;
+  // "Çoğunlukla buldun" yalnızca eşitlik yanılgılarından biri iki ya da daha çok cevapta görülmemişken.
+  if (good(E) && op < NUMERIC_LURE_NOTE && rev < NUMERIC_LURE_NOTE) {
+    const how = E.correct === E.n ? 'her soruda' : 'çoğunlukla';
+    eText = v(
+      `Eşitliğin iki yanının aynı değerde olduğunu kullanarak eksik sayıyı ${how} buldun.`,
+      `Çocuğunuz eşitliğin iki yanının aynı değerde olduğunu kullanarak eksik sayıyı ${how} buldu.`,
+    );
+  } else {
+    eText = v(
+      `${E.n} eşitlik ve denge sorusunun ${E.correct} tanesinde doğru cevap verdin.`,
+      `Çocuğunuz ${E.n} eşitlik ve denge sorusunun ${E.correct} tanesinde doğru cevap verdi.`,
+    );
+  }
+  if (op >= NUMERIC_LURE_NOTE) {
+    eText += v(
+      ` ${op} soruda eşittir işaretinin solundaki işlemin sonucunu ya da bütün sayıların toplamını yazdın: “=” işaretini “sonuç şudur” diye okumuş olabilirsin. Oysa “=” iki yanın aynı değerde olduğunu söyler: 5 + 3 = 6 + 2 gibi.`,
+      ` Çocuğunuz ${op} soruda eşittir işaretinin solundaki işlemin sonucunu ya da bütün sayıların toplamını yazdı: “=” işaretini “sonuç şudur” diye okumuş olabilir. Oysa “=” iki yanın aynı değerde olduğunu söyler: 5 + 3 = 6 + 2 gibi.`,
+    );
+    if (!adult) eText += ' Araştırmalarda ortaokul öğrencilerinin önemli bir kısmının eşittir işaretini “sonuç” anlamında tanımladığı görülmüştür.';
+  }
+  if (rev >= NUMERIC_LURE_NOTE) {
+    eText += v(
+      ` ${rev} soruda bir sayı değişince ötekini ters yönde değiştirdin. Eşitliğin iki yanı aynı kalsın diye toplamada ve çarpmada biri büyüyünce öteki küçülür; çıkarmada ve bölmede ikisi birlikte büyür ya da birlikte küçülür.`,
+      ` Çocuğunuz ${rev} soruda bir sayı değişince ötekini ters yönde değiştirdi. Eşitliğin iki yanı aynı kalsın diye toplamada ve çarpmada biri büyüyünce öteki küçülür; çıkarmada ve bölmede ikisi birlikte büyür ya da birlikte küçülür.`,
+    );
+  }
+  // Terazi soruları iki tane olduğu için bu yanılgı tek cevapta anlatılır.
+  if (part >= 1) {
+    eText += v(
+      ` Terazi sorularının ${part} tanesinde terazilerin verdiği bilgilerden birini hesaba katmamış olabilirsin: iki kefenin aynı ağırlıkta olduğunu kullanarak adım adım ilerlemek işine yarayabilir.`,
+      ` Çocuğunuz terazi sorularının ${part} tanesinde terazilerin verdiği bilgilerden birini hesaba katmamış olabilir: iki kefenin aynı ağırlıkta olduğunu kullanarak adım adım ilerlemek çocuğunuza yardım edebilir.`,
+    );
+  }
+  const esitlik: CognitiveBlock = {
+    ...card('sy_esitlik'),
+    headline: `${E.n} soruda ${E.correct} doğru`,
+    detail: `Eşittir işareti ${k.eq.correct}/${k.eq.n} · Denkleştirme ${k.comp.correct}/${k.comp.n} · Terazi ${k.bal.correct}/${k.bal.n}`,
+    text: eText + ' Her tür birkaç soruya dayanır; bu kaba bir göstergedir.',
+  };
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  const fastRight = r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değildi' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğruydu`;
+  if (rapid) {
+    issues.push(
+      v(
+        `${r.n} sorunun ${r.rapid} tanesinde cevabı, soruyu okumaya yetmeyecek kadar kısa sürede verdin ve ${fastRight}; bu sorularda okumadan cevap vermiş olabilirsin.`,
+        `Çocuğunuz ${r.n} sorunun ${r.rapid} tanesinde cevabı, soruyu okumaya yetmeyecek kadar kısa sürede verdi ve ${fastRight}; bu sorularda okumadan cevap vermiş olabilir.`,
+      ),
+    );
+  }
+  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru sonuca ulaşabilmektir.');
+  const blankLine = `“Bilmiyorum” ${r.blank}/${r.n}`;
+  const calisma: CognitiveBlock =
+    r.medianRt === null
+      ? { ...card('sy_calisma'), headline: 'Süre hesaplanamadı', detail: blankLine, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') }
+      : {
+          ...card('sy_calisma'),
+          headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
+          detail: blankLine,
+          text:
+            [v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`), ...issues].join(' ') + noLimit,
+        };
+
+  /* Grafikler ve öne çıkan sayılar */
+  const groupNote =
+    'Her grupta sekiz soru vardır. Orantılı durumlarda iki nicelik aynı oranda büyür; orantılı olmayan durumlarda aradaki fark korunur, bir başlangıç miktarı vardır ya da sonuç hiç değişmez; eşitlik ve denge sorularında eşitliğin ya da terazinin iki yanı aynı değerdedir.';
+  const chart: CognitiveReport['chart'] = {
+    title: 'Soru gruplarına göre doğru cevaplar',
+    note: v(
+      `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.`,
+      `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.`,
+    ),
+    rows: NUMERIC_GROUPS.map((g) => ({ label: g.name, value: r[g.key].correct, max: r[g.key].n, valueLabel: `${r[g.key].correct}/${r[g.key].n}` })),
+  };
+  const figures = [
+    { label: 'Doğru', value: `${r.correct}/${r.n}` },
+    { label: 'Durum soruları', value: `${r.prop.correct + r.nonProp.correct}/${r.prop.n + r.nonProp.n}` },
+    { label: 'Eşitlik soruları', value: `${r.equal.correct}/${r.equal.n}` },
+    ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
+  ];
+  const profile: CognitiveReport['profile'] = {
+    title: v('Soru gruplarına göre sonucun', 'Soru gruplarına göre sonuç'),
+    note: v(
+      'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğunu doğru bulmuşsun demektir; tam boy sütun, hepsini doğru bulduğun anlamına gelir. Renkler yalnızca grupları ayırır.',
+      'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğu doğru bulunmuş demektir; tam boy sütun, hepsinin doğru bulunduğu anlamına gelir. Renkler yalnızca grupları ayırır.',
+    ),
+    bars: NUMERIC_GROUPS.map((g) => ({
+      key: g.key,
+      label: g.name,
+      value: Math.round((r[g.key].correct / r[g.key].n) * 100),
+      min: 0,
+      max: 100,
+      color: g.color,
+      valueLabel: `${r[g.key].correct}/${r[g.key].n}`,
+      band: '',
+    })),
+  };
+  return { blocks: [dogru, oranti, esitlik, calisma], chart, figures, profile };
+}
+
 /* ---------- Kelime bilgisi ---------- */
 
 /** Kelime bilgisinde soru türlerinin adları (raporda ve üç boyutlu grafikte), cümle içindeki kısa adları ve kısa anlatımları. */
@@ -4861,10 +5105,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (kl && def.tasks.some((t) => t.kind === 'word_list')) add(wordListBlocks(kl, audience, card));
   const ma = byKey.get('ma_dogru')?.extra as unknown as LogicResult | undefined;
   if (ma && def.tasks.some((t): t is LogicalReasoningTask => t.kind === 'logical_reasoning')) add(logicBlocks(ma, audience, card));
+  const sy = byKey.get('sy_dogru')?.extra as unknown as NumericResult | undefined;
+  if (sy && def.tasks.some((t): t is NumericalReasoningTask => t.kind === 'numerical_reasoning')) add(numericBlocks(sy, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 
