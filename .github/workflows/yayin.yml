@@ -295,6 +295,17 @@ jobs:
           if ! grep -q 'Doğru seçeneği bul' <<<"$sz_sayfa" || ! grep -qF '\"answers\":[]' <<<"$sz_sayfa" || ! grep -qF '\"lures\":[]' <<<"$sz_sayfa" || ! grep -qF '\"levels\":[]' <<<"$sz_sayfa"; then
             sorun="$sorun sozel-akil-yurutme-anahtar"
           fi
+          # Mantıksal Akıl Yürütme: 32 sorunun hepsi doğru (s, testin cevap anahtarıdır: 1 evet, 2 hayır;
+          # tests/mantiksal-akil-yurutme.test.ts güncel olduğunu denetler). Çözme sayfasına cevap anahtarı ve soru türleri gitmez.
+          MA_GOVDE=$(python3 -c 'import json; s=[1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 1, 2, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 1, 1, 2, 1, 2, 2, 1]; print(json.dumps({"grade": 7, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"mantiksal-akil-yurutme": [{"index": i, "response": s[i], "rtMs": 9000 + 100 * i} for i in range(32)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$MA_GOVDE" "https://$ALAN/api/rapor/mantiksal-akil-yurutme" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 4 and len(r["student"]["items"]) == 4 and r["student"]["chartTitle"] == "Soru gruplarına göre doğru cevaplar" and r["student"]["items"][0]["badge"] == "32 soruda 32 doğru"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 4 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun mantiksal-raporu"
+          fi
+          ma_sayfa=$("${C[@]}" -f "https://$ALAN/testler/mantiksal-akil-yurutme/coz?sinif=7") || ma_sayfa=""
+          if ! grep -q 'Bilgilerden ne çıkar?' <<<"$ma_sayfa" || ! grep -qF '\"answers\":[]' <<<"$ma_sayfa" || ! grep -qF '\"forms\":[]' <<<"$ma_sayfa"; then
+            sorun="$sorun mantiksal-anahtar"
+          fi
           # Kâğıt Katlama: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/kagit-katlama.test.ts güncel olduğunu
           # denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve yanılgı türleri gitmez.
           KK_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kagit-katlama": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')

@@ -184,6 +184,22 @@ export const KAYNAK = {
     text: 'Haimovitz, K. ve Dweck, C. S. (2016). Parents’ views of failure predict children’s fixed and growth intelligence mind-sets. Psychological Science, 27(6), 859–869.',
     url: 'https://doi.org/10.1177/0956797616639727',
   },
+  evansThompsonOver: {
+    text: 'Evans, J. St. B. T., Thompson, V. A. ve Over, D. E. (2015). Uncertain deduction and conditional reasoning. Frontiers in Psychology, 6, Article 398.',
+    url: 'https://doi.org/10.3389/fpsyg.2015.00398',
+  },
+  trippas: {
+    text: 'Trippas, D., Kellen, D., Singmann, H., Pennycook, G., Koehler, D. J., Fugelsang, J. A. ve Dubé, C. (2018). Characterizing belief bias in syllogistic reasoning: A hierarchical Bayesian meta-analysis of ROC data. Psychonomic Bulletin & Review, 25(6), 2141–2174.',
+    url: 'https://doi.org/10.3758/s13423-018-1460-7',
+  },
+  deNeys: {
+    text: 'De Neys, W. ve Van Gelder, E. (2009). Logic and belief across the lifespan: The rise and fall of belief inhibition during syllogistic reasoning. Developmental Science, 12(1), 123–130.',
+    url: 'https://doi.org/10.1111/j.1467-7687.2008.00746.x',
+  },
+  markovits2014: {
+    text: 'Markovits, H. (2014). Development and necessary norms of reasoning. Frontiers in Psychology, 5, Article 488.',
+    url: 'https://doi.org/10.3389/fpsyg.2014.00488',
+  },
   kristofBrown: {
     text: 'Kristof-Brown, A. L., Zimmerman, R. D. ve Johnson, E. C. (2005). Consequences of individuals’ fit at work: A meta-analysis of person–job, person–organization, person–group, and person–supervisor fit. Personnel Psychology, 58(2), 281–342.',
     url: 'https://doi.org/10.1111/j.1744-6570.2005.00672.x',

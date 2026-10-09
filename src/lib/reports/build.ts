@@ -27,6 +27,8 @@ import type {
   FoldingLure,
   FoldingType,
   PaperFoldingTask,
+  LogicalReasoningTask,
+  LogicForm,
   VocabularyLure,
   VocabularyTask,
   VocabularyType,
@@ -95,6 +97,13 @@ import {
   type VocabularyResult,
   type RuleSwitchResult,
   type WordListResult,
+  LOGIC_GOOD,
+  LOGIC_WEAK,
+  logicBelowChance,
+  logicRapid,
+  logicSameSide,
+  type LogicGroup,
+  type LogicResult,
 } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
@@ -3463,6 +3472,317 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
+/* ---------- Mantıksal akıl yürütme ---------- */
+
+/** Mantıksal akıl yürütmede soru türlerinin raporda görünen kısa adları ("Eğer A ise B" kuralında). */
+export const LOGIC_FORM_NAMES: Record<LogicForm, string> = {
+  mp: '“A var, öyleyse B var”',
+  mt: '“B yok, öyleyse A yok”',
+  ac: '“B var, öyleyse A var”',
+  da: '“A yok, öyleyse B yok”',
+  vb: 'kesin ve gerçekte doğru',
+  vu: 'kesin ama gerçekte yanlış',
+  ib: 'kesin değil ama gerçekte doğru',
+  iu: 'kesin değil ve gerçekte yanlış',
+};
+
+/** Soru grupları (grafikte ve üç boyutlu grafikte): adı, rengi ve sonuçtaki yeri. */
+export const LOGIC_GROUPS: {
+  key: 'condValid' | 'condInvalid' | 'noConflict' | 'conflict';
+  name: string;
+  color: string;
+}[] = [
+  { key: 'condValid', name: 'Eğer–ise: kesin olanlar', color: '#2f5ce0' },
+  { key: 'condInvalid', name: 'Eğer–ise: kesin olmayanlar', color: '#0e9c8c' },
+  { key: 'noConflict', name: 'Gerçek hayatla çatışmayanlar', color: '#d28a14' },
+  { key: 'conflict', name: 'Gerçek hayatla çatışanlar', color: '#ee6a36' },
+];
+
+/**
+ * Mantıksal akıl yürütmenin dört sonuç kartı, soru gruplarına göre grafik, öne çıkan sayılar ve soru gruplarının üç
+ * boyutlu grafiği. Cevapların neredeyse hepsi aynı yöndeyse (`logicSameSide`) türlere göre yorum yapılmaz. Sekiz soruluk
+ * bir grupta en az 6 doğru "çoğu", en çok 4 doğru "zorlanma"dır (iki seçenekte rastgele seçimin düzeyi).
+ */
+function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  // Yetişkine "yetişkinler de" ya da yaşla gelişme cümlesi yazılmaz.
+  const adult = audience === 'adult';
+  const side = logicSameSide(r);
+  const rapid = logicRapid(r);
+  const good = (g: LogicGroup) => g.correct >= LOGIC_GOOD;
+  const weak = (g: LogicGroup) => g.correct <= LOGIC_WEAK;
+  const f = r.forms;
+  const sideCount = side === 'yes' ? r.yes : r.n - r.yes;
+  const sideLabel = side === 'yes' ? 'Evet, kesin olarak doğru' : 'Hayır, kesin değil';
+  const notRead = 'Cevapların neredeyse hepsi aynı olduğu için bu sorular yorumlanmadı.';
+
+  /* Doğru cevaplar */
+  const below = logicBelowChance(r);
+  let accText: string;
+  if (side) {
+    accText = v(
+      `Soruların ${sideCount} tanesinde “${sideLabel}” dedin. Oysa soruların yarısında sonuç bilgilerden kesin olarak çıkıyor, yarısında çıkmıyordu. Sorulara bakmadan hep aynı cevabı vermiş ya da yönergeyi farklı anlamış olabilirsin; bu yüzden soru türlerine göre sonuçlar yorumlanmadı. Dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz soruların ${sideCount} tanesinde “${sideLabel}” dedi. Oysa soruların yarısında sonuç bilgilerden kesin olarak çıkıyor, yarısında çıkmıyordu. Sorulara bakılmadan hep aynı cevap verilmiş ya da yönerge farklı anlaşılmış olabilir; bu yüzden soru türlerine göre sonuçlar yorumlanmadı. Dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+    );
+  } else if (r.correct >= r.n - 3) {
+    accText = v(
+      'Soruların hemen hepsinde doğru karar verdin: hem “eğer–ise” kurallarında hem de “bütün, bazı, hiçbir” sorularında sonucun bilgilerden kesin olarak çıkıp çıkmadığını buldun.',
+      'Çocuğunuz soruların hemen hepsinde doğru karar verdi: hem “eğer–ise” kurallarında hem de “bütün, bazı, hiçbir” sorularında sonucun bilgilerden kesin olarak çıkıp çıkmadığını buldu.',
+    );
+  } else {
+    accText = v(
+      `${r.n} sorunun ${r.correct} tanesinde doğru karar verdin. Her soruda iki seçenek olduğu için rastgele seçen biri de yaklaşık yarısını doğru bulabilir; bu yüzden toplamdan çok, aşağıdaki kartlarda hangi tür sorularda zorlandığın daha çok şey söyler.`,
+      `Çocuğunuz ${r.n} sorunun ${r.correct} tanesinde doğru karar verdi. Her soruda iki seçenek olduğu için rastgele seçen biri de yaklaşık yarısını doğru bulabilir; bu yüzden toplamdan çok, aşağıdaki kartlarda hangi tür sorularda zorlandığı daha çok şey söyler.`,
+    );
+    if (below) {
+      // Rastgele seçimin de altında: çoğu zaman yönergenin farklı anlaşılması ya da seçeneklerin ters kullanılması.
+      accText += v(
+        ' Bu sayı, rastgele seçimde beklenenden de az. Böyle bir sonuç, yönerge farklı anlaşıldığında ya da seçenekler ters kullanıldığında ortaya çıkabilir; yönergeyi yeniden okuyup acele etmeden yeniden denemek daha doğru bir sonuç verebilir.',
+        ' Bu sayı, rastgele seçimde beklenenden de az. Böyle bir sonuç, yönerge farklı anlaşıldığında ya da seçenekler ters kullanıldığında ortaya çıkabilir; çocuğunuzun yönergeyi yeniden okuyup acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.',
+      );
+    } else if (Math.abs(r.correct - r.n / 2) <= 4) {
+      accText +=
+        ' Toplamın yarıya yakın olması tek başına rastgele seçildiği anlamına gelmez: belirli bir düşünme alışkanlığı da bazı tür sorularda hep aynı yanlışı yaptırabilir.';
+    }
+  }
+  if (rapid && !side) {
+    accText += v(
+      ' Bazı sorularda bilgileri okumadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
+      ' Bazı sorularda bilgiler okunmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+    );
+  }
+  const dogru: CognitiveBlock = {
+    ...card('ma_dogru'),
+    headline: `${r.n} soruda ${r.correct} doğru`,
+    detail: `Eğer–ise soruları ${r.conditional.correct}/${r.conditional.n} · Bütün–bazı–hiçbir soruları ${r.categorical.correct}/${r.categorical.n}`,
+    text: accText,
+  };
+
+  /* Eğer–ise çıkarımları */
+  const cv = r.condValid;
+  const ci = r.condInvalid;
+  const formList = (forms: LogicForm[]) => forms.map((x) => `${LOGIC_FORM_NAMES[x]} ${f[x].correct}/${f[x].n}`).join('; ');
+  const condLine = `Kesin olanlar: ${formList(['mp', 'mt'])} · Kesin olmayanlar: ${formList(['ac', 'da'])}`;
+  const beliefLine = `Çatışmayanlar: ${formList(['vb', 'iu'])} · Çatışanlar: ${formList(['vu', 'ib'])}`;
+  const rule = 'Bu kural şunu söyler: A varsa B de vardır, B yoksa A da yoktur; B olduğunda ya da A olmadığında ise kesin bir şey söylenemez.';
+  let kosul: CognitiveBlock;
+  if (side) {
+    kosul = {
+      ...card('ma_kosul'),
+      headline: 'Yorumlanmadı',
+      detail: condLine,
+      text: notRead,
+    };
+  } else {
+    let text: string;
+    if (good(cv) && good(ci)) {
+      const how = cv.correct + ci.correct === cv.n + ci.n ? 'her soruda' : 'çoğunlukla';
+      text = v(
+        `“Eğer A ise B” kurallarından kesin olarak neyin çıktığını, neyin çıkmadığını ${how} ayırt ettin. ${rule}`,
+        `Çocuğunuz “eğer A ise B” kurallarından kesin olarak neyin çıktığını, neyin çıkmadığını ${how} ayırt etti. ${rule}`,
+      );
+    } else if (good(cv) && weak(ci)) {
+      const yes = ci.n - ci.correct;
+      text = v(
+        `“Eğer A ise B” kurallarında kesin olan sonuçların çoğunu buldun ama kesin olmayan ${ci.n} sonucun ${yes} tanesine de “evet” dedin. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez: B başka durumlarda da olabilir. Kuralı iki yönlü düşünmek çok yaygındır; ${adult ? 'araştırmalarda bu iki çıkarım sık kabul edilir' : 'araştırmalarda yetişkinler de bu iki çıkarımı sık kabul eder'}. Böyle bir soruda “B olup da A’nın olmadığı bir durum olabilir mi?” diye bir karşı örnek aramak işine yarayabilir.`,
+        `Çocuğunuz “eğer A ise B” kurallarında kesin olan sonuçların çoğunu buldu ama kesin olmayan ${ci.n} sonucun ${yes} tanesine de “evet” dedi. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez: B başka durumlarda da olabilir. Kuralı iki yönlü düşünmek çok yaygındır; araştırmalarda yetişkinler de bu iki çıkarımı sık kabul eder. Böyle bir soruda “B olup da A’nın olmadığı bir durum olabilir mi?” diye bir karşı örnek aramak ona yardım edebilir.`,
+      );
+    } else if (weak(cv) && good(ci)) {
+      const no = cv.n - cv.correct;
+      text = v(
+        `Kesin olmayan sonuçların çoğunu fark ettin ama kesin olan ${cv.n} sonucun ${no} tanesine de “hayır” dedin. Her sonuca temkinli yaklaşmış olabilirsin; oysa “eğer A ise B” kuralı, A olduğunda B’nin de olacağını ve B olmadığında A’nın da olmadığını kesin olarak söyler.`,
+        `Çocuğunuz kesin olmayan sonuçların çoğunu fark etti ama kesin olan ${cv.n} sonucun ${no} tanesine de “hayır” dedi. Her sonuca temkinli yaklaşmış olabilir; oysa “eğer A ise B” kuralı, A olduğunda B’nin de olacağını ve B olmadığında A’nın da olmadığını kesin olarak söyler.`,
+      );
+    } else if (weak(cv) && weak(ci)) {
+      text = v(
+        `Bu sorularda kesin olanla kesin olmayanı ayırt etmekte zorlandın. “Eğer A ise B” kuralı şunu söyler: A varsa B de vardır; B yoksa A da yoktur. B olduğunda ya da A olmadığında ise kesin bir şey söylenemez.`,
+        `Çocuğunuz bu sorularda kesin olanla kesin olmayanı ayırt etmekte zorlandı. “Eğer A ise B” kuralı şunu söyler: A varsa B de vardır; B yoksa A da yoktur. B olduğunda ya da A olmadığında ise kesin bir şey söylenemez.`,
+      );
+    } else {
+      text = v(
+        `Kesin olan ${cv.n} sonucun ${cv.correct} tanesinde, kesin olmayan ${ci.n} sonucun ${ci.correct} tanesinde doğru karar verdin.`,
+        `Çocuğunuz kesin olan ${cv.n} sonucun ${cv.correct} tanesinde, kesin olmayan ${ci.n} sonucun ${ci.correct} tanesinde doğru karar verdi.`,
+      );
+      if (ci.correct < cv.correct) {
+        text += ' Kesin olmayan sonuçlardan bazılarına “evet” denmiş: kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez.';
+      } else if (cv.correct < ci.correct) {
+        text +=
+          ' Kesin olan sonuçlardan bazılarına “hayır” denmiş: kural, A olduğunda B’nin de olacağını ve B olmadığında A’nın da olmadığını kesin olarak söyler.';
+      }
+    }
+    // "B yoksa A da yoktur" (olumsuz cümlelerle kurulan kesin çıkarım) ötekinden belirgin biçimde zor geldiyse.
+    if (f.mt.correct <= 2 && f.mp.correct - f.mt.correct >= 2) {
+      text += v(
+        ` Özellikle “B yoksa A da yoktur” çıkarımında zorlandın (${f.mt.n} sorunun ${f.mt.correct} tanesi doğru); olumsuz cümlelerle kurulan bu çıkarım kesindir ama araştırmalarda da “A varsa B de vardır”dan daha az kabul edilir.`,
+        ` Özellikle “B yoksa A da yoktur” çıkarımında zorlandı (${f.mt.n} sorunun ${f.mt.correct} tanesi doğru); olumsuz cümlelerle kurulan bu çıkarım kesindir ama araştırmalarda da “A varsa B de vardır”dan daha az kabul edilir.`,
+      );
+    }
+    kosul = {
+      ...card('ma_kosul'),
+      headline: `Kesin olanlar ${cv.correct}/${cv.n} · Kesin olmayanlar ${ci.correct}/${ci.n}`,
+      detail: condLine,
+      text: text + ' Her tür dört soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
+    };
+  }
+
+  /* Bilgiler ve gerçek hayat */
+  const nc = r.noConflict;
+  const cf = r.conflict;
+  let inanc: CognitiveBlock;
+  if (side) {
+    inanc = {
+      ...card('ma_inanc'),
+      headline: 'Yorumlanmadı',
+      detail: beliefLine,
+      text: notRead,
+    };
+  } else {
+    let text: string;
+    const tip = v(
+      ' Böyle sorularda gerçek dünyayı bir an bir kenara bırakmak, örneğin cümledeki adların yerine uydurma sözcükler koyup yeniden düşünmek işine yarayabilir.',
+      ' Böyle sorularda gerçek dünyayı bir an bir kenara bırakmak, örneğin cümledeki adların yerine uydurma sözcükler koyup yeniden düşünmek ona yardım edebilir.',
+    );
+    if (weak(nc)) {
+      text = v(
+        `Sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde doğru karar verdin; bu yüzden gerçek hayatta bildiklerinin kararını ne kadar etkilediği bu sonuçtan çıkarılamaz. Bu sorularda yalnızca bilgilere bakıp sonucun onlardan kesin olarak çıkıp çıkmadığını düşünmek gerekir.`,
+        `Çocuğunuz sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde doğru karar verdi; bu yüzden gerçek hayatta bildiklerinin kararını ne kadar etkilediği bu sonuçtan çıkarılamaz. Bu sorularda yalnızca bilgilere bakıp sonucun onlardan kesin olarak çıkıp çıkmadığını düşünmek gerekir.`,
+      );
+    } else if (good(cf)) {
+      const how = cf.correct === cf.n ? 'her soruda' : 'çoğunlukla';
+      text = v(
+        `Sonuç gerçek hayatla çatıştığında ${how} yalnızca verilen bilgilere göre karar verdin (bu tür ${cf.n} sorunun ${cf.correct} tanesi doğru). Bunun için gerçekte doğru ya da yanlış olanı bir kenara bırakmak gerekir${adult ? '' : '; araştırmalarda bu sorulardaki başarının 12 yaşından genç yetişkinliğe doğru arttığı görülmüştür'}.`,
+        `Çocuğunuz sonuç gerçek hayatla çatıştığında ${how} yalnızca verilen bilgilere göre karar verdi (bu tür ${cf.n} sorunun ${cf.correct} tanesi doğru). Bunun için gerçekte doğru ya da yanlış olanı bir kenara bırakmak gerekir; araştırmalarda bu sorulardaki başarının 12 yaşından genç yetişkinliğe doğru arttığı görülmüştür.`,
+      );
+    } else {
+      text = v(
+        `Sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde, çatıştığı ${cf.n} sorunun ${cf.correct} tanesinde doğru karar verdin.`,
+        `Çocuğunuz sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde, çatıştığı ${cf.n} sorunun ${cf.correct} tanesinde doğru karar verdi.`,
+      );
+      if (nc.correct - cf.correct >= 2) {
+        // Çatışan sorulardaki her yanlış, gerçek hayatta bilinene uyan cevaptır: hangi yönde olduğu sayısıyla yazılır.
+        const errs: string[] = [];
+        const ibWrong = f.ib.n - f.ib.correct;
+        const vuWrong = f.vu.n - f.vu.correct;
+        if (ibWrong) errs.push(`sonuç gerçekte doğruyken, bilgilerden çıkmadığı hâlde ${ibWrong} soruda “evet”`);
+        if (vuWrong) errs.push(`sonuç gerçekte yanlışken, bilgilerden çıktığı hâlde ${vuWrong} soruda “hayır”`);
+        text += v(
+          ` Çatışan sorularda ${errs.join('; ')} dedin: bu cevapların hepsi gerçek hayatta bildiklerine uyuyordu. Gerçek hayatta bilinenin kararı etkilemesine inandırıcılık etkisi denir ve ${adult ? 'çok yaygındır' : 'yetişkinlerde de çok yaygındır'}.`,
+          ` Çatışan sorularda ${errs.join('; ')} dedi: bu cevapların hepsi gerçek hayatta bildiklerine uyuyordu. Gerçek hayatta bilinenin kararı etkilemesine inandırıcılık etkisi denir ve yetişkinlerde de çok yaygındır.`,
+        );
+        text += tip;
+      } else if (cf.correct < nc.correct) {
+        text += ' İki grup arasındaki fark küçük; gerçek hayatta bilinenin kararı belirgin biçimde etkilediği söylenemez.';
+      }
+    }
+    inanc = {
+      ...card('ma_inanc'),
+      headline: `Çatışan sorular ${cf.correct}/${cf.n} · Çatışmayan sorular ${nc.correct}/${nc.n}`,
+      detail: beliefLine,
+      text: text + ' Her grup sekiz soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
+    };
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (rapid) {
+    issues.push(
+      v(
+        `${r.n} sorunun ${r.rapid} tanesinde cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdin ve bu cevapların ${r.rapidCorrect} tanesi doğruydu; bu sorularda okumadan seçmiş olabilirsin.`,
+        `Çocuğunuz ${r.n} sorunun ${r.rapid} tanesinde cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdi ve bu cevapların ${r.rapidCorrect} tanesi doğruydu; bu sorularda okumadan seçmiş olabilir.`,
+      ),
+    );
+  }
+  if (side) {
+    issues.push(
+      v(
+        `Soruların ${sideCount} tanesinde “${sideLabel}” dedin; soruların yarısının cevabı “evet”, yarısının “hayır”dı.`,
+        `Çocuğunuz soruların ${sideCount} tanesinde “${sideLabel}” dedi; soruların yarısının cevabı “evet”, yarısının “hayır”dı.`,
+      ),
+    );
+  }
+  const noLimit = v(
+    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.',
+    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru karara ulaşabilmektir.',
+  );
+  const yesLine = `“Evet” cevapları ${r.yes}/${r.n} (soruların yarısının cevabı “evet”)`;
+  const calisma: CognitiveBlock =
+    r.medianRt === null
+      ? {
+          ...card('ma_calisma'),
+          headline: 'Süre hesaplanamadı',
+          detail: yesLine,
+          text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' '),
+        }
+      : {
+          ...card('ma_calisma'),
+          headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
+          detail: yesLine,
+          text:
+            [
+              v(
+                `Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`,
+                `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`,
+              ),
+              ...issues,
+            ].join(' ') + noLimit,
+        };
+
+  /* Grafikler ve öne çıkan sayılar */
+  const chart: CognitiveReport['chart'] = {
+    title: 'Soru gruplarına göre doğru cevaplar',
+    note: v(
+      'Her grupta sekiz soru vardır. İlk iki grup “eğer–ise” kurallarıdır: sonucun kesin olarak çıktığı ve çıkmadığı sorular. Son iki grup “bütün, bazı, hiçbir” sorularıdır: sonucun gerçek hayatla çatışmadığı ve çatıştığı sorular. Çatışan sorularda sonuç, bilgilerden kesin olarak çıktığı hâlde gerçekte yanlıştır ya da bilgilerden çıkmadığı hâlde gerçekte doğrudur. Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.',
+      'Her grupta sekiz soru vardır. İlk iki grup “eğer–ise” kurallarıdır: sonucun kesin olarak çıktığı ve çıkmadığı sorular. Son iki grup “bütün, bazı, hiçbir” sorularıdır: sonucun gerçek hayatla çatışmadığı ve çatıştığı sorular. Çatışan sorularda sonuç, bilgilerden kesin olarak çıktığı hâlde gerçekte yanlıştır ya da bilgilerden çıkmadığı hâlde gerçekte doğrudur. Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.',
+    ),
+    rows: LOGIC_GROUPS.map((g) => ({
+      label: g.name,
+      value: r[g.key].correct,
+      max: r[g.key].n,
+      valueLabel: `${r[g.key].correct}/${r[g.key].n}`,
+    })),
+  };
+  const figures = [
+    { label: 'Doğru', value: `${r.correct}/${r.n}` },
+    {
+      label: 'Eğer–ise soruları',
+      value: `${r.conditional.correct}/${r.conditional.n}`,
+    },
+    side
+      ? { label: 'Gerçek hayatla çatışan sorular', value: 'Yorumlanmadı' }
+      : {
+          label: 'Gerçek hayatla çatışan sorular',
+          value: `${cf.correct}/${cf.n}`,
+        },
+    ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
+  ];
+  const profile: CognitiveReport['profile'] = side
+    ? undefined
+    : {
+        title: v('Soru gruplarına göre sonucun', 'Soru gruplarına göre sonuç'),
+        note: v(
+          'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğunu doğru bulmuşsun demektir; tam boy sütun, hepsini doğru bulduğun anlamına gelir. Renkler yalnızca grupları ayırır.',
+          'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğu doğru bulunmuş demektir; tam boy sütun, hepsinin doğru bulunduğu anlamına gelir. Renkler yalnızca grupları ayırır.',
+        ),
+        bars: LOGIC_GROUPS.map((g) => ({
+          key: g.key,
+          label: g.name,
+          value: Math.round((r[g.key].correct / r[g.key].n) * 100),
+          min: 0,
+          max: 100,
+          color: g.color,
+          valueLabel: `${r[g.key].correct}/${r[g.key].n}`,
+          band: '',
+        })),
+      };
+  return {
+    blocks: [dogru, kosul, inanc, calisma],
+    chart,
+    figures,
+    ...(profile ? { profile } : {}),
+  };
+}
+
 /* ---------- Kelime bilgisi ---------- */
 
 /** Kelime bilgisinde soru türlerinin adları (raporda ve üç boyutlu grafikte), cümle içindeki kısa adları ve kısa anlatımları. */
@@ -4539,10 +4859,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (kd && def.tasks.some((t) => t.kind === 'rule_switch')) add(ruleSwitchBlocks(kd, audience, card));
   const kl = byKey.get('kl_ogrenme')?.extra as unknown as WordListResult | undefined;
   if (kl && def.tasks.some((t) => t.kind === 'word_list')) add(wordListBlocks(kl, audience, card));
+  const ma = byKey.get('ma_dogru')?.extra as unknown as LogicResult | undefined;
+  if (ma && def.tasks.some((t): t is LogicalReasoningTask => t.kind === 'logical_reasoning')) add(logicBlocks(ma, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

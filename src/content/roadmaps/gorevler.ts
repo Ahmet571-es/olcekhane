@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme ve Kelime Listesi Hatırlama yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama ve Mantıksal Akıl Yürütme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1262,6 +1262,138 @@ const kuralDegistirme: TaskRoadmapTemplate = {
   sources: [KAYNAK.stoet, KAYNAK.zinke, KAYNAK.hedge],
 };
 
+const mantiksalBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (sözel bilgilerden kesin sonuç çıkarmayı) gösterir.',
+    '“Eğer–ise” kurallarını iki yönlü düşünmek ve gerçek hayattaki bilgiye göre karar vermek yetişkinlerde de çok yaygındır; bu yanılgılar düşünme biçimini fark etmek için birer fırsattır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (sözel bilgilerden kesin sonuç çıkarmayı) gösterir.',
+    'Sonucun gerçek hayatla çatıştığı sorulardaki başarının 12 yaşından genç yetişkinliğe doğru arttığı görülmüştür; yani bu beceri ergenlik boyunca gelişmeye devam eder.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine yanılgıların çok yaygın olduğu bilgisi. */
+const mantiksalFacts: InfoBox = {
+  ...mantiksalBase,
+  items: {
+    ...mantiksalBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (sözel bilgilerden kesin sonuç çıkarmayı) gösterir.',
+      '“Eğer–ise” kurallarını iki yönlü düşünmek ve gerçek hayattaki bilgiye göre karar vermek çok yaygındır; araştırmalarda yetişkin katılımcılar da bu yanılgılara sık düşmüştür.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const mantiksalAkilYurutme: TaskRoadmapTemplate = {
+  version: 'mantiksal-akil-yurutme-yol-haritasi-1',
+  what: {
+    student: 'bilgilerden kesin sonuç çıkarmayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun bilgilerden kesin sonuç çıkarmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'bilgilerden kesin sonuç çıkarmayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: {
+    you: 'Kesin sonuç çıkarmayı ne kolaylaştırır?',
+    parent: 'Çocuğunuzun kesin sonuç çıkarmasını ne kolaylaştırır?',
+  },
+  studyIntro: t(
+    'Bu test, verilen bilgilerden kesin olarak neyin çıktığını, neyin çıkmadığını ayırt edebilmeyi ölçer. Bu beceri; bir kuralı ya da yönergeyi doğru uygulamak, matematikte ve bilimde bir sonucun gerçekten kanıtlanıp kanıtlanmadığına bakmak, bir haberi ya da iddiayı değerlendirmek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+    'Bu test, verilen bilgilerden kesin olarak neyin çıktığını, neyin çıkmadığını ayırt edebilmeyi ölçer. Bu beceri; bir kuralı ya da yönergeyi doğru uygulamak, matematikte ve bilimde bir sonucun gerçekten kanıtlanıp kanıtlanmadığına bakmak, bir haberi ya da iddiayı değerlendirmek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
+  ),
+  supports: [
+    support(
+      0,
+      'karsi',
+      'Karşı örnek ara',
+      'Yöntem',
+      t(
+        'Bir sonucun kesin olup olmadığını anlamak için kendine şunu sor: “Bilgilerin hepsi doğru olduğu hâlde bu sonucun yanlış olduğu bir durum olabilir mi?” Böyle bir durum, yani bir karşı örnek bulabiliyorsan sonuç kesin değildir. Örneğin “Yağmur yağarsa yer ıslanır” kuralında yer ıslaksa, yağmur yağmadan da ıslanmış olabilir: biri su dökmüş olabilir.',
+        'Çocuğunuza bir sonucun kesin olup olmadığını anlamak için şunu sormasını önerin: “Bilgilerin hepsi doğru olduğu hâlde bu sonucun yanlış olduğu bir durum olabilir mi?” Böyle bir durum, yani bir karşı örnek bulunabiliyorsa sonuç kesin değildir. Örneğin “Yağmur yağarsa yer ıslanır” kuralında yer ıslaksa, yağmur yağmadan da ıslanmış olabilir: biri su dökmüş olabilir.',
+      ),
+    ),
+    support(
+      1,
+      'yon',
+      'Kuralın yönüne dikkat et',
+      'Yöntem',
+      t(
+        '“Eğer A ise B” kuralı tek yönlüdür: A olunca B de olur; B yoksa A da yoktur. Ama kural, B olunca A’nın da olduğunu ya da A yokken B’nin de olmadığını söylemez. Bir kuralı okurken “Bu kural tersini de söylüyor mu?” diye kendine sor.',
+        '“Eğer A ise B” kuralı tek yönlüdür: A olunca B de olur; B yoksa A da yoktur. Ama kural, B olunca A’nın da olduğunu ya da A yokken B’nin de olmadığını söylemez. Çocuğunuzla bir kuralı okurken “Bu kural tersini de söylüyor mu?” diye birlikte sorun.',
+      ),
+    ),
+    support(
+      2,
+      'gercek',
+      'Gerçeği bir kenara bırak',
+      'Yöntem',
+      t(
+        'Bir sonucu gerçek hayatta doğru ya da yanlış bulduğun için kabul etme ya da reddetme; yalnızca bilgilerden çıkıp çıkmadığına bak. Cümledeki adların yerine uydurma sözcükler koymak (ör. “Bütün kuşlar” yerine “Bütün mopalar”) bunu kolaylaştırabilir.',
+        'Çocuğunuza bir sonucu gerçek hayatta doğru ya da yanlış bulduğu için kabul etmemesini ya da reddetmemesini, yalnızca bilgilerden çıkıp çıkmadığına bakmasını önerin. Cümledeki adların yerine uydurma sözcükler koymak (ör. “Bütün kuşlar” yerine “Bütün mopalar”) bunu kolaylaştırabilir.',
+      ),
+    ),
+    support(
+      3,
+      'ciz',
+      'Çizerek düşün',
+      'Araç',
+      t(
+        '“Bütün”, “bazı” ve “hiçbir” cümlelerini iç içe ya da yan yana çemberlerle çiz: “Bütün güller çiçektir” cümlesinde güller çemberi, çiçekler çemberinin içindedir. Bilgiler çoğu zaman birden çok çizime izin verir: aklına gelen bütün çizimleri yap. Sonuç bu çizimlerden birinde bile tutmuyorsa kesin değildir.',
+        'Çocuğunuza “bütün”, “bazı” ve “hiçbir” cümlelerini iç içe ya da yan yana çemberlerle çizmesini önerin: “Bütün güller çiçektir” cümlesinde güller çemberi, çiçekler çemberinin içindedir. Bilgiler çoğu zaman birden çok çizime izin verir: akla gelen bütün çizimleri yapmak gerekir. Sonuç bu çizimlerden birinde bile tutmuyorsa kesin değildir.',
+      ),
+    ),
+  ],
+  facts: mantiksalFacts,
+  approach: [
+    {
+      title: 'Nedenini sorun',
+      text: 'Bir sonuca vardığında “Bunu nereden biliyoruz, başka türlü olabilir mi?” diye sorun; doğru ya da yanlış demek yerine birlikte bir karşı örnek arayın.',
+    },
+    {
+      title: 'Kuralları birlikte inceleyin',
+      text: 'Günlük konuşmalardaki “eğer … ise …” cümlelerini birlikte inceleyin ve kuralın tersini de söyleyip söylemediğini konuşun.',
+    },
+    {
+      title: 'Karşılaştırmayın',
+      text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.',
+    },
+  ],
+  weeks: [
+    {
+      title: 'Karşı örnek avı',
+      text: t(
+        'Bu hafta duyduğun ya da okuduğun üç “eğer … ise …” cümlesini yaz; her biri için kuralın tersinin doğru olmayabileceğini gösteren bir örnek bul.',
+        'Bu hafta çocuğunuzla duyduğunuz ya da okuduğunuz üç “eğer … ise …” cümlesini yazın; her biri için kuralın tersinin doğru olmayabileceğini gösteren bir örnek bulun.',
+      ),
+    },
+    {
+      title: 'Gerçek mi, çıkarım mı?',
+      text: t(
+        'Bu hafta gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yaz ve birine sor; sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini onunla konuş.',
+        'Bu hafta çocuğunuz gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yazsın ve size sorsun; sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini birlikte konuşun.',
+      ),
+    },
+    {
+      title: 'Çiz ve gör',
+      text: t(
+        'Bu hafta “bütün, bazı, hiçbir” sözcükleriyle kurulmuş iki cümleyi çemberler çizerek incele ve hangi sonuçların kesin olarak çıktığını bul.',
+        'Bu hafta çocuğunuzla “bütün, bazı, hiçbir” sözcükleriyle kurulmuş iki cümleyi çemberler çizerek inceleyin ve hangi sonuçların kesin olarak çıktığını bulun.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (karşı örnek aramak, kuralın yönüne bakmak, gerçeği bir kenara bırakmak ya da çizmek) kesin sonuç çıkarmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun kesin sonuç çıkarmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['sozel-akil-yurutme', 'sekil-akil-yurutme'],
+  nextPurpose: {
+    you: 'sözcüklerle ve şekillerle akıl yürütmeyi de görmek',
+    parent: 'çocuğunuzun sözcüklerle ve şekillerle akıl yürütmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.markovits2014, KAYNAK.evansThompsonOver, KAYNAK.trippas, KAYNAK.deNeys],
+};
+
 const kelimeListesiBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
@@ -1381,4 +1513,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'kelime-bilgisi': kelimeBilgisi,
   'kural-degistirme': kuralDegistirme,
   'kelime-listesi-hatirlama': kelimeListesi,
+  'mantiksal-akil-yurutme': mantiksalAkilYurutme,
 };

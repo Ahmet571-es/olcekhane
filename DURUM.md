@@ -255,8 +255,20 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    sona kalan değerler düzeyleriyle; kapanış notu), ifadelerin adı "ifade", ilgi yol haritası şablonunda `lowNote`. Yol
    haritası ilgi testlerininkiyle aynı yapıda (en önemli değerlere göre bir işi tanırken sorulacak sorular). Kaynaklar
    Busque-Carrier ve ark. (2022), Kristof-Brown ve ark. (2005), Lechner ve ark. (2017), Schwartz (2012), Twenge ve ark. (2010).
-15. Sıradaki: 3. dalganın çalışma ve motivasyon testleri tamamlandı. Site sahibine sorulacak: Akıl Yürütme mı, 4. dalga
-   (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
+15. **Mantıksal Akıl Yürütme: yayında (2026-10-09, pilot; 5. sınıftan yetişkine).** Site sahibinin 2026-10-09 seçimiyle
+   Akıl Yürütme dalgasının ilki. 32 özgün soru (iki bilgi ve bir sonuç; "Evet, kesin olarak doğru" / "Hayır, kesin değil"),
+   ~12 dakika, 3 alıştırma (`content/instruments/mantiksal-akil-yurutme.ts`, `components/runner/tasks/logical-reasoning.tsx`).
+   16 "eğer–ise" sorusu (dört çıkarımın her birinden dört; ikisi uydurma canlı adlarıyla, ikisi gelişigüzel kurallarla) ve
+   16 "bütün, bazı, hiçbir" sorusu (geçerlik × sonucun gerçek hayatta doğru olup olmaması). Her sorunun cevabı
+   `tests/helpers/logic-check.ts`'teki bağımsız denetleyiciyle (bütün olası dünyalar denenerek) doğrulanır. Rapor: doğru
+   sayısı, eğer–ise (kesin olanlar ve olmayanlar; "karşı örnek" ve "temkinli" yorumları), "Bilgiler ve gerçek hayat"
+   (inandırıcılık etkisi yalnızca iki puanlık farkta ve yanılgının yönü sayısıyla), çalışma biçimi; hep aynı cevap
+   (28/32), rastgele seçimin altı (≤10/32) ve okumadan seçme (hızlı ve çoğu yanlış) uyarıları. Kaynaklar Datsogianni ve
+   ark. (2020), De Neys ve Van Gelder (2009), Evans, Barston ve Pollard (1983), Evans, Thompson ve Over (2015), Trippas ve
+   ark. (2018), Markovits (2014).
+16. Sıradaki (Akıl Yürütme dalgası, site sahibinin 2026-10-09 seçimi, bu sırayla): Sayısal Akıl Yürütme (sınıfa göre
+   formlar, özgün oran ve problem soruları), Küp Açınımı (SVG açınımlar, çözücüyle doğrulama), Düşünerek Karar Verme
+   (özgün sezgi tuzağı soruları; rapor sezgisel yanlışı öteki yanlışlardan ayırır).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -441,6 +453,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Erteleme ve Zaman Yönetimi | erteleme-ve-zaman-yonetimi | Yayında (pilot; 6. sınıftan yetişkine) |
 | Zihniyet: Zekâ ve Öğrenme İnançları | zihniyet | Yayında (pilot; 5. sınıftan yetişkine) |
 | Çalışma Değerleri | calisma-degerleri | Yayında (pilot; 7. sınıftan yetişkine) |
+| Mantıksal Akıl Yürütme | mantiksal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -552,6 +565,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (17): Mantıksal Akıl Yürütme yayında (5. sınıftan yetişkine): 32 özgün soru; "eğer–ise" kurallarında
+  kesin olanla olmayanın ayrılıp ayrılmadığı ve sonucun gerçek hayatta doğru ya da yanlış görünmesinin kararı etkileyip
+  etkilemediği ayrı ayrı yorumlanır; her sorunun cevabı bağımsız bir denetleyiciyle doğrulandı; öğrenci, veli ve yetişkin
+  raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF
+  açıldı; bağımsız inceleme bulguları (iki tur) düzeltildi.
 - 2026-10-09 (16): Site sahibinin kararıyla Beyin Akademisi yalnızca beyni anlatır: iki kafatası dersi yayından
   kaldırıldı (depoda saklı, eski adresler ilk derse yönlenir); kafatası ünitesinin hazırlanmamış dersleri ve kol-bacak
   sinirleri programdan çıktı; program 100 ders. Sıradaki ders "Anatominin dili".
@@ -585,6 +603,3 @@ En yeni üstte; en çok 10 madde tutulur.
   düzeyde; 39 üç boyutlu sahnede kemik tek başına, çıkıntıları, delikleri ve çukurları 131 işaret noktasıyla
   işaretli; 3 yeni hareketli çizim, 20 vaka, 74 soru, 187 kaynak (açık tam metinler, Gray 1918, OpenStax, TA2).
   Sahnelerde etiket yazıları artık noktaların ve birbirinin üstüne binmiyor (bütün derslerde).
-- 2026-10-09 (7): Çocuk Kişilik Profili yayında (3–5. sınıf): 30 madde, üç seçenek, beş boyut; öğrenci ve veli raporu,
-  3B grafikli yol haritası; "evet deme eğilimi" uyarısı; çocuğa 112'siz destek kutusu; İlkokul 3–4 önerisi; telefonda
-  dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız inceleme bulguları düzeltildi.

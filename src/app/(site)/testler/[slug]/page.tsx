@@ -73,6 +73,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                       ? `${single.trials.length} deneme, 4 bölüm`
                       : single.kind === 'word_list'
                         ? `${single.listA.length} kelimelik iki liste, 5 hatırlama ve 1 tanıma bölümü`
+                        : single.kind === 'logical_reasoning'
+                          ? `${single.items.length} soru, 2 soru türü`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -381,6 +383,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğruluk ve hataların türü (iki kuralın farklı düğmeyi istediği şekillerde öteki kurala göre basmak)</li>
                 <li>Kural değiştiğinde ve iki kural karıştığında cevabın ne kadar yavaşladığı (tipik süreler grafiğiyle) ve görevin nasıl yapıldığı</li>
+              </>
+            )}
+            {single?.kind === 'logical_reasoning' && (
+              <>
+                <li>Doğru cevap sayısı ve soru gruplarına göre doğru cevaplar grafiği</li>
+                <li>“Eğer–ise” kurallarında kesin olanla olmayanın ayırt edilip edilmediği ve sonuç gerçek hayatta doğru ya da yanlış göründüğünde bu bilginin kararı etkileyip etkilemediği (üç boyutlu grafikle)</li>
               </>
             )}
             {single?.kind === 'word_list' && (

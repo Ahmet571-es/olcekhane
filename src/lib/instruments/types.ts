@@ -252,7 +252,8 @@ export type TaskKind =
   | 'vocabulary'
   | 'rule_switch'
   | 'word_list'
-  | 'paper_folding';
+  | 'paper_folding'
+  | 'logical_reasoning';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -767,6 +768,42 @@ export interface VocabularyTask extends TaskBase {
 }
 
 /**
+ * Mantıksal akıl yürütme (tümdengelim): her soruda iki bilgi ve bir sonuç vardır; bilgiler doğru kabul edildiğinde sonucun
+ * kesin olarak doğru olup olmadığına karar verilir (iki seçenek: "Evet, kesin olarak doğru" ya da "Hayır, kesin değil").
+ * Sorular iki türdür (content/instruments/mantiksal-akil-yurutme.ts):
+ *  - Koşullu ("Eğer … ise …") çıkarımlar, uydurma bir dünyadaki kurallarla (gerçek hayat bilgisi işe karışmaz): koşul
+ *    var → sonuç var (`mp`, kesin), sonuç yok → koşul yok (`mt`, kesin), sonuç var → koşul var (`ac`, kesin değil),
+ *    koşul yok → sonuç yok (`da`, kesin değil).
+ *  - Kategorik ("bütün", "hiçbir", "bazı") çıkarımlar; sonucun gerçek hayatta inandırıcı olup olmadığıyla geçerliliği
+ *    çaprazlanır (Evans, Barston ve Pollard, 1983 düzeni): geçerli–inandırıcı (`vb`), geçerli–inandırıcı değil (`vu`),
+ *    geçersiz–inandırıcı (`ib`), geçersiz–inandırıcı değil (`iu`). `vu` ve `ib` sorularında bilgi ile inanç çatışır.
+ */
+export type LogicForm = 'mp' | 'mt' | 'ac' | 'da' | 'vb' | 'vu' | 'ib' | 'iu';
+
+export interface LogicItem {
+  key: string;
+  /** Verilen bilgiler (her biri bir cümle). */
+  premises: string[];
+  conclusion: string;
+}
+
+export interface LogicPracticeItem extends LogicItem {
+  /** 1: evet, kesin olarak doğru; 2: hayır, kesin değil. Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: 1 | 2;
+  explain: string;
+}
+
+export interface LogicalReasoningTask extends TaskBase {
+  kind: 'logical_reasoning';
+  practice: LogicPracticeItem[];
+  items: LogicItem[];
+  /** Cevap anahtarı (1 evet, 2 hayır). Tarayıcıya boş gönderilir. */
+  answers: (1 | 2)[];
+  /** Her sorunun türü (cevabı ele verdiği için tarayıcıya boş gönderilir). */
+  forms: LogicForm[];
+}
+
+/**
  * Kural değiştirme (görev değiştirme düzeni): her denemede mavi ya da turuncu bir daire ya da kare görünür; üstündeki
  * işaret (RENK ya da ŞEKİL) hangi kurala göre cevap verileceğini söyler (lib/instruments/rule-switch.ts). Önce iki tek
  * kurallı bölüm, sonra iki kuralın karıştığı iki bölüm gelir.
@@ -845,7 +882,8 @@ export type CognitiveTask =
   | PaperFoldingTask
   | VocabularyTask
   | RuleSwitchTask
-  | WordListTask;
+  | WordListTask
+  | LogicalReasoningTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

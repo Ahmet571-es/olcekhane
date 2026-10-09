@@ -21,6 +21,7 @@ import {
   matrixBody,
   numberSeriesBody,
   verbalBody,
+  logicBody,
   foldingBody,
   vocabularyBody,
   ruleSwitchBody,
@@ -277,6 +278,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'sekil-akil-yurutme': matrixBody,
     'sayi-dizileri': numberSeriesBody,
     'sozel-akil-yurutme': verbalBody,
+    'mantiksal-akil-yurutme': () => logicBody(),
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
@@ -306,7 +308,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     }
   });
 
-  it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu grafik yalnızca şekil akıl yürütmede, sayı dizilerinde ve sözel akıl yürütmede; PDF yol haritasıyla üretilir', async () => {
+  it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu grafik yalnızca soru ya da kural türü olan görevlerde; PDF yol haritasıyla üretilir', async () => {
     for (const [slug, body] of Object.entries(BODIES)) {
       expect(hasPublicRoadmap(slug), slug).toBe(true);
       const r = evaluate(slug, body());
@@ -332,6 +334,11 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['analogy', 'classification', 'ordering', 'deduction']);
           expect(rm.barsTitle).toMatch(/^Soru türlerine göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('soru türüdür');
+        } else if (slug === 'mantiksal-akil-yurutme') {
+          // Sekiz soruluk dört grupta doğru cevap oranı (aynı birim): dört sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['condValid', 'condInvalid', 'noConflict', 'conflict']);
+          expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('sekiz soruluk bir gruptur');
         } else if (slug === 'sekil-akil-yurutme' || slug === 'sayi-dizileri') {
           // Kural türlerine göre doğru cevap oranı (aynı birim): beş sütun, kendi başlığı ve açıklamasıyla.
           expect(rm.bars.map((b) => b.key)).toEqual(

@@ -26,6 +26,8 @@ import type {
   VocabularyTask,
   RuleSwitchTask,
   WordListTask,
+  LogicalReasoningTask,
+  LogicForm,
 } from '@/lib/instruments/types';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
 import { formForGrade } from '@/lib/scoring/quiz';
@@ -423,5 +425,21 @@ export function wordListBody(plan: Partial<WordListPlan> = {}, grade = 6): Answe
       return { index: recalls.length + j, response: recog(q) ? 1 : 2, rtMs: recogRt(q) };
     }),
   ];
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Mantıksal akıl yürütmenin bir sorusu: türü, doğru cevabı (1 evet, 2 hayır) ve sırası. */
+export type LogicCell = { form: LogicForm; answer: 1 | 2; i: number };
+
+/** Mantıksal akıl yürütme: varsayılan olarak her soruda doğru cevap, soru başına 8 saniye. */
+export function logicBody(
+  pick: (q: LogicCell) => { response: number; rtMs: number | null } = (q) => ({ response: q.answer, rtMs: 8000 }),
+  grade = 7,
+): AnswersBody {
+  const task = def<TaskInstrument>('mantiksal-akil-yurutme').tasks[0] as LogicalReasoningTask;
+  const trials = task.items.map((_, index) => {
+    const p = pick({ form: task.forms[index], answer: task.answers[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

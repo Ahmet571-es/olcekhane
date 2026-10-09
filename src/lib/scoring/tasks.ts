@@ -25,7 +25,10 @@ import type {
   RuleSwitchTask,
   WordListLure,
   WordListTask,
+  LogicForm,
+  LogicalReasoningTask,
 } from '@/lib/instruments/types';
+import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
 import { verbalRapidMs } from '@/lib/instruments/verbal';
 import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
@@ -2012,6 +2015,147 @@ export function scoreWordList(task: WordListTask, input: WordListTrialInput[]): 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
 const ordinalLower = (i: number) => ORDINALS_LOWER[i] ?? `${i + 1}.`;
 
+/* ---------- Mantıksal akıl yürütme ---------- */
+
+export interface LogicTrialInput {
+  index: number;
+  /** 1: evet, kesin olarak doğru; 2: hayır, kesin değil. */
+  response: number;
+  rtMs: number | null;
+}
+
+/** Bir soru grubunda soru sayısı, doğru cevap ve "evet" cevabı sayısı. */
+export interface LogicGroup {
+  n: number;
+  correct: number;
+  yes: number;
+}
+
+export interface LogicResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  /** Soru türlerine göre (koşullu: mp, mt, ac, da; kategorik: vb, vu, ib, iu). */
+  forms: Record<LogicForm, LogicGroup>;
+  /** Koşullu sorular: hepsi, kesin olanlar (mp, mt) ve kesin olmayanlar (ac, da). */
+  conditional: LogicGroup;
+  condValid: LogicGroup;
+  condInvalid: LogicGroup;
+  /** Kategorik sorular: hepsi, bilgi ile inancın çatışmadığı (vb, iu) ve çatıştığı (vu, ib) sorular. */
+  categorical: LogicGroup;
+  noConflict: LogicGroup;
+  conflict: LogicGroup;
+  /**
+   * Kategorik sorularda inandırıcılık etkisi: inandırıcı sonuçların "evet" oranından inandırıcı olmayanlarınki çıkarılır
+   * (−1 ile 1 arası; Evans ve ark., 1983'teki "belief" etkisi). Mantık etkisi: geçerli sonuçların "evet" oranından
+   * geçersizlerinki çıkarılır.
+   */
+  beliefIndex: number;
+  logicIndex: number;
+  /** Bütün sorulardaki "evet" cevabı sayısı (cevapların yarısı "evet"tir). */
+  yes: number;
+  medianRt: number | null;
+  /** Sorunun uzunluğuna göre okunamayacak kadar kısa sürede verilen cevaplar (doğru ya da yanlış) ve bunların doğruları. */
+  rapid: number;
+  rapidCorrect: number;
+}
+
+export const LOGIC_FORMS_ORDER: LogicForm[] = ['mp', 'mt', 'ac', 'da', 'vb', 'vu', 'ib', 'iu'];
+/** Hep aynı yöne: 32 sorunun en az 28'inde "evet" ya da en az 28'inde "hayır" (cevapların yarısı "evet"tir). */
+export const LOGIC_SAME_SIDE = 28;
+/** Sekiz soruluk bir grupta "çoğunu doğru" (en az 6) ve "zorlanma" (en çok 4; iki seçenekte rastgele seçimin düzeyi). */
+export const LOGIC_GOOD = 6;
+export const LOGIC_WEAK = 4;
+/** 32 sorunun en çok 10'u doğru: iki seçenekte rastgele seçimin de altında (yönerge ters anlaşılmış olabilir). */
+export const LOGIC_BELOW_CHANCE = 10;
+
+export function scoreLogic(task: LogicalReasoningTask, input: LogicTrialInput[]): { result: LogicResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.forms.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, LogicTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (t.response !== 1 && t.response !== 2) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    return {
+      item,
+      form: task.forms[i],
+      correct: t.response === task.answers[i],
+      yes: t.response === 1,
+      rt: t.rtMs,
+    };
+  });
+  const group = (forms: LogicForm[]): LogicGroup => {
+    const here = scored.filter((s) => forms.includes(s.form));
+    return {
+      n: here.length,
+      correct: here.filter((s) => s.correct).length,
+      yes: here.filter((s) => s.yes).length,
+    };
+  };
+  const forms = Object.fromEntries(LOGIC_FORMS_ORDER.map((f) => [f, group([f])])) as Record<LogicForm, LogicGroup>;
+  const rate = (g: LogicGroup) => (g.n ? g.yes / g.n : 0);
+  const correct = scored.filter((s) => s.correct).length;
+  const rts = scored.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const fast = scored.filter((s) => s.rt !== null && s.rt < logicRapidMs(s.item));
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      forms,
+      conditional: group(LOGIC_CONDITIONAL),
+      condValid: group(['mp', 'mt']),
+      condInvalid: group(['ac', 'da']),
+      categorical: group(['vb', 'vu', 'ib', 'iu']),
+      noConflict: group(['vb', 'iu']),
+      conflict: group(LOGIC_CONFLICT),
+      beliefIndex: round(rate(group(['vb', 'ib'])) - rate(group(['vu', 'iu'])), 3),
+      logicIndex: round(rate(group(['vb', 'vu'])) - rate(group(['ib', 'iu'])), 3),
+      yes: scored.filter((s) => s.yes).length,
+      medianRt: medianOrNull(rts),
+      rapid: fast.length,
+      rapidCorrect: fast.filter((s) => s.correct).length,
+    },
+  };
+}
+
+/** Cevapların neredeyse hepsi aynı yönde ("evet" ya da "hayır"): türlere göre yorum yapılmaz. */
+export const logicSameSide = (r: LogicResult): 'yes' | 'no' | null => (r.yes >= LOGIC_SAME_SIDE ? 'yes' : r.n - r.yes >= LOGIC_SAME_SIDE ? 'no' : null);
+/**
+ * Okunamayacak kadar hızlı cevaplar: soruların en az dörtte biri ve bu cevapların dörtte üçünden azı doğru. Hızlı ama
+ * çoğu doğru cevaplar, soruların hızlı okunduğunu gösterir; uyarı verilmez.
+ */
+export const logicRapid = (r: LogicResult) => r.rapid >= Math.ceil(r.n / 4) && r.rapidCorrect < 0.75 * r.rapid;
+/** Rastgele seçimin de altında doğru (hep aynı cevap verilmemişken). */
+export const logicBelowChance = (r: LogicResult) => !logicSameSide(r) && r.correct <= LOGIC_BELOW_CHANCE;
+
+/** Mantıksal akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, logicBlocks aynı eşikleri kullanır). */
+export function logicQualityNotes(r: LogicResult): string[] {
+  const notes: string[] = [];
+  const side = logicSameSide(r);
+  if (side) {
+    notes.push(
+      `Mantıksal akıl yürütme testinde ${r.n} sorunun ${side === 'yes' ? r.yes : r.n - r.yes} tanesine “${side === 'yes' ? 'Evet, kesin olarak doğru' : 'Hayır, kesin değil'}” denmiş; oysa soruların yarısının cevabı “evet”, yarısının “hayır”dır. Sorulara bakılmadan hep aynı cevap verilmiş ya da yönerge farklı anlaşılmış olabilir; soru türlerine göre sonuçlar yorumlanmadı.`,
+    );
+  }
+  if (logicBelowChance(r)) {
+    notes.push(
+      `Mantıksal akıl yürütme testinde ${r.n} sorunun yalnızca ${r.correct} tanesi doğru cevaplanmış; bu, iki seçenek arasından rastgele seçimde beklenenden de azdır. Yönerge farklı anlaşılmış ya da seçenekler ters kullanılmış olabilir; sonuç dikkatle yorumlanmalıdır.`,
+    );
+  }
+  if (logicRapid(r)) {
+    notes.push(
+      `Mantıksal akıl yürütme testinde ${r.n} sorunun ${r.rapid} tanesinde cevap, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verilmiş ve bu cevapların yalnızca ${r.rapidCorrect} tanesi doğru; bu sorularda okumadan seçilmiş olabilir.`,
+    );
+  }
+  return notes;
+}
 export function taskQualityNotes(parts: {
   flanker?: FlankerResult;
   symbol?: SymbolResult;
@@ -2026,6 +2170,7 @@ export function taskQualityNotes(parts: {
   numberSeries?: NumberSeriesResult;
   verbal?: VerbalResult;
   folding?: FoldingResult;
+  logic?: LogicResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -2206,6 +2351,8 @@ export function taskQualityNotes(parts: {
   if (kd) notes.push(...ruleSwitchQualityNotes(kd));
   const kl = parts.wordList;
   if (kl) notes.push(...wordListQualityNotes(kl));
+  const ma = parts.logic;
+  if (ma) notes.push(...logicQualityNotes(ma));
   return notes;
 }
 
