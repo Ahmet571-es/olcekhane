@@ -32,7 +32,7 @@ Basamaklar:
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** bitti (2026-10-07). Çözülebilen her testin raporunda (öğrenci, veli
    ve yetişkinlere açık testlerde yetişkin) yol haritası var; Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik hoca onaylı,
    ötekiler 2026-10-07 kararıyla onay beklenmeden yayında (hoca yayındaki siteyi inceleyecek).
-3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 110 ders (2026-10-09: sinir sistemi ve kafatası üniteleri), üç boyutlu model (BodyParts3D),
+3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 100 ders (2026-10-09: yalnızca beyin; kafatası dersleri yayından kalktı), üç boyutlu model (BodyParts3D),
    her işlemede bir ders; ayrıntı ve sıradaki ders aşağıdaki "Beyin Akademisi" bölümünde. Kaynak erişimi: OpenStax,
    UTHealth (Neuroscience Online), NINDS, MedlinePlus ve Europe PMC açılıyor; NCBI/PubMed ve CDC açılmıyor.
 4. **Okuma bölümü (site sahibinin 2026-10-07 isteği):** kişilik ve zekâ testlerinden ayrı "Okuma" sekmesi
@@ -338,7 +338,7 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
 
 - Adresler: `/beyin-akademisi`, `/beyin-akademisi/<bölüm>` (8 bölüm), `/beyin-akademisi/<bölüm>/<ders>`,
   `/beyin-akademisi/beyin-gezgini`. Eski `/beyin-akademisi/nasil-calisir` adresleri `hucre-ve-molekul`'e kalıcı yönlenir.
-- Program: 8 bölüm, 110 ders (`src/content/beyin/index.ts`; 2026-10-09'da kafatası ünitesiyle 100'den 106'ya, sinir sistemi ünitesiyle 110'a): Anatomi 40, Hücreden Sinyale 16, Sistem Nörobilimi 15,
+- Program: 8 bölüm, 100 ders (`src/content/beyin/index.ts`; 2026-10-09'da üniteler eklenince 110'a çıktı, sonra site sahibinin kararıyla yalnızca beyin: kafatası dersleri ve kol-bacak sinirleri çıktı): Anatomi 30, Hücreden Sinyale 16, Sistem Nörobilimi 15,
   Zihin ve Davranış 12, Yaşam Boyu Beyin 5, Klinik Nörobilim 12, İnceleme Yöntemleri 6, Tarih, Efsaneler ve Etkili
   Öğrenme 4. Her dersin seviyesi var: Temel, Lisans, İleri ve klinik.
 - Ders standardı (site sahibinin 2026-10-08 üçüncü isteği: "öğrenciden profesöre, tıp ve beyin cerrahisi dahil, çok
@@ -364,21 +364,10 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   kaynaklara göre düzeltildi (dayanaksız "%75 vagus", "40 mmHg", Cushing ve "normal 7–15" çıkarıldı). Modelde yeni
   "omurga" paketi: C3–L5 omurları, sağrı kemiği ve omurlar arası diskler (sürüm 75b11dae6b); modelde omurilik ve
   sinirler yoktur.
-- Hazır: Anatomi 2 "Kafatası: beynin kemik kalesi" (2026-10-09; 7 bölüm: genel bakış, kubbe ve dikişler, kafa
-  derisi ve kemiğin katmanları, kafatası tabanı ve delikler, yüz-sinüsler-atlas, bebeklikten yaşlılığa ve
-  kraniosinostoz, kırıklar-görüntüleme-kafatası cerrahisi; 7 sahne, 6 hareketli çizim, 5 vaka, 36 soru, 100 terim,
-  167 kaynak; okuma süresi temel ~34, lisans ~72, tamamı ~95 dk; UÇEP: 138, 164, 165, 166). Bağımsız denetimde 6
-  yanlış ve 37 küçük sorun bulundu, hepsi düzeltildi. Modelde yeni "yuz" paketi: yüz kemikleri, dil kemiği, atlas
-  ve aksis (sürüm c5d7ea847e); kemik sahneleri kesitte kemiklerin kutusunu kullanır.
-- Hazır: Anatomi 3 "Kafatası 1: Kemikler tek tek" (2026-10-09; ünitenin ilk dersi; 10 bölüm: kemik dili, alın, yan
-  kafa, şakak, art kafa, kama, kalbur, yüz kemikleri, alt çene ve dil kemiği, kemikler birlikte; 39 sahne, 3 hareketli
-  çizim (kemik işaretleri, yüz siniri kanalı, sfenoid sinüs tipleri), 20 vaka, 74 soru, 106 terim, 187 kaynak; okuma
-  süresi temel ~72, lisans ~263, tamamı ~357 dk). Kaynaklar dört ayrı araştırmayla açık tam metinlerden, Gray 1918'den,
-  OpenStax'ten ve TA2/TA98'den toplandı; her alıntı kayıtlı metinde makineyle doğrulandı; üç bağımsız denetçi 66
-  düzeltme yaptı. Yeni: kemiklerin üzerinde 131 işaret noktası (`noktalar.ts`), etiket yazıları noktaların üstüne
-  binmeden yerleşir. Modelde olmadığı için işaretlenemeyenler (metinde anlatıldı): foramen spinosum, pterigoid kanal,
-  göz üstü deliği, mastoid ve yan kafa delikleri, büyük damak deliği, elmacık-yüz deliği, Henle dikeni, çene dikenleri;
-  optik kanal ile üst göz çukuru yarığı modelde birleşik, sinüs boşlukları yok.
+- **Yayından kaldırıldı (2026-10-09, site sahibinin kararı):** "Kafatası: beynin kemik kalesi" ve "Kafatası 1: Kemikler
+  tek tek" (her biri bağımsız denetimden geçmiş, yayında kalmış derslerdi: 7 ve 10 bölüm, 7 ve 39 sahne, 167 ve 187
+  kaynak, 131 kemik işaret noktası). Klasörleri, işaret noktaları ve çizimleri depoda saklı; eski adresler ilk derse
+  geçici yönlenir. Site sahibi isterse geri gelir.
 - **Site sahibinin 2026-10-09 kararı:** kafatası dersi istediği kapsam ve derinlikte bulunmadı. Kalıcı istekleri: derinlik
   sınırı açık erişimli tam metinler ve ders kitaplarıyla aşılacak (özetle yetinilmez); büyük konular birkaç derslik
   üniteye bölünerek büyütülecek. Program 106 derse çıktı: mevcut kafatası dersi ünitenin genel bakışı oldu, ardından
@@ -389,12 +378,21 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   genel bakış (yeni ölçüyle baştan yazılacak) ve dört ders: (1) anatominin dili, (2) omurilik sinirleri ve
   dermatomlar, (3) boyun ve kol sinir ağları, (4) bel-sakral ağ ve bacak sinirleri. Kafatası dersleri programda 6–12.
   sıraya kaydı.
-- **Sıradaki ders:** Sinir sistemi 1 "Anatominin dili" (yönler, eksenler, düzlemler, MR/BT'de yön); ardından ünitenin
-  öteki üç dersi (omurilik sinirleri ve dermatomlar, boyun ve kol ağları, bel-sakral ağ ve bacak sinirleri); sonra
-  Kafatası 2 "Beş yönden kafatası ve iç taban"; kafatası ünitesi bitince Anatomi "Beyin zarları". Denetçilerin önerdiği
-  yeni 2B çizimler (nöron biçimleri, glia, sinir kesiti, geçiş bölgesi, nörülasyon ve kesecikler, lokalizasyon
-  merdiveni, sert zar katmanları ve sinüsler, BOS yolu, Willis varyantları) ilgili ünite derslerinde yapılacak. Site
-  sahibi başka bir ders isterse o yapılır.
+- **Site sahibinin 2026-10-09 üçüncü kararı (kalıcı):** Beyin Akademisi atlas ve ansiklopedi derinliğinde olacak,
+  profesörler de yararlanabilmeli; ama dil her düzeyde (Uzman dahil) çok yalın ve sade: herkes okuyunca anlamalı. Her
+  konu çok kapsamlı işlenir, zaman sınırı yok. İlk dersin dili bu ölçüyle sadeleştirildi (bilgi, sayı ve kaynaklar
+  aynen kaldı; makineyle denetlendi).
+- **Site sahibinin 2026-10-09 dördüncü kararı (kalıcı):** Beyin Akademisi **yalnızca beyni** anlatır: beyin ve onu
+  oluşturan bütün yapılar, ne işe yaradıkları, beynin nasıl çalıştığı ve nasıl öğrendiği; nörobilim ve tıp öğrencisinden
+  profesöre, öğretmenden beyin cerrahına herkesin başvuracağı, Türkiye'de eşi olmayan bir beyin atlası ve ansiklopedisi.
+  Kafatası işlenmez (iki kafatası dersi yayından kalktı). Sinir sistemi ünitesinden yalnızca "Anatominin dili" kaldı
+  (kol-bacak sinirleri ve dermatomlar çıktı); omurilik ve çıkan-inen yollar dersleri kalır. Derinlik ve sade dil aynen.
+- **Sıradaki ders:** Anatomi 2 "Anatominin dili: beyinde yön bulmak" (yönler, eksenler, düzlemler ve kesitler, MR/BT'de
+  yön ve sağ-sol, standart koordinatlar, terimlerin kökeni; kaynak araştırması bitti: dört grupta 1677 doğrulanmış not,
+  çalışma klasöründe). Sonra programdaki sırayla beyin dersleri: beyin zarları, karıncıklar ve BOS, atardamarlar...
+  Denetçilerin önerdiği 2B çizimler (nöron biçimleri, glia, nörülasyon ve kesecikler, lokalizasyon merdiveni, sert zar
+  katmanları ve sinüsler, BOS yolu, Willis varyantları) ilgili derslerde yapılacak. Site sahibi başka bir ders isterse
+  o yapılır.
 - **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
   eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
   cerrahi kutuları sürer.
@@ -554,6 +552,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (16): Site sahibinin kararıyla Beyin Akademisi yalnızca beyni anlatır: iki kafatası dersi yayından
+  kaldırıldı (depoda saklı, eski adresler ilk derse yönlenir); kafatası ünitesinin hazırlanmamış dersleri ve kol-bacak
+  sinirleri programdan çıktı; program 100 ders. Sıradaki ders "Anatominin dili".
+- 2026-10-09 (15): Site sahibinin isteğiyle Beyin Akademisi'nde dil her düzeyde sade olacak (kalıcı kural). İlk ders
+  "Sinir sistemine ilk bakış" bu ölçüyle sadeleştirildi: ortalama cümle ~15 sözcükten ~8–9 sözcüğe indi, terimler ilk
+  geçtiği yerde Türkçe açıklandı; bilgiler, sayılar ve kaynaklar aynen kaldı.
 - 2026-10-09 (14): Çalışma Değerleri yayında (7. sınıftan yetişkine): 32 özgün ifade, sekiz değer; değerler kişinin kendi
   içinde sıralanır, en önemliler anlatılır, birbiriyle yarışabilecek değerler ve sona kalanlar ayrıca belirtilir; öğrenci,
   veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak)
@@ -584,10 +588,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (7): Çocuk Kişilik Profili yayında (3–5. sınıf): 30 madde, üç seçenek, beş boyut; öğrenci ve veli raporu,
   3B grafikli yol haritası; "evet deme eğilimi" uyarısı; çocuğa 112'siz destek kutusu; İlkokul 3–4 önerisi; telefonda
   dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız inceleme bulguları düzeltildi.
-- 2026-10-09 (6): Kelime Listesi Hatırlama yayında: 15 kelimelik liste üç kez, araya giren ikinci liste, ilk listeyi
-  yeniden hatırlama ve 35 kelimelik tanıma; öğrenci, veli ve yetişkin raporu (öğrenme, koruma, tanıma, listenin
-  kısımları), 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (sekme değiştirme dahil) baştan sona
-  yapıldı, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
-- 2026-10-09 (5): Kural Değiştirme yayında: renk ve şekil kuralı arasında geçiş, 98 deneme, dört bölüm; öğrenci, veli ve
-  yetişkin raporu (doğruluk, kural değiştirmenin ve iki kuralı akılda tutmanın bedeli, hataların türü), yol haritası;
-  telefonda dokunarak ve masaüstünde ok tuşlarıyla baştan sona yapıldı, rapor ve PDF açıldı.

@@ -52,6 +52,10 @@ const nextConfig: NextConfig = {
       // "Hücreden Sinyale" bölümü aldı.
       { source: '/beyin-akademisi/nasil-calisir', destination: '/beyin-akademisi/hucre-ve-molekul', permanent: true },
       { source: '/beyin-akademisi/nasil-calisir/:rest*', destination: '/beyin-akademisi/hucre-ve-molekul', permanent: true },
+      // 2026-10-09: kafatası dersleri yayından kaldırıldı (site sahibinin kararı: bölüm yalnızca beyni anlatır). Geri
+      // gelebilecekleri için yönlendirme geçicidir.
+      { source: '/beyin-akademisi/anatomi/kafatasi', destination: '/beyin-akademisi/anatomi/sinir-sistemine-ilk-bakis', permanent: false },
+      { source: '/beyin-akademisi/anatomi/kafatasinin-kemikleri', destination: '/beyin-akademisi/anatomi/sinir-sistemine-ilk-bakis', permanent: false },
     ];
   },
   async headers() {

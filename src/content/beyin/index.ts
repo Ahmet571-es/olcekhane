@@ -1,5 +1,3 @@
-import { kafatasi } from './dersler/anatomi/kafatasi';
-import { kafatasininKemikleri } from './dersler/anatomi/kafatasinin-kemikleri';
 import { sinirSistemineIlkBakis } from './dersler/anatomi/sinir-sistemine-ilk-bakis';
 import type { Dal, DalId, Ders, ProgramDersi, Seviye } from './types';
 
@@ -7,13 +5,13 @@ export type { Dal, DalId, Ders, Seviye } from './types';
 export { SEVIYE_ADLARI, SEVIYE_KITLESI } from './types';
 
 /**
- * Beyin Akademisi'nin programı: 8 bölüm; 2026-10-08'de onaylanan 100 derslik harita, 2026-10-09'da kafatası ünitesinin
- * altı dersiyle 106, sinir sistemi ünitesinin dört dersiyle 110 derse çıktı (site sahibinin isteği: büyük konular
- * üniteye bölünür). Her işlemede bir
+ * Beyin Akademisi'nin programı: 8 bölüm; 2026-10-08'de onaylanan 100 derslik harita. 2026-10-09'da site sahibinin
+ * kararıyla bölüm yalnızca beyni anlatır: kafatası dersleri yayından kaldırıldı (klasörleri `dersler/anatomi/kafatasi*`
+ * altında saklı, istenirse geri gelir), sinir sistemi ünitesinden yalnızca "Anatominin dili" kaldı. Her işlemede bir
  * ders hazırlanır. Hazır dersin içeriği `ders` alanındadır; olmayanlar programda "Hazırlanıyor" diye görünür, kendi
  * sayfaları açılmaz ve site haritasına girmez.
  */
-const HAZIR: Ders[] = [sinirSistemineIlkBakis, kafatasi, kafatasininKemikleri];
+const HAZIR: Ders[] = [sinirSistemineIlkBakis];
 
 type Satir = [slug: string, baslik: string, ozet: string, seviye: Seviye];
 
@@ -36,20 +34,10 @@ export const DALLAR: Dal[] = [
     kisaAd: 'Anatomi',
     renk: '#4f7cf0',
     aciklama:
-      'Kafatasından omuriliğe, beyni oluşturan bütün yapılar: loblar ve kıvrımlar, derin çekirdekler, beyin sapı, beyincik, karıncıklar, damarlar, kafa sinirleri ve sinir yolları. Her ders gerçek bir beyin modeli üzerinde.',
+      'Beyni oluşturan bütün yapılar: loblar ve kıvrımlar, derin çekirdekler, beyin sapı, beyincik, karıncıklar, zarlar, damarlar, kafa sinirleri, omurilik ve sinir yolları. Her ders gerçek bir beyin modeli üzerinde.',
     program: program('anatomi', [
-      ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış', 'Ünitenin genel bakışı: merkezî ve çevresel sinir sistemi, beynin bölümleri ve gelişimi, loblar, gri ve beyaz cevher, beyni koruyanlar ve besleyenler.', 'temel'],
-      ['anatominin-dili', 'Sinir sistemi 1: Anatominin dili', 'Yönler, beynin iki ekseni, kesit düzlemleri ve terimlerin kuruluşu; MR ve BT görüntülerinde yön bulma.', 'temel'],
-      ['omurilik-sinirleri', 'Sinir sistemi 2: Omurilik sinirleri ve dermatomlar', 'Kökler, gangliyonlar ve dallar; sinirin katmanları; dermatom ve miyotom haritaları; kök sıkışmaları.', 'lisans'],
-      ['boyun-ve-kol-sinirleri', 'Sinir sistemi 3: Boyun ve kol sinir ağları', 'Boyun ağı ve kol ağı (pleksus); kolun büyük sinirleri, seyirleri, yaralanmaları ve sıkışma noktaları.', 'lisans'],
-      ['bel-sakral-ag-ve-bacak-sinirleri', 'Sinir sistemi 4: Bel-sakral ağ ve bacak sinirleri', 'Bel ağı ve sakral ağ; bacağın büyük sinirleri, seyirleri, yaralanmaları ve sıkışma noktaları.', 'lisans'],
-      ['kafatasi', 'Kafatası: beynin kemik kalesi', 'Kafatası ünitesine genel bakış: 22 kemik, dikişler, kafa tabanı ve delikler, bıngıldaklar, kırıklar ve kafatası cerrahisi.', 'temel'],
-      ['kafatasinin-kemikleri', 'Kafatası 1: Kemikler tek tek', 'Beyin kutusunun 8, yüzün 14 kemiği ve dil kemiği tek tek: bölümleri, çıkıntıları, delikleri ve komşulukları.', 'lisans'],
-      ['kafatasina-bes-yonden-bakis', 'Kafatası 2: Beş yönden kafatası ve iç taban', 'Önden, yandan, üstten, arkadan ve alttan kafatası; içeriden üç kafa çukuru, oluklar ve ölçüm noktaları.', 'lisans'],
-      ['kafatasi-delikleri-ve-derin-cukurlar', 'Kafatası 3: Delikler, kanallar ve derin çukurlar', 'Her delikten geçen sinirler ve damarlar; göz çukuru, infratemporal ve pterigopalatin çukur, delik sendromları.', 'lisans'],
-      ['kafatasi-boyun-bileskesi', 'Kafatası 4: Kafatası–boyun bileşkesi', 'Art kafa kemiği, atlas ve aksis; eklemler, bağlar, ölçüm çizgileri ve bileşkenin hastalıkları.', 'ileri'],
-      ['kafatasinin-gelisimi-ve-hastaliklari', 'Kafatası 5: Gelişim ve hastalıklar', 'Kemikleşme, bıngıldaklar ve dikişler; kraniosinostoz; kafatası tümörleri ve kemik hastalıkları.', 'lisans'],
-      ['kafatasi-travma-ve-cerrahi-anatomi', 'Kafatası 6: Kırıklar, görüntüleme ve cerrahi anatomi', 'Kırıklar ve karar kuralları, BT ve MR, kafatası üzerindeki cerrahi giriş noktaları ve yaklaşımlar.', 'ileri'],
+      ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış', 'Haritanın tamamı: sinir sistemi ne yapar, sinir dokusu, beynin bölümleri ve gelişimi, loblar, omurilik ve sinirler, beyni koruyanlar ve besleyenler.', 'temel'],
+      ['anatominin-dili', 'Anatominin dili: beyinde yön bulmak', 'Yönler, beynin iki ekseni, kesit düzlemleri ve terimlerin kuruluşu; MR ve BT görüntülerinde yön bulma.', 'temel'],
       ['beyin-zarlari', 'Beyin zarları ve zarlar arası boşluklar', 'Sert zar, örümcek ağı zar ve yumuşak zar; kıvrımları ve boşlukları.', 'lisans'],
       ['karinciklar-ve-beyin-omurilik-sivisi', 'Karıncıklar ve beyin-omurilik sıvısı', 'Dört karıncık; sıvının yapılışı, dolaşımı ve emilmesi.', 'lisans'],
       ['beynin-atardamarlari', 'Beynin atardamarları ve Willis halkası', 'Karotis ve vertebrobaziler sistem; halkanın parçaları.', 'lisans'],

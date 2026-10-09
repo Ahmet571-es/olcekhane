@@ -5,168 +5,169 @@ export const sozluk: Terim[] = [
   {
     terim: 'AC–PC çizgisi',
     tanim:
-      'Ön komissür (AC) ile arka komissürü (PC) birleştiren çizgi; stereotaksik cerrahinin ve Talairach koordinat sisteminin başvuru çizgisi.',
+      'Ön komissür (AC) ile arka komissürü (PC) birleştiren çizgi. Stereotaksik cerrahi ve Talairach koordinat sistemi bu çizgiyi başvuru çizgisi olarak kullanır.',
   },
   {
     terim: 'Adrenerjik ve muskarinik almaçlar',
     tanim:
-      'Adrenerjik almaçlar (α1, α2, β1, β2, β3) noradrenalini ve adrenalini karşılar; muskarinik almaçlar parasempatik postganglionik liflerin salgıladığı asetilkolini hedef organda karşılar.',
+      'Adrenerjik almaçlar (α1, α2, β1, β2, β3) noradrenalini ve adrenalini karşılar. Muskarinik almaçlar ise hedef organda asetilkolini karşılar. Bu asetilkolini parasempatik postganglionik lifler salar.',
   },
   {
     terim: 'Afferent ve efferent lif',
-    tanim: 'Afferent (getirici) lif bilgiyi MSS’ye taşır; efferent (götürücü) lif komutu MSS’den kaslara ve bezlere götürür.',
+    tanim: 'Afferent (getirici) lif bilgiyi MSS’ye taşır. Efferent (götürücü) lif komutu MSS’den kaslara ve bezlere götürür.',
   },
   {
     terim: 'Agranüler kabuk',
     tanim:
-      'Hücreden zengin IV. (granüler) katmanı bulunmayan kabuk; birincil hareket kabuğu böyledir ve en belirgin katmanı Betz hücrelerini taşıyan V. katmandır.',
+      'Hücreden zengin IV. (granüler) katmanı bulunmayan kabuk. Birincil hareket kabuğu böyledir. En belirgin katmanı, Betz hücrelerini taşıyan V. katmandır.',
   },
   {
     terim: 'Aksiyel (horizontal) düzlem',
     latince: 'Plana transversa (TA2’de çoğul; eş anlamlısı plana horizontalia)',
-    tanim: 'Yere paralel uzanan, beyni üst ve alt diye ayıran düzlem; görüntülemede bu kesitlere aksiyel kesit denir.',
+    tanim: 'Yere paralel uzanan, beyni üst ve alt diye ayıran düzlem. Görüntülemede bu kesitlere aksiyel kesit denir.',
   },
   {
     terim: 'Akson',
-    tanim: 'Nöron gövdesinden çıkıp hedef hücrelere uzanan lif; ders kitapları nöronu genellikle tek aksonlu anlatır.',
+    tanim: 'Nöron gövdesinden çıkıp hedef hücrelere uzanan lif. Ders kitapları nöronu genellikle tek aksonlu anlatır.',
   },
   {
     terim: 'Alar plak',
-    tanim: 'Nöral tüp yan duvarının sırt tarafındaki boylamsal şerit; duyu girdisi alacak nöronları ve daha sonra beyinciği yapar.',
+    tanim: 'Nöral tüpün yan duvarında, sırt tarafındaki uzun şerit. Duyu girdisi alacak nöronları, daha sonra da beyinciği yapar.',
   },
   {
     terim: 'Alt motor nöron',
     tanim:
-      'Omurilik ve beyin sapındaki alfa motor nöronlar (kafa sinirlerinin hareket çekirdekleri ve ön boynuz hücreleri); aksonları kasa gider.',
+      'Omurilik ve beyin sapındaki alfa motor nöronlar: kafa sinirlerinin hareket çekirdekleri ve ön boynuz hücreleri. Aksonları kasa gider.',
   },
   {
     terim: 'Anatomik duruş',
     tanim:
-      'Yönlerin söylendiği standart duruş: dik, ayaklar omuz genişliğinde ve paralel, ayak parmakları önde, kollar iki yanda, avuç içleri öne dönük.',
+      'Yönlerin söylendiği standart duruş. Kişi dik durur, ayaklar omuz genişliğinde ve paraleldir, ayak parmakları öndedir. Kollar iki yandadır, avuç içleri öne dönüktür.',
   },
   {
     terim: 'Ara beyin (diensefalon)',
     latince: 'Diencephalon',
-    tanim: 'Büyük beynin derininde, üçüncü karıncığın duvarlarını yapan bölüm; talamus, hipotalamus, subtalamus ve epitalamustan oluşur.',
+    tanim: 'Büyük beynin derininde, üçüncü karıncığın duvarlarını yapan bölüm. Talamus, hipotalamus, subtalamus ve epitalamustan oluşur.',
   },
   {
     terim: 'Ara yapışıklık (massa intermedia)',
     latince: 'Adhaesio interthalamica',
-    tanim: 'Çoğu beyinde iki talamusun ortada birbirine değdiği köprü; çevresini üçüncü karıncık sarar.',
+    tanim: 'Çoğu beyinde iki talamusun ortada birbirine değdiği köprü. Çevresini üçüncü karıncık sarar.',
   },
   {
     terim: 'Araknoid granülasyon',
     latince: 'Granulationes arachnoideae',
     tanim:
-      'Örümcek ağı zarın sert zar sinüslerine uzanan çıkıntıları; klasik görüşte BOS’un kana döndüğü yer. Bebeklikte yoktur, yaşla sayıları ve boyları artar.',
+      'Örümcek ağı zarın sert zar sinüslerine uzanan çıkıntıları. Klasik görüşe göre BOS buradan kana döner. Bebeklikte yoktur; yaşla sayıları ve boyları artar.',
   },
   {
     terim: 'Arka beyin (rombensefalon)',
     latince: 'Rhombencephalon',
-    tanim: 'Metensefalona (pons ve beyincik) ve miyelensefalona (omurilik soğanı) ayrılan birincil kesecik; boşluğu dördüncü karıncıktır.',
+    tanim:
+      'Birincil keseciklerin en arkadakisi. Metensefalona (pons ve beyincik) ve miyelensefalona (omurilik soğanı) ayrılır. Boşluğu dördüncü karıncıktır.',
   },
   {
     terim: 'Arka kök gangliyonu',
     latince: 'Ganglion spinale',
     tanim:
-      'Arka kökün üzerindeki, duyu nöronlarının gövdelerini taşıyan şişkinlik; çoğunlukla omurlar arası delikte, sağrı sinirlerinde omurga kanalının içindedir.',
+      'Arka kökün üzerindeki şişkinlik. Duyu nöronlarının gövdelerini taşır. Çoğunlukla omurlar arası deliktedir; sağrı sinirlerinde ise omurga kanalının içindedir.',
   },
   {
     terim: 'Astrosit',
     tanim:
-      'Hücre dışı kimyasal ortamı koruyan, MSS’nin dış yüzünde ve damarların çevresinde örtü yapan, kan-beyin bariyerine katkıda bulunan glia hücresi.',
+      'Hücre dışı kimyasal ortamı koruyan glia hücresi. MSS’nin dış yüzünde ve damarların çevresinde bir örtü yapar. Kan-beyin bariyerine katkıda bulunur.',
   },
   {
     terim: 'At kuyruğu',
     latince: 'Cauda equina',
-    tanim: 'Konusun altında omurga kanalında aşağı doğru uzanan bel ve sağrı kökleri demeti; adını görünüşünden ve uzunluğundan alır.',
+    tanim: 'Konusun altında, omurga kanalında aşağı doğru uzanan bel ve sağrı kökleri demeti. Adını görünüşünden ve uzunluğundan alır.',
   },
   {
     terim: 'Babinski belirtisi',
     tanim:
-      'Ayak tabanı çizilince başparmağın yukarı kalkıp öteki parmakların yelpaze gibi açılması; yetişkinde kortikospinal yol hasarını gösterir, ilk iki yaşta normaldir.',
+      'Ayak tabanı çizilince başparmağın yukarı kalkması ve öteki parmakların yelpaze gibi açılması. Yetişkinde kortikospinal yol hasarını gösterir. İlk iki yaşta normaldir.',
   },
   {
     terim: 'Başvuru aralığı',
     tanim:
-      'Sağlıklı bir grubun ölçümlerinin büyük bölümünü (çoğunlukla %95’ini) kapsayan değer aralığı; karşılaştırma, kişinin yaşına ve cinsiyetine uygun gruptan alınan aralıkla yapılmalıdır.',
+      'Sağlıklı bir grubun ölçümlerinin büyük bölümünü (çoğunlukla %95’ini) kapsayan değer aralığı. Bir kişinin değeri, yaşına ve cinsiyetine uygun bir gruptan alınan aralıkla karşılaştırılmalıdır.',
   },
   {
     terim: 'Bazal plak',
-    tanim: 'Nöral tüp yan duvarının karın tarafındaki boylamsal şerit; hareket nöronlarını ve onlarla ilişkili ara nöronları yapar.',
+    tanim: 'Nöral tüpün yan duvarında, karın tarafındaki uzun şerit. Hareket nöronlarını ve onlarla ilişkili ara nöronları yapar.',
   },
   {
     terim: 'Bel ponksiyonu (lomber ponksiyon)',
     tanim:
-      'Beyin-omurilik sıvısından örnek almak için iğnenin, omuriliğin bulunmadığı alt bel bölgesinden sert zar ve örümcek ağı zar geçilerek sıvıya ulaştırılması; menenjitin temel tanı testidir.',
+      'Beyin-omurilik sıvısından örnek alma işlemi. İğne, omuriliğin bulunmadığı alt bel bölgesinden girer. Sert zarı ve örümcek ağı zarı geçip sıvıya ulaşır. Menenjitin temel tanı testidir.',
   },
   {
     terim: 'Bel sarnıcı',
     latince: 'Cisterna lumbalis',
-    tanim: 'Konusun altında, sert zar kesesinin içinde at kuyruğunun köklerini çevreleyen, beyin-omurilik sıvısıyla dolu bölüm.',
+    tanim: 'Konusun altında, sert zar kesesinin içindeki bölüm. Beyin-omurilik sıvısıyla doludur ve at kuyruğunun köklerini çevreler.',
   },
   {
     terim: 'Beyaz cevher',
     latince: 'Substantia alba',
-    tanim: 'Aksonların yoğun olduğu doku; rengini aksonları saran, yağdan zengin miyelinden alır.',
+    tanim: 'Aksonların yoğun olduğu doku. Rengini, aksonları saran ve yağdan zengin olan miyelinden alır.',
   },
   {
     terim: 'Beyaz ve gri bağlantı dalı',
     latince: 'Ramus communicans albus et griseus',
     tanim:
-      'Omurilik siniri ile sempatik gövde arasındaki dallar. Beyaz dal miyelinlidir ve yalnızca göğüs ile ilk bel sinirlerinden çıkar; gri dal miyelinsizdir ve her omurilik sinirine gelir.',
+      'Omurilik siniri ile sempatik gövde arasındaki dallar. Beyaz dal miyelinlidir ve yalnızca göğüs ile ilk bel sinirlerinden çıkar. Gri dal miyelinsizdir ve her omurilik sinirine gelir.',
   },
   {
     terim: 'Beyin grafikleri',
     tanim:
-      'Yaşam boyu beyin ölçümlerinin (gri ve beyaz cevher hacmi, kabuk kalınlığı ve yüzeyi) 101.457 kişinin 123.984 MR taramasından çıkarılan eğrileri; anne karnındaki 115. günden 100 yaşa kadar uzanır.',
+      'Beyin ölçümlerinin yaşam boyu nasıl değiştiğini gösteren eğriler. Gri ve beyaz cevher hacmini, kabuk kalınlığını ve yüzeyini kapsar. 101.457 kişinin 123.984 MR taramasından çıkarıldı. Anne karnındaki 115. günden 100 yaşa kadar uzanır.',
   },
   {
     terim: 'Beyin orağı',
     latince: 'Falx cerebri',
     tanim:
-      'İki yarımküre arasındaki yarığa inen en büyük sert zar kıvrımı; üst kenarında üst sagital, alt kenarında alt sagital sinüs uzanır.',
+      'İki yarımküre arasındaki yarığa inen en büyük sert zar kıvrımı. Üst kenarında üst sagital sinüs, alt kenarında alt sagital sinüs uzanır.',
   },
   {
     terim: 'Beyin sapı',
     latince: 'Truncus encephali',
-    tanim: 'Orta beyin, pons ve omurilik soğanından oluşan, beyni omuriliğe bağlayan bölüm; çıkan ve inen büyük yollar buradan geçer.',
+    tanim: 'Beyni omuriliğe bağlayan bölüm. Orta beyin, pons ve omurilik soğanından oluşur. Çıkan ve inen büyük yollar buradan geçer.',
   },
   {
     terim: 'Beyin su yolu',
     latince: 'Aquaeductus mesencephali',
-    tanim: 'Orta beyinden geçen, üçüncü karıncığı dördüncü karıncığa bağlayan dar kanal; çatısı tektum, tabanı tegmentumdur.',
+    tanim: 'Orta beyinden geçen dar kanal. Üçüncü karıncığı dördüncü karıncığa bağlar. Çatısı tektum, tabanı tegmentumdur.',
   },
   {
     terim: 'Beyincik çadırı',
     latince: 'Tentorium cerebelli',
     tanim:
-      'Büyük beyin ile beyincik arasındaki U biçimli sert zar kıvrımı; kafa içini çadır üstü ve çadır altı diye ayırır, çentiğinden orta beyin geçer.',
+      'Büyük beyin ile beyincik arasındaki U biçimli sert zar kıvrımı. Kafa içini çadır üstü ve çadır altı diye ikiye ayırır. Çentiğinden orta beyin geçer.',
   },
   {
     terim: 'Boyun genişlemesi',
     latince: 'Intumescentia cervicalis',
-    tanim: 'Kol sinirlerinin bağlandığı kalın omurilik kesimi; omur hizasıyla yaklaşık C3–T2, omurilik bölümüyle C3–T1.',
+    tanim: 'Kol sinirlerinin bağlandığı kalın omurilik kesimi. Omur hizasıyla yaklaşık C3–T2, omurilik bölümüyle C3–T1 arasındadır.',
   },
   {
     terim: 'Brodmann alanları',
     tanim:
-      'Brodmann’ın 20. yüzyıl başında kabuğu mikroskobik doku yapısına göre ayırdığı 52 bölge; ör. 4 birincil hareket, 3-1-2 bedensel duyu, 41-42 işitme, 17 görme kabuğu.',
+      'Brodmann’ın 20. yüzyıl başında kabukta ayırdığı 52 bölge. Bunu dokunun mikroskop altındaki yapısına göre yaptı. Örnekler: 4 birincil hareket, 3-1-2 bedensel duyu, 41-42 işitme, 17 görme kabuğu.',
   },
   {
     terim: 'Çapraz hemiparezi',
-    tanim: 'Kafa siniri bulgularıyla birlikte karşı tarafta kol ve bacak güçsüzlüğü; beyin sapındaki bir lezyonu düşündürür.',
+    tanim: 'Kafa siniri bulgularıyla birlikte karşı tarafta kol ve bacak güçsüzlüğü. Beyin sapındaki bir lezyonu düşündürür.',
   },
   {
     terim: 'Çatal sinir',
     latince: 'Nervus furcalis',
     tanim:
-      'Gray’in (1918) bel ağı ile sağrı ağı arasında bölünen bel sinirine verdiği ad; çoğu olguda bu sinir L4’tür. TA2 terimi bel sinirleri arasında, her zaman bulunmayan (inconstant) bir sinir olarak listeler.',
+      'Gray (1918) bu adı, bel ağı ile sağrı ağı arasında bölünen bel sinirine verir. Çoğu olguda bu sinir L4’tür. TA2 terimi bel sinirleri arasında listeler; ona göre bu sinir her zaman bulunmaz (inconstant).',
   },
   {
     terim: 'Çekirdek (nukleus)',
     latince: 'Nucleus',
-    tanim: 'MSS’deki nöron gövdesi kümesi; ÇSS’deki karşılığı gangliyondur.',
+    tanim: 'MSS’deki nöron gövdesi kümesi. ÇSS’deki karşılığı gangliyondur.',
   },
   {
     terim: 'Çevresel sinir sistemi (ÇSS)',
@@ -176,131 +177,134 @@ export const sozluk: Terim[] = [
   },
   {
     terim: 'Çift sinirlenme',
-    tanim: 'Bir organın hem sempatik hem parasempatik sinir alması; organın etkinliğini iki kolun dengesi belirler (ör. kalp).',
+    tanim: 'Bir organın hem sempatik hem parasempatik sinir alması. Organın etkinliğini iki kolun dengesi belirler (ör. kalp).',
   },
   {
     terim: 'Dermatom',
     tanim:
-      'Tek bir arka kök gangliyonundan gelen liflerin beslediği deri alanı. Komşu dermatomlar örtüşür; ders kitaplarındaki haritalar birbirini tutmaz.',
+      'Tek bir arka kök gangliyonundan gelen liflerin duyusunu taşıdığı deri alanı. Komşu dermatomlar örtüşür. Ders kitaplarındaki haritalar birbirini tutmaz.',
   },
   {
     terim: 'Dorsal ve ventral',
-    tanim: 'Sinir eksenine göre yönler: dorsal beyinde yukarı, omurilikte sırta doğru; ventral beyinde aşağı, omurilikte karına doğru.',
+    tanim:
+      'Sinir eksenine göre yönler. Dorsal beyinde yukarı, omurilikte sırta doğrudur. Ventral beyinde aşağı, omurilikte karına doğrudur.',
   },
   {
     terim: 'Dural sınır hücre katmanı',
     tanim:
-      'Sert zarın en iç, 10 μm’den ince, 3–8 sıra yassı hücreli katmanı; yarılınca klinikte “subdural aralık” diye görülen düzlem açılır.',
+      'Sert zarın en iç katmanı. 10 μm’den incedir ve 3–8 sıra yassı hücreden oluşur. Yarılınca klinikte “subdural aralık” diye görülen düzlem açılır.',
   },
   {
     terim: 'Dural venöz sinüs',
-    tanim: 'Sert zarın katmanları arasında uzanan, beynin kanını toplayan kapakçıksız toplardamar kanalı.',
+    tanim: 'Sert zarın katmanları arasında uzanan toplardamar kanalı. Beynin kanını toplar; kapakçığı yoktur.',
   },
   {
     terim: 'Edinger–Westphal çekirdeği',
     latince: 'Nucleus accessorius nervi oculomotorii',
     tanim:
-      'Orta beyinde okülomotor çekirdek kompleksinin parçası; lifleri okülomotor sinirle ilerler ve siliyer gangliyon üzerinden iris kasına ulaşır.',
+      'Orta beyindeki okülomotor çekirdek topluluğunun bir parçası. Lifleri okülomotor sinirle ilerler. Siliyer gangliyon üzerinden iris kasına ulaşır.',
   },
   {
     terim: 'Enerji bütçesi (sinyal)',
     tanim:
-      'Beynin sinyal iletimine harcadığı enerjinin süreçlere dağılımı; güncel bütçede beyin kabuğunda bu enerjinin %50’si sinaps sonrası glutamat almaçlarına, %21’i aksiyon potansiyellerine, %20’si dinlenim potansiyeline gider.',
+      'Beynin sinyal iletimine harcadığı enerjinin hangi işlere gittiğini gösterir. Güncel bütçede beyin kabuğunda bu enerjinin %50’si sinaps sonrası glutamat almaçlarına gider. %21’i aksiyon potansiyellerine, %20’si dinlenim potansiyeline gider.',
   },
   {
     terim: 'Engellilikle düzeltilmiş yaşam yılı (DALY)',
-    tanim: 'Hastalık yükünün ölçüsü: erken ölümle kaybedilen yaşam yılları (YLL) ile engellilikle geçen yılların (YLD) toplamı.',
+    tanim:
+      'Hastalık yükünün bir ölçüsü. İki şeyin toplamıdır: erken ölümle kaybedilen yaşam yılları (YLL) ve engellilikle geçen yıllar (YLD).',
   },
   {
     terim: 'Enterik sinir sistemi',
     latince: 'Plexus entericus',
     tanim:
-      'Sindirim kanalının duvarındaki, miyenterik ve submukozal pleksuslardan oluşan, 200–600 milyon nöronlu sinir ağı; çalışmak için MSS’ye muhtaç değildir.',
+      'Sindirim kanalının duvarındaki sinir ağı. Miyenterik ve submukozal pleksuslardan oluşur ve 200–600 milyon nöron taşır. Çalışmak için MSS’ye muhtaç değildir.',
   },
   {
     terim: 'Fasikülasyon',
-    tanim: 'Hasarlı alt motor nöronun kendiliğinden ateşlemesiyle motor birimindeki kas liflerinin kasılması; kasta gözle görülen seğirme.',
+    tanim:
+      'Kasta gözle görülen seğirme. Hasarlı alt motor nöron kendiliğinden ateşler. Bu nöronun motor birimindeki kas lifleri de kasılır.',
   },
   {
     terim: 'Filum terminale',
     latince: 'Filum terminale',
     tanim:
-      'Konusun ucundan aşağı uzanan ince iplik; Gray’e göre yaklaşık 20 cm, bir kadavra serisinde ortalama 221,8 mm; sert zar kesesiyle çoğunlukla S2 dolayında birleşir.',
+      'Konusun ucundan aşağı uzanan ince iplik. Uzunluğu Gray’e göre yaklaşık 20 cm, bir kadavra serisinde ortalama 221,8 mm’dir. Sert zar kesesiyle çoğunlukla S2 dolayında birleşir.',
   },
   {
     terim: 'Fraksiyonel anizotropi (FA)',
     tanim:
-      'Difüzyon tensör görüntülemede beyaz cevherin olgunlaşmasını izlemek için kullanılan ölçü; 20–42 yaş arasında zirve yapar. Miyelinin yanında aksonların sıkı dizilişini de yansıtır.',
+      'Difüzyon tensör görüntülemede beyaz cevherin olgunlaşmasını izleyen bir ölçü. 20–42 yaş arasında zirve yapar. Miyelinin yanında aksonların sıkı dizilişini de yansıtır.',
   },
   {
     terim: 'Gangliyon',
     latince: 'Ganglion',
-    tanim: 'ÇSS’deki nöron gövdesi kümesi; başlıca duyusal ve otonom gangliyonlar olarak ikiye ayrılır.',
+    tanim: 'ÇSS’deki nöron gövdesi kümesi. Başlıca iki türü vardır: duyusal ve otonom gangliyonlar.',
   },
   {
     terim: 'Gevşek (flask) felç',
-    tanim: 'Kas tonusunun tümüyle ya da kısmen kaybolduğu felç; alt motor nöron hastalıklarında görülür.',
+    tanim: 'Kas gerginliğinin (tonus) tümüyle ya da kısmen kaybolduğu felç. Alt motor nöron hastalıklarında görülür.',
   },
   {
     terim: 'Girus',
     latince: 'Gyrus',
-    tanim: 'Beyin kabuğunun kabarık kıvrımı; iki girus arasındaki oyuğa sulkus (oluk) denir.',
+    tanim: 'Beyin kabuğunun kabarık kıvrımı. İki girus arasındaki oyuğa sulkus (oluk) denir.',
   },
   {
     terim: 'Glia (nöroglia)',
-    tanim:
-      'Nöronları destekleyen sinir sistemi hücreleri; dördü MSS’de, ikisi ÇSS’de olmak üzere altı türü vardır. Adı Yunanca “tutkal”dan gelir.',
+    tanim: 'Nöronları destekleyen sinir sistemi hücreleri. Altı türü vardır: dördü MSS’de, ikisi ÇSS’de. Adı Yunanca “tutkal”dan gelir.',
   },
   {
     terim: 'Glimfatik hipotez',
     tanim:
-      'BOS’un atardamar çevresinden beyne girip doku arası sıvıyı toplardamar çevresinden temizlediğini öne süren, verilerinin çoğu kemirgenden gelen tartışmalı hipotez.',
+      'Verilerinin çoğu kemirgenden gelen, tartışmalı bir hipotez. Buna göre BOS atardamarların çevresinden beyne girer. Doku arası sıvıyı da toplardamarların çevresinden temizler.',
   },
   {
     terim: 'Gri cevher',
     latince: 'Substantia grisea',
-    tanim: 'Nöron gövdelerinin ve dendritlerin yoğun olduğu doku; taze beyinde pembemsi ya da açık kahverengi görünebilir.',
+    tanim: 'Nöron gövdelerinin ve dendritlerin yoğun olduğu doku. Taze beyinde pembemsi ya da açık kahverengi görünebilir.',
   },
   {
     terim: 'Heschl girusu (enine temporal girus)',
     latince: 'Gyri temporales transversi',
-    tanim: 'Üst temporal girusun lateral oluğa uzanan üst yüzündeki enine kıvrım; birincil işitme kabuğu (Brodmann 41, 42).',
+    tanim:
+      'Üst temporal girusun üst yüzündeki enine kıvrım. Bu yüz lateral oluğa doğru uzanır. Birincil işitme kabuğu buradadır (Brodmann 41, 42).',
   },
   {
     terim: 'Hipotalamus',
     latince: 'Hypothalamus',
-    tanim: 'Ara beynin talamusun altındaki bölgesi; otonom sinir sistemini ve ön hipofizi düzenleyerek hormon sistemini yönetir.',
+    tanim: 'Ara beynin talamusun altındaki bölgesi. Otonom sinir sistemini yönetir. Ön hipofizi düzenleyerek hormon sistemini de yönetir.',
   },
   {
     terim: 'Hücre atlası',
     tanim:
-      'Bir beyin bölgesindeki ya da bütün beyindeki hücreleri tek tek inceleyip gen ifadesi, biçim ve elektriksel özelliklerine göre tiplere ayıran harita.',
+      'Hücreleri tiplerine ayıran harita. Bir beyin bölgesindeki ya da bütün beyindeki hücreler tek tek incelenir. Sonra gen ifadesine, biçimine ve elektriksel özelliklerine göre tiplere ayrılır.',
   },
   {
     terim: 'İç kapsül',
     latince: 'Capsula interna',
     tanim:
-      'Dışta lentiform çekirdek, içte kaudat çekirdek ve talamus arasında uzanan yassı beyaz lif bandı; arka kolu lentiform çekirdeği talamustan ayırır.',
+      'Yassı bir beyaz lif bandı. Dışında lentiform çekirdek, içinde kaudat çekirdek ve talamus vardır. Arka kolu lentiform çekirdeği talamustan ayırır.',
   },
   {
     terim: 'İkincil nörülasyon',
     tanim:
-      'Omuriliğin en alt ucunun, nöral kıvrım oluşmadan, bir boşluk açılmasıyla (kanalizasyon) oluşması; birincil nörülasyonda ise boru kıvrımların kapanmasıyla oluşur.',
+      'Omuriliğin en alt ucunun oluşma yolu. Burada nöral kıvrım oluşmaz; boru, içinde bir boşluk açılmasıyla (kanalizasyon) oluşur. Birincil nörülasyonda ise boru, kıvrımların kapanmasıyla oluşur.',
   },
   {
     terim: 'İnsula',
     latince: 'Insula (lobus insularis)',
     tanim:
-      'Lateral oluğun tabanında, çevresindeki lobların kapakçıklarıyla (operkulum) örtülü kabuk bölgesi; ağrı algısı ve otonom düzenlemeyle ilişkili olduğuna dair kanıt vardır.',
+      'Lateral oluğun tabanındaki kabuk bölgesi. Çevresindeki lobların kapakçıkları (operkulum) onu örter. Ağrı algısı ve otonom düzenlemeyle ilişkili olduğuna dair kanıt vardır.',
   },
   {
     terim: 'İntermediolateral çekirdek',
     latince: 'Nucleus intermediolateralis',
-    tanim: 'Sempatik preganglionik nöronların omurilikteki hücre kolonu; TA2’ye göre olağan uzanımı T1’den L1 ya da L2 bölümüne kadardır.',
+    tanim: 'Sempatik preganglionik nöronların omurilikteki hücre sütunu. TA2’ye göre olağan uzanımı T1’den L1 ya da L2 bölümüne kadardır.',
   },
   {
     terim: 'İntramural gangliyon',
-    tanim: 'Hedef organın duvarı içindeki parasempatik terminal gangliyon; parasempatik postganglionik lifin kısa olmasının nedeni.',
+    tanim: 'Hedef organın duvarı içindeki parasempatik terminal gangliyon. Parasempatik postganglionik lifin kısa olmasının nedeni budur.',
   },
   {
     terim: 'İpsilateral ve kontralateral',
@@ -309,224 +313,228 @@ export const sozluk: Terim[] = [
   {
     terim: 'İzotropik fraksiyonatör',
     tanim:
-      'Beyindeki nöronları ve nöron olmayan hücreleri sayan yeni yöntem (isotropic fractionator); erişkin erkek beyninde ~86 milyar nöron ve ~85 milyar nöron olmayan hücre bu yöntemle bulundu.',
+      'Beyindeki nöronları ve nöron olmayan hücreleri sayan yeni bir yöntem (isotropic fractionator). Erişkin erkek beyninde ~86 milyar nöron ve ~85 milyar nöron olmayan hücre bu yöntemle bulundu.',
   },
   {
     terim: 'Kabuk kalınlığı',
     tanim:
-      'Kabuğun dış yüzeyi ile gri-beyaz cevher sınırı arasındaki uzaklık; ortalama 2,5–3 mm, bölgeye göre 0,5–4,5 mm. Girusların tepesinde olukların dibinden kalındır.',
+      'Kabuğun dış yüzeyi ile gri-beyaz cevher sınırı arasındaki uzaklık. Ortalama 2,5–3 mm’dir, bölgeye göre 0,5–4,5 mm arasında değişir. Girusların tepesinde, olukların dibine göre kalındır.',
   },
   {
     terim: 'Kafa plakodları',
     tanim:
-      'Nöral plağın hemen yanındaki ektodermden gelişen kalınlaşmalar; ön hipofiz, koku epiteli, göz merceği ve V, VII, IX, X gangliyonlarının büyük nöronları bunlardan gelir.',
+      'Nöral plağın hemen yanındaki ektodermden gelişen kalınlaşmalar. Ön hipofiz, koku epiteli ve göz merceği bunlardan gelir. V, VII, IX ve X gangliyonlarının büyük nöronları da bunlardan gelir.',
   },
   {
     terim: 'Kafa siniri',
     latince: 'Nervus cranialis',
-    tanim: 'Beyne bağlanan ve kafatası tabanındaki deliklerden geçen 12 çift sinirden her biri; Roma rakamlarıyla I–XII diye numaralanır.',
+    tanim: 'Beyne bağlanan ve kafatası tabanındaki deliklerden geçen 12 çift sinirden her biri. Roma rakamlarıyla I–XII diye numaralanır.',
   },
   {
     terim: 'Kan-beyin engeli',
-    tanim: 'Beyin kılcallarının pencere taşımayan ve kesintisiz sıkı bağlantılarla kenetli endotel hücrelerinin kurduğu seçici engel.',
+    tanim:
+      'Beyin kılcallarının endotel hücrelerinin kurduğu seçici engel. Bu hücrelerde pencere yoktur; hücreler kesintisiz sıkı bağlantılarla kenetlidir.',
   },
   {
     terim: 'Kol ağı (brakiyal pleksus)',
     latince: 'Plexus brachialis',
-    tanim: 'Kolun sinirlerini veren ağ; klasik kökleri C5–T1’dir. Ders kitaplarındaki C4–T1 değeri komşu katkıları da sayar.',
+    tanim: 'Kolun sinirlerini veren ağ. Klasik kökleri C5–T1’dir. Ders kitaplarındaki C4–T1 değeri komşu katkıları da sayar.',
   },
   {
     terim: 'Konnektom',
-    tanim: 'Nöronlar arasındaki bağlantıların haritası; elektron mikroskobu görüntüleri toplanıp çözümlenerek çıkarılır.',
+    tanim: 'Nöronlar arasındaki bağlantıların haritası. Elektron mikroskobu görüntüleri toplanıp çözümlenerek çıkarılır.',
   },
   {
     terim: 'Konus medullaris',
     latince: 'Conus medullaris',
     tanim:
-      'Omuriliğin sivri alt ucu. Büyük erişkin MR serilerinde ortalama L1 dolayında biter ve aralık T11’den L3’e kadar uzanır; daha aşağıda biten seyrek olgular da bildirilmiştir.',
+      'Omuriliğin sivri alt ucu. Büyük erişkin MR serilerinde ortalama L1 dolayında biter. Bitiş yeri T11’den L3’e kadar değişir. Daha aşağıda biten seyrek olgular da bildirilmiştir.',
   },
   {
     terim: 'Koroid pleksus',
     latince: 'Plexus choroideus',
-    tanim: 'Dört karıncıkta bulunan, BOS’un çoğunu etkin salgıyla yapan damarlı yapı; epitel hücreleri kan-BOS engelini kurar.',
+    tanim: 'Dört karıncıkta bulunan damarlı yapı. BOS’un çoğunu etkin salgıyla yapar. Epitel hücreleri kan-BOS engelini kurar.',
   },
   {
     terim: 'Koronal düzlem',
     latince: 'Plana coronalia (TA2’de çoğul; eş anlamlısı plana frontalia)',
-    tanim: 'Beyni ön ve arka diye ayıran, iki kulağa paralel dikey düzlem; frontal düzlem de denir.',
+    tanim: 'Beyni ön ve arka diye ayıran dikey düzlem. İki kulağa paralel uzanır. Frontal düzlem de denir.',
   },
   {
     terim: 'Kromafin hücre',
     tanim:
-      'Böbrek üstü bezinin medullasında, sempatik gangliyonlarla birlikte nöral kristadan (sinir kabartısı) gelişen sinir-salgı hücresi; bez bu yüzden işlevce bir sempatik gangliyon sayılır.',
+      'Böbrek üstü bezinin medullasındaki sinir-salgı hücresi. Sempatik gangliyonlarla birlikte nöral kristadan (sinir kabartısı) gelişir. Bez bu yüzden işlevce bir sempatik gangliyon sayılır.',
   },
   {
     terim: 'Lateral oluk (Sylvius yarığı)',
     latince: 'Sulcus lateralis',
-    tanim: 'Temporal lobu üstteki frontal ve parietal loblardan ayıran derin oluk; tabanında insula bulunur.',
+    tanim: 'Temporal lobu üstteki frontal ve parietal loblardan ayıran derin oluk. Tabanında insula bulunur.',
   },
   {
     terim: 'Limbik lob',
     latince: 'Lobus limbicus',
     tanim:
-      'Broca’nın singulat ve hipokampal girusları topladığı iç yüz lobu; bellek ve öğrenme, dürtüyle ilgili davranış ve duyguyla ilişkilidir.',
+      'Yarımkürenin iç yüzündeki lob. Broca, singulat ve hipokampal girusları bu adla bir araya toplamıştır. Bellek ve öğrenme, dürtüyle ilgili davranış ve duyguyla ilişkilidir.',
   },
   {
     terim: 'Lokalizasyon',
     tanim:
-      'Belirti ve bulgulardan hasarın sinir sisteminin hangi düzeyinde (kabuk, beyin sapı, omurilik, ön boynuz, kök, sinir, kavşak, kas) olduğunu çıkarma.',
+      'Hasarın yerini bulma. Belirti ve bulgulardan hasarın sinir sisteminin hangi düzeyinde olduğu çıkarılır: kabuk, beyin sapı, omurilik, ön boynuz, kök, sinir, kavşak ya da kas.',
   },
   {
     terim: 'Lumbosakral genişleme',
     latince: 'Intumescentia lumbosacralis',
-    tanim: 'Bacak sinirlerinin bağlandığı kalın omurilik kesimi; omur hizasıyla yaklaşık T9–T12, omurilik bölümüyle L1–S2.',
+    tanim: 'Bacak sinirlerinin bağlandığı kalın omurilik kesimi. Omur hizasıyla yaklaşık T9–T12, omurilik bölümüyle L1–S2 arasındadır.',
   },
   {
     terim: 'Menenjiyal lenf damarları',
     tanim:
-      'Sert zar toplardamar sinüslerinin yanında uzanan, BOS’tan sıvı ve bağışıklık hücresi taşıyan lenf damarları; insanda MR ile görüntülenmiştir.',
+      'Beyin zarlarındaki lenf damarları. Sert zarın toplardamar sinüslerinin yanında uzanır; BOS’tan sıvı ve bağışıklık hücresi taşır. İnsanda MR ile görüntülenmiştir.',
   },
   {
     terim: 'Merkezî oluk',
     latince: 'Sulcus centralis',
     tanim:
-      'Frontal lobu parietal lobdan ayıran oluk; önünde presantral girus (birincil hareket kabuğu), arkasında postsantral girus (birincil bedensel duyu kabuğu) bulunur.',
+      'Frontal lobu parietal lobdan ayıran oluk. Önünde presantral girus (birincil hareket kabuğu) bulunur. Arkasında postsantral girus (birincil bedensel duyu kabuğu) bulunur.',
   },
   {
     terim: 'Merkezî sinir sistemi (MSS)',
     latince: 'Systema nervosum centrale',
-    tanim: 'Kafatasının içindeki beyin ile omurga kanalının içindeki omurilik; ikisi atlasın üst kenarı hizasında birbirine devam eder.',
+    tanim:
+      'Kafatasının içindeki beyin ile omurga kanalının içindeki omurilik. İkisi, atlasın (birinci boyun omuru) üst kenarı hizasında birbirine devam eder.',
   },
   {
     terim: 'Mikroglia',
-    tanim: 'MSS’ye yerleşik makrofaj olan glia hücresi; sağlıklı dokuda da hasarlı hücreleri ve hastalık etkenlerini yutabilir.',
+    tanim:
+      'MSS’ye yerleşmiş yutucu hücre (makrofaj) olan glia hücresi. Sağlıklı dokuda da hasarlı hücreleri ve hastalık etkenlerini yutabilir.',
   },
   {
     terim: 'Miyelin',
     tanim:
-      'Glia hücre zarının akson çevresine çok kat sarılmasıyla oluşan, yağdan zengin yalıtkan kılıf; miyelinli aksonda sinyal düğümden düğüme atlar.',
+      'Glia hücre zarının akson çevresine çok kat sarılmasıyla oluşan, yağdan zengin yalıtkan kılıf. Miyelinli aksonda sinyal düğümden düğüme atlar.',
   },
   {
     terim: 'Miyelinleşme',
     tanim:
-      'Aksonların miyelin kılıfla sarılması; anne karnında başlar (ilk miyelinin haftası kaynağa göre 12–16. gebelik haftası arasında verilir), ilişkilendirme yollarının çoğunda 20’li yaşlarda da sürer; prefrontal bölgeler zirvesine kabaca 20–40 yaş arasında ulaşır.',
+      'Aksonların miyelin kılıfla sarılması. Anne karnında başlar. İlk miyelinin haftası kaynağa göre 12–16. gebelik haftası arasında verilir. Çoğu ilişkilendirme yolunda 20’li yaşlarda da sürer. Prefrontal bölgeler zirvesine kabaca 20–40 yaş arasında ulaşır.',
   },
   {
     terim: 'Miyenterik ve submukozal ağ',
     latince: 'Plexus myentericus et plexus submucosus',
     tanim:
-      'Enterik sistemin iki ana ağı. Kas katmanındaki miyenterik (Auerbach) ağ hareketi düzenler ve üst yemek borusundan iç anal büzgene uzanır; mukoza altındaki submukozal (Meissner) ağ ince ve kalın bağırsakta bulunur.',
+      'Enterik sistemin iki ana ağı. Miyenterik (Auerbach) ağ kas katmanındadır ve hareketi düzenler. Üst yemek borusundan iç anal büzgene uzanır. Submukozal (Meissner) ağ mukoza altındadır; ince ve kalın bağırsakta bulunur.',
   },
   {
     terim: 'Mononöropati multipleks',
-    tanim: 'Çevresel sinir hastalığının asimetrik güçsüzlük ve/veya uyuşuklukla seyreden deseni; örneğin vaskülitik nöropatide görülür.',
+    tanim:
+      'Çevresel sinir hastalığının bir deseni. Güçsüzlük, uyuşukluk ya da ikisi birden iki yanda eşit değildir (asimetrik). Örneğin vaskülitik nöropatide görülür.',
   },
   {
     terim: 'Monro–Kellie öğretisi',
     tanim:
-      'Kafatası sağlamken beyin, kan ve BOS hacimlerinin toplamının sabit olduğu, birinin artışının öteki birinin ya da ikisinin azalmasıyla dengelendiği ilke.',
+      'Kafatası sağlamken beyin, kan ve BOS hacimlerinin toplamının sabit olduğunu söyleyen ilke. Biri artarsa öteki ikisinden biri ya da ikisi birden azalarak dengeler.',
   },
   {
     terim: 'MSS–ÇSS geçiş bölgesi',
     tanim:
-      'Sinir kökçüğünün hem merkezi hem çevresel sinir dokusu taşıyan kesimi; kafa sinirlerinde Obersteiner–Redlich bölgesi diye anılır.',
+      'Sinir kökçüğünün hem merkezi hem çevresel sinir dokusu taşıyan kesimi. Kafa sinirlerinde Obersteiner–Redlich bölgesi diye anılır.',
   },
   {
     terim: 'Neokorteks',
     tanim:
-      'Kabuk yüzeyinin %90’ından fazlasını oluşturan altı katmanlı kabuk; 1–3 mm kalınlıktadır ve girusların tepesinde olukların dibine göre daha kalındır.',
+      'Altı katmanlı kabuk. Kabuk yüzeyinin %90’ından fazlasını oluşturur. 1–3 mm kalınlıktadır. Girusların tepesinde, olukların dibine göre daha kalındır.',
   },
   {
     terim: 'Nöral krista',
     tanim:
-      'Nöral kıvrımların kenarından ayrılıp göç eden, çok yönlü embriyonik hücre topluluğu; duyu ve otonom gangliyonları, Schwann hücrelerini, kromafin hücreleri, melanositleri ve yüz iskeletinin büyük bölümünü yapar.',
+      'Nöral kıvrımların kenarından ayrılıp göç eden embriyonik hücre topluluğu. Çok yönlüdür, yani birçok hücre türüne dönüşebilir. Duyu ve otonom gangliyonları, Schwann hücrelerini, kromafin hücreleri, melanositleri ve yüz iskeletinin büyük bölümünü yapar.',
   },
   {
     terim: 'Nöral tüp (sinir borusu)',
     tanim:
-      'Nöral kıvrımların orta hatta birleşmesiyle ektodermin altında oluşan içi boş boru; ön ucu beyni, arka bölümü omuriliği yapar, boşluğu karıncıklara ve merkezî kanala dönüşür.',
+      'İçi boş bir boru. Nöral kıvrımlar orta hatta birleşince ektodermin altında oluşur. Ön ucu beyni, arka bölümü omuriliği yapar. Boşluğu karıncıklara ve merkezî kanala dönüşür.',
   },
   {
     terim: 'Nöral tüp defekti (NTD)',
     tanim:
-      'Nöral tüpün oluşumundaki kusurlardan doğan doğumsal bozukluklar: anensefali, ensefalosel, kraniyoraşişizis ve spina bifida biçimleri. Klasik olarak borunun kapanmamasına bağlanır; deriyle örtülü alt sağrı-kuyruk sokumu disrafizmi ise ikincil nörülasyonun bozulmasından doğar.',
+      'Nöral tüpün oluşumundaki kusurlardan doğan doğumsal bozukluklar: anensefali, ensefalosel, kraniyoraşişizis ve spina bifida biçimleri. Klasik olarak borunun kapanmamasına bağlanır. Deriyle örtülü alt sağrı-kuyruk sokumu disrafizmi ise ikincil nörülasyonun bozulmasından doğar.',
   },
   {
     terim: 'Nörolojik ölçütlerle ölüm (beyin ölümü)',
     tanim:
-      'Beyin işlevinin kalıcı olarak durması; Kanada 2023 kılavuzuna göre bilinç yokluğu, kafa siniri testleriyle beyin sapı işlevi yokluğu ve apne testiyle soluma kapasitesi yokluğu gösterilerek belirlenir.',
+      'Beyin işlevinin kalıcı olarak durması. Kanada 2023 kılavuzuna göre üç şey gösterilerek belirlenir: bilinç yokluğu, beyin sapı işlevi yokluğu (kafa siniri testleriyle) ve soluma kapasitesi yokluğu (apne testiyle).',
   },
   {
     terim: 'Nöron',
-    tanim: 'Sinir sisteminin hesaplamasını ve haberleşmesini yapan hücre; bilgi dendritlerden gövdeye, oradan aksona akar.',
+    tanim: 'Sinir sisteminin hesaplamasını ve haberleşmesini yapan hücre. Bilgi dendritlerden gövdeye, oradan aksona akar.',
   },
   {
     terim: 'Nöropor',
     tanim:
-      'Nöral tüpün iki ucundaki geçici açıklık; ön nöropor yaklaşık 25. günde kapanıp son laminaya dönüşür, arka nöropor yaklaşık 27. günde kapanır.',
+      'Nöral tüpün iki ucundaki geçici açıklık. Ön nöropor yaklaşık 25. günde kapanır ve son laminaya dönüşür. Arka nöropor yaklaşık 27. günde kapanır.',
   },
   {
     terim: 'Olasılıksal atlas',
-    tanim: 'Bir alanın sınırını, beyinden beyne değişkenliği hesaba katarak gösteren atlas; örneği Julich-Brain’dir.',
+    tanim: 'Bir alanın sınırını gösteren atlas; sınırın beyinden beyne değişmesini de hesaba katar. Julich-Brain bunun bir örneğidir.',
   },
   {
     terim: 'Oligodendrosit',
-    tanim: 'MSS’de miyelin yapan glia hücresi; bir hücre birden çok akson segmentine miyelin verir.',
+    tanim: 'MSS’de miyelin yapan glia hücresi. Bir hücre birden çok akson segmentine miyelin verir.',
   },
   {
     terim: 'Omurilik',
     latince: 'Medulla spinalis',
     tanim:
-      'Merkezî sinir sisteminin omurga kanalındaki parçası; foramen magnumda omurilik soğanının devamı olarak başlar, yetişkinde çoğunlukla L1–L2 hizasında biter; 40–50 cm uzunluğundadır.',
+      'Merkezî sinir sisteminin omurga kanalındaki parçası. Foramen magnumda, omurilik soğanının devamı olarak başlar. Yetişkinde çoğunlukla L1–L2 hizasında biter. Uzunluğu 40–50 cm’dir.',
   },
   {
     terim: 'Omurilik bölümü (segment)',
     tanim:
-      'Bir çift omurilik sinirinin bağlandığı omurilik uzunluğu. Yüzeyde görünür bir sınırı yoktur ve aynı adı taşıyan omurla aynı hizada değildir.',
+      'Bir çift omurilik sinirinin bağlandığı omurilik uzunluğu. Yüzeyde görünür bir sınırı yoktur. Aynı adı taşıyan omurla aynı hizada değildir.',
   },
   {
     terim: 'Omurilik durası (dura kesesi)',
     latince: 'Dura spinalis',
-    tanim: 'Omuriliği saran sert zar kesesi; omuriliğin bittiği yerin altına uzanır ve 2. sağrı omuru dolayında kör bir uçla biter.',
+    tanim: 'Omuriliği saran sert zar kesesi. Omuriliğin bittiği yerden daha aşağı uzanır. 2. sağrı omuru dolayında kapalı bir uçla biter.',
   },
   {
     terim: 'Omurilik siniri',
     latince: 'Nervus spinalis',
-    tanim: 'Omuriliğe ön ve arka kökle bağlanan, hem duyu hem hareket aksonu taşıyan karma sinir; 31 çifttir.',
+    tanim: 'Omuriliğe ön ve arka kökle bağlanan karma sinir. Hem duyu hem hareket aksonu taşır. 31 çifttir.',
   },
   {
     terim: 'Otonom bölüm',
     latince: 'Divisio autonomica systematis nervosi peripherici',
     tanim:
-      'Kalp kasını, düz kasları ve bezleri istem dışı yöneten bölüm; sempatik (torakolomber) ve parasempatik (kraniyosakral) kısımları vardır; enterik sistem de otonom sistemin üçüncü bölümü sayılır.',
+      'Kalp kasını, düz kasları ve bezleri istem dışı yöneten bölüm. Sempatik kısmı göğüs-bel (torakolomber), parasempatik kısmı kafa-sağrı (kraniyosakral) bölümüdür. Enterik sistem de otonom sistemin üçüncü bölümü sayılır.',
   },
   {
     terim: 'Otoregülasyon',
     tanim:
-      'Perfüzyon basıncı belirli bir aralıkta (kaynağa göre 50–150 ya da 60–160 mmHg) değişse de beyin kan akımının görece sabit kalması.',
+      'Beyin kan akımının kendi kendini ayarlaması. Perfüzyon basıncı belli bir aralıkta değişse de akım görece sabit kalır. Aralık kaynağa göre 50–150 ya da 60–160 mmHg’dir.',
   },
   {
     terim: 'Ön beyin (prosensefalon)',
     latince: 'Prosencephalon',
     tanim:
-      'Üç birincil keseciğin en öndekisi; uç beyni (telensefalon) ve ara beyni (diensefalon) verir. TA2’de yetişkindeki cerebrum’un eş anlamlısıdır.',
+      'Üç birincil keseciğin en öndekisi. Uç beyni (telensefalon) ve ara beyni (diensefalon) verir. Terminologia Anatomica’da (TA2) yetişkindeki cerebrum’un eş anlamlısıdır.',
   },
   {
     terim: 'Ön dal ve arka dal',
     latince: 'Ramus anterior et ramus posterior nervi spinalis',
     tanim:
-      'Omurilik sinirinin delikten çıktıktan sonra ayrıldığı iki dal; ikisi de iki kökten lif alır. Boyun, bel ve sağrı bölgesinde ön dallar sinir ağları kurar.',
+      'Omurilik sinirinin delikten çıktıktan sonra ayrıldığı iki dal. İkisi de iki kökten lif alır. Boyun, bel ve sağrı bölgesinde ön dallar sinir ağları kurar.',
   },
   {
     terim: 'Örümcek ağı zar (araknoid)',
     latince: 'Arachnoidea mater',
     tanim:
-      'Sert zarın altındaki ince zar; dıştaki engel hücreleri sıkı bağlantılarla kenetlidir, içten örümcek ağına benzeyen trabeküllerle subaraknoid aralığa uzanır.',
+      'Sert zarın altındaki ince zar. Dıştaki engel hücreleri sıkı bağlantılarla kenetlidir. İçten, örümcek ağına benzeyen ince liflerle (trabeküller) subaraknoid aralığa uzanır.',
   },
   {
     terim: 'Parasempatik kol',
     latince: 'Pars craniosacralis divisionis autonomicae',
-    tanim: 'Otonom sistemin “dinlen ve sindir” kolu; III, VII, IX ve X. kafa sinirleri ile S2–S4 sinirlerinden çıkar.',
+    tanim: 'Otonom sistemin “dinlen ve sindir” kolu. III, VII, IX ve X. kafa sinirleri ile S2–S4 sinirlerinden çıkar.',
   },
   {
     terim: 'Parieto-oksipital oluk',
@@ -536,17 +544,17 @@ export const sozluk: Terim[] = [
   {
     terim: 'Perinöryum',
     tanim:
-      'Çevresel sinirde akson demetlerini (fasikülleri) saran ve endonöryum ile dış dokular arasındaki ana difüzyon bariyerini oluşturan kılıf.',
+      'Çevresel sinirde akson demetlerini (fasikülleri) saran kılıf. Endonöryum ile dış dokular arasındaki ana difüzyon engelini oluşturur.',
   },
   {
     terim: 'Pial yüzey',
     tanim:
-      'Beyin kabuğunun dış yüzeyi; gri-beyaz cevher sınırında ölçülen yüzeyden yaklaşık 1,2 kat büyüktür (MR’a dayalı bir hesapla kadınlarda iki yarımkürede ~2038 cm²).',
+      'Beyin kabuğunun dış yüzeyi. Gri-beyaz cevher sınırındaki yüzeyden yaklaşık 1,2 kat büyüktür (MR’a dayalı bir hesapla kadınlarda iki yarımkürede ~2038 cm²).',
   },
   {
     terim: 'Preganglionik ve postganglionik nöron',
     tanim:
-      'Otonom yolun iki nöronu: gövdesi merkezî sistemde olan preganglionik nöron, gövdesi gangliyonda olan ve organa uzanan postganglionik nörona bağlanır.',
+      'Otonom yolun iki nöronu. Preganglionik nöronun gövdesi merkezî sistemdedir. Bu nöron, gangliyondaki postganglionik nörona bağlanır. Postganglionik nöron da organa uzanır.',
   },
   {
     terim: 'Prevertebral gangliyonlar',
@@ -557,213 +565,215 @@ export const sozluk: Terim[] = [
   {
     terim: 'Psödounipolar nöron',
     tanim:
-      'Gövdesinden çıkan tek uzantısı T biçiminde ikiye ayrılan duyu nöronu; gövdesi çoğunlukla arka kök gangliyonu gibi bir duyusal gangliyondadır. Gray (1918) trigeminal sinirin mezensefalik kökünün unipolar hücrelerini MSS’nin içinde anlatır. İnsanda gerçek unipolar nöron yoktur.',
+      'Gövdesinden tek uzantı çıkan duyu nöronu; bu uzantı T biçiminde ikiye ayrılır. Gövdesi çoğunlukla arka kök gangliyonu gibi bir duyusal gangliyondadır. Gray (1918) trigeminal sinirin mezensefalik kökünün unipolar hücrelerini MSS’nin içinde anlatır. İnsanda gerçek unipolar nöron yoktur.',
   },
   {
     terim: 'Radyolojik gösterim',
     tanim:
-      'Kesitin hastanın ayak ucundan bakılıyormuş gibi gösterildiği kural: hastanın solu ekranın sağındadır. Tersine nörolojik gösterim denir.',
+      'Kesitin, hastanın ayak ucundan bakılıyormuş gibi gösterildiği kural. Hastanın solu ekranın sağındadır. Tersine nörolojik gösterim denir.',
   },
   {
     terim: 'Ranvier düğümü',
-    tanim: 'Miyelin kılıfındaki boşluklar; sinyalin akson boyunca ilerleyişinde önemlidir.',
+    tanim: 'Miyelin kılıfındaki boşluklar. Sinyalin akson boyunca ilerleyişinde önemlidir.',
   },
   {
     terim: 'Retiküler formasyon',
     latince: 'Formatio reticularis',
-    tanim: 'Beyin sapı boyunca yayılan dağınık gri cevher ağı; uyku–uyanıklık ve dikkatle ilişkilidir.',
+    tanim: 'Beyin sapı boyunca yayılan dağınık bir gri cevher ağı. Uyku–uyanıklık ve dikkatle ilişkilidir.',
   },
   {
     terim: 'Rombik dudak',
     tanim:
-      'Arka beyinde alar plakların uç kısımları; His’e göre pontin çekirdekler, olivler ve koklear çekirdekler gibi göçmen hücre topluluklarının kaynağıdır.',
+      'Arka beyinde alar plakların uç kısımları. His’e göre göçmen hücre topluluklarının kaynağıdır; pontin çekirdekler, olivler ve koklear çekirdekler bunlara örnektir.',
   },
   {
     terim: 'Rostral ve kaudal',
-    tanim: 'Sinir ekseni boyunca yönler: rostral beyinde öne, omurilikte başa doğru; kaudal beyinde arkaya, omurilikte aşağı doğru.',
+    tanim: 'Sinir ekseni boyunca yönler. Rostral beyinde öne, omurilikte başa doğrudur. Kaudal beyinde arkaya, omurilikte aşağı doğrudur.',
   },
   {
     terim: 'Sagital düzlem',
     latince: 'Plana sagittalia (TA2’de çoğul; orta sagital düzlem: planum medianum)',
-    tanim: 'Vücudu ve beyni sağ ve sol diye ayıran dikey düzlem; orta hattan geçene orta sagital (median) düzlem denir.',
+    tanim: 'Vücudu ve beyni sağ ve sol diye ayıran dikey düzlem. Orta hattan geçene orta sagital (median) düzlem denir.',
   },
   {
     terim: 'Schwann hücresi',
-    tanim: 'ÇSS’de miyelin yapan glia hücresi; tek bir aksonun yalnızca bir segmentini sarar.',
+    tanim: 'ÇSS’de miyelin yapan glia hücresi. Tek bir aksonun yalnızca bir segmentini sarar.',
   },
   {
     terim: 'Sella diyaframı',
     latince: 'Diaphragma sellae',
-    tanim: 'Türk eyerinin üstündeki tek katlı sert zar yaprağı; olguların %39’unda 5 mm ya da daha geniş bir açıklık bulunur.',
+    tanim: 'Türk eyerinin üstündeki tek katlı sert zar yaprağı. Olguların %39’unda bu yaprakta 5 mm ya da daha geniş bir açıklık bulunur.',
   },
   {
     terim: 'Sempatik gövde',
     latince: 'Truncus sympathicus',
     tanim:
-      'Omurganın iki yanında uzanan, her yanda tipik olarak 23 gangliyon taşıyan zincir; iki gövde aşağıda kuyruk sokumunun önündeki ganglion imparda birleşir.',
+      'Omurganın iki yanında uzanan gangliyon zinciri. Her yanda tipik olarak 23 gangliyon taşır. İki gövde aşağıda, kuyruk sokumunun önündeki ganglion imparda birleşir.',
   },
   {
     terim: 'Sempatik kol',
     latince: 'Pars thoracolumbalis divisionis autonomicae',
     tanim:
-      'Otonom sistemin “savaş ya da kaç” kolu; preganglionik nöronları göğüs ve üst bel omuriliğinin yan boynuzundadır (T1–L2, kaynağa göre L1–L3).',
+      'Otonom sistemin “savaş ya da kaç” kolu. Preganglionik nöronları göğüs ve üst bel omuriliğinin yan boynuzundadır (T1–L2, kaynağa göre L1–L3).',
   },
   {
     terim: 'Sert zar (dura)',
     latince: 'Dura mater',
     tanim:
-      'Beyni ve omuriliği saran en dıştaki kalın, lifli zar; kafatasında klasik olarak endosteal ve meningeal iki katmanı, güncel anlatımda en içte bir de dural sınır hücre katmanı vardır.',
+      'Beyni ve omuriliği saran en dıştaki kalın, lifli zar. Klasik anlatımda kafatasında iki katmanı vardır: endosteal ve meningeal. Güncel anlatımda en içte bir de dural sınır hücre katmanı vardır.',
   },
   {
     terim: 'Sınır oluğu',
     latince: 'Sulcus limitans',
     tanim:
-      'Alar ve bazal plakların sınırını karıncık yüzünde çizen oluk; yetişkinde dördüncü karıncığın tabanında görülür, embriyoda ne kadar öne uzandığı tartışmalıdır.',
+      'Alar ve bazal plakların sınırını karıncık yüzünde çizen oluk. Yetişkinde dördüncü karıncığın tabanında görülür. Embriyoda ne kadar öne uzandığı tartışmalıdır.',
   },
   {
     terim: 'Sinaptogenez',
     tanim:
-      'Sinapsların oluşması; anne karnında başlar (başlangıcı kaynağa göre 12. gebelik haftası ile gebeliğin ortası arasında verilir), 2–3 yaş dolayında doruğa ulaşır ve ergenlikte özellikle prefrontal kabukta yeniden hızlanır.',
+      'Sinapsların oluşması. Anne karnında başlar. Başlangıcı kaynağa göre 12. gebelik haftası ile gebeliğin ortası arasında verilir. 2–3 yaş dolayında doruğa ulaşır. Ergenlikte, özellikle prefrontal kabukta yeniden hızlanır.',
   },
   {
     terim: 'Sinir ağı (pleksus)',
     latince: 'Plexus nervosus',
     tanim:
-      'Sinir dallarının birbirine katıldığı ağ. Omurilik sinirlerinin ağları hücre gövdesi içermez; otonom ve enterik ağlar gangliyon içerebilir.',
+      'Sinir dallarının birbirine katıldığı ağ. Omurilik sinirlerinin ağları hücre gövdesi içermez. Otonom ve enterik ağlar gangliyon içerebilir.',
   },
   {
     terim: 'Sinüvertebral sinir (meningeal dal)',
     latince: 'Ramus meningeus nervi spinalis',
     tanim:
-      'Omurilik sinirinin omurlar arası delikten geri girip omurları, bağlarını ve omuriliğin zarlarının damarlarını sinirlendiren küçük dalı.',
+      'Omurilik sinirinin küçük bir dalı. Omurlar arası delikten omurga kanalına geri girer. Omurları, bağlarını ve omuriliğin zarlarının damarlarını sinirlendirir.',
   },
   {
     terim: 'Sinyal dışı ("ev işi") enerji',
     tanim:
-      'Beynin bilgi iletimine değil hücreyi ayakta tutmaya (protein ve lipit yapımı, mitokondride proton kaçağı gibi) harcadığı enerji; toplamın yarıya yakını.',
+      'Beynin bilgi iletimine değil, hücreyi ayakta tutmaya harcadığı enerji. Protein ve lipit yapımı ile mitokondride proton kaçağı bu işlere örnektir. Toplamın yarıya yakınıdır.',
   },
   {
     terim: 'Sirkumventriküler organlar',
     tanim:
-      'Karıncıkların çevresinde, kılcalları pencereli olduğu için kan-beyin engeli bulunmayan küçük bölgeler (“beynin pencereleri”); duyusal ve salgı yapan türleri vardır.',
+      'Karıncıkların çevresindeki küçük bölgeler (“beynin pencereleri”). Kılcalları pencereli olduğu için burada kan-beyin engeli yoktur. Duyusal ve salgı yapan türleri vardır.',
   },
   {
     terim: 'Sitoarkitektonik harita',
-    tanim: 'Kabuk alanlarını ve çekirdekleri hücrelerin dizilişine göre ayıran harita; Julich-Brain bu haritalardan oluşur.',
+    tanim: 'Kabuk alanlarını ve çekirdekleri hücrelerin dizilişine göre ayıran harita. Julich-Brain bu haritalardan oluşur.',
   },
   {
     terim: 'Somatik sinir sistemi',
-    tanim: 'Bilinçli algıdan ve istemli hareketlerden sorumlu, iskelet kaslarını kasan bölüm; somatik yanıtların bir kısmı reflekstir.',
+    tanim: 'Bilinçli algıyı ve istemli hareketleri yöneten, iskelet kaslarını kasan bölüm. Somatik yanıtların bir kısmı reflekstir.',
   },
   {
     terim: 'Somatotopi',
     tanim:
-      'Bedenin bölümlerinin kabukta düzenli bir harita hâlinde temsil edilmesi; el ve yüz orantısız geniş yer kaplar, ayak ve bacak presantral girusun iç duvarındadır.',
+      'Bedenin bölümlerinin kabukta düzenli bir harita gibi temsil edilmesi. El ve yüz orantısız geniş yer kaplar. Ayak ve bacak presantral girusun iç duvarındadır.',
   },
   {
     terim: 'Spastisite',
     tanim:
-      'Ekstremitenin pasif hareketine, hız arttıkça artan direnç; üst motor nöron bozukluğunun işaretidir. Rijidite ise hıza bağlı değildir.',
+      'Kol ya da bacak pasif olarak oynatılınca ortaya çıkan direnç; hız arttıkça direnç de artar. Üst motor nöron bozukluğunun işaretidir. Rijidite ise hıza bağlı değildir.',
   },
   {
     terim: 'Spinal epidural aralık',
     latince: 'Spatium epidurale spinale',
-    tanim: 'Omurilik durası ile omurga kanalının duvarı arasındaki, gevşek bağ dokusu ve toplardamar ağı içeren gerçek aralık.',
+    tanim: 'Omurilik durası ile omurga kanalının duvarı arasındaki gerçek aralık. İçinde gevşek bağ dokusu ve toplardamar ağı vardır.',
   },
   {
     terim: 'Stereotaksi',
-    tanim: 'Üç boyutlu bir koordinat sistemiyle beynin derinindeki bir noktaya iğne ya da elektrot ulaştırma yöntemi.',
+    tanim: 'Beynin derinindeki bir noktaya iğne ya da elektrot ulaştırma yöntemi. Bunun için üç boyutlu bir koordinat sistemi kullanılır.',
   },
   {
     terim: 'Striatum',
-    tanim: 'Kaudat çekirdek ile putamenin ortak adı; bazal çekirdeklerin kabuktan gelen bütün girdisini alır.',
+    tanim: 'Kaudat çekirdek ile putamenin ortak adı. Bazal çekirdeklerin kabuktan gelen bütün girdisini alır.',
   },
   {
     terim: 'Subaraknoid aralık',
     latince: 'Spatium subarachnoidale',
-    tanim: 'Örümcek ağı zar ile yumuşak zar arasındaki, dolaşan BOS ile dolu gerçek aralık.',
+    tanim: 'Örümcek ağı zar ile yumuşak zar arasındaki gerçek aralık. İçi dolaşan BOS ile doludur.',
   },
   {
     terim: 'Subaraknoid sarnıç',
     tanim:
-      'Beyin tabanında örümcek ağı zarın yumuşak zardan geniş aralıkla ayrıldığı, birbiriyle bağlantılı BOS havuzu; interpedinküler sarnıç Willis halkasını taşır.',
+      'Beyin tabanında örümcek ağı zarın yumuşak zardan geniş bir aralıkla ayrıldığı yerdeki BOS havuzu. Sarnıçlar birbiriyle bağlantılıdır. İnterpedinküler sarnıç Willis halkasını taşır.',
   },
   {
     terim: 'Sulkus (oluk)',
     latince: 'Sulcus',
-    tanim: 'İki kıvrım arasındaki oyuk; kabuk yüzeyinin yaklaşık üçte ikisi olukların içinde gizlidir.',
+    tanim: 'İki kıvrım arasındaki oyuk. Kabuk yüzeyinin yaklaşık üçte ikisi olukların içinde gizlidir.',
   },
   {
     terim: 'Talamus',
     latince: 'Thalamus',
     tanim:
-      'Üçüncü karıncığın iki yanındaki, yaklaşık 4 cm uzunluğunda oval gri cevher kitlesi; koku dışındaki bütün duyuları kabuğa aktarır ve işler.',
+      'Üçüncü karıncığın iki yanındaki oval gri cevher kitlesi. Yaklaşık 4 cm uzunluğundadır. Koku dışındaki bütün duyuları kabuğa aktarır ve işler.',
   },
   {
     terim: 'Tektum',
     latince: 'Tectum mesencephali',
     tanim:
-      'Orta beynin çatısı; görmeyle ilgili üst tepecikleri ve işitmeyle ilgili alt tepecikleri taşır. Tabandaki bölüme tegmentum denir.',
+      'Orta beynin çatısı. Görmeyle ilgili üst tepecikleri ve işitmeyle ilgili alt tepecikleri taşır. Tabandaki bölüme tegmentum denir.',
   },
   {
     terim: 'Telensefalon',
     latince: 'Telencephalon',
-    tanim: 'Ön beynin büyük beyni yapan bölümü: iki yarımküre, kabuk, beyaz cevher ve bazal çekirdekler; boşluğu yan karıncıklardır.',
+    tanim:
+      'Ön beynin büyük beyni yapan bölümü. İki yarımküreyi, kabuğu, beyaz cevheri ve bazal çekirdekleri içerir. Boşluğu yan karıncıklardır.',
   },
   {
     terim: 'Terminal sinir',
     latince: 'Nervus terminalis',
-    tanim: 'TA2’nin kafa sinirleri arasında “0. kafa siniri” eş adıyla listelediği sinir; ilk kez 1878’de kıkırdaklı balıklarda bulundu.',
+    tanim:
+      'TA2’nin kafa sinirleri arasında listelediği bir sinir. Eş adı “0. kafa siniri”dir. İlk kez 1878’de kıkırdaklı balıklarda bulundu.',
   },
   {
     terim: 'Tetik bölgesi',
-    tanim: 'Akson tepeciği ile aksonun başlangıç segmentinden oluşan, aksiyon potansiyelinin doğduğu bölge.',
+    tanim: 'Aksiyon potansiyelinin doğduğu bölge. Akson tepeciği ile aksonun başlangıç segmentinden oluşur.',
   },
   {
     terim: 'Transkriptom',
-    tanim: 'Bir hücrede okunan genlerin (RNA’ların) bütünü; hücre tipi atlaslarında hücreleri sınıflamanın temel verisidir.',
+    tanim: 'Bir hücrede okunan genlerin (RNA’ların) bütünü. Hücre tipi atlaslarında hücreleri sınıflamanın temel verisidir.',
   },
   {
     terim: 'Trigeminal boşluk (Meckel boşluğu)',
     latince: 'Cavum trigeminale',
     tanim:
-      'Temporal kemiğin kayalık kısmının tepesine yakın, trigeminal gangliyonu barındıran sert zar boşluğu; gangliyonun kafatası içinde olduğunu gösterir.',
+      'Trigeminal gangliyonu barındıran sert zar boşluğu. Şakak (temporal) kemiğinin kayalık kısmının tepesine yakındır. Gangliyonun kafatası içinde olduğunu gösterir.',
   },
   {
     terim: 'Uzamsal transkriptomik',
     tanim:
-      'Gen ifadesini, hücrelerin dokudaki yerini koruyarak ölçen yöntemler; bütün fare beyni atlasında MERFISH ile yaklaşık 4,3 milyon hücre incelendi.',
+      'Gen ifadesini, hücrelerin dokudaki yerini koruyarak ölçen yöntemler. Bütün fare beyni atlasında MERFISH ile yaklaşık 4,3 milyon hücre incelendi.',
   },
   {
     terim: 'Uzunlamasına yarık',
     latince: 'Fissura longitudinalis cerebri',
-    tanim: 'İki yarımküreyi birbirinden ayıran derin yarık; iki yarımküreyi derinde korpus kallozum bağlar.',
+    tanim: 'İki yarımküreyi birbirinden ayıran derin yarık. Derinde iki yarımküreyi korpus kallozum bağlar.',
   },
   {
     terim: 'Üst motor nöron',
     tanim:
-      'Geniş tanımda alfa motor nöronların üstündeki bütün hareket sistemi nöronları; dar tanımda kortikospinal yolun kabuktaki nöronu. Bu nöronların bir bölümü birincil hareket kabuğunda, ötekiler başka kabuk alanlarındadır.',
+      'Geniş tanımda: alfa motor nöronların üstündeki bütün hareket sistemi nöronları. Dar tanımda: kortikospinal yolun kabuktaki nöronu. Bu nöronların bir bölümü birincil hareket kabuğundadır; ötekiler başka kabuk alanlarındadır.',
   },
   {
     terim: 'Vermis',
     latince: 'Vermis cerebelli',
-    tanim: 'Beyinciğin ortadaki daralmış, halkalı görünümlü bölümü; iki yanında beyincik yarımküreleri bulunur.',
+    tanim: 'Beyinciğin ortadaki daralmış, halkalı görünümlü bölümü. İki yanında beyincik yarımküreleri bulunur.',
   },
   {
     terim: 'Willis halkası',
     latince: 'Circulus arteriosus cerebri',
     tanim:
-      'Beynin tabanında iç karotis ve vertebral–baziler sistemleri bağlayan atardamar halkası; ince (hipoplazik) ya da eksik parça içermeyen tam halka çoğu seride insanların azınlığında görülür, oran tanıma göre değişir.',
+      'Beynin tabanındaki atardamar halkası. İç karotis ve vertebral–baziler sistemleri birbirine bağlar. Tam halkada ince (hipoplazik) ya da eksik parça yoktur. Çoğu seride tam halka insanların azınlığında görülür; oran tanıma göre değişir.',
   },
   {
     terim: 'Yol (traktus)',
     latince: 'Tractus',
-    tanim: 'MSS’deki akson demeti; ÇSS’deki karşılığı sinirdir. Adında önce köken, sonra sonlanma yeri yazılır (kortikospinal).',
+    tanim: 'MSS’deki akson demeti. ÇSS’deki karşılığı sinirdir. Adında önce köken, sonra sonlanma yeri yazılır (kortikospinal).',
   },
   {
     terim: 'Yumuşak zar (pia)',
     latince: 'Pia mater',
     tanim:
-      'Beyin yüzeyine yapışık, olukların içine inen en iç zar; hücreleri arasında sıkı bağlantı yoktur, çözünmüş maddelere engel olmaz.',
+      'Beyin yüzeyine yapışık, olukların içine inen en iç zar. Hücreleri arasında sıkı bağlantı yoktur; çözünmüş maddelere engel olmaz.',
   },
 ];

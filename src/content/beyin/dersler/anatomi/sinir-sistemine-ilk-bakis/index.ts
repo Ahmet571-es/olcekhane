@@ -17,7 +17,7 @@ import { sorular } from './sorular';
 import { sozluk } from './sozluk';
 
 /**
- * Anatomi 1: Sinir sistemine ilk bakış (sinir sistemi ünitesinin genel bakışı). Üç düzeyli ders (Temel, Lisans,
+ * Anatomi 1: Sinir sistemine ilk bakış (bölümün genel bakışı: bütün sinir sisteminin haritası). Üç düzeyli ders (Temel, Lisans,
  * Uzman); bilgiler açık erişimli ders kitaplarından (Gray 1918, OpenStax, UTHealth, TA2) ve makalelerin tam
  * metinlerinden alındı. Bölümler ayrı dosyalardadır.
  */
@@ -30,7 +30,7 @@ export const sinirSistemineIlkBakis: Ders = {
   aciklama:
     'Sinir sisteminin üç düzeyli haritası: bölümler, sinir dokusu, sayılar, loblar, gelişim, omurilik, sinirler, otonom sistem, zarlar, BOS, damarlar, hasarın yeri.',
   giris:
-    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım: sinir sistemi ne yapar ve nasıl bölünür, hangi hücrelerden kurulur, beyin hangi parçalardan oluşur ve nasıl gelişir, omurilik ve sinirler bedene nasıl yayılır, onu ne korur ve besler, bir hasarın yeri belirtilerden nasıl bulunur? Ders üç düzeyde okunur: Temel ile başla; hazır olduğunda Lisans ve Uzman düzeylerinde ders kitaplarının ayrıntısına, çelişen kaynaklara, hasta vakalarına, görüntülemeye ve beyin cerrahisine geç. Bu ders sinir sistemi ünitesinin genel bakışıdır; anatominin dili, omurilik sinirleri ve dermatomlar, kol ve bacak sinirleri ünitenin sonraki dört dersinde ayrıntılı işlenecek.',
+    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım. Sinir sistemi ne yapar ve nasıl bölünür? Hangi hücrelerden kurulur? Beyin hangi parçalardan oluşur ve nasıl gelişir? Omurilik ve sinirler bedene nasıl yayılır? Beyni ne korur, ne besler? Bir hasarın yeri belirtilerden nasıl bulunur? Ders üç düzeyde okunur. Temel ile başla. Hazır olduğunda Lisans ve Uzman düzeylerine geç: orada ders kitaplarının ayrıntısı, birbirini tutmayan kaynaklar, hasta vakaları, görüntüleme ve beyin cerrahisi var. Bu ders bütün sinir sisteminin haritasıdır; sonraki dersler beynin yapılarını tek tek ayrıntılı işler.',
   hedefler: [
     'Sinir sisteminin üç işini (duyu, bütünleştirme, yanıt) ve yerine, işine ve bilginin yönüne göre bölümlerini açıklamak',
     'Yön terimlerini ve kesit düzlemlerini kullanmak; beyinde ve omurilikte “dorsal” ile “rostral”ın farkını söylemek',

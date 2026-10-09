@@ -203,14 +203,14 @@ describe('yapı kataloğu ve model', () => {
 });
 
 describe('dersler', () => {
-  // 2026-10-08: 100 ders; 2026-10-09: kafatası ünitesinin altı dersiyle 106, sinir sistemi ünitesinin dört dersiyle 110
+  // 2026-10-08: 100 ders; 2026-10-09: üniteler eklenip 110'a çıktı, sonra bölüm yalnızca beyne odaklandı (kafatası dersleri ve kol-bacak sinirleri çıktı): 100
   // (site sahibinin istekleri).
-  it('program 8 bölüm, 110 derstir; sıralar ardışık, adresler benzersiz', () => {
+  it('program 8 bölüm, 100 derstir; sıralar ardışık, adresler benzersiz', () => {
     expect(DALLAR).toHaveLength(8);
     expect(DALLAR.map((d) => d.sira)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(new Set(DALLAR.map((d) => d.id)).size).toBe(8);
-    expect(toplamDers()).toBe(110);
-    expect(DALLAR.reduce((t, d) => t + d.program.length, 0)).toBe(110);
+    expect(toplamDers()).toBe(100);
+    expect(DALLAR.reduce((t, d) => t + d.program.length, 0)).toBe(100);
     for (const d of DALLAR) {
       expect(d.renk, d.id).toMatch(/^#[0-9a-f]{6}$/i);
       expect(d.aciklama.length, d.id).toBeGreaterThan(60);

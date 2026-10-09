@@ -15,7 +15,7 @@ export function ModelNotu({ kisa = false }: { kisa?: boolean }) {
         <a href="https://creativecommons.org/licenses/by/4.0/deed.tr" target="_blank" rel="noopener noreferrer">
           lisans
         </a>
-        ). Yalnızca beyin, damar, kafatası ve yüz kemikleri, dil kemiği ile ilk iki boyun omuru alındı; eksenleri ve merkezi değiştirildi, dosyalar sitede hızlı
+        ). Yalnızca beyin, damarlar, kafatası ve yüz kemikleri, dil kemiği, omurlar (sağrı kemiği dahil) ve omurlar arası diskler alındı; eksenleri ve merkezi değiştirildi, dosyalar sitede hızlı
         açılsın diye sıkıştırıldı. Türkçe adlar, renkler ve açıklamalar Ölçekhane’nindir.
       </p>
       {!kisa && (
