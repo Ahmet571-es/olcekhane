@@ -396,6 +396,15 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   kaynaklara göre düzeltildi (dayanaksız "%75 vagus", "40 mmHg", Cushing ve "normal 7–15" çıkarıldı). Modelde yeni
   "omurga" paketi: C3–L5 omurları, sağrı kemiği ve omurlar arası diskler (sürüm 75b11dae6b); modelde omurilik ve
   sinirler yoktur.
+- Hazır: Anatomi 2 "Anatominin dili: beyinde yön bulmak" (2026-10-09; 9 bölüm: anatomik duruş ve yön terimleri, beynin
+  ekseni (Forel–Meynert, bükülmeler), düzlemler ve kesitler, simetri ve ölçek merdiveni, MR ve BT'de yön (radyolojik ve
+  nörolojik gösterim), koordinatlar (RAS+/LPS+, Talairach, MNI, AC–PC, Leksell, derin beyin uyarımı hedefleri), taraf
+  hataları, kafanın dışından beyni bulmak (Taylor–Haughton, Kocher ve öteki giriş noktaları, EEG 10–20, TMS), terimlerin
+  kökeni; 21 sahne, 8 hareketli çizim (5'i yeni: yön çiftleri, eksen açıları, ölçek merdiveni, AC–PC ızgarası, kafadan
+  beyne çizgiler), 18 vaka, 41 tablo, 54 soru, 100 terim, 267 kaynak; okuma süresi temel ~77, lisans ~182, tamamı ~280
+  dk). Dört araştırmayla 1677 doğrulanmış not; dört bağımsız denetçi ~100 bulgu bildirdi, hepsi kaynağa bakılarak
+  düzeltildi; iki ayrı doğrulayıcı düzeltmeleri ve çizimleri yeniden denetledi. Kapsam kararına göre omurga ameliyatı,
+  kafa derisi ve kafatası ayrıntıları çıkarıldı. Gray 1918'in doğrulanmamış değerleri "tarihsel" diye işaretli.
 - **Yayından kaldırıldı (2026-10-09, site sahibinin kararı):** "Kafatası: beynin kemik kalesi" ve "Kafatası 1: Kemikler
   tek tek" (her biri bağımsız denetimden geçmiş, yayında kalmış derslerdi: 7 ve 10 bölüm, 7 ve 39 sahne, 167 ve 187
   kaynak, 131 kemik işaret noktası). Klasörleri, işaret noktaları ve çizimleri depoda saklı; eski adresler ilk derse
@@ -419,9 +428,8 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   profesöre, öğretmenden beyin cerrahına herkesin başvuracağı, Türkiye'de eşi olmayan bir beyin atlası ve ansiklopedisi.
   Kafatası işlenmez (iki kafatası dersi yayından kalktı). Sinir sistemi ünitesinden yalnızca "Anatominin dili" kaldı
   (kol-bacak sinirleri ve dermatomlar çıktı); omurilik ve çıkan-inen yollar dersleri kalır. Derinlik ve sade dil aynen.
-- **Sıradaki ders:** Anatomi 2 "Anatominin dili: beyinde yön bulmak" (yönler, eksenler, düzlemler ve kesitler, MR/BT'de
-  yön ve sağ-sol, standart koordinatlar, terimlerin kökeni; kaynak araştırması bitti: dört grupta 1677 doğrulanmış not,
-  çalışma klasöründe). Sonra programdaki sırayla beyin dersleri: beyin zarları, karıncıklar ve BOS, atardamarlar...
+- **Sıradaki ders:** Anatomi 3 "Beyin zarları ve zarlar arası boşluklar" (sert zar, örümcek ağı zar, yumuşak zar;
+  kıvrımları, boşlukları, toplardamar sinüsleri). Sonra programdaki sırayla: karıncıklar ve BOS, atardamarlar...
   Denetçilerin önerdiği 2B çizimler (nöron biçimleri, glia, nörülasyon ve kesecikler, lokalizasyon merdiveni, sert zar
   katmanları ve sinüsler, BOS yolu, Willis varyantları) ilgili derslerde yapılacak. Site sahibi başka bir ders isterse
   o yapılır.
@@ -587,6 +595,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (20): Beyin Akademisi Anatomi 2 "Anatominin dili: beyinde yön bulmak" yayında: 9 bölüm, üç düzey, 21
+  sahne, 5 yeni hareketli çizim, 18 vaka, 54 soru, 267 kaynak; dört bağımsız denetim ve iki doğrulama; dil sade (cümle
+  ortalaması ~9 sözcük). Sıradaki ders "Beyin zarları ve zarlar arası boşluklar".
 - 2026-10-09 (19): Küp Açınımı yayında (5. sınıftan yetişkine): 20 özgün soru, on bir açınımın hepsi; yüzlerin yeri ve
   şekillerin yönü ayrı yorumlanır, yanılgılar (karşılıklı yüzler, köşedeki sıra, şeklin yönü) yalnızca beklenenden sık
   görülünce anlatılır; her soru açınım kâğıt gibi katlanarak bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, yol
@@ -624,7 +635,3 @@ En yeni üstte; en çok 10 madde tutulur.
   birlikte yorumlayan "Birlikte bakınca" bölümü (ertelemenin hangi alışkanlıklarla birlikte görüldüğü); öğrenci, veli ve
   yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü,
   rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
-- 2026-10-09 (10): Ders Çalışma Motivasyonu yayında (5. sınıftan mezuna): 25 özgün madde, beş motivasyon türü; yeni
-  "motivasyon haritası" (kendi isteğiyle ve baskıyla çalışma) ve dokuz profilli yorum; öğrenci ve veli raporu, 3B grafikli
-  yol haritası; telefonda dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız
-  inceleme bulguları düzeltildi.
