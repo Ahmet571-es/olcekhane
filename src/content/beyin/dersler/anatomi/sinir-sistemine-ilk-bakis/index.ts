@@ -20,11 +20,11 @@ export const sinirSistemineIlkBakis: Ders = {
   slug: 'sinir-sistemine-ilk-bakis',
   sira: 1,
   seviye: 'temel',
-  baslik: 'Sinir sistemine ilk bakış ve anatominin dili',
+  baslik: 'Sinir sistemine ilk bakış',
   aciklama:
     'Üç düzeyli giriş: sinir sisteminin bölümleri, gelişim, loblar, beyaz cevher yolları, yönler, MR ve BT, zarlar, BOS, kafa içi basıncı ve beyin dolaşımı.',
   giris:
-    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım: sinir sistemi hangi parçalardan oluşur, beyin bu sistemin neresindedir, onu ne korur ve besler, anatomistler bir yapının yerini nasıl tarif eder? Ders üç düzeyde okunur: Temel ile başla; hazır olduğunda Lisans ve Uzman düzeylerinde hasta vakalarına, görüntülemeye ve beyin cerrahisine geç.',
+    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım: sinir sistemi hangi parçalardan oluşur, beyin bu sistemin neresindedir, onu ne korur ve besler, anatomistler bir yapının yerini nasıl tarif eder? Ders üç düzeyde okunur: Temel ile başla; hazır olduğunda Lisans ve Uzman düzeylerinde hasta vakalarına, görüntülemeye ve beyin cerrahisine geç. Bu ders sinir sistemi ünitesinin genel bakışıdır; anatominin dili, omurilik sinirleri ve kol-bacak sinirleri ünitenin sonraki dört dersinde ayrıntılı işlenecek.',
   hedefler: [
     'Merkezî ve çevresel sinir sistemini; somatik ve otonom sistemi ayırt etmek',
     'Omurilik sinirlerinin sayısını, köklerini ve karma yapısını açıklamak',
@@ -60,5 +60,5 @@ export const sinirSistemineIlkBakis: Ders = {
     { no: 291, ad: 'Spinal kord bası sendromu', duzey: 'ÖnT' },
   ],
   yayin: '2026-10-08',
-  guncelleme: '2026-10-08',
+  guncelleme: '2026-10-09',
 };

@@ -14,14 +14,14 @@ import { sorular } from './sorular';
 import { sozluk } from './sozluk';
 
 /**
- * Anatomi 3 (kafatası ünitesinin 1. dersi): kemikler tek tek. Her kemik ayrı bölümde, üç düzeyde (Temel, Lisans,
+ * Anatomi 7 (kafatası ünitesinin 1. dersi): kemikler tek tek. Her kemik ayrı bölümde, üç düzeyde (Temel, Lisans,
  * Uzman); her bölümde kemik üç boyutlu sahnede tek başına, işaret noktalarıyla (`noktalar.ts`). Kaynaklar açık erişimli
  * tam metinler, Gray 1918, OpenStax ve Terminologia Anatomica'dır (site sahibinin 2026-10-09 derinlik isteği).
  */
 export const kafatasininKemikleri: Ders = {
   dal: 'anatomi',
   slug: 'kafatasinin-kemikleri',
-  sira: 3,
+  sira: 7,
   seviye: 'lisans',
   baslik: 'Kafatası 1: Kemikler tek tek',
   aciklama:

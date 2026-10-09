@@ -120,7 +120,7 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 ## Beyin Akademisi
 
 - Nörobilim bölümü (site sahibinin 2026-10-08 istekleri; durum ve sıradaki ders `DURUM.md`'de): sıfırdan uzman
-  düzeyine en büyük Türkçe beyin kaynağı; 8 bölüm, 106 ders (kafatası ünitesiyle), **her işlemede bir ders**, tek ölçüt kalite. Program ve
+  düzeyine en büyük Türkçe beyin kaynağı; 8 bölüm, 110 ders (sinir sistemi ve kafatası üniteleriyle), **her işlemede bir ders**, tek ölçüt kalite. Program ve
   hazır derslerin kaydı `src/content/beyin/index.ts`; her ders bir klasördür: `src/content/beyin/dersler/<bölüm>/<ders>/`
   (`index.ts`, `bolum-*.ts`, `sozluk.ts`, `sorular.ts`, `kaynaklar.ts`; türler `types.ts`; örnek ilk ders). Hazır olmayan ders programda "Hazırlanıyor" görünür, sayfası ve site haritası
   kaydı olmaz. Bölüm adresi değişirse eski adres `next.config.ts`'te kalıcı yönlendirilir.
@@ -153,7 +153,9 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   Özet yalnızca tam metni bulunmayan kaynakta ve özette yazanla sınırlı kullanılır. Eski kitaptaki (Gray 1918) terim ve
   bilgiler güncel kaynakla (Terminologia Anatomica, güncel kitap ya da makale) karşılaştırılır; eskimiş bilgi derse girmez.
 - **Ünite** (site sahibinin 2026-10-09 isteği): büyük konular tek derse sıkıştırılmaz, birkaç derslik üniteye bölünerek
-  büyütülür; ünitenin ilk dersi genel bakıştır. Kafatası ünitesi: genel bakış (`kafatasi`) ve altı ders (kemikler tek tek,
+  büyütülür; ünitenin ilk dersi genel bakıştır. Sinir sistemi ünitesi (site sahibinin 2026-10-09 isteği; kafatasından
+  önce bitirilir): genel bakış (`sinir-sistemine-ilk-bakis`, yeni ölçüyle baştan yazılır) ve dört ders (anatominin dili,
+  omurilik sinirleri ve dermatomlar, boyun ve kol sinir ağları, bel-sakral ağ ve bacak sinirleri). Kafatası ünitesi: genel bakış (`kafatasi`) ve altı ders (kemikler tek tek,
   beş yönden kafatası ve iç taban, delikler ve derin çukurlar, kafatası–boyun bileşkesi, gelişim ve hastalıklar, kırıklar
   ve cerrahi anatomi). Ayrı bir beyin cerrahisi bölümü eklenmez; site sahibi en son karar verecek.
 - Üç boyutlu model: BodyParts3D 4.0 (CC BY 4.0, atıf `components/beyin/model-notu.tsx`'te). Yapı kataloğu

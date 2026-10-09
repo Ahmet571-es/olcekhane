@@ -32,7 +32,7 @@ Basamaklar:
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** bitti (2026-10-07). Çözülebilen her testin raporunda (öğrenci, veli
    ve yetişkinlere açık testlerde yetişkin) yol haritası var; Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik hoca onaylı,
    ötekiler 2026-10-07 kararıyla onay beklenmeden yayında (hoca yayındaki siteyi inceleyecek).
-3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 106 ders (2026-10-09: kafatası ünitesi), üç boyutlu model (BodyParts3D),
+3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 110 ders (2026-10-09: sinir sistemi ve kafatası üniteleri), üç boyutlu model (BodyParts3D),
    her işlemede bir ders; ayrıntı ve sıradaki ders aşağıdaki "Beyin Akademisi" bölümünde. Kaynak erişimi: OpenStax,
    UTHealth (Neuroscience Online), NINDS, MedlinePlus ve Europe PMC açılıyor; NCBI/PubMed ve CDC açılmıyor.
 4. **Okuma bölümü (site sahibinin 2026-10-07 isteği):** kişilik ve zekâ testlerinden ayrı "Okuma" sekmesi
@@ -293,7 +293,7 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
 
 - Adresler: `/beyin-akademisi`, `/beyin-akademisi/<bölüm>` (8 bölüm), `/beyin-akademisi/<bölüm>/<ders>`,
   `/beyin-akademisi/beyin-gezgini`. Eski `/beyin-akademisi/nasil-calisir` adresleri `hucre-ve-molekul`'e kalıcı yönlenir.
-- Program: 8 bölüm, 106 ders (`src/content/beyin/index.ts`; 2026-10-09'da kafatası ünitesiyle 100'den 106'ya): Anatomi 36, Hücreden Sinyale 16, Sistem Nörobilimi 15,
+- Program: 8 bölüm, 110 ders (`src/content/beyin/index.ts`; 2026-10-09'da kafatası ünitesiyle 100'den 106'ya, sinir sistemi ünitesiyle 110'a): Anatomi 40, Hücreden Sinyale 16, Sistem Nörobilimi 15,
   Zihin ve Davranış 12, Yaşam Boyu Beyin 5, Klinik Nörobilim 12, İnceleme Yöntemleri 6, Tarih, Efsaneler ve Etkili
   Öğrenme 4. Her dersin seviyesi var: Temel, Lisans, İleri ve klinik.
 - Ders standardı (site sahibinin 2026-10-08 üçüncü isteği: "öğrenciden profesöre, tıp ve beyin cerrahisi dahil, çok
@@ -332,9 +332,14 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   üniteye bölünerek büyütülecek. Program 106 derse çıktı: mevcut kafatası dersi ünitenin genel bakışı oldu, ardından
   altı ders: (1) kemikler tek tek, (2) beş yönden kafatası ve iç taban, (3) delikler, kanallar ve derin çukurlar,
   (4) kafatası–boyun bileşkesi, (5) gelişim ve hastalıklar, (6) kırıklar, görüntüleme ve cerrahi anatomi.
-- **Sıradaki ders:** Kafatası 2 "Beş yönden kafatası ve iç taban"; ünite sırayla bitince Anatomi "Beyin
-  zarları". Site sahibi başka
-  bir ders isterse o yapılır. Ünite dersleri hazır oldukça genel bakıştaki tekrarlar gözden geçirilir.
+- **Site sahibinin 2026-10-09 ikinci kararı:** ilk ders ("Sinir sistemine ilk bakış") da istediği kapsam ve derinlikte
+  bulunmadı; önce bu ders üniteye çevrilip bitirilecek, sonra kafatası ünitesine dönülecek. Program 110 derse çıktı:
+  genel bakış (yeni ölçüyle baştan yazılacak) ve dört ders: (1) anatominin dili, (2) omurilik sinirleri ve
+  dermatomlar, (3) boyun ve kol sinir ağları, (4) bel-sakral ağ ve bacak sinirleri. Kafatası dersleri programda 6–12.
+  sıraya kaydı.
+- **Sıradaki ders:** "Sinir sistemine ilk bakış" yeni ölçüyle baştan; ardından sinir sistemi ünitesinin dört dersi;
+  sonra Kafatası 2 "Beş yönden kafatası ve iç taban"; kafatası ünitesi bitince Anatomi "Beyin zarları". Site sahibi
+  başka bir ders isterse o yapılır.
 - **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
   eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
   cerrahi kutuları sürer.
@@ -490,6 +495,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (9): Site sahibi ilk dersi de yeterince derin bulmadı; sinir sistemi ünitesi kuruldu: "Sinir sistemine
+  ilk bakış" ünitenin genel bakışı oldu, dört ders (anatominin dili, omurilik sinirleri, boyun-kol ağı, bel-sakral ağ)
+  "Hazırlanıyor" olarak programa eklendi; program 110 ders.
 - 2026-10-09 (8): Beyin Akademisi Anatomi 3 "Kafatası 1: Kemikler tek tek" yayında: her kemik ayrı bölümde, üç
   düzeyde; 39 üç boyutlu sahnede kemik tek başına, çıkıntıları, delikleri ve çukurları 131 işaret noktasıyla
   işaretli; 3 yeni hareketli çizim, 20 vaka, 74 soru, 187 kaynak (açık tam metinler, Gray 1918, OpenStax, TA2).
@@ -521,8 +529,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-08 (12): Sözel Akıl Yürütme yayında: 24 özgün soru (kelime ilişkileri, sınıflama, sıralama, mantıksal
   çıkarım), 5 düzey; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; telefonda ve
   masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: 3B grafiğin ilk açısı çift sütunda düzeldi.
-- 2026-10-08 (11): Beyin Akademisi yeni gelen için kolaylaştırıldı (site sahibi düzeyleri karışık buldu): ders Temel
-  ile açılıyor, başta "Sen kimsin?" kartları, Lisans ve Uzman bölümleri renkli kenar çizgisi ve başlıkla ayrılıyor,
-  her konunun sonunda gizli kısım haber veriliyor, okurken altta düzey şeridi, düzey değişince sayfa kaymıyor, düzey
-  bağlantıyla paylaşılabiliyor; ana sayfada "Her ders üç düzeyde okunur" tanıtımı, bölüm sayfasında ders başına
-  okuma süreleri; sahnelerde kullanım ipucu.

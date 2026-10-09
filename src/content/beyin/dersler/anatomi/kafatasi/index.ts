@@ -18,7 +18,7 @@ import { sozluk } from './sozluk';
 export const kafatasi: Ders = {
   dal: 'anatomi',
   slug: 'kafatasi',
-  sira: 2,
+  sira: 6,
   seviye: 'temel',
   baslik: 'Kafatası: beynin kemik kalesi',
   aciklama:

@@ -8,7 +8,8 @@ export { SEVIYE_ADLARI, SEVIYE_KITLESI } from './types';
 
 /**
  * Beyin Akademisi'nin programı: 8 bölüm; 2026-10-08'de onaylanan 100 derslik harita, 2026-10-09'da kafatası ünitesinin
- * altı dersiyle 106 derse çıktı (site sahibinin isteği: büyük konular üniteye bölünür). Her işlemede bir
+ * altı dersiyle 106, sinir sistemi ünitesinin dört dersiyle 110 derse çıktı (site sahibinin isteği: büyük konular
+ * üniteye bölünür). Her işlemede bir
  * ders hazırlanır. Hazır dersin içeriği `ders` alanındadır; olmayanlar programda "Hazırlanıyor" diye görünür, kendi
  * sayfaları açılmaz ve site haritasına girmez.
  */
@@ -37,7 +38,11 @@ export const DALLAR: Dal[] = [
     aciklama:
       'Kafatasından omuriliğe, beyni oluşturan bütün yapılar: loblar ve kıvrımlar, derin çekirdekler, beyin sapı, beyincik, karıncıklar, damarlar, kafa sinirleri ve sinir yolları. Her ders gerçek bir beyin modeli üzerinde.',
     program: program('anatomi', [
-      ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış ve anatominin dili', 'Merkezî ve çevresel sinir sistemi, beynin bölümleri, gri ve beyaz cevher, yönler ve kesitler.', 'temel'],
+      ['sinir-sistemine-ilk-bakis', 'Sinir sistemine ilk bakış', 'Ünitenin genel bakışı: merkezî ve çevresel sinir sistemi, beynin bölümleri ve gelişimi, loblar, gri ve beyaz cevher, beyni koruyanlar ve besleyenler.', 'temel'],
+      ['anatominin-dili', 'Sinir sistemi 1: Anatominin dili', 'Yönler, beynin iki ekseni, kesit düzlemleri ve terimlerin kuruluşu; MR ve BT görüntülerinde yön bulma.', 'temel'],
+      ['omurilik-sinirleri', 'Sinir sistemi 2: Omurilik sinirleri ve dermatomlar', 'Kökler, gangliyonlar ve dallar; sinirin katmanları; dermatom ve miyotom haritaları; kök sıkışmaları.', 'lisans'],
+      ['boyun-ve-kol-sinirleri', 'Sinir sistemi 3: Boyun ve kol sinir ağları', 'Boyun ağı ve kol ağı (pleksus); kolun büyük sinirleri, seyirleri, yaralanmaları ve sıkışma noktaları.', 'lisans'],
+      ['bel-sakral-ag-ve-bacak-sinirleri', 'Sinir sistemi 4: Bel-sakral ağ ve bacak sinirleri', 'Bel ağı ve sakral ağ; bacağın büyük sinirleri, seyirleri, yaralanmaları ve sıkışma noktaları.', 'lisans'],
       ['kafatasi', 'Kafatası: beynin kemik kalesi', 'Kafatası ünitesine genel bakış: 22 kemik, dikişler, kafa tabanı ve delikler, bıngıldaklar, kırıklar ve kafatası cerrahisi.', 'temel'],
       ['kafatasinin-kemikleri', 'Kafatası 1: Kemikler tek tek', 'Beyin kutusunun 8, yüzün 14 kemiği ve dil kemiği tek tek: bölümleri, çıkıntıları, delikleri ve komşulukları.', 'lisans'],
       ['kafatasina-bes-yonden-bakis', 'Kafatası 2: Beş yönden kafatası ve iç taban', 'Önden, yandan, üstten, arkadan ve alttan kafatası; içeriden üç kafa çukuru, oluklar ve ölçüm noktaları.', 'lisans'],
