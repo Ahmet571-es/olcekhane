@@ -51,6 +51,9 @@ export interface QualityReport {
   tooFast: boolean;
   straightLining: boolean;
   incomplete: boolean;
+  /** Birbirinin tersi olan madde çiftlerinden ikisine de en yüksek (agree) ya da en düşük (disagree) seçenek verilenler. */
+  oppositeAgree: number;
+  oppositeDisagree: number;
   medianRtMs: number | null;
   longestRun: number;
   notes: string[];
@@ -195,6 +198,14 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
     longestRun = Math.max(longestRun, run);
   }
 
+  // Birbirinin tersi olan çiftler: ikisine de aynı uç cevap.
+  const highest = Math.max(...def.options.map((o) => o.value));
+  const pairs = (def.oppositePairs ?? []).map(([x, y]) => [answers[x]?.value, answers[y]?.value]);
+  const oppositeAgree = pairs.filter(([x, y]) => x === highest && y === highest).length;
+  const oppositeDisagree = pairs.filter(([x, y]) => x === lowest && y === lowest).length;
+  const tendency = (n: number) => def.oppositePairs !== undefined && n >= Math.ceil(def.oppositePairs.length / 2);
+  const label = (v: number) => def.options.find((o) => o.value === v)?.label ?? '';
+
   const notes: string[] = [];
   const tooFast = medianRtMs !== null && rts.length >= 5 && medianRtMs < 700;
   const straightLining = def.items.length >= 20 && longestRun >= 12;
@@ -202,5 +213,14 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   if (tooFast) notes.push(`Cevaplar çok hızlı verilmiş; bazı ${ITEM_NOUN_PLURAL[likertItemNoun(def)]} okunmadan işaretlenmiş olabilir.`);
   if (straightLining) notes.push('Uzun bir bölümde hep aynı seçenek işaretlenmiş.');
   if (incomplete) notes.push('Bazı maddeler cevaplanmamış.');
-  return { tooFast, straightLining, incomplete, medianRtMs, longestRun, notes };
+  for (const [n, v, what] of [
+    [oppositeAgree, highest, 'evet'],
+    [oppositeDisagree, lowest, 'hayır'],
+  ] as const) {
+    if (!tendency(n)) continue;
+    notes.push(
+      `Birbirinin tersini söyleyen ${def.oppositePairs!.length} cümle çiftinden ${n} tanesinde iki cümleye de “${label(v)}” denmiş. Bu, cümlelerin ne söylediğine bakmadan çoğuna “${what}” deme eğiliminden kaynaklanabilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
+    );
+  }
+  return { tooFast, straightLining, incomplete, oppositeAgree, oppositeDisagree, medianRtMs, longestRun, notes };
 }

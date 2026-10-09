@@ -15,6 +15,7 @@ import { matematik } from './matematik';
 import { meslekIlgiAlanlari } from './meslek-ilgi-alanlari';
 import { meslekiIlgi } from './mesleki-ilgi';
 import { ogrenmeVeBasari } from './ogrenme-ve-basari';
+import { cocukKisilik } from './cocuk-kisilik';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
@@ -61,6 +62,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   kisilerarasiTarz,
   onAltiFaktorKisilik,
   ogrenmeVeBasari,
+  cocukKisilik,
   hobiIlgileri,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 

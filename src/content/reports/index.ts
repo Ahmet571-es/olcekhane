@@ -9,6 +9,7 @@ import { kisilerarasiTarzReport } from './kisilerarasi-tarz';
 import { meslekIlgiAlanlariReport } from './meslek-ilgi-alanlari';
 import { meslekiIlgiReport } from './mesleki-ilgi';
 import { ogrenmeVeBasariReport } from './ogrenme-ve-basari';
+import { cocukKisilikReport } from './cocuk-kisilik';
 import { okumaReport } from './okuma';
 import { ozSaygiReport } from './oz-saygi';
 import type { ReportTemplate } from './types';
@@ -26,6 +27,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'kisilerarasi-tarz': kisilerarasiTarzReport,
   '16-faktorlu-kisilik-profili': onAltiFaktorKisilikReport,
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariReport,
+  'cocuk-kisilik-profili': cocukKisilikReport,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriReport,
   'dikkat-ve-bellek': { version: 'dikkat-bellek-rapor-1', bandLabels: {}, scales: {} },
   'surekli-dikkat': { version: 'surekli-dikkat-rapor-1', bandLabels: {}, scales: {} },

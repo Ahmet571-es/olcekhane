@@ -199,7 +199,19 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    uyarı verilir. 3. sınıftan yetişkine. Bağımsız bir ajan kaynakları, kelimeleri ve metinleri denetledi; bulguları
    düzeltildi. Kaynaklar Oliveira ve Charchat-Fichman (2008), Lehmann (2015), Dewhurst ve ark. (2012), Hedge ve ark. (2018);
    yol haritasında ayrıca Roediger ve Karpicke (2006), Cepeda ve ark. (2006).
-10. Sonra: 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
+10. **Çocuk Kişilik Profili: yayında (2026-10-09, pilot; 3–5. sınıf).** IPIP Beş Faktör Belirteçleri'nin 100 maddelik
+   formundan her boyuta altı madde (üçü düz, üçü ters) seçildi ve çocuk diline uyarlandı (30 madde; İngilizce asılları
+   `source`'ta, yönler kaynakla aynı; testte denetlenir). Üç seçenek (hiç / biraz / çok benziyor); düzey toplamla 6–9 düşük,
+   10–14 orta, 15–18 yüksek. Boyut adları: Sosyallik, Başkalarını önemseme, Düzen ve sorumluluk, Sakinlik, Merak ve hayal
+   gücü. Yeni ortak özellik: `oppositePairs` (birbirinin tersi beş çiftin en az üçüne aynı uç cevap → "evet deme eğilimi"
+   uyarısı; Soto ve ark., 2008). Yalnızca 5. sınıfa kadar açık testlerde öğrenci destek kutusu çocuk diliyle ve 112'siz
+   (veliye 112 kalır). Öğrenci ve veli raporu, ortamsız yol haritası (2. hafta çalışma düzeni, Sakinlik düşükse 3. hafta iyi
+   oluş, rehber bağlantısı yok); İlkokul 3–4 sayfasında "Nereden başlamalı?" önerisi. Bağımsız ajan maddeleri IPIP
+   sayfasıyla, iddiaları kaynaklarla karşılaştırdı; bulguları düzeltildi (ör. "tanımadığım biri" yerine "tanımadığım bir
+   çocuk", "zor kitaplar" yerine "bilmediğim konulardaki kitaplar"). Kaynaklar Goldberg (1992, 2006), Soto ve ark. (2008),
+   Vicentini ve ark. (2025).
+11. Sonra: site sahibine sorulacak: 3. dalganın kalanları (Ders Çalışma Motivasyonu, Erteleme ve Zaman Yönetimi, Zihniyet,
+   Çalışma Değerleri, Akıl Yürütme) mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -356,6 +368,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Kelime Bilgisi | kelime-bilgisi | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kural Değiştirme | kural-degistirme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kelime Listesi Hatırlama | kelime-listesi-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
+| Çocuk Kişilik Profili | cocuk-kisilik-profili | Yayında (pilot; 3–5. sınıf) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -467,6 +480,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (7): Çocuk Kişilik Profili yayında (3–5. sınıf): 30 madde, üç seçenek, beş boyut; öğrenci ve veli raporu,
+  3B grafikli yol haritası; "evet deme eğilimi" uyarısı; çocuğa 112'siz destek kutusu; İlkokul 3–4 önerisi; telefonda
+  dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız inceleme bulguları düzeltildi.
 - 2026-10-09 (6): Kelime Listesi Hatırlama yayında: 15 kelimelik liste üç kez, araya giren ikinci liste, ilk listeyi
   yeniden hatırlama ve 35 kelimelik tanıma; öğrenci, veli ve yetişkin raporu (öğrenme, koruma, tanıma, listenin
   kısımları), 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (sekme değiştirme dahil) baştan sona
@@ -499,8 +515,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-08 (10): Öğrenme ve Başarı Özellikleri yayında: 56 madde, 6 özellik (çaba, işe koyulma, planlı çalışma,
   zorlukla başa çıkma, düşünmekten hoşlanma, öğrenmeye açıklık), öğrenci, veli ve yetişkin raporu, 3B grafikli yol
   haritası; telefonda ve masaüstünde çözüldü, rapor ve PDF açıldı. Ortak: düzey, gösterilen yuvarlanmış puandan.
-- 2026-10-08 (9): Beyin Akademisi Ders 1 öğrenciden profesöre derinleştirildi (site sahibinin isteği; beğenirse bütün
-  dersler böyle): üç okuma katmanı (Temel, Lisans, Uzman), görüntüleme, beyin cerrahisi ve araştırma kutuları, 5 klinik
-  vaka, dermatom, refleks, üst-alt motor nöron, otonom sinaps, kanama ve kesecik tabloları, 6 yeni sahne (beş
-  kesecik, birincil alanlar, iç kapsül, AC–PC, karıncıklar, Willis halkası), 3 yeni hareketli çizim, 36 soru, 157
-  kaynak. Bilgiler ayrı bir ajanla kaynaklara karşı denetlendi, bulunan yanlışlar düzeltildi.

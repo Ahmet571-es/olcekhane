@@ -77,6 +77,10 @@ export const AGE_GROUPS: AgeGroup[] = [
       },
       { slug: 'okuma-hizi-ve-anlama', why: 'Okuma hızını ve okuduğunu anlamayı birlikte gösterir; metin sınıfa göre seçilir.' },
       { slug: 'surekli-dikkat', why: 'Harf bulma görevi: dikkatin birkaç dakika boyunca nasıl sürdüğünü gösterir.' },
+      {
+        slug: 'cocuk-kisilik-profili',
+        why: 'Çocuk diliyle yazılmış 30 kısa cümleyle, kişiliğin beş temel boyutunda kendini nasıl gördüğünü gösterir.',
+      },
     ],
   },
   {

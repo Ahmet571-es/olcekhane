@@ -160,6 +160,8 @@ export interface ReportContent {
   /** "Genel bakış" açıklaması (şablonda tanımlıysa). */
   overview?: string;
   support: boolean;
+  /** Test yalnızca küçük çocuklara (en çok 5. sınıf) açık: öğrenciye destek kutusu çocuk diliyle yazılır. */
+  young?: boolean;
   science: { basedOn: string; reliability: string; limitations: string[]; license: string };
   interests?: InterestProfile;
   /** Sıralı ilgi profili (profil: interests). */
@@ -531,6 +533,7 @@ export function buildReport(input: {
         : ((audience === 'adult' ? template.overview.adult : undefined) ?? template.overview.student)
       : undefined,
     support,
+    ...(def.maxGrade <= 5 ? { young: true } : {}),
     science: {
       basedOn: science.basedOn,
       reliability: science.reliability,

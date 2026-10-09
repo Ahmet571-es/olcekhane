@@ -291,6 +291,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'oz-saygi': 3 * 2,
       'calisma-aliskanliklari': 5 ** 5 * 2,
       'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,
+      // Yalnızca 3–5. sınıflara açık: öğrenci ve veli.
+      'cocuk-kisilik-profili': 3 ** 5 * 2,
     });
   }, 60_000);
 });

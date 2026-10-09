@@ -144,6 +144,13 @@ export interface LikertInstrument extends InstrumentBase {
   anchoredBands: AnchoredBands;
   /** Toplam puan da hesaplanacaksa (ör. öz-saygı tek boyutludur). */
   totalScale?: string;
+  /**
+   * Birbirinin tersini söyleyen madde çiftleri (aynı ölçekte, biri düz biri ters yönlü). Çiftlerin çoğuna aynı uç cevap
+   * verilirse (ikisine de en yüksek ya da ikisine de en düşük seçenek) cümlelerin içeriğinden bağımsız olarak katılma ya da
+   * katılmama eğilimi düşünülür ve raporda uyarı gösterilir (lib/scoring/likert.ts, likertQuality). Bu eğilim çocuklarda
+   * daha belirgindir (Soto ve ark., 2008).
+   */
+  oppositePairs?: [string, string][];
 }
 
 export interface ReadingQuestion {

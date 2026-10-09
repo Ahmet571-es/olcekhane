@@ -181,8 +181,19 @@ const SUPPORT: Record<Audience, { title: string; lines: string[] }> = {
   },
 };
 
-export function supportText(audience: Audience): { title: string; lines: string[] } {
-  const { title, lines } = SUPPORT[audience];
+/**
+ * Yalnızca küçük çocuklara (en çok 5. sınıf) açık testlerde öğrenciye: 8–11 yaşındaki bir çocuğa acil durum numarası
+ * vermek orantısız ve korkutucu olabilir; acil durum bilgisi veli raporundadır.
+ */
+const SUPPORT_YOUNG = {
+  title: 'Konuşmak istersen',
+  lines: [
+    'Kendini çok üzgün, kızgın ya da endişeli hissettiğinde bunu tek başına taşımak zorunda değilsin. Ailene, öğretmenine ya da okuldaki rehber öğretmenine anlatabilirsin.',
+  ],
+};
+
+export function supportText(audience: Audience, young = false): { title: string; lines: string[] } {
+  const { title, lines } = young && audience === 'student' ? SUPPORT_YOUNG : SUPPORT[audience];
   return { title, lines: [...lines] };
 }
 
@@ -380,7 +391,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     completedAt: r.completedAt,
     isPilot: r.isPilot,
     cautions: [...r.qualityNotes],
-    support: r.support ? supportText(r.audience) : null,
+    support: r.support ? supportText(r.audience, r.young) : null,
     normNote: r.normNote,
     disclaimer: disclaimerText(r),
   };
