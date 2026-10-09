@@ -77,6 +77,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                           ? `${single.items.length} soru, 2 soru türü`
                           : single.kind === 'numerical_reasoning'
                             ? `${single.items.length} soru, 3 soru grubu`
+                            : single.kind === 'cube_net'
+                              ? `${single.items.length} soru, ${single.levels.length} düzey`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -397,6 +399,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı ve soru gruplarına göre doğru cevaplar (grafik ve üç boyutlu grafikle)</li>
                 <li>Orantılı ve orantılı olmayan durumların ayırt edilip edilmediği, eşittir işaretinin nasıl okunduğu ve görülen yanılgılar</li>
+              </>
+            )}
+            {single?.kind === 'cube_net' && (
+              <>
+                <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
+                <li>Yalnızca yüzlerin yerinin önemli olduğu sorularla şekillerin yönünün de önemli olduğu soruların karşılaştırması, yanlış cevaplarda öne çıkan yanılgılar (karşılıklı yüzleri yan yana görmek, köşedeki sırayı ters görmek, şeklin yönünü yanlış görmek) ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'word_list' && (

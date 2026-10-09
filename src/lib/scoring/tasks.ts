@@ -30,7 +30,10 @@ import type {
   NumericKind,
   NumericLureKind,
   NumericalReasoningTask,
+  CubeNetTask,
+  CubeType,
 } from '@/lib/instruments/types';
+import type { CubeLure } from '@/lib/instruments/cube';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
 import { NUMERIC_EQUAL, NUMERIC_KINDS, NUMERIC_NONPROP, NUMERIC_PROP, numericRapidMs } from '@/lib/instruments/numeric';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
@@ -2310,6 +2313,161 @@ export function numericQualityNotes(r: NumericResult): string[] {
   return notes;
 }
 
+/* ---------- Küp açınımı ---------- */
+
+export interface CubeTrialInput {
+  index: number;
+  /** Seçilen seçeneğin sırası (1–4). */
+  response: number;
+  rtMs: number | null;
+}
+
+export interface CubeTypeResult {
+  type: CubeType;
+  n: number;
+  correct: number;
+}
+
+export interface CubeResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  /** Yalnızca yüzlerin yerinin önemli olduğu ve şekillerin yönünün de önemli olduğu sorular. */
+  types: CubeTypeResult[];
+  reached: number;
+  medianRt: number | null;
+  rtEasy: number | null;
+  rtHard: number | null;
+  /** 3. düzey ve üstündeki sorulardan `CUBE_RAPID_MS`'den kısa sürede yanlış cevaplananlar ve bu soruların sayısı. */
+  rapid: number;
+  rapidOf: number;
+  wrong: number;
+  /** Yanlışlarda seçilen seçeneğin yanılgı türü ve her türün seçeneklerde kaç kez bulunduğu. */
+  luresByKind: Record<CubeLure, number>;
+  offeredByKind: Record<CubeLure, number>;
+  /**
+   * Her yanılgı türü için, yanlışlarda rastgele seçilmiş olsaydı en az bu kadar sık görülme olasılığı. Yanlış
+   * seçeneklerin türleri dengeli değildir (karşılıklı yüzler ve köşedeki sıra 24'er, şeklin yönü 12 seçenekte); bu
+   * yüzden bir türün sıklığı, yanlış cevaplanan sorularda o türden kaç seçenek bulunduğuna göre değerlendirilir.
+   */
+  lureP: Record<CubeLure, number>;
+  samePosition: number;
+}
+
+export const CUBE_LURES_ORDER: CubeLure[] = ['opposite', 'order', 'turn'];
+export const CUBE_TYPES_ORDER: CubeType[] = ['place', 'turn'];
+/** Açınımı katlayıp dört küpe bakmak için bundan kısa bir süre yetmez (3. düzey ve üstünde birkaç katlama gerekir). */
+export const CUBE_RAPID_MS = 3000;
+/** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
+export const CUBE_CHANCE_MAX = 8;
+
+export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result: CubeResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.optionLures.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, CubeTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (!Number.isInteger(t.response) || t.response < 1 || t.response > task.items[t.index].options.length) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const correct = t.response === task.answers[i];
+    return { item, correct, lure: correct ? null : task.optionLures[i][t.response - 1], response: t.response, rt: t.rtMs };
+  });
+  const correct = scored.filter((s) => s.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((s) => s.item.level === level);
+      return { level, n: here.length, correct: here.filter((s) => s.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const luresByKind = Object.fromEntries(CUBE_LURES_ORDER.map((k) => [k, scored.filter((s) => s.lure === k).length])) as Record<CubeLure, number>;
+  const offeredByKind = Object.fromEntries(CUBE_LURES_ORDER.map((k) => [k, task.optionLures.flat().filter((x) => x === k).length])) as Record<CubeLure, number>;
+  // Yanlış cevaplanan her soruda yanlış seçeneklerden biri rastgele seçilseydi: türün o sorudaki payı (Poisson-binom).
+  const wrongIdx = scored.flatMap((s, i) => (s.correct ? [] : [i]));
+  const lureP = Object.fromEntries(
+    CUBE_LURES_ORDER.map((k) => {
+      const ps = wrongIdx.map((i) => {
+        const wrongs = task.optionLures[i].filter((x) => x !== null);
+        return wrongs.filter((x) => x === k).length / wrongs.length;
+      });
+      let dist = [1];
+      for (const q of ps) dist = [...dist, 0].map((v, j) => v * (1 - q) + (j > 0 ? dist[j - 1] * q : 0));
+      return [k, round(Math.min(1, dist.slice(luresByKind[k]).reduce((a, b) => a + b, 0)), 4)];
+    }),
+  ) as Record<CubeLure, number>;
+  const types = CUBE_TYPES_ORDER.flatMap((type) => {
+    const here = scored.filter((s) => s.item.type === type);
+    return here.length ? [{ type, n: here.length, correct: here.filter((s) => s.correct).length }] : [];
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const hardOnes = scored.filter((s) => s.item.level >= 3);
+  const positions = new Map<number, number>();
+  for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      types,
+      reached,
+      medianRt: medianOrNull(rts(scored)),
+      rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 3))),
+      rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < CUBE_RAPID_MS).length,
+      rapidOf: hardOnes.length,
+      wrong: n - correct,
+      luresByKind,
+      offeredByKind,
+      lureP,
+      samePosition: Math.max(0, ...positions.values()),
+    },
+  };
+}
+
+/** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
+export const cubeRapid = (r: CubeResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const CUBE_SAME_MAX_CORRECT = 12;
+/** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada ve doğru cevaplar çok değil. */
+export const cubeSamePosition = (r: CubeResult) => r.samePosition >= Math.ceil(r.n / 2) && r.correct <= CUBE_SAME_MAX_CORRECT;
+/** Bir yanılgı türü yanlışlarda en az üç kez ve rastgele seçimde beklenenden belirgin sık (olasılık en çok %5) görülünce anlatılır. */
+export const CUBE_LURE_NOTE = 3;
+export const CUBE_LURE_P = 0.05;
+export const cubeLureStandsOut = (r: CubeResult, k: CubeLure) => r.luresByKind[k] >= CUBE_LURE_NOTE && r.lureP[k] <= CUBE_LURE_P;
+
+/** Küp açınımında sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, cubeBlocks aynı eşikleri kullanır). */
+export function cubeQualityNotes(r: CubeResult): string[] {
+  const notes: string[] = [];
+  if (r.correct <= CUBE_CHANCE_MAX) {
+    notes.push(
+      'Küp açınımı testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorulara bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (cubeRapid(r)) {
+    notes.push(
+      `Küp açınımı testinde 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} yanlış bir cevap 3 saniyeden kısa sürede verilmiş; bu sorularda açınıma bakılmadan seçilmiş olabilir.`,
+    );
+  }
+  if (cubeSamePosition(r)) {
+    notes.push('Küp açınımı testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
+  }
+  return notes;
+}
+
 export function taskQualityNotes(parts: {
   flanker?: FlankerResult;
   symbol?: SymbolResult;
@@ -2326,6 +2484,7 @@ export function taskQualityNotes(parts: {
   folding?: FoldingResult;
   logic?: LogicResult;
   numeric?: NumericResult;
+  cube?: CubeResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -2510,6 +2669,8 @@ export function taskQualityNotes(parts: {
   if (ma) notes.push(...logicQualityNotes(ma));
   const sy = parts.numeric;
   if (sy) notes.push(...numericQualityNotes(sy));
+  const kp = parts.cube;
+  if (kp) notes.push(...cubeQualityNotes(kp));
   return notes;
 }
 

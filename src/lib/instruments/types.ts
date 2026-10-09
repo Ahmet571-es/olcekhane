@@ -1,3 +1,4 @@
+import type { Cell, CubeFace, CubeLure, CubeView } from './cube';
 import type { Fold, Pt } from './folding';
 /**
  * Test tanımları için ortak türler.
@@ -254,7 +255,8 @@ export type TaskKind =
   | 'word_list'
   | 'paper_folding'
   | 'logical_reasoning'
-  | 'numerical_reasoning';
+  | 'numerical_reasoning'
+  | 'cube_net';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -858,6 +860,42 @@ export interface NumericalReasoningTask extends TaskBase {
 }
 
 /**
+ * Küp açınımı: altı kareli bir açınım ve dört küp görünüşü; açınımdan oluşabilecek küp seçilir (content/instruments/
+ * kup-acinimi.ts, geometri lib/instruments/cube.ts). Türler: yalnızca yüzlerin yerinin önemli olduğu sorular (`place`;
+ * şekiller dönünce değişmez) ve şekillerin yönünün de önemli olduğu sorular (`turn`).
+ */
+export type CubeType = 'place' | 'turn';
+
+export interface CubeItem {
+  key: string;
+  level: 1 | 2 | 3 | 4;
+  type: CubeType;
+  /** Açınımın kareleri [sütun, satır]; `faces` aynı sıradadır. */
+  cells: Cell[];
+  faces: CubeFace[];
+  /** Dört seçenek: küpün üstte, sol önde ve sağ önde görünen yüzleri ve şekillerinin dönüşü. */
+  options: CubeView[];
+}
+
+export interface CubePracticeItem extends CubeItem {
+  /** Doğru seçeneğin sırası (1–4). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+}
+
+export interface CubeNetTask extends TaskBase {
+  kind: 'cube_net';
+  practice: CubePracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: CubeItem[];
+  /** Cevap anahtarı (1–4). Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /** Her seçeneğin yanılgı türü (doğru seçenekte `null`). Tarayıcıya boş gönderilir. */
+  optionLures: (CubeLure | null)[][];
+  levels: { level: number; name: string; plain: string }[];
+}
+
+/**
  * Kural değiştirme (görev değiştirme düzeni): her denemede mavi ya da turuncu bir daire ya da kare görünür; üstündeki
  * işaret (RENK ya da ŞEKİL) hangi kurala göre cevap verileceğini söyler (lib/instruments/rule-switch.ts). Önce iki tek
  * kurallı bölüm, sonra iki kuralın karıştığı iki bölüm gelir.
@@ -938,7 +976,8 @@ export type CognitiveTask =
   | RuleSwitchTask
   | WordListTask
   | LogicalReasoningTask
-  | NumericalReasoningTask;
+  | NumericalReasoningTask
+  | CubeNetTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

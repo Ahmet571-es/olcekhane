@@ -74,7 +74,8 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       // gönderilmez: bazı soruların ipucunu verir (ör. "durduranlar") ve çözme ekranında kullanılmaz. Kâğıt katlamada da
       // çeldiriciler, yanılgı türleri ve düzey anlatımları gönderilmez. Kelime listesinde tanıma bölümünün anahtarı,
       // mantıksal akıl yürütmede de sorunun türü (cevabı ele verir) gönderilmez. Sayısal akıl yürütmede cevap anahtarı, soru
-      // türleri ve yanılgı cevapları gönderilmez.
+      // türleri ve yanılgı cevapları gönderilmez. Küp açınımında cevap anahtarı, seçeneklerin yanılgı türleri ve düzey
+      // anlatımları gönderilmez.
       return {
         engine: 'tasks',
         intro,
@@ -93,7 +94,9 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
                       ? { ...t, answers: [], forms: [] }
                       : t.kind === 'numerical_reasoning'
                         ? { ...t, answers: [], kinds: [], ratios: [], lures: [] }
-                        : t,
+                        : t.kind === 'cube_net'
+                          ? { ...t, answers: [], optionLures: [], levels: [] }
+                          : t,
         ),
       };
     case 'oral':

@@ -32,7 +32,10 @@ import type {
   NumericKind,
   NumericLureKind,
   NumericRatio,
+  CubeNetTask,
+  CubeType,
 } from '@/lib/instruments/types';
+import type { CubeLure } from '@/lib/instruments/cube';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
@@ -461,4 +464,34 @@ export function numericBody(
     return { index, response: p.response === null ? null : { answer: p.response }, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+export type CubeCell = { level: number; type: CubeType; answer: number; lures: (CubeLure | null)[]; i: number };
+
+/** Küp açınımında seçilen yanılgı türündeki ilk seçenek (yoksa doğru olmayan ilk seçenek). */
+export const cubeLureOption = (q: CubeCell, kind?: CubeLure) => {
+  const at = kind ? q.lures.findIndex((l) => l === kind) : -1;
+  return at >= 0 ? at + 1 : q.lures.findIndex((l) => l !== null) + 1;
+};
+
+/** Küp açınımı: varsayılan olarak 1–3. düzeyde doğru, 4. düzeyde ilk iki soru doğru; zor sorulara daha çok zaman. */
+export function cubeBody(
+  pick: (q: CubeCell) => { response: number; rtMs: number | null } = (q) => ({
+    response: q.level <= 3 || cubeRank(q) < 2 ? q.answer : cubeLureOption(q),
+    rtMs: 5000 + 3000 * q.level,
+  }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('kup-acinimi').tasks[0] as CubeNetTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, type: it.type, answer: task.answers[index], lures: task.optionLures[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Küp açınımında sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function cubeRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('kup-acinimi').tasks[0] as CubeNetTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
 }

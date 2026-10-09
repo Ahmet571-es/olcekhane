@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme ve Sayısal Akıl Yürütme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme ve Küp Açınımı yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1493,6 +1493,105 @@ const sayisalAkilYurutme: TaskRoadmapTemplate = {
   sources: [KAYNAK.fernandez2012, KAYNAK.vanDooren2004, KAYNAK.knuth2006],
 };
 
+const kupBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (düz bir açınımı zihinde katlamayı) gösterir.',
+    'Bu tür sorulara alışkın olmak (ör. kutu ya da kâğıttan küp yapmak, yapı oyunları) sonucu etkileyebilir.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir; zikzak açınımlarda zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (düz bir açınımı zihinde katlamayı) gösterir.',
+    'Bu tür sorulara alışkın olmak (ör. kutu ya da kâğıttan küp yapmak, yapı oyunları) sonucu etkileyebilir.',
+    '7–11 yaşındaki çocuklarla yapılan bir çalışmada zihinde katlama, yaş ve sözel beceri hesaba katıldıktan sonra da fen başarısıyla ilişkili bulunmuştur; bu bir ilişkidir, tek başına neden sonuç anlamına gelmez.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const kupFacts: InfoBox = {
+  ...kupBase,
+  items: {
+    ...kupBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (düz bir açınımı zihinde katlamayı) gösterir.',
+      'Bu tür sorulara alışkın olmak (ör. ambalaj ya da maket yapmak, teknik çizim, yapı oyunları) sonucu etkileyebilir.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const kupAcinimi: TaskRoadmapTemplate = {
+  version: 'kup-acinimi-yol-haritasi-1',
+  what: {
+    student: 'cisimleri zihinde katlayıp canlandırmayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun cisimleri zihinde katlayıp canlandırmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'cisimleri zihinde katlayıp canlandırmayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Açınımları zihinde katlamayı ne kolaylaştırır?', parent: 'Çocuğunuzun açınımları zihinde katlamasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, düz bir açınımı zihninde katlayıp oluşan küpün nasıl görüneceğini bulabilmeyi ölçer. Bu beceri; bir kutunun ya da ambalajın nasıl katlanacağını düşünmek, bir eşyayı kurulum çizimine bakarak kurmak, bir cismin farklı yönlerden nasıl göründüğünü kestirmek ve geometride cisimlerin açınımlarıyla çalışmak gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+    'Bu test, düz bir açınımı zihinde katlayıp oluşan küpün nasıl görüneceğini bulabilmeyi ölçer. Bu beceri; bir kutunun ya da ambalajın nasıl katlanacağını düşünmek, bir eşyayı kurulum çizimine bakarak kurmak, bir cismin farklı yönlerden nasıl göründüğünü kestirmek ve geometride cisimlerin açınımlarıyla çalışmak gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'sabitle', 'Bir yüzü sabitle', 'Yöntem', t(
+      'Açınımda bir kareyi küpün önü say ve komşu kareleri onun çevresine tek tek katla. Her adımda yalnızca bir kareyi düşünmek, uzaktaki yüzlerin nereye geleceğini izlemeyi kolaylaştırabilir.',
+      'Çocuğunuza açınımda bir kareyi küpün önü saymasını ve komşu kareleri onun çevresine tek tek katlamasını önerin. Her adımda yalnızca bir kareyi düşünmek, uzaktaki yüzlerin nereye geleceğini izlemeyi kolaylaştırabilir.',
+    )),
+    support(1, 'karsilikli', 'Önce karşılıklı yüzleri bul', 'Yöntem', t(
+      'Açınımda düz bir sırada aralarında tek bir kare bulunan iki kare küpte karşı karşıya gelir; düz bir sıranın bir yanına bağlı bir kare ile öbür yanına bağlı bir kare de öyle (Z ya da S biçiminin iki ucu gibi). Karşılıklı iki yüz bir küpte hiçbir zaman yan yana görünmez; seçeneklere bakmadan önce karşılıklı yüzleri bulmak, olamayacak küpleri ayırmana yardım edebilir.',
+      'Çocuğunuza şunu gösterebilirsiniz: açınımda düz bir sırada aralarında tek bir kare bulunan iki kare küpte karşı karşıya gelir; düz bir sıranın bir yanına bağlı bir kare ile öbür yanına bağlı bir kare de öyle (Z ya da S biçiminin iki ucu gibi). Karşılıklı iki yüz bir küpte hiçbir zaman yan yana görünmez; seçeneklere bakmadan önce karşılıklı yüzleri bulmak, olamayacak küpleri ayırmasına yardım edebilir.',
+    )),
+    support(2, 'kes-katla', 'Kes, katla, kontrol et', 'Etkinlik', t(
+      'Kareli kâğıda bir küp açınımı çiz ve karelere farklı şekiller, bir tanesine de ok çiz. Kesip katlamadan önce hangi yüzlerin yan yana geleceğini ve okun nereyi göstereceğini tahmin et; sonra katlayıp tahminini kontrol et.',
+      'Çocuğunuzla kareli kâğıda bir küp açınımı çizin; karelere farklı şekiller, bir tanesine de ok çizin. Kesip katlamadan önce hangi yüzlerin yan yana geleceğini ve okun nereyi göstereceğini tahmin etmesini isteyin; sonra katlayıp tahmini birlikte kontrol edin.',
+    )),
+    support(3, 'oyun', 'Uzamsal oyunlar', 'Etkinlik', t(
+      'Origami, yapı oyunları, maket yapmak ve kutu katlamak, şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Origami, yapı oyunları, maket yapmak ve kutu katlamak, çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+    )),
+  ],
+  facts: kupFacts,
+  approach: [
+    { title: 'Birlikte katlayın', text: 'Kâğıttan bir küp açınımını birlikte kesip katlayın; katlamadan önce hangi yüzlerin karşı karşıya geleceğini tahmin etmesini isteyin ve sonra birlikte bakın.' },
+    { title: 'Acele ettirmeyin', text: 'Zor bir soruda uzun düşünmesine izin verin; hızlı olmasından çok, açınımı adım adım katlayarak düşünmesini övün.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Kutuyu aç',
+      text: t(
+        'Bu hafta boş bir karton kutuyu açmadan önce, kenarlarından açılınca nasıl bir açınım çıkacağını kâğıda çizerek tahmin et. Sonra kutuyu kenarlarından açıp düz bir yere ser ve çizimini kontrol et.',
+        'Bu hafta çocuğunuzla boş bir karton kutuyu açmadan önce, kenarlarından açılınca nasıl bir açınım çıkacağını kâğıda çizerek tahmin etmesini isteyin. Sonra kutuyu birlikte açıp düz bir yere serin ve çizimi kontrol edin.',
+      ),
+    },
+    {
+      title: 'Zarın açınımı',
+      text: t(
+        'Bu hafta bir zarı al; kareli kâğıda bir küp açınımı çiz ve zarın her yüzündeki noktaları açınımda doğru kareye yerleştirmeye çalış. Sonra açınımı kesip katla ve zarla karşılaştır.',
+        'Bu hafta çocuğunuzla bir zarı alın; kareli kâğıda bir küp açınımı çizip zarın her yüzündeki noktaları açınımda doğru kareye yerleştirmeye çalışın. Sonra açınımı kesip katlayın ve zarla karşılaştırın.',
+      ),
+    },
+    {
+      title: 'Kendi sorunu yap',
+      text: t(
+        'Bu hafta bir açınım çiz ve yüzlerine şekiller koy; altına biri doğru, biri yanlış iki küp çiz. Birine çözdür ve nasıl düşündüğünü sor.',
+        'Bu hafta çocuğunuzdan bir açınım çizip yüzlerine şekiller koymasını ve altına biri doğru, biri yanlış iki küp çizerek size çözdürmesini isteyin; sonra rolleri değiştirin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (bir yüzü sabitlemek, karşılıklı yüzleri bulmak ya da kâğıtla denemek) açınımları zihninde katlamanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun açınımları zihinde katlamasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['kagit-katlama', 'zihinde-dondurme'],
+  nextPurpose: {
+    you: 'katlanan bir kâğıdı zihinde açmayı ve şekilleri zihinde döndürmeyi de görmek',
+    parent: 'çocuğunuzun katlanan bir kâğıdı zihinde açmasını ve şekilleri zihinde döndürmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.uttal, KAYNAK.hodgkiss2018, KAYNAK.wai],
+};
+
 const kelimeListesiBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
@@ -1614,4 +1713,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'kelime-listesi-hatirlama': kelimeListesi,
   'mantiksal-akil-yurutme': mantiksalAkilYurutme,
   'sayisal-akil-yurutme': sayisalAkilYurutme,
+  'kup-acinimi': kupAcinimi,
 };

@@ -119,6 +119,10 @@ export const KAYNAK = {
     text: 'Uttal, D. H., Meadow, N. G., Tipton, E., Hand, L. L., Alden, A. R., Warren, C. ve Newcombe, N. S. (2013). The malleability of spatial skills: A meta-analysis of training studies. Psychological Bulletin, 139(2), 352–402.',
     url: 'https://doi.org/10.1037/a0028446',
   },
+  hodgkiss2018: {
+    text: 'Hodgkiss, A., Gilligan, K. A., Tolmie, A. K., Thomas, M. S. C. ve Farran, E. K. (2018). Spatial cognition and science achievement: The contribution of intrinsic and extrinsic spatial skills from 7 to 11 years. British Journal of Educational Psychology, 88(4), 675–697.',
+    url: 'https://doi.org/10.1111/bjep.12211',
+  },
   wai: {
     text: 'Wai, J., Lubinski, D. ve Benbow, C. P. (2009). Spatial ability for STEM domains: Aligning over 50 years of cumulative psychological knowledge solidifies its importance. Journal of Educational Psychology, 101(4), 817–835.',
     url: 'https://doi.org/10.1037/a0016127',

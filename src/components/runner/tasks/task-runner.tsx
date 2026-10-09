@@ -22,6 +22,7 @@ import { SymbolMatch } from './symbol-match';
 import { VerbalReasoning } from './verbal-reasoning';
 import { LogicalReasoning } from './logical-reasoning';
 import { NumericalReasoning } from './numerical-reasoning';
+import { CubeNet } from './cube-net';
 import { Trail } from './trail';
 import { WordList } from './word-list';
 
@@ -180,6 +181,7 @@ export function TaskRunner(props: {
       {task.kind === 'word_list' && <WordList key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'logical_reasoning' && <LogicalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'numerical_reasoning' && <NumericalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'cube_net' && <CubeNet key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

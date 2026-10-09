@@ -275,9 +275,20 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    (test denetler). Rapor: fark yanılgısı, orantı yanılgısı (türüne göre), sayılara göre yöntem seçme, eşittir işaretini
    "sonuç" diye okuma, ters denkleştirme, terazi; "Bilmiyorum" (≥12) ve okumadan cevap (hızlı ve çoğu yanlış) uyarıları.
    Kaynaklar Fernández ve ark. (2012), Van Dooren ve ark. (2004), Knuth ve ark. (2006).
-17. Sıradaki (Akıl Yürütme dalgası, site sahibinin 2026-10-09 seçimi, bu sırayla): Küp Açınımı (SVG açınımlar,
-   çözücüyle doğrulama), Düşünerek Karar Verme (özgün sezgi tuzağı soruları; rapor sezgisel yanlışı öteki yanlışlardan
-   ayırır).
+17. **Küp Açınımı: yayında (2026-10-09, pilot; 5. sınıftan yetişkine).** 20 özgün soru, 4 düzey (dört kare yan yana
+   açınımlarda yakın ve uzak yüzler, basamaklı, zikzak), on bir küp açınımının hepsi; 10 soruda yalnızca yüzlerin yeri, 10
+   soruda şekillerin yönü (ok, bayrak, köşe) de önemli; 2 alıştırma (üç yanılgının her biri açıklanır), ~12 dakika
+   (`lib/instruments/cube.ts`, `content/instruments/kup-acinimi.ts`, `components/runner/tasks/cube-net.tsx`). Yanlış
+   seçenekler küpün bir duruşundan tek değişiklikle üretilir: karşılıklı yüzler yan yana, köşedeki sıra ters, şeklin yönü
+   yanlış. `tests/helpers/cube-check.ts` açınımı kâğıt gibi katlayarak her soruyu bağımsızca doğrular; çizimin ayna
+   görüntüsü olmadığı, anlatılan kuralların on bir açınımda da doğru olduğu ve kestirme yolların işe yaramadığı denetlenir.
+   Rapor: doğru sayısı, ulaşılan düzey, yer ve yön soruları; yanılgı yalnızca seçeneklerdeki sıklığına göre beklenenden sık
+   görülünce (olasılık ≤ %5) anlatılır; çok hızlı yanlış (3. düzey ve üstü, 3 sn) ve aynı sıradaki seçenek (en çok 12
+   doğruda) uyarıları. Üç boyutlu profil yok (iki tür). Kaynaklar Dahm ve Sachse (2025), Harris ve ark. (2013), Hilton ve
+   ark. (2022), Hodgkiss ve ark. (2018), Pawlak-Jakubowska ve Terczyńska (2023), Shepard ve Feng (1972); yol haritasında
+   Uttal ve ark. (2013), Wai ve ark. (2009).
+18. Sıradaki (Akıl Yürütme dalgası, site sahibinin 2026-10-09 seçimi): Düşünerek Karar Verme (özgün sezgi tuzağı
+   soruları; rapor sezgisel yanlışı öteki yanlışlardan ayırır).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -464,6 +475,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Çalışma Değerleri | calisma-degerleri | Yayında (pilot; 7. sınıftan yetişkine) |
 | Mantıksal Akıl Yürütme | mantiksal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sayısal Akıl Yürütme | sayisal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
+| Küp Açınımı | kup-acinimi | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -575,6 +587,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (19): Küp Açınımı yayında (5. sınıftan yetişkine): 20 özgün soru, on bir açınımın hepsi; yüzlerin yeri ve
+  şekillerin yönü ayrı yorumlanır, yanılgılar (karşılıklı yüzler, köşedeki sıra, şeklin yönü) yalnızca beklenenden sık
+  görülünce anlatılır; her soru açınım kâğıt gibi katlanarak bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, yol
+  haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme
+  bulguları düzeltildi.
 - 2026-10-09 (18): Sayısal Akıl Yürütme yayında (5. sınıftan yetişkine): 24 özgün soru, cevap yazılır; orantılı ve
   orantılı olmayan durumların ayırt edilip edilmediği, sayılara göre yöntem seçme ve eşittir işaretinin nasıl okunduğu
   sayılarıyla anlatılır; cevaplar ve yanılgı cevapları bağımsızca hesaplanarak doğrulandı; öğrenci, veli ve yetişkin raporu,
@@ -611,6 +628,3 @@ En yeni üstte; en çok 10 madde tutulur.
   "motivasyon haritası" (kendi isteğiyle ve baskıyla çalışma) ve dokuz profilli yorum; öğrenci ve veli raporu, 3B grafikli
   yol haritası; telefonda dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız
   inceleme bulguları düzeltildi.
-- 2026-10-09 (9): Site sahibi ilk dersi de yeterince derin bulmadı; sinir sistemi ünitesi kuruldu: "Sinir sistemine
-  ilk bakış" ünitenin genel bakışı oldu, dört ders (anatominin dili, omurilik sinirleri, boyun-kol ağı, bel-sakral ağ)
-  "Hazırlanıyor" olarak programa eklendi; program 110 ders.
