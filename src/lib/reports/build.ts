@@ -59,6 +59,12 @@ import {
   ruleSwitchFast,
   ruleSwitchOneSide,
   ruleSwitchTimeouts,
+  wordListManyExtra,
+  wordListNoInput,
+  wordListDelayedSkipped,
+  wordListRecogFast,
+  wordListRecogOneSided,
+  wordListRecogValid,
   matrixRapid,
   matrixSamePosition,
   nBackKeptOneBack,
@@ -87,6 +93,7 @@ import {
   type FoldingResult,
   type VocabularyResult,
   type RuleSwitchResult,
+  type WordListResult,
 } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
@@ -3753,6 +3760,412 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
   return { blocks: [dogruluk, degisim, karisik, calisma], ...(chart ? { chart } : {}), figures };
 }
 
+/* ---------- Kelime listesi hatırlama ---------- */
+
+/** Öğrenme denemelerinde bu kadar ya da daha çok artış "belirgin" sayılır (kelime). */
+const WL_GAIN_CLEAR = 3;
+/** İlk denemede bu kadar ya da daha çok kelime hatırlanınca artması için yer kalmamış sayılır. */
+const WL_CEILING = 13;
+/** Araya giren listeden sonraki değişim, son öğrenme denemesinde en az bu kadar kelime varsa yorumlanır. */
+const WL_RETENTION_MIN = 4;
+/** Listenin başı, ortası ve sonu arasındaki fark (her biri 15 fırsattan) en az bu kadarsa söylenir. */
+const WL_POSITION_DIFF = 4;
+/** Listenin kısımları, öğrenme denemelerinde en az bu kadar kelime hatırlandıysa karşılaştırılır. */
+const WL_POSITION_MIN = 9;
+/** Tanınan kelimeler kendiliğinden hatırlananlardan en az bu kadar çoksa söylenir. */
+const WL_RECOGNITION_GAP = 4;
+
+/** Araya giren listeden sonraki düşüş, en az bu kadar kelimeyse "belirgin" sayılabilir. */
+const WL_DROP_CLEAR = 3;
+/** Tanıma ile kendiliğinden hatırlama karşılaştırılırken ilk listede olmayan kelimelere "evet" oranı en çok bu kadar olmalı. */
+const WL_RECOGNITION_FALSE_MAX = 0.2;
+
+const WL_LURE_TEXT: Record<'b' | 'semantic' | 'sound' | 'new', (n: number) => string> = {
+  b: (n) => `ikinci listeden ${n} kelime`,
+  semantic: (n) => `anlamca yakın ${n} kelime`,
+  sound: (n) => `sesi ve yazılışı benzer ${n} kelime`,
+  new: (n) => `hiçbir listede olmayan ${n} kelime`,
+};
+
+/**
+ * Listenin hangi kısmı daha çok hatırlandı: ortası (öteki ikisinden belirgin biçimde çok), sonu ya da başı (öteki uçtan
+ * belirgin biçimde çok), iki ucu (benzer, ortadan belirgin biçimde çok) ya da hepsi benzer.
+ */
+export function wordListPosition(p: { begin: number; middle: number; end: number }): 'middle' | 'end' | 'begin' | 'ends' | 'even' {
+  if (p.middle - Math.max(p.begin, p.end) >= WL_POSITION_DIFF) return 'middle';
+  if (p.end - p.begin >= WL_POSITION_DIFF) return 'end';
+  if (p.begin - p.end >= WL_POSITION_DIFF) return 'begin';
+  if (p.middle <= Math.min(p.begin, p.end) - WL_POSITION_DIFF) return 'ends';
+  return 'even';
+}
+
+/** Listenin kısımları (üç boyutlu grafikte). */
+export const WORD_LIST_PARTS = [
+  { key: 'begin', label: 'Listenin başı', color: '#2f5ce0' },
+  { key: 'middle', label: 'Listenin ortası', color: '#0e9c8c' },
+  { key: 'end', label: 'Listenin sonu', color: '#ee6a36' },
+] as const;
+
+/** Kelime listesi hatırlamanın dört sonuç kartı, hatırlanan kelime sayıları grafiği ve listenin kısımlarına göre profil. */
+function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const adult = audience === 'adult';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const L = r.listLength;
+  const none = wordListNoInput(r);
+  const counts = r.trials.map((t) => t.correct);
+  const [t1, t2, t3] = counts;
+  const d = r.delayed.correct;
+  const rec = r.recognition;
+  const valid = wordListRecogValid(r);
+  const fa = rec.falseYes.b + rec.falseYes.semantic + rec.falseYes.sound + rec.falseYes.new;
+  const nLures = rec.n - rec.targets;
+
+  /* Öğrenme */
+  let ogrenme: CognitiveBlock;
+  if (none) {
+    ogrenme = {
+      ...card('kl_ogrenme'),
+      headline: 'Cevap verilmedi',
+      text: v(
+        'Hatırlama bölümlerinin hiçbirinde kelime yazmadın; bu yüzden sonuç yorumlanmadı. Yönerge anlaşılmamış ya da görev yarıda kalmış olabilir.',
+        'Hatırlama bölümlerinin hiçbirinde kelime yazılmadı; bu yüzden sonuç yorumlanmadı. Yönerge anlaşılmamış ya da görev yarıda kalmış olabilir.',
+      ),
+    };
+  } else {
+    const parts: string[] = [
+      v(
+        `Aynı liste üç kez gösterildi. ${L} kelimeden ilk denemede ${t1}, ikincide ${t2}, üçüncüde ${t3} kelime hatırladın (toplam ${r.total}).`,
+        `Aynı liste üç kez gösterildi. Çocuğunuz ${L} kelimeden ilk denemede ${t1}, ikincide ${t2}, üçüncüde ${t3} kelime hatırladı (toplam ${r.total}).`,
+      ),
+    ];
+    if (r.gain >= WL_GAIN_CLEAR) {
+      parts.push(
+        v(
+          'Liste tekrarlandıkça hatırladığın kelime sayısı belirgin biçimde arttı: tekrarlar kelimeleri öğrenmene yardım etti.',
+          'Liste tekrarlandıkça hatırladığı kelime sayısı belirgin biçimde arttı: tekrarlar kelimeleri öğrenmesine yardım etti.',
+        ),
+      );
+    } else if (r.gain > 0) {
+      parts.push(v('Liste tekrarlandıkça hatırladığın kelime sayısı biraz arttı.', 'Liste tekrarlandıkça hatırladığı kelime sayısı biraz arttı.'));
+    } else if (t1 >= WL_CEILING && t3 >= WL_CEILING) {
+      parts.push(
+        v(
+          'İlk denemeden başlayarak kelimelerin hepsini ya da neredeyse hepsini hatırladın; sayının artması için fazla yer yoktu.',
+          'İlk denemeden başlayarak kelimelerin hepsini ya da neredeyse hepsini hatırladı; sayının artması için fazla yer yoktu.',
+        ),
+      );
+    } else {
+      const verb = r.gain < 0 ? 'azaldı' : 'artmadı';
+      parts.push(
+        v(
+          `Liste tekrarlandığı hâlde hatırladığın kelime sayısı ${verb}. Bunun nedeni yorgunluk, dikkat dağınıklığı ya da her denemede bütün kelimeleri yeniden yazmanın unutulması olabilir.`,
+          `Liste tekrarlandığı hâlde hatırladığı kelime sayısı ${verb}. Bunun nedeni yorgunluk, dikkat dağınıklığı ya da her denemede bütün kelimeleri yeniden yazmanın unutulması olabilir.`,
+        ),
+      );
+    }
+    parts.push(
+      `Bir kerede akılda tutulabilecek kelime sayısı sınırlıdır ve ${L} kelime bu sınırın üzerindedir. Bu yüzden çoğu kişi ilk denemede kelimelerin yalnızca bir kısmını hatırlar; sonraki denemelerde hatırlananlara yenileri eklenir (Oliveira ve Charchat-Fichman, 2008).`,
+      v(
+        'Bu beceri; bir alışveriş listesini, yeni tanıştığın kişilerin adlarını ya da yeni öğrendiğin kelimeleri akılda tutmak gibi işlerde kullanılır.',
+        'Bu beceri; bir alışveriş listesini, yeni tanıştığı kişilerin adlarını ya da yeni öğrendiği kelimeleri akılda tutmak gibi işlerde kullanılır.',
+      ),
+    );
+    if (wordListManyExtra(r)) parts.push('Hiçbir listede olmayan çok sayıda kelime yazıldığı için bu sonuç dikkatle yorumlanmalıdır.');
+    ogrenme = { ...card('kl_ogrenme'), headline: `${counts.slice(0, -1).join(', ')} ve ${counts[counts.length - 1]} kelime`, text: parts.join(' ') };
+  }
+
+  /* Öğrenileni koruma */
+  let koruma: CognitiveBlock;
+  const skipped = wordListDelayedSkipped(r);
+  if (none) {
+    koruma = { ...card('kl_koruma'), headline: 'Cevap verilmedi', text: v('Kelime yazmadığın için bu bölüm yorumlanmadı.', 'Kelime yazılmadığı için bu bölüm yorumlanmadı.') };
+  } else {
+    const bPart =
+      r.b.correct > 0
+        ? v(`bu listeden ${r.b.correct} kelime hatırladın`, `çocuğunuz bu listeden ${r.b.correct} kelime hatırladı`)
+        : r.b.entries > 0
+          ? v('bu listeden hiç kelime hatırlamadın', 'çocuğunuz bu listeden hiç kelime hatırlamadı')
+          : v('bu listeden hiç kelime yazmadın', 'çocuğunuz bu listeden hiç kelime yazmadı');
+    const dPart = skipped
+      ? v(
+          'Ardından ilk listeyi yeniden görmeden yazman istendiğinde hiç kelime yazmadın; bu bölüm atlanmış olabilir.',
+          'Ardından ilk listeyi yeniden görmeden yazması istendiğinde hiç kelime yazmadı; bu bölüm atlanmış olabilir.',
+        )
+      : d > 0
+        ? v(
+            `Ardından ilk listeyi yeniden görmeden yazdın ve ${d} kelime hatırladın (üçüncü denemede ${t3} kelime hatırlamıştın).`,
+            `Ardından ilk listeyi yeniden görmeden yazdı ve ${d} kelime hatırladı (üçüncü denemede ${t3} kelime hatırlamıştı).`,
+          )
+        : v(
+            `Ardından ilk listeyi yeniden görmeden yazdın, ama hiç kelime hatırlamadın (üçüncü denemede ${t3} kelime hatırlamıştın).`,
+            `Ardından ilk listeyi yeniden görmeden yazdı, ama hiç kelime hatırlamadı (üçüncü denemede ${t3} kelime hatırlamıştı).`,
+          );
+    const parts: string[] = [`Sonra yeni bir liste bir kez gösterildi; ${bPart}. ${dPart}`];
+    let headline = `Araya giren listeden sonra ${d} kelime`;
+    if (skipped) {
+      headline = 'Yorumlanmadı';
+      parts.push('Bu yüzden karşılaştırma yorumlanmadı.');
+    } else if (t3 < WL_RETENTION_MIN) {
+      parts.push('Üçüncü denemede çok az kelime hatırlandığı için bu karşılaştırma yorumlanmadı.');
+    } else if (d >= t3) {
+      headline = d > t3 ? `${t3} kelimeden ${d} kelimeye çıktı` : 'Hatırlananlar korundu';
+      parts.push(
+        v(
+          d > t3
+            ? 'Araya yeni bir liste girmesine karşın üçüncü denemedekinden de çok kelime hatırladın: öğrendiğin kelimeler aklında kalmış.'
+            : 'Araya giren yeni liste, ilk listeden hatırladıklarını azaltmadı: öğrendiğin kelimeler aklında kalmış.',
+          d > t3
+            ? 'Araya yeni bir liste girmesine karşın üçüncü denemedekinden de çok kelime hatırladı: öğrendiği kelimeler aklında kalmış.'
+            : 'Araya giren yeni liste, ilk listeden hatırladıklarını azaltmadı: öğrendiği kelimeler aklında kalmış.',
+        ),
+      );
+    } else {
+      const ratio = r.retention ?? 0;
+      if (ratio >= 0.9) {
+        headline = 'Hatırlananların hemen hepsi korundu';
+        parts.push(
+          v(
+            'Araya giren yeni liste, ilk listeden hatırladıklarını neredeyse hiç azaltmadı: öğrendiğin kelimeler aklında kalmış.',
+            'Araya giren yeni liste, ilk listeden hatırladıklarını neredeyse hiç azaltmadı: öğrendiği kelimeler aklında kalmış.',
+          ),
+        );
+      } else if (ratio >= 0.7 || t3 - d < WL_DROP_CLEAR) {
+        headline = ratio >= 0.7 ? 'Hatırlananların çoğu korundu' : 'Hatırlananlar biraz azaldı';
+        parts.push(
+          v(
+            'Araya giren yeni listeden sonra ilk listeden hatırladıkların biraz azaldı. Yeni bir bilgi, daha önce öğrenilenleri hatırlamayı biraz zorlaştırabilir; bu herkeste görülür.',
+            'Araya giren yeni listeden sonra ilk listeden hatırladıkları biraz azaldı. Yeni bir bilgi, daha önce öğrenilenleri hatırlamayı biraz zorlaştırabilir; bu herkeste görülür.',
+          ),
+        );
+      } else {
+        headline = 'Hatırlananlar belirgin biçimde azaldı';
+        parts.push(
+          v(
+            'Araya giren yeni listeden sonra ilk listeden hatırladıkların belirgin biçimde azaldı: yeni liste, ilk listedeki kelimeleri hatırlamayı zorlaştırmış görünüyor.',
+            'Araya giren yeni listeden sonra ilk listeden hatırladıkları belirgin biçimde azaldı: yeni liste, ilk listedeki kelimeleri hatırlamayı zorlaştırmış görünüyor.',
+          ),
+        );
+        if (valid) parts.push('Kelimelerin akılda kalıp kalmadığını tanıma bölümünün sonucu ayrıca gösterir.');
+      }
+    }
+    if (r.delayed.otherList > 0) {
+      parts.push(
+        v(
+          `İlk listeyi yazarken ikinci listeden ${r.delayed.otherList} kelime de yazdın: iki listeyi biraz karıştırdın.`,
+          `İlk listeyi yazarken ikinci listeden ${r.delayed.otherList} kelime de yazdı: iki listeyi biraz karıştırdı.`,
+        ),
+      );
+    }
+    if (r.b.otherList > 0) {
+      parts.push(
+        v(
+          `İkinci listeyi yazarken ilk listeden ${r.b.otherList} kelime de yazdın: daha önce öğrendiğin liste yenisine karıştı.`,
+          `İkinci listeyi yazarken ilk listeden ${r.b.otherList} kelime de yazdı: daha önce öğrendiği liste yenisine karıştı.`,
+        ),
+      );
+    }
+    parts.push('Bu bölüm, yeni bir bilginin daha önce öğrenilenleri hatırlamayı nasıl etkilediğini gösterir (Oliveira ve Charchat-Fichman, 2008).');
+    koruma = { ...card('kl_koruma'), headline, text: parts.join(' ') };
+  }
+
+  /* Tanıma */
+  const said = (yes: boolean) => (yes ? v('dedin', 'dedi') : v('demedin', 'demedi'));
+  const T = rec.targets;
+  const recSentence =
+    rec.hits === 0 && fa === 0
+      ? `İlk listedeki ${T} kelimenin de, ilk listede olmayan ${nLures} kelimenin de hiçbirine “evet” ${said(false)}.`
+      : `İlk listedeki ${rec.hits === T ? `${T} kelimenin hepsine “evet” ${said(true)}` : rec.hits === 0 ? `${T} kelimenin hiçbirine “evet” ${said(false)}` : `${T} kelimeden ${rec.hits} tanesine “evet” ${said(true)}`}; ilk listede olmayan ${
+          fa === 0 ? `${nLures} kelimenin hiçbirine “evet” ${said(false)}` : `${nLures} kelimeden ${fa} tanesine ${rec.hits === 0 ? 'ise' : 'de'} “evet” ${said(true)}`
+        }.`;
+  const base = `Son bölümde ${rec.n} kelime tek tek gösterildi. ${you ? recSentence : `Çocuğunuz ${recSentence.charAt(0).toLocaleLowerCase('tr-TR')}${recSentence.slice(1)}`}`;
+  let tanima: CognitiveBlock;
+  if (!valid) {
+    const why = wordListRecogOneSided(r)
+      ? v('Bu bölümde hemen her kelimeye aynı cevabı verdin; bu yüzden tanıma sonucu yorumlanmadı.', 'Bu bölümde hemen her kelimeye aynı cevap verildi; bu yüzden tanıma sonucu yorumlanmadı.')
+      : wordListRecogFast(r)
+        ? v(
+            `${rec.tooFast} kelimede 0,3 saniyeden kısa sürede cevap verdin; kelimeye bakmadan cevap vermiş olabilirsin. Bu yüzden tanıma sonucu yorumlanmadı.`,
+            `${rec.tooFast} kelimede 0,3 saniyeden kısa sürede cevap verildi; kelimeye bakılmadan cevap verilmiş olabilir. Bu yüzden tanıma sonucu yorumlanmadı.`,
+          )
+        : v(
+            'İlk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dedin; tahminle cevap vermiş olabilirsin. Bu yüzden tanıma sonucu yorumlanmadı.',
+            'İlk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dendi; tahminle cevap verilmiş olabilir. Bu yüzden tanıma sonucu yorumlanmadı.',
+          );
+    tanima = { ...card('kl_tanima'), headline: 'Yorumlanmadı', text: `${base} ${why}` };
+  } else {
+    const parts: string[] = [base];
+    if (fa > 0) {
+      const kinds = (['b', 'semantic', 'sound', 'new'] as const).filter((k) => rec.falseYes[k] > 0);
+      const list = kinds.map((k) => WL_LURE_TEXT[k](rec.falseYes[k])).join(', ');
+      parts.push(v(`Yanlışlıkla “evet” dediğin kelimeler: ${list}.`, `Yanlışlıkla “evet” dediği kelimeler: ${list}.`));
+      const top = kinds.find((k) => rec.falseYes[k] >= 2 && rec.falseYes[k] >= 0.6 * fa);
+      const example = (k: 'semantic' | 'sound') => {
+        const x = rec.falseYesPairs.find((q) => q.kind === k);
+        return x ? ` (ör. “${x.word}”; listede “${x.of}” vardı)` : '';
+      };
+      if (top === 'semantic') {
+        parts.push(
+          v(
+            `Yanlışlıkla “evet” dediğin kelimelerin çoğu, ilk listedeki bir kelimeyle anlamca yakın kelimelerdi${example('semantic')}. Kelimenin anlamı aklında kalmış, ama kelimenin kendisi karışmış olabilir.`,
+            `Yanlışlıkla “evet” dediği kelimelerin çoğu, ilk listedeki bir kelimeyle anlamca yakın kelimelerdi${example('semantic')}. Kelimenin anlamı aklında kalmış, ama kelimenin kendisi karışmış olabilir.`,
+          ),
+        );
+      } else if (top === 'sound') {
+        parts.push(
+          v(
+            `Yanlışlıkla “evet” dediğin kelimelerin çoğu, sesi ve yazılışı ilk listedeki bir kelimeye benzeyen kelimelerdi${example('sound')}: kelimenin yalnızca sesi ya da görünüşü aklında kalmış olabilir.`,
+            `Yanlışlıkla “evet” dediği kelimelerin çoğu, sesi ve yazılışı ilk listedeki bir kelimeye benzeyen kelimelerdi${example('sound')}: kelimenin yalnızca sesi ya da görünüşü aklında kalmış olabilir.`,
+          ),
+        );
+      } else if (top === 'b') {
+        parts.push(
+          v(
+            'Yanlışlıkla “evet” dediğin kelimelerin çoğu ikinci listedeki kelimelerdi: kelimeyi hatırladın, ama hangi listede gördüğünü karıştırdın.',
+            'Yanlışlıkla “evet” dediği kelimelerin çoğu ikinci listedeki kelimelerdi: kelimeyi hatırladı, ama hangi listede gördüğünü karıştırdı.',
+          ),
+        );
+      } else if (top === 'new') {
+        parts.push(
+          v(
+            'Yanlışlıkla “evet” dediğin kelimelerin çoğu hiçbir listede olmayan ilgisiz kelimelerdi; bu bölümde dikkatin dağılmış ya da tahminle cevap vermiş olabilirsin.',
+            'Yanlışlıkla “evet” dediği kelimelerin çoğu hiçbir listede olmayan ilgisiz kelimelerdi; bu bölümde dikkati dağılmış ya da tahminle cevap verilmiş olabilir.',
+          ),
+        );
+      }
+    }
+    if (!none && !skipped && rec.hits - d >= WL_RECOGNITION_GAP && rec.falseRate <= WL_RECOGNITION_FALSE_MAX) {
+      parts.push(
+        v(
+          `Kendiliğinden yazarken ilk listeden ${d} kelime hatırladın, görünce ise ${rec.hits} kelimeyi tanıdın: kendiliğinden hatırlayamadığın kelimelerin bir kısmı da aklında kalmış. Görünce tanımak, kendiliğinden hatırlamaktan genellikle daha kolaydır.`,
+          `Kendiliğinden yazarken ilk listeden ${d} kelime hatırladı, görünce ise ${rec.hits} kelimeyi tanıdı: kendiliğinden hatırlayamadığı kelimelerin bir kısmı da aklında kalmış. Görünce tanımak, kendiliğinden hatırlamaktan genellikle daha kolaydır.`,
+        ),
+      );
+    } else if (rec.hits >= T - 1 && fa <= 1) {
+      parts.push(v('İlk listedeki kelimeleri, ilk listede olmayanlardan çok iyi ayırt ettin.', 'İlk listedeki kelimeleri, ilk listede olmayanlardan çok iyi ayırt etti.'));
+    }
+    tanima = { ...card('kl_tanima'), headline: `${rec.hits}/${T} tanındı, ${fa} yanlış “evet”`, text: parts.join(' ') };
+  }
+
+  /* Çalışma biçimi */
+  const p = r.positions;
+  const compared = !none && r.total >= WL_POSITION_MIN;
+  const issues: string[] = [];
+  if (!none) {
+    issues.push(
+      r.extraLearning === 0
+        ? v('Öğrenme denemelerinde hiçbir listede olmayan bir kelime yazmadın.', 'Öğrenme denemelerinde hiçbir listede olmayan bir kelime yazmadı.')
+        : v(
+            `Öğrenme denemelerinde hiçbir listede olmayan ${r.extraLearning} kelime yazdın; akla gelen başka bir kelimeyi yazmak herkeste ara sıra görülür.`,
+            `Öğrenme denemelerinde hiçbir listede olmayan ${r.extraLearning} kelime yazdı; akla gelen başka bir kelimeyi yazmak herkeste ara sıra görülür.`,
+          ),
+    );
+    if (r.emptyRecalls >= 2) issues.push(`${r.emptyRecalls} hatırlama bölümünde hiç kelime yazılmadı; o bölümler yarıda bırakılmış olabilir.`);
+  }
+  if (r.restarts > 0) {
+    issues.push(
+      `Başka bir sekmeye ya da uygulamaya geçildiği için liste ${r.restarts} kez baştan gösterildi; kelimeler bir kez daha görüldüğü için hatırlanan kelime sayısı biraz yüksek çıkmış olabilir.`,
+    );
+  }
+  let calisma: CognitiveBlock;
+  if (none) {
+    calisma = { ...card('kl_calisma'), headline: 'Cevap verilmedi', text: [v('Kelime yazmadığın için bu bölüm yorumlanmadı.', 'Kelime yazılmadığı için bu bölüm yorumlanmadı.'), ...issues].join(' ') };
+  } else {
+    const third = p.of / r.trials.length;
+    const parts: string[] = [
+      v(
+        `Üç denemede listenin ilk ${third} kelimesini toplam ${p.begin} kez, ortadaki ${third} kelimeyi ${p.middle} kez, son ${third} kelimeyi ${p.end} kez hatırladın (her kısımda en çok ${p.of}).`,
+        `Üç denemede listenin ilk ${third} kelimesi toplam ${p.begin} kez, ortadaki ${third} kelime ${p.middle} kez, son ${third} kelime ${p.end} kez hatırlandı (her kısımda en çok ${p.of}).`,
+      ),
+    ];
+    let headline: string;
+    if (!compared) {
+      headline = 'Kısımlar karşılaştırılmadı';
+      parts.push('Öğrenme denemelerinde az kelime hatırlandığı için listenin kısımları karşılaştırılmadı.');
+    } else {
+      const grows = adult ? '' : '; bu tür tekrar çocukluk boyunca gelişir';
+      const pos = wordListPosition(p);
+      if (pos === 'middle') {
+        headline = 'Listenin ortası daha çok hatırlandı';
+        parts.push(
+          v(
+            'Listenin ortasındaki kelimeleri, başındakilerden ve sonundakilerden daha çok hatırladın.',
+            'Listenin ortasındaki kelimeleri, başındakilerden ve sonundakilerden daha çok hatırladı.',
+          ),
+        );
+      } else if (pos === 'end') {
+        headline = 'Listenin sonu, başından daha çok hatırlandı';
+        parts.push(
+          v(
+            `Listenin sonundaki kelimeleri, başındakilerden daha çok hatırladın. Son kelimeler, liste biter bitmez henüz akıldayken kolayca yazılır. Listenin başındaki kelimeleri hatırlamak ise kelimeler gösterilirken öncekileri de içinden tekrar etmekle ilgilidir${grows} (Lehmann, 2015).`,
+            `Listenin sonundaki kelimeleri, başındakilerden daha çok hatırladı. Son kelimeler, liste biter bitmez henüz akıldayken kolayca yazılır. Listenin başındaki kelimeleri hatırlamak ise kelimeler gösterilirken öncekileri de içinden tekrar etmekle ilgilidir${grows} (Lehmann, 2015).`,
+          ),
+        );
+      } else if (pos === 'begin') {
+        headline = 'Listenin başı, sonundan daha çok hatırlandı';
+        parts.push(
+          v(
+            'Listenin başındaki kelimeleri, sonundakilerden daha çok hatırladın; bu, kelimeler gösterilirken öncekileri de içinden tekrar etmiş olabileceğini düşündürür (Lehmann, 2015).',
+            'Listenin başındaki kelimeleri, sonundakilerden daha çok hatırladı; bu, kelimeler gösterilirken öncekileri de içinden tekrar etmiş olabileceğini düşündürür (Lehmann, 2015).',
+          ),
+        );
+      } else if (pos === 'ends') {
+        headline = 'Başı ve sonu, ortasından daha çok hatırlandı';
+        parts.push(v('Listenin başından ve sonundan benzer sayıda kelime hatırladın.', 'Listenin başından ve sonundan benzer sayıda kelime hatırladı.'));
+      } else {
+        headline = 'Listenin her kısmından benzer sayıda kelime';
+        parts.push(v('Listenin başından, ortasından ve sonundan benzer sayıda kelime hatırladın.', 'Listenin başından, ortasından ve sonundan benzer sayıda kelime hatırladı.'));
+      }
+      if (p.middle <= Math.min(p.begin, p.end) - WL_POSITION_DIFF) {
+        parts.push('Ortadaki kelimeler daha az hatırlandı; çoğu kişi için listenin ortası en zor hatırlanan kısımdır.');
+      }
+      parts.push(`Bu karşılaştırma her kısımda yalnızca ${third} kelimeye dayanır; kaba bir göstergedir.`);
+    }
+    calisma = { ...card('kl_calisma'), headline, text: [...parts, ...issues].join(' ') };
+  }
+
+  /* Grafik, öne çıkan sayılar ve profil */
+  const chart: CognitiveReport['chart'] = none
+    ? undefined
+    : {
+        title: 'Hatırlanan kelime sayısı',
+        note: v(
+          `İlk üç çubuk aynı listenin üç denemesidir; dördüncüsü bir kez gösterilen ikinci liste, sonuncusu ilk listenin yeniden gösterilmeden hatırlanmasıdır. Her çubuk ${L} kelime üzerindendir.`,
+          `İlk üç çubuk aynı listenin üç denemesidir; dördüncüsü bir kez gösterilen ikinci liste, sonuncusu ilk listenin yeniden gösterilmeden hatırlanmasıdır. Her çubuk ${L} kelime üzerindendir.`,
+        ),
+        rows: [
+          ...counts.map((c, i) => ({ label: `${i + 1}. deneme`, value: c })),
+          { label: 'İkinci liste (bir kez)', value: r.b.correct },
+          { label: 'İlk liste, araya giren listeden sonra', value: d },
+        ].map((x) => ({ ...x, max: L, valueLabel: `${x.value}/${L}` })),
+      };
+  const figures: CognitiveReport['figures'] = [
+    { label: 'Üçüncü denemede', value: none ? 'Cevap yok' : `${t3}/${L}` },
+    { label: 'Araya giren listeden sonra', value: none ? 'Cevap yok' : `${d}/${L}` },
+    valid ? { label: 'Tanıma', value: `${rec.hits}/${rec.targets}`, note: `${fa} yanlış “evet”` } : { label: 'Tanıma', value: 'Yorumlanmadı' },
+  ];
+  const profile: CognitiveReport['profile'] = compared
+    ? {
+        title: v('Listenin hangi kısmını daha çok hatırladın', 'Listenin hangi kısmı daha çok hatırlandı'),
+        note: v(
+          'Her sütun listenin bir kısmıdır: ilk beş, ortadaki beş ve son beş kelime. Sütun ne kadar yüksekse o kısımdaki kelimeleri üç denemede o kadar çok hatırlamışsın demektir; tam boy sütun, o beş kelimeyi üç denemede de hatırladığın anlamına gelir. Renkler yalnızca kısımları ayırır.',
+          'Her sütun listenin bir kısmıdır: ilk beş, ortadaki beş ve son beş kelime. Sütun ne kadar yüksekse o kısımdaki kelimeler üç denemede o kadar çok hatırlanmış demektir; tam boy sütun, o beş kelimenin üç denemede de hatırlandığı anlamına gelir. Renkler yalnızca kısımları ayırır.',
+        ),
+        bars: WORD_LIST_PARTS.map((x) => ({
+          key: x.key,
+          label: x.label,
+          value: Math.round((p[x.key] / p.of) * 100),
+          min: 0,
+          max: 100,
+          color: x.color,
+          valueLabel: `${p[x.key]}/${p.of}`,
+          band: '',
+        })),
+      }
+    : undefined;
+  return { blocks: [ogrenme, koruma, tanima, calisma], ...(chart ? { chart } : {}), figures, ...(profile ? { profile } : {}) };
+}
+
 function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, audience: Audience): CognitiveReport {
   const you = audience !== 'parent';
   const blocks: CognitiveBlock[] = [];
@@ -3894,10 +4307,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (kb && kbt) add(vocabularyBlocks(kb, kbt, audience, card));
   const kd = byKey.get('kd_dogruluk')?.extra as unknown as RuleSwitchResult | undefined;
   if (kd && def.tasks.some((t) => t.kind === 'rule_switch')) add(ruleSwitchBlocks(kd, audience, card));
+  const kl = byKey.get('kl_ogrenme')?.extra as unknown as WordListResult | undefined;
+  if (kl && def.tasks.some((t) => t.kind === 'word_list')) add(wordListBlocks(kl, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

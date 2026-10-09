@@ -239,6 +239,7 @@ export type TaskKind =
   | 'verbal_reasoning'
   | 'vocabulary'
   | 'rule_switch'
+  | 'word_list'
   | 'paper_folding';
 
 interface TaskBase {
@@ -783,6 +784,37 @@ export interface RuleSwitchTask extends TaskBase {
   itiMs: [number, number];
 }
 
+/**
+ * Kelime listesi hatırlama (sözel liste öğrenme düzeni): 15 kelimelik bir liste üç kez gösterilir ve her seferinden sonra
+ * hatırlanan kelimeler yazılır; sonra yeni bir liste bir kez gösterilip hatırlanır, ilk liste yeniden gösterilmeden bir
+ * kez daha hatırlanır ve en sonda tanıma bölümü gelir (lib/instruments/word-list.ts).
+ */
+export type WordListLure = 'b' | 'semantic' | 'sound' | 'new';
+
+export interface WordListTask extends TaskBase {
+  kind: 'word_list';
+  /** Alıştırma listesi (geri bildirimli, puanlanmaz). */
+  practice: string[];
+  /** Öğrenilen liste (15 kelime); her denemede aynı sırayla gösterilir. */
+  listA: string[];
+  /** Araya giren liste (15 kelime); bir kez gösterilir. */
+  listB: string[];
+  /** İlk listenin kaç kez gösterilip hatırlanacağı. */
+  learningTrials: number;
+  /** Tanıma bölümünde gösterilen kelimeler, gösterilme sırasıyla. */
+  recognition: string[];
+  /**
+   * Tanıma bölümünün anahtarı (`recognition` ile aynı sırada): ilk listedeki kelime (`target`, `of` listedeki yeri) ya da
+   * yanılgı türü: ikinci listeden (`b`, `of` ikinci listedeki yeri), ilk listedeki bir kelimeyle anlamca yakın
+   * (`semantic`) ya da sesi ve yazılışı benzer (`sound`) yeni kelime (`of` o kelimenin yeri), ilgisiz yeni kelime (`new`).
+   * Tarayıcıya boş gönderilir.
+   */
+  recognitionKey: { kind: 'target' | WordListLure; of?: number }[];
+  /** Her kelimenin ekranda kaldığı süre ve iki kelime arasındaki boşluk (ms). */
+  wordMs: number;
+  gapMs: number;
+}
+
 export type CognitiveTask =
   | DigitSpanTask
   | SpatialSpanTask
@@ -800,7 +832,8 @@ export type CognitiveTask =
   | VerbalReasoningTask
   | PaperFoldingTask
   | VocabularyTask
-  | RuleSwitchTask;
+  | RuleSwitchTask
+  | WordListTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

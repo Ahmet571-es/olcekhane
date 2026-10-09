@@ -17,6 +17,7 @@ import {
   scoreFolding,
   scoreVocabulary,
   scoreRuleSwitch,
+  scoreWordList,
   scoreReaction,
   scoreRotation,
   scoreSpan,
@@ -45,6 +46,8 @@ import {
   type VocabularyTrialInput,
   type RuleSwitchResult,
   type RuleSwitchTrialInput,
+  type WordListResult,
+  type WordListTrialInput,
   type ReactionResult,
   type ReactionTrialInput,
   type RotationResult,
@@ -170,7 +173,8 @@ export type TaskInputs =
   | VerbalTrialInput[]
   | FoldingTrialInput[]
   | VocabularyTrialInput[]
-  | RuleSwitchTrialInput[];
+  | RuleSwitchTrialInput[]
+  | WordListTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -199,6 +203,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let foldingRes: FoldingResult | undefined;
   let vocabularyRes: VocabularyResult | undefined;
   let ruleSwitchRes: RuleSwitchResult | undefined;
+  let wordListRes: WordListResult | undefined;
   const pct = (x: number) => Math.round(x * 1000) / 10;
 
   for (const task of def.tasks) {
@@ -384,6 +389,17 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'kd_karisik', raw: result.mixingCost, mean: null, nAnswered: result.repeat.nRt, nItems: result.repeat.n, band: null },
         { scaleKey: 'kd_calisma', raw: result.medianRt, mean: null, nAnswered: result.answered, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'word_list') {
+      const { result } = scoreWordList(task, input as WordListTrialInput[]);
+      wordListRes = result;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "kl_ogrenme" satırında durur.
+      const last = result.trials[result.trials.length - 1];
+      rows.push(
+        { scaleKey: 'kl_ogrenme', raw: result.total, mean: null, nAnswered: last.correct, nItems: result.totalMax, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'kl_koruma', raw: result.delayed.correct, mean: null, nAnswered: result.delayed.correct, nItems: result.listLength, band: null },
+        { scaleKey: 'kl_tanima', raw: pct(result.recognition.discrimination), mean: null, nAnswered: result.recognition.hits, nItems: result.recognition.n, band: null },
+        { scaleKey: 'kl_calisma', raw: result.extraLearning, mean: null, nAnswered: result.entries, nItems: result.totalMax, band: null },
+      );
     } else {
       const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
@@ -416,6 +432,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       folding: foldingRes,
       vocabulary: vocabularyRes,
       ruleSwitch: ruleSwitchRes,
+      wordList: wordListRes,
     }),
   };
 }

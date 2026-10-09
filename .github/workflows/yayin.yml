@@ -289,6 +289,18 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 3 and len(r["student"]["items"]) == 4 and r["student"]["items"][0]["badge"] == "%100 doğru"; m=r["parent"]["roadmap"]; assert m["bars"] == [] and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
             sorun="$sorun kural-degistirme-raporu"
           fi
+          # Kelime Listesi Hatırlama: ilk listenin üç denemesinde 5, 10 ve 15 kelime, ikinci listeden 5, sonra 15 kelime; tanımada
+          # yalnızca ilk listedeki kelimelere "evet" (a ve b testin listeleri, k tanıma anahtarıdır: 1 evet, 2 hayır;
+          # tests/kelime-listesi.test.ts güncel olduğunu denetler). Çözme sayfasına tanıma anahtarı gitmez.
+          KL_GOVDE=$(python3 -c 'import json; a=["tavşan","pencere","limon","köprü","gitar","para","gömlek","çekiç","balon","kibrit","araba","bayrak","ayna","anahtar","kulak"]; b=["sabun","havuz","zarf","tabure","terazi","dürbün","mendil","yastık","pusula","heykel","kupa","sandık","şemsiye","maske","sepet"]; k=[1,1,1,2,2,2,1,2,1,1,2,2,2,1,2,2,2,1,2,1,1,2,2,2,1,1,2,1,2,2,2,1,2,2,1]; r=[a[:5], a[:10], a, b[:5], a]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kelime-listesi": [{"index": i, "response": {"words": w}, "rtMs": 40000} for i, w in enumerate(r)] + [{"index": 5 + j, "response": x, "rtMs": 1200} for j, x in enumerate(k)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$KL_GOVDE" "https://$ALAN/api/rapor/kelime-listesi-hatirlama" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 4 and r["student"]["items"][0]["badge"] == "5, 10 ve 15 kelime" and r["student"]["items"][2]["badge"] == "15/15 tanındı, 0 yanlış “evet”"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun kelime-listesi-raporu"
+          fi
+          kl_sayfa=$("${C[@]}" -f "https://$ALAN/testler/kelime-listesi-hatirlama/coz?sinif=6") || kl_sayfa=""
+          if ! grep -q 'Kelimeleri aklında tut' <<<"$kl_sayfa" || ! grep -qF '\"recognitionKey\":[]' <<<"$kl_sayfa"; then
+            sorun="$sorun kelime-listesi-anahtar"
+          fi
           # Sesli okuma: tarayıcı mikrofonu yalnızca izin başlığı açıksa kullanabilir; ses cihazda kalır, sunucuya yalnızca
           # işaretler, süreler ve cevaplar gelir. Örnek: 3. sınıf metni, iki yanlış okuma, bir yeniden anlatma fikri.
           "${C[@]}" -I "https://$ALAN/okuma" | grep -qi '^permissions-policy:.*microphone=(self)' || sorun="$sorun mikrofon-izni"

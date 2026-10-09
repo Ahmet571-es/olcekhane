@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-08
+Son güncelleme: 2026-10-09
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -188,7 +188,18 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    Rapor: doğruluk ve hataların türü (uyumsuz şekillerde öteki kurala göre basma), kural değiştirmenin bedeli, iki
    kuralı akılda tutmanın bedeli (0,05 sn'den küçük farklar belirgin sayılmaz), çalışma biçimi; tipik süreler grafiği.
    3. sınıftan yetişkine. Kaynaklar Stoet ve Snyder (2007), Zinke ve ark. (2012), Hedge ve ark. (2018).
-9. Sonra: Kelime Listesi Hatırlama, 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
+9. **Kelime Listesi Hatırlama: yayında (2026-10-09, pilot).** Sözel liste öğrenme düzeni (Rey'in düzeni; kelimeler,
+   tanıma kelimeleri, puanlama ve rapor özgün): 15 kelimelik ilk liste üç kez gösterilir (kelime 1,5 sn, aralık 0,5 sn) ve
+   her seferinden sonra hatırlananlar yazılır; ikinci liste bir kez; ilk liste yeniden gösterilmeden; tanıma 35 kelime (15
+   hedef; ikinci listeden, anlamca yakın, sesi ve yazılışı benzer, ilgisiz yeni beşer yanılgı). Yazım: büyük-küçük harf,
+   Türkçe harf işaretleri, çoğul eki ve 5+ harfli kelimede ilk harf doğruysa tek kayma (eksik/fazla harf, yer değiştirme,
+   klavyede yan tuş) hata sayılmaz (`lib/instruments/word-list.ts`); yazılan kelimeler kaydedilmez, raporda da gösterilmez.
+   Rapor: öğrenme (üç deneme), öğrenileni koruma (araya giren listeden sonra), tanıma (yanılgı türleri, tanıma ile
+   hatırlama farkı), çalışma biçimi (listenin başı, ortası, sonu; 3B grafik); sekme değişince liste baştan gösterilir ve
+   uyarı verilir. 3. sınıftan yetişkine. Bağımsız bir ajan kaynakları, kelimeleri ve metinleri denetledi; bulguları
+   düzeltildi. Kaynaklar Oliveira ve Charchat-Fichman (2008), Lehmann (2015), Dewhurst ve ark. (2012), Hedge ve ark. (2018);
+   yol haritasında ayrıca Roediger ve Karpicke (2006), Cepeda ve ark. (2006).
+10. Sonra: 3–5. sınıflar için çocuk diliyle kısa kişilik testi.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -344,6 +355,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Kâğıt Katlama | kagit-katlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kelime Bilgisi | kelime-bilgisi | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kural Değiştirme | kural-degistirme | Yayında (pilot; 3. sınıftan yetişkine) |
+| Kelime Listesi Hatırlama | kelime-listesi-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -455,6 +467,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (6): Kelime Listesi Hatırlama yayında: 15 kelimelik liste üç kez, araya giren ikinci liste, ilk listeyi
+  yeniden hatırlama ve 35 kelimelik tanıma; öğrenci, veli ve yetişkin raporu (öğrenme, koruma, tanıma, listenin
+  kısımları), 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (sekme değiştirme dahil) baştan sona
+  yapıldı, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
 - 2026-10-09 (5): Kural Değiştirme yayında: renk ve şekil kuralı arasında geçiş, 98 deneme, dört bölüm; öğrenci, veli ve
   yetişkin raporu (doğruluk, kural değiştirmenin ve iki kuralı akılda tutmanın bedeli, hataların türü), yol haritası;
   telefonda dokunarak ve masaüstünde ok tuşlarıyla baştan sona yapıldı, rapor ve PDF açıldı.
@@ -488,6 +504,3 @@ En yeni üstte; en çok 10 madde tutulur.
   vaka, dermatom, refleks, üst-alt motor nöron, otonom sinaps, kanama ve kesecik tabloları, 6 yeni sahne (beş
   kesecik, birincil alanlar, iç kapsül, AC–PC, karıncıklar, Willis halkası), 3 yeni hareketli çizim, 36 soru, 157
   kaynak. Bilgiler ayrı bir ajanla kaynaklara karşı denetlendi, bulunan yanlışlar düzeltildi.
-- 2026-10-08 (8): Sayı Dizileri yayında: 24 özgün sayı dizisi, 5 düzey, cevap yazılarak; öğrenci, veli ve yetişkin
-  raporu, kural türlerine göre 3B grafikli yol haritası; telefonda ve masaüstünde baştan sona çözüldü, rapor ve PDF
-  açıldı. Aynı değişiklikte Şekil Akıl Yürütme raporunda iki küçük metin tutarlılığı düzeltmesi.

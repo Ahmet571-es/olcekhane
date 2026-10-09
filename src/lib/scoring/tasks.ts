@@ -23,11 +23,14 @@ import type {
   VocabularyTask,
   VocabularyType,
   RuleSwitchTask,
+  WordListLure,
+  WordListTask,
 } from '@/lib/instruments/types';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
 import { verbalRapidMs } from '@/lib/instruments/verbal';
 import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds } from '@/lib/instruments/rule-switch';
+import { WORD_RECOGNITION_FAST_MS, matchWord, normalizeWord, wordListRecalls } from '@/lib/instruments/word-list';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { median, round } from './stats';
 
@@ -1805,6 +1808,205 @@ export function scoreRuleSwitch(task: RuleSwitchTask, input: RuleSwitchTrialInpu
   };
 }
 
+/* ---------- Kelime listesi hatırlama ---------- */
+
+export interface WordListTrialInput {
+  /** 0–4 hatırlama denemeleri (ilk listenin üç denemesi, ikinci liste, ilk liste yeniden); 5 ve sonrası tanıma bölümü. */
+  index: number;
+  /** Hatırlamada yazılan kelimeler (ve liste gösterilirken sayfa gizlendiği için listenin baştan gösterilme sayısı); tanımada 1 evet, 2 hayır. */
+  response: { words: string[]; restarts?: number } | number | null;
+  /** Hatırlamada yazmaya ayrılan süre; tanımada kelimenin göründüğü andan cevaba kadar geçen süre (ms). */
+  rtMs: number | null;
+}
+
+export interface WordListRecall {
+  /** Hangi liste hatırlandı: A ilk liste, B ikinci (araya giren) liste. */
+  list: 'A' | 'B';
+  /** Doğru hatırlanan kelimelerin listedeki yerleri (küçükten büyüğe). */
+  recalled: number[];
+  correct: number;
+  /** Yazılan kelime sayısı (öteki listeden ve listede olmayanlar dahil). */
+  entries: number;
+  /** Öteki listeden yazılan kelimeler: ilk listeyi yazarken ikinci listeden ya da ikinci listeyi yazarken ilk listeden. */
+  otherList: number;
+  /** Hiçbir listede olmayan kelimeler. */
+  extra: number;
+  /** Aynı denemede ikinci kez yazılan liste kelimeleri (ör. biri çoğul). */
+  repeats: number;
+  ms: number | null;
+  /** Liste gösterilirken sayfa gizlendiği için listenin baştan gösterilme sayısı. */
+  restarts: number;
+}
+
+type WordListLureCounts = Record<WordListLure, number>;
+
+export interface WordListResult {
+  listLength: number;
+  /** İlk listenin öğrenme denemeleri (sırayla). */
+  trials: WordListRecall[];
+  /** İkinci (araya giren) liste. */
+  b: WordListRecall;
+  /** İlk liste, ikinci listeden sonra ve yeniden gösterilmeden. */
+  delayed: WordListRecall;
+  /** Öğrenme denemelerinde hatırlanan kelimelerin toplamı ve en çok olabileceği. */
+  total: number;
+  totalMax: number;
+  /** Son öğrenme denemesi ile ilki arasındaki fark. */
+  gain: number;
+  /** Araya giren listeden sonra hatırlanan / son öğrenme denemesinde hatırlanan (son denemede hiç kelime yoksa null). */
+  retention: number | null;
+  /** Öğrenme denemelerinde listenin başından, ortasından ve sonundan hatırlananlar; her biri `of` fırsattan. */
+  positions: { begin: number; middle: number; end: number; of: number };
+  /** Öğrenme denemelerinde hiçbir listede olmayan kelimeler. */
+  extraLearning: number;
+  /** Hiç kelime yazılmayan hatırlama denemeleri. */
+  emptyRecalls: number;
+  /** Yazılan bütün kelimeler (bütün hatırlama denemelerinde). */
+  entries: number;
+  restarts: number;
+  recognition: {
+    n: number;
+    /** İlk listedeki kelimeler ve onlara verilen "evet" cevapları. */
+    targets: number;
+    hits: number;
+    /** Yanılgı türlerinin kelime sayıları ve onlara verilen "evet" cevapları. */
+    lures: WordListLureCounts;
+    falseYes: WordListLureCounts;
+    /** "Evet" denen anlamca yakın ve sesi benzer yanılgılar ile ilişkili oldukları kelimeler (raporda örnek için). */
+    falseYesPairs: { kind: 'semantic' | 'sound'; word: string; of: string }[];
+    yes: number;
+    hitRate: number;
+    falseRate: number;
+    /** Ayırt etme: "evet" oranı ilk listedeki kelimelerde eksi yanılgılarda. */
+    discrimination: number;
+    /** `WORD_RECOGNITION_FAST_MS`'den kısa cevaplar. */
+    tooFast: number;
+    medianRt: number | null;
+  };
+}
+
+/** Bir hatırlama denemesinde en çok bu kadar kelime alınır. */
+export const WORD_LIST_MAX_ENTRIES = 40;
+
+export function scoreWordList(task: WordListTask, input: WordListTrialInput[]): { result: WordListResult } {
+  const recalls = wordListRecalls(task);
+  const nRecog = task.recognition.length;
+  const n = recalls.length + nRecog;
+  const byIndex = new Map<number, WordListTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz deneme.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (t.index < recalls.length) {
+      const r = t.response;
+      if (r === null || typeof r !== 'object' || !Array.isArray(r.words) || r.words.length > WORD_LIST_MAX_ENTRIES) throw new TaskInputError('Geçersiz cevap.');
+      if (r.words.some((w) => typeof w !== 'string' || w.length > 30)) throw new TaskInputError('Geçersiz cevap.');
+      if (r.restarts !== undefined && (!Number.isInteger(r.restarts) || r.restarts < 0)) throw new TaskInputError('Geçersiz cevap.');
+    } else if (t.response !== 1 && t.response !== 2) {
+      throw new TaskInputError('Geçersiz cevap.');
+    }
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Denemelerin hepsi gelmedi.');
+
+  const all = [...task.listA, ...task.listB];
+  const recallOf = (i: number): WordListRecall => {
+    const kind = recalls[i];
+    const t = byIndex.get(i)!;
+    const resp = t.response as { words: string[]; restarts?: number };
+    const words = resp.words.filter((w) => normalizeWord(w).length > 0);
+    const own = new Set<number>();
+    let otherList = 0;
+    let extra = 0;
+    let repeats = 0;
+    for (const w of words) {
+      const m = matchWord(w, all);
+      if (m === null) extra++;
+      else {
+        const inA = m < task.listA.length;
+        const pos = inA ? m : m - task.listA.length;
+        if ((kind.list === 'A') !== inA) otherList++;
+        else if (own.has(pos)) repeats++;
+        else own.add(pos);
+      }
+    }
+    const recalled = [...own].sort((a, b) => a - b);
+    return { list: kind.list, recalled, correct: recalled.length, entries: words.length, otherList, extra, repeats, ms: t.rtMs, restarts: resp.restarts ?? 0 };
+  };
+  const scored = recalls.map((_, i) => recallOf(i));
+  const trials = scored.slice(0, task.learningTrials);
+  const b = scored[task.learningTrials];
+  const delayed = scored[task.learningTrials + 1];
+  const L = task.listA.length;
+  const third = Math.floor(L / 3);
+  const inRange = (lo: number, hi: number) => trials.reduce((s, t) => s + t.recalled.filter((p) => p >= lo && p < hi).length, 0);
+  const last = trials[trials.length - 1];
+
+  const zero = (): WordListLureCounts => ({ b: 0, semantic: 0, sound: 0, new: 0 });
+  const lures = zero();
+  const falseYes = zero();
+  const falseYesPairs: WordListResult['recognition']['falseYesPairs'] = [];
+  let hits = 0;
+  let targets = 0;
+  let yes = 0;
+  let tooFast = 0;
+  const rts: number[] = [];
+  task.recognitionKey.forEach((key, j) => {
+    const t = byIndex.get(recalls.length + j)!;
+    const said = t.response === 1;
+    if (said) yes++;
+    if (t.rtMs !== null) {
+      if (t.rtMs < WORD_RECOGNITION_FAST_MS) tooFast++;
+      rts.push(t.rtMs);
+    }
+    if (key.kind === 'target') {
+      targets++;
+      if (said) hits++;
+    } else {
+      lures[key.kind]++;
+      if (said) {
+        falseYes[key.kind]++;
+        if ((key.kind === 'semantic' || key.kind === 'sound') && key.of !== undefined) falseYesPairs.push({ kind: key.kind, word: task.recognition[j], of: task.listA[key.of] });
+      }
+    }
+  });
+  const nLures = nRecog - targets;
+  const nFalse = falseYes.b + falseYes.semantic + falseYes.sound + falseYes.new;
+  const hitRate = targets ? hits / targets : 0;
+  const falseRate = nLures ? nFalse / nLures : 0;
+
+  return {
+    result: {
+      listLength: L,
+      trials,
+      b,
+      delayed,
+      total: trials.reduce((s, t) => s + t.correct, 0),
+      totalMax: L * trials.length,
+      gain: last.correct - trials[0].correct,
+      retention: last.correct > 0 ? round(delayed.correct / last.correct, 3) : null,
+      positions: { begin: inRange(0, third), middle: inRange(third, L - third), end: inRange(L - third, L), of: third * trials.length },
+      extraLearning: trials.reduce((s, t) => s + t.extra, 0),
+      emptyRecalls: scored.filter((t) => t.entries === 0).length,
+      entries: scored.reduce((s, t) => s + t.entries, 0),
+      restarts: scored.reduce((s, t) => s + t.restarts, 0),
+      recognition: {
+        n: nRecog,
+        targets,
+        hits,
+        lures,
+        falseYes,
+        falseYesPairs,
+        yes,
+        hitRate: round(hitRate, 3),
+        falseRate: round(falseRate, 3),
+        discrimination: round(hitRate - falseRate, 3),
+        tooFast,
+        medianRt: medianOrNull(rts),
+      },
+    },
+  };
+}
+
 /* ---------- Cevap kalitesi ---------- */
 
 const ORDINALS_LOWER = ['birinci', 'ikinci', 'üçüncü', 'dördüncü', 'beşinci', 'altıncı'];
@@ -1826,6 +2028,7 @@ export function taskQualityNotes(parts: {
   folding?: FoldingResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
+  wordList?: WordListResult;
 }): string[] {
   const notes: string[] = [];
   const f = parts.flanker;
@@ -2001,6 +2204,8 @@ export function taskQualityNotes(parts: {
   if (kb) notes.push(...vocabularyQualityNotes(kb));
   const kd = parts.ruleSwitch;
   if (kd) notes.push(...ruleSwitchQualityNotes(kd));
+  const kl = parts.wordList;
+  if (kl) notes.push(...wordListQualityNotes(kl));
   return notes;
 }
 
@@ -2050,6 +2255,51 @@ export function ruleSwitchQualityNotes(r: RuleSwitchResult): string[] {
   if (ruleSwitchTimeouts(r)) notes.push(`Kural değiştirme görevinde ${r.n} denemenin ${r.timeouts} tanesinde süre içinde cevap verilmedi; görev yarıda bırakılmış ya da dikkat dağılmış olabilir.`);
   if (ruleSwitchFast(r)) notes.push(`Kural değiştirme görevinde ${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde basıldı; bu denemelerde şekle bakmadan basılmış olabilir.`);
   if (ruleSwitchOneSide(r)) notes.push('Kural değiştirme görevinde cevapların çoğunda aynı düğmeye basıldı; şekillere bakılmadan hep aynı düğmeye basılmış olabilir.');
+  return notes;
+}
+
+/** Kelime listesinde hiçbir hatırlama bölümünde kelime yazılmadı. */
+export const wordListNoInput = (r: WordListResult) => r.entries === 0;
+/** Araya giren listeden sonra ilk listenin yeniden yazıldığı bölümde hiç kelime yazılmadı (öteki bölümlerde yazıldı). */
+export const wordListDelayedSkipped = (r: WordListResult) => r.entries > 0 && r.delayed.entries === 0;
+/** Öğrenme denemelerinde listede olmayan çok sayıda kelime: en az 9 ve doğru hatırlananlar kadar ya da daha çok. */
+export const wordListManyExtra = (r: WordListResult) => r.extraLearning >= 9 && r.extraLearning >= r.total;
+/** Tanımada hemen hep aynı cevap: cevapların en az %90'ı "evet" ya da en az %90'ı "hayır". */
+export const wordListRecogOneSided = (r: WordListResult) => Math.max(r.recognition.yes, r.recognition.n - r.recognition.yes) >= Math.ceil(0.9 * r.recognition.n);
+/** Tanımada çok hızlı cevaplar: kelimelerin en az %15'i (en az 4). */
+export const wordListRecogFast = (r: WordListResult) => r.recognition.tooFast >= Math.max(4, Math.ceil(0.15 * r.recognition.n));
+/** Tanımada ayırt etme yok denecek kadar az: "evet" oranı ilk listedeki kelimelerde, yanılgılardakinden en çok 0,1 fazla. */
+export const wordListRecogChance = (r: WordListResult) => r.recognition.discrimination <= 0.1;
+/** Tanıma sonucu yorumlanabilir mi? */
+export const wordListRecogValid = (r: WordListResult) => !wordListRecogOneSided(r) && !wordListRecogFast(r) && !wordListRecogChance(r);
+
+/** Kelime listesinde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, wordListBlocks aynı eşikleri kullanır). */
+export function wordListQualityNotes(r: WordListResult): string[] {
+  const notes: string[] = [];
+  if (wordListNoInput(r)) {
+    notes.push('Kelime listesi görevinde hiçbir hatırlama bölümünde kelime yazılmadı; yönerge anlaşılmamış ya da görev yarıda bırakılmış olabilir. Hatırlama sonuçları yorumlanmadı.');
+  } else {
+    if (wordListManyExtra(r)) {
+      notes.push(
+        `Kelime listesi görevinin öğrenme denemelerinde hiçbir listede olmayan ${r.extraLearning} kelime yazıldı; yönerge tam anlaşılmamış ya da akla gelen başka kelimeler de yazılmış olabilir. Hatırlama sonuçları dikkatle yorumlanmalıdır.`,
+      );
+    }
+    if (r.emptyRecalls >= 2) notes.push(`Kelime listesi görevinde ${r.emptyRecalls} hatırlama bölümünde hiç kelime yazılmadı; o bölümler yarıda bırakılmış olabilir.`);
+    if (wordListDelayedSkipped(r)) {
+      notes.push('Kelime listesi görevinde ilk listenin yeniden yazıldığı bölümde hiç kelime yazılmadı; bu bölüm atlanmış olabilir. Öğrenileni koruma sonucu yorumlanmadı.');
+    }
+  }
+  if (r.restarts > 0) {
+    notes.push(
+      `Kelime listesi görevinde başka bir sekmeye ya da uygulamaya geçildiği için liste ${r.restarts} kez baştan gösterildi; kelimeler bir kez daha görüldüğü için hatırlanan kelime sayısı biraz yüksek çıkmış olabilir.`,
+    );
+  }
+  if (wordListRecogOneSided(r)) notes.push('Kelime listesi görevinin tanıma bölümünde hemen her kelimeye aynı cevap verildi; tanıma sonucu yorumlanmadı.');
+  else if (wordListRecogFast(r)) {
+    notes.push(`Kelime listesi görevinin tanıma bölümünde ${r.recognition.tooFast} kelimede 0,3 saniyeden kısa sürede cevap verildi; kelimeye bakılmadan cevap verilmiş olabilir. Tanıma sonucu yorumlanmadı.`);
+  } else if (wordListRecogChance(r)) {
+    notes.push('Kelime listesi görevinin tanıma bölümünde ilk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dendi; tahminle cevap verilmiş olabilir. Tanıma sonucu yorumlanmadı.');
+  }
   return notes;
 }
 

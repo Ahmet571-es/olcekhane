@@ -21,6 +21,7 @@ import { SpatialSpan } from './spatial-span';
 import { SymbolMatch } from './symbol-match';
 import { VerbalReasoning } from './verbal-reasoning';
 import { Trail } from './trail';
+import { WordList } from './word-list';
 
 type Phase = 'intro' | 'task-intro' | 'task' | 'between' | 'finishing';
 
@@ -174,6 +175,7 @@ export function TaskRunner(props: {
       {task.kind === 'paper_folding' && <PaperFolding key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'vocabulary' && <Vocabulary key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'rule_switch' && <RuleSwitch key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'word_list' && <WordList key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

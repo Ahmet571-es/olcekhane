@@ -25,6 +25,7 @@ import type {
   PaperFoldingTask,
   VocabularyTask,
   RuleSwitchTask,
+  WordListTask,
 } from '@/lib/instruments/types';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
 import { formForGrade } from '@/lib/scoring/quiz';
@@ -375,5 +376,52 @@ export function ruleSwitchBody(
     const p = pick({ i: index, rule: t.rule, kind: kinds[index], congruent: ruleCongruent(t), answer: ruleAnswer(t) + 1, block: t.block });
     return { index, response: p.response, rtMs: p.rtMs };
   });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Kelime listesi: tanıma bölümündeki bir kelimenin anahtarı ve sırası. */
+export type WordListCell = { kind: 'target' | 'b' | 'semantic' | 'sound' | 'new'; of?: number; j: number };
+
+/** Kelime listesinin hatırlama denemelerinde yazılanlar ve tanıma cevapları. */
+export type WordListPlan = {
+  /** Sırasıyla ilk listenin üç denemesi, ikinci liste ve ilk liste yeniden: yazılan kelimeler. */
+  recalls: string[][];
+  /** Tanımada "evet" denecek kelimeler. */
+  recog: (q: WordListCell) => boolean;
+  recogRt: (q: WordListCell) => number | null;
+  restarts: number[];
+};
+
+/** Kelime listesinin kelimeleri: ilk (A) ya da ikinci (B) listedeki yerlerine göre. */
+export function wordListWords(list: 'A' | 'B', positions: number[]): string[] {
+  const task = def<TaskInstrument>('kelime-listesi-hatirlama').tasks[0] as WordListTask;
+  return positions.map((p) => (list === 'A' ? task.listA : task.listB)[p]);
+}
+
+const range = (a: number, b: number) => Array.from({ length: b - a }, (_, i) => a + i);
+
+/**
+ * Kelime listesi: varsayılan olarak ilk denemede 6, ikincide 9, üçüncüde 12 kelime; ikinci listeden 6; araya giren
+ * listeden sonra 11 kelime. Tanımada ilk listedeki kelimelerin hepsine ve yalnızca bir anlamca yakın yanılgıya "evet".
+ */
+export function wordListBody(plan: Partial<WordListPlan> = {}, grade = 6): AnswersBody {
+  const task = def<TaskInstrument>('kelime-listesi-hatirlama').tasks[0] as WordListTask;
+  const recalls = plan.recalls ?? [
+    wordListWords('A', [0, 1, 2, 12, 13, 14]),
+    wordListWords('A', [0, 1, 2, 3, 6, 11, 12, 13, 14]),
+    wordListWords('A', [...range(0, 8), 11, 12, 13, 14]),
+    wordListWords('B', [0, 1, 2, 12, 13, 14]),
+    wordListWords('A', [...range(0, 7), 11, 12, 13, 14]),
+  ];
+  const restarts = plan.restarts ?? [];
+  const recog = plan.recog ?? ((q) => q.kind === 'target' || (q.kind === 'semantic' && q.of === 2));
+  const recogRt = plan.recogRt ?? (() => 1400);
+  const trials = [
+    ...recalls.map((words, index) => ({ index, response: { words, ...(restarts[index] ? { restarts: restarts[index] } : {}) }, rtMs: 45_000 })),
+    ...task.recognitionKey.map((k, j) => {
+      const q = { ...k, j };
+      return { index: recalls.length + j, response: recog(q) ? 1 : 2, rtMs: recogRt(q) };
+    }),
+  ];
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

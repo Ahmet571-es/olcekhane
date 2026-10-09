@@ -24,6 +24,7 @@ import {
   foldingBody,
   vocabularyBody,
   ruleSwitchBody,
+  wordListBody,
   reactionBody,
   readingBody,
   rotationBody,
@@ -279,6 +280,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
+    'kelime-listesi-hatirlama': wordListBody,
   };
 
   it('her zihinsel görevin yol haritası var; metinler eksiksiz, veli metinleri çocuğunuzu anar, öğrenci metinleri anmaz', () => {
@@ -316,6 +318,11 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['half', 'partial', 'diagonal']);
           expect(rm.barsTitle).toMatch(/^Katlama türlerine göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('katlama türüdür');
+        } else if (slug === 'kelime-listesi-hatirlama') {
+          // Listenin başından, ortasından ve sonundan hatırlananlar (aynı birim): üç sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['begin', 'middle', 'end']);
+          expect(rm.barsTitle).toMatch(/^Listenin hangi kısm(ını daha çok hatırladın|ı daha çok hatırlandı)$/);
+          expect(rm.barsNote).toContain('listenin bir kısmıdır');
         } else if (slug === 'kelime-bilgisi') {
           expect(rm.bars.map((b) => b.key)).toEqual(['synonym', 'antonym', 'context', 'idiom']);
           expect(rm.barsTitle).toMatch(/^Soru türlerine göre (sonucun|sonuç)$/);

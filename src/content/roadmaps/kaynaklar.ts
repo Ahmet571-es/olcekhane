@@ -140,4 +140,12 @@ export const KAYNAK = {
     text: 'Zinke, K., Einert, M., Pfennig, L. ve Kliegel, M. (2012). Plasticity of executive control through task switching training in adolescents. Frontiers in Human Neuroscience, 6, 41.',
     url: 'https://doi.org/10.3389/fnhum.2012.00041',
   },
+  oliveira: {
+    text: 'Oliveira, R. M. ve Charchat-Fichman, H. (2008). Brazilian children performance on Rey’s auditory verbal learning paradigm. Arquivos de Neuro-Psiquiatria, 66(1), 40–44.',
+    url: 'https://doi.org/10.1590/S0004-282X2008000100010',
+  },
+  lehmann: {
+    text: 'Lehmann, M. (2015). Rehearsal development as development of iterative recall processes. Frontiers in Psychology, 6, 308.',
+    url: 'https://doi.org/10.3389/fpsyg.2015.00308',
+  },
 } satisfies Record<string, { text: string; url: string }>;

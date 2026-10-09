@@ -24,6 +24,7 @@ import { sesliOkuma } from './sesli-okuma';
 import { sozelAkilYurutme } from './sozel-akil-yurutme';
 import { kagitKatlama } from './kagit-katlama';
 import { kelimeBilgisi } from './kelime-bilgisi';
+import { kelimeListesi } from './kelime-listesi';
 import { kuralDegistirme } from './kural-degistirme';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
 import { tepkiHizi } from './tepki-hizi';
@@ -55,6 +56,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   kagitKatlama,
   kelimeBilgisi,
   kuralDegistirme,
+  kelimeListesi,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   onAltiFaktorKisilik,

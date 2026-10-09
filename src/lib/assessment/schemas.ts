@@ -26,6 +26,8 @@ export const taskTrial = z.object({
     z.object({ answer: z.number().int().min(0).max(99_999) }),
     cancellationResponse,
     trailResponse,
+    /** Kelime listesi hatırlamada yazılan kelimeler ve listenin baştan gösterilme sayısı. */
+    z.object({ words: z.array(z.string().max(30)).max(40), restarts: z.number().int().min(0).max(50).optional() }),
     z.null(),
   ]),
   rtMs: z.number().min(0).max(120_000).nullable(),

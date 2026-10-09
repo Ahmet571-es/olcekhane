@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi ve Kural Değiştirme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme ve Kelime Listesi Hatırlama yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1262,6 +1262,108 @@ const kuralDegistirme: TaskRoadmapTemplate = {
   sources: [KAYNAK.stoet, KAYNAK.zinke, KAYNAK.hedge],
 };
 
+const kelimeListesiBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
+    'On beş kelimenin hepsini hatırlamak herkes için zordur; ilk denemede kelimelerin bir kısmını unutmak olağandır.',
+    'Liste öğrenme çocukluk boyunca gelişir; küçük yaşta daha az kelime hatırlamak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
+    'On beş kelimenin hepsini hatırlamak herkes için zordur; ilk denemede kelimelerin bir kısmını unutmak olağandır.',
+    'Liste öğrenme çocukluk boyunca gelişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle olmadan. */
+const kelimeListesiFacts: InfoBox = {
+  ...kelimeListesiBase,
+  items: {
+    ...kelimeListesiBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
+      'On beş kelimenin hepsini hatırlamak herkes için zordur; ilk denemede kelimelerin bir kısmını unutmak olağandır.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const kelimeListesi: TaskRoadmapTemplate = {
+  version: 'kelime-listesi-yol-haritasi-1',
+  what: {
+    student: 'bir şeyi öğrenip aklında tutmayı nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun bir şeyi öğrenip aklında tutmasını nasıl kolaylaştırabileceği',
+    summary: 'öğrendiğini aklında tutmayı kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Öğrendiğini aklında tutmayı ne kolaylaştırır?', parent: 'Çocuğunuzun öğrendiğini aklında tutmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu görev, tekrarlarla bir kelime listesini öğrenebilmeyi ve öğrendiğini hatırlayabilmeyi ölçer. Bu beceri; bir alışveriş listesini, yeni tanıştığın kişilerin adlarını ya da yeni öğrendiğin kelimeleri akılda tutmak gibi durumlarda kullanılır. Aşağıdaki yollar, öğrendiklerini aklında tutmana yardım edebilir.',
+    'Bu görev, tekrarlarla bir kelime listesini öğrenebilmeyi ve öğrendiğini hatırlayabilmeyi ölçer. Bu beceri; bir alışveriş listesini, yeni tanışılan kişilerin adlarını ya da yeni öğrenilen kelimeleri akılda tutmak gibi durumlarda kullanılır. Aşağıdaki yollar, çocuğunuzun öğrendiklerini aklında tutmasına yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'tekrar', 'İçinden tekrar et', 'Yöntem', {
+      ...t(
+        'Bir liste ya da art arda gelen bilgiler öğrenirken her yeni bilgiyi öncekilerle birlikte içinden tekrar et (ör. “ekmek, süt”; sonra “ekmek, süt, yumurta”). Araştırmalar, listenin başındaki bilgileri hatırlamanın bu tür tekrarla ilgili olduğunu ve bu tekrarın çocukluk boyunca geliştiğini gösteriyor.',
+        'Çocuğunuza bir liste ya da art arda gelen bilgiler öğrenirken her yeni bilgiyi öncekilerle birlikte içinden tekrar etmesini önerin (ör. “ekmek, süt”; sonra “ekmek, süt, yumurta”). Araştırmalar, listenin başındaki bilgileri hatırlamanın bu tür tekrarla ilgili olduğunu ve bu tekrarın çocukluk boyunca geliştiğini gösteriyor.',
+      ),
+      adult:
+        'Bir liste ya da art arda gelen bilgiler öğrenirken her yeni bilgiyi öncekilerle birlikte içinden tekrar et (ör. “ekmek, süt”; sonra “ekmek, süt, yumurta”). Araştırmalar, listenin başındaki bilgileri hatırlamanın bu tür tekrarla ilgili olduğunu gösteriyor.',
+    }),
+    support(1, 'yokla', 'Bakmadan hatırla', 'Alışkanlık', t(
+      'Bir şeyi öğrenmek istediğinde yalnızca yeniden okumak yerine bakmadan hatırlamaya çalış, sonra kontrol et. 18–24 yaş arası kişilerle yapılan bir araştırmada, bir metni okuduktan sonra bakmadan hatırlamaya çalışanlar metni yeniden okuyanlardan iki gün ve bir hafta sonra daha çok şey hatırladı; beş dakika sonra yapılan ölçümde ise yeniden okumak biraz daha iyiydi.',
+      'Çocuğunuza öğrenmek istediği bir şeyi yalnızca yeniden okumak yerine bakmadan hatırlamaya çalışmasını, sonra kontrol etmesini önerin. 18–24 yaş arası kişilerle yapılan bir araştırmada, bir metni okuduktan sonra bakmadan hatırlamaya çalışanlar metni yeniden okuyanlardan iki gün ve bir hafta sonra daha çok şey hatırladı; beş dakika sonra yapılan ölçümde ise yeniden okumak biraz daha iyiydi.',
+    )),
+    support(2, 'aralik', 'Tekrarları günlere yay', 'Alışkanlık', t(
+      'Bir şeyi uzun süre aklında tutmak istiyorsan tekrarlarını art arda değil, aralıklı yap (ör. bugün, iki gün sonra ve bir hafta sonra). Kelime ve bilgi hatırlama üzerine yapılmış birçok çalışmayı birleştiren bir inceleme, aralıklı tekrarın art arda tekrardan tutarlı biçimde daha iyi sonuç verdiğini gösteriyor.',
+      'Çocuğunuzun akılda tutmak istediği bir şeyi art arda değil, aralıklı tekrar etmesine destek olun (ör. bugün, iki gün sonra ve bir hafta sonra). Kelime ve bilgi hatırlama üzerine yapılmış birçok çalışmayı birleştiren bir inceleme, aralıklı tekrarın art arda tekrardan tutarlı biçimde daha iyi sonuç verdiğini gösteriyor.',
+    )),
+    support(3, 'not', 'Önemli listeleri yaz', 'Araç', t(
+      'Bir alışveriş listesi, yapılacak işler ya da bir tarifin malzemeleri gibi kesin hatırlanması gereken listeleri yaz ya da telefonuna not al. Böylece aklını ezberlemeye değil, işin kendisine ayırırsın; not almak bir eksiklik değil, akıllıca bir yoldur.',
+      'Çocuğunuzu, yapılacak işler ya da bir etkinlik için gerekenler gibi kesin hatırlanması gereken listeleri yazmaya teşvik edin. Böylece aklını ezberlemeye değil, işin kendisine ayırır; not almak bir eksiklik değil, akıllıca bir yoldur.',
+    )),
+  ],
+  facts: kelimeListesiFacts,
+  approach: [
+    { title: 'Anlatmasını isteyin', text: 'Gün sonunda okuduğu ya da öğrendiği bir şeyi size kendi sözleriyle anlatmasını isteyin; bakmadan hatırlamak, öğrendiğini pekiştirir.' },
+    { title: 'Kısa ve aralıklı', text: 'Ezberlemesi gereken bir şeyi tek seferde uzun uzun değil, birkaç güne yayılmış kısa tekrarlarla çalışmasına destek olun.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'İçinden tekrar',
+      text: t(
+        'Bu hafta bir alışveriş listesini ya da yapılacak üç dört işi, her yeni maddeyi öncekilerle birlikte içinden tekrar ederek aklında tut; sonra listeye bakıp kontrol et.',
+        'Bu hafta çocuğunuzla bir alışveriş listesini ya da yapılacak üç dört işi, her yeni maddeyi öncekilerle birlikte tekrar ederek akılda tutmayı deneyin; sonra listeye bakıp birlikte kontrol edin.',
+      ),
+    },
+    {
+      title: 'Bakmadan hatırla',
+      text: t(
+        'Bu hafta her gün, o gün okuduğun ya da öğrendiğin bir şeyi bakmadan birkaç cümleyle hatırlamaya çalış; sonra bakıp kontrol et.',
+        'Bu hafta çocuğunuzdan her gün, o gün okuduğu ya da öğrendiği bir şeyi bakmadan birkaç cümleyle anlatmasını isteyin.',
+      ),
+    },
+    {
+      title: 'Aralıklı tekrar',
+      text: t(
+        'Bu hafta aklında tutmak istediğin bir şeyi (ör. yeni kelimeler ya da bir şiir) seç; bugün, iki gün sonra ve bir hafta sonra kısa kısa tekrar et.',
+        'Bu hafta çocuğunuzla akılda tutmak istediği bir şeyi (ör. yeni kelimeler ya da bir şiir) seçin; bugün, iki gün sonra ve bir hafta sonra kısa kısa tekrar etmeyi deneyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun bir şeyi aklında tutmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun bir şeyi aklında tutmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['geriye-donuk-hatirlama', 'dikkat-ve-bellek', 'kelime-bilgisi'],
+  nextPurpose: {
+    you: 'belleğinin ve sözel becerilerinin başka yönlerini de görmek',
+    parent: 'çocuğunuzun belleğinin ve sözel becerilerinin başka yönlerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.oliveira, KAYNAK.lehmann, KAYNAK.roediger, KAYNAK.cepeda],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -1278,4 +1380,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'kagit-katlama': kagitKatlama,
   'kelime-bilgisi': kelimeBilgisi,
   'kural-degistirme': kuralDegistirme,
+  'kelime-listesi-hatirlama': kelimeListesi,
 };
