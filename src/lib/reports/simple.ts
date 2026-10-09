@@ -23,7 +23,24 @@ export type SimpleChart =
   /** Yatay çubuklar: değer / en çok (ör. doğru / soru). */
   | { type: 'bars'; rows: { label: string; value: number; max: number; valueLabel: string }[] }
   /** Dikey sütunlar: eşit süreli bölümler (harf işaretleme). */
-  | { type: 'columns'; rows: { label: string; value: number }[]; caption: string };
+  | { type: 'columns'; rows: { label: string; value: number }[]; caption: string }
+  /**
+   * Motivasyon haritası: iki bileşik ölçek (ortalama, `min`–`max`) bir düzlemde. `cuts` düşük, orta ve yüksek düzeylerin
+   * sınırlarıdır (düzlem dokuz hücreye bölünür); köşe hücrelerinde araştırmalardaki dört profilin adı, `active` kişinin
+   * bulunduğu hücre ("<yatay>-<dikey>", ör. "high-low").
+   */
+  | {
+      type: 'quadrant';
+      x: { label: string; value: number | null };
+      y: { label: string; value: number | null };
+      min: number;
+      max: number;
+      cuts: [number, number];
+      corners: { x: 'low' | 'high'; y: 'low' | 'high'; label: string }[];
+      active: string | null;
+      /** Kişinin bulunduğu hücrenin profil adı (köşede olmasa da; ekran okuyucu için). */
+      activeLabel: string | null;
+    };
 
 export type RulerRow = Extract<SimpleChart, { type: 'rulers' }>['rows'][number];
 
@@ -663,6 +680,39 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
   });
   const badge = (s: ReportContent['sections'][number]) => (s.summary && s.summary !== s.bandLabel ? `${s.bandLabel} · ${s.summary}` : s.bandLabel);
 
+  // Motivasyon haritası: kendi isteğiyle ve baskıyla çalışma bir düzlemde; profil ve yorumu; ardından bileşik ölçekler
+  // (ve isteksizlik) grup grup, alt ölçeklerinin cetvelleri ve yorumlarıyla.
+  if (r.motivation) {
+    const m = r.motivation;
+    const byKey = new Map(r.sections.map((s) => [s.scaleKey, s]));
+    const groups = m.groups.flatMap((g) => {
+      const head = byKey.get(g.key);
+      if (!head) return [];
+      const facets = g.scales.flatMap((k) => byKey.get(k) ?? []).map((f) => ({ ...ruler(f), text: f.text }));
+      return [{ title: head.name, badge: head.value === null ? head.bandLabel : `${head.bandLabel} · ${head.valueLabel}`, text: g.text, facets }];
+    });
+    return {
+      ...base,
+      chartTitle: you ? 'Motivasyon haritan' : 'Motivasyon haritası',
+      chartNote: m.chartNote,
+      chart: {
+        type: 'quadrant',
+        x: { label: m.x.name, value: m.x.value },
+        y: { label: m.y.name, value: m.y.value },
+        min: r.sections[0]?.min ?? 1,
+        max: r.sections[0]?.max ?? 5,
+        cuts: m.cuts,
+        corners: m.corners,
+        active: m.pattern,
+        activeLabel: m.name,
+      },
+      keyFigures: [],
+      itemsTitle: you ? 'Sonuçların' : 'Sonuçlar',
+      items: [{ title: you ? 'Motivasyon profilin' : 'Motivasyon profili', ...(m.name ? { badge: m.name } : {}), text: m.text }],
+      groups,
+    };
+  }
+
   // Kişilerarası çember: tarzlar çemberde üstten (öne çıkma) başlayarak saat yönünde sıralanır; grafik ve metinler
   // aynı sırayla. Genel açıklama şablondan gelir (çemberin nasıl okunacağı ve sonuçların yaklaşık olduğu).
   if (r.circumplex) {
@@ -724,3 +774,72 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
 }
 
 export const formatMean = (v: number | null) => (v === null ? '—' : nf1.format(v));
+
+export type QuadrantChart = Extract<SimpleChart, { type: 'quadrant' }>;
+
+/** Profil adını iki satıra böler (uzunlukları en yakın olacak boşluktan): "Hem istek" / "hem baskı". */
+export function twoLines(label: string): string[] {
+  const words = label.split(' ');
+  if (words.length < 2) return [label];
+  let best = 1;
+  let bestDiff = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < words.length; i++) {
+    const diff = Math.abs(words.slice(0, i).join(' ').length - words.slice(i).join(' ').length);
+    if (diff < bestDiff) {
+      best = i;
+      bestDiff = diff;
+    }
+  }
+  return [words.slice(0, best).join(' '), words.slice(best).join(' ')];
+}
+
+/**
+ * Motivasyon haritasının çizimi (ekranda ve PDF'te aynı hesap). Düzlem `box` içindedir: sol üst köşe (left, top), kenar
+ * `size`. Dokuz hücre (düşük, orta, yüksek × düşük, orta, yüksek), köşe hücrelerindeki profil adlarının dayanacağı köşe,
+ * 1'den 5'e ölçek işaretleri ve kişinin noktası (bir eksen hesaplanamadıysa yok). Adlar hücrenin dış kenarına (düzlemin
+ * köşesine) yazılır; kişinin noktası adın kapladığı şeride düşüyorsa (uç cevaplarda) ad hücrenin iç kenarına alınır,
+ * nokta yazının üstüne binmez. Şeridin yüksekliği iki satır yazı ve noktanın yarıçapı kadardır (kenarın %18'i).
+ */
+export function quadrantGeometry(chart: QuadrantChart, box: { left: number; top: number; size: number }) {
+  const { left: L, top: T, size: S } = box;
+  const span = chart.max - chart.min || 1;
+  const clamp = (v: number) => Math.min(chart.max, Math.max(chart.min, v));
+  const r2 = (v: number) => Math.round(v * 100) / 100;
+  const px = (v: number) => r2(L + ((clamp(v) - chart.min) / span) * S);
+  const py = (v: number) => r2(T + ((chart.max - clamp(v)) / span) * S);
+  const edges = [chart.min, chart.cuts[0], chart.cuts[1], chart.max];
+  const levels = ['low', 'average', 'high'] as const;
+  const cells = levels.flatMap((lx, i) =>
+    levels.map((ly, j) => ({
+      key: `${lx}-${ly}`,
+      x: px(edges[i]),
+      y: py(edges[j + 1]),
+      w: r2(px(edges[i + 1]) - px(edges[i])),
+      h: r2(py(edges[j]) - py(edges[j + 1])),
+      active: chart.active === `${lx}-${ly}`,
+    })),
+  );
+  const point = chart.x.value !== null && chart.y.value !== null ? { x: px(chart.x.value), y: py(chart.y.value) } : null;
+  const band = S * 0.18;
+  const corners = chart.corners.map((c) => {
+    const cell = cells.find((k) => k.key === `${c.x}-${c.y}`)!;
+    const right = c.x === 'high';
+    const inCell = !!point && point.x >= cell.x && point.x <= cell.x + cell.w && point.y >= cell.y && point.y <= cell.y + cell.h;
+    const outerTop = c.y === 'high';
+    const covered = inCell && (outerTop ? point!.y - cell.y < band : cell.y + cell.h - point!.y < band);
+    const top = covered ? !outerTop : outerTop;
+    return {
+      key: cell.key,
+      lines: twoLines(c.label),
+      anchor: right ? ('end' as const) : ('start' as const),
+      /** Yazının dayandığı köşe: sağdaki hücrelerde sağ kenar, soldakilerde sol kenar; üstteki hücrelerde üst, alttakilerde alt kenar. */
+      x: right ? r2(cell.x + cell.w) : cell.x,
+      y: top ? cell.y : r2(cell.y + cell.h),
+      top,
+      active: cell.active,
+    };
+  });
+  const ticks: { v: number; x: number; y: number }[] = [];
+  for (let v = Math.ceil(chart.min); v <= chart.max + 1e-9; v++) ticks.push({ v, x: px(v), y: py(v) });
+  return { cells, corners, ticks, point, cuts: chart.cuts.map((c) => ({ x: px(c), y: py(c) })) };
+}

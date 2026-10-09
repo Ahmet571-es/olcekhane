@@ -130,9 +130,11 @@ export interface LikertInstrument extends InstrumentBase {
    * "circumplex": kişilerarası çember (ölçekler `angle` açılarıyla bir çember üzerinde; her biri için düzey metni).
    * "activities": sıralı etkinlik profili (serbest zaman alanları, etkinliklerin ne sıklıkla yapıldığına göre en sıktan
    * en seyreğe; en çok zaman ayrılan alanların açıklaması).
+   * "motivation": motivasyon haritası (iki bileşik ölçek, ör. kendi isteğiyle ve baskıyla çalışma, bir düzlemde; profil adı
+   * ve yorumu) ve bileşik ölçeklerin altında alt ölçeklerin cetvelleri; metinler rapor şablonunun `motivation` alanındadır.
    * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
    */
-  profile?: 'riasec' | 'interests' | 'facets' | 'circumplex' | 'activities';
+  profile?: 'riasec' | 'interests' | 'facets' | 'circumplex' | 'activities' | 'motivation';
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];

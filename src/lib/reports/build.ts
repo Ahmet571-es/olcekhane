@@ -1,6 +1,6 @@
 import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type RiasecKey } from '@/content/careers/riasec';
 import { REPORT_TEMPLATES } from '@/content/reports';
-import type { BandText } from '@/content/reports/types';
+import type { BandText, MotivationTemplate, PairText } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import type {
@@ -8,6 +8,7 @@ import type {
   CancellationTask,
   GoNoGoTask,
   InstrumentDef,
+  LikertInstrument,
   MatrixReasoningTask,
   MatrixRule,
   MentalRotationTask,
@@ -171,6 +172,8 @@ export interface ReportContent {
   facetGroups?: { domain: string; facets: string[]; facetItems: number }[];
   /** Kişilerarası çember (profil: circumplex): her ölçeğin çemberdeki açısı ve grafikteki kısa adı. */
   circumplex?: { key: string; angle: number; short: string }[];
+  /** Motivasyon haritası ve profili (profil: motivation). */
+  motivation?: MotivationReport;
   cognitive?: CognitiveReport;
   academic?: AcademicReport;
   reading?: {
@@ -193,6 +196,32 @@ export interface ReportContent {
     /** Okuma hızı metnin sınıf düzeyine göre (lib/scoring/reading.ts, READING_PACE). */
     pace?: 'fast' | 'slow' | 'ok';
   };
+}
+
+/** Haritadaki bir bileşik ölçeğin düzeyi (düşük, orta, yüksek). */
+export type MotivationLevel = 'low' | 'average' | 'high';
+
+/**
+ * Motivasyon haritası (profil: motivation): iki bileşik ölçek (yatay: kendi isteğiyle, dikey: baskıyla çalışma) bir
+ * düzlemde, düzeylerinin birleşimine göre profil ve yorumu; ardından bileşik ölçekler ve haritada olmayan ölçek
+ * (isteksizlik) grup grup, alt ölçekleriyle. Metinler rapor şablonundandır (`motivation`).
+ */
+export interface MotivationReport {
+  x: { key: string; name: string; value: number | null; level: MotivationLevel | null };
+  y: { key: string; name: string; value: number | null; level: MotivationLevel | null };
+  /** "<yatay>-<dikey>" (ör. "high-low"); bir eksen hesaplanamadıysa null. */
+  pattern: string | null;
+  /** Profilin adı; hesaplanamadıysa null. */
+  name: string | null;
+  /** Profilin yorumu (ve varsa bileşik ölçeklerin baskın parçasını anlatan cümleler). */
+  text: string;
+  /** Düzey sınırları (düşük → orta, orta → yüksek); haritadaki çizgiler. */
+  cuts: [number, number];
+  /** Haritanın köşelerindeki dört profilin adları. */
+  corners: { x: 'low' | 'high'; y: 'low' | 'high'; label: string }[];
+  chartNote: string;
+  /** Gruplar: bileşik ölçekler ve haritada olmayan ölçek; her birinin açıklaması ve cetvelleri gösterilecek ölçekler. */
+  groups: { key: string; text: string; scales: string[] }[];
 }
 
 export interface AcademicReport {
@@ -485,6 +514,11 @@ export function buildReport(input: {
     def.engine === 'likert' && def.profile === 'circumplex'
       ? def.scales.flatMap((s) => (s.angle === undefined ? [] : [{ key: s.key, angle: s.angle, short: s.short ?? s.name }]))
       : undefined;
+  const motivation =
+    def.engine === 'likert' && def.profile === 'motivation' && template?.motivation
+      ? buildMotivation(def, sections, template.motivation, audience)
+      : undefined;
+  const extraNotes = motivation?.caution ? [motivation.caution] : [];
 
   // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
   let strengths: string[] | undefined;
@@ -501,7 +535,7 @@ export function buildReport(input: {
       const s = sections.find((x) => x.scaleKey === key);
       if (s) highlights.push(`${s.name}: ${s.summary.toLocaleLowerCase('tr-TR')}`);
     }
-  } else if (sections.length > 2 && !interests && !facetGroups && !circumplex && !template?.evaluative) {
+  } else if (sections.length > 2 && !interests && !facetGroups && !circumplex && !motivation && !template?.evaluative) {
     const rank: Record<string, number> = { very_high: 2, very_low: 2, high: 1, low: 1, average: 0 };
     const notable = sections
       .filter((s) => s.band && rank[s.band] > 0)
@@ -522,7 +556,7 @@ export function buildReport(input: {
     isPilot: def.status === 'pilot',
     // Sitede norm tablosu yoktur: norm durumu her zaman testin bilim kartındaki açıklamadır.
     normNote: science.normNote,
-    qualityNotes: input.qualityNotes ?? [],
+    qualityNotes: [...(input.qualityNotes ?? []), ...extraNotes],
     sections,
     highlights,
     strengths,
@@ -545,8 +579,95 @@ export function buildReport(input: {
     ranking,
     facetGroups,
     circumplex,
+    ...(motivation ? { motivation: motivation.report } : {}),
     cognitive,
     academic,
+  };
+}
+
+/** Bir ondalıklı ortalama (raporda gösterilen sayı); karşılaştırmalar gösterilen sayılarla yapılır. */
+const shown1 = (v: number) => Math.round(v * 10) / 10;
+
+function motivationLevel(band: Band | null): MotivationLevel | null {
+  if (band === null) return null;
+  if (band === 'very_low' || band === 'low') return 'low';
+  if (band === 'high' || band === 'very_high') return 'high';
+  return 'average';
+}
+
+/**
+ * Motivasyon haritası. Profil, iki bileşik ölçeğin düzeylerinden ("high-low" gibi); yorumun sonuna, bir bileşik ölçeğin
+ * iki parçası arasında belirgin fark varsa (gösterilen ortalamalar arasında en az 1 puan ve baskın parça düşük değilse)
+ * baskın parçayı anlatan cümle eklenir. Yatay eksen yüksek ve haritada olmayan ölçek (isteksizlik) yüksekse cevaplar
+ * birbirine ters düştüğü için uyarı verilir.
+ */
+function buildMotivation(
+  def: LikertInstrument,
+  sections: ReportSection[],
+  t: MotivationTemplate,
+  audience: Audience,
+): { report: MotivationReport; caution: string | null } {
+  const pick = (p: PairText) => (audience === 'parent' ? p.parent : p.student);
+  const scales = def.scales;
+  const byKey = new Map(sections.map((s) => [s.scaleKey, s]));
+  const th = (band: Band) => def.anchoredBands.thresholds.find((x) => x.band === band)?.min ?? Number.NaN;
+  const axis = (key: string) => {
+    const s = byKey.get(key);
+    return { key, name: s?.name ?? key, value: s?.value ?? null, level: motivationLevel(s?.band ?? null) };
+  };
+  const x = axis(t.x);
+  const y = axis(t.y);
+  const pattern = x.level && y.level ? `${x.level}-${y.level}` : null;
+  const p = pattern ? t.patterns[pattern] : undefined;
+
+  // Bileşik ölçeğin parçaları: biri tek başına yüksekken bileşik ölçek yüksek değilse bunu söyleyen cümle (profil metni
+  // yalnızca bileşik ölçeği anlattığı için); değilse parçalar arasında belirgin fark varsa baskın parçayı anlatan cümle.
+  const leans: string[] = [];
+  for (const axisInfo of [x, y]) {
+    const parts = (scales.find((s) => s.key === axisInfo.key)?.of ?? []).map((k) => byKey.get(k));
+    if (parts.length !== 2 || parts.some((s) => !s || s.value === null)) continue;
+    const [a, b] = parts as ReportSection[];
+    const high = [a, b].find((s) => motivationLevel(s.band) === 'high');
+    if (high && axisInfo.level !== null && axisInfo.level !== 'high' && t.hidden[high.scaleKey]) {
+      leans.push(pick(t.hidden[high.scaleKey]).replace('{düzey}', axisInfo.level === 'low' ? 'az' : 'orta düzeyde'));
+      continue;
+    }
+    const gap = shown1(a.value!) - shown1(b.value!);
+    if (Math.abs(gap) < 1 - 1e-9) continue;
+    const top = gap > 0 ? a : b;
+    if (motivationLevel(top.band) === 'low' || !t.lean[top.scaleKey]) continue;
+    leans.push(pick(t.lean[top.scaleKey]));
+  }
+
+  const none =
+    audience === 'parent'
+      ? 'Bazı cümleler cevaplanmadığı için motivasyon profili hesaplanamadı. Aşağıdaki türlerin sonuçları yine de yorumlanabilir.'
+      : 'Bazı cümleleri cevaplamadığın için motivasyon profilin hesaplanamadı. Aşağıdaki türlerin sonuçlarına yine de bakabilirsin.';
+  // Kendi isteğiyle çalışma (ya da parçalarından biri, ör. önemini görme) yüksekken isteksizlik de yüksekse cevaplar
+  // birbirine ters düşer ("öğrendiklerim işime yarayacak" ile "işime yaramayacak").
+  const alone = byKey.get(t.alone);
+  const xParts = (scales.find((s) => s.key === t.x)?.of ?? []).map((k) => byKey.get(k));
+  const xHigh = x.level === 'high' || xParts.some((s) => motivationLevel(s?.band ?? null) === 'high');
+  const caution = xHigh && motivationLevel(alone?.band ?? null) === 'high' ? pick(t.contradiction) : null;
+  const corner = (cx: 'low' | 'high', cy: 'low' | 'high') => ({ x: cx, y: cy, label: t.patterns[`${cx}-${cy}`].name });
+  return {
+    report: {
+      x,
+      y,
+      pattern: p ? pattern : null,
+      name: p?.name ?? null,
+      // Profil yorumu ve eklenen cümleler ayrı paragraflar (ekranda ve PDF'te satır arasıyla).
+      text: p ? [pick(p), ...leans].join('\n\n') : none,
+      cuts: [th('average'), th('high')],
+      corners: [corner('low', 'low'), corner('high', 'low'), corner('low', 'high'), corner('high', 'high')],
+      chartNote: pick(t.chartNote),
+      groups: [t.x, t.y, t.alone].map((key) => ({
+        key,
+        text: pick(t.groupText[key]),
+        scales: scales.find((s) => s.key === key)?.of ?? [key],
+      })),
+    },
+    caution,
   };
 }
 

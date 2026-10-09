@@ -2,7 +2,7 @@ import { MathText } from '@/components/quiz/math-text';
 import { QuizVisual } from '@/components/quiz/quiz-visuals';
 import { ScaleRuler } from '@/components/report/scale-ruler';
 import { AUDIENCE_LABELS } from '@/lib/config';
-import type { RulerRow, SimpleChart, SimpleGroup, SimpleQuizReview, SimpleReport } from '@/lib/reports/simple';
+import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleGroup, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
 import { OralLevelBanner, OralReportSections } from './oral-report';
 
 /**
@@ -219,8 +219,78 @@ function Columns({ chart }: { chart: Extract<SimpleChart, { type: 'columns' }> }
   );
 }
 
+/**
+ * Motivasyon haritası: yatay eksen kendi isteğiyle, dikey eksen baskıyla çalışma (1–5). Kesikli çizgiler düşük, orta ve
+ * yüksek düzeylerin sınırı; köşelerde araştırmalardaki dört profilin adı; kişinin bulunduğu hücre renkli, noktası kırmızı.
+ */
+function Quadrant({ chart }: { chart: QuadrantChart }) {
+  const box = { left: 62, top: 44, size: 316 };
+  const { left: L, top: T, size: S } = box;
+  const g = quadrantGeometry(chart, box);
+  const fmt = (v: number | null) => (v === null ? 'hesaplanamadı' : nf1fixed.format(v));
+  const label = `Motivasyon haritası (1–5): ${chart.x.label} ${fmt(chart.x.value)}, ${chart.y.label} ${fmt(chart.y.value)}${
+    chart.activeLabel ? `; bölge: ${chart.activeLabel}` : ''
+  }`;
+  return (
+    <svg viewBox="0 0 410 432" className="mx-auto h-auto w-full max-w-[28rem]" role="img" aria-label={label}>
+      {g.cells.map((c) => (
+        <rect key={c.key} x={c.x} y={c.y} width={c.w} height={c.h} fill={c.active ? 'color-mix(in oklab, var(--brass) 24%, transparent)' : 'none'} />
+      ))}
+      <rect x={L} y={T} width={S} height={S} fill="none" stroke="var(--rule)" strokeWidth={1} />
+      {g.cuts.map((c, i) => (
+        <g key={i}>
+          <line x1={c.x} y1={T} x2={c.x} y2={T + S} stroke="var(--rule-strong)" strokeWidth={1} strokeDasharray="5 5" />
+          <line x1={L} y1={c.y} x2={L + S} y2={c.y} stroke="var(--rule-strong)" strokeWidth={1} strokeDasharray="5 5" />
+        </g>
+      ))}
+      {g.corners.map((c) => (
+        <text
+          key={c.key}
+          x={c.anchor === 'end' ? c.x - 9 : c.x + 9}
+          y={c.top ? c.y + 22 : c.y - 11 - (c.lines.length - 1) * 18}
+          textAnchor={c.anchor}
+          fontSize="15"
+          fontWeight={c.active ? 700 : 400}
+          fill={c.active ? 'var(--ink)' : 'var(--ink-3)'}
+        >
+          {c.lines.map((line, i) => (
+            <tspan key={i} x={c.anchor === 'end' ? c.x - 9 : c.x + 9} dy={i === 0 ? 0 : 18}>
+              {line}
+            </tspan>
+          ))}
+        </text>
+      ))}
+      {/* Eksenler: sol ve alt kenar, uçlarında ok. */}
+      <line x1={L} y1={T + S} x2={L + S + 14} y2={T + S} stroke="var(--ink)" strokeWidth={1.5} />
+      <polygon points={`${L + S + 22},${T + S} ${L + S + 12},${T + S - 5} ${L + S + 12},${T + S + 5}`} fill="var(--ink)" />
+      <line x1={L} y1={T + S} x2={L} y2={T - 14} stroke="var(--ink)" strokeWidth={1.5} />
+      <polygon points={`${L},${T - 22} ${L - 5},${T - 12} ${L + 5},${T - 12}`} fill="var(--ink)" />
+      {g.ticks.map((t) => (
+        <g key={t.v}>
+          <line x1={t.x} y1={T + S} x2={t.x} y2={T + S + 6} stroke="var(--ink)" strokeWidth={1} />
+          <text x={t.x} y={T + S + 22} textAnchor="middle" fontSize="13" fill="var(--ink-3)">
+            {t.v}
+          </text>
+          <line x1={L - 6} y1={t.y} x2={L} y2={t.y} stroke="var(--ink)" strokeWidth={1} />
+          <text x={L - 11} y={t.y + 4.5} textAnchor="end" fontSize="13" fill="var(--ink-3)">
+            {t.v}
+          </text>
+        </g>
+      ))}
+      <text x={L + S} y={T + S + 46} textAnchor="end" fontSize="16" fontWeight={700} fill="var(--ink)">
+        {chart.x.label}
+      </text>
+      <text x={L + 14} y={T - 16} textAnchor="start" fontSize="16" fontWeight={700} fill="var(--ink)">
+        {chart.y.label}
+      </text>
+      {g.point && <circle cx={g.point.x} cy={g.point.y} r={9} fill="var(--marker)" stroke="var(--paper)" strokeWidth={2.5} />}
+    </svg>
+  );
+}
+
 function Chart({ chart }: { chart: SimpleChart }) {
   if (chart.type === 'rulers') return <Rulers rows={chart.rows} />;
+  if (chart.type === 'quadrant') return <Quadrant chart={chart} />;
   if (chart.type === 'hexagon') return <Hexagon chart={chart} />;
   if (chart.type === 'circle') return <Circumplex chart={chart} />;
   if (chart.type === 'bars') return <Bars rows={chart.rows} />;
@@ -381,9 +451,8 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
             {report.itemsTitle}
           </h2>
           {report.groupsNote && <p className="t-meta measure">{report.groupsNote}</p>}
-          {report.groups ? (
-            <Groups groups={report.groups} />
-          ) : (
+          {/* Önce maddeler (ör. motivasyon profili), sonra gruplar; PDF'teki sırayla aynı. */}
+          {report.items.length > 0 && (
             <ul className="flex flex-col divide-y divide-rule border-y border-rule">
               {report.items.map((it) => (
                 <li key={it.title} className="flex flex-col gap-1.5 py-5">
@@ -391,11 +460,13 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
                     <span className="font-display text-lg font-bold">{it.title}</span>
                     {it.badge && <span className="t-small font-bold text-brass-ink">{it.badge}</span>}
                   </p>
-                  <p className="measure text-ink-2">{it.text}</p>
+                  {/* Birden çok paragraf olabilir (ör. motivasyon profili ve eklenen cümleler: "\n\n"). */}
+                  <p className="measure whitespace-pre-line text-ink-2">{it.text}</p>
                 </li>
               ))}
             </ul>
           )}
+          {report.groups && <Groups groups={report.groups} />}
         </section>
       )}
 

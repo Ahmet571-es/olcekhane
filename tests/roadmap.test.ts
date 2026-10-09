@@ -293,6 +293,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,
       // Yalnızca 3–5. sınıflara açık: öğrenci ve veli.
       'cocuk-kisilik-profili': 3 ** 5 * 2,
+      // Beş motivasyon türü (bileşik ölçekler yol haritasında yok); öğrenci ve veli.
+      'ders-calisma-motivasyonu': 3 ** 5 * 2,
     });
   }, 60_000);
 });

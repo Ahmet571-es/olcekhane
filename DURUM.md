@@ -210,8 +210,22 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    sayfasıyla, iddiaları kaynaklarla karşılaştırdı; bulguları düzeltildi (ör. "tanımadığım biri" yerine "tanımadığım bir
    çocuk", "zor kitaplar" yerine "bilmediğim konulardaki kitaplar"). Kaynaklar Goldberg (1992, 2006), Soto ve ark. (2008),
    Vicentini ve ark. (2025).
-11. Sonra: site sahibine sorulacak: 3. dalganın kalanları (Ders Çalışma Motivasyonu, Erteleme ve Zaman Yönetimi, Zihniyet,
-   Çalışma Değerleri, Akıl Yürütme) mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
+11. **Ders Çalışma Motivasyonu: yayında (2026-10-09, pilot; 5. sınıftan mezuna, yetişkine kapalı).** Öz-belirleme
+   kuramına göre sıfırdan yazılmış 25 madde ("…için çalışırım"): merak ve keyif, önemini görme, iç baskı, dış baskı ve
+   ödül, isteksizlik (beşer madde, türler sırayla döner; SRQ-A ve AMS maddelerine benzememesi bağımsız ajanla denetlendi).
+   İki bileşik ölçek: kendi isteğiyle çalışma (ilk ikisi) ve baskıyla çalışma (ortadaki ikisi). Yeni ortak özellikler:
+   `profile: 'motivation'` ve rapor şablonunda `motivation` (dokuz profil: iki bileşik ölçeğin düşük/orta/yüksek
+   birleşimi; köşelerde Vansteenkiste ve ark. 2009'un dört profili), yeni grafik "motivasyon haritası" (`quadrant`; ekranda
+   ve PDF'te aynı hesap `quadrantGeometry`; nokta köşe adının üstüne düşerse ad hücrenin iç kenarına alınır), bileşik
+   ölçek yüksek değilken bir parçası yüksekse "tek başına yüksek" cümlesi (`hidden`), parçalar arasında belirgin fark
+   varsa eğilim cümlesi (`lean`), kendi isteğiyle çalışma ile isteksizlik birlikte yüksekse uyarı. Basit raporda maddeler
+   artık gruplardan önce de gösterilebilir; madde metninde paragraf ("\n\n") olabilir. Test sayfasında bileşik ölçeğe
+   girmeyen ölçek de listelenir. Yol haritası: 2. hafta "Neden önemli?", 3. hafta isteksizlik ya da iç baskı yüksekse
+   onlar (iç baskıda Sınav kaygısı bağlantısı). Bağımsız ajan iddiaları kaynaklarla karşılaştırdı; bulgularının hepsi
+   düzeltildi (nedensellik dili, abartılar, birbirine ters düşen metinler, iki maddenin AMS'ye benzerliği). Kaynaklar Ryan
+   ve Deci (2000), Ryan ve Connell (1989), Vansteenkiste ve ark. (2009), Howard ve ark. (2021), Bureau ve ark. (2022).
+12. Sıradaki (site sahibinin 2026-10-09 isteği, maddeler sıfırdan): Erteleme ve Zaman Yönetimi, Zihniyet, Çalışma
+   Değerleri. Sonra site sahibine sorulacak: Akıl Yürütme mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -384,6 +398,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Kural Değiştirme | kural-degistirme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kelime Listesi Hatırlama | kelime-listesi-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Çocuk Kişilik Profili | cocuk-kisilik-profili | Yayında (pilot; 3–5. sınıf) |
+| Ders Çalışma Motivasyonu | ders-calisma-motivasyonu | Yayında (pilot; 5. sınıftan mezuna) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -495,6 +510,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (10): Ders Çalışma Motivasyonu yayında (5. sınıftan mezuna): 25 özgün madde, beş motivasyon türü; yeni
+  "motivasyon haritası" (kendi isteğiyle ve baskıyla çalışma) ve dokuz profilli yorum; öğrenci ve veli raporu, 3B grafikli
+  yol haritası; telefonda dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız
+  inceleme bulguları düzeltildi.
 - 2026-10-09 (9): Site sahibi ilk dersi de yeterince derin bulmadı; sinir sistemi ünitesi kuruldu: "Sinir sistemine
   ilk bakış" ünitenin genel bakışı oldu, dört ders (anatominin dili, omurilik sinirleri, boyun-kol ağı, bel-sakral ağ)
   "Hazırlanıyor" olarak programa eklendi; program 110 ders.
@@ -522,10 +541,6 @@ En yeni üstte; en çok 10 madde tutulur.
   dikişler ve pterion, kafa derisi, kafatası tabanı ve 13 delik, yüz ve sinüsler, bıngıldaklar ve kraniosinostoz,
   kırıklar, BOS sızıntısı, BT kuralları, kraniotomi, dekompresif kraniektomi ve kranioplasti; 7 üç boyutlu sahne
   (yüz kemikleri ve ilk iki omur modele eklendi), 6 hareketli çizim, 5 vaka, 36 soru, 167 kaynak.
-- 2026-10-09 (1): Kâğıt Katlama yayında: 24 özgün soru (ortadan, kenardan ve çapraz katlama), 5 düzey, üç alıştırma;
-  öğrenci, veli ve yetişkin raporu, katlama türlerine göre 3B grafikli yol haritası; telefonda ve masaüstünde baştan
-  sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: Sözel Akıl Yürütme raporunda yanlışların çoğu çeldiriciyse
-  kolay sorulardaki yanlışlar artık dikkatsizliğe bağlanmıyor.
 - 2026-10-08 (12): Sözel Akıl Yürütme yayında: 24 özgün soru (kelime ilişkileri, sınıflama, sıralama, mantıksal
   çıkarım), 5 düzey; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; telefonda ve
   masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: 3B grafiğin ilk açısı çift sütunda düzeldi.

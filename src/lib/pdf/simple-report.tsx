@@ -8,7 +8,7 @@ import { AUDIENCE_LABELS } from '@/lib/config';
 import type { OralReportBlock } from '@/lib/reports/oral';
 import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
 import type { OralMarkedToken } from '@/lib/scoring/oral';
-import type { RulerRow, SimpleChart, SimpleQuizReview, SimpleReport } from '@/lib/reports/simple';
+import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
 
 /**
  * Basit raporun PDF'i. Sunucuda bellekte üretilir ve doğrudan indirilir; dosya hiçbir yere kaydedilmez.
@@ -313,8 +313,68 @@ function Columns({ chart }: { chart: Extract<SimpleChart, { type: 'columns' }> }
   );
 }
 
+/** Motivasyon haritası (ekrandakiyle aynı hesap: lib/reports/simple.ts, quadrantGeometry). */
+function Quadrant({ chart }: { chart: QuadrantChart }) {
+  const box = { left: 40, top: 30, size: 220 };
+  const { left: L, top: T, size: S } = box;
+  const g = quadrantGeometry(chart, box);
+  const W = 300;
+  const H = 300;
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <Svg width={W} height={H}>
+        {g.cells.map((c) => (c.active ? <Rect key={c.key} x={c.x} y={c.y} width={c.w} height={c.h} fill={C.brassSoft} /> : null))}
+        <Rect x={L} y={T} width={S} height={S} fill="none" stroke={C.rule} strokeWidth={0.8} />
+        {g.cuts.map((c, i) => (
+          <G key={i}>
+            <Line x1={c.x} y1={T} x2={c.x} y2={T + S} stroke={C.ruleStrong} strokeWidth={0.8} strokeDasharray="3 3" />
+            <Line x1={L} y1={c.y} x2={L + S} y2={c.y} stroke={C.ruleStrong} strokeWidth={0.8} strokeDasharray="3 3" />
+          </G>
+        ))}
+        {g.corners.flatMap((c) =>
+          c.lines.map((line, i) => (
+            <Text
+              key={`${c.key}-${i}`}
+              x={c.anchor === 'end' ? c.x - 6 : c.x + 6}
+              y={c.top ? c.y + 14 + i * 11 : c.y - 7 - (c.lines.length - 1 - i) * 11}
+              textAnchor={c.anchor}
+              style={{ fontFamily: 'Atkinson', fontSize: 8.5, fontWeight: c.active ? 700 : 400, fill: c.active ? C.ink : C.ink3 }}
+            >
+              {line}
+            </Text>
+          )),
+        )}
+        <Line x1={L} y1={T + S} x2={L + S + 9} y2={T + S} stroke={C.ink} strokeWidth={1.1} />
+        <Polygon points={`${L + S + 15},${T + S} ${L + S + 8},${T + S - 3.5} ${L + S + 8},${T + S + 3.5}`} fill={C.ink} />
+        <Line x1={L} y1={T + S} x2={L} y2={T - 9} stroke={C.ink} strokeWidth={1.1} />
+        <Polygon points={`${L},${T - 15} ${L - 3.5},${T - 8} ${L + 3.5},${T - 8}`} fill={C.ink} />
+        {g.ticks.map((t) => (
+          <G key={t.v}>
+            <Line x1={t.x} y1={T + S} x2={t.x} y2={T + S + 4} stroke={C.ink} strokeWidth={0.8} />
+            <Text x={t.x} y={T + S + 13} textAnchor="middle" style={{ fontFamily: 'Atkinson', fontSize: 7.5, fill: C.ink3 }}>
+              {String(t.v)}
+            </Text>
+            <Line x1={L - 4} y1={t.y} x2={L} y2={t.y} stroke={C.ink} strokeWidth={0.8} />
+            <Text x={L - 7} y={t.y + 2.6} textAnchor="end" style={{ fontFamily: 'Atkinson', fontSize: 7.5, fill: C.ink3 }}>
+              {String(t.v)}
+            </Text>
+          </G>
+        ))}
+        <Text x={L + S} y={T + S + 29} textAnchor="end" style={{ fontFamily: 'Atkinson', fontSize: 9.5, fontWeight: 700, fill: C.ink }}>
+          {chart.x.label}
+        </Text>
+        <Text x={L + 9} y={T - 10} textAnchor="start" style={{ fontFamily: 'Atkinson', fontSize: 9.5, fontWeight: 700, fill: C.ink }}>
+          {chart.y.label}
+        </Text>
+        {g.point && <Circle cx={g.point.x} cy={g.point.y} r={5.5} fill={C.marker} stroke={C.paper} strokeWidth={1.5} />}
+      </Svg>
+    </View>
+  );
+}
+
 function Chart({ chart }: { chart: SimpleChart }) {
   if (chart.type === 'rulers') return <Rulers rows={chart.rows} />;
+  if (chart.type === 'quadrant') return <Quadrant chart={chart} />;
   if (chart.type === 'hexagon') return <Hexagon chart={chart} />;
   if (chart.type === 'circle') return <Circumplex chart={chart} />;
   if (chart.type === 'bars') return <Bars rows={chart.rows} />;

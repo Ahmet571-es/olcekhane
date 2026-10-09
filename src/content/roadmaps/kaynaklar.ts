@@ -148,4 +148,16 @@ export const KAYNAK = {
     text: 'Lehmann, M. (2015). Rehearsal development as development of iterative recall processes. Frontiers in Psychology, 6, 308.',
     url: 'https://doi.org/10.3389/fpsyg.2015.00308',
   },
+  ryanDeci: {
+    text: 'Ryan, R. M. ve Deci, E. L. (2000). Self-determination theory and the facilitation of intrinsic motivation, social development, and well-being. American Psychologist, 55(1), 68–78.',
+    url: 'https://doi.org/10.1037/0003-066X.55.1.68',
+  },
+  vansteenkiste: {
+    text: 'Vansteenkiste, M., Sierens, E., Soenens, B., Luyckx, K. ve Lens, W. (2009). Motivational profiles from a self-determination perspective: The quality of motivation matters. Journal of Educational Psychology, 101(3), 671–688.',
+    url: 'https://doi.org/10.1037/a0015083',
+  },
+  bureau: {
+    text: 'Bureau, J. S., Howard, J. L., Chong, J. X. Y. ve Guay, F. (2022). Pathways to student motivation: A meta-analysis of antecedents of autonomous and controlled motivations. Review of Educational Research, 92(1), 46–72.',
+    url: 'https://doi.org/10.3102/00346543211042426',
+  },
 } satisfies Record<string, { text: string; url: string }>;

@@ -12,6 +12,7 @@ import { meslekIlgiAlanlariRoadmap } from './meslek-ilgi-alanlari';
 import { meslekiIlgiProfiliRoadmap } from './mesleki-ilgi-profili';
 import { ogrenmeVeBasariRoadmap } from './ogrenme-ve-basari';
 import { cocukKisilikRoadmap } from './cocuk-kisilik';
+import { dersCalismaMotivasyonuRoadmap } from './ders-calisma-motivasyonu';
 import { okumaRoadmap } from './okuma';
 import { ozSaygiRoadmap } from './oz-saygi';
 import { sesliOkumaRoadmap, type OralRoadmapTemplate } from './sesli-okuma';
@@ -31,6 +32,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'calisma-aliskanliklari': calismaAliskanliklariRoadmap,
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariRoadmap,
   'cocuk-kisilik-profili': cocukKisilikRoadmap,
+  'ders-calisma-motivasyonu': dersCalismaMotivasyonuRoadmap,
 };
 
 /**

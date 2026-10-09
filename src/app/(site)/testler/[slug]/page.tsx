@@ -86,9 +86,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               ? '1 metin: sesli okuma, anlatma ve 5–8 soru'
               : '1 metin, 8 soru';
   const scales = def.scales.filter((s) => s.key !== 'total');
+  /** Bileşik olmayan ölçekler (motivasyon profilinde türler). */
+  const simpleScales = scales.filter((s) => !s.of);
   // Ayrıntılı profil: boyutlar (bileşik ölçekler) ve altlarındaki alt özellikler birlikte anlatılır.
   const composites = scales.filter((s) => s.of?.length);
   const facetCount = composites.reduce((n, d) => n + (d.of?.length ?? 0), 0);
+  const loose = simpleScales.filter((s) => !composites.some((c) => c.of?.includes(s.key)));
   // Güvenirliği ve başvuru standart sapması bilinen ölçeklerde cetvelde ölçüm payı da gösterilir.
   const showsMargin = def.engine === 'likert' && def.scales.some((s) => s.alpha !== undefined && s.sdRef !== undefined);
   const solveUrl = `/testler/${def.slug}/coz`;
@@ -198,6 +201,13 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                   </div>
                 </li>
               ))}
+              {/* Bileşik ölçeklere girmeyen ölçekler (ör. motivasyon testinde isteksizlik). */}
+              {loose.map((s) => (
+                <li key={s.key} className="grid gap-3 py-5 sm:grid-cols-[12rem_1fr] sm:gap-6">
+                  <p className="font-bold">{s.name}</p>
+                  <p>{s.plain}</p>
+                </li>
+              ))}
             </ul>
           ) : (
             <ul className="divide-y divide-rule border-y border-rule">
@@ -286,6 +296,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>{`${NUMBER_WORDS[scales.length] ?? scales.length} kişilerarası tarzın çember üzerinde gösterimi`}</li>
                 <li>Her tarz için düzey ve sade bir açıklama</li>
+              </>
+            )}
+            {def.engine === 'likert' && def.profile === 'motivation' && (
+              <>
+                <li>Motivasyon haritası: kendi isteğiyle ve baskıyla çalışmanın birlikte gösterimi ve araştırmalardaki dört motivasyon profiline göre yorumu</li>
+                <li>{`${NUMBER_WORDS[simpleScales.length] ?? simpleScales.length} motivasyon türünün cetvel üzerinde gösterimi ve her biri için sade bir açıklama`}</li>
               </>
             )}
             {def.engine === 'likert' && !def.profile && (
