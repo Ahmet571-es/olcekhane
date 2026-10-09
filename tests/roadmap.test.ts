@@ -295,6 +295,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'cocuk-kisilik-profili': 3 ** 5 * 2,
       // Beş motivasyon türü (bileşik ölçekler yol haritasında yok); öğrenci ve veli.
       'ders-calisma-motivasyonu': 3 ** 5 * 2,
+      // Yetişkinlere de açık: öğrenci, veli ve yetişkin.
+      'erteleme-ve-zaman-yonetimi': 3 ** 5 * 3,
     });
   }, 60_000);
 });

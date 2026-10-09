@@ -34,6 +34,11 @@ export interface ReportTemplate {
   evaluative?: boolean;
   /** Motivasyon haritası ve profil metinleri (profil: motivation). */
   motivation?: MotivationTemplate;
+  /**
+   * Ölçeklerin birlikte yorumu (profil verilmeyen çok ölçekli testlerde): raporda ilk madde olarak gösterilir. Giriş
+   * cümlesi `lead` kurallarından ilk uyandır; ardından uyan bütün `rules` cümleleri sırayla eklenir (ayrı paragraflar).
+   */
+  insight?: InsightTemplate;
   scales: Record<string, ScaleTexts>;
 }
 
@@ -41,6 +46,31 @@ export interface ReportTemplate {
 export interface PairText {
   student: string;
   parent: string;
+}
+
+/** Düzey grubu: çok düşük ve düşük → düşük, orta → orta, yüksek ve çok yüksek → yüksek. */
+export type LevelGroup = 'low' | 'average' | 'high';
+
+/**
+ * Birlikte yorumda bir kural: `when`deki her ölçek verilen düzey gruplarından birindeyse cümle eklenir; `not` verilmişse
+ * ve oradaki koşulların hepsi de sağlanıyorsa eklenmez (ör. "başka bir alan düşükse": not = hepsi orta ya da yüksek).
+ */
+export interface InsightRule {
+  when: Record<string, LevelGroup[]>;
+  not?: Record<string, LevelGroup[]>;
+  /** Yetişkin metni yalnızca öğrenci metni okula özgüyse yazılır. */
+  text: PairText & { adult?: string };
+}
+
+export interface InsightTemplate {
+  /** Maddenin başlığı ("Kısaca" gibi): öğrenci ve yetişkine, veliye. */
+  title: { you: string; parent: string };
+  /** Giriş: ilk uyan kural. Hiçbiri uymazsa (ör. ölçek hesaplanamadı) birlikte yorum gösterilmez. */
+  lead: InsightRule[];
+  /** Ek cümleler: uyan bütün kurallar, sırayla. */
+  rules: InsightRule[];
+  /** Test sayfasının "Ücretsiz raporda neler var?" listesindeki satır. */
+  pageNote: string;
 }
 
 /**

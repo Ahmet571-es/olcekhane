@@ -160,4 +160,20 @@ export const KAYNAK = {
     text: 'Bureau, J. S., Howard, J. L., Chong, J. X. Y. ve Guay, F. (2022). Pathways to student motivation: A meta-analysis of antecedents of autonomous and controlled motivations. Review of Educational Research, 92(1), 46–72.',
     url: 'https://doi.org/10.3102/00346543211042426',
   },
+  steel: {
+    text: 'Steel, P. (2007). The nature of procrastination: A meta-analytic and theoretical review of quintessential self-regulatory failure. Psychological Bulletin, 133(1), 65–94.',
+    url: 'https://doi.org/10.1037/0033-2909.133.1.65',
+  },
+  gollwitzer: {
+    text: 'Gollwitzer, P. M. ve Sheeran, P. (2006). Implementation intentions and goal achievement: A meta-analysis of effects and processes. Advances in Experimental Social Psychology, 38, 69–119.',
+    url: 'https://doi.org/10.1016/S0065-2601(06)38002-1',
+  },
+  buehler: {
+    text: 'Buehler, R., Griffin, D. ve Ross, M. (1994). Exploring the “planning fallacy”: Why people underestimate their task completion times. Journal of Personality and Social Psychology, 67(3), 366–381.',
+    url: 'https://doi.org/10.1037/0022-3514.67.3.366',
+  },
+  aeon: {
+    text: 'Aeon, B., Faber, A. ve Panaccio, A. (2021). Does time management work? A meta-analysis. PLOS ONE, 16(1), e0245066.',
+    url: 'https://doi.org/10.1371/journal.pone.0245066',
+  },
 } satisfies Record<string, { text: string; url: string }>;

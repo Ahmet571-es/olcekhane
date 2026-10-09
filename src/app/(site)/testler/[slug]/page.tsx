@@ -7,6 +7,7 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { GuideList } from '@/components/site/guide-list';
 import { PageGuide } from '@/components/site/page-guide';
 import { guidesForTest } from '@/content/rehber';
+import { REPORT_TEMPLATES } from '@/content/reports';
 import { hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
 import { DOMAIN_LABELS, gradeRangeLabel } from '@/lib/config';
 import { domainColor } from '@/lib/domain-style';
@@ -308,6 +309,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>{showsMargin ? 'Her boyutun, puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi' : 'Her boyutun cetvel üzerinde gösterimi'}</li>
                 <li>Her boyut için düzey ve sade bir açıklama</li>
+                {REPORT_TEMPLATES[def.slug]?.insight && <li>{REPORT_TEMPLATES[def.slug].insight!.pageNote}</li>}
               </>
             )}
             {def.engine === 'reading' && <li>Okuma hızı, anlama oranı ve soru türlerine göre sonuç</li>}

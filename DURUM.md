@@ -224,8 +224,19 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    onlar (iç baskıda Sınav kaygısı bağlantısı). Bağımsız ajan iddiaları kaynaklarla karşılaştırdı; bulgularının hepsi
    düzeltildi (nedensellik dili, abartılar, birbirine ters düşen metinler, iki maddenin AMS'ye benzerliği). Kaynaklar Ryan
    ve Deci (2000), Ryan ve Connell (1989), Vansteenkiste ve ark. (2009), Howard ve ark. (2021), Bureau ve ark. (2022).
-12. Sıradaki (site sahibinin 2026-10-09 isteği, maddeler sıfırdan): Erteleme ve Zaman Yönetimi, Zihniyet, Çalışma
-   Değerleri. Sonra site sahibine sorulacak: Akıl Yürütme mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
+12. **Erteleme ve Zaman Yönetimi: yayında (2026-10-09, pilot; 6. sınıftan yetişkine).** Sıfırdan yazılmış 25 madde
+   (Lay, Tuckman, Steel ve Macan ölçeklerine benzememesi bağımsız ajanla denetlendi), beş alan, hepsinde yüksek = beceri:
+   Ertelemeden başlama, Planlama ve öncelik, Süreyi tahmin etme, Odağı koruma, Zamanın kontrolü; 25 maddenin 11'i ters
+   yönlü, beş karşıt çift. Yeni ortak özellikler: rapor şablonunda `insight` ("Birlikte bakınca": ertelemenin düzeyine göre
+   giriş ve düzey birleşimlerine göre cümleler; `when` ve `not` koşulları; test sayfasında da bir satır), beş ve daha çok
+   seçenekli ölçeklerde karşıt çift uyarısı uçtaki iki seçeneği birlikte sayar ("Sık sık" ya da "Her zaman"; evet diyen
+   biri "sık erteleyen" diye yorumlanmasın). Öğrenci, veli ve yetişkin raporu; yol haritası (2. hafta planlama, 3. hafta
+   zamanın kontrolü düşükse o, değilse en düşük alan). Bağımsız ajan iddiaları kaynaklarla karşılaştırdı; bulguları
+   düzeltildi (Buehler'de yalnızca hatırlamanın yetmediği, Aeon'da "biraz daha güçlü", çelişen cümleler, çift olumsuzlar,
+   iki maddenin benzerliği). Kaynaklar Steel (2007), Sirois ve Pychyl (2013), Macan ve ark. (1990), Buehler, Griffin ve
+   Ross (1994), Gollwitzer ve Sheeran (2006), Aeon, Faber ve Panaccio (2021).
+13. Sıradaki (site sahibinin 2026-10-09 isteği, maddeler sıfırdan): Zihniyet, Çalışma Değerleri. Sonra site sahibine
+   sorulacak: Akıl Yürütme mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -399,6 +410,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Kelime Listesi Hatırlama | kelime-listesi-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Çocuk Kişilik Profili | cocuk-kisilik-profili | Yayında (pilot; 3–5. sınıf) |
 | Ders Çalışma Motivasyonu | ders-calisma-motivasyonu | Yayında (pilot; 5. sınıftan mezuna) |
+| Erteleme ve Zaman Yönetimi | erteleme-ve-zaman-yonetimi | Yayında (pilot; 6. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -510,6 +522,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (11): Erteleme ve Zaman Yönetimi yayında (6. sınıftan yetişkine): 25 özgün madde, beş alan; alanları
+  birlikte yorumlayan "Birlikte bakınca" bölümü (ertelemenin hangi alışkanlıklarla birlikte görüldüğü); öğrenci, veli ve
+  yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü,
+  rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
 - 2026-10-09 (10): Ders Çalışma Motivasyonu yayında (5. sınıftan mezuna): 25 özgün madde, beş motivasyon türü; yeni
   "motivasyon haritası" (kendi isteğiyle ve baskıyla çalışma) ve dokuz profilli yorum; öğrenci ve veli raporu, 3B grafikli
   yol haritası; telefonda dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız
@@ -541,6 +557,3 @@ En yeni üstte; en çok 10 madde tutulur.
   dikişler ve pterion, kafa derisi, kafatası tabanı ve 13 delik, yüz ve sinüsler, bıngıldaklar ve kraniosinostoz,
   kırıklar, BOS sızıntısı, BT kuralları, kraniotomi, dekompresif kraniektomi ve kranioplasti; 7 üç boyutlu sahne
   (yüz kemikleri ve ilk iki omur modele eklendi), 6 hareketli çizim, 5 vaka, 36 soru, 167 kaynak.
-- 2026-10-08 (12): Sözel Akıl Yürütme yayında: 24 özgün soru (kelime ilişkileri, sınıflama, sıralama, mantıksal
-  çıkarım), 5 düzey; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; telefonda ve
-  masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı. Ortak: 3B grafiğin ilk açısı çift sütunda düzeldi.

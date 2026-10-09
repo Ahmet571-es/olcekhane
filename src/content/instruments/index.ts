@@ -17,6 +17,7 @@ import { meslekiIlgi } from './mesleki-ilgi';
 import { ogrenmeVeBasari } from './ogrenme-ve-basari';
 import { cocukKisilik } from './cocuk-kisilik';
 import { dersCalismaMotivasyonu } from './ders-calisma-motivasyonu';
+import { ertelemeZamanYonetimi } from './erteleme-zaman-yonetimi';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
@@ -65,6 +66,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   ogrenmeVeBasari,
   cocukKisilik,
   dersCalismaMotivasyonu,
+  ertelemeZamanYonetimi,
   hobiIlgileri,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 

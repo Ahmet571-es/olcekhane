@@ -760,6 +760,8 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
   // yalnızca sarı bant cümlesi eklenir.
   const band = margin ? (you ? 'Sarı bant ölçümün doğal payı.' : 'Sarı bant ölçümün doğal payını gösterir.') : '';
   const overview = r.overview ? [r.overview, band].filter(Boolean).join(' ') : undefined;
+  // Ölçeklerin birlikte yorumu (varsa) ilk madde olarak.
+  const lead = r.insight ? [{ title: r.insight.title, text: r.insight.text }] : [];
   return {
     ...base,
     chartTitle: one ? r.sections[0].name : 'Genel bakış',
@@ -768,8 +770,8 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       : (overview ?? [you ? 'Her satır bir özellik.' : 'Her satır bir boyut.', marks, poles].filter(Boolean).join(' ')),
     chart: { type: 'rulers', rows: r.sections.map(ruler) },
     keyFigures: [],
-    itemsTitle: one ? 'Sonuç' : 'Boyutlar',
-    items: r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text })),
+    itemsTitle: one ? 'Sonuç' : lead.length ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Boyutlar',
+    items: [...lead, ...r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text }))],
   };
 }
 

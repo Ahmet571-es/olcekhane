@@ -201,10 +201,16 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   // Birbirinin tersi olan çiftler: ikisine de aynı uç cevap.
   const highest = Math.max(...def.options.map((o) => o.value));
   const pairs = (def.oppositePairs ?? []).map(([x, y]) => [answers[x]?.value, answers[y]?.value]);
-  const oppositeAgree = pairs.filter(([x, y]) => x === highest && y === highest).length;
-  const oppositeDisagree = pairs.filter(([x, y]) => x === lowest && y === lowest).length;
+  // Beş ya da daha çok seçenekli ölçekte uçtaki iki seçenek birlikte sayılır ("Sık sık" ve "Her zaman"): evet deme
+  // eğilimi olan biri her cümleye en uç seçeneği vermeyebilir; az seçenekli ölçekte (ör. üç seçenek) yalnızca en uç.
+  const wide = def.options.length >= 5 ? 1 : 0;
+  const agrees = (v: number | undefined) => v !== undefined && v >= highest - wide;
+  const disagrees = (v: number | undefined) => v !== undefined && v <= lowest + wide;
+  const oppositeAgree = pairs.filter(([x, y]) => agrees(x) && agrees(y)).length;
+  const oppositeDisagree = pairs.filter(([x, y]) => disagrees(x) && disagrees(y)).length;
   const tendency = (n: number) => def.oppositePairs !== undefined && n >= Math.ceil(def.oppositePairs.length / 2);
   const label = (v: number) => def.options.find((o) => o.value === v)?.label ?? '';
+  const labels = (v: number, toward: number) => (wide ? `“${label(Math.min(v, v + toward))}” ya da “${label(Math.max(v, v + toward))}”` : `“${label(v)}”`);
 
   const notes: string[] = [];
   const tooFast = medianRtMs !== null && rts.length >= 5 && medianRtMs < 700;
@@ -213,13 +219,13 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   if (tooFast) notes.push(`Cevaplar çok hızlı verilmiş; bazı ${ITEM_NOUN_PLURAL[likertItemNoun(def)]} okunmadan işaretlenmiş olabilir.`);
   if (straightLining) notes.push('Uzun bir bölümde hep aynı seçenek işaretlenmiş.');
   if (incomplete) notes.push('Bazı maddeler cevaplanmamış.');
-  for (const [n, v, what] of [
-    [oppositeAgree, highest, 'evet'],
-    [oppositeDisagree, lowest, 'hayır'],
+  for (const [n, v, toward, what] of [
+    [oppositeAgree, highest, -1, 'evet'],
+    [oppositeDisagree, lowest, 1, 'hayır'],
   ] as const) {
     if (!tendency(n)) continue;
     notes.push(
-      `Birbirinin tersini söyleyen ${def.oppositePairs!.length} cümle çiftinden ${n} tanesinde iki cümleye de “${label(v)}” denmiş. Bu, cümlelerin ne söylediğine bakmadan çoğuna “${what}” deme eğiliminden kaynaklanabilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
+      `Birbirinin tersini söyleyen ${def.oppositePairs!.length} cümle çiftinden ${n} tanesinde iki cümleye de ${labels(v, toward)} denmiş. Bu, cümlelerin ne söylediğine bakmadan çoğuna “${what}” deme eğiliminden kaynaklanabilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
     );
   }
   return { tooFast, straightLining, incomplete, oppositeAgree, oppositeDisagree, medianRtMs, longestRun, notes };

@@ -1,6 +1,6 @@
 import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type RiasecKey } from '@/content/careers/riasec';
 import { REPORT_TEMPLATES } from '@/content/reports';
-import type { BandText, MotivationTemplate, PairText } from '@/content/reports/types';
+import type { BandText, InsightTemplate, LevelGroup, MotivationTemplate, PairText } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import type {
@@ -174,6 +174,8 @@ export interface ReportContent {
   circumplex?: { key: string; angle: number; short: string }[];
   /** Motivasyon haritası ve profili (profil: motivation). */
   motivation?: MotivationReport;
+  /** Ölçeklerin birlikte yorumu (şablonda `insight` varsa): başlık ve paragraflar ("\n\n" ile ayrılmış). */
+  insight?: { title: string; text: string };
   cognitive?: CognitiveReport;
   academic?: AcademicReport;
   reading?: {
@@ -519,6 +521,8 @@ export function buildReport(input: {
       ? buildMotivation(def, sections, template.motivation, audience)
       : undefined;
   const extraNotes = motivation?.caution ? [motivation.caution] : [];
+  const insight =
+    def.engine === 'likert' && !def.profile && template?.insight ? buildInsight(sections, template.insight, audience) : undefined;
 
   // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
   let strengths: string[] | undefined;
@@ -580,9 +584,29 @@ export function buildReport(input: {
     facetGroups,
     circumplex,
     ...(motivation ? { motivation: motivation.report } : {}),
+    ...(insight ? { insight } : {}),
     cognitive,
     academic,
   };
+}
+
+/**
+ * Ölçeklerin birlikte yorumu: giriş (ilk uyan `lead` kuralı) ve uyan bütün ek kurallar, ayrı paragraflar. Bir kuralın
+ * andığı ölçek hesaplanamadıysa kural uymaz; giriş uymazsa yorum gösterilmez.
+ */
+function buildInsight(sections: ReportSection[], t: InsightTemplate, audience: Audience): { title: string; text: string } | undefined {
+  const group = new Map(sections.map((s) => [s.scaleKey, motivationLevel(s.band) as LevelGroup | null]));
+  const fits = (when: Record<string, LevelGroup[]>) =>
+    Object.entries(when).every(([key, groups]) => {
+      const g = group.get(key);
+      return g !== null && g !== undefined && groups.includes(g);
+    });
+  const pickText = (x: InsightTemplate['lead'][number]['text']) =>
+    audience === 'parent' ? x.parent : audience === 'adult' ? (x.adult ?? x.student) : x.student;
+  const lead = t.lead.find((r) => fits(r.when));
+  if (!lead) return undefined;
+  const more = t.rules.filter((r) => fits(r.when) && !(r.not && fits(r.not))).map((r) => pickText(r.text));
+  return { title: audience === 'parent' ? t.title.parent : t.title.you, text: [pickText(lead.text), ...more].join('\n\n') };
 }
 
 /** Bir ondalıklı ortalama (raporda gösterilen sayı); karşılaştırmalar gösterilen sayılarla yapılır. */
