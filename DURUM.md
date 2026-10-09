@@ -318,12 +318,22 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   167 kaynak; okuma süresi temel ~34, lisans ~72, tamamı ~95 dk; UÇEP: 138, 164, 165, 166). Bağımsız denetimde 6
   yanlış ve 37 küçük sorun bulundu, hepsi düzeltildi. Modelde yeni "yuz" paketi: yüz kemikleri, dil kemiği, atlas
   ve aksis (sürüm c5d7ea847e); kemik sahneleri kesitte kemiklerin kutusunu kullanır.
+- Hazır: Anatomi 3 "Kafatası 1: Kemikler tek tek" (2026-10-09; ünitenin ilk dersi; 10 bölüm: kemik dili, alın, yan
+  kafa, şakak, art kafa, kama, kalbur, yüz kemikleri, alt çene ve dil kemiği, kemikler birlikte; 39 sahne, 3 hareketli
+  çizim (kemik işaretleri, yüz siniri kanalı, sfenoid sinüs tipleri), 20 vaka, 74 soru, 106 terim, 187 kaynak; okuma
+  süresi temel ~72, lisans ~263, tamamı ~357 dk). Kaynaklar dört ayrı araştırmayla açık tam metinlerden, Gray 1918'den,
+  OpenStax'ten ve TA2/TA98'den toplandı; her alıntı kayıtlı metinde makineyle doğrulandı; üç bağımsız denetçi 66
+  düzeltme yaptı. Yeni: kemiklerin üzerinde 131 işaret noktası (`noktalar.ts`), etiket yazıları noktaların üstüne
+  binmeden yerleşir. Modelde olmadığı için işaretlenemeyenler (metinde anlatıldı): foramen spinosum, pterigoid kanal,
+  göz üstü deliği, mastoid ve yan kafa delikleri, büyük damak deliği, elmacık-yüz deliği, Henle dikeni, çene dikenleri;
+  optik kanal ile üst göz çukuru yarığı modelde birleşik, sinüs boşlukları yok.
 - **Site sahibinin 2026-10-09 kararı:** kafatası dersi istediği kapsam ve derinlikte bulunmadı. Kalıcı istekleri: derinlik
   sınırı açık erişimli tam metinler ve ders kitaplarıyla aşılacak (özetle yetinilmez); büyük konular birkaç derslik
   üniteye bölünerek büyütülecek. Program 106 derse çıktı: mevcut kafatası dersi ünitenin genel bakışı oldu, ardından
   altı ders: (1) kemikler tek tek, (2) beş yönden kafatası ve iç taban, (3) delikler, kanallar ve derin çukurlar,
   (4) kafatası–boyun bileşkesi, (5) gelişim ve hastalıklar, (6) kırıklar, görüntüleme ve cerrahi anatomi.
-- **Sıradaki ders:** Kafatası 1 "Kemikler tek tek"; ünite sırayla bitince Anatomi "Beyin zarları". Site sahibi başka
+- **Sıradaki ders:** Kafatası 2 "Beş yönden kafatası ve iç taban"; ünite sırayla bitince Anatomi "Beyin
+  zarları". Site sahibi başka
   bir ders isterse o yapılır. Ünite dersleri hazır oldukça genel bakıştaki tekrarlar gözden geçirilir.
 - **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
   eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
@@ -480,6 +490,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (8): Beyin Akademisi Anatomi 3 "Kafatası 1: Kemikler tek tek" yayında: her kemik ayrı bölümde, üç
+  düzeyde; 39 üç boyutlu sahnede kemik tek başına, çıkıntıları, delikleri ve çukurları 131 işaret noktasıyla
+  işaretli; 3 yeni hareketli çizim, 20 vaka, 74 soru, 187 kaynak (açık tam metinler, Gray 1918, OpenStax, TA2).
+  Sahnelerde etiket yazıları artık noktaların ve birbirinin üstüne binmiyor (bütün derslerde).
 - 2026-10-09 (7): Çocuk Kişilik Profili yayında (3–5. sınıf): 30 madde, üç seçenek, beş boyut; öğrenci ve veli raporu,
   3B grafikli yol haritası; "evet deme eğilimi" uyarısı; çocuğa 112'siz destek kutusu; İlkokul 3–4 önerisi; telefonda
   dokunarak ve masaüstünde klavyeyle çözüldü, rapor ve PDF (öğrenci ve veli) açıldı; bağımsız inceleme bulguları düzeltildi.
@@ -512,6 +526,3 @@ En yeni üstte; en çok 10 madde tutulur.
   her konunun sonunda gizli kısım haber veriliyor, okurken altta düzey şeridi, düzey değişince sayfa kaymıyor, düzey
   bağlantıyla paylaşılabiliyor; ana sayfada "Her ders üç düzeyde okunur" tanıtımı, bölüm sayfasında ders başına
   okuma süreleri; sahnelerde kullanım ipucu.
-- 2026-10-08 (10): Öğrenme ve Başarı Özellikleri yayında: 56 madde, 6 özellik (çaba, işe koyulma, planlı çalışma,
-  zorlukla başa çıkma, düşünmekten hoşlanma, öğrenmeye açıklık), öğrenci, veli ve yetişkin raporu, 3B grafikli yol
-  haritası; telefonda ve masaüstünde çözüldü, rapor ve PDF açıldı. Ortak: düzey, gösterilen yuvarlanmış puandan.

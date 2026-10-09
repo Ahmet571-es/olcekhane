@@ -1166,6 +1166,18 @@
       0 0 14px rgb(255 255 255 / 0.65);
     transition: opacity 0.25s ease;
   }
+  /* Kemiğin üzerindeki işaret noktası: açık renkli kemik üzerinde de seçilsin diye koyu merkezli beyaz halka. */
+  .beyin-etiket-isaret {
+    left: -6px;
+    top: -6px;
+    width: 12px;
+    height: 12px;
+    background: rgb(8 14 28);
+    border: 2.5px solid #fff;
+    box-shadow:
+      0 0 0 1.5px rgb(8 14 28 / 0.55),
+      0 0 10px rgb(255 255 255 / 0.55);
+  }
   .beyin-etiket-metin {
     position: absolute;
     left: 0;

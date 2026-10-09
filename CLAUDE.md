@@ -169,6 +169,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   göster/gizle/vurgula/saydam seçicileri, renk, sahneye özel boya (`boya`), etiketler, bakış, yarım küre, kesit,
   ayrıştırma (her şeyi dağıtır; yalnızca kemikleri ayırmaz). Etiketli sahne dönmez. Etiket noktası yapının görünen
   yüzündeki bir köşedir; kesitle kaldırılan ya da önü kapalı noktanın etiketi gizlenir.
+- Kemik işaret noktaları (çıkıntı ucu, delik ağzı, çukur, köşe): `src/content/beyin/noktalar.ts` (model koordinatı, mm),
+  sahnede `noktalar`. Yeni nokta modelin kemik ağı üzerinde ölçülür ve iki bakıştan çizilip denetlenir; ağda görünmeyen
+  yapı işaretlenmez, metinde anlatılır (site sahibine söz: yeri tam doğru konamayan nokta açıkça söylenir). Test her
+  noktanın kendi kemiğinin yüzeyinde olduğunu denetler. Sahnenin bakışından görünmeyen nokta kullanılmaz. Etiket
+  yazılarının yeri `components/beyin/etiket-duzeni.ts`: yazılar noktaların ve birbirinin üstüne binmez.
 - Etkileşimli deneme: `tarayiciAc()` ile açılan Chromium'a WebGL için `--use-gl=angle --use-angle=swiftshader
   --enable-unsafe-swiftshader` verilir; her sahne kutusunun ekran görüntüsü alınıp gözle denetlenir.
 

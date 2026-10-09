@@ -1,11 +1,14 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { MeshoptDecoder } from 'meshoptimizer/decoder';
 import { describe, expect, it } from 'vitest';
 import nextConfig from '../next.config';
 import sitemap from '@/app/sitemap';
 import { adrestenDuzey, DUZEY_ADRESI, DUZEY_KARTI, DUZEY_SIRASI } from '@/components/beyin/duzey';
+import { etiketDuzeni } from '@/components/beyin/etiket-duzeni';
 import { BEYIN_YOLU, DALLAR, hazirDersler, SEVIYE_ADLARI, toplamDers } from '@/content/beyin';
 import { MODEL_SURUMU, MODEL_YOLU } from '@/content/beyin/model-surum';
+import { NOKTALAR, noktaById } from '@/content/beyin/noktalar';
 import { blokDuzeyi, KUTU_DUZEYI, type Sahne } from '@/content/beyin/types';
 import { BOLGE_ADLARI, KATMAN_ADLARI, LOB_ADLARI, YAPILAR } from '@/content/beyin/yapilar';
 
@@ -36,6 +39,62 @@ function seciciGecerli(s: string): boolean {
     return false;
   }
   return YAPILAR.some((y) => y.id === s || y.id.replace(/-(sol|sag)$/, '') === s);
+}
+
+/** Parçaların üçgenleri (köşe koordinatları art arda: 9 sayı bir üçgen), model dosyasından çözülür. */
+function yuzeyUcgenleri(parcalar: string[]): Float64Array {
+  const sonuc: number[] = [];
+  for (const id of parcalar) {
+    const p = dizin.parcalar[id] as Dizin['parcalar'][string] & { min: number[]; olcek: number[] };
+    const bin = new Uint8Array(readFileSync(path.join(MODEL, `${p.k}.bin`)));
+    const q = new Uint16Array(p.v * 4);
+    MeshoptDecoder.decodeVertexBuffer(new Uint8Array(q.buffer), p.v, 8, bin.subarray(p.kv[0], p.kv[0] + p.kv[1]));
+    const u = new Uint32Array(p.i);
+    MeshoptDecoder.decodeIndexBuffer(new Uint8Array(u.buffer), p.i, 4, bin.subarray(p.ki[0], p.ki[0] + p.ki[1]));
+    for (const j of u) for (let d = 0; d < 3; d++) sonuc.push(p.min[d] + q[j * 4 + d] * p.olcek[d]);
+  }
+  return Float64Array.from(sonuc);
+}
+
+/** Noktanın üçgenlere en kısa uzaklığı (üçgen üzerindeki en yakın nokta: Ericson, Real-Time Collision Detection 5.1.5). */
+function yuzeyeUzaklik(p: [number, number, number], t: Float64Array): number {
+  const fark = (a: number[], b: number[]) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const ic = (a: number[], b: number[]) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const yuru = (a: number[], v: number[], k: number) => [a[0] + v[0] * k, a[1] + v[1] * k, a[2] + v[2] * k];
+  let enAz = Infinity;
+  for (let i = 0; i < t.length; i += 9) {
+    const a = [t[i], t[i + 1], t[i + 2]];
+    const b = [t[i + 3], t[i + 4], t[i + 5]];
+    const c = [t[i + 6], t[i + 7], t[i + 8]];
+    const ab = fark(b, a);
+    const ac = fark(c, a);
+    const ap = fark(p, a);
+    const d1 = ic(ab, ap);
+    const d2 = ic(ac, ap);
+    const bp = fark(p, b);
+    const d3 = ic(ab, bp);
+    const d4 = ic(ac, bp);
+    const cp = fark(p, c);
+    const d5 = ic(ab, cp);
+    const d6 = ic(ac, cp);
+    const vc = d1 * d4 - d3 * d2;
+    const vb = d5 * d2 - d1 * d6;
+    const va = d3 * d6 - d5 * d4;
+    let q: number[];
+    if (d1 <= 0 && d2 <= 0) q = a;
+    else if (d3 >= 0 && d4 <= d3) q = b;
+    else if (d6 >= 0 && d5 <= d6) q = c;
+    else if (vc <= 0 && d1 >= 0 && d3 <= 0) q = yuru(a, ab, d1 / (d1 - d3));
+    else if (vb <= 0 && d2 >= 0 && d6 <= 0) q = yuru(a, ac, d2 / (d2 - d6));
+    else if (va <= 0 && d4 - d3 >= 0 && d5 - d6 >= 0) q = yuru(b, fark(c, b), (d4 - d3) / (d4 - d3 + (d5 - d6)));
+    else {
+      const den = 1 / (va + vb + vc);
+      q = yuru(yuru(a, ab, vb * den), ac, vc * den);
+    }
+    const f = fark(p, q);
+    enAz = Math.min(enAz, Math.sqrt(ic(f, f)));
+  }
+  return enAz;
 }
 
 function sahneler(): { ders: string; sahne: Sahne }[] {
@@ -89,6 +148,57 @@ describe('yapı kataloğu ve model', () => {
   it('model sayfada hızlı açılacak kadar küçük', () => {
     const toplam = Object.values(dizin.katmanlar).reduce((t, x) => t + x, 0);
     expect(toplam).toBeLessThan(4 * 1024 * 1024);
+  });
+
+  it('etiket yerleşimi: yazılar ekranda kalır, birbirine ve noktalara binmez', () => {
+    // Birbirine yakın yedi nokta (kalabalık bir kemik sahnesi gibi).
+    const noktalar = [
+      [400, 300],
+      [430, 310],
+      [415, 340],
+      [380, 330],
+      [450, 280],
+      [360, 260],
+      [470, 360],
+    ].map(([x, y]) => ({ x, y, gen: 130, yuk: 24 }));
+    const W = 860;
+    const H = 520;
+    const yerler = etiketDuzeni(noktalar, { x: 420, y: 300 }, W, H);
+    expect(yerler).toHaveLength(noktalar.length);
+    yerler.forEach((k, i) => {
+      expect(k.sol).toBeGreaterThanOrEqual(6);
+      expect(k.sol + noktalar[i].gen).toBeLessThanOrEqual(W - 6);
+      expect(k.ust).toBeGreaterThanOrEqual(58);
+      expect(k.ust + noktalar[i].yuk).toBeLessThanOrEqual(H - 6);
+      for (const n of noktalar) {
+        const altinda = n.x > k.sol && n.x < k.sol + noktalar[i].gen && n.y > k.ust && n.y < k.ust + noktalar[i].yuk;
+        expect(altinda, `yazı ${i} bir noktanın üstünde`).toBe(false);
+      }
+      for (let j = 0; j < i; j++) {
+        const b = yerler[j];
+        const cakisir =
+          k.sol < b.sol + noktalar[j].gen && b.sol < k.sol + noktalar[i].gen && k.ust < b.ust + noktalar[j].yuk && b.ust < k.ust + noktalar[i].yuk;
+        expect(cakisir, `yazı ${i} ile ${j} çakışıyor`).toBe(false);
+      }
+    });
+  });
+
+  it('işaret noktaları: kimlikler benzersiz, kemikleri katalogda ve her nokta kendi kemiğinin yüzeyinde', async () => {
+    const ids = NOKTALAR.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    await MeshoptDecoder.ready;
+    const ucgenler = new Map<string, Float64Array>();
+    for (const p of NOKTALAR) {
+      expect(p.ad.length, p.id).toBeGreaterThan(2);
+      expect(p.latince.length, p.id).toBeGreaterThan(2);
+      const y = YAPILAR.find((x) => x.id === p.yapi);
+      expect(y, `${p.id}: ${p.yapi}`).toBeDefined();
+      expect(['kemik', 'yuz'], p.id).toContain(y!.katman);
+      if (!ucgenler.has(p.yapi)) ucgenler.set(p.yapi, yuzeyUcgenleri(y!.parcalar));
+      // Nokta yüzeyin üstündedir; delik noktası ise deliğin ağzının ortasında durur (en büyüğü foramen magnum).
+      const uzaklik = yuzeyeUzaklik(p.konum, ucgenler.get(p.yapi)!);
+      expect(uzaklik, p.id).toBeLessThanOrEqual(p.tur === 'delik' ? 18 : 0.6);
+    }
   });
 });
 
@@ -223,9 +333,14 @@ describe('dersler', () => {
         expect(b.renk, ders).toMatch(/^#[0-9a-f]{6}$/i);
         for (const s of b.secici) expect(seciciGecerli(s), `${ders}: boya ${s}`).toBe(true);
       }
+      for (const e of sahne.noktalar ?? []) {
+        const p = noktaById(e.nokta);
+        expect(p, `${ders}: nokta ${e.nokta}`).toBeDefined();
+        expect(sahne.katmanlar, `${ders}: ${e.nokta} kemiğinin paketi yüklenmiyor`).toContain(YAPILAR.find((y) => y.id === p!.yapi)!.katman);
+      }
       if (sahne.kesit) expect(Math.abs(sahne.kesit.konum)).toBeLessThanOrEqual(1);
       // Etiketli sahneler dönmez (dönerken etiketler gizlenir).
-      if (sahne.etiketler?.length) expect(sahne.donme ?? false, ders).toBe(false);
+      if (sahne.etiketler?.length || sahne.noktalar?.length) expect(sahne.donme ?? false, ders).toBe(false);
     }
   });
 

@@ -42,6 +42,11 @@ export interface Sahne {
   boya?: { secici: string[]; renk: string }[];
   /** Yapıların üzerinde gösterilecek etiketler (yapı kimliği ya da tarafsız kimlik; metin verilmezse yapının adı). */
   etiketler?: { yapi: string; metin?: string }[];
+  /**
+   * Kemiklerin üzerindeki işaret noktaları (`noktalar.ts`: çıkıntı ucu, delik ağzı, çukur, köşe). Nokta yerinde
+   * sabittir; önü kapalıysa ya da kesitle kaldırıldıysa etiketi gizlenir. Metin verilmezse noktanın adı yazar.
+   */
+  noktalar?: { nokta: string; metin?: string }[];
   bakis?: Bakis;
   /** Yalnızca bir yarımküre: orta hattan kesilir (iç yüzü görmek için). */
   yarim?: 'sol' | 'sag';
@@ -74,7 +79,10 @@ export type AnimasyonAdi =
   | 'kraniosinostoz'
   | 'kafa-derisi-katmanlari'
   | 'kafatasi-kiriklari'
-  | 'kraniotomi';
+  | 'kraniotomi'
+  | 'kemik-isaretleri'
+  | 'yuz-siniri-kanali'
+  | 'kama-sinusu-tipleri';
 
 /**
  * Kutu çeşitleri. "aklinda-kalsin", "biliyor-muydun" ve "dikkat" temel katmandadır. "derinles", "klinik",

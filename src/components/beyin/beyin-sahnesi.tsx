@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { noktaById } from '@/content/beyin/noktalar';
 import type { Bakis, KesitDuzlemi, Sahne, SahneAraci } from '@/content/beyin/types';
 import { BOLGE_ADLARI, KATMAN_ADLARI, LOB_ADLARI, type Katman, type Yapi, yapiAdi, yapiById } from '@/content/beyin/yapilar';
 import type { BeyinMotoru } from './motor';
@@ -262,6 +263,15 @@ export function BeyinSahnesi({
     }
     return [...gruplar];
   }, [etkinAyar]);
+  const isaretler = useMemo(
+    () =>
+      (sahne.noktalar ?? []).flatMap((e) => {
+        const p = noktaById(e.nokta);
+        const y = p && yapiById(p.yapi);
+        return p && y ? [{ id: p.id, metin: e.metin ?? p.ad, latince: p.latince, kemik: yapiAdi(y) }] : [];
+      }),
+    [sahne.noktalar],
+  );
   const seciliYapi = secili ? yapiById(secili) : undefined;
   const paneller = [...new Set(araclar.map((a) => ARAC_PANELI[a]).filter((p): p is Panel => Boolean(p)))];
   const yukleniyor = durum === 'yukleniyor' || durum === 'bos';
@@ -334,7 +344,7 @@ export function BeyinSahnesi({
 
         {durum === 'etkin' && (
           <div className="beyin-ust-araclar">
-            {(sahne.etiketler?.length ?? 0) > 0 && (
+            {(sahne.etiketler?.length ?? 0) + (sahne.noktalar?.length ?? 0) > 0 && (
               <button
                 type="button"
                 className="beyin-yuvarlak"
@@ -535,12 +545,29 @@ export function BeyinSahnesi({
             </li>
           ))}
         </ul>
+        {isaretler.length > 0 && (
+          <>
+            <p>Sahnede işaretli noktalar:</p>
+            <ul>
+              {isaretler.map((p) => (
+                <li key={p.id}>
+                  {p.metin} (<i lang="la">{p.latince}</i>), {p.kemik}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
       {durum === 'hata' && (
         <ul className="mt-3 flex flex-col gap-2 px-1">
           {oneCikanlar(etkinAyar).map((y) => (
             <li key={y.id}>
               <b>{yapiAdi(y)}</b> (<i lang="la">{y.latince}</i>): {y.gorev}
+            </li>
+          ))}
+          {isaretler.map((p) => (
+            <li key={p.id}>
+              <b>{p.metin}</b> (<i lang="la">{p.latince}</i>), {p.kemik}
             </li>
           ))}
         </ul>

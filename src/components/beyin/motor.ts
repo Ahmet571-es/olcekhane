@@ -23,8 +23,10 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { noktaById } from '@/content/beyin/noktalar';
 import type { Bakis, KesitDuzlemi, Sahne } from '@/content/beyin/types';
 import { YAPILAR, type Katman, type Yapi, yapiAdi } from '@/content/beyin/yapilar';
+import { etiketDuzeni } from './etiket-duzeni';
 import { katmanYukle } from './model';
 import { sahneRengi } from './renkler';
 import { seciciUyar, tarafsiz, uyar } from './secici';
@@ -78,6 +80,8 @@ interface Etiket {
   ortulu: boolean;
   /** Son görünürlük denetiminde seçilen nokta adayı. */
   aday: number;
+  /** İşaret noktası etiketinde noktanın yapıya göre sabit yeri (model koordinatı; ayrıştırma kayması eklenmeden). */
+  sabit?: Vector3;
 }
 
 /**
@@ -588,7 +592,28 @@ export class BeyinMotoru {
       this.etiketKati.append(nokta, metin);
       this.etiketler.push({ id: ilk.yapi.id, nokta, metin, cizgi, ortulu: false, aday: 0 });
     }
+    for (const e of this.ayar.noktalar ?? []) {
+      const p = noktaById(e.nokta);
+      const sahibi = p && this.nesneler.get(p.yapi);
+      if (!p || !sahibi || sahibi.hedefOpaklik <= 0) continue;
+      const nokta = document.createElement('span');
+      nokta.className = 'beyin-etiket-nokta beyin-etiket-isaret';
+      const metin = document.createElement('span');
+      metin.className = 'beyin-etiket-metin';
+      metin.textContent = e.metin ?? p.ad;
+      const cizgi = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      svg.append(cizgi);
+      this.etiketKati.append(nokta, metin);
+      this.etiketler.push({ id: p.yapi, nokta, metin, cizgi, ortulu: false, aday: 0, sabit: new Vector3(...p.konum) });
+    }
     this.etiketleriYerlestir(true);
+  }
+
+  /** Etiketin dünya koordinatındaki noktası: işaret noktasında sabit yer, yapı etiketinde adaya göre seçilen köşe. */
+  private etiketKonumu(e: Etiket, n: YapiNesnesi, aday: number): Vector3 | null {
+    if (!e.sabit) return this.etiketNoktasi(n, aday);
+    const p = e.sabit.clone().add(n.grup.position);
+    return this.duzlemler.some((d) => d.distanceToPoint(p) < 0) ? null : p;
   }
 
   /**
@@ -640,8 +665,11 @@ export class BeyinMotoru {
     return nokta?.clone() ?? null;
   }
 
-  /** Bu noktanın önünü (kameradan bakınca) başka bir yapı kapatıyor mu? */
-  private onuKapali(n: YapiNesnesi, p: Vector3): boolean {
+  /**
+   * Bu noktanın önünü (kameradan bakınca) başka bir yapı kapatıyor mu? İşaret noktasında (`sabit`) yapının kendisi de
+   * kapatabilir (ör. kemiğin iç yüzündeki nokta dışarıdan bakınca görünmez).
+   */
+  private onuKapali(n: YapiNesnesi, p: Vector3, sabit = false): boolean {
     const kesitVar = this.duzlemler.length > 0;
     const yon = p.clone().sub(this.kamera.position);
     const uzak = yon.length();
@@ -655,6 +683,7 @@ export class BeyinMotoru {
         false,
       )
       .find((v) => !this.duzlemler.some((d) => d.distanceToPoint(v.point) < 0));
+    if (sabit) return Boolean(engel && engel.distance < uzak - 2.5);
     // Nokta yüzeyde durduğundan pay küçüktür; oluğun dibindeki nokta komşu kıvrımın kenarına takılmasın diye biraz pay.
     const pay = Math.min(n.kutu.getSize(new Vector3()).length() * 0.35, 15);
     return Boolean(engel && engel.object.userData.yapi !== n.yapi.id && engel.distance < uzak - pay);
@@ -686,16 +715,16 @@ export class BeyinMotoru {
       if (ortu) {
         // Kamera dururken adaylar sırayla denenir: kesilmemiş, ekranda ve önü açık olan ilk nokta seçilir.
         e.ortulu = true;
-        for (let a = 0; a < 3; a++) {
-          const q = this.etiketNoktasi(n, a);
-          if (q && this.ekranda(q) && !this.onuKapali(n, q)) {
+        for (let a = 0; a < (e.sabit ? 1 : 3); a++) {
+          const q = this.etiketKonumu(e, n, a);
+          if (q && this.ekranda(q) && !this.onuKapali(n, q, Boolean(e.sabit))) {
             e.aday = a;
             e.ortulu = false;
             break;
           }
         }
       }
-      const nokta = this.etiketNoktasi(n, e.aday);
+      const nokta = this.etiketKonumu(e, n, e.aday);
       const p = nokta ?? n.merkez.clone().add(n.grup.position);
       const ekran = p.clone().project(this.kamera);
       const gorunur = nokta !== null && !e.ortulu && this.ekranda(p) && n.opaklik > 0.05;
@@ -705,33 +734,13 @@ export class BeyinMotoru {
     const merkez = this.kontrol.target.clone().project(this.kamera);
     const mx = ((merkez.x + 1) / 2) * W;
     const my = ((1 - merkez.y) / 2) * H;
-    const kutular = gorunen.map((y) => {
-      let dx = y.x - mx;
-      let dy = y.y - my;
-      const u = Math.hypot(dx, dy);
-      if (u < 1) [dx, dy] = [1, 0];
-      else [dx, dy] = [dx / u, dy / u];
-      const gen = y.e.metin.offsetWidth || 90;
-      const yuk = y.e.metin.offsetHeight || 24;
-      const sagda = dx >= -0.15;
-      const tx = y.x + dx * 34;
-      let ty = y.y + dy * 30;
-      let sol = sagda ? tx : tx - gen;
-      sol = Math.min(Math.max(sol, 6), W - gen - 6);
-      // Üstteki yuvarlak düğmelerin altında kalmasın.
-      ty = Math.min(Math.max(ty, yuk / 2 + 58), H - yuk / 2 - 6);
-      return { y, sol, ust: ty - yuk / 2, gen, yuk, sagda };
-    });
-    // Çakışma giderme: yukarıdan aşağıya sırayla, üst üste binen kutuyu aşağı kaydır.
-    kutular.sort((a, b) => a.ust - b.ust);
-    for (let i = 0; i < kutular.length; i++) {
-      for (let j = 0; j < i; j++) {
-        const a = kutular[j];
-        const b = kutular[i];
-        const yatay = a.sol < b.sol + b.gen + 4 && b.sol < a.sol + a.gen + 4;
-        if (yatay && b.ust < a.ust + a.yuk + 4) b.ust = a.ust + a.yuk + 4;
-      }
-    }
+    const duzen = etiketDuzeni(
+      gorunen.map((y) => ({ x: y.x, y: y.y, gen: y.e.metin.offsetWidth || 90, yuk: y.e.metin.offsetHeight || 24 })),
+      { x: mx, y: my },
+      W,
+      H,
+    );
+    const kutular = gorunen.map((y, i) => ({ y, ...duzen[i] }));
     for (const y of yerler) {
       const k = kutular.find((x) => x.y === y);
       const e = y.e;
@@ -742,12 +751,10 @@ export class BeyinMotoru {
       e.nokta.style.transform = `translate(${y.x}px, ${y.y}px)`;
       if (!k) continue;
       e.metin.style.transform = `translate(${k.sol}px, ${k.ust}px)`;
-      const ux = k.sagda ? k.sol : k.sol + k.gen;
-      const uy = k.ust + k.yuk / 2;
       e.cizgi.setAttribute('x1', String(y.x));
       e.cizgi.setAttribute('y1', String(y.y));
-      e.cizgi.setAttribute('x2', String(ux));
-      e.cizgi.setAttribute('y2', String(uy));
+      e.cizgi.setAttribute('x2', String(k.cx));
+      e.cizgi.setAttribute('y2', String(k.cy));
     }
     this.etiketKati.classList.remove('beyin-etiketler-gizli');
   }
