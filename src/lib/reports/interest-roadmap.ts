@@ -80,7 +80,13 @@ export function buildInterestRoadmap(
       band: s.bandLabel,
     })),
     standout: top.map((s) => ({ title: s.name, text: summary(s) })),
-    standoutNote: top.length ? null : allLow ? lowNote(!!t.leisure, parent) + (t.leisure ? '' : ` ${pick(t.openNote, a)}`) : pick(t.openNote, a),
+    standoutNote: top.length
+      ? null
+      : allLow
+        ? t.lowNote
+          ? pick(t.lowNote, a)
+          : lowNote(!!t.leisure, parent) + (t.leisure ? '' : ` ${pick(t.openNote, a)}`)
+        : pick(t.openNote, a),
     study: {
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
       intro: pick(t.studyIntro, a),

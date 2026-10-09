@@ -9,6 +9,7 @@ import { durGitGorevi } from './dur-git';
 import { duygusalZekaBilesenleri } from './duygusal-zeka-bilesenleri';
 import { geriyeDonukHatirlama } from './geriye-donuk-hatirlama';
 import { harfIsaretleme } from './harf-isaretleme';
+import { calismaDegerleri } from './calisma-degerleri';
 import { hobiIlgileri } from './hobi-ilgileri';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
 import { matematik } from './matematik';
@@ -70,6 +71,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   ertelemeZamanYonetimi,
   zihniyet,
   hobiIlgileri,
+  calismaDegerleri,
 ].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export function getInstrumentDef(slug: string): InstrumentDef | undefined {

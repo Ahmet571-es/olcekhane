@@ -132,9 +132,12 @@ export interface LikertInstrument extends InstrumentBase {
    * en seyreğe; en çok zaman ayrılan alanların açıklaması).
    * "motivation": motivasyon haritası (iki bileşik ölçek, ör. kendi isteğiyle ve baskıyla çalışma, bir düzlemde; profil adı
    * ve yorumu) ve bileşik ölçeklerin altında alt ölçeklerin cetvelleri; metinler rapor şablonunun `motivation` alanındadır.
+   * "values": sıralı değer profili (bir işte neyin ne kadar önemli olduğu, en önemliden en az önemliye; en önemli
+   * değerlerin açıklaması, birbirine ters yönde çekebilen değerler ve daha az önem verilenler; metinler rapor şablonunun
+   * `values` alanındadır). Çoğu kişi birçok değeri önemli bulduğu için asıl bilgi kişinin kendi içindeki sıralamadır.
    * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
    */
-  profile?: 'riasec' | 'interests' | 'facets' | 'circumplex' | 'activities' | 'motivation';
+  profile?: 'riasec' | 'interests' | 'facets' | 'circumplex' | 'activities' | 'motivation' | 'values';
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];

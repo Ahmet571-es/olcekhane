@@ -39,7 +39,28 @@ export interface ReportTemplate {
    * cümlesi `lead` kurallarından ilk uyandır; ardından uyan bütün `rules` cümleleri sırayla eklenir (ayrı paragraflar).
    */
   insight?: InsightTemplate;
+  /** Değer sıralamasının ek metinleri (profil: values). */
+  values?: ValuesTemplate;
   scales: Record<string, ScaleTexts>;
+}
+
+/**
+ * Değer sıralaması (profil: values): en önemli değerler raporun başındadır (her birinin düzey metniyle); ardından ikisi
+ * de en önemliler arasındaysa birbirine ters yönde çekebilen değer çiftleri ve daha az önem verilen değerler anlatılır.
+ */
+export interface ValuesTemplate {
+  /**
+   * Birbirine ters yönde çekebilen değer çiftleri (ör. güvence ve bağımsızlık): ikisi de en önemli değerler arasındaysa
+   * madde olarak gösterilir. Metin karar verirken hangisinin ağır basacağını düşünmeye çağırır; birini doğru saymaz.
+   */
+  tradeoffs: { a: string; b: string; title: string; text: PairText & { adult?: string } }[];
+  /**
+   * Daha az önem verilen değerlerin açıklaması; "{değerler}" yerine değerlerin adları ve düzeyleri, "{o}" yerine
+   * "o değerin" ya da "o değerlerin" yazılır.
+   */
+  lower: PairText & { adult?: string };
+  /** Her raporun sonunda: sonucun nasıl kullanılabileceği (değerler meslek seçmez). */
+  note: { title: { you: string; parent: string }; text: PairText & { adult?: string } };
 }
 
 /** Öğrenciye ve veliye ayrı yazılmış metin. */

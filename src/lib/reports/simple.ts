@@ -335,9 +335,63 @@ function activityNotes(p: InterestRanking, audience: Audience): string[] {
   return notes;
 }
 
+/** Değer sıralamasının uyarıları: hepsi az önemli, sıralama yapılamadı, hiçbiri çok önemli değil, farklar küçük. */
+function valueNotes(p: InterestRanking, audience: Audience): string[] {
+  if (p.allLow) {
+    return [
+      byAudience(audience, {
+        student:
+          'Bir işte önemli olabilecek şeylerin hepsini az önemli bulduğunu belirtmişsin; bu yüzden hiçbir değer öne çıkarılmadı. Bu, iş ve meslek hakkında henüz pek düşünmemiş olmandan ya da o anki isteksizlikten kaynaklanabilir. Hayal ettiğin bir işi düşünerek testi başka bir gün yeniden çözmek önceliklerini daha net gösterebilir.',
+        parent:
+          'Çocuğunuz bir işte önemli olabilecek şeylerin hepsini az önemli bulduğunu belirtmiş; bu yüzden hiçbir değer öne çıkarılmadı. Bu, iş ve meslek hakkında henüz pek düşünmemiş olmasından ya da o anki isteksizlikten kaynaklanabilir.',
+        adult:
+          'Bir işte önemli olabilecek şeylerin hepsini az önemli bulduğunu belirtmişsin; bu yüzden hiçbir değer öne çıkarılmadı. Bu, listedeki şeylerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Şu anki ya da geçmişteki bir işini düşünerek testi başka bir gün yeniden çözmek önceliklerini daha net gösterebilir.',
+      }),
+    ];
+  }
+  const notes: string[] = [];
+  if (!p.top.length) {
+    notes.push(
+      byAudience(audience, {
+        student:
+          'Birçok değere aynı önemi verdin; bu yüzden hiçbir değer öne çıkarılmadı. Gerçek seçimlerde değerler çoğu zaman birbiriyle yarışır: iki iş arasında kalsan hangisinden vazgeçebileceğini düşünmek önceliklerini netleştirebilir.',
+        parent:
+          'Çocuğunuz birçok değere aynı önemi verdi; bu yüzden hiçbir değer öne çıkarılmadı. Gerçek seçimlerde değerler çoğu zaman birbiriyle yarışır: iki iş arasında kalsa hangisinden vazgeçebileceğini onunla konuşmak önceliklerini netleştirebilir.',
+      }),
+    );
+    return notes;
+  }
+  if (p.noneHigh) {
+    notes.push(
+      byAudience(audience, {
+        student:
+          p.top.length > 1
+            ? 'Hiçbir değeri “çok önemli” bulmadın; aşağıda en yüksek çıkan değerlerini görüyorsun.'
+            : 'Hiçbir değeri “çok önemli” bulmadın; aşağıda en yüksek çıkan değerini görüyorsun.',
+        parent:
+          p.top.length > 1
+            ? 'Çocuğunuz hiçbir değeri “çok önemli” bulmadı; aşağıda en yüksek çıkan değerleri yer alıyor.'
+            : 'Çocuğunuz hiçbir değeri “çok önemli” bulmadı; aşağıda en yüksek çıkan değeri yer alıyor.',
+      }),
+    );
+  }
+  if (p.flat) {
+    notes.push(
+      byAudience(audience, {
+        student:
+          'Değerler arasındaki farklar küçük: birçok şeye benzer önem veriyorsun. Bu yaygındır; ama gerçek seçimlerde değerler çoğu zaman birbiriyle yarışır. İki seçenek arasında kaldığında hangisinden vazgeçebileceğini düşünmek önceliklerini netleştirebilir.',
+        parent:
+          'Değerler arasındaki farklar küçük: çocuğunuz birçok şeye benzer önem veriyor. Bu yaygındır; ama gerçek seçimlerde değerler çoğu zaman birbiriyle yarışır. İki seçenek arasında kalsa hangisinden vazgeçebileceğini onunla konuşmak önceliklerini netleştirebilir.',
+      }),
+    );
+  }
+  return notes;
+}
+
 /** Sıralı ilgi profilinde yorumu etkileyen durumlar. */
 export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
   if (p.kind === 'activities') return activityNotes(p, audience);
+  if (p.kind === 'values') return valueNotes(p, audience);
   if (p.allLow) {
     return [
       byAudience(audience, {
@@ -379,7 +433,19 @@ export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
  */
 const RANKING_TEXT: Record<
   InterestRanking['kind'],
-  { chartTitle: [string, string]; chartNote: string; topLabel: [string, string]; itemsTitle: [string, string]; restNote: string }
+  {
+    chartTitle: [string, string];
+    chartNote: string;
+    topLabel: [string, string];
+    itemsTitle: [string, string];
+    restNote: string;
+    /** Sıralanan şeyin adıyla başlıklar: öne çıkan yokken, en yüksekler (belirgin düzeyde değilken), ötekiler. */
+    all: [string, string];
+    allTitle: string;
+    highestOne: [string, string];
+    highest: [string, string];
+    rest: [string, string];
+  }
 > = {
   interests: {
     chartTitle: ['İlgi alanların', 'İlgi alanları'],
@@ -387,6 +453,11 @@ const RANKING_TEXT: Record<
     topLabel: ['En belirgin ilgi alanın', 'En belirgin ilgi alanı'],
     itemsTitle: ['En belirgin ilgi alanların', 'En belirgin ilgi alanları'],
     restNote: 'Alan örnekleri yol göstermek içindir; bir meslek seçimi önerisi değildir.',
+    all: ['Alanların', 'Alanlar'],
+    allTitle: 'Bütün alanlar',
+    highestOne: ['En yüksek çıkan alanın', 'En yüksek çıkan alan'],
+    highest: ['En yüksek çıkan alanların', 'En yüksek çıkan alanlar'],
+    rest: ['Diğer alanların', 'Diğer alanlar'],
   },
   activities: {
     chartTitle: ['Serbest zaman etkinliklerin', 'Serbest zaman etkinlikleri'],
@@ -395,6 +466,23 @@ const RANKING_TEXT: Record<
     topLabel: ['En sık uğraştığın alan', 'En sık uğraşılan alan'],
     itemsTitle: ['En sık uğraştığın alanlar', 'En sık uğraşılan alanlar'],
     restNote: '',
+    all: ['Alanların', 'Alanlar'],
+    allTitle: 'Bütün alanlar',
+    highestOne: ['En yüksek çıkan alanın', 'En yüksek çıkan alan'],
+    highest: ['En yüksek çıkan alanların', 'En yüksek çıkan alanlar'],
+    rest: ['Diğer alanların', 'Diğer alanlar'],
+  },
+  values: {
+    chartTitle: ['Değerlerin', 'Çocuğunuzun değerleri'],
+    chartNote: 'Değerler en önemliden en az önemliye sıralandı. Puanlar 1 (hiç önemli değil) ile 5 (son derece önemli) arasındadır.',
+    topLabel: ['En önem verdiğin değer', 'En önem verdiği değer'],
+    itemsTitle: ['En önem verdiğin değerler', 'En önem verdiği değerler'],
+    restNote: '',
+    all: ['Değerlerin', 'Değerler'],
+    allTitle: 'Bütün değerler',
+    highestOne: ['En yüksek çıkan değerin', 'En yüksek çıkan değer'],
+    highest: ['En yüksek çıkan değerlerin', 'En yüksek çıkan değerler'],
+    rest: ['Diğer değerlerin', 'Diğer değerler'],
   },
 };
 
@@ -474,7 +562,14 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     const t = RANKING_TEXT[p.kind];
     const pick = ([forYou, forParent]: [string, string]) => (you ? forYou : forParent);
     const top = p.top.map((k) => r.sections.find((s) => s.scaleKey === k)).filter((s): s is NonNullable<typeof s> => !!s);
-    const rest = r.sections.filter((s) => s.value !== null && !p.top.includes(s.scaleKey));
+    // Sona kalan değerler yalnızca kendi maddelerinde anılıyorsa ötekilerin listesinden çıkarılır.
+    const bottom = p.lowerText ? (p.bottom ?? []) : [];
+    const rest = r.sections.filter((s) => s.value !== null && !p.top.includes(s.scaleKey) && !bottom.includes(s.scaleKey));
+    // Değer sıralamasında eşit puanlılar aynı sıra numarasını alır; en yüksek puanı paylaşanlar birlikte anılır.
+    const ranks = p.ranks ?? top.map((_, i) => i + 1);
+    const tiedFirst = top.filter((_, i) => ranks[i] === 1);
+    const tied = (i: number) => ranks.filter((x) => x === ranks[i]).length > 1;
+    const one = p.kind === 'values' && top.length === 1;
     return {
       ...base,
       chartTitle: pick(t.chartTitle),
@@ -494,26 +589,51 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
         })),
       },
       keyFigures: top.length
-        ? [
-            {
-              label: p.noneHigh ? pick(['En yüksek çıkan alanın', 'En yüksek çıkan alan']) : pick(t.topLabel),
-              value: top[0].name,
-              note: top.length > 1 ? `Ardından: ${top.slice(1).map((s) => s.name).join(' · ')}` : undefined,
-            },
-          ]
+        ? tiedFirst.length > 1
+          ? [
+              {
+                label: p.noneHigh ? pick(t.highest) : pick(t.itemsTitle),
+                value: tiedFirst.map((s) => s.name).join(' · '),
+                note: top.length > tiedFirst.length ? `Ardından: ${top.slice(tiedFirst.length).map((s) => s.name).join(' · ')}` : 'eşit puanla',
+              },
+            ]
+          : [
+              {
+                label: p.noneHigh ? pick(t.highestOne) : pick(t.topLabel),
+                value: top[0].name,
+                note: top.length > 1 ? `Ardından: ${top.slice(1).map((s) => s.name).join(' · ')}` : undefined,
+              },
+            ]
         : [],
       // Bütün alanların puanı aynıysa öne çıkan alan yoktur: alanlar düzeyleriyle tek listede gösterilir.
       itemsTitle: !top.length
-        ? pick(['Alanların', 'Alanlar'])
-        : p.noneHigh
-          ? pick(['En yüksek çıkan alanların', 'En yüksek çıkan alanlar'])
-          : pick(t.itemsTitle),
+        ? pick(t.all)
+        : one
+          ? p.noneHigh
+            ? pick(t.highestOne)
+            : pick(t.topLabel)
+          : p.noneHigh
+            ? pick(t.highest)
+            : pick(t.itemsTitle),
       items: [
-        ...top.map((s, i) => ({ title: `${i + 1}. ${s.name}`, badge: s.bandLabel, text: s.text })),
+        ...top.map((s, i) => ({ title: `${ranks[i]}. ${s.name}`, badge: tied(i) ? `${s.bandLabel} · eşit puan` : s.bandLabel, text: s.text })),
+        // Değer sıralaması: ikisi de en önemliler arasında olan, birbirine ters yönde çekebilen değerler.
+        ...(p.tradeoffs ?? []).map((x) => ({ title: x.title, badge: 'Birbiriyle yarışabilir', text: x.text })),
+        ...(bottom.length && p.lowerText
+          ? [
+              {
+                title:
+                  bottom.length > 1
+                    ? pick(['Daha az önem verdiğin değerler', 'Daha az önem verdiği değerler'])
+                    : pick(['Daha az önem verdiğin değer', 'Daha az önem verdiği değer']),
+                text: p.lowerText,
+              },
+            ]
+          : []),
         ...(rest.length
           ? [
               {
-                title: top.length ? pick(['Diğer alanların', 'Diğer alanlar']) : 'Bütün alanlar',
+                title: top.length ? pick(t.rest) : t.allTitle,
                 // Alan örnekleri öne çıkan alanların metinlerindedir; öne çıkan alan yoksa not da yazılmaz.
                 text: [`${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}.`, top.length ? t.restNote : '']
                   .filter(Boolean)
@@ -521,6 +641,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
               },
             ]
           : []),
+        ...(p.note ? [p.note] : []),
       ],
       cautions: [...base.cautions, ...rankingNotes(p, r.audience)],
     };

@@ -1,6 +1,6 @@
 import { RIASEC_ORDER, RIASEC_TYPES, occupationsFor, type Occupation, type RiasecKey } from '@/content/careers/riasec';
 import { REPORT_TEMPLATES } from '@/content/reports';
-import type { BandText, InsightTemplate, LevelGroup, MotivationTemplate, PairText } from '@/content/reports/types';
+import type { BandText, InsightTemplate, LevelGroup, MotivationTemplate, PairText, ValuesTemplate } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import type {
@@ -304,8 +304,8 @@ export interface InterestRanking {
    * Neyin sıralandığı: "interests" işlerden ve etkinliklerden ne kadar hoşlanıldığı (meslek ilgileri), "activities"
    * serbest zaman etkinliklerinin son bir yılda ne sıklıkla yapıldığı. Rapordaki başlıklar ve notlar buna göre yazılır.
    */
-  kind: 'interests' | 'activities';
-  /** Puanı hesaplanan alanların anahtarları, en yüksekten en düşüğe. */
+  kind: 'interests' | 'activities' | 'values';
+  /** Puanı hesaplanan alanların anahtarları, en yüksekten en düşüğe (eşit puanlılar testteki sırayla). */
   order: string[];
   /**
    * Belirgin (yüksek düzeydeki) en çok üç alan; hiçbiri yoksa en yüksek iki alan (etkinliklerde yalnızca orta düzeydekiler:
@@ -319,6 +319,22 @@ export interface InterestRanking {
   flat: boolean;
   /** Bütün alanlar düşük düzeyde. */
   allLow: boolean;
+  /**
+   * Değer sıralamasında (kind: values) daha az önem verilen değerler: en düşük iki puandaki değerler (eşitlikte en çok
+   * üç), en önemli değerin puanından en az 1 puan aşağıdaysa; en önemli değerlerden biri değilse.
+   */
+  bottom?: string[];
+  /** Değer sıralamasında ikisi de en önemli değerler arasında olan, birbirine ters yönde çekebilen çiftler. */
+  tradeoffs?: { a: string; b: string; title: string; text: string }[];
+  /**
+   * Değer sıralamasında en önemli değerlerin sıra numaraları (eşit puanlılar aynı numarayı alır: 1, 1, 3): eşit puan
+   * testteki sıraya göre bozulmaz.
+   */
+  ranks?: number[];
+  /** Değer sıralamasında daha az önem verilen değerlerin açıklaması (değer adları yazılmış). */
+  lowerText?: string;
+  /** Değer sıralamasının sonundaki not: sonucun nasıl kullanılabileceği. */
+  note?: { title: string; text: string };
 }
 
 export interface InterestProfile {
@@ -501,7 +517,9 @@ export function buildReport(input: {
   const interests =
     def.engine === 'likert' && def.profile === 'riasec' ? buildInterestProfile(sections, audience, input.grade) : undefined;
   const ranking =
-    def.engine === 'likert' && (def.profile === 'interests' || def.profile === 'activities') ? rankInterests(sections, def.profile) : undefined;
+    def.engine === 'likert' && (def.profile === 'interests' || def.profile === 'activities' || def.profile === 'values')
+      ? rankInterests(sections, def.profile, template?.values, audience)
+      : undefined;
   const facetGroups =
     def.engine === 'likert' && def.profile === 'facets'
       ? def.scales
@@ -699,13 +717,19 @@ function buildMotivation(
  * Sıralı ilgi ya da etkinlik profili. Bölümler yerinde sıralanır: puanı olanlar en yüksekten en düşüğe, hesaplanamayanlar
  * sonda. Aynı puandaki alanlar testteki sıralarını korur. Düzeyler şablondaki düzeylerdir (ör. düşük, orta, yüksek).
  */
-function rankInterests(sections: ReportSection[], kind: InterestRanking['kind']): InterestRanking {
+function rankInterests(
+  sections: ReportSection[],
+  kind: InterestRanking['kind'],
+  valuesTemplate?: ValuesTemplate,
+  audience: Audience = 'student',
+): InterestRanking {
   sections.sort((a, b) => (b.value ?? Number.NEGATIVE_INFINITY) - (a.value ?? Number.NEGATIVE_INFINITY));
   const scored = sections.filter((s) => s.value !== null);
   const high = scored.filter((s) => s.band === 'high' || s.band === 'very_high');
   const noneHigh = high.length === 0;
   const values = scored.map((s) => s.value as number);
   const spread = values.length > 1 ? Math.max(...values) - Math.min(...values) : 0;
+  if (kind === 'values') return rankValues(scored, values, spread, noneHigh, valuesTemplate, audience);
   return {
     kind,
     order: scored.map((s) => s.scaleKey),
@@ -718,6 +742,64 @@ function rankInterests(sections: ReportSection[], kind: InterestRanking['kind'])
     noneHigh,
     flat: values.length > 1 && spread < 0.8,
     allLow: scored.length > 0 && scored.every((s) => s.band === 'low' || s.band === 'very_low'),
+  };
+}
+
+/**
+ * Değer sıralaması. En önemli değerler: puanı üçüncü en yüksek puana eşit ya da ondan yüksek olanlar; eşitlik yüzünden
+ * dörtten çok olursa ikinci en yüksek puana kadar olanlar, onlar da dörtten çoksa yalnızca en yüksek puandakiler; onlar
+ * da dörtten çoksa hiçbiri (sıralama yapılamaz). Düşük düzeydeki ("az önemli") değer en önemliler arasına girmez. Bütün
+ * puanlar aynıysa öne çıkan değer yoktur. Eşit puanlı değerler aynı sıra numarasını alır.
+ */
+function rankValues(
+  scored: ReportSection[],
+  values: number[],
+  spread: number,
+  noneHigh: boolean,
+  t: ValuesTemplate | undefined,
+  audience: Audience,
+): InterestRanking {
+  const notLow = scored.filter((s) => s.band !== 'low' && s.band !== 'very_low');
+  let top: ReportSection[] = [];
+  if (values.length > 1 && spread > 0) {
+    for (const cut of [values[Math.min(2, values.length - 1)], values[1], values[0]]) {
+      top = notLow.filter((s) => (s.value as number) >= cut);
+      if (top.length <= 4) break;
+    }
+    if (top.length > 4) top = [];
+  }
+  const topKeys = top.map((s) => s.scaleKey);
+  const rest = scored.filter((s) => !topKeys.includes(s.scaleKey));
+  let bottom: ReportSection[] = [];
+  if (top.length && values.length > 1) {
+    const second = values[values.length - 2];
+    bottom = rest.filter((s) => (s.value as number) <= second);
+    if (bottom.length > 3) bottom = rest.filter((s) => s.value === values[values.length - 1]);
+    if (bottom.length > 3) bottom = [];
+    bottom = bottom.filter((s) => (s.value as number) <= values[0] - 1);
+  }
+  const pickText = (x: PairText & { adult?: string }) => (audience === 'parent' ? x.parent : audience === 'adult' ? (x.adult ?? x.student) : x.student);
+  const tradeoffs = (t?.tradeoffs ?? [])
+    .filter((x) => topKeys.includes(x.a) && topKeys.includes(x.b))
+    .map((x) => ({ a: x.a, b: x.b, title: x.title, text: pickText(x.text) }));
+  // Sona kalan değerler düzeyleriyle anılır: "çok önemli" bir değer de sıralamanın sonunda olabilir.
+  const names = bottom.map((s) => `“${s.name}” (${s.bandLabel.toLocaleLowerCase('tr-TR')})`);
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} ve ${names.at(-1)}` : (names[0] ?? '');
+  const ranks = top.map((s) => 1 + top.filter((x) => (x.value as number) > (s.value as number)).length);
+  return {
+    kind: 'values',
+    order: scored.map((s) => s.scaleKey),
+    top: topKeys,
+    noneHigh,
+    flat: values.length > 1 && spread < 0.8,
+    allLow: scored.length > 0 && scored.every((s) => s.band === 'low' || s.band === 'very_low'),
+    bottom: bottom.map((s) => s.scaleKey),
+    tradeoffs,
+    ranks,
+    ...(t && bottom.length
+      ? { lowerText: pickText(t.lower).replace('{değerler}', list).replace('{o}', bottom.length > 1 ? 'o değerlerin' : 'o değerin') }
+      : {}),
+    ...(t ? { note: { title: audience === 'parent' ? t.note.title.parent : t.note.title.you, text: pickText(t.note.text) } } : {}),
   };
 }
 

@@ -285,6 +285,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                 <li>En sık uğraşılan alanların açıklaması ve öteki alanların düzeyi</li>
               </>
             )}
+            {def.engine === 'likert' && def.profile === 'values' && (
+              <>
+                <li>{`${NUMBER_WORDS[scales.length] ?? scales.length} çalışma değerinin en önemliden en az önemliye sıralanması`}</li>
+                <li>En önem verilen değerlerin açıklaması, birbiriyle yarışabilecek değerler ve daha az önem verilen değerler</li>
+              </>
+            )}
             {def.engine === 'likert' && def.profile === 'facets' && (
               <>
                 <li>

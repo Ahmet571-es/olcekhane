@@ -14,6 +14,7 @@ import { schoolWords } from './helpers/school';
 const SLUGS = Object.keys(INTEREST_ROADMAPS);
 const HOBI = 'hobi-ve-serbest-zaman-ilgileri';
 const HOLLAND = 'mesleki-ilgi-profili';
+const DEGER = 'calisma-degerleri';
 
 /** Her maddeye, maddenin alanına göre en yüksek, orta ya da en düşük cevap. */
 function bodyFor(slug: string, grade: number, level: (scale: string) => 'hi' | 'mid' | 'lo'): AnswersBody {
@@ -38,8 +39,8 @@ const scaleKeys = (slug: string) => def<LikertInstrument>(slug).scales.map((s) =
 const gradeFor = (slug: string) => Math.max(def<LikertInstrument>(slug).minGrade, 9);
 
 describe('ilgi testlerinin yol haritası: şablonlar', () => {
-  it('üç ilgi testinin yol haritası var ve yayında', () => {
-    expect(SLUGS.sort()).toEqual([HOBI, 'meslek-ilgi-alanlari', HOLLAND].sort());
+  it('üç ilgi testinin ve değer testinin yol haritası var ve yayında', () => {
+    expect(SLUGS.sort()).toEqual([HOBI, 'meslek-ilgi-alanlari', HOLLAND, DEGER].sort());
     for (const slug of SLUGS) expect(hasPublicRoadmap(slug), slug).toBe(true);
   });
 
@@ -184,7 +185,7 @@ describe('ilgi testlerinin yol haritası: rapora eklenmesi', () => {
         expect(rm.study.items, slug).toEqual([]);
         expect(rm.settings, slug).toBeNull();
         expect(rm.approach, slug).toBeNull();
-        expect(rm.standoutNote, slug).toContain('hiçbir alan öne çıkarılmadı');
+        expect(rm.standoutNote, slug).toMatch(/hiçbir (alan|değer) öne çıkarılmadı/);
       }
     }
   });

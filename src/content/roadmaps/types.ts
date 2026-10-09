@@ -118,6 +118,11 @@ export interface InterestRoadmapTemplate {
   studyIntro: AudienceText;
   /** Öne çıkan alan yoksa (ilgiler henüz ayrışmamışsa) "Kısaca" bölümündeki cümle. */
   openNote: AudienceText;
+  /**
+   * Bütün alanlar düşük düzeydeyken `openNote`un yerine geçen not; verilmezse etkinliklerden hoşlanma (ya da serbest
+   * zamanda sıklık) cümlesi ve `openNote` kullanılır. Değer testinde değerlerin hepsinin az önemli bulunduğu söylenir.
+   */
+  lowNote?: AudienceText;
   /** Eğitim yolları bölümünün sonundaki uyarı (yolu olan şablonda). */
   pathsNote?: AudienceText;
   firstWeek: AudienceText;

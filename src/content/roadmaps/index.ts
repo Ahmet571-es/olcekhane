@@ -5,6 +5,7 @@ import { besFaktorRoadmap } from './bes-faktor';
 import { calismaAliskanliklariRoadmap } from './calisma-aliskanliklari';
 import { duygusalZekaBilesenleriRoadmap } from './duygusal-zeka-bilesenleri';
 import { TASK_ROADMAPS } from './gorevler';
+import { calismaDegerleriRoadmap } from './calisma-degerleri';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
 import { kisilerarasiTarzRoadmap } from './kisilerarasi-tarz';
 import { matematikRoadmap } from './matematik';
@@ -55,6 +56,7 @@ export const INTEREST_ROADMAPS: Record<string, InterestRoadmapTemplate> = {
   'mesleki-ilgi-profili': meslekiIlgiProfiliRoadmap,
   'meslek-ilgi-alanlari': meslekIlgiAlanlariRoadmap,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriRoadmap,
+  'calisma-degerleri': calismaDegerleriRoadmap,
 };
 
 /** Konu tarama testlerinin yol haritaları: konu alanlarına göre çalışma planı (lib/reports/academic-roadmap.ts). */

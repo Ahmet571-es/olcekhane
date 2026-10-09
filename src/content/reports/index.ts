@@ -4,6 +4,7 @@ import { ayrintiliKisilikReport } from './ayrintili-kisilik';
 import { besFaktorReport } from './bes-faktor';
 import { calismaAliskanliklariReport } from './calisma-aliskanliklari';
 import { duygusalZekaBilesenleriReport } from './duygusal-zeka-bilesenleri';
+import { calismaDegerleriReport } from './calisma-degerleri';
 import { hobiIlgileriReport } from './hobi-ilgileri';
 import { kisilerarasiTarzReport } from './kisilerarasi-tarz';
 import { meslekIlgiAlanlariReport } from './meslek-ilgi-alanlari';
@@ -35,6 +36,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiReport,
   zihniyet: zihniyetReport,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriReport,
+  'calisma-degerleri': calismaDegerleriReport,
   'dikkat-ve-bellek': { version: 'dikkat-bellek-rapor-1', bandLabels: {}, scales: {} },
   'surekli-dikkat': { version: 'surekli-dikkat-rapor-1', bandLabels: {}, scales: {} },
   // Görev raporlarının metinleri kod içindedir (lib/reports/build.ts); burada yalnızca sürümleri tutulur.

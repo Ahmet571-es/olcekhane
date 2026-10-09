@@ -246,8 +246,17 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    bir raporda bir kez geçer (test denetler). Yol haritası: 2. hafta "Hatadan öğrenmek", 3. hafta en düşük alan. Kaynaklar
    Blackwell ve ark. (2007), Burnette ve ark. (2013), Haimovitz ve Dweck (2016), Sisk ve ark. (2018), Burgoyne ve ark.
    (2020), Yeager ve ark. (2019), Dunlosky ve ark. (2013).
-14. Sıradaki (site sahibinin 2026-10-09 isteği, maddeler sıfırdan): Çalışma Değerleri. Sonra site sahibine sorulacak:
-   Akıl Yürütme mı, 4. dalga (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
+14. **Çalışma Değerleri: yayında (2026-10-09, pilot; 7. sınıftan yetişkine).** Sıfırdan yazılmış 32 ifade (Super'in
+   envanteri, O*NET ve Minnesota ifadeleri ve Monitoring the Future ifadeleriyle bağımsız ajan karşılaştırdı; yakın bulunan
+   dördü yeniden yazıldı), sekiz değer: İlgi ve öğrenme, Kazanç, Başkalarına yardım, Bağımsızlık, Güvence, Birlikte
+   çalışma, Saygınlık ve ilerleme, Yaşam dengesi; önem derecesi 1–5, ters ifade yok. Yeni ortak özellik: `profile: 'values'`
+   (sıralı değer profili; kişinin kendi içinde sıralama: en önemliler üçüncü en yüksek puana kadar, eşitlikte en çok dört
+   ve aynı sıra numarasıyla; birbirine ters yönde çekebilen üç değer çifti Schwartz 2012'ye göre "Birbiriyle yarışabilir";
+   sona kalan değerler düzeyleriyle; kapanış notu), ifadelerin adı "ifade", ilgi yol haritası şablonunda `lowNote`. Yol
+   haritası ilgi testlerininkiyle aynı yapıda (en önemli değerlere göre bir işi tanırken sorulacak sorular). Kaynaklar
+   Busque-Carrier ve ark. (2022), Kristof-Brown ve ark. (2005), Lechner ve ark. (2017), Schwartz (2012), Twenge ve ark. (2010).
+15. Sıradaki: 3. dalganın çalışma ve motivasyon testleri tamamlandı. Site sahibine sorulacak: Akıl Yürütme mı, 4. dalga
+   (Türkçe ve Fen Konu Tarama, Hızlı Kişilik Testi) mı.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -433,6 +442,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Ders Çalışma Motivasyonu | ders-calisma-motivasyonu | Yayında (pilot; 5. sınıftan mezuna) |
 | Erteleme ve Zaman Yönetimi | erteleme-ve-zaman-yonetimi | Yayında (pilot; 6. sınıftan yetişkine) |
 | Zihniyet: Zekâ ve Öğrenme İnançları | zihniyet | Yayında (pilot; 5. sınıftan yetişkine) |
+| Çalışma Değerleri | calisma-degerleri | Yayında (pilot; 7. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -544,6 +554,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (14): Çalışma Değerleri yayında (7. sınıftan yetişkine): 32 özgün ifade, sekiz değer; değerler kişinin kendi
+  içinde sıralanır, en önemliler anlatılır, birbiriyle yarışabilecek değerler ve sona kalanlar ayrıca belirtilir; öğrenci,
+  veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak)
+  çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
 - 2026-10-09 (13): Beyin Akademisi Anatomi 1 "Sinir sistemine ilk bakış" yeni ölçüyle baştan yazıldı: 13 bölüm,
   35 üç boyutlu sahne (yeni: omurga, bel bölgesi, sempatik gövde, kafa sinirlerinin çıkış kapıları), 9 hareketli çizim,
   19 vaka, 82 soru, 234 kaynak (açık tam metinler, Gray 1918, OpenStax, UTHealth, TA2); beş bağımsız denetçinin
@@ -577,6 +591,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (5): Kural Değiştirme yayında: renk ve şekil kuralı arasında geçiş, 98 deneme, dört bölüm; öğrenci, veli ve
   yetişkin raporu (doğruluk, kural değiştirmenin ve iki kuralı akılda tutmanın bedeli, hataların türü), yol haritası;
   telefonda dokunarak ve masaüstünde ok tuşlarıyla baştan sona yapıldı, rapor ve PDF açıldı.
-- 2026-10-09 (4): Kelime Bilgisi yayında: 24 özgün soru (eş anlam, zıt anlam, cümlede anlam, deyimler), 5 düzey,
-  dört alıştırma; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; anlamlar TDK
-  sözlüğüyle denetlendi; telefonda ve masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı.

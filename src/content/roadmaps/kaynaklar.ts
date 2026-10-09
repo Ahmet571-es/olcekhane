@@ -184,6 +184,18 @@ export const KAYNAK = {
     text: 'Haimovitz, K. ve Dweck, C. S. (2016). Parents’ views of failure predict children’s fixed and growth intelligence mind-sets. Psychological Science, 27(6), 859–869.',
     url: 'https://doi.org/10.1177/0956797616639727',
   },
+  kristofBrown: {
+    text: 'Kristof-Brown, A. L., Zimmerman, R. D. ve Johnson, E. C. (2005). Consequences of individuals’ fit at work: A meta-analysis of person–job, person–organization, person–group, and person–supervisor fit. Personnel Psychology, 58(2), 281–342.',
+    url: 'https://doi.org/10.1111/j.1744-6570.2005.00672.x',
+  },
+  lechner: {
+    text: 'Lechner, C. M., Sortheix, F. M., Göllner, R. ve Salmela-Aro, K. (2017). The development of work values during the transition to adulthood: A two-country study. Journal of Vocational Behavior, 99, 52–65.',
+    url: 'https://doi.org/10.1016/j.jvb.2016.12.004',
+  },
+  schwartz: {
+    text: 'Schwartz, S. H. (2012). An overview of the Schwartz theory of basic values. Online Readings in Psychology and Culture, 2(1).',
+    url: 'https://doi.org/10.9707/2307-0919.1116',
+  },
   sisk: {
     text: 'Sisk, V. F., Burgoyne, A. P., Sun, J., Butler, J. L. ve Macnamara, B. N. (2018). To what extent and under which circumstances are growth mind-sets important to academic achievement? Two meta-analyses. Psychological Science, 29(4), 549–571.',
     url: 'https://doi.org/10.1177/0956797617739704',
