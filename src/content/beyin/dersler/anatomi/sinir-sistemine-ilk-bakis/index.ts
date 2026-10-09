@@ -1,19 +1,25 @@
 import type { Ders } from '../../../types';
-import { haberlesmeAgi } from './bolum-1-haberlesme';
-import { beyninBolumleri } from './bolum-2-bolumler';
-import { yariklarVeLoblar } from './bolum-3-loblar';
-import { griVeBeyazCevher } from './bolum-4-cevher';
-import { yonTerimleri } from './bolum-5-yonler';
-import { kesitDuzlemleri } from './bolum-6-kesitler';
-import { koruyanlarVeBesleyenler } from './bolum-7-koruyanlar';
+import { neYapar } from './bolum-01-ne-yapar';
+import { yonBulma } from './bolum-02-yon-bulma';
+import { sinirDokusu } from './bolum-03-sinir-dokusu';
+import { sayilarlaSinirSistemi } from './bolum-04-sayilarla';
+import { beyninBolumleri } from './bolum-05-beynin-bolumleri';
+import { yariklarVeLoblar } from './bolum-06-loblar';
+import { gelisim } from './bolum-07-gelisim';
+import { omurilikVeOmurga } from './bolum-08-omurilik';
+import { cevreselSinirSistemi } from './bolum-09-cevresel';
+import { otonomVeEnterik } from './bolum-10-otonom';
+import { koruyanlarVeBesleyenler } from './bolum-11-koruyanlar';
+import { hasarinYeri } from './bolum-12-hasarin-yeri';
+import { bugunNasilInceliyoruz } from './bolum-13-bugun';
 import { kaynaklar } from './kaynaklar';
 import { sorular } from './sorular';
 import { sozluk } from './sozluk';
 
 /**
- * Anatomi 1: Sinir sistemine ilk bakış ve anatominin dili. Üç katmanlı ders (Temel, Lisans, Uzman): temel anlatım
- * meraklı herkes içindir; lisans ve uzman katmanları tıp, nörobilim ve psikoloji öğrencisine, asistan hekime, beyin
- * cerrahına ve araştırmacıya seslenir. Bölümler ayrı dosyalardadır.
+ * Anatomi 1: Sinir sistemine ilk bakış (sinir sistemi ünitesinin genel bakışı). Üç düzeyli ders (Temel, Lisans,
+ * Uzman); bilgiler açık erişimli ders kitaplarından (Gray 1918, OpenStax, UTHealth, TA2) ve makalelerin tam
+ * metinlerinden alındı. Bölümler ayrı dosyalardadır.
  */
 export const sinirSistemineIlkBakis: Ders = {
   dal: 'anatomi',
@@ -22,29 +28,60 @@ export const sinirSistemineIlkBakis: Ders = {
   seviye: 'temel',
   baslik: 'Sinir sistemine ilk bakış',
   aciklama:
-    'Üç düzeyli giriş: sinir sisteminin bölümleri, gelişim, loblar, beyaz cevher yolları, yönler, MR ve BT, zarlar, BOS, kafa içi basıncı ve beyin dolaşımı.',
+    'Sinir sisteminin üç düzeyli haritası: bölümler, sinir dokusu, sayılar, loblar, gelişim, omurilik, sinirler, otonom sistem, zarlar, BOS, damarlar, hasarın yeri.',
   giris:
-    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım: sinir sistemi hangi parçalardan oluşur, beyin bu sistemin neresindedir, onu ne korur ve besler, anatomistler bir yapının yerini nasıl tarif eder? Ders üç düzeyde okunur: Temel ile başla; hazır olduğunda Lisans ve Uzman düzeylerinde hasta vakalarına, görüntülemeye ve beyin cerrahisine geç. Bu ders sinir sistemi ünitesinin genel bakışıdır; anatominin dili, omurilik sinirleri ve kol-bacak sinirleri ünitenin sonraki dört dersinde ayrıntılı işlenecek.',
+    'Beynin ayrıntılarına dalmadan önce haritanın tamamına bakalım: sinir sistemi ne yapar ve nasıl bölünür, hangi hücrelerden kurulur, beyin hangi parçalardan oluşur ve nasıl gelişir, omurilik ve sinirler bedene nasıl yayılır, onu ne korur ve besler, bir hasarın yeri belirtilerden nasıl bulunur? Ders üç düzeyde okunur: Temel ile başla; hazır olduğunda Lisans ve Uzman düzeylerinde ders kitaplarının ayrıntısına, çelişen kaynaklara, hasta vakalarına, görüntülemeye ve beyin cerrahisine geç. Bu ders sinir sistemi ünitesinin genel bakışıdır; anatominin dili, omurilik sinirleri ve dermatomlar, kol ve bacak sinirleri ünitenin sonraki dört dersinde ayrıntılı işlenecek.',
   hedefler: [
-    'Merkezî ve çevresel sinir sistemini; somatik ve otonom sistemi ayırt etmek',
-    'Omurilik sinirlerinin sayısını, köklerini ve karma yapısını açıklamak',
-    'Beynin büyük bölümlerini ve gelişimdeki kökenlerini üç boyutlu modelde bulmak',
-    'Büyük yarıkları, olukları ve lobları tanımak',
-    'Gri ve beyaz cevheri, beyaz cevherin üç lif türünü ayırt etmek',
-    'Yön terimlerini ve kesit düzlemlerini doğru kullanmak; MR’da sağı ve solu okumak',
-    'Beyni koruyan ve besleyen yapılara ilk kez bakmak',
-    { metin: 'Otonom çıkışı, gangliyonları, haberci maddeleri ve almaçları sıralamak', duzey: 'lisans' },
-    { metin: 'Dermatomlar, refleks bölümleri ve üst/alt motor nöron bulgularıyla hasarın yerini kestirmek', duzey: 'lisans' },
-    { metin: 'Sinir borusunu, kesecikleri, karıncıkları, alar/bazal plağı ve sinir kabartısı türevlerini ilişkilendirmek', duzey: 'lisans' },
-    { metin: 'Kabuğun katmanlarını, beyaz cevher demetlerini, iç kapsülü ve çaprazlaşmaları açıklamak', duzey: 'lisans' },
-    { metin: 'Zarlar arası aralıkları, BOS dolaşımını, kafa içi kanamaları ve Willis halkasını karşılaştırmak', duzey: 'lisans' },
-    { metin: 'BT ve MR’da dokuları, MR’da merkezî oluğu tanımak', duzey: 'ileri' },
-    { metin: 'Kafa içi basınç–hacim ilişkisini, perfüzyon basıncını ve herniasyonu yorumlamak', duzey: 'ileri' },
-    { metin: 'Stereotaksik koordinatları (AC–PC, Talairach, MNI) ve derin beyin uyarımının hedeflerini tanımak', duzey: 'ileri' },
-    { metin: 'Uyanık kraniyotomi, traktografi ve kallozotomi gibi cerrahi yaklaşımların anatomik temelini anlamak', duzey: 'ileri' },
-    { metin: 'Nöron sayıları, kabuk haritaları ve miyelinleşme üzerine güncel araştırmaları değerlendirmek', duzey: 'ileri' },
+    'Sinir sisteminin üç işini (duyu, bütünleştirme, yanıt) ve yerine, işine ve bilginin yönüne göre bölümlerini açıklamak',
+    'Yön terimlerini ve kesit düzlemlerini kullanmak; beyinde ve omurilikte “dorsal” ile “rostral”ın farkını söylemek',
+    'Nöronu, glia hücrelerini, miyelini ve sinirin kılıflarını tanımak; “100 milyar nöron, on kat glia” efsanesini düzeltmek',
+    'Beynin büyük bölümlerini, loblarını ve karıncıklarını üç boyutlu modelde bulmak',
+    'Sinir borusundan beş keseciğe uzanan gelişimi ve nöral tüp defektlerini folik asitle birlikte açıklamak',
+    'Omuriliğin omurgaya göre yerini, 31 çift omurilik sinirini, 12 çift kafa sinirini ve otonom sistemin iki kolunu tanımak',
+    'Beyni koruyan zarları, BOS’u, kan-beyin engelini ve beyni besleyen atardamarları tanımak',
+    { metin: 'MSS–ÇSS geçiş bölgesini, işlevsel lif bileşenlerini ve enterik sistemin sınırlarını açıklamak', duzey: 'lisans' },
+    {
+      metin: 'Beyin ağırlığı, kabuk yüzeyi ve kalınlığı, sinaps, miyelinli lif ve enerji sayılarını kaynağı ve tanımıyla okumak',
+      duzey: 'lisans',
+    },
+    {
+      metin: 'Konusun yerini, bel ponksiyonunun hizasını, sinir ağlarını ve dermatom haritalarının sınırlarını değerlendirmek',
+      duzey: 'lisans',
+    },
+    { metin: 'Otonom çıkışı, gangliyonları, haberci maddeleri ve Horner sendromunun anatomisini sıralamak', duzey: 'lisans' },
+    { metin: 'Üst ve alt motor nöron bulgularıyla ve lokalizasyon merdiveniyle hasarın yerini kestirmek', duzey: 'lisans' },
+    { metin: 'Normal BOS ve kafa içi basıncı değerlerini, Willis halkası varyantlarını ve iskemi eşiklerini yorumlamak', duzey: 'lisans' },
+    { metin: 'Gray 1918’in eskimiş bilgilerini ve kaynaklar arası çelişkileri güncel kanıtla karşılaştırmak', duzey: 'ileri' },
+    {
+      metin: 'Sert zarın katmanlarını, “subdural aralık” tartışmasını, glimfatik hipotezi ve SLYM tartışmasını değerlendirmek',
+      duzey: 'ileri',
+    },
+    {
+      metin:
+        'Stereotaksik koordinatları (AC–PC, Talairach, MNI), görüntü dosyalarındaki eksen kurallarını ve geçiş bölgesinin cerrahi anlamını tanımak',
+      duzey: 'ileri',
+    },
+    {
+      metin:
+        'Sinir sistemi hastalıklarının yükünü, beyin ölümü ölçütlerini ve güncel haritalama çalışmalarını (BICCN, HCP, konnektomlar) değerlendirmek',
+      duzey: 'ileri',
+    },
   ],
-  bolumler: [haberlesmeAgi, beyninBolumleri, yariklarVeLoblar, griVeBeyazCevher, yonTerimleri, kesitDuzlemleri, koruyanlarVeBesleyenler],
+  bolumler: [
+    neYapar,
+    yonBulma,
+    sinirDokusu,
+    sayilarlaSinirSistemi,
+    beyninBolumleri,
+    yariklarVeLoblar,
+    gelisim,
+    omurilikVeOmurga,
+    cevreselSinirSistemi,
+    otonomVeEnterik,
+    koruyanlarVeBesleyenler,
+    hasarinYeri,
+    bugunNasilInceliyoruz,
+  ],
   sozluk,
   sorular,
   kaynaklar,
@@ -55,8 +92,12 @@ export const sinirSistemineIlkBakis: Ders = {
     { no: 156, ad: 'İntrakraniyal kanamalar', duzey: 'A' },
     { no: 164, ad: 'Kafa içi basınç artması sendromu', duzey: 'A' },
     { no: 166, ad: 'Kafa travması', duzey: 'A' },
+    { no: 216, ad: 'Merkezi sinir sistemi enfeksiyonları', duzey: 'A' },
     { no: 224, ad: 'Multipl skleroz', duzey: 'ÖnT' },
+    { no: 225, ad: 'Myastenia gravis ve kolinerjik kriz', duzey: 'A' },
     { no: 227, ad: 'Nöral tüp defektleri', duzey: 'T-K' },
+    { no: 246, ad: 'Parkinson hastalığı', duzey: 'ÖnT' },
+    { no: 252, ad: 'Periferik nöropati', duzey: 'ÖnT' },
     { no: 291, ad: 'Spinal kord bası sendromu', duzey: 'ÖnT' },
   ],
   yayin: '2026-10-08',

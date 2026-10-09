@@ -23,6 +23,7 @@ export const BOLGE_RENGI: Record<Bolge, string> = {
   karincik: '#4f9de0',
   damar: '#d9473c',
   kemik: '#ece3cf',
+  disk: '#8fc1dc',
   sinir: '#f2dc8c',
 };
 
@@ -69,6 +70,7 @@ const DOGAL: Partial<Record<Bolge, string>> = {
   karincik: '#5aa6e6',
   damar: '#cc3b33',
   kemik: '#efe7d5',
+  disk: '#9cc7dc',
   sinir: '#f0dfa2',
 };
 

@@ -6,9 +6,11 @@ import { useGorunur, useHareketAzaltilmis, useKare } from './ortak';
 /**
  * Monro–Kellie ilkesi ve basınç–hacim eğrisi. Kafatası sabit hacimli bir kutudur: beyin, kan ve beyin-omurilik sıvısı
  * (BOS). Kutuya bir kitle (kanama, tümör, ödem) eklendikçe önce BOS ve toplardamar kanı dışarı itilerek denge korunur;
- * bu tampon tükenince kafa içi basıncı (KİB) hızla, üstel bir eğriyle yükselir. Eğri şematiktir: eşikler kaynaklarda
- * verilen yetişkin değerleridir (normal 7–15 mmHg; tedaviye başlama eşiği 22 mmHg; perfüzyon basıncı hedefi 60–70).
- * Kaynak: Bothwell ve ark. (2019); Canac ve ark. (2020); Schizodimos ve ark. (2020); Wilson (2016).
+ * bu tampon tükenince kafa içi basıncı (KİB) hızla, üstel bir eğriyle yükselir. Eğri şematiktir. Bant, sırtüstü başvuru
+ * aralığıdır (0,9–16,3 mmHg): sırtüstü yatarken kafa içinden ölçülen basıncın, KİB bakımından sağlıklı sayılan
+ * ("pseudo-healthy") her yaştan hastadaki %90 başvuru aralığı; 6 çalışma, 62 kişi; derleme bunu klinikte kullanılabilir
+ * bir aralık saymaz (Norager ve ark., 2021). Ağır kafa travmasında hedef KİB < 22 mmHg, önerilen perfüzyon basıncı
+ * 60–70 mmHg (Schizodimos ve ark., 2020); perfüzyon basıncı = ortalama arter basıncı − KİB (Wilson, 2016).
  */
 
 const OAB = 90; // örnek ortalama arter basıncı (mmHg)
@@ -35,7 +37,7 @@ function evre(v: number): { ad: string; metin: string; renk: string } {
   return {
     ad: 'Dekompansasyon',
     metin:
-      'Basınç hızla yükselir ve beyin perfüzyon basıncı düşer. Beyin dokusu bir bölmeden ötekine itilebilir (herniasyon). Geç ve kötü bir belirti Cushing üçlüsüdür: çok yüksek kan basıncı, yavaş nabız, düzensiz solunum.',
+      'Basınç hızla yükselir ve beyin perfüzyon basıncı düşer. Yükselen basıncın ölümcül olabilen bir sonucu, beyin dokusunun bir bölmeden ötekine itilmesidir (herniasyon).',
     renk: '#d9473c',
   };
 }
@@ -151,17 +153,13 @@ export function MonroKellie() {
         </svg>
         <svg viewBox="0 0 340 215" className="w-full" role="img" aria-label="Basınç–hacim eğrisi">
           {/* Bantlar */}
-          <rect x={X0} y={ey(15)} width={X1 - X0} height={ey(7) - ey(15)} fill="#25a993" opacity="0.14" />
-          <text x={X1 - 2} y={ey(11) + 3} textAnchor="end" fontSize="8.5" fill="#1b7a6a">
-            normal 7–15
+          <rect x={X0} y={ey(16.3)} width={X1 - X0} height={ey(0.9) - ey(16.3)} fill="#25a993" opacity="0.14" />
+          <text x={X1 - 2} y={ey(4) + 3} textAnchor="end" fontSize="8.5" fill="#1b7a6a">
+            sırtüstü başvuru aralığı 0,9–16,3
           </text>
           <line x1={X0} x2={X1} y1={ey(22)} y2={ey(22)} stroke="#e0a32e" strokeDasharray="5 4" />
           <text x={X0 + 4} y={ey(22) - 4} fontSize="8.5" fill="#9a6a10">
-            22: tedavi eşiği (kafa travması)
-          </text>
-          <line x1={X0} x2={X1} y1={ey(40)} y2={ey(40)} stroke="#d9473c" strokeDasharray="2 4" />
-          <text x={X0 + 4} y={ey(40) - 4} fontSize="8.5" fill="#a5281d">
-            40: yaşamı tehdit eder
+            22: ağır kafa travmasında hedefin üst sınırı
           </text>
           {/* Eksenler */}
           <line x1={X0} y1={Y0} x2={X1} y2={Y0} stroke="var(--ink-3)" />
@@ -201,8 +199,10 @@ export function MonroKellie() {
       </div>
       <p className="text-[0.98rem]">{e.metin}</p>
       <p className="t-meta">
-        Eğri şematiktir; gerçek eğri kişiden kişiye değişir. Örnekte ortalama arter basıncı {OAB} mmHg alındı. Ağır kafa
-        travması geçiren yetişkinde perfüzyon basıncı için önerilen hedef aralık 60–70 mmHg’dir.
+        Eğri şematiktir; gerçek eğri kişiden kişiye değişir. Yeşil bant sırtüstü başvuru aralığıdır: sırtüstü yatarken kafa içinden ölçülen
+        basıncın, kafa içi basıncı bakımından sağlıklı sayılan her yaştan hastada bulunan aralığı (6 çalışma, 62 kişi). Basınç duruşa
+        bağlıdır: ayakta başvuru aralığı −5,9 ile 8,3 mmHg’dir. Örnekte ortalama arter basıncı {OAB}
+        mmHg alındı. Ağır kafa travmasında kılavuzun önerdiği perfüzyon basıncı aralığı 60–70 mmHg’dir.
       </p>
     </div>
   );

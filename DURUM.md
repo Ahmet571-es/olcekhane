@@ -345,9 +345,16 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   ve Uzman bölümleri mavi ve mor kenar çizgisiyle ayrılır; her konunun sonunda "devamı var" kutusu; okurken altta
   düzey şeridi; sahnelerde ilk dokunuşa kadar "Parmağınla döndür" ipucu. Uzmanlara gösterilecek doğrudan bağlantı:
   https://olcekhane.com/beyin-akademisi/anatomi/sinir-sistemine-ilk-bakis?duzey=uzman
-- Hazır: Anatomi 1 "Sinir sistemine ilk bakış ve anatominin dili" (sürüm 3: 7 bölüm; 17 sahne, 9 hareketli çizim
-  (yeni: otonom çıkış düzeyleri, kafa içi kanamalar, Monro–Kellie), 5 vaka, 36 soru, 130 terim, 157 kaynak; okuma
-  süresi temel ~31, lisans ~79, tamamı ~98 dk; UÇEP: 127, 138, 154, 156, 164, 166, 224, 227, 291).
+- Hazır: Anatomi 1 "Sinir sistemine ilk bakış" (sürüm 4, 2026-10-09: sinir sistemi ünitesinin genel bakışı, yeni ölçüyle
+  baştan yazıldı; 13 bölüm: ne yapar ve nasıl bölünür, yön bulmak, sinir dokusu, sayılarla, beynin bölümleri, loblar,
+  gelişim, omurilik ve omurga, çevresel sinir sistemi, otonom ve enterik sistem, koruyanlar ve besleyenler, hasar nerede,
+  bugün nasıl inceliyoruz; 35 sahne, 9 hareketli çizim, 19 vaka, 44 tablo, 82 soru, 152 terim, 234 kaynak; okuma süresi
+  temel ~98, lisans ~252, tamamı ~320 dk; UÇEP: 127, 138, 154, 156, 164, 166, 216, 224, 225, 227, 246, 252, 291).
+  Dört araştırmayla 1472 doğrulanmış not satırı (Gray 1918, OpenStax, UTHealth, TA2, açık tam metinler); beş bağımsız
+  denetçi ~100 bulgu bildirdi, hepsi kaynağa bakılarak düzeltildi. Kanama, Monro–Kellie ve otonom çizimlerinin metinleri
+  kaynaklara göre düzeltildi (dayanaksız "%75 vagus", "40 mmHg", Cushing ve "normal 7–15" çıkarıldı). Modelde yeni
+  "omurga" paketi: C3–L5 omurları, sağrı kemiği ve omurlar arası diskler (sürüm 75b11dae6b); modelde omurilik ve
+  sinirler yoktur.
 - Hazır: Anatomi 2 "Kafatası: beynin kemik kalesi" (2026-10-09; 7 bölüm: genel bakış, kubbe ve dikişler, kafa
   derisi ve kemiğin katmanları, kafatası tabanı ve delikler, yüz-sinüsler-atlas, bebeklikten yaşlılığa ve
   kraniosinostoz, kırıklar-görüntüleme-kafatası cerrahisi; 7 sahne, 6 hareketli çizim, 5 vaka, 36 soru, 100 terim,
@@ -373,9 +380,12 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   genel bakış (yeni ölçüyle baştan yazılacak) ve dört ders: (1) anatominin dili, (2) omurilik sinirleri ve
   dermatomlar, (3) boyun ve kol sinir ağları, (4) bel-sakral ağ ve bacak sinirleri. Kafatası dersleri programda 6–12.
   sıraya kaydı.
-- **Sıradaki ders:** "Sinir sistemine ilk bakış" yeni ölçüyle baştan; ardından sinir sistemi ünitesinin dört dersi;
-  sonra Kafatası 2 "Beş yönden kafatası ve iç taban"; kafatası ünitesi bitince Anatomi "Beyin zarları". Site sahibi
-  başka bir ders isterse o yapılır.
+- **Sıradaki ders:** Sinir sistemi 1 "Anatominin dili" (yönler, eksenler, düzlemler, MR/BT'de yön); ardından ünitenin
+  öteki üç dersi (omurilik sinirleri ve dermatomlar, boyun ve kol ağları, bel-sakral ağ ve bacak sinirleri); sonra
+  Kafatası 2 "Beş yönden kafatası ve iç taban"; kafatası ünitesi bitince Anatomi "Beyin zarları". Denetçilerin önerdiği
+  yeni 2B çizimler (nöron biçimleri, glia, sinir kesiti, geçiş bölgesi, nörülasyon ve kesecikler, lokalizasyon
+  merdiveni, sert zar katmanları ve sinüsler, BOS yolu, Willis varyantları) ilgili ünite derslerinde yapılacak. Site
+  sahibi başka bir ders isterse o yapılır.
 - **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
   eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
   cerrahi kutuları sürer.
@@ -534,6 +544,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-09 (13): Beyin Akademisi Anatomi 1 "Sinir sistemine ilk bakış" yeni ölçüyle baştan yazıldı: 13 bölüm,
+  35 üç boyutlu sahne (yeni: omurga, bel bölgesi, sempatik gövde, kafa sinirlerinin çıkış kapıları), 9 hareketli çizim,
+  19 vaka, 82 soru, 234 kaynak (açık tam metinler, Gray 1918, OpenStax, UTHealth, TA2); beş bağımsız denetçinin
+  bulguları kaynağa bakılarak düzeltildi. Modele omurga eklendi (C3–L5, sağrı kemiği, diskler).
 - 2026-10-09 (12): Zihniyet: Zekâ ve Öğrenme İnançları yayında (5. sınıftan yetişkine): 24 özgün madde, dört alan
   (zekâ, çaba, hata, zorluk); "Birlikte bakınca" inançların örtüşüp örtüşmediğini yorumlar; araştırmaların ne bulduğu
   abartılmadan anlatılır; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde
@@ -566,6 +580,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (4): Kelime Bilgisi yayında: 24 özgün soru (eş anlam, zıt anlam, cümlede anlam, deyimler), 5 düzey,
   dört alıştırma; öğrenci, veli ve yetişkin raporu, soru türlerine göre 3B grafikli yol haritası; anlamlar TDK
   sözlüğüyle denetlendi; telefonda ve masaüstünde baştan sona çözüldü (klavyeyle de), rapor ve PDF açıldı.
-- 2026-10-09 (3): Site sahibi kafatası dersini yeterince derin bulmadı; kalıcı istekleri kaydedildi (açık erişimli tam
-  metinler ve ders kitaplarıyla derinlik; büyük konular üniteye bölünür). Program 106 derse çıktı: kafatası dersi ünitenin
-  genel bakışı oldu, altı ders "Hazırlanıyor" olarak programa eklendi.

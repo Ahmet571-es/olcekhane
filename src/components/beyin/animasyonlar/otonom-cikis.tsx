@@ -6,8 +6,10 @@ import { Secenekler, useGorunur, useHareketAzaltilmis, useKare, yolNoktasi } fro
 /**
  * Otonom sistemin çıkış yolları: solda nöronların gövdelerinin bulunduğu düzeyler (sempatik T1–L2; parasempatik
  * III, VII, IX, X. kafa sinirleri ve S2–S4), sağda iki nöronlu zincir ve her sinapsta salınan haberci ile almaç.
- * Dört durum: sempatik, ter bezi istisnası, böbrek üstü bezi ve parasempatik. Kaynak: OpenStax A&P 2e 15.1–15.2;
- * Wulf ve Tom (2023); Dafny (UTHealth); Pop-Busui (2010).
+ * Dört durum: sempatik, ter bezi istisnası, böbrek üstü bezi ve parasempatik. Kaynak: OpenStax A&P 2e 13.4, 15.1–15.2;
+ * Gray (1918); FIPAT (2019, TA2); Dafny (UTHealth). Sempatik çıkışın alt sınırı kaynağa göre L1–L3 arasında verilir.
+ * Sağrı bölgesindeki preganglionik gövdeler "yan boynuz" değil, TA2'deki adıyla sakral parasempatik çekirdek
+ * (nucleus parasympathicus sacralis) diye anılır: TA2 intermediolateral çekirdeğin olağan uzanımını T1–L1/L2 verir.
  */
 
 type Durum = 'sempatik' | 'ter' | 'bobrek' | 'parasempatik';
@@ -39,7 +41,7 @@ const ZINCIRLER: Record<Durum, Zincir> = {
     hedef: 'organ (ör. kalp)',
     renk: SEMPATIK,
     bilgi:
-      'Gövde omuriliğin T1–L2 bölümlerinin yan boynuzunda. Kısa ve miyelinli preganglionik lif zincir (paravertebral) ya da kolateral (prevertebral) gangliyona gider, asetilkolin (ACh) salar; gangliyon nöronundaki almaç nikotiniktir. Uzun ve miyelinsiz postganglionik lif organda noradrenalin salar; almaç α ya da β adrenerjiktir. Tek bir preganglionik nöron 10–20 hedefe uzanabildiği için sempatik yanıt yaygındır.',
+      'Gövde omuriliğin yaklaşık T1–L2 bölümlerinin yan boynuzunda (alt sınır kaynağa göre L1 ile L3 arasında verilir). Kısa ve miyelinli preganglionik lif zincir (paravertebral) ya da kolateral (prevertebral) gangliyona gider, asetilkolin (ACh) salar; gangliyon nöronundaki almaç nikotiniktir. Uzun ve miyelinsiz postganglionik lif organda noradrenalin salar; almaç α ya da β adrenerjiktir. Tek bir preganglionik nöron 10–20 hedefe uzanabildiği için sempatik yanıt yaygındır.',
   },
   ter: {
     pre: 'M58,92 L118,92',
@@ -51,7 +53,7 @@ const ZINCIRLER: Record<Durum, Zincir> = {
     hedef: 'ter bezi',
     renk: SEMPATIK,
     bilgi:
-      'İstisna: Ter bezlerine (ve iskelet kasındaki bazı damarlara) giden sempatik postganglionik lifler noradrenalin değil asetilkolin salar; ter bezlerindeki almaç muskariniktir. Ter bezlerine parasempatik lif gelmez: terlemeyi yalnızca sempatik kol yönetir.',
+      'İstisna: Ter bezlerine (ve iskelet kasındaki bazı damarlara) giden sempatik postganglionik lifler noradrenalin değil asetilkolin salar; ter bezlerindeki almaç muskariniktir.',
   },
   bobrek: {
     pre: 'M58,92 L300,92',
@@ -75,7 +77,7 @@ const ZINCIRLER: Record<Durum, Zincir> = {
     hedef: 'organ (ör. kalp)',
     renk: PARASEMPATIK,
     bilgi:
-      'Gövdeler beyin sapında (III, VII, IX ve X. kafa sinirleriyle çıkar) ve omuriliğin S2–S4 bölümlerinde. Uzun preganglionik lif organın yanındaki ya da duvarının içindeki (terminal, intramural) gangliyona gider; ACh → nikotinik. Kısa postganglionik lif de ACh salar; organdaki almaç muskariniktir. Vagus siniri (X) parasempatik etkinliğin yaklaşık %75’ini taşır.',
+      'Gövdeler beyin sapı çekirdeklerinde (III, VII, IX ve X. kafa sinirleriyle çıkar) ve omuriliğin S2–S4 bölümlerindeki sakral parasempatik çekirdekte (nucleus parasympathicus sacralis). Uzun preganglionik lif organın yanındaki ya da duvarının içindeki (terminal, intramural) gangliyona gider; ACh → nikotinik. Kısa postganglionik lif de ACh salar; organdaki almaç muskariniktir. Vagus siniri (X) esas olarak göğüs ve üst karın boşluğundaki otonom gangliyonlara uzanır.',
   },
 };
 
@@ -135,7 +137,7 @@ function Duzeyler({ durum }: { durum: Durum }) {
         {sempatikMi ? 'T1–L2' : 'S2–S4'}
       </text>
       <text x="96" y={sempatikMi ? y0 + 8 * h + 6 * h + 11 : y0 + 26 * h + 11} fontSize="8.5" fill="var(--ink-2)">
-        yan boynuz
+        {sempatikMi ? 'yan boynuz' : 'sakral çekirdek'}
       </text>
     </svg>
   );

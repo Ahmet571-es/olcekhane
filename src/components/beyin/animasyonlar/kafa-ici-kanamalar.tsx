@@ -6,7 +6,10 @@ import { Secenekler } from './ortak';
 /**
  * Beyni saran katmanlar ve kafa içindeki üç kanama. Kafatasının yan bölümünden alınmış şematik bir kesit: deri,
  * kemik (iki sütür çizgisiyle), sert zar, örümcek ağı zar, beyin-omurilik sıvısı dolu boşluk, yumuşak zar ve kabuk.
- * Kanama seçilince kan ilgili aralıkta toplanır; biçimi BT'deki görünümünü anımsatır. Kaynaklar dersin sonunda.
+ * Kanama seçilince kan ilgili aralıkta toplanır; biçimi BT'deki görünümünü anımsatır. Kaynaklar: Stalons ve ark. (2022);
+ * Shetty ve ark. (2016); Nouri ve ark. (2021); Griswold ve ark. (2022); NINDS (2026a, beyin anevrizmaları).
+ * Subaraknoid kanamanın nedeni: en sık neden travmadır (Griswold ve ark., 2022); klinik önemi büyük kanamalar daha çok
+ * damar bozukluklarındandır, travma dışı en sık neden sakküler anevrizmadır (Stalons ve ark., 2022).
  */
 
 type Durum = 'katmanlar' | 'epidural' | 'subdural' | 'subaraknoid';
@@ -31,22 +34,22 @@ const BILGI: Record<Durum, { baslik: string; metin: string }> = {
   katmanlar: {
     baslik: 'Dışarıdan içeriye katmanlar',
     metin:
-      'Deri, kafatası kemiği, sert zar (dura mater; kemiğe yapışık dış ve beyne bakan iç tabaka), örümcek ağı zar (araknoid), beyin-omurilik sıvısıyla dolu örümcek ağı zar altı boşluk (subaraknoid aralık; büyük damarlar buradan geçer), kıvrımların içine kadar inen yumuşak zar (pia mater) ve kabuk. Mavi çizgi bir köprü ven: kabuktan sert zardaki toplardamar sinüsüne uzanır. Kırmızı daire orta meningeal arterdir: kafatası kemiğinin hemen altında seyreder, şakak bölgesinde ince şakak kemiği onun üstünü örter.',
+      'Deri, kafatası kemiği, sert zar (dura mater; klasik anlatımda kemiğe yapışık dış ve beyne bakan iç tabaka), örümcek ağı zar (araknoid), beyin-omurilik sıvısıyla dolu örümcek ağı zar altı boşluk (subaraknoid aralık; büyük damarlar buradan geçer), kıvrımların içine kadar inen yumuşak zar (pia mater) ve kabuk. Mavi çizgi bir köprü ven: beyin yüzeyinden sert zara uzanır. Kırmızı daire orta meningeal arterdir: kafatası kemiğinin hemen altında seyreder; şakak bölgesinde şakak kemiği onun üstünü örter.',
   },
   epidural: {
     baslik: 'Epidural kanama (kemik ile sert zar arasında)',
     metin:
-      'Çoğunlukla şakak kemiği kırığında altındaki orta meningeal arter yırtılır. Atardamar basıncıyla toplanan kan sert zarı kemikten ayırır. Sert zar sütürlerde kemiğe sıkı yapıştığı için kan genellikle sütür çizgisini aşamaz: BT’de iki yanı dışbükey, mercek biçimli bir görüntü. Kısa bir bilinç kaybından sonra bir “açık aralık” görülebilir, ardından hızla kötüleşme gelir; her hastada görülmez. Acil cerrahi bir durumdur.',
+      'Çoğunlukla şakak kemiği kırığında, altındaki orta meningeal arter yırtılır; epidural kanamaların %85’ine kafatası kırığı eşlik eder. Atardamar basıncıyla toplanan kan sert zarı kemikten ayırır. Kafatası dikişleri (sütürler) kanın yayılmasını sınırladığı için BT’de iki yanı dışbükey, mercek biçimli bir görüntü oluşur. Kısa bir bilinç kaybından sonra yakınmaların geçtiği ya da azaldığı bir “açık aralık” görülebilir; her hastada görülmez.',
   },
   subdural: {
     baslik: 'Subdural kanama (sert zar ile örümcek ağı zar arasında)',
     metin:
-      'Sert zardan beyne uzanan ince duvarlı köprü venler yırtılır. Kan sert zar ile örümcek ağı zar arasındaki düzlemde yayılır: hilal biçimli. Sütürleri aşabilir ama sert zarın kıvrımlarını (orak, çadır) aşamaz. Kanı sulandıran ilaçlar, uzun süreli alkol kullanımı, tekrarlayan düşmeler ve ileri yaş risk etkenleridir. Akut (ilk 72 saat), yarı akut (3–21 gün) ve kronik (3 haftadan sonra) diye ayrılır.',
+      'Beyin yüzeyinden sert zara geçen ince duvarlı köprü venler kanar; bu venlerin duvarının sert zarın en iç hücre katmanında en ince olduğu düşünülür. Kan bu katmanda açılan yarıkta yayılır: hilal biçimli. Sütürleri aşabilir ama sert zarın kıvrımlarını (orak, çadır) aşamaz. Kanı sulandıran ilaçlar, yaşla beynin küçülmesi ve uzun süreli alkol kullanımı kronik subdural kanama için risk etkenleridir. BT’de kan ilk günlerde parlak, yaklaşık iki haftaya kadar beyinle aynı yoğunlukta, üç haftadan sonra koyu görünür.',
   },
   subaraknoid: {
     baslik: 'Subaraknoid kanama (örümcek ağı zarın altında)',
     metin:
-      'Kan beyin-omurilik sıvısına karışır, sıvının dolaştığı aralık boyunca oluklara yayılır. En sık nedeni kafa travmasıdır. Travma dışı subaraknoid kanamaların yaklaşık %85’i bir anevrizmanın yırtılmasından olur: ani başlayan, “hayatımın en kötü baş ağrısı” diye anlatılan bir ağrı. Önce kontrastsız BT çekilir; normalse lomber ponksiyon yapılabilir. Anevrizma ameliyatla klipslenir ya da damar içinden sarmal (koil) ile kapatılır.',
+      'Kan beyin-omurilik sıvısına karışır, sıvının dolaştığı aralık boyunca oluklara yayılır. Subaraknoid kanamanın en sık nedeni kafa travmasıdır; klinik önemi büyük kanamalar ise daha çok damar bozukluklarından olur ve travma dışı kanamanın en sık nedeni kese biçimli (sakküler) bir anevrizmanın yırtılmasıdır. Bir anevrizma yırtılırsa ani ve şiddetli bir baş ağrısı olur; bazı hastalar bunu “hayatımın en kötü baş ağrısı” diye anlatır. İlk inceleme çoğu zaman BT’dir; kanamayı aramak için lomber ponksiyonla BOS da incelenebilir. Anevrizma ameliyatla klipslenebilir ya da damar içinden platin sarmallarla (koil) doldurulabilir.',
   },
 };
 

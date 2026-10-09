@@ -39,7 +39,7 @@ import { seciciUyar, tarafsiz, uyar } from './secici';
  */
 
 /** Kafatası ve yüz kemikleri beyni sarar; kamera çerçevesi ve kesit sınırı onlara göre değil, beyne göre kurulur. */
-const KEMIK_KATMANLARI = new Set<Katman>(['kemik', 'yuz']);
+const KEMIK_KATMANLARI = new Set<Katman>(['kemik', 'yuz', 'omurga']);
 
 const BAKIS_YONU: Record<Bakis, [number, number, number]> = {
   sol: [1, 0.12, 0],

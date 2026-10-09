@@ -7,6 +7,11 @@ import { Secenekler } from './ortak';
  * Otonom sinir sisteminin iki kolu: sempatik ("savaş ya da kaç") ve parasempatik ("dinlen ve sindir"). Düğmeyle
  * seçilen kolun altı organa etkisi canlanır: göz bebeği, tükürük, hava yolları, kalp, sindirim ve mesane.
  * Hareketi azaltmayı seçenlerde canlandırma durur; durumlar yine görünür.
+ * Kaynak: Spielman ve ark. (2020, Psychology 2e 3.3 ve Şekil 3.14: tükürük, hava yolları, kalp, sindirim, mesane);
+ * OpenStax A&P 2e 13.4 (VII ve IX tükürüğü başlatır), 15.1, 15.3 (otonom girdisiz ~100, dinlenmede ~70) ve 23.1;
+ * Wulf ve Tom (2023; sempatik kol mesane kasının kasılmasını baskılar, parasempatik kol kasıp idrarı boşaltır).
+ * Çizim ders kitabı şemasının genel yönünü gösterir; Gray (1918) üst boyun gangliyonundan tükürük bezlerine salgı
+ * lifleri gittiğini de yazar.
  */
 
 type Kol = 'sempatik' | 'parasempatik';
@@ -15,11 +20,11 @@ const RENK: Record<Kol, string> = { sempatik: '#ef5d7b', parasempatik: '#25a993'
 
 const ETKILER: { organ: string; sempatik: string; parasempatik: string }[] = [
   { organ: 'Göz bebeği', sempatik: 'Büyür (daha çok ışık girer).', parasempatik: 'Küçülür.' },
-  { organ: 'Tükürük', sempatik: 'Azalır; ağız kurur.', parasempatik: 'Akar; ağız nemli kalır.' },
+  { organ: 'Tükürük', sempatik: 'Tükürük salgısı baskılanır.', parasempatik: 'Tükürük salgısı uyarılır; tükürük akar.' },
   { organ: 'Hava yolları', sempatik: 'Genişler.', parasempatik: 'Daralır.' },
-  { organ: 'Kalp', sempatik: 'Hızlanır (egzersizde dakikada 120–140 atıma kadar).', parasempatik: 'Yavaşlar (dinlenmede dakikada 60–80 atım).' },
+  { organ: 'Kalp', sempatik: 'Hızlanır; kan basıncı yükselir.', parasempatik: 'Yavaşlar: otonom girdi olmasa ~100 olan hız dinlenmede ~70’e iner.' },
   { organ: 'Sindirim', sempatik: 'Bağırsak hareketleri ve salgılar azalır.', parasempatik: 'Bağırsak hareketleri ve salgılar artar.' },
-  { organ: 'Mesane', sempatik: 'Mesane duvarı gevşer; idrar biriktirilir.', parasempatik: 'Mesane kasılır, iç büzgen gevşer; mesane boşalır.' },
+  { organ: 'Mesane', sempatik: 'Mesane duvarı gevşer; idrar biriktirilir.', parasempatik: 'Mesane kası kasılır; idrar boşaltılır.' },
 ];
 
 function Goz({ kol }: { kol: Kol }) {
@@ -43,7 +48,7 @@ function Agiz({ kol }: { kol: Kol }) {
         ))}
       {kol === 'sempatik' && (
         <text x="40" y="46" textAnchor="middle" fontSize="9" fill="var(--ink-3)">
-          kuru
+          azalır
         </text>
       )}
     </svg>
