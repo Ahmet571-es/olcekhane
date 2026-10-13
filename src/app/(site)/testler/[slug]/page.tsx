@@ -304,7 +304,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                 <li>
                   {`${NUMBER_WORDS[composites.length] ?? composites.length} boyutun${showsMargin ? ', puanın ölçüm payıyla birlikte' : ''} cetvel üzerinde gösterimi`}
                 </li>
-                <li>{`Her boyutun altında alt özelliklerinin (toplam ${facetCount}) cetveli ve her biri için kısa bir yorum`}</li>
+                <li>{`Her boyutun altında ${def.facetTerms?.ofDomain ?? 'alt özelliklerinin'} (toplam ${facetCount}) cetveli ve her biri için kısa bir yorum`}</li>
+                {REPORT_TEMPLATES[def.slug]?.insight && <li>{REPORT_TEMPLATES[def.slug].insight!.pageNote}</li>}
               </>
             )}
             {def.engine === 'likert' && def.profile === 'circumplex' && (

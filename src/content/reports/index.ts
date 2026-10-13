@@ -7,6 +7,7 @@ import { duygusalZekaBilesenleriReport } from './duygusal-zeka-bilesenleri';
 import { calismaDegerleriReport } from './calisma-degerleri';
 import { hobiIlgileriReport } from './hobi-ilgileri';
 import { kisilerarasiTarzReport } from './kisilerarasi-tarz';
+import { kisiligin10YonuReport } from './kisiligin-10-yonu';
 import { meslekIlgiAlanlariReport } from './meslek-ilgi-alanlari';
 import { meslekiIlgiReport } from './mesleki-ilgi';
 import { ogrenmeVeBasariReport } from './ogrenme-ve-basari';
@@ -21,6 +22,7 @@ import type { ReportTemplate } from './types';
 export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'bes-faktor-kisilik': besFaktorReport,
   'ayrintili-kisilik-profili': ayrintiliKisilikReport,
+  'kisiligin-10-yonu': kisiligin10YonuReport,
   'alti-boyutlu-kisilik-profili': altiBoyutluKisilikReport,
   'oz-saygi': ozSaygiReport,
   'okuma-hizi-ve-anlama': okumaReport,

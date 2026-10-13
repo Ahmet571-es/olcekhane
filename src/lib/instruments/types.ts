@@ -139,6 +139,12 @@ export interface LikertInstrument extends InstrumentBase {
    * Verilmezse her ölçek için cetvel ve düzey metni gösterilir.
    */
   profile?: 'riasec' | 'interests' | 'facets' | 'circumplex' | 'activities' | 'motivation' | 'values';
+  /**
+   * Ayrıntılı profilde (facets) alt ölçeklerin raporda ve test sayfasında nasıl anıldığı; verilmezse "alt özellik".
+   * Ör. Kişiliğin 10 Yönü'nde "yön": from "iki yönden" (Her boyut, ... ölçülen iki yönden oluşur), subject "Yönler",
+   * toOne "tek bir yöne", ofDomain "iki yönünün" (Her boyutun altında iki yönünün ... cetveli).
+   */
+  facetTerms?: { from: string; subject: string; toOne: string; ofDomain: string };
   prompt: string;
   options: LikertOption[];
   items: LikertItemDef[];

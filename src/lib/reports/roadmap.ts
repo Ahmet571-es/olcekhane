@@ -129,12 +129,13 @@ export function buildRoadmap(
           .sort((x, y) => distance(y) - distance(x))
           .slice(0, 2);
   const standout = notable.map((s) => ({ title: s.name, text: s.summary }));
+  const unit = t.unit?.one ?? 'boyut';
   const standoutNote =
     standout.length > 0
       ? null
       : parent
-        ? 'Çocuğunuzun profili dengeli: hiçbir boyut belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyor.'
-        : 'Profilin dengeli: hiçbir boyut belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyorsun.';
+        ? `Çocuğunuzun profili dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyor.`
+        : `Profilin dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyorsun.`;
 
   // Çok boyutlu testlerde öneriler yalnızca en belirgin boyutlar için verilir: önce orta düzeyde olmayanlar (eşiğe eşit
   // uzaklıktaki bir orta puan, yüksek ya da düşük bir puanın önüne geçmesin diye), sonra ortadan en uzaktan başlayarak;

@@ -8,6 +8,7 @@ import { TASK_ROADMAPS } from './gorevler';
 import { calismaDegerleriRoadmap } from './calisma-degerleri';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
 import { kisilerarasiTarzRoadmap } from './kisilerarasi-tarz';
+import { kisiligin10YonuRoadmap } from './kisiligin-10-yonu';
 import { matematikRoadmap } from './matematik';
 import { meslekIlgiAlanlariRoadmap } from './meslek-ilgi-alanlari';
 import { meslekiIlgiProfiliRoadmap } from './mesleki-ilgi-profili';
@@ -27,6 +28,7 @@ export { TASK_ROADMAPS };
 export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'bes-faktor-kisilik': besFaktorRoadmap,
   'ayrintili-kisilik-profili': ayrintiliKisilikRoadmap,
+  'kisiligin-10-yonu': kisiligin10YonuRoadmap,
   'alti-boyutlu-kisilik-profili': altiBoyutluKisilikRoadmap,
   'duygusal-zeka-bilesenleri': duygusalZekaBilesenleriRoadmap,
   'kisilerarasi-tarz': kisilerarasiTarzRoadmap,
@@ -110,7 +112,7 @@ export function roadmapSummary(slug: string): string {
   const t = ROADMAPS[slug];
   const parts = [
     ...(Object.keys(t.scales).length >= 3 ? ['parmakla döndürülebilen üç boyutlu profil'] : []),
-    t.focus ? 'en belirgin boyutlara göre nasıl çalışılabileceğine dair öneriler' : 'nasıl çalışılabileceğine dair öneriler',
+    t.focus ? `en belirgin ${t.unit?.toPlural ?? 'boyutlara'} göre nasıl çalışılabileceğine dair öneriler` : 'nasıl çalışılabileceğine dair öneriler',
     ...(Object.values(t.scales).some((x) => x.settings) ? ['rahat edilebilecek ortamlar'] : []),
     'veliye yaklaşım önerileri',
   ];

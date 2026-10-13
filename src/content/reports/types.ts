@@ -35,12 +35,20 @@ export interface ReportTemplate {
   /** Motivasyon haritası ve profil metinleri (profil: motivation). */
   motivation?: MotivationTemplate;
   /**
-   * Ölçeklerin birlikte yorumu (profil verilmeyen çok ölçekli testlerde): raporda ilk madde olarak gösterilir. Giriş
+   * Ölçeklerin birlikte yorumu (profil verilmeyen çok ölçekli testlerde ve ayrıntılı profilde): raporda ilk madde olarak
+   * gösterilir (ayrıntılı profilde boyut gruplarından önce). Giriş
    * cümlesi `lead` kurallarından ilk uyandır; ardından uyan bütün `rules` cümleleri sırayla eklenir (ayrı paragraflar).
    */
   insight?: InsightTemplate;
   /** Değer sıralamasının ek metinleri (profil: values). */
   values?: ValuesTemplate;
+  /**
+   * Ayrıntılı profilde (facets) bir boyutun alt ölçeklerinden biri yüksek (yüksek ya da çok yüksek), öteki düşükse (düşük
+   * ya da çok düşük) boyutun kısa adı ve metni yerine gösterilen metin; anahtar boyuttur. Boyutun düzey metni iki yönün
+   * davranışlarını birlikte anlattığı için ayrışmada yönlerden birinin kartıyla çelişirdi (ör. "insanlara yavaş ısınan"
+   * boyut metni ile "insanlara çabuk ısınan" yön kartı aynı sayfada). Destek kutusu boyutun düzeyine göre değişmez.
+   */
+  facetSplit?: Record<string, { summary: string; student: string; parent: string; adult?: string }>;
   scales: Record<string, ScaleTexts>;
 }
 
@@ -90,6 +98,8 @@ export interface InsightTemplate {
   lead: InsightRule[];
   /** Ek cümleler: uyan bütün kurallar, sırayla. */
   rules: InsightRule[];
+  /** Ek kurallardan hiçbiri uymazsa girişin ardından gelen cümle (ör. "hiçbir boyutun iki yönü ayrışmıyor"). */
+  fallback?: PairText & { adult?: string };
   /** Test sayfasının "Ücretsiz raporda neler var?" listesindeki satır. */
   pageNote: string;
 }

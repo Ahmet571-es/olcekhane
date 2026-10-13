@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-09
+Son güncelleme: 2026-10-13
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -21,7 +21,9 @@ istedi. Kararları:
 - Beyin derslerini testleri onaylayan hocamız okur.
 - **2026-10-07 kararı:** hoca onayı beklenmez; testler ve yol haritaları doğrudan yayına alınır (özgün testler
   `pilot`). Site sahibi hocayla 2026-10-11'de buluşacak ve platformu bitmiş hâliyle sunacak; hoca yayındaki siteyi
-  inceleyip düzeltme isteyecek. Platformun o güne hazır olması gerekiyor.
+  inceleyip düzeltme isteyecek. Platformun o güne hazır olması gerekiyor. **2026-10-13 güncellemesi:** buluşma 5–6 gün
+  sonraya (2026-10-18 dolayı) kaldı; site sahibi hocanın bütün yeni testleri kontrol edeceğini, "sıfır hata" istediğini
+  söyledi.
 - Zekâ tarafı "Zekâ ve zihinsel beceriler" adıyla kurulur: telifli zekâ testleri kullanılmaz, IQ puanı verilmez;
   akıl yürütme, sözel, sayısal, uzamsal, bellek, dikkat ve hız ayrı ayrı ölçülür, sonuç güçlü yanlar haritasıdır.
 
@@ -303,6 +305,39 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
    Verme'de her tuzaklı soruda ilk akla gelen cevabın gerçekten en sık yanlış olduğu sınanmalı (Young ve Shtulman,
    2020a'daki ölçüt); şimdilik tasarım varsayımıdır ve bilim kartında böyle yazar.
 
+**Yeni kişilik ve zekâ testleri, 2. dalga (site sahibinin 2026-10-13 isteği):** "Türkiye'nin en büyük kişilik ve zekâ test
+platformu"; lisans sorunu olmayan testler geniş bir araştırmayla seçildi, **her mesajda bir test** eklenip çözülüyor,
+hataları gideriliyor ve yayına alınıyor. Raporlar çok ayrıntılı ve bilimsel ama dili çok sade; tanı, tedavi, ilaç ya da
+klinik öneri ve kesin hüküm yok. Her testte iki tur bağımsız inceleme yapılır. Lisans: kişilikte yalnızca IPIP (kamu malı;
+https://ipip.ori.org/newPermission.htm "for any purpose, commercial or non-commercial"), zekâda sorular özgün. Site
+sahibinin seçtiği sıra (kişilik ve zekâ dönüşümlü; site sahibi "Bismillah, sıradaki test" yazınca bir sonraki):
+1. **Kişiliğin 10 Yönü: yayında (2026-10-13, active; 9. sınıftan yetişkine).** BFAS (DeYoung, Quilty ve Peterson,
+   2007), 100 madde, beş boyut × iki yön; Nevrotiklik "Duygusal Denge" (Soğukkanlılık ve İç rahatlık; "Sakinlik" adı
+   Ayrıntılı Kişilik'te başka anlamda olduğu için kullanılmadı), Intellect "Düşünsel merak" (zekâ ölçmez), Openness "Sanat
+   ve hayal gücü". 64 madde öteki testlerin çevirisiyle aynı, 36 madde iki taslakla çevrildi (bağımsız incelemeden sonra
+   yedisi düzeltildi). α ve sdRef Tablo 5 üniversite örnekleminden. Rapor: genel bakışta beş boyut, altında yönler;
+   "Bir boyutun iki yönü" bölümü (insight artık facets profilinde de var; `fallback` cümlesi yeni); iki yön ayrışınca
+   (biri yüksek, öteki düşük) boyut kartında düzey metni yerine "İki yönü ayrışan" metni (yeni `facetSplit`; ayrışan
+   boyutun düzey metni destek kutusunu açmaz). Boyut metinleri iki yönün ortalamasını anlatır, yönlerin davranışını
+   tek tek saymaz (yön kartıyla çelişmesin; her boyutta 5 × 5 düzey testte). Yeni ortak alanlar: `facetTerms` (raporda ve
+   test sayfasında "alt özellik" yerine "yön"), yol haritasında `unit` ("yön", "yönlere"). Yol haritası on yönle: 10
+   sütunlu 3B grafik, öneriler en belirgin beş yön için, 2. hafta Çalışkanlık, 3. hafta İç rahatlık düşükse iyi oluş
+   (Sınav kaygısı bağlantısı), değilse Soğukkanlılık düşükse o (bağlantısız). Bilim kartında: Türkçe uyarlama ve ergen
+   çalışması bulunamadı (Ekim 2026), test-tekrar test 90 kişi, ortalama 38 gün. Telefonda dokunarak (öğrenci) ve
+   masaüstünde klavyeyle (yetişkin) çözüldü, öğrenci, veli ve yetişkin PDF'leri açıldı.
+2. Planlama: Kule Görevi (Londra Kulesi düzeni; Shallice, 1982; özgün problemler, en az hamle bağımsız çözücüyle).
+3. Kontrol Odağı (IPIP, Levenson benzeri üç ölçek: içsel, güçlü başkaları, şans).
+4. Üç Boyutlu Zihinde Döndürme (Shepard–Metzler düzeni; küplerden özgün şekiller, ayna/döndürme bağımsız denetim).
+5. Hızlı Kişilik Testi (Mini-IPIP, 20 madde; Donnellan ve ark., 2006).
+6. Karmaşık Bellek Aralığı (işlem aralığı; Unsworth ve ark., 2005; özgün işlemler ve harfler).
+7. Düşünme ve Çalışma Tarzı (IPIP JPI-R benzeri ölçekler; siyasi-dinî görüş soran Gelenekçilik ve Makyavelcilik çıkarılır).
+8. Bakış Açısı Alma (Hegarty ve Waller, 2004 düzeni; özgün yerleşimler, açılar hesapla doğrulanır).
+9. Heyecan Arayışı (IPIP, Hoyle benzeri üç ölçek; rapor riskli davranışı özendirmez).
+10. Gizli Şekiller (Witkin düzeni; özgün çizimler).
+11. İyimserlik (IPIP, 10 madde).
+12. Desen Hatırlama (görsel bellek; Della Sala düzeni; özgün desenler).
+13. Harf Dizileri (Thurstone; Simon ve Kotovsky düzeni; özgün diziler, Türk alfabesi).
+
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
 misin?" → "Evet" → sistem kaydı kendisi inceler ve rapor verir; hiçbir şey saklanmaz; öncelik doğruluk. Aylık ek sunucu
@@ -469,6 +504,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Okuma Hızı ve Anlama | okuma-hizi-ve-anlama | Yayında (pilot) |
 | Matematik Konu Tarama Testi | matematik-konu-tarama-testi | Yayında (pilot) |
 | Ayrıntılı Kişilik Profili | ayrintili-kisilik-profili | Yayında (active) |
+| Kişiliğin 10 Yönü | kisiligin-10-yonu | Yayında (active; 9. sınıftan yetişkine) |
 | Meslek İlgi Alanları | meslek-ilgi-alanlari | Yayında (active) |
 | Renk-Kelime Görevi | renk-kelime-gorevi | Yayında (pilot; hoca onayı beklenmeden) |
 | Dur-Git Görevi | dur-git-gorevi | Yayında (pilot; hoca onayı beklenmeden) |
@@ -600,7 +636,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
-- **Hoca buluşması (2026-10-11):** platform bitmiş hâliyle sunulacak; hocanın düzeltme istekleri gelince yapılır.
+- **Hoca buluşması (2026-10-18 dolayı; 2026-10-11'den ertelendi):** platform bitmiş hâliyle sunulacak; yeni testler de
+  kontrol ettirilecek; hocanın düzeltme istekleri gelince yapılır.
   İsterse hazır inceleme belgeleri (Hoca incelemesi tablosu) hocaya iletilebilir.
 - **Açık soru:** Katalogda Türkçe Konu Tarama Testi "Hazırlanıyor" diye görünüyor, oysa 4. dalgada. İlgili bir iş
   gelince etiketin kalıp kalmayacağı site sahibine sorulur.
@@ -609,6 +646,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-13 (22): Kişiliğin 10 Yönü yayında (9. sınıftan yetişkine): BFAS'ın 100 maddesi, beş boyut ve on yön; bir
+  boyutun iki yönü ayrışınca bunu anlatan bölüm ve boyut kartı; öğrenci, veli ve yetişkin raporu, 10 sütunlu 3B yol
+  haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. 2. dalga
+  planı (13 test) yukarıda.
 - 2026-10-09 (21): Düşünerek Karar Verme yayında (5. sınıftan yetişkine), Akıl Yürütme dalgası tamamlandı: 24 özgün
   kısa soru; tuzaklı sorularda ilk akla gelen yanlış cevap öteki yanlışlardan ayrılır ve tuzaksız eş sorularla
   karşılaştırılır; sayısal sorular bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası;
@@ -646,7 +687,3 @@ En yeni üstte; en çok 10 madde tutulur.
   35 üç boyutlu sahne (yeni: omurga, bel bölgesi, sempatik gövde, kafa sinirlerinin çıkış kapıları), 9 hareketli çizim,
   19 vaka, 82 soru, 234 kaynak (açık tam metinler, Gray 1918, OpenStax, UTHealth, TA2); beş bağımsız denetçinin
   bulguları kaynağa bakılarak düzeltildi. Modele omurga eklendi (C3–L5, sağrı kemiği, diskler).
-- 2026-10-09 (12): Zihniyet: Zekâ ve Öğrenme İnançları yayında (5. sınıftan yetişkine): 24 özgün madde, dört alan
-  (zekâ, çaba, hata, zorluk); "Birlikte bakınca" inançların örtüşüp örtüşmediğini yorumlar; araştırmaların ne bulduğu
-  abartılmadan anlatılır; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde
-  klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.

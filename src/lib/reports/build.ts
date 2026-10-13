@@ -203,6 +203,8 @@ export interface ReportContent {
   /** Ayrıntılı profil (profil: facets): her bileşik ölçek ve alt ölçekleri, testteki sırayla. */
   /** Ayrıntılı profil: her boyutun alt özellikleri; `facetItems`, bir alt özelliğin kaç maddeyle ölçüldüğüdür. */
   facetGroups?: { domain: string; facets: string[]; facetItems: number }[];
+  /** Ayrıntılı profilde alt ölçeklerin adı (testin `facetTerms` alanı; verilmezse "alt özellik"). */
+  facetTerms?: { from: string; subject: string; toOne: string; ofDomain: string };
   /** Kişilerarası çember (profil: circumplex): her ölçeğin çemberdeki açısı ve grafikteki kısa adı. */
   circumplex?: { key: string; angle: number; short: string }[];
   /** Motivasyon haritası ve profili (profil: motivation). */
@@ -438,6 +440,8 @@ export function buildReport(input: {
   const template = REPORT_TEMPLATES[def.slug];
   const byKey = new Map(input.scores.map((s) => [s.scaleKey, s]));
   let support = false;
+  /** Destek kutusunu açan ölçekler (ayrışan bir boyutun düzey metni gösterilmezse o boyut kutuyu açmaz). */
+  const supportFrom: string[] = [];
 
   const sections: ReportSection[] = [];
   let reading: ReportContent['reading'];
@@ -453,7 +457,10 @@ export function buildReport(input: {
       const rawBand = (s?.band ?? null) as Band | null;
       const band = rawBand ? nearestBand(rawBand, (b) => !!template?.scales[scale.key]?.[b]) : null;
       const bt = band ? template?.scales[scale.key]?.[band] : undefined;
-      if (bt?.support) support = true;
+      if (bt?.support) {
+        support = true;
+        supportFrom.push(scale.key);
+      }
       const picked = pickText(bt, audience);
       const nItems = scaleItems(def, scale).length;
       const isMean = def.scoring.method === 'mean';
@@ -478,6 +485,23 @@ export function buildReport(input: {
         ciHigh: s?.ciHigh ?? null,
         percentile: s?.percentile ?? null,
       });
+    }
+    // Ayrıntılı profilde bir boyutun alt ölçekleri ayrışıyorsa (biri yüksek, öteki düşük) boyutun düzey metni yerine
+    // şablondaki ayrışma metni (rapor şablonu: facetSplit).
+    if (def.profile === 'facets' && template?.facetSplit) {
+      for (const scale of def.scales) {
+        const split = template.facetSplit[scale.key];
+        const sec = sections.find((x) => x.scaleKey === scale.key);
+        if (!split || !sec?.band || !scale.of) continue;
+        const groups = scale.of.map((k) => motivationLevel(sections.find((x) => x.scaleKey === k)?.band ?? null));
+        if (!groups.includes('high') || !groups.includes('low')) continue;
+        sec.summary = split.summary;
+        sec.text = audience === 'parent' ? split.parent : audience === 'adult' ? (split.adult ?? split.student) : split.student;
+        // Destek kutusunu yalnızca bu boyutun (artık gösterilmeyen) düzey metni açtıysa kutu kalkar; yönlerden biri açtıysa kalır.
+        const at = supportFrom.indexOf(scale.key);
+        if (at >= 0) supportFrom.splice(at, 1);
+        support = supportFrom.length > 0;
+      }
     }
   } else if (def.engine === 'tasks') {
     cognitive = buildCognitive(def, byKey, audience);
@@ -572,8 +596,11 @@ export function buildReport(input: {
       ? buildMotivation(def, sections, template.motivation, audience)
       : undefined;
   const extraNotes = motivation?.caution ? [motivation.caution] : [];
+  // Birlikte yorum profil verilmeyen testlerde ve ayrıntılı profilde (ör. bir boyutun iki yönünün ayrışması) kullanılır.
   const insight =
-    def.engine === 'likert' && !def.profile && template?.insight ? buildInsight(sections, template.insight, audience) : undefined;
+    def.engine === 'likert' && (!def.profile || def.profile === 'facets') && template?.insight
+      ? buildInsight(sections, template.insight, audience)
+      : undefined;
 
   // Değerlendirici ölçekler: güçlü yanlar (yüksek) ve geliştirilebilecek alanlar (düşük) ayrı listelenir.
   let strengths: string[] | undefined;
@@ -633,6 +660,7 @@ export function buildReport(input: {
     interests,
     ranking,
     facetGroups,
+    ...(facetGroups && def.engine === 'likert' && def.facetTerms ? { facetTerms: def.facetTerms } : {}),
     circumplex,
     ...(motivation ? { motivation: motivation.report } : {}),
     ...(insight ? { insight } : {}),
@@ -657,6 +685,8 @@ function buildInsight(sections: ReportSection[], t: InsightTemplate, audience: A
   const lead = t.lead.find((r) => fits(r.when));
   if (!lead) return undefined;
   const more = t.rules.filter((r) => fits(r.when) && !(r.not && fits(r.not))).map((r) => pickText(r.text));
+  // Hiçbir ek kural uymadıysa (ör. hiçbir boyutun iki yönü ayrışmıyorsa) şablondaki kapanış cümlesi.
+  if (more.length === 0 && t.fallback) more.push(pickText(t.fallback));
   return { title: audience === 'parent' ? t.title.parent : t.title.you, text: [pickText(lead.text), ...more].join('\n\n') };
 }
 

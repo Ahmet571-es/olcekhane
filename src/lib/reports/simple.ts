@@ -132,13 +132,19 @@ const sentence = (s: string) => (/[.!?…]$/.test(s.trim()) ? s.trim() : `${s.tr
 /** Üleştirme sayıları: "dörder cümleyle", "onar cümleyle". */
 const DISTRIBUTIVE: Record<number, string> = { 3: 'üçer', 4: 'dörder', 5: 'beşer', 6: 'altışar', 8: 'sekizer', 10: 'onar' };
 
-/** Ayrıntılı profilde alt özelliklerin boyutlardan daha az kesin olduğunu anlatan not. */
-function facetNote(facetItems: number, margin: boolean): string {
+/** Ayrıntılı profilde alt ölçeklerin varsayılan adı. */
+const FACET_TERMS = { from: 'alt özelliklerden', subject: 'Alt özellikler', toOne: 'tek bir alt özelliğe', ofDomain: 'alt özelliklerinin' };
+
+/**
+ * Ayrıntılı profilde alt özelliklerin (ya da testin kendi adıyla, ör. yönlerin) boyutlardan daha az kesin olduğunu anlatan
+ * not.
+ */
+export function facetNote(facetItems: number, margin: boolean, terms: typeof FACET_TERMS = FACET_TERMS): string {
   const each = DISTRIBUTIVE[facetItems];
-  const first = each ? `Her boyut, ${each} cümleyle ölçülen alt özelliklerden oluşur.` : 'Her boyut, birkaç alt özellikten oluşur.';
+  const first = each ? `Her boyut, ${each} cümleyle ölçülen ${terms.from} oluşur.` : 'Her boyut, birkaç alt özellikten oluşur.';
   return margin
-    ? `${first} Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; sarı bantların daha geniş olması bundandır.`
-    : `${first} Alt özellikler daha az cümleye dayandığı için boyutlardan daha az kesindir; tek bir alt özelliğe bakarak sonuç çıkarılmamalıdır.`;
+    ? `${first} ${terms.subject} daha az cümleye dayandığı için boyutlardan daha az kesindir; sarı bantların daha geniş olması bundandır.`
+    : `${first} ${terms.subject} daha az cümleye dayandığı için boyutlardan daha az kesindir; ${terms.toOne} bakarak sonuç çıkarılmamalıdır.`;
 }
 
 /**
@@ -869,9 +875,10 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       chart: { type: 'rulers', rows: domains.map(ruler) },
       keyFigures: [],
       itemsTitle: 'Boyut boyut ayrıntılar',
-      items: [],
+      // Birlikte yorum (varsa) boyut gruplarından önce: bir boyutun alt ölçekleri birbirinden ayrıştığında ne anlama gelebileceği.
+      items: r.insight ? [{ title: r.insight.title, text: r.insight.text }] : [],
       groups,
-      groupsNote: facetNote(r.facetGroups[0]?.facetItems ?? 0, margin),
+      groupsNote: facetNote(r.facetGroups[0]?.facetItems ?? 0, margin, r.facetTerms),
     };
   }
 

@@ -70,6 +70,11 @@ export interface RoadmapTemplate {
    */
   focus?: { count: number; note: AudienceText };
   /**
+   * Yol haritasındaki ölçeklerin adı, verilmezse "boyut" (ör. Kişiliğin 10 Yönü'nde yol haritası yönlerle kurulur: "yön",
+   * "yönlere"). Dengeli profil cümlesinde ve test sayfasındaki tanıtımda kullanılır.
+   */
+  unit?: { one: string; toPlural: string };
+  /**
    * Veliye yaklaşım önerileri. Verilmezse rapor şablonundaki veli önerilerinin ilki kullanılır (Beş Faktör); rapor
    * şablonunda öneri yazılmamış testlerde burada verilir.
    */

@@ -226,9 +226,11 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
             .slice(0, shown);
           if (shown < scales.length) {
             expect(rm.study.items.map((x) => x.key), label).toEqual(focusKeys.map((x) => x.k));
-            expect(rm.study.intro, label).toContain(
-              a === 'parent' ? 'Aşağıda çocuğunuzun puanı ortadan en uzak altı özelliği' : 'Aşağıda puanı ortadan en uzak altı özelliğin',
-            );
+            // Not şablondandır: 16 Faktörlü Kişilik'te "altı özellik", Kişiliğin 10 Yönü'nde "beş yön".
+            const word = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][shown];
+            const note = a === 'parent' ? t.focus!.note.parent : (a === 'adult' ? t.focus!.note.adult : undefined) ?? t.focus!.note.student;
+            expect(rm.study.intro, label).toContain(note.replace('{n}', word));
+            expect(rm.study.intro, label).toContain(`puanı ortadan en uzak ${word} `);
           }
           expect(rm.standout.length, label).toBe(scales.length === 1 ? 1 : Math.min(2, extremes));
           expect(rm.standoutNote === null, label).toBe(scales.length === 1 || extremes > 0);
@@ -288,6 +290,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'duygusal-zeka-bilesenleri': 3 ** 7 * 3,
       'kisilerarasi-tarz': 3 ** 8 * 3,
       '16-faktorlu-kisilik-profili': comboCount(3, 16) * 3,
+      // On yön (boyutlar yol haritasında yok); yetişkinlere de açık.
+      'kisiligin-10-yonu': comboCount(3, 10) * 3,
       'oz-saygi': 3 * 2,
       'calisma-aliskanliklari': 5 ** 5 * 2,
       'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,

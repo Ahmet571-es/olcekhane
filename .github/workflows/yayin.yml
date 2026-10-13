@@ -190,6 +190,13 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert len(r["parent"]["chart"]["rows"]) == 6 and len(r["student"]["items"]) == 6 and "toplam bir puan yoktur" in r["student"]["chartNote"]; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 6 and len(m["approach"]["items"]) == 6 and m["settings"] is None and m["weeks"][1]["title"] == "Çalışma düzeni" and not m["preview"]'; then
             sorun="$sorun ogrenme-ve-basari-raporu"
           fi
+          # Kişiliğin 10 Yönü: 100 madde, beş boyut ve ikişer yön; birlikte yorum maddesi; yol haritasında 10 sütun, öneriler
+          # en belirgin beş yön için, 2. hafta çalışma düzeni.
+          ONYON_GOVDE=$(python3 -c 'import json; n={"vol": 10, "wit": 10, "com": 10, "pol": 10, "ind": 10, "ord": 10, "ent": 10, "ass": 10, "int": 10, "opn": 10}; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"{k}{i:02d}": {"value": (j + i) % 5 + 1, "rtMs": 2500} for j, k in enumerate(n) for i in range(1, n[k] + 1)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$ONYON_GOVDE" "https://$ALAN/api/rapor/kisiligin-10-yonu" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert [len(g["facets"]) for g in r["parent"]["groups"]] == [2, 2, 2, 2, 2] and r["student"]["items"][0]["title"] == "Bir boyutun iki yönü"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 10 and len(m["study"]["items"]) == 5 and len(m["approach"]["items"]) == 5 and m["weeks"][1]["title"] == "Çalışma düzeni" and not m["preview"]'; then
+            sorun="$sorun on-yon-raporu"
+          fi
           # Çocuk Kişilik Profili (3–5. sınıf): 30 madde (k, uygulama sırası; tests/cocuk-kisilik.test.ts güncel olduğunu denetler),
           # 5 boyut, üç seçenek; yol haritasında 5 sütun, ortamlar yok, 2. hafta çalışma düzeni.
           CK_GOVDE=$(python3 -c 'import json; k=["E1","A6","C5","ES4","I1","E4","A1","C2","ES3","I4","E3","A4","C3","ES2","I3","E2","A3","C4","ES5","I2","E5","A2","C1","ES6","I5","E6","A5","C6","ES1","I6"]; print(json.dumps({"grade": 4, "data": {"engine": "likert", "answers": {x: {"value": i % 3 + 1, "rtMs": 2500} for i, x in enumerate(k)}}}))')

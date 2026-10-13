@@ -12,6 +12,7 @@ import { harfIsaretleme } from './harf-isaretleme';
 import { calismaDegerleri } from './calisma-degerleri';
 import { hobiIlgileri } from './hobi-ilgileri';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
+import { kisiligin10Yonu } from './kisiligin-10-yonu';
 import { matematik } from './matematik';
 import { meslekIlgiAlanlari } from './meslek-ilgi-alanlari';
 import { meslekiIlgi } from './mesleki-ilgi';
@@ -43,6 +44,7 @@ import { zihindeDondurme } from './zihinde-dondurme';
 export const INSTRUMENTS: InstrumentDef[] = [
   besFaktor,
   ayrintiliKisilik,
+  kisiligin10Yonu,
   altiBoyutluKisilik,
   ozSaygi,
   meslekiIlgi,
