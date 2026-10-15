@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-15
+Son güncelleme: 2026-10-16
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -403,7 +403,22 @@ Düşünmeyi Sevme.
    ark. (2020), Jansen ve ark. (2019), Jost ve Jansen (2024), Peters ve ark. (1995), Rajeb ve ark. (2025), Shepard ve
    Metzler (1971), Timm ve ark. (2024), Uttal ve ark. (2013), Vandenberg ve Kuse (1978). Üç tur bağımsız inceleme
    düzeltildi; telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
-7. Karmaşık Bellek Aralığı (işlem aralığı; Unsworth ve ark., 2005; özgün işlemler ve harfler).
+7. **Çalışma Belleği: Hesapla ve Hatırla: yayında (2026-10-16, pilot; 5. sınıftan yetişkine).** Karmaşık bellek aralığı,
+   işlem aralığı düzeni (Unsworth ve ark., 2005; aktaran Đokić ve ark., 2018): her harften önce "(a × b) ± c = sonuç"
+   doğru mu yanlış mı (DOĞRU/YANLIŞ ya da D/Y), dizinin sonunda harfler sırayla seçilir (12 ünsüz, BOŞ, SİL, TAMAM; bir
+   harf ikinci kez seçilemez). 10 dizi (3–7 harf, her uzunluktan iki, karışık sırada), 50 harf, 50 işlem; üç alıştırma
+   (harfler, 15 işlem, ikisi birlikte). İşlem süresi kişiye göre: işlem alıştırmasındaki sürelerin ortalaması + 2,5
+   standart sapma, 3–15 sn (alıştırmada söylenmez); süre dolarsa işlem cevapsız sayılır. Sayfa gizlenince duraklar,
+   duraklatmada basılan tuş sayılmaz, dizi baştan gösterilir. Puan kısmi puandır (doğru yerdeki her harf); hata türleri
+   (yeri karışan, dizide olmayan, boş). İşlemler bir üreticiyle seçildi (scratchpad'de): yarısı doğru, yanlışlar ±1/±2 ve
+   çarpıma göre doğru sonuçla aynı tarafta; tek-çift, 5'e bölünme, işaret, büyüklük gibi ipuçlarıyla basan biri en çok 31/50
+   bulur (`tests/hesapla-ve-hatirla.test.ts`). Rapor: hatırlanan harfler, dizi uzunluğu, işlemler, hata türleri; harfler
+   rastgele düzeyindeyse (≤8) ya da işlemler rastgele basma düzeyindeyse (≤31) yorum yapılmaz, işlemlerin beşte biri
+   yarım saniyeden kısaysa dikkatle yorumlanır, %85 altı işlem doğruluğunda kartta not; bütün durum birleşimleri testte.
+   Kaynaklar Đokić ve ark. (2018), Ferguson ve ark. (2021), Fu ve ark. (2026), Hischa ve ark. (2025), Lee ve Engle (2026),
+   Melby-Lervåg ve Hulme (2013), Monteiro ve ark. (2025), Redick ve Lindsey (2013), Ruiz ve ark. (2019), Schmiedek ve ark.
+   (2014), Unsworth ve ark. (2005). İki tur bağımsız inceleme (bilgi doğrulama, kod ve rapor) ve ikinci tur düzeltildi;
+   telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, duraklatma denendi, PDF'ler açıldı.
 8. Düşünme ve Çalışma Tarzı (IPIP JPI-R benzeri ölçekler; siyasi-dinî görüş soran Gelenekçilik ve Makyavelcilik çıkarılır).
 9. Bakış Açısı Alma (Hegarty ve Waller, 2004 düzeni; özgün yerleşimler, açılar hesapla doğrulanır).
 10. Heyecan Arayışı (IPIP, Hoyle benzeri üç ölçek; rapor riskli davranışı özendirmez).
@@ -624,6 +639,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Düşünerek Karar Verme | dusunerek-karar-verme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Planlama: Kule Görevi | planlama-kule-gorevi | Yayında (pilot; 3. sınıftan yetişkine) |
 | Üç Boyutlu Zihinde Döndürme | uc-boyutlu-zihinde-dondurme | Yayında (pilot; 5. sınıftan yetişkine) |
+| Çalışma Belleği: Hesapla ve Hatırla | hesapla-ve-hatirla | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -736,6 +752,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-16 (28): Çalışma Belleği: Hesapla ve Hatırla yayında (5. sınıftan yetişkine), 2. dalganın 7. testi: kısa
+  işlemler yaparken harfleri sırayla akılda tutma (işlem aralığı düzeni); 10 dizi, 50 harf, 50 işlem, kişiye göre işlem
+  süresi; işlemler ipucu vermeyecek biçimde seçildi; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası; iki tur
+  bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Geriye Dönük Hatırlama'nın
+  bilim kartında "karmaşık dizi görevleri" adı "karmaşık bellek aralığı görevleri" yapıldı.
 - 2026-10-15 (27): Üç Boyutlu Zihinde Döndürme yayında (5. sınıftan yetişkine), 2. dalganın 6. testi: küplerden yapılmış
   on özgün şekil, 20 soru, iki bölüm; ayna görüntüleri dik durur ve hiçbir seçenek düz bir resim gibi döndürülerek ya da
   çevrilerek bulunamaz (bağımsız denetleyiciyle test edildi); öğrenci, veli ve yetişkin raporu, yol haritası; üç tur bağımsız
@@ -775,8 +796,3 @@ En yeni üstte; en çok 10 madde tutulur.
   görülünce anlatılır; her soru açınım kâğıt gibi katlanarak bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, yol
   haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme
   bulguları düzeltildi.
-- 2026-10-09 (18): Sayısal Akıl Yürütme yayında (5. sınıftan yetişkine): 24 özgün soru, cevap yazılır; orantılı ve
-  orantılı olmayan durumların ayırt edilip edilmediği, sayılara göre yöntem seçme ve eşittir işaretinin nasıl okunduğu
-  sayılarıyla anlatılır; cevaplar ve yanılgı cevapları bağımsızca hesaplanarak doğrulandı; öğrenci, veli ve yetişkin raporu,
-  3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı;
-  bağımsız inceleme bulguları (iki tur) düzeltildi.

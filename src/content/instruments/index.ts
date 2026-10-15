@@ -39,6 +39,7 @@ import { dusunerekKararVerme } from './dusunerek-karar-verme';
 import { planlamaKuleGorevi } from './planlama-kule-gorevi';
 import { kelimeBilgisi } from './kelime-bilgisi';
 import { kelimeListesi } from './kelime-listesi';
+import { hesaplaVeHatirla } from './hesapla-ve-hatirla';
 import { kuralDegistirme } from './kural-degistirme';
 import { siraylaBirlestirme } from './sirayla-birlestirme';
 import { tepkiHizi } from './tepki-hizi';
@@ -79,6 +80,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   kelimeBilgisi,
   kuralDegistirme,
   kelimeListesi,
+  hesaplaVeHatirla,
   duygusalZekaBilesenleri,
   kisilerarasiTarz,
   onAltiFaktorKisilik,

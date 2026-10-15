@@ -2,6 +2,7 @@ import { getInstrumentDef } from '@/content/instruments';
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
 import { disparity } from '@/lib/instruments/rotation';
+import { opTrue } from '@/lib/instruments/complex-span';
 import { nBackRoles, type NBackRole } from '@/lib/instruments/sequences';
 import type {
   CancellationTask,
@@ -35,6 +36,8 @@ import type {
   CubeNetTask,
   CubeType,
   MentalRotation3dTask,
+  ComplexSpanOp,
+  ComplexSpanTask,
   CognitiveReflectionTask,
   ReflectionDomain,
   ReflectionRole,
@@ -583,6 +586,30 @@ export function towerBody(pick: (q: TowerCell) => TowerPlay = () => ({ outcome: 
       response: { moves: mv.map(([a, b]) => (a + 1) * 10 + (b + 1)), times, pick: pickMs },
       rtMs: solved ? times[times.length - 1] : task.limitMs,
     };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Hesapla ve hatırlada bir dizi: harflerin sırası (harf listesindeki yerleri), işlemler ve dizinin yeri. */
+export type ComplexSpanCell = { size: number; letters: number[]; ops: ComplexSpanOp[]; i: number };
+export type ComplexSpanPlay = { recall: number[]; ops: { a: boolean | null; ms: number | null }[]; rtMs?: number | null };
+
+/** Hesapla ve hatırlada bir işlemin doğru cevabı ve süresi (ms). */
+export const csRight = (op: ComplexSpanOp, ms = 2500) => ({ a: opTrue(op), ms });
+
+/**
+ * Hesapla ve hatırla: varsayılan olarak her dizide bütün harfler doğru yerde, her işlem 2,5 saniyede doğru cevaplanmış;
+ * işlem süre sınırı 6 saniye, hatırlama ekranında 5 saniye.
+ */
+export function complexSpanBody(
+  pick: (q: ComplexSpanCell) => ComplexSpanPlay = (q) => ({ recall: q.letters, ops: q.ops.map((o) => csRight(o)) }),
+  grade = 7,
+  limitMs = 6000,
+): AnswersBody {
+  const task = def<TaskInstrument>('hesapla-ve-hatirla').tasks[0] as ComplexSpanTask;
+  const trials = task.sets.map((set, index) => {
+    const p = pick({ size: set.letters.length, letters: set.letters, ops: set.ops, i: index });
+    return { index, response: { recall: p.recall, ops: p.ops, limitMs }, rtMs: p.rtMs === undefined ? 5000 : p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

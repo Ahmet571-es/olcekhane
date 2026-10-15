@@ -392,6 +392,17 @@ jobs:
           if ! grep -q 'Hangi ikisi aynı şekil?' <<<"$ud_sayfa" || ! grep -qF '\"answers\":[]' <<<"$ud_sayfa"; then
             sorun="$sorun uc-boyutlu-dondurme-anahtar"
           fi
+          # Hesapla ve Hatırla: 10 dizinin bütün harfleri doğru yerde ve 50 işlemin hepsi doğru (l, harflerin harf listesindeki
+          # yerleri; d, işlemlerin doğru olup olmadığı; tests/hesapla-ve-hatirla.test.ts güncel olduğunu denetler).
+          HB_GOVDE=$(python3 -c 'import json; l=[[8,2,11,10],[0,2,1,3,7,4],[6,8,5],[7,11,3,10,0,9,6],[5,1,0,4,9],[10,11,2],[3,7,5,1,9],[3,7,4,8,2,1,0],[4,8,6,3],[1,5,10,7,11,2]]; d=[[1,0,0,1],[0,1,1,1,0,0],[0,1,1],[0,1,1,1,0,1,0],[1,0,0,1,0],[0,0,1],[1,0,0,1,1],[0,1,1,0,1,0,0],[0,1,1,0],[1,0,0,0,1,1]]; print(json.dumps({"grade": 7, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"hesapla-ve-hatirla": [{"index": i, "response": {"recall": l[i], "ops": [{"a": bool(x), "ms": 2500} for x in d[i]], "limitMs": 6000}, "rtMs": 5000} for i in range(10)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$HB_GOVDE" "https://$ALAN/api/rapor/hesapla-ve-hatirla" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 4 and r["student"]["items"][0]["badge"] == "50 harfin hepsi doğru yerde"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 5 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun hesapla-ve-hatirla-raporu"
+          fi
+          hb_sayfa=$("${C[@]}" -f "https://$ALAN/testler/hesapla-ve-hatirla/coz?sinif=yetiskin") || hb_sayfa=""
+          if ! grep -q 'Hem hesapla hem hatırla!' <<<"$hb_sayfa" || ! grep -qF '\"letterMs\":1000' <<<"$hb_sayfa"; then
+            sorun="$sorun hesapla-ve-hatirla-sayfa"
+          fi
           # Kâğıt Katlama: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/kagit-katlama.test.ts güncel olduğunu
           # denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve yanılgı türleri gitmez.
           KK_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kagit-katlama": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')

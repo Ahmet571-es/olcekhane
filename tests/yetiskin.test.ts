@@ -35,6 +35,7 @@ const KULE = 'planlama-kule-gorevi';
 const HIZLI = 'hizli-kisilik-testi';
 const NFC = 'dusunmeyi-sevme-olcegi';
 const UC_BOYUT = 'uc-boyutlu-zihinde-dondurme';
+const HESAPLA = 'hesapla-ve-hatirla';
 
 /** Raporda kişiye gösterilen bütün metinler. */
 function reportText(r: SimpleReport): string {
@@ -76,7 +77,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT, HESAPLA].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);
@@ -85,7 +86,7 @@ describe('yetişkinler', () => {
       // yolları) yetişkin kipi henüz yok: bu testler açılmadan önce yetişkin için ayrı hazırlık gerekir. Görevlerden
       // yalnızca şekil akıl yürütme, sayı dizileri, sözel akıl yürütme, mantıksal akıl yürütme, sayısal akıl yürütme, kâğıt katlama, kelime bilgisi, kural değiştirme ve kelime listesi hatırlama yetişkinlere açıktır: soruları sınıfa göre değişmez, rapor metinleri okula
       // özgü değildir.
-      if (d.engine === 'tasks') expect([['matrix_reasoning'], ['number_series'], ['verbal_reasoning'], ['logical_reasoning'], ['numerical_reasoning'], ['cube_net'], ['mental_rotation_3d'], ['cognitive_reflection'], ['tower'], ['paper_folding'], ['vocabulary'], ['rule_switch'], ['word_list']], d.slug).toContainEqual(d.tasks.map((t) => t.kind));
+      if (d.engine === 'tasks') expect([['matrix_reasoning'], ['number_series'], ['verbal_reasoning'], ['logical_reasoning'], ['numerical_reasoning'], ['cube_net'], ['mental_rotation_3d'], ['complex_span'], ['cognitive_reflection'], ['tower'], ['paper_folding'], ['vocabulary'], ['rule_switch'], ['word_list']], d.slug).toContainEqual(d.tasks.map((t) => t.kind));
       else expect(d.engine, d.slug).toBe('likert');
       if (d.engine === 'likert') expect(d.profile, d.slug).not.toBe('riasec');
     }

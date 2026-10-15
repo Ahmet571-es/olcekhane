@@ -24,6 +24,13 @@ const towerResponse = z.object({
   pick: z.number().min(0).max(120_000).nullable(),
 });
 
+/** Hesapla ve hatırlada bir dizi: seçilen harfler, işlemlere verilen cevaplar ve işlem süre sınırı. */
+const complexSpanResponse = z.object({
+  recall: z.array(z.number().int().min(0).max(40)).max(12),
+  ops: z.array(z.object({ a: z.boolean().nullable(), ms: z.number().min(0).max(120_000).nullable() })).max(12),
+  limitMs: z.number().min(0).max(60_000),
+});
+
 /** Bilişsel görevin bir denemesi (tarayıcının gönderdiği biçim); doğruluk sunucuda yeniden hesaplanır. */
 export const taskTrial = z.object({
   length: z.number().int().min(1).max(20).optional(),
@@ -37,6 +44,7 @@ export const taskTrial = z.object({
     cancellationResponse,
     trailResponse,
     towerResponse,
+    complexSpanResponse,
     /** Kelime listesi hatırlamada yazılan kelimeler ve listenin baştan gösterilme sayısı. */
     z.object({ words: z.array(z.string().max(30)).max(40), restarts: z.number().int().min(0).max(50).optional() }),
     z.null(),

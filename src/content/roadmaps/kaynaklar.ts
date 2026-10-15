@@ -276,4 +276,16 @@ export const KAYNAK = {
     text: 'Sisk, V. F., Burgoyne, A. P., Sun, J., Butler, J. L. ve Macnamara, B. N. (2018). To what extent and under which circumstances are growth mind-sets important to academic achievement? Two meta-analyses. Psychological Science, 29(4), 549–571.',
     url: 'https://doi.org/10.1177/0956797617739704',
   },
+  ferguson2021: {
+    text: 'Ferguson, H. J., Brunsdon, V. E. A. ve Bradford, E. E. F. (2021). The developmental trajectories of executive function from adolescence to old age. Scientific Reports, 11, 1382.',
+    url: 'https://doi.org/10.1038/s41598-020-80866-1',
+  },
+  schmiedek2014: {
+    text: 'Schmiedek, F., Lövdén, M. ve Lindenberger, U. (2014). A task is a task is a task: Putting complex span, n-back, and other working memory indicators in psychometric context. Frontiers in Psychology, 5, 1475.',
+    url: 'https://doi.org/10.3389/fpsyg.2014.01475',
+  },
+  fu2026: {
+    text: 'Fu, J., Zhou, Y., Yuan, M. ve Cai, Y. (2026). The asymmetry of working memory training transfer: A systematic review and meta-analysis. Psychonomic Bulletin & Review, 33(7), 227.',
+    url: 'https://doi.org/10.3758/s13423-026-02994-5',
+  },
 } satisfies Record<string, { text: string; url: string }>;

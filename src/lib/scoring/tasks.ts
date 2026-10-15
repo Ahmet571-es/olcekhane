@@ -8,6 +8,7 @@ import type {
   MatrixRule,
   MentalRotationTask,
   MentalRotation3dTask,
+  ComplexSpanTask,
   NBackTask,
   NumberSeriesRule,
   NumberSeriesTask,
@@ -47,6 +48,7 @@ import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds } from '@/lib/instruments/rule-switch';
 import { WORD_RECOGNITION_FAST_MS, matchWord, normalizeWord, wordListRecalls } from '@/lib/instruments/word-list';
 import { nBackRoles } from '@/lib/instruments/sequences';
+import { blankOf, opTrue } from '@/lib/instruments/complex-span';
 import { median, round } from './stats';
 
 /**
@@ -2622,6 +2624,203 @@ export function rotation3dQualityNotes(r: Rotation3dResult): string[] {
   return notes;
 }
 
+/* ---------- Hesapla ve hatırla (karmaşık bellek aralığı) ---------- */
+
+export interface ComplexSpanTrialInput {
+  /** Dizinin sırası (0'dan). */
+  index: number;
+  response: {
+    /** Seçilen harfler, sırayla (harflerin listedeki sırası; "Boş" için harf sayısı). */
+    recall: number[];
+    /** Dizideki işlemlere verilen cevaplar: doğru/yanlış (süre dolduysa null) ve süre (ms). */
+    ops: { a: boolean | null; ms: number | null }[];
+    /** O dizide kullanılan işlem süre sınırı (ms). */
+    limitMs: number;
+  };
+  /** Hatırlama ekranında geçen süre. */
+  rtMs: number | null;
+}
+
+export interface ComplexSpanSizeResult {
+  size: number;
+  sets: number;
+  letters: number;
+  /** Doğru yerde hatırlanan harfler. */
+  correct: number;
+  /** Bütün harfleri doğru sırayla hatırlanan diziler. */
+  perfect: number;
+}
+
+export interface ComplexSpanOpsResult {
+  n: number;
+  correct: number;
+  wrong: number;
+  /** Süre içinde cevaplanmayan işlemler (yanlış sayılır). */
+  timeouts: number;
+  accuracy: number;
+  medianMs: number | null;
+  /** `CS_RAPID_MS`'den kısa sürede verilen cevaplar. */
+  rapid: number;
+}
+
+export interface ComplexSpanResult {
+  sets: number;
+  letters: number;
+  /** Doğru yerde hatırlanan harfler (kısmi puan: her harf, dizinin tamamı doğru olmasa da sayılır). */
+  correct: number;
+  accuracy: number;
+  /** Bütün harfleri doğru sırayla hatırlanan diziler ve bunlardaki harfler (tam puan). */
+  perfectSets: number;
+  absolute: number;
+  /** Bütün harfleri doğru sırayla hatırlanan en uzun dizi. */
+  longest: number | null;
+  bySize: ComplexSpanSizeResult[];
+  /** Doğru yerde olmayan harf yerleri: dizide olan ama yeri karışan harf, dizide olmayan harf, boş kalan yer. */
+  order: number;
+  intrusion: number;
+  blank: number;
+  ops: ComplexSpanOpsResult;
+  /** İşlem süre sınırı (ms). */
+  limitMs: number | null;
+  medianRecallMs: number | null;
+}
+
+/** Bu testteki düzende işlemlerin en az %85'inin doğru olması beklenir (Unsworth ve ark., 2005; aktaran Đokić ve ark., 2018). */
+export const CS_OPS_TARGET = 0.85;
+/**
+ * Rastgele basan biri her işlemi 1/2 olasılıkla doğru cevaplar: 50 işlemde 32 ya da daha çok doğrunun olasılığı %3,2'dir.
+ * 31 ya da daha az doğru, rastgele basan birinin de bulabileceği kadar azdır.
+ */
+export const CS_OPS_CHANCE_MAX = 31;
+/**
+ * Harfleri rastgele seçen biri bir yeri yaklaşık 1/12 olasılıkla doğru bulur: 50 yerde 9 ya da daha çok doğrunun olasılığı
+ * %2,1'dir. 8 ya da daha az doğru, rastgele seçimde de görülebilir.
+ */
+export const CS_RECALL_CHANCE_MAX = 8;
+/** Bir işlemi okuyup hesaplamak için bundan kısa bir süre yetmez. */
+export const CS_RAPID_MS = 500;
+
+export function scoreComplexSpan(task: ComplexSpanTask, input: ComplexSpanTrialInput[]): { result: ComplexSpanResult } {
+  const n = task.sets.length;
+  const blank = blankOf(task);
+  const byIndex = new Map<number, ComplexSpanTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz dizi.');
+    const set = task.sets[t.index];
+    const r = t.response;
+    if (!r || typeof r !== 'object' || !Array.isArray(r.recall) || !Array.isArray(r.ops)) throw new TaskInputError('Geçersiz cevap.');
+    if (r.recall.length > set.letters.length || r.recall.some((x) => !Number.isInteger(x) || x < 0 || x > blank)) throw new TaskInputError('Geçersiz cevap.');
+    if (r.ops.length !== set.ops.length) throw new TaskInputError('Geçersiz cevap.');
+    for (const o of r.ops) {
+      if (!o || (o.a !== null && typeof o.a !== 'boolean')) throw new TaskInputError('Geçersiz cevap.');
+      if (o.ms !== null && (!Number.isFinite(o.ms) || o.ms < 0)) throw new TaskInputError('Geçersiz süre.');
+    }
+    if (!Number.isFinite(r.limitMs) || r.limitMs < task.limit.minMs || r.limitMs > task.limit.maxMs) throw new TaskInputError('Geçersiz süre sınırı.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Dizilerin hepsi cevaplanmadı.');
+
+  let correct = 0;
+  let order = 0;
+  let intrusion = 0;
+  let blankN = 0;
+  const sizes = new Map<number, ComplexSpanSizeResult>();
+  const opMs: number[] = [];
+  const recallMs: number[] = [];
+  const ops = { n: 0, correct: 0, wrong: 0, timeouts: 0, rapid: 0 };
+  let limitMs: number | null = null;
+  task.sets.forEach((set, i) => {
+    const t = byIndex.get(i)!;
+    const size = set.letters.length;
+    let here = 0;
+    for (let k = 0; k < size; k++) {
+      const x = t.response.recall[k];
+      if (x === set.letters[k]) here++;
+      else if (x === undefined || x === blank) blankN++;
+      else if (set.letters.includes(x)) order++;
+      else intrusion++;
+    }
+    correct += here;
+    const s = sizes.get(size) ?? { size, sets: 0, letters: 0, correct: 0, perfect: 0 };
+    s.sets++;
+    s.letters += size;
+    s.correct += here;
+    if (here === size) s.perfect++;
+    sizes.set(size, s);
+    set.ops.forEach((op, k) => {
+      const o = t.response.ops[k];
+      ops.n++;
+      if (o.a === null) ops.timeouts++;
+      else if (o.a === opTrue(op)) ops.correct++;
+      else ops.wrong++;
+      if (o.a !== null && o.ms !== null) {
+        opMs.push(o.ms);
+        if (o.ms < CS_RAPID_MS) ops.rapid++;
+      }
+    });
+    if (t.rtMs !== null) recallMs.push(t.rtMs);
+    limitMs = t.response.limitMs;
+  });
+  const bySize = [...sizes.values()].sort((a, b) => a.size - b.size);
+  const letters = task.sets.reduce((s, x) => s + x.letters.length, 0);
+  const perfect = bySize.filter((s) => s.perfect > 0);
+  return {
+    result: {
+      sets: n,
+      letters,
+      correct,
+      accuracy: round(correct / letters, 3),
+      perfectSets: bySize.reduce((s, x) => s + x.perfect, 0),
+      absolute: bySize.reduce((s, x) => s + x.perfect * x.size, 0),
+      longest: perfect.length ? perfect[perfect.length - 1].size : null,
+      bySize,
+      order,
+      intrusion,
+      blank: blankN,
+      ops: { ...ops, accuracy: round(ops.correct / ops.n, 3), medianMs: medianOrNull(opMs) },
+      limitMs,
+      medianRecallMs: medianOrNull(recallMs),
+    },
+  };
+}
+
+/** İşlemler rastgele basan birinin de bulabileceği kadar az doğru. */
+export const complexSpanOpsChance = (r: ComplexSpanResult) => r.ops.correct <= CS_OPS_CHANCE_MAX;
+/** İşlemlerin en az beşte birine yarım saniyeden kısa sürede cevap verilmiş. */
+export const complexSpanRapid = (r: ComplexSpanResult) => r.ops.rapid >= Math.ceil(r.ops.n / 5);
+/** Doğru yerde hatırlanan harfler rastgele seçimde de görülebilecek kadar az. */
+export const complexSpanRecallChance = (r: ComplexSpanResult) => r.correct <= CS_RECALL_CHANCE_MAX;
+
+/**
+ * Hesapla ve hatırlada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, complexSpanBlocks aynı eşikleri
+ * kullanır). Harfler rastgele seçimdeki kadar azsa harf sonucu zaten yorumlanmaz; işlem notları o zaman harf sonucu için
+ * ayrıca bir şey söylemez.
+ */
+export function complexSpanQualityNotes(r: ComplexSpanResult): string[] {
+  const notes: string[] = [];
+  const recallChance = complexSpanRecallChance(r);
+  if (recallChance) {
+    notes.push(
+      'Hesapla ve hatırla testinde doğru yerde hatırlanan harfler, harfleri rastgele seçen birinin de bulabileceği kadar az; yönerge tam anlaşılmamış, harfler boş bırakılmış ya da görev yarıda bırakılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (complexSpanOpsChance(r)) {
+    notes.push(
+      `Hesapla ve hatırla testinde ${r.ops.n} işlemin ${r.ops.correct === 0 ? 'hiçbiri süresi içinde doğru cevaplanmamış' : `yalnızca ${r.ops.correct === 1 ? 'biri' : `${r.ops.correct} tanesi`} süresi içinde doğru cevaplanmış`}; bu, rastgele basan birinin de bulabileceği kadar az.${
+        recallChance ? '' : ' İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmamalıdır.'
+      }`,
+    );
+  } else if (complexSpanRapid(r)) {
+    notes.push(
+      `Hesapla ve hatırla testinde ${r.ops.n} işlemin ${r.ops.rapid === r.ops.n ? 'hepsine' : `${r.ops.rapid} tanesine`} yarım saniyeden kısa sürede cevap verilmiş; bu işlemlere bakılmadan basılmış olabilir.${
+        recallChance ? '' : ' İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu dikkatle yorumlanmalıdır.'
+      }`,
+    );
+  }
+  return notes;
+}
+
 /* ---------- Düşünerek karar verme ---------- */
 
 export interface ReflectionTrialInput {
@@ -2969,6 +3168,7 @@ export function taskQualityNotes(parts: {
   reflection?: ReflectionResult;
   tower?: TowerResult;
   rotation3d?: Rotation3dResult;
+  complexSpan?: ComplexSpanResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -3161,6 +3361,8 @@ export function taskQualityNotes(parts: {
   if (kg) notes.push(...towerQualityNotes(kg));
   const ud = parts.rotation3d;
   if (ud) notes.push(...rotation3dQualityNotes(ud));
+  const hb = parts.complexSpan;
+  if (hb) notes.push(...complexSpanQualityNotes(hb));
   return notes;
 }
 

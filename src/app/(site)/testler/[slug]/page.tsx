@@ -85,6 +85,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                                   ? `${single.items.length} problem, ${Math.min(...single.items.map((i) => i.minMoves))}–${Math.max(...single.items.map((i) => i.minMoves))} hamle`
                                   : single.kind === 'mental_rotation_3d'
                                     ? `${single.items.length} soru, ${single.parts.length} bölüm`
+                                    : single.kind === 'complex_span'
+                                      ? `${single.sets.length} dizi: ${single.sets.reduce((s, x) => s + x.letters.length, 0)} harf ve ${single.sets.reduce((s, x) => s + x.ops.length, 0)} işlem`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -433,6 +435,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Kaç soruda döndürülmüş iki şeklin de bulunduğu ve seçilen şekillerin kaçının doğru olduğu</li>
                 <li>Yalnızca dik bir eksen çevresinde döndürülmüş şekillerle ayrıca yan yatırılmış şekillerin karşılaştırması (grafikle), yanlış cevaplarda ayna görüntülerinin nasıl seçildiği ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'complex_span' && (
+              <>
+                <li>İşlemlerin arasında gösterilen harflerin kaç tanesinin doğru yerde hatırlandığı ve diziler uzadıkça sonucun nasıl değiştiği (3 harften 7 harfe; grafik ve üç boyutlu grafikle)</li>
+                <li>İşlemlerin ne kadarının süresi içinde doğru cevaplandığı ve doğru yerde olmayan harflerin türü (yeri karışan, dizide olmayan ya da boş bırakılan)</li>
               </>
             )}
             {single?.kind === 'tower' && (

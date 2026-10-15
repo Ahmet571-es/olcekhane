@@ -24,6 +24,7 @@ import {
   scoreReflection,
   scoreTower,
   scoreRotation3d,
+  scoreComplexSpan,
   scoreReaction,
   scoreRotation,
   scoreSpan,
@@ -66,6 +67,8 @@ import {
   type TowerTrialInput,
   type Rotation3dResult,
   type Rotation3dTrialInput,
+  type ComplexSpanResult,
+  type ComplexSpanTrialInput,
   type ReactionResult,
   type ReactionTrialInput,
   type RotationResult,
@@ -198,7 +201,8 @@ export type TaskInputs =
   | CubeTrialInput[]
   | ReflectionTrialInput[]
   | TowerTrialInput[]
-  | Rotation3dTrialInput[];
+  | Rotation3dTrialInput[]
+  | ComplexSpanTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -230,6 +234,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let reflectionRes: ReflectionResult | undefined;
   let towerRes: TowerResult | undefined;
   let rotation3dRes: Rotation3dResult | undefined;
+  let complexSpanRes: ComplexSpanResult | undefined;
   let foldingRes: FoldingResult | undefined;
   let vocabularyRes: VocabularyResult | undefined;
   let ruleSwitchRes: RuleSwitchResult | undefined;
@@ -469,6 +474,16 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'ud_ayna', raw: null, mean: null, nAnswered: result.n - result.correct, nItems: result.n, band: null },
         { scaleKey: 'ud_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'complex_span') {
+      const { result } = scoreComplexSpan(task, input as ComplexSpanTrialInput[]);
+      complexSpanRes = result;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "hb_harf" satırında durur.
+      rows.push(
+        { scaleKey: 'hb_harf', raw: result.correct, mean: null, nAnswered: result.correct, nItems: result.letters, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'hb_uzunluk', raw: result.longest, mean: null, nAnswered: result.perfectSets, nItems: result.sets, band: null },
+        { scaleKey: 'hb_islem', raw: pct(result.ops.accuracy), mean: null, nAnswered: result.ops.correct, nItems: result.ops.n, band: null },
+        { scaleKey: 'hb_hata', raw: null, mean: null, nAnswered: result.order + result.intrusion + result.blank, nItems: result.letters, band: null },
+      );
     } else if (task.kind === 'tower') {
       const { result } = scoreTower(task, input as TowerTrialInput[]);
       towerRes = result;
@@ -529,6 +544,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       reflection: reflectionRes,
       tower: towerRes,
       rotation3d: rotation3dRes,
+      complexSpan: complexSpanRes,
     }),
   };
 }

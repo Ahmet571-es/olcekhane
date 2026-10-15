@@ -9,7 +9,7 @@ import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadma
  * beyni çalıştırmayı vaat etmez. Üç boyutlu grafik yalnızca sonuçları aynı birimde olan görevlerde vardır (şekil akıl
  * yürütmede ve sayı dizilerinde kural türlerine, sözel akıl yürütmede soru türlerine, kâğıt katlamada katlama türlerine, kelime
  * bilgisinde soru türlerine göre doğru cevap oranı; kelime listesi hatırlamada listenin başından, ortasından ve sonundan
- * hatırlananların oranı); öteki görevlerde
+ * hatırlananların oranı; hesapla ve hatırlada dizi uzunluklarına göre doğru yerde hatırlanan harflerin oranı); öteki görevlerde
  * sonuçlar farklı birimlerde olduğu için yoktur.
  */
 export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts: { preview: boolean; next: NextTest[] }): Roadmap | undefined {

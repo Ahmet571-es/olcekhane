@@ -27,6 +27,7 @@ import {
   rotation3dBody,
   reflectionBody,
   towerBody,
+  complexSpanBody,
   foldingBody,
   vocabularyBody,
   ruleSwitchBody,
@@ -289,6 +290,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'uc-boyutlu-zihinde-dondurme': () => rotation3dBody(),
     'dusunerek-karar-verme': () => reflectionBody(),
     'planlama-kule-gorevi': () => towerBody(),
+    'hesapla-ve-hatirla': () => complexSpanBody(),
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
@@ -349,6 +351,11 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['h3', 'h4', 'h5', 'h6', 'h7']);
           expect(rm.barsTitle).toMatch(/^Problem uzunluğuna göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('dört problemdir');
+        } else if (slug === 'hesapla-ve-hatirla') {
+          // Her uzunlukta (3–7 harf) iki dizide doğru yerde hatırlanan harflerin oranı (aynı birim): beş sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['d3', 'd4', 'd5', 'd6', 'd7']);
+          expect(rm.barsTitle).toMatch(/^Dizi uzunluğuna göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('iki dizidir');
         } else if (slug === 'dusunerek-karar-verme') {
           expect(rm.bars.map((b) => b.key)).toEqual(['numLure', 'verbLure', 'control']);
           expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);

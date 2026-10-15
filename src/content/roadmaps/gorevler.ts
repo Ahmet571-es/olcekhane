@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme ve Kule Görevi yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi ve Hesapla ve Hatırla yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1994,6 +1994,108 @@ const kelimeListesi: TaskRoadmapTemplate = {
   sources: [KAYNAK.oliveira, KAYNAK.lehmann, KAYNAK.roediger, KAYNAK.cepeda],
 };
 
+const hesaplaBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; çalışma belleğinin yalnızca bir yönünü (araya işlemler girerken harfleri sırasıyla akılda tutmayı) gösterir.',
+    'Tek bir görevin sonucu, çalışma belleğinin yanında o göreve özgü etkileri de taşır; çalışma belleğini daha iyi görmek için farklı türden görevler birlikte kullanılır.',
+    '10–86 yaş arası kişilerle yapılan bir çalışmada bu tür bir görevdeki sonuçlar 10 ile 30 yaş arasında biraz yükselmiştir.',
+    'Harf ya da sayı dizilerini akılda tutmaya dayalı bilgisayar alıştırmaları alıştırılan görevde sonucu yükseltebilir; ama bunun başka türden görevlere ve günlük işlere yansıdığına dair güvenilir bir kanıt yoktur.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; çalışma belleğinin yalnızca bir yönünü (araya işlemler girerken harfleri sırasıyla akılda tutmayı) gösterir.',
+    'Tek bir görevin sonucu, çalışma belleğinin yanında o göreve özgü etkileri de taşır; çalışma belleğini daha iyi görmek için farklı türden görevler birlikte kullanılır.',
+    '10–86 yaş arası kişilerle yapılan bir çalışmada bu tür bir görevdeki sonuçlar 10 ile 30 yaş arasında biraz yükselmiştir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+    'Harf ya da sayı dizilerini akılda tutmaya dayalı bilgisayar alıştırmaları alıştırılan görevde sonucu yükseltebilir; ama bunun başka türden görevlere, derslere ve günlük işlere yansıdığına dair güvenilir bir kanıt yoktur.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine yaşla ilgili bilgi. */
+const hesaplaFacts: InfoBox = {
+  ...hesaplaBase,
+  items: {
+    ...hesaplaBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; çalışma belleğinin yalnızca bir yönünü (araya işlemler girerken harfleri sırasıyla akılda tutmayı) gösterir.',
+      'Tek bir görevin sonucu, çalışma belleğinin yanında o göreve özgü etkileri de taşır; çalışma belleğini daha iyi görmek için farklı türden görevler birlikte kullanılır.',
+      '10–86 yaş arası kişilerle yapılan bir çalışmada bu tür bir görevdeki sonuçlar 30 yaşa kadar biraz yükselmiş, 30 yaşın üstünde ise yaş ilerledikçe düşmüştür; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+      'Harf ya da sayı dizilerini akılda tutmaya dayalı bilgisayar alıştırmaları alıştırılan görevde sonucu yükseltebilir; ama bunun başka türden görevlere ve günlük işlere yansıdığına dair güvenilir bir kanıt yoktur.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const hesaplaVeHatirla: TaskRoadmapTemplate = {
+  version: 'hesapla-ve-hatirla-yol-haritasi-1',
+  what: {
+    student: 'bir yandan iş yaparken bir yandan bilgiyi aklında tutmayı nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun bir yandan iş yaparken bir yandan bilgiyi aklında tutmasını nasıl kolaylaştırabileceği',
+    summary: 'iş yaparken bilgiyi akılda tutmayı kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'İş yaparken bilgiyi aklında tutmayı ne kolaylaştırır?', parent: 'Çocuğunuzun iş yaparken bilgiyi aklında tutmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, araya işlemler girerken harfleri sırasıyla aklında tutabilmeyi, yani çalışma belleğini ölçer. Çalışma belleği; zihinden hesap yaparken ara sonuçları akılda tutmak, birini dinlerken söylenenleri aklında tutup bir yandan not almak ya da birkaç adımlı bir tarifi uygularken sıradaki adımı unutmamak gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde aklındaki yükü hafifletmeye yardım edebilir.',
+    'Bu test, araya işlemler girerken harfleri sırasıyla akılda tutabilmeyi, yani çalışma belleğini ölçer. Çalışma belleği; zihinden hesap yaparken ara sonuçları akılda tutmak, öğretmeni dinlerken bir yandan not almak ya da çok adımlı bir yönergeyi uygularken sıradaki adımı unutmamak gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde aklındaki yükü hafifletmeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'yaz', 'Ara sonuçları yaz', 'Araç', t(
+      'Zihinden işlem yaparken ya da birkaç bilgiyi aynı anda kullanman gerektiğinde ara sonuçları kâğıda ya da telefona yaz. Bilgi kâğıtta durunca hepsini aynı anda aklında tutmak zorunda kalmazsın; aklını hesaba ve düşünmeye ayırırsın.',
+      'Çocuğunuza zihinden işlem yaparken ya da birkaç bilgiyi aynı anda kullanması gerektiğinde ara sonuçları kâğıda yazmasını önerin. Bilgi kâğıtta durunca hepsini aynı anda aklında tutmak zorunda kalmaz; aklını hesaba ve düşünmeye ayırır.',
+    )),
+    support(1, 'tek', 'Bir seferde bir iş', 'Ortam', t(
+      'Önemli bir şeyi dinlerken ya da okurken aynı anda başka bir işe (ör. mesajlara bakmaya) geçme. Bu testte de gördüğün gibi, araya başka bir iş girdiğinde akılda tutulan bilgiyi korumak zorlaşır.',
+      'Önemli bir şeyi dinlerken ya da okurken aynı anda başka bir işe (ör. telefona bakmaya) geçmemesi çocuğunuzun işini kolaylaştırır. Bu testte de görüldüğü gibi, araya başka bir iş girdiğinde akılda tutulan bilgiyi korumak zorlaşır.',
+    )),
+    support(2, 'parca', 'Parçalara böl', 'Yöntem', t(
+      'Akılda tutman gereken uzun bir bilgiyi (ör. bir numara ya da birkaç adımlı bir yol tarifi) küçük parçalara böl ve bir parçayı bitirmeden ötekine geçme. Uzun bir bilgiyi tek seferde değil, parça parça kullanmak aklındaki yükü azaltabilir.',
+      'Çocuğunuza akılda tutması gereken uzun bir bilgiyi (ör. bir numara ya da çok adımlı bir yönerge) küçük parçalara bölmesini ve bir parçayı bitirmeden ötekine geçmemesini önerin. Uzun bir bilgiyi tek seferde değil, parça parça kullanmak aklındaki yükü azaltabilir.',
+    )),
+    support(3, 'liste', 'Adımları listeye dök', 'Alışkanlık', t(
+      'Birkaç adımlı bir iş ya da yönerge aldığında adımları kısa bir listeye yaz ve bitirdikçe işaretle. Liste, sıradaki adımı aklında tutma işini senin yerine yapar; bir adımı unutursan listeye bakman yeter.',
+      'Çocuğunuza birkaç adımlı bir iş ya da yönerge aldığında adımları kısa bir listeye yazmasını ve bitirdikçe işaretlemesini önerin. Liste, sıradaki adımı aklında tutma işini onun yerine yapar; bir adımı unutursa listeye bakması yeter.',
+    )),
+  ],
+  facts: hesaplaFacts,
+  approach: [
+    { title: 'Yönergeleri parça parça verin', text: 'Çok adımlı yönergeleri birer birer verin ya da kısa bir liste olarak yazın; birini bitirince ötekine geçmesini bekleyin.' },
+    { title: 'Ortamı sadeleştirin', text: 'Ödev ve ders çalışma sırasında televizyon ve telefon gibi dikkati bölen şeyleri ortamdan uzaklaştırın; bir seferde bir işe odaklanmasına destek olun.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Ara sonucu yaz',
+      text: t(
+        'Bu hafta birbirine benzeyen, birkaç adımlı iki hesap seç (ör. iki ayrı alışverişin toplam tutarı). Birini ara sonuçları yazarak, ötekini yazmadan yap; hangisinin daha kolay ve doğru olduğunu karşılaştır.',
+        'Bu hafta çocuğunuzla birbirine benzeyen, birkaç adımlı iki hesap seçin (ör. iki ayrı alışverişin toplam tutarı). Birini ara sonuçları yazarak, ötekini yazmadan yapın; hangisinin daha kolay ve doğru olduğunu birlikte konuşun.',
+      ),
+    },
+    {
+      title: 'Tek iş',
+      text: t(
+        'Bu hafta önemli bir şeyi dinlerken ya da okurken telefonunu başka bir yere koy. Sonra dinlediğin ya da okuduğun şeyi ne kadar aklında tuttuğuna bak.',
+        'Bu hafta çocuğunuza önemli bir şeyi dinlerken ya da okurken telefonunu başka bir yere koymasını önerin. Sonra dinlediği ya da okuduğu şeyi ne kadar aklında tuttuğunu birlikte konuşun.',
+      ),
+    },
+    {
+      title: 'Listeye dök',
+      text: t(
+        'Bu hafta birkaç adımlı bir işi (ör. bir tarifi uygulamak ya da bir eşyayı kurmak) adımları kısa bir listeye yazarak yap ve bitirdikçe işaretle.',
+        'Bu hafta çocuğunuzla birkaç adımlı bir işi (ör. bir tarifi uygulamak ya da bir oyunu kurmak) adımları kısa bir listeye yazarak yapın ve bitirdikçe işaretlemesini isteyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (ara sonuçları yazmak, bir seferde bir iş yapmak, parçalara bölmek ya da listeye dökmek) iş yaparken bilgiyi aklında tutmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun iş yaparken bilgiyi aklında tutmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['geriye-donuk-hatirlama', 'kelime-listesi-hatirlama', 'kural-degistirme'],
+  nextPurpose: {
+    you: 'belleğinin ve dikkatinin başka yönlerini de görmek',
+    parent: 'çocuğunuzun belleğinin ve dikkatinin başka yönlerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.ferguson2021, KAYNAK.fu2026, KAYNAK.schmiedek2014, KAYNAK.melby, KAYNAK.hedge],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -2017,4 +2119,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'uc-boyutlu-zihinde-dondurme': ucBoyutluZihindeDondurme,
   'dusunerek-karar-verme': dusunerekKararVerme,
   'planlama-kule-gorevi': planlamaKuleGorevi,
+  'hesapla-ve-hatirla': hesaplaVeHatirla,
 };

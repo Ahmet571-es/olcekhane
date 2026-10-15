@@ -144,6 +144,11 @@ import {
   rotation3dSamePair,
   type Rotation3dPartResult,
   type Rotation3dResult,
+  CS_OPS_TARGET,
+  complexSpanOpsChance,
+  complexSpanRapid,
+  complexSpanRecallChance,
+  type ComplexSpanResult,
 } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
@@ -4673,6 +4678,378 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   return { blocks: [dogru, bolum, ayna, calisma], chart, figures };
 }
 
+/* ---------- Hesapla ve hatırla ---------- */
+
+/** Hesapla ve hatırlada dizi uzunluklarının renkleri (üç boyutlu grafikte; yalnızca uzunlukları ayırır). */
+export const COMPLEX_SPAN_SIZE_COLORS = ['#2f5ce0', '#0e9c8c', '#d28a14', '#ee6a36', '#7a4ee6'];
+
+/** "4,2 saniye": işlem süreleri ve süre sınırı (onda bir saniye duyarlıkla). */
+/** "12 tanesini" ama "birini": tek olan için "1 tanesi" denmez. */
+const csCount = (n: number, suffix: 'i' | 'ini' | 'inde' | 'inin') => (n === 1 ? `bir${suffix}` : `${n} tanes${suffix}`);
+
+const csSeconds = (ms: number) => `${String(Math.round(ms / 100) / 10).replace('.', ',')} saniye`;
+
+/** Hesapla ve hatırlanın dört sonuç kartı, dizi uzunluklarına göre grafik, öne çıkan sayılar ve üç boyutlu grafik. */
+function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const N = r.letters;
+  const X = r.correct;
+  const P = r.perfectSets;
+  const O = r.ops;
+  const recallChance = complexSpanRecallChance(r);
+  const opsChance = complexSpanOpsChance(r);
+  // Kalite notlarındaki gibi: işlemler rastgele düzeydeyse hızlı cevaplar ayrıca anlatılmaz.
+  const rapid = !opsChance && complexSpanRapid(r);
+  const noRead = recallChance || opsChance;
+  const noReadWhy = recallChance
+    ? 'Doğru yerde hatırlanan harfler rastgele seçimde de görülebilecek kadar az olduğu için'
+    : 'İşlemlerin doğru cevaplananları rastgele basmada da görülebilecek kadar az olduğu için';
+  // "Hiçbiri" olumsuz fiille söylenir ("cevaplayamadın"); bir kısmı olumlu fiille.
+  const opsClause = v(
+    O.correct === 0
+      ? 'işlemlerin hiçbirini süresi içinde doğru cevaplayamadın'
+      : `işlemlerin yalnızca ${csCount(O.correct, 'ini')} süresi içinde doğru cevapladın`,
+    O.correct === 0
+      ? 'işlemlerin hiçbirini süresi içinde doğru cevaplayamadı'
+      : `işlemlerin yalnızca ${csCount(O.correct, 'ini')} süresi içinde doğru cevapladı`,
+  );
+  const rapidPhrase = O.rapid === O.n ? 'hepsine' : `${O.rapid} tanesine`;
+
+  /* Hatırlanan harfler */
+  let harfText: string;
+  if (recallChance) {
+    harfText = v(
+      `${N} harften ${X === 0 ? 'hiçbirini doğru yerde seçemedin' : `yalnızca ${csCount(X, 'ini')} doğru yerde seçtin`}; bu, harfleri rastgele seçen birinin de bulabileceği kadar az. Yönergeyi tam anlamamış, harfleri boş bırakmış ya da görevi yarıda bırakmış olabilirsin; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
+      `Çocuğunuz ${N} harften ${X === 0 ? 'hiçbirini doğru yerde seçemedi' : `yalnızca ${csCount(X, 'ini')} doğru yerde seçti`}; bu, harfleri rastgele seçen birinin de bulabileceği kadar az. Yönerge tam anlaşılmamış, harfler boş bırakılmış ya da görev yarıda bırakılmış olabilir; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
+    );
+  } else if (opsChance) {
+    harfText = v(
+      `${N} harften ${csCount(X, 'ini')} doğru yerde seçtin. Ancak ${opsClause}; bu, rastgele basan birinin de bulabileceği kadar az. Bu testte harfler, işlemler yapılırken akılda tutulur; işlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı. Dinlenmiş olduğun bir gün, işlemlere de özen göstererek testi baştan çözmek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${N} harften ${csCount(X, 'ini')} doğru yerde seçti. Ancak ${opsClause}; bu, rastgele basan birinin de bulabileceği kadar az. Bu testte harfler, işlemler yapılırken akılda tutulur; işlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı. Dinlenmiş olduğu bir gün, işlemlere de özen göstererek testi baştan çözmesi daha doğru bir sonuç verebilir.`,
+    );
+  } else {
+    const intro = v(
+      `Bu testte ${r.sets} dizide toplam ${N} harf vardı; her harften önce bir işlemin doğru olup olmadığına karar verdin.`,
+      `Bu testte ${r.sets} dizide toplam ${N} harf vardı; çocuğunuz her harften önce bir işlemin doğru olup olmadığına karar verdi.`,
+    );
+    let level: string;
+    if (X === N) {
+      level = v(
+        'Harflerin hepsini doğru yerde hatırladın: işlemler araya girse de bütün dizileri doğru sırayla akılda tuttun.',
+        'Çocuğunuz harflerin hepsini doğru yerde hatırladı: işlemler araya girse de bütün dizileri doğru sırayla akılda tuttu.',
+      );
+    } else if (X >= 0.85 * N) {
+      level = v(
+        `Bunların ${csCount(X, 'ini')} doğru yerde hatırladın: işlemler araya girse de harflerin hemen hepsini doğru sırayla akılda tuttun.`,
+        `Çocuğunuz bunların ${csCount(X, 'ini')} doğru yerde hatırladı: işlemler araya girse de harflerin hemen hepsini doğru sırayla akılda tuttu.`,
+      );
+    } else if (X >= 0.65 * N) {
+      level = v(
+        `Bunların ${csCount(X, 'ini')} doğru yerde hatırladın: işlemler araya girse de harflerin çoğunu doğru sırayla akılda tuttun.`,
+        `Çocuğunuz bunların ${csCount(X, 'ini')} doğru yerde hatırladı: işlemler araya girse de harflerin çoğunu doğru sırayla akılda tuttu.`,
+      );
+    } else {
+      const share = 2 * X > N ? 'yarısından çoğu' : 2 * X === N ? 'yarısı' : 'yarısından azı';
+      level = v(
+        `Bunların ${csCount(X, 'ini')} doğru yerde hatırladın: harflerin ${share} doğru yerdeydi; öteki harflerde yer karıştı ya da harf hatırlanamadı.`,
+        `Çocuğunuz bunların ${csCount(X, 'ini')} doğru yerde hatırladı: harflerin ${share} doğru yerdeydi; öteki harflerde yer karıştı ya da harf hatırlanamadı.`,
+      );
+    }
+    const parts = [intro, level];
+    if (X < N) {
+      parts.push(
+        r.longest !== null
+          ? v(
+              `Bütün harflerini doğru sırayla hatırladığın en uzun dizi ${r.longest} harfliydi.`,
+              `Bütün harflerini doğru sırayla hatırladığı en uzun dizi ${r.longest} harfliydi.`,
+            )
+          : v(
+              'Hiçbir dizinin bütün harflerini doğru sırayla seçemedin; doğru yerde seçtiğin harfler yine de sonuca sayıldı.',
+              'Çocuğunuz hiçbir dizinin bütün harflerini doğru sırayla seçemedi; doğru yerde seçtiği harfler yine de sonuca sayıldı.',
+            ),
+      );
+    }
+    parts.push(
+      v(
+        'Bu beceri; zihinden işlem yaparken ara sonuçları akılda tutmak ya da birini dinlerken söylenenleri aklında tutup bir yandan başka bir şey yapmak gibi işlerde kullanılır.',
+        'Bu beceri; zihinden işlem yaparken ara sonuçları akılda tutmak, çok adımlı yönergeleri izlemek ya da okurken cümlenin başını akılda tutmak gibi işlerde kullanılır.',
+      ),
+    );
+    if (rapid) {
+      parts.push(
+        v(
+          `İşlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdin; bu işlemlere bakılmadan basılmış olabilir. İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için bu sonuç dikkatle yorumlanmalıdır.`,
+          `Çocuğunuz işlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdi; bu işlemlere bakılmadan basılmış olabilir. İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için bu sonuç dikkatle yorumlanmalıdır.`,
+        ),
+      );
+    } else if (O.accuracy < CS_OPS_TARGET) {
+      parts.push(
+        v(
+          `İşlemlerin ${pct(O.accuracy)} kadarını süresi içinde doğru cevapladın. Bu tür görevlerde, işlemlerin gerçekten yapıldığını göstermek için geleneksel olarak en az %85’inin doğru olması istenir; bu düzeyin altında kalındığı için harf sonucu biraz daha dikkatle yorumlanmalıdır.`,
+          `Çocuğunuz işlemlerin ${pct(O.accuracy)} kadarını süresi içinde doğru cevapladı. Bu tür görevlerde, işlemlerin gerçekten yapıldığını göstermek için geleneksel olarak en az %85’inin doğru olması istenir; bu düzeyin altında kalındığı için harf sonucu biraz daha dikkatle yorumlanmalıdır.`,
+        ),
+      );
+    }
+    harfText = parts.join(' ');
+  }
+  const harf: CognitiveBlock = {
+    ...card('hb_harf'),
+    headline: X === 0 ? `${N} harfin hiçbiri doğru yerde değil` : X === N ? `${N} harfin hepsi doğru yerde` : `${N} harften ${csCount(X, 'i')} doğru yerde`,
+    text: harfText,
+  };
+
+  /* Dizi uzunluğu */
+  const group = (sizes: number[]) => {
+    const xs = r.bySize.filter((s) => sizes.includes(s.size));
+    return { correct: xs.reduce((s, x) => s + x.correct, 0), letters: xs.reduce((s, x) => s + x.letters, 0) };
+  };
+  const share = (sizes: number[]) => {
+    const g = group(sizes);
+    return g.letters ? g.correct / g.letters : 0;
+  };
+  let uzunluk: CognitiveBlock;
+  if (noRead) {
+    uzunluk = { ...card('hb_uzunluk'), headline: 'Yorumlanmadı', text: `${noReadWhy} dizi uzunluklarına göre sonuç yorumlanmadı.` };
+  } else {
+    const pShort = share([3, 4]);
+    const pLong = share([6, 7]);
+    const diff = pShort - pLong;
+    const S = group([3, 4]);
+    const L = group([6, 7]);
+    // "Hiçbirini" olumsuz fiille söylenir: bir grupta hiç doğru yoksa iki grup ayrı fiillerle anlatılır.
+    const some = (g: { correct: number; letters: number }) => `${g.letters} harfin ${g.correct === g.letters ? 'hepsini' : `${csCount(g.correct, 'ini')}`}`;
+    const none = (g: { letters: number }) => `${g.letters} harfin hiçbirini`;
+    let text: string;
+    if (S.correct > 0 && L.correct > 0) {
+      text = v(
+        `Kısa dizilerde (3 ve 4 harf) ${some(S)}, uzun dizilerde (6 ve 7 harf) ${some(L)} doğru yerde hatırladın.`,
+        `Çocuğunuz kısa dizilerde (3 ve 4 harf) ${some(S)}, uzun dizilerde (6 ve 7 harf) ${some(L)} doğru yerde hatırladı.`,
+      );
+    } else {
+      const part = (g: { correct: number; letters: number }, yes: string, no: string) =>
+        g.correct > 0 ? `${some(g)} doğru yerde ${yes}` : `${none(g)} doğru yerde ${no}`;
+      text = v(
+        `Kısa dizilerde (3 ve 4 harf) ${part(S, 'hatırladın', 'hatırlayamadın')}; uzun dizilerde (6 ve 7 harf) ${part(L, 'hatırladın', 'hatırlayamadın')}.`,
+        `Çocuğunuz kısa dizilerde (3 ve 4 harf) ${part(S, 'hatırladı', 'hatırlayamadı')}; uzun dizilerde (6 ve 7 harf) ${part(L, 'hatırladı', 'hatırlayamadı')}.`,
+      );
+    }
+    if (pShort >= 0.9 && pLong >= 0.9) {
+      text +=
+        pLong >= pShort
+          ? v(' Diziler uzadıkça sonucun düşmedi.', ' Diziler uzadıkça sonucu düşmedi.')
+          : v(' Diziler uzadıkça sonucun pek değişmedi.', ' Diziler uzadıkça sonucu pek değişmedi.');
+    } else if (diff >= 0.2) {
+      text += v(
+        ' Diziler uzadıkça doğru yerde hatırladığın harflerin oranı düştü. Uzun dizilerde hem akılda tutulacak harf hem araya giren işlem artar; bu yüzden diziler uzadıkça zorlanmak bu görevde olağandır.',
+        ' Diziler uzadıkça doğru yerde hatırladığı harflerin oranı düştü. Uzun dizilerde hem akılda tutulacak harf hem araya giren işlem artar; bu yüzden diziler uzadıkça zorlanmak bu görevde olağandır.',
+      );
+    } else if (diff >= 0.1 && L.letters - L.correct >= 3) {
+      // Birkaç harflik farklar yorumlanmaz: uzun dizilerde en az üç yer doğru değilse.
+      text += v(
+        ' Diziler uzadıkça doğru yerde hatırladığın harflerin oranı biraz düştü.',
+        ' Diziler uzadıkça doğru yerde hatırladığı harflerin oranı biraz düştü.',
+      );
+    } else if (diff <= -0.1 && S.letters - S.correct >= 3) {
+      text += v(
+        ' Uzun dizilerde harflerin, kısa dizilerdekinden daha büyük bir kısmını doğru yerde hatırladın. Kısa dizilerde dikkatin dağılmış olabilir.',
+        ' Uzun dizilerde harflerin, kısa dizilerdekinden daha büyük bir kısmını doğru yerde hatırladı. Kısa dizilerde dikkati dağılmış olabilir.',
+      );
+    } else {
+      text += v(' Diziler uzadıkça sonucun pek değişmedi.', ' Diziler uzadıkça sonucu pek değişmedi.');
+    }
+    if (P > 0 && P < r.sets) {
+      text += v(
+        ` ${r.sets} diziden ${csCount(P, 'inin')} bütün harflerini doğru sırayla hatırladın.`,
+        ` Çocuğunuz ${r.sets} diziden ${csCount(P, 'inin')} bütün harflerini doğru sırayla hatırladı.`,
+      );
+    }
+    text +=
+      ' Her uzunlukta yalnızca iki dizi olduğu için bütün harfleri doğru hatırlanan en uzun dizi yalnızca kabaca fikir verir; asıl sonuç, doğru yerde hatırlanan harflerin toplamıdır.';
+    uzunluk = {
+      ...card('hb_uzunluk'),
+      headline: P === r.sets ? 'Bütün diziler tam' : r.longest !== null ? `En uzun tam dizi: ${r.longest} harf` : 'Tam hatırlanan dizi yok',
+      detail: r.bySize.map((s) => `${s.size} harflik ${s.correct}/${s.letters}`).join(' · '),
+      text,
+    };
+  }
+
+  /* İşlemler */
+  const opsDetail = `Doğru ${O.correct} · Yanlış ${O.wrong} · Süre doldu ${O.timeouts}`;
+  const limitText =
+    r.limitMs !== null && O.timeouts > 0
+      ? v(
+          ` Süre sınırı, alıştırmadaki hızına göre ${csSeconds(r.limitMs)} olarak belirlenmişti; süresi dolan işlemler yanlış sayıldı.`,
+          ` Süre sınırı, alıştırmadaki hızına göre ${csSeconds(r.limitMs)} olarak belirlenmişti; süresi dolan işlemler yanlış sayıldı.`,
+        )
+      : '';
+  let islemText: string;
+  if (opsChance) {
+    islemText = v(
+      `${O.n} ${opsClause.replace(/^işlemlerin/, 'işlemin')}; bu, rastgele basan birinin de bulabileceği kadar az.`,
+      `Çocuğunuz ${O.n} ${opsClause.replace(/^işlemlerin/, 'işlemin')}; bu, rastgele basan birinin de bulabileceği kadar az.`,
+    );
+    islemText +=
+      O.timeouts > O.wrong
+        ? v(
+            ` İşlemlerin ${O.timeouts === O.n ? 'hepsinde' : `${O.timeouts} tanesinde`} süre doldu: işlemlerde alıştırmadakinden çok daha yavaş çalışmış, ara vermiş ya da yönergeyi tam anlamamış olabilirsin.`,
+            ` İşlemlerin ${O.timeouts === O.n ? 'hepsinde' : `${O.timeouts} tanesinde`} süre doldu: işlemlerde alıştırmadakinden çok daha yavaş çalışmış, ara vermiş ya da yönergeyi tam anlamamış olabilir.`,
+          )
+        : v(
+            ` ${O.wrong === O.n ? 'İşlemlerin hepsine' : `${O.wrong} işleme`} yanlış cevap verdin; işlemlere bakmadan basmış ya da yönergeyi tam anlamamış olabilirsin.`,
+            ` ${O.wrong === O.n ? 'İşlemlerin hepsine' : `${O.wrong} işleme`} yanlış cevap verdi; işlemlere bakmadan basmış ya da yönergeyi tam anlamamış olabilir.`,
+          );
+    islemText += limitText;
+    if (!recallChance) islemText += ' İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı.';
+  } else {
+    const parts = [
+      v(
+        `Harfleri akılda tutarken işlemlerin ${O.correct === O.n ? 'hepsini' : `${pct(O.accuracy)} kadarını`} süresi içinde doğru cevapladın.`,
+        `Çocuğunuz harfleri akılda tutarken işlemlerin ${O.correct === O.n ? 'hepsini' : `${pct(O.accuracy)} kadarını`} süresi içinde doğru cevapladı.`,
+      ),
+    ];
+    if (O.correct === O.n) {
+      parts.push(v('Hiçbir işlemde yanılmadın ve süre hiç dolmadı.', 'Hiçbir işlemde yanılmadı ve süre hiç dolmadı.'));
+    } else if (O.accuracy >= CS_OPS_TARGET) {
+      parts.push(
+        v(
+          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; bu düzeye ulaştın.',
+          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; çocuğunuz bu düzeye ulaştı.',
+        ),
+      );
+    } else {
+      parts.push(
+        v(
+          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; bu düzeyin altında kaldın.',
+          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; çocuğunuz bu düzeyin altında kaldı.',
+        ),
+      );
+      parts.push(
+        O.timeouts > O.wrong
+          ? v(
+              O.wrong === 0
+                ? `${O.timeouts} işlemde süre doldu; hiçbir işleme yanlış cevap vermedin. İşlemlerde alıştırmadakinden daha yavaş çalışmış olabilirsin.`
+                : `${O.timeouts} işlemde süre doldu, ${O.wrong} işleme yanlış cevap verdin: süre dolması yanlış cevaptan daha sıktı. İşlemlerde alıştırmadakinden daha yavaş çalışmış olabilirsin.`,
+              O.wrong === 0
+                ? `${O.timeouts} işlemde süre doldu; çocuğunuz hiçbir işleme yanlış cevap vermedi. İşlemlerde alıştırmadakinden daha yavaş çalışmış olabilir.`
+                : `${O.timeouts} işlemde süre doldu, çocuğunuz ${O.wrong} işleme yanlış cevap verdi: süre dolması yanlış cevaptan daha sıktı. İşlemlerde alıştırmadakinden daha yavaş çalışmış olabilir.`,
+            )
+          : O.wrong === O.timeouts
+            ? v(
+                `${O.wrong} işleme yanlış cevap verdin, ${O.timeouts} işlemde süre doldu: hem yanlış cevaplar hem de süre dolması görüldü.`,
+                `Çocuğunuz ${O.wrong} işleme yanlış cevap verdi, ${O.timeouts} işlemde süre doldu: hem yanlış cevaplar hem de süre dolması görüldü.`,
+              )
+            : v(
+                `${O.wrong} işleme yanlış cevap verdin${O.timeouts > 0 ? `, ${O.timeouts} işlemde süre doldu` : ''}. Harfleri akılda tutmaya çalışırken işlemlerde acele etmiş olabilirsin.`,
+                `Çocuğunuz ${O.wrong} işleme yanlış cevap verdi${O.timeouts > 0 ? `, ${O.timeouts} işlemde süre doldu` : ''}. Harfleri akılda tutmaya çalışırken işlemlerde acele etmiş olabilir.`,
+              ),
+      );
+    }
+    let text = parts.join(' ') + limitText;
+    if (rapid) {
+      text += v(
+        ` İşlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdin; bu sürede bir işlemi okuyup hesaplamak zordur. Bu işlemlere bakılmadan basılmış olabilir.`,
+        ` Çocuğunuz işlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdi; bu sürede bir işlemi okuyup hesaplamak zordur. Bu işlemlere bakılmadan basılmış olabilir.`,
+      );
+    }
+    text += ' İşlemler matematik becerisini ölçmek için değil, harfleri akılda tutmayı zorlaştırmak için vardır.';
+    islemText = text;
+  }
+  const islem: CognitiveBlock = {
+    ...card('hb_islem'),
+    headline:
+      O.correct === 0
+        ? `${O.n} işlemin hiçbiri doğru değil`
+        : O.correct === O.n
+          ? `${O.n} işlemin hepsi doğru`
+          : `${O.n} işlemin ${csCount(O.correct, 'i')} doğru (${pct(O.accuracy)})`,
+    detail: opsDetail,
+    text: islemText,
+  };
+
+  /* Hata türleri */
+  const E = N - X;
+  let hata: CognitiveBlock;
+  const hataDetail = `Yeri karışan ${r.order} · Dizide olmayan ${r.intrusion} · Boş ${r.blank}`;
+  if (noRead) {
+    hata = { ...card('hb_hata'), headline: 'Yorumlanmadı', detail: hataDetail, text: `${noReadWhy} doğru yerde olmayan harflerin türü yorumlanmadı.` };
+  } else if (E === 0) {
+    hata = {
+      ...card('hb_hata'),
+      headline: 'Hata yok',
+      text: v('Bütün harfleri doğru yerde seçtin; hiçbir harfin yeri karışmadı.', 'Çocuğunuz bütün harfleri doğru yerde seçti; hiçbir harfin yeri karışmadı.'),
+    };
+  } else {
+    // "Doğru yerde olmayan 7 yerin 4 tanesinde …, 3 tanesi boş kaldı"; tek tür bütün yerleri kapsıyorsa "hepsinde".
+    const many = (k: number, all: string) =>
+      E === 1 ? '' : k === E ? `${all} ` : k === 1 ? (all === 'hepsi' ? 'biri ' : 'birinde ') : `${k} tanesi${all === 'hepsi' ? '' : 'nde'} `;
+    const lead = E === 1 ? (r.blank === 1 ? 'Doğru yerde olmayan tek yer' : 'Doğru yerde olmayan tek yerde') : `Doğru yerde olmayan ${E} yerin`;
+    const kinds = [
+      r.order > 0 ? `${many(r.order, 'hepsinde')}harf o dizide vardı ama yeri karıştı` : '',
+      r.intrusion > 0 ? `${many(r.intrusion, 'hepsinde')}o dizide olmayan bir harf seçildi` : '',
+      r.blank > 0 ? `${many(r.blank, 'hepsi')}boş kaldı` : '',
+    ].filter(Boolean);
+    let text = `${lead} ${joinTr(kinds)}.`;
+    if (2 * r.order > E) {
+      text += v(
+        ' Yeri karışan harflerde harfi hatırladın ama sırasını karıştırdın. Bu testte bir harf yalnızca gösterildiği sıradaki yerde seçilirse doğru sayılır; harflerin sırasını da akılda tutmak gerekir.',
+        ' Yeri karışan harflerde çocuğunuz harfi hatırladı ama sırasını karıştırdı. Bu testte bir harf yalnızca gösterildiği sıradaki yerde seçilirse doğru sayılır; harflerin sırasını da akılda tutmak gerekir.',
+      );
+    } else if (2 * r.intrusion > E) {
+      text += ' O dizide olmayan bir harfin seçildiği yerlerde harf başka bir harfle karışmış ya da tahmin edilmiş olabilir.';
+    } else if (2 * r.blank > E) {
+      text += ' Boş kalan yerler hatırlanamayan harflerdir; hatırlanamayan harfin yerine BOŞ düğmesine basmak öteki harflerin yerinde kalmasını sağlar.';
+    } else {
+      text += ' Bu yerlerde hata türlerinden hiçbiri ötekilerden belirgin biçimde çok değildi.';
+    }
+    // Sayılar başlıkta ve metinde geçtiği için ayrıntı satırı yoktur.
+    hata = {
+      ...card('hb_hata'),
+      headline: [r.order > 0 ? `Yeri karışan ${r.order}` : '', r.intrusion > 0 ? `dizide olmayan ${r.intrusion}` : '', r.blank > 0 ? `boş ${r.blank}` : '']
+        .filter(Boolean)
+        .join(' · ')
+        .replace(/^./, (c) => c.toLocaleUpperCase('tr-TR')),
+      text,
+    };
+  }
+
+  /* Grafikler ve öne çıkan sayılar */
+  const chart: CognitiveReport['chart'] = {
+    title: 'Dizi uzunluğuna göre doğru yerde hatırlanan harfler',
+    note: v(
+      'Her satırda aynı uzunluktaki iki dizinin harfleri vardır. Çubuk ne kadar uzunsa o dizilerdeki harflerin o kadar çoğunu doğru yerde hatırlamışsın demektir.',
+      'Her satırda aynı uzunluktaki iki dizinin harfleri vardır. Çubuk ne kadar uzunsa o dizilerdeki harflerin o kadar çoğu doğru yerde hatırlanmış demektir.',
+    ),
+    rows: r.bySize.map((s) => ({ label: `${s.size} harflik diziler`, value: s.correct, max: s.letters, valueLabel: `${s.correct}/${s.letters}` })),
+  };
+  const figures = [
+    { label: 'Doğru yerde hatırlanan harf', value: `${X}/${N}` },
+    { label: 'Bütün harfleri doğru dizi', value: `${P}/${r.sets}` },
+    { label: 'İşlem doğruluğu', value: pct(O.accuracy) },
+    ...(r.limitMs !== null ? [{ label: 'İşlem süre sınırı', value: csSeconds(r.limitMs) }] : []),
+  ];
+  const profile: CognitiveReport['profile'] = noRead
+    ? undefined
+    : {
+        title: v('Dizi uzunluğuna göre sonucun', 'Dizi uzunluğuna göre sonuç'),
+        note: v(
+          'Her sütun aynı uzunluktaki iki dizidir (3 harften 7 harfe). Sütun ne kadar yüksekse o dizilerdeki harflerin o kadar çoğunu doğru yerde hatırlamışsın demektir; tam boy sütun, hepsini doğru yerde hatırladığın anlamına gelir. Renkler yalnızca dizi uzunluklarını ayırır.',
+          'Her sütun aynı uzunluktaki iki dizidir (3 harften 7 harfe). Sütun ne kadar yüksekse o dizilerdeki harflerin o kadar çoğu doğru yerde hatırlanmış demektir; tam boy sütun, hepsinin doğru yerde hatırlandığı anlamına gelir. Renkler yalnızca dizi uzunluklarını ayırır.',
+        ),
+        bars: r.bySize.map((s, i) => ({
+          key: `d${s.size}`,
+          label: `${s.size} harflik`,
+          value: Math.round((s.correct / s.letters) * 100),
+          min: 0,
+          max: 100,
+          color: COMPLEX_SPAN_SIZE_COLORS[i % COMPLEX_SPAN_SIZE_COLORS.length],
+          valueLabel: `${s.correct}/${s.letters}`,
+          band: '',
+        })),
+      };
+  return { blocks: [harf, uzunluk, islem, hata], chart, figures, ...(profile ? { profile } : {}) };
+}
+
 /* ---------- Düşünerek karar verme ---------- */
 
 /** Soru grupları (grafikte ve üç boyutlu grafikte): adı, rengi ve sonuçtaki yeri. */
@@ -6346,10 +6723,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const ud = byKey.get('ud_dogru')?.extra as unknown as Rotation3dResult | undefined;
   const udt = def.tasks.find((t): t is MentalRotation3dTask => t.kind === 'mental_rotation_3d');
   if (ud && udt) add(rotation3dBlocks(ud, udt, audience, card));
+  const hb = byKey.get('hb_harf')?.extra as unknown as ComplexSpanResult | undefined;
+  if (hb && def.tasks.some((t) => t.kind === 'complex_span')) add(complexSpanBlocks(hb, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

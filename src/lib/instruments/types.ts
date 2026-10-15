@@ -265,7 +265,8 @@ export type TaskKind =
   | 'cube_net'
   | 'cognitive_reflection'
   | 'tower'
-  | 'mental_rotation_3d';
+  | 'mental_rotation_3d'
+  | 'complex_span';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -1104,7 +1105,41 @@ export type CognitiveTask =
   | CubeNetTask
   | CognitiveReflectionTask
   | TowerTask
-  | MentalRotation3dTask;
+  | MentalRotation3dTask
+  | ComplexSpanTask;
+
+/** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
+export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
+
+export interface ComplexSpanSet {
+  /** Harflerin `letters` içindeki sırası. */
+  letters: number[];
+  /** Her harften önce cevaplanan işlem (harf sayısı kadar). */
+  ops: ComplexSpanOp[];
+}
+
+/**
+ * Hesapla ve hatırla (karmaşık bellek aralığı; işlem aralığı düzeni): her adımda kısa bir işlemin doğru olup olmadığına
+ * karar verilir, ardından bir harf gösterilir; bir dizinin sonunda harfler gösterildiği sırayla seçilir
+ * (lib/instruments/complex-span.ts). İşlemler, alıştırmadaki hıza göre belirlenen bir süre içinde cevaplanır.
+ */
+export interface ComplexSpanTask extends TaskBase {
+  kind: 'complex_span';
+  /** Kullanılan harfler; hatırlama ekranındaki düğmeler bu sırayladır. */
+  letters: string[];
+  /** Her harfin ekranda kalma süresi (ms). */
+  letterMs: number;
+  /** İşlem süre sınırı: alıştırmadaki işlem sürelerinin ortalaması + `factor` × standart sapma, [minMs, maxMs] arasında. */
+  limit: { factor: number; minMs: number; maxMs: number };
+  /** Alıştırma 1: yalnızca harfler. */
+  practiceLetters: number[][];
+  /** Alıştırma 2: yalnızca işlemler (süre sınırı bunlardan hesaplanır). */
+  practiceOps: ComplexSpanOp[];
+  /** Alıştırma 3: işlemler ve harfler birlikte. */
+  practiceSets: ComplexSpanSet[];
+  /** Asıl diziler (uzunlukları karışık sırada). */
+  sets: ComplexSpanSet[];
+}
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

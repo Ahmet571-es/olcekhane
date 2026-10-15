@@ -81,6 +81,7 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       // döndürmede cevap anahtarı gönderilmez. Şekillerin çizim verisi (küplerin konumları ve duruş matrisi) gönderilir;
       // doğru seçenekler hedefle aynı küp listesini taşımaz ve küpler karışık sırayla gider. Çizilen her şekilde olduğu
       // gibi, bu veriden bir seçeneğin ayna görüntüsü olup olmadığı hesaplanabilir; test bir sınav olmadığı için kabul edilir.
+      // Hesapla ve hatırlada gizlenecek bir anahtar yoktur: harfler ve işlemler zaten ekranda gösterilir.
       return {
         engine: 'tasks',
         intro,

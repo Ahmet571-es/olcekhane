@@ -25,6 +25,7 @@ import { NumericalReasoning } from './numerical-reasoning';
 import { CubeNet } from './cube-net';
 import { MentalRotation3d } from './mental-rotation-3d';
 import { CognitiveReflection } from './cognitive-reflection';
+import { ComplexSpan } from './complex-span';
 import { Tower } from './tower';
 import { Trail } from './trail';
 import { WordList } from './word-list';
@@ -189,6 +190,7 @@ export function TaskRunner(props: {
       {task.kind === 'mental_rotation_3d' && <MentalRotation3d key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cognitive_reflection' && <CognitiveReflection key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'tower' && <Tower key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'complex_span' && <ComplexSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }
