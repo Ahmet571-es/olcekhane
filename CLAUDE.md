@@ -169,8 +169,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   `src/content/beyin/yapilar.ts` (Türkçe ad, Latince ad, bölge, lob, paket, parça dosyaları, görev). Yeni yapı
   eklenince `node araclar/beyin-modeli.mjs` çalıştırılır: arşivi indirip SHA-256 ile doğrular, yalnızca katalogdaki
   parçaları sıkıştırıp `public/beyin/model/<sürüm>/`'e yazar (git'e girer, ~2,5 MB) ve `model-surum.ts`'i günceller.
-  Paketler: kabuk, beyaz, derin, sap, karincik, damar, kemik (beyin kutusunun 8 kemiği), yuz (yüz kemikleri, dil
-  kemiği, atlas, aksis) ve omurga (C3–L5 omurları, sağrı kemiği, omurlar arası diskler). Modelde omurilik, omurilik
+  Paketler: kabuk, beyaz, derin, sap, karincik (koroid pleksus dahil), zar (beyincik çadırı), damar, kemik (beyin kutusunun
+  8 kemiği), yuz (yüz kemikleri, dil kemiği, atlas, aksis) ve omurga (C3–L5 omurları, sağrı kemiği, omurlar arası diskler).
+  Yalnızca bir yarısı modellenmiş yapı katalogda `<parça>~ayna` ile aynalanır (beyincik çadırı); araç aynalanan yarıyı
+  orta hatta asıl yarıya birleştirir ve `AYNA_ENGEL`'deki yapının (sol beyincik) üstüne kaldırır; model notu bunu söyler. Modelde omurilik, omurilik
   sinirleri ve kafatası dışındaki sinirler yoktur; bunlar çizim ve tabloyla anlatılır. Kemik paketleri kamera çerçevesine ve kesit sınırına girmez; yalnızca kemik yüklü sahnede
   kesit kemiklerin kutusuna göre konur. Bütün sahneyi (kemikler dahil) çerçevelemek için görünenler `vurgula`ya da yazılır.
 - Çizici `components/beyin/motor.ts` (three.js; sayfada tek WebGL bağlamı, tuval en çok görünen sahneye taşınır,

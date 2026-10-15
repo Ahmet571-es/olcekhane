@@ -22,6 +22,11 @@ import { OmurilikSinirleri } from './animasyonlar/omurilik-sinirleri';
 import { OtonomCikis } from './animasyonlar/otonom-cikis';
 import { OtonomTerazi } from './animasyonlar/otonom-terazi';
 import { SinirSistemiHaritasi } from './animasyonlar/sinir-sistemi-haritasi';
+import { ZarKatmanlari } from './animasyonlar/zar-katmanlari';
+import { SinusHaritasi } from './animasyonlar/sinus-haritasi';
+import { Fitiklasmalar } from './animasyonlar/fitiklasmalar';
+import { Sisternalar } from './animasyonlar/sisternalar';
+import { KopruToplardamarlari } from './animasyonlar/kopru-toplardamarlari';
 import { YonCiftleri } from './animasyonlar/yon-ciftleri';
 import { YonPusulasi } from './animasyonlar/yon-pusulasi';
 import { YuzSiniriKanali } from './animasyonlar/yuz-siniri-kanali';
@@ -52,6 +57,16 @@ export function Animasyon({ ad }: { ad: AnimasyonAdi }) {
       return <AcPcIzgarasi />;
     case 'kafa-beyin-cizgileri':
       return <KafaBeyinCizgileri />;
+    case 'zar-katmanlari':
+      return <ZarKatmanlari />;
+    case 'sinus-haritasi':
+      return <SinusHaritasi />;
+    case 'fitiklasmalar':
+      return <Fitiklasmalar />;
+    case 'sisternalar':
+      return <Sisternalar />;
+    case 'kopru-toplardamarlari':
+      return <KopruToplardamarlari />;
     case 'otonom-cikis':
       return <OtonomCikis />;
     case 'kafa-ici-kanamalar':

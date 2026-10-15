@@ -21,6 +21,7 @@ export const BOLGE_RENGI: Record<Bolge, string> = {
   'beyin-sapi': '#a98cf6',
   beyincik: '#f28a5d',
   karincik: '#4f9de0',
+  zar: '#c7cfdb',
   damar: '#d9473c',
   kemik: '#ece3cf',
   disk: '#8fc1dc',
@@ -59,6 +60,8 @@ const YAPI_RENGI: Record<string, string> = {
   'omurilik-sogani': '#9b83e9',
   beyincik: '#f28a5d',
   'beyaz-cevher': '#f3ede3',
+  'koroid-pleksus': '#e0607e',
+  'beyincik-cadiri': '#c7cfdb',
 };
 
 /** Gerçeğe yakın renkler: kabuk pembemsi, beyaz cevher krem, damar kırmızı, kemik fildişi. */
@@ -68,6 +71,7 @@ const DOGAL: Partial<Record<Bolge, string>> = {
   'beyin-sapi': '#dcaea3',
   beyincik: '#e2ab9d',
   karincik: '#5aa6e6',
+  zar: '#d9d3c7',
   damar: '#cc3b33',
   kemik: '#efe7d5',
   disk: '#9cc7dc',

@@ -1,4 +1,5 @@
 import { anatomininDili } from './dersler/anatomi/anatominin-dili';
+import { beyinZarlari } from './dersler/anatomi/beyin-zarlari';
 import { sinirSistemineIlkBakis } from './dersler/anatomi/sinir-sistemine-ilk-bakis';
 import type { Dal, DalId, Ders, ProgramDersi, Seviye } from './types';
 
@@ -12,7 +13,7 @@ export { SEVIYE_ADLARI, SEVIYE_KITLESI } from './types';
  * ders hazırlanır. Hazır dersin içeriği `ders` alanındadır; olmayanlar programda "Hazırlanıyor" diye görünür, kendi
  * sayfaları açılmaz ve site haritasına girmez.
  */
-const HAZIR: Ders[] = [sinirSistemineIlkBakis, anatomininDili];
+const HAZIR: Ders[] = [sinirSistemineIlkBakis, anatomininDili, beyinZarlari];
 
 type Satir = [slug: string, baslik: string, ozet: string, seviye: Seviye];
 

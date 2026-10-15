@@ -30,7 +30,7 @@ const DUZLEMLER: { d: KesitDuzlemi; ad: string; aciklama: string }[] = [
   { d: 'aksiyel', ad: 'Aksiyel', aciklama: 'üst ve alt diye ayırır' },
 ];
 
-const KATMAN_SIRASI: Katman[] = ['kabuk', 'beyaz', 'derin', 'sap', 'karincik', 'damar', 'kemik', 'yuz', 'omurga'];
+const KATMAN_SIRASI: Katman[] = ['kabuk', 'beyaz', 'derin', 'sap', 'karincik', 'zar', 'damar', 'kemik', 'yuz', 'omurga'];
 
 type Panel = 'bakis' | 'katman' | 'kesit' | 'ayristir' | 'renk' | 'liste';
 

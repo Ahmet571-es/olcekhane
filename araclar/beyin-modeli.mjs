@@ -53,7 +53,151 @@ async function arsiv() {
   return yer;
 }
 
+/**
+ * Aynalanmış parça: kimliğin sonu `~ayna` ise asıl parça okunur ve orta hatta yakın kenarı boyunca aynalanır (yalnızca
+ * bir yarısı modellenmiş yapılar için, ör. beyincik çadırı). Aynalama BodyParts3D eksenlerinde (x sola) yapılır; üçgenlerin
+ * yönü aşağıdaki hacim denetimiyle düzelir. Sayfadaki model notu bu uyarlamayı anlatır.
+ */
+const AYNA = '~ayna';
+
+/**
+ * Aynalanan yarının altında kalan yapılar. İnsanın iki yanı tam simetrik olmadığı için aynalanmış beyincik çadırı yer
+ * yer sol beyincik yarımküresinin (FJ1781) içinde kalır ve beyincik yaprağın içinden taşar. Bu yüzden aynalanan yarı,
+ * yalnızca gereken yerlerde ve yumuşak bir tümsekle, beyinciğin üst yüzünün biraz üstüne kaldırılır. Ayrıca iki yarı,
+ * çentiğin arkasında orta hatta birleşsin diye aynalanan yarının iç kenarı asıl yarının kenarına kaydırılır; kaldırma
+ * orta hatta da sürüyorsa asıl yarının kenarı aynı miktarda kaldırılır (birleşme yeri açılmasın diye).
+ */
+const AYNA_ENGEL = { FJ1843: ['FJ1781'] };
+
+/** Yüzey (v, BodyParts3D: z yukarı) engelin üst yüzünün PAY mm üstüne kalkar; kaldırma YARICAP mm içinde azalarak yayılır. */
+function engeldenKaldir(v, engel) {
+  const H = 1.5;
+  const PAY = 0.8;
+  const YARICAP = 8;
+  const hucre = (x, y) => `${Math.floor(x / H)},${Math.floor(y / H)}`;
+  const enUst = (dizi) => {
+    const m = new Map();
+    for (let i = 0; i < dizi.length; i += 3) {
+      const k = hucre(dizi[i], dizi[i + 1]);
+      if (!m.has(k) || dizi[i + 2] > m.get(k)) m.set(k, dizi[i + 2]);
+    }
+    return m;
+  };
+  const yuzey = enUst(v);
+  const ustu = enUst(engel);
+  const gerek = [];
+  for (const [k, z] of yuzey) {
+    const e = ustu.get(k);
+    if (e !== undefined && e + PAY > z) {
+      const [i, j] = k.split(',').map(Number);
+      gerek.push([(i + 0.5) * H, (j + 0.5) * H, e + PAY - z]);
+    }
+  }
+  const kalkma = new Float64Array(v.length / 3);
+  for (let i = 0; i < v.length; i += 3) {
+    let kaldir = 0;
+    for (const [x, y, d] of gerek) {
+      const r = Math.hypot(v[i] - x, v[i + 1] - y);
+      if (r < YARICAP) kaldir = Math.max(kaldir, d * 0.5 * (1 + Math.cos((Math.PI * r) / YARICAP)));
+    }
+    v[i + 2] += kaldir;
+    kalkma[i / 3] = kaldir;
+  }
+  console.log(`  aynalanmış yarı: ${gerek.length} hücrede engelin üstüne kaldırıldı (en çok ${Math.max(...kalkma).toFixed(2)} mm)`);
+  return kalkma;
+}
+
+const aynaOnbellek = new Map();
+
+/** Asıl yarı (sag) ve aynalanmış yarı (sol), birleşme yeri kapatılmış ve engelden kaldırılmış olarak. */
+function aynaCifti(zip, taban) {
+  if (aynaOnbellek.has(taban)) return aynaOnbellek.get(taban);
+  const asil = hamOku(zip, taban);
+  const n = asil.v.length / 3;
+  let ort = 0;
+  let enKucukX = Infinity;
+  let enBuyukX = -Infinity;
+  let enKucukY = Infinity;
+  let enBuyukY = -Infinity;
+  for (let i = 0; i < asil.v.length; i += 3) {
+    ort += asil.v[i];
+    enKucukX = Math.min(enKucukX, asil.v[i]);
+    enBuyukX = Math.max(enBuyukX, asil.v[i]);
+    enKucukY = Math.min(enKucukY, asil.v[i + 1]);
+    enBuyukY = Math.max(enBuyukY, asil.v[i + 1]);
+  }
+  ort /= n;
+  // s = 1: asıl yarı eksi x yanında, aynası artı x yanında.
+  const s = ort < 0 ? 1 : -1;
+  const duzlem = ort < 0 ? enBuyukX : enKucukX;
+  // İç kenarın y boyunca yeri (4 mm'lik dilimler) ve iki yarı arasındaki aralık.
+  const DILIM = 4;
+  const dilimSay = Math.ceil((enBuyukY - enKucukY) / DILIM) + 1;
+  const kenar = new Array(dilimSay).fill(null);
+  for (let i = 0; i < asil.v.length; i += 3) {
+    const d = Math.floor((asil.v[i + 1] - enKucukY) / DILIM);
+    const x = asil.v[i];
+    if (kenar[d] === null || s * x > s * kenar[d]) kenar[d] = x;
+  }
+  for (let d = 0; d < dilimSay; d++) if (kenar[d] === null) kenar[d] = kenar[d - 1] ?? duzlem;
+  const ara = (dizi, y) => {
+    const t = (y - enKucukY) / DILIM - 0.5;
+    const d = Math.max(0, Math.min(dilimSay - 1, Math.floor(t)));
+    const e = Math.min(dilimSay - 1, d + 1);
+    const w = Math.max(0, Math.min(1, t - d));
+    return dizi[d] * (1 - w) + dizi[e] * w;
+  };
+  // Aralık 4 mm'ye kadar kapatılır; 4–8 mm arasında kapatma azalır (çentik açık kalır).
+  const kapat = kenar.map((x) => {
+    const g = 2 * Math.abs(duzlem - x);
+    return g <= 4 ? 1 : g < 8 ? (8 - g) / 4 : 0;
+  });
+  const sol = new Float64Array(asil.v);
+  const kenardanUzak = new Float64Array(n);
+  for (let i = 0; i < sol.length; i += 3) {
+    const y = sol[i + 1];
+    const xe = ara(kenar, y);
+    const yeni = 2 * duzlem - sol[i];
+    const d = s * (yeni - (2 * duzlem - xe));
+    kenardanUzak[i / 3] = d;
+    const kayma = 2 * Math.abs(duzlem - xe) * ara(kapat, y) * Math.max(0, 1 - d / 12);
+    sol[i] = yeni - s * kayma;
+  }
+  let kalkma = new Float64Array(n);
+  const engel = AYNA_ENGEL[taban];
+  if (engel) kalkma = engeldenKaldir(sol, engel.flatMap((e) => Array.from(hamOku(zip, e).v)));
+  // Birleşme yerindeki kaldırma, asıl yarının kenarına da uygulanır.
+  const kenarKalkma = new Float64Array(dilimSay);
+  for (let k = 0; k < n; k++) {
+    if (kenardanUzak[k] > 1.5) continue;
+    const d = Math.max(0, Math.min(dilimSay - 1, Math.floor((sol[k * 3 + 1] - enKucukY) / DILIM)));
+    kenarKalkma[d] = Math.max(kenarKalkma[d], kalkma[k] * kapat[d]);
+  }
+  const sag = new Float64Array(asil.v);
+  let enCok = 0;
+  for (let i = 0; i < sag.length; i += 3) {
+    const y = sag[i + 1];
+    const uzak = s * (ara(kenar, y) - sag[i]);
+    const z = ara(kenarKalkma, y) * Math.max(0, 1 - uzak / 6);
+    sag[i + 2] += z;
+    enCok = Math.max(enCok, z);
+  }
+  console.log(`  asıl yarı: birleşme yerinde en çok ${enCok.toFixed(2)} mm kaldırıldı`);
+  const sonuc = { sag: { v: sag, f: asil.f }, sol: { v: sol, f: asil.f } };
+  aynaOnbellek.set(taban, sonuc);
+  return sonuc;
+}
+
 function objOku(zip, id) {
+  const taban = id.endsWith(AYNA) ? id.slice(0, -AYNA.length) : id;
+  if (id.endsWith(AYNA) || AYNA_ENGEL[taban]) {
+    const cift = aynaCifti(zip, taban);
+    return id.endsWith(AYNA) ? cift.sol : cift.sag;
+  }
+  return hamOku(zip, id);
+}
+
+function hamOku(zip, id) {
   const metin = execFileSync('unzip', ['-p', zip, `isa_BP3D_4.0_obj_99/${id}.obj`], { maxBuffer: 64 * 1024 * 1024 }).toString('utf8');
   const v = [];
   const f = [];
@@ -62,7 +206,11 @@ function objOku(zip, id) {
       const [, x, y, z] = satir.trim().split(/\s+/).map(Number);
       v.push(x, y, z);
     } else if (satir.startsWith('f ')) {
-      const k = satir.trim().split(/\s+/).slice(1).map((s) => Number(s.split('/')[0]) - 1);
+      const k = satir
+        .trim()
+        .split(/\s+/)
+        .slice(1)
+        .map((s) => Number(s.split('/')[0]) - 1);
       for (let i = 1; i + 1 < k.length; i++) f.push(k[0], k[i], k[i + 1]);
     }
   }

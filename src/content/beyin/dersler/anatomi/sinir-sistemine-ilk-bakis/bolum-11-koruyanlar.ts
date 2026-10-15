@@ -234,7 +234,7 @@ Siegenthaler ve Betsholtz da benzer düşünür. Onlara göre öne sürülen zar
 
 **Tek hücre düzeyinde.** Bir çalışma, hücrelerde hangi genlerin çalıştığına bakarak (transkriptom) ince zarlardaki hücreleri ayırdı. Leptomeninkste beş ayrı fibroblast benzeri hücre tipi buldu. Bunları yumuşak zara, iç araknoide, dış araknoid engeline ve dural sınır katmanına bağladı (fare) (Pietilä ve ark., 2023). 2026 tarihli bir derleme ise bu varsayılan dördüncü katmanın hâlâ yoğun biçimde tartışıldığını yazar. Hem var olup olmadığı hem de görevi tartışılmaktadır (Joost ve ark., 2026). Kısacası “dördüncü zar keşfedildi” demek bugün için erkendir.
 
-**Köprü venlerin kapısı.** Köprü venler, beyin yüzeyinden sert zar sinüslerine uzanan toplardamarlardır. Bir fare çalışmasında, köprü venlerin araknoid engeli geçtiği yerlerde engelde kesintiler bulundu. Bunlara **araknoid manşet çıkış noktaları** adı verildi. Sağlıklı gönüllülerde de MR’da görünen izleyici maddeler köprü venler boyunca subaraknoid aralığa benzer biçimde geçti (Smyth ve ark., 2024).`,
+**Köprü venlerin kapısı.** Köprü venler, beyin yüzeyinden sert zar sinüslerine uzanan toplardamarlardır. Bir fare çalışmasında, köprü toplardamarlarının araknoid engeli geçtiği yerlerde engelde kesintiler bulundu. Bunlara **araknoid manşet çıkış noktaları** adı verildi. Sağlıklı gönüllülerde de MR’da görünen izleyici maddeler köprü toplardamarları boyunca subaraknoid aralığa benzer biçimde geçti (Smyth ve ark., 2024).`,
     },
     {
       tur: 'vaka',
@@ -692,7 +692,7 @@ Kan akımının düzenlenmesi üç ana ilkeyle anlatılır. Birincisi basınç o
       duzey: 'lisans',
       md: `**Toplardamar dönüşü.** Beynin toplardamarlarında kapakçık yoktur. Duvarlarında kas dokusu bulunmaz, bu yüzden çok incedirler (Gray, 1918). Çadır üstündeki toplardamarlar iki sisteme ayrılır: yüzeyel ve derin (Ota, 2024).
 
-Kabuğun toplardamarları **köprü venler** aracılığıyla üst sagital sinüse akar. Kan oradan sinüslerin birleşim yerine (torkula) gelir. Çoğu kişide de sağ transvers sinüse geçer (Wilson, 2016). Gray bunu şöyle anlatır: üst sagital sinüs, iç art kafa çıkıntısının yakınında bir yana sapar. Bu yan genellikle sağdır. Sinüs, o yanın transvers sinüsü olarak devam eder (Gray, 1918).
+Kabuğun toplardamarları **köprü toplardamarları** aracılığıyla üst sagital sinüse akar. Kan oradan sinüslerin birleşim yerine (torkula) gelir. Çoğu kişide de sağ transvers sinüse geçer (Wilson, 2016). Gray bunu şöyle anlatır: üst sagital sinüs, iç art kafa çıkıntısının yakınında bir yana sapar. Bu yan genellikle sağdır. Sinüs, o yanın transvers sinüsü olarak devam eder (Gray, 1918).
 
 Derin toplardamarların çoğu **iç serebral vene** (*vena interna cerebri*) dökülür. Bir kısmı da **Rosenthal’in bazal venine** (*vena basalis*) dökülür. İkisi de **Galen’in büyük serebral venine** (*vena magna cerebri*) yönelir (Ota, 2024). Galen veni, düz sinüs yoluyla birleşim yerine boşalır. Oradan çoğu kişide sol transvers sinüse geçer (Wilson, 2016). Daha derin (ön) bölgelerin toplardamarları **kavernöz sinüslere** (*sinus cavernosus*) boşalır. Bu sinüsler de üst ve alt petrozal sinüsler yoluyla juguler bulbusa, yani iç juguler venin başındaki genişliğe açılır (Wilson, 2016).`,
     },
@@ -813,7 +813,7 @@ Yani basınç ayakta eksiye bile inebilir. Belden ölçülen BOS basıncının b
       md: `- **Menenjiyal lenf damarları**, insanda ve marmoset maymununda canlıda görüntülenebilmiştir. Bunun için yüksek çözünürlüklü klinik MR kullanılmıştır (Absinta ve ark., 2017).
 - **Willis halkası** MR anjiyografi ve BT anjiyografiyle incelenir. Hangi parçanın “eksik” sayılacağı seçilen eşiğe bağlıdır. Örneğin Tromsø çalışması, 3T TOF-MR anjiyografide 1 mm’den ince parçaları eksik ya da hipoplazik saydı (Hindenes ve ark., 2020; Karatas ve ark., 2015).
 - **Optik sinir kılıfı çapı:** Görme sinirini saran kılıfın çapı 5 mm’yi aşabilir. Birçok çalışmada bu durum, KİB’in 20 mmHg ya da üstünde olmasıyla ilişkili bulunmuştur (Schizodimos ve ark., 2020).
-- **İzleyiciyle MR:** Sağlıklı gönüllülerde MR izleyicileri köprü venler boyunca subaraknoid aralığa geçer (Smyth ve ark., 2024). BOS’a verilen izleyicinin, 48 saat boyunca sagital sinüs çevresindeki sert zara doğrudan geçtiği görülmüştür (Ringstad ve Eide, 2024).`,
+- **İzleyiciyle MR:** Sağlıklı gönüllülerde MR izleyicileri köprü toplardamarları boyunca subaraknoid aralığa geçer (Smyth ve ark., 2024). BOS’a verilen izleyicinin, 48 saat boyunca sagital sinüs çevresindeki sert zara doğrudan geçtiği görülmüştür (Ringstad ve Eide, 2024).`,
     },
     {
       tur: 'kutu',

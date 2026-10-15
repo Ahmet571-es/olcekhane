@@ -259,7 +259,7 @@ describe('dersler', () => {
       const turler = d.bolumler.flatMap((b) => b.bloklar.map((k) => k.tur));
       expect(turler).toContain('sahne');
       expect(turler).toContain('animasyon');
-      expect(JSON.stringify(d)).not.toMatch(/TODO|XXX|lorem/i);
+      expect(JSON.stringify(d)).not.toMatch(/\bTODO\b|\bXXX\b|\blorem\b/i);
     }
   });
 

@@ -11,10 +11,10 @@
  */
 
 /** Modelin paket dosyaları: bir ders yalnızca gerektirdiği paketleri indirir. */
-export type Katman = 'kabuk' | 'beyaz' | 'derin' | 'sap' | 'karincik' | 'damar' | 'kemik' | 'yuz' | 'omurga';
+export type Katman = 'kabuk' | 'beyaz' | 'derin' | 'sap' | 'karincik' | 'zar' | 'damar' | 'kemik' | 'yuz' | 'omurga';
 
 /** Gelişimsel ve anatomik bölge (Ders 1'deki dört ana bölüm ve ek gruplar). */
-export type Bolge = 'serebrum' | 'diensefalon' | 'beyin-sapi' | 'beyincik' | 'karincik' | 'damar' | 'kemik' | 'disk' | 'sinir';
+export type Bolge = 'serebrum' | 'diensefalon' | 'beyin-sapi' | 'beyincik' | 'karincik' | 'zar' | 'damar' | 'kemik' | 'disk' | 'sinir';
 
 export type Lob = 'frontal' | 'parietal' | 'temporal' | 'oksipital' | 'insula' | 'limbik';
 
@@ -734,6 +734,36 @@ export const YAPILAR: Yapi[] = [
       gorev: 'Beyincik ile pons ve omurilik soğanının üst bölümü arasındaki boşluk.',
     },
     ['FJ1731'],
+  ),
+  ...cift(
+    {
+      id: 'koroid-pleksus',
+      ad: 'Koroid pleksus (yan karıncık)',
+      sade: 'karıncıktaki damarlı doku',
+      latince: 'Plexus choroideus ventriculi lateralis',
+      bolge: 'karincik',
+      katman: 'karincik',
+      gorev:
+        'Yan karıncığın içinde, yumuşak zar ile kılcal damarlardan oluşan kıvrımlı doku. Beyin-omurilik sıvısını yapar.',
+    },
+    ['FJ1755'],
+    ['FJ1803'],
+  ),
+
+  // ——— Beyin zarları (BodyParts3D'de yalnızca beyincik çadırının sağ yarısı var; sol yarı onun aynasıdır) ———
+  ...cift(
+    {
+      id: 'beyincik-cadiri',
+      ad: 'Beyincik çadırı',
+      sade: 'sert zarın çadır biçimli kıvrımı',
+      latince: 'Tentorium cerebelli',
+      bolge: 'zar',
+      katman: 'zar',
+      gorev:
+        'Sert zarın, büyük beynin arka bölümü ile beyincik arasına uzanan çadır biçimli kıvrımı. Ön kenarındaki çentikten beyin sapı geçer. Modelde sol yarı, sağ yarının aynalanmış kopyasıdır.',
+    },
+    ['FJ1843~ayna'],
+    ['FJ1843'],
   ),
 
   // ——— Atardamarlar ———
@@ -1636,6 +1666,7 @@ export const KATMAN_ADLARI: Record<Katman, string> = {
   derin: 'Derin yapılar',
   sap: 'Beyin sapı ve beyincik',
   karincik: 'Karıncıklar',
+  zar: 'Beyin zarları',
   damar: 'Atardamarlar',
   kemik: 'Kafatası',
   yuz: 'Yüz ve boyun kemikleri',
@@ -1648,6 +1679,7 @@ export const BOLGE_ADLARI: Record<Bolge, string> = {
   'beyin-sapi': 'Beyin sapı',
   beyincik: 'Beyincik (serebellum)',
   karincik: 'Karıncıklar',
+  zar: 'Beyin zarları',
   damar: 'Atardamarlar',
   kemik: 'Kemikler',
   disk: 'Omurlar arası diskler',

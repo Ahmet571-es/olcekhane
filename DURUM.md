@@ -492,6 +492,18 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   dk). Dört araştırmayla 1677 doğrulanmış not; dört bağımsız denetçi ~100 bulgu bildirdi, hepsi kaynağa bakılarak
   düzeltildi; iki ayrı doğrulayıcı düzeltmeleri ve çizimleri yeniden denetledi. Kapsam kararına göre omurga ameliyatı,
   kafa derisi ve kafatası ayrıntıları çıkarıldı. Gray 1918'in doğrulanmamış değerleri "tarihsel" diye işaretli.
+- Hazır: Anatomi 3 "Beyin zarları ve zarlar arası boşluklar" (2026-10-15; 13 bölüm: üç zar ve iki gerçek boşluk, sert
+  zarın yapısı, kıvrımları ve bölmeleri (orak, çadır, çentik), toplardamar sinüsleri ve köprü toplardamarları, sert zarın
+  atardamarları, sinirleri ve ağrı, örümcek ağı zar (engel hücreleri, Liliequist zarı, granülasyonlar), yumuşak zar ve
+  damar çevresi boşluklar, boşluklar ve sisternalar, yeni keşifler (zar lenf damarları, SLYM ve glenfatik tartışması),
+  gelişim ve keşif tarihi, kanamalar ve fıtıklaşmalar, menenjit, menenjiyom ve basınç bozuklukları, görüntüleme ve
+  cerrahi; 31 sahne, 6 hareketli çizim (5'i yeni: zar katmanları, sinüs haritası, köprü toplardamarları, sisternalar,
+  fıtıklaşmalar), 29 vaka, 77 tablo, 87 soru, 142 terim, 445 kaynak; okuma süresi temel ~121, lisans ~342, tamamı ~499
+  dk). Dört araştırmayla ~3.900 doğrulanmış not; altı bağımsız denetçi ~175 bulgu bildirdi, hepsi kaynağa bakılarak
+  düzeltildi; üç doğrulayıcı düzeltmeleri, çizimleri ve sahneleri yeniden denetledi, ikinci turda kalanlar düzeltildi.
+  Modele yeni "zar" paketi: beyincik çadırı (BodyParts3D'de yalnızca sağ yarı var; sol yarı ayna kopyası, orta hatta
+  sağ yarıya birleştirildi ve beyinciğin üstünde kalsın diye yer yer birkaç mm kaldırıldı) ve yan karıncığın koroid
+  pleksusu (model sürümü 08fd1ff5cb).
 - **Yayından kaldırıldı (2026-10-09, site sahibinin kararı):** "Kafatası: beynin kemik kalesi" ve "Kafatası 1: Kemikler
   tek tek" (her biri bağımsız denetimden geçmiş, yayında kalmış derslerdi: 7 ve 10 bölüm, 7 ve 39 sahne, 167 ve 187
   kaynak, 131 kemik işaret noktası). Klasörleri, işaret noktaları ve çizimleri depoda saklı; eski adresler ilk derse
@@ -515,11 +527,11 @@ bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
   profesöre, öğretmenden beyin cerrahına herkesin başvuracağı, Türkiye'de eşi olmayan bir beyin atlası ve ansiklopedisi.
   Kafatası işlenmez (iki kafatası dersi yayından kalktı). Sinir sistemi ünitesinden yalnızca "Anatominin dili" kaldı
   (kol-bacak sinirleri ve dermatomlar çıktı); omurilik ve çıkan-inen yollar dersleri kalır. Derinlik ve sade dil aynen.
-- **Sıradaki ders:** Anatomi 3 "Beyin zarları ve zarlar arası boşluklar" (sert zar, örümcek ağı zar, yumuşak zar;
-  kıvrımları, boşlukları, toplardamar sinüsleri). Sonra programdaki sırayla: karıncıklar ve BOS, atardamarlar...
-  Denetçilerin önerdiği 2B çizimler (nöron biçimleri, glia, nörülasyon ve kesecikler, lokalizasyon merdiveni, sert zar
-  katmanları ve sinüsler, BOS yolu, Willis varyantları) ilgili derslerde yapılacak. Site sahibi başka bir ders isterse
-  o yapılır.
+- **Sıradaki ders:** Anatomi 4 "Karıncıklar ve beyin-omurilik sıvısı" (dört karıncık; sıvının yapılışı, dolaşımı ve
+  emilmesi). Sonra programdaki sırayla: beynin atardamarları ve Willis halkası, atardamar alanları ve toplardamarlar...
+  Beyin zarları dersinde bu derslere "… dersinde anlatılacak" diye gönderme var; dersler yayına girince göndermeler
+  güncellenebilir. Denetçilerin önerdiği 2B çizimler (nöron biçimleri, glia, nörülasyon ve kesecikler, lokalizasyon
+  merdiveni, BOS yolu, Willis varyantları) ilgili derslerde yapılacak. Site sahibi başka bir ders isterse o yapılır.
 - **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
   eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
   cerrahi kutuları sürer.
@@ -687,6 +699,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-15 (25): Beyin Akademisi Anatomi 3 "Beyin zarları ve zarlar arası boşluklar" yayında: 13 bölüm, üç düzey, 31
+  sahne, 5 yeni hareketli çizim, 29 vaka, 87 soru, 445 kaynak; altı bağımsız denetim, üç doğrulama ve ikinci tur
+  düzeltme; dil sade (cümle ortalaması ~9,5 sözcük). Modele beyincik çadırı ve koroid pleksus eklendi. Sıradaki ders
+  "Karıncıklar ve beyin-omurilik sıvısı".
 - 2026-10-15 (24): Hızlı Kişilik Testi yayında (9. sınıftan yetişkine), 2. dalganın 3. testi: Mini-IPIP'in 20 maddesi,
   beş boyut, yaklaşık 3 dakika; ölçüm payı açık veriden hesaplanan standart sapmalarla; rapor metinleri yalnızca
   maddelerin sorduğunu anlatır; öğrenci, veli ve yetişkin raporu, Beş Faktör'ün yol haritası (çelişen metinler bu testte
@@ -726,6 +742,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (16): Site sahibinin kararıyla Beyin Akademisi yalnızca beyni anlatır: iki kafatası dersi yayından
   kaldırıldı (depoda saklı, eski adresler ilk derse yönlenir); kafatası ünitesinin hazırlanmamış dersleri ve kol-bacak
   sinirleri programdan çıktı; program 100 ders. Sıradaki ders "Anatominin dili".
-- 2026-10-09 (15): Site sahibinin isteğiyle Beyin Akademisi'nde dil her düzeyde sade olacak (kalıcı kural). İlk ders
-  "Sinir sistemine ilk bakış" bu ölçüyle sadeleştirildi: ortalama cümle ~15 sözcükten ~8–9 sözcüğe indi, terimler ilk
-  geçtiği yerde Türkçe açıklandı; bilgiler, sayılar ve kaynaklar aynen kaldı.
