@@ -264,7 +264,8 @@ export type TaskKind =
   | 'numerical_reasoning'
   | 'cube_net'
   | 'cognitive_reflection'
-  | 'tower';
+  | 'tower'
+  | 'mental_rotation_3d';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -975,6 +976,50 @@ export interface TowerTask extends TaskBase {
 }
 
 /**
+ * Üç boyutlu zihinde döndürme: küplerden yapılmış bir şekil ve dört seçenek; iki seçenek şeklin döndürülmüş hâli, ikisi
+ * döndürülmüş ayna görüntüsüdür ve döndürülmüş iki seçenek seçilir (content/instruments/uc-boyutlu-zihinde-dondurme.ts,
+ * geometri ve çizim lib/instruments/rotation3d.ts). 1. bölümde şekiller yalnızca dik bir eksen çevresinde döndürülmüş,
+ * 2. bölümde ayrıca resim düzleminde yan yatırılmıştır.
+ */
+export interface Rotation3dFigure {
+  /** Küplerin ızgara konumları. */
+  cells: [number, number, number][];
+  /** Şeklin duruşu: satır sırasıyla 3×3 bir döndürme matrisi. */
+  m: number[];
+}
+
+export interface Rotation3dItem {
+  key: string;
+  part: 1 | 2;
+  target: Rotation3dFigure;
+  options: Rotation3dFigure[];
+}
+
+export interface Rotation3dPracticeItem extends Rotation3dItem {
+  /** Doğru iki seçeneğin sırası (1–4). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: [number, number];
+  explain: string;
+  /**
+   * Çözümün canlandırması: hedef şekil önce dik eksen çevresinde `yaw`, sonra resim düzleminde `roll` derece döndürülünce
+   * sırasıyla doğru seçeneklerin duruşuna gelir.
+   */
+  turns: { yaw: number; roll: number }[];
+}
+
+export interface MentalRotation3dTask extends TaskBase {
+  kind: 'mental_rotation_3d';
+  /** Yönergedeki örnek: bir şekil, döndürülmüş hâli ve aynı duruşta ayna görüntüsü. */
+  example: { target: Rotation3dFigure; rotated: Rotation3dFigure; mirrored: Rotation3dFigure };
+  practice: Rotation3dPracticeItem[];
+  /** Asıl sorular: önce 1. bölüm, sonra 2. bölüm. */
+  items: Rotation3dItem[];
+  /** Cevap anahtarı: her soruda doğru iki seçeneğin sırası (1–4, küçükten büyüğe). Tarayıcıya boş gönderilir. */
+  answers: [number, number][];
+  /** Bölümler: adı ve bölüm başlarken gösterilen açıklama (`intro`). */
+  parts: { part: 1 | 2; name: string; intro: string }[];
+}
+
+/**
  * Kural değiştirme (görev değiştirme düzeni): her denemede mavi ya da turuncu bir daire ya da kare görünür; üstündeki
  * işaret (RENK ya da ŞEKİL) hangi kurala göre cevap verileceğini söyler (lib/instruments/rule-switch.ts). Önce iki tek
  * kurallı bölüm, sonra iki kuralın karıştığı iki bölüm gelir.
@@ -1058,7 +1103,8 @@ export type CognitiveTask =
   | NumericalReasoningTask
   | CubeNetTask
   | CognitiveReflectionTask
-  | TowerTask;
+  | TowerTask
+  | MentalRotation3dTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

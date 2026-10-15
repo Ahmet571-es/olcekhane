@@ -77,7 +77,10 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       // türleri ve yanılgı cevapları gönderilmez. Küp açınımında cevap anahtarı, seçeneklerin yanılgı türleri ve düzey
       // anlatımları gönderilmez. Düşünerek karar vermede cevap anahtarı, soruların türü (sayısal ya da sözel, tuzaklı ya da
       // tuzaksız), tuzak seçenekleri ve eşler gönderilmez. Kule görevinde gizlenecek bir anahtar yoktur: problemlerin en az
-      // hamle sayısı ekranda zaten gösterilir, çözüm sunucuda hamleler yeniden oynatılarak denetlenir.
+      // hamle sayısı ekranda zaten gösterilir, çözüm sunucuda hamleler yeniden oynatılarak denetlenir. Üç boyutlu zihinde
+      // döndürmede cevap anahtarı gönderilmez. Şekillerin çizim verisi (küplerin konumları ve duruş matrisi) gönderilir;
+      // doğru seçenekler hedefle aynı küp listesini taşımaz ve küpler karışık sırayla gider. Çizilen her şekilde olduğu
+      // gibi, bu veriden bir seçeneğin ayna görüntüsü olup olmadığı hesaplanabilir; test bir sınav olmadığı için kabul edilir.
       return {
         engine: 'tasks',
         intro,
@@ -100,7 +103,9 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
                           ? { ...t, answers: [], optionLures: [], levels: [] }
                           : t.kind === 'cognitive_reflection'
                             ? { ...t, answers: [], domains: [], roles: [], lures: [], pairs: [] }
-                            : t,
+                            : t.kind === 'mental_rotation_3d'
+                              ? { ...t, answers: [] }
+                              : t,
         ),
       };
     case 'oral':

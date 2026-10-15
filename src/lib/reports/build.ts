@@ -32,6 +32,7 @@ import type {
   NumericalReasoningTask,
   CubeNetTask,
   CubeType,
+  MentalRotation3dTask,
   VocabularyLure,
   VocabularyTask,
   VocabularyType,
@@ -136,6 +137,13 @@ import {
   type TowerResult,
   cubeSamePosition,
   type CubeResult,
+  ROTATION3D_CHANCE_MAX,
+  ROTATION3D_PART_GAP,
+  rotation3dMirrorPick,
+  rotation3dRapid,
+  rotation3dSamePair,
+  type Rotation3dPartResult,
+  type Rotation3dResult,
 } from '@/lib/scoring/tasks';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
@@ -4375,6 +4383,296 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
   return { blocks: [dogru, duzey, tur, calisma], chart, figures };
 }
 
+/* ---------- Üç boyutlu zihinde döndürme ---------- */
+
+/** Ayna kartının başlığı (yanlışlar yorumlandığında): bir doğru bir ayna ile iki aynadan hangisi daha sık? */
+export function rotation3dMixHeadline(r: Pick<Rotation3dResult, 'half' | 'none'>): string {
+  if (r.none === 0) return 'Yanlışların hepsinde bir doğru şekil';
+  if (r.half === 0) return 'Yanlışların hepsinde iki ayna görüntüsü';
+  if (r.half > r.none) return 'Yanlışların çoğunda bir doğru şekil';
+  if (r.half < r.none) return 'Yanlışların çoğunda iki ayna görüntüsü';
+  return 'Yanlışların yarısında bir doğru şekil, yarısında iki ayna';
+}
+
+/** Üç boyutlu zihinde döndürmenin dört sonuç kartı, bölümlere göre grafik ve öne çıkan sayılar. */
+function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const mirrorPick = rotation3dMirrorPick(r);
+  const rapid = rotation3dRapid(r);
+  const samePair = rotation3dSamePair(r);
+  const doubt = rapid || samePair;
+  // İki ayna görüntüsünün birden çok sık seçildiği ve doğruların az olduğu sonuç: yönerge ters anlaşılmış olabilir. Bazı
+  // sorularda bakmadan seçilmiş olabilirse (çok hızlı ya da hep aynı yer) bu yoruma gidilmez; sonuç rastgele düzeyinde sayılır.
+  const reversed = mirrorPick && r.correct <= ROTATION3D_CHANCE_MAX && !doubt;
+  const chance = r.correct <= ROTATION3D_CHANCE_MAX && !reversed;
+  const noneOfAll = r.none === r.n ? 'hepsinde' : `${r.none} tanesinde`;
+  const wrong = r.n - r.correct;
+  const [p1, p2] = r.parts;
+
+  /* Doğru cevaplar */
+  let accText: string;
+  if (reversed) {
+    accText = v(
+      `${r.n} sorunun ${noneOfAll} iki ayna görüntüsünü birden seçtin; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Yönergeyi ters anlamış, yani döndürülmüş şekiller yerine ayna görüntülerini aramış olabilirsin. Bu sonuç tek başına bir şey söylemez; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${r.n} sorunun ${noneOfAll} iki ayna görüntüsünü birden seçti; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Yönerge ters anlaşılmış, yani döndürülmüş şekiller yerine ayna görüntüleri aranmış olabilir. Bu sonuç yorumlanmamalıdır; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmesi daha doğru bir sonuç verebilir.`,
+    );
+  } else if (chance) {
+    accText = v(
+      `Doğru cevapların, seçenekleri rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${ROTATION3D_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da şekillere yeterince bakmadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuzun doğru cevapları, seçenekleri rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${ROTATION3D_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da şekillere yeterince bakılmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+    );
+  } else {
+    if (r.correct === r.n) {
+      accText = v(
+        'Soruların hepsinde döndürülmüş iki şekli de buldun: küplerden yapılmış şekilleri zihninde döndürüp ayna görüntülerinden ayırabildin.',
+        'Çocuğunuz soruların hepsinde döndürülmüş iki şekli de buldu: küplerden yapılmış şekilleri zihninde döndürüp ayna görüntülerinden ayırabildi.',
+      );
+    } else if (r.correct >= r.n - 3) {
+      accText = v(
+        'Soruların hemen hepsinde döndürülmüş iki şekli de buldun: küplerden yapılmış şekilleri zihninde döndürüp ayna görüntülerinden ayırabildin.',
+        'Çocuğunuz soruların hemen hepsinde döndürülmüş iki şekli de buldu: küplerden yapılmış şekilleri zihninde döndürüp ayna görüntülerinden ayırabildi.',
+      );
+    } else if (r.correct * 3 >= r.n * 2) {
+      accText = v(
+        'Soruların çoğunda döndürülmüş iki şekli de buldun; bazı sorularda ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandın.',
+        'Çocuğunuz soruların çoğunda döndürülmüş iki şekli de buldu; bazı sorularda ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandı.',
+      );
+    } else {
+      accText = v(
+        'Soruların bir kısmında döndürülmüş iki şekli de buldun; birçok soruda ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandın. Bu tür sorularda şekli zihinde döndürüp her kolun nereye geleceğini izlemek gerekir.',
+        'Çocuğunuz soruların bir kısmında döndürülmüş iki şekli de buldu; birçok soruda ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandı. Bu tür sorularda şekli zihinde döndürüp her kolun nereye geleceğini izlemek gerekir.',
+      );
+    }
+    if (r.correct < r.n) {
+      accText += v(
+        ` Seçtiğin ${2 * r.n} şeklin ${r.figures} tanesi döndürülmüş şekillerdi.`,
+        ` Çocuğunuzun seçtiği ${2 * r.n} şeklin ${r.figures} tanesi döndürülmüş şekillerdi.`,
+      );
+    }
+    // Bazı sorularda bakmadan seçilmiş olabilirse ayna kartı yanlışları yorumlamaz; o karta yönlendirilmez.
+    if (mirrorPick && !doubt) {
+      accText += v(
+        ' Yanlış cevaplarında ayna görüntülerinin nasıl seçildiği için ayna görüntüleri kartına bak.',
+        ' Yanlış cevaplarda ayna görüntülerinin nasıl seçildiği için ayna görüntüleri kartına bakın.',
+      );
+    }
+    if (doubt) {
+      accText += v(
+        ' Bazı sorularda şekillere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
+        ' Bazı sorularda şekillere bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+      );
+    }
+  }
+  const dogru: CognitiveBlock = { ...card('ud_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+
+  /* Dik eksen ve yan yatırma */
+  const partLine = `1. bölüm ${p1.correct}/${p1.n} · 2. bölüm ${p2.correct}/${p2.n}`;
+  const rough = ` Her bölüm ${p1.n} soruya dayanır; bu karşılaştırma kaba bir göstergedir.`;
+  let bolum: CognitiveBlock;
+  if (reversed || chance) {
+    bolum = { ...card('ud_bolum'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için iki bölüm karşılaştırılmadı.' };
+  } else {
+    const gap = p1.correct - p2.correct;
+    const found = (p: Rotation3dPartResult) =>
+      p.correct === 0
+        ? v(`${p.n} sorunun hiçbirinde iki doğru şekli birlikte bulamadın`, `${p.n} sorunun hiçbirinde iki doğru şekli birlikte bulamadı`)
+        : v(
+            `${p.n} sorunun ${p.correct === p.n ? 'hepsinde' : `${p.correct} tanesinde`} iki doğru şekli de buldun`,
+            `${p.n} sorunun ${p.correct === p.n ? 'hepsinde' : `${p.correct} tanesinde`} iki doğru şekli de buldu`,
+          );
+    const counts = v(
+      `Yalnızca dik eksen çevresinde döndürülmüş şekillerin olduğu 1. bölümde ${found(p1)}; yan yatırılmış şekillerin olduğu 2. bölümde ${found(p2)}.`,
+      `Yalnızca dik eksen çevresinde döndürülmüş şekillerin olduğu 1. bölümde çocuğunuz ${found(p1)}; yan yatırılmış şekillerin olduğu 2. bölümde ${found(p2)}.`,
+    );
+    let head: string;
+    let text: string;
+    if (doubt) {
+      // Bazı sorularda bakmadan seçilmiş olabilir: bölümler arasındaki fark açıklanmaz, yalnızca sayılar verilir.
+      head =
+        gap >= ROTATION3D_PART_GAP ? '2. bölümde daha az doğru' : gap <= -ROTATION3D_PART_GAP ? '2. bölümde daha çok doğru' : 'İki bölümde yakın sayıda doğru';
+      text = `${counts} ${v(
+        'Bazı sorularda şekillere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) iki bölüm arasındaki fark yorumlanmadı.',
+        'Bazı sorularda şekillere bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) iki bölüm arasındaki fark yorumlanmadı.',
+      )}`;
+    } else if (gap >= ROTATION3D_PART_GAP) {
+      head = 'Yan yatırılmış şekillerde daha çok zorlanma';
+      text = `${counts} ${v(
+        'Yan yatırılmış şekillerde iki dönüşü birlikte izlemek gerekir; birden çok yönde döndürülmüş şekiller genellikle daha zordur.',
+        'Yan yatırılmış şekillerde iki dönüşü birlikte izlemek gerekir; birden çok yönde döndürülmüş şekiller genellikle daha zordur.',
+      )}`;
+    } else if (gap <= -ROTATION3D_PART_GAP) {
+      head = 'Yan yatırılmış şekillerde daha çok doğru';
+      text = `${counts} ${v(
+        'Yan yatırılmış şekiller genellikle daha zor olsa da 2. bölümde daha çok doğru cevap verdin. Testin başında sorulara alışmak zaman alabilir; ilk bölümdeki yanlışlar bundan da kaynaklanmış olabilir.',
+        'Yan yatırılmış şekiller genellikle daha zor olsa da çocuğunuz 2. bölümde daha çok doğru cevap verdi. Testin başında sorulara alışmak zaman alabilir; ilk bölümdeki yanlışlar bundan da kaynaklanmış olabilir.',
+      )}`;
+    } else {
+      head = 'İki bölümde yakın sonuç';
+      const both = p1.correct * 3 >= p1.n * 2 && p2.correct * 3 >= p2.n * 2;
+      text = `${counts} ${
+        both
+          ? v(
+              'Şekiller yan yatırıldığında da döndürülmüş şekilleri çoğunlukla bulabildin.',
+              'Çocuğunuz şekiller yan yatırıldığında da döndürülmüş şekilleri çoğunlukla bulabildi.',
+            )
+          : v('İki bölümde birbirine yakın sayıda doğru cevap verdin.', 'Çocuğunuz iki bölümde birbirine yakın sayıda doğru cevap verdi.')
+      }`;
+    }
+    bolum = { ...card('ud_bolum'), headline: head, detail: partLine, text: text + rough };
+  }
+
+  /* Ayna görüntüleri */
+  let ayna: CognitiveBlock;
+  const tip = v(
+    ' Bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirdiğini düşün, sonra kalan iki kola bak: döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır.',
+    ' Bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirip kalan iki kola bakmak yardımcı olabilir: döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır.',
+  );
+  const mixLine = `Bir doğru bir ayna: ${r.half} soru · İki ayna: ${r.none} soru`;
+  const noneOfWrong = r.none === wrong ? 'hepsinde' : `${r.none} tanesinde`;
+  if (reversed) {
+    ayna = {
+      ...card('ud_ayna'),
+      headline: `İki ayna görüntüsü birden: ${r.none} soru`,
+      detail: mixLine,
+      text: v(
+        `${wrong} yanlış cevabının ${noneOfWrong} iki ayna görüntüsünü birden seçtin. Yönergeyi ters anlamış olabileceğin için bu sonuç yorumlanmadı (doğru cevaplar kartına bak).`,
+        `Çocuğunuz ${wrong} yanlış cevabının ${noneOfWrong} iki ayna görüntüsünü birden seçti. Yönerge ters anlaşılmış olabileceği için bu sonuç yorumlanmadı (doğru cevaplar kartına bakın).`,
+      ),
+    };
+  } else if (chance) {
+    ayna = { ...card('ud_ayna'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için yanlış cevaplardaki seçimler yorumlanmadı.' };
+  } else if (wrong === 0) {
+    ayna = {
+      ...card('ud_ayna'),
+      headline: 'Ayna görüntüsü seçilmedi',
+      text: v('Hiçbir soruda ayna görüntüsü seçmedin.', 'Çocuğunuz hiçbir soruda ayna görüntüsü seçmedi.'),
+    };
+  } else if (doubt) {
+    ayna = {
+      ...card('ud_ayna'),
+      headline: 'Yorumlanmadı',
+      detail: mixLine,
+      text: v(
+        'Bazı sorularda şekillere bakmadan seçmiş olabileceğin için yanlış cevaplarındaki seçimler yorumlanmadı.',
+        'Bazı sorularda şekillere bakılmadan seçilmiş olabileceği için yanlış cevaplardaki seçimler yorumlanmadı.',
+      ),
+    };
+  } else if (mirrorPick) {
+    ayna = {
+      ...card('ud_ayna'),
+      headline: `İki ayna görüntüsü birden: ${r.none} soru`,
+      detail: mixLine,
+      text:
+        v(
+          `Doğru bulamadığın ${wrong} sorunun ${noneOfWrong} iki ayna görüntüsünü birden seçtin; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Bir şeklin hangi kolunun öne, hangisinin arkaya uzandığı ters görülürse şekil ayna görüntüsüne benzer. Bu sorularda şeklin derinliğini ters görmüş olabilirsin. Işık her şekle aynı yönden, ekranın üstünden ve biraz solundan gelir: ışığa dönük yüzler açık, öbür yüzler daha koyu renktedir; bu, her yüzün hangi yöne baktığını anlamana yardım eder.`,
+          `Çocuğunuz doğru bulamadığı ${wrong} sorunun ${noneOfWrong} iki ayna görüntüsünü birden seçti; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Bir şeklin hangi kolunun öne, hangisinin arkaya uzandığı ters görülürse şekil ayna görüntüsüne benzer. Bu sorularda şeklin derinliği ters görülmüş olabilir. Işık her şekle aynı yönden, ekranın üstünden ve biraz solundan gelir: ışığa dönük yüzler açık, öbür yüzler daha koyu renktedir; bu, her yüzün hangi yöne baktığını anlamaya yardım eder.`,
+        ) + tip,
+    };
+  } else {
+    const which =
+      r.none === 0
+        ? v(
+            `Doğru bulamadığın ${wrong} sorunun hepsinde iki şekilden birini doğru seçtin: bu sorularda döndürülmüş şekillerden birini tanıdın ama ikincisini bir ayna görüntüsüyle karıştırdın.`,
+            `Çocuğunuz doğru bulamadığı ${wrong} sorunun hepsinde iki şekilden birini doğru seçti: bu sorularda döndürülmüş şekillerden birini tanıdı ama ikincisini bir ayna görüntüsüyle karıştırdı.`,
+          )
+        : r.half === 0
+          ? v(
+              `Doğru bulamadığın ${wrong} sorunun hepsinde iki ayna görüntüsünü birden seçtin.`,
+              `Çocuğunuz doğru bulamadığı ${wrong} sorunun hepsinde iki ayna görüntüsünü birden seçti.`,
+            )
+          : v(
+              `Doğru bulamadığın ${wrong} sorunun ${r.half} tanesinde iki şekilden birini doğru seçtin, yani döndürülmüş şekillerden birini tanıyıp ikincisini bir ayna görüntüsüyle karıştırdın; ${r.none} soruda ise iki ayna görüntüsünü birden seçtin.`,
+              `Çocuğunuz doğru bulamadığı ${wrong} sorunun ${r.half} tanesinde iki şekilden birini doğru seçti, yani döndürülmüş şekillerden birini tanıyıp ikincisini bir ayna görüntüsüyle karıştırdı; ${r.none} soruda ise iki ayna görüntüsünü birden seçti.`,
+            );
+    ayna = {
+      ...card('ud_ayna'),
+      headline: rotation3dMixHeadline(r),
+      detail: mixLine,
+      text: which + tip,
+    };
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (rapid) {
+    issues.push(
+      v(
+        `${r.n} sorunun ${r.rapid === r.n ? 'hepsinde' : `${r.rapid} tanesinde`} 4 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede beş şekle bakıp ikisini seçmek çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz ${r.n} sorunun ${r.rapid === r.n ? 'hepsinde' : `${r.rapid} tanesinde`} 4 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede beş şekle bakıp ikisini seçmek çok zordur; bu sorularda tahmin edilmiş olabilir.`,
+      ),
+    );
+  }
+  if (samePair) {
+    issues.push(
+      v(
+        `${r.samePair === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePair} tanesinde`} aynı yerdeki iki seçeneği seçtin; birçok soruda bakmadan aynı yerlere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePair === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePair} tanesinde`} aynı yerdeki iki seçeneği seçti; birçok soruda bakılmadan aynı yerlere basılmış olabilir.`,
+      ),
+    );
+  }
+  let calisma: CognitiveBlock;
+  const noLimit = v(
+    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.',
+    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.',
+  );
+  if (r.medianRt === null) {
+    calisma = { ...card('ud_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+  } else {
+    const timesLine =
+      p1.medianRt !== null && p2.medianRt !== null ? `1. bölümde tipik ${seconds(p1.medianRt)} · 2. bölümde ${seconds(p2.medianRt)}` : undefined;
+    let pace = '';
+    // Bölümler karşılaştırılmadıysa (doğrular çok az) ya da bakmadan seçilmiş olabilirse süreler de karşılaştırılmaz.
+    if (!doubt && !chance && !reversed && p1.medianRt !== null && p2.medianRt !== null) {
+      if (p2.medianRt >= 1.3 * p1.medianRt) {
+        pace = v(
+          'Yan yatırılmış şekillere daha çok zaman ayırdın; iki dönüşü birlikte izlemek zaman alır.',
+          'Çocuğunuz yan yatırılmış şekillere daha çok zaman ayırdı; iki dönüşü birlikte izlemek zaman alır.',
+        );
+      } else if (p2.medianRt * 1.3 <= p1.medianRt) {
+        pace = v(
+          'Yan yatırılmış şekilleri ilk bölümdeki şekillerden daha kısa sürede cevapladın; sorulara alıştıkça hızlanmış olabilirsin.',
+          'Çocuğunuz yan yatırılmış şekilleri ilk bölümdeki şekillerden daha kısa sürede cevapladı; sorulara alıştıkça hızlanmış olabilir.',
+        );
+      } else {
+        pace = v('İki bölümdeki sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz iki bölümdeki sorulara birbirine yakın süreler ayırdı.');
+      }
+    }
+    const base = v(
+      `Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`,
+      `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`,
+    );
+    calisma = {
+      ...card('ud_calisma'),
+      headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
+      detail: timesLine,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+    };
+  }
+
+  /* Grafik ve öne çıkan sayılar */
+  const chart: CognitiveReport['chart'] = {
+    title: 'Bölümlere göre doğru cevaplar',
+    note: v(
+      `1. bölümde şekiller yalnızca dik bir eksen çevresinde döndürülmüş, 2. bölümde ayrıca yan yatırılmıştır; her bölümde ${p1.n} soru vardır. Çubuk ne kadar uzunsa o bölümdeki soruların o kadar çoğunda iki doğru şekli de bulmuşsun demektir.`,
+      `1. bölümde şekiller yalnızca dik bir eksen çevresinde döndürülmüş, 2. bölümde ayrıca yan yatırılmıştır; her bölümde ${p1.n} soru vardır. Çubuk ne kadar uzunsa o bölümdeki soruların o kadar çoğunda iki doğru şekil de bulunmuş demektir.`,
+    ),
+    rows: r.parts.map((p, i) => ({
+      label: `${p.part}. bölüm: ${task.parts[i].name.toLocaleLowerCase('tr-TR')}`,
+      value: p.correct,
+      max: p.n,
+      valueLabel: `${p.correct}/${p.n}`,
+    })),
+  };
+  const figures = [
+    { label: 'Doğru', value: `${r.correct}/${r.n}` },
+    { label: 'Doğru seçilen şekiller', value: `${r.figures}/${2 * r.n}` },
+    ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
+  ];
+  // Yalnızca iki bölüm olduğu için üç boyutlu profil grafiği yoktur (yol haritası en az üç sütun ister).
+  return { blocks: [dogru, bolum, ayna, calisma], chart, figures };
+}
+
 /* ---------- Düşünerek karar verme ---------- */
 
 /** Soru grupları (grafikte ve üç boyutlu grafikte): adı, rengi ve sonuçtaki yeri. */
@@ -6045,10 +6343,13 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (dk && def.tasks.some((t) => t.kind === 'cognitive_reflection')) add(reflectionBlocks(dk, audience, card));
   const kg = byKey.get('kg_dogru')?.extra as unknown as TowerResult | undefined;
   if (kg && def.tasks.some((t) => t.kind === 'tower')) add(towerBlocks(kg, audience, card));
+  const ud = byKey.get('ud_dogru')?.extra as unknown as Rotation3dResult | undefined;
+  const udt = def.tasks.find((t): t is MentalRotation3dTask => t.kind === 'mental_rotation_3d');
+  if (ud && udt) add(rotation3dBlocks(ud, udt, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

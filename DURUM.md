@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-13
+Son güncelleme: 2026-10-15
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -384,7 +384,25 @@ Düşünmeyi Sevme.
    doi:10.7910/DVN/UF52WY, `.por` dosyası; teknik rapor ipip.ori.org/ESCS_TechnicalReport_January2016.pdf). IPIP
    maddelerinin çoğu bu veride var; yeni bir IPIP ölçeğinin α ve sdRef değeri buradan, maddeler metinle eşlenerek
    ve ters maddeler çevrilerek hesaplanır (sonuç IPIP sayfasındaki α ile karşılaştırılır).
-6. Üç Boyutlu Zihinde Döndürme (Shepard–Metzler düzeni; küplerden özgün şekiller, ayna/döndürme bağımsız denetim).
+6. **Üç Boyutlu Zihinde Döndürme: yayında (2026-10-15, pilot; 5. sınıftan yetişkine).** Shepard–Metzler ve Vandenberg–Kuse
+   düzeni: her soruda küplerden bir şekil ve dört seçenek (iki döndürülmüş, iki ayna); iki doğru birlikte bulunursa soru doğru.
+   20 soru, iki bölüm (1. bölüm yalnızca dik eksen, 2. bölüm ayrıca resim düzleminde 40–140° yan yatırma), 2 alıştırma
+   (çözüm canlandırması iki tur oynar, durdurulabilir). On özgün şekil (dört kol, üç dik kıvrım, 9–10 küp; hepsi ayna
+   simetrisiz ve döndürme simetrisiz, dördünün uç kolları eşit). Çizim kütüphanesiz SVG, gölgeli ve hafif perspektifli
+   (`lib/instruments/rotation3d.ts`); tarayıcıya cevap anahtarı gitmez, küpler ızgara döndürmesiyle yeniden yazılır ve
+   karışık sırayla gider. Ayna görüntüsü dik bir düzleme göre yansıtılır (`mirrorAxisFor`; baş aşağı ayna 1. bölümde bir
+   bakışta elenirdi). Sorular bir üreticiyle seçildi (scratchpad'de, depoda değil) ve `tests/uc-boyutlu-zihinde-dondurme.test.ts`
+   bağımsız denetleyiciyle (`tests/helpers/rotation3d-check.ts`) doğrular: cevaplar çizim verisinden yeniden bulunur; her
+   küp en az ~1/4 görünür (en çok biri 1/3'ün altında), uç küpler yarıya yakın, kollar kameraya doğru kısalmaz, bağlı
+   olmayan kollar binmez, üç yüz yönü görünür; seçenekler arası duruş farkı (aynı tür ≥40°, karşı tür ≥25°/2. bölümde ≥35°);
+   hiçbir çizim hedefin ya da başka seçeneğin düz resim gibi döndürülmüş/çevrilmiş hâli değil (`pictureResidual` ≥25°);
+   1. bölümde zincir boyunca yükseklikler aynı; siluet kestirmeleri ve yer dengesi şans düzeyinde. Rapor: doğru cevaplar,
+   iki bölüm, ayna görüntüleri (bir doğru bir ayna / iki ayna; sık iki ayna: derinlik ters görülmüş olabilir, doğrular
+   azsa yönerge ters anlaşılmış olabilir; çok hızlı ya da hep aynı çiftte yorum yapılmaz), çalışma biçimi; bütün durum
+   birleşimleri testte. Kaynaklar Caissie ve ark. (2009), Frick ve Pichelmann (2023), Ganis ve Kievit (2015), Gilligan ve
+   ark. (2020), Jansen ve ark. (2019), Jost ve Jansen (2024), Peters ve ark. (1995), Rajeb ve ark. (2025), Shepard ve
+   Metzler (1971), Timm ve ark. (2024), Uttal ve ark. (2013), Vandenberg ve Kuse (1978). Üç tur bağımsız inceleme
+   düzeltildi; telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
 7. Karmaşık Bellek Aralığı (işlem aralığı; Unsworth ve ark., 2005; özgün işlemler ve harfler).
 8. Düşünme ve Çalışma Tarzı (IPIP JPI-R benzeri ölçekler; siyasi-dinî görüş soran Gelenekçilik ve Makyavelcilik çıkarılır).
 9. Bakış Açısı Alma (Hegarty ve Waller, 2004 düzeni; özgün yerleşimler, açılar hesapla doğrulanır).
@@ -605,6 +623,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Küp Açınımı | kup-acinimi | Yayında (pilot; 5. sınıftan yetişkine) |
 | Düşünerek Karar Verme | dusunerek-karar-verme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Planlama: Kule Görevi | planlama-kule-gorevi | Yayında (pilot; 3. sınıftan yetişkine) |
+| Üç Boyutlu Zihinde Döndürme | uc-boyutlu-zihinde-dondurme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -717,6 +736,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-15 (27): Üç Boyutlu Zihinde Döndürme yayında (5. sınıftan yetişkine), 2. dalganın 6. testi: küplerden yapılmış
+  on özgün şekil, 20 soru, iki bölüm; ayna görüntüleri dik durur ve hiçbir seçenek düz bir resim gibi döndürülerek ya da
+  çevrilerek bulunamaz (bağımsız denetleyiciyle test edildi); öğrenci, veli ve yetişkin raporu, yol haritası; üç tur bağımsız
+  incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-15 (26): Düşünmeyi Sevme Ölçeği yayında (9. sınıftan yetişkine), 2. dalganın 5. testi: IPIP'in 10 maddesi,
   yaklaşık 2 dakika; güvenirlik ve ölçüm payı IPIP'in açık verisinden hesaplandı; rapor sonucu ve araştırmaların kısa
   özetini verir; öğrenci, veli ve yetişkin raporu, tek ölçekli yol haritası; iki tur bağımsız incelemenin bulguları
@@ -757,8 +780,3 @@ En yeni üstte; en çok 10 madde tutulur.
   sayılarıyla anlatılır; cevaplar ve yanılgı cevapları bağımsızca hesaplanarak doğrulandı; öğrenci, veli ve yetişkin raporu,
   3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı;
   bağımsız inceleme bulguları (iki tur) düzeltildi.
-- 2026-10-09 (17): Mantıksal Akıl Yürütme yayında (5. sınıftan yetişkine): 32 özgün soru; "eğer–ise" kurallarında
-  kesin olanla olmayanın ayrılıp ayrılmadığı ve sonucun gerçek hayatta doğru ya da yanlış görünmesinin kararı etkileyip
-  etkilemediği ayrı ayrı yorumlanır; her sorunun cevabı bağımsız bir denetleyiciyle doğrulandı; öğrenci, veli ve yetişkin
-  raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF
-  açıldı; bağımsız inceleme bulguları (iki tur) düzeltildi.

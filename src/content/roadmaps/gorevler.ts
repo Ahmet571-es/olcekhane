@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Düşünerek Karar Verme ve Kule Görevi yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme ve Kule Görevi yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1592,6 +1592,110 @@ const kupAcinimi: TaskRoadmapTemplate = {
   sources: [KAYNAK.uttal, KAYNAK.hodgkiss2018, KAYNAK.wai],
 };
 
+const ucBoyutluBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (üç boyutlu şekilleri zihinde döndürmeyi) gösterir.',
+    'Bu tür sorulara alışkın olmak (ör. yapı oyunları, maket yapmak) sonucu etkileyebilir; zihinde döndürme testleri yeniden çözüldüğünde sonuçlar yükselebilir.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir; yan yatırılmış şekillerde zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (üç boyutlu şekilleri zihinde döndürmeyi) gösterir.',
+    'Bu tür sorulara alışkın olmak (ör. yapı oyunları, maket yapmak) sonucu etkileyebilir; zihinde döndürme testleri yeniden çözüldüğünde sonuçlar yükselebilir.',
+    'Zihinde döndürme becerisinin matematik başarısıyla ilişkisi çocuklukta gösterilmiştir ama bu ilişki yaşa ve matematik konusuna göre değişir; bu bir ilişkidir, tek başına neden sonuç anlamına gelmez.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine yaşla ve alışkanlıkla ilgili bilgi. */
+const ucBoyutluFacts: InfoBox = {
+  ...ucBoyutluBase,
+  items: {
+    ...ucBoyutluBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (üç boyutlu şekilleri zihinde döndürmeyi) gösterir.',
+      'Bu tür sorulara alışkın olmak (ör. maket yapmak, teknik çizim, yapı oyunları) sonucu etkileyebilir; zihinde döndürme testleri yeniden çözüldüğünde sonuçlar yükselebilir.',
+      'Bu tür testlerin sonuçları, 20 yaşın üstündeki yaş gruplarında yaş ilerledikçe düşme eğilimindedir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const ucBoyutluZihindeDondurme: TaskRoadmapTemplate = {
+  version: 'uc-boyutlu-zihinde-dondurme-yol-haritasi-1',
+  what: {
+    student: 'cisimleri zihinde döndürmeyi gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun cisimleri zihinde döndürmeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'cisimleri zihinde döndürmeyi gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Şekilleri zihinde döndürmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun şekilleri zihinde döndürmesini ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, küplerden yapılmış bir şekli zihninde döndürüp başka bir yönden nasıl görüneceğini bulabilmeyi ve onu ayna görüntüsünden ayırabilmeyi ölçer. Bu beceri; bir eşyanın parçalarını kurulum çizimine bakarak birleştirmek, bir cismin arkadan ya da yandan nasıl görüneceğini kestirmek ve geometride cisimlerle çalışmak gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+    'Bu test, küplerden yapılmış bir şekli zihinde döndürüp başka bir yönden nasıl görüneceğini bulabilmeyi ve onu ayna görüntüsünden ayırabilmeyi ölçer. Bu beceri; bir eşyanın parçalarını kurulum çizimine bakarak birleştirmek, bir cismin arkadan ya da yandan nasıl görüneceğini kestirmek ve geometride cisimlerle çalışmak gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'elle', 'Kur, tahmin et, çevir', 'Etkinlik', {
+      student:
+        'Küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yap. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin et, sonra çevirip bak. 8 yaşındaki çocuklarla yapılan bir çalışmada, düz resimlerle birkaç dakikalık bir zihinde döndürme alıştırması (cevabın doğru olup olmadığının hemen gösterildiği sorular ya da kısa bir anlatım videosu) yapan çocukların hemen ardından ölçülen zihinde döndürme sonuçları yükselmiş, okumayla ilgili bir etkinlik yapan karşılaştırma grubununki yükselmemiştir; kazancın ne kadar sürdüğü ölçülmemiştir.',
+      parent:
+        'Çocuğunuzla küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yapın. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin etmesini, sonra çevirip bakmasını isteyin. 8 yaşındaki çocuklarla yapılan bir çalışmada, düz resimlerle birkaç dakikalık bir zihinde döndürme alıştırması (cevabın doğru olup olmadığının hemen gösterildiği sorular ya da kısa bir anlatım videosu) yapan çocukların hemen ardından ölçülen zihinde döndürme sonuçları yükselmiş, okumayla ilgili bir etkinlik yapan karşılaştırma grubununki yükselmemiştir; kazancın ne kadar sürdüğü ölçülmemiştir.',
+      adult:
+        'Küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yap. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin et, sonra çevirip bak. Çocuklarla yapılan bir çalışmada, düz resimlerle birkaç dakikalık bir zihinde döndürme alıştırması (cevabın doğru olup olmadığının hemen gösterildiği sorular ya da kısa bir anlatım videosu) yapanların hemen ardından ölçülen zihinde döndürme sonuçları yükselmiş, okumayla ilgili bir etkinlik yapan karşılaştırma grubununki yükselmemiştir; kazancın ne kadar sürdüğü ölçülmemiştir.',
+    }),
+    support(1, 'kol', 'Kolları eşleştir', 'Yöntem', t(
+      'Bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirdiğini düşün, sonra kalan iki kola bak: döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır. Bazı kişiler şeklin bütününü birden döndürür, bazıları parça parça karşılaştırır; ikisi de kullanılabilir.',
+      'Çocuğunuza şunu gösterebilirsiniz: bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu hedef şekildeki yerlerine getirdiğini düşünüp kalan iki kola bakabilir; döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır. Bazı kişiler şeklin bütününü birden döndürür, bazıları parça parça karşılaştırır; ikisi de kullanılabilir.',
+    )),
+    support(2, 'ciz', 'Farklı yönlerden çiz', 'Araç', t(
+      'Kurduğun bir şekli önden, yandan ve üstten bakarak kâğıda çiz. Noktalı ya da kareli kâğıt, küplerin kenarlarını düzgün çizmeni kolaylaştırır.',
+      'Çocuğunuzdan kurduğu bir şekli önden, yandan ve üstten bakarak kâğıda çizmesini isteyin. Noktalı ya da kareli kâğıt, küplerin kenarlarını düzgün çizmeyi kolaylaştırır.',
+    )),
+    support(3, 'oyun', 'Uzamsal oyunlar', 'Etkinlik', t(
+      'Yapı oyunları, maket ve üç boyutlu yapbozlar şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Yapı oyunları, maket ve üç boyutlu yapbozlar çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
+    )),
+  ],
+  facts: ucBoyutluFacts,
+  approach: [
+    { title: 'Birlikte kurun', text: 'Küplerden bir şekil kurun ve çevirmeden önce başka bir yönden nasıl görüneceğini tahmin etmesini isteyin; sonra birlikte çevirip bakın.' },
+    { title: 'Acele ettirmeyin', text: 'Zor bir soruda uzun düşünmesine izin verin; hızlı olmasından çok, şekli adım adım düşünerek karşılaştırmasını övün.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Şekil kur',
+      text: t(
+        'Bu hafta 8–10 küçük küpten ya da yapı bloğundan bu testteki gibi kollu bir şekil yap: kolları üç ayrı yöne (sağa, yukarı ve öne) uzansın, iki uçtaki kolu farklı uzunlukta olsun. Şekli masada çevirmeden önce başka bir yönden nasıl görüneceğini tahmin et, sonra çevirip bak.',
+        'Bu hafta çocuğunuzla 8–10 küçük küpten ya da yapı bloğundan bu testteki gibi kollu bir şekil yapın: kolları üç ayrı yöne (sağa, yukarı ve öne) uzansın, iki uçtaki kolu farklı uzunlukta olsun. Şekli masada çevirmeden önce başka bir yönden nasıl görüneceğini tahmin etmesini isteyin, sonra birlikte çevirip bakın.',
+      ),
+    },
+    {
+      title: 'Aynasını kur',
+      text: t(
+        'Bu hafta kurduğun şekli bir aynanın önüne koy ve aynadaki görüntüsünü de küplerle kur. İki şekli ne kadar çevirirsen çevir çakışmadığını kendin gör. (Masaya düz yatabilen bir şeklin ayna görüntüsü ise çevrilince şekille çakışır; bu yüzden kolların üç ayrı yöne uzanması gerekir.)',
+        'Bu hafta çocuğunuzla kurduğunuz şekli bir aynanın önüne koyun ve aynadaki görüntüsünü de küplerle kurun. İki şeklin ne kadar çevrilirse çevrilsin çakışmadığını birlikte görün. (Masaya düz yatabilen bir şeklin ayna görüntüsü ise çevrilince şekille çakışır; bu yüzden kolların üç ayrı yöne uzanması gerekir.)',
+      ),
+    },
+    {
+      title: 'Hangisi aynı?',
+      text: t(
+        'Bu hafta kurduğun iki şeklin (şekil ve ayna görüntüsü) farklı yönlerden birkaç fotoğrafını çek ya da çiz. Birine gösterip hangilerinin aynı şekil olduğunu buldur ve nasıl düşündüğünü sor.',
+        'Bu hafta çocuğunuzdan kurduğu iki şeklin (şekil ve ayna görüntüsü) farklı yönlerden birkaç fotoğrafını çekmesini ya da çizmesini isteyin; sonra hangilerinin aynı şekil olduğunu size buldursun ve rolleri değiştirin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (şekli elle kurmak, kolları eşleştirmek ya da çizmek) şekilleri zihninde döndürmeni en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun şekilleri zihinde döndürmesini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['zihinde-dondurme', 'kup-acinimi'],
+  nextPurpose: {
+    you: 'düz şekilleri zihinde döndürmeyi ve bir açınımı zihinde katlamayı da görmek',
+    parent: 'çocuğunuzun düz şekilleri zihinde döndürmesini ve bir açınımı zihinde katlamasını da görmek',
+  },
+  links: [],
+  sources: [KAYNAK.gilligan2020, KAYNAK.uttal, KAYNAK.timm2024],
+};
+
 const dusunerekBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; düşünerek karar vermenin yalnızca bir yönünü (kısa sorulardaki tuzakları fark etmeyi) gösterir.',
@@ -1910,6 +2014,7 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'mantiksal-akil-yurutme': mantiksalAkilYurutme,
   'sayisal-akil-yurutme': sayisalAkilYurutme,
   'kup-acinimi': kupAcinimi,
+  'uc-boyutlu-zihinde-dondurme': ucBoyutluZihindeDondurme,
   'dusunerek-karar-verme': dusunerekKararVerme,
   'planlama-kule-gorevi': planlamaKuleGorevi,
 };

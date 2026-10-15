@@ -381,6 +381,17 @@ jobs:
           if ! grep -q 'Açınımı zihninde katla' <<<"$kp_sayfa" || ! grep -qF '\"answers\":[]' <<<"$kp_sayfa" || ! grep -qF '\"optionLures\":[]' <<<"$kp_sayfa"; then
             sorun="$sorun kup-acinimi-anahtar"
           fi
+          # Üç Boyutlu Zihinde Döndürme: 20 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/uc-boyutlu-zihinde-dondurme.test.ts
+          # güncel olduğunu denetler). Çözme sayfasına cevap anahtarı gitmez.
+          UD_GOVDE=$(python3 -c 'import json; s=[[2, 4], [3, 4], [2, 3], [3, 4], [1, 3], [1, 4], [1, 2], [2, 3], [1, 3], [2, 4], [1, 2], [1, 3], [1, 4], [2, 3], [1, 2], [2, 4], [3, 4], [1, 4], [3, 4], [1, 2]]; print(json.dumps({"grade": 7, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"uc-boyutlu-zihinde-dondurme": [{"index": i, "response": s[i], "rtMs": 8000 + 500 * i} for i in range(20)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$UD_GOVDE" "https://$ALAN/api/rapor/uc-boyutlu-zihinde-dondurme" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 2 and len(r["student"]["items"]) == 4 and r["student"]["items"][0]["badge"] == "20 soruda 20 doğru"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 0 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun uc-boyutlu-dondurme-raporu"
+          fi
+          ud_sayfa=$("${C[@]}" -f "https://$ALAN/testler/uc-boyutlu-zihinde-dondurme/coz?sinif=7") || ud_sayfa=""
+          if ! grep -q 'Hangi ikisi aynı şekil?' <<<"$ud_sayfa" || ! grep -qF '\"answers\":[]' <<<"$ud_sayfa"; then
+            sorun="$sorun uc-boyutlu-dondurme-anahtar"
+          fi
           # Kâğıt Katlama: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/kagit-katlama.test.ts güncel olduğunu
           # denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve yanılgı türleri gitmez.
           KK_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kagit-katlama": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')

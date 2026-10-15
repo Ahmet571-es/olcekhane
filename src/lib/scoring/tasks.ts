@@ -7,6 +7,7 @@ import type {
   MatrixReasoningTask,
   MatrixRule,
   MentalRotationTask,
+  MentalRotation3dTask,
   NBackTask,
   NumberSeriesRule,
   NumberSeriesTask,
@@ -2472,6 +2473,155 @@ export function cubeQualityNotes(r: CubeResult): string[] {
   return notes;
 }
 
+/* ---------- Üç boyutlu zihinde döndürme ---------- */
+
+export interface Rotation3dTrialInput {
+  index: number;
+  /** Seçilen iki seçeneğin sırası (1–4). */
+  response: number[];
+  rtMs: number | null;
+}
+
+export interface Rotation3dPartResult {
+  part: 1 | 2;
+  n: number;
+  /** İki doğru seçeneğin birlikte bulunduğu sorular. */
+  correct: number;
+  /** Bir doğru seçenekle bir ayna görüntüsünün seçildiği sorular. */
+  half: number;
+  /** İki ayna görüntüsünün birden seçildiği sorular. */
+  none: number;
+  medianRt: number | null;
+}
+
+export interface Rotation3dResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  half: number;
+  none: number;
+  /** Doğru seçilen şekiller (her soruda 0, 1 ya da 2; en çok 2n). */
+  figures: number;
+  parts: Rotation3dPartResult[];
+  medianRt: number | null;
+  /** `ROTATION3D_RAPID_MS`'den kısa sürede verilen yanlış cevaplar. */
+  rapid: number;
+  /** En sık seçilen yer çiftinin (ör. A ile B) kaç soruda seçildiği. */
+  samePair: number;
+}
+
+/**
+ * Rastgele seçimde (her soruda altı çiftten biri, doğru olma olasılığı 1/6) 20 soruda 7 ya da daha çok doğrunun olasılığı
+ * %3,7'dir: 6 ya da daha az doğru, rastgele seçen birinin de bulabileceği kadar azdır.
+ */
+export const ROTATION3D_CHANCE_MAX = 6;
+/**
+ * İki ayna görüntüsünün birden seçildiği sorular: rastgele seçimde de her soruda 1/6 olasılıkla olur; 20 soruda 7 ya da
+ * daha çok olmasının olasılığı %3,7'dir. Bu kadar sık görülürse ayna görüntüleri bilerek seçilmiş, yönerge ters anlaşılmış
+ * ya da şekillerin derinliği ters görülmüş olabilir.
+ */
+export const ROTATION3D_MIRROR_NOTE = 7;
+/** Beş şekle bakıp ikisini seçmek için bundan kısa bir süre yetmez. */
+export const ROTATION3D_RAPID_MS = 4000;
+/** İki bölümün doğru sayıları arasında en az bu kadar fark varsa bölümler arasında belirgin bir fark sayılır. */
+export const ROTATION3D_PART_GAP = 3;
+
+export function scoreRotation3d(task: MentalRotation3dTask, input: Rotation3dTrialInput[]): { result: Rotation3dResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, Rotation3dTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    const r = t.response;
+    const k = task.items[t.index].options.length;
+    if (!Array.isArray(r) || r.length !== 2 || r.some((x) => !Number.isInteger(x) || x < 1 || x > k) || r[0] === r[1])
+      throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const hits = t.response.filter((x) => task.answers[i].includes(x)).length;
+    return { part: item.part, hits, rt: t.rtMs, pair: [...t.response].sort((a, b) => a - b).join('-') };
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const parts = ([1, 2] as const).flatMap((part) => {
+    const here = scored.filter((s) => s.part === part);
+    return here.length
+      ? [
+          {
+            part,
+            n: here.length,
+            correct: here.filter((s) => s.hits === 2).length,
+            half: here.filter((s) => s.hits === 1).length,
+            none: here.filter((s) => s.hits === 0).length,
+            medianRt: medianOrNull(rts(here)),
+          },
+        ]
+      : [];
+  });
+  const pairs = new Map<string, number>();
+  for (const s of scored) pairs.set(s.pair, (pairs.get(s.pair) ?? 0) + 1);
+  const correct = scored.filter((s) => s.hits === 2).length;
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      half: scored.filter((s) => s.hits === 1).length,
+      none: scored.filter((s) => s.hits === 0).length,
+      figures: scored.reduce((a, s) => a + s.hits, 0),
+      parts,
+      medianRt: medianOrNull(rts(scored)),
+      rapid: scored.filter((s) => s.hits < 2 && s.rt !== null && s.rt < ROTATION3D_RAPID_MS).length,
+      samePair: Math.max(0, ...pairs.values()),
+    },
+  };
+}
+
+/** Çok hızlı yanlış cevaplar: soruların en az dörtte biri. */
+export const rotation3dRapid = (r: Rotation3dResult) => r.rapid >= Math.max(3, Math.ceil(r.n / 4));
+/** Bundan çok doğru cevap verende aynı yer çiftinin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const ROTATION3D_SAME_MAX_CORRECT = 10;
+/** Hep aynı yerdeki iki seçeneği seçme: cevapların en az yarısı aynı çift ve doğru cevaplar çok değil. */
+export const rotation3dSamePair = (r: Rotation3dResult) => r.samePair >= Math.ceil(r.n / 2) && r.correct <= ROTATION3D_SAME_MAX_CORRECT;
+/** İki ayna görüntüsünün birden seçildiği sorular rastgele seçimde beklenenden belirgin sık. */
+export const rotation3dMirrorPick = (r: Rotation3dResult) => r.none >= ROTATION3D_MIRROR_NOTE;
+
+/** Üç boyutlu zihinde döndürmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, rotation3dBlocks aynı eşikleri kullanır). */
+export function rotation3dQualityNotes(r: Rotation3dResult): string[] {
+  const notes: string[] = [];
+  // Bazı sorularda bakmadan seçilmiş olabilirse (çok hızlı ya da hep aynı çift) iki aynalı seçimler yorumlanmaz.
+  const doubt = rotation3dRapid(r) || rotation3dSamePair(r);
+  const low = r.correct <= ROTATION3D_CHANCE_MAX;
+  const which = r.none === r.n ? 'hepsinde' : `${r.none} tanesinde`;
+  if (rotation3dMirrorPick(r) && low && !doubt) {
+    notes.push(
+      `Üç boyutlu zihinde döndürme testinde ${r.n} sorunun ${which} iki ayna görüntüsü birden seçilmiş; rastgele seçimde bu kadar sık olması pek beklenmez. Yönerge ters anlaşılmış, yani döndürülmüş şekiller yerine ayna görüntüleri aranmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+    );
+  } else if (rotation3dMirrorPick(r) && !low && !doubt) {
+    notes.push(
+      `Üç boyutlu zihinde döndürme testinde ${r.n} sorunun ${which} iki ayna görüntüsü birden seçilmiş; rastgele seçimde bu kadar sık olması pek beklenmez. Bu sorularda şeklin derinliği, yani hangi kolun öne, hangisinin arkaya uzandığı ters görülmüş olabilir. Sonuç dikkatle yorumlanmalıdır.`,
+    );
+  } else if (low) {
+    notes.push(
+      'Üç boyutlu zihinde döndürme testinde doğru cevaplar, seçenekleri rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da şekillere bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (rotation3dRapid(r)) {
+    notes.push(
+      `Üç boyutlu zihinde döndürme testinde ${r.n} sorunun ${r.rapid === r.n ? 'hepsinde' : `${r.rapid} tanesinde`} yanlış bir cevap 4 saniyeden kısa sürede verilmiş; bu sorularda şekillere bakılmadan seçilmiş olabilir.`,
+    );
+  }
+  if (rotation3dSamePair(r)) {
+    notes.push(
+      'Üç boyutlu zihinde döndürme testinde cevapların yarısında ya da daha çoğunda aynı yerdeki iki seçenek seçilmiş; birçok soruda bakılmadan aynı yerlere basılmış olabilir.',
+    );
+  }
+  return notes;
+}
+
 /* ---------- Düşünerek karar verme ---------- */
 
 export interface ReflectionTrialInput {
@@ -2818,6 +2968,7 @@ export function taskQualityNotes(parts: {
   cube?: CubeResult;
   reflection?: ReflectionResult;
   tower?: TowerResult;
+  rotation3d?: Rotation3dResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -3008,6 +3159,8 @@ export function taskQualityNotes(parts: {
   if (dk) notes.push(...reflectionQualityNotes(dk));
   const kg = parts.tower;
   if (kg) notes.push(...towerQualityNotes(kg));
+  const ud = parts.rotation3d;
+  if (ud) notes.push(...rotation3dQualityNotes(ud));
   return notes;
 }
 

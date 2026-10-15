@@ -34,6 +34,7 @@ import type {
   NumericRatio,
   CubeNetTask,
   CubeType,
+  MentalRotation3dTask,
   CognitiveReflectionTask,
   ReflectionDomain,
   ReflectionRole,
@@ -499,6 +500,32 @@ export function cubeBody(
 export function cubeRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('kup-acinimi').tasks[0] as CubeNetTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+export type Rotation3dCell = { part: 1 | 2; answer: [number, number]; mirrors: [number, number]; i: number };
+
+/** Üç boyutlu zihinde döndürmede bir doğru seçenekle bir ayna görüntüsü (`k`: hangi doğru, hangi ayna). */
+export const r3Half = (q: Rotation3dCell, k = 0): number[] => [q.answer[k % 2], q.mirrors[(k >> 1) % 2]].sort((a, b) => a - b);
+
+/**
+ * Üç boyutlu zihinde döndürme: varsayılan olarak 1. bölümün hepsi ve 2. bölümün ilk altı sorusu doğru, öbür dört soruda
+ * bir doğru bir ayna görüntüsü; 1. bölümde soru başına 15, 2. bölümde 20 saniye.
+ */
+export function rotation3dBody(
+  pick: (q: Rotation3dCell) => { response: number[]; rtMs: number | null } = (q) => ({
+    response: q.part === 1 || q.i < 16 ? q.answer : r3Half(q),
+    rtMs: q.part === 1 ? 15_000 : 20_000,
+  }),
+  grade = 7,
+): AnswersBody {
+  const task = def<TaskInstrument>('uc-boyutlu-zihinde-dondurme').tasks[0] as MentalRotation3dTask;
+  const trials = task.items.map((it, index) => {
+    const answer = task.answers[index];
+    const mirrors = [1, 2, 3, 4].filter((o) => !answer.includes(o)) as [number, number];
+    const p = pick({ part: it.part, answer, mirrors, i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }
 
 export type ReflectionCell = { domain: ReflectionDomain; role: ReflectionRole; answer: number; lure: number; pair: number | null; i: number };

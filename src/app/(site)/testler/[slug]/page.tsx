@@ -83,6 +83,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                                 ? `${single.items.length} kısa soru, dört seçenekli`
                                 : single.kind === 'tower'
                                   ? `${single.items.length} problem, ${Math.min(...single.items.map((i) => i.minMoves))}–${Math.max(...single.items.map((i) => i.minMoves))} hamle`
+                                  : single.kind === 'mental_rotation_3d'
+                                    ? `${single.items.length} soru, ${single.parts.length} bölüm`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -425,6 +427,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Soruların kaçında doğru cevaba ulaşıldığı (sayısal ve sözel sorular ayrı; grafik ve üç boyutlu grafikle)</li>
                 <li>Yanlışların türü, benzer soru çiftlerinin karşılaştırılması ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'mental_rotation_3d' && (
+              <>
+                <li>Kaç soruda döndürülmüş iki şeklin de bulunduğu ve seçilen şekillerin kaçının doğru olduğu</li>
+                <li>Yalnızca dik bir eksen çevresinde döndürülmüş şekillerle ayrıca yan yatırılmış şekillerin karşılaştırması (grafikle), yanlış cevaplarda ayna görüntülerinin nasıl seçildiği ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'tower' && (

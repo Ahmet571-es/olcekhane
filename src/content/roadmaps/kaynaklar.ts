@@ -119,6 +119,14 @@ export const KAYNAK = {
     text: 'Uttal, D. H., Meadow, N. G., Tipton, E., Hand, L. L., Alden, A. R., Warren, C. ve Newcombe, N. S. (2013). The malleability of spatial skills: A meta-analysis of training studies. Psychological Bulletin, 139(2), 352–402.',
     url: 'https://doi.org/10.1037/a0028446',
   },
+  gilligan2020: {
+    text: 'Gilligan, K. A., Thomas, M. S. C. ve Farran, E. K. (2020). First demonstration of effective spatial training for near transfer to spatial performance and far transfer to a range of mathematics skills at 8 years. Developmental Science, 23(4), e12909.',
+    url: 'https://doi.org/10.1111/desc.12909',
+  },
+  timm2024: {
+    text: 'Timm, J. D., Huff, M., Schwan, S. ve Papenmeier, F. (2024). Short-term transfer effects of Tetris on mental rotation: Review and registered report — A Bayesian approach. Attention, Perception, & Psychophysics, 86(3), 1056–1064.',
+    url: 'https://doi.org/10.3758/s13414-024-02855-0',
+  },
   hodgkiss2018: {
     text: 'Hodgkiss, A., Gilligan, K. A., Tolmie, A. K., Thomas, M. S. C. ve Farran, E. K. (2018). Spatial cognition and science achievement: The contribution of intrinsic and extrinsic spatial skills from 7 to 11 years. British Journal of Educational Psychology, 88(4), 675–697.',
     url: 'https://doi.org/10.1111/bjep.12211',
