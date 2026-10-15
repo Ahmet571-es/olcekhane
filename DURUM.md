@@ -304,6 +304,9 @@ olur, sonra yayına alınır. Lisans: kişilikte yalnızca IPIP (kamu malı) öl
 19. Pilot veriler gelince (hiçbir şey saklanmadığı için ancak site sahibinin izinli bir denemesiyle): Düşünerek Karar
    Verme'de her tuzaklı soruda ilk akla gelen cevabın gerçekten en sık yanlış olduğu sınanmalı (Young ve Shtulman,
    2020a'daki ölçüt); şimdilik tasarım varsayımıdır ve bilim kartında böyle yazar.
+20. Pilot veriler gelince: Kule Görevi'nde 1 dakikalık sürenin 3–4. sınıflar için yetip yetmediği (uzun problemlerde
+   hiç top taşınmadan süresi dolanların oranı) ve 2 saniyelik "çabuk başlama" sınırı gözden geçirilmeli; bilim kartında
+   küçük yaşta sürenin yetmeyebileceği yazar.
 
 **Yeni kişilik ve zekâ testleri, 2. dalga (site sahibinin 2026-10-13 isteği):** "Türkiye'nin en büyük kişilik ve zekâ test
 platformu"; lisans sorunu olmayan testler geniş bir araştırmayla seçildi, **her mesajda bir test** eklenip çözülüyor,
@@ -325,7 +328,22 @@ sahibinin seçtiği sıra (kişilik ve zekâ dönüşümlü; site sahibi "Bismil
    (Sınav kaygısı bağlantısı), değilse Soğukkanlılık düşükse o (bağlantısız). Bilim kartında: Türkçe uyarlama ve ergen
    çalışması bulunamadı (Ekim 2026), test-tekrar test 90 kişi, ortalama 38 gün. Telefonda dokunarak (öğrenci) ve
    masaüstünde klavyeyle (yetişkin) çözüldü, öğrenci, veli ve yetişkin PDF'leri açıldı.
-2. Planlama: Kule Görevi (Londra Kulesi düzeni; Shallice, 1982; özgün problemler, en az hamle bağımsız çözücüyle).
+2. **Planlama: Kule Görevi: yayında (2026-10-15, pilot; 3. sınıftan yetişkine).** Londra Kulesi düzeni (Shallice,
+   1982): çubuklar 3-2-1 top alır, toplar kırmızı/mavi/sarı ve üstünde harfi (K, M, S). 2 alıştırma (süresiz; fazla
+   hamlede en az hamleli çözüm gösterilir, yeniden denenebilir) ve 20 özgün problem: 3–7 hamle, her uzunlukta dört; her
+   uzunlukta bir kule, bir düz, iki kısmi hedef; tek ve çok yollu problemler; renk değişince aynı ya da ters iki problem
+   yok, art arda iki problem ortak diziliş kullanmaz (36 diziliş ve 108 hamle bağımsız aramayla taranır,
+   tests/helpers/tower-check.ts). Freiburg sürümündeki gibi en az hamle ekranda, problem başına 1 dakika, asıl sonuç en az
+   hamlede çözülenler; ilk hamleden önceki süre taşınan ilk topun alındığı an (alınıp bırakılan sayılmaz), sayfa gizlenince
+   süre durur; sunucu hamleleri yeniden oynatarak puanlar. Rapor: en az hamlede çözülenler (uzunluğa göre), kısa (3–4) ve
+   uzun (6–7) problemlerin karşılaştırması, çözüm biçimi (fazla hamle, hedefe ulaşılamayan, hiç top taşınmayan), başlamadan
+   önce düşünme (tipik süre, kısa–uzun farkı, 5+ hamlede 2 sn'den çabuk başlayıp en az hamlede çözememek, başlamadan önce
+   düşünme payı; Schumacher ve ark., 2026). Hiç top taşınmayan problemler: yarısında ve kısa problemlerin de yarısında
+   (ya da dörtte üçünde) yorumlanmaz; yalnızca uzun problemlerdeyse "süre yetmemiş olabilir" denir. 5 sütunlu 3B yol
+   haritası. İki tur bağımsız inceleme (ilkinde 5 önemli bulgu: boştaki problemlerin yorumu, ilk top süresi, yol
+   haritasında iki cümle, ters problem çifti; ikincisinde 3: "yorumlanmadı" kuralı, hızlı başlama ile "plana zaman
+   ayırdın" çelişkisi, bir güvenirlik cümlesi) düzeltildi. Telefonda dokunarak (3. sınıf) ve masaüstünde klavyeyle
+   (yetişkin, duraklatma dahil) çözüldü, gönderilen veri denetlendi, PDF'ler açıldı.
 3. Kontrol Odağı (IPIP, Levenson benzeri üç ölçek: içsel, güçlü başkaları, şans).
 4. Üç Boyutlu Zihinde Döndürme (Shepard–Metzler düzeni; küplerden özgün şekiller, ayna/döndürme bağımsız denetim).
 5. Hızlı Kişilik Testi (Mini-IPIP, 20 madde; Donnellan ve ark., 2006).
@@ -534,6 +552,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Sayısal Akıl Yürütme | sayisal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Küp Açınımı | kup-acinimi | Yayında (pilot; 5. sınıftan yetişkine) |
 | Düşünerek Karar Verme | dusunerek-karar-verme | Yayında (pilot; 5. sınıftan yetişkine) |
+| Planlama: Kule Görevi | planlama-kule-gorevi | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -646,6 +665,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-15 (23): Planlama: Kule Görevi yayında (3. sınıftan yetişkine), 2. dalganın 2. testi: 20 özgün problem
+  (3–7 hamle), en az hamleler bütün dizilişler taranarak doğrulandı; en az hamlede çözülenler, problem uzadıkça sonuç,
+  çözüm biçimi ve başlamadan önce düşünme ayrı yorumlanır; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası;
+  iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-13 (22): Kişiliğin 10 Yönü yayında (9. sınıftan yetişkine): BFAS'ın 100 maddesi, beş boyut ve on yön; bir
   boyutun iki yönü ayrışınca bunu anlatan bölüm ve boyut kartı; öğrenci, veli ve yetişkin raporu, 10 sütunlu 3B yol
   haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. 2. dalga
@@ -683,7 +706,3 @@ En yeni üstte; en çok 10 madde tutulur.
   içinde sıralanır, en önemliler anlatılır, birbiriyle yarışabilecek değerler ve sona kalanlar ayrıca belirtilir; öğrenci,
   veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak)
   çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.
-- 2026-10-09 (13): Beyin Akademisi Anatomi 1 "Sinir sistemine ilk bakış" yeni ölçüyle baştan yazıldı: 13 bölüm,
-  35 üç boyutlu sahne (yeni: omurga, bel bölgesi, sempatik gövde, kafa sinirlerinin çıkış kapıları), 9 hareketli çizim,
-  19 vaka, 82 soru, 234 kaynak (açık tam metinler, Gray 1918, OpenStax, UTHealth, TA2); beş bağımsız denetçinin
-  bulguları kaynağa bakılarak düzeltildi. Modele omurga eklendi (C3–L5, sağrı kemiği, diskler).

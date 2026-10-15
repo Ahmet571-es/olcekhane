@@ -76,7 +76,8 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       // mantıksal akıl yürütmede de sorunun türü (cevabı ele verir) gönderilmez. Sayısal akıl yürütmede cevap anahtarı, soru
       // türleri ve yanılgı cevapları gönderilmez. Küp açınımında cevap anahtarı, seçeneklerin yanılgı türleri ve düzey
       // anlatımları gönderilmez. Düşünerek karar vermede cevap anahtarı, soruların türü (sayısal ya da sözel, tuzaklı ya da
-      // tuzaksız), tuzak seçenekleri ve eşler gönderilmez.
+      // tuzaksız), tuzak seçenekleri ve eşler gönderilmez. Kule görevinde gizlenecek bir anahtar yoktur: problemlerin en az
+      // hamle sayısı ekranda zaten gösterilir, çözüm sunucuda hamleler yeniden oynatılarak denetlenir.
       return {
         engine: 'tasks',
         intro,

@@ -14,6 +14,16 @@ const trailResponse = z.object({
   times: z.array(z.number().min(0).max(600_000)).max(400),
 });
 
+/**
+ * Kule görevinde bir problem: hamleler (10 × nereden + nereye, çubuklar 1–3), her hamlenin bittiği an ve ilk topun alındığı
+ * an (problem ekrana geldikten sonra geçen ms; hiç top alınmadıysa `null`).
+ */
+const towerResponse = z.object({
+  moves: z.array(z.number().int().min(12).max(32)).max(100),
+  times: z.array(z.number().min(0).max(120_000)).max(100),
+  pick: z.number().min(0).max(120_000).nullable(),
+});
+
 /** Bilişsel görevin bir denemesi (tarayıcının gönderdiği biçim); doğruluk sunucuda yeniden hesaplanır. */
 export const taskTrial = z.object({
   length: z.number().int().min(1).max(20).optional(),
@@ -26,6 +36,7 @@ export const taskTrial = z.object({
     z.object({ answer: z.number().int().min(0).max(99_999) }),
     cancellationResponse,
     trailResponse,
+    towerResponse,
     /** Kelime listesi hatırlamada yazılan kelimeler ve listenin baştan gösterilme sayısı. */
     z.object({ words: z.array(z.string().max(30)).max(40), restarts: z.number().int().min(0).max(50).optional() }),
     z.null(),

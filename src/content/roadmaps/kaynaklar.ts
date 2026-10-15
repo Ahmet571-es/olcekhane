@@ -224,6 +224,26 @@ export const KAYNAK = {
     text: 'Stagnaro, M. N., Pennycook, G. ve Rand, D. G. (2018). Performance on the Cognitive Reflection Test is stable across time. Judgment and Decision Making, 13(3), 260–267.',
     url: 'https://doi.org/10.1017/S1930297500007695',
   },
+  albertSteinberg2011: {
+    text: 'Albert, D. ve Steinberg, L. (2011). Age differences in strategic planning as indexed by the Tower of London. Child Development, 82(5), 1501–1517.',
+    url: 'https://doi.org/10.1111/j.1467-8624.2011.01613.x',
+  },
+  phillips2001: {
+    text: 'Phillips, L. H., Wynn, V. E., McPherson, S. ve Gilhooly, K. J. (2001). Mental planning and the Tower of London task. The Quarterly Journal of Experimental Psychology Section A, 54(2), 579–597.',
+    url: 'https://doi.org/10.1080/713755977',
+  },
+  unterrainer2003: {
+    text: 'Unterrainer, J. M., Rahm, B., Leonhart, R., Ruff, C. C. ve Halsband, U. (2003). The Tower of London: The impact of instructions, cueing, and learning on planning abilities. Cognitive Brain Research, 17(3), 675–683.',
+    url: 'https://doi.org/10.1016/S0926-6410(03)00191-5',
+  },
+  schumacher2026: {
+    text: 'Schumacher, L. V., Rahm, B., Kaller, C. P., Schyle, V., Weiller, C. ve Unterrainer, J. M. (2026). A novel index to measure pre-planning in the Tower of London task: Test–retest reliability and known-group validity. British Journal of Psychology, 117(3), 1007–1025.',
+    url: 'https://doi.org/10.1111/bjop.70044',
+  },
+  unterrainer2019: {
+    text: 'Unterrainer, J. M., Rahm, B., Kaller, C. P., Wild, P. S., Münzel, T., Blettner, M., Lackner, K., Pfeiffer, N. ve Beutel, M. E. (2019). Assessing planning ability across the adult life span in a large population-representative sample: Reliability estimates and normative data for the Tower of London (TOL-F) task. Journal of the International Neuropsychological Society, 25(5), 520–529.',
+    url: 'https://doi.org/10.1017/S1355617718001248',
+  },
   bialek2018: {
     text: 'Bialek, M. ve Pennycook, G. (2018). The cognitive reflection test is robust to multiple exposures. Behavior Research Methods, 50(5), 1953–1959.',
     url: 'https://doi.org/10.3758/s13428-017-0963-x',

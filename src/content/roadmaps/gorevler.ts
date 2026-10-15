@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı ve Düşünerek Karar Verme yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Düşünerek Karar Verme ve Kule Görevi yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1690,6 +1690,104 @@ const dusunerekKararVerme: TaskRoadmapTemplate = {
   sources: [KAYNAK.deNeysBats, KAYNAK.youngShtulman2020, KAYNAK.stagnaro2018, KAYNAK.bialek2018],
 };
 
+const kuleBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; planlamanın yalnızca bir yönünü (topları en az hamlede hedef düzene getirmeyi) gösterir.',
+    'Problemler uzadıkça en kısa yolu bulmak genellikle zorlaşır; uzun problemlerde fazla hamle yapmak olağandır.',
+    'Planlama becerisi ergenlik boyunca gelişmeyi sürdürür; en zor problemlerde bu gelişme 20’li yaşların başına kadar sürebilir.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; planlamanın yalnızca bir yönünü (topları en az hamlede hedef düzene getirmeyi) gösterir.',
+    'Planlama becerisi ergenlik boyunca gelişmeyi sürdürür: kolay problemlerde 17 yaş dolayında yetişkin düzeyine ulaşılırken en zor problemlerde 20’li yaşların başına kadar ilerleme görülmüştür. Sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+    'Bu görevi daha önce çözmüş olmak sonucu etkileyebilir; tekrar uygulamada süreler kısalır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine yaşla, eğitimle ve tekrarla ilgili bilgi. */
+const kuleFacts: InfoBox = {
+  ...kuleBase,
+  items: {
+    ...kuleBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; planlamanın yalnızca bir yönünü (topları en az hamlede hedef düzene getirmeyi) gösterir.',
+      '40–80 yaş arasındaki kişilerle yapılan geniş bir çalışmada bu tür bir görevdeki sonuçlar yaş ilerledikçe düşmüş ve eğitim düzeyiyle ilişkili bulunmuştur. Bu görevi daha önce çözmüş olmak da sonucu etkileyebilir.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const planlamaKuleGorevi: TaskRoadmapTemplate = {
+  version: 'planlama-kule-gorevi-yol-haritasi-1',
+  what: {
+    student: 'birkaç adımı önceden düşünmeyi gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun birkaç adımı önceden düşünmeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'birkaç adımı önceden düşünmeyi kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Önceden plan yapmayı ne kolaylaştırır?', parent: 'Çocuğunuzun önceden plan yapmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Planlama, bir hedefe ulaşmak için gereken adımları başlamadan önce kafada sıraya koyabilmektir. Bir yolculuğa hazırlanmak, bir tarifin adımlarını sıraya koymak ya da bir oyunda birkaç hamle sonrasını düşünmek de planlama ister. Bu test planlamanın yalnızca bir yönünü, topları en az hamleyle hedef düzene getirmeyi ölçer. Aşağıdaki yollar, birkaç adımlı işlerde plan yapmayı kolaylaştırmaya yardım edebilir.',
+    'Planlama, bir hedefe ulaşmak için gereken adımları başlamadan önce kafada sıraya koyabilmektir. Bir yolculuğa hazırlanmak, bir tarifin adımlarını sıraya koymak ya da bir oyunda birkaç hamle sonrasını düşünmek de planlama ister. Bu test planlamanın yalnızca bir yönünü, topları en az hamleyle hedef düzene getirmeyi ölçer. Aşağıdaki yollar, çocuğunuzun birkaç adımlı işlerde plan yapmasını kolaylaştırmaya yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'once', 'Önce kafanda dene', 'Yöntem', t(
+      'Birkaç adımlı bir işe başlamadan önce ilk iki üç adımı kafanda sırayla dene: “Önce bunu yaparsam ne olur, sonra ne yapmam gerekir?” Bir çalışmada, başlamadan önce tam plan yapması söylenen kişiler bu tür problemlerin daha çoğunu çözmüştür; başka bir çalışmada bu fark görülmemiştir. Araştırmalar farklı sonuçlar bulduğu için bunu kendin dene ve birkaç adımı önceden düşünmenin sana yardım edip etmediğine bak.',
+      'Çocuğunuza birkaç adımlı bir işe başlamadan önce ilk iki üç adımı kafasında sırayla denemesini önerin: “Önce bunu yaparsam ne olur, sonra ne yapmam gerekir?” Bir çalışmada, başlamadan önce tam plan yapması söylenen kişiler bu tür problemlerin daha çoğunu çözmüştür; başka bir çalışmada bu fark görülmemiştir. Araştırmalar farklı sonuçlar bulduğu için bunu birlikte deneyin ve birkaç adımı önceden düşünmenin ona yardım edip etmediğine bakın.',
+    )),
+    support(1, 'geri', 'Hedeften geriye bak', 'Yöntem', t(
+      'Bazen hedefe bakıp geriye doğru düşünmek yolu kısaltır: “Hedefe ulaşmadan hemen önce ne olmalı?” Kule görevinde, hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır. Günlük işlerde de en son ne olacağını düşünüp oradan geriye doğru adımları sıralamak işe yarayabilir; örneğin bir yere zamanında varmak için ne zaman yola çıkman gerektiğini bulmak gibi.',
+      'Bazen hedefe bakıp geriye doğru düşünmek yolu kısaltır: “Hedefe ulaşmadan hemen önce ne olmalı?” Kule görevinde, hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır. Çocuğunuza günlük işlerde de en son ne olacağını düşünüp oradan geriye doğru adımları sıralamasını önerebilirsiniz; örneğin bir yere zamanında varmak için ne zaman yola çıkmak gerektiğini bulmak gibi.',
+    )),
+    support(2, 'ara', 'Ara hedefler koy', 'Yöntem', t(
+      'Uzun bir işi birkaç ara hedefe böl ve bir seferde yalnızca bir sonraki ara hedefi düşün. Bir araştırmada çoğu kişinin kafasında iki ara adımı doğru planlayabildiği, üçüncü adımda zorlandığı görülmüştür; çok adımlı işleri küçük parçalara bölmek kafadaki yükü azaltabilir.',
+      'Çocuğunuza uzun bir işi birkaç ara hedefe bölmesini ve bir seferde yalnızca bir sonraki ara hedefi düşünmesini önerin. Bir araştırmada çoğu kişinin kafasında iki ara adımı doğru planlayabildiği, üçüncü adımda zorlandığı görülmüştür; çok adımlı işleri küçük parçalara bölmek kafadaki yükü azaltabilir.',
+    )),
+    support(3, 'yaz', 'Planı yaz', 'Araç', t(
+      'Çok adımlı bir işte adımları kısa bir listeye yaz ve bitirdikçe işaretle. Plan kâğıtta durunca hepsini aynı anda aklında tutmak zorunda kalmazsın; bir adım aksarsa listeye bakıp planı değiştirebilirsin.',
+      'Çocuğunuza çok adımlı bir işte adımları kısa bir listeye yazmasını ve bitirdikçe işaretlemesini önerin. Plan kâğıtta durunca hepsini aynı anda aklında tutmak zorunda kalmaz; bir adım aksarsa listeye bakıp planı değiştirebilir.',
+    )),
+  ],
+  facts: kuleFacts,
+  approach: [
+    { title: 'Çözümü söylemeyin, sorun', text: 'Çocuğunuz bir bulmacada ya da bir işte takıldığında çözümü göstermek yerine “İlk adımın ne olur, sonra ne olur?” diye sorun.' },
+    { title: 'Düşünmeye zaman tanıyın', text: 'Plan yapmak zaman ister; çok adımlı bir işe başlamadan önce düşünmesine fırsat verin ve acele ettirmeyin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Adımları söyle',
+      text: t(
+        'Bu hafta birkaç adımlı bir işe (ör. bir çanta hazırlamak, bir tarifi uygulamak ya da bir oyunu kurmak) başlamadan önce adımları sırayla yüksek sesle söyle, sonra başla.',
+        'Bu hafta çocuğunuzla birkaç adımlı bir işe (ör. bir çanta hazırlamak, bir tarifi uygulamak ya da bir oyunu kurmak) başlamadan önce adımları sırayla yüksek sesle söylemeyi deneyin.',
+      ),
+    },
+    {
+      title: 'Geriye doğru',
+      text: t(
+        'Bu hafta bir yere zamanında varman gereken bir gün, varış saatinden geriye doğru giderek ne zaman hazırlanmaya ve yola çıkmaya başlaman gerektiğini hesapla.',
+        'Bu hafta bir yere zamanında varmanız gereken bir gün, çocuğunuzla varış saatinden geriye doğru giderek ne zaman hazırlanmaya ve yola çıkmaya başlamak gerektiğini birlikte hesaplayın.',
+      ),
+    },
+    {
+      title: 'Bir hamle sonrası',
+      text: t(
+        'Bu hafta dama ya da satranç gibi bir oyunda her hamleden önce “Bunu yaparsam sonra ne olur?” diye bir sonraki hamleyi de düşün.',
+        'Bu hafta çocuğunuzla dama ya da satranç gibi bir oyun oynayın; her hamleden önce “Bunu yaparsan sonra ne olur?” diye sorun.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (önce kafanda denemek, hedeften geriye bakmak, ara hedefler koymak ya da planı yazmak) birkaç adımlı işlerde işini en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun birkaç adımlı işlerini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['kural-degistirme', 'dur-git-gorevi'],
+  nextPurpose: {
+    you: 'planlamayla birlikte çalışan başka zihinsel becerileri de görmek',
+    parent: 'çocuğunuzun planlamayla birlikte çalışan başka zihinsel becerilerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.unterrainer2003, KAYNAK.phillips2001, KAYNAK.albertSteinberg2011, KAYNAK.unterrainer2019, KAYNAK.schumacher2026],
+};
+
 const kelimeListesiBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; belleğin yalnızca bir yönünü (yazılı bir kelime listesini birkaç dakika içinde öğrenip hatırlamayı) gösterir.',
@@ -1813,4 +1911,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'sayisal-akil-yurutme': sayisalAkilYurutme,
   'kup-acinimi': kupAcinimi,
   'dusunerek-karar-verme': dusunerekKararVerme,
+  'planlama-kule-gorevi': planlamaKuleGorevi,
 };

@@ -33,12 +33,14 @@ import type {
   CubeNetTask,
   CubeType,
   CognitiveReflectionTask,
+  TowerTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
 import { NUMERIC_EQUAL, NUMERIC_KINDS, NUMERIC_NONPROP, NUMERIC_PROP, numericRapidMs } from '@/lib/instruments/numeric';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
 import { reflectionRapidMs } from '@/lib/instruments/reflection';
+import { TOWER_MAX_MOVES, towerDecode, towerMove, towerSame } from '@/lib/instruments/tower';
 import { verbalRapidMs } from '@/lib/instruments/verbal';
 import { vocabularyRapidMs } from '@/lib/instruments/vocabulary';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds } from '@/lib/instruments/rule-switch';
@@ -2621,6 +2623,182 @@ export function reflectionQualityNotes(r: ReflectionResult): string[] {
   return notes;
 }
 
+/* ---------- Kule görevi ---------- */
+
+export interface TowerTrialInput {
+  index: number;
+  /**
+   * Hamleler (10 × nereden + nereye, çubuklar 1–3), her hamlenin bittiği an ve ilk topun alındığı an (problem ekrana
+   * geldikten sonra geçen ms; sayfa gizliyken geçen süre sayılmaz). Hedefe ulaşılınca problem biter.
+   */
+  response: { moves: number[]; times: number[]; pick: number | null };
+  rtMs: number | null;
+}
+
+/** Problemin sonucu: en az hamlede çözüldü, fazla hamleyle çözüldü ya da süre içinde çözülemedi. */
+export type TowerOutcome = 'optimal' | 'extra' | 'unsolved';
+
+export interface TowerLevel {
+  /** Problemlerin en az hamle sayısı. */
+  moves: number;
+  n: number;
+  optimal: number;
+  extra: number;
+  unsolved: number;
+  /** Hiç top taşınmadan süresi dolan problemler. */
+  idle: number;
+}
+
+export interface TowerResult {
+  n: number;
+  optimal: number;
+  extra: number;
+  unsolved: number;
+  /** Hiç top taşınmadan süresi dolan problemler. */
+  idle: number;
+  levels: TowerLevel[];
+  /** Kısa (en çok 4 hamle) ve uzun (en az 6 hamle) problemlerde en az hamlede çözülenler ve hiç top taşınmayanlar. */
+  short: { n: number; optimal: number; idle: number };
+  long: { n: number; optimal: number; idle: number };
+  /** Fazla hamleyle çözülen problemlerde en az hamlenin üstünde yapılan hamlelerin toplamı. */
+  excessMoves: number;
+  /** İlk topun alınmasına kadar geçen tipik süre (ms): bütün problemlerde, kısa ve uzun problemlerde. */
+  medianPick: number | null;
+  pickShort: number | null;
+  pickLong: number | null;
+  /**
+   * Ön planlama payı (%): çözülen her problemde ilk topa kadar geçen sürenin bütün çözüm süresine oranı, problemlerin
+   * ortalaması (Schumacher ve ark., 2026). En az `TOWER_PREPLAN_MIN` problem çözülmediyse `null`.
+   */
+  prePlan: number | null;
+  /** 5 hamle ve üstündeki problemler; bunlardan ilk topun `TOWER_RAPID_MS`'den önce alındığı ve en az hamlede çözülemeyenler. */
+  rapidOf: number;
+  rapid: number;
+  /** Problem başına sonuç (sırayla). */
+  outcomes: TowerOutcome[];
+}
+
+/** Kısa problemler en çok bu kadar, uzun problemler en az `TOWER_LONG` hamlelik problemlerdir. */
+export const TOWER_SHORT = 4;
+export const TOWER_LONG = 6;
+/** Bu kadar ya da daha uzun problemlerde ilk topu çok çabuk almak "düşünmeden başlamak" sayılabilir. */
+export const TOWER_RAPID_FROM = 5;
+/** İlk topun alınması için bundan kısa süre, 5 hamle ve üstündeki bir problemi kafada çözmeye yetmez. */
+export const TOWER_RAPID_MS = 2000;
+/** Tipik sürenin hesaplanması için en az bu kadar problem gerekir. */
+export const TOWER_PICK_MIN = 3;
+/** Ön planlama payı için en az bu kadar çözülmüş problem gerekir. */
+export const TOWER_PREPLAN_MIN = 5;
+/** Bu kadar problemde hiç top taşınmadıysa sonuç dikkatle yorumlanır. */
+export const TOWER_IDLE_NOTE = 3;
+
+export function scoreTower(task: TowerTask, input: TowerTrialInput[]): { result: TowerResult } {
+  const n = task.items.length;
+  const byIndex = new Map<number, TowerTrialInput>();
+  const finite = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz problem.');
+    const r = t.response as Partial<TowerTrialInput['response']> | null;
+    if (!r || typeof r !== 'object' || !Array.isArray(r.moves) || !Array.isArray(r.times) || r.moves.length !== r.times.length) {
+      throw new TaskInputError('Geçersiz cevap.');
+    }
+    if (r.moves.length > TOWER_MAX_MOVES) throw new TaskInputError('Geçersiz cevap.');
+    if (r.pick !== null && (!finite(r.pick) || r.pick < 0 || r.pick > task.limitMs)) throw new TaskInputError('Geçersiz süre.');
+    let prev = r.pick ?? 0;
+    for (const x of r.times) {
+      if (!finite(x) || x < prev || x > task.limitMs) throw new TaskInputError('Geçersiz süre.');
+      prev = x;
+    }
+    // İlk top süresi, taşınan ilk topun alındığı andır: hamle varsa vardır, hamle yoksa yoktur.
+    if ((r.moves.length > 0) !== (r.pick !== null)) throw new TaskInputError('Geçersiz süre.');
+    if (t.rtMs !== null && (!finite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Problemlerin hepsi tamamlanmadı.');
+
+  const scored = task.items.map((item, i) => {
+    const { moves, times, pick } = byIndex.get(i)!.response;
+    let state = item.start;
+    let solved = false;
+    for (const code of moves) {
+      if (solved) throw new TaskInputError('Hedefe ulaşıldıktan sonra hamle yapılamaz.');
+      const mv = towerDecode(code);
+      const next = mv ? towerMove(state, mv[0], mv[1]) : null;
+      if (!next) throw new TaskInputError('Kurala aykırı hamle.');
+      state = next;
+      solved = towerSame(state, item.goal);
+    }
+    // En az hamleden kısa bir çözüm olamaz: olursa problemin en az hamle sayısı yanlıştır.
+    if (solved && moves.length < item.minMoves) throw new TaskInputError('Geçersiz çözüm.');
+    const outcome: TowerOutcome = !solved ? 'unsolved' : moves.length === item.minMoves ? 'optimal' : 'extra';
+    return { item, outcome, moves: moves.length, pick, end: solved ? times[times.length - 1] : null };
+  });
+
+  const count = (xs: typeof scored, o: TowerOutcome) => xs.filter((s) => s.outcome === o).length;
+  const idleOf = (xs: typeof scored) => xs.filter((s) => s.moves === 0).length;
+  const levels = [...new Set(task.items.map((it) => it.minMoves))]
+    .sort((a, b) => a - b)
+    .map((moves) => {
+      const here = scored.filter((s) => s.item.minMoves === moves);
+      return { moves, n: here.length, optimal: count(here, 'optimal'), extra: count(here, 'extra'), unsolved: count(here, 'unsolved'), idle: idleOf(here) };
+    });
+  const picks = (xs: typeof scored) => xs.flatMap((s) => (s.pick === null ? [] : [s.pick]));
+  const shortOnes = scored.filter((s) => s.item.minMoves <= TOWER_SHORT);
+  const longOnes = scored.filter((s) => s.item.minMoves >= TOWER_LONG);
+  const hard = scored.filter((s) => s.item.minMoves >= TOWER_RAPID_FROM);
+  const shares = scored.flatMap((s) => (s.end !== null && s.end > 0 && s.pick !== null ? [s.pick / s.end] : []));
+  return {
+    result: {
+      n,
+      optimal: count(scored, 'optimal'),
+      extra: count(scored, 'extra'),
+      unsolved: count(scored, 'unsolved'),
+      idle: idleOf(scored),
+      levels,
+      short: { n: shortOnes.length, optimal: count(shortOnes, 'optimal'), idle: idleOf(shortOnes) },
+      long: { n: longOnes.length, optimal: count(longOnes, 'optimal'), idle: idleOf(longOnes) },
+      excessMoves: scored.reduce((sum, s) => sum + (s.outcome === 'extra' ? s.moves - s.item.minMoves : 0), 0),
+      medianPick: medianOrNull(picks(scored), TOWER_PICK_MIN),
+      pickShort: medianOrNull(picks(shortOnes), TOWER_PICK_MIN),
+      pickLong: medianOrNull(picks(longOnes), TOWER_PICK_MIN),
+      prePlan: shares.length >= TOWER_PREPLAN_MIN ? Math.round((100 * shares.reduce((a, b) => a + b, 0)) / shares.length) : null,
+      rapidOf: hard.length,
+      rapid: hard.filter((s) => s.pick !== null && s.pick < TOWER_RAPID_MS && s.outcome !== 'optimal').length,
+      outcomes: scored.map((s) => s.outcome),
+    },
+  };
+}
+
+/**
+ * Problemlerin yarısında ya da daha çoğunda ve kısa problemlerin de yarısında (ya da bütün problemlerin dörtte üçünde) hiç
+ * top taşınmadı: sonuç yorumlanmaz. Hiç top taşınmayan problemler yalnızca uzun problemlerse, çözüm kafada aranırken süre
+ * yetmemiş olabilir (yönergeye uygun olarak önce düşünen biri); birkaç kısa problemde top taşınmayıp ötekiler çözüldüyse de
+ * görev anlaşılmıştır. Bu durumlarda sonuç dikkatle yorumlanır (`towerIdle`).
+ */
+export const towerNone = (r: TowerResult) =>
+  (r.idle >= Math.ceil(r.n / 2) && r.short.idle >= Math.ceil(r.short.n / 2)) || r.idle >= Math.ceil((3 * r.n) / 4);
+/** Birkaç problemde hiç top taşınmadı: sonuç dikkatle yorumlanır. */
+export const towerIdle = (r: TowerResult) => !towerNone(r) && r.idle >= TOWER_IDLE_NOTE;
+/** 5 hamle ve üstündeki problemlerin en az üçte birinde ilk top çok çabuk alındı ve problem en az hamlede çözülemedi. */
+export const towerRapid = (r: TowerResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 3));
+
+/** Kule görevinde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, towerBlocks aynı eşikleri kullanır). */
+export function towerQualityNotes(r: TowerResult): string[] {
+  if (towerNone(r)) {
+    return [
+      `Kule görevinde ${r.n} problemin ${r.idle} tanesinde hiç top taşınmadan süre dolmuş; bunların ${r.short.idle} tanesi 3 ve 4 hamlelik kısa problemlerdir. Testte ara verilmiş, görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+    ];
+  }
+  if (towerIdle(r)) {
+    return [
+      r.short.idle === 0
+        ? `Kule görevinde ${r.idle} problemde hiç top taşınmadan süre dolmuş; bu problemlerde çözüm kafada aranırken süre yetmemiş ya da ara verilmiş olabilir.`
+        : `Kule görevinde ${r.idle} problemde hiç top taşınmadan süre dolmuş; bu problemlerde çözüm kafada aranırken süre yetmemiş, ara verilmiş ya da yönerge anlaşılmamış olabilir.`,
+    ];
+  }
+  return [];
+}
+
 export function taskQualityNotes(parts: {
   flanker?: FlankerResult;
   symbol?: SymbolResult;
@@ -2639,6 +2817,7 @@ export function taskQualityNotes(parts: {
   numeric?: NumericResult;
   cube?: CubeResult;
   reflection?: ReflectionResult;
+  tower?: TowerResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -2827,6 +3006,8 @@ export function taskQualityNotes(parts: {
   if (kp) notes.push(...cubeQualityNotes(kp));
   const dk = parts.reflection;
   if (dk) notes.push(...reflectionQualityNotes(dk));
+  const kg = parts.tower;
+  if (kg) notes.push(...towerQualityNotes(kg));
   return notes;
 }
 

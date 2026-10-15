@@ -25,6 +25,7 @@ import {
   numericBody,
   cubeBody,
   reflectionBody,
+  towerBody,
   foldingBody,
   vocabularyBody,
   ruleSwitchBody,
@@ -285,6 +286,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'sayisal-akil-yurutme': () => numericBody(),
     'kup-acinimi': () => cubeBody(),
     'dusunerek-karar-verme': () => reflectionBody(),
+    'planlama-kule-gorevi': () => towerBody(),
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
@@ -340,6 +342,11 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['analogy', 'classification', 'ordering', 'deduction']);
           expect(rm.barsTitle).toMatch(/^Soru türlerine göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('soru türüdür');
+        } else if (slug === 'planlama-kule-gorevi') {
+          // Her uzunlukta (3–7 hamle) dört problemde en az hamlede çözülenlerin oranı (aynı birim): beş sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['h3', 'h4', 'h5', 'h6', 'h7']);
+          expect(rm.barsTitle).toMatch(/^Problem uzunluğuna göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('dört problemdir');
         } else if (slug === 'dusunerek-karar-verme') {
           expect(rm.bars.map((b) => b.key)).toEqual(['numLure', 'verbLure', 'control']);
           expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);

@@ -37,12 +37,14 @@ import type {
   CognitiveReflectionTask,
   ReflectionDomain,
   ReflectionRole,
+  TowerTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
 import { expectedSpanResponse, spanStimulus } from '@/lib/scoring/tasks';
+import { keyOf, shortestPath, successors } from './tower-check';
 
 /** Hızlı test istek gövdeleri: her motor için geçerli, örnek cevaplar (birim ve veritabanı testleri). */
 export const def = <T>(slug: string) => getInstrumentDef(slug) as T;
@@ -513,6 +515,47 @@ export function reflectionBody(
   const trials = task.items.map((_, index) => {
     const p = pick({ domain: task.domains[index], role: task.roles[index], answer: task.answers[index], lure: task.lures[index], pair: task.pairs[index], i: index });
     return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Kule görevinde bir problemin nasıl çözüleceği: en az hamlede, fazla hamleyle (`excess` çift sayı), hedefe ulaşmadan ya da hiç top taşımadan. */
+export type TowerPlay = { outcome: 'optimal' | 'extra' | 'unsolved' | 'idle'; pickMs?: number; excess?: number; stepMs?: number };
+export type TowerCell = { moves: number; i: number };
+
+/**
+ * Kule görevinin hamleleri bağımsız denetleyicinin (tests/helpers/tower-check.ts) en kısa yolundan kurulur. Fazla hamle,
+ * başta bir topu başka bir çubuğa koyup geri almakla eklenir (her gidiş-dönüş 2 hamle). Hedefe ulaşılamayan problemde
+ * yalnızca bir hamle yapılır (en kısa problem 3 hamledir).
+ */
+export function towerMoves(start: readonly string[], goal: readonly string[], play: TowerPlay): [number, number][] {
+  const s = keyOf(start);
+  const g = keyOf(goal);
+  if (play.outcome === 'idle') return [];
+  const [from, to] = successors(s)[0];
+  if (play.outcome === 'unsolved') return [[from, to]];
+  const path = shortestPath(s, g);
+  if (play.outcome === 'optimal') return path;
+  const detour: [number, number][] = [];
+  for (let k = 0; k < (play.excess ?? 2) / 2; k++) detour.push([from, to], [to, from]);
+  return [...detour, ...path];
+}
+
+/** Kule görevi: varsayılan olarak her problem en az hamlede; ilk top 4 saniyede, her hamle 1,5 saniyede. */
+export function towerBody(pick: (q: TowerCell) => TowerPlay = () => ({ outcome: 'optimal' }), grade = 5): AnswersBody {
+  const task = def<TaskInstrument>('planlama-kule-gorevi').tasks[0] as TowerTask;
+  const trials = task.items.map((item, index) => {
+    const play = pick({ moves: item.minMoves, i: index });
+    const mv = towerMoves(item.start, item.goal, play);
+    const pickMs = play.outcome === 'idle' ? null : (play.pickMs ?? 4000);
+    const step = play.stepMs ?? 1500;
+    const times = mv.map((_, k) => Math.min(task.limitMs, (pickMs ?? 0) + step * (k + 1)));
+    const solved = play.outcome === 'optimal' || play.outcome === 'extra';
+    return {
+      index,
+      response: { moves: mv.map(([a, b]) => (a + 1) * 10 + (b + 1)), times, pick: pickMs },
+      rtMs: solved ? times[times.length - 1] : task.limitMs,
+    };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

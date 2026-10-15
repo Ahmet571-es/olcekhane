@@ -263,7 +263,8 @@ export type TaskKind =
   | 'logical_reasoning'
   | 'numerical_reasoning'
   | 'cube_net'
-  | 'cognitive_reflection';
+  | 'cognitive_reflection'
+  | 'tower';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -945,6 +946,35 @@ export interface CognitiveReflectionTask extends TaskBase {
 }
 
 /**
+ * Kule görevi (Londra Kulesi düzeni; Shallice, 1982): üç çubuk (soldaki 3, ortadaki 2, sağdaki 1 top alır) ve üç renkli
+ * top. Başlangıç düzeni, en az hamleyle hedef düzene getirilir (content/instruments/planlama-kule-gorevi.ts). Düzen, her
+ * çubuktaki topların alttan üste harfleridir: K kırmızı, M mavi, S sarı (lib/instruments/tower.ts).
+ */
+export type TowerState = readonly [string, string, string];
+
+export interface TowerProblem {
+  key: string;
+  start: TowerState;
+  goal: TowerState;
+  /** Hedefe ulaşmak için gereken en az hamle (ekranda gösterilir; testte bağımsız bir aramayla doğrulanır). */
+  minMoves: number;
+}
+
+export interface TowerPracticeProblem extends TowerProblem {
+  /** En az hamleli çözüm: her hamle [nereden, nereye] (çubuklar 1–3). Hamle fazla olursa kişiye gösterilir. */
+  solution: readonly (readonly [number, number])[];
+}
+
+export interface TowerTask extends TaskBase {
+  kind: 'tower';
+  practice: TowerPracticeProblem[];
+  /** Asıl problemler, en az hamle sayısına göre kısadan uzuna. */
+  items: TowerProblem[];
+  /** Bir problem için süre (ms). */
+  limitMs: number;
+}
+
+/**
  * Kural değiştirme (görev değiştirme düzeni): her denemede mavi ya da turuncu bir daire ya da kare görünür; üstündeki
  * işaret (RENK ya da ŞEKİL) hangi kurala göre cevap verileceğini söyler (lib/instruments/rule-switch.ts). Önce iki tek
  * kurallı bölüm, sonra iki kuralın karıştığı iki bölüm gelir.
@@ -1027,7 +1057,8 @@ export type CognitiveTask =
   | LogicalReasoningTask
   | NumericalReasoningTask
   | CubeNetTask
-  | CognitiveReflectionTask;
+  | CognitiveReflectionTask
+  | TowerTask;
 
 export interface TaskInstrument extends InstrumentBase {
   engine: 'tasks';

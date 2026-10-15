@@ -24,6 +24,7 @@ import { LogicalReasoning } from './logical-reasoning';
 import { NumericalReasoning } from './numerical-reasoning';
 import { CubeNet } from './cube-net';
 import { CognitiveReflection } from './cognitive-reflection';
+import { Tower } from './tower';
 import { Trail } from './trail';
 import { WordList } from './word-list';
 
@@ -184,6 +185,7 @@ export function TaskRunner(props: {
       {task.kind === 'numerical_reasoning' && <NumericalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cube_net' && <CubeNet key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cognitive_reflection' && <CognitiveReflection key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'tower' && <Tower key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

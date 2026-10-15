@@ -81,6 +81,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                               ? `${single.items.length} soru, ${single.levels.length} düzey`
                               : single.kind === 'cognitive_reflection'
                                 ? `${single.items.length} kısa soru, dört seçenekli`
+                                : single.kind === 'tower'
+                                  ? `${single.items.length} problem, ${Math.min(...single.items.map((i) => i.minMoves))}–${Math.max(...single.items.map((i) => i.minMoves))} hamle`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -414,6 +416,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Soruların kaçında doğru cevaba ulaşıldığı (sayısal ve sözel sorular ayrı; grafik ve üç boyutlu grafikle)</li>
                 <li>Yanlışların türü, benzer soru çiftlerinin karşılaştırılması ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'tower' && (
+              <>
+                <li>Problemlerin kaçının en az hamlede çözüldüğü (3 hamleden 7 hamleye her uzunlukta ayrı; grafik ve üç boyutlu grafikle)</li>
+                <li>Problemler uzadıkça sonucun nasıl değiştiği, fazla hamleyle çözülen ve hedefe ulaşılamayan problemler, ilk hamleye başlamadan önce ne kadar düşünüldüğü</li>
               </>
             )}
             {single?.kind === 'word_list' && (

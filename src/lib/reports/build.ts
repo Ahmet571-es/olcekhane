@@ -126,6 +126,14 @@ import {
   reflectionRapid,
   reflectionSamePosition,
   type ReflectionResult,
+  towerIdle,
+  towerNone,
+  towerRapid,
+  TOWER_LONG,
+  TOWER_RAPID_FROM,
+  TOWER_RAPID_MS,
+  TOWER_SHORT,
+  type TowerResult,
   cubeSamePosition,
   type CubeResult,
 } from '@/lib/scoring/tasks';
@@ -4656,6 +4664,300 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
   return { blocks: [dogru, yanlis, es, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
+/* ---------- Kule görevi ---------- */
+
+/** Kule görevinde problem uzunluklarının (3–7 hamle) üç boyutlu grafikteki renkleri. */
+export const TOWER_LEVEL_COLORS = ['#2f5ce0', '#0e9c8c', '#d28a14', '#ee6a36', '#7a4ee6'];
+
+/** Cümle başındaki büyük harfi küçültür ("Uzun problemlerde" → "uzun problemlerde"). */
+const lowerFirst = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1);
+
+/** Kule görevindeki kısa süreler: 10 saniyeden kısası ondalıklı yazılır ("1,6 saniye"), yarım saniyeden kısası "bir saniyeden kısa". */
+const towerSeconds = (ms: number) => (ms < 500 ? 'bir saniyeden kısa' : ms < 10_000 ? `${String(towerTenths(ms)).replace('.', ',')} saniye` : seconds(ms));
+/** `towerSeconds` ile yazılan süre (saniye): karşılaştırmalar yazılan sürelerle yapılır. */
+const towerTenths = (ms: number) => (ms < 500 ? 0 : ms < 10_000 ? Math.round(ms / 100) / 10 : Math.round(ms / 1000));
+
+/** Kule görevinin dört sonuç kartı, problem uzunluğuna göre grafik, öne çıkan sayılar ve üç boyutlu grafik. */
+function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const none = towerNone(r);
+  const idle = towerIdle(r);
+  const rapid = towerRapid(r);
+  const O = r.optimal;
+  const S = r.short;
+  const L = r.long;
+  const mid = r.levels.filter((l) => l.moves > TOWER_SHORT && l.moves < TOWER_LONG);
+  const M = { n: mid.reduce((s, l) => s + l.n, 0), optimal: mid.reduce((s, l) => s + l.optimal, 0), idle: mid.reduce((s, l) => s + l.idle, 0) };
+  const midName = `${mid.map((l) => l.moves).join(' ve ')} hamlelik problemlerde`;
+  const shortName = `kısa problemlerde (${TOWER_SHORT - 1} ve ${TOWER_SHORT} hamle)`;
+  const longName = `uzun problemlerde (${TOWER_LONG} ve ${TOWER_LONG + 1} hamle)`;
+  const noneWhy = `Problemlerin ${r.idle} tanesinde, kısa problemlerin de ${S.idle} tanesinde hiç top taşınmadığı için`;
+
+  /* En az hamlede çözülenler */
+  let accText: string;
+  if (none) {
+    accText = v(
+      `${r.n} problemin ${r.idle} tanesinde hiç top taşımadan süre doldu; bunların ${S.idle} tanesi 3 ve 4 hamlelik kısa problemlerdi. Testte ara vermiş, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı problemler yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
+      `Çocuğunuz ${r.n} problemin ${r.idle} tanesinde hiç top taşımadı ve bu problemlerde süre doldu; bunların ${S.idle} tanesi 3 ve 4 hamlelik kısa problemlerdi. Testte ara verilmiş, görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı problemler yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
+    );
+  } else {
+    const intro = v(
+      `Bu testte ${r.n} problem vardı; her problemde topları en az hamleyle hedef düzene getirmen gerekiyordu.`,
+      `Bu testte ${r.n} problem vardı; her problemde çocuğunuzun topları en az hamleyle hedef düzene getirmesi gerekiyordu.`,
+    );
+    let level: string;
+    if (O === r.n) {
+      level = v('Problemlerin hepsini en az hamlede çözdün.', 'Çocuğunuz problemlerin hepsini en az hamlede çözdü.');
+    } else if (O >= 16) {
+      level = v(`Bunların ${O} tanesini en az hamlede çözdün: problemlerin hemen hepsinde en kısa yolu buldun.`, `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü: problemlerin hemen hepsinde en kısa yolu buldu.`);
+    } else if (O >= 11) {
+      level = v(`Bunların ${O} tanesini en az hamlede çözdün: problemlerin çoğunda en kısa yolu buldun.`, `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü: problemlerin çoğunda en kısa yolu buldu.`);
+    } else if (O >= 6) {
+      level = v(
+        `Bunların ${O} tanesini en az hamlede çözdün: problemlerin bir kısmında en kısa yolu buldun, bir kısmında daha çok hamle gerekti ya da hedefe ulaşamadın.`,
+        `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü: problemlerin bir kısmında en kısa yolu buldu, bir kısmında daha çok hamle gerekti ya da hedefe ulaşamadı.`,
+      );
+    } else if (O > 0) {
+      level = v(
+        `Bunların ${O} tanesini en az hamlede çözdün; öteki problemlerde daha çok hamle gerekti ya da hedefe ulaşamadın.`,
+        `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü; öteki problemlerde daha çok hamle gerekti ya da hedefe ulaşamadı.`,
+      );
+    } else {
+      level = v('Bunların hiçbirini en az hamlede çözemedin.', 'Çocuğunuz bunların hiçbirini en az hamlede çözemedi.');
+    }
+    accText = `${intro} ${level}`;
+    if (idle) {
+      // Kısa problemlerin hepsinde top taşındıysa yönerge anlaşılmıştır: hiç top taşınmayan (uzun) problemlerde süre yetmemiş olabilir.
+      const why =
+        S.idle === 0
+          ? v('çözümü kafanda ararken süre yetmemiş ya da ara vermiş olabilirsin', 'çözüm kafada aranırken süre yetmemiş ya da ara verilmiş olabilir')
+          : v('çözümü kafanda ararken süre yetmemiş, ara vermiş ya da yönergeyi tam anlamamış olabilirsin', 'çözüm kafada aranırken süre yetmemiş, ara verilmiş ya da yönerge tam anlaşılmamış olabilir');
+      accText += v(
+        ` ${r.idle} problemde hiç top taşımadan süre doldu; bu problemlerde ${why}. Bu yüzden bu sonuç seni tam yansıtmayabilir.`,
+        ` ${r.idle} problemde hiç top taşınmadan süre doldu; bu problemlerde ${why}. Bu yüzden bu sonuç çocuğunuzu tam yansıtmayabilir.`,
+      );
+    }
+  }
+  const dogru: CognitiveBlock = {
+    ...card('kg_dogru'),
+    headline: `${r.n} problemin ${O} tanesi en az hamlede`,
+    detail: r.levels.map((l) => `${l.moves} hamlelik ${l.optimal}/${l.n}`).join(' · '),
+    text: accText,
+  };
+
+  /* Problem uzadıkça */
+  let uzunluk: CognitiveBlock;
+  if (none) {
+    uzunluk = { ...card('kg_uzunluk'), headline: 'Yorumlanmadı', text: `${noneWhy} kısa ve uzun problemler karşılaştırılmadı.` };
+  } else {
+    let text = v(
+      `En az hamlede çözdüğün problemler: ${shortName} ${S.optimal}/${S.n}, ${longName} ${L.optimal}/${L.n}.`,
+      `Çocuğunuzun en az hamlede çözdüğü problemler: ${shortName} ${S.optimal}/${S.n}, ${longName} ${L.optimal}/${L.n}.`,
+    );
+    const diff = S.optimal - L.optimal;
+    if (S.optimal >= S.n - 1 && L.optimal >= L.n - 1) {
+      const all = L.optimal === L.n ? 'hepsinde' : 'hemen hepsinde';
+      if (M.optimal < M.n - 1) {
+        // Kısa ve uzun problemler iyi, aradaki problemler değil: "düşmedi" denmez, aradaki sonuç da söylenir.
+        text += v(
+          ` Kısa ve uzun problemlerde sonucun birbirine yakın; ${midName} ise ${M.optimal}/${M.n}.`,
+          ` Kısa ve uzun problemlerde sonucu birbirine yakın; ${midName} ise ${M.optimal}/${M.n}.`,
+        );
+      } else if (L.optimal >= S.optimal) {
+        text += v(` Problemler uzadıkça sonucun düşmedi: uzun problemlerin ${all} en kısa yolu buldun.`, ` Problemler uzadıkça sonucu düşmedi: uzun problemlerin ${all} en kısa yolu buldu.`);
+      } else {
+        text += v(
+          ' Problemler uzadıkça sonucun pek değişmedi: uzun problemlerin de hemen hepsinde en kısa yolu buldun.',
+          ' Problemler uzadıkça sonucu pek değişmedi: uzun problemlerin de hemen hepsinde en kısa yolu buldu.',
+        );
+      }
+    } else if (diff >= 3) {
+      // Uzun problemlerin yarısında ya da daha çoğunda hiç top taşınmadıysa "zorlaştı" diye kesin konuşulmaz.
+      text +=
+        L.idle >= L.n / 2
+          ? v(
+              ' Uzun problemlerin yarısında ya da daha çoğunda süre içinde en kısa yolu bulamadın. Uzun problemlerde daha çok hamleyi kafanda sıraya koyman ve bazı topları geçici olarak başka bir yere koyman gerekir; bu, aynı anda akılda tutulacak adımları da artırır.',
+              ' Çocuğunuz uzun problemlerin yarısında ya da daha çoğunda süre içinde en kısa yolu bulamadı. Uzun problemlerde daha çok hamleyi kafada sıraya koymak ve bazı topları geçici olarak başka bir yere koymak gerekir; bu, aynı anda akılda tutulacak adımları da artırır.',
+            )
+          : v(
+              ' Problemler uzadıkça en kısa yolu bulman zorlaştı. Uzun problemlerde daha çok hamleyi kafanda sıraya koyman ve bazı topları geçici olarak başka bir yere koyman gerekir; bu, aynı anda akılda tutulacak adımları da artırır. Problem uzadıkça sonucun düşmesi bu görevde olağandır.',
+              ' Problemler uzadıkça en kısa yolu bulması zorlaştı. Uzun problemlerde daha çok hamleyi kafada sıraya koymak ve bazı topları geçici olarak başka bir yere koymak gerekir; bu, aynı anda akılda tutulacak adımları da artırır. Problem uzadıkça sonucun düşmesi bu görevde olağandır.',
+            );
+    } else if (diff <= -3) {
+      text += v(' Uzun problemlerde kısa problemlerden daha çok en kısa yolu buldun.', ' Çocuğunuz uzun problemlerde kısa problemlerden daha çok en kısa yolu buldu.');
+      if (S.idle === 0) {
+        text += v(' Kısa problemlerde acele etmiş ya da testin başında tahtaya alışıyor olabilirsin.', ' Kısa problemlerde acele etmiş ya da testin başında tahtaya alışıyor olabilir.');
+      }
+    } else {
+      text += v(' Problemler uzadıkça sonucun pek değişmedi.', ' Problemler uzadıkça sonucu pek değişmedi.');
+    }
+    const idleParts = [S.idle > 0 ? `kısa problemlerde ${S.idle}` : '', M.idle > 0 ? `${midName} ${M.idle}` : '', L.idle > 0 ? `uzun problemlerde ${L.idle}` : ''].filter(Boolean);
+    if (idleParts.length) text += ` Hiç top taşınmadan süresi dolan problemler (${idleParts.join(', ')}) en az hamlede çözülmemiş sayıldı.`;
+    if (S.optimal <= S.n / 2 && diff > -3) {
+      const how = S.optimal === 0 ? 'hiçbirinde' : 'yarısında ya da daha çoğunda';
+      text += v(
+        ` Kısa problemlerin ${how} en kısa yolu bulamadın; topa dokunmadan önce hedefe dikkatle bakmak ve yönergeyi bir kez daha okumak işine yarayabilir.`,
+        ` Çocuğunuz kısa problemlerin ${how} en kısa yolu bulamadı; topa dokunmadan önce hedefe dikkatle bakması ve yönergeyi bir kez daha okuması ona yardım edebilir.`,
+      );
+    }
+    uzunluk = { ...card('kg_uzunluk'), headline: `Kısa problemlerde ${S.optimal}/${S.n}, uzun problemlerde ${L.optimal}/${L.n}`, text };
+  }
+
+  /* Çözüm biçimi */
+  const E = r.extra;
+  const U = r.unsolved;
+  let cozumText: string;
+  if (E === 0 && U === 0) {
+    cozumText = v('Bütün problemlerde hedefe en az hamleyle ulaştın.', 'Çocuğunuz bütün problemlerde hedefe en az hamleyle ulaştı.');
+  } else {
+    const parts: string[] = [];
+    if (E > 0) {
+      const these = E === 1 ? 'bu problemde' : 'bu problemlerde';
+      parts.push(
+        v(
+          `${E} problemde hedefe ulaştın ama en az hamleden fazlasını yaptın; ${these} toplam ${r.excessMoves} hamle fazla yaptın.`,
+          `Çocuğunuz ${E} problemde hedefe ulaştı ama en az hamleden fazlasını yaptı; ${these} toplam ${r.excessMoves} hamle fazla yaptı.`,
+        ),
+      );
+    }
+    if (U > 0) {
+      const idlePart = r.idle === 0 ? '' : r.idle === U ? (U === 1 ? '; bu problemde hiç top taşınmadı' : '; bunların hepsinde hiç top taşınmadı') : `; bunların ${r.idle} tanesinde hiç top taşınmadı`;
+      parts.push(v(`${U} problemde hedefe ulaşamadın${idlePart}.`, `Çocuğunuz ${U} problemde hedefe ulaşamadı${idlePart}.`));
+    }
+    if (!none && E >= 3 && E >= U) {
+      parts.push(
+        v(
+          'Fazla hamleler, bir topu hedefteki yerine erken koyup sonra yeniden kaldırmak zorunda kalmaktan ya da bir topun üstünü kapatmaktan kaynaklanabilir. Hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır; topa dokunmadan önce hangi topun önce yerine gideceğini düşünmek işine yarayabilir.',
+          'Fazla hamleler, bir topu hedefteki yerine erken koyup sonra yeniden kaldırmak zorunda kalmaktan ya da bir topun üstünü kapatmaktan kaynaklanabilir. Hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır; topa dokunmadan önce hangi topun önce yerine gideceğini düşünmesi çocuğunuza yardım edebilir.',
+        ),
+      );
+    } else if (!none && U >= 3 && U > E && r.idle < U) {
+      parts.push(
+        v(
+          'Hedefe ulaşamadığın problemlerde süre yetmemiş ya da çözüm yolu bulunamamış olabilir.',
+          'Çocuğunuzun hedefe ulaşamadığı problemlerde süre yetmemiş ya da çözüm yolu bulunamamış olabilir.',
+        ),
+      );
+    }
+    cozumText = parts.join(' ');
+  }
+  const cozum: CognitiveBlock = {
+    ...card('kg_cozum'),
+    headline:
+      E === 0 && U === 0
+        ? 'Hepsi en az hamlede'
+        : [E > 0 ? `${E} problem fazla hamleyle çözüldü` : '', U > 0 ? `${U} problemde hedefe ulaşılamadı` : ''].filter(Boolean).join(' · '),
+    detail: `En az hamlede ${O} · Fazla hamleyle ${E} · Hedefe ulaşılamayan ${U}`,
+    text: cozumText,
+  };
+
+  /* Başlamadan önce düşünme: problem ekrana geldikten sonra taşınan ilk topun alındığı ana kadar geçen süre */
+  let plan: CognitiveBlock;
+  if (none) {
+    plan = { ...card('kg_plan'), headline: 'Yorumlanmadı', text: `${noneWhy} ilk hamleden önceki süreler yorumlanmadı.` };
+  } else if (r.medianPick === null) {
+    plan = { ...card('kg_plan'), headline: 'Süre hesaplanamadı', text: 'Süreler alınamadığı için ilk hamleden önce ne kadar düşünüldüğü yorumlanmadı.' };
+  } else {
+    const parts: string[] = [
+      v(
+        `Problem ekrana geldikten sonra taşıdığın ilk topu alman tipik olarak ${towerSeconds(r.medianPick)} sürdü.`,
+        `Problem ekrana geldikten sonra çocuğunuzun taşıdığı ilk topu alması tipik olarak ${towerSeconds(r.medianPick)} sürdü.`,
+      ),
+    ];
+    // Çok çabuk başlama uyarısı varken kısa ve uzun problemler karşılaştırılmaz ("plana daha çok zaman ayırdın" ile çelişmesin).
+    if (r.pickShort !== null && r.pickLong !== null && !rapid) {
+      const a = towerTenths(r.pickShort);
+      const b = towerTenths(r.pickLong);
+      const which = `Uzun problemlerde (${TOWER_LONG} ve ${TOWER_LONG + 1} hamle) ilk hamleden önce kısa problemlerdekinden (${TOWER_SHORT - 1} ve ${TOWER_SHORT} hamle)`;
+      if (b - a >= 2 && b >= 1.5 * a) {
+        parts.push(v(`${which} daha uzun düşündün: problem zorlaştıkça plana daha çok zaman ayırdın.`, `Çocuğunuz ${lowerFirst(which)} daha uzun düşündü: problem zorlaştıkça plana daha çok zaman ayırdı.`));
+      } else if (b > a) {
+        parts.push(v(`${which} biraz daha uzun düşündün.`, `Çocuğunuz ${lowerFirst(which)} biraz daha uzun düşündü.`));
+      } else {
+        parts.push(v(`${which} daha uzun düşünmedin.`, `Çocuğunuz ${lowerFirst(which)} daha uzun düşünmedi.`));
+        if (L.optimal >= L.n - 1) {
+          const all = L.optimal === L.n ? 'hepsini' : 'hemen hepsini';
+          parts.push(v(`Buna karşın uzun problemlerin de ${all} en az hamlede çözdün.`, `Buna karşın uzun problemlerin de ${all} en az hamlede çözdü.`));
+        } else if (L.optimal <= L.n / 2) {
+          parts.push(
+            v(
+              'Uzun problemlerin yarısında ya da daha çoğunda en kısa yolu bulamadın; uzun problemlerde topa dokunmadan önce ilk birkaç hamleyi kafanda denemek işine yarayabilir.',
+              'Uzun problemlerin yarısında ya da daha çoğunda en kısa yolu bulamadı; uzun problemlerde topa dokunmadan önce ilk birkaç hamleyi kafada denemesi ona yardım edebilir.',
+            ),
+          );
+        }
+      }
+    }
+    if (rapid) {
+      parts.push(
+        v(
+          `${TOWER_RAPID_FROM} ya da daha çok hamlelik ${r.rapidOf} problemin ${r.rapid} tanesinde taşıdığın ilk topu ${TOWER_RAPID_MS / 1000} saniyeden kısa sürede aldın ve bu problemleri en az hamlede çözemedin; bu problemlerde düşünmeden başlamış olabilirsin. Topa dokunmadan önce ilk birkaç hamleyi kafanda denemek işine yarayabilir.`,
+          `Çocuğunuz ${TOWER_RAPID_FROM} ya da daha çok hamlelik ${r.rapidOf} problemin ${r.rapid} tanesinde taşıdığı ilk topu ${TOWER_RAPID_MS / 1000} saniyeden kısa sürede aldı ve bu problemleri en az hamlede çözemedi; bu problemlerde düşünmeden başlamış olabilir. Topa dokunmadan önce ilk birkaç hamleyi kafada denemesi ona yardım edebilir.`,
+        ),
+      );
+    }
+    if (r.prePlan !== null) {
+      parts.push(
+        v(
+          `Hedefe ulaştığın problemlerde sürenin ortalama %${r.prePlan} kadarını ilk hamleden önce, gerisini topları taşırken geçirdin. 18 yaş ve üstündeki kişilerle yapılan bir araştırmada, başlamadan önce düşünmeye daha büyük pay ayıranların daha çok problemi en az hamlede çözdüğü görülmüştür; bu bir ilişkidir, kesin bir kural değildir.`,
+          `Çocuğunuz hedefe ulaştığı problemlerde sürenin ortalama %${r.prePlan} kadarını ilk hamleden önce, gerisini topları taşırken geçirdi. 18 yaş ve üstündeki kişilerle yapılan bir araştırmada, başlamadan önce düşünmeye daha büyük pay ayıranların daha çok problemi en az hamlede çözdüğü görülmüştür; bu bir ilişkidir, kesin bir kural değildir.`,
+        ),
+      );
+    }
+    parts.push('Hız tek başına iyi ya da kötü değildir; önemli olan hedefe en az hamleyle ulaşabilmektir.');
+    plan = {
+      ...card('kg_plan'),
+      headline: `İlk hamleden önce tipik ${towerSeconds(r.medianPick)}`,
+      detail:
+        [
+          r.pickShort !== null && r.pickLong !== null ? `Kısa problemlerde tipik ${towerSeconds(r.pickShort)} · uzun problemlerde ${towerSeconds(r.pickLong)}` : null,
+          r.prePlan !== null ? `başlamadan önce düşünme payı %${r.prePlan}` : null,
+        ]
+          .filter((x): x is string => !!x)
+          .join(' · ')
+          .replace(/^./, (c) => c.toLocaleUpperCase('tr-TR')) || undefined,
+      text: parts.join(' '),
+    };
+  }
+
+  /* Grafikler ve öne çıkan sayılar */
+  const chart: CognitiveReport['chart'] = {
+    title: 'Problem uzunluğuna göre en az hamlede çözülenler',
+    note: v(
+      'Her satırda aynı uzunlukta dört problem vardır. Çubuk ne kadar uzunsa o problemlerin o kadar çoğunu en az hamlede çözmüşsün demektir.',
+      'Her satırda aynı uzunlukta dört problem vardır. Çubuk ne kadar uzunsa o problemlerin o kadar çoğu en az hamlede çözülmüş demektir.',
+    ),
+    rows: r.levels.map((l) => ({ label: `${l.moves} hamlelik problemler`, value: l.optimal, max: l.n, valueLabel: `${l.optimal}/${l.n}` })),
+  };
+  const figures = [
+    { label: 'En az hamlede çözülen', value: `${O}/${r.n}` },
+    { label: 'Fazla hamleyle çözülen', value: String(E) },
+    { label: 'Hedefe ulaşılamayan', value: String(U) },
+    ...(r.medianPick !== null && !none ? [{ label: 'İlk hamleden önce tipik süre', value: towerSeconds(r.medianPick) }] : []),
+  ];
+  const profile: CognitiveReport['profile'] = none
+    ? undefined
+    : {
+        title: v('Problem uzunluğuna göre sonucun', 'Problem uzunluğuna göre sonuç'),
+        note: v(
+          'Her sütun aynı uzunluktaki dört problemdir (3 hamleden 7 hamleye). Sütun ne kadar yüksekse o problemlerin o kadar çoğunu en az hamlede çözmüşsün demektir; tam boy sütun, hepsini en az hamlede çözdüğün anlamına gelir. Renkler yalnızca problem uzunluklarını ayırır.',
+          'Her sütun aynı uzunluktaki dört problemdir (3 hamleden 7 hamleye). Sütun ne kadar yüksekse o problemlerin o kadar çoğu en az hamlede çözülmüş demektir; tam boy sütun, hepsinin en az hamlede çözüldüğü anlamına gelir. Renkler yalnızca problem uzunluklarını ayırır.',
+        ),
+        bars: r.levels.map((l, i) => ({
+          key: `h${l.moves}`,
+          label: `${l.moves} hamlelik`,
+          value: Math.round((l.optimal / l.n) * 100),
+          min: 0,
+          max: 100,
+          color: TOWER_LEVEL_COLORS[i % TOWER_LEVEL_COLORS.length],
+          valueLabel: `${l.optimal}/${l.n}`,
+          band: '',
+        })),
+      };
+  return { blocks: [dogru, uzunluk, cozum, plan], chart, figures, ...(profile ? { profile } : {}) };
+}
+
 /* ---------- Kelime bilgisi ---------- */
 
 /** Kelime bilgisinde soru türlerinin adları (raporda ve üç boyutlu grafikte), cümle içindeki kısa adları ve kısa anlatımları. */
@@ -5741,10 +6043,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (kp && kpt) add(cubeBlocks(kp, kpt, audience, card));
   const dk = byKey.get('dk_dogru')?.extra as unknown as ReflectionResult | undefined;
   if (dk && def.tasks.some((t) => t.kind === 'cognitive_reflection')) add(reflectionBlocks(dk, audience, card));
+  const kg = byKey.get('kg_dogru')?.extra as unknown as TowerResult | undefined;
+  if (kg && def.tasks.some((t) => t.kind === 'tower')) add(towerBlocks(kg, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 
