@@ -6,6 +6,7 @@ import { besFaktor } from './bes-faktor';
 import { calismaAliskanliklari } from './calisma-aliskanliklari';
 import { dikkatBellek } from './dikkat-bellek';
 import { durGitGorevi } from './dur-git';
+import { dusunmeyiSevme } from './dusunmeyi-sevme';
 import { duygusalZekaBilesenleri } from './duygusal-zeka-bilesenleri';
 import { geriyeDonukHatirlama } from './geriye-donuk-hatirlama';
 import { harfIsaretleme } from './harf-isaretleme';
@@ -80,6 +81,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   kisilerarasiTarz,
   onAltiFaktorKisilik,
   ogrenmeVeBasari,
+  dusunmeyiSevme,
   cocukKisilik,
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,

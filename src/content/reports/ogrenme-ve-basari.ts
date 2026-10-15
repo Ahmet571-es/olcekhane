@@ -118,8 +118,8 @@ export const ogrenmeVeBasariReport: ReportTemplate = {
       ),
       low: t(
         'Kafa yoran işlerden kaçınan',
-        'Genel olarak karmaşık problemler, okuması zor metinler ve soyut konular gibi kafa yoran işlerden pek hoşlanmadığını söylüyorsun. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir. Zor bir konuya ilgini çeken bir örnekle başlamak, kafa yormayı daha kolay ve keyifli hâle getirebilir.',
-        'Çocuğunuz genel olarak karmaşık problemler, okuması zor metinler ve soyut konular gibi kafa yoran işlerden pek hoşlanmadığını belirtiyor. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
+        'Genel olarak karmaşık problemler, okuması zor metinler ve felsefi tartışmalar gibi kafa yoran işlerden pek hoşlanmadığını söylüyorsun. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir. Zor bir konuya ilgini çeken bir örnekle başlamak, kafa yormayı daha kolay ve keyifli hâle getirebilir.',
+        'Çocuğunuz genel olarak karmaşık problemler, okuması zor metinler ve felsefi tartışmalar gibi kafa yoran işlerden pek hoşlanmadığını belirtiyor. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
       ),
     },
     openness: {

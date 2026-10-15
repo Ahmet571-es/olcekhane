@@ -182,6 +182,18 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert list(r) == ["adult"] and r["adult"]["gradeLabel"] == "Yetişkin" and r["adult"]["roadmap"]["approach"] is None'; then
             sorun="$sorun hizli-kisilik-yetiskin"
           fi
+          # Düşünmeyi Sevme Ölçeği: 10 madde (n01–n10), tek ölçek ölçüm payıyla; sonuç kartından sonra "Bilmekte yarar var"; yol haritasında
+          # tek sütun, ortamlar yok, 2. hafta "Kafa yoran küçük bir deneme". Yetişkin olarak (14) yalnızca kişisel rapor.
+          NFC_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"n{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 11)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$NFC_GOVDE" "https://$ALAN/api/rapor/dusunmeyi-sevme-olcegi" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); rows=r["parent"]["chart"]["rows"]; assert len(rows) == 1 and rows[0]["ciLow"] is not None and [x["title"] for x in r["student"]["items"]] == ["Düşünmeyi sevme", "Bilmekte yarar var"]; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 1 and m["settings"] is None and len(m["approach"]["items"]) == 1 and m["weeks"][1]["title"] == "Kafa yoran küçük bir deneme" and not m["preview"]'; then
+            sorun="$sorun dusunmeyi-sevme-raporu"
+          fi
+          NFC_YETISKIN=$(printf '%s' "$NFC_GOVDE" | python3 -c 'import json,sys; b=json.load(sys.stdin); b["grade"]=14; print(json.dumps(b))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$NFC_YETISKIN" "https://$ALAN/api/rapor/dusunmeyi-sevme-olcegi" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert list(r) == ["adult"] and r["adult"]["gradeLabel"] == "Yetişkin" and r["adult"]["roadmap"]["approach"] is None'; then
+            sorun="$sorun dusunmeyi-sevme-yetiskin"
+          fi
           # Kişilerarası Tarz: 32 madde, sekiz tarz çember grafiğinde; yol haritası.
           TARZ_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"ipc{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 33)}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TARZ_GOVDE" "https://$ALAN/api/rapor/kisilerarasi-tarz" |

@@ -363,10 +363,27 @@ Düşünmeyi Sevme.
    (ilkinde ergen çalışması cümlesi, çeviri kuralı, yol haritasındaki çelişkiler; ikincisinde bir bilim kartı cümlesi,
    üç yol haritası metni ve bir ortam) düzeltildi. Telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin)
    çözüldü, öğrenci, veli ve yetişkin PDF'leri açıldı.
-4. Kontrol Odağı, az maddeyle (IPIP; yalnızca içeriği örtüşen maddeler: başarının yetenek ve çabaya bağlı olduğu, olayları
-   kendinin belirlediği, güçlü birkaç kişinin dünyayı yönettiği, şanssızlık ve şanslı doğma; "kadere inanırım" ve "kaderime
-   razıyım" yok; güvenirlik düşük, açıkça yazılır). Maddeler: https://ipip.ori.org/newSingleConstructsKey.htm.
-5. Düşünmeyi Sevme (IPIP Need for Cognition, 10 madde, α .84; birkaç madde yetenek öz değerlendirmesidir, raporda söylenir).
+4. **Kontrol Odağı: site sahibinin kararı bekleniyor (2026-10-15).** Az maddeyle (IPIP; yalnızca içeriği örtüşen maddeler:
+   başarının yetenek ve çabaya bağlı olduğu, olayları kendinin belirlediği, güçlü birkaç kişinin dünyayı yönettiği,
+   şanssızlık ve şanslı doğma; "kadere inanırım" ve "kaderime razıyım" yok). IPIP'in açık verisinde (ESCS, aşağıda)
+   hesaplandı: içeriği örtüşen maddelerin iç tutarlılığı α ≈ .50 (kişiye rapor verecek bir ölçek için düşük). Öneri:
+   yayımlanmasın (ya da "deneme" diye uyarıyla). Site sahibine soruldu; cevap gelene kadar bu test yapılmaz.
+   Maddeler: https://ipip.ori.org/newSingleConstructsKey.htm.
+5. **Düşünmeyi Sevme Ölçeği: yayında (2026-10-15, active; 9. sınıftan yetişkine).** IPIP Need for Cognition, 10 madde;
+   çeviriler ve uygulama sırası Öğrenme ve Başarı Özellikleri'ndeki "Düşünmekten hoşlanma" ölçeğiyle birebir aynı, düzey
+   eşikleri de (aynı cevaplar iki testte aynı düzeyi verir; açıklamada ve bilim kartında yazılı; o test bir sonraki test
+   olarak önerilmez). α .84 ve sdRef 0,70 açık veriden hesaplandı (ESCS, 570 yetişkin; IPIP'in .84'ünü tutturdu); ölçüm
+   payıyla cetvel. Rapor: "Sonuç" altında önce düzey kartı, sonra "Bilmekte yarar var" (zekâ ile ilişki küçük–orta,
+   başarıyla küçük, ergenlikte görece kararlı; Liu ve Nesbit 2024, Schweitzer ve ark. 2025, Lavrijsen ve ark. 2024).
+   Düşük ve orta düzeyde kavrama hakkındaki dört cümleye değinilmez; her düzeyde "zekâyı ölçmez". Yol haritası tek
+   ölçekli: "Kafa yoran küçük bir deneme" ve "Birlikte düşünmek" haftaları; sonraki test Zihniyet. Tek ölçekli testlerin
+   tanıtım sayfasında "Raporda neler var" satırları tek ölçeğe göre yazılır (Öz-saygı da). Öğrenme ve Başarı
+   Özellikleri'nin düşük düzey metninde "soyut konular" yerine maddenin sorduğu "felsefi tartışmalar" yazıldı. İki tur
+   bağımsız inceleme düzeltildi; telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
+   **IPIP testleri için açık veri:** Eugene-Springfield Topluluk Örneklemi (ESCS; Goldberg, 2018, Harvard Dataverse
+   doi:10.7910/DVN/UF52WY, `.por` dosyası; teknik rapor ipip.ori.org/ESCS_TechnicalReport_January2016.pdf). IPIP
+   maddelerinin çoğu bu veride var; yeni bir IPIP ölçeğinin α ve sdRef değeri buradan, maddeler metinle eşlenerek
+   ve ters maddeler çevrilerek hesaplanır (sonuç IPIP sayfasındaki α ile karşılaştırılır).
 6. Üç Boyutlu Zihinde Döndürme (Shepard–Metzler düzeni; küplerden özgün şekiller, ayna/döndürme bağımsız denetim).
 7. Karmaşık Bellek Aralığı (işlem aralığı; Unsworth ve ark., 2005; özgün işlemler ve harfler).
 8. Düşünme ve Çalışma Tarzı (IPIP JPI-R benzeri ölçekler; siyasi-dinî görüş soran Gelenekçilik ve Makyavelcilik çıkarılır).
@@ -572,6 +589,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | 16 Faktörlü Kişilik Profili | 16-faktorlu-kisilik-profili | Yayında (active; 9. sınıftan yetişkine) |
 | Sayı Dizileri | sayi-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öğrenme ve Başarı Özellikleri | ogrenme-ve-basari-ozellikleri | Yayında (active; 9. sınıftan yetişkine) |
+| Düşünmeyi Sevme Ölçeği | dusunmeyi-sevme-olcegi | Yayında (active; 9. sınıftan yetişkine) |
 | Sözel Akıl Yürütme | sozel-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kâğıt Katlama | kagit-katlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kelime Bilgisi | kelime-bilgisi | Yayında (pilot; 3. sınıftan yetişkine) |
@@ -699,6 +717,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-15 (26): Düşünmeyi Sevme Ölçeği yayında (9. sınıftan yetişkine), 2. dalganın 5. testi: IPIP'in 10 maddesi,
+  yaklaşık 2 dakika; güvenirlik ve ölçüm payı IPIP'in açık verisinden hesaplandı; rapor sonucu ve araştırmaların kısa
+  özetini verir; öğrenci, veli ve yetişkin raporu, tek ölçekli yol haritası; iki tur bağımsız incelemenin bulguları
+  düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Kontrol Odağı (4. test) açık veride güvenirliği düşük
+  (α ≈ .50) çıktığı için site sahibinin kararını bekliyor.
 - 2026-10-15 (25): Beyin Akademisi Anatomi 3 "Beyin zarları ve zarlar arası boşluklar" yayında: 13 bölüm, üç düzey, 31
   sahne, 5 yeni hareketli çizim, 29 vaka, 87 soru, 445 kaynak; altı bağımsız denetim, üç doğrulama ve ikinci tur
   düzeltme; dil sade (cümle ortalaması ~9,5 sözcük). Modele beyincik çadırı ve koroid pleksus eklendi. Sıradaki ders
@@ -739,6 +762,3 @@ En yeni üstte; en çok 10 madde tutulur.
   etkilemediği ayrı ayrı yorumlanır; her sorunun cevabı bağımsız bir denetleyiciyle doğrulandı; öğrenci, veli ve yetişkin
   raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF
   açıldı; bağımsız inceleme bulguları (iki tur) düzeltildi.
-- 2026-10-09 (16): Site sahibinin kararıyla Beyin Akademisi yalnızca beyni anlatır: iki kafatası dersi yayından
-  kaldırıldı (depoda saklı, eski adresler ilk derse yönlenir); kafatası ünitesinin hazırlanmamış dersleri ve kol-bacak
-  sinirleri programdan çıktı; program 100 ders. Sıradaki ders "Anatominin dili".

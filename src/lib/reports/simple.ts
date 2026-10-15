@@ -899,7 +899,11 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     chart: { type: 'rulers', rows: r.sections.map(ruler) },
     keyFigures: [],
     itemsTitle: one ? 'Sonuç' : lead.length ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Boyutlar',
-    items: [...lead, ...r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text }))],
+    // Tek ölçekli testte "Sonuç" başlığının altında önce sonucun kendisi, ardından (varsa) genel bilgi ("Bilmekte yarar var");
+    // çok ölçekli testte birlikte yorum ölçeklerden önce gelir.
+    items: one
+      ? [...r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text })), ...lead]
+      : [...lead, ...r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text }))],
   };
 }
 

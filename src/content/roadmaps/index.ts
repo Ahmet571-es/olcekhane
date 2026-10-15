@@ -4,6 +4,7 @@ import { ayrintiliKisilikRoadmap } from './ayrintili-kisilik';
 import { besFaktorRoadmap } from './bes-faktor';
 import { calismaAliskanliklariRoadmap } from './calisma-aliskanliklari';
 import { duygusalZekaBilesenleriRoadmap } from './duygusal-zeka-bilesenleri';
+import { dusunmeyiSevmeRoadmap } from './dusunmeyi-sevme';
 import { TASK_ROADMAPS } from './gorevler';
 import { calismaDegerleriRoadmap } from './calisma-degerleri';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
@@ -38,6 +39,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'oz-saygi': ozSaygiRoadmap,
   'calisma-aliskanliklari': calismaAliskanliklariRoadmap,
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariRoadmap,
+  'dusunmeyi-sevme-olcegi': dusunmeyiSevmeRoadmap,
   'cocuk-kisilik-profili': cocukKisilikRoadmap,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuRoadmap,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiRoadmap,

@@ -324,8 +324,17 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             )}
             {def.engine === 'likert' && !def.profile && (
               <>
-                <li>{showsMargin ? 'Her boyutun, puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi' : 'Her boyutun cetvel üzerinde gösterimi'}</li>
-                <li>Her boyut için düzey ve sade bir açıklama</li>
+                {scales.length === 1 ? (
+                  <>
+                    <li>{showsMargin ? 'Puanın, ölçüm payıyla birlikte cetvel üzerinde gösterimi' : 'Puanın cetvel üzerinde gösterimi'}</li>
+                    <li>Düzey ve sade bir açıklama</li>
+                  </>
+                ) : (
+                  <>
+                    <li>{showsMargin ? 'Her boyutun, puanın ölçüm payıyla birlikte cetvel üzerinde gösterimi' : 'Her boyutun cetvel üzerinde gösterimi'}</li>
+                    <li>Her boyut için düzey ve sade bir açıklama</li>
+                  </>
+                )}
                 {REPORT_TEMPLATES[def.slug]?.insight && <li>{REPORT_TEMPLATES[def.slug].insight!.pageNote}</li>}
               </>
             )}

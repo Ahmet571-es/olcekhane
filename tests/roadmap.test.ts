@@ -295,6 +295,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       // On yön (boyutlar yol haritasında yok); yetişkinlere de açık.
       'kisiligin-10-yonu': comboCount(3, 10) * 3,
       'oz-saygi': 3 * 2,
+      // Tek boyutlu; öğrenci, veli ve yetişkin.
+      'dusunmeyi-sevme-olcegi': 3 * 3,
       'calisma-aliskanliklari': 5 ** 5 * 2,
       'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,
       // Yalnızca 3–5. sınıflara açık: öğrenci ve veli.
