@@ -7,6 +7,7 @@ import { duygusalZekaBilesenleriRoadmap } from './duygusal-zeka-bilesenleri';
 import { TASK_ROADMAPS } from './gorevler';
 import { calismaDegerleriRoadmap } from './calisma-degerleri';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
+import { hizliKisilikTestiRoadmap } from './hizli-kisilik-testi';
 import { kisilerarasiTarzRoadmap } from './kisilerarasi-tarz';
 import { kisiligin10YonuRoadmap } from './kisiligin-10-yonu';
 import { matematikRoadmap } from './matematik';
@@ -27,6 +28,7 @@ export { TASK_ROADMAPS };
 /** Gelişim yol haritası olan testler. */
 export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'bes-faktor-kisilik': besFaktorRoadmap,
+  'hizli-kisilik-testi': hizliKisilikTestiRoadmap,
   'ayrintili-kisilik-profili': ayrintiliKisilikRoadmap,
   'kisiligin-10-yonu': kisiligin10YonuRoadmap,
   'alti-boyutlu-kisilik-profili': altiBoyutluKisilikRoadmap,

@@ -19,7 +19,7 @@ const ALL_BANDS: Band[] = ['very_low', 'low', 'average', 'high', 'very_high'];
 const VALUE: Record<Band, number> = { very_low: 1.4, low: 2.2, average: 3, high: 3.8, very_high: 4.6 };
 const AUDIENCES: Audience[] = ['student', 'parent', 'adult'];
 /** Yetişkine yazılan metinlerde okula özgü sözcük olmaz. */
-const SCHOOL = /\b(ders|öğretmen|okul|sınıf|ödev|kitap)/i;
+const SCHOOL = /(?<!\p{L})(ders|öğretmen|okul|sınıf|ödev|kitap)/iu;
 
 /** Yol haritası olan bir testin boyutları (yol haritası alt özellikleri değil boyutları kullanır) ve düzeyleri. */
 function setup(slug: string) {
@@ -285,6 +285,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
     }
     expect(counts).toEqual({
       'bes-faktor-kisilik': 5 ** 5 * 3,
+      // Beş Faktör'ün kısa formu: üç düzey, öğrenci, veli ve yetişkin.
+      'hizli-kisilik-testi': 3 ** 5 * 3,
       'ayrintili-kisilik-profili': 3 ** 5 * 3,
       'alti-boyutlu-kisilik-profili': 3 ** 6 * 3,
       'duygusal-zeka-bilesenleri': 3 ** 7 * 3,

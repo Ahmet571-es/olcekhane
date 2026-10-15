@@ -344,17 +344,38 @@ sahibinin seçtiği sıra (kişilik ve zekâ dönüşümlü; site sahibi "Bismil
    haritasında iki cümle, ters problem çifti; ikincisinde 3: "yorumlanmadı" kuralı, hızlı başlama ile "plana zaman
    ayırdın" çelişkisi, bir güvenirlik cümlesi) düzeltildi. Telefonda dokunarak (3. sınıf) ve masaüstünde klavyeyle
    (yetişkin, duraklatma dahil) çözüldü, gönderilen veri denetlendi, PDF'ler açıldı.
-3. Kontrol Odağı (IPIP, Levenson benzeri üç ölçek: içsel, güçlü başkaları, şans).
-4. Üç Boyutlu Zihinde Döndürme (Shepard–Metzler düzeni; küplerden özgün şekiller, ayna/döndürme bağımsız denetim).
-5. Hızlı Kişilik Testi (Mini-IPIP, 20 madde; Donnellan ve ark., 2006).
-6. Karmaşık Bellek Aralığı (işlem aralığı; Unsworth ve ark., 2005; özgün işlemler ve harfler).
-7. Düşünme ve Çalışma Tarzı (IPIP JPI-R benzeri ölçekler; siyasi-dinî görüş soran Gelenekçilik ve Makyavelcilik çıkarılır).
-8. Bakış Açısı Alma (Hegarty ve Waller, 2004 düzeni; özgün yerleşimler, açılar hesapla doğrulanır).
-9. Heyecan Arayışı (IPIP, Hoyle benzeri üç ölçek; rapor riskli davranışı özendirmez).
-10. Gizli Şekiller (Witkin düzeni; özgün çizimler).
-11. İyimserlik (IPIP, 10 madde).
-12. Desen Hatırlama (görsel bellek; Della Sala düzeni; özgün desenler).
-13. Harf Dizileri (Thurstone; Simon ve Kotovsky düzeni; özgün diziler, Türk alfabesi).
+
+Site sahibinin 2026-10-15 kararı: IPIP'in Kontrol Odağı maddelerinin çoğu adlarının söylediğini ölçmüyor ("kadere
+inanırım" maddesi de dinî açıdan hassas); bu yüzden sıra şöyle değişti: önce Hızlı Kişilik Testi, sonra Kontrol Odağı
+(yalnızca içeriği ölçeğiyle örtüşen maddelerle, kader maddeleri olmadan; güvenirliğin düşük olduğu açıkça yazılır), sonra
+Düşünmeyi Sevme.
+3. **Hızlı Kişilik Testi: yayında (2026-10-15, active; 9. sınıftan yetişkine).** Mini-IPIP (Donnellan ve ark., 2006):
+   IPIP'in 50 maddelik Beş Faktör ölçeğinden 20 madde, beş boyut × dört madde, kaynaktaki sırayla (m01–m20); Nevrotiklik
+   "Duygusal Denge" olarak ters puanlanır (IPIP'in notu). 17 madde Beş Faktör'ün çevirisiyle aynı; üçü 9. sınıftan
+   başlayan testlerin çevirisi ("Küçük şeylere kolayca bozulurum", "Soyut fikirleri anlamakta zorlanırım", "Canlı bir
+   hayal gücüm vardır"). α IPIP sayfasından (.65–.77); sdRef Martínez-Molina ve Arias'ın (2018, PeerJ, CC BY) açık
+   verisindeki ABD örnekleminden (367 yetişkin) hesaplandı; ölçüm payı ±0,63–0,86. Üç düzey: orta yalnızca toplam 11–13
+   (iki yanı simetrik, bir madde boşken de). Rapor metinleri yalnızca dört maddenin sorduğunu anlatır; Merak ve Hayal
+   Gücü'nde her düzeyde "zekâyı ölçmez"; destek kutusu Duygusal Denge düşükken. Yol haritası Beş Faktör'ünkü; maddelerin
+   sormadığı bir özelliği güç diye söyleyen ya da kartla çelişen 10 metin (Uyumluluk, Sorumluluk orta, Duygusal Denge,
+   Merak düşük) ve 5 veli önerisi bu testte değiştirildi. Bilim kartında: ergenlerde güvenirlik ve geçerlik çalışması ve
+   Türkçe uyarlama bulunamadı (Ekim 2026); model uyumu ve gruplar arası karşılaştırma sınırları. İki tur bağımsız inceleme
+   (ilkinde ergen çalışması cümlesi, çeviri kuralı, yol haritasındaki çelişkiler; ikincisinde bir bilim kartı cümlesi,
+   üç yol haritası metni ve bir ortam) düzeltildi. Telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin)
+   çözüldü, öğrenci, veli ve yetişkin PDF'leri açıldı.
+4. Kontrol Odağı, az maddeyle (IPIP; yalnızca içeriği örtüşen maddeler: başarının yetenek ve çabaya bağlı olduğu, olayları
+   kendinin belirlediği, güçlü birkaç kişinin dünyayı yönettiği, şanssızlık ve şanslı doğma; "kadere inanırım" ve "kaderime
+   razıyım" yok; güvenirlik düşük, açıkça yazılır). Maddeler: https://ipip.ori.org/newSingleConstructsKey.htm.
+5. Düşünmeyi Sevme (IPIP Need for Cognition, 10 madde, α .84; birkaç madde yetenek öz değerlendirmesidir, raporda söylenir).
+6. Üç Boyutlu Zihinde Döndürme (Shepard–Metzler düzeni; küplerden özgün şekiller, ayna/döndürme bağımsız denetim).
+7. Karmaşık Bellek Aralığı (işlem aralığı; Unsworth ve ark., 2005; özgün işlemler ve harfler).
+8. Düşünme ve Çalışma Tarzı (IPIP JPI-R benzeri ölçekler; siyasi-dinî görüş soran Gelenekçilik ve Makyavelcilik çıkarılır).
+9. Bakış Açısı Alma (Hegarty ve Waller, 2004 düzeni; özgün yerleşimler, açılar hesapla doğrulanır).
+10. Heyecan Arayışı (IPIP, Hoyle benzeri üç ölçek; rapor riskli davranışı özendirmez).
+11. Gizli Şekiller (Witkin düzeni; özgün çizimler).
+12. İyimserlik (IPIP, 10 madde; maddelerin bir kısmı öz-saygı ve ruh hâli de sorar, raporda dikkate alınır).
+13. Desen Hatırlama (görsel bellek; Della Sala düzeni; özgün desenler).
+14. Harf Dizileri (Thurstone; Simon ve Kotovsky düzeni; özgün diziler, Türk alfabesi).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -411,7 +432,7 @@ okumada otomatik analiz").
 3. **3. dalga, 7 özgün test (önce incelemede, onaydan sonra pilot):** Ders Çalışma Motivasyonu, Erteleme ve Zaman
    Yönetimi, Zihniyet, Çalışma Değerleri, Kural Değiştirme, Akıl Yürütme, Kelime Listesi Hatırlama. Maddeler
    sıfırdan yazılır.
-4. **4. dalga:** Türkçe ve Fen Konu Tarama, Kelime Bilgisi, Alan ve Bölüm Seçimi Rehberi, Hızlı Kişilik Testi;
+4. **4. dalga:** Türkçe ve Fen Konu Tarama, Kelime Bilgisi, Alan ve Bölüm Seçimi Rehberi, Hızlı Kişilik Testi (yayında);
    test paketleri (birkaç testi art arda çözüp tek PDF almak; cevaplar yine saklanmaz).
 5. **Etkileşimli anlatımlar (5, test değil):** unutma eğrisinde tekrar zamanlarını deneme, Stroop etkisini kendin
    görme, ölçüm payını cetvel üzerinde görme, kişiliğin 30 alt boyutlu haritası, beyinle ilgili bilinenler ve
@@ -515,6 +536,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | --- | --- | --- |
 | Öz-saygı Ölçeği | oz-saygi | Yayında (active) |
 | Beş Faktör Kişilik Profili | bes-faktor-kisilik | Yayında (active) |
+| Hızlı Kişilik Testi | hizli-kisilik-testi | Yayında (active; 9. sınıftan yetişkine) |
 | Çalışma Alışkanlıkları Envanteri | calisma-aliskanliklari | Yayında (pilot) |
 | Dikkat ve Çalışma Belleği Görevleri | dikkat-ve-bellek | Yayında (pilot) |
 | Sürekli Dikkat: Harf İşaretleme | surekli-dikkat | Yayında (pilot) |
@@ -665,6 +687,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-15 (24): Hızlı Kişilik Testi yayında (9. sınıftan yetişkine), 2. dalganın 3. testi: Mini-IPIP'in 20 maddesi,
+  beş boyut, yaklaşık 3 dakika; ölçüm payı açık veriden hesaplanan standart sapmalarla; rapor metinleri yalnızca
+  maddelerin sorduğunu anlatır; öğrenci, veli ve yetişkin raporu, Beş Faktör'ün yol haritası (çelişen metinler bu testte
+  değişti); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Yol
+  haritası testindeki yetişkin sözcük denetimi Türkçe harflerle de çalışacak biçimde düzeltildi.
 - 2026-10-15 (23): Planlama: Kule Görevi yayında (3. sınıftan yetişkine), 2. dalganın 2. testi: 20 özgün problem
   (3–7 hamle), en az hamleler bütün dizilişler taranarak doğrulandı; en az hamlede çözülenler, problem uzadıkça sonuç,
   çözüm biçimi ve başlamadan önce düşünme ayrı yorumlanır; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası;
@@ -702,7 +729,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (15): Site sahibinin isteğiyle Beyin Akademisi'nde dil her düzeyde sade olacak (kalıcı kural). İlk ders
   "Sinir sistemine ilk bakış" bu ölçüyle sadeleştirildi: ortalama cümle ~15 sözcükten ~8–9 sözcüğe indi, terimler ilk
   geçtiği yerde Türkçe açıklandı; bilgiler, sayılar ve kaynaklar aynen kaldı.
-- 2026-10-09 (14): Çalışma Değerleri yayında (7. sınıftan yetişkine): 32 özgün ifade, sekiz değer; değerler kişinin kendi
-  içinde sıralanır, en önemliler anlatılır, birbiriyle yarışabilecek değerler ve sona kalanlar ayrıca belirtilir; öğrenci,
-  veli ve yetişkin raporu, 3B grafikli yol haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak)
-  çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları düzeltildi.

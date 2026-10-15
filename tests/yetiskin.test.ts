@@ -32,6 +32,7 @@ const KUP = 'kup-acinimi';
 const DUSUNEREK = 'dusunerek-karar-verme';
 const ON_YON = 'kisiligin-10-yonu';
 const KULE = 'planlama-kule-gorevi';
+const HIZLI = 'hizli-kisilik-testi';
 
 /** Raporda kişiye gösterilen bütün metinler. */
 function reportText(r: SimpleReport): string {
@@ -73,7 +74,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);

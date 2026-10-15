@@ -9,6 +9,7 @@ import { durGitGorevi } from './dur-git';
 import { duygusalZekaBilesenleri } from './duygusal-zeka-bilesenleri';
 import { geriyeDonukHatirlama } from './geriye-donuk-hatirlama';
 import { harfIsaretleme } from './harf-isaretleme';
+import { hizliKisilikTesti } from './hizli-kisilik-testi';
 import { calismaDegerleri } from './calisma-degerleri';
 import { hobiIlgileri } from './hobi-ilgileri';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
@@ -44,6 +45,7 @@ import { zihindeDondurme } from './zihinde-dondurme';
 /** Platformdaki tüm test tanımları. Sıralama katalogdaki varsayılan sıradır. */
 export const INSTRUMENTS: InstrumentDef[] = [
   besFaktor,
+  hizliKisilikTesti,
   ayrintiliKisilik,
   kisiligin10Yonu,
   altiBoyutluKisilik,
