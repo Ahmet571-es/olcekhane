@@ -3,6 +3,7 @@ import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
 import { disparity } from '@/lib/instruments/rotation';
 import { opTrue } from '@/lib/instruments/complex-span';
+import { correctAngle, egocentricAngle, headingOf, mirrorAngle, normDeg } from '@/lib/instruments/perspective';
 import { nBackRoles, type NBackRole } from '@/lib/instruments/sequences';
 import type {
   CancellationTask,
@@ -42,6 +43,7 @@ import type {
   ReflectionDomain,
   ReflectionRole,
   TowerTask,
+  PerspectiveTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
@@ -610,6 +612,28 @@ export function complexSpanBody(
   const trials = task.sets.map((set, index) => {
     const p = pick({ size: set.letters.length, letters: set.letters, ops: set.ops, i: index });
     return { index, response: { recall: p.recall, ops: p.ops, limitMs }, rtMs: p.rtMs === undefined ? 5000 : p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Bakış açısı almada bir soru: dönüş açısı, doğru yön, haritaya göre yön ve sağ-sol karışıklığının yönü (derece) ve sırası. */
+export type PerspectiveCell = { shift: number; correct: number; ego: number; mirror: number; i: number };
+
+/** Bakış açısı alma: varsayılan olarak her soruda doğru yönün 8 derece sağı ya da solu, soru başına 12 saniye. */
+export function perspectiveBody(
+  pick: (q: PerspectiveCell) => { deg: number | null; rtMs: number | null } = (q) => ({ deg: normDeg(Math.round(q.correct) + (q.i % 2 ? 8 : -8)), rtMs: 12_000 }),
+  grade = 7,
+): AnswersBody {
+  const task = def<TaskInstrument>('bakis-acisi-alma').tasks[0] as PerspectiveTask;
+  const trials = task.items.map((item, index) => {
+    const p = pick({
+      shift: headingOf(task.objects, item),
+      correct: correctAngle(task.objects, item),
+      ego: egocentricAngle(task.objects, item),
+      mirror: mirrorAngle(task.objects, item),
+      i: index,
+    });
+    return { index, response: p.deg === null ? null : { deg: p.deg }, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

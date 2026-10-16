@@ -26,6 +26,7 @@ import { CubeNet } from './cube-net';
 import { MentalRotation3d } from './mental-rotation-3d';
 import { CognitiveReflection } from './cognitive-reflection';
 import { ComplexSpan } from './complex-span';
+import { Perspective } from './perspective';
 import { Tower } from './tower';
 import { Trail } from './trail';
 import { WordList } from './word-list';
@@ -160,8 +161,9 @@ export function TaskRunner(props: {
   }
 
   return (
-    // Üç boyutlu şekiller büyük ekranda daha geniş bir alanda çizilir (beş şekil yan yana karşılaştırılır).
-    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
+    // Üç boyutlu şekiller büyük ekranda daha geniş bir alanda çizilir (beş şekil yan yana karşılaştırılır); bakış açısı almada
+    // harita ile cevap çemberi büyük ekranda yan yanadır.
+    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' || task.kind === 'perspective' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
       <TaskSteps tasks={tasks} done={done} current={current} />
       <h1 className="sr-only">{task.name}</h1>
       {task.kind === 'digit_span' && <DigitSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
@@ -191,6 +193,7 @@ export function TaskRunner(props: {
       {task.kind === 'cognitive_reflection' && <CognitiveReflection key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'tower' && <Tower key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'complex_span' && <ComplexSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'perspective' && <Perspective key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

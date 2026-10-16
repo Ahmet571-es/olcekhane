@@ -36,6 +36,7 @@ import type {
   CubeType,
   CognitiveReflectionTask,
   TowerTask,
+  PerspectiveTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
@@ -49,6 +50,20 @@ import { ruleAnswer, ruleCongruent, ruleSwitchKinds } from '@/lib/instruments/ru
 import { WORD_RECOGNITION_FAST_MS, matchWord, normalizeWord, wordListRecalls } from '@/lib/instruments/word-list';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { blankOf, opTrue } from '@/lib/instruments/complex-span';
+import {
+  PA_CLOSE,
+  PA_EGO_MIN_SHIFT,
+  PA_SHIFT_BINS,
+  PA_SMALL_MAX,
+  PA_ZONE,
+  angleDiff,
+  correctAngle,
+  egocentricAngle,
+  headingOf,
+  mirrorAngle,
+  normDeg,
+  shiftBin,
+} from '@/lib/instruments/perspective';
 import { median, round } from './stats';
 
 /**
@@ -2821,6 +2836,203 @@ export function complexSpanQualityNotes(r: ComplexSpanResult): string[] {
   return notes;
 }
 
+/* ---------- Bakış açısı alma ---------- */
+
+export interface PerspectiveTrialInput {
+  /** Sorunun sırası (0'dan). */
+  index: number;
+  /** Gösterilen yön (derece, −180–180; 0 ileri, saat yönünde) ya da cevapsız (`null`). */
+  response: { deg: number } | null;
+  rtMs: number | null;
+}
+
+export interface PerspectiveItemResult {
+  index: number;
+  /** Zihinde dönülmesi gereken açı (işaretli; bakılan nesnenin ekranın yukarısıyla yaptığı açı). */
+  shift: number;
+  correct: number;
+  response: number | null;
+  /** Mutlak açı hatası (0–180); cevapsız soruda 90 (rastgele düzeyi). */
+  error: number;
+  /** Cevap, haritaya göre cevabın ±`PA_ZONE` yakınında ve doğru cevaptan uzak (yalnızca dönüşü en az 45 derece olan sorularda). */
+  ego: boolean;
+  /** Cevap, sağ ile solun karıştırıldığı yönün ±`PA_ZONE` yakınında ve doğru cevaptan uzak. */
+  mirror: boolean;
+  rt: number | null;
+}
+
+export interface PerspectiveGroupResult {
+  n: number;
+  /** Ortalama mutlak hata (derece, bir ondalık). */
+  meanError: number;
+}
+
+export interface PerspectiveResult {
+  n: number;
+  answered: number;
+  meanError: number;
+  /** Hatası `PA_CLOSE` derece ya da daha az olan sorular. */
+  close: number;
+  /** Dönüşü en çok 90 derece olan sorular ve 90 dereceden büyük olanlar. */
+  small: PerspectiveGroupResult;
+  large: PerspectiveGroupResult;
+  /** Dönüş açısı gruplarına göre (0–45, 45–90, 90–135, 135–180). */
+  bins: (PerspectiveGroupResult & { from: number; to: number })[];
+  ego: { eligible: number; count: number };
+  mirror: { eligible: number; count: number };
+  /** Hata türlerinden birine girmeyen sorular (cevapsızlar dahil) ve ortalama hataları: yüksek hatayı hata türü mü açıklıyor? */
+  rest: PerspectiveGroupResult;
+  medianRt: number | null;
+  /** `PA_RAPID_MS`'den kısa sürede verilen ve 45 dereceden çok hatalı cevaplar (cevapsız sorular sayılmaz). */
+  rapid: number;
+  /**
+   * En kalabalık 30 derecelik dilimdeki cevap sayısı: bir cevabın 15 derece sağı ve solu içinde kalan cevaplar (o cevap
+   * dahil), en çoğu alınır (hep aynı yönü göstermek).
+   */
+  sameDir: number;
+  items: PerspectiveItemResult[];
+}
+
+/**
+ * Rastgele gösterilen bir yönün hatası 0–180 arasında eşit olasılıklıdır (ortalama 90). 12 soruda rastgele gösterilen
+ * yönlerin ortalama hatasının 65 derece ya da altında olma olasılığı %4,8'dir (Irwin–Hall dağılımı; testte hesaplanır):
+ * 65'in üstündeki bir ortalama, rastgele gösterilen yönlerden belirgin biçimde ayrılmaz.
+ */
+export const PA_CHANCE_MEAN = 65;
+/**
+ * Rastgele bir cevabın belirli bir 40 derecelik dilime düşme olasılığı 1/9'dur. Haritaya göre cevap (10 uygun soruda) ya da
+ * sağ-sol karışıklığı (12 soruda) en az 4 soruda görülürse rastlantı pek açıklamaz (olasılık %1,8 ve %3,6).
+ */
+export const PA_PATTERN_MIN = 4;
+/** Yüksek hatanın hata türüyle açıklanıp açıklanmadığına bakarken bir cevabın o türe uyduğu sayılan genişlik (derece). */
+export const PA_FIT = 45;
+/** Soruyu okuyup oku yerleştirmek için bundan kısa süre yetmez. */
+export const PA_RAPID_MS = 3000;
+/** Hep aynı yönü gösterme: cevapların en az bu kadarı birbirine 15 dereceden yakın. */
+export const PA_SAME_DIR = 8;
+
+const mean1 = (xs: number[]) => (xs.length ? round(xs.reduce((a, b) => a + b, 0) / xs.length, 1) : 0);
+/** "12 sorunun hepsinde" ya da "12 sorunun 5 tanesinde" (rapor kartları da aynı biçimi kullanır). */
+export const paOf = (k: number, n: number) => `${n} sorunun ${k === n ? 'hepsinde' : `${k} tanesinde`}`;
+
+export function scorePerspective(task: PerspectiveTask, input: PerspectiveTrialInput[]): { result: PerspectiveResult } {
+  const n = task.items.length;
+  const byIndex = new Map<number, PerspectiveTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (t.response !== null && (typeof t.response !== 'object' || !Number.isFinite(t.response.deg) || t.response.deg < -180 || t.response.deg > 180))
+      throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const items: PerspectiveItemResult[] = task.items.map((item, index) => {
+    const t = byIndex.get(index)!;
+    const shift = headingOf(task.objects, item);
+    const correct = correctAngle(task.objects, item);
+    const response = t.response === null ? null : t.response.deg;
+    const error = response === null ? 90 : angleDiff(response, correct);
+    const far = error > PA_ZONE;
+    const ego = response !== null && Math.abs(shift) >= PA_EGO_MIN_SHIFT && far && angleDiff(response, egocentricAngle(task.objects, item)) <= PA_ZONE;
+    const mirror = response !== null && far && angleDiff(response, mirrorAngle(task.objects, item)) <= PA_ZONE;
+    return { index, shift: round(shift, 1), correct: round(correct, 1), response, error: round(error, 1), ego, mirror, rt: t.rtMs };
+  });
+  const errs = (xs: PerspectiveItemResult[]) => xs.map((x) => x.error);
+  const small = items.filter((x) => Math.abs(x.shift) <= PA_SMALL_MAX);
+  const large = items.filter((x) => Math.abs(x.shift) > PA_SMALL_MAX);
+  const answers = items.flatMap((x) => (x.response === null ? [] : [x.response]));
+  const sameDir = Math.max(0, ...answers.map((a) => answers.filter((b) => angleDiff(a, b) <= 15).length));
+  const rts = items.flatMap((x) => (x.rt === null ? [] : [x.rt]));
+  return {
+    result: {
+      n,
+      answered: answers.length,
+      meanError: mean1(errs(items)),
+      close: items.filter((x) => x.error <= PA_CLOSE).length,
+      small: { n: small.length, meanError: mean1(errs(small)) },
+      large: { n: large.length, meanError: mean1(errs(large)) },
+      bins: PA_SHIFT_BINS.map(([from, to], k) => {
+        const here = items.filter((x) => shiftBin(x.shift) === k);
+        return { from, to, n: here.length, meanError: mean1(errs(here)) };
+      }),
+      ego: { eligible: items.filter((x) => Math.abs(x.shift) >= PA_EGO_MIN_SHIFT).length, count: items.filter((x) => x.ego).length },
+      mirror: { eligible: n, count: items.filter((x) => x.mirror).length },
+      rest: (() => {
+        // Belirgin bir hata türü varsa (en az PA_PATTERN_MIN soru), o türün yönüne ±PA_FIT derece içinde kalan ve doğru
+        // yöne ondan daha uzak olan cevaplar da o türe uyar sayılır: aynı yolla çözen birinin oku her soruda tam o yöne
+        // düşmeyebilir. Sayım ±PA_ZONE ile yapılır; bu yalnızca yüksek hatanın hata türüyle açıklanıp açıklanmadığı içindir.
+        const egoOn = items.filter((x) => x.ego).length >= PA_PATTERN_MIN;
+        const mirrorOn = items.filter((x) => x.mirror).length >= PA_PATTERN_MIN;
+        const fits = (x: PerspectiveItemResult, dir: number) =>
+          x.response !== null && angleDiff(x.response, dir) <= PA_FIT && angleDiff(x.response, dir) < x.error;
+        const rest = items.filter(
+          (x) =>
+            !(egoOn && Math.abs(x.shift) >= PA_EGO_MIN_SHIFT && fits(x, normDeg(x.correct + x.shift))) && !(mirrorOn && fits(x, normDeg(-x.correct))),
+        );
+        return { n: rest.length, meanError: mean1(errs(rest)) };
+      })(),
+      medianRt: medianOrNull(rts),
+      rapid: items.filter((x) => x.response !== null && x.rt !== null && x.rt < PA_RAPID_MS && x.error > 45).length,
+      sameDir,
+      items,
+    },
+  };
+}
+
+/** Haritaya göre cevaplar rastlantının pek açıklamayacağı kadar sık. */
+export const perspectiveEgo = (r: PerspectiveResult) => r.ego.count >= PA_PATTERN_MIN;
+/** Sağ ile solun karıştırıldığı cevaplar rastlantının pek açıklamayacağı kadar sık. */
+export const perspectiveMirror = (r: PerspectiveResult) => r.mirror.count >= PA_PATTERN_MIN;
+/** Çok hızlı ve çok hatalı cevaplar: soruların en az dörtte biri. */
+export const perspectiveRapid = (r: PerspectiveResult) => r.rapid >= Math.max(3, Math.ceil(r.n / 4));
+/** Hep aynı yönü gösterme. */
+export const perspectiveSameDir = (r: PerspectiveResult) => r.sameDir >= PA_SAME_DIR;
+/** Bazı sorularda düşünmeden ya da soruya bakmadan cevap verilmiş olabilir: hata türleri ve karşılaştırmalar yorumlanmaz. */
+export const perspectiveDoubt = (r: PerspectiveResult) => perspectiveRapid(r) || perspectiveSameDir(r);
+/**
+ * Yüksek hatayı hata türü açıklıyor: türe giren cevaplar çıkarılınca kalan soruların ortalama hatası rastgele düzeyinin
+ * altında (ör. dört soruda haritaya göre yön, sekiz soruda rastgele yönler gösterildiyse açıklamaz).
+ */
+const perspectiveExplained = (r: PerspectiveResult) => r.rest.n === 0 || r.rest.meanError <= PA_CHANCE_MEAN;
+/**
+ * Ortalama hata rastgele gösterilen yönlerden belirgin biçimde ayrılmıyor ve bunu açıklayan bir hata türü de yok (ya da
+ * bazı sorularda düşünmeden cevap verilmiş olabileceği için hata türü yorumlanmıyor).
+ */
+export const perspectiveChance = (r: PerspectiveResult) =>
+  r.meanError > PA_CHANCE_MEAN && (perspectiveDoubt(r) || (!perspectiveEgo(r) && !perspectiveMirror(r)) || !perspectiveExplained(r));
+/** Ortalama hata yüksek ama yanlışlar belirli bir türde toplanıyor: yönerge farklı anlaşılmış olabilir. */
+export const perspectivePatternHigh = (r: PerspectiveResult) => r.meanError > PA_CHANCE_MEAN && !perspectiveChance(r);
+
+/** Bakış açısı almada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, perspectiveBlocks aynı eşikleri kullanır). */
+export function perspectiveQualityNotes(r: PerspectiveResult): string[] {
+  const notes: string[] = [];
+  if (perspectiveChance(r)) {
+    notes.push(
+      'Bakış açısı alma testinde gösterilen yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da yönler düşünülmeden gösterilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  } else if (perspectivePatternHigh(r)) {
+    const ego = `zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)} haritaya yukarıdan bakar gibi`;
+    const mirror = `${paOf(r.mirror.count, r.n)} doğru açıyla ama ters tarafa (sağ yerine sol ya da sol yerine sağ)`;
+    const both = perspectiveEgo(r) && perspectiveMirror(r);
+    notes.push(
+      `Bakış açısı alma testinde yön, ${both ? `${ego}, ${mirror}` : perspectiveEgo(r) ? ego : mirror} gösterilmiş. ${
+        both ? 'Yönerge farklı anlaşılmış ya da sağ ile sol karıştırılmış' : perspectiveEgo(r) ? 'Yönerge farklı anlaşılmış' : 'Sağ ile sol karıştırılmış'
+      } olabileceği için ortalama hata yorumlanmamalıdır; yalnızca yanlışların türü anlatılır.`,
+    );
+  }
+  if (perspectiveRapid(r)) {
+    notes.push(
+      `Bakış açısı alma testinde ${paOf(r.rapid, r.n)} çok hatalı bir yön 3 saniyeden kısa sürede gösterilmiş; bu sorularda düşünmeden cevap verilmiş olabilir.`,
+    );
+  }
+  if (perspectiveSameDir(r)) {
+    notes.push(
+      `Bakış açısı alma testinde ${paOf(r.sameDir, r.n)} hemen hemen aynı yön gösterilmiş; sorulara bakılmadan cevap verilmiş olabilir.`,
+    );
+  }
+  return notes;
+}
+
 /* ---------- Düşünerek karar verme ---------- */
 
 export interface ReflectionTrialInput {
@@ -3169,6 +3381,7 @@ export function taskQualityNotes(parts: {
   tower?: TowerResult;
   rotation3d?: Rotation3dResult;
   complexSpan?: ComplexSpanResult;
+  perspective?: PerspectiveResult;
   vocabulary?: VocabularyResult;
   ruleSwitch?: RuleSwitchResult;
   wordList?: WordListResult;
@@ -3363,6 +3576,8 @@ export function taskQualityNotes(parts: {
   if (ud) notes.push(...rotation3dQualityNotes(ud));
   const hb = parts.complexSpan;
   if (hb) notes.push(...complexSpanQualityNotes(hb));
+  const ba = parts.perspective;
+  if (ba) notes.push(...perspectiveQualityNotes(ba));
   return notes;
 }
 

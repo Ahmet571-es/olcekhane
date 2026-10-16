@@ -435,7 +435,19 @@ Düşünmeyi Sevme.
    önerileri arasında ortak söz öbekleri testte denetlenir. Yol haritası: 5 sütunlu 3B profil, ortamlar yok, 2. hafta
    Çalışma düzeni. İki tur bağımsız inceleme (bilgi ve veri doğrulama; kod ve metin) ve ikinci tur denetim düzeltildi;
    telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
-9. Bakış Açısı Alma (Hegarty ve Waller, 2004 düzeni; özgün yerleşimler, açılar hesapla doğrulanır).
+9. **Bakış Açısı Alma: yayında (2026-10-16, pilot; 7. sınıftan yetişkine).** Hegarty ve Waller'in (2004) kullandığı
+   uzamsal yönelim testinin düzeni, Friedman ve ark.'nın (2020) bilgisayar sürümündeki değişikliklerle (önü arkası olmayan
+   nesneler, orta noktalar, geri bildirimli üç alıştırma); yedi nesneli özgün harita, 12 özgün soru, süre sınırı yok. Puan
+   ortalama açı hatası (cevapsız 90°). Sorular üreticiyle seçildi ve testte bağımsız hesapla (iç ve dış çarpım) denetlenir:
+   dönüş grupları 2/4/3/3 (6 küçük, 6 büyük; sınırlara en az 5°), doğru yönler 3/3/3/3 dörtte birlik bölgede, |doğru yön|
+   30–150°, çizgilere en az 9 birim; haritaya göre yön ve sağ-sol karışıklığı doğru yönden ve birbirinden en az 45°
+   uzak. Rapor: yön gösterme isabeti, küçük ve büyük dönüşler, hata türleri (haritaya yukarıdan bakar gibi ≥4/10, sağ-sol
+   karışıklığı ≥4/12), çalışma biçimi; ortalama hata 65°'nin üstündeyse (12 soruda rastgele olasılığı %4,8) yalnızca
+   yüksek hatayı açıklayan bir tür varsa o anlatılır; çok hızlı yanlışlar ve hep aynı yön ayrıca. Bütün durum birleşimleri
+   testte. Yol haritası (3B grafik yok): kendini oraya koy, haritayı yoluna çevir, kimin sağı, yön oyunları. Çözme
+   ekranında harita ve cevap çemberi (dokunma, sürükleme, ← → tuşları). İki tur bağımsız inceleme (bilgi doğrulama; kod,
+   geometri ve rapor) ve ikinci tur denetim düzeltildi; telefonda dokunarak ve sürükleyerek (öğrenci), masaüstünde
+   klavyeyle (yetişkin) çözüldü, PDF'ler açıldı. Türkiye'de bu testin uyarlaması bulunamadı.
 10. Heyecan Arayışı (IPIP, Hoyle benzeri üç ölçek; rapor riskli davranışı özendirmez).
 11. Gizli Şekiller (Witkin düzeni; özgün çizimler).
 12. İyimserlik (IPIP, 10 madde; maddelerin bir kısmı öz-saygı ve ruh hâli de sorar, raporda dikkate alınır).
@@ -656,6 +668,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Planlama: Kule Görevi | planlama-kule-gorevi | Yayında (pilot; 3. sınıftan yetişkine) |
 | Üç Boyutlu Zihinde Döndürme | uc-boyutlu-zihinde-dondurme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Çalışma Belleği: Hesapla ve Hatırla | hesapla-ve-hatirla | Yayında (pilot; 5. sınıftan yetişkine) |
+| Bakış Açısı Alma | bakis-acisi-alma | Yayında (pilot; 7. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -768,6 +781,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-16 (30): Bakış Açısı Alma yayında (7. sınıftan yetişkine), 2. dalganın 9. testi: yedi nesneli özgün bir
+  haritada kendini bir nesnenin yanında hayal edip üçüncü nesnenin yönünü çemberde okla gösterme; 12 soru, üç alıştırma;
+  açılar bağımsız hesapla doğrulandı; ortalama açı hatası, küçük ve büyük dönüşler, hata türleri (haritaya yukarıdan
+  bakar gibi, sağ-sol karışıklığı); öğrenci, veli ve yetişkin raporu, yol haritası; iki tur bağımsız incelemenin
+  bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-16 (29): Düşünme ve Çalışma Tarzı yayında (9. sınıftan yetişkine), 2. dalganın 8. testi: 50 madde, beş
   özellik (soyut ve felsefi konulara ilgi, yenilikçilik, başkalarının görüşüne önem verme, enerji ve tempo, düzen ve plan);
   siyasi ve dinî görüş soran ölçekler alınmadı; güvenirlik ve ölçüm payı IPIP'in açık verisinden; öğrenci, veli ve
@@ -809,6 +827,3 @@ En yeni üstte; en çok 10 madde tutulur.
   karşılaştırılır; sayısal sorular bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası;
   telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları
   (iki tur) düzeltildi.
-- 2026-10-09 (20): Beyin Akademisi Anatomi 2 "Anatominin dili: beyinde yön bulmak" yayında: 9 bölüm, üç düzey, 21
-  sahne, 5 yeni hareketli çizim, 18 vaka, 54 soru, 267 kaynak; dört bağımsız denetim ve iki doğrulama; dil sade (cümle
-  ortalaması ~9 sözcük). Sıradaki ders "Beyin zarları ve zarlar arası boşluklar".

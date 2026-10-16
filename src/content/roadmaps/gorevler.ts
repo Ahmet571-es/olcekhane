@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi ve Hesapla ve Hatırla yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla ve Bakış Açısı Alma yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1696,6 +1696,105 @@ const ucBoyutluZihindeDondurme: TaskRoadmapTemplate = {
   sources: [KAYNAK.gilligan2020, KAYNAK.uttal, KAYNAK.timm2024],
 };
 
+const bakisBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (kendini zihinde başka bir yere ve yöne koymayı) gösterir.',
+    'Bu tür testler ikinci kez çözüldüğünde hatalar azalabilir; sorulara ve cevap çemberine alışmak sonucu etkiler.',
+    'Kendini zihinde başka bir yöne koyma becerisi gençlik yıllarında da gelişmeye devam eder; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (kendini zihinde başka bir yere ve yöne koymayı) gösterir.',
+    'Bu tür testler ikinci kez çözüldüğünde hatalar azalabilir; sorulara ve cevap çemberine alışmak sonucu etkiler.',
+    'Bakış açısı alma, çocuklukta zihinde döndürmeden daha yavaş gelişir ve ergenlikte de gelişmeye devam eder; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine sonucun akranlarla karşılaştırılmadığı bilgisi. */
+const bakisFacts: InfoBox = {
+  ...bakisBase,
+  items: {
+    ...bakisBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (kendini zihinde başka bir yere ve yöne koymayı) gösterir.',
+      'Bu tür testler ikinci kez çözüldüğünde hatalar azalabilir; sorulara ve cevap çemberine alışmak sonucu etkiler.',
+      'Sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const bakisAcisiAlma: TaskRoadmapTemplate = {
+  version: 'bakis-acisi-alma-yol-haritasi-1',
+  what: {
+    student: 'kendini zihinde başka bir yere ve yöne koymayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun kendini zihinde başka bir yere ve yöne koymayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'kendini zihinde başka bir yere ve yöne koymayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Yön bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun yön bulmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, kendini zihinde başka bir yere ve yöne koyup çevredeki nesnelerin oradan hangi yönde kaldığını kestirebilmeyi ölçer. Bu beceri; bir haritaya bakarak hangi yöne yürüyeceğini bulmak, birine yol tarif etmek ya da karşındaki birinin “sağımdaki” dediği şeyi bulmak gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde yönleri karıştırmamana yardım edebilir.',
+    'Bu test, kendini zihinde başka bir yere ve yöne koyup çevredeki nesnelerin oradan hangi yönde kaldığını kestirebilmeyi ölçer. Bu beceri; bir haritaya bakarak hangi yöne yürüyeceğini bulmak, birine yol tarif etmek ya da karşısındaki birinin “sağımdaki” dediği şeyi bulmak gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde yönleri karıştırmamasına yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'kendini', 'Kendini oraya koy', 'Yöntem', t(
+      'Bir haritada ya da krokide kendini bir yerde hayal ederken o nesnenin yanında durduğunu ve yüzünün bakılan yöne dönük olduğunu düşün, sonra “önüm, arkam, sağım, solum” diye sor. Bu tür testleri çözen kişilerin çoğu, kendini haritanın içinde o nesnenin yanında hayal ederek çözdüğünü söylemiştir.',
+      'Çocuğunuza şunu önerebilirsiniz: bir haritada ya da krokide kendini bir yerde hayal ederken o nesnenin yanında durduğunu ve yüzünün bakılan yöne dönük olduğunu düşünsün, sonra “önüm, arkam, sağım, solum” diye sorsun. Bu tür testleri çözen kişilerin çoğu, kendini haritanın içinde o nesnenin yanında hayal ederek çözdüğünü söylemiştir.',
+    )),
+    support(1, 'harita', 'Haritayı yoluna çevir', 'Araç', t(
+      'İnsanlar bir haritanın yukarısını kendi baktıkları yön sanma eğilimindedir; harita başka bir yöne dönükse yönleri karıştırmak kolaylaşır. Bir haritayı kullanırken onu, yürüdüğün yön haritanın yukarısında kalacak biçimde çevirmek bu karışıklığı azaltabilir. Gerçek bir yolda yön bulurken haritayı ya da telefonu çevirmekte hiçbir sakınca yoktur; testte ise beceri ölçüldüğü için ekran çevrilmez.',
+      'İnsanlar bir haritanın yukarısını kendi baktıkları yön sanma eğilimindedir; harita başka bir yöne dönükse yönleri karıştırmak kolaylaşır. Çocuğunuza bir haritayı kullanırken onu, yürüdüğü yön haritanın yukarısında kalacak biçimde çevirmesini önerebilirsiniz. Gerçek bir yolda yön bulurken haritayı ya da telefonu çevirmekte hiçbir sakınca yoktur; testte ise beceri ölçüldüğü için ekran çevrilmez.',
+    )),
+    support(2, 'kimin', 'Kimin sağı?', 'Alışkanlık', t(
+      'Biri “sağdaki” dediğinde kendi sağını mı yoksa senin sağını mı kastettiğini sor; sen tarif ederken de kimin sağını söylediğini belirt (“senin sağında”). Bir çalışmada, karşısındakinin “sağdaki” sözünü daha çok onun bakış açısından anlayan kişilerin bakış açısı alma testindeki hataları daha küçük bulunmuştur. Bu bir ilişki bulgusudur; bu alışkanlığın beceriyi geliştirdiği gösterilmemiştir.',
+      'Çocuğunuza, biri “sağdaki” dediğinde konuşanın kendi sağını mı yoksa onun sağını mı kastettiğini sormasını, kendisi tarif ederken de kimin sağını söylediğini belirtmesini (“senin sağında”) önerin. Bir çalışmada, karşısındakinin “sağdaki” sözünü daha çok onun bakış açısından anlayan kişilerin bakış açısı alma testindeki hataları daha küçük bulunmuştur. Bu bir ilişki bulgusudur; bu alışkanlığın beceriyi geliştirdiği gösterilmemiştir.',
+    )),
+    support(3, 'oyun', 'Yön oyunları', 'Etkinlik', t(
+      'Bir yerin krokisini çizip yönleri tahmin etmek, gözü kapalı bir eşyanın yerini göstermek ya da harita kullanılan oyunlar, yönlerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan bir oyunda ustalaşmak her işe kendiliğinden yansımaz.',
+      'Bir yerin krokisini çizip yönleri tahmin etmek, gözü kapalı bir eşyanın yerini göstermek ya da harita kullanılan oyunlar çocuğunuz için yönlerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan bir oyunda ustalaşmak her işe kendiliğinden yansımaz.',
+    )),
+  ],
+  facts: bakisFacts,
+  approach: [
+    { title: 'Haritayı ona verin', text: 'Bir gezide ya da yeni bir yerde haritayı ona verin; nerede olduğunuzu ve hangi yöne yürüyeceğinizi birlikte bulun.' },
+    { title: 'Acele ettirmeyin', text: 'Sağ ile solu karıştırdığında hemen düzeltmek yerine kendini o yöne dönmüş hayal etmesini ve yeniden düşünmesini isteyin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Krokiyle tahmin et',
+      text: t(
+        'Bu hafta yaşadığın evin ya da bir odanın basit bir krokisini (yukarıdan görünüşünü) çiz ve üç eşyayı işaretle. Krokide bir eşyanın yanında durup başka bir eşyaya baktığını hayal et; üçüncüsünün hangi yönde kaldığını önce tahmin et, sonra gerçekten o yere gidip bak.',
+        'Bu hafta çocuğunuzla evin ya da bir odanın basit bir krokisini (yukarıdan görünüşünü) çizin ve üç eşyayı işaretleyin. Krokide bir eşyanın yanında durup başka bir eşyaya baktığını hayal etmesini, üçüncüsünün hangi yönde kaldığını önce tahmin etmesini isteyin; sonra birlikte o yere gidip bakın.',
+      ),
+    },
+    {
+      title: 'Haritayla yürü',
+      text: t(
+        'Bu hafta bildiğin, trafikten uzak ve güvenli bir yolda kâğıttaki ya da telefondaki haritayı aç ve her dönemeçte sağa mı sola mı döneceğini haritaya bakarak tahmin et. Haritanın yukarısı yürüdüğün yön değilken ve haritayı yürüdüğün yöne çevirdiğinde işin nasıl değiştiğine dikkat et.',
+        'Bu hafta çocuğunuzla bildiğiniz, trafikten uzak ve güvenli bir yolda kâğıttaki ya da telefondaki haritayı açın; her dönemeçte sağa mı sola mı döneceğinizi haritaya bakarak tahmin etmesini isteyin. Haritanın yukarısı yürüdüğünüz yön değilken ve harita yürüdüğünüz yöne çevrildiğinde işin nasıl değiştiğini birlikte konuşun.',
+      ),
+    },
+    {
+      title: 'Karşıdan tarif et',
+      text: t(
+        'Bu hafta biriyle karşılıklı otur ve aranıza birkaç eşya koy. Sırayla bir eşyanın yerini karşındakinin bakış açısıyla tarif edin (“senin sağ önünde”); karşındaki eşyayı bulsun, sonra rolleri değiştirin.',
+        'Bu hafta çocuğunuzla karşılıklı oturun ve aranıza birkaç eşya koyun. Sırayla bir eşyanın yerini karşıdakinin bakış açısıyla tarif edin (“senin sağ önünde”); karşıdaki eşyayı bulsun, sonra rolleri değiştirin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (kendini o yöne koymak, haritayı yoluna çevirmek ya da kimin sağı olduğunu söylemek) yön bulmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun yön bulmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['uc-boyutlu-zihinde-dondurme', 'zihinde-dondurme'],
+  nextPurpose: {
+    you: 'şekilleri zihinde döndürme becerisini de görmek',
+    parent: 'çocuğunuzun şekilleri zihinde döndürme becerisini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.gunalp2021, KAYNAK.he2022, KAYNAK.loy2023, KAYNAK.friedman2020, KAYNAK.frick2023, KAYNAK.brucato2022, KAYNAK.uttal],
+};
+
 const dusunerekBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; düşünerek karar vermenin yalnızca bir yönünü (kısa sorulardaki tuzakları fark etmeyi) gösterir.',
@@ -2120,4 +2219,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dusunerek-karar-verme': dusunerekKararVerme,
   'planlama-kule-gorevi': planlamaKuleGorevi,
   'hesapla-ve-hatirla': hesaplaVeHatirla,
+  'bakis-acisi-alma': bakisAcisiAlma,
 };

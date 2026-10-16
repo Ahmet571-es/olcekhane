@@ -87,6 +87,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                                     ? `${single.items.length} soru, ${single.parts.length} bölüm`
                                     : single.kind === 'complex_span'
                                       ? `${single.sets.length} dizi: ${single.sets.reduce((s, x) => s + x.letters.length, 0)} harf ve ${single.sets.reduce((s, x) => s + x.ops.length, 0)} işlem`
+                                      : single.kind === 'perspective'
+                                        ? `${single.items.length} soru, ${single.practice.length} alıştırma`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -435,6 +437,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Kaç soruda döndürülmüş iki şeklin de bulunduğu ve seçilen şekillerin kaçının doğru olduğu</li>
                 <li>Yalnızca dik bir eksen çevresinde döndürülmüş şekillerle ayrıca yan yatırılmış şekillerin karşılaştırması (grafikle), yanlış cevaplarda ayna görüntülerinin nasıl seçildiği ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'perspective' && (
+              <>
+                <li>Gösterilen yönlerin doğru yönden ortalama kaç derece saptığı ve kendini zihinde az ya da çok döndürmeyi gerektiren soruların karşılaştırması (grafikle)</li>
+                <li>Yanlış gösterilen yönlerde sağ ile solun karıştırılıp karıştırılmadığı, yönün haritaya yukarıdan bakar gibi gösterilip gösterilmediği ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'complex_span' && (

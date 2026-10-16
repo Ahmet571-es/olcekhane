@@ -266,7 +266,8 @@ export type TaskKind =
   | 'cognitive_reflection'
   | 'tower'
   | 'mental_rotation_3d'
-  | 'complex_span';
+  | 'complex_span'
+  | 'perspective';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -1106,7 +1107,8 @@ export type CognitiveTask =
   | CognitiveReflectionTask
   | TowerTask
   | MentalRotation3dTask
-  | ComplexSpanTask;
+  | ComplexSpanTask
+  | PerspectiveTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
@@ -1139,6 +1141,44 @@ export interface ComplexSpanTask extends TaskBase {
   practiceSets: ComplexSpanSet[];
   /** Asıl diziler (uzunlukları karışık sırada). */
   sets: ComplexSpanSet[];
+}
+
+/** Bakış açısı almada haritadaki bir nesne: konumu (0–100, y aşağı doğru) ve cümlelerdeki ekli hâlleri. */
+export interface PerspectiveObject {
+  /** Çizimin anahtarı (components/runner/tasks/perspective.tsx). */
+  key: string;
+  /** "Ağaç" */
+  name: string;
+  /** İlgi hâli: "ağacın" (… yanında). */
+  gen: string;
+  /** Yönelme hâli: "ağaca" (… doğru). */
+  dat: string;
+  x: number;
+  y: number;
+}
+
+/** Bir soru: `at` nesnesinin yanında durup `facing` nesnesine bakan biri, `target` nesnesini gösterir (nesnelerin sırası). */
+export interface PerspectiveItem {
+  at: number;
+  facing: number;
+  target: number;
+}
+
+/**
+ * Bakış açısı alma (uzamsal yönelim testi düzeni; Kozhevnikov ve Hegarty, 2001; Hegarty ve Waller, 2004; Friedman ve
+ * ark., 2020): bir haritada yedi nesne vardır; her soruda bir nesnenin yanında durup başka bir nesneye bakıldığı hayal
+ * edilir ve üçüncü nesnenin yönü bir çemberin üstünde okla gösterilir. Çemberin yukarısı bakış yönüdür. Harita döndürülmez.
+ * Açıların hesabı lib/instruments/perspective.ts; doğru cevaplar konumlardan hesaplanır.
+ */
+export interface PerspectiveTask extends TaskBase {
+  kind: 'perspective';
+  objects: PerspectiveObject[];
+  /** Yönergedeki çözülmüş örnek (alıştırmalarda ve asıl sorularda kullanılmayan bir durma-bakma çifti). */
+  example: PerspectiveItem;
+  /** Geri bildirimli alıştırmalar (puanlanmaz). */
+  practice: PerspectiveItem[];
+  /** Asıl sorular, gösterilme sırasıyla. */
+  items: PerspectiveItem[];
 }
 
 export interface TaskInstrument extends InstrumentBase {

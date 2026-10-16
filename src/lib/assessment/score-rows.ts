@@ -25,6 +25,7 @@ import {
   scoreTower,
   scoreRotation3d,
   scoreComplexSpan,
+  scorePerspective,
   scoreReaction,
   scoreRotation,
   scoreSpan,
@@ -69,6 +70,8 @@ import {
   type Rotation3dTrialInput,
   type ComplexSpanResult,
   type ComplexSpanTrialInput,
+  type PerspectiveResult,
+  type PerspectiveTrialInput,
   type ReactionResult,
   type ReactionTrialInput,
   type RotationResult,
@@ -202,7 +205,8 @@ export type TaskInputs =
   | ReflectionTrialInput[]
   | TowerTrialInput[]
   | Rotation3dTrialInput[]
-  | ComplexSpanTrialInput[];
+  | ComplexSpanTrialInput[]
+  | PerspectiveTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -235,6 +239,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let towerRes: TowerResult | undefined;
   let rotation3dRes: Rotation3dResult | undefined;
   let complexSpanRes: ComplexSpanResult | undefined;
+  let perspectiveRes: PerspectiveResult | undefined;
   let foldingRes: FoldingResult | undefined;
   let vocabularyRes: VocabularyResult | undefined;
   let ruleSwitchRes: RuleSwitchResult | undefined;
@@ -474,6 +479,17 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'ud_ayna', raw: null, mean: null, nAnswered: result.n - result.correct, nItems: result.n, band: null },
         { scaleKey: 'ud_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'perspective') {
+      const { result } = scorePerspective(task, input as PerspectiveTrialInput[]);
+      perspectiveRes = result;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "ba_hata" satırında durur. Ham puan ortalama açı hatasıdır
+      // (derece; küçük olan daha isabetli).
+      rows.push(
+        { scaleKey: 'ba_hata', raw: result.meanError, mean: null, nAnswered: result.close, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'ba_donus', raw: Math.round((result.large.meanError - result.small.meanError) * 10) / 10, mean: null, nAnswered: result.small.n, nItems: result.n, band: null },
+        { scaleKey: 'ba_tur', raw: null, mean: null, nAnswered: result.ego.count + result.mirror.count, nItems: result.n, band: null },
+        { scaleKey: 'ba_calisma', raw: result.medianRt, mean: null, nAnswered: result.answered, nItems: result.n, band: null },
+      );
     } else if (task.kind === 'complex_span') {
       const { result } = scoreComplexSpan(task, input as ComplexSpanTrialInput[]);
       complexSpanRes = result;
@@ -545,6 +561,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       tower: towerRes,
       rotation3d: rotation3dRes,
       complexSpan: complexSpanRes,
+      perspective: perspectiveRes,
     }),
   };
 }

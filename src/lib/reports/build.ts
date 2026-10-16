@@ -149,7 +149,18 @@ import {
   complexSpanRapid,
   complexSpanRecallChance,
   type ComplexSpanResult,
+  PA_CHANCE_MEAN,
+  perspectiveChance,
+  perspectiveDoubt,
+  perspectiveEgo,
+  perspectiveMirror,
+  perspectivePatternHigh,
+  perspectiveRapid,
+  perspectiveSameDir,
+  type PerspectiveResult,
+  paOf,
 } from '@/lib/scoring/tasks';
+import { PA_CLOSE, PA_EGO_MIN_SHIFT, PA_SMALL_MAX } from '@/lib/instruments/perspective';
 import type { ReadingResult } from '@/lib/scoring/reading';
 
 /**
@@ -5050,6 +5061,316 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   return { blocks: [harf, uzunluk, islem, hata], chart, figures, ...(profile ? { profile } : {}) };
 }
 
+/* ---------- Bakış açısı alma ---------- */
+
+const nfDeg = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
+/** "24,3 derece", "90 derece". */
+const degrees = (x: number) => `${nfDeg.format(x)} derece`;
+
+/** Bakış açısı almada büyük ve küçük dönüşlü soruların ortalama hatası en az bu kadar (derece) farklıysa fark belirgin sayılır. */
+export const PA_GAP = 15;
+
+/**
+ * Bakış açısı almanın dört sonuç kartı, dönüş açısına göre grafik ve öne çıkan sayılar. Durumların sırası ve eşikleri
+ * uyarılarla (lib/scoring/tasks.ts, perspectiveQualityNotes) aynıdır: rastgele düzeyi, yüksek hatayı açıklayan bir hata
+ * türü, bazı sorularda düşünmeden cevap verilmiş olabilmesi. Üç boyutlu grafik yoktur: sonuç hatadır (kısa çubuk daha iyi).
+ */
+function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const chance = perspectiveChance(r);
+  const high = perspectivePatternHigh(r);
+  const doubt = perspectiveDoubt(r);
+  const egoP = perspectiveEgo(r);
+  const mirrorP = perspectiveMirror(r);
+  const m = r.meanError;
+  const unanswered = r.n - r.answered;
+  const far = r.items.filter((x) => x.error > PA_CLOSE).length;
+  const checkWork = v(' Çalışma biçimi kartına da bak.', ' Çalışma biçimi kartına da bakın.');
+
+  /* Yön gösterme isabeti */
+  let accText: string;
+  if (chance) {
+    accText =
+      v(
+        `Gösterdiğin yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil: rastgele gösterilen yönlerin ortalama hatası 90 derecedir ve ${r.n} soruda ortalama hata ${PA_CHANCE_MEAN} derecenin üstündeyse rastgele gösterilen yönlerden ayırt edilemez. Sorular sana çok zor gelmiş, yönergeyi tam anlamamış ya da yönleri düşünmeden göstermiş olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+        `Çocuğunuzun gösterdiği yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil: rastgele gösterilen yönlerin ortalama hatası 90 derecedir ve ${r.n} soruda ortalama hata ${PA_CHANCE_MEAN} derecenin üstündeyse rastgele gösterilen yönlerden ayırt edilemez. Sorular ona çok zor gelmiş, yönerge tam anlaşılmamış ya da yönler düşünülmeden gösterilmiş olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+      ) + (doubt ? checkWork : '');
+  } else if (high) {
+    const ego = `zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)}`;
+    const mir = `${paOf(r.mirror.count, r.n)}`;
+    const what =
+      egoP && mirrorP
+        ? v(
+            `${ego} yönü haritaya yukarıdan bakar gibi göstermiş, ${mir} ise sağ ile solu karıştırmış olabilirsin`,
+            `${ego} yön haritaya yukarıdan bakar gibi gösterilmiş, ${mir} ise sağ ile sol karıştırılmış olabilir`,
+          )
+        : egoP
+          ? v(
+              `${ego} yönü, kendini nesnenin yanında hayal etmeden haritaya yukarıdan bakar gibi göstermiş olabilirsin`,
+              `${ego} çocuğunuz kendini nesnenin yanında hayal etmeden, yönü haritaya yukarıdan bakar gibi göstermiş olabilir`,
+            )
+          : v(`${mir} sağ ile solu karıştırmış olabilirsin`, `${mir} sağ ile sol karıştırılmış olabilir`);
+    accText = v(
+      `Gösterdiğin yönlerin ortalama hatası çok yüksek, ama yanlışların rastgele dağılmıyor: ${what} (hata türleri kartına bak). Bu yüzden ortalama hata tek başına bir şey söylemez; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuzun gösterdiği yönlerin ortalama hatası çok yüksek, ama yanlışları rastgele dağılmıyor: ${what} (hata türleri kartına bakın). Bu yüzden ortalama hata yorumlanmamalıdır; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmesi daha doğru bir sonuç verebilir.`,
+    );
+  } else {
+    if (m <= 20) {
+      accText = v(
+        'Gösterdiğin oklar doğru yöne çok yakındı: kendini haritadaki nesnelerin yanında hayal edip öteki nesnelerin senin için hangi yönde kaldığını isabetle kestirebildin.',
+        'Çocuğunuzun gösterdiği oklar doğru yöne çok yakındı: kendini haritadaki nesnelerin yanında hayal edip öteki nesnelerin kendisi için hangi yönde kaldığını isabetle kestirebildi.',
+      );
+    } else if (m <= 35) {
+      accText = v(
+        'Gösterdiğin oklar doğru yönden biraz saptı: kendini haritadaki nesnelerin yanında hayal edip öteki nesnelerin yönünü büyük ölçüde isabetle kestirebildin.',
+        'Çocuğunuzun gösterdiği oklar doğru yönden biraz saptı: kendini haritadaki nesnelerin yanında hayal edip öteki nesnelerin yönünü büyük ölçüde isabetle kestirebildi.',
+      );
+    } else if (m <= 50) {
+      accText = v(
+        'Gösterdiğin oklar doğru yönden epeyce saptı; yine de rastgele gösterilen yönlerden çok daha isabetliydi.',
+        'Çocuğunuzun gösterdiği oklar doğru yönden epeyce saptı; yine de rastgele gösterilen yönlerden çok daha isabetliydi.',
+      );
+    } else {
+      accText = v(
+        'Gösterdiğin oklar doğru yönden büyük ölçüde saptı; yine de rastgele gösterilen yönlerden daha isabetliydi. Bu tür sorularda kendini nesnenin yanına koyup yüzünü bakılan nesneye çevirmek, sonra hedefin önünde mi arkanda mı, sağında mı solunda mı kaldığını düşünmek gerekir.',
+        'Çocuğunuzun gösterdiği oklar doğru yönden büyük ölçüde saptı; yine de rastgele gösterilen yönlerden daha isabetliydi. Bu tür sorularda kişinin kendini nesnenin yanına koyup yüzünü bakılan nesneye çevirmesi, sonra hedefin önünde mi arkasında mı, sağında mı solunda mı kaldığını düşünmesi gerekir.',
+      );
+    }
+    accText += ' Ortalama hata ne kadar küçükse yönler o kadar isabetli gösterilmiş demektir; rastgele gösterilen yönlerin ortalama hatası 90 derecedir.';
+    if ((egoP || mirrorP) && !doubt) {
+      accText += v(
+        ' Yanlışlarının bir kısmı belirli bir türde toplanıyor (hata türleri kartına bak).',
+        ' Yanlışlarının bir kısmı belirli bir türde toplanıyor (hata türleri kartına bakın).',
+      );
+    }
+    if (doubt) {
+      accText += v(
+        ' Bazı sorularda düşünmeden cevap vermiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
+        ' Bazı sorularda düşünmeden cevap verilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+      );
+    }
+  }
+  if (unanswered > 0) {
+    accText += v(
+      ` Cevaplamadığın ${unanswered} soru, rastgele düzeyi olan 90 derece hata sayıldı.`,
+      ` Cevaplanmayan ${unanswered} soru, rastgele düzeyi olan 90 derece hata sayıldı.`,
+    );
+  }
+  const hata: CognitiveBlock = {
+    ...card('ba_hata'),
+    headline: `Ortalama hata ${degrees(m)}`,
+    detail: `Doğru yöne çok yakın (en çok ${PA_CLOSE} derece hata): ${r.close}/${r.n} soru`,
+    text: accText,
+  };
+
+  /* Küçük ve büyük dönüşler */
+  const gap = r.large.meanError - r.small.meanError;
+  const counts = v(
+    `Zihinde en çok ${PA_SMALL_MAX} derece dönmeyi gerektiren ${r.small.n} soruda ortalama hatan ${degrees(r.small.meanError)}, ${PA_SMALL_MAX} dereceden fazla dönmeyi gerektiren ${r.large.n} soruda ${degrees(r.large.meanError)}.`,
+    `Zihinde en çok ${PA_SMALL_MAX} derece dönmeyi gerektiren ${r.small.n} soruda çocuğunuzun ortalama hatası ${degrees(r.small.meanError)}, ${PA_SMALL_MAX} dereceden fazla dönmeyi gerektiren ${r.large.n} soruda ${degrees(r.large.meanError)}.`,
+  );
+  const rough = ` Her grup ${r.small.n} soruya dayanır; bu karşılaştırma kaba bir göstergedir.`;
+  let donus: CognitiveBlock;
+  if (chance) {
+    donus = {
+      ...card('ba_donus'),
+      headline: 'Yorumlanmadı',
+      text: 'Gösterilen yönler rastgele gösterilen yönlerden belirgin biçimde daha isabetli olmadığı için iki soru grubu karşılaştırılmadı.',
+    };
+  } else if (high) {
+    donus = {
+      ...card('ba_donus'),
+      headline: 'Yorumlanmadı',
+      text: v(
+        'Ortalama hata çok yüksek olduğu ve yanlışlar belirli bir türde toplandığı için (hata türleri kartına bak) iki soru grubu karşılaştırılmadı.',
+        'Ortalama hata çok yüksek olduğu ve yanlışlar belirli bir türde toplandığı için (hata türleri kartına bakın) iki soru grubu karşılaştırılmadı.',
+      ),
+    };
+  } else if (doubt) {
+    // Sayılar verilir ama aradaki fark yorumlanmaz; başlık da bir fark söylemez (yol haritasının "Kısaca" bölümünde görünür).
+    donus = {
+      ...card('ba_donus'),
+      headline: 'Yorumlanmadı',
+      text: `${counts} ${v(
+        'Bazı sorularda düşünmeden cevap vermiş olabileceğin için (çalışma biçimi kartına bak) iki grup arasındaki fark yorumlanmadı.',
+        'Bazı sorularda düşünmeden cevap verilmiş olabileceği için (çalışma biçimi kartına bakın) iki grup arasındaki fark yorumlanmadı.',
+      )}`,
+    };
+  } else {
+    let head: string;
+    let text: string;
+    if (gap >= PA_GAP) {
+      head = 'Büyük dönüşlerde daha çok hata';
+      text = v(
+        'Kendini zihinde çok döndürmen gereken sorularda oklar daha çok kaydı. Bu beklenen bir durumdur: hayal edilen bakış yönü haritanın yönünden ne kadar farklıysa yönü bulmak o kadar zorlaşır.',
+        'Çocuğunuzun kendini zihinde çok döndürmesi gereken sorularda oklar daha çok kaydı. Bu beklenen bir durumdur: hayal edilen bakış yönü haritanın yönünden ne kadar farklıysa yönü bulmak o kadar zorlaşır.',
+      );
+      if (egoP) {
+        text += v(
+          ' Haritaya yukarıdan bakar gibi gösterilen yönler (hata türleri kartına bak) en çok büyük dönüşlerde hata yaratır; bu fark bundan da kaynaklanıyor olabilir.',
+          ' Haritaya yukarıdan bakar gibi gösterilen yönler (hata türleri kartına bakın) en çok büyük dönüşlerde hata yaratır; bu fark bundan da kaynaklanıyor olabilir.',
+        );
+      }
+    } else if (gap <= -PA_GAP) {
+      head = 'Büyük dönüşlerde daha az hata';
+      text = v(
+        'Kendini zihinde çok döndürmen gereken sorularda oklar daha az kaydı; genellikle bunun tersi olur. Az dönmeyi gerektiren sorulardaki birkaç büyük kayma da bu sonucu doğurabilir.',
+        'Çocuğunuzun kendini zihinde çok döndürmesi gereken sorularda oklar daha az kaydı; genellikle bunun tersi olur. Az dönmeyi gerektiren sorulardaki birkaç büyük kayma da bu sonucu doğurabilir.',
+      );
+      if (egoP || mirrorP) {
+        text += v(
+          ' Yanlışların belirli bir türde toplanması (hata türleri kartına bak) bu farkı etkilemiş olabilir.',
+          ' Yanlışların belirli bir türde toplanması (hata türleri kartına bakın) bu farkı etkilemiş olabilir.',
+        );
+      }
+    } else {
+      head = 'İki grupta yakın hata';
+      // Kart, isabet kartındaki düzeylerle aynı sözleri kullanır (en çok 20 derece "isabetli", en çok 35 "büyük ölçüde isabetli").
+      const most = Math.max(r.small.meanError, r.large.meanError);
+      text =
+        most <= 20
+          ? v(
+              'Kendini zihinde çok döndürmen gerektiğinde de yönleri isabetli gösterebildin.',
+              'Çocuğunuz kendini zihinde çok döndürmesi gerektiğinde de yönleri isabetli gösterebildi.',
+            )
+          : most <= 35
+            ? v(
+                'Kendini zihinde çok döndürmen gerektiğinde de yönleri büyük ölçüde isabetli gösterebildin.',
+                'Çocuğunuz kendini zihinde çok döndürmesi gerektiğinde de yönleri büyük ölçüde isabetli gösterebildi.',
+              )
+            : v('İki gruptaki sorularda oklar birbirine yakın ölçüde kaydı.', 'İki gruptaki sorularda çocuğunuzun okları birbirine yakın ölçüde kaydı.');
+    }
+    donus = { ...card('ba_donus'), headline: head, text: `${counts} ${text}${rough}` };
+  }
+
+  /* Hata türleri */
+  const kindLine = `Haritaya yukarıdan bakar gibi: ${r.ego.count}/${r.ego.eligible} soru · Sağ ile sol karışık: ${r.mirror.count}/${r.mirror.eligible} soru`;
+  const egoText = v(
+    `Zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)} oku, hedefin haritadaki yönüne, yani haritaya yukarıdan bakar gibi gösterdin; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Bu sorularda kendini nesnenin yanında hayal etmek yerine haritayı olduğu gibi kullanmış olabilirsin.`,
+    `Zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)} çocuğunuz oku, hedefin haritadaki yönüne, yani haritaya yukarıdan bakar gibi gösterdi; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Bu sorularda kendini nesnenin yanında hayal etmek yerine haritayı olduğu gibi kullanmış olabilir.`,
+  );
+  const egoTip = v(
+    ' Çemberin yukarısı her zaman baktığın nesnedir, haritanın yukarısı değil: önce kendini o nesneye dönmüş hayal et, sonra hedefin önünde mi arkanda mı, sağında mı solunda mı kaldığını düşün.',
+    ' Çemberin yukarısı her zaman bakılan nesnedir, haritanın yukarısı değil: önce kendini o nesneye dönmüş hayal etmek, sonra hedefin önde mi arkada mı, sağda mı solda mı kaldığını düşünmek yardımcı olabilir.',
+  );
+  const mirrorText = v(
+    `${paOf(r.mirror.count, r.mirror.eligible)} oku doğru açıyla ama ters tarafa (sağ yerine sol ya da sol yerine sağ) gösterdin; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Bu sorularda hedefin önünde mi arkanda mı kaldığını doğru bulup sağ ile solu karıştırmış olabilirsin.`,
+    `${paOf(r.mirror.count, r.mirror.eligible)} çocuğunuz oku doğru açıyla ama ters tarafa (sağ yerine sol ya da sol yerine sağ) gösterdi; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Bu sorularda hedefin önde mi arkada mı kaldığını doğru bulup sağ ile solu karıştırmış olabilir.`,
+  );
+  const mirrorTip = v(
+    ' Baktığın nesne haritada aşağıdaysa senin sağın ekranın soluna düşer; kendini o nesneye dönmüş hayal edip sağ elinin hangi yana düştüğünü düşünmek yardımcı olabilir.',
+    ' Bakılan nesne haritada aşağıdaysa kişinin sağı ekranın soluna düşer; kendini o nesneye dönmüş hayal edip sağ elin hangi yana düştüğünü düşünmek yardımcı olabilir.',
+  );
+  let tur: CognitiveBlock;
+  if (chance && !doubt) {
+    tur = {
+      ...card('ba_tur'),
+      headline: 'Yorumlanmadı',
+      text: 'Gösterilen yönler rastgele gösterilen yönlerden belirgin biçimde daha isabetli olmadığı için yanlışların türü yorumlanmadı.',
+    };
+  } else if (doubt) {
+    tur = {
+      ...card('ba_tur'),
+      headline: 'Yorumlanmadı',
+      detail: kindLine,
+      text: v(
+        'Bazı sorularda düşünmeden cevap vermiş olabileceğin için yanlışlarının türü yorumlanmadı.',
+        'Bazı sorularda düşünmeden cevap verilmiş olabileceği için yanlışların türü yorumlanmadı.',
+      ),
+    };
+  } else if (far === 0) {
+    tur = {
+      ...card('ba_tur'),
+      headline: 'Belirgin kayma yok',
+      text: v(
+        `Hiçbir soruda ok doğru yönden ${PA_CLOSE} dereceden fazla kaymadı.`,
+        `Hiçbir soruda çocuğunuzun gösterdiği ok doğru yönden ${PA_CLOSE} dereceden fazla kaymadı.`,
+      ),
+    };
+  } else if (egoP && mirrorP) {
+    tur = { ...card('ba_tur'), headline: 'İki hata türü birden', detail: kindLine, text: `${egoText} ${mirrorText}${egoTip}${mirrorTip}` };
+  } else if (egoP) {
+    tur = { ...card('ba_tur'), headline: `Haritaya yukarıdan bakar gibi: ${r.ego.count} soru`, detail: kindLine, text: egoText + egoTip };
+  } else if (mirrorP) {
+    tur = { ...card('ba_tur'), headline: `Sağ ile sol karışmış olabilir: ${r.mirror.count} soru`, detail: kindLine, text: mirrorText + mirrorTip };
+  } else {
+    tur = {
+      ...card('ba_tur'),
+      headline: 'Belirgin bir hata türü yok',
+      detail: kindLine,
+      text: v(
+        'Bu kart iki tür yanlışa bakar: yönü, kendini nesnenin yanında hayal etmeden haritaya yukarıdan bakar gibi göstermek ve sağ ile solu karıştırmak. Senin cevaplarında ikisi de, rastgele gösterilen yönlerde bile görülebilecek kadar az; yanlışların belirli bir türde toplanmıyor.',
+        'Bu kart iki tür yanlışa bakar: yönü, kendini nesnenin yanında hayal etmeden haritaya yukarıdan bakar gibi göstermek ve sağ ile solu karıştırmak. Çocuğunuzun cevaplarında ikisi de, rastgele gösterilen yönlerde bile görülebilecek kadar az; yanlışları belirli bir türde toplanmıyor.',
+      ),
+    };
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (perspectiveRapid(r)) {
+    issues.push(
+      v(
+        `${paOf(r.rapid, r.n)} çok hatalı bir yönü (45 dereceden fazla) 3 saniyeden kısa sürede gösterdin. Bu kadar kısa sürede soruyu okuyup kendini nesnenin yanında hayal etmek çok zordur; bu sorularda düşünmeden cevap vermiş olabilirsin.`,
+        `Çocuğunuz ${paOf(r.rapid, r.n)} çok hatalı bir yönü (45 dereceden fazla) 3 saniyeden kısa sürede gösterdi. Bu kadar kısa sürede soruyu okuyup kendini nesnenin yanında hayal etmek çok zordur; bu sorularda düşünmeden cevap verilmiş olabilir.`,
+      ),
+    );
+  }
+  if (perspectiveSameDir(r)) {
+    issues.push(
+      v(
+        `${paOf(r.sameDir, r.n)} hemen hemen aynı yönü gösterdin (oklar 30 derecelik dar bir dilimin içinde kaldı); doğru yönler sorudan soruya değiştiği için birçok soruda soruya bakmadan cevap vermiş olabilirsin.`,
+        `Çocuğunuz ${paOf(r.sameDir, r.n)} hemen hemen aynı yönü gösterdi (oklar 30 derecelik dar bir dilimin içinde kaldı); doğru yönler sorudan soruya değiştiği için birçok soruda soruya bakmadan cevap verilmiş olabilir.`,
+      ),
+    );
+  }
+  const noLimit = v(
+    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.',
+    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan yönü doğru bulabilmektir.',
+  );
+  const calisma: CognitiveBlock =
+    r.medianRt === null
+      ? { ...card('ba_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') }
+      : {
+          ...card('ba_calisma'),
+          headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
+          text:
+            [
+              v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`),
+              ...issues,
+            ].join(' ') + noLimit,
+        };
+
+  /* Grafik ve öne çıkan sayılar */
+  const bins = r.bins.filter((b) => b.n > 0);
+  const sizes = bins.map((b) => b.n);
+  const per = Math.min(...sizes) === Math.max(...sizes) ? `${sizes[0]}` : `${Math.min(...sizes)}–${Math.max(...sizes)}`;
+  const caution =
+    chance || high
+      ? ' Ortalama hata çok yüksek olduğu için gruplar arasındaki farklar yorumlanmamalıdır.'
+      : doubt
+        ? v(
+            ' Bazı sorularda düşünmeden cevap vermiş olabileceğin için gruplar arasındaki farklar yorumlanmamalıdır.',
+            ' Bazı sorularda düşünmeden cevap verilmiş olabileceği için gruplar arasındaki farklar yorumlanmamalıdır.',
+          )
+        : '';
+  const chart: CognitiveReport['chart'] = {
+    title: 'Zihinde dönme açısına göre ortalama hata',
+    note:
+      v(
+        `Sorular, kendini zihinde ne kadar döndürmen gerektiğine göre gruplandı. Çubuklar her gruptaki ortalama hatayı gösterir; kısa çubuk daha isabetli demektir. Rastgele gösterilen yönlerin ortalama hatası 90 derecedir. Her grupta ${per} soru olduğu için bu grafik kaba bir göstergedir.`,
+        `Sorular, kişinin kendini zihinde ne kadar döndürmesi gerektiğine göre gruplandı. Çubuklar her gruptaki ortalama hatayı gösterir; kısa çubuk daha isabetli demektir. Rastgele gösterilen yönlerin ortalama hatası 90 derecedir. Her grupta ${per} soru olduğu için bu grafik kaba bir göstergedir.`,
+      ) + caution,
+    rows: bins.map((b) => ({ label: `${b.from}–${b.to} derece dönüş (${b.n} soru)`, value: b.meanError, max: 180, valueLabel: `${nfDeg.format(b.meanError)}°` })),
+  };
+  const figures = [
+    { label: 'Ortalama hata', value: degrees(m) },
+    { label: 'Doğru yöne çok yakın cevaplar', value: `${r.close}/${r.n}`, note: `en çok ${PA_CLOSE} derece hata` },
+    ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
+  ];
+  return { blocks: [hata, donus, tur, calisma], chart, figures };
+}
+
 /* ---------- Düşünerek karar verme ---------- */
 
 /** Soru grupları (grafikte ve üç boyutlu grafikte): adı, rengi ve sonuçtaki yeri. */
@@ -6725,10 +7046,12 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (ud && udt) add(rotation3dBlocks(ud, udt, audience, card));
   const hb = byKey.get('hb_harf')?.extra as unknown as ComplexSpanResult | undefined;
   if (hb && def.tasks.some((t) => t.kind === 'complex_span')) add(complexSpanBlocks(hb, audience, card));
+  const ba = byKey.get('ba_hata')?.extra as unknown as PerspectiveResult | undefined;
+  if (ba && def.tasks.some((t) => t.kind === 'perspective')) add(perspectiveBlocks(ba, audience, card));
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

@@ -31,6 +31,9 @@ const complexSpanResponse = z.object({
   limitMs: z.number().min(0).max(60_000),
 });
 
+/** Bakış açısı almada gösterilen yön (derece; 0 ileri, saat yönünde). */
+const perspectiveResponse = z.object({ deg: z.number().min(-180).max(180) }).strict();
+
 /** Bilişsel görevin bir denemesi (tarayıcının gönderdiği biçim); doğruluk sunucuda yeniden hesaplanır. */
 export const taskTrial = z.object({
   length: z.number().int().min(1).max(20).optional(),
@@ -45,6 +48,7 @@ export const taskTrial = z.object({
     trailResponse,
     towerResponse,
     complexSpanResponse,
+    perspectiveResponse,
     /** Kelime listesi hatırlamada yazılan kelimeler ve listenin baştan gösterilme sayısı. */
     z.object({ words: z.array(z.string().max(30)).max(40), restarts: z.number().int().min(0).max(50).optional() }),
     z.null(),

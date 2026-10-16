@@ -415,6 +415,17 @@ jobs:
           if ! grep -q 'Hem hesapla hem hatırla!' <<<"$hb_sayfa" || ! grep -qF '\"letterMs\":1000' <<<"$hb_sayfa"; then
             sorun="$sorun hesapla-ve-hatirla-sayfa"
           fi
+          # Bakış Açısı Alma: 12 sorunun hepsinde doğru yön (a, doğru yönler, tam dereceye yuvarlanmış; tests/bakis-acisi-alma.test.ts
+          # güncel olduğunu denetler). Çözme sayfasına haritanın nesneleri ve soruları gider; puanlama sunucuda yapılır.
+          BA_GOVDE=$(python3 -c 'import json; a=[47,-52,104,-40,33,-72,-104,-147,135,102,-92,55]; print(json.dumps({"grade": 8, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"bakis-acisi-alma": [{"index": i, "response": {"deg": a[i]}, "rtMs": 12000} for i in range(12)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$BA_GOVDE" "https://$ALAN/api/rapor/bakis-acisi-alma" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 4 and len(r["student"]["items"]) == 4 and r["student"]["items"][2]["badge"] == "Belirgin kayma yok"; f={x["label"]: x["value"] for x in r["student"]["keyFigures"]}; assert f["Doğru yöne çok yakın cevaplar"] == "12/12"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 0 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun bakis-acisi-alma-raporu"
+          fi
+          ba_sayfa=$("${C[@]}" -f "https://$ALAN/testler/bakis-acisi-alma/coz?sinif=yetiskin") || ba_sayfa=""
+          if ! grep -q 'O nesne senin için hangi yönde?' <<<"$ba_sayfa" || ! grep -qF '\"kind\":\"perspective\"' <<<"$ba_sayfa"; then
+            sorun="$sorun bakis-acisi-alma-sayfa"
+          fi
           # Kâğıt Katlama: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/kagit-katlama.test.ts güncel olduğunu
           # denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve yanılgı türleri gitmez.
           KK_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kagit-katlama": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')

@@ -288,4 +288,28 @@ export const KAYNAK = {
     text: 'Fu, J., Zhou, Y., Yuan, M. ve Cai, Y. (2026). The asymmetry of working memory training transfer: A systematic review and meta-analysis. Psychonomic Bulletin & Review, 33(7), 227.',
     url: 'https://doi.org/10.3758/s13423-026-02994-5',
   },
+  friedman2020: {
+    text: 'Friedman, A., Kohler, B., Gunalp, P., Boone, A. P. ve Hegarty, M. (2020). A computerized spatial orientation test. Behavior Research Methods, 52(2), 799–812.',
+    url: 'https://doi.org/10.3758/s13428-019-01277-3',
+  },
+  brucato2022: {
+    text: 'Brucato, M., Nazareth, A. ve Newcombe, N. S. (2022). Longitudinal development of cognitive mapping from childhood to adolescence. Journal of Experimental Child Psychology, 219, 105412.',
+    url: 'https://doi.org/10.1016/j.jecp.2022.105412',
+  },
+  gunalp2021: {
+    text: 'Gunalp, P., Chrastil, E. R. ve Hegarty, M. (2021). Directionality eclipses agency: How both directional and social cues improve spatial perspective taking. Psychonomic Bulletin & Review, 28(4), 1289–1300.',
+    url: 'https://doi.org/10.3758/s13423-021-01896-y',
+  },
+  he2022: {
+    text: 'He, C., Chrastil, E. R. ve Hegarty, M. (2022). A new psychometric task measuring spatial perspective taking in ambulatory virtual reality. Frontiers in Virtual Reality, 3, 971502.',
+    url: 'https://doi.org/10.3389/frvir.2022.971502',
+  },
+  loy2023: {
+    text: 'Loy, J. E. ve Demberg, V. (2023). Individual differences in spatial orientation modulate perspective taking in listeners. Journal of Cognition, 6(1), 52.',
+    url: 'https://doi.org/10.5334/joc.321',
+  },
+  frick2023: {
+    text: 'Frick, A. ve Pichelmann, S. (2023). Measuring spatial abilities in children: A comparison of mental-rotation and perspective-taking tasks. Journal of Intelligence, 11(8), 165.',
+    url: 'https://doi.org/10.3390/jintelligence11080165',
+  },
 } satisfies Record<string, { text: string; url: string }>;
