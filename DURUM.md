@@ -363,11 +363,12 @@ Düşünmeyi Sevme.
    (ilkinde ergen çalışması cümlesi, çeviri kuralı, yol haritasındaki çelişkiler; ikincisinde bir bilim kartı cümlesi,
    üç yol haritası metni ve bir ortam) düzeltildi. Telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin)
    çözüldü, öğrenci, veli ve yetişkin PDF'leri açıldı.
-4. **Kontrol Odağı: site sahibinin kararı bekleniyor (2026-10-15).** Az maddeyle (IPIP; yalnızca içeriği örtüşen maddeler:
+4. **Kontrol Odağı: yayımlanmayacak (site sahibinin 2026-10-16 kararı).** Güvenirliği düşük bir testin bilimsel temelden
+   uzaklaştıracağı ve bir fayda getirmeyeceği için yapılmadı; "deneme" uyarısıyla yayımlama seçeneği de seçilmedi. Az maddeyle (IPIP; yalnızca içeriği örtüşen maddeler:
    başarının yetenek ve çabaya bağlı olduğu, olayları kendinin belirlediği, güçlü birkaç kişinin dünyayı yönettiği,
    şanssızlık ve şanslı doğma; "kadere inanırım" ve "kaderime razıyım" yok). IPIP'in açık verisinde (ESCS, aşağıda)
    hesaplandı: içeriği örtüşen maddelerin iç tutarlılığı α ≈ .50 (kişiye rapor verecek bir ölçek için düşük). Öneri:
-   yayımlanmasın (ya da "deneme" diye uyarıyla). Site sahibine soruldu; cevap gelene kadar bu test yapılmaz.
+   yayımlanmasın (ya da "deneme" diye uyarıyla). Site sahibi yayımlamamayı seçti.
    Maddeler: https://ipip.ori.org/newSingleConstructsKey.htm.
 5. **Düşünmeyi Sevme Ölçeği: yayında (2026-10-15, active; 9. sınıftan yetişkine).** IPIP Need for Cognition, 10 madde;
    çeviriler ve uygulama sırası Öğrenme ve Başarı Özellikleri'ndeki "Düşünmekten hoşlanma" ölçeğiyle birebir aynı, düzey
