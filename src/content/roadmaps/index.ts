@@ -5,6 +5,7 @@ import { besFaktorRoadmap } from './bes-faktor';
 import { calismaAliskanliklariRoadmap } from './calisma-aliskanliklari';
 import { duygusalZekaBilesenleriRoadmap } from './duygusal-zeka-bilesenleri';
 import { dusunmeyiSevmeRoadmap } from './dusunmeyi-sevme';
+import { dusunmeVeCalismaTarziRoadmap } from './dusunme-ve-calisma-tarzi';
 import { TASK_ROADMAPS } from './gorevler';
 import { calismaDegerleriRoadmap } from './calisma-degerleri';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
@@ -40,6 +41,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'calisma-aliskanliklari': calismaAliskanliklariRoadmap,
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariRoadmap,
   'dusunmeyi-sevme-olcegi': dusunmeyiSevmeRoadmap,
+  'dusunme-ve-calisma-tarzi': dusunmeVeCalismaTarziRoadmap,
   'cocuk-kisilik-profili': cocukKisilikRoadmap,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuRoadmap,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiRoadmap,

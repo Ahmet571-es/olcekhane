@@ -297,6 +297,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'oz-saygi': 3 * 2,
       // Tek boyutlu; öğrenci, veli ve yetişkin.
       'dusunmeyi-sevme-olcegi': 3 * 3,
+      // Beş özellik, üç düzey; öğrenci, veli ve yetişkin.
+      'dusunme-ve-calisma-tarzi': 3 ** 5 * 3,
       'calisma-aliskanliklari': 5 ** 5 * 2,
       'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,
       // Yalnızca 3–5. sınıflara açık: öğrenci ve veli.

@@ -420,7 +420,21 @@ Düşünmeyi Sevme.
    Melby-Lervåg ve Hulme (2013), Monteiro ve ark. (2025), Redick ve Lindsey (2013), Ruiz ve ark. (2019), Schmiedek ve ark.
    (2014), Unsworth ve ark. (2005). İki tur bağımsız inceleme (bilgi doğrulama, kod ve rapor) ve ikinci tur düzeltildi;
    telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, duraklatma denendi, PDF'ler açıldı.
-8. Düşünme ve Çalışma Tarzı (IPIP JPI-R benzeri ölçekler; siyasi-dinî görüş soran Gelenekçilik ve Makyavelcilik çıkarılır).
+8. **Düşünme ve Çalışma Tarzı: yayında (2026-10-16, active; 9. sınıftan yetişkine).** IPIP'in JPI-R'ye benzeyen 15 ön
+   ölçeğinden beşi, her birinin 10 maddesinin hepsi (50 madde): Soyut ve felsefi konulara ilgi (Complexity), Yenilikçilik
+   (Ingenuity), Başkalarının görüşüne önem verme (Conformity), Enerji ve tempo (Activity-Level), Düzen ve plan
+   (Organization). Alınmayanlar: Gelenekçilik (din, siyaset), Hoşgörü (ırk, cezalandırma görüşü), Sorumluluk (vergi,
+   hile), Makyavelcilik; Düşünsel genişlik (bir maddesi siyaset; siyasi madde çıkınca da Complexity ile r = .74);
+   duygusal ve sosyal ölçekler. Ölçek adları beceri değil ilgi ya da eğilim söyler ("soyut düşünme" denmez). 34 madde
+   sitedeki 9. sınıf çevirisiyle aynı, 16 madde üç bağımsız taslaktan seçildi. α ve sdRef ESCS'den (570–623 yetişkin;
+   IPIP'in sayfadaki α'larını tutturdu); ölçüm payında düşük olan α. Bilim kartında JPI-R ile ilişki (.59–.74), Beş
+   Faktör boyutlarıyla ilişki (düzen–sorumluluk .90; ortak maddeler yazılı) ve ABD verisinde "yüksek" düzeyin yaygınlığı
+   (%69–75). Madde sırası: benzer ve ters maddeler aynı ölçekte en az 20 madde arayla; beş ters çift (açık veride yanlış
+   uyarı %0,9). Rapor kartları yalnızca kendi maddelerinin sorduğunu anlatır ve yan yana çelişmez (ör. enerji kartı "işe
+   başlamayı", düzen kartı "boşa geçen zamanı" anlatmaz); 3⁵ düzey birleşiminin hepsi ve rapor, öneri, deneme ve veli
+   önerileri arasında ortak söz öbekleri testte denetlenir. Yol haritası: 5 sütunlu 3B profil, ortamlar yok, 2. hafta
+   Çalışma düzeni. İki tur bağımsız inceleme (bilgi ve veri doğrulama; kod ve metin) ve ikinci tur denetim düzeltildi;
+   telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
 9. Bakış Açısı Alma (Hegarty ve Waller, 2004 düzeni; özgün yerleşimler, açılar hesapla doğrulanır).
 10. Heyecan Arayışı (IPIP, Hoyle benzeri üç ölçek; rapor riskli davranışı özendirmez).
 11. Gizli Şekiller (Witkin düzeni; özgün çizimler).
@@ -624,6 +638,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Sayı Dizileri | sayi-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öğrenme ve Başarı Özellikleri | ogrenme-ve-basari-ozellikleri | Yayında (active; 9. sınıftan yetişkine) |
 | Düşünmeyi Sevme Ölçeği | dusunmeyi-sevme-olcegi | Yayında (active; 9. sınıftan yetişkine) |
+| Düşünme ve Çalışma Tarzı | dusunme-ve-calisma-tarzi | Yayında (active; 9. sınıftan yetişkine) |
 | Sözel Akıl Yürütme | sozel-akil-yurutme | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kâğıt Katlama | kagit-katlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Kelime Bilgisi | kelime-bilgisi | Yayında (pilot; 3. sınıftan yetişkine) |
@@ -753,6 +768,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-16 (29): Düşünme ve Çalışma Tarzı yayında (9. sınıftan yetişkine), 2. dalganın 8. testi: 50 madde, beş
+  özellik (soyut ve felsefi konulara ilgi, yenilikçilik, başkalarının görüşüne önem verme, enerji ve tempo, düzen ve plan);
+  siyasi ve dinî görüş soran ölçekler alınmadı; güvenirlik ve ölçüm payı IPIP'in açık verisinden; öğrenci, veli ve
+  yetişkin raporu, 5 sütunlu 3B yol haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde
+  çözüldü, PDF'ler açıldı. Kontrol Odağı site sahibinin kararıyla yayımlanmadı.
 - 2026-10-16 (28): Çalışma Belleği: Hesapla ve Hatırla yayında (5. sınıftan yetişkine), 2. dalganın 7. testi: kısa
   işlemler yaparken harfleri sırayla akılda tutma (işlem aralığı düzeni); 10 dizi, 50 harf, 50 işlem, kişiye göre işlem
   süresi; işlemler ipucu vermeyecek biçimde seçildi; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası; iki tur
@@ -792,8 +812,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-10-09 (20): Beyin Akademisi Anatomi 2 "Anatominin dili: beyinde yön bulmak" yayında: 9 bölüm, üç düzey, 21
   sahne, 5 yeni hareketli çizim, 18 vaka, 54 soru, 267 kaynak; dört bağımsız denetim ve iki doğrulama; dil sade (cümle
   ortalaması ~9 sözcük). Sıradaki ders "Beyin zarları ve zarlar arası boşluklar".
-- 2026-10-09 (19): Küp Açınımı yayında (5. sınıftan yetişkine): 20 özgün soru, on bir açınımın hepsi; yüzlerin yeri ve
-  şekillerin yönü ayrı yorumlanır, yanılgılar (karşılıklı yüzler, köşedeki sıra, şeklin yönü) yalnızca beklenenden sık
-  görülünce anlatılır; her soru açınım kâğıt gibi katlanarak bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, yol
-  haritası; telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme
-  bulguları düzeltildi.

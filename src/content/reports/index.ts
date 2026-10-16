@@ -5,6 +5,7 @@ import { besFaktorReport } from './bes-faktor';
 import { calismaAliskanliklariReport } from './calisma-aliskanliklari';
 import { duygusalZekaBilesenleriReport } from './duygusal-zeka-bilesenleri';
 import { dusunmeyiSevmeReport } from './dusunmeyi-sevme';
+import { dusunmeVeCalismaTarziReport } from './dusunme-ve-calisma-tarzi';
 import { calismaDegerleriReport } from './calisma-degerleri';
 import { hobiIlgileriReport } from './hobi-ilgileri';
 import { hizliKisilikTestiReport } from './hizli-kisilik-testi';
@@ -37,6 +38,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   '16-faktorlu-kisilik-profili': onAltiFaktorKisilikReport,
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariReport,
   'dusunmeyi-sevme-olcegi': dusunmeyiSevmeReport,
+  'dusunme-ve-calisma-tarzi': dusunmeVeCalismaTarziReport,
   'cocuk-kisilik-profili': cocukKisilikReport,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuReport,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiReport,
