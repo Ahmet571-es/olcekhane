@@ -334,6 +334,17 @@ jobs:
           if ! grep -q 'Eksik sayıyı bul' <<<"$sd_sayfa" || ! grep -qF '\"answers\":[]' <<<"$sd_sayfa" || ! grep -qF '\"traps\":[]' <<<"$sd_sayfa"; then
             sorun="$sorun sayi-dizileri-anahtar"
           fi
+          # Harf Dizileri: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/harf-dizileri.test.ts güncel olduğunu
+          # denetler). Çözme sayfasına cevap anahtarı ve tuzak harfler gitmez.
+          HD_GOVDE=$(python3 -c 'import json; s="E B G U T M Ç S N O P Ü Ö H K J Ş D F R Ğ V L I".split(); print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"harf-dizileri": [{"index": i, "response": {"answer": s[i]}, "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$HD_GOVDE" "https://$ALAN/api/rapor/harf-dizileri" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 4 and r["student"]["items"][0]["badge"] == "24 soruda 24 doğru" and len(r["student"]["keyFigures"]) == 3 and r["student"]["cautions"] == []; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 5 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun harf-dizileri-raporu"
+          fi
+          hd_sayfa=$("${C[@]}" -f "https://$ALAN/testler/harf-dizileri/coz?sinif=6") || hd_sayfa=""
+          if ! grep -q 'Eksik harfi bul' <<<"$hd_sayfa" || ! grep -qF '\"answers\":[]' <<<"$hd_sayfa" || ! grep -qF '\"traps\":[]' <<<"$hd_sayfa"; then
+            sorun="$sorun harf-dizileri-anahtar"
+          fi
           # Sözel Akıl Yürütme: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/sozel-akil-yurutme.test.ts güncel
           # olduğunu denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve düzey anlatımları gitmez.
           SZ_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"sozel-akil-yurutme": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')

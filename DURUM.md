@@ -531,7 +531,26 @@ Düşünmeyi Sevme.
    Türkiye'de yayımlanmış bir çalışma bulunamadı; norm yok. İki tur bağımsız inceleme (bilgi ve kaynak; desenler, rapor
    ve ekran) ve ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci), 320 px telefonda (15 kareli desen sığıyor)
    ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
-14. Harf Dizileri (Thurstone; Simon ve Kotovsky düzeni; özgün diziler, Türk alfabesi).
+14. **Harf Dizileri: yayında (2026-10-21, pilot; 3. sınıftan yetişkine).** Thurstone'un harf dizileri ve Simon ile
+   Kotovsky'nin (1963) dizi tamamlama düzeni; 24 özgün dizi ve 2 alıştırma, Türk alfabesinin 29 harfiyle (Ç, Ğ, I, İ, Ö,
+   Ş, Ü dahil); 5 düzey (4, 5, 5, 5, 5), ~10 dakika. Cevap, alfabe sırasıyla dizilmiş 29 harf tuşundan seçilir (telefonda
+   6, geniş ekranda 10 sütun; klavyede "i" → İ, "ı" → I), "Bilmiyorum" denebilir. Beş kural türü: sabit adım (6),
+   tekrar eden harfler (4), iç içe diziler (4), harf grupları (6), değişen adım (4). Sayı Dizileri'nin yapısı ve eşikleri
+   (`letter_series`, `scoreLetterSeries`, `letterSeriesBlocks`, `components/runner/tasks/letter-series.tsx`): doğru
+   cevaplar, ulaşılan düzey (%60), kural türleri (3B grafik), çalışma biçimi; yanlışların çoğu "daha basit kural"
+   tuzağıysa ya da alfabede doğru cevabın hemen yanındaki harfse söylenir; çok hızlı yanlışlar, hep aynı harf ve
+   çoğunda "Bilmiyorum" uyarı olur. Her sorunun tek cevabı bağımsız çözücüyle denetlenir (`tests/helpers/letter-solver.ts`:
+   eksik yere 29 harf konur; 1–6 periyotlu sabit adımlı sınıflar ve ikinci derece kurallar, yalnızca sınanabilen
+   kurallar); doğru cevaplar birbirinden farklı; sabit adım dışındaki sorularda "son harfin sıradakini yazmak" doğru
+   cevabı vermez; tuzaklar beş basit kuraldan biriyle bulunur; soru izi `SORU_IZI`. Cevap anahtarı ve tuzaklar tarayıcıya
+   gitmez (yayın denetimi de bakar). Yol haritası: adımları yaz, kuralı bütün dizide dene, gruplara ve iki diziye ayır,
+   alfabede rahat ol; haftalar Adımları yaz / Kendi dizini yap / Kontrol et. Türkiye'de yayımlanmış çalışma bulunamadı;
+   norm yok. İki tur bağımsız inceleme (bilgi ve kaynak; diziler, rapor ve ekran) ve ikinci tur denetim düzeltildi;
+   telefonda dokunarak (öğrenci), 320 px telefonda ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
+   İnceleme notu: hd12 (3. düzey) ve hd18 (4. düzey) düzeylerine göre kolay görünebilir; düzey sırası pilot verisi
+   geldikçe gözden geçirilir. Klavyede noktasız I için Shift gerekir (İngilizce klavyede "i" İ olur); cevap satırı ve
+   ekran okuyucu "I (noktasız)" / "İ (noktalı)" der.
+   **2. dalganın sırası bu testle bitti;** sıradaki iş site sahibine sorulur.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -752,6 +771,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Gizli Şekiller | gizli-sekiller | Yayında (pilot; 3. sınıftan yetişkine) |
 | İyimserlik Ölçeği | iyimserlik | Yayında (active; 9. sınıftan yetişkine) |
 | Desen Hatırlama | desen-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
+| Harf Dizileri | harf-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -864,6 +884,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-21 (35): Harf Dizileri yayında (3. sınıftan yetişkine), 2. dalganın 14. ve son testi: Türk alfabesiyle yazılmış
+  24 özgün harf dizisinde eksik harfi alfabe sırasıyla dizilmiş harf tuşlarından seçme; beş düzey, beş kural türü, iki
+  alıştırma; her dizinin tek cevabı bağımsız çözücüyle doğrulandı; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol
+  haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-21 (34): Desen Hatırlama yayında (3. sınıftan yetişkine), 2. dalganın 13. testi: 3 saniye gösterilen kareli
   bir deseni boş tabloda yeniden işaretleme (kısa süreli görsel bellek); 39 özgün desen, 3'ten 15 kareye, iki alıştırma;
   desenlerin kolay ad verilemeyecek biçimde seçildiği bağımsız denetleyiciyle doğrulandı; rapor en büyük doğru deseni,
@@ -909,7 +933,3 @@ En yeni üstte; en çok 10 madde tutulur.
   özetini verir; öğrenci, veli ve yetişkin raporu, tek ölçekli yol haritası; iki tur bağımsız incelemenin bulguları
   düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Kontrol Odağı (4. test) açık veride güvenirliği düşük
   (α ≈ .50) çıktığı için site sahibinin kararını bekliyor.
-- 2026-10-15 (25): Beyin Akademisi Anatomi 3 "Beyin zarları ve zarlar arası boşluklar" yayında: 13 bölüm, üç düzey, 31
-  sahne, 5 yeni hareketli çizim, 29 vaka, 87 soru, 445 kaynak; altı bağımsız denetim, üç doğrulama ve ikinci tur
-  düzeltme; dil sade (cümle ortalaması ~9,5 sözcük). Modele beyincik çadırı ve koroid pleksus eklendi. Sıradaki ders
-  "Karıncıklar ve beyin-omurilik sıvısı".

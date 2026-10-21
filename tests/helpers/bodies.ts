@@ -16,6 +16,7 @@ import type {
   MentalRotationTask,
   NBackTask,
   NumberSeriesTask,
+  LetterSeriesTask,
   QuizInstrument,
   ReactionTimeTask,
   ReadingInstrument,
@@ -269,6 +270,54 @@ export function numberSeriesBody(
 /** Sayı dizilerinde sorunun kendi düzeyindeki sırası (0'dan başlar). */
 export function numberSeriesRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('sayi-dizileri').tasks[0] as NumberSeriesTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Harf dizilerinin bir sorusu: düzeyi, kural türü, dizi, doğru harf, tuzak harfler ve sırası. */
+export type LetterSeriesCell = { level: number; rule: string; terms: (string | null)[]; answer: string; traps: string[]; i: number };
+
+const HARFLER = 'A B C Ç D E F G Ğ H I İ J K L M N O Ö P R S Ş T U Ü V Y Z'.split(' ');
+
+/**
+ * Doğru cevaptan uzak bir yanlış harf: alfabede doğru cevaptan 7 (gerekirse daha çok) ileride (sondan başa dolanarak),
+ * ne tuzak ne dizide ne de doğru cevabın hemen yanında. Doğru cevaplar birbirinden farklı olduğu için bu harfler de
+ * çoğunlukla farklıdır ("hep aynı harf" uyarısını kendiliğinden doğurmaz).
+ */
+export function letterFar(q: LetterSeriesCell): string {
+  const a = HARFLER.indexOf(q.answer);
+  for (let k = 7; k < 29; k++) {
+    const x = HARFLER[(a + k) % 29];
+    if (x !== q.answer && !q.traps.includes(x) && !q.terms.includes(x) && Math.abs(HARFLER.indexOf(x) - a) !== 1) return x;
+  }
+  throw new Error('uzak harf yok');
+}
+
+/** Alfabede doğru cevabın hemen arkasındaki (yoksa önündeki) harf. */
+export const letterNext = (q: LetterSeriesCell) => HARFLER[HARFLER.indexOf(q.answer) + 1] ?? HARFLER[HARFLER.indexOf(q.answer) - 1];
+
+/**
+ * Harf dizileri: varsayılan olarak ilk üç düzeyin sorularında doğru; 4. ve 5. düzeyde ilk iki soruda doğru, ötekilerde
+ * doğru cevaptan uzak bir harf (ne tuzak ne yakın cevap); cevap süresi düzeyle artar (8 sn + 6 sn/düzey). Seçici
+ * `answer: null` döndürürse "Bilmiyorum" denmiş olur.
+ */
+export function letterSeriesBody(
+  pick: (q: LetterSeriesCell) => { answer: string | null; rtMs: number | null } = (q) => {
+    const firstTwo = q.level <= 3 || letterSeriesRank(q) < 2;
+    return { answer: firstTwo ? q.answer : letterFar(q), rtMs: 8000 + 6000 * q.level };
+  },
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('harf-dizileri').tasks[0] as LetterSeriesTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, rule: it.rule, terms: it.terms, answer: task.answers[index], traps: task.traps[index], i: index });
+    return { index, response: p.answer === null ? null : { answer: p.answer }, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Harf dizilerinde sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function letterSeriesRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('harf-dizileri').tasks[0] as LetterSeriesTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
 }
 

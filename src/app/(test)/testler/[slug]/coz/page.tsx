@@ -91,7 +91,7 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
         tasks: def.tasks.map((t) =>
           t.kind === 'matrix_reasoning'
             ? { ...t, answers: [], optionDistance: [] }
-            : t.kind === 'number_series'
+            : t.kind === 'number_series' || t.kind === 'letter_series'
               ? { ...t, answers: [], traps: [] }
               : t.kind === 'verbal_reasoning'
                 ? { ...t, answers: [], lures: [], levels: [] }

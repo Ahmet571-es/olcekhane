@@ -107,6 +107,18 @@ export const KAYNAK = {
     text: 'Schneider, B. ve Sparfeldt, J. R. (2021). How to get better: Taking notes mediates the effect of a video tutorial on number series. Journal of Intelligence, 9(4), 55.',
     url: 'https://doi.org/10.3390/jintelligence9040055',
   },
+  simon1963: {
+    text: 'Simon, H. A. ve Kotovsky, K. (1963). Human acquisition of concepts for sequential patterns. Psychological Review, 70(6), 534–546.',
+    url: 'https://doi.org/10.1037/h0043901',
+  },
+  holzman1976: {
+    text: 'Holzman, T. G., Glaser, R. ve Pellegrino, J. W. (1976). Process training derived from a computer simulation theory. Memory & Cognition, 4(4), 349–356.',
+    url: 'https://doi.org/10.3758/BF03213188',
+  },
+  willis2013: {
+    text: 'Willis, S. L. ve Caskie, G. I. L. (2013). Reasoning training in the ACTIVE study: How much is needed and who benefits? Journal of Aging and Health, 25(8 Suppl.), 43S–64S.',
+    url: 'https://doi.org/10.1177/0898264313503987',
+  },
   thibaut: {
     text: 'Thibaut, J.-P., French, R. ve Vezneva, M. (2010). The development of analogy making in children: Cognitive load and executive functions. Journal of Experimental Child Psychology, 106(1), 1–19.',
     url: 'https://doi.org/10.1016/j.jecp.2010.01.001',

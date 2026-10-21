@@ -13,6 +13,7 @@ import { MatrixReasoning } from './matrix-reasoning';
 import { MentalRotation } from './mental-rotation';
 import { NBack } from './n-back';
 import { NumberSeries } from './number-series';
+import { LetterSeries } from './letter-series';
 import { PaperFolding } from './paper-folding';
 import { Vocabulary } from './vocabulary';
 import { RuleSwitch } from './rule-switch';
@@ -183,6 +184,7 @@ export function TaskRunner(props: {
       {task.kind === 'reaction_time' && <ReactionTime key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'matrix_reasoning' && <MatrixReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'number_series' && <NumberSeries key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'letter_series' && <LetterSeries key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'verbal_reasoning' && <VerbalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'paper_folding' && <PaperFolding key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'vocabulary' && <Vocabulary key={task.key} task={task} onDone={(t) => save(task.key, t)} />}

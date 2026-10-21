@@ -63,7 +63,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             ? `${single.blocks.length} bölüm, toplam ${single.blocks.reduce((s, b) => s + b.letters.length, 0)} harf`
             : single.kind === 'reaction_time'
               ? single.parts.map((p) => `${p.trials.length} ${p.boxes === 1 ? 'basit' : 'seçmeli'}`).join(', ') + ' deneme'
-              : single.kind === 'matrix_reasoning' || single.kind === 'number_series'
+              : single.kind === 'matrix_reasoning' || single.kind === 'number_series' || single.kind === 'letter_series'
                 ? `${single.items.length} soru, ${single.levels.length} düzey`
                 : single.kind === 'verbal_reasoning' || single.kind === 'vocabulary'
                   ? `${single.items.length} soru, ${single.levels.length} düzey, 4 soru türü`
@@ -493,6 +493,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Hangi soru türlerinin daha kolay geldiği (üç boyutlu grafikle), yanlış cevapların neyi düşündürdüğü ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'letter_series' && (
+              <>
+                <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
+                <li>Hangi tür kuralların daha kolay bulunduğu (üç boyutlu grafikle), yanlış cevapların neyi düşündürdüğü ve sorulara nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'number_series' && (

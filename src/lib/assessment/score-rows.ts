@@ -13,6 +13,7 @@ import {
   scoreMatrix,
   scoreNBack,
   scoreNumberSeries,
+  scoreLetterSeries,
   scoreVerbal,
   scoreFolding,
   scoreVocabulary,
@@ -48,6 +49,8 @@ import {
   type NBackTrialInput,
   type NumberSeriesResult,
   type NumberSeriesTrialInput,
+  type LetterSeriesResult,
+  type LetterSeriesTrialInput,
   type VerbalResult,
   type VerbalTrialInput,
   type FoldingResult,
@@ -200,6 +203,7 @@ export type TaskInputs =
   | ReactionTrialInput[]
   | MatrixTrialInput[]
   | NumberSeriesTrialInput[]
+  | LetterSeriesTrialInput[]
   | VerbalTrialInput[]
   | FoldingTrialInput[]
   | VocabularyTrialInput[]
@@ -239,6 +243,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let reactionRes: ReactionResult | undefined;
   let matrixRes: MatrixResult | undefined;
   let numberSeriesRes: NumberSeriesResult | undefined;
+  let letterSeriesRes: LetterSeriesResult | undefined;
   let verbalRes: VerbalResult | undefined;
   let logicRes: LogicResult | undefined;
   let numericRes: NumericResult | undefined;
@@ -398,6 +403,16 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'sd_duzey', raw: result.reached, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
         { scaleKey: 'sd_kural', raw: null, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
         { scaleKey: 'sd_calisma', raw: result.medianRt, mean: null, nAnswered: result.n - result.skipped, nItems: result.n, band: null },
+      );
+    } else if (task.kind === 'letter_series') {
+      const { result } = scoreLetterSeries(task, input as LetterSeriesTrialInput[]);
+      letterSeriesRes = result;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "hd_dogru" satırında durur.
+      rows.push(
+        { scaleKey: 'hd_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'hd_duzey', raw: result.reached, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+        { scaleKey: 'hd_kural', raw: null, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+        { scaleKey: 'hd_calisma', raw: result.medianRt, mean: null, nAnswered: result.n - result.skipped, nItems: result.n, band: null },
       );
     } else if (task.kind === 'verbal_reasoning') {
       const { result } = scoreVerbal(task, input as VerbalTrialInput[]);
@@ -579,6 +594,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       reaction: reactionRes,
       matrix: matrixRes,
       numberSeries: numberSeriesRes,
+      letterSeries: letterSeriesRes,
       verbal: verbalRes,
       folding: foldingRes,
       vocabulary: vocabularyRes,

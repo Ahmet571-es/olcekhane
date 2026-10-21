@@ -50,6 +50,8 @@ export const taskTrial = z.object({
     z.number().int().min(1).max(9),
     /** Sayı dizilerinde yazılan cevap ("Bilmiyorum" denirse `null`). */
     z.object({ answer: z.number().int().min(0).max(99_999) }),
+    /** Harf dizilerinde seçilen harf ("Bilmiyorum" denirse `null`); harfin alfabede olduğunu puanlama denetler. */
+    z.object({ answer: z.string().min(1).max(2) }).strict(),
     cancellationResponse,
     trailResponse,
     towerResponse,

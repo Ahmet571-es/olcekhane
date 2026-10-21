@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller ve Desen Hatırlama yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller, Desen Hatırlama ve Harf Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -2401,6 +2401,107 @@ const desenHatirlama: TaskRoadmapTemplate = {
   sources: [KAYNAK.dellaSala1999, KAYNAK.wilson1987, KAYNAK.brown2006, KAYNAK.brownWesley2013, KAYNAK.melby2016],
 };
 
+const harfBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca harf dizileriyle yapılan yönünü gösterir.',
+    'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri sayabilmek de rol oynar.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; küçük yaşta üst düzeylerdeki sorularda zorlanmak olağandır.',
+    'Bu tür soruları çözme yollarını öğrenmek ve aynı testi yeniden çözmek sonucu yükseltebilir; bu, akıl yürütmenin genel olarak geliştiği anlamına gelmez.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca harf dizileriyle yapılan yönünü gösterir.',
+    'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri sayabilmek de rol oynar; küçük sınıflarda bu rahatlık henüz gelişiyor olabilir.',
+    'Akıl yürütme becerisi çocukluk ve ergenlik boyunca gelişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+    'Bu tür soruları çözme yollarını öğrenmek ve aynı testi yeniden çözmek sonucu yükseltebilir; bu, akıl yürütmenin genel olarak geliştiği anlamına gelmez.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const harfFacts: InfoBox = {
+  ...harfBase,
+  items: {
+    ...harfBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca harf dizileriyle yapılan yönünü gösterir.',
+      'Harf dizilerinde alfabenin sırasını rahat bilmek ve bu tür sorulara alışkın olmak da rol oynar.',
+      'Bu tür soruları çözme yollarını öğrenmek ve aynı testi yeniden çözmek sonucu yükseltebilir; bu, akıl yürütmenin genel olarak geliştiği anlamına gelmez.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const harfDizileri: TaskRoadmapTemplate = {
+  version: 'harf-dizileri-yol-haritasi-1',
+  what: {
+    student: 'bir dizideki kuralı bulmayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun bir dizideki kuralı bulmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    summary: 'bir dizideki kuralı bulmayı kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Bir dizideki kuralı bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun bir dizideki kuralı bulmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, harf dizilerindeki kuralı bulup sürdürebilmeyi ölçer. Bu beceri; bir örüntüyü fark etmek, örneklerden bir kural çıkarmak ve bulduğun kuralı yeni durumlarda denemek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım eder.',
+    'Bu test, harf dizilerindeki kuralı bulup sürdürebilmeyi ölçer. Bu beceri; bir örüntüyü fark etmek, örneklerden bir kural çıkarmak ve bulunan kuralı yeni durumlarda denemek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım eder.',
+  ),
+  supports: [
+    support(0, 'adim', 'Adımları yaz', 'Yöntem', t(
+      'Bir harf dizisinde kuralı ararken ardışık harflerin arasına alfabede kaç harf ilerlendiğini ya da geri gidildiğini yaz: “+1”, “+2”, “−1”; aynı harf tekrarlanıyorsa “=”. Bu sayılar da bir düzen oluşturuyorsa onların altına yeni bir satır aç. Harfleri sayarken alfabeyi önüne koymak işini kolaylaştırır. Bir araştırmada, harfler arasındaki ilişkileri ve dizinin kaç harfte bir tekrarlandığını aramayı birkaç kısa oturumda öğrenen çocukların hataları, bu eğitimi almayanlarınkinden daha çok azalmıştır (yaklaşık %32’ye karşı %13).',
+      'Çocuğunuza bir harf dizisinde kuralı ararken ardışık harflerin arasına alfabede kaç harf ilerlendiğini ya da geri gidildiğini yazmasını önerin: “+1”, “+2”, “−1”; aynı harf tekrarlanıyorsa “=”. Bu sayılar da bir düzen oluşturuyorsa onların altına yeni bir satır açabilir. Harfleri sayarken alfabeyi önüne koymak işini kolaylaştırır. Bir araştırmada, harfler arasındaki ilişkileri ve dizinin kaç harfte bir tekrarlandığını aramayı birkaç kısa oturumda öğrenen çocukların hataları, bu eğitimi almayanlarınkinden daha çok azalmıştır (yaklaşık %32’ye karşı %13).',
+    )),
+    support(1, 'dene', 'Kuralı bütün dizide dene', 'Alışkanlık', t(
+      'Bir araştırmada bu tür sorulardaki en sık hatanın, doğru kural bulunduktan sonra onu sürdürürken yapıldığı görülmüştür. Cevabı vermeden önce adımları alfabede bir kez daha say. Bulduğun kuralı dizinin başından sonuna da dene: yalnızca son iki harfe uyan bir kural yanlış çıkabilir. Örneğin K, L, N, P dizisinde son adımı (+3) aynen sürdürmek Ş verir; oysa adımlar her seferinde 1 büyüyor (+1, +2, +3) ve sıradaki harf T’dir.',
+      'Bir araştırmada bu tür sorulardaki en sık hatanın, doğru kural bulunduktan sonra onu sürdürürken yapıldığı görülmüştür. Çocuğunuza cevabı vermeden önce adımları alfabede bir kez daha saymasını ve bulduğu kuralı dizinin başından sonuna denemesini önerin: yalnızca son iki harfe uyan bir kural yanlış çıkabilir. Örneğin K, L, N, P dizisinde son adımı (+3) aynen sürdürmek Ş verir; oysa adımlar her seferinde 1 büyüyor (+1, +2, +3) ve sıradaki harf T’dir.',
+    )),
+    support(2, 'ayir', 'Gruplara ve iki diziye ayır', 'Yöntem', t(
+      'Harfler bir ileri bir geri gidiyorsa ya da düzen bir türlü bulunamıyorsa birinci, üçüncü, beşinci harfleri ve ikinci, dördüncü, altıncı harfleri ayrı ayrı yaz: bazen iç içe geçmiş iki basit dizi ortaya çıkar. Bir harf belli aralıklarla tekrarlanıyorsa diziyi iki, üç ya da dört harflik gruplara böl ve grupları alt alta yazıp karşılaştır.',
+      'Harfler bir ileri bir geri gidiyorsa ya da düzen bir türlü bulunamıyorsa çocuğunuza birinci, üçüncü, beşinci harfleri ve ikinci, dördüncü, altıncı harfleri ayrı ayrı yazmasını önerin: bazen iç içe geçmiş iki basit dizi ortaya çıkar. Bir harf belli aralıklarla tekrarlanıyorsa diziyi iki, üç ya da dört harflik gruplara bölüp grupları alt alta yazarak karşılaştırabilir.',
+    )),
+    support(3, 'alfabe', 'Alfabede rahat ol', 'Etkinlik', t(
+      'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri saymak işi kolaylaştırır. Türk alfabesini ileri ve geri söylemek, “Ğ’den iki önceki harf hangisi?” gibi kısa sorularla oynamak ve kelime bulmacaları çözmek bu rahatlığı destekleyebilir; bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir, asıl kazanç harflerle düşünmekten keyif almaktır.',
+      'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri saymak işi kolaylaştırır. Türk alfabesini ileri ve geri söylemek, “Ğ’den iki önceki harf hangisi?” gibi kısa sorularla oynamak ve kelime bulmacaları çözmek çocuğunuzun bu rahatlığını destekleyebilir; bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir, asıl kazanç harflerle düşünmekten keyif almaktır.',
+    )),
+  ],
+  facts: harfFacts,
+  approach: [
+    { title: 'Acele ettirmeyin', text: 'Zor bir dizide uzun düşünmesine ve kâğıt kalem kullanmasına izin verin; hızlı olmasından çok, kuralı kendisinin bulmasını övün.' },
+    { title: 'Harf oyunları oynayın', text: '“Bir kural düşündüm: K, L, M… Sıradaki harf ne?” gibi kısa oyunları sırayla kural koyarak oynayın; kuralı sözcüklerle söylemesini isteyin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Adımları yaz',
+      text: t(
+        'Bu hafta kendin yazdığın ya da bir bulmacada gördüğün üç kısa harf dizisinde harflerin arasına adımları (“+1”, “+2”, “=”) yaz ve her birinin kuralını tek cümleyle söyle.',
+        'Bu hafta çocuğunuzla üç kısa harf dizisi yazın; harflerin arasına adımları (“+1”, “+2”, “=”) yazıp her birinin kuralını tek cümleyle söyleyin.',
+      ),
+    },
+    {
+      title: 'Kendi dizini yap',
+      text: t(
+        'Bu hafta bir kural seç (ör. “bir harf atla, sonra hep aynı harfi yaz”), o kurala göre altı harf yaz, yedinciyi boş bırak ve birine çözdür; sonra onun nasıl düşündüğünü sor.',
+        'Bu hafta çocuğunuzdan bir kural seçip (ör. “her seferinde bir harf atla”) altı harflik bir dizi yazmasını, yedinci harfi boş bırakıp size çözdürmesini isteyin; sonra rolleri değiştirin.',
+      ),
+    },
+    {
+      title: 'Kontrol et',
+      text: t(
+        'Bu hafta bir bulmaca ya da problem çözerken, cevabı vermeden önce bulduğun kuralı baştan sona bir kez dene ve kaç hatayı böyle yakaladığını say.',
+        'Bu hafta çocuğunuzdan bir bulmaca ya da problem çözerken cevabı vermeden önce bulduğu kuralı baştan sona bir kez denemesini ve kaç hatayı böyle yakaladığını saymasını isteyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun dizilerdeki kuralı bulmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun dizilerdeki kuralı bulmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['sayi-dizileri', 'sekil-akil-yurutme'],
+  nextPurpose: {
+    you: 'sayılarla ve şekillerle akıl yürütmeyi de görmek',
+    parent: 'çocuğunuzun sayılarla ve şekillerle akıl yürütmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.simon1963, KAYNAK.holzman1976, KAYNAK.willis2013, KAYNAK.ferrer],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -2428,4 +2529,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'bakis-acisi-alma': bakisAcisiAlma,
   'gizli-sekiller': gizliSekiller,
   'desen-hatirlama': desenHatirlama,
+  'harf-dizileri': harfDizileri,
 };

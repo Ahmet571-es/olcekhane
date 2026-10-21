@@ -31,6 +31,7 @@ import {
   perspectiveBody,
   hiddenBody,
   patternBody,
+  letterSeriesBody,
   foldingBody,
   vocabularyBody,
   ruleSwitchBody,
@@ -297,6 +298,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'bakis-acisi-alma': () => perspectiveBody(),
     'gizli-sekiller': () => hiddenBody(),
     'desen-hatirlama': () => patternBody(),
+    'harf-dizileri': letterSeriesBody,
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
@@ -376,10 +378,14 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['condValid', 'condInvalid', 'noConflict', 'conflict']);
           expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('sekiz soruluk bir gruptur');
-        } else if (slug === 'sekil-akil-yurutme' || slug === 'sayi-dizileri') {
+        } else if (slug === 'sekil-akil-yurutme' || slug === 'sayi-dizileri' || slug === 'harf-dizileri') {
           // Kural türlerine göre doğru cevap oranı (aynı birim): beş sütun, kendi başlığı ve açıklamasıyla.
           expect(rm.bars.map((b) => b.key)).toEqual(
-            slug === 'sekil-akil-yurutme' ? ['constant', 'progression', 'distribution', 'addition', 'xor'] : ['step', 'ratio', 'growing', 'alternating', 'combined'],
+            slug === 'sekil-akil-yurutme'
+              ? ['constant', 'progression', 'distribution', 'addition', 'xor']
+              : slug === 'sayi-dizileri'
+                ? ['step', 'ratio', 'growing', 'alternating', 'combined']
+                : ['next', 'repeat', 'interleaved', 'group', 'growing'],
           );
           expect(rm.barsTitle).toMatch(/^Kural türlerine göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('kural türüdür');

@@ -784,7 +784,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
           : null,
       keyFigures: [],
       // Tek görevli testlerde kartlar görevin sonuçlarıdır; çok görevli testte her kart bir görevdir.
-      itemsTitle: sections || blocks.some((b) => /^(renk|dg|iz|gh|zd|th|sa|sd|sz|kk|kb|kd|kl|ma|sy|kp|dk|kg|ud|hb|ba|gs|dh)_/.test(b.key)) ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Görevler',
+      itemsTitle: sections || blocks.some((b) => /^(renk|dg|iz|gh|zd|th|sa|sd|sz|kk|kb|kd|kl|ma|sy|kp|dk|kg|ud|hb|ba|gs|dh|hd)_/.test(b.key)) ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Görevler',
       items,
     };
   }

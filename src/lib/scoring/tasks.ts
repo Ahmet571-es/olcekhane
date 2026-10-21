@@ -39,7 +39,10 @@ import type {
   PerspectiveTask,
   HiddenFiguresTask,
   PatternMemoryTask,
+  LetterSeriesRule,
+  LetterSeriesTask,
 } from '@/lib/instruments/types';
+import { TURKISH_ALPHABET } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
@@ -1371,6 +1374,130 @@ export function scoreNumberSeries(task: NumberSeriesTask, input: NumberSeriesTri
   const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
   const hardAnswered = scored.filter((s) => s.item.level >= 3 && s.value !== null);
   const values = new Map<number, number>();
+  for (const s of scored) if (s.value !== null) values.set(s.value, (values.get(s.value) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      rules,
+      reached,
+      medianRt: medianOrNull(rts(scored)),
+      rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
+      rapid: hardAnswered.filter((s) => !s.correct && s.rt !== null && s.rt < task.rapidMs).length,
+      rapidOf: hardAnswered.length,
+      skipped: scored.filter((s) => s.value === null).length,
+      wrong: scored.filter((s) => s.value !== null && !s.correct).length,
+      traps: scored.filter((s) => s.trap).length,
+      nearMisses: scored.filter((s) => s.near).length,
+      sameAnswer: Math.max(0, ...values.values()),
+    },
+  };
+}
+
+/* ---------- Harf dizileri ---------- */
+
+export interface LetterSeriesTrialInput {
+  index: number;
+  /** Seçilen harf (Türk alfabesinin büyük harflerinden biri); "Bilmiyorum" denirse `null`. */
+  response: { answer: string } | null;
+  /** Dizinin ekrana çizildiği andan cevabın verildiği ana kadar geçen süre (ms); tarayıcı 2 dakikada keser. */
+  rtMs: number | null;
+}
+
+export interface LetterSeriesRuleResult {
+  rule: LetterSeriesRule;
+  n: number;
+  correct: number;
+}
+
+/** Harf dizilerinin sonucu: sayı dizileriyle aynı yapı (düzeyler, ulaşılan düzey, süreler, yanlışların türü). */
+export interface LetterSeriesResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  /** Kural türlerine göre; soruları olmayan türler listede yoktur. */
+  rules: LetterSeriesRuleResult[];
+  /** Ulaşılan düzey: şekil akıl yürütmedeki ölçütle aynı (o düzeyde ve o düzeye kadarki sorularda en az %60 doğru). */
+  reached: number;
+  medianRt: number | null;
+  /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
+  rtEasy: number | null;
+  rtHard: number | null;
+  /**
+   * 3. düzey ve üstündeki sorularda `rapidMs`'den kısa sürede verilen yanlış cevaplar ve bu düzeylerde cevap verilen soru
+   * sayısı. Doğru cevaplar sayılmaz.
+   */
+  rapid: number;
+  rapidOf: number;
+  /** "Bilmiyorum" denen sorular. */
+  skipped: number;
+  /** Verilen ama yanlış olan cevaplar. */
+  wrong: number;
+  /** Yanlışlardan, dizinin bir bölümüne uyan daha basit bir kuralla bulunanlar (sorunun tuzak cevapları). */
+  traps: number;
+  /**
+   * Yanlışlardan, tuzak olmayan ve alfabede doğru cevabın hemen önündeki ya da arkasındaki harf olanlar (harfleri sayarken
+   * bir kayma olabilir). Dizide zaten görünen bir harfi yazmak yakın cevap sayılmaz.
+   */
+  nearMisses: number;
+  /** En sık verilen harfin kaç soruda verildiği (hep aynı harfin seçilip seçilmediği). */
+  sameAnswer: number;
+}
+
+/** Yanlışların yorumlanması için en az bu kadar ve yanlışların en az yarısı aynı türden olmalı. */
+export const LETTER_PATTERN_MIN = 3;
+
+export function scoreLetterSeries(task: LetterSeriesTask, input: LetterSeriesTrialInput[]): { result: LetterSeriesResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.traps.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const alphabet: readonly string[] = TURKISH_ALPHABET;
+  const byIndex = new Map<number, LetterSeriesTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (t.response !== null) {
+      const a = t.response?.answer;
+      if (typeof a !== 'string' || !alphabet.includes(a)) throw new TaskInputError('Geçersiz cevap.');
+    }
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const value = t.response === null ? null : t.response.answer;
+    const answer = task.answers[i];
+    const correct = value === answer;
+    const trap = value !== null && !correct && task.traps[i].includes(value);
+    const near = value !== null && !correct && !trap && !item.terms.includes(value) && Math.abs(alphabet.indexOf(value) - alphabet.indexOf(answer)) === 1;
+    return { item, value, correct, trap, near, rt: t.rtMs };
+  });
+  const correct = scored.filter((s) => s.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((s) => s.item.level === level);
+      return { level, n: here.length, correct: here.filter((s) => s.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const RULES: LetterSeriesRule[] = ['next', 'repeat', 'interleaved', 'group', 'growing'];
+  const rules = RULES.flatMap((rule) => {
+    const here = scored.filter((s) => s.item.rule === rule);
+    return here.length ? [{ rule, n: here.length, correct: here.filter((s) => s.correct).length }] : [];
+  });
+  const rts = (xs: typeof scored) => xs.flatMap((s) => (s.rt === null ? [] : [s.rt]));
+  const hardAnswered = scored.filter((s) => s.item.level >= 3 && s.value !== null);
+  const values = new Map<string, number>();
   for (const s of scored) if (s.value !== null) values.set(s.value, (values.get(s.value) ?? 0) + 1);
   return {
     result: {
@@ -3755,6 +3882,7 @@ export function taskQualityNotes(parts: {
   reaction?: ReactionResult;
   matrix?: MatrixResult;
   numberSeries?: NumberSeriesResult;
+  letterSeries?: LetterSeriesResult;
   verbal?: VerbalResult;
   folding?: FoldingResult;
   logic?: LogicResult;
@@ -3937,6 +4065,8 @@ export function taskQualityNotes(parts: {
   if (mx) notes.push(...matrixQualityNotes(mx));
   const ns = parts.numberSeries;
   if (ns) notes.push(...numberSeriesQualityNotes(ns));
+  const hd = parts.letterSeries;
+  if (hd) notes.push(...letterSeriesQualityNotes(hd));
   const vr = parts.verbal;
   if (vr) notes.push(...verbalQualityNotes(vr));
   const kf = parts.folding;
@@ -4140,6 +4270,35 @@ export function numberSeriesQualityNotes(ns: NumberSeriesResult): string[] {
   }
   return notes;
 }
+
+/**
+ * Harf dizilerinde sonucu dikkatle yorumlamayı gerektiren durumlar. Eşikler sayı dizileriyle aynıdır; rapordaki kartlar
+ * aynı eşikleri kullanır (lib/reports/build.ts, letterSeriesBlocks).
+ */
+export function letterSeriesQualityNotes(hs: LetterSeriesResult): string[] {
+  const notes: string[] = [];
+  if (letterSeriesMostlySkipped(hs)) {
+    notes.push(
+      `Harf dizileri testinde ${hs.n} sorunun ${hs.skipped === hs.n ? 'hepsinde' : `${hs.skipped} tanesinde`} “Bilmiyorum” denmiş; sorular çok zor gelmiş ya da test yarıda bırakılmak istenmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+    );
+  }
+  if (letterSeriesRapid(hs)) {
+    notes.push(
+      `Harf dizileri testinde 3. düzey ve üstündeki sorulardan cevap verilen ${hs.rapidOf} sorunun ${hs.rapid === hs.rapidOf ? 'hepsinde' : `${hs.rapid} tanesinde`} yanlış bir cevap 2,5 saniyeden kısa sürede verilmiş; bu sorularda diziye bakmadan cevap verilmiş olabilir.`,
+    );
+  }
+  if (letterSeriesSameAnswer(hs)) {
+    notes.push('Harf dizileri testinde cevapların yarısında ya da daha çoğunda aynı harf seçilmiş; sorulara bakmadan cevap verilmiş olabilir.');
+  }
+  return notes;
+}
+
+/** Harf dizilerinde soruların yarısından çoğunda "Bilmiyorum". */
+export const letterSeriesMostlySkipped = (hs: LetterSeriesResult) => hs.skipped > hs.n / 2;
+/** Harf dizilerinde zor sorularda çok hızlı verilen yanlış cevaplar: 3. düzey ve üstünde cevap verilen soruların en az dörtte biri (en az 2). */
+export const letterSeriesRapid = (hs: LetterSeriesResult) => hs.rapidOf > 0 && hs.rapid >= Math.max(2, Math.ceil(hs.rapidOf / 4));
+/** Harf dizilerinde hep aynı harfi seçme: soruların en az yarısında aynı harf (en az 6 cevapta). */
+export const letterSeriesSameAnswer = (hs: LetterSeriesResult) => hs.sameAnswer >= Math.max(6, Math.ceil(hs.n / 2));
 
 /** Soruların yarısından çoğunda "Bilmiyorum". */
 export const numberSeriesMostlySkipped = (ns: NumberSeriesResult) => ns.skipped > ns.n / 2;

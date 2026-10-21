@@ -283,7 +283,8 @@ export type TaskKind =
   | 'complex_span'
   | 'perspective'
   | 'hidden_figures'
-  | 'pattern_memory';
+  | 'pattern_memory'
+  | 'letter_series';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -650,6 +651,54 @@ export interface NumberSeriesTask extends TaskBase {
   rapidMs: number;
   /** Cevabın en çok kaç basamaklı olabileceği (tuş takımı bundan uzun sayı yazdırmaz). */
   maxDigits: number;
+}
+
+/** Türk alfabesinin 29 büyük harfi, alfabe sırasıyla (harf dizileri ve tuş takımı). */
+export const TURKISH_ALPHABET = ['A', 'B', 'C', 'Ç', 'D', 'E', 'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'Y', 'Z'] as const;
+
+/**
+ * Harf dizileri: Türk alfabesiyle yazılmış, bir kurala göre ilerleyen harf dizisinin eksik harfini (çoğunlukla sonuncusunu,
+ * bazen ortadakini) bulmak (Thurstone'un harf dizileri; Simon ve Kotovsky, 1963'ün düzeni). Cevap ekrandaki harf tuş
+ * takımıyla (alfabe sırasıyla dizilmiş 29 harf) yazılır; "Bilmiyorum" da denebilir (yanlış sayılır). Bütün diziler
+ * Ölçekhane'nindir (content/instruments/harf-dizileri.ts).
+ *
+ * Kural türleri: sabit adım (her adımda alfabede aynı sayıda harf ileri ya da geri), tekrar eden harfler (bir harfin ya da
+ * harf çiftinin düzenli aralıklarla yinelenmesi), iç içe diziler (sırayla gelen iki ayrı dizi), harf grupları (iki, üç ya
+ * da dört harflik grupların birbirine göre değişmesi), değişen adım (adımların her seferinde büyümesi).
+ */
+export type LetterSeriesRule = 'next' | 'repeat' | 'interleaved' | 'group' | 'growing';
+
+export interface LetterSeriesItem {
+  key: string;
+  /** Zorluk düzeyi (1–5): kuralın türüne, grup uzunluğuna ve adımın büyüklüğüne göre. */
+  level: 1 | 2 | 3 | 4 | 5;
+  rule: LetterSeriesRule;
+  /** Dizinin harfleri (büyük harf); eksik olan (bulunacak) harfin yerinde `null` vardır (tam bir tane). */
+  terms: (string | null)[];
+}
+
+export interface LetterSeriesPracticeItem extends LetterSeriesItem {
+  /** Eksik harf. Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: string;
+  /** Cevaptan sonra gösterilen açıklama. */
+  explain: string;
+}
+
+export interface LetterSeriesTask extends TaskBase {
+  kind: 'letter_series';
+  practice: LetterSeriesPracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: LetterSeriesItem[];
+  /** Cevap anahtarı: items[i] sorusunun eksik harfi. Tarayıcıya giden test bilgisinde boş gönderilir (testler/[slug]/coz). */
+  answers: string[];
+  /**
+   * Her sorunun "basit kural tuzakları": dizinin yalnızca bir bölümüne uyan daha basit bir kuralla bulunan yanlış harfler
+   * (ör. son harfin alfabedeki sıradakini yazmak, adımlar büyürken son adımı sürdürmek). Tarayıcıya boş gönderilir.
+   */
+  traps: string[][];
+  levels: { level: number; name: string; plain: string }[];
+  /** Düzeyi 3 ve üstündeki sorularda bu süreden (ms) kısa yanlış cevaplar "çok hızlı" sayılır: diziye bakmadan yazılmış olabilir. */
+  rapidMs: number;
 }
 
 /**
@@ -1126,7 +1175,8 @@ export type CognitiveTask =
   | ComplexSpanTask
   | PerspectiveTask
   | HiddenFiguresTask
-  | PatternMemoryTask;
+  | PatternMemoryTask
+  | LetterSeriesTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
