@@ -14,6 +14,7 @@ import { harfIsaretleme } from './harf-isaretleme';
 import { hizliKisilikTesti } from './hizli-kisilik-testi';
 import { calismaDegerleri } from './calisma-degerleri';
 import { hobiIlgileri } from './hobi-ilgileri';
+import { heyecanArayisi } from './heyecan-arayisi';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
 import { kisiligin10Yonu } from './kisiligin-10-yonu';
 import { matematik } from './matematik';
@@ -90,6 +91,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   ogrenmeVeBasari,
   dusunmeyiSevme,
   dusunmeVeCalismaTarzi,
+  heyecanArayisi,
   cocukKisilik,
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,

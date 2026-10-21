@@ -206,6 +206,13 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); assert list(r) == ["adult"] and r["adult"]["gradeLabel"] == "Yetişkin" and r["adult"]["roadmap"]["approach"] is None'; then
             sorun="$sorun dusunme-calisma-yetiskin"
           fi
+          # Heyecan Arayışı: 29 madde (dan 9, deprem maddesi dan03 yok; imp 10; cal 10), üç ölçek, ölçüm payı yok; ilk madde
+          # "Birlikte bakınca"; yol haritasında üç sütun, ortamlar var, 2. hafta "Plan ve anlık kararlar".
+          HEY_GOVDE=$(python3 -c 'import json; n={"dan": 10, "imp": 10, "cal": 10}; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"{k}{i:02d}": {"value": (j + i) % 5 + 1, "rtMs": 2500} for j, k in enumerate(n) for i in range(1, n[k] + 1) if f"{k}{i:02d}" != "dan03"}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$HEY_GOVDE" "https://$ALAN/api/rapor/heyecan-arayisi" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); rows=r["parent"]["chart"]["rows"]; assert len(rows) == 3 and all(x["ciLow"] is None for x in rows) and r["student"]["items"][0]["title"] == "Birlikte bakınca" and len(r["student"]["items"]) == 4; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and m["settings"] is not None and len(m["approach"]["items"]) == 3 and m["weeks"][1]["title"] == "Plan ve anlık kararlar" and not m["preview"]'; then
+            sorun="$sorun heyecan-raporu"
+          fi
           # Kişilerarası Tarz: 32 madde, sekiz tarz çember grafiğinde; yol haritası.
           TARZ_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"ipc{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 33)}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TARZ_GOVDE" "https://$ALAN/api/rapor/kisilerarasi-tarz" |

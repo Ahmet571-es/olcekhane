@@ -448,7 +448,23 @@ Düşünmeyi Sevme.
    ekranında harita ve cevap çemberi (dokunma, sürükleme, ← → tuşları). İki tur bağımsız inceleme (bilgi doğrulama; kod,
    geometri ve rapor) ve ikinci tur denetim düzeltildi; telefonda dokunarak ve sürükleyerek (öğrenci), masaüstünde
    klavyeyle (yetişkin) çözüldü, PDF'ler açıldı. Türkiye'de bu testin uyarlaması bulunamadı.
-10. Heyecan Arayışı (IPIP, Hoyle benzeri üç ölçek; rapor riskli davranışı özendirmez).
+10. **Heyecan Arayışı: yayında (2026-10-21, active; 9. sınıftan yetişkine).** IPIP'in Hoyle ve ark.'na (2002) atıfla
+   verdiği üç heyecan arayışı ölçeği: Tehlikeli heyecanlara ilgi (Dangerous), Anlık heyecan arayışı (Impulsive), Göze alma
+   ve keşif (Calculated; maddeleri plan değil göze alma ve keşif sorduğu için bu ad). 30 maddeden 29'u: deprem/hortum
+   maddesi Türkiye'deki deprem acıları düşünülerek çıkarıldı (dokuz maddeyle beklenen α ≈ .86); "hang gliding" yerine
+   yamaç paraşütü. 14 madde sitedeki çevirilerle aynı (dokuzu Altı Boyutlu'da), 15'i iki taslaktan. **ESCS açık verisine
+   (Harvard Dataverse) bu oturumda ağ izni olmadığı için ulaşılamadı:** sdRef yok, raporda ölçüm payı yok (veriye
+   ulaşılınca eklenebilir). Toplam puan ve karşıt çift uyarısı yok (anlık ölçeğin 10 maddesi aynı yönde; bilim kartında).
+   Rapor: "Birlikte bakınca" girişi araştırma özeti (tanım, yaşla değişim, dürtüsellikten farkı, olumlu riskler, arkadaş
+   etkisi; yetişkine arkadaş etkisi gençlerle sınırlı anlatılır), altı birleşim kuralı; düşük ve orta metinler "risk"
+   demez (iki ölçekte risk maddesi var); yüksek tehlike ilgisi yaş sınırı ve eğitmen gözetimiyle anlatılır. Yol haritası 3
+   sütun, ortamlar var, 2. hafta "Plan ve anlık kararlar"; tehlikeli etkinlik adı geçmez, keşif önerileri herkese açık
+   güvenli yerlerle sınırlı (test denetler). Kaynaklar: Zuckerman (1994), Steinberg ve ark. (2008, 2018), Maples-Keller ve
+   ark. (2016), Woodman ve ark. (2013), Duell ve Steinberg (2020), Gardner ve Steinberg (2005); Türkçe uyarlamalar Çelik
+   (2015, BSSS-4) ve Yıldırım ve ark. (2021). İki tur bağımsız inceleme (bilgi ve kaynak; metin, çelişki ve güvenlik) ve
+   ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
+   Not: `src/content/instruments/gorsel-algi-hizi.ts` (2026-10-13, başka bir sohbetten; yalnızca tanım dosyası) kayıtlı
+   değil, sitede yok; site sahibi isterse tamamlanır.
 11. Gizli Şekiller (Witkin düzeni; özgün çizimler).
 12. İyimserlik (IPIP, 10 madde; maddelerin bir kısmı öz-saygı ve ruh hâli de sorar, raporda dikkate alınır).
 13. Desen Hatırlama (görsel bellek; Della Sala düzeni; özgün desenler).
@@ -669,6 +685,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Üç Boyutlu Zihinde Döndürme | uc-boyutlu-zihinde-dondurme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Çalışma Belleği: Hesapla ve Hatırla | hesapla-ve-hatirla | Yayında (pilot; 5. sınıftan yetişkine) |
 | Bakış Açısı Alma | bakis-acisi-alma | Yayında (pilot; 7. sınıftan yetişkine) |
+| Heyecan Arayışı | heyecan-arayisi | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -781,6 +798,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-21 (31): Heyecan Arayışı yayında (9. sınıftan yetişkine), 2. dalganın 10. testi: IPIP'in üç heyecan arayışı
+  ölçeği, 29 madde (deprem maddesi çıkarıldı), yaklaşık 5 dakika; rapor araştırmaların kısa özetini ve üç yönün birlikte
+  ne anlatabileceğini verir, riskli davranışı özendirmez; öğrenci, veli ve yetişkin raporu, 3 sütunlu 3B yol haritası;
+  iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Ölçüm payı yok
+  (açık veriye bu oturumdan ulaşılamadı).
 - 2026-10-16 (30): Bakış Açısı Alma yayında (7. sınıftan yetişkine), 2. dalganın 9. testi: yedi nesneli özgün bir
   haritada kendini bir nesnenin yanında hayal edip üçüncü nesnenin yönünü çemberde okla gösterme; 12 soru, üç alıştırma;
   açılar bağımsız hesapla doğrulandı; ortalama açı hatası, küçük ve büyük dönüşler, hata türleri (haritaya yukarıdan
@@ -822,8 +844,3 @@ En yeni üstte; en çok 10 madde tutulur.
   boyutun iki yönü ayrışınca bunu anlatan bölüm ve boyut kartı; öğrenci, veli ve yetişkin raporu, 10 sütunlu 3B yol
   haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. 2. dalga
   planı (13 test) yukarıda.
-- 2026-10-09 (21): Düşünerek Karar Verme yayında (5. sınıftan yetişkine), Akıl Yürütme dalgası tamamlandı: 24 özgün
-  kısa soru; tuzaklı sorularda ilk akla gelen yanlış cevap öteki yanlışlardan ayrılır ve tuzaksız eş sorularla
-  karşılaştırılır; sayısal sorular bağımsızca doğrulandı; öğrenci, veli ve yetişkin raporu, 3B grafikli yol haritası;
-  telefonda dokunarak ve masaüstünde klavyeyle (yetişkin olarak) çözüldü, rapor ve PDF açıldı; bağımsız inceleme bulguları
-  (iki tur) düzeltildi.

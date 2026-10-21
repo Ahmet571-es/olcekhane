@@ -9,6 +9,7 @@ import { dusunmeVeCalismaTarziRoadmap } from './dusunme-ve-calisma-tarzi';
 import { TASK_ROADMAPS } from './gorevler';
 import { calismaDegerleriRoadmap } from './calisma-degerleri';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
+import { heyecanArayisiRoadmap } from './heyecan-arayisi';
 import { hizliKisilikTestiRoadmap } from './hizli-kisilik-testi';
 import { kisilerarasiTarzRoadmap } from './kisilerarasi-tarz';
 import { kisiligin10YonuRoadmap } from './kisiligin-10-yonu';
@@ -42,6 +43,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariRoadmap,
   'dusunmeyi-sevme-olcegi': dusunmeyiSevmeRoadmap,
   'dusunme-ve-calisma-tarzi': dusunmeVeCalismaTarziRoadmap,
+  'heyecan-arayisi': heyecanArayisiRoadmap,
   'cocuk-kisilik-profili': cocukKisilikRoadmap,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuRoadmap,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiRoadmap,

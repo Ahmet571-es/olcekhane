@@ -8,6 +8,7 @@ import { dusunmeyiSevmeReport } from './dusunmeyi-sevme';
 import { dusunmeVeCalismaTarziReport } from './dusunme-ve-calisma-tarzi';
 import { calismaDegerleriReport } from './calisma-degerleri';
 import { hobiIlgileriReport } from './hobi-ilgileri';
+import { heyecanArayisiReport } from './heyecan-arayisi';
 import { hizliKisilikTestiReport } from './hizli-kisilik-testi';
 import { kisilerarasiTarzReport } from './kisilerarasi-tarz';
 import { kisiligin10YonuReport } from './kisiligin-10-yonu';
@@ -39,6 +40,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariReport,
   'dusunmeyi-sevme-olcegi': dusunmeyiSevmeReport,
   'dusunme-ve-calisma-tarzi': dusunmeVeCalismaTarziReport,
+  'heyecan-arayisi': heyecanArayisiReport,
   'cocuk-kisilik-profili': cocukKisilikReport,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuReport,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiReport,
