@@ -38,6 +38,7 @@ import { sayisalAkilYurutme } from './sayisal-akil-yurutme';
 import { kupAcinimi } from './kup-acinimi';
 import { ucBoyutluZihindeDondurme } from './uc-boyutlu-zihinde-dondurme';
 import { bakisAcisiAlma } from './bakis-acisi-alma';
+import { gizliSekiller } from './gizli-sekiller';
 import { dusunerekKararVerme } from './dusunerek-karar-verme';
 import { planlamaKuleGorevi } from './planlama-kule-gorevi';
 import { kelimeBilgisi } from './kelime-bilgisi';
@@ -79,6 +80,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   kupAcinimi,
   ucBoyutluZihindeDondurme,
   bakisAcisiAlma,
+  gizliSekiller,
   dusunerekKararVerme,
   planlamaKuleGorevi,
   kelimeBilgisi,

@@ -1,5 +1,6 @@
 import type { Cell, CubeFace, CubeLure, CubeView } from './cube';
 import type { Fold, Pt } from './folding';
+import type { HSeg, HiddenLure } from './hidden';
 /**
  * Test tanımları için ortak türler.
  *
@@ -267,7 +268,8 @@ export type TaskKind =
   | 'tower'
   | 'mental_rotation_3d'
   | 'complex_span'
-  | 'perspective';
+  | 'perspective'
+  | 'hidden_figures';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -1108,7 +1110,8 @@ export type CognitiveTask =
   | TowerTask
   | MentalRotation3dTask
   | ComplexSpanTask
-  | PerspectiveTask;
+  | PerspectiveTask
+  | HiddenFiguresTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
@@ -1179,6 +1182,43 @@ export interface PerspectiveTask extends TaskBase {
   practice: PerspectiveItem[];
   /** Asıl sorular, gösterilme sırasıyla. */
   items: PerspectiveItem[];
+}
+
+/**
+ * Gizli şekiller (saklı şekil, Gottschaldt düzeni): üstte basit bir şekil, altında dört karmaşık çizim; şeklin aynı
+ * büyüklükte ve aynı yönde saklandığı tek çizim seçilir (content/instruments/gizli-sekiller.ts, geometri
+ * lib/instruments/hidden.ts). Yanlış seçeneklerde şeklin döndürülmüş ya da ayna görüntüsü olan biçimi (`turned`) ya da
+ * bir köşesi farklı olan benzeri (`changed`) saklıdır.
+ */
+export interface HiddenItem {
+  key: string;
+  level: 1 | 2 | 3 | 4;
+  /** Aranan şekil (sol üst köşesi 0, 0). */
+  target: HSeg[];
+  /** Dört karmaşık çizim; ızgara 0–6. */
+  options: HSeg[][];
+}
+
+export interface HiddenPracticeItem extends HiddenItem {
+  /** Doğru seçeneğin sırası (1–4). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+  /** Geri bildirimde her seçenekte vurgulanan şekil: doğru seçenekte aranan şekil, ötekilerde onun benzeri. */
+  marks: HSeg[][];
+}
+
+export interface HiddenFiguresTask extends TaskBase {
+  kind: 'hidden_figures';
+  /** Izgaranın genişliği ve yüksekliği (birim). */
+  grid: number;
+  practice: HiddenPracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: HiddenItem[];
+  /** Cevap anahtarı (1–4). Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /** Her seçeneğin yanılgı türü (doğru seçenekte `null`). Tarayıcıya boş gönderilir. */
+  optionLures: (HiddenLure | null)[][];
+  levels: { level: number; name: string; plain: string }[];
 }
 
 export interface TaskInstrument extends InstrumentBase {

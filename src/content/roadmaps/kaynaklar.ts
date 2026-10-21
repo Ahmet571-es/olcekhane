@@ -115,6 +115,22 @@ export const KAYNAK = {
     text: 'Evans, J. St. B. T., Barston, J. L. ve Pollard, P. (1983). On the conflict between logic and belief in syllogistic reasoning. Memory & Cognition, 11(3), 295–306.',
     url: 'https://doi.org/10.3758/BF03196976',
   },
+  deWit2017: {
+    text: 'de-Wit, L., Huygelier, H., Van der Hallen, R., Chamberlain, R. ve Wagemans, J. (2017). Developing the Leuven Embedded Figures Test (L-EFT): Testing the stimulus features that influence embedding. PeerJ, 5, e2862.',
+    url: 'https://doi.org/10.7717/peerj.2862',
+  },
+  hock1974: {
+    text: 'Hock, H. S., Gordon, G. P. ve Marcus, N. A. (1974). Individual differences in the detection of embedded figures. Perception & Psychophysics, 15(1), 47–52.',
+    url: 'https://doi.org/10.3758/BF03205826',
+  },
+  milne2009: {
+    text: 'Milne, E. ve Szczerbinski, M. (2009). Global and local perceptual style, field-independence, and central coherence: An attempt at concept validation. Advances in Cognitive Psychology, 5, 1–26.',
+    url: 'https://doi.org/10.2478/v10053-008-0062-8',
+  },
+  xie2025: {
+    text: 'Xie, Q., Yang, K., Ji, R., Qian, Y., Tong, L., Chao, C. N. G. ve Sin, K. F. (2025). Cognitive style and students’ academic achievement: A meta-analysis. Frontiers in Education, 10, 1634732.',
+    url: 'https://doi.org/10.3389/feduc.2025.1634732',
+  },
   uttal: {
     text: 'Uttal, D. H., Meadow, N. G., Tipton, E., Hand, L. L., Alden, A. R., Warren, C. ve Newcombe, N. S. (2013). The malleability of spatial skills: A meta-analysis of training studies. Psychological Bulletin, 139(2), 352–402.',
     url: 'https://doi.org/10.1037/a0028446',

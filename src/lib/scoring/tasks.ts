@@ -37,8 +37,10 @@ import type {
   CognitiveReflectionTask,
   TowerTask,
   PerspectiveTask,
+  HiddenFiguresTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
+import type { HiddenLure } from '@/lib/instruments/hidden';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
 import { NUMERIC_EQUAL, NUMERIC_KINDS, NUMERIC_NONPROP, NUMERIC_PROP, numericRapidMs } from '@/lib/instruments/numeric';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
@@ -2490,6 +2492,146 @@ export function cubeQualityNotes(r: CubeResult): string[] {
   return notes;
 }
 
+/* ---------- Gizli şekiller ---------- */
+
+export interface HiddenTrialInput {
+  index: number;
+  /** Seçilen seçeneğin sırası (1–4). */
+  response: number;
+  rtMs: number | null;
+}
+
+export interface HiddenResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  reached: number;
+  medianRt: number | null;
+  /** Doğru cevaplanan sorularda tipik süre (şeklin bulunma süresi). */
+  medianRtCorrect: number | null;
+  rtEasy: number | null;
+  rtHard: number | null;
+  /** 3. düzey ve üstündeki sorulardan `HIDDEN_RAPID_MS`'den kısa sürede yanlış cevaplananlar ve bu soruların sayısı. */
+  rapid: number;
+  rapidOf: number;
+  wrong: number;
+  /** Yanlışlarda seçilen seçeneğin yanılgı türü ve her türün seçeneklerde kaç kez bulunduğu. */
+  luresByKind: Record<HiddenLure, number>;
+  offeredByKind: Record<HiddenLure, number>;
+  /** Her yanılgı türü için, yanlışlarda rastgele seçilmiş olsaydı en az bu kadar sık görülme olasılığı (Poisson-binom). */
+  lureP: Record<HiddenLure, number>;
+  samePosition: number;
+}
+
+export const HIDDEN_LURES_ORDER: HiddenLure[] = ['turned', 'changed'];
+/** Dört karmaşık çizimde şekli aramak için bundan kısa bir süre yetmez (3. düzey ve üstünde şekil iyice gizlenmiştir). */
+export const HIDDEN_RAPID_MS = 3000;
+/** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
+export const HIDDEN_CHANCE_MAX = 8;
+
+export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]): { result: HiddenResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.optionLures.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, HiddenTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (!Number.isInteger(t.response) || t.response < 1 || t.response > task.items[t.index].options.length) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const correct = t.response === task.answers[i];
+    return { item, correct, lure: correct ? null : task.optionLures[i][t.response - 1], response: t.response, rt: t.rtMs };
+  });
+  const correct = scored.filter((x) => x.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((x) => x.item.level === level);
+      return { level, n: here.length, correct: here.filter((x) => x.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const luresByKind = Object.fromEntries(HIDDEN_LURES_ORDER.map((k) => [k, scored.filter((x) => x.lure === k).length])) as Record<HiddenLure, number>;
+  const offeredByKind = Object.fromEntries(HIDDEN_LURES_ORDER.map((k) => [k, task.optionLures.flat().filter((x) => x === k).length])) as Record<HiddenLure, number>;
+  // Yanlış cevaplanan her soruda yanlış seçeneklerden biri rastgele seçilseydi: türün o sorudaki payı (Poisson-binom).
+  const wrongIdx = scored.flatMap((x, i) => (x.correct ? [] : [i]));
+  const lureP = Object.fromEntries(
+    HIDDEN_LURES_ORDER.map((k) => {
+      const ps = wrongIdx.map((i) => {
+        const wrongs = task.optionLures[i].filter((x) => x !== null);
+        return wrongs.filter((x) => x === k).length / wrongs.length;
+      });
+      let dist = [1];
+      for (const q of ps) dist = [...dist, 0].map((v, j) => v * (1 - q) + (j > 0 ? dist[j - 1] * q : 0));
+      return [k, round(Math.min(1, dist.slice(luresByKind[k]).reduce((a, b) => a + b, 0)), 4)];
+    }),
+  ) as Record<HiddenLure, number>;
+  const rts = (xs: typeof scored) => xs.flatMap((x) => (x.rt === null ? [] : [x.rt]));
+  const hardOnes = scored.filter((x) => x.item.level >= 3);
+  const positions = new Map<number, number>();
+  for (const x of scored) positions.set(x.response, (positions.get(x.response) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      reached,
+      medianRt: medianOrNull(rts(scored)),
+      medianRtCorrect: medianOrNull(rts(scored.filter((x) => x.correct))),
+      rtEasy: medianOrNull(rts(scored.filter((x) => x.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((x) => x.item.level >= 3))),
+      rapid: hardOnes.filter((x) => !x.correct && x.rt !== null && x.rt < HIDDEN_RAPID_MS).length,
+      rapidOf: hardOnes.length,
+      wrong: n - correct,
+      luresByKind,
+      offeredByKind,
+      lureP,
+      samePosition: Math.max(0, ...positions.values()),
+    },
+  };
+}
+
+/** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
+export const hiddenRapid = (r: HiddenResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const HIDDEN_SAME_MAX_CORRECT = 12;
+/** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada ve doğru cevaplar çok değil. */
+export const hiddenSamePosition = (r: HiddenResult) => r.samePosition >= Math.ceil(r.n / 2) && r.correct <= HIDDEN_SAME_MAX_CORRECT;
+/** Bir yanılgı türü yanlışlarda en az üç kez ve rastgele seçimde beklenenden belirgin sık (olasılık en çok %5) görülünce anlatılır. */
+export const HIDDEN_LURE_NOTE = 3;
+export const HIDDEN_LURE_P = 0.05;
+export const hiddenLureStandsOut = (r: HiddenResult, k: HiddenLure) => r.luresByKind[k] >= HIDDEN_LURE_NOTE && r.lureP[k] <= HIDDEN_LURE_P;
+
+/** Gizli şekillerde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, hiddenBlocks aynı eşikleri kullanır). */
+export function hiddenQualityNotes(r: HiddenResult): string[] {
+  const notes: string[] = [];
+  if (r.correct <= HIDDEN_CHANCE_MAX) {
+    notes.push(
+      'Gizli şekiller testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da çizimlere bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (hiddenRapid(r)) {
+    notes.push(
+      `Gizli şekiller testinde 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} yanlış bir cevap 3 saniyeden kısa sürede verilmiş; bu sorularda çizimlere bakılmadan seçilmiş olabilir.`,
+    );
+  }
+  if (hiddenSamePosition(r)) {
+    notes.push('Gizli şekiller testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
+  }
+  return notes;
+}
+
 /* ---------- Üç boyutlu zihinde döndürme ---------- */
 
 export interface Rotation3dTrialInput {
@@ -3377,6 +3519,7 @@ export function taskQualityNotes(parts: {
   logic?: LogicResult;
   numeric?: NumericResult;
   cube?: CubeResult;
+  hidden?: HiddenResult;
   reflection?: ReflectionResult;
   tower?: TowerResult;
   rotation3d?: Rotation3dResult;
@@ -3568,6 +3711,8 @@ export function taskQualityNotes(parts: {
   if (sy) notes.push(...numericQualityNotes(sy));
   const kp = parts.cube;
   if (kp) notes.push(...cubeQualityNotes(kp));
+  const gs = parts.hidden;
+  if (gs) notes.push(...hiddenQualityNotes(gs));
   const dk = parts.reflection;
   if (dk) notes.push(...reflectionQualityNotes(dk));
   const kg = parts.tower;

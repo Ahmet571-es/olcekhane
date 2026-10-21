@@ -44,8 +44,10 @@ import type {
   ReflectionRole,
   TowerTask,
   PerspectiveTask,
+  HiddenFiguresTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
+import type { HiddenLure } from '@/lib/instruments/hidden';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
 import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
@@ -505,6 +507,36 @@ export function cubeBody(
 export function cubeRank(q: { level: number; i: number }): number {
   const task = def<TaskInstrument>('kup-acinimi').tasks[0] as CubeNetTask;
   return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+export type HiddenCell = { level: number; answer: number; lures: (HiddenLure | null)[]; i: number };
+
+/** Gizli şekillerde seçilen yanılgı türündeki ilk seçenek (yoksa doğru olmayan ilk seçenek). */
+export const hiddenLureOption = (q: HiddenCell, kind?: HiddenLure) => {
+  const at = kind ? q.lures.findIndex((l) => l === kind) : -1;
+  return at >= 0 ? at + 1 : q.lures.findIndex((l) => l !== null) + 1;
+};
+
+/** Gizli şekillerde sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function hiddenRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('gizli-sekiller').tasks[0] as HiddenFiguresTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Gizli şekiller: varsayılan olarak 1–3. düzeyde doğru, 4. düzeyde ilk iki soru doğru; zor sorulara daha çok zaman. */
+export function hiddenBody(
+  pick: (q: HiddenCell) => { response: number; rtMs: number | null } = (q) => ({
+    response: q.level <= 3 || hiddenRank(q) < 2 ? q.answer : hiddenLureOption(q),
+    rtMs: 6000 + 4000 * q.level,
+  }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('gizli-sekiller').tasks[0] as HiddenFiguresTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, answer: task.answers[index], lures: task.optionLures[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }
 
 export type Rotation3dCell = { part: 1 | 2; answer: [number, number]; mirrors: [number, number]; i: number };

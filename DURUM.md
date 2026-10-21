@@ -465,7 +465,30 @@ Düşünmeyi Sevme.
    ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
    Not: `src/content/instruments/gorsel-algi-hizi.ts` (2026-10-13, başka bir sohbetten; yalnızca tanım dosyası) kayıtlı
    değil, sitede yok; site sahibi isterse tamamlanır.
-11. Gizli Şekiller (Witkin düzeni; özgün çizimler).
+11. **Gizli Şekiller: yayında (2026-10-21, pilot; 3. sınıftan yetişkine).** Gottschaldt'ın (1926) ve Witkin'in (1950)
+   gömülü şekiller düzeni; ticari testlerin (EFT, GEFT, CEFT, ETS) hiçbir çizimi kullanılmadı, 20 soru ve 2 alıştırma
+   özgün. Her soruda üstte basit bir şekil, altta dört çizim; şekil yalnızca birinde aynı büyüklük ve yönde saklı.
+   Yanlış seçeneklerde döndürülmüş/ters çevrilmiş biçim (30) ya da bir köşesi farklı benzer (30); cevaplar A–D beşer,
+   art arda aynı harf yok. Düzeyler (4×5) şeklin kenarlarının çizimdeki çizgilerle aynı doğrultuda devam etmesine göre
+   (de-Wit ve ark., 2017'nin en önemli etkenlerden biri dediği), değen çizgilere ve çizgi yoğunluğuna göre zorlaşır.
+   Çizimler üreticiyle (`/tmp`, depo dışında) seçildi; testte kütüphaneyi kullanmayan bağımsız bir geometrik
+   denetleyiciyle (orta nokta ve doğrultu) her sorunun tek cevabı, tuzak türleri (köşesi farklı seçenekte aynı boyda bir
+   köşesi kaydırılmış benzer var; döndürülmüş seçenekte hiçbiri yok), iki kat büyütme ve tek kenar eksik benzerlerin
+   yokluğu, hiçbir hedefin başka bir hedefin (ve yönerge örneğinin) bir köşesi farklı benzeri olmaması, asıl soruların
+   hedeflerinin birbirinden, alıştırmalardan ve örnekten her yönde en az 4 birim parça farklı olması, yanlış seçeneklerde
+   sonraki soruların hedeflerinin bulunmaması, 1. düzeyde tek adım eksik benzer olmaması, düzeylerin giderek zorlaşması
+   ve kısa yol kuralları (en çok 8 doğru) denetlenir; soru izi `SORU_IZI`. İncelemelerden sonra gs01, gs02, gs05, gs11 ve
+   gs19 yeniden üretildi (gs17/gs19 ve gs02/gs13 hedefleri bir köşe farklıydı, gs01/gs05 ve gsp2/gs11 çok benzerdi; 1.
+   düzeyde köşesi farklı benzerler çok yakındı); cevap harfleri ve tuzak türleri aynı kaldı. Puanlama küp açınımı gibi
+   (düzey ölçütü %60, şans sınırı 8, 3. düzey ve üstünde 3 sn'den kısa yanlışlar, hep aynı harf); yanlışlarda seçilen
+   tuzak türü yalnızca en az 3 yanlışta ve şanstan anlamlı biçimde fazlaysa öne çıkar. Rapor: doğru cevaplar, ulaşılan
+   düzey, yanlışlarda seçilen şekiller, çalışma biçimi; düzey grafiği; bütün durum birleşimleri testte. Yol haritası (3B
+   yok): parçadan başla, yönü ve köşeleri denetle, uzun çizgilerin içine bak; haftalar Gizli nesneler / Kendi gizli
+   şeklini çiz / Parçalardan bütüne. Türkiye: GEFT'in Türkçe biçimiyle Çakan (2003a, 2003b); norm yok. İki tur bağımsız
+   inceleme (bilgi ve kaynak; sorular, rapor ve ekran) ve ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci) ve
+   masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı. Ekran: 1024 px altında seçenekler iki sütun, üstünde dört
+   sütun (aranan şekil ve çizimler aynı ölçekte; 1366×768'de "Cevabı ver" ekranda); odak seçeneklere yalnızca klavyeyle
+   ilerleyende taşınır.
 12. İyimserlik (IPIP, 10 madde; maddelerin bir kısmı öz-saygı ve ruh hâli de sorar, raporda dikkate alınır).
 13. Desen Hatırlama (görsel bellek; Della Sala düzeni; özgün desenler).
 14. Harf Dizileri (Thurstone; Simon ve Kotovsky düzeni; özgün diziler, Türk alfabesi).
@@ -686,6 +709,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Çalışma Belleği: Hesapla ve Hatırla | hesapla-ve-hatirla | Yayında (pilot; 5. sınıftan yetişkine) |
 | Bakış Açısı Alma | bakis-acisi-alma | Yayında (pilot; 7. sınıftan yetişkine) |
 | Heyecan Arayışı | heyecan-arayisi | Yayında (active; 9. sınıftan yetişkine) |
+| Gizli Şekiller | gizli-sekiller | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -798,6 +822,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-21 (32): Gizli Şekiller yayında (3. sınıftan yetişkine), 2. dalganın 11. testi: karmaşık bir çizimin içine
+  saklanmış basit şekli dört çizimden birinde bulma; 20 özgün soru, dört düzey, iki alıştırma; her sorunun tek cevabı ve
+  düzeylerin giderek zorlaştığı bağımsız denetleyiciyle doğrulandı; yanlışlarda döndürülmüş ya da köşesi farklı benzerin
+  seçilmesi ayrıca anlatılır; öğrenci, veli ve yetişkin raporu, yol haritası; iki tur bağımsız incelemenin bulguları
+  düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-21 (31): Heyecan Arayışı yayında (9. sınıftan yetişkine), 2. dalganın 10. testi: IPIP'in üç heyecan arayışı
   ölçeği, 29 madde (deprem maddesi çıkarıldı), yaklaşık 5 dakika; rapor araştırmaların kısa özetini ve üç yönün birlikte
   ne anlatabileceğini verir, riskli davranışı özendirmez; öğrenci, veli ve yetişkin raporu, 3 sütunlu 3B yol haritası;
@@ -840,7 +869,3 @@ En yeni üstte; en çok 10 madde tutulur.
   (3–7 hamle), en az hamleler bütün dizilişler taranarak doğrulandı; en az hamlede çözülenler, problem uzadıkça sonuç,
   çözüm biçimi ve başlamadan önce düşünme ayrı yorumlanır; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası;
   iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-13 (22): Kişiliğin 10 Yönü yayında (9. sınıftan yetişkine): BFAS'ın 100 maddesi, beş boyut ve on yön; bir
-  boyutun iki yönü ayrışınca bunu anlatan bölüm ve boyut kartı; öğrenci, veli ve yetişkin raporu, 10 sütunlu 3B yol
-  haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. 2. dalga
-  planı (13 test) yukarıda.

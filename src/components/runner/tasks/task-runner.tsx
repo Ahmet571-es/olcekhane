@@ -23,6 +23,7 @@ import { VerbalReasoning } from './verbal-reasoning';
 import { LogicalReasoning } from './logical-reasoning';
 import { NumericalReasoning } from './numerical-reasoning';
 import { CubeNet } from './cube-net';
+import { HiddenFigures } from './hidden-figures';
 import { MentalRotation3d } from './mental-rotation-3d';
 import { CognitiveReflection } from './cognitive-reflection';
 import { ComplexSpan } from './complex-span';
@@ -163,7 +164,7 @@ export function TaskRunner(props: {
   return (
     // Üç boyutlu şekiller büyük ekranda daha geniş bir alanda çizilir (beş şekil yan yana karşılaştırılır); bakış açısı almada
     // harita ile cevap çemberi büyük ekranda yan yanadır.
-    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' || task.kind === 'perspective' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
+    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' || task.kind === 'perspective' || task.kind === 'hidden_figures' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
       <TaskSteps tasks={tasks} done={done} current={current} />
       <h1 className="sr-only">{task.name}</h1>
       {task.kind === 'digit_span' && <DigitSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
@@ -189,6 +190,7 @@ export function TaskRunner(props: {
       {task.kind === 'logical_reasoning' && <LogicalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'numerical_reasoning' && <NumericalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cube_net' && <CubeNet key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'hidden_figures' && <HiddenFigures key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'mental_rotation_3d' && <MentalRotation3d key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cognitive_reflection' && <CognitiveReflection key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'tower' && <Tower key={task.key} task={task} onDone={(t) => save(task.key, t)} />}

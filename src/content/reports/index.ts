@@ -65,6 +65,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'kup-acinimi': { version: 'kup-acinimi-rapor-1', bandLabels: {}, scales: {} },
   'uc-boyutlu-zihinde-dondurme': { version: 'uc-boyutlu-zihinde-dondurme-rapor-1', bandLabels: {}, scales: {} },
   'bakis-acisi-alma': { version: 'bakis-acisi-alma-rapor-1', bandLabels: {}, scales: {} },
+  'gizli-sekiller': { version: 'gizli-sekiller-rapor-1', bandLabels: {}, scales: {} },
   'dusunerek-karar-verme': { version: 'dusunerek-karar-verme-rapor-1', bandLabels: {}, scales: {} },
   'planlama-kule-gorevi': { version: 'planlama-kule-gorevi-rapor-1', bandLabels: {}, scales: {} },
   'kelime-bilgisi': { version: 'kelime-bilgisi-rapor-1', bandLabels: {}, scales: {} },

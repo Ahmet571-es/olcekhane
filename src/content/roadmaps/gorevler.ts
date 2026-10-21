@@ -1723,6 +1723,108 @@ const bakisFacts: InfoBox = {
   },
 };
 
+const MILNE_FACT =
+  'Yetişkinlerle yapılan bir araştırmada, bir parçayı bütünün içinden ayırma becerisiyle bütünü görme becerisi arasında anlamlı bir ilişki bulunmamıştır; parçayı ayırabilmek bütünü görememek anlamına gelmez.';
+const MILNE_FACT_ADULT =
+  'Bir araştırmada, bir parçayı bütünün içinden ayırma becerisiyle bütünü görme becerisi arasında anlamlı bir ilişki bulunmamıştır; parçayı ayırabilmek bütünü görememek anlamına gelmez.';
+const gizliBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; görsel algının yalnızca bir yönünü (karmaşık bir çizimde bir şekli bulmayı) gösterir.',
+    'Şekil bulma çocukluk boyunca gelişir; kenarları başka çizgilere karışmış şekillerde zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; görsel algının yalnızca bir yönünü (karmaşık bir çizimde bir şekli bulmayı) gösterir.',
+    MILNE_FACT,
+    'Bu tür testlerle okul başarısı arasında orta düzeyde bir ilişki bulunmuştur; bu bir ilişkidir, tek başına neden sonuç anlamına gelmez.',
+    'Şekil bulma çocukluk boyunca gelişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const gizliFacts: InfoBox = {
+  ...gizliBase,
+  items: {
+    ...gizliBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; görsel algının yalnızca bir yönünü (karmaşık bir çizimde bir şekli bulmayı) gösterir.',
+      MILNE_FACT_ADULT,
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const gizliSekiller: TaskRoadmapTemplate = {
+  version: 'gizli-sekiller-yol-haritasi-1',
+  what: {
+    student: 'karmaşık bir görüntünün içinde aradığın bir şekli ya da ayrıntıyı bulmayı nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun karmaşık bir görüntünün içinde aradığı bir şekli ya da ayrıntıyı bulmayı nasıl kolaylaştırabileceği',
+    summary: 'karmaşık bir görüntünün içinde bir şekli ya da ayrıntıyı bulmayı kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Saklı bir şekli bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun saklı bir şekli bulmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, karmaşık bir çizimin içine saklanmış basit bir şekli bulabilmeyi ölçer. Bu beceri; iç içe geçmiş geometrik şekilleri birbirinden ayırmak, bir haritada ya da grafikte aradığın bilgiyi bulmak, kalabalık bir tabloda bir sayıyı ya da bir resimde bir ayrıntıyı seçmek gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde aramanı düzenlemeye yardım edebilir.',
+    'Bu test, karmaşık bir çizimin içine saklanmış basit bir şekli bulabilmeyi ölçer. Bu beceri; iç içe geçmiş geometrik şekilleri birbirinden ayırmak, bir haritada ya da grafikte aranan bilgiyi bulmak, kalabalık bir tabloda bir sayıyı ya da bir resimde bir ayrıntıyı seçmek gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde aramasını düzenlemeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'parca', 'Ayırt edici bir parçayla başla', 'Yöntem', t(
+      'Şeklin en kolay ayırt edilen parçasını (ör. eğik bir kenarı ya da sivri bir köşesini) seç ve önce onu ara; bulunca şeklin öteki kenarlarının da orada olup olmadığına bak. Bir çalışmada şekli parçalarına ayırarak arayan kişilerin saklı şekilleri daha hızlı bulduğu görülmüştür.',
+      'Çocuğunuza şunu önerebilirsiniz: şeklin en kolay ayırt edilen parçasını (ör. eğik bir kenarı ya da sivri bir köşesini) seçsin ve önce onu arasın; bulunca şeklin öteki kenarlarının da orada olup olmadığına baksın. Bir çalışmada şekli parçalarına ayırarak arayan kişilerin saklı şekilleri daha hızlı bulduğu görülmüştür.',
+    )),
+    support(1, 'denetle', 'Yönünü ve köşelerini denetle', 'Alışkanlık', t(
+      'Şekle benzeyen bir yer bulunca hemen karar verme: şekil üstteki şekille aynı yöne mi bakıyor, her köşesi ve kenarı yerinde mi? Döndürülmüş, ters çevrilmiş ya da bir köşesi farklı bir şekil aynı şekil sayılmaz. Bu kısa denetim, benzerine aldanmayı önleyebilir.',
+      'Çocuğunuza, şekle benzeyen bir yer bulunca hemen karar vermek yerine şeklin üstteki şekille aynı yöne bakıp bakmadığını ve her köşesinin yerinde olup olmadığını denetlemesini önerin. Döndürülmüş, ters çevrilmiş ya da bir köşesi farklı bir şekil aynı şekil sayılmaz. Bu kısa denetim, benzerine aldanmayı önleyebilir.',
+    )),
+    support(2, 'uzun', 'Uzun çizgilerin içine bak', 'Bilgi', t(
+      'Bir şekli saklayan en önemli etkenlerden biri, kenarlarının çizimdeki başka çizgilerle aynı doğrultuda devam etmesidir; bir araştırmada bu tür devam eden kenarlar azaldıkça şekiller çok daha kolay bulunmuştur. Bu yüzden uzun bir çizginin yalnızca bir parçasının şeklin kenarı olabileceğini akılda tutmak işine yarayabilir.',
+      'Bir şekli saklayan en önemli etkenlerden biri, kenarlarının çizimdeki başka çizgilerle aynı doğrultuda devam etmesidir; bir araştırmada bu tür devam eden kenarlar azaldıkça şekiller çok daha kolay bulunmuştur. Çocuğunuza, uzun bir çizginin yalnızca bir parçasının şeklin kenarı olabileceğini hatırlatabilirsiniz.',
+    )),
+    support(3, 'oyun', 'Gözlem oyunları', 'Etkinlik', t(
+      'Gizli nesne bulmacaları, iki resim arasındaki farkları bulmak, tangram ve yapboz, görsel ayrıntılarla uğraşmayı keyifli bir etkinliğe dönüştürür. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç görsel ayrıntılarla uğraşmaktan keyif almaktır.',
+      'Gizli nesne bulmacaları, iki resim arasındaki farkları bulmak, tangram ve yapboz çocuğunuz için görsel ayrıntılarla uğraşmayı keyifli bir etkinliğe dönüştürür. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç görsel ayrıntılarla uğraşmaktan keyif almaktır.',
+    )),
+  ],
+  facts: gizliFacts,
+  approach: [
+    { title: 'Günlük hayatta birlikte arayın', text: 'Bir haritada, krokide ya da kalabalık bir resimde bir şeyi birlikte bulmaya çalışın; bulduğunda nasıl bulduğunu merak edin.' },
+    { title: 'Acele ettirmeyin', text: 'Kalabalık bir görüntüde uzun bakmasına izin verin; hızlı olmasından çok, dikkatle ve sabırla bakmasını övün.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Gizli nesneler',
+      text: t(
+        'Bu hafta bir gizli nesne bulmacası çöz ya da iki resim arasındaki farkları bul. Her birinde nasıl aradığını (önce neye baktığını) bir cümleyle yaz.',
+        'Bu hafta çocuğunuzla bir gizli nesne bulmacası çözün ya da iki resim arasındaki farkları bulun. Her birinde nasıl aradığını, önce neye baktığını anlatmasını isteyin.',
+      ),
+    },
+    {
+      title: 'Kendi gizli şeklini çiz',
+      text: t(
+        'Bu hafta kareli kâğıda basit bir şekil çiz, sonra onu kenarlarını uzatan ve içinden geçen başka çizgilerle sakla. Birine bulmasını söyle ve nasıl aradığını sor; sonra rolleri değiştirin.',
+        'Bu hafta çocuğunuzdan kareli kâğıda basit bir şekil çizip onu kenarlarını uzatan ve içinden geçen başka çizgilerle saklamasını isteyin. Siz bulmaya çalışın; sonra rolleri değiştirin.',
+      ),
+    },
+    {
+      title: 'Parçalardan bütüne',
+      text: t(
+        'Bu hafta kâğıttan kestiğin birkaç üçgen ve kareyle (ya da bir tangramla) basit bir resim yap; sonra bitmiş resme bakıp hangi parçanın nerede olduğunu göstermeye çalış.',
+        'Bu hafta çocuğunuzla kâğıttan kestiğiniz birkaç üçgen ve kareyle (ya da bir tangramla) basit bir resim yapın; sonra bitmiş resme bakıp hangi parçanın nerede olduğunu göstermesini isteyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (ayırt edici bir parçayla başlamak, yönü ve köşeleri denetlemek ya da uzun çizgilerin içine bakmak) saklı şekilleri bulmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun saklı şekilleri bulmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['kagit-katlama', 'sekil-akil-yurutme'],
+  nextPurpose: {
+    you: 'katlanan bir kâğıdı zihinde açmayı ve şekillerle akıl yürütmeyi de görmek',
+    parent: 'çocuğunuzun katlanan bir kâğıdı zihinde açmasını ve şekillerle akıl yürütmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.hock1974, KAYNAK.deWit2017, KAYNAK.milne2009, KAYNAK.xie2025, KAYNAK.uttal],
+};
+
 const bakisAcisiAlma: TaskRoadmapTemplate = {
   version: 'bakis-acisi-alma-yol-haritasi-1',
   what: {
@@ -2220,4 +2322,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'planlama-kule-gorevi': planlamaKuleGorevi,
   'hesapla-ve-hatirla': hesaplaVeHatirla,
   'bakis-acisi-alma': bakisAcisiAlma,
+  'gizli-sekiller': gizliSekiller,
 };
