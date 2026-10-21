@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-16
+Son güncelleme: 2026-10-22
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -550,7 +550,39 @@ Düşünmeyi Sevme.
    İnceleme notu: hd12 (3. düzey) ve hd18 (4. düzey) düzeylerine göre kolay görünebilir; düzey sırası pilot verisi
    geldikçe gözden geçirilir. Klavyede noktasız I için Shift gerekir (İngilizce klavyede "i" İ olur); cevap satırı ve
    ekran okuyucu "I (noktasız)" / "İ (noktalı)" der.
-   **2. dalganın sırası bu testle bitti;** sıradaki iş site sahibine sorulur.
+   **2. dalganın sırası bu testle bitti.**
+
+**Yeni kişilik ve zekâ testleri, 3. liste (2026-10-22):** 2. dalga bitince site sahibi "Bismillah ile devam edelim" dedi;
+sıradaki iş sorulduğunda tercih belirtmedi, Claude önerdiği 12 testlik listeyle sürdürdü. İlkeler 2. dalgayla aynı:
+kişilikte yalnızca IPIP (VIA ölçekleri kullanılmaz), zekâda özgün sorular, kişilik ve zekâ dönüşümlü, her mesajda bir test,
+iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi başka bir sıra isterse o uygulanır.
+1. **Empati: yayında (2026-10-22, active; 9. sınıftan yetişkine).** IPIP'in üç ölçeği: AB5C Understanding →
+   "Başkalarını düşünme" ("Anlayışlı olma" adı "çabuk anlayan, zeki" diye de okunabildiği için kullanılmadı), JPI-R Empathy →
+   "Duygusal duyarlılık", AB5C Warmth → "Sıcaklık ve destek". Kaynaktaki 31 maddeden iki ölçekte birden olan ikisi bir kez
+   sorulur (29 madde, ~5 dakika); 19 madde öteki testlerin çevirisiyle aynı, 10 madde iki taslakla (biri öbürü görülmeden)
+   çevrildi ("spiritually" → "aramda derin bir bağ"). HPI ve TCI empati ölçekleri (sinirlilik; ters madde yok), Sympathy
+   ölçekleri (görüş içeren maddeler) ve VIA kullanılmadı. Beş karşıt çift (biri iki ölçek arasında: zaman ayırırım /
+   ayırmam) evet deme eğilimini yakalar. Rapor: "Birlikte bakınca" girişi (iki yön, testin yönlerinin bunlarla birebir
+   örtüşmediği, gençlerde başkasının gözünden bakabilmenin artışı, yardım etmeyle ilişki, öz değerlendirmenin doğru anlama
+   becerisiyle çok zayıf ilişkisi, eğitimle gelişme) ve dokuz birleşim kuralı (bir yön yüksek öteki düşükken her zaman bir
+   kural; üçü yüksekken başarı, üçü düşükken eksiklik gibi anlatılmaz). Yol haritası: 3 sütun, ortamlar, 2. hafta "Dinle ve
+   anla" (yardım etmeden önce ne gerektiğini sormak, duyduğunu kendi cümleleriyle söyleyip doğru anlayıp anlamadığını
+   sormak), son hafta Kişiliğin 10 Yönü ve Duygusal Zekâ Bileşenleri. Bilim kartında: öz bildirim doğru anlamayı ölçmez
+   (Murphy ve Lilienfeld, 2019), örtüşme sayıları, sitedeki Bakış Açısı Alma testinden farkı, Türkçe uyarlamalar (Engeler
+   ve Yargıç, 2007; Topçu ve ark., 2010; Totan ve ark., 2012; bu testin maddeleri onların değil). Bütün 27 düzey birleşimi
+   öğrenci, veli ve yetişkin için testte. İki tur bağımsız inceleme (çeviri, metin ve mantık; kaynak ve bilgi denetimi) ve
+   ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
+2. Zihinden Hesaplama Hızı (zekâ; özgün sorular)
+3. Öz-yeterlik: Kendine Güven (kişilik; IPIP)
+4. Şekil Benzetmeleri (zekâ; özgün sorular)
+5. Öz-denetim (kişilik; IPIP)
+6. Harf-Sayı Sıralama (zekâ; özgün görev)
+7. Merak (kişilik; IPIP, VIA dışı ölçek)
+8. Simge Arama (zekâ; özgün görev)
+9. Liderlik (kişilik; IPIP, VIA dışı ölçek)
+10. Parça Birleştirme (zekâ; özgün sorular)
+11. Yaratıcılık Eğilimi (kişilik; IPIP)
+12. Kelime Bulma (zekâ; özgün sorular)
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -772,6 +804,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | İyimserlik Ölçeği | iyimserlik | Yayında (active; 9. sınıftan yetişkine) |
 | Desen Hatırlama | desen-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Harf Dizileri | harf-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
+| Empati | empati | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -884,6 +917,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (36): Empati yayında (9. sınıftan yetişkine), yeni 12 testlik listenin ilki: IPIP'in üç ölçeğiyle
+  başkalarını düşünme, duygusal duyarlılık, sıcaklık ve destek; 29 madde, ~5 dakika; rapor kişinin kendini nasıl gördüğünü
+  anlatır, başkalarını doğru anlama becerisini ölçmediğini söyler; öğrenci, veli ve yetişkin raporu, 3 sütunlu yol haritası
+  ("Dinle ve anla" haftası); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-21 (35): Harf Dizileri yayında (3. sınıftan yetişkine), 2. dalganın 14. ve son testi: Türk alfabesiyle yazılmış
   24 özgün harf dizisinde eksik harfi alfabe sırasıyla dizilmiş harf tuşlarından seçme; beş düzey, beş kural türü, iki
   alıştırma; her dizinin tek cevabı bağımsız çözücüyle doğrulandı; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol
@@ -928,8 +965,3 @@ En yeni üstte; en çok 10 madde tutulur.
   on özgün şekil, 20 soru, iki bölüm; ayna görüntüleri dik durur ve hiçbir seçenek düz bir resim gibi döndürülerek ya da
   çevrilerek bulunamaz (bağımsız denetleyiciyle test edildi); öğrenci, veli ve yetişkin raporu, yol haritası; üç tur bağımsız
   incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-15 (26): Düşünmeyi Sevme Ölçeği yayında (9. sınıftan yetişkine), 2. dalganın 5. testi: IPIP'in 10 maddesi,
-  yaklaşık 2 dakika; güvenirlik ve ölçüm payı IPIP'in açık verisinden hesaplandı; rapor sonucu ve araştırmaların kısa
-  özetini verir; öğrenci, veli ve yetişkin raporu, tek ölçekli yol haritası; iki tur bağımsız incelemenin bulguları
-  düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Kontrol Odağı (4. test) açık veride güvenirliği düşük
-  (α ≈ .50) çıktığı için site sahibinin kararını bekliyor.

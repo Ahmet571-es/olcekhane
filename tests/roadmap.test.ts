@@ -303,6 +303,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'heyecan-arayisi': 3 ** 3 * 3,
       // Üç konu (toplam puan yol haritasında yok); yetişkinlere de açık.
       iyimserlik: 3 ** 3 * 3,
+      // Üç yön; yetişkinlere de açık.
+      empati: 3 ** 3 * 3,
       'calisma-aliskanliklari': 5 ** 5 * 2,
       'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,
       // Yalnızca 3–5. sınıflara açık: öğrenci ve veli.

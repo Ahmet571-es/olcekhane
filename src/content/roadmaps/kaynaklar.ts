@@ -204,6 +204,10 @@ export const KAYNAK = {
     text: 'Steel, P. (2007). The nature of procrastination: A meta-analytic and theoretical review of quintessential self-regulatory failure. Psychological Bulletin, 133(1), 65–94.',
     url: 'https://doi.org/10.1037/0033-2909.133.1.65',
   },
+  tedingVanBerkhout: {
+    text: 'Teding van Berkhout, E. ve Malouff, J. M. (2016). The efficacy of empathy training: A meta-analysis of randomized controlled trials. Journal of Counseling Psychology, 63(1), 32–41.',
+    url: 'https://doi.org/10.1037/cou0000093',
+  },
   gollwitzer: {
     text: 'Gollwitzer, P. M. ve Sheeran, P. (2006). Implementation intentions and goal achievement: A meta-analysis of effects and processes. Advances in Experimental Social Psychology, 38, 69–119.',
     url: 'https://doi.org/10.1016/S0065-2601(06)38002-1',
