@@ -38,6 +38,7 @@ import type {
   TowerTask,
   PerspectiveTask,
   HiddenFiguresTask,
+  PatternMemoryTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
@@ -52,6 +53,7 @@ import { ruleAnswer, ruleCongruent, ruleSwitchKinds } from '@/lib/instruments/ru
 import { WORD_RECOGNITION_FAST_MS, matchWord, normalizeWord, wordListRecalls } from '@/lib/instruments/word-list';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { blankOf, opTrue } from '@/lib/instruments/complex-span';
+import { cellsAdjacent } from '@/lib/instruments/pattern';
 import {
   PA_CLOSE,
   PA_EGO_MIN_SHIFT,
@@ -2632,6 +2634,239 @@ export function hiddenQualityNotes(r: HiddenResult): string[] {
   return notes;
 }
 
+/* ---------- Desen hatırlama ---------- */
+
+export interface PatternTrialInput {
+  /** Denemenin sırası: düzey × 3 + desen (0'dan). */
+  index: number;
+  /**
+   * İşaretlenen kareler (satır satır, 0'dan); "Hatırlamıyorum" denirse boş. `restarts`: desen gösterilirken sayfa gizlendiği
+   * için desenin baştan gösterilme sayısı.
+   */
+  response: { cells: number[]; restarts?: number };
+  rtMs: number | null;
+}
+
+export interface PatternTrialResult {
+  index: number;
+  /** Desendeki dolu kare sayısı (düzey). */
+  size: number;
+  correct: boolean;
+  /** "Hatırlamıyorum" dendi (hiç kare işaretlenmedi). */
+  skipped: boolean;
+  marked: number;
+  /** Doğru işaretlenen, işaretlenmeyen (eksik) ve desende olmayan (fazla) kareler. */
+  hits: number;
+  missed: number;
+  extra: number;
+  /** Yanlış ama yalnızca bir kare farklı: bir kare eksik, bir kare fazla ya da bir karenin yeri farklı. */
+  near: boolean;
+  /**
+   * Bir karenin yeri, doğru yerinin hemen yanına (kenar komşusu) kaymış: kare sayısı doğru, tek bir kare farklı. Yalnızca
+   * 7 ve daha büyük desenlerde sayılır: küçük ızgarada rastgele konan bir karenin de doğru yerin yanına düşme olasılığı
+   * yüksektir.
+   */
+  shifted: boolean;
+  /** Desen gösterilirken sayfa gizlendiği için desenin baştan gösterilme sayısı. */
+  restarts: number;
+  rt: number | null;
+}
+
+export interface PatternLevelResult {
+  size: number;
+  n: number;
+  correct: number;
+}
+
+export interface PatternResult {
+  /** Testteki en küçük ve en büyük desen (dolu kare). */
+  start: number;
+  max: number;
+  /** Tam doğru hatırlanan en büyük desen (dolu kare; Della Sala ve ark., 1999'daki puan). En küçük düzeyde de doğru yoksa 0. */
+  span: number;
+  /** Görevin bittiği düzey (üç deseni de yanlış); en büyük düzeye kadar her düzeyde en az bir doğru varsa `null`. */
+  stoppedAt: number | null;
+  trials: number;
+  correct: number;
+  /** Gösterilen düzeyler, küçükten büyüğe. */
+  levels: PatternLevelResult[];
+  /**
+   * Gösterilen desenlerdeki dolu kareler, bunlardan doğru işaretlenenler ve kısmi puan: her desende doğru işaretlenen
+   * kareler eksi desende olmayan işaretli kareler (en az 0). Bütün kareleri işaretleyen biri kısmi puan almaz.
+   */
+  cellsShown: number;
+  cellsHit: number;
+  cellsCredit: number;
+  /** Yanlış desenler ("Hatırlamıyorum" dahil) ve "Hatırlamıyorum" denenler. */
+  wrong: number;
+  skipped: number;
+  /** "Hatırlamıyorum" denmeyen yanlış desenler ve bunlarda: yalnızca bir kare farklı olanlar; işaretlenen kare sayısı desendekinden az, fazla ya da aynı olanlar. */
+  attemptedWrong: number;
+  near: number;
+  fewer: number;
+  more: number;
+  same: number;
+  /** Bu desenlerde toplam eksik ve fazla kareler; bir karesi doğru yerinin hemen yanına kaymış desenler. */
+  missed: number;
+  extra: number;
+  shifted: number;
+  /** "Hatırlamıyorum" denmeyen desenlerde işaretleme süresinin ortancası. */
+  medianRt: number | null;
+  /**
+   * Bakılmadan işaretlenmiş olabilecek desenler: yanlış, tek kare farkı değil, karelerin yarısından azı doğru ve
+   * `PATTERN_RAPID_BASE_MS` + `PATTERN_RAPID_MS_PER_CELL` × işaretlenen kare süresinden kısa sürede işaretlenmiş.
+   */
+  rapid: number;
+  /** Desen gösterilirken sayfa gizlendiği için desenlerin baştan gösterilme sayısı (toplam). */
+  restarts: number;
+  /** Testin bittiği büyüklük dışındaki desenler ve bunlarda "Hatırlamıyorum" denenler. */
+  beforeStop: number;
+  skippedBeforeStop: number;
+  items: PatternTrialResult[];
+}
+
+/**
+ * Bakmadan işaretleme: desen ekrandan kalktıktan sonra `PATTERN_RAPID_BASE_MS` + kare başına `PATTERN_RAPID_MS_PER_CELL`
+ * süreden kısa sürede işaretlenen ve karelerinin çoğu yanlış olan desenler (hızlı ama doğru yakın işaretleme sayılmaz).
+ */
+export const PATTERN_RAPID_BASE_MS = 800;
+export const PATTERN_RAPID_MS_PER_CELL = 200;
+/** Kayma (bir karenin doğru yerinin yanına konması) yalnızca bu büyüklükten başlayarak sayılır. */
+export const PATTERN_SHIFT_MIN_SIZE = 7;
+/** Bir düzeyde gösterilen desen sayısı. */
+export const PATTERN_PER_LEVEL = 3;
+
+export function scorePattern(task: PatternMemoryTask, input: PatternTrialInput[]): { result: PatternResult } {
+  const flat = task.levels.flatMap((l, li) => l.items.map((item, k) => ({ item, size: l.cells, level: li, k })));
+  const byIndex = new Map<number, PatternTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= flat.length) throw new TaskInputError('Geçersiz desen.');
+    const { item } = flat[t.index];
+    const cells = t.response?.cells;
+    if (!Array.isArray(cells) || cells.length > item.rows * item.cols) throw new TaskInputError('Geçersiz cevap.');
+    const restarts = t.response.restarts;
+    if (restarts !== undefined && (!Number.isInteger(restarts) || restarts < 0 || restarts > 50)) throw new TaskInputError('Geçersiz cevap.');
+    if (cells.some((c) => !Number.isInteger(c) || c < 0 || c >= item.rows * item.cols) || new Set(cells).size !== cells.length) {
+      throw new TaskInputError('Geçersiz cevap.');
+    }
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  const shown = byIndex.size;
+  if (shown < PATTERN_PER_LEVEL || shown % PATTERN_PER_LEVEL !== 0) throw new TaskInputError('Desenlerin hepsi cevaplanmadı.');
+  for (let i = 0; i < shown; i++) if (!byIndex.has(i)) throw new TaskInputError('Desenlerin hepsi cevaplanmadı.');
+
+  const items: PatternTrialResult[] = flat.slice(0, shown).map(({ item, size }, index) => {
+    const t = byIndex.get(index)!;
+    const target = new Set(item.cells);
+    const marked = new Set(t.response.cells);
+    const hits = [...marked].filter((c) => target.has(c)).length;
+    const missedCells = item.cells.filter((c) => !marked.has(c));
+    const extraCells = [...marked].filter((c) => !target.has(c));
+    const correct = missedCells.length === 0 && extraCells.length === 0;
+    const skipped = marked.size === 0;
+    return {
+      index,
+      size,
+      correct,
+      skipped,
+      marked: marked.size,
+      hits,
+      missed: missedCells.length,
+      extra: extraCells.length,
+      near: !correct && !skipped && missedCells.length <= 1 && extraCells.length <= 1,
+      shifted:
+        size >= PATTERN_SHIFT_MIN_SIZE && missedCells.length === 1 && extraCells.length === 1 && cellsAdjacent(extraCells[0], missedCells[0], item.cols),
+      restarts: t.response.restarts ?? 0,
+      rt: t.rtMs,
+    };
+  });
+
+  // Düzeyler: bir düzeyin üç deseninin hiçbiri doğru değilse görev orada biter; daha sonraki desenler gelmemiş olmalı.
+  const levels: PatternLevelResult[] = [];
+  for (let li = 0; li * PATTERN_PER_LEVEL < shown; li++) {
+    const here = items.slice(li * PATTERN_PER_LEVEL, (li + 1) * PATTERN_PER_LEVEL);
+    levels.push({ size: task.levels[li].cells, n: here.length, correct: here.filter((x) => x.correct).length });
+  }
+  levels.forEach((l, i) => {
+    if (l.correct === 0 && i < levels.length - 1) throw new TaskInputError('Geçersiz deneme dizisi.');
+  });
+  const last = levels[levels.length - 1];
+  if (last.correct > 0 && levels.length < task.levels.length) throw new TaskInputError('Desenlerin hepsi cevaplanmadı.');
+  const stoppedAt = last.correct === 0 ? last.size : null;
+  const passed = levels.filter((l) => l.correct > 0);
+  const wrongs = items.filter((x) => !x.correct && !x.skipped);
+  const rts = items.flatMap((x) => (x.rt === null || x.skipped ? [] : [x.rt]));
+  const beforeStop = items.filter((x) => x.size !== stoppedAt);
+  return {
+    result: {
+      start: task.levels[0].cells,
+      max: task.levels[task.levels.length - 1].cells,
+      span: passed.length ? passed[passed.length - 1].size : 0,
+      stoppedAt,
+      trials: shown,
+      correct: items.filter((x) => x.correct).length,
+      levels,
+      cellsShown: items.reduce((a, x) => a + x.size, 0),
+      cellsHit: items.reduce((a, x) => a + x.hits, 0),
+      cellsCredit: items.reduce((a, x) => a + Math.max(0, x.hits - x.extra), 0),
+      wrong: items.filter((x) => !x.correct).length,
+      skipped: items.filter((x) => x.skipped).length,
+      attemptedWrong: wrongs.length,
+      near: wrongs.filter((x) => x.near).length,
+      fewer: wrongs.filter((x) => x.marked < x.size).length,
+      more: wrongs.filter((x) => x.marked > x.size).length,
+      same: wrongs.filter((x) => x.marked === x.size).length,
+      missed: wrongs.reduce((a, x) => a + x.missed, 0),
+      extra: wrongs.reduce((a, x) => a + x.extra, 0),
+      shifted: wrongs.filter((x) => x.shifted).length,
+      medianRt: medianOrNull(rts),
+      rapid: wrongs.filter((x) => !x.near && 2 * x.hits < x.size && x.rt !== null && x.rt < PATTERN_RAPID_BASE_MS + PATTERN_RAPID_MS_PER_CELL * x.marked).length,
+      restarts: items.reduce((a, x) => a + x.restarts, 0),
+      beforeStop: beforeStop.length,
+      skippedBeforeStop: beforeStop.filter((x) => x.skipped).length,
+      items,
+    },
+  };
+}
+
+/** En küçük düzeydeki desenlerin de hiçbiri doğru hatırlanmadı: sonuç yorumlanmaz. */
+export const patternFloor = (r: PatternResult) => r.span === 0;
+/**
+ * Testin bittiği büyüklükten önceki desenlerin (en az altı desen) yarısında ya da daha çoğunda "Hatırlamıyorum" dendi.
+ * Testin bittiği büyüklükte "Hatırlamıyorum" demek, düğmenin amacına uygundur ve sayılmaz.
+ */
+export const patternManySkipped = (r: PatternResult) => r.beforeStop >= 2 * PATTERN_PER_LEVEL && 2 * r.skippedBeforeStop >= r.beforeStop;
+/** Bakılmadan işaretlenmiş olabilecek desenler: en az üç desen ve yanlışların en az üçte biri. */
+export const patternRapid = (r: PatternResult) => r.rapid >= 3 && 3 * r.rapid >= r.attemptedWrong;
+/** Desen gösterilirken başka bir uygulamaya geçildiği için en az iki kez desen baştan gösterildi. */
+export const PATTERN_RESTARTS_NOTE = 2;
+
+/** Desen hatırlamada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, patternBlocks aynı eşikleri kullanır). */
+export function patternQualityNotes(r: PatternResult): string[] {
+  const notes: string[] = [];
+  if (patternFloor(r)) {
+    notes.push(
+      `Desen hatırlama testinde en küçük (${r.start} kareli) desenlerin hiçbiri doğru hatırlanmadı; yönerge tam anlaşılmamış, desenlere bakılmamış ya da görev yarıda bırakılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+    );
+  } else if (patternManySkipped(r)) {
+    notes.push(
+      `Desen hatırlama testinde, testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” denmiş; görev yarıda bırakılmış ya da dikkat başka yere kaymış olabilir. Sonuç dikkatle yorumlanmalıdır.`,
+    );
+  }
+  if (!patternFloor(r) && patternRapid(r)) {
+    notes.push(
+      `Desen hatırlama testinde ${r.rapid} desen çok kısa sürede işaretlenmiş ve karelerinin çoğu yanlış; bu desenlerde kareler dikkatle işaretlenmemiş olabilir.`,
+    );
+  }
+  if (r.restarts >= PATTERN_RESTARTS_NOTE) {
+    notes.push(
+      `Desen hatırlama testinde desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçilmiş; bu desenler baştan, yani bir kez daha gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
+    );
+  }
+  return notes;
+}
+
 /* ---------- Üç boyutlu zihinde döndürme ---------- */
 
 export interface Rotation3dTrialInput {
@@ -3520,6 +3755,7 @@ export function taskQualityNotes(parts: {
   numeric?: NumericResult;
   cube?: CubeResult;
   hidden?: HiddenResult;
+  pattern?: PatternResult;
   reflection?: ReflectionResult;
   tower?: TowerResult;
   rotation3d?: Rotation3dResult;
@@ -3713,6 +3949,8 @@ export function taskQualityNotes(parts: {
   if (kp) notes.push(...cubeQualityNotes(kp));
   const gs = parts.hidden;
   if (gs) notes.push(...hiddenQualityNotes(gs));
+  const dh = parts.pattern;
+  if (dh) notes.push(...patternQualityNotes(dh));
   const dk = parts.reflection;
   if (dk) notes.push(...reflectionQualityNotes(dk));
   const kg = parts.tower;

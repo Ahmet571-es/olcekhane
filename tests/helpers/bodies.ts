@@ -45,6 +45,7 @@ import type {
   TowerTask,
   PerspectiveTask,
   HiddenFiguresTask,
+  PatternMemoryTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
@@ -667,5 +668,64 @@ export function perspectiveBody(
     });
     return { index, response: p.deg === null ? null : { deg: p.deg }, rtMs: p.rtMs };
   });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+/** Desen hatırlamada bir deneme: desenin büyüklüğü (dolu kare), düzeydeki sırası, kareleri ve ızgarası. */
+export type PatternCell = { size: number; k: number; cells: number[]; rows: number; cols: number; i: number };
+export type PatternPlay = { cells: number[]; rtMs?: number | null; restarts?: number };
+
+/** Desenin bir karesi eksik (son dolu kare işaretlenmemiş). */
+export const dhMissOne = (q: PatternCell): number[] => q.cells.slice(0, -1);
+/** Desene bir kare fazla (desende olmayan ilk kare de işaretlenmiş). */
+export const dhExtraOne = (q: PatternCell): number[] => {
+  const free = Array.from({ length: q.rows * q.cols }, (_, c) => c).find((c) => !q.cells.includes(c))!;
+  return [...q.cells, free].sort((a, b) => a - b);
+};
+/** Bir kare hemen yanındaki boş kareye kaymış (kenar komşusu). */
+export const dhShiftOne = (q: PatternCell): number[] => {
+  for (const c of q.cells) {
+    const [y, x] = [Math.floor(c / q.cols), c % q.cols];
+    for (const [dy, dx] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      const [ny, nx] = [y + dy, x + dx];
+      const n = ny * q.cols + nx;
+      if (ny >= 0 && ny < q.rows && nx >= 0 && nx < q.cols && !q.cells.includes(n)) return q.cells.filter((z) => z !== c).concat(n).sort((a, b) => a - b);
+    }
+  }
+  throw new Error('kaydırılacak kare yok');
+};
+/** Desenin hiçbir karesi değil: desende olmayan kareler, desendeki kadar (bakmadan işaretleme gibi). */
+export const dhNoneRight = (q: PatternCell): number[] => Array.from({ length: q.rows * q.cols }, (_, c) => c).filter((c) => !q.cells.includes(c)).slice(0, q.size);
+/** Bir kare uzaktaki (komşu olmayan) boş bir kareye konmuş. */
+export const dhFarOne = (q: PatternCell): number[] => {
+  const adj = (a: number, b: number) => Math.abs(Math.floor(a / q.cols) - Math.floor(b / q.cols)) + Math.abs((a % q.cols) - (b % q.cols)) === 1;
+  const c = q.cells[0];
+  const far = Array.from({ length: q.rows * q.cols }, (_, z) => z).find((z) => !q.cells.includes(z) && !adj(z, c))!;
+  return q.cells.slice(1).concat(far).sort((a, b) => a - b);
+};
+
+/**
+ * Desen hatırlama: bütün düzeyler sırayla oynanır; bir düzeyin üç deseninin hiçbiri doğru değilse görev orada biter
+ * (tarayıcıdaki kural). Varsayılan: 8 kareye kadar bütün desenler doğru; 9 ve 10 karede ilk desen doğru, öbürlerinde bir
+ * kare eksik; 11 karede üçü de bir kare eksik (test 11 karede biter). Desen başına 6 saniye.
+ */
+export function patternBody(
+  pick: (q: PatternCell) => PatternPlay = (q) => ({ cells: q.size <= 8 || (q.size <= 10 && q.k === 0) ? q.cells : dhMissOne(q) }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('desen-hatirlama').tasks[0] as PatternMemoryTask;
+  const trials: { index: number; response: { cells: number[]; restarts?: number }; rtMs: number | null }[] = [];
+  let i = 0;
+  for (const level of task.levels) {
+    let hits = 0;
+    for (const [k, item] of level.items.entries()) {
+      const p = pick({ size: level.cells, k, cells: item.cells, rows: item.rows, cols: item.cols, i });
+      const cells = [...p.cells].sort((a, b) => a - b);
+      if (cells.length === item.cells.length && cells.every((c, j) => c === item.cells[j])) hits++;
+      trials.push({ index: i, response: p.restarts === undefined ? { cells } : { cells, restarts: p.restarts }, rtMs: p.rtMs === undefined ? 6000 : p.rtMs });
+      i++;
+    }
+    if (hits === 0) break;
+  }
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }

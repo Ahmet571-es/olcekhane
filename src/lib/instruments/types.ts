@@ -282,7 +282,8 @@ export type TaskKind =
   | 'mental_rotation_3d'
   | 'complex_span'
   | 'perspective'
-  | 'hidden_figures';
+  | 'hidden_figures'
+  | 'pattern_memory';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -1124,7 +1125,8 @@ export type CognitiveTask =
   | MentalRotation3dTask
   | ComplexSpanTask
   | PerspectiveTask
-  | HiddenFiguresTask;
+  | HiddenFiguresTask
+  | PatternMemoryTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
@@ -1232,6 +1234,33 @@ export interface HiddenFiguresTask extends TaskBase {
   /** Her seçeneğin yanılgı türü (doğru seçenekte `null`). Tarayıcıya boş gönderilir. */
   optionLures: (HiddenLure | null)[][];
   levels: { level: number; name: string; plain: string }[];
+}
+
+/**
+ * Desen hatırlamada bir desen: `rows` satır, `cols` sütunluk bir ızgara ve dolu karelerin sırası (satır satır, sol üstten
+ * 0'dan başlayarak). Desenler content/instruments/desen-hatirlama.ts'tedir; yazımı lib/instruments/pattern.ts.
+ */
+export interface PatternItem {
+  key: string;
+  rows: number;
+  cols: number;
+  cells: number[];
+}
+
+/**
+ * Desen hatırlama (görsel desen aralığı; Della Sala ve ark., 1999'daki düzen): kareli bir ızgarada dolu kareler `showMs`
+ * boyunca gösterilir, ardından boş ızgarada aynı kareler işaretlenir. Desenler düzey düzey büyür (her düzeyde aynı sayıda
+ * dolu kare, üç desen); bir düzeyin üç deseninin hiçbiri tam doğru hatırlanmazsa görev biter. Desenler ekranda
+ * gösterildiği için tarayıcıya gider; puanlama sunucuda, işaretlenen karelerden yeniden yapılır.
+ */
+export interface PatternMemoryTask extends TaskBase {
+  kind: 'pattern_memory';
+  /** Desenin ekranda kaldığı süre (ms). */
+  showMs: number;
+  /** Geri bildirimli alıştırma desenleri (puanlanmaz). */
+  practice: PatternItem[];
+  /** Düzeyler küçükten büyüğe; denemelerin sırası (`index`) düzey × 3 + desen. */
+  levels: { cells: number; items: PatternItem[] }[];
 }
 
 export interface TaskInstrument extends InstrumentBase {

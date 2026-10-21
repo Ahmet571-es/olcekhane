@@ -512,7 +512,25 @@ Düşünmeyi Sevme.
    sayfasında tek bileşik ölçekli testin "Raporda neler var" satırları. İki tur bağımsız inceleme (bilgi ve kaynak; çeviri,
    metin, mantık ve ekran) ve ikinci tur denetim düzeltildi; 400 rastgele karışık cevap örüntüsü testte denenir; telefonda
    dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
-13. Desen Hatırlama (görsel bellek; Della Sala düzeni; özgün desenler).
+13. **Desen Hatırlama: yayında (2026-10-21, pilot; 3. sınıftan yetişkine).** Della Sala ve ark.'nın (1999) Görsel
+   Desenler Testi düzeni (ticari testin desenleri, puan düzeltmeleri ve normları kullanılmadı): kareli bir tabloda dolu
+   kareler 3 sn gösterilir, boş tabloda aynı kareler işaretlenir; 3'ten 15 dolu kareye 13 büyüklük, her birinde 3 özgün
+   desen (39) ve 2 alıştırma (geri bildirimli). Bir büyüklükteki üç desenin hiçbiri tam doğru değilse test biter (sunucu
+   da denetler); puan tam doğru hatırlanan en büyük desen ("En büyük doğru desen"). Desenler üreticiyle (depo dışında)
+   kolay ad verilebilecek biçimlerden kaçınılarak seçildi (Brown ve ark., 2006): dolu ya da boş satır/sütun yok, simetri
+   yok, kısa düz diziler, parça sayısı sınırlı, aynı büyüklükteki desenler döndürülse de birbirinden farklı; testte
+   bağımsız denetleyici (`tests/helpers/pattern-check.ts`) bunları yeniden hesaplar; desen izi `DESEN_IZI`. Rapor: en
+   büyük doğru desen (tavanda "testin en büyük deseni", sınırın bilinmediği söylenir), doğru hatırlanan desenler (ilk
+   yanlışın yeri; yanlış desenlerde karelerin çoğu doğruysa kısmi hatırlama), hata türleri (tek kare farkı, eksik, fazla,
+   yer karışıklığı; 7 ve daha büyük desenlerde bir karenin doğru yerinin hemen yanına kayması), çalışma biçimi (tipik
+   süre, "Hatırlamıyorum", bakmadan işaretleme: yanlış, karelerin çoğu yanlış ve 0,8 sn + kare başına 0,2 sn'den kısa;
+   desen gösterilirken başka uygulamaya geçilince desen yeniden gösterilir, iki ya da daha çok kez olunca not); büyüklüğe
+   göre grafik; öne çıkan sayılarda karelerde isabet (desende olmayan işaretli kareler düşülür). Bütün durum
+   birleşimleri testte. Yol haritası (3B yok): görüntüye ad ver, bölümlere ayırarak bak, kâğıda aktar, görsel bellek
+   oyunları; haftalar Bak ve çiz / Ad ver / Eşini bul; oyunların yeniden çözümde sonucu yükseltebileceği söylenir.
+   Türkiye'de yayımlanmış bir çalışma bulunamadı; norm yok. İki tur bağımsız inceleme (bilgi ve kaynak; desenler, rapor
+   ve ekran) ve ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci), 320 px telefonda (15 kareli desen sığıyor)
+   ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
 14. Harf Dizileri (Thurstone; Simon ve Kotovsky düzeni; özgün diziler, Türk alfabesi).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
@@ -733,6 +751,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Heyecan Arayışı | heyecan-arayisi | Yayında (active; 9. sınıftan yetişkine) |
 | Gizli Şekiller | gizli-sekiller | Yayında (pilot; 3. sınıftan yetişkine) |
 | İyimserlik Ölçeği | iyimserlik | Yayında (active; 9. sınıftan yetişkine) |
+| Desen Hatırlama | desen-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -845,6 +864,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-21 (34): Desen Hatırlama yayında (3. sınıftan yetişkine), 2. dalganın 13. testi: 3 saniye gösterilen kareli
+  bir deseni boş tabloda yeniden işaretleme (kısa süreli görsel bellek); 39 özgün desen, 3'ten 15 kareye, iki alıştırma;
+  desenlerin kolay ad verilemeyecek biçimde seçildiği bağımsız denetleyiciyle doğrulandı; rapor en büyük doğru deseni,
+  büyüklüğe göre doğruları, hata türlerini ve çalışma biçimini anlatır; öğrenci, veli ve yetişkin raporu, yol haritası;
+  iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-21 (33): İyimserlik Ölçeği yayında (9. sınıftan yetişkine), 2. dalganın 12. testi: IPIP'in 10 maddelik
   iyimserlik ölçeği, yaklaşık 2 dakika; toplam puanın yanında cümlelerin sorduğu üç konu (hayata ve geleceğe bakış, kendine
   bakış, ruh hâli) ayrı gösterilir; destek kutusu düşük düzeylerde ve hüzün ya da kendinden hoşlanmama cümlesine tek bir
@@ -889,8 +913,3 @@ En yeni üstte; en çok 10 madde tutulur.
   sahne, 5 yeni hareketli çizim, 29 vaka, 87 soru, 445 kaynak; altı bağımsız denetim, üç doğrulama ve ikinci tur
   düzeltme; dil sade (cümle ortalaması ~9,5 sözcük). Modele beyincik çadırı ve koroid pleksus eklendi. Sıradaki ders
   "Karıncıklar ve beyin-omurilik sıvısı".
-- 2026-10-15 (24): Hızlı Kişilik Testi yayında (9. sınıftan yetişkine), 2. dalganın 3. testi: Mini-IPIP'in 20 maddesi,
-  beş boyut, yaklaşık 3 dakika; ölçüm payı açık veriden hesaplanan standart sapmalarla; rapor metinleri yalnızca
-  maddelerin sorduğunu anlatır; öğrenci, veli ve yetişkin raporu, Beş Faktör'ün yol haritası (çelişen metinler bu testte
-  değişti); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Yol
-  haritası testindeki yetişkin sözcük denetimi Türkçe harflerle de çalışacak biçimde düzeltildi.

@@ -22,6 +22,7 @@ import {
   scoreNumeric,
   scoreCube,
   scoreHidden,
+  scorePattern,
   scoreReflection,
   scoreTower,
   scoreRotation3d,
@@ -65,6 +66,8 @@ import {
   type CubeTrialInput,
   type HiddenResult,
   type HiddenTrialInput,
+  type PatternResult,
+  type PatternTrialInput,
   type ReflectionResult,
   type ReflectionTrialInput,
   type TowerResult,
@@ -206,6 +209,7 @@ export type TaskInputs =
   | NumericTrialInput[]
   | CubeTrialInput[]
   | HiddenTrialInput[]
+  | PatternTrialInput[]
   | ReflectionTrialInput[]
   | TowerTrialInput[]
   | Rotation3dTrialInput[]
@@ -240,6 +244,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let numericRes: NumericResult | undefined;
   let cubeRes: CubeResult | undefined;
   let hiddenRes: HiddenResult | undefined;
+  let patternRes: PatternResult | undefined;
   let reflectionRes: ReflectionResult | undefined;
   let towerRes: TowerResult | undefined;
   let rotation3dRes: Rotation3dResult | undefined;
@@ -474,6 +479,16 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'gs_yanilgi', raw: null, mean: null, nAnswered: result.wrong, nItems: result.n, band: null },
         { scaleKey: 'gs_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'pattern_memory') {
+      const { result } = scorePattern(task, input as PatternTrialInput[]);
+      patternRes = result;
+      // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "dh_aralik" satırında durur.
+      rows.push(
+        { scaleKey: 'dh_aralik', raw: result.span, mean: null, nAnswered: result.correct, nItems: result.trials, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'dh_desen', raw: result.correct, mean: null, nAnswered: result.correct, nItems: result.trials, band: null },
+        { scaleKey: 'dh_hata', raw: null, mean: null, nAnswered: result.wrong, nItems: result.trials, band: null },
+        { scaleKey: 'dh_calisma', raw: result.medianRt, mean: null, nAnswered: result.trials, nItems: result.trials, band: null },
+      );
     } else if (task.kind === 'cognitive_reflection') {
       const { result } = scoreReflection(task, input as ReflectionTrialInput[]);
       reflectionRes = result;
@@ -573,6 +588,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       numeric: numericRes,
       cube: cubeRes,
       hidden: hiddenRes,
+      pattern: patternRes,
       reflection: reflectionRes,
       tower: towerRes,
       rotation3d: rotation3dRes,

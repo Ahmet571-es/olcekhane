@@ -31,6 +31,12 @@ const complexSpanResponse = z.object({
   limitMs: z.number().min(0).max(60_000),
 });
 
+/**
+ * Desen hatırlamada işaretlenen kareler (satır satır, 0'dan; en büyük ızgara 5 × 6; "Hatırlamıyorum" denirse boş) ve desen
+ * gösterilirken sayfa gizlendiği için desenin baştan gösterilme sayısı.
+ */
+const patternResponse = z.object({ cells: z.array(z.number().int().min(0).max(63)).max(64), restarts: z.number().int().min(0).max(50).optional() }).strict();
+
 /** Bakış açısı almada gösterilen yön (derece; 0 ileri, saat yönünde). */
 const perspectiveResponse = z.object({ deg: z.number().min(-180).max(180) }).strict();
 
@@ -49,6 +55,7 @@ export const taskTrial = z.object({
     towerResponse,
     complexSpanResponse,
     perspectiveResponse,
+    patternResponse,
     /** Kelime listesi hatırlamada yazılan kelimeler ve listenin baştan gösterilme sayısı. */
     z.object({ words: z.array(z.string().max(30)).max(40), restarts: z.number().int().min(0).max(50).optional() }),
     z.null(),

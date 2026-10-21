@@ -89,6 +89,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                                       ? `${single.sets.length} dizi: ${single.sets.reduce((s, x) => s + x.letters.length, 0)} harf ve ${single.sets.reduce((s, x) => s + x.ops.length, 0)} işlem`
                                       : single.kind === 'perspective'
                                         ? `${single.items.length} soru, ${single.practice.length} alıştırma`
+                                        : single.kind === 'pattern_memory'
+                                          ? `${single.levels[0].cells}–${single.levels[single.levels.length - 1].cells} kareli desenler, her büyüklükte 3 desen`
                 : null;
   const itemCount =
     def.engine === 'likert'
@@ -437,6 +439,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Yanlış cevaplarda şeklin döndürülmüş ya da ters çevrilmiş biçiminin mi, bir köşesi farklı benzerinin mi seçildiği ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'pattern_memory' && (
+              <>
+                <li>Bütün kareleriyle doğru hatırlanan en büyük desen (desen aralığı) ve desen büyüklüğüne göre doğru hatırlanan desenler grafiği</li>
+                <li>Yanlış hatırlanan desenlerde karelerin unutulup unutulmadığı, fazladan kare işaretlenip işaretlenmediği, yanlış karelerin doğru yerin yanında olup olmadığı ve desenlere nasıl çalışıldığı</li>
               </>
             )}
             {single?.kind === 'cognitive_reflection' && (

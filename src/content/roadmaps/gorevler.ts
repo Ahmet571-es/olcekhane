@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla ve Bakış Açısı Alma yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller ve Desen Hatırlama yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -2297,6 +2297,110 @@ const hesaplaVeHatirla: TaskRoadmapTemplate = {
   sources: [KAYNAK.ferguson2021, KAYNAK.fu2026, KAYNAK.schmiedek2014, KAYNAK.melby, KAYNAK.hedge],
 };
 
+const desenBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; görsel belleğin yalnızca bir yönünü (kısa bir süre gösterilen bir deseni hemen ardından hatırlamayı) gösterir.',
+    'Desen hatırlama çocuklukta hızla gelişir: bir araştırmada 5 ile 11 yaş arasında hızla artmış, 11 yaşına gelindiğinde yetişkinlerin düzeyine ulaşmıştır.',
+    'Kolay ad verilebilen desenler daha iyi hatırlanır; bu testin desenleri bu yüzden kolay ad verilebilecek biçimlerden kaçınılarak seçildi.',
+    'Yol haritasındaki haftalık oyunlar bu teste benzer; testi yeniden çözdüğünde sonucun yükselebilir. Bu, görsel belleğinin genel olarak geliştiği anlamına gelmez.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; görsel belleğin yalnızca bir yönünü (kısa bir süre gösterilen bir deseni hemen ardından hatırlamayı) gösterir.',
+    'Desenleri hatırlamak, yerlerin sırasını hatırlamaktan (ör. kutuların sırayla yandığı görevler) büyük ölçüde ayrı bir beceri olarak görülür; bir araştırmada sağlıklı yetişkinlerde ikisinin sonuçları arasındaki ilişki zayıf bulunmuştur.',
+    'Desen hatırlama çocuklukta hızla gelişir: bir araştırmada 5 ile 11 yaş arasında hızla artmış, 11 yaşına gelindiğinde yetişkinlerin düzeyine ulaşmıştır. Sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+    'Bellek alıştırmaları alıştırılan göreve benzer görevlerde sonucu kısa vadede yükseltebilir; ama bunun zekâ testlerine, derslere ve günlük işlere yansıdığına dair güvenilir bir kanıt yoktur.',
+    'Yol haritasındaki haftalık oyunlar bu teste benzer; çocuğunuz testi yeniden çözdüğünde sonucu yükselebilir. Bu, görsel belleğin genel olarak geliştiği anlamına gelmez.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine yaşla ilgili bilgi. */
+const desenFacts: InfoBox = {
+  ...desenBase,
+  items: {
+    ...desenBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; görsel belleğin yalnızca bir yönünü (kısa bir süre gösterilen bir deseni hemen ardından hatırlamayı) gösterir.',
+      'Desen hatırlama yetişkinlikte yaş ilerledikçe azalır; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+      'Kolay ad verilebilen desenler daha iyi hatırlanır; bu testin desenleri bu yüzden kolay ad verilebilecek biçimlerden kaçınılarak seçildi.',
+      'Bellek alıştırmaları alıştırılan göreve benzer görevlerde sonucu kısa vadede yükseltebilir; ama bunun başka becerilere yansıdığına dair güvenilir bir kanıt yoktur.',
+      'Yol haritasındaki haftalık oyunlar bu teste benzer; testi yeniden çözdüğünde sonucun yükselebilir. Bu, görsel belleğinin genel olarak geliştiği anlamına gelmez.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const desenHatirlama: TaskRoadmapTemplate = {
+  version: 'desen-hatirlama-yol-haritasi-1',
+  what: {
+    student: 'bir şeklin ya da çizimin görünüşünü kısa bir bakıştan sonra aklında tutmayı nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun bir şeklin ya da çizimin görünüşünü kısa bir bakıştan sonra aklında tutmasını nasıl kolaylaştırabileceği',
+    summary: 'bir görüntüyü kısa bir bakıştan sonra akılda tutmayı kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Bir görüntüyü aklında tutmayı ne kolaylaştırır?', parent: 'Çocuğunuzun bir görüntüyü aklında tutmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, kısa bir süre gösterilen bir deseni akılda tutabilmeyi, yani kısa süreli görsel belleği ölçer. Bu beceri; bir çizime bakıp onu kâğıda çizmek, bir tablonun ya da bir sayfanın düzenini aklında tutmak, bir geometri şeklinin görünüşünü hatırlamak gibi işlerde kullanılır. Aşağıdaki yollar, bu tür işlerde bir görüntüyü aklında tutmayı kolaylaştırabilir.',
+    'Bu test, kısa bir süre gösterilen bir deseni akılda tutabilmeyi, yani kısa süreli görsel belleği ölçer. Bu beceri; tahtadaki bir şekli deftere çizmek, bir tablonun ya da bir sayfanın düzenini akılda tutmak, bir geometri şeklinin görünüşünü hatırlamak gibi işlerde kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde bir görüntüyü aklında tutmasını kolaylaştırabilir.',
+  ),
+  supports: [
+    support(0, 'ad', 'Görüntüye bir ad ver', 'Yöntem', t(
+      'Bir şekli ya da çizimi aklında tutman gerektiğinde ona kısa bir ad vermeyi dene (ör. “merdiven gibi”, “iki köşesi dolu”). Araştırmalarda kolay ad verilebilen desenlerin daha iyi hatırlandığı, görüntüyü bir anlamla ve sözcükle birlikte aklında tuttuğunu söyleyenlerin daha başarılı olduğu görülmüştür; bu yüzden ad vermek işe yarayabilir.',
+      'Çocuğunuza, bir şekli ya da çizimi aklında tutması gerektiğinde ona kısa bir ad vermesini (ör. “merdiven gibi”, “iki köşesi dolu”) önerebilirsiniz. Araştırmalarda kolay ad verilebilen desenlerin daha iyi hatırlandığı, görüntüyü bir anlamla ve sözcükle birlikte aklında tuttuğunu söyleyenlerin daha başarılı olduğu görülmüştür; bu yüzden ad vermek işe yarayabilir.',
+    )),
+    support(1, 'parca', 'Bölümlere ayırarak bak', 'Yöntem', t(
+      'Kalabalık bir görüntüye bir bütün olarak bakmak yerine onu bölümlere ayır: önce üst yarısına, sonra alt yarısına bak; her bölümde neyin nerede olduğunu fark et. Bölümlere ayırmak, neye bakacağını düzenlemene ve aklında tutman gereken şeyi küçük parçalara bölmene yardım edebilir.',
+      'Çocuğunuza, kalabalık bir görüntüye bir bütün olarak bakmak yerine onu bölümlere ayırmasını önerin: önce üst yarısına, sonra alt yarısına baksın; her bölümde neyin nerede olduğunu fark etsin. Bölümlere ayırmak, neye bakacağını düzenlemesine ve aklında tutması gereken şeyi küçük parçalara bölmesine yardım edebilir.',
+    )),
+    support(2, 'aktar', 'Görüntüyü kâğıda aktar', 'Araç', t(
+      'Kısa süreli görsel bellek sınırlıdır; bir bakışta aklında tutabileceğin şey azdır. Önemli bir çizimi, tabloyu ya da şemayı aklında tutmaya çalışmak yerine kabaca kâğıda çiz ya da kaynağa yeniden bakmaktan çekinme. Bir şeyi kopyalarken her seferinde küçük bir bölümüne bakıp onu aktarmak, hepsini birden aklında tutmaktan daha kolaydır.',
+      'Kısa süreli görsel bellek sınırlıdır; bir bakışta akılda tutulabilecek şey azdır. Çocuğunuza, önemli bir çizimi ya da şemayı aklında tutmaya çalışmak yerine kabaca kâğıda çizmesini ya da kaynağa yeniden bakmaktan çekinmemesini önerin. Tahtadan bir şeyi kopyalarken her seferinde küçük bir bölümüne bakıp onu aktarmak, hepsini birden aklında tutmaktan daha kolaydır.',
+    )),
+    support(3, 'oyun', 'Görsel bellek oyunları', 'Etkinlik', t(
+      'Eşini bul (hafıza kartları), “Ne değişti?” ve bir çizime bakıp onu aklından çizmek gibi oyunlar, görüntüleri aklında tutmayı keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir; ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, görüntülere dikkatle bakmaktan keyif almaktır.',
+      'Eşini bul (hafıza kartları), “Ne değişti?” ve bir çizime bakıp onu aklından çizmek gibi oyunlar, çocuğunuz için görüntüleri aklında tutmayı keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir; ama bunun derslere ve başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, görüntülere dikkatle bakmaktan keyif almaktır.',
+    )),
+  ],
+  facts: desenFacts,
+  approach: [
+    { title: 'Kaynağa yeniden baksın', text: 'Tahtadan ya da kitaptan bir şekli kopyalarken kaynağa yeniden bakmasını doğal karşılayın; tek bakışta aklında tutmasını beklemeyin.' },
+    { title: 'Keyif için oynayın', text: 'Eşini bul gibi görsel bellek oyunlarını kazanmak için değil, birlikte vakit geçirmek için oynayın; kartların yerini nasıl aklında tuttuğunu merak edin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Bak ve çiz',
+      text: t(
+        'Bu hafta kareli kâğıda 3 × 4’lük bir tablo çiz ve birinden birkaç kareyi boyamasını iste. Desene 3 saniye bak, kapat ve kendi kâğıdına çiz; sonra karşılaştırın ve rolleri değiştirin.',
+        'Bu hafta kareli kâğıda 3 × 4’lük bir tablo çizin ve birkaç kareyi boyayın. Çocuğunuz desene 3 saniye baksın, kapatın ve kendi kâğıdına çizmesini isteyin; sonra karşılaştırın ve rolleri değiştirin.',
+      ),
+    },
+    {
+      title: 'Ad ver',
+      text: t(
+        'Bu hafta aynı oyunu iki biçimde oyna: bir desene yalnızca bakarak, ötekine bir ad vererek (ör. “yamuk merdiven”). Hangisinde daha çok kareyi doğru hatırladığını bir cümleyle yaz.',
+        'Bu hafta aynı oyunu iki biçimde oynayın: çocuğunuz bir desene yalnızca baksın, ötekine bir ad versin (ör. “yamuk merdiven”). Hangisinde daha çok kareyi doğru hatırladığını birlikte konuşun.',
+      ),
+    },
+    {
+      title: 'Eşini bul',
+      text: t(
+        'Bu hafta yakınlarınla ya da arkadaşlarınla eşini bul (hafıza kartları) oyna. Oyunun sonunda kartların yerini nasıl aklında tuttuğunuzu (ör. köşelere göre ya da ad vererek) birbirinize anlatın.',
+        'Bu hafta çocuğunuzla eşini bul (hafıza kartları) oynayın. Oyunun sonunda kartların yerini nasıl aklınızda tuttuğunuzu (ör. köşelere göre ya da ad vererek) birbirinize anlatın.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda hangi yolun (görüntüye ad vermek, bölümlere ayırarak bakmak ya da görüntüyü kâğıda aktarmak) bir görüntüyü aklında tutmanı en çok kolaylaştırdığını yaz ve onu sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun bir görüntüyü aklında tutmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['kelime-listesi-hatirlama', 'hesapla-ve-hatirla', 'gizli-sekiller'],
+  nextPurpose: {
+    you: 'belleğinin ve görsel becerilerinin başka yönlerini de görmek',
+    parent: 'çocuğunuzun belleğinin ve görsel becerilerinin başka yönlerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.dellaSala1999, KAYNAK.wilson1987, KAYNAK.brown2006, KAYNAK.brownWesley2013, KAYNAK.melby2016],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -2323,4 +2427,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'hesapla-ve-hatirla': hesaplaVeHatirla,
   'bakis-acisi-alma': bakisAcisiAlma,
   'gizli-sekiller': gizliSekiller,
+  'desen-hatirlama': desenHatirlama,
 };

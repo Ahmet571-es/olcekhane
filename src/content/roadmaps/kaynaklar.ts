@@ -328,4 +328,24 @@ export const KAYNAK = {
     text: 'Frick, A. ve Pichelmann, S. (2023). Measuring spatial abilities in children: A comparison of mental-rotation and perspective-taking tasks. Journal of Intelligence, 11(8), 165.',
     url: 'https://doi.org/10.3390/jintelligence11080165',
   },
+  dellaSala1999: {
+    text: 'Della Sala, S., Gray, C., Baddeley, A., Allamano, N. ve Wilson, L. (1999). Pattern span: A tool for unwelding visuo-spatial memory. Neuropsychologia, 37(10), 1189–1199.',
+    url: 'https://doi.org/10.1016/S0028-3932(98)00159-6',
+  },
+  brown2006: {
+    text: 'Brown, L. A., Forbes, D. ve McConnell, J. (2006). Limiting the use of verbal coding in the Visual Patterns Test. Quarterly Journal of Experimental Psychology, 59(7), 1169–1176.',
+    url: 'https://doi.org/10.1080/17470210600665954',
+  },
+  brownWesley2013: {
+    text: 'Brown, L. A. ve Wesley, R. (2013). Visual working memory is enhanced by mixed strategy use and semantic coding. Journal of Cognitive Psychology, 25(3), 328–338.',
+    url: 'https://doi.org/10.1080/20445911.2013.773004',
+  },
+  wilson1987: {
+    text: 'Wilson, J. T. L., Scott, J. H. ve Power, K. G. (1987). Developmental differences in the span of visual memory for pattern. British Journal of Developmental Psychology, 5(3), 249–255.',
+    url: 'https://doi.org/10.1111/j.2044-835X.1987.tb01060.x',
+  },
+  melby2016: {
+    text: 'Melby-Lervåg, M., Redick, T. S. ve Hulme, C. (2016). Working memory training does not improve performance on measures of intelligence or other measures of “far transfer”: Evidence from a meta-analytic review. Perspectives on Psychological Science, 11(4), 512–534.',
+    url: 'https://doi.org/10.1177/1745691616635612',
+  },
 } satisfies Record<string, { text: string; url: string }>;

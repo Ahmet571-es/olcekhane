@@ -146,6 +146,11 @@ import {
   hiddenRapid,
   hiddenSamePosition,
   type HiddenResult,
+  patternFloor,
+  patternManySkipped,
+  patternRapid,
+  PATTERN_RESTARTS_NOTE,
+  type PatternResult,
   ROTATION3D_CHANCE_MAX,
   ROTATION3D_PART_GAP,
   rotation3dMirrorPick,
@@ -5426,6 +5431,340 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   return { blocks: [harf, uzunluk, islem, hata], chart, figures, ...(profile ? { profile } : {}) };
 }
 
+/* ---------- Desen hatırlama ---------- */
+
+/** "3 tanesinde" ama "birinde". */
+const dhCount = (k: number, suffix: 'i' | 'inde' | 'ini') => (k === 1 ? `bir${suffix}` : `${k} tanes${suffix}`);
+
+/**
+ * Desen hatırlamanın dört sonuç kartı, desen büyüklüğüne göre grafik ve öne çıkan sayılar. Durumların sırası ve eşikleri
+ * uyarılarla (lib/scoring/tasks.ts, patternQualityNotes) aynıdır: en küçük desenler de hatırlanamamışsa sonuç yorumlanmaz;
+ * testin bittiği büyüklükten önceki desenlerin yarısında "Hatırlamıyorum" denmişse ya da yanlış desenlerin bir kısmı
+ * bakılmadan işaretlenmiş olabilecek kadar hızlıysa sonuç dikkatle okunur. Türkiye normu olmadığı için sonuç akranlarla
+ * karşılaştırılmaz; desenlerin büyüklüğüyle anlatılır.
+ */
+function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const floor = patternFloor(r);
+  const manySkip = !floor && patternManySkipped(r);
+  const rapid = !floor && patternRapid(r);
+  const doubt = manySkip || rapid;
+  const hedge = v('Çalışma biçimi kartında anlatılan nedenle bu sonuç seni tam yansıtmayabilir.', 'Çalışma biçimi kartında anlatılan nedenle bu sonuç çocuğunuzu tam yansıtmayabilir.');
+  const noReadWhy = `En küçük (${r.start} kareli) desenler de hatırlanamadığı için`;
+  const lastLevel = r.levels[r.levels.length - 1];
+
+  /* En büyük doğru desen (desen aralığı) */
+  let aralik: CognitiveBlock;
+  if (floor) {
+    aralik = {
+      ...card('dh_aralik'),
+      headline: 'Yorumlanmadı',
+      text: v(
+        `En küçük (${r.start} kareli) üç desenin hiçbirini tam doğru hatırlayamadın; bu yüzden hatırlanan en büyük desen belirtilmedi. Yönergeyi tam anlamamış, desenlere yeterince bakamamış ya da testi yarıda bırakmış olabilirsin. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı desenler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
+        `Çocuğunuz en küçük (${r.start} kareli) üç desenin hiçbirini tam doğru hatırlayamadı; bu yüzden hatırlanan en büyük desen belirtilmedi. Yönerge tam anlaşılmamış, desenlere yeterince bakılamamış ya da test yarıda bırakılmış olabilir. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı desenler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
+      ),
+    };
+  } else {
+    const parts = [`Desenler ${r.start} dolu kareden ${r.max} dolu kareye kadar büyüyordu; her büyüklükte üç desen vardı ve her desen 3 saniye gösterildi.`];
+    if (r.stoppedAt === null) {
+      const c = lastLevel.correct;
+      const which = c === lastLevel.n ? `en büyük (${r.max} kareli) desenlerin hepsini` : `en büyük (${r.max} kareli) desenlerden ${dhCount(c, 'ini')}`;
+      parts.push(
+        v(
+          `${capTr(which)} de bütün kareleriyle doğru hatırladın. Testte daha büyük desen olmadığı için sınırının daha da yukarıda olup olmadığı bilinmiyor.`,
+          `Çocuğunuz ${which} de bütün kareleriyle doğru hatırladı. Testte daha büyük desen olmadığı için sınırının daha da yukarıda olup olmadığı bilinmiyor.`,
+        ),
+      );
+    } else {
+      parts.push(
+        v(
+          `Bütün kareleriyle doğru hatırladığın en büyük desen ${r.span} kareliydi. ${r.stoppedAt} kareli üç desenin hiçbirini tam doğru hatırlayamadığın için test orada bitti.`,
+          `Çocuğunuzun bütün kareleriyle doğru hatırladığı en büyük desen ${r.span} kareliydi. ${r.stoppedAt} kareli üç desenin hiçbirini tam doğru hatırlayamadığı için test orada bitti.`,
+        ),
+      );
+    }
+    parts.push(
+      v(
+        'Bu beceri; bir şeklin, bir çizimin ya da bir sayfanın düzenini kısa bir bakıştan sonra akılda tutmak gibi işlerde kullanılır: örneğin bir çizime bakıp onu kâğıda çizmek ya da bir tablonun düzenini aklında tutmak.',
+        'Bu beceri; bir şeklin, bir çizimin ya da bir sayfanın düzenini kısa bir bakıştan sonra akılda tutmak gibi işlerde kullanılır: örneğin tahtadaki bir şekli deftere çizmek ya da bir tablonun düzenini akılda tutmak.',
+      ),
+    );
+    if (r.stoppedAt !== null) {
+      parts.push(
+        'Her büyüklükte yalnızca üç desen olduğu ve bir büyüklükteki üç desenin hiçbiri hatırlanamayınca test bittiği için bu sayı kabaca fikir verir; o anki kısa bir dalgınlık da sonucu düşürebilir.',
+      );
+    }
+    if (doubt) parts.push(hedge);
+    aralik = { ...card('dh_aralik'), headline: r.stoppedAt === null ? `${r.span} kare (testin en büyük deseni)` : `${r.span} kare`, text: parts.join(' ') };
+  }
+
+  /* Doğru hatırlanan desenler */
+  const extraAll = r.items.reduce((a, x) => a + x.extra, 0);
+  const cellsLine = `Doğru işaretlenen kare ${r.cellsHit}/${r.cellsShown}${extraAll ? ` · desende olmayan ${extraAll}` : ''}`;
+  let desen: CognitiveBlock;
+  if (floor) {
+    desen = { ...card('dh_desen'), headline: `${r.trials} desenden ${r.correct} doğru`, detail: cellsLine, text: `${noReadWhy} doğru hatırlanan desenler yorumlanmadı.` };
+  } else {
+    const all = r.correct === r.trials;
+    const parts = [
+      all
+        ? v(`Gösterilen ${r.trials} desenin hepsini bütün kareleriyle doğru hatırladın.`, `Çocuğunuz gösterilen ${r.trials} desenin hepsini bütün kareleriyle doğru hatırladı.`)
+        : v(
+            `Gösterilen ${r.trials} desenin ${dhCount(r.correct, 'ini')} bütün kareleriyle doğru hatırladın.`,
+            `Çocuğunuz gösterilen ${r.trials} desenin ${dhCount(r.correct, 'ini')} bütün kareleriyle doğru hatırladı.`,
+          ),
+    ];
+    if (!all) {
+      const firstMiss = r.levels.findIndex((l) => l.correct < l.n);
+      const later = r.levels.slice(firstMiss + 1);
+      // İlk yanlışın olduğu büyüklükten sonraki desenler: hepsi doğru, bir kısmı doğru ya da hiçbiri doğru değil (ya da yok).
+      const laterAll = later.length > 0 && later.every((l) => l.correct === l.n);
+      const laterSome = r.levels.slice(firstMiss).some((l) => l.correct > 0);
+      const missLevel = r.levels[firstMiss];
+      if (firstMiss > 0) {
+        const fullUpTo = r.levels[firstMiss - 1].size;
+        const upTo = fullUpTo === r.start ? `${r.start} kareli desenlerin` : `${fullUpTo} kareye kadarki desenlerin`;
+        parts.push(
+          laterSome
+            ? v(`${upTo} hepsini doğru hatırladın; daha büyük desenlerde bazılarını doğru, bazılarını yanlış hatırladın.`, `${upTo} hepsini doğru hatırladı; daha büyük desenlerde bazılarını doğru, bazılarını yanlış hatırladı.`)
+            : v(
+                `${upTo} hepsini doğru hatırladın; ${missLevel.size} kareli desenlerin hiçbirini tam doğru hatırlayamadın.`,
+                `${upTo} hepsini doğru hatırladı; ${missLevel.size} kareli desenlerin hiçbirini tam doğru hatırlayamadı.`,
+              ),
+          'Desenler büyüdükçe akılda tutulacak kare sayısı arttığı için büyük desenlerde yanılmak bu testte olağandır.',
+        );
+      } else {
+        const m = missLevel.n - missLevel.correct;
+        const rest = laterAll
+          ? v('; daha büyük desenlerin hepsini doğru hatırladın.', '; daha büyük desenlerin hepsini doğru hatırladı.')
+          : later.some((l) => l.correct > 0)
+            ? v('; daha büyük desenlerde bazılarını doğru, bazılarını yanlış hatırladın.', '; daha büyük desenlerde bazılarını doğru, bazılarını yanlış hatırladı.')
+            : later.length
+              ? v(`; ${later[0].size} kareli desenlerin hiçbirini tam doğru hatırlayamadın.`, `; ${later[0].size} kareli desenlerin hiçbirini tam doğru hatırlayamadı.`)
+              : '.';
+        parts.push(
+          v(
+            `En küçük (${r.start} kareli) desenlerden ${m === 1 ? 'birinde' : `${m} tanesinde`} yanıldın${rest}`,
+            `En küçük (${r.start} kareli) desenlerden ${m === 1 ? 'birinde' : `${m} tanesinde`} yanıldı${rest}`,
+          ),
+        );
+      }
+      // Tam doğru olmayan desenlerde karelerin çoğu yine de doğru işaretlendiyse (kısmi hatırlama; desende olmayan işaretli
+      // kareler düşülür). Yanlışların yarısı ya da daha çoğu tek kare farkıysa bunu "Hata türleri" kartı söyler.
+      const tried = r.items.filter((x) => !x.correct && !x.skipped);
+      const triedCells = tried.reduce((a, x) => a + x.size, 0);
+      const triedCredit = tried.reduce((a, x) => a + Math.max(0, x.hits - x.extra), 0);
+      if (tried.length >= 2 && triedCredit >= 0.75 * triedCells && 2 * r.near < r.attemptedWrong) {
+        parts.push(
+          r.skipped > 0
+            ? v(
+                'Kareleri işaretlediğin yanlış desenlerde de karelerin çoğunu doğru yerde işaretledin: bu desenleri büyük ölçüde hatırladın, birkaç karede yanıldın.',
+                'Çocuğunuz kareleri işaretlediği yanlış desenlerde de karelerin çoğunu doğru yerde işaretledi: bu desenleri büyük ölçüde hatırladı, birkaç karede yanıldı.',
+              )
+            : v(
+                'Tam doğru hatırlayamadığın desenlerde de karelerin çoğunu doğru yerde işaretledin: bu desenleri büyük ölçüde hatırladın, birkaç karede yanıldın.',
+                'Çocuğunuz tam doğru hatırlayamadığı desenlerde de karelerin çoğunu doğru yerde işaretledi: bu desenleri büyük ölçüde hatırladı, birkaç karede yanıldı.',
+              ),
+        );
+      }
+    }
+    if (doubt) parts.push(hedge);
+    desen = { ...card('dh_desen'), headline: all ? `${r.trials} desenin hepsi doğru` : `${r.trials} desenden ${r.correct} doğru`, detail: cellsLine, text: parts.join(' ') };
+  }
+
+  /* Hata türleri */
+  let hata: CognitiveBlock;
+  const W = r.attemptedWrong;
+  const hataDetail = `Eksik kare ${r.missed} · fazla kare ${r.extra} · tek kare farkı ${r.near} · “Hatırlamıyorum” ${r.skipped}`;
+  if (floor) {
+    hata = { ...card('dh_hata'), headline: 'Yorumlanmadı', detail: hataDetail, text: `${noReadWhy} yanlış desenlerdeki hatalar yorumlanmadı.` };
+  } else if (r.wrong === 0) {
+    hata = {
+      ...card('dh_hata'),
+      headline: 'Hata yok',
+      text: v('Gösterilen bütün desenleri doğru hatırladın; hiçbir karede yanılmadın.', 'Çocuğunuz gösterilen bütün desenleri doğru hatırladı; hiçbir karede yanılmadı.'),
+    };
+  } else if (W === 0) {
+    hata = {
+      ...card('dh_hata'),
+      headline: '“Hatırlamıyorum” denen desenler',
+      text: v(
+        `Tam doğru hatırlayamadığın ${r.wrong === 1 ? 'desende' : `${r.wrong} desenin hepsinde`} “Hatırlamıyorum” düğmesine bastın; bu yüzden hangi tür hatanın öne çıktığı söylenemez.`,
+        `Çocuğunuz tam doğru hatırlayamadığı ${r.wrong === 1 ? 'desende' : `${r.wrong} desenin hepsinde`} “Hatırlamıyorum” düğmesine bastı; bu yüzden hangi tür hatanın öne çıktığı söylenemez.`,
+      ),
+    };
+  } else {
+    const parts: string[] = [];
+    // "Hatırlamıyorum" denen desenler de yanlış sayılır; hata türleri yalnızca kareleri işaretlenen yanlış desenlerde anlatılır.
+    const subject =
+      r.skipped > 0
+        ? v('Kareleri işaretlediğin yanlış desenlerin', 'Çocuğunuzun kareleri işaretlediği yanlış desenlerin')
+        : v('Tam doğru hatırlayamadığın desenlerin', 'Çocuğunuzun tam doğru hatırlayamadığı desenlerin');
+    const doer =
+      r.skipped > 0
+        ? v('Kareleri işaretlediğin yanlış desenlerin', 'Çocuğunuz kareleri işaretlediği yanlış desenlerin')
+        : v('Tam doğru hatırlayamadığın desenlerin', 'Çocuğunuz tam doğru hatırlayamadığı desenlerin');
+    if (r.skipped > 0) {
+      parts.push(
+        v(
+          `Tam doğru hatırlayamadığın ${r.wrong} desenin ${dhCount(r.skipped, 'inde')} “Hatırlamıyorum” düğmesine bastın; öteki ${W === 1 ? 'desende' : `${W} desende`} kareleri işaretledin.`,
+          `Çocuğunuz tam doğru hatırlayamadığı ${r.wrong} desenin ${dhCount(r.skipped, 'inde')} “Hatırlamıyorum” düğmesine bastı; öteki ${W === 1 ? 'desende' : `${W} desende`} kareleri işaretledi.`,
+        ),
+      );
+    }
+    let head = W === 1 ? 'Bir yanlış desen' : `${W} yanlış desen`;
+    if (W >= 2) {
+      let them = doer;
+      if (2 * r.near >= W) {
+        const half = 2 * r.near === W;
+        head = r.near === W ? 'Hepsinde tek kare farkı' : half ? 'Yarısında tek kare farkı' : 'Çoğunda tek kare farkı';
+        them = v('Bunların', 'Çocuğunuz bunların');
+        const q = r.near === W ? 'hepsinde' : half ? 'yarısında' : dhCount(r.near, 'inde');
+        parts.push(
+          v(
+            `${subject} ${q} yalnızca bir kare farklıydı: ${r.near === 1 ? 'o deseni' : 'bu desenleri'} büyük ölçüde hatırladın.`,
+            `${subject} ${q} yalnızca bir kare farklıydı: çocuğunuz ${r.near === 1 ? 'o deseni' : 'bu desenleri'} büyük ölçüde hatırladı.`,
+          ),
+        );
+      }
+      const how = (k: number) => (k === W ? 'hepsinde' : 'çoğunda');
+      if (2 * r.fewer > W) {
+        if (head.endsWith('desen')) head = 'Çoğunda kare eksik';
+        parts.push(
+          v(`${them} ${how(r.fewer)} desendekinden daha az kare işaretledin: bazı kareler akılda kalmamış.`, `${them} ${how(r.fewer)} desendekinden daha az kare işaretledi: bazı kareler akılda kalmamış.`),
+        );
+      } else if (2 * r.more > W) {
+        if (head.endsWith('desen')) head = 'Çoğunda fazla kare';
+        parts.push(
+          v(
+            `${them} ${how(r.more)} desendekinden daha çok kare işaretledin: desende olmayan kareler de işaretlendi.`,
+            `${them} ${how(r.more)} desendekinden daha çok kare işaretledi: desende olmayan kareler de işaretlendi.`,
+          ),
+        );
+      } else if (2 * r.same > W) {
+        if (head.endsWith('desen')) head = 'Çoğunda yer karışıklığı';
+        // Kare sayısı doğru olan yanlış desenlerde karelerin çoğu mu, birkaçı mı yanlış yerdeydi?
+        const sameItems = r.items.filter((x) => !x.correct && !x.skipped && x.marked === x.size);
+        const most = 2 * sameItems.reduce((a, x) => a + x.hits, 0) < sameItems.reduce((a, x) => a + x.size, 0);
+        const which = most ? 'karelerin çoğunu' : 'bazı kareleri';
+        parts.push(
+          v(
+            `${them} ${how(r.same)} kare sayısını doğru tuttun ama ${which} yanlış yere koydun.`,
+            `${them} ${how(r.same)} kare sayısını doğru tuttu ama ${which} yanlış yere koydu.`,
+          ),
+        );
+      } else {
+        // Belirgin bir tür yok: sayılar olduğu gibi söylenir (sıfır olan tür anılmaz).
+        const kinds = [
+          r.fewer > 0 ? `${dhCount(r.fewer, 'inde')} desendekinden daha az` : '',
+          r.more > 0 ? `${dhCount(r.more, 'inde')} daha çok` : '',
+          r.same > 0 ? `${dhCount(r.same, 'inde')} aynı sayıda` : '',
+        ].filter(Boolean);
+        parts.push(v(`${them} ${joinTr(kinds)} kare işaretledin.`, `${them} ${joinTr(kinds)} kare işaretledi.`));
+      }
+      if (r.shifted >= 2) {
+        parts.push(
+          `Bunların ${r.shifted} tanesinde bir kare, doğru yerinin hemen yanına konmuştu: bu desenlerde karelerin yeri büyük ölçüde akılda kalmış, yalnızca birinin yeri bir kare kaymış.`,
+        );
+      }
+    } else {
+      const one = r.items.find((x) => !x.correct && !x.skipped)!;
+      const lead = r.skipped > 0 ? v('Kareleri işaretlediğin tek yanlış desende', 'Çocuğunuzun kareleri işaretlediği tek yanlış desende') : v('Tek yanlış desende', 'Çocuğunuzun tek yanlış deseninde');
+      parts.push(
+        one.near
+          ? v(`${lead} yalnızca bir kare farklıydı: o deseni büyük ölçüde hatırladın.`, `${lead} yalnızca bir kare farklıydı: çocuğunuz o deseni büyük ölçüde hatırladı.`)
+          : `${lead} birden çok kare farklıydı.`,
+        r.skipped > 0
+          ? 'Kareleri işaretlenen tek bir yanlış desen olduğu için hangi tür hatanın öne çıktığı söylenemez.'
+          : 'Tek bir yanlış desen olduğu için hangi tür hatanın öne çıktığı söylenemez.',
+      );
+    }
+    if (doubt) parts.push(hedge);
+    hata = { ...card('dh_hata'), headline: head, detail: hataDetail, text: parts.join(' ') };
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (manySkip) {
+    issues.push(
+      v(
+        `Testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” düğmesine bastın. Bu kadar çok desende bu düğmeye basıldığında testi yarıda bırakmış ya da dikkatin başka yere kaymış olabilir; sonuç dikkatle yorumlanmalıdır.`,
+        `Çocuğunuz testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” düğmesine bastı. Bu kadar çok desende bu düğmeye basıldığında test yarıda bırakılmış ya da dikkat başka yere kaymış olabilir; sonuç dikkatle yorumlanmalıdır.`,
+      ),
+    );
+  }
+  if (rapid) {
+    issues.push(
+      v(
+        `${r.rapid} desen çok kısa sürede işaretlendi ve karelerinin çoğu yanlıştı; bu desenlerde kareleri dikkatle işaretlememiş olabilirsin.`,
+        `${r.rapid} desen çok kısa sürede işaretlendi ve karelerinin çoğu yanlıştı; bu desenlerde kareler dikkatle işaretlenmemiş olabilir.`,
+      ),
+    );
+  }
+  if (r.restarts >= PATTERN_RESTARTS_NOTE) {
+    issues.push(
+      v(
+        `Desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçtin; bu desenler bir kez daha gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
+        `Desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçildi; bu desenler bir kez daha gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
+      ),
+    );
+  }
+  const noLimit = v(
+    'Bu testte işaretlemek için süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.',
+    'Bu testte işaretlemek için süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan deseni doğru hatırlamaktır.',
+  );
+  const skipLine = floor
+    ? ''
+    : r.skipped === 0
+      ? v('Hiçbir desende “Hatırlamıyorum” düğmesine basmadın.', 'Çocuğunuz hiçbir desende “Hatırlamıyorum” düğmesine basmadı.')
+      : manySkip
+        ? ''
+        : v(
+            `${r.skipped === 1 ? 'Bir desende' : `${r.skipped} desende`} “Hatırlamıyorum” düğmesine bastın; hatırlamadığın bir desende tahmin etmek yerine bu düğmeyi kullanmak sonucu bozmaz.`,
+            `Çocuğunuz ${r.skipped === 1 ? 'bir desende' : `${r.skipped} desende`} “Hatırlamıyorum” düğmesine bastı; hatırlanmayan bir desende tahmin etmek yerine bu düğmeyi kullanmak sonucu bozmaz.`,
+          );
+  let calisma: CognitiveBlock;
+  if (r.medianRt === null) {
+    calisma = {
+      ...card('dh_calisma'),
+      headline: 'Süre hesaplanamadı',
+      text: [skipLine, ...issues, 'İşaretleme süreleri alınamadığı için süreler yorumlanmadı.'].filter(Boolean).join(' '),
+    };
+  } else {
+    calisma = {
+      ...card('dh_calisma'),
+      headline: `Desen başına tipik süre ${seconds(r.medianRt)}`,
+      text: [
+        v(`Bir deseni işaretlemen tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir deseni işaretlemesi tipik olarak ${seconds(r.medianRt)} sürdü.`),
+        skipLine,
+        ...issues,
+        noLimit,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    };
+  }
+
+  /* Grafik ve öne çıkan sayılar */
+  const chart: CognitiveReport['chart'] = {
+    title: 'Desen büyüklüğüne göre doğru hatırlanan desenler',
+    note: v(
+      'Her satırda aynı büyüklükteki üç desen vardır. Çubuk ne kadar uzunsa o büyüklükteki desenlerin o kadar çoğunu doğru hatırlamışsın demektir. Test, üç desenin hiçbirinin doğru hatırlanamadığı büyüklükte biter; daha büyük desenler gösterilmez.',
+      'Her satırda aynı büyüklükteki üç desen vardır. Çubuk ne kadar uzunsa o büyüklükteki desenlerin o kadar çoğu doğru hatırlanmış demektir. Test, üç desenin hiçbirinin doğru hatırlanamadığı büyüklükte biter; daha büyük desenler gösterilmez.',
+    ),
+    rows: r.levels.map((l) => ({ label: `${l.size} kareli`, value: l.correct, max: l.n, valueLabel: `${l.correct}/${l.n}` })),
+  };
+  // Kısmi puan aşağı yuvarlanır: bir hata varken %100 görünmesin.
+  const creditPct = r.cellsShown ? Math.floor((100 * r.cellsCredit) / r.cellsShown) : 0;
+  const figures = [
+    { label: 'En büyük doğru desen', value: floor ? '—' : `${r.span} kare` },
+    { label: 'Doğru hatırlanan desen', value: `${r.correct}/${r.trials}` },
+    { label: 'Karelerde isabet', value: `%${creditPct}`, note: 'Doğru işaretlenen kareler; desende olmayan işaretli kareler düşülür.' },
+  ];
+  return { blocks: [aralik, desen, hata, calisma], chart, figures };
+}
+
 /* ---------- Bakış açısı alma ---------- */
 
 const nfDeg = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
@@ -7412,6 +7751,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const ud = byKey.get('ud_dogru')?.extra as unknown as Rotation3dResult | undefined;
   const udt = def.tasks.find((t): t is MentalRotation3dTask => t.kind === 'mental_rotation_3d');
   if (ud && udt) add(rotation3dBlocks(ud, udt, audience, card));
+  const dh = byKey.get('dh_aralik')?.extra as unknown as PatternResult | undefined;
+  if (dh && def.tasks.some((t) => t.kind === 'pattern_memory')) add(patternBlocks(dh, audience, card));
   const hb = byKey.get('hb_harf')?.extra as unknown as ComplexSpanResult | undefined;
   if (hb && def.tasks.some((t) => t.kind === 'complex_span')) add(complexSpanBlocks(hb, audience, card));
   const ba = byKey.get('ba_hata')?.extra as unknown as PerspectiveResult | undefined;
@@ -7419,7 +7760,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

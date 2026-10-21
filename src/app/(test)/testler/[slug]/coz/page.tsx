@@ -82,6 +82,7 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
       // doğru seçenekler hedefle aynı küp listesini taşımaz ve küpler karışık sırayla gider. Çizilen her şekilde olduğu
       // gibi, bu veriden bir seçeneğin ayna görüntüsü olup olmadığı hesaplanabilir; test bir sınav olmadığı için kabul edilir.
       // Hesapla ve hatırlada gizlenecek bir anahtar yoktur: harfler ve işlemler zaten ekranda gösterilir.
+      // Desen hatırlamada da gizlenecek bir anahtar yoktur: desenler ekranda gösterilir; puanlama sunucuda yapılır.
       // Bakış açısı almada da gizlenecek bir anahtar yoktur: haritayı çizmek için nesnelerin konumları gönderilir ve doğru
       // yönler bunlardan hesaplanabilir (test bir sınav değildir); puanlama sunucuda yapılır.
       return {
