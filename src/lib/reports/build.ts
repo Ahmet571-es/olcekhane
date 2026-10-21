@@ -149,6 +149,7 @@ import {
   patternFloor,
   patternManySkipped,
   patternRapid,
+  PATTERN_LARGE,
   PATTERN_RESTARTS_NOTE,
   type PatternResult,
   ROTATION3D_CHANCE_MAX,
@@ -5532,8 +5533,11 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
                 `${upTo} hepsini doğru hatırladın; ${missLevel.size} kareli desenlerin hiçbirini tam doğru hatırlayamadın.`,
                 `${upTo} hepsini doğru hatırladı; ${missLevel.size} kareli desenlerin hiçbirini tam doğru hatırlayamadı.`,
               ),
-          'Desenler büyüdükçe akılda tutulacak kare sayısı arttığı için büyük desenlerde yanılmak bu testte olağandır.',
         );
+        // Yanlışlar büyük desenlerde başladıysa: akılda tutulacak kare çoğaldıkça yanılmak olağandır.
+        if (missLevel.size >= PATTERN_LARGE) {
+          parts.push('Desenler büyüdükçe akılda tutulacak kare sayısı arttığı için büyük desenlerde yanılmak bu testte olağandır.');
+        }
       } else {
         const m = missLevel.n - missLevel.correct;
         const rest = laterAll
@@ -5552,10 +5556,14 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
       }
       // Tam doğru olmayan desenlerde karelerin çoğu yine de doğru işaretlendiyse (kısmi hatırlama; desende olmayan işaretli
       // kareler düşülür). Yanlışların yarısı ya da daha çoğu tek kare farkıysa bunu "Hata türleri" kartı söyler.
+      // Her yanlış desende karelerin en az yarısı, hepsinde birlikte en az dörtte üçü doğru olmalı; bakmadan işaretleme
+      // kuşkusu varsa söylenmez.
       const tried = r.items.filter((x) => !x.correct && !x.skipped);
       const triedCells = tried.reduce((a, x) => a + x.size, 0);
-      const triedCredit = tried.reduce((a, x) => a + Math.max(0, x.hits - x.extra), 0);
-      if (tried.length >= 2 && triedCredit >= 0.75 * triedCells && 2 * r.near < r.attemptedWrong) {
+      const credit = (x: (typeof tried)[number]) => Math.max(0, x.hits - x.extra);
+      const triedCredit = tried.reduce((a, x) => a + credit(x), 0);
+      const eachHalf = tried.every((x) => 2 * credit(x) >= x.size);
+      if (!rapid && tried.length >= 2 && eachHalf && triedCredit >= 0.75 * triedCells && 2 * r.near < r.attemptedWrong) {
         parts.push(
           r.skipped > 0
             ? v(
@@ -5576,7 +5584,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   /* Hata türleri */
   let hata: CognitiveBlock;
   const W = r.attemptedWrong;
-  const hataDetail = `Eksik kare ${r.missed} · fazla kare ${r.extra} · tek kare farkı ${r.near} · “Hatırlamıyorum” ${r.skipped}`;
+  const hataDetail = `Eksik kare ${r.missed} · fazla kare ${r.extra} · tek kare farkı olan desen ${r.near} · “Hatırlamıyorum” denen desen ${r.skipped}`;
   if (floor) {
     hata = { ...card('dh_hata'), headline: 'Yorumlanmadı', detail: hataDetail, text: `${noReadWhy} yanlış desenlerdeki hatalar yorumlanmadı.` };
   } else if (r.wrong === 0) {
@@ -5613,12 +5621,15 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
         ),
       );
     }
-    let head = W === 1 ? 'Bir yanlış desen' : `${W} yanlış desen`;
+    // "Hatırlamıyorum" denen desenler de varsa başlık, yalnızca kareleri işaretlenen yanlış desenleri anlattığını söyler.
+    const scope = (q: string) => (r.skipped > 0 ? `İşaretlenenlerin ${q}` : capTr(q));
+    let head = r.skipped > 0 ? `İşaretlenen ${W === 1 ? 'bir' : W} yanlış desen` : W === 1 ? 'Bir yanlış desen' : `${W} yanlış desen`;
     if (W >= 2) {
       let them = doer;
+      const how = (k: number) => (k === W ? 'hepsinde' : 'çoğunda');
       if (2 * r.near >= W) {
         const half = 2 * r.near === W;
-        head = r.near === W ? 'Hepsinde tek kare farkı' : half ? 'Yarısında tek kare farkı' : 'Çoğunda tek kare farkı';
+        head = `${scope(r.near === W ? 'hepsinde' : half ? 'yarısında' : 'çoğunda')} tek kare farkı`;
         them = v('Bunların', 'Çocuğunuz bunların');
         const q = r.near === W ? 'hepsinde' : half ? 'yarısında' : dhCount(r.near, 'inde');
         parts.push(
@@ -5628,14 +5639,13 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
           ),
         );
       }
-      const how = (k: number) => (k === W ? 'hepsinde' : 'çoğunda');
       if (2 * r.fewer > W) {
-        if (head.endsWith('desen')) head = 'Çoğunda kare eksik';
+        if (head.endsWith('desen')) head = `${scope(how(r.fewer))} kare eksik`;
         parts.push(
           v(`${them} ${how(r.fewer)} desendekinden daha az kare işaretledin: bazı kareler akılda kalmamış.`, `${them} ${how(r.fewer)} desendekinden daha az kare işaretledi: bazı kareler akılda kalmamış.`),
         );
       } else if (2 * r.more > W) {
-        if (head.endsWith('desen')) head = 'Çoğunda fazla kare';
+        if (head.endsWith('desen')) head = `${scope(how(r.more))} fazla kare`;
         parts.push(
           v(
             `${them} ${how(r.more)} desendekinden daha çok kare işaretledin: desende olmayan kareler de işaretlendi.`,
@@ -5643,7 +5653,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
           ),
         );
       } else if (2 * r.same > W) {
-        if (head.endsWith('desen')) head = 'Çoğunda yer karışıklığı';
+        if (head.endsWith('desen')) head = `${scope(how(r.same))} yer karışıklığı`;
         // Kare sayısı doğru olan yanlış desenlerde karelerin çoğu mu, birkaçı mı yanlış yerdeydi?
         const sameItems = r.items.filter((x) => !x.correct && !x.skipped && x.marked === x.size);
         const most = 2 * sameItems.reduce((a, x) => a + x.hits, 0) < sameItems.reduce((a, x) => a + x.size, 0);
@@ -5658,8 +5668,8 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
         // Belirgin bir tür yok: sayılar olduğu gibi söylenir (sıfır olan tür anılmaz).
         const kinds = [
           r.fewer > 0 ? `${dhCount(r.fewer, 'inde')} desendekinden daha az` : '',
-          r.more > 0 ? `${dhCount(r.more, 'inde')} daha çok` : '',
-          r.same > 0 ? `${dhCount(r.same, 'inde')} aynı sayıda` : '',
+          r.more > 0 ? `${dhCount(r.more, 'inde')} ${r.fewer > 0 ? '' : 'desendekinden '}daha çok` : '',
+          r.same > 0 ? `${dhCount(r.same, 'inde')} desendeki kadar` : '',
         ].filter(Boolean);
         parts.push(v(`${them} ${joinTr(kinds)} kare işaretledin.`, `${them} ${joinTr(kinds)} kare işaretledi.`));
       }
@@ -5705,8 +5715,8 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   if (r.restarts >= PATTERN_RESTARTS_NOTE) {
     issues.push(
       v(
-        `Desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçtin; bu desenler bir kez daha gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
-        `Desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçildi; bu desenler bir kez daha gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
+        `Desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçtin; bu desenler yeniden gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
+        `Desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçildi; bu desenler yeniden gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
       ),
     );
   }
@@ -5725,7 +5735,20 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
             `Çocuğunuz ${r.skipped === 1 ? 'bir desende' : `${r.skipped} desende`} “Hatırlamıyorum” düğmesine bastı; hatırlanmayan bir desende tahmin etmek yerine bu düğmeyi kullanmak sonucu bozmaz.`,
           );
   let calisma: CognitiveBlock;
-  if (r.medianRt === null) {
+  if (r.skipped === r.trials) {
+    // Hiç kare işaretlenmedi: süre yoktur (ölçülemediği için değil).
+    calisma = {
+      ...card('dh_calisma'),
+      headline: '“Hatırlamıyorum” denen desenler',
+      text: [
+        v(
+          `Gösterilen ${r.trials} desenin hepsinde “Hatırlamıyorum” düğmesine bastın; hiç kare işaretlenmediği için işaretleme süresi yok.`,
+          `Çocuğunuz gösterilen ${r.trials} desenin hepsinde “Hatırlamıyorum” düğmesine bastı; hiç kare işaretlenmediği için işaretleme süresi yok.`,
+        ),
+        ...issues,
+      ].join(' '),
+    };
+  } else if (r.medianRt === null) {
     calisma = {
       ...card('dh_calisma'),
       headline: 'Süre hesaplanamadı',

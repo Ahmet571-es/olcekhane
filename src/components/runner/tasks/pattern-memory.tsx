@@ -22,10 +22,10 @@ const WRONG = '#c2410c';
 
 /**
  * Bir karenin ekrandaki boyu: en büyük ızgara (6 sütun) 320 piksellik telefonda da sığar. Çıkarılan pay: sayfanın iki yan
- * boşluğu (2 × 1rem), ızgaranın iç boşluğu (2 × 0,5rem), kenarı (2 × 2px), yarım rem güvenlik payı ve kareler arasındaki
- * boşluklar ((sütun − 1) × 0,25rem).
+ * boşluğu (2 × 1,25rem; globals.css), ızgaranın iç boşluğu (2 × 0,5rem), kenarı (2 × 2px), yarım rem güvenlik payı (yuvarlama
+ * ve kaydırma çubuğu için) ve kareler arasındaki boşluklar ((sütun − 1) × 0,25rem).
  */
-const cellSize = (cols: number) => `min(3.6rem, calc((100vw - ${3.75 + (cols - 1) * 0.25}rem) / ${cols}))`;
+const cellSize = (cols: number) => `min(3.6rem, calc((100vw - ${4.25 + (cols - 1) * 0.25}rem) / ${cols}))`;
 
 const PRACTICE_WORD = ['', 'bir', 'iki', 'üç'];
 /** Yönergedeki örnek: asıl desenlerde ve alıştırmada olmayan (simetrik) bir desen. */
@@ -86,10 +86,13 @@ function Grid({
           return (
             <span
               key={i}
-              className={`block rounded-md ${TOUCH_CLASSES}`}
+              className={`flex items-center justify-center rounded-md text-2xl leading-none font-bold text-white ${TOUCH_CLASSES}`}
               style={style}
               title={marks ? (hit ? 'Doğru' : missed ? 'Unutulan kare' : extra ? 'Desende olmayan kare' : undefined) : undefined}
-            />
+            >
+              {/* Desende olmayan kare yalnızca renkle değil, çarpıyla da ayırt edilir. */}
+              {extra ? <span aria-hidden="true">×</span> : null}
+            </span>
           );
         }
         return (
@@ -165,7 +168,8 @@ export function PatternMemory({ task, onDone }: { task: PatternMemoryTask; onDon
       inputAt.current = performance.now();
       setPhase('input');
       const painted = await afterPaint();
-      if (!ac.signal.aborted && document.visibilityState === 'visible' && hiddenSince.current === null) inputAt.current = painted;
+      // Sayfa bu arada gizlenip açıldıysa gizli süre zaten düşülür; başlangıç yeniden kaydırılmaz.
+      if (!ac.signal.aborted && document.visibilityState === 'visible' && hiddenSince.current === null && hiddenMs.current === 0) inputAt.current = painted;
     })().catch((e) => {
       if (!isAbort(e)) throw e;
     });
@@ -365,7 +369,7 @@ export function PatternMemory({ task, onDone }: { task: PatternMemoryTask; onDon
     const parts = [
       hit.size ? 'yeşil kareler doğru işaretlediğin kareler' : '',
       missed.size ? 'kesik çizgili yeşil kareler işaretlemediğin kareler' : '',
-      extra.size ? 'turuncu kareler desende olmayan kareler' : '',
+      extra.size ? 'çarpılı turuncu kareler desende olmayan kareler' : '',
     ].filter(Boolean);
     const legend = parts.length ? `${parts.join(', ').charAt(0).toLocaleUpperCase('tr-TR')}${parts.join(', ').slice(1)}.` : '';
     return (

@@ -2719,7 +2719,10 @@ export interface PatternResult {
   rapid: number;
   /** Desen gösterilirken sayfa gizlendiği için desenlerin baştan gösterilme sayısı (toplam). */
   restarts: number;
-  /** Testin bittiği büyüklük dışındaki desenler ve bunlarda "Hatırlamıyorum" denenler. */
+  /**
+   * Testin bittiği büyüklük (görevin bittiği ya da test sonuna kadar sürdüyse en büyük büyüklük) dışındaki desenler ve
+   * bunlarda "Hatırlamıyorum" denenler.
+   */
   beforeStop: number;
   skippedBeforeStop: number;
   items: PatternTrialResult[];
@@ -2733,6 +2736,8 @@ export const PATTERN_RAPID_BASE_MS = 800;
 export const PATTERN_RAPID_MS_PER_CELL = 200;
 /** Kayma (bir karenin doğru yerinin yanına konması) yalnızca bu büyüklükten başlayarak sayılır. */
 export const PATTERN_SHIFT_MIN_SIZE = 7;
+/** Raporda "büyük desen" sayılan en küçük büyüklük: yanlışlar bu büyüklükte ya da sonra başladıysa olağan olduğu söylenir. */
+export const PATTERN_LARGE = 7;
 /** Bir düzeyde gösterilen desen sayısı. */
 export const PATTERN_PER_LEVEL = 3;
 
@@ -2797,7 +2802,8 @@ export function scorePattern(task: PatternMemoryTask, input: PatternTrialInput[]
   const passed = levels.filter((l) => l.correct > 0);
   const wrongs = items.filter((x) => !x.correct && !x.skipped);
   const rts = items.flatMap((x) => (x.rt === null || x.skipped ? [] : [x.rt]));
-  const beforeStop = items.filter((x) => x.size !== stoppedAt);
+  // Testin bittiği büyüklük: üç deseni de yanlış olan büyüklük ya da test sonuna kadar sürdüyse en büyük büyüklük.
+  const beforeStop = items.filter((x) => x.size !== last.size);
   return {
     result: {
       start: task.levels[0].cells,
@@ -2861,7 +2867,7 @@ export function patternQualityNotes(r: PatternResult): string[] {
   }
   if (r.restarts >= PATTERN_RESTARTS_NOTE) {
     notes.push(
-      `Desen hatırlama testinde desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçilmiş; bu desenler baştan, yani bir kez daha gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
+      `Desen hatırlama testinde desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçilmiş; bu desenler yeniden gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
     );
   }
   return notes;
