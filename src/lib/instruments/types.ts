@@ -164,6 +164,19 @@ export interface LikertInstrument extends InstrumentBase {
    * (lib/scoring/likert.ts, likertQuality). Bu eğilim çocuklarda daha belirgindir (Soto ve ark., 2008).
    */
   oppositePairs?: [string, string][];
+  /**
+   * Destek kutusunu ölçek düzeylerinden bağımsız açan maddeler: bu maddelerden birine en az `min` cevabı verilirse (ham
+   * cevap, ters çevrilmeden önce) kutu açılır ve rapor şablonundaki `itemSupport` cümlesi kutunun başına eklenir. Ortalama
+   * tek bir cevabı gizleyebildiği için kullanılır (ör. "Sık sık kendimi hüzünlü hissederim" cümlesine "Oldukça doğru"
+   * deyip öteki cümlelere olumlu cevap veren birinin ruh hâli satırı orta düzeyde görünür).
+   */
+  supportItems?: { key: string; min: number }[];
+  /**
+   * Kısa ve düz-ters yönlü maddeleri karışık ölçeklerde: bütün maddelere aynı cevap verildiyse (ortadaki seçenek dışında)
+   * kalite notu gösterilir (lib/scoring/likert.ts, likertQuality). Uzun ölçeklerdeki "hep aynı seçenek" denetimi 20'den az
+   * maddede çalışmaz.
+   */
+  sameAnswerCheck?: boolean;
 }
 
 export interface ReadingQuestion {

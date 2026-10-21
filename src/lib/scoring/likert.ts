@@ -56,7 +56,55 @@ export interface QualityReport {
   oppositeDisagree: number;
   medianRtMs: number | null;
   longestRun: number;
+  /** Bütün maddelere aynı (ortada olmayan) cevap; yalnızca `sameAnswerCheck` verilen ölçeklerde denetlenir. */
+  sameAnswer: boolean;
   notes: string[];
+}
+
+/**
+ * Madde düzeyindeki işaretler (rapor için):
+ * - support: `supportItems`'taki maddelerden birine en az `min` cevabı verildi; flagged: bu maddelerin ölçekleri.
+ * - mixed: maddeleri doğrudan bu ölçeğe bağlı (bileşik olmayan) ve iki ya da daha çok maddesi cevaplanmış ölçeklerden,
+ *   cevaplarında hem olumlu hem olumsuz uç bulunanlar (ters maddeler çevrildikten sonra en az bir cevap üstteki iki
+ *   seçenekte, en az biri alttaki iki seçenekte; üç ya da dört seçenekli ölçekte yalnızca en uçtakiler). Ortalama böyle
+ *   ayrışan cevapları "orta" gösterebilir; rapor şablonu `itemSplit` ile bunu ayrıca anlatabilir.
+ */
+export interface LikertItemFlags {
+  support: boolean;
+  flagged: string[];
+  mixed: string[];
+}
+
+export function likertItemFlags(def: LikertInstrument, answers: Record<string, LikertAnswer>): LikertItemFlags {
+  const values = def.options.map((o) => o.value);
+  const lowest = Math.min(...values);
+  const highest = Math.max(...values);
+  const wide = def.options.length >= 5 ? 1 : 0;
+  const flagged = [
+    ...new Set(
+      (def.supportItems ?? [])
+        .filter(({ key, min }) => {
+          const v = answers[key]?.value;
+          return v !== undefined && Number.isFinite(v) && v >= min;
+        })
+        .map(({ key }) => def.items.find((i) => i.key === key)!.scale),
+    ),
+  ];
+  const mixed: string[] = [];
+  for (const scale of def.scales) {
+    if (scale.of) continue;
+    const keyed = def.items
+      .filter((i) => i.scale === scale.key)
+      .map((i) => {
+        const v = answers[i.key]?.value;
+        if (v === undefined || !Number.isFinite(v)) return undefined;
+        return i.reverse ? lowest + highest - v : v;
+      })
+      .filter((v): v is number => v !== undefined);
+    if (keyed.length < 2) continue;
+    if (keyed.some((v) => v >= highest - wide) && keyed.some((v) => v <= lowest + wide)) mixed.push(scale.key);
+  }
+  return { support: flagged.length > 0, flagged, mixed };
 }
 
 /** Yüzdelik değeri beş düzeye çevirir (norm varken kullanılır). */
@@ -228,5 +276,24 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
       `Birbirinin tersini söyleyen ${def.oppositePairs!.length} cümle çiftinden ${n} tanesinde iki cümleye de ${labels(v, toward)} denmiş. Bu, cümlelerin ne söylediğine bakmadan çoğuna “${what}” deme eğiliminden kaynaklanabilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
     );
   }
-  return { tooFast, straightLining, incomplete, oppositeAgree, oppositeDisagree, medianRtMs, longestRun, notes };
+  // Bütün maddelere aynı cevap: düz ve ters yönlü maddeler karışık olduğu için ortadaki seçenek dışında anlamlı değildir.
+  const middle = (lowest + highest) / 2;
+  const first = answered[0]?.value;
+  const sameAnswer =
+    !!def.sameAnswerCheck &&
+    !incomplete &&
+    first !== undefined &&
+    first !== middle &&
+    answered.every((a) => a.value === first) &&
+    def.items.some((i) => i.reverse) &&
+    def.items.some((i) => !i.reverse);
+  if (sameAnswer) {
+    // Çoğul adlar "-ler" ile biter: yönelme "-lere", ilgi "-lerin" (cümlelere, cümlelerin).
+    const plural = ITEM_NOUN_PLURAL[likertItemNoun(def)];
+    const of = `${plural.charAt(0).toLocaleUpperCase('tr-TR')}${plural.slice(1)}in`;
+    notes.push(
+      `Bütün ${plural}e aynı cevap (“${label(first)}”) verilmiş. ${of} bir kısmı olumlu, bir kısmı olumsuz bir şey söylediği için bu, ne söylediklerine bakmadan cevap verme eğiliminden kaynaklanabilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
+    );
+  }
+  return { tooFast, straightLining, incomplete, oppositeAgree, oppositeDisagree, medianRtMs, longestRun, sameAnswer, notes };
 }

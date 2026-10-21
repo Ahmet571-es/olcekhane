@@ -101,6 +101,11 @@ export function buildRoadmap(
   const a = r.audience;
   const parent = a === 'parent';
   const sections = r.sections.filter((s) => t.scales[s.scaleKey]);
+  // Önerilerin düzeyi: bir maddesi destek kutusunu açan ölçekte (ör. "Sık sık kendimi hüzünlü hissederim" cümlesine
+  // "Oldukça doğru") düşük düzeyin önerileri; cevapları iki uca ayrışan ölçekte orta düzeyinkiler (rapordaki kart
+  // "Farklı cevaplar" der). Grafik, öne çıkanlar ve dengeli profil cümlesi puanın kendi düzeyini kullanır.
+  const groupOf = (s: (typeof sections)[number]): BandGroup | null =>
+    s.band === null ? null : s.flagged ? 'low' : s.split ? 'average' : bandGroup(s.band);
   const mid = (s: (typeof sections)[number]) => (s.min + s.max) / 2;
   const distance = (s: (typeof sections)[number]) => (s.value === null ? -1 : Math.abs(s.value - mid(s)));
 
@@ -133,7 +138,9 @@ export function buildRoadmap(
   const standoutNote =
     standout.length > 0
       ? null
-      : parent
+      : t.balancedNote
+        ? pick(t.balancedNote, a)
+        : parent
         ? `Çocuğunuzun profili dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyor.`
         : `Profilin dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyorsun.`;
 
@@ -142,13 +149,13 @@ export function buildRoadmap(
   // eşitlikte profildeki sıra korunur.
   const scored = sections.filter((s) => s.value !== null);
   const focusing = !!t.focus && scored.length > t.focus.count;
-  const extreme = (s: (typeof sections)[number]) => (bandGroup(s.band) === 'average' ? 0 : 1);
+  const extreme = (s: (typeof sections)[number]) => (groupOf(s) === 'average' ? 0 : 1);
   const focused = focusing
     ? [...scored].sort((x, y) => extreme(y) - extreme(x) || distance(y) - distance(x)).slice(0, t.focus!.count)
     : sections;
 
   const study = focused.flatMap((s) => {
-    const g = bandGroup(s.band);
+    const g = groupOf(s);
     if (!g) return [];
     return [
       {
@@ -162,7 +169,7 @@ export function buildRoadmap(
   });
   // İyi oluş: şablondaki sırayla ilk uyan boyut (ör. Duygusal denge düşük, sonra Endişeye yatkınlık yüksek).
   const wellbeing = (t.wellbeing ? [t.wellbeing].flat() : [])
-    .map((w) => ({ w, s: sections.find((s) => s.scaleKey === w.scale && bandGroup(s.band) === w.group) }))
+    .map((w) => ({ w, s: sections.find((s) => s.scaleKey === w.scale && groupOf(s) === w.group) }))
     .find((x) => x.s);
   const stress = wellbeing?.s;
   const links = [{ label: a === 'adult' ? 'Etkili çalışma yöntemleri' : 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
@@ -174,7 +181,7 @@ export function buildRoadmap(
 
   const hasSettings = Object.values(t.scales).some((x) => x.settings) && !!t.settingsNote;
   const settingItems = focused.flatMap((s) => {
-    const g = bandGroup(s.band);
+    const g = groupOf(s);
     const text = g ? t.scales[s.scaleKey].settings?.[g] : undefined;
     return text ? [text] : [];
   });
@@ -183,7 +190,7 @@ export function buildRoadmap(
   // geçir.
   const action = (key: string) => {
     const s = sections.find((x) => x.scaleKey === key);
-    const g = s ? bandGroup(s.band) : null;
+    const g = s ? groupOf(s) : null;
     return s && g ? { name: s.name, text: pick(t.scales[key].action[g], a) } : null;
   };
   const planning = action(t.planningScale);
@@ -251,7 +258,7 @@ export function buildRoadmap(
       ? {
           title: 'Çocuğunuza nasıl yaklaşabilirsiniz?',
           items: focused.flatMap((s) => {
-            const g = bandGroup(s.band);
+            const g = groupOf(s);
             const text = (g && t.approach?.[s.scaleKey]?.[g]) || s.tips[0];
             return text ? [{ title: s.name, text }] : [];
           }),

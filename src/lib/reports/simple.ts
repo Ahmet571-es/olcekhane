@@ -220,6 +220,11 @@ export function supportText(audience: Audience, young = false): { title: string;
   return { title, lines: [...lines] };
 }
 
+/** Kutuyu bir cevap açtıysa (ReportContent.supportNote) o cümle kutunun ilk satırıdır. */
+function withSupportNote(box: { title: string; lines: string[] }, note?: string): { title: string; lines: string[] } {
+  return note ? { title: box.title, lines: [note, ...box.lines] } : box;
+}
+
 /** Kime yazıldığına göre metin; yetişkin metni verilmezse öğrenci metni kullanılır (ikisi de "sen" diliyle). */
 function byAudience(audience: Audience, t: { student: string; parent: string; adult?: string }): string {
   if (audience === 'parent') return t.parent;
@@ -502,7 +507,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     completedAt: r.completedAt,
     isPilot: r.isPilot,
     cautions: [...r.qualityNotes],
-    support: r.support ? supportText(r.audience, r.young) : null,
+    support: r.support ? withSupportNote(supportText(r.audience, r.young), r.supportNote) : null,
     normNote: r.normNote,
     disclaimer: disclaimerText(r),
   };

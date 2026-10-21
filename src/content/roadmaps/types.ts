@@ -75,6 +75,11 @@ export interface RoadmapTemplate {
    */
   unit?: { one: string; toPlural: string };
   /**
+   * Hiçbir ölçek orta düzeyin dışında değilken gösterilen cümle; verilmezse "Profilin dengeli: hiçbir boyut belirgin
+   * biçimde öne çıkmıyor…" (kişilik testleri). Kişilik dışındaki testlerde "yönlerini kullanabiliyorsun" uymaz (ör. iyimserlik).
+   */
+  balancedNote?: AudienceText;
+  /**
    * Veliye yaklaşım önerileri. Verilmezse rapor şablonundaki veli önerilerinin ilki kullanılır (Beş Faktör); rapor
    * şablonunda öneri yazılmamış testlerde burada verilir.
    */

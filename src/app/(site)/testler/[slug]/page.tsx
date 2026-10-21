@@ -330,7 +330,13 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
             )}
             {def.engine === 'likert' && !def.profile && (
               <>
-                {scales.length === 1 ? (
+                {composites.length === 1 && loose.length === 0 ? (
+                  // Tek bir toplam puan ve onun maddelerinin konulara göre ayrılmış ortalamaları (ör. iyimserlik).
+                  <>
+                    <li>{`${composites[0].name} puanının${showsMargin ? ', ölçüm payıyla birlikte' : ''} cetvel üzerinde gösterimi; düzeyi ve sade bir açıklaması`}</li>
+                    <li>{`Cümlelerin sorduğu ${(NUMBER_WORDS[facetCount] ?? String(facetCount)).toLocaleLowerCase('tr-TR')} konuda (${(composites[0].of ?? []).flatMap((k) => scales.filter((f) => f.key === k)).map((f) => f.name.toLocaleLowerCase('tr-TR')).join(', ')}) cevapların ayrı ayrı gösterimi ve her biri için kısa bir açıklama`}</li>
+                  </>
+                ) : scales.length === 1 ? (
                   <>
                     <li>{showsMargin ? 'Puanın, ölçüm payıyla birlikte cetvel üzerinde gösterimi' : 'Puanın cetvel üzerinde gösterimi'}</li>
                     <li>Düzey ve sade bir açıklama</li>

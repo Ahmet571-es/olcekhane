@@ -489,7 +489,29 @@ Düşünmeyi Sevme.
    masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı. Ekran: 1024 px altında seçenekler iki sütun, üstünde dört
    sütun (aranan şekil ve çizimler aynı ölçekte; 1366×768'de "Cevabı ver" ekranda); odak seçeneklere yalnızca klavyeyle
    ilerleyende taşınır.
-12. İyimserlik (IPIP, 10 madde; maddelerin bir kısmı öz-saygı ve ruh hâli de sorar, raporda dikkate alınır).
+12. **İyimserlik Ölçeği: yayında (2026-10-21, active; 9. sınıftan yetişkine).** IPIP'in LOT-R'ye (Scheier, Carver ve Bridges,
+   1994) karşılık gelen 10 maddesinin hepsi (α .86; LOT-R ile .69, düzeltilmiş .82; ESCS yetişkinleri). IPIP ölçekleri
+   ölçütle en çok ilişkili maddeler seçilerek kurulduğu için beş madde hayata ve geleceğe bakışı, iki madde kendine bakışı,
+   üç madde ruh hâlini sorar; beşi IPIP-NEO depresyon alt ölçeğinde de var. Asıl puan on maddenin ortalaması (bileşik ölçek
+   `iyimserlik`); raporda ayrıca üç konunun ortalaması ayrı satırlarda (`gelecek`, `kendine_bakis`, `ruh_hali`; ayrı ölçek
+   değil, ölçüm payı yok, metinler "… cümleye verdiğin cevaplar" diye başlar; toplam kartı konular hakkında hüküm vermez).
+   Ölçüm payı yok (ESCS açık verisine bu oturumdan ulaşılamadı; IPIP sürümünün ortalaması yayımlanmamış). Beş çeviri öteki
+   testlerle aynı, beşi yeni. Sıra olumlu başlar ve biter (artı maddeler 1., 4., 7., 10.). Destek kutusu dört satırdan biri
+   düşükken **ve** "Sık sık kendimi hüzünlü hissederim" ya da "Kendimden hoşlanmam" cümlesine 4–5 denince (yeni ortak alanlar:
+   ölçekte `supportItems`, rapor şablonunda `itemSupport`: kutunun ilk satırı nedenini söyler). Kendine bakış ya da ruh hâli
+   cevapları iki uca ayrışır ve ortalama düşük değilse kartta "Farklı cevaplar" (yeni ortak alan `itemSplit`;
+   `likertItemFlags`); yol haritası bu konularda sırasıyla düşük ve orta düzeyin önerilerini verir (`ReportSection.flagged`,
+   `split`). Bütün cümlelere aynı uç cevapta kalite notu (yeni ortak alan `sameAnswerCheck`). "Bilmekte yarar var":
+   tanım, içeriğin neden ruh hâli ve kendine bakışı da sorduğu (ilişkili ama ayrı), başa çıkma (Solberg Nes ve Segerstrom,
+   2006), görece kalıcı ama değişebilir (Malouff ve Schutte, 2017); altı birleşim kuralı (toplam düşük değilken ruh hâli ya
+   da kendine bakış düşük; karamsarlık daha çok gelecekte; gelecek umutlu ama ruh hâli düşük; toplam yüksek ama gelecek daha
+   az umutlu; toplam düşük ama gelecek o kadar karamsar değil). Yol haritası üç konuyla: 3 sütun, ortamlar yok, 1. hafta
+   veliye raporu birlikte okuma, 2. hafta "En iyi olası gelecek" (BPS; söz vermez), 3. hafta ruh hâli düşükse ona (iki hafta
+   ya da daha uzun süredir çoğu zaman keyifsizlikte biriyle konuşma ve doktor; MedlinePlus), değilse kendine bakış düşükse
+   ona ("Öz-saygı nedir?" bağlantısı). Yeni ortak alan: yol haritasında `balancedNote` (dengeli profil cümlesi). Test
+   sayfasında tek bileşik ölçekli testin "Raporda neler var" satırları. İki tur bağımsız inceleme (bilgi ve kaynak; çeviri,
+   metin, mantık ve ekran) ve ikinci tur denetim düzeltildi; 400 rastgele karışık cevap örüntüsü testte denenir; telefonda
+   dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
 13. Desen Hatırlama (görsel bellek; Della Sala düzeni; özgün desenler).
 14. Harf Dizileri (Thurstone; Simon ve Kotovsky düzeni; özgün diziler, Türk alfabesi).
 
@@ -710,6 +732,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Bakış Açısı Alma | bakis-acisi-alma | Yayında (pilot; 7. sınıftan yetişkine) |
 | Heyecan Arayışı | heyecan-arayisi | Yayında (active; 9. sınıftan yetişkine) |
 | Gizli Şekiller | gizli-sekiller | Yayında (pilot; 3. sınıftan yetişkine) |
+| İyimserlik Ölçeği | iyimserlik | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -822,6 +845,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-21 (33): İyimserlik Ölçeği yayında (9. sınıftan yetişkine), 2. dalganın 12. testi: IPIP'in 10 maddelik
+  iyimserlik ölçeği, yaklaşık 2 dakika; toplam puanın yanında cümlelerin sorduğu üç konu (hayata ve geleceğe bakış, kendine
+  bakış, ruh hâli) ayrı gösterilir; destek kutusu düşük düzeylerde ve hüzün ya da kendinden hoşlanmama cümlesine tek bir
+  "doğru" cevabında da açılır; bir konunun cevapları ayrışınca "Farklı cevaplar" yazar; öğrenci, veli ve yetişkin raporu,
+  3 sütunlu yol haritası ("En iyi olası gelecek" haftası); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve
+  masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-21 (32): Gizli Şekiller yayında (3. sınıftan yetişkine), 2. dalganın 11. testi: karmaşık bir çizimin içine
   saklanmış basit şekli dört çizimden birinde bulma; 20 özgün soru, dört düzey, iki alıştırma; her sorunun tek cevabı ve
   düzeylerin giderek zorlaştığı bağımsız denetleyiciyle doğrulandı; yanlışlarda döndürülmüş ya da köşesi farklı benzerin
@@ -865,7 +894,3 @@ En yeni üstte; en çok 10 madde tutulur.
   maddelerin sorduğunu anlatır; öğrenci, veli ve yetişkin raporu, Beş Faktör'ün yol haritası (çelişen metinler bu testte
   değişti); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Yol
   haritası testindeki yetişkin sözcük denetimi Türkçe harflerle de çalışacak biçimde düzeltildi.
-- 2026-10-15 (23): Planlama: Kule Görevi yayında (3. sınıftan yetişkine), 2. dalganın 2. testi: 20 özgün problem
-  (3–7 hamle), en az hamleler bütün dizilişler taranarak doğrulandı; en az hamlede çözülenler, problem uzadıkça sonuç,
-  çözüm biçimi ve başlamadan önce düşünme ayrı yorumlanır; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası;
-  iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.

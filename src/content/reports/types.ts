@@ -49,6 +49,17 @@ export interface ReportTemplate {
    * boyut metni ile "insanlara çabuk ısınan" yön kartı aynı sayfada). Destek kutusu boyutun düzeyine göre değişmez.
    */
   facetSplit?: Record<string, { summary: string; student: string; parent: string; adult?: string }>;
+  /**
+   * Bileşik olmayan bir ölçeğin cevapları iki uca ayrışıyorsa (ters maddeler çevrildikten sonra biri olumlu, biri olumsuz;
+   * scoring/likert, likertItemFlags) ve ortalama düşük değilse, düzey metni yerine gösterilen metin; anahtar ölçektir.
+   * Az maddeli bir konuda ortalama, birbirine ters cevapları "orta" ya da "yüksek" gösterebilir.
+   */
+  itemSplit?: Record<string, { summary: string; student: string; parent: string; adult?: string }>;
+  /**
+   * Destek kutusunu bir madde açtıysa (ölçek: supportItems) kutunun başına eklenen cümle: kutunun neden gösterildiğini
+   * söyler. Tanı koymaz.
+   */
+  itemSupport?: { student: string; parent: string; adult?: string };
   scales: Record<string, ScaleTexts>;
 }
 

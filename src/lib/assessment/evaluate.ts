@@ -12,7 +12,7 @@ import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
 import { buildRoadmap, type Roadmap } from '@/lib/reports/roadmap';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { buildTaskRoadmap } from '@/lib/reports/task-roadmap';
-import { likertQuality, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
+import { likertItemFlags, likertQuality, scoreLikert, type LikertAnswer, type LikertItemFlags } from '@/lib/scoring/likert';
 import { OralInputError, scoreOral, type OralResult } from '@/lib/scoring/oral';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
@@ -57,7 +57,7 @@ export function solvableInstrument(slug: string): InstrumentDef | null {
  * Cevapları puanlar. Norm tablosu kullanılmaz: Likert ölçekleri puanın cevap aralığındaki konumuna
  * göre (scoring/likert, anchoredBand), diğer testler kendi ölçütlerine göre yorumlanır.
  */
-function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes: string[] } {
+function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes: string[]; items?: LikertItemFlags } {
   const { data, grade } = body;
   if (def.engine !== data.engine) throw new AssessmentError('invalid', 'Geçersiz istek.');
 
@@ -72,7 +72,7 @@ function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes
     if (Object.keys(answers).length < Math.ceil(def.items.length * def.scoring.minAnsweredRatio)) {
       throw new AssessmentError('invalid', 'Testi bitirmek için maddelerin çoğunu cevaplamak gerekiyor.');
     }
-    return { rows: likertRows(scoreLikert(def, answers, {})), notes: likertQuality(def, answers).notes };
+    return { rows: likertRows(scoreLikert(def, answers, {})), notes: likertQuality(def, answers).notes, items: likertItemFlags(def, answers) };
   }
 
   if (def.engine === 'quiz' && data.engine === 'quiz') {
@@ -168,7 +168,7 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
       return withRoadmap ? { ...report, roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : report;
     };
   }
-  const { rows, notes } = score(def, body);
+  const { rows, notes, items } = score(def, body);
   const scores = rows.map(toReportScore);
   return (audience, now) => {
     const content = buildReport({
@@ -179,6 +179,7 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
       grade: body.grade,
       completedAt: now,
       qualityNotes: notes,
+      items,
     });
     const report = toSimpleReport(content);
     const roadmap = roadmapFor(def, content, body);

@@ -214,6 +214,10 @@ export interface ReportSection {
   ciLow: number | null;
   ciHigh: number | null;
   percentile: number | null;
+  /** Cevaplar iki uca ayrıştığı için düzey metni yerine ayrışma metni gösterildi (rapor şablonu: itemSplit). */
+  split?: boolean;
+  /** Bu ölçeğin bir maddesi destek kutusunu açtı (ölçek: supportItems). */
+  flagged?: boolean;
 }
 
 export interface ReportContent {
@@ -235,6 +239,8 @@ export interface ReportContent {
   /** "Genel bakış" açıklaması (şablonda tanımlıysa). */
   overview?: string;
   support: boolean;
+  /** Destek kutusunu bir cevap açtıysa kutunun başındaki cümle (ör. "Cevaplarından en az birinde …"). */
+  supportNote?: string;
   /** Test yalnızca küçük çocuklara (en çok 5. sınıf) açık: öğrenciye destek kutusu çocuk diliyle yazılır. */
   young?: boolean;
   science: { basedOn: string; reliability: string; limitations: string[]; license: string };
@@ -476,6 +482,8 @@ export function buildReport(input: {
   grade: number;
   completedAt: Date;
   qualityNotes?: string[];
+  /** Likert testlerinde madde düzeyindeki işaretler (scoring/likert, likertItemFlags). */
+  items?: { support: boolean; flagged: string[]; mixed: string[] };
 }): ReportContent {
   const { def, audience } = input;
   const template = REPORT_TEMPLATES[def.slug];
@@ -483,6 +491,8 @@ export function buildReport(input: {
   let support = false;
   /** Destek kutusunu açan ölçekler (ayrışan bir boyutun düzey metni gösterilmezse o boyut kutuyu açmaz). */
   const supportFrom: string[] = [];
+  /** Kutuyu bir madde açtıysa kutunun başındaki cümle (rapor şablonu: itemSupport). */
+  let supportNote: string | undefined;
 
   const sections: ReportSection[] = [];
   let reading: ReportContent['reading'];
@@ -543,6 +553,24 @@ export function buildReport(input: {
         if (at >= 0) supportFrom.splice(at, 1);
         support = supportFrom.length > 0;
       }
+    }
+    // Bir konudaki cevaplar iki uca ayrışıyorsa (biri olumlu, biri olumsuz) ve ortalama düşük değilse, ortalamanın düzey
+    // metni yerine şablondaki ayrışma metni (rapor şablonu: itemSplit). Düşük düzeyin metni ve destek kutusu değişmez.
+    if (template?.itemSplit && input.items) {
+      for (const [key, split] of Object.entries(template.itemSplit)) {
+        const sec = sections.find((x) => x.scaleKey === key);
+        if (!sec?.band || motivationLevel(sec.band) === 'low' || !input.items.mixed.includes(key)) continue;
+        sec.summary = split.summary;
+        sec.text = audience === 'parent' ? split.parent : audience === 'adult' ? (split.adult ?? split.student) : split.student;
+        sec.split = true;
+      }
+    }
+    // Destek kutusunu açan maddeler (ölçek: supportItems): ortalama tek bir cevabı gizleyebilir.
+    for (const sec of sections) if (input.items?.flagged.includes(sec.scaleKey)) sec.flagged = true;
+    if (input.items?.support) {
+      support = true;
+      supportFrom.push('items');
+      if (template?.itemSupport) supportNote = audience === 'parent' ? template.itemSupport.parent : audience === 'adult' ? (template.itemSupport.adult ?? template.itemSupport.student) : template.itemSupport.student;
     }
   } else if (def.engine === 'tasks') {
     cognitive = buildCognitive(def, byKey, audience);
@@ -690,6 +718,7 @@ export function buildReport(input: {
         : ((audience === 'adult' ? template.overview.adult : undefined) ?? template.overview.student)
       : undefined,
     support,
+    ...(support && supportNote ? { supportNote } : {}),
     ...(def.maxGrade <= 5 ? { young: true } : {}),
     science: {
       basedOn: science.basedOn,
