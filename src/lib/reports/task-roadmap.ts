@@ -1,4 +1,5 @@
 import type { TaskRoadmapTemplate } from '@/content/roadmaps/types';
+import { parentTitle } from '@/content/roadmaps/veli-basliklari';
 import type { ReportContent } from './build';
 import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
 
@@ -18,12 +19,21 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
   const a = r.audience;
   const parent = a === 'parent';
   const contents = [pick(t.what, a), 'bilmekte yarar olanlar', ...(parent ? ['ona nasıl yaklaşabileceğiniz'] : []), 'dört haftalık küçük adımlar'];
+  // Öneri ve hafta başlıkları okura "sen" diye seslenir; veli raporunda ad öbeği biçimi kullanılır.
+  const title = (x: string) => (parent ? parentTitle(x) : x);
 
+  // Ana sonuç (ilk kart) yorumlanmadıysa giriş, önerilerin sonuca değil herkese yönelik olduğunu söyler.
+  const notRead = blocks[0].headline === 'Yorumlanmadı';
+  const purpose = 'Öneriler puanı yükseltmek için değil, bu becerinin gerektiği işleri kolaylaştırmak içindir.';
   return {
     preview: opts.preview,
-    intro: parent
-      ? `Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: ${joinNames(contents)}. Öneriler puanı yükseltmek için değil, bu becerinin gerektiği işleri kolaylaştırmak içindir.`
-      : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${joinNames(contents)}. Öneriler puanı yükseltmek için değil, bu becerinin gerektiği işleri kolaylaştırmak içindir.`,
+    intro: notRead
+      ? parent
+        ? `Sonuç yorumlanmadığı için bu bölümdeki öneriler herkes için yazılmış genel önerilerdir: ${joinNames(contents)}. ${purpose}`
+        : `Sonucun yorumlanmadığı için bu bölümdeki öneriler herkes için yazılmış genel önerilerdir: ${joinNames(contents)}. ${purpose}`
+      : parent
+        ? `Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: ${joinNames(contents)}. ${purpose}`
+        : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${joinNames(contents)}. ${purpose}`,
     bars: (r.cognitive?.profile?.bars ?? []).map((b) => ({ ...b, ciLow: null, ciHigh: null })),
     ...(r.cognitive?.profile ? { barsTitle: r.cognitive.profile.title, barsNote: r.cognitive.profile.note } : {}),
     standout: blocks.map((b) => ({ title: b.name, text: b.headline })),
@@ -31,7 +41,7 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
     study: {
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
       intro: pick(t.studyIntro, a),
-      items: t.supports.map((s) => ({ key: s.key, title: s.title, badge: s.tag, color: s.color, text: pick(s.text, a) })),
+      items: t.supports.map((s) => ({ key: s.key, title: title(s.title), badge: s.tag, color: s.color, text: pick(s.text, a) })),
       links: t.links,
     },
     settings: {
@@ -42,8 +52,8 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
     },
     approach: parent ? { title: 'Çocuğunuza nasıl yaklaşabilirsiniz?', items: t.approach } : null,
     weeks: [
-      ...t.weeks.map((w, i) => ({ label: `${i + 1}. hafta`, title: w.title, text: pick(w.text, a) })),
-      { label: '4. hafta', title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent) },
+      ...t.weeks.map((w, i) => ({ label: `${i + 1}. hafta`, title: title(w.title), text: pick(w.text, a) })),
+      { label: '4. hafta', title: title('Gözden geçir'), text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent) },
     ],
     sources: t.sources,
   };

@@ -1862,8 +1862,8 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
   };
   const incomplete = (p: TrailResult['parts'][number]) =>
     you
-      ? `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.n} dairenin ${p.reached} tanesini sırayla birleştirdin). Bu; kullandığın cihazdan, yönergeyi tam anlamamaktan ya da o an dikkatinin dağılmasından olabilir. Bu sonuç tek başına bir şey söylemez.`
-      : `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.n} dairenin ${p.reached} tanesi birleştirildi). Bu; cihazdan, yönergenin tam anlaşılmamasından ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.`;
+      ? `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.reached === 0 ? 'hiçbir daireyi birleştiremedin' : `${p.n} dairenin ${countOf(p.reached, p.n, 'ini')} sırayla birleştirdin`}). Bu; kullandığın cihazdan, yönergeyi tam anlamamaktan ya da o an dikkatinin dağılmasından olabilir. Bu sonuç tek başına bir şey söylemez.`
+      : `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.reached === 0 ? 'hiçbir daire birleştirilmedi' : `${p.n} dairenin ${countOf(p.reached, p.n, 'i')} birleştirildi`}). Bu; cihazdan, yönergenin tam anlaşılmamasından ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.`;
   const [a, b] = r.parts;
 
   const blockA: CognitiveBlock = a.completed
@@ -2963,7 +2963,7 @@ function reachedLevelBlock(o: {
     const high = o.levels.filter((l) => l.level > 1 && passed(l));
     const highShare = high.every((l) => l.correct === l.n) ? 'hepsini' : 'çoğunu';
     const highNames = joinTr(high.map((l) => `${l.level}.`));
-    const found = first.correct === 0 ? 'hiçbirini doğru bulama' : `${first.correct} tanesini doğru bul`;
+    const found = first.correct === 0 ? 'hiçbirini doğru bulama' : `${first.correct === 1 ? 'birini' : `${first.correct} tanesini`} doğru bul`;
     return {
       ...o.base,
       headline: 'Düzey belirtilmedi',
@@ -3008,7 +3008,7 @@ function reachedLevelBlock(o: {
   } else {
     // Bir üst düzeyde soruların en az %40'ı her zaman yanlıştır: o düzeyde en az %60 doğru olsaydı o düzeye de ulaşılırdı.
     const wrong = nextRes.n - nextRes.correct;
-    const miss = wrong === nextRes.n ? 'hiçbirini' : `${wrong} tanesini`;
+    const miss = wrong === nextRes.n ? 'hiçbirini' : wrong === 1 ? 'birini' : `${wrong} tanesini`;
     text +=
       v(` ${next.level}. düzeydeki ${nextRes.n} sorunun ${miss} doğru bulamadın.`, ` Çocuğunuz ${next.level}. düzeydeki ${nextRes.n} sorunun ${miss} doğru bulamadı.`) +
       ` Bu düzeydeki sorularda ${need} gerekiyordu: ${lower(next.plain)}.`;
@@ -3261,7 +3261,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
         ? `${r.rules.length} kural türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.rules.length} kural türünün hiçbirinde soruların çoğu doğru değil`
-          : `${r.rules.length} kural türünün ${good.length} tanesinde soruların çoğu doğru`;
+          : `${r.rules.length} kural türünün ${good.length === 1 ? 'birinde' : `${good.length} tanesinde`} soruların çoğu doğru`;
     // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs = hard.length > 2 ? '' : hard.map((x) => capTr(`${ruleList([x])} kuralında ${MATRIX_RULES[x].plain} gerekir.`)).join(' ');
     let text: string;
@@ -3442,7 +3442,7 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
     const how =
       r.correct === 0
         ? v(`${r.n} sorunun hiçbirinde eksik sayıyı doğru bulamadın.`, `Çocuğunuz ${r.n} sorunun hiçbirinde eksik sayıyı doğru bulamadı.`)
-        : v(`${r.n} sorudan yalnızca ${r.correct} tanesinde eksik sayıyı doğru buldun.`, `Çocuğunuz ${r.n} sorudan yalnızca ${r.correct} tanesinde eksik sayıyı doğru buldu.`);
+        : v(`${r.n} sorudan yalnızca ${r.correct === 1 ? 'birinde' : `${r.correct} tanesinde`} eksik sayıyı doğru buldun.`, `Çocuğunuz ${r.n} sorudan yalnızca ${r.correct === 1 ? 'birinde' : `${r.correct} tanesinde`} eksik sayıyı doğru buldu.`);
     const why = skippedMost
       ? v(
           ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.`,
@@ -3546,7 +3546,7 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
         ? `${r.rules.length} kural türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.rules.length} kural türünün hiçbirinde soruların çoğu doğru değil`
-          : `${r.rules.length} kural türünün ${good.length} tanesinde soruların çoğu doğru`;
+          : `${r.rules.length} kural türünün ${good.length === 1 ? 'birinde' : `${good.length} tanesinde`} soruların çoğu doğru`;
     // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs = hard.length > 2 ? '' : hard.map((x) => capTr(`${numberRuleList([x])} türünde ${NUMBER_RULES[x].plain} gerekir.`)).join(' ');
     let text: string;
@@ -3728,7 +3728,7 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
     const how =
       r.correct === 0
         ? v(`${r.n} sorunun hiçbirinde eksik harfi doğru bulamadın.`, `Çocuğunuz ${r.n} sorunun hiçbirinde eksik harfi doğru bulamadı.`)
-        : v(`${r.n} sorudan yalnızca ${r.correct} tanesinde eksik harfi doğru buldun.`, `Çocuğunuz ${r.n} sorudan yalnızca ${r.correct} tanesinde eksik harfi doğru buldu.`);
+        : v(`${r.n} sorudan yalnızca ${r.correct === 1 ? 'birinde' : `${r.correct} tanesinde`} eksik harfi doğru buldun.`, `Çocuğunuz ${r.n} sorudan yalnızca ${r.correct === 1 ? 'birinde' : `${r.correct} tanesinde`} eksik harfi doğru buldu.`);
     const why = skippedMost
       ? v(
           ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.`,
@@ -3832,7 +3832,7 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
         ? `${r.rules.length} kural türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.rules.length} kural türünün hiçbirinde soruların çoğu doğru değil`
-          : `${r.rules.length} kural türünün ${good.length} tanesinde soruların çoğu doğru`;
+          : `${r.rules.length} kural türünün ${good.length === 1 ? 'birinde' : `${good.length} tanesinde`} soruların çoğu doğru`;
     // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs = hard.length > 2 ? '' : hard.map((x) => capTr(`${letterRuleList([x])} türünde ${LETTER_RULES[x].plain} gerekir.`)).join(' ');
     let text: string;
@@ -4107,7 +4107,7 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
         ? `${r.types.length} soru türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.types.length} soru türünün hiçbirinde soruların çoğu doğru değil`
-          : `${r.types.length} soru türünün ${good.length} tanesinde soruların çoğu doğru`;
+          : `${r.types.length} soru türünün ${good.length === 1 ? 'birinde' : `${good.length} tanesinde`} soruların çoğu doğru`;
     let text: string;
     if (hard.length === 0) {
       text = v(
@@ -4350,7 +4350,7 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
         ? `${r.types.length} katlama türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.types.length} katlama türünün hiçbirinde soruların çoğu doğru değil`
-          : `${r.types.length} katlama türünün ${good.length} tanesinde soruların çoğu doğru`;
+          : `${r.types.length} katlama türünün ${good.length === 1 ? 'birinde' : `${good.length} tanesinde`} soruların çoğu doğru`;
     let text: string;
     if (hard.length === 0) {
       text = v(
@@ -6013,8 +6013,8 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
               `Çocuğunuz doğru bulamadığı ${wrong} sorunun hepsinde iki ayna görüntüsünü birden seçti.`,
             )
           : v(
-              `Doğru bulamadığın ${wrong} sorunun ${r.half} tanesinde iki şekilden birini doğru seçtin, yani döndürülmüş şekillerden birini tanıyıp ikincisini bir ayna görüntüsüyle karıştırdın; ${r.none} soruda ise iki ayna görüntüsünü birden seçtin.`,
-              `Çocuğunuz doğru bulamadığı ${wrong} sorunun ${r.half} tanesinde iki şekilden birini doğru seçti, yani döndürülmüş şekillerden birini tanıyıp ikincisini bir ayna görüntüsüyle karıştırdı; ${r.none} soruda ise iki ayna görüntüsünü birden seçti.`,
+              `Doğru bulamadığın ${wrong} sorunun ${r.half === 1 ? 'birinde' : `${r.half} tanesinde`} iki şekilden birini doğru seçtin, yani döndürülmüş şekillerden birini tanıyıp ikincisini bir ayna görüntüsüyle karıştırdın; ${r.none} soruda ise iki ayna görüntüsünü birden seçtin.`,
+              `Çocuğunuz doğru bulamadığı ${wrong} sorunun ${r.half === 1 ? 'birinde' : `${r.half} tanesinde`} iki şekilden birini doğru seçti, yani döndürülmüş şekillerden birini tanıyıp ikincisini bir ayna görüntüsüyle karıştırdı; ${r.none} soruda ise iki ayna görüntüsünü birden seçti.`,
             );
     ayna = {
       ...card('ud_ayna'),
@@ -8243,7 +8243,7 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
         ? `${r.types.length} soru türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.types.length} soru türünün hiçbirinde soruların çoğu doğru değil`
-          : `${r.types.length} soru türünün ${good.length} tanesinde soruların çoğu doğru`;
+          : `${r.types.length} soru türünün ${good.length === 1 ? 'birinde' : `${good.length} tanesinde`} soruların çoğu doğru`;
     let text: string;
     if (hard.length === 0) {
       text = v(
@@ -9289,8 +9289,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
             ? `${secs} saniye boyunca hiç sembol eşleştirmedin; bu yüzden bu görevin sonucu yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Öteki görevlerin sonuçları bundan etkilenmez.`
             : `Çocuğunuz ${secs} saniye boyunca hiç sembol eşleştirmedi; bu yüzden bu görevin sonucu yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Öteki görevlerin sonuçları bundan etkilenmez.`
           : you
-            ? `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdin (${spd.errors} hata). Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer; örneğin tahtadan bir şeyi deftere geçirmek ya da sınavda basit işlemleri yapmak gibi.`
-            : `Çocuğunuz ${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdi (${spd.errors} hata). Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer; tahtadan yazmak ya da sınavda basit işlemleri yapmak gibi işlerde kullanılır. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
+            ? `${spd.correct === spd.attempted ? `Eşleştirdiğin ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Eşleştirdiğin ${spd.attempted} sembolün hiçbiri doğru değildi` : `${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdin (${spd.errors} hata)`}. Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer; örneğin tahtadan bir şeyi deftere geçirmek ya da sınavda basit işlemleri yapmak gibi.`
+            : `${spd.correct === spd.attempted ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hiçbiri doğru değildi` : `Çocuğunuz ${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdi (${spd.errors} hata)`}. Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer; tahtadan yazmak ya da sınavda basit işlemleri yapmak gibi işlerde kullanılır. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
       symbol: { correct: spd.correct, errors: spd.errors, perMinute: spd.perMinute },
       // Hiç cevap yoksa çizilecek bir şey yoktur.
       ...(spd.attempted > 0

@@ -53,7 +53,7 @@ const dikkatBellek: TaskRoadmapTemplate = {
   version: 'dikkat-bellek-yol-haritasi-1',
   what: {
     student: 'dikkat ve bellek gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun dikkat ve bellek gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun dikkat ve bellek gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'dikkat ve bellek gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle,
@@ -131,7 +131,7 @@ const surekliDikkat: TaskRoadmapTemplate = {
   version: 'surekli-dikkat-yol-haritasi-1',
   what: {
     student: 'uzun ve dikkat isteyen işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun uzun ve dikkat isteyen işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun uzun ve dikkat isteyen işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'uzun ve dikkat isteyen işleri kolaylaştıran yollar',
   },
   studyTitle,
@@ -209,7 +209,7 @@ const renkKelime: TaskRoadmapTemplate = {
   version: 'renk-kelime-yol-haritasi-1',
   what: {
     student: 'aceleyle gelen ilk cevabı durdurmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun aceleyle gelen ilk cevabı durdurmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun aceleyle gelen ilk cevabı durdurmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'aceleyle gelen ilk cevabı durdurmayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle,
@@ -285,7 +285,7 @@ const durGit: TaskRoadmapTemplate = {
   version: 'dur-git-yol-haritasi-1',
   what: {
     student: 'kendini durdurman gereken anları nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun kendini durdurması gereken anları nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun kendini durdurması gereken anları nasıl kolaylaştırabileceğiniz',
     summary: 'kendini durdurmayı gerektiren anları kolaylaştıran yollar',
   },
   studyTitle,
@@ -441,7 +441,7 @@ const geriyeDonuk: TaskRoadmapTemplate = {
   version: 'geriye-donuk-hatirlama-yol-haritasi-1',
   what: {
     student: 'sürekli değişen bilgiyi takip etmeyi nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun sürekli değişen bilgiyi takip etmesini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun sürekli değişen bilgiyi takip etmesini nasıl kolaylaştırabileceğiniz',
     summary: 'sürekli değişen bilgiyi takip etmeyi kolaylaştıran yollar',
   },
   studyTitle,
@@ -521,7 +521,7 @@ const zihindeDondurme: TaskRoadmapTemplate = {
   version: 'zihinde-dondurme-yol-haritasi-1',
   what: {
     student: 'şekillerle ve yönlerle uğraşmayı nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun şekillerle ve yönlerle uğraşmasını nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun şekillerle ve yönlerle uğraşmasını nasıl kolaylaştırabileceğiniz',
     summary: 'şekillerle ve yönlerle uğraşmayı kolaylaştıran yollar',
   },
   studyTitle,
@@ -599,7 +599,7 @@ const tepkiHizi: TaskRoadmapTemplate = {
   version: 'tepki-hizi-yol-haritasi-1',
   what: {
     student: 'hızlı karar vermeyi gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun hızlı karar vermeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun hızlı karar vermeyi gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'hızlı karar vermeyi gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle,
@@ -703,7 +703,7 @@ const sekilAkilYurutme: TaskRoadmapTemplate = {
   version: 'sekil-akil-yurutme-yol-haritasi-1',
   what: {
     student: 'kuralları bulmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun kuralları bulmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun kuralları bulmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'kuralları bulmayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: { you: 'Kuralları bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun kuralları bulmasını ne kolaylaştırır?' },
@@ -801,7 +801,7 @@ const sayiDizileri: TaskRoadmapTemplate = {
   version: 'sayi-dizileri-yol-haritasi-1',
   what: {
     student: 'sayılarla kural bulmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun sayılarla kural bulmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun sayılarla kural bulmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'sayılarla kural bulmayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: { you: 'Sayılarla kural bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun sayılarla kural bulmasını ne kolaylaştırır?' },
@@ -899,7 +899,7 @@ const sozelAkilYurutme: TaskRoadmapTemplate = {
   version: 'sozel-akil-yurutme-yol-haritasi-1',
   what: {
     student: 'sözcüklerle akıl yürütmeyi gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun sözcüklerle akıl yürütmeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun sözcüklerle akıl yürütmeyi gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'sözcüklerle akıl yürütmeyi gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: { you: 'Sözcüklerle akıl yürütmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun sözcüklerle akıl yürütmesini ne kolaylaştırır?' },
@@ -997,7 +997,7 @@ const kagitKatlama: TaskRoadmapTemplate = {
   version: 'kagit-katlama-yol-haritasi-1',
   what: {
     student: 'şekilleri zihinde canlandırmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun şekilleri zihinde canlandırmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun şekilleri zihinde canlandırmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'şekilleri zihinde canlandırmayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: { you: 'Şekilleri zihinde canlandırmayı ne kolaylaştırır?', parent: 'Çocuğunuzun şekilleri zihinde canlandırmasını ne kolaylaştırır?' },
@@ -1096,7 +1096,7 @@ const kelimeBilgisi: TaskRoadmapTemplate = {
   version: 'kelime-bilgisi-yol-haritasi-1',
   what: {
     student: 'yeni kelimeler öğrenmeyi ve okurken bilmediğin bir kelimenin anlamını bulmayı nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun yeni kelimeler öğrenmesini ve okurken bilmediği bir kelimenin anlamını bulmasını nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun yeni kelimeler öğrenmesini ve okurken bilmediği bir kelimenin anlamını bulmasını nasıl kolaylaştırabileceğiniz',
     summary: 'yeni kelimeler öğrenmeyi ve bilinmeyen bir kelimenin anlamını bulmayı kolaylaştıran yollar',
   },
   studyTitle: { you: 'Yeni kelimeler öğrenmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun yeni kelimeler öğrenmesini ne kolaylaştırır?' },
@@ -1194,7 +1194,7 @@ const kuralDegistirme: TaskRoadmapTemplate = {
   version: 'kural-degistirme-yol-haritasi-1',
   what: {
     student: 'bir işten ötekine ya da bir kuraldan ötekine geçmeyi gerektiren durumları nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun bir işten ötekine ya da bir kuraldan ötekine geçmesini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun bir işten ötekine ya da bir kuraldan ötekine geçmesini nasıl kolaylaştırabileceğiniz',
     summary: 'bir işten ötekine geçmeyi kolaylaştıran yollar',
   },
   studyTitle: { you: 'Bir işten ötekine geçmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun bir işten ötekine geçmesini ne kolaylaştırır?' },
@@ -1291,7 +1291,7 @@ const mantiksalAkilYurutme: TaskRoadmapTemplate = {
   version: 'mantiksal-akil-yurutme-yol-haritasi-1',
   what: {
     student: 'bilgilerden kesin sonuç çıkarmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun bilgilerden kesin sonuç çıkarmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun bilgilerden kesin sonuç çıkarmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'bilgilerden kesin sonuç çıkarmayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: {
@@ -1423,7 +1423,7 @@ const sayisalAkilYurutme: TaskRoadmapTemplate = {
   version: 'sayisal-akil-yurutme-yol-haritasi-1',
   what: {
     student: 'sayılar arasındaki ilişkiyi kurmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun sayılar arasındaki ilişkiyi kurmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun sayılar arasındaki ilişkiyi kurmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'sayılar arasındaki ilişkiyi kurmayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: {
@@ -1525,7 +1525,7 @@ const kupAcinimi: TaskRoadmapTemplate = {
   version: 'kup-acinimi-yol-haritasi-1',
   what: {
     student: 'cisimleri zihinde katlayıp canlandırmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun cisimleri zihinde katlayıp canlandırmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun cisimleri zihinde katlayıp canlandırmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'cisimleri zihinde katlayıp canlandırmayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: { you: 'Açınımları zihinde katlamayı ne kolaylaştırır?', parent: 'Çocuğunuzun açınımları zihinde katlamasını ne kolaylaştırır?' },
@@ -1625,7 +1625,7 @@ const ucBoyutluZihindeDondurme: TaskRoadmapTemplate = {
   version: 'uc-boyutlu-zihinde-dondurme-yol-haritasi-1',
   what: {
     student: 'cisimleri zihinde döndürmeyi gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun cisimleri zihinde döndürmeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun cisimleri zihinde döndürmeyi gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'cisimleri zihinde döndürmeyi gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: { you: 'Şekilleri zihinde döndürmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun şekilleri zihinde döndürmesini ne kolaylaştırır?' },
@@ -1758,7 +1758,7 @@ const gizliSekiller: TaskRoadmapTemplate = {
   version: 'gizli-sekiller-yol-haritasi-1',
   what: {
     student: 'karmaşık bir görüntünün içinde aradığın bir şekli ya da ayrıntıyı bulmayı nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun karmaşık bir görüntünün içinde aradığı bir şekli ya da ayrıntıyı bulmayı nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun karmaşık bir görüntünün içinde aradığı bir şekli ya da ayrıntıyı bulmayı nasıl kolaylaştırabileceğiniz',
     summary: 'karmaşık bir görüntünün içinde bir şekli ya da ayrıntıyı bulmayı kolaylaştıran yollar',
   },
   studyTitle: { you: 'Saklı bir şekli bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun saklı bir şekli bulmasını ne kolaylaştırır?' },
@@ -1830,7 +1830,7 @@ const bakisAcisiAlma: TaskRoadmapTemplate = {
   version: 'bakis-acisi-alma-yol-haritasi-1',
   what: {
     student: 'kendini zihinde başka bir yere ve yöne koymayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun kendini zihinde başka bir yere ve yöne koymayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun kendini zihinde başka bir yere ve yöne koymayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'kendini zihinde başka bir yere ve yöne koymayı gerektiren işleri kolaylaştıran yollar',
   },
   studyTitle: { you: 'Yön bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun yön bulmasını ne kolaylaştırır?' },
@@ -1928,7 +1928,7 @@ const dusunerekKararVerme: TaskRoadmapTemplate = {
   version: 'dusunerek-karar-verme-yol-haritasi-1',
   what: {
     student: 'ilk akla gelen cevabı denetlemeyi gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun ilk akla gelen cevabı denetlemeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun ilk akla gelen cevabı denetlemeyi gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'ilk akla gelen cevabı denetlemeyi kolaylaştıran yollar',
   },
   studyTitle: { you: 'İlk akla gelen cevabı denetlemeyi ne kolaylaştırır?', parent: 'Çocuğunuzun ilk akla gelen cevabı denetlemesini ne kolaylaştırır?' },
@@ -2027,7 +2027,7 @@ const planlamaKuleGorevi: TaskRoadmapTemplate = {
   version: 'planlama-kule-gorevi-yol-haritasi-1',
   what: {
     student: 'birkaç adımı önceden düşünmeyi gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun birkaç adımı önceden düşünmeyi gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun birkaç adımı önceden düşünmeyi gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'birkaç adımı önceden düşünmeyi kolaylaştıran yollar',
   },
   studyTitle: { you: 'Önceden plan yapmayı ne kolaylaştırır?', parent: 'Çocuğunuzun önceden plan yapmasını ne kolaylaştırır?' },
@@ -2126,7 +2126,7 @@ const kelimeListesi: TaskRoadmapTemplate = {
   version: 'kelime-listesi-yol-haritasi-1',
   what: {
     student: 'bir şeyi öğrenip aklında tutmayı nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun bir şeyi öğrenip aklında tutmasını nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun bir şeyi öğrenip aklında tutmasını nasıl kolaylaştırabileceğiniz',
     summary: 'öğrendiğini aklında tutmayı kolaylaştıran yollar',
   },
   studyTitle: { you: 'Öğrendiğini aklında tutmayı ne kolaylaştırır?', parent: 'Çocuğunuzun öğrendiğini aklında tutmasını ne kolaylaştırır?' },
@@ -2233,7 +2233,7 @@ const hesaplaVeHatirla: TaskRoadmapTemplate = {
   version: 'hesapla-ve-hatirla-yol-haritasi-1',
   what: {
     student: 'bir yandan iş yaparken bir yandan bilgiyi aklında tutmayı nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun bir yandan iş yaparken bir yandan bilgiyi aklında tutmasını nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun bir yandan iş yaparken bir yandan bilgiyi aklında tutmasını nasıl kolaylaştırabileceğiniz',
     summary: 'iş yaparken bilgiyi akılda tutmayı kolaylaştıran yollar',
   },
   studyTitle: { you: 'İş yaparken bilgiyi aklında tutmayı ne kolaylaştırır?', parent: 'Çocuğunuzun iş yaparken bilgiyi aklında tutmasını ne kolaylaştırır?' },
@@ -2338,7 +2338,7 @@ const desenHatirlama: TaskRoadmapTemplate = {
   version: 'desen-hatirlama-yol-haritasi-1',
   what: {
     student: 'bir şeklin ya da çizimin görünüşünü kısa bir bakıştan sonra aklında tutmayı nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun bir şeklin ya da çizimin görünüşünü kısa bir bakıştan sonra aklında tutmasını nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun bir şeklin ya da çizimin görünüşünü kısa bir bakıştan sonra aklında tutmasını nasıl kolaylaştırabileceğiniz',
     summary: 'bir görüntüyü kısa bir bakıştan sonra akılda tutmayı kolaylaştıran yollar',
   },
   studyTitle: { you: 'Bir görüntüyü aklında tutmayı ne kolaylaştırır?', parent: 'Çocuğunuzun bir görüntüyü aklında tutmasını ne kolaylaştırır?' },
@@ -2440,7 +2440,7 @@ const harfDizileri: TaskRoadmapTemplate = {
   version: 'harf-dizileri-yol-haritasi-1',
   what: {
     student: 'bir dizideki kuralı bulmayı gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun bir dizideki kuralı bulmayı gerektiren işlerini nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuzun bir dizideki kuralı bulmayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
     summary: 'bir dizideki kuralı bulmayı kolaylaştıran yollar',
   },
   studyTitle: { you: 'Bir dizideki kuralı bulmayı ne kolaylaştırır?', parent: 'Çocuğunuzun bir dizideki kuralı bulmasını ne kolaylaştırır?' },

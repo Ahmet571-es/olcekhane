@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { solvableInstruments } from '@/content/instruments';
 import { ACADEMIC_ROADMAPS, READING_ROADMAPS, TASK_ROADMAPS, hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
 import type { AudienceText } from '@/content/roadmaps/types';
+import { PARENT_TITLES } from '@/content/roadmaps/veli-basliklari';
 import { evaluate } from '@/lib/assessment/evaluate';
 import type { Band, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
@@ -338,6 +339,45 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
       expect(JSON.stringify(t), slug).not.toMatch(/beyni(ni)? çalıştır|puanını yükselt|zekânı geliştir/i);
       expect(roadmapSummary(slug), slug).toContain('bilmekte yarar olanlar');
     }
+  });
+
+  it('öneri ve hafta başlıkları veli raporunda "sen"e seslenmez: her başlığın veli biçimi var ya da başlık zaten ad öbeği', () => {
+    // İki kitlede de aynı kalan başlıklar (ad öbeği ya da soru); yeni bir başlık eklenince buraya ya da PARENT_TITLES'a yazılır.
+    const SAME = new Set([
+      'Aklın yerine kâğıt', 'Bir seferde bir iş', 'Bir seferde tek iş', 'Dikkat dağıtıcılardan uzak', 'Dinlenmiş bir zihin', 'Dinç olmak',
+      'Düzenli bir sayfa', 'Görsel bellek oyunları', 'Görünür hatırlatıcılar', 'Gözlem oyunları', 'Hareket ve dinlenme', 'Hız ve doğruluk dengesi',
+      'Kelime defteri ve sözlük', 'Kelime ve mantık oyunları', 'Kimin sağı?', 'Kurallı oyunlar', 'Kuralı değişen oyunlar', 'Kısa bölümler',
+      'Sade bir masa', 'Sessiz bir ortam', 'Tek bilgi kaynağı', 'Uzamsal oyunlar', 'Yön oyunları', 'Önce doğruluk', 'İki katı sorusu',
+      'Şekil oyunları', '“Kesin mi, olabilir mi?”',
+      'Anlamı değiştiren sözcükler', 'Aralıklı tekrar', 'Bir hamle sonrası', 'Deyim haftası', 'Doğruluk önce', 'Geriye doğru',
+      'Gerçek mi, çıkarım mı?', 'Gizli nesneler', 'Göndermeden önce', 'Hangisi aynı?', 'Karşı örnek avı', 'Kelime avı', 'Kuralı değişen oyun',
+      'Orantı mı, değil mi?', 'Parçalardan bütüne', 'Sade bir çalışma köşesi', 'Son kontrol', 'Tek iş', 'Tek iş saati', 'Terazi bulmacaları',
+      'Tuzaklı bilmeceler', 'Yer imi', 'Zarın açınımı', 'İçinden tekrar', '“Kesin mi?” oyunu',
+    ]);
+    const titles = new Set(['Gözden geçir']);
+    for (const t of Object.values(TASK_ROADMAPS)) for (const x of [...t.supports, ...t.weeks]) titles.add(x.title);
+    for (const x of titles) expect(x in PARENT_TITLES || SAME.has(x), x).toBe(true);
+    for (const x of titles) expect(x in PARENT_TITLES && SAME.has(x), x).toBe(false);
+    // Kullanılmayan veli başlığı kalmaz.
+    for (const x of Object.keys(PARENT_TITLES)) expect(titles.has(x), x).toBe(true);
+    // Veli biçimi gerçekten başkadır ve "sen"e seslenen sözcük taşımaz.
+    for (const [k, x] of Object.entries(PARENT_TITLES)) {
+      expect(x, k).not.toBe(k);
+      expect(x, k).not.toMatch(/(^|\s)(kendin|kafanda|gözünü|yoluna|kaldığın|cümlenle|sıranı|bulmacanı|dizini|elinle|sen)(\s|,|$)/);
+    }
+  });
+
+  it('veli raporunda başlıklar veli biçimiyle; sonuç yorumlanmadıysa giriş önerilerin genel olduğunu söyler', () => {
+    const r = evaluate('dikkat-ve-bellek', memoryTasksBody());
+    const titles = (rm: Roadmap) => [...rm.study.items.map((x) => x.title), ...rm.weeks.map((w) => w.title)];
+    expect(titles(r.parent.roadmap!)).toContain('Gözden geçirmek');
+    expect(titles(r.student.roadmap!)).toContain('Gözden geçir');
+    expect(titles(r.parent.roadmap!).filter((x) => x in PARENT_TITLES)).toEqual([]);
+    expect(r.parent.roadmap!.intro).toContain('çocuğunuzun dikkat ve bellek gerektiren işlerini nasıl kolaylaştırabileceğiniz');
+    expect(r.student.roadmap!.intro).toMatch(/^Bu bölüm sonuçlarını günlük hayata taşıman için/);
+    const same = evaluate('mantiksal-akil-yurutme', logicBody(() => ({ response: 1, rtMs: 9000 })));
+    expect(same.student.roadmap!.intro).toMatch(/^Sonucun yorumlanmadığı için bu bölümdeki öneriler herkes için yazılmış genel önerilerdir: /);
+    expect(same.parent.roadmap!.intro).toMatch(/^Sonuç yorumlanmadığı için bu bölümdeki öneriler/);
   });
 
   it('rapora eklenir: Kısaca raporun kartlarını özetler, üç boyutlu grafik yalnızca soru ya da kural türü olan görevlerde; PDF yol haritasıyla üretilir', async () => {

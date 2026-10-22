@@ -316,7 +316,7 @@ describe('Şekil akıl yürütme: rapor', () => {
     const low = evaluate(SLUG, matrixBody((q) => ({ choice: matrixRank(q) < [1, 2, 2, 2, 1][q.level - 1] ? q.answer : optionAt(q.i, 2), rtMs: 15_000 })));
     expect(low.student.items[1].badge).toBe('Düzey belirtilmedi');
     expect(low.parent.items[1].badge).toBe('Düzey belirtilmedi');
-    expect(low.student.items[1].text).toContain('En kolay düzeydeki 4 sorunun 1 tanesini doğru buldun.');
+    expect(low.student.items[1].text).toContain('En kolay düzeydeki 4 sorunun birini doğru buldun.');
     expect(low.student.keyFigures[1]).toEqual({ label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' });
     // Yakın hatalar: 4. ve 5. düzeyin hepsinde doğru cevaptan tek özellikte ayrılan seçenek.
     const near = evaluate(SLUG, matrixBody((q) => ({ choice: q.level >= 4 ? optionAt(q.i, 1) : q.answer, rtMs: 15_000 })));

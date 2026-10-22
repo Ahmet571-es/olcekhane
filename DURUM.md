@@ -604,14 +604,13 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    - 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi): **yayında
      (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
    - 5. grup (mantıksal, sayısal, düşünerek karar verme): **yayında (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
-   - Sıradaki: bütün görev testleri için ortak işler (3. ve 4. grubun incelemesinde bulundu): (a) yol haritasındaki
-     öneri ve hafta başlıkları veli raporunda da çocuğa "sen" diye sesleniyor ("Kaldığın yeri işaretle"); veliye ayrı
-     başlık (~104 öneri başlığı). (b) Uyarı notları her kitleye aynı edilgen dille yazılıyor; öğrenci raporunda
-     "yorumlanmamalıdır" yerine kitleye göre metin. (c) Sonuç yorumlanmadığında yol haritasının giriş cümlesi de bunu
-     söylemeli. (d) Tek çubuklu süre grafikleri (yalnızca "Bütün sorular") bilgi taşımıyor; karşılaştırılacak ikinci bir
-     değer yoksa sürenin başka bir anlatımı. (e) Nicelik sözleri için ortak yardımcı (`countOf`, lib/scoring/tasks.ts) 5. grupta
-     kullanılıyor; öteki görev testlerindeki "N tanesinde" kalıpları da ona geçirilmeli. (f) Veli yol haritası girişinde özne
-     belirsiz ("işlerini nasıl kolaylaştırabileceği"). (g) Yol haritalarında noktalı virgüllü uzun cümleler.
+   - Ortak işler (3.–5. grubun incelemesinde bulundu): **yapıldı (2026-10-22):** veli raporunda yol haritasının öneri ve
+     hafta başlıkları veliye göre (`content/roadmaps/veli-basliklari.ts`, `parentTitle`; test bütün başlıkları denetler);
+     sonuç yorumlanmadığında yol haritasının girişi önerilerin genel olduğunu söyler; veli girişinde özne "nasıl
+     kolaylaştırabileceğiniz"; 0 ve 1 için nicelik sözleri ("birinde", "hiçbirini"; test `N tanes` kalıbını denetler).
+     **Karar:** uyarı notları ("Sonucunu okurken dikkat") 26 testte kitleye ayrı yazılmadı; edilgen dil iki kitlede de
+     doğru okunuyor. **Kalan:** (d) tek çubuklu süre grafikleri (yalnızca "Bütün sorular") bilgi taşımıyor; karşılaştırılacak
+     ikinci bir değer yoksa sürenin başka bir anlatımı. (g) Yol haritalarında noktalı virgüllü uzun cümleler.
 3. Okuma, sesli okuma, matematik konu tarama.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
@@ -948,6 +947,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (42): Görev testlerinde ortak düzeltmeler: veli raporunda yol haritasının öneri ve hafta başlıkları artık
+  veliye göre yazılıyor ("Kaldığın yeri işaretle" yerine "Kalınan yeri işaretlemek"); sonuç yorumlanmadığında yol
+  haritasının girişi önerilerin herkes için yazılmış genel öneriler olduğunu söylüyor; veli girişinde "işlerini nasıl
+  kolaylaştırabileceğiniz"; bütün görev testlerinde "1 tanesinde", "0 tanesini" gibi nicelik sözleri "birinde",
+  "hiçbirini" oldu (sembol eşleştirme, sırayla birleştirme, sayı ve harf dizileri, üç boyutlu döndürme dahil).
 - 2026-10-22 (41): Raporlarda her başlığa grafik, 2. aşamanın 5. grubu (mantıksal akıl yürütme, sayısal akıl yürütme,
   düşünerek karar verme): soru türlerine göre doğru kararlar, durum ve eşitlik türleri, tuzaklı ve tuzaksız sorulardaki
   cevaplar, yanlışların türü. Bağımsız incelemenin bulguları uygulandı: soruların çoğu okunamayacak kadar hızlı
@@ -1022,8 +1026,3 @@ En yeni üstte; en çok 10 madde tutulur.
   "doğru" cevabında da açılır; bir konunun cevapları ayrışınca "Farklı cevaplar" yazar; öğrenci, veli ve yetişkin raporu,
   3 sütunlu yol haritası ("En iyi olası gelecek" haftası); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve
   masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-21 (32): Gizli Şekiller yayında (3. sınıftan yetişkine), 2. dalganın 11. testi: karmaşık bir çizimin içine
-  saklanmış basit şekli dört çizimden birinde bulma; 20 özgün soru, dört düzey, iki alıştırma; her sorunun tek cevabı ve
-  düzeylerin giderek zorlaştığı bağımsız denetleyiciyle doğrulandı; yanlışlarda döndürülmüş ya da köşesi farklı benzerin
-  seçilmesi ayrıca anlatılır; öğrenci, veli ve yetişkin raporu, yol haritası; iki tur bağımsız incelemenin bulguları
-  düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.

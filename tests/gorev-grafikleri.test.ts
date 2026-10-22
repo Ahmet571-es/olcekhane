@@ -72,6 +72,9 @@ describe('görev testlerinin kart grafikleri', () => {
       let cards = 0;
       for (const [name, make] of Object.entries(variants) as [string, () => AnswersBody][]) {
         for (const rep of reportsOf(slug, make())) {
+          // Nicelik sözleri sayılarla uyuşur: "8 sorunun 8 tanesi", "0 tanesi", "1 tanesi" denmez.
+          const all = [...rep.items.flatMap((i) => [i.badge ?? '', i.text]), ...rep.cautions].join(' ');
+          expect(all, `${slug} ${name} ${rep.audience}`).not.toMatch(/\b(\d+) \S+ \1 tanes|(^|\s)[01] tanes/);
           for (const it of rep.items) {
             const label = `${slug} ${name} ${rep.audience} ${it.title}`;
             // Sonucu hesaplanamayan ya da karşılaştırılamayan kartın çizecek bir verisi yoktur (ör. süreler alınamadı).
