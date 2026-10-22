@@ -609,8 +609,10 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
      sonuç yorumlanmadığında yol haritasının girişi önerilerin genel olduğunu söyler; veli girişinde özne "nasıl
      kolaylaştırabileceğiniz"; 0 ve 1 için nicelik sözleri ("birinde", "hiçbirini"; test `N tanes` kalıbını denetler).
      **Karar:** uyarı notları ("Sonucunu okurken dikkat") 26 testte kitleye ayrı yazılmadı; edilgen dil iki kitlede de
-     doğru okunuyor. **Kalan:** (d) tek çubuklu süre grafikleri (yalnızca "Bütün sorular") bilgi taşımıyor; karşılaştırılacak
-     ikinci bir değer yoksa sürenin başka bir anlatımı. (g) Yol haritalarında noktalı virgüllü uzun cümleler.
+     doğru okunuyor. Karşılaştırılacak ikinci bir süre yokken süre kartının grafiği tek çubuk değil, süre şeridi: her
+     soru (doğru cevap, problem) bir nokta, tipik süre çizgi (`durationStrip`, sonuçlarda `rts`/`picks`; test tek çubuklu
+     süre grafiğini ve çizginin noktaların ortasında olduğunu denetler). **Kalan:** (g) yol haritalarında noktalı virgüllü
+     uzun cümleler.
 3. Okuma, sesli okuma, matematik konu tarama.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
@@ -947,6 +949,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (43): Görev testlerinde süre kartları: karşılaştırılacak ikinci bir süre olmadığında tek bir çubuk yerine her
+  sorunun (doğru cevabın, problemin) süresini nokta olarak gösteren şerit çiziliyor; çizgi tipik süredir (13 soru testi,
+  renk-kelime, dur-git, zihinde döndürme, kural değiştirme, desen hatırlama, planlama kulesi). Çok ölçümlü şeritlerde
+  noktalar küçülüp üst üste diziliyor. Raporlar telefonda ve masaüstünde açıldı, PDF incelendi.
 - 2026-10-22 (42): Görev testlerinde ortak düzeltmeler: veli raporunda yol haritasının öneri ve hafta başlıkları artık
   veliye göre yazılıyor ("Kaldığın yeri işaretle" yerine "Kalınan yeri işaretlemek"); sonuç yorumlanmadığında yol
   haritasının girişi önerilerin herkes için yazılmış genel öneriler olduğunu söylüyor; veli girişinde "işlerini nasıl
@@ -1020,9 +1026,3 @@ En yeni üstte; en çok 10 madde tutulur.
   desenlerin kolay ad verilemeyecek biçimde seçildiği bağımsız denetleyiciyle doğrulandı; rapor en büyük doğru deseni,
   büyüklüğe göre doğruları, hata türlerini ve çalışma biçimini anlatır; öğrenci, veli ve yetişkin raporu, yol haritası;
   iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-21 (33): İyimserlik Ölçeği yayında (9. sınıftan yetişkine), 2. dalganın 12. testi: IPIP'in 10 maddelik
-  iyimserlik ölçeği, yaklaşık 2 dakika; toplam puanın yanında cümlelerin sorduğu üç konu (hayata ve geleceğe bakış, kendine
-  bakış, ruh hâli) ayrı gösterilir; destek kutusu düşük düzeylerde ve hüzün ya da kendinden hoşlanmama cümlesine tek bir
-  "doğru" cevabında da açılır; bir konunun cevapları ayrışınca "Farklı cevaplar" yazar; öğrenci, veli ve yetişkin raporu,
-  3 sütunlu yol haritası ("En iyi olası gelecek" haftası); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve
-  masaüstünde çözüldü, PDF'ler açıldı.

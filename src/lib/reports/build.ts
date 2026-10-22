@@ -1660,7 +1660,8 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
     { label: 'Kelime ile renk aynıyken', rate: r.accCongruent },
     { label: 'Kelime ile renk farklıyken', rate: r.accIncongruent },
   ]);
-  if (r.medianRt !== null) hiz.visual = msBarsVisual('Tipik cevap süresi', [{ label: 'Doğru cevaplarda tipik süre', ms: r.medianRt }]);
+  if (r.medianRt !== null)
+    hiz.visual = durationStrip({ label: 'Doğru cevaplarda cevap süreleri', rts: r.rts, median: r.medianRt, marker: `Tipik ${sn(r.medianRt)} sn`, item: 'bir doğru cevap', digits: 2 });
   if (c !== null && i !== null)
     etki.visual = msBarsVisual('Tipik cevap süresi', [
       { label: 'Kelime ile renk aynıyken', ms: c },
@@ -1817,7 +1818,8 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
       ...(r.anticipations ? [{ label: 'Çok erken basıldı', value: r.anticipations }] : []),
     ],
   } satisfies StackVisual;
-  if (r.medianRt !== null) hiz.visual = msBarsVisual('Tipik tepki süresi', [{ label: 'Doğru basışlarda tipik süre', ms: r.medianRt }]);
+  if (r.medianRt !== null)
+    hiz.visual = durationStrip({ label: 'Doğru basışlarda tepki süreleri', rts: r.rts, median: r.medianRt, marker: `Tipik ${sn(r.medianRt)} sn`, item: 'bir doğru basış', digits: 2 });
   return {
     blocks: [durma, tepki, hiz],
     chart: {
@@ -2478,7 +2480,14 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
       : {
           ...card('zd_hiz'),
           headline: `Tipik karar süresi ${sn(r.medianRt)} saniye`,
-          visual: msBarsVisual('Tipik karar süresi', [{ label: 'Doğru bulunan aynı şekillerde', ms: r.medianRt }]),
+          visual: durationStrip({
+            label: 'Doğru bulunan aynı şekillerde karar süreleri',
+            rts: r.rts,
+            median: r.medianRt,
+            marker: `Tipik ${sn(r.medianRt)} sn`,
+            item: 'bir aynı şekil',
+            digits: 2,
+          }),
           text: v(
             `Doğru bulduğun aynı şekillerde karar vermen tipik olarak ${sn(r.medianRt)} saniye sürdü. Hız tek başına iyi ya da kötü değildir; önemli olan, doğru karar verebilmektir.`,
             `Çocuğunuzun doğru bulduğu aynı şekillerde tipik karar süresi ${sn(r.medianRt)} saniye oldu. Bu süre şekilleri görmeyi, karşılaştırmayı ve düğmeye basmayı içerir. Yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir. Hız, doğrulukla birlikte değerlendirilmelidir.`,
@@ -3154,16 +3163,55 @@ function typeBarsVisual(label: string, rows: { name: string; correct: number; n:
   return { type: 'bars', label, scale: 'share', rows: rows.map((x) => ({ label: x.name, value: x.correct, max: x.n, valueLabel: `${x.correct}/${x.n}` })) };
 }
 
-/** Çalışma biçimi: bütün sorulardaki ve kolay ve zor sorulardaki tipik cevap süresi (ortak eksende, saniye). */
-function paceVisual(median: number, easy: { label: string; ms: number | null }, hard: { label: string; ms: number | null }): BarsVisual {
+/**
+ * Karşılaştırılacak ikinci bir süre yokken "Çalışma biçimi" kartının grafiği: her sorunun cevap süresi bir nokta, tipik süre
+ * (ortanca) dikey çizgi. Tek bir çubuk bilgi taşımaz; şerit, sürelerin sorudan soruya ne kadar değiştiğini de gösterir.
+ */
+function timeStrip(rts: number[], median: number, item: 'soru' | 'desen' = 'soru'): StripVisual {
+  return durationStrip({
+    label: item === 'soru' ? 'Sorulardaki cevap süreleri' : 'Desenlerdeki işaretleme süreleri',
+    rts,
+    median,
+    marker: `Tipik ${secShort(median)}`,
+    item: `bir ${item}`,
+  });
+}
+
+/**
+ * Süre şeridi: her ölçüm (soru, doğru cevap, problem) bir nokta, tipik süre (ortanca) dikey çizgi. `digits`: noktaların
+ * saniyedeki ondalık basamağı (tepki sürelerinde 2). Kartın başlığındaki süre işaretin adında yazar.
+ */
+function durationStrip(o: { label: string; rts: number[]; median: number; marker: string; item: string; digits?: 1 | 2 }): StripVisual {
+  const f = o.digits === 2 ? 100 : 10;
+  const points = o.rts.map((ms) => Math.round((ms / 1000) * f) / f);
+  return {
+    type: 'strip',
+    label: o.label,
+    min: 0,
+    // Eksen en uzun sürenin biraz üstünde biter: en uzun sürenin noktası eksenin ucuna yapışmaz.
+    max: niceMax(Math.max(o.digits === 2 ? 0.5 : 1, ...points) * 1.1),
+    unit: 'sn',
+    points,
+    marker: { value: Math.round((o.median / 1000) * f) / f, label: o.marker },
+    caption: `Her nokta ${o.item}; çizgi tipik süre`,
+  };
+}
+
+/**
+ * Çalışma biçimi: kolay ve zor sorulardaki süreler karşılaştırılabiliyorsa bütün sorulardaki, kolay ve zor sorulardaki tipik
+ * cevap süresi (ortak eksende, saniye); karşılaştırılamıyorsa her sorunun süresi (timeStrip).
+ */
+function paceVisual(
+  median: number,
+  rts: number[],
+  easy: { label: string; ms: number | null },
+  hard: { label: string; ms: number | null },
+): BarsVisual | StripVisual {
+  if (easy.ms === null || hard.ms === null) return timeStrip(rts, median);
   const rows = [
     { label: 'Bütün sorular', value: secValue(median), valueLabel: secShort(median) },
-    ...(easy.ms !== null && hard.ms !== null
-      ? [
-          { label: `Kolay sorular (${easy.label})`, value: secValue(easy.ms), valueLabel: secShort(easy.ms) },
-          { label: `Zor sorular (${hard.label})`, value: secValue(hard.ms), valueLabel: secShort(hard.ms) },
-        ]
-      : []),
+    { label: `Kolay sorular (${easy.label})`, value: secValue(easy.ms), valueLabel: secShort(easy.ms) },
+    { label: `Zor sorular (${hard.label})`, value: secValue(hard.ms), valueLabel: secShort(hard.ms) },
   ];
   return { type: 'bars', label: 'Soru başına tipik süre', scale: 'scale', unit: 'sn', rows };
 }
@@ -3396,7 +3444,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   dogru.visual = levelDotsVisual(r.levels);
   if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
   if (!chance) kural.visual = typeBarsVisual('Kural türlerine göre doğru cevaplar', r.rules.map((x) => ({ name: MATRIX_RULES[x.rule].name, correct: x.correct, n: x.n })));
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, kural, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -3683,7 +3731,7 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
   dogru.visual = levelDotsVisual(r.levels, true);
   duzey.visual = levelStepsVisual(r.levels.length, r.reached);
   if (!few && !skippedMost) kural.visual = typeBarsVisual('Kural türlerine göre doğru cevaplar', r.rules.map((x) => ({ name: NUMBER_RULES[x.rule].name, correct: x.correct, n: x.n })));
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, kural, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -3969,7 +4017,7 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
   dogru.visual = levelDotsVisual(r.levels, true);
   duzey.visual = levelStepsVisual(r.levels.length, r.reached);
   if (!few && !skippedMost) kural.visual = typeBarsVisual('Kural türlerine göre doğru cevaplar', r.rules.map((x) => ({ name: LETTER_RULES[x.rule].name, correct: x.correct, n: x.n })));
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, kural, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -4236,7 +4284,7 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
   dogru.visual = levelDotsVisual(r.levels);
   if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
   if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: VERBAL_TYPES[x.type].name, correct: x.correct, n: x.n })));
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -4471,7 +4519,7 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
   dogru.visual = levelDotsVisual(r.levels);
   if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
   if (!chance) tur.visual = typeBarsVisual('Katlama türlerine göre doğru cevaplar', r.types.map((x) => ({ name: FOLDING_TYPES[x.type].name, correct: x.correct, n: x.n })));
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -4784,13 +4832,7 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
       : {
           ...card('ma_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-          visual: {
-            type: 'bars',
-            label: 'Soru başına tipik süre',
-            scale: 'scale',
-            unit: 'sn',
-            rows: [{ label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) }],
-          } satisfies BarsVisual,
+          visual: timeStrip(r.rts, r.medianRt),
           text:
             [
               v(
@@ -5151,13 +5193,7 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
       : {
           ...card('sy_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-          visual: {
-            type: 'bars',
-            label: 'Soru başına tipik süre',
-            scale: 'scale',
-            unit: 'sn',
-            rows: [{ label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) }],
-          } satisfies BarsVisual,
+          visual: timeStrip(r.rts, r.medianRt),
           text:
             [v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`), ...issues].join(' ') + noLimit,
         };
@@ -5494,7 +5530,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
       ],
     };
   }
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '3–4. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '3–4. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, yanilgi, calisma], chart, figures };
 }
 
@@ -5725,7 +5761,7 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
   dogru.visual = levelDotsVisual(r.levels);
   if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
   if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: CUBE_TYPES[x.type].name, correct: x.correct, n: x.n })));
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '3–4. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '3–4. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures };
 }
 
@@ -6076,21 +6112,20 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
       ...card('ud_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
       text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
-      visual: {
-        type: 'bars',
-        label: 'Soru başına tipik süre',
-        scale: 'scale',
-        unit: 'sn',
-        rows: [
-          { label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) },
-          ...(comparePace && p1.medianRt !== null && p2.medianRt !== null
-            ? [
+      visual:
+        comparePace && p1.medianRt !== null && p2.medianRt !== null
+          ? ({
+              type: 'bars',
+              label: 'Soru başına tipik süre',
+              scale: 'scale',
+              unit: 'sn',
+              rows: [
+                { label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) },
                 { label: '1. bölüm', value: secValue(p1.medianRt), valueLabel: secShort(p1.medianRt) },
                 { label: '2. bölüm', value: secValue(p2.medianRt), valueLabel: secShort(p2.medianRt) },
-              ]
-            : []),
-        ],
-      } satisfies BarsVisual,
+              ],
+            } satisfies BarsVisual)
+          : timeStrip(r.rts, r.medianRt),
     };
   }
 
@@ -6970,7 +7005,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
     calisma = {
       ...card('dh_calisma'),
       headline: `Desen başına tipik süre ${seconds(r.medianRt)}`,
-      visual: { type: 'bars', label: 'Desen başına tipik süre', scale: 'scale', unit: 'sn', rows: [{ label: 'İşaretlenen desenler', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) }] } satisfies BarsVisual,
+      visual: timeStrip(r.rts, r.medianRt, 'desen'),
       text: [
         v(`Bir deseni işaretlemen tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir deseni işaretlemesi tipik olarak ${seconds(r.medianRt)} sürdü.`),
         skipLine,
@@ -7330,7 +7365,7 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
       : {
           ...card('ba_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-          visual: { type: 'bars', label: 'Soru başına tipik süre', scale: 'scale', unit: 'sn', rows: [{ label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) }] } satisfies BarsVisual,
+          visual: timeStrip(r.rts, r.medianRt),
           text:
             [
               v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`),
@@ -7686,21 +7721,20 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
       ...card('dk_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
       text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
-      visual: {
-        type: 'bars',
-        label: 'Soru başına tipik süre',
-        scale: 'scale',
-        unit: 'sn',
-        rows: [
-          { label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) },
-          ...(comparePace && a !== null && b !== null
-            ? [
+      visual:
+        comparePace && a !== null && b !== null
+          ? ({
+              type: 'bars',
+              label: 'Soru başına tipik süre',
+              scale: 'scale',
+              unit: 'sn',
+              rows: [
+                { label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) },
                 { label: 'Doğru bulunan tuzaklı sorular', value: secValue(a), valueLabel: secShort(a) },
                 { label: 'İlk akla gelen cevabın seçildiği sorular', value: secValue(b), valueLabel: secShort(b) },
-              ]
-            : []),
-        ],
-      } satisfies BarsVisual,
+              ],
+            } satisfies BarsVisual)
+          : timeStrip(r.rts, r.medianRt),
     };
   }
 
@@ -8064,21 +8098,26 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
       ...card('kg_plan'),
       headline: `İlk hamleden önce tipik ${towerSeconds(r.medianPick)}`,
       text: parts.join(' '),
-      visual: {
-        type: 'bars',
-        label: 'İlk hamleden önce tipik süre',
-        scale: 'scale',
-        unit: 'sn',
-        rows: [
-          { label: 'Bütün problemler', value: towerTenths(r.medianPick), valueLabel: towerSecShort(r.medianPick) },
-          ...(r.pickShort !== null && r.pickLong !== null && !rapid
-            ? [
+      visual:
+        r.pickShort !== null && r.pickLong !== null && !rapid
+          ? ({
+              type: 'bars',
+              label: 'İlk hamleden önce tipik süre',
+              scale: 'scale',
+              unit: 'sn',
+              rows: [
+                { label: 'Bütün problemler', value: towerTenths(r.medianPick), valueLabel: towerSecShort(r.medianPick) },
                 { label: `Kısa (${TOWER_SHORT - 1} ve ${TOWER_SHORT} hamle)`, value: towerTenths(r.pickShort), valueLabel: towerSecShort(r.pickShort) },
                 { label: `Uzun (${TOWER_LONG} ve ${TOWER_LONG + 1} hamle)`, value: towerTenths(r.pickLong), valueLabel: towerSecShort(r.pickLong) },
-              ]
-            : []),
-        ],
-      } satisfies BarsVisual,
+              ],
+            } satisfies BarsVisual)
+          : durationStrip({
+              label: 'Problemlerde ilk hamleden önceki süreler',
+              rts: r.picks,
+              median: r.medianPick,
+              marker: `Tipik ${towerSecShort(r.medianPick)}`,
+              item: 'bir problem',
+            }),
     };
   }
 
@@ -8364,7 +8403,7 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
   dogru.visual = levelDotsVisual(r.levels);
   if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
   if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: VOCABULARY_TYPES[x.type].name, correct: x.correct, n: x.n })));
-  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -8626,7 +8665,14 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       : {
           ...card('kd_calisma'),
           headline: `Tipik cevap süresi ${sn(to10(r.medianRt))} sn`,
-          visual: msBarsVisual('Tipik cevap süresi', [{ label: 'Doğru cevaplarda tipik süre', ms: to10(r.medianRt) }]),
+          visual: durationStrip({
+            label: 'Doğru cevaplarda cevap süreleri',
+            rts: r.rts,
+            median: to10(r.medianRt),
+            marker: `Tipik ${sn(to10(r.medianRt))} sn`,
+            item: 'bir doğru cevap',
+            digits: 2,
+          }),
           text:
             [
               v(

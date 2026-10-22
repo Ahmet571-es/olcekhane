@@ -332,7 +332,9 @@ function drawStrip(v: StripVisual, W: number, fs: number): Drawing {
   const span = v.max - v.min || 1;
   const x = (val: number) => pad + ((Math.min(v.max, Math.max(v.min, val)) - v.min) / span) * (W - 2 * pad);
   const yTop = fs * 1.75;
-  const plotH = v.points.length ? fs * 2.6 : fs * 1.6;
+  // Çok ölçüm varsa (ör. 90 tepki) noktalar küçülür ve daha çok kat üst üste dizilir: üst üste binen nokta yığını oluşmaz.
+  const many = v.points.length > 30;
+  const plotH = v.points.length ? fs * (v.points.length > 60 ? 5.4 : many ? 4.2 : 2.6) : fs * 1.6;
   const axisY = yTop + plotH;
   if (v.zone) {
     const zx = x(v.zone.from);
@@ -347,15 +349,16 @@ function drawStrip(v: StripVisual, W: number, fs: number): Drawing {
     shapes.push({ k: 'line', x1: rx, y1: r2(yTop - fs * 0.2), x2: rx, y2: r2(axisY), stroke: 'ink2', sw: 1, dash: true });
   }
   // Noktalar: üst üste gelenler yukarı doğru dizilir.
-  const pr = r2(fs * 0.33);
-  const levels = Math.max(1, Math.floor((plotH - fs * 0.3) / (2 * pr + 0.8)));
+  const pr = r2(fs * (many ? 0.24 : 0.33));
+  const gap = many ? 0.5 : 0.8;
+  const levels = Math.max(1, Math.floor((plotH - fs * 0.3) / (2 * pr + gap)));
   const placed: { x: number; level: number }[] = [];
   for (const p of [...v.points].sort((a, b) => a - b)) {
     const px = x(p);
     let level = 0;
     while (level < levels - 1 && placed.some((q) => q.level === level && Math.abs(q.x - px) < 2 * pr + 0.6)) level++;
     placed.push({ x: px, level });
-    shapes.push({ k: 'circle', x: r2(px), y: r2(axisY - pr - 1 - level * (2 * pr + 0.8)), r: pr, fill: 'ink3', stroke: 'surface', sw: 0.6 });
+    shapes.push({ k: 'circle', x: r2(px), y: r2(axisY - pr - 1 - level * (2 * pr + gap)), r: pr, fill: 'ink3', stroke: 'surface', sw: 0.6 });
   }
   shapes.push({ k: 'line', x1: 0, y1: r2(axisY), x2: W, y2: r2(axisY), stroke: 'axis', sw: 0.8 });
   if (v.marker) {
@@ -390,6 +393,10 @@ function drawStrip(v: StripVisual, W: number, fs: number): Drawing {
     if (!prev || clash) y += ts * 1.35;
     shapes.push({ k: 'text', x: r2(at.x), y: r2(y), text: n.text, size: ts, weight: 400, fill: 'ink2', anchor: at.anchor });
     prev = { left, right: left + w };
+  }
+  if (v.caption) {
+    y += ts * 1.35;
+    shapes.push({ k: 'text', x: 0, y: r2(y), text: v.caption, size: ts, weight: 400, fill: 'ink3', anchor: 'start' });
   }
   return { width: W, height: r2(y + ts * 0.4), shapes };
 }

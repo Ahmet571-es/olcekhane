@@ -131,6 +131,8 @@ export interface StripVisual {
   box?: { low: number; high: number; label?: string };
   zone?: { from: number; to: number; label: string };
   reference?: { value: number; label: string };
+  /** Alttaki açıklama (ör. "Her nokta bir soru"). */
+  caption?: string;
 }
 
 /**
@@ -364,6 +366,7 @@ export function visualDescription(v: ItemVisual): string {
         v.box ? `${v.box.label ?? 'çoğu ölçüm'} ${exact(v.box.low)}–${exact(v.box.high)} ${v.unit} arasında` : '',
         v.points.length ? `${v.points.length} ölçüm` : '',
         v.zone ? `${v.zone.label}: ${formatTick(v.zone.from)}–${formatTick(v.zone.to)} ${v.unit}` : '',
+        v.caption ?? '',
       ].filter(Boolean);
       return `${v.label}: ${parts.join('; ')}.`;
     }

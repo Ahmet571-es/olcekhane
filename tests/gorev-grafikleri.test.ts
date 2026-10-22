@@ -81,6 +81,17 @@ describe('görev testlerinin kart grafikleri', () => {
             if (!it.visual && NO_DATA.includes(it.badge ?? '')) continue;
             expect(it.visual, label).toBeDefined();
             checkDrawn(it.visual!, label);
+            // Ortak eksendeki tek bir çubuk (ör. yalnızca "Bütün sorular") bilgi taşımaz: karşılaştırılacak ikinci bir değer
+            // yoksa her sorunun süresi nokta şeridinde gösterilir.
+            if (it.visual!.type === 'bars' && it.visual!.scale === 'scale') expect(it.visual!.rows.length, label).toBeGreaterThan(1);
+            // Süre şeridinde her ölçüm bir nokta, tipik süre (ortanca) çizgi: çizgi noktaların ortasındadır.
+            if (it.visual!.type === 'strip' && it.visual!.caption?.startsWith('Her nokta')) {
+              const { points, marker } = it.visual!;
+              expect(points.length, label).toBeGreaterThan(0);
+              const below = points.filter((p) => p <= marker!.value + 0.05).length;
+              const above = points.filter((p) => p >= marker!.value - 0.05).length;
+              expect(Math.min(below, above), label).toBeGreaterThanOrEqual(points.length / 2 - 0.5);
+            }
             cards++;
           }
         }

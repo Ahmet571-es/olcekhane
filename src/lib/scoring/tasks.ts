@@ -494,6 +494,8 @@ export interface ColorWordResult {
   accIncongruent: number;
   /** Doğru cevaplarda tipik (ortanca) cevap süresi (ms); yeterince doğru cevap yoksa null. */
   medianRt: number | null;
+  /** Puanlanan cevapların süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   medianRtCongruent: number | null;
   medianRtIncongruent: number | null;
   /** Uyumsuz ve uyumlu denemelerdeki tipik cevap süreleri arasındaki fark (ms): renk-kelime etkisi. */
@@ -586,6 +588,7 @@ export function scoreColorWord(task: ColorWordTask, input: ColorWordTrialInput[]
       accCongruent: acc(cong),
       accIncongruent: acc(inc),
       medianRt: rt(trials),
+      rts: trials.filter((t) => t.correct).map((t) => t.rtMs as number),
       medianRtCongruent: rtC,
       medianRtIncongruent: rtI,
       interferenceMs: rtC !== null && rtI !== null ? rtI - rtC : null,
@@ -629,6 +632,8 @@ export interface GoNoGoResult {
   hitRate: number;
   /** Doğru basışlarda tipik (ortanca) tepki süresi (ms); yeterince doğru basış yoksa null. */
   medianRt: number | null;
+  /** Puanlanan cevapların süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
 }
 
 /** Harf göründükten sonra bu süreden önceki basışlar harfe bakılmadan yapılmış sayılır. */
@@ -675,6 +680,7 @@ export function scoreGoNoGo(task: GoNoGoTask, input: GoNoGoTrialInput[]): { resu
       stopRate: stopTrials ? round((stopTrials - commissions) / stopTrials, 3) : 0,
       hitRate: goTrials ? round(hits / goTrials, 3) : 0,
       medianRt: medianOrNull(rts, GO_MIN_HITS),
+      rts,
     },
   };
 }
@@ -961,6 +967,8 @@ export interface RotationResult {
   byAngle: RotationAngleResult[];
   /** Doğru bulunan "aynı" şekillerde tipik karar süresi (ms), bütün açılarda. */
   medianRt: number | null;
+  /** Puanlanan cevapların süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** Az (0 ve 45 derece) ve çok (135 ve 180 derece) döndürülmüş, doğru bulunan "aynı" şekillerde tipik karar süresi (ms). */
   rtSmall: number | null;
   rtLarge: number | null;
@@ -1066,6 +1074,7 @@ export function scoreRotation(task: MentalRotationTask, input: RotationTrialInpu
         return { angle, n: here.length, correct: here.filter((t) => t.correct).length, accuracy: acc(here), medianRt: rtOf(here, ROTATION_MIN_PER_ANGLE) };
       }),
       medianRt: rtOf(trials, ROTATION_MIN_CORRECT),
+      rts: trials.filter((t) => t.correct && !t.mirror).map((t) => t.rt as number),
       rtSmall,
       rtLarge,
       rotationCostMs: rtSmall !== null && rtLarge !== null ? rtLarge - rtSmall : null,
@@ -1227,6 +1236,8 @@ export interface MatrixResult {
   reached: number;
   /** Bütün sorularda tipik (ortanca) cevap süresi (ms). */
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
   rtEasy: number | null;
   rtHard: number | null;
@@ -1303,6 +1314,7 @@ export function scoreMatrix(task: MatrixReasoningTask, input: MatrixTrialInput[]
       rules,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
       rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < task.rapidMs).length,
@@ -1340,6 +1352,8 @@ export interface NumberSeriesResult {
   /** Ulaşılan düzey: şekil akıl yürütmedeki ölçütle aynı (o düzeyde ve o düzeye kadarki sorularda en az %60 doğru). */
   reached: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
   rtEasy: number | null;
   rtHard: number | null;
@@ -1425,6 +1439,7 @@ export function scoreNumberSeries(task: NumberSeriesTask, input: NumberSeriesTri
       rules,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
       rapid: hardAnswered.filter((s) => !s.correct && s.rt !== null && s.rt < task.rapidMs).length,
@@ -1465,6 +1480,8 @@ export interface LetterSeriesResult {
   /** Ulaşılan düzey: şekil akıl yürütmedeki ölçütle aynı (o düzeyde ve o düzeye kadarki sorularda en az %60 doğru). */
   reached: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
   rtEasy: number | null;
   rtHard: number | null;
@@ -1549,6 +1566,7 @@ export function scoreLetterSeries(task: LetterSeriesTask, input: LetterSeriesTri
       rules,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
       rapid: hardAnswered.filter((s) => !s.correct && s.rt !== null && s.rt < task.rapidMs).length,
@@ -1588,6 +1606,8 @@ export interface VerbalResult {
   /** Ulaşılan düzey: şekil akıl yürütmedeki ölçütle aynı (o düzeyde ve o düzeye kadarki sorularda en az %60 doğru). */
   reached: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
   rtEasy: number | null;
   rtHard: number | null;
@@ -1673,6 +1693,7 @@ export function scoreVerbal(task: VerbalReasoningTask, input: VerbalTrialInput[]
       types,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
       rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < verbalRapidMs(s.item)).length,
@@ -1709,6 +1730,8 @@ export interface FoldingResult {
   types: FoldingTypeResult[];
   reached: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   rtEasy: number | null;
   rtHard: number | null;
   /** 3. düzey ve üstündeki sorulardan `FOLDING_RAPID_MS`'den kısa sürede yanlış cevaplananlar ve bu soruların sayısı. */
@@ -1777,6 +1800,7 @@ export function scoreFolding(task: PaperFoldingTask, input: FoldingTrialInput[])
       types,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
       rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < FOLDING_RAPID_MS).length,
@@ -1813,6 +1837,8 @@ export interface VocabularyResult {
   types: VocabularyTypeResult[];
   reached: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   rtEasy: number | null;
   rtHard: number | null;
   /** 3. düzey ve üstündeki sorulardan okunamayacak kadar kısa sürede (`vocabularyRapidMs`) yanlış cevaplananlar ve bu soruların sayısı. */
@@ -1879,6 +1905,7 @@ export function scoreVocabulary(task: VocabularyTask, input: VocabularyTrialInpu
       types,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
       rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < vocabularyRapidMs(s.item)).length,
@@ -1927,6 +1954,8 @@ export interface RuleSwitchResult {
   mixingCost: number | null;
   /** Bütün geçerli doğru cevapların tipik süresi (ms). */
   medianRt: number | null;
+  /** Puanlanan cevapların süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   answered: number;
   timeouts: number;
   /** `RULE_TOO_FAST_MS`'den kısa cevaplar (şekle bakmadan basılmış olabilir); doğru sayılmaz. */
@@ -2000,6 +2029,7 @@ export function scoreRuleSwitch(task: RuleSwitchTask, input: RuleSwitchTrialInpu
       switchCost: sw.medianRt !== null && repeat.medianRt !== null ? Math.round(sw.medianRt - repeat.medianRt) : null,
       mixingCost: repeat.medianRt !== null && pure.medianRt !== null ? Math.round(repeat.medianRt - pure.medianRt) : null,
       medianRt: allRts.length >= RULE_MIN_RTS ? medianOrNull(allRts) : null,
+      rts: allRts,
       answered: scored.filter((s) => s.answered).length,
       timeouts: scored.filter((s) => !s.answered).length,
       tooFast: scored.filter((s) => s.fast).length,
@@ -2256,6 +2286,8 @@ export interface LogicResult {
   /** Bütün sorulardaki "evet" cevabı sayısı (cevapların yarısı "evet"tir). */
   yes: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** Sorunun uzunluğuna göre okunamayacak kadar kısa sürede verilen cevaplar (doğru ya da yanlış) ve bunların doğruları. */
   rapid: number;
   rapidCorrect: number;
@@ -2332,6 +2364,7 @@ export function scoreLogic(task: LogicalReasoningTask, input: LogicTrialInput[])
       logicIndex: round(rate(group(['vb', 'vu'])) - rate(group(['ib', 'iu'])), 3),
       yes: scored.filter((s) => s.yes).length,
       medianRt: medianOrNull(rts),
+      rts: rts,
       rapid: fast.length,
       rapidCorrect: fast.filter((s) => s.correct).length,
     },
@@ -2431,6 +2464,8 @@ export interface NumericResult {
   fracAdditive: number;
   intProportional: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /**
    * Sorunun uzunluğuna göre okunamayacak kadar kısa sürede yazılan cevaplar ("Bilmiyorum" sayılmaz) ve bunların doğruları;
    * bu kadar kısa sürede denen "Bilmiyorum"lar ayrıca sayılır.
@@ -2513,6 +2548,7 @@ export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialIn
       fracAdditive: scored.filter((s) => s.kind === 'p' && s.ratio === 'frac' && s.lure === 'additive').length,
       intProportional: scored.filter((s) => s.kind === 'a' && s.ratio === 'int' && s.lure === 'proportional').length,
       medianRt: medianOrNull(rts),
+      rts: rts,
       rapid: fast.length,
       rapidCorrect: fast.filter((s) => s.correct).length,
       rapidBlank: quick.length - fast.length,
@@ -2582,6 +2618,8 @@ export interface CubeResult {
   types: CubeTypeResult[];
   reached: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   rtEasy: number | null;
   rtHard: number | null;
   /** 3. düzey ve üstündeki sorulardan `CUBE_RAPID_MS`'den kısa sürede yanlış cevaplananlar ve bu soruların sayısı. */
@@ -2670,6 +2708,7 @@ export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result:
       types,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 3))),
       rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < CUBE_RAPID_MS).length,
@@ -2731,6 +2770,8 @@ export interface HiddenResult {
   levels: MatrixLevelResult[];
   reached: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** Doğru cevaplanan sorularda tipik süre (şeklin bulunma süresi). */
   medianRtCorrect: number | null;
   rtEasy: number | null;
@@ -2811,6 +2852,7 @@ export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]):
       levels,
       reached,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       medianRtCorrect: medianOrNull(rts(scored.filter((x) => x.correct))),
       rtEasy: medianOrNull(rts(scored.filter((x) => x.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((x) => x.item.level >= 3))),
@@ -2938,6 +2980,8 @@ export interface PatternResult {
   extra: number;
   shifted: number;
   /** "Hatırlamıyorum" denmeyen desenlerde işaretleme süresinin ortancası. */
+  /** İşaretlenen desenlerin süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   medianRt: number | null;
   /**
    * Bakılmadan işaretlenmiş olabilecek desenler: yanlış, tek kare farkı değil, karelerin yarısından azı doğru ve
@@ -3053,6 +3097,7 @@ export function scorePattern(task: PatternMemoryTask, input: PatternTrialInput[]
       missed: wrongs.reduce((a, x) => a + x.missed, 0),
       extra: wrongs.reduce((a, x) => a + x.extra, 0),
       shifted: wrongs.filter((x) => x.shifted).length,
+      rts,
       medianRt: medianOrNull(rts),
       rapid: wrongs.filter((x) => !x.near && 2 * x.hits < x.size && x.rt !== null && x.rt < PATTERN_RAPID_BASE_MS + PATTERN_RAPID_MS_PER_CELL * x.marked).length,
       restarts: items.reduce((a, x) => a + x.restarts, 0),
@@ -3134,6 +3179,8 @@ export interface Rotation3dResult {
   figures: number;
   parts: Rotation3dPartResult[];
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** `ROTATION3D_RAPID_MS`'den kısa sürede verilen yanlış cevaplar. */
   rapid: number;
   /** En sık seçilen yer çiftinin (ör. A ile B) kaç soruda seçildiği. */
@@ -3214,6 +3261,7 @@ export function scoreRotation3d(task: MentalRotation3dTask, input: Rotation3dTri
       figures: scored.reduce((a, s) => a + s.hits, 0),
       parts,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rapid: scored.filter((s) => s.hits < 2 && s.rt !== null && s.rt < ROTATION3D_RAPID_MS).length,
       samePair: Math.max(0, ...pairs.values()),
     },
@@ -3548,6 +3596,8 @@ export interface PerspectiveResult {
   /** Hata türlerinden birine girmeyen sorular (cevapsızlar dahil) ve ortalama hataları: yüksek hatayı hata türü mü açıklıyor? */
   rest: PerspectiveGroupResult;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** `PA_RAPID_MS`'den kısa sürede verilen ve 45 dereceden çok hatalı cevaplar (cevapsız sorular sayılmaz). */
   rapid: number;
   /**
@@ -3642,6 +3692,7 @@ export function scorePerspective(task: PerspectiveTask, input: PerspectiveTrialI
         return { n: rest.length, meanError: mean1(errs(rest)) };
       })(),
       medianRt: medianOrNull(rts),
+      rts: rts,
       rapid: items.filter((x) => x.response !== null && x.rt !== null && x.rt < PA_RAPID_MS && x.error > 45).length,
       sameDir,
       items,
@@ -3738,6 +3789,8 @@ export interface ReflectionResult {
   pairControlOnly: number;
   pairBoth: number;
   medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
   /** Tuzaklı sorularda doğru cevapların ve ilk akla gelen cevapların tipik süresi (en az üç cevap varsa). */
   rtLureCorrect: number | null;
   rtLureIntuitive: number | null;
@@ -3815,6 +3868,7 @@ export function scoreReflection(task: CognitiveReflectionTask, input: Reflection
       pairControlOnly: pairsOf.filter((p) => p.control.kind === 'correct' && p.lure.kind === 'lure').length,
       pairBoth: pairsOf.filter((p) => p.control.kind === 'correct' && p.lure.kind === 'correct').length,
       medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
       rtLureCorrect: enough(rts(lures.filter((s) => s.kind === 'correct'))),
       rtLureIntuitive: enough(rts(lures.filter((s) => s.kind === 'lure'))),
       rapid: fast.length,
@@ -3924,6 +3978,8 @@ export interface TowerResult {
   excessMoves: number;
   /** İlk topun alınmasına kadar geçen tipik süre (ms): bütün problemlerde, kısa ve uzun problemlerde. */
   medianPick: number | null;
+  /** Problemlerde ilk topun alınmasına kadar geçen süreler (ms); kartın süre şeridi bunları gösterir. */
+  picks: number[];
   pickShort: number | null;
   pickLong: number | null;
   /**
@@ -4019,6 +4075,7 @@ export function scoreTower(task: TowerTask, input: TowerTrialInput[]): { result:
       long: { n: longOnes.length, optimal: count(longOnes, 'optimal'), idle: idleOf(longOnes) },
       excessMoves: scored.reduce((sum, s) => sum + (s.outcome === 'extra' ? s.moves - s.item.minMoves : 0), 0),
       medianPick: medianOrNull(picks(scored), TOWER_PICK_MIN),
+      picks: picks(scored),
       pickShort: medianOrNull(picks(shortOnes), TOWER_PICK_MIN),
       pickLong: medianOrNull(picks(longOnes), TOWER_PICK_MIN),
       prePlan: shares.length >= TOWER_PREPLAN_MIN ? Math.round((100 * shares.reduce((a, b) => a + b, 0)) / shares.length) : null,
