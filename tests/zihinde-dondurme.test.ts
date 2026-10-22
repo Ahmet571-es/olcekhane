@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { publicInstruments, solvableInstruments } from '@/content/instruments';
 import { zihindeDondurme } from '@/content/instruments/zihinde-dondurme';
@@ -377,5 +378,19 @@ describe('Zihinde döndürme: rapor', () => {
     expect(sitemap().some((u) => u.url.endsWith(`/testler/${SLUG}`))).toBe(true);
     expect(zihindeDondurme.name.toLocaleLowerCase('tr-TR')).not.toContain('tanı');
     expect(zihindeDondurme.science.citations.every((c) => c.url?.startsWith('https://doi.org/'))).toBe(true);
+  });
+});
+
+describe('Zihinde döndürme: yayındaki dış sınama', () => {
+  it('örnek cevaplar her denemenin doğru cevabıdır; rapor grafikle yorumlanır', () => {
+    const yml = readFileSync(new URL('../.github/workflows/yayin.yml', import.meta.url), 'utf8');
+    const m = /ZD_GOVDE=.*?r=(\[[\d,]+\]);/.exec(yml);
+    expect(m).not.toBeNull();
+    const r = JSON.parse(m![1]) as number[];
+    expect(r).toEqual((zihindeDondurme.tasks[0] as MentalRotationTask).trials.map((t) => (t.mirror ? 2 : 1)));
+    const rep = evaluate(SLUG, rotationBody((t, i) => ({ choice: r[i] as 1 | 2, rtMs: 1500 })));
+    expect(rep.parent.chart?.type === 'bars' ? rep.parent.chart.rows : []).toHaveLength(5);
+    expect(rep.student.chartTitle).toBe('Döndürme açısına göre tipik karar süresi');
+    expect(rep.student.items[0].badge).toBe('%100 doğru');
   });
 });

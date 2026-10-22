@@ -308,8 +308,9 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 4 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Bir geri ve iki geri"'; then
             sorun="$sorun geriye-donuk-hatirlama-raporu"
           fi
-          # Zihinde Döndürme: 80 deneme; cevaplar sırayla "Aynı" ve "Ayna görüntüsü".
-          ZD_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"zihinde-dondurme": [{"index": i, "response": 1 + i % 2, "rtMs": 1500} for i in range(80)]}}}))')
+          # Zihinde Döndürme: 80 deneme; r, her denemenin doğru cevabıdır (1 "Aynı", 2 "Ayna görüntüsü"; tests/zihinde-dondurme.test.ts
+          # denetler). Rastgele cevaplarda sonuç yorumlanmaz ve açılara göre süre grafiği çizilmez.
+          ZD_GOVDE=$(python3 -c 'import json; r=[1,1,1,2,2,1,1,1,2,2,1,1,1,2,2,2,1,1,1,2,2,2,1,2,2,2,1,1,2,2,2,1,2,1,2,2,1,1,2,1,1,2,1,1,1,2,1,2,1,2,2,1,2,2,2,1,1,2,2,2,1,2,1,1,1,2,2,1,2,1,2,1,2,1,2,2,1,1,2,1]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"zihinde-dondurme": [{"index": i, "response": r[i], "rtMs": 1500} for i in range(80)]}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$ZD_GOVDE" "https://$ALAN/api/rapor/zihinde-dondurme" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 3 and r["student"]["chartTitle"] == "Döndürme açısına göre tipik karar süresi"; m=r["student"]["roadmap"]; assert len(m["study"]["items"]) == 4 and m["approach"] is None'; then
             sorun="$sorun zihinde-dondurme-raporu"
