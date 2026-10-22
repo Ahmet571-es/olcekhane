@@ -17,9 +17,12 @@ import {
   REFLECTION_SAME_MAX_CORRECT,
   REFLECTION_TRAP_NOTE,
   TaskInputError,
+  countOf,
+  reflectionBelowChance,
   reflectionChance,
   reflectionControlLow,
   reflectionRapid,
+  reflectionRushed,
   reflectionSuspicious,
   reflectionSamePosition,
   scoreReflection,
@@ -223,8 +226,8 @@ describe('Düşünerek karar verme: puanlama', () => {
 
   it('başka yanlışlar: tuzaksız soruların çoğu da yanlışsa sonuç yorumlanmaz', () => {
     const r = score((q) => ({ response: reflectionOther(q), rtMs: 12_000 }));
-    expect([r.correct, r.lure.other, r.control.other, reflectionChance(r)]).toEqual([0, 16, 8, true]);
-    expect([REFLECTION_CONTROL_NONE, REFLECTION_CONTROL_LOW, REFLECTION_TRAP_NOTE]).toEqual([3, 5, 2]);
+    expect([r.correct, r.lure.other, r.control.other, reflectionChance(r), reflectionBelowChance(r)]).toEqual([0, 16, 8, true, true]);
+    expect([REFLECTION_CONTROL_NONE, REFLECTION_CONTROL_LOW, REFLECTION_TRAP_NOTE]).toEqual([3, 5, 3]);
   });
 
   it('rastgele seçen biri neredeyse her zaman uyarı alır; tuzak seçeneğine rastgele denk gelmek "tuzak aramak" sayılmaz', () => {
@@ -287,14 +290,14 @@ describe('Düşünerek karar verme: rapor', () => {
     const r = evaluate(SLUG, reflectionBody());
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '16 tuzaklı soruda 16 doğru'],
-      ['Yanlışların türü', 'Yanlış yok'],
+      ['Yanlışların türü', 'Tuzaklı sorularda yanlış yok'],
       ['Benzer soru çiftleri', '8 tuzaksız soruda 8 doğru'],
       ['Çalışma biçimi', 'Soru başına tipik süre 12 saniye'],
     ]);
     expect(r.student.cautions).toEqual([]);
+    // İlk akla gelen yanlış cevapların sayısı ayrı bir eğilim ölçüsü olarak geçerli bulunmadığı için öne çıkan sayı değildir.
     expect(r.student.keyFigures.map((f) => [f.label, f.value])).toEqual([
       ['Tuzaklı sorularda doğru', '16/16'],
-      ['İlk akla gelen yanlış cevap', 'Yok'],
       ['Tuzaksız eş sorularda doğru', '8/8'],
       ['Soru başına tipik süre', '12 saniye'],
     ]);
@@ -302,7 +305,10 @@ describe('Düşünerek karar verme: rapor', () => {
     expect(rm.bars.map((b) => [b.label, b.valueLabel])).toEqual(REFLECTION_GROUPS.map((g) => [g.name, '8/8']));
     expect(rm.barsTitle).toBe('Soru gruplarına göre sonucun');
     expect(rm.standout.map((s) => s.title)).toEqual(TITLES);
-    expect(r.student.items[0].text).toContain('tuzakların hemen hepsini fark ettin');
+    expect(r.student.items[0].text).toBe(
+      'Testteki 24 sorunun 16 tanesi tuzaklıydı: bunlarda ilk akla gelen cevap yanlıştı. Tuzaklı soruların hepsinde doğru cevabı buldun; ilk akla gelen yanlış cevaba hiç kapılmadın.',
+    );
+    expect(r.student.items[1].text).toBe('Tuzaklı soruların hiçbirinde yanlış cevap vermedin.');
     expect(r.student.items[2].text).toContain('tuzak olan ve olmayan soruları birbirinden ayırdın');
     expect(text(r.student)).not.toContain('Çocuğunuz');
   });
@@ -314,12 +320,13 @@ describe('Düşünerek karar verme: rapor', () => {
     );
     expect(intuitive.student.items[0].badge).toBe('16 tuzaklı soruda 0 doğru');
     expect(intuitive.student.items[0].text).toContain('birçok kişi bu cevabı verir');
-    expect(intuitive.student.items[1].badge).toBe('16 yanlışın 16 tanesi ilk akla gelen cevap');
+    expect(intuitive.student.items[1].badge).toBe('16 yanlışın hepsi ilk akla gelen cevap');
     expect(intuitive.student.items[1].text).toContain('Yanlışlarının hepsinde sorunun ilk anda akla getirdiği cevabı seçtin.');
     expect(intuitive.student.items[1].text).toContain('ikisi birlikte 120 lira eder');
     expect(intuitive.student.items[2].text).toContain(
-      '8 eşin 8 tanesinde tuzaksız sorunun doğru cevabını buldun ama tuzaklı eşinde ilk akla gelen cevabı seçtin.',
+      'Eşlerin hepsinde tuzaksız sorunun doğru cevabını buldun ama tuzaklı eşinde ilk akla gelen cevabı seçtin. Tuzaksız eşleri doğru bulman, bu sorulardaki okuma ve hesabın sana zor gelmediğini gösterir.',
     );
+    expect(intuitive.student.items[2].text).not.toContain('anlamamaktan');
     expect(intuitive.parent.items[2].text).toContain('Çocuğunuz bu soruların hepsini doğru buldu.');
 
     const other = evaluate(
@@ -327,33 +334,56 @@ describe('Düşünerek karar verme: rapor', () => {
       reflectionBody((q) => ({ response: q.role === 'lure' && q.i % 2 ? reflectionOther(q) : q.answer, rtMs: 12_000 })),
     );
     expect(other.student.items[1].text).toContain(
-      'ilk akla gelen cevap değil, başka bir yanlıştı. Bu tür sorularda yanlışların çoğu genellikle ilk akla gelen cevaptır',
+      'Yanlışlarının hiçbiri ilk akla gelen cevap değildi; hepsi başka bir yanlıştı. Bu tür sorularda yanlışlar çoğunlukla ilk akla gelen cevap olur.',
     );
+    expect(other.student.items[1].badge).toBe('7 yanlışın hiçbiri ilk akla gelen cevap değil');
 
     const suspicious = evaluate(
       SLUG,
       reflectionBody((q) => ({ response: q.role === 'lure' ? q.answer : q.lure, rtMs: 12_000 })),
     );
-    expect(suspicious.student.items[2].text).toContain('Bu soruların 8 tanesinde, tuzak olmadığı hâlde tuzak varmış gibi cevap verdin.');
-    expect(suspicious.student.cautions.join(' ')).toContain('tuzak olmadığı hâlde tuzak varmış gibi cevap verilmiş');
-    expect(suspicious.student.cautions.join(' ')).toContain('bunların hepsinde tuzak olmadığı hâlde');
-    // Tuzaklıların hepsi doğru ama tuzaksızlarda da tuzak arandı: kartlar "denetledin" demez, tuzak aramaya dikkat çeker.
-    expect(suspicious.student.items[0].text).toContain('her soruda tuzak aramaktan kaynaklanmış olabilir');
-    expect(suspicious.student.items[1].text).toContain('her soruda tuzak aramaktan da kaynaklanmış olabilir');
-    expect(suspicious.student.items[1].text).not.toContain('denetledin');
+    expect(suspicious.student.items[2].text).toContain('Bu soruların hepsinde, tuzak olmadığı hâlde tuzak varmış gibi cevap verdin.');
+    expect(suspicious.student.cautions.join(' ')).toContain(
+      'tuzaksız eş soruların hepsinde yanlış cevap verilmiş; bunların hepsinde tuzak olmadığı hâlde tuzak varmış gibi cevap verilmiş',
+    );
+    // Tuzaklıların hepsi doğru ama tuzaksızlarda da tuzak arandı: kartlar övmez, tuzak aramaya dikkat çeker.
+    expect(suspicious.student.items[0].text).toContain('Tuzaklı soruların hepsinde doğru cevabı seçtin.');
+    expect(suspicious.student.items[0].text).toContain('tuzak olmayan sorularda da tuzak aramaktan kaynaklanmış olabilir');
+    expect(suspicious.student.items[0].text).not.toContain('kapılmadın');
+    expect(suspicious.student.items[1].badge).toBe('Tuzaklı sorularda yanlış yok');
+    expect(suspicious.student.items[1].text).toContain('tuzak olmayan sorularda da tuzak aramaktan kaynaklanmış olabilir');
+    expect(text(suspicious.student)).not.toMatch(/her soruda tuzak|denetle/);
+    // Sekiz tuzaksız sorunun ikisinde tuzak cevabı, öteki tuzaksızlar doğru: rastgele seçimde de sık görülür, tuzak arama denmez.
+    const lightBody = () => {
+      let c = 0;
+      return reflectionBody((q) => ({ response: q.role === 'control' && c++ < 2 ? q.lure : q.answer, rtMs: 12_000 }));
+    };
+    const light = evaluate(SLUG, lightBody());
+    const lightRes = scoreReflection(task, trialsOf(lightBody())).result;
+    expect([lightRes.control.lure, lightRes.control.correct]).toEqual([2, 6]);
+    expect(reflectionSuspicious(lightRes)).toBe(false);
+    expect(text(light.student)).not.toContain('tuzak aramak');
 
     const random = evaluate(
       SLUG,
       reflectionBody((q) => ({ response: reflectionOther(q), rtMs: 12_000 })),
     );
-    expect(random.student.items.map((i) => i.badge)).toEqual([
-      '16 tuzaklı soruda 0 doğru',
-      'Yorumlanmadı',
-      '8 tuzaksız soruda 0 doğru',
-      'Soru başına tipik süre 12 saniye',
-    ]);
-    expect(random.student.cautions.join(' ')).toContain('tuzaksız eş soruların da çoğu');
+    // Hiçbir soruda doğru cevap yok: rastgele seçimde beklenenden de az, "rastgele seçilmiş" denmez.
+    expect(random.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', '8 tuzaksız soruda 0 doğru', 'Soru başına tipik süre 12 saniye']);
+    expect(random.student.items[0].text).toMatch(/^Hiçbir soruda doğru cevabı seçmedin\. Bu, rastgele seçimde beklenenden de az\./);
+    expect(random.student.items[2].text).toContain('yönergenin farklı anlaşıldığını');
+    expect(random.student.cautions.join(' ')).toContain('24 sorunun hiçbiri doğru cevaplanmamış. Bu, rastgele seçimde beklenenden de azdır.');
+    expect(text(random.student)).not.toContain('rastgele seçilmiş');
     expect(random.student.roadmap!.bars).toEqual([]);
+    expect(random.student.chart).toBeNull();
+    // Tuzaksızların çoğu yanlış ama toplam rastgele düzeyinde: sonuç yorumlanmaz.
+    const chanceBody = reflectionBody((q) => ({ response: q.i % 3 === 0 ? q.answer : reflectionOther(q), rtMs: 12_000 }));
+    const chanceRes = scoreReflection(task, trialsOf(chanceBody)).result;
+    expect([reflectionChance(chanceRes), reflectionBelowChance(chanceRes)]).toEqual([true, false]);
+    const chanceRep = evaluate(SLUG, chanceBody);
+    expect(chanceRep.student.items[0].text).toMatch(/^Tuzaksız eş soruların da çoğunda doğru cevabı bulamadın\./);
+    expect(chanceRep.student.items[0].text).toContain('verebilir');
+    expect(chanceRep.student.cautions.join(' ')).toContain('Bu sonuç yorumlanmamalıdır.');
 
     const low = evaluate(
       SLUG,
@@ -375,7 +405,19 @@ describe('Düşünerek karar verme: rapor', () => {
       reflectionBody((q) => ({ response: q.i % 4 === 0 ? q.answer : reflectionOther(q), rtMs: q.i < 8 ? 900 : 12_000 })),
     );
     expect(fast.student.cautions.join(' ')).toContain('okumaya yetmeyecek kadar kısa');
-    expect(fast.student.items[3].text).toContain('okumaya yetmeyecek kadar kısa sürede verdin');
+    expect(fast.student.items[3].text).toContain('24 sorunun 8 tanesinde cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin.');
+    expect(fast.student.items[3].text).not.toContain('hız tek başına');
+    // Soruların hepsi okunamayacak kadar hızlı: sonuç yorumlanmaz; tuzak arama ya da sayısal–sözel farkı anlatılmaz.
+    const rushed = evaluate(
+      SLUG,
+      reflectionBody((q) => ({ response: q.i % 2 ? q.answer : q.lure, rtMs: 900 })),
+    );
+    expect(rushed.student.items.slice(0, 3).map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(rushed.student.items[0].text).toMatch(/^24 sorunun hepsinde cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin\./);
+    expect(rushed.student.cautions.join(' ')).toContain('Bu sonuç yorumlanmamalıdır.');
+    expect(text(rushed.student)).not.toMatch(/tuzak aramak|Sayısal tuzaklı sorularda|ilk akla gelen cevap(tı| değil)/);
+    expect(rushed.student.keyFigures.map((f) => f.value)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', '1 saniye']);
+    expect(rushed.student.chart).toBeNull();
 
     const same = evaluate(
       SLUG,
@@ -387,12 +429,12 @@ describe('Düşünerek karar verme: rapor', () => {
       SLUG,
       reflectionBody((q) => ({ response: q.role === 'lure' && q.domain === 'num' ? q.lure : q.answer, rtMs: 12_000 })),
     );
-    expect(numHard.student.items[0].text).toContain('Sayısal sorulardaki tuzaklarda, sözel sorulardakilerden belirgin daha az doğru cevap buldun.');
+    expect(numHard.student.items[0].text).toContain('Sayısal tuzaklı sorularda, sözel olanlardan daha az doğru cevap buldun.');
     const verbHard = evaluate(
       SLUG,
       reflectionBody((q) => ({ response: q.role === 'lure' && q.domain === 'verb' ? q.lure : q.answer, rtMs: 12_000 })),
     );
-    expect(verbHard.student.items[0].text).toContain('Sözel sorulardaki tuzaklarda, sayısal sorulardakilerden belirgin daha az doğru cevap buldun.');
+    expect(verbHard.student.items[0].text).toContain('Sözel tuzaklı sorularda, sayısal olanlardan daha az doğru cevap buldun.');
 
     // Süreler: ilk akla gelen cevaplar hızlı.
     const quickIntuitive = evaluate(
@@ -402,7 +444,11 @@ describe('Düşünerek karar verme: rapor', () => {
     expect(quickIntuitive.student.items[3].text).toContain(
       'İlk akla gelen cevabı seçtiğin sorularda, doğru bulduğun sorulardan daha kısa sürede cevap verdin.',
     );
-    expect(quickIntuitive.student.items[3].text).toContain('Doğru bulunan tuzaklı sorularda tipik 15 saniye · ilk akla gelen cevapta 6 saniye.');
+    expect(quickIntuitive.student.items[3].visual?.type === 'bars' ? quickIntuitive.student.items[3].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []).toEqual([
+      'Bütün sorular 15 sn',
+      'Doğru bulunan tuzaklı sorular 15 sn',
+      'İlk akla gelen cevabın seçildiği sorular 6 sn',
+    ]);
   });
 
   it('rastgele 1500 cevap düzeninde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -434,13 +480,20 @@ describe('Düşünerek karar verme: rapor', () => {
       const result: ReflectionResult = scoreReflection(task, trialsOf(body)).result;
       const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
       const chance = reflectionChance(result);
-      const doubt = reflectionRapid(result) || reflectionSamePosition(result);
+      const rushed = reflectionRushed(result);
+      const notRead = chance || rushed;
+      const rapid = reflectionRapid(result);
+      const samePos = reflectionSamePosition(result);
+      const doubt = !notRead && (rapid || samePos);
       const L = result.lure;
       const C = result.control;
       const wrong = L.n - L.correct;
-      const suspicious = !chance && C.lure >= REFLECTION_TRAP_NOTE && C.lure > C.other;
-      const ctrlLow = !chance && C.correct <= REFLECTION_CONTROL_LOW;
-      expect([reflectionSuspicious(result), reflectionControlLow(result)], label).toEqual([suspicious, ctrlLow]);
+      const ctrlLowRaw = !chance && C.correct <= REFLECTION_CONTROL_LOW;
+      const suspiciousRaw = !chance && C.lure > C.other && (C.lure >= REFLECTION_TRAP_NOTE || (C.lure >= 2 && ctrlLowRaw));
+      expect([reflectionSuspicious(result), reflectionControlLow(result)], label).toEqual([suspiciousRaw, ctrlLowRaw]);
+      // Kartlar: okumadan ya da bakmadan seçilmiş olabilirse (ya da sonuç yorumlanmıyorsa) tuzak arama anlatılmaz.
+      const suspicious = !notRead && !doubt && suspiciousRaw;
+      const ctrlLow = !notRead && !doubt && ctrlLowRaw;
       for (const r of [res.student, res.parent, adult]) {
         const t = text(r);
         expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]|: \./);
@@ -449,19 +502,28 @@ describe('Düşünerek karar verme: rapor', () => {
           label,
         ).toEqual(TITLES);
         for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
-        expect(r.items[0].badge, label).toBe(`16 tuzaklı soruda ${L.correct} doğru`);
-        expect(r.items[0].text, label).toContain(`Sayısal ${result.numLure.correct}/8 · Sözel ${result.verbLure.correct}/8.`);
-        expect(r.items[1].badge, label).toBe(chance ? 'Yorumlanmadı' : wrong === 0 ? 'Yanlış yok' : `${wrong} yanlışın ${L.lure} tanesi ilk akla gelen cevap`);
-        expect(r.items[2].badge, label).toBe(`8 tuzaksız soruda ${C.correct} doğru`);
+        // Nicelik sözleri sayılarla uyuşur ("8 sorunun 8 tanesi", "0 tanesi", "1 tanesi" denmez).
+        expect(`${t} ${r.cautions.join(' ')}`, label).not.toMatch(/\b(\d+) (sorunun|yanlışın|eşin) \1 tanes|(^|\s)[01] tanes/);
+        expect(r.items[0].badge, label).toBe(notRead ? 'Yorumlanmadı' : `16 tuzaklı soruda ${L.correct} doğru`);
+        expect(r.items[0].visual === undefined, label).toBe(notRead);
+        expect(r.items[1].badge, label).toBe(
+          notRead
+            ? 'Yorumlanmadı'
+            : wrong === 0
+              ? 'Tuzaklı sorularda yanlış yok'
+              : doubt
+                ? 'Yorumlanmadı'
+                : wrong === 1
+                  ? `Tek yanlış: ${L.lure ? 'ilk akla gelen cevap' : 'başka bir yanlış'}`
+                  : `${wrong} yanlışın ${countOf(L.lure, wrong, 'i')} ilk akla gelen cevap${L.lure === 0 ? ' değil' : ''}`,
+        );
+        expect(r.items[2].badge, label).toBe(rushed || doubt ? 'Yorumlanmadı' : `8 tuzaksız soruda ${C.correct} doğru`);
         // Uyarılar.
+        expect(r.cautions.some((c) => c.includes('yorumlanmamalıdır')), label).toBe(notRead);
         expect(
-          r.cautions.some((c) => c.includes('tuzaksız eş soruların da çoğu')),
+          r.cautions.some((c) => /tuzaksız eş soruların .* yanlış cevap verilmiş/.test(c)),
           label,
-        ).toBe(chance);
-        expect(
-          r.cautions.some((c) => /tuzaksız eş soruların \d+ tanesi yanlış/.test(c)),
-          label,
-        ).toBe(ctrlLow);
+        ).toBe(ctrlLowRaw && !rapid && !samePos);
         expect(
           r.cautions.some((c) => c.includes('okumaya yetmeyecek kadar kısa')),
           label,
@@ -472,43 +534,47 @@ describe('Düşünerek karar verme: rapor', () => {
         ).toBe(reflectionSamePosition(result));
         // Tuzaklı sorular kartı.
         const a = r.items[0].text;
-        expect(a.includes('tuzaklı sorulardaki sonuç yorumlanmadı'), label).toBe(chance);
-        expect(/benzer soru çiftleri kartına bak/.test(a), label).toBe(ctrlLow);
-        expect(/okumadan ya da bakmadan seç/.test(a), label).toBe(!chance && doubt);
+        expect(a.includes('sonuç yorumlanmadı'), label).toBe(notRead);
+        expect(/benzer soru çiftleri kartına bak/.test(a), label).toBe(suspicious || ctrlLow);
+        expect(a.includes('tuzak olmayan sorularda da tuzak aramaktan'), label).toBe(suspicious);
+        expect(/okumadan ya da bakmadan seç/.test(a), label).toBe(doubt);
         const diff = result.numLure.correct - result.verbLure.correct;
-        expect(a.includes('Sayısal sorulardaki tuzaklarda') || a.includes('sayısal sorulardaki tuzaklarda'), label).toBe(!chance && diff <= -3);
-        expect(a.includes('Sözel sorulardaki tuzaklarda') || a.includes('sözel sorulardaki tuzaklarda'), label).toBe(!chance && diff >= 3);
+        expect(a.includes('Sayısal tuzaklı sorularda'), label).toBe(!notRead && !doubt && diff <= -4);
+        expect(a.includes('Sözel tuzaklı sorularda'), label).toBe(!notRead && !doubt && diff >= 4);
         // Yanlışların türü.
         const b = r.items[1].text;
-        const intuitiveMost = !chance && !doubt && wrong >= 2 && L.lure >= 2 && L.lure >= 2 * L.other;
-        const otherMost = !chance && !doubt && wrong >= 2 && !intuitiveMost && L.other >= 2 && L.other > L.lure;
+        const intuitiveMost = !notRead && !doubt && wrong >= 2 && L.lure >= 2 && L.lure >= 2 * L.other;
+        const otherMost = !notRead && !doubt && wrong >= 2 && !intuitiveMost && L.other >= 2 && L.other > L.lure;
         expect(b.includes('sorunun ilk anda akla getirdiği cevabı seçt'), label).toBe(intuitiveMost);
-        expect(b.includes('Bu tür sorularda yanlışların çoğu genellikle ilk akla gelen cevaptır'), label).toBe(otherMost);
-        expect(b.includes('yanlışların türü yorumlanmadı'), label).toBe(chance || (doubt && wrong > 0));
+        expect(b.includes('Bu tür sorularda yanlışlar çoğunlukla ilk akla gelen cevap olur'), label).toBe(otherMost);
+        expect(b.includes('yanlışların türü yorumlanmadı'), label).toBe(notRead || (doubt && wrong > 0));
         // Tuzaksız eş sorular.
         const c = r.items[2].text;
         expect(c.includes('tuzak varmış gibi cevap ver'), label).toBe(suspicious);
-        expect(c.includes(' eşin '), label).toBe(!suspicious && !chance && !ctrlLow && result.pairControlOnly >= 2);
-        if (c.includes(' eşin ')) expect(c, label).toContain(`8 eşin ${result.pairControlOnly} tanesinde`);
+        expect(c.includes('Eşlerin '), label).toBe(!notRead && !doubt && !suspicious && !ctrlLow && result.pairControlOnly >= 2);
+        if (c.includes('Eşlerin ')) expect(c, label).toContain(`Eşlerin ${countOf(result.pairControlOnly, result.pairs, 'inde')}`);
         expect(c.includes('başka bir yanlış cevap ver'), label).toBe(suspicious && C.other >= 2);
         // "Birçok kişi bu cevabı verir" yalnızca yanlışların çoğu ilk akla gelen cevapken.
         if (a.includes('birçok kişi bu cevabı verir')) expect(L.lure >= L.other, label).toBe(true);
         // Kuşkulu sonuçta dikkatsizlik ya da süre yorumu yapılmaz.
-        if (doubt || chance) expect(r.items[3].text, label).not.toMatch(/daha kısa sürede cevap verd|daha çok zaman ayırd|yakın süreler/);
+        if (doubt || notRead || rapid) expect(r.items[3].text, label).not.toMatch(/daha kısa sürede cevap verd|daha çok zaman ayırd|yakın süreler/);
+        expect(r.items[3].text.includes('hız tek başına'), label).toBe(!rapid && result.medianRt !== null);
         // Grafik, sütunlar ve öne çıkan sayılar kartlarla aynı sayıları gösterir.
-        expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(
-          REFLECTION_GROUPS.map((g) => `${result[g.key].correct}/8`),
-        );
+        if (notRead) expect(r.chart, label).toBeNull();
+        else
+          expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(
+            REFLECTION_GROUPS.map((g) => `${result[g.key].correct}/8`),
+          );
         expect(
           r.roadmap!.bars.map((x) => x.valueLabel),
           label,
-        ).toEqual(chance ? [] : REFLECTION_GROUPS.map((g) => `${result[g.key].correct}/8`));
-        expect(r.keyFigures.find((f) => f.label === 'Tuzaksız eş sorularda doğru')?.value, label).toBe(`${C.correct}/8`);
+        ).toEqual(notRead ? [] : REFLECTION_GROUPS.map((g) => `${result[g.key].correct}/8`));
+        expect(r.keyFigures.find((f) => f.label === 'Tuzaksız eş sorularda doğru')?.value, label).toBe(rushed || doubt ? 'Yorumlanmadı' : `${C.correct}/8`);
       }
       expect(text(res.student), label).not.toContain('Çocuğunuz');
       expect(text(adult), label).not.toContain('Çocuğunuz');
       expect(text(res.parent), label).not.toMatch(
-        /\b(buldun|verdin|seçtin|bulamadın|ulaşamadın|ettin|ayırdın|ayırdın|denetledin|olabilirsin|olabileceğin|kalmış olabilirsin)\b|bak\./,
+        /\b(buldun|verdin|seçtin|seçmedin|bulamadın|ulaşamadın|ettin|ayırdın|kapılmadın|aradığın|bulman|olabilirsin|olabileceğin)\b|bak\./,
       );
       expect(schoolWords(withoutRoadmap(adult)), label).toEqual([]);
       n++;

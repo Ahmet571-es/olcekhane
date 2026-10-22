@@ -17,8 +17,11 @@ import {
   NUMERIC_LURE_KINDS,
   NUMERIC_LURE_NOTE,
   TaskInputError,
+  countOf,
+  numericFewAnswered,
   numericNumberDriven,
   numericRapid,
+  numericRushed,
   scoreNumeric,
   type NumericTrialInput,
 } from '@/lib/scoring/tasks';
@@ -201,11 +204,16 @@ describe('Sayısal akıl yürütme: puanlama', () => {
     const blank = score((q) => ({ response: q.i < 12 ? null : q.answer, rtMs: 9000 }));
     expect([blank.blank, blank.correct, blank.prop.blank + blank.nonProp.blank + blank.equal.blank]).toEqual([12, 12, 12]);
     expect(NUMERIC_BLANK_MANY).toBe(12);
-    // Çok hızlı uyarısı: soruların en az dörtte biri hızlı ve bunların dörtte üçünden azı doğru.
+    // Cevap yazıldığı için yalnızca kısa sürede yazılan yanlış cevaplara bakılır: en az 6 olunca acele uyarısı.
     const fast = score((q) => ({ response: q.i < 6 && q.i % 2 ? q.answer + 1 : q.answer, rtMs: q.i < 6 ? 800 : 9000 }));
-    expect([fast.rapid, fast.rapidCorrect, numericRapid(fast)]).toEqual([6, 3, true]);
+    expect([fast.rapid, fast.rapidCorrect, numericRapid(fast)]).toEqual([6, 3, false]);
+    const fastWrong = score((q) => ({ response: q.i < 6 ? q.answer + 1 : q.answer, rtMs: q.i < 6 ? 800 : 9000 }));
+    expect([fastWrong.rapid, fastWrong.rapidCorrect, numericRapid(fastWrong), numericRushed(fastWrong)]).toEqual([6, 0, true, false]);
     const quick = score((q) => ({ response: q.answer, rtMs: 800 }));
     expect([quick.rapid, numericRapid(quick)]).toEqual([24, false]);
+    // Kısa sürede denen "Bilmiyorum" cevap sayılmaz; ayrıca sayılır.
+    const skip = score(() => ({ response: null, rtMs: 800 }));
+    expect([skip.rapid, skip.rapidBlank, numericRapid(skip), numericFewAnswered(skip)]).toEqual([0, 24, false, true]);
     expect(score((q) => ({ response: q.answer, rtMs: null })).medianRt).toBeNull();
 
     const ok = trialsOf(numericBody());
@@ -250,12 +258,20 @@ describe('Sayısal akıl yürütme: rapor', () => {
     expect(rm.barsTitle).toBe('Soru gruplarına göre sonucun');
     expect(rm.standout.map((s) => s.title)).toEqual(TITLES);
     expect(text(r.student)).not.toContain('Çocuğunuz');
+    expect(r.student.items[0].text).toMatch(/^Bütün sorularda doğru cevap verdin: hem günlük durumlarda/);
     expect(r.student.items[1].text).toContain('her soruda ayırt ettin');
     expect(r.student.items[2].text).toContain('her soruda buldun');
-    expect(r.student.items[1].text).toContain(
-      'Orantılı: sayılar birbirinin katı 4/4; katı değil 4/4 · Orantılı olmayan: fark korunan 4/4; başta bir miktar olan 2/2; değişmeyen 2/2.',
-    );
-    expect(r.student.items[2].text).toContain('Eşittir işareti 2/2 · Denkleştirme 4/4 · Terazi 2/2.');
+    // Türlerin sayıları kartların grafiğindedir; metinde yinelenmez.
+    const rows = (i: number) => (r.student.items[i].visual?.type === 'bars' ? r.student.items[i].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []);
+    expect(rows(1)).toEqual([
+      'Orantılı: sayılar birbirinin katı 4/4',
+      'Orantılı: sayılar birbirinin katı değil 4/4',
+      'Orantılı değil: fark korunuyor 4/4',
+      'Orantılı değil: başta bir miktar var 2/2',
+      'Orantılı değil: sonuç değişmiyor 2/2',
+    ]);
+    expect(rows(2)).toEqual(['Eşittir işareti 2/2', 'Denkleştirme 4/4', 'Terazi 2/2']);
+    expect(text(r.student)).not.toMatch(/\d+ tanes/);
   });
 
   it('durumlar: fark yanılgısı, orantı yanılgısı, ters orantı, sayılara göre yöntem, eşitlik yanılgıları, "Bilmiyorum", çok hızlı', () => {
@@ -263,20 +279,22 @@ describe('Sayısal akıl yürütme: rapor', () => {
       SLUG,
       numericBody((q) => ({ response: q.kind === 'p' ? lureOf(q, 'additive') : q.answer, rtMs: 9000 })),
     );
-    expect(additive.student.items[1].text).toContain('Orantılı durumların 8 tanesinde iki sayı arasındaki farkı korudun');
-    expect(additive.student.items[1].text).toContain('lise yıllarında azaldığı');
-    expect(additive.parent.items[1].text).toContain('Çocuğunuz orantılı durumların 8 tanesinde');
+    expect(additive.student.items[1].text).toContain('Orantılı durumların hepsinde iki sayı arasındaki farkı korudun.');
+    expect(additive.student.items[1].text).toContain('Bir araştırmada bu yanılgı 4. sınıftan 6. sınıfa doğru arttı, sonraki sınıflarda azaldı.');
+    expect(additive.parent.items[1].text).toMatch(
+      /^Çocuğunuz orantılı durumlarda, orantılı olmayanlardan daha az doğru cevap verdi\. Orantılı durumların hepsinde iki sayı arasındaki farkı korudu\./,
+    );
     expect(
       evaluateAdult(SLUG, { ...numericBody((q) => ({ response: q.kind === 'p' ? lureOf(q, 'additive') : q.answer, rtMs: 9000 })), grade: ADULT_GRADE }).adult
         .items[1].text,
-    ).not.toContain('Araştırmalarda');
+    ).not.toMatch(/[Aa]raştırma/);
 
     const onlyAdd = evaluate(
       SLUG,
       numericBody((q) => ({ response: q.kind === 'a' ? lureOf(q, 'proportional') : q.answer, rtMs: 9000 })),
     );
     expect(onlyAdd.student.items[1].text).toContain(
-      'Orantılı olmayan durumların 4 tanesinde orantı kurdun. Oysa her durum orantılı değildir: aynı hızla ilerleyen iki şeyde aradaki fark hep aynı kalır.',
+      'Orantılı olmayan durumların yarısında orantı kurdun. Oysa her durum orantılı değildir. Aynı hızla ilerleyen iki şeyde aradaki fark hep aynı kalır.',
     );
 
     const constant = evaluate(
@@ -288,7 +306,7 @@ describe('Sayısal akıl yürütme: rapor', () => {
     );
     expect(constant.student.items[1].text).toContain('Bir soruda miktar artınca süreyi kısalttın');
     expect(constant.student.items[1].text).toContain(
-      'Orantılı olmayan durumların 3 tanesinde orantı kurdun. Oysa her durum orantılı değildir: başlangıçta var olan miktar katlanmaz, yalnızca sonradan eklenen kısım artar; bazı durumlarda miktar artsa da sonuç hiç değişmez.',
+      'Orantılı olmayan durumların 3 tanesinde orantı kurdun. Oysa her durum orantılı değildir. Başlangıçta var olan miktar katlanmaz; yalnızca sonradan eklenen kısım artar. Bazı durumlarda miktar artsa da sonuç hiç değişmez.',
     );
 
     const numberDriven = evaluate(
@@ -298,16 +316,21 @@ describe('Sayısal akıl yürütme: rapor', () => {
         rtMs: 9000,
       })),
     );
+    // Aynı yanlışlar tek bir nedenle anlatılır: yaşa bağlı fark yanılgısı cümlesi yazılmaz.
     expect(numberDriven.student.items[1].text).toContain(
-      'sayılara bakarak seçmiş olabilirsin: sayıların birbirinin katı olmadığı 4 orantılı durumun 4 tanesinde fark, sayıların birbirinin katı olduğu ve farkın korunduğu 2 durumun 2 tanesinde orantı kurdun.',
+      'Sayılar birbirinin katı olmadığında farkı korudun, katı olduğunda ise orantı kurdun. Yöntemi durumdan çok sayılara bakarak seçmiş olabilirsin.',
     );
     expect(numberDriven.student.items[1].text).not.toContain('ayırt ett');
+    expect(numberDriven.student.items[1].text).not.toContain('Orantılı durumların');
+    expect(numberDriven.student.items[1].text.match(/araştırma/gi)).toHaveLength(1);
     // Hemen hepsi doğru ama eşitlikte iki yanılgı: "hem … hem …" yazılmaz.
     const nearly = evaluate(
       SLUG,
       numericBody((q) => ({ response: q.kind === 'eq' ? lureOf(q, 'operational') : q.answer, rtMs: 9000 })),
     );
-    expect(nearly.student.items[0].text).toContain('24 sorunun 22 tanesinde doğru cevap verdin; aşağıdaki kartlar');
+    expect(nearly.student.items[0].text).toBe(
+      'Soruların hemen hepsinde doğru cevap verdin. Doğru bulamadığın birkaç sorunun hangi türden olduğunu aşağıdaki kartlar gösterir.',
+    );
     expect(evaluate(SLUG, numericBody()).student.items[0].text).toContain('hem günlük durumlarda hem de eşitliklerde');
 
     const eq = evaluate(
@@ -320,28 +343,63 @@ describe('Sayısal akıl yürütme: rapor', () => {
     const e = eq.student.items[2].text;
     expect(e).toContain('2 soruda eşittir işaretinin solundaki işlemin sonucunu');
     expect(e).toContain('4 soruda bir sayı değişince ötekini ters yönde değiştirdin');
-    expect(e).toContain('Terazi sorularının 2 tanesinde');
+    expect(e).toContain('Terazi sorularının ikisinde de');
+    expect(e).toMatch(/^Eşitlik ve denge sorularının hiçbirinde doğru cevap vermedin\./);
     expect(eq.student.items[2].badge).toBe('8 soruda 0 doğru');
 
     const blank = evaluate(
       SLUG,
       numericBody((q) => ({ response: q.i % 2 ? null : q.answer, rtMs: 9000 })),
     );
-    expect(blank.student.cautions.join(' ')).toContain('12 tanesinde “Bilmiyorum” denmiş');
-    expect(blank.student.items[0].text).toContain('Soruların 12 tanesinde “Bilmiyorum” dediğin için');
-    expect(blank.student.items[3].text).toContain('“Bilmiyorum” 12/24.');
+    expect(blank.student.cautions.join(' ')).toContain('24 sorunun yarısında “Bilmiyorum” denmiş');
+    expect(blank.student.items[0].text).toContain('Soruların yarısında “Bilmiyorum” dediğin için');
+    expect(blank.student.items[3].text).toContain('Soruların yarısında “Bilmiyorum” dedin. Bu düğme, emin olunmayan soruda tahmin etmek yerine kullanılır; bu sorular doğru sayılmadı.');
+    expect(blank.student.items[1].text).toMatch(/Bu sorulardan \d+ tanesinde “Bilmiyorum” dedin; bunlar doğru sayılmadı\./);
+    expect(blank.student.keyFigures.find((f) => f.label === '“Bilmiyorum” denen sorular')?.value).toBe('12');
+    // Birkaç "Bilmiyorum" da anlatılır (uyarı olmadan).
+    const someBlank = evaluate(
+      SLUG,
+      numericBody((q) => ({ response: q.i < 2 ? null : q.answer, rtMs: 9000 })),
+    );
+    expect(someBlank.student.cautions).toEqual([]);
+    expect(someBlank.student.items[3].text).toContain('Soruların 2 tanesinde “Bilmiyorum” dedin.');
 
     const fast = evaluate(
       SLUG,
       numericBody((q) => ({ response: q.i % 2 ? q.answer : q.answer + 1, rtMs: 900 })),
     );
-    expect(fast.student.cautions.join(' ')).toContain('okumaya yetmeyecek kadar kısa');
-    expect(fast.student.items[0].text).toContain('okumadan cevap vermiş olabileceğin');
+    // Kısa sürede yazılan cevapların yarısı doğru: soru okunmuş, acele edilmiş olabilir; sonuç yorumlanır.
+    expect(fast.student.cautions).toEqual([
+      'Sayısal akıl yürütme testinde 24 sorunun yarısında cevap çok kısa sürede yazılmış ve yanlış. Bu sorularda acele edilmiş olabilir.',
+    ]);
+    expect(fast.student.items[0].badge).toBe('24 soruda 12 doğru');
+    expect(fast.student.items[0].text).toContain('12 soruda acele etmiş olabileceğin için');
+    expect(fast.student.items[3].text).toContain('12 soruda cevabı çok kısa sürede yazdın ve bu cevaplar yanlıştı. Bu sorularda acele etmiş olabilirsin.');
+    expect(fast.student.items[3].text).not.toContain('hız tek başına');
+    expect(text(fast.student)).not.toContain('okumadan');
+    // Bütün cevaplar kısa sürede ve yanlış: sonuç yorumlanmaz.
+    const rushed = evaluate(
+      SLUG,
+      numericBody((q) => ({ response: q.answer + 1, rtMs: 900 })),
+    );
+    expect(rushed.student.items.slice(0, 3).map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(rushed.student.cautions.join(' ')).toContain('Bu sonuç yorumlanmamalıdır.');
+    expect(rushed.student.chart).toBeNull();
+    // Hep kısa sürede "Bilmiyorum": cevap yazılmadığı için sonuç yorumlanmaz; "okumadan cevap" denmez.
     const fastBlank = evaluate(
       SLUG,
       numericBody(() => ({ response: null, rtMs: 900 })),
     );
-    expect(fastBlank.student.items[3].text).toContain('bu cevapların hiçbiri doğru değildi');
+    expect(fastBlank.student.items[0].text).toMatch(/^Soruların hepsinde “Bilmiyorum” dedin\. Cevap yazdığın soru çok az olduğu için sonuç yorumlanmadı\./);
+    expect(fastBlank.student.items.slice(0, 3).map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(text(fastBlank.student)).not.toContain('okumadan');
+    // Birkaç soruda kısa sürede "Bilmiyorum": atlanmış olabileceği söylenir.
+    const skipped = evaluate(
+      SLUG,
+      numericBody((q) => (q.i < 4 ? { response: null, rtMs: 900 } : { response: q.answer, rtMs: 9000 })),
+    );
+    expect(skipped.student.cautions).toEqual([]);
+    expect(skipped.student.items[3].text).toContain('4 soruda, soruyu okumaya yetmeyecek kadar kısa sürede “Bilmiyorum” dedin. Bu soruları atlamış olabilirsin.');
     const quick = evaluate(
       SLUG,
       numericBody((q) => ({ response: q.answer, rtMs: 900 })),
@@ -382,6 +440,11 @@ describe('Sayısal akıl yürütme: rapor', () => {
       const result = scoreNumeric(task, trialsOf(body)).result;
       const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
       const good = (x: { correct: number }) => x.correct >= NUMERIC_GOOD;
+      const notRead = numericFewAnswered(result) || numericRushed(result);
+      const rapid = numericRapid(result);
+      const driven = numericNumberDriven(result);
+      const L = result.lures;
+      const proOther = driven ? L.proportional - result.intProportional : L.proportional;
       for (const r of [res.student, res.parent, adult]) {
         const t = text(r);
         expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]|: \./);
@@ -390,58 +453,73 @@ describe('Sayısal akıl yürütme: rapor', () => {
           label,
         ).toEqual(TITLES);
         for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
-        expect(r.items[0].badge, label).toBe(`24 soruda ${result.correct} doğru`);
-        expect(r.items[1].badge, label).toBe(`Orantılı ${result.prop.correct}/8 · Orantılı olmayan ${result.nonProp.correct}/8`);
-        expect(r.items[2].badge, label).toBe(`8 soruda ${result.equal.correct} doğru`);
-        const o = r.items[1].text;
-        const e = r.items[2].text;
-        // Yanılgılar yalnızca en az iki cevapta görülünce ve sayısıyla anlatılır.
-        expect(/durumların \d+ tanesinde iki sayı arasındaki farkı korud/.test(o), label).toBe(result.lures.additive >= NUMERIC_LURE_NOTE);
-        expect(/olmayan durumların \d+ tanesinde orantı kurd/.test(o), label).toBe(result.lures.proportional >= NUMERIC_LURE_NOTE);
-        if (result.lures.additive >= NUMERIC_LURE_NOTE)
-          expect(o, label).toContain(`durumların ${result.lures.additive} tanesinde iki sayı arasındaki farkı korud`);
-        if (result.lures.proportional >= NUMERIC_LURE_NOTE) {
-          expect(o, label).toContain(`durumların ${result.lures.proportional} tanesinde orantı kurd`);
-          expect(o.includes('aradaki fark hep aynı kalır'), label).toBe(result.propLures.a > 0);
-          expect(o.includes('miktar katlanmaz'), label).toBe(result.propLures.f > 0);
-          expect(o.includes('sonuç hiç değişmez'), label).toBe(result.propLures.c > 0);
+        // Nicelik sözleri sayılarla uyuşur ("8 durumun 8 tanesi", "0 tanesi", "1 tanesi" denmez).
+        expect(`${t} ${r.cautions.join(' ')}`, label).not.toMatch(/\b(\d+) (sorunun|durumun) \1 tanes|(^|\s)[01] tanes/);
+        // Yorumlanmayan sonucun rozetleri, grafikleri ve öne çıkan sayıları sonuç gibi görünmez.
+        if (notRead) {
+          expect(r.items.slice(0, 3).map((i) => i.badge), label).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+          expect(r.items.slice(0, 3).every((i) => i.visual === undefined), label).toBe(true);
+          expect(r.chart, label).toBeNull();
+          expect(r.roadmap!.bars, label).toEqual([]);
+          expect(r.keyFigures[0].value, label).toBe('Yorumlanmadı');
+        } else {
+          expect(r.items[0].badge, label).toBe(`24 soruda ${result.correct} doğru`);
+          expect(r.items[1].badge, label).toBe(`Orantılı ${result.prop.correct}/8 · Orantılı olmayan ${result.nonProp.correct}/8`);
+          expect(r.items[2].badge, label).toBe(`8 soruda ${result.equal.correct} doğru`);
+          const o = r.items[1].text;
+          const e = r.items[2].text;
+          // Yanılgılar yalnızca en az iki cevapta görülünce ve sayılarla uyuşan sözle anlatılır.
+          expect(/durumların \S+ ?\S* iki sayı arasındaki farkı korud/.test(o), label).toBe(L.additive >= NUMERIC_LURE_NOTE && !driven);
+          if (L.additive >= NUMERIC_LURE_NOTE && !driven) expect(o, label).toContain(`durumların ${countOf(L.additive, 8, 'inde')} iki sayı arasındaki farkı korud`);
+          expect(/olmayan durumların .* orantı kurd/.test(o), label).toBe(proOther >= NUMERIC_LURE_NOTE);
+          if (proOther >= NUMERIC_LURE_NOTE) {
+            expect(o, label).toContain(`olmayan durumların ${countOf(L.proportional, 8, 'inde')} orantı kurd`);
+            expect(o.includes('aradaki fark hep aynı kalır'), label).toBe(result.propLures.a > 0);
+            expect(o.includes('miktar katlanmaz'), label).toBe(result.propLures.f > 0);
+            expect(o.includes('sonuç hiç değişmez'), label).toBe(result.propLures.c > 0);
+          }
+          expect(o.includes('süreyi kısalt'), label).toBe(L.inverse >= 1);
+          expect(o.includes('sayılara bakarak seçmiş olabilir'), label).toBe(driven);
+          // "Çoğunlukla" ya da "her soruda" yalnızca iki grup da en az 6/8 iken.
+          expect(o.includes('ayırt ett'), label).toBe(good(result.prop) && good(result.nonProp));
+          expect(e.includes('“sonuç şudur”'), label).toBe(L.operational >= NUMERIC_LURE_NOTE);
+          expect(e.includes('ters yönde değiştird'), label).toBe(L.reverse >= NUMERIC_LURE_NOTE);
+          expect(/[Tt]erazi sorularının/.test(e), label).toBe(L.partial >= 1);
+          expect(e.includes('eksik sayıyı'), label).toBe(result.equal.correct >= NUMERIC_GOOD && L.operational < NUMERIC_LURE_NOTE && L.reverse < NUMERIC_LURE_NOTE);
+          expect(r.items[0].text.includes('hem günlük durumlarda'), label).toBe(
+            result.correct >= 22 && [result.prop, result.nonProp, result.equal].every((g) => g.correct >= 7),
+          );
+          // "Bilmiyorum" denen sorular kartlarda da söylenir.
+          expect(o.includes('“Bilmiyorum” ded'), label).toBe(result.prop.blank + result.nonProp.blank > 0);
+          expect(e.includes('“Bilmiyorum” ded'), label).toBe(result.equal.blank > 0);
+          // Araştırma bulguları (sınıflara göre) yetişkine yazılmaz.
+          if (r === adult) expect(o + e, label).not.toMatch(/[Aa]raştırma/);
+          expect(r.items[0].text.includes('acele etmiş olabileceğin') || r.items[0].text.includes('acele edilmiş olabileceği'), label).toBe(rapid);
+          // Grafik, sütunlar ve öne çıkan sayılar kartlarla aynı sayıları gösterir.
+          expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(
+            NUMERIC_GROUPS.map((g) => `${result[g.key].correct}/8`),
+          );
+          expect(
+            r.roadmap!.bars.map((b) => b.valueLabel),
+            label,
+          ).toEqual(NUMERIC_GROUPS.map((g) => `${result[g.key].correct}/8`));
+          const k = result.kinds;
+          expect(r.items[1].visual?.type === 'bars' ? r.items[1].visual.rows.map((x) => x.valueLabel) : [], label).toEqual(
+            [result.pInt, result.pFrac, k.a, k.f, k.c].map((g) => `${g.correct}/${g.n}`),
+          );
         }
-        expect(o.includes('süreyi kısalt'), label).toBe(result.lures.inverse >= 1);
-        expect(o.includes('sayılara bakarak seçmiş olabilir'), label).toBe(numericNumberDriven(result));
-        // "Çoğunlukla" ya da "her soruda" yalnızca iki grup da en az 6/8 iken.
-        expect(o.includes('ayırt ett'), label).toBe(good(result.prop) && good(result.nonProp));
-        expect(e.includes('“sonuç şudur”'), label).toBe(result.lures.operational >= NUMERIC_LURE_NOTE);
-        expect(e.includes('ters yönde değiştird'), label).toBe(result.lures.reverse >= NUMERIC_LURE_NOTE);
-        expect(/[Tt]erazi sorularının/.test(e), label).toBe(result.lures.partial >= 1);
-        expect(e.includes('eksik sayıyı'), label).toBe(result.equal.correct >= NUMERIC_GOOD && result.lures.operational < NUMERIC_LURE_NOTE && result.lures.reverse < NUMERIC_LURE_NOTE);
-        expect(r.items[0].text.includes('hem günlük durumlarda'), label).toBe(
-          result.correct >= 22 && [result.prop, result.nonProp, result.equal].every((g) => g.correct >= 7),
-        );
-        if (o.includes('sayılara bakarak')) expect(o, label).not.toContain('ayırt ett');
-        // Araştırma bulguları (sınıflara göre) yetişkine yazılmaz.
-        if (r === adult) expect(o + e, label).not.toContain('Araştırmalarda');
         // Uyarılar ve kart metinleri uyumlu.
         expect(
           r.cautions.some((c) => c.includes('“Bilmiyorum” denmiş')),
           label,
-        ).toBe(result.blank >= NUMERIC_BLANK_MANY);
+        ).toBe(result.blank >= NUMERIC_BLANK_MANY || numericFewAnswered(result));
+        expect(r.cautions.some((c) => c.includes('yorumlanmamalıdır')), label).toBe(notRead);
         expect(
-          r.cautions.some((c) => c.includes('okumaya yetmeyecek kadar kısa')),
+          r.cautions.some((c) => c.includes('kısa sürede yazılmış ve yanlış')),
           label,
-        ).toBe(numericRapid(result));
-        expect(r.items[3].text.includes('okumaya yetmeyecek kadar kısa'), label).toBe(numericRapid(result));
-        expect(r.items[0].text.includes('okunmadan cevap verilmiş olabileceği') || r.items[0].text.includes('okumadan cevap vermiş olabileceğin'), label).toBe(
-          numericRapid(result),
-        );
-        // Grafik, sütunlar ve öne çıkan sayılar kartlarla aynı sayıları gösterir.
-        expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(
-          NUMERIC_GROUPS.map((g) => `${result[g.key].correct}/8`),
-        );
-        expect(
-          r.roadmap!.bars.map((b) => b.valueLabel),
-          label,
-        ).toEqual(NUMERIC_GROUPS.map((g) => `${result[g.key].correct}/8`));
-        expect(o, label).toContain(`sayılar birbirinin katı ${result.pInt.correct}/4; katı değil ${result.pFrac.correct}/4`);
+        ).toBe(rapid);
+        expect(/kısa sürede yazd(ın|ı) ve bu cevaplar yanlıştı/.test(r.items[3].text), label).toBe(rapid);
+        expect(r.items[3].text.includes('hız tek başına'), label).toBe(!rapid && result.medianRt !== null);
       }
       expect(text(res.student), label).not.toContain('Çocuğunuz');
       expect(text(adult), label).not.toContain('Çocuğunuz');

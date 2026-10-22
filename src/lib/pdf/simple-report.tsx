@@ -1118,7 +1118,8 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
               {row.map((f, i) => (
                 <View key={f.label} style={i === row.length - 1 ? s.figureLast : s.figure}>
                   <Text style={s.figureLabel}>{f.label}</Text>
-                  <Text style={s.figureValue}>{f.value}</Text>
+                  {/* Dört kutulu satırda uzun bir değer ("Yorumlanmadı") kutuya sığsın diye küçük yazılır. */}
+                  <Text style={row.length >= 4 && f.value.length > 9 ? [s.figureValue, { fontSize: 14 }] : s.figureValue}>{f.value}</Text>
                   {f.note && <Text style={s.figureNote}>{f.note}</Text>}
                 </View>
               ))}

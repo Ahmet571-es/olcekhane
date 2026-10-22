@@ -2261,6 +2261,18 @@ export interface LogicResult {
   rapidCorrect: number;
 }
 
+/**
+ * Bir bütünün kaçta kaçı, sayılarla uyuşan sözle: "hepsi", "hiçbiri", "biri", "yarısı" ya da "5 tanesi"; ek yalın (i),
+ * belirtme (ini), bulunma (inde) ya da yönelme (ine) hâlidir. "Hiçbiri" olumsuz fiille kullanılır.
+ */
+export function countOf(k: number, n: number, ek: 'i' | 'ini' | 'inde' | 'ine'): string {
+  if (k === n && n > 1) return `heps${ek}`;
+  if (k === 0) return `hiçbir${ek}`;
+  if (k === 1) return `bir${ek}`;
+  if (2 * k === n) return `yarıs${{ i: 'ı', ini: 'ını', inde: 'ında', ine: 'ına' }[ek]}`;
+  return `${k} tanes${ek}`;
+}
+
 export const LOGIC_FORMS_ORDER: LogicForm[] = ['mp', 'mt', 'ac', 'da', 'vb', 'vu', 'ib', 'iu'];
 /** Hep aynı yöne: 32 sorunun en az 28'inde "evet" ya da en az 28'inde "hayır" (cevapların yarısı "evet"tir). */
 export const LOGIC_SAME_SIDE = 28;
@@ -2335,24 +2347,37 @@ export const logicSameSide = (r: LogicResult): 'yes' | 'no' | null => (r.yes >= 
 export const logicRapid = (r: LogicResult) => r.rapid >= Math.ceil(r.n / 4) && r.rapidCorrect < 0.75 * r.rapid;
 /** Rastgele seçimin de altında doğru (hep aynı cevap verilmemişken). */
 export const logicBelowChance = (r: LogicResult) => !logicSameSide(r) && r.correct <= LOGIC_BELOW_CHANCE;
+/**
+ * Soruların en az yarısı okunamayacak kadar kısa sürede cevaplanmış ve bu cevapların doğruları rastgele seçimden belirgin
+ * biçimde fazla değil (yarısından en çok iki standart sapma kadar fazla): sonuç yorumlanmaz.
+ */
+export const logicRushed = (r: LogicResult) =>
+  !logicSameSide(r) && !logicBelowChance(r) && logicRapid(r) && 2 * r.rapid >= r.n && r.rapidCorrect < r.rapid / 2 + Math.sqrt(r.rapid);
+/**
+ * 32 soruda en az 22 doğru: iki seçenek arasından rastgele seçen birinin bunu bulma olasılığı %2,5'tir. Daha azında "rastgele
+ * seçen biri de yaklaşık yarısını bulur" hatırlatması yapılır.
+ */
+export const LOGIC_ABOVE_CHANCE = 22;
 
 /** Mantıksal akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, logicBlocks aynı eşikleri kullanır). */
 export function logicQualityNotes(r: LogicResult): string[] {
   const notes: string[] = [];
   const side = logicSameSide(r);
   if (side) {
+    const k = side === 'yes' ? r.yes : r.n - r.yes;
     notes.push(
-      `Mantıksal akıl yürütme testinde ${r.n} sorunun ${side === 'yes' ? r.yes : r.n - r.yes} tanesine “${side === 'yes' ? 'Evet, kesin olarak doğru' : 'Hayır, kesin değil'}” denmiş; oysa soruların yarısının cevabı “evet”, yarısının “hayır”dır. Sorulara bakılmadan hep aynı cevap verilmiş ya da yönerge farklı anlaşılmış olabilir; soru türlerine göre sonuçlar yorumlanmadı.`,
+      `Mantıksal akıl yürütme testinde ${r.n} sorunun ${countOf(k, r.n, 'ine')} “${side === 'yes' ? 'Evet, kesin olarak doğru' : 'Hayır, kesin değil'}” denmiş. Oysa soruların yarısının cevabı “evet”, yarısının “hayır”dır. Sorulara bakılmadan hep aynı cevap verilmiş ya da yönerge farklı anlaşılmış olabilir. Bu sonuç yorumlanmamalıdır.`,
     );
   }
   if (logicBelowChance(r)) {
     notes.push(
-      `Mantıksal akıl yürütme testinde ${r.n} sorunun yalnızca ${r.correct} tanesi doğru cevaplanmış; bu, iki seçenek arasından rastgele seçimde beklenenden de azdır. Yönerge farklı anlaşılmış ya da seçenekler ters kullanılmış olabilir; sonuç dikkatle yorumlanmalıdır.`,
+      `Mantıksal akıl yürütme testinde ${r.correct === 0 ? `${r.n} sorunun hiçbiri doğru cevaplanmamış` : `${r.n} sorunun yalnızca ${countOf(r.correct, r.n, 'i')} doğru cevaplanmış`}. Bu, iki seçenek arasından rastgele seçimde beklenenden de azdır. Yönerge farklı anlaşılmış ya da seçenekler ters kullanılmış olabilir. Bu sonuç yorumlanmamalıdır.`,
     );
   }
   if (logicRapid(r)) {
+    const right = r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değil' : `bu cevapların yalnızca ${countOf(r.rapidCorrect, r.rapid, 'i')} doğru`;
     notes.push(
-      `Mantıksal akıl yürütme testinde ${r.n} sorunun ${r.rapid} tanesinde cevap, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verilmiş ve bu cevapların yalnızca ${r.rapidCorrect} tanesi doğru; bu sorularda okumadan seçilmiş olabilir.`,
+      `Mantıksal akıl yürütme testinde ${r.n} sorunun ${countOf(r.rapid, r.n, 'inde')} cevap, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verilmiş; ${right}. Bu sorularda okumadan seçilmiş olabilir.${logicRushed(r) ? ' Bu sonuç yorumlanmamalıdır.' : ''}`,
     );
   }
   return notes;
@@ -2406,9 +2431,13 @@ export interface NumericResult {
   fracAdditive: number;
   intProportional: number;
   medianRt: number | null;
-  /** Sorunun uzunluğuna göre okunamayacak kadar kısa sürede verilen cevaplar ("Bilmiyorum" dahil) ve bunların doğruları. */
+  /**
+   * Sorunun uzunluğuna göre okunamayacak kadar kısa sürede yazılan cevaplar ("Bilmiyorum" sayılmaz) ve bunların doğruları;
+   * bu kadar kısa sürede denen "Bilmiyorum"lar ayrıca sayılır.
+   */
   rapid: number;
   rapidCorrect: number;
+  rapidBlank: number;
 }
 
 /** Sekiz soruluk bir grupta "çoğunu doğru" en az 6; bir yanılgı türü en az iki cevapta görülünce anlatılır. */
@@ -2416,6 +2445,12 @@ export const NUMERIC_GOOD = 6;
 export const NUMERIC_LURE_NOTE = 2;
 /** "Bilmiyorum" soruların yarısında ya da daha çoğunda denmişse sonuç dikkatle yorumlanır. */
 export const NUMERIC_BLANK_MANY = 12;
+/** Cevap yazılan sorulardan en az bu kadarı yazılmışsa sonuç yorumlanır. */
+export const NUMERIC_MIN_ANSWERED = 6;
+/** Okunamayacak kadar kısa sürede yazılan yanlış cevaplar en az bu kadarsa acele edilmiş olabileceği söylenir. */
+export const NUMERIC_RAPID_WRONG = 6;
+/** Bu kadar ya da daha çok soruda kısa sürede "Bilmiyorum" denmişse bu sorular atlanmış olabilir. */
+export const NUMERIC_RAPID_BLANK = 3;
 
 export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialInput[]): { result: NumericResult } {
   const n = task.items.length;
@@ -2451,7 +2486,8 @@ export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialIn
   const isCongruent = (s: Scored) => (s.kind === 'p' && s.ratio === 'int') || (s.kind === 'a' && s.ratio === 'frac');
   const correct = scored.filter((s) => s.correct).length;
   const rts = scored.flatMap((s) => (s.rt === null ? [] : [s.rt]));
-  const fast = scored.filter((s) => s.rt !== null && s.rt < numericRapidMs(s.item));
+  const quick = scored.filter((s) => s.rt !== null && s.rt < numericRapidMs(s.item));
+  const fast = quick.filter((s) => s.value !== null);
   return {
     result: {
       n,
@@ -2479,12 +2515,20 @@ export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialIn
       medianRt: medianOrNull(rts),
       rapid: fast.length,
       rapidCorrect: fast.filter((s) => s.correct).length,
+      rapidBlank: quick.length - fast.length,
     },
   };
 }
 
-/** Okunamayacak kadar hızlı cevaplar: soruların en az dörtte biri ve bu cevapların dörtte üçünden azı doğru. */
-export const numericRapid = (r: NumericResult) => r.rapid >= Math.ceil(r.n / 4) && r.rapidCorrect < 0.75 * r.rapid;
+/** Cevap yazılan soru çok az ("Bilmiyorum" denenler dışında): sonuç yorumlanmaz. */
+export const numericFewAnswered = (r: NumericResult) => r.n - r.blank < NUMERIC_MIN_ANSWERED;
+/**
+ * Cevap yazıldığı için tahminle doğru sayı bulunamaz: kısa sürede yazılan doğru cevaplar sorunun okunduğunu gösterir. Bu
+ * yüzden yalnızca kısa sürede yazılan yanlış cevaplara bakılır.
+ */
+export const numericRapid = (r: NumericResult) => !numericFewAnswered(r) && r.rapid - r.rapidCorrect >= NUMERIC_RAPID_WRONG;
+/** Soruların en az yarısında cevap kısa sürede ve yanlış yazılmış, kısa sürede yazılan doğru cevap ise çok az: sonuç yorumlanmaz. */
+export const numericRushed = (r: NumericResult) => numericRapid(r) && 2 * (r.rapid - r.rapidCorrect) >= r.n && 3 * r.rapidCorrect < r.rapid - r.rapidCorrect;
 /**
  * Sayılara göre yöntem seçme: sayıların doğru yönteme çektiği altı sorunun en az beşi doğru; tam katlı olmayan dört
  * orantılı durumun en az üçünde fark, tam katlı iki fark korunan durumun en az birinde orantı kurulmuş.
@@ -2494,14 +2538,21 @@ export const numericNumberDriven = (r: NumericResult) => r.congruent.correct >= 
 /** Sayısal akıl yürütmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, numericBlocks aynı eşikleri kullanır). */
 export function numericQualityNotes(r: NumericResult): string[] {
   const notes: string[] = [];
-  if (r.blank >= NUMERIC_BLANK_MANY) {
+  if (numericFewAnswered(r)) {
     notes.push(
-      `Sayısal akıl yürütme testinde ${r.n} sorunun ${r.blank} tanesinde “Bilmiyorum” denmiş; cevaplanan soru az olduğu için soru türlerine göre sonuçlar dikkatle yorumlanmalıdır.`,
+      `Sayısal akıl yürütme testinde ${r.n} sorunun ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” denmiş; cevap yazılan soru çok az. Bu sonuç yorumlanmamalıdır.`,
+    );
+  } else if (r.blank >= NUMERIC_BLANK_MANY) {
+    notes.push(
+      `Sayısal akıl yürütme testinde ${r.n} sorunun ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” denmiş. Cevap yazılan soru az olduğu için soru türlerine göre sonuçlar dikkatle yorumlanmalıdır.`,
     );
   }
   if (numericRapid(r)) {
+    const wrong = r.rapid - r.rapidCorrect;
     notes.push(
-      `Sayısal akıl yürütme testinde ${r.n} sorunun ${r.rapid} tanesinde cevap, soruyu okumaya yetmeyecek kadar kısa sürede verilmiş ve ${r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değil' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğru`}; bu sorulara okumadan cevap verilmiş olabilir.`,
+      numericRushed(r)
+        ? `Sayısal akıl yürütme testinde ${r.n} sorunun ${countOf(wrong, r.n, 'inde')} cevap, soruyu okumaya yetmeyecek kadar kısa sürede yazılmış ve yanlış. Bu sorulara okumadan cevap verilmiş olabilir. Bu sonuç yorumlanmamalıdır.`
+        : `Sayısal akıl yürütme testinde ${r.n} sorunun ${countOf(wrong, r.n, 'inde')} cevap çok kısa sürede yazılmış ve yanlış. Bu sorularda acele edilmiş olabilir.`,
     );
   }
   return notes;
@@ -3700,8 +3751,16 @@ export interface ReflectionResult {
 export const REFLECTION_CONTROL_LOW = 5;
 /** Tuzaksız eş sorularda bu kadar ya da daha az doğru (ve yanlışlar çoğunlukla tuzak aramaktan değilse): sonuç yorumlanmaz. */
 export const REFLECTION_CONTROL_NONE = 3;
-/** Tuzaksız sorularda tuzak varmış gibi en az bu kadar ve başka yanlışlardan çok cevap: "her yerde tuzak aramak" anlatılır. */
-export const REFLECTION_TRAP_NOTE = 2;
+/**
+ * Tuzaksız sorularda tuzak varmış gibi en az bu kadar ve başka yanlışlardan çok cevap: "tuzak olmayan sorularda da tuzak
+ * aramak" anlatılır (tuzaksız soruların bir kısmı da yanlışsa iki cevap yeter).
+ */
+export const REFLECTION_TRAP_NOTE = 3;
+/**
+ * 24 sorunun en çok 2'si doğru: dört seçenek arasından rastgele seçen birinin bunu bulma olasılığı %4'tür. Seçenekler
+ * belli bir düzenle seçilmiş ya da yönerge farklı anlaşılmış olabilir; "rastgele" denmez.
+ */
+export const REFLECTION_BELOW_CHANCE = 2;
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
 export const REFLECTION_SAME_MAX_CORRECT = 15;
 /** Tipik sürelerin karşılaştırılması için en az bu kadar cevap gerekir. */
@@ -3771,32 +3830,51 @@ export function scoreReflection(task: CognitiveReflectionTask, input: Reflection
  * çok olmadıkça tuzak arama sayılmaz.
  */
 export const reflectionChance = (r: ReflectionResult) => r.control.correct <= REFLECTION_CONTROL_NONE && r.control.lure <= r.control.other;
-/** Tuzaksız sorularda tuzak varmış gibi cevap: en az iki ve başka yanlışlardan çok. */
-export const reflectionSuspicious = (r: ReflectionResult) => !reflectionChance(r) && r.control.lure >= REFLECTION_TRAP_NOTE && r.control.lure > r.control.other;
 /** Tuzaksız eş soruların bir kısmı da yanlış: sonuç dikkatle yorumlanır. */
 export const reflectionControlLow = (r: ReflectionResult) => !reflectionChance(r) && r.control.correct <= REFLECTION_CONTROL_LOW;
+/**
+ * Tuzaksız sorularda tuzak varmış gibi cevap: başka yanlışlardan çok ve en az üç (tuzaksız soruların bir kısmı da yanlışsa en
+ * az iki).
+ */
+export const reflectionSuspicious = (r: ReflectionResult) =>
+  !reflectionChance(r) &&
+  r.control.lure > r.control.other &&
+  (r.control.lure >= REFLECTION_TRAP_NOTE || (r.control.lure >= 2 && reflectionControlLow(r)));
+/** Rastgele seçimin de altında doğru (tuzaksız sorular da çoğunlukla yanlışken). */
+export const reflectionBelowChance = (r: ReflectionResult) => reflectionChance(r) && r.correct <= REFLECTION_BELOW_CHANCE;
 /** Soruların en az dörtte biri okumaya yetmeyecek kadar kısa sürede ve bu cevapların dörtte üçünden azı doğru. */
 export const reflectionRapid = (r: ReflectionResult) => r.rapid >= Math.ceil(r.n / 4) && r.rapidCorrect < 0.75 * r.rapid;
+/** Soruların en az yarısı okumaya yetmeyecek kadar kısa sürede cevaplanmış: sonuç yorumlanmaz. */
+export const reflectionRushed = (r: ReflectionResult) => !reflectionChance(r) && reflectionRapid(r) && 2 * r.rapid >= r.n;
 /** Cevapların en az yarısı aynı sırada ve doğru cevaplar çok değil. */
 export const reflectionSamePosition = (r: ReflectionResult) => r.samePosition >= Math.ceil(r.n / 2) && r.correct <= REFLECTION_SAME_MAX_CORRECT;
 
 /** Düşünerek karar vermede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, reflectionBlocks aynı eşikleri kullanır). */
 export function reflectionQualityNotes(r: ReflectionResult): string[] {
   const notes: string[] = [];
-  if (reflectionChance(r)) {
+  const C = r.control;
+  const wrongC = C.n - C.correct;
+  // Bazı sorularda okumadan ya da bakmadan seçilmiş olabilirse tuzaksız sorulardaki yanlışlar ayrıca yorumlanmaz.
+  const doubt = reflectionRapid(r) || reflectionSamePosition(r);
+  if (reflectionBelowChance(r)) {
     notes.push(
-      `Düşünerek karar verme testinde tuzaksız eş soruların da çoğu (${r.control.n} sorunun ${r.control.n - r.control.correct} tanesi) yanlış cevaplanmış; sorular dikkatle okunmamış ya da rastgele seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+      `Düşünerek karar verme testinde ${r.correct === 0 ? `${r.n} sorunun hiçbiri doğru cevaplanmamış` : `${r.n} sorunun yalnızca ${countOf(r.correct, r.n, 'i')} doğru cevaplanmış`}. Bu, rastgele seçimde beklenenden de azdır. Seçenekler belli bir düzenle seçilmiş ya da yönerge farklı anlaşılmış olabilir. Bu sonuç yorumlanmamalıdır.`,
     );
-  } else if (reflectionControlLow(r)) {
+  } else if (reflectionChance(r)) {
+    notes.push(
+      `Düşünerek karar verme testinde tuzaksız eş soruların ${C.correct === 0 ? 'hiçbiri doğru cevaplanmamış' : `yalnızca ${countOf(C.correct, C.n, 'i')} doğru cevaplanmış`}. Sorular dikkatle okunmamış, yönerge farklı anlaşılmış ya da cevaplar rastgele seçilmiş olabilir. Bu sonuç yorumlanmamalıdır.`,
+    );
+  } else if (reflectionControlLow(r) && !doubt) {
     notes.push(
       reflectionSuspicious(r)
-        ? `Düşünerek karar verme testinde tuzaksız eş soruların ${r.control.n - r.control.correct} tanesi yanlış cevaplanmış; bunların ${r.control.other === 0 ? 'hepsinde' : `${r.control.lure} tanesinde`} tuzak olmadığı hâlde tuzak varmış gibi cevap verilmiş. Sonuç dikkatle yorumlanmalıdır.`
-        : `Düşünerek karar verme testinde tuzaksız eş soruların ${r.control.n - r.control.correct} tanesi yanlış cevaplanmış; tuzaklı sorulardaki yanlışların bir kısmı da dikkatin dağılmasından ya da soruyu yanlış okumaktan kaynaklanmış olabilir. Sonuç dikkatle yorumlanmalıdır.`,
+        ? `Düşünerek karar verme testinde tuzaksız eş soruların ${countOf(wrongC, C.n, 'inde')} yanlış cevap verilmiş; bunların ${countOf(C.lure, wrongC, 'inde')} tuzak olmadığı hâlde tuzak varmış gibi cevap verilmiş. Sonuç dikkatle yorumlanmalıdır.`
+        : `Düşünerek karar verme testinde tuzaksız eş soruların ${countOf(wrongC, C.n, 'inde')} yanlış cevap verilmiş. Tuzaklı sorulardaki yanlışların bir kısmı da dikkatin dağılmasından ya da soruyu yanlış okumaktan kaynaklanmış olabilir. Sonuç dikkatle yorumlanmalıdır.`,
     );
   }
   if (reflectionRapid(r)) {
+    const right = r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değil' : `bu cevapların yalnızca ${countOf(r.rapidCorrect, r.rapid, 'i')} doğru`;
     notes.push(
-      `Düşünerek karar verme testinde ${r.n} sorunun ${r.rapid} tanesinde cevap, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verilmiş ve ${r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değil' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğru`}; bu sorulara okumadan cevap verilmiş olabilir.`,
+      `Düşünerek karar verme testinde ${r.n} sorunun ${countOf(r.rapid, r.n, 'inde')} cevap, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verilmiş; ${right}. Bu sorulara okumadan cevap verilmiş olabilir.${reflectionRushed(r) ? ' Bu sonuç yorumlanmamalıdır.' : ''}`,
     );
   }
   if (reflectionSamePosition(r)) {

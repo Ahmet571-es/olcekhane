@@ -35,6 +35,10 @@ import {
   dhMissOne,
   dhExtraOne,
   towerBody,
+  logicBody,
+  numericBody,
+  reflectionBody,
+  reflectionOther,
   cubeBody,
   cubeLureOption,
   foldingBody,
@@ -128,7 +132,38 @@ function trailVariant(stepMs: number, cutB?: number, wrongEvery = 0): AnswersBod
 
 const CS_BLANK = blankOf(def<TaskInstrument>('hesapla-ve-hatirla').tasks[0] as ComplexSpanTask);
 
+/** Sayısal akıl yürütmede bir sorunun verilen türdeki ilk yanılgı cevabı (yoksa doğru cevap). */
+const numLure = (q: { answer: number; lures: Partial<Record<string, number[]>> }, kind: string) => q.lures[kind]?.[0] ?? q.answer;
+
 export const TASK_VARIANTS: Record<string, Variants> = {
+  'mantiksal-akil-yurutme': {
+    varsayilan: () => logicBody((q) => ({ response: q.form === 'ib' && q.i % 2 ? 1 : q.answer, rtMs: 8000 })),
+    hepsi: () => logicBody(),
+    inanc: () => logicBody((q) => ({ response: q.form === 'vu' ? 2 : q.form === 'ib' ? 1 : q.answer, rtMs: 8000 })),
+    ikiYon: () => logicBody((q) => ({ response: q.form === 'ac' || q.form === 'da' ? 1 : q.answer, rtMs: 8000 })),
+    hepEvet: () => logicBody(() => ({ response: 1, rtMs: 9000 })),
+    hizli: () => logicBody((q) => ({ response: q.i % 2 ? q.answer : q.answer === 1 ? 2 : 1, rtMs: 900 })),
+    suresiz: () => logicBody((q) => ({ response: q.answer, rtMs: null })),
+  },
+  'sayisal-akil-yurutme': {
+    varsayilan: () => numericBody((q) => ({ response: q.kind === 'p' && q.i % 2 ? numLure(q, 'additive') : q.answer, rtMs: 9000 })),
+    hepsi: () => numericBody(),
+    fark: () => numericBody((q) => ({ response: numLure(q, 'additive'), rtMs: 9000 })),
+    oranti: () => numericBody((q) => ({ response: numLure(q, 'proportional'), rtMs: 9000 })),
+    esittir: () => numericBody((q) => ({ response: numLure(q, 'operational'), rtMs: 9000 })),
+    bilmiyorum: () => numericBody((q) => ({ response: q.i % 3 === 0 ? null : q.answer, rtMs: 9000 })),
+    hizli: () => numericBody((q) => ({ response: q.i % 2 ? q.answer : q.answer + 1, rtMs: 800 })),
+    suresiz: () => numericBody((q) => ({ response: q.answer, rtMs: null })),
+  },
+  'dusunerek-karar-verme': {
+    varsayilan: () => reflectionBody((q) => ({ response: q.role === 'lure' && q.i % 3 === 0 ? q.lure : q.answer, rtMs: 12_000 })),
+    hepsi: () => reflectionBody(),
+    tuzak: () => reflectionBody((q) => ({ response: q.role === 'lure' ? q.lure : q.answer, rtMs: q.role === 'lure' ? 6000 : 12_000 })),
+    supheci: () => reflectionBody((q) => ({ response: q.role === 'control' && q.i % 2 ? q.lure : q.answer, rtMs: 12_000 })),
+    rastgele: () => reflectionBody((q) => ({ response: reflectionOther(q), rtMs: 2000 })),
+    hizli: () => reflectionBody((q) => ({ response: q.i % 2 ? q.answer : q.lure, rtMs: 900 })),
+    suresiz: () => reflectionBody((q) => ({ response: q.answer, rtMs: null })),
+  },
   'zihinde-dondurme': {
     varsayilan: () => rotationBody(),
     aynaKarisik: () => rotationBody((t, i) => ({ choice: t.mirror && i % 3 === 0 ? 1 : t.mirror ? 2 : 1, rtMs: 1300 + 6 * t.disparity })),

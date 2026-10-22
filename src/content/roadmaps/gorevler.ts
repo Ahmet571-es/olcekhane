@@ -1270,7 +1270,7 @@ const mantiksalBase = facts(
   ],
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (sözel bilgilerden kesin sonuç çıkarmayı) gösterir.',
-    'Sonucun gerçek hayatla çatıştığı sorulardaki başarının 12 yaşından genç yetişkinliğe doğru arttığı görülmüştür; yani bu beceri ergenlik boyunca gelişmeye devam eder.',
+    'Bir araştırmada, sonucun gerçek hayatla çatıştığı sorularda çocukların başarısı genç yetişkinlerden düşük bulunmuştur. Bu beceri ergenlikte de gelişiyor olabilir.',
   ],
 );
 /** Yetişkine: gelişimle ilgili cümle yerine yanılgıların çok yaygın olduğu bilgisi. */
@@ -1370,8 +1370,8 @@ const mantiksalAkilYurutme: TaskRoadmapTemplate = {
     {
       title: 'Gerçek mi, çıkarım mı?',
       text: t(
-        'Bu hafta gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yaz ve birine sor; sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini onunla konuş.',
-        'Bu hafta çocuğunuz gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yazsın ve size sorsun; sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini birlikte konuşun.',
+        'Bu hafta gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yaz ve birine sor. Sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini onunla konuş.',
+        'Bu hafta çocuğunuz gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yazsın ve size sorsun. Sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini birlikte konuşun.',
       ),
     },
     {
@@ -1402,7 +1402,7 @@ const sayisalBase = facts(
   ],
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; sayılarla akıl yürütmenin yalnızca iki yönünü (orantı ile farkı ayırt etmeyi ve eşitliği dengelemeyi) gösterir.',
-    'Araştırmalarda orantılı durumlarda farkı koruma yanılgısının ilkokulda yaygın olduğu ve lise yıllarında azaldığı, orantılı olmayan durumlarda orantı kurma yanılgısının ise orantının öğretildiği yıllarda arttığı görülmüştür; bu yüzden aynı yanılgı farklı yaşlarda farklı anlama gelir.',
+    'Bir araştırmada orantılı durumlarda farkı koruma yanılgısı 4. sınıftan 6. sınıfa doğru arttı, sonraki sınıflarda azaldı. Bu yüzden aynı yanılgı farklı yaşlarda farklı anlama gelebilir.',
   ],
 );
 /** Yetişkine: gelişimle ilgili cümle yerine yanılgıların neyle ilişkili olabileceği. */
@@ -1938,8 +1938,8 @@ const dusunerekKararVerme: TaskRoadmapTemplate = {
   ),
   supports: [
     support(0, 'sina', 'Cevabı sına', 'Yöntem', t(
-      'Bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koy ve uyuyor mu diye bak. Örneğin bir sopa ile bir top birlikte 110 lira ve sopa toptan 100 lira pahalıysa “top 10 lira” cevabını sınamak için sopanın fiyatını bul: 110 lira olur ve ikisi birlikte 120 lira eder; demek ki cevap yanlış.',
-      'Çocuğunuza, bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koyup uyup uymadığına bakmasını önerin. Örneğin bir sopa ile bir top birlikte 110 lira ve sopa toptan 100 lira pahalıysa “top 10 lira” cevabını sınamak için sopanın fiyatı bulunur: 110 lira olur ve ikisi birlikte 120 lira eder; demek ki cevap yanlış.',
+      'Bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koy ve uyuyor mu diye bak. Örneğin bir sopa ile bir top birlikte 110 lira olsun. Sopa toptan 100 lira daha pahalı olsun. “Top 10 lira” cevabını sınamak için sopanın fiyatını bul: 110 lira olur ve ikisi birlikte 120 lira eder. Demek ki cevap yanlış.',
+      'Çocuğunuza, bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koyup uyup uymadığına bakmasını önerin. Örneğin bir sopa ile bir top birlikte 110 lira olsun. Sopa toptan 100 lira daha pahalı olsun. “Top 10 lira” cevabını sınamak için sopanın fiyatı bulunur: 110 lira olur ve ikisi birlikte 120 lira eder. Demek ki cevap yanlış.',
     )),
     support(1, 'oku', 'Soruyu sonuna kadar oku', 'Yöntem', t(
       'Kısa sorularda tuzak bazen tek bir sözcüktedir: “hariç”, “en az”, “daha fazla” gibi. Soruyu sonuna kadar oku ve sorunun gerçekten ne istediğini kendi cümlelerinle söyle; bazen soru, olmayan bir şeyi varmış gibi de sorabilir.',

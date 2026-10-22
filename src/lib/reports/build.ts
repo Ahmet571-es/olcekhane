@@ -127,11 +127,17 @@ import {
   NUMERIC_GOOD,
   NUMERIC_LURE_NOTE,
   numericNumberDriven,
+  numericFewAnswered,
   numericRapid,
+  numericRushed,
+  NUMERIC_RAPID_BLANK,
   type NumericGroup,
   type NumericResult,
+  LOGIC_ABOVE_CHANCE,
+  countOf,
   logicBelowChance,
   logicRapid,
+  logicRushed,
   logicSameSide,
   type LogicGroup,
   type LogicResult,
@@ -144,6 +150,8 @@ import {
   reflectionChance,
   reflectionControlLow,
   reflectionSuspicious,
+  reflectionBelowChance,
+  reflectionRushed,
   reflectionRapid,
   reflectionSamePosition,
   type ReflectionResult,
@@ -4504,73 +4512,123 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
   // Yetişkine "yetişkinler de" ya da yaşla gelişme cümlesi yazılmaz.
   const adult = audience === 'adult';
   const side = logicSameSide(r);
+  const below = logicBelowChance(r);
+  const rushed = logicRushed(r);
   const rapid = logicRapid(r);
+  // Sonuç yorumlanmaz: hep aynı cevap, rastgele seçimin de altında doğru ya da soruların çoğu okunmadan cevaplanmış olabilir.
+  const notRead = !!side || below || rushed;
   const good = (g: LogicGroup) => g.correct >= LOGIC_GOOD;
   const weak = (g: LogicGroup) => g.correct <= LOGIC_WEAK;
   const f = r.forms;
   const sideCount = side === 'yes' ? r.yes : r.n - r.yes;
   const sideLabel = side === 'yes' ? 'Evet, kesin olarak doğru' : 'Hayır, kesin değil';
-  const notRead = 'Cevapların neredeyse hepsi aynı olduğu için bu sorular yorumlanmadı.';
+  const notReadWhy = side
+    ? sideCount === r.n
+      ? 'Cevapların hepsi aynı olduğu için'
+      : 'Cevapların neredeyse hepsi aynı olduğu için'
+    : below
+      ? 'Doğru cevaplar rastgele seçimde beklenenden de az olduğu için'
+      : 'Soruların çoğu okumaya yetmeyecek kadar kısa sürede cevaplandığı için';
+  const rapidOf = `${r.n} sorunun ${countOf(r.rapid, r.n, 'inde')}`;
+  const rule = 'Bu kurala göre A varsa B de vardır, B yoksa A da yoktur. B olduğunda ya da A olmadığında ise kesin bir şey söylenemez.';
 
   /* Doğru cevaplar */
-  const below = logicBelowChance(r);
   let accText: string;
   if (side) {
     accText = v(
-      `Soruların ${sideCount} tanesinde “${sideLabel}” dedin. Oysa soruların yarısında sonuç bilgilerden kesin olarak çıkıyor, yarısında çıkmıyordu. Sorulara bakmadan hep aynı cevabı vermiş ya da yönergeyi farklı anlamış olabilirsin; bu yüzden soru türlerine göre sonuçlar yorumlanmadı. Dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
-      `Çocuğunuz soruların ${sideCount} tanesinde “${sideLabel}” dedi. Oysa soruların yarısında sonuç bilgilerden kesin olarak çıkıyor, yarısında çıkmıyordu. Sorulara bakılmadan hep aynı cevap verilmiş ya da yönerge farklı anlaşılmış olabilir; bu yüzden soru türlerine göre sonuçlar yorumlanmadı. Dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+      `Soruların ${countOf(sideCount, r.n, 'inde')} “${sideLabel}” dedin. Oysa soruların yarısında sonuç bilgilerden kesin olarak çıkıyor, yarısında çıkmıyordu. Sorulara bakmadan hep aynı cevabı vermiş ya da yönergeyi farklı anlamış olabilirsin. Bu yüzden sonuç yorumlanmadı. Yönergeyi yeniden okuyup başka bir gün yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz soruların ${countOf(sideCount, r.n, 'inde')} “${sideLabel}” dedi. Oysa soruların yarısında sonuç bilgilerden kesin olarak çıkıyor, yarısında çıkmıyordu. Sorulara bakılmadan hep aynı cevap verilmiş ya da yönerge farklı anlaşılmış olabilir. Bu yüzden sonuç yorumlanmadı. Yönergeyi yeniden okuyup başka bir gün yeniden denemesi daha doğru bir sonuç verebilir.`,
     );
-  } else if (r.correct >= r.n - 3) {
+  } else if (below) {
+    const few = r.correct === 0 ? v('Hiçbir soruda doğru karar vermedin.', 'Çocuğunuz hiçbir soruda doğru karar vermedi.') : v(`Soruların yalnızca ${countOf(r.correct, r.n, 'inde')} doğru karar verdin.`, `Çocuğunuz soruların yalnızca ${countOf(r.correct, r.n, 'inde')} doğru karar verdi.`);
+    accText =
+      few +
+      v(
+        ' Bu, iki seçenek arasından rastgele seçimde beklenenden de az. Yönergeyi farklı anlamış ya da seçenekleri ters kullanmış olabilirsin. Bu yüzden sonuç yorumlanmadı. Yönergeyi yeniden okuyup başka bir gün yeniden denemek daha doğru bir sonuç verebilir.',
+        ' Bu, iki seçenek arasından rastgele seçimde beklenenden de az. Yönerge farklı anlaşılmış ya da seçenekler ters kullanılmış olabilir. Bu yüzden sonuç yorumlanmadı. Yönergeyi yeniden okuyup başka bir gün yeniden denemesi daha doğru bir sonuç verebilir.',
+      );
+  } else if (rushed) {
     accText = v(
-      'Soruların hemen hepsinde doğru karar verdin: hem “eğer–ise” kurallarında hem de “bütün, bazı, hiçbir” sorularında sonucun bilgilerden kesin olarak çıkıp çıkmadığını buldun.',
-      'Çocuğunuz soruların hemen hepsinde doğru karar verdi: hem “eğer–ise” kurallarında hem de “bütün, bazı, hiçbir” sorularında sonucun bilgilerden kesin olarak çıkıp çıkmadığını buldu.',
+      `${capTr(rapidOf)} cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdin. Bu sorularda okumadan seçmiş olabilirsin. Bu yüzden sonuç yorumlanmadı. Acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${rapidOf} cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdi. Bu sorularda okumadan seçmiş olabilir. Bu yüzden sonuç yorumlanmadı. Acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
     );
   } else {
-    accText = v(
-      `${r.n} sorunun ${r.correct} tanesinde doğru karar verdin. Her soruda iki seçenek olduğu için rastgele seçen biri de yaklaşık yarısını doğru bulabilir; bu yüzden toplamdan çok, aşağıdaki kartlarda hangi tür sorularda zorlandığın daha çok şey söyler.`,
-      `Çocuğunuz ${r.n} sorunun ${r.correct} tanesinde doğru karar verdi. Her soruda iki seçenek olduğu için rastgele seçen biri de yaklaşık yarısını doğru bulabilir; bu yüzden toplamdan çok, aşağıdaki kartlarda hangi tür sorularda zorlandığı daha çok şey söyler.`,
-    );
-    if (below) {
-      // Rastgele seçimin de altında: çoğu zaman yönergenin farklı anlaşılması ya da seçeneklerin ters kullanılması.
-      accText += v(
-        ' Bu sayı, rastgele seçimde beklenenden de az. Böyle bir sonuç, yönerge farklı anlaşıldığında ya da seçenekler ters kullanıldığında ortaya çıkabilir; yönergeyi yeniden okuyup acele etmeden yeniden denemek daha doğru bir sonuç verebilir.',
-        ' Bu sayı, rastgele seçimde beklenenden de az. Böyle bir sonuç, yönerge farklı anlaşıldığında ya da seçenekler ters kullanıldığında ortaya çıkabilir; çocuğunuzun yönergeyi yeniden okuyup acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.',
+    const both = 'hem “eğer–ise” kurallarında hem de “bütün, bazı, hiçbir” sorularında sonucun bilgilerden kesin olarak çıkıp çıkmadığını buldun';
+    const bothP = 'hem “eğer–ise” kurallarında hem de “bütün, bazı, hiçbir” sorularında sonucun bilgilerden kesin olarak çıkıp çıkmadığını buldu';
+    // "Hem … hem de …" yalnızca dört grubun her birinde en çok bir yanlış varken: ötekinde kartlar yanlışların türünü anlatır.
+    const allGroups = LOGIC_GROUPS.every((g) => r[g.key].correct >= r[g.key].n - 1);
+    if (r.correct === r.n) {
+      accText = v(`Bütün sorularda doğru karar verdin: ${both}.`, `Çocuğunuz bütün sorularda doğru karar verdi: ${bothP}.`);
+    } else if (r.correct >= r.n - 3 && allGroups) {
+      accText = v(`Soruların hemen hepsinde doğru karar verdin: ${both}.`, `Çocuğunuz soruların hemen hepsinde doğru karar verdi: ${bothP}.`);
+    } else if (r.correct >= r.n - 3) {
+      accText = v(
+        'Soruların hemen hepsinde doğru karar verdin. Birkaç yanlışının hangi türden olduğunu aşağıdaki kartlar gösterir.',
+        'Çocuğunuz soruların hemen hepsinde doğru karar verdi. Birkaç yanlışının hangi türden olduğunu aşağıdaki kartlar gösterir.',
       );
-    } else if (Math.abs(r.correct - r.n / 2) <= 4) {
-      accText +=
-        ' Toplamın yarıya yakın olması tek başına rastgele seçildiği anlamına gelmez: belirli bir düşünme alışkanlığı da bazı tür sorularda hep aynı yanlışı yaptırabilir.';
+    } else if (r.correct >= LOGIC_ABOVE_CHANCE) {
+      accText = v(
+        'Soruların çoğunda doğru karar verdin. Hangi tür sorularda zorlandığını aşağıdaki kartlar gösterir.',
+        'Çocuğunuz soruların çoğunda doğru karar verdi. Hangi tür sorularda zorlandığını aşağıdaki kartlar gösterir.',
+      );
+    } else {
+      const part = 2 * r.correct > r.n ? 'yarısından çoğunda' : 2 * r.correct === r.n ? 'yarısında' : 'yarısından azında';
+      accText = v(
+        `Soruların ${part} doğru karar verdin. Her soruda iki seçenek var; rastgele seçen biri de yaklaşık yarısını doğru bulur. Bu yüzden toplamdan çok, hangi tür sorularda zorlandığın daha çok şey söyler (aşağıdaki kartlar).`,
+        `Çocuğunuz soruların ${part} doğru karar verdi. Her soruda iki seçenek var; rastgele seçen biri de yaklaşık yarısını doğru bulur. Bu yüzden toplamdan çok, hangi tür sorularda zorlandığı daha çok şey söyler (aşağıdaki kartlar).`,
+      );
+      if (!rapid && Math.abs(r.correct - r.n / 2) <= 4) {
+        accText +=
+          ' Toplamın yarıya yakın olması, rastgele seçildiği anlamına gelmez. Belirli bir düşünme alışkanlığı da bazı tür sorularda hep aynı yanlışı yaptırabilir.';
+      }
+    }
+    if (rapid) {
+      accText += v(
+        ` ${capTr(rapidOf)} bilgileri okumadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.`,
+        ` ${capTr(rapidOf)} bilgiler okunmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.`,
+      );
     }
   }
-  if (rapid && !side) {
-    accText += v(
-      ' Bazı sorularda bilgileri okumadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-      ' Bazı sorularda bilgiler okunmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
-    );
-  }
-  const dogru: CognitiveBlock = {
-    ...card('ma_dogru'),
-    headline: `${r.n} soruda ${r.correct} doğru`,
-    detail: `Eğer–ise soruları ${r.conditional.correct}/${r.conditional.n} · Bütün–bazı–hiçbir soruları ${r.categorical.correct}/${r.categorical.n}`,
-    text: accText,
-  };
+  // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
+  const dogru: CognitiveBlock = notRead
+    ? { ...card('ma_dogru'), headline: 'Yorumlanmadı', text: accText }
+    : {
+        ...card('ma_dogru'),
+        headline: `${r.n} soruda ${r.correct} doğru`,
+        text: accText,
+        visual: {
+          type: 'bars',
+          label: 'Doğru karar verilen sorular',
+          scale: 'share',
+          rows: [
+            { label: 'Eğer–ise soruları', value: r.conditional.correct, max: r.conditional.n, valueLabel: `${r.conditional.correct}/${r.conditional.n}` },
+            { label: 'Bütün–bazı–hiçbir soruları', value: r.categorical.correct, max: r.categorical.n, valueLabel: `${r.categorical.correct}/${r.categorical.n}` },
+          ],
+        } satisfies BarsVisual,
+      };
 
   /* Eğer–ise çıkarımları */
   const cv = r.condValid;
   const ci = r.condInvalid;
-  const formList = (forms: LogicForm[]) => forms.map((x) => `${LOGIC_FORM_NAMES[x]} ${f[x].correct}/${f[x].n}`).join('; ');
-  const condLine = `Kesin olanlar: ${formList(['mp', 'mt'])} · Kesin olmayanlar: ${formList(['ac', 'da'])}`;
-  const beliefLine = `Çatışmayanlar: ${formList(['vb', 'iu'])} · Çatışanlar: ${formList(['vu', 'ib'])}`;
-  const rule = 'Bu kural şunu söyler: A varsa B de vardır, B yoksa A da yoktur; B olduğunda ya da A olmadığında ise kesin bir şey söylenemez.';
+  // Soru türlerine göre doğru kararlar (kartların grafiği): her satır bir tür, başında grubu.
+  const formBars = (label: string, forms: [string, LogicForm][]): BarsVisual => ({
+    type: 'bars',
+    label,
+    scale: 'share',
+    rows: forms.map(([group, x]) => ({ label: `${group}: ${LOGIC_FORM_NAMES[x]}`, value: f[x].correct, max: f[x].n, valueLabel: `${f[x].correct}/${f[x].n}` })),
+  });
+  // "B yoksa A da yoktur" (olumsuz cümlelerle kurulan kesin çıkarım) ötekinden belirgin biçimde zor geldi.
+  const mtWeak = f.mt.correct <= 2 && f.mp.correct - f.mt.correct >= 2;
+  const mtText = v(
+    ' Özellikle “B yoksa A da yoktur” çıkarımında zorlandın. Olumsuz cümlelerle kurulan bu çıkarım kesindir. Araştırmalarda da “A varsa B de vardır”dan daha az kabul edilir.',
+    ' Özellikle “B yoksa A da yoktur” çıkarımında zorlandı. Olumsuz cümlelerle kurulan bu çıkarım kesindir. Araştırmalarda da “A varsa B de vardır”dan daha az kabul edilir.',
+  );
   let kosul: CognitiveBlock;
-  if (side) {
-    kosul = {
-      ...card('ma_kosul'),
-      headline: 'Yorumlanmadı',
-      detail: condLine,
-      text: notRead,
-    };
+  if (notRead) {
+    kosul = { ...card('ma_kosul'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
   } else {
     let text: string;
+    let mtSaid = false;
     if (good(cv) && good(ci)) {
       const how = cv.correct + ci.correct === cv.n + ci.n ? 'her soruda' : 'çoğunlukla';
       text = v(
@@ -4578,141 +4636,161 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
         `Çocuğunuz “eğer A ise B” kurallarından kesin olarak neyin çıktığını, neyin çıkmadığını ${how} ayırt etti. ${rule}`,
       );
     } else if (good(cv) && weak(ci)) {
+      const found = cv.correct === cv.n ? 'hepsini' : 'çoğunu';
       const yes = ci.n - ci.correct;
+      const yesQ = yes === ci.n ? 'hepsine' : 2 * yes === ci.n ? 'yarısına' : 'çoğuna';
       text = v(
-        `“Eğer A ise B” kurallarında kesin olan sonuçların çoğunu buldun ama kesin olmayan ${ci.n} sonucun ${yes} tanesine de “evet” dedin. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez: B başka durumlarda da olabilir. Kuralı iki yönlü düşünmek çok yaygındır; ${adult ? 'araştırmalarda bu iki çıkarım sık kabul edilir' : 'araştırmalarda yetişkinler de bu iki çıkarımı sık kabul eder'}. Böyle bir soruda “B olup da A’nın olmadığı bir durum olabilir mi?” diye bir karşı örnek aramak işine yarayabilir.`,
-        `Çocuğunuz “eğer A ise B” kurallarında kesin olan sonuçların çoğunu buldu ama kesin olmayan ${ci.n} sonucun ${yes} tanesine de “evet” dedi. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez: B başka durumlarda da olabilir. Kuralı iki yönlü düşünmek çok yaygındır; araştırmalarda yetişkinler de bu iki çıkarımı sık kabul eder. Böyle bir soruda “B olup da A’nın olmadığı bir durum olabilir mi?” diye bir karşı örnek aramak ona yardım edebilir.`,
+        `“Eğer A ise B” kurallarında kesin olan sonuçların ${found} buldun. Ama kesin olmayan sonuçların ${yesQ} de “evet” dedin. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez. B başka durumlarda da olabilir. Kuralı iki yönlü düşünmek çok yaygındır. ${adult ? 'Araştırmalarda bu iki çıkarım sık kabul edilir.' : 'Araştırmalarda yetişkinler de bu iki çıkarımı sık kabul eder.'} Böyle bir soruda “B olup da A’nın olmadığı bir durum olabilir mi?” diye bir karşı örnek aramak işine yarayabilir.`,
+        `Çocuğunuz “eğer A ise B” kurallarında kesin olan sonuçların ${found} buldu. Ama kesin olmayan sonuçların ${yesQ} de “evet” dedi. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez. B başka durumlarda da olabilir. Kuralı iki yönlü düşünmek çok yaygındır. Araştırmalarda yetişkinler de bu iki çıkarımı sık kabul eder. Böyle bir soruda “B olup da A’nın olmadığı bir durum olabilir mi?” diye bir karşı örnek aramak ona yardım edebilir.`,
       );
     } else if (weak(cv) && good(ci)) {
-      const no = cv.n - cv.correct;
-      text = v(
-        `Kesin olmayan sonuçların çoğunu fark ettin ama kesin olan ${cv.n} sonucun ${no} tanesine de “hayır” dedin. Her sonuca temkinli yaklaşmış olabilirsin; oysa “eğer A ise B” kuralı, A olduğunda B’nin de olacağını ve B olmadığında A’nın da olmadığını kesin olarak söyler.`,
-        `Çocuğunuz kesin olmayan sonuçların çoğunu fark etti ama kesin olan ${cv.n} sonucun ${no} tanesine de “hayır” dedi. Her sonuca temkinli yaklaşmış olabilir; oysa “eğer A ise B” kuralı, A olduğunda B’nin de olacağını ve B olmadığında A’nın da olmadığını kesin olarak söyler.`,
-      );
+      const noticed = ci.correct === ci.n ? 'her soruda' : 'çoğunlukla';
+      if (mtWeak && f.mp.correct >= 3) {
+        // Yanlışlar "B yoksa A da yoktur" sorularında toplanıyor: genel bir temkin açıklaması verilmez.
+        text = v(
+          `Kesin olmayan sonuçları ${noticed} fark ettin.${mtText}`,
+          `Çocuğunuz kesin olmayan sonuçları ${noticed} fark etti.${mtText}`,
+        );
+        mtSaid = true;
+      } else {
+        const no = cv.n - cv.correct;
+        const noQ = no === cv.n ? 'hepsine' : 2 * no === cv.n ? 'yarısına' : 'çoğuna';
+        text = v(
+          `Kesin olmayan sonuçları ${noticed} fark ettin. Ama kesin olan sonuçların ${noQ} de “hayır” dedin. Her sonuca temkinli yaklaşmış olabilirsin. Oysa “eğer A ise B” kuralına göre A varsa B de kesin olarak vardır, B yoksa A da yoktur.`,
+          `Çocuğunuz kesin olmayan sonuçları ${noticed} fark etti. Ama kesin olan sonuçların ${noQ} de “hayır” dedi. Her sonuca temkinli yaklaşmış olabilir. Oysa “eğer A ise B” kuralına göre A varsa B de kesin olarak vardır, B yoksa A da yoktur.`,
+        );
+      }
     } else if (weak(cv) && weak(ci)) {
       text = v(
-        `Bu sorularda kesin olanla kesin olmayanı ayırt etmekte zorlandın. “Eğer A ise B” kuralı şunu söyler: A varsa B de vardır; B yoksa A da yoktur. B olduğunda ya da A olmadığında ise kesin bir şey söylenemez.`,
-        `Çocuğunuz bu sorularda kesin olanla kesin olmayanı ayırt etmekte zorlandı. “Eğer A ise B” kuralı şunu söyler: A varsa B de vardır; B yoksa A da yoktur. B olduğunda ya da A olmadığında ise kesin bir şey söylenemez.`,
+        `Bu sorularda kesin olanla kesin olmayanı ayırt etmekte zorlandın. ${rule}`,
+        `Çocuğunuz bu sorularda kesin olanla kesin olmayanı ayırt etmekte zorlandı. ${rule}`,
+      );
+    } else if (ci.correct < cv.correct) {
+      text = v(
+        'Kesin olmayan sonuçlardan bazılarına “evet” dedin. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez.',
+        'Çocuğunuz kesin olmayan sonuçlardan bazılarına “evet” dedi. Kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez.',
+      );
+    } else if (cv.correct < ci.correct) {
+      text = v(
+        'Kesin olan sonuçlardan bazılarına “hayır” dedin. Kurala göre A varsa B de kesin olarak vardır, B yoksa A da yoktur.',
+        'Çocuğunuz kesin olan sonuçlardan bazılarına “hayır” dedi. Kurala göre A varsa B de kesin olarak vardır, B yoksa A da yoktur.',
       );
     } else {
-      text = v(
-        `Kesin olan ${cv.n} sonucun ${cv.correct} tanesinde, kesin olmayan ${ci.n} sonucun ${ci.correct} tanesinde doğru karar verdin.`,
-        `Çocuğunuz kesin olan ${cv.n} sonucun ${cv.correct} tanesinde, kesin olmayan ${ci.n} sonucun ${ci.correct} tanesinde doğru karar verdi.`,
-      );
-      if (ci.correct < cv.correct) {
-        text += ' Kesin olmayan sonuçlardan bazılarına “evet” denmiş: kural, B olduğunda A’nın da olduğunu ya da A olmadığında B’nin de olmadığını söylemez.';
-      } else if (cv.correct < ci.correct) {
-        text +=
-          ' Kesin olan sonuçlardan bazılarına “hayır” denmiş: kural, A olduğunda B’nin de olacağını ve B olmadığında A’nın da olmadığını kesin olarak söyler.';
-      }
+      text = v(`Kesin olan ve kesin olmayan sonuçların ikisinde de yanıldığın sorular oldu. ${rule}`, `Çocuğunuz kesin olan ve kesin olmayan sonuçların ikisinde de yanıldı. ${rule}`);
     }
-    // "B yoksa A da yoktur" (olumsuz cümlelerle kurulan kesin çıkarım) ötekinden belirgin biçimde zor geldiyse.
-    if (f.mt.correct <= 2 && f.mp.correct - f.mt.correct >= 2) {
-      text += v(
-        ` Özellikle “B yoksa A da yoktur” çıkarımında zorlandın (${f.mt.n} sorunun ${f.mt.correct} tanesi doğru); olumsuz cümlelerle kurulan bu çıkarım kesindir ama araştırmalarda da “A varsa B de vardır”dan daha az kabul edilir.`,
-        ` Özellikle “B yoksa A da yoktur” çıkarımında zorlandı (${f.mt.n} sorunun ${f.mt.correct} tanesi doğru); olumsuz cümlelerle kurulan bu çıkarım kesindir ama araştırmalarda da “A varsa B de vardır”dan daha az kabul edilir.`,
-      );
-    }
+    if (mtWeak && !mtSaid) text += mtText;
     kosul = {
       ...card('ma_kosul'),
       headline: `Kesin olanlar ${cv.correct}/${cv.n} · Kesin olmayanlar ${ci.correct}/${ci.n}`,
-      detail: condLine,
       text: text + ' Her tür dört soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
+      visual: formBars('Doğru karar verilen sorular (her türde dört soru)', [
+        ['Kesin', 'mp'],
+        ['Kesin', 'mt'],
+        ['Kesin değil', 'ac'],
+        ['Kesin değil', 'da'],
+      ]),
     };
   }
 
   /* Bilgiler ve gerçek hayat */
   const nc = r.noConflict;
   const cf = r.conflict;
+  // Çatışmayan soruların da çoğu yanlışsa iki grup karşılaştırılamaz.
+  const noCompare = !notRead && weak(nc);
   let inanc: CognitiveBlock;
-  if (side) {
+  if (notRead) {
+    inanc = { ...card('ma_inanc'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
+  } else if (noCompare) {
+    const missQ = nc.correct === 0 ? 'hiçbirinde' : 'yarısında ya da daha çoğunda';
     inanc = {
       ...card('ma_inanc'),
-      headline: 'Yorumlanmadı',
-      detail: beliefLine,
-      text: notRead,
+      headline: 'Karşılaştırılamadı',
+      text: v(
+        `Sonucun gerçek hayatla çatışmadığı soruların ${missQ} doğru karar veremedin. Bu yüzden gerçek hayatta bildiklerinin kararını ne kadar etkilediği söylenemez. Bu sorularda yalnızca bilgilere bakıp sonucun onlardan kesin olarak çıkıp çıkmadığını düşünmek gerekir.`,
+        `Çocuğunuz sonucun gerçek hayatla çatışmadığı soruların ${missQ} doğru karar veremedi. Bu yüzden gerçek hayatta bildiklerinin kararını ne kadar etkilediği söylenemez. Bu sorularda yalnızca bilgilere bakıp sonucun onlardan kesin olarak çıkıp çıkmadığını düşünmek gerekir.`,
+      ),
     };
   } else {
     let text: string;
     const tip = v(
-      ' Böyle sorularda gerçek dünyayı bir an bir kenara bırakmak, örneğin cümledeki adların yerine uydurma sözcükler koyup yeniden düşünmek işine yarayabilir.',
-      ' Böyle sorularda gerçek dünyayı bir an bir kenara bırakmak, örneğin cümledeki adların yerine uydurma sözcükler koyup yeniden düşünmek ona yardım edebilir.',
+      ' Böyle sorularda gerçek dünyayı bir an bir kenara bırakmak işine yarayabilir. Örneğin cümledeki adların yerine uydurma sözcükler koyup yeniden düşünebilirsin.',
+      ' Böyle sorularda gerçek dünyayı bir an bir kenara bırakmak ona yardım edebilir. Örneğin cümledeki adların yerine uydurma sözcükler koyup yeniden düşünebilir.',
     );
-    if (weak(nc)) {
-      text = v(
-        `Sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde doğru karar verdin; bu yüzden gerçek hayatta bildiklerinin kararını ne kadar etkilediği bu sonuçtan çıkarılamaz. Bu sorularda yalnızca bilgilere bakıp sonucun onlardan kesin olarak çıkıp çıkmadığını düşünmek gerekir.`,
-        `Çocuğunuz sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde doğru karar verdi; bu yüzden gerçek hayatta bildiklerinin kararını ne kadar etkilediği bu sonuçtan çıkarılamaz. Bu sorularda yalnızca bilgilere bakıp sonucun onlardan kesin olarak çıkıp çıkmadığını düşünmek gerekir.`,
-      );
-    } else if (good(cf)) {
+    if (good(cf)) {
       const how = cf.correct === cf.n ? 'her soruda' : 'çoğunlukla';
       text = v(
-        `Sonuç gerçek hayatla çatıştığında ${how} yalnızca verilen bilgilere göre karar verdin (bu tür ${cf.n} sorunun ${cf.correct} tanesi doğru). Bunun için gerçekte doğru ya da yanlış olanı bir kenara bırakmak gerekir${adult ? '' : '; araştırmalarda bu sorulardaki başarının 12 yaşından genç yetişkinliğe doğru arttığı görülmüştür'}.`,
-        `Çocuğunuz sonuç gerçek hayatla çatıştığında ${how} yalnızca verilen bilgilere göre karar verdi (bu tür ${cf.n} sorunun ${cf.correct} tanesi doğru). Bunun için gerçekte doğru ya da yanlış olanı bir kenara bırakmak gerekir; araştırmalarda bu sorulardaki başarının 12 yaşından genç yetişkinliğe doğru arttığı görülmüştür.`,
+        `Sonuç gerçek hayatla çatıştığında ${how} yalnızca verilen bilgilere göre karar verdin. Bunun için gerçekte doğru ya da yanlış olanı bir kenara bırakmak gerekir.${adult ? '' : ' Bir araştırmada çocukların bu sorulardaki başarısı genç yetişkinlerden düşük bulunmuştur.'}`,
+        `Çocuğunuz sonuç gerçek hayatla çatıştığında ${how} yalnızca verilen bilgilere göre karar verdi. Bunun için gerçekte doğru ya da yanlış olanı bir kenara bırakmak gerekir. Bir araştırmada çocukların bu sorulardaki başarısı genç yetişkinlerden düşük bulunmuştur.`,
       );
-    } else {
+    } else if (nc.correct > cf.correct) {
       text = v(
-        `Sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde, çatıştığı ${cf.n} sorunun ${cf.correct} tanesinde doğru karar verdin.`,
-        `Çocuğunuz sonucun gerçek hayatla çatışmadığı ${nc.n} sorunun ${nc.correct} tanesinde, çatıştığı ${cf.n} sorunun ${cf.correct} tanesinde doğru karar verdi.`,
+        'Sonucun gerçek hayatla çatışmadığı sorularda, çatıştığı sorulardan daha çok doğru karar verdin.',
+        'Çocuğunuz sonucun gerçek hayatla çatışmadığı sorularda, çatıştığı sorulardan daha çok doğru karar verdi.',
       );
-      if (nc.correct - cf.correct >= 2) {
-        // Çatışan sorulardaki her yanlış, gerçek hayatta bilinene uyan cevaptır: hangi yönde olduğu sayısıyla yazılır.
-        const errs: string[] = [];
-        const ibWrong = f.ib.n - f.ib.correct;
-        const vuWrong = f.vu.n - f.vu.correct;
-        if (ibWrong) errs.push(`sonuç gerçekte doğruyken, bilgilerden çıkmadığı hâlde ${ibWrong} soruda “evet”`);
-        if (vuWrong) errs.push(`sonuç gerçekte yanlışken, bilgilerden çıktığı hâlde ${vuWrong} soruda “hayır”`);
+      if (good(nc) && nc.correct - cf.correct >= 3) {
+        // Fark rastlantının zor açıklayacağı kadar büyük: inandırıcılık etkisi anlatılır.
         text += v(
-          ` Çatışan sorularda ${errs.join('; ')} dedin: bu cevapların hepsi gerçek hayatta bildiklerine uyuyordu. Gerçek hayatta bilinenin kararı etkilemesine inandırıcılık etkisi denir ve ${adult ? 'çok yaygındır' : 'yetişkinlerde de çok yaygındır'}.`,
-          ` Çatışan sorularda ${errs.join('; ')} dedi: bu cevapların hepsi gerçek hayatta bildiklerine uyuyordu. Gerçek hayatta bilinenin kararı etkilemesine inandırıcılık etkisi denir ve yetişkinlerde de çok yaygındır.`,
+          ` Çatışan sorularda yanıldığında, sonucu gerçek hayatta bildiklerine göre değerlendirmiş olabilirsin. Gerçek hayatta bilinenin kararı etkilemesine inandırıcılık etkisi denir. ${adult ? 'Bu etki çok yaygındır.' : 'Bu etki yetişkinlerde de çok yaygındır.'}`,
+          ' Çatışan sorularda yanıldığında, sonucu gerçek hayatta bildiklerine göre değerlendirmiş olabilir. Gerçek hayatta bilinenin kararı etkilemesine inandırıcılık etkisi denir. Bu etki yetişkinlerde de çok yaygındır.',
         );
         text += tip;
-      } else if (cf.correct < nc.correct) {
-        text += ' İki grup arasındaki fark küçük; gerçek hayatta bilinenin kararı belirgin biçimde etkilediği söylenemez.';
+      } else {
+        text += ' Ama iki grup arasındaki fark, gerçek hayat bilgisinin kararı etkilediğini söylemeye yetmez.';
       }
+    } else {
+      text = v(
+        'Sonucun gerçek hayatla çatıştığı ve çatışmadığı sorularda birbirine yakın sayıda doğru karar verdin.',
+        'Çocuğunuz sonucun gerçek hayatla çatıştığı ve çatışmadığı sorularda birbirine yakın sayıda doğru karar verdi.',
+      );
     }
     inanc = {
       ...card('ma_inanc'),
       headline: `Çatışan sorular ${cf.correct}/${cf.n} · Çatışmayan sorular ${nc.correct}/${nc.n}`,
-      detail: beliefLine,
       text: text + ' Her grup sekiz soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
+      visual: formBars('Doğru karar verilen sorular (her türde dört soru)', [
+        ['Çatışmayan', 'vb'],
+        ['Çatışmayan', 'iu'],
+        ['Çatışan', 'vu'],
+        ['Çatışan', 'ib'],
+      ]),
     };
   }
 
   /* Çalışma biçimi */
   const issues: string[] = [];
   if (rapid) {
+    const right = r.rapidCorrect === 0 ? 'Bu cevapların hiçbiri doğru değildi.' : `Bu cevapların yalnızca ${countOf(r.rapidCorrect, r.rapid, 'i')} doğruydu.`;
     issues.push(
       v(
-        `${r.n} sorunun ${r.rapid} tanesinde cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdin ve bu cevapların ${r.rapidCorrect} tanesi doğruydu; bu sorularda okumadan seçmiş olabilirsin.`,
-        `Çocuğunuz ${r.n} sorunun ${r.rapid} tanesinde cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdi ve bu cevapların ${r.rapidCorrect} tanesi doğruydu; bu sorularda okumadan seçmiş olabilir.`,
+        `${capTr(rapidOf)} cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdin. ${right} Bu sorularda okumadan seçmiş olabilirsin.`,
+        `Çocuğunuz ${rapidOf} cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdi. ${right} Bu sorularda okumadan seçmiş olabilir.`,
       ),
     );
   }
-  if (side) {
-    issues.push(
-      v(
-        `Soruların ${sideCount} tanesinde “${sideLabel}” dedin; soruların yarısının cevabı “evet”, yarısının “hayır”dı.`,
-        `Çocuğunuz soruların ${sideCount} tanesinde “${sideLabel}” dedi; soruların yarısının cevabı “evet”, yarısının “hayır”dı.`,
-      ),
-    );
-  }
-  const noLimit = v(
-    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.',
-    ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru karara ulaşabilmektir.',
-  );
-  const yesLine = `“Evet” cevapları ${r.yes}/${r.n} (soruların yarısının cevabı “evet”)`;
+  // Çok hızlı cevap uyarısı varken "hız tek başına iyi ya da kötü değildir" denmez.
+  const noLimit = rapid
+    ? ''
+    : v(
+        ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.',
+        ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru karara ulaşabilmektir.',
+      );
   const calisma: CognitiveBlock =
     r.medianRt === null
       ? {
           ...card('ma_calisma'),
           headline: 'Süre hesaplanamadı',
-          detail: yesLine,
-          text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' '),
+          text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' '),
         }
       : {
           ...card('ma_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-          detail: yesLine,
+          visual: {
+            type: 'bars',
+            label: 'Soru başına tipik süre',
+            scale: 'scale',
+            unit: 'sn',
+            rows: [{ label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) }],
+          } satisfies BarsVisual,
           text:
             [
               v(
@@ -4724,34 +4802,29 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
         };
 
   /* Grafikler ve öne çıkan sayılar */
-  const chart: CognitiveReport['chart'] = {
-    title: 'Soru gruplarına göre doğru cevaplar',
-    note: v(
-      'Her grupta sekiz soru vardır. İlk iki grup “eğer–ise” kurallarıdır: sonucun kesin olarak çıktığı ve çıkmadığı sorular. Son iki grup “bütün, bazı, hiçbir” sorularıdır: sonucun gerçek hayatla çatışmadığı ve çatıştığı sorular. Çatışan sorularda sonuç, bilgilerden kesin olarak çıktığı hâlde gerçekte yanlıştır ya da bilgilerden çıkmadığı hâlde gerçekte doğrudur. Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.',
-      'Her grupta sekiz soru vardır. İlk iki grup “eğer–ise” kurallarıdır: sonucun kesin olarak çıktığı ve çıkmadığı sorular. Son iki grup “bütün, bazı, hiçbir” sorularıdır: sonucun gerçek hayatla çatışmadığı ve çatıştığı sorular. Çatışan sorularda sonuç, bilgilerden kesin olarak çıktığı hâlde gerçekte yanlıştır ya da bilgilerden çıkmadığı hâlde gerçekte doğrudur. Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.',
-    ),
-    rows: LOGIC_GROUPS.map((g) => ({
-      label: g.name,
-      value: r[g.key].correct,
-      max: r[g.key].n,
-      valueLabel: `${r[g.key].correct}/${r[g.key].n}`,
-    })),
-  };
+  // Sonuç yorumlanmıyorsa soru gruplarına göre grafik ve üç boyutlu grafik çizilmez.
+  const chart: CognitiveReport['chart'] = notRead
+    ? undefined
+    : {
+        title: 'Soru gruplarına göre doğru cevaplar',
+        note: v(
+          'Her grupta sekiz soru vardır. İlk iki grup “eğer–ise” kurallarıdır: sonucun kesin olarak çıktığı ve çıkmadığı sorular. Son iki grup “bütün, bazı, hiçbir” sorularıdır: sonucun gerçek hayatla çatışmadığı ve çatıştığı sorular. Çatışan sorularda sonuç bilgilerden kesin olarak çıkar ama gerçekte yanlıştır, ya da bilgilerden çıkmaz ama gerçekte doğrudur. Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.',
+          'Her grupta sekiz soru vardır. İlk iki grup “eğer–ise” kurallarıdır: sonucun kesin olarak çıktığı ve çıkmadığı sorular. Son iki grup “bütün, bazı, hiçbir” sorularıdır: sonucun gerçek hayatla çatışmadığı ve çatıştığı sorular. Çatışan sorularda sonuç bilgilerden kesin olarak çıkar ama gerçekte yanlıştır, ya da bilgilerden çıkmaz ama gerçekte doğrudur. Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.',
+        ),
+        rows: LOGIC_GROUPS.map((g) => ({
+          label: g.name,
+          value: r[g.key].correct,
+          max: r[g.key].n,
+          valueLabel: `${r[g.key].correct}/${r[g.key].n}`,
+        })),
+      };
   const figures = [
-    { label: 'Doğru', value: `${r.correct}/${r.n}` },
-    {
-      label: 'Eğer–ise soruları',
-      value: `${r.conditional.correct}/${r.conditional.n}`,
-    },
-    side
-      ? { label: 'Gerçek hayatla çatışan sorular', value: 'Yorumlanmadı' }
-      : {
-          label: 'Gerçek hayatla çatışan sorular',
-          value: `${cf.correct}/${cf.n}`,
-        },
+    { label: 'Doğru', value: notRead ? 'Yorumlanmadı' : `${r.correct}/${r.n}` },
+    { label: 'Eğer–ise soruları', value: notRead ? 'Yorumlanmadı' : `${r.conditional.correct}/${r.conditional.n}` },
+    { label: 'Gerçek hayatla çatışan sorular', value: notRead ? 'Yorumlanmadı' : noCompare ? 'Karşılaştırılamadı' : `${cf.correct}/${cf.n}` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
-  const profile: CognitiveReport['profile'] = side
+  const profile: CognitiveReport['profile'] = notRead
     ? undefined
     : {
         title: v('Soru gruplarına göre sonucun', 'Soru gruplarına göre sonuç'),
@@ -4772,7 +4845,7 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
       };
   return {
     blocks: [dogru, kosul, inanc, calisma],
-    chart,
+    ...(chart ? { chart } : {}),
     figures,
     ...(profile ? { profile } : {}),
   };
@@ -4798,49 +4871,95 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
   const v = (student: string, parent: string) => (you ? student : parent);
   // Yetişkine öğrencilerle yapılan araştırmaların sınıflara göre bulguları yazılmaz.
   const adult = audience === 'adult';
+  const few = numericFewAnswered(r);
   const rapid = numericRapid(r);
+  const rushed = numericRushed(r);
+  // Sonuç yorumlanmaz: cevap yazılan soru çok az ya da soruların çoğunda cevap okunmadan yazılmış olabilir.
+  const notRead = few || rushed;
   const good = (g: NumericGroup) => g.correct >= NUMERIC_GOOD;
   const k = r.kinds;
-  const manyBlank = r.blank >= NUMERIC_BLANK_MANY;
+  const manyBlank = !few && r.blank >= NUMERIC_BLANK_MANY;
+  const rapidWrong = r.rapid - r.rapidCorrect;
+  const notReadWhy = few ? 'Cevap yazılan soru çok az olduğu için' : 'Soruların çoğunda cevap okunmadan yazılmış olabileceği için';
 
   /* Doğru cevaplar */
   let accText: string;
-  if (r.correct >= r.n - 2) {
+  if (few) {
+    accText = v(
+      `Soruların ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” dedin. Cevap yazdığın soru çok az olduğu için sonuç yorumlanmadı. Dinlendiğin bir gün yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz soruların ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” dedi. Cevap yazdığı soru çok az olduğu için sonuç yorumlanmadı. Dinlendiği bir gün yeniden denemesi daha doğru bir sonuç verebilir.`,
+    );
+  } else if (rushed) {
+    accText = v(
+      `${capTr(`${r.n} sorunun ${countOf(rapidWrong, r.n, 'inde')}`)} cevabı, soruyu okumaya yetmeyecek kadar kısa sürede yazdın ve bu cevaplar yanlıştı. Bu sorulara okumadan cevap vermiş olabilirsin. Bu yüzden sonuç yorumlanmadı. Acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${r.n} sorunun ${countOf(rapidWrong, r.n, 'inde')} cevabı, soruyu okumaya yetmeyecek kadar kısa sürede yazdı ve bu cevaplar yanlıştı. Bu sorulara okumadan cevap vermiş olabilir. Bu yüzden sonuç yorumlanmadı. Acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+    );
+  } else {
     // "Hem … hem …" yalnızca üç grubun her birinde en çok bir yanlış varken: ötekinde aşağıdaki kartlar yanılgıyı anlatır.
     const allGroups = [r.prop, r.nonProp, r.equal].every((g) => g.correct >= g.n - 1);
-    accText = allGroups
-      ? v(
-          'Soruların hemen hepsinde doğru cevap verdin: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdun.',
-          'Çocuğunuz soruların hemen hepsinde doğru cevap verdi: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdu.',
-        )
+    if (r.correct === r.n) {
+      accText = v(
+        'Bütün sorularda doğru cevap verdin: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdun.',
+        'Çocuğunuz bütün sorularda doğru cevap verdi: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdu.',
+      );
+    } else if (r.correct >= r.n - 2 && allGroups) {
+      accText = v(
+        'Soruların hemen hepsinde doğru cevap verdin: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdun.',
+        'Çocuğunuz soruların hemen hepsinde doğru cevap verdi: hem günlük durumlarda hem de eşitliklerde sayılar arasındaki ilişkiyi doğru kurdu.',
+      );
+    } else if (r.correct >= r.n - 2) {
+      accText = v(
+        'Soruların hemen hepsinde doğru cevap verdin. Doğru bulamadığın birkaç sorunun hangi türden olduğunu aşağıdaki kartlar gösterir.',
+        'Çocuğunuz soruların hemen hepsinde doğru cevap verdi. Doğru bulamadığı birkaç sorunun hangi türden olduğunu aşağıdaki kartlar gösterir.',
+      );
+    } else {
+      const first =
+        r.correct === 0
+          ? v('Hiçbir soruda doğru cevap vermedin.', 'Çocuğunuz hiçbir soruda doğru cevap vermedi.')
+          : v(
+              `Soruların ${2 * r.correct > r.n ? 'yarısından çoğunda' : 2 * r.correct === r.n ? 'yarısında' : 'yarısından azında'} doğru cevap verdin.`,
+              `Çocuğunuz soruların ${2 * r.correct > r.n ? 'yarısından çoğunda' : 2 * r.correct === r.n ? 'yarısında' : 'yarısından azında'} doğru cevap verdi.`,
+            );
+      accText = `${first} Toplamdan çok, hangi tür sorularda hangi yanılgının görüldüğü daha çok şey söyler (aşağıdaki kartlar).`;
+    }
+    if (manyBlank) {
+      accText += v(
+        ` Soruların ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” dediğin için türlere göre sonuçlar dikkatle okunmalı.`,
+        ` Soruların ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” dendiği için türlere göre sonuçlar dikkatle okunmalı.`,
+      );
+    }
+    if (rapid) {
+      accText += v(
+        ` ${rapidWrong} soruda acele etmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.`,
+        ` ${rapidWrong} soruda acele edilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.`,
+      );
+    }
+  }
+  // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
+  const dogru: CognitiveBlock = notRead
+    ? { ...card('sy_dogru'), headline: 'Yorumlanmadı', text: accText }
+    : {
+        ...card('sy_dogru'),
+        headline: `${r.n} soruda ${r.correct} doğru`,
+        text: accText,
+        visual: {
+          type: 'bars',
+          label: 'Doğru cevaplanan sorular',
+          scale: 'share',
+          rows: [
+            { label: 'Durum soruları', value: r.prop.correct + r.nonProp.correct, max: r.prop.n + r.nonProp.n, valueLabel: `${r.prop.correct + r.nonProp.correct}/${r.prop.n + r.nonProp.n}` },
+            { label: 'Eşitlik ve denge soruları', value: r.equal.correct, max: r.equal.n, valueLabel: `${r.equal.correct}/${r.equal.n}` },
+          ],
+        } satisfies BarsVisual,
+      };
+  // Bir kartın sorularında "Bilmiyorum" denmişse söylenir: bunlar yanlış cevap değildir ama doğru sayılmadı.
+  const blankNote = (b: number) =>
+    b === 0
+      ? ''
       : v(
-          `${r.n} sorunun ${r.correct} tanesinde doğru cevap verdin; aşağıdaki kartlar yanıldığın birkaç sorunun hangi türden olduğunu gösterir.`,
-          `Çocuğunuz ${r.n} sorunun ${r.correct} tanesinde doğru cevap verdi; aşağıdaki kartlar yanıldığı birkaç sorunun hangi türden olduğunu gösterir.`,
+          ` Bu sorulardan ${b === 1 ? 'birinde' : `${b} tanesinde`} “Bilmiyorum” dedin; ${b === 1 ? 'bu soru' : 'bunlar'} doğru sayılmadı.`,
+          ` Bu sorulardan ${b === 1 ? 'birinde' : `${b} tanesinde`} “Bilmiyorum” dedi; ${b === 1 ? 'bu soru' : 'bunlar'} doğru sayılmadı.`,
         );
-  } else {
-    accText = v(
-      `${r.n} sorunun ${r.correct} tanesinde doğru cevap verdin. Toplamdan çok, aşağıdaki kartlarda hangi tür sorularda hangi yanılgının görüldüğü daha çok şey söyler.`,
-      `Çocuğunuz ${r.n} sorunun ${r.correct} tanesinde doğru cevap verdi. Toplamdan çok, aşağıdaki kartlarda hangi tür sorularda hangi yanılgının görüldüğü daha çok şey söyler.`,
-    );
-  }
-  if (manyBlank) {
-    accText += v(
-      ` Soruların ${r.blank} tanesinde “Bilmiyorum” dediğin için türlere göre sonuçlar dikkatle okunmalı.`,
-      ` Soruların ${r.blank} tanesinde “Bilmiyorum” denildiği için türlere göre sonuçlar dikkatle okunmalı.`,
-    );
-  }
-  if (rapid) {
-    accText += v(
-      ' Bazı sorulara soruyu okumadan cevap vermiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-      ' Bazı sorulara soru okunmadan cevap verilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
-    );
-  }
-  const dogru: CognitiveBlock = {
-    ...card('sy_dogru'),
-    headline: `${r.n} soruda ${r.correct} doğru`,
-    detail: `Durum soruları ${r.prop.correct + r.nonProp.correct}/${r.prop.n + r.nonProp.n} · Eşitlik soruları ${r.equal.correct}/${r.equal.n}`,
-    text: accText,
-  };
 
   /* Orantı mı, fark mı? */
   const P = r.prop;
@@ -4848,170 +4967,242 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
   const add = r.lures.additive;
   const pro = r.lures.proportional;
   const inv = r.lures.inverse;
-  let oText: string;
-  if (good(P) && good(N)) {
-    const how = P.correct + N.correct === P.n + N.n ? 'her soruda' : 'çoğunlukla';
-    oText = v(
-      `İki niceliğin aynı oranda büyüdüğü durumları, aradaki farkın korunduğu, bir başlangıç miktarının olduğu ya da sonucun hiç değişmediği durumlardan ${how} ayırt ettin.`,
-      `Çocuğunuz iki niceliğin aynı oranda büyüdüğü durumları, aradaki farkın korunduğu, bir başlangıç miktarının olduğu ya da sonucun hiç değişmediği durumlardan ${how} ayırt etti.`,
-    );
+  const driven = numericNumberDriven(r);
+  let oranti: CognitiveBlock;
+  if (notRead) {
+    oranti = { ...card('sy_oranti'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
   } else {
-    oText = v(
-      `Orantılı ${P.n} durumun ${P.correct} tanesinde, orantılı olmayan ${N.n} durumun ${N.correct} tanesinde doğru cevap verdin.`,
-      `Çocuğunuz orantılı ${P.n} durumun ${P.correct} tanesinde, orantılı olmayan ${N.n} durumun ${N.correct} tanesinde doğru cevap verdi.`,
-    );
+    let oText: string;
+    if (good(P) && good(N)) {
+      const how = P.correct + N.correct === P.n + N.n ? 'her soruda' : 'çoğunlukla';
+      oText = v(
+        `Orantılı durumları, orantılı olmayanlardan ${how} ayırt ettin. Orantılı durumlarda iki nicelik aynı oranda büyür; ötekilerde fark korunur, bir başlangıç miktarı vardır ya da sonuç hiç değişmez.`,
+        `Çocuğunuz orantılı durumları, orantılı olmayanlardan ${how} ayırt etti. Orantılı durumlarda iki nicelik aynı oranda büyür; ötekilerde fark korunur, bir başlangıç miktarı vardır ya da sonuç hiç değişmez.`,
+      );
+    } else if (P.correct < N.correct) {
+      oText = v('Orantılı durumlarda, orantılı olmayanlardan daha az doğru cevap verdin.', 'Çocuğunuz orantılı durumlarda, orantılı olmayanlardan daha az doğru cevap verdi.');
+    } else if (N.correct < P.correct) {
+      oText = v('Orantılı olmayan durumlarda, orantılı olanlardan daha az doğru cevap verdin.', 'Çocuğunuz orantılı olmayan durumlarda, orantılı olanlardan daha az doğru cevap verdi.');
+    } else {
+      oText = v('Orantılı ve orantılı olmayan durumlarda aynı sayıda doğru cevap verdin.', 'Çocuğunuz orantılı ve orantılı olmayan durumlarda aynı sayıda doğru cevap verdi.');
+    }
+    if (driven) {
+      // Yanlışlar sayıların yapısına göre ayrılıyor: aynı yanlışlar ikinci bir nedenle (yaşa bağlı yanılgı) anlatılmaz.
+      oText += v(
+        ' Sayılar birbirinin katı olmadığında farkı korudun, katı olduğunda ise orantı kurdun. Yöntemi durumdan çok sayılara bakarak seçmiş olabilirsin.',
+        ' Sayılar birbirinin katı olmadığında farkı korudu, katı olduğunda ise orantı kurdu. Yöntemi durumdan çok sayılara bakarak seçmiş olabilir.',
+      );
+      if (!adult) oText += ' Bir araştırmada da sayılar birbirinin katı olduğunda orantının, olmadığında farkın daha sık kullanıldığı görülmüştür.';
+    } else if (add >= NUMERIC_LURE_NOTE) {
+      oText += v(
+        ` Orantılı durumların ${countOf(add, P.n, 'inde')} iki sayı arasındaki farkı korudun.`,
+        ` Orantılı durumların ${countOf(add, P.n, 'inde')} iki sayı arasındaki farkı korudu.`,
+      );
+      oText +=
+        ' Oysa bu durumlarda fark değil oran korunur. Biri iki katına çıkınca öteki de iki katına çıkar. Örneğin 3 bardak suya 1 limon sıkılıyorsa 6 bardak suya 2 limon sıkılır.';
+      if (!adult) oText += ' Bir araştırmada bu yanılgı 4. sınıftan 6. sınıfa doğru arttı, sonraki sınıflarda azaldı.';
+    }
+    // Sayılara göre yöntem seçmede sayılan orantı cevapları dışında da orantı kurulmuşsa.
+    const proOther = driven ? pro - r.intProportional : pro;
+    if (proOther >= NUMERIC_LURE_NOTE) {
+      const why = [
+        ...(r.propLures.a ? ['Aynı hızla ilerleyen iki şeyde aradaki fark hep aynı kalır.'] : []),
+        ...(r.propLures.f ? ['Başlangıçta var olan miktar katlanmaz; yalnızca sonradan eklenen kısım artar.'] : []),
+        ...(r.propLures.c ? ['Bazı durumlarda miktar artsa da sonuç hiç değişmez.'] : []),
+      ];
+      oText += v(
+        ` Orantılı olmayan durumların ${countOf(pro, N.n, 'inde')} orantı kurdun. Oysa her durum orantılı değildir. ${why.join(' ')}`,
+        ` Orantılı olmayan durumların ${countOf(pro, N.n, 'inde')} orantı kurdu. Oysa her durum orantılı değildir. ${why.join(' ')}`,
+      );
+      if (!adult) oText += ' Bir araştırmada 2–6. sınıf öğrencilerinin orantılı olmayan problemlere verdiği cevapların üçte birinden fazlası orantı kuruyordu.';
+    }
+    // Bu yanılgı yalnızca bir soruda (değişmeyen durum) olabildiği için tek cevapta anlatılır.
+    if (inv >= 1) {
+      oText += v(' Bir soruda miktar artınca süreyi kısalttın; oysa o durumda süre hiç değişmiyordu.', ' Bir soruda miktar artınca süreyi kısalttı; oysa o durumda süre hiç değişmiyordu.');
+    }
+    if (driven || add >= NUMERIC_LURE_NOTE || proOther >= NUMERIC_LURE_NOTE) {
+      oText += v(
+        ' Böyle sorularda önce “Biri iki katına çıkınca öteki de iki katına çıkar mı?” diye sormak işine yarayabilir.',
+        ' Böyle sorularda önce “Biri iki katına çıkınca öteki de iki katına çıkar mı?” diye sormak çocuğunuza yardım edebilir.',
+      );
+    }
+    oranti = {
+      ...card('sy_oranti'),
+      headline: `Orantılı ${P.correct}/${P.n} · Orantılı olmayan ${N.correct}/${N.n}`,
+      text: oText + blankNote(P.blank + N.blank) + ' Her tür birkaç soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
+      visual: {
+        type: 'bars',
+        label: 'Durum türlerine göre doğru cevaplar',
+        scale: 'share',
+        rows: [
+          { label: 'Orantılı: sayılar birbirinin katı', g: r.pInt },
+          { label: 'Orantılı: sayılar birbirinin katı değil', g: r.pFrac },
+          { label: 'Orantılı değil: fark korunuyor', g: k.a },
+          { label: 'Orantılı değil: başta bir miktar var', g: k.f },
+          { label: 'Orantılı değil: sonuç değişmiyor', g: k.c },
+        ].map((x) => ({ label: x.label, value: x.g.correct, max: x.g.n, valueLabel: `${x.g.correct}/${x.g.n}` })),
+      } satisfies BarsVisual,
+    };
   }
-  if (add >= NUMERIC_LURE_NOTE) {
-    oText += v(
-      ` Orantılı durumların ${add} tanesinde iki sayı arasındaki farkı korudun. Oysa bu durumlarda fark değil oran korunur: biri iki katına çıkınca öteki de iki katına çıkar (3 bardak suya 1 limon sıkılıyorsa 6 bardak suya 2 limon sıkılır).`,
-      ` Çocuğunuz orantılı durumların ${add} tanesinde iki sayı arasındaki farkı korudu. Oysa bu durumlarda fark değil oran korunur: biri iki katına çıkınca öteki de iki katına çıkar (3 bardak suya 1 limon sıkılıyorsa 6 bardak suya 2 limon sıkılır).`,
-    );
-    if (!adult) oText += ' Araştırmalarda bu yanılgının ilkokulda ve ortaokulun ilk yıllarında çok yaygın olduğu, lise yıllarında azaldığı görülmüştür.';
-  }
-  if (pro >= NUMERIC_LURE_NOTE) {
-    const why = [
-      ...(r.propLures.a ? ['aynı hızla ilerleyen iki şeyde aradaki fark hep aynı kalır'] : []),
-      ...(r.propLures.f ? ['başlangıçta var olan miktar katlanmaz, yalnızca sonradan eklenen kısım artar'] : []),
-      ...(r.propLures.c ? ['bazı durumlarda miktar artsa da sonuç hiç değişmez'] : []),
-    ];
-    oText += v(
-      ` Orantılı olmayan durumların ${pro} tanesinde orantı kurdun. Oysa her durum orantılı değildir: ${why.join('; ')}.`,
-      ` Çocuğunuz orantılı olmayan durumların ${pro} tanesinde orantı kurdu. Oysa her durum orantılı değildir: ${why.join('; ')}.`,
-    );
-    if (!adult) oText += ' Araştırmalarda bu yanılgının orantının öğretildiği yıllarda arttığı, lisede de sık görüldüğü bulunmuştur.';
-  }
-  // Bu yanılgı yalnızca bir soruda (değişmeyen durum) olabildiği için tek cevapta anlatılır.
-  if (inv >= 1) {
-    oText += v(
-      ' Bir soruda miktar artınca süreyi kısalttın; oysa o durumda süre hiç değişmiyordu.',
-      ' Çocuğunuz bir soruda miktar artınca süreyi kısalttı; oysa o durumda süre hiç değişmiyordu.',
-    );
-  }
-  if (numericNumberDriven(r)) {
-    const counts = `sayıların birbirinin katı olmadığı ${r.pFrac.n} orantılı durumun ${r.fracAdditive} tanesinde fark, sayıların birbirinin katı olduğu ve farkın korunduğu ${r.aInt.n} durumun ${r.intProportional} tanesinde orantı`;
-    oText += v(
-      ` Yöntemi durumdan çok sayılara bakarak seçmiş olabilirsin: ${counts} kurdun.${adult ? '' : ' Araştırmalarda da sayılar birbirinin katı olduğunda orantının, olmadığında farkın daha sık kullanıldığı görülmüştür.'}`,
-      ` Çocuğunuz yöntemi durumdan çok sayılara bakarak seçmiş olabilir: ${counts} kurdu. Araştırmalarda da sayılar birbirinin katı olduğunda orantının, olmadığında farkın daha sık kullanıldığı görülmüştür.`,
-    );
-  }
-  if (add >= NUMERIC_LURE_NOTE || pro >= NUMERIC_LURE_NOTE) {
-    oText += v(
-      ' Böyle sorularda önce “Biri iki katına çıkınca öteki de iki katına çıkar mı?” diye sormak işine yarayabilir.',
-      ' Böyle sorularda önce “Biri iki katına çıkınca öteki de iki katına çıkar mı?” diye sormak çocuğunuza yardım edebilir.',
-    );
-  }
-  const oranti: CognitiveBlock = {
-    ...card('sy_oranti'),
-    headline: `Orantılı ${P.correct}/${P.n} · Orantılı olmayan ${N.correct}/${N.n}`,
-    detail: `Orantılı: sayılar birbirinin katı ${r.pInt.correct}/${r.pInt.n}; katı değil ${r.pFrac.correct}/${r.pFrac.n} · Orantılı olmayan: fark korunan ${k.a.correct}/${k.a.n}; başta bir miktar olan ${k.f.correct}/${k.f.n}; değişmeyen ${k.c.correct}/${k.c.n}`,
-    text: oText + ' Her tür birkaç soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
-  };
 
   /* Eşitlik ve denge */
   const E = r.equal;
   const op = r.lures.operational;
   const rev = r.lures.reverse;
   const part = r.lures.partial;
-  let eText: string;
-  // "Çoğunlukla buldun" yalnızca eşitlik yanılgılarından biri iki ya da daha çok cevapta görülmemişken.
-  if (good(E) && op < NUMERIC_LURE_NOTE && rev < NUMERIC_LURE_NOTE) {
-    const how = E.correct === E.n ? 'her soruda' : 'çoğunlukla';
-    eText = v(
-      `Eşitliğin iki yanının aynı değerde olduğunu kullanarak eksik sayıyı ${how} buldun.`,
-      `Çocuğunuz eşitliğin iki yanının aynı değerde olduğunu kullanarak eksik sayıyı ${how} buldu.`,
-    );
+  let esitlik: CognitiveBlock;
+  if (notRead) {
+    esitlik = { ...card('sy_esitlik'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
   } else {
-    eText = v(
-      `${E.n} eşitlik ve denge sorusunun ${E.correct} tanesinde doğru cevap verdin.`,
-      `Çocuğunuz ${E.n} eşitlik ve denge sorusunun ${E.correct} tanesinde doğru cevap verdi.`,
-    );
+    let eText: string;
+    // "Çoğunlukla buldun" yalnızca eşitlik yanılgılarından biri iki ya da daha çok cevapta görülmemişken.
+    if (good(E) && op < NUMERIC_LURE_NOTE && rev < NUMERIC_LURE_NOTE) {
+      const how = E.correct === E.n ? 'her soruda' : 'çoğunlukla';
+      eText = v(
+        `Eşitliğin iki yanının aynı değerde olduğunu kullanarak eksik sayıyı ${how} buldun.`,
+        `Çocuğunuz eşitliğin iki yanının aynı değerde olduğunu kullanarak eksik sayıyı ${how} buldu.`,
+      );
+    } else if (E.correct === 0) {
+      eText = v('Eşitlik ve denge sorularının hiçbirinde doğru cevap vermedin.', 'Çocuğunuz eşitlik ve denge sorularının hiçbirinde doğru cevap vermedi.');
+    } else if (2 * E.correct < E.n) {
+      eText = v('Eşitlik ve denge sorularının çoğunda doğru cevabı bulamadın.', 'Çocuğunuz eşitlik ve denge sorularının çoğunda doğru cevabı bulamadı.');
+    } else {
+      eText = v('Eşitlik ve denge sorularının bazılarında doğru cevabı bulamadın.', 'Çocuğunuz eşitlik ve denge sorularının bazılarında doğru cevabı bulamadı.');
+    }
+    if (op >= NUMERIC_LURE_NOTE) {
+      eText += v(
+        ` ${op} soruda eşittir işaretinin solundaki işlemin sonucunu ya da bütün sayıların toplamını yazdın. “=” işaretini “sonuç şudur” diye okumuş olabilirsin.`,
+        ` ${op} soruda eşittir işaretinin solundaki işlemin sonucunu ya da bütün sayıların toplamını yazdı. “=” işaretini “sonuç şudur” diye okumuş olabilir.`,
+      );
+      eText += ' Oysa “=” iki yanın aynı değerde olduğunu söyler; örneğin 5 + 3 = 6 + 2.';
+      if (!adult) eText += ' Bir araştırmada ortaokul öğrencilerinin yaklaşık yarısı eşittir işaretini “sonuç” diye tanımladı.';
+    }
+    if (rev >= NUMERIC_LURE_NOTE) {
+      eText += v(
+        ` ${rev} soruda bir sayı değişince ötekini ters yönde değiştirdin.`,
+        ` ${rev} soruda bir sayı değişince ötekini ters yönde değiştirdi.`,
+      );
+      eText +=
+        ' Eşitliğin iki yanı aynı kalsın diye toplamada ve çarpmada biri büyüyünce öteki küçülür. Çıkarmada ve bölmede ise ikisi birlikte büyür ya da birlikte küçülür.';
+    }
+    // Terazi soruları iki tane olduğu için bu yanılgı tek cevapta anlatılır.
+    if (part >= 1) {
+      const where = part === k.bal.n ? (k.bal.n === 2 ? 'ikisinde de' : 'hepsinde') : part === 1 ? 'birinde' : `${part} tanesinde`;
+      eText += v(
+        ` Terazi sorularının ${where} terazilerin verdiği bilgilerden birini hesaba katmamış olabilirsin. İki kefenin aynı ağırlıkta olduğunu kullanarak adım adım ilerlemek işine yarayabilir.`,
+        ` Terazi sorularının ${where} terazilerin verdiği bilgilerden birini hesaba katmamış olabilir. İki kefenin aynı ağırlıkta olduğunu kullanarak adım adım ilerlemek ona yardım edebilir.`,
+      );
+    }
+    esitlik = {
+      ...card('sy_esitlik'),
+      headline: `${E.n} soruda ${E.correct} doğru`,
+      text: eText + blankNote(E.blank) + ' Her tür birkaç soruya dayanır; bu kaba bir göstergedir.',
+      visual: {
+        type: 'bars',
+        label: 'Soru türlerine göre doğru cevaplar',
+        scale: 'share',
+        rows: [
+          { label: 'Eşittir işareti', g: k.eq },
+          { label: 'Denkleştirme', g: k.comp },
+          { label: 'Terazi', g: k.bal },
+        ].map((x) => ({ label: x.label, value: x.g.correct, max: x.g.n, valueLabel: `${x.g.correct}/${x.g.n}` })),
+      } satisfies BarsVisual,
+    };
   }
-  if (op >= NUMERIC_LURE_NOTE) {
-    eText += v(
-      ` ${op} soruda eşittir işaretinin solundaki işlemin sonucunu ya da bütün sayıların toplamını yazdın: “=” işaretini “sonuç şudur” diye okumuş olabilirsin. Oysa “=” iki yanın aynı değerde olduğunu söyler: 5 + 3 = 6 + 2 gibi.`,
-      ` Çocuğunuz ${op} soruda eşittir işaretinin solundaki işlemin sonucunu ya da bütün sayıların toplamını yazdı: “=” işaretini “sonuç şudur” diye okumuş olabilir. Oysa “=” iki yanın aynı değerde olduğunu söyler: 5 + 3 = 6 + 2 gibi.`,
-    );
-    if (!adult) eText += ' Araştırmalarda ortaokul öğrencilerinin önemli bir kısmının eşittir işaretini “sonuç” anlamında tanımladığı görülmüştür.';
-  }
-  if (rev >= NUMERIC_LURE_NOTE) {
-    eText += v(
-      ` ${rev} soruda bir sayı değişince ötekini ters yönde değiştirdin. Eşitliğin iki yanı aynı kalsın diye toplamada ve çarpmada biri büyüyünce öteki küçülür; çıkarmada ve bölmede ikisi birlikte büyür ya da birlikte küçülür.`,
-      ` Çocuğunuz ${rev} soruda bir sayı değişince ötekini ters yönde değiştirdi. Eşitliğin iki yanı aynı kalsın diye toplamada ve çarpmada biri büyüyünce öteki küçülür; çıkarmada ve bölmede ikisi birlikte büyür ya da birlikte küçülür.`,
-    );
-  }
-  // Terazi soruları iki tane olduğu için bu yanılgı tek cevapta anlatılır.
-  if (part >= 1) {
-    eText += v(
-      ` Terazi sorularının ${part} tanesinde terazilerin verdiği bilgilerden birini hesaba katmamış olabilirsin: iki kefenin aynı ağırlıkta olduğunu kullanarak adım adım ilerlemek işine yarayabilir.`,
-      ` Çocuğunuz terazi sorularının ${part} tanesinde terazilerin verdiği bilgilerden birini hesaba katmamış olabilir: iki kefenin aynı ağırlıkta olduğunu kullanarak adım adım ilerlemek çocuğunuza yardım edebilir.`,
-    );
-  }
-  const esitlik: CognitiveBlock = {
-    ...card('sy_esitlik'),
-    headline: `${E.n} soruda ${E.correct} doğru`,
-    detail: `Eşittir işareti ${k.eq.correct}/${k.eq.n} · Denkleştirme ${k.comp.correct}/${k.comp.n} · Terazi ${k.bal.correct}/${k.bal.n}`,
-    text: eText + ' Her tür birkaç soruya dayanır; bu kaba bir göstergedir.',
-  };
 
   /* Çalışma biçimi */
   const issues: string[] = [];
-  const fastRight = r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değildi' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğruydu`;
-  if (rapid) {
+  if (r.blank > 0 && !few) {
     issues.push(
       v(
-        `${r.n} sorunun ${r.rapid} tanesinde cevabı, soruyu okumaya yetmeyecek kadar kısa sürede verdin ve ${fastRight}; bu sorularda okumadan cevap vermiş olabilirsin.`,
-        `Çocuğunuz ${r.n} sorunun ${r.rapid} tanesinde cevabı, soruyu okumaya yetmeyecek kadar kısa sürede verdi ve ${fastRight}; bu sorularda okumadan cevap vermiş olabilir.`,
+        `Soruların ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” dedin. Bu düğme, emin olunmayan soruda tahmin etmek yerine kullanılır; bu sorular doğru sayılmadı.`,
+        `Çocuğunuz soruların ${countOf(r.blank, r.n, 'inde')} “Bilmiyorum” dedi. Bu düğme, emin olunmayan soruda tahmin etmek yerine kullanılır; bu sorular doğru sayılmadı.`,
       ),
     );
   }
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru sonuca ulaşabilmektir.');
-  const blankLine = `“Bilmiyorum” ${r.blank}/${r.n}`;
+  if (r.rapidBlank >= NUMERIC_RAPID_BLANK && !few) {
+    issues.push(
+      v(
+        `${r.rapidBlank} soruda, soruyu okumaya yetmeyecek kadar kısa sürede “Bilmiyorum” dedin. Bu soruları atlamış olabilirsin.`,
+        `Çocuğunuz ${r.rapidBlank} soruda, soruyu okumaya yetmeyecek kadar kısa sürede “Bilmiyorum” dedi. Bu soruları atlamış olabilir.`,
+      ),
+    );
+  }
+  if (rapid) {
+    issues.push(
+      rushed
+        ? v(
+            `${capTr(`${r.n} sorunun ${countOf(rapidWrong, r.n, 'inde')}`)} cevabı, soruyu okumaya yetmeyecek kadar kısa sürede yazdın ve bu cevaplar yanlıştı. Bu sorulara okumadan cevap vermiş olabilirsin.`,
+            `Çocuğunuz ${r.n} sorunun ${countOf(rapidWrong, r.n, 'inde')} cevabı, soruyu okumaya yetmeyecek kadar kısa sürede yazdı ve bu cevaplar yanlıştı. Bu sorulara okumadan cevap vermiş olabilir.`,
+          )
+        : v(
+            `${rapidWrong} soruda cevabı çok kısa sürede yazdın ve bu cevaplar yanlıştı. Bu sorularda acele etmiş olabilirsin.`,
+            `Çocuğunuz ${rapidWrong} soruda cevabı çok kısa sürede yazdı ve bu cevaplar yanlıştı. Bu sorularda acele etmiş olabilir.`,
+          ),
+    );
+  }
+  // Acele edilmiş olabileceği söylenirken "hız tek başına iyi ya da kötü değildir" denmez.
+  const noLimit = rapid
+    ? ''
+    : v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru sonuca ulaşabilmektir.');
   const calisma: CognitiveBlock =
     r.medianRt === null
-      ? { ...card('sy_calisma'), headline: 'Süre hesaplanamadı', detail: blankLine, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') }
+      ? { ...card('sy_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') }
       : {
           ...card('sy_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-          detail: blankLine,
+          visual: {
+            type: 'bars',
+            label: 'Soru başına tipik süre',
+            scale: 'scale',
+            unit: 'sn',
+            rows: [{ label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) }],
+          } satisfies BarsVisual,
           text:
             [v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`), ...issues].join(' ') + noLimit,
         };
 
   /* Grafikler ve öne çıkan sayılar */
   const groupNote =
-    'Her grupta sekiz soru vardır. Orantılı durumlarda iki nicelik aynı oranda büyür; orantılı olmayan durumlarda aradaki fark korunur, bir başlangıç miktarı vardır ya da sonuç hiç değişmez; eşitlik ve denge sorularında eşitliğin ya da terazinin iki yanı aynı değerdedir.';
-  const chart: CognitiveReport['chart'] = {
-    title: 'Soru gruplarına göre doğru cevaplar',
-    note: v(
-      `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.`,
-      `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.`,
-    ),
-    rows: NUMERIC_GROUPS.map((g) => ({ label: g.name, value: r[g.key].correct, max: r[g.key].n, valueLabel: `${r[g.key].correct}/${r[g.key].n}` })),
-  };
+    'Her grupta sekiz soru vardır. Orantılı durumlarda iki nicelik aynı oranda büyür. Orantılı olmayan durumlarda aradaki fark korunur, bir başlangıç miktarı vardır ya da sonuç hiç değişmez. Eşitlik ve denge sorularında eşitliğin ya da terazinin iki yanı aynı değerdedir.';
+  // Sonuç yorumlanmıyorsa soru gruplarına göre grafik ve üç boyutlu grafik çizilmez.
+  const chart: CognitiveReport['chart'] = notRead
+    ? undefined
+    : {
+        title: 'Soru gruplarına göre doğru cevaplar',
+        note: v(
+          `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.`,
+          `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.`,
+        ),
+        rows: NUMERIC_GROUPS.map((g) => ({ label: g.name, value: r[g.key].correct, max: r[g.key].n, valueLabel: `${r[g.key].correct}/${r[g.key].n}` })),
+      };
   const figures = [
-    { label: 'Doğru', value: `${r.correct}/${r.n}` },
-    { label: 'Durum soruları', value: `${r.prop.correct + r.nonProp.correct}/${r.prop.n + r.nonProp.n}` },
-    { label: 'Eşitlik soruları', value: `${r.equal.correct}/${r.equal.n}` },
+    { label: 'Doğru', value: notRead ? 'Yorumlanmadı' : `${r.correct}/${r.n}` },
+    { label: 'Durum soruları', value: notRead ? 'Yorumlanmadı' : `${r.prop.correct + r.nonProp.correct}/${r.prop.n + r.nonProp.n}` },
+    { label: 'Eşitlik soruları', value: notRead ? 'Yorumlanmadı' : `${r.equal.correct}/${r.equal.n}` },
+    ...(r.blank > 0 ? [{ label: '“Bilmiyorum” denen sorular', value: String(r.blank) }] : []),
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
-  const profile: CognitiveReport['profile'] = {
-    title: v('Soru gruplarına göre sonucun', 'Soru gruplarına göre sonuç'),
-    note: v(
-      'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğunu doğru bulmuşsun demektir; tam boy sütun, hepsini doğru bulduğun anlamına gelir. Renkler yalnızca grupları ayırır.',
-      'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğu doğru bulunmuş demektir; tam boy sütun, hepsinin doğru bulunduğu anlamına gelir. Renkler yalnızca grupları ayırır.',
-    ),
-    bars: NUMERIC_GROUPS.map((g) => ({
-      key: g.key,
-      label: g.name,
-      value: Math.round((r[g.key].correct / r[g.key].n) * 100),
-      min: 0,
-      max: 100,
-      color: g.color,
-      valueLabel: `${r[g.key].correct}/${r[g.key].n}`,
-      band: '',
-    })),
-  };
-  return { blocks: [dogru, oranti, esitlik, calisma], chart, figures, profile };
+  const profile: CognitiveReport['profile'] = notRead
+    ? undefined
+    : {
+        title: v('Soru gruplarına göre sonucun', 'Soru gruplarına göre sonuç'),
+        note: v(
+          'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğunu doğru bulmuşsun demektir; tam boy sütun, hepsini doğru bulduğun anlamına gelir. Renkler yalnızca grupları ayırır.',
+          'Her sütun sekiz soruluk bir gruptur. Sütun ne kadar yüksekse o gruptaki soruların o kadar çoğu doğru bulunmuş demektir; tam boy sütun, hepsinin doğru bulunduğu anlamına gelir. Renkler yalnızca grupları ayırır.',
+        ),
+        bars: NUMERIC_GROUPS.map((g) => ({
+          key: g.key,
+          label: g.name,
+          value: Math.round((r[g.key].correct / r[g.key].n) * 100),
+          min: 0,
+          max: 100,
+          color: g.color,
+          valueLabel: `${r[g.key].correct}/${r[g.key].n}`,
+          band: '',
+        })),
+      };
+  return { blocks: [dogru, oranti, esitlik, calisma], ...(chart ? { chart } : {}), figures, ...(profile ? { profile } : {}) };
 }
 
 /* ---------- Gizli şekiller ---------- */
@@ -7194,167 +7385,223 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
   const L = r.lure;
   const C = r.control;
   const chance = reflectionChance(r);
+  const below = reflectionBelowChance(r);
+  const rushed = reflectionRushed(r);
+  // Sonuç yorumlanmaz: tuzaksız eş sorular da çoğunlukla yanlış ya da soruların çoğu okunmadan cevaplanmış olabilir.
+  const notRead = chance || rushed;
   const rapid = reflectionRapid(r);
   const samePos = reflectionSamePosition(r);
-  const doubt = rapid || samePos;
+  const doubt = !notRead && (rapid || samePos);
   const wrong = L.n - L.correct;
-  const suspicious = reflectionSuspicious(r);
-  const ctrlLow = reflectionControlLow(r);
+  const wrongC = C.n - C.correct;
+  // Bazı sorularda okumadan ya da bakmadan seçilmiş olabilirse tuzak arama ve tuzaksız sorulardaki yanlışlar yorumlanmaz.
+  const suspicious = !doubt && reflectionSuspicious(r);
+  const ctrlLow = !doubt && reflectionControlLow(r);
+  const rapidOf = `${r.n} sorunun ${countOf(r.rapid, r.n, 'inde')}`;
+  const doubtWhy = v('Bazı sorularda okumadan ya da bakmadan seçmiş olabileceğin için', 'Bazı sorularda okumadan ya da bakmadan seçilmiş olabileceği için');
 
   /* Tuzaklı sorular */
   let accText: string;
-  if (chance) {
+  if (below) {
     accText = v(
-      `Tuzaksız eş soruların da çoğunda doğru cevabı bulamadın (${C.n} sorunun ${C.correct === 0 ? 'hiçbiri doğru değil' : `yalnızca ${C.correct} tanesi doğru`}). Sorular dikkatle okunmamış, yönerge tam anlaşılmamış ya da cevaplar rastgele seçilmiş olabilir; bu yüzden tuzaklı sorulardaki sonuç yorumlanmadı. Dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir; aynı sorular yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
-      `Çocuğunuz tuzaksız eş soruların da çoğunda doğru cevabı bulamadı (${C.n} sorunun ${C.correct === 0 ? 'hiçbiri doğru değil' : `yalnızca ${C.correct} tanesi doğru`}). Sorular dikkatle okunmamış, yönerge tam anlaşılmamış ya da cevaplar rastgele seçilmiş olabilir; bu yüzden tuzaklı sorulardaki sonuç yorumlanmadı. Dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir; aynı sorular yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
+      `${r.correct === 0 ? 'Hiçbir soruda doğru cevabı seçmedin.' : `Soruların yalnızca ${countOf(r.correct, r.n, 'inde')} doğru cevabı seçtin.`} Bu, rastgele seçimde beklenenden de az. Seçenekleri belli bir düzenle seçmiş ya da yönergeyi farklı anlamış olabilirsin. Bu yüzden sonuç yorumlanmadı. Yönergeyi yeniden okuyup başka bir gün yeniden denemek daha doğru bir sonuç verebilir.`,
+      `${r.correct === 0 ? 'Çocuğunuz hiçbir soruda doğru cevabı seçmedi.' : `Çocuğunuz soruların yalnızca ${countOf(r.correct, r.n, 'inde')} doğru cevabı seçti.`} Bu, rastgele seçimde beklenenden de az. Seçenekler belli bir düzenle seçilmiş ya da yönerge farklı anlaşılmış olabilir. Bu yüzden sonuç yorumlanmadı. Yönergeyi yeniden okuyup başka bir gün yeniden denemesi daha doğru bir sonuç verebilir.`,
+    );
+  } else if (chance) {
+    const missed = C.correct === 0 ? 'hiçbirinde' : 'çoğunda';
+    accText = v(
+      `Tuzaksız eş soruların da ${missed} doğru cevabı bulamadın. Soruları dikkatle okumamış, yönergeyi tam anlamamış ya da cevapları rastgele seçmiş olabilirsin. Bu yüzden tuzaklı sorulardaki sonuç yorumlanmadı. Dinlendiğin bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir. Aynı sorular yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
+      `Çocuğunuz tuzaksız eş soruların da ${missed} doğru cevabı bulamadı. Sorular dikkatle okunmamış, yönerge tam anlaşılmamış ya da cevaplar rastgele seçilmiş olabilir. Bu yüzden tuzaklı sorulardaki sonuç yorumlanmadı. Dinlendiği bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir. Aynı sorular yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
+    );
+  } else if (rushed) {
+    accText = v(
+      `${capTr(rapidOf)} cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin. Bu sorulara okumadan cevap vermiş olabilirsin. Bu yüzden sonuç yorumlanmadı. Acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${rapidOf} cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdi. Bu sorulara okumadan cevap vermiş olabilir. Bu yüzden sonuç yorumlanmadı. Acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
     );
   } else {
-    const intro = `Bu testteki ${L.n} soruda ilk akla gelen cevap yanlıştı.`;
+    const intro = `Testteki ${r.n} sorunun ${L.n} tanesi tuzaklıydı: bunlarda ilk akla gelen cevap yanlıştı.`;
     let level: string;
-    if (L.correct >= 13) {
-      level = v(
-        `Bunların ${L.correct} tanesinde ilk akla gelen cevabı denetleyip doğru cevabı buldun: tuzakların hemen hepsini fark ettin.`,
-        `Çocuğunuz bunların ${L.correct} tanesinde ilk akla gelen cevabı denetleyip doğru cevabı buldu: tuzakların hemen hepsini fark etti.`,
-      );
+    if (L.correct === L.n) {
+      level = suspicious
+        ? v('Tuzaklı soruların hepsinde doğru cevabı seçtin.', 'Çocuğunuz tuzaklı soruların hepsinde doğru cevabı seçti.')
+        : v(
+            'Tuzaklı soruların hepsinde doğru cevabı buldun; ilk akla gelen yanlış cevaba hiç kapılmadın.',
+            'Çocuğunuz tuzaklı soruların hepsinde doğru cevabı buldu; ilk akla gelen yanlış cevaba hiç kapılmadı.',
+          );
+    } else if (L.correct >= 13) {
+      level = v('Tuzaklı soruların hemen hepsinde doğru cevabı buldun.', 'Çocuğunuz tuzaklı soruların hemen hepsinde doğru cevabı buldu.');
     } else if (L.correct >= 9) {
-      level = v(`Bunların ${L.correct} tanesinde doğru cevabı buldun: tuzakların çoğunu fark ettin.`, `Çocuğunuz bunların ${L.correct} tanesinde doğru cevabı buldu: tuzakların çoğunu fark etti.`);
+      level = v('Tuzaklı soruların çoğunda doğru cevabı buldun: tuzakların çoğunu fark ettin.', 'Çocuğunuz tuzaklı soruların çoğunda doğru cevabı buldu: tuzakların çoğunu fark etti.');
+    } else if (2 * L.correct === L.n) {
+      level = v('Tuzaklı soruların yarısında doğru cevabı buldun.', 'Çocuğunuz tuzaklı soruların yarısında doğru cevabı buldu.');
     } else if (L.correct >= 5) {
       level = v(
-        `Bunların ${L.correct} tanesinde doğru cevabı buldun: tuzakların bir kısmını fark ettin, bir kısmında doğru cevaba ulaşamadın.`,
-        `Çocuğunuz bunların ${L.correct} tanesinde doğru cevabı buldu: tuzakların bir kısmını fark etti, bir kısmında doğru cevaba ulaşamadı.`,
+        'Tuzaklı soruların bir kısmında doğru cevabı buldun; çoğunda ise doğru cevaba ulaşamadın.',
+        'Çocuğunuz tuzaklı soruların bir kısmında doğru cevabı buldu; çoğunda ise doğru cevaba ulaşamadı.',
       );
     } else if (L.correct > 0) {
       level = v(
-        `Bunların yalnızca ${L.correct} tanesinde doğru cevabı buldun: tuzakların çoğunda doğru cevaba ulaşamadın.`,
-        `Çocuğunuz bunların yalnızca ${L.correct} tanesinde doğru cevabı buldu: tuzakların çoğunda doğru cevaba ulaşamadı.`,
+        `Tuzaklı soruların yalnızca ${countOf(L.correct, L.n, 'inde')} doğru cevabı buldun.`,
+        `Çocuğunuz tuzaklı soruların yalnızca ${countOf(L.correct, L.n, 'inde')} doğru cevabı buldu.`,
       );
     } else {
-      level = v('Bunların hiçbirinde doğru cevabı bulamadın.', 'Çocuğunuz bunların hiçbirinde doğru cevabı bulamadı.');
+      level = v('Tuzaklı soruların hiçbirinde doğru cevabı bulamadın.', 'Çocuğunuz tuzaklı soruların hiçbirinde doğru cevabı bulamadı.');
     }
     accText = `${intro} ${level}`;
-    if (L.correct <= 12 && L.lure >= L.other) accText += ' Bu tür sorularda ilk akla gelen cevap çok güçlüdür; birçok kişi bu cevabı verir.';
+    if (!doubt && L.correct <= 12 && L.lure >= L.other) accText += ' Bu tür sorularda ilk akla gelen cevap çok güçlüdür; birçok kişi bu cevabı verir.';
+    // Sayısal ve sözel tuzaklar arasında en az dört soruluk fark (her grup sekiz soru).
     const diff = r.numLure.correct - r.verbLure.correct;
-    if (diff <= -3) {
+    if (!doubt && diff <= -4) {
       accText += v(
-        ' Sayısal sorulardaki tuzaklarda, sözel sorulardakilerden belirgin daha az doğru cevap buldun. Sayısal sorularda tuzağı fark etmenin yanında hesap da gerekir; bu fark hesaplardan da kaynaklanmış olabilir.',
-        ' Çocuğunuz sayısal sorulardaki tuzaklarda, sözel sorulardakilerden belirgin daha az doğru cevap buldu. Sayısal sorularda tuzağı fark etmenin yanında hesap da gerekir; bu fark hesaplardan da kaynaklanmış olabilir.',
+        ' Sayısal tuzaklı sorularda, sözel olanlardan daha az doğru cevap buldun. Sayısal sorularda tuzağı fark etmenin yanında hesap da gerekir. Bu fark birkaç soruya dayanır; kaba bir göstergedir.',
+        ' Sayısal tuzaklı sorularda, sözel olanlardan daha az doğru cevap buldu. Sayısal sorularda tuzağı fark etmenin yanında hesap da gerekir. Bu fark birkaç soruya dayanır; kaba bir göstergedir.',
       );
-    } else if (diff >= 3) {
+    } else if (!doubt && diff >= 4) {
       accText += v(
-        ' Sözel sorulardaki tuzaklarda, sayısal sorulardakilerden belirgin daha az doğru cevap buldun. Sözel sorularda tuzak sorunun içindeki küçük bir ayrıntıdadır; soruyu sonuna kadar dikkatle okumak gerekir.',
-        ' Çocuğunuz sözel sorulardaki tuzaklarda, sayısal sorulardakilerden belirgin daha az doğru cevap buldu. Sözel sorularda tuzak sorunun içindeki küçük bir ayrıntıdadır; soruyu sonuna kadar dikkatle okumak gerekir.',
+        ' Sözel tuzaklı sorularda, sayısal olanlardan daha az doğru cevap buldun. Sözel sorularda tuzak sorunun içindeki küçük bir ayrıntıdadır. Bu fark birkaç soruya dayanır; kaba bir göstergedir.',
+        ' Sözel tuzaklı sorularda, sayısal olanlardan daha az doğru cevap buldu. Sözel sorularda tuzak sorunun içindeki küçük bir ayrıntıdadır. Bu fark birkaç soruya dayanır; kaba bir göstergedir.',
       );
     }
-    if (ctrlLow && suspicious) {
+    if (suspicious) {
       accText += v(
-        ` Tuzaksız eş soruların ${C.lure} tanesinde de tuzak varmış gibi cevap verdiğin için bu sonucun bir kısmı her soruda tuzak aramaktan kaynaklanmış olabilir; sonuç dikkatle yorumlanmalıdır (benzer soru çiftleri kartına bak).`,
-        ` Çocuğunuz tuzaksız eş soruların ${C.lure} tanesinde de tuzak varmış gibi cevap verdiği için bu sonucun bir kısmı her soruda tuzak aramaktan kaynaklanmış olabilir; sonuç dikkatle yorumlanmalıdır (benzer soru çiftleri kartına bakın).`,
+        ` Tuzaksız eş soruların ${countOf(C.lure, C.n, 'inde')} de tuzak varmış gibi cevap verdin. Bu sonucun bir kısmı, tuzak olmayan sorularda da tuzak aramaktan kaynaklanmış olabilir. Bu yüzden sonuç dikkatle okunmalı (benzer soru çiftleri kartına bak).`,
+        ` Tuzaksız eş soruların ${countOf(C.lure, C.n, 'inde')} de tuzak varmış gibi cevap verdi. Bu sonucun bir kısmı, tuzak olmayan sorularda da tuzak aramaktan kaynaklanmış olabilir. Bu yüzden sonuç dikkatle okunmalı (benzer soru çiftleri kartına bakın).`,
       );
     } else if (ctrlLow) {
       accText += v(
-        ` Tuzaksız eş soruların ${C.n - C.correct} tanesinde yanlış cevap verdiğin için bu sonuç dikkatle yorumlanmalıdır (benzer soru çiftleri kartına bak).`,
-        ` Çocuğunuz tuzaksız eş soruların ${C.n - C.correct} tanesinde yanlış cevap verdiği için bu sonuç dikkatle yorumlanmalıdır (benzer soru çiftleri kartına bakın).`,
+        ` Tuzaksız eş soruların ${countOf(wrongC, C.n, 'inde')} de yanlış cevap verdin. Bu yüzden sonuç dikkatle okunmalı (benzer soru çiftleri kartına bak).`,
+        ` Tuzaksız eş soruların ${countOf(wrongC, C.n, 'inde')} de yanlış cevap verdi. Bu yüzden sonuç dikkatle okunmalı (benzer soru çiftleri kartına bakın).`,
       );
     }
     if (doubt) {
       accText += v(
-        ' Bazı sorularda okumadan ya da bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorularda okumadan ya da bakmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ` ${doubtWhy} (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.`,
+        ` ${doubtWhy} (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.`,
       );
     }
   }
-  const dogru: CognitiveBlock = {
-    ...card('dk_dogru'),
-    headline: `${L.n} tuzaklı soruda ${L.correct} doğru`,
-    detail: `Sayısal ${r.numLure.correct}/${r.numLure.n} · Sözel ${r.verbLure.correct}/${r.verbLure.n}`,
-    text: accText,
-  };
+  const dogru: CognitiveBlock = notRead
+    ? { ...card('dk_dogru'), headline: 'Yorumlanmadı', text: accText }
+    : {
+        ...card('dk_dogru'),
+        headline: `${L.n} tuzaklı soruda ${L.correct} doğru`,
+        text: accText,
+        visual: {
+          type: 'bars',
+          label: 'Tuzaklı sorularda doğru cevaplar',
+          scale: 'share',
+          rows: [
+            { label: 'Sayısal tuzaklı sorular', value: r.numLure.correct, max: r.numLure.n, valueLabel: `${r.numLure.correct}/${r.numLure.n}` },
+            { label: 'Sözel tuzaklı sorular', value: r.verbLure.correct, max: r.verbLure.n, valueLabel: `${r.verbLure.correct}/${r.verbLure.n}` },
+          ],
+        } satisfies BarsVisual,
+      };
 
   /* Yanlışların türü */
   let yanlis: CognitiveBlock;
-  if (chance) {
-    yanlis = { ...card('dk_yanlis'), headline: 'Yorumlanmadı', text: 'Tuzaksız eş soruların da çoğu yanlış olduğu için yanlışların türü yorumlanmadı.' };
+  if (notRead) {
+    yanlis = {
+      ...card('dk_yanlis'),
+      headline: 'Yorumlanmadı',
+      text: below
+        ? 'Doğru cevaplar rastgele seçimde beklenenden de az olduğu için yanlışların türü yorumlanmadı.'
+        : chance
+          ? 'Tuzaksız eş soruların da çoğu yanlış olduğu için yanlışların türü yorumlanmadı.'
+          : 'Soruların çoğu okumaya yetmeyecek kadar kısa sürede cevaplandığı için yanlışların türü yorumlanmadı.',
+    };
   } else if (wrong === 0) {
     yanlis = {
       ...card('dk_yanlis'),
-      headline: 'Yanlış yok',
+      headline: 'Tuzaklı sorularda yanlış yok',
       text: suspicious
         ? v(
-            'Tuzaklı soruların hiçbirinde yanlış cevap vermedin; ancak tuzaksız sorularda da tuzak aradığın için bu, her soruda tuzak aramaktan da kaynaklanmış olabilir.',
-            'Çocuğunuz tuzaklı soruların hiçbirinde yanlış cevap vermedi; ancak tuzaksız sorularda da tuzak aradığı için bu, her soruda tuzak aramaktan da kaynaklanmış olabilir.',
+            'Tuzaklı soruların hiçbirinde yanlış cevap vermedin. Ama tuzaksız sorularda da tuzak aradığın için bu sonuç, tuzak olmayan sorularda da tuzak aramaktan kaynaklanmış olabilir.',
+            'Çocuğunuz tuzaklı soruların hiçbirinde yanlış cevap vermedi. Ama tuzaksız sorularda da tuzak aradığı için bu sonuç, tuzak olmayan sorularda da tuzak aramaktan kaynaklanmış olabilir.',
           )
-        : v(
-            'Tuzaklı soruların hiçbirinde yanlış cevap vermedin; ilk akla gelen cevabı her soruda denetledin.',
-            'Çocuğunuz tuzaklı soruların hiçbirinde yanlış cevap vermedi; ilk akla gelen cevabı her soruda denetledi.',
-          ),
+        : v('Tuzaklı soruların hiçbirinde yanlış cevap vermedin.', 'Çocuğunuz tuzaklı soruların hiçbirinde yanlış cevap vermedi.'),
     };
+  } else if (doubt) {
+    // Okumadan seçilmiş olabilirse yanlışların türü yorumlanmaz: rozet, grafik ve sayılar da yorumlanmış gibi görünmez.
+    yanlis = { ...card('dk_yanlis'), headline: 'Yorumlanmadı', text: `${doubtWhy} yanlışların türü yorumlanmadı.` };
   } else {
     let text: string;
-    if (doubt) {
-      text = v(
-        `Tuzaklı sorulardaki ${wrong} yanlışın ${L.lure} tanesi ilk akla gelen cevap, ${L.other} tanesi başka bir yanlıştı. Bazı sorularda okumadan ya da bakmadan seçmiş olabileceğin için yanlışların türü yorumlanmadı.`,
-        `Tuzaklı sorulardaki ${wrong} yanlışın ${L.lure} tanesi ilk akla gelen cevap, ${L.other} tanesi başka bir yanlıştı. Bazı sorularda okumadan ya da bakmadan seçilmiş olabileceği için yanlışların türü yorumlanmadı.`,
-      );
-    } else if (wrong === 1) {
+    if (wrong === 1) {
       text = v(
         `Tuzaklı sorulardan yalnızca birinde yanlış cevap verdin; bu cevap ${L.lure ? 'sorunun ilk anda akla getirdiği cevaptı' : 'ilk akla gelen cevap değil, başka bir yanlıştı'}.`,
         `Çocuğunuz tuzaklı sorulardan yalnızca birinde yanlış cevap verdi; bu cevap ${L.lure ? 'sorunun ilk anda akla getirdiği cevaptı' : 'ilk akla gelen cevap değil, başka bir yanlıştı'}.`,
       );
     } else if (L.lure >= 2 && L.lure >= 2 * L.other) {
-      const share = L.other === 0 ? 'hepsinde' : `çoğunda (${wrong} yanlışın ${L.lure} tanesinde)`;
+      const share = L.other === 0 ? 'hepsinde' : 'çoğunda';
       const example =
-        'Bu cevaplar ilk bakışta doğru görünür ama soruyla karşılaştırılınca uymaz. Örneğin bir sopa ile bir top birlikte 110 lira ve sopa toptan 100 lira pahalıysa, akla ilk gelen “top 10 lira” cevabı yanlıştır: o zaman sopa 110 lira olur ve ikisi birlikte 120 lira eder.';
+        'Bu cevaplar ilk bakışta doğru görünür ama soruyla karşılaştırılınca uymaz. Örneğin bir sopa ile bir top birlikte 110 lira olsun. Sopa toptan 100 lira daha pahalı olsun. Akla ilk gelen “top 10 lira” cevabı yanlıştır: o zaman sopa 110 lira olur ve ikisi birlikte 120 lira eder.';
       text = v(
         `Yanlışlarının ${share} sorunun ilk anda akla getirdiği cevabı seçtin. ${example} Bir cevap çok kolay geliyorsa onu sorudaki bilgilerle bir kez sınamak işine yarayabilir.`,
         `Çocuğunuz yanlışlarının ${share} sorunun ilk anda akla getirdiği cevabı seçti. ${example} Bir cevap çok kolay geliyorsa onu sorudaki bilgilerle bir kez sınamak ona yardım edebilir.`,
       );
     } else if (L.other >= 2 && L.other > L.lure) {
+      const share = L.lure === 0 ? 'hiçbiri ilk akla gelen cevap değildi; hepsi başka bir yanlıştı' : 'çoğu ilk akla gelen cevap değil, başka bir yanlıştı';
       text = v(
-        `Yanlışlarının çoğu (${wrong} yanlışın ${L.other} tanesi) ilk akla gelen cevap değil, başka bir yanlıştı. Bu tür sorularda yanlışların çoğu genellikle ilk akla gelen cevaptır; senin yanlışların ise soruyu yanlış anlamaktan, hesapta yanılmaktan ya da emin olmadan seçmekten kaynaklanmış olabilir.`,
-        `Çocuğunuzun yanlışlarının çoğu (${wrong} yanlışın ${L.other} tanesi) ilk akla gelen cevap değil, başka bir yanlıştı. Bu tür sorularda yanlışların çoğu genellikle ilk akla gelen cevaptır; bu yanlışlar ise soruyu yanlış anlamaktan, hesapta yanılmaktan ya da emin olmadan seçmekten kaynaklanmış olabilir.`,
+        `Yanlışlarının ${share}. Bu tür sorularda yanlışlar çoğunlukla ilk akla gelen cevap olur. Senin yanlışların ise soruyu yanlış anlamaktan, hesapta yanılmaktan ya da emin olmadan seçmekten kaynaklanmış olabilir.`,
+        `Çocuğunuzun yanlışlarının ${share}. Bu tür sorularda yanlışlar çoğunlukla ilk akla gelen cevap olur. Bu yanlışlar ise soruyu yanlış anlamaktan, hesapta yanılmaktan ya da emin olmadan seçmekten kaynaklanmış olabilir.`,
       );
     } else {
       text = v(
-        `Yanlışlarının ${L.lure} tanesi ilk akla gelen cevap, ${L.other} tanesi başka bir yanlıştı. İlk akla gelen cevabı sorudaki bilgilerle sınamak da, soruyu sonuna kadar dikkatle okumak da işine yarayabilir.`,
-        `Çocuğunuzun yanlışlarının ${L.lure} tanesi ilk akla gelen cevap, ${L.other} tanesi başka bir yanlıştı. İlk akla gelen cevabı sorudaki bilgilerle sınamak da, soruyu sonuna kadar dikkatle okumak da ona yardım edebilir.`,
+        'Yanlışlarının bir kısmı ilk akla gelen cevap, bir kısmı başka bir yanlıştı. İlk akla gelen cevabı sorudaki bilgilerle sınamak da, soruyu sonuna kadar dikkatle okumak da işine yarayabilir.',
+        'Çocuğunuzun yanlışlarının bir kısmı ilk akla gelen cevap, bir kısmı başka bir yanlıştı. İlk akla gelen cevabı sorudaki bilgilerle sınamak da, soruyu sonuna kadar dikkatle okumak da ona yardım edebilir.',
       );
     }
     yanlis = {
       ...card('dk_yanlis'),
-      headline: `${wrong} yanlışın ${L.lure} tanesi ilk akla gelen cevap`,
-      detail: `İlk akla gelen cevap ${L.lure} · Başka bir yanlış ${L.other}`,
+      headline:
+        wrong === 1
+          ? `Tek yanlış: ${L.lure ? 'ilk akla gelen cevap' : 'başka bir yanlış'}`
+          : `${wrong} yanlışın ${countOf(L.lure, wrong, 'i')} ilk akla gelen cevap${L.lure === 0 ? ' değil' : ''}`,
       text,
+      visual: {
+        type: 'stack',
+        label: 'Tuzaklı sorulardaki yanlışlar',
+        total: wrong,
+        parts: [
+          { label: 'İlk akla gelen cevap', value: L.lure },
+          { label: 'Başka bir yanlış', value: L.other },
+        ],
+      } satisfies StackVisual,
     };
   }
 
   /* Tuzaksız eş sorular */
-  let esText = `Tuzaklı soruların ${C.n} tanesinin bir de tuzaksız eşi vardı: aynı sayılar ya da benzer bir durum, ama bu kez ilk akla gelen cevap doğruydu.`;
-  const how = C.correct === C.n ? 'hepsini' : `${C.correct} tanesini`;
-  if (suspicious) {
+  const esIntro = `Tuzaklı sorulardan ${C.n} tanesinin bir de tuzaksız eşi vardı. Bu eşlerde sayılar ya da durum benzerdi, ama ilk akla gelen cevap doğruydu.`;
+  const how = countOf(C.correct, C.n, 'ini');
+  let esText = esIntro;
+  if (rushed) {
+    esText += ' Soruların çoğu okumaya yetmeyecek kadar kısa sürede cevaplandığı için bu sorulardaki sonuç yorumlanmadı.';
+  } else if (doubt) {
+    esText += ` ${doubtWhy} bu sorulardaki sonuç yorumlanmadı.`;
+  } else if (chance) {
     esText += v(
-      ` Bu soruların ${C.lure} tanesinde, tuzak olmadığı hâlde tuzak varmış gibi cevap verdin. Her soruda tuzak aramak da yanıltabilir; cevabı sorudaki bilgilerle sınamak, tuzak olup olmadığını da gösterir.`,
-      ` Çocuğunuz bu soruların ${C.lure} tanesinde, tuzak olmadığı hâlde tuzak varmış gibi cevap verdi. Her soruda tuzak aramak da yanıltabilir; cevabı sorudaki bilgilerle sınamak, tuzak olup olmadığını da gösterir.`,
+      ` ${C.correct === 0 ? 'Bu soruların hiçbirinde doğru cevabı bulamadın' : `Bu soruların yalnızca ${countOf(C.correct, C.n, 'inde')} doğru cevabı buldun`}. Bu sorularda tuzak olmadığı için yanlışlar, soruların dikkatle okunmadığını ya da ${below ? 'yönergenin farklı anlaşıldığını' : 'cevapların rastgele seçildiğini'} düşündürür.`,
+      ` ${C.correct === 0 ? 'Çocuğunuz bu soruların hiçbirinde doğru cevabı bulamadı' : `Çocuğunuz bu soruların yalnızca ${countOf(C.correct, C.n, 'inde')} doğru cevabı buldu`}. Bu sorularda tuzak olmadığı için yanlışlar, soruların dikkatle okunmadığını ya da ${below ? 'yönergenin farklı anlaşıldığını' : 'cevapların rastgele seçildiğini'} düşündürür.`,
+    );
+  } else if (suspicious) {
+    esText += v(
+      ` Bu soruların ${countOf(C.lure, C.n, 'inde')}, tuzak olmadığı hâlde tuzak varmış gibi cevap verdin. Tuzak olmayan sorularda da tuzak aramak yanıltabilir. Cevabı sorudaki bilgilerle sınamak, tuzak olup olmadığını da gösterir.`,
+      ` Çocuğunuz bu soruların ${countOf(C.lure, C.n, 'inde')}, tuzak olmadığı hâlde tuzak varmış gibi cevap verdi. Tuzak olmayan sorularda da tuzak aramak yanıltabilir. Cevabı sorudaki bilgilerle sınamak, tuzak olup olmadığını da gösterir.`,
     );
     if (C.other >= 2) {
       esText += v(
-        ` Bu soruların ${C.other} tanesinde de başka bir yanlış cevap verdin; bu yüzden sonuç dikkatle yorumlanmalıdır.`,
-        ` Çocuğunuz bu soruların ${C.other} tanesinde de başka bir yanlış cevap verdi; bu yüzden sonuç dikkatle yorumlanmalıdır.`,
+        ` Bu soruların ${countOf(C.other, C.n, 'inde')} de başka bir yanlış cevap verdin. Bu yüzden sonuç dikkatle okunmalı.`,
+        ` Bu soruların ${countOf(C.other, C.n, 'inde')} de başka bir yanlış cevap verdi. Bu yüzden sonuç dikkatle okunmalı.`,
       );
     }
-  } else if (chance) {
-    esText += v(
-      ` ${C.correct === 0 ? 'Bu soruların hiçbirinde doğru cevabı bulamadın' : `Bu soruların yalnızca ${C.correct} tanesinde doğru cevabı buldun`}. Bu sorularda tuzak olmadığı için yanlışlar, soruların dikkatle okunmadığını ya da cevapların rastgele seçildiğini düşündürür.`,
-      ` ${C.correct === 0 ? 'Çocuğunuz bu soruların hiçbirinde doğru cevabı bulamadı' : `Çocuğunuz bu soruların yalnızca ${C.correct} tanesinde doğru cevabı buldu`}. Bu sorularda tuzak olmadığı için yanlışlar, soruların dikkatle okunmadığını ya da cevapların rastgele seçildiğini düşündürür.`,
-    );
   } else if (ctrlLow) {
     esText += v(
-      ` Bu soruların ${C.n - C.correct} tanesinde de yanlış cevap verdin. Tuzaksız sorulardaki yanlışlar, tuzaklı sorulardaki yanlışların bir kısmının da dikkatin dağılmasından, soruyu yanlış okumaktan ya da hesaptan kaynaklanmış olabileceğini düşündürür.`,
-      ` Çocuğunuz bu soruların ${C.n - C.correct} tanesinde de yanlış cevap verdi. Tuzaksız sorulardaki yanlışlar, tuzaklı sorulardaki yanlışların bir kısmının da dikkatin dağılmasından, soruyu yanlış okumaktan ya da hesaptan kaynaklanmış olabileceğini düşündürür.`,
+      ` Bu soruların ${countOf(wrongC, C.n, 'inde')} de yanlış cevap verdin. Tuzaklı sorulardaki yanlışların bir kısmı da dikkatin dağılmasından, soruyu yanlış okumaktan ya da hesaptan kaynaklanmış olabilir.`,
+      ` Çocuğunuz bu soruların ${countOf(wrongC, C.n, 'inde')} de yanlış cevap verdi. Tuzaklı sorulardaki yanlışların bir kısmı da dikkatin dağılmasından, soruyu yanlış okumaktan ya da hesaptan kaynaklanmış olabilir.`,
     );
   } else if (r.pairControlOnly >= 2) {
     esText += v(
-      ` Bu soruların ${how} doğru buldun. ${r.pairs} eşin ${r.pairControlOnly} tanesinde tuzaksız sorunun doğru cevabını buldun ama tuzaklı eşinde ilk akla gelen cevabı seçtin. Bu, o yanlışların soruyu anlamamaktan çok ilk akla gelen cevabı denetlemeden vermekten kaynaklanmış olabileceğini düşündürür.`,
-      ` Çocuğunuz bu soruların ${how} doğru buldu. ${r.pairs} eşin ${r.pairControlOnly} tanesinde tuzaksız sorunun doğru cevabını buldu ama tuzaklı eşinde ilk akla gelen cevabı seçti. Bu, o yanlışların soruyu anlamamaktan çok ilk akla gelen cevabı denetlemeden vermekten kaynaklanmış olabileceğini düşündürür.`,
+      ` Bu soruların ${how} doğru buldun. Eşlerin ${countOf(r.pairControlOnly, r.pairs, 'inde')} tuzaksız sorunun doğru cevabını buldun ama tuzaklı eşinde ilk akla gelen cevabı seçtin. Tuzaksız eşleri doğru bulman, bu sorulardaki okuma ve hesabın sana zor gelmediğini gösterir. Tuzaklı eşlerinde ilk akla gelen cevabı bir kez daha sınamak işine yarayabilir.`,
+      ` Çocuğunuz bu soruların ${how} doğru buldu. Eşlerin ${countOf(r.pairControlOnly, r.pairs, 'inde')} tuzaksız sorunun doğru cevabını buldu ama tuzaklı eşinde ilk akla gelen cevabı seçti. Tuzaksız eşleri doğru bulması, bu sorulardaki okuma ve hesabın ona zor gelmediğini gösterir. Tuzaklı eşlerinde ilk akla gelen cevabı bir kez daha sınamak ona yardım edebilir.`,
     );
   } else if (L.correct >= 9) {
     esText += v(` Bu soruların ${how} doğru buldun: tuzak olan ve olmayan soruları birbirinden ayırdın.`, ` Çocuğunuz bu soruların ${how} doğru buldu: tuzak olan ve olmayan soruları birbirinden ayırdı.`);
@@ -7364,20 +7611,35 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
       ` Çocuğunuz bu soruların ${how} doğru buldu: bu soruların hesapları ve cümleleri ona zor gelmedi.`,
     );
   }
-  const es: CognitiveBlock = {
-    ...card('dk_es'),
-    headline: `${C.n} tuzaksız soruda ${C.correct} doğru`,
-    detail: `Sayısal ${r.numControl.correct}/${r.numControl.n} · Sözel ${r.verbControl.correct}/${r.verbControl.n}`,
-    text: esText,
-  };
+  // Bakmadan seçilmiş olabilirse (ya da soruların çoğu okunmadan cevaplandıysa) bu kart da yorumlanmaz; tuzaksız soruların
+  // çoğu yanlışsa kart, sonucun neden yorumlanmadığını sayılarla gösterir.
+  const es: CognitiveBlock =
+    rushed || doubt
+      ? { ...card('dk_es'), headline: 'Yorumlanmadı', text: esText }
+      : {
+          ...card('dk_es'),
+          headline: `${C.n} tuzaksız soruda ${C.correct} doğru`,
+          text: esText,
+          visual: {
+            type: 'stack',
+            label: 'Tuzaksız eş sorulardaki cevaplar',
+            total: C.n,
+            parts: [
+              { label: 'Doğru', value: C.correct },
+              { label: 'Tuzak varmış gibi cevap', value: C.lure },
+              { label: 'Başka bir yanlış', value: C.other },
+            ],
+          } satisfies StackVisual,
+        };
 
   /* Çalışma biçimi */
   const issues: string[] = [];
   if (rapid) {
+    const right = r.rapidCorrect === 0 ? 'Bu cevapların hiçbiri doğru değildi.' : `Bu cevapların yalnızca ${countOf(r.rapidCorrect, r.rapid, 'i')} doğruydu.`;
     issues.push(
       v(
-        `${r.n} sorunun ${r.rapid} tanesinde cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin ve ${r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değildi' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğruydu`}; bu sorulara okumadan cevap vermiş olabilirsin.`,
-        `Çocuğunuz ${r.n} sorunun ${r.rapid} tanesinde cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdi ve ${r.rapidCorrect === 0 ? 'bu cevapların hiçbiri doğru değildi' : `bu cevapların yalnızca ${r.rapidCorrect} tanesi doğruydu`}; bu sorulara okumadan cevap verilmiş olabilir.`,
+        `${capTr(rapidOf)} cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin. ${right} Bu sorulara okumadan cevap vermiş olabilirsin.`,
+        `Çocuğunuz ${rapidOf} cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdi. ${right} Bu sorulara okumadan cevap vermiş olabilir.`,
       ),
     );
   }
@@ -7385,20 +7647,23 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
     issues.push(
       v(
         `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
-        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakılmadan aynı yere basılmış olabilir.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
+  // Okumadan cevap verilmiş olabileceği söylenirken "hız tek başına iyi ya da kötü değildir" denmez.
+  const noLimit = rapid
+    ? ''
+    : v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
   if (r.medianRt === null) {
-    calisma = { ...card('dk_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('dk_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') };
   } else {
     const a = r.rtLureCorrect;
     const b = r.rtLureIntuitive;
-    const timesLine = a !== null && b !== null ? `Doğru bulunan tuzaklı sorularda tipik ${seconds(a)} · ilk akla gelen cevapta ${seconds(b)}` : undefined;
     let pace = '';
-    if (!doubt && !chance && a !== null && b !== null) {
+    const comparePace = !doubt && !notRead && !rapid && a !== null && b !== null;
+    if (comparePace) {
       if (b * 1.3 <= a) {
         pace = v(
           'İlk akla gelen cevabı seçtiğin sorularda, doğru bulduğun sorulardan daha kısa sürede cevap verdin. Doğru cevap çoğu zaman ilk cevabı bir kez daha düşünmeyi gerektirir; acele etmemek işine yarayabilir.',
@@ -7420,32 +7685,45 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
     calisma = {
       ...card('dk_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      detail: timesLine,
       text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      visual: {
+        type: 'bars',
+        label: 'Soru başına tipik süre',
+        scale: 'scale',
+        unit: 'sn',
+        rows: [
+          { label: 'Bütün sorular', value: secValue(r.medianRt), valueLabel: secShort(r.medianRt) },
+          ...(comparePace && a !== null && b !== null
+            ? [
+                { label: 'Doğru bulunan tuzaklı sorular', value: secValue(a), valueLabel: secShort(a) },
+                { label: 'İlk akla gelen cevabın seçildiği sorular', value: secValue(b), valueLabel: secShort(b) },
+              ]
+            : []),
+        ],
+      } satisfies BarsVisual,
     };
   }
 
   /* Grafikler ve öne çıkan sayılar */
   const groupNote = 'Her grupta sekiz soru vardır. Tuzaklı sorularda ilk akla gelen cevap yanlıştır; tuzaksız eş sorularda doğrudur.';
-  const chart: CognitiveReport['chart'] = {
-    title: 'Soru gruplarına göre doğru cevaplar',
-    note: v(
-      `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.`,
-      `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.`,
-    ),
-    rows: REFLECTION_GROUPS.map((g) => ({ label: g.name, value: r[g.key].correct, max: r[g.key].n, valueLabel: `${r[g.key].correct}/${r[g.key].n}` })),
-  };
+  // Tuzaklı sorulardaki sonuç yorumlanmıyorsa gruplara göre grafik de çizilmez (nedenini kartlar söyler).
+  const chart: CognitiveReport['chart'] = notRead
+    ? undefined
+    : {
+        title: 'Soru gruplarına göre doğru cevaplar',
+        note: v(
+          `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğunu doğru cevaplamışsın demektir.`,
+          `${groupNote} Çubuk ne kadar uzunsa o gruptaki soruların o kadar çoğu doğru cevaplanmış demektir.`,
+        ),
+        rows: REFLECTION_GROUPS.map((g) => ({ label: g.name, value: r[g.key].correct, max: r[g.key].n, valueLabel: `${r[g.key].correct}/${r[g.key].n}` })),
+      };
+  // İlk akla gelen yanlış cevapların sayısı ayrı bir eğilim ölçüsü olarak geçerli bulunmadığı için öne çıkan sayılarda yoktur.
   const figures = [
-    { label: 'Tuzaklı sorularda doğru', value: `${L.correct}/${L.n}` },
-    chance
-      ? { label: 'İlk akla gelen yanlış cevap', value: 'Yorumlanmadı' }
-      : wrong === 0
-        ? { label: 'İlk akla gelen yanlış cevap', value: 'Yok' }
-        : { label: 'İlk akla gelen yanlış cevap', value: String(L.lure), note: `${wrong} yanlıştan` },
-    { label: 'Tuzaksız eş sorularda doğru', value: `${C.correct}/${C.n}` },
+    { label: 'Tuzaklı sorularda doğru', value: notRead ? 'Yorumlanmadı' : `${L.correct}/${L.n}` },
+    { label: 'Tuzaksız eş sorularda doğru', value: rushed || doubt ? 'Yorumlanmadı' : `${C.correct}/${C.n}` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
-  const profile: CognitiveReport['profile'] = chance
+  const profile: CognitiveReport['profile'] = notRead
     ? undefined
     : {
         title: v('Soru gruplarına göre sonucun', 'Soru gruplarına göre sonuç'),
@@ -7464,7 +7742,7 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
           band: '',
         })),
       };
-  return { blocks: [dogru, yanlis, es, calisma], chart, figures, ...(profile ? { profile } : {}) };
+  return { blocks: [dogru, yanlis, es, calisma], ...(chart ? { chart } : {}), figures, ...(profile ? { profile } : {}) };
 }
 
 /* ---------- Kule görevi ---------- */

@@ -603,13 +603,15 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
      **yayında (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
    - 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi): **yayında
      (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
-   - Sıradaki: 5. grup (mantıksal, sayısal, düşünerek karar verme).
-   - 5. gruptan sonra bütün görev testleri için ortak işler (3. ve 4. grubun incelemesinde bulundu): (a) yol haritasındaki
+   - 5. grup (mantıksal, sayısal, düşünerek karar verme): **yayında (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
+   - Sıradaki: bütün görev testleri için ortak işler (3. ve 4. grubun incelemesinde bulundu): (a) yol haritasındaki
      öneri ve hafta başlıkları veli raporunda da çocuğa "sen" diye sesleniyor ("Kaldığın yeri işaretle"); veliye ayrı
      başlık (~104 öneri başlığı). (b) Uyarı notları her kitleye aynı edilgen dille yazılıyor; öğrenci raporunda
      "yorumlanmamalıdır" yerine kitleye göre metin. (c) Sonuç yorumlanmadığında yol haritasının giriş cümlesi de bunu
      söylemeli. (d) Tek çubuklu süre grafikleri (yalnızca "Bütün sorular") bilgi taşımıyor; karşılaştırılacak ikinci bir
-     değer yoksa sürenin başka bir anlatımı.
+     değer yoksa sürenin başka bir anlatımı. (e) Nicelik sözleri için ortak yardımcı (`countOf`, lib/scoring/tasks.ts) 5. grupta
+     kullanılıyor; öteki görev testlerindeki "N tanesinde" kalıpları da ona geçirilmeli. (f) Veli yol haritası girişinde özne
+     belirsiz ("işlerini nasıl kolaylaştırabileceği"). (g) Yol haritalarında noktalı virgüllü uzun cümleler.
 3. Okuma, sesli okuma, matematik konu tarama.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
@@ -946,6 +948,17 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (41): Raporlarda her başlığa grafik, 2. aşamanın 5. grubu (mantıksal akıl yürütme, sayısal akıl yürütme,
+  düşünerek karar verme): soru türlerine göre doğru kararlar, durum ve eşitlik türleri, tuzaklı ve tuzaksız sorulardaki
+  cevaplar, yanlışların türü. Bağımsız incelemenin bulguları uygulandı: soruların çoğu okunamayacak kadar hızlı
+  cevaplandıysa, rastgele seçimin de altında doğru varsa ya da hep aynı cevap verildiyse sonuç yorumlanmıyor (rozet, grafik,
+  öne çıkan sayılar ve üç boyutlu grafik dahil); sayısal testte "Bilmiyorum" artık her kartta söyleniyor, hızlı denen
+  "Bilmiyorum" ve hızlı ama doğru yazılan cevaplar "okumadan cevap verdin" sayılmıyor; inandırıcılık etkisi ve sayısal–sözel
+  farkı yalnızca rastlantının zor açıklayacağı farklarda anlatılıyor; tuzaksız soruların ikisinde tuzak cevabı "her soruda
+  tuzak aramak" sayılmıyor; hiç doğru cevap yoksa "rastgele" denmiyor; "8 sorunun 8 tanesi", "0 tanesi", tam puanda "hemen
+  hepsi" gibi nicelik hataları ortak bir yardımcıyla düzeldi; araştırma cümleleri kaynaklarla uyuşacak biçimde "Bir
+  araştırmada…" diye yazıldı; ilk akla gelen yanlış cevap sayısı öne çıkan sayılardan çıktı. PDF'te dört kutulu satırda uzun
+  değerler küçük yazılıyor. Raporlar telefonda ve masaüstünde açıldı, PDF'ler incelendi.
 - 2026-10-22 (40): Raporlarda her başlığa grafik, 2. aşamanın 4. grubu (zihinde döndürme, üç boyutlu döndürme, bakış
   açısı alma, desen hatırlama, planlama kulesi): türlere ve açılara göre doğruluk, bölümlere göre doğrular, hata türleri,
   açı hatası şeridi, büyüklüğe göre doğrular, problem uzunluğuna göre çözülenler, çözüm biçimi ve ilk hamleden önceki süre.
@@ -1014,8 +1027,3 @@ En yeni üstte; en çok 10 madde tutulur.
   düzeylerin giderek zorlaştığı bağımsız denetleyiciyle doğrulandı; yanlışlarda döndürülmüş ya da köşesi farklı benzerin
   seçilmesi ayrıca anlatılır; öğrenci, veli ve yetişkin raporu, yol haritası; iki tur bağımsız incelemenin bulguları
   düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-21 (31): Heyecan Arayışı yayında (9. sınıftan yetişkine), 2. dalganın 10. testi: IPIP'in üç heyecan arayışı
-  ölçeği, 29 madde (deprem maddesi çıkarıldı), yaklaşık 5 dakika; rapor araştırmaların kısa özetini ve üç yönün birlikte
-  ne anlatabileceğini verir, riskli davranışı özendirmez; öğrenci, veli ve yetişkin raporu, 3 sütunlu 3B yol haritası;
-  iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Ölçüm payı yok
-  (açık veriye bu oturumdan ulaşılamadı).

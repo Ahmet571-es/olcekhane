@@ -10,9 +10,10 @@ import { ADULT_GRADE } from '@/lib/config';
 import { LOGIC_CATEGORICAL, LOGIC_CONDITIONAL, LOGIC_VALID, logicRapidMs } from '@/lib/instruments/logic';
 import type { LogicForm, LogicalReasoningTask, VerbalReasoningTask } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
-import { LOGIC_FORM_NAMES, LOGIC_GROUPS } from '@/lib/reports/build';
+import { LOGIC_GROUPS } from '@/lib/reports/build';
 import type { SimpleReport } from '@/lib/reports/simple';
 import {
+  LOGIC_ABOVE_CHANCE,
   LOGIC_BELOW_CHANCE,
   LOGIC_GOOD,
   LOGIC_SAME_SIDE,
@@ -20,6 +21,7 @@ import {
   TaskInputError,
   logicBelowChance,
   logicRapid,
+  logicRushed,
   logicSameSide,
   scoreLogic,
   type LogicTrialInput,
@@ -302,10 +304,25 @@ describe('Mantıksal akıl yürütme: rapor', () => {
     expect(rm.barsTitle).toBe('Soru gruplarına göre sonucun');
     expect(rm.standout.map((s) => s.title)).toEqual(TITLES);
     expect(text(r.student)).not.toContain('Çocuğunuz');
+    expect(r.student.items[0].text).toMatch(/^Bütün sorularda doğru karar verdin: hem “eğer–ise” kurallarında/);
     expect(r.student.items[1].text).toContain('her soruda ayırt ettin');
     expect(r.student.items[2].text).toContain('her soruda yalnızca verilen bilgilere göre karar verdin');
-    expect(r.student.items[1].text).toContain('Kesin olanlar: “A var, öyleyse B var” 4/4; “B yok, öyleyse A yok” 4/4 · Kesin olmayanlar:');
-    expect(r.student.items[2].text).toContain('Çatışmayanlar: kesin ve gerçekte doğru 4/4; kesin değil ve gerçekte yanlış 4/4 · Çatışanlar:');
+    expect(r.student.items[2].text).toContain('Bir araştırmada çocukların bu sorulardaki başarısı genç yetişkinlerden düşük bulunmuştur.');
+    // Türlerin sayıları kartların grafiğindedir; metinde yinelenmez.
+    const rows = (i: number) => (r.student.items[i].visual?.type === 'bars' ? r.student.items[i].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []);
+    expect(rows(1)).toEqual([
+      'Kesin: “A var, öyleyse B var” 4/4',
+      'Kesin: “B yok, öyleyse A yok” 4/4',
+      'Kesin değil: “B var, öyleyse A var” 4/4',
+      'Kesin değil: “A yok, öyleyse B yok” 4/4',
+    ]);
+    expect(rows(2)).toEqual([
+      'Çatışmayan: kesin ve gerçekte doğru 4/4',
+      'Çatışmayan: kesin değil ve gerçekte yanlış 4/4',
+      'Çatışan: kesin ama gerçekte yanlış 4/4',
+      'Çatışan: kesin değil ama gerçekte doğru 4/4',
+    ]);
+    expect(text(r.student)).not.toMatch(/\d+ tanes/);
   });
 
   it('durumlar: inandırıcılık etkisi, kuralı iki yönlü düşünme, temkinli cevaplar, hep aynı cevap, çok hızlı', () => {
@@ -318,11 +335,11 @@ describe('Mantıksal akıl yürütme: rapor', () => {
     );
     expect(belief.student.items[2].badge).toBe('Çatışan sorular 0/8 · Çatışmayan sorular 8/8');
     expect(belief.student.items[2].text).toContain(
-      'Çatışan sorularda sonuç gerçekte doğruyken, bilgilerden çıkmadığı hâlde 4 soruda “evet”; sonuç gerçekte yanlışken, bilgilerden çıktığı hâlde 4 soruda “hayır” dedin',
+      'Sonucun gerçek hayatla çatışmadığı sorularda, çatıştığı sorulardan daha çok doğru karar verdin. Çatışan sorularda yanıldığında, sonucu gerçek hayatta bildiklerine göre değerlendirmiş olabilirsin. Gerçek hayatta bilinenin kararı etkilemesine inandırıcılık etkisi denir.',
     );
-    expect(belief.student.items[2].text).toContain('inandırıcılık etkisi');
-    expect(belief.parent.items[2].text).toContain('Çocuğunuz sonucun gerçek hayatla çatışmadığı 8 sorunun 8 tanesinde');
-    // Yalnızca bir yönde yanılan: kart yalnızca o yönü anlatır.
+    expect(belief.parent.items[2].text).toContain('Çocuğunuz sonucun gerçek hayatla çatışmadığı sorularda, çatıştığı sorulardan daha çok doğru karar verdi.');
+    expect(belief.student.items[0].text).toBe('Soruların çoğunda doğru karar verdin. Hangi tür sorularda zorlandığını aşağıdaki kartlar gösterir.');
+    // Yalnızca bir yönde yanılan (çatışmayanlar 8/8, çatışanlar 4/8): fark belirgin, etki anlatılır.
     const oneWay = evaluate(
       SLUG,
       logicBody((q) => ({
@@ -330,9 +347,10 @@ describe('Mantıksal akıl yürütme: rapor', () => {
         rtMs: 9000,
       })),
     );
-    expect(oneWay.student.items[2].text).toContain('bilgilerden çıkmadığı hâlde 4 soruda “evet” dedin');
-    expect(oneWay.student.items[2].text).not.toContain('“hayır”');
-    // Bir puanlık fark inandırıcılık etkisi diye anlatılmaz: çatışmayanlar 6/8, çatışanlar 5/8.
+    expect(oneWay.student.items[2].text).toContain('inandırıcılık etkisi');
+    // "Hem … hem de …" yalnızca dört grubun her birinde en çok bir yanlış varken.
+    expect(oneWay.student.items[0].text).toBe('Soruların çoğunda doğru karar verdin. Hangi tür sorularda zorlandığını aşağıdaki kartlar gösterir.');
+    // Küçük fark inandırıcılık etkisi diye anlatılmaz: çatışmayanlar 6/8, çatışanlar 5/8.
     const flip = (q: LogicCell) => (q.answer === 1 ? 2 : 1);
     const smallPick = (q: LogicCell) => ({
       response: (q.form === 'vb' || q.form === 'vu') && q.i < 10 ? flip(q) : q.form === 'ib' && q.i < 13 ? flip(q) : q.answer,
@@ -343,7 +361,7 @@ describe('Mantıksal akıl yürütme: rapor', () => {
     const sm = scoreLogic(task, (smallBody.data as { blocks: Record<string, LogicTrialInput[]> }).blocks[task.key]).result;
     expect([sm.noConflict.correct, sm.conflict.correct]).toEqual([6, 5]);
     expect(small.student.items[2].text).not.toContain('inandırıcılık etkisi');
-    expect(small.student.items[2].text).toContain('İki grup arasındaki fark küçük');
+    expect(small.student.items[2].text).toContain('Ama iki grup arasındaki fark, gerçek hayat bilgisinin kararı etkilediğini söylemeye yetmez.');
 
     const twoWay = evaluate(
       SLUG,
@@ -354,6 +372,7 @@ describe('Mantıksal akıl yürütme: rapor', () => {
     );
     expect(twoWay.student.items[1].badge).toBe('Kesin olanlar 8/8 · Kesin olmayanlar 0/8');
     expect(twoWay.student.items[1].text).toContain('karşı örnek');
+    expect(twoWay.student.items[1].text).toContain('kesin olan sonuçların hepsini buldun. Ama kesin olmayan sonuçların hepsine de “evet” dedin.');
 
     const cautious = evaluate(
       SLUG,
@@ -362,7 +381,7 @@ describe('Mantıksal akıl yürütme: rapor', () => {
         rtMs: 9000,
       })),
     );
-    expect(cautious.student.items[1].text).toContain('temkinli');
+    expect(cautious.student.items[1].text).toContain('Kesin olmayan sonuçları her soruda fark ettin. Ama kesin olan sonuçların hepsine de “hayır” dedin. Her sonuca temkinli yaklaşmış olabilirsin.');
 
     const mt = evaluate(
       SLUG,
@@ -371,15 +390,25 @@ describe('Mantıksal akıl yürütme: rapor', () => {
         rtMs: 9000,
       })),
     );
+    // Yanlışlar "B yoksa A da yoktur" sorularında: genel bir temkin açıklaması yapılmaz.
     expect(mt.student.items[1].text).toContain('“B yoksa A da yoktur” çıkarımında zorlandın');
+    expect(mt.student.items[1].text).not.toContain('temkinli');
 
     const yes = evaluate(
       SLUG,
       logicBody(() => ({ response: 1, rtMs: 9000 })),
     );
-    expect(yes.student.items.map((i) => i.badge)).toEqual(['32 soruda 16 doğru', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
-    expect(yes.student.cautions.join(' ')).toContain('“Evet, kesin olarak doğru” denmiş');
+    expect(yes.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
+    expect(yes.student.cautions).toEqual([
+      'Mantıksal akıl yürütme testinde 32 sorunun hepsine “Evet, kesin olarak doğru” denmiş. Oysa soruların yarısının cevabı “evet”, yarısının “hayır”dır. Sorulara bakılmadan hep aynı cevap verilmiş ya da yönerge farklı anlaşılmış olabilir. Bu sonuç yorumlanmamalıdır.',
+    ]);
+    expect(yes.student.items[0].text).toMatch(/^Soruların hepsinde “Evet, kesin olarak doğru” dedin\./);
+    expect(yes.student.items[0].text).not.toContain('acele');
+    expect(yes.student.items[1].text).toBe('Cevapların hepsi aynı olduğu için bu sorulardaki sonuç yorumlanmadı.');
+    expect(yes.student.items[3].text).not.toContain('Evet');
     expect(yes.student.roadmap!.bars).toEqual([]);
+    expect(yes.student.chart).toBeNull();
+    expect(yes.student.keyFigures.map((f) => f.value)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', '9 saniye']);
 
     // Hızlı ve çoğu yanlış: uyarı; hızlı ama hepsi doğru: uyarı yok.
     const fast = evaluate(
@@ -389,8 +418,22 @@ describe('Mantıksal akıl yürütme: rapor', () => {
         rtMs: 900,
       })),
     );
-    expect(fast.student.cautions.join(' ')).toContain('okumaya yetmeyecek kadar kısa');
-    expect(fast.student.items[0].text).toContain('okumadan seçmiş olabileceğin');
+    // Bütün sorular okunamayacak kadar hızlı ve cevapların yarısı doğru: sonuç yorumlanmaz.
+    expect(fast.student.cautions).toEqual([
+      'Mantıksal akıl yürütme testinde 32 sorunun hepsinde cevap, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verilmiş; bu cevapların yalnızca yarısı doğru. Bu sorularda okumadan seçilmiş olabilir. Bu sonuç yorumlanmamalıdır.',
+    ]);
+    expect(fast.student.items.map((i) => i.badge).slice(0, 3)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(fast.student.items[0].text).toMatch(/^32 sorunun hepsinde cevabı, bilgileri ve sonucu okumaya yetmeyecek kadar kısa sürede verdin\./);
+    expect(fast.student.items[3].text).not.toContain('hız tek başına');
+    expect(fast.parent.items[0].text).toMatch(/^Çocuğunuz 32 sorunun hepsinde cevabı/);
+    // Dokuz soruda hızlı ve yanlış: sonuç yorumlanır, kaç soruda olduğu söylenir.
+    const someFast = evaluate(
+      SLUG,
+      logicBody((q) => (q.i < 9 ? { response: q.answer === 1 ? 2 : 1, rtMs: 900 } : { response: q.answer, rtMs: 9000 })),
+    );
+    expect(someFast.student.items[0].badge).toBe('32 soruda 23 doğru');
+    expect(someFast.student.items[0].text).toContain('32 sorunun 9 tanesinde bilgileri okumadan seçmiş olabileceğin için');
+    expect(someFast.student.cautions.join(' ')).toContain('bu cevapların hiçbiri doğru değil');
     const quick = evaluate(
       SLUG,
       logicBody((q) => ({ response: q.answer, rtMs: 900 })),
@@ -402,9 +445,11 @@ describe('Mantıksal akıl yürütme: rapor', () => {
       SLUG,
       logicBody((q) => ({ response: q.answer === 1 ? 2 : 1, rtMs: 9000 })),
     );
-    expect(reversed.student.items[0].text).toContain('rastgele seçimde beklenenden de az');
+    expect(reversed.student.items[0].text).toMatch(/^Hiçbir soruda doğru karar vermedin\. Bu, iki seçenek arasından rastgele seçimde beklenenden de az\./);
     expect(reversed.student.items[0].text).not.toContain('yarıya yakın');
-    expect(reversed.parent.cautions.join(' ')).toContain('rastgele seçimde beklenenden de azdır');
+    expect(reversed.student.items.slice(0, 3).map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(reversed.student.items[1].text).toBe('Doğru cevaplar rastgele seçimde beklenenden de az olduğu için bu sorulardaki sonuç yorumlanmadı.');
+    expect(reversed.parent.cautions.join(' ')).toContain('32 sorunun hiçbiri doğru cevaplanmamış. Bu, iki seçenek arasından rastgele seçimde beklenenden de azdır.');
   });
 
   it('rastgele 1500 cevap düzeninde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -439,8 +484,13 @@ describe('Mantıksal akıl yürütme: rapor', () => {
       const { result } = scoreLogic(task, (body.data as { blocks: Record<string, LogicTrialInput[]> }).blocks[task.key]);
       const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
       const side = logicSameSide(result);
+      const notRead = !!side || logicBelowChance(result) || logicRushed(result);
       const good = (x: { correct: number }) => x.correct >= LOGIC_GOOD;
       const weak = (x: { correct: number }) => x.correct <= LOGIC_WEAK;
+      const nc = result.noConflict.correct;
+      const cf = result.conflict.correct;
+      const f = result.forms;
+      const mtWeak = f.mt.correct <= 2 && f.mp.correct - f.mt.correct >= 2;
       for (const r of [res.student, res.parent, adult]) {
         const t = text(r);
         expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]/);
@@ -449,40 +499,49 @@ describe('Mantıksal akıl yürütme: rapor', () => {
           label,
         ).toEqual(TITLES);
         for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
-        expect(r.items[0].badge, label).toBe(`32 soruda ${result.correct} doğru`);
-        expect(r.items[1].badge === 'Yorumlanmadı', label).toBe(!!side);
-        expect(r.items[2].badge === 'Yorumlanmadı', label).toBe(!!side);
-        expect(r.roadmap!.bars.length, label).toBe(side ? 0 : 4);
+        // Nicelik sözleri sayılarla uyuşur ("8 sorunun 8 tanesi", "0 tanesi", "1 tanesi" denmez).
+        expect(`${t} ${r.cautions.join(' ')}`, label).not.toMatch(/\b(\d+) (sorunun|sonucun) \1 tanes|(^|\s)[01] tanes/);
+        // Yorumlanmayan sonucun rozetleri, grafikleri ve öne çıkan sayıları sonuç gibi görünmez.
+        expect(r.items[0].badge, label).toBe(notRead ? 'Yorumlanmadı' : `32 soruda ${result.correct} doğru`);
+        expect(r.items[0].visual === undefined, label).toBe(notRead);
+        expect(r.items[1].badge === 'Yorumlanmadı', label).toBe(notRead);
+        expect(r.items[2].badge === 'Yorumlanmadı', label).toBe(notRead);
+        expect(r.items[2].badge === 'Karşılaştırılamadı', label).toBe(!notRead && weak(result.noConflict));
+        expect(r.roadmap!.bars.length, label).toBe(notRead ? 0 : 4);
+        expect(r.keyFigures[0].value, label).toBe(notRead ? 'Yorumlanmadı' : `${result.correct}/32`);
         expect(
-          r.cautions.some((c) => c.includes('denmiş; oysa soruların yarısının')),
+          r.cautions.some((c) => c.includes('denmiş. Oysa soruların yarısının')),
           label,
         ).toBe(!!side);
         const rapidNote = r.cautions.some((c) => c.includes('okumaya yetmeyecek kadar kısa'));
         expect(rapidNote, label).toBe(logicRapid(result));
         expect(r.items[3].text.includes('okumaya yetmeyecek kadar kısa'), label).toBe(rapidNote);
-        if (!side) {
+        expect(r.items[3].text.includes('hız tek başına'), label).toBe(!rapidNote && result.medianRt !== null);
+        expect(r.cautions.some((c) => c.includes('yorumlanmamalıdır')), label).toBe(notRead);
+        if (notRead) {
+          expect(r.chart, label).toBeNull();
+        } else {
           // Eğer–ise kartı: "karşı örnek" önerisi yalnızca kesinler çoğunlukla doğru, kesin olmayanlar zorken.
           expect(r.items[1].text.includes('karşı örnek'), label).toBe(good(result.condValid) && weak(result.condInvalid));
-          expect(r.items[1].text.includes('temkinli'), label).toBe(weak(result.condValid) && good(result.condInvalid));
-          // Bilgiler ve gerçek hayat kartı: inandırıcılık etkisi yalnızca çatışmayan sorular zor değilken ve çatışanlar daha zorken.
+          expect(r.items[1].text.includes('temkinli'), label).toBe(weak(result.condValid) && good(result.condInvalid) && !(mtWeak && f.mp.correct >= 3));
+          expect(r.items[1].text.includes('“B yoksa A da yoktur” çıkarımında zorland'), label).toBe(mtWeak);
+          // Bilgiler ve gerçek hayat kartı: inandırıcılık etkisi yalnızca çatışmayanlar çoğunlukla doğru ve fark en az 3 iken.
           const beliefNamed = r.items[2].text.includes('inandırıcılık etkisi');
-          expect(beliefNamed, label).toBe(!weak(result.noConflict) && !good(result.conflict) && result.noConflict.correct - result.conflict.correct >= 2);
-          // Yanılgılar yalnızca gerçekten olduğu yönde anlatılır.
-          if (beliefNamed) {
-            expect(r.items[2].text.includes('soruda “evet”'), label).toBe(result.forms.ib.correct < 4);
-            expect(r.items[2].text.includes('soruda “hayır”'), label).toBe(result.forms.vu.correct < 4);
-          }
-          // "Çoğu" yalnızca en az 6/8'de; "rastgele seçimin de altı" yalnızca en çok 10/32'de.
-          expect(r.items[0].text.includes('beklenenden de az'), label).toBe(logicBelowChance(result));
-          expect(r.items[0].text.includes('yarıya yakın'), label).toBe(!logicBelowChance(result) && result.correct < 29 && Math.abs(result.correct - 16) <= 4);
-          expect(r.items[2].text.includes('çıkarılamaz'), label).toBe(weak(result.noConflict));
+          expect(beliefNamed, label).toBe(good(result.noConflict) && !good(result.conflict) && nc - cf >= 3);
+          expect(r.items[2].text.includes('söylemeye yetmez'), label).toBe(!weak(result.noConflict) && !good(result.conflict) && nc > cf && !beliefNamed);
+          expect(r.items[2].text.includes('söylenemez'), label).toBe(weak(result.noConflict));
+          // Rastgele seçim hatırlatması yalnızca rastgele seçimden belirgin biçimde ayrılmayan toplamda.
+          expect(r.items[0].text.includes('yaklaşık yarısını doğru bulur'), label).toBe(result.correct < LOGIC_ABOVE_CHANCE);
+          expect(r.items[0].text.includes('yarıya yakın'), label).toBe(result.correct < LOGIC_ABOVE_CHANCE && !logicRapid(result) && Math.abs(result.correct - 16) <= 4);
+          expect(r.items[0].text.includes('hemen hepsinde'), label).toBe(result.correct >= 29 && result.correct < 32);
           // Grafik ve sütunlar kart başlıklarıyla aynı sayıları gösterir.
           expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(
-            LOGIC_GROUPS.map((g) => `${groupOf(g.key).reduce((a, f) => a + result.forms[f].correct, 0)}/8`),
+            LOGIC_GROUPS.map((g) => `${groupOf(g.key).reduce((a, x) => a + f[x].correct, 0)}/8`),
           );
+          const rows = r.items[1].visual?.type === 'bars' ? r.items[1].visual.rows.map((x) => x.valueLabel) : [];
+          expect(rows, label).toEqual((['mp', 'mt', 'ac', 'da'] as LogicForm[]).map((x) => `${f[x].correct}/4`));
+          expect(r.items[2].visual === undefined, label).toBe(weak(result.noConflict));
         }
-        expect(r.items[1].text, label).toContain(`${LOGIC_FORM_NAMES.mp} ${result.forms.mp.correct}/4`);
-        expect(r.items[2].text, label).toContain(`${LOGIC_FORM_NAMES.ib} ${result.forms.ib.correct}/4`);
       }
       expect(text(res.student), label).not.toContain('Çocuğunuz');
       expect(text(adult), label).not.toContain('Çocuğunuz');
