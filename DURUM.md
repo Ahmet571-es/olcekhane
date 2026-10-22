@@ -611,8 +611,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
      **Karar:** uyarı notları ("Sonucunu okurken dikkat") 26 testte kitleye ayrı yazılmadı; edilgen dil iki kitlede de
      doğru okunuyor. Karşılaştırılacak ikinci bir süre yokken süre kartının grafiği tek çubuk değil, süre şeridi: her
      soru (doğru cevap, problem) bir nokta, tipik süre çizgi (`durationStrip`, sonuçlarda `rts`/`picks`; test tek çubuklu
-     süre grafiğini ve çizginin noktaların ortasında olduğunu denetler). **Kalan:** (g) yol haritalarında noktalı virgüllü
-     uzun cümleler.
+     süre grafiğini ve çizginin noktaların ortasında olduğunu denetler). Yol haritalarındaki uzun cümleler bölündü
+     (22 sözcüğü aşan 135 cümle 27'ye indi, 30'u aşan kalmadı). 2. aşamanın ortak işleri bitti.
 3. Okuma, sesli okuma, matematik konu tarama.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
@@ -949,6 +949,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (44): Görev testlerinin yol haritalarında noktalı virgülle bağlanmış uzun cümleler kısa cümlelere bölündü
+  ("Bu beceri; …" cümleleri, dördüncü haftanın özet cümleleri, araştırma cümleleri); anlam ve kaynaklar değişmedi.
 - 2026-10-22 (43): Görev testlerinde süre kartları: karşılaştırılacak ikinci bir süre olmadığında tek bir çubuk yerine her
   sorunun (doğru cevabın, problemin) süresini nokta olarak gösteren şerit çiziliyor; çizgi tipik süredir (13 soru testi,
   renk-kelime, dur-git, zihinde döndürme, kural değiştirme, desen hatırlama, planlama kulesi). Çok ölçümlü şeritlerde
@@ -1021,8 +1023,3 @@ En yeni üstte; en çok 10 madde tutulur.
   24 özgün harf dizisinde eksik harfi alfabe sırasıyla dizilmiş harf tuşlarından seçme; beş düzey, beş kural türü, iki
   alıştırma; her dizinin tek cevabı bağımsız çözücüyle doğrulandı; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol
   haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-21 (34): Desen Hatırlama yayında (3. sınıftan yetişkine), 2. dalganın 13. testi: 3 saniye gösterilen kareli
-  bir deseni boş tabloda yeniden işaretleme (kısa süreli görsel bellek); 39 özgün desen, 3'ten 15 kareye, iki alıştırma;
-  desenlerin kolay ad verilemeyecek biçimde seçildiği bağımsız denetleyiciyle doğrulandı; rapor en büyük doğru deseni,
-  büyüklüğe göre doğruları, hata türlerini ve çalışma biçimini anlatır; öğrenci, veli ve yetişkin raporu, yol haritası;
-  iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
