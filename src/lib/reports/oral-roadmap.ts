@@ -1,25 +1,29 @@
-import { FLUENCY_LEVEL_TEXT, LEVEL_TEXT, prosodyLabel } from '@/content/reports/sesli-okuma';
+import { LEVEL_TEXT, prosodyLabel } from '@/content/reports/sesli-okuma';
 import type { OralAspect, OralRoadmapTemplate } from '@/content/roadmaps/sesli-okuma';
 import type { OralResult } from '@/lib/scoring/oral';
+import { countOf } from '@/lib/scoring/tasks';
 import type { Audience } from './build';
+import { levelText } from './oral';
 import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
 
 /**
  * Sesli Okuma Değerlendirmesinin gelişim yol haritası: okumanın dört yönüne (doğru okuma, akıcılık, anlama, yeniden
- * anlatma) göre nasıl çalışılacağı, okuma alışkanlığı, veliye yaklaşım ve dört haftalık plan. Yönler en çok çalışılacak
- * olandan başlayarak sıralanır (oranı düşük olan önce, eşitlikte bu sırayla). Yeniden anlatma yapılmadıysa o yön yoktur;
- * otomatik analizde akıcılık derecelendirilmediği için akıcılık yönü de yoktur.
+ * anlatma) göre nasıl çalışılacağı, okuma alışkanlığı, veliye yaklaşım ve dört haftalık plan. Çalışılacak yönler önce
+ * gelir; aralarında öncelik, metnin düzeyini belirleyen ölçütlerindir: önce doğru okuma (kelimeleri çözmek anlamanın
+ * temelidir; Gough ve Tunmer, 1986), sonra anlama, sonra akıcılık, en son yeniden anlatma. Yeniden anlatma yapılmadıysa o
+ * yön yoktur; otomatik analizde akıcılık derecelendirilmediği için akıcılık yönü de yoktur.
  */
 
+const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
+/** Çalışılacak yönler arasında öncelik (küçük önce). */
+const PRIORITY: Record<OralAspect, number> = { accuracy: 0, comprehension: 1, prosody: 2, retell: 3 };
 // Doğru okuma oranı aşağı yuvarlanarak gösterilir: düzey yuvarlanmamış değere göre verildiği için %96,99 "%97" görünüp
 // "destekle" yazmasın.
 const accText = (x: number) => nf1.format(Math.floor(x * 10 + 1e-9) / 10);
 
 interface AspectState {
   key: OralAspect;
-  /** 0–1 arası oran (sıralama için). */
-  ratio: number;
   /** Bu yönde çalışmak öneriliyor mu? */
   need: boolean;
   badge: string;
@@ -31,7 +35,6 @@ export function oralAspects(r: OralResult): AspectState[] {
   const list: AspectState[] = [
     {
       key: 'accuracy',
-      ratio: r.accuracyPct / 100,
       need: r.accuracyLevel !== 'easy',
       badge: `Doğru okuma %${accText(r.accuracyPct)}`,
       bar: { value: r.accuracyPct, min: 0, max: 100, valueLabel: `%${accText(r.accuracyPct)}`, band: LEVEL_TEXT[r.accuracyLevel].short },
@@ -40,7 +43,6 @@ export function oralAspects(r: OralResult): AspectState[] {
       ? [
           {
             key: 'prosody' as const,
-            ratio: (p.total - 4) / 12,
             need: p.total < 13,
             badge: `${p.total} / 16`,
             bar: { value: p.total, min: 4, max: 16, valueLabel: `${p.total} / 16`, band: prosodyLabel(p.total) },
@@ -49,7 +51,6 @@ export function oralAspects(r: OralResult): AspectState[] {
       : []),
     {
       key: 'comprehension',
-      ratio: r.comprehension.correct / r.comprehension.total,
       need: r.comprehension.level !== 'easy',
       badge: `${r.comprehension.total} sorudan ${r.comprehension.correct} doğru`,
       bar: {
@@ -65,14 +66,13 @@ export function oralAspects(r: OralResult): AspectState[] {
     const n = r.retell.mentioned.length;
     list.push({
       key: 'retell',
-      ratio: n / r.retell.total,
       need: r.retell.core < r.retell.coreTotal,
-      badge: `${r.retell.total} fikirden ${n} tanesi`,
+      badge: `${r.retell.total} fikrin ${countOf(n, r.retell.total, 'i')}`,
       bar: { value: n, min: 0, max: r.retell.total, valueLabel: `${n} / ${r.retell.total}`, band: '' },
     });
   }
-  // Çalışılacak yönler önce, kendi içinde oranı düşük olan önce; eşitlikte yukarıdaki sıra korunur (sort kararlıdır).
-  return [...list].sort((a, b) => Number(b.need) - Number(a.need) || a.ratio - b.ratio);
+  // Çalışılacak yönler önce; kendi aralarında ve ötekiler arasında PRIORITY sırası.
+  return [...list].sort((a, b) => Number(b.need) - Number(a.need) || PRIORITY[a.key] - PRIORITY[b.key]);
 }
 
 export function buildOralRoadmap(
@@ -101,14 +101,24 @@ export function buildOralRoadmap(
       ? fluencyWeek
       : { title: t.extraWeek.title, text: pick(t.extraWeek.text, audience) };
   const levelKey = fluency && r.level === 'easy' ? 'support' : r.level;
-  const third = need[1]
+  // Metin zorsa üçüncü hafta her zaman kolay metinlerle çalışmadır (raporun önerisiyle aynı).
+  const third = r.level === 'hard'
+    ? { title: t.thirdWeek.hard.title, text: pick(t.thirdWeek.hard.text, audience) }
+    : need[1]
     ? { title: t.aspects[need[1].key].title, text: pick(t.aspects[need[1].key].action, audience) }
     : fluency && second !== fluencyWeek
       ? fluencyWeek
       : { title: t.thirdWeek[levelKey].title, text: pick(t.thirdWeek[levelKey].text, audience) };
-  // Öğrenci yalnızca kendi sınıfının ve bir alt, bir üst sınıfın metinlerini seçebilir: seçebileceği bir üst metin yoksa üst
-  // düzey önerilmez.
-  const last = r.level === 'easy' && !fluency && r.passageGrade < Math.min(8, opts.grade + 1) ? t.lastWeek.up : t.lastWeek.same;
+  // Dördüncü hafta raporun "Sonraki değerlendirme" önerisiyle aynıdır (lib/reports/oral.ts, nextText). Öğrenci yalnızca
+  // kendi sınıfının ve bir alt, bir üst sınıfın metinlerini seçebilir: seçebileceği metin yoksa o düzey önerilmez. Okuma
+  // metin bitmeden durduysa ya da kelimelerin çoğu net anlaşılamadıysa aynı düzeyden başka bir metin önerilir.
+  const settled = !r.flags.unfinished && !r.flags.unclearHigh;
+  const last =
+    settled && r.level === 'easy' && !fluency && r.passageGrade < Math.min(8, opts.grade + 1)
+      ? t.lastWeek.up
+      : settled && r.level === 'hard' && r.passageGrade > Math.max(1, opts.grade - 1)
+        ? t.lastWeek.down
+        : t.lastWeek.same;
 
   // Otomatik analizde öneriler yapay zekânın yaklaşık sonuçlarına dayanır; bu, girişte söylenir.
   const basis = r.flags.auto ? pick(t.autoBasis, audience) : 'Öneriler tek bir metnin sesli okunmasına dayanır; kesin hüküm değildir.';
@@ -119,8 +129,9 @@ export function buildOralRoadmap(
       : `Bu bölüm sonuçlarını günlük okumana taşıman için öneriler içerir: ${joinNames(contents)}. ${basis}`,
     bars: aspects.map((x) => ({ key: x.key, label: t.aspects[x.key].title, ciLow: null, ciHigh: null, color: t.aspects[x.key].color, ...x.bar })),
     standout: [
-      { title: 'Metnin düzeyi', text: r.level === 'easy' && fluency ? FLUENCY_LEVEL_TEXT.label : LEVEL_TEXT[r.level].label },
-      { title: 'Dakikada doğru okunan kelime', text: String(r.wcpm) },
+      { title: 'Metnin düzeyi', text: parent ? levelText(r).label : levelText(r).you },
+      // Süre metne göre çok kısaysa hız hesaplanmaz (raporda da gösterilmez).
+      ...(r.flags.tooFast ? [] : [{ title: 'Dakikada doğru okunan kelime', text: nf0.format(r.wcpm) }]),
       ...(need[0] ? [{ title: parent ? 'Öncelikli çalışma' : 'Önce bunu çalış', text: t.aspects[need[0].key].title }] : []),
     ],
     standoutNote: null,

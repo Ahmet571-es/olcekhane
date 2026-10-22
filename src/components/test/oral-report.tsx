@@ -112,7 +112,7 @@ export function OralReportSections({ report }: { report: SimpleReport }) {
             </tbody>
           </table>
         </div>
-        <p className="t-meta measure">Metnin düzeyi, iki ölçütten düşük olanıdır. Eşikler Ölçekhane’nin pilot ölçütleridir; bir norm değildir.</p>
+        <p className="t-meta measure">{oral.criteriaNote}</p>
       </section>
 
       <section aria-labelledby="isaretli" className="flex flex-col gap-4">

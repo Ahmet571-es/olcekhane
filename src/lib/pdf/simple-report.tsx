@@ -628,7 +628,7 @@ function OralSectionsPdf({ report }: { report: SimpleReport }) {
             <Text style={[cell, { width: 70 }]}>{c.level}</Text>
           </View>
         ))}
-        <Text style={s.note}>Metnin düzeyi, iki ölçütten düşük olanıdır. Eşikler Ölçekhane’nin pilot ölçütleridir; bir norm değildir.</Text>
+        <Text style={s.note}>{oral.criteriaNote}</Text>
       </View>
 
       <Text style={s.h2} minPresenceAhead={80}>

@@ -33,7 +33,11 @@ export interface OralRoadmapTemplate {
    * düzeye geçmek yerine aynı düzeydeki metinlerle tekrarlı okuma.
    */
   fluencyWeek: { title: string; text: AudienceText };
-  lastWeek: { same: AudienceText; up: AudienceText };
+  /**
+   * Dördüncü hafta: aynı düzeyden başka bir metin; rahat okuyana bir üst, metni zor bulana bir alt sınıfın metni (seçebileceği
+   * bir üst ya da alt metin varsa; raporun "Sonraki değerlendirme" önerisiyle aynı).
+   */
+  lastWeek: { same: AudienceText; up: AudienceText; down: AudienceText };
   nextTests: string[];
   nextPurpose: NextPurpose;
   /** Otomatik analizde girişin son cümlesi: önerilerin neye dayandığı. */
@@ -85,12 +89,12 @@ export const sesliOkumaRoadmap: OralRoadmapTemplate = {
       color: '#0e9c8c',
       need: {
         student:
-          'Okurken ara ara dur ve "Burada ne anlatılıyor?" diye kendine sor. Metni bitirince bir cümleyle özetle. Bilmediğin kelimelerin anlamını önce cümleden tahmin et, sonra sözlükten bak.',
+          'Okurken ara ara dur ve “Burada ne anlatılıyor?” diye kendine sor. Metni bitirince bir cümleyle özetle. Bilmediğin kelimelerin anlamını önce cümleden tahmin et, sonra sözlükten bak.',
         parent:
-          'Okuduktan sonra "Sence neden böyle oldu?", "Bu metni bir cümleyle nasıl özetlersin?" gibi sorular sorun. Bilmediği kelimelerin anlamını önce birlikte cümleden tahmin edip sonra sözlükten kontrol etmek kelime bilgisini de geliştirir.',
+          'Okuduktan sonra “Sence neden böyle oldu?”, “Bu metni bir cümleyle nasıl özetlersin?” gibi sorular sorun. Bilmediği kelimelerin anlamını önce birlikte cümleden tahmin edip sonra sözlükten kontrol etmek kelime bilgisini de geliştirir.',
       },
       full: {
-        student: 'Okuduğunu iyi anlıyorsun. Okuduğun bir metin hakkında "Yazar bunu neden böyle yazmış olabilir?" diye düşünmek anlamanı daha da derinleştirir.',
+        student: 'Okuduğunu iyi anlıyorsun. Okuduğun bir metin hakkında “Yazar bunu neden böyle yazmış olabilir?” diye düşünmek anlamanı daha da derinleştirir.',
         parent: 'Okuduğunu iyi anlıyor. Okuduğu metinler hakkında farklı yorumları birlikte konuşmanız bu beceriyi derinleştirir.',
       },
       action: {
@@ -103,9 +107,9 @@ export const sesliOkumaRoadmap: OralRoadmapTemplate = {
       color: '#d28a14',
       need: {
         student:
-          'Okuduğun bir öyküyü birine anlatırken "Önce ne oldu, sonra ne oldu, en sonunda ne oldu?" sırasını izle. Bilgilendirici bir metinde önce en önemli bilgiyi, sonra onu destekleyen iki ayrıntıyı söyle.',
+          'Okuduğun bir öyküyü birine anlatırken “Önce ne oldu, sonra ne oldu, en sonunda ne oldu?” sırasını izle. Bilgilendirici bir metinde önce en önemli bilgiyi, sonra onu destekleyen iki ayrıntıyı söyle.',
         parent:
-          'Okuduğu bir metni size anlatmasını isteyin. Öykülerde "Önce ne oldu, sonra ne oldu, sonunda ne oldu?", bilgilendirici metinlerde "En önemli bilgi neydi?" sorularıyla sırayı ve ana fikri kurmasına yardım edin.',
+          'Okuduğu bir metni size anlatmasını isteyin. Öykülerde “Önce ne oldu, sonra ne oldu, sonunda ne oldu?”, bilgilendirici metinlerde “En önemli bilgi neydi?” sorularıyla sırayı ve ana fikri kurmasına yardım edin.',
       },
       full: {
         student: 'Okuduğunu kendi cümlelerinle iyi anlatıyorsun. Okuduğun bir kitabı arkadaşlarına tanıtmak bu beceriyi daha da geliştirir.',
@@ -237,6 +241,10 @@ export const sesliOkumaRoadmap: OralRoadmapTemplate = {
     up: {
       student: 'Ayın sonunda Sesli Okuma Değerlendirmesini bir üst sınıfın metinlerinden biriyle yap ve iki raporu karşılaştır.',
       parent: 'Ayın sonunda Sesli Okuma Değerlendirmesini bir üst sınıfın metinlerinden biriyle yapın ve iki raporu karşılaştırın.',
+    },
+    down: {
+      student: 'Ayın sonunda Sesli Okuma Değerlendirmesini bir alt sınıfın metinlerinden biriyle yap ve iki raporu karşılaştır.',
+      parent: 'Ayın sonunda Sesli Okuma Değerlendirmesini bir alt sınıfın metinlerinden biriyle yapın; rahat ya da destekle okuduğu düzeyi bulun.',
     },
   },
   nextTests: ['okuma-hizi-ve-anlama'],

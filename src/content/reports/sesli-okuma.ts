@@ -17,20 +17,20 @@ export const PROSODY_DIMENSIONS = [
     question: 'Öğrenci metni ne kadar anlamına uygun bir sesle okudu?',
     levels: [
       {
-        parent: 'Düz, tekdüze bir sesle okudu; sesi çok kısıktı ya da anlaşılması güçtü.',
-        student: 'Düz, tekdüze bir sesle okudun; sesin kısıktı ya da anlaşılması güçtü.',
+        parent: 'Kelimeleri yalnızca söylemek için okudu; düz, tekdüze ve alçak bir sesle okudu.',
+        student: 'Düz, tekdüze ve alçak bir sesle okudun.',
       },
       {
         parent: 'Çoğunlukla düz okudu; yer yer vurgu ve tonlama kullandı.',
         student: 'Çoğunlukla düz okudun; yer yer vurgu ve tonlama kullandın.',
       },
       {
-        parent: 'Çoğu yerde anlama uygun vurgu ve tonlama kullandı; sesi rahatça duyuluyordu.',
-        student: 'Çoğu yerde anlama uygun vurgu ve tonlama kullandın; sesin rahatça duyuluyordu.',
+        parent: 'Çoğu yerde metnin anlamına uygun vurgu ve tonlama kullandı; sesi rahatça duyuluyordu.',
+        student: 'Çoğu yerde metnin anlamına uygun vurgu ve tonlama kullandın; sesin rahatça duyuluyordu.',
       },
       {
-        parent: 'Konuşur gibi, anlama uygun vurgu ve tonlamayla okudu; soru ve ünlem cümlelerini sesine yansıttı.',
-        student: 'Konuşur gibi, anlama uygun vurgu ve tonlamayla okudun; soru ve ünlem cümlelerini sesine yansıttın.',
+        parent: 'Konuşur gibi, metnin anlamına uygun vurgu ve tonlamayla okudu; soru ve ünlem cümlelerini sesine yansıttı.',
+        student: 'Konuşur gibi, metnin anlamına uygun vurgu ve tonlamayla okudun; soru ve ünlem cümlelerini sesine yansıttın.',
       },
     ],
   },
@@ -98,11 +98,15 @@ export const PROSODY_DIMENSIONS = [
 
 export type ProsodyKey = (typeof PROSODY_DIMENSIONS)[number]['key'];
 
-/** Metnin öğrenci için düzeyi. */
-export const LEVEL_TEXT: Record<OralLevel, { label: string; short: string } & Two> = {
+/**
+ * Metnin öğrenci için düzeyi. `label` yetişkin raporunda, `you` öğrenci raporunda başlıktır; `short` ölçüt tablosunda
+ * metin için düzeydir ("Bu metin için: Rahat okunur").
+ */
+export const LEVEL_TEXT: Record<OralLevel, { label: string; you: string; short: string } & Two> = {
   easy: {
     label: 'Rahat okuyor',
-    short: 'Rahat',
+    you: 'Rahat okuyorsun',
+    short: 'Rahat okunur',
     student:
       'Bu metni rahatça okudun ve iyi anladın. Bu düzeydeki metinleri tek başına okuyabilirsin. Kendini biraz zorlamak istersen bir üst düzeydeki metinleri de deneyebilirsin.',
     parent:
@@ -110,7 +114,8 @@ export const LEVEL_TEXT: Record<OralLevel, { label: string; short: string } & Tw
   },
   support: {
     label: 'Destekle okuyor',
-    short: 'Destekle',
+    you: 'Destekle okuyorsun',
+    short: 'Destekle okunur',
     student:
       'Bu metni okudun ama bazı yerlerde zorlandın. Bu düzeydeki metinler gelişimin için çok uygun: Bir yetişkinle birlikte okursan ilerlemen kolaylaşır.',
     parent:
@@ -118,7 +123,8 @@ export const LEVEL_TEXT: Record<OralLevel, { label: string; short: string } & Tw
   },
   hard: {
     label: 'Bu metin şimdilik zor',
-    short: 'Zor',
+    you: 'Bu metin şimdilik zor',
+    short: 'Şimdilik zor',
     student:
       'Bu metin senin için şimdilik zordu. Bu çok olağan bir durum: Herkes kendi hızında gelişir. Daha kısa ve kolay metinlerle çalışarak adım adım ilerleyebilirsin.',
     parent:
@@ -130,20 +136,21 @@ export const LEVEL_TEXT: Record<OralLevel, { label: string; short: string } & Tw
  * Doğru ve anlayarak okuyan ama okuması belirgin biçimde yavaş ya da akıcı olmayan öğrenci (bkz. FLUENCY_LOW_TOTAL,
  * lib/scoring/oral.ts): metin "rahat" sayılmaz, bir üst düzey önerilmez; çalışma aynı düzeyde tekrarlı okumadır.
  */
-export const FLUENCY_LEVEL_TEXT: { label: string; short: string } & Two = {
+export const FLUENCY_LEVEL_TEXT: { label: string; you: string; short: string } & Two = {
   label: 'Doğru okuyor, akıcılığı gelişiyor',
+  you: 'Doğru okuyorsun, akıcılığın gelişiyor',
   short: 'Akıcılık gelişiyor',
   student:
     'Bu metni doğru okudun ve iyi anladın; ama okuman yavaştı ya da yer yer kesik kesikti. Kelimeleri doğru okuman çok iyi bir temel. Şimdi aynı düzeydeki metinleri birkaç kez sesli okuyarak daha akıcı okumayı çalışabilirsin; okudukça hızın da artar.',
   parent:
-    'Öğrenci bu metni doğru okudu ve iyi anladı; ancak okuması yaşıtlarına göre belirgin biçimde yavaş ya da akıcılıktan uzaktı. Kelimeleri doğru çözmesi iyi bir temeldir; akıcılık ise bu düzeydeki metinlerle yapılan tekrarlı okumayla (aynı metni birkaç kez, her seferinde biraz daha akıcı okumak) gelişir. Daha zor metinlere geçmek için acele etmeyin ve sonucu sınıf öğretmeniyle paylaşın.',
+    'Öğrenci bu metni doğru okudu ve iyi anladı; ancak okuması yavaştı ya da akıcılıktan uzaktı. Kelimeleri doğru çözmesi iyi bir temeldir. Akıcılık ise bu düzeydeki metinlerle yapılan tekrarlı okumayla (aynı metni birkaç kez, her seferinde biraz daha akıcı okumak) gelişir. Daha zor metinlere geçmek için acele etmeyin ve sonucu sınıf öğretmeniyle paylaşın.',
 };
 
 /** Akıcılığı gelişen öğrenci için bir sonraki değerlendirme önerisi. */
 export const NEXT_TEXT_FLUENCY: Two = {
   student: 'Birkaç hafta aynı düzeydeki metinleri tekrar tekrar sesli okuduktan sonra aynı düzeyden başka bir metni dene; ne kadar akıcılaştığını görürsün.',
   parent:
-    'Dört ila altı hafta tekrarlı okuma çalıştıktan sonra aynı sınıf düzeyinden başka bir metinle yeniden değerlendirin. Okuma hızının (dakikada doğru okunan kelime) artışı gelişimin en açık göstergesidir.',
+    'Dört ila altı hafta tekrarlı okuma çalıştıktan sonra aynı sınıf düzeyinden başka bir metinle yeniden değerlendirin. Dakikada doğru okunan kelimedeki artış, gelişimi izlemenin bir yoludur.',
 };
 
 /**
@@ -156,41 +163,55 @@ export const PROFILE_TEXT: Record<string, Two> = {
     parent: 'Kelimeleri doğru ve rahat okuyor; biraz daha desteklenebilecek yön, okuduğunu anlamak.',
   },
   'easy-hard': {
-    student: 'Kelimeleri doğru ve rahat okuyorsun, ama okuduğunu anlamakta zorlandın. Okurken anlamı takip etmeye odaklanmak sana çok yardımcı olur.',
+    student: 'Kelimeleri doğru ve rahat okuyorsun, ama sorularda zorlandın. Okurken anlamı takip etmeye odaklanmak sana çok yardımcı olur.',
     parent:
-      'Kelimeleri doğru ve rahat okuyor, ama okuduğunu anlamakta zorlandı. Zorluk kelimeleri çözmekte değil; kelime bilgisi ve okuduğunu anlama stratejileri üzerinde durmak daha yararlı olur.',
+      'Kelimeleri doğru ve rahat okuyor, ama sorularda zorlandı. Zorluk kelimeleri çözmekte değil; kelime bilgisi ve okuduğunu anlama stratejileri üzerinde durmak daha yararlı olur.',
   },
   'support-easy': {
-    student: 'Bazı kelimelerde zorlandın ama metni iyi anladın. Kelimeleri daha rahat okudukça anlamak da kolaylaşır.',
-    parent: 'Bazı kelimelerde zorlansa da metni iyi anladı. Kelimeleri daha rahat çözmeye yönelik çalışmalar okumasını kolaylaştıracaktır.',
+    student: 'Bazı kelimelerde zorlandın ama soruları iyi cevapladın. Kelimeleri daha rahat okudukça anlamak da kolaylaşır.',
+    parent: 'Bazı kelimelerde zorlansa da soruları iyi cevapladı. Kelimeleri daha rahat çözmeye yönelik çalışmalar okumasını kolaylaştıracaktır.',
   },
   'support-hard': {
-    student: 'Bazı kelimelerde zorlandın ve okuduğunu anlamak da zor geldi. Önce biraz daha kolay metinlerle çalışmak sana iyi gelir.',
+    student: 'Bazı kelimelerde zorlandın ve sorular da zor geldi. Önce biraz daha kolay metinlerle çalışmak sana iyi gelir.',
     parent:
-      'Bazı kelimelerde zorlandı ve okuduğunu anlamakta da güçlük çekti. Kelimeleri çözmek dikkatinin bir kısmını aldığı için anlamaya daha az yer kalmış olabilir.',
+      'Bazı kelimelerde zorlandı ve sorularda da güçlük çekti. Kelimeleri çözmek dikkatinin bir kısmını aldığı için anlamaya daha az yer kalmış olabilir.',
   },
   'hard-easy': {
-    student: 'Kelimeleri okumakta zorlandın ama metni anladın. Bu güzel bir işaret: Kelimeleri çözmeye çalıştıkça okuman da rahatlayacak.',
+    student: 'Kelimeleri okumakta zorlandın ama soruları iyi cevapladın. Bu güzel bir işaret: Kelimeleri çözmeye çalıştıkça okuman da rahatlayacak.',
     parent:
-      'Kelimeleri çözmekte belirgin biçimde zorlansa da metni anladı. Anlama becerisi iyi görünüyor; öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır.',
+      'Kelimeleri çözmekte belirgin biçimde zorlansa da soruları iyi cevapladı. Anlama becerisi iyi görünüyor; öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır.',
   },
   'hard-support': {
-    student: 'Kelimeleri okumakta zorlandın ama metnin çoğunu anladın. Kelimeleri daha rahat okudukça anlaman da artacak.',
+    student: 'Kelimeleri okumakta zorlandın ama soruların çoğunu doğru cevapladın. Kelimeleri daha rahat okudukça anlaman da artacak.',
     parent:
-      'Kelimeleri çözmekte belirgin biçimde zorlansa da metni büyük ölçüde anladı. Öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır; bu kolaylaştıkça anlama da güçlenir.',
+      'Kelimeleri çözmekte belirgin biçimde zorlansa da soruların çoğunu doğru cevapladı. Öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır; bu kolaylaştıkça anlama da güçlenir.',
   },
 };
 
+/** Doğru okuma kartının rozeti ve grafiğinin bölgeleri (yetişkin raporu); öğrenci raporunda ACCURACY_LABEL_YOU. */
 export const ACCURACY_LABEL: Record<OralLevel, string> = {
   easy: 'Rahat',
   support: 'Zaman zaman zorlanıyor',
   hard: 'Sık zorlanıyor',
 };
 
+export const ACCURACY_LABEL_YOU: Record<OralLevel, string> = {
+  easy: 'Rahat',
+  support: 'Bazen zorlanıyorsun',
+  hard: 'Sık zorlanıyorsun',
+};
+
+/** Anlama kartının rozeti: sorulardaki sonuç (yetişkin raporu); öğrenci raporunda COMPREHENSION_LABEL_YOU. */
 export const COMPREHENSION_LABEL: Record<OralLevel, string> = {
   easy: 'İyi anlıyor',
   support: 'Büyük ölçüde anlıyor',
-  hard: 'Anlamakta zorlanıyor',
+  hard: 'Sorularda zorlanıyor',
+};
+
+export const COMPREHENSION_LABEL_YOU: Record<OralLevel, string> = {
+  easy: 'İyi anlıyorsun',
+  support: 'Büyük ölçüde anlıyorsun',
+  hard: 'Sorularda zorlanıyorsun',
 };
 
 export const ACCURACY_TEXT: Record<OralLevel, Two> = {
@@ -210,23 +231,30 @@ export const ACCURACY_TEXT: Record<OralLevel, Two> = {
   },
 };
 
+/** Soruların hepsi doğru cevaplandıysa "çoğunu" yerine. */
+export const COMPREHENSION_ALL: Two = {
+  student: 'Metinle ilgili soruların hepsini doğru cevapladın: Okuduğunu iyi anlamışsın.',
+  parent: 'Metinle ilgili soruların hepsini doğru cevapladı: Okuduğunu iyi anlamış.',
+};
+
 export const COMPREHENSION_TEXT: Record<OralLevel, Two> = {
   easy: {
     student: 'Metinle ilgili soruların çoğunu doğru cevapladın: Okuduğunu iyi anlamışsın.',
     parent: 'Metinle ilgili soruların çoğunu doğru cevapladı: Okuduğunu iyi anlamış.',
   },
   support: {
-    student: 'Soruların çoğunu doğru cevapladın; bazı noktaları kaçırdın. Okurken "Burada ne anlatılıyor?" diye düşünmek anlamanı güçlendirir.',
+    student: 'Soruların çoğunu doğru cevapladın; bazı noktaları kaçırdın. Okurken “Burada ne anlatılıyor?” diye düşünmek anlamanı güçlendirir.',
     parent: 'Soruların çoğunu doğru cevapladı; metni büyük ölçüde anladı ama bazı noktaları kaçırdı.',
   },
   hard: {
     student: 'Soruların en az yarısında zorlandın. Bir metni okuduktan sonra birlikte konuşmak anlamanı geliştirir.',
-    parent: 'Soruların en az yarısında zorlandı: Metni anlamakta güçlük çekti.',
+    parent: 'Soruların en az yarısında zorlandı.',
   },
 };
 
 export const SKILL_LABELS: Record<string, string> = {
-  literal: 'Metindeki bilgiyi bulma',
+  // Sorular metin kapandıktan sonra sorulur: bilgi metinde bulunmaz, hatırlanır.
+  literal: 'Metindeki bilgiyi hatırlama',
   inference: 'Çıkarım yapma',
   vocabulary: 'Kelime anlamı',
   main_idea: 'Ana fikir',
@@ -235,28 +263,43 @@ export const SKILL_LABELS: Record<string, string> = {
 /** Akıcılık toplamının (4–16) düzeyi. */
 export function prosodyLabel(total: number): string {
   if (total >= 13) return 'Akıcı ve anlamlı';
-  if (total >= 9) return 'Gelişiyor';
+  if (total >= 8) return 'Gelişiyor';
   return 'Desteğe ihtiyaç var';
 }
 
 export const GENRE_LABELS = { narrative: 'Öykü', informational: 'Bilgilendirici metin' } as const;
 
-/** Bir sonraki değerlendirme önerisi. */
-export const NEXT_TEXT: Record<OralLevel, Two> = {
-  easy: {
-    student: 'Bir dahaki sefere bir üst sınıfın metinlerinden birini deneyebilirsin.',
-    parent:
-      'Rahat okuduğu en üst düzeyi bulmak için bir üst sınıfın metinlerinden biriyle de değerlendirme yapabilirsiniz. Gelişimini izlemek için birkaç hafta sonra başka bir metinle yeniden değerlendirin.',
-  },
+/**
+ * Bir sonraki değerlendirme önerisi. Rahat okuyana bir üst, zorlanana bir alt sınıfın metni önerilir; sınıf adı açıkça
+ * yazılır (metnin sınıfına göre: 3. sınıf metnini rahat okuyana 4. sınıf).
+ */
+export const NEXT_TEXT_UP = (g: number): Two => ({
+  student: `Bir dahaki sefere ${g}. sınıfın metinlerinden birini deneyebilirsin.`,
+  parent: `Rahat okuduğu en üst düzeyi bulmak için ${g}. sınıfın metinlerinden biriyle de değerlendirme yapabilirsiniz. Gelişimini izlemek için birkaç hafta sonra başka bir metinle yeniden değerlendirin.`,
+});
+
+export const NEXT_TEXT_DOWN = (g: number): Two => ({
+  student: `Bir dahaki sefere ${g}. sınıfın metinlerinden biriyle başla.`,
+  parent: `${g}. sınıfın metinlerinden biriyle yeniden değerlendirme yaparak rahat ya da destekle okuduğu düzeyi bulun ve çalışmaları o düzeydeki metinlerle sürdürün.`,
+});
+
+/** Okuma metin bitmeden durduysa: düzey eksik okumaya dayanır. */
+export const NEXT_TEXT_UNFINISHED: Two = {
+  student: 'Bir dahaki sefere metni sonuna kadar okumayı dene.',
+  parent: 'Metnin tamamının okunduğu yeni bir değerlendirme yapın; düzey o zaman daha doğru belirlenir.',
+};
+
+/** Otomatik analizde kelimelerin çoğu net anlaşılamadıysa: sonuç yaklaşık olduğu için üst ya da alt düzey önerilmez. */
+export const NEXT_TEXT_UNCLEAR: Two = {
+  student: 'Bir dahaki sefere sessiz bir yerde, aynı düzeyden başka bir metinle yeniden dene.',
+  parent: 'Sessiz bir ortamda, aynı düzeyden başka bir metinle yeniden değerlendirin; sonuç o zaman daha net olur.',
+};
+
+export const NEXT_TEXT: Record<'support', Two> = {
   support: {
     student: 'Birkaç hafta birlikte okuyarak çalıştıktan sonra aynı düzeyden başka bir metni dene; ne kadar ilerlediğini görürsün.',
     parent:
       'Bu düzeydeki metinlerle birlikte okumaya devam edin. Dört ila altı hafta sonra aynı sınıf düzeyinden başka bir metinle yeniden değerlendirerek gelişimi izleyebilirsiniz.',
-  },
-  hard: {
-    student: 'Bir dahaki sefere bir alt sınıfın metinlerinden biriyle başla.',
-    parent:
-      'Bir alt sınıfın metinlerinden biriyle yeniden değerlendirme yaparak rahat ya da destekle okuduğu düzeyi bulun ve çalışmaları o düzeydeki metinlerle sürdürün.',
   },
 };
 
@@ -311,6 +354,6 @@ export const SPECIALIST = {
   lines: [
     'Okumadaki zorluk sürüyorsa önce sınıf öğretmeniyle ve okulun rehberlik servisiyle görüşmenizi öneririz.',
     'Gerekli görülürse Rehberlik ve Araştırma Merkezi (RAM) eğitsel değerlendirme yapabilir.',
-    'Özgül öğrenme güçlüğü (disleksi) gibi durumların tanısı bir test sonucuyla değil, uzmanların kapsamlı değerlendirmesiyle konur. Bu değerlendirme bir tanı aracı değildir.',
+    'Okumadaki kalıcı bir güçlüğün nedeni bir test sonucuyla değil, uzmanların kapsamlı değerlendirmesiyle anlaşılır. Bu değerlendirme bir tanı aracı değildir.',
   ],
 };

@@ -617,9 +617,11 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    çubuğunda (testin %50 ve %75 eşikleri), alanlar kare kare; okumada anlama soruları ve okuma hızıyla anlayarak okuma
    yan yana; sesli okumada doğru okuma oranı düzey çubuğunda (%90 ve %97), dakikada okunan ve doğru okunan kelime (kendi
    sınıfının metninde sınıf ortalaması çizgisi), akıcılığın dört yönü, anlama soruları, söylenen fikirler. Denetim
-   `tests/beceri-grafikleri.test.ts`. Bağımsız inceleme: matematik ve okuma bulguları **uygulandı (2026-10-22)**; sesli
-   okumanın bulguları (özet: metin bitmeden durunca oran okunan kısımdan, hız güvenilmezken sayı
-   gösterilmemesi, yol haritası sırası, uzman kutusu koşulu, Ankara ve yıl sonu verisi, akıcılık eşiği) sırada.
+   `tests/beceri-grafikleri.test.ts`. Bağımsız inceleme: matematik, okuma ve sesli okuma bulguları **uygulandı
+   (2026-10-22)**; 3. aşama bitti. **Karar:** sesli okumada yıl sonu (nisan–mayıs) verisiyle karşılaştırma ders yılının
+   başında da yapılıyor; kart bunu söylüyor ("ders yılının başında daha düşük hızlar olağandır"), ama yavaş hız düzeyi
+   yine "akıcılığı gelişiyor"a çevirebiliyor (puanlama tarihi bilmiyor). Sürenin düğmelere göre ölçüldüğü okumada yavaş
+   hız düzeyi değiştirmiyor; kayıtta kesinti varsa hız karşılaştırılmıyor.
    Okumada bekleyen içerik işi: bazı sorular metni okumadan da cevaplanabiliyor (başlık ana fikri veriyor, bazı kelime ve
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
@@ -957,6 +959,18 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (47): Sesli okuma raporunda bağımsız incelemenin bulguları uygulandı. Okuma metin bitmeden durduysa ve
+  metnin en az yarısı okunduysa doğru okuma oranı okunan kısımdan hesaplanıyor (okunmayan kelimeler "zorlanma" sayılmıyor;
+  yarısından azı okunduysa sayılıyor ama bu açıkça söyleniyor, profil verilmiyor, yeni değerlendirme isteniyor). Süre
+  metne göre çok kısaysa hız hiçbir yerde gösterilmiyor; kayıtta kesinti varsa hız karşılaştırılmıyor; süre düğmelerle
+  ölçüldüyse yavaş hız düzeyi değiştirmiyor. Hız karşılaştırması "Ankara, 2002, ders yılının sonu" diye ve aralıkla
+  anlatılıyor; öğrenciye kısa ve kaynaksız. Akıcılık eşiği kaynağın yorumuna göre (8'in altı). Uzman kutusu yalnızca
+  kelimelerde sık zorlanmada ya da hem sorularda hem anlatmada zorlanmada açılıyor; "disleksi" sözü kalktı. Anlama kartı
+  soru türünü yalnızca en az iki yanlış bir türde toplanınca söylüyor; sorular ile yeniden anlatma ayrışınca veliye
+  açıklanıyor. Öğrenci raporunda başlık ve rozetler "sen" diliyle; sonraki değerlendirmede sınıf adı açık; ölçüt tablosu
+  ve altındaki not düzeyin nasıl belirlendiğini (akıcılık kuralı, soru sayısı) söylüyor. Yol haritasında öncelik düzeyi
+  belirleyen ölçütte (önce doğru okuma, sonra anlama); metin zorsa 3. hafta kolay metinler, 4. hafta bir alt sınıfın metni.
+  Rapor telefonda ve masaüstünde açıldı, PDF incelendi.
 - 2026-10-22 (46): Matematik ve okuma raporlarında bağımsız incelemenin bulguları uygulandı. Matematik: cevaplar tahmin
   olabilirse (çok hızlı ya da çoğu aynı seçenek) ya da bütün sorularda "Bilmiyorum" denmişse genel sonuç, alanlar ve yol
   haritası "Yorumlanmadı"; alan kartları sonucu sözle de anlatıyor; "Pekiştirilmeli" ama bazı alanlar öncelikliyse o
@@ -1030,11 +1044,3 @@ En yeni üstte; en çok 10 madde tutulur.
   grafikle uyumlu ("biraz daha çok zaman"); norm notları sadeleşti; yol haritasında önerilen test sınıfa uymayınca amaç
   cümlesi kalan teste uymuyorsa yazılmaz. Sekiz sözel ve sayısal testin soru izinde yalnızca düzey anlatımları değişti
   (sürüm aynı). Raporlar telefonda ve masaüstünde açıldı, PDF'ler incelendi.
-- 2026-10-22 (37): Raporlarda her başlığa grafik, 1. aşama (24 anket testi): ölçek kartlarında düzey çubuğu (testin
-  eşikleriyle bölgeler, kişinin bölgesi vurgulu, puan ve ölçüm payı), "Birlikte bakınca", sıralama ve liste kartlarında yan
-  yana grafik; ekranda ve PDF'te aynı çizim, telefonda kartın altında, masaüstünde yanında. Dört bağımsız incelemenin
-  bulguları uygulandı: Beş Faktör ve Öz-saygı'ya cevap tutarlılığı denetimi, çelişen kartlar (ilgi ve değer testlerinde
-  eşit puanlar, hiçbir alan yüksek değilken "en yüksek" dili, Holland kodunun eşitlikte kesilmesi), tek araştırmayı kesin
-  bilgi gibi anlatan cümleler ("yeni şeyleri çabuk kavrama" çıkarıldı), yol haritasında iyi oluş kartının önce gelmesi ve
-  tekrarlanan önerilerin ayıklanması, mezunlara ayrı destek metni, zor cümlelerin sadeleştirilmesi; `tests/kart-grafikleri.test.ts`
-  her testin her kartını dokuz cevap örüntüsüyle dener. Sekiz test telefonda ve masaüstünde çözüldü, PDF'ler açıldı.

@@ -230,7 +230,7 @@ describe('okuma hızı ve anlama: yol haritası şablonu', () => {
   it('her doğru sayısı, anlama düzeyi ve hız birleşiminde bölümler eksiksiz ve tutarlı', () => {
     const keys = ['literal', 'inference', 'vocabulary', 'main_idea'];
     const totals = [3, 2, 2, 1];
-    const labels: Record<string, string> = { literal: 'Metindeki bilgiyi bulma', inference: 'Çıkarım yapma', vocabulary: 'Kelime anlamı', main_idea: 'Ana fikir' };
+    const labels: Record<string, string> = { literal: 'Metindeki bilgiyi hatırlama', inference: 'Çıkarım yapma', vocabulary: 'Kelime anlamı', main_idea: 'Ana fikir' };
     let n = 0;
     for (const counts of product(totals.map((x) => x + 1))) {
       for (const band of ['low', 'average', 'high', 'very_high'] as Band[]) {

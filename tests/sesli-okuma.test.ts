@@ -30,6 +30,8 @@ import {
 } from '@/lib/scoring/oral';
 import sitemap from '../src/app/sitemap';
 
+const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
+
 const SLUG = 'sesli-okuma-degerlendirmesi';
 const def = sesliOkuma;
 const LEVELS: OralLevel[] = ['easy', 'support', 'hard'];
@@ -355,10 +357,11 @@ describe('Sesli okuma: rapor', () => {
                     expect(all, tag).not.toMatch(/undefined|NaN|null|\{|\}/);
                     expect(o.level.key, tag).toBe(lowerLevel(acc, comp));
                     // Doğru ve anlayarak okuyup akıcılık işareti olana "rahat okuyor" denmez.
-                    const levelLabel =
-                      lowerLevel(acc, comp) === 'easy' && result.flags.fluencyConcern ? FLUENCY_LEVEL_TEXT.label : LEVEL_TEXT[lowerLevel(acc, comp)].label;
+                    const lt = lowerLevel(acc, comp) === 'easy' && result.flags.fluencyConcern ? FLUENCY_LEVEL_TEXT : LEVEL_TEXT[lowerLevel(acc, comp)];
+                    const levelLabel = audience === 'parent' ? lt.label : lt.you;
                     expect(o.level.label, tag).toBe(levelLabel);
-                    expect(result.flags.fluencyConcern, tag).toBe(result.fluency.slowRate || prosody === 1);
+                    // Süre düğmelere göre ölçüldüyse yavaş hız tek başına düzeyi değiştirmez.
+                    expect(result.flags.fluencyConcern, tag).toBe((result.fluency.slowRate && flag !== 'manual') || prosody === 1);
                     if (lowerLevel(acc, comp) === 'easy' && result.flags.fluencyConcern) {
                       // Çalışılacak iki yön yoksa (ör. akıcılık derecelendirmesi zaten öncelikliyse o yön tekrarlı okuma içerir)
                       // tekrarlı okuma haftası vardır.
@@ -376,10 +379,17 @@ describe('Sesli okuma: rapor', () => {
                   expect(r.cautions.some((c) => /son \d+ kelime/.test(c)), tag).toBe(false);
                     // Süre güvenilmezse ortalamayla karşılaştırma yapılmaz; karşılaştırma yalnızca 1–4. sınıfta ve kendi sınıfının metninde.
                     const rate = r.items.find((x) => x.title === 'Okuma hızı')!.text;
-                    expect(/Erden/.test(rate), tag).toBe(flag !== 'fast' && grade <= 5 && (grade === p.grade || (result.fluency.slowRate && audience === 'parent')));
-                    // Duraklamalar yalnızca ses kalitesi iyi ve süre kayıttan ölçüldüyse anlatılır ve çizilir.
+                    // Kayıtta kesinti olduysa karşılaştırılmaz; kaynak yalnızca yetişkin raporunda anılır (öğrenciye kısa anlatım).
+                    expect(/Erden/.test(rate), tag).toBe(
+                      audience === 'parent' && flag !== 'fast' && grade <= 5 && ((grade === p.grade && flag !== 'interrupted') || result.fluency.slowRate),
+                    );
+                    expect(/ortalama \d+ kelimeyi doğru okumuş/.test(rate), tag).toBe(flag !== 'fast' && flag !== 'interrupted' && grade <= 5 && grade === p.grade);
+                    // Süre düğmelere göre ölçüldüyse yavaş hız tek başına düzeyi değiştirmez.
+                    if (flag === 'manual') expect(result.flags.fluencyConcern, tag).toBe(prosody === 1);
+                    // Duraklamalar yalnızca ses kalitesi iyi ve süre kayıttan ölçüldüyse anlatılır ve çizilir; hız hesaplanmadıysa
+                    // hız kartında anlatılmaz.
                     const pausesShown = !['interrupted', 'manual', 'noisy'].includes(flag);
-                    expect(/duraklama|kez durdun/.test(rate), tag).toBe(pausesShown);
+                    expect(/duraklama|kez durdun/.test(rate), tag).toBe(pausesShown && flag !== 'fast');
                     expect(o.timeline !== null, tag).toBe(pausesShown);
                     // Uzmana danışma kutusu yalnızca yetişkin raporunda ve öğrenci kendi düzeyinde zorlandıysa.
                     expect(r.support !== null, tag).toBe(audience === 'parent' && needsSpecialistNote(result, grade));
@@ -408,7 +418,7 @@ describe('Sesli okuma: rapor', () => {
                     if (audience === 'parent') expect(all, tag).not.toMatch(/\b(okudun|anladın|zorlandın|söyledin|cevapladın|durdun|düzelttin|sen)\b/);
                     else expect(all, tag).not.toMatch(/Öğrenci |öğrencinin|Okumadaki zorluk/);
                     // Sayılar kartlarla aynı.
-                    expect(r.keyFigures[0].value, tag).toBe(String(result.wcpm));
+                    expect(r.keyFigures[0].value, tag).toBe(flag === 'fast' ? '—' : nf0.format(result.wcpm));
                     expect(r.keyFigures[3].value, tag).toBe(`${result.comprehension.correct} / ${result.comprehension.total}`);
                     expect(r.keyFigures[4].value, tag).toBe(retell === 'none' ? '—' : `${result.retell!.mentioned.length} / ${result.retell!.total}`);
                     expect(o.prosodyTotal, tag).toBe(result.prosody!.total);
@@ -460,15 +470,16 @@ describe('Sesli okuma: doğru ama yavaş okuyan öğrenci', () => {
     const reps = evaluate(SLUG, body(3, i));
     for (const audience of ['student', 'parent'] as const) {
       const r = reps[audience];
-      expect(r.oral!.level.label).toBe(FLUENCY_LEVEL_TEXT.label);
-      expect(text(r)).not.toMatch(/Rahat okuyor|bir üst sınıfın/);
+      const lt = audience === 'parent' ? FLUENCY_LEVEL_TEXT.label : FLUENCY_LEVEL_TEXT.you;
+      expect(r.oral!.level.label).toBe(lt);
+      expect(text(r)).not.toMatch(/Rahat okuyor|bir üst sınıfın|\d\. sınıfın metinlerinden birini/);
       const rate = r.items.find((x) => x.title === 'Okuma hızı')!.text;
-      expect(rate).toContain('91 kelimeyi doğru okuduğu');
-      expect(rate).toContain('60 ile 122 arasındadır');
+      expect(rate).toContain('ortalama 91 kelimeyi doğru okumuş');
+      expect(rate).toContain('60 ile 122 arasında');
       expect(rate).toMatch(/aralığın altında/);
       expect(r.roadmap!.weeks.map((w) => w.title)).toContain('Tekrarlı okuma');
       expect(r.roadmap!.weeks.map((w) => w.title)).not.toContain('Bir adım ileri');
-      expect(r.roadmap!.standout[0].text).toBe(FLUENCY_LEVEL_TEXT.label);
+      expect(r.roadmap!.standout[0].text).toBe(lt);
     }
     const pdf = await renderSimpleReportPdf(reps.parent, 'olcekhane.com');
     expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
@@ -477,7 +488,8 @@ describe('Sesli okuma: doğru ama yavaş okuyan öğrenci', () => {
   it('normal hızda "rahat okuyor"; tempo "çok yavaş" derecelendirildiyse de rahat denmez', () => {
     const ok = scoreOral(def, 3, input(key));
     expect(ok.flags.fluencyConcern).toBe(false);
-    expect(evaluate(SLUG, body(3, input(key))).student.oral!.level.label).toBe(LEVEL_TEXT.easy.label);
+    expect(evaluate(SLUG, body(3, input(key))).student.oral!.level.label).toBe(LEVEL_TEXT.easy.you);
+    expect(evaluate(SLUG, body(3, input(key))).parent.oral!.level.label).toBe(LEVEL_TEXT.easy.label);
     const paced = scoreOral(def, 3, input(key, { prosody: { expression: 3, phrasing: 3, smoothness: 3, pace: 1 } }));
     expect(paced.fluency.slowPace).toBe(true);
     expect(paced.flags.fluencyConcern).toBe(true);
@@ -605,7 +617,9 @@ describe('Sesli okuma: otomatik analiz (cihazdaki yapay zekâ)', () => {
     for (const make of [autoInput, (k: string, o: Partial<OralInput>) => input(k, o)]) {
       const r = scoreOral(def, 3, make(key, { readingMs: 60_000, marks: { ...tail(40), '0': { s: 'sub' } } }));
       expect([r.unread, r.flags.unfinished, r.wpm, r.wcpm]).toEqual([40, true, n - 40, n - 41]);
-      expect(r.errors).toBe(41);
+      // Metnin en az yarısı okunduysa okunmayan kelimeler hata sayılmaz: doğru okuma okunan kısımdan.
+      expect(40 * 2 <= n).toBe(true);
+      expect([r.errors, r.readWords, r.counts.omit]).toEqual([1, n - 40, 0]);
       // İki kelimelik atlama metnin sonunda da olsa yalnızca atlamadır.
       const two = scoreOral(def, 3, make(key, { readingMs: 60_000, marks: tail(2) }));
       expect([two.unread, two.flags.unfinished, two.wpm]).toEqual([0, false, n]);
@@ -620,8 +634,17 @@ describe('Sesli okuma: otomatik analiz (cihazdaki yapay zekâ)', () => {
       const rate = reps.student.items[1].visual;
       expect(rate?.type === 'bars' && rate.rows[0].value).toBe(n - 40);
       expect(reps.student.keyFigures[2].note).toBe(`${n} kelimenin ${n - 40} tanesi okundu`);
-      expect(reps.student.items[0].text).toContain('Hataların 40 tanesi, metnin sonunda okumadığın kelimeler.');
-      expect(reps.parent.items[0].text).toContain('Hataların 40 tanesi metnin sonundaki okunmayan kelimelerdir');
+      expect(reps.student.items[0].text).toContain('Metnin son 40 kelimesini okumadın; doğru okuma oranın okuduğun kısımdan hesaplandı.');
+      expect(reps.parent.items[0].text).toContain(`Okunan ${n - 40} kelimenin hepsini doğru okudu`);
+      expect(reps.parent.oral!.level.key).toBe('easy');
+      expect(reps.parent.support).toBeNull();
+      expect(reps.parent.oral!.next).toBe('Metnin tamamının okunduğu yeni bir değerlendirme yapın; düzey o zaman daha doğru belirlenir.');
+      // Yarısından azı okunduysa okunmayan kelimeler atlama sayılır ve bu söylenir.
+      const k = n - 10;
+      const few = evaluate(SLUG, body(3, make(key, { readingMs: 10_000, marks: tail(k) })));
+      expect(few.student.items[0].text).toContain('Hataların hepsi, metnin sonunda okumadığın kelimeler.');
+      expect(few.parent.items[0].text).toContain('Hataların hepsi metnin sonundaki okunmayan kelimelerdir');
+      expect(few.parent.oral!.level.key).toBe('hard');
     }
   });
 
@@ -757,7 +780,8 @@ describe('Sesli okuma: sitede', () => {
     expect([t.domain, t.engine, t.minGrade, t.maxGrade, !!t.adults]).toEqual(['reading', 'oral', 1, 8, false]);
     // Erden, Kurdoğlu ve Uslu (2002) 1–5. sınıfları bildirir.
     expect(def.referenceRates.map((r) => r.grade)).toEqual([1, 2, 3, 4, 5]);
-    expect(def.science.normNote).toContain(`%${ORAL_CRITERIA.accuracy.easy}`);
+    expect(def.science.normNote).toContain('pilot ölçütlere');
+    expect(evaluate(SLUG, body(3, input('g3-kus-yemligi'))).parent.oral!.criteria[0].rule).toContain(`%${ORAL_CRITERIA.accuracy.easy}`);
   });
 
   it('herkese açık gelişim yol haritası var; test sayfası tanıtımı onu anlatır', () => {

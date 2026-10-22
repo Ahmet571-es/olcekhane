@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getInstrumentDef } from '@/content/instruments';
 import { sesliOkuma } from '@/content/instruments/sesli-okuma';
-import { ACCURACY_LABEL } from '@/content/reports/sesli-okuma';
+import { ACCURACY_LABEL, ACCURACY_LABEL_YOU } from '@/content/reports/sesli-okuma';
 import { evaluate } from '@/lib/assessment/evaluate';
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import type { QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
@@ -204,7 +204,7 @@ describe('Sesli Okuma Değerlendirmesi', () => {
             if (g.type === 'gauge') {
               expect(g.zones[g.active!].label, label).toBe(acc.badge);
               expect(g.valueLabel, label).toBe(r.keyFigures[1].value);
-              expect(Object.values(ACCURACY_LABEL)).toContain(acc.badge);
+              expect(Object.values(r.audience === 'parent' ? ACCURACY_LABEL : ACCURACY_LABEL_YOU)).toContain(acc.badge);
               expect(g.value! >= g.min, label).toBe(true);
             }
             expect(acc.text, label).not.toContain(g.type === 'gauge' ? g.valueLabel : '—');

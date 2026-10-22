@@ -113,9 +113,11 @@ export const UNFINISHED_MIN = 3;
  * Üç işaretten biri yeter: (1) öğrencinin kendi sınıfının ya da daha alt bir sınıfın metninde dakikada doğru okunan
  * kelime, yayımlanmış Türkiye ortalamasının bir standart sapma altından azsa (yalnızca verisi olan 1–5. sınıflar);
  * (2) yetişkin tempoyu "çok yavaş ve zorlanarak" diye derecelendirdiyse; (3) akıcılık toplamı bu değer ya da altındaysa
- * (4–16; Zutell ve Rasinski, 1991 ölçeğinin Türkçe uyarlamasında "desteğe ihtiyaç var" aralığı).
+ * (4–16; Zutell ve Rasinski, 1991 ölçeğinin yaygın yorumu: 8'in altı akıcılık açısından kaygı, 8 ve üstü iyi ilerleme).
+ * Süre düğmelere göre ölçüldüyse (hız olduğundan düşük çıkabilir) yavaş hız tek başına düzeyi değiştirmez; kayıt sırasında
+ * kesinti olduysa hız karşılaştırılmaz.
  */
-export const FLUENCY_LOW_TOTAL = 8;
+export const FLUENCY_LOW_TOTAL = 7;
 
 /** Duraklama sayımı: bu süreden uzun sessizlikler; ve uzun duraklamalar. */
 export const PAUSE_MS = 1000;
@@ -156,6 +158,11 @@ export interface OralResult {
   wordCount: number;
   /** Metnin sonunda art arda atlanan (okunmayan) kelimeler; UNFINISHED_MIN'den azsa 0. */
   unread: number;
+  /**
+   * Doğru okuma oranının hesaplandığı kelime sayısı. Okuma metin bitmeden durduysa ve metnin en az yarısı okunduysa okunan
+   * kısım (okunmayan kelimeler hata sayılmaz); yarısından azı okunduysa metnin tamamı (okunmayanlar atlama sayılır).
+   */
+  readWords: number;
   recordMs: number;
   readingMs: number;
   timingAuto: boolean;
@@ -278,16 +285,21 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
   if (auto && counts.unclear > n * UNCLEAR_MAX) {
     throw new OralInputError('Okumanın çoğu net anlaşılamadı; bu okumadan rapor hazırlanamaz. Metni yeniden okuyabilirsin.');
   }
-  // Net anlaşılamayan kelimeler hata sayılmaz (doğru okunmuş gibi hesaba katılır).
-  const missed = counts.sub + counts.omit + counts.help;
-  const errors = missed + counts.ins;
-  const wordsCorrect = n - missed;
-  const accuracy = Math.max(0, ((n - errors) / n) * 100);
   const minutes = Math.max(input.readingMs, 1000) / 60000;
-  // Okuma metin bitmeden durduysa hız okunan kısımdan: okunmayan kelimeler sürede yoktur.
+  // Okuma metin bitmeden durduysa hız okunan kısımdan: okunmayan kelimeler sürede yoktur. Metnin en az yarısı okunduysa
+  // doğru okuma oranı da okunan kısımdan hesaplanır: okunmayan kelimeler kelimelerde zorlanma sayılmaz. Yarısından azı
+  // okunduysa (okumayı zorlandığı için bırakmış olabilir) okunmayan kelimeler atlama sayılır.
   let trailing = 0;
   for (let i = n - 1; i >= 0 && input.marks[String(i)]?.s === 'omit'; i--) trailing++;
   const unread = trailing >= UNFINISHED_MIN ? trailing : 0;
+  const excluded = unread > 0 && unread * 2 <= n ? unread : 0;
+  counts.omit -= excluded;
+  const readWords = n - excluded;
+  // Net anlaşılamayan kelimeler hata sayılmaz (doğru okunmuş gibi hesaba katılır).
+  const missed = counts.sub + counts.omit + counts.help;
+  const errors = missed + counts.ins;
+  const wordsCorrect = readWords - missed;
+  const accuracy = Math.max(0, ((readWords - errors) / readWords) * 100);
   const wpm = (n - unread) / minutes;
   const wcpm = wordsCorrect / minutes;
 
@@ -337,8 +349,9 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
   // altı; ya da yetişkinin derecelendirmesi.
   const ref = passage.grade <= grade ? def.referenceRates.find((x) => x.grade === grade) : undefined;
   const tooFast = wpm > ORAL_MAX_WPM;
+  const audio0 = input.audio;
   const fluency = {
-    slowRate: !!ref && !tooFast && wcpm < ref.wpm - ref.sd,
+    slowRate: !!ref && !tooFast && !audio0?.interrupted && wcpm < ref.wpm - ref.sd,
     slowPace: prosody?.pace === 1,
     lowProsody: !!prosody && prosody.total <= FLUENCY_LOW_TOTAL,
     refWcpm: ref?.wpm ?? null,
@@ -381,6 +394,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     title: passage.title,
     wordCount: n,
     unread,
+    readWords,
     recordMs: Math.round(input.recordMs),
     readingMs: Math.round(input.readingMs),
     timingAuto: input.timingAuto,
@@ -406,7 +420,7 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
       interrupted: !!audio?.interrupted,
       tooFast,
       unfinished: unread > 0,
-      fluencyConcern: fluency.slowRate || fluency.slowPace || fluency.lowProsody,
+      fluencyConcern: (fluency.slowRate && input.timingAuto) || fluency.slowPace || fluency.lowProsody,
       manualTiming: !input.timingAuto,
       pausesUnreliable,
     },

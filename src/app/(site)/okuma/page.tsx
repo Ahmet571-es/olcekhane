@@ -30,7 +30,7 @@ const MEASURES = [
   { t: 'Doğru okuma', d: 'Metindeki kelimelerin ne kadarının doğru okunduğu; hangi kelimelerde, nasıl hata yapıldığı (yanlış okuma, atlama, ekleme, yardımla okuma).' },
   { t: 'Okuma hızı', d: 'Dakikada doğru okunan kelime sayısı; okuma süresi kayıttan, ilk sesten son sese ölçülür.' },
   { t: 'Akıcılık', d: 'Vurgu ve tonlama, anlamlı kelime gruplarıyla okuma, düzgünlük ve tempo; duraklamalar kayıttan otomatik ölçülür.' },
-  { t: 'Okuduğunu anlama', d: 'Metindeki bilgiyi bulma, çıkarım yapma, kelime anlamı ve ana fikir soruları; metni kendi cümleleriyle anlatma.' },
+  { t: 'Okuduğunu anlama', d: 'Metindeki bilgiyi hatırlama, çıkarım yapma, kelime anlamı ve ana fikir soruları; metni kendi cümleleriyle anlatma.' },
 ];
 
 export default function ReadingPage() {

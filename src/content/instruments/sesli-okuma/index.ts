@@ -46,7 +46,7 @@ export const sesliOkuma: OralReadingInstrument = {
     { key: 'accuracy', name: 'Doğru okuma', plain: 'Metindeki kelimelerin ne kadarının doğru okunduğu (kelime tanıma).' },
     { key: 'rate', name: 'Okuma hızı', plain: 'Bir dakikada doğru okunan kelime sayısı.' },
     { key: 'prosody', name: 'Akıcılık', plain: 'Vurgu ve tonlama, anlamlı kelime gruplarıyla okuma, düzgünlük ve tempo.' },
-    { key: 'comprehension', name: 'Okuduğunu anlama', plain: 'Metindeki bilgiyi bulma, çıkarım yapma, kelime anlamı ve ana fikir.' },
+    { key: 'comprehension', name: 'Okuduğunu anlama', plain: 'Metindeki bilgiyi hatırlama, çıkarım yapma, kelime anlamı ve ana fikir.' },
     { key: 'retell', name: 'Yeniden anlatma', plain: 'Metni kendi cümleleriyle anlatırken önemli fikirlerin ne kadarının söylendiği.' },
   ],
   referenceRates: [
@@ -69,7 +69,7 @@ export const sesliOkuma: OralReadingInstrument = {
       'Değerlendirme pilot aşamadadır. Metinlerin sınıf düzeyine uygunluğu, soruların madde analizi, iki dinleyicinin işaretlemelerinin ne kadar uyuştuğu ve otomatik analizin işaretlerinin bir öğretmenin işaretlemesiyle ne kadar uyuştuğu henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Bu değerlendirmenin Türkiye normu yoktur; sonuçlar akranlarla karşılaştırılmaz. Metnin öğrenci için düzeyi Ölçekhane’nin pilot ölçütlerine göre belirlenir: Doğru okunan kelime oranı %97 ve üzerindeyse rahat, %90 ile %97 arasındaysa destekle, %90’ın altındaysa zor; sorularda doğru oranı %80 ve üzerindeyse rahat, %60 ile %80 arasındaysa destekle, %60’ın altındaysa zor. İkisinden düşük olanı metnin düzeyidir. 1–5. sınıflarda okuma hızı, Türkiye’de yayımlanmış bir çalışmadaki ortalamayla yalnızca kaba bir fikir vermek için karşılaştırılır.',
+      'Bu değerlendirmenin kendi Türkiye normu yoktur; doğru okuma, anlama ve akıcılık sonuçları akranlarla karşılaştırılmaz. Metnin düzeyi, raporda bir tabloyla gösterilen pilot ölçütlere göre belirlenir: doğru okuma ve anlamadan düşük olanı metnin düzeyidir. Doğru okuma ve anlama rahat olsa bile okuma belirgin biçimde yavaşsa ya da akıcılık puanı düşükse düzey “Doğru okuyor, akıcılığı gelişiyor” olarak verilir. 1–5. sınıflarda okuma hızı, Ankara’da 2002’de yayımlanan bir çalışmanın ortalamasıyla yalnızca kaba bir fikir vermek için karşılaştırılır.',
     ageNote:
       '1–8. sınıflar için. Her sınıfa üç metin vardır; öğrenci kendi sınıfının ya da bir alt ve bir üst sınıfın metnini okuyabilir. 1. sınıf metinleri ikinci dönem için yazılmıştır. Değerlendirmeyi bir yetişkin (öğretmen ya da veli) yapar; otomatik analiz sürümünde öğrenci tek başına okur ve kaydını bir yetişkin dinlemez.',
     license: 'Özgün içerik: metinler, sorular ve derecelendirmeler Ölçekhane’ye aittir.',
