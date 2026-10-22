@@ -237,6 +237,14 @@ describe('Ders çalışma motivasyonu: rapor', () => {
         expect(rm.weeks.map((w) => w.title).slice(0, 2), tag).toEqual(['Fark et', 'Neden önemli?']);
         const third = combo[4] === 'high' ? 'İsteksizlik' : combo[2] === 'high' ? 'İç baskı' : null;
         if (third) expect(rm.weeks[2].title, tag).toBe(third);
+        // Üzerinde çalışmayı gerektirmeyen düşük isteksizlik, iç baskı ve dış baskı 3. haftaya başlık olmaz.
+        for (const k of ['amotivation', 'introjected', 'external']) {
+          if (combo[TYPES.indexOf(k)] === 'low') expect(rm.weeks[2].title, tag).not.toBe(NAMES[TYPES.indexOf(k)]);
+        }
+        // Yüksek isteksizlik ve yüksek iç baskı "Kısaca" bölümünde her zaman yer alır.
+        for (const k of ['amotivation', 'introjected']) {
+          if (combo[TYPES.indexOf(k)] === 'high') expect(rm.standout.map((x) => x.title), tag).toContain(NAMES[TYPES.indexOf(k)]);
+        }
         expect(rm.study.links.map((l) => l.href), tag).toEqual([
           '/rehber/etkili-ders-calisma-yontemleri',
           ...(combo[4] !== 'high' && combo[2] === 'high' ? ['/rehber/sinav-kaygisi'] : []),
@@ -386,6 +394,47 @@ describe('Ders çalışma motivasyonu: rapor', () => {
       'İsteksizlik',
       false,
     ]);
+  });
+});
+
+describe('Ders çalışma motivasyonu: kısa adlar ve yol haritasının "Kısaca" bölümü', () => {
+  it('bütün türler orta düzeydeyse "dengeli profil" yerine motivasyona özgü not', () => {
+    const r = evaluate(SLUG, bodyFor({ intrinsic: 3.2, identified: 2.8, introjected: 3, external: 2.6, amotivation: 3.4 }));
+    expect(r.student.cautions).toEqual([]);
+    expect(r.student.roadmap!.standout).toEqual([]);
+    expect(r.student.roadmap!.standoutNote).toBe(
+      'Ders çalışma nedenlerinin hiçbiri belirgin biçimde öne çıkmıyor; hepsi orta düzeyde. Hangi derste hangi nedenle çalıştığını fark etmek iyi bir başlangıç olur.',
+    );
+    expect(r.parent.roadmap!.standoutNote).toMatch(/^Çocuğunuzun ders çalışma nedenlerinin hiçbiri belirgin biçimde öne çıkmıyor; hepsi orta düzeyde\./);
+    expect(r.parent.roadmap!.standoutNote).not.toContain('dengeli');
+  });
+
+  it('yüksek isteksizlik ve iç baskı, aynı uzaklıktaki merak ve önemini görmenin arkasında kalmaz', () => {
+    const rm = evaluate(SLUG, bodyFor({ intrinsic: 5, identified: 5, introjected: 5, external: 3, amotivation: 5 })).student.roadmap!;
+    expect(rm.standout).toEqual([
+      { title: 'İç baskı', text: 'Güçlü bir iç baskı' },
+      { title: 'İsteksizlik', text: 'Çalışma şu sıralar anlamsız geliyor' },
+    ]);
+  });
+
+  it('3. hafta düşük isteksizliğe ayrılmaz: en belirgin öteki tür seçilir', () => {
+    const rm = evaluate(SLUG, bodyFor({ intrinsic: 3.2, identified: 3, introjected: 2.8, external: 3, amotivation: 1 })).student.roadmap!;
+    expect(rm.weeks.map((w) => w.title)).toEqual(['Fark et', 'Neden önemli?', 'Merak ve keyif', 'Gözden geçir']);
+  });
+
+  it('kısa adlar emir gibi okunmaz ve kişisizdir; profil metni kısa cümlelerle yazılmış; veliye "öğrenileni"', () => {
+    for (const t of TYPES) {
+      for (const b of ['low', 'average', 'high'] as const) {
+        const sum = tpl.scales[t][b]!.summary;
+        expect(sum, `${t}/${b}`).not.toMatch(/(alma|görme|sorgulama|görememe|bulmama)$/);
+      }
+    }
+    expect(tpl.scales.intrinsic.high!.summary).toBe('Öğrenmek keyif veriyor');
+    expect(tpl.scales.amotivation.low!.summary).toBe('Çalışma anlamsız gelmiyor');
+    expect(m.patterns['high-low'].student).toContain(
+      '“iyi nitelikli motivasyon” diye anılıyor. Bu düzendeki öğrenciler öğrenme yöntemlerini en iyi kullanan gruplar arasında yer alıyor ve en az erteleyen grup oluyor. Baskısı yüksek olan öğrencilere göre daha az sınav kaygısı yaşıyorlar;',
+    );
+    expect(ROADMAPS[SLUG].studyIntro.parent).toContain('öğrenileni kitaba bakmadan hatırlamaya çalışmak');
   });
 });
 

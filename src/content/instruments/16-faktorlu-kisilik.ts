@@ -403,7 +403,7 @@ export const onAltiFaktorKisilik: LikertInstrument = {
       'IPIP sayfasında, Amerika Birleşik Devletleri’nde 501 yetişkinden oluşan bir toplum örnekleminde (Eugene-Springfield) ölçeklerin iç tutarlılığı (Cronbach α) .73 ile .86 arasında (ortalama .80) bildirilmiştir; aynı grupta 16PF’in kendi ölçeklerinde bu değer ortalama .74’tür. Aynı grupta her IPIP ölçeğinin 16PF’teki karşılığıyla ilişkisi (korelasyon) .51 ile .77 arasındadır (ortalama .66); en düşük ilişki düşünsel özgüven ile 16PF’in akıl yürütme ölçeği arasındadır. Kurallara bağlılık ölçeğinden üç madde çıkarıldığı için bu ölçeğin güvenirliği kaynakta bildirilen değerden (.84) düşük olabilir. Kaynakta standart sapmalar verilmediği için raporda ölçüm payı gösterilmez. Ölçekhane çevirisinin güvenirliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç kişinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç, kişinin kendini nasıl tanımladığını gösterir; başkalarıyla karşılaştırma yapmaz.',
     ageNote:
       '9. sınıftan itibaren uygulanır; mezunlar ve yetişkinler de çözebilir. Kaynaktaki güvenirlik değerleri yetişkinlerden elde edilmiştir; lise öğrencileriyle yapılmış bir çalışmaya ulaşılamadı. Kişilik gençlik yıllarında gelişmeye devam ettiği için lise öğrencilerinde sonuçlar kendini tanımaya yönelik bir başlangıç olarak sunulur.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',

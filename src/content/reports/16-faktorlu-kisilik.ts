@@ -14,6 +14,9 @@ import type { BandText, ReportTemplate } from './types';
  * yetişkin raporunda da kullanılır.
  * Öneri listeleri (kapsamlı rapor için) bu testte yazılmadı; basit raporda gösterilmez. Veliye yaklaşım önerileri
  * gelişim yol haritasındadır.
+ * Ölçekler raporun her yerinde "özellik" diye anılır: genel bakış, sonuç kartlarının başlığı (`itemsTitle`: "Özellikler")
+ * ve yol haritası (`unit`). Genel bakışın açıklaması varsayılan grafik notunun yerine geçtiği için kırmızı işaretin
+ * puanı gösterdiğini de söyler.
  */
 const t = (summary: string, student: string, parent: string, extra?: { support?: boolean; adult?: string }): BandText => ({
   summary,
@@ -34,10 +37,11 @@ export const onAltiFaktorKisilikReport: ReportTemplate = {
   },
   overview: {
     student:
-      'Her satır bir özelliği gösteriyor; 16 özellik ayrı ayrı puanlanır, toplam bir puan yoktur. Puanlar bir not değildir: yüksek ya da düşük olması tek başına iyi ya da kötü anlamına gelmez; her düzeyin işe yarayan ve dikkat edilecek yanları vardır. Her özellik 7–13 cümleyle ölçüldüğü için sonuçlar yaklaşıktır; tek bir özelliğe bakarak kesin sonuç çıkarma.',
+      'Her satır bir özelliği gösteriyor; 16 özellik ayrı ayrı puanlanır, toplam bir puan yoktur. Puanlar bir not değildir: yüksek ya da düşük olması tek başına iyi ya da kötü anlamına gelmez; her düzeyin işe yarayan ve dikkat edilecek yanları vardır. Her özellik 7–13 cümleyle ölçüldüğü için sonuçlar yaklaşıktır; tek bir özelliğe bakarak kesin sonuç çıkarma. Kırmızı işaret senin puanın.',
     parent:
-      'Her satır bir özelliği gösterir; 16 özellik ayrı ayrı puanlanır, toplam bir puan yoktur. Puanlar bir not değildir: yüksek ya da düşük olması tek başına iyi ya da kötü anlamına gelmez; her düzeyin işe yarayan ve dikkat edilecek yanları vardır. Her özellik 7–13 cümleyle ölçüldüğü için sonuçlar yaklaşıktır; tek bir özelliğe bakarak kesin sonuç çıkarılmamalıdır.',
+      'Her satır bir özelliği gösterir; 16 özellik ayrı ayrı puanlanır, toplam bir puan yoktur. Puanlar bir not değildir: yüksek ya da düşük olması tek başına iyi ya da kötü anlamına gelmez; her düzeyin işe yarayan ve dikkat edilecek yanları vardır. Her özellik 7–13 cümleyle ölçüldüğü için sonuçlar yaklaşıktır; tek bir özelliğe bakarak kesin sonuç çıkarılmamalıdır. Kırmızı işaret puanı gösterir.',
   },
+  itemsTitle: 'Özellikler',
   scales: {
     warmth: {
       high: t(
@@ -69,8 +73,8 @@ export const onAltiFaktorKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Düşünme becerisine pek güvenmeyen',
-        'Genel olarak kafanın kolayca karışabildiğini, kendini bu konuda sıradan biri olarak gördüğünü ve okurken zor kelimeleri geçtiğini söylüyorsun. Bu ölçek zekâyı ölçmez; kendine bakışını gösterir. Bir konuyu anlamak çoğu zaman vakit ve çaba ister: zorlandığın bir konuyu küçük parçalara bölüp her birini kendi cümlelerinle anlatmaya çalışmak, ne kadar ilerlediğini görmeni sağlayabilir.',
-        'Çocuğunuz genel olarak kafasının kolayca karışabildiğini, kendini bu konuda sıradan biri olarak gördüğünü ve okurken zor kelimeleri geçtiğini belirtiyor. Bu ölçek zekâyı ölçmez; çocuğunuzun kendine bakışını gösterir. Zorlandığı bir konuyu küçük parçalara bölmesine ve ilerlediği adımları fark etmesine yardım etmek, öğrenme gücüne duyduğu güveni artırabilir.',
+        'Genel olarak kafanın kolayca karışabildiğini, kendini bu konuda sıradan biri olarak gördüğünü ve okurken zor kelimeleri atlayıp geçtiğini söylüyorsun. Bu ölçek zekâyı ölçmez; kendine bakışını gösterir. Bir konuyu anlamak çoğu zaman vakit ve çaba ister: zorlandığın bir konuyu küçük parçalara bölüp her birini kendi cümlelerinle anlatmaya çalışmak, ne kadar ilerlediğini görmeni sağlayabilir.',
+        'Çocuğunuz genel olarak kafasının kolayca karışabildiğini, kendini bu konuda sıradan biri olarak gördüğünü ve okurken zor kelimeleri atlayıp geçtiğini belirtiyor. Bu ölçek zekâyı ölçmez; çocuğunuzun kendine bakışını gösterir. Zorlandığı bir konuyu küçük parçalara bölmesine ve ilerlediği adımları fark etmesine yardım etmek, öğrenme gücüne duyduğu güveni artırabilir.',
       ),
     },
     emotional_stability: {
@@ -290,8 +294,8 @@ export const onAltiFaktorKisilikReport: ReportTemplate = {
     orderliness: {
       high: t(
         'Düzenli ve titiz',
-        'Genel olarak düzeni sevdiğini, işleri hemen ve eksiksiz yapmaya çalıştığını ve her şey yerli yerinde olana kadar uğraştığını söylüyorsun. Bu titizlik, özen gerektiren işlerde sana güç verir. Her işin kusursuz olması gerekmediğini hatırlamak, zamanını ve enerjini korumana yardım edebilir.',
-        'Çocuğunuz genel olarak düzeni sevdiğini, işleri hemen ve eksiksiz yapmaya çalıştığını ve her şey yerli yerinde olana kadar uğraştığını belirtiyor. Bu titizlik, özen gerektiren işlerde ona güç verir.',
+        'Genel olarak düzeni sevdiğini, işleri hemen ve eksiksiz yapmaya çalıştığını ve her şey yerli yerinde olana kadar uğraştığını söylüyorsun. Bu titizlik, özen gerektiren işlerde işine yarayabilir. Her işin kusursuz olması gerekmediğini hatırlamak, zamanını ve enerjini korumana yardım edebilir.',
+        'Çocuğunuz genel olarak düzeni sevdiğini, işleri hemen ve eksiksiz yapmaya çalıştığını ve her şey yerli yerinde olana kadar uğraştığını belirtiyor. Bu titizlik, özen gerektiren işlerde ona yardımcı olabilir.',
       ),
       average: t(
         'Gerektiğinde düzenli',

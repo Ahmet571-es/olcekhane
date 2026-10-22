@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { publicInstruments, solvableInstruments } from '@/content/instruments';
 import { REPORT_TEMPLATES } from '@/content/reports';
+import { ROADMAPS } from '@/content/roadmaps';
 import { ADULT_GRADE } from '@/lib/config';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import type { LikertInstrument } from '@/lib/instruments/types';
 import { scoreLikert } from '@/lib/scoring/likert';
 import sitemap from '../src/app/sitemap';
+import type { SimpleReport } from '@/lib/reports/simple';
 import { def, likertBody } from './helpers/bodies';
 
 const SLUG = 'duygusal-zeka-bilesenleri';
@@ -383,4 +385,120 @@ describe('Duygusal Zekâ Bileşenleri raporu', () => {
     expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(true);
     expect(sitemap().some((u) => u.url.endsWith(`/testler/${SLUG}`))).toBe(true);
   });
+});
+
+/** Sayfada yan yana okunan metinler: kartlar ve yol haritasının bölümleri. */
+function pageTexts(rep: SimpleReport): string[] {
+  const r = rep.roadmap!;
+  return [
+    ...rep.items.map((i) => i.text),
+    r.standoutNote ?? '',
+    r.study.intro,
+    ...r.study.items.map((i) => i.text),
+    ...(r.settings ? [r.settings.intro, ...r.settings.items, r.settings.note] : []),
+    ...(r.approach?.items.map((i) => i.text) ?? []),
+    ...r.weeks.map((w) => w.text),
+  ].filter(Boolean);
+}
+
+describe('Duygusal Zekâ Bileşenleri: 2026-10-22 incelemesi', () => {
+  const t = REPORT_TEMPLATES[SLUG];
+  const rm = ROADMAPS[SLUG];
+
+  it('kartların başlığı "Bileşenler"; yol haritasında öneriler en belirgin üç bileşen için, grafik yedisini gösterir', () => {
+    expect(t.itemsTitle).toBe('Bileşenler');
+    expect(rm.unit).toEqual({ one: 'bileşen', toPlural: 'bileşenlere' });
+    const r = evaluate(SLUG, likertBody(SLUG, 10, (i) => (i * 7) % 5));
+    for (const rep of [r.student, r.parent]) {
+      expect(rep.itemsTitle).toBe('Bileşenler');
+      expect(rep.roadmap!.bars).toHaveLength(7);
+      expect(rep.roadmap!.study.items).toHaveLength(3);
+    }
+    expect(r.parent.roadmap!.approach!.items).toHaveLength(3);
+    expect(r.student.roadmap!.study.intro).toContain('Aşağıda puanı ortadan en uzak üç bileşenin için öneriler var');
+    expect(r.parent.roadmap!.study.intro).toContain('Aşağıda çocuğunuzun puanı ortadan en uzak üç bileşeni için öneriler var');
+    // Üzücü olaylardan etkilenme yüksekken o bileşenin kartı ilk sıradadır (3. hafta ona ayrılır).
+    const answers = keyedAnswers((s) => (s === 'responsive_distress' ? 'high' : s === 'empathic_concern' || s === 'positive_expressivity' || s === 'negative_expressivity' ? 'low' : 'mid'));
+    const high = evaluate(SLUG, { grade: 10, data: { engine: 'likert', answers } });
+    expect(high.student.roadmap!.study.items[0].key).toBe('responsive_distress');
+    expect(high.student.roadmap!.weeks[2].title).toBe('Üzücü olaylardan etkilenme');
+    // Bütün bileşenler ortadayken dengeli profil cümlesi "bileşen" der.
+    const mid = evaluate(SLUG, { grade: 10, data: { engine: 'likert', answers: keyedAnswers(() => 'mid') } });
+    expect(mid.student.roadmap!.standoutNote).toContain('hiçbir bileşen belirgin biçimde öne çıkmıyor');
+  });
+
+  it('kartlar ve çalışma önerileri ölçeğin sormadığını söylemez; öneriler kartları tekrar etmez', () => {
+    const s = t.scales;
+    expect(s.negative_expressivity.low!.student).toContain('Duygularını göstermemek bazı durumlarda işe yarayabilir');
+    expect(s.negative_expressivity.low!.student).not.toContain('kontrol');
+    const ec = rm.scales.empathic_concern.study.low;
+    for (const x of [ec.student, ec.parent, ec.adult!]) {
+      expect(x).not.toMatch(/nesnel|tarafsız/);
+      expect(x).toContain('farklı kişilerin gözünden');
+    }
+    expect(ec.parent).not.toContain('yerine kendini koyma');
+    const ae = rm.scales.attending_emotions.study.high;
+    for (const x of [ae.student, ae.adult!]) {
+      expect(x).not.toContain('güçlü yanın');
+      expect(x).toMatch(/^Ne hissettiğini genellikle fark ettiğini söylüyorsun\./);
+    }
+    // Kartta söylenen "başkalarını anlamana yardım edebilir" cümlesi çalışma önerisinde yinelenmez.
+    const rd = rm.scales.responsive_distress.study.high;
+    for (const x of [rd.student, rd.parent, rd.adult!]) expect(x).not.toContain('Bu duyarlılık başkalarını anlama');
+    // Kendini sınama: heyecanla değil, kitaba (yetişkinde kaynağa) bakmadan anlatmak.
+    const pe = rm.scales.positive_expressivity.study.high;
+    expect(pe.student).toContain('kitaba bakmadan birine anlatmak, kendini sınamanın bir yoludur');
+    expect(pe.adult).toContain('kaynağa bakmadan birine anlatmak');
+    expect(rm.scales.responsive_joy.study.average.adult).toContain('Bazı işleri biriyle birlikte');
+    expect(rm.scales.attending_emotions.action.high.student).toContain('kısa bir süre başka bir konuya geçmek');
+    expect(rm.scales.attending_emotions.action.high.student).not.toContain('karışık');
+    // "Bu hafta dene" çalışma kartını tekrar etmez.
+    expect(rm.scales.emotion_decisions.action.high.student).not.toContain('aynı güne');
+    expect(rm.scales.emotion_decisions.action.high.parent).not.toContain('aynı güne');
+    expect(rm.scales.positive_expressivity.action.average.student).not.toContain('anlatarak');
+    expect(rm.scales.attending_emotions.action.low.student).not.toContain('Şu an ne hissediyorum');
+  });
+
+  it('yol haritasında düz tırnak yok; son haftada Empati ve İyimserlik önerilir', () => {
+    const strings: string[] = [];
+    const walk = (x: unknown) => {
+      if (typeof x === 'string') strings.push(x);
+      else if (x && typeof x === 'object') Object.values(x).forEach(walk);
+    };
+    walk({ ...rm, sources: [] });
+    for (const x of strings) expect(x).not.toContain('"');
+    expect(rm.nextTests).toEqual(['empati', 'iyimserlik']);
+    const r = evaluate(SLUG, likertBody(SLUG, 10, (i) => i % 5));
+    expect(r.student.roadmap!.weeks[3].text).toContain('başkalarına ve geleceğe bakışını da görmek için Empati ve İyimserlik testlerinden birini çözebilirsin');
+    expect(r.parent.roadmap!.weeks[3].text).toContain('çocuğunuzun başkalarına ve geleceğe bakışını da görmek için Empati ve İyimserlik testlerini önerebilirsiniz');
+    const adult = evaluateAdult(SLUG, { grade: ADULT_GRADE, data: { engine: 'likert', answers: keyedAnswers(() => 'high') } }).adult;
+    expect(adult.roadmap!.weeks[3].text).toContain('Empati ve İyimserlik');
+    expect(d.science.normNote).not.toMatch(/akran/);
+    expect(d.science.normNote).toContain('karşılaştırma çalışması (norm)');
+  });
+
+  it('400 rastgele cevap örüntüsünde aynı sayfada bir cümle iki kez geçmez', () => {
+    let seed = 20261022;
+    const rand = () => {
+      seed = (seed * 1103515245 + 12345) % 2 ** 31;
+      return seed / 2 ** 31;
+    };
+    const levels = ['high', 'low', 'mid'] as const;
+    for (let n = 0; n < 400; n++) {
+      const pick = Object.fromEntries(d.scales.map((s) => [s.key, levels[Math.floor(rand() * 3)]]));
+      const answers = keyedAnswers((s) => pick[s]);
+      const r = evaluate(SLUG, { grade: 10, data: { engine: 'likert', answers } });
+      const adult = evaluateAdult(SLUG, { grade: ADULT_GRADE, data: { engine: 'likert', answers } }).adult;
+      for (const [rep, who] of [
+        [r.student, 'student'],
+        [r.parent, 'parent'],
+        [adult, 'adult'],
+      ] as const) {
+        const label = `${JSON.stringify(pick)} ${who}`;
+        const sentences = pageTexts(rep).flatMap((x) => x.split(/(?<=[.!?])\s+/)).map((x) => x.trim()).filter((x) => x.length > 25);
+        const dup = sentences.filter((x, i) => sentences.indexOf(x) !== i);
+        expect(dup, label).toEqual([]);
+      }
+    }
+  }, 120_000);
 });

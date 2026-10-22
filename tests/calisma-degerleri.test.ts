@@ -165,13 +165,14 @@ describe('Çalışma Değerleri: puanlama ve sıralama', () => {
         expect(x.chart?.type === 'rulers' ? x.chart.rows.map((row) => row.label) : [], tag).toEqual(order.map(nameOf));
         const titles = x.items.map((i) => i.title);
         expect(titles.filter((t) => /^\d\. /.test(t)), tag).toEqual(top.map((k, i) => `${ranks[i]}. ${nameOf(k)}`));
-        const trade = vt.tradeoffs.filter((t) => top.includes(t.a) && top.includes(t.b)).map((t) => t.title);
+        // Yarışan değerler: ikisi de en önemliler arasında ve ikisi de "çok önemli" düzeyinde.
+        const trade = vt.tradeoffs.filter((t) => [t.a, t.b].every((k) => top.includes(k) && band(values[k]) === 'high')).map((t) => t.title);
         expect(titles.filter((t) => vt.tradeoffs.some((x) => x.title === t)), tag).toEqual(trade);
-        const lower = x.items.find((i) => i.title.startsWith('Daha az önem'));
+        const lower = x.items.find((i) => i.title.startsWith('Sıralamanın sonundaki'));
         expect(!!lower, tag).toBe(bottom.length > 0);
         if (lower) {
           for (const k of bottom) expect(lower.text, tag).toContain(`“${nameOf(k)}” (`);
-          expect(lower.title.endsWith('değerler'), tag).toBe(bottom.length > 1);
+          expect(/değerler(in)?$/.test(lower.title), tag).toBe(bottom.length > 1);
           expect(lower.text, tag).toContain(bottom.length > 1 ? 'o değerlerin' : 'o değerin ');
         }
         // Hiçbir değer iki kez anlatılmaz: en önemliler, daha az önemliler ve ötekiler ayrıdır.
@@ -261,7 +262,8 @@ describe('Çalışma Değerleri: puanlama ve sıralama', () => {
     const mm = /CD_GOVDE=.*?k=(\[[^\]]+\])/.exec(yml);
     expect(JSON.parse(mm![1])).toEqual(d.items.map((i) => i.key));
     // Cevaplar sırayla 1, 2, 3, 4, 5, …: bağımsızlık 3,5; güvence 3,3; ilgi ve öğrenme 3; birlikte çalışma 3 (eşit
-    // puanla üçüncü); yardım ve yaşam dengesi 2,5 (en sonda).
+    // puanla üçüncü); yardım ve yaşam dengesi 2,5 (en sonda). Yalnızca bağımsızlık "çok önemli" olduğu için yarışan değer
+    // çifti gösterilmez.
     const r = evaluate(SLUG, likertBody(SLUG, 8, (i) => i % 5));
     const s = r.student;
     expect(s.chart?.type === 'rulers' ? s.chart.rows[0].label : '').toBe('Bağımsızlık');
@@ -270,9 +272,7 @@ describe('Çalışma Değerleri: puanlama ve sıralama', () => {
       '2. Güvence',
       '3. İlgi ve öğrenme',
       '3. Birlikte çalışma',
-      'Güvence ile bağımsızlık arasında',
-      'Güvence ile yenilik arasında',
-      'Daha az önem verdiğin değerler',
+      'Sıralamanın sonundaki değerlerin',
       'Diğer değerlerin',
       'Bu sonucu nasıl kullanabilirsin?',
     ]);
@@ -285,6 +285,68 @@ describe('Çalışma Değerleri: puanlama ve sıralama', () => {
       'Güvence',
       false,
     ]);
+  });
+});
+
+describe('Çalışma Değerleri: yarışan değerler, sıralama dili ve haftalar', () => {
+  const base = Object.fromEntries(SCALES.map((k) => [k, 2])) as Record<string, number>;
+  it('yarışan değerler yalnızca ikisi de "çok önemli" iken: orta derecede önemli iki değer birbirine karşı konmaz', () => {
+    // Saygınlık 3,25 ve yardım 3: en önemliler arasında ama ikisi de orta derecede önemli.
+    const mid = evaluate(SLUG, bodyFor({ ...base, status: 3.25, helping: 3, balance: 2.75 })).student;
+    expect(mid.items.map((i) => i.title)).not.toContain('Saygınlık ile yardım arasında');
+    // İkisi de çok önemli: gösterilir; "çoğu zaman çeker" değil, "çekebilir" der.
+    const both = evaluate(SLUG, bodyFor({ ...base, status: 4.5, helping: 4 })).student;
+    const card = both.items.find((i) => i.title === 'Saygınlık ile yardım arasında')!;
+    expect(card.text).toContain('farklı yönlere çekebilir');
+    expect(card.text).not.toContain('çoğu zaman');
+    // Güvence ile ilgi ve öğrenme: başlık değerlerin adlarıyla.
+    const sec = evaluate(SLUG, bodyFor({ ...base, security: 4.5, learning: 4 })).student;
+    expect(sec.items.map((i) => i.title)).toContain('Güvence ile ilgi ve öğrenme arasında');
+  });
+
+  it('sıralamanın sonundaki değerler "daha az önem verilen" diye anılmaz (çok önemli bir değer de sonda olabilir)', () => {
+    const r = evaluate(SLUG, bodyFor({ learning: 5, income: 5, helping: 5, independence: 4, security: 4, team: 4, status: 3.75, balance: 3.5 }));
+    const lower = r.student.items.find((i) => i.title.startsWith('Sıralamanın sonundaki'))!;
+    expect(lower.title).toBe('Sıralamanın sonundaki değerlerin');
+    expect(lower.text).toContain('(çok önemli)');
+    expect(r.parent.items.find((i) => i.title.startsWith('Sıralamanın sonundaki'))!.title).toBe('Sıralamanın sonundaki değerler');
+  });
+
+  it('kısa adlar kişisiz: "…önemsiyor", "…önem veriyor", "…öncelik saymıyor" yok', () => {
+    for (const k of SCALES) {
+      for (const b of ['low', 'average', 'high'] as const) {
+        expect(tpl.scales[k][b]!.summary, `${k}/${b}`).toMatch(/(önemli|öncelik değil)$/);
+      }
+    }
+    expect(tpl.scales.income.high!.summary).toBe('İyi kazanmak önemli');
+    expect(tpl.scales.income.average!.summary).toBe('Kazanç orta derecede önemli');
+    expect(tpl.scales.income.low!.summary).toBe('Kazanç öncelik değil');
+  });
+
+  it('keşif kartları rapordaki değer kartlarının uyarılarını tekrar etmez', () => {
+    const r = evaluate(SLUG, bodyFor({ ...base, income: 5, security: 4.75, balance: 4.5, team: 4.25 }));
+    for (const rep of [r.student, r.parent]) {
+      const study = rep.roadmap!.study.items.map((i) => i.text).join(' ');
+      expect(study).not.toMatch(/sözleşmenin türüne|şehre göre|çalışma düzeni(nin)? iş yerine|Ekip çalışmasının aynı meslekte/);
+    }
+    const team = evaluate(SLUG, bodyFor({ ...base, team: 5 }));
+    expect(team.student.roadmap!.study.items.find((i) => i.key === 'team')!.text).toMatch(/İş yerinin havasının da önemli olduğunu unutma\.$/);
+    expect(team.parent.roadmap!.study.items.find((i) => i.key === 'team')!.text).not.toContain('Ekip çalışmasının');
+  });
+
+  it('haftalar bir sıralama var saymaz: değerler eşit ya da hepsi az önemliyken de doğru okunur', () => {
+    for (const values of [Object.fromEntries(SCALES.map((k) => [k, 3])), Object.fromEntries(SCALES.map((k) => [k, 1.5])), { ...base, learning: 5 }]) {
+      const r = evaluate(SLUG, bodyFor(values as Record<string, number>));
+      for (const rep of [r.student, r.parent]) {
+        const weeks = rep.roadmap!.weeks.map((w) => w.text).join(' ');
+        expect(weeks, JSON.stringify(values)).not.toMatch(/sıralama/);
+      }
+    }
+    const same = evaluate(SLUG, bodyFor(Object.fromEntries(SCALES.map((k) => [k, 3])) as Record<string, number>));
+    expect(same.student.roadmap!.weeks[0].text).toMatch(/^Raporundaki sonuçlara bir kez daha bak/);
+    expect(same.student.roadmap!.weeks[2].text).toContain('biri senin için önemli bir değeri sunuyor ama önemli olan başka bir değeri sunmuyor');
+    expect(same.parent.roadmap!.weeks[0].text).toContain('sonuçların ona uyup uymadığını');
+    expect(same.student.roadmap!.weeks[3].text).toMatch(/^Dört haftada yazdıklarına bak: sonuçların sana hâlâ uyuyor mu\?/);
   });
 });
 

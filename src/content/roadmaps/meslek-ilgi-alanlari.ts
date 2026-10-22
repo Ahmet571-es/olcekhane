@@ -5,12 +5,12 @@ import type { AudienceText, InterestArea, InterestRoadmapTemplate } from './type
  * Meslek İlgi Alanları (sekiz alan): gelişim yol haritası metinleri.
  *
  * İlkeler:
- *  - Raporda her belirgin alanın ilişkili meslek alanları ve deneme fırsatları zaten yazılıdır; yol haritası onları
- *    tekrar etmez, eğitim yolları bölümü de yoktur. Keşif kartları, haftalık denemeler ve yaklaşım önerileri bu dosyada
- *    yazılır.
- *  - Belirgin alan yoksa raporun en üstteki iki alanı gösterilir; bu alanlar "Az ilgi" düzeyinde de olabilir. Bu yüzden
- *    keşif kartları ve yaklaşım önerileri ilgiyi var saymaz: alanı denemeyi ve tanımayı önerir ("bu alanı denemek
- *    istersen").
+ *  - Raporda her belirgin alanın ilişkili meslek alanları zaten yazılıdır; deneme fırsatları (kulüp, kurs, gönüllülük)
+ *    yalnızca yol haritasının keşif kartlarında ve haftalarında yazılır, rapordaki kartlar onları tekrar etmez. Eğitim
+ *    yolları bölümü yoktur.
+ *  - Belirgin alan yoksa raporun orta düzeydeki en üstteki (en çok iki) alanı gösterilir; düşük düzeydeki alan hiçbir
+ *    zaman öne çıkarılmaz. Bu alanlar belirgin olmadığı için keşif kartları ve yaklaşım önerileri ilgiyi var saymaz:
+ *    alanı denemeyi ve tanımayı önerir ("bu alanı denemek istersen").
  *  - İlgi, yetenek ya da başarı demek değildir; ilgiler denedikçe netleşir (Low ve ark., 2005). Öneriler meslek seçmez.
  *  - Test yetişkinlere açıktır: öğrenci metni okula özgüyse yetişkin metni yazılır.
  */
@@ -27,11 +27,18 @@ export const meslekIlgiAlanlariRoadmap: InterestRoadmapTemplate = {
   studyTitle: riasec.studyTitle,
   studyIntro: {
     ...riasec.studyIntro,
-    adult: 'İlgiler denedikçe netleşir. Aşağıda en belirgin ilgi alanların için keşif önerileri var; yalnızca okuyarak değil, deneyerek karar ver.',
+    adult: 'İlgiler denedikçe netleşir. Aşağıda en üstte çıkan ilgi alanların için keşif önerileri var; yalnızca okuyarak değil, deneyerek karar ver.',
   },
   openNote: {
     ...riasec.openNote,
-    adult: 'İlgilerin henüz belirgin biçimde ayrışmamış. Farklı alanları denemek için iyi bir zaman.',
+    adult: 'İlgilerin belirgin bir yönde toplanmıyor; geniş bir alana yayılmış olabilir. Farklı alanları denemek için iyi bir zaman.',
+  },
+  lowNote: {
+    student:
+      'İşlerin çoğundan pek hoşlanmayacağını belirttiğin için hiçbir alan öne çıkarılmadı. Bu olağan bir durum; aşağıdaki haftalarda farklı alanları denemen için küçük adımlar var.',
+    parent:
+      'Çocuğunuz işlerin çoğundan pek hoşlanmayacağını belirttiği için hiçbir alan öne çıkarılmadı. Bu olağan bir durum; aşağıdaki haftalarda farklı alanları denemesi için küçük adımlar var.',
+    adult: 'İşlerin çoğundan pek hoşlanmayacağını belirttiğin için hiçbir alan öne çıkarılmadı. Aşağıdaki haftalarda farklı alanları denemen için küçük adımlar var.',
   },
   firstWeek: riasec.firstWeek,
   openWeeks: [

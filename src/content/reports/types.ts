@@ -26,6 +26,8 @@ export interface ReportTemplate {
   bandLabels: Partial<Record<Band, string>>;
   /** Çok ölçekli raporlarda "Genel bakış" başlığının altındaki açıklama. Verilmezse kişilik metni kullanılır. */
   overview?: { student: string; parent: string; adult?: string };
+  /** Sonuç kartlarının başlığı (birlikte yorum yokken); verilmezse "Boyutlar" (ör. "Özellikler"). */
+  itemsTitle?: string;
   /**
    * Yüksek puanın gelişmiş bir beceri anlamına geldiği ölçekler (ör. çalışma alışkanlıkları). Bu durumda
    * "Öne çıkanlar" yerine "Güçlü yanlar" ve "Geliştirilebilecek alanlar" ayrı ayrı gösterilir.

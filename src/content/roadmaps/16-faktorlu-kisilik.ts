@@ -19,6 +19,9 @@ import type { RoadmapTemplate } from './types';
  *    veliye "Sınav kaygısı" yazısına bağlantı verilir (yetişkine verilmez); öneriler uyku, kısa molalar, güvenilen biriyle konuşmak ve sınavdan önce endişeleri
  *    yazmak gibi araştırmayla desteklenen yollardır (Ramirez ve Beilock, 2011).
  *  - Düşünsel özgüven zekâyı ölçmez; metinler zekâ hakkında hüküm vermez, puanı yükseltme vaadi vermez.
+ *  - Bir uç güçlü yan ya da avantaj diye anlatılmaz ("Düzen ve titizlik senin güçlü yanın" yerine "sana kolay geliyor").
+ *  - Ölçekler raporun her yerindeki gibi "özellik" diye anılır (`unit`; ör. dengeli profil cümlesi "hiçbir özellik belirgin
+ *    biçimde öne çıkmıyor").
  *  - Veliye yaklaşım önerileri rapordaki veli metinlerini ve aynı raporda yan yana okunan "Bu hafta dene" metinlerini
  *    tekrar etmez.
  *  - Renkler 16 özelliği birbirinden ayırmak için seçildi (çember üzerinde yan yana gelen sütunlar belirgin biçimde farklı
@@ -42,10 +45,13 @@ export const onAltiFaktorKisilikRoadmap: RoadmapTemplate = {
   focus: {
     count: 6,
     note: {
-      student: 'Aşağıda puanı ortadan en uzak {n} özelliğin için öneriler var; öteki özelliklerin, raporun önceki bölümünde anlatılıyor.',
-      parent: 'Aşağıda çocuğunuzun puanı ortadan en uzak {n} özelliği için öneriler var; öteki özellikleri, raporun önceki bölümünde anlatılıyor.',
+      student:
+        'Aşağıda en belirgin {n} özelliğin (puanı orta noktadan en çok uzaklaşanlar) için öneriler var; öteki özelliklerin raporun önceki bölümünde anlatıldı.',
+      parent:
+        'Aşağıda çocuğunuzun en belirgin {n} özelliği (puanı orta noktadan en çok uzaklaşanlar) için öneriler var; öteki özellikleri raporun önceki bölümünde anlatıldı.',
     },
   },
+  unit: { one: 'özellik', toPlural: 'özelliklere' },
   studyIntro: bf.studyIntro,
   settingsNote: bf.settingsNote,
   firstWeek: bf.firstWeek,
@@ -147,9 +153,9 @@ export const onAltiFaktorKisilikRoadmap: RoadmapTemplate = {
         },
         average: {
           student:
-            'Başkalarına yardım etmeyi seviyorsun ama kendi işini de ihmal etmiyorsun. Bir arkadaşınla çalışırken önce herkesin soruları tek başına çözmesi, sonra çözümleri karşılaştırması hem yardımlaşmayı hem de kendini sınamayı sağlar.',
+            'Başkalarıyla ilgilenmekle kendi işine odaklanmak arasında denge kurabiliyorsun. Bir arkadaşınla çalışırken önce herkesin soruları tek başına çözmesi, sonra çözümleri karşılaştırması hem yardımlaşmayı hem de kendini sınamayı sağlar.',
           parent:
-            'Çocuğunuz başkalarına yardım etmeyi seviyor ama kendi işini de ihmal etmiyor. Bir arkadaşıyla çalışırken önce soruları tek başlarına çözmeleri, sonra çözümleri karşılaştırmaları hem yardımlaşmayı hem de kendini sınamayı sağlar.',
+            'Çocuğunuz başkalarıyla ilgilenmekle kendi işine odaklanmak arasında denge kurabiliyor olabilir. Bir arkadaşıyla çalışırken önce soruları tek başlarına çözmeleri, sonra çözümleri karşılaştırmaları hem yardımlaşmayı hem de kendini sınamayı sağlar.',
         },
         low: {
           student:
@@ -233,9 +239,9 @@ export const onAltiFaktorKisilikRoadmap: RoadmapTemplate = {
         },
         average: {
           student:
-            'Çoğu zaman dengelisin, bazı dönemler ise seni daha çok zorlayabilir. Yoğun dönemlerde çalışmayı küçük ve düzenli parçalara bölmek son güne yığılmayı önler ve stresi azaltır; dinlenmeyi de planına yazmayı unutma.',
+            'Bazı dönemler seni ötekilerden daha çok zorlayabilir. Yoğun dönemlerde çalışmayı küçük ve düzenli parçalara bölmek son güne yığılmayı önler ve stresi azaltır; dinlenmeyi de planına yazmayı unutma.',
           parent:
-            'Çocuğunuz çoğu zaman dengeli; bazı dönemler ise onu daha çok zorlayabilir. Yoğun dönemlerde çalışmayı küçük ve düzenli parçalara bölmesi son güne yığılmayı önler ve stresi azaltır; dinlenmeyi de planına yazmasına destek olun.',
+            'Bazı dönemler çocuğunuzu ötekilerden daha çok zorlayabilir. Yoğun dönemlerde çalışmayı küçük ve düzenli parçalara bölmesi son güne yığılmayı önler ve stresi azaltır; dinlenmeyi de planına yazmasına destek olun.',
         },
         low: {
           student:
@@ -491,9 +497,9 @@ export const onAltiFaktorKisilikRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Kolay kolay ikna olmuyorsun; bu, öğrenirken bir güçtür. Okuduğun bir bilgide "Kaynağı ne? Kanıtı ne?" diye sor ve bilgiyi güvenilir bir kaynakla karşılaştır. Grup çalışmalarında görevleri ve kimin neyi yapacağını baştan yazılı olarak paylaşmak, belirsizlikleri azaltır.',
+            'Kolay kolay ikna olmuyorsun; bu temkin öğrenirken de işine yarayabilir. Okuduğun bir bilgide "Kaynağı ne? Kanıtı ne?" diye sor ve bilgiyi güvenilir bir kaynakla karşılaştır. Grup çalışmalarında görevleri ve kimin neyi yapacağını baştan yazılı olarak paylaşmak, belirsizlikleri azaltır.',
           parent:
-            'Çocuğunuz kolay kolay ikna olmuyor olabilir; bu, öğrenirken bir güçtür. Okuduğu bir bilgide "Kaynağı ne? Kanıtı ne?" diye sorması ve bilgiyi güvenilir bir kaynakla karşılaştırması bu sorgulayıcılığı işe yarar hâle getirir. Grup çalışmalarında görevlerin baştan yazılı olarak paylaşılması belirsizliği azaltır.',
+            'Çocuğunuz kolay kolay ikna olmuyor olabilir; bu temkin öğrenirken de işine yarayabilir. Okuduğu bir bilgide "Kaynağı ne? Kanıtı ne?" diye sorması ve bilgiyi güvenilir bir kaynakla karşılaştırması bu sorgulayıcılığı işe yarar hâle getirir. Grup çalışmalarında görevlerin baştan yazılı olarak paylaşılması belirsizliği azaltır.',
         },
         average: {
           student:
@@ -591,9 +597,9 @@ export const onAltiFaktorKisilikRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Kendini kolayca ifade ediyorsun; bu, öğrenirken bir güçtür. Öğrendiğin bir konuyu sesli anlatmak hem anlamanı hem hatırlamanı güçlendirir. Takıldığın yeri açıkça söylemen, yardım almanı da kolaylaştırır.',
+            'Kendini kolayca ifade ediyorsun; bu, öğrenirken de işine yarayabilir. Öğrendiğin bir konuyu sesli anlatmak hem anlamanı hem hatırlamanı güçlendirir. Takıldığın yeri açıkça söylemen, yardım almanı da kolaylaştırır.',
           parent:
-            'Çocuğunuz kendini kolayca ifade ediyor; bu, öğrenirken bir güçtür. Öğrendiği bir konuyu sesli anlatması hem anlamasını hem hatırlamasını güçlendirir; takıldığı yeri açıkça söylemesi yardım almasını kolaylaştırır.',
+            'Çocuğunuz kendini kolayca ifade ediyor olabilir; bu, öğrenirken de işine yarayabilir. Öğrendiği bir konuyu sesli anlatması hem anlamasını hem hatırlamasını güçlendirir; takıldığı yeri açıkça söylemesi yardım almasını kolaylaştırır.',
         },
       },
       action: {
@@ -757,11 +763,11 @@ export const onAltiFaktorKisilikRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Düzen ve titizlik senin güçlü yanın. Bu düzeni en etkili yöntemlere ayır: tekrarlarını takvime yaz, her tekrarda kendini kitaba bakmadan sına. Her şeyin kusursuz olmasını beklemek bazen işi uzatabilir; bir işe ayıracağın süreyi baştan belirlemek bunu dengeler.',
+            'Düzen ve titizlik sana kolay geliyor. Bu düzeni en etkili yöntemlere ayır: tekrarlarını takvime yaz, her tekrarda kendini kitaba bakmadan sına. Her şeyin kusursuz olmasını beklemek bazen işi uzatabilir; bir işe ayıracağın süreyi baştan belirlemek bunu dengeler.',
           parent:
-            'Düzen ve titizlik çocuğunuzun güçlü yanı olabilir. Tekrarlarını takvime yazması ve her tekrarda kendini kitaba bakmadan sınaması bu düzeni en etkili yöntemlere ayırır. Her şeyin kusursuz olmasını beklemek işi uzatabilir; bir işe ayıracağı süreyi baştan belirlemesine yardım edin.',
+            'Düzen ve titizlik çocuğunuza kolay geliyor olabilir. Tekrarlarını takvime yazması ve her tekrarda kendini kitaba bakmadan sınaması bu düzeni en etkili yöntemlere ayırır. Her şeyin kusursuz olmasını beklemek işi uzatabilir; bir işe ayıracağı süreyi baştan belirlemesine yardım edin.',
           adult:
-            'Düzen ve titizlik senin güçlü yanın. Bu düzeni en etkili yöntemlere ayır: tekrarlarını takvime yaz, her tekrarda kendini kaynağa bakmadan sına. Her şeyin kusursuz olmasını beklemek bazen işi uzatabilir; bir işe ayıracağın süreyi baştan belirlemek bunu dengeler.',
+            'Düzen ve titizlik sana kolay geliyor. Bu düzeni en etkili yöntemlere ayır: tekrarlarını takvime yaz, her tekrarda kendini kaynağa bakmadan sına. Her şeyin kusursuz olmasını beklemek bazen işi uzatabilir; bir işe ayıracağın süreyi baştan belirlemek bunu dengeler.',
         },
         average: {
           student:

@@ -265,8 +265,8 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   const straightLining = def.items.length >= 20 && longestRun >= 12;
   const incomplete = answered.length < def.items.length;
   if (tooFast) notes.push(`Cevaplar çok hızlı verilmiş; bazı ${ITEM_NOUN_PLURAL[likertItemNoun(def)]} okunmadan işaretlenmiş olabilir.`);
-  if (straightLining) notes.push('Uzun bir bölümde hep aynı seçenek işaretlenmiş.');
-  if (incomplete) notes.push('Bazı maddeler cevaplanmamış.');
+  if (straightLining) notes.push('Uzun bir bölümde hep aynı seçenek işaretlenmiş. Bu, cümlelere tek tek bakmadan cevap verildiğini gösterebilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.');
+  if (incomplete) notes.push('Bazı cümleler cevaplanmamış; daha az cümleye dayanan sonuçlar daha az kesindir.');
   for (const [n, v, toward, what] of [
     [oppositeAgree, highest, -1, 'evet'],
     [oppositeDisagree, lowest, 1, 'hayır'],

@@ -10,20 +10,19 @@ import type { BandGroup, RoadmapTemplate } from './types';
  *
  * Ancak bu testin her boyutu yalnızca dört maddeyle ölçülür ve rapor metinleri yalnızca o maddelerin sorduğunu anlatır.
  * Beş Faktör metinlerinden bu maddelerin hiç sormadığı bir özelliği güçlü yan diye söyleyen ya da rapordaki kartla çelişen
- * metinler bu testte değiştirildi:
- *  - Uyumluluk düşük: Beş Faktör "Fikirleri sorgulamak ve eleştirel bakmak senin güçlü yanın" der; buradaki dört madde
+ * metinler bu testte değiştirildi (Sorumluluk ve Duygusal Denge orta düzeyinde bu testte yazılan metinler 2026-10-22'de Beş
+ * Faktör'ün kendi metinleri oldu; o yüzden burada ayrıca yazılmaz):
+ *  - Uyumluluk düşük: Beş Faktör "Fikirleri sorgulamak sana doğal geliyor olabilir" der; buradaki dört madde
  *    yalnızca başkalarının duygularına ve sorunlarına ilgiyi sorar. Öneri, kendine adım adım açıklama (Dunlosky ve ark.,
  *    2013: kendine açıklama) ve başkalarının fikrini sormaktır; ortam da eleştiriye değil göreve odaklanır. Çalışma önerisi
  *    boyuttan bir güç çıkarmaz ("Kendi işine odaklanmak…" gibi bir çıkarım, dışadönüklük yüksekken "İnsanlarla birlikte
  *    çalışmak seni canlı tutuyor" metniyle yan yana çelişirdi).
  *  - Uyumluluk yüksek: Beş Faktör "İş birliği içinde öğrenmek sana kolay geliyor" der; maddeler iş birliğini sormaz. Yalnızca
  *    bu ilk cümle değişti.
- *  - Sorumluluk orta: Beş Faktör "İlgini çeken işlerde düzenlisin" der; maddeler ilgiyi sormaz. Yalnızca bu ilk cümle değişti.
- *  - Merak ve Hayal Gücü düşük: Beş Faktör "Somut ve işe yarar konulara odaklanmak senin güçlü yanın" der; maddeler somut
+ *  - Merak ve Hayal Gücü düşük: Beş Faktör "Somut ve işe yarar konular ilgini daha çok çekiyor" der; maddeler somut
  *    konulara ilgiyi sormaz. Bu cümle çıkarıldı.
  *  - Duygusal Denge düşük: Beş Faktör "Duygularını yoğun yaşaman" der; maddeler duyguların yoğunluğunu değil, sık sık inip
  *    çıkmasını sorar. Yalnızca bu ilk söz değişti; metnin kalanı Beş Faktör'ündür.
- *  - Duygusal Denge orta: Beş Faktör "Çoğu zaman sakinsin" der; buradaki kart "bazen sakin, bazen çabuk etkilenen" der.
  *  - Duygusal Denge yüksek: Beş Faktör "Baskı altında sakin kalabilmen" der; maddeler baskıyı ya da hızlı kararı sormaz,
  *    "çoğu zaman rahat ve sakin" olmayı sorar. Ortam da "baskı altında, hızlı karar" yerine yalnızca sakin kalabilmektir.
  *  - Veliye yaklaşım: Uyumluluk yüksek ve orta, Dışadönüklük orta (Beş Faktör'deki "kendi görüşünü savunma", "farklı
@@ -45,7 +44,6 @@ function swap(text: string, from: string, to: string): string {
 }
 
 const A = bf.scales.agreeableness;
-const C = bf.scales.conscientiousness;
 const ES = bf.scales.emotional_stability;
 const I = bf.scales.intellect;
 
@@ -95,29 +93,6 @@ export const hizliKisilikTestiRoadmap: RoadmapTemplate = {
       },
       settings: { ...A.settings, low: 'Kararların işin gereğine göre verildiği, göreve odaklanan ortamlar' },
     },
-    conscientiousness: {
-      ...C,
-      study: {
-        ...C.study,
-        average: {
-          student: swap(
-            C.study.average.student,
-            'İlgini çeken işlerde düzenlisin; diğerlerinde başlamak zor gelebilir.',
-            'Bazı işlere başlamak sana ötekilerden daha zor gelebilir.',
-          ),
-          parent: swap(
-            C.study.average.parent,
-            'Çocuğunuz ilgisini çeken işlerde düzenli, diğerlerinde başlamakta zorlanıyor olabilir.',
-            'Bazı işlere başlamak çocuğunuza ötekilerden daha zor gelebilir.',
-          ),
-          adult: swap(
-            C.study.average.adult!,
-            'İlgini çeken işlerde düzenlisin; diğerlerinde başlamak zor gelebilir.',
-            'Bazı işlere başlamak sana ötekilerden daha zor gelebilir.',
-          ),
-        },
-      },
-    },
     emotional_stability: {
       ...ES,
       study: {
@@ -135,14 +110,6 @@ export const hizliKisilikTestiRoadmap: RoadmapTemplate = {
           adult:
             'Çoğu zaman rahat ve sakin olman önemli bir güç olabilir. Bu rahatlığın son ana bırakmaya dönüşmemesi için önemli bir işin tarihinden geriye doğru küçük bir plan yap.',
         },
-        average: {
-          student:
-            'Bazı dersler ya da sınavlar seni ötekilerden daha çok gerebilir. Seni zorlayan konulara daha erken başla ve onları kısa ama sık tekrarlarla çalış. İyi hazırlanmış hissetmek gerginliği azaltır.',
-          parent:
-            'Bazı dersler ya da sınavlar çocuğunuzu ötekilerden daha çok gerebilir. Zorlandığı konulara erken başlaması ve onları kısa ama sık tekrarlarla çalışması, iyi hazırlanmış hissetmesini sağlar.',
-          adult:
-            'Bazı işler seni ötekilerden daha çok gerebilir. Seni zorlayan işlere daha erken başla ve onları küçük parçalara böl. İyi hazırlanmış hissetmek gerginliği azaltır.',
-        },
       },
       settings: { ...ES.settings, high: 'Sakin kalabilmenin işe yaradığı ortamlar' },
     },
@@ -151,13 +118,13 @@ export const hizliKisilikTestiRoadmap: RoadmapTemplate = {
       study: {
         ...I.study,
         low: {
-          student: swap(I.study.low.student, 'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. ', ''),
+          student: swap(I.study.low.student, 'Somut ve işe yarar konular ilgini daha çok çekiyor. ', ''),
           parent: swap(
             I.study.low.parent,
-            'Çocuğunuz somut ve işe yarar konulara odaklanmayı seviyor. Soyut bir konuyu gerçek hayattan bir örnekle ya da bir çizimle başlatmak işini kolaylaştırır.',
+            'Somut ve işe yarar konular çocuğunuzun ilgisini daha çok çekiyor olabilir. Soyut bir konuyu gerçek hayattan bir örnekle ya da bir çizimle başlatmak onun işini kolaylaştırır.',
             'Soyut bir konuyu gerçek hayattan bir örnekle ya da bir çizimle başlatmak çocuğunuzun işini kolaylaştırır.',
           ),
-          adult: swap(I.study.low.adult!, 'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. ', ''),
+          adult: swap(I.study.low.adult!, 'Somut ve işe yarar konular ilgini daha çok çekiyor. ', ''),
         },
       },
     },

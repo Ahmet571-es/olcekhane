@@ -13,6 +13,14 @@ import type { BandText, ReportTemplate } from './types';
  * Destek kutusu: Endişelenme alt özelliği yüksek düzeydeyse gösterilir.
  * Yetişkin raporu öğrenci metinlerini kullanır; öğrenci metni okula ya da ergenliğe özgü olduğunda yetişkin metni
  * (`adult`) ayrıca yazılmıştır.
+ * Yüksek uç bir başarı ("sana güç verir"), düşük uç bir eksiklik diye anlatılmaz; orta düzey de yükseğe yaslanmaz
+ * ("Çoğu zaman planlı" yerine "Duruma göre planlı").
+ *
+ * Ayrışma (`facetSplit`): bir boyutun alt özelliklerinden biri yüksek, bir başkası düşükse boyut kartında düzey metni
+ * yerine "Alt özellikleri ayrışan" metni gösterilir. Boyutun düzey metni bütün alt özelliklerin davranışlarını birlikte
+ * anlattığı için ayrışmada bir alt özelliğin kartıyla çelişirdi (ör. "Yüksek · Hoşgörülü ve sabırlı" Uyumluluk kartının
+ * altında "Düşük · Çabuk sinirlenen" Sabırlılık kartı). Yol haritası da ayrışan boyut için orta düzeyin önerilerini verir
+ * (lib/reports/build.ts: split).
  */
 const t = (summary: string, student: string, parent: string, extra?: { support?: boolean; adult?: string }): BandText => ({
   summary,
@@ -24,12 +32,30 @@ const t = (summary: string, student: string, parent: string, extra?: { support?:
   ...(extra?.support ? { support: true } : {}),
 });
 
+/**
+ * Bir boyutun alt özellikleri ayrıştığında (en az biri yüksek, en az biri düşük) boyut kartında, boyutun düzey metni
+ * yerine gösterilen metin; `facets` alt özelliklerin adlarıdır.
+ */
+const splitText = (facets: string) => ({
+  summary: 'Alt özellikleri ayrışan',
+  student: `Bu boyutun alt özellikleri (${facets}) sende birbirinden ayrılıyor: aralarında yüksek olan da var, düşük olan da. Bu yüzden boyut puanın seni tek başına iyi anlatmıyor; alt özelliklerini aşağıda tek tek görebilirsin.`,
+  parent: `Bu boyutun alt özellikleri (${facets}) çocuğunuzda birbirinden ayrılıyor: aralarında yüksek olan da var, düşük olan da. Bu yüzden boyut puanı onu tek başına iyi anlatmıyor; alt özellikleri aşağıda tek tek görülüyor.`,
+});
+
 export const altiBoyutluKisilikReport: ReportTemplate = {
   version: 'alti-boyutlu-kisilik-rapor-1',
   bandLabels: {
     low: 'Düşük',
     average: 'Orta',
     high: 'Yüksek',
+  },
+  facetSplit: {
+    honesty_humility: splitText('içtenlik, adil davranma, sadelik ve alçakgönüllülük'),
+    emotionality: splitText('tehlikeden çekinme, endişelenme, destek ihtiyacı ve duygusal duyarlılık'),
+    extraversion: splitText('kendini ifade etme, sosyal cesaret, sosyallik ve canlılık'),
+    agreeableness: splitText('bağışlayıcılık, hoşgörü, esneklik ve sabırlılık'),
+    conscientiousness: splitText('düzenlilik, çalışkanlık, özenlilik ve temkinlilik'),
+    openness: splitText('sanata ve güzelliğe ilgi, merak, yaratıcılık ve sıra dışılık'),
   },
   scales: {
     /* ---------- Boyutlar ---------- */
@@ -40,9 +66,9 @@ export const altiBoyutluKisilikReport: ReportTemplate = {
         'Çocuğunuz genel olarak insanlarla içten ilişkiler kurduğunu, çıkarı için başkalarını kullanmadığını ve kendini başkalarından üstün görmediğini belirtiyor.',
       ),
       average: t(
-        'Çoğu zaman içten ve ölçülü',
-        'Çoğu durumda içten ve adil davrandığını, bazı durumlarda ise kendi çıkarını ya da başkalarının gözündeki yerini daha çok gözettiğini söylüyorsun.',
-        'Çocuğunuz çoğu durumda içten ve adil davrandığını, bazı durumlarda ise kendi çıkarını ya da başkalarının gözündeki yerini daha çok gözettiğini belirtiyor.',
+        'Duruma göre içten ve ölçülü',
+        'Bazı durumlarda içten ve adil davranmayı, bazı durumlarda kendi çıkarını ya da başkalarının gözündeki yerini daha çok gözettiğini söylüyorsun.',
+        'Çocuğunuz bazı durumlarda içten ve adil davranmayı, bazı durumlarda kendi çıkarını ya da başkalarının gözündeki yerini daha çok gözettiğini belirtiyor.',
       ),
       low: t(
         'Kendi çıkarını ve konumunu önemseyen',
@@ -63,7 +89,7 @@ export const altiBoyutluKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Sakin, kendi ayakları üzerinde duran',
-        'Genel olarak tehlike ve stres karşısında sakin kaldığını, zorluklarla çoğunlukla kendi başına baş ettiğini ve duygularını çok yoğun yaşamadığını söylüyorsun. Bu sakinlik zor anlarda sana güç verir.',
+        'Genel olarak tehlike ve stres karşısında sakin kaldığını, zorluklarla çoğunlukla kendi başına baş ettiğini ve duygularını çok yoğun yaşamadığını söylüyorsun. Bu sakinlik zor anlarda işine yarayabilir.',
         'Çocuğunuz genel olarak tehlike ve stres karşısında sakin kaldığını, zorluklarla çoğunlukla kendi başına baş ettiğini ve duygularını çok yoğun yaşamadığını belirtiyor.',
       ),
     },
@@ -104,17 +130,17 @@ export const altiBoyutluKisilikReport: ReportTemplate = {
     conscientiousness: {
       high: t(
         'Planlı ve kararlı',
-        'Genel olarak düzenli, çalışkan ve özenli olduğunu, işlerini düşünüp planlayarak yaptığını söylüyorsun. Bu eğilim okulda ve hedeflerine ulaşmada sana güç verir.',
+        'Genel olarak düzenli, çalışkan ve özenli olduğunu, işlerini düşünüp planlayarak yaptığını söylüyorsun. Bu eğilim okulda ve hedeflerine ulaşırken işine yarayabilir.',
         'Çocuğunuz genel olarak düzenli, çalışkan ve özenli olduğunu, işlerini düşünüp planlayarak yaptığını belirtiyor.',
         {
           adult:
-            'Genel olarak düzenli, çalışkan ve özenli olduğunu, işlerini düşünüp planlayarak yaptığını söylüyorsun. Bu eğilim işinde, eğitiminde ve hedeflerine ulaşmada sana güç verir.',
+            'Genel olarak düzenli, çalışkan ve özenli olduğunu, işlerini düşünüp planlayarak yaptığını söylüyorsun. Bu eğilim işinde, eğitiminde ve hedeflerine ulaşırken sana yardımcı olabilir.',
         },
       ),
       average: t(
-        'Çoğu zaman planlı',
-        'Çoğu zaman düzenli ve planlı davranıyor, bazı durumlarda ise daha esnek ve anlık hareket ediyorsun.',
-        'Çocuğunuz çoğu zaman düzenli ve planlı davrandığını, bazı durumlarda ise daha esnek ve anlık hareket ettiğini belirtiyor.',
+        'Duruma göre planlı',
+        'Bazı durumlarda düzenli ve planlı, bazı durumlarda daha esnek ve anlık davrandığını söylüyorsun.',
+        'Çocuğunuz bazı durumlarda düzenli ve planlı, bazı durumlarda daha esnek ve anlık davrandığını belirtiyor.',
       ),
       low: t(
         'Esnek, anlık hareket eden',
@@ -125,8 +151,8 @@ export const altiBoyutluKisilikReport: ReportTemplate = {
     openness: {
       high: t(
         'Meraklı ve yeniliğe açık',
-        'Genel olarak sanata ve güzelliğe, bilgiye, yeni fikirlere ve alışılmışın dışındaki yollara ilgi duyduğunu söylüyorsun. Bu merak öğrenmede ve yaratıcı işlerde sana güç verir.',
-        'Çocuğunuz genel olarak sanata ve güzelliğe, bilgiye, yeni fikirlere ve alışılmışın dışındaki yollara ilgi duyduğunu belirtiyor. Bu merak öğrenmede ve yaratıcı işlerde önemli bir güçtür.',
+        'Genel olarak sanata ve güzelliğe, bilgiye, yeni fikirlere ve alışılmışın dışındaki yollara ilgi duyduğunu söylüyorsun. Bu merak öğrenmede ve yaratıcı işlerde işine yarayabilir.',
+        'Çocuğunuz genel olarak sanata ve güzelliğe, bilgiye, yeni fikirlere ve alışılmışın dışındaki yollara ilgi duyduğunu belirtiyor. Bu merak öğrenmede ve yaratıcı işlerde ona yardımcı olabilir.',
       ),
       average: t(
         'Yeniyle bilineni dengeleyen',
@@ -525,7 +551,7 @@ export const altiBoyutluKisilikReport: ReportTemplate = {
         'Çocuğunuz ilgisini çeken konularda meraklı olduğunu, her konuya ise aynı ilgiyi duymadığını belirtiyor.',
       ),
       low: t(
-        'Merakı daha sınırlı',
+        'Bilime ve tarihe pek ilgi duymayan',
         'Bilime, tarihe ve okuması zor metinlere pek ilgi duymadığını söylüyorsun; ilgilerin daha çok günlük hayatta işine yarayan konularda olabilir.',
         'Çocuğunuz bilime, tarihe ve okuması zor metinlere pek ilgi duymadığını belirtiyor; ilgileri daha çok günlük hayatta işine yarayan konularda olabilir.',
       ),
@@ -543,8 +569,8 @@ export const altiBoyutluKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Denenmiş yolları seven',
-        'Yeni fikirler üretmek yerine denenmiş ve bilinen yolları kullanmayı tercih ettiğini söylüyorsun; bu tarz, düzen ve güvenilirlik isteyen işlerde işe yarar.',
-        'Çocuğunuz yeni fikirler üretmek yerine denenmiş ve bilinen yolları kullanmayı tercih ettiğini belirtiyor; bu tarz, düzen ve güvenilirlik isteyen işlerde işe yarar.',
+        'Yeni fikirler üretmek yerine denenmiş ve bilinen yolları kullanmayı tercih ettiğini söylüyorsun; bu tarz, düzen ve güvenilirlik isteyen işlerde yararlı olabilir.',
+        'Çocuğunuz yeni fikirler üretmek yerine denenmiş ve bilinen yolları kullanmayı tercih ettiğini belirtiyor; bu tarz, düzen ve güvenilirlik isteyen işlerde yararlı olabilir.',
       ),
     },
     unconventionality: {

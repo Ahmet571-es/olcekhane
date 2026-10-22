@@ -107,6 +107,20 @@ const NAMES = [
 
 const num = (key: string) => Number(key.slice(1));
 
+/** Her alanın etkinliklerine sırayla verilecek cevaplar (verilmeyen alanlara `other`). */
+function bodyBy(level: Record<string, number[]>, other = 3, grade = 8) {
+  const seen = new Map<string, number>();
+  const answers = Object.fromEntries(
+    d.items.map((it) => {
+      const k = seen.get(it.scale) ?? 0;
+      seen.set(it.scale, k + 1);
+      const list = level[it.scale];
+      return [it.key, { value: list ? list[k % list.length] : other, rtMs: 2600 }];
+    }),
+  );
+  return { grade, data: { engine: 'likert' as const, answers } };
+}
+
 /** Ölçeğe göre aynı cevabı veren gövde (ölçek seçilmezse `other`). */
 function body(grade: number, level: Record<string, number>, other = 3) {
   return {
@@ -272,7 +286,7 @@ describe('Hobi ve Serbest Zaman İlgileri (ORAIS) tanımı', () => {
 
 describe('Hobi ve Serbest Zaman İlgileri raporu', () => {
   it('alanlar en sıktan en seyreğe; en sık uğraşılan alanlar açıklanır, ötekiler düzeyleriyle listelenir', () => {
-    const r = evaluate(SLUG, body(7, { sports: 5, exercise: 4, games: 4, outdoors: 4, culture: 1, fashion: 2 }));
+    const r = evaluate(SLUG, body(7, { sports: 5, exercise: 4, games: 4, culture: 1, fashion: 2 }));
     for (const rep of [r.student, r.parent]) {
       expect(rep.chart?.type).toBe('rulers');
       const rows = rep.chart?.type === 'rulers' ? rep.chart.rows : [];
@@ -280,9 +294,14 @@ describe('Hobi ve Serbest Zaman İlgileri raporu', () => {
       expect(rows[0].label).toBe('Spor');
       expect(rows.at(-1)?.label).toBe('Kültür ve sanat');
       expect(rows.map((x) => x.value)).toEqual([...rows.map((x) => x.value)].sort((a, b) => b! - a!));
-      expect(rep.items.map((i) => i.title)).toEqual(['1. Spor', '2. Egzersiz', '3. Masa ve kart oyunları', rep.audience === 'parent' ? 'Diğer alanlar' : 'Diğer alanların']);
-      expect(rep.items[0].badge).toBe('Sık');
-      expect(rep.items[3].text).toContain('Açık hava etkinlikleri (sık)');
+      // Egzersiz ve Masa ve kart oyunları eşit puanda (4,0): ikisi de ikinci, "eşit puan" rozetiyle.
+      expect(rep.items.map((i) => [i.title, i.badge])).toEqual([
+        ['1. Spor', 'Sık'],
+        ['2. Egzersiz', 'Sık · eşit puan'],
+        ['2. Masa ve kart oyunları', 'Sık · eşit puan'],
+        [rep.audience === 'parent' ? 'Diğer alanlar' : 'Diğer alanların', undefined],
+      ]);
+      expect(rep.items[3].text).toContain('Açık hava etkinlikleri (ara sıra)');
       expect(rep.items[3].text).toContain('Kültür ve sanat (az)');
       expect(rep.items[3].text).not.toContain('meslek');
       expect(rep.keyFigures[0].value).toBe('Spor');
@@ -303,14 +322,20 @@ describe('Hobi ve Serbest Zaman İlgileri raporu', () => {
 
   it('sık yapılan alan yoksa yalnızca ara sıra yapılan alanlar öne çıkar; az yapılan alan "en sık" diye gösterilmez', () => {
     const none = evaluate(SLUG, body(8, { reading: 3, travel: 3 }, 2));
-    expect(none.student.items.map((i) => i.title)).toEqual(['1. Kitap okuma', '2. Gezi ve seyahat', 'Diğer alanların']);
+    expect(none.student.items.map((i) => i.title)).toEqual(['1. Kitap okuma', '1. Gezi ve seyahat', 'Diğer alanların']);
     expect(none.student.itemsTitle).toBe('En yüksek çıkan alanların');
-    expect(none.student.cautions.join(' ')).toContain('ara sıra yapılan iki alanı');
-    // Tek bir alan ara sıra, ötekiler az: yalnızca o alan.
+    expect(none.student.cautions.join(' ')).toContain('aşağıda ara sıra yapılan iki alanı görüyorsun.');
+    // Tek bir alan ara sıra, ötekiler az: yalnızca o alan; başlık tekil.
     const one = evaluate(SLUG, body(8, { reading: 3 }, 2));
     expect(one.student.items.map((i) => i.title)).toEqual(['1. Kitap okuma', 'Diğer alanların']);
+    expect(one.student.itemsTitle).toBe('En yüksek çıkan alanın');
     expect(one.student.keyFigures[0].note).toBeUndefined();
     expect(one.parent.cautions.join(' ')).toContain('ara sıra yapılan alan yer alıyor');
+    // Dört alan ara sıra (puanları farklı), ötekiler az: ara sıra yapılanlardan en yüksek çıkan ikisi gösterilir.
+    const four = evaluate(SLUG, bodyBy({ reading: [4, 4, 3, 3, 3], travel: [4, 3, 3, 3, 3, 3], sports: [3], culture: [3, 3, 3, 3, 3, 2] }, 2));
+    expect(four.student.items.map((i) => i.title)).toEqual(['1. Kitap okuma', '2. Gezi ve seyahat', 'Diğer alanların']);
+    expect(four.student.cautions.join(' ')).toContain('aşağıda ara sıra yapılan alanlardan en yüksek çıkan ikisini görüyorsun.');
+    expect(four.parent.cautions.join(' ')).toContain('aşağıda ara sıra yapılan alanlardan en yüksek çıkan ikisi yer alıyor.');
     // Bütün alanlar az: öne çıkan alan yok; imkânları anlatan not.
     const low = evaluate(SLUG, body(8, { reading: 2 }, 1));
     expect(low.student.keyFigures).toEqual([]);
@@ -324,7 +349,31 @@ describe('Hobi ve Serbest Zaman İlgileri raporu', () => {
     expect(same.parent.itemsTitle).toBe('Alanlar');
     expect(same.student.items.map((i) => i.title)).toEqual(['Bütün alanlar']);
     expect(same.student.cautions.join(' ')).not.toContain('iki alan');
-    expect(same.student.cautions.join(' ')).toContain('hiçbir alan ötekilerden belirgin biçimde ayrılmıyor');
+    expect(same.student.cautions.join(' ')).toContain('Bütün alanlarda aynı puan çıktı; bu yüzden hiçbir alan öne çıkarılmadı. Alanlar arasındaki farklar küçük');
+    // Yol haritası: zaman birçok alana benzer ölçüde ayrılmış (imkânların kısıtlılığı yalnızca hepsi az yapılırken anılır).
+    for (const v of [3, 5]) {
+      const rm = evaluate(SLUG, body(8, {}, v)).student.roadmap!;
+      expect(rm.standoutNote).toBe('Son bir yılda hiçbir alan ötekilerden öne çıkmıyor: zamanını birçok alana benzer ölçüde ayırmışsın. Aşağıdaki haftalarda küçük denemeler var.');
+    }
+    expect(evaluate(SLUG, body(8, {}, 5)).parent.roadmap!.standoutNote).toContain('çocuğunuz zamanını birçok alana benzer ölçüde ayırmış');
+    expect(low.student.roadmap!.standoutNote).toContain('zamanının ya da imkânlarının kısıtlı olmasıyla');
+  });
+
+  it('eşit puanlar: en sık uğraşılan alanlarla eşit puandaki alanlar sessizce düşürülmez', () => {
+    // Sekiz alan en sık düzeyde (5,0): üçü gösterilir, sekizi de notta anılır; birinci sıradaki üç alan "eşit puan".
+    const eight = ['sports', 'exercise', 'games', 'outdoors', 'travel', 'reading', 'pets', 'gardening'];
+    const r = evaluate(SLUG, body(9, Object.fromEntries(eight.map((k) => [k, 5])), 2));
+    const tops = r.student.items.filter((i) => /^\d\. /.test(i.title));
+    expect(tops.map((i) => [i.title, i.badge])).toEqual([
+      ['1. Egzersiz', 'Sık · eşit puan'],
+      ['1. Masa ve kart oyunları', 'Sık · eşit puan'],
+      ['1. Bahçe ve bitkiler', 'Sık · eşit puan'],
+    ]);
+    const note = r.student.cautions.find((c) => c.includes('alanlarındaki puanların aynı ya da neredeyse aynı'))!;
+    for (const k of eight) expect(note, k).toContain(`${d.scales.find((s) => s.key === k)!.name}`);
+    expect(note).toContain('“Masa ve kart oyunları”');
+    expect(note).toMatch(/bu yüzden öne çıkan alanlarının seçimi kesin değil, bu alanların hepsini birlikte düşünebilirsin\.$/);
+    expect(r.student.keyFigures[0]).toMatchObject({ label: 'En sık uğraştığın alanlar', note: 'eşit puanla' });
   });
 
   it('"hiç yapmadım" ya da "son bir yılda yapmadım" cevaplarının üst üste gelmesi düz çizgi sayılmaz; öteki cevaplarınki sayılır', () => {

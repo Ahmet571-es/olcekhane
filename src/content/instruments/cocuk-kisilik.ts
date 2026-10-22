@@ -166,7 +166,7 @@ export const cocukKisilik: LikertInstrument = {
       'Bu kısa formun güvenirlik çalışması henüz yapılmadı; kaynaktaki 10 ve 20 maddelik ölçekler yetişkinlerle geliştirilmiştir. 10–20 yaş arası 230.000’i aşkın kişinin cevaplarıyla yapılan bir çalışmada, cümlelerin çoğuna katılma eğilimindeki kişiler arası farklılığın (varyansın) 10 yaşında 20 yaşındakinin iki katı olduğu ve bir boyutun maddeleri arasındaki tutarlılığın yaşla arttığı bulunmuştur (Soto ve ark., 2008). Aynı çalışmada, katılma eğilimi denetlendikten sonra, 10 yaşındakilerde 8–10 maddelik ölçeklerin güvenirlik katsayıları .57 ile .76 arasındaydı (20 yaşında .75 ile .87); çalışmanın en küçük katılımcıları 10 yaşındaydı. Bu yüzden her boyutta maddelerin yarısı ters yönlüdür ve birbirinin tersini söyleyen beş cümle çiftinin en az üçünde iki cümleye de aynı uç cevap verilirse raporda uyarı gösterilir. Her boyut altı cümleyle ölçüldüğü için sonuçlar yaklaşıktır; raporda ölçüm payı gösterilmez.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok. Puanlar 1–3 cevap aralığına göre yorumlanır: sonuç çocuğun kendini nasıl gördüğünü gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Sonuç, çocuğun kendini nasıl gördüğünü gösterir; onu başka çocuklarla karşılaştırmaz.',
     ageNote:
       '3, 4 ve 5. sınıflar için yazılmıştır; 6. sınıftan itibaren Beş Faktör Kişilik Profili önerilir. Çocuk cümleleri kendisi okur ve cevabı kendisi seçer; anlamadığı bir kelimeyi yanındaki yetişkin, cevabı yönlendirmeden açıklayabilir.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden kopyalanabilir, düzenlenebilir, çevrilebilir ve her amaçla kullanılabilir.',

@@ -485,7 +485,8 @@ describe('Empati raporu', () => {
     }
     // Girişteki öz değerlendirme uyarısı her kişiye; gençlerle yapılan çalışma yetişkine anılmaz.
     for (const x of [lead.student, lead.parent, lead.adult!]) {
-      expect(x).toContain('ne kadar doğru tahmin ettiği arasındaki ilişki ise çok zayıftır');
+      expect(x).toContain('“Başkalarını iyi anlarım” demek, onların ne hissettiğini doğru tahmin etmek anlamına gelmez');
+      expect(x).toContain('bu ikisi arasındaki ilişki çok zayıf çıkmıştır');
       expect(x).toContain('Bu testin üç yönü bu ikisiyle birebir örtüşmez');
     }
     expect(lead.adult).toBeDefined();

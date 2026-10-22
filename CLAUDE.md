@@ -254,6 +254,13 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Test çözme ve rapor ekranları (`src/app/(test)`) sade kalır; hareketli efektler oraya taşınmaz. Rapordaki üç
   boyutlu profil grafiği (`lib/charts/bars3d.ts`; ekranda ve PDF'te aynı hesap) yalnızca kişi sürükleyince ya da
   düğmeye basınca döner. Tayf renkleri bir boyutu ya da alanı tanıtır; puan, iyi ya da kötü anlamı taşımaz.
+- Kart grafikleri (site sahibinin 2026-10-22 kalıcı isteği): raporda her başlık sözel açıklamanın yanında grafikle de
+  anlatılır. Kartın grafiği (`SimpleItem.visual`) ortak geometriyle ekranda (`components/report/item-visual.tsx`; telefonda
+  başlığın altında, geniş ekranda açıklamanın yanında) ve PDF'te aynı çizilir (`lib/reports/visuals.ts`): ölçek kartında
+  düzey çubuğu (testin kendi eşikleriyle Düşük–Orta–Yüksek bölgeleri, kişinin bölgesi vurgulu), ölçekleri birlikte anlatan
+  kartta yan yana grafik. Bölgeler tek tonludur (iyi ya da kötü çağrışımı yoktur). Yeni testte her kartın grafiği olur;
+  anket testlerinde `tests/kart-grafikleri.test.ts` denetler (grafik rozetteki düzeyle ve genel bakıştaki puanla aynıdır,
+  yazılar taşmaz). Görev (zekâ) testlerinin kart grafikleri 2. aşamadadır (`DURUM.md`).
 
 ## Gelişim yol haritası
 

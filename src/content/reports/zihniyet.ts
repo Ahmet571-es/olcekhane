@@ -20,14 +20,19 @@ import type { InsightRule, ReportTemplate } from './types';
  *    küçük"), az sayıda çalışmada düşük gelirli ailelerden gelen öğrencilerde d = .34.
  *  - Burgoyne, Hambrick ve Macnamara (2020): üniversite öğrencileriyle; kuramın altı öncülünden yalnızca ikisi desteklendi
  *    (ör. gelişim zihniyeti ile zorlukta sebat etme ilişkisi anlamlı değildi).
- *  - Yeager ve ark. (2019): bir saatten kısa çevrim içi çalışma, notları düşük öğrencilerin notlarını biraz yükseltti
- *    (yaklaşık 0,1 not puanı); etkisi akran ortamı mesajla uyumluyken görüldü.
+ *  - Yeager ve ark. (2019; yalnızca bilim kartında): bir saatten kısa çevrim içi çalışma, notları düşük öğrencilerin
+ *    notlarını biraz yükseltti (yaklaşık 0,1 not puanı); etkisi akran ortamı mesajla uyumluyken görüldü. Raporda anılmaz:
+ *    okuyanın notlarının düşük olduğunu ve zihniyet değişince notların yükseldiğini ima ederdi; hemen ardından gelen "Bir
+ *    not" de kısa çalışmaların etkisinin çok küçük olduğunu söyler (2026-10-22 incelemesi).
  *  - Dunlosky ve ark. (2013): bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak en yararlı bulunan iki yöntem.
  * İlkeler: zihniyet abartılmaz (başarıyla ilişkisi küçüktür, erişkinlerde neredeyse yoktur); gelişim zihniyeti bir
  * "doğru cevap" ya da etiket gibi sunulmaz; inanç ile davranışın örtüşmeyebileceği söylenir. Bulgular ilişkiseldir;
- * öneriler "-abilir" diye yazılır. Aynı araştırma bulgusu bir raporda bir kez anılır ("zorlanma anlarında belirginleşir"
- * yalnızca Hataya bakışta, anne babanın başarısızlığa bakışı yalnızca veli metninde Hataya bakışta). Öğrenci metni okula
+ * öneriler "-abilir" diye yazılır. Aynı araştırma bulgusu bir raporda bir kez anılır ("başarısız olunan anlarda görülüyor"
+ * yalnızca Hataya bakışta, anne babanın hatalara bakışı yalnızca veli metninde Hataya bakışta). Öğrenci metni okula
  * özgüyse ya da erişkin için yanlış olursa yetişkine ayrı metin yazılır.
+ * Kartlar sonucu anlatır, öneri vermez (2026-10-22 incelemesi): öneriler yol haritasındadır (çalışma kartları, veliye
+ * yaklaşım, haftalar); kartta da söylenince aynı öneri bir sayfada üç dört kez okunuyordu. "Birlikte bakınca" kuralları
+ * kartlardaki cümleleri tekrar etmez; yalnızca hangi alanın düşük olduğunu söyler.
  */
 
 const p = (
@@ -49,7 +54,7 @@ const NOT_HIGH = ['low', 'average'] as const;
 const NOT_LOW = ['average', 'high'] as const;
 
 const OVERVIEW =
-  'Her satır bir alan. Değerler 1 ile 5 arasındadır: 5’e yaklaştıkça gelişim yönündeki inanç (“gelişim zihniyeti”), 1’e yaklaştıkça sabitlik yönündeki inanç (“sabit zihniyet”) güçlüdür. Sabitlik yönündeki cümlelerde cevap ters çevrilerek hesaplanır. Bu bir yetenek puanı değildir.';
+  'Her satır bir alan. Değerler 1 ile 5 arasındadır: 5’e yaklaştıkça gelişim yönündeki inanç (“gelişim zihniyeti”), 1’e yaklaştıkça sabitlik yönündeki inanç (“sabit zihniyet”) güçlüdür. “Zekâ boy gibidir: çalışarak artırılamaz” gibi cümlelere katılmamak puanı yükseltir. Bu bir yetenek puanı değildir.';
 
 export const zihniyetReport: ReportTemplate = {
   version: 'zihniyet-1',
@@ -79,18 +84,18 @@ export const zihniyetReport: ReportTemplate = {
       // Zekâyı gelişebilir görüp başka bir alanda sabit bakış: inanç ile davranış her zaman örtüşmez.
       r(
         { intelligence: ['high'], effort: ['low'] },
-        'Ancak çok çalışmak gerekmesini yeteneksizlik işareti gibi görüyorsun. Bu iki düşünce birbiriyle pek uyuşmuyor: zekâ gelişebiliyorsa, emek vermek ve yöntem değiştirmek o gelişmenin yollarıdır.',
-        'Ancak çok çalışmak gerekmesini yeteneksizlik işareti gibi görüyor. Bu iki düşünce birbiriyle pek uyuşmuyor: zekâ gelişebiliyorsa, emek vermek ve yöntem değiştirmek o gelişmenin yollarıdır.',
+        'Ancak çabaya bakış puanın düşük. Bu iki düşünce birbiriyle pek uyuşmuyor: zekâ gelişebiliyorsa, emek vermek ve yöntem değiştirmek o gelişmenin yollarıdır.',
+        'Ancak çabaya bakış puanı düşük. Bu iki düşünce birbiriyle pek uyuşmuyor: zekâ gelişebiliyorsa, emek vermek ve yöntem değiştirmek o gelişmenin yollarıdır.',
       ),
       r(
         { intelligence: ['high'], failure: ['low'] },
-        'Öte yandan hataları seni geri götüren şeyler olarak görüyorsun. Zekânın gelişebileceğine inanan biri için hatalar, neyin henüz öğrenilmediğini gösteren işaretler olabilir; bu yüzden hataya bakış, üzerinde durmanın en çok işine yarayabileceği alan olabilir.',
-        'Öte yandan hataları onu geri götüren şeyler olarak görüyor. Zekânın gelişebileceğine inanan biri için hatalar, neyin henüz öğrenilmediğini gösteren işaretler olabilir; bu yüzden hataya bakış, üzerinde durmanın ona en çok yarar sağlayabileceği alan olabilir.',
+        'Öte yandan hataya bakış puanın düşük. Zekânın gelişebileceğine inanan biri için hatalar, neyin henüz öğrenilmediğini gösteren işaretler olabilir; bu yüzden hataya bakış, üzerinde durmanın en çok işine yarayabileceği alan olabilir.',
+        'Öte yandan hataya bakış puanı düşük. Zekânın gelişebileceğine inanan biri için hatalar, neyin henüz öğrenilmediğini gösteren işaretler olabilir; bu yüzden hataya bakış, üzerinde durmanın ona en çok yarar sağlayabileceği alan olabilir.',
       ),
       r(
         { intelligence: ['high'], challenge: ['low'] },
-        'Buna karşın zorlayıcı işlerden kaçınma eğilimin var. İnanç ile davranışın örtüşmemesi şaşırtıcı değil: araştırmalarda zihniyetle zorluk karşısındaki davranışlar arasındaki ilişkiler küçük bulunmuş. “Nasıl çalışabilirsin?” bölümünde zorluğa yaklaşım için önerilen küçük adım, inancını davranışa çevirmene yardım edebilir.',
-        'Buna karşın zorlayıcı işlerden kaçınma eğiliminde. İnanç ile davranışın örtüşmemesi şaşırtıcı değil: araştırmalarda zihniyetle zorluk karşısındaki davranışlar arasındaki ilişkiler küçük bulunmuş. “Çocuğunuz nasıl çalışabilir?” bölümünde zorluğa yaklaşım için önerilen küçük adım, inancını davranışa çevirmesine yardım edebilir.',
+        'Buna karşın zorluğa yaklaşım puanın düşük. İnanç ile davranışın örtüşmemesi şaşırtıcı değil: araştırmalarda zihniyetle zorluk karşısındaki davranışlar arasındaki ilişkiler küçük bulunmuş. “Nasıl çalışabilirsin?” bölümünde zorluğa yaklaşım için önerilen küçük adım, inancını davranışa çevirmene yardım edebilir.',
+        'Buna karşın zorluğa yaklaşım puanı düşük. İnanç ile davranışın örtüşmemesi şaşırtıcı değil: araştırmalarda zihniyetle zorluk karşısındaki davranışlar arasındaki ilişkiler küçük bulunmuş. “Çocuğunuz nasıl çalışabilir?” bölümünde zorluğa yaklaşım için önerilen küçük adım, inancını davranışa çevirmesine yardım edebilir.',
       ),
       r(
         { intelligence: ['high'], effort: ['high'], failure: ['high'], challenge: ['high'] },
@@ -120,16 +125,15 @@ export const zihniyetReport: ReportTemplate = {
       // Zekâyı sabit görüp başka bir alanda gelişim yönünde bakış.
       r(
         { intelligence: ['low'] },
-        'Yine de çaba, hata ya da zorluk konusunda gelişime açık bir bakışın var. Yani zekâ hakkındaki inancın, zorlandığında nasıl davrandığını tek başına belirlemiyor olabilir; araştırmalarda da zihniyetle davranışlar arasındaki ilişkiler küçük bulunmuş.',
-        'Yine de çaba, hata ya da zorluk konusunda gelişime açık bir bakışı var. Yani zekâ hakkındaki inancı, zorlandığında nasıl davrandığını tek başına belirlemiyor olabilir; araştırmalarda da zihniyetle davranışlar arasındaki ilişkiler küçük bulunmuş.',
+        'Yine de çaba, hata ve zorluk alanlarından en az birinde gelişime açık bir bakışın var. Yani zekâ hakkındaki inancın, zorlandığında nasıl davrandığını tek başına belirlemiyor olabilir; araştırmalarda da zihniyetle davranışlar arasındaki ilişkiler küçük bulunmuş.',
+        'Yine de çaba, hata ve zorluk alanlarından en az birinde gelişime açık bir bakışı var. Yani zekâ hakkındaki inancı, zorlandığında nasıl davrandığını tek başına belirlemiyor olabilir; araştırmalarda da zihniyetle davranışlar arasındaki ilişkiler küçük bulunmuş.',
         undefined,
         { effort: [...NOT_HIGH], failure: [...NOT_HIGH], challenge: [...NOT_HIGH] },
       ),
       r(
         { intelligence: ['low'], effort: [...NOT_HIGH], failure: [...NOT_HIGH], challenge: [...NOT_HIGH] },
-        'Çaba, hata ve zorluk konusunda da gelişim yönünde belirgin bir bakış görünmüyor; bu durumda zorlanınca “Bende bu yetenek yok” deyip vazgeçmek daha kolay olabilir. Bir araştırmada, zekânın gelişebileceğini anlatan bir saatten kısa bir çevrim içi çalışma, notları düşük öğrencilerin notlarını biraz yükseltmiş. “Nasıl çalışabilirsin?” bölümünde zekâya bakış için önerilen adım iyi bir başlangıç olabilir.',
-        'Çaba, hata ve zorluk konusunda da gelişim yönünde belirgin bir bakış görünmüyor; bu durumda zorlanınca “Bende bu yetenek yok” deyip vazgeçmek daha kolay olabilir. Bir araştırmada, zekânın gelişebileceğini anlatan bir saatten kısa bir çevrim içi çalışma, notları düşük öğrencilerin notlarını biraz yükseltmiş. “Çocuğunuz nasıl çalışabilir?” bölümünde zekâya bakış için önerilen adım iyi bir başlangıç olabilir.',
-        'Çaba, hata ve zorluk konusunda da gelişim yönünde belirgin bir bakış görünmüyor; bu durumda zorlanınca “Bende bu yetenek yok” deyip vazgeçmek daha kolay olabilir. Bu düşünceyi fark etmek, vazgeçmek yerine başka bir yol denemene yardım edebilir.',
+        'Çaba, hata ve zorluk konusunda da gelişim yönünde belirgin bir bakış görünmüyor; bu durumda zorlanınca “Bende bu yetenek yok” deyip vazgeçmek daha kolay olabilir. Bu düşünceyi fark etmek, vazgeçmek yerine başka bir yol denemene yardım edebilir. “Nasıl çalışabilirsin?” bölümünde zekâya bakış için önerilen adım iyi bir başlangıç olabilir.',
+        'Çaba, hata ve zorluk konusunda da gelişim yönünde belirgin bir bakış görünmüyor; bu durumda zorlanınca “Bende bu yetenek yok” deyip vazgeçmek daha kolay olabilir. Bu düşünceyi fark etmek, vazgeçmek yerine başka bir yol denemesine yardım edebilir. “Çocuğunuz nasıl çalışabilir?” bölümünde zekâya bakış için önerilen adım iyi bir başlangıç olabilir.',
       ),
       // Her raporda: zihniyet abartılmaz.
       r(
@@ -144,23 +148,23 @@ export const zihniyetReport: ReportTemplate = {
     intelligence: {
       low: p(
         'Zekâyı sabit görme',
-        'Zekânın büyük ölçüde doğuştan belli olduğunu ve pek değişmediğini düşünüyorsun. Bu düşünce, zorlandığın anlarda “Demek ki yapamıyorum” sonucuna varmayı kolaylaştırabilir. Bir araştırmada, zekânın gelişebileceğine inanan yedinci sınıf öğrencilerinin matematik notlarının iki yıl boyunca yükseldiği, sabit olduğuna inananlarınkinin ise yerinde saydığı görülmüş. Yine de araştırmaların genelinde bu ilişki küçüktür: zihniyet başarının tek ya da en önemli belirleyicisi değildir.',
-        'Çocuğunuz zekânın büyük ölçüde doğuştan belli olduğunu ve pek değişmediğini düşünüyor. Bu düşünce, zorlandığı anlarda “Demek ki yapamıyorum” sonucuna varmayı kolaylaştırabilir. Bir araştırmada, zekânın gelişebileceğine inanan yedinci sınıf öğrencilerinin matematik notlarının iki yıl boyunca yükseldiği, sabit olduğuna inananlarınkinin ise yerinde saydığı görülmüş. Yine de araştırmaların genelinde bu ilişki küçüktür: zihniyet başarının tek ya da en önemli belirleyicisi değildir.',
+        'Zekânın büyük ölçüde doğuştan belli olduğunu ve pek değişmediğini düşünüyorsun. Bu düşünce, zorlandığın anlarda “Demek ki yapamıyorum” sonucuna varmayı kolaylaştırabilir. Bir araştırmada, zekânın gelişebileceğine inanan yedinci sınıf öğrencilerinin matematik notlarının iki yıl boyunca yükseldiği, sabit olduğuna inananlarınkinin ise yerinde saydığı görülmüş.',
+        'Çocuğunuz zekânın büyük ölçüde doğuştan belli olduğunu ve pek değişmediğini düşünüyor. Bu düşünce, zorlandığı anlarda “Demek ki yapamıyorum” sonucuna varmayı kolaylaştırabilir. Bir araştırmada, zekânın gelişebileceğine inanan yedinci sınıf öğrencilerinin matematik notlarının iki yıl boyunca yükseldiği, sabit olduğuna inananlarınkinin ise yerinde saydığı görülmüş.',
         ['Bir ay önce zorlandığın ama şimdi daha iyi yaptığın bir şeyi düşün.'],
         ['Zorlandığı ama sonra öğrendiği bir şeyi ona hatırlatın.'],
-        'Zekânın büyük ölçüde doğuştan belli olduğunu ve pek değişmediğini düşünüyorsun. Bu düşünce, zorlandığın anlarda “Demek ki yapamıyorum” sonucuna varmayı kolaylaştırabilir. Bir zamanlar zorlandığın ama sonra öğrendiğin bir şeyi hatırlamak, bu düşünceyi sınamana yardım edebilir.',
+        'Zekânın büyük ölçüde doğuştan belli olduğunu ve pek değişmediğini düşünüyorsun. Bu düşünce, zorlandığın anlarda “Demek ki yapamıyorum” sonucuna varmayı kolaylaştırabilir.',
       ),
       average: p(
         'Zekâya iki yönden bakma',
-        'Zekâ konusunda iki görüşe de yakınsın: bazen gelişebileceğini, bazen doğuştan belli olduğunu düşünüyorsun. Zorlandığın bir anda hangi düşüncenin aklına geldiğini fark etmek işine yarayabilir.',
-        'Çocuğunuz zekâ konusunda iki görüşe de yakın: bazen gelişebileceğini, bazen doğuştan belli olduğunu düşünüyor. Zorlandığı anlarda hangi düşüncenin aklına geldiğini birlikte konuşmak ona yardım edebilir.',
+        'Zekâ konusunda iki görüşe de yakınsın: bazen gelişebileceğini, bazen doğuştan belli olduğunu düşünüyorsun.',
+        'Çocuğunuz zekâ konusunda iki görüşe de yakın: bazen gelişebileceğini, bazen doğuştan belli olduğunu düşünüyor.',
         ['Zorlandığında aklına gelen düşünceyi fark et.'],
         ['Zorlandığında neler düşündüğünü sorun ve dinleyin.'],
       ),
       high: p(
         'Zekânın gelişebileceğine inanma',
-        'Zekânın ve zihinsel becerilerin öğrenerek gelişebileceğine inanıyorsun. Araştırmalarda bu inanç, öğrenmeyi hedefleme ve zorlanınca vazgeçmek yerine yöntem değiştirme ile küçük de olsa ilişkili bulunmuş. Yine de inanç ile davranış her zaman örtüşmez; zorlandığında gerçekten yeni yollar deneyip denemediğine bakmak işine yarayabilir.',
-        'Çocuğunuz zekânın ve zihinsel becerilerin öğrenerek gelişebileceğine inanıyor. Araştırmalarda bu inanç, öğrenmeyi hedefleme ve zorlanınca vazgeçmek yerine yöntem değiştirme ile küçük de olsa ilişkili bulunmuş. Yine de inanç ile davranış her zaman örtüşmez; zorlandığında gerçekten yeni yollar deneyip denemediğine birlikte bakabilirsiniz.',
+        'Zekânın ve zihinsel becerilerin öğrenerek gelişebileceğine inanıyorsun. Araştırmalarda bu inanç, öğrenmeyi hedefleme ve zorlanınca vazgeçmek yerine yöntem değiştirme ile küçük de olsa ilişkili bulunmuş. Yine de inanç ile davranış her zaman örtüşmez.',
+        'Çocuğunuz zekânın ve zihinsel becerilerin öğrenerek gelişebileceğine inanıyor. Araştırmalarda bu inanç, öğrenmeyi hedefleme ve zorlanınca vazgeçmek yerine yöntem değiştirme ile küçük de olsa ilişkili bulunmuş. Yine de inanç ile davranış her zaman örtüşmez.',
         ['Takıldığında yeni bir yol dene.'],
         ['Çabasını ve yöntem değiştirmesini fark ettiğinizi söyleyin.'],
       ),
@@ -168,23 +172,22 @@ export const zihniyetReport: ReportTemplate = {
     effort: {
       low: p(
         'Çabayı yeteneksizlik işareti görme',
-        'Bir konuda çok çalışmak gerekmesini, o konuda yeteneğin olmadığının işareti gibi görüyorsun. Bu bakış, zorlanınca vazgeçmeyi kolaylaştırabilir. Bir araştırmada, zekânın gelişebileceğine inanan öğrencilerin notlarındaki yükselişle ilişkili etkenlerden birinin çabaya olumlu bakmak olduğu görülmüş. Zorlandığında “Yeteneğim yok” yerine “Henüz doğru yolu bulamadım” diye düşünmek işine yarayabilir.',
-        'Çocuğunuz bir konuda çok çalışmak gerekmesini, o konuda yeteneği olmadığının işareti gibi görüyor. Bu bakış, zorlanınca vazgeçmeyi kolaylaştırabilir. Bir araştırmada, zekânın gelişebileceğine inanan öğrencilerin notlarındaki yükselişle ilişkili etkenlerden birinin çabaya olumlu bakmak olduğu görülmüş. Yeteneğini değil, çabasını ve denediği yolları fark ettiğinizi söylemek bu bakışı destekleyebilir.',
+        'Bir konuda çok çalışmak gerekmesini, o konuda yeteneğin olmadığının işareti gibi görüyorsun. Bu bakış, zorlanınca vazgeçmeyi kolaylaştırabilir. Zorlandığında “Yeteneğim yok” yerine “Henüz doğru yolu bulamadım” diye düşünmek işine yarayabilir.',
+        'Çocuğunuz bir konuda çok çalışmak gerekmesini, o konuda yeteneği olmadığının işareti gibi görüyor. Bu bakış, zorlanınca vazgeçmeyi kolaylaştırabilir.',
         ['Zorlandığında “Henüz doğru yolu bulamadım” de.'],
         ['Yeteneğini değil, çabasını ve denediği yolları övün.'],
-        'Bir konuda çok çalışmak gerekmesini, o konuda yeteneğin olmadığının işareti gibi görüyorsun. Bu bakış, zorlanınca vazgeçmeyi kolaylaştırabilir. Zorlandığında “Yeteneğim yok” yerine “Henüz doğru yolu bulamadım” diye düşünmek işine yarayabilir.',
       ),
       average: p(
         'Çabaya iki yönden bakma',
-        'Çabanın ilerlettiğini düşünüyorsun ama bazen çok çalışmak gerekmesi sana yeteneksizlik gibi gelebiliyor. Çabanın yanında yöntem de önemlidir: takılınca aynı şeyi tekrarlamak yerine başka bir yol denemek işine yarayabilir.',
-        'Çocuğunuz çabanın ilerlettiğini düşünüyor ama bazen çok çalışmak gerekmesi ona yeteneksizlik gibi gelebiliyor. Çabanın yanında yöntem de önemlidir: takılınca aynı şeyi tekrarlamak yerine başka bir yol denemesi ona yarar sağlayabilir.',
+        'Çabanın ilerlettiğini düşünüyorsun ama bazen çok çalışmak gerekmesi sana yeteneksizlik gibi gelebiliyor.',
+        'Çocuğunuz çabanın ilerlettiğini düşünüyor ama bazen çok çalışmak gerekmesi ona yeteneksizlik gibi gelebiliyor.',
         ['Takıldığında aynı şeyi tekrarlamak yerine yöntem değiştir.'],
         ['Takıldığında başka bir yol denemesini cesaretlendirin.'],
       ),
       high: p(
         'Çabanın ilerlettiğine inanma',
-        'Emeğin ve yeni yollar denemenin seni ilerlettiğine inanıyorsun; çok çalışmak gerekmesini yeteneksizlik saymıyorsun. Çabanın yanında etkili yöntemleri seçmek de önemlidir: öğrendiğini bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak, araştırmalarda en yararlı bulunan yöntemler arasında.',
-        'Çocuğunuz emeğin ve yeni yollar denemenin onu ilerlettiğine inanıyor; çok çalışmak gerekmesini yeteneksizlik saymıyor. Çabasını etkili yöntemlerle birleştirmesi de önemlidir: öğrendiğini bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak, araştırmalarda en yararlı bulunan yöntemler arasında.',
+        'Emeğin ve yeni yollar denemenin seni ilerlettiğine inanıyorsun; çok çalışmak gerekmesini yeteneksizlik saymıyorsun.',
+        'Çocuğunuz emeğin ve yeni yollar denemenin onu ilerlettiğine inanıyor; çok çalışmak gerekmesini yeteneksizlik saymıyor.',
         ['Çabanı bakmadan hatırlama gibi etkili yöntemlerle birleştir.'],
         ['Çabasını etkili yöntemlerle birleştirmesini destekleyin.'],
       ),
@@ -192,22 +195,22 @@ export const zihniyetReport: ReportTemplate = {
     failure: {
       low: p(
         'Hatayı engel görme',
-        'Hataları ve başarısızlığı öğrenmeyi engelleyen, seni geri götüren şeyler olarak görüyorsun. Bu bakış, hata ihtimali olan işlerden uzak durmayı kolaylaştırabilir. Araştırmalarda zihniyetle zorlanınca seçilen yollar arasındaki ilişki en çok başarısızlık anlarında belirginleşiyor: zekânın gelişebileceğini düşünenler bu anlarda çaresizliğe kapılmak yerine yöntem değiştirme eğiliminde. Bir hatanın ardından “Bu bana ne öğretti?” diye sormak bu bakışı değiştirmeye yardım edebilir.',
-        'Çocuğunuz hataları ve başarısızlığı öğrenmeyi engelleyen, onu geri götüren şeyler olarak görüyor. Bu bakış, hata ihtimali olan işlerden uzak durmayı kolaylaştırabilir. Bir araştırmada, başarısızlığı engelleyici gören anne babaların çocuğun hatasına yetenek kaygısıyla tepki verme ve öğrenmesini daha az destekleme eğiliminde olduğu görülmüş; anne babanın başarısızlığa bakışı, çocuğun zekâ hakkındaki inancıyla da ilişkili bulunmuş. Çocuğunuzun hatalarına “Bundan ne öğrendin?” diye yaklaşmak bu yüzden önemli olabilir.',
+        'Hataları ve başarısızlığı öğrenmeyi engelleyen, seni geri götüren şeyler olarak görüyorsun. Bu bakış, hata ihtimali olan işlerden uzak durmayı kolaylaştırabilir. Araştırmalarda zihniyet ile davranış arasındaki bağ en çok başarısız olunan anlarda görülüyor: zekânın gelişebileceğini düşünenler bu anlarda vazgeçmek yerine yöntem değiştirmeye daha yatkın.',
+        'Çocuğunuz hataları ve başarısızlığı öğrenmeyi engelleyen, onu geri götüren şeyler olarak görüyor. Bu bakış, hata ihtimali olan işlerden uzak durmayı kolaylaştırabilir. Bir araştırmada, anne babanın hatalara bakışının çocuğun zekâ hakkındaki inancıyla ilişkili olduğu görülmüş.',
         ['Bir hatanın ardından “Bu bana ne öğretti?” diye sor.'],
         ['Hatalarına “Bundan ne öğrendin?” diye yaklaşın.'],
       ),
       average: p(
         'Hataya iki yönden bakma',
         'Hataların bazen öğrettiğini, bazen seni geri götürdüğünü düşünüyorsun. Hangi durumlarda hatayı bir işaret, hangilerinde bir başarısızlık olarak gördüğünü fark etmek işine yarayabilir.',
-        'Çocuğunuz hataların bazen öğrettiğini, bazen onu geri götürdüğünü düşünüyor. Hatalarına yetenek kaygısıyla değil, öğrenmeye odaklanarak tepki vermeniz bu bakışı destekleyebilir.',
+        'Çocuğunuz hataların bazen öğrettiğini, bazen onu geri götürdüğünü düşünüyor.',
         ['Bir hatayı bir işaret olarak okumayı dene.'],
         ['Hatalarına öğrenmeye odaklanarak tepki verin.'],
       ),
       high: p(
         'Hatayı öğretici görme',
-        'Hataları ve başarısızlığı öğrenmenin normal bir parçası, neyi öğrenmen gerektiğini gösteren işaretler olarak görüyorsun. Araştırmalarda zihniyetle zorlanınca seçilen yollar arasındaki ilişki en çok zorlanma ve başarısızlık anlarında belirginleşiyor; bu bakış o anlarda işine yarayabilir.',
-        'Çocuğunuz hataları ve başarısızlığı öğrenmenin normal bir parçası olarak görüyor. Bir araştırmaya göre çocukların zekâ hakkındaki inançları, anne babanın başarısızlığa bakışıyla ilişkili; hatalarına öğrenmeye odaklanarak tepki vermeniz bu bakışı destekleyebilir.',
+        'Hataları ve başarısızlığı öğrenmenin normal bir parçası, neyi öğrenmen gerektiğini gösteren işaretler olarak görüyorsun. Araştırmalarda zihniyet ile davranış arasındaki bağ en çok zorlanılan ve başarısız olunan anlarda görülüyor; bu bakış o anlarda işine yarayabilir.',
+        'Çocuğunuz hataları ve başarısızlığı öğrenmenin normal bir parçası olarak görüyor. Bir araştırmaya göre çocukların zekâ hakkındaki inançları, anne babanın hatalara bakışıyla ilişkili.',
         ['Hatalarından öğrendiklerini not etmeyi sürdür.'],
         ['Hatalarına öğrenmeye odaklanarak tepki vermeyi sürdürün.'],
       ),
@@ -216,21 +219,21 @@ export const zihniyetReport: ReportTemplate = {
       low: p(
         'Zorluktan kaçınma',
         'Hata yapma ihtimali olan ya da başkalarının önünde zorlanacağın işlerden kaçınma eğilimindesin; iyi olduğun şeylerde kalmayı tercih ediyorsun. Bu seni o an rahat ettirebilir ama yeni şeyler öğrenme fırsatlarını azaltabilir. Araştırmalarda zekânın sabit olduğuna inananların daha çok yeteneğini kanıtlamayı, gelişebileceğine inananların daha çok yeteneğini geliştirmeyi önemsediği görülmüş.',
-        'Çocuğunuz hata yapma ihtimali olan ya da başkalarının önünde zorlanacağı işlerden kaçınma eğiliminde; iyi olduğu şeylerde kalmayı tercih ediyor. Bu onu o an rahat ettirebilir ama yeni şeyler öğrenme fırsatlarını azaltabilir. Araştırmalarda zekânın sabit olduğuna inananların daha çok yeteneğini kanıtlamayı, gelişebileceğine inananların daha çok yeteneğini geliştirmeyi önemsediği görülmüş. Sonuç yerine denemesini ve öğrendiğini takdir etmek, küçük zorlukları denemesini kolaylaştırabilir.',
+        'Çocuğunuz hata yapma ihtimali olan ya da başkalarının önünde zorlanacağı işlerden kaçınma eğiliminde; iyi olduğu şeylerde kalmayı tercih ediyor. Bu onu o an rahat ettirebilir ama yeni şeyler öğrenme fırsatlarını azaltabilir. Araştırmalarda zekânın sabit olduğuna inananların daha çok yeteneğini kanıtlamayı, gelişebileceğine inananların daha çok yeteneğini geliştirmeyi önemsediği görülmüş.',
         ['Bu hafta zorlanacağını bildiğin küçük bir işi dene.'],
         ['Sonucu değil, denemesini takdir edin.'],
       ),
       average: p(
         'Bazen zorluğu seçme',
-        'Bazen zorlayıcı işleri seçiyor, bazen bildiğin işlerde kalmayı tercih ediyorsun. Hangi durumlarda zorluktan kaçındığını (başkalarının önünde mi, hata ihtimali varken mi) fark etmek nereden başlayabileceğini gösterebilir.',
-        'Çocuğunuz bazen zorlayıcı işleri seçiyor, bazen bildiği işlerde kalmayı tercih ediyor. Hangi durumlarda zorluktan kaçındığını (başkalarının önünde mi, hata ihtimali varken mi) birlikte fark etmek nereden başlanabileceğini gösterebilir.',
+        'Bazen zorlayıcı işleri seçiyor, bazen bildiğin işlerde kalmayı tercih ediyorsun.',
+        'Çocuğunuz bazen zorlayıcı işleri seçiyor, bazen bildiği işlerde kalmayı tercih ediyor.',
         ['Zorluktan hangi durumlarda kaçındığını fark et.'],
         ['Hangi durumlarda zorluktan kaçındığını birlikte konuşun.'],
       ),
       high: p(
         'Zorluğu arama',
         'Zorlayıcı işleri seçiyor, iyi görünmek yerine öğrenmeyi önemsiyorsun. Araştırmalarda öğrenmeyi hedefleyen bu yaklaşım, zekânın gelişebileceği inancıyla birlikte görülüyor.',
-        'Çocuğunuz zorlayıcı işleri seçiyor, iyi görünmek yerine öğrenmeyi önemsiyor. Araştırmalarda öğrenmeyi hedefleyen bu yaklaşım, zekânın gelişebileceği inancıyla birlikte görülüyor. Denemelerini ve öğrendiklerini takdir etmek bu yaklaşımı destekleyebilir.',
+        'Çocuğunuz zorlayıcı işleri seçiyor, iyi görünmek yerine öğrenmeyi önemsiyor. Araştırmalarda öğrenmeyi hedefleyen bu yaklaşım, zekânın gelişebileceği inancıyla birlikte görülüyor.',
         ['Zorlayıcı işleri seçmeyi sürdür.'],
         ['Denemelerini ve öğrendiklerini takdir edin.'],
       ),

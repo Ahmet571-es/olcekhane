@@ -460,7 +460,7 @@ export function buildOralReport(input: {
             title: 'Bu rapor bir tanı değildir.',
             text: 'Tek bir metnin sesli okunmasına ve dinleyen yetişkinin işaretlemelerine dayanır; bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli ve gelişimi izlemek için farklı metinlerle tekrarlanmalıdır.',
           }
-        : disclaimerText({ audience, academic: undefined }),
+        : disclaimerText({ audience, academic: undefined, cognitive: undefined }),
     oral,
   };
 }

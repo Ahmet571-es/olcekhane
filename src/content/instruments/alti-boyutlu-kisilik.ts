@@ -469,7 +469,7 @@ export const altiBoyutluKisilik: LikertInstrument = {
       'IPIP sayfasında 24 alt boyut ölçeğinin iç tutarlılığı (Cronbach α) .69 ile .88 arasında bildirilmiştir. Sayfada ölçeklerin standart sapmaları verilmediği için raporda ölçüm payı gösterilmez. Türkçe çevirinin güvenirliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç kişinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç, kişinin kendini nasıl tanımladığını gösterir; başkalarıyla karşılaştırma yapmaz.',
     ageNote:
       '9. sınıftan itibaren uygulanır; mezunlar ve yetişkinler de çözebilir. 240 cümleden oluşan uzun bir testtir ve yaklaşık 30 dakika sürer. Bazı cümleler yetişkin yaşamından durumları anlatır (ör. bir iş ya da vergi); öğrencilerden bunlara, öyle bir durumda olsalar nasıl davranacaklarını düşünerek cevap vermeleri istenir. Kişilik ergenlikte gelişmeye devam ettiği için lise öğrencilerinde sonuçlar kendini tanımaya yönelik bir başlangıç olarak sunulur.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',

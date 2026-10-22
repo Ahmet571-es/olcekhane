@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { publicInstruments, solvableInstruments } from '@/content/instruments';
 import { REPORT_TEMPLATES } from '@/content/reports';
+import { ROADMAPS } from '@/content/roadmaps';
 import { ADULT_GRADE } from '@/lib/config';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import type { LikertInstrument } from '@/lib/instruments/types';
@@ -250,6 +251,67 @@ describe('Kişilerarası Tarz raporu', () => {
       const words = (JSON.stringify(adult).toLocaleLowerCase('tr-TR').match(/\p{L}+/gu) ?? []).filter((w) => school.some((p) => w.startsWith(p)));
       expect(words, level).toEqual([]);
     }
+  });
+
+  it('kartlar birbiriyle çelişmez: "Her şeye katlanmayan" kartı başkalarını gözetmeyi öğütlemez; "Geri planda kalmayan" kendini övmeyi anlatmaz', () => {
+    const t = REPORT_TEMPLATES[SLUG];
+    // Sıcak 5, Uysal 1, Mesafeli 1 gibi bir profilde aynı raporda "insanlara ilgi duyduğunu" ve "Başkalarına duyarlılığını
+    // takdir edin" de okunur: düşük uysallık kartı bir eksiklik varmış gibi öğüt vermez.
+    const low = t.scales.unassuming_ingenuous.low!;
+    for (const x of [low.student, low.parent]) {
+      expect(x).not.toMatch(/ihtiyaçlarını da gözet|değerini onunla konuş/);
+      expect(x).toContain('kendi isteklerine de yer açtığını gösterebilir');
+    }
+    const sub = t.scales.unassured_submissive.low!;
+    for (const x of [sub.student, sub.parent]) {
+      expect(x).not.toContain('övmekten');
+      expect(x).toContain('kendi başarılarını anlatmaktan çekinmediğini');
+    }
+    expect(ROADMAPS[SLUG].approach!.unassuming_ingenuous.low).not.toMatch(/başkalarının isteklerini de hesaba/);
+    expect(ROADMAPS[SLUG].approach!.unassured_submissive.low).not.toMatch(/güven/);
+  });
+
+  it('yol haritası: öneriler, ortamlar ve veliye yaklaşım en belirgin üç tarz için; ortamlar birbiriyle çelişmez', () => {
+    const rmT = ROADMAPS[SLUG];
+    expect(rmT.focus?.count).toBe(3);
+    expect(rmT.unit).toEqual({ one: 'tarz', toPlural: 'tarzlara' });
+    // Sıcak yüksek, uysal ve mesafeli düşük, ötekiler orta: üç tarzın önerisi, yaklaşımı ve ortamı.
+    const b = { grade: 10, data: { engine: 'likert' as const, answers: answers((s) => (s === 'warm_agreeable' ? 'high' : s === 'unassuming_ingenuous' || s === 'cold_hearted' ? 'low' : 'mid')) } };
+    const r = evaluate(SLUG, b);
+    for (const rep of [r.student, r.parent]) {
+      const rm = rep.roadmap!;
+      expect(rm.bars).toHaveLength(8);
+      expect(rm.study.items.map((x) => x.key)).toEqual(['warm_agreeable', 'unassuming_ingenuous', 'cold_hearted']);
+      expect(rm.study.intro).toContain('puanı ortadan en uzak üç');
+      expect(rm.settings!.items).toHaveLength(3);
+    }
+    expect(r.student.roadmap!.study.intro).toContain('Sekiz tarzının hepsi');
+    expect(r.parent.roadmap!.study.intro).toContain('Çocuğunuzun sekiz tarzının hepsi');
+    expect(r.parent.roadmap!.approach!.items.map((x) => x.title)).toEqual(['Sıcak ve uyumlu olma', 'Hoşgörülü ve uysal olma', 'Başkalarının derdine mesafeli olma']);
+    // Her tarz ayrı ölçüldüğü için herhangi iki tarzın ortamı birlikte görünebilir: birbirinin tersini söyleyen ortamlar yok.
+    const settings = Object.entries(rmT.scales).flatMap(([k, s]) => [
+      { k, x: s.settings!.low! },
+      { k, x: s.settings!.high! },
+    ]);
+    const conflicts: [RegExp, RegExp][] = [
+      [/kalabalık|hareketli|tanışma|konuşmanın .*bol/i, /sessiz|tek başına|küçük grup/i],
+      [/öne çıkmak zorunda olmadığı/i, /kendini .*tanıtma/i],
+      [/bağımsız/i, /karşılıklı destek/i],
+    ];
+    for (const a of settings)
+      for (const c of settings) {
+        if (a.k === c.k) continue;
+        for (const [p, q] of conflicts) expect(p.test(a.x) && q.test(c.x), `${a.x} / ${c.x}`).toBe(false);
+      }
+    // Yetişkine okuldaki grup çalışması anlatılmaz (toplantı, ortak iş, birlikte öğrenme).
+    for (const level of ['high', 'low', 'mid'] as const) {
+      const adult = evaluateAdult(SLUG, { grade: ADULT_GRADE, data: { engine: 'likert', answers: answers(() => level) } }).adult.roadmap!;
+      const text = [adult.study.intro, ...adult.study.items.map((x) => x.text), ...adult.weeks.map((w) => w.text)].join(' ');
+      expect(text, level).not.toMatch(/grup çalışma|çalışma grubu|derste|kitap/i);
+    }
+    for (const g of ['low', 'average', 'high'] as const)
+      for (const [k, s] of Object.entries(rmT.scales))
+        for (const x of [s.study[g], s.action[g]]) expect(x.adult ?? x.student, `${k} ${g}`).not.toMatch(/grup çalışma|çalışma grubu|derste|kitap/i);
   });
 
   it('hoca onayladı: yayında, listelerde ve site haritasında', () => {

@@ -56,8 +56,8 @@ export const dusunmeyiSevmeReport: ReportTemplate = {
     need_for_cognition: {
       high: t(
         'Kafa yoran işlerden hoşlanan',
-        'Genel olarak karmaşık problemleri çözmekten, işleri yapmanın yeni yollarını düşünmekten ve anlamak için kafa yorman gereken metinler okumaktan hoşlandığını söylüyorsun. Bir şeyleri çabuk kavradığını ve çok bilgiyle başa çıkabildiğini de düşünüyorsun. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
-        'Çocuğunuz genel olarak karmaşık problemleri çözmekten, işleri yapmanın yeni yollarını düşünmekten ve anlamak için kafa yorması gereken metinler okumaktan hoşlandığını belirtiyor. Bir şeyleri çabuk kavradığını ve çok bilgiyle başa çıkabildiğini de düşünüyor. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
+        'Genel olarak karmaşık problemleri çözmekten, işleri yapmanın yeni yollarını düşünmekten ve anlamak için kafa yorman gereken metinler okumaktan hoşlandığını söylüyorsun. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
+        'Çocuğunuz genel olarak karmaşık problemleri çözmekten, işleri yapmanın yeni yollarını düşünmekten ve anlamak için kafa yorması gereken metinler okumaktan hoşlandığını belirtiyor. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
       ),
       average: t(
         'Konuya göre düşünmeye istekli',

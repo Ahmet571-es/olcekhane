@@ -20,7 +20,7 @@ function rulerSteps(s: ReportSection) {
 export function ReportView({ report }: { report: ReportContent }) {
   const forStudent = report.audience !== 'parent';
   // Destek kutusu ve son not, basit raporla aynı metinler (yetişkin raporu dahil).
-  const support = supportText(report.audience, report.young);
+  const support = supportText(report.audience, report.young, report.graduate);
   const disclaimer = disclaimerText(report);
   const multi = report.sections.length > 1 && !report.reading && !report.interests;
   return (

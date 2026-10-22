@@ -53,6 +53,16 @@ export interface RoadmapTemplate {
    * "lowest" en düşük puanlı boyut (ör. çalışma alışkanlıkları: en çok geliştirilebilecek alışkanlık).
    */
   thirdWeek?: 'farthest' | 'lowest';
+  /**
+   * "Kısaca" kartlarında önce gösterilecek boyutlar: bu boyut bu düzey grubundayken öne çıkanların başına alınır (ör.
+   * motivasyonda yüksek isteksizlik; ortadan aynı uzaklıktaki bir "merak" puanının arkasında kalmasın).
+   */
+  standoutFirst?: { scale: string; group: BandGroup }[];
+  /**
+   * 3. haftaya seçilmeyecek boyut ve düzeyler: üzerinde çalışmayı gerektirmeyen bir sonuç (ör. düşük isteksizlik) "en
+   * belirgin boyut" diye bir haftaya başlık olmasın.
+   */
+  thirdWeekSkip?: { scale: string; group: BandGroup }[];
   /** Tek boyutlu testlerde 3. hafta: 2. hafta dışında boyut olmadığında bu deneme verilir. */
   extraWeek?: { title: string; text: AudienceText };
   /** "Etkili ders çalışma yöntemleri"nin ardından her raporda verilen rehber yazıları. */

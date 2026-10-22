@@ -9,7 +9,10 @@ import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadma
  * Öneri niteliğindedir: meslek seçmez, kesin hüküm vermez. Ekranda ve PDF'te kişilik yol haritasıyla aynı bölümler
  * kullanılır.
  */
-/** Bütün alanlar düşük düzeydeyken "Kısaca" bölümündeki not (etkinlik sıklığında ve ilgi düzeyinde ayrı). */
+/**
+ * Bütün alanlar düşük düzeydeyken "Kısaca" bölümündeki not (etkinlik sıklığında ve ilgi düzeyinde ayrı); şablon kendi
+ * notunu (`lowNote`) verebilir.
+ */
 function lowNote(leisure: boolean, parent: boolean): string {
   if (leisure) {
     return parent
@@ -17,9 +20,21 @@ function lowNote(leisure: boolean, parent: boolean): string {
       : 'Son bir yılda bu etkinliklerin çoğunu pek yapmamışsın; bu yüzden hiçbir alan öne çıkarılmadı. Bu, zamanının ya da imkânlarının kısıtlı olmasıyla ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.';
   }
   return parent
-    ? 'Etkinliklerin çoğundan pek hoşlanmayacağını belirttiği için hiçbir alan öne çıkarılmadı.'
-    : 'Etkinliklerin çoğundan pek hoşlanmayacağını belirttiğin için hiçbir alan öne çıkarılmadı.';
+    ? 'Çocuğunuz etkinliklerin çoğundan pek hoşlanmayacağını belirttiği için hiçbir alan öne çıkarılmadı. Bu olağan bir durum; aşağıdaki haftalarda farklı alanları denemesi için küçük adımlar var.'
+    : 'Etkinliklerin çoğundan pek hoşlanmayacağını belirttiğin için hiçbir alan öne çıkarılmadı. Bu olağan bir durum; aşağıdaki haftalarda farklı alanları denemen için küçük adımlar var.';
 }
+
+/**
+ * Mezun (13. sınıf) için eğitim yolları: lise yolları ("Lise: …") gösterilmez, yalnızca sonraki bölüm ("Üniversite: …")
+ * kalır; not okuldan ve öğretmenden söz etmez.
+ */
+const forGraduate = (paths: string) => paths.replace(/^Lise: .*?(?=Üniversite: )/, '');
+const GRADUATE_PATHS_NOTE = {
+  student:
+    'İlgi tek başına meslek seçtirmez: yeteneklerin, değerlerin ve gerçek deneyimlerin de önemlidir. Bu yollar yalnızca yol gösterici örneklerdir; tercih yaparken bir rehberlik uzmanıyla konuş.',
+  parent:
+    'İlgi tek başına meslek seçtirmez: çocuğunuzun yetenekleri, değerleri ve gerçek deneyimleri de önemlidir. Bu yollar yalnızca yol gösterici örneklerdir; tercih döneminde bir rehberlik uzmanıyla görüşmesini öneririz.',
+};
 
 export function buildInterestRoadmap(
   r: ReportContent,
@@ -85,7 +100,7 @@ export function buildInterestRoadmap(
       : allLow
         ? t.lowNote
           ? pick(t.lowNote, a)
-          : lowNote(!!t.leisure, parent) + (t.leisure ? '' : ` ${pick(t.openNote, a)}`)
+          : lowNote(!!t.leisure, parent)
         : pick(t.openNote, a),
     study: {
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
@@ -103,14 +118,17 @@ export function buildInterestRoadmap(
       !hasPaths || top.length === 0
         ? null
         : {
-            title: a === 'adult' ? 'İş ve meslek planı için' : 'Okul ve meslek planı için',
+            title: a === 'adult' ? 'İş ve meslek planı için' : r.graduate ? 'Eğitim ve meslek planı için' : 'Okul ve meslek planı için',
             intro: parent
               ? 'Çocuğunuzun en belirgin ilgi alanlarıyla ilişkili eğitim yolları:'
               : a === 'adult'
                 ? 'En belirgin ilgi alanlarınla ilişkili alanlar ve programlar:'
                 : 'En belirgin ilgi alanlarınla ilişkili eğitim yolları:',
-            items: highTop.map((s) => `${s.name}: ${pick(area(s.scaleKey).paths!, a)}`),
-            note: pick(t.pathsNote!, a),
+            items: highTop.map((s) => {
+              const paths = pick(area(s.scaleKey).paths!, a);
+              return `${s.name}: ${r.graduate ? forGraduate(paths) : paths}`;
+            }),
+            note: r.graduate && a !== 'adult' ? pick(GRADUATE_PATHS_NOTE, a) : pick(t.pathsNote!, a),
           },
     approach:
       parent && top.length

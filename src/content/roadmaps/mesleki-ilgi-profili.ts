@@ -1,5 +1,4 @@
 import { RIASEC_TYPES, type RiasecKey } from '@/content/careers/riasec';
-import { besFaktorRoadmap as bf } from './bes-faktor';
 import type { InterestArea, InterestRoadmapTemplate } from './types';
 
 /**
@@ -11,7 +10,9 @@ import type { InterestArea, InterestRoadmapTemplate } from './types';
  *  - İlgi, yetenek ya da başarı demek değildir; ilgiler denedikçe netleşir (Low ve ark., 2005). Öneriler meslek
  *    seçmez; eğitim yolları yol gösterici örneklerdir.
  *  - Renkler altıgenin sırasını izler: komşu alanlar komşu renklerdedir.
- *  - Test yetişkinlere açık değildir; yetişkin metni yoktur.
+ *  - Test yetişkinlere açık değildir; yetişkin metni yoktur. Mezunlara (13) eğitim yollarının yalnızca üniversite kısmı ve
+ *    okuldan söz etmeyen not gösterilir (lib/reports/interest-roadmap.ts): yollar "Lise: … Üniversite: …" biçimindedir.
+ *  - Keşif önerileri öne çıkan alanlar içindir; bu alanlar belirgin (yüksek) olmayabilir: "en üstte çıkan" denir.
  */
 const area = (key: RiasecKey, color: string, x: { parent: string; action: { student: string; parent: string }; approach: string }): InterestArea => {
   const t = RIASEC_TYPES[key];
@@ -35,9 +36,9 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
   studyTitle: { you: 'Nasıl keşfedebilirsin?', parent: 'Çocuğunuz nasıl keşfedebilir?' },
   studyIntro: {
     student:
-      'İlgiler denedikçe netleşir: ergenlikte belli bir tutarlılık gösterir ama asıl kararlılık üniversite yıllarında artar. Aşağıda en belirgin ilgi alanların için keşif önerileri var; yalnızca okuyarak değil, deneyerek karar ver.',
+      'İlgiler denedikçe netleşir: ergenlikte belli bir tutarlılık gösterir ama asıl kararlılık üniversite yıllarında artar. Aşağıda en üstte çıkan ilgi alanların için keşif önerileri var; yalnızca okuyarak değil, deneyerek karar ver.',
     parent:
-      'İlgiler denedikçe netleşir: ergenlikte belli bir tutarlılık gösterir ama asıl kararlılık üniversite yıllarında artar. Aşağıda çocuğunuzun en belirgin ilgi alanları için keşif önerileri var; ona bu alanları deneyebileceği fırsatlar sunabilirsiniz.',
+      'İlgiler denedikçe netleşir: ergenlikte belli bir tutarlılık gösterir ama asıl kararlılık üniversite yıllarında artar. Aşağıda çocuğunuzun en üstte çıkan ilgi alanları için keşif önerileri var; ona bu alanları deneyebileceği fırsatlar sunabilirsiniz.',
   },
   openNote: {
     student: 'İlgilerin henüz belirgin biçimde ayrışmamış; bu yaşta çok yaygın. Farklı alanları denemek için iyi bir zaman.',
@@ -51,14 +52,15 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
   },
   firstWeek: {
     student: 'Raporundaki ilgi alanlarına bir kez daha göz at. Bu hafta hangi işleri yaparken zamanın nasıl geçtiğini fark etmediğini her gün bir cümleyle bir deftere yaz.',
-    parent: bf.firstWeek.parent,
+    parent:
+      'Raporu çocuğunuzla birlikte okuyun ve hangi alanların ona uyduğunu sorun. Bu hafta onu en çok hangi etkinliklerin heyecanlandırdığını birlikte gözlemleyin.',
   },
   openWeeks: [
     {
       title: 'Yeni bir alan dene',
       text: {
         student: 'Bu hafta daha önce hiç denemediğin bir etkinliğe katıl (bir kulüp, bir atölye ya da çevrim içi bir ders) ve sana nasıl hissettirdiğini yaz.',
-        parent: 'Bu hafta çocuğunuzla daha önce denemediği bir etkinlik seçin (bir kulüp, bir atölye ya da bir müze gezisi) ve sonra nasıl hissettirdiğini konuşun.',
+        parent: 'Bu hafta çocuğunuzla daha önce denemediği bir etkinlik seçin (bir kulüp, bir atölye ya da bir müze gezisi) ve sonra bunun ona nasıl hissettirdiğini konuşun.',
       },
     },
     {

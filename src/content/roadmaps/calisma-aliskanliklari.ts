@@ -12,23 +12,34 @@ import type { RoadmapTemplate } from './types';
  *  - Alışkanlıklar meslek ortamı anlatmadığı için ortamlar bölümü yoktur.
  *  - 2. hafta "Çalışma düzeni" (Planlama); 3. hafta en düşük puanlı alışkanlık: en çok geliştirilebilecek olan.
  *  - Test yetişkinlere açık değildir; yetişkin metni yoktur.
+ *  - Bütün alışkanlıklar orta düzeydeyken (ara sıra) "Kısaca" bölümü `balancedNote` der: kişilik testlerindeki "dengeli
+ *    profil" cümlesi bir davranış sıklığına uymaz.
+ *  - Son haftada önerilen testler neden ve nasıl çalışıldığını tamamlar (motivasyon, erteleme); ilgi testleri değil.
  */
 export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
-  version: 'calisma-aliskanliklari-yol-haritasi-1',
+  version: 'calisma-aliskanliklari-yol-haritasi-2',
   planningScale: 'planning',
   thirdWeek: 'lowest',
+  balancedNote: {
+    student:
+      'Bu alışkanlıkların hepsini ara sıra kullanıyorsun; hiçbiri belirgin biçimde sık ya da az kullanılmıyor. Aşağıdaki küçük adımlarla bunlardan birini sık kullandığın bir alışkanlığa çevirebilirsin.',
+    parent:
+      'Çocuğunuz bu alışkanlıkların hepsini ara sıra kullandığını belirtiyor; hiçbiri belirgin biçimde sık ya da az kullanılmıyor. Aşağıdaki küçük adımlar, bunlardan birinin sık kullanılan bir alışkanlığa dönüşmesine yardım edebilir.',
+  },
   studyIntro: {
     student:
       'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Aşağıda her alışkanlığın için bir sonraki küçük adım var; hepsini birden değil, birer birer dene.',
     parent:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Aşağıda çocuğunuzun her alışkanlığı için bir sonraki küçük adım var; hepsini birden değil, birer birer denemesine destek olun.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrenileni kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Aşağıda çocuğunuzun her alışkanlığı için bir sonraki küçük adım var; hepsini birden değil, birer birer denemesine destek olun.',
   },
   firstWeek: {
     student: 'Raporundaki beş alışkanlığa bak. Bu hafta çalışırken hangisini ne zaman kullandığını her gün bir cümleyle bir deftere yaz.',
-    parent: bf.firstWeek.parent,
+    parent:
+      'Raporu çocuğunuzla birlikte okuyun ve hangi alışkanlıkların onu anlattığını sorun. Bu hafta hangi alışkanlığı ne zaman kullandığını birlikte fark edin.',
   },
   lastWeek: bf.lastWeek,
-  nextTests: bf.nextTests,
+  nextTests: ['ders-calisma-motivasyonu', 'erteleme-ve-zaman-yonetimi', 'ogrenme-ve-basari-ozellikleri'],
+  nextPurpose: { you: 'neden ve nasıl çalıştığını daha yakından görmek', parent: 'çocuğunuzun neden ve nasıl çalıştığını daha yakından görmek' },
   approach: {
     planning: {
       low: 'Yaptığı küçük planları ve planına uyduğu günleri fark ettiğinizi ona söyleyin.',
@@ -179,7 +190,7 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
         },
         average: {
           student:
-            'Çalışmaya başlamadan önce masandan ilgisiz her şeyi kaldır ve bildirimleri kapat. Zor konuları günün dikkatinin en iyi olduğu saatlerine koymak da işini kolaylaştırır.',
+            'Çalışmaya başlamadan önce masandan ilgisiz her şeyi kaldır ve bildirimleri kapat. Zor konuları dikkatinin en iyi olduğu saatlere koymak da işini kolaylaştırabilir.',
           parent:
             'Çocuğunuzun çalışmaya başlamadan masasını düzenlemesi, bildirimleri kapatması ve zor konuları dikkatinin en iyi olduğu saatlere koyması odaklanmasını destekleyebilir.',
         },

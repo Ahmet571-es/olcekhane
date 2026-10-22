@@ -12,7 +12,12 @@ import type { RoadmapTemplate } from './types';
  *    vermek, hata yapmaya alan açmak. O yazıya her raporda bağlantı verilir.
  *  - Tek boyutlu test: üç boyutlu profil ve ortamlar bölümü yoktur; 3. hafta şablondaki ek denemedir ("Gerçek bir
  *    sorumluluk"). Düşük düzeyde raporun kendi destek kutusu gösterilir; yol haritası onu tekrar etmez.
+ *  - Bir cevap destek kutusunu açtıysa ("işe yaramaz" ya da "başarısız" cümlesi; ölçekte supportItems) öneriler toplam
+ *    puan düşük olmasa da düşük düzeyinkilerdir. Bu yüzden düşük düzeyin metinleri "kendine eleştirel bakışın" gibi bir
+ *    hüküm vermez, "kendine eleştirel baktığın anlar" der: kartta "Dengeli" ya da "Olumlu" yazarken de doğrudur.
  *  - Rapor metinleri tekrar edilmez; tanı koyan ya da korkutan dil kullanılmaz. Test yetişkinlere açık değildir.
+ *  - Son haftada kendine ve geleceğe bakışı başka yönlerden gösteren testler önerilir (İyimserlik 9. sınıftan, Zihniyet
+ *    5. sınıftan itibaren; kişinin sınıfına uymayan test gösterilmez).
  */
 export const ozSaygiRoadmap: RoadmapTemplate = {
   version: 'oz-saygi-yol-haritasi-1',
@@ -40,7 +45,11 @@ export const ozSaygiRoadmap: RoadmapTemplate = {
     parent: bf.firstWeek.parent,
   },
   lastWeek: bf.lastWeek,
-  nextTests: bf.nextTests,
+  nextTests: ['iyimserlik', 'zihniyet'],
+  nextPurpose: {
+    you: 'kendine ve geleceğe bakışını başka yönlerden de görmek',
+    parent: 'çocuğunuzun kendine ve geleceğe bakışını başka yönlerden de görmek',
+  },
   approach: {
     self_esteem: {
       low: 'Sevginizin notlara bağlı olmadığını hissettirin; başarısızlık anlarında sakin ve sıcak kalın.',
@@ -54,15 +63,15 @@ export const ozSaygiRoadmap: RoadmapTemplate = {
       study: {
         low: {
           student:
-            'Kendine bakışın, çalışırken takıldığın anlarda “Ben yapamam” düşüncesine dönüşebilir. Böyle anlarda zor işi küçük parçalara böl ve yalnızca ilk adıma odaklan; ilerlemeni başkalarıyla değil kendi geçen haftanla karşılaştır. Takıldığında güvendiğin birinden yardım istemek de bir güçtür.',
+            'Kendine eleştirel baktığın anlar, çalışırken takıldığında “Ben yapamam” düşüncesine dönüşebilir. Böyle anlarda zor işi küçük parçalara böl ve yalnızca ilk adıma odaklan; ilerlemeni başkalarıyla değil kendi geçen haftanla karşılaştır. Takıldığında güvendiğin birinden yardım istemek de bir güçtür.',
           parent:
-            'Çocuğunuzun kendine eleştirel bakışı, çalışırken takıldığı anlarda “Ben yapamam” düşüncesine dönüşebilir. Zor işleri küçük parçalara bölmesine yardım etmek ve ilerlemesini başkalarıyla değil kendi geçen haftasıyla karşılaştırmak işini kolaylaştırabilir. Abartılı övgü yerine çabasını ve yöntemini somut olarak takdir edin.',
+            'Çocuğunuzun kendine eleştirel baktığı anlar, çalışırken takıldığında “Ben yapamam” düşüncesine dönüşebilir. Zor işleri küçük parçalara bölmesine yardım etmek ve ilerlemesini başkalarıyla değil kendi geçen haftasıyla karşılaştırmak işini kolaylaştırabilir. Abartılı övgü yerine çabasını ve yöntemini somut olarak takdir edin.',
         },
         average: {
           student:
-            'Zorlandığın günlerde kendinden şüphe duyabilirsin. Böyle günlerde daha önce zorlanıp sonra başardığın bir konuyu hatırla. Çalışırken küçük hedefler koyup tamamladıklarını işaretlemek ilerlemeni görünür kılar.',
+            'Kendinden şüphe duyduğun günlerde, daha önce zorlanıp sonra başardığın bir konuyu hatırla. Çalışırken küçük hedefler koyup tamamladıklarını işaretlemek ilerlemeni görünür kılar.',
           parent:
-            'Çocuğunuz zorlandığı günlerde kendinden şüphe duyabilir. Daha önce zorlanıp sonra başardığı bir şeyi birlikte hatırlamak ve küçük hedeflerini tamamladıkça işaretlemesini önermek ilerlemesini görünür kılar.',
+            'Çocuğunuzun kendinden şüphe duyduğu günlerde, daha önce zorlanıp sonra başardığı bir şeyi birlikte hatırlamak ve küçük hedeflerini tamamladıkça işaretlemesini önermek ilerlemesini görünür kılar.',
         },
         high: {
           student:

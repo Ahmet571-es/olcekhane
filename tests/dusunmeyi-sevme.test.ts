@@ -126,11 +126,15 @@ describe('Düşünmeyi Sevme Ölçeği tanımı', () => {
     expect(() => evaluate(SLUG, { grade: 10, data: { engine: 'likert', answers: answersFor(() => 5, ['n01', 'n02', 'n03']) } })).toThrow(/çoğunu cevaplamak/);
   });
 
-  it('cevap kalitesi: çok hızlı cevap ve eksik madde denetlenir; 10 maddede "hep aynı seçenek" ve karşılıklı çift denetimi yok', () => {
+  it('cevap kalitesi: çok hızlı cevap, eksik madde ve bütün cümlelere aynı cevap denetlenir; karşılıklı çift denetimi yok', () => {
     const fast = Object.fromEntries(d.items.map((it) => [it.key, { value: 3, rtMs: 300 }]));
     expect(likertQuality(d, fast).notes.join(' ')).toContain('çok hızlı');
+    // Dört madde ters yönlü: bütün cümlelere aynı (ortada olmayan) cevap, ne söylediklerine bakmadan cevap vermeyi düşündürür.
+    expect(d.sameAnswerCheck).toBe(true);
     const same = Object.fromEntries(d.items.map((it) => [it.key, { value: 4, rtMs: 2600 }]));
-    expect(likertQuality(d, same).notes).toEqual([]);
+    expect(likertQuality(d, same).notes.join(' ')).toContain('Bütün cümlelere aynı cevap');
+    const middle = Object.fromEntries(d.items.map((it) => [it.key, { value: 3, rtMs: 2600 }]));
+    expect(likertQuality(d, middle).notes).toEqual([]);
     expect(
       likertQuality(
         d,

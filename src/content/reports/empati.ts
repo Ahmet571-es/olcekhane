@@ -45,7 +45,7 @@ const LEAD_START =
   'Empati, başkasının ne hissettiğini anlamak ve onun duygusunu bir ölçüde paylaşmaktır. Araştırmalarda iki yönü ayrılır: olaylara başkasının gözünden bakabilmek ve onun duygusundan etkilenmek. Bu testin üç yönü bu ikisiyle birebir örtüşmez; test, başkalarını önemsemeyi, duygulardan etkilenmeyi ve insanlara sıcak yaklaşmayı sorar.';
 const LEAD_TEEN = '13 ile 18 yaş arasındaki gençleri yıllarca izleyen bir çalışmada olaylara başkasının gözünden bakabilme yaşla artmıştır.';
 const LEAD_REST =
-  'Empati, yardım etme ve paylaşma gibi davranışlarla ilişkili bulunmuştur. Kişinin başkalarını ne kadar iyi anladığına dair kendi görüşü ile başkalarının duygularını ve düşüncelerini ne kadar doğru tahmin ettiği arasındaki ilişki ise çok zayıftır. Empati çalışmayla gelişebilir: kontrollü deneyleri birleştiren bir incelemede empati eğitimlerinin orta büyüklükte bir etkisi bulunmuştur.';
+  'Empati, yardım etme ve paylaşma gibi davranışlarla ilişkili bulunmuştur. Ama “Başkalarını iyi anlarım” demek, onların ne hissettiğini doğru tahmin etmek anlamına gelmez: araştırmalarda bu ikisi arasındaki ilişki çok zayıf çıkmıştır. Empati çalışmayla gelişebilir: kontrollü deneyleri birleştiren bir incelemede empati eğitimlerinin orta büyüklükte bir etkisi bulunmuştur.';
 
 export const empatiReport: ReportTemplate = {
   version: 'empati-rapor-1',
@@ -138,7 +138,7 @@ export const empatiReport: ReportTemplate = {
         'Çocuğunuz genel olarak başkalarının duygularına saygı gösterdiğini, onların bakış açısına değer verdiğini ve yararını da düşündüğünü belirtiyor. Başkalarının sorunlarını ve ihtiyaçlarını önemsiyor, onlara yardımcı olmayı seviyor. Bu özen, insanların ona güvenmesini kolaylaştırabilir.',
       ),
       average: t(
-        'Kimi zaman başkalarını, kimi zaman kendini öne alan',
+        'Kimi zaman başkalarına, kimi zaman kendi işlerine öncelik veren',
         'Başkalarının ihtiyaçlarını bazen ön plana aldığını, bazen de kendi işlerine ve önceliklerine yöneldiğini söylüyorsun. Birçok insan bu dengeyi kurar.',
         'Çocuğunuz başkalarının ihtiyaçlarını bazen ön plana aldığını, bazen de kendi işlerine ve önceliklerine yöneldiğini belirtiyor. Birçok insan bu dengeyi kurar.',
       ),

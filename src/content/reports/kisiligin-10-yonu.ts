@@ -201,8 +201,8 @@ export const kisiligin10YonuReport: ReportTemplate = {
       ),
       low: t(
         'Esnek, kendi temposunda',
-        'Cevaplarına göre işe koyulmak, işleri bir plana ve düzene göre yürütmek ya da ikisi birden sana pek kolay gelmiyor: çalışkanlık ve düzenlilik yönlerinin ortalaması düşük. Hangisinin daha belirgin olduğunu aşağıda görebilirsin. Önemli işlerde küçük hedefler ve hatırlatıcılar işini kolaylaştırabilir.',
-        'Çocuğunuzun cevaplarına göre işe koyulmak, işleri bir plana ve düzene göre yürütmek ya da ikisi birden ona pek kolay gelmiyor: çalışkanlık ve düzenlilik yönlerinin ortalaması düşük. Hangisinin daha belirgin olduğu aşağıda görülüyor. Önemli işlerde birlikte küçük hedefler koymak ona destek olabilir.',
+        'Cevaplarına göre işe koyulmak ya da işleri bir plana göre yürütmek (belki ikisi birden) sana pek kolay gelmiyor: çalışkanlık ve düzenlilik yönlerinin ortalaması düşük. Hangisinin daha belirgin olduğunu aşağıda görebilirsin. Önemli işlerde küçük hedefler ve hatırlatıcılar işini kolaylaştırabilir.',
+        'Çocuğunuzun cevaplarına göre işe koyulmak ya da işleri bir plana göre yürütmek (belki ikisi birden) ona pek kolay gelmiyor: çalışkanlık ve düzenlilik yönlerinin ortalaması düşük. Hangisinin daha belirgin olduğu aşağıda görülüyor. Önemli işlerde birlikte küçük hedefler koymak ona destek olabilir.',
       ),
     },
     emotional_stability: {
@@ -218,7 +218,7 @@ export const kisiligin10YonuReport: ReportTemplate = {
       ),
       low: t(
         'Stresten kolay etkilenen',
-        'Cevaplarına göre öfke, endişe ya da kuşku gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini söylüyorsun: soğukkanlılık ve iç rahatlık yönlerinin ortalaması düşük. Bu duygularla baş etmeyi öğrenmek mümkün; hangisinin seni daha çok zorladığını aşağıdaki iki yönde görebilirsin.',
+        'Öfke, endişe ya da kuşku gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini söylüyorsun: soğukkanlılık ve iç rahatlık yönlerinin ortalaması düşük. Bu duygularla baş etmeyi öğrenmek mümkün; hangisinin seni daha çok zorladığını aşağıdaki iki yönde görebilirsin.',
         'Çocuğunuz öfke, endişe ya da kuşku gibi duyguları sık yaşadığını ve stresli durumlardan kolayca etkilendiğini belirtiyor; soğukkanlılık ve iç rahatlık yönlerinin ortalaması düşük. Bu sonuç bir tanı değildir; ancak bu duyguların ne kadar süredir devam ettiğini ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir.',
         { support: true },
       ),
@@ -394,8 +394,8 @@ export const kisiligin10YonuReport: ReportTemplate = {
     intellect: {
       high: t(
         'Fikirlerle uğraşmayı seven',
-        'Karmaşık problemleri çözmekten, soyut fikirlerle ve zor metinlerle uğraşmaktan hoşlandığını, yeni şeyleri çabuk kavradığını söylüyorsun. Bu yön zekâyı ölçmez; fikirlere duyduğun ilgiyi ve kendini nasıl gördüğünü gösterir.',
-        'Çocuğunuz karmaşık problemleri çözmekten, soyut fikirlerle ve zor metinlerle uğraşmaktan hoşlandığını, yeni şeyleri çabuk kavradığını belirtiyor. Bu yön zekâyı ölçmez; fikirlere duyduğu ilgiyi ve kendini nasıl gördüğünü gösterir.',
+        'Karmaşık problemleri çözmekten, soyut fikirlerle ve zor metinlerle uğraşmaktan hoşlandığını söylüyorsun. Bu yön zekâyı ölçmez; fikirlere duyduğun ilgiyi ve kendini nasıl gördüğünü gösterir.',
+        'Çocuğunuz karmaşık problemleri çözmekten, soyut fikirlerle ve zor metinlerle uğraşmaktan hoşlandığını belirtiyor. Bu yön zekâyı ölçmez; fikirlere duyduğu ilgiyi ve kendini nasıl gördüğünü gösterir.',
       ),
       average: t(
         'Konusuna göre meraklı',

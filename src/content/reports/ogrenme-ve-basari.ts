@@ -25,6 +25,7 @@ const t = (summary: string, student: string, parent: string): BandText => ({
 
 export const ogrenmeVeBasariReport: ReportTemplate = {
   version: 'ogrenme-ve-basari-rapor-1',
+  itemsTitle: 'Özellikler',
   bandLabels: {
     low: 'Düşük',
     average: 'Orta',
@@ -49,7 +50,7 @@ export const ogrenmeVeBasariReport: ReportTemplate = {
         'Çocuğunuz bazı işlerde çok çaba gösterdiğini, bazılarında ise idare edecek kadar çalıştığını belirtiyor. İlgisini çeken ya da önemli bulduğu işlerde daha çok çaba gösteriyor olabilir.',
       ),
       low: t(
-        'Zorlanınca bırakmaya yatkın',
+        'Daha az çaba gösteren',
         'Genel olarak idare edecek kadar çalıştığını, iş zorlaştığında ya da ilgini kaybettiğinde bazen bıraktığını söylüyorsun. Bu bazen bir işin nereden tutulacağını bilmemekten ya da işin gözünde büyümesinden kaynaklanabilir. Bir işe ara vermeden önce kaldığın yeri ve bir sonraki adımı not etmek, işe geri dönmeni kolaylaştırabilir.',
         'Çocuğunuz genel olarak idare edecek kadar çalıştığını, iş zorlaştığında ya da ilgisini kaybettiğinde bazen bıraktığını belirtiyor. Bu bazen bir işin nereden tutulacağını bilmemekten ya da işin gözünde büyümesinden kaynaklanabilir; bir işe ara vermeden önce kaldığı yeri ve bir sonraki adımı not etmesi, işe geri dönmesini kolaylaştırabilir.',
       ),
@@ -57,8 +58,8 @@ export const ogrenmeVeBasariReport: ReportTemplate = {
     initiative: {
       high: t(
         'İşlere ertelemeden başlayan',
-        'Genel olarak yapman gereken işlere ertelemeden başladığını, başlamak için birinin seni dürtmesine gerek olmadığını ve işleri çabuk bitirdiğini söylüyorsun. Bu, son güne kalan işleri ve son dakika telaşını azaltabilir. Çabuk bitirdiğin işlerde, işi bitmiş saymadan önce kısa bir kontrol yapmak gözden kaçan hataları yakalamana yardım edebilir.',
-        'Çocuğunuz genel olarak yapması gereken işlere ertelemeden başladığını, başlamak için birinin onu dürtmesine gerek olmadığını ve işleri çabuk bitirdiğini belirtiyor. Bu, son güne kalan işleri ve son dakika telaşını azaltabilir; çabuk bitirdiği işlerde kısa bir kontrol yapması gözden kaçan hataları yakalamasına yardım edebilir.',
+        'Genel olarak yapman gereken işlere ertelemeden başladığını, başlamak için birinin seni dürtmesine gerek olmadığını ve işleri çabuk bitirdiğini söylüyorsun. Bu, işlerin birikmesini önleyebilir. Çabuk bitirdiğin işlerde, işi bitmiş saymadan önce kısa bir kontrol yapmak gözden kaçan hataları yakalamana yardım edebilir.',
+        'Çocuğunuz genel olarak yapması gereken işlere ertelemeden başladığını, başlamak için birinin onu dürtmesine gerek olmadığını ve işleri çabuk bitirdiğini belirtiyor. Bu, işlerin birikmesini önleyebilir; çabuk bitirdiği işlerde kısa bir kontrol yapması gözden kaçan hataları yakalamasına yardım edebilir.',
       ),
       average: t(
         'Bazen erteleyen',
@@ -108,8 +109,8 @@ export const ogrenmeVeBasariReport: ReportTemplate = {
     need_for_cognition: {
       high: t(
         'Kafa yoran işlerden hoşlanan',
-        'Genel olarak karmaşık problemleri çözmekten, zor metinler okumaktan ve kafa yoran konularla uğraşmaktan hoşlandığını, yeni şeyleri çabuk kavradığını söylüyorsun. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir. Bu istek, bir konuyu ezberlemek yerine anlamaya çalışmanı kolaylaştırabilir.',
-        'Çocuğunuz genel olarak karmaşık problemleri çözmekten, zor metinler okumaktan ve kafa yoran konularla uğraşmaktan hoşlandığını, yeni şeyleri çabuk kavradığını belirtiyor. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
+        'Genel olarak karmaşık problemleri çözmekten, zor metinler okumaktan ve kafa yoran konularla uğraşmaktan hoşlandığını söylüyorsun. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir. Bu istek, bir konuyu ezberlemek yerine anlamaya çalışmanı kolaylaştırabilir.',
+        'Çocuğunuz genel olarak karmaşık problemleri çözmekten, zor metinler okumaktan ve kafa yoran konularla uğraşmaktan hoşlandığını belirtiyor. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
       ),
       average: t(
         'Duruma göre düşünmeye istekli',
@@ -117,7 +118,7 @@ export const ogrenmeVeBasariReport: ReportTemplate = {
         'Çocuğunuz bazı kafa yoran işlerden hoşlandığını, bazılarından ise kaçındığını belirtiyor. Bu ölçek zekâyı ölçmez; ilgisini çeken konularda düşünmeye daha istekli olabilir.',
       ),
       low: t(
-        'Kafa yoran işlerden kaçınan',
+        'Kafa yoran işlere daha az istekli',
         'Genel olarak karmaşık problemler, okuması zor metinler ve felsefi tartışmalar gibi kafa yoran işlerden pek hoşlanmadığını söylüyorsun. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir. Zor bir konuya ilgini çeken bir örnekle başlamak, kafa yormayı daha kolay ve keyifli hâle getirebilir.',
         'Çocuğunuz genel olarak karmaşık problemler, okuması zor metinler ve felsefi tartışmalar gibi kafa yoran işlerden pek hoşlanmadığını belirtiyor. Bu ölçek zekâyı ölçmez; düşünmeyi gerektiren işlere ne kadar istekle yaklaştığını gösterir.',
       ),

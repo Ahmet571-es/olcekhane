@@ -576,10 +576,11 @@ describe('Kişiliğin 10 Yönü raporu', () => {
             const label = `${dom.key} ${ba}/${bb} ${rep.audience}`;
             const g = rep.groups!.find((x) => x.title === dom.name)!;
             const sp = t.facetSplit![dom.key];
-            // Destek kutusu: İç rahatlık düşükse ya da (ayrışma yokken) Duygusal Denge düşükse.
+            // Destek kutusu: İç rahatlık düşükse ya da Duygusal Denge düşükse (ayrışsa da).
             const facetBand = (name: string) => rep.groups!.flatMap((x) => x.facets).find((f) => f.label === name)!.band;
             const esGroup = rep.groups!.find((x) => x.title === 'Duygusal Denge')!;
-            const esLow = esGroup.badge.startsWith('Düşük') && !esGroup.badge.includes('İki yönü ayrışan');
+            // Ayrışan boyutun ortalaması düşükse kutu kalır (2026-10-22): kişi genel olarak sık sıkıntı yaşadığını söylüyordur.
+            const esLow = esGroup.badge.startsWith('Düşük');
             expect(rep.support !== null, label).toBe(esLow || facetBand('İç rahatlık') === 'Düşük');
             if (split) {
               expect(g.text, label).toBe(rep.audience === 'parent' ? sp.parent : (rep.audience === 'adult' ? sp.adult : undefined) ?? sp.student);
@@ -663,6 +664,10 @@ describe('Kişiliğin 10 Yönü gelişim yol haritası', () => {
       { scale: 'composure', group: 'low', link: null },
     ]);
     expect(t.sources.every((s) => s.url?.startsWith('https://doi.org/'))).toBe(true);
+    // Öneri kartlarının neden yalnızca beş yön için olduğu sade dille söylenir.
+    const r = evaluate(SLUG, likertBody(SLUG, 10, (i) => (i * 7) % 5));
+    expect(r.student.roadmap!.study.intro).toContain('burada en belirgin beş yönün (puanı orta noktadan en çok uzaklaşanlar) için öneriler var');
+    expect(r.parent.roadmap!.study.intro).toContain('burada en belirgin beş yönü (puanı orta noktadan en çok uzaklaşanlar) için öneriler var');
   });
 
   it('her yönün her düzeyi: on sütun, beş öneri kartı, haftalar ve iyi oluş haftası tutarlı (öğrenci, veli, yetişkin)', () => {

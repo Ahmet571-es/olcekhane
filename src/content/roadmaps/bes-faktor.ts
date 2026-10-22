@@ -10,7 +10,11 @@ import type { RoadmapTemplate } from './types';
  *    öğrenme stillerine göre öğretmenin işe yaradığı gösterilmemiştir (sitedeki "Öğrenme stilleri efsanesi" yazısı).
  *  - Ortamlar bir meslek önerisi değildir; kişilik tek başına meslek seçtirmez. Meslek için ilgi testlerine yönlendirilir.
  *  - Duygusal denge düşükken öneriler iyi oluşu öne alır (sınav kaygısı yazısındaki, araştırmayla desteklenen yollar).
- *  - Uçlar iyi ya da kötü değildir; her düzeyin güçlü yanından yola çıkılır.
+ *  - Uçlar iyi ya da kötü değildir: yüksek uç bir başarı ya da "en büyük avantaj", düşük uç bir beceri (ör. uyumluluk
+ *    düşükken "eleştirel düşünme") diye anlatılmaz; kişinin kendi söylediğinden ("sana kolay geliyor") yola çıkılır.
+ *  - Orta düzeyin metinleri ("Bazı işlere başlamak sana ötekilerden daha zor gelebilir") kişiye bir özellik yüklemez: Ayrıntılı
+ *    ve Altı Boyutlu Kişilik Profili'nde alt özellikleri ayrışan (biri yüksek, öteki düşük) bir boyutta da bu metinler
+ *    gösterilir ve o alt özelliklerin kartlarıyla çelişmemelidir. Rapordaki kartı da tekrar etmezler.
  */
 export const besFaktorRoadmap: RoadmapTemplate = {
   version: 'bes-faktor-yol-haritasi-1',
@@ -26,13 +30,13 @@ export const besFaktorRoadmap: RoadmapTemplate = {
   },
   settingsNote: {
     student:
-      'Kişilik tek başına meslek seçtirmez: aynı meslekte çok farklı kişilikte insanlar başarılı olur. Bu liste yalnızca hangi ortamlarda kendini daha rahat hissedebileceğine dair bir ipucudur. Alan ve meslek seçerken ilgilerine de bakmak gerekir.',
+      'Kişilik tek başına meslek seçtirmez: aynı meslekte çok farklı kişilikte insanlar başarılı olur. Bu bölüm yalnızca hangi ortamlarda kendini daha rahat hissedebileceğine dair bir ipucu verir. Alan ve meslek seçerken ilgilerine de bakmak gerekir.',
     parent:
-      'Kişilik tek başına meslek seçtirmez: aynı meslekte çok farklı kişilikte insanlar başarılı olur. Bu liste, çocuğunuzun hangi ortamlarda kendini daha rahat hissedebileceğine dair bir ipucudur. Alan ve meslek seçiminde ilgilerine de bakmanızı öneririz.',
+      'Kişilik tek başına meslek seçtirmez: aynı meslekte çok farklı kişilikte insanlar başarılı olur. Bu bölüm yalnızca çocuğunuzun hangi ortamlarda kendini daha rahat hissedebileceğine dair bir ipucu verir. Alan ve meslek seçiminde ilgilerine de bakmanızı öneririz.',
   },
   firstWeek: {
     student:
-      'Raporundaki en belirgin özelliklerini düşün. Bu hafta onların sana nerede yardım ettiğini ve nerede zorladığını iki üç cümleyle bir deftere yaz.',
+      'Raporunda seni en iyi anlattığını düşündüğün iki üç özelliği seç. Bu hafta bu özelliklerin sana nerede yardım ettiğini, seni nerede zorladığını bir deftere kısaca yaz.',
     parent:
       'Raporu çocuğunuzla birlikte okuyun ve ona hangi cümlelerin kendisini anlattığını sorun. Bu hafta yalnızca birlikte gözlem yapın; hemen bir şeyi değiştirmeye çalışmayın.',
   },
@@ -117,11 +121,11 @@ export const besFaktorRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Fikirleri sorgulamak ve eleştirel bakmak senin güçlü yanın. Bunu öğrenirken kullan: okuduğun bir konu için "Bunun kanıtı ne? Karşı görüş ne olabilir?" diye sor ve cevaplarını not al. Grup çalışmalarında farklı düşündüğünde gerekçeni sakin bir dille anlatmak fikrinin daha iyi duyulmasını sağlar.',
+            'Fikirleri sorgulamak sana doğal geliyor olabilir. Bunu öğrenirken kullan: okuduğun bir konu için "Bunun kanıtı ne? Karşı görüş ne olabilir?" diye sor ve cevaplarını not al. Grup çalışmalarında farklı düşündüğünde gerekçeni sakin bir dille anlatmak fikrinin daha iyi duyulmasını sağlar.',
           parent:
-            'Çocuğunuz fikirleri sorgulamayı ve kendi görüşünü savunmayı seviyor olabilir. Bu eleştirel bakışı "Bunun kanıtı ne?" gibi sorularla derslere yönlendirebilirsiniz. Grup çalışmalarında görüşünü sakin bir dille anlatmasına destek olun.',
+            'Çocuğunuz fikirleri sorgulamayı ve kendi görüşünü savunmayı seviyor olabilir. Bu sorgulayıcılığı "Bunun kanıtı ne?" gibi sorularla derslere yönlendirebilirsiniz. Grup çalışmalarında görüşünü sakin bir dille anlatmasına destek olun.',
           adult:
-            'Fikirleri sorgulamak ve eleştirel bakmak senin güçlü yanın. Bunu öğrenirken kullan: okuduğun bir konu için "Bunun kanıtı ne? Karşı görüş ne olabilir?" diye sor ve cevaplarını not al. Ortak işlerde farklı düşündüğünde gerekçeni sakin bir dille anlatmak fikrinin daha iyi duyulmasını sağlar.',
+            'Fikirleri sorgulamak sana doğal geliyor olabilir. Bunu öğrenirken kullan: okuduğun bir konu için "Bunun kanıtı ne? Karşı görüş ne olabilir?" diye sor ve cevaplarını not al. Ortak işlerde farklı düşündüğünde gerekçeni sakin bir dille anlatmak fikrinin daha iyi duyulmasını sağlar.',
         },
       },
       action: {
@@ -153,19 +157,19 @@ export const besFaktorRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Planlı çalışma senin en büyük avantajlarından biri. Bu düzeni en etkili yöntemlerle birleştir: konuyu okuduktan sonra kitabı kapatıp hatırlamaya çalış ve tekrarları günlere yay. Planına dinlenmeyi de yaz; her şeyin kusursuz olması gerekmez.',
+            'Planlı çalışmak sana kolay geliyor; bu, öğrenirken işine yarar. Bu düzeni en etkili yöntemlerle birleştir: konuyu okuduktan sonra kitabı kapatıp hatırlamaya çalış ve tekrarları günlere yay. Planına dinlenmeyi de yaz; her şeyin kusursuz olması gerekmez.',
           parent:
-            'Çocuğunuzun planlı çalışma eğilimi önemli bir avantaj. Bu düzeni en etkili yöntemlerle birleştirmesine destek olun: konuyu kitaba bakmadan hatırlamaya çalışması ve tekrarları günlere yayması. Dinlenmenin de planın parçası olduğunu hatırlatın.',
+            'Çocuğunuza planlı çalışmak kolay geliyor olabilir; bu, öğrenirken işine yarar. Bu düzeni en etkili yöntemlerle birleştirmesine destek olun: konuyu kitaba bakmadan hatırlamaya çalışması ve tekrarları günlere yayması. Dinlenmenin de planın parçası olduğunu hatırlatın.',
           adult:
-            'Planlı çalışma senin en büyük avantajlarından biri. Bu düzeni en etkili yöntemlerle birleştir: öğrendiğini kaynağa bakmadan hatırlamaya çalış ve tekrarları günlere yay. Planına dinlenmeyi de yaz; her şeyin kusursuz olması gerekmez.',
+            'Planlı çalışmak sana kolay geliyor; bu, öğrenirken işine yarar. Bu düzeni en etkili yöntemlerle birleştir: öğrendiğini kaynağa bakmadan hatırlamaya çalış ve tekrarları günlere yay. Planına dinlenmeyi de yaz; her şeyin kusursuz olması gerekmez.',
         },
         average: {
           student:
-            'İlgini çeken işlerde düzenlisin; diğerlerinde başlamak zor gelebilir. Her akşam ertesi günün en önemli işini seç ve ona ne zaman, nerede başlayacağını yaz: "Okuldan gelince, masamda, 30 dakika." Bunu önceden belirlemek başlamayı kolaylaştırır.',
+            'Bazı işlere başlamak sana ötekilerden daha zor gelebilir. Her akşam ertesi günün en önemli işini seç ve ona ne zaman, nerede başlayacağını yaz: "Okuldan gelince, masamda, 30 dakika." Bunu önceden belirlemek başlamayı kolaylaştırır.',
           parent:
-            'Çocuğunuz ilgisini çeken işlerde düzenli, diğerlerinde başlamakta zorlanıyor olabilir. Her akşam ertesi günün en önemli işini ve ona ne zaman, nerede başlayacağını birlikte kısaca yazmak başlamayı kolaylaştırır.',
+            'Bazı işlere başlamak çocuğunuza ötekilerden daha zor gelebilir. Her akşam ertesi günün en önemli işini ve ona ne zaman, nerede başlayacağını birlikte kısaca yazmak başlamayı kolaylaştırır.',
           adult:
-            'İlgini çeken işlerde düzenlisin; diğerlerinde başlamak zor gelebilir. Her akşam ertesi günün en önemli işini seç ve ona ne zaman, nerede başlayacağını yaz. Bunu önceden belirlemek başlamayı kolaylaştırır.',
+            'Bazı işlere başlamak sana ötekilerden daha zor gelebilir. Her akşam ertesi günün en önemli işini seç ve ona ne zaman, nerede başlayacağını yaz. Bunu önceden belirlemek başlamayı kolaylaştırır.',
         },
         low: {
           student:
@@ -207,17 +211,17 @@ export const besFaktorRoadmap: RoadmapTemplate = {
           student:
             'Baskı altında sakin kalabilmen sınavlarda işine yarar. Bu rahatlığın "Nasılsa yetişir" düşüncesine dönüşmemesi için sınav tarihinden geriye doğru küçük bir plan yap ve deneme sınavlarıyla kendini sına.',
           parent:
-            'Çocuğunuzun baskı altında sakin kalabilmesi sınavlarda bir güç. Bu rahatlığın son ana bırakmaya dönüşmemesi için sınav tarihinden geriye doğru küçük bir plan yapmasına destek olabilirsiniz.',
+            'Çocuğunuzun baskı altında sakin kalabilmesi sınavlarda işine yarayabilir. Bu rahatlığın son ana bırakmaya dönüşmemesi için sınav tarihinden geriye doğru küçük bir plan yapmasına destek olabilirsiniz.',
           adult:
-            'Baskı altında sakin kalabilmen önemli bir güç. Bu rahatlığın son ana bırakmaya dönüşmemesi için önemli bir işin tarihinden geriye doğru küçük bir plan yap.',
+            'Baskı altında sakin kalabilmen işine yarayabilir. Bu rahatlığın son ana bırakmaya dönüşmemesi için önemli bir işin tarihinden geriye doğru küçük bir plan yap.',
         },
         average: {
           student:
-            'Çoğu zaman sakinsin; bazı dersler ya da sınavlar seni daha çok gerebilir. Seni zorlayan konulara daha erken başla ve onları kısa ama sık tekrarlarla çalış. İyi hazırlanmış hissetmek gerginliği azaltır.',
+            'Bazı dersler ya da sınavlar seni ötekilerden daha çok gerebilir. Seni zorlayan konulara daha erken başla ve onları kısa ama sık tekrarlarla çalış. İyi hazırlanmış hissetmek gerginliği azaltır.',
           parent:
-            'Çocuğunuz çoğu zaman sakin; bazı dersler ya da sınavlar onu daha çok gerebilir. Zorlandığı konulara erken başlaması ve onları kısa ama sık tekrarlarla çalışması, iyi hazırlanmış hissetmesini sağlar.',
+            'Bazı dersler ya da sınavlar çocuğunuzu ötekilerden daha çok gerebilir. Zorlandığı konulara erken başlaması ve onları kısa ama sık tekrarlarla çalışması, iyi hazırlanmış hissetmesini sağlar.',
           adult:
-            'Çoğu zaman sakinsin; bazı işler seni daha çok gerebilir. Seni zorlayan işlere daha erken başla ve onları küçük parçalara böl. İyi hazırlanmış hissetmek gerginliği azaltır.',
+            'Bazı işler seni ötekilerden daha çok gerebilir. Seni zorlayan işlere daha erken başla ve onları küçük parçalara böl. İyi hazırlanmış hissetmek gerginliği azaltır.',
         },
         low: {
           student:
@@ -266,19 +270,19 @@ export const besFaktorRoadmap: RoadmapTemplate = {
         },
         average: {
           student:
-            'İlgini çeken konularda merakın artıyor. İlgini daha az çeken bir derste konuyu sevdiğin bir alanla ilişkilendirmeyi dene ya da "Bunu nerede kullanırım?" diye sor. Somut örnekler konuyu canlandırır.',
+            'Merakın konuya göre değişebilir. İlgini daha az çeken bir derste konuyu sevdiğin bir alanla ilişkilendirmeyi dene ya da "Bunu nerede kullanırım?" diye sor. Somut örnekler konuyu canlandırır.',
           parent:
-            'Çocuğunuz ilgisini çeken konularda daha meraklı. İlgisini daha az çeken bir dersi sevdiği bir alanla ilişkilendirmesine yardım edebilir, "Bunu nerede kullanırız?" sorusunu birlikte cevaplayabilirsiniz.',
+            'Çocuğunuzun merakı konuya göre değişebilir. İlgisini daha az çeken bir dersi sevdiği bir alanla ilişkilendirmesine yardım edebilir, "Bunu nerede kullanırız?" sorusunu birlikte cevaplayabilirsiniz.',
           adult:
-            'İlgini çeken konularda merakın artıyor. İlgini daha az çeken bir konuyu sevdiğin bir alanla ilişkilendirmeyi dene ya da "Bunu nerede kullanırım?" diye sor. Somut örnekler konuyu canlandırır.',
+            'Merakın konuya göre değişebilir. İlgini daha az çeken bir konuyu sevdiğin bir alanla ilişkilendirmeyi dene ya da "Bunu nerede kullanırım?" diye sor. Somut örnekler konuyu canlandırır.',
         },
         low: {
           student:
-            'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol örnek soru çözmek ve farklı türde soruları karışık sırayla çalışmak, öğrendiğini kalıcı hâle getirmene yardım eder.',
+            'Somut ve işe yarar konular ilgini daha çok çekiyor. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol örnek soru çözmek ve farklı türde soruları karışık sırayla çalışmak, öğrendiğini kalıcı hâle getirmene yardım eder.',
           parent:
-            'Çocuğunuz somut ve işe yarar konulara odaklanmayı seviyor. Soyut bir konuyu gerçek hayattan bir örnekle ya da bir çizimle başlatmak işini kolaylaştırır. Bol örnek soru çözmesi ve farklı türde soruları karışık çalışması kalıcı öğrenmeyi destekleyebilir.',
+            'Somut ve işe yarar konular çocuğunuzun ilgisini daha çok çekiyor olabilir. Soyut bir konuyu gerçek hayattan bir örnekle ya da bir çizimle başlatmak onun işini kolaylaştırır. Bol örnek soru çözmesi ve farklı türde soruları karışık çalışması kalıcı öğrenmeyi destekleyebilir.',
           adult:
-            'Somut ve işe yarar konulara odaklanmak senin güçlü yanın. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol uygulama yapmak ve farklı türde örnekleri karışık sırayla çalışmak, öğrendiğini kalıcı hâle getirmene yardım eder.',
+            'Somut ve işe yarar konular ilgini daha çok çekiyor. Soyut bir konuyu gerçek hayattan bir örnekle ve bir çizimle başlatmak işini kolaylaştırır. Bol uygulama yapmak ve farklı türde örnekleri karışık sırayla çalışmak, öğrendiğini kalıcı hâle getirmene yardım eder.',
         },
       },
       action: {

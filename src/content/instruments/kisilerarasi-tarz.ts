@@ -212,7 +212,7 @@ export const kisilerarasiTarz: LikertInstrument = {
       'Kaynak makaledeki üç çalışmada dört cümlelik tarz ölçeklerinin güvenirliği düşüktür: ortalama .60 ile .64 arasında, en düşük .46, en yüksek .77. Tarzlardan hesaplanan iki ana boyutun (baskınlık ve sıcaklık) güvenirliği daha yüksektir (.80–.89). Ama bu boyutlar, tarz puanlarının bir başvuru grubunun ortalama ve standart sapmalarına göre standartlaştırılmasıyla hesaplanır; Türkiye için böyle bir veri olmadığından raporda boyut puanı verilmez ve tarz sonuçları boyut puanlarından daha az kesindir. Kaynaktaki değerlerle hesaplandığında bir tarz puanının ölçüm payı 1–5 aralığında yaklaşık ±0,6–0,8 puandır. Türkçe çevirinin güvenirliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç kişinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç, kişinin kendini nasıl tanımladığını gösterir; başkalarıyla karşılaştırma yapmaz.',
     ageNote:
       '9. sınıftan itibaren uygulanır; mezunlar ve yetişkinler de çözebilir. Kaynak çalışmalar yetişkinler ve üniversite öğrencileriyle yapılmıştır; lise öğrencileriyle yapılmış bir güvenirlik çalışmasına ulaşılamadı.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',

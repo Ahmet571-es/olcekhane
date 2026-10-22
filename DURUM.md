@@ -584,6 +584,20 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
 11. Yaratıcılık Eğilimi (kişilik; IPIP)
 12. Kelime Bulma (zekâ; özgün sorular)
 
+**Raporlar: her başlığa grafik ve baştan sona inceleme (site sahibinin 2026-10-22 isteği):** "Testleri ve analiz
+raporlarını çok detaylı kontrol et; çok bilimsel ama çok sade, eşi benzeri olmayan Türkçe raporlar; grafiği çok kullanalım,
+her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sahibi aşama aşama gitmeyi seçti:
+1. **Anket testleri (24 test): yayında (2026-10-22).** Ortak kart grafiği altyapısı (`lib/reports/visuals.ts`; ekranda
+   `components/report/item-visual.tsx`, PDF'te aynı geometri): ölçek kartında düzey çubuğu (testin eşikleriyle bölgeler,
+   kişinin bölgesi vurgulu, puan kırmızı işaretle), birlikte yorumda ve listelerde yan yana grafik; ayrıntılı profilde
+   boyut başlıklarında da. 24 testin raporu dört bağımsız incelemeden geçti (çelişen kartlar, tek cümleyi kesin bilgi gibi
+   anlatan metinler, aynı sayfada tekrarlanan öneriler, zor cümleler, cevap tutarlılığı denetimleri); bulgular uygulandı
+   (ayrıntı "Son yapılanlar"da). `tests/kart-grafikleri.test.ts` her anket testinin her kartını dener.
+2. **Görev (zekâ ve dikkat) testleri (26 test), 4–5'lik gruplar:** her başlığa o başlığın verisine uygun grafik (düzeylere
+   göre doğrular, hata türleri, hız), rapor metinlerinin bağımsız incelemesi. Sırada.
+3. Okuma, sesli okuma, matematik konu tarama.
+4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
+
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
 misin?" → "Evet" → sistem kaydı kendisi inceler ve rapor verir; hiçbir şey saklanmaz; öncelik doğruluk. Aylık ek sunucu
@@ -917,6 +931,14 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (37): Raporlarda her başlığa grafik, 1. aşama (24 anket testi): ölçek kartlarında düzey çubuğu (testin
+  eşikleriyle bölgeler, kişinin bölgesi vurgulu, puan ve ölçüm payı), "Birlikte bakınca", sıralama ve liste kartlarında yan
+  yana grafik; ekranda ve PDF'te aynı çizim, telefonda kartın altında, masaüstünde yanında. Dört bağımsız incelemenin
+  bulguları uygulandı: Beş Faktör ve Öz-saygı'ya cevap tutarlılığı denetimi, çelişen kartlar (ilgi ve değer testlerinde
+  eşit puanlar, hiçbir alan yüksek değilken "en yüksek" dili, Holland kodunun eşitlikte kesilmesi), tek araştırmayı kesin
+  bilgi gibi anlatan cümleler ("yeni şeyleri çabuk kavrama" çıkarıldı), yol haritasında iyi oluş kartının önce gelmesi ve
+  tekrarlanan önerilerin ayıklanması, mezunlara ayrı destek metni, zor cümlelerin sadeleştirilmesi; `tests/kart-grafikleri.test.ts`
+  her testin her kartını dokuz cevap örüntüsüyle dener. Sekiz test telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
 - 2026-10-22 (36): Empati yayında (9. sınıftan yetişkine), yeni 12 testlik listenin ilki: IPIP'in üç ölçeğiyle
   başkalarını düşünme, duygusal duyarlılık, sıcaklık ve destek; 29 madde, ~5 dakika; rapor kişinin kendini nasıl gördüğünü
   anlatır, başkalarını doğru anlama becerisini ölçmediğini söyler; öğrenci, veli ve yetişkin raporu, 3 sütunlu yol haritası
@@ -961,7 +983,3 @@ En yeni üstte; en çok 10 madde tutulur.
   süresi; işlemler ipucu vermeyecek biçimde seçildi; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası; iki tur
   bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Geriye Dönük Hatırlama'nın
   bilim kartında "karmaşık dizi görevleri" adı "karmaşık bellek aralığı görevleri" yapıldı.
-- 2026-10-15 (27): Üç Boyutlu Zihinde Döndürme yayında (5. sınıftan yetişkine), 2. dalganın 6. testi: küplerden yapılmış
-  on özgün şekil, 20 soru, iki bölüm; ayna görüntüleri dik durur ve hiçbir seçenek düz bir resim gibi döndürülerek ya da
-  çevrilerek bulunamaz (bağımsız denetleyiciyle test edildi); öğrenci, veli ve yetişkin raporu, yol haritası; üç tur bağımsız
-  incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.

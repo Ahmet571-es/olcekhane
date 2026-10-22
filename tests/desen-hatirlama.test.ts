@@ -468,8 +468,9 @@ describe('Desen hatırlama: rapor', () => {
     const next = (grade: number) => evaluateReports(SLUG, patternBody(undefined, grade));
     const weeks = (x: ReturnType<typeof next>) => ('adult' in x ? x.adult : x.student).roadmap!.weeks;
     expect(weeks(next(3)).at(-1)!.text).toContain('Kelime Listesi Hatırlama ve Gizli Şekiller');
-    expect(weeks(next(7)).at(-1)!.text).toContain('Kelime Listesi Hatırlama ve Çalışma Belleği: Hesapla ve Hatırla');
-    expect(weeks(next(ADULT_GRADE)).at(-1)!.text).toContain('Kelime Listesi Hatırlama ve Çalışma Belleği: Hesapla ve Hatırla');
+    // Adlardan biri "ve" ya da iki nokta içerdiği için adlar tırnak içindedir.
+    expect(weeks(next(7)).at(-1)!.text).toContain('“Kelime Listesi Hatırlama” ve “Çalışma Belleği: Hesapla ve Hatırla”');
+    expect(weeks(next(ADULT_GRADE)).at(-1)!.text).toContain('“Kelime Listesi Hatırlama” ve “Çalışma Belleği: Hesapla ve Hatırla”');
   });
 
   it('yayındaki sitenin dış sınamasındaki örnek cevaplar bu testin desenleridir', () => {

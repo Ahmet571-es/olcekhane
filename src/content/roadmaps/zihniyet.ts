@@ -11,6 +11,9 @@ import type { AudienceText, RoadmapTemplate } from './types';
  *  - Zihniyetin başarıyla ilişkisi küçüktür (Sisk ve ark., 2018): "zihniyetini değiştir, başarın artsın" vaadi verilmez.
  *  - 2. hafta hataya bakış ("Hatadan öğrenmek"); 3. hafta en düşük puanlı alan. Ortamlar bölümü yoktur.
  *  - Öğrenci metinleri okula özgü değildir: yetişkine de aynen gösterilir.
+ *  - Aynı sayfada bir öneri bir kez verilir (2026-10-22 incelemesi): rapordaki kartlar öneri vermez; çalışma kartı, "Bu
+ *    hafta dene" ve veliye yaklaşım aynı alanda farklı bir adım önerir (ör. Hataya bakış düşükken çalışma kartı
+ *    takıldığı yeri incelemeyi, 2. hafta "Bundan ne öğrendim?" sorusunu, veliye yaklaşım önce duyguyu dinlemeyi önerir).
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
@@ -19,6 +22,11 @@ export const zihniyetRoadmap: RoadmapTemplate = {
   planningScale: 'failure',
   planningTitle: 'Hatadan öğrenmek',
   thirdWeek: 'lowest',
+  unit: { one: 'alan', toPlural: 'alanlara' },
+  balancedNote: t(
+    'Dört alanda da puanın ortada: ne sabitlik ne de gelişim yönünde belirgin bir inanç öne çıkıyor.',
+    'Çocuğunuzun dört alanda da puanı ortada: ne sabitlik ne de gelişim yönünde belirgin bir inanç öne çıkıyor.',
+  ),
   studyIntro: t(
     'Zihniyet bir inançtır; asıl fark, zorlandığın anlarda ne yaptığında ortaya çıkar. Aşağıda her alan için inancını davranışa çevirecek bir sonraki küçük adım var; hepsini birden değil, birer birer dene.',
     'Zihniyet bir inançtır; asıl fark, zorlanılan anlarda ne yapıldığında ortaya çıkar. Aşağıda çocuğunuzun her alanı için inancını davranışa çevirecek bir sonraki küçük adım var; hepsini birden değil, birer birer denemesine destek olun.',
@@ -35,24 +43,24 @@ export const zihniyetRoadmap: RoadmapTemplate = {
   nextPurpose: { you: 'öğrenmeyle ilgili başka yönlerini de görmek', parent: 'çocuğunuzun öğrenmeyle ilgili başka yönlerini de görmek' },
   approach: {
     intelligence: {
-      low: 'Bir zamanlar zorlandığı ama şimdi rahatça yaptığı bir şeyi ona hatırlatın.',
-      average: 'Zorlandığında neler düşündüğünü sorun ve dinleyin.',
-      high: 'Çabasını ve yöntem değiştirmesini fark ettiğinizi söyleyin.',
+      low: 'Kendi hayatınızdan, önce zorlanıp sonra öğrendiğiniz bir şeyi (araba kullanmak, yeni bir iş gibi) ona anlatın.',
+      average: '“Sen bunu yapamazsın” gibi sabit sözler yerine “Henüz öğrenmedin” demeyi deneyin.',
+      high: 'Zorlandığında hemen yardım etmek yerine biraz uğraşmasına fırsat verin.',
     },
     effort: {
       low: 'Yeteneğini değil, çabasını ve denediği yolları övün.',
-      average: 'Takıldığında başka bir yol denemesini cesaretlendirin.',
-      high: 'Çabasını etkili çalışma yöntemleriyle birleştirmesini destekleyin.',
+      average: 'Takıldığında çözümü hemen söylemek yerine “Başka hangi yolu deneyebilirsin?” diye sorun.',
+      high: '“Bugün hangi yöntemi denedin?” gibi sorularla ne kadar değil, nasıl çalıştığını sorun.',
     },
     failure: {
-      low: 'Hatalarına “Bundan ne öğrendin, bir dahaki sefere neyi farklı yaparsın?” diye yaklaşın.',
-      average: 'Hatalarına yetenek kaygısıyla değil, öğrenmeye odaklanarak tepki verin.',
-      high: 'Hatalarına öğrenmeye odaklanarak tepki vermeyi sürdürün.',
+      low: 'Bir hatanın ardından önce duygusunu dinleyin; ne öğrendiğini konuşmayı biraz sonraya bırakın.',
+      average: 'Hata yaptığında hayal kırıklığınızı değil, merakınızı gösterin; örneğin “Nerede takıldın, birlikte bakalım mı?” diye sorun.',
+      high: 'Zorlu bir işte hata yapmasına izin verin; her hatayı hemen düzeltmeyin.',
     },
     challenge: {
-      low: 'Sonucu değil, yeni bir şeyi denemesini takdir edin.',
-      average: 'Hangi durumlarda zorluktan kaçındığını birlikte konuşun.',
-      high: 'Denemelerini ve öğrendiklerini takdir edin.',
+      low: 'Yeni bir şeyi denediğinde, sonucu ne olursa olsun denemesini takdir edin.',
+      average: 'Kaçındığı türden küçük bir işi siz de onunla birlikte deneyin.',
+      high: 'Zorlandığı işlerde ilerlemesini sonuçtan bağımsız olarak fark edip söyleyin.',
     },
   },
   scales: {
@@ -68,18 +76,18 @@ export const zihniyetRoadmap: RoadmapTemplate = {
           'Çocuğunuzun zorlandığı anlarda aklına gelen düşünceyi birlikte fark edin: “Bende bu yetenek yok” mu, “Henüz öğrenmedim” mi? Fark etmek, hangi düşüncenin onu ilerlettiğini görmeyi kolaylaştırır.',
         ),
         high: t(
-          'Zekânın gelişebileceğine inanıyorsun. Bu inancı davranışa çevirmek için takıldığında yeni bir yol dene ve neyin işe yaradığını not et.',
-          'Çocuğunuz zekânın gelişebileceğine inanıyor. Bu inancı davranışa çevirmesi için takıldığında yeni bir yol denemesini ve neyin işe yaradığını not etmesini destekleyin.',
+          'Zekânın gelişebileceği inancını kendi deneyiminle sınamanın bir yolu, ilk denemede başaramadığın bir işe birkaç gün sonra geri dönmektir: ikinci denemede neyin değiştiğini görebilirsin.',
+          'Çocuğunuzun ilk denemede başaramadığı bir işe birkaç gün sonra geri dönmesi, zekânın gelişebileceği inancını kendi deneyimiyle sınamasını sağlayabilir: ikinci denemede neyin değiştiğini görebilir.',
         ),
       },
       action: {
         low: t(
-          'Bu hafta bir zamanlar zorlandığın ama şimdi rahatça yaptığın bir şeyi yaz ve onu nasıl öğrendiğini anlat.',
-          'Bu hafta çocuğunuzla bir zamanlar zorlandığı ama şimdi rahatça yaptığı bir şeyi ve onu nasıl öğrendiğini konuşun.',
+          'Bu hafta zorlandığın bir anda aklına gelen “Bende bu yetenek yok” düşüncesini “Henüz öğrenmedim” diye yeniden yaz.',
+          'Bu hafta çocuğunuz zorlandığında “Bende bu yetenek yok” derse, “Henüz öğrenmedin” diye karşılık verin ve nasıl öğrenebileceğini birlikte düşünün.',
         ),
         average: t(
-          'Bu hafta zorlandığın üç anı ve o an aklına gelen düşünceyi yaz.',
-          'Bu hafta çocuğunuzun zorlandığı anlarda ne düşündüğünü sorun ve dinleyin.',
+          'Bu hafta zorlandığın bir anda aklına gelen düşünceden sonra ne yaptığını yaz: vazgeçtin mi, başka bir yol mu denedin?',
+          'Bu hafta çocuğunuz zorlandığında, aklına gelen düşünceden sonra ne yaptığını konuşun: vazgeçti mi, başka bir yol mu denedi?',
         ),
         high: t(
           'Bu hafta takıldığın bir işte en az iki farklı yol dene.',
@@ -99,18 +107,18 @@ export const zihniyetRoadmap: RoadmapTemplate = {
           'Çabanın yanında yöntem de önemlidir: çocuğunuz takıldığında aynı şeyi tekrarlamak yerine başka bir yol denemesi için cesaretlendirilebilir.',
         ),
         high: t(
-          'Emeğin seni ilerletiyor. Çabanı etkili yöntemlerle birleştir: öğrendiğini bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak.',
-          'Çocuğunuzun emeği onu ilerletiyor. Çabasını etkili yöntemlerle birleştirmesini destekleyin: öğrendiğini bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak.',
+          'Çabanı etkili yöntemlerle birleştirmek işine yarayabilir: öğrendiğini bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak, araştırmalarda en yararlı bulunan yöntemler arasında.',
+          'Çocuğunuzun çabasını etkili yöntemlerle birleştirmesi işine yarayabilir: öğrendiğini bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak, araştırmalarda en yararlı bulunan yöntemler arasında.',
         ),
       },
       action: {
         low: t(
-          'Bu hafta zorlandığın bir işte çalışma yöntemini değiştir ve farkı not et.',
-          'Bu hafta çocuğunuz zorlandığı bir işte çalışma yöntemini değiştirsin; farkı birlikte konuşun.',
+          'Bu hafta çok çalışman gereken bir işte, her çalışmanın sonunda neyi yeni öğrendiğini tek cümleyle yaz.',
+          'Bu hafta çocuğunuz çok çalışması gereken bir işte, her çalışmanın sonunda neyi yeni öğrendiğini size tek cümleyle söylesin.',
         ),
         average: t(
-          'Bu hafta takıldığın her seferde başka bir yöntem dene.',
-          'Bu hafta çocuğunuz takıldığında başka bir yöntem denesin.',
+          'Bu hafta her akşam ne kadar çalıştığını değil, hangi yöntemle çalıştığını tek cümleyle yaz.',
+          'Bu hafta akşamları çocuğunuzla, o gün ne kadar değil, hangi yöntemle çalıştığını konuşun.',
         ),
         high: t(
           'Bu hafta öğrendiğin bir şeyi ertesi gün bakmadan hatırlamayı dene.',
@@ -122,22 +130,22 @@ export const zihniyetRoadmap: RoadmapTemplate = {
       color: '#ee6a36',
       study: {
         low: t(
-          'Bir hatanın ardından “Bu bana ne öğretti, bir dahaki sefere neyi farklı yaparım?” sorusuna iki cümleyle cevap yaz. Hatayı bir işaret olarak okumak zamanla alışkanlık hâline gelebilir.',
-          'Çocuğunuzun hatalarına yeteneğini sorgulayarak değil, “Bundan ne öğrendin, bir dahaki sefere neyi farklı yaparsın?” diye sorarak yaklaşın. Araştırmalara göre anne babanın başarısızlığa tepkisi, çocuğun zekâ hakkındaki inancıyla ilişkili.',
+          'Hata yaptığında önce sonuca değil, nerede takıldığına bak: hangi adımda yanlış yola girdin? Hatayı bir işaret olarak okumak zamanla alışkanlık hâline gelebilir.',
+          'Çocuğunuz hata yaptığında önce sonucu değil, nerede takıldığını birlikte inceleyin; hatayı bir işaret olarak okumak zamanla alışkanlık hâline gelebilir.',
         ),
         average: t(
           'Hata yaptığında onu bir işaret olarak okumayı dene: neyi henüz öğrenmediğini gösteriyor?',
-          'Çocuğunuz hata yaptığında ona neyi henüz öğrenmediğini gösterdiğini birlikte konuşun; yetenek kaygısıyla değil, öğrenmeye odaklanarak tepki verin.',
+          'Çocuğunuz hata yaptığında, hatanın ona neyi henüz öğrenmediğini gösterdiğini birlikte konuşun.',
         ),
         high: t(
-          'Hatalarından öğrenebiliyorsun. Önemli hatalarını ve onlardan öğrendiklerini kısa bir listede topla; zor bir dönemde bu liste sana güç verebilir.',
-          'Çocuğunuz hatalarından öğrenebiliyor. Önemli hatalarını ve onlardan öğrendiklerini kısa bir listede toplaması zor bir dönemde ona güç verebilir.',
+          'Hatalarını türlerine göre ayır: dikkatsizlikten mi, yoksa henüz bilmediğin bir şeyden mi? Hangi türün daha sık olduğunu görmek, nereye odaklanacağını gösterebilir.',
+          'Çocuğunuzun hatalarını türlerine göre ayırması (dikkatsizlikten mi, henüz bilmediği bir şeyden mi?), hangi türün daha sık olduğunu ve nereye odaklanacağını görmesini sağlayabilir.',
         ),
       },
       action: {
         low: t(
           'Bu hafta her hatanın ardından “Bundan ne öğrendim?” sorusunu tek cümleyle yanıtla.',
-          'Bu hafta çocuğunuzun her hatasının ardından ona “Bundan ne öğrendin?” diye sorun.',
+          'Bu hafta çocuğunuz bir hata yaptığında, sakinleştikten sonra ona “Bundan ne öğrendin?” diye sorun.',
         ),
         average: t(
           'Bu hafta yaptığın bir hatayı ve ondan öğrendiğin şeyi bir yakınına anlat.',
@@ -153,16 +161,16 @@ export const zihniyetRoadmap: RoadmapTemplate = {
       color: '#0e9c8c',
       study: {
         low: t(
-          'Zorluktan kaçınmak yerine küçük bir zorlukla başla: hata yapabileceğin ama başaramazsan bir şey kaybetmeyeceğin küçük bir iş seç. Sonucu değil, ne öğrendiğini değerlendir.',
-          'Çocuğunuzun zorluktan kaçınması yerine küçük bir zorlukla başlamasını destekleyin: hata yapabileceği ama başaramazsa bir şey kaybetmeyeceği küçük bir iş. Sonucu değil, ne öğrendiğini konuşun.',
+          'Zorlayıcı bir işe “Yeteneğimi göstermeliyim” diye değil, “Bunu öğrenmek istiyorum” diye bakmak, onu denemeyi kolaylaştırabilir. İlk denemeleri başkalarının önünde değil, tek başına yapmak da baskıyı azaltabilir.',
+          'Zorlayıcı bir işe “Yeteneğimi göstermeliyim” diye değil, “Bunu öğrenmek istiyorum” diye bakması, çocuğunuzun onu denemesini kolaylaştırabilir. İlk denemeleri başkalarının önünde değil, evde ya da tek başına yapması da baskıyı azaltabilir.',
         ),
         average: t(
-          'Hangi durumlarda zorluktan kaçındığını fark et; o durumlardan birinde, küçük bir adımla zorluğu seç.',
-          'Çocuğunuzun hangi durumlarda zorluktan kaçındığını birlikte fark edin; o durumlardan birinde küçük bir adımla zorluğu seçmesini cesaretlendirin.',
+          'Zorlayıcı bir işi seçtiğin durumlarla kaçındığın durumları karşılaştır: kaçındığında başkalarının önünde miydin, yoksa hata yapma ihtimali mi vardı? Bu fark, nereden başlayabileceğini gösterebilir.',
+          'Çocuğunuzla, zorlayıcı bir işi seçtiği durumlarla kaçındığı durumları karşılaştırın: kaçındığında başkalarının önünde miydi, yoksa hata yapma ihtimali mi vardı? Bu fark, nereden başlanabileceğini gösterebilir.',
         ),
         high: t(
-          'Zorlayıcı işleri seçiyorsun. Zorlandığın işlerde nasıl ilerlediğini not etmek, hangi yolların işine yaradığını görmeni kolaylaştırır.',
-          'Çocuğunuz zorlayıcı işleri seçiyor. Zorlandığı işlerde nasıl ilerlediğini not etmesi, hangi yolların işine yaradığını görmesini kolaylaştırır.',
+          'Zorlandığın işlerde nasıl ilerlediğini not etmek, hangi yolların işine yaradığını görmeni kolaylaştırabilir.',
+          'Zorlandığı işlerde nasıl ilerlediğini not etmesi, çocuğunuzun hangi yolların işine yaradığını görmesini kolaylaştırabilir.',
         ),
       },
       action: {
@@ -175,8 +183,8 @@ export const zihniyetRoadmap: RoadmapTemplate = {
           'Bu hafta çocuğunuz genellikle kaçındığı türden küçük bir zorluğu seçsin.',
         ),
         high: t(
-          'Bu hafta zorlandığın bir işte hangi yolların işine yaradığını not et.',
-          'Bu hafta çocuğunuz zorlandığı bir işte hangi yolların işine yaradığını not etsin.',
+          'Bu hafta seni biraz aşan yeni bir iş seç ve ilk denemende nerede zorlandığını yaz.',
+          'Bu hafta çocuğunuz onu biraz aşan yeni bir iş seçsin; ilk denemede nerede zorlandığını birlikte konuşun.',
         ),
       },
     },

@@ -11,6 +11,9 @@ import type { AudienceText, RoadmapTemplate } from './types';
  *  - Sakinlik düşükken 3. hafta iyi oluşa ayrılır (her akşam gününü bir yetişkinle konuşmak); rehber yazısı bağlantısı
  *    verilmez (sitedeki sınav kaygısı yazısı daha büyük öğrencilere yazılmıştır).
  *  - Öneriler çocuğun yalnız başına değil, ailesiyle birlikte yapabileceği küçük adımlardır. Uçlar iyi ya da kötü değildir.
+ *  - Aynı sayfada yan yana okunan metinler birbirini tekrar etmez (2026-10-22 incelemesi): veliye yaklaşım önerileri
+ *    rapordaki veli kartlarında söylenmeyen bir şey önerir; "Nasıl çalışabilirsin?" kartları ve "Bu hafta dene" metinleri
+ *    rapordaki kartları ve birbirini yinelemez. Rapordaki gibi beş ölçeğe "yön" denir (`unit`).
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
@@ -18,6 +21,11 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
   version: 'cocuk-kisilik-yol-haritasi-1',
   planningScale: 'conscientiousness',
   wellbeing: { scale: 'emotional_stability', group: 'low', link: null },
+  unit: { one: 'yön', toPlural: 'yönlere' },
+  balancedNote: t(
+    'Beş yönde de puanın ortada; hiçbiri ötekilerden çok daha yüksek ya da düşük değil.',
+    'Çocuğunuzun beş yönde de puanı ortada: hiçbiri belirgin biçimde öne çıkmıyor.',
+  ),
   studyIntro: t(
     'Araştırmalara göre herkes için en işe yarayan çalışma yolları aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Kişiliğin, bu yolları nasıl kullanmanın sana kolay geleceği konusunda ipucu verebilir.',
     'Araştırmalara göre herkes için en işe yarayan çalışma yolları aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun kişiliği, bu yolları nasıl kullanmanın ona kolay geleceği konusunda ipucu verebilir.',
@@ -51,12 +59,12 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
       },
       action: {
         high: t(
-          'Bu hafta ailenden biriyle ya da bir arkadaşınla 10 dakikalık bir soru-cevap oyunu oyna: kitaplar kapalı, sırayla birbirinize soru sorun.',
-          'Bu hafta çocuğunuzla 10 dakikalık bir soru-cevap oyunu oynayın: kitaplar kapalı, o gün öğrendiği konudan sırayla birbirinize soru sorun.',
+          'Bu hafta bir arkadaşınla ya da ailenden biriyle konuşurken sırayı ona ver: önce o anlatsın, sen sözünü kesmeden sonuna kadar dinle.',
+          'Bu hafta çocuğunuzla bir sohbet oyunu oynayın: biriniz anlatırken öteki sözünü kesmeden sonuna kadar dinlesin.',
         ),
         average: t(
-          'Bu hafta bir konuyu önce tek başına çalış, sonra kitabı kapatıp ailenden birine 5 dakikada anlat.',
-          'Bu hafta çocuğunuzdan bir konuyu önce tek başına çalışmasını, sonra kitabı kapatıp size 5 dakikada anlatmasını isteyin.',
+          'Bu hafta bir gün bir arkadaşınla oyna, bir gün de kendi başına sevdiğin bir şeyle uğraş; hangisinden sonra nasıl hissettiğini ailene anlat.',
+          'Bu hafta çocuğunuzun bir gün bir arkadaşıyla oynamasına, bir gün de kendi başına sevdiği bir şeyle uğraşmasına fırsat verin; hangisinden sonra nasıl hissettiğini birlikte konuşun.',
         ),
         low: t(
           'Bu hafta az konuştuğun bir arkadaşına küçük bir soru sor (örneğin “En sevdiğin oyun hangisi?”); akşam ailene nasıl geçtiğini anlat.',
@@ -76,14 +84,14 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
           'Çocuğunuz bir arkadaşıyla birlikte çalışırken önce ikisi de kitaba bakmadan hatırladıklarını yazıp sonra karşılaştırabilir. Birbirlerine yardım ederken öğrendiklerini de tekrar etmiş olurlar.',
         ),
         low: t(
-          'Kendi başına çalışmak sana kolay gelebilir. Çalışmanın sonunda kitabı kapat ve öğrendiklerini kısaca bir kâğıda yaz; bakmadan hatırlamak en işe yarayan tekrar yollarından biridir.',
-          'Çocuğunuza kendi başına çalışmak kolay gelebilir. Çalışmanın sonunda kitabı kapatıp öğrendiklerini kısaca bir kâğıda yazması, bakmadan hatırlamanın kolay bir yoludur.',
+          'Çalıştığın konudan aklında kalan beş şeyi kitaba bakmadan bir liste hâlinde yaz; bakmadan hatırlamak en işe yarayan tekrar yollarından biridir.',
+          'Çocuğunuzun çalıştığı konudan aklında kalan beş şeyi kitaba bakmadan bir liste hâlinde yazması, bakmadan hatırlamanın kolay bir yoludur.',
         ),
       },
       action: {
         high: t(
           'Bu hafta bir arkadaşına ya da kardeşine zorlandığı bir işte yardım et; ama bir gün de senin yapmak istediğin şeyi ona söylemeyi dene.',
-          'Bu hafta çocuğunuzun bir arkadaşına ya da kardeşine yardım ettiği anları fark edip söyleyin; bir gün de kendi isteğini açıkça söylemesini cesaretlendirin.',
+          'Bu hafta evde birlikte bir karar verirken (akşam ne oynanacağı gibi) önce çocuğunuzun ne istediğini sorun; isteğini açıkça söylemesini olağan karşılayın.',
         ),
         average: t(
           'Bu hafta her gün birine küçük bir iyilik yap ve akşam ailene ne yaptığını anlat.',
@@ -99,8 +107,8 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
       color: '#2f5ce0',
       study: {
         high: t(
-          'Düzenli olmak işini kolaylaştırıyor. Bir adım daha atabilirsin: bir konuyu bir günde uzun uzun değil, birkaç güne yayarak kısa kısa tekrar et.',
-          'Düzenli olmak çocuğunuzun işini kolaylaştırıyor. Bir adım daha atabilir: bir konuyu bir günde uzun uzun değil, birkaç güne yayarak kısa kısa tekrar edebilir.',
+          'Düzenli olmak işini kolaylaştırıyorsa bir adım daha atabilirsin: bir konuyu çalıştıktan sonra kendine üç soru yaz ve ertesi gün kitaba bakmadan cevapla.',
+          'Düzenli olmak çocuğunuzun işini kolaylaştırıyorsa bir adım daha atabilir: bir konuyu çalıştıktan sonra kendine üç soru yazıp ertesi gün kitaba bakmadan cevaplayabilir.',
         ),
         average: t(
           'Bazı işlerde düzenlisin. Bu düzeni çalışmaya da taşıyabilirsin: her gün aynı saatte, kısa bir süre çalış ve sonunda kitabı kapatıp neler öğrendiğini hatırlamaya çalış.',
@@ -122,7 +130,7 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
         ),
         low: t(
           'Bu hafta her gün yalnızca bir işi hemen yap; örneğin eve gelince çantanı yerine koy. Yaptığın her gün bir kâğıda işaret koy.',
-          'Bu hafta çocuğunuzla her gün hemen yapılacak tek bir iş seçin (ör. eve gelince çantasını yerine koymak); yaptığı her günü bir kâğıda işaretleyin ve küçük adımlarını övün.',
+          'Bu hafta çocuğunuzla her gün hemen yapılacak tek bir iş seçin (ör. eve gelince çantasını yerine koymak); yaptığı her günü bir kâğıda birlikte işaretleyin.',
         ),
       },
     },
@@ -148,12 +156,12 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
           'Bu hafta çocuğunuzla onu sakinleştiren şeylerin (ör. yürüyüş, müzik, resim yapmak) bir listesini hazırlayın; zor bir günde birlikte bu listeye bakın.',
         ),
         average: t(
-          'Bu hafta seni üzen ya da kızdıran bir anı ailene anlat ve o anda ne yapabileceğini birlikte düşünün.',
-          'Bu hafta çocuğunuzla onu üzen ya da kızdıran bir anı konuşun ve o anda ne yapabileceğini birlikte düşünün.',
+          'Bu hafta her akşam, o gün kendini ne kadar sakin hissettiğini 1’den 5’e kadar bir sayıyla bir kâğıda yaz; hafta sonunda ailenle birlikte bak.',
+          'Bu hafta her akşam çocuğunuzla, o gün kendini ne kadar sakin hissettiğini 1’den 5’e kadar bir sayıyla işaretleyin; hafta sonunda birlikte bakın.',
         ),
         low: t(
-          'Bu hafta her akşam ailenle 5 dakika konuş: günün en güzel ve en zor anı neydi? Zorlandığın şeyleri anlatmak, onları tek başına taşımaktan daha kolaydır.',
-          'Bu hafta her akşam çocuğunuzla 5 dakika konuşun: günün en güzel ve en zor anı neydi? Yargılamadan dinlemeniz, duygularını anlatmasını kolaylaştırır.',
+          'Bu hafta her akşam ailenle 5 dakika konuş: günün en güzel ve en zor anı neydi?',
+          'Bu hafta her akşam çocuğunuzla 5 dakika konuşun: günün en güzel ve en zor anı neydi? Önce siz kendi gününüzü anlatarak başlayabilirsiniz.',
         ),
       },
     },
@@ -183,37 +191,37 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
           'Bu hafta çocuğunuzdan ilgisini çeken bir konuda “Neden?” diye başlayan üç soru yazmasını isteyin ve cevaplarını birlikte arayın.',
         ),
         low: t(
-          'Bu hafta sevdiğin bir konuda kısa ve resimli bir kitap ya da yazı oku ve en ilginç bulduğun şeyi ailene anlat.',
-          'Bu hafta çocuğunuzla sevdiği bir konuda kısa ve resimli bir kitap ya da yazı okuyun ve en ilginç bulduğu şeyi size anlatmasını isteyin.',
+          'Bu hafta evde ya da dışarıda gördüğün bir şey için “Bu nasıl çalışıyor?” diye sor ve cevabını bir yetişkinle birlikte bul.',
+          'Bu hafta çocuğunuzla evde ya da dışarıda gördüğünüz bir şeyin (bir el feneri, bir bisiklet zili gibi) nasıl çalıştığını birlikte inceleyin; cevabı bulmayı ona bırakın.',
         ),
       },
     },
   },
   approach: {
     extraversion: {
-      high: 'Konuşma ve arkadaşlık enerjisini destekleyin; başkalarını sonuna kadar dinlemeyi de birlikte konuşun.',
-      average: 'Hem arkadaşlarıyla hem de tek başına vakit geçirme isteğine saygı gösterin.',
-      low: 'Onu konuşmaya zorlamayın; yeni ortamlara önceden hazırlayın ve attığı küçük adımları fark edip söyleyin.',
+      high: 'Arkadaşlarıyla buluşabileceği ortamlar sunun; günün sonunda baş başa, sakin bir sohbet zamanı da ayırın.',
+      average: 'Hafta sonu planlarında bazen kalabalık, bazen sakin etkinlikleri birlikte seçin.',
+      low: 'Attığı küçük adımları (bir çocuğa soru sormak, söz almak) fark edip söyleyin; sessiz kalmasını da olağan karşılayın.',
     },
     agreeableness: {
-      high: 'Yardımseverliğini fark edip söyleyin; gerektiğinde “hayır” diyebileceğini de hatırlatın.',
+      high: 'Yardım ettiği anları fark edip söyleyin; bir arkadaşıyla anlaşamadığında ne istediğini nasıl söyleyebileceğini birlikte prova edin.',
       average: 'Başkalarını düşündüğü anları fark edip söyleyin.',
-      low: 'Günlük olaylarda başkalarının ne hissedebileceğini birlikte konuşun; kırıcı bir söz söylediğinde bunun karşısındakini nasıl etkilediğini sakin bir dille anlatın.',
+      low: 'Kırıcı bir söz söylerse bunun karşısındakini nasıl etkilediğini sakin bir dille anlatın ve özür dilemenin yolunu birlikte bulun.',
     },
     conscientiousness: {
-      high: 'Her şeyin kusursuz olması gerekmediğini, hata yapmanın da öğrenmenin parçası olduğunu hatırlatın.',
+      high: 'Düzenine gösterdiği özeni fark edin; bir iş plana uymadığında sakin kalarak ona örnek olun.',
       average: 'Sevdiği işlerdeki düzenini fark edin ve bu düzeni öteki işlerine de taşımasına yardım edin.',
-      low: 'Tek bir küçük alışkanlıkla başlayın ve her gün aynı saatte tekrarlayın; suçlamak yerine attığı küçük adımları övün.',
+      low: 'Dağınıklık için suçlamak yerine attığı her küçük adımı fark edip övün.',
     },
     emotional_stability: {
-      high: 'Sakinliğini fark edin; yine de duygularını paylaşabileceği bir ortam sunmaya devam edin.',
-      average: 'Onu zorlayan durumları yargılamadan dinleyin ve o anlarda ne yapabileceğini birlikte düşünün.',
-      low: 'Duygularını yargılamadan dinleyin; bu duygular uzun sürüyor ya da günlük hayatını etkiliyorsa okulun rehber öğretmeninden destek alın.',
+      high: 'Sizin de zaman zaman üzüldüğünüzü ya da kızdığınızı ve bununla nasıl baş ettiğinizi anlatın.',
+      average: 'Zor bir anda önce sakinleşmesine yardım edin (birkaç derin nefes, kısa bir yürüyüş); konuşmayı sonraya bırakın.',
+      low: 'Duygularını küçümsemeden dinleyin; “Bu kadar abartma” yerine “Bu seni çok üzmüş” gibi sözlerle duygusunu adlandırın.',
     },
     intellect: {
-      high: 'Sorularını ciddiye alın ve cevapları birlikte arayın.',
+      high: 'Merak ettiği bir konuda kütüphaneye ya da bir müzeye birlikte gitmeyi önerin.',
       average: 'İlgisini çeken konuları fark edin ve o konularda kitap ve etkinlik önerin.',
-      low: 'Deney, yapım ve gezi gibi somut, elle tutulur etkinliklerle merakını besleyin.',
+      low: 'Birlikte bir şey yaparken (yemek, maket, bahçe işi) “Sence bu neden böyle oldu?” diye sorun.',
     },
   },
   sources: [KAYNAK.dunlosky],

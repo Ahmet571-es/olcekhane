@@ -2,9 +2,13 @@ import type { ReportTemplate } from './types';
 
 /**
  * Beş Faktör Kişilik Profili rapor metinleri.
- * İlkeler: kişilik boyutlarında "iyi" ya da "kötü" uç yoktur; her tarzın güçlü yanı anlatılır.
+ * İlkeler: kişilik boyutlarında "iyi" ya da "kötü" uç yoktur: yüksek uç bir başarı ("büyük bir avantaj"), düşük uç bir
+ * beceri (uyumluluk düşükken "eleştirel düşünme") diye anlatılmaz; yalnızca o tarzın neye yarayabileceği söylenir.
  * Etiketleme yapılmaz ("içe dönük bir çocuk" yerine "sakin ortamları tercih ettiğini belirtiyor").
- * Sonuç öz bildirime dayandığı için veliye "çocuğunuz ... olduğunu belirtiyor" dili kullanılır.
+ * Sonuç öz bildirime dayandığı için öğrenciye "... söylüyorsun", veliye "çocuğunuz ... olduğunu belirtiyor" dili kullanılır.
+ * Kısa adlar (summary) öğrenci ve veli raporunda rozet olarak gösterildiği için kişisizdir ("belirtiyor" gibi bir fiil yok).
+ * Merak ve Hayal Gücü'nün bazı maddeleri beceri gibi okunabilir ("Bir şeyleri çabuk kavrarım"); düşük düzeylerde bu boyutun
+ * zekâyı ölçmediği söylenir.
  */
 export const besFaktorReport: ReportTemplate = {
   version: 'bes-faktor-rapor-1',
@@ -20,7 +24,7 @@ export const besFaktorReport: ReportTemplate = {
       very_high: {
         summary: 'Çok sosyal ve enerjik',
         student:
-          'Kendini çok sosyal ve enerjik biri olarak görüyorsun. Kalabalık ortamlar, yeni insanlar ve hareket seni canlandırıyor. Grup çalışmalarında ortamı canlandırman büyük bir güç.',
+          'Kendini çok sosyal ve enerjik biri olarak görüyorsun. Kalabalık ortamlar, yeni insanlar ve hareket seni canlandırıyor. Bu enerji grup çalışmalarında ortamı canlandırabilir.',
         parent:
           'Çocuğunuz kendini çok sosyal ve enerjik biri olarak tanımlıyor. İnsanlarla birlikteyken enerji topluyor ve grup etkinliklerinde öne çıkmaktan hoşlanıyor.',
         tipsStudent: [
@@ -65,9 +69,9 @@ export const besFaktorReport: ReportTemplate = {
       low: {
         summary: 'Sakin, dinlemeyi seven',
         student:
-          'Kalabalık yerine küçük gruplarda ya da tek başına olmayı tercih ettiğini söylüyorsun. Konuşmadan önce düşünmek ve dinlemek senin güçlü yanların.',
+          'Kalabalık yerine küçük gruplarda ya da tek başına olmayı tercih ettiğini söylüyorsun. Konuşmadan önce düşünmek ve dinlemek sana daha doğal geliyor olabilir.',
         parent:
-          'Çocuğunuz sakin ortamları, küçük grupları ve dinlemeyi tercih ettiğini belirtiyor. Bu bir eksiklik değildir; derinlemesine düşünme ve dikkatli dinleme gibi güçlü yanlarla birlikte gelir.',
+          'Çocuğunuz sakin ortamları, küçük grupları ve dinlemeyi tercih ettiğini belirtiyor. Bu bir eksiklik değildir; birçok insanın kişilik tarzı böyledir.',
         tipsStudent: [
           'Sınıfta söz almak zor geliyorsa söyleyeceklerini önceden not almak işini kolaylaştırabilir.',
           'Sosyal etkinliklerden sonra kendine dinlenme zamanı ayırmak normal ve sağlıklı.',
@@ -80,9 +84,9 @@ export const besFaktorReport: ReportTemplate = {
       very_low: {
         summary: 'Çok sakin, kendi dünyasında',
         student:
-          'Sessiz ve sakin ortamlarda kendini en iyi hissettiğini, kalabalıkta öne çıkmaktan kaçındığını söylüyorsun. Tek başına derinlemesine çalışabilmek senin için doğal bir güç.',
+          'Sessiz ve sakin ortamlarda kendini en iyi hissettiğini, kalabalıkta öne çıkmaktan kaçındığını söylüyorsun. Tek başına derinlemesine çalışmak sana doğal gelebilir.',
         parent:
-          'Çocuğunuz kendini oldukça sakin ve içe dönük biri olarak tanımlıyor. Bu kişilik tarzı yaygındır; odaklanma ve dinleme gibi güçlü yanlarla birlikte gelir.',
+          'Çocuğunuz kendini oldukça sakin ve içe dönük biri olarak tanımlıyor. Bu kişilik tarzı yaygındır ve bir eksiklik değildir.',
         tipsStudent: [
           'Güvendiğin bir iki arkadaşla bağlarını güçlü tutmak yeterli ve değerli.',
           'Sunum gibi görevler zor geliyorsa küçük adımlarla pratik yap: önce bir arkadaşına, sonra küçük bir gruba anlat.',
@@ -97,7 +101,7 @@ export const besFaktorReport: ReportTemplate = {
       very_high: {
         summary: 'Çok şefkatli ve yardımsever',
         student:
-          'Başkalarının duygularına çok önem veriyor, yardım etmekten mutluluk duyuyorsun. İnsanlar yanında kendilerini rahat hissediyor.',
+          'Başkalarının duygularına çok önem verdiğini, yardım etmekten mutluluk duyduğunu ve insanların yanında rahat hissetmesini sağladığını söylüyorsun.',
         parent: 'Çocuğunuz başkalarının duygularına çok duyarlı ve yardımsever olduğunu belirtiyor.',
         tipsStudent: [
           'Başkalarına yardım ederken kendi ihtiyaçlarını da unutma; bazen "hayır" demek de bir iyiliktir.',
@@ -111,7 +115,7 @@ export const besFaktorReport: ReportTemplate = {
       high: {
         summary: 'Anlayışlı ve uzlaşmacı',
         student:
-          'İnsanlara karşı ilgili ve yardımseversin; tartışmalarda uzlaşma yolu aramaya eğilimlisin.',
+          'İnsanlara karşı ilgili ve yardımsever olduğunu söylüyorsun; tartışmalarda da uzlaşma yolu arıyor olabilirsin.',
         parent:
           'Çocuğunuz insanlarla yumuşak ve uyumlu ilişkiler kurduğunu, başkalarının duygularını önemsediğini belirtiyor.',
         tipsStudent: [
@@ -141,9 +145,9 @@ export const besFaktorReport: ReportTemplate = {
       low: {
         summary: 'Doğrudan ve bağımsız',
         student:
-          'Düşündüğünü açıkça söyleyen, kendi görüşünü savunan birisin. Kolay ikna olmaman eleştirel düşünme için bir güç.',
+          'Düşündüğünü açıkça söylediğini ve kendi görüşünü savunduğunu söylüyorsun. Bunu yaparken karşındakinin duygularını da gözetmek, sözünün daha çok dinlenmesini sağlar.',
         parent:
-          'Çocuğunuz doğrudan konuşan, kendi görüşünü savunan bir tarz tanımlıyor. Bu, eleştirel düşünme ve bağımsızlık için bir güçtür.',
+          'Çocuğunuz doğrudan konuştuğunu ve kendi görüşünü savunduğunu belirtiyor. Görüşünü söylerken karşısındakinin duygularını da gözetmesine destek olabilirsiniz.',
         tipsStudent: [
           'Görüşlerini söylerken karşındakinin duygularını da hesaba katmak sözünün daha çok dinlenmesini sağlar.',
           'Bir arkadaşın sıkıntısını anlatırken önce dinlemeyi, sonra çözüm önermeyi dene.',
@@ -156,7 +160,7 @@ export const besFaktorReport: ReportTemplate = {
       very_low: {
         summary: 'Kendi yolunu izleyen',
         student:
-          'Başkalarının ne düşündüğünden çok kendi yoluna odaklandığını söylüyorsun. Bağımsız düşünmek bir güç; ilişkilerde karşındakinin duygularını fark etmek ise işini kolaylaştırır.',
+          'Başkalarının duygularından ve sorunlarından çok kendi işlerine odaklandığını söylüyorsun. Bu senin hakkında bir yargı değil; insanlar başkalarına farklı ölçüde yakınlık gösterir. Karşındakinin ne hissettiğini fark etmek ilişkilerini kolaylaştırır.',
         parent:
           'Çocuğunuz başkalarının ihtiyaçlarına pek odaklanmadığını ve kendi yolunu izlediğini belirtiyor. Ergenlikte bu tarz sık görülür ve zamanla değişebilir.',
         tipsStudent: [
@@ -172,7 +176,7 @@ export const besFaktorReport: ReportTemplate = {
     conscientiousness: {
       very_high: {
         summary: 'Çok planlı ve kararlı',
-        student: 'Çok planlı, düzenli ve kararlısın. Bir işe başladığında onu bitirmek senin için önemli.',
+        student: 'Kendini çok planlı, düzenli ve kararlı biri olarak görüyorsun. Bir işe başladığında onu bitirmek senin için önemli.',
         parent: 'Çocuğunuz kendini çok düzenli, planlı ve kararlı biri olarak tanımlıyor.',
         tipsStudent: [
           'Plan bozulduğunda esnek olabilmek de bir beceri; her şeyin kusursuz olması gerekmez.',
@@ -186,7 +190,7 @@ export const besFaktorReport: ReportTemplate = {
       high: {
         summary: 'Sorumluluk sahibi',
         student:
-          'Sorumluluklarını ciddiye alıyor, işlerini planlı yürütüyorsun. Bu, derslerde ve sınav hazırlığında büyük bir avantaj.',
+          'Sorumluluklarını ciddiye aldığını ve işlerini planlı yürüttüğünü söylüyorsun. Bu düzen, derslerde ve sınav hazırlığında işine yarayabilir.',
         parent: 'Çocuğunuz sorumluluklarını ciddiye aldığını ve işlerini planlı yürüttüğünü belirtiyor.',
         tipsStudent: [
           'Büyük hedefleri küçük adımlara bölmeye devam et.',
@@ -216,7 +220,7 @@ export const besFaktorReport: ReportTemplate = {
         student:
           'Planlara bağlı kalmaktan çok anlık karar vermeyi ve esnek olmayı seviyorsun. Esneklik bir güç; ama ödev ve sınav gibi işlerde küçük sistemler hayatını kolaylaştırabilir.',
         parent:
-          'Çocuğunuz planlılıktan çok esnekliği tercih ettiğini, işlerini bazen son ana bıraktığını belirtiyor. Bu, ergenlikte yaygın ve öğrenilebilir bir beceri alanıdır.',
+          'Çocuğunuz planlılıktan çok esnekliği tercih ettiğini, işlerini bazen son ana bıraktığını belirtiyor. Planlama ergenlikte hâlâ gelişen ve öğrenilebilen bir beceridir.',
         tipsStudent: [
           'Telefonuna hatırlatıcı kurmak ya da çantanı akşamdan hazırlamak gibi küçük alışkanlıklarla başla.',
           '25 dakika çalışıp 5 dakika mola vermek gibi kısa bloklar işe başlamayı kolaylaştırır.',
@@ -246,7 +250,7 @@ export const besFaktorReport: ReportTemplate = {
       very_high: {
         summary: 'Çok sakin, kolay sarsılmayan',
         student:
-          'Zor durumlarda bile sakin kalabildiğini, kolay kolay strese girmediğini söylüyorsun. Bu, sınav gibi baskılı anlarda büyük bir avantaj.',
+          'Zor durumlarda bile sakin kalabildiğini, kolay kolay strese girmediğini söylüyorsun. Bu sakinlik, sınav gibi baskılı anlarda işine yarayabilir.',
         parent: 'Çocuğunuz kendini zor durumlarda sakin kalabilen, kolay sarsılmayan biri olarak tanımlıyor.',
         tipsStudent: [
           'Sakinliğin, çevrendeki gergin arkadaşlarına da iyi gelebilir.',
@@ -300,7 +304,7 @@ export const besFaktorReport: ReportTemplate = {
         ],
       },
       very_low: {
-        summary: 'Sık sık stresli ya da üzgün hissettiğini belirtiyor',
+        summary: 'Sık sık stres ya da üzüntü',
         student:
           'Sık sık stresli, endişeli ya da üzgün hissettiğini söylüyorsun. Bunu fark etmen önemli bir adım. Bu duygularla tek başına baş etmek zorunda değilsin.',
         parent:
@@ -361,9 +365,9 @@ export const besFaktorReport: ReportTemplate = {
       low: {
         summary: 'Somut ve pratik',
         student:
-          'Somut, pratik ve işe yarar şeylere odaklanmayı tercih ediyorsun. Soyut tartışmalardan çok uygulama seni çekiyor.',
+          'Somut, pratik ve işe yarar şeylere odaklanmayı tercih ettiğini söylüyorsun; soyut tartışmalardan çok uygulama seni çekiyor. Bu boyut zekâyı ölçmez; kendini nasıl gördüğünü gösterir.',
         parent:
-          'Çocuğunuz soyut fikirlerden çok somut ve pratik konuları tercih ettiğini belirtiyor. Uygulamaya dönük düşünme değerli bir güçtür.',
+          'Çocuğunuz soyut fikirlerden çok somut ve pratik konuları tercih ettiğini belirtiyor. Bu boyut zekâyı ölçmez; çocuğunuzun kendini nasıl gördüğünü gösterir.',
         tipsStudent: [
           'Soyut konuları gerçek hayattan örneklerle çalışmak sana daha kolay gelebilir.',
           'Yaparak öğrenebileceğin etkinlikler seç: deney, yapım, uygulama.',
@@ -376,8 +380,8 @@ export const besFaktorReport: ReportTemplate = {
       very_low: {
         summary: 'Alışık olduğu konuları tercih eden',
         student:
-          'Yeni ve soyut fikirler yerine bildiğin, somut şeylerle uğraşmayı çok daha çok seviyorsun.',
-        parent: 'Çocuğunuz alışık olduğu, somut konularla uğraşmayı tercih ettiğini belirtiyor.',
+          'Yeni ve soyut fikirler yerine bildiğin, somut konularla uğraşmayı çok daha fazla sevdiğini söylüyorsun. Bu boyut zekâyı ölçmez; kendini nasıl gördüğünü gösterir.',
+        parent: 'Çocuğunuz alışık olduğu, somut konularla uğraşmayı tercih ettiğini belirtiyor. Bu boyut zekâyı ölçmez; çocuğunuzun kendini nasıl gördüğünü gösterir.',
         tipsStudent: [
           'Merak ettiğin tek bir konu seç ve onu biraz daha derinlemesine keşfet.',
           'Soru sormaktan çekinme; soru sormak öğrenmenin en iyi yollarından biri.',

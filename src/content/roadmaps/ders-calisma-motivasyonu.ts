@@ -12,22 +12,40 @@ import type { AudienceText, RoadmapTemplate } from './types';
  *  - Etkili çalışma yolları herkes için aynıdır (bakmadan hatırlamak, tekrarları günlere yaymak; Dunlosky ve ark., 2013);
  *    motivasyon türleri bu yolların nasıl sürdürüleceğine ipucu verir.
  *  - 2. hafta "Neden önemli?" (önemini görme): kurama göre benimsemenin anahtarı. 3. hafta isteksizlik yüksekse ona, değilse
- *    iç baskı yüksekse ona (bağlantı: Sınav kaygısı) ayrılır; ikisi de değilse ortadan en uzak tür.
+ *    iç baskı yüksekse ona (bağlantı: Sınav kaygısı) ayrılır; ikisi de değilse ortadan en uzak tür (üzerinde çalışmayı
+ *    gerektirmeyen düşük isteksizlik, iç baskı ve dış baskı hariç).
+ *  - "Kısaca" bölümünde yüksek isteksizlik ve yüksek iç baskı önce gelir; bütün türler orta düzeydeyse `balancedNote`.
  *  - Bu test meslek ortamı anlatmadığı için ortamlar bölümü yoktur. Yetişkinlere açık değildir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
 export const dersCalismaMotivasyonuRoadmap: RoadmapTemplate = {
-  version: 'ders-calisma-motivasyonu-yol-haritasi-1',
+  version: 'ders-calisma-motivasyonu-yol-haritasi-2',
   planningScale: 'identified',
   planningTitle: 'Neden önemli?',
   wellbeing: [
     { scale: 'amotivation', group: 'high', link: null },
     { scale: 'introjected', group: 'high' },
   ],
+  // Yüksek isteksizlik ve yüksek iç baskı "Kısaca" bölümünde her zaman önce gelir: aynı uzaklıktaki bir merak puanının
+  // arkasında kalıp gizlenmez.
+  standoutFirst: [
+    { scale: 'amotivation', group: 'high' },
+    { scale: 'introjected', group: 'high' },
+  ],
+  // Üzerinde çalışmayı gerektirmeyen sonuçlar (düşük isteksizlik, düşük iç baskı, düşük dış baskı) 3. haftaya başlık olmaz.
+  thirdWeekSkip: [
+    { scale: 'amotivation', group: 'low' },
+    { scale: 'introjected', group: 'low' },
+    { scale: 'external', group: 'low' },
+  ],
+  balancedNote: t(
+    'Ders çalışma nedenlerinin hiçbiri belirgin biçimde öne çıkmıyor; hepsi orta düzeyde. Hangi derste hangi nedenle çalıştığını fark etmek iyi bir başlangıç olur.',
+    'Çocuğunuzun ders çalışma nedenlerinin hiçbiri belirgin biçimde öne çıkmıyor; hepsi orta düzeyde. Hangi derste hangi nedenle çalıştığını onunla konuşmak iyi bir başlangıç olur.',
+  ),
   studyIntro: t(
     'Araştırmalara göre herkes için en etkili çalışma yolları aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Motivasyonun, bu yolları sürdürmeni kolaylaştırabilir ya da zorlaştırabilir. Aşağıda her motivasyon türün için bir öneri var; hepsini birden değil, birer birer dene.',
-    'Araştırmalara göre herkes için en etkili çalışma yolları aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Motivasyon, bu yolların sürdürülmesini kolaylaştırabilir ya da zorlaştırabilir. Aşağıda çocuğunuzun her motivasyon türü için bir öneri var; hepsini birden değil, birer birer denemesine destek olun.',
+    'Araştırmalara göre herkes için en etkili çalışma yolları aynıdır: öğrenileni kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Motivasyon, bu yolların sürdürülmesini kolaylaştırabilir ya da zorlaştırabilir. Aşağıda çocuğunuzun her motivasyon türü için bir öneri var; hepsini birden değil, birer birer denemesine destek olun.',
   ),
   firstWeek: t(
     'Raporundaki beş motivasyon türüne bak. Bu hafta her çalışmaya başlarken “Şu an neden çalışıyorum?” diye sor ve cevabını (merak, önemini görme, iç baskı, dış baskı ya da hiçbiri) bir deftere kısaca yaz.',

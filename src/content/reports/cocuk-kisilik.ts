@@ -10,6 +10,8 @@ import type { BandText, ReportTemplate } from './types';
  *  - Merak ve hayal gücü metinleri, bu boyutun zekâyı ölçmediğini söyler (yüksek ve düşük düzeyde).
  *  - Sakinlik düşükken destek kutusu gösterilir; veli metni bunun bir tanı olmadığını ve ne zaman destek alınabileceğini
  *    söyler.
+ *  - Öğrenci ve veli raporunda beş ölçeğe "yön" denir (kartların başlığı "Yönler"; yol haritasında da `unit`): kart
+ *    başlığı ve dengeli profil cümlesi iki raporda ortaktır.
  * Öneri listeleri (kapsamlı rapor için) bu testte yazılmadı; veliye yaklaşım önerileri gelişim yol haritasındadır.
  */
 const t = (summary: string, student: string, parent: string, support?: true): BandText => ({
@@ -28,11 +30,12 @@ export const cocukKisilikReport: ReportTemplate = {
     average: 'Orta',
     high: 'Yüksek',
   },
+  itemsTitle: 'Yönler',
   overview: {
     student:
       'Her satır kişiliğinin bir yönünü gösteriyor. Beş yön ayrı ayrı puanlanır; toplam bir puan yoktur. Bir yönde düşük ya da yüksek çıkman iyi ya da kötü biri olduğun anlamına gelmez; her düzeyin kolaylaştırdığı ve zorlaştırdığı şeyler olabilir. Her yön altı cümleyle ölçüldüğü için sonuçlar yaklaşıktır. İnsanlar büyüdükçe değişir.',
     parent:
-      'Her satır çocuğunuzun kişiliğinin bir boyutunu gösterir. Beş boyut ayrı ayrı puanlanır; toplam bir puan yoktur. Bir boyutta düşük ya da yüksek çıkması çocuğunuzun iyi ya da kötü olduğu anlamına gelmez; her düzeyin kolaylaştırdığı ve zorlaştırdığı şeyler olabilir. Her boyut altı cümleyle ölçüldüğü için sonuçlar yaklaşıktır ve kişilik çocuklukta gelişmeye devam eder; sonuç bir etiket olarak kullanılmamalıdır.',
+      'Her satır çocuğunuzun kişiliğinin bir yönünü gösterir. Beş yön ayrı ayrı puanlanır; toplam bir puan yoktur. Bir yönde düşük ya da yüksek çıkması çocuğunuzun iyi ya da kötü olduğu anlamına gelmez; her düzeyin kolaylaştırdığı ve zorlaştırdığı şeyler olabilir. Her yön altı cümleyle ölçüldüğü için sonuçlar yaklaşıktır ve kişilik çocuklukta gelişmeye devam eder; sonuç bir etiket olarak kullanılmamalıdır.',
   },
   scales: {
     extraversion: {
@@ -99,8 +102,8 @@ export const cocukKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Duygularını yoğun yaşayan',
-        'Birçok şey için endişelendiğini, çabuk kızdığını ya da çabuk üzüldüğünü söylüyorsun. Bu duyguları herkes zaman zaman yaşar; onlarla tek başına baş etmek zorunda değilsin. Nasıl hissettiğini ailene, öğretmenine ya da güvendiğin bir yetişkine anlatmak iyi gelebilir.',
-        'Çocuğunuz birçok şey için endişelendiğini, çabuk kızdığını ya da çabuk üzüldüğünü belirtiyor. Bu sonuç bir tanı değildir; ancak bu duyguların ne zamandır sürdüğünü ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir. Bu duygular uzun süredir sürüyor ya da okulunu, uykusunu ya da arkadaşlıklarını etkiliyorsa okulun rehber öğretmeninden destek alabilirsiniz.',
+        'Birçok şey için endişelendiğini, çabuk kızdığını ya da çabuk üzüldüğünü söylüyorsun. Bu duyguları herkes zaman zaman yaşar. Böyle bir anda birkaç derin nefes almak ya da biraz yürümek sakinleşmene yardım edebilir.',
+        'Çocuğunuz birçok şey için endişelendiğini, çabuk kızdığını ya da çabuk üzüldüğünü belirtiyor. Bu sonuç bir tanı değildir; ancak bu duyguların ne zamandır sürdüğünü ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir. Bu duygular uzun süredir sürüyor ya da okul hayatını, uykusunu ya da arkadaşlıklarını etkiliyorsa okulun rehber öğretmeninden destek alabilirsiniz.',
         true,
       ),
     },
@@ -108,7 +111,7 @@ export const cocukKisilikReport: ReportTemplate = {
       high: t(
         'Meraklı, hayal gücü güçlü',
         'Hayal gücünün güçlü olduğunu, aklına sık sık yeni fikirler geldiğini ve bir şeyi yapmanın yeni yollarını bulmayı sevdiğini söylüyorsun. Bu yön ne kadar zeki olduğunu ölçmez; merakını ve hayal kurmayı ne kadar sevdiğini gösterir. Aklına gelen fikirleri bir deftere yazmak, en sevdiklerini sonra denemene yardım eder.',
-        'Çocuğunuz hayal gücünün güçlü olduğunu, aklına sık sık yeni fikirler geldiğini ve bir şeyi yapmanın yeni yollarını bulmayı sevdiğini belirtiyor. Bu boyut zekâyı ölçmez; merakını ve hayal kurmayı ne kadar sevdiğini gösterir. Sorularını ciddiye almanız ve cevapları birlikte aramanız bu merakı besleyebilir.',
+        'Çocuğunuz hayal gücünün güçlü olduğunu, aklına sık sık yeni fikirler geldiğini ve bir şeyi yapmanın yeni yollarını bulmayı sevdiğini belirtiyor. Bu yön zekâyı ölçmez; merakını ve hayal kurmayı ne kadar sevdiğini gösterir. Sorularını ciddiye almanız ve cevapları birlikte aramanız bu merakı besleyebilir.',
       ),
       average: t(
         'Duruma göre meraklı',
@@ -118,7 +121,7 @@ export const cocukKisilikReport: ReportTemplate = {
       low: t(
         'Somut ve bildiğini seven',
         'Hayal kurmanın sana zor geldiğini, bir konuyu ayrıntısıyla araştırmayı pek sevmediğini ve bilmediğin konulardaki kitaplardan uzak durduğunu söylüyorsun. Bu yön ne kadar zeki olduğunu ölçmez; bazı insanlar hayallerden çok somut ve elle tutulur işlerden hoşlanır. Sevdiğin bir konuda kısa ve kolay bir kitapla başlamak merakını besleyebilir.',
-        'Çocuğunuz hayal kurmanın kendisine zor geldiğini, bir konuyu ayrıntısıyla araştırmayı pek sevmediğini ve bilmediği konulardaki kitaplardan uzak durduğunu belirtiyor. Bu boyut zekâyı ölçmez; bazı çocuklar hayallerden çok somut ve elle tutulur işlerden hoşlanır. Onun ilgi duyduğu bir konuda kısa ve kolay kitaplar ya da birlikte yapılan küçük deneyler merakını besleyebilir.',
+        'Çocuğunuz hayal kurmanın kendisine zor geldiğini, bir konuyu ayrıntısıyla araştırmayı pek sevmediğini ve bilmediği konulardaki kitaplardan uzak durduğunu belirtiyor. Bu yön zekâyı ölçmez; bazı çocuklar hayallerden çok somut ve elle tutulur işlerden hoşlanır. Onun ilgi duyduğu bir konuda kısa ve kolay kitaplar ya da birlikte yapılan küçük deneyler merakını besleyebilir.',
       ),
     },
   },

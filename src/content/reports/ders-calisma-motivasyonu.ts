@@ -29,6 +29,8 @@ import type { ReportTemplate } from './types';
  * hüküm vermez. Hiçbir metin öğrenciyi suçlamaz; motivasyon kalıcı bir özellik değildir, ortama göre değişir. Destek
  * kutusu (acil durum numarası) gösterilmez: motivasyon bir kriz değildir; iç baskı ve isteksizlik yüksekken metinler bir
  * rehber öğretmenle (psikolojik danışmanla) konuşmayı önerir. 13 mezunları da kapsar: "okulundaki" denmez.
+ * Kısa adlar (summary) kişisiz ve emir gibi okunmayacak biçimde yazılır ("Öğrenmek keyif veriyor"; "keyif alma" değil):
+ * öğrenci ve veli raporunda, yol haritasının "Kısaca" bölümünde ve rozetlerde aynıdır.
  */
 
 const p = (summary: string, student: string, parent: string, tipsStudent: string[], tipsParent: string[]) => ({
@@ -40,7 +42,7 @@ const p = (summary: string, student: string, parent: string, tipsStudent: string
 });
 
 export const dersCalismaMotivasyonuReport: ReportTemplate = {
-  version: 'ders-calisma-motivasyonu-1',
+  version: 'ders-calisma-motivasyonu-2',
   bandLabels: { low: 'Düşük', average: 'Orta', high: 'Yüksek' },
   motivation: {
     x: 'autonomous',
@@ -74,9 +76,9 @@ export const dersCalismaMotivasyonuReport: ReportTemplate = {
       'high-low': {
         name: 'İsteğe dayalı motivasyon',
         student:
-          'Ders çalışma nedenlerin çoğunlukla kendi isteğine dayanıyor: konuları ilginç buluyor ya da öğrenmenin sana ne kazandırdığını görüyorsun. Baskıya dayalı nedenlerin ise genel olarak az. Araştırmalarda bu düzen “iyi nitelikli motivasyon” diye anılıyor: bu düzendeki öğrenciler öğrenme yöntemlerini en iyi kullanan gruplar arasında, en az erteleyen grup oluyor ve baskısı yüksek olan öğrencilere göre daha az sınav kaygısı yaşıyor; 7–12. sınıf öğrencileriyle yapılan bir araştırmada not ortalamaları da en yüksekti. Bu, her konuda her zaman istekli olacağın anlamına gelmez; isteğin azaldığı dönemlerde neden çalıştığını hatırlamak işini kolaylaştırabilir.',
+          'Ders çalışma nedenlerin çoğunlukla kendi isteğine dayanıyor: konuları ilginç buluyor ya da öğrenmenin sana ne kazandırdığını görüyorsun. Baskıya dayalı nedenlerin ise genel olarak az. Araştırmalarda bu düzen “iyi nitelikli motivasyon” diye anılıyor. Bu düzendeki öğrenciler öğrenme yöntemlerini en iyi kullanan gruplar arasında yer alıyor ve en az erteleyen grup oluyor. Baskısı yüksek olan öğrencilere göre daha az sınav kaygısı yaşıyorlar; 7–12. sınıf öğrencileriyle yapılan bir araştırmada not ortalamaları da en yüksekti. Bu, her konuda her zaman istekli olacağın anlamına gelmez; isteğin azaldığı dönemlerde neden çalıştığını hatırlamak işini kolaylaştırabilir.',
         parent:
-          'Çocuğunuzun ders çalışma nedenleri çoğunlukla kendi isteğine dayanıyor: konuları ilginç buluyor ya da öğrenmenin kendisine ne kazandırdığını görüyor. Baskıya dayalı nedenleri ise genel olarak az. Araştırmalarda bu düzen “iyi nitelikli motivasyon” diye anılıyor: bu düzendeki öğrenciler öğrenme yöntemlerini en iyi kullanan gruplar arasında, en az erteleyen grup oluyor ve baskısı yüksek olan öğrencilere göre daha az sınav kaygısı yaşıyor; 7–12. sınıf öğrencileriyle yapılan bir araştırmada not ortalamaları da en yüksekti. Bu motivasyon, görüşlerine alan bırakan, yapabildiklerini fark eden ve ona yakın duran bir ortamda daha kolay korunabilir.',
+          'Çocuğunuzun ders çalışma nedenleri çoğunlukla kendi isteğine dayanıyor: konuları ilginç buluyor ya da öğrenmenin kendisine ne kazandırdığını görüyor. Baskıya dayalı nedenleri ise genel olarak az. Araştırmalarda bu düzen “iyi nitelikli motivasyon” diye anılıyor. Bu düzendeki öğrenciler öğrenme yöntemlerini en iyi kullanan gruplar arasında yer alıyor ve en az erteleyen grup oluyor. Baskısı yüksek olan öğrencilere göre daha az sınav kaygısı yaşıyorlar; 7–12. sınıf öğrencileriyle yapılan bir araştırmada not ortalamaları da en yüksekti. Bu motivasyon, görüşlerine alan bırakan, yapabildiklerini fark eden ve ona yakın duran bir ortamda daha kolay korunabilir.',
       },
       'high-average': {
         name: 'İstek önde, biraz baskı',
@@ -211,7 +213,7 @@ export const dersCalismaMotivasyonuReport: ReportTemplate = {
         ['Merak ettiği soruları ciddiye alın; cevabı birlikte arayın.'],
       ),
       high: p(
-        'Öğrenmekten keyif alma',
+        'Öğrenmek keyif veriyor',
         'Ders çalışmanın önemli bir nedeni merak ve keyif: yeni bir şey öğrenmek, zor bir konuyu sonunda anlamak hoşuna gidiyor. Araştırmalarda bu tür motivasyon başarıyla ve kendini iyi hissetmeyle birlikte görülüyor. Merakını beslemeye devam et; ilgini çeken konularda soru sormaktan ve daha fazlasını araştırmaktan çekinme.',
         'Çocuğunuz için ders çalışmanın önemli bir nedeni merak ve keyif: yeni bir şey öğrenmek, zor bir konuyu sonunda anlamak hoşuna gidiyor. Araştırmalarda bu tür motivasyon başarıyla ve kendini iyi hissetmeyle birlikte görülüyor. Bu merak, ilgisinin ciddiye alınmasıyla daha kolay korunabilir; başarıya bağlı ödüller ise merakı azaltabilir.',
         ['İlgini çeken bir konuda bir adım daha ileri git: bir kitap, bir belgesel ya da bir soru.'],
@@ -227,14 +229,14 @@ export const dersCalismaMotivasyonuReport: ReportTemplate = {
         ['Bir dersin neden önemli olduğunu anlamlı bir gerekçeyle paylaşın ve onun ne düşündüğünü sorun.'],
       ),
       average: p(
-        'Bazı konularda önemini görme',
+        'Bazı konuların önemi net',
         'Bazı derslerin ya da konuların önemini görüyorsun, bazılarının ise sana ne kazandıracağı net değil. Önemini gördüğün derslerde çalışmak daha kolay gelebilir. Önemini göremediğin bir derste kendine “Bu bana ne kazandırabilir: bir beceri, bir hedef, bir bakış açısı?” diye sormak işe yarayabilir.',
         'Çocuğunuz bazı derslerin önemini görüyor, bazılarının ise kendisine ne kazandıracağını net göremiyor. Önemini gördüğü derslerde çalışmak ona daha kolay gelebilir. Önemini göremediği dersler için anlamlı bir gerekçe paylaşmak ve onun bu konudaki düşüncesini dinlemek, o dersin anlamını bulmasına yardım edebilir.',
         ['Önemini göremediğin bir ders için kendine bir neden bul ve not et.'],
         ['Önemini göremediği bir ders hakkında, onu ikna etmeye çalışmadan düşüncesini sorun.'],
       ),
       high: p(
-        'Çalışmanın önemini kendisi görme',
+        'Çalışmanın önemi net',
         'Ders çalışmanın önemini kendin görüyor ve bunu kendi hedeflerinle ilişkilendiriyorsun. Araştırmalarda bu tür motivasyon, vazgeçmeden sürdürmekle en çok ilişkili nedenlerden biri. Sıkıcı bulduğun konularda bile neden çalıştığını bilmek sana güç verebilir; hedeflerin değiştikçe bu nedenleri yeniden düşünmek de iyi olur.',
         'Çocuğunuz ders çalışmanın önemini kendisi görüyor ve bunu kendi hedefleriyle ilişkilendiriyor. Araştırmalarda bu tür motivasyon, vazgeçmeden sürdürmekle en çok ilişkili nedenlerden biri. Hedeflerini onunla konuşmak ve bu hedeflerin onun kendi seçimi olduğunu hissettirmek bu motivasyonu korumaya yardım edebilir.',
         ['Hedeflerini ara sıra yeniden yaz; neden çalıştığını hatırlamak güç verebilir.'],
@@ -289,21 +291,21 @@ export const dersCalismaMotivasyonuReport: ReportTemplate = {
     },
     amotivation: {
       low: p(
-        'Çalışmayı anlamsız bulmama',
+        'Çalışma anlamsız gelmiyor',
         'Ders çalışmanın anlamsız olduğu düşüncesi sana pek uymuyor. Bu, motivasyonun üzerine kurulabileceği bir zemin.',
         'Ders çalışmanın anlamsız olduğu düşüncesi çocuğunuza pek uymuyor. Bu, motivasyonun üzerine kurulabileceği bir zemindir.',
         ['Ders çalışmanın sana kazandırabileceklerini ara sıra hatırla.'],
         ['Ders çalışmanın ona kazandırabileceklerini onunla ara sıra konuşun.'],
       ),
       average: p(
-        'Zaman zaman anlamı sorgulama',
+        'Ara sıra anlamsız geliyor',
         'Bazen ders çalışmanın anlamsız olduğunu ya da ne kadar uğraşsan da sonucun değişmeyeceğini düşünüyorsun. Bu duygu birçok öğrencide zaman zaman görülebilir. Araştırmalarda bu duygu en çok, kendini derslerde yeterli hissetmemekle ilişkili bulunmuş; bu yüzden küçük ve başarabileceğin hedefler koyup yapabildiklerini görmek iyi bir başlangıç olabilir.',
         'Çocuğunuz bazen ders çalışmanın anlamsız olduğunu ya da ne kadar uğraşsa da sonucun değişmeyeceğini düşünüyor. Bu duygu birçok öğrencide zaman zaman görülebilir. Araştırmalarda bu duygu en çok, kendini derslerde yeterli hissetmemekle ilişkili bulunmuş; başarabileceği küçük hedefler koyması ve yapabildiklerinin fark edilmesi iyi bir başlangıç olabilir.',
         ['Bu hafta kesinlikle başarabileceğin küçük bir hedef koy.'],
         ['Yapabildiği küçük şeyleri fark edin ve ona söyleyin.'],
       ),
       high: p(
-        'Çalışmanın anlamını şu sıralar görememe',
+        'Çalışma şu sıralar anlamsız geliyor',
         'Ders çalışmak sana şu sıralar anlamsız geliyor ya da ne kadar uğraşsan da sonucun değişmeyeceğini düşünüyorsun. Bu duygu değişmez bir özelliğin değil; motivasyon ortama göre de değişebilir. Araştırmalarda bu duygu en çok, kendini derslerde yeterli hissetmemekle ilişkili bulunmuş. Küçük ve başarabileceğin hedeflerle başlamak ve bu duyguyu güvendiğin bir yetişkinle ya da bir rehber öğretmenle konuşmak iyi bir adım olabilir.',
         'Çocuğunuz ders çalışmayı şu sıralar anlamsız buluyor ya da ne kadar uğraşsa da sonucun değişmeyeceğini düşünüyor. Bu bir tembellik işareti ya da değişmez bir özellik değildir; motivasyon ortama göre de değişebilir. Araştırmalarda bu duygu en çok, kendini derslerde yeterli hissetmemekle ilişkili bulunmuş. Başarabileceği küçük hedefler, çabasının fark edilmesi ve sakin bir konuşma yardımcı olabilir. Bu durum uzun sürüyorsa ya da genel bir isteksizlik ve mutsuzlukla birlikte görülüyorsa okulun rehberlik servisiyle ya da bir psikolojik danışmanla görüşmenizi öneririz.',
         ['Bu duyguyu güvendiğin bir yetişkinle ya da bir rehber öğretmenle konuş.'],

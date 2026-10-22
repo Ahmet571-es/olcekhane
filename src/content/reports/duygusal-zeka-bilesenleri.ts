@@ -27,6 +27,7 @@ export const duygusalZekaBilesenleriReport: ReportTemplate = {
     average: 'Orta',
     high: 'Yüksek',
   },
+  itemsTitle: 'Bileşenler',
   overview: {
     student:
       'Her satır bir bileşeni gösteriyor; yedi bileşen ayrı ayrı puanlanır, toplam bir puan yoktur. Puanlar bir not değildir: yüksek ya da düşük olması tek başına iyi ya da kötü anlamına gelmez. Örneğin duygulara göre karar verme ve üzücü olaylardan etkilenme bileşenlerinde iki ucun da işe yarayan ve dikkat edilecek yanları vardır. Her bileşen 8–10 cümleyle ölçüldüğü için sonuçlar yaklaşıktır; tek bir bileşene bakarak kesin sonuç çıkarma.',
@@ -64,7 +65,7 @@ export const duygusalZekaBilesenleriReport: ReportTemplate = {
       ),
       low: t(
         'Olumsuz duygularını kendine saklayan',
-        'Genel olarak üzüntü, korku ve öfke gibi duygularını, ne kadar güçlü olurlarsa olsunlar, çoğu zaman kendine sakladığını söylüyorsun. Duygularını kontrol edebilmek bazı durumlarda işe yarar; ama zor bir şey yaşadığında bunu güvendiğin biriyle paylaşmak yükünü hafifletebilir.',
+        'Genel olarak üzüntü, korku ve öfke gibi duygularını, ne kadar güçlü olurlarsa olsunlar, çoğu zaman kendine sakladığını söylüyorsun. Duygularını göstermemek bazı durumlarda işe yarayabilir; ama zor bir şey yaşadığında bunu güvendiğin biriyle paylaşmak yükünü hafifletebilir.',
         'Çocuğunuz genel olarak üzüntü, korku ve öfke gibi duygularını, ne kadar güçlü olurlarsa olsunlar, çoğu zaman kendine sakladığını belirtiyor. Zor bir şey yaşadığında bunu paylaşabileceği sakin ve güvenli anlar yaratmak ona iyi gelebilir.',
       ),
     },

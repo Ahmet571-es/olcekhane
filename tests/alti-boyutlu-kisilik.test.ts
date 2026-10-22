@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { publicInstruments, solvableInstruments } from '@/content/instruments';
 import { REPORT_TEMPLATES } from '@/content/reports';
+import { ROADMAPS } from '@/content/roadmaps';
 import { ADULT_GRADE } from '@/lib/config';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import type { LikertInstrument } from '@/lib/instruments/types';
@@ -227,6 +228,64 @@ describe('Altı Boyutlu Kişilik Profili raporu', () => {
       data: { engine: 'likert', answers: keyedAnswers((s) => (domainOf(s) === 'emotionality' && s !== 'anxiety' ? 'high' : 'low')) },
     });
     expect(feeling.student.support).toBeNull();
+  });
+
+  it('bir boyutun alt özellikleri ayrışınca boyut kartı "Alt özellikleri ayrışan" metnini, yol haritası orta düzeyin önerisini gösterir (her boyutta, iki yönde)', () => {
+    const t = REPORT_TEMPLATES[SLUG];
+    const rm = ROADMAPS[SLUG];
+    let n = 0;
+    for (const dom of d.scales.filter((s) => s.of)) {
+      const sp = t.facetSplit![dom.key];
+      // Ayrışma metni boyutun dört alt özelliğini adıyla anar.
+      for (const f of dom.of!) expect(sp.student, dom.key).toContain(d.scales.find((s) => s.key === f)!.name.toLocaleLowerCase('tr-TR'));
+      // Boyut yüksek ama bir alt özelliği düşük (ör. Uyumluluk yüksek, Sabırlılık düşük); boyut düşük ama bir alt özelliği
+      // yüksek. Öteki boyutlar orta.
+      for (const [rest, band] of [
+        ['high', 'Yüksek'],
+        ['low', 'Düşük'],
+      ] as const) {
+        const one = rest === 'high' ? 'low' : 'high';
+        for (const odd of dom.of!) {
+          const answers = keyedAnswers((s) => (s === odd ? one : dom.of!.includes(s) ? rest : 'mid'));
+          const r = evaluate(SLUG, { grade: 11, data: { engine: 'likert', answers } });
+          const adult = evaluateAdult(SLUG, { grade: ADULT_GRADE, data: { engine: 'likert', answers } }).adult;
+          for (const rep of [r.student, r.parent, adult]) {
+            const label = `${dom.key} ${rest}, ${odd} ${one} ${rep.audience}`;
+            const g = rep.groups!.find((x) => x.title === dom.name)!;
+            expect(g.badge, label).toBe(`${band} · Alt özellikleri ayrışan`);
+            expect(g.text, label).toBe(rep.audience === 'parent' ? sp.parent : sp.student);
+            // Yol haritası: ayrışan boyutun kartı orta düzeyin önerisidir; ortamlar arasında bu boyutun ortamı yoktur.
+            const card = rep.roadmap!.study.items.find((x) => x.key === dom.key)!;
+            const avg = rm.scales[dom.key].study.average;
+            expect(card.badge, label).toBe(`${band} · Alt özellikleri ayrışan`);
+            expect(card.text, label).toBe(rep.audience === 'parent' ? avg.parent : rep.audience === 'adult' ? (avg.adult ?? avg.student) : avg.student);
+            const settings = rm.scales[dom.key].settings!;
+            expect(rep.roadmap!.settings!.items, label).not.toContain(settings.high);
+            expect(rep.roadmap!.settings!.items, label).not.toContain(settings.low);
+            if (rep.audience === 'parent') {
+              const tip = rep.roadmap!.approach!.items.find((x) => x.title === dom.name)!;
+              expect(tip.text, label).toBe(rm.approach![dom.key].average);
+              expect(tip.text, label).not.toContain('bu dengeyi');
+            }
+            // Destek kutusu yalnızca Endişelenme yüksekken.
+            const anxiety = rep.groups!.flatMap((x) => x.facets).find((f) => f.label === 'Endişelenme')!.band;
+            expect(rep.support !== null, label).toBe(anxiety === 'Yüksek');
+            n++;
+          }
+        }
+      }
+    }
+    expect(n).toBe(6 * 2 * 4 * 3);
+  }, 60_000);
+
+  it('yol haritası alt özelliklerin kartlarıyla çelişen bir hüküm vermez', () => {
+    const t = ROADMAPS[SLUG];
+    // Uyumluluk yüksekken "sabırlısın" denmez (Sabırlılık orta olabilir); Duygusallık düşükken "baskı altında sakin" denmez.
+    const A = t.scales.agreeableness.study.high;
+    for (const x of [A.student, A.parent, A.adult ?? '']) expect(x).not.toMatch(/[Ss]abırlı/);
+    const E = t.scales.emotionality.study.low;
+    for (const x of [E.student, E.parent, E.adult ?? '']) expect(x).not.toMatch(/[Bb]askı altında|[Ss]akinliğin/);
+    expect(t.approach!.agreeableness.high).not.toMatch(/[Ss]abr/);
   });
 
   it('orta cevaplarda bütün ölçekler orta düzeyde', () => {

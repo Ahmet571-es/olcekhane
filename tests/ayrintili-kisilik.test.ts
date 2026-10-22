@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { publicInstruments, solvableInstruments } from '@/content/instruments';
 import { NEO_ADAPTED, NEO_REMOVED } from '@/content/instruments/ayrintili-kisilik';
 import { REPORT_TEMPLATES } from '@/content/reports';
-import { evaluate } from '@/lib/assessment/evaluate';
+import { ROADMAPS } from '@/content/roadmaps';
+import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
+import { ADULT_GRADE } from '@/lib/config';
 import type { LikertInstrument } from '@/lib/instruments/types';
 import { scaleItems, scoreLikert } from '@/lib/scoring/likert';
 import sitemap from '../src/app/sitemap';
 import { def, likertBody } from './helpers/bodies';
+import { schoolWords } from './helpers/school';
 
 const SLUG = 'ayrintili-kisilik-profili';
 const d = def<LikertInstrument>(SLUG);
@@ -143,6 +146,62 @@ describe('Ayrıntılı Kişilik Profili raporu', () => {
     const high = evaluate(SLUG, { grade: 11, data: { engine: 'likert', answers: keyedAnswers(() => 'high') } });
     expect(high.student.support).toBeNull();
     expect(high.student.groups!.every((g) => g.badge.startsWith('Yüksek'))).toBe(true);
+  });
+
+  it('bir boyutun alt özellikleri ayrışınca boyut kartı "Alt özellikleri ayrışan" metnini, yol haritası orta düzeyin önerisini gösterir (her boyutta, iki yönde)', () => {
+    const t = REPORT_TEMPLATES[SLUG];
+    const rm = ROADMAPS[SLUG];
+    let n = 0;
+    for (const dom of d.scales.filter((s) => s.of)) {
+      const sp = t.facetSplit![dom.key];
+      // Ayrışma metni boyutun bütün alt özelliklerini adıyla anar.
+      for (const f of dom.of!) expect(sp.student, dom.key).toContain(d.scales.find((s) => s.key === f)!.name.toLocaleLowerCase('tr-TR'));
+      // Boyut yüksek ama bir alt özelliği düşük; boyut düşük ama bir alt özelliği yüksek. Öteki boyutlar orta.
+      for (const [rest, band] of [
+        ['high', 'Yüksek'],
+        ['low', 'Düşük'],
+      ] as const) {
+        const one = rest === 'high' ? 'low' : 'high';
+        const answers = keyedAnswers((s) => (s === dom.of![0] ? one : dom.of!.includes(s) ? rest : 'mid'));
+        const r = evaluate(SLUG, { grade: 11, data: { engine: 'likert', answers } });
+        const adult = evaluateAdult(SLUG, { grade: ADULT_GRADE, data: { engine: 'likert', answers } }).adult;
+        for (const rep of [r.student, r.parent, adult]) {
+          const label = `${dom.key} ${rest} ${rep.audience}`;
+          const g = rep.groups!.find((x) => x.title === dom.name)!;
+          expect(g.facets.map((f) => f.band), label).toContain('Yüksek');
+          expect(g.facets.map((f) => f.band), label).toContain('Düşük');
+          expect(g.badge, label).toBe(`${band} · Alt özellikleri ayrışan`);
+          expect(g.text, label).toBe(rep.audience === 'parent' ? sp.parent : rep.audience === 'adult' ? (sp.adult ?? sp.student) : sp.student);
+          if (rep.audience === 'adult') expect(schoolWords(g.text), label).toEqual([]);
+          // Yol haritası: ayrışan boyutun kartı orta düzeyin önerisidir (yüksek ya da düşük düzeyin önerisi bir alt
+          // özelliğin kartıyla çelişirdi); ortamlar arasında da bu boyutun ortamı yoktur.
+          const card = rep.roadmap!.study.items.find((x) => x.key === dom.key)!;
+          const avg = rm.scales[dom.key].study.average;
+          expect(card.badge, label).toBe(`${band} · Alt özellikleri ayrışan`);
+          expect(card.text, label).toBe(rep.audience === 'parent' ? avg.parent : rep.audience === 'adult' ? (avg.adult ?? avg.student) : avg.student);
+          const settings = rm.scales[dom.key].settings!;
+          expect(rep.roadmap!.settings!.items, label).not.toContain(settings.high);
+          expect(rep.roadmap!.settings!.items, label).not.toContain(settings.low);
+          if (rep.audience === 'parent') {
+            const tip = rep.roadmap!.approach!.items.find((x) => x.title === dom.name)!;
+            expect(tip.text, label).toBe(rm.approach![dom.key].average);
+            expect(tip.text, label).not.toContain('bu dengeyi');
+          }
+          // Destek kutusu: Duygusal Denge'de İç huzuru düşükse (boyut düşük, Sakinlik yüksek).
+          expect(rep.support !== null, label).toBe(dom.key === 'emotional_stability' && rest === 'low');
+          n++;
+        }
+      }
+      // Biri yüksek, ötekiler orta: ayrışma sayılmaz; boyut kartı kendi düzeyinin metnini gösterir (beş alt özellikli
+      // Deneyime Açıklık'ta boyut 3,4 ile yüksek, ötekilerde orta).
+      const near = evaluate(SLUG, { grade: 11, data: { engine: 'likert', answers: keyedAnswers((s) => (s === dom.of![0] ? 'high' : 'mid')) } });
+      const g = near.student.groups!.find((x) => x.title === dom.name)!;
+      const level = g.badge.startsWith('Yüksek') ? 'high' : 'average';
+      expect(level, dom.key).toBe(dom.of!.length === 5 ? 'high' : 'average');
+      expect(g.badge, dom.key).toBe(`${level === 'high' ? 'Yüksek' : 'Orta'} · ${t.scales[dom.key][level]!.summary}`);
+      expect(g.text, dom.key).toBe(t.scales[dom.key][level]!.student);
+    }
+    expect(n).toBe(5 * 2 * 3);
   });
 
   it('orta cevaplarda bütün ölçekler orta düzeyde', () => {

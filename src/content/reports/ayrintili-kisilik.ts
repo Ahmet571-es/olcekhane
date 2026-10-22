@@ -11,6 +11,14 @@ import type { BandText, ReportTemplate } from './types';
  * Destek kutusu: Duygusal Denge boyutu ve İç huzuru alt özelliği düşük düzeydeyse gösterilir.
  * Yetişkin raporu öğrenci metinlerini kullanır; öğrenci metni okula ya da ergenliğe özgü olduğunda yetişkin metni
  * (`adult`) ayrıca yazılmıştır.
+ * Yüksek uç bir başarı ("sana güç verir"), düşük uç bir eksiklik diye anlatılmaz; orta düzey de yükseğe yaslanmaz
+ * ("Çoğu zaman planlı" yerine "Duruma göre planlı").
+ *
+ * Ayrışma (`facetSplit`): bir boyutun alt özelliklerinden biri yüksek, bir başkası düşükse boyut kartında düzey metni
+ * yerine "Alt özellikleri ayrışan" metni gösterilir. Boyutun düzey metni bütün alt özelliklerin davranışlarını birlikte
+ * anlattığı için ayrışmada bir alt özelliğin kartıyla çelişirdi (ör. "Yüksek · Sakin, kolay sarsılmayan" Duygusal Denge
+ * kartının altında "Düşük · Zorluklar karşısında bunalan" Dayanıklılık kartı). Yol haritası da ayrışan boyut için orta
+ * düzeyin önerilerini verir (lib/reports/build.ts: split).
  */
 const t = (summary: string, student: string, parent: string, extra?: { support?: boolean; adult?: string }): BandText => ({
   summary,
@@ -22,12 +30,38 @@ const t = (summary: string, student: string, parent: string, extra?: { support?:
   ...(extra?.support ? { support: true } : {}),
 });
 
+/**
+ * Bir boyutun alt özellikleri ayrıştığında (en az biri yüksek, en az biri düşük) boyut kartında, boyutun düzey metni
+ * yerine gösterilen metin; `facets` alt özelliklerin adlarıdır.
+ */
+const splitText = (facets: string, extra?: { student: string; parent: string; adult: string }) => ({
+  summary: 'Alt özellikleri ayrışan',
+  student: `Bu boyutun alt özellikleri (${facets}) sende birbirinden ayrılıyor: aralarında yüksek olan da var, düşük olan da. Bu yüzden boyut puanın seni tek başına iyi anlatmıyor; alt özelliklerini aşağıda tek tek görebilirsin.${extra ? ` ${extra.student}` : ''}`,
+  parent: `Bu boyutun alt özellikleri (${facets}) çocuğunuzda birbirinden ayrılıyor: aralarında yüksek olan da var, düşük olan da. Bu yüzden boyut puanı onu tek başına iyi anlatmıyor; alt özellikleri aşağıda tek tek görülüyor.${extra ? ` ${extra.parent}` : ''}`,
+  ...(extra
+    ? {
+        adult: `Bu boyutun alt özellikleri (${facets}) sende birbirinden ayrılıyor: aralarında yüksek olan da var, düşük olan da. Bu yüzden boyut puanın seni tek başına iyi anlatmıyor; alt özelliklerini aşağıda tek tek görebilirsin. ${extra.adult}`,
+      }
+    : {}),
+});
+
 export const ayrintiliKisilikReport: ReportTemplate = {
   version: 'ayrintili-kisilik-rapor-2',
   bandLabels: {
     low: 'Düşük',
     average: 'Orta',
     high: 'Yüksek',
+  },
+  facetSplit: {
+    extraversion: splitText('sıcakkanlılık, kalabalık sevgisi, liderlik, tempo, heyecan arayışı ve neşe'),
+    agreeableness: splitText('insanlara güven, adil davranma, yardımseverlik, uzlaşmacılık, alçakgönüllülük ve şefkat'),
+    conscientiousness: splitText('yetkinlik duygusu, düzenlilik, görev bilinci, çalışkanlık, öz disiplin ve temkinlilik'),
+    emotional_stability: splitText('sakinlik, sabırlılık, iç huzuru, sosyal rahatlık, ölçülülük ve dayanıklılık', {
+      student: 'Seni zorlayan bir duygu varsa bunu güvendiğin bir yetişkinle konuşmak iyi gelir.',
+      parent: 'Hangi duyguların onu en çok zorladığını sakin bir anda birlikte konuşabilirsiniz.',
+      adult: 'Seni zorlayan bir duygu varsa bunu güvendiğin biriyle konuşmak iyi gelir.',
+    }),
+    openness: splitText('hayal gücü, sanata ilgi, duygulara açıklık, değişime açıklık ve düşünsel merak'),
   },
   scales: {
     /* ---------- Boyutlar ---------- */
@@ -44,7 +78,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Sakin, kendi alanını seven',
-        'Genel olarak kalabalık ve hareketli ortamlar yerine sakin ortamları ya da kendi başına olmayı tercih ettiğini söylüyorsun. Bu bir eksiklik değil; sakin ortamlar birçok kişiye odaklanmak ve düşünmek için alan açar.',
+        'Genel olarak kalabalık ve hareketli ortamlar yerine sakin ortamları ya da kendi başına olmayı tercih ettiğini söylüyorsun. Bu bir eksiklik değil; birçok kişi sakin ortamlarda daha iyi odaklanır ve düşünür.',
         'Çocuğunuz genel olarak kalabalık ve hareketli ortamlar yerine sakin ortamları ya da kendi başına olmayı tercih ettiğini belirtiyor. Bu bir eksiklik değildir; birçok kişi sakin ortamlarda daha iyi odaklanır.',
       ),
     },
@@ -68,17 +102,17 @@ export const ayrintiliKisilikReport: ReportTemplate = {
     conscientiousness: {
       high: t(
         'Planlı ve kararlı',
-        'Genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu söylüyorsun. Bu eğilim okulda ve hedeflerine ulaşmada sana güç verir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu söylüyorsun. Bu eğilim okulda ve hedeflerine ulaşırken işine yarayabilir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
         'Çocuğunuz genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu belirtiyor.',
         {
           adult:
-            'Genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu söylüyorsun. Bu eğilim işinde, eğitiminde ve hedeflerine ulaşmada sana güç verir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+            'Genel olarak planlı, güvenilir ve işlerini bitirmeye kararlı olduğunu söylüyorsun. Bu eğilim işinde, eğitiminde ve hedeflerine ulaşırken sana yardımcı olabilir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
         },
       ),
       average: t(
-        'Çoğu zaman planlı',
-        'Çoğu zaman planlı ve sorumlu davranıyor, bazı durumlarda ise daha esnek hareket ediyorsun. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
-        'Çocuğunuz çoğu zaman planlı ve sorumlu davrandığını, bazı durumlarda ise daha esnek hareket ettiğini belirtiyor.',
+        'Duruma göre planlı',
+        'Bazı durumlarda planlı ve düzenli, bazı durumlarda daha esnek davrandığını söylüyorsun. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz bazı durumlarda planlı ve düzenli, bazı durumlarda daha esnek davrandığını belirtiyor.',
       ),
       low: t(
         'Esnek, anlık hareket eden',
@@ -89,11 +123,11 @@ export const ayrintiliKisilikReport: ReportTemplate = {
     emotional_stability: {
       high: t(
         'Sakin, kolay sarsılmayan',
-        'Genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını söylüyorsun. Bu, sınav gibi baskılı durumlarda sana güç veren bir özellik. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını söylüyorsun. Bu sakinlik, sınav gibi baskılı durumlarda işine yarayabilir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
         'Çocuğunuz genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını belirtiyor.',
         {
           adult:
-            'Genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını söylüyorsun. Bu, baskı altında kaldığın dönemlerde sana güç veren bir özellik. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+            'Genel olarak stresli ve zor anlarda sakin kalabildiğini ve çabuk toparlandığını söylüyorsun. Bu sakinlik, baskı altında kaldığın dönemlerde işine yarayabilir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
         },
       ),
       average: t(
@@ -115,8 +149,8 @@ export const ayrintiliKisilikReport: ReportTemplate = {
     openness: {
       high: t(
         'Meraklı ve yeniliğe açık',
-        'Genel olarak hayal gücüne, sanata, duygulara, yeniliklere ve fikirlere açık olduğunu söylüyorsun. Bu merak öğrenmede ve yaratıcı işlerde sana güç verir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
-        'Çocuğunuz genel olarak hayal gücüne, sanata, yeni deneyimlere ve fikirlere açık olduğunu belirtiyor. Bu merak öğrenmede ve yaratıcı işlerde önemli bir güçtür.',
+        'Genel olarak hayal gücüne, sanata, duygulara, yeniliklere ve fikirlere açık olduğunu söylüyorsun. Bu merak öğrenmede ve yaratıcı işlerde işine yarayabilir. Hangi yönlerinin öne çıktığını aşağıda görebilirsin.',
+        'Çocuğunuz genel olarak hayal gücüne, sanata, yeni deneyimlere ve fikirlere açık olduğunu belirtiyor. Bu merak öğrenmede ve yaratıcı işlerde ona yardımcı olabilir.',
       ),
       average: t(
         'Yeniyle bilineni dengeleyen',
@@ -125,7 +159,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
       ),
       low: t(
         'Somut ve pratik',
-        'Genel olarak soyut fikirler ve yenilikler yerine somut, pratik ve bildiğin konuları tercih ettiğini söylüyorsun. Gerçekçi ve ayağı yere basan bir bakış birçok işte işe yarar.',
+        'Genel olarak soyut fikirler ve yenilikler yerine somut, pratik ve bildiğin konuları tercih ettiğini söylüyorsun. Gerçekçi ve ayağı yere basan bir bakış birçok alanda yarar sağlar.',
         'Çocuğunuz genel olarak soyut fikirler ve yenilikler yerine somut, pratik ve bildiği konuları tercih ettiğini belirtiyor. Gerçekçi ve ayağı yere basan bu tarz birçok alanda işe yarar.',
       ),
     },
@@ -315,9 +349,9 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Çocuğunuz kendine güvenmekle alçakgönüllü olmak arasında dengeli bir tutum tanımlıyor.',
       ),
       low: t(
-        'Kendine çok güvenen',
-        'Kendine yüksek bir değer biçtiğini ve iyi yönlerini açıkça ortaya koyduğunu söylüyorsun; özgüven bir güçtür, başkalarının katkısını da görmek bu gücü artırır.',
-        'Çocuğunuz kendine yüksek bir değer biçtiğini ve iyi yönlerini açıkça ortaya koyduğunu belirtiyor; özgüvenini korurken başkalarının katkılarını da görmesini destekleyebilirsiniz.',
+        'Kendini öne çıkaran',
+        'Kendine yüksek bir değer biçtiğini ve iyi yönlerini açıkça ortaya koyduğunu söylüyorsun; yeteneklerinin farkında olmak değerli, başkalarının katkısını da görmek ilişkilerini güçlendirir.',
+        'Çocuğunuz kendine yüksek bir değer biçtiğini ve iyi yönlerini açıkça ortaya koyduğunu belirtiyor; yeteneklerinin farkında olmasını desteklerken başkalarının katkılarını da görmesine yardımcı olabilirsiniz.',
       ),
     },
     sympathy: {
@@ -598,7 +632,7 @@ export const ayrintiliKisilikReport: ReportTemplate = {
         'Çocuğunuz kendi duygularını ve başkalarının duygularını çoğu zaman fark ettiğini belirtiyor.',
       ),
       low: t(
-        'Olaylara mantıkla bakan',
+        'Duygularının üzerinde pek durmayan',
         'Duygular yerine düşüncelere ve olaylara odaklandığını, duygusal tepkilerini pek fark etmediğini söylüyorsun.',
         'Çocuğunuz duygular yerine düşüncelere ve olaylara odaklandığını, duygusal tepkilerini pek fark etmediğini belirtiyor.',
       ),

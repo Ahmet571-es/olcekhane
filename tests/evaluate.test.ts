@@ -57,8 +57,8 @@ describe('test raporları', () => {
     // En belirgin üç alan (düzeyleriyle), profile uyan örnek meslekler (test sayfasındaki söz) ve öteki alanlar.
     expect(r.student.items).toHaveLength(5);
     for (const it of r.student.items.slice(0, 3)) expect(it.badge).toMatch(/ilgi$/);
-    expect(r.student.items[3].title).toBe('Sana uyabilecek örnek meslekler');
-    expect(r.parent.items[3].title).toBe('Profile uyan örnek meslekler');
+    expect(r.student.items[3].title).toBe('İlgilerinle ilişkili örnek meslekler');
+    expect(r.parent.items[3].title).toBe('Bu ilgilerle ilişkili örnek meslekler');
     expect(r.parent.items[3].text).toContain(' · ');
     expect(r.student.items[4].title).toBe('Diğer alanların');
     expect(r.parent.items[4].title).toBe('Diğer alanlar');

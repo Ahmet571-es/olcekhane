@@ -1,5 +1,6 @@
 import { MathText } from '@/components/quiz/math-text';
 import { QuizVisual } from '@/components/quiz/quiz-visuals';
+import { ItemVisualView } from '@/components/report/item-visual';
 import { ScaleRuler } from '@/components/report/scale-ruler';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleGroup, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
@@ -66,11 +67,18 @@ function Groups({ groups }: { groups: SimpleGroup[] }) {
     <div className="flex flex-col gap-10">
       {groups.map((g) => (
         <section key={g.title} aria-label={g.title} className="flex flex-col gap-3">
-          <h3 className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-display text-xl font-bold">{g.title}</span>
-            <span className="t-small font-bold text-brass-ink">{g.badge}</span>
-          </h3>
-          <p className="measure text-ink-2">{g.text}</p>
+          <div className={g.visual ? 'grid gap-x-8 gap-y-3 md:grid-cols-[minmax(0,1fr)_16.5rem]' : 'flex flex-col gap-3'}>
+            <h3 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 md:col-start-1">
+              <span className="font-display text-xl font-bold">{g.title}</span>
+              <span className="t-small font-bold text-brass-ink">{g.badge}</span>
+            </h3>
+            {g.visual && (
+              <div className="max-w-[22rem] md:col-start-2 md:row-span-2 md:row-start-1 md:max-w-none md:pt-1">
+                <ItemVisualView visual={g.visual} />
+              </div>
+            )}
+            <p className="measure text-ink-2 md:col-start-1">{g.text}</p>
+          </div>
           <Rulers rows={g.facets} />
         </section>
       ))}
@@ -455,13 +463,19 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
           {report.items.length > 0 && (
             <ul className="flex flex-col divide-y divide-rule border-y border-rule">
               {report.items.map((it) => (
-                <li key={it.title} className="flex flex-col gap-1.5 py-5">
-                  <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                // Kartın grafiği telefonda başlığın altında, geniş ekranda açıklamanın yanında.
+                <li key={it.title} className={it.visual ? 'grid gap-x-8 gap-y-3 py-5 md:grid-cols-[minmax(0,1fr)_16.5rem]' : 'flex flex-col gap-1.5 py-5'}>
+                  <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 md:col-start-1">
                     <span className="font-display text-lg font-bold">{it.title}</span>
                     {it.badge && <span className="t-small font-bold text-brass-ink">{it.badge}</span>}
                   </p>
+                  {it.visual && (
+                    <div className="max-w-[22rem] md:col-start-2 md:row-span-2 md:row-start-1 md:max-w-none md:pt-1">
+                      <ItemVisualView visual={it.visual} />
+                    </div>
+                  )}
                   {/* Birden çok paragraf olabilir (ör. motivasyon profili ve eklenen cümleler: "\n\n"). */}
-                  <p className="measure whitespace-pre-line text-ink-2">{it.text}</p>
+                  <p className="measure whitespace-pre-line text-ink-2 md:col-start-1">{it.text}</p>
                 </li>
               ))}
             </ul>

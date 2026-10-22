@@ -1,4 +1,3 @@
-import { besFaktorRoadmap as bf } from './bes-faktor';
 import type { InterestArea, InterestRoadmapTemplate } from './types';
 
 /**
@@ -13,6 +12,8 @@ import type { InterestArea, InterestRoadmapTemplate } from './types';
  *  - Test yetişkinlere de açıktır ve rapor metinleri gibi bu metinler de okula ya da ergenliğe özgü sözcük içermez:
  *    yetişkine öğrenci metni gösterilir.
  *  - Sağlık ya da başarı üzerine kesin yargı yoktur.
+ *  - Öne çıkan alan yoksa ve alanların hepsi az yapılmıyorsa bütün alanların puanı aynıdır (`openNote`): zaman birçok alana
+ *    benzer ölçüde ayrılmıştır; imkânların kısıtlı olması yalnızca hepsi az yapılırken anılır (lib/reports/interest-roadmap.ts).
  */
 const area = (color: string, x: Omit<InterestArea, 'color'>): InterestArea => ({ color, ...x });
 
@@ -33,14 +34,15 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
   },
   openNote: {
     student:
-      'Son bir yılda hiçbir alan ötekilerden öne çıkmıyor. Bu, zamanının ya da imkânlarının kısıtlı olmasıyla da, zamanını birçok alana benzer ölçüde ayırmanla da ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.',
+      'Son bir yılda hiçbir alan ötekilerden öne çıkmıyor: zamanını birçok alana benzer ölçüde ayırmışsın. Aşağıdaki haftalarda küçük denemeler var.',
     parent:
-      'Son bir yılda yapılan etkinliklerde hiçbir alan ötekilerden öne çıkmıyor. Bu, zamanın ya da imkânların kısıtlı olmasıyla da, çocuğunuzun zamanını birçok alana benzer ölçüde ayırmasıyla da ilgili olabilir; aşağıdaki haftalarda küçük denemeler var.',
+      'Son bir yılda yapılan etkinliklerde hiçbir alan ötekilerden öne çıkmıyor: çocuğunuz zamanını birçok alana benzer ölçüde ayırmış. Aşağıdaki haftalarda küçük denemeler var.',
   },
   firstWeek: {
     student:
       'Raporundaki alanlara bir kez daha göz at. Bu hafta her akşam boş zamanını neyle geçirdiğini bir cümleyle bir deftere yaz: hangi etkinlik sana iyi geldi, hangisi seni yordu?',
-    parent: bf.firstWeek.parent,
+    parent:
+      'Raporu çocuğunuzla birlikte okuyun ve sonuçların ona uyup uymadığını sorun. Bu hafta boş zamanında hangi etkinliklerin ona iyi geldiğini birlikte gözlemleyin.',
   },
   openWeeks: [
     {

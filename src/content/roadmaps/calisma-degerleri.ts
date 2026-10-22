@@ -9,14 +9,17 @@ import type { InterestArea, InterestRoadmapTemplate } from './types';
  *    anlatır (değer uyumu iş doyumuyla ilişkili bulunmuştur: Kristof-Brown, Zimmerman ve Johnson, 2005). Öne çıkan
  *    değerler raporunkilerdir (lib/reports/build.ts, rankValues).
  *  - Gelir, güvence ve çalışma saati gibi koşulların mesleğe olduğu kadar iş yerine ve döneme göre de değişebileceği
- *    söylenir; belirli meslekler hakkında kesin bilgi verilmez. Örnek meslekler yalnızca bir değerin farklı işlerde
+ *    rapordaki değer kartlarında söylenir; keşif kartları bunu tekrar etmez, yalnızca sorulacak soruları verir. Belirli
+ *    meslekler hakkında kesin bilgi verilmez.
+ *  - Haftalar bir sıralama var saymaz: değerlerin hepsi aynı ya da az önemli çıktığında da okunabilir ("sonuçların",
+ *    "senin için önemli bir değer"). Örnek meslekler yalnızca bir değerin farklı işlerde
  *    karşılanabileceğini göstermek içindir.
  *  - Test yetişkinlere de açıktır; metinler okula özgü sözcük içermez: yetişkine öğrenci metni gösterilir.
  */
 const area = (color: string, x: Omit<InterestArea, 'color'>): InterestArea => ({ color, ...x });
 
 export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
-  version: 'calisma-degerleri-yol-haritasi-1',
+  version: 'calisma-degerleri-yol-haritasi-2',
   what: {
     student: 'en önem verdiğin değerleri meslekleri tanırken nasıl kullanabileceğin',
     parent: 'çocuğunuzun en önem verdiği değerleri meslekleri tanırken nasıl kullanabileceği',
@@ -43,11 +46,11 @@ export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
   },
   firstWeek: {
     student:
-      'Raporundaki sıralamaya bir kez daha bak: sana uyuyor mu? Bu hafta tanıdığın biri işinden memnun ya da şikâyetçi olduğunda, bunun hangi değerle ilgili olduğunu bir cümleyle yaz.',
+      'Raporundaki sonuçlara bir kez daha bak: sana uyuyor mu? Bu hafta tanıdığın biri işinden memnun ya da şikâyetçi olduğunda, bunun hangi değerle ilgili olduğunu bir cümleyle yaz.',
     parent:
-      'Raporu çocuğunuzla birlikte okuyun ve sıralamanın ona uyup uymadığını sorun. Bu hafta kendi işinizde ya da bildiğiniz bir işte insanı neyin memnun ettiğini, neyin zorladığını ona anlatın.',
+      'Raporu çocuğunuzla birlikte okuyun ve sonuçların ona uyup uymadığını sorun. Bu hafta kendi işinizde ya da bildiğiniz bir işte insanı neyin memnun ettiğini, neyin zorladığını ona anlatın.',
     adult:
-      'Raporundaki sıralamaya bir kez daha bak: sana uyuyor mu? Bu hafta kendi işinde ya da tanıdığın birinin işinde seni memnun eden ya da zorlayan bir şey olduğunda, bunun hangi değerle ilgili olduğunu bir cümleyle yaz.',
+      'Raporundaki sonuçlara bir kez daha bak: sana uyuyor mu? Bu hafta kendi işinde ya da tanıdığın birinin işinde seni memnun eden ya da zorlayan bir şey olduğunda, bunun hangi değerle ilgili olduğunu bir cümleyle yaz.',
   },
   openWeeks: [
     {
@@ -63,15 +66,15 @@ export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
       title: 'Önceliklerini sına',
       text: {
         student:
-          'Bu hafta iki hayalî iş düşün: biri sıralamanın en üstündeki değeri sunuyor ama ikinci sıradakini sunmuyor, öteki bunun tersi. Hangisini seçerdin? Nedenini bir iki cümleyle yaz.',
+          'Bu hafta iki hayalî iş düşün: biri senin için önemli bir değeri sunuyor ama önemli olan başka bir değeri sunmuyor, öteki bunun tersi. Hangisini seçerdin? Nedenini bir iki cümleyle yaz.',
         parent:
-          'Bu hafta çocuğunuzla iki hayalî iş düşünün: biri sıralamanın en üstündeki değeri sunuyor ama ikinci sıradakini sunmuyor, öteki bunun tersi. Hangisini seçeceğini ve nedenini konuşun.',
+          'Bu hafta çocuğunuzla iki hayalî iş düşünün: biri onun için önemli bir değeri sunuyor ama önemli olan başka bir değeri sunmuyor, öteki bunun tersi. Hangisini seçeceğini ve nedenini konuşun.',
       },
     },
   ],
   lastWeek: {
     student:
-      'Dört haftada yazdıklarına bak: sıralaman sana hâlâ uyuyor mu? En önem verdiğin üç değeri bir kâğıda yaz ve bir mesleği tanırken bu kâğıda göz at.',
+      'Dört haftada yazdıklarına bak: sonuçların sana hâlâ uyuyor mu? Senin için en önemli üç değeri bir kâğıda yaz ve bir mesleği tanırken bu kâğıda göz at.',
     parent:
       'Dört haftada neler öğrendiğinizi çocuğunuzla konuşun; en önem verdiği üç değeri birlikte yazın ve meslekleri tanırken bu listeye göz atın.',
   },
@@ -97,9 +100,9 @@ export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
     income: area('#d28a14', {
       explore: {
         student:
-          'Bir mesleği tanırken başlangıçtaki gelirini, yıllar içinde nasıl değiştiğini ve bu gelire ulaşmak için ne kadar eğitim ve deneyim gerektiğini öğren. Gelirin iş yerine ve şehre göre ne kadar değiştiğini de sor; tek bir ortalama sayı yanıltıcı olabilir.',
+          'Bir mesleği tanırken başlangıçtaki gelirini, yıllar içinde nasıl değiştiğini ve bu gelire ulaşmak için ne kadar eğitim ve deneyim gerektiğini öğren.',
         parent:
-          'Çocuğunuzla meslekleri tanırken başlangıçtaki geliri, yıllar içinde nasıl değiştiğini ve bu gelire ulaşmak için ne kadar eğitim ve deneyim gerektiğini birlikte konuşun. Gelirin iş yerine ve şehre göre değişebileceğini de hatırlatın.',
+          'Çocuğunuzla meslekleri tanırken başlangıçtaki geliri, yıllar içinde nasıl değiştiğini ve bu gelire ulaşmak için ne kadar eğitim ve deneyim gerektiğini birlikte konuşun.',
       },
       action: {
         student:
@@ -142,9 +145,9 @@ export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
     security: area('#3b6fd8', {
       explore: {
         student:
-          'Bir mesleği tanırken o alanda iş bulmanın ne kadar kolay olduğunu, işlerin ne kadar sürekli olduğunu ve gelirin düzenli olup olmadığını sor. Güvencenin mesleğe olduğu kadar iş yerine ve sözleşmenin türüne de bağlı olabileceğini unutma.',
+          'Bir mesleği tanırken o alanda iş bulmanın ne kadar kolay olduğunu, işlerin ne kadar sürekli olduğunu ve gelirin düzenli olup olmadığını sor.',
         parent:
-          'Çocuğunuzla meslekleri tanırken o alanda iş bulmanın ne kadar kolay olduğunu, işlerin ne kadar sürekli olduğunu ve gelirin düzenli olup olmadığını konuşun. Güvencenin iş yerine ve sözleşmenin türüne de bağlı olabileceğini hatırlatın.',
+          'Çocuğunuzla meslekleri tanırken o alanda iş bulmanın ne kadar kolay olduğunu, işlerin ne kadar sürekli olduğunu ve gelirin düzenli olup olmadığını konuşun.',
       },
       action: {
         student: 'Bu hafta tanıdığın birine, işinin ne kadar güvenceli olduğunu ve bunun onun için ne anlama geldiğini sor.',
@@ -156,9 +159,9 @@ export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
     team: area('#ee6a36', {
       explore: {
         student:
-          'Bir mesleği tanırken o işte günün ne kadarının başkalarıyla, ne kadarının tek başına geçtiğini sor. Ekip çalışmasının aynı meslekte bile iş yerine göre değişebileceğini, iş yerinin havasının da önemli olduğunu unutma.',
+          'Bir mesleği tanırken o işte günün ne kadarının başkalarıyla, ne kadarının tek başına geçtiğini sor. İş yerinin havasının da önemli olduğunu unutma.',
         parent:
-          'Çocuğunuzla meslekleri tanırken o işte günün ne kadarının başkalarıyla, ne kadarının tek başına geçtiğini konuşun. Ekip çalışmasının aynı meslekte bile iş yerine göre değişebileceğini hatırlatın.',
+          'Çocuğunuzla meslekleri tanırken o işte günün ne kadarının başkalarıyla, ne kadarının tek başına geçtiğini konuşun.',
       },
       action: {
         student:
@@ -186,9 +189,9 @@ export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
     balance: area('#4c9a2a', {
       explore: {
         student:
-          'Bir mesleği tanırken haftada kaç saat çalışıldığını, akşam ya da hafta sonu çalışmanın ne kadar yaygın olduğunu ve iş yükünün dönemlere göre nasıl değiştiğini sor. Aynı meslekte bile çalışma düzeni iş yerine göre çok farklı olabilir.',
+          'Bir mesleği tanırken haftada kaç saat çalışıldığını, akşam ya da hafta sonu çalışmanın ne kadar yaygın olduğunu ve iş yükünün dönemlere göre nasıl değiştiğini sor.',
         parent:
-          'Çocuğunuzla meslekleri tanırken haftada kaç saat çalışıldığını, akşam ya da hafta sonu çalışmanın ne kadar yaygın olduğunu konuşun. Aynı meslekte bile çalışma düzeninin iş yerine göre değişebileceğini hatırlatın.',
+          'Çocuğunuzla meslekleri tanırken haftada kaç saat çalışıldığını, akşam ya da hafta sonu çalışmanın ne kadar yaygın olduğunu konuşun.',
       },
       action: {
         student:

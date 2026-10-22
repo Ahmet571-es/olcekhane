@@ -533,6 +533,10 @@ describe('16 Faktörlü Kişilik Profili raporu', () => {
       expect(rows.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
       expect(rep.chartNote).toContain('toplam bir puan yoktur');
       expect(rep.chartNote).not.toContain('sarı bant');
+      // Genel bakışın açıklaması varsayılan grafik notunun yerine geçer: kırmızı işaretin ne olduğunu da söyler.
+      expect(rep.chartNote).toContain('Kırmızı işaret');
+      // Ölçekler her yerde "özellik" diye anılır: sonuç kartlarının başlığı da.
+      expect(rep.itemsTitle).toBe('Özellikler');
       expect(rep.items.map((x) => x.title)).toEqual(NAMES);
       for (const it of rep.items) expect(it.text.length, it.title).toBeGreaterThan(40);
       expect(rep.groups).toBeUndefined();
@@ -673,7 +677,7 @@ describe('16 Faktörlü Kişilik Profili raporu', () => {
   it('gelişim yol haritası: 16 sütun, 16 ayrı renk; öneriler en belirgin altı özellik için', () => {
     expect(hasPublicRoadmap(SLUG)).toBe(true);
     expect(roadmapSummary(SLUG)).toBe(
-      'parmakla döndürülebilen üç boyutlu profil, en belirgin boyutlara göre nasıl çalışılabileceğine dair öneriler, rahat edilebilecek ortamlar, veliye yaklaşım önerileri ve dört haftalık küçük adımlar',
+      'parmakla döndürülebilen üç boyutlu profil, en belirgin özelliklere göre nasıl çalışılabileceğine dair öneriler, rahat edilebilecek ortamlar, veliye yaklaşım önerileri ve dört haftalık küçük adımlar',
     );
     const t = ROADMAPS[SLUG];
     expect(new Set(Object.values(t.scales).map((x) => x.color)).size).toBe(16);
@@ -684,8 +688,12 @@ describe('16 Faktörlü Kişilik Profili raporu', () => {
     expect(rm.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
     expect(rm.study.items).toHaveLength(6);
     expect(rm.approach?.items).toHaveLength(6);
-    expect(rm.study.intro).toContain('Aşağıda çocuğunuzun puanı ortadan en uzak altı özelliği için öneriler var');
-    expect(r.student.roadmap!.study.intro).toContain('Aşağıda puanı ortadan en uzak altı özelliğin için öneriler var');
+    expect(rm.study.intro).toContain('Aşağıda çocuğunuzun en belirgin altı özelliği (puanı orta noktadan en çok uzaklaşanlar) için öneriler var');
+    expect(r.student.roadmap!.study.intro).toContain('Aşağıda en belirgin altı özelliğin (puanı orta noktadan en çok uzaklaşanlar) için öneriler var');
+    // Dengeli profilde de ölçekler "özellik" diye anılır.
+    const mid = evaluate(SLUG, body(() => 'mid'));
+    expect(mid.student.roadmap!.standoutNote).toContain('hiçbir özellik belirgin biçimde öne çıkmıyor');
+    expect(mid.parent.roadmap!.standoutNote).toContain('hiçbir özellik belirgin biçimde öne çıkmıyor');
     // Ortam önerisi yazılmayan iki özellik: Düşünsel özgüven (beceriye göre yönlendirme gibi okunmasın) ve Duyarlılık.
     expect(Object.entries(t.scales).filter(([, x]) => !x.settings).map(([k]) => k)).toEqual(['intellect', 'sensitivity']);
     // Rapordaki veli metinlerinde geçen öneriler veliye yaklaşımda tekrar edilmez.

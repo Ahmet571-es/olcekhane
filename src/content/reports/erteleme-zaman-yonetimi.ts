@@ -25,6 +25,8 @@ import type { InsightRule, ReportTemplate } from './types';
  * odak, süre tahmini, kontrol duygusu) bağlar. Ayrıntı ve öneriler alanların kendi metinlerindedir; birlikte yorum
  * onları tekrar etmez, ilgili bölüme işaret eder. Süre tahmini ve kontrol duygusu kaynaklarda ertelemeyle ilişkilendirilmez:
  * onlar "zaman yönetimi alışkanlığı" diye anılır. Öğrenci metinleri okula özgü değilse yetişkine de aynen gösterilir.
+ * Kartlar, yol haritasının çalışma kartlarında ve haftalarında verilen öneriyi tekrar etmez (2026-10-22 incelemesi): aynı
+ * öneri (ör. telefonu başka odaya koymak, işleri yazıya dökmek) bir sayfada bir kez verilir.
  */
 
 const p = (
@@ -57,13 +59,13 @@ export const ertelemeZamanYonetimiReport: ReportTemplate = {
     lead: [
       r(
         { start: ['low'] },
-        'Ertelemeden başlama puanın düşük. Erteleme tembellikle açıklanamaz ve tek bir nedeni yoktur: araştırmacılar onu çoğu zaman zor ya da sıkıcı bir işin o an verdiği kötü duygudan kaçmak olarak açıklar; bedelini ise sonradan sıkışarak sen ödersin. Ertelemenin sende hangi alışkanlıklarla birlikte görüldüğü aşağıda.',
-        'Çocuğunuzun ertelemeden başlama puanı düşük. Erteleme tembellikle açıklanamaz ve tek bir nedeni yoktur: araştırmacılar onu çoğu zaman zor ya da sıkıcı bir işin o an verdiği kötü duygudan kaçmak olarak açıklar; bedelini ise çocuğunuz sonradan sıkışarak öder. Ertelemenin onda hangi alışkanlıklarla birlikte görüldüğü aşağıda.',
+        'Ertelemeden başlama puanın düşük. Erteleme tembellikle açıklanamaz ve tek bir nedeni yoktur: araştırmacılar onu çoğu zaman zor ya da sıkıcı bir işin o an verdiği kötü duygudan kaçmak olarak açıklar; bu kaçış ise çoğu zaman sonradan sıkışmaya ve daha kötü hissetmeye yol açar. Ertelemenin sende hangi alışkanlıklarla birlikte görüldüğü aşağıda.',
+        'Çocuğunuzun ertelemeden başlama puanı düşük. Erteleme tembellikle açıklanamaz ve tek bir nedeni yoktur: araştırmacılar onu çoğu zaman zor ya da sıkıcı bir işin o an verdiği kötü duygudan kaçmak olarak açıklar; bu kaçış ise çoğu zaman sonradan sıkışmaya ve daha kötü hissetmeye yol açar. Ertelemenin onda hangi alışkanlıklarla birlikte görüldüğü aşağıda.',
       ),
       r(
         { start: ['average'] },
-        'Bazı işlere zamanında başlıyor, bazılarını erteliyorsun.',
-        'Çocuğunuz bazı işlere zamanında başlıyor, bazılarını erteliyor.',
+        'Ertelemeden başlama puanın orta.',
+        'Çocuğunuzun ertelemeden başlama puanı orta.',
       ),
       r(
         { start: ['high'] },
@@ -89,8 +91,8 @@ export const ertelemeZamanYonetimiReport: ReportTemplate = {
       ),
       r(
         { start: ['low', 'average'], focus: ['low'] },
-        'Odağı koruma puanın düşük. Dikkatin kolay dağılması ertelemeyle en güçlü ilişkili özelliklerden biri olduğu için Odağı koruma bölümündeki öneri, ertelemeyi azaltmanın en kestirme yollarından biri olabilir.',
-        'Odağı koruma puanı düşük. Dikkatin kolay dağılması ertelemeyle en güçlü ilişkili özelliklerden biri olduğu için Odağı koruma bölümündeki öneri, ertelemeyi azaltmanın en kestirme yollarından biri olabilir.',
+        'Odağı koruma puanın düşük. Dikkatin kolay dağılması, araştırmalarda ertelemeyle en güçlü ilişkili özelliklerden biri; bu yüzden Odağı koruma bölümündeki öneriyle başlamak iyi bir seçenek olabilir.',
+        'Odağı koruma puanı düşük. Dikkatin kolay dağılması, araştırmalarda ertelemeyle en güçlü ilişkili özelliklerden biri; bu yüzden Odağı koruma bölümündeki öneriyle başlamak iyi bir seçenek olabilir.',
       ),
       r(
         { start: ['low', 'average'], estimation: ['low'] },
@@ -142,8 +144,8 @@ export const ertelemeZamanYonetimiReport: ReportTemplate = {
       ),
       average: p(
         'Bazen erteleme',
-        'Bazı işlere zamanında başlıyor, bazılarını erteliyorsun. Hangi işleri, hangi durumlarda ertelediğini fark etmek nereden başlayabileceğini gösterebilir.',
-        'Çocuğunuz bazı işlere zamanında başlıyor, bazılarını erteliyor. Hangi işleri, hangi durumlarda ertelediğini birlikte fark etmek nereden başlanabileceğini gösterebilir.',
+        'Bazı işlere zamanında başlıyor, bazılarını erteliyorsun.',
+        'Çocuğunuz bazı işlere zamanında başlıyor, bazılarını erteliyor.',
         ['Bu hafta ertelediğin işleri not et ve ortak yanlarına bak.'],
         ['Hangi işleri ertelediğini, yargılamadan birlikte konuşun.'],
       ),
@@ -158,22 +160,22 @@ export const ertelemeZamanYonetimiReport: ReportTemplate = {
     planning: {
       low: p(
         'Plan yapmadan çalışma',
-        'Yapacaklarını çoğunlukla plan yapmadan, aklına geldiği sırayla yapıyorsun. Araştırmalarda düzenli ve planlı olmak daha az ertelemeyle ilişkili; uzak bir hedefi yakın ara hedeflere bölmek de işe başlamayı kolaylaştırabilir. Planın uzun olması gerekmez: araştırmalarda bir işi ne zaman ve nerede yapacağına önceden karar vermenin bile hedefe ulaşmayı belirgin biçimde kolaylaştırdığı görülmüş.',
-        'Çocuğunuz yapacaklarını çoğunlukla plan yapmadan, aklına geldiği sırayla yapıyor. Araştırmalarda düzenli ve planlı olmak daha az ertelemeyle ilişkili; uzak bir hedefi yakın ara hedeflere bölmek de işe başlamayı kolaylaştırabilir. Planın uzun olması gerekmez: araştırmalarda bir işi ne zaman ve nerede yapacağına önceden karar vermenin bile hedefe ulaşmayı belirgin biçimde kolaylaştırdığı görülmüş.',
+        'Yapacaklarını çoğunlukla plan yapmadan, aklına geldiği sırayla yapıyorsun. Araştırmalarda düzenli ve planlı olmak daha az ertelemeyle ilişkili; uzak bir hedefi yakın ara hedeflere bölmek de işe başlamayı kolaylaştırabilir.',
+        'Çocuğunuz yapacaklarını çoğunlukla plan yapmadan, aklına geldiği sırayla yapıyor. Araştırmalarda düzenli ve planlı olmak daha az ertelemeyle ilişkili; uzak bir hedefi yakın ara hedeflere bölmek de işe başlamayı kolaylaştırabilir.',
         ['Yarın yapacağın tek bir işin ne zaman ve nerede yapılacağını yaz.'],
         ['Haftanın başında birlikte kısa bir yapılacaklar listesi hazırlayın.'],
       ),
       average: p(
         'Bazen plan yapma',
-        'Bazen plan yapıyor, bazen işleri akışına bırakıyorsun. Özellikle yoğun dönemlerde kısa bir liste ve işleri önem sırasına koymak, neyin önce yapılacağına karar vermeyi kolaylaştırabilir. Araştırmalarda bir işi ne zaman ve nerede yapacağına önceden karar vermek, hedefe ulaşmayı kolaylaştıran yollardan biri.',
-        'Çocuğunuz bazen plan yapıyor, bazen işleri akışına bırakıyor. Özellikle yoğun dönemlerde kısa bir liste ve işleri önem sırasına koymak, neyin önce yapılacağına karar vermeyi kolaylaştırabilir. Araştırmalarda bir işi ne zaman ve nerede yapacağına önceden karar vermek, hedefe ulaşmayı kolaylaştıran yollardan biri.',
+        'Bazen plan yapıyor, bazen işleri akışına bırakıyorsun. Araştırmalarda bir işi ne zaman ve nerede yapacağına önceden karar vermek, hedefe ulaşmayı kolaylaştıran yollardan biri.',
+        'Çocuğunuz bazen plan yapıyor, bazen işleri akışına bırakıyor. Araştırmalarda bir işi ne zaman ve nerede yapacağına önceden karar vermek, hedefe ulaşmayı kolaylaştıran yollardan biri.',
         ['Yoğun günlerde işlerini önem sırasına koy.'],
         ['Yoğun dönemlerde neyin önce yapılacağını birlikte konuşun.'],
       ),
       high: p(
         'Planlı çalışma',
-        'Yapacaklarını çoğunlukla planlıyor ve önem sırasına koyuyorsun. Araştırmalarda zaman yönetimi hem başarıyla hem de, biraz daha güçlü biçimde, kendini iyi hissetmeyle ilişkili. Planlarının esnek olabileceğini, aksayan günlerin de olağan olduğunu unutma.',
-        'Çocuğunuz yapacaklarını çoğunlukla planlıyor ve önem sırasına koyuyor. Araştırmalarda zaman yönetimi hem başarıyla hem de, biraz daha güçlü biçimde, kendini iyi hissetmeyle ilişkili. Planların esnek olabileceğini, aksayan günlerin de olağan olduğunu ona hatırlatabilirsiniz.',
+        'Yapacaklarını çoğunlukla planlıyor ve önem sırasına koyuyorsun. Araştırmalarda zaman yönetimi hem başarıyla hem de (biraz daha güçlü biçimde) kendini iyi hissetmeyle ilişkili. Planlarının esnek olabileceğini, aksayan günlerin de olağan olduğunu unutma.',
+        'Çocuğunuz yapacaklarını çoğunlukla planlıyor ve önem sırasına koyuyor. Araştırmalarda zaman yönetimi hem başarıyla hem de (biraz daha güçlü biçimde) kendini iyi hissetmeyle ilişkili. Planların esnek olabileceğini, aksayan günlerin de olağan olduğunu ona hatırlatabilirsiniz.',
         ['Planına dinlenme zamanını da ekle.'],
         ['Planlarının esnek olabileceğini hatırlatın.'],
       ),
@@ -181,16 +183,16 @@ export const ertelemeZamanYonetimiReport: ReportTemplate = {
     estimation: {
       low: p(
         'Süreyi kısa tahmin etme',
-        'İşlerin ne kadar süreceğini çoğu zaman olduğundan kısa tahmin ediyor ve gün içinde zamanın nereye gittiğini fark etmekte zorlanıyorsun. Bu çok insani bir yanılgı: bir araştırmada üniversite öğrencilerinin üçte birinden azı tezini kendi tahmin ettiği sürede bitirebildi. Aynı makaledeki başka bir deneyde, benzer işlerin daha önce ne kadar sürdüğünü hatırlayıp bunu yeni işin tahminine bağlayanlarda bu iyimserlik ortadan kalktı; yalnızca hatırlamak yetmedi. Bir işe başlamadan önce “Geçen sefer benzer bir iş ne kadar sürmüştü?” diye sorup bu işin de benzer sürebileceğini tahminine katmak işine yarayabilir.',
-        'Çocuğunuz işlerin ne kadar süreceğini çoğu zaman olduğundan kısa tahmin ediyor ve gün içinde zamanın nereye gittiğini fark etmekte zorlanıyor. Bu çok insani bir yanılgıdır: bir araştırmada üniversite öğrencilerinin üçte birinden azı tezini kendi tahmin ettiği sürede bitirebildi. Aynı makaledeki başka bir deneyde, benzer işlerin daha önce ne kadar sürdüğünü hatırlayıp bunu yeni işin tahminine bağlayanlarda bu iyimserlik ortadan kalktı; yalnızca hatırlamak yetmedi. Bir işe başlamadan önce “Geçen sefer benzer bir iş ne kadar sürmüştü?” diye sorup bu işin de benzer sürebileceğini tahmine katması ona yardım edebilir.',
+        'İşlerin ne kadar süreceğini çoğu zaman olduğundan kısa tahmin ediyor ve gün içinde zamanın nereye gittiğini fark etmekte zorlanıyorsun. Bu çok insani bir yanılgı: bir araştırmada bitirme tezi yazan üniversite öğrencilerinin üçte birinden azı, tezini kendi tahmin ettiği sürede bitirebildi.',
+        'Çocuğunuz işlerin ne kadar süreceğini çoğu zaman olduğundan kısa tahmin ediyor ve gün içinde zamanın nereye gittiğini fark etmekte zorlanıyor. Bu çok insani bir yanılgıdır: bir araştırmada bitirme tezi yazan üniversite öğrencilerinin üçte birinden azı, tezini kendi tahmin ettiği sürede bitirebildi.',
         ['Bir işin süresini tahmin et, sonra gerçek süreyi ölç.'],
         ['Bir işin ne kadar süreceğini birlikte tahmin edip sonra karşılaştırın.'],
-        'İşlerin ne kadar süreceğini çoğu zaman olduğundan kısa tahmin ediyor ve gün içinde zamanın nereye gittiğini fark etmekte zorlanıyorsun. Bu çok insani bir yanılgı: bir araştırmada bitirme tezi yazan kişilerin üçte birinden azı tezini kendi tahmin ettiği sürede bitirebildi. Aynı makaledeki başka bir deneyde, benzer işlerin daha önce ne kadar sürdüğünü hatırlayıp bunu yeni işin tahminine bağlayanlarda bu iyimserlik ortadan kalktı; yalnızca hatırlamak yetmedi. Bir işe başlamadan önce “Geçen sefer benzer bir iş ne kadar sürmüştü?” diye sorup bu işin de benzer sürebileceğini tahminine katmak işine yarayabilir.',
+        'İşlerin ne kadar süreceğini çoğu zaman olduğundan kısa tahmin ediyor ve gün içinde zamanın nereye gittiğini fark etmekte zorlanıyorsun. Bu çok insani bir yanılgı: bir araştırmada bitirme tezi yazan kişilerin üçte birinden azı, tezini kendi tahmin ettiği sürede bitirebildi.',
       ),
       average: p(
         'Süreyi bazen isabetli tahmin etme',
-        'Bazı işlerin süresini isabetli tahmin ediyor, bazılarında yanılıyorsun. Özellikle uzun ya da yeni işlerde süre kolayca kısa tahmin edilebilir. Benzer işlerin daha önce ne kadar sürdüğünü hesaba katmak ve beklenmedik durumlar için pay bırakmak tahminlerini daha gerçekçi yapabilir.',
-        'Çocuğunuz bazı işlerin süresini isabetli tahmin ediyor, bazılarında yanılıyor. Özellikle uzun ya da yeni işlerde süre kolayca kısa tahmin edilebilir. Benzer işlerin daha önce ne kadar sürdüğünü hesaba katmak ve beklenmedik durumlar için pay bırakmak tahminlerini daha gerçekçi yapabilir.',
+        'Bazı işlerin süresini isabetli tahmin ediyor, bazılarında yanılıyorsun. Özellikle uzun ya da yeni işlerde süre kolayca kısa tahmin edilebilir.',
+        'Çocuğunuz bazı işlerin süresini isabetli tahmin ediyor, bazılarında yanılıyor. Özellikle uzun ya da yeni işlerde süre kolayca kısa tahmin edilebilir.',
         ['Uzun işlerde tahmin ettiğin süreye pay ekle.'],
         ['Uzun işlerde süreyi birlikte, pay bırakarak planlayın.'],
       ),
@@ -205,15 +207,15 @@ export const ertelemeZamanYonetimiReport: ReportTemplate = {
     focus: {
       low: p(
         'Dikkat dağıtıcılara kolay kapılma',
-        'Bir işle uğraşırken telefon, aklına gelen başka bir şey ya da daha eğlenceli bir seçenek dikkatini kolayca dağıtıyor. Araştırmalarda dikkatin kolay dağılması ve anlık isteklere kapılma, ertelemeyle en güçlü ilişkili özellikler arasında. Dikkat dağıtıcıya her seferinde direnmeye çalışmak yerine onu ortamdan uzaklaştırmak (telefonu başka bir odaya koymak gibi) daha kolay olabilir.',
-        'Çocuğunuz bir işle uğraşırken telefon, aklına gelen başka bir şey ya da daha eğlenceli bir seçenek yüzünden dikkatini kolayca kaybediyor. Araştırmalarda dikkatin kolay dağılması ve anlık isteklere kapılma, ertelemeyle en güçlü ilişkili özellikler arasında. Dikkat dağıtıcıya her seferinde direnmeye çalışmak yerine onu ortamdan uzaklaştırmak (çocuğunuz çalışırken telefonun başka bir odada durması gibi) daha kolay olabilir.',
+        'Bir işle uğraşırken telefon, aklına gelen başka bir şey ya da daha eğlenceli bir seçenek dikkatini kolayca dağıtıyor. Araştırmalarda dikkatin kolay dağılması ve anlık isteklere kapılma, ertelemeyle en güçlü ilişkili özellikler arasında.',
+        'Çocuğunuz bir işle uğraşırken telefon, aklına gelen başka bir şey ya da daha eğlenceli bir seçenek yüzünden dikkatini kolayca kaybediyor. Araştırmalarda dikkatin kolay dağılması ve anlık isteklere kapılma, ertelemeyle en güçlü ilişkili özellikler arasında.',
         ['Bir işe başlamadan telefonunu başka bir odaya koy.'],
         ['Çalışma saatlerinde telefonun başka bir odada durmasını birlikte kararlaştırın.'],
       ),
       average: p(
         'Bazen dikkat dağılması',
-        'Bazen bir işe odaklanabiliyor, bazen dikkat dağıtıcılara kapılıyorsun. Hangi durumlarda dikkatinin dağıldığını fark etmek (sıkıcı bir işin başında, telefon yanındayken gibi) neyi değiştirebileceğini gösterebilir.',
-        'Çocuğunuz bazen bir işe odaklanabiliyor, bazen dikkat dağıtıcılara kapılıyor. Hangi durumlarda dikkatinin dağıldığını birlikte fark etmek (sıkıcı bir işin başında, telefon yanındayken gibi) neyin değiştirilebileceğini gösterebilir.',
+        'Bazen bir işe odaklanabiliyor, bazen dikkat dağıtıcılara kapılıyorsun.',
+        'Çocuğunuz bazen bir işe odaklanabiliyor, bazen dikkat dağıtıcılara kapılıyor.',
         ['Dikkatinin en çok ne zaman dağıldığını bir hafta not et.'],
         ['Dikkatinin ne zaman dağıldığını yargılamadan birlikte gözlemleyin.'],
       ),
@@ -228,16 +230,16 @@ export const ertelemeZamanYonetimiReport: ReportTemplate = {
     control: {
       low: p(
         'İşlerin altında ezilmiş hissetme',
-        'Yetiştirmen gereken işlerin altında ezildiğini, zamanının kontrolünün sende olmadığını sık sık hissediyorsun. Araştırmalarda zamanı kontrol edebilme duygusu, zaman yönetimi özellikleri arasında daha az stres ve daha yüksek doyumla en çok ilişkili olanı. İşleri yazıya dökmek ve en önemli tek işi seçip ona başlamak bu duyguyu hafifletebilir. Bu yük seni çok zorluyorsa güvendiğin biriyle ya da bir rehber öğretmenle konuşmak iyi gelebilir.',
-        'Çocuğunuz yetiştirmesi gereken işlerin altında ezildiğini, zamanının kontrolünün kendinde olmadığını sık sık hissediyor. Araştırmalarda zamanı kontrol edebilme duygusu, zaman yönetimi özellikleri arasında daha az stres ve daha yüksek doyumla en çok ilişkili olanı. İşleri birlikte yazıya dökmek ve en önemli tek işi seçmesine yardım etmek bu duyguyu hafifletebilir. Bu yük onu çok zorluyorsa okulun rehberlik servisinden ya da bir psikolojik danışmandan destek alabilirsiniz.',
+        'Yetiştirmen gereken işlerin altında ezildiğini, zamanının kontrolünün sende olmadığını sık sık hissediyorsun. Araştırmalarda zamanı kontrol edebilme duygusu, zaman yönetimi özellikleri arasında daha az stres ve daha yüksek doyumla en çok ilişkili olanı. Bu yük seni çok zorluyorsa güvendiğin biriyle ya da bir rehber öğretmenle konuşmak iyi gelebilir.',
+        'Çocuğunuz yetiştirmesi gereken işlerin altında ezildiğini, zamanının kontrolünün kendinde olmadığını sık sık hissediyor. Araştırmalarda zamanı kontrol edebilme duygusu, zaman yönetimi özellikleri arasında daha az stres ve daha yüksek doyumla en çok ilişkili olanı. Bu yük onu çok zorluyorsa okulun rehberlik servisinden (psikolojik danışman) destek alabilirsiniz.',
         ['Bütün işlerini bir kâğıda yaz ve en önemli tek işi seç.'],
         ['İşlerini birlikte yazıya döküp en önemli tek işi seçmesine yardım edin.'],
-        'Yetiştirmen gereken işlerin altında ezildiğini, zamanının kontrolünün sende olmadığını sık sık hissediyorsun. Araştırmalarda zamanı kontrol edebilme duygusu, zaman yönetimi özellikleri arasında daha az stres ve daha yüksek doyumla en çok ilişkili olanı. İşleri yazıya dökmek ve en önemli tek işi seçip ona başlamak bu duyguyu hafifletebilir. Bu yük seni çok zorluyorsa güvendiğin biriyle konuşmak ya da bir uzmandan destek almak iyi gelebilir.',
+        'Yetiştirmen gereken işlerin altında ezildiğini, zamanının kontrolünün sende olmadığını sık sık hissediyorsun. Araştırmalarda zamanı kontrol edebilme duygusu, zaman yönetimi özellikleri arasında daha az stres ve daha yüksek doyumla en çok ilişkili olanı. Bu yük seni çok zorluyorsa güvendiğin biriyle konuşmak ya da bir uzmandan destek almak iyi gelebilir.',
       ),
       average: p(
         'Zaman zaman kontrol duygusu',
-        'Bazen zamanının kontrolünün sende olduğunu, bazen işlerin üst üste bindiğini hissediyorsun. Araştırmalarda bu kontrol duygusu, zaman yönetimi özellikleri arasında stresle en çok ilişkili olanı; yoğun dönemlerde işleri yazıya dökmek ve önem sırasına koymak bu duyguyu güçlendirebilir.',
-        'Çocuğunuz bazen zamanının kontrolünün kendinde olduğunu, bazen işlerin üst üste bindiğini hissediyor. Araştırmalarda bu kontrol duygusu, zaman yönetimi özellikleri arasında stresle en çok ilişkili olanı; yoğun dönemlerde işleri yazıya dökmek ve önem sırasına koymak bu duyguyu güçlendirebilir.',
+        'Bazen zamanının kontrolünün sende olduğunu, bazen işlerin üst üste bindiğini hissediyorsun. Araştırmalarda bu kontrol duygusu, zaman yönetimi özellikleri arasında stresle en çok ilişkili olanı.',
+        'Çocuğunuz bazen zamanının kontrolünün kendinde olduğunu, bazen işlerin üst üste bindiğini hissediyor. Araştırmalarda bu kontrol duygusu, zaman yönetimi özellikleri arasında stresle en çok ilişkili olanı.',
         ['Yoğun günlerde işlerini yazıya dök.'],
         ['Yoğun dönemlerde işleri birlikte önem sırasına koyun.'],
       ),

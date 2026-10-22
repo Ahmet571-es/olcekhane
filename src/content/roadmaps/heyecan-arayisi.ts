@@ -10,8 +10,8 @@ import type { RoadmapTemplate } from './types';
  *    bildiği etkinliklerde karşılanması önerilir; belirli bir tehlikeli etkinlik "yap" diye önerilmez. Düşük düzeylerde
  *    kişi zorlanmaz; yalnızca küçük ve güvenli yenilikler önerilir.
  *  - Etkili öğrenme yöntemleri herkes için aynıdır (kaynağa bakmadan hatırlamaya çalışmak, tekrarları günlere yaymak,
- *    karışık çalışmak; Dunlosky ve ark., 2013). Heyecan arayışı bu yöntemleri hangi düzende kullanmanın kolay geleceğine
- *    ipucu verebilir; kişiliğe göre "öğrenme stili" eşleştirmesi vaat edilmez.
+ *    karışık çalışmak; Dunlosky ve ark., 2013). Heyecan arayışı bu yöntemlere nereden başlanacağını seçmeye yardım edebilir;
+ *    kişiliğe göre "öğrenme stili" eşleştirmesi vaat edilmez.
  *  - Anlık heyecan arayışında "eğer–o zaman" planları önerilir: bir durumda ne yapılacağını önceden belirlemek (Gollwitzer ve
  *    Sheeran, 2006).
  *  - 2. hafta "Plan ve anlık kararlar" (Anlık heyecan arayışı); 3. hafta ortadan en uzak öteki yön.
@@ -27,9 +27,9 @@ export const heyecanArayisiRoadmap: RoadmapTemplate = {
   unit: { one: 'yön', toPlural: 'yönlere' },
   studyIntro: {
     student:
-      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Heyecan arayışın, bu yöntemleri hangi düzende kullanmanın sana kolay geleceği konusunda ipucu verebilir.',
+      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Heyecan arayışın, bu yöntemlere nereden başlayacağını seçmene yardım edebilir.',
     parent:
-      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun heyecan arayışı, bu yöntemleri hangi düzende kullanmanın ona kolay geleceği konusunda ipucu verebilir.',
+      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun heyecan arayışı, bu yöntemlere nereden başlayacağını seçmesine yardım edebilir.',
   },
   settingsNote: bf.settingsNote,
   firstWeek: {

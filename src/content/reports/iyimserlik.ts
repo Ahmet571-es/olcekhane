@@ -19,6 +19,9 @@ import type { BandText, InsightRule, ReportTemplate } from './types';
  *    düşük değilse kartta "Farklı cevaplar" yazar (`itemSplit`).
  *  - Toplam kartı yalnızca on cümlenin genel yönünü söyler; konular hakkında hüküm vermez (konu satırları başka yönde
  *    olabilir). Toplam ile hayata ve geleceğe bakış ayrıştığında bu, "Bilmekte yarar var"da ayrıca söylenir.
+ *  - Ruh hâli düşükken kart, destek almayı yeniden anlatmaz (destek kutusu zaten açılır, yol haritasının 3. haftası da ne
+ *    zaman biriyle konuşup doktora başvurmanın iyi olacağını söyler); yalnızca o haftaya yönlendirir. "Bilmekte yarar var"
+ *    kısadır: tanım, cümlelerin içeriği, başa çıkmayla ilişki ve değişebilirlik (bilim kartındaki kaynaklara dayanır).
  *  - Öneriler raporda değil, yol haritasındadır. Metinler okula özgü sözcük içermez; yetişkin raporu öğrenci metinlerini
  *    kullanır (Öz-saygı Ölçeği yetişkinlere açık olmadığı için ondan söz eden kuralın yetişkin metni ayrıdır).
  */
@@ -63,11 +66,11 @@ export const iyimserlikReport: ReportTemplate = {
         when: {},
         text: {
           student:
-            'Araştırmacılar iyimserliği, geleceğe dair genel olarak iyi şeyler bekleme eğilimi olarak tanımlar. Bu testteki cümlelerin yalnızca yarısı geleceğe ve hayata bakışı sorar; ötekiler kendine bakışı ve ruh hâlini sorar. Bunun nedeni şu: cümleler, iyimserliği ölçen başka bir testle sonuçları en çok örtüşen cümleler arasından seçildi. İyimserlik ruh hâliyle ve kendine bakışla ilişkilidir, ama onlardan ayrı bir özelliktir. İyimser kişilerin zorluklarla karşılaşınca sorundan kaçmak yerine onunla uğraşmaya biraz daha yatkın olduğu bulunmuştur. İyimserlik kolay kolay değişmeyen bir eğilimdir, ama tamamen sabit değildir: yetişkinlerle yapılan çalışmalarda, en iyi olası geleceğini hayal edip yazmak gibi kısa çalışmaların iyimserliği biraz artırabildiği görülmüştür; bu artışın ne kadar sürdüğü ve gençlerde nasıl olduğu henüz yeterince bilinmiyor.',
+            'Araştırmacılar iyimserliği, geleceğe dair genel olarak iyi şeyler bekleme eğilimi olarak tanımlar. Bu testteki cümlelerin yarısı geleceğe ve hayata bakışı, ötekiler kendine bakışı ve ruh hâlini sorar; çünkü cümleler, iyimserliği ölçen başka bir testle en çok örtüşenler arasından seçildi. Araştırmalara göre iyimser kişiler, zorluklarla karşılaşınca sorundan kaçmak yerine onunla uğraşmaya biraz daha yatkındır. İyimserlik kolay değişmez ama sabit de değildir: en iyi olası geleceğini hayal edip yazmak gibi kısa çalışmalar onu biraz artırabilir; bunun ne kadar sürdüğü ve gençlerde nasıl işlediği henüz yeterince bilinmiyor.',
           parent:
-            'Araştırmacılar iyimserliği, geleceğe dair genel olarak iyi şeyler bekleme eğilimi olarak tanımlar. Bu testteki cümlelerin yalnızca yarısı geleceğe ve hayata bakışı sorar; ötekiler kendine bakışı ve ruh hâlini sorar. Bunun nedeni şu: cümleler, iyimserliği ölçen başka bir testle sonuçları en çok örtüşen cümleler arasından seçildi. İyimserlik ruh hâliyle ve kendine bakışla ilişkilidir, ama onlardan ayrı bir özelliktir. İyimser kişilerin zorluklarla karşılaşınca sorundan kaçmak yerine onunla uğraşmaya biraz daha yatkın olduğu bulunmuştur. İyimserlik kolay kolay değişmeyen bir eğilimdir, ama tamamen sabit değildir: yetişkinlerle yapılan çalışmalarda, en iyi olası geleceğini hayal edip yazmak gibi kısa çalışmaların iyimserliği biraz artırabildiği görülmüştür; bu artışın ne kadar sürdüğü ve gençlerde nasıl olduğu henüz yeterince bilinmiyor.',
+            'Araştırmacılar iyimserliği, geleceğe dair genel olarak iyi şeyler bekleme eğilimi olarak tanımlar. Bu testteki cümlelerin yarısı geleceğe ve hayata bakışı, ötekiler kendine bakışı ve ruh hâlini sorar; çünkü cümleler, iyimserliği ölçen başka bir testle en çok örtüşenler arasından seçildi. Araştırmalara göre iyimser kişiler, zorluklarla karşılaşınca sorundan kaçmak yerine onunla uğraşmaya biraz daha yatkındır. İyimserlik kolay değişmez ama sabit de değildir: en iyi olası geleceğini hayal edip yazmak gibi kısa çalışmalar onu biraz artırabilir; bunun ne kadar sürdüğü ve gençlerde nasıl işlediği henüz yeterince bilinmiyor.',
           adult:
-            'Araştırmacılar iyimserliği, geleceğe dair genel olarak iyi şeyler bekleme eğilimi olarak tanımlar. Bu testteki cümlelerin yalnızca yarısı geleceğe ve hayata bakışı sorar; ötekiler kendine bakışı ve ruh hâlini sorar. Bunun nedeni şu: cümleler, iyimserliği ölçen başka bir testle sonuçları en çok örtüşen cümleler arasından seçildi. İyimserlik ruh hâliyle ve kendine bakışla ilişkilidir, ama onlardan ayrı bir özelliktir. İyimser kişilerin zorluklarla karşılaşınca sorundan kaçmak yerine onunla uğraşmaya biraz daha yatkın olduğu bulunmuştur. İyimserlik kolay kolay değişmeyen bir eğilimdir, ama tamamen sabit değildir: en iyi olası geleceğini hayal edip yazmak gibi kısa çalışmaların iyimserliği biraz artırabildiği görülmüştür; bu artışın ne kadar sürdüğü henüz yeterince bilinmiyor.',
+            'Araştırmacılar iyimserliği, geleceğe dair genel olarak iyi şeyler bekleme eğilimi olarak tanımlar. Bu testteki cümlelerin yarısı geleceğe ve hayata bakışı, ötekiler kendine bakışı ve ruh hâlini sorar; çünkü cümleler, iyimserliği ölçen başka bir testle en çok örtüşenler arasından seçildi. Araştırmalara göre iyimser kişiler, zorluklarla karşılaşınca sorundan kaçmak yerine onunla uğraşmaya biraz daha yatkındır. İyimserlik kolay değişmez ama sabit de değildir: en iyi olası geleceğini hayal edip yazmak gibi kısa çalışmalar onu biraz artırabilir; bunun ne kadar sürdüğü henüz yeterince bilinmiyor.',
         },
       },
     ],
@@ -194,7 +197,7 @@ export const iyimserlikReport: ReportTemplate = {
       ),
       low: t(
         'Sık sık hüzünlü ya da keyifsiz',
-        'Ruh hâlini soran üç cümleye verdiğin cevaplar, kendini sık sık hüzünlü ya da keyifsiz hissettiğini söylüyor. Bu duyguların sevdiğin şeylerden keyif almanı engelleyip engellemediğini fark etmek, ne zaman destek isteyeceğini anlamana yardım eder.',
+        'Ruh hâlini soran üç cümleye verdiğin cevaplar, kendini sık sık hüzünlü ya da keyifsiz hissettiğini söylüyor. Yol haritasındaki “Ruh hâli” haftasında sana iyi gelebilecek küçük adımlar var.',
         'Çocuğunuzun ruh hâlini soran üç cümleye verdiği cevaplar, kendini sık sık hüzünlü ya da keyifsiz hissettiğini belirtiyor. Bu duyguların sevdiği şeylerden keyif almasını engelleyip engellemediğine dikkat etmek iyi olur.',
         true,
       ),

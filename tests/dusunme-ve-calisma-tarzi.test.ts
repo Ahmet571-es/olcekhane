@@ -515,6 +515,33 @@ describe('Düşünme ve Çalışma Tarzı raporu', () => {
     expect(texts('conformity')).not.toMatch(/fikirler bul|hayal|düzen|tempo/);
   });
 
+  it('ortalama tek tek her cümleye katılmak değildir: uç düzey metinleri "Genel olarak" başlar; tek cümleye dayanan bilgi kesin söylenmez', () => {
+    const t = REPORT_TEMPLATES[SLUG];
+    for (const k of SCALES) {
+      for (const b of ['low', 'high'] as const) {
+        const bt = t.scales[k][b]!;
+        expect(bt.student, `${k}/${b}`).toMatch(/^Genel olarak /);
+        expect(bt.parent, `${k}/${b}`).toMatch(/^Çocuğunuz genel olarak /);
+        // Öteki maddelerden ayrı, tek bir cümleyi kesin bir söz gibi ekleyen kalıplar yok (ör. soyut ilgi yüksekken
+        // "Şiiri sevmem: Tamamen doğru" denmiş olabilir).
+        expect(`${bt.student} ${bt.parent}`, `${k}/${b}`).not.toMatch(/de anlatıyorsun|de söylüyor\.|de düşünüyor(sun)?\.|karakter kusuru/);
+      }
+    }
+    // Maddelerden biri başka bir cevapla çelişebilecek ek bilgiler "olabilir" diye verilir.
+    expect(t.scales.complexity.high!.student).toContain('sanat ve şiir de ilgi alanların arasında olabilir');
+    expect(t.scales.complexity.high!.student).not.toMatch(/şiiri sevdiğini|sanatı önemsediğini/);
+    expect(t.scales.conformity.high!.student).toContain('senin için önemli olabilir');
+    expect(t.scales.conformity.low!.student).toContain('başkalarından farklı olmak da sana çekici gelebilir');
+    expect(t.scales.activity.high!.student).toContain('geçiriyor olabilirsin');
+    expect(t.scales.organization.high!.student).toContain('tutuyor olabilirsin');
+    // Düşük düzen de bir kusur gibi anlatılmaz.
+    expect(t.scales.organization.low!.student).toContain('İnsanlar düzene farklı ölçüde önem verir; bu bir kusur değildir.');
+    // Öz bildirim yol haritasında bir yetenek gibi anlatılmaz.
+    const rm = ROADMAPS[SLUG];
+    expect(`${rm.scales.activity.study.high.student} ${rm.scales.activity.study.high.parent}`).not.toMatch(/bir güç|yürütebilme/);
+    for (const x of Object.values(rm.studyIntro)) expect(x).not.toMatch(/ipucu|kolay geleceğ/);
+  });
+
   it('bütün düzey birleşimleri (3⁵) tek tek: her kart kendi düzeyinin metni, rozet doğru, destek kutusu yok (öğrenci, veli, yetişkin)', () => {
     const t = REPORT_TEMPLATES[SLUG];
     const combos: (typeof BANDS)[number][][] = [[]];

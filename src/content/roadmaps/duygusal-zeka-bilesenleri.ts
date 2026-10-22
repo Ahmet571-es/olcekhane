@@ -12,8 +12,11 @@ import type { RoadmapTemplate } from './types';
  *  - Üzücü olaylardan etkilenme yüksekken 3. hafta iyi oluşa ayrılır. Bu ölçek kaygı ölçmediği için "Sınav kaygısı"
  *    yazısına bağlantı verilmez ve sınav kaygısı önerisi verilmez; öneriler duygusal yükü hafifletmeye ve kendine iyi
  *    bakmaya (dinlenme, uyku, üzücü haberlere ara verme, güvenilen biriyle konuşma) yöneliktir.
- *  - Veliye yaklaşım önerileri rapordaki veli metinlerini ve aynı raporda yan yana okunan "Bu hafta dene"
- *    metinlerini tekrar etmez.
+ *  - Yedi bileşen olduğu için "Nasıl çalışabilirsin?" kartları ve veliye yaklaşım önerileri yalnızca en belirgin üç
+ *    bileşen için verilir (`focus`; üzücü olaylardan etkilenme yüksekse o bileşen her zaman ilk sıradadır); grafik
+ *    yedisini de gösterir. Öteki bileşenler raporun önceki bölümünde anlatılır.
+ *  - Veliye yaklaşım önerileri, çalışma kartları ve "Bu hafta dene" metinleri rapordaki kartları ve birbirini tekrar
+ *    etmez (2026-10-22 incelemesi): kartta söylenen bir fikir aynı sayfada başka bir bölümde yeniden söylenmez.
  *  - 2. hafta "Duygularına dikkat": bu testte çalışma düzenini ölçen bir ölçek yoktur; duyguları fark etmek öteki
  *    bütün önerilerin başlangıcıdır.
  *  - Ortamlar bir meslek önerisi değildir; meslek için ilgi testlerine yönlendirilir.
@@ -24,6 +27,14 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
   planningScale: 'attending_emotions',
   planningTitle: 'Duygularına dikkat',
   wellbeing: { scale: 'responsive_distress', group: 'high', link: null },
+  focus: {
+    count: 3,
+    note: {
+      student: 'Aşağıda puanı ortadan en uzak {n} bileşenin için öneriler var; öteki bileşenlerin raporun önceki bölümünde anlatıldı.',
+      parent: 'Aşağıda çocuğunuzun puanı ortadan en uzak {n} bileşeni için öneriler var; öteki bileşenleri raporun önceki bölümünde anlatıldı.',
+    },
+  },
+  unit: { one: 'bileşen', toPlural: 'bileşenlere' },
   studyIntro: {
     student:
       'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Duygularınla ilgili eğilimlerin, bu yöntemleri nasıl kullanmanın ve zor anlarda kendine nasıl destek olmanın sana kolay geleceğini gösterebilir.',
@@ -44,7 +55,11 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
     parent: bf.firstWeek.parent,
   },
   lastWeek: bf.lastWeek,
-  nextTests: bf.nextTests,
+  nextTests: ['empati', 'iyimserlik'],
+  nextPurpose: {
+    you: 'başkalarına ve geleceğe bakışını da görmek',
+    parent: 'çocuğunuzun başkalarına ve geleceğe bakışını da görmek',
+  },
   approach: {
     positive_expressivity: {
       low: 'Duygularını göstermesi için onu zorlamayın; birlikte yürümek ya da yemek hazırlamak gibi sakin ortak işler, söze dökmeden yakınlık kurmanıza fırsat verebilir.',
@@ -57,7 +72,7 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       high: 'Duygularını açıkça söylemesini olağan karşılayın; öfkeli bir anda sesinizi alçak ve sakin tutmanız ona da yol gösterir.',
     },
     attending_emotions: {
-      low: 'Kendi duygularınızı da günlük konuşmalarda adlandırın: "Bugün biraz yorgunum" ya da "Buna çok sevindim" gibi.',
+      low: 'Kendi duygularınızı da günlük konuşmalarda adlandırın: “Bugün biraz yorgunum” ya da “Buna çok sevindim” gibi.',
       average: 'Duygularını adlandırmasına yardım edebilirsiniz: örneğin kızgın mı yoksa kırgın mı olduğunu birlikte ayırt edin.',
       high: 'Duygularını anlattığında onları ciddiye alın ve dinleyin.',
     },
@@ -88,9 +103,11 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Sevincini ve heyecanını kolayca gösteriyorsun; bu enerji birlikte çalışırken başkalarını da harekete geçirebilir. Öğrendiğin bir konuyu heyecanla birine anlatmak, aynı zamanda en etkili yöntemlerden birini kullanmak demektir: anlatırken takıldığın yer, tekrar etmen gereken yerdir. Küçük başarılarını kutlamak da çalışmayı sürdürmeni kolaylaştırabilir.',
+            'Sevincini ve heyecanını kolayca gösteriyorsun; bu enerji birlikte çalışırken başkalarını da harekete geçirebilir. Öğrendiğin bir konuyu kitaba bakmadan birine anlatmak, kendini sınamanın bir yoludur: anlatırken takıldığın yer, tekrar etmen gereken yerdir. Küçük başarılarını kutlamak da çalışmayı sürdürmeni kolaylaştırabilir.',
           parent:
-            'Çocuğunuz sevincini ve heyecanını kolayca gösteriyor; bu enerji birlikte çalışırken başkalarını da harekete geçirebilir. Öğrendiği bir konuyu size heyecanla anlatmasına fırsat verin: anlatırken takıldığı yer, tekrar etmesi gereken yerdir. Küçük ilerlemelerini birlikte fark etmek çalışmayı sürdürmesini kolaylaştırabilir.',
+            'Çocuğunuz sevincini ve heyecanını kolayca gösteriyor; bu enerji birlikte çalışırken başkalarını da harekete geçirebilir. Öğrendiği bir konuyu kitaba bakmadan size anlatmasına fırsat verin: anlatırken takıldığı yer, tekrar etmesi gereken yerdir. Küçük ilerlemelerini birlikte fark etmek çalışmayı sürdürmesini kolaylaştırabilir.',
+          adult:
+            'Sevincini ve heyecanını kolayca gösteriyorsun; bu enerji birlikte çalışırken başkalarını da harekete geçirebilir. Öğrendiğin bir konuyu kaynağa bakmadan birine anlatmak, kendini sınamanın bir yoludur: anlatırken takıldığın yer, tekrar etmen gereken yerdir. Küçük başarılarını kutlamak da çalışmayı sürdürmeni kolaylaştırabilir.',
         },
         average: {
           student:
@@ -113,13 +130,12 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
           parent: 'Çocuğunuzdan bu hafta öğrendiği bir konuyu size 5 dakikada anlatmasını isteyin; anlatamadığı yerleri birlikte not alın.',
         },
         average: {
-          student:
-            'Bir konuyu bir gün birine anlatarak, başka bir gün sessizce yazarak tekrar et; hafta sonunda hangisinden sonra daha çok hatırladığını kendini sınayarak karşılaştır.',
-          parent: 'Çocuğunuzla, öğrendiklerini size anlattığında mı yoksa kendi kendine yazdığında mı daha çok hatırladığını birlikte gözlemleyin.',
+          student: 'Bu hafta seni sevindiren bir şeyi en az bir kez sevdiğin biriyle paylaş.',
+          parent: 'Bu hafta çocuğunuzun sevindiği bir anı fark ettiğinizde bunu ona söyleyin ve onu neyin sevindirdiğini sorun.',
         },
         low: {
-          student: 'Bu hafta her gün emek verdiğin ve iyi giden bir şeyi tek cümleyle yaz; hafta sonunda listene bak.',
-          parent: 'Bu hafta çocuğunuzun emek verdiği bir şeyi fark ettiğinizde bunu ona abartmadan ve sakin bir dille söyleyin.',
+          student: 'Bu hafta her gün seni sevindiren küçük bir şeyi tek cümleyle yaz; hafta sonunda listene bak ve birini sevdiğin biriyle paylaş.',
+          parent: 'Bu hafta çocuğunuz küçük de olsa bir sevincini sizinle paylaştığında, elinizdeki işi bırakıp ona birkaç dakika ayırın.',
         },
       },
       settings: {
@@ -163,7 +179,7 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
         },
         low: {
           student: 'Bu hafta takıldığın bir soruyu ya da konuyu en az bir kez birine sor; sonra nasıl hissettiğini not et.',
-          parent: 'Bu hafta sakin bir anda çocuğunuza "Bu hafta seni en çok ne zorladı?" diye sorun ve yalnızca dinleyin.',
+          parent: 'Bu hafta sakin bir anda çocuğunuza “Bu hafta seni en çok ne zorladı?” diye sorun ve yalnızca dinleyin.',
         },
       },
       settings: {
@@ -176,21 +192,21 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Ne hissettiğini fark etmek senin güçlü yanın. Bunu çalışırken kullan: yorulduğunu ya da sıkıldığını erken fark ettiğinde kısa bir mola ver, sonra kaldığın yerden kitaba bakmadan hatırlamaya çalışarak devam et. Hangi konuların seni gerdiğini fark etmek, onlara erken başlamanı da kolaylaştırır.',
+            'Ne hissettiğini genellikle fark ettiğini söylüyorsun. Bunu çalışırken kullan: yorulduğunu ya da sıkıldığını erken fark ettiğinde kısa bir mola ver, sonra kaldığın yerden kitaba bakmadan hatırlamaya çalışarak devam et. Hangi konuların seni gerdiğini fark etmek, onlara erken başlamanı da kolaylaştırır.',
           parent:
-            'Çocuğunuz ne hissettiğini fark ediyor olabilir; bu, çalışırken işine yarar. Yorulduğunu ya da sıkıldığını söylediğinde kısa bir mola vermesine izin verin. Hangi konuların onu gerdiğini konuşmak, o konulara erken başlamasını kolaylaştırır.',
+            'Çocuğunuz ne hissettiğini genellikle fark ettiğini belirtiyor; bu, çalışırken işine yarayabilir. Yorulduğunu ya da sıkıldığını söylediğinde kısa bir mola vermesine izin verin. Hangi konuların onu gerdiğini konuşmak, o konulara erken başlamasını kolaylaştırır.',
           adult:
-            'Ne hissettiğini fark etmek senin güçlü yanın. Bunu çalışırken kullan: yorulduğunu ya da sıkıldığını erken fark ettiğinde kısa bir mola ver, sonra kaldığın yerden kaynağa bakmadan hatırlamaya çalışarak devam et. Hangi işlerin seni gerdiğini fark etmek, onlara erken başlamanı da kolaylaştırır.',
+            'Ne hissettiğini genellikle fark ettiğini söylüyorsun. Bunu çalışırken kullan: yorulduğunu ya da sıkıldığını erken fark ettiğinde kısa bir mola ver, sonra kaldığın yerden kaynağa bakmadan hatırlamaya çalışarak devam et. Hangi işlerin seni gerdiğini fark etmek, onlara erken başlamanı da kolaylaştırır.',
         },
         average: {
           student:
-            'Duygularını çoğu zaman fark ediyorsun. Çalışmanın sonunda bir dakika durup "Bugün nasıl çalıştım, ne hissettim?" diye sormak, hangi saatlerde ve hangi konularda daha verimli olduğunu görmeni sağlar.',
+            'Duygularını çoğu zaman fark ediyorsun. Çalışmanın sonunda bir dakika durup “Bugün nasıl çalıştım, ne hissettim?” diye sormak, hangi saatlerde ve hangi konularda daha verimli olduğunu görmeni sağlar.',
           parent:
             'Çocuğunuz duygularını çoğu zaman fark ediyor. Çalışmanın sonunda bir dakika durup nasıl çalıştığını ve ne hissettiğini düşünmesi, ne zaman daha verimli olduğunu görmesini sağlar.',
         },
         low: {
           student:
-            'Ne hissettiğinin üzerinde pek durmuyorsun; bu, işine odaklanmanı kolaylaştırabilir. Yine de yorgunluk ya da sıkılma fark edilmediğinde çalışma uzar ama verim düşebilir. Çalışırken her 25–30 dakikada bir kısa bir mola ver ve kendine "Şu an nasılım?" diye sor.',
+            'Ne hissettiğinin üzerinde pek durmuyorsun; bu, işine odaklanmanı kolaylaştırabilir. Yine de yorgunluk ya da sıkılma fark edilmediğinde çalışma uzar ama verim düşebilir. Çalışırken her 25–30 dakikada bir kısa bir mola ver ve kendine “Şu an nasılım?” diye sor.',
           parent:
             'Çocuğunuz ne hissettiğinin üzerinde pek durmuyor olabilir; bu, işine odaklanmasını kolaylaştırabilir. Yine de yorgunluğu fark edilmediğinde çalışma uzar ama verim düşebilir. Belirli aralıklarla kısa molalar vermesini önerebilirsiniz.',
         },
@@ -198,7 +214,7 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       action: {
         high: {
           student:
-            'Bu hafta bir duyguyu fark ettiğinde ona göre küçük bir adım seç: yorgunsan 5 dakika mola, gerginsen birkaç derin nefes, sıkıldıysan konuyu değiştirip karışık çalışmak.',
+            'Bu hafta bir duyguyu fark ettiğinde ona göre küçük bir adım seç: yorgunsan 5 dakika mola, gerginsen birkaç derin nefes, sıkıldıysan kısa bir süre başka bir konuya geçmek.',
           parent:
             'Çocuğunuzla, bir duyguyu fark ettiğinde neler yapabileceğini konuşun: yorgunsa kısa bir mola, gerginse birkaç derin nefes, sıkıldıysa konuyu değiştirmek.',
         },
@@ -207,8 +223,8 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
           parent: 'Bu hafta akşam yemeğinde, çocuğunuz da dâhil herkesin günün en güçlü duygusunu ve nedenini tek cümleyle söylemesini deneyin.',
         },
         low: {
-          student: 'Bu hafta günde iki kez kendine "Şu an ne hissediyorum?" diye sor ve cevabı tek kelimeyle not et.',
-          parent: 'Bu hafta gün içinde çocuğunuza nasıl hissettiğini sorun ve cevabını yorum yapmadan dinleyin.',
+          student: 'Bu hafta her akşam, günün en güçlü duygusunu tek kelimeyle yaz (sevinç, öfke, üzüntü, yorgunluk gibi).',
+          parent: 'Bu hafta akşamları çocuğunuza günün en güçlü duygusunu tek kelimeyle sorun (sevinç, öfke, üzüntü, yorgunluk gibi) ve cevabını yorum yapmadan dinleyin.',
         },
       },
       settings: {
@@ -244,17 +260,15 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       },
       action: {
         high: {
-          student: 'Bu hafta en az sevdiğin dersi sevdiğin bir dersle aynı güne koy ve önce zor olanla başla.',
-          parent:
-            'Bu hafta çocuğunuzla birlikte çalışma saatlerini belirleyin; en az sevdiği dersi sevdiği bir dersle aynı güne koymasını önerin.',
-          adult: 'Bu hafta en az sevdiğin işi sevdiğin bir işle aynı güne koy ve önce zor olanla başla.',
+          student: 'Bu hafta bir karar verirken iki liste yap: “Ne hissediyorum?” ve “Gerçekler ne diyor?”. Sonra ikisini karşılaştır.',
+          parent: 'Bu hafta çocuğunuzla, canı istemediği bir günde bile yapabileceği 10 dakikalık küçük bir çalışma adımı belirleyin.',
         },
         average: {
-          student: 'Bu hafta önemli bir kararı verirken iki liste yap: "Ne düşünüyorum?" ve "Ne hissediyorum?". Sonra ikisini karşılaştır.',
+          student: 'Bu hafta önemli bir kararı verirken iki liste yap: “Ne düşünüyorum?” ve “Ne hissediyorum?”. Sonra ikisini karşılaştır.',
           parent: 'Bu hafta küçük bir aile kararında çocuğunuza hem ne düşündüğünü hem ne hissettiğini sorun.',
         },
         low: {
-          student: 'Bu hafta bir kararı verirken gerekçelerinin yanına "Bu konuda ne hissediyorum?" sorusunun cevabını da tek cümleyle ekle.',
+          student: 'Bu hafta bir kararı verirken gerekçelerinin yanına “Bu konuda ne hissediyorum?” sorusunun cevabını da tek cümleyle ekle.',
           parent: 'Bu hafta çocuğunuzla bir kararı konuşurken gerekçelerinin yanında ne hissettiğini de sorun.',
         },
       },
@@ -276,9 +290,11 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
         },
         average: {
           student:
-            'Başkalarının sevincine çoğu zaman ortak oluyorsun, bazen de kendi hâlinde kalıyorsun. Bazı konuları bir arkadaşınla, bazılarını tek başına çalışmak bu iki yanını da kullanmanı sağlar.',
+            'Başkalarının sevincine çoğu zaman ortak oluyorsun, bazen de kendi hâlinde kalıyorsun. Bazı konuları bir arkadaşınla, bazılarını tek başına çalışmak bu iki yanını da kullanmanı sağlayabilir.',
           parent:
-            'Çocuğunuz başkalarının sevincine çoğu zaman ortak oluyor, bazen de kendi hâlinde kalıyor. Bazı konuları bir arkadaşıyla, bazılarını tek başına çalışması iyi bir denge kurar.',
+            'Çocuğunuz başkalarının sevincine çoğu zaman ortak oluyor, bazen de kendi hâlinde kalıyor. Bazı konuları bir arkadaşıyla, bazılarını tek başına çalışması iyi bir denge kurabilir.',
+          adult:
+            'Başkalarının sevincine çoğu zaman ortak oluyorsun, bazen de kendi hâlinde kalıyorsun. Bazı işleri biriyle birlikte, bazılarını tek başına yapmak bu iki yanını da kullanmanı sağlayabilir.',
         },
         low: {
           student:
@@ -314,11 +330,11 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun. Bu duyarlılık başkalarını anlamana yardım edebilir; ama yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir tekrar bile işe yarayabilir. Başkalarının acısı seni çok yorduğunda üzücü haberlere ve görüntülere bir süre ara vermek, yeterince uyumak ve sevdiğin sakin bir işle dinlenmek yükünü hafifletebilir.',
+            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun; yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir tekrar bile işe yarayabilir. Başkalarının acısı seni çok yorduğunda üzücü haberlere ve görüntülere bir süre ara vermek, yeterince uyumak ve sevdiğin sakin bir işle dinlenmek yükünü hafifletebilir.',
           parent:
-            'Çocuğunuz üzücü olaylardan ve gergin anlardan derinden etkilenebiliyor. Bu duyarlılık başkalarını anlamasına yardım edebilir; ama yorgun düştüğü günlerde çalışmak zorlaşabilir. Böyle günlerde planı küçültmesine ama bırakmamasına destek olun. Başkalarının acısı onu çok yorduğunda üzücü haberlere bir süre ara vermesi, uykusunu koruması ve sevdiği sakin bir işle dinlenmesi yükünü hafifletebilir.',
+            'Çocuğunuz üzücü olaylardan ve gergin anlardan derinden etkilenebiliyor; yorgun düştüğü günlerde çalışmak zorlaşabilir. Böyle günlerde planı küçültmesine ama bırakmamasına destek olun. Başkalarının acısı onu çok yorduğunda üzücü haberlere bir süre ara vermesi, uykusunu koruması ve sevdiği sakin bir işle dinlenmesi yükünü hafifletebilir.',
           adult:
-            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun. Bu duyarlılık başkalarını anlamana yardım edebilir; ama yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir çalışma bile işe yarayabilir. Başkalarının acısı seni çok yorduğunda üzücü haberlere ve görüntülere bir süre ara vermek, yeterince uyumak ve sevdiğin sakin bir işle dinlenmek yükünü hafifletebilir.',
+            'Üzücü olaylardan ve gergin anlardan derinden etkilenebiliyorsun; yorgun düştüğün günlerde çalışmak zorlaşabilir. Böyle günlerde planını küçült ama bırakma: 20 dakikalık kısa bir çalışma bile işe yarayabilir. Başkalarının acısı seni çok yorduğunda üzücü haberlere ve görüntülere bir süre ara vermek, yeterince uyumak ve sevdiğin sakin bir işle dinlenmek yükünü hafifletebilir.',
         },
         average: {
           student:
@@ -330,11 +346,11 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Gergin anlarda sakin kalabiliyorsun; bu, sınav gibi baskılı durumlarda işine yarayabilir. Sakinliğin "Nasılsa yetişir" düşüncesine dönüşmesin: tekrarlarını günlere yay ve kendini düzenli olarak sına. Zorlanan bir arkadaşına destek olmak da hem ona hem sana iyi gelebilir.',
+            'Gergin anlarda sakin kalabiliyorsun; bu, sınav gibi baskılı durumlarda işine yarayabilir. Sakinliğin “Nasılsa yetişir” düşüncesine dönüşmesin: tekrarlarını günlere yay ve kendini düzenli olarak sına. Zorlanan bir arkadaşına destek olmak da hem ona hem sana iyi gelebilir.',
           parent:
             'Çocuğunuz gergin anlarda sakin kalabiliyor olabilir; bu, sınav gibi baskılı durumlarda işine yarayabilir. Sakinliğin son ana bırakmaya dönüşmemesi için tekrarlarını günlere yayan küçük bir plan yapmasına destek olabilirsiniz.',
           adult:
-            'Gergin anlarda sakin kalabiliyorsun; bu, baskılı durumlarda işine yarayabilir. Sakinliğin "Nasılsa yetişir" düşüncesine dönüşmesin: işlerini günlere yay ve kendini düzenli olarak sına. Zorlanan birine destek olmak da hem ona hem sana iyi gelebilir.',
+            'Gergin anlarda sakin kalabiliyorsun; bu, baskılı durumlarda işine yarayabilir. Sakinliğin “Nasılsa yetişir” düşüncesine dönüşmesin: işlerini günlere yay ve kendini düzenli olarak sına. Zorlanan birine destek olmak da hem ona hem sana iyi gelebilir.',
         },
       },
       action: {
@@ -342,7 +358,7 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
           student:
             'Bu hafta seni üzen ya da geren bir şey olduğunda duygularını birkaç dakika kâğıda yaz ya da güvendiğin biriyle konuş; o akşam uyku saatini koru.',
           parent:
-            'Bu hafta çocuğunuzu dinlemek için sakin bir zaman ayırın: "Bu hafta seni en çok ne üzdü ya da gerdi?" diye sorun ve uyku saatini birlikte koruyun.',
+            'Bu hafta çocuğunuzu dinlemek için sakin bir zaman ayırın: “Bu hafta seni en çok ne üzdü ya da gerdi?” diye sorun ve uyku saatini birlikte koruyun.',
         },
         average: {
           student: 'Bu hafta seni en çok zorlayan konuyu belirle ve ona haftada üç kez 15 dakika ayır.',
@@ -380,11 +396,11 @@ export const duygusalZekaBilesenleriRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Olaylara mesafeli ve nesnel bakabiliyorsun; bu, bir konuyu tarafsız değerlendirmeni kolaylaştırabilir. Öğrenirken bunu kullan: tarih ya da edebiyat gibi derslerde olayları farklı kişilerin gözünden anlatmayı dene; bu, konuyu farklı yönleriyle görmeni sağlar.',
+            'Başkalarının sorunlarına mesafeli durduğunu söylüyorsun. Öğrenirken tarih ya da edebiyat gibi derslerde bir olayı, içindeki farklı kişilerin gözünden anlatmayı dene; bu, konuyu farklı yönleriyle görmeni sağlayabilir.',
           parent:
-            'Çocuğunuz olaylara mesafeli ve nesnel bakabiliyor olabilir; bu, bir konuyu tarafsız değerlendirmesini kolaylaştırabilir. Okuduğu bir hikâyeyi ya da tarihî bir olayı farklı kişilerin gözünden anlatmasını isteyebilirsiniz; bu, başkalarının yerine kendini koyma fırsatı da sunar.',
+            'Çocuğunuz başkalarının sorunlarına mesafeli durduğunu belirtiyor. Okuduğu bir hikâyeyi ya da tarihî bir olayı, içindeki farklı kişilerin gözünden anlatmasını isteyebilirsiniz; bu, konuyu farklı yönleriyle görmesini sağlayabilir.',
           adult:
-            'Olaylara mesafeli ve nesnel bakabiliyorsun; bu, bir konuyu tarafsız değerlendirmeni kolaylaştırabilir. Öğrenirken ya da bir karar verirken olayı farklı kişilerin gözünden anlatmayı dene; bu, konuyu farklı yönleriyle görmeni sağlar.',
+            'Başkalarının sorunlarına mesafeli durduğunu söylüyorsun. Öğrenirken ya da bir karar verirken bir olayı, içindeki farklı kişilerin gözünden anlatmayı dene; bu, konuyu farklı yönleriyle görmeni sağlayabilir.',
         },
       },
       action: {

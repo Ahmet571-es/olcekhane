@@ -109,9 +109,9 @@ export const meslekiIlgi: LikertInstrument = {
   maxGrade: 13,
   estimatedMinutes: 8,
   sortOrder: 30,
-  tagline: 'Altı ilgi alanında hangi etkinliklerden hoşlandığını ölçer ve bunlara uyan örnek meslekleri gösterir.',
+  tagline: 'Altı ilgi alanında hangi etkinliklerden hoşlandığını ölçer ve bu ilgilerle ilişkili örnek meslekleri gösterir.',
   description:
-    'Holland’ın RIASEC modeline dayanan bu profil, öğrencinin gerçekçi, araştırmacı, sanatçı, sosyal, girişimci ve düzenli olmak üzere altı ilgi alanında hangi etkinliklerden ne kadar hoşlandığını ölçer. Sonuçta en belirgin üç ilgi alanını ve bunlara uyan örnek meslekleri görürsünüz.',
+    'Holland’ın RIASEC modeline dayanan bu profil, öğrencinin gerçekçi, araştırmacı, sanatçı, sosyal, girişimci ve düzenli olmak üzere altı ilgi alanında hangi etkinliklerden ne kadar hoşlandığını ölçer. Sonuçta en belirgin üç ilgi alanını ve bu ilgilerle ilişkili örnek meslekleri görürsünüz.',
   intro: {
     title: 'Hangi etkinlikler sana göre?',
     paragraphs: [
@@ -140,7 +140,7 @@ export const meslekiIlgi: LikertInstrument = {
     ],
   },
   scales: [
-    { key: R, name: 'Gerçekçi', plain: 'Elleriyle, aletlerle, makinelerle ya da doğada somut işler yapmaktan hoşlanmak.' },
+    { key: R, name: 'Gerçekçi', plain: 'Elle, aletlerle, makinelerle ya da doğada somut işler yapmaktan hoşlanmak.' },
     { key: I, name: 'Araştırmacı', plain: 'Gözlem yapmaktan, araştırmaktan ve karmaşık problemleri çözmekten hoşlanmak.' },
     { key: A, name: 'Sanatçı', plain: 'Kendini ifade etmekten, yaratıcı ve özgün işler ortaya koymaktan hoşlanmak.' },
     { key: S, name: 'Sosyal', plain: 'İnsanlara yardım etmekten, öğretmekten ve onlarla birlikte çalışmaktan hoşlanmak.' },

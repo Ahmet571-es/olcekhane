@@ -15,6 +15,11 @@ import type { BandGroup, RoadmapTemplate } from './types';
  * ayrılır: duyguları fark etmek, dinlenmek, uyku ve güvenilen biriyle konuşmak. Sınav kaygısı önerisi verilmez ve
  * "Sınav kaygısı" yazısına bağlantı verilmez. Düşük Dürüstlük-Alçakgönüllülük suçlamadan, görünür başarıyı önemseme
  * olarak anlatılır.
+ *
+ * Metinler bir alt özelliğin kartıyla çelişen bir hüküm vermez: ör. Uyumluluk yüksekken "sabırlısın" denmez (Sabırlılık
+ * orta olabilir), Duygusallık düşükken "baskı altında sakin kalabiliyorsun" denmez (Endişelenme orta olabilir). Alt
+ * özellikleri ayrışan (biri yüksek, öteki düşük) bir boyutta orta düzeyin önerileri verilir (rapor şablonu: facetSplit);
+ * bu yüzden Dışadönüklük'te veliye yaklaşımın orta düzeyi Beş Faktör'deki gibi "bu dengeyi" demez.
  */
 const parentTip = (key: string): Record<BandGroup, string> => ({
   low: besFaktorReport.scales[key].low!.tipsParent[0],
@@ -99,9 +104,9 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Baskı altında sakin kalabiliyor ve işlerini kendi başına yürütmeyi seviyorsun. Bu bağımsızlığı kendini sınamakla birleştir. Sakinliğin "Nasılsa yetişir" düşüncesine dönüşmesin; takıldığında yardım istemekten de çekinme.',
+            'İşlerini kendi başına yürütmeyi seviyor olabilirsin. Bu bağımsızlığı kendini sınamakla birleştir. Kendi başına çalışırken işi son güne bırakmamak için küçük ara hedefler koy; takıldığında yardım istemekten de çekinme.',
           parent:
-            'Çocuğunuz baskı altında sakin kalabiliyor ve işlerini kendi başına yürütmeyi seviyor olabilir. Bu bağımsızlığa saygı gösterin; sakinliğin son ana bırakmaya dönüşmemesi için sınav tarihinden geriye doğru küçük bir plan yapmasına destek olabilirsiniz.',
+            'Çocuğunuz işlerini kendi başına yürütmeyi seviyor olabilir. Bu bağımsızlığa saygı gösterin; işleri son ana bırakmaması için sınav tarihinden geriye doğru küçük bir plan yapmasına destek olabilirsiniz.',
         },
       },
       action: {
@@ -133,9 +138,9 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Sabırlı ve hoşgörülüsün; uzlaşmaya açıksın. Bu sabrı kendi öğrenmene de uygula: zor bir konuda hemen sonuç beklemeden aynı konuya birkaç gün arayla kısa tekrarlarla dön. Ortak çalışmalarda uzlaşmak sana kolay gelir; katılmadığın bir noktayı sakin bir dille söylemek de işin daha iyi olmasına katkı sağlayabilir.',
+            'Genel olarak insanlara hoşgörüyle yaklaştığını söylüyorsun. Bu sakin tutumu kendi öğrenmene de uygula: zor bir konuda hemen sonuç beklemeden aynı konuya birkaç gün arayla kısa tekrarlarla dön. Ortak çalışmalarda katılmadığın bir noktayı sakin bir dille söylemek de işin daha iyi olmasına katkı sağlayabilir.',
           parent:
-            'Çocuğunuz sabırlı, hoşgörülü ve uzlaşmaya açık olabilir. Bu sabrı kendi öğrenmesine de uygulayabilir: zor bir konuda hemen sonuç beklemeden aynı konuya birkaç gün arayla kısa tekrarlarla dönmesi işine yarayabilir. Ortak çalışmalarda uzlaşırken kendi payına düşen işi baştan netleştirmesini önerebilirsiniz.',
+            'Çocuğunuz insanlara hoşgörüyle yaklaştığını belirtiyor. Bu sakin tutumu kendi öğrenmesine de uygulayabilir: zor bir konuda hemen sonuç beklemeden aynı konuya birkaç gün arayla kısa tekrarlarla dönmesi işine yarayabilir. Ortak çalışmalarda uzlaşırken kendi payına düşen işi baştan netleştirmesini önerebilirsiniz.',
         },
         average: {
           student:
@@ -188,9 +193,12 @@ export const altiBoyutluKisilikRoadmap: RoadmapTemplate = {
       average: 'Hangi durumların onu daha çok etkilediğini yargılamadan sorun.',
       low: 'Bağımsızlığına saygı gösterin; yine de zorlandığında yardım istemenin de bir güç olduğunu hatırlatın.',
     },
-    extraversion: parentTip('extraversion'),
+    extraversion: {
+      ...parentTip('extraversion'),
+      average: 'Hem grup hem de bireysel etkinliklere yer açmak, farklı ortamlarda rahat edebilmesini destekler.',
+    },
     agreeableness: {
-      high: 'Sabrını ve hoşgörüsünü takdir edin; kendi isteklerini de dile getirmesini destekleyin.',
+      high: 'Hoşgörülü tavrını takdir edin; kendi isteklerini de dile getirmesini destekleyin.',
       average: 'Anlaşmazlıklarda nasıl uzlaştığını birlikte konuşabilirsiniz.',
       low: 'Bir kırgınlığı uzun süre aklında tuttuğunda onu dinleyin; kendi hatalarınızı kabul edip özür dileyerek bağışlamanın nasıl göründüğünü gösterin.',
     },

@@ -362,7 +362,7 @@ export const kisiligin10Yonu: LikertInstrument = {
       'Kaynak çalışmada iki örneklem vardı: ABD’de 481 yetişkin ve Kanada’da 480 üniversite öğrencisi. On yönün iç tutarlılığı (Cronbach α) .72 ile .87, beş boyutunki .80 ile .89 arasındaydı. Üniversite örnekleminden 90 kişiye test yaklaşık bir ay sonra (ortalama 38 gün) yeniden uygulandığında, yönlerdeki puanların tutarlılığı (test-tekrar test) .73 ile .86 arasındaydı. Ölçüm payı, üniversite örnekleminin değerleriyle hesaplanır. Türkçe çevirinin güvenirliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç kişinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç, kişinin kendini nasıl tanımladığını gösterir; başkalarıyla karşılaştırma yapmaz.',
     ageNote:
       '9. sınıftan itibaren uygulanır; mezunlar ve yetişkinler de çözebilir. Kaynak çalışmalar 17 yaş ve üzerindeki kişilerle yapılmıştır; ergenlerle yapılmış yayımlanmış bir çalışmaya ulaşılamadı. Kişilik ergenlikte gelişmeye devam ettiği için lise öğrencilerinde sonuçlar kendini tanımaya yönelik bir başlangıç olarak sunulur.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',

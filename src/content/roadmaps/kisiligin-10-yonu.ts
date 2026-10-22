@@ -38,8 +38,8 @@ export const kisiligin10YonuRoadmap: RoadmapTemplate = {
   focus: {
     count: 5,
     note: {
-      student: 'On yönünün hepsi raporun önceki bölümünde anlatıldı; burada puanı ortadan en uzak {n} yönün için öneriler var.',
-      parent: 'Çocuğunuzun on yönünün hepsi raporun önceki bölümünde anlatıldı; burada puanı ortadan en uzak {n} yönü için öneriler var.',
+      student: 'On yönünün hepsi raporun önceki bölümünde anlatıldı; burada en belirgin {n} yönün (puanı orta noktadan en çok uzaklaşanlar) için öneriler var.',
+      parent: 'Çocuğunuzun on yönünün hepsi raporun önceki bölümünde anlatıldı; burada en belirgin {n} yönü (puanı orta noktadan en çok uzaklaşanlar) için öneriler var.',
     },
   },
   unit: { one: 'yön', toPlural: 'yönlere' },

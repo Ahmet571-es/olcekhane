@@ -13,6 +13,8 @@ import type { AudienceText, RoadmapTemplate } from './types';
  *  - Giriş, ilk ve son hafta ertelemeyi varsaymaz (işlere zamanında başlayan için de doğru okunur).
  *  - 2. hafta planlama; 3. hafta zamanın kontrolü düşükse ona, değilse en düşük puanlı alana ayrılır.
  *  - Öğrenci metinleri okula özgü değildir ("iş", "çalışma"): yetişkine de aynen gösterilir. Ortamlar bölümü yoktur.
+ *  - Aynı sayfada bir öneri bir kez verilir (2026-10-22 incelemesi): rapordaki kartlar çalışma kartındaki öneriyi
+ *    söylemez; "Bu hafta dene" ve veliye yaklaşım, kartlarda ve çalışma kartlarında söylenmeyen bir adım önerir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
 
@@ -22,6 +24,11 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
   planningTitle: 'Planlama',
   thirdWeek: 'lowest',
   wellbeing: { scale: 'control', group: 'low', link: null },
+  unit: { one: 'alan', toPlural: 'alanlara' },
+  balancedNote: t(
+    'Beş alanda da puanın ortada: hiçbiri belirgin biçimde öne çıkmıyor ya da geride kalmıyor.',
+    'Çocuğunuzun beş alanda da puanı ortada: hiçbiri belirgin biçimde öne çıkmıyor ya da geride kalmıyor.',
+  ),
   studyIntro: t(
     'Zamanı iyi kullanmanın herkese uyan tek bir yolu yoktur; işe yarayan adım, hangi alanın sende güçlü, hangisinin geliştirilebilir olduğuna bağlıdır. Aşağıda her alan için bir sonraki küçük adım var; hepsini birden değil, birer birer dene.',
     'Zamanı iyi kullanmanın herkese uyan tek bir yolu yoktur; işe yarayan adım, hangi alanın güçlü, hangisinin geliştirilebilir olduğuna bağlıdır. Aşağıda çocuğunuzun her alanı için bir sonraki küçük adım var; hepsini birden değil, birer birer denemesine destek olun.',
@@ -38,28 +45,28 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
   nextPurpose: { you: 'neden ve nasıl çalıştığını da görmek', parent: 'çocuğunuzun neden ve nasıl çalıştığını da görmek' },
   approach: {
     start: {
-      low: 'Ertelediği için suçlamak yerine işin ilk küçük adımını birlikte belirleyin.',
-      average: 'Hangi işleri ertelediğini yargılamadan birlikte konuşun.',
-      high: 'Zamanında başlama çabasını fark ettiğinizi ona söyleyin.',
+      low: 'Ertelediği bir işi hatırlatırken sesinizi sakin tutun; “Neden hâlâ başlamadın?” yerine “İlk adım ne olabilir?” diye sorun.',
+      average: 'Ertelediği bir işe başladığında, bitirmesini beklemeden başlamasını fark edip söyleyin.',
+      high: 'Zor bir işe başlarken yardım isteyip istemediğini sorun; istemiyorsa düzenine karışmayın.',
     },
     planning: {
       low: 'Haftanın başında birlikte kısa bir yapılacaklar listesi hazırlayın.',
-      average: 'Yoğun dönemlerde neyin önce yapılacağını birlikte konuşun.',
-      high: 'Planlarının esnek olabileceğini, aksayan günlerin de olağan olduğunu hatırlatın.',
+      average: 'Planını sizinle paylaştığında ilgiyle dinleyin; planı onun yerine yapmayın.',
+      high: 'Planına uymadığı bir günde onu eleştirmek yerine ertesi gün yeniden başlamasını destekleyin.',
     },
     estimation: {
-      low: 'Bir işin ne kadar süreceğini birlikte tahmin edip sonra gerçek süreyle karşılaştırın.',
-      average: 'Uzun işlerde süreyi birlikte, pay bırakarak planlayın.',
+      low: 'Süreyi kısa tahmin ettiğinde bunu bir kusur gibi değil, herkesin yaşadığı bir yanılgı gibi konuşun.',
+      average: 'Bir iş beklediğinden uzun sürdüğünde onu acele ettirmek yerine kalan işi birlikte yeniden planlayın.',
       high: 'Gerçekçi planlarını fark ettiğinizi söyleyin.',
     },
     focus: {
-      low: 'Çalışma saatlerinde telefonun başka bir odada durmasını birlikte kararlaştırın.',
-      average: 'Dikkatinin ne zaman dağıldığını yargılamadan birlikte gözlemleyin.',
+      low: 'Telefonu elinden almak yerine kuralı onunla birlikte koyun; siz de o saatlerde telefonu bir kenara bırakarak örnek olun.',
+      average: 'Onun çalıştığı saatlerde evdeki gürültüyü ve araya giren işleri azaltmaya çalışın.',
       high: 'Çalışırken onu bölmemeye özen gösterin.',
     },
     control: {
-      low: 'İşlerini birlikte yazıya döküp en önemli tek işi seçmesine yardım edin; yük çok ağırsa okulun rehberlik servisine başvurun.',
-      average: 'Yoğun dönemlerde işleri birlikte önem sırasına koyun.',
+      low: 'Ondan yeni bir iş istemeden önce elindeki işleri birlikte gözden geçirin; gerekirse bazılarını erteleyin ya da paylaşın.',
+      average: 'Yoğun dönemlerde ondan beklediğiniz ek işleri hafifletin.',
       high: 'Dinlenmeye ayırdığı zamana saygı gösterin.',
     },
   },
@@ -72,8 +79,8 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
           'Ertelenen bir işe başlamanın en kolay yolu onu çok küçültmektir: çocuğunuzla “Bu işin ilk beş dakikasında ne yapacaksın?” sorusunun cevabını birlikte bulun. İşi küçültmek, onun verdiği kötü duyguyu da küçültebilir.',
         ),
         average: t(
-          'Ertelediğin işlerin ortak yanını bul: sıkıcı mı, zor mu, belirsiz mi? Sıkıcı işi sevdiğin bir şeyin hemen öncesine koymak, zor işi parçalara bölmek, belirsiz işin ilk adımını yazmak işe yarayabilir.',
-          'Çocuğunuzun ertelediği işlerin ortak yanını birlikte bulun: sıkıcı mı, zor mu, belirsiz mi? Sıkıcı işi sevdiği bir şeyin hemen öncesine koymak, zor işi parçalara bölmek, belirsiz işin ilk adımını yazmak işe yarayabilir.',
+          'Sıkıcı işi sevdiğin bir şeyin hemen öncesine koymak, zor işi parçalara bölmek, belirsiz işin ilk adımını yazmak işe yarayabilir.',
+          'Çocuğunuzun sıkıcı işi sevdiği bir şeyin hemen öncesine koyması, zor işi parçalara bölmesi, belirsiz işin ilk adımını yazması işe yarayabilir.',
         ),
         high: t(
           'İşlere zamanında başlama alışkanlığın var. Zor ya da sıkıcı işlerde de bu alışkanlığı sürdürmek için onları günün, enerjinin yüksek olduğu bir saatine koyabilirsin.',
@@ -86,8 +93,8 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
           'Bu hafta çocuğunuzla, her gün ertelediği bir işin yalnızca ilk beş dakikasını yapmasını kararlaştırın; beş dakika dolunca isterse bırakabilir.',
         ),
         average: t(
-          'Bu hafta ertelediğin işleri bir yere not et; hafta sonunda ortak yanlarına bak.',
-          'Bu hafta çocuğunuz ertelediği işleri not etsin; hafta sonunda ortak yanlarına birlikte bakın.',
+          'Bu hafta ertelediğin işlerden birini parçalara böl ve her gün yalnızca bir parçasını yap.',
+          'Bu hafta çocuğunuz ertelediği işlerden birini parçalara bölsün ve her gün yalnızca bir parçasını yapsın.',
         ),
         high: t(
           'Bu hafta en sıkıcı bulduğun işi, enerjinin en yüksek olduğu saate koy.',
@@ -103,12 +110,12 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
           'Planın uzun olması gerekmez. Çocuğunuz bir işi ne zaman ve nerede yapacağını tek cümleyle yazabilir: “Akşam yemeği bitince masama oturup bu işe başlayacağım.” Araştırmalarda “şu olunca şunu yapacağım” biçimindeki bu planlar hedefe ulaşmayı belirgin biçimde kolaylaştırıyor.',
         ),
         average: t(
-          'Yoğun dönemlerde güne başlarken yapılacakları yaz ve en önemli üç işi işaretle. Uzun işlere ara hedefler ve tarihler koymak, uzak bir son tarihi yakın adımlara çevirir.',
-          'Yoğun dönemlerde çocuğunuz güne başlarken yapılacakları yazıp en önemli üç işi işaretleyebilir. Uzun işlere ara hedefler ve tarihler koymak, uzak bir son tarihi yakın adımlara çevirir.',
+          'Uzun işlere ara hedefler ve tarihler koy: uzak bir son tarihi yakın adımlara çevirmek başlamayı kolaylaştırabilir.',
+          'Çocuğunuzun uzun işlere ara hedefler ve tarihler koyması, uzak bir son tarihi yakın adımlara çevirerek başlamayı kolaylaştırabilir.',
         ),
         high: t(
-          'Plan yapma becerin güçlü. Planına dinlenme ve beklenmedik işler için boş zaman da ekle; esnek bir planı sürdürmek daha kolay olabilir.',
-          'Çocuğunuzun plan yapma becerisi güçlü. Planına dinlenme ve beklenmedik işler için boş zaman da eklemesi, planı sürdürmesini kolaylaştırabilir.',
+          'Haftanın sonunda planının ne kadarının gerçekleştiğine bak ve bir sonraki haftanın planını buna göre kur; gerçekçi bir planı sürdürmek daha kolaydır.',
+          'Çocuğunuz haftanın sonunda planının ne kadarının gerçekleştiğine bakıp bir sonraki haftanın planını buna göre kurabilir; gerçekçi bir planı sürdürmek daha kolaydır.',
         ),
       },
       action: {
@@ -175,8 +182,8 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
       },
       action: {
         low: t(
-          'Bu hafta her işe başlamadan önce telefonunu başka bir odaya koy.',
-          'Bu hafta çocuğunuzla, her işe başlamadan önce telefonun başka bir odaya konmasını kararlaştırın.',
+          'Bu hafta bir işe oturduğunda 25 dakikalık bir süre tut; süre bitene kadar telefona bakmamayı dene ve kaç kez bakmak istediğini bir kâğıda işaretle.',
+          'Bu hafta çocuğunuzla 25 dakikalık telefonsuz çalışma süreleri deneyin; süre bitince birlikte kısa bir mola verin.',
         ),
         average: t(
           'Bu hafta dikkatinin dağıldığı anları bir kâğıda işaretle; hafta sonunda en sık ne olduğuna bak.',
@@ -196,22 +203,22 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
           'Çocuğunuz işlerin altında ezildiğini hissettiğinde bütün işleri birlikte bir kâğıda yazın; zihninde dönen işler kâğıtta görünür olur. Sonra en önemli tek işi seçip ona başlamasına yardım edin. Dinlenmeyi de listeye koyun: araştırmalarda zaman yönetimi, başarıdan biraz daha güçlü biçimde kendini iyi hissetmeyle ilişkili bulunmuş.',
         ),
         average: t(
-          'Yoğun dönemlerde işleri yazıya dökmek ve önem sırasına koymak kontrol duygusunu güçlendirebilir. Her gün kendine ayırdığın küçük bir zamanı korumayı da unutma.',
-          'Yoğun dönemlerde işleri yazıya dökmek ve önem sırasına koymak çocuğunuzun kontrol duygusunu güçlendirebilir. Her gün kendine ayırdığı küçük bir zamanın korunması da önemlidir.',
+          'İşlerin üst üste bindiği günlerde hepsini aynı anda düşünmek yerine yalnızca sıradaki işe bak; bitince bir sonrakine geç. Her gün kendine ayırdığın küçük bir zamanı korumak da kontrol duygusunu güçlendirebilir.',
+          'İşlerin üst üste bindiği günlerde çocuğunuzun hepsini aynı anda düşünmek yerine yalnızca sıradaki işe bakması işini kolaylaştırabilir. Her gün kendine ayırdığı küçük bir zamanın korunması da kontrol duygusunu güçlendirebilir.',
         ),
         high: t(
-          'Zamanını yönettiğini hissediyorsun. Bu dengeyi korumak için dinlenme zamanını da planının bir parçası olarak gör.',
-          'Çocuğunuz zamanını yönettiğini hissediyor. Bu dengeyi korumak için dinlenme zamanını da planının bir parçası olarak görmesini destekleyin.',
+          'Yoğun bir dönem yaklaşırken o dönemin takvimini önceden çıkar: neyin ne zaman yapılacağını görmek bu dengeyi korumana yardım edebilir.',
+          'Çocuğunuzun yoğun bir dönem yaklaşırken o dönemin takvimini önceden çıkarması, neyin ne zaman yapılacağını görmesini ve bu dengeyi korumasını kolaylaştırabilir.',
         ),
       },
       action: {
         low: t(
-          'Bu hafta her akşam ertesi günün en önemli tek işini seç ve sabah ilk ona başla.',
-          'Bu hafta her akşam çocuğunuzla ertesi günün en önemli tek işini seçin; sabah ilk ona başlasın.',
+          'Bu hafta her gün kendine 20 dakikalık, yalnızca dinlenmeye ya da sevdiğin bir şeye ayrılmış bir zaman koy ve onu bir iş gibi koru.',
+          'Bu hafta çocuğunuzun her gün 20 dakikalık, yalnızca dinlenmeye ya da sevdiği bir şeye ayrılmış bir zamanı olsun; bu zamanı birlikte koruyun.',
         ),
         average: t(
-          'Bu hafta yoğun günlerde işlerini yazıya dök ve önem sırasına koy.',
-          'Bu hafta yoğun günlerde çocuğunuz işlerini yazıya döksün ve önem sırasına koysun.',
+          'Bu hafta en yoğun gününün akşamında, o gün seni en çok neyin sıkıştırdığını tek cümleyle yaz.',
+          'Bu hafta çocuğunuzla, en yoğun gününün akşamında onu en çok neyin sıkıştırdığını konuşun.',
         ),
         high: t(
           'Bu hafta her gün sevdiğin bir şey için kendine zaman ayır.',

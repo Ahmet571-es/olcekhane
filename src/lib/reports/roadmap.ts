@@ -67,7 +67,10 @@ export function pick(t: AudienceText, audience: Audience): string {
 /** "Ayrıntılı Kişilik Profili ve Meslek İlgi Alanları" gibi. */
 export function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('');
-  return `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`;
+  // Adlardan biri "ve", iki nokta ya da soru işareti içeriyorsa ("Erteleme ve Zaman Yönetimi", "Çalışma Değerleri: Bir İşte…?")
+  // adlar tırnak içinde yazılır; yoksa cümle karışır.
+  const q = names.length > 1 && names.some((n) => / ve |[:?]/.test(n)) ? names.map((n) => `“${n}”`) : names;
+  return `${q.slice(0, -1).join(', ')} ve ${q[q.length - 1]}`;
 }
 
 const SAYILAR = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'];
@@ -122,7 +125,9 @@ export function buildRoadmap(
     band: s.bandLabel,
   }));
 
-  // Öne çıkanlar: ortadan en uzak, orta düzeyde olmayan en çok iki boyut. Tek boyutlu testte (ör. öz-saygı) o boyut.
+  // Öne çıkanlar: ortadan en uzak, orta düzeyde olmayan en çok iki boyut (şablonun öncelik verdiği boyut ve düzeyler önce).
+  // Tek boyutlu testte (ör. öz-saygı) o boyut.
+  const prior = (s: (typeof sections)[number]) => ((t.standoutFirst ?? []).some((p) => p.scale === s.scaleKey && bandGroup(s.band) === p.group) ? 1 : 0);
   const notable =
     sections.length === 1
       ? sections.filter((s) => s.value !== null)
@@ -131,18 +136,26 @@ export function buildRoadmap(
             const g = bandGroup(s.band);
             return g !== null && g !== 'average';
           })
-          .sort((x, y) => distance(y) - distance(x))
+          .sort((x, y) => prior(y) - prior(x) || distance(y) - distance(x))
           .slice(0, 2);
   const standout = notable.map((s) => ({ title: s.name, text: s.summary }));
   const unit = t.unit?.one ?? 'boyut';
+  // Cevaplarda bir kalite uyarısı varsa (ör. hep aynı seçenek, evet deme eğilimi) orta çıkan profil "dengeli" diye
+  // anlatılmaz: puanların ortada toplanması cevap biçiminden de kaynaklanabilir.
   const standoutNote =
     standout.length > 0
       ? null
+      : (r.qualityNotes?.length ?? 0) > 0
+        ? parent
+          ? `Çocuğunuzun puanlarında hiçbir ${unit} belirgin biçimde öne çıkmıyor; ama raporun başındaki uyarı nedeniyle bu sonuç dikkatle yorumlanmalıdır.`
+          : r.young
+            ? 'Puanlarının hepsi ortaya yakın çıktı. Raporun başındaki notu ailenle birlikte oku.'
+            : `Puanlarında hiçbir ${unit} belirgin biçimde öne çıkmıyor; ama raporun başındaki uyarı nedeniyle bu sonuç dikkatle yorumlanmalı.`
       : t.balancedNote
         ? pick(t.balancedNote, a)
         : parent
-        ? `Çocuğunuzun profili dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyor.`
-        : `Profilin dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı yönlerini kullanabiliyorsun.`;
+        ? `Çocuğunuzun profili dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı biçimlerde davranıyor olabilir.`
+        : `Profilin dengeli: hiçbir ${unit} belirgin biçimde öne çıkmıyor. Duruma göre farklı biçimlerde davranıyor olabilirsin.`;
 
   // Çok boyutlu testlerde öneriler yalnızca en belirgin boyutlar için verilir: önce orta düzeyde olmayanlar (eşiğe eşit
   // uzaklıktaki bir orta puan, yüksek ya da düşük bir puanın önüne geçmesin diye), sonra ortadan en uzaktan başlayarak;
@@ -150,8 +163,17 @@ export function buildRoadmap(
   const scored = sections.filter((s) => s.value !== null);
   const focusing = !!t.focus && scored.length > t.focus.count;
   const extreme = (s: (typeof sections)[number]) => (groupOf(s) === 'average' ? 0 : 1);
+  // İyi oluş: şablondaki sırayla ilk uyan boyut (ör. Duygusal denge düşük, sonra Endişeye yatkınlık yüksek). Önerileri
+  // en belirgin boyutlarla sınırlı testte bu boyutun kartı her zaman verilir ve ilk sıradadır (3. hafta ona ayrılır).
+  // İyi oluş haftası boyutun kendi düzeyine bakar: alt özellikleri ayrışan (split) düşük bir boyut da haftayı açar.
+  const wellGroup = (s: (typeof sections)[number]) => (s.flagged ? 'low' : bandGroup(s.band));
+  const wellbeing = (t.wellbeing ? [t.wellbeing].flat() : [])
+    .map((w) => ({ w, s: sections.find((s) => s.scaleKey === w.scale && wellGroup(s) === w.group) }))
+    .find((x) => x.s);
+  const stress = wellbeing?.s;
+  const first = (s: (typeof sections)[number]) => (s === stress ? 1 : 0);
   const focused = focusing
-    ? [...scored].sort((x, y) => extreme(y) - extreme(x) || distance(y) - distance(x)).slice(0, t.focus!.count)
+    ? [...scored].sort((x, y) => first(y) - first(x) || extreme(y) - extreme(x) || distance(y) - distance(x)).slice(0, t.focus!.count)
     : sections;
 
   const study = focused.flatMap((s) => {
@@ -167,11 +189,6 @@ export function buildRoadmap(
       },
     ];
   });
-  // İyi oluş: şablondaki sırayla ilk uyan boyut (ör. Duygusal denge düşük, sonra Endişeye yatkınlık yüksek).
-  const wellbeing = (t.wellbeing ? [t.wellbeing].flat() : [])
-    .map((w) => ({ w, s: sections.find((s) => s.scaleKey === w.scale && groupOf(s) === w.group) }))
-    .find((x) => x.s);
-  const stress = wellbeing?.s;
   const links = [{ label: a === 'adult' ? 'Etkili çalışma yöntemleri' : 'Etkili ders çalışma yöntemleri', href: '/rehber/etkili-ders-calisma-yontemleri' }];
   // Varsayılan bağlantı "Sınav kaygısı" yazısıdır; öğrencilere ve velilere yazıldığı için yetişkine verilmez.
   const stressLink =
@@ -197,7 +214,8 @@ export function buildRoadmap(
   // 3. hafta: iyi oluş gerekiyorsa o boyut; değilse ortadan en uzak (şablon isterse en düşük puanlı) boyut; tek boyutlu
   // testte şablondaki ek deneme.
   const rel = (s: (typeof sections)[number]) => (s.value === null ? Infinity : (s.value - s.min) / (s.max - s.min || 1));
-  const others = sections.filter((s) => s.scaleKey !== t.planningScale && s.value !== null);
+  const skip = (s: (typeof sections)[number]) => (t.thirdWeekSkip ?? []).some((p) => p.scale === s.scaleKey && groupOf(s) === p.group);
+  const others = sections.filter((s) => s.scaleKey !== t.planningScale && s.value !== null && !skip(s));
   const ordered =
     t.thirdWeek === 'lowest' ? others.sort((x, y) => rel(x) - rel(y)) : others.sort((x, y) => distance(y) - distance(x));
   const thirdKey = stress?.scaleKey ?? ordered[0]?.scaleKey;
@@ -227,7 +245,9 @@ export function buildRoadmap(
     preview: opts.preview,
     intro: parent
       ? `Bu bölüm sonuçları günlük hayata taşımanız için öneriler içerir: ${contents.join(', ')} ve ${span}. Öneriler bir tanı ya da kesin hüküm değildir; çocuğunuza uyanları birlikte seçin.`
-      : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${contents.join(', ')} ve ${span}. Öneriler bir tanı ya da kesin hüküm değildir; sana uyanları seç.`,
+      : r.young
+        ? `Bu bölümde ailenle birlikte deneyebileceğin öneriler var: ${contents.join(', ')} ve ${span}. Hepsini yapmak zorunda değilsin; sana uyanları seç.`
+        : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${contents.join(', ')} ve ${span}. Öneriler bir tanı ya da kesin hüküm değildir; sana uyanları seç.`,
     bars,
     standout,
     standoutNote,

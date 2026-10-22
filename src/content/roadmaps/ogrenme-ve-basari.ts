@@ -20,6 +20,7 @@ import type { RoadmapTemplate } from './types';
  */
 export const ogrenmeVeBasariRoadmap: RoadmapTemplate = {
   version: 'ogrenme-ve-basari-yol-haritasi-1',
+  unit: { one: 'özellik', toPlural: 'özelliklere' },
   planningScale: 'planfulness',
   thirdWeek: 'lowest',
   studyIntro: {
@@ -92,8 +93,8 @@ export const ogrenmeVeBasariRoadmap: RoadmapTemplate = {
       },
       action: {
         low: {
-          student: 'Bu hafta yarım kalan ya da gözünde büyüyen bir işi seç; onu beş küçük adıma böl ve her gün en az bir adımı tamamla.',
-          parent: 'Bu hafta çocuğunuzla yarım kalan bir işi seçin; onu küçük adımlara bölmesine yardım edin ve her gün en az bir adımı tamamlamasını destekleyin.',
+          student: 'Bu hafta her akşam, o gün yarım bırakmadan bitirdiğin bir işi ve onu bitirmene neyin yardım ettiğini bir cümleyle yaz; hafta sonunda listene bak.',
+          parent: 'Bu hafta çocuğunuza her akşam, o gün yarım bırakmadan bitirdiği bir işi ve ona neyin yardım ettiğini bir cümleyle yazmasını önerin; hafta sonunda listeye birlikte bakın.',
         },
         average: {
           student: 'Bu hafta her gün en çok çaba gerektiren işini günün ilk çalışma saatine koy ve bitirince nasıl hissettiğini bir cümleyle yaz.',

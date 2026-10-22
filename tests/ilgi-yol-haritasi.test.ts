@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { INTEREST_ROADMAPS, hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
+import { REPORT_TEMPLATES } from '@/content/reports';
+import { INTEREST_ROADMAPS, ROADMAPS, hasPublicRoadmap, roadmapSummary } from '@/content/roadmaps';
 import type { AudienceText } from '@/content/roadmaps/types';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import type { AnswersBody } from '@/lib/assessment/schemas';
@@ -186,8 +187,23 @@ describe('ilgi testlerinin yol haritası: rapora eklenmesi', () => {
         expect(rm.settings, slug).toBeNull();
         expect(rm.approach, slug).toBeNull();
         expect(rm.standoutNote, slug).toMatch(/hiçbir (alan|değer) öne çıkarılmadı/);
+        // Not kendi başına okunur: veliye özneyle ("Çocuğunuz …") yazılır, ardına ilgilerin ayrışmadığını söyleyen genel not
+        // eklenmez.
+        if (audience === 'parent') expect(rm.standoutNote, slug).toMatch(/^Çocuğunuz /);
+        expect(rm.standoutNote, slug).not.toContain(pick(INTEREST_ROADMAPS[slug].openNote, audience));
       }
     }
+  });
+
+  it('veliye ilk hafta testin kendi konusunu gözlemlemeyi önerir (kişilik testinden kopyalanmış metin yok)', () => {
+    const personality = ROADMAPS['bes-faktor-kisilik'].firstWeek.parent;
+    for (const t of [...Object.values(INTEREST_ROADMAPS), ROADMAPS['calisma-aliskanliklari']]) {
+      expect(t.firstWeek.parent).not.toBe(personality);
+      expect(t.firstWeek.parent).not.toContain('hemen bir şeyi değiştirmeye');
+      expect(t.firstWeek.parent).toMatch(/^Raporu çocuğunuzla birlikte okuyun/);
+    }
+    expect(INTEREST_ROADMAPS[HOBI].firstWeek.parent).toContain('boş zamanında hangi etkinliklerin ona iyi geldiğini');
+    expect(INTEREST_ROADMAPS[HOLLAND].openWeeks[0].text.parent).toContain('ve sonra bunun ona nasıl hissettirdiğini konuşun.');
   });
 
   it('hobi: sık yapılan alan yoksa ara sıra yapılanlar öne çıkar; az yapılanlar öne çıkmaz', () => {
@@ -222,6 +238,71 @@ describe('ilgi testlerinin yol haritası: rapora eklenmesi', () => {
       'meslek ilgilerini de görmek için Mesleki İlgi Profili ve Meslek İlgi Alanları testlerinden birini çözebilirsin.',
     );
   });
+
+  it('sıralı ilgi profilleri (rastgele profiller): düşük düzeydeki alan öne çıkmaz, eşit puanlı alanlar sessizce düşürülmez', () => {
+    let seed = 20261022;
+    const rand = () => {
+      seed = (seed * 1103515245 + 12345) % 2 ** 31;
+      return seed / 2 ** 31;
+    };
+    const shown1 = (v: number) => Math.round(v * 10) / 10;
+    let ties = 0;
+    let dropped = 0;
+    for (const slug of ['meslek-ilgi-alanlari', HOBI]) {
+      const d = def<LikertInstrument>(slug);
+      const labels = REPORT_TEMPLATES[slug].bandLabels;
+      for (let n = 0; n < 400; n++) {
+        // Her alana bir taban cevap; profillerin yarısında her madde aynı (çok sayıda birebir eşitlik), yarısında sapmalı.
+        const base = Object.fromEntries(d.scales.map((s) => [s.key, 1 + Math.floor(rand() * 5)]));
+        const noise = n % 2 === 0 ? 0 : 0.35;
+        const answers = Object.fromEntries(
+          d.items.map((it) => {
+            const step = rand() < noise ? (rand() < 0.5 ? -1 : 1) : 0;
+            return [it.key, { value: Math.min(5, Math.max(1, base[it.scale] + step)), rtMs: 2600 }];
+          }),
+        );
+        const r = evaluate(slug, { grade: gradeFor(slug), data: { engine: 'likert', answers } } as AnswersBody);
+        for (const rep of [r.student, r.parent]) {
+          const tag = `${slug} ${n} ${rep.audience}`;
+          const rows = rep.chart?.type === 'rulers' ? rep.chart.rows.filter((x) => x.value !== null) : [];
+          const value = (name: string) => shown1(rows.find((x) => x.label === name)!.value!);
+          const tops = rep.items.filter((i) => /^\d\. /.test(i.title));
+          const anyHigh = rows.some((x) => x.band === labels.high);
+          const level = anyHigh ? labels.high! : labels.average!;
+          const pool = rows.filter((x) => x.band === level);
+          expect(tops.length, tag).toBeLessThanOrEqual(anyHigh ? 4 : 3);
+          for (const t of tops) {
+            const name = t.title.slice(3);
+            const [band, tie] = t.badge!.split(' · ');
+            // Düşük düzeydeki alan hiçbir zaman öne çıkmaz; belirgin alan varsa yalnızca belirgin alanlar.
+            expect(band, tag).toBe(level);
+            const same = tops.filter((x) => value(x.title.slice(3)) === value(name)).length > 1;
+            expect(tie, `${tag}: ${t.title}`).toBe(same ? 'eşit puan' : undefined);
+            expect(Number(t.title[0]), `${tag}: ${t.title}`).toBe(1 + tops.filter((x) => value(x.title.slice(3)) > value(name)).length);
+            if (same) ties++;
+          }
+          if (tops.length > (anyHigh ? 3 : 2)) {
+            // Kesimin ötesine geçen alan, son gösterilenle birebir eşit puandadır.
+            expect(value(tops.at(-1)!.title.slice(3)), tag).toBe(value(tops.at(-2)!.title.slice(3)));
+          }
+          // Gösterilen alanla birebir eşit puandaki, gösterilmeyen alan bir notta anılır.
+          if (tops.length) {
+            const last = value(tops.at(-1)!.title.slice(3));
+            for (const x of pool.filter((p) => !tops.some((t) => t.title.endsWith(p.label)) && shown1(p.value!) === last)) {
+              expect(rep.cautions.join(' '), `${tag}: ${x.label}`).toContain(x.label);
+              dropped++;
+            }
+          }
+          // Yol haritası raporla aynı alanları öne çıkarır.
+          expect(rep.roadmap!.standout.map((x) => x.title), tag).toEqual(tops.map((t) => t.title.slice(3)));
+          expect(JSON.stringify(rep), tag).not.toMatch(/undefined|NaN/);
+        }
+      }
+    }
+    // Eşitlik yolları yeterince denendi.
+    expect(ties).toBeGreaterThan(100);
+    expect(dropped).toBeGreaterThan(20);
+  }, 120_000);
 
   it('test sayfasındaki tanıtım ilgi testinin bölümlerini sayar', () => {
     expect(roadmapSummary(HOLLAND)).toBe(

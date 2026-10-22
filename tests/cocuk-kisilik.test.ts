@@ -367,6 +367,84 @@ describe('Çocuk kişilik profili: rapor', () => {
   });
 });
 
+/** Sayfada yan yana okunan metinler: kartlar, destek kutusu ve yol haritasının bölümleri. */
+function pageTexts(rep: SimpleReport): string[] {
+  const r = rep.roadmap!;
+  return [
+    ...rep.items.map((i) => i.text),
+    ...(rep.support?.lines ?? []),
+    r.standoutNote ?? '',
+    r.study.intro,
+    ...r.study.items.map((i) => i.text),
+    ...(r.approach?.items.map((i) => i.text) ?? []),
+    ...r.weeks.map((w) => w.text),
+  ].filter(Boolean);
+}
+
+describe('Çocuk kişilik profili: 2026-10-22 incelemesi', () => {
+  const tpl = REPORT_TEMPLATES[SLUG];
+  const rm = ROADMAPS[SLUG];
+
+  it('iki raporda da beş ölçeğe "yön" denir: kartların başlığı, genel bakış ve dengeli profil cümlesi', () => {
+    expect(tpl.itemsTitle).toBe('Yönler');
+    expect(rm.unit).toEqual({ one: 'yön', toPlural: 'yönlere' });
+    expect(tpl.overview!.student).toContain('Beş yön');
+    expect(tpl.overview!.parent).toContain('Beş yön');
+    expect(JSON.stringify(tpl)).not.toMatch(/boyut/);
+    // Beş yön de ortada ve uyarı yok: cevaplar 1, 2 ve 3 arasında dönerek (uzun bir aynı seçenek dizisi olmadan).
+    const answers = Object.fromEntries(d.items.map((it, i) => [it.key, { value: [1, 2, 3, 2, 3, 1][i % 6], rtMs: 2500 }]));
+    const mid = evaluate(SLUG, { grade: 4, data: { engine: 'likert', answers } });
+    expect(mid.student.cautions).toEqual([]);
+    expect(mid.student.items.every((x) => x.badge?.startsWith('Orta'))).toBe(true);
+    expect(mid.student.itemsTitle).toBe('Yönler');
+    expect(mid.parent.itemsTitle).toBe('Yönler');
+    expect(mid.student.roadmap!.standoutNote).toBe(rm.balancedNote!.student);
+    expect(mid.parent.roadmap!.standoutNote).toBe(rm.balancedNote!.parent);
+    expect(rm.balancedNote!.student).not.toMatch(/belirgin|profil/);
+    // Norm notu iki raporda ortaktır: sade ve çocuğu kimseyle karşılaştırmaz.
+    expect(d.science.normNote).not.toMatch(/akran|norm yok/i);
+    expect(d.science.normNote).toContain('başka çocuklarla karşılaştırmaz');
+  });
+
+  it('veliye yaklaşım önerileri veli kartlarını, "Bu hafta dene" metinleri çalışma kartlarını tekrar etmez', () => {
+    for (const [key, byGroup] of Object.entries(rm.approach!)) {
+      for (const g of ['low', 'average', 'high'] as const) {
+        const card = tpl.scales[key][g]!.parent;
+        for (const part of byGroup[g].split(/;\s*/)) expect(card, `${key} ${g}`).not.toContain(part.replace(/\.$/, ''));
+      }
+    }
+    expect(rm.approach!.emotional_stability.low).not.toContain('rehber');
+    expect(tpl.scales.emotional_stability.low!.parent).toContain('okul hayatını, uykusunu ya da arkadaşlıklarını');
+    expect(tpl.scales.emotional_stability.low!.student).not.toMatch(/öğretmen|ailene/);
+    expect(rm.scales.emotional_stability.action.low.student).not.toContain('tek başına taşımak');
+    expect(rm.scales.agreeableness.study.low.student).not.toContain('Kendi başına çalışmak');
+    expect(rm.scales.conscientiousness.study.high.student).not.toContain('birkaç güne yayarak');
+    expect(rm.scales.extraversion.action.high.student).not.toContain('soru-cevap');
+    expect(rm.scales.intellect.action.low.student).toContain('“Bu nasıl çalışıyor?”');
+  });
+
+  it('bütün düzey birleşimlerinde aynı sayfada bir cümle iki kez geçmez; veliye yaklaşım beş yönün hepsi için', () => {
+    const bands: Band3[] = ['low', 'average', 'high'];
+    for (let k = 0; k < 3 ** 5; k++) {
+      const combo = SCALES.map((_, i) => bands[Math.floor(k / 3 ** i) % 3]);
+      const sums = combo.map((b, i) => BAND_SUMS[b][(k + i) % BAND_SUMS[b].length]);
+      const r = evaluate(SLUG, bodyFor(sums, 3 + (k % 3)));
+      expect(r.parent.roadmap!.approach!.items, combo.join('/')).toHaveLength(5);
+      for (const [rep, who] of [
+        [r.student, 'student'],
+        [r.parent, 'parent'],
+      ] as const) {
+        const tag = `${combo.join('/')} ${who}`;
+        const sentences = pageTexts(rep).flatMap((x) => x.split(/(?<=[.!?])\s+/)).map((x) => x.trim()).filter((x) => x.length > 25);
+        const dup = sentences.filter((x, i) => sentences.indexOf(x) !== i);
+        expect(dup, tag).toEqual([]);
+        // "Rehber öğretmen" veli sayfasında en çok bir kez (sakinlik kartı); destek kutusu "rehberlik servisi" der.
+        expect(pageTexts(rep).join(' ').split('rehber öğretmen').length, tag).toBeLessThanOrEqual(2);
+      }
+    }
+  }, 120_000);
+});
+
 describe('Çocuk kişilik profili: yayın', () => {
   it('pilot olarak yayında: listelerde, site haritasında ve İlkokul 3–4 grubunda; adında "tanı" yok; yol haritası var', () => {
     expect(d.status).toBe('pilot');

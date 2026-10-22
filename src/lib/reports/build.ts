@@ -3,6 +3,7 @@ import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText, InsightTemplate, LevelGroup, MotivationTemplate, PairText, ValuesTemplate } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
+import { bandZones, type Zone } from './visuals';
 import type {
   Band,
   CancellationTask,
@@ -231,6 +232,8 @@ export interface ReportSection {
   split?: boolean;
   /** Bu ölçeğin bir maddesi destek kutusunu açtı (ölçek: supportItems). */
   flagged?: boolean;
+  /** Düzey bölgeleri (anket testlerinde): kartın düzey çubuğu bunlarla çizilir (lib/reports/visuals.ts). */
+  zones?: Zone[];
 }
 
 export interface ReportContent {
@@ -256,6 +259,10 @@ export interface ReportContent {
   supportNote?: string;
   /** Test yalnızca küçük çocuklara (en çok 5. sınıf) açık: öğrenciye destek kutusu çocuk diliyle yazılır. */
   young?: boolean;
+  /** Testi mezun (üniversiteye hazırlanan) biri çözdü: destek kutusu okuldan söz etmez. */
+  graduate?: boolean;
+  /** Sonuç kartlarının başlığı (rapor şablonu: itemsTitle). */
+  itemsTitle?: string;
   science: { basedOn: string; reliability: string; limitations: string[]; license: string };
   interests?: InterestProfile;
   /** Sıralı ilgi profili (profil: interests). */
@@ -403,11 +410,23 @@ export interface InterestRanking {
   /** Puanı hesaplanan alanların anahtarları, en yüksekten en düşüğe (eşit puanlılar testteki sırayla). */
   order: string[];
   /**
-   * Belirgin (yüksek düzeydeki) en çok üç alan; hiçbiri yoksa en yüksek iki alan (etkinliklerde yalnızca orta düzeydekiler:
-   * az yapılan bir alan "en sık uğraşılan" diye gösterilmez). Bütün alanların puanı aynıysa boştur: öne çıkan alan yoktur
-   * (ör. her etkinliğe aynı cevap verildiğinde).
+   * Belirgin (yüksek düzeydeki) en çok üç alan; hiçbiri yoksa orta düzeydeki en yüksek iki alan (düşük düzeydeki bir alan
+   * "en yüksek çıkan" ya da "en sık uğraşılan" diye gösterilmez). Gösterilen puanı birebir aynı alanlar kesimle bölünmez:
+   * son gösterilen alanla eşit puandaki alanlar bir alan fazlasına kadar birlikte gösterilir (ör. üçüncü ve dördüncü alan
+   * eşitse dört alan); daha büyük eşitlik notla söylenir (`closeCalls`). Bütün alanların puanı aynıysa boştur: öne çıkan
+   * alan yoktur (ör. her etkinliğe aynı cevap verildiğinde).
    */
   top: string[];
+  /**
+   * İlgi ve etkinlik sıralamasında öne çıkabilecek alanların sayısı: yüksek düzeydeki alanlar, hiçbiri yoksa orta
+   * düzeydekiler (öne çıkan alanlar bunların en yüksekleridir).
+   */
+  candidates?: number;
+  /**
+   * İlgi ve etkinlik sıralamasında eşitlik notları: öne çıkan alanların sırası ya da seçimi aynı ya da neredeyse aynı
+   * puanlara dayanıyorsa (kişiye göre yazılmış).
+   */
+  closeCalls?: string[];
   /** Hiçbir alanda belirgin ilgi yok. */
   noneHigh: boolean;
   /** En yüksek ile en düşük alan arasındaki fark küçük: ilgiler henüz ayrışmamış. */
@@ -419,11 +438,14 @@ export interface InterestRanking {
    * üç), en önemli değerin puanından en az 1 puan aşağıdaysa; en önemli değerlerden biri değilse.
    */
   bottom?: string[];
-  /** Değer sıralamasında ikisi de en önemli değerler arasında olan, birbirine ters yönde çekebilen çiftler. */
+  /**
+   * Değer sıralamasında ikisi de en önemli değerler arasında ve ikisi de "çok önemli" düzeyinde olan, birbirine ters
+   * yönde çekebilen çiftler.
+   */
   tradeoffs?: { a: string; b: string; title: string; text: string }[];
   /**
-   * Değer sıralamasında en önemli değerlerin sıra numaraları (eşit puanlılar aynı numarayı alır: 1, 1, 3): eşit puan
-   * testteki sıraya göre bozulmaz.
+   * Öne çıkan alanların ya da değerlerin sıra numaraları (eşit puanlılar aynı numarayı alır: 1, 1, 3): eşit puan testteki
+   * sıraya göre bozulmaz. İlgi ve etkinlik sıralamasında eşitlik gösterilen puana (bir ondalık) göredir.
    */
   ranks?: number[];
   /** Değer sıralamasında daha az önem verilen değerlerin açıklaması (değer adları yazılmış). */
@@ -434,20 +456,27 @@ export interface InterestRanking {
 
 export interface InterestProfile {
   /**
-   * Öne çıkan alanların harfleri, ör. "SAE" (en çok üç; orta düzeyin altındaki alan girmez). Hiçbir alan yüksek
-   * değilse, bütün alanlar düşükse ya da bütün puanlar aynıysa boştur: kod ve örnek meslek verilmez.
+   * Öne çıkan alanların harfleri, ör. "SAE" (en çok üç; orta düzeyin altındaki alan girmez). Birebir eşit puan bir harfin
+   * hangi alana ait olacağını belirliyorsa (ör. üçüncü ve dördüncü alan eşit) kod eşitlikten önce kesilir (ör. "SA");
+   * eşitlik ilk harften başlıyorsa kod verilmez. Hiçbir alan yüksek değilse, bütün alanlar düşükse ya da bütün puanlar
+   * aynıysa boştur: kod ve örnek meslek verilmez.
    */
   code: string;
   types: { key: RiasecKey; name: string; mean: number | null; rank: number }[];
-  /** Öne çıkan alanlar: kod varsa kodun alanları, yoksa (hiçbir alan yüksek değilken) en yüksek iki orta düzey alan. */
+  /**
+   * Öne çıkan alanlar: en az bir alan yüksekse en çok üç alan, yoksa en yüksek iki orta düzey alan. Gösterilen puanı
+   * birebir aynı alanlar kesimle bölünmez (bir alan fazlasına kadar birlikte gösterilir).
+   */
   top: {
     key: RiasecKey;
     name: string;
     plain: string;
-    /** Yüksek düzeydeki alanda kişiye yazılmış açıklama, öteki alanlarda tek cümlelik tanım. */
+    /** Yüksek düzeydeki alanda kişiye yazılmış açıklama, orta düzeydeki alanda orta düzeyde ilgiyi söyleyen cümle. */
     text: string;
     bandLabel: string;
     high: boolean;
+    /** Sıra numarası: gösterilen puanı aynı alanlar aynı numarayı alır (1, 1, 3). */
+    rank: number;
     likes: string[];
     explore: string[];
     paths: { lise: string; universite: string };
@@ -455,7 +484,7 @@ export interface InterestProfile {
   lowest: { key: RiasecKey; name: string }[];
   /** En yüksek ile en düşük alan arasındaki fark (1–5 ölçeğinde). */
   differentiation: number;
-  /** Profil henüz belirginleşmemiş (fark küçük). */
+  /** Profil henüz belirginleşmemiş (fark küçük): kod gösterilir ama örnek meslek listesi verilmez. */
   flat: boolean;
   /** Hiçbir alan yüksek düzeyde değil. */
   noneHigh: boolean;
@@ -548,6 +577,7 @@ export function buildReport(input: {
         ciLow: s?.ciLow ?? null,
         ciHigh: s?.ciHigh ?? null,
         percentile: s?.percentile ?? null,
+        zones: bandZones(def.anchoredBands, template, scale.key, min, max),
       });
     }
     // Ayrıntılı profilde bir boyutun alt ölçekleri ayrışıyorsa (biri yüksek, öteki düşük) boyutun düzey metni yerine
@@ -561,10 +591,10 @@ export function buildReport(input: {
         if (!groups.includes('high') || !groups.includes('low')) continue;
         sec.summary = split.summary;
         sec.text = audience === 'parent' ? split.parent : audience === 'adult' ? (split.adult ?? split.student) : split.student;
-        // Destek kutusunu yalnızca bu boyutun (artık gösterilmeyen) düzey metni açtıysa kutu kalkar; yönlerden biri açtıysa kalır.
-        const at = supportFrom.indexOf(scale.key);
-        if (at >= 0) supportFrom.splice(at, 1);
-        support = supportFrom.length > 0;
+        // Yol haritası ayrışan boyut için orta düzeyin önerilerini verir (yüksek ya da düşük kart yönlerinden biriyle çelişirdi).
+        sec.split = true;
+        // Destek kutusu kalır: boyutun ortalaması düşükse (ör. Duygusal Denge) alt özelliklerinden biri yüksek olsa da
+        // kişi genel olarak sık sıkıntı yaşadığını söylüyordur (2026-10-22 incelemesi; önceden kutu kalkıyordu).
       }
     }
     // Bir konudaki cevaplar iki uca ayrışıyorsa (biri olumlu, biri olumsuz) ve ortalama düşük değilse, ortalamanın düzey
@@ -733,6 +763,8 @@ export function buildReport(input: {
     support,
     ...(support && supportNote ? { supportNote } : {}),
     ...(def.maxGrade <= 5 ? { young: true } : {}),
+    ...(input.grade === 13 ? { graduate: true } : {}),
+    ...(template?.itemsTitle ? { itemsTitle: template.itemsTitle } : {}),
     science: {
       basedOn: science.basedOn,
       reliability: science.reliability,
@@ -876,19 +908,53 @@ function rankInterests(
   const values = scored.map((s) => s.value as number);
   const spread = values.length > 1 ? Math.max(...values) - Math.min(...values) : 0;
   if (kind === 'values') return rankValues(scored, values, spread, noneHigh, valuesTemplate, audience);
+  // Öne çıkabilecek alanlar: yüksek düzeydekiler (en çok üç), hiçbiri yoksa orta düzeydekiler (en çok iki). Düşük düzeydeki
+  // bir alan hiçbir zaman "en yüksek çıkan" ya da "en sık uğraşılan" diye gösterilmez.
+  const pool = noneHigh ? scored.filter((s) => s.band === 'average') : high;
+  const poolValues = pool.map((s) => s.value as number);
+  const count = values.length > 1 && spread === 0 ? 0 : tiedCut(poolValues, noneHigh ? 2 : 3);
+  const top = pool.slice(0, count);
   return {
     kind,
     order: scored.map((s) => s.scaleKey),
-    top:
-      values.length > 1 && spread === 0
-        ? []
-        : (noneHigh ? (kind === 'activities' ? scored.filter((s) => s.band === 'average') : scored).slice(0, 2) : high.slice(0, 3)).map(
-            (s) => s.scaleKey,
-          ),
+    top: top.map((s) => s.scaleKey),
+    candidates: pool.length,
+    ranks: tieRanks(poolValues.slice(0, count)),
+    closeCalls: count ? rankingCloseCalls(pool.map((s) => ({ name: s.name, value: s.value as number })), count, audience) : [],
     noneHigh,
     flat: values.length > 1 && spread < 0.8,
     allLow: scored.length > 0 && scored.every((s) => s.band === 'low' || s.band === 'very_low'),
   };
+}
+
+/**
+ * Sıralı ilgi ve etkinlik profilinde eşitlik notları. Puanları art arda en çok INTEREST_TIE farklı alanlar (öne
+ * çıkabilecek alanların içinde) bir küme oluşturur; küme öne çıkan alanlara dokunuyorsa sıranın ya da seçimin küçük bir
+ * farka dayandığı söylenir. Gösterilen puanları birebir aynı olan ve hepsi öne çıkan alanlar arasında gösterilen kümeye not
+ * yazılmaz: kartlardaki aynı sıra numarası ve "eşit puan" rozeti bunu zaten söyler.
+ */
+function rankingCloseCalls(pool: { name: string; value: number }[], shown: number, audience: Audience): string[] {
+  const you = audience !== 'parent';
+  const notes: string[] = [];
+  for (const [i, j] of tieClusters(pool.map((x) => x.value), shown)) {
+    const group = pool.slice(i, j + 1);
+    const exact = group.every((x) => exactTie(x.value, group[0].value));
+    if (j < shown && exact) continue;
+    const names = joinAreas(group.map((x) => x.name));
+    const lead = you ? `${names} alanlarındaki puanların aynı ya da neredeyse aynı; ` : `${names} alanlarındaki puanlar aynı ya da neredeyse aynıdır; `;
+    let tail: string;
+    if (j < shown) tail = 'bu alanların sırası yer değiştirebilir.';
+    else if (i === shown - 1)
+      tail = you
+        ? 'öne çıkan alanlarından birini bu alanlardan herhangi biri olarak düşünebilirsin.'
+        : 'öne çıkan alanlardan biri bu alanlardan herhangi biri olarak düşünülebilir.';
+    else
+      tail = you
+        ? 'bu yüzden öne çıkan alanlarının seçimi kesin değil, bu alanların hepsini birlikte düşünebilirsin.'
+        : 'bu yüzden öne çıkan alanların seçimi kesin değildir, bu alanların hepsi birlikte düşünülebilir.';
+    notes.push(lead + tail);
+  }
+  return notes;
 }
 
 /**
@@ -925,8 +991,11 @@ function rankValues(
     bottom = bottom.filter((s) => (s.value as number) <= values[0] - 1);
   }
   const pickText = (x: PairText & { adult?: string }) => (audience === 'parent' ? x.parent : audience === 'adult' ? (x.adult ?? x.student) : x.student);
+  // Yarışan değerler yalnızca ikisi de "çok önemli" düzeyindeyken anılır: orta derecede önemli iki değer "en önemli
+  // değerler arasında" diye birbirine karşı konmaz.
+  const veryImportant = (k: string) => top.some((s) => s.scaleKey === k && isHighBand(s.band));
   const tradeoffs = (t?.tradeoffs ?? [])
-    .filter((x) => topKeys.includes(x.a) && topKeys.includes(x.b))
+    .filter((x) => veryImportant(x.a) && veryImportant(x.b))
     .map((x) => ({ a: x.a, b: x.b, title: x.title, text: pickText(x.text) }));
   // Sona kalan değerler düzeyleriyle anılır: "çok önemli" bir değer de sıralamanın sonunda olabilir.
   const names = bottom.map((s) => `“${s.name}” (${s.bandLabel.toLocaleLowerCase('tr-TR')})`);
@@ -8148,17 +8217,60 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   return { blocks, tips };
 }
 
-/** Puanları birbirine bu kadar yakın alanların sırası güvenilir değildir (8 maddelik alanda bir cevabın farkı 0,125). */
+/**
+ * Puanları birbirine bu kadar yakın (ya da daha yakın) alanların sırası güvenilir değildir: 8 maddelik alanda bir cevabın
+ * farkı 0,125, 10–14 maddelik alanda 0,07–0,1. İlgi profillerinin hepsinde (Holland, sıralı ilgi ve etkinlik) aynı sınır.
+ */
 const INTEREST_TIE = 0.15;
+const nearTie = (a: number, b: number) => Math.abs(a - b) <= INTEREST_TIE + 1e-9;
+/** Birebir eşit: raporda gösterilen puan (bir ondalık) aynı. */
+const exactTie = (a: number, b: number) => shown1(a) === shown1(b);
 const isHighBand = (b: Band | null) => b === 'high' || b === 'very_high';
-const ORDINAL = ['birinci', 'ikinci', 'üçüncü'];
+const ORDINAL = ['birinci', 'ikinci', 'üçüncü', 'dördüncü'];
+const COUNT_WORDS = ['', 'bir', 'iki', 'üç', 'dört'];
 const joinTr = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} ve ${xs[xs.length - 1]}`);
+/** Alan adları: adlardan biri "ve" içeriyorsa ("Liderlik ve İkna") adlar tırnak içinde yazılır; yoksa cümle karışır. */
+const joinAreas = (names: string[]) => joinTr(names.length > 1 && names.some((n) => / ve /.test(n)) ? names.map((n) => `“${n}”`) : names);
+
+/**
+ * Öne çıkan alan sayısı: puana göre sıralı alanlardan en çok `cap` alan. Gösterilen puanı birebir aynı alanlar kesimle
+ * bölünmez: kesim eşit puanlı bir grubun içine düşüyorsa grup, öne çıkan alanlar en çok bir alan artacaksa bütünüyle alınır
+ * (ör. üçüncü ve dördüncü alan eşitse dört alan); grup daha büyükse kesim yerinde kalır ve eşitlik notla söylenir.
+ */
+function tiedCut(values: number[], cap: number): number {
+  const n = Math.min(cap, values.length);
+  if (n === 0 || n === values.length || !exactTie(values[n - 1], values[n])) return n;
+  let end = n;
+  while (end < values.length && exactTie(values[n - 1], values[end])) end++;
+  return end <= cap + 1 ? end : n;
+}
+
+/** Sıra numaraları: gösterilen puanı aynı olan alanlar aynı numarayı alır (1, 1, 3). */
+const tieRanks = (values: number[]) => values.map((v) => 1 + values.filter((x) => shown1(x) > shown1(v)).length);
+
+/**
+ * Eşitlik kümeleri: puanları art arda en çok INTEREST_TIE farklı alanlar ([ilk, son] sırası; tek alanlı küme yazılmaz).
+ * Yalnızca ilk `upto` alandan birinde başlayan kümeler (öne çıkan alanlara dokunanlar).
+ */
+function tieClusters(values: number[], upto: number): [number, number][] {
+  const out: [number, number][] = [];
+  for (let i = 0; i < values.length && i < upto; ) {
+    let j = i;
+    while (j + 1 < values.length && nearTie(values[j], values[j + 1])) j++;
+    if (j > i) out.push([i, j]);
+    i = j + 1;
+  }
+  return out;
+}
 
 /**
  * Holland profili. Öne çıkan alanlar puanın düzeyine bakılarak seçilir: en az orta düzeyde olmayan alan hiçbir zaman öne
  * çıkarılmaz. En az bir alan yüksekse en çok üç alan öne çıkar, Holland kodu ve örnek meslekler bunlardan oluşur. Hiçbir
  * alan yüksek değilse en yüksek iki orta düzey alan gösterilir, kod ve meslek verilmez. Bütün alanlar düşükse ya da
- * bütün alanların puanı aynıysa öne çıkan alan yoktur. Puanları neredeyse aynı olan alanlar (eşitlikler) notla söylenir.
+ * bütün alanların puanı aynıysa öne çıkan alan yoktur. Gösterilen puanı birebir aynı alanlar kesimle bölünmez (tiedCut);
+ * birebir eşitlik bir harfin hangi alana ait olacağını belirliyorsa kod eşitlikten önce kesilir. Profil belirginleşmemişse
+ * (fark küçük) kod gösterilir ama örnek meslek listesi verilmez. Puanları aynı ya da neredeyse aynı olan alanlar
+ * (eşitlikler) notla söylenir.
  */
 function buildInterestProfile(sections: ReportSection[], audience: Audience, grade: number): InterestProfile {
   const byScale = new Map(sections.map((s) => [s.scaleKey, s]));
@@ -8173,49 +8285,79 @@ function buildInterestProfile(sections: ReportSection[], audience: Audience, gra
   const max = means.length ? Math.max(...means) : 0;
   const min = means.length ? Math.min(...means) : 0;
   const differentiation = Math.round((max - min) * 100) / 100;
+  const flat = differentiation < 0.8;
 
   const tied = ranked.length > 1 && differentiation === 0;
   const noneHigh = !ranked.some((r) => isHighBand(r.band));
   const allLow = !ranked.some((r) => r.band === 'average' || isHighBand(r.band));
   // Öne çıkabilecek alanlar: en az orta düzeyde olanlar.
   const eligible = tied ? [] : ranked.filter((r) => r.band === 'average' || isHighBand(r.band));
-  const topRows = eligible.slice(0, noneHigh ? 2 : 3);
+  const values = eligible.map((r) => r.mean!);
+  const cap = noneHigh ? 2 : 3;
+  const topRows = eligible.slice(0, tiedCut(values, cap));
   const topKeys = topRows.map((r) => r.key);
-  const hasCode = !noneHigh && topKeys.length > 0;
+  const ranks = tieRanks(values.slice(0, topRows.length));
+  // Kodun harfleri: üçüncü harfin (ya da daha öncekinin) hangi alana ait olacağını birebir eşit bir puan belirliyorsa
+  // (eşit puanlı grup kesimi aşıyorsa) kod bu gruptan önce kesilir; grup en üstteyse kod verilmez.
+  let codeLen = noneHigh ? 0 : Math.min(cap, topRows.length);
+  if (codeLen > 0 && eligible.length > codeLen && exactTie(values[codeLen - 1], values[codeLen])) {
+    let start = codeLen - 1;
+    while (start > 0 && exactTie(values[start - 1], values[codeLen])) start--;
+    codeLen = start;
+  }
+  const codeCut = !noneHigh && codeLen < Math.min(cap, eligible.length);
+  const hasCode = codeLen > 0;
+  const codeKeys = topKeys.slice(0, codeLen);
 
   // Eşitlikler: puanları art arda birbirine çok yakın olan alanlar bir küme oluşturur. Küme öne çıkan alanlara
-  // dokunuyorsa sıranın (ya da hangi alanın öne çıktığının) küçük bir farka dayandığı söylenir.
+  // dokunuyorsa sıranın (ya da hangi alanın öne çıktığının) küçük bir farka dayandığı söylenir. Kodun harflerini
+  // etkilemeyen ve bütünüyle gösterilen birebir eşitlik kartlardaki aynı sıra numarasıyla ve "eşit puan" rozetiyle zaten
+  // görünür; ayrıca not yazılmaz.
   const you = audience !== 'parent';
   const closeCalls: string[] = [];
-  for (let i = 0; i < eligible.length && i < topRows.length; ) {
-    let j = i;
-    while (j + 1 < eligible.length && Math.abs(eligible[j].mean! - eligible[j + 1].mean!) < INTEREST_TIE) j++;
-    if (j > i) {
-      const names = joinTr(eligible.slice(i, j + 1).map((r) => r.name));
-      const lead = you ? `${names} alanlarındaki puanların neredeyse aynı; ` : `${names} alanlarındaki puanlar neredeyse aynıdır; `;
-      const where = hasCode ? 'ilgi kodunda ' : '';
-      let tail: string;
-      if (j < topRows.length) {
-        tail = `${where}bu alanların sırası yer değiştirebilir.`;
-      } else if (i === topRows.length - 1) {
-        const nth = hasCode ? ORDINAL[i] : 'en yüksek çıkan';
-        tail = you
-          ? `${hasCode ? `${nth} alanını` : 'en yüksek çıkan alanlarından birini'} bu alanlardan herhangi biri olarak düşünebilirsin.`
-          : `${hasCode ? `${nth} alan` : 'en yüksek çıkan alanlardan biri'} bu alanlardan herhangi biri olarak düşünülebilir.`;
-      } else {
-        tail = you
-          ? 'bu yüzden öne çıkan alanlarının seçimi küçük bir farka dayanıyor, bu alanların hepsini birlikte düşünebilirsin.'
-          : 'bu yüzden öne çıkan alanların seçimi küçük bir farka dayanır, bu alanların hepsi birlikte düşünülebilir.';
-      }
-      closeCalls.push(lead + tail);
+  for (const [i, j] of tieClusters(values, topRows.length)) {
+    const group = eligible.slice(i, j + 1);
+    const exact = group.every((r) => exactTie(r.mean!, group[0].mean!));
+    const names = joinTr(group.map((r) => r.name));
+    const lead = you ? `${names} alanlarındaki puanların aynı ya da neredeyse aynı; ` : `${names} alanlarındaki puanlar aynı ya da neredeyse aynıdır; `;
+    const all = you ? 'bu alanların hepsini birlikte düşünebilirsin.' : 'bu alanların hepsi birlikte düşünülebilir.';
+    let tail: string;
+    if (codeCut && i <= codeLen && codeLen <= j) {
+      // Eşitlik bir harfi belirlediği için kod kesildi.
+      tail =
+        codeLen === 0
+          ? `bu yüzden ilgi kodu ve örnek meslekler verilmedi; ${all}`
+          : `bu yüzden ilgi kodunda yalnızca ${codeLen === 1 ? 'ilk harf' : `ilk ${COUNT_WORDS[codeLen]} harf`} verildi; ${all}`;
+    } else if (j < topRows.length) {
+      const inCode = hasCode && j < codeLen;
+      if (exact && !inCode) continue;
+      tail = `${inCode ? 'ilgi kodunda ' : ''}bu alanların sırası yer değiştirebilir.`;
+    } else if (i === topRows.length - 1) {
+      const nth = ORDINAL[i];
+      tail = you
+        ? `${hasCode ? `${nth} alanını` : 'en yüksek çıkan alanlarından birini'} bu alanlardan herhangi biri olarak düşünebilirsin.`
+        : `${hasCode ? `${nth} alan` : 'en yüksek çıkan alanlardan biri'} bu alanlardan herhangi biri olarak düşünülebilir.`;
+    } else {
+      tail = you
+        ? `bu yüzden öne çıkan alanlarının seçimi kesin değil, ${all}`
+        : `bu yüzden öne çıkan alanların seçimi kesin değildir, ${all}`;
     }
-    i = j + 1;
+    closeCalls.push(lead + tail);
   }
 
+  // Orta düzeydeki öne çıkan alan: sözlük tanımı yerine orta düzeyde ilgiyi söyleyen cümle (tanım parantez içinde).
+  const middle = (plain: string) => {
+    const what = plain.replace(/\.$/, '');
+    const def = what.charAt(0).toLocaleLowerCase('tr-TR') + what.slice(1);
+    return audience === 'parent'
+      ? `Çocuğunuz bu alandaki işlere orta düzeyde ilgi duyduğunu belirtiyor (${def}).`
+      : `Bu alandaki işlere orta düzeyde ilgi duyuyorsun (${def}).`;
+  };
+
   return {
-    code: hasCode ? topKeys.join('') : '',
+    code: codeKeys.join(''),
     types: rows.map((r) => ({ key: r.key, name: r.name, mean: r.mean, rank: rankOf.get(r.key) ?? 0 })),
-    top: topRows.map((r) => {
+    top: topRows.map((r, i) => {
       const t = RIASEC_TYPES[r.key];
       const high = isHighBand(r.band);
       return {
@@ -8223,9 +8365,10 @@ function buildInterestProfile(sections: ReportSection[], audience: Audience, gra
         name: t.name,
         plain: t.plain,
         // Kişiye yazılmış metin ("…hoşlanıyorsun") yalnızca yüksek düzeydeki alanda kullanılır.
-        text: high ? (audience === 'parent' ? t.parent : t.student) : t.plain,
+        text: high ? (audience === 'parent' ? t.parent : t.student) : middle(t.plain),
         bandLabel: r.bandLabel,
         high,
+        rank: ranks[i],
         likes: t.likes,
         explore: t.explore,
         paths: t.paths,
@@ -8233,11 +8376,13 @@ function buildInterestProfile(sections: ReportSection[], audience: Audience, gra
     }),
     lowest: ranked.slice(-2).reverse().map((r) => ({ key: r.key, name: r.name })),
     differentiation,
-    flat: differentiation < 0.8,
+    flat,
     noneHigh,
     allLow,
     exploration: grade <= 9,
     closeCalls,
-    occupations: hasCode ? occupationsFor(topKeys, 8) : [],
+    // Profil belirginleşmemişse (fark küçük) örnek meslek listesi verilmez: kod en üstteki alanları gösterir ama meslek
+    // önerisi kadar güçlü bir çerçeve kurmaz.
+    occupations: hasCode && !flat ? occupationsFor(codeKeys, 8) : [],
   };
 }

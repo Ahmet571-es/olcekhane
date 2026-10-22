@@ -35,9 +35,9 @@ export const dusunmeyiSevmeRoadmap: RoadmapTemplate = {
   },
   studyIntro: {
     student:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Düşünmeyi ne kadar sevdiğin, bu yöntemleri hangi konularda ve nasıl kullanmaya başlamanın sana kolay geleceğine dair ipucu verebilir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Düşünmeyi ne kadar sevdiğin, bu yöntemlere nereden başlayacağını seçmene yardım edebilir.',
     parent:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun düşünmeyi ne kadar sevdiği, bu yöntemleri hangi konularda ve nasıl kullanmaya başlamanın ona kolay geleceğine dair ipucu verebilir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun düşünmeyi ne kadar sevdiği, bu yöntemlere nereden başlayacağını seçmesine yardım edebilir.',
   },
   firstWeek: {
     student:
@@ -64,11 +64,11 @@ export const dusunmeyiSevmeRoadmap: RoadmapTemplate = {
       study: {
         low: {
           student:
-            'Kafa yoran işlerden pek hoşlanmasan da en etkili yöntemler senin için de işe yarar: lise öğrencileriyle yapılan bir araştırmada, öğrendiğini kaynağa bakmadan hatırlamaya çalışmanın, düşünmeyi sevme düzeyi düşük olanlarda da bir hafta sonra daha çok hatırlamayı sağladığı görüldü. Zor bir konuyu kısa bölümlere ayır ve takıldığın yeri birine sor.',
+            'Kafa yoran işlerden pek hoşlanmasan da en etkili yöntemler senin için de işe yarar: lise öğrencileriyle yapılan bir araştırmada, öğrendiğini kaynağa bakmadan hatırlamaya çalışmanın, yalnızca yeniden çalışmaya göre bir hafta sonra daha çok hatırlamayı sağladığı ve bunun düşünmeyi sevme düzeyi düşük olanlarda da geçerli olduğu görüldü. Zor bir konuyu kısa bölümlere ayır ve takıldığın yeri birine sor.',
           parent:
-            'Çocuğunuz kafa yoran işlerden pek hoşlanmasa da en etkili yöntemler onun için de işe yarar: lise öğrencileriyle yapılan bir araştırmada, öğrendiğini kaynağa bakmadan hatırlamaya çalışmanın, düşünmeyi sevme düzeyi düşük olanlarda da bir hafta sonra daha çok hatırlamayı sağladığı görüldü. Zor bir konuyu kısa bölümlere ayırması ve takıldığı yeri sorması işini kolaylaştırabilir.',
+            'Çocuğunuz kafa yoran işlerden pek hoşlanmasa da en etkili yöntemler onun için de işe yarar: lise öğrencileriyle yapılan bir araştırmada, öğrendiğini kaynağa bakmadan hatırlamaya çalışmanın, yalnızca yeniden çalışmaya göre bir hafta sonra daha çok hatırlamayı sağladığı ve bunun düşünmeyi sevme düzeyi düşük olanlarda da geçerli olduğu görüldü. Zor bir konuyu kısa bölümlere ayırması ve takıldığı yeri sorması işini kolaylaştırabilir.',
           adult:
-            'Kafa yoran işlerden pek hoşlanmasan da en etkili yöntemler senin için de işe yarar: gençlerle yapılan bir araştırmada, öğrendiğini kaynağa bakmadan hatırlamaya çalışmanın, düşünmeyi sevme düzeyi düşük olanlarda da bir hafta sonra daha çok hatırlamayı sağladığı görüldü. Zor bir konuyu kısa bölümlere ayır ve takıldığın yeri birine sor.',
+            'Kafa yoran işlerden pek hoşlanmasan da en etkili yöntemler senin için de işe yarar: gençlerle yapılan bir araştırmada, öğrendiğini kaynağa bakmadan hatırlamaya çalışmanın, yalnızca yeniden çalışmaya göre bir hafta sonra daha çok hatırlamayı sağladığı ve bunun düşünmeyi sevme düzeyi düşük olanlarda da geçerli olduğu görüldü. Zor bir konuyu kısa bölümlere ayır ve takıldığın yeri birine sor.',
         },
         average: {
           student:

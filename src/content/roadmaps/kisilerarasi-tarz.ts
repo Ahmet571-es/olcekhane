@@ -21,20 +21,36 @@ import type { RoadmapTemplate } from './types';
  *    düşük); bunların metinleri ve ortamları aynı raporda yan yana okunacağı için birbirini tekrar etmez.
  *  - Renkler çember boyunca tayfı izler: yan yana duran tarzlar komşu renklerdedir. Renk bir tarzı tanıtır; iyi ya da
  *    kötü anlamı taşımaz.
+ *  - Öneriler, ortamlar ve veliye yaklaşım yalnızca en belirgin üç tarz (puanı ortadan en uzak; `focus`) için verilir:
+ *    sekiz tarzın hepsi raporda anlatılır, yol haritası kısa kalır (tests/roadmap.test.ts notu ve sırayı denetler). Her
+ *    tarz ayrı ölçüldüğü için herhangi iki tarzın ortamı birlikte görünebilir: ortamlar birbiriyle
+ *    çelişmez (ör. Sessiz yüksekken "sessiz ve tek başına" değil "özel hayata saygı"; Sosyal yüksekken "kalabalık" ortam da
+ *    görünebilir). Veliye yaklaşım öğüt verirken çocuğun bir eksiği varmış gibi konuşmaz (ör. "Her şeye katlanmayan" tarzda
+ *    "başkalarını da hesaba katmasını isteyin" denmez; aynı raporda "Başkalarına duyarlılığını takdir edin" çıkabilir).
  *  - Ortamlar bir meslek önerisi değildir; meslek için ilgi testlerine yönlendirilir.
- *  - Yetişkin metni yalnızca öğrenci metni okula özgü olduğunda yazılır.
+ *  - Yetişkin metni öğrenci metni okula özgü olduğunda ya da okuldaki grup çalışmasını anlattığında yazılır (yetişkine
+ *    toplantı, ortak iş, birlikte öğrenme).
  */
 export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
   version: 'kisilerarasi-tarz-yol-haritasi-1',
   planningScale: 'assured_dominant',
   planningTitle: 'Birlikte çalışırken',
+  unit: { one: 'tarz', toPlural: 'tarzlara' },
+  focus: {
+    count: 3,
+    note: {
+      student: 'Sekiz tarzının hepsi raporun önceki bölümünde anlatıldı; burada en belirgin, yani puanı ortadan en uzak {n} tarzın için öneriler var.',
+      parent:
+        'Çocuğunuzun sekiz tarzının hepsi raporun önceki bölümünde anlatıldı; burada en belirgin, yani puanı ortadan en uzak {n} tarzı için öneriler var.',
+    },
+  },
   studyIntro: {
     student:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. İnsanlarla ilişkilerdeki tarzın, bu yöntemleri tek başına mı yoksa başkalarıyla birlikte mi kullanmanın sana kolay geleceğini gösterebilir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. İnsanlarla ilişkilerdeki tarzın, bu yöntemleri tek başına mı yoksa başkalarıyla birlikte mi kullanacağını seçmene yardım edebilir.',
     parent:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun insanlarla ilişkilerdeki tarzı, bu yöntemleri tek başına mı yoksa başkalarıyla birlikte mi kullanmanın ona kolay geleceğini gösterebilir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kitaba bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun insanlarla ilişkilerdeki tarzı, bu yöntemleri tek başına mı yoksa başkalarıyla birlikte mi kullanacağını seçmesine yardım edebilir.',
     adult:
-      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. İnsanlarla ilişkilerdeki tarzın, bu yöntemleri tek başına mı yoksa başkalarıyla birlikte mi kullanmanın sana kolay geleceğini gösterebilir.',
+      'Araştırmalara göre herkes için en etkili yöntemler aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. İnsanlarla ilişkilerdeki tarzın, bu yöntemleri tek başına mı yoksa başkalarıyla birlikte mi kullanacağını seçmene yardım edebilir.',
   },
   settingsNote: {
     student:
@@ -66,12 +82,12 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
       high: 'Sıcaklığını ve başkalarına gösterdiği ilgiyi fark ettiğinizi ona söyleyin.',
     },
     unassuming_ingenuous: {
-      low: 'Kendi isteklerini savunmasına saygı gösterin; aile içinde bir plan yaparken (ör. hafta sonu) başkalarının isteklerini de hesaba katan bir çözüm önermesini isteyin.',
+      low: 'Kendi isteklerini savunmasına saygı gösterin; aile içinde bir plan yaparken (ör. hafta sonu) herkesin isteğini gözeten bir çözümü birlikte arayın.',
       average: 'Ne zaman başkalarına uyduğunu, ne zaman kendi isteğini söylediğini yargılamadan konuşabilirsiniz.',
       high: 'Hoşgörüsünü takdir edin; evde kendi isteğini söylediğinde bunu dikkate aldığınızı gösterin.',
     },
     unassured_submissive: {
-      low: 'Kendine güvenini takdir edin; başarılarını anlatırken başkalarının emeğini de anmasını önerebilirsiniz.',
+      low: 'Düşüncelerini açıkça söylemesini takdir edin; başardığı bir işi anlatırken ona kimlerin katkı verdiğini de sorabilirsiniz.',
       average: 'Düşüncesini söylediği anlarda onu dikkatle dinleyin; sessiz kaldığı anları da doğal karşılayın.',
       high: 'Onu konuşmaya zorlamadan düşüncelerini sorun ve ilgiyle dinleyin; emeğini fark ettiğinizi söyleyin.',
     },
@@ -108,6 +124,8 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
             'Bazı ortamlarda sözü alıyor, bazılarında ilgiyi başkalarına bırakıyorsun. Grup çalışmalarında iki rolü de deneyebilirsin: bir gün konuyu anlatan, bir gün soru soran ol. İki rol de öğrendiğini sınamanın bir yoludur.',
           parent:
             'Çocuğunuz bazı ortamlarda sözü alıyor, bazılarında ilgiyi başkalarına bırakıyor. Arkadaşlarıyla çalışırken bir gün konuyu anlatan, bir gün soru soran olması iki yönünü de kullanır; iki rol de öğrendiğini sınamanın bir yoludur.',
+          adult:
+            'Bazı ortamlarda sözü alıyor, bazılarında ilgiyi başkalarına bırakıyorsun. Biriyle birlikte öğrenirken iki rolü de deneyebilirsin: bir gün konuyu anlatan, bir gün soru soran ol. İki rol de öğrendiğini sınamanın bir yoludur.',
         },
         low: {
           student:
@@ -120,17 +138,19 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
         high: {
           student: 'Bu hafta bir grup çalışmasında kendi fikrini söylemeden önce en az iki kişinin fikrini dinle ve birine soru sor.',
           parent: 'Bu hafta çocuğunuzla, bir grup çalışmasında kendi fikrini söylemeden önce başkalarını dinlemenin ve onlara soru sormanın neler kazandırabileceğini konuşun.',
+          adult: 'Bu hafta bir toplantıda ya da ortak bir işte kendi fikrini söylemeden önce en az iki kişinin fikrini dinle ve birine soru sor.',
         },
         average: {
           student: 'Bu hafta bir grup çalışmasında bir kez sözü al, bir kez de sözü başkasına bırak; ikisinin sana ne kazandırdığını iki cümleyle yaz.',
           parent: 'Bu hafta çocuğunuzla, bir grup içinde ne zaman söz almanın, ne zaman dinlemenin işe yaradığını konuşun.',
+          adult: 'Bu hafta bir toplantıda ya da ortak bir işte bir kez sözü al, bir kez de sözü başkasına bırak; ikisinin sana ne kazandırdığını iki cümleyle yaz.',
         },
         low: {
           student:
-            'Bu hafta derste ya da bir grup çalışmasında en az bir fikrini söyle ya da bir soru sor. Dinlerken aklına gelenleri kısaca not etmek, söylemek istediğini seçmeni kolaylaştırır.',
+            'Bu hafta istersen derste ya da bir grup çalışmasında en az bir fikrini söyle ya da bir soru sor. Dinlerken aklına gelenleri kısaca not etmek, söylemek istediğini seçmeni kolaylaştırır.',
           parent: 'Bu hafta çocuğunuzla, bir grup içinde söylemek istediği bir fikri önceden bir cümleyle not etmesini konuşun; söylemesi için onu zorlamayın.',
           adult:
-            'Bu hafta bir toplantıda ya da ortak bir işte en az bir fikrini söyle ya da bir soru sor. Dinlerken aklına gelenleri kısaca not etmek, söylemek istediğini seçmeni kolaylaştırır.',
+            'Bu hafta istersen bir toplantıda ya da ortak bir işte en az bir fikrini söyle ya da bir soru sor. Dinlerken aklına gelenleri kısaca not etmek, söylemek istediğini seçmeni kolaylaştırır.',
         },
       },
       settings: {
@@ -146,6 +166,8 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
             'İnsanların arasında rahatsın ve sohbet başlatmayı seviyorsun. Bu enerjiyi çalışmaya taşıyabilirsin: arkadaşlarınla kısa bir çalışma grubu kur ve birbirinize soru sorun. Grubun sohbete dönmemesi için süreyi baştan belirleyin; tek başına yapacağın tekrarları da planına ekle.',
           parent:
             'Çocuğunuz insanların arasında rahat ve sohbet başlatmayı seviyor olabilir. Arkadaşlarıyla kısa bir çalışma grubu kurup birbirlerine soru sormaları bu enerjiyi çalışmaya taşır. Grubun sohbete dönmemesi için süreyi baştan belirlemelerini önerebilirsiniz.',
+          adult:
+            'İnsanların arasında rahatsın ve sohbet başlatmayı seviyorsun. Bu enerjiyi öğrenmeye taşıyabilirsin: aynı konuyu öğrenen birkaç kişiyle kısa bir buluşma ayarla ve birbirinize soru sorun. Buluşmanın sohbete dönmemesi için süreyi baştan belirleyin; tek başına yapacağın tekrarları da planına ekle.',
         },
         average: {
           student:
@@ -230,6 +252,8 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
             'Hoşgörülüsün ve çoğu zaman önce başkalarını düşünüyorsun. Grup çalışmalarında uyumu sağlayan kişi olabilirsin; yine de kendi çalışma zamanını korumak için gerektiğinde hayır demek önemli. Haftalık planına önce kendi tekrarlarını yaz, başkalarına yardımı sonra ekle.',
           parent:
             'Çocuğunuz hoşgörülü ve çoğu zaman önce başkalarını düşünüyor olabilir. Grup çalışmalarında uyumu sağlayan kişi olabilir; kendi çalışma zamanını korumak için gerektiğinde hayır diyebilmesini destekleyin. Haftalık planına önce kendi tekrarlarını yazmasını önerebilirsiniz.',
+          adult:
+            'Hoşgörülüsün ve çoğu zaman önce başkalarını düşünüyorsun. Ortak işlerde uyumu sağlayan kişi olabilirsin; yine de kendi çalışma zamanını korumak için gerektiğinde hayır demek önemli. Haftalık planına önce kendi tekrarlarını yaz, başkalarına yardımı sonra ekle.',
         },
         average: {
           student:
@@ -242,6 +266,8 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
             'Başkalarının her davranışına katlanmıyor ve kendi ihtiyaçlarını gözetiyorsun. Bu, çalışma zamanını korumanı kolaylaştırabilir: dikkatini dağıtan bir ortamı değiştirmekten çekinme. Grup çalışmalarında herkesin ne istediğini baştan konuşmak, anlaşmazlıkları azaltır.',
           parent:
             'Çocuğunuz başkalarının her davranışına katlanmıyor ve kendi ihtiyaçlarını gözetiyor olabilir. Bu, çalışma zamanını korumasını kolaylaştırabilir. Grup çalışmalarında herkesin ne istediğini baştan konuşmanın anlaşmazlıkları azalttığını onunla konuşabilirsiniz.',
+          adult:
+            'Başkalarının her davranışına katlanmıyor ve kendi ihtiyaçlarını gözetiyorsun. Bu, çalışma zamanını korumanı kolaylaştırabilir: dikkatini dağıtan bir ortamı değiştirmekten çekinme. Ortak işlerde herkesin ne istediğini baştan konuşmak, anlaşmazlıkları azaltır.',
         },
       },
       action: {
@@ -259,7 +285,7 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
         },
       },
       settings: {
-        high: 'Hoşgörünün, sabrın ve karşılıklı desteğin öne çıktığı ortamlar',
+        high: 'Hoşgörünün, sabrın ve anlayışın öne çıktığı ortamlar',
         low: 'Herkesin ihtiyaçlarının açıkça konuşulduğu, sınırların net olduğu ortamlar',
       },
     },
@@ -307,7 +333,7 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
       },
       settings: {
         high: 'Dikkatli dinlemenin ve özenli çalışmanın değer gördüğü ortamlar',
-        low: 'Kendini ve yapılan işi başkalarına tanıtmanın önemli olduğu ortamlar',
+        low: 'Yapılan işin başkalarına gösterildiği ve geri bildirimin bol olduğu ortamlar',
       },
     },
     aloof_introverted: {
@@ -352,8 +378,8 @@ export const kisilerarasiTarzRoadmap: RoadmapTemplate = {
         },
       },
       settings: {
-        high: 'Sessiz, odaklanmaya elverişli ve tek başına derinleşilebilen ortamlar',
-        low: 'Konuşmanın, tanışmanın ve fikir paylaşmanın bol olduğu ortamlar',
+        high: 'Özel hayata saygı gösterilen, insanların birbirini zamanla tanıdığı ortamlar',
+        low: 'Düşüncelerin ve deneyimlerin rahatça paylaşıldığı ortamlar',
       },
     },
     cold_hearted: {

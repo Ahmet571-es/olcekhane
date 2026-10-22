@@ -7,7 +7,9 @@ import type { BandText, ReportTemplate } from './types';
  * söylediğinin ötesine geçmez: "ilgi odağı olmayı aramadığını" der, "geri planda kaldığını" demez. Öğrenciye "Genel olarak ...
  * söylüyorsun", veliye "Çocuğunuz genel olarak ... belirtiyor" dili kullanılır. Sert ve mesafeli tarzların yüksek düzeyi
  * suçlamadan, küçük ve uygulanabilir bir öneriyle anlatılır; sessiz ve geri planda kalan tarzlar bir eksiklik gibi
- * anlatılmaz. Faydalar kesin sonuç gibi değil, olasılık olarak söylenir.
+ * anlatılmaz. Faydalar kesin sonuç gibi değil, olasılık olarak söylenir. Düşük düzeyler de bir eksiklik gibi anlatılmaz ve
+ * öteki kartlarla çelişen bir öğüt vermez: ör. "Her şeye katlanmayan" kartı başkalarını gözetmeyi öğütlemez (aynı raporda
+ * sıcak tarz yüksek, mesafeli tarz düşük çıkabilir); kendi isteklerine yer açmayı anlatır.
  * Metinler okula ya da ergenliğe özgü sözcük içermez; yetişkin raporu öğrenci metinlerini kullanır.
  * Destek kutusu yoktur: ölçeklerin hiçbiri sıkıntı ya da kaygı ölçmez.
  * Öneri listeleri (kapsamlı rapor için) bu testte henüz yazılmadı; basit raporda gösterilmez.
@@ -98,8 +100,8 @@ export const kisilerarasiTarzReport: ReportTemplate = {
       ),
       low: t(
         'Her şeye katlanmayan',
-        'Genel olarak başkalarının her davranışına katlanmadığını ve her zaman önce başkalarını düşünmediğini söylüyorsun. Kendini korumak önemli; başkalarının ihtiyaçlarını da gözetmek ilişkilerini güçlendirebilir.',
-        'Çocuğunuz genel olarak başkalarının her davranışına katlanmadığını ve her zaman önce başkalarını düşünmediğini belirtiyor. Başkalarının ihtiyaçlarını da gözetmenin değerini onunla konuşabilirsiniz.',
+        'Genel olarak başkalarının her davranışına katlanmadığını ve her zaman önce başkalarını düşünmediğini söylüyorsun. Bu, gerektiğinde sınır çizebildiğini ve kendi isteklerine de yer açtığını gösterebilir.',
+        'Çocuğunuz genel olarak başkalarının her davranışına katlanmadığını ve her zaman önce başkalarını düşünmediğini belirtiyor. Bu, gerektiğinde sınır çizebildiğini ve kendi isteklerine de yer açtığını gösterebilir.',
       ),
     },
     unassured_submissive: {
@@ -115,8 +117,8 @@ export const kisilerarasiTarzReport: ReportTemplate = {
       ),
       low: t(
         'Geri planda kalmayan',
-        'Genel olarak alçak sesle konuşmadığını, kendini övmekten çekinmediğini ve ilgi odağı olmaktan rahatsızlık duymadığını söylüyorsun.',
-        'Çocuğunuz genel olarak alçak sesle konuşmadığını, kendini övmekten çekinmediğini ve ilgi odağı olmaktan rahatsızlık duymadığını belirtiyor.',
+        'Genel olarak alçak sesle konuşmadığını, kendi başarılarını anlatmaktan çekinmediğini ve ilgi odağı olmaktan rahatsızlık duymadığını söylüyorsun.',
+        'Çocuğunuz genel olarak alçak sesle konuşmadığını, kendi başarılarını anlatmaktan çekinmediğini ve ilgi odağı olmaktan rahatsızlık duymadığını belirtiyor.',
       ),
     },
     aloof_introverted: {

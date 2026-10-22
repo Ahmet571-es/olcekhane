@@ -4,6 +4,14 @@ import type { LikertInstrument } from '@/lib/instruments/types';
  * Öz-saygı Ölçeği
  * Kaynak: Rosenberg Self-Esteem Scale (Rosenberg, 1965). Ücretsiz ve bildirim gerektirmeden kullanılabilir.
  * Türkçe çeviri: Ölçekhane, 2026. Puanlama 0–3 (toplam 0–30); 2, 5, 6, 8 ve 9. maddeler ters puanlanır.
+ *
+ * Cevap denetimi (2026-10-22 incelemesi): on cümlenin beşi olumlu, beşi olumsuz bir şey söylediği için bütün cümlelere
+ * aynı cevap (ortada seçenek yok; hep "Tamamen katılıyorum" toplamı 15 yapar ve "Dengeli" görünür) kalite notu verir
+ * (`sameAnswerCheck`). Madde düzeyinde destek (`supportItems`): toplam puan tek bir cevabı gizleyebilir. "Sonuçta kendimi
+ * başarısız biri gibi görme eğilimindeyim" (R9) cümlesine "Katılıyorum" ya da "Tamamen katılıyorum", "Bazen kendimi
+ * gerçekten işe yaramaz hissediyorum" (R6) cümlesine "Tamamen katılıyorum" denirse destek kutusu toplam puandan bağımsız
+ * açılır ve ilk satırı nedenini söyler (rapor şablonu: itemSupport). R6 "bazen" dediği için yalnızca en güçlü cevap
+ * kutuyu açar: zaman zaman kendini işe yaramaz hissettiğine katılmak gençlerde çok yaygındır.
  */
 export const ozSaygi: LikertInstrument = {
   slug: 'oz-saygi',
@@ -37,6 +45,11 @@ export const ozSaygi: LikertInstrument = {
     { value: 3, label: 'Tamamen katılıyorum' },
   ],
   scoring: { method: 'sum', minAnsweredRatio: 0.9 },
+  supportItems: [
+    { key: 'R6', min: 3 },
+    { key: 'R9', min: 2 },
+  ],
+  sameAnswerCheck: true,
   totalScale: 'self_esteem',
   anchoredBands: {
     basis: 'sum',
@@ -77,7 +90,7 @@ export const ozSaygi: LikertInstrument = {
       '53 ülkede eş zamanlı uygulamada ölçeğin iç tutarlılığı ortalama α = .81 bulunmuştur (Schmitt ve Allik, 2005).',
     normStatus: 'none',
     normNote:
-      'Türkiye ergen normları henüz yok. Toplam puan, ölçeğin yaygın kullanılan aralıklarına göre yorumlanıyor (0–14, 15–25, 26–30). Bu aralıklar klinik bir eşik değildir.',
+      'Türkiye’de gençler için henüz bir karşılaştırma çalışması (norm) yok. Toplam puan, ölçeğin yaygın kullanılan aralıklarına göre yorumlanır (0–14, 15–25, 26–30): sonuç kişinin kendini nasıl gördüğünü gösterir, başkalarıyla karşılaştırma yapmaz. Bu aralıklar klinik bir eşik değildir.',
     ageNote: '6. sınıftan itibaren uygundur.',
     license: 'Ücretsiz: ölçek izin almadan ve bildirim yapmadan kullanılabilir.',
     licenseUrl: 'https://socy.umd.edu/about-us/using-rosenberg-self-esteem-scale',

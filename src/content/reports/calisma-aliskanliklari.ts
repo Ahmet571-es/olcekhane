@@ -1,19 +1,26 @@
 import type { BandText, ReportTemplate, ScaleTexts } from './types';
 
+/**
+ * Çalışma Alışkanlıkları Envanteri: rapor metinleri. Düzey adları bir sıklık dizisidir ("Çok az kullanılıyor" … "Çok sık
+ * kullanılıyor"): cevaplar bir alışkanlığın ne sıklıkla kullanıldığıdır, düşük düzey bir eksiklik hükmü değildir. Kısa
+ * adlar (summary) kişisiz yazılır ("Takılınca çoğu zaman sormadan geçen"); emir gibi okunmaz. Öneriler söz vermez:
+ * "-abilir" diye yazılır.
+ */
+
 /** Üç düzeyli metni beş düzeye yayar: çok düşük ve düşük aynı, yüksek ve çok yüksek aynı metni kullanır. */
 function three(low: BandText, mid: BandText, high: BandText): ScaleTexts {
   return { very_low: low, low, average: mid, high, very_high: high };
 }
 
 export const calismaAliskanliklariReport: ReportTemplate = {
-  version: 'calisma-aliskanliklari-rapor-1',
+  version: 'calisma-aliskanliklari-rapor-2',
   evaluative: true,
   bandLabels: {
-    very_low: 'Geliştirilmeli',
-    low: 'Geliştirilebilir',
+    very_low: 'Çok az kullanılıyor',
+    low: 'Az kullanılıyor',
     average: 'Ara sıra kullanılıyor',
-    high: 'Güçlü',
-    very_high: 'Çok güçlü',
+    high: 'Sık kullanılıyor',
+    very_high: 'Çok sık kullanılıyor',
   },
   overview: {
     student:
@@ -26,9 +33,9 @@ export const calismaAliskanliklariReport: ReportTemplate = {
       {
         summary: 'Çoğu zaman plansız',
         student:
-          'Çalışmaya genellikle plansız başlıyor ve işleri son güne bırakabiliyorsun. Bu çok yaygın bir durum ve küçük adımlarla değiştirilebilir.',
+          'Çalışmaya genellikle plansız başlıyorsun ve işler çoğu zaman son güne kalıyor. Bu çok yaygın bir durum ve küçük adımlarla değiştirilebilir.',
         parent:
-          'Çocuğunuz çalışmayı genellikle önceden planlamadığını ve işleri son güne bırakabildiğini belirtiyor. Planlama, birlikte çalışılarak kolayca geliştirilebilecek bir beceridir.',
+          'Çocuğunuz çalışmayı genellikle önceden planlamadığını ve işlerin çoğu zaman son güne kaldığını belirtiyor. Planlama, birlikte çalışılarak geliştirilebilecek bir beceridir.',
         tipsStudent: [
           'Her akşam yalnızca beş dakikanı ayırıp ertesi gün neyi çalışacağını üç madde olarak yaz.',
           'Büyük bir ödevi parçalara böl ve her parçaya bir gün ver.',
@@ -40,7 +47,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
       },
       {
         summary: 'Zaman zaman planlı',
-        student: 'Bazen planlı çalışıyorsun, bazen işler son güne kalıyor. Planlamayı bir alışkanlık hâline getirmek sana zaman kazandırır.',
+        student: 'Bazen planlı çalışıyorsun, bazen işler son güne kalıyor. Planlamayı bir alışkanlık hâline getirmek sana zaman kazandırabilir.',
         parent: 'Çocuğunuz zaman zaman planlı çalıştığını, zaman zaman da işleri son güne bıraktığını belirtiyor.',
         tipsStudent: [
           'Sınav tarihlerini öğrenir öğrenmez takvimine yaz ve geriye doğru çalışma günleri belirle.',
@@ -53,7 +60,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
       },
       {
         summary: 'Planlı ve önceden başlayan',
-        student: 'Çalışmanı önceden planlıyor ve işleri son güne bırakmıyorsun. Bu, sınav dönemlerinde sana büyük bir rahatlık sağlar.',
+        student: 'Çalışmanı önceden planlıyor ve işleri son güne bırakmıyorsun. Bu, sınav dönemlerinde sana rahatlık sağlayabilir.',
         parent: 'Çocuğunuz çalışmasını önceden planladığını ve işleri son güne bırakmadığını belirtiyor. Bu güçlü bir alışkanlıktır.',
         tipsStudent: [
           'Planına tekrar günleri de ekle: öğrendiğin konulara birkaç gün sonra geri dön.',
@@ -66,7 +73,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
       {
         summary: 'Çoğunlukla yeniden okumaya dayalı',
         student:
-          'Tekrar yaparken daha çok notlarını yeniden okuyorsun. Yeniden okumak “biliyorum” hissi verir ama kalıcı öğrenme için en etkili yol, kitabı kapatıp hatırlamaya çalışmaktır.',
+          'Tekrar yaparken daha çok notlarını yeniden okuyorsun. Yeniden okumak “biliyorum” hissi verir ama kalıcı öğrenme için en etkili yollardan biri, kitabı kapatıp hatırlamaya çalışmaktır.',
         parent:
           'Çocuğunuz tekrar yaparken daha çok notlarını yeniden okuduğunu belirtiyor. Araştırmalar, bilgiyi kitaba bakmadan hatırlamaya çalışmanın ve tekrarı günlere yaymanın çok daha etkili olduğunu gösteriyor.',
         tipsStudent: [
@@ -79,7 +86,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
         ],
       },
       {
-        summary: 'Zaman zaman kendini sınama',
+        summary: 'Zaman zaman kendini sınayan',
         student: 'Bazen kendini sınıyor, bazen yalnızca yeniden okuyorsun. Kendini sınamayı daha sık kullanırsan aynı sürede daha kalıcı öğrenebilirsin.',
         parent: 'Çocuğunuz bazen kendini sınadığını, bazen yalnızca notlarını yeniden okuduğunu belirtiyor.',
         tipsStudent: [
@@ -89,7 +96,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
         tipsParent: ['Sınavdan önceki son akşam yerine, günlere yayılmış kısa tekrarları destekleyin.', 'Onu sınamayı teklif edin; takıldığı yerleri birlikte not edin.'],
       },
       {
-        summary: 'Kendini sınama ve aralıklı tekrar',
+        summary: 'Kendini sınayan, tekrarı günlere yayan',
         student:
           'Öğrendiklerini kitaba bakmadan hatırlamaya çalışıyor ve tekrarını günlere yayıyorsun. Bu, araştırmalarda en etkili bulunan iki çalışma yöntemi.',
         parent:
@@ -102,9 +109,9 @@ export const calismaAliskanliklariReport: ReportTemplate = {
       {
         summary: 'Daha çok ezbere dayalı',
         student:
-          'Konuları çoğu zaman anlamadan ezberlemeye çalışıyorsun. Ezber kısa sürede işe yarar gibi görünür ama çabuk unutulur. Anladığın bilgi ise kalıcıdır.',
+          'Konuları çoğu zaman anlamadan ezberlemeye çalışıyorsun. Ezber kısa sürede işe yarar gibi görünür ama çabuk unutulur. Anladığın bilgi ise daha kalıcıdır.',
         parent:
-          'Çocuğunuz konuları çoğu zaman anlamadan ezberlemeye çalıştığını belirtiyor. Anlamaya dayalı öğrenme hem daha kalıcıdır hem de yeni konuları öğrenmeyi kolaylaştırır.',
+          'Çocuğunuz konuları çoğu zaman anlamadan ezberlemeye çalıştığını belirtiyor. Anlamaya dayalı öğrenme genellikle daha kalıcıdır ve yeni konuları öğrenmeyi kolaylaştırabilir.',
         tipsStudent: [
           'Her yeni bilgi için kendine “Bu neden böyle?” diye sor ve cevabını bir cümleyle yaz.',
           'Öğrendiğin konuyu kendi cümlelerinle bir arkadaşına ya da ailene anlat.',
@@ -116,7 +123,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
       },
       {
         summary: 'Zaman zaman anlamaya yönelik',
-        student: 'Bazen konuları anlamaya çalışıyor, bazen ezberliyorsun. “Neden?” sorusunu daha sık sormak öğrendiklerini daha kalıcı yapar.',
+        student: 'Bazen konuları anlamaya çalışıyor, bazen ezberliyorsun. “Neden?” sorusunu daha sık sormak öğrendiklerini daha kalıcı yapabilir.',
         parent: 'Çocuğunuz bazen konuları anlamaya çalıştığını, bazen ezberlediğini belirtiyor.',
         tipsStudent: ['Yeni bir konuyu daha önce bildiğin bir şeye benzetmeye çalış.', 'Bir çözümün her adımını kendine sesli açıkla.'],
         tipsParent: ['Anlamadığı bir yeri geçmek yerine üzerinde durmasını destekleyin.', 'Doğru cevaptan çok akıl yürütmesini takdir edin.'],
@@ -135,7 +142,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
         student:
           'Ders çalışırken dikkatin telefon, bildirimler ya da başka düşünceler yüzünden sık sık dağılıyor. Bu çok yaygın ve ortamda yapacağın küçük değişiklikler büyük fark yaratabilir.',
         parent:
-          'Çocuğunuz ders çalışırken dikkatinin sık sık dağıldığını belirtiyor. Dikkat dağıtıcıları ortamdan uzaklaştırmak, irade gücüne güvenmekten çok daha etkilidir.',
+          'Çocuğunuz ders çalışırken dikkatinin sık sık dağıldığını belirtiyor. Dikkat dağıtıcıları ortamdan uzaklaştırmak, yalnızca irade gücüne güvenmekten genellikle daha etkilidir.',
         tipsStudent: [
           'Çalışırken telefonunu başka bir odaya koy; yalnızca molada bak.',
           '25 dakika çalışıp 5 dakika mola ver; molada ekrana bakmamaya çalış.',
@@ -147,13 +154,13 @@ export const calismaAliskanliklariReport: ReportTemplate = {
       },
       {
         summary: 'Değişken odaklanma',
-        student: 'Bazen dikkatini toplayabiliyor, bazen dağılıyorsun. Çalışma ortamını düzenlemek odaklanmanı kolaylaştırır.',
+        student: 'Bazen dikkatini toplayabiliyor, bazen dağılıyorsun. Çalışma ortamını düzenlemek odaklanmanı kolaylaştırabilir.',
         parent: 'Çocuğunuz ders çalışırken zaman zaman odaklanabildiğini, zaman zaman dikkatinin dağıldığını belirtiyor.',
         tipsStudent: ['Çalışmaya başlamadan önce masandan ilgisiz her şeyi kaldır.', 'Bildirimleri çalışma saatlerinde kapat.'],
         tipsParent: ['Çalışma saatlerinde ev içindeki gürültüyü azaltmaya çalışın.', 'Molalarını ekran yerine hareketle geçirmesini önerin.'],
       },
       {
-        summary: 'Dikkat dağıtıcıları iyi yönetiyor',
+        summary: 'Dikkat dağıtıcıları iyi yöneten',
         student: 'Dikkat dağıtıcıları uzak tutabiliyor ve çalışırken dikkatini toplayabiliyorsun.',
         parent: 'Çocuğunuz dikkat dağıtıcıları uzak tutabildiğini ve çalışırken odaklanabildiğini belirtiyor.',
         tipsStudent: ['Uzun çalışmalarda düzenli molalar vermeyi unutma.', 'Zor konuları dikkatinin en iyi olduğu saatlere koy.'],
@@ -162,7 +169,7 @@ export const calismaAliskanliklariReport: ReportTemplate = {
     ),
     help: three(
       {
-        summary: 'Takılınca çoğu zaman geçme',
+        summary: 'Takılınca çoğu zaman sormadan geçen',
         student:
           'Takıldığında ya da yanlış yaptığında çoğu zaman üzerinde durmadan geçiyorsun. Yanlışlar ve sorular, öğrenmenin en değerli fırsatlarıdır.',
         parent:
@@ -177,8 +184,8 @@ export const calismaAliskanliklariReport: ReportTemplate = {
         ],
       },
       {
-        summary: 'Zaman zaman yardım isteme',
-        student: 'Bazen yanlışlarını inceliyor ve yardım istiyorsun. Bunu bir alışkanlık hâline getirmek, aynı hataları tekrarlamanı önler.',
+        summary: 'Zaman zaman yardım isteyen',
+        student: 'Bazen yanlışlarını inceliyor ve yardım istiyorsun. Bunu bir alışkanlık hâline getirmek, aynı hataları tekrarlama olasılığını azaltabilir.',
         parent: 'Çocuğunuz bazen yanlışlarını incelediğini ve yardım istediğini belirtiyor.',
         tipsStudent: ['Yanlış yaptığın soruları birkaç gün sonra yeniden çöz.', 'Takıldığında önce ne bildiğini yaz, sonra soruyu sor.'],
         tipsParent: ['Soru sorabileceği kişileri ve kaynakları birlikte belirleyin.', 'Hatalarını paylaştığında sakin ve meraklı bir tutum gösterin.'],

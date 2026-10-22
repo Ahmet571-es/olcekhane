@@ -38,9 +38,9 @@ export const RIASEC_TYPES: Record<RiasecKey, RiasecType> = {
     scaleKey: 'realistic',
     name: 'Gerçekçi',
     english: 'Realistic',
-    plain: 'Elleriyle, aletlerle, makinelerle ya da doğada somut işler yapmaktan hoşlanmak.',
+    plain: 'Elle, aletlerle, makinelerle ya da doğada somut işler yapmaktan hoşlanmak.',
     student:
-      'Elleriyle bir şey yapmaktan, söküp takmaktan, kurmaktan ve onarmaktan hoşlanıyorsun. Sonucu elle tutulur işler, makineler, araçlar, bitkiler ya da açık hava sana daha çekici geliyor.',
+      'Ellerinle bir şey yapmaktan, söküp takmaktan, kurmaktan ve onarmaktan hoşlanıyorsun. Sonucu elle tutulur işler, makineler, araçlar, bitkiler ya da açık hava sana daha çekici geliyor.',
     parent:
       'Çocuğunuz somut, elle yapılan işlerden hoşlandığını belirtiyor: bir şeyi tamir etmek, kurmak, yetiştirmek ya da açık havada çalışmak. Atölye, tamir, yapım ve açık hava etkinliklerinde deneme fırsatları onun için değerli olabilir.',
     likes: ['Tamir etmek, kurmak, monte etmek', 'Makinelerle ve aletlerle çalışmak', 'Açık havada ve doğada olmak', 'Sonucu gözle görülen işler'],

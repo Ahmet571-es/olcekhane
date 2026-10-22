@@ -17,7 +17,8 @@ import type { RoadmapTemplate } from './types';
  *    bağlantısıyla). "Sık sık kendimi hüzünlü hissederim" ya da "Kendimden hoşlanmam" cümlesine 4–5 denmişse o konu için
  *    düşük düzeyin önerileri kullanılır (lib/reports/roadmap.ts); cevapları iki uca ayrışan konuda orta düzeyinkiler. Ruh hâli düşükken öneriler, iki hafta ya da daha uzun süredir çoğu zaman keyifsizlik ve üzüntü
  *    varsa güvendiği biriyle konuşmayı ve doktora başvurmayı söyler (MedlinePlus: belirtiler çoğu zaman ve iki hafta ya da
- *    daha uzun süredir varsa doktorla konuşulmalı). Raporun kendi destek kutusu da gösterilir.
+ *    daha uzun süredir varsa doktorla konuşulmalı). Raporun kendi destek kutusu da gösterilir; bu yönlendirme bir sayfada
+ *    üç kez okunmasın diye veliye yaklaşım ve rapor kartı onu tekrarlamaz (veliye yaklaşım dinlemeyi anlatır).
  *  - Rapor metinleri tekrar edilmez; tanı koyan ya da korkutan dil kullanılmaz; iyimserlik bir başarı ölçütü gibi anlatılmaz.
  *  - Yetişkin metni yalnızca öğrenci metni okula özgü olduğunda ya da güvenilecek kişi olarak yetişkinden söz ettiğinde
  *    yazılır.
@@ -51,8 +52,8 @@ export const iyimserlikRoadmap: RoadmapTemplate = {
   lastWeek: bf.lastWeek,
   nextTests: ['oz-saygi', 'duygusal-zeka-bilesenleri', 'kisiligin-10-yonu'],
   nextPurpose: {
-    you: 'kendine bakışını, duygularını ve kişiliğini daha ayrıntılı görmek',
-    parent: 'çocuğunuzun kendine bakışını, duygularını ve kişiliğini daha ayrıntılı görmek',
+    you: 'kendini farklı yönlerden daha ayrıntılı tanımak',
+    parent: 'çocuğunuzun kendini farklı yönlerden daha ayrıntılı tanıması',
   },
   approach: {
     gelecek: {
@@ -66,7 +67,7 @@ export const iyimserlikRoadmap: RoadmapTemplate = {
       high: 'Hata yaptığında sakin kalın; yanlışlarını rahatça konuşabileceği bir ortam sunun.',
     },
     ruh_hali: {
-      low: 'Duygularını küçümsemeden dinleyin; bu hâl en az iki haftadır çoğu gün sürüyorsa okulun rehberlik servisiyle ya da aile hekiminizle görüşün.',
+      low: 'Duygularını ciddiye alın; “Neşelen” yerine “Seni dinliyorum” demek konuşmasını kolaylaştırabilir.',
       average: 'Keyifsiz olduğu günlerde ona alan tanıyın ve isterse sizinle konuşabileceğini bilmesini sağlayın.',
       high: 'Onu neyin keyiflendirdiğini sorun ve bunlara zaman ayırmasını destekleyin.',
     },
@@ -79,7 +80,7 @@ export const iyimserlikRoadmap: RoadmapTemplate = {
           student:
             'Geleceğe karamsar baktığında, emek vermenin bir işe yaramayacağını düşünmek ve zor bir konuyu yarıda bırakmak kolaylaşabilir. Büyük hedefler yerine bir hafta içinde bitirebileceğin küçük bir hedef seç; tamamladığın her adımı işaretle. Küçük ilerlemeleri görmek, emeğinin bir karşılığı olduğunu fark etmeni kolaylaştırır.',
           parent:
-            'Geleceğe karamsar baktığında, emek vermenin bir işe yaramayacağını düşünmek ve zor bir konuyu yarıda bırakmak çocuğunuza kolay gelebilir. Büyük hedefler yerine bir hafta içinde bitirebileceği küçük bir hedef seçmesine ve tamamladığı adımları işaretlemesine yardım edin.',
+            'Çocuğunuz geleceğe karamsar baktığında, emek vermenin işe yaramayacağını düşünebilir ve zor bir konuyu yarıda bırakmak ona kolay gelebilir. Büyük hedefler yerine bir hafta içinde bitirebileceği küçük bir hedef seçmesine ve tamamladığı adımları işaretlemesine yardım edin.',
         },
         average: {
           student:
@@ -122,7 +123,7 @@ export const iyimserlikRoadmap: RoadmapTemplate = {
           student:
             'Kendinden hoşlanmadığında, yaptığın bir yanlışı kendine karşı bir kanıt gibi görmek kolaylaşabilir. Çalışırken yanlış yaptığında, aynı durumdaki bir arkadaşına ne söyleyeceğini düşün ve kendine de öyle seslen. İlerlemeni başkalarıyla değil, kendi geçen haftanla karşılaştır.',
           parent:
-            'Kendinden hoşlanmadığında, çocuğunuz yaptığı bir yanlışı kendine karşı bir kanıt gibi görebilir. Yanlışlarını öğrenmenin bir parçası olarak görmesine yardım edin; ilerlemesini başkalarıyla değil, kendi geçen haftasıyla karşılaştırın.',
+            'Çocuğunuz kendinden hoşlanmadığı zamanlarda, yaptığı bir yanlışı kendine karşı bir kanıt gibi görebilir. Yanlışlarını öğrenmenin bir parçası olarak görmesine yardım edin; ilerlemesini başkalarıyla değil, kendi geçen haftasıyla karşılaştırın.',
         },
         average: {
           student:

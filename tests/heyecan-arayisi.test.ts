@@ -454,6 +454,10 @@ describe('Heyecan Arayışı gelişim yol haritası', () => {
     expect(new Set(Object.values(t.scales).map((x) => x.color)).size).toBe(3);
     expect(t.planningScale).toBe('impulsive');
     expect(t.sources.every((s) => s.url?.startsWith('https://doi.org/'))).toBe(true);
+    // Giriş sade: "… kullanmanın sana kolay geleceği konusunda ipucu verebilir" gibi dolambaçlı bir cümle yok.
+    expect(t.studyIntro.student).toContain('Heyecan arayışın, bu yöntemlere nereden başlayacağını seçmene yardım edebilir.');
+    expect(t.studyIntro.parent).toContain('Çocuğunuzun heyecan arayışı, bu yöntemlere nereden başlayacağını seçmesine yardım edebilir.');
+    for (const x of Object.values(t.studyIntro)) expect(x).not.toMatch(/ipucu|kolay geleceğ/);
   });
 
   it('rapor kartı, öneri kartı, "Bu hafta dene" ve veliye yaklaşım aynı fikri tekrar etmez (dört sözcüklük söz öbekleri)', () => {

@@ -6,6 +6,11 @@ import type { LikertInstrument } from '@/lib/instruments/types';
  * Madde sırası özgün uygulama sırasıdır (E, A, C, ES, I döngüsü).
  * Türkçe çeviri: Ölçekhane, 2026. Ergenlerin anlayacağı sade dil hedeflendi; "parti" gibi
  * bağlamlar Türkiye'deki gençlerin gündelik hayatına uyarlandı.
+ *
+ * Birbirinin tersini söyleyen beş madde çifti (`oppositePairs`; her çiftte önce düz, sonra ters puanlanan madde): çoğuna
+ * aynı uç cevap verilirse raporda uyarı çıkar. Dışadönüklükte iki çift (ilgi odağı olmak, ortamı canlandırmak ile geri
+ * planda kalmak); uyumlulukta insanlara ilgi; duygusal dengede hüzün ("nadiren" ve "sık sık"); merak ve hayal gücünde
+ * hayal gücü. Sorumlulukta birbirinin tam tersi olan bir çift yoktur (düzeni seven biri de eşyalarını ortada bırakabilir).
  */
 export const besFaktor: LikertInstrument = {
   slug: 'bes-faktor-kisilik',
@@ -41,6 +46,13 @@ export const besFaktor: LikertInstrument = {
     { value: 5, label: 'Tamamen doğru' },
   ],
   scoring: { method: 'mean', minAnsweredRatio: 0.8 },
+  oppositePairs: [
+    ['E9', 'E8'],
+    ['E1', 'E4'],
+    ['A2', 'A7'],
+    ['ES4', 'ES10'],
+    ['I3', 'I6'],
+  ],
   anchoredBands: {
     basis: 'mean',
     thresholds: [
@@ -154,7 +166,7 @@ export const besFaktor: LikertInstrument = {
     reliability: 'Özgün formun 10 maddelik ölçeklerinde iç tutarlılık (Cronbach α) .79 ile .87 arasındadır.',
     normStatus: 'none',
     normNote:
-      'Türkiye yaş normları henüz yok. Puanlar ölçeğin kendi aralığına göre yorumlanıyor: sonuç öğrencinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç, kişinin kendini nasıl tanımladığını gösterir; başkalarıyla karşılaştırma yapmaz.',
     ageNote:
       '6. sınıftan itibaren uygundur. Birkaç madde soyut ifade içerdiğinden küçük yaşlarda bir yetişkinin kelimeleri açıklaması gerekebilir; cevabı yönlendirmeden.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',

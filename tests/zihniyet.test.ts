@@ -4,7 +4,7 @@ import { publicInstruments, solvableInstruments } from '@/content/instruments';
 import { zihniyet } from '@/content/instruments/zihniyet';
 import { REPORT_TEMPLATES } from '@/content/reports';
 import type { InsightRule, LevelGroup } from '@/content/reports/types';
-import { hasPublicRoadmap } from '@/content/roadmaps';
+import { ROADMAPS, hasPublicRoadmap } from '@/content/roadmaps';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import { ADULT_GRADE } from '@/lib/config';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
@@ -113,6 +113,19 @@ describe('Zihniyet: puanlama', () => {
   });
 });
 
+/** Sayfada yan yana okunan metinler: kartlar (birlikte yorumun paragrafları ayrı) ve yol haritasının bölümleri. */
+function pageTexts(rep: SimpleReport): string[] {
+  const r = rep.roadmap!;
+  return [
+    ...rep.items.flatMap((i) => i.text.split('\n\n')),
+    r.standoutNote ?? '',
+    r.study.intro,
+    ...r.study.items.map((i) => i.text),
+    ...(r.approach?.items.map((i) => i.text) ?? []),
+    ...r.weeks.map((w) => w.text),
+  ].filter(Boolean);
+}
+
 describe('Zihniyet: rapor', () => {
   const VALUES: Record<LevelGroup, number[]> = { low: [1, 2], average: [3], high: [4, 5] };
 
@@ -144,8 +157,13 @@ describe('Zihniyet: rapor', () => {
         const [zk, cb, ht, zr] = combo;
         expect(txt.includes(aud === 'adult' ? 'Bir not: zihniyet tek başına belirleyici değildir' : 'Bir not: zihniyet başarının küçük bir parçasıdır'), tag).toBe(true);
         expect(txt.includes('birbiriyle pek uyuşmuyor'), tag).toBe(zk === 'high' && cb === 'low');
-        expect(txt.includes('hataları seni geri götüren') || txt.includes('hataları onu geri götüren'), tag).toBe(zk === 'high' && ht === 'low');
-        expect(txt.includes('zorlayıcı işlerden kaçınma'), tag).toBe(zk === 'high' && zr === 'low');
+        // Birlikte yorum kartlardaki cümleleri tekrar etmez: yalnızca hangi alanın düşük olduğunu söyler.
+        expect(txt.includes('Ancak çabaya bakış puan'), tag).toBe(zk === 'high' && cb === 'low');
+        expect(txt.includes('Öte yandan hataya bakış puan'), tag).toBe(zk === 'high' && ht === 'low');
+        expect(txt.includes('Buna karşın zorluğa yaklaşım puan'), tag).toBe(zk === 'high' && zr === 'low');
+        expect(txt, tag).not.toMatch(/geri götüren şeyler olarak|yeteneksizlik işareti gibi|kaçınma eğilim/);
+        // Kısa bir çevrim içi çalışmanın notları yükselttiği söylenmez (okuyanın notlarının düşük olduğunu ima ederdi).
+        expect(txt, tag).not.toMatch(/notları düşük|çevrim içi/);
         expect(/[Dd]ört alanda da/.test(txt), tag).toBe(combo.every((x) => x === 'high'));
         const anyHigh = [cb, ht, zr].includes('high');
         expect(txt.includes('gelişime açık bir bakış'), tag).toBe(zk === 'low' && anyHigh);
@@ -155,8 +173,11 @@ describe('Zihniyet: rapor', () => {
         expect(txt.includes('düşük çıkanlarda sabitlik yönünde'), tag).toBe(zk === 'average' && [cb, ht, zr].includes('low'));
         // Aynı bulgu bir raporda bir kez anılır.
         const all = rep.items.map((i) => i.text).join(' ');
-        expect(all.split('belirginleşiyor').length - 1, tag).toBeLessThanOrEqual(1);
-        expect(all.split('anne babanın başarısızlığa bakışı').length - 1, tag).toBeLessThanOrEqual(1);
+        expect(all.split('başarısız olunan anlarda görülüyor').length - 1, tag).toBeLessThanOrEqual(1);
+        expect(all.split('anne babanın hatalara bakış').length - 1, tag).toBeLessThanOrEqual(1);
+        // Aynı sayfada bir cümle iki kez geçmez (kartlar, birlikte yorum ve yol haritası).
+        const sentences = pageTexts(rep).flatMap((x) => x.split(/(?<=[.!?])\s+/)).map((x) => x.trim()).filter((x) => x.length > 25);
+        expect(sentences.filter((x, i) => sentences.indexOf(x) !== i), tag).toEqual([]);
         expect(rep.cautions.filter((x) => !x.includes('hep aynı seçenek')), tag).toEqual([]);
         expect(rep.support, tag).toBeNull();
         if (aud !== 'parent') expect(JSON.stringify(rep), tag).not.toMatch(/[Çç]ocuğunuz/);
@@ -217,6 +238,47 @@ describe('Zihniyet: rapor', () => {
       'Zekâya bakış',
       false,
     ]);
+  });
+});
+
+describe('Zihniyet: 2026-10-22 incelemesi', () => {
+  const rm = ROADMAPS[SLUG];
+
+  it('kartlar öneri vermez; veliye yaklaşım önerileri ve çalışma kartları kartları ve birbirini tekrar etmez', () => {
+    const levels = ['low', 'average', 'high'] as const;
+    for (const s of SCALES) {
+      for (const g of levels) {
+        const bt = tpl.scales[s][g]!;
+        const approach = rm.approach![s][g];
+        for (const part of approach.split(/[;:]\s*/)) expect(bt.parent, `${s} ${g}`).not.toContain(part.replace(/[.”“]/g, '').trim());
+        // Rapordaki veli kartında "takdir edin", "tepki vermeniz", "fark ettiğinizi söylemek" gibi öneri yok.
+        expect(bt.parent, `${s} ${g}`).not.toMatch(/takdir et|tepki vermeniz|fark ettiğinizi söyle|yaklaşmak bu yüzden|birlikte bakabilirsiniz/);
+        expect(`${bt.student} ${bt.adult ?? ''}`, `${s} ${g}`).not.toMatch(/“Bu bana ne öğretti\?”|hatırlamak, bu düşünceyi sınamana/);
+        // Yetişkin metni yalnızca öğrenci metninden farklıysa yazılır.
+        if (bt.adult) expect(bt.adult, `${s} ${g}`).not.toBe(bt.student);
+      }
+    }
+    // "Bundan ne öğrendin?" veli sayfasında yalnızca 2. haftada.
+    expect(rm.scales.failure.study.low.parent).not.toContain('Bundan ne öğrendin');
+    expect(rm.approach!.failure.low).not.toContain('Bundan ne öğrendin');
+    expect(tpl.scales.failure.low!.parent).not.toContain('Bundan ne öğrendin');
+    // Zekâya bakış düşükken: çalışma kartı kişinin kendi örneği, 3. hafta düşünceyi yeniden yazmak, veliye yaklaşım anne babanın örneği.
+    expect(rm.scales.intelligence.action.low.student).toContain('“Henüz öğrenmedim” diye yeniden yaz');
+    expect(rm.approach!.intelligence.low).toContain('Kendi hayatınızdan');
+    // Blackwell bulgusu bir raporda bir kez (Zekâya bakış düşük kartında); "Bir not" her raporda zihniyetin küçük etkisini söyler.
+    expect(JSON.stringify(tpl.scales.effort)).not.toContain('Bir araştırmada');
+    expect(tpl.scales.intelligence.low!.student).not.toContain('tek ya da en önemli belirleyicisi');
+  });
+
+  it('yol haritası alanlarla anlatılır; genel bakış ters cümleleri örnekle açıklar; norm notu', () => {
+    expect(rm.unit).toEqual({ one: 'alan', toPlural: 'alanlara' });
+    expect(rm.balancedNote!.student).toContain('Dört alanda da puanın ortada');
+    expect(rm.balancedNote!.parent).toContain('Çocuğunuzun dört alanda da puanı ortada');
+    expect(tpl.overview!.student).toContain('gibi cümlelere katılmamak puanı yükseltir');
+    expect(tpl.overview!.student).not.toContain('ters çevrilerek');
+    expect(d.items.some((i) => i.reverse && i.text === 'Zekâ boy gibidir: çalışarak artırılamaz.')).toBe(true);
+    expect(d.science.normNote).toContain('karşılaştırma çalışması (norm)');
+    expect(d.science.normNote).not.toMatch(/akran/);
   });
 });
 

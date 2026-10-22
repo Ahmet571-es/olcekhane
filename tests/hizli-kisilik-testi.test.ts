@@ -503,9 +503,7 @@ describe('Hızlı Kişilik Testi gelişim yol haritası', () => {
       'agreeableness study low',
       'agreeableness action low',
       'agreeableness settings low',
-      'conscientiousness study average',
       'emotional_stability study low',
-      'emotional_stability study average',
       'emotional_stability study high',
       'emotional_stability settings high',
       'intellect study low',
@@ -532,21 +530,23 @@ describe('Hızlı Kişilik Testi gelişim yol haritası', () => {
         }
       }
     }
-    expect(changed).toHaveLength(3 * 8 + 2);
+    expect(changed).toHaveLength(3 * 6 + 2);
     // Yalnızca ilk sözü değişenler: metnin kalanı Beş Faktör'ündür.
     const ES = t.scales.emotional_stability.study.low;
     const bfES = bf.scales.emotional_stability.study.low;
     expect(ES.student).toBe(bfES.student.replace('Duygularını yoğun yaşaman', 'Duygularının inip çıkması'));
     expect(ES.parent).toBe(bfES.parent.replace('Çocuğunuz duyguları yoğun yaşıyor olabilir;', 'Çocuğunuz duygularının inip çıkabildiğini belirtiyor;'));
     expect(t.scales.intellect.study.low.student).toBe(
-      bf.scales.intellect.study.low.student.replace('Somut ve işe yarar konulara odaklanmak senin güçlü yanın. ', ''),
+      bf.scales.intellect.study.low.student.replace('Somut ve işe yarar konular ilgini daha çok çekiyor. ', ''),
     );
-    expect(t.scales.conscientiousness.study.average.student).toBe(
-      bf.scales.conscientiousness.study.average.student.replace(
-        'İlgini çeken işlerde düzenlisin; diğerlerinde başlamak zor gelebilir.',
-        'Bazı işlere başlamak sana ötekilerden daha zor gelebilir.',
-      ),
-    );
+    // Sorumluluk ve Duygusal Denge orta düzeyinde bu test için yazılan, maddelerin sormadığı bir şey söylemeyen metinler
+    // ("Bazı işlere başlamak sana ötekilerden daha zor gelebilir") artık Beş Faktör'ün kendi metinleridir.
+    expect(t.scales.conscientiousness).toBe(bf.scales.conscientiousness);
+    for (const g of ['conscientiousness', 'emotional_stability'] as const) {
+      const avg = t.scales[g].study.average;
+      for (const x of [avg.student, avg.parent, avg.adult!]) expect(x, g).not.toMatch(/İlgini çeken|ilgisini çeken|[Çç]oğu zaman sakin/);
+    }
+    expect(t.scales.conscientiousness.study.average.student.startsWith('Bazı işlere başlamak sana ötekilerden daha zor gelebilir.')).toBe(true);
     // Veliye yaklaşım: Beş Faktör raporundaki veli önerilerinin ilki; maddelerle uyuşmayan ya da yol haritasında tekrar
     // eden beşi değişti (Merak ve Hayal Gücü düşükte Beş Faktör'ün ikinci önerisi).
     const own: Record<string, BandGroup[]> = { extraversion: ['average'], agreeableness: ['high', 'average'], conscientiousness: ['low'], intellect: ['low'] };

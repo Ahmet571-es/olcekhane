@@ -327,7 +327,7 @@ export const ayrintiliKisilik: LikertInstrument = {
       'Kaynak çalışmada (N = 619.150) beş boyutun iç tutarlılığı (Cronbach α) .81 ile .90, dört maddelik alt boyutlarınki .63 ile .88 arasında bildirilmiştir; bu testte kullanılan 29 alt boyutta en düşük değer .65’tir. Türkçe çevirinin güvenirliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç kişinin kendini nasıl tanımladığını gösterir, akranlarıyla karşılaştırma yapmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç, kişinin kendini nasıl tanımladığını gösterir; başkalarıyla karşılaştırma yapmaz.',
     ageNote:
       '9. sınıftan itibaren uygulanır; mezunlar ve yetişkinler de çözebilir. Kaynak çalışmalar ağırlıkla genç yetişkinlerle yapılmıştır (yaş ortalaması 25 civarında). Kişilik ergenlikte gelişmeye devam ettiği için lise öğrencilerinde sonuçlar kendini tanımaya yönelik bir başlangıç olarak sunulur.',
     license: 'Kamu malı: IPIP maddeleri izin ve ücret gerektirmeden her amaçla kullanılabilir ve çevrilebilir.',

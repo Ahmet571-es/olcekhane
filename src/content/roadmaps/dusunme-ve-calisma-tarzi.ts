@@ -12,7 +12,8 @@ import type { RoadmapTemplate } from './types';
  *    "öğrenme stili" eşleştirmesi vaat edilmez. Bir işe ne zaman ve nerede başlanacağını önceden belirlemek (Gollwitzer ve
  *    Sheeran, 2006) ve bir işin süresini önceden tahmin edip gerçekte ne kadar sürdüğüyle karşılaştırmak (insanlar işlerin
  *    süresini çoğu zaman olduğundan kısa tahmin eder; Buehler, Griffin ve Ross, 1994) düzen önerilerindedir.
- *  - Uçların iyi ya da kötü anlamı yoktur: yüksek düzeyin önerileri de bir sonraki adımı anlatır.
+ *  - Uçların iyi ya da kötü anlamı yoktur: yüksek düzeyin önerileri de bir sonraki adımı anlatır. Öz bildirim bir yetenek
+ *    gibi anlatılmaz ("birçok işi yürütebilmen bir güç" değil, "birçok işi bir arada yürüttüğünü söylüyorsun").
  *  - Aynı özellik ve düzeyde rapor kartı, "Nasıl çalışabilirsin?" kartı, "Bu hafta dene" ve veliye yaklaşım aynı fikri
  *    tekrar etmez (ör. enerji yüksekken dinlenme yalnızca rapor kartında); veliye yaklaşım önerileri de birbirini tekrar
  *    etmez. tests/dusunme-ve-calisma-tarzi.test.ts dört sözcüklük ortak söz öbeklerini arar.
@@ -30,9 +31,9 @@ export const dusunmeVeCalismaTarziRoadmap: RoadmapTemplate = {
   unit: { one: 'özellik', toPlural: 'özelliklere' },
   studyIntro: {
     student:
-      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Düşünme ve çalışma tarzın, bu yöntemleri hangi düzende kullanmanın sana kolay geleceği konusunda ipucu verebilir. Aşağıdaki önerilerin hepsini birden değil, birer birer dene.',
+      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Düşünme ve çalışma tarzın, bu yöntemlere nereden başlayacağını seçmene yardım edebilir. Aşağıdaki önerilerin hepsini birden değil, birer birer dene.',
     parent:
-      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun düşünme ve çalışma tarzı, bu yöntemleri hangi düzende kullanmanın ona kolay geleceği konusunda ipucu verebilir. Önerilerin hepsini birden değil, birer birer denemesine destek olun.',
+      'Araştırmalara göre herkes için en etkili öğrenme yöntemleri aynıdır: öğrendiğini kaynağa bakmadan hatırlamaya çalışmak ve tekrarları günlere yaymak. Çocuğunuzun düşünme ve çalışma tarzı, bu yöntemlere nereden başlayacağını seçmesine yardım edebilir. Önerilerin hepsini birden değil, birer birer denemesine destek olun.',
   },
   firstWeek: {
     student:
@@ -208,9 +209,9 @@ export const dusunmeVeCalismaTarziRoadmap: RoadmapTemplate = {
         },
         high: {
           student:
-            'Birçok işi bir arada yürütebilmen bir güç. Öğrenirken bir yandan başka işlerle (mesaj, bildirim gibi) uğraşmamak, dikkatini öğrendiğin konuda tutmanı kolaylaştırabilir. Yoğun dönemlerde de tekrarları günlere yaymak, öğrendiklerini kalıcı kılar.',
+            'Birçok işi bir arada yürüttüğünü söylüyorsun. Öğrenirken bir yandan başka işlerle (mesaj, bildirim gibi) uğraşmamak, dikkatini öğrendiğin konuda tutmanı kolaylaştırabilir. Yoğun dönemlerde de tekrarları günlere yaymak, öğrendiklerini kalıcı kılar.',
           parent:
-            'Çocuğunuzun birçok işi bir arada yürütebilmesi bir güç. Öğrenirken bir yandan başka işlerle (mesaj, bildirim gibi) uğraşmaması dikkatini konuda tutmasını kolaylaştırabilir; yoğun dönemlerde de tekrarları günlere yayması öğrendiklerini kalıcı kılar.',
+            'Çocuğunuz birçok işi bir arada yürüttüğünü belirtiyor. Öğrenirken bir yandan başka işlerle (mesaj, bildirim gibi) uğraşmaması dikkatini konuda tutmasını kolaylaştırabilir; yoğun dönemlerde de tekrarları günlere yayması öğrendiklerini kalıcı kılar.',
         },
       },
       action: {

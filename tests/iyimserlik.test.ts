@@ -326,6 +326,13 @@ describe('İyimserlik raporu', () => {
       expect(schoolWords(x.adult ?? x.student), label).toEqual([]);
       for (const y of [x.student, x.parent, x.adult ?? '.']) expect(y, label).toMatch(/[.]$/);
     }
+    // "Bilmekte yarar var" sonuçlardan önce okunur: kısa tutulur (en çok dört cümle, 90 sözcük; önceki metin altı cümle,
+    // 110 sözcüktü).
+    const lead = ins.lead[0].text;
+    for (const x of [lead.student, lead.parent, lead.adult ?? lead.student]) {
+      expect(x.split(/(?<=[.])\s+/).length, x.slice(0, 40)).toBeLessThanOrEqual(4);
+      expect(x.match(/\p{L}+/gu)!.length, x.slice(0, 40)).toBeLessThanOrEqual(90);
+    }
     // Ayrışma metinleri yalnızca az cümleli iki konuda; kendi kısa adıyla.
     expect(Object.keys(t.itemSplit!).sort()).toEqual(['kendine_bakis', 'ruh_hali']);
     for (const [k, x] of Object.entries(t.itemSplit!)) {
@@ -588,7 +595,7 @@ describe('İyimserlik gelişim yol haritası', () => {
     for (let i = 0; i < tips.length; i++) for (let j = i + 1; j < tips.length; j++) expect([...grams(tips[i])].filter((x) => grams(tips[j]).has(x)), `${tips[i]} – ${tips[j]}`).toEqual([]);
   });
 
-  it('ruh hâli düşükken öneriler iki hafta ya da daha uzun süren keyifsizlikte biriyle konuşmayı ve doktoru söyler (MedlinePlus); yetişkine okul yok', () => {
+  it('ruh hâli düşükken 3. hafta iki hafta ya da daha uzun süren keyifsizlikte biriyle konuşmayı ve doktoru söyler (MedlinePlus); başka yerde tekrarlanmaz; yetişkine okul yok', () => {
     const t = ROADMAPS[SLUG];
     const a = t.scales.ruh_hali.action.low;
     for (const x of [a.student, a.parent, a.adult!]) {
@@ -597,9 +604,13 @@ describe('İyimserlik gelişim yol haritası', () => {
     }
     expect(a.adult).toContain('aile hekimine');
     expect(schoolWords(a.adult!)).toEqual([]);
-    expect(t.approach!.ruh_hali.low).toContain('en az iki haftadır çoğu gün');
-    // Çalışma önerisi kartı bunu tekrarlamaz.
+    // Bu yönlendirme bir sayfada yalnızca 3. haftada (ve raporun destek kutusunda) okunur: çalışma önerisi kartı, veliye
+    // yaklaşım ve rapordaki ruh hâli kartı onu tekrarlamaz; kart 3. haftaya yönlendirir.
     expect(`${t.scales.ruh_hali.study.low.student} ${t.scales.ruh_hali.study.low.parent}`).not.toMatch(/uzun (zaman|süre)/);
+    const card = REPORT_TEMPLATES[SLUG].scales.ruh_hali.low!;
+    for (const x of [t.approach!.ruh_hali.low, card.student, card.parent]) expect(x).not.toMatch(/iki hafta|uzun (zaman|süre)|hekim|doktor|rehberlik|uzman|destek iste/);
+    expect(t.approach!.ruh_hali.low).toContain('Seni dinliyorum');
+    expect(card.student).toContain('“Ruh hâli” haftasında');
   });
 
   it('ilk hafta: öğrenciye yeniden bakmayı, veliye raporu birlikte okuyup yargılamadan dinlemeyi önerir; 2. hafta "En iyi olası gelecek"', () => {
@@ -618,6 +629,11 @@ describe('İyimserlik gelişim yol haritası', () => {
     expect(r.student.roadmap!.weeks[3].text).toContain('Öz-saygı ve Duygusal Zekâ Bileşenleri');
     const adult = evaluateAdult(SLUG, { ...body(() => 'average'), grade: ADULT_GRADE }).adult;
     expect(adult.roadmap!.weeks[3].text).toContain('Duygusal Zekâ Bileşenleri ve Kişiliğin 10 Yönü');
+    // Amaç cümlesi önerilen testlerin hepsine uyar (öğrenciye kişilik, yetişkine öz-saygı testi önerilmez; "kişiliğini"
+    // ya da "kendine bakışını" demez).
+    expect(r.student.roadmap!.weeks[3].text).toContain('Bir sonraki adım olarak kendini farklı yönlerden daha ayrıntılı tanımak için');
+    expect(r.parent.roadmap!.weeks[3].text).toContain('Bir sonraki adım olarak çocuğunuzun kendini farklı yönlerden daha ayrıntılı tanıması için');
+    expect(adult.roadmap!.weeks[3].text).toContain('kendini farklı yönlerden daha ayrıntılı tanımak için');
   });
 });
 

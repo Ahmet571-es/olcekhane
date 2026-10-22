@@ -154,7 +154,7 @@ export const ertelemeZamanYonetimi: LikertInstrument = {
     reliability: 'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu henüz yok. Puanlar, her davranışın ne sıklıkla görüldüğüne göre (1: hiçbir zaman, 5: her zaman) yorumlanır; kişi başkalarıyla karşılaştırılmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar, her davranışın ne sıklıkla görüldüğüne göre (1: hiçbir zaman, 5: her zaman) yorumlanır; kişi başkalarıyla karşılaştırılmaz.',
     ageNote:
       '6. sınıftan itibaren; mezunlar ve yetişkinler de çözebilir. Maddeler okula özgü değildir: “iş” sözcüğü, ödevden işteki görevlere kadar kişinin sorumluluğundaki her şeyi kapsar.',
     license: 'Özgün ölçek. Ölçekhane tarafından geliştirilmiştir.',

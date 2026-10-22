@@ -220,9 +220,12 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
           const extremes = groups.filter((g) => g !== 'average').length;
           const dist = (i: number) => Math.abs(VALUE[combo[i]] - 3);
           const ext = (i: number) => (groups[i] === 'average' ? 0 : 1);
+          // İyi oluş boyutu (şablondaki sırayla ilk uyan) önerileri sınırlı testte her zaman ilk sıradadır.
+          const stressKey = (t.wellbeing ? [t.wellbeing].flat() : []).find((w) => groups[keys.indexOf(w.scale)] === w.group)?.scale;
+          const st = (i: number) => (keys[i] === stressKey ? 1 : 0);
           const focusKeys = keys
             .map((k, i) => ({ k, i }))
-            .sort((x, y) => (shown < scales.length ? ext(y.i) - ext(x.i) || dist(y.i) - dist(x.i) : 0) || x.i - y.i)
+            .sort((x, y) => (shown < scales.length ? st(y.i) - st(x.i) || ext(y.i) - ext(x.i) || dist(y.i) - dist(x.i) : 0) || x.i - y.i)
             .slice(0, shown);
           if (shown < scales.length) {
             expect(rm.study.items.map((x) => x.key), label).toEqual(focusKeys.map((x) => x.k));
@@ -230,7 +233,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
             const word = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][shown];
             const note = a === 'parent' ? t.focus!.note.parent : (a === 'adult' ? t.focus!.note.adult : undefined) ?? t.focus!.note.student;
             expect(rm.study.intro, label).toContain(note.replace('{n}', word));
-            expect(rm.study.intro, label).toContain(`puanı ortadan en uzak ${word} `);
+            expect(rm.study.intro, label).toMatch(new RegExp(`(puanı ortadan en uzak|en belirgin) ${word} `));
           }
           expect(rm.standout.length, label).toBe(scales.length === 1 ? 1 : Math.min(2, extremes));
           expect(rm.standoutNote === null, label).toBe(scales.length === 1 || extremes > 0);
@@ -374,7 +377,9 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(r.student.roadmap?.preview).toBe(false);
     expect(r.student.roadmap?.bars).toHaveLength(7);
     expect(r.student.roadmap?.weeks[1].title).toBe('Duygularına dikkat');
-    expect(r.parent.roadmap?.approach?.items).toHaveLength(7);
+    // Öneriler en belirgin üç bileşen için (2026-10-22); grafik yedi bileşenin hepsini gösterir.
+    expect(r.student.roadmap?.study.items).toHaveLength(3);
+    expect(r.parent.roadmap?.approach?.items).toHaveLength(3);
     // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
     expect(r.student.roadmap?.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
     const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;
@@ -408,7 +413,9 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(rm.weeks[1].title).toBe('Birlikte çalışırken');
     // Ölçeklerin hiçbiri sıkıntı ölçmez: iyi oluş haftası ve "Sınav kaygısı" bağlantısı yoktur.
     expect(rm.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri']);
-    expect(r.parent.roadmap?.approach?.items).toHaveLength(8);
+    // Öneriler en belirgin üç tarz için (2026-10-22): sekiz tarzın hepsi raporun önceki bölümünde anlatılır.
+    expect(rm.study.items).toHaveLength(3);
+    expect(r.parent.roadmap?.approach?.items).toHaveLength(3);
     // Bu testte ölçüm payı hesaplanmaz: üç boyutlu grafikte kılıf çizilmez.
     expect(rm.bars.every((x) => x.ciLow === null && x.ciHigh === null)).toBe(true);
     const adult = evaluateAdult(slug, { ...b, grade: ADULT_GRADE }).adult.roadmap!;

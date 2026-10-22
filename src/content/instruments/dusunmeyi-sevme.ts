@@ -33,7 +33,8 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *
  * Karşılıklı çiftler (`oppositePairs`) yoktur: birbirinin tam tersini söyleyen tek çift ("Love to read challenging material"
  * ve "Avoid difficult reading material") vardır; tek çiftle uyarı, dürüst cevaplarda da sık çıkardı. Madde sayısı 20'den az
- * olduğu için "hep aynı seçenek" denetimi de çalışmaz; çok hızlı cevap ve eksik madde denetlenir.
+ * olduğu için "hep aynı seçenek" denetimi çalışmaz; çok hızlı cevap ve eksik madde denetlenir. Dört madde ters yönlü olduğu
+ * için bütün cümlelere aynı (ortada olmayan) cevap ayrıca kalite notu verir (`sameAnswerCheck`; 2026-10-22 incelemesi).
  *
  * Durum: yayında (site sahibinin 2026-10-07 kararı: kaynağı doğrulanmış ölçekler doğrudan yayına alınır). Türkçe çevirinin
  * güvenirlik ve geçerlik çalışması henüz yapılmadı.
@@ -99,6 +100,7 @@ export const dusunmeyiSevme: LikertInstrument = {
     { value: 5, label: 'Tamamen doğru' },
   ],
   scoring: { method: 'mean', minAnsweredRatio: 0.75 },
+  sameAnswerCheck: true,
   anchoredBands: {
     basis: 'mean',
     thresholds: [

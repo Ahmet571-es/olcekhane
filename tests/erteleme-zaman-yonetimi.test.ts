@@ -50,6 +50,19 @@ function expectedInsight(values: Record<string, number>, aud: Aud): string {
   return [pick(lead), ...ins.rules.filter(fits).map(pick)].join('\n\n');
 }
 
+/** Sayfada yan yana okunan metinler: kartlar (birlikte yorumun paragrafları ayrı) ve yol haritasının bölümleri. */
+function pageTexts(rep: SimpleReport): string[] {
+  const r = rep.roadmap!;
+  return [
+    ...rep.items.flatMap((i) => i.text.split('\n\n')),
+    r.standoutNote ?? '',
+    r.study.intro,
+    ...r.study.items.map((i) => i.text),
+    ...(r.approach?.items.map((i) => i.text) ?? []),
+    ...r.weeks.map((w) => w.text),
+  ].filter(Boolean);
+}
+
 function strings(x: unknown): string[] {
   if (typeof x === 'string') return [x];
   if (Array.isArray(x)) return x.flatMap(strings);
@@ -191,6 +204,9 @@ describe('Erteleme ve zaman yönetimi: rapor', () => {
           expect(schoolWords(JSON.stringify(rest)), tag).toEqual([]);
         }
         for (const x of strings(rep)) expect(x.replaceAll('\n\n', ' '), tag).not.toMatch(/undefined|null|\s{2}|\n|\{|tembelsin/);
+        // Aynı sayfada bir cümle iki kez geçmez (birlikte yorum, kartlar ve yol haritası).
+        const sentences = pageTexts(rep).flatMap((x) => x.split(/(?<=[.!?])\s+/)).map((x) => x.trim()).filter((x) => x.length > 25);
+        expect(sentences.filter((x, i) => sentences.indexOf(x) !== i), tag).toEqual([]);
         // Yol haritası: beş alan; 2. hafta planlama; 3. hafta zamanın kontrolü düşükse o, değilse en düşük alan.
         const rm = rep.roadmap!;
         expect(rm.bars.map((b) => b.key), tag).toEqual(SCALES);
@@ -272,5 +288,68 @@ describe('Erteleme ve zaman yönetimi: yayın', () => {
     for (const a of ['Steel, 2007', 'Macan ve ark., 1990', 'Buehler, Griffin ve Ross, 1994', 'Gollwitzer ve Sheeran, 2006', 'Aeon, Faber ve Panaccio, 2021', 'Sirois ve Pychyl, 2013']) {
       expect(body, a).toContain(a);
     }
+  });
+});
+
+describe('Erteleme ve zaman yönetimi: 2026-10-22 incelemesi', () => {
+  const rm = ROADMAPS[SLUG];
+  const levels = ['low', 'average', 'high'] as const;
+
+  it('kartlar yol haritasındaki öneriyi tekrar etmez; veliye yaklaşım kartları, çalışma kartlarını ve haftaları tekrar etmez', () => {
+    for (const s of SCALES) {
+      for (const g of levels) {
+        const bt = tpl.scales[s][g]!;
+        const cards = `${bt.student} ${bt.parent} ${bt.adult ?? ''}`;
+        expect(cards, `${s} ${g}`).not.toMatch(/Planın uzun olması gerekmez|telefonu başka bir odaya|telefonun başka bir odada|İşleri (birlikte )?yazıya dökmek|Benzer işlerin daha önce ne kadar sürdüğünü hesaba katmak|Geçen sefer benzer/);
+        const approach = rm.approach![s][g];
+        const same = [bt.parent, rm.scales[s].study[g].parent, rm.scales[s].action[g].parent];
+        for (const part of approach.split(/;\s*/)) for (const x of same) expect(x, `${s} ${g}`).not.toContain(part.replace(/\.$/, ''));
+      }
+    }
+    // Giriş kartı tekrar etmez; düşük düzeyde suçlamaz.
+    expect(ins.lead[1].text.student).toBe('Ertelemeden başlama puanın orta.');
+    expect(ins.lead[1].text.parent).toBe('Çocuğunuzun ertelemeden başlama puanı orta.');
+    for (const x of [ins.lead[0].text.student, ins.lead[0].text.parent]) {
+      expect(x).not.toMatch(/bedel|ödersin|öder\b/);
+      expect(x).toContain('bu kaçış ise çoğu zaman sonradan sıkışmaya ve daha kötü hissetmeye yol açar');
+    }
+    const focusRule = ins.rules.find((x) => x.when.focus?.includes('low'))!;
+    expect(focusRule.text.student).toContain('araştırmalarda ertelemeyle en güçlü ilişkili özelliklerden biri; bu yüzden Odağı koruma bölümündeki öneriyle başlamak');
+    // Süre tahmini: kaynaktaki çalışma bitirme tezi yazan öğrencilerle yapıldı (%29,7); yetişkine "öğrenci" denmez.
+    const es = tpl.scales.estimation.low!;
+    expect(es.student).toContain('bitirme tezi yazan üniversite öğrencilerinin üçte birinden azı');
+    expect(es.adult).toContain('bitirme tezi yazan kişilerin üçte birinden azı');
+    expect(schoolWords(es.adult!)).toEqual([]);
+    expect(tpl.scales.planning.high!.student).toContain('hem başarıyla hem de (biraz daha güçlü biçimde) kendini iyi hissetmeyle');
+    expect(tpl.scales.control.low!.parent).toContain('okulun rehberlik servisinden (psikolojik danışman)');
+    // Zamanın kontrolü düşükken 3. hafta dinlenmeye ayrılır; çalışma kartındaki "en önemli tek iş" önerisi tekrar edilmez.
+    expect(rm.scales.control.action.low.student).toContain('20 dakikalık');
+    expect(rm.scales.control.action.low.student).not.toContain('en önemli tek iş');
+  });
+
+  it('yol haritası alanlarla anlatılır; dengeli profil cümlesi ve norm notu', () => {
+    expect(rm.unit).toEqual({ one: 'alan', toPlural: 'alanlara' });
+    // Her alanda ortalama 3 (beceri yönünde): birbirinin tersi olan çiftlere 3, öteki üç cümleye 2, 4 ve 3; uyarı yok.
+    const paired = new Set(d.oppositePairs!.flat());
+    const answers = Object.fromEntries(
+      SCALES.flatMap((sc) => {
+        let k = 0;
+        return d.items
+          .filter((it) => it.scale === sc)
+          .map((it) => {
+            const v = paired.has(it.key) ? 3 : [2, 4, 3][k++];
+            return [it.key, { value: it.reverse ? 6 - v : v, rtMs: 2500 }];
+          });
+      }),
+    );
+    const r = evaluate(SLUG, { grade: 8, data: { engine: 'likert', answers } });
+    const rows = r.student.chart?.type === 'rulers' ? r.student.chart.rows : [];
+    expect(rows.map((x) => x.band)).toEqual(['Orta', 'Orta', 'Orta', 'Orta', 'Orta']);
+    expect(r.student.cautions).toEqual([]);
+    expect(r.student.roadmap!.standoutNote).toBe(rm.balancedNote!.student);
+    expect(r.parent.roadmap!.standoutNote).toBe(rm.balancedNote!.parent);
+    expect(rm.balancedNote!.student).toContain('Beş alanda da puanın ortada');
+    expect(d.science.normNote).toContain('karşılaştırma çalışması (norm)');
+    expect(d.science.normNote).not.toMatch(/akran/);
   });
 });

@@ -1,6 +1,6 @@
 import 'server-only';
 import { join } from 'node:path';
-import { Circle, Document, Font, G, Line, Page, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
+import { Circle, Document, Font, G, Line, Page, Path, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { plainMath } from '@/components/quiz/math-text';
 import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene, defaultYaw } from '@/lib/charts/bars3d';
 import type { QuizChart, QuizTable } from '@/lib/instruments/types';
@@ -9,6 +9,7 @@ import type { OralReportBlock } from '@/lib/reports/oral';
 import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
 import type { OralMarkedToken } from '@/lib/scoring/oral';
 import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
+import { compareGeometry, gaugeGeometry, type CompareVisual, type GaugeVisual, type ItemVisual } from '@/lib/reports/visuals';
 
 /**
  * Basit raporun PDF'i. Sunucuda bellekte üretilir ve doğrudan indirilir; dosya hiçbir yere kaydedilmez.
@@ -370,6 +371,106 @@ function Quadrant({ chart }: { chart: QuadrantChart }) {
       </Svg>
     </View>
   );
+}
+
+/* ---------- Kart grafikleri (ekrandakiyle aynı geometri: lib/reports/visuals.ts) ---------- */
+
+const VW = 176;
+const VFS = 7;
+/** Bölgelerin gri tonları; kişinin bölgesi pirinç rengiyle vurgulanır. */
+const ZONE_FILL = ['#dde3ec', '#cdd5e0'];
+
+function GaugePdf({ v }: { v: GaugeVisual }) {
+  const g = gaugeGeometry(v, VW, VFS);
+  return (
+    <Svg width={VW} height={g.height}>
+      {g.zones.map((z, i) => (
+        <Rect
+          key={i}
+          x={z.x}
+          y={g.barY}
+          width={Math.max(0, z.w - 0.8)}
+          height={g.barH}
+          rx={1.5}
+          fill={z.active ? C.brassSoft : ZONE_FILL[i % 2]}
+          stroke={z.active ? C.brass : undefined}
+          strokeWidth={z.active ? 0.9 : 0}
+        />
+      ))}
+      {g.ci && <Rect x={g.ci.x} y={g.barY + g.barH * 0.3} width={g.ci.w} height={g.barH * 0.4} rx={1} fill={C.band} />}
+      {g.ticks.map((t, i) => (
+        <Text key={i} x={t.x} y={g.tickY} textAnchor={t.anchor} style={{ fontFamily: 'Atkinson', fontSize: g.tickSize, fill: C.ink3 }}>
+          {t.text}
+        </Text>
+      ))}
+      {g.labels.map((l, i) => (
+        <Text
+          key={i}
+          x={l.x}
+          y={g.labelY(l.row)}
+          textAnchor={l.anchor}
+          style={{ fontFamily: 'Atkinson', fontSize: VFS, fontWeight: l.active ? 700 : 400, fill: l.active ? C.ink : C.ink2 }}
+        >
+          {l.text}
+        </Text>
+      ))}
+      {g.marker && (
+        <G>
+          <Line x1={g.marker.x} y1={g.barY - 2} x2={g.marker.x} y2={g.barY + g.barH + 1.5} stroke={C.marker} strokeWidth={1.7} />
+          <Path d={`M${g.marker.x - 3} ${g.barY - 5.5} L${g.marker.x + 3} ${g.barY - 5.5} L${g.marker.x} ${g.barY - 1.5} Z`} fill={C.marker} />
+          <Text x={g.marker.x} y={g.barY - 7.5} textAnchor={g.marker.anchor} style={{ fontFamily: 'Atkinson', fontSize: VFS, fontWeight: 700, fill: C.ink }}>
+            {g.marker.text}
+          </Text>
+        </G>
+      )}
+    </Svg>
+  );
+}
+
+function ComparePdf({ v }: { v: CompareVisual }) {
+  const g = compareGeometry(v, VW, VFS);
+  return (
+    <Svg width={VW} height={g.height}>
+      {g.rows.map((row, i) => (
+        <G key={i}>
+          <Text x={0} y={row.labelY} style={{ fontFamily: 'Atkinson', fontSize: row.labelSize, fontWeight: 700, fill: C.ink }}>
+            {row.label}
+          </Text>
+          <Text x={VW} y={row.labelY} textAnchor="end" style={{ fontFamily: 'Atkinson', fontSize: VFS, fontWeight: 700, fill: C.ink }}>
+            {row.valueText}
+          </Text>
+          {row.zones.map((z, j) => (
+            <Rect
+              key={j}
+              x={z.x}
+              y={row.trackY}
+              width={Math.max(0, z.w - 0.8)}
+              height={4}
+              rx={1}
+              fill={z.active ? C.brassSoft : ZONE_FILL[j % 2]}
+              stroke={z.active ? C.brass : undefined}
+              strokeWidth={z.active ? 0.8 : 0}
+            />
+          ))}
+          {row.dot !== null && <Circle cx={row.dot} cy={row.trackY + 2} r={3.2} fill={C.marker} stroke={C.paper} strokeWidth={1} />}
+        </G>
+      ))}
+      {g.ticks.map((t, i) => (
+        <Text key={i} x={t.x} y={g.axisY + g.fontSize} textAnchor={t.anchor} style={{ fontFamily: 'Atkinson', fontSize: g.tickSize, fill: C.ink3 }}>
+          {t.text}
+        </Text>
+      ))}
+      {g.labels.map((l, i) => (
+        <Text key={i} x={l.x} y={g.labelY(l.row)} textAnchor={l.anchor} style={{ fontFamily: 'Atkinson', fontSize: VFS * 0.92, fill: C.ink2 }}>
+          {l.text}
+        </Text>
+      ))}
+    </Svg>
+  );
+}
+
+function ItemVisualPdf({ visual }: { visual: ItemVisual }) {
+  return visual.type === 'gauge' ? <GaugePdf v={visual} /> : <ComparePdf v={visual} />;
 }
 
 function Chart({ chart }: { chart: SimpleChart }) {
@@ -1002,22 +1103,40 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
         )}
         {report.groupsNote && <Text style={[s.note, { marginTop: 0, marginBottom: 6 }]}>{report.groupsNote}</Text>}
         {!report.oral && report.items.map((it) => (
-          <View key={it.title} style={s.item} wrap={false}>
-            <View style={s.itemHead}>
-              <Text style={s.itemTitle}>{it.title}</Text>
-              {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
+          // Kartın grafiği açıklamanın yanında (ekrandaki geniş görünüm gibi). Uzun açıklamalı kartlar (birlikte yorum)
+          // sayfaya sığmayabileceği için bölünebilir; grafik ilk parçada kalır.
+          <View key={it.title} style={s.item} wrap={it.text.length > 900}>
+            <View style={{ flexDirection: 'row', gap: 14 }}>
+              <View style={{ flex: 1 }}>
+                <View style={s.itemHead}>
+                  <Text style={s.itemTitle}>{it.title}</Text>
+                  {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
+                </View>
+                <Text style={s.para}>{it.text}</Text>
+              </View>
+              {it.visual && (
+                <View style={{ width: VW, paddingTop: 2 }}>
+                  <ItemVisualPdf visual={it.visual} />
+                </View>
+              )}
             </View>
-            <Text style={s.para}>{it.text}</Text>
           </View>
         ))}
         {report.groups?.map((g) => (
           <View key={g.title} style={{ marginTop: 12 }}>
-            <View wrap={false} minPresenceAhead={70}>
-              <View style={s.itemHead}>
-                <Text style={[s.itemTitle, { fontFamily: 'Bricolage', fontSize: 12.5 }]}>{g.title}</Text>
-                <Text style={s.itemBadge}>{g.badge}</Text>
+            <View wrap={false} minPresenceAhead={70} style={{ flexDirection: 'row', gap: 14 }}>
+              <View style={{ flex: 1 }}>
+                <View style={s.itemHead}>
+                  <Text style={[s.itemTitle, { fontFamily: 'Bricolage', fontSize: 12.5 }]}>{g.title}</Text>
+                  <Text style={s.itemBadge}>{g.badge}</Text>
+                </View>
+                <Text style={[s.para, { marginBottom: 6 }]}>{g.text}</Text>
               </View>
-              <Text style={[s.para, { marginBottom: 6 }]}>{g.text}</Text>
+              {g.visual && (
+                <View style={{ width: VW, paddingTop: 2 }}>
+                  <ItemVisualPdf visual={g.visual} />
+                </View>
+              )}
             </View>
             <Rulers rows={g.facets} />
           </View>

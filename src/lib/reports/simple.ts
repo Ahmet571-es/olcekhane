@@ -3,6 +3,7 @@ import type { QuizChart, QuizFigure, QuizTable } from '@/lib/instruments/types';
 import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
 import type { OralReportBlock } from './oral';
 import type { Roadmap } from './roadmap';
+import type { CompareVisual, GaugeVisual, ItemVisual, Zone } from './visuals';
 
 /**
  * Basit rapor: test bitince ekranda gösterilen ve PDF olarak indirilen ücretsiz rapor (hiçbir yerde
@@ -49,6 +50,8 @@ export interface SimpleItem {
   /** Düzey adı ya da kısa sonuç ("Olumlu", "Dakikada 127 harf"). */
   badge?: string;
   text: string;
+  /** Kartın grafiği: kartın sözel açıklamasını görsel olarak da anlatır (lib/reports/visuals.ts). */
+  visual?: ItemVisual;
 }
 
 /** Ayrıntılı profilde bir boyut: boyutun yorumu ve alt özelliklerinin cetvelleri (her cetvelin altında kısa yorum). */
@@ -56,6 +59,8 @@ export interface SimpleGroup {
   title: string;
   badge: string;
   text: string;
+  /** Boyutun düzey çubuğu. */
+  visual?: ItemVisual;
   facets: (RulerRow & { text: string })[];
 }
 
@@ -215,8 +220,26 @@ const SUPPORT_YOUNG = {
   ],
 };
 
-export function supportText(audience: Audience, young = false): { title: string; lines: string[] } {
-  const { title, lines } = young && audience === 'student' ? SUPPORT_YOUNG : SUPPORT[audience];
+/** Mezunlara (üniversiteye hazırlananlara): okula gitmedikleri için okulun rehberlik servisi anılmaz. */
+const SUPPORT_GRADUATE: Partial<Record<Audience, { title: string; lines: string[] }>> = {
+  student: {
+    title: 'Konuşmak istersen',
+    lines: [
+      'Kendini zor hissettiğinde bunu tek başına taşımak zorunda değilsin. Ailenle ya da güvendiğin bir yetişkinle konuşabilirsin; bir kursa gidiyorsan oradaki rehber öğretmene de başvurabilirsin. Aile hekimin de seni gerekirse bir ruh sağlığı uzmanına yönlendirebilir. Acil bir durumda 112’yi arayabilirsin.',
+    ],
+  },
+  parent: {
+    title: 'Destek almak isterseniz',
+    lines: [
+      'Aile hekiminiz ilk başvuru adresi olabilir; gerekirse bir ruh sağlığı uzmanına yönlendirebilir.',
+      'Çocuğunuz bir kursa gidiyorsa oradaki rehber öğretmenden de destek alabilirsiniz.',
+      'Acil bir durum olduğunu düşünüyorsanız 112’yi arayın.',
+    ],
+  },
+};
+
+export function supportText(audience: Audience, young = false, graduate = false): { title: string; lines: string[] } {
+  const { title, lines } = young && audience === 'student' ? SUPPORT_YOUNG : ((graduate ? SUPPORT_GRADUATE[audience] : undefined) ?? SUPPORT[audience]);
   return { title, lines: [...lines] };
 }
 
@@ -232,7 +255,7 @@ function byAudience(audience: Audience, t: { student: string; parent: string; ad
 }
 
 /** Raporun sonundaki "bu bir tanı değildir" notu (tam raporla aynı metin). */
-export function disclaimerText(report: Pick<ReportContent, 'audience' | 'academic'>): { title: string; text: string } {
+export function disclaimerText(report: Pick<ReportContent, 'audience' | 'academic' | 'cognitive' | 'young'>): { title: string; text: string } {
   if (report.academic) {
     return {
       title: 'Bu rapor bir sınav notu değildir.',
@@ -243,21 +266,37 @@ export function disclaimerText(report: Pick<ReportContent, 'audience' | 'academi
       }),
     };
   }
+  // Küçük çocuğa (en çok 5. sınıf) "tanı" sözcüğü yerine kendi diliyle; velisine "kariyer" yerine "önemli kararlar".
   return {
-    title: 'Bu rapor bir tanı değildir.',
+    title: report.young && report.audience === 'student' ? 'Bu rapor bir not ya da bir etiket değildir.' : 'Bu rapor bir tanı değildir.',
     text: byAudience(report.audience, {
       student: 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.',
-      parent:
-        'Çocuğunuzun kendi cevaplarına ya da görevdeki performansına dayanır; bugünkü hâlini anlatır. Eğitim ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.',
+      parent: `Çocuğunuzun ${report.cognitive ? 'görevlerdeki performansına' : 'kendi cevaplarına'} dayanır; bugünkü hâlini anlatır. ${report.young ? 'Önemli kararlarda' : 'Eğitim ve kariyer kararlarında'} tek başına dayanak olarak kullanılmamalıdır.`,
       adult:
         'Senin cevaplarına dayanır ve bugünkü hâlini anlatır; insanlar zamanla değişir ve gelişir. Eğitim, iş ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.',
     }),
   };
 }
 
+/** Sayıların adı ("iki alan", "üç alanı"). */
+const COUNT_WORDS = ['', 'bir', 'iki', 'üç', 'dört'];
+
 /** Yetişkinde ilgilerin ayrışmamış olması (iki ilgi profilinde de aynı metin). */
 const FLAT_ADULT =
-  'Alanlar arasındaki farklar küçük: ilgilerin belirgin bir yönde toplanmıyor. Bu, ilgilerinin geniş bir alana yayıldığını ya da henüz netleşmediğini gösterebilir. En üstteki alanları yakından tanımak iyi bir adım olur.';
+  'Alanlar arasındaki farklar küçük: en üstteki alanlar ötekilerden pek ayrılmıyor, yani ilgilerin tek bir yönde toplanmıyor. Bu, ilgilerinin geniş bir alana yayıldığını ya da henüz netleşmediğini gösterebilir. En üstteki alanları yakından tanımak iyi bir adım olur.';
+
+/**
+ * İlgiler ayrışmamış (alanlar arasındaki farklar küçük), ama en üstteki alanlar gösteriliyor. Öne çıkan alanların kartları
+ * "Belirgin ilgi" ya da "Yüksek ilgi" diyebildiği için "belirgin bir yöne ayrışmamış" denmez; en üstteki alanların
+ * ötekilerden pek ayrılmadığı söylenir.
+ */
+const FLAT_TOP = {
+  student:
+    'Alanlar arasındaki farklar küçük: en üstteki alanlar ötekilerden pek ayrılmıyor, yani ilgilerin henüz tek bir yönde toplanmamış. Bu çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.',
+  parent:
+    'Alanlar arasındaki farklar küçüktür: en üstteki alanlar ötekilerden pek ayrılmıyor, yani ilgiler henüz tek bir yönde toplanmamış. Bu olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım edebilir.',
+  adult: FLAT_ADULT,
+};
 
 /** İlgi profilinde yorumu etkileyen durumlar (tam raporla aynı metinler). */
 export function interestNotes(p: InterestProfile, audience: Audience): string[] {
@@ -266,11 +305,11 @@ export function interestNotes(p: InterestProfile, audience: Audience): string[] 
     notes.push(
       byAudience(audience, {
         student:
-          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşebilir. Bu yüzden hiçbir alan öne çıkarılmadı; ilgi kodu ve örnek meslekler verilmedi.',
+          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin; bu yüzden hiçbir alan öne çıkarılmadı, ilgi kodu ve örnek meslekler verilmedi. Bu olağan bir durum: henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşebilir.',
         parent:
-          'Çocuğunuz etkinliklerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz. Bu yüzden hiçbir alan öne çıkarılmadı; ilgi kodu ve örnek meslekler verilmedi.',
+          'Çocuğunuz etkinliklerin çoğundan pek hoşlanmayacağını belirtmiş; bu yüzden hiçbir alan öne çıkarılmadı, ilgi kodu ve örnek meslekler verilmedi. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
         adult:
-          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu, listedeki etkinliklerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Keyif aldığın işleri düşünerek testi başka bir gün yeniden çözmek ilgilerini daha net gösterebilir.',
+          'Etkinliklerin çoğundan pek hoşlanmayacağını belirtmişsin; bu yüzden hiçbir alan öne çıkarılmadı. Bu, listedeki etkinliklerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Keyif aldığın işleri düşünerek testi başka bir gün yeniden çözmek ilgilerini daha net gösterebilir.',
       }),
     );
   } else if (p.flat && !p.top.length) {
@@ -285,25 +324,23 @@ export function interestNotes(p: InterestProfile, audience: Audience): string[] 
     );
   } else {
     if (p.noneHigh && p.top.length) {
+      const one = p.top.length === 1;
       notes.push(
         byAudience(audience, {
-          student:
-            'Hiçbir alanda belirgin (yüksek düzeyde) bir ilgi çıkmadı; aşağıda en yüksek çıkan alanları görüyorsun. İlgi kodu ve örnek meslekler yalnızca belirgin bir ilgi olduğunda verilir. İlgiler denedikçe netleşir.',
-          parent:
-            'Hiçbir alanda belirgin (yüksek düzeyde) bir ilgi çıkmadı; aşağıda en yüksek çıkan alanlar yer alıyor. İlgi kodu ve örnek meslekler yalnızca belirgin bir ilgi olduğunda verilir. İlgiler yeni deneyimlerle netleşir.',
+          student: `Hiçbir alanda belirgin (yüksek düzeyde) bir ilgi çıkmadı; aşağıda en yüksek çıkan ${one ? 'alanını' : 'alanları'} görüyorsun. İlgi kodu ve örnek meslekler yalnızca belirgin bir ilgi olduğunda verilir. İlgiler denedikçe netleşir.`,
+          parent: `Hiçbir alanda belirgin (yüksek düzeyde) bir ilgi çıkmadı; aşağıda en yüksek çıkan ${one ? 'alan' : 'alanlar'} yer alıyor. İlgi kodu ve örnek meslekler yalnızca belirgin bir ilgi olduğunda verilir. İlgiler yeni deneyimlerle netleşir.`,
         }),
       );
     }
     if (p.flat) {
-      notes.push(
-        byAudience(audience, {
-          student:
-            'Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu senin yaşında çok olağan. En üstteki alanları denemeye başlamak iyi bir adım olur.',
-          parent:
-            'Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu yaşta olağandır. En üstteki alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.',
-          adult: FLAT_ADULT,
-        }),
-      );
+      // İlgi kodu varken farklar küçükse kod gösterilir ama örnek meslek listesi verilmez; not bunu söyler.
+      const jobs = p.code
+        ? byAudience(audience, {
+            student: ' Farklar küçük olduğu için örnek meslek listesi verilmedi.',
+            parent: ' Farklar küçük olduğu için örnek meslek listesi verilmedi.',
+          })
+        : '';
+      notes.push(byAudience(audience, FLAT_TOP) + jobs);
     }
   }
   notes.push(...p.closeCalls);
@@ -325,24 +362,34 @@ function activityNotes(p: InterestRanking, audience: Audience): string[] {
     ];
   }
   const notes: string[] = [];
-  // Sık yapılan alan yoksa yalnızca ara sıra yapılan (en çok iki) alan açıklanır.
+  // Sık yapılan alan yoksa yalnızca ara sıra yapılan (en çok iki; eşit puanla üç) alan açıklanır. Ara sıra yapılan alan
+  // gösterilenlerden çoksa en yüksek çıkanların gösterildiği söylenir.
   if (p.noneHigh && p.top.length) {
-    const two = p.top.length > 1;
+    const n = p.top.length;
+    const some = (p.candidates ?? n) > n;
     notes.push(
       byAudience(audience, {
-        student: `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan ${two ? 'iki alanı' : 'alanı'} görüyorsun.`,
-        parent: `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan ${two ? 'iki alan' : 'alan'} yer alıyor.`,
+        student: some
+          ? `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan alanlardan en yüksek çıkan ${n === 3 ? 'üçünü' : 'ikisini'} görüyorsun.`
+          : `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan ${n > 1 ? `${COUNT_WORDS[n]} alanı` : 'alanı'} görüyorsun.`,
+        parent: some
+          ? `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan alanlardan en yüksek çıkan ${n === 3 ? 'üçü' : 'ikisi'} yer alıyor.`
+          : `Hiçbir alanda sık yapılan etkinlikler çıkmadı; aşağıda ara sıra yapılan ${n > 1 ? `${COUNT_WORDS[n]} alan` : 'alan'} yer alıyor.`,
       }),
     );
   }
   if (p.flat) {
+    // Bütün alanların puanı aynıysa öne çıkan alan gösterilmez; not bunu da söyler.
+    const none = p.top.length ? '' : 'Bütün alanlarda aynı puan çıktı; bu yüzden hiçbir alan öne çıkarılmadı. ';
     notes.push(
-      byAudience(audience, {
-        student: 'Alanlar arasındaki farklar küçük: hiçbir alan ötekilerden belirgin biçimde ayrılmıyor.',
-        parent: 'Alanlar arasındaki farklar küçüktür: hiçbir alan ötekilerden belirgin biçimde ayrılmıyor.',
-      }),
+      none +
+        byAudience(audience, {
+          student: 'Alanlar arasındaki farklar küçük: hiçbir alan ötekilerden belirgin biçimde ayrılmıyor.',
+          parent: 'Alanlar arasındaki farklar küçüktür: hiçbir alan ötekilerden belirgin biçimde ayrılmıyor.',
+        }),
     );
   }
+  notes.push(...(p.closeCalls ?? []));
   return notes;
 }
 
@@ -407,34 +454,43 @@ export function rankingNotes(p: InterestRanking, audience: Audience): string[] {
     return [
       byAudience(audience, {
         student:
-          'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu olağan bir durum: Henüz pek çok şeyi denememiş olabilirsin. Farklı etkinlikleri denedikçe ilgilerin netleşecek.',
+          'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin; bu yüzden hiçbir alan öne çıkarılmadı. Bu olağan bir durum: henüz pek çok şeyi denememiş olabilirsin. Farklı işleri ve etkinlikleri denedikçe ilgilerin netleşebilir.',
         parent:
-          'Çocuğunuz işlerin çoğundan pek hoşlanmayacağını belirtmiş. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
+          'Çocuğunuz işlerin çoğundan pek hoşlanmayacağını belirtmiş; bu yüzden hiçbir alan öne çıkarılmadı. Bu durum, henüz yeterince deneyim fırsatı olmamasından ya da o dönemdeki isteksizlikten kaynaklanabilir. Farklı etkinlikleri denemesi için fırsat yaratmanızı öneririz.',
         adult:
-          'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin. Bu, listedeki işlerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Keyif aldığın işleri ve etkinlikleri düşünerek testi başka bir gün yeniden çözmek ilgilerini daha net gösterebilir.',
+          'İşlerin çoğundan pek hoşlanmayacağını belirtmişsin; bu yüzden hiçbir alan öne çıkarılmadı. Bu, listedeki işlerin sana uzak gelmesinden ya da o anki isteksizlikten kaynaklanabilir. Keyif aldığın işleri ve etkinlikleri düşünerek testi başka bir gün yeniden çözmek ilgilerini daha net gösterebilir.',
       }),
     ];
   }
   const notes: string[] = [];
+  // Belirgin ilgi yoksa orta düzeydeki en yüksek alanlar gösterilir (düşük düzeydeki alan gösterilmez).
   if (p.noneHigh && p.top.length) {
+    const n = p.top.length;
     notes.push(
       byAudience(audience, {
-        student: 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alanı görüyorsun. İlgiler denedikçe netleşir.',
-        parent: 'Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan iki alan yer alıyor. İlgiler yeni deneyimlerle netleşir.',
+        student: `Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan ${n > 1 ? `${COUNT_WORDS[n]} alanı` : 'alanı'} görüyorsun. İlgiler denedikçe netleşir.`,
+        parent: `Hiçbir alanda belirgin bir ilgi çıkmadı; aşağıda en yüksek çıkan ${n > 1 ? `${COUNT_WORDS[n]} alan` : 'alan'} yer alıyor. İlgiler yeni deneyimlerle netleşir.`,
       }),
     );
   }
   if (p.flat) {
-    // Bütün alanlar aynı puandaysa (öne çıkan alan gösterilmez) "en üstteki alanlar" yerine farklı alanlar önerilir.
-    const top = p.top.length > 0;
+    // Bütün alanlar aynı puandaysa öne çıkan alan gösterilmez: "en üstteki alanlar" yerine farklı alanlar önerilir.
     notes.push(
-      byAudience(audience, {
-        student: `Alanlar arasındaki farklar küçük; yani ilgilerin henüz belirgin bir yöne ayrışmamış. Bu çok olağan. ${top ? 'En üstteki alanları denemeye başlamak' : 'Farklı alanları denemek'} iyi bir adım olur.`,
-        parent: `Alanlar arasındaki farklar küçüktür; ilgiler henüz belirgin bir yöne ayrışmamış görünüyor. Bu olağandır. ${top ? 'En üstteki alanlarda' : 'Farklı alanlarda'} deneyim fırsatları yaratmak ilgilerin netleşmesine yardım eder.`,
-        adult: top ? FLAT_ADULT : FLAT_ADULT.replace('En üstteki alanları', 'Farklı alanları'),
-      }),
+      byAudience(
+        audience,
+        p.top.length
+          ? FLAT_TOP
+          : {
+              student:
+                'Bütün alanlarda aynı puan çıktı; bu yüzden hiçbir alan öne çıkarılmadı. Farklı alanları denemek ilgilerinin netleşmesine yardım edebilir.',
+              parent:
+                'Bütün alanlarda aynı puan çıktı; bu yüzden hiçbir alan öne çıkarılmadı. Farklı alanlarda deneyim fırsatları yaratmak ilgilerin netleşmesine yardım edebilir.',
+              adult: 'Bütün alanlarda aynı puan çıktı; bu yüzden hiçbir alan öne çıkarılmadı. Farklı alanları yakından tanımak iyi bir adım olur.',
+            },
+      ),
     );
   }
+  notes.push(...(p.closeCalls ?? []));
   return notes;
 }
 
@@ -497,6 +553,52 @@ const RANKING_TEXT: Record<
   },
 };
 
+type Section = ReportContent['sections'][number];
+
+/** Kişinin bölgesi: rapordaki düzeyle aynı bölge (düzey gösterilen sayıdan belirlenir); bulunamazsa puanın düştüğü bölge. */
+function activeZone(zones: Zone[], s: Pick<Section, 'band' | 'value'>): number | null {
+  if (s.value === null) return null;
+  const byBand = zones.findIndex((z) => z.band === s.band);
+  if (byBand >= 0) return byBand;
+  const i = zones.findIndex((z, j) => s.value! >= z.from && (s.value! < z.to || j === zones.length - 1));
+  return i >= 0 ? i : null;
+}
+
+/** Bir ölçeğin kartındaki düzey çubuğu (bölgeleri olan anket ölçeklerinde). */
+export function gaugeOf(s: Section): GaugeVisual | undefined {
+  if (!s.zones?.length) return undefined;
+  return {
+    type: 'gauge',
+    label: s.name,
+    value: s.value,
+    min: s.min,
+    max: s.max,
+    ciLow: s.value === null ? null : s.ciLow,
+    ciHigh: s.value === null ? null : s.ciHigh,
+    valueLabel: s.valueLabel,
+    zones: s.zones,
+    active: activeZone(s.zones, s),
+  };
+}
+
+/** Birkaç ölçeği yan yana gösteren grafik (aralıkları aynıysa; en az iki ölçek). */
+export function compareOf(list: Section[]): CompareVisual | undefined {
+  const rows = list.filter((s) => s.zones?.length);
+  if (rows.length < 2) return undefined;
+  const { min, max } = rows[0];
+  if (rows.some((s) => s.min !== min || s.max !== max)) return undefined;
+  const zones = rows[0].zones!;
+  return {
+    type: 'compare',
+    min,
+    max,
+    zones,
+    rows: rows.map((s) => ({ label: s.name, value: s.value, valueLabel: s.valueLabel, active: activeZone(zones, s) })),
+  };
+}
+
+const withVisual = <T extends object>(x: T, visual: ItemVisual | undefined): T & { visual?: ItemVisual } => (visual ? { ...x, visual } : x);
+
 export function toSimpleReport(r: ReportContent): SimpleReport {
   const you = r.audience !== 'parent';
   const base = {
@@ -507,7 +609,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     completedAt: r.completedAt,
     isPilot: r.isPilot,
     cautions: [...r.qualityNotes],
-    support: r.support ? withSupportNote(supportText(r.audience, r.young), r.supportNote) : null,
+    support: r.support ? withSupportNote(supportText(r.audience, r.young, r.graduate), r.supportNote) : null,
     normNote: r.normNote,
     disclaimer: disclaimerText(r),
   };
@@ -516,6 +618,10 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     const p = r.interests;
     const pick = ([forYou, forParent]: [string, string]) => (you ? forYou : forParent);
     const shown = new Set(p.top.map((t) => t.key));
+    const one = p.top.length === 1;
+    // Kodun alanları (eşitlik bir harfi belirlediyse kod öne çıkan alanlardan kısadır) ve en yüksek puanı paylaşanlar.
+    const codeAreas = p.top.slice(0, p.code.length);
+    const leading = p.top.filter((t) => t.rank === 1);
     // Öne çıkan alanların dışındakiler düzeyleriyle tek satırda (öne çıkan alan yoksa bütün alanlar).
     const rest = r.sections
       .filter((s) => s.value !== null && !p.top.some((t) => RIASEC_TYPES[t.key].scaleKey === s.scaleKey))
@@ -523,44 +629,82 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     return {
       ...base,
       chartTitle: you ? 'İlgi profilin' : 'İlgi profili',
-      chartNote: 'Altıgende yan yana duran alanlar birbirine benzer. Değerler 1 ile 5 arasındadır.',
+      chartNote: `Altıgende yan yana duran alanlar birbirine benzer. Değerler 1 (hiç hoşlanmam) ile 5 (çok hoşlanırım) arasındadır. İlgi, yetenek demek değildir: sonuç ${you ? '' : 'çocuğunuzun '}neyi yapabileceğini değil, neyi yapmaktan hoşlandığını gösterir.`,
       chart: {
         type: 'hexagon',
         highlight: RIASEC_ORDER.filter((k) => shown.has(k)),
         axes: RIASEC_ORDER.map((k) => ({ key: k, label: RIASEC_TYPES[k].name, value: p.types.find((t) => t.key === k)?.mean ?? null })),
       },
+      // Kodun harfleri Türkçe adlarla örtüşmez (ör. Sanatçı: A, Girişimci: E): her alanın harfi adının yanında yazılır.
       keyFigures: p.code
-        ? [{ label: 'İlgi kodu', value: p.code, note: p.top.map((t) => t.name).join(' · ') }]
+        ? [
+            {
+              label: 'İlgi kodu',
+              value: p.code,
+              note: `${codeAreas.map((t) => `${t.name} (${t.key})`).join(' · ')}. Harfler, alanların uluslararası kullanılan İngilizce adlarının baş harfleridir.`,
+            },
+          ]
         : p.top.length
           ? [
-              {
-                label: pick(['En yüksek çıkan alanın', 'En yüksek çıkan alan']),
-                value: p.top[0].name,
-                note: p.top.length > 1 ? `Ardından: ${p.top.slice(1).map((t) => t.name).join(' · ')}` : undefined,
-              },
+              // En yüksek puanı birden çok alan paylaşıyorsa hepsi birlikte anılır.
+              leading.length > 1
+                ? {
+                    label: pick(['En yüksek çıkan alanların', 'En yüksek çıkan alanlar']),
+                    value: leading.map((t) => t.name).join(' · '),
+                    note: p.top.length > leading.length ? `Ardından: ${p.top.slice(leading.length).map((t) => t.name).join(' · ')}` : 'eşit puanla',
+                  }
+                : {
+                    label: pick(['En yüksek çıkan alanın', 'En yüksek çıkan alan']),
+                    value: p.top[0].name,
+                    note: p.top.length > 1 ? `Ardından: ${p.top.slice(1).map((t) => t.name).join(' · ')}` : undefined,
+                  },
             ]
           : [],
+      // Profil belirginleşmemişse (farklar küçük) "en belirgin" denmez.
       itemsTitle: !p.top.length
         ? pick(['Alanların', 'Alanlar'])
-        : p.code
-          ? pick(['En belirgin ilgi alanların', 'En belirgin ilgi alanları'])
-          : pick(['En yüksek çıkan alanların', 'En yüksek çıkan alanlar']),
+        : p.code && !p.flat
+          ? one
+            ? pick(['En belirgin ilgi alanın', 'En belirgin ilgi alanı'])
+            : pick(['En belirgin ilgi alanların', 'En belirgin ilgi alanları'])
+          : one
+            ? pick(['En yüksek çıkan alanın', 'En yüksek çıkan alan'])
+            : pick(['En yüksek çıkan alanların', 'En yüksek çıkan alanlar']),
       items: [
-        ...p.top.map((t, i) => ({ title: `${i + 1}. ${t.name}`, badge: t.bandLabel, text: t.text })),
+        ...p.top.map((t) =>
+          withVisual(
+            { title: `${t.rank}. ${t.name}`, badge: p.top.filter((x) => x.rank === t.rank).length > 1 ? `${t.bandLabel} · eşit puan` : t.bandLabel, text: t.text },
+            (() => {
+              const sec = r.sections.find((x) => x.scaleKey === RIASEC_TYPES[t.key].scaleKey);
+              return sec ? gaugeOf(sec) : undefined;
+            })(),
+          ),
+        ),
         ...(p.occupations.length
           ? [
-              {
-                title: you ? 'Sana uyabilecek örnek meslekler' : 'Profile uyan örnek meslekler',
-                text: `${p.occupations.map((o) => o.name).join(' · ')}. Liste, meslekleri en çok hitap ettikleri ilgi alanlarına göre sınıflandıran Holland kodlarına dayanır; yol göstermek içindir, bir meslek seçimi önerisi değildir.`,
-              },
+              // Grafik, örnek mesleklerin seçildiği öne çıkan alanları yan yana gösterir.
+              withVisual(
+                {
+                  title: you ? 'İlgilerinle ilişkili örnek meslekler' : 'Bu ilgilerle ilişkili örnek meslekler',
+                  text: `${p.occupations.map((o) => o.name).join(' · ')}. Liste, meslekleri en çok hitap ettikleri ilgi alanlarına göre sınıflandıran Holland kodlarına dayanır; yol göstermek içindir, bir meslek seçimi önerisi değildir.`,
+                },
+                (() => {
+                  const secs = codeAreas.flatMap((t) => r.sections.find((x) => x.scaleKey === RIASEC_TYPES[t.key].scaleKey) ?? []);
+                  return secs.length === 1 ? gaugeOf(secs[0]) : compareOf(secs);
+                })(),
+              ),
             ]
           : []),
         ...(rest.length
           ? [
-              {
-                title: p.top.length ? pick(['Diğer alanların', 'Diğer alanlar']) : 'Bütün alanlar',
-                text: `${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}.`,
-              },
+              withVisual(
+                {
+                  title: p.top.length ? pick(['Diğer alanların', 'Diğer alanlar']) : 'Bütün alanlar',
+                  text: `${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}.`,
+                },
+                // Eşit puanla dört alan öne çıktığında ve bir alan hesaplanamadığında listede tek alan kalabilir.
+                rest.length === 1 ? gaugeOf(rest[0]) : compareOf(rest),
+              ),
             ]
           : []),
       ],
@@ -580,7 +724,8 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     const ranks = p.ranks ?? top.map((_, i) => i + 1);
     const tiedFirst = top.filter((_, i) => ranks[i] === 1);
     const tied = (i: number) => ranks.filter((x) => x === ranks[i]).length > 1;
-    const one = p.kind === 'values' && top.length === 1;
+    // Tek öne çıkan alan ya da değer: başlık tekil.
+    const one = top.length === 1;
     return {
       ...base,
       chartTitle: pick(t.chartTitle),
@@ -627,29 +772,46 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
             ? pick(t.highest)
             : pick(t.itemsTitle),
       items: [
-        ...top.map((s, i) => ({ title: `${ranks[i]}. ${s.name}`, badge: tied(i) ? `${s.bandLabel} · eşit puan` : s.bandLabel, text: s.text })),
+        ...top.map((s, i) =>
+          withVisual({ title: `${ranks[i]}. ${s.name}`, badge: tied(i) ? `${s.bandLabel} · eşit puan` : s.bandLabel, text: s.text }, gaugeOf(s)),
+        ),
         // Değer sıralaması: ikisi de en önemliler arasında olan, birbirine ters yönde çekebilen değerler.
-        ...(p.tradeoffs ?? []).map((x) => ({ title: x.title, badge: 'Birbiriyle yarışabilir', text: x.text })),
+        ...(p.tradeoffs ?? []).map((x) =>
+          withVisual(
+            { title: x.title, badge: 'Birbiriyle yarışabilir', text: x.text },
+            compareOf([x.a, x.b].flatMap((k) => r.sections.find((sec) => sec.scaleKey === k) ?? [])),
+          ),
+        ),
         ...(bottom.length && p.lowerText
           ? [
-              {
-                title:
-                  bottom.length > 1
-                    ? pick(['Daha az önem verdiğin değerler', 'Daha az önem verdiği değerler'])
-                    : pick(['Daha az önem verdiğin değer', 'Daha az önem verdiği değer']),
-                text: p.lowerText,
-              },
+              withVisual(
+                {
+                  // "Daha az önem verilen" denmez: sıralamanın sonundaki bir değer de "çok önemli" düzeyinde olabilir.
+                  title:
+                    bottom.length > 1
+                      ? pick(['Sıralamanın sonundaki değerlerin', 'Sıralamanın sonundaki değerler'])
+                      : pick(['Sıralamanın sonundaki değerin', 'Sıralamanın sonundaki değer']),
+                  text: p.lowerText,
+                },
+                (() => {
+                  const secs = bottom.flatMap((k) => r.sections.find((sec) => sec.scaleKey === k) ?? []);
+                  return secs.length === 1 ? gaugeOf(secs[0]) : compareOf(secs);
+                })(),
+              ),
             ]
           : []),
         ...(rest.length
           ? [
-              {
-                title: top.length ? pick(t.rest) : t.allTitle,
-                // Alan örnekleri öne çıkan alanların metinlerindedir; öne çıkan alan yoksa not da yazılmaz.
-                text: [`${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}.`, top.length ? t.restNote : '']
-                  .filter(Boolean)
-                  .join(' '),
-              },
+              withVisual(
+                {
+                  title: top.length ? pick(t.rest) : t.allTitle,
+                  // Alan örnekleri belirgin alanların metinlerindedir; belirgin alan yoksa not da yazılmaz.
+                  text: [`${rest.map((s) => `${s.name} (${s.bandLabel.toLocaleLowerCase('tr-TR')})`).join(' · ')}.`, top.length && !p.noneHigh ? t.restNote : '']
+                    .filter(Boolean)
+                    .join(' '),
+                },
+                rest.length === 1 ? gaugeOf(rest[0]) : compareOf(rest),
+              ),
             ]
           : []),
         ...(p.note ? [p.note] : []),
@@ -796,7 +958,9 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     ? you
       ? 'Kırmızı işaret senin puanın, sarı bant ölçümün doğal payı.'
       : 'Kırmızı işaret puanı, sarı bant ölçümün doğal payını gösterir.'
-    : '';
+    : you
+      ? 'Kırmızı işaret senin puanın.'
+      : 'Kırmızı işaret puanı gösterir.';
   const poles = you
     ? 'Uçlardan biri iyi, öteki kötü değil; her tarzın kendine özgü güçlü yanları var.'
     : 'Uçlardan biri iyi, öteki kötü değildir; her tarzın kendine özgü güçlü yanları vardır.';
@@ -821,7 +985,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       const head = byKey.get(g.key);
       if (!head) return [];
       const facets = g.scales.flatMap((k) => byKey.get(k) ?? []).map((f) => ({ ...ruler(f), text: f.text }));
-      return [{ title: head.name, badge: head.value === null ? head.bandLabel : `${head.bandLabel} · ${head.valueLabel}`, text: g.text, facets }];
+      return [withVisual({ title: head.name, badge: head.value === null ? head.bandLabel : `${head.bandLabel} · ${head.valueLabel}`, text: g.text, facets }, gaugeOf(head))];
     });
     return {
       ...base,
@@ -840,7 +1004,12 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       },
       keyFigures: [],
       itemsTitle: you ? 'Sonuçların' : 'Sonuçlar',
-      items: [{ title: you ? 'Motivasyon profilin' : 'Motivasyon profili', ...(m.name ? { badge: m.name } : {}), text: m.text }],
+      items: [
+        withVisual(
+          { title: you ? 'Motivasyon profilin' : 'Motivasyon profili', ...(m.name ? { badge: m.name } : {}), text: m.text },
+          compareOf([m.x.key, m.y.key].flatMap((k) => byKey.get(k) ?? [])),
+        ),
+      ],
       groups,
     };
   }
@@ -859,7 +1028,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       chart: { type: 'circle', axes: order.map((a) => ({ key: a.key, label: a.short, value: byKey.get(a.key)?.value ?? null, angle: a.angle })) },
       keyFigures: [],
       itemsTitle: 'Tarzlar',
-      items: order.flatMap((a) => byKey.get(a.key) ?? []).map((s) => ({ title: s.name, badge: badge(s), text: s.text })),
+      items: order.flatMap((a) => byKey.get(a.key) ?? []).map((s) => withVisual({ title: s.name, badge: badge(s), text: s.text }, gaugeOf(s))),
     };
   }
 
@@ -871,8 +1040,11 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       const d = byKey.get(g.domain);
       if (!d) return [];
       const facets = g.facets.flatMap((k) => byKey.get(k) ?? []).map((f) => ({ ...ruler(f), text: f.text }));
-      return [{ title: d.name, badge: badge(d), text: d.text, facets }];
+      return [withVisual({ title: d.name, badge: badge(d), text: d.text, facets }, gaugeOf(d))];
     });
+    // Birlikte yorumun grafiği: alt özellikler azsa (ör. on yön) hepsi, çoksa boyutlar.
+    const facetSecs = r.facetGroups.flatMap((g) => g.facets.flatMap((k) => byKey.get(k) ?? []));
+    const insightVisual = compareOf(facetSecs.length <= 12 ? facetSecs : domains);
     return {
       ...base,
       chartTitle: 'Genel bakış',
@@ -881,7 +1053,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       keyFigures: [],
       itemsTitle: 'Boyut boyut ayrıntılar',
       // Birlikte yorum (varsa) boyut gruplarından önce: bir boyutun alt ölçekleri birbirinden ayrıştığında ne anlama gelebileceği.
-      items: r.insight ? [{ title: r.insight.title, text: r.insight.text }] : [],
+      items: r.insight ? [withVisual({ title: r.insight.title, text: r.insight.text }, insightVisual)] : [],
       groups,
       groupsNote: facetNote(r.facetGroups[0]?.facetItems ?? 0, margin, r.facetTerms),
     };
@@ -894,21 +1066,21 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
   const band = margin ? (you ? 'Sarı bant ölçümün doğal payı.' : 'Sarı bant ölçümün doğal payını gösterir.') : '';
   const overview = r.overview ? [r.overview, band].filter(Boolean).join(' ') : undefined;
   // Ölçeklerin birlikte yorumu (varsa) ilk madde olarak.
-  const lead = r.insight ? [{ title: r.insight.title, text: r.insight.text }] : [];
+  const lead = r.insight ? [withVisual({ title: r.insight.title, text: r.insight.text }, one ? undefined : compareOf(r.sections))] : [];
   return {
     ...base,
     chartTitle: one ? r.sections[0].name : 'Genel bakış',
     chartNote: one
       ? marks || undefined
-      : (overview ?? [you ? 'Her satır bir özellik.' : 'Her satır bir boyut.', marks, poles].filter(Boolean).join(' ')),
+      : (overview ?? ['Her satır bir boyut.', marks, poles].filter(Boolean).join(' ')),
     chart: { type: 'rulers', rows: r.sections.map(ruler) },
     keyFigures: [],
-    itemsTitle: one ? 'Sonuç' : lead.length ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Boyutlar',
+    itemsTitle: one ? 'Sonuç' : lead.length ? (you ? 'Sonuçların' : 'Sonuçlar') : (r.itemsTitle ?? 'Boyutlar'),
     // Tek ölçekli testte "Sonuç" başlığının altında önce sonucun kendisi, ardından (varsa) genel bilgi ("Bilmekte yarar var");
     // çok ölçekli testte birlikte yorum ölçeklerden önce gelir.
     items: one
-      ? [...r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text })), ...lead]
-      : [...lead, ...r.sections.map((s) => ({ title: s.name, badge: badge(s), text: s.text }))],
+      ? [...r.sections.map((s) => withVisual({ title: s.name, badge: badge(s), text: s.text }, gaugeOf(s))), ...lead]
+      : [...lead, ...r.sections.map((s) => withVisual({ title: s.name, badge: badge(s), text: s.text }, gaugeOf(s)))],
   };
 }
 

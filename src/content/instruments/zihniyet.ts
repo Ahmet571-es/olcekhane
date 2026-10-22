@@ -141,7 +141,7 @@ export const zihniyet: LikertInstrument = {
     reliability: 'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu henüz yok. Puanlar, gelişim yönündeki inancın ne kadar güçlü olduğuna göre (1: sabitlik yönünde, 5: gelişim yönünde) yorumlanır; kişi başkalarıyla karşılaştırılmaz.',
+      'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar, gelişim yönündeki inancın ne kadar güçlü olduğuna göre (1: sabitlik yönünde, 5: gelişim yönünde) yorumlanır; kişi başkalarıyla karşılaştırılmaz.',
     ageNote:
       '5. sınıftan itibaren; mezunlar ve yetişkinler de çözebilir. Maddeler okula özgü değildir. Araştırmalarda zihniyetin akademik başarıyla ilişkisi çocuklarda ve ergenlerde küçük, üniversite öğrencileri gibi yetişkinlerde ise neredeyse yok bulunmuştur (Sisk ve ark., 2018).',
     license: 'Özgün ölçek. Ölçekhane tarafından geliştirilmiştir.',
