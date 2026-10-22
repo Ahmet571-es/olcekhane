@@ -10,7 +10,7 @@ import { cellKey, cellPrims, describeCell, itemMaxCount, specCells } from '@/lib
 import type { MatrixCell, MatrixItem, MatrixReasoningTask } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import type { SimpleReport } from '@/lib/reports/simple';
-import { MATRIX_CHANCE_MAX, TaskInputError, scoreMatrix, type MatrixTrialInput } from '@/lib/scoring/tasks';
+import { TaskInputError, matrixChance, scoreMatrix, type MatrixTrialInput } from '@/lib/scoring/tasks';
 import sitemap from '../src/app/sitemap';
 import { matrixBody, matrixRank, type MatrixCellInfo } from './helpers/bodies';
 import { itemAttrs, predictAttr, predictSetSize } from './helpers/matrix-solver';
@@ -221,8 +221,11 @@ describe('Şekil akıl yürütme: puanlama', () => {
     expect([near.wrong, near.nearMisses]).toEqual([10, 10]);
     const far = scoreMatrix(task, all((i) => (task.items[i].level >= 4 ? { response: optionAt(i, 3) } : {}))).result;
     expect([far.wrong, far.nearMisses]).toEqual([10, 0]);
-    const rapid = scoreMatrix(task, all((i) => (task.items[i].level >= 3 ? { rtMs: 1200 } : {}))).result;
+    // Çok hızlı cevap yalnızca yanlış cevaplarda sayılır: hızlı ve doğru cevap bakılmadan seçilmiş sayılmaz.
+    const rapid = scoreMatrix(task, all((i) => (task.items[i].level >= 3 ? { rtMs: 1200, response: optionAt(i, 2) } : {}))).result;
     expect([rapid.rapid, rapid.rapidOf]).toEqual([15, 15]);
+    const quickRight = scoreMatrix(task, all((i) => (task.items[i].level >= 3 ? { rtMs: 1200 } : {}))).result;
+    expect(quickRight.rapid).toBe(0);
     const easyFast = scoreMatrix(task, all((i) => (task.items[i].level <= 2 ? { rtMs: 1200 } : {}))).result;
     expect(easyFast.rapid).toBe(0);
     expect(scoreMatrix(task, all(() => ({ response: 1 }))).result.samePosition).toBe(24);
@@ -254,7 +257,7 @@ describe('Şekil akıl yürütme: rapor', () => {
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '24 soruda 24 doğru'],
       ['Ulaşılan düzey', '5. düzey'],
-      ['Kural türleri', '5 kural türünün hepsinde soruların çoğu doğru'],
+      ['Kural türleri', '5 kural türünün hepsinde bütün sorular doğru'],
       ['Çalışma biçimi', 'Soru başına tipik süre 17 saniye'],
     ]);
     expect(r.student.keyFigures).toEqual([
@@ -262,8 +265,8 @@ describe('Şekil akıl yürütme: rapor', () => {
       { label: 'Ulaşılan düzey', value: '5. düzey', note: '5 düzeyden' },
       { label: 'Soru başına tipik süre', value: '17 saniye' },
     ]);
-    expect(r.student.items[0].text).toContain('Bütün düzeylerde soruların hemen hepsini doğru cevapladın');
-    expect(r.student.items[1].text).toContain('Bu en zor düzeydi.');
+    expect(r.student.items[0].text).toContain('Bütün soruları doğru cevapladın');
+    expect(r.student.items[1].text).toContain('5. düzey testin en zor düzeyiydi.');
     expect(r.student.items[3].text).toContain('Zor sorulara kolay sorulardan daha çok zaman ayırdın');
     expect(r.student.cautions).toEqual([]);
     const rm = r.student.roadmap!;
@@ -286,8 +289,10 @@ describe('Şekil akıl yürütme: rapor', () => {
     expect(r.student.items[0].badge).toBe('24 soruda 18 doğru');
     expect(r.student.items[0].text).toContain('Sorular zorlaştıkça doğru cevapların azaldı');
     expect(r.student.items[1].badge).toBe('3. düzey');
-    expect(r.student.items[1].text).toContain('3. düzeye kadar soruların çoğunu doğru cevapladın');
-    expect(r.student.items[1].text).toContain('4. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda parçaları üst üste koyma');
+    expect(r.student.items[1].text).toContain('1–3. düzeylerdeki soruların hepsini doğru cevapladın');
+    expect(r.student.items[1].text).toContain('4. düzeydeki 5 sorunun 3 tanesini doğru bulamadın. Bu düzeydeki sorularda şu gerekiyordu: parçaları üst üste koyma');
+    expect(r.student.items[1].text).toContain('en az %60’ını doğru bulmak gerekir');
+    expect(r.parent.items[1].text).toContain('Çocuğunuz 4. düzeydeki 5 sorunun 3 tanesini doğru bulamadı.');
     expect(r.parent.items[0].text).toContain('(Carpenter, Just ve Shell, 1990)');
     expect(r.student.items[2].text).toContain('“ekleme ve çıkarma” ve “ortak olanı silme” kurallarında zorlandın. “Ekleme ve çıkarma” kuralında üçüncü parçanın');
     // Kural türlerinin düzeylerle iç içe olduğu, soruların gerçek düzeylerine göre söylenir.
@@ -304,14 +309,15 @@ describe('Şekil akıl yürütme: rapor', () => {
     expect(chance.student.roadmap!.bars).toEqual([]);
     // 1. düzeyde iki yanlış ama 3. düzey başarılı: kolay sorularda dikkat dağılmış olabilir.
     const easy = evaluate(SLUG, matrixBody((q) => ({ choice: q.level === 1 && matrixRank(q) < 2 ? optionAt(q.i, 1) : q.answer, rtMs: 15_000 })));
-    expect(easy.student.items[0].text).toContain('1. düzeydeki kolay sorulardan 2 tanesini yanlış cevapladın');
+    expect(easy.student.items[0].text).toContain('1. düzeydeki kolay sorulardan 2 tanesini doğru cevaplamadın ama daha zor düzeylerdeki soruların hepsini doğru buldun');
     expect(easy.student.items[1].badge).toBe('5. düzey');
-    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeyde yaptığın yanlışlar bu sonucu değiştirmedi');
+    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeydeki yanlışların bu sonucu değiştirmedi');
     // Hiçbir düzeyde soruların çoğu doğru değil (ama rastgele seçimden fazla doğru): düzey belirtilmez.
     const low = evaluate(SLUG, matrixBody((q) => ({ choice: matrixRank(q) < [1, 2, 2, 2, 1][q.level - 1] ? q.answer : optionAt(q.i, 2), rtMs: 15_000 })));
-    expect(low.student.items[1].badge).toBe('1. düzeyde zorlandın');
-    expect(low.parent.items[1].badge).toBe('1. düzeyde zorlandı');
-    expect(low.student.keyFigures[1]).toEqual({ label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' });
+    expect(low.student.items[1].badge).toBe('Düzey belirtilmedi');
+    expect(low.parent.items[1].badge).toBe('Düzey belirtilmedi');
+    expect(low.student.items[1].text).toContain('En kolay düzeydeki 4 sorunun 1 tanesini doğru buldun.');
+    expect(low.student.keyFigures[1]).toEqual({ label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' });
     // Yakın hatalar: 4. ve 5. düzeyin hepsinde doğru cevaptan tek özellikte ayrılan seçenek.
     const near = evaluate(SLUG, matrixBody((q) => ({ choice: q.level >= 4 ? optionAt(q.i, 1) : q.answer, rtMs: 15_000 })));
     expect(near.student.items[0].text).toContain('Yanlış cevaplarının hepsinde seçtiğin parça doğru cevaptan yalnızca bir özellikte ayrılıyordu');
@@ -319,8 +325,8 @@ describe('Şekil akıl yürütme: rapor', () => {
     expect(far.student.items[0].text).not.toContain('bir özellikte ayrılıyordu');
     // Zor sorularda çok hızlı: uyarı ve kartlar aynı şeyi söyler; hız karşılaştırması yapılmaz.
     const rapid = evaluate(SLUG, matrixBody((q) => ({ choice: q.level >= 3 ? optionAt(q.i, 2) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })));
-    expect(rapid.student.cautions.join(' ')).toContain('15 sorunun hepsinde 2,5 saniyeden kısa sürede');
-    expect(rapid.student.items[3].text).toContain('15 sorunun hepsinde 2,5 saniyeden kısa sürede cevap verdin');
+    expect(rapid.student.cautions.join(' ')).toContain('15 sorunun hepsinde yanlış bir cevap 2,5 saniyeden kısa sürede');
+    expect(rapid.student.items[3].text).toContain('15 sorunun hepsine 2,5 saniyeden kısa sürede yanlış cevap verdin');
     expect(rapid.student.items[3].text).not.toMatch(/zaman ayırdın|yakın sürelerde/);
     // Bir saniyeden kısa tipik süre "0 saniye" diye yazılmaz.
     const blink = evaluate(SLUG, matrixBody((q) => ({ choice: q.answer, rtMs: 300 })));
@@ -343,8 +349,8 @@ describe('Şekil akıl yürütme: rapor', () => {
     expect(quickHard.student.items[3].text).toContain('Zor sorularda kolay sorulardakinden daha kısa sürede cevap verdin ve bu soruların çoğunu yine doğru buldun.');
     // Hiçbir düzey ölçüte uymuyorsa bunun nedeni ölçütle söylenir (bir düzeyde soruların çoğu doğru olsa bile).
     const none = evaluate(SLUG, matrixBody((q) => ({ choice: matrixRank(q) < [2, 3, 2, 1, 0][q.level - 1] ? q.answer : optionAt(q.i, 2), rtMs: 15_000 })));
-    expect(none.student.items[1].badge).toBe('1. düzeyde zorlandın');
-    expect(none.student.items[1].text).toContain('bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi');
+    expect(none.student.items[1].badge).toBe('Düzey belirtilmedi');
+    expect(none.student.items[1].text).toContain('hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi. 2. düzeydeki soruların çoğunu doğru bulmana rağmen');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -385,7 +391,7 @@ describe('Şekil akıl yürütme: rapor', () => {
               expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]/);
               expect(r.items.map((i) => i.title), label).toEqual(['Doğru cevaplar', 'Ulaşılan düzey', 'Kural türleri', 'Çalışma biçimi']);
               for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
-              const chance = result.correct <= MATRIX_CHANCE_MAX;
+              const chance = matrixChance(result);
               // Uyarı ile kart aynı durumu söyler.
               expect(r.cautions.some((c) => c.includes('rastgele seçen')), label).toBe(chance);
               expect(r.items[0].text.includes('rastgele seçen'), label).toBe(chance);
@@ -400,7 +406,7 @@ describe('Şekil akıl yürütme: rapor', () => {
               // Ulaşılan düzey kartı ile öne çıkan sayı aynı.
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
               if (chance) expect(fig, label).toBe('Yorumlanmadı');
-              else if (result.reached === 0) expect([fig, r.items[1].badge?.startsWith('1. düzeyde zorlandı')], label).toEqual(['Belirtilmedi', true]);
+              else if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               // Süre yoksa çalışma biçimi hesaplanmaz.
               expect(r.items[3].badge === 'Süre hesaplanamadı', label).toBe(result.medianRt === null);

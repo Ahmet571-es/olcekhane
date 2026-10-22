@@ -24,6 +24,7 @@ import { CUBE_LURE_TEXT, CUBE_TYPES } from '@/lib/reports/build';
 import type { SimpleReport } from '@/lib/reports/simple';
 import {
   CUBE_CHANCE_MAX,
+  cubeChance,
   CUBE_LURE_NOTE,
   CUBE_LURE_P,
   CUBE_LURES_ORDER,
@@ -496,7 +497,7 @@ describe('Küp açınımı: rapor', () => {
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '20 soruda 20 doğru'],
       ['Ulaşılan düzey', '4. düzey'],
-      ['Yüzlerin yeri ve şekillerin yönü', 'İki soru türünde de soruların çoğu doğru'],
+      ['Yüzlerin yeri ve şekillerin yönü', 'İki soru türünde de bütün sorular doğru'],
       ['Çalışma biçimi', 'Soru başına tipik süre 11 saniye'],
     ]);
     expect(r.student.cautions).toEqual([]);
@@ -505,8 +506,13 @@ describe('Küp açınımı: rapor', () => {
       ['Ulaşılan düzey', '4. düzey'],
       ['Soru başına tipik süre', '11 saniye'],
     ]);
-    expect(r.student.items[2].text).toContain('Yüzlerin yeri 10/10 · Şekillerin yönü 10/10.');
-    expect(r.student.items[3].text).toContain('1–2. düzeyde tipik 9 saniye · 3–4. düzeyde 13 saniye.');
+    // Sayılar kartların grafiklerindedir.
+    const typeRows = r.student.items[2].visual?.type === 'bars' ? r.student.items[2].visual.rows : [];
+    expect(typeRows.map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Yüzlerin yeri 10/10', 'Şekillerin yönü 10/10']);
+    const paceRows = r.student.items[3].visual?.type === 'bars' ? r.student.items[3].visual.rows : [];
+    expect(paceRows.map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Bütün sorular 11 sn', 'Kolay sorular (1–2. düzey) 9 sn', 'Zor sorular (3–4. düzey) 13 sn']);
+    // 9 ve 13 saniye: fark 1,5 katından az ama grafikte görünür; "birbirine yakın" denmez.
+    expect(r.student.items[3].text).toContain('Zor sorulara kolay sorulardan biraz daha çok zaman ayırdın.');
     const rm = r.student.roadmap!;
     expect(rm.bars).toEqual([]);
     expect(rm.standout.map((s) => s.title)).toEqual(TITLES);
@@ -526,10 +532,8 @@ describe('Küp açınımı: rapor', () => {
       cubeBody((q) => ({ response: q.level >= 3 && q.lures.includes('opposite') ? cubeLureOption(q, 'opposite') : q.answer, rtMs: 15_000 })),
     );
     const oppText = opp.student.items[2].text;
-    expect(oppText).toContain(
-      `10 yanlış cevabında şu yanılgı, seçeneklerde bulunma sıklığına göre beklenenden sık görüldü: ${CUBE_LURE_TEXT.opposite} (10 yanlışta).`,
-    );
-    expect(oppText).toContain('Karşılıklı iki yüz bir küpte hiçbir zaman aynı anda görünmez');
+    expect(oppText).toContain(`10 yanlış cevabının hepsinde şu yanılgı vardı: ${CUBE_LURE_TEXT.opposite}. Bu, rastgele seçimle açıklanamayacak kadar sık.`);
+    expect(oppText).toContain('Karşılıklı iki yüz küpte hiçbir zaman yan yana gelmez; bu yüzden bir küp resminde ikisi birden görünmez.');
     expect(opp.parent.items[2].text).toContain('Çocuğunuzun');
     expect(opp.student.items[0].text).toContain('öne çıkan yanılgılar için yüzlerin yeri ve şekillerin yönü kartına bak.');
     expect(opp.parent.items[0].text).toContain('kartına bakın.');
@@ -540,7 +544,7 @@ describe('Küp açınımı: rapor', () => {
     );
     expect(turn.student.items[2].badge).toBe('“Yüzlerin yeri” sorularının çoğu doğru');
     expect(turn.student.items[2].text).toContain('“Yüzlerin yeri” sorularının çoğunu doğru buldun; “Şekillerin yönü” sorularında zorlandın. Bu sorularda');
-    expect(turn.student.items[2].text).toContain(`beklenenden sık görüldü: ${CUBE_LURE_TEXT.turn} (10 yanlışta)`);
+    expect(turn.student.items[2].text).toContain(`10 yanlış cevabının hepsinde şu yanılgı vardı: ${CUBE_LURE_TEXT.turn}. Bu, rastgele seçimle açıklanamayacak kadar sık.`);
     expect(turn.student.items[2].text).toContain('bir şekil açınımda hangi komşu yüze bakıyorsa küpte de o yüze bakar');
 
     const rapid = evaluate(
@@ -548,7 +552,7 @@ describe('Küp açınımı: rapor', () => {
       cubeBody((q) => ({ response: q.level >= 3 ? cubeLureOption(q) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })),
     );
     expect(rapid.student.cautions.join(' ')).toContain('3. düzey ve üstündeki 10 sorunun hepsinde yanlış bir cevap 3 saniyeden kısa sürede verilmiş');
-    expect(rapid.student.items[3].text).toContain('3. düzey ve üstündeki 10 sorunun hepsinde 3 saniyeden kısa sürede yanlış cevap verdin.');
+    expect(rapid.student.items[3].text).toContain('3. düzey ve üstündeki 10 sorunun hepsine 3 saniyeden kısa sürede yanlış cevap verdin.');
     expect(rapid.student.items[2].text).toContain('yanlışlardaki yanılgılar yorumlanmadı');
     expect(rapid.student.items[0].text).toContain('açınıma bakmadan seçmiş olabileceğin');
 
@@ -570,9 +574,9 @@ describe('Küp açınımı: rapor', () => {
     const drop = evaluate(SLUG, cubeBody());
     expect(drop.student.items[0].badge).toBe('20 soruda 17 doğru');
     expect(drop.student.items[1].text).toContain(
-      '1–3. düzeylerdeki soruların çoğunu doğru cevapladın. 3. düzeydeki sorularda şu gerekiyordu: basamaklı açınımlarda',
+      '1–3. düzeylerdeki soruların hepsini doğru cevapladın. 3. düzeydeki sorularda şu gerekiyordu: basamaklı açınımlarda',
     );
-    expect(drop.student.items[1].text).toContain('4. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda zikzak açınımlarda');
+    expect(drop.student.items[1].text).toContain('4. düzeydeki 5 sorunun 3 tanesini doğru bulamadın. Bu düzeydeki sorularda şu gerekiyordu: zikzak açınımlarda');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -613,7 +617,7 @@ describe('Küp açınımı: rapor', () => {
             const res = evaluate(SLUG, body);
             const result: CubeResult = scoreCube(task, trialsOf(body)).result;
             const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
-            const chance = result.correct <= CUBE_CHANCE_MAX;
+            const chance = cubeChance(result);
             const doubt = cubeRapid(result) || cubeSamePosition(result);
             const noted = chance || doubt ? [] : CUBE_LURES_ORDER.filter((k) => result.luresByKind[k] >= CUBE_LURE_NOTE && result.lureP[k] <= CUBE_LURE_P);
             for (const r of [res.student, res.parent, adult]) {
@@ -642,13 +646,13 @@ describe('Küp açınımı: rapor', () => {
               if (!chance) expect(/açınıma bakmadan seçmiş|açınıma bakılmadan seçilmiş/.test(r.items[0].text), label).toBe(doubt);
               // Yanılgılar: yalnızca sonuç yorumlanabiliyorsa ve en az üç yanlışta görülünce, sayısıyla.
               const tur = r.items[2].text;
-              expect(tur.includes('beklenenden sık görüldü'), label).toBe(noted.length > 0);
+              expect(tur.includes('rastgele seçimle açıklanamayacak kadar sık'), label).toBe(noted.length > 0);
               for (const k of CUBE_LURES_ORDER) {
                 expect(tur.includes(CUBE_LURE_TEXT[k]), `${label} ${k}`).toBe(noted.includes(k));
-                if (noted.includes(k)) expect(tur, `${label} ${k}`).toContain(`${CUBE_LURE_TEXT[k]} (${result.luresByKind[k]} yanlışta)`);
+                if (noted.includes(k)) expect(tur, `${label} ${k}`).toContain(`${result.luresByKind[k] === result.wrong ? 'hepsinde' : `${result.luresByKind[k]} tanesinde`} şu yanılgı vardı: ${CUBE_LURE_TEXT[k]}`);
               }
               expect(tur.includes('yanılgılar yorumlanmadı'), label).toBe(chance || (doubt && result.wrong > 0));
-              expect(tur.includes('hiçbir yanılgı, seçeneklerde'), label).toBe(!chance && !doubt && noted.length === 0 && result.wrong >= CUBE_LURE_NOTE);
+              expect(tur.includes('öne çıkan bir yanılgı görülmedi'), label).toBe(!chance && !doubt && noted.length === 0 && result.wrong >= CUBE_LURE_NOTE);
               expect(r.items[0].text.includes('yanılgılar için yüzlerin yeri'), label).toBe(noted.length > 0);
               // Yanılgılar anlatılıyorsa kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz.
               if (noted.length || doubt) expect(r.items[0].text + r.items[1].text, label).not.toMatch(/dağılmasından/);
@@ -656,19 +660,27 @@ describe('Küp açınımı: rapor', () => {
               if (doubt) expect(r.items[0].text, label).not.toContain('beklenen bir durumdur');
               if (!chance) {
                 const [place, turnT] = result.types;
-                expect(tur, label).toContain(`Yüzlerin yeri ${place.correct}/10 · Şekillerin yönü ${turnT.correct}/10.`);
+                // Türlerin sayıları kartın grafiğindedir.
+                const rows = r.items[2].visual?.type === 'bars' ? r.items[2].visual.rows : [];
+                expect(
+                  rows.map((x) => `${x.label} ${x.valueLabel}`),
+                  label,
+                ).toEqual([`Yüzlerin yeri ${place.correct}/10`, `Şekillerin yönü ${turnT.correct}/10`]);
                 const good = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
+                const all = (x: { correct: number; n: number }) => x.correct === x.n;
                 expect(r.items[2].badge, label).toBe(
-                  good(place) && good(turnT)
-                    ? 'İki soru türünde de soruların çoğu doğru'
-                    : !good(place) && !good(turnT)
-                      ? 'İki soru türünde de soruların çoğu doğru değil'
-                      : `“${good(place) ? 'Yüzlerin yeri' : 'Şekillerin yönü'}” sorularının çoğu doğru`,
+                  all(place) && all(turnT)
+                    ? 'İki soru türünde de bütün sorular doğru'
+                    : good(place) && good(turnT)
+                      ? 'İki soru türünde de soruların çoğu doğru'
+                      : !good(place) && !good(turnT)
+                        ? 'İki soru türünde de soruların çoğu doğru değil'
+                        : `“${good(place) ? 'Yüzlerin yeri' : 'Şekillerin yönü'}” sorularının çoğu doğru`,
                 );
               }
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
               if (chance) expect(fig, label).toBe('Yorumlanmadı');
-              else if (result.reached === 0) expect([fig, r.items[1].badge?.startsWith('1. düzeyde zorlandı')], label).toEqual(['Belirtilmedi', true]);
+              else if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(result.levels.map((l) => `${l.correct}/5`));
             }

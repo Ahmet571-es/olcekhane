@@ -271,7 +271,7 @@ export function disclaimerText(report: Pick<ReportContent, 'audience' | 'academi
     title: report.young && report.audience === 'student' ? 'Bu rapor bir not ya da bir etiket değildir.' : 'Bu rapor bir tanı değildir.',
     text: byAudience(report.audience, {
       student: 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.',
-      parent: `Çocuğunuzun ${report.cognitive ? 'görevlerdeki performansına' : 'kendi cevaplarına'} dayanır; bugünkü hâlini anlatır. ${report.young ? 'Önemli kararlarda' : 'Eğitim ve kariyer kararlarında'} tek başına dayanak olarak kullanılmamalıdır.`,
+      parent: `Çocuğunuzun ${report.cognitive ? 'görevlerde yaptıklarına' : 'kendi cevaplarına'} dayanır; bugünkü hâlini anlatır. ${report.young ? 'Önemli kararlarda' : 'Eğitim ve kariyer kararlarında'} tek başına dayanak olarak kullanılmamalıdır.`,
       adult:
         'Senin cevaplarına dayanır ve bugünkü hâlini anlatır; insanlar zamanla değişir ve gelişir. Eğitim, iş ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.',
     }),
@@ -911,7 +911,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
 
   if (r.cognitive) {
     const blocks = r.cognitive.blocks;
-    const items = blocks.map((b) => ({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') }));
+    const items = blocks.map((b) => withVisual({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') }, b.visual));
     // Tek görevli testler (renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme, tepki
     // hızı, şekil akıl yürütme): sonucu görevin kendi grafiği özetler.
     const own = r.cognitive.chart;
@@ -929,7 +929,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     const sections = blocks.find((b) => b.sections)?.sections;
     return {
       ...base,
-      chartTitle: sections ? 'Bölüm bölüm net doğru' : 'Görev sonuçları',
+      chartTitle: sections ? 'Bölüm bölüm net doğru' : blocks.some((b) => b.flanker) ? 'Ok görevi: okların yönüne göre doğru cevaplar' : 'Görev sonuçları',
       chartNote: sections ? 'Her sütun bir bölüm; bölümlerin süresi eşittir.' : undefined,
       chart: sections
         ? { type: 'columns', rows: sections, caption: 'net doğru' }
@@ -946,7 +946,13 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
           : null,
       keyFigures: [],
       // Tek görevli testlerde kartlar görevin sonuçlarıdır; çok görevli testte her kart bir görevdir.
-      itemsTitle: sections || blocks.some((b) => /^(renk|dg|iz|gh|zd|th|sa|sd|sz|kk|kb|kd|kl|ma|sy|kp|dk|kg|ud|hb|ba|gs|dh|hd)_/.test(b.key)) ? (you ? 'Sonuçların' : 'Sonuçlar') : 'Görevler',
+      // Harf işaretleme tek görevlidir; bölüm grafiği olmasa da (çok az işaret) kartları görevin sonuçlarıdır.
+      itemsTitle:
+        sections || blocks.some((b) => b.key === 'tempo' || /^(renk|dg|iz|gh|zd|th|sa|sd|sz|kk|kb|kd|kl|ma|sy|kp|dk|kg|ud|hb|ba|gs|dh|hd)_/.test(b.key))
+          ? you
+            ? 'Sonuçların'
+            : 'Sonuçlar'
+          : 'Görevler',
       items,
     };
   }

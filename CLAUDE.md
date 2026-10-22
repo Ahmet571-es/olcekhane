@@ -260,7 +260,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   düzey çubuğu (testin kendi eşikleriyle Düşük–Orta–Yüksek bölgeleri, kişinin bölgesi vurgulu), ölçekleri birlikte anlatan
   kartta yan yana grafik. Bölgeler tek tonludur (iyi ya da kötü çağrışımı yoktur). Yeni testte her kartın grafiği olur;
   anket testlerinde `tests/kart-grafikleri.test.ts` denetler (grafik rozetteki düzeyle ve genel bakıştaki puanla aynıdır,
-  yazılar taşmaz). Görev (zekâ) testlerinin kart grafikleri 2. aşamadadır (`DURUM.md`).
+  yazılar taşmaz). Görev testlerinde grafik verinin türüne göre seçilir (düzeylere göre doğrular, ulaşılan düzey, türler,
+  yanılgılar, süreler, dizi merdiveni; geometri `lib/reports/visual-draw.ts`); yeni görev testi `tests/helpers/task-variants.ts`'e
+  birkaç sonuç örüntüsüyle eklenir ve `tests/gorev-grafikleri.test.ts` her kartı dener. "Yorumlanmadı" ya da hesaplanamayan
+  kartın grafiği olmaz; kartın metnindeki sayılar grafikte olduğu için metinde yinelenmez. Görev testlerinin kalan grupları
+  `DURUM.md`'de.
 
 ## Gelişim yol haritası
 

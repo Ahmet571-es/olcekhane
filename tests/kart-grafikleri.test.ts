@@ -78,7 +78,7 @@ function checkGeometry(v: ItemVisual, label: string) {
         expect(left + w, label).toBeLessThanOrEqual(width + 0.01);
       }
       expect(g.zones.reduce((n, z) => n + z.w, 0), label).toBeCloseTo(width - 4, 5);
-    } else {
+    } else if (v.type === 'compare') {
       const g = compareGeometry(v, width, font);
       checkLabels(g.labels, width, font * 0.92, label);
       for (const row of g.rows) {
@@ -149,6 +149,9 @@ describe('Anket testlerinin kart grafikleri', () => {
                 expect(v.valueLabel, label).toBe(row.valueLabel);
               }
             } else {
+              // Anket testlerinde yalnızca düzey çubuğu ve yan yana grafik vardır.
+              expect(v.type, label).toBe('compare');
+              if (v.type !== 'compare') continue;
               compares++;
               expect(v.rows.length, label).toBeGreaterThanOrEqual(2);
               for (const r of v.rows) {

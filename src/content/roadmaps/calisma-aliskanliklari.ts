@@ -39,7 +39,7 @@ export const calismaAliskanliklariRoadmap: RoadmapTemplate = {
   },
   lastWeek: bf.lastWeek,
   nextTests: ['ders-calisma-motivasyonu', 'erteleme-ve-zaman-yonetimi', 'ogrenme-ve-basari-ozellikleri'],
-  nextPurpose: { you: 'neden ve nasıl çalıştığını daha yakından görmek', parent: 'çocuğunuzun neden ve nasıl çalıştığını daha yakından görmek' },
+  nextPurpose: { you: 'neden ve nasıl çalıştığını daha yakından görmek', parent: 'çocuğunuzun neden ve nasıl çalıştığını daha yakından görmek', general: true },
   approach: {
     planning: {
       low: 'Yaptığı küçük planları ve planına uyduğu günleri fark ettiğinizi ona söyleyin.',

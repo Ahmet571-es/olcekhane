@@ -54,6 +54,7 @@ export const iyimserlikRoadmap: RoadmapTemplate = {
   nextPurpose: {
     you: 'kendini farklı yönlerden daha ayrıntılı tanımak',
     parent: 'çocuğunuzun kendini farklı yönlerden daha ayrıntılı tanıması',
+    general: true,
   },
   approach: {
     gelecek: {

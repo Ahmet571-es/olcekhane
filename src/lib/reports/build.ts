@@ -3,10 +3,13 @@ import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText, InsightTemplate, LevelGroup, MotivationTemplate, PairText, ValuesTemplate } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
-import { bandZones, type Zone } from './visuals';
+import { niceMax } from './visual-draw';
+import { bandZones, type BarsVisual, type ColumnsVisual, type DotsVisual, type ItemVisual, type LadderVisual, type StackVisual, type StepsVisual, type StripVisual, type Zone } from './visuals';
 import type {
   Band,
   CancellationTask,
+  DigitSpanTask,
+  SpatialSpanTask,
   GoNoGoTask,
   InstrumentDef,
   LikertInstrument,
@@ -48,7 +51,10 @@ import { VOCABULARY_TYPE_NAMES } from '@/lib/instruments/vocabulary';
 import { scaleItems } from '@/lib/scoring/likert';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
 import {
+  CANCELLATION_FEW_HITS,
+  colorWordMostlyMissed,
   MATRIX_CHANCE_MAX,
+  matrixChance,
   MATRIX_LEVEL_PASS,
   MATRIX_NEAR_MIN,
   MATRIX_NEAR_SHARE,
@@ -57,13 +63,16 @@ import {
   REACTION_MIN_VALID,
   REACTION_MOUSE_SHARE,
   VERBAL_CHANCE_MAX,
+  verbalChance,
   VERBAL_TYPES_ORDER,
   FOLDING_CHANCE_MAX,
+  foldingChance,
   FOLDING_LURES_ORDER,
   foldingLurePattern,
   foldingRapid,
   foldingSamePosition,
   VOCABULARY_CHANCE_MAX,
+  vocabularyChance,
   VOCABULARY_LURES_ORDER,
   vocabularyLurePattern,
   vocabularyRapid,
@@ -127,6 +136,7 @@ import {
   type LogicGroup,
   type LogicResult,
   CUBE_CHANCE_MAX,
+  cubeChance,
   CUBE_LURE_NOTE,
   CUBE_LURES_ORDER,
   cubeLureStandsOut,
@@ -148,6 +158,7 @@ import {
   cubeSamePosition,
   type CubeResult,
   HIDDEN_CHANCE_MAX,
+  hiddenChance,
   HIDDEN_LURE_NOTE,
   HIDDEN_LURES_ORDER,
   hiddenLureStandsOut,
@@ -381,6 +392,8 @@ export interface CognitiveBlock {
   symbol?: { correct: number; errors: number; perMinute: number };
   /** Harf işaretleme: bölüm bölüm net doğru sayısı. */
   sections?: { label: string; value: number }[];
+  /** Kartın grafiği: kartın sözel açıklamasını görsel olarak da anlatır (lib/reports/visuals.ts). */
+  visual?: ItemVisual;
 }
 
 export interface CognitiveReport {
@@ -1195,12 +1208,24 @@ function buildAcademic(
 
 const pct = (x: number) => `%${nf0.format(Math.round(x * 100))}`;
 
-function spanText(r: SpanResult, audience: Audience, what: { student: string; parent: string; unit: string; everyday: string }): string {
+/** Dizi görevinin merdiveni: görevdeki bütün uzunluklar, her uzunluktaki denemeler ve doğru tekrarlanan en uzun dizi. */
+function spanLadder(label: string, r: SpanResult, unit: string, task: { startLength: number; sequences: unknown[] } | undefined): LadderVisual {
+  const first = task?.startLength ?? r.ladder[0]?.length ?? 1;
+  const last = task ? task.startLength + task.sequences.length - 1 : (r.ladder.at(-1)?.length ?? first);
+  const rows = Array.from({ length: last - first + 1 }, (_, i) => first + i).map((length) => ({ length, results: r.ladder.find((x) => x.length === length)?.results ?? [] }));
+  return { type: 'ladder', label, rows, reached: r.span > 0 ? r.span : null, unit };
+}
+
+function spanText(
+  r: SpanResult,
+  audience: Audience,
+  what: { student: string; parent: string; unit: string; everyday: string; floor: { student: string; parent: string } },
+): string {
   const you = audience !== 'parent';
   if (r.belowFloor) {
     return you
-      ? `En kısa ${what.unit} dizilerinde bile zorlandın. Bu, o an dikkatinin dağılmasından ya da görevi ilk kez yapıyor olmaktan kaynaklanabilir. ${what.everyday}`
-      : `En kısa ${what.unit} dizilerinde bile zorlandı. Bu sonuç o anki dikkat, yorgunluk ya da görevi ilk kez yapıyor olmaktan etkilenmiş olabilir; tek başına yorumlanmamalıdır. ${what.everyday}`;
+      ? `${what.floor.student} O an dikkatin dağılmış ya da görev sana yeni gelmiş olabilir. ${what.everyday}`
+      : `${what.floor.parent} O anki dikkat, yorgunluk ya da görevin yeni olması bu sonucu etkilemiş olabilir; tek başına yorumlanmamalıdır. ${what.everyday}`;
   }
   const base = you ? what.student.replace('{n}', String(r.span)) : what.parent.replace('{n}', String(r.span));
   const ceiling = r.ceiling
@@ -1242,103 +1267,201 @@ function cancellationBlocks(
   scale: (k: string) => { name: string; plain: string },
 ): CognitiveBlock[] {
   const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
   const n = nf0.format;
   const card = (key: string) => ({ key, name: scale(key).name, plain: scale(key).plain });
 
+  // Çok az harf işaretlendiyse (görev yarıda kalmış ya da yönerge anlaşılmamış) hiçbir kart yorumlanmaz; grafik çizilmez.
+  if (r.hits < CANCELLATION_FEW_HITS) {
+    const short = v('Çok az harf işaretlediğin için yorumlanmadı.', 'Çok az harf işaretlendiği için yorumlanmadı.');
+    return [
+      {
+        ...card('tempo'),
+        headline: 'Yorumlanmadı',
+        text: v(
+          'Çok az harf işaretlediğin için bu sonuç yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin.',
+          'Çocuğunuz çok az harf işaretlediği için bu sonuç yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir.',
+        ),
+      },
+      { ...card('isabet'), headline: 'Yorumlanmadı', text: short },
+      { ...card('net'), headline: 'Yorumlanmadı', text: short },
+      { ...card('surdurme'), headline: 'Yorumlanmadı', text: short },
+    ];
+  }
+
   const ceiling = r.ceiling
-    ? you
-      ? ' En az bir bölümde sayfanın sonuna ulaştın; gerçek hızın bundan da yüksek olabilir.'
-      : ' En az bir bölümde sayfanın sonuna ulaşıldı; gerçek çalışma hızı bundan yüksek olabilir.'
+    ? v(
+        ' En az bir bölümde sayfanın sonuna ulaştın; gerçek hızın bundan da yüksek olabilir.',
+        ' En az bir bölümde sayfanın sonuna ulaşıldı; gerçek çalışma hızı bundan yüksek olabilir.',
+      )
     : '';
   const tempo: CognitiveBlock = {
     ...card('tempo'),
     headline: `Dakikada ${n(r.perMinute)} harf`,
-    detail: `${task.sections} bölümde toplam ${n(r.processed)} harf tarandı.`,
     text:
-      (you
-        ? `Harf sayfalarında dakikada ortalama ${n(r.perMinute)} harfe baktın. Bu, işi ne kadar hızlı yürüttüğünü gösterir. Hız tek başına iyi ya da kötü değildir; önemli olan, hızlı giderken aranan harfleri kaçırmamaktır.`
-        : `Çocuğunuz harf sayfalarında dakikada ortalama ${n(r.perMinute)} harf taradı. Bu, basit ama dikkat gerektiren bir işi ne kadar hızlı yürütebildiğini gösterir. Hız, doğrulukla birlikte değerlendirilmelidir: çok harf atlayarak hızlı çalışmak da, hiç hata yapmadan ama çok yavaş çalışmak da üzerinde durulması gereken bir örüntüdür.`) +
-      ceiling,
+      v(
+        `Harf sayfalarında dakikada ortalama ${n(r.perMinute)} harfe baktın. Bu, işi ne kadar hızlı yürüttüğünü gösterir. Hız tek başına iyi ya da kötü değildir; önemli olan, hızlı giderken aranan harfleri kaçırmamaktır.`,
+        `Çocuğunuz harf sayfalarında dakikada ortalama ${n(r.perMinute)} harf taradı. Bu sayı, basit ama dikkat isteyen bir işi ne kadar hızlı yaptığını gösterir. Hız tek başına iyi ya da kötü değildir; doğrulukla birlikte okunmalıdır.`,
+      ) + ceiling,
   };
 
   // Çok sayıda yanlış işaret varken (harflere gelişigüzel dokunmak da bütün hedefleri bulur) "dikkatli" denmez.
   const manyFalse = r.falseAlarmRate >= 0.02;
+  const random = r.commissions > r.hits;
   const found =
     r.hitRate >= 0.9
-      ? you
-        ? `Taradığın satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsini' : 'neredeyse hepsini'} buldun${manyFalse ? '.' : '; dikkatli çalıştığını gösteriyor.'}`
-        : `Taranan satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsi' : 'neredeyse hepsi'} bulundu${manyFalse ? '.' : '; görev dikkatle yürütülmüş.'}`
+      ? v(
+          `Taradığın satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsini' : 'neredeyse hepsini'} buldun${manyFalse ? '.' : '; dikkatli çalıştığını gösteriyor.'}`,
+          `Çocuğunuz taradığı satırlardaki aranan harflerin ${r.omissions === 0 ? 'hepsini' : 'neredeyse hepsini'} buldu${manyFalse ? '.' : '; görevi dikkatle yürüttü.'}`,
+        )
       : r.hitRate >= 0.75
-        ? you
-          ? 'Taradığın satırlardaki aranan harflerin çoğunu buldun ama bir kısmını atladın. Hızlı giderken bazı harflerin gözden kaçması çok yaygındır; satır satır, harf harf ilerlemek atlamaları azaltır.'
-          : 'Taranan satırlardaki aranan harflerin çoğu bulundu, bir kısmı atlandı. Hızlı çalışırken bazı harflerin gözden kaçması yaygındır.'
-        : you
-          ? 'Taradığın satırlardaki aranan harflerin önemli bir kısmını atladın. Bu; hızlı gitmekten, satır atlamaktan ya da o an dikkatinin dağılmasından kaynaklanabilir. Acele etmeden, harf harf ilerlemek işine yarar.'
-          : 'Taranan satırlardaki aranan harflerin önemli bir kısmı atlandı. Bu; çok hızlı çalışmaktan, satır atlamaktan ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.';
-  const falseMarks =
-    manyFalse
-      ? you
-        ? ' Bazı harfleri de yanlışlıkla işaretledin; p ile b ya da d, o ile a gibi birbirine benzeyen harfler kolayca karışabilir.'
-        : ' Aranan harflere benzeyen bazı harfler de işaretlenmiş (ör. p ile b ya da d); bu, acele etmekten ya da benzer harfleri ayırt etmekte zorlanmaktan kaynaklanabilir.'
+        ? v(
+            'Taradığın satırlardaki aranan harflerin çoğunu buldun ama bir kısmını atladın. Hızlı giderken bazı harflerin gözden kaçması çok yaygındır; satır satır, harf harf ilerlemek atlamaları azaltır.',
+            'Çocuğunuz taradığı satırlardaki aranan harflerin çoğunu buldu, bir kısmını atladı. Hızlı çalışırken bazı harflerin gözden kaçması yaygındır.',
+          )
+        : v(
+            'Taradığın satırlardaki aranan harflerin önemli bir kısmını atladın. Bu; hızlı gitmekten, satır atlamaktan ya da o an dikkatinin dağılmasından kaynaklanabilir. Acele etmeden, harf harf ilerlemek işine yarar.',
+            'Çocuğunuz taradığı satırlardaki aranan harflerin önemli bir kısmını atladı. Bu; çok hızlı çalışmaktan, satır atlamaktan ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+          );
+  const falseMarks = random
+    ? v(
+        ' Yanlış işaretlerin doğru işaretlerinden fazla: harflere bakmadan dokunmuş olabilirsin. Bu yüzden bulduğun harflerin oranı tek başına bir şey söylemez.',
+        ' Yanlış işaretler doğru işaretlerden fazla: çocuğunuz harflere bakmadan dokunmuş olabilir. Bu yüzden bulma oranı tek başına yorumlanmamalıdır.',
+      )
+    : manyFalse
+      ? v(
+          ` Birçok harfi de yanlışlıkla işaretledin (${n(r.commissions)} yanlış işaret); p ile b ya da d, o ile a gibi birbirine benzeyen harfler kolayca karışabilir.`,
+          ` Çocuğunuz aranan harflere benzeyen birçok harfi de işaretledi (${n(r.commissions)} yanlış işaret; ör. p ile b ya da d). Bu, acele etmekten ya da benzer harfleri ayırt etmekte zorlanmaktan kaynaklanabilir.`,
+        )
       : r.commissions === 0
-        ? you
-          ? ' Hiç yanlış işaret yapmadın.'
-          : ' Hiç yanlış işaret yok.'
+        ? v(' Hiç yanlış işaret yapmadın.', ' Hiç yanlış işaret yok.')
         : '';
   const isabet: CognitiveBlock = {
     ...card('isabet'),
     headline: `Bulma oranı ${pct(r.hitRate)}`,
-    detail: `${n(r.hits)} harf bulundu · ${n(r.omissions)} harf atlandı · ${n(r.commissions)} yanlış işaret${
-      r.strays ? ` · taranan kısmın çok ilerisindeki ${n(r.strays)} dokunuş yanlışlıkla dokunma sayıldı, puana katılmadı` : ''
-    }`,
+    ...(r.strays ? { detail: `Taranan kısmın çok ilerisindeki ${n(r.strays)} dokunuş yanlışlıkla dokunma sayıldı, puana katılmadı.` } : {}),
     text: found + falseMarks,
   };
 
   const net: CognitiveBlock = {
     ...card('net'),
     headline: `${n(r.net)} net doğru`,
-    detail: `${n(r.hits)} doğru işaret − ${n(r.commissions)} yanlış işaret`,
-    text: you
-      ? 'Net doğru, doğru işaretlerinden yanlış işaretlerin çıkarılmasıyla bulunur. Hızını ve dikkatini birlikte gösterir: harfleri kaçırmadan ve yanlış işaretlemeden ne kadar iş çıkardığını anlatır.'
-      : 'Net doğru (doğru işaretler eksi yanlış işaretler), hızı ve dikkati birlikte yansıtan özet puandır; rastgele işaretleme bu puanı yükseltmez. Henüz norm olmadığı için akranlarla karşılaştırılamaz. İleride aynı tür cihazla yapılacak uygulamalarda değişimi izlemek için kullanılabilir; tekrarda alıştırma etkisiyle bir miktar artış beklenir.',
+    text: v(
+      'Net doğru, doğru işaretlerinden yanlış işaretlerin çıkarılmasıyla bulunur. Hızını ve dikkatini birlikte gösterir: harfleri kaçırmadan ve yanlış işaretlemeden ne kadar iş çıkardığını anlatır.',
+      'Net doğru, doğru işaretlerden yanlış işaretlerin çıkarılmasıyla bulunur. Hızı ve dikkati birlikte gösterir; rastgele işaretlemek bu sayıyı artırmaz. Görev aynı tür cihazla yeniden yapılırsa değişimi izlemek için kullanılabilir; ikinci seferde alışkanlıkla biraz artması beklenir.',
+    ),
   };
+
+  // İlk ve son bölümler (kartın grafiğiyle aynı bölme): bölüm başına taranan harf ve bulma oranı.
+  const half = Math.floor(r.sections.length / 2);
+  const early = r.sections.slice(0, half);
+  const late = r.sections.slice(half);
+  const sum = (xs: typeof r.sections, k: 'processed' | 'hits' | 'targets') => xs.reduce((a, x) => a + x[k], 0);
+  const per = (xs: typeof r.sections, k: 'processed' | 'hits' | 'targets') => (xs.length ? sum(xs, k) / xs.length : 0);
+  const rate = (xs: typeof r.sections) => sum(xs, 'hits') / Math.max(1, sum(xs, 'targets'));
+  // Net doğrudaki düşüş, son bölümlerde daha az harf taramaktan geliyor: taranan satırlardaki harfler yine bulunmuş.
+  const scannedLess = per(late, 'processed') < per(early, 'processed') && rate(late) >= 0.9 && rate(late) >= rate(early) - 0.05;
 
   const change = r.sustainChange;
   const x = change === null ? '' : `%${n(Math.abs(change))}`;
+  const unclear = change !== null && Math.abs(change) >= SUSTAIN_THRESHOLD && !r.sustainClear;
   const [headline, sustainText] =
     change === null
       ? [
           'Değişim hesaplanamadı',
-          you
-            ? 'İlk bölümlerde yeterli işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.'
-            : 'İlk bölümlerde yeterli doğru işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.',
+          v(
+            'İlk bölümlerde yeterli işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.',
+            'İlk bölümlerde yeterli doğru işaret olmadığı için bölümler arasındaki değişim hesaplanamadı.',
+          ),
         ]
-      : change <= -SUSTAIN_THRESHOLD && r.sustainClear
+      : unclear
         ? [
-            'Son bölümlerde düştü',
-            you
-              ? `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} azaldı. Uzun bir işte yorulmak ya da sıkılmak herkeste olur; uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`
-              : `Son bölümlerde net doğru sayısı ilk bölümlere göre yaklaşık ${x} azaldı. Bu, dikkati uzun süre aynı düzeyde tutmakta zorlanıldığını düşündürebilir; yorgunluk ya da isteksizlik de aynı etkiyi yapar. Uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`,
+            'Fark belirsiz',
+            v(
+              'Grafikte son bölümler ilk bölümlerden farklı görünüyor. Ama işaretlediğin harf az olduğu için bu fark şans eseri de olabilir; bu yüzden yorumlanmadı.',
+              'Grafikte son bölümler ilk bölümlerden farklı görünüyor. Ancak çocuğunuzun işaretlediği harf sayısı az olduğu için bu fark şans eseri de olabilir; bu yüzden yorumlanmadı.',
+            ),
           ]
-        : change >= SUSTAIN_THRESHOLD && r.sustainClear
+        : change <= -SUSTAIN_THRESHOLD
           ? [
-              'Görev ilerledikçe arttı',
-              you
-                ? `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} arttı: görevi yaptıkça ısındın.`
-                : `Son bölümlerde net doğru sayısı ilk bölümlere göre yaklaşık ${x} arttı: görev ilerledikçe ısınma ve alışma görülüyor.`,
+              'Son bölümlerde düştü',
+              scannedLess
+                ? v(
+                    `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} azaldı. Bunun nedeni, son bölümlerde daha az harf taraman: yavaşladın, ama taradığın satırlardaki harfleri yine kaçırmadın. Uzun bir işte yorulmak ya da sıkılmak çoğu kişide olur; uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`,
+                    `Çocuğunuzun son bölümlerdeki net doğru sayısı ilk bölümlere göre yaklaşık ${x} azaldı. Azalma, son bölümlerde daha az harf taramasından geliyor; taradığı satırlardaki harfleri yine kaçırmadı. Bu, uzun bir işte yorulma ya da sıkılmayla olabilir. Uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`,
+                  )
+                : v(
+                    `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} azaldı. Uzun bir işte yorulmak ya da sıkılmak çoğu kişide olur; uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`,
+                    `Çocuğunuzun son bölümlerdeki net doğru sayısı ilk bölümlere göre yaklaşık ${x} azaldı. Bu, çocuğunuzun dikkatini uzun süre aynı düzeyde tutmakta zorlandığını düşündürebilir; yorgunluk ya da isteksizlik de aynı etkiyi yapabilir. Uzun işleri parçalara bölmek ve kısa molalar vermek yardımcı olur.`,
+                  ),
             ]
-          : [
-              'Belirgin değişim yok',
-              you
-                ? `${task.sections} bölüm boyunca belirgin bir değişim görülmedi; dikkatini görev boyunca koruyabildiğini düşündürüyor. Bölümler arasındaki küçük farklar ölçümün doğal oynaklığıdır.`
-                : `${task.sections} bölüm boyunca belirgin bir değişim görülmedi; dikkat görev süresince korunabilmiş görünüyor.`,
-            ];
+          : change >= SUSTAIN_THRESHOLD
+            ? [
+                'Görev ilerledikçe arttı',
+                v(
+                  `Son bölümlerde net doğru sayın ilk bölümlere göre yaklaşık ${x} arttı: görevi yaptıkça ısındın.`,
+                  `Çocuğunuzun son bölümlerdeki net doğru sayısı ilk bölümlere göre yaklaşık ${x} arttı: görev ilerledikçe ısınmış ve göreve alışmış görünüyor.`,
+                ),
+              ]
+            : [
+                'Belirgin değişim yok',
+                v(
+                  `${task.sections} bölüm boyunca belirgin bir değişim görülmedi: görevin başında nasıl çalıştıysan sonunda da öyle çalıştın.`,
+                  `${task.sections} bölüm boyunca belirgin bir değişim görülmedi; çocuğunuz görevin başında ve sonunda benzer biçimde çalıştı.`,
+                ) +
+                  (r.hitRate >= 0.9 && !manyFalse ? v(' Dikkatini görev boyunca korudun.', ' Dikkatini görev boyunca korumuş görünüyor.') : '') +
+                  v(' Bölümler arasındaki küçük farklar şans eseri olabilir.', ''),
+              ];
   const surdurme: CognitiveBlock = {
     ...card('surdurme'),
     headline,
-    text: you ? sustainText : `${sustainText} Bölümler arasındaki küçük farklar ölçüm hatası sınırları içindedir; yalnızca belirgin değişimler yorumlanmalıdır.`,
+    text: you || change === null || unclear ? sustainText : `${sustainText} Bölümler arasındaki küçük farklar şans eseri olabilir; yalnızca büyük farklar yorumlanır.`,
     sections: r.sections.map((s) => ({ label: `${s.index + 1}. bölüm`, value: s.net })),
   };
+
+  /* Kart grafikleri */
+  tempo.visual = {
+    type: 'columns',
+    label: 'Bölüm bölüm taranan harf',
+    rows: r.sections.map((x) => ({ label: `${x.index + 1}. bölüm`, value: x.processed, valueLabel: n(x.processed) })),
+    max: Math.max(1, ...r.sections.map((x) => x.processed)),
+    caption: 'Taranan harf; bölümlerin süresi eşit',
+  } satisfies ColumnsVisual;
+  isabet.visual = {
+    type: 'stack',
+    label: 'Taranan satırlardaki aranan harfler',
+    total: r.hits + r.omissions,
+    parts: [
+      { label: 'Bulunan harf', value: r.hits },
+      { label: 'Atlanan harf', value: r.omissions },
+    ],
+  } satisfies StackVisual;
+  net.visual = {
+    type: 'bars',
+    label: 'Net doğru',
+    scale: 'scale',
+    rows: [
+      { label: 'Doğru işaret', value: r.hits, valueLabel: n(r.hits) },
+      { label: 'Yanlış işaret', value: r.commissions, valueLabel: n(r.commissions) },
+      { label: 'Net doğru (doğru − yanlış)', value: Math.max(0, r.net), valueLabel: n(r.net) },
+    ],
+  } satisfies BarsVisual;
+  {
+    // Kartın karşılaştırdığı iki yarı: ilk bölümler ve son bölümler (bölümlerin süresi eşit; bölüm başına ortalama net doğru).
+    const avg = (xs: typeof r.sections) => (xs.length ? xs.reduce((a, x) => a + x.net, 0) / xs.length : 0);
+    const a = avg(early);
+    const b = avg(late);
+    const one = (k: number) => (k === 1 ? 'bölüm' : `${k} bölüm`);
+    surdurme.visual = {
+      type: 'bars',
+      label: 'Bölüm başına ortalama net doğru',
+      scale: 'scale',
+      rows: [
+        { label: `İlk ${one(early.length)}`, value: Math.max(0, a), valueLabel: nf1.format(a) },
+        { label: `Son ${one(late.length)}`, value: Math.max(0, b), valueLabel: nf1.format(b) },
+      ],
+    } satisfies BarsVisual;
+  }
 
   return [tempo, isabet, net, surdurme];
 }
@@ -1367,6 +1490,10 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
   // karışmasından olabileceği için okuma yorumu yapılmaz.
   const incErr = r.incongruentErrors;
   const missedInc = incErr - r.wordErrors - r.otherErrors;
+  const errors = r.n - r.correct;
+  // Hataların ne kadarı kelime ile renk farklıyken oldu ve bu hataların ne kadarı aynı türdeydi: sayıya uyan sözcük.
+  const where = incErr === errors ? 'Hataların hepsi' : incErr * 2 > errors ? 'Hataların çoğu' : 'Hataların bir kısmı';
+  const most = (k: number) => (k === incErr ? 'bu hataların hepsinde' : 'bu hatalarda çoğunlukla');
   const errorKind: 'reading' | 'other' | 'missed' | 'mixed' =
     incErr === 0
       ? 'mixed'
@@ -1379,19 +1506,18 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
             : 'mixed';
   const incongruentNote = {
     reading: you
-      ? ' Hataların çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge bastın: kelimeyi okuma alışkanlığı zaman zaman öne geçti.'
-      : ' Hataların çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge basıldı; bu, kelimeyi okuma alışkanlığının zaman zaman öne geçtiğini gösterir.',
+      ? ` ${where} kelime ile renk farklıyken oldu ve ${most(r.wordErrors)} kelimenin söylediği renge bastın: kelimeyi okuma alışkanlığı zaman zaman öne geçti.`
+      : ` ${where} kelime ile renk farklıyken oldu ve ${most(r.wordErrors)} kelimenin söylediği renge basıldı; bu, kelimeyi okuma alışkanlığının zaman zaman öne geçtiğini gösterir.`,
     other: you
-      ? ' Hataların çoğu kelime ile renk farklıyken oldu; bu hatalarda çoğunlukla kelimeye değil, başka bir renge bastın. Renkleri birbirine karıştırmış ya da acele etmiş olabilirsin.'
-      : ' Hataların çoğu kelime ile renk farklıyken oldu; bu hatalarda çoğunlukla kelimeye değil, başka bir renge basıldı. Renkler birbirine karıştırılmış ya da acele edilmiş olabilir.',
+      ? ` ${where} kelime ile renk farklıyken oldu; ${most(r.otherErrors)} kelimeye değil, başka bir renge bastın. Renkleri birbirine karıştırmış ya da acele etmiş olabilirsin.`
+      : ` ${where} kelime ile renk farklıyken oldu; ${most(r.otherErrors)} kelimeye değil, başka bir renge basıldı. Renkler birbirine karıştırılmış ya da acele edilmiş olabilir.`,
     missed: you
-      ? ' Hataların çoğu kelime ile renk farklıyken oldu; bu denemelerin çoğunda süre içinde cevap vermedin ya da kelimeye bakmadan çok erken bastın.'
-      : ' Hataların çoğu kelime ile renk farklıyken oldu; bu denemelerin çoğunda süre içinde cevap verilmedi ya da kelimeye bakmadan çok erken basıldı.',
-    mixed: ' Hataların çoğu kelime ile renk farklıyken oldu.',
+      ? ` ${where} kelime ile renk farklıyken oldu; ${missedInc === incErr ? 'bu denemelerin hepsinde' : 'bu denemelerin çoğunda'} süre içinde cevap vermedin ya da kelimeye bakmadan çok erken bastın.`
+      : ` ${where} kelime ile renk farklıyken oldu; ${missedInc === incErr ? 'bu denemelerin hepsinde' : 'bu denemelerin çoğunda'} süre içinde cevap verilmedi ya da kelimeye bakmadan çok erken basıldı.`,
+    mixed: ` ${where} kelime ile renk farklıyken oldu.`,
   }[errorKind];
   // Doğruluk düşükken hataların çoğu süre aşımı ya da çok erken cevapsa bu ayrıca söylenir.
-  const errors = r.n - r.correct;
-  const mostlyMissed = errors > 0 && r.timeouts + r.anticipations > errors / 2;
+  const mostlyMissed = colorWordMostlyMissed(r);
   let accText: string;
   if (r.accuracy === 1) {
     accText = you ? 'Yazıların rengini her seferinde doğru buldun.' : 'Çocuğunuz yazıların rengini her seferinde doğru buldu.';
@@ -1417,8 +1543,8 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
     accText = you ? `${some} yazının rengini bulmakta zorlandın.` : `Çocuğunuz ${some.toLocaleLowerCase('tr-TR')} yazının rengini bulmakta zorlandı.`;
     if (drop && errorKind === 'reading') {
       accText += you
-        ? ' Hatalarının çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge bastın: kelimeyi okumak, yazının rengine bakmanın önüne geçti. Acele etmeden, önce yazının rengine bakmak işine yarar.'
-        : ' Hataların çoğu kelime ile renk farklıyken oldu ve bu hatalarda çoğunlukla kelimenin söylediği renge basıldı: kelimeyi okumak yazının rengine bakmanın önüne geçmiş ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.';
+        ? ` ${where} kelime ile renk farklıyken oldu ve ${most(r.wordErrors)} kelimenin söylediği renge bastın: kelimeyi okumak, yazının rengine bakmanın önüne geçti. Acele etmeden, önce yazının rengine bakmak işine yarar.`
+        : ` ${where} kelime ile renk farklıyken oldu ve ${most(r.wordErrors)} kelimenin söylediği renge basıldı: kelimeyi okumak yazının rengine bakmanın önüne geçmiş ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`;
     } else {
       accText += you
         ? ' Bu; acele etmekten, yönergeyi tam anlamamaktan ya da renkleri ayırt etmekte zorlanmaktan kaynaklanabilir.'
@@ -1433,7 +1559,6 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
   const dogruluk: CognitiveBlock = {
     ...card('renk_dogruluk'),
     headline: `${pct(r.accuracy)} doğru`,
-    detail: `Kelime ile renk aynıyken ${pct(r.accCongruent)}, farklıyken ${pct(r.accIncongruent)} doğru`,
     text: accText,
   };
 
@@ -1463,16 +1588,14 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
     etki = {
       ...card('renk_etki'),
       headline: 'Hesaplanamadı',
-      text: 'Kelime ile rengin aynı ya da farklı olduğu denemelerin birinde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.',
+      text: 'Yeterince doğru cevap olmadığı için kelime ile rengin aynı olduğu ve farklı olduğu denemeler karşılaştırılamadı.',
     };
   } else {
     const diff = i - c;
-    const detail = `Aynıyken ${sn(c)} sn · farklıyken ${sn(i)} sn`;
     if (diff >= INTERFERENCE_MIN_MS) {
       etki = {
         ...card('renk_etki'),
         headline: `Kelime ile renk farklıyken ${sn(diff)} sn daha yavaş`,
-        detail,
         text: you
           ? 'Kelime ile renk farklı olduğunda cevapların biraz yavaşladı. Bu çoğu kişide olur: okumak o kadar otomatik bir alışkanlıktır ki kelime, rengi bulmanın önüne geçer. Bu yavaşlama, alışkanlığa direnip doğru cevabı vermenin ne kadar çaba istediğini gösterir. Bu fark bir seferden ötekine değişebilir; küçük farklara takılma.'
           : 'Kelime ile renk farklı olduğunda çocuğunuzun cevapları biraz yavaşladı. Bu, çoğu kişide görülen bir etkidir (renk-kelime etkisi): okuma otomatik bir alışkanlık olduğu için kelime, rengi bulmanın önüne geçer. Yavaşlamanın büyüklüğü, alışkanlığa direnip doğru cevabı vermenin ne kadar çaba istediğini gösterir; bu etki çocuklukta büyüktür ve yaşla azalır. Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.',
@@ -1481,7 +1604,6 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
       etki = {
         ...card('renk_etki'),
         headline: 'Kelime ile renk farklıyken daha hızlı',
-        detail,
         text: you
           ? 'Kelime ile renk farklıyken cevapların, aynıyken olduğundan biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır ve bir seferden ötekine değişebilir.'
           : 'Kelime ile renk farklıyken çocuğunuzun cevapları, aynıyken olduğundan biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır. Tek bir uygulamada bu farkın kesinliği düşüktür.',
@@ -1490,11 +1612,21 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
       etki = {
         ...card('renk_etki'),
         headline: 'Belirgin bir fark görülmedi',
-        detail,
         text: you
           ? 'Kelime ile renk farklıyken cevapların, aynıyken olduğundan belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlama, bu uygulamada sende belirgin olarak ortaya çıkmadı. Bu fark bir seferden ötekine değişebilir.'
           : 'Kelime ile renk farklıyken çocuğunuzun cevapları, aynıyken olduğundan belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlamanın belirgin olmaması; kelimelerin henüz çok otomatik okunmamasından, hızdan çok doğruluğa önem verilmesinden ya da ölçümün doğal payından kaynaklanabilir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
       };
+    }
+    // Kelime ile renk farklıyken hız korunup daha sık yanılındıysa kelimenin etkisi hatalarda görülmüştür.
+    if (drop && errorKind === 'reading' && diff < INTERFERENCE_MIN_MS) {
+      etki.text += you
+        ? ' Bu görevde kelimenin etkisi daha çok hatalarda görüldü: farklıyken hızını korudun ama daha sık yanıldın. Bu yüzden bu küçük süre farkı tek başına bir şey söylemez.'
+        : ' Bu görevde kelimenin etkisi daha çok hatalarda görüldü: çocuğunuz kelime ile renk farklıyken hızını korudu ama daha sık yanıldı. Bu yüzden süre farkı tek başına yorumlanmamalıdır.';
+    }
+    if (r.checkFlag) {
+      etki.text += you
+        ? ' Renk denemesindeki karışıklık yüzünden bu fark dikkatle yorumlanmalı.'
+        : ' Renk denemesindeki karışıklık yüzünden bu fark dikkatle yorumlanmalıdır.';
     }
     const max = roundUp(Math.max(c, i), 500);
     chart = {
@@ -1508,6 +1640,17 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
       ],
     };
   }
+  /* Kart grafikleri */
+  dogruluk.visual = pctBarsVisual('Doğru cevap oranı', [
+    { label: 'Kelime ile renk aynıyken', rate: r.accCongruent },
+    { label: 'Kelime ile renk farklıyken', rate: r.accIncongruent },
+  ]);
+  if (r.medianRt !== null) hiz.visual = msBarsVisual('Tipik cevap süresi', [{ label: 'Doğru cevaplarda tipik süre', ms: r.medianRt }]);
+  if (c !== null && i !== null)
+    etki.visual = msBarsVisual('Tipik cevap süresi', [
+      { label: 'Kelime ile renk aynıyken', ms: c },
+      { label: 'Kelime ile renk farklıyken', ms: i },
+    ]);
   return { blocks: [dogruluk, hiz, etki], chart };
 }
 
@@ -1520,9 +1663,17 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
   const x = task.stop;
   const stopped = r.stopTrials - r.commissions;
   const early = r.anticipations > r.omissions;
+  // Hiç basılmadı (çok erken basış da yok): görev yarıda kalmış ya da yönerge anlaşılmamış.
+  const none = r.hits === 0 && r.anticipations === 0;
+  // Basma oranı düşükse durma oranı yorumlanmaz: hiç basmayan biri de X'te durmuş görünür.
+  const stopUnread = r.hitRate < GO_HIT_FOR_STOP;
+  const speedy = r.stopRate < 0.6 && r.hitRate >= 0.95;
+  const careful = r.stopRate >= 0.8 && r.hitRate >= GO_HIT_FOR_STOP && r.hitRate < 0.85 && !early;
+  /** "Basman gereken 90 harfin 31 tanesinde": çok erken basışların sayısı. */
+  const earlyCount = `${r.goTrials} harfin ${r.anticipations === r.goTrials ? 'hepsinde' : `${r.anticipations} tanesinde`}`;
   let durmaText: string;
-  if (r.hitRate < GO_HIT_FOR_STOP) {
-    const q = r.hitRate < 0.5 ? 'çoğunda' : 'önemli bir kısmında';
+  if (stopUnread) {
+    const q = none ? 'hiçbirinde' : r.hitRate < 0.5 ? 'çoğunda' : 'önemli bir kısmında';
     // "0 kez durdun" ya da "30 kez durdun" yerine "hiç durmadın" ve "her seferinde durdun".
     const didStop = you
       ? stopped === 0
@@ -1537,11 +1688,20 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
           : `Çocuğunuz ${x} geldiğinde ${stopped} kez durdu, ${r.commissions} kez bastı`;
     durmaText = early
       ? you
-        ? `${didStop}. Ama basman gereken harflerin ${q} harfe bakmadan, çok erken bastığın için bu oran tek başına bir şey söylemez.`
-        : `${didStop}. Ancak basması gereken harflerin ${q} harfe bakmadan, çok erken bastığı için bu oran tek başına yorumlanamaz.`
-      : you
-        ? `${didStop}. Ama basman gereken harflerin ${q} zamanında basmadığın için bu oran tek başına bir şey söylemez: hiç basmayan biri de ${x}’te durmuş görünür.`
-        : `${didStop}. Ancak basması gereken harflerin ${q} zamanında basmadığı için bu oran tek başına yorumlanamaz: hiç basmayan biri de ${x}’te durmuş görünür.`;
+        ? `${didStop}. Ama basman gereken ${earlyCount} harfe bakmadan, çok erken bastığın için bu oran tek başına bir şey söylemez.`
+        : `${didStop}. Ancak basması gereken ${earlyCount} harfe bakmadan, çok erken bastığı için bu oran tek başına yorumlanamaz.`
+      : none
+        ? you
+          ? `${didStop}. Ama basman gereken harflerin hiçbirinde basmadığın için bu oran bir şey söylemez: hiç basmayan biri de ${x}’te durmuş görünür.`
+          : `${didStop}. Ancak basması gereken harflerin hiçbirinde basmadığı için bu oran yorumlanamaz: hiç basmayan biri de ${x}’te durmuş görünür.`
+        : you
+          ? `${didStop}. Ama basman gereken harflerin ${q} zamanında basmadığın için bu oran tek başına bir şey söylemez: hiç basmayan biri de ${x}’te durmuş görünür.`
+          : `${didStop}. Ancak basması gereken harflerin ${q} zamanında basmadığı için bu oran tek başına yorumlanamaz: hiç basmayan biri de ${x}’te durmuş görünür.`;
+  } else if (careful) {
+    // Dikkatli gidip durabildi ama basması gereken bazı harfleri kaçırdı: durma oranı bu dengeyle birlikte okunur.
+    durmaText = you
+      ? `${x} geldiğinde ${r.stopRate === 1 ? 'her seferinde' : 'çoğu zaman'} durabildin. Ama bunu yaparken basman gereken bazı harfleri kaçırdın: yavaş ve dikkatli gitmek durmayı kolaylaştırmış olabilir.`
+      : `Çocuğunuz ${x} geldiğinde ${r.stopRate === 1 ? 'her seferinde' : 'çoğu zaman'} durabildi; ancak basması gereken harflerin bir kısmını kaçırdı. Yavaş ve dikkatli çalışmak durmayı kolaylaştırmış olabilir.`;
   } else if (r.stopRate === 1) {
     durmaText = you
       ? `${x} geldiğinde her seferinde durabildin. Sık sık basarken birden durmak kolay değildir; bu, hızlı çalışırken bile kendini frenleyebildiğini gösterir.`
@@ -1555,14 +1715,14 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
       ? `${x} geldiğinde çoğu zaman durabildin, bazen de istemeden bastın. Sık sık basarken birden durmak çoğu kişi için zordur; özellikle hızlı gittiğinde elin gözünden önce davranabilir.`
       : `Çocuğunuz ${x} geldiğinde çoğu zaman durabildi, bazen de istemeden bastı. Sık tekrarlanan bir tepkiyi gerektiğinde vermeden durabilmek çoğu kişi için zordur; hızlı çalışıldığında bu tür hatalar artar.`;
   } else {
+    // Hızlı çalışırken durmakta zorlandıysa öneri tepki hızı kartındadır (aynı öneri iki kez yazılmaz).
     durmaText = you
-      ? `${x} geldiğinde birçok kez istemeden bastın. Sık sık basarken birden durmak çoğu kişi için zordur; biraz daha yavaş ve dikkatli gitmek durmayı kolaylaştırır.`
-      : `Çocuğunuz ${x} geldiğinde birçok kez istemeden bastı. Bu; çok hızlı çalışmaktan, yönergenin tam anlaşılmamasından ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır. Tepki ketlemesi çocukluk ve ergenlik boyunca gelişmeye devam eder.`;
+      ? `${x} geldiğinde birçok kez istemeden bastın. Sık sık basarken birden durmak çoğu kişi için zordur${speedy ? '.' : '; biraz daha yavaş ve dikkatli gitmek durmayı kolaylaştırır.'}`
+      : `Çocuğunuz ${x} geldiğinde birçok kez istemeden bastı. Bu; çok hızlı çalışmaktan, yönergenin tam anlaşılmamasından ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.`;
   }
   const durma: CognitiveBlock = {
     ...card('dg_durma'),
-    headline: `Durma oranı ${pct(r.stopRate)}`,
-    detail: `${x} harfi ${r.stopTrials} kez geldi: ${stopped} kez basılmadı, ${r.commissions} kez basıldı`,
+    headline: stopUnread ? 'Yorumlanmadı' : `Durma oranı ${pct(r.stopRate)}`,
     text: durmaText,
   };
 
@@ -1584,21 +1744,22 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
         ? 'Basman gereken harflerin çoğunda zamanında bastın, birkaçını kaçırdın.'
         : 'Çocuğunuz basması gereken harflerin çoğunda zamanında bastı, birkaçını kaçırdı.';
   } else if (early) {
-    const q = r.anticipations > r.goTrials / 2 ? 'çoğunda' : 'bir kısmında';
     tepkiText = you
-      ? `Basman gereken harflerin ${q} harf görünür görünmez, ona bakmadan bastın. Harfi görüp öyle basmak, hem doğru tepki vermeni hem de ${x}’te durmanı kolaylaştırır.`
-      : `Çocuğunuz basması gereken harflerin ${q} harf görünür görünmez, ona bakmadan bastı; düğmeye harfi beklemeden basılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`;
+      ? `Basman gereken ${earlyCount} harf görünür görünmez, ona bakmadan bastın. Harfi görüp öyle basmak, hem doğru tepki vermeni hem de ${x}’te durmanı kolaylaştırır.`
+      : `Çocuğunuz basması gereken ${earlyCount} harf görünür görünmez, ona bakmadan bastı; düğmeye harfi beklemeden basılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`;
+  } else if (none) {
+    tepkiText = you
+      ? 'Basman gereken harflerin hiçbirinde basmadın. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin; bu yüzden bu sonuç yorumlanmadı.'
+      : 'Çocuğunuz basması gereken harflerin hiçbirinde basmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir; bu yüzden bu sonuç yorumlanmadı.';
   } else {
     const q = r.omissions > r.goTrials / 2 ? 'çoğunu' : 'bir kısmını';
     tepkiText = you
       ? `Basman gereken harflerin ${q} kaçırdın. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan ya da ${x}’e takılmamak için çok dikkatli gitmekten kaynaklanabilir.`
       : `Çocuğunuz basması gereken harflerin ${q} kaçırdı. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan, isteksizlikten ya da çok dikkatli davranmaya çalışmaktan kaynaklanabilir ve tek başına yorumlanmamalıdır.`;
   }
-  const earlyNote = r.anticipations ? `, ${r.anticipations} kez çok erken basıldı` : '';
   const tepki: CognitiveBlock = {
     ...card('dg_tepki'),
     headline: `Basma oranı ${pct(r.hitRate)}`,
-    detail: `Diğer harfler ${r.goTrials} kez geldi: ${r.hits} kez zamanında basıldı, ${r.omissions} kez kaçırıldı${earlyNote}`,
     text: tepkiText,
   };
 
@@ -1606,17 +1767,12 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
   if (r.medianRt === null) {
     hiz = { ...card('dg_hiz'), headline: 'Hesaplanamadı', text: 'Zamanında basış çok az olduğu için tepki süresi hesaplanamadı.' };
   } else {
-    const speedy = r.stopRate < 0.6 && r.hitRate >= 0.95;
-    const careful = r.stopRate >= 0.8 && r.hitRate >= GO_HIT_FOR_STOP && r.hitRate < 0.85 && !early;
+    // Dikkatli gidip harf kaçırmak durabilme kartında anlatılır; burada yinelenmez.
     const pattern = speedy
       ? you
         ? ` Senin sonucunda hız öne çıkıyor: biraz yavaşlamak ${x}’te durmanı kolaylaştırabilir.`
         : ` Çocuğunuzun sonucunda hız öne çıkıyor: hızlı tepki verirken ${x}’te durmakta zorlandı.`
-      : careful
-        ? you
-          ? ` Senin sonucunda dikkatli davranmak öne çıkıyor: ${x}’te durmayı başardın ama bazı harfleri kaçırdın.`
-          : ` Çocuğunuzun sonucunda dikkatli davranmak öne çıkıyor: ${x}’te durmayı başardı ama bazı harfleri kaçırdı.`
-        : '';
+      : '';
     hiz = {
       ...card('dg_hiz'),
       headline: `Tipik tepki süresi ${sn(r.medianRt)} saniye`,
@@ -1626,15 +1782,40 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
           : `Çocuğunuzun doğru basışlarında tipik tepki süresi ${sn(r.medianRt)} saniye oldu. Bu görevde hız ile durabilme arasında bir denge vardır: çok hızlı çalışanlar ${x}’te daha sık yanılır, çok dikkatli çalışanlar bazı harfleri kaçırır.`) + pattern,
     };
   }
+  /* Kart grafikleri */
+  // Yorumlanmayan durma oranının grafiği yoktur.
+  if (!stopUnread) {
+    durma.visual = {
+      type: 'dots',
+      label: `${x} harfinin geldiği denemeler`,
+      rows: [{ label: `${x} geldiğinde`, filled: stopped, total: r.stopTrials, valueLabel: `${stopped}/${r.stopTrials}` }],
+      legend: ['basmadan durdu', 'bastı'],
+    } satisfies DotsVisual;
+  }
+  tepki.visual = {
+    type: 'stack',
+    label: 'Diğer harflerin geldiği denemeler',
+    total: r.goTrials,
+    parts: [
+      { label: 'Zamanında basıldı', value: r.hits },
+      { label: 'Kaçırıldı', value: r.omissions },
+      ...(r.anticipations ? [{ label: 'Çok erken basıldı', value: r.anticipations }] : []),
+    ],
+  } satisfies StackVisual;
+  if (r.medianRt !== null) hiz.visual = msBarsVisual('Tipik tepki süresi', [{ label: 'Doğru basışlarda tipik süre', ms: r.medianRt }]);
   return {
     blocks: [durma, tepki, hiz],
     chart: {
       title: 'Doğru tepki oranları',
-      note: you
-        ? 'Çubuklar, durman ve basman gereken harflerde doğru tepki oranını gösterir.'
-        : 'Çubuklar, durması ve basması gereken harflerde doğru tepki oranını gösterir.',
+      note:
+        (you
+          ? 'Çubuklar, durman ve basman gereken harflerde doğru tepki oranını gösterir.'
+          : 'Çubuklar, durması ve basması gereken harflerde doğru tepki oranını gösterir.') +
+        (stopUnread ? ' Basma oranı düşük olduğu için durma oranı yorumlanmadı.' : ''),
       rows: [
-        { label: `${x} geldiğinde durma`, value: Math.round(r.stopRate * 100), max: 100, valueLabel: pct(r.stopRate) },
+        stopUnread
+          ? { label: `${x} geldiğinde durma`, value: 0, max: 100, valueLabel: 'yorumlanmadı' }
+          : { label: `${x} geldiğinde durma`, value: Math.round(r.stopRate * 100), max: 100, valueLabel: pct(r.stopRate) },
         { label: 'Diğer harflerde basma', value: Math.round(r.hitRate * 100), max: 100, valueLabel: pct(r.hitRate) },
       ],
     },
@@ -2256,9 +2437,15 @@ function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: Card
   const base = card(choice ? 'th_secmeli' : 'th_basit');
   const detail = !choice
     ? undefined
-    : p.correct === 0
-      ? `${p.n} denemenin hiçbirinde dairenin olduğu taraftaki düğmeye basılmadı`
-      : `${p.n} denemenin ${p.correct === p.n ? 'hepsinde' : `${p.correct} tanesinde`} dairenin olduğu taraftaki düğmeye basıldı`;
+    : p.misses === p.n
+      ? `${p.n} denemenin hiçbirinde süre içinde basılmadı`
+      : p.correct === 0
+        ? `${p.n} denemenin hiçbirinde dairenin olduğu taraftaki düğmeye basılmadı`
+        : `${p.n} denemenin ${p.correct === p.n ? 'hepsinde' : `${p.correct} tanesinde`} dairenin olduğu taraftaki düğmeye basıldı`;
+  // Hep aynı düğme: hangi düğmeye kaç cevapta basıldığı.
+  const sameSide = Math.max(p.left, p.answered - p.left);
+  const sideName = p.left * 2 > p.answered ? 'sol' : 'sağ';
+  const sideCount = `${p.answered} cevabın ${sameSide === p.answered ? 'hepsinde' : `${sameSide} tanesinde`} ${sideName} düğmeye`;
   // Tepki sayılmayan denemelerin sayıları: çok erken, süre aşımı ve (seçmeli bölümde) öteki taraf.
   const counts = (withWrong = true) => {
     const parts: string[] = [];
@@ -2278,15 +2465,15 @@ function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: Card
     case 'missed':
       return no(
         v(
-          `Denemelerin yarısından çoğunda süre içinde basmadın; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu yüzden ${verdict}.`,
-          `Çocuğunuz denemelerin yarısından çoğunda süre içinde basmadı; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu yüzden ${verdict}.`,
+          `${p.misses === p.n ? 'Hiçbir denemede' : 'Denemelerin yarısından çoğunda'} süre içinde basmadın; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu yüzden ${verdict}.`,
+          `Çocuğunuz ${p.misses === p.n ? 'hiçbir denemede' : 'denemelerin yarısından çoğunda'} süre içinde basmadı; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu yüzden ${verdict}.`,
         ),
       );
     case 'early':
       return no(
         v(
-          `Denemelerin yarısından çoğunda daire belirmeden ya da belirir belirmez bastın; bu yüzden ${verdict}. Daireyi bekleyip, görür görmez basmak gerekir.`,
-          `Çocuğunuz denemelerin yarısından çoğunda daire belirmeden ya da belirir belirmez bastı; bu yüzden ${verdict}.`,
+          `Denemelerin ${p.early === p.n ? 'hepsinde' : 'yarısından çoğunda'} daire belirmeden ya da belirir belirmez bastın; bu yüzden ${verdict}. Daireyi bekleyip, görür görmez basmak gerekir.`,
+          `Çocuğunuz denemelerin ${p.early === p.n ? 'hepsinde' : 'yarısından çoğunda'} daire belirmeden ya da belirir belirmez bastı; bu yüzden ${verdict}.`,
         ),
       );
     case 'mixed':
@@ -2299,15 +2486,15 @@ function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: Card
     case 'reversed':
       return no(
         v(
-          `Cevaplarının çoğunda dairenin olmadığı taraftaki düğmeye bastın; yönergeyi ters anlamış olabilirsin. Daire hangi taraftaysa o taraftaki düğmeye basmak gerekir. Bu yüzden ${verdict}.${extra}`,
-          `Çocuğunuz cevaplarının çoğunda dairenin olmadığı taraftaki düğmeye bastı; yönerge ters anlaşılmış olabilir. Bu yüzden ${verdict}.${extra}`,
+          `Cevaplarının ${p.wrong === p.answered ? 'hepsinde' : 'çoğunda'} dairenin olmadığı taraftaki düğmeye bastın; yönergeyi ters anlamış olabilirsin. Daire hangi taraftaysa o taraftaki düğmeye basmak gerekir. Bu yüzden ${verdict}.${extra}`,
+          `Çocuğunuz cevaplarının ${p.wrong === p.answered ? 'hepsinde' : 'çoğunda'} dairenin olmadığı taraftaki düğmeye bastı; yönerge ters anlaşılmış olabilir. Bu yüzden ${verdict}.${extra}`,
         ),
       );
     case 'oneSide':
       return no(
         v(
-          `Cevaplarının çoğunda, dairenin hangi tarafta olduğuna bakmadan hep aynı düğmeye bastın. Daire hangi taraftaysa o taraftaki düğmeye basmak gerekir. Bu yüzden ${verdict}.${extra}`,
-          `Çocuğunuz cevaplarının çoğunda dairenin hangi tarafta olduğuna bakmadan hep aynı düğmeye bastı; yönerge anlaşılmamış olabilir. Bu yüzden ${verdict}.${extra}`,
+          `Cevaplarının ${sameSide === p.answered ? 'hepsinde' : 'çoğunda'}, dairenin hangi tarafta olduğuna bakmadan aynı düğmeye bastın (${sideCount}). Daire hangi taraftaysa o taraftaki düğmeye basmak gerekir. Bu yüzden ${verdict}.${extra}`,
+          `Çocuğunuz cevaplarının ${sameSide === p.answered ? 'hepsinde' : 'çoğunda'} dairenin hangi tarafta olduğuna bakmadan aynı düğmeye bastı (${sideCount}); yönerge anlaşılmamış olabilir. Bu yüzden ${verdict}.${extra}`,
         ),
       );
     case 'chance':
@@ -2332,6 +2519,11 @@ function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: Card
   const lo = Math.floor((p.midLow as number) / 10) * 10;
   const hi = Math.ceil((p.midHigh as number) / 10) * 10;
   const range = lo === hi ? `${sn(lo)} saniye sürdü` : `${sn(lo)} ile ${sn(hi)} saniye arasındaydı`;
+  // Aralık tek bir süreye inmişse "aralık ne kadar darsa" denmez.
+  const spread =
+    lo === hi
+      ? v(' Tepkilerin birbirine çok yakındı.', ' Çocuğunuzun tepkileri birbirine çok yakındı; bu, tepkilerinin tutarlı olduğunu gösterir.')
+      : v(' Bu aralık ne kadar darsa tepkilerin birbirine o kadar yakın demektir.', ' Bu aralığın darlığı, tepkilerin ne kadar tutarlı olduğunu gösterir.');
   const excluded = p.early + p.misses + p.wrong;
   const issues = excluded
     ? v(
@@ -2339,7 +2531,6 @@ function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: Card
         ` Çocuğunuz ${p.n} denemenin ${counts()}; ${excluded === 1 ? 'bu deneme' : 'bu denemeler'} hesaba katılmadı.`,
       )
     : '';
-  const spread = v(' Bu aralık ne kadar darsa tepkilerin birbirine o kadar yakın demektir.', ' Bu aralığın darlığı, tepkilerin ne kadar tutarlı olduğunu gösterir.');
   const mouse = reactionByMouse(p)
     ? v(
         ' Bu bölümde fareyle bastığın için bu süreye imlecin iki düğme arasındaki yolu da eklendi; bilgisayarda ok tuşlarıyla daha doğru ölçülür.',
@@ -2353,7 +2544,7 @@ function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: Card
       )
     : v(
         `Daire belirince düğmeye basman tipik olarak ${m} saniye sürdü; hesaba katılan tepkilerinin en az yarısı ${range}.${spread}${issues} Hız tek başına iyi ya da kötü değildir; tepki süresi yaşla ve kullanılan cihazla değişir.`,
-        `Çocuğunuzun daire belirince düğmeye basması tipik olarak ${m} saniye sürdü; hesaba katılan tepkilerinin en az yarısı ${range}.${spread}${issues} Bu süre, daireyi görmeyi ve düğmeye basmayı içerir; yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir. Akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.`,
+        `Çocuğunuzun daire belirince düğmeye basması tipik olarak ${m} saniye sürdü; hesaba katılan tepkilerinin en az yarısı ${range}.${spread}${issues} Bu süre, daireyi görmeyi ve düğmeye basmayı içerir; yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir.`,
       );
   return { ...base, headline: `Tipik tepki süresi ${m} saniye`, detail, text };
 }
@@ -2368,6 +2559,8 @@ function reactionBlocks(r: ReactionResult, audience: Audience, card: CardOf): Ta
   const notOk = (p: ReactionPartResult, where: string) =>
     p.medianRt === null ? `${where} tepki süresi hesaplanamadığı için karşılaştırma yapılamadı.` : `${where} tepki süresi yorumlanmadığı için karşılaştırma yapılmadı.`;
   let fark: CognitiveBlock;
+  // İki bölümün tipik süreleri karşılaştırıldı (sayılar kartın grafiğindedir).
+  let compared = false;
   if (ss !== 'ok') fark = no(notOk(r.simple, 'Basit bölümde'));
   else if (cs === 'reversed' || cs === 'chance' || cs === 'errors') fark = no('Seçmeli bölümde öteki taraftaki düğmeye sık basıldığı için karşılaştırma yapılmadı.');
   else if (cs === 'oneSide') fark = no('Seçmeli bölümde cevapların çoğunda aynı düğmeye basıldığı için karşılaştırma yapılmadı.');
@@ -2377,13 +2570,12 @@ function reactionBlocks(r: ReactionResult, audience: Audience, card: CardOf): Ta
     const a = to10(r.simple.medianRt as number);
     const b = to10(r.choice.medianRt as number);
     const diff = b - a;
-    const detail = `Basit ${sn(a)} sn · seçmeli ${sn(b)} sn`;
+    compared = true;
     fark =
       diff >= REACTION_COST_MIN_MS
         ? {
             ...card('th_fark'),
             headline: `Seçmeli bölümde ${sn(diff)} sn daha uzun`,
-            detail,
             text: v(
               'İki kutudan hangisinde daire belirdiğine göre seçim yapmak, tepki süreni uzattı. Bu çoğu kişide görülür: seçenek arttıkça tepki vermek daha uzun sürer. Bu fark bir seferden ötekine değişebilir.',
               'Seçmeli bölümde çocuğunuzun tepkisi, basit bölümdekinden daha uzun sürdü. Bu, tepki süresi çalışmalarının bilinen bir bulgusudur: seçenek sayısı arttıkça tepki süresi uzar (Hick, 1952). Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.',
@@ -2393,8 +2585,7 @@ function reactionBlocks(r: ReactionResult, audience: Audience, card: CardOf): Ta
           ? {
               ...card('th_fark'),
               headline: 'Belirgin bir fark yok',
-              detail,
-              text: v(
+                text: v(
                 'Basit ve seçmeli bölümlerde tepki süren belirgin biçimde farklı değildi. Genellikle seçmeli bölümde tepki daha uzun sürer; bu fark bir seferden ötekine değişebilir.',
                 'Basit ve seçmeli bölümlerde çocuğunuzun tepki süresi belirgin biçimde farklı değildi. Genellikle seçmeli bölümde tepki daha uzun sürer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
               ),
@@ -2402,14 +2593,20 @@ function reactionBlocks(r: ReactionResult, audience: Audience, card: CardOf): Ta
           : {
               ...card('th_fark'),
               headline: 'Seçmeli bölümde daha kısa',
-              detail,
-              text: v(
+                text: v(
                 'Seçmeli bölümde tepki vermen, basit bölümdekinden daha kısa sürdü; genellikle bunun tersi olur. Bu fark bir seferden ötekine değişebilir.',
                 'Seçmeli bölümde çocuğunuzun tepkisi, basit bölümdekinden daha kısa sürdü; genellikle bunun tersi olur. Tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
               ),
             };
   }
 
+  // Bölümlerden birinde denemelerin dörtte birinden çoğu süre aşımı ya da çok erken basışsa karşılaştırma dikkatle okunur.
+  if (compared && [r.simple, r.choice].some((p) => p.misses / p.n > 0.25 || p.early / p.n > 0.25)) {
+    fark.text += v(
+      ' Bölümlerden birinde birçok denemede süre içinde basılmadığı ya da çok erken basıldığı için bu karşılaştırma dikkatle yorumlanmalı.',
+      ' Bölümlerden birinde birçok denemede süre içinde basılmadığı ya da çok erken basıldığı için bu karşılaştırma dikkatle yorumlanmalıdır.',
+    );
+  }
   // Grafikte yalnızca yorumlanan bölümlerin süresi gösterilir; ötekilerin nedeni kartlarında yazar.
   const parts = [
     { label: 'Basit tepki', p: r.simple, status: ss },
@@ -2425,8 +2622,61 @@ function reactionBlocks(r: ReactionResult, audience: Audience, card: CardOf): Ta
       : missing === 1
         ? ' Süresi yazmayan bölümün nedeni, o bölümün kartında açıklanır.'
         : '');
+  /* Kart grafikleri: yorumlanan bölümde tipik süre ve tepkilerin en az yarısının düştüğü aralık (iki bölüm aynı eksende); yorumlanmayan bölümde denemelerin dağılımı. */
+  const partBlocks = [reactionPartBlock(r.simple, audience, card), reactionPartBlock(r.choice, audience, card)];
+  const timed = [r.simple, r.choice].filter((p, k) => p.medianRt !== null && p.midHigh !== null && partBlocks[k].headline.startsWith('Tipik'));
+  const axis = niceMax(Math.max(0.5, ...timed.map((p) => (Math.ceil((p.midHigh as number) / 10) * 10) / 1000)) * 1.1);
+  partBlocks.forEach((b, k) => {
+    const p = k ? r.choice : r.simple;
+    if (timed.includes(p)) {
+      const lo = Math.floor((p.midLow as number) / 10) * 10;
+      const hi = Math.ceil((p.midHigh as number) / 10) * 10;
+      const m = to10(p.medianRt as number);
+      b.visual = {
+        type: 'strip',
+        label: 'Tepki süresi',
+        min: 0,
+        max: axis,
+        unit: 'sn',
+        points: [],
+        marker: { value: m / 1000, label: `Tipik ${sn(m)} sn` },
+        box: { low: lo / 1000, high: hi / 1000, label: 'tepkilerin en az yarısı' },
+      } satisfies StripVisual;
+    } else if (k && reactionStatus(p) === 'oneSide') {
+      // Hep aynı düğme: hangi düğmeye kaç kez basıldığı.
+      b.visual = {
+        type: 'stack',
+        label: 'Denemeler',
+        total: p.n,
+        parts: [
+          { label: 'Sol düğmeye basıldı', value: p.left },
+          { label: 'Sağ düğmeye basıldı', value: p.answered - p.left },
+          { label: 'Daire belirmeden ya da belirir belirmez basıldı', value: p.early },
+          { label: 'Süre içinde basılmadı', value: p.misses },
+        ],
+      } satisfies StackVisual;
+    } else {
+      b.visual = {
+        type: 'stack',
+        label: 'Denemeler',
+        total: p.n,
+        parts: [
+          { label: k ? 'Doğru taraftaki düğmeye basıldı' : 'Zamanında basıldı', value: p.correct },
+          ...(k ? [{ label: 'Öteki düğmeye basıldı', value: p.wrong }] : []),
+          { label: 'Daire belirmeden ya da belirir belirmez basıldı', value: p.early },
+          { label: 'Süre içinde basılmadı', value: p.misses },
+        ],
+      } satisfies StackVisual;
+    }
+  });
+  if (compared) {
+    fark.visual = msBarsVisual('Tipik tepki süresi', [
+      { label: 'Basit tepki', ms: to10(r.simple.medianRt as number) },
+      { label: 'Seçmeli tepki', ms: to10(r.choice.medianRt as number) },
+    ]);
+  }
   return {
-    blocks: [reactionPartBlock(r.simple, audience, card), reactionPartBlock(r.choice, audience, card), fark],
+    blocks: [...partBlocks, fark],
     chart: {
       title: 'Bölümlere göre tipik tepki süresi',
       note,
@@ -2464,6 +2714,287 @@ function seconds(ms: number): string {
   return s % 60 ? `${m} dakika ${s % 60} saniye` : `${m} dakika`;
 }
 
+/* ---------- Kart grafikleri (görev testleri) ---------- */
+
+/**
+ * Grafiklerde kısa süre yazımı: seconds() ile aynı yuvarlama (kartın metniyle aynı sayı). 23 400 → "23 sn",
+ * 75 000 → "1 dk 15 sn", 400 → "1 sn'den kısa".
+ */
+function secShort(ms: number): string {
+  if (ms < 500) return '1 sn’den kısa';
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s} sn`;
+  const m = Math.floor(s / 60);
+  return s % 60 ? `${m} dk ${s % 60} sn` : `${m} dk`;
+}
+/** Grafikteki çubuğun uzunluğu için süre (saniye; seconds() ile aynı yuvarlama). */
+const secValue = (ms: number) => (ms < 500 ? 0.5 : Math.round(ms / 1000));
+
+/**
+ * Kolay ve zor sorulardaki tipik süreler arasında belirgin bir fark yokken (bir yönde 1,5 katından az) "Çalışma biçimi"
+ * kartının süre cümlesi. Kartın grafiği iki süreyi yan yana gösterdiği için %20 ve üstü fark "biraz" diye söylenir;
+ * grafikteki yuvarlanmış süreler aynıysa süreler "birbirine yakın" sayılır.
+ */
+function paceClose(v: (student: string, parent: string) => string, easy: number, hard: number): string {
+  const same = secShort(easy) === secShort(hard);
+  if (!same && hard >= 1.2 * easy) return v('Zor sorulara kolay sorulardan biraz daha çok zaman ayırdın.', 'Çocuğunuz zor sorulara kolay sorulardan biraz daha çok zaman ayırdı.');
+  if (!same && hard * 1.2 <= easy) {
+    return v('Zor sorularda kolay sorulardakinden biraz daha kısa sürede cevap verdin.', 'Çocuğunuz zor sorularda kolay sorulardakinden biraz daha kısa sürede cevap verdi.');
+  }
+  return v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+}
+
+/** Saniyenin yüzde biri duyarlılığında süre çubukları (ortak eksende): tepki ve cevap süreleri. */
+function msBarsVisual(label: string, rows: { label: string; ms: number }[]): BarsVisual {
+  return { type: 'bars', label, scale: 'scale', unit: 'sn', rows: rows.map((x) => ({ label: x.label, value: Math.round(x.ms / 10) / 100, valueLabel: `${sn(x.ms)} sn` })) };
+}
+
+/** Yüzde çubukları (her biri 100 üzerinden): ör. iki durumdaki doğru cevap oranı. */
+function pctBarsVisual(label: string, rows: { label: string; rate: number }[]): BarsVisual {
+  return { type: 'bars', label, scale: 'share', rows: rows.map((x) => ({ label: x.label, value: Math.round(x.rate * 100), max: 100, valueLabel: pct(x.rate) })) };
+}
+
+/**
+ * Düzeyli testlerde "Ulaşılan düzey" kartı (şekil, sayı, harf ve sözel akıl yürütme, kâğıt katlama, kelime bilgisi, küp
+ * açınımı, gizli şekiller). Ulaşılan düzey: o düzeydeki ve daha kolay düzeylerdeki soruların en az %60'ı doğru olan en
+ * yüksek düzey. Kart; ulaşılan düzeye kadarki soruların ne kadarının doğru olduğunu (hepsi, hemen hepsi, çoğu), o düzeyde
+ * neyin gerektiğini, bir üst düzeyde kaç sorunun doğru bulunamadığını ve ölçütü anlatır. Daha kolay düzeylerdeki
+ * yanlışların olası nedeni burada değil, "Doğru cevaplar" kartında söylenir (iki kartta yinelenmez).
+ */
+function reachedLevelBlock(o: {
+  base: { key: string; name: string; plain: string };
+  v: (student: string, parent: string) => string;
+  levels: { level: number; n: number; correct: number }[];
+  reached: number;
+  plans: { level: number; plain: string }[];
+  /** Sonuç yorumlanmıyorsa kartın metni (ör. doğru cevaplar rastgele seçim düzeyinde). */
+  noInterpret?: string | null;
+  /** Hiçbir düzeye ulaşılamadığında olası nedenler (öğrenci, veli); boşlukla başlar. */
+  zeroCause: [string, string];
+  /** 3. düzey ve üstünde çok hızlı yanlış cevaplar: bir üst düzeyin sonucu yorumlanmaz. */
+  rapid: boolean;
+  /** Çalışma biçimi kartında anlatılan bir kuşku (çok hızlı cevaplar, hep aynı yer ya da aynı cevap). */
+  doubt: boolean;
+  /** Düzeylerin anlatımında birden çok iş sayılıyorsa "şunlar gerekiyordu". */
+  plural?: boolean;
+}): CognitiveBlock {
+  const { v } = o;
+  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
+  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
+  const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
+  const need = o.plural ? 'şunlar' : 'şu';
+  const rule = `Bir düzeye ulaşmak için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ını doğru bulmak gerekir`;
+  if (o.noInterpret) return { ...o.base, headline: 'Yorumlanmadı', text: o.noInterpret };
+  const first = o.levels[0];
+  if (o.reached === 0) {
+    const high = o.levels.filter((l) => l.level > 1 && passed(l));
+    const highShare = high.every((l) => l.correct === l.n) ? 'hepsini' : 'çoğunu';
+    const highNames = joinTr(high.map((l) => `${l.level}.`));
+    const found = first.correct === 0 ? 'hiçbirini doğru bulama' : `${first.correct} tanesini doğru bul`;
+    return {
+      ...o.base,
+      headline: 'Düzey belirtilmedi',
+      text:
+        v(`En kolay düzeydeki ${first.n} sorunun ${found}${first.correct === 0 ? 'dın' : 'dun'}.`, `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${found}${first.correct === 0 ? 'dı' : 'du'}.`) +
+        ` ${rule}; hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi.` +
+        (high.length
+          ? v(
+              ` ${highNames} düzeydeki soruların ${highShare} doğru bulmana rağmen, kolay düzeylerdeki yanlışlar yüzünden bu ölçüte ulaşılmadı.`,
+              ` Çocuğunuz ${highNames} düzeydeki soruların ${highShare} doğru bulmasına rağmen, kolay düzeylerdeki yanlışlar yüzünden bu ölçüte ulaşılmadı.`,
+            )
+          : '') +
+        v(o.zeroCause[0], o.zeroCause[1]),
+    };
+  }
+  const def = o.plans.find((l) => l.level === o.reached)!;
+  const next = o.plans.find((l) => l.level === o.reached + 1);
+  const upLevels = o.levels.filter((l) => l.level <= o.reached);
+  const share = upLevels.every((l) => l.correct === l.n) ? 'hepsini' : upLevels.every((l) => l.n - l.correct <= 1) ? 'hemen hepsini' : 'çoğunu';
+  const range = o.reached === 1 ? '1. düzeydeki' : `1–${o.reached}. düzeylerdeki`;
+  let text =
+    v(`${range} soruların ${share} doğru cevapladın.`, `Çocuğunuz ${range} soruların ${share} doğru cevapladı.`) +
+    ` ${o.reached}. düzeydeki sorularda ${need} gerekiyordu: ${lower(def.plain)}.`;
+  const slips = o.levels.filter((l) => l.level < o.reached && !passed(l)).map((l) => `${l.level}.`);
+  if (slips.length) {
+    text += v(
+      ` Daha kolay olan ${joinTr(slips)} düzeydeki yanlışların bu sonucu değiştirmedi.`,
+      ` Çocuğunuzun daha kolay olan ${joinTr(slips)} düzeydeki yanlışları bu sonucu değiştirmedi.`,
+    );
+  }
+  const nextRes = next ? o.levels.find((l) => l.level === next.level) : undefined;
+  let hedged = false;
+  if (!next || !nextRes) {
+    text += ` ${o.reached}. düzey testin en zor düzeyiydi.`;
+  } else if (o.rapid && next.level >= 3) {
+    hedged = true;
+    const rest = next.level === o.levels[o.levels.length - 1].level ? `${next.level}. düzeydeki sonuç` : `${next.level}. düzey ve üstündeki sonuç`;
+    text += v(
+      ` 3. düzey ve üstündeki sorulardan bazılarında çok hızlı cevap verdiğin için ${rest} yorumlanmadı.`,
+      ` Çocuğunuz 3. düzey ve üstündeki sorulardan bazılarında çok hızlı cevap verdiği için ${rest} yorumlanmadı.`,
+    );
+  } else {
+    // Bir üst düzeyde soruların en az %40'ı her zaman yanlıştır: o düzeyde en az %60 doğru olsaydı o düzeye de ulaşılırdı.
+    const wrong = nextRes.n - nextRes.correct;
+    const miss = wrong === nextRes.n ? 'hiçbirini' : `${wrong} tanesini`;
+    text +=
+      v(` ${next.level}. düzeydeki ${nextRes.n} sorunun ${miss} doğru bulamadın.`, ` Çocuğunuz ${next.level}. düzeydeki ${nextRes.n} sorunun ${miss} doğru bulamadı.`) +
+      ` Bu düzeydeki sorularda ${need} gerekiyordu: ${lower(next.plain)}.`;
+  }
+  if (o.doubt && !hedged) {
+    text += v(' Çalışma biçimi kartında anlatılan nedenle bu sonuç da dikkatle okunmalı.', ' Çalışma biçimi kartında anlatılan nedenle bu sonuç da dikkatle okunmalıdır.');
+  }
+  return { ...o.base, headline: `${o.reached}. düzey`, text: `${text} ${rule}.` };
+}
+
+/**
+ * Düzeyli testlerde "Doğru cevaplar" kartının ana cümlesi (sonuç rastgele seçim düzeyinde değilken): hepsi doğru, hemen
+ * hepsi doğru, en kolay düzeyde yanlış ama üst düzeylerde doğru, sorular zorlaştıkça azalma, zor düzeylerde daha çok doğru,
+ * kolay ve zor düzeyler yakın. Kolay sorulardaki yanlışlar yalnızca bir kartta dikkate ya da aceleye bağlanır: hiçbir düzeye
+ * ulaşılmadıysa "Ulaşılan düzey" kartında (`blameInLevel`), yoksa burada.
+ */
+function levelAccText(o: {
+  v: (student: string, parent: string) => string;
+  levels: { level: number; n: number; correct: number }[];
+  n: number;
+  correct: number;
+  /** "Bütün soruları doğru cevapladın; …" cümlesinin devamı (öğrenci, veli). */
+  allTail: [string, string];
+  /** "Sorular zorlaştıkça doğru cevapların azaldı." cümlesinden sonra gelen açıklama (öğrenci, veli). */
+  dropWhy: [string, string];
+  /** Zor düzeylerin başladığı düzey (beş düzeyli testte 4, dört düzeyli testte 3). */
+  hardFrom: number;
+  /** Kolay sorulardaki yanlışlar dikkate ya da aceleye bağlanabilir (yanılgı ya da çalışma biçiminde kuşku yok). */
+  blame: boolean;
+  /** Bu açıklamayı "Ulaşılan düzey" kartı yapıyor. */
+  blameInLevel: boolean;
+  doubt: boolean;
+}): string {
+  const { v } = o;
+  const rate = (ls: typeof o.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
+  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
+  const blameEasy = v(
+    ' kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.',
+    ' kolay sorulardaki yanlışlar çocuğunuzun dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.',
+  );
+  const first = o.levels[0];
+  if (o.correct === o.n) return v(`Bütün soruları doğru cevapladın; ${o.allTail[0]}.`, `Çocuğunuz bütün soruları doğru cevapladı; ${o.allTail[1]}.`);
+  if (o.levels.every((l) => l.n - l.correct <= 1)) {
+    // allTail kullanılmaz: tek bir türdeki yanlışlar (ör. yalnızca çıkarım soruları) "en zor soruları da çözebildin" cümlesiyle çelişir.
+    return v(
+      'Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor düzeydeki soruların da çoğunu doğru buldun.',
+      'Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor düzeydeki soruların da çoğunu doğru buldu.',
+    );
+  }
+  const easyMissed = first.n - first.correct;
+  const higher = o.levels.slice(1);
+  const higherRate = rate(higher);
+  if (easyMissed >= 2 && higher.some((l) => passed(l) && l.correct > first.correct)) {
+    const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hiçbirini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
+    const share = higherRate === 1 ? 'hepsini' : higherRate > 0.5 ? 'çoğunu' : 'bir kısmını';
+    const why = o.blame && !o.blameInLevel;
+    return v(
+      `${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların ${share} doğru buldun.${why ? ' Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : ''}`,
+      `Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların ${share} doğru buldu.${why ? ' Bu, testin başında çocuğunuzun dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.' : ''}`,
+    );
+  }
+  const easyLevels = o.levels.filter((l) => l.level <= 2);
+  const hardRate = rate(o.levels.filter((l) => l.level >= o.hardFrom));
+  const gap = rate(easyLevels) - hardRate;
+  if (gap >= 0.15) {
+    return v(
+      `Sorular zorlaştıkça doğru cevapların azaldı.${o.doubt ? '' : ` ${o.dropWhy[0]}`}`,
+      `Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı.${o.doubt ? '' : ` ${o.dropWhy[1]}`}`,
+    );
+  }
+  if (gap <= -0.15) {
+    return v(
+      `Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin${o.blame && !o.blameInLevel ? `;${blameEasy}` : '.'}`,
+      `Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi${o.blame && !o.blameInLevel ? `;${blameEasy}` : '.'}`,
+    );
+  }
+  const slip = o.blame && !o.blameInLevel && hardRate >= MATRIX_LEVEL_PASS && easyLevels.some((l) => l.correct < l.n) ? ` ${capTr(blameEasy.trim())}` : '';
+  return v(
+    `Kolay ve zor düzeylerdeki doğru cevap oranların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
+    `Çocuğunuzun kolay ve zor düzeylerdeki doğru cevap oranları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
+  );
+}
+
+/**
+ * Düzeyli testlerde doğru cevaplar rastgele seçim düzeyindeyken "Doğru cevaplar" kartı. Olası nedenler raporun başındaki
+ * dikkat notunda yazdığı için burada yinelenmez.
+ */
+function levelChanceText(v: (student: string, parent: string) => string, n: number, max: number): string {
+  return v(
+    `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${n} soruda ${max} ya da daha az); bu yüzden sonuç yorumlanmadı. Sorular sana çok zor gelmiş olabilir. İyi dinlendiğin bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+    `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${n} soruda ${max} ya da daha az); bu yüzden sonuç yorumlanmadı. Sorular ona çok zor gelmiş olabilir. İyi dinlendiği bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+  );
+}
+
+/** Çok hızlı yanlış cevap uyarısı varsa "Çalışma biçimi" kartının son cümlesi; yoksa süre sınırı olmadığını söyleyen cümle. */
+function noLimitText(v: (student: string, parent: string) => string, rapid: boolean): string {
+  return rapid
+    ? v(' Bu testte süre sınırı yoktu; her soruya acele etmeden bakmak daha doğru bir sonuç verebilir.', ' Bu testte süre sınırı yoktu; çocuğunuzun her soruya acele etmeden bakması daha doğru bir sonuç verebilir.')
+    : v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
+}
+
+/** Sonuç yorumlanmadığında (rastgele seçim düzeyi, çoğunlukla "Bilmiyorum") kolay ve zor sorulardaki süreler karşılaştırılmaz. */
+const PACE_SKIPPED: [string, string] = [
+  'Sonuç yorumlanmadığı için kolay ve zor sorulara ayırdığın süreler karşılaştırılmadı.',
+  'Sonuç yorumlanmadığı için çocuğunuzun kolay ve zor sorulara ayırdığı süreler karşılaştırılmadı.',
+];
+
+/** Hiçbir düzeye ulaşılamadığında genel olası nedenler (öğrenci, veli). */
+const ZERO_CAUSE: [string, string] = [
+  ' Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.',
+  ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden ya da yönergeyi tam anlamamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+];
+/** Hiçbir düzeye ulaşılamadığında: çalışma biçimi kartındaki kuşku (çok hızlı cevaplar, hep aynı yer ya da aynı cevap). */
+const ZERO_DOUBT: [string, string] = [
+  ' Çalışma biçimi kartında anlatılan nedenle bu sonuç tek başına bir şey söylemez.',
+  ' Çalışma biçimi kartında anlatılan nedenle bu sonuç tek başına yorumlanmamalıdır.',
+];
+
+/** Düzeylere göre doğru cevaplar: her düzey bir satır kare (dolu kare: doğru cevap). */
+function levelDotsVisual(levels: { level: number; correct: number; n: number }[], skip = false): DotsVisual {
+  return {
+    type: 'dots',
+    label: 'Düzeylere göre doğru cevaplar',
+    rows: levels.map((l) => ({ label: `${l.level}. düzey`, filled: l.correct, total: l.n, valueLabel: `${l.correct}/${l.n}` })),
+    legend: ['doğru', skip ? 'yanlış ya da “Bilmiyorum”' : 'yanlış'],
+  };
+}
+
+/** Ulaşılan düzey: kolaydan zora basamaklar; ulaşılan basamağa kadar dolu. `reached` null: düzey yorumlanmadı. */
+function levelStepsVisual(nLevels: number, reached: number | null): StepsVisual {
+  return {
+    type: 'steps',
+    label: 'Ulaşılan düzey',
+    steps: Array.from({ length: nLevels }, (_, i) => `${i + 1}.`),
+    reached: reached ?? 0,
+    valueLabel: reached === null ? 'Yorumlanmadı' : reached === 0 ? 'Düzey belirtilmedi' : `${reached}. düzey`,
+    caption: 'Düzeyler, kolaydan zora',
+  };
+}
+
+/** Türlere göre doğru cevaplar: her çubuk kendi türündeki soru sayısına göre dolar. */
+function typeBarsVisual(label: string, rows: { name: string; correct: number; n: number }[]): BarsVisual {
+  return { type: 'bars', label, scale: 'share', rows: rows.map((x) => ({ label: x.name, value: x.correct, max: x.n, valueLabel: `${x.correct}/${x.n}` })) };
+}
+
+/** Çalışma biçimi: bütün sorulardaki ve kolay ve zor sorulardaki tipik cevap süresi (ortak eksende, saniye). */
+function paceVisual(median: number, easy: { label: string; ms: number | null }, hard: { label: string; ms: number | null }): BarsVisual {
+  const rows = [
+    { label: 'Bütün sorular', value: secValue(median), valueLabel: secShort(median) },
+    ...(easy.ms !== null && hard.ms !== null
+      ? [
+          { label: `Kolay sorular (${easy.label})`, value: secValue(easy.ms), valueLabel: secShort(easy.ms) },
+          { label: `Zor sorular (${hard.label})`, value: secValue(hard.ms), valueLabel: secShort(hard.ms) },
+        ]
+      : []),
+  ];
+  return { type: 'bars', label: 'Soru başına tipik süre', scale: 'scale', unit: 'sn', rows };
+}
+
 /** "“Düzenli değişim” ve “üçlü dağılım”" gibi: kural adları tırnak içinde, ilk harfi küçük. */
 const ruleList = (rules: MatrixRule[]) =>
   joinTr(rules.map((r) => `“${MATRIX_RULES[r].name.charAt(0).toLocaleLowerCase('tr-TR')}${MATRIX_RULES[r].name.slice(1)}”`));
@@ -2477,178 +3008,122 @@ const capTr = (x: string) => {
 function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audience, card: CardOf): TaskReport {
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
-  const chance = r.correct <= MATRIX_CHANCE_MAX;
+  const chance = matrixChance(r);
   const rapid = matrixRapid(r);
   const samePos = matrixSamePosition(r);
-  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const doubt = rapid || samePos;
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
 
   /* Doğru cevaplar */
   let accText: string;
-  const first = r.levels[0];
-  const easyMissed = first.n - first.correct;
-  const higherPassed = r.levels.slice(1).some(passed);
   if (chance) {
-    accText = v(
-      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${MATRIX_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da sorulara yeterince bakmadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.`,
-      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${MATRIX_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da sorulara yeterince bakılmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.`,
-    );
+    accText = levelChanceText(v, r.n, MATRIX_CHANCE_MAX);
   } else {
-    const allHigh = r.levels.every((l) => l.n - l.correct <= 1);
-    if (allHigh) {
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor sorulardaki birden çok kuralı da birlikte izleyebildin.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor sorulardaki birden çok kuralı da birlikte izleyebildi.`,
-      );
-    } else if (easyMissed >= 2 && higherPassed) {
-      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hepsini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. ${capTr(which)} yanlış cevapladın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun. Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz ${which} yanlış cevapladı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu. Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-      );
-    } else {
-      // Kolay (1–2) ve zor (4–5) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
-      const share = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const easyLevels = r.levels.filter((l) => l.level <= 2);
-      const gap = share(easyLevels) - share(r.levels.filter((l) => l.level >= 4));
-      const easySlips = easyLevels.some((l) => l.correct < l.n);
-      if (gap >= 0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır (Carpenter, Just ve Shell, 1990).`,
-        );
-      } else if (gap <= -0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        );
-      } else {
-        const slip = easySlips ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '';
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-        );
-      }
-    }
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['en zor sorulardaki birden çok kuralı da birlikte izleyebildin', 'en zor sorulardaki birden çok kuralı da birlikte izleyebildi'],
+      dropWhy: [
+        'Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır.',
+        'Bu beklenen bir durumdur: her düzeyde aynı anda izlenmesi gereken kural sayısı artar ve kurallar zorlaşır (Carpenter, Just ve Shell, 1990).',
+      ],
+      hardFrom: 4,
+      blame: !doubt,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
     if (r.wrong >= MATRIX_NEAR_MIN && r.nearMisses / r.wrong >= MATRIX_NEAR_SHARE) {
       accText += v(
         ` Yanlış cevaplarının ${r.nearMisses === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.nearMisses} tanesinde)`} seçtiğin parça doğru cevaptan yalnızca bir özellikte ayrılıyordu: kuralların çoğunu bulup birini gözden kaçırmış olabilirsin. Cevabı vermeden önce şekli, sayıyı, rengi ve yönü tek tek kontrol etmek işine yarar.`,
-        ` Yanlış cevaplarının ${r.nearMisses === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.nearMisses} tanesinde)`} seçtiği parça doğru cevaptan yalnızca bir özellikte ayrılıyordu: kuralların çoğunu bulup birini gözden kaçırmış olabilir. Bu tür sorularda birden çok kuralı aynı anda akılda tutmak gerekir.`,
+        ` Çocuğunuzun yanlış cevaplarının ${r.nearMisses === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.nearMisses} tanesinde)`} seçtiği parça doğru cevaptan yalnızca bir özellikte ayrılıyordu: kuralların çoğunu bulup birini gözden kaçırmış olabilir. Bu tür sorularda birden çok kuralı aynı anda akılda tutmak gerekir.`,
       );
     }
     if (doubt) {
       accText += v(
         ' Bazı sorulara bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorulara bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorulara bakmadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('sa_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('sa_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (chance) {
-    duzey = { ...card('sa_duzey'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' };
-  } else if (r.reached === 0) {
-    duzey = {
-      ...card('sa_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. Bu; dikkatin dağılmasından, acele etmekten ya da yönergenin tam anlaşılmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upTo =
-      r.reached === 1
-        ? v('1. düzeydeki soruların çoğunu doğru cevapladın', 'Çocuğunuz 1. düzeydeki soruların çoğunu doğru cevapladı')
-        : v(`${r.reached}. düzeye kadar soruların çoğunu doğru cevapladın`, `Çocuğunuz ${r.reached}. düzeye kadar soruların çoğunu doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şu gerekiyordu: ${lower(def.plain)}.`;
-    // Alt düzeylerdeki yanlışlar düzeyi düşürmez; daha zor sorular çözüldüğü için dikkatsizlikten kaynaklanmış olabilir.
-    const slips = r.levels.filter((l) => l.level < r.reached && !passed(l)).map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde yaptığın yanlışlar bu sonucu değiştirmedi: daha zor soruları çözebildiğin için bu yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde yaptığı yanlışlar bu sonucu değiştirmedi: daha zor soruları çözebildiği için bu yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-      );
-    }
-    if (!next) {
-      text += v(' Bu en zor düzeydi.', ' Bu, testin en zor düzeyiydi.');
-    } else {
-      // Bir üst düzeyde soruların çoğu her zaman yanlıştır: o düzeyde en az %60 doğru olsaydı o düzeye ulaşılmış olurdu.
-      text += v(
-        ` ${next.level}. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-        ` ${next.level}. düzeyde soruların çoğunda zorlandı; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-      );
-    }
-    duzey = {
-      ...card('sa_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const duzey = reachedLevelBlock({
+    base: card('sa_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: doubt ? ZERO_DOUBT : ZERO_CAUSE,
+    rapid: rapid,
+    doubt,
+  });
 
   /* Kural türleri */
-  const ruleLine = r.rules.map((x) => `${MATRIX_RULES[x.rule].name} ${x.correct}/${x.n}`).join(' · ');
   // Kural türlerinde kartlar "soruların çoğu" der: ölçüt, soruların yarısından fazlasının doğru olmasıdır.
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
-  const good = r.rules.filter(most).map((x) => x.rule);
-  const hard = r.rules.filter((x) => !most(x)).map((x) => x.rule);
   // Kural türleri düzeylerle iç içedir (ör. değişmeyen özellik en kolay, ortak olanı silme en zor düzeylerde); bu söylenir.
   const levelsOf = (rule: MatrixRule) => [...new Set(task.items.filter((it) => it.rule === rule).map((it) => it.level))].sort((a, b) => a - b);
+  // Bütün soruları ulaşılan düzeyin altında kalan türdeki yanlışlar o kolay düzeylerdeki yanlışlardır: "zorlandın" denmez.
+  const slipOnly = (rule: MatrixRule) => r.reached > 0 && levelsOf(rule).every((l) => l < r.reached);
+  const good = r.rules.filter(most).map((x) => x.rule);
+  const hard = r.rules.filter((x) => !most(x) && !slipOnly(x.rule)).map((x) => x.rule);
+  const slipRules = r.rules.filter((x) => !most(x) && slipOnly(x.rule)).map((x) => x.rule);
   const where = (rule: MatrixRule) => {
     const ls = levelsOf(rule);
     return ls.length === 1 ? `yalnızca ${ls[0]}. düzeyde` : `${joinTr(ls.map((l) => `${l}.`))} düzeylerde`;
   };
-  const example = `ör. ${ruleList(['constant'])} soruları ${where('constant')}, ${ruleList(['xor'])} soruları ${where('xor')}`;
-  const rough = ` Her kural türü birkaç soruya dayanır ve türler düzeylerle iç içedir (${example}); bu yüzden bu karşılaştırma kaba bir göstergedir.`;
+  const rough = ` Her türde yalnızca birkaç soru vardı ve bazı türler yalnızca kolay, bazıları yalnızca zor düzeylerde soruldu (ör. ${ruleList(['constant'])} soruları ${where('constant')}, ${ruleList(['xor'])} soruları ${where('xor')}). Bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.`;
   let kural: CognitiveBlock;
   if (chance) {
     kural = { ...card('sa_kural'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.' };
   } else {
-    const needs =
-      hard.length === 1
-        ? `Bu kuralda ${MATRIX_RULES[hard[0]].plain} gerekir.`
-        : hard.map((x) => capTr(`${ruleList([x])} kuralında ${MATRIX_RULES[x].plain} gerekir.`)).join(' ');
-    const head =
-      good.length === r.rules.length
+    const all = r.rules.every((x) => x.correct === x.n);
+    const head = all
+      ? `${r.rules.length} kural türünün hepsinde bütün sorular doğru`
+      : good.length === r.rules.length
         ? `${r.rules.length} kural türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.rules.length} kural türünün hiçbirinde soruların çoğu doğru değil`
           : `${r.rules.length} kural türünün ${good.length} tanesinde soruların çoğu doğru`;
+    // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
+    const needs = hard.length > 2 ? '' : hard.map((x) => capTr(`${ruleList([x])} kuralında ${MATRIX_RULES[x].plain} gerekir.`)).join(' ');
     let text: string;
-    if (hard.length === 0) {
+    if (all) {
+      text = v(
+        `${r.rules.length} kural türünün her birinde bütün soruları doğru buldun: hem satır boyunca aynı kalan ya da düzenli değişen özellikleri hem de parçaları birleştirme ve karşılaştırma gerektiren kuralları izleyebildin.`,
+        `Çocuğunuz ${r.rules.length} kural türünün her birinde bütün soruları doğru buldu: hem satır boyunca aynı kalan ya da düzenli değişen özellikleri hem de parçaları birleştirme ve karşılaştırma gerektiren kuralları izleyebildi.`,
+      );
+    } else if (good.length === r.rules.length) {
       text = v(
         `${r.rules.length} kural türünün her birinde soruların çoğunu doğru buldun: hem satır boyunca aynı kalan ya da düzenli değişen özellikleri hem de parçaları birleştirme ve karşılaştırma gerektiren kuralları izleyebildin.`,
         `Çocuğunuz ${r.rules.length} kural türünün her birinde soruların çoğunu doğru buldu: hem satır boyunca aynı kalan ya da düzenli değişen özellikleri hem de parçaları birleştirme ve karşılaştırma gerektiren kuralları izleyebildi.`,
       );
     } else if (good.length === 0) {
-      text = v(`Hiçbir kural türünde soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz hiçbir kural türünde soruların çoğunu doğru bulamadı. ${needs}`);
+      const best = [...r.rules].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      text = v(
+        `Hiçbir kural türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${ruleList([best.rule])} kuralında verdin.`,
+        `Çocuğunuz hiçbir kural türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${ruleList([best.rule])} kuralında verdi.`,
+      );
     } else {
       text = v(
-        `${ruleList(good)} ${good.length > 1 ? 'kurallarına' : 'kuralına'} dayanan soruların çoğunu doğru buldun; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandın. ${needs}`,
-        `Çocuğunuz ${ruleList(good)} ${good.length > 1 ? 'kurallarına' : 'kuralına'} dayanan soruların çoğunu doğru buldu; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandı. ${needs}`,
+        `${ruleList(good)} ${good.length > 1 ? 'kurallarına' : 'kuralına'} dayanan soruların çoğunu doğru buldun${hard.length ? `; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandın` : ''}. ${needs}`,
+        `Çocuğunuz ${ruleList(good)} ${good.length > 1 ? 'kurallarına' : 'kuralına'} dayanan soruların çoğunu doğru buldu${hard.length ? `; ${ruleList(hard)} ${hard.length > 1 ? 'kurallarında' : 'kuralında'} zorlandı` : ''}. ${needs}`,
       );
       if (hard.includes('addition') || hard.includes('xor')) {
-        text +=
-          audience === 'adult'
-            ? ' Parçaları birleştirme ve karşılaştırma gerektiren bu tür kurallar çoğu kişiyi zorlar.'
-            : v(
-                ' Parçaları birleştirme ve karşılaştırma gerektiren bu tür kurallar yetişkinleri de zorlar.',
-                ' Parçaları birleştirme ve karşılaştırma gerektiren bu tür kurallar yetişkinleri de zorlar (Matzen ve ark., 2010).',
-              );
+        text += v(' Parçaları birleştirme ve karşılaştırma gerektiren kurallar, bu testteki en zor kurallar arasındadır.', ' Parçaları birleştirme ve karşılaştırma gerektiren kurallar, bu testteki en zor kurallar arasındadır (Matzen ve ark., 2010).');
       }
     }
-    text = capTr(text);
-    kural = { ...card('sa_kural'), headline: head, detail: ruleLine, text: text + rough };
+    if (slipRules.length) {
+      text += v(
+        ` ${capTr(ruleList(slipRules))} ${slipRules.length > 1 ? 'kurallarındaki' : 'kuralındaki'} yanlışlarının hepsi daha kolay düzeylerdeydi; daha zor kuralları bulabildiğin için bu yanlışlar kuralı bilmemekten çok dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
+        ` Çocuğunuzun ${ruleList(slipRules)} ${slipRules.length > 1 ? 'kurallarındaki' : 'kuralındaki'} yanlışlarının hepsi daha kolay düzeylerdeydi; daha zor kuralları bulabildiği için bu yanlışlar kuralı bilmemekten çok dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.`,
+      );
+    }
+    kural = { ...card('sa_kural'), headline: head, text: capTr(text.replace(/\s+$/, '').replace(/ {2,}/g, ' ')) + rough };
   }
 
   /* Çalışma biçimi */
@@ -2656,27 +3131,27 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   if (rapid) {
     issues.push(
       v(
-        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} 2,5 saniyeden kısa sürede cevap verdin. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} 2,5 saniyeden kısa sürede cevap verdi. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin edilmiş olabilir.`,
+        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`} 2,5 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`} 2,5 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede bir tabloyu inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilir.`,
       ),
     );
   }
   if (samePos) {
     issues.push(
       v(
-        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; sorulara bakmadan hep aynı yere basmış olabilirsin.`,
-        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; sorulara bakılmadan hep aynı yere basılmış olabilir.`,
+        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
     calisma = { ...card('sa_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const timesLine = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 4–5. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardAcc = r.levels.filter((l) => l.level >= 4).reduce((a, l) => a + l.correct, 0) / Math.max(1, r.levels.filter((l) => l.level >= 4).reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
         pace = v(
@@ -2694,15 +3169,14 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
           'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
-        pace = v('Kolay ve zor sorularda birbirine yakın sürelerde cevap verdin.', 'Çocuğunuz kolay ve zor sorularda birbirine yakın sürelerde cevap verdi.');
+        pace = paceClose(v, r.rtEasy, r.rtHard);
       }
     }
     const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
     calisma = {
       ...card('sa_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      detail: timesLine,
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -2721,7 +3195,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
     chance
       ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
       : r.reached === 0
-        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
         : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
@@ -2744,6 +3218,12 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
           band: '',
         })),
       };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!chance) kural.visual = typeBarsVisual('Kural türlerine göre doğru cevaplar', r.rules.map((x) => ({ name: MATRIX_RULES[x.rule].name, correct: x.correct, n: x.n })));
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, kural, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -2777,81 +3257,56 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
   const rapid = numberSeriesRapid(r);
   const same = numberSeriesSameAnswer(r);
   const doubt = rapid || same;
-  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
   /** "hepsinde", "yarısında (6 yanlışın 3 tanesinde)" ya da "çoğunda (6 yanlışın 4 tanesinde)". */
   const share = (k: number, of: number) =>
     k === of ? 'hepsinde' : `${k * 2 === of ? 'yarısında' : 'çoğunda'} (${of} yanlışın ${k} tanesinde)`;
 
   /* Doğru cevaplar */
   let accText: string;
-  const first = r.levels[0];
+  const answeredN = r.n - r.skipped;
   if (few) {
     const how =
       r.correct === 0
         ? v(`${r.n} sorunun hiçbirinde eksik sayıyı doğru bulamadın.`, `Çocuğunuz ${r.n} sorunun hiçbirinde eksik sayıyı doğru bulamadı.`)
         : v(`${r.n} sorudan yalnızca ${r.correct} tanesinde eksik sayıyı doğru buldun.`, `Çocuğunuz ${r.n} sorudan yalnızca ${r.correct} tanesinde eksik sayıyı doğru buldu.`);
-    const inMost = r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda';
     const why = skippedMost
       ? v(
-          ` ${inMost} “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.`,
-          ` ${inMost} “Bilmiyorum” dedi: sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir.`,
+          ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.`,
+          ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dedi: sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir.`,
         )
-      : v(
-          ' Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da sorulara yeterince bakmadan cevap yazmış da olabilirsin.',
-          ' Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da sorulara yeterince bakılmadan cevap yazılmış da olabilir.',
-        );
+      : v(' Sorular sana çok zor gelmiş olabilir.', ' Sorular ona çok zor gelmiş olabilir.');
     accText =
       how +
       why +
       v(
-        ' Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, yanında kâğıt ve kalemle, acele etmeden yeniden denemek daha doğru bir sonuç verir.',
-        ' Bu sonuç tek başına yorumlanmamalıdır; dinlenmiş olduğu bir gün, yanında kâğıt ve kalemle, acele etmeden yeniden denemesi daha doğru bir sonuç verir.',
+        ' Bu sonuç tek başına bir şey söylemez; iyi dinlendiğin bir gün, yanında kâğıt ve kalemle, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.',
+        ' Bu sonuç tek başına yorumlanmamalıdır; iyi dinlendiği bir gün, yanında kâğıt ve kalemle, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.',
       );
+  } else if (skippedMost) {
+    // Soruların çoğunda "Bilmiyorum" denmişse sonuç yorumlanmaz: düzeylere göre değişim anlatılmaz.
+    accText = v(
+      `${r.n} sorunun ${r.skipped} tanesinde “Bilmiyorum” dedin. Cevap verdiğin ${answeredN} sorunun ${r.correct === answeredN ? 'hepsi' : `${r.correct} tanesi`} doğruydu. Sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin; bu yüzden sonuç tek başına yorumlanmamalıdır.`,
+      `Çocuğunuz ${r.n} sorunun ${r.skipped} tanesinde “Bilmiyorum” dedi. Cevap verdiği ${answeredN} sorunun ${r.correct === answeredN ? 'hepsi' : `${r.correct} tanesi`} doğruydu. Sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir; bu yüzden sonuç tek başına yorumlanmamalıdır.`,
+    );
   } else {
-    const easyMissed = first.n - first.correct;
-    const higherPassed = r.levels.slice(1).some(passed);
-    if (r.levels.every((l) => l.n - l.correct <= 1)) {
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor sorulardaki birkaç adımlı kuralları da bulabildin.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor sorulardaki birkaç adımlı kuralları da bulabildi.`,
-      );
-    } else if (easyMissed >= 2 && higherPassed) {
-      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hiçbirini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. ${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun. Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu. Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-      );
-    } else {
-      // Kolay (1–2) ve zor (4–5) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
-      const rate = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const easyLevels = r.levels.filter((l) => l.level <= 2);
-      const gap = rate(easyLevels) - rate(r.levels.filter((l) => l.level >= 4));
-      if (gap >= 0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: üst düzeylerde kurallar zorlaşır ve izlenmesi gereken adım sayısı artar.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: üst düzeylerde kurallar zorlaşır ve izlenmesi gereken adım sayısı artar.`,
-        );
-      } else if (gap <= -0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        );
-      } else {
-        const slip = easyLevels.some((l) => l.correct < l.n) ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '';
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-        );
-      }
-    }
-    // Yanlışların türü: dizinin yalnızca bir bölümüne uyan daha basit bir kural ya da doğru cevaba çok yakın bir sayı.
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['en zor sorulardaki birkaç adımlı kuralları da bulabildin', 'en zor sorulardaki birkaç adımlı kuralları da bulabildi'],
+      dropWhy: ['Bu beklenen bir durumdur: üst düzeylerde kurallar zorlaşır ve izlenmesi gereken adım sayısı artar.', 'Bu beklenen bir durumdur: üst düzeylerde kurallar zorlaşır ve izlenmesi gereken adım sayısı artar.'],
+      hardFrom: 4,
+      blame: !doubt,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
+    // Yanlışların türü: dizinin yalnızca bir bölümüne uyan daha basit bir kural ya da doğru cevaba çok yakın bir cevap.
     if (r.wrong >= NUMBER_PATTERN_MIN && r.traps * 2 >= r.wrong) {
       accText += v(
-        ` Yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kuralla bulunan bir sayı yazdın: dizinin yalnızca bir bölümüne uyan ya da kuralın bir adımını atlayan bir kural (ör. artışlar büyürken son artışı aynen eklemek, “iki katının bir fazlası” yerine yalnızca iki katını almak ya da iç içe iki dizide öteki dizinin sıradaki sayısını yazmak). Cevabı vermeden önce bulduğun kuralı dizinin bütün sayılarında denemek işine yarar.`,
-        ` Çocuğunuz yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kuralla bulunan bir sayı yazdı: dizinin yalnızca bir bölümüne uyan ya da kuralın bir adımını atlayan bir kural (ör. artışlar büyürken son artışı aynen eklemek, “iki katının bir fazlası” yerine yalnızca iki katını almak ya da iç içe iki dizide öteki dizinin sıradaki sayısını yazmak). Bulduğu kuralı dizinin bütün sayılarında denemeden cevap vermiş olabilir.`,
+        ` Yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kurala göre bir sayı yazdın. Bu kural dizinin yalnızca bir bölümüne uyuyordu: örneğin artışlar büyürken son artışı aynen eklemek ya da “iki katının bir fazlası” yerine yalnızca iki katını almak. Cevabı yazmadan önce bulduğun kuralı dizinin bütün sayılarında dene.`,
+        ` Çocuğunuz yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kurala göre bir sayı yazdı. Bu kural dizinin yalnızca bir bölümüne uyuyordu: örneğin artışlar büyürken son artışı aynen eklemek ya da “iki katının bir fazlası” yerine yalnızca iki katını almak. Bulduğu kuralı dizinin bütün sayılarında denemeden cevap vermiş olabilir.`,
       );
     }
     if (r.wrong >= NUMBER_PATTERN_MIN && r.nearMisses * 2 >= r.wrong) {
@@ -2860,118 +3315,93 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
         ` Çocuğunuzun yanlış cevaplarının ${share(r.nearMisses, r.wrong)} yazdığı sayı doğru cevaba çok yakındı: kuralı bulup hesapta küçük bir kayma yapmış olabilir.`,
       );
     }
-    if (skippedMost) {
-      accText += v(
-        ' Soruların yarısından çoğunda “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.',
-        ' Çocuğunuz soruların yarısından çoğunda “Bilmiyorum” dedi: sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir.',
-      );
-    }
     if (doubt) {
       accText += v(
         ' Bazı sorulara bakmadan cevap yazmış olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorulara bakılmadan cevap yazılmış olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorulara bakmadan cevap yazmış olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('sd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('sd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (r.reached === 0) {
-    duzey = {
-      ...card('sd_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. ${
-          skippedMost
-            ? 'Soruların çoğunda “Bilmiyorum” dediğin için bu sonuç tek başına yorumlanmamalıdır.'
-            : 'Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.'
-        }`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. ${
-          skippedMost
-            ? 'Soruların çoğunda “Bilmiyorum” dediği için bu sonuç tek başına yorumlanmamalıdır.'
-            : 'Bu; dikkatin dağılmasından, acele etmekten, yönergenin tam anlaşılmamasından ya da toplama ve çıkarmada henüz yeterince rahat olmamaktan kaynaklanabilir ve tek başına yorumlanmamalıdır.'
-        }`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upTo =
-      r.reached === 1
-        ? v('1. düzeydeki soruların çoğunu doğru cevapladın', 'Çocuğunuz 1. düzeydeki soruların çoğunu doğru cevapladı')
-        : v(`${r.reached}. düzeye kadar soruların çoğunu doğru cevapladın`, `Çocuğunuz ${r.reached}. düzeye kadar soruların çoğunu doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şu gerekiyordu: ${lower(def.plain)}.`;
-    // Alt düzeylerdeki yanlışlar düzeyi düşürmez; daha zor sorular çözüldüğü için dikkatsizlikten kaynaklanmış olabilir.
-    const slips = r.levels.filter((l) => l.level < r.reached && !passed(l)).map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi: daha zor soruları çözebildiğin için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığı sorular bu sonucu değiştirmedi: daha zor soruları çözebildiği için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-      );
-    }
-    if (!next) {
-      text += v(' Bu en zor düzeydi.', ' Bu, testin en zor düzeyiydi.');
-    } else {
-      // Bir üst düzeyde soruların çoğu her zaman doğru değildir: o düzeyde en az %60 doğru olsaydı o düzeye ulaşılmış olurdu.
-      text += v(
-        ` ${next.level}. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-        ` ${next.level}. düzeyde soruların çoğunda zorlandı; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-      );
-    }
-    duzey = {
-      ...card('sd_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const skipCause: [string, string] = [
+    ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dediğin için bu sonuç tek başına yorumlanmamalıdır.`,
+    ` Çocuğunuz ${r.skipped === r.n ? 'bütün sorularda' : 'soruların çoğunda'} “Bilmiyorum” dediği için bu sonuç tek başına yorumlanmamalıdır.`,
+  ];
+  const duzey = reachedLevelBlock({
+    base: card('sd_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: null,
+    zeroCause: skippedMost ? skipCause : doubt ? ZERO_DOUBT : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da toplama ve çıkarmada henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    rapid: rapid,
+    doubt,
+  });
 
   /* Kural türleri */
-  const ruleLine = r.rules.map((x) => `${NUMBER_RULES[x.rule].name} ${x.correct}/${x.n}`).join(' · ');
   // Kural türlerinde kartlar "soruların çoğu" der: ölçüt, soruların yarısından fazlasının doğru olmasıdır.
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
-  const good = r.rules.filter(most).map((x) => x.rule);
-  const hard = r.rules.filter((x) => !most(x)).map((x) => x.rule);
-  // Kural türleri düzeylerle iç içedir (ör. sabit artış en kolay, birleşik kurallar en zor düzeylerde); bu söylenir.
+  // Kural türleri düzeylerle iç içedir; bu söylenir.
   const levelsOf = (rule: NumberSeriesRule) => [...new Set(task.items.filter((it) => it.rule === rule).map((it) => it.level))].sort((a, b) => a - b);
+  // Bütün soruları ulaşılan düzeyin altında kalan türdeki yanlışlar o kolay düzeylerdeki yanlışlardır: "zorlandın" denmez.
+  const slipOnly = (rule: NumberSeriesRule) => r.reached > 0 && levelsOf(rule).every((l) => l < r.reached);
+  const good = r.rules.filter(most).map((x) => x.rule);
+  const hard = r.rules.filter((x) => !most(x) && !slipOnly(x.rule)).map((x) => x.rule);
+  const slipRules = r.rules.filter((x) => !most(x) && slipOnly(x.rule)).map((x) => x.rule);
   const where = (rule: NumberSeriesRule) => {
     const ls = levelsOf(rule);
     return ls.length === 1 ? `yalnızca ${ls[0]}. düzeyde` : `${joinTr(ls.map((l) => `${l}.`))} düzeylerde`;
   };
-  const example = `ör. ${numberRuleList(['step'])} soruları ${where('step')}, ${numberRuleList(['combined'])} soruları ${where('combined')}`;
-  const rough = ` Her kural türü birkaç soruya dayanır ve türler düzeylerle iç içedir (${example}); bu yüzden bu karşılaştırma kaba bir göstergedir.`;
+  const rough = ` Her türde yalnızca birkaç soru vardı ve bazı türler yalnızca kolay, bazıları yalnızca zor düzeylerde soruldu (ör. ${numberRuleList(['step'])} soruları ${where('step')}, ${numberRuleList(['combined'])} soruları ${where('combined')}). Bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.`;
   let kural: CognitiveBlock;
-  if (few) {
-    kural = { ...card('sd_kural'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.' };
+  if (few || skippedMost) {
+    kural = {
+      ...card('sd_kural'),
+      headline: 'Yorumlanmadı',
+      text: few
+        ? 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.'
+        : v('Soruların çoğunda “Bilmiyorum” dediğin için kural türleri karşılaştırılmadı.', 'Çocuğunuz soruların çoğunda “Bilmiyorum” dediği için kural türleri karşılaştırılmadı.'),
+    };
   } else {
-    const needs =
-      hard.length === 1
-        ? `Bu türde ${NUMBER_RULES[hard[0]].plain} gerekir.`
-        : hard.map((x) => capTr(`${numberRuleList([x])} türünde ${NUMBER_RULES[x].plain} gerekir.`)).join(' ');
-    const head =
-      good.length === r.rules.length
+    const all = r.rules.every((x) => x.correct === x.n);
+    const head = all
+      ? `${r.rules.length} kural türünün hepsinde bütün sorular doğru`
+      : good.length === r.rules.length
         ? `${r.rules.length} kural türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.rules.length} kural türünün hiçbirinde soruların çoğu doğru değil`
           : `${r.rules.length} kural türünün ${good.length} tanesinde soruların çoğu doğru`;
+    // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
+    const needs = hard.length > 2 ? '' : hard.map((x) => capTr(`${numberRuleList([x])} türünde ${NUMBER_RULES[x].plain} gerekir.`)).join(' ');
     let text: string;
-    if (hard.length === 0) {
+    if (all || good.length === r.rules.length) {
+      const q = all ? 'bütün soruları' : 'soruların çoğunu';
       text = v(
-        `${r.rules.length} kural türünün her birinde soruların çoğunu doğru buldun: hem tek bir işlemle ilerleyen dizileri hem de iç içe dizileri ve birkaç adımlı kuralları çözebildin.`,
-        `Çocuğunuz ${r.rules.length} kural türünün her birinde soruların çoğunu doğru buldu: hem tek bir işlemle ilerleyen dizileri hem de iç içe dizileri ve birkaç adımlı kuralları çözebildi.`,
+        `${r.rules.length} kural türünün her birinde ${q} doğru buldun: hem tek bir işlemle ilerleyen dizileri hem de iç içe dizileri ve birkaç adımlı kuralları çözebildin.`,
+        `Çocuğunuz ${r.rules.length} kural türünün her birinde ${q} doğru buldu: hem tek bir işlemle ilerleyen dizileri hem de iç içe dizileri ve birkaç adımlı kuralları çözebildi.`,
       );
     } else if (good.length === 0) {
-      text = v(`Hiçbir kural türünde soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz hiçbir kural türünde soruların çoğunu doğru bulamadı. ${needs}`);
+      const best = [...r.rules].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      text = v(
+        `Hiçbir kural türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${numberRuleList([best.rule])} türünde verdin.`,
+        `Çocuğunuz hiçbir kural türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${numberRuleList([best.rule])} türünde verdi.`,
+      );
     } else {
       text = v(
-        `${numberRuleList(good)} türündeki soruların çoğunu doğru buldun; ${numberRuleList(hard)} türündeki sorularda zorlandın. ${needs}`,
-        `Çocuğunuz ${numberRuleList(good)} türündeki soruların çoğunu doğru buldu; ${numberRuleList(hard)} türündeki sorularda zorlandı. ${needs}`,
+        `${numberRuleList(good)} türündeki soruların çoğunu doğru buldun${hard.length ? `; ${numberRuleList(hard)} türündeki sorularda zorlandın` : ''}. ${needs}`,
+        `Çocuğunuz ${numberRuleList(good)} türündeki soruların çoğunu doğru buldu${hard.length ? `; ${numberRuleList(hard)} türündeki sorularda zorlandı` : ''}. ${needs}`,
       );
     }
-    kural = { ...card('sd_kural'), headline: head, detail: ruleLine, text: capTr(text) + rough };
+    if (slipRules.length) {
+      text += v(
+        ` ${capTr(numberRuleList(slipRules))} türündeki yanlışlarının hepsi daha kolay düzeylerdeydi; daha zor kuralları bulabildiğin için bu yanlışlar kuralı bilmemekten çok dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
+        ` Çocuğunuzun ${numberRuleList(slipRules)} türündeki yanlışlarının hepsi daha kolay düzeylerdeydi; daha zor kuralları bulabildiği için bu yanlışlar kuralı bilmemekten çok dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.`,
+      );
+    }
+    kural = { ...card('sd_kural'), headline: head, text: capTr(text.replace(/\s+$/, '').replace(/ {2,}/g, ' ')) + rough };
   }
 
   /* Çalışma biçimi */
@@ -2982,11 +3412,11 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
     issues.push(v(`${capTr(inWhich)} “Bilmiyorum” dedin.`, `Çocuğunuz ${inWhich} “Bilmiyorum” dedi.`));
   }
   if (rapid) {
-    const which = r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`;
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
     issues.push(
       v(
-        `3. düzey ve üstündeki sorulardan cevap yazdığın ${r.rapidOf} sorunun ${which} yanlış bir cevabı 2,5 saniyeden kısa sürede yazdın. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki sorulardan cevap yazdığı ${r.rapidOf} sorunun ${which} yanlış bir cevabı 2,5 saniyeden kısa sürede yazdı. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin edilmiş olabilir.`,
+        `3. düzey ve üstündeki sorulardan cevap yazdığın ${r.rapidOf} sorunun ${which} 2,5 saniyeden kısa sürede yanlış cevap yazdın. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki sorulardan cevap yazdığı ${r.rapidOf} sorunun ${which} 2,5 saniyeden kısa sürede yanlış cevap yazdı. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilir.`,
       ),
     );
   }
@@ -2994,24 +3424,18 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
     issues.push(
       v(
         `${r.sameAnswer === answered ? 'Bütün cevaplarında' : `Cevaplarının ${r.sameAnswer} tanesinde`} aynı sayıyı yazdın; sorulara bakmadan cevap vermiş olabilirsin.`,
-        `Çocuğunuz ${r.sameAnswer === answered ? 'bütün cevaplarında' : `cevaplarının ${r.sameAnswer} tanesinde`} aynı sayıyı yazdı; sorulara bakılmadan cevap verilmiş olabilir.`,
+        `Çocuğunuz ${r.sameAnswer === answered ? 'bütün cevaplarında' : `cevaplarının ${r.sameAnswer} tanesinde`} aynı sayıyı yazdı; sorulara bakmadan cevap vermiş olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
-  const skipLine = r.skipped > 0 ? `“Bilmiyorum” ${r.skipped} soruda` : undefined;
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !few && !skippedMost && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = {
-      ...card('sd_calisma'),
-      headline: 'Süre hesaplanamadı',
-      ...(skipLine ? { detail: skipLine } : {}),
-      text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' '),
-    };
+    calisma = { ...card('sd_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const times = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 4–5. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = few || skippedMost ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardLevels = r.levels.filter((l) => l.level >= 4);
       const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
@@ -3030,16 +3454,17 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
           'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
-        pace = v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+        pace = paceClose(v, r.rtEasy, r.rtHard);
       }
     }
-    const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
-    const detail = [times, skipLine].filter(Boolean).join(' · ');
+    // "Bilmiyorum" denen sorular da süreye girer; çoğunlukla "Bilmiyorum" denmişse bu söylenir.
+    const base = skippedMost
+      ? v(`Bir soruda tipik olarak ${seconds(r.medianRt)} kaldın; bu süreye “Bilmiyorum” dediğin sorular da girer.`, `Çocuğunuz bir soruda tipik olarak ${seconds(r.medianRt)} kaldı; bu süreye “Bilmiyorum” dediği sorular da girer.`)
+      : v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
     calisma = {
       ...card('sd_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      ...(detail ? { detail } : {}),
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -3056,11 +3481,12 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
   const figures = [
     { label: 'Doğru', value: `${r.correct}/${r.n}` },
     r.reached === 0
-      ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+      ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
       : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
-  const profile: CognitiveReport['profile'] = few
+  // Kural türleri kartı yorumlanmıyorsa (çok az doğru ya da çoğunda "Bilmiyorum") türlerin üç boyutlu grafiği de çizilmez.
+  const profile: CognitiveReport['profile'] = few || skippedMost
     ? undefined
     : {
         title: v('Kural türlerine göre sonucun', 'Kural türlerine göre sonuç'),
@@ -3079,6 +3505,12 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
           band: '',
         })),
       };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels, true);
+  duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!few && !skippedMost) kural.visual = typeBarsVisual('Kural türlerine göre doğru cevaplar', r.rules.map((x) => ({ name: NUMBER_RULES[x.rule].name, correct: x.correct, n: x.n })));
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, kural, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -3111,81 +3543,56 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
   const rapid = letterSeriesRapid(r);
   const same = letterSeriesSameAnswer(r);
   const doubt = rapid || same;
-  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
   /** "hepsinde", "yarısında (6 yanlışın 3 tanesinde)" ya da "çoğunda (6 yanlışın 4 tanesinde)". */
   const share = (k: number, of: number) =>
     k === of ? 'hepsinde' : `${k * 2 === of ? 'yarısında' : 'çoğunda'} (${of} yanlışın ${k} tanesinde)`;
 
   /* Doğru cevaplar */
   let accText: string;
-  const first = r.levels[0];
+  const answeredN = r.n - r.skipped;
   if (few) {
     const how =
       r.correct === 0
         ? v(`${r.n} sorunun hiçbirinde eksik harfi doğru bulamadın.`, `Çocuğunuz ${r.n} sorunun hiçbirinde eksik harfi doğru bulamadı.`)
         : v(`${r.n} sorudan yalnızca ${r.correct} tanesinde eksik harfi doğru buldun.`, `Çocuğunuz ${r.n} sorudan yalnızca ${r.correct} tanesinde eksik harfi doğru buldu.`);
-    const inMost = r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda';
     const why = skippedMost
       ? v(
-          ` ${inMost} “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.`,
-          ` ${inMost} “Bilmiyorum” dedi: sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir.`,
+          ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.`,
+          ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dedi: sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir.`,
         )
-      : v(
-          ' Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da sorulara yeterince bakmadan cevap vermiş de olabilirsin.',
-          ' Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da sorulara yeterince bakılmadan cevap verilmiş de olabilir.',
-        );
+      : v(' Sorular sana çok zor gelmiş olabilir.', ' Sorular ona çok zor gelmiş olabilir.');
     accText =
       how +
       why +
       v(
-        ' Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.',
-        ' Bu sonuç tek başına yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.',
+        ' Bu sonuç tek başına bir şey söylemez; iyi dinlendiğin bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.',
+        ' Bu sonuç tek başına yorumlanmamalıdır; iyi dinlendiği bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.',
       );
+  } else if (skippedMost) {
+    // Soruların çoğunda "Bilmiyorum" denmişse sonuç yorumlanmaz: düzeylere göre değişim anlatılmaz.
+    accText = v(
+      `${r.n} sorunun ${r.skipped} tanesinde “Bilmiyorum” dedin. Cevap verdiğin ${answeredN} sorunun ${r.correct === answeredN ? 'hepsi' : `${r.correct} tanesi`} doğruydu. Sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin; bu yüzden sonuç tek başına yorumlanmamalıdır.`,
+      `Çocuğunuz ${r.n} sorunun ${r.skipped} tanesinde “Bilmiyorum” dedi. Cevap verdiği ${answeredN} sorunun ${r.correct === answeredN ? 'hepsi' : `${r.correct} tanesi`} doğruydu. Sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir; bu yüzden sonuç tek başına yorumlanmamalıdır.`,
+    );
   } else {
-    const easyMissed = first.n - first.correct;
-    const higherPassed = r.levels.slice(1).some(passed);
-    if (r.levels.every((l) => l.n - l.correct <= 1)) {
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor sorulardaki iç içe dizileri, grupları ve büyüyen adımları da bulabildin.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor sorulardaki iç içe dizileri, grupları ve büyüyen adımları da bulabildi.`,
-      );
-    } else if (easyMissed >= 2 && higherPassed) {
-      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hiçbirini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. ${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun. Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu. Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-      );
-    } else {
-      // Kolay (1–2) ve zor (4–5) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
-      const rate = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const easyLevels = r.levels.filter((l) => l.level <= 2);
-      const gap = rate(easyLevels) - rate(r.levels.filter((l) => l.level >= 4));
-      if (gap >= 0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: üst düzeylerde gruplar uzar, iç içe diziler karmaşıklaşır ve büyüyen adımlar gelir; aynı anda akılda tutulması gereken harf ve adım sayısı artar.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: üst düzeylerde gruplar uzar, iç içe diziler karmaşıklaşır ve büyüyen adımlar gelir; aynı anda akılda tutulması gereken harf ve adım sayısı artar.`,
-        );
-      } else if (gap <= -0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        );
-      } else {
-        const slip = easyLevels.some((l) => l.correct < l.n) ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '';
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-        );
-      }
-    }
-    // Yanlışların türü: dizinin yalnızca bir bölümüne uyan daha basit bir kural ya da alfabede doğru cevabın hemen yanındaki harf.
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['en zor sorulardaki iç içe dizileri, grupları ve büyüyen adımları da bulabildin', 'en zor sorulardaki iç içe dizileri, grupları ve büyüyen adımları da bulabildi'],
+      dropWhy: ['Bu beklenen bir durumdur: üst düzeylerde gruplar uzar, iç içe diziler karmaşıklaşır ve büyüyen adımlar gelir; aynı anda akılda tutulması gereken harf ve adım sayısı artar.', 'Bu beklenen bir durumdur: üst düzeylerde gruplar uzar, iç içe diziler karmaşıklaşır ve büyüyen adımlar gelir; aynı anda akılda tutulması gereken harf ve adım sayısı artar.'],
+      hardFrom: 4,
+      blame: !doubt,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
+    // Yanlışların türü: dizinin yalnızca bir bölümüne uyan daha basit bir kural ya da doğru cevaba çok yakın bir cevap.
     if (r.wrong >= LETTER_PATTERN_MIN && r.traps * 2 >= r.wrong) {
       accText += v(
-        ` Yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kuralla bulunan bir harf seçtin: dizinin yalnızca bir bölümüne uyan ya da kuralın bir parçasını atlayan bir kural (ör. son harfin alfabedeki sıradakini seçmek, adımlar büyürken son adımı aynen sürdürmek, iç içe iki dizide öteki dizinin sıradaki harfini seçmek ya da bir grubu değiştirmeden tekrarlamak). Cevabı vermeden önce bulduğun kuralı dizinin bütün harflerinde denemek işine yarar.`,
-        ` Çocuğunuz yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kuralla bulunan bir harf seçti: dizinin yalnızca bir bölümüne uyan ya da kuralın bir parçasını atlayan bir kural (ör. son harfin alfabedeki sıradakini seçmek, adımlar büyürken son adımı aynen sürdürmek, iç içe iki dizide öteki dizinin sıradaki harfini seçmek ya da bir grubu değiştirmeden tekrarlamak). Bulduğu kuralı dizinin bütün harflerinde denemeden cevap vermiş olabilir.`,
+        ` Yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kurala göre bir harf seçtin. Bu kural dizinin yalnızca bir bölümüne uyuyordu: örneğin adımlar büyürken son adımı aynen sürdürmek ya da bir grubu değiştirmeden tekrarlamak. Cevabı vermeden önce bulduğun kuralı dizinin bütün harflerinde dene.`,
+        ` Çocuğunuz yanlış cevaplarının ${share(r.traps, r.wrong)} daha basit bir kurala göre bir harf seçti. Bu kural dizinin yalnızca bir bölümüne uyuyordu: örneğin adımlar büyürken son adımı aynen sürdürmek ya da bir grubu değiştirmeden tekrarlamak. Bulduğu kuralı dizinin bütün harflerinde denemeden cevap vermiş olabilir.`,
       );
     }
     if (r.wrong >= LETTER_PATTERN_MIN && r.nearMisses * 2 >= r.wrong) {
@@ -3194,118 +3601,93 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
         ` Çocuğunuzun yanlış cevaplarının ${share(r.nearMisses, r.wrong)} seçtiği harf, alfabede doğru cevabın hemen önündeki ya da arkasındaki harfti: kuralı bulup harfleri sayarken bir kayma yapmış olabilir.`,
       );
     }
-    if (skippedMost) {
-      accText += v(
-        ' Soruların yarısından çoğunda “Bilmiyorum” dedin: sorular sana çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilirsin.',
-        ' Çocuğunuz soruların yarısından çoğunda “Bilmiyorum” dedi: sorular ona çok zor gelmiş ya da testi bir an önce bitirmek istemiş olabilir.',
-      );
-    }
     if (doubt) {
       accText += v(
         ' Bazı sorulara bakmadan cevap vermiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorulara bakılmadan cevap verilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorulara bakmadan cevap vermiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('hd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('hd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (r.reached === 0) {
-    duzey = {
-      ...card('hd_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. ${
-          skippedMost
-            ? 'Soruların çoğunda “Bilmiyorum” dediğin için bu sonuç tek başına yorumlanmamalıdır.'
-            : 'Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.'
-        }`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi. ${
-          skippedMost
-            ? 'Soruların çoğunda “Bilmiyorum” dediği için bu sonuç tek başına yorumlanmamalıdır.'
-            : 'Bu; dikkatin dağılmasından, acele etmekten, yönergenin tam anlaşılmamasından ya da alfabenin sırasını henüz yeterince rahat bilmemekten kaynaklanabilir ve tek başına yorumlanmamalıdır.'
-        }`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upTo =
-      r.reached === 1
-        ? v('1. düzeydeki soruların çoğunu doğru cevapladın', 'Çocuğunuz 1. düzeydeki soruların çoğunu doğru cevapladı')
-        : v(`${r.reached}. düzeye kadar soruların çoğunu doğru cevapladın`, `Çocuğunuz ${r.reached}. düzeye kadar soruların çoğunu doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şu gerekiyordu: ${lower(def.plain)}.`;
-    // Alt düzeylerdeki yanlışlar düzeyi düşürmez; daha zor sorular çözüldüğü için dikkatsizlikten kaynaklanmış olabilir.
-    const slips = r.levels.filter((l) => l.level < r.reached && !passed(l)).map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi: daha zor soruları çözebildiğin için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığı sorular bu sonucu değiştirmedi: daha zor soruları çözebildiği için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
-      );
-    }
-    if (!next) {
-      text += v(' Bu en zor düzeydi.', ' Bu, testin en zor düzeyiydi.');
-    } else {
-      // Bir üst düzeyde soruların çoğu her zaman doğru değildir: o düzeyde en az %60 doğru olsaydı o düzeye ulaşılmış olurdu.
-      text += v(
-        ` ${next.level}. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-        ` ${next.level}. düzeyde soruların çoğunda zorlandı; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-      );
-    }
-    duzey = {
-      ...card('hd_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const skipCause: [string, string] = [
+    ` ${r.skipped === r.n ? 'Bütün sorularda' : 'Soruların çoğunda'} “Bilmiyorum” dediğin için bu sonuç tek başına yorumlanmamalıdır.`,
+    ` Çocuğunuz ${r.skipped === r.n ? 'bütün sorularda' : 'soruların çoğunda'} “Bilmiyorum” dediği için bu sonuç tek başına yorumlanmamalıdır.`,
+  ];
+  const duzey = reachedLevelBlock({
+    base: card('hd_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: null,
+    zeroCause: skippedMost ? skipCause : doubt ? ZERO_DOUBT : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da alfabenin sırasını henüz yeterince rahat bilmemesinden kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    rapid: rapid,
+    doubt,
+  });
 
   /* Kural türleri */
-  const ruleLine = r.rules.map((x) => `${LETTER_RULES[x.rule].name} ${x.correct}/${x.n}`).join(' · ');
   // Kural türlerinde kartlar "soruların çoğu" der: ölçüt, soruların yarısından fazlasının doğru olmasıdır.
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
-  const good = r.rules.filter(most).map((x) => x.rule);
-  const hard = r.rules.filter((x) => !most(x)).map((x) => x.rule);
-  // Kural türleri düzeylerle iç içedir (ör. sabit adım en kolay, değişen adım en zor düzeylerde); bu söylenir.
+  // Kural türleri düzeylerle iç içedir; bu söylenir.
   const levelsOf = (rule: LetterSeriesRule) => [...new Set(task.items.filter((it) => it.rule === rule).map((it) => it.level))].sort((a, b) => a - b);
+  // Bütün soruları ulaşılan düzeyin altında kalan türdeki yanlışlar o kolay düzeylerdeki yanlışlardır: "zorlandın" denmez.
+  const slipOnly = (rule: LetterSeriesRule) => r.reached > 0 && levelsOf(rule).every((l) => l < r.reached);
+  const good = r.rules.filter(most).map((x) => x.rule);
+  const hard = r.rules.filter((x) => !most(x) && !slipOnly(x.rule)).map((x) => x.rule);
+  const slipRules = r.rules.filter((x) => !most(x) && slipOnly(x.rule)).map((x) => x.rule);
   const where = (rule: LetterSeriesRule) => {
     const ls = levelsOf(rule);
     return ls.length === 1 ? `yalnızca ${ls[0]}. düzeyde` : `${joinTr(ls.map((l) => `${l}.`))} düzeylerde`;
   };
-  const example = `ör. ${letterRuleList(['next'])} soruları ${where('next')}, ${letterRuleList(['growing'])} soruları ${where('growing')}`;
-  const rough = ` Her kural türü birkaç soruya dayanır ve türler düzeylerle iç içedir (${example}); bu yüzden bu karşılaştırma kaba bir göstergedir.`;
+  const rough = ` Her türde yalnızca birkaç soru vardı ve bazı türler yalnızca kolay, bazıları yalnızca zor düzeylerde soruldu (ör. ${letterRuleList(['next'])} soruları ${where('next')}, ${letterRuleList(['growing'])} soruları ${where('growing')}). Bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.`;
   let kural: CognitiveBlock;
-  if (few) {
-    kural = { ...card('hd_kural'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.' };
+  if (few || skippedMost) {
+    kural = {
+      ...card('hd_kural'),
+      headline: 'Yorumlanmadı',
+      text: few
+        ? 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.'
+        : v('Soruların çoğunda “Bilmiyorum” dediğin için kural türleri karşılaştırılmadı.', 'Çocuğunuz soruların çoğunda “Bilmiyorum” dediği için kural türleri karşılaştırılmadı.'),
+    };
   } else {
-    const needs =
-      hard.length === 1
-        ? `Bu türde ${LETTER_RULES[hard[0]].plain} gerekir.`
-        : hard.map((x) => capTr(`${letterRuleList([x])} türünde ${LETTER_RULES[x].plain} gerekir.`)).join(' ');
-    const head =
-      good.length === r.rules.length
+    const all = r.rules.every((x) => x.correct === x.n);
+    const head = all
+      ? `${r.rules.length} kural türünün hepsinde bütün sorular doğru`
+      : good.length === r.rules.length
         ? `${r.rules.length} kural türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.rules.length} kural türünün hiçbirinde soruların çoğu doğru değil`
           : `${r.rules.length} kural türünün ${good.length} tanesinde soruların çoğu doğru`;
+    // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
+    const needs = hard.length > 2 ? '' : hard.map((x) => capTr(`${letterRuleList([x])} türünde ${LETTER_RULES[x].plain} gerekir.`)).join(' ');
     let text: string;
-    if (hard.length === 0) {
+    if (all || good.length === r.rules.length) {
+      const q = all ? 'bütün soruları' : 'soruların çoğunu';
       text = v(
-        `${r.rules.length} kural türünün her birinde soruların çoğunu doğru buldun: hem sabit adımla ilerleyen dizileri hem de iç içe dizileri, grupları ve büyüyen adımları çözebildin.`,
-        `Çocuğunuz ${r.rules.length} kural türünün her birinde soruların çoğunu doğru buldu: hem sabit adımla ilerleyen dizileri hem de iç içe dizileri, grupları ve büyüyen adımları çözebildi.`,
+        `${r.rules.length} kural türünün her birinde ${q} doğru buldun: hem sabit adımla ilerleyen dizileri hem de iç içe dizileri, grupları ve büyüyen adımları çözebildin.`,
+        `Çocuğunuz ${r.rules.length} kural türünün her birinde ${q} doğru buldu: hem sabit adımla ilerleyen dizileri hem de iç içe dizileri, grupları ve büyüyen adımları çözebildi.`,
       );
     } else if (good.length === 0) {
-      text = v(`Hiçbir kural türünde soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz hiçbir kural türünde soruların çoğunu doğru bulamadı. ${needs}`);
+      const best = [...r.rules].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      text = v(
+        `Hiçbir kural türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${letterRuleList([best.rule])} türünde verdin.`,
+        `Çocuğunuz hiçbir kural türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${letterRuleList([best.rule])} türünde verdi.`,
+      );
     } else {
       text = v(
-        `${letterRuleList(good)} türündeki soruların çoğunu doğru buldun; ${letterRuleList(hard)} türündeki sorularda zorlandın. ${needs}`,
-        `Çocuğunuz ${letterRuleList(good)} türündeki soruların çoğunu doğru buldu; ${letterRuleList(hard)} türündeki sorularda zorlandı. ${needs}`,
+        `${letterRuleList(good)} türündeki soruların çoğunu doğru buldun${hard.length ? `; ${letterRuleList(hard)} türündeki sorularda zorlandın` : ''}. ${needs}`,
+        `Çocuğunuz ${letterRuleList(good)} türündeki soruların çoğunu doğru buldu${hard.length ? `; ${letterRuleList(hard)} türündeki sorularda zorlandı` : ''}. ${needs}`,
       );
     }
-    kural = { ...card('hd_kural'), headline: head, detail: ruleLine, text: capTr(text) + rough };
+    if (slipRules.length) {
+      text += v(
+        ` ${capTr(letterRuleList(slipRules))} türündeki yanlışlarının hepsi daha kolay düzeylerdeydi; daha zor kuralları bulabildiğin için bu yanlışlar kuralı bilmemekten çok dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.`,
+        ` Çocuğunuzun ${letterRuleList(slipRules)} türündeki yanlışlarının hepsi daha kolay düzeylerdeydi; daha zor kuralları bulabildiği için bu yanlışlar kuralı bilmemekten çok dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.`,
+      );
+    }
+    kural = { ...card('hd_kural'), headline: head, text: capTr(text.replace(/\s+$/, '').replace(/ {2,}/g, ' ')) + rough };
   }
 
   /* Çalışma biçimi */
@@ -3316,11 +3698,11 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
     issues.push(v(`${capTr(inWhich)} “Bilmiyorum” dedin.`, `Çocuğunuz ${inWhich} “Bilmiyorum” dedi.`));
   }
   if (rapid) {
-    const which = r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`;
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
     issues.push(
       v(
-        `3. düzey ve üstündeki sorulardan cevap verdiğin ${r.rapidOf} sorunun ${which} yanlış bir cevabı 2,5 saniyeden kısa sürede verdin. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki sorulardan cevap verdiği ${r.rapidOf} sorunun ${which} yanlış bir cevabı 2,5 saniyeden kısa sürede verdi. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin edilmiş olabilir.`,
+        `3. düzey ve üstündeki sorulardan cevap verdiğin ${r.rapidOf} sorunun ${which} 2,5 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki sorulardan cevap verdiği ${r.rapidOf} sorunun ${which} 2,5 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur; bu sorularda tahmin etmiş olabilir.`,
       ),
     );
   }
@@ -3328,24 +3710,18 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
     issues.push(
       v(
         `${r.sameAnswer === answered ? 'Bütün cevaplarında' : `Cevaplarının ${r.sameAnswer} tanesinde`} aynı harfi seçtin; sorulara bakmadan cevap vermiş olabilirsin.`,
-        `Çocuğunuz ${r.sameAnswer === answered ? 'bütün cevaplarında' : `cevaplarının ${r.sameAnswer} tanesinde`} aynı harfi seçti; sorulara bakılmadan cevap verilmiş olabilir.`,
+        `Çocuğunuz ${r.sameAnswer === answered ? 'bütün cevaplarında' : `cevaplarının ${r.sameAnswer} tanesinde`} aynı harfi seçti; sorulara bakmadan cevap vermiş olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
-  const skipLine = r.skipped > 0 ? `“Bilmiyorum” ${r.skipped} soruda` : undefined;
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !few && !skippedMost && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = {
-      ...card('hd_calisma'),
-      headline: 'Süre hesaplanamadı',
-      ...(skipLine ? { detail: skipLine } : {}),
-      text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' '),
-    };
+    calisma = { ...card('hd_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const times = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 4–5. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = few || skippedMost ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardLevels = r.levels.filter((l) => l.level >= 4);
       const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
@@ -3364,16 +3740,17 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
           'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
-        pace = v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+        pace = paceClose(v, r.rtEasy, r.rtHard);
       }
     }
-    const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
-    const detail = [times, skipLine].filter(Boolean).join(' · ');
+    // "Bilmiyorum" denen sorular da süreye girer; çoğunlukla "Bilmiyorum" denmişse bu söylenir.
+    const base = skippedMost
+      ? v(`Bir soruda tipik olarak ${seconds(r.medianRt)} kaldın; bu süreye “Bilmiyorum” dediğin sorular da girer.`, `Çocuğunuz bir soruda tipik olarak ${seconds(r.medianRt)} kaldı; bu süreye “Bilmiyorum” dediği sorular da girer.`)
+      : v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
     calisma = {
       ...card('hd_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      ...(detail ? { detail } : {}),
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -3390,11 +3767,12 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
   const figures = [
     { label: 'Doğru', value: `${r.correct}/${r.n}` },
     r.reached === 0
-      ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+      ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
       : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
-  const profile: CognitiveReport['profile'] = few
+  // Kural türleri kartı yorumlanmıyorsa (çok az doğru ya da çoğunda "Bilmiyorum") türlerin üç boyutlu grafiği de çizilmez.
+  const profile: CognitiveReport['profile'] = few || skippedMost
     ? undefined
     : {
         title: v('Kural türlerine göre sonucun', 'Kural türlerine göre sonuç'),
@@ -3413,6 +3791,12 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
           band: '',
         })),
       };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels, true);
+  duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!few && !skippedMost) kural.visual = typeBarsVisual('Kural türlerine göre doğru cevaplar', r.rules.map((x) => ({ name: LETTER_RULES[x.rule].name, correct: x.correct, n: x.n })));
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, kural, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -3449,6 +3833,14 @@ export const VERBAL_TYPES: Record<VerbalItemType, { name: string; plain: string;
   },
 };
 
+/** Sözel akıl yürütmede çeldiricisi seçilen türe göre olası yanılgı (her biri ayrı, kısa bir cümle). */
+const VERBAL_LURE_SENTENCE: Record<VerbalItemType, { you: string; parent: string }> = {
+  analogy: { you: 'Kelime ilişkilerinde kelimelerin arasındaki ilişkiye değil, konusuna bakmış olabilirsin.', parent: 'Kelime ilişkilerinde kelimelerin arasındaki ilişkiye değil, konusuna bakmış olabilir.' },
+  classification: { you: 'Sınıflamada gruba yalnızca bir yönüyle benzeyen kelimeyi seçmiş olabilirsin.', parent: 'Sınıflamada gruba yalnızca bir yönüyle benzeyen kelimeyi seçmiş olabilir.' },
+  ordering: { you: 'Sıralamada bilgilerin yalnızca bir kısmına bakmış ya da olabilecek bir sıralamayı kesin saymış olabilirsin.', parent: 'Sıralamada bilgilerin yalnızca bir kısmına bakmış ya da olabilecek bir sıralamayı kesin saymış olabilir.' },
+  deduction: { you: 'Mantıksal çıkarımda bilgilerden kesin olarak çıkmayan bir cümleyi doğru saymış olabilirsin.', parent: 'Mantıksal çıkarımda bilgilerden kesin olarak çıkmayan bir cümleyi doğru saymış olabilir.' },
+};
+
 /** "“Kelime ilişkileri” ve “sıralama”" gibi: tür adları tırnak içinde, ilk harfi küçük. */
 const verbalTypeList = (types: VerbalItemType[]) =>
   joinTr(types.map((t) => `“${VERBAL_TYPES[t].name.charAt(0).toLocaleLowerCase('tr-TR')}${VERBAL_TYPES[t].name.slice(1)}”`));
@@ -3457,148 +3849,88 @@ const verbalTypeList = (types: VerbalItemType[]) =>
 function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audience, card: CardOf): TaskReport {
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
-  const chance = r.correct <= VERBAL_CHANCE_MAX;
+  const chance = verbalChance(r);
   const rapid = verbalRapid(r);
   const samePos = verbalSamePosition(r);
   const doubt = rapid || samePos;
   // Yanlışların çoğu çeldiriciyse, kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz (yanılgı cümlesi açıklar).
   const lurePattern = verbalLurePattern(r);
-  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
 
   /* Doğru cevaplar */
   let accText: string;
-  const first = r.levels[0];
   if (chance) {
-    accText = v(
-      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${VERBAL_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da soruları yeterince okumadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.`,
-      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${VERBAL_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da sorular yeterince okunmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.`,
-    );
+    accText = levelChanceText(v, r.n, VERBAL_CHANCE_MAX);
   } else {
-    const easyMissed = first.n - first.correct;
-    const higherPassed = r.levels.slice(1).some(passed);
-    if (r.levels.every((l) => l.n - l.correct <= 1)) {
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor düzeydeki soruların da çoğunu doğru buldun.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor düzeydeki soruların da çoğunu doğru buldu.`,
-      );
-    } else if (easyMissed >= 2 && higherPassed) {
-      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hiçbirini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. ${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun.${lurePattern ? '' : ' Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu.${lurePattern ? '' : ' Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-      );
-    } else {
-      // Kolay (1–2) ve zor (4–5) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
-      const rate = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const easyLevels = r.levels.filter((l) => l.level <= 2);
-      const gap = rate(easyLevels) - rate(r.levels.filter((l) => l.level >= 4));
-      if (gap >= 0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: üst düzeylerde ilişkiler soyutlaşır ve birleştirilmesi gereken bilgi sayısı artar.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: üst düzeylerde ilişkiler soyutlaşır ve birleştirilmesi gereken bilgi sayısı artar.`,
-        );
-      } else if (gap <= -0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin${lurePattern ? '.' : '; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi${lurePattern ? '.' : '; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        );
-      } else {
-        const slip = !lurePattern && easyLevels.some((l) => l.correct < l.n) ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '';
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-        );
-      }
-    }
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['kelimeler arasındaki soyut ilişkileri ve birden çok bilgiyi birleştirmeyi gerektiren en zor soruları da çözebildin', 'kelimeler arasındaki soyut ilişkileri ve birden çok bilgiyi birleştirmeyi gerektiren en zor soruları da çözebildi'],
+      dropWhy: ['Bu beklenen bir durumdur: üst düzeylerde ilişkiler soyutlaşır ve birleştirilmesi gereken bilgi sayısı artar.', 'Bu beklenen bir durumdur: üst düzeylerde ilişkiler soyutlaşır ve birleştirilmesi gereken bilgi sayısı artar.'],
+      hardFrom: 4,
+      blame: !doubt && !lurePattern,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
     // Yanlışların türü: sorunun "ilk bakışta doğru görünen" seçeneği.
     if (lurePattern) {
       const share = r.lures === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.lures} tanesinde)`;
-      // Yanılgılar yalnızca çeldiricisi seçilen türler için anılır ve olasılık olarak söylenir.
-      const phrases = VERBAL_TYPES_ORDER.filter((t) => r.luresByType[t] > 0).map((t) => VERBAL_TYPES[t].lure);
-      const how = phrases.join('; ');
-      const which = phrases.length > 1 ? 'şu yanılgılardan' : 'şu yanılgıdan';
-      accText += v(
-        ` Yanlış cevaplarının ${share} ilk bakışta doğru görünen ama sorudaki bilgilerin hepsine uymayan seçeneği seçtin. Bu yanlışlar ${which} kaynaklanmış olabilir: ${how}. Seçmeden önce her seçeneği sorudaki bütün bilgilerle karşılaştırmak işine yarar.`,
-        ` Çocuğunuz yanlış cevaplarının ${share} ilk bakışta doğru görünen ama sorudaki bilgilerin hepsine uymayan seçeneği seçti. Bu yanlışlar ${which} kaynaklanmış olabilir: ${how}. Seçmeden önce her seçeneği sorudaki bütün bilgilerle karşılaştırmak ona yardım edebilir.`,
-      );
+      // Yanılgılar yalnızca çeldiricisi seçilen türler için, her biri kısa bir cümleyle ve olasılık olarak söylenir.
+      const kinds = VERBAL_TYPES_ORDER.filter((t) => r.luresByType[t] > 0);
+      accText +=
+        v(
+          ` Yanlış cevaplarının ${share} ilk bakışta doğru görünen seçeneği seçtin. Bu seçenek sorudaki bilgilerin hepsine uymuyordu.`,
+          ` Çocuğunuz yanlış cevaplarının ${share} ilk bakışta doğru görünen seçeneği seçti. Bu seçenek sorudaki bilgilerin hepsine uymuyordu.`,
+        ) +
+        kinds.map((t) => ` ${v(VERBAL_LURE_SENTENCE[t].you, VERBAL_LURE_SENTENCE[t].parent)}`).join('') +
+        v(' Seçmeden önce her seçeneği sorudaki bütün bilgilerle karşılaştırmak işine yarar.', ' Seçmeden önce her seçeneği sorudaki bütün bilgilerle karşılaştırmak ona yardım edebilir.');
     }
     if (doubt) {
       accText += v(
         ' Bazı soruları okumadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorular okunmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı soruları okumadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('sz_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('sz_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (chance) {
-    duzey = { ...card('sz_duzey'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' };
-  } else if (r.reached === 0) {
-    duzey = {
-      ...card('sz_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lurePattern ? ' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.' : ' Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.'}`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lurePattern ? ' Bu; yönergenin tam anlaşılmamasından, doğru cevaplar kartında anlatılan yanılgılardan ya da soruları okumakta henüz yeterince rahat olmamaktan kaynaklanabilir ve tek başına yorumlanmamalıdır.' : ' Bu; dikkatin dağılmasından, acele etmekten, yönergenin tam anlaşılmamasından ya da soruları okumakta henüz yeterince rahat olmamaktan kaynaklanabilir ve tek başına yorumlanmamalıdır.'}`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upTo =
-      r.reached === 1
-        ? v('1. düzeydeki soruların çoğunu doğru cevapladın', 'Çocuğunuz 1. düzeydeki soruların çoğunu doğru cevapladı')
-        : v(`${r.reached}. düzeye kadar soruların çoğunu doğru cevapladın`, `Çocuğunuz ${r.reached}. düzeye kadar soruların çoğunu doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şunlar gerekiyordu: ${lower(def.plain)}.`;
-    // Alt düzeylerdeki yanlışlar düzeyi düşürmez; daha zor sorular çözüldüğü için dikkatsizlikten kaynaklanmış olabilir.
-    const slips = r.levels.filter((l) => l.level < r.reached && !passed(l)).map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi${lurePattern ? '.' : ': daha zor soruları çözebildiğin için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığı sorular bu sonucu değiştirmedi${lurePattern ? '.' : ': daha zor soruları çözebildiği için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-      );
-    }
-    if (!next) {
-      text += v(' Bu en zor düzeydi.', ' Bu, testin en zor düzeyiydi.');
-    } else {
-      // Bir üst düzeyde soruların çoğu her zaman doğru değildir: o düzeyde en az %60 doğru olsaydı o düzeye ulaşılmış olurdu.
-      text += v(
-        ` ${next.level}. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-        ` ${next.level}. düzeyde soruların çoğunda zorlandı; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-      );
-    }
-    duzey = {
-      ...card('sz_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const duzey = reachedLevelBlock({
+    base: card('sz_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: doubt ? ZERO_DOUBT : lurePattern ? [' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu; yönergeyi tam anlamamasından, doğru cevaplar kartında anlatılan yanılgılardan ya da soruları okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da soruları okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    rapid: rapid,
+    doubt,
+    plural: true,
+  });
 
   /* Soru türleri */
-  const typeLine = r.types.map((x) => `${VERBAL_TYPES[x.type].name} ${x.correct}/${x.n}`).join(' · ');
   // Kartlar "soruların çoğu" der: ölçüt, soruların yarısından fazlasının doğru olmasıdır.
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
   const good = r.types.filter(most).map((x) => x.type);
   const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
-  const rough = ' Her soru türü altı soruya dayanır ve her türde kolaydan zora sorular vardır; bu karşılaştırma kaba bir göstergedir.';
+  const rough = ' Her türde yalnızca altı soru vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.';
   let tur: CognitiveBlock;
   if (chance) {
     tur = { ...card('sz_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
   } else {
+    // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs =
-      hard.length === 1
+      hard.length > 2
+        ? ''
+        : hard.length === 1
         ? `Bu tür sorularda ${VERBAL_TYPES[hard[0]].plain} gerekir.`
         : hard.map((x) => capTr(`${verbalTypeList([x])} sorularında ${VERBAL_TYPES[x].plain} gerekir.`)).join(' ');
-    const head =
-      good.length === r.types.length
+    const allRight = r.types.every((x) => x.correct === x.n);
+    const head = allRight
+      ? `${r.types.length} soru türünün hepsinde bütün sorular doğru`
+      : good.length === r.types.length
         ? `${r.types.length} soru türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.types.length} soru türünün hiçbirinde soruların çoğu doğru değil`
@@ -3606,47 +3938,51 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
     let text: string;
     if (hard.length === 0) {
       text = v(
-        `${r.types.length} soru türünün her birinde soruların çoğunu doğru buldun: hem kelimeler arasındaki ilişkileri ve ortak özellikleri bulabildin hem de bilgileri birleştirip kesin sonuç çıkarabildin.`,
-        `Çocuğunuz ${r.types.length} soru türünün her birinde soruların çoğunu doğru buldu: hem kelimeler arasındaki ilişkileri ve ortak özellikleri bulabildi hem de bilgileri birleştirip kesin sonuç çıkarabildi.`,
+        `${r.types.length} soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldun: hem kelimeler arasındaki ilişkileri ve ortak özellikleri bulabildin hem de bilgileri birleştirip kesin sonuç çıkarabildin.`,
+        `Çocuğunuz ${r.types.length} soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldu: hem kelimeler arasındaki ilişkileri ve ortak özellikleri bulabildi hem de bilgileri birleştirip kesin sonuç çıkarabildi.`,
       );
     } else if (good.length === 0) {
-      text = v(`Hiçbir soru türünde soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz hiçbir soru türünde soruların çoğunu doğru bulamadı. ${needs}`);
+      const best = [...r.types].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      text = v(
+        `Hiçbir soru türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${verbalTypeList([best.type])} sorularında verdin.`,
+        `Çocuğunuz hiçbir soru türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${verbalTypeList([best.type])} sorularında verdi.`,
+      );
     } else {
       text = v(
         `${verbalTypeList(good)} sorularının çoğunu doğru buldun; ${verbalTypeList(hard)} sorularında zorlandın. ${needs}`,
         `Çocuğunuz ${verbalTypeList(good)} sorularının çoğunu doğru buldu; ${verbalTypeList(hard)} sorularında zorlandı. ${needs}`,
       );
     }
-    tur = { ...card('sz_tur'), headline: head, detail: typeLine, text: capTr(text) + rough };
+    tur = { ...card('sz_tur'), headline: head, text: capTr(text.trim()) + rough };
   }
 
   /* Çalışma biçimi */
   const issues: string[] = [];
   if (rapid) {
-    const which = r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`;
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
     issues.push(
       v(
-        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} yanlış bir cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin; bu sorularda okumadan seçmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} yanlış bir cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdi; bu sorularda okunmadan seçilmiş olabilir.`,
+        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which}, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede yanlış cevap verdin; bu sorularda okumadan seçmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which}, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede yanlış cevap verdi; bu sorularda okumadan seçmiş olabilir.`,
       ),
     );
   }
   if (samePos) {
     issues.push(
       v(
-        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; sorulara bakmadan hep aynı yere basmış olabilirsin.`,
-        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; sorulara bakılmadan hep aynı yere basılmış olabilir.`,
+        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
     calisma = { ...card('sz_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const timesLine = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 4–5. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardLevels = r.levels.filter((l) => l.level >= 4);
       const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
@@ -3667,20 +4003,20 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
       } else {
         // Öneri yalnızca zor sorularda doğru cevaplar azken verilir.
         pace =
-          hardAcc <= 0.5
+          paceClose(v, r.rtEasy, r.rtHard) +
+          (hardAcc <= 0.5
             ? v(
-                'Kolay ve zor sorulara birbirine yakın süreler ayırdın; zor sorular daha uzun olduğu için onlarda biraz daha çok zaman ayırmak işine yarayabilir.',
-                'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı; zor sorular daha uzun olduğu için onlarda biraz daha çok zaman ayırmak yardımcı olabilir.',
+                ' Zor sorular daha uzun olduğu için onlara daha çok zaman ayırmak işine yarayabilir.',
+                ' Zor sorular daha uzun olduğu için onlara daha çok zaman ayırmak yardımcı olabilir.',
               )
-            : v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+            : '');
       }
     }
     const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
     calisma = {
       ...card('sz_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      detail: timesLine,
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -3699,7 +4035,7 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
     chance
       ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
       : r.reached === 0
-        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
         : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
@@ -3722,6 +4058,12 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
           band: '',
         })),
       };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: VERBAL_TYPES[x.type].name, correct: x.correct, n: x.n })));
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -3755,144 +4097,83 @@ const foldingTypeList = (types: FoldingType[]) =>
 function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audience, card: CardOf): TaskReport {
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
-  const chance = r.correct <= FOLDING_CHANCE_MAX;
+  const chance = foldingChance(r);
   const rapid = foldingRapid(r);
   const samePos = foldingSamePosition(r);
   const doubt = rapid || samePos;
   // Yanlışların çoğu çeldiriciyse, kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz (yanılgı cümlesi açıklar).
   const lurePattern = foldingLurePattern(r);
-  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
 
   /* Doğru cevaplar */
   let accText: string;
-  const first = r.levels[0];
   if (chance) {
-    accText = v(
-      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${FOLDING_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da katlamalara yeterince bakmadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.`,
-      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${FOLDING_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da katlamalara yeterince bakılmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.`,
-    );
+    accText = levelChanceText(v, r.n, FOLDING_CHANCE_MAX);
   } else {
-    const easyMissed = first.n - first.correct;
-    const higherPassed = r.levels.slice(1).some(passed);
-    if (r.levels.every((l) => l.n - l.correct <= 1)) {
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor düzeydeki soruların da çoğunu doğru buldun.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor düzeydeki soruların da çoğunu doğru buldu.`,
-      );
-    } else if (easyMissed >= 2 && higherPassed) {
-      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hiçbirini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. ${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun.${lurePattern ? '' : ' Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu.${lurePattern ? '' : ' Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-      );
-    } else {
-      // Kolay (1–2) ve zor (4–5) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
-      const rate = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const easyLevels = r.levels.filter((l) => l.level <= 2);
-      const gap = rate(easyLevels) - rate(r.levels.filter((l) => l.level >= 4));
-      if (gap >= 0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: üst düzeylerde katlama sayısı artar ve çapraz ya da kenardan katlamalar birbirine karışır.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: üst düzeylerde katlama sayısı artar ve çapraz ya da kenardan katlamalar birbirine karışır.`,
-        );
-      } else if (gap <= -0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin${lurePattern ? '.' : '; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi${lurePattern ? '.' : '; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        );
-      } else {
-        const slip = !lurePattern && easyLevels.some((l) => l.correct < l.n) ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '';
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-        );
-      }
-    }
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['çok kez katlanan kâğıtları da zihninde adım adım açabildin', 'çok kez katlanan kâğıtları da zihninde adım adım açabildi'],
+      dropWhy: ['Bu beklenen bir durumdur: üst düzeylerde katlama sayısı artar ve çapraz ya da kenardan katlamalar birbirine karışır.', 'Bu beklenen bir durumdur: üst düzeylerde katlama sayısı artar ve çapraz ya da kenardan katlamalar birbirine karışır.'],
+      hardFrom: 4,
+      blame: !doubt && !lurePattern,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
     // Yanlışların türü: sorunun "ilk bakışta doğru görünen" seçeneği; yanılgılar olasılık olarak söylenir.
     if (lurePattern) {
       const share = r.lures === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.lures} tanesinde)`;
       const phrases = FOLDING_LURES_ORDER.filter((k) => r.luresByKind[k] > 0).map((k) => FOLDING_LURE_TEXT[k]);
       const which = phrases.length > 1 ? 'şu yanılgılardan' : 'şu yanılgıdan';
       accText += v(
-        ` Yanlış cevaplarının ${share} ilk bakışta doğru görünen ama katlamalara uymayan seçeneği seçtin. Bu yanlışlar ${which} kaynaklanmış olabilir: ${phrases.join('; ')}. Kâğıdı son katlamadan başlayarak adım adım açmak işine yarar.`,
+        ` Yanlış cevaplarının ${share} ilk bakışta doğru görünen ama katlamalara uymayan seçeneği seçtin. Bu yanlışlar ${which} kaynaklanmış olabilir: ${phrases.join('; ')}. Kâğıdı son katlamadan başlayarak adım adım açmak işine yarayabilir.`,
         ` Çocuğunuz yanlış cevaplarının ${share} ilk bakışta doğru görünen ama katlamalara uymayan seçeneği seçti. Bu yanlışlar ${which} kaynaklanmış olabilir: ${phrases.join('; ')}. Kâğıdı son katlamadan başlayarak adım adım açmak ona yardım edebilir.`,
       );
     }
     if (doubt) {
       accText += v(
         ' Bazı sorularda katlamalara bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorularda katlamalara bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorularda katlamalara bakmadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('kk_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('kk_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (chance) {
-    duzey = { ...card('kk_duzey'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' };
-  } else if (r.reached === 0) {
-    duzey = {
-      ...card('kk_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lurePattern ? ' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.' : ' Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.'}`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lurePattern ? ' Bu, yönergenin tam anlaşılmamasından ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir ve tek başına yorumlanmamalıdır.' : ' Bu; dikkatin dağılmasından, acele etmekten ya da yönergenin tam anlaşılmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'}`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upTo =
-      r.reached === 1
-        ? v('1. düzeydeki soruların çoğunu doğru cevapladın', 'Çocuğunuz 1. düzeydeki soruların çoğunu doğru cevapladı')
-        : v(`${r.reached}. düzeye kadar soruların çoğunu doğru cevapladın`, `Çocuğunuz ${r.reached}. düzeye kadar soruların çoğunu doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şu gerekiyordu: ${lower(def.plain)}.`;
-    // Alt düzeylerdeki yanlışlar düzeyi düşürmez; daha zor sorular çözüldüğü için dikkatsizlikten kaynaklanmış olabilir.
-    const slips = r.levels.filter((l) => l.level < r.reached && !passed(l)).map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi${lurePattern ? '.' : ': daha zor soruları çözebildiğin için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığı sorular bu sonucu değiştirmedi${lurePattern ? '.' : ': daha zor soruları çözebildiği için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-      );
-    }
-    if (!next) {
-      text += v(' Bu en zor düzeydi.', ' Bu, testin en zor düzeyiydi.');
-    } else {
-      text += v(
-        ` ${next.level}. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-        ` ${next.level}. düzeyde soruların çoğunda zorlandı; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-      );
-    }
-    duzey = {
-      ...card('kk_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const duzey = reachedLevelBlock({
+    base: card('kk_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: doubt ? ZERO_DOUBT : lurePattern ? [' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : ZERO_CAUSE,
+    rapid: rapid,
+    doubt,
+  });
 
   /* Katlama türleri */
-  const typeLine = r.types.map((x) => `${FOLDING_TYPES[x.type].name} ${x.correct}/${x.n}`).join(' · ');
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
   const good = r.types.filter(most).map((x) => x.type);
   const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
-  const rough = ' Her tür sekiz soruya dayanır ve her türde kolaydan zora sorular vardır; bu karşılaştırma kaba bir göstergedir.';
+  const rough = ' Her türde yalnızca sekiz soru vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.';
   let tur: CognitiveBlock;
   if (chance) {
     tur = { ...card('kk_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için katlama türleri karşılaştırılmadı.' };
   } else {
+    // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs =
-      hard.length === 1
+      hard.length > 2
+        ? ''
+        : hard.length === 1
         ? `Bu tür sorularda ${FOLDING_TYPES[hard[0]].plain} gerekir.`
         : hard.map((x) => capTr(`${foldingTypeList([x])} sorularında ${FOLDING_TYPES[x].plain} gerekir.`)).join(' ');
-    const head =
-      good.length === r.types.length
+    const allRight = r.types.every((x) => x.correct === x.n);
+    const head = allRight
+      ? `${r.types.length} katlama türünün hepsinde bütün sorular doğru`
+      : good.length === r.types.length
         ? `${r.types.length} katlama türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.types.length} katlama türünün hiçbirinde soruların çoğu doğru değil`
@@ -3900,47 +4181,51 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
     let text: string;
     if (hard.length === 0) {
       text = v(
-        `${r.types.length} katlama türünün her birinde soruların çoğunu doğru buldun: ortadan, kenardan ve çapraz katlanmış kâğıtları zihninde açabildin.`,
-        `Çocuğunuz ${r.types.length} katlama türünün her birinde soruların çoğunu doğru buldu: ortadan, kenardan ve çapraz katlanmış kâğıtları zihninde açabildi.`,
+        `${r.types.length} katlama türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldun: ortadan, kenardan ve çapraz katlanmış kâğıtları zihninde açabildin.`,
+        `Çocuğunuz ${r.types.length} katlama türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldu: ortadan, kenardan ve çapraz katlanmış kâğıtları zihninde açabildi.`,
       );
     } else if (good.length === 0) {
-      text = v(`Hiçbir katlama türünde soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz hiçbir katlama türünde soruların çoğunu doğru bulamadı. ${needs}`);
+      const best = [...r.types].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      text = v(
+        `Hiçbir katlama türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${foldingTypeList([best.type])} sorularında verdin.`,
+        `Çocuğunuz hiçbir katlama türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${foldingTypeList([best.type])} sorularında verdi.`,
+      );
     } else {
       text = v(
         `${foldingTypeList(good)} sorularının çoğunu doğru buldun; ${foldingTypeList(hard)} sorularında zorlandın. ${needs}`,
         `Çocuğunuz ${foldingTypeList(good)} sorularının çoğunu doğru buldu; ${foldingTypeList(hard)} sorularında zorlandı. ${needs}`,
       );
     }
-    tur = { ...card('kk_tur'), headline: head, detail: typeLine, text: capTr(text) + rough };
+    tur = { ...card('kk_tur'), headline: head, text: capTr(text.trim()) + rough };
   }
 
   /* Çalışma biçimi */
   const issues: string[] = [];
   if (rapid) {
-    const which = r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`;
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
     issues.push(
       v(
-        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} yanlış bir cevabı 2,5 saniyeden kısa sürede verdin. Bu kadar kısa sürede katlamaları izleyip seçenekleri karşılaştırmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} yanlış bir cevabı 2,5 saniyeden kısa sürede verdi. Bu kadar kısa sürede katlamaları izleyip seçenekleri karşılaştırmak çok zordur; bu sorularda tahmin edilmiş olabilir.`,
+        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 2,5 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede katlamaları izleyip seçenekleri karşılaştırmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 2,5 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede katlamaları izleyip seçenekleri karşılaştırmak çok zordur; bu sorularda tahmin etmiş olabilir.`,
       ),
     );
   }
   if (samePos) {
     issues.push(
       v(
-        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; sorulara bakmadan hep aynı yere basmış olabilirsin.`,
-        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; sorulara bakılmadan hep aynı yere basılmış olabilir.`,
+        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
     calisma = { ...card('kk_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const timesLine = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 4–5. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardLevels = r.levels.filter((l) => l.level >= 4);
       const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
@@ -3959,15 +4244,14 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
           'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
-        pace = v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+        pace = paceClose(v, r.rtEasy, r.rtHard);
       }
     }
     const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
     calisma = {
       ...card('kk_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      detail: timesLine,
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -3986,7 +4270,7 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
     chance
       ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
       : r.reached === 0
-        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
         : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
@@ -4009,6 +4293,12 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
           band: '',
         })),
       };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!chance) tur.visual = typeBarsVisual('Katlama türlerine göre doğru cevaplar', r.types.map((x) => ({ name: FOLDING_TYPES[x.type].name, correct: x.correct, n: x.n })));
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -4561,11 +4851,7 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
 
 /* ---------- Gizli şekiller ---------- */
 
-/** Yanlış seçeneklerin yanılgıları (yanlışların yorumunda) ve her yanılgı için kısa bir ipucu. */
-export const HIDDEN_LURE_TEXT: Record<HiddenLure, string> = {
-  turned: 'şeklin döndürülmüş ya da ters çevrilmiş biçimini seçmek',
-  changed: 'şeklin bir köşesi farklı olan benzerini seçmek',
-};
+/** Yanlış seçeneklerin yanılgıları için kısa bir ipucu (yanlışların yorumunda). */
 export const HIDDEN_LURE_TIP: Record<HiddenLure, { you: string; parent: string }> = {
   turned: {
     you: 'Döndürülmüş ya da ayna görüntüsü gibi ters çevrilmiş bir şekil, aranan şekille aynı sayılmaz. Bulduğun şeklin eğik kenarlarının ve köşelerinin üstteki şekildekilerle aynı yöne bakıp bakmadığını denetlemek işine yarayabilir.',
@@ -4578,7 +4864,7 @@ export const HIDDEN_LURE_TIP: Record<HiddenLure, { you: string; parent: string }
 };
 
 /** Yanlışlarda seçilen şeklin adı ("… seçildi" cümlesinde). */
-const HIDDEN_LURE_SEEN: Record<HiddenLure, string> = {
+export const HIDDEN_LURE_SEEN: Record<HiddenLure, string> = {
   turned: 'şeklin döndürülmüş ya da ters çevrilmiş biçimi',
   changed: 'şeklin bir köşesi farklı benzeri',
 };
@@ -4587,7 +4873,7 @@ const HIDDEN_LURE_SEEN: Record<HiddenLure, string> = {
 function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audience, card: CardOf): TaskReport {
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
-  const chance = r.correct <= HIDDEN_CHANCE_MAX;
+  const chance = hiddenChance(r);
   const rapid = hiddenRapid(r);
   const samePos = hiddenSamePosition(r);
   const doubt = rapid || samePos;
@@ -4597,26 +4883,28 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
   const lureNoted = noted.length > 0;
   const blameSlip = !lureNoted && !doubt;
   const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
   const intro = `Şekiller kolaydan zora doğru ${levelWord} düzeyde giderek daha iyi saklanıyordu.`;
-  // Kolay sorulardaki yanlışlar dikkat ya da aceleyle açıklanacaksa bu yalnızca bir kartta söylenir: "Ulaşılan düzey"
-  // kartı kolay düzeydeki yanlışları anlatıyorsa orada, anlatmıyorsa "Doğru cevaplar" kartında.
-  const slipsBelow = r.levels.filter((l) => l.level < r.reached && !passed(l));
-  const levelCardBlames = blameSlip && !chance && (r.reached === 0 || slipsBelow.length > 0);
+  // Kolay sorulardaki yanlışlar dikkat ya da aceleyle açıklanacaksa bu yalnızca bir kartta söylenir: hiçbir düzeye
+  // ulaşılmadıysa "Ulaşılan düzey" kartında, yoksa "Doğru cevaplar" kartında.
+  const levelCardBlames = blameSlip && !chance && r.reached === 0;
   const blameHere = blameSlip && !levelCardBlames;
 
   /* Doğru cevaplar */
   let accText: string;
   const first = r.levels[0];
-  // Dört seçenekte rastgele seçen biri 20 soruda ortalama 5 doğru bulur; 2 ya da daha azı şanstan da düşüktür.
-  const belowChance = r.correct <= Math.floor(r.n / 4) - 3;
+  // Rastgele seçim düzeyinde yanlışların çoğu döndürülmüş biçimse yönerge farklı anlaşılmış olabilir (döndürülmüş ya da
+  // ters çevrilmiş şekil doğru sayılmaz); çalışma biçiminde kuşku varsa bu söylenmez.
+  const turnedMost = chance && !doubt && r.luresByKind.turned >= Math.max(6, 0.6 * r.wrong);
   if (chance) {
-    accText = v(
-      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${HIDDEN_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da çizimlere yeterince bakmadan seçmiş de olabilirsin.${belowChance ? ' Doğru cevapların rastgele seçen birinden beklenenden de az olduğu için yönergeyi farklı anlamış olabilirsin (aranan şeklin döndürülmüş ya da ters çevrilmiş biçimi doğru cevap sayılmaz).' : ''} Bu sonuç tek başına bir şey söylemez; iyi dinlendiğin bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
-      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${HIDDEN_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da çizimlere yeterince bakılmadan seçilmiş de olabilir.${belowChance ? ' Doğru cevaplar rastgele seçen birinden beklenenden de az olduğu için yönerge farklı anlaşılmış olabilir (aranan şeklin döndürülmüş ya da ters çevrilmiş biçimi doğru cevap sayılmaz).' : ''} Bu sonuç yorumlanmamalıdır; iyi dinlendiği bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
-    );
+    accText =
+      levelChanceText(v, r.n, HIDDEN_CHANCE_MAX) +
+      (turnedMost
+        ? v(
+            ' Yanlış cevaplarının çoğunda aranan şeklin döndürülmüş ya da ters çevrilmiş biçimini seçtin. Yönergeyi farklı anlamış olabilirsin: döndürülmüş ya da ters çevrilmiş şekil doğru cevap sayılmaz.',
+            ' Çocuğunuz yanlış cevaplarının çoğunda aranan şeklin döndürülmüş ya da ters çevrilmiş biçimini seçti. Yönergeyi farklı anlamış olabilir: döndürülmüş ya da ters çevrilmiş şekil doğru cevap sayılmaz.',
+          )
+        : '');
   } else {
     const easyMissed = first.n - first.correct;
     const higher = r.levels.slice(1);
@@ -4638,7 +4926,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
       const share = higherRate === 1 ? 'hepsini' : 'çoğunu';
       accText = v(
         `${intro} ${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların ${share} doğru buldun.${blameHere ? ' Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : ''}`,
-        `${intro} Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların ${share} doğru buldu.${blameHere ? ' Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : ''}`,
+        `${intro} Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların ${share} doğru buldu.${blameHere ? ' Bu, testin başında çocuğunuzun dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.' : ''}`,
       );
     } else {
       // Kolay (1–2) ve zor (3–4) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
@@ -4654,12 +4942,12 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
       } else if (gap <= -0.15) {
         accText = v(
           `${intro} Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin${blameHere ? '; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
-          `${intro} Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi${blameHere ? '; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
+          `${intro} Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi${blameHere ? '; kolay sorulardaki yanlışlar çocuğunuzun dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.' : '.'}`,
         );
       } else {
         const slip =
           blameHere && hardRate >= MATRIX_LEVEL_PASS && easyLevels.some((l) => l.correct < l.n)
-            ? v(' Kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.', ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.')
+            ? v(' Kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.', ' Kolay sorulardaki yanlışlar çocuğunuzun dikkatinin dağılmasından ya da acele etmesinden kaynaklanmış olabilir.')
             : '';
         accText = v(
           `${intro} Kolay ve zor düzeylerdeki doğru cevap oranların birbirine yakındı; genellikle şekiller daha iyi saklandıkça doğru cevaplar azalır.${slip}`,
@@ -4673,77 +4961,26 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
     if (doubt) {
       accText += v(
         ' Bazı sorularda çizimlere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorularda çizimlere bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorularda çizimlere bakmadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('gs_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('gs_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (chance) {
-    duzey = { ...card('gs_duzey'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' };
-  } else if (r.reached === 0) {
-    const highLevels = r.levels.filter((l) => l.level > 1 && passed(l));
-    const highPassed = highLevels.map((l) => `${l.level}.`);
-    const highShare = highLevels.every((l) => l.correct === l.n) ? 'hepsini' : 'çoğunu';
-    duzey = {
-      ...card('gs_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki soruların ve o düzeye kadarki bütün soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${highPassed.length ? ` ${joinTr(highPassed)} düzeydeki soruların ${highShare} doğru bulmana rağmen, kolay düzeylerdeki yanlışlar yüzünden ölçüte ulaşılmadı.` : ''}${lureNoted ? ' Bu, yönergeyi tam anlamamaktan ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir.' : doubt ? ' Çalışma biçimi kartında anlatılan nedenle bu sonuç tek başına bir şey söylemez.' : levelCardBlames ? ' Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.' : ''}`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki soruların ve o düzeye kadarki bütün soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${highPassed.length ? ` Çocuğunuz ${joinTr(highPassed)} düzeydeki soruların ${highShare} doğru bulmasına rağmen, kolay düzeylerdeki yanlışlar yüzünden ölçüte ulaşılmadı.` : ''}${lureNoted ? ' Bu, yönergenin tam anlaşılmamasından ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir ve tek başına yorumlanmamalıdır.' : doubt ? ' Çalışma biçimi kartında anlatılan nedenle bu sonuç tek başına yorumlanmamalıdır.' : levelCardBlames ? ' Bu; dikkatin dağılmasından, acele etmekten ya da yönergenin tam anlaşılmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.' : ''}`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upLevels = r.levels.filter((l) => l.level <= r.reached);
-    const share = upLevels.every((l) => l.correct === l.n) ? 'hepsini' : upLevels.every((l) => l.n - l.correct <= 1) ? 'hemen hepsini' : 'çoğunu';
-    const upTo =
-      r.reached === 1
-        ? v(`1. düzeydeki soruların ${share} doğru cevapladın`, `Çocuğunuz 1. düzeydeki soruların ${share} doğru cevapladı`)
-        : v(`1–${r.reached}. düzeylerdeki soruların ${share} doğru cevapladın`, `Çocuğunuz 1–${r.reached}. düzeylerdeki soruların ${share} doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şu gerekiyordu: ${lower(def.plain)}.`;
-    const slips = slipsBelow.map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi${levelCardBlames ? ': daha zor soruları çözebildiğin için bu sorulardaki sonuç dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığı sorular bu sonucu değiştirmedi${levelCardBlames ? ': daha zor soruları çözebildiği için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
-      );
-    }
-    const nextRes = next ? r.levels.find((l) => l.level === next.level) : undefined;
-    let hedged = false;
-    if (!next || !nextRes) {
-      text += ` ${r.reached}. düzey testin en zor düzeyiydi.`;
-    } else if (rapid && next.level >= 3) {
-      hedged = true;
-      // Çok hızlı yanlışlar 3. düzey ve üstündedir: bu düzeylerdeki sonuç yorumlanmaz.
-      const rest = next.level === r.levels[r.levels.length - 1].level ? `${next.level}. düzeydeki sonuç` : `${next.level}. düzey ve üstündeki sonuç`;
-      text += v(
-        ` 3. düzey ve üstündeki sorulardan bazılarında çok hızlı cevap verdiğin için ${rest} yorumlanmadı.`,
-        ` 3. düzey ve üstündeki sorulardan bazılarında çok hızlı cevap verildiği için ${rest} yorumlanmadı.`,
-      );
-    } else {
-      const hard = nextRes.correct === 0 ? v('soruların hiçbirini doğru bulamadın', 'soruların hiçbirini doğru bulamadı') : v('soruların çoğunda zorlandın', 'soruların çoğunda zorlandı');
-      text += ` ${next.level}. düzeyde ${hard}; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`;
-    }
-    if (doubt && !hedged) {
-      text += v(' Çalışma biçimi kartında anlatılan nedenle bu sonuç da dikkatle okunmalı.', ' Çalışma biçimi kartında anlatılan nedenle bu sonuç da dikkatle okunmalıdır.');
-    }
-    duzey = {
-      ...card('gs_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki soruların ve o düzeye kadarki bütün soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const duzey = reachedLevelBlock({
+    base: card('gs_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: lureNoted ? [' Bu, yönergeyi tam anlamamaktan ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : doubt ? ZERO_DOUBT : levelCardBlames ? ZERO_CAUSE : ['', ''],
+    rapid: rapid,
+    doubt,
+  });
 
   /* Yanlışlarda seçilen şekiller */
-  const lureLine =
-    r.wrong > 0 ? `${r.wrong} yanlış · döndürülmüş ya da ters çevrilmiş ${r.luresByKind.turned} · köşesi farklı ${r.luresByKind.changed}` : undefined;
   let yanilgi: CognitiveBlock;
   if (chance) {
     yanilgi = { ...card('gs_yanilgi'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
@@ -4757,7 +4994,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
       ),
     };
   } else {
-    const how = 'Her sorudaki yanlış seçeneklerin birinde ya da ikisinde şeklin döndürülmüş ya da ters çevrilmiş biçimi, ötekilerde bir köşesi farklı benzeri saklıydı.';
+    const how = 'Yanlış seçeneklerde iki tür tuzak vardı: aranan şeklin döndürülmüş ya da ters çevrilmiş biçimi ve bir köşesi farklı bir benzeri.';
     let text: string;
     let head: string;
     if (doubt) {
@@ -4768,23 +5005,24 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
       );
     } else if (lureNoted) {
       head = noted.length > 1 ? 'İki yanılgı da öne çıkıyor' : noted[0] === 'turned' ? 'Döndürülmüş biçimler öne çıkıyor' : 'Köşesi farklı benzerler öne çıkıyor';
-      const phrases = noted.map((x) => `${HIDDEN_LURE_TEXT[x]} (${r.luresByKind[x]} yanlışta)`);
-      const which = noted.length > 1 ? 'şu yanılgılar' : 'şu yanılgı';
+      // Her öne çıkan yanılgı: kaç yanlışta görüldüğü ve rastgele seçimle açıklanamayacak kadar sık olduğu.
+      const seen = noted.map((x) => `${r.luresByKind[x] === r.wrong ? 'hepsinde' : `${r.luresByKind[x]} tanesinde`} ${HIDDEN_LURE_SEEN[x]} seçildi`);
+      const these = noted.length > 1 ? 'Bunlar' : 'Bu';
       text = v(
-        `${how} ${r.wrong} yanlış cevabında ${which}, seçeneklerde bulunma sıklığına göre beklenenden sık görüldü: ${joinTr(phrases)}. ${noted.map((x) => HIDDEN_LURE_TIP[x].you).join(' ')}`,
-        `${how} Çocuğunuzun ${r.wrong} yanlış cevabında ${which}, seçeneklerde bulunma sıklığına göre beklenenden sık görüldü: ${joinTr(phrases)}. ${noted.map((x) => HIDDEN_LURE_TIP[x].parent).join(' ')}`,
+        `${how} ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => HIDDEN_LURE_TIP[x].you).join(' ')}`,
+        `${how} Çocuğunuzun ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => HIDDEN_LURE_TIP[x].parent).join(' ')}`,
       );
     } else if (r.wrong >= HIDDEN_LURE_NOTE) {
       head = 'Belirgin bir yanılgı yok';
       const only = HIDDEN_LURES_ORDER.find((k) => r.luresByKind[k] === r.wrong);
       text = only
         ? v(
-            `${how} ${r.wrong} yanlış cevabının hepsinde ${HIDDEN_LURE_SEEN[only]} seçildi; ancak yanlış cevap sayısı, bunun rastlantı olmadığını söylemeye yetmiyor.`,
-            `${how} Çocuğunuzun ${r.wrong} yanlış cevabının hepsinde ${HIDDEN_LURE_SEEN[only]} seçildi; ancak yanlış cevap sayısı, bunun rastlantı olmadığını söylemeye yetmiyor.`,
+            `${how} ${r.wrong} yanlış cevabının hepsinde ${HIDDEN_LURE_SEEN[only]} seçildi. Yanlış sayısı az olduğu için bunun rastlantı olup olmadığı söylenemez.`,
+            `${how} Çocuğunuzun ${r.wrong} yanlış cevabının hepsinde ${HIDDEN_LURE_SEEN[only]} seçildi. Yanlış sayısı az olduğu için bunun rastlantı olup olmadığı söylenemez.`,
           )
         : v(
-            `${how} ${r.wrong} yanlış cevabın iki türe de dağılıyor; hiçbiri, seçeneklerde bulunma sıklığına göre beklenenden sık görülmedi.`,
-            `${how} Çocuğunuzun ${r.wrong} yanlış cevabı iki türe de dağılıyor; hiçbiri, seçeneklerde bulunma sıklığına göre beklenenden sık görülmedi.`,
+            `${how} ${r.wrong} yanlış cevabın bu iki türe dağılıyor; öne çıkan bir yanılgı görülmedi.`,
+            `${how} Çocuğunuzun ${r.wrong} yanlış cevabı bu iki türe dağılıyor; öne çıkan bir yanılgı görülmedi.`,
           );
     } else {
       head = r.wrong === 1 ? 'Bir yanlış' : `${r.wrong} yanlış`;
@@ -4793,17 +5031,17 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
         `${how} Çocuğunuzun yanlış cevapları çok az olduğu için hangi yanılgının öne çıktığı söylenemez.`,
       );
     }
-    yanilgi = { ...card('gs_yanilgi'), headline: head, detail: lureLine, text };
+    yanilgi = { ...card('gs_yanilgi'), headline: head, text };
   }
 
   /* Çalışma biçimi */
   const issues: string[] = [];
   if (rapid) {
-    const which = r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`;
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
     issues.push(
       v(
         `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede şekli dört kalabalık çizimde aramak zordur; bu sorularda tahmin etmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede şekli dört kalabalık çizimde aramak zordur; bu sorularda tahmin edilmiş olabilir.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede şekli dört kalabalık çizimde aramak zordur; bu sorularda tahmin etmiş olabilir.`,
       ),
     );
   }
@@ -4811,18 +5049,18 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
     issues.push(
       v(
         `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
-        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakılmadan aynı yere basılmış olabilir.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan şekli doğru bulabilmektir.');
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
     calisma = { ...card('gs_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const timesLine = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 3–4. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && !chance && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardLevels = r.levels.filter((l) => l.level >= 3);
       const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
@@ -4848,19 +5086,18 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
           'Çocuğunuz zor sorularda kolay sorulardakinden biraz daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
-        pace = v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+        pace = paceClose(v, r.rtEasy, r.rtHard);
       }
     }
     const found =
-      r.medianRtCorrect !== null && r.correct >= 3 && !chance && !doubt
+      r.medianRtCorrect !== null && r.correct >= 3 && r.correct < r.n && !chance && !doubt
         ? v(` Doğru bulduğun sorularda şekli bulman tipik olarak ${seconds(r.medianRtCorrect)} sürdü.`, ` Doğru bulduğu sorularda şekli bulması tipik olarak ${seconds(r.medianRtCorrect)} sürdü.`)
         : '';
     const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.${found}`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.${found}`);
     calisma = {
       ...card('gs_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      detail: timesLine,
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -4879,10 +5116,29 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
     chance
       ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
       : r.reached === 0
-        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
         : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (yanilgi.headline !== 'Yorumlanmadı') {
+    const other = r.wrong - r.luresByKind.turned - r.luresByKind.changed;
+    yanilgi.visual = {
+      type: 'stack',
+      label: 'Soruların dağılımı',
+      total: r.n,
+      parts: [
+        { label: 'Doğru şekil', value: r.correct },
+        { label: 'Döndürülmüş ya da ters çevrilmiş şekil', value: r.luresByKind.turned },
+        { label: 'Bir köşesi farklı benzer', value: r.luresByKind.changed },
+        ...(other > 0 ? [{ label: 'Başka bir yanlış seçenek', value: other }] : []),
+      ],
+    };
+  }
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '3–4. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, yanilgi, calisma], chart, figures };
 }
 
@@ -4896,13 +5152,13 @@ export const CUBE_TYPES: Record<CubeType, { name: string; plain: string }> = {
 
 /** Yanlış seçeneklerin yanılgıları (yanlışların yorumunda) ve her yanılgı için kısa bir ipucu. */
 export const CUBE_LURE_TEXT: Record<CubeLure, string> = {
-  opposite: 'küpte karşı karşıya gelen iki yüzü yan yana görmek',
+  opposite: 'küpte karşı karşıya gelen iki yüzü yan yana sanmak',
   order: 'bir köşede buluşan üç yüzün sırasını ayna görüntüsündeki gibi ters görmek',
   turn: 'bir yüzdeki şeklin yönünü yanlış görmek',
 };
 export const CUBE_LURE_TIP: Record<CubeLure, string> = {
   opposite:
-    'Açınımda düz bir sırada aralarında tek bir kare bulunan iki yüz küpte karşı karşıya gelir. Düz bir sıranın bir yanına bağlı bir yüz ile öbür yanına bağlı bir yüz de karşı karşıya gelir (Z ya da S biçiminin iki ucu gibi). Karşılıklı iki yüz bir küpte hiçbir zaman aynı anda görünmez.',
+    'Açınımda düz bir sırada aralarında tek bir kare bulunan iki yüz küpte karşı karşıya gelir. Düz bir sıranın bir yanına bağlı bir yüz ile öbür yanına bağlı bir yüz de karşı karşıya gelir (Z ya da S biçiminin iki ucu gibi). Karşılıklı iki yüz küpte hiçbir zaman yan yana gelmez; bu yüzden bir küp resminde ikisi birden görünmez.',
   order: 'Bir köşede buluşan üç yüzün saat yönündeki sırası, küp nasıl çevrilirse çevrilsin değişmez; açınımda bir noktanın çevresinde duran üç yüzün sırası küpte de aynı kalır.',
   turn: 'Açınımda yan yana duran iki yüz küpte de yan yana kalır; bir şekil açınımda hangi komşu yüze bakıyorsa küpte de o yüze bakar.',
 };
@@ -4914,7 +5170,7 @@ const cubeTypeName = (t: CubeType) => `“${CUBE_TYPES[t].name}”`;
 function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: CardOf): TaskReport {
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
-  const chance = r.correct <= CUBE_CHANCE_MAX;
+  const chance = cubeChance(r);
   const rapid = cubeRapid(r);
   const samePos = cubeSamePosition(r);
   const doubt = rapid || samePos;
@@ -4923,63 +5179,28 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
   const noted = chance || doubt ? [] : CUBE_LURES_ORDER.filter((k) => cubeLureStandsOut(r, k));
   const lureNoted = noted.length > 0;
   const blameSlip = !lureNoted && !doubt;
-  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
-  const intro = `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu.`;
 
   /* Doğru cevaplar */
   let accText: string;
-  const first = r.levels[0];
   if (chance) {
-    accText = v(
-      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${CUBE_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da açınıma yeterince bakmadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.`,
-      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${CUBE_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da açınıma yeterince bakılmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.`,
-    );
+    accText = levelChanceText(v, r.n, CUBE_CHANCE_MAX);
   } else {
-    const easyMissed = first.n - first.correct;
-    // Daha zor bir düzeyde hem ölçüte ulaşılmış hem 1. düzeyden çok doğru verilmiş olmalı.
-    const higherPassed = r.levels.slice(1).some((l) => passed(l) && l.correct > first.correct);
-    if (r.levels.every((l) => l.n - l.correct <= 1)) {
-      accText = v(
-        `${intro} Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor düzeydeki zikzak açınımları da zihninde katlayabildin.`,
-        `${intro} Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor düzeydeki zikzak açınımları da zihninde katlayabildi.`,
-      );
-    } else if (easyMissed >= 2 && higherPassed) {
-      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hiçbirini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
-      accText = v(
-        `${intro} ${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun.${blameSlip ? ' Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : ''}`,
-        `${intro} Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu.${blameSlip ? ' Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : ''}`,
-      );
-    } else {
-      // Kolay (1–2) ve zor (3–4) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
-      const rate = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const easyLevels = r.levels.filter((l) => l.level <= 2);
-      const hardRate = rate(r.levels.filter((l) => l.level >= 3));
-      const gap = rate(easyLevels) - hardRate;
-      if (gap >= 0.15) {
-        accText = v(
-          `${intro} Sorular zorlaştıkça doğru cevapların azaldı.${doubt ? '' : ' Bu beklenen bir durumdur: üst düzeylerde açınımlar basamaklı ya da zikzak biçimdedir ve uzaktaki yüzleri yerine getirmek için daha çok katlamayı zihinde izlemek gerekir.'}`,
-          `${intro} Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı.${doubt ? '' : ' Bu beklenen bir durumdur: üst düzeylerde açınımlar basamaklı ya da zikzak biçimdedir ve uzaktaki yüzleri yerine getirmek için daha çok katlamayı zihinde izlemek gerekir.'}`,
-        );
-      } else if (gap <= -0.15) {
-        accText = v(
-          `${intro} Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin${blameSlip ? '; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
-          `${intro} Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi${blameSlip ? '; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
-        );
-      } else {
-        // Zor sorular da çoğunlukla doğruysa kolay sorulardaki yanlışlar dikkatin dağılmasına bağlanabilir.
-        const slip =
-          blameSlip && hardRate >= MATRIX_LEVEL_PASS && easyLevels.some((l) => l.correct < l.n)
-            ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'
-            : '';
-        accText = v(
-          `${intro} Kolay ve zor düzeylerdeki doğru cevap oranların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-          `${intro} Çocuğunuzun kolay ve zor düzeylerdeki doğru cevap oranları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-        );
-      }
-    }
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['en zor düzeydeki zikzak açınımları da zihninde katlayabildin', 'en zor düzeydeki zikzak açınımları da zihninde katlayabildi'],
+      dropWhy: [
+        'Bu beklenen bir durumdur: üst düzeylerde açınımlar basamaklı ya da zikzak biçimdedir ve uzaktaki yüzleri yerine getirmek için daha çok katlamayı zihinde izlemek gerekir.',
+        'Bu beklenen bir durumdur: üst düzeylerde açınımlar basamaklı ya da zikzak biçimdedir ve uzaktaki yüzleri yerine getirmek için daha çok katlamayı zihinde izlemek gerekir.',
+      ],
+      hardFrom: 3,
+      blame: blameSlip,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
     if (lureNoted) {
       accText += v(
         ' Yanlış cevaplarında öne çıkan yanılgılar için yüzlerin yeri ve şekillerin yönü kartına bak.',
@@ -4989,66 +5210,31 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
     if (doubt) {
       accText += v(
         ' Bazı sorularda açınıma bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorularda açınıma bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorularda açınıma bakmadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('kp_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('kp_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (chance) {
-    duzey = { ...card('kp_duzey'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' };
-  } else if (r.reached === 0) {
-    duzey = {
-      ...card('kp_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki soruların ve o düzeye kadarki bütün soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lureNoted ? ' Bu, yönergeyi tam anlamamaktan ya da yüzlerin yeri ve şekillerin yönü kartında anlatılan yanılgılardan kaynaklanabilir.' : doubt ? ' Bazı sorularda açınıma bakmadan seçmiş olabileceğin için bu sonuç tek başına bir şey söylemez.' : ' Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.'}`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki soruların ve o düzeye kadarki bütün soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lureNoted ? ' Bu, yönergenin tam anlaşılmamasından ya da yüzlerin yeri ve şekillerin yönü kartında anlatılan yanılgılardan kaynaklanabilir ve tek başına yorumlanmamalıdır.' : doubt ? ' Bazı sorularda açınıma bakılmadan seçilmiş olabileceği için bu sonuç tek başına yorumlanmamalıdır.' : ' Bu; dikkatin dağılmasından, acele etmekten ya da yönergenin tam anlaşılmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'}`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upTo =
-      r.reached === 1
-        ? v('1. düzeydeki soruların çoğunu doğru cevapladın', 'Çocuğunuz 1. düzeydeki soruların çoğunu doğru cevapladı')
-        : v(`1–${r.reached}. düzeylerdeki soruların çoğunu doğru cevapladın`, `Çocuğunuz 1–${r.reached}. düzeylerdeki soruların çoğunu doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şu gerekiyordu: ${lower(def.plain)}.`;
-    // Alt düzeylerdeki yanlışlar düzeyi düşürmez; daha zor sorular çözüldüğü için dikkatsizlikten kaynaklanmış olabilir.
-    const slips = r.levels.filter((l) => l.level < r.reached && !passed(l)).map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi${blameSlip ? ': daha zor soruları çözebildiğin için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığı sorular bu sonucu değiştirmedi${blameSlip ? ': daha zor soruları çözebildiği için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '.'}`,
-      );
-    }
-    if (!next) {
-      text += v(' Bu en zor düzeydi.', ' Bu, testin en zor düzeyiydi.');
-    } else {
-      text += v(
-        ` ${next.level}. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-        ` ${next.level}. düzeyde soruların çoğunda zorlandı; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-      );
-    }
-    duzey = {
-      ...card('kp_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki soruların ve o düzeye kadarki bütün soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const duzey = reachedLevelBlock({
+    base: card('kp_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: doubt ? ZERO_DOUBT : lureNoted ? [' Bu, yönergeyi tam anlamamaktan ya da yüzlerin yeri ve şekillerin yönü kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da yüzlerin yeri ve şekillerin yönü kartında anlatılan yanılgılardan kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : ZERO_CAUSE,
+    rapid: rapid,
+    doubt,
+  });
 
   /* Yüzlerin yeri ve şekillerin yönü */
-  const typeLine = r.types.map((x) => `${CUBE_TYPES[x.type].name} ${x.correct}/${x.n}`).join(' · ');
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
   const good = r.types.filter(most).map((x) => x.type);
   const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
   const sizes = [...new Set(r.types.map((x) => x.n))];
-  const rough = ` Her tür ${sizes.length === 1 ? `${sizes[0]} soruya` : 'birkaç soruya'} dayanır ve her türde kolaydan zora sorular vardır; bu karşılaştırma kaba bir göstergedir.`;
+  const rough = ` Her türde ${sizes.length === 1 ? `yalnızca ${sizes[0]} soru` : 'yalnızca birkaç soru'} vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden iki tür arasındaki fark yalnızca yaklaşık bir fikir verir.`;
   let tur: CognitiveBlock;
   if (chance) {
     tur = { ...card('kp_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı ve yanlışlardaki yanılgılar yorumlanmadı.' };
@@ -5057,8 +5243,10 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
       hard.length === 1
         ? `Bu sorularda ${CUBE_TYPES[hard[0]].plain} gerekir.`
         : hard.map((x) => `${cubeTypeName(x)} sorularında ${CUBE_TYPES[x].plain} gerekir.`).join(' ');
-    const head =
-      good.length === r.types.length
+    const allRight = r.types.every((x) => x.correct === x.n);
+    const head = allRight
+      ? 'İki soru türünde de bütün sorular doğru'
+      : good.length === r.types.length
         ? 'İki soru türünde de soruların çoğu doğru'
         : good.length === 0
           ? 'İki soru türünde de soruların çoğu doğru değil'
@@ -5066,8 +5254,8 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
     let text: string;
     if (hard.length === 0) {
       text = v(
-        'Yalnızca yüzlerin yerinin önemli olduğu sorularda da şekillerin yönünün de önemli olduğu sorularda da soruların çoğunu doğru buldun.',
-        'Çocuğunuz yalnızca yüzlerin yerinin önemli olduğu sorularda da şekillerin yönünün de önemli olduğu sorularda da soruların çoğunu doğru buldu.',
+        `İki soru türünde de ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldun: hem yüzlerin yerini hem de yüzlerdeki şekillerin yönünü ${allRight ? 'her soruda' : 'çoğu soruda'} doğru izledin.`,
+        `Çocuğunuz iki soru türünde de ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldu: hem yüzlerin yerini hem de yüzlerdeki şekillerin yönünü ${allRight ? 'her soruda' : 'çoğu soruda'} doğru izledi.`,
       );
     } else if (good.length === 0) {
       text = v(`İki soru türünde de soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz iki soru türünde de soruların çoğunu doğru bulamadı. ${needs}`);
@@ -5082,32 +5270,32 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
     if (doubt && r.wrong > 0) {
       text += v(
         ' Bazı sorularda açınıma bakmadan seçmiş olabileceğin için yanlışlardaki yanılgılar yorumlanmadı.',
-        ' Bazı sorularda açınıma bakılmadan seçilmiş olabileceği için yanlışlardaki yanılgılar yorumlanmadı.',
+        ' Çocuğunuz bazı sorularda açınıma bakmadan seçmiş olabileceği için yanlışlardaki yanılgılar yorumlanmadı.',
       );
     } else if (lureNoted) {
-      const phrases = noted.map((k) => `${CUBE_LURE_TEXT[k]} (${r.luresByKind[k]} yanlışta)`);
-      const which = noted.length > 1 ? 'şu yanılgılar' : 'şu yanılgı';
+      // Her öne çıkan yanılgı ayrı bir cümleyle: kaç yanlışta görüldüğü ve rastgele seçimle açıklanamayacak kadar sık olduğu.
+      const seen = noted.map((k) => `${r.luresByKind[k] === r.wrong ? 'hepsinde' : `${r.luresByKind[k]} tanesinde`} şu yanılgı vardı: ${CUBE_LURE_TEXT[k]}`);
       text += v(
-        ` ${r.wrong} yanlış cevabında ${which}, seçeneklerde bulunma sıklığına göre beklenenden sık görüldü: ${joinTr(phrases)}. ${noted.map((k) => CUBE_LURE_TIP[k]).join(' ')}`,
-        ` Çocuğunuzun ${r.wrong} yanlış cevabında ${which}, seçeneklerde bulunma sıklığına göre beklenenden sık görüldü: ${joinTr(phrases)}. ${noted.map((k) => CUBE_LURE_TIP[k]).join(' ')}`,
+        ` ${r.wrong} yanlış cevabının ${seen.join('; ')}. ${noted.length > 1 ? 'Bunlar' : 'Bu'}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((k) => CUBE_LURE_TIP[k]).join(' ')}`,
+        ` Çocuğunuzun ${r.wrong} yanlış cevabının ${seen.join('; ')}. ${noted.length > 1 ? 'Bunlar' : 'Bu'}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((k) => CUBE_LURE_TIP[k]).join(' ')}`,
       );
     } else if (r.wrong >= CUBE_LURE_NOTE) {
       text += v(
-        ` ${r.wrong} yanlış cevabın farklı yanılgılara dağılıyor; hiçbir yanılgı, seçeneklerde bulunma sıklığına göre beklenenden sık görülmedi.`,
-        ` Çocuğunuzun ${r.wrong} yanlış cevabı farklı yanılgılara dağılıyor; hiçbir yanılgı, seçeneklerde bulunma sıklığına göre beklenenden sık görülmedi.`,
+        ' Yanlış cevaplarında öne çıkan bir yanılgı görülmedi.',
+        ' Çocuğunuzun yanlış cevaplarında öne çıkan bir yanılgı görülmedi.',
       );
     }
-    tur = { ...card('kp_tur'), headline: head, detail: typeLine, text };
+    tur = { ...card('kp_tur'), headline: head, text: text.replace(/ {2,}/g, ' ') };
   }
 
   /* Çalışma biçimi */
   const issues: string[] = [];
   if (rapid) {
-    const which = r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`;
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
     issues.push(
       v(
         `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede açınımı zihinde katlayıp dört küpe bakmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede açınımı zihinde katlayıp dört küpe bakmak çok zordur; bu sorularda tahmin edilmiş olabilir.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede açınımı zihinde katlayıp dört küpe bakmak çok zordur; bu sorularda tahmin etmiş olabilir.`,
       ),
     );
   }
@@ -5115,18 +5303,18 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
     issues.push(
       v(
         `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
-        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakılmadan aynı yere basılmış olabilir.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
     calisma = { ...card('kp_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const timesLine = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 3–4. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardLevels = r.levels.filter((l) => l.level >= 3);
       const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
@@ -5145,15 +5333,14 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
           'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
-        pace = v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+        pace = paceClose(v, r.rtEasy, r.rtHard);
       }
     }
     const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
     calisma = {
       ...card('kp_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      detail: timesLine,
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -5172,11 +5359,17 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
     chance
       ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
       : r.reached === 0
-        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
         : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
   // Yalnızca iki soru türü olduğu için üç boyutlu profil grafiği yoktur (yol haritası en az üç sütun ister).
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: CUBE_TYPES[x.type].name, correct: x.correct, n: x.n })));
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '3–4. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures };
 }
 
@@ -7115,6 +7308,15 @@ export const VOCABULARY_LURE_TEXT: Record<VocabularyLure, string> = {
   literal: 'deyimi, içindeki kelimelerin gerçek anlamıyla düşünmek',
 };
 
+/** Kelime bilgisinde yanılgıya göre öneri: anlamları karıştırmakta seçenekleri yeniden okumak, cümledeki anlamda cümleyi yeniden okumak. */
+const VOCABULARY_LURE_TIP: Record<VocabularyLure, { you: string; parent: string }> = {
+  swap: { you: 'Seçmeden önce seçeneklerin hepsini okumak ve sorunun eş anlamlıyı mı, zıt anlamlıyı mı istediğine bir kez daha bakmak işine yarayabilir.', parent: 'Seçmeden önce seçeneklerin hepsini okuması ve sorunun eş anlamlıyı mı, zıt anlamlıyı mı istediğine bir kez daha bakması ona yardım edebilir.' },
+  related: { you: 'Seçmeden önce seçeneklerin hepsini okumak ve sorunun eş anlamlıyı mı, zıt anlamlıyı mı istediğine bir kez daha bakmak işine yarayabilir.', parent: 'Seçmeden önce seçeneklerin hepsini okuması ve sorunun eş anlamlıyı mı, zıt anlamlıyı mı istediğine bir kez daha bakması ona yardım edebilir.' },
+  sound: { you: 'Seçmeden önce seçeneklerin hepsini okumak ve sorunun eş anlamlıyı mı, zıt anlamlıyı mı istediğine bir kez daha bakmak işine yarayabilir.', parent: 'Seçmeden önce seçeneklerin hepsini okuması ve sorunun eş anlamlıyı mı, zıt anlamlıyı mı istediğine bir kez daha bakması ona yardım edebilir.' },
+  meaning: { you: 'Seçtiğin anlamı cümlenin içine koyup cümleyi bir kez daha okumak işine yarayabilir.', parent: 'Seçtiği anlamı cümlenin içine koyup cümleyi bir kez daha okuması ona yardım edebilir.' },
+  literal: { you: 'Seçtiğin anlamı cümlenin içine koyup cümleyi bir kez daha okumak işine yarayabilir.', parent: 'Seçtiği anlamı cümlenin içine koyup cümleyi bir kez daha okuması ona yardım edebilir.' },
+};
+
 /** "“eş anlam” ve “deyim”" gibi: türlerin cümle içindeki adları tırnak içinde. */
 const vocabularyTypeList = (types: VocabularyType[]) => joinTr(types.map((t) => `“${VOCABULARY_TYPES[t].short}”`));
 
@@ -7122,144 +7324,86 @@ const vocabularyTypeList = (types: VocabularyType[]) => joinTr(types.map((t) => 
 function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: Audience, card: CardOf): TaskReport {
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
-  const chance = r.correct <= VOCABULARY_CHANCE_MAX;
+  const chance = vocabularyChance(r);
   const rapid = vocabularyRapid(r);
   const samePos = vocabularySamePosition(r);
   const doubt = rapid || samePos;
   // Yanlışların çoğu çeldiriciyse, kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz (yanılgı cümlesi açıklar).
   const lurePattern = vocabularyLurePattern(r);
-  const passed = (l: { correct: number; n: number }) => l.correct / l.n >= MATRIX_LEVEL_PASS;
-  const levelLine = r.levels.map((l) => `${l.level}. düzey ${l.correct}/${l.n}`).join(' · ');
   const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
-  const pass = Math.round(MATRIX_LEVEL_PASS * 100);
 
   /* Doğru cevaplar */
   let accText: string;
-  const first = r.levels[0];
   if (chance) {
-    accText = v(
-      `Doğru cevapların, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${VOCABULARY_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da soruları yeterince okumadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.`,
-      `Çocuğunuzun doğru cevapları, seçeneklerden rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${VOCABULARY_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da sorular yeterince okunmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.`,
-    );
+    accText = levelChanceText(v, r.n, VOCABULARY_CHANCE_MAX);
   } else {
-    const easyMissed = first.n - first.correct;
-    const higherPassed = r.levels.slice(1).some(passed);
-    if (r.levels.every((l) => l.n - l.correct <= 1)) {
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Bütün düzeylerde soruların hemen hepsini doğru cevapladın; en zor düzeydeki soruların da çoğunu doğru buldun.`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz bütün düzeylerde soruların hemen hepsini doğru cevapladı; en zor düzeydeki soruların da çoğunu doğru buldu.`,
-      );
-    } else if (easyMissed >= 2 && higherPassed) {
-      const which = easyMissed === first.n ? '1. düzeydeki kolay soruların hiçbirini' : `1. düzeydeki kolay sorulardan ${easyMissed} tanesini`;
-      accText = v(
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. ${capTr(which)} doğru cevaplamadın ama daha zor düzeylerdeki soruların bir kısmını doğru buldun.${lurePattern ? '' : ' Bu, testin başında dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz ${which} doğru cevaplamadı ama daha zor düzeylerdeki soruların bir kısmını doğru buldu.${lurePattern ? '' : ' Bu, testin başında dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-      );
-    } else {
-      // Kolay (1–2) ve zor (4–5) düzeylerdeki doğru cevap oranları: belirgin düşüş, belirgin artış ya da yakın.
-      const rate = (ls: typeof r.levels) => ls.reduce((a, l) => a + l.correct, 0) / Math.max(1, ls.reduce((a, l) => a + l.n, 0));
-      const easyLevels = r.levels.filter((l) => l.level <= 2);
-      const gap = rate(easyLevels) - rate(r.levels.filter((l) => l.level >= 4));
-      if (gap >= 0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça doğru cevapların azaldı. Bu beklenen bir durumdur: üst düzeylerdeki kelimeler daha seyrek kullanılır ve anlamları daha soyuttur.`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Sorular zorlaştıkça çocuğunuzun doğru cevapları azaldı. Bu beklenen bir durumdur: üst düzeylerdeki kelimeler daha seyrek kullanılır ve anlamları daha soyuttur.`,
-        );
-      } else if (gap <= -0.15) {
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdin${lurePattern ? '.' : '; kolay sorulardaki yanlışlar dikkatinin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuz zor düzeylerde kolay düzeylerdekinden daha çok doğru cevap verdi${lurePattern ? '.' : '; kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        );
-      } else {
-        const slip = !lurePattern && easyLevels.some((l) => l.correct < l.n) ? ' Kolay sorulardaki yanlışlar dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.' : '';
-        accText = v(
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Kolay ve zor düzeylerdeki doğru cevapların birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-          `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerliyordu. Çocuğunuzun kolay ve zor düzeylerdeki doğru cevapları birbirine yakındı; genellikle sorular zorlaştıkça doğru cevaplar azalır.${slip}`,
-        );
-      }
-    }
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['en zor düzeydeki seyrek kelimeleri ve deyimleri de bildin', 'en zor düzeydeki seyrek kelimeleri ve deyimleri de bildi'],
+      dropWhy: ['Bu beklenen bir durumdur: üst düzeylerdeki kelimeler daha seyrek kullanılır ve anlamları daha soyuttur.', 'Bu beklenen bir durumdur: üst düzeylerdeki kelimeler daha seyrek kullanılır ve anlamları daha soyuttur.'],
+      hardFrom: 4,
+      blame: !doubt && !lurePattern,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
     // Yanlışların türü: sorunun "ilk bakışta doğru görünen" seçeneği; yanılgılar olasılık olarak söylenir.
     if (lurePattern) {
       const share = r.lures === r.wrong ? 'hepsinde' : `çoğunda (${r.wrong} yanlışın ${r.lures} tanesinde)`;
-      const phrases = VOCABULARY_LURES_ORDER.filter((k) => r.luresByKind[k] > 0).map((k) => VOCABULARY_LURE_TEXT[k]);
+      const kinds = VOCABULARY_LURES_ORDER.filter((k) => r.luresByKind[k] > 0);
+      const phrases = kinds.map((k) => VOCABULARY_LURE_TEXT[k]);
       const which = phrases.length > 1 ? 'şu yanılgılardan' : 'şu yanılgıdan';
+      // Öneri yanılgıya göre seçilir (eş ve zıt anlam sorularında cümle yoktur); aynı öneri bir kez yazılır.
+      const tips = [...new Set(kinds.map((k) => v(VOCABULARY_LURE_TIP[k].you, VOCABULARY_LURE_TIP[k].parent)))];
       accText += v(
-        ` Yanlış cevaplarının ${share} ilk bakışta doğru görünen ama sorulan anlama uymayan seçeneği seçtin. Bu yanlışlar ${which} kaynaklanmış olabilir: ${phrases.join('; ')}. Seçmeden önce seçeneklerin hepsini okumak ve cümleyi seçtiğin anlamla bir kez daha okumak işine yarar.`,
-        ` Çocuğunuz yanlış cevaplarının ${share} ilk bakışta doğru görünen ama sorulan anlama uymayan seçeneği seçti. Bu yanlışlar ${which} kaynaklanmış olabilir: ${phrases.join('; ')}. Seçmeden önce seçeneklerin hepsini okumak ve cümleyi seçtiği anlamla bir kez daha okumak ona yardım edebilir.`,
+        ` Yanlış cevaplarının ${share} ilk bakışta doğru görünen ama sorulan anlama uymayan seçeneği seçtin. Bu yanlışlar ${which} kaynaklanmış olabilir: ${phrases.join('; ')}. ${tips.join(' ')}`,
+        ` Çocuğunuz yanlış cevaplarının ${share} ilk bakışta doğru görünen ama sorulan anlama uymayan seçeneği seçti. Bu yanlışlar ${which} kaynaklanmış olabilir: ${phrases.join('; ')}. ${tips.join(' ')}`,
       );
     }
     if (doubt) {
       accText += v(
         ' Bazı soruları okumadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
-        ' Bazı sorular okunmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç çocuğunuzu tam yansıtmayabilir.',
+        ' Çocuğunuz bazı soruları okumadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('kb_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, detail: levelLine, text: accText };
+  const dogru: CognitiveBlock = { ...card('kb_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
 
   /* Ulaşılan düzey */
-  let duzey: CognitiveBlock;
-  if (chance) {
-    duzey = { ...card('kb_duzey'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' };
-  } else if (r.reached === 0) {
-    duzey = {
-      ...card('kb_duzey'),
-      headline: v('1. düzeyde zorlandın', '1. düzeyde zorlandı'),
-      detail: `1. düzey ${first.correct}/${first.n}`,
-      text: v(
-        `En kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadın' : `${first.correct} tanesini doğru buldun`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lurePattern ? ' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.' : ' Bu; dikkatinin dağılmasından, acele etmekten ya da yönergeyi tam anlamamaktan kaynaklanabilir.'}`,
-        `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${first.correct === 0 ? 'hiçbirini doğru bulamadı' : `${first.correct} tanesini doğru buldu`}. Bir düzeyin belirtilmesi için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ının doğru olması gerekir; bu ölçüte hiçbir düzeyde ulaşılmadığı için bir düzey belirtilmedi.${lurePattern ? ' Bu; yönergenin tam anlaşılmamasından, doğru cevaplar kartında anlatılan yanılgılardan ya da okumakta henüz yeterince rahat olmamaktan kaynaklanabilir ve tek başına yorumlanmamalıdır.' : ' Bu; dikkatin dağılmasından, acele etmekten, yönergenin tam anlaşılmamasından ya da okumakta henüz yeterince rahat olmamaktan kaynaklanabilir ve tek başına yorumlanmamalıdır.'}`,
-      ),
-    };
-  } else {
-    const def = task.levels.find((l) => l.level === r.reached)!;
-    const next = task.levels.find((l) => l.level === r.reached + 1);
-    const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
-    const upTo =
-      r.reached === 1
-        ? v('1. düzeydeki soruların çoğunu doğru cevapladın', 'Çocuğunuz 1. düzeydeki soruların çoğunu doğru cevapladı')
-        : v(`${r.reached}. düzeye kadar soruların çoğunu doğru cevapladın`, `Çocuğunuz ${r.reached}. düzeye kadar soruların çoğunu doğru cevapladı`);
-    let text = `${upTo}. ${r.reached}. düzeydeki sorularda şu gerekiyordu: ${lower(def.plain)}.`;
-    // Alt düzeylerdeki yanlışlar düzeyi düşürmez; daha zor sorular çözüldüğü için dikkatsizlikten kaynaklanmış olabilir.
-    const slips = r.levels.filter((l) => l.level < r.reached && !passed(l)).map((l) => `${l.level}.`);
-    if (slips.length) {
-      text += v(
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi${lurePattern ? '.' : ': daha zor soruları çözebildiğin için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-        ` Daha kolay olan ${joinTr(slips)} düzeyde doğru bulamadığı sorular bu sonucu değiştirmedi${lurePattern ? '.' : ': daha zor soruları çözebildiği için bu sorulardaki sonuç dikkatin dağılmasından ya da acele etmekten kaynaklanmış olabilir.'}`,
-      );
-    }
-    if (!next) {
-      text += v(' Bu en zor düzeydi.', ' Bu, testin en zor düzeyiydi.');
-    } else {
-      text += v(
-        ` ${next.level}. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-        ` ${next.level}. düzeyde soruların çoğunda zorlandı; bu düzeydeki sorularda ${lower(next.plain)} gerekiyordu.`,
-      );
-    }
-    duzey = {
-      ...card('kb_duzey'),
-      headline: `${r.reached}. düzey`,
-      detail: `${r.levels.length} düzeyden · ölçüt: o düzeydeki ve o düzeye kadarki soruların en az %${pass}’ı doğru`,
-      text,
-    };
-  }
+  const duzey = reachedLevelBlock({
+    base: card('kb_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: doubt ? ZERO_DOUBT : lurePattern ? [' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu; çocuğunuzun yönergeyi tam anlamamasından, doğru cevaplar kartında anlatılan yanılgılardan ya da okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    rapid: rapid,
+    doubt,
+  });
 
   /* Soru türleri */
-  const typeLine = r.types.map((x) => `${VOCABULARY_TYPES[x.type].name} ${x.correct}/${x.n}`).join(' · ');
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
   const good = r.types.filter(most).map((x) => x.type);
   const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
-  const rough = ' Her soru türü altı soruya dayanır ve her türde kolaydan zora sorular vardır; bu karşılaştırma kaba bir göstergedir.';
+  const rough = ' Her türde yalnızca altı soru vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.';
   let tur: CognitiveBlock;
   if (chance) {
     tur = { ...card('kb_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
   } else {
+    // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs =
-      hard.length === 1
+      hard.length > 2
+        ? ''
+        : hard.length === 1
         ? `Bu tür sorularda ${VOCABULARY_TYPES[hard[0]].plain} gerekir.`
         : hard.map((x) => capTr(`${vocabularyTypeList([x])} sorularında ${VOCABULARY_TYPES[x].plain} gerekir.`)).join(' ');
-    const head =
-      good.length === r.types.length
+    const allRight = r.types.every((x) => x.correct === x.n);
+    const head = allRight
+      ? `${r.types.length} soru türünün hepsinde bütün sorular doğru`
+      : good.length === r.types.length
         ? `${r.types.length} soru türünün hepsinde soruların çoğu doğru`
         : good.length === 0
           ? `${r.types.length} soru türünün hiçbirinde soruların çoğu doğru değil`
@@ -7267,47 +7411,51 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
     let text: string;
     if (hard.length === 0) {
       text = v(
-        `${r.types.length} soru türünün her birinde soruların çoğunu doğru buldun: kelimelerin eş ve zıt anlamlılarını, cümlede kazandıkları anlamları ve deyimleri büyük ölçüde biliyorsun.`,
-        `Çocuğunuz ${r.types.length} soru türünün her birinde soruların çoğunu doğru buldu: kelimelerin eş ve zıt anlamlılarını, cümlede kazandıkları anlamları ve deyimleri büyük ölçüde biliyor.`,
+        `${r.types.length} soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldun: eş anlam, zıt anlam, cümlede anlam ve deyim sorularının ${allRight ? 'hepsinde' : 'çoğunda'} doğru seçeneği seçtin.`,
+        `Çocuğunuz ${r.types.length} soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldu: eş anlam, zıt anlam, cümlede anlam ve deyim sorularının ${allRight ? 'hepsinde' : 'çoğunda'} doğru seçeneği seçti.`,
       );
     } else if (good.length === 0) {
-      text = v(`Hiçbir soru türünde soruların çoğunu doğru bulamadın. ${needs}`, `Çocuğunuz hiçbir soru türünde soruların çoğunu doğru bulamadı. ${needs}`);
+      const best = [...r.types].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      text = v(
+        `Hiçbir soru türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${vocabularyTypeList([best.type])} sorularında verdin.`,
+        `Çocuğunuz hiçbir soru türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${vocabularyTypeList([best.type])} sorularında verdi.`,
+      );
     } else {
       text = v(
         `${vocabularyTypeList(good)} sorularının çoğunu doğru buldun; ${vocabularyTypeList(hard)} sorularında zorlandın. ${needs}`,
         `Çocuğunuz ${vocabularyTypeList(good)} sorularının çoğunu doğru buldu; ${vocabularyTypeList(hard)} sorularında zorlandı. ${needs}`,
       );
     }
-    tur = { ...card('kb_tur'), headline: head, detail: typeLine, text: capTr(text) + rough };
+    tur = { ...card('kb_tur'), headline: head, text: capTr(text.trim()) + rough };
   }
 
   /* Çalışma biçimi */
   const issues: string[] = [];
   if (rapid) {
-    const which = r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`;
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
     issues.push(
       v(
-        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} yanlış bir cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin; bu sorularda okumadan seçmiş olabilirsin.`,
-        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} yanlış bir cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdi; bu sorularda okunmadan seçilmiş olabilir.`,
+        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which}, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede yanlış cevap verdin; bu sorularda okumadan seçmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which}, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede yanlış cevap verdi; bu sorularda okumadan seçmiş olabilir.`,
       ),
     );
   }
   if (samePos) {
     issues.push(
       v(
-        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; sorulara bakmadan hep aynı yere basmış olabilirsin.`,
-        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; sorulara bakılmadan hep aynı yere basılmış olabilir.`,
+        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
       ),
     );
   }
   let calisma: CognitiveBlock;
-  const noLimit = v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
+  // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
     calisma = { ...card('kb_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
-    const timesLine = r.rtEasy !== null && r.rtHard !== null ? `1–2. düzeyde tipik ${seconds(r.rtEasy)} · 4–5. düzeyde ${seconds(r.rtHard)}` : undefined;
-    let pace = '';
-    if (!doubt && r.rtEasy !== null && r.rtHard !== null) {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
       const hardLevels = r.levels.filter((l) => l.level >= 4);
       const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
       if (r.rtHard >= 1.5 * r.rtEasy) {
@@ -7326,15 +7474,14 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
           'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
         );
       } else {
-        pace = v('Kolay ve zor sorulara birbirine yakın süreler ayırdın.', 'Çocuğunuz kolay ve zor sorulara birbirine yakın süreler ayırdı.');
+        pace = paceClose(v, r.rtEasy, r.rtHard);
       }
     }
     const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
     calisma = {
       ...card('kb_calisma'),
       headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
-      detail: timesLine,
-      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimit,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
     };
   }
 
@@ -7353,7 +7500,7 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
     chance
       ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
       : r.reached === 0
-        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' }
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
         : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
@@ -7376,6 +7523,12 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
           band: '',
         })),
       };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: VOCABULARY_TYPES[x.type].name, correct: x.correct, n: x.n })));
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
   return { blocks: [dogru, duzey, tur, calisma], chart, figures, ...(profile ? { profile } : {}) };
 }
 
@@ -8029,15 +8182,21 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const blocks: CognitiveBlock[] = [];
   const scale = (k: string) => def.scales.find((s) => s.key === k)!;
 
+  const spanTask = (kind: 'digit_span' | 'spatial_span', direction?: 'forward' | 'backward') =>
+    def.tasks.find((t): t is DigitSpanTask | SpatialSpanTask => t.kind === kind && (!direction || (t as DigitSpanTask).direction === direction));
   const fwd = byKey.get('digit_forward')?.extra as unknown as SpanResult | undefined;
   if (fwd) {
     blocks.push({
       key: 'digit_forward',
       name: scale('digit_forward').name,
       plain: scale('digit_forward').plain,
-      headline: fwd.span ? `${fwd.span} rakamlık diziye kadar` : 'En kısa dizilerde zorlandı',
+      headline: fwd.span ? `${fwd.span} rakamlık diziye kadar` : 'En kısa dizi doğru tekrarlanmadı',
       text: spanText(fwd, audience, {
         unit: 'rakam',
+        floor: {
+          student: 'Bu görevde en kısa rakam dizilerini de doğru tekrar edemedin.',
+          parent: 'Çocuğunuz bu görevde en kısa rakam dizilerini de doğru tekrar edemedi.',
+        },
         student: 'Rakam dizilerini aynı sırayla en fazla {n} rakama kadar doğru tekrar edebildin.',
         parent: 'Çocuğunuz rakam dizilerini aynı sırayla en fazla {n} rakamlık uzunluğa kadar doğru tekrar etti.',
         everyday: you
@@ -8045,6 +8204,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
           : 'Bu beceri, kısa bir bilgiyi kullanana kadar akılda tutmak için gerekir: öğretmenin söylediği sayfa numarası ya da kısa bir yönerge gibi.',
       }),
       ladder: fwd.ladder,
+      visual: spanLadder('İleri sayı dizileri', fwd, 'rakam', spanTask('digit_span', 'forward')),
     });
   }
   const bwd = byKey.get('digit_backward')?.extra as unknown as SpanResult | undefined;
@@ -8053,16 +8213,21 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       key: 'digit_backward',
       name: scale('digit_backward').name,
       plain: scale('digit_backward').plain,
-      headline: bwd.span ? `${bwd.span} rakamlık diziye kadar` : 'En kısa dizilerde zorlandı',
+      headline: bwd.span ? `${bwd.span} rakamlık diziye kadar` : 'En kısa dizi doğru tekrarlanmadı',
       text: spanText(bwd, audience, {
         unit: 'rakam',
+        floor: {
+          student: 'Bu görevde en kısa rakam dizilerini de tersten doğru tekrar edemedin.',
+          parent: 'Çocuğunuz bu görevde en kısa rakam dizilerini de tersten doğru tekrar edemedi.',
+        },
         student: 'Rakam dizilerini tersten en fazla {n} rakama kadar doğru tekrar edebildin.',
         parent: 'Çocuğunuz rakam dizilerini tersten en fazla {n} rakamlık uzunluğa kadar doğru tekrar etti.',
         everyday: you
-          ? 'Bilgiyi hem akılda tutup hem de üzerinde değişiklik yapmak, zihinden işlem yaparken ve çok adımlı yönergeleri takip ederken işine yarar. Tersten tekrar, ileri tekrardan her zaman daha zordur.'
-          : 'Bilgiyi akılda tutarken üzerinde işlem yapabilmek; zihinden işlem, çok adımlı yönergeleri takip etme ve okuduğunu anlama gibi işlerde kullanılır. Tersten tekrar herkes için ileri tekrardan daha zordur.',
+          ? 'Bilgiyi hem akılda tutup hem de üzerinde değişiklik yapmak, zihinden işlem yaparken ve çok adımlı yönergeleri takip ederken işine yarar. Tersten tekrar, çoğu kişi için ileri tekrardan daha zordur.'
+          : 'Bilgiyi akılda tutarken üzerinde işlem yapabilmek; zihinden işlem, çok adımlı yönergeleri takip etme ve okuduğunu anlama gibi işlerde kullanılır. Tersten tekrar, çoğu kişi için ileri tekrardan daha zordur.',
       }),
       ladder: bwd.ladder,
+      visual: spanLadder('Geri sayı dizileri', bwd, 'rakam', spanTask('digit_span', 'backward')),
     });
   }
   const sp = byKey.get('spatial')?.extra as unknown as SpanResult | undefined;
@@ -8071,9 +8236,13 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       key: 'spatial',
       name: scale('spatial').name,
       plain: scale('spatial').plain,
-      headline: sp.span ? `${sp.span} kutuluk diziye kadar` : 'En kısa dizilerde zorlandı',
+      headline: sp.span ? `${sp.span} kutuluk diziye kadar` : 'En kısa dizi doğru tekrarlanmadı',
       text: spanText(sp, audience, {
         unit: 'kutu',
+        floor: {
+          student: 'Bu görevde en kısa kutu dizilerinin sırasını da doğru hatırlayamadın.',
+          parent: 'Çocuğunuz bu görevde en kısa kutu dizilerinin sırasını da doğru hatırlayamadı.',
+        },
         student: 'Yanan kutuların sırasını en fazla {n} kutuya kadar doğru hatırladın.',
         parent: 'Çocuğunuz yanan kutuların sırasını en fazla {n} kutuluk uzunluğa kadar doğru hatırladı.',
         everyday: you
@@ -8081,20 +8250,27 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
           : 'Bu beceri; bir yolu hatırlamak, harita ve şekillerle çalışmak ya da tahtadaki bir çizimi deftere geçirmek gibi işlerde kullanılır.',
       }),
       ladder: sp.ladder,
+      visual: spanLadder('Kutu dizileri', sp, 'kutu', spanTask('spatial_span')),
     });
   }
   const at = byKey.get('attention')?.extra as unknown as FlankerResult | undefined;
   if (at) {
-    const rt = at.meanRt === null ? '' : `, doğru cevaplarda ortalama ${nf0.format(at.meanRt)} milisaniye`;
+    const rt = at.meanRt === null ? '' : ` · doğru cevaplarda ortalama ${sn(at.meanRt)} saniye`;
+    // Kenardaki oklar ters yöne bakarken doğruluk en az 20 puan düşükse bu ayrıca söylenir.
+    const pulled = at.accCongruent - at.accIncongruent >= 0.2;
     blocks.push({
       key: 'attention',
       name: scale('attention').name,
       plain: scale('attention').plain,
       headline: `${pct(at.accuracy)} doğru${rt}`,
       text: you
-        ? `Yanlardaki oklar ortadakiyle aynı yöne baktığında ${pct(at.accCongruent)}, farklı yöne baktığında ${pct(at.accIncongruent)} doğru yaptın. Kenardaki oklar ters yöne baktığında herkes biraz yavaşlar ve daha çok hata yapar; önemli olan dikkatini ortadaki oka toplayabilmek. Bu beceri, gürültülü bir sınıfta öğretmeni dinlemek ya da bir soruda gereksiz bilgileri ayıklamak gibi durumlarda işe yarar.`
-        : `Yanlardaki oklar ortadakiyle aynı yöne baktığında doğruluk ${pct(at.accCongruent)}, farklı yöne baktığında ${pct(at.accIncongruent)} oldu. Dikkat dağıtıcı oklar ters yöne baktığında herkes biraz yavaşlar ve daha çok hata yapar. Bu görev, dikkat dağıtan şeylere rağmen önemli olana odaklanabilmeyi ölçer; örneğin gürültülü bir ortamda öğretmeni dinlemek ya da bir sorudaki gereksiz bilgiyi ayıklamak gibi.`,
+        ? `Yanlardaki oklar ortadakiyle aynı yöne baktığında ${pct(at.accCongruent)}, farklı yöne baktığında ${pct(at.accIncongruent)} doğru cevap verdin. Kenardaki oklar ters yöne baktığında çoğu kişi biraz yavaşlar ve daha sık yanılır; önemli olan dikkatini ortadaki oka toplayabilmek.${pulled ? ' Kenardaki oklar ters yöne baktığında çok daha sık yanıldın. Kenardaki oklar, ortadaki oka bakmanın önüne geçmiş olabilir. Acele etmeden yalnızca ortadaki oka bakmak işine yarar.' : ''} Bu beceri, gürültülü bir sınıfta öğretmeni dinlemek ya da bir soruda gereksiz bilgileri ayıklamak gibi durumlarda işe yarar.`
+        : `Çocuğunuz yanlardaki oklar ortadakiyle aynı yöne baktığında ${pct(at.accCongruent)}, farklı yöne baktığında ${pct(at.accIncongruent)} doğru cevap verdi. Kenardaki oklar ters yöne baktığında çoğu kişi biraz yavaşlar ve daha sık yanılır.${pulled ? ' Çocuğunuz kenardaki oklar ters yöne baktığında çok daha sık yanıldı. Kenardaki oklar, ortadaki oka odaklanmasının önüne geçmiş olabilir; acele etmek ya da yönergenin tam anlaşılmaması da bu sonucu verebilir. Bu sonuç tek başına yorumlanmamalıdır.' : ''} Bu görev, dikkat dağıtan şeylere rağmen önemli olana odaklanabilmeyi ölçer; örneğin gürültülü bir ortamda öğretmeni dinlemek ya da bir sorudaki gereksiz bilgiyi ayıklamak gibi.`,
       flanker: { accCongruent: at.accCongruent, accIncongruent: at.accIncongruent, rtCongruent: at.meanRtCongruent, rtIncongruent: at.meanRtIncongruent },
+      visual: pctBarsVisual('Okların yönüne göre doğru cevaplar', [
+        { label: 'Oklar aynı yöne bakarken', rate: at.accCongruent },
+        { label: 'Oklar farklı yöne bakarken', rate: at.accIncongruent },
+      ]),
     });
   }
   const spd = byKey.get('speed')?.extra as unknown as SymbolResult | undefined;
@@ -8108,12 +8284,29 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       plain: scale('speed').plain,
       headline: spd.attempted === 0 ? 'Cevap verilmedi' : `${secs} saniyede ${spd.correct} doğru eşleştirme`,
       // Süre boyunca hiç cevap verilmediyse (yönerge anlaşılmamış, görev yarıda kalmış) yalnızca bu görev yorumlanmaz.
-      text: spd.attempted === 0
-        ? `${secs} saniye boyunca hiçbir sembol eşleştirilmedi; bu yüzden bu görevin sonucu yorumlanmadı. Görev yarıda kalmış ya da yönerge anlaşılmamış olabilir. Öteki görevlerin sonuçları bundan etkilenmez.`
-        : you
-        ? `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdin (${spd.errors} hata). Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer; örneğin tahtadan bir şeyi deftere geçirmek ya da sınavda basit işlemleri yapmak gibi.`
-        : `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdi (${spd.errors} hata). Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer; tahtadan yazmak ya da sınavda basit işlemleri yapmak gibi işlerde kullanılır. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
+      text:
+        spd.attempted === 0
+          ? you
+            ? `${secs} saniye boyunca hiç sembol eşleştirmedin; bu yüzden bu görevin sonucu yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Öteki görevlerin sonuçları bundan etkilenmez.`
+            : `Çocuğunuz ${secs} saniye boyunca hiç sembol eşleştirmedi; bu yüzden bu görevin sonucu yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Öteki görevlerin sonuçları bundan etkilenmez.`
+          : you
+            ? `${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdin (${spd.errors} hata). Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer; örneğin tahtadan bir şeyi deftere geçirmek ya da sınavda basit işlemleri yapmak gibi.`
+            : `Çocuğunuz ${spd.attempted} sembolden ${spd.correct} tanesini doğru eşleştirdi (${spd.errors} hata). Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer; tahtadan yazmak ya da sınavda basit işlemleri yapmak gibi işlerde kullanılır. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
       symbol: { correct: spd.correct, errors: spd.errors, perMinute: spd.perMinute },
+      // Hiç cevap yoksa çizilecek bir şey yoktur.
+      ...(spd.attempted > 0
+        ? {
+            visual: {
+              type: 'stack',
+              label: 'Eşleştirilen semboller',
+              total: spd.attempted,
+              parts: [
+                { label: 'Doğru eşleştirme', value: spd.correct },
+                { label: 'Hatalı eşleştirme', value: spd.errors },
+              ],
+            } satisfies StackVisual,
+          }
+        : {}),
     });
   }
 

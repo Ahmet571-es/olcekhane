@@ -220,7 +220,7 @@ describe('Harf dizileri: rapor', () => {
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '24 soruda 24 doğru'],
       ['Ulaşılan düzey', '5. düzey'],
-      ['Kural türleri', '5 kural türünün hepsinde soruların çoğu doğru'],
+      ['Kural türleri', '5 kural türünün hepsinde bütün sorular doğru'],
       ['Çalışma biçimi', 'Soru başına tipik süre 17 saniye'],
     ]);
     expect(r.student.keyFigures).toEqual([
@@ -228,8 +228,8 @@ describe('Harf dizileri: rapor', () => {
       { label: 'Ulaşılan düzey', value: '5. düzey', note: '5 düzeyden' },
       { label: 'Soru başına tipik süre', value: '17 saniye' },
     ]);
-    expect(r.student.items[0].text).toContain('Bütün düzeylerde soruların hemen hepsini doğru cevapladın');
-    expect(r.student.items[1].text).toContain('Bu en zor düzeydi.');
+    expect(r.student.items[0].text).toContain('Bütün soruları doğru cevapladın; en zor sorulardaki iç içe dizileri, grupları ve büyüyen adımları da bulabildin.');
+    expect(r.student.items[1].text).toContain('5. düzey testin en zor düzeyiydi.');
     expect(r.student.items[3].text).toContain('Zor sorulara kolay sorulardan daha çok zaman ayırdın');
     expect(r.student.items[3].text).not.toContain('Bilmiyorum');
     expect(r.student.cautions).toEqual([]);
@@ -253,28 +253,30 @@ describe('Harf dizileri: rapor', () => {
     expect(r.student.items[0].badge).toBe('24 soruda 18 doğru');
     expect(r.student.items[0].text).toContain('Sorular zorlaştıkça doğru cevapların azaldı');
     expect(r.student.items[1].badge).toBe('3. düzey');
-    expect(r.student.items[1].text).toContain('3. düzeye kadar soruların çoğunu doğru cevapladın');
-    expect(r.student.items[1].text).toContain('4. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda geriye doğru birkaç harf atlayan');
+    expect(r.student.items[1].text).toContain('1–3. düzeylerdeki soruların hepsini doğru cevapladın');
+    expect(r.student.items[1].text).toContain('4. düzeydeki 5 sorunun 3 tanesini doğru bulamadın. Bu düzeydeki sorularda şu gerekiyordu: geriye doğru birkaç harf atlayan');
     expect(r.student.items[2].text).toContain('ör. “sabit adım” soruları 1., 2., 3. ve 4. düzeylerde, “değişen adım” soruları 3., 4. ve 5. düzeylerde');
-    expect(r.parent.items[2].text).toContain('. Çocuğunuz “sabit adım”');
+    expect(r.parent.items[2].text).toMatch(/^Çocuğunuz “sabit adım”/);
     // Yanlışlar doğru cevaptan uzak: tuzak ya da yakın cevap yorumu yapılmaz.
-    expect(r.student.items[0].text).not.toMatch(/daha basit bir kuralla|hemen önündeki ya da arkasındaki/);
+    expect(r.student.items[0].text).not.toMatch(/daha basit bir kurala göre|hemen önündeki ya da arkasındaki/);
   });
 
   it('durumlar: çok az doğru, çoğunda "Bilmiyorum", tuzaklar, yakın cevaplar, çok hızlı, hep aynı harf, kolay sorularda yanılma', () => {
     const none = evaluate(SLUG, letterSeriesBody((q) => ({ answer: far(q), rtMs: 9000 })));
-    expect(none.student.items.map((i) => i.badge)).toEqual(['24 soruda 0 doğru', '1. düzeyde zorlandın', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
+    expect(none.student.items.map((i) => i.badge)).toEqual(['24 soruda 0 doğru', 'Düzey belirtilmedi', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
     expect(none.student.items[0].text).toContain('24 sorunun hiçbirinde eksik harfi doğru bulamadın.');
     expect(none.parent.items[0].text).toContain('Bu sonuç tek başına yorumlanmamalıdır');
-    expect(none.parent.items[1].text).toContain('alfabenin sırasını henüz yeterince rahat bilmemekten');
+    expect(none.parent.items[1].text).toContain('alfabenin sırasını henüz yeterince rahat bilmemesinden');
     expect(none.student.roadmap!.bars).toEqual([]);
-    expect(none.student.keyFigures[1]).toEqual({ label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: '1. düzeyde zorlanıldı' });
+    expect(none.student.keyFigures[1]).toEqual({ label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' });
     const three = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.i < 3 ? q.answer : far(q), rtMs: 9000 })));
     expect(three.student.items[2].badge).not.toBe('Yorumlanmadı');
     expect(three.student.roadmap!.bars).toHaveLength(5);
     const skip = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.level <= 2 ? q.answer : null, rtMs: 9000 })));
     expect(skip.student.cautions.join(' ')).toContain('24 sorunun 15 tanesinde “Bilmiyorum” denmiş');
-    expect(skip.student.items[0].text).toContain('Soruların yarısından çoğunda “Bilmiyorum” dedin');
+    expect(skip.student.items[0].text).toContain('24 sorunun 15 tanesinde “Bilmiyorum” dedin. Cevap verdiğin 9 sorunun hepsi doğruydu.');
+    expect(skip.student.items[2].badge).toBe('Yorumlanmadı');
+    expect(skip.student.roadmap!.bars).toEqual([]);
     expect(skip.student.items[3].text).toContain('15 soruda “Bilmiyorum” dedin.');
     expect(skip.parent.items[3].text).toContain('Çocuğunuz 15 soruda “Bilmiyorum” dedi.');
     expect(skip.student.items[1].badge).toBe('2. düzey');
@@ -282,19 +284,19 @@ describe('Harf dizileri: rapor', () => {
     expect(allSkip.student.items[3].badge).toBe('Süre hesaplanamadı');
     expect(allSkip.student.items[3].text).toContain('Bütün sorularda “Bilmiyorum” dedin.');
     expect(allSkip.student.cautions.join(' ')).toContain('24 sorunun hepsinde “Bilmiyorum” denmiş');
-    expect(allSkip.student.items[1].text).toContain('Soruların çoğunda “Bilmiyorum” dediğin için bu sonuç tek başına yorumlanmamalıdır.');
+    expect(allSkip.student.items[1].text).toContain('Bütün sorularda “Bilmiyorum” dediğin için bu sonuç tek başına yorumlanmamalıdır.');
     // Tuzaklar: 4. ve 5. düzeyde tuzağı olan sorularda tuzak, olmayanda uzak harf.
     const trap = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.level >= 4 ? (q.traps[0] ?? far(q)) : q.answer, rtMs: 15_000 })));
-    expect(trap.student.items[0].text).toContain('Yanlış cevaplarının hepsinde daha basit bir kuralla bulunan bir harf seçtin');
+    expect(trap.student.items[0].text).toContain('Yanlış cevaplarının hepsinde daha basit bir kurala göre bir harf seçtin. Bu kural dizinin yalnızca bir bölümüne uyuyordu');
     expect(trap.parent.items[0].text).toContain('Çocuğunuz yanlış cevaplarının hepsinde');
     // Yakın cevaplar.
     const near = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.level >= 4 && !q.traps.includes(letterNext(q)) && !q.terms.includes(letterNext(q)) ? letterNext(q) : q.level >= 4 ? far(q) : q.answer, rtMs: 15_000 })));
     expect(near.student.items[0].text).toMatch(/Yanlış cevaplarının (hepsinde|çoğunda \(10 yanlışın \d+ tanesinde\)) seçtiğin harf, alfabede doğru cevabın hemen önündeki ya da arkasındaki harfti/);
-    expect(near.student.items[0].text).not.toContain('daha basit bir kuralla');
+    expect(near.student.items[0].text).not.toContain('daha basit bir kurala göre');
     // Zor sorularda çok hızlı.
     const rapid = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.level >= 3 ? far(q) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })));
-    expect(rapid.student.cautions.join(' ')).toContain('cevap verilen 15 sorunun hepsinde yanlış bir cevap 2,5 saniyeden kısa sürede verilmiş');
-    expect(rapid.student.items[3].text).toContain('cevap verdiğin 15 sorunun hepsinde yanlış bir cevabı 2,5 saniyeden kısa sürede verdin');
+    expect(rapid.student.cautions.join(' ')).toContain('cevap verilen 15 sorunun hepsinde yanlış cevap 2,5 saniyeden kısa sürede verilmiş');
+    expect(rapid.student.items[3].text).toContain('cevap verdiğin 15 sorunun hepsine 2,5 saniyeden kısa sürede yanlış cevap verdin');
     expect(rapid.student.items[0].text).toContain('Bazı sorulara bakmadan cevap vermiş olabileceğin için');
     const fastRight = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.answer, rtMs: q.level >= 3 ? 2000 : 6000 })));
     expect(fastRight.student.cautions).toEqual([]);
@@ -308,13 +310,13 @@ describe('Harf dizileri: rapor', () => {
     const easy = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.level === 1 && letterSeriesRank(q) < 2 ? far(q) : q.answer, rtMs: 15_000 })));
     expect(easy.student.items[0].text).toContain('1. düzeydeki kolay sorulardan 2 tanesini doğru cevaplamadın');
     expect(easy.student.items[1].badge).toBe('5. düzey');
-    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi');
+    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeydeki yanlışların bu sonucu değiştirmedi');
     const giveUp = evaluate(SLUG, letterSeriesBody((q) => ({ answer: q.level >= 4 ? null : q.answer, rtMs: q.level >= 4 ? 5000 : 20_000 })));
     expect(giveUp.student.items[3].text).toContain('Zor sorulara kolay sorulardan daha az zaman ayırdın ve bu sorularda doğru cevaplar azdı.');
     expect(giveUp.student.items[3].text).toContain('harflerin arasına kaç harf atlandığını kâğıda yazmak');
     const low = evaluate(SLUG, letterSeriesBody((q) => ({ answer: letterSeriesRank(q) < [2, 3, 2, 1, 0][q.level - 1] ? q.answer : far(q), rtMs: 15_000 })));
-    expect(low.student.items[1].badge).toBe('1. düzeyde zorlandın');
-    expect(low.parent.items[1].badge).toBe('1. düzeyde zorlandı');
+    expect(low.student.items[1].badge).toBe('Düzey belirtilmedi');
+    expect(low.parent.items[1].badge).toBe('Düzey belirtilmedi');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -361,8 +363,10 @@ describe('Harf dizileri: rapor', () => {
               expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]/);
               expect(r.items.map((i) => i.title), label).toEqual(TITLES);
               for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
-              expect(r.items[2].badge === 'Yorumlanmadı', label).toBe(few);
-              expect(r.roadmap!.bars.length, label).toBe(few ? 0 : 5);
+              // Çoğunda "Bilmiyorum" denmişse de kural türleri yorumlanmaz.
+              const noRules = few || letterSeriesMostlySkipped(result);
+              expect(r.items[2].badge === 'Yorumlanmadı', label).toBe(noRules);
+              expect(r.roadmap!.bars.length, label).toBe(noRules ? 0 : 5);
               expect(/Bu sonuç tek başına (bir şey söylemez|yorumlanmamalıdır)/.test(r.items[0].text), label).toBe(few);
               const skipNote = r.cautions.some((c) => c.includes('“Bilmiyorum” denmiş'));
               expect(skipNote, label).toBe(letterSeriesMostlySkipped(result));
@@ -377,10 +381,10 @@ describe('Harf dizileri: rapor', () => {
               expect(r.items[0].text.includes('Bütün sorularda “Bilmiyorum”'), label).toBe(result.skipped === result.n);
               if (!few) expect(r.items[0].text.includes('bakmadan cevap vermiş') || r.items[0].text.includes('bakılmadan cevap verilmiş'), label).toBe(rapidNote || sameNote);
               const many = !few && result.wrong >= LETTER_PATTERN_MIN;
-              expect(r.items[0].text.includes('daha basit bir kuralla'), label).toBe(many && result.traps * 2 >= result.wrong);
+              expect(r.items[0].text.includes('daha basit bir kurala göre'), label).toBe(many && result.traps * 2 >= result.wrong);
               expect(r.items[0].text.includes('hemen önündeki ya da arkasındaki harfti'), label).toBe(many && result.nearMisses * 2 >= result.wrong);
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
-              if (result.reached === 0) expect([fig, r.items[1].badge?.startsWith('1. düzeyde zorlandı')], label).toEqual(['Belirtilmedi', true]);
+              if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               expect(r.items[0].badge, label).toBe(`24 soruda ${result.correct} doğru`);
               expect(r.items[3].badge === 'Süre hesaplanamadı', label).toBe(result.medianRt === null);

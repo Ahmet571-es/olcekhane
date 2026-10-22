@@ -193,6 +193,18 @@ describe('matematik konu tarama: yol haritası şablonu', () => {
     const task = evaluate('renk-kelime-gorevi', colorWordBody()).student.roadmap!;
     expect(task.weeks[3].text).toContain('Dur-Git ve Sırayla Birleştirme testlerinden birini');
   });
+
+  it('önerilen testlerden biri sınıfa uymayınca amaç cümlesi kalan teste uymuyorsa yazılmaz', () => {
+    // Dikkat ve Bellek: "çalışma düzenini ve dikkatini uzun süre korumayı" (Çalışma Alışkanlıkları 6. sınıftan itibaren).
+    const g4 = evaluate('dikkat-ve-bellek', { ...memoryTasksBody(), grade: 4 });
+    expect(g4.student.roadmap!.weeks[3].text).toContain('Bir sonraki adım olarak “Sürekli Dikkat: Harf İşaretleme” testini de çözebilirsin.');
+    expect(g4.parent.roadmap!.weeks[3].text).toContain('Bir sonraki adım olarak “Sürekli Dikkat: Harf İşaretleme” testini de önerebilirsiniz.');
+    expect(g4.student.roadmap!.weeks[3].text).not.toContain('çalışma düzenini');
+    const g7 = evaluate('dikkat-ve-bellek', { ...memoryTasksBody(), grade: 7 });
+    expect(g7.student.roadmap!.weeks[3].text).toContain('çalışma düzenini ve dikkatini uzun süre korumayı da görmek için');
+    // Amaç her teste tek başına da uyuyorsa yazılır (Kelime Listesi: "belleğinin ve sözel becerilerinin başka yönlerini").
+    expect(TASK_ROADMAPS['kelime-listesi-hatirlama'].nextPurpose.general).toBe(true);
+  });
 });
 
 describe('okuma hızı ve anlama: yol haritası şablonu', () => {

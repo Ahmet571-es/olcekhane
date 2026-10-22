@@ -43,6 +43,7 @@ export const heyecanArayisiRoadmap: RoadmapTemplate = {
   nextPurpose: {
     you: 'kişiliğinin öteki yönlerini de görmek',
     parent: 'çocuğunuzun kişiliğinin öteki yönlerini de görmek',
+    general: true,
   },
   approach: {
     danger: {

@@ -1,4 +1,4 @@
-import type { AudienceText, BandGroup, RoadmapTemplate } from '@/content/roadmaps/types';
+import type { AudienceText, BandGroup, NextPurpose, RoadmapTemplate } from '@/content/roadmaps/types';
 import type { Band } from '@/lib/instruments/types';
 import type { Audience, ReportContent } from './build';
 
@@ -49,6 +49,11 @@ export interface Roadmap {
 export interface NextTest {
   name: string;
   href: string;
+  /**
+   * Şablonun önerdiği ilk iki testten biri kişinin sınıfına uymadığı (ya da yayında olmadığı) için listede başka bir test
+   * var. Şablonun amaç cümlesi önerilen testlerin hepsini birlikte anlattığı için o zaman kullanılmaz.
+   */
+  partial?: boolean;
 }
 
 export function bandGroup(band: Band | null): BandGroup | null {
@@ -66,10 +71,12 @@ export function pick(t: AudienceText, audience: Audience): string {
 
 /** "Ayrıntılı Kişilik Profili ve Meslek İlgi Alanları" gibi. */
 export function joinNames(names: string[]): string {
-  if (names.length <= 1) return names.join('');
   // Adlardan biri "ve", iki nokta ya da soru işareti içeriyorsa ("Erteleme ve Zaman Yönetimi", "Çalışma Değerleri: Bir İşte…?")
-  // adlar tırnak içinde yazılır; yoksa cümle karışır.
-  const q = names.length > 1 && names.some((n) => / ve |[:?]/.test(n)) ? names.map((n) => `“${n}”`) : names;
+  // adlar tırnak içinde yazılır; yoksa cümle karışır. Tek ad iki nokta ya da soru işareti içeriyorsa o da tırnak içinde
+  // yazılır ("Sürekli Dikkat: Harf İşaretleme testini").
+  const q =
+    names.length > 1 ? (names.some((n) => / ve |[:?]/.test(n)) ? names.map((n) => `“${n}”`) : names) : names.map((n) => (/[:?]/.test(n) ? `“${n}”` : n));
+  if (q.length <= 1) return q.join('');
   return `${q.slice(0, -1).join(', ')} ve ${q[q.length - 1]}`;
 }
 
@@ -87,10 +94,15 @@ export function weeksTitle(n: number): string {
 }
 
 /** Son haftanın sonundaki öneri: kişinin sınıfına uyan, yayındaki testler; uyan test yoksa boş. */
-export function nextStep(next: NextTest[], purpose: { you: string; parent: string }, parent: boolean): string {
+export function nextStep(next: NextTest[], purpose: NextPurpose, parent: boolean): string {
   // "Matematik Konu Tarama Testi testini" ya da "Dur-Git Görevi testini" denmez: addaki sözcük cümledeki "testini" ile birleşir.
   const names = next.map((n) => n.name.replace(/ (Testi|Görevi|Görevleri|Envanteri|Ölçeği)$/, ''));
   if (names.length === 0) return '';
+  if (!purpose.general && next.some((n) => n.partial)) {
+    return parent
+      ? ` Bir sonraki adım olarak ${joinNames(names)} ${names.length > 1 ? 'testlerini' : 'testini'} de önerebilirsiniz.`
+      : ` Bir sonraki adım olarak ${joinNames(names)} ${names.length > 1 ? 'testlerinden birini' : 'testini'} de çözebilirsin.`;
+  }
   return parent
     ? ` Bir sonraki adım olarak ${purpose.parent} için ${joinNames(names)} ${names.length > 1 ? 'testlerini' : 'testini'} önerebilirsiniz.`
     : ` Bir sonraki adım olarak ${purpose.you} için ${joinNames(names)} ${names.length > 1 ? 'testlerinden birini' : 'testini'} çözebilirsin.`;
@@ -228,7 +240,7 @@ export function buildRoadmap(
     : secondKey
       ? action(secondKey)
       : null;
-  const nextSentence = nextStep(opts.next, t.nextPurpose ?? { you: 'ilgilerini görmek', parent: 'çocuğunuzun ilgilerini görmek' }, parent);
+  const nextSentence = nextStep(opts.next, t.nextPurpose ?? { you: 'ilgilerini görmek', parent: 'çocuğunuzun ilgilerini görmek', general: true }, parent);
   const middle = [second, third].filter((x): x is { name: string; text: string } => x !== null);
   const weeks = [
     { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a) },

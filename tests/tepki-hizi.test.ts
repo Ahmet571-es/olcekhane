@@ -8,6 +8,7 @@ import { REACTION_WAIT_BINS, reactionTrials, waitBin } from '@/lib/instruments/r
 import { rng } from '@/lib/instruments/sequences';
 import type { ReactionTimeTask, ReactionTrial } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
+import { visualDescription } from '@/lib/reports/visuals';
 import { TaskInputError, scoreReaction } from '@/lib/scoring/tasks';
 import sitemap from '../src/app/sitemap';
 import { reactionBody, type ReactionCell } from './helpers/bodies';
@@ -148,8 +149,13 @@ describe('Tepki hızı: rapor', () => {
     expect(r.student.items[0].text).toContain('hesaba katılan tepkilerinin en az yarısı 0,30 ile 0,34 saniye arasındaydı. Bu aralık ne kadar darsa');
     expect(r.parent.items[0].text).toContain('Bu aralığın darlığı, tepkilerin ne kadar tutarlı olduğunu gösterir.');
     expect(r.student.items[1].text).toContain('40 denemenin hepsinde dairenin olduğu taraftaki düğmeye basıldı.');
-    expect(r.student.items[2].text).toContain('Basit 0,32 sn · seçmeli 0,48 sn.');
+    // İki bölümün süreleri seçimin etkisi kartının grafiğindedir.
+    const farkRows = r.student.items[2].visual?.type === 'bars' ? r.student.items[2].visual.rows : [];
+    expect(farkRows.map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Basit tepki 0,32 sn', 'Seçmeli tepki 0,48 sn']);
     expect(r.parent.items[2].text).toContain('(Hick, 1952)');
+    // Kart grafiğinin açıklaması değeri yinelemez; aralık iki ondalıkla ve ne olduğu yazılır.
+    expect(visualDescription(r.student.items[0].visual!)).toBe('Tepki süresi: Tipik 0,32 sn; tepkilerin en az yarısı 0,30–0,34 sn arasında.');
+    expect(r.parent.items[0].text).not.toContain('Akranlarla');
     const rows = r.student.chart?.type === 'bars' ? r.student.chart.rows : [];
     expect(rows.map((x) => [x.label, x.valueLabel, x.value, x.max])).toEqual([
       ['Basit tepki', '0,32 sn', 320, 500],
@@ -175,7 +181,8 @@ describe('Tepki hızı: rapor', () => {
   it('seçimin etkisi: 0,05 saniyeden küçük fark belirgin sayılmaz; tersi ayrı söylenir', () => {
     const flat = evaluate(SLUG, reactionBody((t) => ({ choice: (t.box + 1) as 1 | 2, rtMs: t.part === 'simple' ? 400 : 440 })));
     expect(flat.student.items[2].badge).toBe('Belirgin bir fark yok');
-    expect(flat.student.items[2].text).toContain('Basit 0,40 sn · seçmeli 0,44 sn.');
+    const flatRows = flat.student.items[2].visual?.type === 'bars' ? flat.student.items[2].visual.rows : [];
+    expect(flatRows.map((x) => x.valueLabel)).toEqual(['0,40 sn', '0,44 sn']);
     const edge = evaluate(SLUG, reactionBody((t) => ({ choice: (t.box + 1) as 1 | 2, rtMs: t.part === 'simple' ? 400 : 450 })));
     expect(edge.student.items[2].badge).toBe('Seçmeli bölümde 0,05 sn daha uzun');
     const reverse = evaluate(SLUG, reactionBody((t) => ({ choice: (t.box + 1) as 1 | 2, rtMs: t.part === 'simple' ? 500 : 420 })));
@@ -186,7 +193,7 @@ describe('Tepki hızı: rapor', () => {
   it('süre içinde basılmayan bölüm hesaplanmaz; uyarı ve grafik aynı şeyi söyler', () => {
     const r = evaluate(SLUG, reactionBody(only('simple', () => ({ choice: null, rtMs: null }))));
     expect(r.student.items[0].badge).toBe('Hesaplanamadı');
-    expect(r.student.items[0].text).toContain('Denemelerin yarısından çoğunda süre içinde basmadın');
+    expect(r.student.items[0].text).toContain('Hiçbir denemede süre içinde basmadın');
     expect(r.student.items[1].badge).toBe('Tipik tepki süresi 0,48 saniye');
     expect(r.student.items[2].text).toBe('Basit bölümde tepki süresi hesaplanamadığı için karşılaştırma yapılamadı.');
     expect(r.parent.cautions.join(' ')).toContain('Tepki hızı görevinin basit bölümünde denemelerin yarısından çoğunda süre içinde basılmamış');
@@ -208,7 +215,7 @@ describe('Tepki hızı: rapor', () => {
   it('seçmeli bölümde öteki tarafa sık basılırsa süre yorumlanmaz: ters, rastgele, sık yanlış', () => {
     const reversed = evaluate(SLUG, reactionBody(only('choice', (t) => ({ choice: (2 - t.box) as 1 | 2, rtMs: 400 }))));
     expect(reversed.student.items[1].badge).toBe('Hesaplanamadı');
-    expect(reversed.student.items[1].text).toContain('dairenin olmadığı taraftaki düğmeye bastın; yönergeyi ters anlamış olabilirsin.');
+    expect(reversed.student.items[1].text).toContain('Cevaplarının hepsinde dairenin olmadığı taraftaki düğmeye bastın; yönergeyi ters anlamış olabilirsin.');
     expect(reversed.student.items[1].text).toContain('40 denemenin hiçbirinde dairenin olduğu taraftaki düğmeye basılmadı.');
     expect(reversed.student.items[2].text).toBe('Seçmeli bölümde öteki taraftaki düğmeye sık basıldığı için karşılaştırma yapılmadı.');
     expect(reversed.parent.cautions.join(' ')).toContain('cevapların çoğunda dairenin olmadığı taraftaki düğmeye basılmış');
@@ -217,7 +224,13 @@ describe('Tepki hızı: rapor', () => {
     // Hep sol düğme: aynı düğme.
     const left = evaluate(SLUG, reactionBody(only('choice', () => ({ choice: 1, rtMs: 400 }))));
     expect(left.parent.items[1].badge).toBe('Yorumlanmadı');
-    expect(left.parent.items[1].text).toContain('dairenin hangi tarafta olduğuna bakmadan hep aynı düğmeye bastı');
+    expect(left.parent.items[1].text).toContain('cevaplarının hepsinde dairenin hangi tarafta olduğuna bakmadan aynı düğmeye bastı (40 cevabın hepsinde sol düğmeye)');
+    // Grafik hangi düğmeye kaç kez basıldığını gösterir.
+    const sides = left.parent.items[1].visual?.type === 'stack' ? left.parent.items[1].visual.parts : [];
+    expect(sides.slice(0, 2).map((x) => [x.label, x.value])).toEqual([
+      ['Sol düğmeye basıldı', 40],
+      ['Sağ düğmeye basıldı', 0],
+    ]);
     expect(left.parent.items[2].text).toBe('Seçmeli bölümde cevapların çoğunda aynı düğmeye basıldığı için karşılaştırma yapılmadı.');
     expect(left.parent.cautions.join(' ')).toContain('seçmeli bölümünde cevapların çoğunda aynı düğmeye basılmış');
     // İki tarafa karışık basılıyor, doğru taraf yarı yarıya.

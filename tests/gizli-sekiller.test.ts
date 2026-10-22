@@ -9,7 +9,7 @@ import { ADULT_GRADE } from '@/lib/config';
 import { HIDDEN_EXAMPLE_AT, HIDDEN_EXAMPLE_FIGURE, HIDDEN_EXAMPLE_TARGET, type HiddenLure } from '@/lib/instruments/hidden';
 import type { HiddenFiguresTask } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
-import { HIDDEN_LURE_TEXT } from '@/lib/reports/build';
+import { HIDDEN_LURE_SEEN } from '@/lib/reports/build';
 import type { SimpleReport } from '@/lib/reports/simple';
 import {
   HIDDEN_CHANCE_MAX,
@@ -19,6 +19,7 @@ import {
   HIDDEN_RAPID_MS,
   HIDDEN_SAME_MAX_CORRECT,
   TaskInputError,
+  hiddenChance,
   hiddenLureStandsOut,
   hiddenRapid,
   hiddenSamePosition,
@@ -437,8 +438,10 @@ describe('Gizli şekiller: rapor', () => {
       ['Ulaşılan düzey', '4. düzey'],
       ['Soru başına tipik süre', '16 saniye'],
     ]);
-    expect(r.student.items[3].text).toContain('1–2. düzeyde tipik 12 saniye · 3–4. düzeyde 20 saniye.');
-    expect(r.student.items[3].text).toContain('Doğru bulduğun sorularda şekli bulman tipik olarak 16 saniye sürdü.');
+    // Sayılar kartın grafiğindedir; bütün sorular doğruyken "doğru bulduğun sorulardaki süre" ayrıca söylenmez.
+    const paceRows = r.student.items[3].visual?.type === 'bars' ? r.student.items[3].visual.rows : [];
+    expect(paceRows.map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Bütün sorular 16 sn', 'Kolay sorular (1–2. düzey) 12 sn', 'Zor sorular (3–4. düzey) 20 sn']);
+    expect(r.student.items[3].text).not.toContain('Doğru bulduğun sorularda');
     expect(r.student.items[3].text).toContain('Şekiller iyi saklandığında aramaya daha çok zaman ayırdın.');
     const rm = r.student.roadmap!;
     expect(rm.bars).toEqual([]);
@@ -460,7 +463,7 @@ describe('Gizli şekiller: rapor', () => {
     );
     const trText = tr.student.items[2].text;
     expect(tr.student.items[2].badge).toBe('Döndürülmüş biçimler öne çıkıyor');
-    expect(trText).toContain(`10 yanlış cevabında şu yanılgı, seçeneklerde bulunma sıklığına göre beklenenden sık görüldü: ${HIDDEN_LURE_TEXT.turned} (10 yanlışta).`);
+    expect(trText).toContain(`10 yanlış cevabının hepsinde ${HIDDEN_LURE_SEEN.turned} seçildi. Bu, rastgele seçimle açıklanamayacak kadar sık.`);
     expect(trText).toContain('eğik kenarlarının ve köşelerinin üstteki şekildekilerle aynı yöne bakıp bakmadığını denetlemek');
     expect(tr.parent.items[2].text).toContain('Çocuğunuzun, bulduğu şeklin eğik kenarlarının');
     expect(tr.parent.items[2].text).toContain('Çocuğunuzun');
@@ -472,7 +475,7 @@ describe('Gizli şekiller: rapor', () => {
       hiddenBody((q) => ({ response: q.level >= 3 ? hiddenLureOption(q, 'changed') : q.answer, rtMs: 15_000 })),
     );
     expect(ch.student.items[2].badge).toBe('Köşesi farklı benzerler öne çıkıyor');
-    expect(ch.student.items[2].text).toContain(`${HIDDEN_LURE_TEXT.changed} (10 yanlışta)`);
+    expect(ch.student.items[2].text).toContain(`10 yanlış cevabının hepsinde ${HIDDEN_LURE_SEEN.changed} seçildi.`);
     expect(ch.student.items[2].text).toContain('her kenarını ve köşesini üstteki şekille tek tek karşılaştırmak');
     expect(ch.parent.items[2].text).toContain('Çocuğunuzun, bulduğu yerde şeklin her kenarını');
 
@@ -481,7 +484,7 @@ describe('Gizli şekiller: rapor', () => {
       hiddenBody((q) => ({ response: q.level >= 3 ? hiddenLureOption(q) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })),
     );
     expect(rapid.student.cautions.join(' ')).toContain('3. düzey ve üstündeki 10 sorunun hepsinde yanlış bir cevap 3 saniyeden kısa sürede verilmiş');
-    expect(rapid.student.items[3].text).toContain('3. düzey ve üstündeki 10 sorunun hepsinde 3 saniyeden kısa sürede yanlış cevap verdin.');
+    expect(rapid.student.items[3].text).toContain('3. düzey ve üstündeki 10 sorunun hepsine 3 saniyeden kısa sürede yanlış cevap verdin.');
     expect(rapid.student.items[2].badge).toBe('Yorumlanmadı');
     expect(rapid.student.items[0].text).toContain('çizimlere bakmadan seçmiş olabileceğin');
     // Çok hızlı yanlışlar 3. düzey ve üstünde: ulaşılan düzey kartı bu düzeyler için hüküm vermez.
@@ -496,14 +499,19 @@ describe('Gizli şekiller: rapor', () => {
 
     // Kolay düzeylerin hepsi yanlış, zor düzeylerin hepsi doğru: ulaşılan düzey kartı bunu çelişkisiz anlatır.
     const tersine = evaluate(SLUG, hiddenBody((q) => ({ response: q.level >= 3 ? q.answer : hiddenLureOption(q, HIDDEN_LURES_ORDER[q.i % 2]), rtMs: 12_000 })));
-    expect(tersine.student.items[1].text).toContain('3. ve 4. düzeydeki soruların hepsini doğru bulmana rağmen, kolay düzeylerdeki yanlışlar yüzünden ölçüte ulaşılmadı.');
+    expect(tersine.student.items[1].text).toContain('3. ve 4. düzeydeki soruların hepsini doğru bulmana rağmen, kolay düzeylerdeki yanlışlar yüzünden bu ölçüte ulaşılmadı.');
     expect(tersine.parent.items[1].text).toContain('Çocuğunuz 3. ve 4. düzeydeki soruların hepsini doğru bulmasına rağmen');
     // Açıklama (dikkat ya da acele) yalnızca bir kartta.
     expect([tersine.student.items[0].text, tersine.student.items[1].text].filter((t) => t.includes('dağılmasından'))).toHaveLength(1);
 
-    // Rastgele seçimden de az doğru: yönergenin farklı anlaşılmış olabileceği söylenir.
-    expect(none.student.items[0].text).toContain('yönergeyi farklı anlamış olabilirsin');
+    // Rastgele seçim düzeyinde ve yanlışların çoğu döndürülmüş biçim: yönergenin farklı anlaşılmış olabileceği söylenir.
     expect(none.student.items[0].text).toContain('daha doğru bir sonuç verebilir');
+    const turnedAll = evaluate(SLUG, hiddenBody((q) => ({ response: hiddenLureOption(q, 'turned'), rtMs: 9000 })));
+    expect(turnedAll.student.items[0].text).toContain('Yanlış cevaplarının çoğunda aranan şeklin döndürülmüş ya da ters çevrilmiş biçimini seçtin. Yönergeyi farklı anlamış olabilirsin');
+    expect(turnedAll.parent.items[0].text).toContain('Çocuğunuz yanlış cevaplarının çoğunda aranan şeklin döndürülmüş');
+    expect(turnedAll.student.cautions.join(' ')).toContain('Yönerge farklı anlaşılmış olabilir');
+    const changedAll = evaluate(SLUG, hiddenBody((q) => ({ response: hiddenLureOption(q, 'changed'), rtMs: 9000 })));
+    expect(changedAll.student.items[0].text).not.toContain('Yönergeyi farklı');
 
     const slip = evaluate(
       SLUG,
@@ -517,7 +525,7 @@ describe('Gizli şekiller: rapor', () => {
     const drop = evaluate(SLUG, hiddenBody());
     expect(drop.student.items[0].badge).toBe('20 soruda 17 doğru');
     expect(drop.student.items[1].text).toContain('1–3. düzeylerdeki soruların hepsini doğru cevapladın. 3. düzeydeki sorularda şu gerekiyordu: kenarları başka şekillerin');
-    expect(drop.student.items[1].text).toContain('4. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda kalabalık bir çizimde');
+    expect(drop.student.items[1].text).toContain('4. düzeydeki 5 sorunun 3 tanesini doğru bulamadın. Bu düzeydeki sorularda şu gerekiyordu: kalabalık bir çizimde');
 
     // Sayılar abartılmaz ya da küçültülmez.
     const all = evaluate(SLUG, hiddenBody((q) => ({ response: q.answer, rtMs: 9000 })));
@@ -535,7 +543,7 @@ describe('Gizli şekiller: rapor', () => {
       expect(tek.student.items[2].text).toContain('hepsinde şeklin bir köşesi farklı benzeri seçildi');
     }
     const hard0 = evaluate(SLUG, hiddenBody((q) => ({ response: q.level <= 3 ? q.answer : hiddenLureOption(q), rtMs: 12_000 })));
-    expect(hard0.student.items[1].text).toContain('4. düzeyde soruların hiçbirini doğru bulamadın');
+    expect(hard0.student.items[1].text).toContain('4. düzeydeki 5 sorunun hiçbirini doğru bulamadın');
     const easy2 = evaluate(SLUG, hiddenBody((q) => ({ response: q.level === 1 && hiddenRank(q) < 3 ? hiddenLureOption(q, HIDDEN_LURES_ORDER[q.i % 2]) : q.answer, rtMs: 12_000 })));
     expect(easy2.student.items[0].text).toContain('daha zor düzeylerdeki soruların hepsini doğru buldun');
   });
@@ -577,7 +585,7 @@ describe('Gizli şekiller: rapor', () => {
             const res = evaluate(SLUG, body);
             const result: HiddenResult = scoreHidden(task, trialsOf(body)).result;
             const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
-            const chance = result.correct <= HIDDEN_CHANCE_MAX;
+            const chance = hiddenChance(result);
             const doubt = hiddenRapid(result) || hiddenSamePosition(result);
             const noted = chance || doubt ? [] : HIDDEN_LURES_ORDER.filter((k) => result.luresByKind[k] >= HIDDEN_LURE_NOTE && result.lureP[k] <= HIDDEN_LURE_P);
             for (const r of [res.student, res.parent, adult]) {
@@ -605,10 +613,10 @@ describe('Gizli şekiller: rapor', () => {
               if (doubt) expect(r.items[3].text, label).not.toMatch(/zaman ayır|yakın süreler/);
               if (!chance) expect(/çizimlere bakmadan seçmiş|çizimlere bakılmadan seçilmiş/.test(r.items[0].text), label).toBe(doubt);
               const yan = r.items[2].text;
-              expect(yan.includes('beklenenden sık görüldü'), label).toBe(noted.length > 0);
-              for (const k of HIDDEN_LURES_ORDER) {
-                expect(yan.includes(HIDDEN_LURE_TEXT[k]), `${label} ${k}`).toBe(noted.includes(k));
-                if (noted.includes(k)) expect(yan, `${label} ${k}`).toContain(`${HIDDEN_LURE_TEXT[k]} (${result.luresByKind[k]} yanlışta)`);
+              expect(yan.includes('rastgele seçimle açıklanamayacak kadar sık'), label).toBe(noted.length > 0);
+              for (const k of noted) {
+                const many = result.luresByKind[k] === result.wrong ? 'hepsinde' : `${result.luresByKind[k]} tanesinde`;
+                expect(yan, `${label} ${k}`).toContain(`${many} ${HIDDEN_LURE_SEEN[k]} seçildi`);
               }
               expect(r.items[2].badge, label).toBe(
                 chance || (doubt && result.wrong > 0)
@@ -627,21 +635,26 @@ describe('Gizli şekiller: rapor', () => {
                             ? 'Bir yanlış'
                             : `${result.wrong} yanlış`,
               );
-              if (!chance && result.wrong > 0) {
-                expect(yan, label).toContain(
-                  `${result.wrong} yanlış · döndürülmüş ya da ters çevrilmiş ${result.luresByKind.turned} · köşesi farklı ${result.luresByKind.changed}.`,
-                );
-              }
+              // Yanlışların türlere dağılımı kartın grafiğindedir (kart yorumlanıyorsa).
+              if (r.items[2].badge !== 'Yorumlanmadı') {
+                const parts = r.items[2].visual?.type === 'stack' ? r.items[2].visual.parts : [];
+                expect(
+                  parts.slice(0, 3).map((x) => x.value),
+                  label,
+                ).toEqual([result.correct, result.luresByKind.turned, result.luresByKind.changed]);
+              } else expect(r.items[2].visual, label).toBeUndefined();
               expect(r.items[0].text.includes('Yanlışlarda seçilen şekiller” kartına'), label).toBe(noted.length > 0);
               if (noted.length || doubt) expect(r.items[0].text + r.items[1].text, label).not.toMatch(/dağılmasından/);
               if (doubt) expect(r.items[0].text, label).not.toContain('beklenen bir durumdur');
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
               if (chance) expect(fig, label).toBe('Yorumlanmadı');
-              else if (result.reached === 0) expect([fig, r.items[1].badge?.startsWith('1. düzeyde zorlandı')], label).toEqual(['Belirtilmedi', true]);
+              else if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(result.levels.map((l) => `${l.correct}/5`));
-              // Doğru bulunan sorulardaki süre yalnızca en az üç doğru varsa söylenir.
-              expect(r.items[3].text.includes('şekli bulma'), label).toBe(result.medianRtCorrect !== null && result.correct >= 3 && !chance && !doubt);
+              // Doğru bulunan sorulardaki süre yalnızca en az üç doğru varsa ve yanlış da varsa söylenir.
+              expect(r.items[3].text.includes('şekli bulma'), label).toBe(
+                result.medianRtCorrect !== null && result.correct >= 3 && result.correct < result.n && !chance && !doubt,
+              );
               // Dikkat ya da acele açıklaması en çok bir kartta.
               expect([r.items[0].text, r.items[1].text].filter((x) => x.includes('dağılmasından')).length, label).toBeLessThanOrEqual(1);
               // Çok hızlı yanlışlar varken 3. düzey ve üstü için "zorlandı" hükmü verilmez.

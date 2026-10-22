@@ -19,6 +19,7 @@ import {
   scoreVerbal,
   verbalLurePattern,
   verbalRapid,
+  verbalChance,
   verbalSamePosition,
   type VerbalTrialInput,
 } from '@/lib/scoring/tasks';
@@ -177,8 +178,11 @@ describe('Sözel akıl yürütme: sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = 'e4bce778c6be405d';
+/**
+ * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-10-22'de yalnızca düzeylerin
+ * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı.
+ */
+const SORU_IZI = 'c2032d0c5dda02d4';
 
 describe('Sözel akıl yürütme: puanlama', () => {
   const all = (fn: (i: number) => Partial<VerbalTrialInput> = () => ({})): VerbalTrialInput[] =>
@@ -273,7 +277,7 @@ describe('Sözel akıl yürütme: rapor', () => {
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '24 soruda 24 doğru'],
       ['Ulaşılan düzey', '5. düzey'],
-      ['Soru türleri', '4 soru türünün hepsinde soruların çoğu doğru'],
+      ['Soru türleri', '4 soru türünün hepsinde bütün sorular doğru'],
       ['Çalışma biçimi', 'Soru başına tipik süre 20 saniye'],
     ]);
     expect(r.student.keyFigures).toEqual([
@@ -281,8 +285,8 @@ describe('Sözel akıl yürütme: rapor', () => {
       { label: 'Ulaşılan düzey', value: '5. düzey', note: '5 düzeyden' },
       { label: 'Soru başına tipik süre', value: '20 saniye' },
     ]);
-    expect(r.student.items[0].text).toContain('Bütün düzeylerde soruların hemen hepsini doğru cevapladın');
-    expect(r.student.items[1].text).toContain('Bu en zor düzeydi.');
+    expect(r.student.items[0].text).toContain('Bütün soruları doğru cevapladın');
+    expect(r.student.items[1].text).toContain('5. düzey testin en zor düzeyiydi.');
     expect(r.student.items[3].text).toContain('Zor sorulara kolay sorulardan daha çok zaman ayırdın');
     expect(r.student.cautions).toEqual([]);
     const rm = r.student.roadmap!;
@@ -304,9 +308,10 @@ describe('Sözel akıl yürütme: rapor', () => {
     expect(r.student.items[0].badge).toBe('24 soruda 18 doğru');
     expect(r.student.items[0].text).toContain('Sorular zorlaştıkça doğru cevapların azaldı');
     expect(r.student.items[1].badge).toBe('3. düzey');
-    expect(r.student.items[1].text).toContain('3. düzeye kadar soruların çoğunu doğru cevapladın. 3. düzeydeki sorularda şunlar gerekiyordu: bir parçanın');
-    expect(r.student.items[1].text).toContain('4. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda bir şeyin en hafif');
-    expect(r.student.items[2].text).toContain('Kelime ilişkileri 6/6 · Sınıflama 4/6 · Sıralama 4/6 · Mantıksal çıkarım 4/6');
+    expect(r.student.items[1].text).toContain('1–3. düzeylerdeki soruların hepsini doğru cevapladın. 3. düzeydeki sorularda şunlar gerekiyordu: bir parçanın');
+    expect(r.student.items[1].text).toContain('Bu düzeydeki sorularda şunlar gerekiyordu: bir şeyin en hafif');
+    const typeRows = r.student.items[2].visual?.type === 'bars' ? r.student.items[2].visual.rows : [];
+    expect(typeRows.map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Kelime ilişkileri 6/6', 'Sınıflama 4/6', 'Sıralama 4/6', 'Mantıksal çıkarım 4/6']);
     expect(r.student.items[2].badge).toBe('4 soru türünün hepsinde soruların çoğu doğru');
     expect(r.student.items[0].text).not.toContain('ilk bakışta doğru görünen');
   });
@@ -316,7 +321,7 @@ describe('Sözel akıl yürütme: rapor', () => {
     const none = evaluate(SLUG, verbalBody((q) => ({ response: verbalOther(q), rtMs: 9000 })));
     expect(none.student.items.map((i) => i.badge)).toEqual(['24 soruda 0 doğru', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
     expect(none.student.items[0].text).toContain('rastgele seçen birinin de bulabileceği kadar az (24 soruda 8 ya da daha az)');
-    expect(none.parent.items[0].text).toContain('Bu sonuç yorumlanmamalıdır');
+    expect(none.parent.items[0].text).toContain('bu yüzden sonuç yorumlanmadı');
     expect(none.student.cautions.join(' ')).toContain('rastgele seçen birinin de bulabileceği kadar az');
     expect(none.student.roadmap!.bars).toEqual([]);
     expect(none.student.keyFigures[1]).toEqual({ label: 'Ulaşılan düzey', value: 'Yorumlanmadı' });
@@ -327,12 +332,14 @@ describe('Sözel akıl yürütme: rapor', () => {
     // Çeldiriciler: 4. ve 5. düzeyin hepsinde; bütün türler anılır.
     const lure = evaluate(SLUG, verbalBody((q) => ({ response: q.level >= 4 ? q.lure : q.answer, rtMs: 20_000 })));
     expect(lure.student.items[0].text).toContain(
-      'Yanlış cevaplarının hepsinde ilk bakışta doğru görünen ama sorudaki bilgilerin hepsine uymayan seçeneği seçtin. Bu yanlışlar şu yanılgılardan kaynaklanmış olabilir: kelime ilişkilerinde kelimeler arasındaki ilişkiye değil konularına bakmak; sınıflamada gruba yalnızca bir yönüyle benzeyen kelimeyi gruba katmak; sıralamada bilgilerin yalnızca bir bölümüne dayanmak ya da olabilecek bir sıralamayı kesin saymak; mantıksal çıkarımda verilen bilgilerden kesin olarak çıkmayan bir cümleyi doğru saymak.',
+      'Yanlış cevaplarının hepsinde ilk bakışta doğru görünen seçeneği seçtin. Bu seçenek sorudaki bilgilerin hepsine uymuyordu. Kelime ilişkilerinde kelimelerin arasındaki ilişkiye değil, konusuna bakmış olabilirsin. Sınıflama',
     );
+    expect(lure.student.items[0].text).toContain('Mantıksal çıkarımda bilgilerden kesin olarak çıkmayan bir cümleyi doğru saymış olabilirsin.');
     expect(lure.parent.items[0].text).toContain('Çocuğunuz yanlış cevaplarının hepsinde');
     // Yalnızca çıkarım sorularında çeldirici: yalnızca o tür anılır.
     const ded = evaluate(SLUG, verbalBody((q) => ({ response: q.type === 'deduction' && q.level >= 3 ? q.lure : q.answer, rtMs: 20_000 })));
-    expect(ded.student.items[0].text).toContain('seçeneği seçtin. Bu yanlışlar şu yanılgıdan kaynaklanmış olabilir: mantıksal çıkarımda verilen');
+    expect(ded.student.items[0].text).toContain('seçeneği seçtin. Bu seçenek sorudaki bilgilerin hepsine uymuyordu. Mantıksal çıkarımda bilgilerden kesin olarak çıkmayan');
+    expect(ded.student.items[0].text).not.toContain('Sınıflama');
     expect(ded.student.items[2].text).toContain('“mantıksal çıkarım” sorularında zorlandın. Bu tür sorularda verilen bilgilerden kesinlikle çıkan sonucu');
     // Yanlışların yarısı çeldirici: %60'a ulaşmadığı için yorumlanmaz.
     const half = evaluate(SLUG, verbalBody((q) => ({ response: q.level === 4 ? q.lure : q.level === 5 ? verbalOther(q) : q.answer, rtMs: 20_000 })));
@@ -340,8 +347,8 @@ describe('Sözel akıl yürütme: rapor', () => {
     // Çok hızlı: uyarı ve kart aynı şeyi söyler; hız karşılaştırması yapılmaz.
     const rapid = evaluate(SLUG, verbalBody((q) => ({ response: q.level >= 3 ? verbalOther(q) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })));
     expect(rapid.student.cautions.join(' ')).toContain('3. düzey ve üstündeki 15 sorunun hepsinde yanlış bir cevap, soru ve seçenekler okunamayacak kadar kısa sürede verilmiş; bu sorularda okunmadan seçilmiş olabilir.');
-    expect(rapid.student.items[3].text).toContain('3. düzey ve üstündeki 15 sorunun hepsinde yanlış bir cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin');
-    expect(rapid.parent.items[3].text).toContain('bu sorularda okunmadan seçilmiş olabilir.');
+    expect(rapid.student.items[3].text).toContain('3. düzey ve üstündeki 15 sorunun hepsine, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede yanlış cevap verdin');
+    expect(rapid.parent.items[3].text).toContain('bu sorularda okumadan seçmiş olabilir.');
     // Kısa sorularda hızlı ama doğru: uyarı yok.
     const quickRight = evaluate(SLUG, verbalBody((q) => ({ response: q.answer, rtMs: q.type === 'analogy' ? 2000 : 15_000 })));
     expect(quickRight.student.cautions).toEqual([]);
@@ -363,7 +370,7 @@ describe('Sözel akıl yürütme: rapor', () => {
     const easy = evaluate(SLUG, verbalBody((q) => ({ response: q.level === 1 && verbalRank(q) < 2 ? verbalOther(q) : q.answer, rtMs: 20_000 })));
     expect(easy.student.items[0].text).toContain('1. düzeydeki kolay sorulardan 2 tanesini doğru cevaplamadın');
     expect(easy.student.items[1].badge).toBe('5. düzey');
-    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi');
+    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeydeki yanlışların bu sonucu değiştirmedi');
     // Bir tür zor: sıralama sorularının hepsi yanlış.
     const ord = evaluate(SLUG, verbalBody((q) => ({ response: q.type === 'ordering' ? verbalOther(q) : q.answer, rtMs: 20_000 })));
     expect(ord.student.items[2].badge).toBe('4 soru türünün 3 tanesinde soruların çoğu doğru');
@@ -371,7 +378,9 @@ describe('Sözel akıl yürütme: rapor', () => {
     expect(ord.parent.items[2].text).toContain('Çocuğunuz “kelime ilişkileri”, “sınıflama” ve “mantıksal çıkarım” sorularının çoğunu');
     // Türde yarısı doğru "çoğu" sayılmaz (3/6).
     const halfType = evaluate(SLUG, verbalBody((q) => ({ response: q.type === 'analogy' && q.level >= 3 ? verbalOther(q) : q.answer, rtMs: 20_000 })));
-    expect(halfType.student.items[2].text).toContain('Kelime ilişkileri 3/6');
+    const halfRows = halfType.student.items[2].visual?.type === 'bars' ? halfType.student.items[2].visual.rows : [];
+    expect(halfRows.find((x) => x.label === 'Kelime ilişkileri')?.valueLabel).toBe('3/6');
+    expect(halfType.student.items[2].text).toContain('“kelime ilişkileri” sorularında zorlandın');
     expect(halfType.student.items[2].badge).toBe('4 soru türünün 3 tanesinde soruların çoğu doğru');
     // Zor sorulara az zaman, az doğru.
     const giveUp = evaluate(SLUG, verbalBody((q) => ({ response: q.level >= 4 ? verbalOther(q) : q.answer, rtMs: q.level >= 4 ? 9000 : 20_000 })));
@@ -379,8 +388,8 @@ describe('Sözel akıl yürütme: rapor', () => {
     // Hiçbir düzey ölçüte uymuyor (ama rastgele düzeyinin üstünde).
     const low = evaluate(SLUG, verbalBody((q) => ({ response: [1, 3, 4, 2, 0][q.level - 1] > verbalRank(q) ? q.answer : verbalOther(q), rtMs: 20_000 })));
     expect(low.student.items[0].badge).toBe('24 soruda 10 doğru');
-    expect(low.student.items[1].badge).toBe('1. düzeyde zorlandın');
-    expect(low.parent.items[1].badge).toBe('1. düzeyde zorlandı');
+    expect(low.student.items[1].badge).toBe('Düzey belirtilmedi');
+    expect(low.parent.items[1].badge).toBe('Düzey belirtilmedi');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -414,7 +423,7 @@ describe('Sözel akıl yürütme: rapor', () => {
             const res = evaluate(SLUG, body);
             const { result } = scoreVerbal(task, (body.data as { blocks: Record<string, VerbalTrialInput[]> }).blocks[task.key]);
             const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
-            const chance = result.correct <= VERBAL_CHANCE_MAX;
+            const chance = verbalChance(result);
             for (const r of [res.student, res.parent, adult]) {
               const t = text(r);
               expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]/);
@@ -442,7 +451,7 @@ describe('Sözel akıl yürütme: rapor', () => {
               // Ulaşılan düzey kartı ile öne çıkan sayı aynı.
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
               if (chance) expect(fig, label).toBe('Yorumlanmadı');
-              else if (result.reached === 0) expect([fig, r.items[1].badge?.startsWith('1. düzeyde zorlandı')], label).toEqual(['Belirtilmedi', true]);
+              else if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               expect(r.items[0].badge, label).toBe(`24 soruda ${result.correct} doğru`);
               expect(r.items[3].badge === 'Süre hesaplanamadı', label).toBe(result.medianRt === null);

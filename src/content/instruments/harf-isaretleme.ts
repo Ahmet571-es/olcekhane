@@ -69,7 +69,7 @@ export const harfIsaretleme: TaskInstrument = {
     { key: 'tempo', name: 'Çalışma hızı', plain: 'Dakikada taranan harf sayısı: işi ne kadar hızlı yürütebildiği.' },
     { key: 'isabet', name: 'Hedefleri bulma', plain: 'Taranan satırlardaki aranan harflerden kaçının bulunduğu: ne kadar dikkatli çalışıldığı.' },
     { key: 'net', name: 'Net doğru', plain: 'Doğru işaretlerden yanlış işaretler çıkarılınca kalan sayı: hızla dikkatin birlikte ölçüsü.' },
-    { key: 'surdurme', name: 'Dikkati sürdürme', plain: 'Görev ilerledikçe performansın korunup korunmadığı: son bölümlerin ilk bölümlere göre değişimi.' },
+    { key: 'surdurme', name: 'Dikkati sürdürme', plain: 'Görev ilerledikçe çalışmanın aynı düzeyde sürüp sürmediği: son bölümlerin ilk bölümlere göre değişimi.' },
   ],
   tasks: [harf],
   science: {

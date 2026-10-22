@@ -79,7 +79,7 @@ export const calismaDegerleriRoadmap: InterestRoadmapTemplate = {
       'Dört haftada neler öğrendiğinizi çocuğunuzla konuşun; en önem verdiği üç değeri birlikte yazın ve meslekleri tanırken bu listeye göz atın.',
   },
   nextTests: ['mesleki-ilgi-profili', 'meslek-ilgi-alanlari'],
-  nextPurpose: { you: 'hangi meslekleri tanımak isteyebileceğini görmek', parent: 'çocuğunuzun hangi meslekleri tanımak isteyebileceğini görmek' },
+  nextPurpose: { you: 'hangi meslekleri tanımak isteyebileceğini görmek', parent: 'çocuğunuzun hangi meslekleri tanımak isteyebileceğini görmek', general: true },
   links: [],
   areas: {
     learning: area('#7a4ee6', {

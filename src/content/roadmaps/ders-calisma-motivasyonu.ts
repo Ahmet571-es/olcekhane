@@ -56,7 +56,7 @@ export const dersCalismaMotivasyonuRoadmap: RoadmapTemplate = {
     'Dört haftada neyin işe yaradığını çocuğunuzla konuşun; işe yarayanı sürdürün, yaramayanı bırakın.',
   ),
   nextTests: ['calisma-aliskanliklari', 'ogrenme-ve-basari-ozellikleri'],
-  nextPurpose: { you: 'nasıl çalıştığını da görmek', parent: 'çocuğunuzun nasıl çalıştığını da görmek' },
+  nextPurpose: { you: 'nasıl çalıştığını da görmek', parent: 'çocuğunuzun nasıl çalıştığını da görmek', general: true },
   approach: {
     intrinsic: {
       low: 'İlgi duyduğu konuları sorun ve bu konularla dersler arasında bağ kurmasına yardım edin; başarıya bağlı ödüllerden kaçının.',

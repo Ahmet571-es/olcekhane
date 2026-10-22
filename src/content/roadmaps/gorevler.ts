@@ -214,13 +214,13 @@ const renkKelime: TaskRoadmapTemplate = {
   },
   studyTitle,
   studyIntro: t(
-    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeyi değil rengini söylemek çoğu kişiye zor gelir. Günlük hayatta da aklına ilk gelen cevap her zaman doğru olmayabilir.',
-    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeyi değil rengini söylemek çoğu kişiye zor gelir. Günlük hayatta da akla ilk gelen cevap her zaman doğru olmayabilir.',
+    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeye değil yazının rengine bakmak çoğu kişiye zor gelir. Günlük hayatta da aklına ilk gelen cevap her zaman doğru olmayabilir.',
+    'Bu görev, alışkanlıkla gelen cevabı durdurup doğru cevabı verebilmeyi ölçer: okumak o kadar otomatiktir ki kelimeye değil yazının rengine bakmak çoğu kişiye zor gelir. Günlük hayatta da akla ilk gelen cevap her zaman doğru olmayabilir.',
   ),
   supports: [
     support(0, 'dur', 'Önce dur, sonra cevap ver', 'Yöntem', t(
-      'Bir soruyu okur okumaz cevaplamak yerine bir an dur ve sorunun tam olarak ne istediğini kendine söyle. "Değildir", "yanlıştır" gibi kelimelerin altını çizmek, alışkanlıkla verilen yanlış cevabı önler.',
-      'Çocuğunuzun bir soruyu okur okumaz cevaplamak yerine bir an durup sorunun ne istediğini kendine söylemesi ve "değildir", "yanlıştır" gibi kelimelerin altını çizmesi, alışkanlıkla verilen yanlış cevapları önler.',
+      'Bir soruyu okur okumaz cevaplamak yerine bir an dur ve sorunun tam olarak ne istediğini kendine söyle. "Değildir", "yanlıştır" gibi kelimelerin altını çizmek, alışkanlıkla verilen yanlış cevapları azaltabilir.',
+      'Çocuğunuzun bir soruyu okur okumaz cevaplamak yerine bir an durup sorunun ne istediğini kendine söylemesi ve "değildir", "yanlıştır" gibi kelimelerin altını çizmesi, alışkanlıkla verilen yanlış cevapları azaltabilir.',
     )),
     support(1, 'denge', 'Hız ve doğruluk dengesi', 'Alışkanlık', t(
       'Zor ya da dikkat isteyen işlerde biraz yavaşlamak hata yapmayı azaltabilir; özellikle emin olmadığın yerde bir an durmak işe yarar.',
@@ -811,8 +811,8 @@ const sayiDizileri: TaskRoadmapTemplate = {
   ),
   supports: [
     support(0, 'fark', 'Farkları yaz', 'Yöntem', t(
-      'Bir sayı dizisinde kuralı ararken ardışık sayıların arasına farkı ya da işlemi yaz: “+3”, “×2” gibi. Farklar da bir düzen oluşturuyorsa onların altına yeni bir satır aç. Yirmili yaşlardaki kişilerle yapılan bir araştırmada, sayılar arasındaki ilişkiler bu şekilde not alınarak çözülen soruların sayısıyla toplam puan arasında güçlü bir ilişki bulunmuştur.',
-      'Çocuğunuza bir sayı dizisinde kuralı ararken ardışık sayıların arasına farkı ya da işlemi yazmasını önerin: “+3”, “×2” gibi. Farklar da bir düzen oluşturuyorsa onların altına yeni bir satır açabilir. Yirmili yaşlardaki kişilerle yapılan bir araştırmada, sayılar arasındaki ilişkiler bu şekilde not alınarak çözülen soruların sayısıyla toplam puan arasında güçlü bir ilişki bulunmuştur.',
+      'Bir sayı dizisinde kuralı ararken ardışık sayıların arasına farkı ya da işlemi yaz: “+3”, “×2” gibi. Farklar da bir düzen oluşturuyorsa onların altına yeni bir satır aç. Yirmili yaşlardaki gençlerle yapılan bir araştırmada, farkları böyle yazarak çözülen soru sayısı arttıkça doğru cevapların da arttığı görülmüştür.',
+      'Çocuğunuza bir sayı dizisinde kuralı ararken ardışık sayıların arasına farkı ya da işlemi yazmasını önerin: “+3”, “×2” gibi. Farklar da bir düzen oluşturuyorsa onların altına yeni bir satır açabilir. Yirmili yaşlardaki gençlerle yapılan bir araştırmada, farkları böyle yazarak çözülen soru sayısı arttıkça doğru cevapların da arttığı görülmüştür.',
     )),
     support(1, 'dene', 'Kuralı bütün dizide dene', 'Alışkanlık', t(
       'Bir kural bulduğunda cevabı yazmadan önce onu dizinin başından sonuna dene. Yalnızca son iki sayıya uyan bir kural çoğu zaman yanlış çıkar: örneğin 3, 4, 6, 9, 13 dizisinde son artışı (4) aynen eklemek 17 verir; oysa artışlar her adımda 1 büyüyor ve sıradaki sayı 18’dir.',
@@ -909,8 +909,8 @@ const sozelAkilYurutme: TaskRoadmapTemplate = {
   ),
   supports: [
     support(0, 'iliski', 'İlişkiyi cümleyle söyle', 'Yöntem', t(
-      'İki kelime arasındaki ilişkiyi ararken onu bir cümleyle söyle: “Anahtar kilidi açar.” Sonra aynı cümleyi yeni kelimeyle kur ve ona uyanı ara. Şekil ve renklerle kurulan benzetme sorularıyla çocuklarla yapılan bir araştırmada, üçüncü öğeye benzeyen yanlış seçeneklerin sık seçildiği görülmüştür; ilişkiyi açıkça söylemek, yalnızca benzerliğe bakmamana yardım edebilir.',
-      'Çocuğunuza iki kelime arasındaki ilişkiyi ararken onu bir cümleyle söylemesini önerin: “Anahtar kilidi açar.” Sonra aynı cümleyi yeni kelimeyle kurup ona uyanı arayabilir. Şekil ve renklerle kurulan benzetme sorularıyla çocuklarla yapılan bir araştırmada, üçüncü öğeye benzeyen yanlış seçeneklerin sık seçildiği görülmüştür; ilişkiyi açıkça söylemek, yalnızca benzerliğe bakmamasına yardım edebilir.',
+      'İki kelime arasındaki ilişkiyi ararken onu bir cümleyle söyle: “Anahtar kilidi açar.” Sonra aynı cümleyi yeni kelimeyle kur ve ona uyanı ara. Çocuklarla yapılan bir araştırmada, şekillerle hazırlanmış benzetme sorularında sorudaki üçüncü şekle benzeyen yanlış seçeneğin sık seçildiği görülmüştür; ilişkiyi açıkça söylemek, yalnızca benzerliğe bakmamana yardım edebilir.',
+      'Çocuğunuza iki kelime arasındaki ilişkiyi ararken onu bir cümleyle söylemesini önerin: “Anahtar kilidi açar.” Sonra aynı cümleyi yeni kelimeyle kurup ona uyanı arayabilir. Çocuklarla yapılan bir araştırmada, şekillerle hazırlanmış benzetme sorularında sorudaki üçüncü şekle benzeyen yanlış seçeneğin sık seçildiği görülmüştür; ilişkiyi açıkça söylemek, yalnızca benzerliğe bakmamasına yardım edebilir.',
     )),
     support(1, 'ciz', 'Bilgileri çiz', 'Yöntem', t(
       'Sıralama sorularında kişileri bir çizgi üzerine yerleştir ve her bilgiyi tek tek ekle. Bilgiler tek bir sıralamaya yetmiyorsa olası sıralamaların hepsini ayrı ayrı çiz: hepsinde doğru olan cevap kesindir, yalnızca birinde doğru olan ise yalnızca olabilir.',
@@ -1019,8 +1019,8 @@ const kagitKatlama: TaskRoadmapTemplate = {
       'Çocuğunuza kâğıda bir kare çizip katlama çizgisini ve deliği işaretlemesini, sonra deliğin çizgiye uzaklığını ölçüp öbür yana aynı uzaklıkta yeni bir delik çizmesini önerin; çapraz katlamada da aynı kural geçerlidir.',
     )),
     support(3, 'oyun', 'Uzamsal oyunlar', 'Etkinlik', t(
-      'Origami, tangram, yapı oyunları ve harita okumak, şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
-      'Origami, tangram, yapı oyunları ve harita okumak, çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Origami, tangram, yapı oyunları ve harita okumak, şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Origami, tangram, yapı oyunları ve harita okumak, çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
     )),
   ],
   facts: katlamaFacts,
@@ -1257,6 +1257,7 @@ const kuralDegistirme: TaskRoadmapTemplate = {
   nextPurpose: {
     you: 'dikkatini yönetme becerilerinin başka yönlerini de görmek',
     parent: 'çocuğunuzun dikkatini yönetme becerilerinin başka yönlerini de görmek',
+    general: true,
   },
   links: [],
   sources: [KAYNAK.stoet, KAYNAK.zinke, KAYNAK.hedge],
@@ -1546,8 +1547,8 @@ const kupAcinimi: TaskRoadmapTemplate = {
       'Çocuğunuzla kareli kâğıda bir küp açınımı çizin; karelere farklı şekiller, bir tanesine de ok çizin. Kesip katlamadan önce hangi yüzlerin yan yana geleceğini ve okun nereyi göstereceğini tahmin etmesini isteyin; sonra katlayıp tahmini birlikte kontrol edin.',
     )),
     support(3, 'oyun', 'Uzamsal oyunlar', 'Etkinlik', t(
-      'Origami, yapı oyunları, maket yapmak ve kutu katlamak, şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
-      'Origami, yapı oyunları, maket yapmak ve kutu katlamak, çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Origami, yapı oyunları, maket yapmak ve kutu katlamak, şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Origami, yapı oyunları, maket yapmak ve kutu katlamak, çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç şekillerle düşünmekten keyif almaktır.',
     )),
   ],
   facts: kupFacts,
@@ -1650,8 +1651,8 @@ const ucBoyutluZihindeDondurme: TaskRoadmapTemplate = {
       'Çocuğunuzdan kurduğu bir şekli önden, yandan ve üstten bakarak kâğıda çizmesini isteyin. Noktalı ya da kareli kâğıt, küplerin kenarlarını düzgün çizmeyi kolaylaştırır.',
     )),
     support(3, 'oyun', 'Uzamsal oyunlar', 'Etkinlik', t(
-      'Yapı oyunları, maket ve üç boyutlu yapbozlar şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
-      'Yapı oyunları, maket ve üç boyutlu yapbozlar çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Yapı oyunları, maket ve üç boyutlu yapbozlar şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Yapı oyunları, maket ve üç boyutlu yapbozlar çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
     )),
   ],
   facts: ucBoyutluFacts,
@@ -1779,8 +1780,8 @@ const gizliSekiller: TaskRoadmapTemplate = {
       'Bir şekli saklayan en önemli etkenlerden biri, kenarlarının çizimdeki başka çizgilerle aynı doğrultuda devam etmesidir; bir araştırmada bu tür devam eden kenarlar azaldıkça şekiller çok daha kolay bulunmuştur. Çocuğunuza, uzun bir çizginin yalnızca bir parçasının şeklin kenarı olabileceğini hatırlatabilirsiniz.',
     )),
     support(3, 'oyun', 'Gözlem oyunları', 'Etkinlik', t(
-      'Gizli nesne bulmacaları, iki resim arasındaki farkları bulmak, tangram ve yapboz, görsel ayrıntılarla uğraşmayı keyifli bir etkinliğe dönüştürür. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç görsel ayrıntılarla uğraşmaktan keyif almaktır.',
-      'Gizli nesne bulmacaları, iki resim arasındaki farkları bulmak, tangram ve yapboz çocuğunuz için görsel ayrıntılarla uğraşmayı keyifli bir etkinliğe dönüştürür. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç görsel ayrıntılarla uğraşmaktan keyif almaktır.',
+      'Gizli nesne bulmacaları, iki resim arasındaki farkları bulmak, tangram ve yapboz, görsel ayrıntılarla uğraşmayı keyifli bir etkinliğe dönüştürür. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç görsel ayrıntılarla uğraşmaktan keyif almaktır.',
+      'Gizli nesne bulmacaları, iki resim arasındaki farkları bulmak, tangram ve yapboz çocuğunuz için görsel ayrıntılarla uğraşmayı keyifli bir etkinliğe dönüştürür. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; yine de bir oyunda ustalaşmanın her işe kendiliğinden yansıyacağı söylenemez, asıl kazanç görsel ayrıntılarla uğraşmaktan keyif almaktır.',
     )),
   ],
   facts: gizliFacts,
@@ -1851,8 +1852,8 @@ const bakisAcisiAlma: TaskRoadmapTemplate = {
       'Çocuğunuza, biri “sağdaki” dediğinde konuşanın kendi sağını mı yoksa onun sağını mı kastettiğini sormasını, kendisi tarif ederken de kimin sağını söylediğini belirtmesini (“senin sağında”) önerin. Bir çalışmada, karşısındakinin “sağdaki” sözünü daha çok onun bakış açısından anlayan kişilerin bakış açısı alma testindeki hataları daha küçük bulunmuştur. Bu bir ilişki bulgusudur; bu alışkanlığın beceriyi geliştirdiği gösterilmemiştir.',
     )),
     support(3, 'oyun', 'Yön oyunları', 'Etkinlik', t(
-      'Bir yerin krokisini çizip yönleri tahmin etmek, gözü kapalı bir eşyanın yerini göstermek ya da harita kullanılan oyunlar, yönlerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan bir oyunda ustalaşmak her işe kendiliğinden yansımaz.',
-      'Bir yerin krokisini çizip yönleri tahmin etmek, gözü kapalı bir eşyanın yerini göstermek ya da harita kullanılan oyunlar çocuğunuz için yönlerle düşünmeyi keyifli bir uğraş hâline getirir. Bir meta analizde uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan bir oyunda ustalaşmak her işe kendiliğinden yansımaz.',
+      'Bir yerin krokisini çizip yönleri tahmin etmek, gözü kapalı bir eşyanın yerini göstermek ya da harita kullanılan oyunlar, yönlerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan bir oyunda ustalaşmak her işe kendiliğinden yansımaz.',
+      'Bir yerin krokisini çizip yönleri tahmin etmek, gözü kapalı bir eşyanın yerini göstermek ya da harita kullanılan oyunlar çocuğunuz için yönlerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan bir oyunda ustalaşmak her işe kendiliğinden yansımaz.',
     )),
   ],
   facts: bakisFacts,
@@ -1990,6 +1991,7 @@ const dusunerekKararVerme: TaskRoadmapTemplate = {
   nextPurpose: {
     you: 'akıl yürütmenin başka yönlerini de görmek',
     parent: 'çocuğunuzun akıl yürütmesinin başka yönlerini de görmek',
+    general: true,
   },
   links: [],
   sources: [KAYNAK.deNeysBats, KAYNAK.youngShtulman2020, KAYNAK.stagnaro2018, KAYNAK.bialek2018],
@@ -2088,6 +2090,7 @@ const planlamaKuleGorevi: TaskRoadmapTemplate = {
   nextPurpose: {
     you: 'planlamayla birlikte çalışan başka zihinsel becerileri de görmek',
     parent: 'çocuğunuzun planlamayla birlikte çalışan başka zihinsel becerilerini de görmek',
+    general: true,
   },
   links: [],
   sources: [KAYNAK.unterrainer2003, KAYNAK.phillips2001, KAYNAK.albertSteinberg2011, KAYNAK.unterrainer2019, KAYNAK.schumacher2026],
@@ -2190,6 +2193,7 @@ const kelimeListesi: TaskRoadmapTemplate = {
   nextPurpose: {
     you: 'belleğinin ve sözel becerilerinin başka yönlerini de görmek',
     parent: 'çocuğunuzun belleğinin ve sözel becerilerinin başka yönlerini de görmek',
+    general: true,
   },
   links: [],
   sources: [KAYNAK.oliveira, KAYNAK.lehmann, KAYNAK.roediger, KAYNAK.cepeda],
@@ -2292,6 +2296,7 @@ const hesaplaVeHatirla: TaskRoadmapTemplate = {
   nextPurpose: {
     you: 'belleğinin ve dikkatinin başka yönlerini de görmek',
     parent: 'çocuğunuzun belleğinin ve dikkatinin başka yönlerini de görmek',
+    general: true,
   },
   links: [],
   sources: [KAYNAK.ferguson2021, KAYNAK.fu2026, KAYNAK.schmiedek2014, KAYNAK.melby, KAYNAK.hedge],
@@ -2396,6 +2401,7 @@ const desenHatirlama: TaskRoadmapTemplate = {
   nextPurpose: {
     you: 'belleğinin ve görsel becerilerinin başka yönlerini de görmek',
     parent: 'çocuğunuzun belleğinin ve görsel becerilerinin başka yönlerini de görmek',
+    general: true,
   },
   links: [],
   sources: [KAYNAK.dellaSala1999, KAYNAK.wilson1987, KAYNAK.brown2006, KAYNAK.brownWesley2013, KAYNAK.melby2016],
@@ -2444,8 +2450,8 @@ const harfDizileri: TaskRoadmapTemplate = {
   ),
   supports: [
     support(0, 'adim', 'Adımları yaz', 'Yöntem', t(
-      'Bir harf dizisinde kuralı ararken ardışık harflerin arasına alfabede kaç harf ilerlendiğini ya da geri gidildiğini yaz: “+1”, “+2”, “−1”; aynı harf tekrarlanıyorsa “=”. Bu sayılar da bir düzen oluşturuyorsa onların altına yeni bir satır aç. Harfleri sayarken alfabeyi önüne koymak işini kolaylaştırır. Bir araştırmada, harfler arasındaki ilişkileri ve dizinin kaç harfte bir tekrarlandığını aramayı birkaç kısa oturumda öğrenen çocukların hataları, bu eğitimi almayanlarınkinden daha çok azalmıştır (yaklaşık %32’ye karşı %13).',
-      'Çocuğunuza bir harf dizisinde kuralı ararken ardışık harflerin arasına alfabede kaç harf ilerlendiğini ya da geri gidildiğini yazmasını önerin: “+1”, “+2”, “−1”; aynı harf tekrarlanıyorsa “=”. Bu sayılar da bir düzen oluşturuyorsa onların altına yeni bir satır açabilir. Harfleri sayarken alfabeyi önüne koymak işini kolaylaştırır. Bir araştırmada, harfler arasındaki ilişkileri ve dizinin kaç harfte bir tekrarlandığını aramayı birkaç kısa oturumda öğrenen çocukların hataları, bu eğitimi almayanlarınkinden daha çok azalmıştır (yaklaşık %32’ye karşı %13).',
+      'Bir harf dizisinde kuralı ararken ardışık harflerin arasına alfabede kaç harf ilerlendiğini ya da geri gidildiğini yaz: “+1”, “+2”, “−1”; aynı harf tekrarlanıyorsa “=”. Bu sayılar da bir düzen oluşturuyorsa onların altına yeni bir satır aç. Harfleri sayarken alfabeyi önüne koymak işini kolaylaştırır. Bir araştırmada, harfler arasındaki ilişkileri ve dizinin kaç harfte bir tekrarlandığını aramayı birkaç kısa oturumda öğrenen çocukların hataları, bu eğitimi almayanlarınkinden daha çok azalmıştır (yanlışlar bu yolu öğrenenlerde yaklaşık %32, öğrenmeyenlerde yaklaşık %13 azalmıştır).',
+      'Çocuğunuza bir harf dizisinde kuralı ararken ardışık harflerin arasına alfabede kaç harf ilerlendiğini ya da geri gidildiğini yazmasını önerin: “+1”, “+2”, “−1”; aynı harf tekrarlanıyorsa “=”. Bu sayılar da bir düzen oluşturuyorsa onların altına yeni bir satır açabilir. Harfleri sayarken alfabeyi önüne koymak işini kolaylaştırır. Bir araştırmada, harfler arasındaki ilişkileri ve dizinin kaç harfte bir tekrarlandığını aramayı birkaç kısa oturumda öğrenen çocukların hataları, bu eğitimi almayanlarınkinden daha çok azalmıştır (yanlışlar bu yolu öğrenenlerde yaklaşık %32, öğrenmeyenlerde yaklaşık %13 azalmıştır).',
     )),
     support(1, 'dene', 'Kuralı bütün dizide dene', 'Alışkanlık', t(
       'Bir araştırmada bu tür sorulardaki en sık hatanın, doğru kural bulunduktan sonra onu sürdürürken yapıldığı görülmüştür. Cevabı vermeden önce adımları alfabede bir kez daha say. Bulduğun kuralı dizinin başından sonuna da dene: yalnızca son iki harfe uyan bir kural yanlış çıkabilir. Örneğin K, L, N, P dizisinde son adımı (+3) aynen sürdürmek Ş verir; oysa adımlar her seferinde 1 büyüyor (+1, +2, +3) ve sıradaki harf T’dir.',

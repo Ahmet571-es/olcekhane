@@ -14,6 +14,7 @@ import type { SimpleReport } from '@/lib/reports/simple';
 import {
   TaskInputError,
   VOCABULARY_CHANCE_MAX,
+  vocabularyChance,
   scoreVocabulary,
   vocabularyLurePattern,
   vocabularyRapid,
@@ -146,8 +147,11 @@ describe('Kelime bilgisi: sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = 'b81bfb7bd437181d';
+/**
+ * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-10-22'de yalnızca düzeylerin
+ * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı.
+ */
+const SORU_IZI = '2258b3f253122682';
 
 describe('Kelime bilgisi: puanlama', () => {
   const all = (fn: (i: number) => Partial<VocabularyTrialInput> = () => ({})): VocabularyTrialInput[] =>
@@ -208,11 +212,11 @@ describe('Kelime bilgisi: rapor', () => {
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '24 soruda 24 doğru'],
       ['Ulaşılan düzey', '5. düzey'],
-      ['Soru türleri', '4 soru türünün hepsinde soruların çoğu doğru'],
+      ['Soru türleri', '4 soru türünün hepsinde bütün sorular doğru'],
       ['Çalışma biçimi', 'Soru başına tipik süre 9 saniye'],
     ]);
     expect(r.student.cautions).toEqual([]);
-    expect(r.student.items[2].text).toContain('kelimelerin eş ve zıt anlamlılarını, cümlede kazandıkları anlamları ve deyimleri büyük ölçüde biliyorsun');
+    expect(r.student.items[2].text).toContain('eş anlam, zıt anlam, cümlede anlam ve deyim sorularının hepsinde doğru seçeneği seçtin');
     const rm = r.student.roadmap!;
     expect(rm.bars.map((b) => [b.label, b.valueLabel])).toEqual([
       ['Eş anlam', '6/6'],
@@ -223,7 +227,7 @@ describe('Kelime bilgisi: rapor', () => {
     expect(rm.barsTitle).toBe('Soru türlerine göre sonucun');
     expect(rm.standout.map((s) => s.title)).toEqual(TITLES);
     expect(text(r.student)).not.toContain('Çocuğunuz');
-    expect(r.parent.items[0].text).toContain('Çocuğunuz bütün düzeylerde');
+    expect(r.parent.items[0].text).toContain('Çocuğunuz bütün soruları doğru cevapladı; en zor düzeydeki seyrek kelimeleri ve deyimleri de bildi.');
   });
 
   it('durumlar: rastgele düzeyi, çeldiriciler, çok hızlı, hep aynı yer, tür farkı, kolay sorularda yanılma', () => {
@@ -245,7 +249,7 @@ describe('Kelime bilgisi: rapor', () => {
     // Çok hızlı: uyarı ve kart aynı şeyi söyler.
     const rapid = evaluate(SLUG, vocabularyBody((q) => ({ response: q.level >= 3 ? vocabularyOther(q) : q.answer, rtMs: q.level >= 3 ? 1000 : 12_000 })));
     expect(rapid.student.cautions.join(' ')).toContain('3. düzey ve üstündeki 15 sorunun hepsinde yanlış bir cevap, soru ve seçenekler okunamayacak kadar kısa sürede verilmiş');
-    expect(rapid.student.items[3].text).toContain('yanlış bir cevabı, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede verdin');
+    expect(rapid.student.items[3].text).toContain('15 sorunun hepsine, soruyu ve seçenekleri okumaya yetmeyecek kadar kısa sürede yanlış cevap verdin');
     expect(rapid.student.items[0].text).toContain('Bazı soruları okumadan seçmiş olabileceğin için');
     // Hep aynı yer.
     const same = evaluate(SLUG, vocabularyBody(() => ({ response: 2, rtMs: 9000 })));
@@ -257,12 +261,12 @@ describe('Kelime bilgisi: rapor', () => {
     // 1. düzeyde iki yanlış ama üst düzeyler başarılı.
     const easy = evaluate(SLUG, vocabularyBody((q) => ({ response: q.level === 1 && vocabularyRank(q) < 2 ? vocabularyOther(q) : q.answer, rtMs: 20_000 })));
     expect(easy.student.items[0].text).toContain('1. düzeydeki kolay sorulardan 2 tanesini doğru cevaplamadın');
-    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeyde doğru bulamadığın sorular bu sonucu değiştirmedi');
+    expect(easy.student.items[1].text).toContain('Daha kolay olan 1. düzeydeki yanlışların bu sonucu değiştirmedi');
     // Varsayılan örnek: ilk üç düzey tam, sonra zorlanma.
     const ex = evaluate(SLUG, vocabularyBody());
     expect(ex.student.items[0].badge).toBe('24 soruda 18 doğru');
-    expect(ex.student.items[1].text).toContain('3. düzeye kadar soruların çoğunu doğru cevapladın. 3. düzeydeki sorularda şu gerekiyordu: daha seyrek geçen kelimeleri');
-    expect(ex.student.items[1].text).toContain('4. düzeyde soruların çoğunda zorlandın; bu düzeydeki sorularda gazete, bilim ve iş hayatı yazılarında');
+    expect(ex.student.items[1].text).toContain('1–3. düzeylerdeki soruların hepsini doğru cevapladın. 3. düzeydeki sorularda şu gerekiyordu: daha seyrek geçen kelimeleri');
+    expect(ex.student.items[1].text).toContain('4. düzeydeki 5 sorunun 3 tanesini doğru bulamadın. Bu düzeydeki sorularda şu gerekiyordu: gazete, bilim ve iş hayatı yazılarında');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -296,7 +300,7 @@ describe('Kelime bilgisi: rapor', () => {
             const res = evaluate(SLUG, body);
             const { result } = scoreVocabulary(task, (body.data as { blocks: Record<string, VocabularyTrialInput[]> }).blocks[task.key]);
             const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
-            const chance = result.correct <= VOCABULARY_CHANCE_MAX;
+            const chance = vocabularyChance(result);
             for (const r of [res.student, res.parent, adult]) {
               const t = text(r);
               expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]/);
@@ -321,7 +325,7 @@ describe('Kelime bilgisi: rapor', () => {
               if (r.items[0].text.includes('hemen hepsini')) expect(r.items[2].text, label).not.toMatch(/hiçbir soru türünde/);
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
               if (chance) expect(fig, label).toBe('Yorumlanmadı');
-              else if (result.reached === 0) expect([fig, r.items[1].badge?.startsWith('1. düzeyde zorlandı')], label).toEqual(['Belirtilmedi', true]);
+              else if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               expect(r.items[0].badge, label).toBe(`24 soruda ${result.correct} doğru`);
             }

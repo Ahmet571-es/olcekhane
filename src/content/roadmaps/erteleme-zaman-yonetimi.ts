@@ -42,7 +42,7 @@ export const ertelemeZamanYonetimiRoadmap: RoadmapTemplate = {
     'Dört haftada neyin işe yaradığını çocuğunuzla konuşun; işe yarayanı sürdürün, yaramayanı bırakın.',
   ),
   nextTests: ['ders-calisma-motivasyonu', 'calisma-aliskanliklari', 'ogrenme-ve-basari-ozellikleri'],
-  nextPurpose: { you: 'neden ve nasıl çalıştığını da görmek', parent: 'çocuğunuzun neden ve nasıl çalıştığını da görmek' },
+  nextPurpose: { you: 'neden ve nasıl çalıştığını da görmek', parent: 'çocuğunuzun neden ve nasıl çalıştığını da görmek', general: true },
   approach: {
     start: {
       low: 'Ertelediği bir işi hatırlatırken sesinizi sakin tutun; “Neden hâlâ başlamadın?” yerine “İlk adım ne olabilir?” diye sorun.',

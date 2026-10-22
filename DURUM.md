@@ -594,7 +594,14 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    anlatan metinler, aynı sayfada tekrarlanan öneriler, zor cümleler, cevap tutarlılığı denetimleri); bulgular uygulandı
    (ayrıntı "Son yapılanlar"da). `tests/kart-grafikleri.test.ts` her anket testinin her kartını dener.
 2. **Görev (zekâ ve dikkat) testleri (26 test), 4–5'lik gruplar:** her başlığa o başlığın verisine uygun grafik (düzeylere
-   göre doğrular, hata türleri, hız), rapor metinlerinin bağımsız incelemesi. Sırada.
+   göre doğrular, hata türleri, hız), rapor metinlerinin bağımsız incelemesi. Çizim altyapısı `lib/reports/visual-draw.ts`
+   (ekranda ve PDF'te aynı çizim; nokta, çubuk, yığın, basamak, sütun, şerit ve dizi merdiveni), denetim
+   `tests/gorev-grafikleri.test.ts` (her testin her kartı birkaç sonuç örüntüsüyle).
+   - 1. grup (8 düzeyli test: şekil, sayı, harf ve sözel akıl yürütme, kâğıt katlama, kelime bilgisi, küp açınımı, gizli
+     şekiller) ve 2. grup (dikkat ve bellek, sürekli dikkat, renk-kelime, dur-git, tepki hızı): **yayında (2026-10-22).**
+   - Sırada 3. grup: sırayla birleştirme, geriye dönük hatırlama, kural değiştirme, hesapla ve hatırla, kelime listesi.
+     Sonra 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi) ve 5. grup
+     (mantıksal, sayısal, düşünerek karar verme).
 3. Okuma, sesli okuma, matematik konu tarama.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
@@ -931,6 +938,17 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (38): Raporlarda her başlığa grafik, 2. aşamanın ilk iki grubu (13 görev testi): düzeyli testlerde düzeylere
+  göre doğrular (nokta), ulaşılan düzey (basamak), kural ya da soru türleri (çubuk), yanılgılar (yığın) ve kolay–zor
+  sorulardaki süre (çubuk); dikkat ve bellek testlerinde dizi merdiveni, ok görevi, sembol eşleştirme, bölüm bölüm tarama,
+  durma ve basma, tepki süresi şeridi. İki bağımsız incelemenin bulguları uygulandı: "Ulaşılan düzey" kartı düzeye kadarki
+  soruların ne kadarının doğru olduğunu ve bir üst düzeyde kaç sorunun bulunamadığını sayıyla söyler; rastgele seçim ölçütü
+  bir düzeye ulaşılmışsa uygulanmaz; çok hızlı cevap yalnızca yanlışlarda sayılır; sayılar abartılmaz ya da küçültülmez
+  ("hepsinde", "hiçbirinde"); yorumlanmayan kartın grafiği olmaz; aynı öneri iki kartta yinelenmez; çok az işaretli sürekli
+  dikkat, hiç basılmayan dur-git ve hep aynı düğmeye basılan tepki hızı ayrı anlatılır; kolay ve zor sorulardaki süreler
+  grafikle uyumlu ("biraz daha çok zaman"); norm notları sadeleşti; yol haritasında önerilen test sınıfa uymayınca amaç
+  cümlesi kalan teste uymuyorsa yazılmaz. Sekiz sözel ve sayısal testin soru izinde yalnızca düzey anlatımları değişti
+  (sürüm aynı). Raporlar telefonda ve masaüstünde açıldı, PDF'ler incelendi.
 - 2026-10-22 (37): Raporlarda her başlığa grafik, 1. aşama (24 anket testi): ölçek kartlarında düzey çubuğu (testin
   eşikleriyle bölgeler, kişinin bölgesi vurgulu, puan ve ölçüm payı), "Birlikte bakınca", sıralama ve liste kartlarında yan
   yana grafik; ekranda ve PDF'te aynı çizim, telefonda kartın altında, masaüstünde yanında. Dört bağımsız incelemenin
@@ -978,8 +996,3 @@ En yeni üstte; en çok 10 madde tutulur.
   siyasi ve dinî görüş soran ölçekler alınmadı; güvenirlik ve ölçüm payı IPIP'in açık verisinden; öğrenci, veli ve
   yetişkin raporu, 5 sütunlu 3B yol haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde
   çözüldü, PDF'ler açıldı. Kontrol Odağı site sahibinin kararıyla yayımlanmadı.
-- 2026-10-16 (28): Çalışma Belleği: Hesapla ve Hatırla yayında (5. sınıftan yetişkine), 2. dalganın 7. testi: kısa
-  işlemler yaparken harfleri sırayla akılda tutma (işlem aralığı düzeni); 10 dizi, 50 harf, 50 işlem, kişiye göre işlem
-  süresi; işlemler ipucu vermeyecek biçimde seçildi; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol haritası; iki tur
-  bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Geriye Dönük Hatırlama'nın
-  bilim kartında "karmaşık dizi görevleri" adı "karmaşık bellek aralığı görevleri" yapıldı.

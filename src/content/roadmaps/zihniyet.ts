@@ -40,7 +40,7 @@ export const zihniyetRoadmap: RoadmapTemplate = {
     'Dört haftada neyin işe yaradığını çocuğunuzla konuşun; işe yarayanı sürdürün, yaramayanı bırakın.',
   ),
   nextTests: ['ders-calisma-motivasyonu', 'erteleme-ve-zaman-yonetimi', 'ogrenme-ve-basari-ozellikleri'],
-  nextPurpose: { you: 'öğrenmeyle ilgili başka yönlerini de görmek', parent: 'çocuğunuzun öğrenmeyle ilgili başka yönlerini de görmek' },
+  nextPurpose: { you: 'öğrenmeyle ilgili başka yönlerini de görmek', parent: 'çocuğunuzun öğrenmeyle ilgili başka yönlerini de görmek', general: true },
   approach: {
     intelligence: {
       low: 'Kendi hayatınızdan, önce zorlanıp sonra öğrendiğiniz bir şeyi (araba kullanmak, yeni bir iş gibi) ona anlatın.',

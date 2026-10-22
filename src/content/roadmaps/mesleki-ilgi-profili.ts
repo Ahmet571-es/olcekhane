@@ -76,7 +76,7 @@ export const meslekiIlgiProfiliRoadmap: InterestRoadmapTemplate = {
     parent: 'Dört haftada hangi denemenin onu en çok heyecanlandırdığını çocuğunuzla konuşun ve o alanda bir sonraki adımı birlikte seçin.',
   },
   nextTests: ['bes-faktor-kisilik', 'kisilerarasi-tarz'],
-  nextPurpose: { you: 'kişilik özelliklerini de görmek', parent: 'çocuğunuzun kişilik özelliklerini de görmek' },
+  nextPurpose: { you: 'kişilik özelliklerini de görmek', parent: 'çocuğunuzun kişilik özelliklerini de görmek', general: true },
   links: [{ label: 'Meslek seçiminde ilgi envanterleri', href: '/rehber/meslek-seciminde-ilgi-envanterleri' }],
   areas: {
     realistic: area('R', '#5a9e2f', {

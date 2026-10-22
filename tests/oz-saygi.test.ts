@@ -181,10 +181,12 @@ describe('Öz-saygı Ölçeği: rapor metinleri', () => {
 
   it('son haftada kendine ve geleceğe bakışı gösteren testler önerilir: kişinin sınıfına uyanlar', () => {
     expect(rm.nextTests).toEqual(['iyimserlik', 'zihniyet']);
-    // 7. sınıf: İyimserlik 9. sınıftan itibaren olduğu için yalnızca Zihniyet.
+    // 7. sınıf: İyimserlik 9. sınıftan itibaren olduğu için yalnızca Zihniyet; "geleceğe bakış" Zihniyet'e uymadığı için
+    // amaç cümlesi yazılmaz.
     const seventh = evaluate(SLUG, body(positive(), 7));
     const w7 = seventh.student.roadmap!.weeks[3].text;
-    expect(w7).toContain('kendine ve geleceğe bakışını başka yönlerden de görmek için');
+    expect(w7).not.toContain('kendine ve geleceğe bakışını');
+    expect(w7).toContain('Bir sonraki adım olarak “Zihniyet: Zekâ ve Öğrenme İnançları” testini de çözebilirsin.');
     expect(w7).toContain('Zihniyet');
     expect(w7).not.toContain('İyimserlik');
     // 10. sınıf: ikisi de.

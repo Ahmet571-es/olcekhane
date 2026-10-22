@@ -1,3 +1,4 @@
+import { drawVisual, type DrawnVisual, type Tone } from '@/lib/reports/visual-draw';
 import { compareGeometry, gaugeGeometry, visualDescription, type CompareVisual, type GaugeVisual, type ItemVisual } from '@/lib/reports/visuals';
 
 /**
@@ -102,6 +103,48 @@ function Compare({ v }: { v: CompareVisual }) {
   );
 }
 
+/** Görev testlerinin grafiklerindeki renk adlarının ekrandaki karşılıkları (koyu temada da). */
+const TONES: Record<Tone, string> = {
+  fill: 'var(--brass)',
+  soft: 'var(--brass-soft)',
+  track: 'color-mix(in oklab, var(--rule) 55%, var(--surface-2))',
+  track2: 'var(--rule)',
+  ink: 'var(--ink)',
+  ink2: 'var(--ink-2)',
+  ink3: 'var(--ink-3)',
+  axis: 'var(--rule-strong)',
+  marker: 'var(--marker)',
+  surface: 'var(--surface)',
+};
+
+function Drawn({ v }: { v: DrawnVisual }) {
+  const d = drawVisual(v, W, FS);
+  return (
+    <svg viewBox={`0 0 ${W} ${r2(d.height)}`} className="h-auto w-full" role="img" aria-label={visualDescription(v)}>
+      {d.shapes.map((s, i) => {
+        switch (s.k) {
+          case 'rect':
+            return <rect key={i} x={s.x} y={s.y} width={s.w} height={s.h} rx={s.r} fill={TONES[s.fill]} stroke={s.stroke ? TONES[s.stroke] : 'none'} strokeWidth={s.sw ?? 0} />;
+          case 'circle':
+            return <circle key={i} cx={s.x} cy={s.y} r={s.r} fill={TONES[s.fill]} stroke={s.stroke ? TONES[s.stroke] : 'none'} strokeWidth={s.sw ?? 0} />;
+          case 'line':
+            return <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={TONES[s.stroke]} strokeWidth={s.sw} strokeDasharray={s.dash ? '3 2.5' : undefined} />;
+          case 'path':
+            return <path key={i} d={s.d} fill={TONES[s.fill]} />;
+          case 'text':
+            return (
+              <text key={i} x={s.x} y={s.y} textAnchor={s.anchor} fontSize={s.size} fontWeight={s.weight} fill={TONES[s.fill]} className="tabular">
+                {s.text}
+              </text>
+            );
+        }
+      })}
+    </svg>
+  );
+}
+
 export function ItemVisualView({ visual }: { visual: ItemVisual }) {
-  return visual.type === 'gauge' ? <Gauge v={visual} /> : <Compare v={visual} />;
+  if (visual.type === 'gauge') return <Gauge v={visual} />;
+  if (visual.type === 'compare') return <Compare v={visual} />;
+  return <Drawn v={visual} />;
 }

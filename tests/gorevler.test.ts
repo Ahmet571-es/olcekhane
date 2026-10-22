@@ -352,15 +352,23 @@ describe('Görev raporları', () => {
     expect(early.student.items[0].text).toContain('tek başına bir şey söylemez');
     // Hiç basmayan biri: durma oranı %100 ama yorumlanmaz; tipik süre hesaplanamaz.
     const idle = evaluate('dur-git-gorevi', goNoGoBody(() => null));
-    expect(idle.parent.items[0].text).toContain('tek başına yorumlanamaz: hiç basmayan');
-    expect(idle.parent.items[1].text).toContain('çoğunu kaçırdı');
+    expect(idle.parent.items[0].badge).toBe('Yorumlanmadı');
+    expect(idle.parent.items[0].visual).toBeUndefined();
+    expect(idle.parent.items[0].text).toContain('hiçbirinde basmadığı için bu oran yorumlanamaz: hiç basmayan');
+    expect(idle.parent.items[1].text).toContain('Çocuğunuz basması gereken harflerin hiçbirinde basmadı.');
+    expect(idle.student.items[1].text).toContain('Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin; bu yüzden bu sonuç yorumlanmadı.');
     expect(idle.parent.items[2].badge).toBe('Hesaplanamadı');
-    expect(idle.parent.cautions.join(' ')).toContain('zamanında basılmamış; görev yarıda');
+    expect(idle.parent.cautions.join(' ')).toContain('basılması gereken harflerin hiçbirinde basılmamış; görev yarıda');
+    // Ana grafikte durma oranı yorumlanmadı diye yazılır.
+    const stopRow = idle.parent.chart?.type === 'bars' ? idle.parent.chart.rows[0] : null;
+    expect(stopRow?.valueLabel).toBe('yorumlanmadı');
+    expect(idle.parent.chartNote).toContain('Basma oranı düşük olduğu için durma oranı yorumlanmadı.');
     // Her basış harfe bakmadan (90 ms): "hiç basmayan" gerekçesi yazılmaz, erken basış söylenir.
     const allEarly = evaluate('dur-git-gorevi', goNoGoBody(() => 90));
     expect(allEarly.student.items[0].text).toContain('çok erken bastığın için');
     expect(allEarly.student.items[0].text).not.toContain('hiç basmayan');
-    expect(allEarly.student.items[1].text).toContain('harflerin çoğunda harf görünür görünmez');
+    expect(allEarly.student.items[1].text).toContain('Basman gereken 90 harfin hepsinde harf görünür görünmez');
+    expect(allEarly.student.items[0].text).toContain('Ama basman gereken 90 harfin hepsinde harfe bakmadan, çok erken bastığın için');
     // 40 zamanında, 26 erken, 24 kaçırma: uyarı "yarısından çoğunda erken" demez.
     let i = 0;
     const split = evaluate(

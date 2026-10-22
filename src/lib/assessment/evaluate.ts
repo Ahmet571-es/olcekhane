@@ -9,7 +9,7 @@ import { buildInterestRoadmap } from '@/lib/reports/interest-roadmap';
 import { buildOralReport } from '@/lib/reports/oral';
 import { buildOralRoadmap } from '@/lib/reports/oral-roadmap';
 import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
-import { buildRoadmap, type Roadmap } from '@/lib/reports/roadmap';
+import { buildRoadmap, type NextTest, type Roadmap } from '@/lib/reports/roadmap';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { buildTaskRoadmap } from '@/lib/reports/task-roadmap';
 import { likertItemFlags, likertQuality, scoreLikert, type LikertAnswer, type LikertItemFlags } from '@/lib/scoring/likert';
@@ -133,12 +133,13 @@ function roadmapFor(def: InstrumentDef, content: ReportContent, body: AnswersBod
 }
 
 /** Yol haritasının son haftasında önerilecek testler: kişinin sınıfına uyan, yayındaki en çok iki test. */
-function nextTestsFor(slugs: string[], self: string, grade: number) {
+function nextTestsFor(slugs: string[], self: string, grade: number): NextTest[] {
   const live = publicInstruments();
-  return slugs
-    .flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== self && gradeAllowed(t, grade)))
-    .slice(0, 2)
-    .map((t) => ({ name: t.name, href: `/testler/${t.slug}` }));
+  const fits = slugs.flatMap((slug) => live.filter((t) => t.slug === slug && t.slug !== self && gradeAllowed(t, grade))).slice(0, 2);
+  // Şablonun ilk iki önerisinden biri elendiyse amaç cümlesi listeye uymaz (bkz. NextTest.partial).
+  const wanted = slugs.filter((slug) => slug !== self).slice(0, 2);
+  const partial = fits.length !== wanted.length || fits.some((t, i) => t.slug !== wanted[i]);
+  return fits.map((t) => ({ name: t.name, href: `/testler/${t.slug}`, ...(partial ? { partial: true } : {}) }));
 }
 
 /** Cevapları doğrulayıp puanlar; aynı puanlardan istenen kişiye yazılmış raporu hazırlayan işlevi döndürür. */

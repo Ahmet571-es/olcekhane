@@ -1,6 +1,6 @@
 import type { Citation } from '@/lib/instruments/types';
 import { KAYNAK } from './kaynaklar';
-import type { AudienceText } from './types';
+import type { AudienceText, NextPurpose } from './types';
 
 /**
  * Sesli Okuma Değerlendirmesi: gelişim yol haritası metinleri (kurulum lib/reports/oral-roadmap.ts).
@@ -35,7 +35,7 @@ export interface OralRoadmapTemplate {
   fluencyWeek: { title: string; text: AudienceText };
   lastWeek: { same: AudienceText; up: AudienceText };
   nextTests: string[];
-  nextPurpose: { you: string; parent: string };
+  nextPurpose: NextPurpose;
   /** Otomatik analizde girişin son cümlesi: önerilerin neye dayandığı. */
   autoBasis: AudienceText;
   sources: Citation[];

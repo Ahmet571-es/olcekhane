@@ -324,7 +324,7 @@ const task: VocabularyTask = {
       name: '2. düzey',
       plain: 'Günlük hayatta ve kitaplarda sık geçen kelimelerin eş ve zıt anlamlılarını, cümleye göre değişen anlamlarını ve yaygın deyimleri bilmek.',
     },
-    { level: 3, name: '3. düzey', plain: 'Daha seyrek geçen kelimeleri ve bir kelimenin ya da deyimin, içindeki kelimelerin gerçek anlamından farklı olan anlamını bilmek.' },
+    { level: 3, name: '3. düzey', plain: 'Daha seyrek geçen kelimeleri, kelimelerin mecaz anlamlarını ve deyimlerin anlamını bilmek.' },
     { level: 4, name: '4. düzey', plain: 'Gazete, bilim ve iş hayatı yazılarında geçen kelimeleri, bu alanlara özgü anlamları ve daha az bilinen deyimleri bilmek.' },
     { level: 5, name: '5. düzey', plain: 'Çoğu yazı dilinde geçen seyrek kelimeleri, soyut anlamları ve az bilinen deyimleri bilmek.' },
   ],

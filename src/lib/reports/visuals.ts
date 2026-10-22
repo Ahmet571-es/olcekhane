@@ -55,7 +55,98 @@ export interface CompareVisual {
   rows: CompareRow[];
 }
 
-export type ItemVisual = GaugeVisual | CompareVisual;
+/*
+ * Görev (zekâ ve dikkat) testlerinin kart grafikleri. Çizimleri lib/reports/visual-draw.ts'tedir: her tür, ekranda ve PDF'te
+ * aynı biçimde çizilen basit şekillere (dikdörtgen, daire, çizgi, yazı) çevrilir. Renkler tek tonludur: kişinin sonucu pirinç
+ * rengiyle, geri kalanı gri tonlarıyla gösterilir; doğru ve yanlış için yeşil ya da kırmızı kullanılmaz.
+ */
+
+/**
+ * Satır satır kareler: her satırda `total` kare, `filled` tanesi dolu (ör. bir düzeydeki 5 sorunun 4'ü doğru). Kare sayısı
+ * çoksa satır alt satıra geçer. `legend`: dolu ve boş karenin anlamı.
+ */
+export interface DotsVisual {
+  type: 'dots';
+  /** Grafiğin ne gösterdiği (ekran okuyucu için): "Düzeylere göre doğru cevaplar". */
+  label: string;
+  rows: { label: string; filled: number; total: number; valueLabel: string }[];
+  legend: [string, string];
+}
+
+/**
+ * Yatay çubuklar. `share`: her çubuk kendi en çoğuna göre dolar (ör. bir türdeki 6 sorunun 4'ü doğru). `scale`: bütün
+ * çubuklar ortak bir eksende (ör. saniye); eksenin en çoğu `max`, birimi `unit`. `reference`: kesikli dikey çizgi (ör.
+ * rastgele gösterilen yönlerin ortalama hatası).
+ */
+export interface BarsVisual {
+  type: 'bars';
+  label: string;
+  scale: 'share' | 'scale';
+  rows: { label: string; value: number; valueLabel: string; max?: number }[];
+  max?: number;
+  unit?: string;
+  reference?: { value: number; label: string };
+}
+
+/** Bir bütünün parçaları tek çubukta (ör. 20 problemin 18'i en az hamlede, 2'si fazla hamleyle); altında lejant. */
+export interface StackVisual {
+  type: 'stack';
+  label: string;
+  total: number;
+  parts: { label: string; value: number }[];
+}
+
+/** Basamaklar: kolaydan zora düzeyler ve ulaşılan düzey (`reached`; 0: hiçbir düzey belirtilmedi). */
+export interface StepsVisual {
+  type: 'steps';
+  label: string;
+  steps: string[];
+  reached: number;
+  valueLabel: string;
+  caption: string;
+}
+
+/** Dikey sütunlar: sıralı ölçümler (ör. üç denemede hatırlanan kelimeler, bölüm bölüm net doğru). */
+export interface ColumnsVisual {
+  type: 'columns';
+  label: string;
+  rows: { label: string; value: number; valueLabel: string }[];
+  max: number;
+  caption?: string;
+}
+
+/**
+ * Nokta şeridi: bir eksen üzerinde tek tek ölçümler (ör. her sorudaki yön hatası) ya da tipik değer ve çoğu ölçümün düştüğü
+ * aralık (`box`). `zone`: vurgulu aralık (ör. doğru yöne çok yakın cevaplar), `reference`: kesikli çizgi.
+ */
+export interface StripVisual {
+  type: 'strip';
+  label: string;
+  min: number;
+  max: number;
+  unit: string;
+  points: number[];
+  marker?: { value: number; label: string };
+  /** Ölçümlerin çoğunun (ör. tepkilerin en az yarısının) düştüğü aralık; `label` açıklamada kullanılır. */
+  box?: { low: number; high: number; label?: string };
+  zone?: { from: number; to: number; label: string };
+  reference?: { value: number; label: string };
+}
+
+/**
+ * Dizi merdiveni: her uzunluktaki denemeler (dolu daire doğru, boş daire yanlış) ve doğru tekrarlanan en uzun dizi. Görev daha
+ * kısa bir dizide bittiyse sorulmayan uzunlukların denemeleri boştur (`results: []`; soluk çizilir).
+ */
+export interface LadderVisual {
+  type: 'ladder';
+  label: string;
+  rows: { length: number; results: boolean[] }[];
+  reached: number | null;
+  /** Uzunluğun birimi: "rakam", "kutu". */
+  unit: string;
+}
+
+export type ItemVisual = GaugeVisual | CompareVisual | DotsVisual | BarsVisual | StackVisual | StepsVisual | ColumnsVisual | StripVisual | LadderVisual;
 
 /**
  * Ölçeğin düzey bölgeleri: testin eşikleri (anchoredBands) ve şablonun düzey adları. Şablonda metni olmayan düzey en yakın
@@ -92,6 +183,9 @@ export const textWidth = (text: string, fontSize: number) => text.length * fontS
 
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
 export const formatTick = (v: number) => nf1.format(Math.round(v * 10) / 10);
+/** Açıklamalarda en çok iki ondalık: 0.42 → "0,42", 90 → "90". */
+const nf2max = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 });
+const nf2fixed = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export interface LabelSpot {
   text: string;
@@ -239,10 +333,38 @@ export function compareGeometry(v: CompareVisual, width: number, fontSize: numbe
 /** Ekran okuyucu için grafiğin sözel karşılığı. */
 export function visualDescription(v: ItemVisual): string {
   const zoneText = (zs: Zone[]) => zs.map((z) => `${z.label} ${formatTick(z.from)}–${formatTick(z.to)}`).join(', ');
-  if (v.type === 'gauge') {
-    const where = v.value === null || v.active === null ? 'puan hesaplanamadı' : `${v.valueLabel}, ${v.zones[v.active].label} bölgesinde`;
-    return `${v.label}: ${where}. Bölgeler: ${zoneText(v.zones)}.`;
+  switch (v.type) {
+    case 'gauge': {
+      const where = v.value === null || v.active === null ? 'puan hesaplanamadı' : `${v.valueLabel}, ${v.zones[v.active].label} bölgesinde`;
+      return `${v.label}: ${where}. Bölgeler: ${zoneText(v.zones)}.`;
+    }
+    case 'compare': {
+      const rows = v.rows.map((r) => `${r.label} ${r.value === null ? 'hesaplanamadı' : `${r.valueLabel}${r.active !== null ? `, ${v.zones[r.active].label}` : ''}`}`);
+      return `${rows.join('; ')}. Bölgeler: ${zoneText(v.zones)}.`;
+    }
+    case 'dots':
+    case 'bars':
+    case 'columns':
+      return `${v.label}: ${v.rows.map((r) => `${r.label} ${r.valueLabel}`).join('; ')}.`;
+    case 'stack':
+      return `${v.label}: ${v.parts.map((p) => `${p.label} ${p.value}`).join('; ')} (toplam ${v.total}).`;
+    case 'steps':
+      return `${v.label}: ${v.valueLabel} (${v.steps.length} düzeyden).`;
+    case 'strip': {
+      // İşaretin adı değerini de içeriyorsa (ör. "Tipik 0,42 sn") değer yinelenmez; aralık iki ondalıkla (saniyede kartın
+      // metni gibi tam iki ondalık: "0,30–0,34 sn") yazılır.
+      const exact = (x: number) => (v.unit === 'sn' ? nf2fixed : nf2max).format(x);
+      const parts = [
+        v.marker ? (/\d/.test(v.marker.label) ? v.marker.label : `${v.marker.label} ${exact(v.marker.value)} ${v.unit}`) : '',
+        v.box ? `${v.box.label ?? 'çoğu ölçüm'} ${exact(v.box.low)}–${exact(v.box.high)} ${v.unit} arasında` : '',
+        v.points.length ? `${v.points.length} ölçüm` : '',
+        v.zone ? `${v.zone.label}: ${formatTick(v.zone.from)}–${formatTick(v.zone.to)} ${v.unit}` : '',
+      ].filter(Boolean);
+      return `${v.label}: ${parts.join('; ')}.`;
+    }
+    case 'ladder': {
+      const rows = v.rows.filter((r) => r.results.length).map((r) => `${r.length} ${v.unit}: ${r.results.map((x) => (x ? 'doğru' : 'yanlış')).join(', ')}`);
+      return `${v.label}: ${rows.join('; ')}. ${v.reached === null ? 'Doğru tekrarlanan dizi yok' : `En uzun doğru dizi ${v.reached} ${v.unit}`}.`;
+    }
   }
-  const rows = v.rows.map((r) => `${r.label} ${r.value === null ? 'hesaplanamadı' : `${r.valueLabel}${r.active !== null ? `, ${v.zones[r.active].label}` : ''}`}`);
-  return `${rows.join('; ')}. Bölgeler: ${zoneText(v.zones)}.`;
 }

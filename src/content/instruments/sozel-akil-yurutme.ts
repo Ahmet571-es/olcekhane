@@ -405,17 +405,17 @@ const verbal: VerbalReasoningTask = {
     {
       level: 3,
       name: '3. düzey',
-      plain: 'Bir parçanın ait olduğu bütünü bulmak (ör. günün haftaya ait olması), yağışlar ya da okunan yazılar gibi daha geniş grupları tanımak, birden çok sıralamaya uyan bilgilerden kesin olanı seçmek ve gerçeğe uymayan bilgilerle akıl yürütmek.',
+      plain: 'Bir parçanın ait olduğu bütünü bulmak (ör. gün ve hafta), kar ve yağmur gibi yağışları ya da kitap ve gazete gibi okunan yazıları bir grupta toplamak, birden çok sıralamaya uyan bilgilerden kesin olanı seçmek ve gerçekte doğru olmayan bir bilgiyi doğru sayıp sonuç çıkarmak.',
     },
     {
       level: 4,
       name: '4. düzey',
-      plain: 'Bir şeyin en hafif ve en güçlü hâlleri arasındaki ilişkiyi başka bir alana taşımak, bir işe göre kurulan grupları (ör. durduranlar) bulmak, adı hiç geçmeyen birinin yerini bulmak, bilgilerin cevabı bulmaya yetmediğini fark etmek ve bir kuralın sonucu gerçekleşmediğinde bundan ne çıktığını bulmak.',
+      plain: 'Bir şeyin en hafif ve en güçlü hâlini başka bir şeye uygulamak, aynı işi yapanları (ör. bir şeyi durduranları) bir grupta toplamak, sıralamada adı hiç geçmeyen birinin yerini bulmak, bilgilerin cevaba yetmediğini fark etmek ve bir kuralın sonucu gerçekleşmediğinde bundan ne çıktığını bulmak.',
     },
     {
       level: 5,
       name: '5. düzey',
-      plain: 'Bir şeyin neyi önlediği gibi soyut ilişkileri ve gelişip başka bir şeye dönüşenler gibi soyut grupları bulmak, birden çok yerleşime uyan bilgilerden kesin olanı seçmek ve iki ya da üç bilgiyi birleştirerek “hiçbir”, “bütün” ve “bazı” içeren çıkarımlar yapmak.',
+      plain: 'Bir şeyin neyi önlediği gibi soyut ilişkileri ve gelişip başka bir şeye dönüşenler gibi soyut grupları bulmak, birden çok sıralamaya uyan bilgilerden (ör. kimin hangi katta oturduğu) kesin olanı seçmek ve iki ya da üç bilgiyi birleştirerek “hiçbir”, “bütün” ve “bazı” içeren çıkarımlar yapmak.',
     },
   ],
 };
@@ -464,7 +464,7 @@ export const sozelAkilYurutme: TaskInstrument = {
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Sorular, ilişkinin ve çıkarımın zorluğuna göre kolaydan zora beş düzeye ayrılmıştır; bu sıralama Ölçekhane’nin tasarımıdır ve soruların gerçek zorluk sırası henüz veriyle denetlenmedi. Sıralama ve mantıksal çıkarım sorularının tek doğru cevabı olduğu, verilen bilgilere uyan bütün olasılıkları tek tek deneyen bir bilgisayar programıyla denetlenmiştir. Kelime ilişkileri ve sınıflama sorularında böyle bir program kullanılamadığı için sorular cevap anahtarı görülmeden ayrı ayrı çözülerek ve her seçenek için savunulabilir bir gerekçe aranarak denetlenmiştir; bu soruların uzmanlarca incelenmesi henüz yapılmadı.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi soru türlerinde ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Akıl yürütme becerisi erken ve orta çocuklukta hızla gelişir, gençliğin ilk yıllarına kadar daha yavaş da olsa gelişmeyi sürdürür ve gençlik yıllarının ortasıyla sonu arasında durağanlaşır (Ferrer, O’Hare ve Bunge, 2009); sözel sorularda ayrıca kelime bilgisi ve okuma rahatlığı da rol oynar. Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir. Bir norm Türkiye’de, yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi soru türlerinde ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Akıl yürütme becerisi çocuklukta hızla, gençlikte daha yavaş gelişir; gençlik yıllarının sonuna doğru artık pek değişmez (Ferrer, O’Hare ve Bunge, 2009). Sözel sorularda kelime bilgisi ve okuma rahatlığı da rol oynar. Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir.',
     ageNote:
       '3. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Süre sınırı yoktur. Soruları okuyabilmek gerekir; 3. ve 4. sınıflarda uzun sıralama ve çıkarım sorularında zorlanmak beklenen bir durumdur. Telefonla da çözülebilir; yanında kâğıt ve kalem bulunması önerilir.',
     license: 'Özgün test. Sorular, puanlama ve rapor Ölçekhane tarafından geliştirilmiştir.',

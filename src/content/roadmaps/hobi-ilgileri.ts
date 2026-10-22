@@ -67,7 +67,7 @@ export const hobiIlgileriRoadmap: InterestRoadmapTemplate = {
     parent: 'Dört haftada hangi etkinliğin ona en iyi geldiğini çocuğunuzla konuşun ve onu sürdürmesi için haftada küçük ama düzenli bir zamanı birlikte belirleyin.',
   },
   nextTests: ['mesleki-ilgi-profili', 'meslek-ilgi-alanlari'],
-  nextPurpose: { you: 'meslek ilgilerini de görmek', parent: 'çocuğunuzun meslek ilgilerini de görmek' },
+  nextPurpose: { you: 'meslek ilgilerini de görmek', parent: 'çocuğunuzun meslek ilgilerini de görmek', general: true },
   links: [],
   areas: {
     children: area('#df4777', {

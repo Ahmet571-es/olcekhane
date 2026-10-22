@@ -251,7 +251,12 @@ describe('Harf işaretleme raporu', () => {
       const [tempo, isabet, net, surdurme] = c.blocks;
       expect(tempo.headline).toMatch(/^Dakikada \d+ harf$/);
       expect(isabet.headline).toMatch(/^Bulma oranı %\d+$/);
-      expect(isabet.detail).toContain(`${result.omissions} harf atlandı`);
+      // Bulunan ve atlanan harflerin sayıları kartın grafiğindedir.
+      const parts = isabet.visual?.type === 'stack' ? isabet.visual.parts : [];
+      expect(parts.map((x) => [x.label, x.value])).toEqual([
+        ['Bulunan harf', result.hits],
+        ['Atlanan harf', result.omissions],
+      ]);
       expect(net.headline).toBe(`${result.net} net doğru`);
       expect(surdurme.headline).toBe('Son bölümlerde düştü');
       expect(surdurme.sections!.map((s) => s.value)).toEqual(result.sections.map((s) => s.net));
@@ -277,7 +282,7 @@ describe('Harf işaretleme raporu', () => {
     for (const audience of ['student', 'parent'] as const) {
       const c = buildReport({ def: harfIsaretleme, scores: scoresOf(r), audience, studentName: 'Deneme', grade: 5, completedAt: new Date() }).cognitive!;
       expect(c.blocks[1].text).not.toMatch(/dikkatli|dikkatle/);
-      expect(c.blocks[1].text).toMatch(/yanlışlıkla işaretledin|işaretlenmiş/);
+      expect(c.blocks[1].text).toMatch(/yanlışlıkla işaretledin \(\d+ yanlış işaret\)|harfi de işaretledi \(\d+ yanlış işaret/);
       expect(c.blocks[3].headline).toBe('Belirgin değişim yok');
     }
   });

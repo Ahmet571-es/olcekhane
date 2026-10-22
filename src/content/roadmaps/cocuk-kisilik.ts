@@ -39,7 +39,7 @@ export const cocukKisilikRoadmap: RoadmapTemplate = {
     'Dört haftada neyin işe yaradığını çocuğunuzla konuşun; işe yarayanı sürdürün, yaramayanı bırakın.',
   ),
   nextTests: ['kelime-listesi-hatirlama', 'sekil-akil-yurutme'],
-  nextPurpose: { you: 'kendini başka yönlerden de tanımak', parent: 'çocuğunuzu başka yönlerden de tanımak' },
+  nextPurpose: { you: 'kendini başka yönlerden de tanımak', parent: 'çocuğunuzu başka yönlerden de tanımak', general: true },
   scales: {
     extraversion: {
       color: '#ee6a36',

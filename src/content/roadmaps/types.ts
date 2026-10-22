@@ -7,6 +7,17 @@
 export type BandGroup = 'low' | 'average' | 'high';
 
 /**
+ * Yol haritasının son haftasındaki "Bir sonraki adım olarak … için … testini çözebilirsin" cümlesinin amacı. Önerilen
+ * testlerden biri kişinin sınıfına uymadığı (ya da yayında olmadığı) için elenirse amaç yalnızca `general` ise
+ * (önerilen testlerin her birine tek başına da uyuyorsa) yazılır; yoksa kalan test amaçsız önerilir.
+ */
+export interface NextPurpose {
+  you: string;
+  parent: string;
+  general?: boolean;
+}
+
+/**
  * Bir metnin kime yazıldığı: öğrenciye ve yetişkine ikinci tekil şahısla, veliye çocuğunu anlatarak. Yetişkin metni
  * yalnızca öğrenci metni okula özgü olduğunda yazılır; verilmezse öğrenci metni kullanılır.
  */
@@ -104,7 +115,7 @@ export interface RoadmapTemplate {
   /** Son haftada önerilecek testler (yalnızca yayındakiler ve kişinin sınıfına uyanlar gösterilir). */
   nextTests: string[];
   /** Önerilen testlerin ne için önerildiği; verilmezse "ilgilerini görmek" (kişilik testlerinden sonra ilgi testleri). */
-  nextPurpose?: { you: string; parent: string };
+  nextPurpose?: NextPurpose;
   sources: { text: string; url?: string }[];
 }
 
@@ -151,7 +162,7 @@ export interface InterestRoadmapTemplate {
   lastWeek: AudienceText;
   /** Son haftada önerilecek testler ve neden önerildikleri (ör. "kişilik özelliklerini görmek"). */
   nextTests: string[];
-  nextPurpose: { you: string; parent: string };
+  nextPurpose: NextPurpose;
   links: { label: string; href: string }[];
   sources: { text: string; url?: string }[];
 }
@@ -207,7 +218,7 @@ export interface AcademicRoadmapTemplate {
   /** Pekiştirilecek alan yoksa veliye yaklaşım önerileri. */
   approachSolid: { title: string; text: string }[];
   nextTests: string[];
-  nextPurpose: { you: string; parent: string };
+  nextPurpose: NextPurpose;
   links: { label: string; href: string }[];
   sources: { text: string; url?: string }[];
 }
@@ -242,7 +253,7 @@ export interface ReadingRoadmapTemplate {
   extraWeek: { title: string; text: AudienceText };
   lastWeek: AudienceText;
   nextTests: string[];
-  nextPurpose: { you: string; parent: string };
+  nextPurpose: NextPurpose;
   links: { label: string; href: string }[];
   sources: { text: string; url?: string }[];
 }
@@ -265,7 +276,7 @@ export interface TaskRoadmapTemplate {
   weeks: [{ title: string; text: AudienceText }, { title: string; text: AudienceText }, { title: string; text: AudienceText }];
   lastWeek: AudienceText;
   nextTests: string[];
-  nextPurpose: { you: string; parent: string };
+  nextPurpose: NextPurpose;
   links: { label: string; href: string }[];
   sources: { text: string; url?: string }[];
 }

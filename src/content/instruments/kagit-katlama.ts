@@ -174,7 +174,7 @@ const task: PaperFoldingTask = {
       plain: 'İki kez ortadan katlanan ya da bir kez katlanıp iki yerden delinen kâğıdı izlemek ve kenardan katlamada kâğıdın tek kat kaldığı yerleri fark etmek.',
     },
     { level: 3, name: '3. düzey', plain: 'İki katlamayı (ortadan, çapraz ya da kenardan) sondan başa doğru açarak her katlamanın eklediği delikleri bulmak.' },
-    { level: 4, name: '4. düzey', plain: 'Üç kez katlanan ya da iki kez katlanıp iki yerden delinen kâğıdı izlemek; bir katlamanın hangi deliklere ulaştığını ayırt etmek.' },
+    { level: 4, name: '4. düzey', plain: 'Üç kez katlanan ya da iki kez katlanıp iki yerden delinen kâğıdı izlemek ve bir katlamanın hangi deliklere ulaştığını ayırt etmek.' },
     {
       level: 5,
       name: '5. düzey',
@@ -226,7 +226,7 @@ export const kagitKatlama: TaskInstrument = {
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Sorular, katlama sayısına ve türüne göre kolaydan zora beş düzeye ayrılmıştır; bu sıralama Ölçekhane’nin tasarımıdır ve soruların gerçek zorluk sırası henüz veriyle denetlenmedi. Her sorunun doğru seçeneği iki ayrı yolla hesaplanmıştır: kâğıdı adım adım açarak ve kâğıdın her noktasını katlanmış hâline taşıyıp deliğe düşen noktaları bularak; iki yol da yalnızca doğru seçeneği verir. Yanlış seçenekler olası yanılgılardan, deliğin yerini yanlış görmekten ve kâğıdı ters çevirmekten ya da döndürmekten üretilmiştir; delik sayısına ya da seçeneklerin birbirine benzerliğine bakan basit tahmin yolları, rastgele seçmekten belirgin biçimde daha çok doğru cevap vermez.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi tür katlamalarda ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Uzamsal beceriler yaşla ve deneyimle değiştiği için aynı sonuç farklı yaşlarda farklı anlama gelir; bir norm Türkiye’de, yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi tür katlamalarda ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Uzamsal beceriler yaşla ve deneyimle değiştiği için aynı sonuç farklı yaşlarda farklı anlama gelir.',
     ageNote:
       '3. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Süre sınırı yoktur. Küçük sınıflarda üç katlamalı sorularda zorlanmak beklenen bir durumdur. Telefonla da çözülebilir; şekiller büyük ekranda daha rahat görülür.',
     license: 'Özgün test. Sorular, puanlama ve rapor Ölçekhane tarafından geliştirilmiştir.',

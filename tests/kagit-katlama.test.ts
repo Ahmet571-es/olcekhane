@@ -14,6 +14,7 @@ import { FOLDING_TYPES } from '@/lib/reports/build';
 import type { SimpleReport } from '@/lib/reports/simple';
 import {
   FOLDING_CHANCE_MAX,
+  foldingChance,
   FOLDING_RAPID_MS,
   TaskInputError,
   foldingLurePattern,
@@ -167,8 +168,11 @@ describe('Kâğıt katlama: sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '3e3a49ad8385a42a';
+/**
+ * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-10-22'de yalnızca düzeylerin
+ * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı.
+ */
+const SORU_IZI = '5ca0704ea9e763aa';
 
 describe('Kâğıt katlama: puanlama', () => {
   const all = (fn: (i: number) => Partial<FoldingTrialInput> = () => ({})): FoldingTrialInput[] =>
@@ -217,7 +221,7 @@ describe('Kâğıt katlama: rapor', () => {
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '24 soruda 24 doğru'],
       ['Ulaşılan düzey', '5. düzey'],
-      ['Katlama türleri', '3 katlama türünün hepsinde soruların çoğu doğru'],
+      ['Katlama türleri', '3 katlama türünün hepsinde bütün sorular doğru'],
       ['Çalışma biçimi', 'Soru başına tipik süre 20 saniye'],
     ]);
     expect(r.student.cautions).toEqual([]);
@@ -244,7 +248,7 @@ describe('Kâğıt katlama: rapor', () => {
     expect(lure.parent.items[0].text).toContain('Çocuğunuz yanlış cevaplarının hepsinde');
     const rapid = evaluate(SLUG, foldingBody((q) => ({ response: q.level >= 3 ? foldingOther(q) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })));
     expect(rapid.student.cautions.join(' ')).toContain('3. düzey ve üstündeki 15 sorunun hepsinde yanlış bir cevap 2,5 saniyeden kısa sürede verilmiş');
-    expect(rapid.student.items[3].text).toContain('yanlış bir cevabı 2,5 saniyeden kısa sürede verdin');
+    expect(rapid.student.items[3].text).toContain('15 sorunun hepsine 2,5 saniyeden kısa sürede yanlış cevap verdin');
     const same = evaluate(SLUG, foldingBody(() => ({ response: 2, rtMs: 9000 })));
     expect(same.student.items[3].text).toContain('Bütün cevaplarında aynı sıradaki seçeneği seçtin');
     // 1. düzeyde zorlanıp yanlışların çoğunda çeldiriciyi seçmek: düzey kartı dikkatsizlikten söz etmez, yanılgılara gönderir.
@@ -260,7 +264,8 @@ describe('Kâğıt katlama: rapor', () => {
     expect(diag.student.items[2].text).toContain('“Ortadan katlama” ve “kenardan katlama” sorularının çoğunu doğru buldun; “çapraz katlama” sorularında zorlandın.');
     const ex = evaluate(SLUG, foldingBody());
     expect(ex.student.items[0].badge).toBe('24 soruda 18 doğru');
-    expect(ex.student.items[1].text).toContain('3. düzeye kadar soruların çoğunu doğru cevapladın. 3. düzeydeki sorularda şu gerekiyordu: iki katlamayı (ortadan, çapraz ya da kenardan) sondan başa doğru açarak');
+    expect(ex.student.items[1].text).toContain('1–3. düzeylerdeki soruların hepsini doğru cevapladın. 3. düzeydeki sorularda şu gerekiyordu: iki katlamayı (ortadan, çapraz ya da kenardan) sondan başa doğru açarak');
+    expect(ex.student.items[1].text).toContain('4. düzeydeki 5 sorunun 3 tanesini doğru bulamadın. Bu düzeydeki sorularda şu gerekiyordu: üç kez katlanan');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -293,7 +298,7 @@ describe('Kâğıt katlama: rapor', () => {
             const res = evaluate(SLUG, body);
             const { result } = scoreFolding(task, (body.data as { blocks: Record<string, FoldingTrialInput[]> }).blocks[task.key]);
             const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
-            const chance = result.correct <= FOLDING_CHANCE_MAX;
+            const chance = foldingChance(result);
             for (const r of [res.student, res.parent, adult]) {
               const t = text(r);
               expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]/);
@@ -316,7 +321,7 @@ describe('Kâğıt katlama: rapor', () => {
               if (!chance && foldingLurePattern(result)) expect(r.items[0].text + r.items[1].text, label).not.toMatch(/dağılmasından/);
               const fig = r.keyFigures.find((f) => f.label === 'Ulaşılan düzey')!.value;
               if (chance) expect(fig, label).toBe('Yorumlanmadı');
-              else if (result.reached === 0) expect([fig, r.items[1].badge?.startsWith('1. düzeyde zorlandı')], label).toEqual(['Belirtilmedi', true]);
+              else if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               expect(r.items[0].badge, label).toBe(`24 soruda ${result.correct} doğru`);
             }

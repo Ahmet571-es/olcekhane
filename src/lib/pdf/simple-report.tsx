@@ -9,6 +9,7 @@ import type { OralReportBlock } from '@/lib/reports/oral';
 import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
 import type { OralMarkedToken } from '@/lib/scoring/oral';
 import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
+import { drawVisual, type DrawnVisual, type Tone } from '@/lib/reports/visual-draw';
 import { compareGeometry, gaugeGeometry, type CompareVisual, type GaugeVisual, type ItemVisual } from '@/lib/reports/visuals';
 
 /**
@@ -469,8 +470,50 @@ function ComparePdf({ v }: { v: CompareVisual }) {
   );
 }
 
+/** Görev testlerinin grafiklerindeki renk adlarının PDF'teki karşılıkları (ekrandaki açık temayla aynı). */
+const TONES: Record<Tone, string> = {
+  fill: C.brass,
+  soft: C.brassSoft,
+  track: ZONE_FILL[0],
+  track2: ZONE_FILL[1],
+  ink: C.ink,
+  ink2: C.ink2,
+  ink3: C.ink3,
+  axis: C.ruleStrong,
+  marker: C.marker,
+  surface: C.paper,
+};
+
+function DrawnPdf({ v }: { v: DrawnVisual }) {
+  const d = drawVisual(v, VW, VFS);
+  return (
+    <Svg width={VW} height={d.height}>
+      {d.shapes.map((s, i) => {
+        switch (s.k) {
+          case 'rect':
+            return <Rect key={i} x={s.x} y={s.y} width={s.w} height={s.h} rx={s.r} fill={TONES[s.fill]} stroke={s.stroke ? TONES[s.stroke] : undefined} strokeWidth={s.sw ?? 0} />;
+          case 'circle':
+            return <Circle key={i} cx={s.x} cy={s.y} r={s.r} fill={TONES[s.fill]} stroke={s.stroke ? TONES[s.stroke] : undefined} strokeWidth={s.sw ?? 0} />;
+          case 'line':
+            return <Line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={TONES[s.stroke]} strokeWidth={s.sw} strokeDasharray={s.dash ? '2.2 1.8' : undefined} />;
+          case 'path':
+            return <Path key={i} d={s.d} fill={TONES[s.fill]} />;
+          case 'text':
+            return (
+              <Text key={i} x={s.x} y={s.y} textAnchor={s.anchor} style={{ fontFamily: 'Atkinson', fontSize: s.size, fontWeight: s.weight === 600 ? 700 : s.weight, fill: TONES[s.fill] }}>
+                {s.text}
+              </Text>
+            );
+        }
+      })}
+    </Svg>
+  );
+}
+
 function ItemVisualPdf({ visual }: { visual: ItemVisual }) {
-  return visual.type === 'gauge' ? <GaugePdf v={visual} /> : <ComparePdf v={visual} />;
+  if (visual.type === 'gauge') return <GaugePdf v={visual} />;
+  if (visual.type === 'compare') return <ComparePdf v={visual} />;
+  return <DrawnPdf v={visual} />;
 }
 
 function Chart({ chart }: { chart: SimpleChart }) {

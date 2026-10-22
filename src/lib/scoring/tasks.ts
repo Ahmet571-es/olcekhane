@@ -379,6 +379,9 @@ export interface CancellationResult {
   ceiling: boolean;
 }
 
+/** Harf işaretlemede bundan az doğru işaret varsa görev yarıda kalmış ya da yönerge anlaşılmamış sayılır; sonuç yorumlanmaz. */
+export const CANCELLATION_FEW_HITS = 10;
+
 export function scoreCancellation(
   task: CancellationTask,
   sheet: string[][],
@@ -520,6 +523,12 @@ export const COLOR_WORD_ANTICIPATION_MS = 200;
 export const COLOR_WORD_MIN_CORRECT = 10;
 
 const medianOrNull = (xs: number[], min = 1) => (xs.length >= Math.max(1, min) ? Math.round(median(xs)) : null);
+
+/**
+ * Renk-kelime görevinde doğru olmayan cevapların yarısından çoğu süre aşımı ya da çok erken cevap: yazının rengini bulmakta
+ * zorlanmaktan çok görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir (rapordaki kart ve not aynı ölçütü kullanır).
+ */
+export const colorWordMostlyMissed = (r: ColorWordResult) => r.n - r.correct > 0 && r.timeouts + r.anticipations > (r.n - r.correct) / 2;
 
 export function scoreColorWord(task: ColorWordTask, input: ColorWordTrialInput[]): { trials: ColorWordTrialScored[]; result: ColorWordResult } {
   const seen = new Set<number>();
@@ -1192,7 +1201,10 @@ export interface MatrixResult {
   /** 1–2. düzey ve 4–5. düzey sorularda tipik cevap süresi (ms). */
   rtEasy: number | null;
   rtHard: number | null;
-  /** 3. düzey ve üstündeki sorularda `rapidMs`'den kısa cevapların sayısı ve bu soruların sayısı. */
+  /**
+   * 3. düzey ve üstündeki sorularda `rapidMs`'den kısa sürede verilen yanlış cevaplar ve bu soruların sayısı (hızlı ama
+   * doğru bulunan cevap tahmin sayılmaz).
+   */
   rapid: number;
   rapidOf: number;
   /** Yanlış cevaplar ve bunlardan doğru cevaptan tek özellikte ayrılan seçeneklerin seçildikleri ("yakın" hatalar). */
@@ -1264,7 +1276,7 @@ export function scoreMatrix(task: MatrixReasoningTask, input: MatrixTrialInput[]
       medianRt: medianOrNull(rts(scored)),
       rtEasy: medianOrNull(rts(scored.filter((s) => s.item.level <= 2))),
       rtHard: medianOrNull(rts(scored.filter((s) => s.item.level >= 4))),
-      rapid: hardOnes.filter((s) => s.rt !== null && s.rt < task.rapidMs).length,
+      rapid: hardOnes.filter((s) => !s.correct && s.rt !== null && s.rt < task.rapidMs).length,
       rapidOf: hardOnes.length,
       wrong: wrong.length,
       nearMisses: wrong.filter((s) => s.distance === 1).length,
@@ -2592,6 +2604,8 @@ export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result:
 }
 
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
+/** Küp açınımında şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
+export const cubeChance = (r: CubeResult) => r.correct <= CUBE_CHANCE_MAX && r.reached === 0;
 export const cubeRapid = (r: CubeResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
 export const CUBE_SAME_MAX_CORRECT = 12;
@@ -2605,7 +2619,7 @@ export const cubeLureStandsOut = (r: CubeResult, k: CubeLure) => r.luresByKind[k
 /** Küp açınımında sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, cubeBlocks aynı eşikleri kullanır). */
 export function cubeQualityNotes(r: CubeResult): string[] {
   const notes: string[] = [];
-  if (r.correct <= CUBE_CHANCE_MAX) {
+  if (cubeChance(r)) {
     notes.push(
       'Küp açınımı testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorulara bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
@@ -2732,6 +2746,8 @@ export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]):
 }
 
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
+/** Gizli şekillerde şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
+export const hiddenChance = (r: HiddenResult) => r.correct <= HIDDEN_CHANCE_MAX && r.reached === 0;
 export const hiddenRapid = (r: HiddenResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
 export const HIDDEN_SAME_MAX_CORRECT = 12;
@@ -2745,9 +2761,13 @@ export const hiddenLureStandsOut = (r: HiddenResult, k: HiddenLure) => r.luresBy
 /** Gizli şekillerde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, hiddenBlocks aynı eşikleri kullanır). */
 export function hiddenQualityNotes(r: HiddenResult): string[] {
   const notes: string[] = [];
-  if (r.correct <= HIDDEN_CHANCE_MAX) {
+  if (hiddenChance(r)) {
+    // Yanlışların çoğu döndürülmüş biçimse (ve çalışma biçiminde kuşku yoksa) yönerge farklı anlaşılmış olabilir.
+    const turnedMost = !hiddenRapid(r) && !hiddenSamePosition(r) && r.luresByKind.turned >= Math.max(6, 0.6 * (r.n - r.correct));
     notes.push(
-      'Gizli şekiller testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da çizimlere bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+      turnedMost
+        ? 'Gizli şekiller testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; yanlışların çoğunda aranan şeklin döndürülmüş ya da ters çevrilmiş biçimi seçilmiş. Yönerge farklı anlaşılmış olabilir: döndürülmüş ya da ters çevrilmiş şekil doğru cevap sayılmaz. Bu sonuç tek başına yorumlanmamalıdır.'
+        : 'Gizli şekiller testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da çizimlere bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
   }
   if (hiddenRapid(r)) {
@@ -3908,22 +3928,27 @@ export function taskQualityNotes(parts: {
   }
   const s = parts.symbol;
   if (s) {
-    if (s.attempted === 0) notes.push('Sembol eşleştirme görevinde hiç cevap verilmedi; bu görevin sonucu yorumlanmadı.');
+    if (s.attempted === 0) notes.push('Sembol eşleştirme görevinde hiç cevap verilmedi.');
     else if (s.attempted < 10) notes.push('Sembol eşleştirme görevinde çok az cevap verilmiş; görev yarıda bırakılmış olabilir.');
     else if (s.accuracy < 0.7) notes.push('Sembol eşleştirme görevinde hata oranı yüksek; hızdan çok doğruluğa odaklanmak gerekebilir.');
   }
   const c = parts.cancellation;
   if (c) {
-    if (c.hits < 10) notes.push('Harf işaretleme görevinde çok az harf işaretlenmiş; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.');
+    if (c.hits < CANCELLATION_FEW_HITS) notes.push('Harf işaretleme görevinde çok az harf işaretlenmiş; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.');
     else if (c.commissions > c.hits) notes.push('Harf işaretleme görevinde yanlış işaretler doğru işaretlerden fazla; harflere rastgele dokunulmuş olabilir.');
     else if (c.hitRate < 0.5) notes.push('Harf işaretleme görevinde aranan harflerin yarısından azı bulunmuş; satırlar atlanmış ya da çok hızlı gidilmiş olabilir.');
     if (c.ceiling) notes.push('Harf işaretleme görevinde en az bir bölümde sayfanın sonuna ulaşılmış; çalışma hızı olduğundan düşük görünebilir.');
   }
   const cw = parts.colorWord;
-  if (cw && cw.n > 0) {
+  if (cw && cw.n > 0 && cw.accuracy < 0.6 && colorWordMostlyMissed(cw)) {
+    // Doğru olmayan cevapların çoğu süre aşımı ya da çok erken cevap: tek bir not (renk körlüğü ya da süre notu yinelenmez).
+    notes.push(
+      `Renk-kelime görevinde ${cw.timeouts + cw.anticipations > cw.n / 2 ? 'denemelerin çoğunda' : 'denemelerin bir kısmında'} süre içinde cevap verilmemiş ya da kelimeye bakmadan çok erken basılmış; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir. Bu görevin sonucu yorumlanmamalıdır.`,
+    );
+  } else if (cw && cw.n > 0) {
     if (cw.checkFlag) {
       notes.push(
-        `Renk-kelime görevinin başındaki renk denemesinde ${cw.checkTrials} denemenin ${cw.checkErrors} tanesinde başka bir rengin düğmesine basılmış: renkler birbirinden ayırt edilmekte zorlanılmış ya da düğmelere yanlışlıkla basılmış olabilir. Renkleri ayırt etmekte zorlanan biri için bu görevin sonucu geçerli değildir.`,
+        `Renk-kelime görevinin başındaki renk denemesinde ${cw.checkTrials} denemenin ${cw.checkErrors} tanesinde başka bir rengin düğmesine basıldı. Renkler birbirine karışmış ya da düğmelere yanlışlıkla basılmış olabilir.`,
       );
     }
     if (cw.accuracy < 0.6) {
@@ -3932,11 +3957,15 @@ export function taskQualityNotes(parts: {
       notes.push('Renk-kelime görevinde bazı hatalarda ne yazının rengine ne de kelimeye basılmış; renkler birbirine karıştırılmış ya da düğmelere yanlışlıkla basılmış olabilir.');
     }
     if (cw.anticipations / cw.n > 0.1) notes.push('Renk-kelime görevinde bazı cevaplar kelime görünür görünmez, ona bakmadan verilmiş.');
-    if (cw.timeouts / cw.n > 0.2) notes.push('Renk-kelime görevinde denemelerin bir kısmında süre içinde cevap verilmemiş.');
+    if (cw.timeouts / cw.n > 0.2) {
+      notes.push(`Renk-kelime görevinde denemelerin ${cw.timeouts > cw.n / 2 ? 'yarısından çoğunda' : 'bir kısmında'} süre içinde cevap verilmemiş.`);
+    }
   }
   const g = parts.goNoGo;
   if (g && g.goTrials > 0) {
-    if (g.hitRate < 0.5) {
+    if (g.hits === 0 && g.anticipations === 0) {
+      notes.push('Dur-git görevinde basılması gereken harflerin hiçbirinde basılmamış; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.');
+    } else if (g.hitRate < 0.5) {
       const late = 'Dur-git görevinde basılması gereken harflerin yarısından çoğunda zamanında basılmamış';
       notes.push(
         g.anticipations > g.goTrials / 2
@@ -4103,7 +4132,7 @@ export function taskQualityNotes(parts: {
 /** Kâğıt katlamada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, foldingBlocks aynı eşikleri kullanır). */
 export function foldingQualityNotes(kf: FoldingResult): string[] {
   const notes: string[] = [];
-  if (kf.correct <= FOLDING_CHANCE_MAX) {
+  if (foldingChance(kf)) {
     notes.push(
       'Kâğıt katlama testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorulara bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
@@ -4114,15 +4143,23 @@ export function foldingQualityNotes(kf: FoldingResult): string[] {
     );
   }
   if (foldingSamePosition(kf)) {
-    notes.push('Kâğıt katlama testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; sorulara bakmadan hep aynı yere basılmış olabilir.');
+    notes.push('Kâğıt katlama testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
   }
   return notes;
 }
 
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri (en az 2). */
+/**
+ * Kâğıt katlamada doğru cevaplar rastgele seçimle de ulaşılabilecek kadar az ve hiçbir düzeye ulaşılmamış: sonuç yorumlanmaz. En kolay
+ * düzeyin çoğu doğruysa (ulaşılan düzey en az 1) toplam az olsa da sonuç rastgele seçim sayılmaz: kolay sorular gerçekten
+ * çözülmüştür, daha zor sorular zor gelmiştir.
+ */
+export const foldingChance = (kf: FoldingResult) => kf.correct <= FOLDING_CHANCE_MAX && kf.reached === 0;
 export const foldingRapid = (kf: FoldingResult) => kf.rapidOf > 0 && kf.rapid >= Math.max(2, Math.ceil(kf.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
-export const foldingSamePosition = (kf: FoldingResult) => kf.samePosition >= Math.ceil(kf.n / 2);
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const FOLDING_SAME_MAX_CORRECT = 12;
+export const foldingSamePosition = (kf: FoldingResult) => kf.samePosition >= Math.ceil(kf.n / 2) && kf.correct <= FOLDING_SAME_MAX_CORRECT;
 /** Yanlışların yorumlanması: sözel akıl yürütmedeki eşikler (en az 4 çeldirici ve yanlışların en az %60'ı). */
 export const foldingLurePattern = (kf: FoldingResult) => kf.lures >= VERBAL_LURE_MIN && kf.lures >= VERBAL_LURE_SHARE * kf.wrong;
 
@@ -4197,7 +4234,7 @@ export function wordListQualityNotes(r: WordListResult): string[] {
 /** Kelime bilgisinde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, vocabularyBlocks aynı eşikleri kullanır). */
 export function vocabularyQualityNotes(kb: VocabularyResult): string[] {
   const notes: string[] = [];
-  if (kb.correct <= VOCABULARY_CHANCE_MAX) {
+  if (vocabularyChance(kb)) {
     notes.push(
       'Kelime bilgisi testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorular okunmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
@@ -4208,15 +4245,19 @@ export function vocabularyQualityNotes(kb: VocabularyResult): string[] {
     );
   }
   if (vocabularySamePosition(kb)) {
-    notes.push('Kelime bilgisi testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; sorulara bakmadan hep aynı yere basılmış olabilir.');
+    notes.push('Kelime bilgisi testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
   }
   return notes;
 }
 
 /** Zor sorularda okunamayacak kadar hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri (en az 2). */
+/** Kelime bilgisinde şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
+export const vocabularyChance = (kb: VocabularyResult) => kb.correct <= VOCABULARY_CHANCE_MAX && kb.reached === 0;
 export const vocabularyRapid = (kb: VocabularyResult) => kb.rapidOf > 0 && kb.rapid >= Math.max(2, Math.ceil(kb.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
-export const vocabularySamePosition = (kb: VocabularyResult) => kb.samePosition >= Math.ceil(kb.n / 2);
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const VOCABULARY_SAME_MAX_CORRECT = 12;
+export const vocabularySamePosition = (kb: VocabularyResult) => kb.samePosition >= Math.ceil(kb.n / 2) && kb.correct <= VOCABULARY_SAME_MAX_CORRECT;
 /** Yanlışların yorumlanması: sözel akıl yürütmedeki eşikler (en az 4 çeldirici ve yanlışların en az %60'ı). */
 export const vocabularyLurePattern = (kb: VocabularyResult) => kb.lures >= VERBAL_LURE_MIN && kb.lures >= VERBAL_LURE_SHARE * kb.wrong;
 
@@ -4226,7 +4267,7 @@ export const vocabularyLurePattern = (kb: VocabularyResult) => kb.lures >= VERBA
  */
 export function verbalQualityNotes(vr: VerbalResult): string[] {
   const notes: string[] = [];
-  if (vr.correct <= VERBAL_CHANCE_MAX) {
+  if (verbalChance(vr)) {
     notes.push(
       'Sözel akıl yürütme testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorular okunmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
@@ -4237,7 +4278,7 @@ export function verbalQualityNotes(vr: VerbalResult): string[] {
     );
   }
   if (verbalSamePosition(vr)) {
-    notes.push('Sözel akıl yürütme testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; sorulara bakmadan hep aynı yere basılmış olabilir.');
+    notes.push('Sözel akıl yürütme testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
   }
   return notes;
 }
@@ -4245,7 +4286,11 @@ export function verbalQualityNotes(vr: VerbalResult): string[] {
 /** Zor sorularda okunamayacak kadar hızlı cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri (en az 2). */
 export const verbalRapid = (vr: VerbalResult) => vr.rapidOf > 0 && vr.rapid >= Math.max(2, Math.ceil(vr.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
-export const verbalSamePosition = (vr: VerbalResult) => vr.samePosition >= Math.ceil(vr.n / 2);
+/** Sözel akıl yürütmede şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
+export const verbalChance = (vr: VerbalResult) => vr.correct <= VERBAL_CHANCE_MAX && vr.reached === 0;
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const VERBAL_SAME_MAX_CORRECT = 12;
+export const verbalSamePosition = (vr: VerbalResult) => vr.samePosition >= Math.ceil(vr.n / 2) && vr.correct <= VERBAL_SAME_MAX_CORRECT;
 /** Yanlışların yorumlanması: en az 4 çeldirici ve yanlışların en az %60'ı çeldirici. */
 export const verbalLurePattern = (vr: VerbalResult) => vr.lures >= VERBAL_LURE_MIN && vr.lures >= VERBAL_LURE_SHARE * vr.wrong;
 
@@ -4262,7 +4307,7 @@ export function numberSeriesQualityNotes(ns: NumberSeriesResult): string[] {
   }
   if (numberSeriesRapid(ns)) {
     notes.push(
-      `Sayı dizileri testinde 3. düzey ve üstündeki sorulardan cevap yazılan ${ns.rapidOf} sorunun ${ns.rapid === ns.rapidOf ? 'hepsinde' : `${ns.rapid} tanesinde`} yanlış bir cevap 2,5 saniyeden kısa sürede yazılmış; bu sorularda diziye bakmadan yazılmış olabilir.`,
+      `Sayı dizileri testinde 3. düzey ve üstündeki sorulardan cevap yazılan ${ns.rapidOf} sorunun ${ns.rapid === ns.rapidOf ? 'hepsinde' : `${ns.rapid} tanesinde`} yanlış cevap 2,5 saniyeden kısa sürede yazılmış; bu sorularda diziye bakılmadan tahmin edilmiş olabilir.`,
     );
   }
   if (numberSeriesSameAnswer(ns)) {
@@ -4284,7 +4329,7 @@ export function letterSeriesQualityNotes(hs: LetterSeriesResult): string[] {
   }
   if (letterSeriesRapid(hs)) {
     notes.push(
-      `Harf dizileri testinde 3. düzey ve üstündeki sorulardan cevap verilen ${hs.rapidOf} sorunun ${hs.rapid === hs.rapidOf ? 'hepsinde' : `${hs.rapid} tanesinde`} yanlış bir cevap 2,5 saniyeden kısa sürede verilmiş; bu sorularda diziye bakmadan cevap verilmiş olabilir.`,
+      `Harf dizileri testinde 3. düzey ve üstündeki sorulardan cevap verilen ${hs.rapidOf} sorunun ${hs.rapid === hs.rapidOf ? 'hepsinde' : `${hs.rapid} tanesinde`} yanlış cevap 2,5 saniyeden kısa sürede verilmiş; bu sorularda diziye bakılmadan tahmin edilmiş olabilir.`,
     );
   }
   if (letterSeriesSameAnswer(hs)) {
@@ -4313,23 +4358,31 @@ export const numberSeriesSameAnswer = (ns: NumberSeriesResult) => ns.sameAnswer 
  */
 export function matrixQualityNotes(mx: MatrixResult): string[] {
   const notes: string[] = [];
-  if (mx.correct <= MATRIX_CHANCE_MAX) {
+  if (matrixChance(mx)) {
     notes.push(
       'Şekil akıl yürütme testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da sorulara bakmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
   }
   if (matrixRapid(mx)) {
     notes.push(
-      `Şekil akıl yürütme testinde 3. düzey ve üstündeki ${mx.rapidOf} sorunun ${mx.rapid === mx.rapidOf ? 'hepsinde' : `${mx.rapid} tanesinde`} 2,5 saniyeden kısa sürede cevap verilmiş; bu sorularda tabloya bakmadan seçilmiş olabilir.`,
+      `Şekil akıl yürütme testinde 3. düzey ve üstündeki ${mx.rapidOf} sorunun ${mx.rapid === mx.rapidOf ? 'hepsinde' : `${mx.rapid} tanesinde`} yanlış bir cevap 2,5 saniyeden kısa sürede verilmiş; bu sorularda tabloya bakılmadan seçilmiş olabilir.`,
     );
   }
   if (matrixSamePosition(mx)) {
-    notes.push('Şekil akıl yürütme testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; sorulara bakmadan hep aynı yere basılmış olabilir.');
+    notes.push('Şekil akıl yürütme testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
   }
   return notes;
 }
 
-/** Zor sorularda çok hızlı cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
+/**
+ * Doğru cevaplar rastgele seçimle de ulaşılabilecek kadar az ve hiçbir düzeye ulaşılmamış: sonuç yorumlanmaz. En kolay
+ * düzeyin çoğu doğruysa (ulaşılan düzey en az 1) toplam az olsa da sonuç rastgele seçim sayılmaz: kolay sorular gerçekten
+ * çözülmüştür, daha zor sorular zor gelmiştir.
+ */
+export const matrixChance = (mx: MatrixResult) => mx.correct <= MATRIX_CHANCE_MAX && mx.reached === 0;
+/** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
 export const matrixRapid = (mx: MatrixResult) => mx.rapidOf > 0 && mx.rapid >= Math.max(2, Math.ceil(mx.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
-export const matrixSamePosition = (mx: MatrixResult) => mx.samePosition >= Math.ceil(mx.n / 2);
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const MATRIX_SAME_MAX_CORRECT = 12;
+export const matrixSamePosition = (mx: MatrixResult) => mx.samePosition >= Math.ceil(mx.n / 2) && mx.correct <= MATRIX_SAME_MAX_CORRECT;
