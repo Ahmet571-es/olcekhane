@@ -363,7 +363,7 @@ const siraylaBirlestirme: TaskRoadmapTemplate = {
   version: 'sirayla-birlestirme-yol-haritasi-1',
   what: {
     student: 'iki iş arasında gidip gelmeyi gerektiren durumları nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun iki iş arasında gidip gelmeyi gerektiren durumlarını nasıl kolaylaştırabileceği',
+    parent: 'çocuğunuz için iki iş arasında gidip gelmeyi gerektiren durumların nasıl kolaylaştırılabileceği',
     summary: 'iki iş arasında gidip gelmeyi gerektiren durumları kolaylaştıran yollar',
   },
   studyTitle,
@@ -2247,8 +2247,8 @@ const hesaplaVeHatirla: TaskRoadmapTemplate = {
       'Çocuğunuza zihinden işlem yaparken ya da birkaç bilgiyi aynı anda kullanması gerektiğinde ara sonuçları kâğıda yazmasını önerin. Bilgi kâğıtta durunca hepsini aynı anda aklında tutmak zorunda kalmaz; aklını hesaba ve düşünmeye ayırır.',
     )),
     support(1, 'tek', 'Bir seferde bir iş', 'Ortam', t(
-      'Önemli bir şeyi dinlerken ya da okurken aynı anda başka bir işe (ör. mesajlara bakmaya) geçme. Bu testte de gördüğün gibi, araya başka bir iş girdiğinde akılda tutulan bilgiyi korumak zorlaşır.',
-      'Önemli bir şeyi dinlerken ya da okurken aynı anda başka bir işe (ör. telefona bakmaya) geçmemesi çocuğunuzun işini kolaylaştırır. Bu testte de görüldüğü gibi, araya başka bir iş girdiğinde akılda tutulan bilgiyi korumak zorlaşır.',
+      'Önemli bir şeyi dinlerken ya da okurken aynı anda başka bir işe (ör. mesajlara bakmaya) geçme. Bu testte olduğu gibi, araya başka bir iş girince akılda tutulan bilgiyi korumak çoğu kişi için zorlaşır.',
+      'Önemli bir şeyi dinlerken ya da okurken aynı anda başka bir işe (ör. telefona bakmaya) geçmemesi çocuğunuzun işini kolaylaştırır. Bu testte olduğu gibi, araya başka bir iş girince akılda tutulan bilgiyi korumak çoğu kişi için zorlaşır.',
     )),
     support(2, 'parca', 'Parçalara böl', 'Yöntem', t(
       'Akılda tutman gereken uzun bir bilgiyi (ör. bir numara ya da birkaç adımlı bir yol tarifi) küçük parçalara böl ve bir parçayı bitirmeden ötekine geçme. Uzun bir bilgiyi tek seferde değil, parça parça kullanmak aklındaki yükü azaltabilir.',

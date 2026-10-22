@@ -134,7 +134,7 @@ export const renkKelimeGorevi: TaskInstrument = {
       'Bu görevin güvenirlik ve norm çalışması henüz yapılmadı. Renk-kelime etkisi grup düzeyinde psikolojinin en sağlam bulgularından biridir (MacLeod, 1991); ancak iki koşul arasındaki farka dayanan bu tür puanlarda aynı kişinin iki uygulaması arasındaki tutarlılık (test-tekrar test güvenirliği) sınırlıdır (Hedge ve ark., 2018). Bu yüzden raporda bu fark, doğruluk ve cevap süresiyle birlikte ve yalnızca betimleyici olarak verilir; 0,05 saniyeden küçük farklar belirgin sayılmaz.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Renk-kelime etkisi çocuklukta büyüktür, gençlikte azalır ve yaşlılıkta yeniden artar (Comalli ve ark., 1962); bu yüzden bir norm yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Renk-kelime etkisi çocuklukta büyüktür, gençlikte azalır ve yaşlılıkta yeniden artar (Comalli ve ark., 1962); bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir.',
     ageNote:
       '3. sınıftan itibaren uygulanır: kelimelerin akıcı okunması gerekir. Dokunmatik ekranla, fareyle ya da klavyeyle (1–4 tuşları) yapılabilir; aynı kişinin sonuçları karşılaştırılacaksa aynı tür cihaz kullanılmalıdır.',
     license: 'Özgün görev. Ölçekhane tarafından geliştirilmiştir.',

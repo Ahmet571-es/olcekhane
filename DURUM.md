@@ -599,8 +599,12 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    `tests/gorev-grafikleri.test.ts` (her testin her kartı birkaç sonuç örüntüsüyle).
    - 1. grup (8 düzeyli test: şekil, sayı, harf ve sözel akıl yürütme, kâğıt katlama, kelime bilgisi, küp açınımı, gizli
      şekiller) ve 2. grup (dikkat ve bellek, sürekli dikkat, renk-kelime, dur-git, tepki hızı): **yayında (2026-10-22).**
-   - 3. grup (sırayla birleştirme, geriye dönük hatırlama, kural değiştirme, hesapla ve hatırla, kelime listesi): kart
-     grafikleri yayında (2026-10-22); rapor metinlerinin bağımsız incelemesinin bulguları uygulanıyor.
+   - 3. grup (sırayla birleştirme, geriye dönük hatırlama, kural değiştirme, hesapla ve hatırla, kelime listesi):
+     **yayında (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
+   - 5. gruptan sonra bütün görev testleri için iki ortak iş (3. grubun incelemesinde bulundu): yol haritasındaki öneri ve
+     hafta başlıkları veli raporunda da çocuğa "sen" diye sesleniyor ("Kaldığın yeri işaretle"); veliye ayrı başlık
+     (~104 öneri başlığı). Uyarı notları her kitleye aynı edilgen dille yazılıyor; öğrenci raporunda "yorumlanmamalıdır"
+     yerine kitleye göre metin.
      Sonra 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi) ve 5. grup
      (mantıksal, sayısal, düşünerek karar verme).
 3. Okuma, sesli okuma, matematik konu tarama.
@@ -939,6 +943,19 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (39): Raporlarda her başlığa grafik, 2. aşamanın 3. grubu (sırayla birleştirme, geriye dönük hatırlama,
+  kural değiştirme, hesapla ve hatırla, kelime listesi): bölüm süresi şeridi, yakalanan ve basılmadan geçilen harfler,
+  koşullara göre doğruluk ve süre, tam hatırlanan diziler merdiveni ("tam / eksik"), denemelere göre kelimeler. Bağımsız
+  incelemenin bulguları uygulandı: hesapla ve hatırlada süre dolması ya da bütün işlemlerin yanlış olması artık "rastgele
+  basma" sayılmıyor (yavaş çalışmak, düğmeleri ters kullanmak); yorumlanmayan harf sonucunun rozeti, grafiği ve öne çıkan
+  sayıları "Yorumlanmadı"; kural değiştirmede hiç cevap yoksa "Cevap verilmedi", kural değişince doğruluk rastgele düzeyine
+  inince bir önceki kurala göre basmaya devam etmek söylenir; geriye dönük hatırlamada iki düzeyde de hatasız sonuç "fark
+  yok" diye anlatılmıyor, hiç basılmayan düzey grafikte başarı gibi görünmüyor, bir geri kuralıyla devam etmek kartta da
+  söyleniyor; kelime listesinde tavan önce söyleniyor, yeni kelimelerin de birçoğuna "evet" denince tanıma "tanındı" diye
+  sunulmuyor, "1 tanesine" ve "0 kez" denmiyor; sırayla birleştirmede yanlış dokunuşun nedeni bölüme göre, tamamlanmayan
+  bölüm için "acele etme" yerine olası nedenler; "herkeste görülür" gibi abartılar ve ağır biçimler sadeleşti. On görev
+  testinin norm notunun son cümlesi okura göre yazıldı ("aynı sonuç farklı yaşlarda farklı anlama gelir"). Görev testlerinde
+  öğrenci sonuç notu "görevlerde yaptıklarına dayanır" der; grafiği olmayan raporda öne çıkan sayılar yine gösterilir.
 - 2026-10-22 (38): Raporlarda her başlığa grafik, 2. aşamanın ilk iki grubu (13 görev testi): düzeyli testlerde düzeylere
   göre doğrular (nokta), ulaşılan düzey (basamak), kural ya da soru türleri (çubuk), yanılgılar (yığın) ve kolay–zor
   sorulardaki süre (çubuk); dikkat ve bellek testlerinde dizi merdiveni, ok görevi, sembol eşleştirme, bölüm bölüm tarama,
@@ -992,8 +1009,3 @@ En yeni üstte; en çok 10 madde tutulur.
   açılar bağımsız hesapla doğrulandı; ortalama açı hatası, küçük ve büyük dönüşler, hata türleri (haritaya yukarıdan
   bakar gibi, sağ-sol karışıklığı); öğrenci, veli ve yetişkin raporu, yol haritası; iki tur bağımsız incelemenin
   bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-16 (29): Düşünme ve Çalışma Tarzı yayında (9. sınıftan yetişkine), 2. dalganın 8. testi: 50 madde, beş
-  özellik (soyut ve felsefi konulara ilgi, yenilikçilik, başkalarının görüşüne önem verme, enerji ve tempo, düzen ve plan);
-  siyasi ve dinî görüş soran ölçekler alınmadı; güvenirlik ve ölçüm payı IPIP'in açık verisinden; öğrenci, veli ve
-  yetişkin raporu, 5 sütunlu 3B yol haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde
-  çözüldü, PDF'ler açıldı. Kontrol Odağı site sahibinin kararıyla yayımlanmadı.

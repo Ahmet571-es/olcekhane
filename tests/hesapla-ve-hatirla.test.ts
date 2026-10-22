@@ -17,6 +17,8 @@ import {
   CS_RECALL_CHANCE_MAX,
   TaskInputError,
   complexSpanOpsChance,
+  complexSpanOpsReversed,
+  complexSpanOpsSlow,
   complexSpanRapid,
   complexSpanRecallChance,
   scoreComplexSpan,
@@ -372,12 +374,15 @@ describe('Hesapla ve hatırla: rapor', () => {
       })),
     );
     expect(r.student.items[0].badge).toBe('50 harften 42 tanesi doğru yerde');
-    expect(r.student.items[1].badge).toBe('En uzun tam dizi: 5 harf');
+    expect(r.student.items[1].badge).toBe('Uzun dizilerde belirgin düşüş');
     expect(r.student.items[1].text).toContain('Diziler uzadıkça doğru yerde hatırladığın harflerin oranı düştü.');
     expect(r.student.items[3].badge).toBe('Yeri karışan 8');
     expect(r.student.items[3].text).toContain(
-      'Doğru yerde olmayan 8 yerin hepsinde harf o dizide vardı ama yeri karıştı. Yeri karışan harflerde harfi hatırladın ama sırasını karıştırdın.',
+      'Yanlış olan 8 yerin hepsinde seçtiğin harf o dizide vardı, ama yanlış sıraya koydun: harfi hatırladın, sırasını karıştırdın.',
     );
+    expect(r.parent.items[3].text).toContain('Yanlış olan 8 yerin hepsinde çocuğunuzun seçtiği harf o dizide vardı, ama yanlış sıraya kondu');
+    // Kart grafiğinde tek harfi eksik dizi "yanlış" değil "eksik" diye gösterilir.
+    expect(r.student.items[1].visual?.type === 'ladder' ? r.student.items[1].visual.legend : undefined).toEqual(['tam', 'eksik']);
     expect(r.student.cautions).toEqual([]);
 
     // Harflerin yalnızca 8'i doğru yerde: rastgele düzeyi.
@@ -385,7 +390,11 @@ describe('Hesapla ve hatırla: rapor', () => {
       SLUG,
       complexSpanBody((q) => ({ recall: recallK(8)(q), ops: q.ops.map((o) => csRight(o)) })),
     );
-    expect(r.student.items.map((i) => i.badge)).toEqual(['50 harften 8 tanesi doğru yerde', 'Yorumlanmadı', '50 işlemin hepsi doğru', 'Yorumlanmadı']);
+    // Yorumlanmayan harf sonucu rozetiyle, grafiğiyle ve öne çıkan sayılarıyla yorumlanmış gibi görünmez.
+    expect(r.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', '50 işlemin hepsi doğru', 'Yorumlanmadı']);
+    expect(r.student.items[0].visual).toBeUndefined();
+    expect(r.student.chart).toBeNull();
+    expect(r.student.keyFigures[0].value).toBe('Yorumlanmadı');
     expect(r.student.items[0].text).toContain('yalnızca 8 tanesini doğru yerde seçtin');
     expect(r.student.cautions.join(' ')).toContain('tek başına yorumlanmamalıdır');
     expect(r.student.roadmap!.bars).toEqual([]);
@@ -406,8 +415,10 @@ describe('Hesapla ve hatırla: rapor', () => {
       SLUG,
       complexSpanBody((q) => ({ recall: q.letters, ops: q.ops.map((o, k) => csRight(o, OFFSET[q.i] + k < 10 ? 300 : 2500)) })),
     );
-    expect(r.student.items[0].text).toContain('İşlemlerin 10 tanesine yarım saniyeden kısa sürede cevap verdin');
-    expect(r.student.items[0].text).toContain('bu sonuç dikkatle yorumlanmalıdır');
+    expect(r.student.items[2].text).toContain('İşlemlerin 10 tanesine yarım saniyeden kısa sürede cevap verdin');
+    expect(r.student.items[2].text).toContain('Bu işlemlere bakmadan basmış olabilirsin.');
+    expect(r.student.items[0].text).toContain('İşlemlerin bir kısmına bakmadan basmış olabileceğin için (İşlemler kartına bak) harf sonucu dikkatle yorumlanmalıdır');
+    expect(r.student.items[0].text).not.toContain('yarım saniye');
     expect(r.student.cautions).toHaveLength(1);
     expect(r.student.cautions[0]).toContain('harf sonucu dikkatle yorumlanmalıdır');
 
@@ -419,8 +430,28 @@ describe('Hesapla ve hatırla: rapor', () => {
     expect(r.student.items[2].text).toContain('bu düzeyin altında kaldın');
     expect(r.student.items[2].text).toContain('8 işlemde süre doldu; hiçbir işleme yanlış cevap vermedin');
     expect(r.student.items[2].text).toContain('Süre sınırı, alıştırmadaki hızına göre 6 saniye olarak belirlenmişti');
-    expect(r.student.items[0].text).toContain('harf sonucu biraz daha dikkatle yorumlanmalıdır');
+    expect(r.student.items[0].text).toContain('İşlemlerin %85’inden azını doğru cevapladığın için (İşlemler kartına bak) harf sonucu biraz daha dikkatle yorumlanmalıdır.');
+    expect(r.student.items[2].text).not.toContain('geleneksel');
     expect(r.student.cautions).toEqual([]);
+
+    // Cevap verilen işlemlerin hepsi doğru, ama 19 işlemde süre doldu: bu rastgele basmak değildir.
+    r = evaluate(
+      SLUG,
+      complexSpanBody((q) => ({ recall: q.letters, ops: q.ops.map((o, k) => (OFFSET[q.i] + k < 19 ? { a: null, ms: null } : csRight(o))) })),
+    );
+    expect(r.student.items[2].text).toContain('İşlemlerin 19 tanesinde süre doldu; süresi içinde cevap verdiğin 31 işlemin hepsi doğruydu.');
+    expect(r.parent.items[2].text).toContain('Çocuğunuzun işlemlerinin 19 tanesinde süre doldu; süresi içinde cevap verdiği 31 işlemin hepsi doğruydu.');
+    expect(r.student.items[0].badge).toBe('Yorumlanmadı');
+    expect(r.student.items[0].text).toContain('Harf sonucu yorumlanmadı: işlemlerin 19 tanesinde süre doldu');
+    expect(text(r.student)).not.toContain('rastgele basan');
+    expect(r.student.cautions.join(' ')).toContain('50 işlemin 19 tanesinde süre doldu. İşlemler süresinde yapılmayınca');
+
+    // Bütün işlemlere yanlış cevap: rastgele basan biri yarısını bulurdu, düğmeler ters kullanılmış olabilir.
+    r = evaluate(SLUG, complexSpanBody((q) => ({ recall: q.letters, ops: q.ops.map((o) => ({ a: !opTrue(o), ms: 1500 })) })));
+    expect(r.student.items[2].text).toContain('İşlemlerin hepsine yanlış cevap verdin. Rastgele basan biri bile yaklaşık yarısını doğru bulurdu; bu yüzden DOĞRU ve YANLIŞ düğmelerini ters kullanmış olabilirsin.');
+    expect(r.student.items[0].text).toContain('Harf sonucu yorumlanmadı: işlemlerin hepsine yanlış cevap verdiğin için');
+    expect(text(r.student)).not.toContain('rastgele basan birinin de');
+    expect(r.parent.cautions.join(' ')).toContain('DOĞRU ve YANLIŞ düğmeleri ters kullanılmış olabilir');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafik birbiriyle çelişmez', () => {
@@ -470,6 +501,8 @@ describe('Hesapla ve hatırla: rapor', () => {
           const opsChance = complexSpanOpsChance(r);
           const rapid = !opsChance && complexSpanRapid(r);
           const noRead = recallChance || opsChance;
+          const opsSlow = complexSpanOpsSlow(r);
+          const opsReversed = complexSpanOpsReversed(r);
           const E = r.letters - r.correct;
           for (const rep of [res.student, res.parent, adult]) {
             const t = text(rep);
@@ -487,7 +520,9 @@ describe('Hesapla ve hatırla: rapor', () => {
             }
             const [harf, uzunluk, islem, hata] = rep.items;
             expect(harf.badge, label).toBe(
-              r.correct === 0
+              noRead
+                ? 'Yorumlanmadı'
+                : r.correct === 0
                 ? '50 harfin hiçbiri doğru yerde değil'
                 : r.correct === 50
                   ? '50 harfin hepsi doğru yerde'
@@ -505,12 +540,17 @@ describe('Hesapla ve hatırla: rapor', () => {
             // Uyarılar kartlarla aynı şeyi söyler.
             const cautions = rep.cautions.join(' ');
             expect(cautions.includes('harfleri rastgele seçen birinin de bulabileceği'), label).toBe(recallChance);
-            expect(cautions.includes('rastgele basan birinin de bulabileceği'), label).toBe(opsChance);
+            expect(cautions.includes('rastgele basan birinin de bulabileceği'), label).toBe(opsChance && !opsSlow && !opsReversed);
+            expect(/işlemin (hepsinde|\d+ tanesinde) süre doldu/.test(cautions), label).toBe(opsSlow);
+            expect(cautions.includes('ters kullanılmış'), label).toBe(opsReversed);
+            expect(islem.text.includes('ters kullan'), label).toBe(opsReversed);
+            expect(islem.text.includes('rastgele basan birinin de'), label).toBe(opsChance && !opsSlow && !opsReversed);
+            expect(harf.visual === undefined, label).toBe(noRead);
             expect(cautions.includes('yarım saniyeden kısa'), label).toBe(rapid);
             expect(cautions.includes('harf sonucu yorumlanmamalıdır'), label).toBe(opsChance && !recallChance);
             expect(cautions.includes('harf sonucu dikkatle yorumlanmalıdır'), label).toBe(rapid && !recallChance);
-            expect(harf.text.includes('harf sonucu yorumlanmadı'), label).toBe(opsChance && !recallChance);
-            expect(harf.text.includes('bu sonuç dikkatle yorumlanmalıdır'), label).toBe(rapid && !recallChance);
+            expect(/harf sonucu yorumlanmadı/i.test(harf.text), label).toBe(opsChance && !recallChance);
+            expect(harf.text.includes('bakmadan basmış olabilece'), label).toBe(rapid && !recallChance);
             expect(islem.text.includes('yarım saniyeden kısa'), label).toBe(rapid);
             expect(harf.text.includes('sonuç yorumlanmadı'), label).toBe(recallChance);
             expect(harf.text.includes('biraz daha dikkatle'), label).toBe(!noRead && !rapid && r.ops.accuracy < CS_OPS_TARGET);
@@ -519,33 +559,41 @@ describe('Hesapla ve hatırla: rapor', () => {
             // Harf kartındaki nicelik sözleri sayılarla uyuşur.
             if (!noRead) {
               const h = harf.text;
-              expect(h.includes('hemen hepsini'), label).toBe(r.correct >= 42.5 && r.correct < 50);
+              expect(h.includes('hemen hepsini'), label).toBe(r.correct >= 47.5 && r.correct < 50);
+              expect(h.includes('büyük çoğunluğunu'), label).toBe(r.correct >= 42.5 && r.correct < 47.5);
               expect(h.includes('harflerin çoğunu'), label).toBe(r.correct >= 32.5 && r.correct < 42.5);
               expect(h.includes('yarısından çoğu'), label).toBe(r.correct > 25 && r.correct < 32.5);
               expect(/harflerin yarısı doğru/.test(h), label).toBe(r.correct === 25);
               expect(h.includes('yarısından azı'), label).toBe(r.correct < 25);
-              if (r.correct < 50) expect(h, label).toMatch(r.longest === null ? /hiçbir dizinin/i : new RegExp(`en uzun dizi ${r.longest} harfliydi`));
+              // En uzun tam dizi Dizi uzunluğu kartının grafiğindedir; harf kartında yinelenmez.
+              expect(/hiçbir dizinin/i.test(h), label).toBe(r.correct < 50 && r.longest === null);
+              expect(h, label).not.toMatch(/en uzun dizi/);
+              expect(
+                ['Bütün diziler tam', 'Uzun dizilerde belirgin düşüş', 'Uzun dizilerde biraz düşüş', 'Uzun dizilerde daha iyi', 'Uzunlukla pek değişmedi'],
+                label,
+              ).toContain(uzunluk.badge);
+              expect(uzunluk.badge === 'Bütün diziler tam', label).toBe(r.perfectSets === r.sets);
               // Her uzunluktaki tam diziler kartın grafiğindedir.
               const ladder = uzunluk.visual?.type === 'ladder' ? uzunluk.visual : null;
               expect(ladder?.rows.map((x) => `${x.length}:${x.results.filter(Boolean).length}`), label).toEqual(r.bySize.map((s) => `${s.size}:${s.perfect}`));
               expect(ladder?.reached, label).toBe(r.longest);
               // Hata kartı: "çoğunda" yalnızca o tür yarıdan çoksa.
-              expect(/sırasını karıştır/.test(hata.text), label).toBe(2 * r.order > E);
+              expect(/sırası(nı karıştır| karıştı)/.test(hata.text), label).toBe(2 * r.order > E);
               expect(/O dizide olmayan bir harfin seçildiği yerlerde/.test(hata.text), label).toBe(2 * r.intrusion > E);
-              expect(/Boş kalan yerler hatırlanamayan harflerdir/.test(hata.text), label).toBe(2 * r.blank > E);
-              if (E > 1) expect(hata.text, label).toContain(`Doğru yerde olmayan ${E} yerin`);
-              if (E === 1) expect(hata.text, label).toMatch(/^Doğru yerde olmayan tek yer/);
+              expect(/boş bırakmak iyi bir yoldur/.test(hata.text), label).toBe(2 * r.blank > E);
+              if (E > 1) expect(hata.text, label).toContain(r.order === E ? `Yanlış olan ${E} yerin hepsinde` : `Doğru yerde olmayan ${E} yerin`);
+              if (E === 1) expect(hata.text, label).toMatch(r.order === E ? /^Yanlış olan tek yerde/ : /^Doğru yerde olmayan tek yer/);
               // "Hepsinde/hepsi" yalnızca tek tür bütün yerleri kapsıyorsa.
               if (/yerin hepsi/.test(hata.text)) expect([r.order, r.intrusion, r.blank], label).toContain(E);
               if (E === 0) expect(hata.badge, label).toBe('Hata yok');
             }
             // Öne çıkan sayılar ve grafik sonuçla aynıdır.
             const fig = Object.fromEntries(rep.keyFigures.map((f) => [f.label, f.value]));
-            expect(fig['Doğru yerde hatırlanan harf'], label).toBe(`${r.correct}/50`);
-            expect(fig['Bütün harfleri doğru dizi'], label).toBe(`${r.perfectSets}/10`);
+            expect(fig['Doğru yerde hatırlanan harf'], label).toBe(noRead ? 'Yorumlanmadı' : `${r.correct}/50`);
+            expect(fig['Bütün harfleri doğru dizi'], label).toBe(noRead ? 'Yorumlanmadı' : `${r.perfectSets}/10`);
             expect(fig['İşlem doğruluğu'], label).toBe(`%${Math.round(r.ops.accuracy * 100)}`);
             expect(rep.chart?.type === 'bars' ? rep.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(
-              r.bySize.map((s) => `${s.correct}/${s.letters}`),
+              noRead ? [] : r.bySize.map((s) => `${s.correct}/${s.letters}`),
             );
             expect(rep.roadmap!.bars.length, label).toBe(noRead ? 0 : 5);
             const opsParts = islem.visual?.type === 'stack' ? islem.visual.parts.map((x) => x.value) : [];

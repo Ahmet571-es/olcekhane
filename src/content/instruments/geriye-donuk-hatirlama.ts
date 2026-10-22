@@ -99,7 +99,7 @@ export const geriyeDonukHatirlama: TaskInstrument = {
       'Bu görevin güvenirlik ve norm çalışması henüz yapılmadı. Bir meta-analizde n-geri görevleri ile başka bir tür çalışma belleği görevi (karmaşık bellek aralığı görevleri) arasındaki ilişkinin ortalamada zayıf olduğu bulunmuştur (r = 0,20; Redick ve Lindsey, 2013). Birçok görevi bir arada inceleyen bir çalışma ise iki tür görevin de çalışma belleğinin geçerli göstergeleri olduğunu bildirir (Schmiedek ve ark., 2014). Bu yüzden bu görevin sonucu, çalışma belleğinin yalnızca bir yönünü gösterir.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. İspanya’da 7–13 yaş arası 3722 çocukla yapılan bir çalışmada n-geri görevindeki başarının yaşla arttığı, aynı olanları yakalamadaki bu artışın iki geride bir geriden daha belirgin olduğu bildirilmiştir (Pelegrina ve ark., 2015). Bu yüzden bir norm yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. İspanya’da 7–13 yaş arası 3722 çocukla yapılan bir çalışmada bu tür görevlerdeki (n-geri görevi) başarı yaşla arttı; aynı olanları yakalamadaki artış, iki geride bir geriden daha belirgindi (Pelegrina ve ark., 2015). Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir.',
     ageNote:
       '5. sınıftan itibaren uygulanır. Dokunmatik ekranla, fareyle ya da klavyeyle (boşluk tuşu) yapılabilir; aynı kişinin sonuçları karşılaştırılacaksa aynı tür cihaz kullanılmalıdır.',
     license: 'Özgün görev. Ölçekhane tarafından geliştirilmiştir.',

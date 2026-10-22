@@ -270,10 +270,9 @@ export function disclaimerText(report: Pick<ReportContent, 'audience' | 'academi
   return {
     title: report.young && report.audience === 'student' ? 'Bu rapor bir not ya da bir etiket değildir.' : 'Bu rapor bir tanı değildir.',
     text: byAudience(report.audience, {
-      student: 'Senin cevaplarına dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.',
+      student: `${report.cognitive ? 'Görevlerde yaptıklarına' : 'Senin cevaplarına'} dayanır ve bugünkü hâlini anlatır. İnsanlar zamanla değişir ve gelişir.`,
       parent: `Çocuğunuzun ${report.cognitive ? 'görevlerde yaptıklarına' : 'kendi cevaplarına'} dayanır; bugünkü hâlini anlatır. ${report.young ? 'Önemli kararlarda' : 'Eğitim ve kariyer kararlarında'} tek başına dayanak olarak kullanılmamalıdır.`,
-      adult:
-        'Senin cevaplarına dayanır ve bugünkü hâlini anlatır; insanlar zamanla değişir ve gelişir. Eğitim, iş ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.',
+      adult: `${report.cognitive ? 'Görevlerde yaptıklarına' : 'Senin cevaplarına'} dayanır ve bugünkü hâlini anlatır; insanlar zamanla değişir ve gelişir. Eğitim, iş ve kariyer kararlarında tek başına dayanak olarak kullanılmamalıdır.`,
     }),
   };
 }
@@ -944,7 +943,8 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
                 ]),
             }
           : null,
-      keyFigures: [],
+      // Grafiği olmayan (ör. sonucu yorumlanmayan) tek görevli testin öne çıkan sayıları yine gösterilir.
+      keyFigures: r.cognitive.figures ?? [],
       // Tek görevli testlerde kartlar görevin sonuçlarıdır; çok görevli testte her kart bir görevdir.
       // Harf işaretleme tek görevlidir; bölüm grafiği olmasa da (çok az işaret) kartları görevin sonuçlarıdır.
       itemsTitle:

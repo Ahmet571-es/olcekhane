@@ -180,8 +180,11 @@ import {
   type Rotation3dResult,
   CS_OPS_TARGET,
   complexSpanOpsChance,
+  complexSpanOpsReversed,
+  complexSpanOpsSlow,
   complexSpanRapid,
   complexSpanRecallChance,
+  complexSpanWrongShare,
   type ComplexSpanResult,
   PA_CHANCE_MEAN,
   perspectiveChance,
@@ -1831,17 +1834,23 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
   /** Süreyi saniyenin onda biri duyarlılığında yazar (önce yuvarlanır ki her yerde aynı sayı çıksın). */
   const s1 = (ms: number) => nf1.format(Math.round(ms / 100) / 10);
   const maxSec = nf0.format(task.maxMs / 1000);
-  const errText = (errors: number) =>
-    errors === 0
-      ? you
-        ? ' Hiç yanlış daireye dokunmadın.'
-        : ' Hiç yanlış daireye dokunulmadı.'
-      : you
-        ? ` ${errors} kez yanlış daireye dokundun; hızlı giderken bu sık olur.`
-        : ` ${errors} kez yanlış daireye dokunuldu; hızlı çalışırken bu sık olur.`;
+  /** Yanlış dokunuşlar: hiç yoksa, ara sıraysa (bölüme göre olağan nedeniyle) ve daire sayısını aşacak kadar sıksa. */
+  const errText = (p: TrailResult['parts'][number], second: boolean) => {
+    const e = p.errors;
+    const k = e === 1 ? 'Bir' : `${e}`;
+    if (e === 0) return you ? ' Hiç yanlış daireye dokunmadın.' : ' Hiç yanlış daireye dokunmadı.';
+    if (e > p.n)
+      return you
+        ? ` Yanlış dairelere çok sık dokundun (${e} kez); sırayı izlemeden dokunmuş olabilirsin. Bu yüzden bu bölümün süresi seni tam yansıtmayabilir.`
+        : ` Yanlış dairelere çok sık dokundu (${e} kez); sırayı izlemeden dokunmuş olabilir. Bu yüzden bu bölümün süresi tek başına yorumlanmamalıdır.`;
+    const why = second
+      ? 'bu bölümde sayıdan harfe geçerken sırayı bir an karıştırmak sık olur.'
+      : 'bu görevde ara sıra yanlış daireye dokunmak olağandır.';
+    return you ? ` ${k} kez yanlış daireye dokundun; ${why}` : ` ${k} kez yanlış daireye dokundu; ${why}`;
+  };
   const incomplete = (p: TrailResult['parts'][number]) =>
     you
-      ? `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.n} dairenin ${p.reached} tanesini birleştirdin). Acele etmeden, sıradakini arayarak ilerlemek işine yarar.`
+      ? `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.n} dairenin ${p.reached} tanesini sırayla birleştirdin). Bu; kullandığın cihazdan, yönergeyi tam anlamamaktan ya da o an dikkatinin dağılmasından olabilir. Bu sonuç tek başına bir şey söylemez.`
       : `Bu bölüm ${maxSec} saniyelik süre içinde tamamlanamadı (${p.n} dairenin ${p.reached} tanesi birleştirildi). Bu; cihazdan, yönergenin tam anlaşılmamasından ya da o anki dikkat dağınıklığından kaynaklanabilir ve tek başına yorumlanmamalıdır.`;
   const [a, b] = r.parts;
 
@@ -1850,8 +1859,8 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
         ...card('iz_a'),
         headline: `${s1(a.timeMs)} saniye`,
         text: you
-          ? `Sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdin.${errText(a.errors)} Bu bölüm, ekranı tarayıp aradığını hızla bulabilmeyi ve el-göz uyumunu gösterir.`
-          : `Çocuğunuz sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdi.${errText(a.errors)} Bu bölüm görsel taramayı, işlem hızını ve el-göz uyumunu yansıtır; süre, kullanılan cihazdan (dokunmatik ekran ya da fare) belirgin biçimde etkilenir.`,
+          ? `Sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdin.${errText(a, false)} Bu bölüm, ekranı tarayıp aradığını hızla bulabilmeyi ve el-göz uyumunu gösterir; süre, kullandığın cihazdan da etkilenir.`
+          : `Çocuğunuz sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdi.${errText(a, false)} Bu bölüm, ekranı tarayıp aranan daireyi bulma hızını ve el-göz uyumunu yansıtır; süre, kullanılan cihazdan (dokunmatik ekran ya da fare) belirgin biçimde etkilenir.`,
       }
     : { ...card('iz_a'), headline: 'Süre içinde tamamlanamadı', text: incomplete(a) };
 
@@ -1860,8 +1869,8 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
         ...card('iz_b'),
         headline: `${s1(b.timeMs)} saniye`,
         text: you
-          ? `Sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdin.${errText(b.errors)} Bu bölümde bir sayıya bir harfe geçerek iki sırayı birlikte izlemen gerekir; bu yüzden genellikle birinci bölümden daha uzun sürer.`
-          : `Çocuğunuz sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdi.${errText(b.errors)} Bu bölümde sayılar ile harfler arasında gidip gelerek iki sırayı birlikte izlemek gerekir; bu yüzden genellikle birinci bölümden daha uzun sürer. Alfabe sırasını akıcı bilmek de bu süreyi etkiler.`,
+          ? `Sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdin.${errText(b, true)} Bu bölümde bir sayıya bir harfe geçerek ilerlemen gerekir.`
+          : `Çocuğunuz sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdi.${errText(b, true)} Bu bölümde sayılar ile harfler arasında gidip gelmek gerekir; alfabe sırasını akıcı bilmek de süreyi etkiler.`,
       }
     : { ...card('iz_b'), headline: 'Süre içinde tamamlanamadı', text: incomplete(b) };
 
@@ -1870,7 +1879,10 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
     gecis = {
       ...card('iz_gecis'),
       headline: 'Hesaplanamadı',
-      text: 'Bölümlerden biri süre içinde tamamlanamadığı için iki bölüm karşılaştırılamadı.',
+      text:
+        !a.completed && !b.completed
+          ? 'İki bölüm de süre içinde tamamlanamadığı için iki bölüm karşılaştırılamadı.'
+          : 'Bölümlerden biri süre içinde tamamlanamadığı için iki bölüm karşılaştırılamadı.',
     };
   } else {
     // Oran ve fark, raporda yazılan (saniyenin onda biri duyarlılığında) sürelerden hesaplanır ki birbirini tutsun.
@@ -1884,8 +1896,8 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
         ...card('iz_gecis'),
         headline: `Birinci bölümün ${x} katı`,
         text: you
-          ? `İkinci bölüm, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında gidip gelmek, iki sırayı aynı anda akılda tutmayı gerektirir ve tek bir sırayı izlemekten daha çok çaba ister; bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu fark bir seferden ötekine değişebilir; küçük farklara takılma.`
-          : `Çocuğunuzun ikinci bölümü, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında geçiş yapmak, iki sırayı aynı anda akılda tutmayı (çalışma belleği) ve aralarında gidip gelmeyi gerektirir; bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu oran, geçiş yapmanın getirdiği ek süreyi gösterir. Tek bir uygulamada kesinliği düşüktür ve alfabe sırasını akıcı bilmekten de etkilenir; tek başına yorumlanmamalıdır.`,
+          ? `İkinci bölüm, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında gidip gelmek, iki sırayı aynı anda akılda tutmayı gerektirir. Bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu oran bir seferden ötekine değişebilir.`
+          : `Çocuğunuzun ikinci bölümü, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında gidip gelmek, iki sırayı aynı anda akılda tutmayı (çalışma belleği) gerektirir. Bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu oran, geçiş yapmanın ne kadar ek süre getirdiğine dair kaba bir fikir verir; tek bir uygulamada kesinliği düşüktür ve tek başına yorumlanmamalıdır.`,
       };
     } else if (ratio > TRAIL_SAME[0]) {
       gecis = {
@@ -1945,9 +1957,13 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
     blocks: [blockA, blockB, gecis],
     chart: {
       title: 'Bölüm süreleri',
-      note: you
-        ? 'Çubuklar her bölümün kaç saniye sürdüğünü gösterir; kısa çubuk daha hızlı demek.'
-        : 'Çubuklar her bölümün kaç saniye sürdüğünü gösterir; kısa çubuk daha hızlı demektir.',
+      note:
+        (you
+          ? 'Çubuklar her bölümün kaç saniye sürdüğünü gösterir; kısa çubuk daha hızlı demek.'
+          : 'Çubuklar her bölümün kaç saniye sürdüğünü gösterir; kısa çubuk daha hızlı demektir.') +
+        (r.parts.some((p) => !p.completed)
+          ? ` Tamamlanmayan bölümün çubuğu süre sınırına (${maxSec} sn) kadar çizildi; o bölümün gerçek süresi bilinmiyor.`
+          : ''),
       rows: r.parts.map((p, k) => ({
         label: task.parts[p.index]?.name ?? `${k + 1}. bölüm`,
         value: secs[k],
@@ -2020,7 +2036,11 @@ function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], aud
         : l.hitRate >= 0.7
           ? v('çoğunu yakaladın', 'çoğunu yakaladı')
           : l.hitRate > 0.3
-            ? v('bir kısmını yakaladın, bir kısmını kaçırdın', 'bir kısmını yakaladı, bir kısmını kaçırdı')
+            ? l.hits * 2 > l.targets
+              ? v('yarısından çoğunu yakaladın', 'yarısından çoğunu yakaladı')
+              : l.hits * 2 === l.targets
+                ? v('yarısını yakaladın', 'yarısını yakaladı')
+                : v('yarısından azını yakaladın', 'yarısından azını yakaladı')
             : l.hits > 0
               ? v('çoğunu kaçırdın', 'çoğunu kaçırdı')
               : v('hiçbirini yakalamadın', 'hiçbirini yakalamadı');
@@ -2039,12 +2059,23 @@ function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], aud
   const pattern = nBackPattern(l);
   const hard = l.n === 2 ? 'İki geri görevin en zor bölümüdür. ' : '';
   const here = l.n === 1 ? 'Bu bölümde' : 'Bu bölümlerde';
+  // Tuzaklarda (bir önceki harfle aynı olan harfler) basılanların niceliği.
+  const lureQ =
+    l.lureFalseAlarms === l.lures ? 'hepsinde' : l.lureFalseAlarms * 2 > l.lures ? 'çoğunda' : l.lureFalseAlarms * 2 === l.lures ? 'yarısında' : `${l.lureFalseAlarms} tanesinde`;
+  const keptOneBack = pattern !== 'random' && nBackKeptOneBack(l);
   let second: string;
   if (pattern === 'random') {
     second = v(
-      'Aynı olmayan harflerin çoğunda da bastığın için bu sonuç, aynı harfleri ayırt edebildiğini göstermez: düğmeye harfe bakmadan basmış ya da kuralı karıştırmış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
-      'Aynı olmayan harflerin çoğunda da bastığı için bu sonuç, aynı harfleri ayırt edebildiğini göstermez: düğmeye harfe bakmadan basılmış ya da kural karıştırılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+      'Bu yüzden bu sonuç, aynı harfleri ayırt edebildiğini göstermez: düğmeye harfe bakmadan basmış ya da kuralı karıştırmış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
+      'Bu yüzden bu sonuç, aynı harfleri ayırt edebildiğini göstermez: düğmeye harfe bakmadan basmış ya da kuralı karıştırmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
+  } else if (keptOneBack) {
+    second =
+      hard +
+      v(
+        `Bir önceki harfle aynı olan harflerin ${lureQ} bastın: iki geri bölümlerinde bir geri kuralıyla devam etmiş olabilirsin. Bu sonuç tek başına bir şey söylemez.`,
+        `Bir önceki harfle aynı olan harflerin ${lureQ} bastı: iki geri bölümlerinde bir geri kuralıyla devam etmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+      );
   } else if (l.pr >= NBACK_PR.good) {
     second =
       l.n === 1
@@ -2077,30 +2108,36 @@ function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], aud
       hard +
       (pattern === 'misses'
         ? v(
-            'Aynı harfleri yakalamakta zaman zaman zorlandın. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan ya da kuralı karıştırmaktan kaynaklanabilir.',
-            'Aynı harfleri yakalamakta zaman zaman zorlandı. Bu; dikkatin zaman zaman dağılmasından, yorgunluktan ya da kuralın karıştırılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+            `Aynı harfleri yakalamakta zaman zaman zorlandın. Bu; ${l.n === 2 ? 'son iki harfi akılda tutmanın zor gelmesinden, ' : ''}dikkatin zaman zaman dağılmasından, yorgunluktan ya da kuralı karıştırmaktan kaynaklanabilir.`,
+            `Aynı harfleri yakalamakta zaman zaman zorlandı. Bu; ${l.n === 2 ? 'son iki harfi akılda tutmanın zor gelmesinden, ' : ''}dikkatin zaman zaman dağılmasından, yorgunluktan ya da kuralın karıştırılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
           )
         : v(
-            'Aynı harfleri aynı olmayanlardan ayırmakta zaman zaman zorlandın. Bu; acele etmekten, dikkatin dağılmasından ya da kuralı karıştırmaktan kaynaklanabilir.',
-            'Aynı harfleri aynı olmayanlardan ayırmakta zaman zaman zorlandı. Bu; acele etmekten, dikkatin dağılmasından ya da kuralın karıştırılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+            `Aynı harfleri aynı olmayanlardan ayırmakta zaman zaman zorlandın. Bu; ${l.n === 2 ? 'son iki harfi akılda tutmanın zor gelmesinden, ' : ''}acele etmekten, dikkatin dağılmasından ya da kuralı karıştırmaktan kaynaklanabilir.`,
+            `Aynı harfleri aynı olmayanlardan ayırmakta zaman zaman zorlandı. Bu; ${l.n === 2 ? 'son iki harfi akılda tutmanın zor gelmesinden, ' : ''}acele etmekten, dikkatin dağılmasından ya da kuralın karıştırılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
           ));
   } else {
     second =
       hard +
       (pattern === 'misses'
-        ? v(
-            `${here} aynı harfleri yakalamakta zorlandın. Bu; yönergeyi tam anlamamaktan, dikkatin dağılmasından ya da yorgunluktan kaynaklanabilir; tek başına bir şey söylemez.`,
-            `${here} aynı harfleri yakalamakta zorlandı. Bu; yönergenin tam anlaşılmamasından, dikkatin dağılmasından ya da yorgunluktan kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
-          )
+        ? l.n === 2
+          ? v(
+              `${here} aynı harfleri yakalamakta zorlandın. Bu; son iki harfi akılda tutmanın zor gelmesinden, yorgunluktan, dikkatin dağılmasından ya da kuralı tam oturtamamaktan kaynaklanabilir; tek başına bir şey söylemez.`,
+              `${here} aynı harfleri yakalamakta zorlandı. Bu; son iki harfi akılda tutmanın zor gelmesinden, yorgunluktan, dikkatin dağılmasından ya da kuralın tam oturmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
+            )
+          : v(
+              `${here} aynı harfleri yakalamakta zorlandın. Bu; yönergeyi tam anlamamaktan, dikkatin dağılmasından ya da yorgunluktan kaynaklanabilir; tek başına bir şey söylemez.`,
+              `${here} aynı harfleri yakalamakta zorlandı. Bu; yönergenin tam anlaşılmamasından, dikkatin dağılmasından ya da yorgunluktan kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
+            )
         : v(
-            `${here} aynı harfleri aynı olmayanlardan ayırmakta zorlandın. Bu; yönergeyi tam anlamamaktan, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir; tek başına bir şey söylemez.`,
-            `${here} aynı harfleri aynı olmayanlardan ayırmakta zorlandı. Bu; yönergenin tam anlaşılmamasından, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
+            `${here} aynı harfleri aynı olmayanlardan ayırmakta zorlandın. Bu; ${l.n === 2 ? 'son iki harfi akılda tutmanın zor gelmesinden, ' : ''}yönergeyi tam anlamamaktan, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir; tek başına bir şey söylemez.`,
+            `${here} aynı harfleri aynı olmayanlardan ayırmakta zorlandı. Bu; ${l.n === 2 ? 'son iki harfi akılda tutmanın zor gelmesinden, ' : ''}yönergenin tam anlaşılmamasından, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.`,
           ));
   }
-  if (l.n === 2 && pattern !== 'random' && l.lureFalseAlarms >= 2) {
+  if (l.n === 2 && pattern !== 'random' && !keptOneBack && l.lureFalseAlarms >= 2) {
+    const q = l.lureFalseAlarms === l.lures ? 'hepsinde' : `${l.lureFalseAlarms} tanesinde`;
     second += v(
-      ' Bir önceki harfle aynı olan (ama iki önceki harfle aynı olmayan) harflerde de birkaç kez bastın; bu harfler tanıdık geldiği için yanıltıcıdır.',
-      ' Bir önceki harfle aynı olan (ama iki önceki harfle aynı olmayan) harflerde de birkaç kez bastı; bu harfler tanıdık geldiği için yanıltıcıdır.',
+      ` Bir önceki harfle aynı olan (ama iki önceki harfle aynı olmayan) ${l.lures} harfin ${q} de bastın; bu harfler tanıdık geldiği için yanıltıcıdır.`,
+      ` Bir önceki harfle aynı olan (ama iki önceki harfle aynı olmayan) ${l.lures} harfin ${q} de bastı; bu harfler tanıdık geldiği için yanıltıcıdır.`,
     );
   }
   // Düzeyin bir bölümünde hiç basılmadıysa birleşik sonuç kişiyi tam yansıtmaz.
@@ -2121,13 +2158,24 @@ function nBackLoadBlock(r: NBackResult, audience: Audience, card: CardOf): Cogni
   const one = r.levels.find((l) => l.n === 1)!;
   const two = r.levels.find((l) => l.n === 2)!;
   const no = (text: string): CognitiveBlock => ({ ...card('gh_yuk'), headline: 'Karşılaştırılamadı', text });
-  if (nBackSilent(one) && nBackSilent(two)) return no('Hiçbir bölümde basılmadığı için bir geri ile iki geri karşılaştırılamadı.');
-  if (r.blocks.some(nBackSilent)) return no('Bölümlerden birinde hiç basılmadığı için bir geri ile iki geri karşılaştırılamadı.');
-  if (one.falseAlarmRate > NBACK_RANDOM_FA || two.falseAlarmRate > NBACK_RANDOM_FA) {
+  const silentWhere = (w: string) =>
+    no(v(`${w} hiç basmadığın için bir geri ile iki geri karşılaştırılamadı.`, `${w} hiç basmadığı için bir geri ile iki geri karşılaştırılamadı.`));
+  if (nBackSilent(one) && nBackSilent(two)) return silentWhere('Hiçbir bölümde');
+  if (nBackSilent(two)) return silentWhere('İki geri bölümlerinde');
+  if (nBackSilent(one)) return silentWhere('Bir geri bölümünde');
+  const silentBlock = r.blocks.find(nBackSilent);
+  if (silentBlock) {
+    const which = NBACK_ORDINALS[silentBlock.index] ?? `${silentBlock.index + 1}.`;
+    return silentWhere(`${which.charAt(0).toLocaleUpperCase('tr-TR')}${which.slice(1)} bölümde`);
+  }
+  const rand1 = one.falseAlarmRate > NBACK_RANDOM_FA;
+  const rand2 = two.falseAlarmRate > NBACK_RANDOM_FA;
+  if (rand1 || rand2) {
+    const w = rand1 && rand2 ? 'Hem bir geride hem iki geride' : rand1 ? 'Bir geride' : 'İki geride';
     return no(
       v(
-        'Bölümlerden birinde aynı olmayan harflerin çoğunda da bastığın için bir geri ile iki geriyi karşılaştırmak anlamlı değil.',
-        'Bölümlerden birinde aynı olmayan harflerin çoğunda da basıldığı için bir geri ile iki geriyi karşılaştırmak anlamlı değildir.',
+        `${w} aynı olmayan harflerin çoğunda da bastığın için bir geri ile iki geriyi karşılaştırmak anlamlı değil.`,
+        `${w} aynı olmayan harflerin çoğunda da bastığı için bir geri ile iki geriyi karşılaştırmak anlamlı değildir.`,
       ),
     );
   }
@@ -2151,29 +2199,37 @@ function nBackLoadBlock(r: NBackResult, audience: Audience, card: CardOf): Cogni
   const s2 = nBackScore(two);
   const drop = s1 - s2;
   const how =
-    'Ayırt etme puanı, aynı harfleri yakalama oranından aynı olmayanlarda basma oranı çıkarılarak hesaplanır: hiç yanılmayan biri 100, rastgele basan ya da hiç basmayan biri 0 civarında alır.';
-  const [headline, text] =
-    drop >= NBACK_DROP.clear
+    'Grafikteki ayırt etme puanı şöyle bulunur: aynı harfleri yakalama oranından, aynı olmayanlarda basma oranı çıkarılır. Hiç yanılmayan biri 100 alır; rastgele basan biri 0’a yakın, hiç basmayan biri 0 alır.';
+  const ceiling = s1 >= 95 && s2 >= 95;
+  const [headline, text] = ceiling
+    ? [
+        s1 === 100 && s2 === 100 ? 'İki düzeyde de hatasız' : 'İki düzeyde de neredeyse hatasız',
+        v(
+          'Bir geride de iki geride de hemen hiç yanılmadın. Görev sana zor gelmediği için, zorluk artınca sonucun nasıl değiştiği bu görevde görülemedi.',
+          'Çocuğunuz bir geride de iki geride de hemen hiç yanılmadı. Görev ona zor gelmediği için, zorluk artınca sonucun nasıl değiştiği bu görevde görülemedi.',
+        ),
+      ]
+    : drop >= NBACK_DROP.clear
       ? [
           'İki geride belirgin düşüş',
           v(
-            'Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun belirgin biçimde düştü. Bu çoğu kişide görülür: iki geri, çalışma belleğini çok daha fazla zorlar. Düşüşün büyüklüğü, ek yükün senin için ne kadar zorlayıcı olduğunu gösterir; bu fark bir seferden ötekine değişebilir.',
-            'Akılda tutulacak harf sayısı birden ikiye çıkınca çocuğunuzun sonucu belirgin biçimde düştü. Bu çoğu kişide görülür: iki geri, çalışma belleğini çok daha fazla zorlar. Düşüşün büyüklüğü, ek yükün ne kadar zorlayıcı olduğunu gösterir; tek bir uygulamada bu farkın kesinliği düşüktür ve tek başına yorumlanmamalıdır.',
+            'Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun belirgin biçimde düştü. İki geride sonucun düşmesi sık görülür: iki geri, çalışma belleğini çok daha fazla zorlar. Düşüşün büyüklüğü, ek yükün o gün sana ne kadar zor geldiğine dair kaba bir fikir verir; bu fark bir seferden ötekine değişebilir.',
+            'Akılda tutulacak harf sayısı birden ikiye çıkınca çocuğunuzun sonucu belirgin biçimde düştü. İki geride sonucun düşmesi sık görülür: iki geri, çalışma belleğini çok daha fazla zorlar. Düşüşün büyüklüğü yalnızca kaba bir fikir verir; tek bir uygulamada bu farkın kesinliği düşüktür ve tek başına yorumlanmamalıdır.',
           ),
         ]
       : drop >= NBACK_DROP.some
         ? [
             'İki geride biraz düşüş',
             v(
-              'Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun biraz düştü. Bu beklenen bir durumdur: iki geri, bir geriden daha zordur. Bu fark bir seferden ötekine değişebilir.',
-              'Akılda tutulacak harf sayısı birden ikiye çıkınca çocuğunuzun sonucu biraz düştü. Bu beklenen bir durumdur: iki geri, bir geriden daha zordur. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+              'Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun biraz düştü. Bu beklenen bir durumdur. Bu fark bir seferden ötekine değişebilir.',
+              'Akılda tutulacak harf sayısı birden ikiye çıkınca çocuğunuzun sonucu biraz düştü. Bu beklenen bir durumdur. Tek bir uygulamada bu farkın kesinliği düşüktür.',
             ),
           ]
         : drop > -NBACK_DROP.higher
           ? [
               'Belirgin bir fark yok',
               v(
-                'Bir geride ve iki geride benzer sonuç aldın: akılda tutulacak harf sayısının artması, sonucunu belirgin biçimde değiştirmedi. Genellikle iki geride sonuç biraz düşer; bu fark bir seferden ötekine değişebilir.',
+                'Bir geride ve iki geride benzer sonuç aldın: akılda tutulacak harf sayısının artması, sonucunu belirgin biçimde değiştirmedi. Genellikle iki geride sonuç biraz düşer; bu sonuç bir seferden ötekine değişebilir.',
                 'Çocuğunuz bir geride ve iki geride benzer sonuç aldı: akılda tutulacak harf sayısının artması, sonucunu belirgin biçimde değiştirmedi. Genellikle iki geride sonuç biraz düşer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
               ),
             ]
@@ -2204,18 +2260,22 @@ function nBackLoadBlock(r: NBackResult, audience: Audience, card: CardOf): Cogni
 function nBackBlocks(r: NBackResult, audience: Audience, card: CardOf): TaskReport {
   const one = r.levels.find((l) => l.n === 1)!;
   const two = r.levels.find((l) => l.n === 2)!;
-  const row = (l: NBackLevelResult, label: string) => [
-    { label: `${label}: aynıları yakalama`, value: Math.round(l.hitRate * 100), max: 100, valueLabel: pct(l.hitRate) },
-    { label: `${label}: aynı olmayanlarda basmama`, value: Math.round((1 - l.falseAlarmRate) * 100), max: 100, valueLabel: pct(1 - l.falseAlarmRate) },
-  ];
-  const silentNote = r.levels.some(nBackSilent)
-    ? ' Hiç basılmayan bir düzeyde “aynı olmayanlarda basmama” %100 görünür; bu oran tek başına bir şey söylemez.'
-    : '';
+  // Hiç basılmayan düzey yorumlanmaz: çubukları boş çizilir ve "hiç basılmadı" yazılır (basmama %100 başarı gibi görünmesin).
+  const row = (l: NBackLevelResult, label: string) =>
+    nBackSilent(l)
+      ? [
+          { label: `${label}: aynıları yakalama`, value: 0, max: 100, valueLabel: 'hiç basılmadı' },
+          { label: `${label}: aynı olmayanlarda basmama`, value: 0, max: 100, valueLabel: 'hiç basılmadı' },
+        ]
+      : [
+          { label: `${label}: aynıları yakalama`, value: Math.round(l.hitRate * 100), max: 100, valueLabel: pct(l.hitRate) },
+          { label: `${label}: aynı olmayanlarda basmama`, value: Math.round((1 - l.falseAlarmRate) * 100), max: 100, valueLabel: pct(1 - l.falseAlarmRate) },
+        ];
   return {
     blocks: [nBackLevelBlock(one, r.blocks, audience, card), nBackLevelBlock(two, r.blocks, audience, card), nBackLoadBlock(r, audience, card)],
     chart: {
       title: 'Bir geri ve iki geri',
-      note: `Çubuklar, aynı harfleri yakalama ve aynı olmayan harflerde basmadan geçme oranlarını gösterir.${silentNote}`,
+      note: 'Çubuklar, aynı harfleri yakalama ve aynı olmayan harflerde basmadan geçme oranlarını gösterir.',
       rows: [...row(one, 'Bir geri'), ...row(two, 'İki geri')],
     },
   };
@@ -5728,10 +5788,19 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   const opsChance = complexSpanOpsChance(r);
   // Kalite notlarındaki gibi: işlemler rastgele düzeydeyse hızlı cevaplar ayrıca anlatılmaz.
   const rapid = !opsChance && complexSpanRapid(r);
+  // İşlemlerde doğru cevap az olmasının iki özel nedeni: süre dolması (yavaş çalışmak) ya da düğmeleri ters kullanmak.
+  const opsSlow = complexSpanOpsSlow(r);
+  const opsReversed = complexSpanOpsReversed(r);
+  const wrongShare = complexSpanWrongShare(r);
   const noRead = recallChance || opsChance;
   const noReadWhy = recallChance
-    ? 'Doğru yerde hatırlanan harfler rastgele seçimde de görülebilecek kadar az olduğu için'
-    : 'İşlemlerin doğru cevaplananları rastgele basmada da görülebilecek kadar az olduğu için';
+    ? 'Doğru yerde hatırlanan harfler çok az olduğu için'
+    : opsSlow
+      ? 'İşlemlerin birçoğunda süre dolduğu için'
+      : opsReversed
+        ? v('İşlemlere çoğunlukla yanlış cevap verdiğin için', 'İşlemlere çoğunlukla yanlış cevap verildiği için')
+        : 'Doğru cevaplanan işlemler çok az olduğu için';
+  const timeoutCount = O.timeouts === O.n ? 'hepsinde' : `${O.timeouts} tanesinde`;
   // "Hiçbiri" olumsuz fiille söylenir ("cevaplayamadın"); bir kısmı olumlu fiille.
   const opsClause = v(
     O.correct === 0
@@ -5746,14 +5815,27 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   /* Hatırlanan harfler */
   let harfText: string;
   if (recallChance) {
+    // Doğru yerde olmayan yerlerin çoğu boşsa harfler boş bırakılmıştır; değilse rastgele seçilmiş olabilir.
+    const blankMost = 2 * r.blank > N - X;
     harfText = v(
-      `${N} harften ${X === 0 ? 'hiçbirini doğru yerde seçemedin' : `yalnızca ${csCount(X, 'ini')} doğru yerde seçtin`}; bu, harfleri rastgele seçen birinin de bulabileceği kadar az. Yönergeyi tam anlamamış, harfleri boş bırakmış ya da görevi yarıda bırakmış olabilirsin; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
-      `Çocuğunuz ${N} harften ${X === 0 ? 'hiçbirini doğru yerde seçemedi' : `yalnızca ${csCount(X, 'ini')} doğru yerde seçti`}; bu, harfleri rastgele seçen birinin de bulabileceği kadar az. Yönerge tam anlaşılmamış, harfler boş bırakılmış ya da görev yarıda bırakılmış olabilir; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
+      `${N} harften ${X === 0 ? 'hiçbirini doğru yerde seçemedin' : `yalnızca ${csCount(X, 'ini')} doğru yerde seçtin`}; bu, harfleri rastgele seçen birinin de bulabileceği kadar az. Yönergeyi tam anlamamış, ${blankMost ? 'harfleri boş bırakmış' : 'harfleri rastgele seçmiş'} ya da görevi yarıda bırakmış olabilirsin; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözebilirsin. Aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yüksek çıkabilir.`,
+      `Çocuğunuz ${N} harften ${X === 0 ? 'hiçbirini doğru yerde seçemedi' : `yalnızca ${csCount(X, 'ini')} doğru yerde seçti`}; bu, harfleri rastgele seçen birinin de bulabileceği kadar az. Yönergeyi tam anlamamış, ${blankMost ? 'harfleri boş bırakmış' : 'harfleri rastgele seçmiş'} ya da görevi yarıda bırakmış olabilir; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözebilir. Aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yüksek çıkabilir.`,
+    );
+  } else if (opsSlow) {
+    harfText = v(
+      `Harf sonucu yorumlanmadı: işlemlerin ${timeoutCount} süre doldu (İşlemler kartına bak). İşlemler süresinde yapılmayınca harfleri içinden tekrar etmeye zaman kalır ve harfleri akılda tutmak kolaylaşır. Dinlenmiş olduğun bir gün, işlemlere de özen göstererek testi baştan çözmek daha doğru bir sonuç verebilir.`,
+      `Harf sonucu yorumlanmadı: işlemlerin ${timeoutCount} süre doldu (İşlemler kartına bakın). İşlemler süresinde yapılmayınca harfleri içinden tekrar etmeye zaman kalır ve harfleri akılda tutmak kolaylaşır. Dinlenmiş olduğu bir gün, işlemlere de özen göstererek testi baştan çözmesi daha doğru bir sonuç verebilir.`,
+    );
+  } else if (opsReversed) {
+    harfText = v(
+      `Harf sonucu yorumlanmadı: işlemlerin ${wrongShare} yanlış cevap verdiğin için işlemleri nasıl yaptığın anlaşılamadı (İşlemler kartına bak). Bu testte harfler, işlemler yapılırken akılda tutulur. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözebilirsin.`,
+      `Harf sonucu yorumlanmadı: çocuğunuz işlemlerin ${wrongShare} yanlış cevap verdiği için işlemleri nasıl yaptığı anlaşılamadı (İşlemler kartına bakın). Bu testte harfler, işlemler yapılırken akılda tutulur. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözebilir.`,
     );
   } else if (opsChance) {
+    const picked = X === N ? 'harflerin hepsini' : `${N} harften ${csCount(X, 'ini')}`;
     harfText = v(
-      `${N} harften ${csCount(X, 'ini')} doğru yerde seçtin. Ancak ${opsClause}; bu, rastgele basan birinin de bulabileceği kadar az. Bu testte harfler, işlemler yapılırken akılda tutulur; işlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı. Dinlenmiş olduğun bir gün, işlemlere de özen göstererek testi baştan çözmek daha doğru bir sonuç verebilir.`,
-      `Çocuğunuz ${N} harften ${csCount(X, 'ini')} doğru yerde seçti. Ancak ${opsClause}; bu, rastgele basan birinin de bulabileceği kadar az. Bu testte harfler, işlemler yapılırken akılda tutulur; işlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı. Dinlenmiş olduğu bir gün, işlemlere de özen göstererek testi baştan çözmesi daha doğru bir sonuç verebilir.`,
+      `${capTr(picked)} doğru yerde seçtin. Ancak ${opsClause}; bu, rastgele basan birinin de bulabileceği kadar az. Bu testte harfler, işlemler yapılırken akılda tutulur; işlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı. Dinlenmiş olduğun bir gün, işlemlere de özen göstererek testi baştan çözmek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${picked} doğru yerde seçti. Ancak ${opsClause}; bu, rastgele basan birinin de bulabileceği kadar az. Bu testte harfler, işlemler yapılırken akılda tutulur; işlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı. Dinlenmiş olduğu bir gün, işlemlere de özen göstererek testi baştan çözmesi daha doğru bir sonuç verebilir.`,
     );
   } else {
     const intro = v(
@@ -5767,34 +5849,31 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
         'Çocuğunuz harflerin hepsini doğru yerde hatırladı: işlemler araya girse de bütün dizileri doğru sırayla akılda tuttu.',
       );
     } else if (X >= 0.85 * N) {
+      const q = X >= 0.95 * N ? 'hemen hepsini' : 'büyük çoğunluğunu';
       level = v(
-        `Bunların ${csCount(X, 'ini')} doğru yerde hatırladın: işlemler araya girse de harflerin hemen hepsini doğru sırayla akılda tuttun.`,
-        `Çocuğunuz bunların ${csCount(X, 'ini')} doğru yerde hatırladı: işlemler araya girse de harflerin hemen hepsini doğru sırayla akılda tuttu.`,
+        `Bu ${N} harfin ${csCount(X, 'ini')} doğru yerde hatırladın: işlemler araya girse de harflerin ${q} doğru sırayla akılda tuttun.`,
+        `Çocuğunuz bu ${N} harfin ${csCount(X, 'ini')} doğru yerde hatırladı: işlemler araya girse de harflerin ${q} doğru sırayla akılda tuttu.`,
       );
     } else if (X >= 0.65 * N) {
       level = v(
-        `Bunların ${csCount(X, 'ini')} doğru yerde hatırladın: işlemler araya girse de harflerin çoğunu doğru sırayla akılda tuttun.`,
-        `Çocuğunuz bunların ${csCount(X, 'ini')} doğru yerde hatırladı: işlemler araya girse de harflerin çoğunu doğru sırayla akılda tuttu.`,
+        `Bu ${N} harfin ${csCount(X, 'ini')} doğru yerde hatırladın: işlemler araya girse de harflerin çoğunu doğru sırayla akılda tuttun.`,
+        `Çocuğunuz bu ${N} harfin ${csCount(X, 'ini')} doğru yerde hatırladı: işlemler araya girse de harflerin çoğunu doğru sırayla akılda tuttu.`,
       );
     } else {
       const share = 2 * X > N ? 'yarısından çoğu' : 2 * X === N ? 'yarısı' : 'yarısından azı';
       level = v(
-        `Bunların ${csCount(X, 'ini')} doğru yerde hatırladın: harflerin ${share} doğru yerdeydi; öteki harflerde yer karıştı ya da harf hatırlanamadı.`,
-        `Çocuğunuz bunların ${csCount(X, 'ini')} doğru yerde hatırladı: harflerin ${share} doğru yerdeydi; öteki harflerde yer karıştı ya da harf hatırlanamadı.`,
+        `Bu ${N} harfin ${csCount(X, 'ini')} doğru yerde hatırladın: harflerin ${share} doğru yerdeydi; öteki harflerde yer karıştı ya da harf hatırlanamadı.`,
+        `Çocuğunuz bu ${N} harfin ${csCount(X, 'ini')} doğru yerde hatırladı: harflerin ${share} doğru yerdeydi; öteki harflerde yer karıştı ya da harf hatırlanamadı.`,
       );
     }
     const parts = [intro, level];
-    if (X < N) {
+    // Dizilerin uzunluğuna göre sonuç (en uzun tam dizi dahil) Dizi uzunluğu kartındadır.
+    if (X < N && r.longest === null) {
       parts.push(
-        r.longest !== null
-          ? v(
-              `Bütün harflerini doğru sırayla hatırladığın en uzun dizi ${r.longest} harfliydi.`,
-              `Bütün harflerini doğru sırayla hatırladığı en uzun dizi ${r.longest} harfliydi.`,
-            )
-          : v(
-              'Hiçbir dizinin bütün harflerini doğru sırayla seçemedin; doğru yerde seçtiğin harfler yine de sonuca sayıldı.',
-              'Çocuğunuz hiçbir dizinin bütün harflerini doğru sırayla seçemedi; doğru yerde seçtiği harfler yine de sonuca sayıldı.',
-            ),
+        v(
+          'Hiçbir dizinin bütün harflerini doğru sırayla seçemedin; doğru yerde seçtiğin harfler yine de sonuca sayıldı.',
+          'Çocuğunuz hiçbir dizinin bütün harflerini doğru sırayla seçemedi; doğru yerde seçtiği harfler yine de sonuca sayıldı.',
+        ),
       );
     }
     parts.push(
@@ -5806,34 +5885,37 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
     if (rapid) {
       parts.push(
         v(
-          `İşlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdin; bu işlemlere bakılmadan basılmış olabilir. İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için bu sonuç dikkatle yorumlanmalıdır.`,
-          `Çocuğunuz işlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdi; bu işlemlere bakılmadan basılmış olabilir. İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için bu sonuç dikkatle yorumlanmalıdır.`,
+          'İşlemlerin bir kısmına bakmadan basmış olabileceğin için (İşlemler kartına bak) harf sonucu dikkatle yorumlanmalıdır: işlemler yapılmadan harfleri akılda tutmak kolaylaşır.',
+          'İşlemlerin bir kısmına bakmadan basmış olabileceği için (İşlemler kartına bakın) harf sonucu dikkatle yorumlanmalıdır: işlemler yapılmadan harfleri akılda tutmak kolaylaşır.',
         ),
       );
     } else if (O.accuracy < CS_OPS_TARGET) {
       parts.push(
         v(
-          `İşlemlerin ${pct(O.accuracy)} kadarını süresi içinde doğru cevapladın. Bu tür görevlerde, işlemlerin gerçekten yapıldığını göstermek için geleneksel olarak en az %85’inin doğru olması istenir; bu düzeyin altında kalındığı için harf sonucu biraz daha dikkatle yorumlanmalıdır.`,
-          `Çocuğunuz işlemlerin ${pct(O.accuracy)} kadarını süresi içinde doğru cevapladı. Bu tür görevlerde, işlemlerin gerçekten yapıldığını göstermek için geleneksel olarak en az %85’inin doğru olması istenir; bu düzeyin altında kalındığı için harf sonucu biraz daha dikkatle yorumlanmalıdır.`,
+          'İşlemlerin %85’inden azını doğru cevapladığın için (İşlemler kartına bak) harf sonucu biraz daha dikkatle yorumlanmalıdır.',
+          'İşlemlerin %85’inden azı doğru cevaplandığı için (İşlemler kartına bakın) harf sonucu biraz daha dikkatle yorumlanmalıdır.',
         ),
       );
     }
     harfText = parts.join(' ');
   }
-  const harf: CognitiveBlock = {
-    ...card('hb_harf'),
-    headline: X === 0 ? `${N} harfin hiçbiri doğru yerde değil` : X === N ? `${N} harfin hepsi doğru yerde` : `${N} harften ${csCount(X, 'i')} doğru yerde`,
-    text: harfText,
-    visual: {
-      type: 'stack',
-      label: 'Dizilerdeki harfler',
-      total: N,
-      parts: [
-        { label: 'Doğru yerde hatırlandı', value: X },
-        { label: 'Doğru yerde değil', value: N - X },
-      ],
-    } satisfies StackVisual,
-  };
+  // Yorumlanmayan harf sonucu rozetiyle ve grafiğiyle yorumlanmış gibi görünmez.
+  const harf: CognitiveBlock = noRead
+    ? { ...card('hb_harf'), headline: 'Yorumlanmadı', text: harfText }
+    : {
+        ...card('hb_harf'),
+        headline: X === 0 ? `${N} harfin hiçbiri doğru yerde değil` : X === N ? `${N} harfin hepsi doğru yerde` : `${N} harften ${csCount(X, 'i')} doğru yerde`,
+        text: harfText,
+        visual: {
+          type: 'stack',
+          label: 'Dizilerdeki harfler',
+          total: N,
+          parts: [
+            { label: 'Doğru yerde hatırlandı', value: X },
+            { label: 'Doğru yerde değil', value: N - X },
+          ],
+        } satisfies StackVisual,
+      };
 
   /* Dizi uzunluğu */
   const group = (sizes: number[]) => {
@@ -5870,23 +5952,28 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
         `Çocuğunuz kısa dizilerde (3 ve 4 harf) ${part(S, 'hatırladı', 'hatırlayamadı')}; uzun dizilerde (6 ve 7 harf) ${part(L, 'hatırladı', 'hatırlayamadı')}.`,
       );
     }
+    // Rozet, kartın asıl karşılaştırmasıdır (kısa ve uzun diziler); en uzun tam dizi grafikte görünür.
+    let badge = 'Uzunlukla pek değişmedi';
     if (pShort >= 0.9 && pLong >= 0.9) {
       text +=
         pLong >= pShort
           ? v(' Diziler uzadıkça sonucun düşmedi.', ' Diziler uzadıkça sonucu düşmedi.')
           : v(' Diziler uzadıkça sonucun pek değişmedi.', ' Diziler uzadıkça sonucu pek değişmedi.');
     } else if (diff >= 0.2) {
+      badge = 'Uzun dizilerde belirgin düşüş';
       text += v(
         ' Diziler uzadıkça doğru yerde hatırladığın harflerin oranı düştü. Uzun dizilerde hem akılda tutulacak harf hem araya giren işlem artar; bu yüzden diziler uzadıkça zorlanmak bu görevde olağandır.',
         ' Diziler uzadıkça doğru yerde hatırladığı harflerin oranı düştü. Uzun dizilerde hem akılda tutulacak harf hem araya giren işlem artar; bu yüzden diziler uzadıkça zorlanmak bu görevde olağandır.',
       );
     } else if (diff >= 0.1 && L.letters - L.correct >= 3) {
       // Birkaç harflik farklar yorumlanmaz: uzun dizilerde en az üç yer doğru değilse.
+      badge = 'Uzun dizilerde biraz düşüş';
       text += v(
         ' Diziler uzadıkça doğru yerde hatırladığın harflerin oranı biraz düştü.',
         ' Diziler uzadıkça doğru yerde hatırladığı harflerin oranı biraz düştü.',
       );
     } else if (diff <= -0.1 && S.letters - S.correct >= 3) {
+      badge = 'Uzun dizilerde daha iyi';
       text += v(
         ' Uzun dizilerde harflerin, kısa dizilerdekinden daha büyük bir kısmını doğru yerde hatırladın. Kısa dizilerde dikkatin dağılmış olabilir.',
         ' Uzun dizilerde harflerin, kısa dizilerdekinden daha büyük bir kısmını doğru yerde hatırladı. Kısa dizilerde dikkati dağılmış olabilir.',
@@ -5900,11 +5987,17 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
         ` Çocuğunuz ${r.sets} diziden ${csCount(P, 'inin')} bütün harflerini doğru sırayla hatırladı.`,
       );
     }
+    const maxSize = Math.max(...r.bySize.map((x) => x.size));
     text +=
-      ' Her uzunlukta yalnızca iki dizi olduğu için bütün harfleri doğru hatırlanan en uzun dizi yalnızca kabaca fikir verir; asıl sonuç, doğru yerde hatırlanan harflerin toplamıdır.';
+      P === r.sets
+        ? v(
+            ` Görevdeki en uzun diziler ${maxSize} harfti ve bütün dizileri tam hatırladın; daha uzun dizilerde ne olacağı bu görevden anlaşılamaz.`,
+            ` Görevdeki en uzun diziler ${maxSize} harfti ve çocuğunuz bütün dizileri tam hatırladı; daha uzun dizilerde ne olacağı bu görevden anlaşılamaz.`,
+          )
+        : ' Her uzunlukta yalnızca iki dizi olduğu için bütün harfleri doğru hatırlanan en uzun dizi yalnızca kabaca fikir verir; asıl sonuç, doğru yerde hatırlanan harflerin toplamıdır.';
     uzunluk = {
       ...card('hb_uzunluk'),
-      headline: P === r.sets ? 'Bütün diziler tam' : r.longest !== null ? `En uzun tam dizi: ${r.longest} harf` : 'Tam hatırlanan dizi yok',
+      headline: P === r.sets ? 'Bütün diziler tam' : badge,
       text,
       // Her uzunluktaki dizilerden kaçının bütün harfleri doğru sırayla hatırlandı (dolu daire: tam dizi).
       visual: {
@@ -5913,6 +6006,7 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
         rows: r.bySize.map((x) => ({ length: x.size, results: Array.from({ length: x.sets }, (_, i) => i < x.perfect) })),
         reached: r.longest,
         unit: 'harf',
+        legend: ['tam', 'eksik'],
       } satisfies LadderVisual,
     };
   }
@@ -5926,23 +6020,38 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
         )
       : '';
   let islemText: string;
-  if (opsChance) {
+  if (opsSlow) {
+    // Süresi içinde cevap verilen işlemler: hepsi, bir kısmı ya da hiçbiri doğru.
+    const A = O.correct + O.wrong;
+    const answered =
+      A === 0
+        ? ''
+        : O.correct === A
+          ? v(`; süresi içinde cevap verdiğin ${A} işlemin hepsi doğruydu`, `; süresi içinde cevap verdiği ${A} işlemin hepsi doğruydu`)
+          : O.correct === 0
+            ? v(`; süresi içinde cevap verdiğin ${A} işlemin hiçbiri doğru değildi`, `; süresi içinde cevap verdiği ${A} işlemin hiçbiri doğru değildi`)
+            : v(`; süresi içinde cevap verdiğin ${A} işlemin ${csCount(O.correct, 'i')} doğruydu`, `; süresi içinde cevap verdiği ${A} işlemin ${csCount(O.correct, 'i')} doğruydu`);
+    islemText =
+      v(
+        `İşlemlerin ${timeoutCount} süre doldu${answered}. İşlemlerde alıştırmadakinden çok daha yavaş çalışmış, ara vermiş ya da yönergeyi tam anlamamış olabilirsin.`,
+        `Çocuğunuzun işlemlerinin ${timeoutCount} süre doldu${answered}. İşlemlerde alıştırmadakinden çok daha yavaş çalışmış, ara vermiş ya da yönergeyi tam anlamamış olabilir.`,
+      ) + limitText;
+  } else if (opsReversed) {
+    islemText =
+      v(
+        `İşlemlerin ${wrongShare} yanlış cevap verdin. Rastgele basan biri bile yaklaşık yarısını doğru bulurdu; bu yüzden DOĞRU ve YANLIŞ düğmelerini ters kullanmış olabilirsin.`,
+        `Çocuğunuz işlemlerin ${wrongShare} yanlış cevap verdi. Rastgele basan biri bile yaklaşık yarısını doğru bulurdu; bu yüzden DOĞRU ve YANLIŞ düğmeleri ters kullanılmış olabilir.`,
+      ) + limitText;
+  } else if (opsChance) {
     islemText = v(
       `${O.n} ${opsClause.replace(/^işlemlerin/, 'işlemin')}; bu, rastgele basan birinin de bulabileceği kadar az.`,
       `Çocuğunuz ${O.n} ${opsClause.replace(/^işlemlerin/, 'işlemin')}; bu, rastgele basan birinin de bulabileceği kadar az.`,
     );
-    islemText +=
-      O.timeouts > O.wrong
-        ? v(
-            ` İşlemlerin ${O.timeouts === O.n ? 'hepsinde' : `${O.timeouts} tanesinde`} süre doldu: işlemlerde alıştırmadakinden çok daha yavaş çalışmış, ara vermiş ya da yönergeyi tam anlamamış olabilirsin.`,
-            ` İşlemlerin ${O.timeouts === O.n ? 'hepsinde' : `${O.timeouts} tanesinde`} süre doldu: işlemlerde alıştırmadakinden çok daha yavaş çalışmış, ara vermiş ya da yönergeyi tam anlamamış olabilir.`,
-          )
-        : v(
-            ` ${O.wrong === O.n ? 'İşlemlerin hepsine' : `${O.wrong} işleme`} yanlış cevap verdin; işlemlere bakmadan basmış ya da yönergeyi tam anlamamış olabilirsin.`,
-            ` ${O.wrong === O.n ? 'İşlemlerin hepsine' : `${O.wrong} işleme`} yanlış cevap verdi; işlemlere bakmadan basmış ya da yönergeyi tam anlamamış olabilir.`,
-          );
+    islemText += v(
+      ` ${O.wrong === O.n ? 'İşlemlerin hepsine' : `${O.wrong} işleme`} yanlış cevap verdin; işlemlere bakmadan basmış ya da yönergeyi tam anlamamış olabilirsin.`,
+      ` ${O.wrong === O.n ? 'İşlemlerin hepsine' : `${O.wrong} işleme`} yanlış cevap verdi; işlemlere bakmadan basmış ya da yönergeyi tam anlamamış olabilir.`,
+    );
     islemText += limitText;
-    if (!recallChance) islemText += ' İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmadı.';
   } else {
     const parts = [
       v(
@@ -5955,15 +6064,15 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
     } else if (O.accuracy >= CS_OPS_TARGET) {
       parts.push(
         v(
-          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; bu düzeye ulaştın.',
-          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; çocuğunuz bu düzeye ulaştı.',
+          'Bu tür görevlerde, işlemlerin gerçekten yapıldığını görmek için işlemlerin en az %85’inin doğru olması beklenir; bu düzeye ulaştın.',
+          'Bu tür görevlerde, işlemlerin gerçekten yapıldığını görmek için işlemlerin en az %85’inin doğru olması beklenir; çocuğunuz bu düzeye ulaştı.',
         ),
       );
     } else {
       parts.push(
         v(
-          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; bu düzeyin altında kaldın.',
-          'Bu tür görevlerde geleneksel olarak işlemlerin en az %85’inin doğru olması istenir; çocuğunuz bu düzeyin altında kaldı.',
+          'Bu tür görevlerde, işlemlerin gerçekten yapıldığını görmek için işlemlerin en az %85’inin doğru olması beklenir; bu düzeyin altında kaldın.',
+          'Bu tür görevlerde, işlemlerin gerçekten yapıldığını görmek için işlemlerin en az %85’inin doğru olması beklenir; çocuğunuz bu düzeyin altında kaldı.',
         ),
       );
       parts.push(
@@ -5990,8 +6099,8 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
     let text = parts.join(' ') + limitText;
     if (rapid) {
       text += v(
-        ` İşlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdin; bu sürede bir işlemi okuyup hesaplamak zordur. Bu işlemlere bakılmadan basılmış olabilir.`,
-        ` Çocuğunuz işlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdi; bu sürede bir işlemi okuyup hesaplamak zordur. Bu işlemlere bakılmadan basılmış olabilir.`,
+        ` İşlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdin; bu sürede bir işlemi okuyup hesaplamak zordur. Bu işlemlere bakmadan basmış olabilirsin.`,
+        ` Çocuğunuz işlemlerin ${rapidPhrase} yarım saniyeden kısa sürede cevap verdi; bu sürede bir işlemi okuyup hesaplamak zordur. Bu işlemlere bakmadan basmış olabilir.`,
       );
     }
     text += ' İşlemler matematik becerisini ölçmek için değil, harfleri akılda tutmayı zorlaştırmak için vardır.';
@@ -6040,22 +6149,31 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
       r.blank > 0 ? `${many(r.blank, 'hepsi')}boş kaldı` : '',
     ].filter(Boolean);
     let text = `${lead} ${joinTr(kinds)}.`;
-    if (2 * r.order > E) {
-      text += v(
-        ' Yeri karışan harflerde harfi hatırladın ama sırasını karıştırdın. Bu testte bir harf yalnızca gösterildiği sıradaki yerde seçilirse doğru sayılır; harflerin sırasını da akılda tutmak gerekir.',
-        ' Yeri karışan harflerde çocuğunuz harfi hatırladı ama sırasını karıştırdı. Bu testte bir harf yalnızca gösterildiği sıradaki yerde seçilirse doğru sayılır; harflerin sırasını da akılda tutmak gerekir.',
-      );
+    const rule = ' Bu testte bir harf yalnızca gösterildiği sıradaki yere konursa doğru sayılır.';
+    if (r.order === E) {
+      // Bütün yanlış yerlerde harf dizide vardı: iki cümlede aynı şeyi söylememek için tek cümle.
+      const where = E === 1 ? 'Yanlış olan tek yerde' : `Yanlış olan ${E} yerin hepsinde`;
+      text =
+        v(
+          `${where} seçtiğin harf o dizide vardı, ama yanlış sıraya koydun: harfi hatırladın, sırasını karıştırdın.`,
+          `${where} çocuğunuzun seçtiği harf o dizide vardı, ama yanlış sıraya kondu: harf hatırlandı, sırası karıştı.`,
+        ) + rule;
+    } else if (2 * r.order > E) {
+      text += v(' Yeri karışan harflerde harfi hatırladın, sırasını karıştırdın.', ' Yeri karışan harflerde çocuğunuz harfi hatırladı, sırasını karıştırdı.') + rule;
     } else if (2 * r.intrusion > E) {
       text += ' O dizide olmayan bir harfin seçildiği yerlerde harf başka bir harfle karışmış ya da tahmin edilmiş olabilir.';
     } else if (2 * r.blank > E) {
-      text += ' Boş kalan yerler hatırlanamayan harflerdir; hatırlanamayan harfin yerine BOŞ düğmesine basmak öteki harflerin yerinde kalmasını sağlar.';
+      text += v(
+        ' Bu yerlerde harf seçmedin; yani o harfleri hatırlayamadın. Hatırlamadığın yeri boş bırakmak iyi bir yoldur: öteki harfler kendi yerinde kalır ve doğru sayılır.',
+        ' Bu yerlerde harf seçilmedi; yani o harfler hatırlanamadı. Hatırlanmayan yeri boş bırakmak iyi bir yoldur: öteki harfler kendi yerinde kalır ve doğru sayılır.',
+      );
     } else {
       text += ' Bu yerlerde hata türlerinden hiçbiri ötekilerden belirgin biçimde çok değildi.';
     }
     // Sayılar başlıkta ve metinde geçtiği için ayrıntı satırı yoktur.
     hata = {
       ...card('hb_hata'),
-      headline: [r.order > 0 ? `Yeri karışan ${r.order}` : '', r.intrusion > 0 ? `dizide olmayan ${r.intrusion}` : '', r.blank > 0 ? `boş ${r.blank}` : '']
+      headline: [r.order > 0 ? `Yeri karışan ${r.order}` : '', r.intrusion > 0 ? `dizide olmayan ${r.intrusion}` : '', r.blank > 0 ? `boş kalan ${r.blank}` : '']
         .filter(Boolean)
         .join(' · ')
         .replace(/^./, (c) => c.toLocaleUpperCase('tr-TR')),
@@ -6074,7 +6192,8 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   }
 
   /* Grafikler ve öne çıkan sayılar */
-  const chart: CognitiveReport['chart'] = {
+  // Yorumlanmayan harf sonucunun grafiği de çizilmez.
+  const chart: CognitiveReport['chart'] = noRead ? undefined : {
     title: 'Dizi uzunluğuna göre doğru yerde hatırlanan harfler',
     note: v(
       'Her satırda aynı uzunluktaki iki dizinin harfleri vardır. Çubuk ne kadar uzunsa o dizilerdeki harflerin o kadar çoğunu doğru yerde hatırlamışsın demektir.',
@@ -6083,8 +6202,8 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
     rows: r.bySize.map((s) => ({ label: `${s.size} harflik diziler`, value: s.correct, max: s.letters, valueLabel: `${s.correct}/${s.letters}` })),
   };
   const figures = [
-    { label: 'Doğru yerde hatırlanan harf', value: `${X}/${N}` },
-    { label: 'Bütün harfleri doğru dizi', value: `${P}/${r.sets}` },
+    { label: 'Doğru yerde hatırlanan harf', value: noRead ? 'Yorumlanmadı' : `${X}/${N}` },
+    { label: 'Bütün harfleri doğru dizi', value: noRead ? 'Yorumlanmadı' : `${P}/${r.sets}` },
     { label: 'İşlem doğruluğu', value: pct(O.accuracy) },
     ...(r.limitMs !== null ? [{ label: 'İşlem süre sınırı', value: csSeconds(r.limitMs) }] : []),
   ];
@@ -6107,7 +6226,7 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
           band: '',
         })),
       };
-  return { blocks: [harf, uzunluk, islem, hata], chart, figures, ...(profile ? { profile } : {}) };
+  return { blocks: [harf, uzunluk, islem, hata], ...(chart ? { chart } : {}), figures, ...(profile ? { profile } : {}) };
 }
 
 /* ---------- Desen hatırlama ---------- */
@@ -7620,19 +7739,37 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
   const timeouts = ruleSwitchTimeouts(r);
   const fast = ruleSwitchFast(r);
   const oneSide = ruleSwitchOneSide(r);
+  // Hiç cevap yoksa ya da denemelerin yarısında süre dolduysa az doğru cevabın nedeni rastgele basmak değil, basmamaktır.
+  const none = r.answered === 0;
+  const mostlyTimeouts = !none && r.timeouts * 2 >= r.n;
+  const chanceWhy = none ? 'Hiç cevap verilmediği için' : mostlyTimeouts ? 'Denemelerin çoğunda süre dolduğu için' : 'Doğru cevaplar çok az olduğu için';
 
   /* Doğruluk */
   let accText: string;
-  if (chance) {
+  if (none) {
     accText = v(
-      'Doğru cevapların, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az. Kuralları tam anlamamış, şekillere bakmadan basmış ya da görevi yarıda bırakmış olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verir.',
-      'Çocuğunuzun doğru cevapları, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az. Kurallar tam anlaşılmamış, şekillere bakılmadan basılmış ya da görev yarıda bırakılmış olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verir.',
+      'Hiçbir denemede süre içinde düğmeye basmadın; bu yüzden sonuç yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin.',
+      'Çocuğunuz hiçbir denemede süre içinde düğmeye basmadı; bu yüzden sonuç yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir.',
+    );
+  } else if (chance && mostlyTimeouts) {
+    accText = v(
+      'Denemelerin çoğunda süre içinde basmadın; doğru cevaplar bu yüzden az. Görevi yarıda bırakmış ya da dikkatin dağılmış olabilir; bu yüzden sonuç yorumlanmadı.',
+      'Çocuğunuz denemelerin çoğunda süre içinde basmadı; doğru cevaplar bu yüzden az. Görevi yarıda bırakmış ya da dikkati dağılmış olabilir; bu yüzden sonuç yorumlanmadı.',
+    );
+  } else if (chance) {
+    accText = v(
+      'Doğru cevapların, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az. Kuralları tam anlamamış, şekillere bakmadan basmış ya da görevi yarıda bırakmış olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.',
+      'Çocuğunuzun doğru cevapları, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az. Kurallar tam anlaşılmamış, şekillere bakılmadan basılmış ya da görev yarıda bırakılmış olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.',
     );
   } else {
+    // Eşikler, rozette yazan (yuvarlanmış) yüzdeyle karşılaştırılır ki rozet ile metin birbirini tutsun.
+    const p = Math.round(r.accuracy * 100);
     accText =
-      r.accuracy >= 0.95
+      r.correct === r.n
+        ? v('Şekillere, işaretin söylediği kurala göre her seferinde doğru cevap verdin.', 'Çocuğunuz şekillere, işaretin söylediği kurala göre her seferinde doğru cevap verdi.')
+        : p >= 95
         ? v('Şekillere, işaretin söylediği kurala göre neredeyse her seferinde doğru cevap verdin.', 'Çocuğunuz şekillere, işaretin söylediği kurala göre neredeyse her seferinde doğru cevap verdi.')
-        : r.accuracy >= 0.85
+        : p >= 85
           ? v('Çoğu denemede kurala göre doğru düğmeye bastın; bazı denemelerde yanıldın.', 'Çocuğunuz çoğu denemede kurala göre doğru düğmeye bastı; bazı denemelerde yanıldı.')
           : v('Denemelerin bir kısmında kurala göre doğru düğmeyi bulmakta zorlandın.', 'Çocuğunuz denemelerin bir kısmında kurala göre doğru düğmeyi bulmakta zorlandı.');
     // Karışık bölümdeki hataların türü: iki kuralın farklı düğmeyi istediği şekillerde yanlış düğme, öteki kurala göre
@@ -7650,22 +7787,24 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       );
     }
   }
-  const dogruluk: CognitiveBlock = {
-    ...card('kd_dogruluk'),
-    headline: `${pct(r.accuracy)} doğru`,
-    text: accText,
-    visual: pctBarsVisual('Doğru cevap oranı', [
-      { label: 'Tek kurallı bölümler', rate: r.pure.accuracy },
-      { label: 'İki kural karışınca: kural sürerken', rate: r.repeat.accuracy },
-      { label: 'İki kural karışınca: kural değişince', rate: r.switch.accuracy },
-    ]),
-  };
+  const dogruluk: CognitiveBlock = none
+    ? { ...card('kd_dogruluk'), headline: 'Cevap verilmedi', text: accText }
+    : {
+        ...card('kd_dogruluk'),
+        headline: `${pct(r.accuracy)} doğru`,
+        text: accText,
+        visual: pctBarsVisual('Doğru cevap oranı', [
+          { label: 'Tek kurallı bölümler', rate: r.pure.accuracy },
+          { label: 'İki kural karışınca: kural sürerken', rate: r.repeat.accuracy },
+          { label: 'İki kural karışınca: kural değişince', rate: r.switch.accuracy },
+        ]),
+      };
 
   /* Kural değiştirme */
   let degisim: CognitiveBlock;
   let switchFig: { value: string; note?: string } = { value: 'Yorumlanmadı' };
   if (chance) {
-    degisim = { ...card('kd_degisim'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için kural değiştirmenin etkisi yorumlanmadı.' };
+    degisim = { ...card('kd_degisim'), headline: 'Yorumlanmadı', text: `${chanceWhy} kural değiştirmenin etkisi yorumlanmadı.` };
   } else if (r.repeat.medianRt === null || r.switch.medianRt === null) {
     degisim = {
       ...card('kd_degisim'),
@@ -7687,9 +7826,15 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       { label: 'Kural sürerken', ms: a },
       { label: 'Kural değişince', ms: b },
     ]);
-    // Kural değişince doğruluk da en az 10 puan düşerse söylenir.
+    // Kural değişince doğruluk da en az 10 puan düşerse söylenir. Kural sürerken doğruluk yüksekken kural değişince
+    // rastgele basmaya yakın bir düzeye inerse, çoğu zaman bir önceki kurala göre basılmaya devam edilmiş olabilir.
     const accDrop =
-      r.repeat.accuracy - r.switch.accuracy >= 0.1
+      r.switch.accuracy <= 0.6 && r.repeat.accuracy >= 0.8
+        ? v(
+            ` Kural değiştiğinde hataların da belirgin biçimde arttı: doğru cevapların ${pct(r.repeat.accuracy)} yerine ${pct(r.switch.accuracy)} oldu. Bu oran, iki düğmeden birine rastgele basan birinin bulacağına yakın. Kural değişince çoğu zaman bir önceki kurala göre basmaya devam etmiş olabilirsin; basmadan önce şeklin üstündeki işarete bir an bakmak işine yarar.`,
+            ` Kural değiştiğinde hatalar da belirgin biçimde arttı: doğru cevaplar ${pct(r.repeat.accuracy)} yerine ${pct(r.switch.accuracy)} oldu. Bu oran, iki düğmeden birine rastgele basan birinin bulacağına yakın. Kural değişince çocuğunuz çoğu zaman bir önceki kurala göre basmaya devam etmiş olabilir.`,
+          )
+        : r.repeat.accuracy - r.switch.accuracy >= 0.1
         ? v(
             ` Kural değiştiğinde hataların da arttı: doğru cevapların ${pct(r.repeat.accuracy)} yerine ${pct(r.switch.accuracy)} oldu.`,
             ` Kural değiştiğinde hatalar da arttı: doğru cevaplar ${pct(r.repeat.accuracy)} yerine ${pct(r.switch.accuracy)} oldu.`,
@@ -7702,11 +7847,11 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
         visual,
         text:
           v(
-            'Kural değiştiğinde cevapların, aynı kural sürerkenkinden biraz daha yavaştı. Bu herkeste görülür: yeni kurala geçmek için zihnin kendini yeniden ayarlaması gerekir; çok uzun alıştırmalardan sonra bile bu fark tamamen kaybolmaz.',
-            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerkenkinden biraz daha yavaştı. Bu, kural değiştirme çalışmalarının bilinen bir bulgusudur: kural değiştikten sonra verilen cevaplar daha yavaştır ve daha çok hata içerir; çok uzun alıştırmalar bile bu farkı ortadan kaldırmaz (Stoet ve Snyder, 2007).',
+            'Kural değiştiğinde cevapların, aynı kural sürerken verdiğin cevaplardan daha yavaştı. Bu çoğu kişide görülür: yeni kurala geçmek için zihnin kendini yeniden ayarlaması gerekir. Çok uzun alıştırmalardan sonra bile bu fark tamamen kaybolmaz.',
+            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerken verdiği cevaplardan daha yavaştı. Bu, kural değiştirme çalışmalarının bilinen bir bulgusudur: kural değişince cevaplar yavaşlar ve hatalar artar. Çok uzun alıştırmalar bile bu farkı ortadan kaldırmaz (Stoet ve Snyder, 2007).',
           ) +
           accDrop +
-          v(' Bu fark bir seferden ötekine değişebilir; küçük farklara takılma.', ' Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.'),
+          v(' Bu fark bir seferden ötekine değişebilir.', ' Tek bir uygulamada bu farkın kesinliği düşüktür; tek başına yorumlanmamalıdır.'),
       };
     } else if (diff <= -RULE_COST_MIN_MS) {
       degisim = {
@@ -7715,8 +7860,8 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
         visual,
         text:
           v(
-            'Kural değiştiğinde cevapların, aynı kural sürerkenkinden biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır ve bir seferden ötekine değişebilir.',
-            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerkenkinden biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+            'Kural değiştiğinde cevapların, aynı kural sürerken verdiğin cevaplardan biraz daha hızlıydı. Bu sık görülmez; çoğu zaman rastlantıdır, çünkü cevap süreleri denemeden denemeye biraz değişir. Bu sonuç bir seferden ötekine değişebilir.',
+            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerken verdiği cevaplardan biraz daha hızlıydı. Bu sık görülmez; çoğu zaman rastlantıdır, çünkü cevap süreleri denemeden denemeye biraz değişir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
           ) + accDrop,
       };
     } else {
@@ -7726,8 +7871,8 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
         visual,
         text:
           v(
-            'Kural değiştiğinde cevapların, aynı kural sürerkenkinden belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlama, bu uygulamada sende belirgin olarak ortaya çıkmadı. Bu fark bir seferden ötekine değişebilir.',
-            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerkenkinden belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlamanın belirgin olmaması ölçümün doğal payından da kaynaklanabilir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+            'Kural değiştiğinde cevapların, aynı kural sürerken verdiğin cevaplardan belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlama, bu uygulamada sende belirgin olarak ortaya çıkmadı. Bu sonuç bir seferden ötekine değişebilir.',
+            'Kural değiştiğinde çocuğunuzun cevapları, aynı kural sürerken verdiği cevaplardan belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlamanın belirgin olmaması rastlantıdan da kaynaklanabilir. Tek bir uygulamada bu sonucun kesinliği düşüktür.',
           ) + accDrop,
       };
     }
@@ -7736,7 +7881,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
   /* İki kuralı akılda tutma */
   let karisik: CognitiveBlock;
   if (chance) {
-    karisik = { ...card('kd_karisik'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için iki kuralın karıştığı bölüm yorumlanmadı.' };
+    karisik = { ...card('kd_karisik'), headline: 'Yorumlanmadı', text: `${chanceWhy} iki kuralın karıştığı bölüm yorumlanmadı.` };
   } else if (r.pure.medianRt === null || r.repeat.medianRt === null) {
     karisik = {
       ...card('kd_karisik'),
@@ -7757,8 +7902,8 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
         headline: `İki kural karışınca ${sn(diff)} sn daha yavaş`,
         visual,
         text: v(
-          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile cevapların tek kurallı bölümlerdekinden daha yavaştı. Bunun nedeni, iki kuralı birden akılda tutup her denemede işarete bakmanın gerektirdiği çabadır; çoğu kişide görülür. Bu fark bir seferden ötekine değişebilir.',
-          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile çocuğunuzun cevapları tek kurallı bölümlerdekinden daha yavaştı. Bu fark, iki kuralı birden akılda tutmanın gerektirdiği genel çabayı gösterir ve çoğu kişide görülür. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile cevapların tek kurallı bölümlerdeki cevaplarından daha yavaştı. Bu çoğu kişide görülür ve genellikle iki kuralı birden akılda tutup her denemede işarete bakmanın gerektirdiği çabadan kaynaklanır. Bu tür farklar bir seferden ötekine değişebilir.',
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile çocuğunuzun cevapları tek kurallı bölümlerdeki cevaplarından daha yavaştı. Bu fark, iki kuralı birden akılda tutmanın gerektirdiği genel çabayı gösterir ve çoğu kişide görülür. Tek bir uygulamada bu tür farkların kesinliği düşüktür.',
         ),
       };
     } else if (diff <= -RULE_COST_MIN_MS) {
@@ -7767,8 +7912,8 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
         headline: 'İki kural karışınca daha hızlı',
         visual,
         text: v(
-          'İki kuralın karıştığı bölümde cevapların, tek kurallı bölümlerdekinden daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışıp ısınmaktan kaynaklanmış olabilir.',
-          'İki kuralın karıştığı bölümde çocuğunuzun cevapları, tek kurallı bölümlerdekinden daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışmaktan kaynaklanmış olabilir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+          'İki kuralın karıştığı bölümde cevapların, tek kurallı bölümlerdeki cevaplarından daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışıp ısınmaktan kaynaklanmış olabilir.',
+          'İki kuralın karıştığı bölümde çocuğunuzun cevapları, tek kurallı bölümlerdeki cevaplarından daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışmaktan kaynaklanmış olabilir. Tek bir uygulamada bu tür farkların kesinliği düşüktür.',
         ),
       };
     } else {
@@ -7777,8 +7922,8 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
         headline: 'Belirgin bir fark görülmedi',
         visual,
         text: v(
-          'İki kuralın karıştığı bölümde, kural değişmediği denemelerdeki cevapların tek kurallı bölümlerdekinden belirgin biçimde yavaş değildi. Bu fark bir seferden ötekine değişebilir.',
-          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde çocuğunuzun cevapları tek kurallı bölümlerdekinden belirgin biçimde yavaş değildi. Tek bir uygulamada bu farkın kesinliği düşüktür.',
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerdeki cevapların tek kurallı bölümlerdeki cevaplarından belirgin biçimde yavaş değildi. Bu sonuç bir seferden ötekine değişebilir.',
+          'İki kuralın karıştığı bölümde, kural değişmediği denemelerde çocuğunuzun cevapları tek kurallı bölümlerdeki cevaplarından belirgin biçimde yavaş değildi. Tek bir uygulamada bu sonucun kesinliği düşüktür.',
         ),
       };
     }
@@ -7786,11 +7931,18 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
 
   /* Çalışma biçimi */
   const issues: string[] = [];
-  if (timeouts) {
+  if (none) {
+    issues.push(
+      v(
+        'Hiçbir denemede süre içinde basmadın; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin.',
+        'Çocuğunuz hiçbir denemede süre içinde basmadı; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir.',
+      ),
+    );
+  } else if (timeouts) {
     issues.push(
       v(
         `${r.n} denemenin ${r.timeouts} tanesinde süre içinde basmadın; görevi yarıda bırakmış ya da dikkatin dağılmış olabilir.`,
-        `Çocuğunuz ${r.n} denemenin ${r.timeouts} tanesinde süre içinde basmadı; görev yarıda bırakılmış ya da dikkat dağılmış olabilir.`,
+        `Çocuğunuz ${r.n} denemenin ${r.timeouts} tanesinde süre içinde basmadı; görevi yarıda bırakmış ya da dikkati dağılmış olabilir.`,
       ),
     );
   }
@@ -7798,7 +7950,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
     issues.push(
       v(
         `${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde bastın; bu denemelerde şekle bakmadan basmış olabilirsin.`,
-        `Çocuğunuz ${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde bastı; bu denemelerde şekle bakılmadan basılmış olabilir.`,
+        `Çocuğunuz ${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde bastı; bu denemelerde şekle bakmadan basmış olabilir.`,
       ),
     );
   }
@@ -7806,7 +7958,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
     issues.push(
       v(
         'Cevaplarının çoğunda aynı düğmeye bastın; şekillere bakmadan hep aynı düğmeye basmış olabilirsin.',
-        'Çocuğunuz cevaplarının çoğunda aynı düğmeye bastı; şekillere bakılmadan hep aynı düğmeye basılmış olabilir.',
+        'Çocuğunuz cevaplarının çoğunda aynı düğmeye bastı; şekillere bakmadan hep aynı düğmeye basmış olabilir.',
       ),
     );
   }
@@ -7814,9 +7966,21 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
     ' Hız tek başına iyi ya da kötü değildir; bu görevde önemli olan, kurala göre doğru düğmeye basabilmektir.',
     ' Hız tek başına iyi ya da kötü değildir; bu görevde önemli olan, kurala göre doğru düğmeye basabilmektir.',
   );
+  // Doğru cevaplar şans düzeyindeyse onların süresi de bir şey söylemez: kart yorumlanmaz, grafiği olmaz.
   const calisma: CognitiveBlock =
     r.medianRt === null
       ? { ...card('kd_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Yeterince doğru cevap olmadığı için cevap süreleri yorumlanmadı.'].join(' ') }
+      : chance
+        ? {
+            ...card('kd_calisma'),
+            headline: 'Yorumlanmadı',
+            text: [
+              ...issues,
+              mostlyTimeouts
+                ? 'Bu yüzden cevap süresi yorumlanmadı.'
+                : 'Doğru cevaplar rastgele basmayla da görülebilecek kadar az olduğu için cevap süresi yorumlanmadı.',
+            ].join(' '),
+          }
       : {
           ...card('kd_calisma'),
           headline: `Tipik cevap süresi ${sn(to10(r.medianRt))} sn`,
@@ -7850,9 +8014,9 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
     };
   }
   const figures: CognitiveReport['figures'] = [
-    { label: 'Doğru', value: pct(r.accuracy) },
+    { label: 'Doğru', value: none ? 'Cevap verilmedi' : pct(r.accuracy) },
     { label: 'Kural değiştirmenin etkisi', ...switchFig },
-    ...(r.medianRt !== null ? [{ label: 'Tipik cevap süresi', value: `${sn(to10(r.medianRt))} sn` }] : []),
+    ...(r.medianRt !== null && !chance ? [{ label: 'Tipik cevap süresi', value: `${sn(to10(r.medianRt))} sn` }] : []),
   ];
   return { blocks: [dogruluk, degisim, karisik, calisma], ...(chart ? { chart } : {}), figures };
 }
@@ -7879,8 +8043,8 @@ const WL_RECOGNITION_FALSE_MAX = 0.2;
 
 const WL_LURE_TEXT: Record<'b' | 'semantic' | 'sound' | 'new', (n: number) => string> = {
   b: (n) => `ikinci listeden ${n} kelime`,
-  semantic: (n) => `anlamca yakın ${n} kelime`,
-  sound: (n) => `sesi ve yazılışı benzer ${n} kelime`,
+  semantic: (n) => `ilk listedeki bir kelimeye anlamca yakın ${n} kelime`,
+  sound: (n) => `ilk listedeki bir kelimeye sesi ve yazılışı benzeyen ${n} kelime`,
   new: (n) => `hiçbir listede olmayan ${n} kelime`,
 };
 
@@ -7925,8 +8089,8 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
       ...card('kl_ogrenme'),
       headline: 'Cevap verilmedi',
       text: v(
-        'Hatırlama bölümlerinin hiçbirinde kelime yazmadın; bu yüzden sonuç yorumlanmadı. Yönerge anlaşılmamış ya da görev yarıda kalmış olabilir.',
-        'Hatırlama bölümlerinin hiçbirinde kelime yazılmadı; bu yüzden sonuç yorumlanmadı. Yönerge anlaşılmamış ya da görev yarıda kalmış olabilir.',
+        'Hatırlama bölümlerinin hiçbirinde kelime yazmadın; bu yüzden sonuç yorumlanmadı. Yönergeyi tam anlamamış ya da görevi yarıda bırakmış olabilirsin.',
+        'Çocuğunuz hatırlama bölümlerinin hiçbirinde kelime yazmadı; bu yüzden sonuç yorumlanmadı. Yönerge anlaşılmamış ya da görev yarıda kalmış olabilir.',
       ),
     };
   } else {
@@ -7936,7 +8100,16 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
         `Aynı liste üç kez gösterildi. Çocuğunuz ${L} kelimeden ilk denemede ${t1}, ikincide ${t2}, üçüncüde ${t3} kelime hatırladı (toplam ${r.total}).`,
       ),
     ];
-    if (r.gain >= WL_GAIN_CLEAR) {
+    // İlk denemede kelimelerin hemen hepsi hatırlandıysa artış için yer yoktur: önce bu söylenir.
+    const ceiling = t1 >= WL_CEILING && t3 >= WL_CEILING;
+    if (ceiling) {
+      parts.push(
+        v(
+          'İlk denemeden başlayarak kelimelerin hemen hepsini hatırladın; sayının artması için fazla yer yoktu.',
+          'İlk denemeden başlayarak kelimelerin hemen hepsini hatırladı; sayının artması için fazla yer yoktu.',
+        ),
+      );
+    } else if (r.gain >= WL_GAIN_CLEAR) {
       parts.push(
         v(
           'Liste tekrarlandıkça hatırladığın kelime sayısı belirgin biçimde arttı: tekrarlar kelimeleri öğrenmene yardım etti.',
@@ -7945,13 +8118,6 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
       );
     } else if (r.gain > 0) {
       parts.push(v('Liste tekrarlandıkça hatırladığın kelime sayısı biraz arttı.', 'Liste tekrarlandıkça hatırladığı kelime sayısı biraz arttı.'));
-    } else if (t1 >= WL_CEILING && t3 >= WL_CEILING) {
-      parts.push(
-        v(
-          'İlk denemeden başlayarak kelimelerin hepsini ya da neredeyse hepsini hatırladın; sayının artması için fazla yer yoktu.',
-          'İlk denemeden başlayarak kelimelerin hepsini ya da neredeyse hepsini hatırladı; sayının artması için fazla yer yoktu.',
-        ),
-      );
     } else {
       const verb = r.gain < 0 ? 'azaldı' : 'artmadı';
       parts.push(
@@ -7961,8 +8127,12 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
         ),
       );
     }
+    if (!ceiling) {
+      parts.push(
+        `${L} kelime, bir kerede akılda tutulabilecek sayıdan fazladır; bu yüzden çoğu kişi ilk denemede kelimelerin bir kısmını hatırlar, sonraki denemelerde yenilerini ekler (Oliveira ve Charchat-Fichman, 2008).`,
+      );
+    }
     parts.push(
-      `Bir kerede akılda tutulabilecek kelime sayısı sınırlıdır ve ${L} kelime bu sınırın üzerindedir. Bu yüzden çoğu kişi ilk denemede kelimelerin yalnızca bir kısmını hatırlar; sonraki denemelerde hatırlananlara yenileri eklenir (Oliveira ve Charchat-Fichman, 2008).`,
       v(
         'Bu beceri; bir alışveriş listesini, yeni tanıştığın kişilerin adlarını ya da yeni öğrendiğin kelimeleri akılda tutmak gibi işlerde kullanılır.',
         'Bu beceri; bir alışveriş listesini, yeni tanıştığı kişilerin adlarını ya da yeni öğrendiği kelimeleri akılda tutmak gibi işlerde kullanılır.',
@@ -8015,6 +8185,7 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
       headline = 'Yorumlanmadı';
       parts.push('Bu yüzden karşılaştırma yorumlanmadı.');
     } else if (t3 < WL_RETENTION_MIN) {
+      headline = 'Karşılaştırılmadı';
       parts.push('Üçüncü denemede çok az kelime hatırlandığı için bu karşılaştırma yorumlanmadı.');
     } else if (d >= t3) {
       headline = d > t3 ? `${t3} kelimeden ${d} kelimeye çıktı` : 'Hatırlananlar korundu';
@@ -8042,8 +8213,8 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
         headline = ratio >= 0.7 ? 'Hatırlananların çoğu korundu' : 'Hatırlananlar biraz azaldı';
         parts.push(
           v(
-            'Araya giren yeni listeden sonra ilk listeden hatırladıkların biraz azaldı. Yeni bir bilgi, daha önce öğrenilenleri hatırlamayı biraz zorlaştırabilir; bu herkeste görülür.',
-            'Araya giren yeni listeden sonra ilk listeden hatırladıkları biraz azaldı. Yeni bir bilgi, daha önce öğrenilenleri hatırlamayı biraz zorlaştırabilir; bu herkeste görülür.',
+            'Araya giren yeni listeden sonra ilk listeden hatırladıkların biraz azaldı. Yeni bir bilgi, daha önce öğrenilenleri hatırlamayı biraz zorlaştırabilir; bu çoğu kişide görülür.',
+            'Araya giren yeni listeden sonra ilk listeden hatırladıkları biraz azaldı. Yeni bir bilgi, daha önce öğrenilenleri hatırlamayı biraz zorlaştırabilir; bu çoğu kişide görülür.',
           ),
         );
       } else {
@@ -8054,7 +8225,10 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
             'Araya giren yeni listeden sonra ilk listeden hatırladıkları belirgin biçimde azaldı: yeni liste, ilk listedeki kelimeleri hatırlamayı zorlaştırmış görünüyor.',
           ),
         );
-        if (valid) parts.push('Kelimelerin akılda kalıp kalmadığını tanıma bölümünün sonucu ayrıca gösterir.');
+        // Tanıma kartı bu karşılaştırmayı gerçekten yapıyorsa okur oraya yönlendirilir.
+        if (valid && rec.hits - d >= WL_RECOGNITION_GAP && rec.falseRate <= WL_RECOGNITION_FALSE_MAX) {
+          parts.push('Kelimelerin akılda kalıp kalmadığını tanıma bölümünün sonucu ayrıca gösterir.');
+        }
       }
     }
     if (r.delayed.otherList > 0) {
@@ -8075,8 +8249,9 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
     }
     parts.push('Bu bölüm, yeni bir bilginin daha önce öğrenilenleri hatırlamayı nasıl etkilediğini gösterir (Oliveira ve Charchat-Fichman, 2008).');
     koruma = { ...card('kl_koruma'), headline, text: parts.join(' ') };
-    // Kartın karşılaştırdığı sayılar: üçüncü deneme, ikinci liste ve araya giren listeden sonra ilk liste.
-    if (!skipped) {
+    // Kartın karşılaştırdığı sayılar: üçüncü deneme, ikinci liste ve araya giren listeden sonra ilk liste. Karşılaştırma
+    // yorumlanmadıysa grafiği de çizilmez.
+    if (!skipped && t3 >= WL_RETENTION_MIN) {
       koruma.visual = {
         type: 'bars',
         label: `Hatırlanan kelimeler (${L} kelimeden)`,
@@ -8093,30 +8268,44 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
   /* Tanıma */
   const said = (yes: boolean) => (yes ? v('dedin', 'dedi') : v('demedin', 'demedi'));
   const T = rec.targets;
+  // "1 tanesine" denmez: "birine".
+  const some = (k: number) => (k === 1 ? 'birine' : `${k} tanesine`);
   const recSentence =
     rec.hits === 0 && fa === 0
       ? `İlk listedeki ${T} kelimenin de, ilk listede olmayan ${nLures} kelimenin de hiçbirine “evet” ${said(false)}.`
-      : `İlk listedeki ${rec.hits === T ? `${T} kelimenin hepsine “evet” ${said(true)}` : rec.hits === 0 ? `${T} kelimenin hiçbirine “evet” ${said(false)}` : `${T} kelimeden ${rec.hits} tanesine “evet” ${said(true)}`}; ilk listede olmayan ${
-          fa === 0 ? `${nLures} kelimenin hiçbirine “evet” ${said(false)}` : `${nLures} kelimeden ${fa} tanesine ${rec.hits === 0 ? 'ise' : 'de'} “evet” ${said(true)}`
+      : `İlk listedeki ${rec.hits === T ? `${T} kelimenin hepsine “evet” ${said(true)}` : rec.hits === 0 ? `${T} kelimenin hiçbirine “evet” ${said(false)}` : `${T} kelimeden ${some(rec.hits)} “evet” ${said(true)}`}; ilk listede olmayan ${
+          fa === 0 ? `${nLures} kelimenin hiçbirine “evet” ${said(false)}` : `${nLures} kelimeden ${some(fa)} ${rec.hits === 0 ? 'ise' : 'de'} “evet” ${said(true)}`
         }.`;
   const base = `Son bölümde ${rec.n} kelime tek tek gösterildi. ${you ? recSentence : `Çocuğunuz ${recSentence.charAt(0).toLocaleLowerCase('tr-TR')}${recSentence.slice(1)}`}`;
   let tanima: CognitiveBlock;
   if (!valid) {
+    const every = rec.yes === 0 || rec.yes === rec.n ? 'her' : 'hemen her';
+    const fastWhich = rec.tooFast === rec.n ? 'Kelimelerin hepsinde' : `${rec.tooFast} kelimede`;
     const why = wordListRecogOneSided(r)
-      ? v('Bu bölümde hemen her kelimeye aynı cevabı verdin; bu yüzden tanıma sonucu yorumlanmadı.', 'Bu bölümde hemen her kelimeye aynı cevap verildi; bu yüzden tanıma sonucu yorumlanmadı.')
+      ? v(`Bu bölümde ${every} kelimeye aynı cevabı verdin; bu yüzden tanıma sonucu yorumlanmadı.`, `Bu bölümde ${every} kelimeye aynı cevabı verdi; bu yüzden tanıma sonucu yorumlanmadı.`)
       : wordListRecogFast(r)
         ? v(
-            `${rec.tooFast} kelimede 0,3 saniyeden kısa sürede cevap verdin; kelimeye bakmadan cevap vermiş olabilirsin. Bu yüzden tanıma sonucu yorumlanmadı.`,
-            `${rec.tooFast} kelimede 0,3 saniyeden kısa sürede cevap verildi; kelimeye bakılmadan cevap verilmiş olabilir. Bu yüzden tanıma sonucu yorumlanmadı.`,
+            `${fastWhich} 0,3 saniyeden kısa sürede cevap verdin; kelimeye bakmadan cevap vermiş olabilirsin. Bu yüzden tanıma sonucu yorumlanmadı.`,
+            `${fastWhich} 0,3 saniyeden kısa sürede cevap verdi; kelimeye bakmadan cevap vermiş olabilir. Bu yüzden tanıma sonucu yorumlanmadı.`,
           )
         : v(
             'İlk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dedin; tahminle cevap vermiş olabilirsin. Bu yüzden tanıma sonucu yorumlanmadı.',
-            'İlk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dendi; tahminle cevap verilmiş olabilir. Bu yüzden tanıma sonucu yorumlanmadı.',
+            'İlk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dedi; tahminle cevap vermiş olabilir. Bu yüzden tanıma sonucu yorumlanmadı.',
           );
     tanima = { ...card('kl_tanima'), headline: 'Yorumlanmadı', text: `${base} ${why}` };
   } else {
     const parts: string[] = [base];
-    if (fa > 0) {
+    if (fa === 1) {
+      // Tek yanılgı: liste yerine kelimenin türü bir cümleyle söylenir.
+      const k = (['b', 'semantic', 'sound', 'new'] as const).find((x) => rec.falseYes[x] > 0)!;
+      const what = {
+        b: 'ikinci listedeki bir kelimeydi',
+        semantic: 'ilk listedeki bir kelimeye anlamca yakın bir kelimeydi',
+        sound: 'ilk listedeki bir kelimeye sesi ve yazılışı benzeyen bir kelimeydi',
+        new: 'hiçbir listede olmayan bir kelimeydi',
+      }[k];
+      parts.push(v(`Yanlışlıkla “evet” dediğin kelime, ${what}.`, `Yanlışlıkla “evet” dediği kelime, ${what}.`));
+    } else if (fa > 0) {
       const kinds = (['b', 'semantic', 'sound', 'new'] as const).filter((k) => rec.falseYes[k] > 0);
       const list = kinds.map((k) => WL_LURE_TEXT[k](rec.falseYes[k])).join(', ');
       parts.push(v(`Yanlışlıkla “evet” dediğin kelimeler: ${list}.`, `Yanlışlıkla “evet” dediği kelimeler: ${list}.`));
@@ -8150,16 +8339,26 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
         parts.push(
           v(
             'Yanlışlıkla “evet” dediğin kelimelerin çoğu hiçbir listede olmayan ilgisiz kelimelerdi; bu bölümde dikkatin dağılmış ya da tahminle cevap vermiş olabilirsin.',
-            'Yanlışlıkla “evet” dediği kelimelerin çoğu hiçbir listede olmayan ilgisiz kelimelerdi; bu bölümde dikkati dağılmış ya da tahminle cevap verilmiş olabilir.',
+            'Yanlışlıkla “evet” dediği kelimelerin çoğu hiçbir listede olmayan ilgisiz kelimelerdi; bu bölümde dikkati dağılmış ya da tahminle cevap vermiş olabilir.',
           ),
         );
       }
     }
-    if (!none && !skipped && rec.hits - d >= WL_RECOGNITION_GAP && rec.falseRate <= WL_RECOGNITION_FALSE_MAX) {
+    // Yeni kelimelerin de birçoğuna "evet" denmişse ilk listedeki kelimelere "evet" demek onları tanımayı tam göstermez.
+    const looseYes = rec.falseRate >= 0.3;
+    if (looseYes) {
       parts.push(
         v(
-          `Kendiliğinden yazarken ilk listeden ${d} kelime hatırladın, görünce ise ${rec.hits} kelimeyi tanıdın: kendiliğinden hatırlayamadığın kelimelerin bir kısmı da aklında kalmış. Görünce tanımak, kendiliğinden hatırlamaktan genellikle daha kolaydır.`,
-          `Kendiliğinden yazarken ilk listeden ${d} kelime hatırladı, görünce ise ${rec.hits} kelimeyi tanıdı: kendiliğinden hatırlayamadığı kelimelerin bir kısmı da aklında kalmış. Görünce tanımak, kendiliğinden hatırlamaktan genellikle daha kolaydır.`,
+          'İlk listede olmayan kelimelerin de birçoğuna “evet” dediğin için, ilk listedeki kelimelere “evet” demen onları tanıdığını tam göstermez: kelimeleri birbirinden ayırmakta zorlanmış ya da kararsız kaldığında “evet” demiş olabilirsin.',
+          'İlk listede olmayan kelimelerin de birçoğuna “evet” dediği için, ilk listedeki kelimelere “evet” demesi onları tanıdığını tam göstermez: kelimeleri birbirinden ayırmakta zorlanmış ya da kararsız kaldığında “evet” demiş olabilir.',
+        ),
+      );
+    } else if (!none && !skipped && rec.hits - d >= WL_RECOGNITION_GAP && rec.falseRate <= WL_RECOGNITION_FALSE_MAX) {
+      const kept = rec.hits === T ? v('kendiliğinden hatırlayamadığın kelimeler de', 'kendiliğinden hatırlayamadığı kelimeler de') : v('kendiliğinden hatırlayamadığın kelimelerin bir kısmı da', 'kendiliğinden hatırlayamadığı kelimelerin bir kısmı da');
+      parts.push(
+        v(
+          `Kendiliğinden yazarken ilk listeden ${d} kelime hatırladın, görünce ise ${rec.hits} kelimeyi tanıdın: ${kept} aklında kalmış. Görünce tanımak, kendiliğinden hatırlamaktan genellikle daha kolaydır.`,
+          `Kendiliğinden yazarken ilk listeden ${d} kelime hatırladı, görünce ise ${rec.hits} kelimeyi tanıdı: ${kept} aklında kalmış. Görünce tanımak, kendiliğinden hatırlamaktan genellikle daha kolaydır.`,
         ),
       );
     } else if (rec.hits >= T - 1 && fa <= 1) {
@@ -8167,7 +8366,7 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
     }
     tanima = {
       ...card('kl_tanima'),
-      headline: `${rec.hits}/${T} tanındı, ${fa} yanlış “evet”`,
+      headline: looseYes ? `${rec.hits}/${T} “evet”, ${fa} yanlış “evet”` : `${rec.hits}/${T} tanındı, ${fa} yanlış “evet”`,
       text: parts.join(' '),
       visual: {
         type: 'dots',
@@ -8190,11 +8389,18 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
       r.extraLearning === 0
         ? v('Öğrenme denemelerinde hiçbir listede olmayan bir kelime yazmadın.', 'Öğrenme denemelerinde hiçbir listede olmayan bir kelime yazmadı.')
         : v(
-            `Öğrenme denemelerinde hiçbir listede olmayan ${r.extraLearning} kelime yazdın; akla gelen başka bir kelimeyi yazmak herkeste ara sıra görülür.`,
-            `Öğrenme denemelerinde hiçbir listede olmayan ${r.extraLearning} kelime yazdı; akla gelen başka bir kelimeyi yazmak herkeste ara sıra görülür.`,
+            `Öğrenme denemelerinde hiçbir listede olmayan ${r.extraLearning} kelime yazdın; akla gelen başka bir kelimeyi yazmak çoğu kişide ara sıra görülür.`,
+            `Öğrenme denemelerinde hiçbir listede olmayan ${r.extraLearning} kelime yazdı; akla gelen başka bir kelimeyi yazmak çoğu kişide ara sıra görülür.`,
           ),
     );
-    if (r.emptyRecalls >= 2) issues.push(`${r.emptyRecalls} hatırlama bölümünde hiç kelime yazılmadı; o bölümler yarıda bırakılmış olabilir.`);
+    if (r.emptyRecalls >= 2) {
+      issues.push(
+        v(
+          `${r.emptyRecalls} hatırlama bölümünde hiç kelime yazmadın; o bölümleri yarıda bırakmış olabilirsin.`,
+          `Çocuğunuz ${r.emptyRecalls} hatırlama bölümünde hiç kelime yazmadı; o bölümler yarıda bırakılmış olabilir.`,
+        ),
+      );
+    }
   }
   if (r.restarts > 0) {
     issues.push(
@@ -8206,11 +8412,17 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
     calisma = { ...card('kl_calisma'), headline: 'Cevap verilmedi', text: [v('Kelime yazmadığın için bu bölüm yorumlanmadı.', 'Kelime yazılmadığı için bu bölüm yorumlanmadı.'), ...issues].join(' ') };
   } else {
     const third = p.of / r.trials.length;
+    // "0 kez" denmez: ortadaki kelimelerin hiçbiri hatırlanmadıysa bu ayrıca söylenir.
     const parts: string[] = [
-      v(
-        `Üç denemede listenin ilk ${third} kelimesini toplam ${p.begin} kez, ortadaki ${third} kelimeyi ${p.middle} kez, son ${third} kelimeyi ${p.end} kez hatırladın (her kısımda en çok ${p.of}).`,
-        `Üç denemede listenin ilk ${third} kelimesi toplam ${p.begin} kez, ortadaki ${third} kelime ${p.middle} kez, son ${third} kelime ${p.end} kez hatırlandı (her kısımda en çok ${p.of}).`,
-      ),
+      p.middle === 0
+        ? v(
+            `Üç denemede listenin ilk ${third} kelimesini toplam ${p.begin} kez, son ${third} kelimesini ${p.end} kez hatırladın; ortadaki ${third} kelimenin hiçbirini hatırlamadın (her kısımda en çok ${p.of}).`,
+            `Üç denemede listenin ilk ${third} kelimesi toplam ${p.begin} kez, son ${third} kelimesi ${p.end} kez hatırlandı; ortadaki ${third} kelimenin hiçbiri hatırlanmadı (her kısımda en çok ${p.of}).`,
+          )
+        : v(
+            `Üç denemede listenin ilk ${third} kelimesini toplam ${p.begin} kez, ortadaki ${third} kelimeyi ${p.middle} kez, son ${third} kelimeyi ${p.end} kez hatırladın (her kısımda en çok ${p.of}).`,
+            `Üç denemede listenin ilk ${third} kelimesi toplam ${p.begin} kez, ortadaki ${third} kelime ${p.middle} kez, son ${third} kelime ${p.end} kez hatırlandı (her kısımda en çok ${p.of}).`,
+          ),
     ];
     let headline: string;
     if (!compared) {
@@ -8251,9 +8463,22 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
         parts.push(v('Listenin başından, ortasından ve sonundan benzer sayıda kelime hatırladın.', 'Listenin başından, ortasından ve sonundan benzer sayıda kelime hatırladı.'));
       }
       if (p.middle <= Math.min(p.begin, p.end) - WL_POSITION_DIFF) {
-        parts.push('Ortadaki kelimeler daha az hatırlandı; çoğu kişi için listenin ortası en zor hatırlanan kısımdır.');
+        parts.push(
+          p.middle === 0
+            ? 'Çoğu kişi için listenin ortası en zor hatırlanan kısımdır.'
+            : 'Ortadaki kelimeler daha az hatırlandı; çoğu kişi için listenin ortası en zor hatırlanan kısımdır.',
+        );
       }
-      parts.push(`Bu karşılaştırma her kısımda yalnızca ${third} kelimeye dayanır; kaba bir göstergedir.`);
+      // Her kısım tavana yakınsa (13/15 ve üstü) kısımlar arasında fark çıkması beklenmez.
+      const nearCeiling = Math.min(p.begin, p.middle, p.end) >= p.of - 2;
+      parts.push(
+        nearCeiling
+          ? v(
+              'Neredeyse bütün kelimeleri hatırladığın için kısımlar arasında fark çıkması beklenmez.',
+              'Neredeyse bütün kelimeleri hatırladığı için kısımlar arasında fark çıkması beklenmez.',
+            )
+          : `Bu karşılaştırma her kısımda yalnızca ${third} kelimeye dayanır; kaba bir göstergedir.`,
+      );
     }
     calisma = { ...card('kl_calisma'), headline, text: [...parts, ...issues].join(' ') };
     // Kısımlar karşılaştırıldıysa: üç denemede listenin başı, ortası ve sonu kaç kez hatırlandı.
@@ -8283,8 +8508,8 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
         ].map((x) => ({ ...x, max: L, valueLabel: `${x.value}/${L}` })),
       };
   const figures: CognitiveReport['figures'] = [
-    { label: 'Üçüncü denemede', value: none ? 'Cevap yok' : `${t3}/${L}` },
-    { label: 'Araya giren listeden sonra', value: none ? 'Cevap yok' : `${d}/${L}` },
+    { label: 'Üçüncü denemede', value: none ? 'Cevap verilmedi' : `${t3}/${L}` },
+    { label: 'Araya giren listeden sonra', value: none ? 'Cevap verilmedi' : `${d}/${L}` },
     valid ? { label: 'Tanıma', value: `${rec.hits}/${rec.targets}`, note: `${fa} yanlış “evet”` } : { label: 'Tanıma', value: 'Yorumlanmadı' },
   ];
   const profile: CognitiveReport['profile'] = compared

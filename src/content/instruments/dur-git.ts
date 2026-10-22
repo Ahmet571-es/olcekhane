@@ -122,7 +122,7 @@ export const durGitGorevi: TaskInstrument = {
       'Bu görevin güvenirlik ve norm çalışması henüz yapılmadı. Dur-git görevlerinde X’te yanlışlıkla basma sayısı hızla da ilgilidir: çok hızlı çalışan biri daha sık yanılabilir. Bu yüzden raporda durabilme, tepki hızıyla birlikte yorumlanır.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Tepki ketlemesi çocukluk ve ergenlik boyunca gelişir; çocuklar bu tür görevlerde yetişkinlerden daha çok yanlışlıkla basar (Casey ve ark., 1997). Bu yüzden bir norm yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Tepki ketlemesi çocukluk ve ergenlik boyunca gelişir; çocuklar bu tür görevlerde yetişkinlerden daha çok yanlışlıkla basar (Casey ve ark., 1997). Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir.',
     ageNote:
       '3. sınıftan itibaren uygulanır. Dokunmatik ekranla, fareyle ya da klavyeyle (boşluk tuşu) yapılabilir; aynı kişinin sonuçları karşılaştırılacaksa aynı tür cihaz kullanılmalıdır.',
     license: 'Özgün görev. Ölçekhane tarafından geliştirilmiştir.',

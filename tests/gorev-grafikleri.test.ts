@@ -23,6 +23,7 @@ const NO_DATA = [
   'Süre hesaplanamadı',
   'Hesaplanamadı',
   'Karşılaştırılamadı',
+  'Karşılaştırılmadı',
   'Yorumlanmadı',
   'Cevap verilmedi',
   'Hiç basılmadı',
@@ -54,6 +55,7 @@ describe('çizim türleri: uç durumlarda da yazılar taşmaz', () => {
     { type: 'strip', label: 'x', min: 0, max: 1.5, unit: 'sn', points: [], marker: { value: 1.5, label: 'Tipik 1,50 sn' }, box: { low: 1.2, high: 1.5 } },
     { type: 'ladder', label: 'x', unit: 'kutu', reached: 9, rows: [3, 4, 5, 6, 7, 8, 9].map((l) => ({ length: l, results: [true, true] })) },
     { type: 'ladder', label: 'x', unit: 'rakam', reached: null, rows: [{ length: 3, results: [false, false] }] },
+    { type: 'ladder', label: 'x', unit: 'harf', reached: 5, legend: ['tam', 'eksik'], rows: [3, 4, 5, 6, 7].map((l) => ({ length: l, results: [l <= 5, false] })) },
   ];
   it('her örnek', () => {
     samples.forEach((v, i) => checkDrawn(v, `${v.type} ${i}`));

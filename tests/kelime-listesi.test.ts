@@ -279,9 +279,11 @@ describe('Kelime listesi: rapor', () => {
       ]);
       expect(rep.cautions).toEqual([]);
     }
-    expect(r.student.items[2].text).toContain('İlk listedeki 15 kelimenin hepsine “evet” dedin; ilk listede olmayan 20 kelimeden 1 tanesine de “evet” dedin.');
-    expect(r.parent.items[2].text).toContain('Çocuğunuz ilk listedeki 15 kelimenin hepsine “evet” dedi; ilk listede olmayan 20 kelimeden 1 tanesine de “evet” dedi.');
-    expect(r.student.items[2].text).toContain('Yanlışlıkla “evet” dediğin kelimeler: anlamca yakın 1 kelime.');
+    expect(r.student.items[2].text).toContain('İlk listedeki 15 kelimenin hepsine “evet” dedin; ilk listede olmayan 20 kelimeden birine de “evet” dedin.');
+    expect(r.parent.items[2].text).toContain('Çocuğunuz ilk listedeki 15 kelimenin hepsine “evet” dedi; ilk listede olmayan 20 kelimeden birine de “evet” dedi.');
+    expect(r.student.items[2].text).toContain('Yanlışlıkla “evet” dediğin kelime, ilk listedeki bir kelimeye anlamca yakın bir kelimeydi.');
+    // Hepsi tanındığında "bir kısmı da" denmez.
+    expect(r.student.items[2].text).toContain('kendiliğinden hatırlayamadığın kelimeler de aklında kalmış');
     expect(r.parent.items[0].text).toContain('Çocuğunuz 15 kelimeden ilk denemede 6, ikincide 9, üçüncüde 12 kelime hatırladı (toplam 27).');
   });
 
@@ -291,8 +293,8 @@ describe('Kelime listesi: rapor', () => {
     expect(r.student.chart).toBeNull();
     expect(r.student.cautions.some((c) => c.includes('hiçbir hatırlama bölümünde kelime yazılmadı'))).toBe(true);
     expect(r.student.roadmap!.bars).toEqual([]);
-    // Grafik olmadığında öne çıkan sayılar da gösterilmez (basit rapor düzeni).
-    expect(r.student.keyFigures).toEqual([]);
+    // Grafik olmasa da öne çıkan sayılar gösterilir; hatırlama sayıları kartlardaki gibi "Cevap verilmedi" der.
+    expect(r.student.keyFigures.map((f) => f.value)).toEqual(['Cevap verilmedi', 'Cevap verilmedi', '15/15']);
   });
 
   it('özel durumlar: tanımada hiç "evet" yok, atlanan yeniden yazma, küçük düşüş, tahmine dayalı tanıma, sıfır kelime', () => {
@@ -366,10 +368,12 @@ describe('Kelime listesi: rapor', () => {
               // PDF yazı tipinde olmayan işaretler (ör. ok) kullanılmaz.
               check(!/[→←]/.test(withoutRoadmap(r)), label, 'ok işareti');
               const gain = counts[2] - counts[0];
-              check(ogr.text.includes('belirgin biçimde arttı') === gain >= 3, label, 'belirgin artış');
-              check(ogr.text.includes('biraz arttı') === (gain > 0 && gain < 3), label, 'biraz artış');
+              // Tavan önce denetlenir: ilk denemede hemen hepsi hatırlandıysa artış ve "çoğu kişi bir kısmını hatırlar" denmez.
               const ceiling = counts[0] >= 13 && counts[2] >= 13;
-              check(ogr.text.includes('hepsini ya da neredeyse hepsini') === (gain <= 0 && ceiling), label, 'tavan');
+              check(ogr.text.includes('belirgin biçimde arttı') === (!ceiling && gain >= 3), label, 'belirgin artış');
+              check(ogr.text.includes('biraz arttı') === (!ceiling && gain > 0 && gain < 3), label, 'biraz artış');
+              check(ogr.text.includes('kelimelerin hemen hepsini hatırlad') === ceiling, label, 'tavan');
+              check(ogr.text.includes('bir kısmını hatırlar') === !ceiling, label, 'tavanda genel cümle');
               check(/sayısı (azaldı|artmadı)/.test(ogr.text) === (gain <= 0 && !ceiling), label, 'azaldı');
               const manyNote = r.cautions.some((c) => c.includes('listede olmayan') && c.includes('kelime yazıldı'));
               check(manyNote === wordListManyExtra(result), label, 'çok fazla kelime notu');
@@ -379,7 +383,7 @@ describe('Kelime listesi: rapor', () => {
               const ratio = result.retention ?? 0;
               const want =
                 t3 < 4
-                  ? `Araya giren listeden sonra ${d} kelime`
+                  ? 'Karşılaştırılmadı'
                   : d > t3
                     ? `${t3} kelimeden ${d} kelimeye çıktı`
                     : d === t3
@@ -432,7 +436,8 @@ describe('Kelime listesi: rapor', () => {
                         : 'Listenin her kısmından benzer sayıda kelime';
               seen.add(wantCal);
               check(cal.badge === wantCal, label, `çalışma ${cal.badge} ≠ ${wantCal}`);
-              check(cal.text.includes('Ortadaki kelimeler daha az hatırlandı') === (compared && middleLow), label, 'orta');
+              check(/listenin ortası en zor hatırlanan kısımdır/i.test(cal.text) === (compared && middleLow), label, 'orta');
+              check(cal.text.includes('ortadaki 5 kelimeyi 0 kez') === false && cal.text.includes('ortadaki 5 kelime 0 kez') === false, label, '0 kez');
               check(r.roadmap!.bars.length === (compared ? 3 : 0), label, 'üç boyutlu grafik');
               if (compared) check(r.roadmap!.bars.map((b) => b.valueLabel).join('|') === [p.begin, p.middle, p.end].map((x) => `${x}/15`).join('|'), label, 'grafik değerleri');
               const restartNote = r.cautions.some((c) => c.includes('baştan gösterildi'));

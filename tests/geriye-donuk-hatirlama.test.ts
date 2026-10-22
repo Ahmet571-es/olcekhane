@@ -172,17 +172,19 @@ describe('Geriye dönük hatırlama: rapor', () => {
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Bir geri', 'Yakalama %100 · yanlış basma %0'],
       ['İki geri', 'Yakalama %100 · yanlış basma %0'],
-      ['Zorluk artınca', 'Belirgin bir fark yok'],
+      ['Zorluk artınca', 'İki düzeyde de hatasız'],
     ]);
     // Sayılar kartın grafiğindedir: aynı harflerden yakalananlar, aynı olmayanlardan basılmadan geçilenler.
     expect(((r.student.items[0]).visual?.type === 'dots' ? (r.student.items[0]).visual.rows : []).map((x) => x.valueLabel)).toEqual(['10/10', '21/21']);
     expect(r.student.items[0].text).toContain('Bir önceki harfle aynı olan harflerin hepsini yakaladın; aynı olmayanlarda ise hiç basmadın.');
     expect(r.student.items[1].text).toContain('İki önceki harfle aynı olan harflerin hepsini yakaladın');
     expect(((r.student.items[2]).visual?.type === 'bars' ? (r.student.items[2]).visual.rows : []).map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Bir geri 100/100', 'İki geri 100/100']);
-    expect(r.student.items[2].text).toContain('hiç yanılmayan biri 100');
+    expect(r.student.items[2].text).toContain('Hiç yanılmayan biri 100 alır');
+    expect(r.student.items[2].text).toContain('zorluk artınca sonucun nasıl değiştiği bu görevde görülemedi');
+    expect(r.student.items[2].text).not.toContain('bu fark');
     expect(r.student.cautions).toEqual([]);
     expect(r.parent.items[0].text).toContain('Çocuğunuz bir önceki harfle aynı olan harflerin hepsini yakaladı');
-    expect(r.parent.items[2].text).toContain('Çocuğunuz bir geride ve iki geride benzer sonuç aldı: akılda tutulacak harf sayısının artması, sonucunu');
+    expect(r.parent.items[2].text).toContain('Çocuğunuz bir geride de iki geride de hemen hiç yanılmadı.');
     expect(all(r.student)).not.toContain('Çocuğunuz');
     expect(all(r.parent)).not.toMatch(/yakaladın|bastın|aldın|zorlandın/);
   });
@@ -205,7 +207,8 @@ describe('Geriye dönük hatırlama: rapor', () => {
   it('tek bir kaçırma ya da yanlış basma karşılaştırmanın yorumunu değiştirmez', () => {
     const badge = (spec: Parameters<typeof counted>[0]) => evaluate(SLUG, nBackBody(counted(spec))).student.items[2].badge;
     expect(badge({ 1: { hits: 9, fa: 0 }, 2: { hits: 20, fa: 0 } })).toBe('Belirgin bir fark yok');
-    expect(badge({ 1: { hits: 10, fa: 1 }, 2: { hits: 20, fa: 0 } })).toBe('Belirgin bir fark yok');
+    // İki düzey de tavana yakınsa düşüş ölçülemez: "fark yok" denmez.
+    expect(badge({ 1: { hits: 10, fa: 1 }, 2: { hits: 20, fa: 0 } })).toBe('İki düzeyde de neredeyse hatasız');
     expect(badge({ 1: { hits: 9, fa: 0 }, 2: { hits: 19, fa: 0 } })).toBe('Belirgin bir fark yok');
     expect(badge({ 1: { hits: 10, fa: 0 }, 2: { hits: 19, fa: 1 } })).toBe('Belirgin bir fark yok');
     expect(badge({ 1: { hits: 10, fa: 0 }, 2: { hits: 17, fa: 1 } })).toBe('İki geride biraz düşüş');
@@ -244,8 +247,11 @@ describe('Geriye dönük hatırlama: rapor', () => {
     expect(r.parent.items[1].text).toContain('Çocuğunuz iki geri bölümlerinde hiç basmadı');
     expect(r.parent.items[1].text).toContain('bu sonuç yorumlanmamalıdır');
     expect(r.student.items[2].badge).toBe('Karşılaştırılamadı');
-    expect(r.student.items[2].text).toContain('Hiçbir bölümde basılmadığı için');
-    expect(r.student.chartNote).toContain('Hiç basılmayan bir düzeyde');
+    expect(r.student.items[2].text).toContain('Hiçbir bölümde hiç basmadığın için');
+    expect(r.parent.items[2].text).toContain('Hiçbir bölümde hiç basmadığı için');
+    // Hiç basılmayan düzey grafikte başarı gibi görünmez: çubuklar boş, "hiç basılmadı" yazar.
+    const rows = r.student.chart?.type === 'bars' ? r.student.chart.rows : [];
+    expect(rows.map((x) => `${x.value} ${x.valueLabel}`)).toEqual(['0 hiç basılmadı', '0 hiç basılmadı', '0 hiç basılmadı', '0 hiç basılmadı']);
     const notes = r.parent.cautions.join(' ');
     expect(notes).toContain('bir geri bölümünde hiç basılmamış');
     expect(notes).toContain('Bu bölümün sonucu yorumlanmamalıdır');
@@ -259,7 +265,7 @@ describe('Geriye dönük hatırlama: rapor', () => {
     expect(r.student.items[1].text).toContain('Üçüncü bölümde hiç basmadın; bu bölümü yarıda bırakmış olabilirsin.');
     expect(r.parent.items[1].text).toContain('Çocuğunuz üçüncü bölümde hiç basmadı');
     expect(r.student.items[2].badge).toBe('Karşılaştırılamadı');
-    expect(r.student.items[2].text).toContain('Bölümlerden birinde hiç basılmadığı için');
+    expect(r.student.items[2].text).toContain('Üçüncü bölümde hiç basmadığın için');
     expect(r.parent.cautions.join(' ')).toContain('üçüncü bölümünde hiç basılmamış; bu bölüm yarıda bırakılmış olabilir');
   });
 
@@ -270,17 +276,20 @@ describe('Geriye dönük hatırlama: rapor', () => {
     expect(r.student.items[0].text).toContain('ayırt edebildiğini göstermez');
     expect(r.student.items[0].text).toContain('tek başına bir şey söylemez');
     expect(r.student.items[2].badge).toBe('Karşılaştırılamadı');
-    expect(r.student.items[2].text).toContain('aynı olmayan harflerin çoğunda da bastığın için');
+    expect(r.student.items[2].text).toContain('Hem bir geride hem iki geride aynı olmayan harflerin çoğunda da bastığın için');
     expect(r.parent.cautions.join(' ')).toContain('aynı olmayan harflerin yarısından çoğunda da basılmış');
     // Yalnızca iki geride her harfte basmak da karşılaştırılmaz.
     const two = evaluate(SLUG, nBackBody((role, n) => (n === 2 ? 700 : role === 'target' ? 650 : null)));
     expect(two.student.items[2].badge).toBe('Karşılaştırılamadı');
+    expect(two.student.items[2].text).toContain('İki geride aynı olmayan harflerin çoğunda da bastığın için');
   });
 
   it('iki geride bir geri kuralına devam etmek: tuzak notu, uyarı ve karşılaştırma yok', () => {
     const r = evaluate(SLUG, nBackBody(counted({ 1: { hits: 10, fa: 0 }, 2: { hits: 0, fa: 0, lureFa: 4 } })));
     expect(r.student.items[1].text).toContain('hiçbirini yakalamadın; aynı olmayanlarda ise nadiren bastın.');
-    expect(r.student.items[1].text).toContain('tanıdık geldiği için yanıltıcıdır');
+    expect(r.student.items[1].text).toContain('Bir önceki harfle aynı olan harflerin hepsinde bastın: iki geri bölümlerinde bir geri kuralıyla devam etmiş olabilirsin.');
+    expect(r.parent.items[1].text).toContain('Bir önceki harfle aynı olan harflerin hepsinde bastı: iki geri bölümlerinde bir geri kuralıyla devam etmiş olabilir.');
+    expect(r.student.items[1].text).not.toContain('tanıdık');
     expect(r.parent.cautions.join(' ')).toContain('bir geri kuralına göre basılmaya devam edilmiş olabilir');
     expect(r.student.items[2].badge).toBe('Karşılaştırılamadı');
     expect(r.student.items[2].text).toContain('bir geri kuralına göre basmaya devam etmiş olabileceğin için');

@@ -182,7 +182,10 @@ describe('Kural değiştirme: rapor', () => {
     // Uyumsuz şekillerde kural değişince yanlış: öteki kurala göre basma ve doğruluk düşüşü anlatılır.
     const rule = evaluate(SLUG, ruleSwitchBody((q) => ({ response: q.kind === 'switch' && !q.congruent ? 3 - q.answer : q.answer, rtMs: q.kind === 'switch' ? 950 : 750 })));
     expect(rule.student.items[0].text).toContain('öteki kurala göre bastın');
-    expect(rule.student.items[1].text).toContain('Kural değiştiğinde hataların da arttı: doğru cevapların %100 yerine %50 oldu.');
+    // Kural değişince doğruluk rastgele düzeyine iner: bir önceki kurala göre basmaya devam etmek söylenir.
+    expect(rule.student.items[1].text).toContain('Kural değiştiğinde hataların da belirgin biçimde arttı: doğru cevapların %100 yerine %50 oldu.');
+    expect(rule.student.items[1].text).toContain('bir önceki kurala göre basmaya devam etmiş olabilirsin');
+    expect(rule.parent.items[1].text).toContain('çocuğunuz çoğu zaman bir önceki kurala göre basmaya devam etmiş olabilir');
     expect(rule.parent.items[0].text).toContain('öteki kurala göre basıldı');
     // Kural değişen denemelerin hepsi yanlış: süre karşılaştırılamaz.
     const none = evaluate(SLUG, ruleSwitchBody((q) => ({ response: q.kind === 'switch' ? 3 - q.answer : q.answer, rtMs: 800 })));

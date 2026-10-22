@@ -429,15 +429,16 @@ function drawLadder(v: LadderVisual, W: number, fs: number): Drawing {
   const capY = labelY + ls * 1.5;
   shapes.push({ k: 'text', x: 0, y: r2(capY), text: `Dizideki ${v.unit} sayısı`, size: ls, weight: 400, fill: 'ink3', anchor: 'start' });
   // Lejant: dolu ve boş daire.
+  const [yes, no] = v.legend ?? ['doğru', 'yanlış'];
   const legendY = capY + ls * 1.45;
   const lr = r2(ls * 0.42);
   shapes.push({ k: 'circle', x: lr, y: r2(legendY - lr * 0.9), r: lr, fill: 'fill', stroke: 'fill', sw: 1 });
-  shapes.push({ k: 'text', x: r2(lr * 2 + ls * 0.4), y: r2(legendY), text: 'doğru', size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
-  const x2 = lr * 2 + ls * 0.4 + textWidth('doğru', ls) + ls * 1.3;
+  shapes.push({ k: 'text', x: r2(lr * 2 + ls * 0.4), y: r2(legendY), text: yes, size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
+  const x2 = lr * 2 + ls * 0.4 + textWidth(yes, ls) + ls * 1.3;
   shapes.push({ k: 'circle', x: r2(x2 + lr), y: r2(legendY - lr * 0.9), r: lr, fill: 'surface', stroke: 'ink3', sw: 1 });
-  shapes.push({ k: 'text', x: r2(x2 + lr * 2 + ls * 0.4), y: r2(legendY), text: 'yanlış', size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
+  shapes.push({ k: 'text', x: r2(x2 + lr * 2 + ls * 0.4), y: r2(legendY), text: no, size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
   if (v.rows.some((r) => !r.results.length)) {
-    const x3 = x2 + lr * 2 + ls * 0.4 + textWidth('yanlış', ls) + ls * 1.3;
+    const x3 = x2 + lr * 2 + ls * 0.4 + textWidth(no, ls) + ls * 1.3;
     shapes.push({ k: 'circle', x: r2(x3 + lr), y: r2(legendY - lr * 0.9), r: r2(lr * 0.7), fill: 'track' });
     shapes.push({ k: 'text', x: r2(x3 + lr * 2 + ls * 0.4), y: r2(legendY), text: 'sorulmadı', size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
   }

@@ -3336,6 +3336,17 @@ export const complexSpanOpsChance = (r: ComplexSpanResult) => r.ops.correct <= C
 export const complexSpanRapid = (r: ComplexSpanResult) => r.ops.rapid >= Math.ceil(r.ops.n / 5);
 /** Doğru yerde hatırlanan harfler rastgele seçimde de görülebilecek kadar az. */
 export const complexSpanRecallChance = (r: ComplexSpanResult) => r.correct <= CS_RECALL_CHANCE_MAX;
+/** İşlemlerde doğru cevaplar az, çünkü çoğunda süre doldu (yanlış cevaplar değil): bu, rastgele basmak değildir. */
+export const complexSpanOpsSlow = (r: ComplexSpanResult) => complexSpanOpsChance(r) && r.ops.timeouts > r.ops.wrong;
+/**
+ * İşlemlere verilen cevapların çok azı doğru: rastgele basan biri bile cevap verdiği işlemlerin yarısını bulurdu. Bu,
+ * DOĞRU ve YANLIŞ düğmelerinin ters kullanıldığını düşündürür.
+ */
+export const complexSpanOpsReversed = (r: ComplexSpanResult) =>
+  complexSpanOpsChance(r) && !complexSpanOpsSlow(r) && r.ops.wrong >= 20 && r.ops.correct <= 0.2 * (r.ops.correct + r.ops.wrong);
+/** "hepsine", "çoğuna" ya da "12 tanesine": yanlış cevap verilen işlemler. */
+export const complexSpanWrongShare = (r: ComplexSpanResult) =>
+  r.ops.wrong === r.ops.n ? 'hepsine' : r.ops.wrong * 2 > r.ops.n ? 'çoğuna' : `${r.ops.wrong} tanesine`;
 
 /**
  * Hesapla ve hatırlada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, complexSpanBlocks aynı eşikleri
@@ -3346,11 +3357,24 @@ export function complexSpanQualityNotes(r: ComplexSpanResult): string[] {
   const notes: string[] = [];
   const recallChance = complexSpanRecallChance(r);
   if (recallChance) {
+    const blank = 2 * r.blank > r.letters - r.correct;
     notes.push(
-      'Hesapla ve hatırla testinde doğru yerde hatırlanan harfler, harfleri rastgele seçen birinin de bulabileceği kadar az; yönerge tam anlaşılmamış, harfler boş bırakılmış ya da görev yarıda bırakılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+      `Hesapla ve hatırla testinde doğru yerde hatırlanan harfler, harfleri rastgele seçen birinin de bulabileceği kadar az; yönerge tam anlaşılmamış, harfler ${blank ? 'boş bırakılmış' : 'rastgele seçilmiş'} ya da görev yarıda bırakılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
     );
   }
-  if (complexSpanOpsChance(r)) {
+  if (complexSpanOpsSlow(r)) {
+    notes.push(
+      `Hesapla ve hatırla testinde ${r.ops.n} işlemin ${r.ops.timeouts === r.ops.n ? 'hepsinde' : `${r.ops.timeouts} tanesinde`} süre doldu.${
+        recallChance ? '' : ' İşlemler süresinde yapılmayınca harfleri tekrar etmeye zaman kalacağı için harf sonucu yorumlanmamalıdır.'
+      }`,
+    );
+  } else if (complexSpanOpsReversed(r)) {
+    notes.push(
+      `Hesapla ve hatırla testinde işlemlerin ${complexSpanWrongShare(r)} yanlış cevap verilmiş; rastgele basan biri bile yaklaşık yarısını doğru bulurdu. DOĞRU ve YANLIŞ düğmeleri ters kullanılmış olabilir.${
+        recallChance ? '' : ' Bu yüzden harf sonucu yorumlanmamalıdır.'
+      }`,
+    );
+  } else if (complexSpanOpsChance(r)) {
     notes.push(
       `Hesapla ve hatırla testinde ${r.ops.n} işlemin ${r.ops.correct === 0 ? 'hiçbiri süresi içinde doğru cevaplanmamış' : `yalnızca ${r.ops.correct === 1 ? 'biri' : `${r.ops.correct} tanesi`} süresi içinde doğru cevaplanmış`}; bu, rastgele basan birinin de bulabileceği kadar az.${
         recallChance ? '' : ' İşlemler yapılmadan harfleri akılda tutmak kolaylaşacağı için harf sonucu yorumlanmamalıdır.'
@@ -3984,7 +4008,7 @@ export function taskQualityNotes(parts: {
     for (const p of tr.parts) {
       const which = p.index === 0 ? 'birinci' : 'ikinci';
       if (!p.completed) notes.push(`Sırayla birleştirme görevinin ${which} bölümü süre dolmadan tamamlanamadı; bu bölümün süresi yorumlanmamalıdır.`);
-      else if (p.errors > p.n) notes.push(`Sırayla birleştirme görevinin ${which} bölümünde çok sayıda yanlış daireye dokunulmuş; dairelere rastgele dokunulmuş olabilir.`);
+      else if (p.errors > p.n) notes.push(`Sırayla birleştirme görevinin ${which} bölümünde çok sayıda yanlış daireye dokunulmuş; dairelere sırayı izlemeden dokunulmuş olabilir.`);
     }
   }
   const nb = parts.nBack;
@@ -4175,12 +4199,14 @@ export const ruleSwitchOneSide = (r: RuleSwitchResult) => r.answered >= 20 && r.
 /** Kural değiştirmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, ruleSwitchBlocks aynı eşikleri kullanır). */
 export function ruleSwitchQualityNotes(r: RuleSwitchResult): string[] {
   const notes: string[] = [];
-  if (ruleSwitchChance(r)) {
+  // Denemelerin yarısında süre dolduysa az doğru cevabın nedeni rastgele basmak değildir: yalnızca süre notu yazılır.
+  if (ruleSwitchChance(r) && r.timeouts * 2 < r.n) {
     notes.push(
       'Kural değiştirme görevinde doğru cevaplar, iki düğmeden birine rastgele basan birinin de yapabileceği kadar az; yönerge tam anlaşılmamış ya da şekillere bakılmadan basılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
   }
-  if (ruleSwitchTimeouts(r)) notes.push(`Kural değiştirme görevinde ${r.n} denemenin ${r.timeouts} tanesinde süre içinde cevap verilmedi; görev yarıda bırakılmış ya da dikkat dağılmış olabilir.`);
+  if (r.answered === 0) notes.push('Kural değiştirme görevinde hiçbir denemede süre içinde cevap verilmedi; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.');
+  else if (ruleSwitchTimeouts(r)) notes.push(`Kural değiştirme görevinde ${r.n} denemenin ${r.timeouts} tanesinde süre içinde cevap verilmedi; görev yarıda bırakılmış ya da dikkat dağılmış olabilir.`);
   if (ruleSwitchFast(r)) notes.push(`Kural değiştirme görevinde ${r.tooFast} denemede şekil göründükten sonraki 0,2 saniye içinde basıldı; bu denemelerde şekle bakmadan basılmış olabilir.`);
   if (ruleSwitchOneSide(r)) notes.push('Kural değiştirme görevinde cevapların çoğunda aynı düğmeye basıldı; şekillere bakılmadan hep aynı düğmeye basılmış olabilir.');
   return notes;
@@ -4222,9 +4248,12 @@ export function wordListQualityNotes(r: WordListResult): string[] {
       `Kelime listesi görevinde başka bir sekmeye ya da uygulamaya geçildiği için liste ${r.restarts} kez baştan gösterildi; kelimeler bir kez daha görüldüğü için hatırlanan kelime sayısı biraz yüksek çıkmış olabilir.`,
     );
   }
-  if (wordListRecogOneSided(r)) notes.push('Kelime listesi görevinin tanıma bölümünde hemen her kelimeye aynı cevap verildi; tanıma sonucu yorumlanmadı.');
-  else if (wordListRecogFast(r)) {
-    notes.push(`Kelime listesi görevinin tanıma bölümünde ${r.recognition.tooFast} kelimede 0,3 saniyeden kısa sürede cevap verildi; kelimeye bakılmadan cevap verilmiş olabilir. Tanıma sonucu yorumlanmadı.`);
+  if (wordListRecogOneSided(r)) {
+    const all = r.recognition.yes === 0 || r.recognition.yes === r.recognition.n;
+    notes.push(`Kelime listesi görevinin tanıma bölümünde ${all ? 'her' : 'hemen her'} kelimeye aynı cevap verildi; tanıma sonucu yorumlanmadı.`);
+  } else if (wordListRecogFast(r)) {
+    const which = r.recognition.tooFast === r.recognition.n ? 'kelimelerin hepsinde' : `${r.recognition.tooFast} kelimede`;
+    notes.push(`Kelime listesi görevinin tanıma bölümünde ${which} 0,3 saniyeden kısa sürede cevap verildi; kelimeye bakılmadan cevap verilmiş olabilir. Tanıma sonucu yorumlanmadı.`);
   } else if (wordListRecogChance(r)) {
     notes.push('Kelime listesi görevinin tanıma bölümünde ilk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dendi; tahminle cevap verilmiş olabilir. Tanıma sonucu yorumlanmadı.');
   }

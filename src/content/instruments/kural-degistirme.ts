@@ -99,7 +99,7 @@ export const kuralDegistirme: TaskInstrument = {
       'Bu görevin güvenirlik ve norm çalışması henüz yapılmadı. Kural değiştirmenin bedeli gibi iki koşul arasındaki farka dayanan puanlar, görevin kendisi güçlü bir etki gösterse bile kişiler arasındaki farkları güvenilir biçimde ölçmekte zorlanır (Hedge ve ark., 2018); bu yüzden raporda farklar yalnızca betimleyici olarak verilir ve 0,05 saniyeden küçük farklar belirgin sayılmaz. Deneme sırası sabittir: herkes aynı denemeleri görür; kuralın değiştiği ve sürdüğü denemelerde şekiller ve düğmeler dengelidir.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Kural değiştirme gibi yürütücü becerilerin gelişimi gençlik yıllarına kadar sürer (Zinke ve ark., 2012); bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir ve bir norm yaş gruplarına göre ayrı ayrı oluşturulmalıdır.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, görevde yapılanlarla anlatılır. Kural değiştirme gibi kendini yönetme becerilerinin (yürütücü beceriler) gelişimi gençlik yıllarına kadar sürer (Zinke ve ark., 2012); bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir.',
     ageNote:
       '3. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Telefonda ya da tablette dokunarak, bilgisayarda sol ve sağ ok tuşlarıyla yapılır. Tarayıcıda ölçülen süreler cihazdan cihaza değişebilir; kural değiştirmenin bedeli iki koşul arasındaki fark olduğu için bu gecikmeden daha az etkilenir. Görev mavi ile turuncuyu ayırt etmeyi gerektirir; bu iki rengi ayırt etmekte zorlanan biri için sonuç geçerli değildir.',
     license: 'Özgün görev. Ölçekhane tarafından geliştirilmiştir.',
