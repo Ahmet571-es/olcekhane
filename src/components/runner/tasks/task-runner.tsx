@@ -10,6 +10,7 @@ import { DigitSpan } from './digit-span';
 import { Flanker } from './flanker';
 import { GoNoGo } from './go-nogo';
 import { MatrixReasoning } from './matrix-reasoning';
+import { MentalArithmetic } from './mental-arithmetic';
 import { MentalRotation } from './mental-rotation';
 import { NBack } from './n-back';
 import { NumberSeries } from './number-series';
@@ -72,6 +73,8 @@ export function TaskRunner(props: {
   const [done, setDone] = useState<Set<string>>(() => new Set());
   const [phase, setPhase] = useState<Phase>('intro');
   const [finishError, setFinishError] = useState<string | null>(null);
+  /** Süreli bölümü (zihinden hesaplama) biten görevin sonu: süre doldu mu, işlemler mi bitti? */
+  const [timedEnd, setTimedEnd] = useState<'time' | 'items' | null>(null);
   const blocks = useRef(new Map<string, unknown[]>());
   const current = tasks.findIndex((t) => !done.has(t.key));
   const task = current === -1 ? null : tasks[current];
@@ -91,6 +94,8 @@ export function TaskRunner(props: {
 
   function save(block: string, trials: unknown[]) {
     blocks.current.set(block, trials);
+    const t = tasks.find((x) => x.key === block);
+    setTimedEnd(t?.kind === 'mental_arithmetic' ? (trials.length >= t.items.length ? 'items' : 'time') : null);
     const next = new Set(done);
     next.add(block);
     setDone(next);
@@ -124,7 +129,9 @@ export function TaskRunner(props: {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <TaskSteps tasks={tasks} done={done} current={current} />
-        <h1 className="t-h1">Harika, bir görevi daha bitirdin.</h1>
+        <h1 className="t-h1">
+          {timedEnd === 'time' ? 'Süre doldu; bu bölüm bitti.' : timedEnd === 'items' ? 'Bu bölümü süre dolmadan bitirdin.' : 'Harika, bir görevi daha bitirdin.'}
+        </h1>
         <p className="text-lg">
           Sıradaki görev: <strong>{task.name}</strong>. İstersen biraz dinlenebilirsin; hazır olduğunda devam et.
         </p>
@@ -200,6 +207,7 @@ export function TaskRunner(props: {
       {task.kind === 'tower' && <Tower key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'complex_span' && <ComplexSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'perspective' && <Perspective key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'mental_arithmetic' && <MentalArithmetic key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

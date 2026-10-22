@@ -284,7 +284,8 @@ export type TaskKind =
   | 'perspective'
   | 'hidden_figures'
   | 'pattern_memory'
-  | 'letter_series';
+  | 'letter_series'
+  | 'mental_arithmetic';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -935,6 +936,40 @@ export interface NumericalReasoningTask extends TaskBase {
   maxDigits: number;
 }
 
+/** Zihinden hesaplamanın dört işlemi: toplama, çıkarma, çarpma, bölme. */
+export type ArithOp = 'add' | 'sub' | 'mul' | 'div';
+
+/** Bir işlem: `a op b` (ör. [47, 8] toplamada 47 + 8). Bölmede `a` bölünen, `b` bölendir; bütün bölmeler kalansızdır. */
+export type ArithItem = [a: number, b: number];
+
+/**
+ * Zihinden hesaplama hızı: bir işlemin (toplama, çıkarma, çarpma ya da bölme) süreli bölümü. İşlemler tek tek gösterilir;
+ * cevap tuş takımıyla (ya da klavyeyle) yazılır, "Geç" de denebilir. İşlemler kolaydan zora düzeylere ayrılmıştır (her
+ * düzeyde `perLevel` işlem); süre dolunca o ana kadar verilen cevaplar puanlanır (content/instruments/zihinden-hesaplama.ts,
+ * lib/instruments/arithmetic.ts). İşlemler ekranda gösterildiği için gizlenecek bir cevap anahtarı yoktur; puanlama sunucuda
+ * yapılır.
+ */
+export interface MentalArithmeticTask extends TaskBase {
+  kind: 'mental_arithmetic';
+  op: ArithOp;
+  /** Bölümün süresi (ms); sayfa gizliyken süre durur. */
+  durationMs: number;
+  /** Geri bildirimli alıştırma işlemleri (puanlanmaz). */
+  practice: ArithItem[];
+  /** İşlemler, kolaydan zora. */
+  items: ArithItem[];
+  /** Düzeylerin adları, kolaydan zora (`items.length === levels.length * perLevel`). */
+  levels: string[];
+  perLevel: number;
+  /**
+   * Temel işlemlerin (tek basamaklı toplama ve çıkarma, çarpım tablosu) düzeyleri: ilk `factLevels` düzey. Raporda bu
+   * işlemlerdeki tipik süre ayrıca anlatılır.
+   */
+  factLevels: number;
+  /** Cevabın en çok kaç basamaklı olabileceği (tuş takımı bundan uzun sayı yazdırmaz). */
+  maxDigits: number;
+}
+
 /**
  * Küp açınımı: altı kareli bir açınım ve dört küp görünüşü; açınımdan oluşabilecek küp seçilir (content/instruments/
  * kup-acinimi.ts, geometri lib/instruments/cube.ts). Türler: yalnızca yüzlerin yerinin önemli olduğu sorular (`place`;
@@ -1176,7 +1211,8 @@ export type CognitiveTask =
   | PerspectiveTask
   | HiddenFiguresTask
   | PatternMemoryTask
-  | LetterSeriesTask;
+  | LetterSeriesTask
+  | MentalArithmeticTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];

@@ -364,4 +364,40 @@ export const KAYNAK = {
     text: 'Melby-Lervåg, M., Redick, T. S. ve Hulme, C. (2016). Working memory training does not improve performance on measures of intelligence or other measures of “far transfer”: Evidence from a meta-analytic review. Perspectives on Psychological Science, 11(4), 512–534.',
     url: 'https://doi.org/10.1177/1745691616635612',
   },
+  fuchs2021: {
+    text: 'Fuchs, L. S., Newman-Gonchar, R., Schumacher, R., Dougherty, B., Bucka, N., Karp, K. S., Woodward, J., Clarke, B., Jordan, N. C., Gersten, R., Jayanthi, M., Keating, B. ve Morgan, S. (2021). Assisting students struggling with mathematics: Intervention in the elementary grades (WWC 2021006). National Center for Education Evaluation and Regional Assistance (NCEE), Institute of Education Sciences, U.S. Department of Education.',
+    url: 'https://ies.ed.gov/ncee/wwc/practiceguide/26',
+  },
+  gersten2009: {
+    text: 'Gersten, R., Beckmann, S., Clarke, B., Foegen, A., Marsh, L., Star, J. R. ve Witzel, B. (2009). Assisting students struggling with mathematics: Response to Intervention (RtI) for elementary and middle schools (NCEE 2009-4060). National Center for Education Evaluation and Regional Assistance, Institute of Education Sciences, U.S. Department of Education.',
+    url: 'https://ies.ed.gov/ncee/wwc/PracticeGuide/2/',
+  },
+  torbeyns2004: {
+    text: 'Torbeyns, J., Verschaffel, L. ve Ghesquière, P. (2004). Efficiency and adaptiveness of multiple school-taught strategies in the domain of simple addition. M. J. Høines ve A. B. Fuglestad (Ed.), Proceedings of the 28th Conference of the International Group for the Psychology of Mathematics Education (C. 4, s. 321–328). Bergen University College.',
+    url: 'https://emis.univie.ac.at/proceedings/PME28/RR/RR078_Torbeyns.pdf',
+  },
+  kling2014: {
+    text: 'Kling, G. ve Bay-Williams, J. M. (2014). Assessing basic fact fluency. Teaching Children Mathematics, 20(8), 488–497.',
+    url: 'https://bpb-us-e1.wpmucdn.com/sites.psu.edu/dist/3/1552/files/2018/07/assessing-basic-fact-fluency-TCM-yxaog2.pdf',
+  },
+  gliksman2022: {
+    text: 'Gliksman, Y., Berebbi, S. ve Henik, A. (2022). Math fluency during primary school. Brain Sciences, 12(3), 371.',
+    url: 'https://doi.org/10.3390/brainsci12030371',
+  },
+  koponen2016: {
+    text: 'Koponen, T., Salmi, P., Torppa, M., Eklund, K., Aro, T., Aro, M., Poikkeus, A.-M., Lerkkanen, M.-K. ve Nurmi, J.-E. (2016). Counting and rapid naming predict the fluency of arithmetic and reading skills. Contemporary Educational Psychology, 44–45, 83–94.',
+    url: 'https://doi.org/10.1016/j.cedpsych.2016.02.004',
+  },
+  prado2013: {
+    text: 'Prado, J., Lu, J., Liu, L., Dong, Q., Zhou, X. ve Booth, J. R. (2013). The neural bases of the multiplication problem-size effect across countries. Frontiers in Human Neuroscience, 7, 189.',
+    url: 'https://doi.org/10.3389/fnhum.2013.00189',
+  },
+  sorvo2017: {
+    text: 'Sorvo, R., Koponen, T., Viholainen, H., Aro, T., Räikkönen, E., Peura, P., Dowker, A. ve Aro, M. (2017). Math anxiety and its relationship with basic arithmetic skills among primary school children. British Journal of Educational Psychology, 87(3), 309–327.',
+    url: 'https://doi.org/10.1111/bjep.12151',
+  },
+  caviola2017: {
+    text: 'Caviola, S., Carey, E., Mammarella, I. C. ve Szucs, D. (2017). Stress, time pressure, strategy selection and math anxiety in mathematics: A review of the literature. Frontiers in Psychology, 8, 1488.',
+    url: 'https://doi.org/10.3389/fpsyg.2017.01488',
+  },
 } satisfies Record<string, { text: string; url: string }>;

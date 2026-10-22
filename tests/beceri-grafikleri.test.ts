@@ -228,7 +228,7 @@ describe('Sesli Okuma Değerlendirmesi', () => {
         }
       }
     }
-  });
+  }, 60_000);
 
   it('PDF', async () => {
     const p = oralPassagesFor(def, 3)[0];

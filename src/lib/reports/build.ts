@@ -36,6 +36,8 @@ import type {
   LogicalReasoningTask,
   LogicForm,
   NumericalReasoningTask,
+  MentalArithmeticTask,
+  ArithOp,
   CubeNetTask,
   CubeType,
   HiddenFiguresTask,
@@ -47,6 +49,7 @@ import type {
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
 import { VERBAL_TYPE_NAMES } from '@/lib/instruments/verbal';
+import { ARITH_ERROR_KINDS, ARITH_IN, ARITH_NAME, arithText, type ArithErrorKind } from '@/lib/instruments/arithmetic';
 import { VOCABULARY_TYPE_NAMES } from '@/lib/instruments/vocabulary';
 import { scaleItems } from '@/lib/scoring/likert';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
@@ -133,6 +136,12 @@ import {
   NUMERIC_RAPID_BLANK,
   type NumericGroup,
   type NumericResult,
+  type ArithResult,
+  type ArithSectionResult,
+  ARITH_ERROR_NOTE,
+  ARITH_MIN_RTS,
+  arithFew,
+  arithRead,
   LOGIC_ABOVE_CHANCE,
   countOf,
   logicBelowChance,
@@ -5348,6 +5357,535 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
   return { blocks: [dogru, oranti, esitlik, calisma], ...(chart ? { chart } : {}), figures, ...(profile ? { profile } : {}) };
 }
 
+/* ---------- Zihinden hesaplama ---------- */
+
+const ARITH_KEY: Record<ArithOp, string> = { add: 'zh_toplama', sub: 'zh_cikarma', mul: 'zh_carpma', div: 'zh_bolme' };
+/** Temel işlemlerin adı (bölümün ilk düzeyleri; content/instruments/zihinden-hesaplama.ts, factLevels). */
+const ARITH_FACTS: Record<ArithOp, string> = {
+  add: 'tek basamaklı iki sayının toplamı',
+  sub: '20’ye kadar sayılardan tek basamaklı bir sayıyı çıkarmak',
+  mul: 'çarpım tablosu',
+  div: 'çarpım tablosuna dayanan bölmeler',
+};
+/** Temel işlemler, her bölümün ilk düzeyleri (hız kartında). */
+const ARITH_FACTS_ALL =
+  'Temel işlemler, her bölümün ilk düzeyleridir: tek basamaklı sayılarla toplama, 20’ye kadar çıkarma, çarpım tablosu ve ona dayanan bölmeler.';
+const ARITH_COLOR: Record<ArithOp, string> = { add: '#0e9c8c', sub: '#2f5ce0', mul: '#7a4ee6', div: '#ee6a36' };
+/** "altı düzeyin üçüncüsüne kadar". */
+const ARITH_ORDINAL_DAT = ['birincisine', 'ikincisine', 'üçüncüsüne', 'dördüncüsüne', 'beşincisine', 'altıncısına'];
+/** "altı düzeyin üçüncüsündeydi". */
+const ARITH_ORDINAL_LOC = ['ilkindeydi', 'ikincisindeydi', 'üçüncüsündeydi', 'dördüncüsündeydi', 'beşincisindeydi', 'altıncısındaydı'];
+const NUMBER_WORD: Record<number, string> = { 1: 'bir', 2: 'iki', 3: 'üç', 4: 'dört', 5: 'beş', 6: 'altı', 7: 'yedi', 8: 'sekiz' };
+/** Cümle sonunda işlemin adı: "en kısa süren toplamaydı". */
+const ARITH_WAS: Record<ArithOp, string> = { add: 'toplamaydı', sub: 'çıkarmaydı', mul: 'çarpmaydı', div: 'bölmeydi' };
+/** Yanlışların türü, grafikteki adıyla. */
+const ARITH_ERROR_NAME: Record<ArithErrorKind, string> = {
+  operation: 'Başka işlemin sonucu',
+  regroup: 'Elde ya da onluk bozma',
+  table: 'Tablodaki başka bir sonuç',
+  quotient: 'Bölüm bir-iki eksik ya da fazla',
+  near: 'Bir fazla ya da eksik',
+  reversal: 'Rakamların yeri',
+  other: 'Öteki yanlışlar',
+};
+
+/** Temel işlemlerin bellekten hatırlanması (kaynaklı açıklama; hız kartında). */
+const ARITH_FACT_NOTE =
+  'Bu işlemler önce sayarak hesaplanır; beceri geliştikçe sonuç bellekten hatırlanmaya başlar ve işlem hızlanır (Gliksman ve ark., 2022).';
+/** Sayılar büyüdükçe işlemin uzaması (kaynaklı açıklama; hız kartında). */
+const ARITH_SIZE_NOTE = 'Sayılar büyüdükçe işlemlerin daha uzun sürmesi olağandır (Prado ve ark., 2013).';
+
+const nf1Arith = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+/** Saniye, bir ondalıkla: 1450 → "1,5". */
+const sec1 = (ms: number) => nf1Arith.format(Math.round(ms / 100) / 10);
+const sec1Value = (ms: number) => Math.round(ms / 100) / 10;
+const arithMedian = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+/** Yüzde, yuvarlanarak; yanlış varsa en çok %99 (8/12 → %67). */
+const arithPct = (correct: number, answered: number) => Math.min(Math.round((correct / answered) * 100), correct < answered ? 99 : 100);
+/**
+ * Yazılan cevapların ne kadarı doğru: "hemen hepsi", "çoğu", "yarısından azı", "pek azı". Hiçbiri doğru değilse `null`
+ * (olumsuz cümle gerekir: "hiçbiri doğru değildi").
+ */
+function arithHow(acc: number): string | null {
+  if (acc >= 1) return 'hepsi';
+  if (acc >= 0.9) return 'hemen hepsi';
+  if (acc >= 0.7) return 'çoğu';
+  if (acc > 0.5) return 'yarısından çoğu';
+  if (acc === 0.5) return 'yarısı';
+  if (acc > 0.25) return 'yarısından azı';
+  if (acc > 0) return 'pek azı';
+  return null;
+}
+
+/**
+ * Zihinden hesaplamanın kartları: dört işlemde doğru cevaplar, her işlemin bölümü (düzeylere göre doğrular), doğruluk ve hata
+ * türleri, temel işlemlerin hızı. Bir bölümde cevap yazılan işlem çok azsa ya da cevapların çoğu okumaya yetmeyecek kadar
+ * kısa sürede ve yanlış verildiyse o bölüm yorumlanmaz (lib/scoring/tasks.ts, arithRead); yorumlanmayan bölümler toplamlara,
+ * doğruluğa ve sürelere katılmaz. Türkiye normu olmadığı için sonuç akranlarla karşılaştırılmaz.
+ */
+function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const taskOf = (op: ArithOp) => tasks.find((t) => t.op === op)!;
+  const read = r.sections.filter(arithRead);
+  const none = read.length === 0;
+  const sum = (f: (s: ArithSectionResult) => number) => read.reduce((t, s) => t + f(s), 0);
+  const correct = sum((s) => s.correct);
+  const answered = sum((s) => s.answered);
+  const wrong = sum((s) => s.wrong);
+  const skipped = sum((s) => s.skipped);
+  const nameIn = (ops: ArithOp[]) => joinTr(ops.map((op) => ARITH_IN[op]));
+  const lower = (op: ArithOp) => ARITH_NAME[op].toLocaleLowerCase('tr-TR');
+  const isFact = (op: ArithOp, index: number) => {
+    const t = taskOf(op);
+    return Math.floor(index / t.perLevel) < t.factLevels;
+  };
+  const notReadText = v(
+    'Hiçbir bölümde yorumlanabilecek kadar cevap yazmadın ya da cevapların çoğunu işleme bakmaya yetmeyecek kadar kısa sürede verdin. Bu yüzden sonuç yorumlanmadı. Dinlendiğin bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.',
+    'Çocuğunuz hiçbir bölümde yorumlanabilecek kadar cevap yazmadı ya da cevapların çoğunu işleme bakmaya yetmeyecek kadar kısa sürede verdi. Bu yüzden sonuç yorumlanmadı. Dinlendiği bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.',
+  );
+
+  // Yorumlanan bölümlerin yanlışları ve doğruluk kartında anlatılan türler (bölüm kartları bu karta yalnızca orada bir tür
+  // anlatılıyorsa yönlendirir).
+  const wrongs = read.flatMap((s) => s.wrongs.map((w) => ({ ...w, op: s.op, item: taskOf(s.op).items[w.index], fact: isFact(s.op, w.index) })));
+  const kindCount = (k: ArithErrorKind) => wrongs.filter((w) => w.kind === k).length;
+  const kinds = ARITH_ERROR_KINDS.filter((k) => kindCount(k) > 0);
+  const typeChart = wrong >= 3 && kinds.length >= 2;
+  const named = new Set<ArithErrorKind>(wrong > 2 ? kinds.filter((k) => k !== 'other' && kindCount(k) >= ARITH_ERROR_NOTE) : []);
+
+  /* Dört işlemde doğru cevaplar */
+  let genel: CognitiveBlock;
+  if (none) {
+    genel = { ...card('zh_genel'), headline: 'Yorumlanmadı', text: notReadText };
+  } else {
+    const parts = [
+      v(
+        'Dört işlemin her biri için, kolaydan zora giden işlemlerle 60 saniyelik bir bölüm vardı. Grafik, her işlemde kaç işlemi doğru yaptığını gösteriyor.',
+        'Dört işlemin her biri için, kolaydan zora giden işlemlerle 60 saniyelik bir bölüm vardı. Grafik, çocuğunuzun her işlemde kaç işlemi doğru yaptığını gösteriyor.',
+      ),
+    ];
+    if (read.length >= 2) {
+      const max = Math.max(...read.map((s) => s.correct));
+      const min = Math.min(...read.map((s) => s.correct));
+      if (max === min) {
+        parts.push(v('Bölümlerde aynı sayıda işlemi doğru yaptın.', 'Bölümlerde aynı sayıda işlemi doğru yaptı.'));
+      } else if (max - min <= 3) {
+        parts.push(v('Bölümlerde birbirine yakın sayıda işlemi doğru yaptın.', 'Bölümlerde birbirine yakın sayıda işlemi doğru yaptı.'));
+      } else {
+        const most = read.filter((s) => s.correct === max).map((s) => s.op);
+        const leastS = read.filter((s) => s.correct === min);
+        const least = leastS.map((s) => s.op);
+        parts.push(
+          v(
+            `En çok doğru işlemi ${nameIn(most)}, en azını ${nameIn(least)} yaptın.`,
+            `En çok doğru işlemi ${nameIn(most)}, en azını ${nameIn(least)} yaptı.`,
+          ),
+        );
+        const one = leastS.length === 1 ? leastS[0] : null;
+        if (one && one.wrong === 0 && one.skipped === 0 && !one.finished) {
+          // Hepsi doğruysa daha az işlemin nedeni süredir.
+          parts.push(
+            v(
+              `${capTr(ARITH_IN[one.op])} yazdığın cevapların hepsi doğruydu; daha az işlem yapmanın nedeni, bu işlemlerin daha uzun sürmesiydi.`,
+              `${capTr(ARITH_IN[one.op])} yazdığı cevapların hepsi doğruydu; daha az işlem yapmasının nedeni, bu işlemlerin daha uzun sürmesiydi.`,
+            ),
+          );
+        } else if (one?.op === 'div' && audience !== 'adult' && read.every((s) => s.op === 'div' || (s.accuracy ?? 0) > (one.accuracy ?? 0))) {
+          // Bölmenin doğruluğu öteki işlemlerden düşükse araştırmadaki bulgu.
+          parts.push('İsrail’de 3–6. sınıflarda yapılan bir araştırmada da bölmedeki doğruluk öteki üç işlemden düşüktü (Gliksman ve ark., 2022).');
+        }
+      }
+      parts.push('Zorluk basamakları işlemden işleme farklı olduğu için bu karşılaştırma kaba bir fikir verir.');
+    }
+    const notRead = r.sections.filter((s) => !arithRead(s)).map((s) => s.op);
+    if (notRead.length) {
+      parts.push(
+        `${capTr(joinTr(notRead.map(lower)))} ${notRead.length === 1 ? 'bölümünün' : 'bölümlerinin'} sonucu yorumlanmadı; nedeni ${notRead.length === 1 ? 'o bölümün' : 'o bölümlerin'} kartında yazıyor.`,
+      );
+    }
+    // Yorumlanmayan bölüm, en az iki bölüm yorumlandıysa grafikte gösterilmez (boş çubuk "0" gibi okunur); tek bölüm
+    // yorumlandıysa dört işlem yan yana kalır ve yorumlanmayanların yanında "yorumlanmadı" yazar.
+    const rows = read.length >= 2 ? read : r.sections;
+    genel = {
+      ...card('zh_genel'),
+      headline: read.length === r.sections.length ? `Dört bölümde ${correct} doğru işlem` : `${capTr(NUMBER_WORD[read.length] ?? String(read.length))} bölümde ${correct} doğru işlem`,
+      text: parts.join(' '),
+      visual: {
+        type: 'bars',
+        label: 'Her bölümde doğru yapılan işlemler',
+        scale: 'scale',
+        unit: 'işlem',
+        max: roundUp(Math.max(...read.map((s) => s.correct)), 10),
+        rows: rows.map((s) =>
+          arithRead(s)
+            ? { label: ARITH_NAME[s.op], value: s.correct, valueLabel: String(s.correct) }
+            : { label: ARITH_NAME[s.op], value: 0, valueLabel: 'yorumlanmadı' },
+        ),
+      } satisfies BarsVisual,
+    };
+  }
+
+  /* Her işlemin bölümü */
+  const sections: CognitiveBlock[] = r.sections.map((s) => {
+    const t = taskOf(s.op);
+    const c = card(ARITH_KEY[s.op]);
+    if (!arithRead(s)) {
+      const why =
+        s.answered === 0 && s.skipped === 0
+          ? v('Bu bölümde süre boyunca hiç cevap vermedin.', 'Çocuğunuz bu bölümde süre boyunca hiç cevap vermedi.')
+          : s.answered === 0
+            ? v('Bu bölümde işlemlerin hepsini geçtin; hiç cevap yazmadın.', 'Çocuğunuz bu bölümde işlemlerin hepsini geçti; hiç cevap yazmadı.')
+            : arithFew(s)
+              ? v(`Bu bölümde yalnızca ${s.answered} işleme cevap yazdın; bu kadar az cevaptan bir sonuç çıkarılamaz.`, `Çocuğunuz bu bölümde yalnızca ${s.answered} işleme cevap yazdı; bu kadar az cevaptan bir sonuç çıkarılamaz.`)
+              : v(
+                  'Bu bölümde cevapların çoğunu, işlemi okuyup sonucu yazmaya yetmeyecek kadar kısa sürede verdin ve bu cevaplar yanlıştı. Tuşlara işleme bakmadan basmış olabilirsin.',
+                  'Çocuğunuz bu bölümde cevapların çoğunu, işlemi okuyup sonucu yazmaya yetmeyecek kadar kısa sürede verdi ve bu cevaplar yanlıştı. Tuşlara işleme bakmadan basılmış olabilir.',
+                );
+      return { ...c, headline: 'Yorumlanmadı', text: `${why} Bu yüzden bu bölümün sonucu yorumlanmadı.` };
+    }
+    const parts: string[] = [];
+    const L = NUMBER_WORD[t.levels.length];
+    // Ekranda gösterilen son işlemin düzeyi; geçilen işlemler ilerleme sayılmaz (s.reached cevap yazılan son düzeydir).
+    const shown = Math.floor((s.attempted - 1) / t.perLevel) + 1;
+    const hardest = v(
+      `Cevap yazdığın en zor işlemler ${L} düzeyin ${ARITH_ORDINAL_LOC[s.reached - 1]}.`,
+      `Çocuğunuzun cevap yazdığı en zor işlemler ${L} düzeyin ${ARITH_ORDINAL_LOC[s.reached - 1]}.`,
+    );
+    if (s.ceiling) {
+      parts.push(v('Bütün işlemleri süre dolmadan bitirdin.', 'Çocuğunuz bütün işlemleri süre dolmadan bitirdi.'));
+    } else if (s.finished) {
+      parts.push(v('Bölümün sonuna süre dolmadan geldin.', 'Çocuğunuz bölümün sonuna süre dolmadan geldi.'));
+      if (s.reached < t.levels.length) parts.push(hardest);
+    } else if (s.reached < shown) {
+      parts.push(hardest);
+    } else if (s.reached === 1) {
+      parts.push(v(`Süre, bölümün ${L} düzeyinin ilkinde doldu.`, 'Süre, çocuğunuz bölümün ilk düzeyindeyken doldu.'));
+    } else {
+      parts.push(
+        v(
+          `Bölümdeki ${L} düzeyin ${ARITH_ORDINAL_DAT[s.reached - 1]} kadar ilerledin.`,
+          `Çocuğunuz bölümdeki ${L} düzeyin ${ARITH_ORDINAL_DAT[s.reached - 1]} kadar ilerledi.`,
+        ),
+      );
+    }
+    const acc = s.accuracy ?? 0;
+    const how = arithHow(acc);
+    if (how === null) {
+      parts.push(v('Yazdığın cevapların hiçbiri doğru değildi.', 'Yazdığı cevapların hiçbiri doğru değildi.'));
+    } else if (s.wrong === 0) {
+      parts.push(v('Yazdığın cevapların hepsi doğruydu.', 'Yazdığı cevapların hepsi doğruydu.'));
+    } else if (acc >= 0.7) {
+      const n = s.wrong === 1 ? 'yalnızca bir' : String(s.wrong);
+      parts.push(v(`Yazdığın cevapların ${how} doğruydu; ${n} işlemde yanlış yazdın.`, `Yazdığı cevapların ${how} doğruydu; ${n} işlemde yanlış yazdı.`));
+    } else {
+      parts.push(v(`Yazdığın cevapların ${how} doğruydu.`, `Yazdığı cevapların ${how} doğruydu.`));
+    }
+    // Yanlışlar temel işlemlerde mi, büyük sayılarla yapılan işlemlerde mi? Yalnızca temel işlemlerin ötesine geçildiyse ve
+    // temel işlemlerin en az yarısına cevap yazıldıysa (geçilen temel işlemler hakkında bir şey söylenemez).
+    const factLevels = s.levels.slice(0, t.factLevels);
+    const factAnswered = factLevels.reduce((n, l) => n + l.attempted - l.skipped, 0);
+    const factShown = factLevels.reduce((n, l) => n + l.attempted, 0);
+    const factWrong = s.wrongs.filter((w) => isFact(s.op, w.index)).length;
+    if (s.wrong >= 2 && s.reached > t.factLevels && 2 * factAnswered >= factShown) {
+      if (factWrong === 0) {
+        parts.push(
+          v(
+            `Yanlışların hepsi büyük sayılarla yapılan işlemlerdeydi; ${ARITH_FACTS[s.op]} gibi temel işlemlerde yanlış yazmadın.`,
+            `Yanlışların hepsi büyük sayılarla yapılan işlemlerdeydi; ${ARITH_FACTS[s.op]} gibi temel işlemlerde yanlış yazmadı.`,
+          ),
+        );
+      } else if (factWrong >= 2) {
+        parts.push(`Yanlışların ${countOf(factWrong, s.wrong, 'i')} temel işlemlerdeydi (${ARITH_FACTS[s.op]}).`);
+      }
+    }
+    if (acc < 0.7 && s.wrong > 0) {
+      if (wrong <= 2) {
+        parts.push(v('Yanlış yazdığın işlemleri “Doğruluk ve hata türleri” kartında görebilirsin.', 'Yanlış yazdığı işlemleri “Doğruluk ve hata türleri” kartında görebilirsiniz.'));
+      } else if (s.wrongs.some((w) => named.has(w.kind)) || (typeChart && s.wrongs.some((w) => w.kind !== 'other'))) {
+        parts.push(v('Yanlışların türünü “Doğruluk ve hata türleri” kartında görebilirsin.', 'Yanlışların türünü “Doğruluk ve hata türleri” kartında görebilirsiniz.'));
+      } else if (s.wrong >= 3) {
+        parts.push('Bu bölümdeki yanlışlarda belirgin bir tür görülmedi.');
+      }
+    }
+    if (s.skipped > 0) {
+      // Bütünüyle geçilen düzeyler adıyla söylenir.
+      const whole = s.levels.filter((l) => l.attempted === t.perLevel && l.skipped === t.perLevel);
+      const inWhole = whole.length * t.perLevel;
+      if (whole.length) {
+        const which = `${joinTr(whole.map((l) => `${l.level}.`))} düzeydeki`;
+        const rest = s.skipped > inWhole ? `; toplam ${s.skipped} işlemi geçtin` : '';
+        const restP = s.skipped > inWhole ? `; toplam ${s.skipped} işlemi geçti` : '';
+        parts.push(v(`${capTr(which)} işlemlerin hepsini geçtin${rest}.`, `Çocuğunuz ${which} işlemlerin hepsini geçti${restP}.`));
+      } else {
+        parts.push(v(`${s.skipped === 1 ? 'Bir' : s.skipped} işlemi geçtin.`, `${s.skipped === 1 ? 'Bir' : s.skipped} işlemi geçti.`));
+      }
+    }
+    return {
+      ...c,
+      headline: s.ceiling
+        ? `${s.n} işlemde ${s.correct} doğru`
+        : s.finished
+          ? `${Math.max(1, Math.ceil(s.elapsedMs / 1000))} saniyede ${s.correct} doğru`
+          : `60 saniyede ${s.correct} doğru`,
+      text: parts.join(' '),
+      visual: {
+        type: 'dots',
+        label: 'Düzeylere göre doğru işlemler',
+        rows: s.levels
+          .filter((l) => l.attempted > 0)
+          .map((l) => ({
+            label: t.levels[l.level - 1],
+            filled: l.correct,
+            total: l.attempted,
+            valueLabel: l.skipped > 0 ? `${l.correct}/${l.attempted} · ${l.skipped} geçildi` : `${l.correct}/${l.attempted}`,
+          })),
+        legend: s.skipped > 0 ? ['doğru', 'yanlış ya da geçilen'] : ['doğru', 'yanlış'],
+      } satisfies DotsVisual,
+    };
+  });
+
+  /* Doğruluk ve hata türleri */
+  let dogruluk: CognitiveBlock;
+  if (none || answered === 0) {
+    dogruluk = { ...card('zh_dogruluk'), headline: 'Yorumlanmadı', text: 'Yorumlanan bölüm olmadığı için doğruluk hesaplanmadı.' };
+  } else {
+    // Örnek önce büyük sayılarla yapılan işlemlerden seçilir (tek basamaklı işlemde "elde" doğal bir açıklama değildir).
+    // Elde örneğinde tek basamaklı toplama en sona kalır.
+    const pick = (k: ArithErrorKind, op?: ArithOp) => {
+      const xs = wrongs.filter((x) => x.kind === k && (!op || x.op === op));
+      return xs.find((x) => !x.fact) ?? xs.find((x) => x.op !== 'add') ?? xs[0];
+    };
+    const example = (k: ArithErrorKind, op?: ArithOp) => {
+      const w = pick(k, op);
+      return w ? `${arithText(w.op, w.item)} için ${w.value}` : '';
+    };
+    const parts: string[] = [];
+    const acc = correct / answered;
+    const how = arithHow(acc);
+    const accSentence =
+      how === null
+        ? v('Yazdığın cevapların hiçbiri doğru değildi.', 'Çocuğunuzun yazdığı cevapların hiçbiri doğru değildi.')
+        : v(`Yazdığın cevapların ${how} doğruydu.`, `Çocuğunuzun yazdığı cevapların ${how} doğruydu.`);
+    if (wrong === 0) {
+      parts.push(accSentence);
+    } else if (wrong <= 2) {
+      parts.push(
+        accSentence,
+        v(
+          `Yanlış yazdığın ${wrong === 1 ? 'işlem' : 'işlemler'}: ${joinTr(wrongs.map((w) => `${arithText(w.op, w.item)} (${w.value} yazdın)`))}.`,
+          `Yanlış yazdığı ${wrong === 1 ? 'işlem' : 'işlemler'}: ${joinTr(wrongs.map((w) => `${arithText(w.op, w.item)} (${w.value} yazdı)`))}.`,
+        ),
+      );
+    } else {
+      parts.push(accSentence + (typeChart ? ' Grafik, yanlışların türünü gösteriyor.' : ''));
+      const share = (n: number) =>
+        n === wrong ? 'Yanlışların hepsinde' : 2 * n === wrong ? 'Yanlışların yarısında' : 2 * n > wrong ? 'Yanlışların çoğunda' : 'Yanlışların bir kısmında';
+      // Elde yanlışlarının hepsi tek basamaklı toplamalardaysa yalnızca birler basamağı yazılmış olabilir (9 + 4 için 3).
+      const regroups = wrongs.filter((w) => w.kind === 'regroup');
+      const regroupFactAdd = regroups.length > 0 && regroups.every((w) => w.fact && w.op === 'add');
+      const said: Record<Exclude<ArithErrorKind, 'other'>, [string, string]> = {
+        operation: [
+          `başka bir işlemin sonucunu yazdın (ör. ${example('operation')}). Sonucu yazmadan önce işlemin işaretine bir an bakmak bu yanlışı önlemeye yardımcı olabilir.`,
+          `başka bir işlemin sonucu yazıldı (ör. ${example('operation')}). Sonucu yazmadan önce işlemin işaretine bir an bakmak bu yanlışı önlemeye yardımcı olabilir.`,
+        ],
+        regroup: regroupFactAdd
+          ? [
+              `sonucun onlar basamağını yazmamış olabilirsin (ör. ${example('regroup')}). Cevabı göndermeden önce bir an bakmak yardımcı olabilir.`,
+              `sonucun onlar basamağı yazılmamış olabilir (ör. ${example('regroup')}). Cevabı göndermeden önce bir an bakmak yardımcı olabilir.`,
+            ]
+          : [
+              `eldeyi ya da onluk bozmayı atlamış olabilirsin (ör. ${example('regroup')}). Bu işlemleri basamak basamak düşünmek yardımcı olabilir.`,
+              `elde ya da onluk bozma atlanmış olabilir (ör. ${example('regroup')}). Bu işlemleri basamak basamak düşünmek yardımcı olabilir.`,
+            ],
+        table: [
+          `çarpanlardan birinin tablosundaki başka bir sonucu yazdın (ör. ${example('table')}). Çarpım tablosunda yapılan yanlışların çoğu bu türdendir (Soltanlou ve ark., 2015’te aktarılan bir araştırma). Zorlandığın işlemi bildiğin bir işlemden türetmek yardımcı olabilir: 7 × 8, 7 × 7’ye bir 7 daha eklemektir.`,
+          `çarpanlardan birinin tablosundaki başka bir sonuç yazıldı (ör. ${example('table')}). Çarpım tablosunda yapılan yanlışların çoğu bu türdendir (Soltanlou ve ark., 2015’te aktarılan bir araştırma). Zorlanılan işlemi bilinen bir işlemden türetmek yardımcı olabilir: 7 × 8, 7 × 7’ye bir 7 daha eklemektir.`,
+        ],
+        quotient: [
+          `bölümü bir ya da iki eksik ya da fazla buldun (ör. ${example('quotient')}). Bölmeyi ilgili çarpma işleminden düşünmek yardımcı olabilir: 56 ÷ 8 için “8 kere kaç 56 eder?” diye sormak gibi.`,
+          `bölüm bir ya da iki eksik ya da fazla bulundu (ör. ${example('quotient')}). Bölmeyi ilgili çarpma işleminden düşünmek yardımcı olabilir: 56 ÷ 8 için “8 kere kaç 56 eder?” diye sormak gibi.`,
+        ],
+        near: [
+          `sonucu bir eksik ya da bir fazla buldun (ör. ${example('near')}); sayarken bir adım atlanmış ya da fazladan sayılmış olabilir.`,
+          `sonuç bir eksik ya da bir fazla bulundu (ör. ${example('near')}); sayarken bir adım atlanmış ya da fazladan sayılmış olabilir.`,
+        ],
+        reversal: [
+          `rakamların yerini değiştirdin (ör. ${example('reversal')}); bu bazen yalnızca yazarken olur.`,
+          `rakamların yeri değişti (ör. ${example('reversal')}); bu bazen yalnızca yazarken olur.`,
+        ],
+      };
+      for (const k of kinds) {
+        if (k === 'other' || !named.has(k)) continue;
+        parts.push(`${share(kindCount(k))} ${v(said[k][0], said[k][1])}`);
+      }
+    }
+    if (skipped > 0) {
+      parts.push(
+        v(
+          `Geçtiğin ${skipped === 1 ? 'işlem' : 'işlemler'} ne doğru ne yanlış sayıldı.`,
+          `Geçtiği ${skipped === 1 ? 'işlem' : 'işlemler'} ne doğru ne yanlış sayıldı.`,
+        ),
+      );
+    }
+    dogruluk = {
+      ...card('zh_dogruluk'),
+      headline: wrong === 0 ? 'Hepsi doğru' : `%${arithPct(correct, answered)} doğru`,
+      text: parts.join(' '),
+      // Yanlışların türü en az iki türde ve en az üç yanlışta çizilir; ötekinde doğru, yanlış ve geçilen işlemler.
+      visual: typeChart
+        ? ({
+            type: 'bars',
+            label: 'Yanlışların türü',
+            scale: 'scale',
+            unit: 'yanlış',
+            max: roundUp(Math.max(...kinds.map(kindCount)), 5),
+            rows: kinds.map((k) => ({ label: ARITH_ERROR_NAME[k], value: kindCount(k), valueLabel: String(kindCount(k)) })),
+          } satisfies BarsVisual)
+        : ({
+            type: 'stack',
+            label: 'Yazılan ve geçilen işlemler',
+            total: answered + skipped,
+            parts: [
+              { label: 'Doğru', value: correct },
+              { label: 'Yanlış', value: wrong },
+              ...(skipped > 0 ? [{ label: 'Geçilen', value: skipped }] : []),
+            ],
+          } satisfies StackVisual),
+    };
+  }
+
+  /* Temel işlemlerin hızı */
+  const timed = read.filter((s) => s.factMedianRt !== null);
+  // Tipik süre, grafikte gösterilen bölümlerin süreleri birlikte alınarak hesaplanır (rozet ve grafik aynı sayıyı söyler).
+  const factMedian = timed.length === 0 ? null : timed.length === 1 ? timed[0].factMedianRt! : arithMedian(timed.flatMap((s) => s.factRts));
+  let hiz: CognitiveBlock;
+  if (factMedian === null) {
+    hiz = {
+      ...card('zh_hiz'),
+      headline: none ? 'Yorumlanmadı' : 'Hesaplanamadı',
+      text: none
+        ? 'Yorumlanan bölüm olmadığı için süre hesaplanmadı.'
+        : sum((s) => s.factCorrect) >= ARITH_MIN_RTS && sum((s) => s.factRts.length) < ARITH_MIN_RTS
+          ? 'Temel işlemlerdeki doğru cevapların çoğu yarım saniyeden kısa sürede verildiği için tipik süre hesaplanamadı; bu kadar kısa süreler işlemi okuyup yazmaya yetmez.'
+          : read.some((s) => s.levels.slice(0, taskOf(s.op).factLevels).some((l) => l.skipped > l.attempted / 2))
+          ? v(
+              'Temel işlemlerin çoğunu geçtiğin ya da yeterince doğru cevap olmadığı için tipik süre hesaplanamadı.',
+              'Temel işlemlerin çoğu geçildiği ya da yeterince doğru cevap olmadığı için tipik süre hesaplanamadı.',
+            )
+          : 'Temel işlemlerde tipik süreyi hesaplamaya yetecek kadar doğru cevap yok.',
+    };
+  } else {
+    const parts = [
+      timed.length >= 2
+        ? v(
+            'Grafik, temel işlemlerde doğru cevap başına tipik süreni gösteriyor.',
+            'Grafik, temel işlemlerde çocuğunuzun doğru cevap başına tipik süresini gösteriyor.',
+          )
+        : v(
+            'Grafikte her nokta, temel işlemlerdeki bir doğru cevabın süresidir. Çizgi tipik süreni gösterir.',
+            'Grafikte her nokta, temel işlemlerdeki bir doğru cevabın süresidir. Çizgi çocuğunuzun tipik süresini gösterir.',
+          ),
+      ARITH_FACTS_ALL,
+      ...(timed.length === 1 && read.length > 1
+        ? [`Tipik süre yalnızca ${ARITH_IN[timed[0].op]} hesaplanabildi; öteki bölümlerde temel işlemlerde yeterince doğru cevap yoktu.`]
+        : []),
+      ARITH_FACT_NOTE,
+    ];
+    if (timed.length >= 2) {
+      const max = Math.max(...timed.map((s) => s.factMedianRt!));
+      const min = Math.min(...timed.map((s) => s.factMedianRt!));
+      // Belirgin fark (en az %30) adıyla söylenir; %15'ten küçük fark "yakın" sayılır; arası söylenmez.
+      if (max >= 1.3 * min) {
+        const slow = timed.filter((s) => s.factMedianRt === max).map((s) => s.op);
+        const fast = timed.filter((s) => s.factMedianRt === min).map((s) => s.op);
+        const fastNames = [...fast.slice(0, -1).map(lower), ARITH_WAS[fast[fast.length - 1]]];
+        parts.push(
+          `Temel işlemlerde en uzun ${slow.length === 1 ? 'süren' : 'sürenler'} ${joinTr(slow.map(lower))} oldu; en kısa ${fast.length === 1 ? 'süren' : 'sürenler'} ${joinTr(fastNames)}.`,
+        );
+      } else if (max < 1.15 * min) {
+        parts.push(timed.length === 4 ? 'Temel işlemlerde dört işlemin süreleri birbirine yakındı.' : 'Temel işlemlerde işlemlerin süreleri birbirine yakındı.');
+      }
+    }
+    if (r.multiMedianRt !== null) {
+      const m = sec1(r.multiMedianRt);
+      if (r.multiMedianRt >= 1.15 * factMedian) {
+        parts.push(
+          v(
+            `İki basamaklı sayılarla yapılan işlemlerde ise doğru cevap başına tipik süren ${m} saniyeydi.`,
+            `İki basamaklı sayılarla yapılan işlemlerde ise doğru cevap başına tipik süresi ${m} saniyeydi.`,
+          ),
+          ARITH_SIZE_NOTE,
+        );
+      } else if (factMedian >= 1.15 * r.multiMedianRt) {
+        parts.push(
+          v(
+            `İki basamaklı işlemlerde doğru cevap başına tipik süren ${m} saniyeydi.`,
+            `İki basamaklı işlemlerde doğru cevap başına tipik süresi ${m} saniyeydi.`,
+          ),
+        );
+      } else {
+        parts.push(
+          v(
+            `İki basamaklı sayılarla yapılan işlemlerde de tipik süren ${m} saniyeydi.`,
+            `İki basamaklı sayılarla yapılan işlemlerde de tipik süresi ${m} saniyeydi.`,
+          ),
+        );
+      }
+    }
+    parts.push('Süreye işlemi görmek, sonucu bulmak ve tuşlarla yazmak dahildir; yazma hızı ve kullanılan cihaz süreyi biraz etkiler.');
+    hiz = {
+      ...card('zh_hiz'),
+      headline: `Tipik süre ${sec1(factMedian)} sn`,
+      text: parts.join(' '),
+      // Tek işlemin süresi varsa her doğru cevabın süresi şeritte (tek çubuk bilgi taşımaz).
+      visual:
+        timed.length >= 2
+          ? ({
+              type: 'bars',
+              label: 'Temel işlemlerde doğru cevap başına tipik süre',
+              scale: 'scale',
+              unit: 'sn',
+              rows: timed.map((s) => ({ label: ARITH_NAME[s.op], value: sec1Value(s.factMedianRt!), valueLabel: `${sec1(s.factMedianRt!)} sn` })),
+            } satisfies BarsVisual)
+          : durationStrip({
+              label: `${ARITH_NAME[timed[0].op]}: temel işlemlerde doğru cevap süreleri`,
+              rts: timed[0].factRts,
+              median: timed[0].factMedianRt!,
+              marker: `Tipik ${sec1(timed[0].factMedianRt!)} sn`,
+              item: 'bir doğru cevap',
+            }),
+    };
+  }
+
+  /* Öne çıkan sayılar ve üç boyutlu grafik */
+  const figures = [
+    { label: 'Doğru işlem', value: none ? 'Yorumlanmadı' : String(correct), ...(none ? {} : { note: read.length === r.sections.length ? 'dört bölümde' : `${NUMBER_WORD[read.length] ?? read.length} bölümde` }) },
+    ...(none || answered === 0 ? [] : [{ label: 'Doğruluk', value: `%${arithPct(correct, answered)}`, note: 'yazılan cevaplarda' }]),
+    ...(factMedian !== null ? [{ label: 'Temel işlemlerde tipik süre', value: `${sec1(factMedian)} sn`, note: 'doğru cevap başına' }] : []),
+  ];
+  const profile: CognitiveReport['profile'] = none
+    ? undefined
+    : {
+        title: v('Dört işlemde doğru işlemlerin', 'Dört işlemde doğru işlemler'),
+        note: 'Her sütun bir işlemin 60 saniyelik bölümünde doğru yapılan işlem sayısıdır. Bölümler kolaydan zora gider ve zorluk basamakları işlemden işleme farklıdır; sütunlar kaba bir karşılaştırma verir. Renkler yalnızca işlemleri ayırır.',
+        bars: read.map((s) => ({
+          key: s.op,
+          label: ARITH_NAME[s.op],
+          value: s.correct,
+          min: 0,
+          max: roundUp(Math.max(...read.map((x) => x.correct)), 10),
+          color: ARITH_COLOR[s.op],
+          valueLabel: String(s.correct),
+          band: '',
+        })),
+      };
+  return { blocks: [genel, ...sections, dogruluk, hiz], figures, ...(profile ? { profile } : {}) };
+}
+
 /* ---------- Gizli şekiller ---------- */
 
 /** Yanlış seçeneklerin yanılgıları için kısa bir ipucu (yanlışların yorumunda). */
@@ -9519,6 +10057,9 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (ma && def.tasks.some((t): t is LogicalReasoningTask => t.kind === 'logical_reasoning')) add(logicBlocks(ma, audience, card));
   const sy = byKey.get('sy_dogru')?.extra as unknown as NumericResult | undefined;
   if (sy && def.tasks.some((t): t is NumericalReasoningTask => t.kind === 'numerical_reasoning')) add(numericBlocks(sy, audience, card));
+  const zh = byKey.get('zh_genel')?.extra as unknown as ArithResult | undefined;
+  const zht = def.tasks.filter((t): t is MentalArithmeticTask => t.kind === 'mental_arithmetic');
+  if (zh && zht.length) add(arithmeticBlocks(zh, zht, audience, card));
   const kp = byKey.get('kp_dogru')?.extra as unknown as CubeResult | undefined;
   const kpt = def.tasks.find((t): t is CubeNetTask => t.kind === 'cube_net');
   if (kp && kpt) add(cubeBlocks(kp, kpt, audience, card));
@@ -9541,7 +10082,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory', 'letter_series'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory', 'letter_series', 'mental_arithmetic'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

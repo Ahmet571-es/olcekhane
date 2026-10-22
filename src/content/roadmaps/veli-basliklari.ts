@@ -6,6 +6,8 @@
  */
 export const PARENT_TITLES: Record<string, string> = {
   // Öneriler
+  'Basamak basamak düşün': 'Basamak basamak düşünmek',
+  'Bildiğinden türet': 'Bilinenden türetmek',
   'Aceleye bırakma': 'Aceleye bırakmamak',
   'Adım adım aç': 'Adım adım açmak',
   'Adımları listeye dök': 'Adımları listeye dökmek',
@@ -78,6 +80,8 @@ export const PARENT_TITLES: Record<string, string> = {
   'İçinden tekrar et': 'İçinden tekrar etmek',
   'Şüphe sesini dinle': 'Şüphe sesini dinlemek',
   // Haftalar
+  'Bildiklerini ayır': 'Bilinenleri ayırmak',
+  'Kendinle yarış': 'Kendiyle yarışmak',
   'Ad ver': 'Ad vermek',
   'Adımları söyle': 'Adımları söylemek',
   'Altını çiz': 'Altını çizmek',

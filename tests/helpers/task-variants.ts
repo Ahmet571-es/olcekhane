@@ -53,6 +53,7 @@ import {
   verbalOther,
   vocabularyBody,
   vocabularyOther,
+  arithBody,
 } from './bodies';
 
 /**
@@ -144,6 +145,19 @@ export const TASK_VARIANTS: Record<string, Variants> = {
     hepEvet: () => logicBody(() => ({ response: 1, rtMs: 9000 })),
     hizli: () => logicBody((q) => ({ response: q.i % 2 ? q.answer : q.answer === 1 ? 2 : 1, rtMs: 900 })),
     suresiz: () => logicBody((q) => ({ response: q.answer, rtMs: null })),
+  },
+  'zihinden-hesaplama-hizi': {
+    varsayilan: () => arithBody((q) => ({ response: q.i % 6 === 5 ? q.answer + 1 : q.answer, rtMs: 1500 + 700 * q.level })),
+    hepsi: () => arithBody(),
+    elde: () => arithBody((q) => ({ response: q.i % 4 === 3 && q.op === 'add' && (q.item[0] % 10) + (q.item[1] % 10) >= 10 ? q.answer - 10 : q.answer, rtMs: 1800 + 700 * q.level })),
+    tablo: () => arithBody((q) => ({ response: q.i % 3 === 2 && q.op === 'mul' && q.item[1] < 10 ? q.item[0] * (q.item[1] + 1) : q.answer, rtMs: 2200 + 500 * q.level })),
+    gecen: () => arithBody((q) => ({ response: q.level >= 2 && q.i % 2 ? null : q.answer, rtMs: 2600 })),
+    // İlk düzey doğru, gerisi geçildi: düzeylerin yanında "0/8 · 8 geçildi".
+    gecildi: () => arithBody((q) => (q.level === 1 ? { response: q.answer, rtMs: 2000 } : { response: null, rtMs: 400 })),
+    // Yalnızca bir bölüm yorumlanır: grafiklerde tek satır ya da tek süre kalır.
+    tekBolum: () => arithBody((q) => (q.op === 'add' ? { response: q.answer, rtMs: 2000 } : { response: null, rtMs: 3000 })),
+    bolmeYok: () => arithBody((q) => (q.op === 'div' ? { response: null, rtMs: 4000 } : { response: q.answer, rtMs: 2000 })),
+    rastgele: () => arithBody(() => ({ response: 7, rtMs: 300 })),
   },
   'sayisal-akil-yurutme': {
     varsayilan: () => numericBody((q) => ({ response: q.kind === 'p' && q.i % 2 ? numLure(q, 'additive') : q.answer, rtMs: 9000 })),

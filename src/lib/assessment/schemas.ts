@@ -142,8 +142,8 @@ export const answersBody = z.object({
       engine: z.literal('tasks'),
       /** Harf işaretleme sayfalarının tohumu (tarayıcıda rastgele üretilir). */
       seed: z.uuid(),
-      // Süreli sembol eşleştirmede süre boyunca hiç cevap verilmeyebilir: boş blok kabul edilir, öteki görevlerde
-      // puanlama boş bloğu reddeder (taskScoreRows).
+      // Süreli sembol eşleştirmede ve zihinden hesaplamanın bölümlerinde süre boyunca hiç cevap verilmeyebilir: boş blok
+      // kabul edilir, öteki görevlerde puanlama boş bloğu reddeder (taskScoreRows).
       blocks: z.record(z.string().max(40), z.array(taskTrial).max(400)).refine(fewKeys(12)),
     }),
   ]),

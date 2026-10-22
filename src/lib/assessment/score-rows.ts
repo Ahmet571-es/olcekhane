@@ -33,6 +33,9 @@ import {
   scoreRotation,
   scoreSpan,
   scoreSymbol,
+  scoreArithmetic,
+  combineArithmetic,
+  arithQualityNotes,
   scoreTrail,
   taskQualityNotes,
   type CancellationResult,
@@ -88,6 +91,8 @@ import {
   type SpanTrialInput,
   type SymbolResult,
   type SymbolTrialInput,
+  type ArithSectionResult,
+  type ArithTrialInput,
   type TrailPartInput,
   type TrailResult,
 } from '@/lib/scoring/tasks';
@@ -218,7 +223,8 @@ export type TaskInputs =
   | TowerTrialInput[]
   | Rotation3dTrialInput[]
   | ComplexSpanTrialInput[]
-  | PerspectiveTrialInput[];
+  | PerspectiveTrialInput[]
+  | ArithTrialInput[];
 
 function spanScale(t: CognitiveTask): string {
   if (t.kind === 'digit_span') return t.direction === 'forward' ? 'digit_forward' : 'digit_backward';
@@ -259,13 +265,15 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let vocabularyRes: VocabularyResult | undefined;
   let ruleSwitchRes: RuleSwitchResult | undefined;
   let wordListRes: WordListResult | undefined;
+  const arithSections: ArithSectionResult[] = [];
   const pct = (x: number) => Math.round(x * 1000) / 10;
 
   for (const task of def.tasks) {
     const input = inputs.get(task.key);
     if (!input) throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
-    // Yalnızca süreli sembol eşleştirmede hiç cevap verilmemiş olabilir; öteki görevler her denemeyi kaydeder.
-    if (input.length === 0 && task.kind !== 'symbol_match') throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
+    // Yalnızca süreli görevlerde (sembol eşleştirme, zihinden hesaplama) hiç cevap verilmemiş olabilir; öteki görevler her
+    // denemeyi kaydeder.
+    if (input.length === 0 && task.kind !== 'symbol_match' && task.kind !== 'mental_arithmetic') throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
     if (task.kind === 'digit_span' || task.kind === 'spatial_span') {
       const { result } = scoreSpan(task, input as SpanTrialInput[]);
       rows.push({
@@ -566,6 +574,13 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'kl_tanima', raw: pct(result.recognition.discrimination), mean: null, nAnswered: result.recognition.hits, nItems: result.recognition.n, band: null },
         { scaleKey: 'kl_calisma', raw: result.extraLearning, mean: null, nAnswered: result.entries, nItems: result.totalMax, band: null },
       );
+    } else if (task.kind === 'mental_arithmetic') {
+      // Her işlem ayrı bir görevdir; bölümün ayrıntısı kendi satırında, dört bölümün birleşimi döngüden sonra "zh_genel"
+      // satırında durur.
+      const { result } = scoreArithmetic(task, input as ArithTrialInput[]);
+      arithSections.push(result);
+      const key = { add: 'zh_toplama', sub: 'zh_cikarma', mul: 'zh_carpma', div: 'zh_bolme' }[task.op];
+      rows.push({ scaleKey: key, raw: result.correct, mean: null, nAnswered: result.answered, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> });
     } else {
       const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
@@ -580,9 +595,18 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       });
     }
   }
+  const arith = arithSections.length ? combineArithmetic(arithSections) : null;
+  if (arith) {
+    const read = (k: number | null) => (k === null ? null : Math.round(k * 1000) / 10);
+    rows.push(
+      { scaleKey: 'zh_genel', raw: arith.correct, mean: null, nAnswered: arith.answered, nItems: arithSections.reduce((t, s) => t + s.n, 0), band: null, extra: arith as unknown as Record<string, unknown> },
+      { scaleKey: 'zh_dogruluk', raw: read(arith.accuracy), mean: null, nAnswered: arith.correct, nItems: arith.answered, band: null },
+      { scaleKey: 'zh_hiz', raw: arith.factMedianRt, mean: null, nAnswered: arith.correct, nItems: arith.answered, band: null },
+    );
+  }
   return {
     rows,
-    notes: taskQualityNotes({
+    notes: [...(arith ? arithQualityNotes(arith) : []), ...taskQualityNotes({
       flanker: flankerRes,
       symbol: symbolRes,
       cancellation: cancellationRes,
@@ -610,6 +634,6 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       rotation3d: rotation3dRes,
       complexSpan: complexSpanRes,
       perspective: perspectiveRes,
-    }),
+    })],
   };
 }

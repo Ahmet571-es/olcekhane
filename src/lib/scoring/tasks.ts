@@ -41,6 +41,8 @@ import type {
   PatternMemoryTask,
   LetterSeriesRule,
   LetterSeriesTask,
+  ArithOp,
+  MentalArithmeticTask,
 } from '@/lib/instruments/types';
 import { TURKISH_ALPHABET } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
@@ -57,6 +59,7 @@ import { WORD_RECOGNITION_FAST_MS, matchWord, normalizeWord, wordListRecalls } f
 import { nBackRoles } from '@/lib/instruments/sequences';
 import { blankOf, opTrue } from '@/lib/instruments/complex-span';
 import { cellsAdjacent } from '@/lib/instruments/pattern';
+import { ARITH_ERROR_KINDS, arithAnswer, arithErrorKind, type ArithErrorKind } from '@/lib/instruments/arithmetic';
 import {
   PA_CLOSE,
   PA_EGO_MIN_SHIFT,
@@ -2593,6 +2596,265 @@ export function numericQualityNotes(r: NumericResult): string[] {
   }
   return notes;
 }
+
+/* ---------- Zihinden hesaplama ---------- */
+
+export interface ArithTrialInput {
+  index: number;
+  /** Yazılan sonuç; "Geç" denirse `null`. */
+  response: { answer: number } | null;
+  rtMs: number | null;
+}
+
+/** Bir düzeyde gösterilen (cevap verilen ya da geçilen), doğru yapılan ve geçilen işlemler. */
+export interface ArithLevelResult {
+  level: number;
+  attempted: number;
+  correct: number;
+  skipped: number;
+}
+
+/** Bir işlemin (toplama, çıkarma, çarpma, bölme) 60 saniyelik bölümü. */
+export interface ArithSectionResult {
+  op: ArithOp;
+  /** Bölümdeki işlem sayısı ve süresi. */
+  n: number;
+  durationMs: number;
+  /** Gösterilip cevap verilen ya da geçilen işlemler (süre dolduğunda ekrandaki işlem sayılmaz). */
+  attempted: number;
+  answered: number;
+  correct: number;
+  wrong: number;
+  skipped: number;
+  /** Yazılan cevapların doğru olanları (geçilenler hariç); cevap yoksa null. */
+  accuracy: number | null;
+  /** Dakikada doğru işlem: bütün işlemler süre dolmadan bittiyse geçen süreye göre. */
+  perMinute: number;
+  /** Cevap sürelerinin toplamı (ms). */
+  elapsedMs: number;
+  /** Bölümün bütün işlemleri süre dolmadan gösterildi (cevap verildi ya da geçildi). */
+  finished: boolean;
+  /**
+   * Tavan: bölüm süre dolmadan bitti ve işlemlerin hemen hepsi doğru yapıldı (en çok iki işlem geçildi, en çok dört işlem
+   * doğru değil); doğru işlem sayısı bölümdeki işlem sayısıyla sınırlı kaldı.
+   */
+  ceiling: boolean;
+  /** Cevap yazılan en zor düzey (1'den başlar; cevap yoksa 0). Geçilen işlemler ilerleme sayılmaz. */
+  reached: number;
+  levels: ArithLevelResult[];
+  /** Doğru cevapların süreleri (ms) ve ortancası; yazılamayacak kadar kısa süreler (ARITH_RAPID_MS) katılmaz. */
+  rts: number[];
+  medianRt: number | null;
+  /** Temel işlemlerde (tek basamaklı toplama ve çıkarma, çarpım tablosu) ve ötekilerde doğru cevaplar ve tipik süre. */
+  factCorrect: number;
+  factRts: number[];
+  factMedianRt: number | null;
+  multiCorrect: number;
+  multiRts: number[];
+  multiMedianRt: number | null;
+  /** Yanlış cevapların türü (lib/instruments/arithmetic.ts). */
+  errors: Record<ArithErrorKind, number>;
+  /** Yanlış cevaplar: işlemin sırası, yazılan sonuç ve türü (raporda örnek vermek için). */
+  wrongs: { index: number; value: number; kind: ArithErrorKind }[];
+  /** Yazılamayacak kadar kısa sürede verilen cevaplar ve bunların yanlışları. */
+  rapid: number;
+  rapidWrong: number;
+}
+
+/** Bütün bölümler birlikte. */
+export interface ArithResult {
+  sections: ArithSectionResult[];
+  correct: number;
+  answered: number;
+  wrong: number;
+  skipped: number;
+  accuracy: number | null;
+  /** Yorumlanan bölümlerde temel işlemlerin ve ötekilerin tipik süresi (doğru cevaplar). */
+  factMedianRt: number | null;
+  multiMedianRt: number | null;
+  errors: Record<ArithErrorKind, number>;
+}
+
+/** Bir bölümde bundan az cevap yazıldıysa ("Geç" denenler sayılmaz) o bölüm yorumlanmaz. */
+export const ARITH_MIN_ANSWERED = 3;
+/** Bir işlemi okuyup sonucunu tuşlarla yazmaya yetmeyecek kadar kısa süre (ms). */
+export const ARITH_RAPID_MS = 500;
+/** Bir hata türü en az bu kadar cevapta görülünce anlatılır. */
+export const ARITH_ERROR_NOTE = 2;
+/** Tipik süre en az bu kadar doğru cevaptan hesaplanır. */
+export const ARITH_MIN_RTS = 3;
+/** Süre toplamında tarayıcı ölçümlerinin yuvarlanmasına tanınan pay (ms). */
+const ARITH_TIME_SLACK_MS = 3000;
+
+export function scoreArithmetic(task: MentalArithmeticTask, input: ArithTrialInput[]): { result: ArithSectionResult } {
+  const n = task.items.length;
+  if (n !== task.levels.length * task.perLevel) throw new TaskInputError('İşlem listesi eksik.');
+  if (input.length > n) throw new TaskInputError('Geçersiz işlem.');
+  // İşlemler sırayla gösterilir: cevaplar baştan başlayarak, atlamasız ve sırayla gelir.
+  let total = 0;
+  input.forEach((t, i) => {
+    if (t.index !== i) throw new TaskInputError('Geçersiz işlem.');
+    if (t.response !== null) {
+      const a = t.response?.answer;
+      if (typeof a !== 'number' || !Number.isInteger(a) || a < 0 || a >= 10 ** task.maxDigits) throw new TaskInputError('Geçersiz cevap.');
+    }
+    // Ekran her işlemin süresini ölçer; süresiz cevap kabul edilmez (süre toplamı ve hız ondan hesaplanır).
+    if (typeof t.rtMs !== 'number' || !Number.isFinite(t.rtMs) || t.rtMs < 0 || t.rtMs > task.durationMs) throw new TaskInputError('Geçersiz süre.');
+    total += t.rtMs;
+  });
+  if (total > task.durationMs + ARITH_TIME_SLACK_MS) throw new TaskInputError('Geçersiz süre.');
+  const isFact = (i: number) => Math.floor(i / task.perLevel) < task.factLevels;
+  const scored = input.map((t, i) => {
+    const item = task.items[i];
+    const value = t.response === null ? null : t.response.answer;
+    const correct = value !== null && value === arithAnswer(task.op, item);
+    return { i, value, correct, rt: t.rtMs as number, fact: isFact(i) };
+  });
+  const answered = scored.filter((s) => s.value !== null);
+  const correct = scored.filter((s) => s.correct);
+  const wrongs = answered
+    .filter((s) => !s.correct)
+    .map((s) => ({ index: s.i, value: s.value!, kind: arithErrorKind(task.op, task.items[s.i], s.value!, s.fact) }));
+  const errors = Object.fromEntries(ARITH_ERROR_KINDS.map((k) => [k, wrongs.filter((w) => w.kind === k).length])) as Record<ArithErrorKind, number>;
+  // Yazılamayacak kadar kısa süreler (ör. sayfa yeniden açılınca hemen basılan tuş) tipik süreye katılmaz.
+  const rtsOf = (xs: typeof scored) => xs.flatMap((s) => (s.rt < ARITH_RAPID_MS ? [] : [s.rt]));
+  const rts = rtsOf(correct);
+  const factRts = rtsOf(correct.filter((s) => s.fact));
+  const multiRts = rtsOf(correct.filter((s) => !s.fact));
+  const finished = input.length === n;
+  const skipped = input.length - answered.length;
+  const ceiling = finished && skipped <= 2 && correct.length >= n - 4;
+  const elapsedMs = Math.round(total);
+  const minutes = (finished ? Math.max(elapsedMs, 1000) : task.durationMs) / 60_000;
+  const quick = answered.filter((s) => s.rt < ARITH_RAPID_MS);
+  const levels: ArithLevelResult[] = task.levels.map((_, l) => {
+    const here = scored.filter((s) => Math.floor(s.i / task.perLevel) === l);
+    return { level: l + 1, attempted: here.length, correct: here.filter((s) => s.correct).length, skipped: here.filter((s) => s.value === null).length };
+  });
+  const lastAnswered = answered.length ? answered[answered.length - 1].i : -1;
+  return {
+    result: {
+      op: task.op,
+      n,
+      durationMs: task.durationMs,
+      attempted: input.length,
+      answered: answered.length,
+      correct: correct.length,
+      wrong: wrongs.length,
+      skipped,
+      accuracy: answered.length ? round(correct.length / answered.length, 3) : null,
+      perMinute: round(correct.length / minutes, 1),
+      elapsedMs,
+      finished,
+      ceiling,
+      reached: lastAnswered < 0 ? 0 : Math.floor(lastAnswered / task.perLevel) + 1,
+      levels,
+      rts,
+      medianRt: medianOrNull(rts, ARITH_MIN_RTS),
+      factCorrect: correct.filter((s) => s.fact).length,
+      factRts,
+      factMedianRt: medianOrNull(factRts, ARITH_MIN_RTS),
+      multiCorrect: correct.filter((s) => !s.fact).length,
+      multiRts,
+      multiMedianRt: medianOrNull(multiRts, ARITH_MIN_RTS),
+      errors,
+      wrongs,
+      rapid: quick.length,
+      rapidWrong: quick.filter((s) => !s.correct).length,
+    },
+  };
+}
+
+/** Bölümde cevap yazılan işlem çok az: bölüm yorumlanmaz. */
+export const arithFew = (s: ArithSectionResult) => s.answered < ARITH_MIN_ANSWERED;
+/**
+ * Cevapların en az yarısı yazılamayacak kadar kısa sürede verilmiş ve yanlış, doğruluk da yarının altında: tuşlara işleme
+ * bakmadan basılmış olabilir; bölüm yorumlanmaz.
+ */
+export const arithRushed = (s: ArithSectionResult) =>
+  !arithFew(s) && 2 * s.rapidWrong >= s.answered && (s.accuracy ?? 0) < 0.5;
+/** Bölüm yorumlanır. */
+export const arithRead = (s: ArithSectionResult) => !arithFew(s) && !arithRushed(s);
+/** "Geç" en az dört kez ve yazılan cevaplar kadar ya da daha çok denmiş. */
+export const arithManySkips = (s: ArithSectionResult) => s.skipped >= 4 && s.skipped >= s.answered;
+
+/** Bölümleri birleştirir: toplamlara, doğruluğa, hata türlerine ve sürelere yalnızca yorumlanan bölümler katılır (raporla aynı). */
+export function combineArithmetic(sections: ArithSectionResult[]): ArithResult {
+  const read = sections.filter(arithRead);
+  const sum = (f: (s: ArithSectionResult) => number) => read.reduce((t, s) => t + f(s), 0);
+  const answered = sum((s) => s.answered);
+  const correct = sum((s) => s.correct);
+  return {
+    sections,
+    correct,
+    answered,
+    wrong: sum((s) => s.wrong),
+    skipped: sum((s) => s.skipped),
+    accuracy: answered ? round(correct / answered, 3) : null,
+    factMedianRt: medianOrNull(
+      read.flatMap((s) => s.factRts),
+      ARITH_MIN_RTS,
+    ),
+    multiMedianRt: medianOrNull(
+      read.flatMap((s) => s.multiRts),
+      ARITH_MIN_RTS,
+    ),
+    errors: Object.fromEntries(ARITH_ERROR_KINDS.map((k) => [k, sum((s) => s.errors[k])])) as Record<ArithErrorKind, number>,
+  };
+}
+
+/**
+ * Zihinden hesaplamada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, arithmeticBlocks aynı eşikleri
+ * kullanır). Aynı durum birkaç bölümde görülürse tek uyarıda birlikte söylenir.
+ */
+export function arithQualityNotes(r: ArithResult): string[] {
+  const OP_NAME: Record<ArithOp, string> = { add: 'toplama', sub: 'çıkarma', mul: 'çarpma', div: 'bölme' };
+  const groups: { test: (s: ArithSectionResult) => boolean; text: (xs: ArithSectionResult[]) => string }[] = [
+    {
+      test: (s) => s.answered === 0 && s.skipped === 0,
+      text: (xs) => `süre boyunca hiç cevap verilmedi. ${xs.length === 1 ? 'Bölüm' : 'Bölümler'} yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.`,
+    },
+    { test: (s) => s.answered === 0 && s.skipped > 0, text: () => 'hiç cevap yazılmadı; işlemlerin hepsi geçildi.' },
+    { test: (s) => s.answered > 0 && arithFew(s), text: (xs) => `yalnızca ${xs.length === 1 ? xs[0].answered : 'birkaç'} işleme cevap yazıldı.` },
+    {
+      test: arithRushed,
+      text: () => 'cevapların çoğu, işlemi okuyup sonucu yazmaya yetmeyecek kadar kısa sürede verildi ve yanlıştı. Tuşlara işleme bakmadan basılmış olabilir.',
+    },
+  ];
+  const where = (xs: ArithSectionResult[], suffix: 'de' | 'deki') =>
+    `Zihinden hesaplamanın ${joinWords(xs.map((s) => OP_NAME[s.op]))} ${xs.length === 1 ? `bölümün${suffix === 'de' ? 'de' : 'deki'}` : `bölümlerin${suffix === 'de' ? 'de' : 'deki'}`}`;
+  const notes: string[] = [];
+  const taken = new Set<ArithSectionResult>();
+  for (const g of groups) {
+    const xs = r.sections.filter((s) => !taken.has(s) && g.test(s));
+    if (!xs.length) continue;
+    xs.forEach((s) => taken.add(s));
+    notes.push(`${where(xs, 'de')} ${g.text(xs)} ${xs.length === 1 ? 'Bu bölümün' : 'Bu bölümlerin'} sonucu yorumlanmamalıdır.`);
+  }
+  const read = r.sections.filter(arithRead);
+  const zero = read.filter((s) => s.correct === 0);
+  if (zero.length) {
+    notes.push(
+      `${where(zero, 'de')} yazılan cevapların hiçbiri doğru değildi. İşlemin işareti karıştırılmış ya da yönerge anlaşılmamış olabilir. ${zero.length === 1 ? 'Bu bölümün' : 'Bu bölümlerin'} sonucu dikkatle yorumlanmalıdır.`,
+    );
+  }
+  const skips = read.filter(arithManySkips);
+  if (skips.length) {
+    notes.push(
+      `${where(skips, 'de')} ${skips.length === 1 ? `${skips[0].skipped} işlem` : 'çok sayıda işlem'} geçildi; geçilen işlemler doğru sayılmadı.`,
+    );
+  }
+  const top = read.filter((s) => s.ceiling);
+  if (top.length) {
+    notes.push(
+      `${where(top, 'deki')} işlemlerin hepsi süre dolmadan bitti ve hemen hepsi doğru yapıldı. Doğru işlem sayısı, bölümdeki işlem sayısıyla sınırlı kaldı.`,
+    );
+  }
+  return notes;
+}
+
+/** "toplama, çarpma ve bölme". */
+const joinWords = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} ve ${xs[xs.length - 1]}`);
 
 /* ---------- Küp açınımı ---------- */
 

@@ -2508,6 +2508,111 @@ const harfDizileri: TaskRoadmapTemplate = {
   sources: [KAYNAK.simon1963, KAYNAK.holzman1976, KAYNAK.willis2013, KAYNAK.ferrer],
 };
 
+const zihindenBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; dört işlemdeki akıcılığı gösterir, matematik bilgisinin ya da problem çözmenin tamamını ölçmez.',
+    'İşlemler önce sayarak hesaplanır; beceri geliştikçe sonuç bellekten hatırlanmaya başlar ve işlem hızlanır. Sayılar büyüdükçe işlemlerin daha uzun sürmesi olağandır.',
+    'Süre sınırı bazı kişileri gerer ve gerginlik sonucu düşürebilir. Kendini yalnızca kendi önceki sonucunla karşılaştır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; dört işlemdeki akıcılığı gösterir, matematik bilgisinin ya da problem çözmenin tamamını ölçmez.',
+    'Bir araştırmada üst sınıflardaki öğrenciler daha çok işlemi doğru ve daha hızlı yaptı; bölmede doğruluk 6. sınıfta bile %90’a ulaşmadı. Finlandiya’da yapılan bir araştırmada matematik kaygısı 2. sınıfta bile akıcılıkla ilişkili bulunmuştur.',
+    'Süre baskısı, matematik kaygısı olan çocukların daha düşük sonuç almasına yol açabilir. Çocuğunuzu başkalarıyla değil, yalnızca kendi önceki sonucuyla karşılaştırın.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine sayıların büyüklüğü ve süre baskısıyla ilgili bilgi. */
+const zihindenFacts: InfoBox = {
+  ...zihindenBase,
+  items: {
+    ...zihindenBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; dört işlemdeki akıcılığı gösterir, matematik bilgisinin ya da problem çözmenin tamamını ölçmez.',
+      'Sayılar büyüdükçe işlemlerin daha uzun sürmesi ve daha sık yanlış yapılması iyi bilinen bir durumdur ve yetişkinlerde de görülür; iki basamaklı işlemlerde yavaşlamak olağandır.',
+      'Süre sınırı bazı kişileri gerer ve gerginlik sonucu düşürebilir. Kendini yalnızca kendi önceki sonucunla karşılaştır.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const zihindenHesaplama: TaskRoadmapTemplate = {
+  version: 'zihinden-hesaplama-hizi-yol-haritasi-1',
+  what: {
+    student: 'zihinden hesaplamayı gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun zihinden hesaplamayı gerektiren işlerini nasıl kolaylaştırabileceğiniz',
+    summary: 'zihinden hesaplamayı gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: {
+    you: 'Zihinden hesaplamayı ne kolaylaştırır?',
+    parent: 'Çocuğunuzun zihinden hesaplamasını ne kolaylaştırır?',
+  },
+  studyIntro: t(
+    'Bu test, dört işlemi zihinden ne kadar doğru ve akıcı yapabildiğini ölçer. Bu beceri alışverişte para üstünü hesaplamakta ve bir tarifi ikiye katlamakta kullanılır. Matematikte daha büyük problemleri çözerken de işe yarar: Basit işlemler akıcı olunca zihin problemin kendisine ayrılabilir. Aşağıdaki yollar, hesap yaparken işini kolaylaştırabilir.',
+    'Bu test, dört işlemi zihinden ne kadar doğru ve akıcı yapabildiğini ölçer. Bu beceri alışverişte para üstünü hesaplamakta ve bir tarifi ikiye katlamakta kullanılır. Matematikte daha büyük problemleri çözerken de işe yarar: Basit işlemler akıcı olunca zihin problemin kendisine ayrılabilir. Aşağıdaki yollar, çocuğunuzun hesap yaparken işini kolaylaştırabilir.',
+  ),
+  supports: [
+    support(0, 'dogruluk', 'Önce doğruluk', 'Yöntem', t(
+      'Hızdan önce doğruluk gelir. Bir işlemi bildiğin bir yolla doğru yap (ör. sayarak ya da parçalara ayırarak); aynı işlemleri doğru yaptıkça hızlanırsın. Süreli çalışmalarda amaç yalnızca hızlı cevap vermek değil, kısa sürede doğru cevap vermektir.',
+      'Çocuğunuza hızdan önce doğruluğun geldiğini hatırlatın. Bir işlemi bildiği bir yolla doğru yapması (ör. sayarak ya da parçalara ayırarak) yeterlidir; aynı işlemleri doğru yaptıkça hızlanır. Süreli çalışmalarda amaç yalnızca hızlı cevap vermek değil, kısa sürede doğru cevap vermektir.',
+    )),
+    support(1, 'turet', 'Bildiğinden türet', 'Yöntem', t(
+      'Bilmediğin bir işlemi bildiğin bir işlemden türet. 8 + 7, 7 + 7 = 14’e bir eklemektir. 8 + 5 için önce 8’i 10’a tamamla, sonra kalan 3’ü ekle. Çarpmada 7 × 9’u 7 × 10’dan, 7 × 8’i 7 × 7’den bulabilirsin. Tekrar ettikçe bu işlemleri hatırlamak da kolaylaşır.',
+      'Çocuğunuza bilmediği bir işlemi bildiği bir işlemden türetmeyi gösterin. 8 + 7, 7 + 7 = 14’e bir eklemektir. 8 + 5 için önce 8, 10’a tamamlanır; sonra kalan 3 eklenir. Çarpmada 7 × 9, 7 × 10’dan; 7 × 8, 7 × 7’den bulunabilir. Tekrar ettikçe bu işlemleri hatırlamak da kolaylaşır.',
+    )),
+    support(2, 'kisa', 'Kısa ve sık', 'Alışkanlık', t(
+      'Düzenli olarak (ör. haftanın birkaç günü) birkaç dakikalık kısa bir hesap çalışması yap. Kolay işlemlerle başla; onları rahatça yaptıkça biraz zorlaştır. Kendi önceki sonucunu geçmeye çalış; başkalarıyla yarışmana gerek yok.',
+      'Çocuğunuzla düzenli olarak (ör. haftanın birkaç günü) birkaç dakikalık kısa bir hesap çalışması yapın. Kolay işlemlerle başlayın; onları rahatça yaptıkça biraz zorlaştırın. Hedef, başkalarını değil kendi önceki sonucunu geçmek olsun.',
+    )),
+    support(3, 'basamak', 'Basamak basamak düşün', 'Yöntem', t(
+      'İki basamaklı işlemlerde sayıları parçalara ayır. 47 + 8 için önce 47’yi 50’ye tamamla (3 ekle), sonra kalan 5’i ekle. 52 − 7 için önce 52’den 2 çıkar (50), sonra kalan 5’i çıkar. Böylece her adımı görebilirsin.',
+      'Çocuğunuza iki basamaklı işlemlerde sayıları parçalara ayırmayı gösterin. 47 + 8 için önce 47, 50’ye tamamlanır (3 eklenir), sonra kalan 5 eklenir. 52 − 7 için önce 52’den 2 çıkarılır (50), sonra kalan 5 çıkarılır. Böylece her adım görünür.',
+    )),
+  ],
+  facts: zihindenFacts,
+  approach: [
+    {
+      title: 'Baskı kurmayın',
+      text: 'Süreli çalışmaları bir sınav gibi değil, kısa bir oyun gibi yapın. Süre baskısı kaygılı çocukların daha düşük sonuç almasına yol açabilir. Süreli testlerin bazı çocukları olumsuz etkileyebileceği de belirtilmiştir; çocuğunuz süreden huzursuz olursa süre tutmayın.',
+    },
+    { title: 'Nasıl bulduğunu sorun', text: 'Cevabın doğru olup olmadığından önce nasıl bulunduğunu sorun: saydı mı, bildiği bir işlemden mi türetti, yoksa hatırladı mı?' },
+    { title: 'Günlük hesaplar', text: 'Alışverişte para üstünü, yolculukta kalan süreyi ya da sofradaki kişi sayısına göre tabakları birlikte zihinden hesaplayın.' },
+  ],
+  weeks: [
+    {
+      title: 'Bildiklerini ayır',
+      text: t(
+        'Bu hafta toplama ya da çarpım tablosundaki işlemleri ikiye ayır: hemen hatırladıkların ve saymak ya da düşünmek zorunda kaldıkların. İkinci gruptan her gün beş işlemi kâğıda yaz ve çalış.',
+        'Bu hafta çocuğunuzla toplama ya da çarpım tablosundaki işlemleri ikiye ayırın: hemen hatırladıkları ve saymak ya da düşünmek zorunda kaldıkları. Çocuğunuz ikinci gruptan her gün beş işlemi kâğıda yazıp çalışsın.',
+      ),
+    },
+    {
+      title: 'Türetme oyunu',
+      text: t(
+        'Bu hafta her gün zorlandığın bir işlemi bildiğin bir işlemden türet ve nasıl türettiğini birine anlat (ör. 6 × 8’i 5 × 8’e bir 8 daha ekleyerek bulmak).',
+        'Bu hafta çocuğunuz her gün zorlandığı bir işlemi bildiği bir işlemden türetsin ve nasıl türettiğini size anlatsın (ör. 6 × 8’i 5 × 8’e bir 8 daha ekleyerek bulmak).',
+      ),
+    },
+    {
+      title: 'Kendinle yarış',
+      text: t(
+        'Bu hafta her gün iki dakikalık kısa bir hesap çalışması yap ve doğru yaptığın işlemleri say. Sayıyı bir çizelgeye yaz ve yalnızca kendi önceki sonucunla karşılaştır.',
+        'Bu hafta çocuğunuz her gün iki dakikalık kısa bir hesap çalışması yapsın ve doğru yaptığı işlemleri saysın. Sayıyı bir çizelgeye yazın ve yalnızca kendi önceki sonucuyla karşılaştırın.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda denediğin yollara bak: önce doğruluk, türetmek, kısa çalışmalar ve basamak basamak düşünmek. Hesap yapmanı en çok hangisi kolaylaştırdıysa onu yaz ve sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun hesap yapmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['sayisal-akil-yurutme', 'matematik-konu-tarama-testi'],
+  nextPurpose: {
+    you: 'sayılarla akıl yürütmeyi ve matematik konularını da görmek',
+    parent: 'çocuğunuzun sayılarla akıl yürütmesini ve matematik konularını da görmek',
+  },
+  links: [],
+  sources: [KAYNAK.fuchs2021, KAYNAK.gersten2009, KAYNAK.torbeyns2004, KAYNAK.kling2014, KAYNAK.caviola2017, KAYNAK.gliksman2022, KAYNAK.koponen2016, KAYNAK.prado2013, KAYNAK.sorvo2017],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -2536,4 +2641,5 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'gizli-sekiller': gizliSekiller,
   'desen-hatirlama': desenHatirlama,
   'harf-dizileri': harfDizileri,
+  'zihinden-hesaplama-hizi': zihindenHesaplama,
 };

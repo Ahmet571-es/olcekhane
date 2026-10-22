@@ -572,7 +572,25 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    ve Yargıç, 2007; Topçu ve ark., 2010; Totan ve ark., 2012; bu testin maddeleri onların değil). Bütün 27 düzey birleşimi
    öğrenci, veli ve yetişkin için testte. İki tur bağımsız inceleme (çeviri, metin ve mantık; kaynak ve bilgi denetimi) ve
    ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
-2. Zihinden Hesaplama Hızı (zekâ; özgün sorular)
+2. **Zihinden Hesaplama Hızı: yayında (2026-10-22, pilot; 4. sınıftan yetişkine).** Aritmetik akıcılık: toplama, çıkarma,
+   çarpma ve bölme için 60'ar saniyelik dört bölüm (dört görev, `mental_arithmetic`); her bölümde altı düzey × 8 özgün işlem
+   (temel işlemler: tek basamaklı toplama, 20'ye kadar çıkarma, çarpım tablosu ve ona dayanan bölmeler; sonra iki basamaklı
+   eldesiz ve eldeli, bozmasız ve bozmalı işlemler; bölmeler kalansız). Yanlış türleri ayırt edilebilsin diye eldeli ve
+   bozmalı işlemlerde 5 yok, bölmenin 4.–5. düzeyi çarpmaların tersi değil (test denetler). İşlemler tek tek gösterilir,
+   sonuç tuş takımıyla ya da klavyeyle yazılır, "Geç" denebilir; her bölümden önce geri bildirimli iki alıştırma; sayfa
+   gizlenince süre durur (işlemin duraklatmadan önceki süresi korunur); süre dolunca "Süre doldu; bu bölüm bitti". Rapor:
+   dört işlemde doğru işlemler (çubuk), her işlemde düzeylere göre doğrular (kareler; geçilenler sayıyla), doğruluk ve
+   yanlışların türü (elde ya da onluk bozma, başka işlemin sonucu, çarpım tablosunda başka bir sonuç, bölümün bir-iki eksik
+   ya da fazlası, bir fazla ya da eksik, rakamların yeri), temel işlemlerde doğru cevap başına tipik süre (yarım saniyeden
+   kısa süreler katılmaz); çok az cevaplı ya da cevapları işleme bakmadan hızla yazılmış bölüm yorumlanmaz; geçilen işlemler
+   ilerleme ya da tavan sayılmaz. Türkiye normu yok. Bilim kartı: Tempo-Test-Rekenen düzeni (Lafay ve ark., 2015; Vanbinst
+   ve ark., 2019), bilgisayarlı akıcılık testi (Gliksman ve ark., 2022), Türkiye'de akıcılık ile sözel problem (Sarı ve ark.,
+   2014), problem büyüklüğü etkisi (Prado ve ark., 2013), çarpım tablosundaki yanlışlar (Soltanlou ve ark., 2015), süre
+   baskısı ve kaygı (Caviola ve ark., 2017). Yol haritası: önce doğruluk, bildiğinden türetmek, kısa ve sık çalışma
+   (Fuchs ve ark., 2021; Gersten ve ark., 2009), basamak basamak düşünmek; matematik kaygısı (Sorvo ve ark., 2017), süreli
+   testlerin olası olumsuz etkisi (Kling ve Bay-Williams, 2014). İki bağımsız inceleme (kaynak; rapor, puanlama ve ekran)
+   düzeltildi; telefonda dokunarak ve masaüstünde klavyeyle baştan sona çözüldü, PDF açıldı. Açık not: çarpmanın 4. düzeyi
+   (eldesiz iki basamaklı × tek basamaklı) bazı çocuklar için 3. düzeyden (6–9 tabloları) kolay olabilir.
 3. Öz-yeterlik: Kendine Güven (kişilik; IPIP)
 4. Şekil Benzetmeleri (zekâ; özgün sorular)
 5. Öz-denetim (kişilik; IPIP)
@@ -624,7 +642,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    hız düzeyi değiştirmiyor; kayıtta kesinti varsa hız karşılaştırılmıyor.
    Okumada bekleyen içerik işi: bazı sorular metni okumadan da cevaplanabiliyor (başlık ana fikri veriyor, bazı kelime ve
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
-4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
+4. 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlandı: **yayında (2026-10-22)**; her başlıkta grafik ve
+   iki bağımsız inceleme. Sıradaki: 3. listenin 3. testi (Öz-yeterlik: Kendine Güven).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -835,6 +854,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Çalışma Değerleri | calisma-degerleri | Yayında (pilot; 7. sınıftan yetişkine) |
 | Mantıksal Akıl Yürütme | mantiksal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sayısal Akıl Yürütme | sayisal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
+| Zihinden Hesaplama Hızı | zihinden-hesaplama-hizi | Yayında (pilot; 4. sınıftan yetişkine) |
 | Küp Açınımı | kup-acinimi | Yayında (pilot; 5. sınıftan yetişkine) |
 | Düşünerek Karar Verme | dusunerek-karar-verme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Planlama: Kule Görevi | planlama-kule-gorevi | Yayında (pilot; 3. sınıftan yetişkine) |
@@ -959,6 +979,15 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (48): Yeni test Zihinden Hesaplama Hızı yayına alındı (3. listenin 2. testi; ayrıntı yukarıda). Kaynak
+  incelemesinin ve rapor, puanlama ve ekran incelemesinin bulguları uygulandı: doğruluk sözcükleri rozetle aynı ("hemen
+  hepsi" yalnızca %90 ve üstünde; hiç doğru yoksa "hiçbiri doğru değildi" ve uyarı); geçilen işlemler "bitirdin", tavan ve
+  ulaşılan düzey sayılmaz, bütünüyle geçilen düzeyler adıyla söylenir; hız kartının rozeti grafikle aynı süreyi söyler,
+  büyük sayılarla yavaşlama yalnızca gerçekten yavaşlandıysa anlatılır, eşit süreler birlikte adlandırılır; bölme
+  araştırma cümlesi yalnızca bölmenin doğruluğu en düşükse; çarpma ve bölme yanlışları ayrı türler; rakamların yer
+  değiştirmesi tablo yanlışından önce; uyarılar bölümler arasında birleşir; yüzdeler yuvarlanır; yetişkin norm notunda
+  okul sözcüğü yok (test artık bütün yetişkin testlerinin norm notunu denetler). Ekran: duraklatmadan önceki süre korunur,
+  süre dolduktan sonraki cevap sayılmaz, kalan süre ekran okuyucuya açık, süre dolunca "Süre doldu; bu bölüm bitti".
 - 2026-10-22 (47): Sesli okuma raporunda bağımsız incelemenin bulguları uygulandı. Okuma metin bitmeden durduysa ve
   metnin en az yarısı okunduysa doğru okuma oranı okunan kısımdan hesaplanıyor (okunmayan kelimeler "zorlanma" sayılmıyor;
   yarısından azı okunduysa sayılıyor ama bu açıkça söyleniyor, profil verilmiyor, yeni değerlendirme isteniyor). Süre
@@ -1033,14 +1062,3 @@ En yeni üstte; en çok 10 madde tutulur.
   bölüm için "acele etme" yerine olası nedenler; "herkeste görülür" gibi abartılar ve ağır biçimler sadeleşti. On görev
   testinin norm notunun son cümlesi okura göre yazıldı ("aynı sonuç farklı yaşlarda farklı anlama gelir"). Görev testlerinde
   öğrenci sonuç notu "görevlerde yaptıklarına dayanır" der; grafiği olmayan raporda öne çıkan sayılar yine gösterilir.
-- 2026-10-22 (38): Raporlarda her başlığa grafik, 2. aşamanın ilk iki grubu (13 görev testi): düzeyli testlerde düzeylere
-  göre doğrular (nokta), ulaşılan düzey (basamak), kural ya da soru türleri (çubuk), yanılgılar (yığın) ve kolay–zor
-  sorulardaki süre (çubuk); dikkat ve bellek testlerinde dizi merdiveni, ok görevi, sembol eşleştirme, bölüm bölüm tarama,
-  durma ve basma, tepki süresi şeridi. İki bağımsız incelemenin bulguları uygulandı: "Ulaşılan düzey" kartı düzeye kadarki
-  soruların ne kadarının doğru olduğunu ve bir üst düzeyde kaç sorunun bulunamadığını sayıyla söyler; rastgele seçim ölçütü
-  bir düzeye ulaşılmışsa uygulanmaz; çok hızlı cevap yalnızca yanlışlarda sayılır; sayılar abartılmaz ya da küçültülmez
-  ("hepsinde", "hiçbirinde"); yorumlanmayan kartın grafiği olmaz; aynı öneri iki kartta yinelenmez; çok az işaretli sürekli
-  dikkat, hiç basılmayan dur-git ve hep aynı düğmeye basılan tepki hızı ayrı anlatılır; kolay ve zor sorulardaki süreler
-  grafikle uyumlu ("biraz daha çok zaman"); norm notları sadeleşti; yol haritasında önerilen test sınıfa uymayınca amaç
-  cümlesi kalan teste uymuyorsa yazılmaz. Sekiz sözel ve sayısal testin soru izinde yalnızca düzey anlatımları değişti
-  (sürüm aynı). Raporlar telefonda ve masaüstünde açıldı, PDF'ler incelendi.

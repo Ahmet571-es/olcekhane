@@ -3,6 +3,7 @@ import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
 import { disparity } from '@/lib/instruments/rotation';
 import { opTrue } from '@/lib/instruments/complex-span';
+import { arithAnswer } from '@/lib/instruments/arithmetic';
 import { correctAngle, egocentricAngle, headingOf, mirrorAngle, normDeg } from '@/lib/instruments/perspective';
 import { nBackRoles, type NBackRole } from '@/lib/instruments/sequences';
 import type {
@@ -38,6 +39,9 @@ import type {
   CubeNetTask,
   CubeType,
   MentalRotation3dTask,
+  MentalArithmeticTask,
+  ArithItem,
+  ArithOp,
   ComplexSpanOp,
   ComplexSpanTask,
   CognitiveReflectionTask,
@@ -777,4 +781,32 @@ export function patternBody(
     if (hits === 0) break;
   }
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+export type ArithCell = { op: ArithOp; level: number; item: ArithItem; answer: number; i: number };
+
+/**
+ * Zihinden hesaplama: dört bölüm. Her işlemde `pick` yazılan sonucu (`null`: "Geç") ve süreyi verir; bölümün süresi dolunca
+ * (sürelerin toplamı 60 saniyeyi aşacaksa) durulur, ekrandaki işlem gönderilmez. Varsayılan: hepsi doğru, işlem başına
+ * 1,2 + 0,6 × düzey saniye (üçüncü düzeyin sonuna kadar).
+ */
+export function arithBody(
+  pick: (q: ArithCell) => { response: number | null; rtMs: number } = (q) => ({ response: q.answer, rtMs: 1200 + 600 * q.level }),
+  grade = 7,
+): AnswersBody {
+  const tasks = def<TaskInstrument>('zihinden-hesaplama-hizi').tasks as MentalArithmeticTask[];
+  const blocks: Record<string, { index: number; response: { answer: number } | null; rtMs: number }[]> = {};
+  for (const task of tasks) {
+    const trials: { index: number; response: { answer: number } | null; rtMs: number }[] = [];
+    let used = 0;
+    for (let i = 0; i < task.items.length; i++) {
+      const item = task.items[i];
+      const p = pick({ op: task.op, level: Math.floor(i / task.perLevel) + 1, item, answer: arithAnswer(task.op, item), i });
+      if (used + p.rtMs > task.durationMs) break;
+      used += p.rtMs;
+      trials.push({ index: i, response: p.response === null ? null : { answer: p.response }, rtMs: p.rtMs });
+    }
+    blocks[task.key] = trials;
+  }
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks } };
 }

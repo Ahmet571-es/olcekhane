@@ -41,6 +41,7 @@ import {
   readingBody,
   rotationBody,
   trailBody,
+  arithBody,
 } from './helpers/bodies';
 
 const MAT = 'matematik-konu-tarama-testi';
@@ -328,6 +329,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'kelime-bilgisi': vocabularyBody,
     'kural-degistirme': ruleSwitchBody,
     'kelime-listesi-hatirlama': wordListBody,
+    'zihinden-hesaplama-hizi': () => arithBody(),
   };
 
   it('her zihinsel görevin yol haritası var; metinler eksiksiz, veli metinleri çocuğunuzu anar, öğrenci metinleri anmaz', () => {
@@ -364,7 +366,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
       'Anlamı değiştiren sözcükler', 'Aralıklı tekrar', 'Bir hamle sonrası', 'Deyim haftası', 'Doğruluk önce', 'Geriye doğru',
       'Gerçek mi, çıkarım mı?', 'Gizli nesneler', 'Göndermeden önce', 'Hangisi aynı?', 'Karşı örnek avı', 'Kelime avı', 'Kuralı değişen oyun',
       'Orantı mı, değil mi?', 'Parçalardan bütüne', 'Sade bir çalışma köşesi', 'Son kontrol', 'Tek iş', 'Tek iş saati', 'Terazi bulmacaları',
-      'Tuzaklı bilmeceler', 'Yer imi', 'Zarın açınımı', 'İçinden tekrar', '“Kesin mi?” oyunu',
+      'Tuzaklı bilmeceler', 'Yer imi', 'Zarın açınımı', 'İçinden tekrar', '“Kesin mi?” oyunu', 'Kısa ve sık', 'Türetme oyunu',
     ]);
     const titles = new Set(['Gözden geçir']);
     for (const t of Object.values(TASK_ROADMAPS)) for (const x of [...t.supports, ...t.weeks]) titles.add(x.title);
@@ -437,6 +439,11 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['prop', 'nonProp', 'equal']);
           expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('sekiz soruluk bir gruptur');
+        } else if (slug === 'zihinden-hesaplama-hizi') {
+          // Dört işlemin 60 saniyelik bölümlerinde doğru işlem sayısı (aynı birim): dört sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['add', 'sub', 'mul', 'div']);
+          expect(rm.barsTitle).toMatch(/^Dört işlemde doğru işlem(lerin|ler)$/);
+          expect(rm.barsNote).toContain('bir işlemin 60 saniyelik bölümünde');
         } else if (slug === 'mantiksal-akil-yurutme') {
           // Sekiz soruluk dört grupta doğru cevap oranı (aynı birim): dört sütun.
           expect(rm.bars.map((b) => b.key)).toEqual(['condValid', 'condInvalid', 'noConflict', 'conflict']);

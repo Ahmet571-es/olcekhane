@@ -92,8 +92,12 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                                         : single.kind === 'pattern_memory'
                                           ? `${single.levels[0].cells}–${single.levels[single.levels.length - 1].cells} kareli desenler, her büyüklükte 3 desen`
                 : null;
+  // Zihinden hesaplama: her işlem ayrı, süreli bir görevdir (bölüm).
+  const arith = def.engine === 'tasks' && def.tasks.length > 0 && def.tasks.every((t) => t.kind === 'mental_arithmetic') ? def.tasks : null;
   const itemCount =
-    def.engine === 'likert'
+    arith
+      ? `${arith.length} bölüm, her biri ${Math.round(arith[0].durationMs / 1000)} saniye`
+      : def.engine === 'likert'
       ? `${def.items.length} ${likertItemNoun(def)}`
       : taskLength
         ? taskLength
@@ -513,7 +517,13 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                 <li>Akılda tutulacak harf sayısı birden ikiye çıkınca sonucun nasıl değiştiğinin açıklaması</li>
               </>
             )}
-            {def.engine === 'tasks' && !single && <li>Her görevin sonucu ve ne anlama geldiği</li>}
+            {arith && (
+              <>
+                <li>Her işlemde 60 saniyede doğru yapılan işlem sayısı ve düzeylere göre doğru işlemler grafiği</li>
+                <li>Doğruluk, yanlışların türü (ör. eldeyi atlamak, çarpım tablosunda başka bir sonucu yazmak) ve temel işlemlerde doğru cevap başına tipik süre</li>
+              </>
+            )}
+            {def.engine === 'tasks' && !single && !arith && <li>Her görevin sonucu ve ne anlama geldiği</li>}
             {def.engine === 'quiz' && (
               <>
                 <li>Genel sonuç ve konu alanlarının her birinde “sağlam”, “pekiştirilmeli” ya da “öncelikli” değerlendirmesi</li>
