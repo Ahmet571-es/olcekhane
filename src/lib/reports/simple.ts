@@ -3,7 +3,8 @@ import type { QuizChart, QuizFigure, QuizTable } from '@/lib/instruments/types';
 import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
 import type { OralReportBlock } from './oral';
 import type { Roadmap } from './roadmap';
-import type { CompareVisual, GaugeVisual, ItemVisual, Zone } from './visuals';
+import { QUIZ_THRESHOLDS } from '@/lib/scoring/quiz';
+import type { BarsVisual, CompareVisual, DotsVisual, GaugeVisual, ItemVisual, Zone } from './visuals';
 
 /**
  * Basit rapor: test bitince ekranda gösterilen ve PDF olarak indirilen ücretsiz rapor (hiçbir yerde
@@ -598,6 +599,32 @@ export function compareOf(list: Section[]): CompareVisual | undefined {
 
 const withVisual = <T extends object>(x: T, visual: ItemVisual | undefined): T & { visual?: ItemVisual } => (visual ? { ...x, visual } : x);
 
+/**
+ * Konu taramasının genel sonucu: doğru sayısı, testin eşikleriyle (doğruların %50'si ve %75'i) üç bölgeli düzey çubuğunda.
+ * Bölgeler soru sayısından hesaplanır: 20 soruda 0–9, 10–14 ve 15–20 doğru.
+ */
+function quizGauge(a: NonNullable<ReportContent['academic']>): GaugeVisual {
+  const avg = Math.ceil(a.n * QUIZ_THRESHOLDS.average - 1e-9);
+  const high = Math.ceil(a.n * QUIZ_THRESHOLDS.high - 1e-9);
+  const zones: Zone[] = [
+    { from: 0, to: avg, label: a.bandNames.low, band: 'low' },
+    { from: avg, to: high, label: a.bandNames.average, band: 'average' },
+    { from: high, to: a.n, label: a.bandNames.high, band: 'high' },
+  ];
+  return {
+    type: 'gauge',
+    label: 'Genel sonuç',
+    value: a.correct,
+    min: 0,
+    max: a.n,
+    ciLow: null,
+    ciHigh: null,
+    valueLabel: `${a.correct}/${a.n}`,
+    zones,
+    active: a.band === 'high' ? 2 : a.band === 'average' ? 1 : 0,
+  };
+}
+
 export function toSimpleReport(r: ReportContent): SimpleReport {
   const you = r.audience !== 'parent';
   const base = {
@@ -839,8 +866,48 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       ],
       itemsTitle: x.passageTitle ? `“${x.passageTitle}” metni` : 'Okuma sonucu',
       items: [
-        ...(comp ? [{ title: 'Anlama', badge: comp.bandLabel, text: comp.text }] : []),
-        { title: 'Okuma hızı', text: x.referenceNote ? `${x.speedNote} ${x.referenceNote}` : x.speedNote },
+        // Anlama kartının grafiği soruları gösterir (dolu kare doğru cevap).
+        ...(comp
+          ? [
+              withVisual({ title: 'Anlama', badge: comp.bandLabel, text: comp.text }, {
+                type: 'dots',
+                label: 'Anlama soruları',
+                rows: [{ label: 'Sorular', filled: x.correct, total: x.total, valueLabel: `${x.correct}/${x.total}` }],
+                legend: ['doğru', 'yanlış ya da boş'],
+              } satisfies DotsVisual),
+            ]
+          : []),
+        // Hız yorumlanmıyorsa (çok hızlı ya da çok uzun süre) kartın grafiği olmaz. Anlayarak okuma hesaplandıysa grafik
+        // okuma hızını ve anlayarak okumayı yan yana gösterir; hesaplanmadıysa (anlama 6/8'in altında) yalnızca hız kalırdı.
+        withVisual(
+          {
+            title: 'Okuma hızı',
+            badge: x.tooFast || x.tooSlow ? 'Yorumlanmadı' : `Dakikada ${nf0.format(x.wpm)} kelime`,
+            text: [
+              x.speedNote,
+              x.effectiveWpm !== null
+                ? you
+                  ? 'Grafikteki “anlayarak okuma”, hızının anladığın kısmıdır: dakikada okuduğun kelime sayısı, şans payı çıkarılmış doğru cevap oranıyla çarpılır.'
+                  : 'Grafikteki “anlayarak okuma”, hızın anlaşılan kısmıdır: dakikada okunan kelime sayısı, şans payı çıkarılmış doğru cevap oranıyla çarpılır.'
+                : '',
+              x.referenceNote ?? '',
+            ]
+              .filter(Boolean)
+              .join(' '),
+          },
+          x.effectiveWpm !== null
+            ? ({
+                type: 'bars',
+                label: 'Dakikada kelime',
+                scale: 'scale',
+                unit: 'kelime',
+                rows: [
+                  { label: 'Okuma hızı', value: Math.round(x.wpm), valueLabel: nf0.format(x.wpm) },
+                  { label: 'Anlayarak okuma', value: x.effectiveWpm, valueLabel: nf0.format(x.effectiveWpm) },
+                ],
+              } satisfies BarsVisual)
+            : undefined,
+        ),
       ],
     };
   }
@@ -902,8 +969,32 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       ],
       itemsTitle: 'Konu alanları',
       items: [
-        { title: 'Genel sonuç', badge: a.bandLabel, text: a.text },
-        ...a.domains.map((d) => ({ title: d.name, badge: d.bandLabel, text: `${d.correct}/${d.n} doğru${d.dontKnow ? `, ${d.dontKnow} soruda “Bilmiyorum”` : ''}. ${d.plain}` })),
+        withVisual({ title: 'Genel sonuç', badge: a.bandLabel, text: a.text }, quizGauge(a)),
+        // Kartın grafiği alandaki soruları gösterir (dolu kare doğru); doğru sayısı metinde yinelenmez.
+        ...a.domains.map((d) =>
+          withVisual(
+            {
+              title: d.name,
+              badge: d.bandLabel,
+              text: [
+                `Bu alandaki sorular: ${d.plain.charAt(0).toLocaleLowerCase('tr-TR')}${d.plain.slice(1)}`,
+                d.dontKnow
+                  ? you
+                    ? `${d.dontKnow === d.n ? 'Bu alanın bütün sorularında' : d.dontKnow === 1 ? 'Bir soruda' : `${d.dontKnow} soruda`} “Bilmiyorum” dedin.`
+                    : `${d.dontKnow === d.n ? 'Bu alanın bütün sorularında' : d.dontKnow === 1 ? 'Bir soruda' : `${d.dontKnow} soruda`} “Bilmiyorum” denildi.`
+                  : '',
+              ]
+                .filter(Boolean)
+                .join(' '),
+            },
+            {
+              type: 'dots',
+              label: `${d.name}: doğru cevaplar`,
+              rows: [{ label: 'Sorular', filled: d.correct, total: d.n, valueLabel: `${d.correct}/${d.n}` }],
+              legend: ['doğru', 'yanlış ya da boş'],
+            } satisfies DotsVisual,
+          ),
+        ),
       ],
     };
   }

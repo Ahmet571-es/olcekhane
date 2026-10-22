@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 import { drawVisual, isDrawn, textBox, type Shape } from '@/lib/reports/visual-draw';
-import { visualDescription, type ItemVisual } from '@/lib/reports/visuals';
+import { gaugeGeometry, textWidth, visualDescription, type ItemVisual, type LabelSpot } from '@/lib/reports/visuals';
 
 /** Ekrandaki ve PDF'teki çizim boyutları (components/report/item-visual.tsx, lib/pdf/simple-report.tsx). */
 export const VISUAL_SIZES = [
@@ -12,8 +12,42 @@ export const VISUAL_SIZES = [
  * Görev testlerinin kart grafiği: şekiller grafiğin içinde kalır; yazılar taşmaz, birbirinin üstüne binmez ve okunaklıdır
  * (en az yazı boyunun %70'i); ekran okuyucu metninde eksik değer yoktur.
  */
+/** Düzey çubuğu: bölge adları ve puan yazısı grafiğin içinde kalır, aynı satırdaki adlar üst üste binmez. */
+function checkGauge(v: Extract<ItemVisual, { type: 'gauge' }>, label: string) {
+  for (const { width, font } of VISUAL_SIZES) {
+    const g = gaugeGeometry(v, width, font);
+    const box = (l: LabelSpot) => {
+      const w = textWidth(l.text, font);
+      const left = l.anchor === 'start' ? l.x : l.anchor === 'end' ? l.x - w : l.x - w / 2;
+      return { left, right: left + w, row: l.row };
+    };
+    const boxes = g.labels.map(box);
+    for (const b of boxes) {
+      expect(b.left, label).toBeGreaterThanOrEqual(-0.01);
+      expect(b.right, label).toBeLessThanOrEqual(width + 0.01);
+    }
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++)
+        if (boxes[i].row === boxes[j].row) expect(boxes[i].right <= boxes[j].left || boxes[j].right <= boxes[i].left, `${label}: ${g.labels[i].text} / ${g.labels[j].text}`).toBe(true);
+    // Eksendeki sayılar da üst üste binmez.
+    const ticks = g.ticks.map((t) => {
+      const w = textWidth(t.text, g.tickSize);
+      const left = t.anchor === 'start' ? t.x : t.anchor === 'end' ? t.x - w : t.x - w / 2;
+      return { left, right: left + w, text: t.text };
+    });
+    for (let i = 1; i < ticks.length; i++) expect(ticks[i - 1].right <= ticks[i].left, `${label}: ${ticks[i - 1].text} / ${ticks[i].text}`).toBe(true);
+    if (g.marker) {
+      const w = textWidth(g.marker.text, font);
+      const left = g.marker.anchor === 'start' ? g.marker.x : g.marker.anchor === 'end' ? g.marker.x - w : g.marker.x - w / 2;
+      expect(left, label).toBeGreaterThanOrEqual(-0.01);
+      expect(left + w, label).toBeLessThanOrEqual(width + 0.01);
+    }
+  }
+}
+
 export function checkDrawn(v: ItemVisual, label: string) {
   expect(visualDescription(v), label).not.toMatch(/undefined|NaN|Infinity/);
+  if (v.type === 'gauge') return checkGauge(v, label);
   if (!isDrawn(v)) return;
   for (const { width, font } of VISUAL_SIZES) {
     const d = drawVisual(v, width, font);

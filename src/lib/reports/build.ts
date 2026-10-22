@@ -364,6 +364,8 @@ export interface AcademicReport {
   dontKnow: number;
   band: Band;
   bandLabel: string;
+  /** Üç düzeyin adları (kart grafiklerindeki bölgeler için). */
+  bandNames: { low: string; average: string; high: string };
   text: string;
   domains: { key: string; name: string; plain: string; correct: number; n: number; dontKnow: number; band: Band; bandLabel: string }[];
   /**
@@ -685,8 +687,8 @@ export function buildReport(input: {
             ? 'Okuma süren çok uzun ölçüldü; okurken ara vermiş olabilirsin. Bu yüzden hızın yorumlanmadı.'
             : 'Okuma süresi çok uzun ölçüldü; okurken ara verilmiş olabilir. Bu yüzden hız yorumlanmadı.'
           : audience !== 'parent'
-          ? `Metni ${nf0.format(secs)} saniyede okudun. Hızını, anladığın kadarıyla birlikte düşünmek önemli: anlamadan hızlı okumak işe yaramaz.`
-          : `Metin ${nf0.format(secs)} saniyede okundu. Hız, anlama düzeyiyle birlikte değerlendirilmelidir; anlamadan hızlı okumak bir avantaj değildir.`;
+          ? `Metni ${inTime(rr.readingMs)} okudun. Hızını, anladığın kadarıyla birlikte düşünmek önemli: anlamadan hızlı okumak işe yaramaz.`
+          : `Metin ${inTime(rr.readingMs)} okundu. Hız, anlama düzeyiyle birlikte değerlendirilmelidir; anlamadan hızlı okumak bir avantaj değildir.`;
       reading = {
         passageTitle: passage?.title ?? '',
         wordCount: rr.wordCount,
@@ -1187,6 +1189,7 @@ function buildAcademic(
     dontKnow: result.dontKnow,
     band,
     bandLabel: label(band),
+    bandNames: { low: label('low'), average: label('average'), high: label('high') },
     text: ACADEMIC_TEXT[textKey][voice(audience)]
       .replaceAll('{g}', String(form.contentGrade))
       .replaceAll('{s}', def.subject.toLocaleLowerCase('tr-TR'))
@@ -2888,6 +2891,13 @@ export const MATRIX_RULES: Record<MatrixRule, { name: string; plain: string; col
 };
 
 /** Süreyi tam saniye (ya da dakika ve saniye) olarak yazar: 23 400 → "23 saniye", 75 000 → "1 dakika 15 saniye", 400 → "bir saniyeden kısa". */
+/** "2 dakika 30 saniyede", "45 saniyede", "3 dakikada". */
+function inTime(ms: number): string {
+  if (ms < 500) return 'bir saniyeden kısa sürede';
+  const t = seconds(ms);
+  return `${t}${t.endsWith('dakika') ? 'da' : 'de'}`;
+}
+
 function seconds(ms: number): string {
   if (ms < 500) return 'bir saniyeden kısa';
   const s = Math.round(ms / 1000);

@@ -21,6 +21,7 @@ import type { OralPassage, OralReadingInstrument } from '@/lib/instruments/types
 import { ORAL_CRITERIA, type OralLevel, type OralMarkedToken, type OralResult } from '@/lib/scoring/oral';
 import type { Audience } from './build';
 import { disclaimerText, type SimpleItem, type SimpleReport } from './simple';
+import type { BarsVisual, DotsVisual, GaugeVisual } from './visuals';
 
 /**
  * Sesli Okuma Değerlendirmesinin raporu. Öğrenciye ("sen") ve yetişkine (veli ya da öğretmen; öğrenciyi üçüncü kişi
@@ -128,11 +129,11 @@ function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
   const parts = [
     u > 0
       ? parent
-        ? `Metindeki ${r.wordCount} kelimenin ${clear} tanesini doğru okudu, ${u} kelime net anlaşılamadı; hata sayısı ${r.errors} (doğru okuma %${accText(r.accuracyPct)}). Net anlaşılamayan kelimeler hata sayılmadı.`
-        : `Metindeki ${r.wordCount} kelimenin ${clear} tanesini doğru okudun; ${u} kelime net anlaşılamadı ve hata sayılmadı (doğru okuma %${accText(r.accuracyPct)}).`
+        ? `Metindeki ${r.wordCount} kelimenin ${clear} tanesini doğru okudu, ${u} kelime net anlaşılamadı; hata sayısı ${r.errors}. Net anlaşılamayan kelimeler hata sayılmadı.`
+        : `Metindeki ${r.wordCount} kelimenin ${clear} tanesini doğru okudun; ${u} kelime net anlaşılamadı ve hata sayılmadı.`
       : parent
-        ? `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudu; hata sayısı ${r.errors} (doğru okuma %${accText(r.accuracyPct)}).`
-        : `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudun (doğru okuma %${accText(r.accuracyPct)}).`,
+        ? `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudu; hata sayısı ${r.errors}.`
+        : `Metindeki ${r.wordCount} kelimenin ${r.wordsCorrect} tanesini doğru okudun.`,
     pick(audience, ACCURACY_TEXT[r.accuracyLevel]),
   ];
   // Okuma metin bitmeden durduysa okunmayan kelimeler de atlama sayılır: düşük oranın nedeni söylenir.
@@ -166,24 +167,54 @@ function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
   if (parent && c.kinds.reversal > 0) {
     parts.push(`${c.kinds.reversal} kelimede harflerin ya da hecelerin yeri karıştırıldı.`);
   }
-  return { title: 'Doğru okuma', badge: ACCURACY_LABEL[r.accuracyLevel], text: parts.join(' ') };
+  return { title: 'Doğru okuma', badge: ACCURACY_LABEL[r.accuracyLevel], text: parts.join(' '), visual: accuracyGauge(r) };
+}
+
+/**
+ * Doğru okuma oranı, düzeyin eşikleriyle (%90 ve %97) üç bölgeli çubukta. Eksen %80'den başlar (eşikler arası okunur
+ * kalsın); oran daha düşükse eksen onu da içine alacak kadar aşağıdan başlar.
+ */
+function accuracyGauge(r: OralResult): GaugeVisual {
+  const value = Math.floor(r.accuracyPct * 10 + 1e-9) / 10;
+  const min = Math.min(80, Math.floor(value / 10) * 10);
+  const { easy, support } = ORAL_CRITERIA.accuracy;
+  return {
+    type: 'gauge',
+    label: 'Doğru okuma oranı',
+    value,
+    min,
+    max: 100,
+    ciLow: null,
+    ciHigh: null,
+    valueLabel: `%${accText(r.accuracyPct)}`,
+    zones: [
+      { from: min, to: support, label: ACCURACY_LABEL.hard, band: 'low' },
+      { from: support, to: easy, label: ACCURACY_LABEL.support, band: 'average' },
+      { from: easy, to: 100, label: ACCURACY_LABEL.easy, band: 'high' },
+    ],
+    active: r.accuracyLevel === 'easy' ? 2 : r.accuracyLevel === 'support' ? 1 : 0,
+  };
 }
 
 function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audience: Audience): SimpleItem {
   const parent = audience === 'parent';
   // Okuma metin bitmeden durduysa süre okunan kısmındır.
   const what = r.unread > 0 ? `Metnin ${r.wordCount - r.unread} kelimesini` : 'Metni';
+  // Dakikada okunan ve doğru okunan kelime kartın grafiğindedir; metin süreyi ve grafiğin nasıl okunacağını söyler.
   const parts = [
+    `${what} ${durationText(r.readingMs)} sürede ${parent ? 'okudu' : 'okudun'}.`,
     r.counts.unclear > 0
-      ? `${what} ${durationText(r.readingMs)} sürede ${parent ? 'okudu' : 'okudun'}: dakikada ${r.wpm} kelime; hata sayılan kelimeler çıkarılınca dakikada ${r.wcpm} kelime.`
+      ? 'Grafikteki iki çubuk, dakikada okunan bütün kelimeleri ve hata sayılanlar çıkarılınca kalanları gösterir.'
       : parent
-        ? `${what} ${durationText(r.readingMs)} sürede okudu: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesi doğru okundu.`
-        : `${what} ${durationText(r.readingMs)} sürede okudun: dakikada ${r.wpm} kelime; bunların ${r.wcpm} tanesini doğru okudun.`,
+        ? 'Grafikteki iki çubuk, dakikada okunan bütün kelimeleri ve bunların doğru okunanlarını gösterir.'
+        : 'Grafikteki iki çubuk, dakikada okuduğun bütün kelimeleri ve bunların doğru okunanlarını gösterir.',
   ];
   const ref = def.referenceRates.find((x) => x.grade === grade);
+  // Ortalama çizgisi yalnızca karşılaştırma metninin yapıldığı durumda çizilir: kendi sınıfının metni, güvenilir süre.
+  const compared = !r.flags.tooFast && !!ref && r.passageGrade === grade;
   if (r.flags.tooFast) {
     // Süre güvenilmezse karşılaştırma yapılmaz (uyarılarda açıklanır).
-  } else if (ref && r.passageGrade === grade) {
+  } else if (compared && ref) {
     // Çalışma, sınıf düzeyine uygun metinde 1 dakikada doğru okunan kelimeyi saydı: karşılaştırma dakikada doğru kelimeyledir.
     parts.push(
       `Türkiye’de yapılan bir çalışmada ${grade}. sınıf öğrencilerinin sesli okumada dakikada ortalama ${ref.wpm} kelimeyi doğru okuduğu bildirilmiştir; öğrencilerin çoğu yaklaşık ${Math.max(0, ref.wpm - ref.sd)} ile ${ref.wpm + ref.sd} arasındadır (${ref.source}). Bu değerler bir sınır değildir; yalnızca kaba bir fikir verir.`,
@@ -191,8 +222,8 @@ function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audi
     if (r.fluency.slowRate) {
       parts.push(
         parent
-          ? `Dakikada ${r.wcpm} doğru kelime, bu aralığın altındadır: okuma hızı yaşıtlarının çoğundan belirgin biçimde yavaş.`
-          : `Dakikada ${r.wcpm} doğru kelime, bu aralığın altında: okuman yaşıtlarının çoğundan yavaş. Aynı metinleri tekrar tekrar okumak hızını artırır.`,
+          ? 'Dakikada doğru okuduğu kelime sayısı bu aralığın altındadır: okuma hızı yaşıtlarının çoğundan belirgin biçimde yavaş.'
+          : 'Dakikada doğru okuduğun kelime sayısı bu aralığın altında: okuman yaşıtlarının çoğundan yavaş. Aynı metinleri tekrar tekrar okumak hızını artırır.',
       );
     }
   } else if (r.fluency.slowRate && ref) {
@@ -225,7 +256,21 @@ function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audi
       ? 'Hız tek başına bir amaç değildir; önemli olan anlayarak, rahat bir tempoda okumaktır.'
       : 'Hızlı okumak tek başına bir amaç değil; önemli olan anlayarak, rahat bir tempoda okumak.',
   );
-  return { title: 'Okuma hızı', badge: `Dakikada ${r.wcpm} doğru kelime`, text: parts.join(' ') };
+  // Süre güvenilmezse (çok kısa) hız grafiği çizilmez; uyarılarda açıklanır.
+  const visual: BarsVisual | undefined = r.flags.tooFast
+    ? undefined
+    : {
+        type: 'bars',
+        label: 'Dakikada kelime',
+        scale: 'scale',
+        unit: 'kelime',
+        rows: [
+          { label: 'Okunan kelime', value: r.wpm, valueLabel: nf0.format(r.wpm) },
+          { label: 'Doğru okunan kelime', value: r.wcpm, valueLabel: nf0.format(r.wcpm) },
+        ],
+        ...(compared && ref ? { reference: { value: ref.wpm, label: `${grade}. sınıf ortalaması (doğru kelime)` } } : {}),
+      };
+  return { title: 'Okuma hızı', badge: `Dakikada ${r.wcpm} doğru kelime`, text: parts.join(' '), ...(visual ? { visual } : {}) };
 }
 
 function prosodyItem(r: OralResult, audience: Audience): SimpleItem | null {
@@ -251,23 +296,33 @@ function prosodyItem(r: OralResult, audience: Audience): SimpleItem | null {
       ? 'Anlama uygun vurgu ve tonlamayla okumak, okuyanın metni anladığının da bir işaretidir.'
       : 'Anlamına uygun vurgu ve tonlamayla okumak, okuduğunu anladığını da gösterir.',
   );
-  return { title: 'Akıcılık', badge: prosodyLabel(prosody.total), text: parts.join(' ') };
+  const visual: BarsVisual = {
+    type: 'bars',
+    label: 'Akıcılığın dört yönü (1–4)',
+    scale: 'share',
+    rows: rows.map((x) => ({ label: x.d.name, value: x.v, max: 4, valueLabel: `${x.v}/4` })),
+  };
+  return { title: 'Akıcılık', badge: prosodyLabel(prosody.total), text: parts.join(' '), visual };
 }
 
 function comprehensionItem(r: OralResult, audience: Audience): SimpleItem {
   const parent = audience === 'parent';
   const c = r.comprehension;
-  const parts = [
-    parent ? `Metin kapandıktan sonra sorulan ${c.total} sorunun ${c.correct} tanesini doğru cevapladı.` : `Metin kapandıktan sonra sorulan ${c.total} sorunun ${c.correct} tanesini doğru cevapladın.`,
-    pick(audience, COMPREHENSION_TEXT[c.level]),
-  ];
+  // Doğru cevap sayısı kartın grafiğindedir (dolu kare doğru cevap).
+  const parts = ['Sorular metin kapandıktan sonra soruldu.', pick(audience, COMPREHENSION_TEXT[c.level])];
   const weak = Object.entries(c.skills)
     .filter(([, v]) => v.total > 0 && v.correct / v.total < 0.5)
     .map(([k]) => SKILL_LABELS[k].toLocaleLowerCase('tr-TR'));
   if (weak.length > 0 && c.level !== 'easy') {
     parts.push(parent ? `En çok zorlandığı soru ${weak.length > 1 ? 'türleri' : 'türü'}: ${weak.join(', ')}.` : `En çok zorlandığın soru ${weak.length > 1 ? 'türleri' : 'türü'}: ${weak.join(', ')}.`);
   }
-  return { title: 'Okuduğunu anlama', badge: COMPREHENSION_LABEL[c.level], text: parts.join(' ') };
+  const visual: DotsVisual = {
+    type: 'dots',
+    label: 'Anlama soruları',
+    rows: [{ label: 'Sorular', filled: c.correct, total: c.total, valueLabel: `${c.correct}/${c.total}` }],
+    legend: ['doğru', 'yanlış ya da boş'],
+  };
+  return { title: 'Okuduğunu anlama', badge: COMPREHENSION_LABEL[c.level], text: parts.join(' '), visual };
 }
 
 function retellItem(r: OralResult, audience: Audience): SimpleItem {
@@ -283,10 +338,11 @@ function retellItem(r: OralResult, audience: Audience): SimpleItem {
     };
   }
   const n = t.mentioned.length;
+  // Söylenen fikirler kartın grafiğindedir: temel fikirler ve öteki fikirler ayrı satırlarda.
   const parts = [
     parent
-      ? `Metni kendi cümleleriyle anlatırken metindeki ${t.total} önemli fikrin ${n} tanesini söyledi; temel fikirlerden ${t.core} / ${t.coreTotal}.`
-      : `Metni kendi cümlelerinle anlatırken metindeki ${t.total} önemli fikrin ${n} tanesini söyledin.`,
+      ? 'Grafikte, metni kendi cümleleriyle anlatırken söylediği önemli fikirler görülüyor; temel fikirler ayrı satırdadır.'
+      : 'Grafikte, metni kendi cümlelerinle anlatırken söylediğin önemli fikirler görülüyor.',
   ];
   if (t.core === t.coreTotal) parts.push(parent ? 'Metnin özünü kavramış.' : 'Metnin en önemli fikirlerinin hepsini söyledin.');
   else if (t.core * 2 >= t.coreTotal)
@@ -297,7 +353,17 @@ function retellItem(r: OralResult, audience: Audience): SimpleItem {
         ? 'Metni kendi cümleleriyle anlatmakta zorlandı. Okuduktan sonra birlikte konuşmak ve "Önce ne oldu, sonra ne oldu?" diye sormak bu beceriyi geliştirir.'
         : 'Metni anlatmak biraz zor geldi. Okuduktan sonra "Önce ne oldu, sonra ne oldu?" diye düşünmek sana yardım eder.',
     );
-  return { title: 'Yeniden anlatma', badge: `${n} / ${t.total} fikir`, text: parts.join(' ') };
+  const core = t.core;
+  const visual: DotsVisual = {
+    type: 'dots',
+    label: 'Söylenen fikirler',
+    rows: [
+      { label: 'Temel fikirler', filled: core, total: t.coreTotal, valueLabel: `${core}/${t.coreTotal}` },
+      ...(t.total > t.coreTotal ? [{ label: 'Öteki fikirler', filled: n - core, total: t.total - t.coreTotal, valueLabel: `${n - core}/${t.total - t.coreTotal}` }] : []),
+    ],
+    legend: ['söylendi', 'söylenmedi'],
+  };
+  return { title: 'Yeniden anlatma', badge: `${n} / ${t.total} fikir`, text: parts.join(' '), visual };
 }
 
 /** Uzmana danışma kutusu: öğrenci kendi sınıfının (ya da daha alt sınıfın) metninde zorlandıysa, yalnızca yetişkine. */

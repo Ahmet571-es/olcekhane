@@ -613,7 +613,11 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
      soru (doğru cevap, problem) bir nokta, tipik süre çizgi (`durationStrip`, sonuçlarda `rts`/`picks`; test tek çubuklu
      süre grafiğini ve çizginin noktaların ortasında olduğunu denetler). Yol haritalarındaki uzun cümleler bölündü
      (22 sözcüğü aşan 135 cümle 27'ye indi, 30'u aşan kalmadı). 2. aşamanın ortak işleri bitti.
-3. Okuma, sesli okuma, matematik konu tarama.
+3. Okuma, sesli okuma, matematik konu tarama: kart grafikleri **yayında (2026-10-22)**: matematikte genel sonuç düzey
+   çubuğunda (testin %50 ve %75 eşikleri), alanlar kare kare; okumada anlama soruları ve okuma hızıyla anlayarak okuma
+   yan yana; sesli okumada doğru okuma oranı düzey çubuğunda (%90 ve %97), dakikada okunan ve doğru okunan kelime (kendi
+   sınıfının metninde sınıf ortalaması çizgisi), akıcılığın dört yönü, anlama soruları, söylenen fikirler. Denetim
+   `tests/beceri-grafikleri.test.ts`. Sıradaki: bu üç testin rapor metinlerinin bağımsız incelemesi.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
@@ -949,6 +953,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (45): Raporlarda her başlığa grafik, 3. aşama (okuma hızı ve anlama, sesli okuma, matematik konu tarama):
+  genel sonuç ve doğru okuma oranı düzey çubuğunda, alanlar ve sorular kare kare, okuma hızıyla anlayarak okuma ve
+  dakikada okunan ile doğru okunan kelime çubuklarla (kendi sınıfının metninde sınıf ortalaması çizgisi), akıcılığın dört
+  yönü, söylenen temel ve öteki fikirler. Grafikteki sayılar metinden çıkarıldı; okuma süresi "2 dakika 30 saniyede"
+  diye yazılıyor; çubuk grafiğinde eksen kesikli çizgiyi de kapsıyor. Raporlar telefonda ve masaüstünde açıldı, PDF
+  incelendi.
 - 2026-10-22 (44): Görev testlerinin yol haritalarında noktalı virgülle bağlanmış uzun cümleler kısa cümlelere bölündü
   ("Bu beceri; …" cümleleri, dördüncü haftanın özet cümleleri, araştırma cümleleri); anlam ve kaynaklar değişmedi.
 - 2026-10-22 (43): Görev testlerinde süre kartları: karşılaştırılacak ikinci bir süre olmadığında tek bir çubuk yerine her
@@ -1019,7 +1029,3 @@ En yeni üstte; en çok 10 madde tutulur.
   başkalarını düşünme, duygusal duyarlılık, sıcaklık ve destek; 29 madde, ~5 dakika; rapor kişinin kendini nasıl gördüğünü
   anlatır, başkalarını doğru anlama becerisini ölçmediğini söyler; öğrenci, veli ve yetişkin raporu, 3 sütunlu yol haritası
   ("Dinle ve anla" haftası); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-21 (35): Harf Dizileri yayında (3. sınıftan yetişkine), 2. dalganın 14. ve son testi: Türk alfabesiyle yazılmış
-  24 özgün harf dizisinde eksik harfi alfabe sırasıyla dizilmiş harf tuşlarından seçme; beş düzey, beş kural türü, iki
-  alıştırma; her dizinin tek cevabı bağımsız çözücüyle doğrulandı; öğrenci, veli ve yetişkin raporu, 5 sütunlu 3B yol
-  haritası; iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.

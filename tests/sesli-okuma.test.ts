@@ -615,7 +615,10 @@ describe('Sesli okuma: otomatik analiz (cihazdaki yapay zekâ)', () => {
       const reps = evaluate(SLUG, body(3, make(key, { readingMs: 60_000, marks: tail(40) })));
       expect(reps.parent.cautions.some((c) => c.startsWith(`Metnin son 40 kelimesi okunmadı`))).toBe(true);
       expect(reps.student.cautions.some((c) => c.startsWith(`Metnin son 40 kelimesini okumadın`))).toBe(true);
-      expect(reps.student.items[1].text.startsWith(`Metnin ${n - 40} kelimesini 1 dakika sürede okudun: dakikada ${n - 40} kelime`)).toBe(true);
+      expect(reps.student.items[1].text.startsWith(`Metnin ${n - 40} kelimesini 1 dakika sürede okudun.`)).toBe(true);
+      // Hız okunan kısımdan hesaplanır: kartın grafiğinde dakikada okunan kelime.
+      const rate = reps.student.items[1].visual;
+      expect(rate?.type === 'bars' && rate.rows[0].value).toBe(n - 40);
       expect(reps.student.keyFigures[2].note).toBe(`${n} kelimenin ${n - 40} tanesi okundu`);
       expect(reps.student.items[0].text).toContain('Hataların 40 tanesi, metnin sonunda okumadığın kelimeler.');
       expect(reps.parent.items[0].text).toContain('Hataların 40 tanesi metnin sonundaki okunmayan kelimelerdir');

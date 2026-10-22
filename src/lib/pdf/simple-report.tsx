@@ -698,12 +698,22 @@ function OralSectionsPdf({ report }: { report: SimpleReport }) {
         {report.itemsTitle}
       </Text>
       {report.items.map((it) => (
+        // Kartın grafiği açıklamanın yanında (öteki raporlardaki gibi).
         <View key={it.title} style={s.item} wrap={false}>
-          <View style={s.itemHead}>
-            <Text style={s.itemTitle}>{it.title}</Text>
-            {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
+          <View style={{ flexDirection: 'row', gap: 14 }}>
+            <View style={{ flex: 1 }}>
+              <View style={s.itemHead}>
+                <Text style={s.itemTitle}>{it.title}</Text>
+                {it.badge && <Text style={s.itemBadge}>{it.badge}</Text>}
+              </View>
+              <Text style={s.para}>{it.text}</Text>
+            </View>
+            {it.visual && (
+              <View style={{ width: VW, paddingTop: 2 }}>
+                <ItemVisualPdf visual={it.visual} />
+              </View>
+            )}
           </View>
-          <Text style={s.para}>{it.text}</Text>
         </View>
       ))}
 

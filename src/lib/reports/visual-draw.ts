@@ -160,7 +160,8 @@ function drawDots(v: DotsVisual, W: number, fs: number): Drawing {
 
 function drawBars(v: BarsVisual, W: number, fs: number): Drawing {
   const shapes: Shape[] = [];
-  const axisMax = v.scale === 'scale' ? (v.max ?? niceMax(Math.max(...v.rows.map((r) => r.value)))) : 1;
+  // Ortak eksen kesikli çizgiyi de içine alır (ör. sınıf ortalaması çubuklardan uzunsa çizgi eksenin ucuna yapışmaz).
+  const axisMax = v.scale === 'scale' ? (v.max ?? niceMax(Math.max(...v.rows.map((r) => r.value), v.reference?.value ?? 0))) : 1;
   const trackH = r2(fs * 0.7);
   let y = 0;
   const tracks: number[] = [];

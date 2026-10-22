@@ -1,3 +1,4 @@
+import { ItemVisualView } from '@/components/report/item-visual';
 import type { OralReportBlock } from '@/lib/reports/oral';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { MarkedText, UnclearSample } from './oral-word';
@@ -206,12 +207,18 @@ export function OralReportSections({ report }: { report: SimpleReport }) {
         </h2>
         <ul className="flex flex-col divide-y divide-rule border-y border-rule">
           {report.items.map((it) => (
-            <li key={it.title} className="flex flex-col gap-1.5 py-5">
-              <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            // Kartın grafiği telefonda başlığın altında, geniş ekranda açıklamanın yanında (öteki raporlardaki gibi).
+            <li key={it.title} className={it.visual ? 'grid gap-x-8 gap-y-3 py-5 md:grid-cols-[minmax(0,1fr)_16.5rem]' : 'flex flex-col gap-1.5 py-5'}>
+              <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 md:col-start-1">
                 <span className="font-display text-lg font-bold">{it.title}</span>
                 {it.badge && <span className="t-small font-bold text-brass-ink">{it.badge}</span>}
               </p>
-              <p className="measure text-ink-2">{it.text}</p>
+              {it.visual && (
+                <div className="max-w-[22rem] md:col-start-2 md:row-span-2 md:row-start-1 md:max-w-none md:pt-1">
+                  <ItemVisualView visual={it.visual} />
+                </div>
+              )}
+              <p className="measure text-ink-2 md:col-start-1">{it.text}</p>
             </li>
           ))}
         </ul>
