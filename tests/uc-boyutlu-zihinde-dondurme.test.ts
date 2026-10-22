@@ -485,9 +485,14 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
       ['Doğru seçilen şekiller', '40/40'],
       ['Soru başına tipik süre', '18 saniye'],
     ]);
-    expect(r.student.items[1].text).toContain('1. bölüm 10/10 · 2. bölüm 10/10.');
+    // Bölümlerin sayıları ve süreleri kartların grafiğindedir.
+    expect(r.student.items[1].visual?.type === 'bars' ? r.student.items[1].visual.rows.map((x) => x.valueLabel) : []).toEqual(['10/10', '10/10']);
     expect(r.student.items[0].text).toContain('Soruların hepsinde döndürülmüş iki şekli de buldun');
-    expect(r.student.items[3].text).toContain('1. bölümde tipik 14 saniye · 2. bölümde 21 saniye.');
+    expect(r.student.items[3].visual?.type === 'bars' ? r.student.items[3].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []).toEqual([
+      'Bütün sorular 18 sn',
+      '1. bölüm 14 sn',
+      '2. bölüm 21 sn',
+    ]);
     expect(r.student.items[3].text).toContain('Yan yatırılmış şekillere daha çok zaman ayırdın');
     expect(r.student.chart?.type === 'bars' && r.student.chart.rows.map((row) => [row.label, row.valueLabel])).toEqual([
       ['1. bölüm: dik eksende döndürülmüş şekiller', '10/10'],
@@ -672,7 +677,8 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
               if (!chance && !reversed) {
                 expect(/şekillere bakmadan seçmiş|şekillere bakılmadan seçilmiş/.test(r.items[0].text), label).toBe(doubt);
                 expect(r.items[0].text.includes('ayna görüntüleri kartına'), label).toBe(mirrorPick && !doubt);
-                expect(r.items[1].text, label).toContain(`1. bölüm ${p1.correct}/10 · 2. bölüm ${p2.correct}/10.`);
+                const partRows = r.items[1].visual?.type === 'bars' ? r.items[1].visual.rows.map((x) => x.valueLabel) : [];
+                expect(partRows, label).toEqual([`${p1.correct}/10`, `${p2.correct}/10`]);
                 const gap = p1.correct - p2.correct;
                 expect(r.items[1].badge, label).toBe(
                   doubt

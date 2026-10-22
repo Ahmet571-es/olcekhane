@@ -146,6 +146,9 @@ export interface LadderVisual {
   unit: string;
   /** Dolu ve boş dairenin adı (varsayılan "doğru" / "yanlış"; ör. hesapla ve hatırlada "tam" / "eksik"). */
   legend?: [string, string];
+  /** Alttaki açıklama (varsayılan "Dizideki <birim> sayısı") ve ulaşılan uzunluğun adı (varsayılan "En uzun"). */
+  caption?: string;
+  bestLabel?: string;
 }
 
 export type ItemVisual = GaugeVisual | CompareVisual | DotsVisual | BarsVisual | StackVisual | StepsVisual | ColumnsVisual | StripVisual | LadderVisual;
@@ -368,7 +371,8 @@ export function visualDescription(v: ItemVisual): string {
       const [yes, no] = v.legend ?? ['doğru', 'yanlış'];
       const rows = v.rows.filter((r) => r.results.length).map((r) => `${r.length} ${v.unit}: ${r.results.map((x) => (x ? yes : no)).join(', ')}`);
       const none = v.legend ? `${yes.charAt(0).toLocaleUpperCase('tr-TR')}${yes.slice(1)} dizi yok` : 'Doğru tekrarlanan dizi yok';
-      return `${v.label}: ${rows.join('; ')}. ${v.reached === null ? none : `En uzun ${yes} dizi ${v.reached} ${v.unit}`}.`;
+      const best = v.bestLabel ? `${v.bestLabel}: ${v.reached} ${v.unit}` : `En uzun ${yes} dizi ${v.reached} ${v.unit}`;
+      return `${v.label}: ${rows.join('; ')}. ${v.reached === null ? none : best}.`;
     }
   }
 }

@@ -28,6 +28,9 @@ const NO_DATA = [
   'Cevap verilmedi',
   'Hiç basılmadı',
   'Hata yok',
+  'Ayna görüntüsü seçilmedi',
+  'Belirgin kayma yok',
+  '“Hatırlamıyorum” denen desenler',
   'Kısımlar karşılaştırılmadı',
 ];
 

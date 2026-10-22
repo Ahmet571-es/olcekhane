@@ -27,6 +27,14 @@ import {
   csRight,
   wordListBody,
   wordListWords,
+  rotationBody,
+  rotation3dBody,
+  r3Half,
+  perspectiveBody,
+  patternBody,
+  dhMissOne,
+  dhExtraOne,
+  towerBody,
   cubeBody,
   cubeLureOption,
   foldingBody,
@@ -121,6 +129,41 @@ function trailVariant(stepMs: number, cutB?: number, wrongEvery = 0): AnswersBod
 const CS_BLANK = blankOf(def<TaskInstrument>('hesapla-ve-hatirla').tasks[0] as ComplexSpanTask);
 
 export const TASK_VARIANTS: Record<string, Variants> = {
+  'zihinde-dondurme': {
+    varsayilan: () => rotationBody(),
+    aynaKarisik: () => rotationBody((t, i) => ({ choice: t.mirror && i % 3 === 0 ? 1 : t.mirror ? 2 : 1, rtMs: 1300 + 6 * t.disparity })),
+    ters: () => rotationBody((t) => ({ choice: t.mirror ? 1 : 2, rtMs: 1500 })),
+    cevapsiz: () => rotationBody(() => ({ choice: null, rtMs: null })),
+    duz: () => rotationBody((t) => ({ choice: t.mirror ? 2 : 1, rtMs: 1500 })),
+  },
+  'uc-boyutlu-zihinde-dondurme': {
+    varsayilan: () => rotation3dBody(),
+    hepsi: () => rotation3dBody((q) => ({ response: q.answer, rtMs: q.part === 1 ? 14_000 : 22_000 })),
+    ayna: () => rotation3dBody((q) => ({ response: q.part === 2 ? [...q.mirrors].sort((a, b) => a - b) : q.answer, rtMs: 16_000 })),
+    yarim: () => rotation3dBody((q) => ({ response: r3Half(q, q.i), rtMs: 12_000 })),
+    suresiz: () => rotation3dBody((q) => ({ response: q.answer, rtMs: null })),
+  },
+  'bakis-acisi-alma': {
+    varsayilan: () => perspectiveBody(),
+    harita: () => perspectiveBody((q) => ({ deg: Math.abs(q.shift) >= 45 ? Math.round(q.ego) : Math.round(q.correct), rtMs: 9000 })),
+    ayna: () => perspectiveBody((q) => ({ deg: Math.round(q.mirror), rtMs: 11_000 })),
+    rastgele: () => perspectiveBody((q) => ({ deg: ((q.i * 97) % 360) - 180, rtMs: 1500 })),
+    cevapsiz: () => perspectiveBody(() => ({ deg: null, rtMs: null })),
+  },
+  'desen-hatirlama': {
+    varsayilan: () => patternBody(),
+    eksik: () => patternBody((q) => ({ cells: q.size <= 6 ? q.cells : dhMissOne(q) })),
+    fazla: () => patternBody((q) => ({ cells: q.size <= 7 ? q.cells : dhExtraOne(q) })),
+    bilmiyorum: () => patternBody((q) => ({ cells: q.size <= 5 ? q.cells : [] })),
+    hicbiri: () => patternBody((q) => ({ cells: dhMissOne(q) })),
+  },
+  'planlama-kule-gorevi': {
+    varsayilan: () => towerBody(),
+    fazla: () => towerBody((q) => ({ outcome: q.moves >= 5 ? 'extra' : 'optimal', excess: 2 })),
+    cozulemedi: () => towerBody((q) => ({ outcome: q.moves >= 6 ? 'unsolved' : 'optimal' })),
+    bosta: () => towerBody(() => ({ outcome: 'idle' })),
+    acele: () => towerBody((q) => ({ outcome: q.moves >= 5 ? 'extra' : 'optimal', pickMs: 600, excess: 2 })),
+  },
   'sirayla-birlestirme-gorevi': {
     varsayilan: () => trailBody(),
     hizli: () => trailVariant(700),

@@ -269,7 +269,7 @@ describe('Kule görevi: rapor', () => {
   it('hatasız: dört kart, öne çıkan sayılar, grafik ve problem uzunluklarının üç boyutlu grafiği', () => {
     const r = evaluate(SLUG, towerBody());
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
-      ['En az hamlede çözülenler', '20 problemin 20 tanesi en az hamlede'],
+      ['En az hamlede çözülenler', '20 problemin hepsi en az hamlede'],
       ['Problem uzadıkça', 'Kısa problemlerde 8/8, uzun problemlerde 8/8'],
       ['Çözüm biçimi', 'Hepsi en az hamlede'],
       ['Başlamadan önce düşünme', 'İlk hamleden önce tipik 4 saniye'],
@@ -290,7 +290,8 @@ describe('Kule görevi: rapor', () => {
     expect(r.student.items[0].text).toContain('Problemlerin hepsini en az hamlede çözdün.');
     expect(r.student.items[0].text).not.toContain('genellikle zorlaşır');
     expect(r.student.items[1].text).toContain('Problemler uzadıkça sonucun düşmedi: uzun problemlerin hepsinde en kısa yolu buldun.');
-    expect(r.student.items[2].text).toBe('En az hamlede 20 · Fazla hamleyle 0 · Hedefe ulaşılamayan 0. Bütün problemlerde hedefe en az hamleyle ulaştın.');
+    expect(r.student.items[2].text).toBe('Bütün problemlerde hedefe en az hamleyle ulaştın.');
+    expect(r.student.items[2].visual?.type === 'stack' ? r.student.items[2].visual.parts.map((x) => x.value) : []).toEqual([20, 0, 0]);
     expect(r.student.items[3].text).toContain(
       'Uzun problemlerde (6 ve 7 hamle) ilk hamleden önce kısa problemlerdekinden (3 ve 4 hamle) daha uzun düşünmedin. Buna karşın uzun problemlerin de hepsini en az hamlede çözdün.',
     );
@@ -315,7 +316,12 @@ describe('Kule görevi: rapor', () => {
       '6 problemde hedefe ulaştın ama en az hamleden fazlasını yaptın; bu problemlerde toplam 12 hamle fazla yaptın.',
     );
     expect(typical.student.items[2].text).toContain('Hedefte bir çubuğun en altındaki top');
-    expect(typical.student.items[3].text).toContain('Kısa problemlerde tipik 5,3 saniye · uzun problemlerde 9,8 saniye · başlamadan önce düşünme payı %');
+    // Süreler kartın grafiğindedir.
+    expect(typical.student.items[3].visual?.type === 'bars' ? typical.student.items[3].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []).toEqual([
+      'Bütün problemler 7,5 sn',
+      'Kısa (3 ve 4 hamle) 5,3 sn',
+      'Uzun (6 ve 7 hamle) 9,8 sn',
+    ]);
     expect(typical.student.items[3].badge).toBe('İlk hamleden önce tipik 7,5 saniye');
     expect(typical.student.items[3].text).toContain(
       'Uzun problemlerde (6 ve 7 hamle) ilk hamleden önce kısa problemlerdekinden (3 ve 4 hamle) daha uzun düşündün: problem zorlaştıkça plana daha çok zaman ayırdın.',
@@ -517,10 +523,18 @@ describe('Kule görevi: rapor', () => {
         ).toEqual(TITLES);
         for (const i of rep.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
         // Kartların başlıkları sayılarla aynı.
-        expect(rep.items[0].badge, label).toBe(`20 problemin ${r.optimal} tanesi en az hamlede`);
-        expect(rep.items[0].text, label).toContain(`${levelsOf(r)}.`);
+        expect(rep.items[0].badge, label).toBe(
+          r.optimal === 0
+            ? '20 problemin hiçbiri en az hamlede değil'
+            : r.optimal === 20
+              ? '20 problemin hepsi en az hamlede'
+              : `20 problemin ${r.optimal === 1 ? 'biri' : `${r.optimal} tanesi`} en az hamlede`,
+        );
+        // Problem uzunluklarına göre sonuçlar ve çözüm biçimi kartların grafiğindedir.
+        const dots = rep.items[0].visual?.type === 'dots' ? rep.items[0].visual.rows.map((x) => `${x.label} ${x.valueLabel}`).join(' · ') : '';
+        expect(dots, label).toBe(levelsOf(r));
         expect(rep.items[1].badge, label).toBe(none ? 'Yorumlanmadı' : `Kısa problemlerde ${S.optimal}/8, uzun problemlerde ${L.optimal}/8`);
-        expect(rep.items[2].text, label).toContain(`En az hamlede ${r.optimal} · Fazla hamleyle ${r.extra} · Hedefe ulaşılamayan ${r.unsolved}.`);
+        expect(rep.items[2].visual?.type === 'stack' ? rep.items[2].visual.parts.map((x) => x.value) : [], label).toEqual([r.optimal, r.extra, r.unsolved]);
         expect(rep.items[3].badge, label).toEqual(
           none ? 'Yorumlanmadı' : r.medianPick === null ? 'Süre hesaplanamadı' : expect.stringMatching(/^İlk hamleden önce tipik /),
         );
@@ -653,7 +667,7 @@ describe('Kule görevi: rapor', () => {
       rtMs: 4000 + 1000 * codes.length,
     }));
     const r = evaluate(SLUG, { grade: 7, data: { engine: 'tasks', seed: '6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11', blocks: { [task.key]: trials } } });
-    expect(r.student.items[0].badge).toBe('20 problemin 20 tanesi en az hamlede');
+    expect(r.student.items[0].badge).toBe('20 problemin hepsi en az hamlede');
     expect(r.parent.roadmap!.bars).toHaveLength(5);
     expect(r.parent.roadmap!.approach!.items).toHaveLength(3);
     expect(yml).toContain('kg_sayfa');

@@ -605,8 +605,9 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
      hafta başlıkları veli raporunda da çocuğa "sen" diye sesleniyor ("Kaldığın yeri işaretle"); veliye ayrı başlık
      (~104 öneri başlığı). Uyarı notları her kitleye aynı edilgen dille yazılıyor; öğrenci raporunda "yorumlanmamalıdır"
      yerine kitleye göre metin.
-     Sonra 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi) ve 5. grup
-     (mantıksal, sayısal, düşünerek karar verme).
+   - 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi): kart grafikleri
+     yayında (2026-10-22); rapor metinlerinin bağımsız incelemesinin bulguları uygulanacak.
+   - Sonra 5. grup (mantıksal, sayısal, düşünerek karar verme).
 3. Okuma, sesli okuma, matematik konu tarama.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 

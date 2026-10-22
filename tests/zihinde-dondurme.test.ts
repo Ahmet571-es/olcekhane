@@ -186,7 +186,12 @@ describe('Zihinde döndürme: rapor', () => {
       ['Döndürme etkisi', 'Çok döndürülmüş şekillerde 0,68 sn daha uzun'],
     ]);
     expect(r.student.items[0].text).toContain('her seferinde doğru buldun');
-    expect(r.student.items[2].text).toContain('Az döndürülmüş (0–45°) 1,31 sn · çok döndürülmüş (135–180°) 1,99 sn.');
+    // Süreler kartın grafiğindedir (metinde yinelenmez).
+    expect(r.student.items[2].visual?.type === 'bars' ? r.student.items[2].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []).toEqual([
+      'Az döndürülmüş (0–45°) 1,31 sn',
+      'Çok döndürülmüş (135–180°) 1,99 sn',
+    ]);
+    expect(r.student.items[2].text).not.toContain('1,31');
     expect(r.parent.items[2].text).toContain('(Shepard ve Metzler, 1971)');
     expect(r.student.cautions).toEqual([]);
     expect(all(r.student)).not.toContain('Çocuğunuz');
@@ -208,7 +213,10 @@ describe('Zihinde döndürme: rapor', () => {
     const mirrorErr = evaluate(SLUG, rotationBody((t) => ({ choice: t.mirror ? (k++ % 2 ? 1 : 2) : 1, rtMs: 1500 })));
     expect(mirrorErr.student.items[0].badge).toBe('%75 doğru');
     expect(mirrorErr.student.items[0].text).toContain('çoğu zaman doğru buldun. Yanıldığın denemelerin çoğunda ayna görüntüsüne “Aynı” dedin');
-    expect(mirrorErr.student.items[0].text).toContain('Aynı şekillerde %100, ayna görüntülerinde %50 doğru.');
+    expect(mirrorErr.student.items[0].visual?.type === 'bars' ? mirrorErr.student.items[0].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []).toEqual([
+      'Aynı şekiller %100',
+      'Ayna görüntüleri %50',
+    ]);
     // Aynı şekillerde çok döndürülmüşken "Ayna görüntüsü": bunların çok döndürülmüş şekillerde olduğu söylenir.
     const bigErr = evaluate(SLUG, rotationBody((t) => ({ choice: t.mirror ? 2 : t.disparity >= 135 ? 2 : 1, rtMs: 1500 })));
     expect(bigErr.student.items[0].text).toContain('aynı şekle “Ayna görüntüsü” dedin; bunların çoğu çok döndürülmüş şekillerdeydi');
@@ -289,7 +297,7 @@ describe('Zihinde döndürme: rapor', () => {
     // Doğruluk %50: 12 süre aşımı, 10 çok erken, 18 yanlış.
     const lowMixed = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 12 ? 'timeout' : i < 22 ? 'early' : i < 40 ? 'wrong' : 'right')));
     expect(lowMixed.parent.items[0].badge).toBe('%50 doğru');
-    expect(lowMixed.parent.items[0].text).toContain('%50 doğru. Çocuğunuz doğru sayılmayan denemelerin çoğunda ya süre (7 saniye) dolmadan cevap vermedi ya da');
+    expect(lowMixed.parent.items[0].text).toMatch(/^Çocuğunuz doğru sayılmayan denemelerin çoğunda ya süre \(7 saniye\) dolmadan cevap vermedi ya da/);
     expect(lowMixed.parent.cautions.join(' ')).toContain('doğru sayılmayan denemelerin çoğunda ya süre içinde cevap verilmemiş ya da çok erken basılmış');
     expect(all(lowMixed.parent)).not.toMatch(/rastgele|karıştırılmış/);
     // Doğruluk %25: 35 çok erken, 25 yanlış. Kart erken basışı söyler; uyarılar da düğmelerin karıştırıldığını söylemez.

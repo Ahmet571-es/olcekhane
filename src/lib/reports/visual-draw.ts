@@ -422,12 +422,12 @@ function drawLadder(v: LadderVisual, W: number, fs: number): Drawing {
   });
   if (v.reached !== null) {
     const i = v.rows.findIndex((r) => r.length === v.reached);
-    const text = `En uzun: ${v.reached} ${v.unit}`;
+    const text = `${v.bestLabel ?? 'En uzun'}: ${v.reached} ${v.unit}`;
     const at = centered(text, i * slot + slot / 2, fs, W);
     shapes.push({ k: 'text', x: r2(at.x), y: r2(top - fs * 0.75), text, size: fs, weight: 700, fill: 'ink', anchor: at.anchor });
   }
   const capY = labelY + ls * 1.5;
-  shapes.push({ k: 'text', x: 0, y: r2(capY), text: `Dizideki ${v.unit} sayısı`, size: ls, weight: 400, fill: 'ink3', anchor: 'start' });
+  shapes.push({ k: 'text', x: 0, y: r2(capY), text: v.caption ?? `Dizideki ${v.unit} sayısı`, size: ls, weight: 400, fill: 'ink3', anchor: 'start' });
   // Lejant: dolu ve boş daire.
   const [yes, no] = v.legend ?? ['doğru', 'yanlış'];
   const legendY = capY + ls * 1.45;

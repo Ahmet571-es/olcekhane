@@ -260,7 +260,8 @@ describe('Desen hatırlama: rapor', () => {
     expect(r.student.items[1].text).toContain('8 kareye kadarki desenlerin hepsini doğru hatırladın');
     // Yanlışların çoğu tek kare farkı: bunu "Hata türleri" kartı söyler, "Doğru hatırlanan desenler" kartı tekrarlamaz.
     expect(r.student.items[1].text).not.toContain('Tam doğru hatırlayamadığın desenlerde de karelerin çoğunu');
-    expect(r.student.items[1].text).toMatch(/^Doğru işaretlenen kare 182\/189\. Gösterilen 27 desenin 20 tanesini/);
+    expect(r.student.items[1].text).toMatch(/^Gösterilen 27 desenin 20 tanesini/);
+    expect(r.student.items[1].visual?.type === 'stack' ? r.student.items[1].visual.parts.map((x) => x.value) : []).toEqual([20, 7, 0]);
     expect(r.student.items[2].text).toContain('Tam doğru hatırlayamadığın desenlerin hepsinde yalnızca bir kare farklıydı');
     expect(r.student.items[2].text).toContain('Bunların hepsinde desendekinden daha az kare işaretledin');
     expect(r.parent.items[2].text).toContain('Çocuğunuz bunların hepsinde desendekinden daha az kare işaretledi');
@@ -295,9 +296,10 @@ describe('Desen hatırlama: rapor', () => {
     expect(slip.student.items[1].text).toContain('En küçük (3 kareli) desenlerden birinde yanıldın; daha büyük desenlerin hepsini doğru hatırladın.');
     expect(top.student.items[0].text).not.toContain('kabaca fikir verir');
     const floor = evaluate(SLUG, patternBody((q) => ({ cells: dhMissOne(q) })));
-    expect(floor.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', '3 desenden 0 doğru', 'Yorumlanmadı', 'Desen başına tipik süre 6 saniye']);
+    expect(floor.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Desen başına tipik süre 6 saniye']);
+    expect(floor.student.items.slice(0, 3).map((i) => i.visual)).toEqual([undefined, undefined, undefined]);
     expect(floor.student.cautions.join(' ')).toContain('en küçük (3 kareli) desenlerin hiçbiri doğru hatırlanmadı');
-    expect(floor.student.keyFigures[0].value).toBe('—');
+    expect(floor.student.keyFigures.slice(0, 2).map((f) => f.value)).toEqual(['Yorumlanmadı', 'Yorumlanmadı']);
   });
 
   it('ikinci tur incelemedeki durumlar: başlıklar, kısmi hatırlama, karışık hata türleri, hepsi "Hatırlamıyorum"', () => {
@@ -384,7 +386,9 @@ describe('Desen hatırlama: rapor', () => {
             ).toEqual(TITLES);
             for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
             expect(r.items[0].badge, label).toBe(floor ? 'Yorumlanmadı' : result.stoppedAt === null ? `${result.span} kare (testin en büyük deseni)` : `${result.span} kare`);
-            expect(r.items[1].badge, label).toBe(result.correct === result.trials ? `${result.trials} desenin hepsi doğru` : `${result.trials} desenden ${result.correct} doğru`);
+            expect(r.items[1].badge, label).toBe(
+              floor ? 'Yorumlanmadı' : result.correct === result.trials ? `${result.trials} desenin hepsi doğru` : `${result.trials} desenden ${result.correct} doğru`,
+            );
             expect(r.items[2].badge === 'Yorumlanmadı', label).toBe(floor);
             expect(r.items[2].badge === 'Hata yok', label).toBe(!floor && result.wrong === 0);
             expect(r.cautions.some((c) => c.includes('en küçük')), label).toBe(floor);
@@ -394,7 +398,7 @@ describe('Desen hatırlama: rapor', () => {
             const hedged = /tam yansıtmayabilir/.test(r.items[0].text);
             expect(hedged, label).toBe(many || rapid);
             expect(r.chart?.type === 'bars' ? r.chart.rows.map((x) => x.valueLabel) : [], label).toEqual(result.levels.map((l) => `${l.correct}/3`));
-            expect(r.keyFigures.map((f) => f.value)[1], label).toBe(`${result.correct}/${result.trials}`);
+            expect(r.keyFigures.map((f) => f.value)[1], label).toBe(floor ? 'Yorumlanmadı' : `${result.correct}/${result.trials}`);
             expect(r.roadmap!.bars, label).toEqual([]);
             // Hata türü yalnızca en az iki denenmiş yanlış desende ve yarıdan çoğunda görülünce söylenir.
             const h = r.items[2].text;

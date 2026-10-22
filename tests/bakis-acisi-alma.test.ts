@@ -488,7 +488,11 @@ describe('Bakış açısı alma: rapor', () => {
       ['Doğru yöne çok yakın cevaplar', '12/12'],
       ['Soru başına tipik süre', '14 saniye'],
     ]);
-    expect(r.student.items[0].text).toContain('Doğru yöne çok yakın (en çok 20 derece hata): 12/12 soru.');
+    // Soruların açı hataları kartın grafiğindedir: her soru bir nokta, ortalama ve doğru yöne çok yakın bölge.
+    const strip = r.student.items[0].visual?.type === 'strip' ? r.student.items[0].visual : null;
+    expect(strip?.label).toBe('Soruların açı hatası (12 soru; hepsi doğru yöne çok yakın)');
+    expect(strip?.points).toHaveLength(12);
+    expect(strip?.zone).toEqual({ from: 0, to: 20, label: 'Doğru yöne çok yakın' });
     expect(r.student.items[0].text).toContain('isabetle kestirebildin');
     expect(r.student.items[1].text).toContain('Kendini zihinde çok döndürmen gerektiğinde de yönleri isabetli gösterebildin.');
     expect(r.student.chart?.type === 'bars' && r.student.chart.rows.map((row) => [row.label, row.valueLabel])).toEqual([
@@ -637,7 +641,11 @@ describe('Bakış açısı alma: rapor', () => {
 
           // Yön gösterme isabeti
           expect(hata.badge, label).toBe(`Ortalama hata ${deg(m)}`);
-          expect(hata.text.startsWith(`Doğru yöne çok yakın (en çok ${PA_CLOSE} derece hata): ${r.close}/12 soru.`), label).toBe(true);
+          const strip = hata.visual?.type === 'strip' ? hata.visual : null;
+          expect(strip?.points.length, label).toBe(12);
+          expect(strip?.marker?.value, label).toBe(m);
+          expect(strip?.label, label).toContain(r.close === 0 ? 'hiçbiri doğru yöne çok yakın değil' : r.close === 12 ? 'hepsi doğru yöne' : `${r.close === 1 ? 'biri' : `${r.close} tanesi`} doğru yöne`);
+          expect(strip?.zone?.to, label).toBe(PA_CLOSE);
           expect(hata.text.includes('rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil'), label).toBe(chance);
           expect(hata.text.includes('rastgele dağılmıyor'), label).toBe(high);
           expect(hata.text.includes(`hata türleri kartına ${look}`), label).toBe(high || (!chance && (egoP || mirrorP) && !doubt));
@@ -688,11 +696,9 @@ describe('Bakış açısı alma: rapor', () => {
                       ? `Sağ ile sol karışmış olabilir: ${r.mirror.count} soru`
                       : 'Belirgin bir hata türü yok';
             expect(tur.badge, label).toBe(expected);
+            // Hata türlerinin sayıları kartın grafiğindedir.
             if (far > 0)
-              expect(
-                tur.text.startsWith(`Haritaya yukarıdan bakar gibi: ${r.ego.count}/10 soru · Sağ ile sol karışık: ${r.mirror.count}/12 soru.`),
-                label,
-              ).toBe(true);
+              expect(tur.visual?.type === 'bars' ? tur.visual.rows.map((x) => x.valueLabel) : [], label).toEqual([`${r.ego.count}/10`, `${r.mirror.count}/12`]);
           }
           // Yorumlanmamanın nedeni doğru söylenir: düşünmeden cevap verilmiş olabilirse bu, değilse rastgele düzeyi.
           if (doubt) expect(tur.text, label).toMatch(/düşünmeden cevap ver/);
