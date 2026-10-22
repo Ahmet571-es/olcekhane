@@ -341,7 +341,7 @@ describe('Hesapla ve hatırla: rapor', () => {
     ]);
     expect(r.student.items[0].text).toContain('Harflerin hepsini doğru yerde hatırladın');
     expect(r.student.items[1].text).toContain(
-      '3 harflik 6/6 · 4 harflik 8/8 · 5 harflik 10/10 · 6 harflik 12/12 · 7 harflik 14/14. Kısa dizilerde (3 ve 4 harf) 14 harfin hepsini, uzun dizilerde (6 ve 7 harf) 26 harfin hepsini doğru yerde hatırladın. Diziler uzadıkça sonucun düşmedi.',
+      'Kısa dizilerde (3 ve 4 harf) 14 harfin hepsini, uzun dizilerde (6 ve 7 harf) 26 harfin hepsini doğru yerde hatırladın. Diziler uzadıkça sonucun düşmedi.',
     );
     expect(r.student.items[2].text).toContain('Hiçbir işlemde yanılmadın');
     expect(r.student.chart?.type === 'bars' && r.student.chart.rows.map((row) => [row.label, row.valueLabel])).toEqual([
@@ -525,7 +525,10 @@ describe('Hesapla ve hatırla: rapor', () => {
               expect(/harflerin yarısı doğru/.test(h), label).toBe(r.correct === 25);
               expect(h.includes('yarısından azı'), label).toBe(r.correct < 25);
               if (r.correct < 50) expect(h, label).toMatch(r.longest === null ? /hiçbir dizinin/i : new RegExp(`en uzun dizi ${r.longest} harfliydi`));
-              expect(uzunluk.text.startsWith(r.bySize.map((s) => `${s.size} harflik ${s.correct}/${s.letters}`).join(' · ')), label).toBe(true);
+              // Her uzunluktaki tam diziler kartın grafiğindedir.
+              const ladder = uzunluk.visual?.type === 'ladder' ? uzunluk.visual : null;
+              expect(ladder?.rows.map((x) => `${x.length}:${x.results.filter(Boolean).length}`), label).toEqual(r.bySize.map((s) => `${s.size}:${s.perfect}`));
+              expect(ladder?.reached, label).toBe(r.longest);
               // Hata kartı: "çoğunda" yalnızca o tür yarıdan çoksa.
               expect(/sırasını karıştır/.test(hata.text), label).toBe(2 * r.order > E);
               expect(/O dizide olmayan bir harfin seçildiği yerlerde/.test(hata.text), label).toBe(2 * r.intrusion > E);
@@ -545,7 +548,8 @@ describe('Hesapla ve hatırla: rapor', () => {
               r.bySize.map((s) => `${s.correct}/${s.letters}`),
             );
             expect(rep.roadmap!.bars.length, label).toBe(noRead ? 0 : 5);
-            expect(islem.text.startsWith(`Doğru ${r.ops.correct} · Yanlış ${r.ops.wrong} · Süre doldu ${r.ops.timeouts}.`), label).toBe(true);
+            const opsParts = islem.visual?.type === 'stack' ? islem.visual.parts.map((x) => x.value) : [];
+            expect(opsParts, label).toEqual([r.ops.correct, r.ops.wrong, r.ops.timeouts]);
           }
           expect(text(res.student), label).not.toContain('Çocuğunuz');
           expect(text(adult), label).not.toContain('Çocuğunuz');

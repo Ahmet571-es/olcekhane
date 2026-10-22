@@ -17,9 +17,18 @@ import { TASK_VARIANTS } from './helpers/task-variants';
 
 /**
  * Grafiği olmayabilecek kartların rozetleri: sonuç hesaplanamadı, karşılaştırma yapılmadı ya da kart yorumlanmadı (grafik,
- * kartın yapmadığı bir karşılaştırmayı yapmış olurdu).
+ * kartın yapmadığı bir karşılaştırmayı yapmış olurdu), hiç cevap verilmedi ya da çizilecek hata yok.
  */
-const NO_DATA = ['Süre hesaplanamadı', 'Hesaplanamadı', 'Karşılaştırılamadı', 'Yorumlanmadı', 'Cevap verilmedi'];
+const NO_DATA = [
+  'Süre hesaplanamadı',
+  'Hesaplanamadı',
+  'Karşılaştırılamadı',
+  'Yorumlanmadı',
+  'Cevap verilmedi',
+  'Hiç basılmadı',
+  'Hata yok',
+  'Kısımlar karşılaştırılmadı',
+];
 
 function reportsOf(slug: string, body: AnswersBody): SimpleReport[] {
   const def = getInstrumentDef(slug)!;

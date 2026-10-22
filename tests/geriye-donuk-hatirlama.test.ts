@@ -174,10 +174,11 @@ describe('Geriye dönük hatırlama: rapor', () => {
       ['İki geri', 'Yakalama %100 · yanlış basma %0'],
       ['Zorluk artınca', 'Belirgin bir fark yok'],
     ]);
-    expect(r.student.items[0].text).toContain('Aynı olan 10 harfin 10 tanesi yakalandı · aynı olmayan 21 harfte hiç basılmadı.');
+    // Sayılar kartın grafiğindedir: aynı harflerden yakalananlar, aynı olmayanlardan basılmadan geçilenler.
+    expect(((r.student.items[0]).visual?.type === 'dots' ? (r.student.items[0]).visual.rows : []).map((x) => x.valueLabel)).toEqual(['10/10', '21/21']);
     expect(r.student.items[0].text).toContain('Bir önceki harfle aynı olan harflerin hepsini yakaladın; aynı olmayanlarda ise hiç basmadın.');
     expect(r.student.items[1].text).toContain('İki önceki harfle aynı olan harflerin hepsini yakaladın');
-    expect(r.student.items[2].text).toContain('Ayırt etme puanı bir geride 100, iki geride 100 (100 üzerinden).');
+    expect(((r.student.items[2]).visual?.type === 'bars' ? (r.student.items[2]).visual.rows : []).map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Bir geri 100/100', 'İki geri 100/100']);
     expect(r.student.items[2].text).toContain('hiç yanılmayan biri 100');
     expect(r.student.cautions).toEqual([]);
     expect(r.parent.items[0].text).toContain('Çocuğunuz bir önceki harfle aynı olan harflerin hepsini yakaladı');
@@ -191,12 +192,12 @@ describe('Geriye dönük hatırlama: rapor', () => {
     const rows = r.parent.chart?.type === 'bars' ? r.parent.chart.rows : [];
     expect(rows.map((x) => x.valueLabel)).toEqual(['%100', '%95', '%70', '%91']);
     expect(r.parent.items.map((i) => i.badge)).toEqual(['Yakalama %100 · yanlış basma %5', 'Yakalama %70 · yanlış basma %9', 'İki geride belirgin düşüş']);
-    expect(r.parent.items[0].text).toContain('aynı olmayan 21 harfin 1 tanesinde basıldı');
+    expect(((r.parent.items[0]).visual?.type === 'dots' ? (r.parent.items[0]).visual.rows : []).map((x) => x.valueLabel)).toEqual(['10/10', '20/21']);
     expect(r.parent.items[0].text).toContain('hepsini yakaladı; aynı olmayanlarda ise nadiren bastı.');
     expect(r.parent.items[1].text).toContain('çoğunu yakaladı; aynı olmayanlarda ise nadiren bastı.');
     expect(r.parent.items[1].text).toContain('büyük ölçüde başardı');
     expect(r.parent.items[1].text).not.toContain('tanıdık');
-    expect(r.parent.items[2].text).toContain('Ayırt etme puanı bir geride 95, iki geride 61');
+    expect(((r.parent.items[2]).visual?.type === 'bars' ? (r.parent.items[2]).visual.rows : []).map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Bir geri 95/100', 'İki geri 61/100']);
     expect(r.parent.items[2].text).toContain('tek başına yorumlanmamalıdır');
     expect(r.parent.cautions).toEqual([]);
   });

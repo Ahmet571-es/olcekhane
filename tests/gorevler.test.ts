@@ -410,11 +410,13 @@ describe('Görev raporları', () => {
       return evaluate('sirayla-birlestirme-gorevi', body);
     };
     const r = withTimes(30_149, 45_251);
-    expect(r.parent.items[2].text).toContain('Birinci bölüm 30,1 sn · ikinci bölüm 45,3 sn · fark 15,2 sn.');
+    // Bölüm süreleri kartın grafiğindedir; fark metinde yazılı süreden hesaplanır.
+    expect(((r.parent.items[2]).visual?.type === 'bars' ? (r.parent.items[2]).visual.rows : []).map((x) => `${x.label} ${x.valueLabel}`).map((x) => x.split(' ').slice(-2).join(' '))).toEqual(['30,1 sn', '45,3 sn']);
+    expect(r.parent.items[2].text).toContain('(15,2 saniye daha uzun)');
     expect(r.parent.items[0].badge).toBe('30,1 saniye');
     const shorter = withTimes(40_000, 24_000);
     expect(shorter.parent.items[2].badge).toBe('İkinci bölüm daha kısa sürdü');
-    expect(shorter.parent.items[2].text).toContain('ikinci bölüm 16,0 sn daha kısa');
+    expect(((shorter.parent.items[2]).visual?.type === 'bars' ? (shorter.parent.items[2]).visual.rows : []).map((x) => `${x.label} ${x.valueLabel}`).map((x) => x.split(' ').slice(-2).join(' '))).toEqual(['40,0 sn', '24,0 sn']);
   });
 
   it('sırayla birleştirme: iki bölüm yaklaşık aynı sürerse öyle söylenir', () => {

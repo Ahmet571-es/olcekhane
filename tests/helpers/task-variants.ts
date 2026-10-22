@@ -1,6 +1,16 @@
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
-import type { CancellationTask, DigitSpanTask, FlankerTask, SpatialSpanTask, SymbolMatchTask, TaskInstrument } from '@/lib/instruments/types';
+import { blankOf, opTrue } from '@/lib/instruments/complex-span';
+import type {
+  CancellationTask,
+  ComplexSpanTask,
+  DigitSpanTask,
+  FlankerTask,
+  SpatialSpanTask,
+  SymbolMatchTask,
+  TaskInstrument,
+  TrailTask,
+} from '@/lib/instruments/types';
 import { expectedSpanResponse, spanStimulus } from '@/lib/scoring/tasks';
 import {
   SEED,
@@ -10,6 +20,13 @@ import {
   goNoGoBody,
   memoryTasksBody,
   reactionBody,
+  trailBody,
+  nBackBody,
+  ruleSwitchBody,
+  complexSpanBody,
+  csRight,
+  wordListBody,
+  wordListWords,
   cubeBody,
   cubeLureOption,
   foldingBody,
@@ -81,7 +98,76 @@ function cancellationVariant(upTo: number[], wrong = 0, skipEvery = 0): AnswersB
   return { grade: 6, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: sections } } };
 }
 
+/**
+ * Sırayla birleştirme: her dokunuş arasında `stepMs` (ikinci bölümde iki katı); `cutB` verilirse ikinci bölümde yalnızca o
+ * kadar daire birleştirilir (süre biter); `wrongEvery` verilirse her o kadar dairede bir yanlış daireye dokunulur.
+ */
+function trailVariant(stepMs: number, cutB?: number, wrongEvery = 0): AnswersBody {
+  const task = def<TaskInstrument>('sirayla-birlestirme-gorevi').tasks[0] as TrailTask;
+  const parts = task.parts.map((p, index) => {
+    const step = index === 0 ? stepMs : stepMs * 2;
+    const reach = index === 1 && cutB !== undefined ? cutB : p.labels.length;
+    const taps: number[] = [];
+    for (let i = 0; i < reach; i++) {
+      if (wrongEvery && i > 0 && i % wrongEvery === 0 && i + 1 < p.labels.length) taps.push(i + 1);
+      taps.push(i);
+    }
+    const times = taps.map((_, k) => (k + 1) * step);
+    return { index, response: { taps, times }, rtMs: reach < p.labels.length ? task.maxMs : times[times.length - 1] };
+  });
+  return { grade: 5, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: parts } } };
+}
+
+const CS_BLANK = blankOf(def<TaskInstrument>('hesapla-ve-hatirla').tasks[0] as ComplexSpanTask);
+
 export const TASK_VARIANTS: Record<string, Variants> = {
+  'sirayla-birlestirme-gorevi': {
+    varsayilan: () => trailBody(),
+    hizli: () => trailVariant(700),
+    hatali: () => trailVariant(1500, undefined, 4),
+    yarim: () => trailVariant(2500, 9),
+  },
+  'geriye-donuk-hatirlama': {
+    varsayilan: () => nBackBody(),
+    ikiZor: () => nBackBody((role, n, i) => (role === 'target' ? (n === 2 && i % 3 ? null : 650) : n === 2 && role === 'lure' && i % 2 ? 700 : null)),
+    rastgele: () => nBackBody((_, __, i) => (i % 2 ? 520 : null)),
+    sessiz: () => nBackBody(() => null),
+    ikiSessiz: () => nBackBody((role, n) => (n === 1 && role === 'target' ? 650 : null)),
+  },
+  'kural-degistirme': {
+    varsayilan: () => ruleSwitchBody(),
+    karisik: () => ruleSwitchBody((q) => ({ response: q.kind === 'switch' && q.i % 2 ? 3 - q.answer : q.answer, rtMs: q.kind === 'pure' ? 620 : q.kind === 'switch' ? 1050 : 820 })),
+    tekDugme: () => ruleSwitchBody(() => ({ response: 1, rtMs: 600 })),
+    cevapsiz: () => ruleSwitchBody(() => ({ response: null, rtMs: null })),
+    hizliDegisim: () => ruleSwitchBody((q) => ({ response: q.answer, rtMs: q.kind === 'switch' ? 640 : 760 })),
+  },
+  'hesapla-ve-hatirla': {
+    varsayilan: () => complexSpanBody(),
+    uzunZor: () => complexSpanBody((q) => ({ recall: q.size >= 6 ? [...q.letters.slice(0, -2), q.letters.at(-1)!, q.letters.at(-2)!] : q.letters, ops: q.ops.map((o) => csRight(o)) })),
+    bos: () => complexSpanBody((q) => ({ recall: q.size >= 5 ? [...q.letters.slice(0, 2), CS_BLANK, ...q.letters.slice(3)] : q.letters, ops: q.ops.map((o) => csRight(o)) })),
+    rastgele: () => complexSpanBody((q) => ({ recall: [CS_BLANK], ops: q.ops.map((o) => ({ a: !opTrue(o), ms: 1500 })) })),
+    islemYavas: () => complexSpanBody((q) => ({ recall: q.letters, ops: q.ops.map((o, k) => (k % 3 === 0 ? { a: null, ms: null } : csRight(o))) })),
+  },
+  'kelime-listesi-hatirlama': {
+    varsayilan: () => wordListBody(),
+    tavan: () =>
+      wordListBody({
+        recalls: [
+          wordListWords('A', Array.from({ length: 14 }, (_, i) => i)),
+          wordListWords('A', Array.from({ length: 15 }, (_, i) => i)),
+          wordListWords('A', Array.from({ length: 15 }, (_, i) => i)),
+          wordListWords('B', [0, 1, 2, 3, 4, 5, 6, 7]),
+          wordListWords('A', Array.from({ length: 15 }, (_, i) => i)),
+        ],
+      }),
+    unutma: () =>
+      wordListBody({
+        recalls: [wordListWords('A', [0, 1, 13, 14]), wordListWords('A', [0, 1, 2, 12, 13, 14]), wordListWords('A', [0, 1, 2, 3, 11, 12, 13, 14]), wordListWords('B', [0, 1, 14]), wordListWords('A', [0, 1])],
+        recog: (q) => q.kind === 'target' || q.kind === 'b' || q.kind === 'semantic',
+      }),
+    cevapsiz: () => wordListBody({ recalls: [[], [], [], [], []], recog: () => false }),
+    tahmin: () => wordListBody({ recog: (q) => q.j % 2 === 0, recogRt: () => 150 }),
+  },
   'dikkat-ve-bellek': {
     varsayilan: () => memoryTasksBody(),
     iyi: () => memoryVariant(6, 0, 60, 0),

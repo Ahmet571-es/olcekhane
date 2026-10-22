@@ -155,8 +155,9 @@ describe('Kural değiştirme: rapor', () => {
       ['İki kuralı akılda tutma', 'İki kural karışınca 0,10 sn daha yavaş'],
       ['Çalışma biçimi', 'Tipik cevap süresi 0,75 sn'],
     ]);
-    expect(r.student.items[1].text).toContain('Kural sürerken 0,75 sn · kural değişince 0,95 sn');
-    expect(r.student.items[2].text).toContain('Tek kurallı bölümlerde 0,65 sn · iki kural karışınca (kural sürerken) 0,75 sn');
+    // Karşılaştırılan süreler kartların grafiklerindedir.
+    expect(((r.student.items[1]).visual?.type === 'bars' ? (r.student.items[1]).visual.rows : []).map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Kural sürerken 0,75 sn', 'Kural değişince 0,95 sn']);
+    expect(((r.student.items[2]).visual?.type === 'bars' ? (r.student.items[2]).visual.rows : []).map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Tek kurallı bölümler 0,65 sn', 'İki kural karışınca (kural sürerken) 0,75 sn']);
     expect(r.student.cautions).toEqual([]);
     const chart = r.student.chart;
     expect(chart?.type === 'bars' ? chart.rows.map((x) => x.valueLabel) : null).toEqual(['0,65 sn', '0,75 sn', '0,95 sn']);
@@ -242,9 +243,10 @@ describe('Kural değiştirme: rapor', () => {
             // Grafik ancak üç koşulun süresi de varsa ve sonuç yorumlanıyorsa çizilir; kartlardaki süreler grafikle aynıdır.
             if (r.chart?.type === 'bars') {
               expect(chance, label).toBe(false);
-              expect(r.items[1].text, label).toContain(`Kural sürerken ${r.chart.rows[1].valueLabel}`);
-              expect(r.items[1].text, label).toContain(`kural değişince ${r.chart.rows[2].valueLabel}`);
-              expect(r.items[2].text, label).toContain(`Tek kurallı bölümlerde ${r.chart.rows[0].valueLabel}`);
+              const deg = r.items[1].visual?.type === 'bars' ? r.items[1].visual.rows.map((x) => x.valueLabel) : [];
+              const kar = r.items[2].visual?.type === 'bars' ? r.items[2].visual.rows.map((x) => x.valueLabel) : [];
+              expect(deg, label).toEqual([r.chart.rows[1].valueLabel, r.chart.rows[2].valueLabel]);
+              expect(kar, label).toEqual([r.chart.rows[0].valueLabel, r.chart.rows[1].valueLabel]);
             }
             expect(r.items[0].badge, label).toBe(`%${Math.round(result.accuracy * 100)} doğru`);
           }

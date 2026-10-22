@@ -599,7 +599,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    `tests/gorev-grafikleri.test.ts` (her testin her kartı birkaç sonuç örüntüsüyle).
    - 1. grup (8 düzeyli test: şekil, sayı, harf ve sözel akıl yürütme, kâğıt katlama, kelime bilgisi, küp açınımı, gizli
      şekiller) ve 2. grup (dikkat ve bellek, sürekli dikkat, renk-kelime, dur-git, tepki hızı): **yayında (2026-10-22).**
-   - Sırada 3. grup: sırayla birleştirme, geriye dönük hatırlama, kural değiştirme, hesapla ve hatırla, kelime listesi.
+   - 3. grup (sırayla birleştirme, geriye dönük hatırlama, kural değiştirme, hesapla ve hatırla, kelime listesi): kart
+     grafikleri yayında (2026-10-22); rapor metinlerinin bağımsız incelemesinin bulguları uygulanıyor.
      Sonra 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi) ve 5. grup
      (mantıksal, sayısal, düşünerek karar verme).
 3. Okuma, sesli okuma, matematik konu tarama.

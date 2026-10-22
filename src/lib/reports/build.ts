@@ -1849,23 +1849,21 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
     ? {
         ...card('iz_a'),
         headline: `${s1(a.timeMs)} saniye`,
-        detail: `${a.n} daire · ${a.errors} yanlış dokunuş`,
         text: you
           ? `Sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdin.${errText(a.errors)} Bu bölüm, ekranı tarayıp aradığını hızla bulabilmeyi ve el-göz uyumunu gösterir.`
           : `Çocuğunuz sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdi.${errText(a.errors)} Bu bölüm görsel taramayı, işlem hızını ve el-göz uyumunu yansıtır; süre, kullanılan cihazdan (dokunmatik ekran ya da fare) belirgin biçimde etkilenir.`,
       }
-    : { ...card('iz_a'), headline: 'Süre içinde tamamlanamadı', detail: `${a.n} dairenin ${a.reached} tanesi birleştirildi`, text: incomplete(a) };
+    : { ...card('iz_a'), headline: 'Süre içinde tamamlanamadı', text: incomplete(a) };
 
   const blockB: CognitiveBlock = b.completed
     ? {
         ...card('iz_b'),
         headline: `${s1(b.timeMs)} saniye`,
-        detail: `${b.n} daire · ${b.errors} yanlış dokunuş`,
         text: you
           ? `Sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdin.${errText(b.errors)} Bu bölümde bir sayıya bir harfe geçerek iki sırayı birlikte izlemen gerekir; bu yüzden genellikle birinci bölümden daha uzun sürer.`
           : `Çocuğunuz sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdi.${errText(b.errors)} Bu bölümde sayılar ile harfler arasında gidip gelerek iki sırayı birlikte izlemek gerekir; bu yüzden genellikle birinci bölümden daha uzun sürer. Alfabe sırasını akıcı bilmek de bu süreyi etkiler.`,
       }
-    : { ...card('iz_b'), headline: 'Süre içinde tamamlanamadı', detail: `${b.n} dairenin ${b.reached} tanesi birleştirildi`, text: incomplete(b) };
+    : { ...card('iz_b'), headline: 'Süre içinde tamamlanamadı', text: incomplete(b) };
 
   let gecis: CognitiveBlock;
   if (r.ratio === null || r.diffMs === null) {
@@ -1881,12 +1879,10 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
     const ratio = tB / tA;
     const diff = tB - tA;
     const x = nf1.format(ratio);
-    const detail = `Birinci bölüm ${s1(tA)} sn · ikinci bölüm ${s1(tB)} sn · ${diff >= 0 ? `fark ${s1(diff)} sn` : `ikinci bölüm ${s1(-diff)} sn daha kısa`}`;
     if (ratio >= TRAIL_SAME[1]) {
       gecis = {
         ...card('iz_gecis'),
         headline: `Birinci bölümün ${x} katı`,
-        detail,
         text: you
           ? `İkinci bölüm, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında gidip gelmek, iki sırayı aynı anda akılda tutmayı gerektirir ve tek bir sırayı izlemekten daha çok çaba ister; bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu fark bir seferden ötekine değişebilir; küçük farklara takılma.`
           : `Çocuğunuzun ikinci bölümü, birinci bölümün yaklaşık ${x} katı sürdü (${s1(diff)} saniye daha uzun). Sayılar ile harfler arasında geçiş yapmak, iki sırayı aynı anda akılda tutmayı (çalışma belleği) ve aralarında gidip gelmeyi gerektirir; bu yüzden ikinci bölüm genellikle daha uzun sürer. Bu oran, geçiş yapmanın getirdiği ek süreyi gösterir. Tek bir uygulamada kesinliği düşüktür ve alfabe sırasını akıcı bilmekten de etkilenir; tek başına yorumlanmamalıdır.`,
@@ -1895,7 +1891,6 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
       gecis = {
         ...card('iz_gecis'),
         headline: 'İki bölüm yaklaşık aynı sürdü',
-        detail,
         text: you
           ? 'İki bölüm yaklaşık aynı sürede bitti: sayılarla harfler arasında gidip gelmek sana belirgin bir ek süre getirmedi. Genellikle ikinci bölüm daha uzun sürer; bu sonuç bir seferden ötekine değişebilir.'
           : 'Çocuğunuzun iki bölümü yaklaşık aynı sürede bitti: sayılarla harfler arasında gidip gelmek belirgin bir ek süre getirmedi. Genellikle ikinci bölüm daha uzun sürer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
@@ -1904,7 +1899,6 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
       gecis = {
         ...card('iz_gecis'),
         headline: 'İkinci bölüm daha kısa sürdü',
-        detail,
         text: you
           ? 'İkinci bölüm birinci bölümden kısa sürdü. Bu sık görülmez; birinci bölümde bir aksaklık olmuş ya da ikinci bölüme gelene kadar göreve alışmış olabilirsin. Bu sonuç bir seferden ötekine değişebilir.'
           : 'Çocuğunuzun ikinci bölümü birinci bölümden kısa sürdü. Bu sık görülmez; birinci bölümde bir aksaklık olmuş ya da göreve alışma etkisi görülmüş olabilir. Tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
@@ -1912,6 +1906,39 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
     }
   }
 
+  /* Kart grafikleri: tamamlanan bölümde sürenin süre sınırına göre yeri, tamamlanmayanda birleştirilen daireler; iki bölümün süreleri. */
+  const partName = (p: TrailResult['parts'][number], k: number) => task.parts[p.index]?.name ?? `${k + 1}. bölüm`;
+  [blockA, blockB].forEach((blk, k) => {
+    const p = r.parts[k];
+    blk.visual = p.completed
+      ? ({
+          type: 'strip',
+          label: `Bölümün süresi (süre sınırı ${maxSec} sn)`,
+          min: 0,
+          max: task.maxMs / 1000,
+          unit: 'sn',
+          points: [],
+          marker: { value: Math.round(p.timeMs / 100) / 10, label: `${s1(p.timeMs)} sn` },
+        } satisfies StripVisual)
+      : ({
+          type: 'stack',
+          label: 'Daireler',
+          total: p.n,
+          parts: [
+            { label: 'Sırayla birleştirildi', value: p.reached },
+            { label: 'Süre bitince kalan', value: p.n - p.reached },
+          ],
+        } satisfies StackVisual);
+  });
+  if (r.ratio !== null && r.diffMs !== null) {
+    gecis.visual = {
+      type: 'bars',
+      label: 'Bölüm süreleri',
+      scale: 'scale',
+      unit: 'sn',
+      rows: r.parts.map((p, k) => ({ label: partName(p, k), value: Math.round(p.timeMs / 100) / 10, valueLabel: `${s1(p.timeMs)} sn` })),
+    } satisfies BarsVisual;
+  }
   const secs = r.parts.map((p) => (p.completed ? p.timeMs : task.maxMs) / 1000);
   const max = roundUp(Math.max(...secs), 30);
   return {
@@ -1961,16 +1988,23 @@ function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], aud
   const ref = l.n === 1 ? 'bir önceki harfle aynı olan' : 'iki önceki harfle aynı olan';
   const where = l.n === 1 ? 'bu bölümde' : 'iki geri bölümlerinde';
   const headline = `Yakalama ${pct(l.hitRate)} · yanlış basma ${pct(l.falseAlarmRate)}`;
-  const detail =
-    (l.hits === 0 ? `Aynı olan ${l.targets} harfin hiçbiri yakalanmadı` : `Aynı olan ${l.targets} harfin ${l.hits} tanesi yakalandı`) +
-    (l.falseAlarms === 0 ? ` · aynı olmayan ${l.nonTargets} harfte hiç basılmadı` : ` · aynı olmayan ${l.nonTargets} harfin ${l.falseAlarms} tanesinde basıldı`);
+  // Kartın grafiği: aynı harflerden yakalananlar ve aynı olmayan harflerden basılmadan geçilenler.
+  const visual: DotsVisual = {
+    type: 'dots',
+    label: l.n === 1 ? 'Bir geri bölümündeki harfler' : 'İki geri bölümlerindeki harfler',
+    rows: [
+      { label: 'Aynı harfler: yakalandı', filled: l.hits, total: l.targets, valueLabel: `${l.hits}/${l.targets}` },
+      { label: 'Aynı olmayanlar: basılmadı', filled: l.nonTargets - l.falseAlarms, total: l.nonTargets, valueLabel: `${l.nonTargets - l.falseAlarms}/${l.nonTargets}` },
+    ],
+    legend: ['doğru tepki', 'kaçırma ya da yanlış basma'],
+  };
 
   if (nBackSilent(l)) {
     const W = where.charAt(0).toLocaleUpperCase('tr-TR') + where.slice(1);
+    // Hiç basılmayan düzey yorumlanmaz; grafiği de olmaz.
     return {
       ...card(key),
-      headline,
-      detail,
+      headline: 'Hiç basılmadı',
       text: v(
         `${W} hiç basmadın; bu yüzden aynı harfleri yakalayıp yakalayamadığın anlaşılamadı. Yönergeyi tam anlamamış ya da görevi yarıda bırakmış olabilirsin.`,
         `Çocuğunuz ${where} hiç basmadı; bu yüzden aynı harfleri yakalayıp yakalayamadığı anlaşılamadı. Yönerge tam anlaşılmamış ya da görev yarıda bırakılmış olabilir; bu sonuç yorumlanmamalıdır.`,
@@ -2077,7 +2111,7 @@ function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], aud
       ` Çocuğunuz ${which} bölümde hiç basmadı; bu bölüm yarıda bırakılmış olabilir. Bu yüzden bu sonuç onu tam yansıtmayabilir.`,
     );
   }
-  return { ...card(key), headline, detail, text: `${first} ${second}` };
+  return { ...card(key), headline, text: `${first} ${second}`, visual };
 }
 
 /** "Zorluk artınca" kartı: bir geriden iki geriye ayırt etme puanı nasıl değişti? Güvenilmeyen durumlarda karşılaştırılmaz. */
@@ -2153,8 +2187,16 @@ function nBackLoadBlock(r: NBackResult, audience: Audience, card: CardOf): Cogni
   return {
     ...card('gh_yuk'),
     headline,
-    detail: `Ayırt etme puanı bir geride ${s1}, iki geride ${s2} (100 üzerinden)`,
     text: `${text} ${how}`,
+    visual: {
+      type: 'bars',
+      label: 'Ayırt etme puanı (100 üzerinden)',
+      scale: 'share',
+      rows: [
+        { label: 'Bir geri', value: s1, max: 100, valueLabel: `${s1}/100` },
+        { label: 'İki geri', value: s2, max: 100, valueLabel: `${s2}/100` },
+      ],
+    } satisfies BarsVisual,
   };
 }
 
@@ -5782,6 +5824,15 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
     ...card('hb_harf'),
     headline: X === 0 ? `${N} harfin hiçbiri doğru yerde değil` : X === N ? `${N} harfin hepsi doğru yerde` : `${N} harften ${csCount(X, 'i')} doğru yerde`,
     text: harfText,
+    visual: {
+      type: 'stack',
+      label: 'Dizilerdeki harfler',
+      total: N,
+      parts: [
+        { label: 'Doğru yerde hatırlandı', value: X },
+        { label: 'Doğru yerde değil', value: N - X },
+      ],
+    } satisfies StackVisual,
   };
 
   /* Dizi uzunluğu */
@@ -5854,13 +5905,19 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
     uzunluk = {
       ...card('hb_uzunluk'),
       headline: P === r.sets ? 'Bütün diziler tam' : r.longest !== null ? `En uzun tam dizi: ${r.longest} harf` : 'Tam hatırlanan dizi yok',
-      detail: r.bySize.map((s) => `${s.size} harflik ${s.correct}/${s.letters}`).join(' · '),
       text,
+      // Her uzunluktaki dizilerden kaçının bütün harfleri doğru sırayla hatırlandı (dolu daire: tam dizi).
+      visual: {
+        type: 'ladder',
+        label: 'Bütün harfleri doğru sırayla hatırlanan diziler',
+        rows: r.bySize.map((x) => ({ length: x.size, results: Array.from({ length: x.sets }, (_, i) => i < x.perfect) })),
+        reached: r.longest,
+        unit: 'harf',
+      } satisfies LadderVisual,
     };
   }
 
   /* İşlemler */
-  const opsDetail = `Doğru ${O.correct} · Yanlış ${O.wrong} · Süre doldu ${O.timeouts}`;
   const limitText =
     r.limitMs !== null && O.timeouts > 0
       ? v(
@@ -5948,16 +6005,24 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
         : O.correct === O.n
           ? `${O.n} işlemin hepsi doğru`
           : `${O.n} işlemin ${csCount(O.correct, 'i')} doğru (${pct(O.accuracy)})`,
-    detail: opsDetail,
     text: islemText,
+    visual: {
+      type: 'stack',
+      label: 'İşlemler',
+      total: O.n,
+      parts: [
+        { label: 'Doğru cevaplandı', value: O.correct },
+        { label: 'Yanlış cevaplandı', value: O.wrong },
+        { label: 'Süre doldu', value: O.timeouts },
+      ],
+    } satisfies StackVisual,
   };
 
   /* Hata türleri */
   const E = N - X;
   let hata: CognitiveBlock;
-  const hataDetail = `Yeri karışan ${r.order} · Dizide olmayan ${r.intrusion} · Boş ${r.blank}`;
   if (noRead) {
-    hata = { ...card('hb_hata'), headline: 'Yorumlanmadı', detail: hataDetail, text: `${noReadWhy} doğru yerde olmayan harflerin türü yorumlanmadı.` };
+    hata = { ...card('hb_hata'), headline: 'Yorumlanmadı', text: `${noReadWhy} doğru yerde olmayan harflerin türü yorumlanmadı.` };
   } else if (E === 0) {
     hata = {
       ...card('hb_hata'),
@@ -5995,6 +6060,16 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
         .join(' · ')
         .replace(/^./, (c) => c.toLocaleUpperCase('tr-TR')),
       text,
+      visual: {
+        type: 'stack',
+        label: 'Doğru yerde olmayan harf yerleri',
+        total: E,
+        parts: [
+          { label: 'Harf o dizide vardı, yeri karıştı', value: r.order },
+          { label: 'O dizide olmayan harf', value: r.intrusion },
+          { label: 'Boş kaldı', value: r.blank },
+        ],
+      } satisfies StackVisual,
     };
   }
 
@@ -7578,8 +7653,12 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
   const dogruluk: CognitiveBlock = {
     ...card('kd_dogruluk'),
     headline: `${pct(r.accuracy)} doğru`,
-    detail: `Tek kural ${pct(r.pure.accuracy)} · kural sürerken ${pct(r.repeat.accuracy)} · kural değişince ${pct(r.switch.accuracy)}`,
     text: accText,
+    visual: pctBarsVisual('Doğru cevap oranı', [
+      { label: 'Tek kurallı bölümler', rate: r.pure.accuracy },
+      { label: 'İki kural karışınca: kural sürerken', rate: r.repeat.accuracy },
+      { label: 'İki kural karışınca: kural değişince', rate: r.switch.accuracy },
+    ]),
   };
 
   /* Kural değiştirme */
@@ -7604,7 +7683,10 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
         : diff <= -RULE_COST_MIN_MS
           ? { value: `${sn(-diff)} sn`, note: 'kural değişince daha hızlı' }
           : { value: 'Belirgin fark yok' };
-    const detail = `Kural sürerken ${sn(a)} sn · kural değişince ${sn(b)} sn`;
+    const visual = msBarsVisual('Tipik cevap süresi', [
+      { label: 'Kural sürerken', ms: a },
+      { label: 'Kural değişince', ms: b },
+    ]);
     // Kural değişince doğruluk da en az 10 puan düşerse söylenir.
     const accDrop =
       r.repeat.accuracy - r.switch.accuracy >= 0.1
@@ -7617,7 +7699,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       degisim = {
         ...card('kd_degisim'),
         headline: `Kural değişince ${sn(diff)} sn daha yavaş`,
-        detail,
+        visual,
         text:
           v(
             'Kural değiştiğinde cevapların, aynı kural sürerkenkinden biraz daha yavaştı. Bu herkeste görülür: yeni kurala geçmek için zihnin kendini yeniden ayarlaması gerekir; çok uzun alıştırmalardan sonra bile bu fark tamamen kaybolmaz.',
@@ -7630,7 +7712,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       degisim = {
         ...card('kd_degisim'),
         headline: 'Kural değişince daha hızlı',
-        detail,
+        visual,
         text:
           v(
             'Kural değiştiğinde cevapların, aynı kural sürerkenkinden biraz daha hızlıydı. Bu sık görülmez; çoğunlukla ölçümün doğal payından kaynaklanır ve bir seferden ötekine değişebilir.',
@@ -7641,7 +7723,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       degisim = {
         ...card('kd_degisim'),
         headline: 'Belirgin bir fark görülmedi',
-        detail,
+        visual,
         text:
           v(
             'Kural değiştiğinde cevapların, aynı kural sürerkenkinden belirgin biçimde yavaş değildi. Çoğu kişide görülen bu yavaşlama, bu uygulamada sende belirgin olarak ortaya çıkmadı. Bu fark bir seferden ötekine değişebilir.',
@@ -7665,12 +7747,15 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
     const a = to10(r.pure.medianRt);
     const b = to10(r.repeat.medianRt);
     const diff = b - a;
-    const detail = `Tek kurallı bölümlerde ${sn(a)} sn · iki kural karışınca (kural sürerken) ${sn(b)} sn`;
+    const visual = msBarsVisual('Tipik cevap süresi', [
+      { label: 'Tek kurallı bölümler', ms: a },
+      { label: 'İki kural karışınca (kural sürerken)', ms: b },
+    ]);
     if (diff >= RULE_COST_MIN_MS) {
       karisik = {
         ...card('kd_karisik'),
         headline: `İki kural karışınca ${sn(diff)} sn daha yavaş`,
-        detail,
+        visual,
         text: v(
           'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile cevapların tek kurallı bölümlerdekinden daha yavaştı. Bunun nedeni, iki kuralı birden akılda tutup her denemede işarete bakmanın gerektirdiği çabadır; çoğu kişide görülür. Bu fark bir seferden ötekine değişebilir.',
           'İki kuralın karıştığı bölümde, kural değişmediği denemelerde bile çocuğunuzun cevapları tek kurallı bölümlerdekinden daha yavaştı. Bu fark, iki kuralı birden akılda tutmanın gerektirdiği genel çabayı gösterir ve çoğu kişide görülür. Tek bir uygulamada bu farkın kesinliği düşüktür.',
@@ -7680,7 +7765,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       karisik = {
         ...card('kd_karisik'),
         headline: 'İki kural karışınca daha hızlı',
-        detail,
+        visual,
         text: v(
           'İki kuralın karıştığı bölümde cevapların, tek kurallı bölümlerdekinden daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışıp ısınmaktan kaynaklanmış olabilir.',
           'İki kuralın karıştığı bölümde çocuğunuzun cevapları, tek kurallı bölümlerdekinden daha hızlıydı. Karışık bölümler görevin sonunda geldiği için bu, göreve alışmaktan kaynaklanmış olabilir. Tek bir uygulamada bu farkın kesinliği düşüktür.',
@@ -7690,7 +7775,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       karisik = {
         ...card('kd_karisik'),
         headline: 'Belirgin bir fark görülmedi',
-        detail,
+        visual,
         text: v(
           'İki kuralın karıştığı bölümde, kural değişmediği denemelerdeki cevapların tek kurallı bölümlerdekinden belirgin biçimde yavaş değildi. Bu fark bir seferden ötekine değişebilir.',
           'İki kuralın karıştığı bölümde, kural değişmediği denemelerde çocuğunuzun cevapları tek kurallı bölümlerdekinden belirgin biçimde yavaş değildi. Tek bir uygulamada bu farkın kesinliği düşüktür.',
@@ -7735,6 +7820,7 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
       : {
           ...card('kd_calisma'),
           headline: `Tipik cevap süresi ${sn(to10(r.medianRt))} sn`,
+          visual: msBarsVisual('Tipik cevap süresi', [{ label: 'Doğru cevaplarda tipik süre', ms: to10(r.medianRt) }]),
           text:
             [
               v(
@@ -7883,7 +7969,18 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
       ),
     );
     if (wordListManyExtra(r)) parts.push('Hiçbir listede olmayan çok sayıda kelime yazıldığı için bu sonuç dikkatle yorumlanmalıdır.');
-    ogrenme = { ...card('kl_ogrenme'), headline: `${counts.slice(0, -1).join(', ')} ve ${counts[counts.length - 1]} kelime`, text: parts.join(' ') };
+    ogrenme = {
+      ...card('kl_ogrenme'),
+      headline: `${counts.slice(0, -1).join(', ')} ve ${counts[counts.length - 1]} kelime`,
+      text: parts.join(' '),
+      visual: {
+        type: 'columns',
+        label: 'Öğrenme denemelerinde hatırlanan kelimeler',
+        rows: counts.map((c, i) => ({ label: `${i + 1}. deneme`, value: c, valueLabel: String(c) })),
+        max: L,
+        caption: `${L} kelimeden`,
+      } satisfies ColumnsVisual,
+    };
   }
 
   /* Öğrenileni koruma */
@@ -7978,6 +8075,19 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
     }
     parts.push('Bu bölüm, yeni bir bilginin daha önce öğrenilenleri hatırlamayı nasıl etkilediğini gösterir (Oliveira ve Charchat-Fichman, 2008).');
     koruma = { ...card('kl_koruma'), headline, text: parts.join(' ') };
+    // Kartın karşılaştırdığı sayılar: üçüncü deneme, ikinci liste ve araya giren listeden sonra ilk liste.
+    if (!skipped) {
+      koruma.visual = {
+        type: 'bars',
+        label: `Hatırlanan kelimeler (${L} kelimeden)`,
+        scale: 'share',
+        rows: [
+          { label: 'İlk liste, 3. deneme', value: t3, max: L, valueLabel: `${t3}/${L}` },
+          { label: 'İkinci liste (bir kez)', value: r.b.correct, max: L, valueLabel: `${r.b.correct}/${L}` },
+          { label: 'İlk liste, araya giren listeden sonra', value: d, max: L, valueLabel: `${d}/${L}` },
+        ],
+      } satisfies BarsVisual;
+    }
   }
 
   /* Tanıma */
@@ -8055,7 +8165,20 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
     } else if (rec.hits >= T - 1 && fa <= 1) {
       parts.push(v('İlk listedeki kelimeleri, ilk listede olmayanlardan çok iyi ayırt ettin.', 'İlk listedeki kelimeleri, ilk listede olmayanlardan çok iyi ayırt etti.'));
     }
-    tanima = { ...card('kl_tanima'), headline: `${rec.hits}/${T} tanındı, ${fa} yanlış “evet”`, text: parts.join(' ') };
+    tanima = {
+      ...card('kl_tanima'),
+      headline: `${rec.hits}/${T} tanındı, ${fa} yanlış “evet”`,
+      text: parts.join(' '),
+      visual: {
+        type: 'dots',
+        label: 'Tanıma bölümündeki kelimeler',
+        rows: [
+          { label: 'İlk listedekiler: “evet”', filled: rec.hits, total: T, valueLabel: `${rec.hits}/${T}` },
+          { label: 'İlk listede olmayanlar: “hayır”', filled: nLures - fa, total: nLures, valueLabel: `${nLures - fa}/${nLures}` },
+        ],
+        legend: ['doğru cevap', 'yanlış cevap'],
+      } satisfies DotsVisual,
+    };
   }
 
   /* Çalışma biçimi */
@@ -8133,6 +8256,15 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
       parts.push(`Bu karşılaştırma her kısımda yalnızca ${third} kelimeye dayanır; kaba bir göstergedir.`);
     }
     calisma = { ...card('kl_calisma'), headline, text: [...parts, ...issues].join(' ') };
+    // Kısımlar karşılaştırıldıysa: üç denemede listenin başı, ortası ve sonu kaç kez hatırlandı.
+    if (compared) {
+      calisma.visual = {
+        type: 'bars',
+        label: `Listenin kısımları (üç denemede, her kısımda en çok ${p.of})`,
+        scale: 'share',
+        rows: WORD_LIST_PARTS.map((x) => ({ label: x.label, value: p[x.key], max: p.of, valueLabel: `${p[x.key]}/${p.of}` })),
+      } satisfies BarsVisual;
+    }
   }
 
   /* Grafik, öne çıkan sayılar ve profil */
