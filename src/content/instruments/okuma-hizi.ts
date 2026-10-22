@@ -22,7 +22,7 @@ export const okumaHizi: ReadingInstrument = {
   maxGrade: 13,
   estimatedMinutes: 7,
   sortOrder: 40,
-  tagline: 'Sınıf düzeyine uygun bir metni ne kadar hızlı okuyup ne kadarını anladığını birlikte ölçer.',
+  tagline: 'Sınıfın için yazılmış bir metni ne kadar hızlı okuyup ne kadarını anladığını birlikte ölçer.',
   description:
     'Hızlı okumak tek başına bir beceri değildir; önemli olan anlayarak okumaktır. Bu görevde öğrenci kendi sınıf düzeyine göre yazılmış bir metni sessizce okur, ardından metne bakmadan sekiz soruyu cevaplar. Rapor, okuma hızını ve anlama oranını birlikte değerlendirir.',
   intro: {
@@ -437,19 +437,21 @@ export const okumaHizi: ReadingInstrument = {
   science: {
     basedOn: 'Özgün görev: sınıf düzeyine göre yazılmış bilgilendirici metinler ve 8 anlama sorusu (Ölçekhane, 2026).',
     whatItMeasures:
-      'Sessiz okuma hızı (dakikada kelime) ve okunan metni anlama düzeyi: bilgiyi bulma, çıkarım yapma, kelime anlamı ve ana fikir.',
+      'Sessiz okuma hızı (dakikada kelime) ve okunan metni anlama düzeyi: metindeki bilgiyi hatırlama, çıkarım yapma, kelime anlamı ve ana fikir.',
     turkishVersion: 'Metinler doğrudan Türkçe yazılmıştır; çeviri değildir.',
     reliability:
       'Görev pilot aşamasındadır. Anlama sorularının madde analizi ve metinlerin sınıf düzeyine uygunluğu henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye’de 1–5. sınıflar için sesli okuma hızı çalışmaları vardır (ör. 1–5. sınıflarda dakikada ortalama 45, 73, 91, 97 ve 121 kelimenin doğru okunduğu bildirilmiştir); bu test sessiz okumayı ölçtüğü için 3–5. sınıf raporlarında bu değerler doğrudan karşılaştırma için değil, yalnızca bağlam olarak verilir. 6. sınıf ve üzeri ile sessiz okuma için yayımlanmış bir Türkiye normu bulunmamaktadır. Bu nedenle hız bir norma göre değerlendirilmez; anlama düzeyiyle birlikte yorumlanır. Hızın "çok hızlı" ya da "yavaş" sayıldığı sınırlar Ölçekhane’nin pilot ölçütüdür.',
+      'Bu testin Türkiye için bir normu yok. Bildiğimiz kadarıyla sessiz okuma hızı için Türkiye’yi temsil eden bir norm yayımlanmadı. Türkiye’de sesli okuma hızı üzerine çalışmalar var, ama bu test sessiz okumayı ölçüyor. Bu yüzden hız bir normla karşılaştırılmaz, anlamayla birlikte yorumlanır. Metnin “çok kısa sürede geçildiği” ya da “çok uzun sürdüğü” sınırları Ölçekhane’nin deneme ölçütüdür.',
     ageNote: '3. sınıftan itibaren uygundur. Her sınıf grubu kendi düzeyine göre yazılmış farklı bir metin okur.',
     license: 'Özgün içerik: metinler ve sorular Ölçekhane’ye aittir.',
     limitations: [
       'Tek bir metne dayanır; konu ilgisi ve o günkü yorgunluk sonucu etkileyebilir.',
       '8 soru, anlama düzeyi hakkında yalnızca kaba bir fikir verir; tek başına karar için kullanılmamalıdır.',
       'Okuma güçlüğü (disleksi) gibi bir durumu teşhis etmez. Kalıcı zorluk görülürse okulun rehberlik servisiyle görüşülmelidir.',
+      'Bazı sorular konuyu önceden bilenlere kolay gelebilir; anlama sonucu bir ölçüde ön bilgiyi de yansıtabilir.',
+      'Test yeniden çözüldüğünde aynı metin ve aynı sorular gelir; ikinci sonuç bu yüzden olduğundan yüksek çıkabilir.',
     ],
     citations: [
       {

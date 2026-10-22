@@ -28,35 +28,35 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
       parent: 'Bu alan öncelikli: önce temel kavramların sağlamlaşması gerekir.',
     },
     average: {
-      student: 'Bu alan pekiştirilmeli: temel var, eksik kalan bir iki noktayı tamamlaman yeterli.',
-      parent: 'Bu alan pekiştirilmeli: temel var, eksik kalan noktaların tamamlanması yeterli.',
+      student: 'Bu alan pekiştirilmeli: bazı soruları doğru yaptın, bazılarında zorlandın. Aşağıdaki önerilerle eksik kalan konuları tamamlayabilirsin.',
+      parent: 'Bu alan pekiştirilmeli: çocuğunuz bazı soruları doğru yaptı, bazılarında zorlandı. Aşağıdaki öneriler eksik konuları tamamlamaya yardım eder.',
     },
   },
   // Sağlam alan metinleri bütün formlarda ortaktır: belli bir sınıfın konusunu (ör. yüzde, denklem, hacim) anmaz.
   solid: {
     sayilar: {
-      student: 'Bu alan sağlam. Bir adım ileri gitmek için zihinden işlem yapmayı ve sonuçları tahmin etmeyi dene; daha zorlayıcı, çok adımlı problemler seçebilirsin.',
-      parent: 'Bu alan sağlam. Çocuğunuza zihinden işlem ve tahmin gerektiren, biraz daha zorlayıcı problemler önerebilirsiniz.',
+      student: 'Bu alan sağlam görünüyor. Bir adım ileri gitmek için zihinden işlem yapmayı ve sonuçları tahmin etmeyi dene; daha zorlayıcı, çok adımlı problemler seçebilirsin.',
+      parent: 'Bu alan sağlam görünüyor. Çocuğunuza zihinden işlem ve tahmin gerektiren, biraz daha zorlayıcı problemler önerebilirsiniz.',
     },
     kesirler: {
-      student: 'Bu alan sağlam. Bu alandaki konuları gündelik hesaplarda (ör. bir tarifte ya da bir şeyi paylaştırırken) kullanmayı sürdür; birkaç adımlı problemler seçip çözümünü birine anlatmak bu beceriyi ileri taşır.',
-      parent: 'Bu alan sağlam. Bir tarif ya da bir şeyi paylaştırma gibi gündelik hesaplarda bu alandaki konuları kullanmasına fırsat vererek beceriyi canlı tutabilirsiniz.',
+      student: 'Bu alan sağlam görünüyor. Bu konuları gündelik hesaplarda kullanmayı sürdür (ör. bir tarifte ya da bir şeyi paylaştırırken). Birkaç adımlı problemler seçip çözümünü birine anlatmak bu beceriyi ileri taşır.',
+      parent: 'Bu alan sağlam görünüyor. Bir tarif ya da bir şeyi paylaştırma gibi gündelik hesaplarda bu alandaki konuları kullanmasına fırsat vererek beceriyi canlı tutabilirsiniz.',
     },
     oran: {
-      student: 'Bu alan sağlam. Harita ölçekleri ve hız problemleri gibi oran gerektiren yeni durumlarda kendini dene.',
-      parent: 'Bu alan sağlam. Harita ölçeği, hız ve fiyat karşılaştırması gibi yeni durumlarda oran kullanmasına fırsat verebilirsiniz.',
+      student: 'Bu alan sağlam görünüyor. Harita ölçekleri ve hız problemleri gibi oran gerektiren yeni durumlarda kendini dene.',
+      parent: 'Bu alan sağlam görünüyor. Harita ölçeği, hız ve fiyat karşılaştırması gibi yeni durumlarda oran kullanmasına fırsat verebilirsiniz.',
     },
     cebir: {
-      student: 'Bu alan sağlam. Bir problemi iki farklı yolla çözüp yolları karşılaştırmak düşünceni esnekleştirir; biraz daha zorlayıcı örüntü ve problemlerle de kendini deneyebilirsin.',
-      parent: 'Bu alan sağlam. Bir problemi farklı yollarla çözmesini ve bu yolları karşılaştırmasını önerebilirsiniz.',
+      student: 'Bu alan sağlam görünüyor. Bir problemi iki farklı yolla çözüp yolları karşılaştırmak düşünceni esnekleştirir; biraz daha zorlayıcı örüntü ve problemlerle de kendini deneyebilirsin.',
+      parent: 'Bu alan sağlam görünüyor. Bir problemi farklı yollarla çözmesini ve bu yolları karşılaştırmasını önerebilirsiniz.',
     },
     geometri: {
-      student: 'Bu alan sağlam. Kendi şekillerini çizip onlarla ilgili problemler yazmak ve bu problemleri bir arkadaşına çözdürmek bu beceriyi daha da güçlendirir.',
-      parent: 'Bu alan sağlam. Kendi şekillerini tasarlayıp onlarla ilgili problemler yazmasını önerebilirsiniz.',
+      student: 'Bu alan sağlam görünüyor. Kendi şekillerini çizip onlarla ilgili problemler yazmak ve bu problemleri bir arkadaşına çözdürmek bu beceriyi daha da güçlendirir.',
+      parent: 'Bu alan sağlam görünüyor. Kendi şekillerini tasarlayıp onlarla ilgili problemler yazmasını önerebilirsiniz.',
     },
     veri: {
-      student: 'Bu alan sağlam. Merak ettiğin bir konuda kendi küçük anketini yap; sonuçları grafiğe dökmek ve yorumlamak bu beceriyi ileri taşır.',
-      parent: 'Bu alan sağlam. Merak ettiği bir konuda küçük bir anket yapıp sonuçları grafiğe dökmesini destekleyebilirsiniz.',
+      student: 'Bu alan sağlam görünüyor. Merak ettiğin bir konuda kendi küçük anketini yap; sonuçları grafiğe dökmek ve yorumlamak bu beceriyi ileri taşır.',
+      parent: 'Bu alan sağlam görünüyor. Merak ettiği bir konuda küçük bir anket yapıp sonuçları grafiğe dökmesini destekleyebilirsiniz.',
     },
   },
   forms: {
@@ -201,13 +201,13 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
       sayilar: {
         need: {
           student:
-            'Bölünebilme kurallarını ezberlemek yerine birkaç sayıda dene ve neden işe yaradığını gör (ör. 3 ile bölünebilmede rakamlar toplamı). Asal çarpanlara ayırmayı bir çarpan ağacıyla çiz. Ortak bölen ve ortak kat problemlerinde önce sorunun "eşit gruplara bölmek" mi (ortak bölen), yoksa "aynı anda buluşmak" mı (ortak kat) istediğini belirle.',
+            'Bölünebilme kurallarını ezberlemek yerine birkaç sayıda dene ve neden işe yaradığını gör (ör. 3 ile bölünebilmede rakamlar toplamı). Asal çarpanlara ayırmayı bir çarpan ağacıyla çiz. Ortak bölen ve ortak kat problemlerinde önce sorunun ne istediğini belirle. "Eşit gruplara bölmek" ortak bölen, "aynı anda buluşmak" ortak kat ister.',
           parent:
-            'Çocuğunuzun bölünebilme kurallarını birkaç sayıda deneyerek neden işe yaradığını görmesi ezberden daha kalıcıdır. Ortak bölen ve ortak kat problemlerinde sorunun "eşit gruplara bölmek" mi yoksa "aynı anda buluşmak" mı istediğini ayırt etmesi önemlidir; iki otobüsün aynı anda kalkması gibi gündelik örnekler bunu kolaylaştırır.',
+            'Çocuğunuzun bölünebilme kurallarını birkaç sayıda deneyerek neden işe yaradığını görmesi ezberden daha kalıcıdır. Ortak bölen ve ortak kat problemlerinde sorunun ne istediğini ayırt etmesi önemlidir: "eşit gruplara bölmek" mi, "aynı anda buluşmak" mı? İki otobüsün aynı anda kalkması gibi gündelik örnekler bunu kolaylaştırır.',
         },
         action: {
           student: 'Bu hafta her gün iki sayıyı çarpan ağacıyla asal çarpanlarına ayır, ortak bölenlerini ve ortak katlarını bul; birini gündelik bir probleme dönüştür.',
-          parent: 'Bu hafta çocuğunuza gündelik bir ortak kat sorusu sorun (ör. "Biri 6 günde, öteki 8 günde bir geliyorsa ne zaman aynı gün gelirler?") ve çözümünü anlatmasını isteyin.',
+          parent: 'Bu hafta çocuğunuza gündelik bir ortak kat sorusu sorun ve çözümünü anlatmasını isteyin. Örnek: "İki arkadaş bugün kütüphanede karşılaştı. Biri 6 günde bir, öteki 8 günde bir gidiyor. Kaç gün sonra yine aynı gün gelirler?"',
         },
         approach: 'Kuralları ezberletmek yerine "Bu neden doğru?" diye sorun; birkaç örnekle denemesine fırsat verin.',
       },
@@ -216,11 +216,11 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
           student:
             'Kesirlerle işlemleri bir şekil ya da sayı doğrusuyla kontrol et: bir sayıyı 1’den küçük bir kesirle çarpınca sonucun küçüldüğünü, böyle bir kesre bölünce büyüdüğünü gör. Bir kesrin aynı zamanda bir bölme olduğunu hatırla (3/4 = 3 ÷ 4). Yüzde problemlerinde önce yüzdenin neyin yüzdesi olduğunu bul, sonra hesapla.',
           parent:
-            'Çocuğunuzun kesirlerle işlemleri bir şekil ya da sayı doğrusuyla kontrol etmesini destekleyin; 1’den küçük bir kesirle çarpınca sonucun küçüldüğünü görmesi önemlidir. Bir kesrin aynı zamanda bir bölme olduğunu (3/4 = 3 ÷ 4) ve yüzde problemlerinde yüzdenin neyin yüzdesi olduğunu konuşmak bu alanı sağlamlaştırır.',
+            'Çocuğunuzun kesirlerle işlemleri bir şekil ya da sayı doğrusuyla kontrol etmesini destekleyin; 1’den küçük bir kesirle çarpınca sonucun küçüldüğünü görmesi önemlidir. Bir kesrin aynı zamanda bir bölme olduğunu konuşabilirsiniz (3/4 = 3 ÷ 4). Yüzde problemlerinde yüzdenin neyin yüzdesi olduğunu konuşmak da bu alanı sağlamlaştırır.',
         },
         action: {
           student: 'Bu hafta bir tarifin ölçülerini yarıya ve bir buçuk katına göre yeniden hesapla; sonuçları kesir ve ondalık gösterimle yaz.',
-          parent: 'Bu hafta çocuğunuzla bir tarifin ölçülerini birlikte yarıya indirin ya da artırın ve hesapları ona bırakın.',
+          parent: 'Bu hafta çocuğunuzla bir tarifin ölçülerini yarıya indirin ya da artırın: ilk hesabı birlikte yapın, sonrakileri ona bırakın.',
         },
         approach: 'Mutfak, alışveriş ve indirimler gibi gündelik durumlarda kesir ve yüzde hesaplarını ona bırakın.',
       },
@@ -242,7 +242,7 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
           student:
             'Formülleri ezberlemek yerine nereden geldiğini gör: bir paralelkenarı kesip dikdörtgene dönüştürerek alanının taban × yükseklik olduğunu göster. Üçgenin iç açılarının toplamının 180 derece olduğunu, kâğıttan bir üçgenin köşelerini yırtıp yan yana koyarak kontrol et. Alan birimlerini çevirirken bir metrekarenin içine kaç santimetrekare sığdığını çizerek düşün.',
           parent:
-            'Çocuğunuzun formüllerin nereden geldiğini görmesi ezberden daha kalıcıdır: bir paralelkenarı kesip dikdörtgene dönüştürmek alan formülünü, kâğıttan bir üçgenin köşelerini yan yana koymak açılar toplamını gösterir. Yuvarlak bir nesnenin çevresini iple ölçüp çapıyla karşılaştırmak çemberin uzunluğunu somutlaştırır.',
+            'Çocuğunuzun formüllerin nereden geldiğini görmesi ezberden daha kalıcıdır. Bir paralelkenarı kesip dikdörtgene dönüştürmek alan formülünü gösterir. Kâğıttan bir üçgenin köşelerini yan yana koymak da açılar toplamını gösterir. Yuvarlak bir nesnenin çevresini iple ölçüp çapıyla karşılaştırmak çemberin uzunluğunu somutlaştırır.',
         },
         action: {
           student: 'Bu hafta yuvarlak üç nesnenin (bardak, tabak, saat) çevresini iple, çapını cetvelle ölç; her biri için çevrenin çapa oranını hesapla.',
@@ -336,15 +336,15 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
   studyTitle: { you: 'Konu alanlarına göre nasıl çalışabilirsin?', parent: 'Çocuğunuz konu alanlarına göre nasıl çalışabilir?' },
   studyIntro: {
     student:
-      'Alanlar, en çok çalışılması gerekenden başlayarak sıralandı. Her alanda yalnızca soru çözmek değil, konunun anlamını şekil, sayı doğrusu ya da gerçek nesnelerle görmek de önemli.',
+      'Alanlar düzeylerine göre sıralandı: önce öncelikli, sonra pekiştirilmeli, en son sağlam alanlar. Her alanda yalnızca soru çözmek değil, konunun anlamını şekil, sayı doğrusu ya da gerçek nesnelerle görmek de önemli.',
     parent:
-      'Alanlar, en çok çalışılması gerekenden başlayarak sıralandı. Her alanda yalnızca soru çözmek değil, konunun anlamını şekil, sayı doğrusu ya da gerçek nesnelerle görmek de önemlidir.',
+      'Alanlar düzeylerine göre sıralandı: önce öncelikli, sonra pekiştirilmeli, en son sağlam alanlar. Her alanda yalnızca soru çözmek değil, konunun anlamını şekil, sayı doğrusu ya da gerçek nesnelerle görmek de önemlidir.',
   },
   routine: {
     title: 'Haftalık çalışma düzeni',
     intro: {
-      student: 'Eksikleri tamamlamak için uzun saatler gerekmez; kısa ve düzenli bir çalışma yeter:',
-      parent: 'Eksiklerin tamamlanması için uzun saatler gerekmez; kısa ve düzenli bir çalışma yeter:',
+      student: 'Kısa ve düzenli çalışma, uzun ve seyrek çalışmadan daha etkilidir:',
+      parent: 'Kısa ve düzenli çalışma, uzun ve seyrek çalışmadan daha etkilidir:',
     },
     items: {
       student: [
@@ -370,9 +370,15 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
   firstWeek: {
     wrong: {
       student:
-        'Raporundaki yanlış yaptığın ya da "Bilmiyorum" olarak işaretlediğin {k} soruyu bir deftere yaz: sorunun konusu, doğru çözüm ve hatanın nedeni (işlem hatası, kavram ya da soruyu yanlış okuma). Hafta sonunda en çok hangi nedenin tekrarlandığına bak.',
+        'Raporundaki yanlış yaptığın ya da “Bilmiyorum” dediğin soruları her gün en çok ikişer tane deftere yaz. Her biri için sorunun konusunu ve doğru çözümü yaz.',
       parent:
-        'Raporu çocuğunuzla birlikte inceleyin ve yanlış yapılan ya da "Bilmiyorum" olarak işaretlenen {k} soruyu bir deftere yazmasını isteyin: sorunun konusu, doğru çözüm ve hatanın nedeni. Hafta sonunda en sık tekrarlanan nedeni birlikte konuşun.',
+        'Raporu çocuğunuzla birlikte inceleyin. Yanlış yapılan ya da “Bilmiyorum” denen soruları her gün en çok ikişer tane deftere yazmasını isteyin: sorunun konusu ve doğru çözümü.',
+    },
+    // Yalnızca yanlış cevap varsa ve cevaplar tahmin değilse: hatanın nedeni.
+    reason: {
+      student:
+        'Yanlış yaptığın sorularda nedenini de not et: işlem hatası mı, kavram mı, soruyu yanlış okuma mı? Hafta sonunda en çok hangi nedenin tekrarlandığına bak.',
+      parent: 'Yanlış yapılan sorularda nedenini de birlikte konuşun: işlem hatası mı, kavram mı, soruyu yanlış okuma mı?',
     },
     none: {
       student: 'Bütün soruları doğru yaptın. Bu hafta her gün biraz daha zor bir soru seç ya da kendin bir soru yaz ve çözümünü açıkla.',
@@ -397,7 +403,7 @@ export const matematikRoadmap: AcademicRoadmapTemplate = {
   ],
   lastWeek: {
     student:
-      'Dört hafta boyunca çalıştığın konulardan karışık on soru çöz (kitabından ya da öğretmeninden iste); hangi konuların artık kolay geldiğini, hangilerinde hâlâ takıldığını yaz ve öğretmeninle paylaş.',
+      'Dört hafta boyunca çalıştığın konulardan karışık on soru çöz; soruları kitabından ya da öğretmeninden isteyebilirsin. Hangi konuların artık kolay geldiğini, hangilerinde hâlâ takıldığını yaz ve öğretmeninle paylaş.',
     parent:
       'Dört haftanın sonunda çocuğunuzla hangi konuların artık kolay geldiğini, hangilerinde hâlâ zorlandığını konuşun ve bu notları matematik öğretmeniyle paylaşın.',
   },

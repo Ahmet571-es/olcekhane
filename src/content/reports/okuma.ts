@@ -4,7 +4,7 @@ export const okumaReport: ReportTemplate = {
   version: 'okuma-rapor-1',
   bandLabels: {
     low: 'Zorlandı',
-    average: 'Gelişiyor',
+    average: 'Kısmen anladı',
     high: 'İyi',
     very_high: 'Çok iyi',
   },
@@ -13,7 +13,7 @@ export const okumaReport: ReportTemplate = {
       very_high: {
         summary: 'Metni çok iyi anladı',
         student: 'Metni çok iyi anladın; bütün soruları doğru cevapladın.',
-        parent: 'Çocuğunuz sınıf düzeyine uygun metni çok iyi anladı ve bütün soruları doğru cevapladı.',
+        parent: 'Çocuğunuz, sınıfı için yazılmış metni çok iyi anladı ve bütün soruları doğru cevapladı.',
         tipsStudent: [
           'Biraz daha uzun ve zor metinler seçerek kendini zorlayabilirsin.',
           'Okuduğun bir yazıyı birine kısaca anlatmak, anladıklarını kalıcı hâle getirir.',
@@ -25,8 +25,8 @@ export const okumaReport: ReportTemplate = {
       },
       high: {
         summary: 'Metni büyük ölçüde anladı',
-        student: 'Metni büyük ölçüde anladın. Kaçırdığın birkaç ayrıntı, dikkatli okumayla yakalanabilir.',
-        parent: 'Çocuğunuz metni büyük ölçüde anladı; bir iki soruda ayrıntıyı ya da çıkarımı kaçırdı.',
+        student: 'Metni büyük ölçüde anladın.',
+        parent: 'Çocuğunuz metni büyük ölçüde anladı.',
         tipsStudent: [
           'Her paragrafın sonunda durup "Burada ne anlatıldı?" diye kendine sor.',
           'Bilmediğin kelimelerin anlamını cümleden tahmin etmeye çalış.',
@@ -38,10 +38,8 @@ export const okumaReport: ReportTemplate = {
       },
       average: {
         summary: 'Metni kısmen anladı',
-        student:
-          'Metindeki bilgilerin bir kısmını anladın; bazı ayrıntılar ve çıkarımlar zor gelmiş olabilir. Bu beceri okudukça gelişir.',
-        parent:
-          'Çocuğunuz metni kısmen anladı; ayrıntıları hatırlamakta ya da metinde açıkça yazmayanı çıkarmakta zorlanmış olabilir.',
+        student: 'Metnin bir kısmını anladın. Bu beceri düzenli okumayla gelişir.',
+        parent: 'Çocuğunuz metni kısmen anladı.',
         tipsStudent: [
           'Okurken önemli gördüğün cümlelerin altını çiz ya da kısa notlar al.',
           'Bir metni bitirince ana fikrini tek cümleyle söylemeyi dene.',

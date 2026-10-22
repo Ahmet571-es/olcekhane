@@ -36,6 +36,8 @@ export interface GaugeVisual {
   zones: Zone[];
   /** Kişinin bölgesinin sırası (`zones` içinde); puan hesaplanamadıysa null. */
   active: number | null;
+  /** Değer tam sayıdır (ör. doğru sayısı): bölgeler sözel karşılıkta "0–9, 10–14, 15–20" diye yazılır. */
+  discrete?: boolean;
 }
 
 export interface CompareRow {
@@ -343,7 +345,10 @@ export function visualDescription(v: ItemVisual): string {
   switch (v.type) {
     case 'gauge': {
       const where = v.value === null || v.active === null ? 'puan hesaplanamadı' : `${v.valueLabel}, ${v.zones[v.active].label} bölgesinde`;
-      return `${v.label}: ${where}. Bölgeler: ${zoneText(v.zones)}.`;
+      const zones = v.discrete
+        ? v.zones.map((z, i) => `${z.label} ${formatTick(z.from)}–${formatTick(i === v.zones.length - 1 ? z.to : z.to - 1)}`).join(', ')
+        : zoneText(v.zones);
+      return `${v.label}: ${where}. Bölgeler: ${zones}.`;
     }
     case 'compare': {
       const rows = v.rows.map((r) => `${r.label} ${r.value === null ? 'hesaplanamadı' : `${r.valueLabel}${r.active !== null ? `, ${v.zones[r.active].label}` : ''}`}`);

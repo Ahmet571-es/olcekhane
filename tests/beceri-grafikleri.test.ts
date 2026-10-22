@@ -63,6 +63,13 @@ describe('Matematik Konu Tarama Testi', () => {
         const reps = evaluate(def.slug, body(grade, choose, rt));
         for (const r of [reps.student, reps.parent]) {
           const label = `${grade}. sınıf ${name}`;
+          // Cevaplar tahmin olabilir (çok hızlı ya da çoğu aynı seçenek): rozetler "Yorumlanmadı", grafik yok.
+          if (r.items[0].badge === 'Yorumlanmadı') {
+            checkAll(r, label, r.items.map((x) => x.title));
+            expect(r.items.every((x) => x.badge === 'Yorumlanmadı'), label).toBe(true);
+            expect(r.cautions.length, label).toBeGreaterThan(0);
+            continue;
+          }
           checkAll(r, label);
           const [genel, ...alanlar] = r.items;
           const g = genel.visual!;
@@ -80,8 +87,9 @@ describe('Matematik Konu Tarama Testi', () => {
             expect(v.type, `${label} ${a.title}`).toBe('dots');
             if (v.type === 'dots') {
               const { filled, total } = v.rows[0];
-              // Grafikteki doğru sayısı metinde yinelenmez.
+              // Grafikteki doğru sayısı metinde yinelenmez; sonuç sözle de anlatılır.
               expect(a.text, `${label} ${a.title}`).not.toContain(`${filled}/${total}`);
+              expect(a.text, `${label} ${a.title}`).toMatch(/doğru yaptı|zorlandı|“Bilmiyorum”/);
               const ratio = filled / total;
               const band = ratio >= 0.75 ? 'Sağlam' : ratio >= 0.5 ? 'Pekiştirilmeli' : 'Öncelikli';
               expect(a.badge, `${label} ${a.title}`).toBe(band);
@@ -122,16 +130,23 @@ describe('Okuma Hızı ve Anlama', () => {
           for (const r of [reps.student, reps.parent]) {
             const label = `${grade}. sınıf ${wrong} yanlış ${ms} ms`;
             const speed = r.items.find((x) => x.title === 'Okuma hızı')!;
-            const effective = r.keyFigures[2].value !== '—';
-            checkAll(r, label, effective ? [] : ['Okuma hızı']);
+            const speedRead = r.keyFigures[1].value !== '—';
+            checkAll(r, label, speedRead ? [] : ['Okuma hızı']);
             const anlama = r.items.find((x) => x.title === 'Anlama')!;
             const v = anlama.visual!;
             expect(v.type === 'dots' && `${v.rows[0].filled}/${v.rows[0].total}`, label).toBe(r.keyFigures[0].value);
             const flagged = ms !== 150_000;
             expect(speed.badge === 'Yorumlanmadı', label).toBe(flagged);
             if (speed.visual?.type === 'bars') {
-              expect(speed.visual.rows.map((x) => x.valueLabel), label).toEqual([r.keyFigures[1].value, r.keyFigures[2].value]);
-              expect(speed.text, label).toContain('anlayarak okuma');
+              const effective = r.keyFigures[2].value;
+              expect(speed.visual.rows.map((x) => x.valueLabel), label).toEqual([r.keyFigures[1].value, effective === '—' ? 'hesaplanmadı' : effective]);
+              expect(speed.text, label).toMatch(/anlayarak okuma hızı/i);
+            }
+            // Hız yorumlanmadıysa hiçbir yerde hız sayısı gösterilmez.
+            if (!speedRead) {
+              expect(r.keyFigures[2].value, label).toBe('—');
+              const rm = JSON.stringify(r.roadmap ?? {});
+              expect(rm, label).not.toMatch(/Dakikada \d/);
             }
           }
         }

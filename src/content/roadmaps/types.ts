@@ -211,7 +211,7 @@ export interface AcademicRoadmapTemplate {
   studyIntro: AudienceText;
   routine: InfoBox;
   /** 1. hafta: yanlış ya da boş bırakılan soru varsa ({k}: sayısı) ve hiç yoksa. */
-  firstWeek: { wrong: AudienceText; none: AudienceText };
+  firstWeek: { wrong: AudienceText; reason: AudienceText; none: AudienceText };
   /** Pekiştirilecek alan yoksa 2. hafta, ikinci alan yoksa 3. hafta. */
   extraWeeks: [{ title: string; text: AudienceText }, { title: string; text: AudienceText }];
   lastWeek: AudienceText;
@@ -236,7 +236,7 @@ export interface ReadingSkillText {
 
 /** Okuma hızı ve anlama düzenine göre öneri: metin çok hızlı geçildiyse, anlama gelişiyorsa ya da iyiyse. */
 /** rush: rapor metnin çok hızlı geçildiğini söylüyor; quick: anlama düşükken hız yüksek (yalnızca olasılık olarak söylenir). */
-export type ReadingPace = 'rush' | 'quick' | 'build' | 'extend';
+export type ReadingPace = 'rush' | 'skim' | 'quick' | 'understand' | 'build' | 'extend';
 
 export interface ReadingRoadmapTemplate {
   version: string;

@@ -35,9 +35,35 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
   // Hız metnin sınıf düzeyine göre değerlendirilir (lib/scoring/reading.ts, READING_PACE): anlama zayıfken hız belirgin
   // yüksekse "yavaşla ve anla"; anlama iyiyken hız belirgin düşükse "bol okuma" yerine akıcılık (tekrarlı okuma) önerilir.
   // Eski raporlarda sınıfa göre hız bilgisi yoksa yetişkinlerin tipik sessiz okuma hızı kullanılır.
+  // Metin çok kısa sürede geçildiyse hız ölçülemez: anlama iyiyse "skim" (ön bilgi), değilse "rush". Süre çok uzunsa hız
+  // bilinmez: akıcılık önerisi ("build") verilir, "bol okuma" ("extend") verilmez. Hız olağan ama anlama zayıf ya da
+  // ortaysa zorluk anlamadadır ("understand"); akıcılık çalışması yalnızca hız yavaşken önerilir.
   const fast = rd.pace ? rd.pace === 'fast' : rd.wpm >= RUSH_WPM;
   const slow = rd.pace === 'slow' && !rd.tooSlow;
-  const pace: ReadingPace = rd.tooFast ? 'rush' : group !== 'high' && fast ? 'quick' : group === 'high' && !slow ? 'extend' : 'build';
+  const pace: ReadingPace = rd.tooFast
+    ? group === 'high'
+      ? 'skim'
+      : 'rush'
+    : rd.tooSlow
+      ? 'build'
+      : group !== 'high' && fast
+        ? 'quick'
+        : group === 'high'
+          ? slow
+            ? 'build'
+            : 'extend'
+          : slow
+            ? 'build'
+            : 'understand';
+  const speedRead = !rd.tooFast && !rd.tooSlow;
+  const wpm = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(rd.wpm);
+  // Anlama iyi ama hız Ölçekhane'nin deneme ölçütüne göre yavaş: akıcılık önerisinin nedeni söylenir.
+  const slowNote =
+    pace === 'build' && group === 'high' && slow
+      ? parent
+        ? 'Okuma hızı bu metinde Ölçekhane’nin deneme ölçütüne göre düşük çıktı; bu, metnin dikkatle okunmasından da kaynaklanabilir. '
+        : 'Okuma hızın bu metinde Ölçekhane’nin deneme ölçütüne göre düşük çıktı; bu, metni dikkatle okumandan da kaynaklanabilir. '
+      : '';
   const caution = (r.qualityNotes?.length ?? 0) > 0 || rd.tooFast ? cautionText(parent) : '';
   const all = rd.skills;
   const sum = (f: (s: (typeof all)[number]) => number) => all.reduce((n, s) => n + f(s), 0);
@@ -47,8 +73,12 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
         ? 'Tek soru, doğru'
         : 'Tek soru, yanlış'
       : s.correct === s.total
-        ? `${s.total} sorunun hepsi doğru`
-        : `${s.total} sorudan ${s.correct} doğru`;
+        ? s.total === 2
+          ? 'İki sorunun ikisi de doğru'
+          : `${s.total} sorunun hepsi doğru`
+        : s.correct === 0
+          ? `${s.total} sorunun hiçbiri doğru değil`
+          : `${s.total} sorudan ${s.correct} doğru`;
 
   const second = need[0]
     ? { title: need[0].label, text: pick(t.skills[need[0].key].action, a) }
@@ -82,8 +112,8 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
     standout: [
       // Rapor şablonundaki özet üçüncü kişiyle yazılmıştır ("Anlamakta zorlandı"): öğrenciye doğru sayısı gösterilir.
       { title: 'Anlama', text: parent ? section.summary || section.bandLabel : `${sum((x) => x.total)} sorudan ${sum((x) => x.correct)} doğru` },
-      { title: 'Okuma hızı', text: `Dakikada ${rd.wpm} kelime` },
-      ...(need[0] && ratio(need[0]) < 0.5 ? [{ title: 'En çok zorlanılan soru türü', text: need[0].label }] : []),
+      { title: 'Okuma hızı', text: speedRead ? `Dakikada ${wpm} kelime` : 'Yorumlanmadı' },
+      ...(need[0] && ratio(need[0]) < 0.5 ? [{ title: parent ? 'En çok zorlandığı soru türü' : 'En çok zorlandığın soru türü', text: need[0].label }] : []),
     ],
     standoutNote: null,
     study: {
@@ -97,7 +127,7 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
           color: t.skills[s.key].color,
           text: pick(s.correct === s.total ? t.skills[s.key].full : t.skills[s.key].need, a),
         })),
-        { key: 'pace', title: 'Hız ve anlama', badge: `Dakikada ${rd.wpm} kelime`, color: '#5b6b82', text: pick(t.pace[pace].text, a) },
+        { key: 'pace', title: 'Hız ve anlama', badge: speedRead ? `Dakikada ${wpm} kelime` : 'Hız yorumlanmadı', color: '#5b6b82', text: slowNote + pick(t.pace[pace].text, a) },
       ],
       links: t.links,
     },

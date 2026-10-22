@@ -366,6 +366,13 @@ export interface AcademicReport {
   bandLabel: string;
   /** Üç düzeyin adları (kart grafiklerindeki bölgeler için). */
   bandNames: { low: string; average: string; high: string };
+  /**
+   * Sonuç yorumlandı mı: cevaplar tahmin olabilirse (çok hızlı ya da çoğu aynı seçenek) ya da bütün sorularda
+   * "Bilmiyorum" denmişse genel sonuç ve alanlar yorumlanmaz (rozet "Yorumlanmadı", grafik yok).
+   */
+  interpreted: boolean;
+  /** Cevaplar tahmin olabilir (çok hızlı ya da çoğu aynı seçenekte). */
+  guessed: boolean;
   text: string;
   domains: { key: string; name: string; plain: string; correct: number; n: number; dontKnow: number; band: Band; bandLabel: string }[];
   /**
@@ -531,7 +538,8 @@ const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFr
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
 
 const SKILL_LABELS: Record<string, string> = {
-  literal: 'Metindeki bilgiyi bulma',
+  // Metin sorulardan önce kapanır: bilgi metinde bulunmaz, hatırlanır.
+  literal: 'Metindeki bilgiyi hatırlama',
   inference: 'Çıkarım yapma',
   vocabulary: 'Kelime anlamı',
   main_idea: 'Ana fikir',
@@ -658,6 +666,31 @@ export function buildReport(input: {
     const bt = band ? template?.scales.comprehension?.[band] : undefined;
     const picked = pickText(bt, audience);
     if (rr) {
+      const you = audience !== 'parent';
+      // Anlama kartı: düzeyin metni, en çok zorlanılan soru türü (şablon metni türden söz etmez; çelişmesin) ve az doğruda
+      // rastgele işaretlemeyle ayırt edilemeyeceği.
+      const skillRows = Object.entries(rr.skills).filter(([, v]) => v.total > 0);
+      const missed = skillRows.filter(([, v]) => v.correct < v.total);
+      const lowest = missed.length ? Math.min(...missed.map(([, v]) => v.correct / v.total)) : 1;
+      const weakest = missed.filter(([, v]) => v.correct / v.total === lowest).map(([k]) => `“${SKILL_LABELS[k] ?? k}”`);
+      const weakList = weakest.length > 1 ? `${weakest.slice(0, -1).join(', ')} ve ${weakest[weakest.length - 1]}` : weakest[0];
+      const skillNote =
+        rr.correct === rr.total || !missed.length
+          ? ''
+          : rr.total - rr.correct === 1
+            ? you
+              ? ` Yanlış yaptığın soru ${weakList} türündeydi.`
+              : ` Yanlış cevaplanan soru ${weakList} türündeydi.`
+            : you
+              ? ` En çok zorlandığın soru ${weakest.length > 1 ? 'türleri' : 'türü'}: ${weakList}.`
+              : ` En çok zorlandığı soru ${weakest.length > 1 ? 'türleri' : 'türü'}: ${weakList}.`;
+      // Dört seçenekli 8 soruda tahminle beklenen doğru sayısı 2'dir; 3 ve daha azı rastgele işaretlemeyle de çıkabilir.
+      const chanceNote =
+        rr.correct * 8 <= rr.total * 3
+          ? you
+            ? ' Dört seçenekli sorularda bu kadar doğru, rastgele işaretlemeyle de çıkabilir. Bu yüzden bu sonuç, neyi anlayıp neyi anlamadığını tam göstermez.'
+            : ' Dört seçenekli sorularda bu kadar doğru cevap, soruların rastgele işaretlenmesiyle de çıkabilir. Bu yüzden sonuç, çocuğunuzun neyi anlayıp neyi anlamadığını tam göstermez; okuldaki gözlemlerle birlikte değerlendirin.'
+          : '';
       sections.push({
         scaleKey: 'comprehension',
         name: 'Anlama',
@@ -665,7 +698,7 @@ export function buildReport(input: {
         band,
         bandLabel: band ? (template?.bandLabels[band] ?? DEFAULT_BAND_LABELS[band]) : '—',
         summary: picked.summary,
-        text: picked.text,
+        text: `${picked.text}${skillNote}${chanceNote}`,
         tips: picked.tips,
         value: rr.correct,
         valueLabel: `${rr.correct} / ${rr.total}`,
@@ -678,17 +711,19 @@ export function buildReport(input: {
       const passage = rDef.passages.find((p) => p.key === rr.passageKey);
       const ref = rDef.referenceRates.find((r) => r.grade === input.grade);
       const secs = Math.round(rr.readingMs / 1000);
+      // Hız kartı. Metin sorulardan önce kapandığı için ölçülen hız, hatırlamak için dikkatle okunan hızdır.
+      const fastWeak = rr.pace === 'fast' && rr.correct * 4 < rr.total * 3;
       const speedNote = rr.flags?.tooFast
-        ? audience !== 'parent'
-          ? 'Metni çok hızlı geçmişsin; hızın gerçek okuma hızını yansıtmıyor olabilir. Bir dahaki sefere metni anlayarak okumaya odaklan.'
-          : 'Metin çok hızlı geçilmiş görünüyor; bu nedenle ölçülen hız gerçek okuma hızını yansıtmıyor olabilir.'
+        ? you
+          ? 'Metni çok kısa sürede geçtin. Bu sürede metnin hepsi okunamaz; bu yüzden hızın yorumlanmadı. Testi yeniden çözersen aynı metin ve aynı sorular gelir; bu yüzden ikinci sonuç olduğundan yüksek çıkabilir.'
+          : 'Metin çok kısa sürede geçildi. Bu sürede metnin hepsi okunamaz; bu yüzden hız yorumlanmadı. Test yeniden çözülürse aynı metin ve aynı sorular gelir; bu yüzden ikinci sonuç olduğundan yüksek çıkabilir.'
         : rr.flags?.tooSlow
-          ? audience !== 'parent'
-            ? 'Okuma süren çok uzun ölçüldü; okurken ara vermiş olabilirsin. Bu yüzden hızın yorumlanmadı.'
-            : 'Okuma süresi çok uzun ölçüldü; okurken ara verilmiş olabilir. Bu yüzden hız yorumlanmadı.'
-          : audience !== 'parent'
-          ? `Metni ${inTime(rr.readingMs)} okudun. Hızını, anladığın kadarıyla birlikte düşünmek önemli: anlamadan hızlı okumak işe yaramaz.`
-          : `Metin ${inTime(rr.readingMs)} okundu. Hız, anlama düzeyiyle birlikte değerlendirilmelidir; anlamadan hızlı okumak bir avantaj değildir.`;
+          ? you
+            ? 'Okuma süren çok uzun ölçüldü. Ara vermiş olabilirsin ya da metni okumak uzun sürmüş olabilir. Bu yüzden hızın yorumlanmadı.'
+            : 'Okuma süresi çok uzun ölçüldü. Okurken ara verilmiş olabilir ya da metni okumak uzun sürmüş olabilir. Bu yüzden hız yorumlanmadı. Çocuğunuzun okurken çok zorlandığını gözlüyorsanız öğretmeniyle konuşabilirsiniz.'
+          : you
+            ? `Metni ${inTime(rr.readingMs)} okudun. Bu hız, metnin sorulardan önce kapanacağını bilerek okuduğun hızdır; günlük okuma hızın farklı olabilir. Hızın, anladığınla birlikte anlam kazanır.${fastWeak ? ' Hızlı okuyup az anlamak bir avantaj değildir; biraz yavaşlamak anlamayı kolaylaştırabilir.' : ''}`
+            : `Metin ${inTime(rr.readingMs)} okundu. Bu hız, metnin sorulardan önce kapanacağı bilinerek okunduğu hızdır; günlük okuma hızı farklı olabilir. Hız, anlamayla birlikte değerlendirilir.${fastWeak ? ' Hızlı okuyup az anlamak bir avantaj değildir; biraz yavaşlamak anlamayı kolaylaştırabilir.' : ''}`;
       reading = {
         passageTitle: passage?.title ?? '',
         wordCount: rr.wordCount,
@@ -699,11 +734,11 @@ export function buildReport(input: {
         comprehensionPct: rr.comprehensionPct,
         effectiveWpm: rr.effectiveWpm,
         skills: Object.entries(rr.skills).map(([k, v]) => ({ key: k, label: SKILL_LABELS[k] ?? k, correct: v.correct, total: v.total })),
-        // Yayımlanmış Türkiye verisi sesli okumada dakikada doğru okunan kelimedir; bu test sessiz okumayı ölçtüğü için
-        // doğrudan karşılaştırılamaz, yalnızca bağlam olarak verilir.
+        // Yayımlanmış veri (Ankara'da yapılan bir çalışma) sesli okumada dakikada doğru okunan kelimedir; bu test sessiz
+        // okumayı ölçtüğü için karşılaştırılmaz, yalnızca bilgi olarak verilir. Aralık verilmez: norm gibi okunmasın.
         referenceNote:
           ref && !rr.flags?.tooFast && !rr.flags?.tooSlow
-            ? `Bağlam için: Türkiye’de yapılan bir çalışmada ${ref.grade}. sınıf öğrencilerinin sesli okumada dakikada ortalama ${ref.wpm} kelimeyi doğru okuduğu bildirilmiştir${ref.sd ? `; öğrencilerin çoğu yaklaşık ${Math.max(0, ref.wpm - ref.sd)} ile ${ref.wpm + ref.sd} arasındadır` : ''} (${ref.source}). Bu test sessiz okumayı ölçtüğü için bu değerler doğrudan karşılaştırılamaz; sessiz okuma her yaşta sesli okumadan hızlı olmayabilir.`
+            ? `Bilgi için: Ankara’da yapılan bir çalışmada ${ref.grade}. sınıf öğrencileri sesli okumada dakikada ortalama ${ref.wpm} kelimeyi doğru okudu (Erden ve ark., 2002). O çalışma sesli okumayı ölçtü, bu test sessiz okumayı ölçüyor; bu yüzden iki sayı karşılaştırılmaz.`
             : null,
         speedNote,
         tooFast: !!rr.flags?.tooFast,
@@ -792,7 +827,8 @@ export function buildReport(input: {
       : undefined,
     support,
     ...(support && supportNote ? { supportNote } : {}),
-    ...(def.maxGrade <= 5 ? { young: true } : {}),
+    // Küçük çocuk (en çok 5. sınıf): testin bütün sınıfları küçükse ya da öğrenci küçükse.
+    ...(def.maxGrade <= 5 || input.grade <= 5 ? { young: true } : {}),
     ...(input.grade === 13 ? { graduate: true } : {}),
     ...(template?.itemsTitle ? { itemsTitle: template.itemsTitle } : {}),
     science: {
@@ -1050,57 +1086,86 @@ function rankValues(
 
 /* ---------- Akademik konu tarama testleri ---------- */
 
-/** Genel sonuç metinleri. {g}: soruların ait olduğu sınıf, {s}: ders adı (küçük harfle). */
-const ACADEMIC_TEXT: Record<'perfect' | 'high' | 'highGap' | 'average' | 'low' | 'allLow', { student: string; parent: string }> = {
+/**
+ * Genel sonuç metinleri. {g}: soruların ait olduğu sınıf, {s}: ders adı (küçük harfle), {d}: öncelikli alanların adları
+ * ("“Veri” alanındaki"), {b}: "bu alandan" ya da "bu alanlardan".
+ */
+const ACADEMIC_TEXT: Record<
+  'perfect' | 'high' | 'highGap' | 'average' | 'averageGap' | 'low' | 'allLow' | 'guessed' | 'allDontKnow',
+  { student: string; parent: string }
+> = {
   perfect: {
     student: '{g}. sınıf {s} konularındaki soruların hepsini doğru yaptın. Bu tarama, bu konularda belirgin bir eksik göstermiyor.',
     parent: 'Çocuğunuz {g}. sınıf {s} konularındaki soruların hepsini doğru yaptı. Bu tarama, bu konularda belirgin bir eksik göstermiyor.',
   },
   high: {
     student:
-      '{g}. sınıf {s} konularının çoğunu sağlam biliyorsun. Aşağıda yanlış yaptığın ya da bilmediğin az sayıdaki soruya ve varsa hata türlerine göz atman yeterli.',
+      'Bu testteki {g}. sınıf {s} konularının çoğunu iyi biliyor görünüyorsun. Aşağıda yanlış yaptığın ya da bilmediğin az sayıdaki soruya ve varsa hata türlerine göz atman iyi olur.',
     parent:
       'Çocuğunuz {g}. sınıfın temel {s} konularının büyük bölümüne hâkim görünüyor. Aşağıdaki yanlış yapılan sorular ve hata türleri, pekiştirilebilecek küçük noktaları gösteriyor.',
   },
-  // Genel sonuç iyi ama bir alanda soruların çoğu yanlış ya da boş: o alan öne çıkarılır ({d}: alan adları).
+  // Genel sonuç iyi ama bir alanda soruların çoğu yanlış ya da boş: o alan öne çıkarılır. (20 soruda en az 15 doğru
+  // varken en çok bir alan öncelikli olabilir.)
   highGap: {
     student:
-      '{g}. sınıf {s} konularının çoğunu sağlam biliyorsun. Ancak {d} soruların çoğunda zorlandın; aşağıdaki sorularla önce bu konuya bakman iyi olur.',
+      'Bu testteki {g}. sınıf {s} konularının çoğunu iyi biliyor görünüyorsun. Ancak {d} soruların çoğunda zorlandın; aşağıdaki sorularla önce bu konuya bakman iyi olur.',
     parent:
       'Çocuğunuz {g}. sınıfın temel {s} konularının büyük bölümüne hâkim görünüyor. Ancak {d} soruların çoğunda zorlandı; bu konuya öncelik verilmesi iyi olur.',
   },
   average: {
     student:
-      '{g}. sınıf {s} konularının önemli bir kısmını biliyorsun; bazı konuların ise pekiştirilmesi gerekiyor. Aşağıda hangi alanlarda ve ne tür hatalar yaptığını görebilirsin. Önce bunlarla başlamak sana en çok yarayacak.',
+      '{g}. sınıf {s} konularının önemli bir kısmını biliyorsun; bazı konuların ise pekiştirilmesi gerekiyor. Aşağıda hangi alanlarda zorlandığını ve bu soruların çözümlerini görebilirsin. Önce bu alanlardan başlamak iyi olur.',
     parent:
       'Çocuğunuz {g}. sınıf {s} konularının önemli bir kısmını biliyor; bazı konuların ise pekiştirilmesi gerekiyor. Yeni konular öncekilerin üzerine kurulduğu için bu eksiklerin bu yıl içinde tamamlanması yeni konuları öğrenmesini kolaylaştırır.',
   },
+  // Genel sonuç orta ama bazı alanlarda soruların çoğu yanlış ya da boş: o alanlar öne çıkarılır.
+  averageGap: {
+    student:
+      '{g}. sınıf {s} konularının önemli bir kısmını biliyorsun. Ancak {d} sorularda zorlandın; çalışmaya {b} başlaman iyi olur.',
+    parent:
+      'Çocuğunuz {g}. sınıf {s} konularının önemli bir kısmını biliyor. Ancak {d} sorularda zorlandı; çalışmaya {b} başlanması iyi olur. Yeni konular öncekilerin üzerine kurulduğu için bu eksiklerin bu yıl içinde tamamlanması yeni konuları öğrenmesini kolaylaştırır.',
+  },
   low: {
     student:
-      '{g}. sınıf {s} konularının birçoğunda zorlandın. Bu, bu konuları öğrenemeyeceğin anlamına gelmez: eksikler belirli konularda toplanıyor ve adım adım tamamlanabilir. Aşağıdaki alanlardan başlayabilir, öğretmeninden de destek isteyebilirsin.',
+      '{g}. sınıf {s} konularının birçoğunda zorlandın. Bu konular çalışarak öğrenilir: eksikler belirli konularda toplanıyor ve adım adım tamamlanabilir. Aşağıdaki alanlardan başlayabilir, öğretmeninden de destek isteyebilirsin.',
     parent:
-      'Çocuğunuz {g}. sınıf {s} konularının birçoğunda zorlandı. Yeni konular öncekilerin üzerine kurulduğu için bu eksikler bu yılın konularını da zorlaştırabilir. Sonucu dersin öğretmeniyle paylaşmanızı ve aşağıdaki alanlardan başlayarak planlı bir tekrar yapılmasını öneririz. Tek bir testin sonucu kesin bir yargı değildir.',
+      'Çocuğunuz {g}. sınıf {s} konularının birçoğunda zorlandı. Bazı konular okulda henüz işlenmemiş de olabilir. Yeni konular öncekilerin üzerine kurulduğu için bu eksikler bu yılın konularını da zorlaştırabilir. Sonucu dersin öğretmeniyle paylaşmanızı ve aşağıdaki alanlardan başlayarak planlı bir tekrar yapılmasını öneririz. Tek bir testin sonucu kesin bir yargı değildir.',
   },
-  // Bütün alanlar öncelikli: eksikler belirli konularda toplanmıyor.
+  // Alanların çoğu öncelikli: eksiklerin "belirli konularda toplandığı" söylenmez.
   allLow: {
     student:
-      '{g}. sınıf {s} konularının birçoğunda zorlandın. Bu, bu konuları öğrenemeyeceğin anlamına gelmez: eksikler adım adım tamamlanabilir. Aşağıdaki sorulardan ve öğretmeninin önerdiği konulardan başlayabilir, ondan destek isteyebilirsin.',
+      '{g}. sınıf {s} konularının birçoğunda zorlandın. Bu konular çalışarak öğrenilir; eksikler adım adım tamamlanabilir. Aşağıdaki sorulardan ve öğretmeninin önerdiği konulardan başlayabilir, ondan destek isteyebilirsin.',
     parent:
-      'Çocuğunuz {g}. sınıf {s} konularının birçoğunda zorlandı. Yeni konular öncekilerin üzerine kurulduğu için bu eksikler bu yılın konularını da zorlaştırabilir. Sonucu dersin öğretmeniyle paylaşmanızı ve öğretmenin önerdiği konulardan başlayarak planlı bir tekrar yapılmasını öneririz. Tek bir testin sonucu kesin bir yargı değildir.',
+      'Çocuğunuz {g}. sınıf {s} konularının birçoğunda zorlandı. Bazı konular okulda henüz işlenmemiş de olabilir. Yeni konular öncekilerin üzerine kurulduğu için bu eksikler bu yılın konularını da zorlaştırabilir. Sonucu dersin öğretmeniyle paylaşmanızı ve öğretmenin önerdiği konulardan başlayarak planlı bir tekrar yapılmasını öneririz. Tek bir testin sonucu kesin bir yargı değildir.',
+  },
+  // Cevaplar çok hızlı verildi ya da çoğu aynı seçenekte toplandı: sonuç yorumlanmaz.
+  guessed: {
+    student:
+      '{g}. sınıf {s} sorularındaki cevaplarının bir kısmı tahminle verilmiş olabilir. Bu yüzden sonuç yorumlanmadı: bu konularda neyi bildiğini tam göstermiyor. Aşağıdaki soruların çözümlerine bak ve takıldığın konuları öğretmeninle konuş.',
+    parent:
+      'Çocuğunuzun cevaplarının bir kısmı tahminle verilmiş olabilir. Bu yüzden sonuç yorumlanmadı: {g}. sınıf {s} konularında neyi bildiğini tam göstermiyor. Sonucu öğretmeniyle birlikte değerlendirmenizi ve testin acele etmeden yeniden çözülmesini öneririz.',
+  },
+  // Bütün sorularda "Bilmiyorum" dendi: sonuç yorumlanmaz.
+  allDontKnow: {
+    student:
+      'Bütün sorularda “Bilmiyorum” dedin. Bu yüzden bu tarama, {g}. sınıf {s} konularında neyi bildiğini gösteremiyor. Bu konuların derste işlenip işlenmediğini öğretmenine sorabilirsin.',
+    parent:
+      'Çocuğunuz bütün sorularda “Bilmiyorum” seçeneğini işaretledi. Bu yüzden bu tarama, {g}. sınıf {s} konularında neyi bildiğini gösteremiyor. Sonucu öğretmeniyle paylaşmanızı ve konuların işlenip işlenmediğini sormanızı öneririz.',
   },
 };
 
-/** "Veri alanındaki" / "Veri ve Geometri ve ölçme alanlarındaki" */
+/** "“Veri” alanındaki" / "“Veri” ve “Geometri ve ölçme” alanlarındaki": alan adlarında virgül ve "ve" geçtiği için tırnak içinde. */
 function domainPhrase(names: string[]): string {
-  if (names.length === 1) return `${names[0]} alanındaki`;
-  return `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]} alanlarındaki`;
+  const q = names.map((n) => `“${n}”`);
+  if (q.length === 1) return `${q[0]} alanındaki`;
+  return `${q.slice(0, -1).join(', ')} ve ${q[q.length - 1]} alanlarındaki`;
 }
 
 /** Derse özgü çalışma önerileri (şimdilik matematik). */
 const ACADEMIC_TIPS: Record<string, Record<Voice, string[]>> = {
   Matematik: {
     student: [
-      'Yanlış yaptığın her soruyu açıklamasını okuduktan sonra birkaç gün içinde kâğıda bakmadan yeniden çöz.',
+      'Yanlış yaptığın her soruyu açıklamasını okuduktan sonra birkaç gün içinde çözüme bakmadan yeniden çöz.',
       'Kısa ama sık çalış: her gün 15–20 dakika, haftada bir uzun oturumdan daha etkilidir.',
       'Çalışırken farklı konulardan soruları karıştır; yalnızca aynı tür soruları art arda çözmek, sınavda hangi yöntemi kullanacağını seçmeyi öğretmez.',
       'Takıldığın yerleri not al ve öğretmenine sor. Soru sormak, öğrenmenin en hızlı yollarından biridir.',
@@ -1140,23 +1205,32 @@ function buildAcademic(
   const label = (b: Band) => bandLabels[b] ?? b;
   const band = result.band === 'high' || result.band === 'average' ? result.band : 'low';
   const byItem = new Map(result.items.map((r) => [r.key, r]));
-  // Genel metin: bütün sorular doğruysa ayrı metin; genel sonuç iyi ama bir alan öncelikliyse o alan söylenir; bütün
-  // alanlar öncelikliyse eksiklerin "belirli konularda toplandığı" söylenmez.
+  // Cevaplar çok hızlı verildiyse ya da aynı seçenekte toplandıysa seçilen seçenekler tahmin olabilir: sonuç (genel
+  // sonuç, alanlar ve hata türleri) yorumlanmaz. Bütün sorularda "Bilmiyorum" denmişse de tarama bir şey göstermez.
+  // Bütün sorular doğruysa tahmin söz konusu değildir.
+  const guessed = result.correct < result.n && (result.flags.tooFast || result.flags.sameLetter);
+  const allDontKnow = result.dontKnow === result.n;
+  const interpreted = !guessed && !allDontKnow;
+  // Genel metin: bütün sorular doğruysa ayrı metin; genel sonuç iyi ya da orta ama bazı alanlar öncelikliyse o alanlar
+  // söylenir; alanların çoğu öncelikliyse eksiklerin "belirli konularda toplandığı" söylenmez.
   const lowDomains = form.domains.filter((d) => result.domains.find((x) => x.key === d.key)?.band === 'low').map((d) => d.name);
-  const textKey: keyof typeof ACADEMIC_TEXT =
-    result.correct === result.n
-      ? 'perfect'
-      : band === 'high'
-        ? lowDomains.length
-          ? 'highGap'
-          : 'high'
-        : band === 'low' && lowDomains.length === form.domains.length
-          ? 'allLow'
-          : band;
-
-  // Cevaplar çok hızlı verildiyse ya da aynı seçenekte toplandıysa seçilen seçenekler tahmin olabilir: bir hata
-  // türünü göstermez, hata türleri yorumlanmaz.
-  const guessed = result.flags.tooFast || result.flags.sameLetter;
+  const textKey: keyof typeof ACADEMIC_TEXT = allDontKnow
+    ? 'allDontKnow'
+    : guessed
+      ? 'guessed'
+      : result.correct === result.n
+        ? 'perfect'
+        : band === 'high'
+          ? lowDomains.length
+            ? 'highGap'
+            : 'high'
+          : band === 'average'
+            ? lowDomains.length
+              ? 'averageGap'
+              : 'average'
+            : lowDomains.length * 2 > form.domains.length
+              ? 'allLow'
+              : 'low';
   const misconceptions = guessed
     ? []
     : result.misconceptions
@@ -1164,21 +1238,41 @@ function buildAcademic(
         .map((m) => ({ key: m.key, ...def.misconceptions[m.key], count: m.count, itemNumbers: m.itemNumbers }));
   const repeated = misconceptions.some((m) => m.count > 1);
   const you = audience !== 'parent';
+  // Yalnızca birer soruda görülen hata türleri aynı öncelikli alanda toplanıyorsa "dikkatsizlik" denmez: o alan söylenir.
+  const domainOfItem = (no: number) => form.items[no - 1]?.domain;
+  const lowKeys = new Set(form.domains.filter((d) => lowDomains.includes(d.name)).map((d) => d.key));
+  const inLow = new Map<string, number>();
+  for (const m of misconceptions) {
+    const ds = new Set(m.itemNumbers.map(domainOfItem));
+    if (ds.size === 1) {
+      const k = [...ds][0];
+      if (k && lowKeys.has(k)) inLow.set(k, (inLow.get(k) ?? 0) + 1);
+    }
+  }
+  const gather = [...inLow.entries()].sort((x, y) => y[1] - x[1])[0];
+  const gatherName = gather && gather[1] >= 2 ? form.domains.find((d) => d.key === gather[0])?.name : undefined;
+  const gatherShare = gather && gather[1] === misconceptions.length ? 'hepsi' : `${gather?.[1]} tanesi`;
   const misconceptionNote = guessed
-    ? you
-      ? 'Cevaplar çok hızlı verildiği ya da çoğu aynı seçenekte toplandığı için hata türleri yorumlanmadı: seçilen seçenekler tahmin olabilir.'
-      : 'Cevaplar çok hızlı verildiği ya da çoğu aynı seçenekte toplandığı için hata türleri yorumlanmadı: seçilen seçenekler tahmin olabilir.'
-    : misconceptions.length === 0
+    ? 'Cevaplar çok hızlı verildiği ya da çoğu aynı seçenekte toplandığı için hata türleri yorumlanmadı: seçilen seçenekler tahmin olabilir.'
+    : result.wrong === 0
       ? you
-        ? 'Yanlış cevapların belirli bir hata türünde toplanmıyor.'
-        : 'Yanlış cevaplar belirli bir hata türünde toplanmıyor.'
-      : repeated
+        ? 'Yanlış cevabın yok; bilmediğin sorularda “Bilmiyorum” dedin. Bu yüzden hata türü çıkarılmadı.'
+        : 'Yanlış cevap yok; çocuğunuz bilmediği sorularda “Bilmiyorum” dedi. Bu yüzden hata türü çıkarılmadı.'
+      : misconceptions.length === 0
         ? you
-          ? 'Birden fazla soruda görülen hata türleri, üzerinde durman gereken konuları en iyi gösteren işaretlerdir.'
-          : 'Birden fazla soruda görülen hata türleri güçlü bir işarettir. Tek soruda görülenler dikkatsizlikten de kaynaklanmış olabilir.'
-        : you
-          ? 'Her hata türü yalnızca bir soruda görüldü; bunlar dikkatsizlikten de kaynaklanmış olabilir. Yine de açıklamalara göz atman yararlı olur.'
-          : 'Her hata türü yalnızca bir soruda görüldü; bunlar dikkatsizlikten de kaynaklanmış olabilir. Kesin bir yargı için öğretmenin gözlemleriyle birlikte değerlendirilmelidir.';
+          ? 'Yanlış cevapların belirli bir hata türünde toplanmıyor.'
+          : 'Yanlış cevaplar belirli bir hata türünde toplanmıyor.'
+        : repeated
+          ? you
+            ? 'Birden fazla soruda görülen hata türleri daha dikkate değer bir işarettir.'
+            : 'Birden fazla soruda görülen hata türleri daha dikkate değer bir işarettir. Tek soruda görülenler dikkatsizlik ya da tahmin de olabilir.'
+          : gatherName
+            ? you
+              ? `Her hata türü yalnızca bir soruda görüldü; ama bunların ${gatherShare} “${gatherName}” alanının sorularında. Bu alanın çözümlerini dikkatle okuman iyi olur.`
+              : `Her hata türü yalnızca bir soruda görüldü; ama bunların ${gatherShare} “${gatherName}” alanının sorularında. Bu alana öncelik verilmesi iyi olur.`
+            : you
+              ? 'Her hata türü yalnızca bir soruda görüldü; bunlar dikkatsizlik ya da tahmin de olabilir. Yine de açıklamalara göz atman yararlı olur.'
+              : 'Her hata türü yalnızca bir soruda görüldü; bunlar dikkatsizlik ya da tahmin de olabilir. Kesin bir yargı için öğretmenin gözlemleriyle birlikte değerlendirilmelidir.';
 
   return {
     subject: def.subject,
@@ -1190,10 +1284,13 @@ function buildAcademic(
     band,
     bandLabel: label(band),
     bandNames: { low: label('low'), average: label('average'), high: label('high') },
+    interpreted,
+    guessed,
     text: ACADEMIC_TEXT[textKey][voice(audience)]
       .replaceAll('{g}', String(form.contentGrade))
       .replaceAll('{s}', def.subject.toLocaleLowerCase('tr-TR'))
-      .replaceAll('{d}', domainPhrase(lowDomains)),
+      .replaceAll('{d}', domainPhrase(lowDomains))
+      .replaceAll('{b}', lowDomains.length > 1 ? 'bu alanlardan' : 'bu alandan'),
     domains: form.domains.map((d) => {
       const r = result.domains.find((x) => x.key === d.key);
       const b = r?.band ?? 'low';

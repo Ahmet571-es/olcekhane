@@ -66,7 +66,7 @@ describe('test raporları', () => {
 
   it('okuma: anlama, hız ve soru türleri', () => {
     const r = evaluate('okuma-hizi-ve-anlama', readingBody(5));
-    expect(r.parent.keyFigures.map((f) => f.label)).toEqual(['Anlama', 'Okuma hızı', 'Anlayarak okuma']);
+    expect(r.parent.keyFigures.map((f) => f.label)).toEqual(['Anlama', 'Okuma hızı', 'Anlayarak okuma hızı']);
     expect(r.parent.keyFigures[0].value).toBe('8/8');
     expect(r.parent.chart?.type).toBe('bars');
   });

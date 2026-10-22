@@ -61,7 +61,7 @@ export const matematik: QuizInstrument = {
       'Pilot aşamasındadır. Soruların güçlüğü ve ayırt ediciliği ile formların güvenirliği (KR-20) henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yoktur; sonuçlar ölçüt temellidir. Bir alanda 4 sorudan en az 3’ünü doğru yapmak “sağlam”, 2’sini doğru yapmak “pekiştirilmeli”, daha azını doğru yapmak “öncelikli” olarak yorumlanır. Testin geneli için de aynı oranlar kullanılır (20 sorudan en az 15 ve en az 10 doğru).',
+      'Bu testin Türkiye’deki öğrencilerle karşılaştırma tablosu (norm) yoktur. Sonuç, başkalarıyla karşılaştırılarak değil, doğru sayısına göre yorumlanır. Bir alanda 4 sorudan 3 ya da 4 doğru “sağlam”, 2 doğru “pekiştirilmeli”, 0 ya da 1 doğru “öncelikli” sayılır. Testin genelinde 20 sorudan 15 ve üstü “sağlam”, 10–14 “pekiştirilmeli”, 9 ve altı “öncelikli”dir.',
     ageNote:
       '5.–8. sınıflar. Her öğrenci, bulunduğu sınıftan bir önceki sınıfın konularını içeren formu çözer; böylece test yılın her döneminde adil olur ve yeni konuların üzerine kurulacağı temeli yoklar. 2024’ten itibaren kademeli olarak uygulanan Türkiye Yüzyılı Maarif Modeli programında sınıf düzeyi değişen konular, öğrencinin gerçekten işlemiş olacağı biçimde seçilmiştir.',
     license: 'Özgün test. Ölçekhane tarafından geliştirilmiştir.',

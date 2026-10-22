@@ -132,7 +132,10 @@ describe('matematik konu tarama: yol haritası şablonu', () => {
         });
         const correct = counts.reduce((x, y) => x + y, 0);
         for (const audience of AUDIENCES) {
-          const content = { audience, academic: { contentGrade: form.contentGrade, n: 20, correct, domains } } as unknown as ReportContent;
+          const content = {
+            audience,
+            academic: { contentGrade: form.contentGrade, n: 20, correct, wrong: 20 - correct, domains, interpreted: true, guessed: false },
+          } as unknown as ReportContent;
           const rm = buildAcademicRoadmap(content, t, { preview: false, next: NEXT })!;
           const what = `${form.key} ${counts.join('')} ${audience}`;
           n++;
@@ -150,7 +153,7 @@ describe('matematik konu tarama: yol haritası şablonu', () => {
           }
           const titles = [correct < 20 ? 'Hata defteri' : 'Bir adım ileri', need[0]?.title ?? t.extraWeeks[0].title, need[1]?.title ?? t.extraWeeks[1].title, 'Gözden geçir'];
           check(rm.weeks.map((w) => w.title).join('|') === titles.join('|'), what, 'haftalar');
-          check(correct === 20 || rm.weeks[0].text.includes(` ${20 - correct} soru`), what, '1. hafta sayısı');
+          check(correct === 20 || (rm.weeks[0].text.startsWith(pick(t.firstWeek.wrong, audience)) && rm.weeks[0].text.endsWith(pick(t.firstWeek.reason, audience))), what, '1. hafta');
           check(rm.standout[0].title === 'Genel sonuç' && rm.standout[0].text === `${correct} / 20 doğru`, what, 'genel sonuç');
           const groups = (['low', 'average', 'high'] as const).filter((b) => domains.some((x) => x.band === b)).map((b) => labels[b]);
           check(rm.standout.slice(1).map((x) => x.title).join('|') === groups.join('|'), what, 'kısaca');
@@ -231,28 +234,37 @@ describe('okuma hızı ve anlama: yol haritası şablonu', () => {
     let n = 0;
     for (const counts of product(totals.map((x) => x + 1))) {
       for (const band of ['low', 'average', 'high', 'very_high'] as Band[]) {
-        for (const tooFast of [false, true]) {
+        for (const speed of ['ok', 'slow', 'fast', 'tooFast', 'tooSlow'] as const) {
           for (const audience of AUDIENCES) {
             const skills = keys.map((k, i) => ({ key: k, label: labels[k], correct: counts[i], total: totals[i] }));
+            const tooFast = speed === 'tooFast';
+            const tooSlow = speed === 'tooSlow';
+            const pace = tooFast ? 'fast' : tooSlow ? 'slow' : speed;
             const content = {
               audience: audience as Audience,
               sections: [{ scaleKey: 'comprehension', band, summary: 'Özet', bandLabel: 'Düzey' }],
-              reading: { wpm: 120, skills, tooFast },
+              reading: { wpm: 1234, skills, tooFast, tooSlow, pace },
             } as unknown as ReportContent;
             const rm = buildReadingRoadmap(content, t, { preview: false, next: NEXT })!;
-            const what = `${counts.join('')} ${band} ${tooFast} ${audience}`;
+            const what = `${counts.join('')} ${band} ${speed} ${audience}`;
             n++;
             expect(rm.bars, what).toHaveLength(4);
             expect(rm.study.items, what).toHaveLength(5);
             const ratios = rm.study.items.slice(0, 4).map((i) => skills.find((s) => s.key === i.key)!).map((s) => s.correct / s.total);
             expect(ratios, what).toEqual([...ratios].sort((x, y) => x - y));
-            const pace = tooFast ? 'rush' : band === 'high' || band === 'very_high' ? 'extend' : 'build';
-            expect(rm.study.items[4].text, what).toBe(pick(t.pace[pace].text, audience));
+            // Hız yorumlanmadıysa hız sayısı gösterilmez; çok kısa sürede anlama iyiyse "ön bilgi", değilse "yavaşla";
+            // süre çok uzunsa ya da hız yavaşsa akıcılık; hız olağan ve anlama zayıfsa anlama önerisi; hızlı ve zayıfsa yavaşla.
+            const high = band === 'high' || band === 'very_high';
+            const want = tooFast ? (high ? 'skim' : 'rush') : tooSlow ? 'build' : pace === 'fast' && !high ? 'quick' : high ? (pace === 'slow' ? 'build' : 'extend') : pace === 'slow' ? 'build' : 'understand';
+            expect(rm.study.items[4].text.endsWith(pick(t.pace[want].text, audience)), what).toBe(true);
+            const shown = JSON.stringify(rm);
+            if (tooFast || tooSlow) expect(shown, what).not.toContain('1.234');
+            else expect(rm.standout[1].text, what).toBe('Dakikada 1.234 kelime');
             const weakest = skills.filter((s) => s.correct < s.total).sort((x, y) => x.correct / x.total - y.correct / y.total)[0];
             expect(rm.weeks.map((w) => w.title), what).toEqual([
               'Okuma günlüğü',
               weakest ? weakest.label : t.extraWeek.title,
-              t.pace[pace].week.title,
+              t.pace[want].week.title,
               'Gözden geçir',
             ]);
             expect(rm.standout.length, what).toBe(weakest && weakest.correct / weakest.total < 0.5 ? 3 : 2);
@@ -268,7 +280,7 @@ describe('okuma hızı ve anlama: yol haritası şablonu', () => {
         }
       }
     }
-    expect(n).toBe(4 * 3 * 3 * 2 * 4 * 2 * 2);
+    expect(n).toBe(4 * 3 * 3 * 2 * 4 * 5 * 2);
   });
 
   it('rapora eklenir: her metinde öğrenci ve veli raporunda; PDF yol haritasıyla üretilir', async () => {

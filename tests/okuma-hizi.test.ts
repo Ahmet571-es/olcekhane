@@ -105,8 +105,10 @@ describe('Okuma Hızı ve Anlama: puanlama ve rapor', () => {
       data: { engine: 'reading', passageKey: p.key, readingMs: msFor(p, 100), answers: answersWith(p, 8) },
     });
     const speed = r.parent.items.find((i) => i.title === 'Okuma hızı')!.text;
-    expect(speed).toContain('kelimeyi doğru okuduğu');
-    expect(speed).toContain('doğrudan karşılaştırılamaz');
+    expect(speed).toContain('Ankara’da yapılan bir çalışmada 4. sınıf öğrencileri sesli okumada dakikada ortalama 97 kelimeyi doğru okudu');
+    expect(speed).toContain('bu yüzden iki sayı karşılaştırılmaz');
+    // Aralık verilmez: norm gibi okunmasın.
+    expect(speed).not.toMatch(/çoğu|arasındadır/);
     expect(speed).not.toContain('Sessiz okuma genellikle sesli okumadan hızlıdır');
     // Doğru ve yavaş okuyan lise öğrencisine akıcılık (tekrarlı okuma) önerilir, "yeni türler" değil.
     const g10 = passageForGrade(okumaHizi, 10);
@@ -120,6 +122,6 @@ describe('Okuma Hızı ve Anlama: puanlama ve rapor', () => {
       data: { engine: 'reading', passageKey: g10.key, readingMs: msFor(g10, 300), answers: answersWith(g10, 3) },
     });
     expect(low.student.roadmap!.weeks[2].title).toBe('Yavaşla ve anla');
-    expect(low.student.keyFigures.find((f) => f.label === 'Anlayarak okuma')!.value).toBe('—');
+    expect(low.student.keyFigures.find((f) => f.label === 'Anlayarak okuma hızı')!.value).toBe('—');
   });
 });

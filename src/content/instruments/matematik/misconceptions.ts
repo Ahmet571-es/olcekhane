@@ -75,7 +75,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   ebob_ekok: {
     name: 'Ortak bölen ve ortak kat',
     explain:
-      'Bir problemde en büyük ortak bölenin mi en küçük ortak katın mı gerektiğini karıştırma ya da ortak kat yerine sayıların toplamını veya çarpımını kullanma.',
+      'Bir problemde en büyük ortak bölenin mi, en küçük ortak katın mı gerektiğini karıştırma. Ortak kat yerine sayıların toplamını ya da çarpımını kullanma da bu hataya girer.',
     tip: '“Eşit parçalara bölme” problemlerinde ortak bölen, “yeniden aynı anda buluşma” problemlerinde ortak kat aranır. Katları ya da bölenleri liste hâlinde yazmak hangisinin gerektiğini gösterir.',
   },
   negatif_siralama: {
@@ -194,7 +194,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   },
   cebir_yan_yana: {
     name: 'Harfli ifadeleri okuma',
-    explain: '3a gibi bir ifadeyi 3 ile a’nın çarpımı değil, yan yana yazılmış rakamlar ya da toplam gibi okuma (a = 4 için 34 ya da 7).',
+    explain: '3a, 3 ile a’nın çarpımıdır. Bu hata, 3a’yı yan yana yazılmış rakamlar ya da toplam gibi okumaktır (a = 4 için 34 ya da 7).',
     tip: '3a’yı “3 tane a” ya da “3 × a” olarak okumaya alışmak bu karışıklığı giderir.',
   },
   sozel_cebir: {
@@ -206,7 +206,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
     name: 'Denklem çözme',
     explain:
       'Bilinmeyeni bulurken ters işlem yerine aynı işlemi yapma ya da bir terimi eşitliğin öbür tarafına işaretini değiştirmeden geçirme.',
-    tip: 'Bulunan cevabı denklemde yerine koyup iki tarafın eşit olup olmadığını kontrol etmek hatayı her zaman yakalar.',
+    tip: 'Bulunan cevabı denklemde yerine koyup iki tarafın eşit olup olmadığını kontrol etmek, çözümdeki hatayı yakalamanın en güvenilir yoludur.',
   },
 
   /* ---------- Geometri ve ölçme ---------- */
@@ -230,7 +230,7 @@ export const MISCONCEPTIONS: Record<string, Misconception> = {
   alan_birim: {
     name: 'Alan birimleri',
     explain:
-      'Alan birimlerini dönüştürürken uzunluk birimlerindeki çarpanı kullanma (1 m = 100 cm olduğu için 1 m² = 100 cm² sanma; oysa 1 m² = 10 000 cm²).',
+      'Alan birimlerini dönüştürürken uzunluk birimlerindeki gibi 10, 100 ya da 1000 ile çarpma. Oysa 1 m² = 100 × 100 = 10 000 cm²’dir.',
     tip: 'Kenarı 1 m olan bir kareyi kenarı 1 cm olan karelerle kaplamayı düşünmek: 100 sıra × 100 kare = 10 000 kare.',
   },
   birim_donusum: {

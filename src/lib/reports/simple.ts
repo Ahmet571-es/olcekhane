@@ -261,7 +261,7 @@ export function disclaimerText(report: Pick<ReportContent, 'audience' | 'academi
     return {
       title: 'Bu rapor bir sınav notu değildir.',
       text: byAudience(report.audience, {
-        student: 'Tek bir testteki cevaplarına dayanır ve bugün neyi bildiğini gösterir. Eksikler çalışarak tamamlanır.',
+        student: 'Tek bir testteki cevaplarına dayanır ve bugün neyi bildiğine dair bir ipucu verir. Eksikler çalışarak tamamlanır.',
         parent:
           'Tek bir testteki cevaplara dayanır ve bugünkü durumu gösterir. Öğretmenin gözlemleriyle birlikte değerlendirilmeli; sınıf geçme ya da okul seçimi gibi kararlarda tek başına dayanak olarak kullanılmamalıdır.',
       }),
@@ -622,6 +622,7 @@ function quizGauge(a: NonNullable<ReportContent['academic']>): GaugeVisual {
     valueLabel: `${a.correct}/${a.n}`,
     zones,
     active: a.band === 'high' ? 2 : a.band === 'average' ? 1 : 0,
+    discrete: true,
   };
 }
 
@@ -849,20 +850,24 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
   if (r.reading) {
     const x = r.reading;
     const comp = r.sections[0];
+    const speedRead = !x.tooFast && !x.tooSlow;
     return {
       ...base,
-      chartTitle: 'Soru türlerine göre',
+      chartTitle: 'Soru türlerine göre doğru cevaplar',
+      chartNote: 'Her soru türü bir ile üç soruyla ölçüldü. Tek bir soru çubuğu çok değiştirir; bu yüzden türler arasındaki farklar yalnızca kaba bir fikir verir.',
       chart: {
         type: 'bars',
         rows: x.skills.map((s) => ({ label: s.label, value: s.correct, max: s.total, valueLabel: `${s.correct}/${s.total}` })),
       },
       keyFigures: [
         { label: 'Anlama', value: `${x.correct}/${x.total}`, note: 'doğru cevap' },
-        { label: 'Okuma hızı', value: nf0.format(x.wpm), note: 'kelime/dakika' },
-        // Anlama 6/8'in altındaysa ya da süre güvenilmezse yorumlanmaz: göz gezdirip tahminle cevaplayan yüksek görünmesin.
+        speedRead
+          ? { label: 'Okuma hızı', value: nf0.format(x.wpm), note: 'kelime/dakika' }
+          : { label: 'Okuma hızı', value: '—', note: x.tooFast ? 'çok kısa sürede geçildi: yorumlanmadı' : 'süre çok uzun: yorumlanmadı' },
+        // Anlama 6/8'in altındaysa ya da süre güvenilmezse hesaplanmaz: göz gezdirip tahminle cevaplayan yüksek görünmesin.
         x.effectiveWpm === null
-          ? { label: 'Anlayarak okuma', value: '—', note: 'anlama 6/8’in altında ya da süre güvenilmez: yorumlanmadı' }
-          : { label: 'Anlayarak okuma', value: nf0.format(x.effectiveWpm), note: 'hız × şansla düzeltilmiş anlama' },
+          ? { label: 'Anlayarak okuma hızı', value: '—', note: speedRead ? 'anlama 6/8’in altında: hesaplanmadı' : 'hız yorumlanmadığı için hesaplanmadı' }
+          : { label: 'Anlayarak okuma hızı', value: nf0.format(x.effectiveWpm), note: 'kelime/dakika' },
       ],
       itemsTitle: x.passageTitle ? `“${x.passageTitle}” metni` : 'Okuma sonucu',
       items: [
@@ -872,30 +877,32 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
               withVisual({ title: 'Anlama', badge: comp.bandLabel, text: comp.text }, {
                 type: 'dots',
                 label: 'Anlama soruları',
-                rows: [{ label: 'Sorular', filled: x.correct, total: x.total, valueLabel: `${x.correct}/${x.total}` }],
-                legend: ['doğru', 'yanlış ya da boş'],
+                rows: [{ label: 'Doğru', filled: x.correct, total: x.total, valueLabel: `${x.correct}/${x.total}` }],
+                legend: ['doğru', 'yanlış'],
               } satisfies DotsVisual),
             ]
           : []),
-        // Hız yorumlanmıyorsa (çok hızlı ya da çok uzun süre) kartın grafiği olmaz. Anlayarak okuma hesaplandıysa grafik
-        // okuma hızını ve anlayarak okumayı yan yana gösterir; hesaplanmadıysa (anlama 6/8'in altında) yalnızca hız kalırdı.
+        // Hız yorumlanmıyorsa (çok kısa ya da çok uzun süre) kartın grafiği olmaz. Yorumlanıyorsa grafik okuma hızını ve
+        // anlayarak okuma hızını yan yana gösterir; anlayarak okuma hızı hesaplanmadıysa onun çubuğu boş kalır.
         withVisual(
           {
             title: 'Okuma hızı',
-            badge: x.tooFast || x.tooSlow ? 'Yorumlanmadı' : `Dakikada ${nf0.format(x.wpm)} kelime`,
+            badge: speedRead ? `Dakikada ${nf0.format(x.wpm)} kelime` : 'Yorumlanmadı',
             text: [
               x.speedNote,
-              x.effectiveWpm !== null
-                ? you
-                  ? 'Grafikteki “anlayarak okuma”, hızının anladığın kısmıdır: dakikada okuduğun kelime sayısı, şans payı çıkarılmış doğru cevap oranıyla çarpılır.'
-                  : 'Grafikteki “anlayarak okuma”, hızın anlaşılan kısmıdır: dakikada okunan kelime sayısı, şans payı çıkarılmış doğru cevap oranıyla çarpılır.'
-                : '',
+              !speedRead
+                ? ''
+                : x.effectiveWpm !== null
+                  ? you
+                    ? '“Anlayarak okuma hızı”, okuma hızını anlama sonucunla birlikte gösterir. Bütün soruları doğru cevaplayan kişide okuma hızına eşittir; yanlışlar arttıkça küçülür. Tahminle bulunabilecek doğrular hesaba katılmaz.'
+                    : '“Anlayarak okuma hızı”, okuma hızını anlama sonucuyla birlikte gösterir. Bütün soruları doğru cevaplayan kişide okuma hızına eşittir; yanlışlar arttıkça küçülür. Tahminle bulunabilecek doğrular hesaba katılmaz.'
+                  : 'Anlayarak okuma hızı, 8 sorudan en az 6’sı doğru olunca hesaplanır.',
               x.referenceNote ?? '',
             ]
               .filter(Boolean)
               .join(' '),
           },
-          x.effectiveWpm !== null
+          speedRead
             ? ({
                 type: 'bars',
                 label: 'Dakikada kelime',
@@ -903,7 +910,9 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
                 unit: 'kelime',
                 rows: [
                   { label: 'Okuma hızı', value: Math.round(x.wpm), valueLabel: nf0.format(x.wpm) },
-                  { label: 'Anlayarak okuma', value: x.effectiveWpm, valueLabel: nf0.format(x.effectiveWpm) },
+                  x.effectiveWpm !== null
+                    ? { label: 'Anlayarak okuma hızı', value: x.effectiveWpm, valueLabel: nf0.format(x.effectiveWpm) }
+                    : { label: 'Anlayarak okuma hızı', value: 0, valueLabel: 'hesaplanmadı' },
                 ],
               } satisfies BarsVisual)
             : undefined,
@@ -931,10 +940,10 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       misconception: it.misconception,
     }));
     const quiz: SimpleQuizReview = {
-      title: you ? 'Yanlış yaptığın ve bilmediğin sorular' : 'Yanlış yapılan ve bilinmeyen sorular',
+      title: you ? 'Yanlış yaptığın ve “Bilmiyorum” dediğin sorular' : 'Yanlış cevaplanan ve “Bilmiyorum” denen sorular',
       intro: missed.length
         ? you
-          ? `${missed.length} sorunun her birinde doğru cevabı ve kısa çözümünü görüyorsun. Çözümü okuduktan birkaç gün sonra soruyu kâğıda bakmadan yeniden çözmeye çalış.`
+          ? `${missed.length} sorunun her birinde doğru cevabı ve kısa çözümünü görüyorsun. Çözümü okuduktan birkaç gün sonra soruyu çözüme bakmadan yeniden çözmeye çalış.`
           : `${missed.length} sorunun her birinde doğru cevap ve kısa çözüm yer alıyor. Soruları çocuğunuzla birlikte, çözümü ona anlattırarak gözden geçirebilirsiniz.`
         : you
           ? 'Bütün soruları doğru yaptın; incelenecek yanlış soru yok.'
@@ -952,48 +961,78 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
         tip: m.tip,
       })),
     };
+    const topics = (d: (typeof a.domains)[number]) => `Sorulan konular: ${d.plain.charAt(0).toLocaleLowerCase('tr-TR')}${d.plain.slice(1)}`;
+    /** Alanın sonucu (sayı yinelenmez; doğru sayısı kartın grafiğinde). */
+    const domainResult = (d: (typeof a.domains)[number]): string => {
+      if (d.dontKnow === d.n) {
+        return you
+          ? 'Bu alanın bütün sorularında “Bilmiyorum” dedin. Bu konular okulda henüz işlenmemiş de olabilir; öğretmenine sorabilirsin.'
+          : 'Çocuğunuz bu alanın bütün sorularında “Bilmiyorum” dedi. Bu konular okulda henüz işlenmemiş de olabilir; öğretmenine sorabilirsiniz.';
+      }
+      const result =
+        d.correct === d.n
+          ? you
+            ? 'Bu alandaki soruların hepsini doğru yaptın.'
+            : 'Çocuğunuz bu alandaki soruların hepsini doğru yaptı.'
+          : d.band === 'high'
+            ? you
+              ? 'Bu alandaki soruların çoğunu doğru yaptın.'
+              : 'Çocuğunuz bu alandaki soruların çoğunu doğru yaptı.'
+            : d.band === 'average'
+              ? you
+                ? 'Bu alandaki soruların bir kısmını doğru yaptın, bir kısmında zorlandın.'
+                : 'Çocuğunuz bu alandaki soruların bir kısmını doğru yaptı, bir kısmında zorlandı.'
+              : you
+                ? 'Bu alandaki sorularda zorlandın; çalışmaya bu alandan başlayabilirsin.'
+                : 'Çocuğunuz bu alandaki sorularda zorlandı; çalışmaya bu alandan başlanabilir.';
+      const dk = d.dontKnow
+        ? you
+          ? `${d.dontKnow === 1 ? 'Bir soruda' : `${d.dontKnow} soruda`} “Bilmiyorum” dedin.`
+          : `${d.dontKnow === 1 ? 'Bir soruda' : `${d.dontKnow} soruda`} “Bilmiyorum” denildi.`
+        : '';
+      return [result, dk].filter(Boolean).join(' ');
+    };
+    // Sonuç yorumlanmıyorsa (cevaplar tahmin olabilir ya da bütün sorularda "Bilmiyorum"): rozetler "Yorumlanmadı",
+    // kart grafikleri ve alanlara göre grafik yok; yanlış sorular ve çözümleri yine gösterilir.
+    const notRead = !a.interpreted;
+    const notReadDomain = a.guessed
+      ? 'Cevapların bir kısmı tahmin olabileceği için bu alan yorumlanmadı.'
+      : you
+        ? 'Bütün sorularda “Bilmiyorum” dediğin için bu alan yorumlanmadı. Bu konular okulda henüz işlenmemiş de olabilir.'
+        : 'Bütün sorularda “Bilmiyorum” denildiği için bu alan yorumlanmadı. Bu konular okulda henüz işlenmemiş de olabilir.';
     return {
       ...base,
-      chartTitle: 'Konu alanlarına göre',
-      // Her alan birkaç soruya dayanır: alan düzeyleri kaba bir göstergedir.
-      chartNote: `${a.contentGrade}. sınıf konuları. Her alan ${perDomain} soruya dayanır; alan düzeyleri kaba bir göstergedir, bir iki sorudaki dikkatsizlik düzeyi değiştirebilir.`,
+      chartTitle: notRead ? '' : 'Konu alanlarına göre',
+      // Her alan birkaç soruya dayanır: alan düzeyleri kaba bir göstergedir. Test bir önceki sınıfın konularını yoklar.
+      chartNote: `Bu test, bir önceki sınıfın temel konularını yoklar: ${a.contentGrade}. sınıf konuları. Her alan ${perDomain} soruya dayanır; alan düzeyleri kaba bir göstergedir. Tek bir sorudaki dikkatsizlik ya da şansla doğru gelen bir cevap düzeyi değiştirebilir.`,
       quiz,
-      chart: {
-        type: 'bars',
-        rows: a.domains.map((d) => ({ label: d.name, value: d.correct, max: d.n, valueLabel: `${d.correct}/${d.n}` })),
-      },
+      chart: notRead
+        ? null
+        : {
+            type: 'bars',
+            rows: a.domains.map((d) => ({ label: d.name, value: d.correct, max: d.n, valueLabel: `${d.correct}/${d.n}` })),
+          },
       keyFigures: [
         { label: 'Doğru', value: `${a.correct}/${a.n}` },
         { label: 'Bilmiyorum', value: String(a.dontKnow) },
-        { label: 'Genel sonuç', value: a.bandLabel },
+        { label: 'Genel sonuç', value: notRead ? 'Yorumlanmadı' : a.bandLabel },
       ],
       itemsTitle: 'Konu alanları',
       items: [
-        withVisual({ title: 'Genel sonuç', badge: a.bandLabel, text: a.text }, quizGauge(a)),
+        notRead ? { title: 'Genel sonuç', badge: 'Yorumlanmadı', text: a.text } : withVisual({ title: 'Genel sonuç', badge: a.bandLabel, text: a.text }, quizGauge(a)),
         // Kartın grafiği alandaki soruları gösterir (dolu kare doğru); doğru sayısı metinde yinelenmez.
         ...a.domains.map((d) =>
-          withVisual(
-            {
-              title: d.name,
-              badge: d.bandLabel,
-              text: [
-                `Bu alandaki sorular: ${d.plain.charAt(0).toLocaleLowerCase('tr-TR')}${d.plain.slice(1)}`,
-                d.dontKnow
-                  ? you
-                    ? `${d.dontKnow === d.n ? 'Bu alanın bütün sorularında' : d.dontKnow === 1 ? 'Bir soruda' : `${d.dontKnow} soruda`} “Bilmiyorum” dedin.`
-                    : `${d.dontKnow === d.n ? 'Bu alanın bütün sorularında' : d.dontKnow === 1 ? 'Bir soruda' : `${d.dontKnow} soruda`} “Bilmiyorum” denildi.`
-                  : '',
-              ]
-                .filter(Boolean)
-                .join(' '),
-            },
-            {
-              type: 'dots',
-              label: `${d.name}: doğru cevaplar`,
-              rows: [{ label: 'Sorular', filled: d.correct, total: d.n, valueLabel: `${d.correct}/${d.n}` }],
-              legend: ['doğru', 'yanlış ya da boş'],
-            } satisfies DotsVisual,
-          ),
+          notRead
+            ? { title: d.name, badge: 'Yorumlanmadı', text: `${topics(d)} ${notReadDomain}` }
+            : withVisual(
+                { title: d.name, badge: d.bandLabel, text: `${domainResult(d)} ${topics(d)}` },
+                {
+                  type: 'dots',
+                  label: d.name,
+                  rows: [{ label: 'Doğru', filled: d.correct, total: d.n, valueLabel: `${d.correct}/${d.n}` }],
+                  legend: ['doğru', 'yanlış ya da “Bilmiyorum”'],
+                } satisfies DotsVisual,
+              ),
         ),
       ],
     };

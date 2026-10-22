@@ -151,11 +151,17 @@ export function scoreQuiz(form: QuizForm, answers: Record<string, QuizAnswer | u
   const notes: string[] = [];
   if (tooFast) {
     notes.push(
-      `Sorular çok hızlı cevaplanmış (soru başına ortanca süre ${Math.round((medianRtMs ?? 0) / 1000)} saniye). Bazı cevaplar okunmadan ya da tahminle verilmiş olabilir.`,
+      `Sorular çok hızlı cevaplanmış: bir soruya çoğunlukla ${QUIZ_TOO_FAST_MS / 1000} saniyeden az zaman ayrılmış. Bazı cevaplar okunmadan ya da tahminle verilmiş olabilir.`,
     );
   }
   if (sameLetter) {
-    notes.push('Cevapların büyük çoğunluğu aynı seçenekte toplanmış; bu, soruların bir kısmının rastgele cevaplandığını gösterebilir.');
+    notes.push('Cevapların çoğu aynı seçenekte toplanmış; bu, soruların bir kısmının rastgele cevaplandığını gösterebilir.');
+  }
+  // "Bilmiyorum" cevapları hız ve seçenek denetimine girmez: soruların çoğunda "Bilmiyorum" denmişse ayrıca söylenir.
+  if (dontKnow === n && n > 0) {
+    notes.push('Bütün sorularda “Bilmiyorum” denmiş; bu yüzden sonuç yorumlanmadı.');
+  } else if (dontKnow * 2 > n) {
+    notes.push('Soruların yarısından çoğunda “Bilmiyorum” denmiş. Bu konuların bir kısmı okulda henüz işlenmemiş olabilir; sonuç dikkatle okunmalı.');
   }
 
   return {

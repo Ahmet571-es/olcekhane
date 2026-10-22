@@ -617,7 +617,11 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    çubuğunda (testin %50 ve %75 eşikleri), alanlar kare kare; okumada anlama soruları ve okuma hızıyla anlayarak okuma
    yan yana; sesli okumada doğru okuma oranı düzey çubuğunda (%90 ve %97), dakikada okunan ve doğru okunan kelime (kendi
    sınıfının metninde sınıf ortalaması çizgisi), akıcılığın dört yönü, anlama soruları, söylenen fikirler. Denetim
-   `tests/beceri-grafikleri.test.ts`. Sıradaki: bu üç testin rapor metinlerinin bağımsız incelemesi.
+   `tests/beceri-grafikleri.test.ts`. Bağımsız inceleme: matematik ve okuma bulguları **uygulandı (2026-10-22)**; sesli
+   okumanın bulguları (özet: metin bitmeden durunca oran okunan kısımdan, hız güvenilmezken sayı
+   gösterilmemesi, yol haritası sırası, uzman kutusu koşulu, Ankara ve yıl sonu verisi, akıcılık eşiği) sırada.
+   Okumada bekleyen içerik işi: bazı sorular metni okumadan da cevaplanabiliyor (başlık ana fikri veriyor, bazı kelime ve
+   bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
@@ -953,6 +957,15 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (46): Matematik ve okuma raporlarında bağımsız incelemenin bulguları uygulandı. Matematik: cevaplar tahmin
+  olabilirse (çok hızlı ya da çoğu aynı seçenek) ya da bütün sorularda "Bilmiyorum" denmişse genel sonuç, alanlar ve yol
+  haritası "Yorumlanmadı"; alan kartları sonucu sözle de anlatıyor; "Pekiştirilmeli" ama bazı alanlar öncelikliyse o
+  alanlar söyleniyor; hatalar bir alanda toplanınca "dikkatsizlik" denmiyor; yanlış yokken hata türü bölümü bunu söylüyor;
+  norm notu, uyarılar, yol haritası (sıralama, "sağlam görünüyor", ortak kat sorusu, hata defteri) sadeleşti. Okuma: hız
+  yorumlanmayınca hiçbir yerde hız sayısı yok; anlama kartı en çok zorlanılan soru türünü söylüyor, az doğruda rastgele
+  işaretlemeyle ayırt edilemeyeceğini belirtiyor; "Anlayarak okuma hızı" adı ve açıklaması; sesli okuma verisi aralıksız ve
+  "Ankara'da" diye; "metindeki bilgiyi hatırlama"; yol haritasında hız olağan ama anlama zayıfsa anlama önerisi, çok kısa
+  sürede anlama iyiyse ön bilgi uyarısı. 3–5. sınıf öğrencisinin raporunun sonundaki not küçük çocuğa göre.
 - 2026-10-22 (45): Raporlarda her başlığa grafik, 3. aşama (okuma hızı ve anlama, sesli okuma, matematik konu tarama):
   genel sonuç ve doğru okuma oranı düzey çubuğunda, alanlar ve sorular kare kare, okuma hızıyla anlayarak okuma ve
   dakikada okunan ile doğru okunan kelime çubuklarla (kendi sınıfının metninde sınıf ortalaması çizgisi), akıcılığın dört
@@ -1025,7 +1038,3 @@ En yeni üstte; en çok 10 madde tutulur.
   bilgi gibi anlatan cümleler ("yeni şeyleri çabuk kavrama" çıkarıldı), yol haritasında iyi oluş kartının önce gelmesi ve
   tekrarlanan önerilerin ayıklanması, mezunlara ayrı destek metni, zor cümlelerin sadeleştirilmesi; `tests/kart-grafikleri.test.ts`
   her testin her kartını dokuz cevap örüntüsüyle dener. Sekiz test telefonda ve masaüstünde çözüldü, PDF'ler açıldı.
-- 2026-10-22 (36): Empati yayında (9. sınıftan yetişkine), yeni 12 testlik listenin ilki: IPIP'in üç ölçeğiyle
-  başkalarını düşünme, duygusal duyarlılık, sıcaklık ve destek; 29 madde, ~5 dakika; rapor kişinin kendini nasıl gördüğünü
-  anlatır, başkalarını doğru anlama becerisini ölçmediğini söyler; öğrenci, veli ve yetişkin raporu, 3 sütunlu yol haritası
-  ("Dinle ve anla" haftası); iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.

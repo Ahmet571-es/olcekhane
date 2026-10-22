@@ -97,7 +97,12 @@ export function scoreReading(
   const tooFast = wpm > limits.max;
   if (tooFast) notes.push('Metin çok hızlı geçilmiş; anlamaya yetecek kadar okunmamış olabilir.');
   const tooSlow = !tooFast && wpm < READING_TOO_SLOW;
-  if (tooSlow) notes.push('Okuma süresi çok uzun ölçüldü; okurken uzun bir ara verilmiş olabilir. Okuma hızı yorumlanmadı.');
+  if (tooSlow) notes.push('Okuma süresi çok uzun ölçüldü: okurken ara verilmiş olabilir ya da metni okumak uzun sürmüş olabilir. Okuma hızı yorumlanmadı.');
+  // Metin çok kısa sürede geçildiği hâlde soruların çoğu doğruysa sonuç metni anlamaktan çok önceki bilgiyi gösterebilir.
+  if (tooFast && comprehension >= EFFECTIVE_MIN_RATIO - 1e-9) {
+    notes.push('Metin çok kısa sürede geçildiği hâlde soruların çoğu doğru cevaplandı. Konu önceden biliniyor olabilir; bu yüzden anlama sonucu, metni anlamaktan çok önceki bilgiyi gösterebilir.');
+  }
+  if (total > 0 && correct === 0) notes.push('Hiçbir soru doğru cevaplanmadı. Sorular dikkatle okunmadan işaretlenmiş olabilir.');
   // Şansla düzeltilmiş anlama oranı: dört seçenekte her üç yanlışa karşılık bir doğru tahminle gelmiş sayılır.
   const wrong = total - correct;
   const corrected = total ? Math.max(0, correct - wrong / 3) / total : 0;
