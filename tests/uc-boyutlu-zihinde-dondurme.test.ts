@@ -38,6 +38,7 @@ import {
   ROTATION3D_RAPID_MS,
   ROTATION3D_SAME_MAX_CORRECT,
   TaskInputError,
+  rotation3dHalfPick,
   rotation3dMirrorPick,
   rotation3dRapid,
   rotation3dSamePair,
@@ -475,7 +476,7 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
     );
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '20 soruda 20 doğru'],
-      ['Dik eksen ve yan yatırma', 'İki bölümde yakın sonuç'],
+      ['Dik eksen ve yan yatırma', 'İki bölümde de hepsi doğru'],
       ['Ayna görüntüleri', 'Ayna görüntüsü seçilmedi'],
       ['Çalışma biçimi', 'Soru başına tipik süre 18 saniye'],
     ]);
@@ -505,24 +506,50 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
   });
 
   it('durumlar: rastgele düzeyi, ters anlaşılan yönerge, sık iki ayna, bölüm farkı, çok hızlı, hep aynı çift', () => {
+    // Tam doğrular az, şekiller de rastgele seçimdeki kadar: rastgele düzeyi.
     const none = evaluate(
+      SLUG,
+      rotation3dBody((q) => ({ response: q.i < 2 ? q.answer : q.i < 6 ? q.mirrors : r3Half(q, q.i), rtMs: 9000 })),
+    );
+    expect(none.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
+    expect(none.student.items[0].visual).toBeUndefined();
+    expect(none.student.items[1].text).toBe('Doğru cevaplar çok az olduğu için iki bölüm karşılaştırılmadı.');
+    expect(none.student.chart).toBeNull();
+    expect(none.student.keyFigures.map((f) => f.value)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', '9 saniye']);
+    expect(none.student.cautions.join(' ')).toContain('rastgele seçen birinin de bulabileceği kadar az');
+
+    // Hiç tam doğru yok ama 20 sorunun hepsinde bir doğru şekil ile bir ayna görüntüsü: rastgele seçimde bu pek olmaz.
+    const allHalf = evaluate(
       SLUG,
       rotation3dBody((q) => ({ response: r3Half(q, q.i), rtMs: 9000 })),
     );
-    expect(none.student.items.map((i) => i.badge)).toEqual(['20 soruda 0 doğru', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
-    expect(none.student.cautions.join(' ')).toContain('rastgele seçen birinin de bulabileceği kadar az');
+    expect(allHalf.student.items[0].text).toContain('Soruların hepsinde iki şekilden birini doğru seçtin, öbürü ise bir ayna görüntüsüydü.');
+    expect(allHalf.student.items[1].text).toBe('Yönerge farklı anlaşılmış olabileceği için iki bölüm karşılaştırılmadı.');
+    expect(allHalf.student.items[2].text).toContain('Yanlış cevaplarının hepsinde bir doğru şekil ile bir ayna görüntüsü seçtin');
+    expect(allHalf.student.cautions.join(' ')).toContain('20 sorunun hepsinde bir döndürülmüş şekil ile bir ayna görüntüsü seçilmiş');
+
+    // 6 doğru, öteki 14 soruda bir doğru şekil ile bir ayna görüntüsü: 40 şeklin 26'sı doğru; rastgele seçim sayılmaz,
+    // yönerge "biri döndürülmüş, biri ayna" diye anlaşılmış olabilir.
+    const half = evaluate(
+      SLUG,
+      rotation3dBody((q) => ({ response: q.i < 6 ? q.answer : r3Half(q, q.i), rtMs: 15_000 })),
+    );
+    expect(half.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 15 saniye']);
+    expect(half.student.items[0].text).toContain('20 sorunun 14 tanesinde iki şekilden birini doğru seçtin, öbürü ise bir ayna görüntüsüydü.');
+    expect(half.student.items[2].text).toContain('Yanlış cevaplarının hepsinde bir doğru şekil ile bir ayna görüntüsü seçtin');
+    expect(half.parent.items[0].text).toContain('Çocuğunuz 20 sorunun 14 tanesinde iki şekilden birini doğru seçti');
+    expect(half.student.cautions).toEqual([
+      'Üç boyutlu zihinde döndürme testinde 20 sorunun 14 tanesinde bir döndürülmüş şekil ile bir ayna görüntüsü seçilmiş; rastgele seçimde bu pek beklenmez. Yönerge farklı anlaşılmış ya da ikinci şekil hep ayna görüntüsüyle karıştırılmış olabilir. Bu sonuç yorumlanmamalıdır.',
+    ]);
+    expect(text(half.student)).not.toContain('rastgele seçen birinin de bulabileceği');
 
     const reversed = evaluate(
       SLUG,
       rotation3dBody((q) => ({ response: q.mirrors, rtMs: 15_000 })),
     );
-    expect(reversed.student.items.map((i) => i.badge)).toEqual([
-      '20 soruda 0 doğru',
-      'Yorumlanmadı',
-      'İki ayna görüntüsü birden: 20 soru',
-      'Soru başına tipik süre 15 saniye',
-    ]);
+    expect(reversed.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 15 saniye']);
     expect(reversed.student.items[0].text).toContain('Yönergeyi ters anlamış');
+    expect(reversed.student.items[1].text).toBe('Yönerge ters anlaşılmış olabileceği için iki bölüm karşılaştırılmadı.');
     expect(reversed.student.items[2].text).toContain('20 yanlış cevabının hepsinde iki ayna görüntüsünü birden seçtin');
     expect(reversed.parent.items[0].text).toContain('Yönerge ters anlaşılmış');
     expect(reversed.student.cautions.join(' ')).toContain('döndürülmüş şekiller yerine ayna görüntüleri aranmış olabilir');
@@ -543,12 +570,13 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
       SLUG,
       rotation3dBody((q) => ({ response: q.part === 1 || q.i >= 16 ? q.answer : r3Half(q), rtMs: 15_000 })),
     );
-    expect(part2.student.items[1].badge).toBe('Yan yatırılmış şekillerde daha çok zorlanma');
-    expect(part2.student.items[1].text).toContain('2. bölümde 10 sorunun 4 tanesinde iki doğru şekli de buldun');
-    expect(part2.student.items[1].text).toContain('1. bölümde 10 sorunun hepsinde iki doğru şekli de buldun');
-    expect(part2.parent.items[1].text).toContain(
-      '1. bölümde çocuğunuz 10 sorunun hepsinde iki doğru şekli de buldu; yan yatırılmış şekillerin olduğu 2. bölümde 10 sorunun 4 tanesinde iki doğru şekli de buldu.',
+    // Bölümlerin sayıları kartın grafiğindedir; metinde yinelenmez.
+    expect(part2.student.items[1].badge).toBe('2. bölümde daha az doğru');
+    expect(part2.student.items[1].visual?.type === 'bars' ? part2.student.items[1].visual.rows.map((x) => x.valueLabel) : []).toEqual(['10/10', '4/10']);
+    expect(part2.student.items[1].text).toBe(
+      'Yalnızca dik eksen çevresinde döndürülmüş şekillerde (1. bölüm), yan yatırılmış şekillerdekinden (2. bölüm) daha çok soruyu doğru buldun. Yan yatırılmış şekillerde iki dönüşü birlikte izlemek gerekir. Bazı çalışmalarda birden çok yönde döndürülmüş şekiller daha zor bulunmuştur. Her bölüm 10 soruya dayanır; bu karşılaştırma kaba bir göstergedir.',
     );
+    expect(part2.parent.items[1].text).toContain('Çocuğunuz yalnızca dik eksen çevresinde döndürülmüş şekillerde (1. bölüm)');
     expect(part2.student.items[2].badge).toBe('Yanlışların hepsinde bir doğru şekil');
     expect(part2.student.items[2].text).toContain('Doğru bulamadığın 6 sorunun hepsinde iki şekilden birini doğru seçtin');
 
@@ -556,7 +584,7 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
       SLUG,
       rotation3dBody((q) => ({ response: q.part === 2 || q.i >= 6 ? q.answer : r3Half(q), rtMs: 15_000 })),
     );
-    expect(part1.student.items[1].badge).toBe('Yan yatırılmış şekillerde daha çok doğru');
+    expect(part1.student.items[1].badge).toBe('2. bölümde daha çok doğru');
     expect(part1.student.items[1].text).toContain('sorulara alışmak zaman alabilir');
 
     const rapid = evaluate(
@@ -567,6 +595,8 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
     expect(rapid.student.items[3].text).toContain('20 sorunun 6 tanesinde 4 saniyeden kısa sürede yanlış cevap verdin.');
     expect(rapid.student.items[2].badge).toBe('Yorumlanmadı');
     expect(rapid.student.items[0].text).toContain('şekillere bakmadan seçmiş olabileceğin');
+    expect(rapid.student.items[1].badge).toBe('Yorumlanmadı');
+    expect(rapid.student.items[1].visual).toBeUndefined();
     expect(rapid.student.items[1].text).toContain('iki bölüm arasındaki fark yorumlanmadı');
 
     // Sık iki ayna ama bazı cevaplar çok hızlı: ayna kartı yorumlamaz, doğru cevaplar kartı ona yönlendirmez, uyarı derinlikten söz etmez.
@@ -584,7 +614,7 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
       SLUG,
       rotation3dBody((q) => ({ response: q.mirrors, rtMs: 2000 })),
     );
-    expect(reversedDoubt.student.items.slice(0, 3).map((i) => i.badge)).toEqual(['20 soruda 0 doğru', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(reversedDoubt.student.items.slice(0, 3).map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
     const rdCautions = reversedDoubt.student.cautions.join(' ');
     expect(rdCautions).not.toContain('ayna görüntüleri aranmış');
     expect(rdCautions).toContain('rastgele seçen birinin de bulabileceği');
@@ -638,7 +668,10 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
             const doubt = rotation3dRapid(result) || rotation3dSamePair(result);
             // Bazı sorularda bakmadan seçilmiş olabilirse "yönerge ters anlaşılmış" yorumu yapılmaz; sonuç rastgele düzeyinde sayılır.
             const reversed = mirrorPick && result.correct <= ROTATION3D_CHANCE_MAX && !doubt;
-            const chance = result.correct <= ROTATION3D_CHANCE_MAX && !reversed;
+            // Çoğu soruda bir doğru, bir ayna: rastgele seçim sayılmaz, yönerge farklı anlaşılmış olabilir.
+            const halfPick = !reversed && rotation3dHalfPick(result);
+            const chance = result.correct <= ROTATION3D_CHANCE_MAX && !reversed && !halfPick;
+            const notRead = reversed || halfPick || chance;
             const wrongN = result.n - result.correct;
             const [p1, p2] = result.parts;
             for (const r of [res.student, res.parent, adult]) {
@@ -649,11 +682,14 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
                 label,
               ).toEqual(TITLES);
               for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
-              expect(r.items[0].badge, label).toBe(`20 soruda ${result.correct} doğru`);
-              expect(r.items[1].badge === 'Yorumlanmadı', label).toBe(chance || reversed);
+              // Yorumlanmayan sonucun rozeti ve grafiği yorumlanmış gibi görünmez.
+              expect(r.items[0].badge, label).toBe(notRead ? 'Yorumlanmadı' : `20 soruda ${result.correct} doğru`);
+              expect(r.items[0].visual === undefined, label).toBe(notRead);
+              expect(r.items[1].badge === 'Yorumlanmadı', label).toBe(notRead || doubt);
+              expect(r.items[1].visual === undefined, label).toBe(notRead || doubt);
               const ayna = r.items[2].badge!;
-              if (reversed || (mirrorPick && !chance && !doubt && wrongN > 0)) expect(ayna, label).toBe(`İki ayna görüntüsü birden: ${result.none} soru`);
-              else if (chance) expect(ayna, label).toBe('Yorumlanmadı');
+              if (notRead) expect(ayna, label).toBe('Yorumlanmadı');
+              else if (mirrorPick && !doubt && wrongN > 0) expect(ayna, label).toBe(`İki ayna görüntüsü birden: ${result.none} soru`);
               else if (wrongN === 0) expect(ayna, label).toBe('Ayna görüntüsü seçilmedi');
               else if (doubt) expect(ayna, label).toBe('Yorumlanmadı');
               else expect(ayna, label).toBe(rotation3dMixHeadline(result));
@@ -665,6 +701,7 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
               const cautions = r.cautions.join(' ');
               expect(cautions.includes('rastgele seçen birinin de bulabileceği'), label).toBe(chance);
               expect(cautions.includes('ayna görüntüleri aranmış olabilir'), label).toBe(reversed);
+              expect(cautions.includes('bir döndürülmüş şekil ile bir ayna görüntüsü seçilmiş'), label).toBe(halfPick);
               expect(cautions.includes('arkaya uzandığı ters görülmüş'), label).toBe(mirrorPick && !reversed && !doubt);
               const rapidNote = cautions.includes('4 saniyeden kısa');
               expect(rapidNote, label).toBe(rotation3dRapid(result));
@@ -673,39 +710,43 @@ describe('Üç boyutlu zihinde döndürme: rapor', () => {
               expect(sameNote, label).toBe(rotation3dSamePair(result));
               expect(/aynı yerdeki iki seçeneği seçt/.test(r.items[3].text), label).toBe(sameNote);
               // Bakmadan seçilmiş olabilirse ya da bölümler karşılaştırılmadıysa süreler de karşılaştırılmaz.
-              if (doubt || chance || reversed) expect(r.items[3].text, label).not.toMatch(/zaman ayırd|yakın süreler|hızlanmış/);
-              if (!chance && !reversed) {
+              if (doubt || notRead) expect(r.items[3].text, label).not.toMatch(/zaman ayırd|yakın süreler|hızlanmış/);
+              if (!notRead) {
                 expect(/şekillere bakmadan seçmiş|şekillere bakılmadan seçilmiş/.test(r.items[0].text), label).toBe(doubt);
                 expect(r.items[0].text.includes('ayna görüntüleri kartına'), label).toBe(mirrorPick && !doubt);
                 const partRows = r.items[1].visual?.type === 'bars' ? r.items[1].visual.rows.map((x) => x.valueLabel) : [];
-                expect(partRows, label).toEqual([`${p1.correct}/10`, `${p2.correct}/10`]);
+                expect(partRows, label).toEqual(doubt ? [] : [`${p1.correct}/10`, `${p2.correct}/10`]);
                 const gap = p1.correct - p2.correct;
                 expect(r.items[1].badge, label).toBe(
                   doubt
-                    ? gap >= ROTATION3D_PART_GAP
+                    ? 'Yorumlanmadı'
+                    : gap >= ROTATION3D_PART_GAP
                       ? '2. bölümde daha az doğru'
                       : gap <= -ROTATION3D_PART_GAP
                         ? '2. bölümde daha çok doğru'
-                        : 'İki bölümde yakın sayıda doğru'
-                    : gap >= ROTATION3D_PART_GAP
-                      ? 'Yan yatırılmış şekillerde daha çok zorlanma'
-                      : gap <= -ROTATION3D_PART_GAP
-                        ? 'Yan yatırılmış şekillerde daha çok doğru'
-                        : 'İki bölümde yakın sonuç',
+                        : p1.correct === 10 && p2.correct === 10
+                          ? 'İki bölümde de hepsi doğru'
+                          : 'İki bölümde yakın sonuç',
                 );
-                // Bakmadan seçilmiş olabilirse bölüm farkı açıklanmaz.
+                // Bakmadan seçilmiş olabilirse bölüm farkı açıklanmaz; grafik olmadığı için sayılar metindedir.
                 if (doubt) {
                   expect(r.items[1].text, label).not.toMatch(/iki dönüşü birlikte|alışmak zaman|çoğunlukla bulabil/);
                   expect(r.items[1].text, label).toContain('fark yorumlanmadı');
+                  expect(r.items[1].text, label).toContain('1. bölümde');
+                } else {
+                  // Sayılar kartın grafiğinde olduğu için metinde yinelenmez.
+                  expect(r.items[1].text, label).not.toMatch(/sorunun (hepsinde|\d+ tanesinde|hiçbirinde)/);
                 }
                 // Ayna kartındaki sayılar sonuçla aynıdır.
                 if (wrongN > 0 && !doubt) expect(r.items[2].text, label).toContain(`${wrongN} soru`);
               }
               // Doğru seçilen şekil sayısı öne çıkan sayılarda ve (hepsi doğru değilse) kartta aynıdır.
-              expect(r.keyFigures.find((f) => f.label === 'Doğru seçilen şekiller')!.value, label).toBe(`${result.figures}/40`);
-              if (!chance && !reversed && result.correct < 20) expect(r.items[0].text, label).toContain(`40 şeklin ${result.figures} tanesi`);
+              expect(r.keyFigures.find((f) => f.label === 'Doğru seçilen şekiller')!.value, label).toBe(notRead ? 'Yorumlanmadı' : `${result.figures}/40`);
+              expect(r.keyFigures.find((f) => f.label === 'Doğru')!.value, label).toBe(notRead ? 'Yorumlanmadı' : `${result.correct}/20`);
+              if (!notRead && result.correct < 20) expect(r.items[0].text, label).toContain(`40 şeklin ${result.figures} tanesi`);
               if (result.correct === 20) expect(r.items[0].text, label).toMatch(/[Ss]oruların hepsinde/);
-              expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual([`${p1.correct}/10`, `${p2.correct}/10`]);
+              if (notRead) expect(r.chart, label).toBeNull();
+              else expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual([`${p1.correct}/10`, `${p2.correct}/10`]);
             }
             expect(text(res.student), label).not.toContain('Çocuğunuz');
             expect(text(adult), label).not.toContain('Çocuğunuz');

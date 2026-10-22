@@ -526,8 +526,8 @@ const zihindeDondurme: TaskRoadmapTemplate = {
   },
   studyTitle,
   studyIntro: t(
-    'Bu görev, şekilleri zihninde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır. Şekil ne kadar çok döndürülmüşse karar vermek çoğu kişide o kadar uzun sürer; bu fark herkeste aynı ölçüde görülmeyebilir.',
-    'Bu görev, şekilleri zihinde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır. Şekil ne kadar çok döndürülmüşse karar vermek çoğu kişide o kadar uzun sürer; bu fark herkeste aynı ölçüde görülmeyebilir.',
+    'Bu görev, şekilleri zihninde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır.',
+    'Bu görev, şekilleri zihinde döndürüp karşılaştırabilmeyi ölçer. Bu beceri harita okumak, bir eşyanın yerleşimini planlamak, geometri ve çizim gibi işlerde kullanılır.',
   ),
   supports: [
     support(0, 'ciz', 'Çizerek düşün', 'Araç', t(
@@ -539,7 +539,7 @@ const zihindeDondurme: TaskRoadmapTemplate = {
       'Mümkünse nesneyi eliyle döndürerek incelemesi (bir küp, bir kutu ya da kâğıttan bir şekil) çocuğunuzun zihnindeki dönüşü somutlaştırır.',
     )),
     support(2, 'harita', 'Yer işaretleriyle yön bul', 'Alışkanlık', t(
-      'Bir yere giderken haritayı gideceğin yöne çevirerek oku ve yol üzerindeki belirgin yerleri (bir park, bir cami, bir okul) aklına not et. Yönleri yer işaretleriyle hatırlamak sağ ve soldan daha kolaydır.',
+      'Bir yere giderken haritayı gideceğin yöne çevirerek oku ve yol üzerindeki belirgin yerleri (bir park, bir cami, bir okul) aklına not et. Yönleri yer işaretleriyle hatırlamak, yalnızca “sağ” ve “sol” ile hatırlamaktan sana daha kolay gelebilir.',
       'Yolculuklarda haritayı gidilen yöne çevirerek okumak ve yol üzerindeki belirgin yerleri birlikte not etmek, çocuğunuzun yön bulmasını kolaylaştırır.',
     )),
     support(3, 'oyun', 'Şekil oyunları', 'Etkinlik', t(
@@ -1597,7 +1597,7 @@ const ucBoyutluBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (üç boyutlu şekilleri zihinde döndürmeyi) gösterir.',
     'Bu tür sorulara alışkın olmak (ör. yapı oyunları, maket yapmak) sonucu etkileyebilir; zihinde döndürme testleri yeniden çözüldüğünde sonuçlar yükselebilir.',
-    'Uzamsal beceriler yaşla ve deneyimle değişir; yan yatırılmış şekillerde zorlanmak olağandır.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir. Yan yatırılmış şekillerde zorlanmak şaşırtıcı değildir.',
   ],
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (üç boyutlu şekilleri zihinde döndürmeyi) gösterir.',
@@ -1636,23 +1636,23 @@ const ucBoyutluZihindeDondurme: TaskRoadmapTemplate = {
   supports: [
     support(0, 'elle', 'Kur, tahmin et, çevir', 'Etkinlik', {
       student:
-        'Küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yap. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin et, sonra çevirip bak. 8 yaşındaki çocuklarla yapılan bir çalışmada, düz resimlerle birkaç dakikalık bir zihinde döndürme alıştırması (cevabın doğru olup olmadığının hemen gösterildiği sorular ya da kısa bir anlatım videosu) yapan çocukların hemen ardından ölçülen zihinde döndürme sonuçları yükselmiş, okumayla ilgili bir etkinlik yapan karşılaştırma grubununki yükselmemiştir; kazancın ne kadar sürdüğü ölçülmemiştir.',
+        'Küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yap. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin et. Sonra çevirip bak. Tahminini gördüğünle karşılaştırmak, şekillerin dönünce nasıl değiştiğini fark etmeni kolaylaştırabilir.',
       parent:
-        'Çocuğunuzla küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yapın. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin etmesini, sonra çevirip bakmasını isteyin. 8 yaşındaki çocuklarla yapılan bir çalışmada, düz resimlerle birkaç dakikalık bir zihinde döndürme alıştırması (cevabın doğru olup olmadığının hemen gösterildiği sorular ya da kısa bir anlatım videosu) yapan çocukların hemen ardından ölçülen zihinde döndürme sonuçları yükselmiş, okumayla ilgili bir etkinlik yapan karşılaştırma grubununki yükselmemiştir; kazancın ne kadar sürdüğü ölçülmemiştir.',
+        'Çocuğunuzla küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yapın. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin etmesini isteyin. Sonra birlikte çevirip bakın. Tahminini gördüğüyle karşılaştırmak, şekillerin dönünce nasıl değiştiğini fark etmesini kolaylaştırabilir.',
       adult:
-        'Küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yap. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin et, sonra çevirip bak. Çocuklarla yapılan bir çalışmada, düz resimlerle birkaç dakikalık bir zihinde döndürme alıştırması (cevabın doğru olup olmadığının hemen gösterildiği sorular ya da kısa bir anlatım videosu) yapanların hemen ardından ölçülen zihinde döndürme sonuçları yükselmiş, okumayla ilgili bir etkinlik yapan karşılaştırma grubununki yükselmemiştir; kazancın ne kadar sürdüğü ölçülmemiştir.',
+        'Küçük küplerden ya da yapı bloklarından bu testteki gibi kollu bir şekil yap. Şekli çevirmeden önce başka bir yönden nasıl görüneceğini tahmin et. Sonra çevirip bak. Tahminini gördüğünle karşılaştırmak, şekillerin dönünce nasıl değiştiğini fark etmeni kolaylaştırabilir.',
     }),
     support(1, 'kol', 'Kolları eşleştir', 'Yöntem', t(
       'Bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirdiğini düşün, sonra kalan iki kola bak: döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır. Bazı kişiler şeklin bütününü birden döndürür, bazıları parça parça karşılaştırır; ikisi de kullanılabilir.',
-      'Çocuğunuza şunu gösterebilirsiniz: bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu hedef şekildeki yerlerine getirdiğini düşünüp kalan iki kola bakabilir; döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır. Bazı kişiler şeklin bütününü birden döndürür, bazıları parça parça karşılaştırır; ikisi de kullanılabilir.',
+      'Çocuğunuza şunu gösterebilirsiniz: bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirdiğini düşünüp kalan iki kola bakabilir; döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır. Bazı kişiler şeklin bütününü birden döndürür, bazıları parça parça karşılaştırır; ikisi de kullanılabilir.',
     )),
     support(2, 'ciz', 'Farklı yönlerden çiz', 'Araç', t(
       'Kurduğun bir şekli önden, yandan ve üstten bakarak kâğıda çiz. Noktalı ya da kareli kâğıt, küplerin kenarlarını düzgün çizmeni kolaylaştırır.',
       'Çocuğunuzdan kurduğu bir şekli önden, yandan ve üstten bakarak kâğıda çizmesini isteyin. Noktalı ya da kareli kâğıt, küplerin kenarlarını düzgün çizmeyi kolaylaştırır.',
     )),
     support(3, 'oyun', 'Uzamsal oyunlar', 'Etkinlik', t(
-      'Yapı oyunları, maket ve üç boyutlu yapbozlar şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
-      'Yapı oyunları, maket ve üç boyutlu yapbozlar çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür; öte yandan 4 haftada 10 saat Tetris oynamanın, bir kart oyunu oynamaya göre zihinde döndürmeyi daha çok geliştirmediği bulunmuştur. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Yapı oyunları, maket ve üç boyutlu yapbozlar şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür. Öte yandan 4 haftada 10 saat Tetris oynamak, aynı süre bir kart oyunu (solitaire) oynamaya göre zihinde döndürmeyi daha çok geliştirmemiştir. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
+      'Yapı oyunları, maket ve üç boyutlu yapbozlar çocuğunuz için şekillerle düşünmeyi keyifli bir uğraş hâline getirir. Pek çok araştırmayı birlikte inceleyen bir çalışmada uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür. Öte yandan 4 haftada 10 saat Tetris oynamak, aynı süre bir kart oyunu (solitaire) oynamaya göre zihinde döndürmeyi daha çok geliştirmemiştir. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç şekillerle düşünmekten keyif almaktır.',
     )),
   ],
   facts: ucBoyutluFacts,
@@ -2348,8 +2348,8 @@ const desenHatirlama: TaskRoadmapTemplate = {
   ),
   supports: [
     support(0, 'ad', 'Görüntüye bir ad ver', 'Yöntem', t(
-      'Bir şekli ya da çizimi aklında tutman gerektiğinde ona kısa bir ad vermeyi dene (ör. “merdiven gibi”, “iki köşesi dolu”). Araştırmalarda kolay ad verilebilen desenlerin daha iyi hatırlandığı, görüntüyü bir anlamla ve sözcükle birlikte aklında tuttuğunu söyleyenlerin daha başarılı olduğu görülmüştür; bu yüzden ad vermek işe yarayabilir.',
-      'Çocuğunuza, bir şekli ya da çizimi aklında tutması gerektiğinde ona kısa bir ad vermesini (ör. “merdiven gibi”, “iki köşesi dolu”) önerebilirsiniz. Araştırmalarda kolay ad verilebilen desenlerin daha iyi hatırlandığı, görüntüyü bir anlamla ve sözcükle birlikte aklında tuttuğunu söyleyenlerin daha başarılı olduğu görülmüştür; bu yüzden ad vermek işe yarayabilir.',
+      'Bir şekli ya da çizimi aklında tutman gerektiğinde ona kısa bir ad vermeyi dene (ör. “merdiven gibi”, “iki köşesi dolu”). Araştırmalarda kolay ad verilebilen desenler daha iyi hatırlanmıştır. Görüntüyü bir sözcükle birlikte aklında tuttuğunu söyleyenler de daha başarılı bulunmuştur. Bu bir ilişkidir; ad vermenin sana yardım edip etmediğini kendin dene.',
+      'Çocuğunuza, bir şekli ya da çizimi aklında tutması gerektiğinde ona kısa bir ad vermesini (ör. “merdiven gibi”, “iki köşesi dolu”) önerebilirsiniz. Araştırmalarda kolay ad verilebilen desenler daha iyi hatırlanmıştır. Görüntüyü bir sözcükle birlikte aklında tuttuğunu söyleyenler de daha başarılı bulunmuştur. Bu bir ilişkidir; ad vermenin ona yardım edip etmediğini birlikte deneyin.',
     )),
     support(1, 'parca', 'Bölümlere ayırarak bak', 'Yöntem', t(
       'Kalabalık bir görüntüye bir bütün olarak bakmak yerine onu bölümlere ayır: önce üst yarısına, sonra alt yarısına bak; her bölümde neyin nerede olduğunu fark et. Bölümlere ayırmak, neye bakacağını düzenlemene ve aklında tutman gereken şeyi küçük parçalara bölmene yardım edebilir.',
@@ -2388,7 +2388,7 @@ const desenHatirlama: TaskRoadmapTemplate = {
     {
       title: 'Eşini bul',
       text: t(
-        'Bu hafta yakınlarınla ya da arkadaşlarınla eşini bul (hafıza kartları) oyna. Oyunun sonunda kartların yerini nasıl aklında tuttuğunuzu (ör. köşelere göre ya da ad vererek) birbirinize anlatın.',
+        'Bu hafta yakınlarınla ya da arkadaşlarınla eşini bul (hafıza kartları) oyna. Oyunun sonunda kartların yerini nasıl aklınızda tuttuğunuzu (ör. köşelere göre ya da ad vererek) birbirinize anlatın.',
         'Bu hafta çocuğunuzla eşini bul (hafıza kartları) oynayın. Oyunun sonunda kartların yerini nasıl aklınızda tuttuğunuzu (ör. köşelere göre ya da ad vererek) birbirinize anlatın.',
       ),
     },

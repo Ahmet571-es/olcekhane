@@ -291,9 +291,9 @@ describe('Kule görevi: rapor', () => {
     expect(r.student.items[0].text).not.toContain('genellikle zorlaşır');
     expect(r.student.items[1].text).toContain('Problemler uzadıkça sonucun düşmedi: uzun problemlerin hepsinde en kısa yolu buldun.');
     expect(r.student.items[2].text).toBe('Bütün problemlerde hedefe en az hamleyle ulaştın.');
-    expect(r.student.items[2].visual?.type === 'stack' ? r.student.items[2].visual.parts.map((x) => x.value) : []).toEqual([20, 0, 0]);
+    expect(r.student.items[2].visual?.type === 'stack' ? r.student.items[2].visual.parts.map((x) => x.value) : []).toEqual([20, 0, 0, 0]);
     expect(r.student.items[3].text).toContain(
-      'Uzun problemlerde (6 ve 7 hamle) ilk hamleden önce kısa problemlerdekinden (3 ve 4 hamle) daha uzun düşünmedin. Buna karşın uzun problemlerin de hepsini en az hamlede çözdün.',
+      'Kısa ve uzun problemlerde ilk topu almadan önce birbirine yakın süre bekledin. Buna karşın uzun problemlerin de hepsini en az hamlede çözdün.',
     );
     expect(text(r.student)).not.toContain('Çocuğunuz');
     expect(text(r.parent)).toContain('Çocuğunuz problemlerin hepsini en az hamlede çözdü.');
@@ -323,11 +323,14 @@ describe('Kule görevi: rapor', () => {
       'Uzun (6 ve 7 hamle) 9,8 sn',
     ]);
     expect(typical.student.items[3].badge).toBe('İlk hamleden önce tipik 7,5 saniye');
+    // İlk topa kadar geçen süre planın kendisi değildir: "plana zaman ayırdın" diye kesin konuşulmaz.
     expect(typical.student.items[3].text).toContain(
-      'Uzun problemlerde (6 ve 7 hamle) ilk hamleden önce kısa problemlerdekinden (3 ve 4 hamle) daha uzun düşündün: problem zorlaştıkça plana daha çok zaman ayırdın.',
+      'Uzun problemlerde ilk topu almadan önce kısa problemlerdekinden daha uzun bekledin. Problem zorlaştıkça başlamadan önce düşünmeye daha çok zaman ayırmış olabilirsin.',
     );
-    expect(typical.parent.items[3].text).toContain(
-      'Çocuğunuz uzun problemlerde (6 ve 7 hamle) ilk hamleden önce kısa problemlerdekinden (3 ve 4 hamle) daha uzun düşündü',
+    expect(typical.parent.items[3].text).toContain('Çocuğunuz uzun problemlerde ilk topu almadan önce kısa problemlerdekinden daha uzun bekledi.');
+    expect(typical.student.items[3].text).toContain('Yetişkinlerle yapılan bir araştırmada');
+    expect(evaluateAdult(SLUG, { ...towerBody((q) => ({ outcome: 'optimal', pickMs: 1500 * q.moves })), grade: ADULT_GRADE }).adult.items[3].text).toContain(
+      'Bir araştırmada, başlamadan önce düşünmeye daha çok pay ayıranlar',
     );
     expect(typical.student.items[3].text).toMatch(/sürenin ortalama %\d+ kadarını ilk hamleden önce/);
     expect(typical.parent.items[1].text).toContain('Problemler uzadıkça en kısa yolu bulması zorlaştı.');
@@ -338,7 +341,7 @@ describe('Kule görevi: rapor', () => {
       towerBody((q) => (q.moves >= 5 ? { outcome: q.i % 2 ? 'extra' : 'unsolved', pickMs: 400 } : { outcome: 'optimal', pickMs: 400 })),
     );
     expect(rapid.student.items[3].text).toContain(
-      '5 ya da daha çok hamlelik 12 problemin 12 tanesinde taşıdığın ilk topu 2 saniyeden kısa sürede aldın ve bu problemleri en az hamlede çözemedin',
+      '5 ya da daha çok hamlelik 12 problemin hepsinde ilk topu 2 saniyeden kısa sürede aldın ve bu problemleri en az hamlede çözemedin',
     );
     expect(rapid.student.items[3].badge).toBe('İlk hamleden önce tipik bir saniyeden kısa');
     expect(rapid.student.items[3].text).toContain('taşıdığın ilk topu alman tipik olarak bir saniyeden kısa sürdü');
@@ -348,8 +351,8 @@ describe('Kule görevi: rapor', () => {
       towerBody((q) => (q.moves >= 5 ? { outcome: 'extra', pickMs: 1600 } : { outcome: 'optimal', pickMs: 300 })),
     );
     expect(edge.student.items[3].badge).toBe('İlk hamleden önce tipik 1,6 saniye');
-    expect(edge.student.items[3].text).toContain('12 problemin 12 tanesinde taşıdığın ilk topu 2 saniyeden kısa sürede aldın');
-    expect(edge.student.items[3].text).not.toMatch(/plana daha çok zaman|daha uzun düşün/);
+    expect(edge.student.items[3].text).toContain('12 problemin hepsinde ilk topu 2 saniyeden kısa sürede aldın');
+    expect(edge.student.items[3].text).not.toMatch(/daha uzun bekled|daha çok zaman ayır/);
     expect(rapid.student.cautions).toEqual([]);
 
     // Birkaç problemde hiç top taşımamak: uyarı ve kartta not.
@@ -361,10 +364,13 @@ describe('Kule görevi: rapor', () => {
       'Kule görevinde 3 problemde hiç top taşınmadan süre dolmuş; bu problemlerde çözüm kafada aranırken süre yetmemiş ya da ara verilmiş olabilir.',
     ]);
     expect(idle.student.items[0].text).toContain(
-      '3 problemde hiç top taşımadan süre doldu; bu problemlerde çözümü kafanda ararken süre yetmemiş ya da ara vermiş olabilirsin. Bu yüzden bu sonuç seni tam yansıtmayabilir.',
+      '3 problemde hiç top taşımadan süre doldu; bu problemlerde çözümü kafanda ararken süre yetmemiş ya da ara vermiş olabilirsin. Bu yüzden sonuç dikkatle okunmalı.',
     );
     expect(idle.student.items[1].text).toContain('Hiç top taşınmadan süresi dolan problemler (uzun problemlerde 3) en az hamlede çözülmemiş sayıldı.');
-    expect(idle.student.items[2].text).toContain('3 problemde hedefe ulaşamadın; bunların hepsinde hiç top taşınmadı.');
+    expect(idle.student.items[2].text).toContain('3 problemde hedefe ulaşamadın; bunların hepsinde hiç top taşımadın.');
+    expect(idle.parent.items[0].text).toContain('3 problemde hiç top taşınmadan süre doldu');
+    // Hiç top taşınmayan problemler grafikte "hedefe ulaşılamadı"dan ayrı gösterilir.
+    expect(idle.student.items[2].visual?.type === 'stack' ? idle.student.items[2].visual.parts.map((x) => x.value) : []).toEqual([17, 0, 0, 3]);
     expect(idle.student.items[2].badge).toBe('3 problemde hedefe ulaşılamadı');
 
     // Yarısında ya da daha çoğunda hiç top taşınmadı: sonuç yorumlanmaz.
@@ -372,12 +378,11 @@ describe('Kule görevi: rapor', () => {
       SLUG,
       towerBody((q) => (q.i % 2 ? { outcome: 'idle' } : { outcome: 'optimal' })),
     );
-    expect(none.student.items.map((i) => i.badge)).toEqual([
-      '20 problemin 10 tanesi en az hamlede',
-      'Yorumlanmadı',
-      '10 problemde hedefe ulaşılamadı',
-      'Yorumlanmadı',
-    ]);
+    expect(none.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(none.student.items.map((i) => i.visual)).toEqual([undefined, undefined, undefined, undefined]);
+    expect(none.student.chart).toBeNull();
+    expect(none.student.keyFigures.map((f) => f.value)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı']);
+    expect(none.student.items[2].text).toBe('20 problemin 10 tanesinde hiç top taşımadın; bu yüzden çözüm biçimi yorumlanmadı.');
     expect(none.student.items[0].text).toContain(
       '20 problemin 10 tanesinde hiç top taşımadan süre doldu; bunların 4 tanesi 3 ve 4 hamlelik kısa problemlerdi.',
     );
@@ -423,7 +428,7 @@ describe('Kule görevi: rapor', () => {
     expect(thinker.student.items[1].text).toContain('Uzun problemlerin yarısında ya da daha çoğunda süre içinde en kısa yolu bulamadın.');
     expect(thinker.student.items[1].text).not.toContain('zorlaştı');
     expect(thinker.student.roadmap!.bars).toHaveLength(5);
-    expect(none.student.cautions.join(' ')).toContain('Bu sonuç tek başına yorumlanmamalıdır');
+    expect(none.student.cautions.join(' ')).toContain('Bu sonuç yorumlanmamalıdır');
     expect(none.student.roadmap!.bars).toEqual([]);
 
     // Uzun problemlerde kısa problemlerden daha başarılı.
@@ -453,7 +458,7 @@ describe('Kule görevi: rapor', () => {
       SLUG,
       towerBody((q) => ({ outcome: q.moves === 5 ? 'idle' : 'optimal' })),
     );
-    expect(midDip.student.items[1].text).toContain('Kısa ve uzun problemlerde sonucun birbirine yakın; 5 hamlelik problemlerde ise 0/4.');
+    expect(midDip.student.items[1].text).toContain('Kısa ve uzun problemlerde sonucun birbirine yakın; 5 hamlelik problemlerde ise daha az problemi en az hamlede çözdün.');
     expect(midDip.student.items[1].text).toContain('(5 hamlelik problemlerde 4)');
     expect(midDip.student.items[1].text).not.toContain('düşmedi');
     // Kısa problemlerin hiçbiri en az hamlede değil.
@@ -523,24 +528,30 @@ describe('Kule görevi: rapor', () => {
         ).toEqual(TITLES);
         for (const i of rep.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
         // Kartların başlıkları sayılarla aynı.
+        // Yorumlanmayan sonucun rozetleri ve grafikleri yorumlanmış gibi görünmez.
         expect(rep.items[0].badge, label).toBe(
-          r.optimal === 0
-            ? '20 problemin hiçbiri en az hamlede değil'
-            : r.optimal === 20
-              ? '20 problemin hepsi en az hamlede'
-              : `20 problemin ${r.optimal === 1 ? 'biri' : `${r.optimal} tanesi`} en az hamlede`,
+          none
+            ? 'Yorumlanmadı'
+            : r.optimal === 0
+              ? '20 problemin hiçbiri en az hamlede değil'
+              : r.optimal === 20
+                ? '20 problemin hepsi en az hamlede'
+                : `20 problemin ${r.optimal === 1 ? 'biri' : `${r.optimal} tanesi`} en az hamlede`,
         );
         // Problem uzunluklarına göre sonuçlar ve çözüm biçimi kartların grafiğindedir.
         const dots = rep.items[0].visual?.type === 'dots' ? rep.items[0].visual.rows.map((x) => `${x.label} ${x.valueLabel}`).join(' · ') : '';
-        expect(dots, label).toBe(levelsOf(r));
+        expect(dots, label).toBe(none ? '' : levelsOf(r));
         expect(rep.items[1].badge, label).toBe(none ? 'Yorumlanmadı' : `Kısa problemlerde ${S.optimal}/8, uzun problemlerde ${L.optimal}/8`);
-        expect(rep.items[2].visual?.type === 'stack' ? rep.items[2].visual.parts.map((x) => x.value) : [], label).toEqual([r.optimal, r.extra, r.unsolved]);
+        expect(rep.items[2].badge === 'Yorumlanmadı', label).toBe(none);
+        expect(rep.items[2].visual?.type === 'stack' ? rep.items[2].visual.parts.map((x) => x.value) : [], label).toEqual(
+          none ? [] : [r.optimal, r.extra, r.unsolved - r.idle, r.idle],
+        );
         expect(rep.items[3].badge, label).toEqual(
           none ? 'Yorumlanmadı' : r.medianPick === null ? 'Süre hesaplanamadı' : expect.stringMatching(/^İlk hamleden önce tipik /),
         );
         // Uyarılar.
         expect(
-          rep.cautions.some((c) => c.includes('Bu sonuç tek başına yorumlanmamalıdır')),
+          rep.cautions.some((c) => c.includes('Bu sonuç yorumlanmamalıdır')),
           label,
         ).toBe(none);
         expect(
@@ -550,11 +561,11 @@ describe('Kule görevi: rapor', () => {
         // En az hamlede çözülenler kartı.
         const a = rep.items[0].text;
         expect(a.includes('sonuç yorumlanmadı'), label).toBe(none);
-        expect(/tam yansıtmayabilir/.test(a), label).toBe(idle);
+        expect(/sonuç dikkatle okunmalı/.test(a), label).toBe(idle);
         expect(a.includes('olağandır'), label).toBe(false);
         expect(a.includes('yönergeyi tam anlamamış') || a.includes('yönerge tam anlaşılmamış'), label).toBe(none || (idle && S.idle > 0));
         expect(a.includes('hepsini en az hamlede'), label).toBe(!none && r.optimal === 20);
-        expect(a.includes('hemen hepsinde'), label).toBe(!none && r.optimal >= 16 && r.optimal < 20);
+        expect(a.includes('hemen hepsinde'), label).toBe(!none && r.optimal >= 18 && r.optimal < 20);
         // Problem uzadıkça kartı.
         const b = rep.items[1].text;
         const flat = S.optimal >= 7 && L.optimal >= 7;
@@ -588,35 +599,39 @@ describe('Kule görevi: rapor', () => {
         if (/[Kk]ısa problemlerin hiçbirinde/.test(b)) expect(S.optimal, label).toBe(0);
         // Çözüm biçimi kartı.
         const c = rep.items[2].text;
-        expect(c.includes(`toplam ${r.excessMoves} hamle fazla`), label).toBe(r.extra > 0);
-        expect(c.includes(`${r.unsolved} problemde hedefe ulaşama`), label).toBe(r.unsolved > 0);
-        if (r.extra > 0) expect(c, label).toContain(r.extra === 1 ? 'bu problemde toplam' : 'bu problemlerde toplam');
-        expect(c.includes('hiç top taşınmadı'), label).toBe(r.idle > 0);
+        expect(c.includes('çözüm biçimi yorumlanmadı'), label).toBe(none);
+        expect(c.includes(`toplam ${r.excessMoves} hamle fazla`), label).toBe(!none && r.extra > 0);
+        expect(c.includes(`${r.unsolved} problemde hedefe ulaşama`), label).toBe(!none && r.unsolved > 0);
+        if (!none && r.extra > 0) expect(c, label).toContain(r.extra === 1 ? 'bu problemde toplam' : 'bu problemlerde toplam');
+        expect(/hiç top taşımadı/.test(c), label).toBe(r.idle > 0);
         expect(c.includes('Hedefte bir çubuğun en altındaki top'), label).toBe(!none && r.extra >= 3 && r.extra >= r.unsolved);
         // Başlamadan önce düşünme kartı.
         const d = rep.items[3].text;
-        expect(d.includes('düşünmeden başlamış olabilir'), label).toBe(!none && r.medianPick !== null && rapid);
+        expect(/saniyeden kısa sürede aldı/.test(d), label).toBe(!none && r.medianPick !== null && rapid);
         if (rapid && !none) {
-          expect(d, label).toContain(`12 problemin ${r.rapid} tanesinde`);
-          expect(d, label).not.toMatch(/plana daha çok zaman|daha uzun düşün/);
+          expect(d, label).toContain(`${r.rapidOf} problemin ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`}`);
+          expect(d, label).not.toMatch(/daha uzun bekled|daha çok zaman ayır/);
         }
-        expect(d.includes('kafanda denemek') || d.includes('kafada denemesi'), label).toBe(
-          !none && r.medianPick !== null && (rapid || (L.optimal <= 4 && /daha uzun düşünme(din|di)\./.test(d))),
+        // Uzun problemlerde ilk topu daha uzun beklemeden alan biri (yakın süre ya da daha çabuk).
+        const notLonger = /yakın süre bekled|daha çabuk aldı/.test(d);
+        expect(d.includes('kafanda denemek') || d.includes('kafasında denemesi'), label).toBe(
+          !none && r.medianPick !== null && (rapid || (L.optimal <= 4 && notLonger)),
         );
         // Aynı öneri iki kartta birden verilmez.
-        expect(c.includes('kafanda denemek') || c.includes('kafada denemesi'), label).toBe(false);
-        expect(d.includes('Buna karşın uzun problemlerin de hepsini'), label).toBe(!none && L.optimal === 8 && /daha uzun düşünme(din|di)\./.test(d));
-        expect(d.includes('Buna karşın uzun problemlerin de hemen hepsini'), label).toBe(!none && L.optimal === 7 && /daha uzun düşünme(din|di)\./.test(d));
+        expect(c.includes('kafanda denemek') || c.includes('kafasında denemesi'), label).toBe(false);
+        expect(d.includes('Buna karşın uzun problemlerin de hepsini'), label).toBe(!none && L.optimal === 8 && notLonger);
+        expect(d.includes('Buna karşın uzun problemlerin de hemen hepsini'), label).toBe(!none && L.optimal === 7 && notLonger);
         expect(d.includes('sürenin ortalama %'), label).toBe(!none && r.medianPick !== null && r.prePlan !== null);
         if (d.includes('sürenin ortalama %')) expect(d, label).toContain(`%${r.prePlan} kadarını`);
         // Grafik, sütunlar ve öne çıkan sayılar kartlarla aynı.
-        expect(rep.chart?.type === 'bars' ? rep.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(r.levels.map((l) => `${l.optimal}/4`));
+        if (none) expect(rep.chart, label).toBeNull();
+        else expect(rep.chart?.type === 'bars' ? rep.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(r.levels.map((l) => `${l.optimal}/4`));
         expect(
           rep.roadmap!.bars.map((x) => x.valueLabel),
           label,
         ).toEqual(none ? [] : r.levels.map((l) => `${l.optimal}/4`));
-        expect(rep.keyFigures.find((f) => f.label === 'En az hamlede çözülen')?.value, label).toBe(`${r.optimal}/20`);
-        expect(rep.keyFigures.find((f) => f.label === 'Hedefe ulaşılamayan')?.value, label).toBe(String(r.unsolved));
+        expect(rep.keyFigures.find((f) => f.label === 'En az hamlede çözülen')?.value, label).toBe(none ? 'Yorumlanmadı' : `${r.optimal}/20`);
+        expect(rep.keyFigures.find((f) => f.label === 'Hedefe ulaşılamayan')?.value, label).toBe(none ? 'Yorumlanmadı' : String(r.unsolved));
         if (!parent) expect(t, label).not.toContain('Çocuğunuz');
       }
       expect(text(res.parent), label).not.toMatch(

@@ -972,6 +972,35 @@ export interface RotationResult {
 export const ROTATION_ANTICIPATION_MS = 300;
 /** Bütün açılardaki tipik süre en az bu kadar doğru cevaptan hesaplanır. */
 export const ROTATION_MIN_CORRECT = 10;
+/** Şans ve ters kararı için en az bu kadar cevap verilmiş deneme gerekir (süre aşımı ve çok erken basış sayılmaz). */
+export const ROTATION_MIN_ANSWERED = 10;
+
+/**
+ * Zihinde döndürmede sonucun durumu (rapor kartları ve uyarılar aynı ayrımı kullanır). Şans ve ters kararı yalnızca cevap
+ * verilen denemelerden verilir: süre aşımı ve çok erken basış rastgele basmak değildir. "missed": cevap verilen
+ * denemelerin çoğu doğru, ama süre aşımları ve çok erken basışlar yüzünden doğru cevap oranı düşük. Denemelerin yarısından
+ * çoğunda süre dolmuşsa ("abandoned"), çok erken basılmışsa ("rushed") ya da ikisi birlikte yarıyı aşıyorsa ("invalid")
+ * sonuç yorumlanmaz (tepki hızındaki ayrımla aynı).
+ */
+export function rotationStatus(ro: RotationResult): 'abandoned' | 'rushed' | 'invalid' | 'reversed' | 'chance' | 'missed' | 'ok' {
+  if (ro.timeouts > ro.n / 2) return 'abandoned';
+  if (ro.anticipations > ro.n / 2) return 'rushed';
+  if (ro.timeouts + ro.anticipations > ro.n / 2) return 'invalid';
+  const answered = ro.correct + ro.sameSaidMirror + ro.mirrorSaidSame;
+  const acc = answered ? ro.correct / answered : 0;
+  if (answered >= ROTATION_MIN_ANSWERED && acc < 0.4) return 'reversed';
+  if (answered >= ROTATION_MIN_ANSWERED && acc < 0.6) return 'chance';
+  if (ro.accuracy < 0.6) return 'missed';
+  return 'ok';
+}
+
+/** Doğru sayılmayan denemelerden süre aşımı ve çok erken basışların hangisi öne çıkıyor (ikisi de en az dörtte birse "mixed"). */
+export function rotationMissedKind(ro: RotationResult): 'timeouts' | 'early' | 'mixed' {
+  const t = ro.timeouts;
+  const a = ro.anticipations;
+  if (t > 0 && a > 0 && Math.min(t, a) >= (t + a) / 4) return 'mixed';
+  return t >= a ? 'timeouts' : 'early';
+}
 /** Bir açıdaki tipik süre en az bu kadar, az ve çok döndürülmüş gruplarınki en az bu kadar doğru cevaptan hesaplanır. */
 export const ROTATION_MIN_PER_ANGLE = 3;
 export const ROTATION_MIN_PER_GROUP = 6;
@@ -3000,11 +3029,14 @@ export function patternQualityNotes(r: PatternResult): string[] {
   const notes: string[] = [];
   if (patternFloor(r)) {
     notes.push(
-      `Desen hatırlama testinde en küçük (${r.start} kareli) desenlerin hiçbiri doğru hatırlanmadı; yönerge tam anlaşılmamış, desenlere bakılmamış ya da görev yarıda bırakılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+      // En küçük desenlerde kareler çoğunlukla doğru işaretlendiyse yarıda bırakmak ya da bakmamak söylenmez (rapor kartıyla aynı ölçüt).
+      r.items.every((x) => !x.correct && !x.skipped && 2 * Math.max(0, x.hits - x.extra) >= x.size)
+        ? `Desen hatırlama testinde en küçük (${r.start} kareli) desenlerin hiçbiri tam doğru işaretlenmedi; karelerin çoğu ise doğru yerdeydi. Bu sonuç yorumlanmamalıdır.`
+        : `Desen hatırlama testinde en küçük (${r.start} kareli) desenlerin hiçbiri doğru hatırlanmadı; yönerge tam anlaşılmamış, desenlere bakılmamış ya da görev yarıda bırakılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
     );
   } else if (patternManySkipped(r)) {
     notes.push(
-      `Desen hatırlama testinde, testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” denmiş; görev yarıda bırakılmış ya da dikkat başka yere kaymış olabilir. Sonuç dikkatle yorumlanmalıdır.`,
+      `Desen hatırlama testinde, testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” denmiş. Dikkat dalgalanmış ya da emin olunmayan desenler denenmemiş olabilir. Sonuç dikkatle yorumlanmalıdır.`,
     );
   }
   if (!patternFloor(r) && patternRapid(r)) {
@@ -3062,6 +3094,16 @@ export interface Rotation3dResult {
  * %3,7'dir: 6 ya da daha az doğru, rastgele seçen birinin de bulabileceği kadar azdır.
  */
 export const ROTATION3D_CHANCE_MAX = 6;
+/**
+ * Rastgele seçimde bir sorudaki iki seçimden beklenen döndürülmüş şekil sayısı 1'dir (20 soruda 20). 40 seçimin en az 25'inin
+ * döndürülmüş şekil olma olasılığı %4,0'dür: tam doğrular az olsa da bu kadar döndürülmüş şekil seçilmesi rastgele değildir.
+ */
+export const ROTATION3D_FIGURES_ABOVE = 25;
+/**
+ * Rastgele seçimde bir soruda tam bir döndürülmüş şekil ile bir ayna görüntüsü seçilme olasılığı 4/6'dır; 20 sorunun en az
+ * 18'inde böyle olmasının olasılığı %1,8'dir. Bu kadar sık "bir doğru, bir ayna" seçmek sistemli bir düzendir.
+ */
+export const ROTATION3D_HALF_SYSTEMATIC = 18;
 /**
  * İki ayna görüntüsünün birden seçildiği sorular: rastgele seçimde de her soruda 1/6 olasılıkla olur; 20 soruda 7 ya da
  * daha çok olmasının olasılığı %3,7'dir. Bu kadar sık görülürse ayna görüntüleri bilerek seçilmiş, yönerge ters anlaşılmış
@@ -3135,6 +3177,17 @@ export const ROTATION3D_SAME_MAX_CORRECT = 10;
 export const rotation3dSamePair = (r: Rotation3dResult) => r.samePair >= Math.ceil(r.n / 2) && r.correct <= ROTATION3D_SAME_MAX_CORRECT;
 /** İki ayna görüntüsünün birden seçildiği sorular rastgele seçimde beklenenden belirgin sık. */
 export const rotation3dMirrorPick = (r: Rotation3dResult) => r.none >= ROTATION3D_MIRROR_NOTE;
+/**
+ * Tam doğrular rastgele düzeyinde, ama seçilen şekillerin çoğu döndürülmüş şekil ya da soruların hemen hepsinde bir doğru
+ * şekil ile bir ayna görüntüsü seçilmiş. Yönerge "biri döndürülmüş, biri ayna" diye anlaşılmış ya da ikinci şekil hep aynayla karıştırılmış
+ * olabilir; rastgele seçim sayılmaz. Bakmadan seçilmiş olabilirse (çok hızlı ya da hep aynı çift) bu yoruma gidilmez.
+ */
+export const rotation3dHalfPick = (r: Rotation3dResult) =>
+  r.correct <= ROTATION3D_CHANCE_MAX &&
+  (r.figures >= ROTATION3D_FIGURES_ABOVE || r.half >= ROTATION3D_HALF_SYSTEMATIC) &&
+  !rotation3dMirrorPick(r) &&
+  !rotation3dRapid(r) &&
+  !rotation3dSamePair(r);
 
 /** Üç boyutlu zihinde döndürmede sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, rotation3dBlocks aynı eşikleri kullanır). */
 export function rotation3dQualityNotes(r: Rotation3dResult): string[] {
@@ -3150,6 +3203,10 @@ export function rotation3dQualityNotes(r: Rotation3dResult): string[] {
   } else if (rotation3dMirrorPick(r) && !low && !doubt) {
     notes.push(
       `Üç boyutlu zihinde döndürme testinde ${r.n} sorunun ${which} iki ayna görüntüsü birden seçilmiş; rastgele seçimde bu kadar sık olması pek beklenmez. Bu sorularda şeklin derinliği, yani hangi kolun öne, hangisinin arkaya uzandığı ters görülmüş olabilir. Sonuç dikkatle yorumlanmalıdır.`,
+    );
+  } else if (rotation3dHalfPick(r)) {
+    notes.push(
+      `Üç boyutlu zihinde döndürme testinde ${r.n} sorunun ${r.half === r.n ? 'hepsinde' : `${r.half} tanesinde`} bir döndürülmüş şekil ile bir ayna görüntüsü seçilmiş; rastgele seçimde bu pek beklenmez. Yönerge farklı anlaşılmış ya da ikinci şekil hep ayna görüntüsüyle karıştırılmış olabilir. Bu sonuç yorumlanmamalıdır.`,
     );
   } else if (low) {
     notes.push(
@@ -3412,6 +3469,8 @@ export interface PerspectiveItemResult {
   ego: boolean;
   /** Cevap, sağ ile solun karıştırıldığı yönün ±`PA_ZONE` yakınında ve doğru cevaptan uzak. */
   mirror: boolean;
+  /** Cevap, doğru yönün tam tersinin ±`PA_ZONE` yakınında (ok hedeften kişiye doğru ya da ön ile arka karışık). */
+  opposite: boolean;
   rt: number | null;
 }
 
@@ -3434,6 +3493,7 @@ export interface PerspectiveResult {
   bins: (PerspectiveGroupResult & { from: number; to: number })[];
   ego: { eligible: number; count: number };
   mirror: { eligible: number; count: number };
+  opposite: { eligible: number; count: number };
   /** Hata türlerinden birine girmeyen sorular (cevapsızlar dahil) ve ortalama hataları: yüksek hatayı hata türü mü açıklıyor? */
   rest: PerspectiveGroupResult;
   medianRt: number | null;
@@ -3454,8 +3514,8 @@ export interface PerspectiveResult {
  */
 export const PA_CHANCE_MEAN = 65;
 /**
- * Rastgele bir cevabın belirli bir 40 derecelik dilime düşme olasılığı 1/9'dur. Haritaya göre cevap (10 uygun soruda) ya da
- * sağ-sol karışıklığı (12 soruda) en az 4 soruda görülürse rastlantı pek açıklamaz (olasılık %1,8 ve %3,6).
+ * Rastgele bir cevabın belirli bir 40 derecelik dilime düşme olasılığı 1/9'dur. Haritaya göre cevap (10 uygun soruda), sağ-sol
+ * karışıklığı ya da ters yön (12 soruda) en az 4 soruda görülürse rastlantı pek açıklamaz (olasılık %1,8 ve %3,6).
  */
 export const PA_PATTERN_MIN = 4;
 /** Yüksek hatanın hata türüyle açıklanıp açıklanmadığına bakarken bir cevabın o türe uyduğu sayılan genişlik (derece). */
@@ -3489,7 +3549,8 @@ export function scorePerspective(task: PerspectiveTask, input: PerspectiveTrialI
     const far = error > PA_ZONE;
     const ego = response !== null && Math.abs(shift) >= PA_EGO_MIN_SHIFT && far && angleDiff(response, egocentricAngle(task.objects, item)) <= PA_ZONE;
     const mirror = response !== null && far && angleDiff(response, mirrorAngle(task.objects, item)) <= PA_ZONE;
-    return { index, shift: round(shift, 1), correct: round(correct, 1), response, error: round(error, 1), ego, mirror, rt: t.rtMs };
+    const opposite = response !== null && error >= 180 - PA_ZONE;
+    return { index, shift: round(shift, 1), correct: round(correct, 1), response, error: round(error, 1), ego, mirror, opposite, rt: t.rtMs };
   });
   const errs = (xs: PerspectiveItemResult[]) => xs.map((x) => x.error);
   const small = items.filter((x) => Math.abs(x.shift) <= PA_SMALL_MAX);
@@ -3511,17 +3572,21 @@ export function scorePerspective(task: PerspectiveTask, input: PerspectiveTrialI
       }),
       ego: { eligible: items.filter((x) => Math.abs(x.shift) >= PA_EGO_MIN_SHIFT).length, count: items.filter((x) => x.ego).length },
       mirror: { eligible: n, count: items.filter((x) => x.mirror).length },
+      opposite: { eligible: n, count: items.filter((x) => x.opposite).length },
       rest: (() => {
         // Belirgin bir hata türü varsa (en az PA_PATTERN_MIN soru), o türün yönüne ±PA_FIT derece içinde kalan ve doğru
         // yöne ondan daha uzak olan cevaplar da o türe uyar sayılır: aynı yolla çözen birinin oku her soruda tam o yöne
         // düşmeyebilir. Sayım ±PA_ZONE ile yapılır; bu yalnızca yüksek hatanın hata türüyle açıklanıp açıklanmadığı içindir.
         const egoOn = items.filter((x) => x.ego).length >= PA_PATTERN_MIN;
         const mirrorOn = items.filter((x) => x.mirror).length >= PA_PATTERN_MIN;
+        const oppositeOn = items.filter((x) => x.opposite).length >= PA_PATTERN_MIN;
         const fits = (x: PerspectiveItemResult, dir: number) =>
           x.response !== null && angleDiff(x.response, dir) <= PA_FIT && angleDiff(x.response, dir) < x.error;
         const rest = items.filter(
           (x) =>
-            !(egoOn && Math.abs(x.shift) >= PA_EGO_MIN_SHIFT && fits(x, normDeg(x.correct + x.shift))) && !(mirrorOn && fits(x, normDeg(-x.correct))),
+            !(egoOn && Math.abs(x.shift) >= PA_EGO_MIN_SHIFT && fits(x, normDeg(x.correct + x.shift))) &&
+            !(mirrorOn && fits(x, normDeg(-x.correct))) &&
+            !(oppositeOn && fits(x, normDeg(x.correct + 180))),
         );
         return { n: rest.length, meanError: mean1(errs(rest)) };
       })(),
@@ -3537,6 +3602,8 @@ export function scorePerspective(task: PerspectiveTask, input: PerspectiveTrialI
 export const perspectiveEgo = (r: PerspectiveResult) => r.ego.count >= PA_PATTERN_MIN;
 /** Sağ ile solun karıştırıldığı cevaplar rastlantının pek açıklamayacağı kadar sık. */
 export const perspectiveMirror = (r: PerspectiveResult) => r.mirror.count >= PA_PATTERN_MIN;
+/** Doğru yönün tam tersini gösteren cevaplar rastlantının pek açıklamayacağı kadar sık. */
+export const perspectiveOpposite = (r: PerspectiveResult) => r.opposite.count >= PA_PATTERN_MIN;
 /** Çok hızlı ve çok hatalı cevaplar: soruların en az dörtte biri. */
 export const perspectiveRapid = (r: PerspectiveResult) => r.rapid >= Math.max(3, Math.ceil(r.n / 4));
 /** Hep aynı yönü gösterme. */
@@ -3553,7 +3620,8 @@ const perspectiveExplained = (r: PerspectiveResult) => r.rest.n === 0 || r.rest.
  * bazı sorularda düşünmeden cevap verilmiş olabileceği için hata türü yorumlanmıyor).
  */
 export const perspectiveChance = (r: PerspectiveResult) =>
-  r.meanError > PA_CHANCE_MEAN && (perspectiveDoubt(r) || (!perspectiveEgo(r) && !perspectiveMirror(r)) || !perspectiveExplained(r));
+  r.meanError > PA_CHANCE_MEAN &&
+  (perspectiveDoubt(r) || (!perspectiveEgo(r) && !perspectiveMirror(r) && !perspectiveOpposite(r)) || !perspectiveExplained(r));
 /** Ortalama hata yüksek ama yanlışlar belirli bir türde toplanıyor: yönerge farklı anlaşılmış olabilir. */
 export const perspectivePatternHigh = (r: PerspectiveResult) => r.meanError > PA_CHANCE_MEAN && !perspectiveChance(r);
 
@@ -3565,14 +3633,13 @@ export function perspectiveQualityNotes(r: PerspectiveResult): string[] {
       'Bakış açısı alma testinde gösterilen yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da yönler düşünülmeden gösterilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
   } else if (perspectivePatternHigh(r)) {
-    const ego = `zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)} haritaya yukarıdan bakar gibi`;
-    const mirror = `${paOf(r.mirror.count, r.n)} doğru açıyla ama ters tarafa (sağ yerine sol ya da sol yerine sağ)`;
-    const both = perspectiveEgo(r) && perspectiveMirror(r);
-    notes.push(
-      `Bakış açısı alma testinde yön, ${both ? `${ego}, ${mirror}` : perspectiveEgo(r) ? ego : mirror} gösterilmiş. ${
-        both ? 'Yönerge farklı anlaşılmış ya da sağ ile sol karıştırılmış' : perspectiveEgo(r) ? 'Yönerge farklı anlaşılmış' : 'Sağ ile sol karıştırılmış'
-      } olabileceği için ortalama hata yorumlanmamalıdır; yalnızca yanlışların türü anlatılır.`,
-    );
+    const kinds = [
+      perspectiveEgo(r) ? `zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)} haritaya yukarıdan bakar gibi` : '',
+      perspectiveMirror(r) ? `${paOf(r.mirror.count, r.n)} doğru açıyla ama ters tarafa (sağ yerine sol ya da sol yerine sağ)` : '',
+      perspectiveOpposite(r) ? `${paOf(r.opposite.count, r.n)} doğru yönün tam tersine` : '',
+    ].filter(Boolean);
+    const why = perspectiveMirror(r) && !perspectiveEgo(r) && !perspectiveOpposite(r) ? 'Sağ ile sol karıştırılmış' : 'Yönerge farklı anlaşılmış';
+    notes.push(`Bakış açısı alma testinde yön, ${kinds.join('; ')} gösterilmiş. ${why} olabileceği için ortalama hata yorumlanmamalıdır; yalnızca yanlışların türü anlatılır.`);
   }
   if (perspectiveRapid(r)) {
     notes.push(
@@ -3901,7 +3968,7 @@ export const towerRapid = (r: TowerResult) => r.rapidOf > 0 && r.rapid >= Math.m
 export function towerQualityNotes(r: TowerResult): string[] {
   if (towerNone(r)) {
     return [
-      `Kule görevinde ${r.n} problemin ${r.idle} tanesinde hiç top taşınmadan süre dolmuş; bunların ${r.short.idle} tanesi 3 ve 4 hamlelik kısa problemlerdir. Testte ara verilmiş, görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+      `Kule görevinde ${r.n} problemin ${r.idle === r.n ? 'hepsinde' : `${r.idle} tanesinde`} hiç top taşınmadan süre dolmuş; ${r.short.idle === r.idle ? 'bunların hepsi' : `bunların ${r.short.idle} tanesi`} 3 ve 4 hamlelik kısa problemlerdir. Testte ara verilmiş, görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir. Bu sonuç yorumlanmamalıdır.`,
     ];
   }
   if (towerIdle(r)) {
@@ -4038,38 +4105,55 @@ export function taskQualityNotes(parts: {
   }
   const ro = parts.rotation;
   if (ro && ro.n > 0) {
-    const errors = ro.n - ro.correct;
-    const wrong = ro.sameSaidMirror + ro.mirrorSaidSame;
-    const low = ro.accuracy < 0.6;
-    // Rapordaki doğruluk kartıyla aynı ayrım: düşük doğrulukta doğru sayılmayan denemelerin çoğu süre aşımı ya da çok
-    // erken basışsa düğmelerin karıştırıldığı ya da rastgele basıldığı söylenmez.
-    const mostlyMissed = errors > 0 && ro.timeouts + ro.anticipations > errors / 2;
-    const mostlyTimeouts = errors > 0 && ro.timeouts > errors / 2;
-    const mostlyEarly = errors > 0 && ro.anticipations > errors / 2;
-    if (ro.timeouts / ro.n > 0.5) {
-      notes.push('Zihinde döndürme görevinde denemelerin yarısından çoğunda süre içinde cevap verilmemiş; görev yarıda bırakılmış olabilir. Bu görevin sonucu yorumlanmamalıdır.');
+    // Rapordaki doğruluk kartıyla aynı ayrım (rotationStatus): şans ve ters kararı yalnızca cevap verilen denemelerden.
+    const status = rotationStatus(ro);
+    const kind = rotationMissedKind(ro);
+    const answered = ro.correct + ro.sameSaidMirror + ro.mirrorSaidSame;
+    const wrong = answered - ro.correct;
+    let earlySaid = false;
+    if (status === 'abandoned') {
+      notes.push(
+        ro.timeouts === ro.n
+          ? 'Zihinde döndürme görevinde hiçbir denemede süre içinde cevap verilmemiş; görev yarıda bırakılmış olabilir. Bu görevin sonucu yorumlanmamalıdır.'
+          : 'Zihinde döndürme görevinde denemelerin yarısından çoğunda süre içinde cevap verilmemiş; görev yarıda bırakılmış olabilir. Bu görevin sonucu yorumlanmamalıdır.',
+      );
+    } else if (status === 'rushed') {
+      notes.push(
+        'Zihinde döndürme görevinde denemelerin yarısından çoğunda şekiller görünür görünmez, onlara bakılmadan basılmış. Bu görevin sonucu yorumlanmamalıdır.',
+      );
+      earlySaid = true;
+    } else if (status === 'invalid') {
+      notes.push(
+        'Zihinde döndürme görevinde denemelerin yarısından çoğunda ya süre içinde cevap verilmemiş ya da şekiller görünür görünmez basılmış. Bu görevin sonucu yorumlanmamalıdır.',
+      );
+      earlySaid = true;
     } else {
-      if (low && mostlyMissed) {
-        if (mostlyTimeouts) {
-          notes.push('Zihinde döndürme görevinde denemelerin birçoğunda süre içinde cevap verilmemiş; doğru cevaplar bu yüzden az.');
-        } else if (!mostlyEarly) {
-          notes.push('Zihinde döndürme görevinde doğru sayılmayan denemelerin çoğunda ya süre içinde cevap verilmemiş ya da çok erken basılmış; doğru cevaplar bu yüzden az.');
+      if (status === 'missed') {
+        if (kind === 'timeouts') notes.push(`Zihinde döndürme görevinde ${ro.n} denemenin ${ro.timeouts} tanesinde süre içinde cevap verilmemiş; doğru cevaplar bu yüzden az.`);
+        else if (kind === 'early') {
+          notes.push(`Zihinde döndürme görevinde ${ro.n} denemenin ${ro.anticipations} tanesinde şekiller görünür görünmez basılmış; doğru cevaplar bu yüzden az.`);
+          earlySaid = true;
+        } else {
+          notes.push('Zihinde döndürme görevinde doğru sayılmayan denemelerin birçoğunda ya süre içinde cevap verilmemiş ya da çok erken basılmış; doğru cevaplar bu yüzden az.');
+          earlySaid = true;
         }
-        // Çoğu çok erken basışsa aşağıdaki erken basış uyarısı bunu söyler.
-      } else if (ro.accuracy < 0.4 && wrong > ro.correct) {
-        notes.push('Zihinde döndürme görevinde cevapların çoğu yanlış: “Aynı” ile “Ayna görüntüsü” düğmeleri birbirine karıştırılmış olabilir.');
-      } else if (low) {
-        notes.push('Zihinde döndürme görevinde doğru cevaplar yarıya yakın: rastgele basan biri de yaklaşık yarısını doğru bulur. Yönerge anlaşılmamış ya da düğmelere rastgele basılmış olabilir.');
+      } else if (status === 'reversed') {
+        notes.push(
+          `Zihinde döndürme görevinde cevap verilen denemelerin ${wrong === answered ? 'hepsi' : 'çoğu'} yanlış: “Aynı” ile “Ayna görüntüsü” düğmeleri birbirine karıştırılmış olabilir.`,
+        );
+      } else if (status === 'chance') {
+        notes.push(
+          'Zihinde döndürme görevinde cevap verilen denemelerin yarıya yakını doğru: rastgele basan biri de yaklaşık yarısını bulur. Yönerge anlaşılmamış ya da düğmelere rastgele basılmış olabilir.',
+        );
       }
       if (ro.sameShare !== null && (ro.sameShare > 0.85 || ro.sameShare < 0.15)) {
         notes.push('Zihinde döndürme görevinde cevapların çoğunda aynı düğmeye basılmış; yönerge anlaşılmamış olabilir.');
       }
-      if (ro.timeouts / ro.n > 0.2 && !(low && mostlyTimeouts)) {
+      if (ro.timeouts / ro.n > 0.2 && !(status === 'missed' && kind !== 'early')) {
         notes.push('Zihinde döndürme görevinde denemelerin bir kısmında süre içinde cevap verilmemiş.');
       }
     }
-    if (ro.anticipations / ro.n > 0.5) notes.push('Zihinde döndürme görevinde cevapların çoğu şekiller görünür görünmez, onlara bakmadan verilmiş.');
-    else if (ro.anticipations / ro.n > 0.1) notes.push('Zihinde döndürme görevinde bazı cevaplar şekiller görünür görünmez, onlara bakmadan verilmiş.');
+    if (ro.anticipations / ro.n > 0.1 && !earlySaid) notes.push('Zihinde döndürme görevinde bazı cevaplar şekiller görünür görünmez, onlara bakmadan verilmiş.');
   }
   const re = parts.reaction;
   if (re) {

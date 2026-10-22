@@ -601,13 +601,15 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
      şekiller) ve 2. grup (dikkat ve bellek, sürekli dikkat, renk-kelime, dur-git, tepki hızı): **yayında (2026-10-22).**
    - 3. grup (sırayla birleştirme, geriye dönük hatırlama, kural değiştirme, hesapla ve hatırla, kelime listesi):
      **yayında (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
-   - 5. gruptan sonra bütün görev testleri için iki ortak iş (3. grubun incelemesinde bulundu): yol haritasındaki öneri ve
-     hafta başlıkları veli raporunda da çocuğa "sen" diye sesleniyor ("Kaldığın yeri işaretle"); veliye ayrı başlık
-     (~104 öneri başlığı). Uyarı notları her kitleye aynı edilgen dille yazılıyor; öğrenci raporunda "yorumlanmamalıdır"
-     yerine kitleye göre metin.
-   - 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi): kart grafikleri
-     yayında (2026-10-22); rapor metinlerinin bağımsız incelemesinin bulguları uygulanacak.
-   - Sonra 5. grup (mantıksal, sayısal, düşünerek karar verme).
+   - 4. grup (zihinde döndürme, üç boyutlu döndürme, bakış açısı, desen hatırlama, planlama kulesi): **yayında
+     (2026-10-22)**, bağımsız inceleme bulguları uygulandı.
+   - Sıradaki: 5. grup (mantıksal, sayısal, düşünerek karar verme).
+   - 5. gruptan sonra bütün görev testleri için ortak işler (3. ve 4. grubun incelemesinde bulundu): (a) yol haritasındaki
+     öneri ve hafta başlıkları veli raporunda da çocuğa "sen" diye sesleniyor ("Kaldığın yeri işaretle"); veliye ayrı
+     başlık (~104 öneri başlığı). (b) Uyarı notları her kitleye aynı edilgen dille yazılıyor; öğrenci raporunda
+     "yorumlanmamalıdır" yerine kitleye göre metin. (c) Sonuç yorumlanmadığında yol haritasının giriş cümlesi de bunu
+     söylemeli. (d) Tek çubuklu süre grafikleri (yalnızca "Bütün sorular") bilgi taşımıyor; karşılaştırılacak ikinci bir
+     değer yoksa sürenin başka bir anlatımı.
 3. Okuma, sesli okuma, matematik konu tarama.
 4. Ardından 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlanır.
 
@@ -944,6 +946,18 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-22 (40): Raporlarda her başlığa grafik, 2. aşamanın 4. grubu (zihinde döndürme, üç boyutlu döndürme, bakış
+  açısı alma, desen hatırlama, planlama kulesi): türlere ve açılara göre doğruluk, bölümlere göre doğrular, hata türleri,
+  açı hatası şeridi, büyüklüğe göre doğrular, problem uzunluğuna göre çözülenler, çözüm biçimi ve ilk hamleden önceki süre.
+  Bağımsız incelemenin bulguları uygulandı: zihinde döndürmede şans ve ters düğme kararı yalnızca cevap verilen
+  denemelerden veriliyor; denemelerin yarısından çoğunda süre dolması, çok erken basılması ya da ikisinin birlikte yarıyı
+  aşması sonucu yorumsuz bırakıyor (hepsi çok erken basılan sonuç "neredeyse hepsi doğru" diye anlatılmıyor); üç boyutlu
+  döndürmede çoğu soruda bir doğru şekil ile bir ayna görüntüsü seçmek rastgele sayılmıyor, yönergenin farklı anlaşılmış
+  olabileceği söyleniyor; bakış açısında oku tam ters yöne göstermek üçüncü hata türü oldu; desen hatırlamada en küçük
+  desenlerde kareler çoğunlukla doğruysa "yarıda bırakmış" denmiyor; kulede hiç top taşınmayan problemler grafikte ayrı,
+  ilk topa kadar geçen süre "plan süresi" diye kesin anlatılmıyor; yorumlanmayan sonuçların rozeti, grafiği ve öne çıkan
+  sayıları "Yorumlanmadı"; grafikteki sayılar metinde yinelenmiyor. Raporlar telefonda ve masaüstünde açıldı, PDF'ler
+  incelendi.
 - 2026-10-22 (39): Raporlarda her başlığa grafik, 2. aşamanın 3. grubu (sırayla birleştirme, geriye dönük hatırlama,
   kural değiştirme, hesapla ve hatırla, kelime listesi): bölüm süresi şeridi, yakalanan ve basılmadan geçilen harfler,
   koşullara göre doğruluk ve süre, tam hatırlanan diziler merdiveni ("tam / eksik"), denemelere göre kelimeler. Bağımsız
@@ -1005,8 +1019,3 @@ En yeni üstte; en çok 10 madde tutulur.
   ne anlatabileceğini verir, riskli davranışı özendirmez; öğrenci, veli ve yetişkin raporu, 3 sütunlu 3B yol haritası;
   iki tur bağımsız incelemenin bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı. Ölçüm payı yok
   (açık veriye bu oturumdan ulaşılamadı).
-- 2026-10-16 (30): Bakış Açısı Alma yayında (7. sınıftan yetişkine), 2. dalganın 9. testi: yedi nesneli özgün bir
-  haritada kendini bir nesnenin yanında hayal edip üçüncü nesnenin yönünü çemberde okla gösterme; 12 soru, üç alıştırma;
-  açılar bağımsız hesapla doğrulandı; ortalama açı hatası, küçük ve büyük dönüşler, hata türleri (haritaya yukarıdan
-  bakar gibi, sağ-sol karışıklığı); öğrenci, veli ve yetişkin raporu, yol haritası; iki tur bağımsız incelemenin
-  bulguları düzeltildi; telefonda ve masaüstünde çözüldü, PDF'ler açıldı.

@@ -135,12 +135,16 @@ export const TASK_VARIANTS: Record<string, Variants> = {
     ters: () => rotationBody((t) => ({ choice: t.mirror ? 1 : 2, rtMs: 1500 })),
     cevapsiz: () => rotationBody(() => ({ choice: null, rtMs: null })),
     duz: () => rotationBody((t) => ({ choice: t.mirror ? 2 : 1, rtMs: 1500 })),
+    // Hep şekiller görünür görünmez basılmış: sonuç yorumlanmaz.
+    erken: () => rotationBody((t) => ({ choice: t.mirror ? 2 : 1, rtMs: 150 })),
   },
   'uc-boyutlu-zihinde-dondurme': {
     varsayilan: () => rotation3dBody(),
     hepsi: () => rotation3dBody((q) => ({ response: q.answer, rtMs: q.part === 1 ? 14_000 : 22_000 })),
     ayna: () => rotation3dBody((q) => ({ response: q.part === 2 ? [...q.mirrors].sort((a, b) => a - b) : q.answer, rtMs: 16_000 })),
     yarim: () => rotation3dBody((q) => ({ response: r3Half(q, q.i), rtMs: 12_000 })),
+    // 6 doğru, öteki sorularda bir doğru şekil ile bir ayna: yönerge farklı anlaşılmış olabilir.
+    biriAyna: () => rotation3dBody((q) => ({ response: q.i < 6 ? q.answer : r3Half(q, q.i), rtMs: 12_000 })),
     suresiz: () => rotation3dBody((q) => ({ response: q.answer, rtMs: null })),
   },
   'bakis-acisi-alma': {
@@ -149,6 +153,8 @@ export const TASK_VARIANTS: Record<string, Variants> = {
     ayna: () => perspectiveBody((q) => ({ deg: Math.round(q.mirror), rtMs: 11_000 })),
     rastgele: () => perspectiveBody((q) => ({ deg: ((q.i * 97) % 360) - 180, rtMs: 1500 })),
     cevapsiz: () => perspectiveBody(() => ({ deg: null, rtMs: null })),
+    // Ok hep doğru yönün tam tersine.
+    ters: () => perspectiveBody((q) => ({ deg: Math.round(q.correct > 0 ? q.correct - 180 : q.correct + 180), rtMs: 9000 })),
   },
   'desen-hatirlama': {
     varsayilan: () => patternBody(),

@@ -38,6 +38,7 @@ import {
   perspectiveDoubt,
   perspectiveEgo,
   perspectiveMirror,
+  perspectiveOpposite,
   perspectivePatternHigh,
   perspectiveRapid,
   perspectiveSameDir,
@@ -379,11 +380,17 @@ describe('Bakış açısı alma: puanlama', () => {
     expect(r.rest.n).toBe(2);
     expect(r.rest.meanError).toBeLessThanOrEqual(PA_CHANCE_MEAN);
     expect(perspectivePatternHigh(r)).toBe(true);
-    // Dört soruda haritaya göre yön, ötekiler tam ters: kalan sorular rastgele düzeyinin üstünde, rastgele düzeyi sayılır.
-    r = score(perspectiveBody((q) => ({ deg: EGO4.has(q.i) ? q.ego : normDeg(q.correct + 180), rtMs: 9000 })));
+    // Dört soruda haritaya göre yön, ötekiler rastgele: kalan sorular rastgele düzeyinin üstünde, rastgele düzeyi sayılır.
+    r = score(perspectiveBody((q) => ({ deg: EGO4.has(q.i) ? q.ego : RANDOM_A[q.i], rtMs: 9000 })));
     expect(r.ego.count).toBeGreaterThanOrEqual(4);
     expect(r.rest.meanError).toBeGreaterThan(PA_CHANCE_MEAN);
     expect([perspectivePatternHigh(r), perspectiveChance(r)]).toEqual([false, true]);
+    // Dört soruda haritaya göre yön, ötekiler tam ters: ters yön de bir hata türüdür; yüksek hatayı iki tür birlikte açıklar.
+    r = score(perspectiveBody((q) => ({ deg: EGO4.has(q.i) ? q.ego : normDeg(q.correct + 180), rtMs: 9000 })));
+    expect(r.ego.count).toBeGreaterThanOrEqual(4);
+    expect(perspectiveOpposite(r)).toBe(true);
+    expect(r.rest.n).toBe(0);
+    expect([perspectivePatternHigh(r), perspectiveChance(r)]).toEqual([true, false]);
     // Aynı yolla çözen birinin oku her soruda tam o yöne düşmeyebilir: türün yönüne 45 dereceye kadar yakın cevaplar türe uyar.
     r = score(perspectiveBody((q) => ({ deg: normDeg(q.mirror + (q.i < 3 ? 25 : 0)), rtMs: 9000 })));
     expect(r.mirror.count).toBeLessThanOrEqual(9);
@@ -542,14 +549,37 @@ describe('Bakış açısı alma: rapor', () => {
     expect(r.student.items[0].text).toContain('Yanlışlarının bir kısmı belirli bir türde toplanıyor');
     expect(r.student.cautions).toEqual([]);
 
-    // Rastgele: yorumlanmaz.
+    // Hep tam ters yön: ortalama hata yorumlanmaz, yanlışların türü anlatılır.
     r = evaluate(
       SLUG,
       perspectiveBody((q) => ({ deg: normDeg(q.correct + 180), rtMs: 9000 })),
     );
-    expect(r.student.items.map((i) => i.badge)).toEqual(['Ortalama hata 180 derece', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
+    expect(r.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Ters yön: 12 soru', 'Soru başına tipik süre 9 saniye']);
+    expect(r.student.items[2].text).toContain('12 sorunun hepsinde oku doğru yönün tam tersine gösterdin');
+    expect(r.parent.items[2].text).toContain('12 sorunun hepsinde çocuğunuz oku doğru yönün tam tersine gösterdi');
+    expect(r.student.cautions).toEqual([
+      'Bakış açısı alma testinde yön, 12 sorunun hepsinde doğru yönün tam tersine gösterilmiş. Yönerge farklı anlaşılmış olabileceği için ortalama hata yorumlanmamalıdır; yalnızca yanlışların türü anlatılır.',
+    ]);
+    expect(r.student.chart).toBeNull();
+    expect(r.student.keyFigures.map((f) => f.value)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', '9 saniye']);
+
+    // Rastgele: yorumlanmaz.
+    r = evaluate(
+      SLUG,
+      perspectiveBody((q) => ({ deg: RANDOM_A[q.i], rtMs: 9000 })),
+    );
+    expect(r.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
     expect(r.student.cautions).toHaveLength(1);
-    expect(r.student.chartNote).toContain('Ortalama hata çok yüksek olduğu için');
+    expect(r.student.chart).toBeNull();
+
+    // Hiç yön gösterilmemiş: rastgele sayılmaz, cevap verilmediği söylenir.
+    r = evaluate(
+      SLUG,
+      perspectiveBody(() => ({ deg: null, rtMs: 9000 })),
+    );
+    expect(r.student.items[0].text).toBe(
+      'Hiçbir soruda yön göstermedin. Bu yüzden sonuç yorumlanmadı. Dinlendiğin bir gün testi yeniden çözmek daha doğru bir sonuç verebilir.',
+    );
 
     // Dört soruda 2 saniyede çok hatalı cevap: hata türleri ve karşılaştırma yorumlanmaz.
     r = evaluate(
@@ -588,6 +618,7 @@ describe('Bakış açısı alma: rapor', () => {
       kucukZor: (q) => (Math.abs(q.shift) <= PA_SMALL_MAX ? normDeg(q.correct + 60) : q.correct),
       bos2: (q) => (q.i < 2 ? null : q.correct),
       hepsiBos: () => null,
+      ters4: (q) => (MIRROR4.has(q.i) ? normDeg(q.correct + 180) : q.correct),
       rastgeleA: (q) => RANDOM_A[q.i],
       rastgeleB: (q) => RANDOM_B[q.i],
       // Dört soruda haritaya göre yön, ötekilerde rastgele: hata türü yüksek hatayı açıklamaz, rastgele düzeyi sayılır.
@@ -617,6 +648,10 @@ describe('Bakış açısı alma: rapor', () => {
         const doubt = perspectiveDoubt(r);
         const egoP = perspectiveEgo(r);
         const mirrorP = perspectiveMirror(r);
+        const oppP = perspectiveOpposite(r);
+        const kinds = [egoP, mirrorP, oppP].filter(Boolean).length;
+        const notRead = chance || high;
+        const none = r.answered === 0;
         const rapid = perspectiveRapid(r);
         const same = perspectiveSameDir(r);
         const m = r.meanError;
@@ -639,25 +674,29 @@ describe('Bakış açısı alma: rapor', () => {
           const [hata, donus, tur, calisma] = rep.items;
           const look = you ? 'bak)' : 'bakın)';
 
-          // Yön gösterme isabeti
-          expect(hata.badge, label).toBe(`Ortalama hata ${deg(m)}`);
-          const strip = hata.visual?.type === 'strip' ? hata.visual : null;
-          expect(strip?.points.length, label).toBe(12);
-          expect(strip?.marker?.value, label).toBe(m);
-          expect(strip?.label, label).toContain(r.close === 0 ? 'hiçbiri doğru yöne çok yakın değil' : r.close === 12 ? 'hepsi doğru yöne' : `${r.close === 1 ? 'biri' : `${r.close} tanesi`} doğru yöne`);
-          expect(strip?.zone?.to, label).toBe(PA_CLOSE);
-          expect(hata.text.includes('rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil'), label).toBe(chance);
+          // Yön gösterme isabeti: yorumlanmayan sonucun rozeti ve grafiği yorumlanmış gibi görünmez.
+          expect(hata.badge, label).toBe(notRead ? 'Yorumlanmadı' : `Ortalama hata ${deg(m)}`);
+          expect(hata.visual === undefined, label).toBe(notRead);
+          if (!notRead) {
+            const strip = hata.visual?.type === 'strip' ? hata.visual : null;
+            expect(strip?.points.length, label).toBe(12);
+            expect(strip?.marker?.value, label).toBe(m);
+            expect(strip?.label, label).toContain(r.close === 0 ? 'hiçbiri doğru yöne çok yakın değil' : r.close === 12 ? 'hepsi doğru yöne' : `${r.close === 1 ? 'biri' : `${r.close} tanesi`} doğru yöne`);
+            expect(strip?.zone?.to, label).toBe(PA_CLOSE);
+          }
+          expect(/hiçbir soruda yön göster/i.test(hata.text), label).toBe(none);
+          expect(hata.text.includes('rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil'), label).toBe(chance && !none);
           expect(hata.text.includes('rastgele dağılmıyor'), label).toBe(high);
-          expect(hata.text.includes(`hata türleri kartına ${look}`), label).toBe(high || (!chance && (egoP || mirrorP) && !doubt));
+          expect(hata.text.includes(`hata türleri kartına ${look}`), label).toBe(high || (!chance && kinds > 0 && !doubt));
           expect(hata.text.includes('doğru yöne çok yakındı'), label).toBe(!chance && !high && m <= 20);
           expect(hata.text.includes('doğru yönden biraz saptı'), label).toBe(m > 20 && m <= 35);
           expect(hata.text.includes('doğru yönden epeyce saptı'), label).toBe(m > 35 && m <= 50);
           expect(hata.text.includes('doğru yönden büyük ölçüde saptı'), label).toBe(m > 50 && m <= PA_CHANCE_MEAN);
-          expect(hata.text.includes('ortalama hata yorumlanmamalıdır') || hata.text.includes('ortalama hata tek başına bir şey söylemez'), label).toBe(high);
+          expect(hata.text.includes('Bu yüzden ortalama hata yorumlanmadı.'), label).toBe(high);
           expect(hata.text.includes('bu sonuç seni tam yansıtmayabilir') || hata.text.includes('bu sonuç çocuğunuzu tam yansıtmayabilir'), label).toBe(
             doubt && !chance && !high,
           );
-          expect(hata.text.includes('soru, rastgele düzeyi olan 90 derece hata sayıldı'), label).toBe(r.answered < 12);
+          expect(hata.text.includes('soru, rastgele düzeyi olan 90 derece hata sayıldı'), label).toBe(r.answered < 12 && !none);
 
           // Küçük ve büyük dönüşler
           const gap = r.large.meanError - r.small.meanError;
@@ -667,13 +706,15 @@ describe('Bakış açısı alma: rapor', () => {
               expect(donus.badge, label).toBe(
                 gap >= PA_GAP ? 'Büyük dönüşlerde daha çok hata' : gap <= -PA_GAP ? 'Büyük dönüşlerde daha az hata' : 'İki grupta yakın hata',
               );
+            // Grupların ortalama hataları kartın grafiğindedir; grafik yoksa (düşünmeden cevap verilmiş olabilir) metindedir.
             const small = you ? `ortalama hatan ${deg(r.small.meanError)}` : `çocuğunuzun ortalama hatası ${deg(r.small.meanError)}`;
             expect(
               donus.text.startsWith(
                 `Zihinde en çok 90 derece dönmeyi gerektiren 6 soruda ${small}, 90 dereceden fazla dönmeyi gerektiren 6 soruda ${deg(r.large.meanError)}.`,
               ),
               label,
-            ).toBe(true);
+            ).toBe(doubt);
+            expect(donus.visual === undefined, label).toBe(doubt);
             expect(donus.text.includes('iki grup arasındaki fark yorumlanmadı'), label).toBe(doubt);
             expect(donus.text.includes('Bu beklenen bir durumdur'), label).toBe(!doubt && gap >= PA_GAP);
             expect(donus.text.includes('genellikle bunun tersi olur'), label).toBe(!doubt && gap <= -PA_GAP);
@@ -688,17 +729,25 @@ describe('Bakış açısı alma: rapor', () => {
             const expected =
               far === 0
                 ? 'Belirgin kayma yok'
-                : egoP && mirrorP
-                  ? 'İki hata türü birden'
-                  : egoP
-                    ? `Haritaya yukarıdan bakar gibi: ${r.ego.count} soru`
-                    : mirrorP
-                      ? `Sağ ile sol karışmış olabilir: ${r.mirror.count} soru`
-                      : 'Belirgin bir hata türü yok';
+                : kinds === 3
+                  ? 'Üç hata türü birden'
+                  : kinds === 2
+                    ? 'İki hata türü birden'
+                    : egoP
+                      ? `Haritaya yukarıdan bakar gibi: ${r.ego.count} soru`
+                      : mirrorP
+                        ? `Sağ ile sol karışmış olabilir: ${r.mirror.count} soru`
+                        : oppP
+                          ? `Ters yön: ${r.opposite.count} soru`
+                          : 'Belirgin bir hata türü yok';
             expect(tur.badge, label).toBe(expected);
             // Hata türlerinin sayıları kartın grafiğindedir.
             if (far > 0)
-              expect(tur.visual?.type === 'bars' ? tur.visual.rows.map((x) => x.valueLabel) : [], label).toEqual([`${r.ego.count}/10`, `${r.mirror.count}/12`]);
+              expect(tur.visual?.type === 'bars' ? tur.visual.rows.map((x) => x.valueLabel) : [], label).toEqual([
+                `${r.ego.count}/10`,
+                `${r.mirror.count}/12`,
+                `${r.opposite.count}/12`,
+              ]);
           }
           // Yorumlanmamanın nedeni doğru söylenir: düşünmeden cevap verilmiş olabilirse bu, değilse rastgele düzeyi.
           if (doubt) expect(tur.text, label).toMatch(/düşünmeden cevap ver/);
@@ -706,6 +755,7 @@ describe('Bakış açısı alma: rapor', () => {
           // Hata türü olmayan bir sonuçta haritaya göre yön ya da sağ-sol karışıklığı anlatılmaz.
           if (!egoP) expect(tur.text.includes('haritayı olduğu gibi kullanmış'), label).toBe(false);
           if (!mirrorP) expect(tur.text.includes('sağ ile solu karıştırmış olabilir'), label).toBe(false);
+          if (!oppP) expect(tur.text.includes('oku doğru yönün tam tersine gösterd'), label).toBe(false);
 
           // Çalışma biçimi
           expect(calisma.text.includes('3 saniyeden kısa sürede'), label).toBe(rapid);
@@ -718,18 +768,20 @@ describe('Bakış açısı alma: rapor', () => {
           expect(cautions.includes('rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil'), label).toBe(chance);
           expect(cautions.includes('haritaya yukarıdan bakar gibi'), label).toBe(high && egoP);
           expect(cautions.includes('ters tarafa'), label).toBe(high && mirrorP);
+          expect(cautions.includes('doğru yönün tam tersine gösterilmiş'), label).toBe(high && oppP);
           expect(cautions.includes('ortalama hata yorumlanmamalıdır; yalnızca yanlışların türü anlatılır'), label).toBe(high);
           expect(cautions.includes('3 saniyeden kısa sürede'), label).toBe(rapid);
           expect(cautions.includes('hemen hemen aynı yön'), label).toBe(same);
 
           // Öne çıkan sayılar ve grafik sonuçla aynıdır.
           const fig = Object.fromEntries(rep.keyFigures.map((f) => [f.label, f.value]));
-          expect(fig['Ortalama hata'], label).toBe(deg(m));
-          expect(fig['Doğru yöne çok yakın cevaplar'], label).toBe(`${r.close}/12`);
-          expect(rep.chart?.type === 'bars' ? rep.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(
-            r.bins.map((b) => `${nfDeg.format(b.meanError)}°`),
-          );
-          expect(rep.chartNote?.includes('yorumlanmamalıdır'), label).toBe(chance || high || doubt);
+          expect(fig['Ortalama hata'], label).toBe(notRead ? 'Yorumlanmadı' : deg(m));
+          expect(fig['Doğru yöne çok yakın cevaplar'], label).toBe(notRead ? 'Yorumlanmadı' : `${r.close}/12`);
+          if (notRead) expect(rep.chart, label).toBeNull();
+          else {
+            expect(rep.chart?.type === 'bars' ? rep.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(r.bins.map((b) => `${nfDeg.format(b.meanError)}°`));
+            expect(rep.chartNote?.includes('yorumlanmamalıdır'), label).toBe(doubt);
+          }
           expect(rep.roadmap!.bars, label).toEqual([]);
         }
         expect(text(res.student), label).not.toContain('Çocuğunuz');
@@ -739,7 +791,7 @@ describe('Bakış açısı alma: rapor', () => {
         n++;
       }
     }
-    expect(n).toBe(30 * 5);
+    expect(n).toBe(31 * 5);
   }, 400_000);
 
   it('7. sınıftan itibaren; yetişkinler de çözebilir: kişisel rapor, okula özgü sözcük yok, veli yaklaşımı yok', () => {

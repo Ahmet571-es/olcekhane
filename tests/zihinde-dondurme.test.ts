@@ -212,7 +212,7 @@ describe('Zihinde döndürme: rapor', () => {
     // Ayna görüntülerinin yarısında "Aynı": doğruluk %75, yanlışlar ayna görüntülerinde.
     const mirrorErr = evaluate(SLUG, rotationBody((t) => ({ choice: t.mirror ? (k++ % 2 ? 1 : 2) : 1, rtMs: 1500 })));
     expect(mirrorErr.student.items[0].badge).toBe('%75 doğru');
-    expect(mirrorErr.student.items[0].text).toContain('çoğu zaman doğru buldun. Yanıldığın denemelerin çoğunda ayna görüntüsüne “Aynı” dedin');
+    expect(mirrorErr.student.items[0].text).toContain('çoğu zaman doğru buldun. Yanıldığın denemelerin hepsinde ayna görüntüsüne “Aynı” dedin');
     expect(mirrorErr.student.items[0].visual?.type === 'bars' ? mirrorErr.student.items[0].visual.rows.map((x) => `${x.label} ${x.valueLabel}`) : []).toEqual([
       'Aynı şekiller %100',
       'Ayna görüntüleri %50',
@@ -238,7 +238,7 @@ describe('Zihinde döndürme: rapor', () => {
     expect(slow.student.items[0].badge).toBe('%60 doğru');
     expect(slow.student.items[0].text).toContain('süre (7 saniye) dolmadan cevap vermedin');
     expect(slow.student.items[0].text).not.toContain('acele');
-    expect(slow.student.items[2].badge).toBe('Karşılaştırılamadı');
+    expect(slow.student.items[2].badge).toBe('Karşılaştırılmadı');
   });
 
   it('düşük doğrulukta durumlar ayrılır: rastgele, ters düğme, süre aşımı, çok erken basış', () => {
@@ -251,18 +251,21 @@ describe('Zihinde döndürme: rapor', () => {
         return { choice: (t.mirror === right ? 2 : 1) as 1 | 2, rtMs: 1500 };
       }),
     );
-    expect(random.parent.items[0].badge).toBe('%50 doğru');
-    expect(random.parent.items[0].text).toContain('rastgele basan biri de yaklaşık yarısını doğru bulur');
-    expect(random.parent.items[1].badge).toBe('Hesaplanamadı');
-    expect(random.parent.items[2].badge).toBe('Karşılaştırılamadı');
-    expect(random.parent.cautions.join(' ')).toContain('doğru cevaplar yarıya yakın');
-    const rows = random.parent.chart?.type === 'bars' ? random.parent.chart.rows : [];
-    expect(rows.every((x) => x.valueLabel === 'yetersiz')).toBe(true);
-    expect(random.parent.chartNote).toContain('açılara göre süreler gösterilmedi');
+    // Yorumlanmayan sonucun rozeti, grafiği ve süre kartları yorumlanmış gibi görünmez.
+    expect(random.parent.items[0].badge).toBe('Yorumlanmadı');
+    expect(random.parent.items[0].visual).toBeUndefined();
+    expect(random.parent.items[0].text).toContain('Rastgele basan biri de yaklaşık yarısını bulur');
+    expect(random.parent.items[0].text).toContain('Bu yüzden sonuç yorumlanmadı.');
+    expect(random.parent.items[1].badge).toBe('Yorumlanmadı');
+    expect(random.parent.items[1].text).toBe('Doğru cevaplar rastgele basmayla da bulunabilecek kadar az olduğu için karar süresi yorumlanmadı.');
+    expect(random.parent.items[2].badge).toBe('Karşılaştırılmadı');
+    expect(random.parent.cautions.join(' ')).toContain('cevap verilen denemelerin yarıya yakını doğru');
+    expect(random.parent.chart).toBeNull();
     // Düğmeler ters basılmış: "yarıya yakın" denmez.
     const swapped = evaluate(SLUG, rotationBody((t) => ({ choice: t.mirror ? 1 : 2, rtMs: 1500 })));
-    expect(swapped.parent.items[0].badge).toBe('%0 doğru');
+    expect(swapped.parent.items[0].badge).toBe('Yorumlanmadı');
     expect(swapped.parent.items[0].text).toContain('düğmeleri birbirine karıştırılmış olabilir');
+    expect(swapped.parent.items[1].text).toBe('Düğmeler birbirine karıştırılmış olabileceği için karar süresi yorumlanmadı.');
     expect(swapped.parent.cautions.join(' ')).toContain('düğmeleri birbirine karıştırılmış olabilir');
     expect(swapped.parent.cautions.join(' ')).not.toContain('yarıya yakın');
     // Yarısında süre doluyor, verilen cevapların hepsi doğru: "rastgele" denmez.
@@ -270,16 +273,22 @@ describe('Zihinde döndürme: rapor', () => {
     expect(half.parent.items[0].badge).toBe('%50 doğru');
     expect(half.parent.items[0].text).toContain('süre (7 saniye) dolmadan cevap vermedi');
     expect(all(half.parent)).not.toMatch(/rastgele/);
-    // Hep çok erken basılmış.
+    // Hep çok erken basılmış: sonuç yorumlanmaz (cevap verilen deneme kalmadığı için "neredeyse hepsini doğru buldun" denmez).
     const early = evaluate(SLUG, rotationBody((t) => ({ choice: t.mirror ? 2 : 1, rtMs: 150 })));
-    expect(early.student.items[0].text).toContain('şekillere bakmadan, çok erken bastın');
-    expect(early.student.cautions.join(' ')).toContain('cevapların çoğu şekiller görünür görünmez');
-    expect(early.student.cautions.join(' ')).not.toContain('yarıya yakın');
-    // Hep "Aynı": uyarı; aynı şekillerin hepsi doğru olduğu için "doğru bulunan aynı şekil az" denmez.
+    expect(early.student.items[0].badge).toBe('Yorumlanmadı');
+    expect(early.student.items[0].text).toBe(
+      'Bütün denemelerde 0,3 saniyeden kısa sürede bastın. Bu kadar kısa sürede iki şekli karşılaştırmak çok zordur; şekillere bakmadan basmış olabilirsin. Bu yüzden sonuç yorumlanmadı.',
+    );
+    expect(early.student.items[1].text).toBe('Denemelerin çoğunda şekillere bakmadan, çok erken basıldığı için karar süresi yorumlanmadı.');
+    expect(early.student.chart).toBeNull();
+    expect(early.student.cautions).toEqual([
+      'Zihinde döndürme görevinde denemelerin yarısından çoğunda şekiller görünür görünmez, onlara bakılmadan basılmış. Bu görevin sonucu yorumlanmamalıdır.',
+    ]);
+    // Hep "Aynı": cevapların yarısı doğru (şans düzeyi); uyarı aynı düğmeyi de söyler.
     const allSame = evaluate(SLUG, rotationBody(() => ({ choice: 1, rtMs: 1500 })));
     expect(allSame.parent.cautions.join(' ')).toContain('cevapların çoğunda aynı düğmeye basılmış');
-    expect(allSame.parent.chartNote).toBe('Doğru cevaplar yarıya yakın ya da daha az olduğu için açılara göre süreler gösterilmedi.');
-    expect(allSame.parent.items[1].text).toBe('Doğru cevaplar yarıya yakın ya da daha az olduğu için karar süresi yorumlanmadı.');
+    expect(allSame.parent.chart).toBeNull();
+    expect(allSame.parent.items[1].text).toBe('Doğru cevaplar rastgele basmayla da bulunabilecek kadar az olduğu için karar süresi yorumlanmadı.');
   });
 
   it('süre aşımı ile çok erken basış birlikte çoğunluktaysa ikisi birlikte söylenir; uyarılar kartla çelişmez', () => {
@@ -291,40 +300,55 @@ describe('Zihinde döndürme: rapor', () => {
     const mixed = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 4 ? 'timeout' : i < 7 ? 'early' : i < 12 ? 'wrong' : 'right')));
     expect(mixed.student.items[0].badge).toBe('%85 doğru');
     expect(mixed.student.items[0].text).toContain(
-      'Doğru sayılmayan denemelerin çoğunda ya süre (7 saniye) dolmadan cevap vermedin ya da şekillere bakmadan, çok erken bastın.',
+      'Doğru sayılmayan denemelerin çoğunda ya süre (7 saniye) dolmadan cevap vermedin ya da 0,3 saniyeden kısa sürede bastın.',
     );
-    expect(mixed.parent.items[0].text).toContain('ya süre (7 saniye) dolmadan cevap vermedi ya da şekillere bakmadan, çok erken bastı.');
+    expect(mixed.parent.items[0].text).toContain('ya süre (7 saniye) dolmadan cevap vermedi ya da 0,3 saniyeden kısa sürede bastı.');
     // Doğruluk %50: 12 süre aşımı, 10 çok erken, 18 yanlış.
     const lowMixed = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 12 ? 'timeout' : i < 22 ? 'early' : i < 40 ? 'wrong' : 'right')));
     expect(lowMixed.parent.items[0].badge).toBe('%50 doğru');
-    expect(lowMixed.parent.items[0].text).toMatch(/^Çocuğunuz doğru sayılmayan denemelerin çoğunda ya süre \(7 saniye\) dolmadan cevap vermedi ya da/);
-    expect(lowMixed.parent.cautions.join(' ')).toContain('doğru sayılmayan denemelerin çoğunda ya süre içinde cevap verilmemiş ya da çok erken basılmış');
+    expect(lowMixed.parent.items[0].text).toBe(
+      'Çocuğunuz 12 denemede süre (7 saniye) dolmadan cevap vermedi; 10 denemede de 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilir. Bunlar doğru sayılmadı. Cevap verdiği denemelerin ise çoğunu doğru buldu. Bu yüzden doğru cevap oranı onu tam yansıtmayabilir.',
+    );
+    expect(lowMixed.parent.cautions.join(' ')).toContain('doğru sayılmayan denemelerin birçoğunda ya süre içinde cevap verilmemiş ya da çok erken basılmış');
     expect(all(lowMixed.parent)).not.toMatch(/rastgele|karıştırılmış/);
-    // Doğruluk %25: 35 çok erken, 25 yanlış. Kart erken basışı söyler; uyarılar da düğmelerin karıştırıldığını söylemez.
+    // 35 çok erken, 25 yanlış, 20 doğru: cevap verilen 45 denemenin %44'ü doğru, yani şans düzeyi. Kart ve uyarı bunu söyler;
+    // uyarı ayrıca erken basışları da söyler; düğmelerin karıştırıldığı söylenmez.
     const lowEarly = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 35 ? 'early' : i < 60 ? 'wrong' : 'right')));
-    expect(lowEarly.student.items[0].text).toContain('denemelerin birçoğunda şekillere bakmadan, çok erken bastın');
+    expect(lowEarly.student.items[0].badge).toBe('Yorumlanmadı');
+    expect(lowEarly.student.items[0].text).toContain('Cevap verdiğin denemelerin yarıya yakınını doğru buldun.');
+    expect(lowEarly.student.cautions.join(' ')).toContain('cevap verilen denemelerin yarıya yakını doğru');
     expect(lowEarly.student.cautions.join(' ')).toContain('bazı cevaplar şekiller görünür görünmez');
-    expect(all(lowEarly.student)).not.toMatch(/rastgele|karıştırılmış/);
-    expect(lowEarly.student.cautions.join(' ')).not.toContain('yarıya yakın');
+    expect(all(lowEarly.student)).not.toMatch(/karıştırılmış|karıştırmış/);
+    // 30 süre aşımı ve 15 çok erken basış: ikisi tek başına yarıyı aşmıyor, birlikte aşıyor; sonuç yorumlanmaz.
+    const invalid = evaluate(SLUG, rotationBody((t, i) => answer(t, i < 30 ? 'timeout' : i < 45 ? 'early' : 'right')));
+    expect(invalid.parent.items[0].badge).toBe('Yorumlanmadı');
+    expect(invalid.parent.items[0].text).toBe(
+      'Çocuğunuz 30 denemede süre (7 saniye) dolmadan cevap vermedi; 15 denemede de 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilir. Denemelerin yarısından çoğu böyle geçtiği için sonuç yorumlanmadı.',
+    );
+    expect(invalid.parent.items[2].text).toBe('Denemelerin çoğunda ya süre içinde cevap verilmediği ya da çok erken basıldığı için karar süreleri karşılaştırılmadı.');
+    expect(invalid.parent.chart).toBeNull();
+    expect(invalid.parent.cautions).toEqual([
+      'Zihinde döndürme görevinde denemelerin yarısından çoğunda ya süre içinde cevap verilmemiş ya da şekiller görünür görünmez basılmış. Bu görevin sonucu yorumlanmamalıdır.',
+    ]);
   });
 
   it('çok döndürülmüş şekillerde tahmin edilmişse süreler karşılaştırılmaz', () => {
     let k = 0;
     const r = evaluate(SLUG, rotationBody((t) => (t.disparity >= 135 ? { choice: (k++ % 2 ? 1 : 2) as 1 | 2, rtMs: 900 } : { choice: t.mirror ? 2 : 1, rtMs: 1300 })));
-    expect(r.student.items[2].badge).toBe('Karşılaştırılamadı');
+    expect(r.student.items[2].badge).toBe('Karşılaştırılmadı');
     expect(r.student.items[2].text).toContain('Çok döndürülmüş şekillerde doğru cevaplar az');
   });
 
   it('süre içinde cevap verilmeyen görev yorumlanmaz', () => {
     const r = evaluate(SLUG, rotationBody(() => ({ choice: null, rtMs: null })));
-    expect(r.student.items[0].text).toContain('denemelerin çoğunda süre içinde cevap vermedin');
-    expect(r.student.items[1].badge).toBe('Hesaplanamadı');
-    expect(r.student.items[2].badge).toBe('Karşılaştırılamadı');
-    expect(r.student.chartNote).toBe('Denemelerin çoğunda süre içinde cevap verilmediği için açılara göre süreler gösterilmedi.');
+    expect(r.student.items[0].text).toBe(
+      'Hiçbir denemede süre (7 saniye) dolmadan cevap vermedin. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu yüzden sonuç yorumlanmadı.',
+    );
+    expect(r.student.items[1].badge).toBe('Yorumlanmadı');
+    expect(r.student.items[2].badge).toBe('Karşılaştırılmadı');
     expect(r.student.items[2].text).toBe('Denemelerin çoğunda süre içinde cevap verilmediği için karar süreleri karşılaştırılmadı.');
-    const rows = r.student.chart?.type === 'bars' ? r.student.chart.rows : [];
-    expect(rows.every((x) => x.valueLabel === 'yetersiz' && x.value === 0)).toBe(true);
-    expect(r.parent.cautions.join(' ')).toContain('yarısından çoğunda süre içinde cevap verilmemiş');
+    expect(r.student.chart).toBeNull();
+    expect(r.parent.cautions.join(' ')).toContain('hiçbir denemede süre içinde cevap verilmemiş');
   });
 
   it('bir açıda yeterince doğru "aynı" cevap yoksa o çubuk "yetersiz"', () => {

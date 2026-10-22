@@ -155,6 +155,8 @@ import {
   TOWER_RAPID_MS,
   TOWER_SHORT,
   type TowerResult,
+  rotationStatus,
+  rotationMissedKind,
   cubeSamePosition,
   type CubeResult,
   HIDDEN_CHANCE_MAX,
@@ -174,6 +176,7 @@ import {
   ROTATION3D_CHANCE_MAX,
   ROTATION3D_PART_GAP,
   rotation3dMirrorPick,
+  rotation3dHalfPick,
   rotation3dRapid,
   rotation3dSamePair,
   type Rotation3dPartResult,
@@ -191,6 +194,7 @@ import {
   perspectiveDoubt,
   perspectiveEgo,
   perspectiveMirror,
+  perspectiveOpposite,
   perspectivePatternHigh,
   perspectiveRapid,
   perspectiveSameDir,
@@ -2291,50 +2295,86 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
   const limit = nf0.format(task.timeoutMs / 1000);
-  const abandoned = r.timeouts > r.n / 2;
-  const low = r.accuracy < 0.6;
+  // Uyarılarla aynı ayrım (rotationStatus): şans ve ters kararı yalnızca cevap verilen denemelerden verilir.
+  const status = rotationStatus(r);
+  const kind = rotationMissedKind(r);
+  const notRead = status === 'abandoned' || status === 'rushed' || status === 'invalid' || status === 'chance' || status === 'reversed';
+  const answered = r.correct + r.sameSaidMirror + r.mirrorSaidSame;
+  const wrong = answered - r.correct;
   const errors = r.n - r.correct;
-  const wrong = r.sameSaidMirror + r.mirrorSaidSame;
   const missed = r.timeouts + r.anticipations;
-  const mostlyMissed = errors > 0 && missed > errors / 2;
-  // Doğru sayılmayan denemelerin çoğu süre aşımı ya da çok erken basışsa hangisi olduğu söylenir; ikisi de tek başına
-  // çoğunluk değilse ("karışık") ikisi birlikte söylenir.
-  const missedKind = r.timeouts > errors / 2 ? 'timeouts' : r.anticipations > errors / 2 ? 'early' : 'mixed';
-  // Doğruluk düşükken yanlış cevaplar doğrulardan çoksa düğmeler karıştırılmış olabilir (rastgele basan biri yarısını bulur).
-  const reversed = low && !mostlyMissed && r.accuracy < 0.4 && wrong > r.correct;
+  // Yanlış cevapların türü (ok durumunda): hepsi tek türdeyse ve süre aşımı ya da erken basış yoksa "hepsinde".
+  const share = (k: number) => (k === errors ? 'hepsinde' : 'çoğunda');
 
   let accText: string;
-  if (abandoned) {
-    accText = v(
-      'Görevde denemelerin çoğunda süre içinde cevap vermedin; görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
-      'Çocuğunuz denemelerin çoğunda süre içinde cevap vermedi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu sonuç yorumlanmamalıdır.',
-    );
-  } else if (low && mostlyMissed) {
+  if (status === 'abandoned') {
+    const first =
+      r.timeouts === r.n
+        ? v(`Hiçbir denemede süre (${limit} saniye) dolmadan cevap vermedin.`, `Çocuğunuz hiçbir denemede süre (${limit} saniye) dolmadan cevap vermedi.`)
+        : v(
+            `${r.n} denemenin ${r.timeouts} tanesinde süre (${limit} saniye) dolmadan cevap vermedin.`,
+            `Çocuğunuz ${r.n} denemenin ${r.timeouts} tanesinde süre (${limit} saniye) dolmadan cevap vermedi.`,
+          );
     accText =
-      missedKind === 'timeouts'
+      first +
+      v(
+        ' Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu yüzden sonuç yorumlanmadı.',
+        ' Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Bu yüzden sonuç yorumlanmadı.',
+      );
+  } else if (status === 'rushed') {
+    const first =
+      r.anticipations === r.n
+        ? v('Bütün denemelerde 0,3 saniyeden kısa sürede bastın.', 'Çocuğunuz bütün denemelerde 0,3 saniyeden kısa sürede bastı.')
+        : v(
+            `${r.n} denemenin ${r.anticipations} tanesinde 0,3 saniyeden kısa sürede bastın.`,
+            `Çocuğunuz ${r.n} denemenin ${r.anticipations} tanesinde 0,3 saniyeden kısa sürede bastı.`,
+          );
+    accText =
+      first +
+      v(
+        ' Bu kadar kısa sürede iki şekli karşılaştırmak çok zordur; şekillere bakmadan basmış olabilirsin. Bu yüzden sonuç yorumlanmadı.',
+        ' Bu kadar kısa sürede iki şekli karşılaştırmak çok zordur; şekillere bakmadan basmış olabilir. Bu yüzden sonuç yorumlanmadı.',
+      );
+  } else if (status === 'invalid') {
+    accText = v(
+      `${r.timeouts} denemede süre (${limit} saniye) dolmadan cevap vermedin; ${r.anticipations} denemede de 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilirsin. Denemelerin yarısından çoğu böyle geçtiği için sonuç yorumlanmadı.`,
+      `Çocuğunuz ${r.timeouts} denemede süre (${limit} saniye) dolmadan cevap vermedi; ${r.anticipations} denemede de 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilir. Denemelerin yarısından çoğu böyle geçtiği için sonuç yorumlanmadı.`,
+    );
+  } else if (status === 'reversed') {
+    const q = wrong === answered ? 'hepsi' : 'çoğu';
+    accText = v(
+      `Cevap verdiğin denemelerin ${q} yanlıştı: “Aynı” ile “Ayna görüntüsü” düğmelerini birbirine karıştırmış olabilirsin. Bu yüzden sonuç yorumlanmadı.`,
+      `Çocuğunuzun cevap verdiği denemelerin ${q} yanlıştı: “Aynı” ile “Ayna görüntüsü” düğmeleri birbirine karıştırılmış olabilir. Bu yüzden sonuç yorumlanmadı.`,
+    );
+  } else if (status === 'chance') {
+    accText = v(
+      'Cevap verdiğin denemelerin yarıya yakınını doğru buldun. Rastgele basan biri de yaklaşık yarısını bulur. Yönergeyi tam anlamamış ya da acele etmiş olabilirsin; dikkatin de dağılmış olabilir. Bu yüzden sonuç yorumlanmadı.',
+      'Çocuğunuz cevap verdiği denemelerin yarıya yakınını doğru buldu. Rastgele basan biri de yaklaşık yarısını bulur. Yönerge tam anlaşılmamış ya da acele edilmiş olabilir; dikkati de dağılmış olabilir. Bu yüzden sonuç yorumlanmadı.',
+    );
+  } else if (status === 'missed') {
+    // Cevap verilen denemelerin çoğu doğru; doğru cevap oranını süre aşımları ve çok erken basışlar düşürdü.
+    const first =
+      kind === 'timeouts'
         ? v(
-            `Görevde denemelerin birçoğunda süre (${limit} saniye) dolmadan cevap vermedin; doğru cevaplar bu yüzden az. Şekilleri karşılaştırmak uzun sürmüş ya da yönergeyi tam anlamamış olabilirsin. Bu sonuç tek başına bir şey söylemez.`,
-            `Çocuğunuz denemelerin birçoğunda süre (${limit} saniye) dolmadan cevap vermedi; doğru cevaplar bu yüzden az. Şekilleri karşılaştırmak uzun sürmüş ya da yönerge tam anlaşılmamış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+            `${r.n} denemenin ${r.timeouts} tanesinde süre (${limit} saniye) dolmadan cevap vermedin; bunlar doğru sayılmadı.`,
+            `Çocuğunuz ${r.n} denemenin ${r.timeouts} tanesinde süre (${limit} saniye) dolmadan cevap vermedi; bunlar doğru sayılmadı.`,
           )
-        : missedKind === 'early'
+        : kind === 'early'
           ? v(
-              'Görevde denemelerin birçoğunda şekillere bakmadan, çok erken bastın; doğru cevaplar bu yüzden az. Acele etmeden, önce iki şekli karşılaştırıp öyle basmak işine yarar.',
-              'Çocuğunuz denemelerin birçoğunda şekillere bakmadan, çok erken bastı; doğru cevaplar bu yüzden az. Bu sonuç tek başına yorumlanmamalıdır.',
+              `${r.n} denemenin ${r.anticipations} tanesinde 0,3 saniyeden kısa sürede bastın. Bu kadar kısa sürede iki şekli karşılaştırmak çok zordur; bu denemelerde şekillere bakmadan basmış olabilirsin. Bunlar doğru sayılmadı.`,
+              `Çocuğunuz ${r.n} denemenin ${r.anticipations} tanesinde 0,3 saniyeden kısa sürede bastı. Bu kadar kısa sürede iki şekli karşılaştırmak çok zordur; bu denemelerde şekillere bakmadan basmış olabilir. Bunlar doğru sayılmadı.`,
             )
           : v(
-              `Görevde doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedin ya da şekillere bakmadan, çok erken bastın; doğru cevaplar bu yüzden az. Bu sonuç tek başına bir şey söylemez.`,
-              `Çocuğunuz doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedi ya da şekillere bakmadan, çok erken bastı; doğru cevaplar bu yüzden az. Bu sonuç tek başına yorumlanmamalıdır.`,
+              `${r.timeouts} denemede süre (${limit} saniye) dolmadan cevap vermedin; ${r.anticipations} denemede de 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilirsin. Bunlar doğru sayılmadı.`,
+              `Çocuğunuz ${r.timeouts} denemede süre (${limit} saniye) dolmadan cevap vermedi; ${r.anticipations} denemede de 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilir. Bunlar doğru sayılmadı.`,
             );
-  } else if (reversed) {
-    accText = v(
-      'Cevaplarının çoğu yanlıştı: “Aynı” ile “Ayna görüntüsü” düğmelerini birbirine karıştırmış olabilirsin. Bu sonuç tek başına bir şey söylemez.',
-      'Çocuğunuzun cevaplarının çoğu yanlıştı: “Aynı” ile “Ayna görüntüsü” düğmeleri birbirine karıştırılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
-    );
-  } else if (low) {
-    accText = v(
-      'Şekilleri karşılaştırmakta zorlandın: bu görevde rastgele basan biri de yaklaşık yarısını doğru bulur. Bu; yönergeyi tam anlamamaktan, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir; tek başına bir şey söylemez.',
-      'Çocuğunuz şekilleri karşılaştırmakta zorlandı: bu görevde rastgele basan biri de yaklaşık yarısını doğru bulur. Bu; yönergenin tam anlaşılmamasından, acele etmekten ya da dikkatin dağılmasından kaynaklanabilir ve tek başına yorumlanmamalıdır.',
-    );
+    const most = r.correct >= 0.9 * answered ? 'neredeyse hepsini' : 'çoğunu';
+    accText =
+      first +
+      v(
+        ` Cevap verdiğin denemelerin ise ${most} doğru buldun. Bu yüzden doğru cevap oranı seni tam yansıtmayabilir.`,
+        ` Cevap verdiği denemelerin ise ${most} doğru buldu. Bu yüzden doğru cevap oranı onu tam yansıtmayabilir.`,
+      );
   } else {
     accText =
       r.accuracy === 1
@@ -2353,66 +2393,79 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
     // Doğru sayılmayan denemelerin türü: süre aşımı ya da çok erken basış mı, yanlış cevap mı? Yanlış cevaplar çoğunlukla
     // bir türdeyse (ayna görüntüsüne "Aynı" ya da aynı şekle "Ayna görüntüsü") bu söylenir.
     if (errors > 0) {
-      if (mostlyMissed) {
+      if (missed > errors / 2) {
         accText +=
-          missedKind === 'timeouts'
+          kind === 'timeouts'
             ? v(
                 ` Doğru sayılmayan denemelerin çoğunda süre (${limit} saniye) dolmadan cevap vermedin: bazı şekilleri karşılaştırmak uzun sürmüş olabilir.`,
                 ` Doğru sayılmayan denemelerin çoğunda süre (${limit} saniye) dolmadan cevap vermedi: bazı şekilleri karşılaştırmak uzun sürmüş olabilir.`,
               )
-            : missedKind === 'early'
-              ? v(' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastın.', ' Doğru sayılmayan denemelerin çoğunda şekillere bakmadan, çok erken bastı.')
+            : kind === 'early'
+              ? v(
+                  ' Doğru sayılmayan denemelerin çoğunda 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilirsin.',
+                  ' Doğru sayılmayan denemelerin çoğunda 0,3 saniyeden kısa sürede, şekillere bakmadan basmış olabilir.',
+                )
               : v(
-                  ` Doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedin ya da şekillere bakmadan, çok erken bastın.`,
-                  ` Doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedi ya da şekillere bakmadan, çok erken bastı.`,
+                  ` Doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedin ya da 0,3 saniyeden kısa sürede bastın.`,
+                  ` Doğru sayılmayan denemelerin çoğunda ya süre (${limit} saniye) dolmadan cevap vermedi ya da 0,3 saniyeden kısa sürede bastı.`,
                 );
       } else if (r.mirrorSaidSame >= 3 && r.mirrorSaidSame >= 2 * r.sameSaidMirror) {
         accText += v(
-          ' Yanıldığın denemelerin çoğunda ayna görüntüsüne “Aynı” dedin: ayna görüntüsünü fark etmek için şekli dikkatle döndürüp karşılaştırmak gerekir.',
-          ' Yanıldığı denemelerin çoğunda ayna görüntüsüne “Aynı” dedi; ayna görüntüsünü fark etmek, şekli dikkatle döndürüp karşılaştırmayı gerektirir.',
+          ` Yanıldığın denemelerin ${share(r.mirrorSaidSame)} ayna görüntüsüne “Aynı” dedin. Ayna görüntüsü aynı şekle çok benzer; farkı görmek için şekli zihninde sonuna kadar döndürmek gerekir.`,
+          ` Yanıldığı denemelerin ${share(r.mirrorSaidSame)} ayna görüntüsüne “Aynı” dedi. Ayna görüntüsü aynı şekle çok benzer; farkı görmek için şekli zihinde sonuna kadar döndürmek gerekir.`,
         );
       } else if (r.sameSaidMirror >= 3 && r.sameSaidMirror >= 2 * r.mirrorSaidSame) {
         const large = r.sameSaidMirrorLarge > r.sameSaidMirror / 2;
         accText += v(
-          ` Yanıldığın denemelerin çoğunda aynı şekle “Ayna görüntüsü” dedin${large ? '; bunların çoğu çok döndürülmüş şekillerdeydi. Çok döndürülmüş bir şekli tanımak daha zordur.' : '.'}`,
-          ` Yanıldığı denemelerin çoğunda aynı şekle “Ayna görüntüsü” dedi${large ? '; bunların çoğu çok döndürülmüş şekillerdeydi. Çok döndürülmüş bir şekli tanımak daha zordur.' : '.'}`,
+          ` Yanıldığın denemelerin ${share(r.sameSaidMirror)} aynı şekle “Ayna görüntüsü” dedin${large ? '; bunların çoğu çok döndürülmüş şekillerdeydi. Çok döndürülmüş bir şekli tanımak daha zordur.' : '.'}`,
+          ` Yanıldığı denemelerin ${share(r.sameSaidMirror)} aynı şekle “Ayna görüntüsü” dedi${large ? '; bunların çoğu çok döndürülmüş şekillerdeydi. Çok döndürülmüş bir şekli tanımak daha zordur.' : '.'}`,
         );
       } else if (wrong > 0) {
         accText += v(' Bazı denemelerde yanıldın.', ' Bazı denemelerde yanıldı.');
       }
-      if (r.accuracy < 0.75 && !mostlyMissed) {
+      if (r.accuracy < 0.75 && missed <= errors / 2) {
         accText += v(
-          ' Bu; acele etmekten, dikkatin dağılmasından ya da şekli zihinde döndürmenin zor gelmesinden kaynaklanabilir.',
-          ' Bu; acele etmekten, dikkatin dağılmasından ya da şekli zihinde döndürmenin zor gelmesinden kaynaklanabilir ve tek başına yorumlanmamalıdır.',
+          ' Bunun nedeni acele etmek, dikkatin dağılması ya da şekli zihinde döndürmenin zor gelmesi olabilir.',
+          ' Bunun nedeni acele etmek, dikkatin dağılması ya da şekli zihinde döndürmenin zor gelmesi olabilir; tek başına yorumlanmamalıdır.',
         );
       }
     }
   }
-  const dogruluk: CognitiveBlock = {
-    ...card('zd_dogruluk'),
-    headline: `${pct(r.accuracy)} doğru`,
-    text: accText,
-    visual: pctBarsVisual('Doğru cevap oranı', [
-      { label: 'Aynı şekiller', rate: r.accSame },
-      { label: 'Ayna görüntüleri', rate: r.accMirror },
-    ]),
-  };
+  // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
+  const dogruluk: CognitiveBlock = notRead
+    ? { ...card('zd_dogruluk'), headline: 'Yorumlanmadı', text: accText }
+    : {
+        ...card('zd_dogruluk'),
+        headline: `${pct(r.accuracy)} doğru`,
+        text: accText,
+        visual: pctBarsVisual('Doğru cevap oranı', [
+          { label: 'Aynı şekiller', rate: r.accSame },
+          { label: 'Ayna görüntüleri', rate: r.accMirror },
+        ]),
+      };
 
-  // Görev yarıda bırakıldıysa ya da doğru cevaplar azsa süreler yorumlanmaz; grafikte de gösterilmez.
-  const usable = !abandoned && !low && r.medianRt !== null;
-  const hiz: CognitiveBlock =
-    r.medianRt === null || abandoned || low
+  // Sonuç yorumlanmıyorsa süreler de yorumlanmaz; hesaplanamayan süre ayrıca söylenir.
+  const why =
+    status === 'abandoned'
+      ? 'Denemelerin çoğunda süre içinde cevap verilmediği için'
+      : status === 'rushed'
+        ? 'Denemelerin çoğunda şekillere bakmadan, çok erken basıldığı için'
+        : status === 'invalid'
+          ? 'Denemelerin çoğunda ya süre içinde cevap verilmediği ya da çok erken basıldığı için'
+          : status === 'reversed'
+            ? 'Düğmeler birbirine karıştırılmış olabileceği için'
+            : 'Doğru cevaplar rastgele basmayla da bulunabilecek kadar az olduğu için';
+  const usable = !notRead && r.medianRt !== null;
+  const hiz: CognitiveBlock = notRead
+    ? { ...card('zd_hiz'), headline: 'Yorumlanmadı', text: `${why} karar süresi yorumlanmadı.` }
+    : r.medianRt === null
       ? {
           ...card('zd_hiz'),
           headline: 'Hesaplanamadı',
-          text: abandoned
-            ? 'Denemelerin çoğunda süre içinde cevap verilmediği için karar süresi yorumlanmadı.'
-            : low
-              ? 'Doğru cevaplar yarıya yakın ya da daha az olduğu için karar süresi yorumlanmadı.'
-              : v(
-                  'Doğru bulduğun aynı şekiller yeterince çok olmadığı için karar süren hesaplanamadı.',
-                  'Doğru bulunan aynı şekiller yeterince çok olmadığı için karar süresi hesaplanamadı.',
-                ),
+          text: v(
+            'Doğru bulduğun aynı şekiller yeterince çok olmadığı için karar süren hesaplanamadı.',
+            'Doğru bulunan aynı şekiller yeterince çok olmadığı için karar süresi hesaplanamadı.',
+          ),
         }
       : {
           ...card('zd_hiz'),
@@ -2420,7 +2473,7 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
           visual: msBarsVisual('Tipik karar süresi', [{ label: 'Doğru bulunan aynı şekillerde', ms: r.medianRt }]),
           text: v(
             `Doğru bulduğun aynı şekillerde karar vermen tipik olarak ${sn(r.medianRt)} saniye sürdü. Hız tek başına iyi ya da kötü değildir; önemli olan, doğru karar verebilmektir.`,
-            `Çocuğunuzun doğru bulduğu aynı şekillerde tipik karar süresi ${sn(r.medianRt)} saniye oldu. Bu süre; şekilleri görmeyi, karşılaştırmayı ve düğmeye basmayı içerir; yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir. Hız, doğrulukla birlikte değerlendirilmelidir.`,
+            `Çocuğunuzun doğru bulduğu aynı şekillerde tipik karar süresi ${sn(r.medianRt)} saniye oldu. Bu süre şekilleri görmeyi, karşılaştırmayı ve düğmeye basmayı içerir. Yaşla ve kullanılan cihazla (dokunmatik ekran, fare ya da klavye) değişir. Hız, doğrulukla birlikte değerlendirilmelidir.`,
           ),
         };
 
@@ -2430,16 +2483,15 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
   const large = to10(r.rtLarge);
   const bigAngles = r.byAngle.filter((a) => a.angle >= 135);
   const accLarge = bigAngles.reduce((s, a) => s + a.correct, 0) / Math.max(1, bigAngles.reduce((s, a) => s + a.n, 0));
-  const no = (text: string): CognitiveBlock => ({ ...card('zd_aci'), headline: 'Karşılaştırılamadı', text });
+  const largeWeak = accLarge < ROTATION_LARGE_MIN_ACC;
+  const no = (headline: string, text: string): CognitiveBlock => ({ ...card('zd_aci'), headline, text });
   let aci: CognitiveBlock;
-  if (abandoned) {
-    aci = no('Denemelerin çoğunda süre içinde cevap verilmediği için karar süreleri karşılaştırılmadı.');
-  } else if (low) {
-    aci = no('Doğru cevaplar yarıya yakın ya da daha az olduğu için karar süreleri karşılaştırılmadı.');
-  } else if (accLarge < ROTATION_LARGE_MIN_ACC) {
-    aci = no('Çok döndürülmüş şekillerde doğru cevaplar az olduğu için karar süreleri karşılaştırılmadı.');
+  if (notRead) {
+    aci = no('Karşılaştırılmadı', `${why} karar süreleri karşılaştırılmadı.`);
+  } else if (largeWeak) {
+    aci = no('Karşılaştırılmadı', 'Çok döndürülmüş şekillerde doğru cevaplar az olduğu için karar süreleri karşılaştırılmadı.');
   } else if (small === null || large === null) {
-    aci = no('Az ya da çok döndürülmüş aynı şekillerde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.');
+    aci = no('Karşılaştırılamadı', 'Az ya da çok döndürülmüş aynı şekillerde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.');
   } else {
     const diff = large - small;
     const visual = msBarsVisual('Tipik karar süresi', [
@@ -2463,7 +2515,7 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
               headline: 'Belirgin bir fark yok',
               visual,
               text: v(
-                'Az ve çok döndürülmüş şekillerde karar süren belirgin biçimde farklı değildi. Genellikle şekil daha çok döndürüldüğünde karar daha uzun sürer; bu fark bir seferden ötekine değişebilir.',
+                'Az ve çok döndürülmüş şekillerde karar süren belirgin biçimde farklı değildi. Genellikle şekil daha çok döndürüldüğünde karar daha uzun sürer. Bu sonuç bir seferden ötekine değişebilir.',
                 'Az ve çok döndürülmüş şekillerde çocuğunuzun karar süresi belirgin biçimde farklı değildi. Genellikle şekil daha çok döndürüldüğünde karar daha uzun sürer; tek bir uygulamada bu karşılaştırmanın kesinliği düşüktür.',
               ),
             }
@@ -2478,18 +2530,22 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
             };
   }
 
-  const values = r.byAngle.map((a) => (usable ? to10(a.medianRt) : null));
+  // Yorumlanmayan sonuçta açılara göre süre grafiği de çizilmez. Çok döndürülmüş şekillerde doğru cevaplar azsa o açıların
+  // süreleri "yetersiz" yazılır (kart bu karşılaştırmayı yapmıyor).
+  if (notRead) return { blocks: [dogruluk, hiz, aci] };
+  const values = r.byAngle.map((a) => (usable && !(largeWeak && a.angle >= 135) ? to10(a.medianRt) : null));
   const max = roundUp(Math.max(0, ...values.map((x) => x ?? 0)), 500);
-  const note = abandoned
-    ? 'Denemelerin çoğunda süre içinde cevap verilmediği için açılara göre süreler gösterilmedi.'
-    : low
-      ? 'Doğru cevaplar yarıya yakın ya da daha az olduğu için açılara göre süreler gösterilmedi.'
-      : !usable
-        ? 'Doğru bulunan aynı şekil sayısı az olduğu için açılara göre süreler gösterilmedi.'
-        : v(
+  const note = !usable
+    ? 'Doğru bulunan aynı şekil sayısı az olduğu için açılara göre süreler gösterilmedi.'
+    : v(
         'Çubuklar, doğru bulduğun aynı şekillerdeki tipik karar süresini gösterir; kısa çubuk daha hızlı demek.',
         'Çubuklar, doğru bulunan aynı şekillerdeki tipik (ortanca) karar süresini gösterir; kısa çubuk daha hızlı demektir.',
-      ) + (values.some((x) => x === null) ? ' “Yetersiz”: o açıda doğru bulunan aynı şekil sayısı yetersiz.' : '');
+      ) +
+      (largeWeak
+        ? ' Çok döndürülmüş şekillerde (135° ve 180°) doğru cevaplar az olduğu için bu açıların süreleri gösterilmedi.'
+        : values.some((x) => x === null)
+          ? ' “Yetersiz”: o açıda doğru bulunan aynı şekil sayısı yetersiz.'
+          : '');
   return {
     blocks: [dogruluk, hiz, aci],
     chart: {
@@ -5504,7 +5560,10 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   // İki ayna görüntüsünün birden çok sık seçildiği ve doğruların az olduğu sonuç: yönerge ters anlaşılmış olabilir. Bazı
   // sorularda bakmadan seçilmiş olabilirse (çok hızlı ya da hep aynı yer) bu yoruma gidilmez; sonuç rastgele düzeyinde sayılır.
   const reversed = mirrorPick && r.correct <= ROTATION3D_CHANCE_MAX && !doubt;
-  const chance = r.correct <= ROTATION3D_CHANCE_MAX && !reversed;
+  // Tam doğrular az ama seçilen şekillerin çoğu döndürülmüş: çoğu soruda bir doğru, bir ayna (uyarılarla aynı ölçüt).
+  const halfPick = !reversed && rotation3dHalfPick(r);
+  const chance = r.correct <= ROTATION3D_CHANCE_MAX && !reversed && !halfPick;
+  const notRead = reversed || halfPick || chance;
   const noneOfAll = r.none === r.n ? 'hepsinde' : `${r.none} tanesinde`;
   const wrong = r.n - r.correct;
   const [p1, p2] = r.parts;
@@ -5513,13 +5572,19 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   let accText: string;
   if (reversed) {
     accText = v(
-      `${r.n} sorunun ${noneOfAll} iki ayna görüntüsünü birden seçtin; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Yönergeyi ters anlamış, yani döndürülmüş şekiller yerine ayna görüntülerini aramış olabilirsin. Bu sonuç tek başına bir şey söylemez; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmek daha doğru bir sonuç verebilir.`,
-      `Çocuğunuz ${r.n} sorunun ${noneOfAll} iki ayna görüntüsünü birden seçti; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Yönerge ters anlaşılmış, yani döndürülmüş şekiller yerine ayna görüntüleri aranmış olabilir. Bu sonuç yorumlanmamalıdır; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmesi daha doğru bir sonuç verebilir.`,
+      `${r.n} sorunun ${noneOfAll} iki ayna görüntüsünü birden seçtin; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Yönergeyi ters anlamış, yani döndürülmüş şekiller yerine ayna görüntülerini aramış olabilirsin. Bu yüzden sonuç yorumlanmadı. Alıştırma sorularına yeniden bakıp testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${r.n} sorunun ${noneOfAll} iki ayna görüntüsünü birden seçti; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Yönerge ters anlaşılmış, yani döndürülmüş şekiller yerine ayna görüntüleri aranmış olabilir. Bu yüzden sonuç yorumlanmadı. Alıştırma sorularına yeniden bakıp testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
+    );
+  } else if (halfPick) {
+    const where = r.half === r.n ? 'Soruların hepsinde' : `${r.n} sorunun ${r.half} tanesinde`;
+    accText = v(
+      `${where} iki şekilden birini doğru seçtin, öbürü ise bir ayna görüntüsüydü. Rastgele seçen biri bunu bu kadar sık yapmaz. Yönergeyi “biri döndürülmüş, biri ayna görüntüsü” diye anlamış ya da ikinci şekli hep ayna görüntüsüyle karıştırmış olabilirsin; oysa dört şekilden ikisi döndürülmüş hâldir. Bu yüzden sonuç yorumlanmadı. Alıştırma sorularına yeniden bakıp testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${lowerFirst(where)} iki şekilden birini doğru seçti, öbürü ise bir ayna görüntüsüydü. Rastgele seçen biri bunu bu kadar sık yapmaz. Yönerge “biri döndürülmüş, biri ayna görüntüsü” diye anlaşılmış ya da ikinci şekil hep ayna görüntüsüyle karıştırılmış olabilir; oysa dört şekilden ikisi döndürülmüş hâldir. Bu yüzden sonuç yorumlanmadı. Alıştırma sorularına yeniden bakıp testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
     );
   } else if (chance) {
     accText = v(
-      `Doğru cevapların, seçenekleri rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${ROTATION3D_CHANCE_MAX} ya da daha az). Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da şekillere yeterince bakmadan seçmiş de olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
-      `Çocuğunuzun doğru cevapları, seçenekleri rastgele seçen birinin de bulabileceği kadar az (${r.n} soruda ${ROTATION3D_CHANCE_MAX} ya da daha az). Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da şekillere yeterince bakılmadan seçilmiş de olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+      `${r.n} sorunun ${r.correct === 0 ? 'hiçbirinde iki doğru şekli birlikte bulamadın' : `${r.correct === 1 ? 'birinde' : `${r.correct} tanesinde`} iki doğru şekli de buldun`}; bu, seçenekleri rastgele seçen birinin de bulabileceği kadar az. Sorular sana çok zor gelmiş olabilir; yönergeyi tam anlamamış ya da şekillere yeterince bakmadan seçmiş de olabilirsin. Bu yüzden sonuç yorumlanmadı. Dinlendiğin bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuz ${r.n} sorunun ${r.correct === 0 ? 'hiçbirinde iki doğru şekli birlikte bulamadı' : `${r.correct === 1 ? 'birinde' : `${r.correct} tanesinde`} iki doğru şekli de buldu`}; bu, seçenekleri rastgele seçen birinin de bulabileceği kadar az. Sorular ona çok zor gelmiş olabilir; yönerge tam anlaşılmamış ya da şekillere yeterince bakılmadan seçilmiş de olabilir. Bu yüzden sonuç yorumlanmadı. Dinlendiği bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
     );
   } else {
     if (r.correct === r.n) {
@@ -5538,10 +5603,17 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
         'Çocuğunuz soruların çoğunda döndürülmüş iki şekli de buldu; bazı sorularda ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandı.',
       );
     } else {
+      // Nicelik sayıyla uyuşur: yarısından çoğu, yarısı ya da bir kısmı.
+      const [some, rest] =
+        2 * r.correct > r.n ? ['yarısından çoğunda', 'öteki sorularda'] : 2 * r.correct === r.n ? ['yarısında', 'öteki yarısında'] : ['bir kısmında', 'çoğunda'];
       accText = v(
-        'Soruların bir kısmında döndürülmüş iki şekli de buldun; birçok soruda ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandın. Bu tür sorularda şekli zihinde döndürüp her kolun nereye geleceğini izlemek gerekir.',
-        'Çocuğunuz soruların bir kısmında döndürülmüş iki şekli de buldu; birçok soruda ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandı. Bu tür sorularda şekli zihinde döndürüp her kolun nereye geleceğini izlemek gerekir.',
+        `Soruların ${some} döndürülmüş iki şekli de buldun; ${rest === 'çoğunda' ? 'soruların çoğunda' : rest} ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandın.`,
+        `Çocuğunuz soruların ${some} döndürülmüş iki şekli de buldu; ${rest === 'çoğunda' ? 'soruların çoğunda' : rest} ayna görüntülerini döndürülmüş şekillerden ayırmakta zorlandı.`,
       );
+      // Ayna görüntülerinin nasıl seçildiğini ayna kartı anlatıyorsa genel ipucu yinelenmez.
+      if (!(mirrorPick && !doubt)) {
+        accText += ' Bu tür sorularda şekli zihinde döndürüp her kolun nereye geleceğini izlemek gerekir.';
+      }
     }
     if (r.correct < r.n) {
       accText += v(
@@ -5563,7 +5635,10 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
       );
     }
   }
-  const dogru: CognitiveBlock = {
+  // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
+  const dogru: CognitiveBlock = notRead
+    ? { ...card('ud_dogru'), headline: 'Yorumlanmadı', text: accText }
+    : {
     ...card('ud_dogru'),
     headline: `${r.n} soruda ${r.correct} doğru`,
     text: accText,
@@ -5582,8 +5657,14 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   /* Dik eksen ve yan yatırma */
   const rough = ` Her bölüm ${p1.n} soruya dayanır; bu karşılaştırma kaba bir göstergedir.`;
   let bolum: CognitiveBlock;
-  if (reversed || chance) {
-    bolum = { ...card('ud_bolum'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için iki bölüm karşılaştırılmadı.' };
+  if (notRead) {
+    // Neden doğru cevaplar kartıyla aynı söylenir: yönerge ters ya da farklı anlaşılmış olabilir ya da doğrular çok az.
+    const why = reversed
+      ? 'Yönerge ters anlaşılmış olabileceği için'
+      : halfPick
+        ? 'Yönerge farklı anlaşılmış olabileceği için'
+        : 'Doğru cevaplar çok az olduğu için';
+    bolum = { ...card('ud_bolum'), headline: 'Yorumlanmadı', text: `${why} iki bölüm karşılaştırılmadı.` };
   } else {
     const gap = p1.correct - p2.correct;
     const found = (p: Rotation3dPartResult) =>
@@ -5599,37 +5680,54 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
     );
     let head: string;
     let text: string;
+    // Ayna görüntüleri sık seçildiyse bölümler arasındaki farkın nedeni ayna kartında anlatılır.
+    const toMirror = mirrorPick
+      ? v(' Yanlış cevaplarındaki seçimler için ayna görüntüleri kartına bak.', ' Yanlış cevaplardaki seçimler için ayna görüntüleri kartına bakın.')
+      : '';
     if (doubt) {
-      // Bazı sorularda bakmadan seçilmiş olabilir: bölümler arasındaki fark açıklanmaz, yalnızca sayılar verilir.
-      head =
-        gap >= ROTATION3D_PART_GAP ? '2. bölümde daha az doğru' : gap <= -ROTATION3D_PART_GAP ? '2. bölümde daha çok doğru' : 'İki bölümde yakın sayıda doğru';
-      text = `${counts} ${v(
-        'Bazı sorularda şekillere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) iki bölüm arasındaki fark yorumlanmadı.',
-        'Bazı sorularda şekillere bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) iki bölüm arasındaki fark yorumlanmadı.',
-      )}`;
-    } else if (gap >= ROTATION3D_PART_GAP) {
-      head = 'Yan yatırılmış şekillerde daha çok zorlanma';
-      text = `${counts} ${v(
-        'Yan yatırılmış şekillerde iki dönüşü birlikte izlemek gerekir; birden çok yönde döndürülmüş şekiller genellikle daha zordur.',
-        'Yan yatırılmış şekillerde iki dönüşü birlikte izlemek gerekir; birden çok yönde döndürülmüş şekiller genellikle daha zordur.',
-      )}`;
+      // Bazı sorularda bakmadan seçilmiş olabilir: bölümler arasındaki fark yorumlanmaz; sayılar metinde kalır, grafik çizilmez.
+      bolum = {
+        ...card('ud_bolum'),
+        headline: 'Yorumlanmadı',
+        text: `${counts} ${v(
+          'Bazı sorularda şekillere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) iki bölüm arasındaki fark yorumlanmadı.',
+          'Bazı sorularda şekillere bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) iki bölüm arasındaki fark yorumlanmadı.',
+        )}`,
+      };
+    } else {
+    if (gap >= ROTATION3D_PART_GAP) {
+      head = '2. bölümde daha az doğru';
+      text =
+        v(
+          'Yalnızca dik eksen çevresinde döndürülmüş şekillerde (1. bölüm), yan yatırılmış şekillerdekinden (2. bölüm) daha çok soruyu doğru buldun.',
+          'Çocuğunuz yalnızca dik eksen çevresinde döndürülmüş şekillerde (1. bölüm), yan yatırılmış şekillerdekinden (2. bölüm) daha çok soruyu doğru buldu.',
+        ) +
+        (mirrorPick
+          ? toMirror
+          : ' Yan yatırılmış şekillerde iki dönüşü birlikte izlemek gerekir. Bazı çalışmalarda birden çok yönde döndürülmüş şekiller daha zor bulunmuştur.');
     } else if (gap <= -ROTATION3D_PART_GAP) {
-      head = 'Yan yatırılmış şekillerde daha çok doğru';
-      text = `${counts} ${v(
-        'Yan yatırılmış şekiller genellikle daha zor olsa da 2. bölümde daha çok doğru cevap verdin. Testin başında sorulara alışmak zaman alabilir; ilk bölümdeki yanlışlar bundan da kaynaklanmış olabilir.',
-        'Yan yatırılmış şekiller genellikle daha zor olsa da çocuğunuz 2. bölümde daha çok doğru cevap verdi. Testin başında sorulara alışmak zaman alabilir; ilk bölümdeki yanlışlar bundan da kaynaklanmış olabilir.',
-      )}`;
+      head = '2. bölümde daha çok doğru';
+      text =
+        v(
+          'Yan yatırılmış şekillerde (2. bölüm), yalnızca dik eksen çevresinde döndürülmüş şekillerdekinden (1. bölüm) daha çok soruyu doğru buldun. Testin başında sorulara alışmak zaman alabilir; ilk bölümdeki yanlışlar bundan da kaynaklanmış olabilir.',
+          'Çocuğunuz yan yatırılmış şekillerde (2. bölüm), yalnızca dik eksen çevresinde döndürülmüş şekillerdekinden (1. bölüm) daha çok soruyu doğru buldu. Testin başında sorulara alışmak zaman alabilir; ilk bölümdeki yanlışlar bundan da kaynaklanmış olabilir.',
+        ) + toMirror;
+    } else if (p1.correct === p1.n && p2.correct === p2.n) {
+      head = 'İki bölümde de hepsi doğru';
+      text = v(
+        'Şekiller yan yatırıldığında da döndürülmüş şekillerin hepsini buldun.',
+        'Çocuğunuz şekiller yan yatırıldığında da döndürülmüş şekillerin hepsini buldu.',
+      );
     } else {
       head = 'İki bölümde yakın sonuç';
       const both = p1.correct * 3 >= p1.n * 2 && p2.correct * 3 >= p2.n * 2;
-      text = `${counts} ${
-        both
+      text =
+        (both
           ? v(
               'Şekiller yan yatırıldığında da döndürülmüş şekilleri çoğunlukla bulabildin.',
               'Çocuğunuz şekiller yan yatırıldığında da döndürülmüş şekilleri çoğunlukla bulabildi.',
             )
-          : v('İki bölümde birbirine yakın sayıda doğru cevap verdin.', 'Çocuğunuz iki bölümde birbirine yakın sayıda doğru cevap verdi.')
-      }`;
+          : v('İki bölümde birbirine yakın sayıda soruyu doğru buldun.', 'Çocuğunuz iki bölümde birbirine yakın sayıda soruyu doğru buldu.')) + toMirror;
     }
     bolum = {
       ...card('ud_bolum'),
@@ -5645,13 +5743,14 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
         ],
       } satisfies BarsVisual,
     };
+    }
   }
 
   /* Ayna görüntüleri */
   let ayna: CognitiveBlock;
   const tip = v(
-    ' Bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirdiğini düşün, sonra kalan iki kola bak: döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır.',
-    ' Bir şekli ayna görüntüsünden ayırmak için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirip kalan iki kola bakmak yardımcı olabilir: döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır.',
+    ' İpucu: bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirdiğini düşün. Sonra kalan kollara bak. Döndürülmüş şekilde onlar da aynı yöne uzanır; ayna görüntüsünde biri öbür yana uzanır.',
+    ' İpucu: bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirip kalan kollara bakmak yardımcı olabilir. Döndürülmüş şekilde onlar da aynı yöne uzanır; ayna görüntüsünde biri öbür yana uzanır.',
   );
   // Doğru bulunamayan sorulardaki seçimler (kartın grafiği).
   const mixVisual: StackVisual = {
@@ -5667,11 +5766,19 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   if (reversed) {
     ayna = {
       ...card('ud_ayna'),
-      headline: `İki ayna görüntüsü birden: ${r.none} soru`,
-      visual: mixVisual,
+      headline: 'Yorumlanmadı',
       text: v(
         `${wrong} yanlış cevabının ${noneOfWrong} iki ayna görüntüsünü birden seçtin. Yönergeyi ters anlamış olabileceğin için bu sonuç yorumlanmadı (doğru cevaplar kartına bak).`,
         `Çocuğunuz ${wrong} yanlış cevabının ${noneOfWrong} iki ayna görüntüsünü birden seçti. Yönerge ters anlaşılmış olabileceği için bu sonuç yorumlanmadı (doğru cevaplar kartına bakın).`,
+      ),
+    };
+  } else if (halfPick) {
+    ayna = {
+      ...card('ud_ayna'),
+      headline: 'Yorumlanmadı',
+      text: v(
+        `Yanlış cevaplarının ${r.half === wrong ? 'hepsinde' : 'çoğunda'} bir doğru şekil ile bir ayna görüntüsü seçtin; yönergeyi farklı anlamış olabileceğin için bu seçimler yorumlanmadı (doğru cevaplar kartına bak).`,
+        `Çocuğunuz yanlış cevaplarının ${r.half === wrong ? 'hepsinde' : 'çoğunda'} bir doğru şekil ile bir ayna görüntüsü seçti; yönerge farklı anlaşılmış olabileceği için bu seçimler yorumlanmadı (doğru cevaplar kartına bakın).`,
       ),
     };
   } else if (chance) {
@@ -5698,8 +5805,8 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
       visual: mixVisual,
       text:
         v(
-          `Doğru bulamadığın ${wrong} sorunun ${noneOfWrong} iki ayna görüntüsünü birden seçtin; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Bir şeklin hangi kolunun öne, hangisinin arkaya uzandığı ters görülürse şekil ayna görüntüsüne benzer. Bu sorularda şeklin derinliğini ters görmüş olabilirsin. Işık her şekle aynı yönden, ekranın üstünden ve biraz solundan gelir: ışığa dönük yüzler açık, öbür yüzler daha koyu renktedir; bu, her yüzün hangi yöne baktığını anlamana yardım eder.`,
-          `Çocuğunuz doğru bulamadığı ${wrong} sorunun ${noneOfWrong} iki ayna görüntüsünü birden seçti; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Bir şeklin hangi kolunun öne, hangisinin arkaya uzandığı ters görülürse şekil ayna görüntüsüne benzer. Bu sorularda şeklin derinliği ters görülmüş olabilir. Işık her şekle aynı yönden, ekranın üstünden ve biraz solundan gelir: ışığa dönük yüzler açık, öbür yüzler daha koyu renktedir; bu, her yüzün hangi yöne baktığını anlamaya yardım eder.`,
+          `Doğru bulamadığın ${wrong} sorunun ${noneOfWrong} iki ayna görüntüsünü birden seçtin; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Bir şeklin hangi kolunun öne, hangisinin arkaya uzandığı ters görülürse şekil ayna görüntüsüne benzer. Bu sorularda şeklin derinliğini ters görmüş olabilirsin. Işık her şekle aynı yönden gelir: ekranın üstünden ve biraz solundan. Işığa dönük yüzler açık, öbürleri koyu renktedir. Bu, her yüzün hangi yöne baktığını anlamana yardım eder.`,
+          `Çocuğunuz doğru bulamadığı ${wrong} sorunun ${noneOfWrong} iki ayna görüntüsünü birden seçti; seçenekleri rastgele seçen birinin bunu bu kadar sık yapması pek beklenmez. Bir şeklin hangi kolunun öne, hangisinin arkaya uzandığı ters görülürse şekil ayna görüntüsüne benzer. Bu sorularda şeklin derinliği ters görülmüş olabilir. Işık her şekle aynı yönden gelir: ekranın üstünden ve biraz solundan. Işığa dönük yüzler açık, öbürleri koyu renktedir. Bu, her yüzün hangi yöne baktığını anlamaya yardım eder.`,
         ) + tip,
     };
   } else {
@@ -5750,12 +5857,12 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
     ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.',
   );
   if (r.medianRt === null) {
-    calisma = { ...card('ud_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('ud_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') };
   } else {
     let pace = '';
-    const comparePace = !doubt && !chance && !reversed && p1.medianRt !== null && p2.medianRt !== null;
     // Bölümler karşılaştırılmadıysa (doğrular çok az) ya da bakmadan seçilmiş olabilirse süreler de karşılaştırılmaz.
-    if (!doubt && !chance && !reversed && p1.medianRt !== null && p2.medianRt !== null) {
+    const comparePace = !doubt && !notRead && p1.medianRt !== null && p2.medianRt !== null;
+    if (comparePace && p1.medianRt !== null && p2.medianRt !== null) {
       if (p2.medianRt >= 1.3 * p1.medianRt) {
         pace = v(
           'Yan yatırılmış şekillere daha çok zaman ayırdın; iki dönüşü birlikte izlemek zaman alır.',
@@ -5797,7 +5904,8 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   }
 
   /* Grafik ve öne çıkan sayılar */
-  const chart: CognitiveReport['chart'] = {
+  // Yorumlanmayan sonuçta bölümlere göre grafik de çizilmez.
+  const chart: CognitiveReport['chart'] = notRead ? undefined : {
     title: 'Bölümlere göre doğru cevaplar',
     note: v(
       `1. bölümde şekiller yalnızca dik bir eksen çevresinde döndürülmüş, 2. bölümde ayrıca yan yatırılmıştır; her bölümde ${p1.n} soru vardır. Çubuk ne kadar uzunsa o bölümdeki soruların o kadar çoğunda iki doğru şekli de bulmuşsun demektir.`,
@@ -5811,12 +5919,12 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
     })),
   };
   const figures = [
-    { label: 'Doğru', value: `${r.correct}/${r.n}` },
-    { label: 'Doğru seçilen şekiller', value: `${r.figures}/${2 * r.n}` },
+    { label: 'Doğru', value: notRead ? 'Yorumlanmadı' : `${r.correct}/${r.n}` },
+    { label: 'Doğru seçilen şekiller', value: notRead ? 'Yorumlanmadı' : `${r.figures}/${2 * r.n}` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
   // Yalnızca iki bölüm olduğu için üç boyutlu profil grafiği yoktur (yol haritası en az üç sütun ister).
-  return { blocks: [dogru, bolum, ayna, calisma], chart, figures };
+  return { blocks: [dogru, bolum, ayna, calisma], ...(chart ? { chart } : {}), figures };
 }
 
 /* ---------- Hesapla ve hatırla ---------- */
@@ -6303,12 +6411,25 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   const rapid = !floor && patternRapid(r);
   const doubt = manySkip || rapid;
   const hedge = v('Çalışma biçimi kartında anlatılan nedenle bu sonuç seni tam yansıtmayabilir.', 'Çalışma biçimi kartında anlatılan nedenle bu sonuç çocuğunuzu tam yansıtmayabilir.');
-  const noReadWhy = `En küçük (${r.start} kareli) desenler de hatırlanamadığı için`;
   const lastLevel = r.levels[r.levels.length - 1];
 
   /* En büyük doğru desen (desen aralığı) */
   let aralik: CognitiveBlock;
-  if (floor) {
+  // En küçük desenlerde kareler çoğunlukla doğru işaretlendiyse (her yanlış desende karelerin en az yarısı): yarıda
+  // bırakmak ya da bakmamak değil, desenleri tam doğru işaretleyememek söz konusudur.
+  const floorTried = r.items.filter((x) => !x.correct && !x.skipped);
+  const floorClose = floor && floorTried.length === r.items.length && floorTried.every((x) => 2 * Math.max(0, x.hits - x.extra) >= x.size);
+  const noReadWhy = `En küçük (${r.start} kareli) desenler de ${floorClose ? 'tam doğru işaretlenemediği' : 'hatırlanamadığı'} için`;
+  if (floor && floorClose) {
+    aralik = {
+      ...card('dh_aralik'),
+      headline: 'Yorumlanmadı',
+      text: v(
+        `En küçük (${r.start} kareli) üç desenin hiçbirini tam doğru işaretleyemedin. Yine de karelerin çoğunu doğru yere koydun; her desende birkaç kare eksik, fazla ya da yanlış yerdeydi. Test bu yüzden ilk büyüklükte bitti ve sonuç yorumlanmadı. Yönergeyi yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
+        `Çocuğunuz en küçük (${r.start} kareli) üç desenin hiçbirini tam doğru işaretleyemedi. Yine de karelerin çoğunu doğru yere koydu; her desende birkaç kare eksik, fazla ya da yanlış yerdeydi. Test bu yüzden ilk büyüklükte bitti ve sonuç yorumlanmadı. Yönergeyi yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
+      ),
+    };
+  } else if (floor) {
     aralik = {
       ...card('dh_aralik'),
       headline: 'Yorumlanmadı',
@@ -6318,7 +6439,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
       ),
     };
   } else {
-    const parts = [`Desenler ${r.start} dolu kareden ${r.max} dolu kareye kadar büyüyordu; her büyüklükte üç desen vardı ve her desen 3 saniye gösterildi.`];
+    const parts = [`Desenler ${r.start} dolu kareden ${r.max} dolu kareye kadar büyüyordu. Her büyüklükte üç desen vardı; her biri 3 saniye gösterildi.`];
     if (r.stoppedAt === null) {
       const c = lastLevel.correct;
       const which = c === lastLevel.n ? `en büyük (${r.max} kareli) desenlerin hepsini` : `en büyük (${r.max} kareli) desenlerden ${dhCount(c, 'ini')}`;
@@ -6336,15 +6457,10 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
         ),
       );
     }
-    parts.push(
-      v(
-        'Bu beceri; bir şeklin, bir çizimin ya da bir sayfanın düzenini kısa bir bakıştan sonra akılda tutmak gibi işlerde kullanılır: örneğin bir çizime bakıp onu kâğıda çizmek ya da bir tablonun düzenini aklında tutmak.',
-        'Bu beceri; bir şeklin, bir çizimin ya da bir sayfanın düzenini kısa bir bakıştan sonra akılda tutmak gibi işlerde kullanılır: örneğin tahtadaki bir şekli deftere çizmek ya da bir tablonun düzenini akılda tutmak.',
-      ),
-    );
+    // Becerinin ne işe yaradığı yol haritasının girişinde anlatılır; burada yinelenmez.
     if (r.stoppedAt !== null) {
       parts.push(
-        'Her büyüklükte yalnızca üç desen olduğu ve bir büyüklükteki üç desenin hiçbiri hatırlanamayınca test bittiği için bu sayı kabaca fikir verir; o anki kısa bir dalgınlık da sonucu düşürebilir.',
+        'Her büyüklükte yalnızca üç desen olduğu ve üçü de yanlış olunca test bittiği için bu sayı kabaca fikir verir. O anki kısa bir dalgınlık da sonucu düşürebilir.',
       );
     }
     if (doubt) parts.push(hedge);
@@ -6509,7 +6625,8 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
       if (2 * r.near >= W) {
         const half = 2 * r.near === W;
         head = `${scope(r.near === W ? 'hepsinde' : half ? 'yarısında' : 'çoğunda')} tek kare farkı`;
-        them = v('Bunların', 'Çocuğunuz bunların');
+        // "Bunların" yalnızca bütün yanlış desenleri gösterdiğinde kullanılır (aşağıdaki nicelikler W'ye göredir).
+        if (r.near === W) them = v('Bunların', 'Çocuğunuz bunların');
         const q = r.near === W ? 'hepsinde' : half ? 'yarısında' : dhCount(r.near, 'inde');
         parts.push(
           v(
@@ -6521,14 +6638,14 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
       if (2 * r.fewer > W) {
         if (head.endsWith('desen')) head = `${scope(how(r.fewer))} kare eksik`;
         parts.push(
-          v(`${them} ${how(r.fewer)} desendekinden daha az kare işaretledin: bazı kareler akılda kalmamış.`, `${them} ${how(r.fewer)} desendekinden daha az kare işaretledi: bazı kareler akılda kalmamış.`),
+          v(`${them} ${how(r.fewer)} desendekinden daha az kare işaretledin: bazı kareler aklında kalmamış.`, `${them} ${how(r.fewer)} desendekinden daha az kare işaretledi: bazı kareler aklında kalmamış.`),
         );
       } else if (2 * r.more > W) {
         if (head.endsWith('desen')) head = `${scope(how(r.more))} fazla kare`;
         parts.push(
           v(
-            `${them} ${how(r.more)} desendekinden daha çok kare işaretledin: desende olmayan kareler de işaretlendi.`,
-            `${them} ${how(r.more)} desendekinden daha çok kare işaretledi: desende olmayan kareler de işaretlendi.`,
+            `${them} ${how(r.more)} desendekinden daha çok kare işaretledin: desende olmayan kareleri de işaretledin.`,
+            `${them} ${how(r.more)} desendekinden daha çok kare işaretledi: desende olmayan kareleri de işaretledi.`,
           ),
         );
       } else if (2 * r.same > W) {
@@ -6553,8 +6670,18 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
         parts.push(v(`${them} ${joinTr(kinds)} kare işaretledin.`, `${them} ${joinTr(kinds)} kare işaretledi.`));
       }
       if (r.shifted >= 2) {
+        // "Hatırlamıyorum" denen desenler de varsa yalnızca kareleri işaretlenen yanlış desenler anılır.
+        const q = r.shifted === W ? 'hepsinde' : `${r.shifted} tanesinde`;
         parts.push(
-          `Bunların ${r.shifted} tanesinde bir kare, doğru yerinin hemen yanına konmuştu: bu desenlerde karelerin yeri büyük ölçüde akılda kalmış, yalnızca birinin yeri bir kare kaymış.`,
+          r.skipped > 0
+            ? v(
+                `Kareleri işaretlediğin yanlış desenlerin ${q} bir kareyi doğru yerinin hemen yanına koydun: bu desenlerin yeri büyük ölçüde aklında kalmış.`,
+                `Çocuğunuz kareleri işaretlediği yanlış desenlerin ${q} bir kareyi doğru yerinin hemen yanına koydu: bu desenlerin yeri büyük ölçüde aklında kalmış.`,
+              )
+            : v(
+                `Yanlış desenlerin ${q} bir kareyi doğru yerinin hemen yanına koydun: bu desenlerin yeri büyük ölçüde aklında kalmış.`,
+                `Çocuğunuz yanlış desenlerin ${q} bir kareyi doğru yerinin hemen yanına koydu: bu desenlerin yeri büyük ölçüde aklında kalmış.`,
+              ),
         );
       }
     } else {
@@ -6593,16 +6720,16 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   if (manySkip) {
     issues.push(
       v(
-        `Testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” düğmesine bastın. Bu kadar çok desende bu düğmeye basıldığında testi yarıda bırakmış ya da dikkatin başka yere kaymış olabilir; sonuç dikkatle yorumlanmalıdır.`,
-        `Çocuğunuz testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” düğmesine bastı. Bu kadar çok desende bu düğmeye basıldığında test yarıda bırakılmış ya da dikkat başka yere kaymış olabilir; sonuç dikkatle yorumlanmalıdır.`,
+        `Testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” düğmesine bastın. Bu düğme, hatırlamadığın desende tahmin etmek yerine kullanılır. Ama bu kadar sık kullanıldığında dikkatin dalgalanmış ya da emin olmadığın desenleri hiç denememiş olabilirsin. Bu yüzden sonuç dikkatle okunmalı.`,
+        `Çocuğunuz testin bittiği büyüklükten önceki ${r.beforeStop} desenin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” düğmesine bastı. Bu düğme, hatırlanmayan desende tahmin etmek yerine kullanılır. Ama bu kadar sık kullanıldığında dikkati dalgalanmış ya da emin olmadığı desenleri hiç denememiş olabilir. Bu yüzden sonuç dikkatle okunmalı.`,
       ),
     );
   }
   if (rapid) {
     issues.push(
       v(
-        `${r.rapid} desen çok kısa sürede işaretlendi ve karelerinin çoğu yanlıştı; bu desenlerde kareleri dikkatle işaretlememiş olabilirsin.`,
-        `${r.rapid} desen çok kısa sürede işaretlendi ve karelerinin çoğu yanlıştı; bu desenlerde kareler dikkatle işaretlenmemiş olabilir.`,
+        `${r.rapid} deseni çok kısa sürede işaretledin ve bu desenlerde karelerin çoğu yanlıştı. Bu desenlerde kareleri dikkatle işaretlememiş olabilirsin.`,
+        `Çocuğunuz ${r.rapid} deseni çok kısa sürede işaretledi ve bu desenlerde karelerin çoğu yanlıştı. Bu desenlerde kareleri dikkatle işaretlememiş olabilir.`,
       ),
     );
   }
@@ -6646,7 +6773,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
     calisma = {
       ...card('dh_calisma'),
       headline: 'Süre hesaplanamadı',
-      text: [skipLine, ...issues, 'İşaretleme süreleri alınamadığı için süreler yorumlanmadı.'].filter(Boolean).join(' '),
+      text: [skipLine, ...issues, 'İşaretleme süreleri alınamadığı için süreler hesaplanamadı.'].filter(Boolean).join(' '),
     };
   } else {
     calisma = {
@@ -6678,7 +6805,13 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   const figures = [
     { label: 'En büyük doğru desen', value: floor ? 'Yorumlanmadı' : `${r.span} kare` },
     { label: 'Doğru hatırlanan desen', value: floor ? 'Yorumlanmadı' : `${r.correct}/${r.trials}` },
-    { label: 'Karelerde isabet', value: `%${creditPct}`, note: 'Doğru işaretlenen kareler; desende olmayan işaretli kareler düşülür.' },
+    floor
+      ? { label: 'Karelerde isabet', value: 'Yorumlanmadı' }
+      : {
+          label: 'Karelerde isabet',
+          value: `%${creditPct}`,
+          note: 'Bütün desenlerdeki karelerden doğru işaretlenenler. Desende olmayan işaretli kareler düşülür; “Hatırlamıyorum” denen desenlerin kareleri de doğru sayılmaz.',
+        },
   ];
   return { blocks: [aralik, desen, hata, calisma], chart, figures };
 }
@@ -6705,6 +6838,10 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
   const doubt = perspectiveDoubt(r);
   const egoP = perspectiveEgo(r);
   const mirrorP = perspectiveMirror(r);
+  const oppP = perspectiveOpposite(r);
+  const none = r.answered === 0;
+  // Sonuç yorumlanmıyorsa ortalama hata rozette, grafikte ve öne çıkan sayılarda da sonuç gibi gösterilmez.
+  const notRead = chance || high;
   const m = r.meanError;
   const unanswered = r.n - r.answered;
   const far = r.items.filter((x) => x.error > PA_CLOSE).length;
@@ -6712,30 +6849,21 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
 
   /* Yön gösterme isabeti */
   let accText: string;
-  if (chance) {
+  if (none) {
+    accText = v(
+      'Hiçbir soruda yön göstermedin. Bu yüzden sonuç yorumlanmadı. Dinlendiğin bir gün testi yeniden çözmek daha doğru bir sonuç verebilir.',
+      'Çocuğunuz hiçbir soruda yön göstermedi. Bu yüzden sonuç yorumlanmadı. Dinlendiği bir gün testi yeniden çözmesi daha doğru bir sonuç verebilir.',
+    );
+  } else if (chance) {
     accText =
       v(
-        `Gösterdiğin yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil: rastgele gösterilen yönlerin ortalama hatası 90 derecedir ve ${r.n} soruda ortalama hata ${PA_CHANCE_MEAN} derecenin üstündeyse rastgele gösterilen yönlerden ayırt edilemez. Sorular sana çok zor gelmiş, yönergeyi tam anlamamış ya da yönleri düşünmeden göstermiş olabilirsin. Bu sonuç tek başına bir şey söylemez; dinlenmiş olduğun bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
-        `Çocuğunuzun gösterdiği yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil: rastgele gösterilen yönlerin ortalama hatası 90 derecedir ve ${r.n} soruda ortalama hata ${PA_CHANCE_MEAN} derecenin üstündeyse rastgele gösterilen yönlerden ayırt edilemez. Sorular ona çok zor gelmiş, yönerge tam anlaşılmamış ya da yönler düşünülmeden gösterilmiş olabilir. Bu sonuç yorumlanmamalıdır; dinlenmiş olduğu bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
+        `Gösterdiğin yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil. Rastgele yönlerin ortalama hatası 90 derecedir; ${r.n} soruda ortalama hata ${PA_CHANCE_MEAN} derecenin üstündeyse rastgele yönlerden ayırt edilemez. Sorular sana çok zor gelmiş, yönergeyi tam anlamamış ya da yönleri düşünmeden göstermiş olabilirsin. Bu yüzden sonuç yorumlanmadı. Dinlendiğin bir gün, acele etmeden yeniden denemek daha doğru bir sonuç verebilir.`,
+        `Çocuğunuzun gösterdiği yönler, rastgele gösterilen yönlerden belirgin biçimde daha isabetli değil. Rastgele yönlerin ortalama hatası 90 derecedir; ${r.n} soruda ortalama hata ${PA_CHANCE_MEAN} derecenin üstündeyse rastgele yönlerden ayırt edilemez. Sorular ona çok zor gelmiş, yönerge tam anlaşılmamış ya da yönler düşünülmeden gösterilmiş olabilir. Bu yüzden sonuç yorumlanmadı. Dinlendiği bir gün, acele etmeden yeniden denemesi daha doğru bir sonuç verebilir.`,
       ) + (doubt ? checkWork : '');
   } else if (high) {
-    const ego = `zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)}`;
-    const mir = `${paOf(r.mirror.count, r.n)}`;
-    const what =
-      egoP && mirrorP
-        ? v(
-            `${ego} yönü haritaya yukarıdan bakar gibi göstermiş, ${mir} ise sağ ile solu karıştırmış olabilirsin`,
-            `${ego} yön haritaya yukarıdan bakar gibi gösterilmiş, ${mir} ise sağ ile sol karıştırılmış olabilir`,
-          )
-        : egoP
-          ? v(
-              `${ego} yönü, kendini nesnenin yanında hayal etmeden haritaya yukarıdan bakar gibi göstermiş olabilirsin`,
-              `${ego} çocuğunuz kendini nesnenin yanında hayal etmeden, yönü haritaya yukarıdan bakar gibi göstermiş olabilir`,
-            )
-          : v(`${mir} sağ ile solu karıştırmış olabilirsin`, `${mir} sağ ile sol karıştırılmış olabilir`);
     accText = v(
-      `Gösterdiğin yönlerin ortalama hatası çok yüksek, ama yanlışların rastgele dağılmıyor: ${what} (hata türleri kartına bak). Bu yüzden ortalama hata tek başına bir şey söylemez; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmek daha doğru bir sonuç verebilir.`,
-      `Çocuğunuzun gösterdiği yönlerin ortalama hatası çok yüksek, ama yanlışları rastgele dağılmıyor: ${what} (hata türleri kartına bakın). Bu yüzden ortalama hata yorumlanmamalıdır; alıştırma sorularına yeniden bakıp testi başka bir gün yeniden çözmesi daha doğru bir sonuç verebilir.`,
+      `Gösterdiğin yönlerin ortalama hatası çok yüksek (${degrees(m)}), ama yanlışların rastgele dağılmıyor: belirli bir türde toplanıyor (hata türleri kartına bak). Bu yüzden ortalama hata yorumlanmadı. Alıştırma sorularına yeniden bakıp testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
+      `Çocuğunuzun gösterdiği yönlerin ortalama hatası çok yüksek (${degrees(m)}), ama yanlışları rastgele dağılmıyor: belirli bir türde toplanıyor (hata türleri kartına bakın). Bu yüzden ortalama hata yorumlanmadı. Alıştırma sorularına yeniden bakıp testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
     );
   } else {
     if (m <= 20) {
@@ -6760,7 +6888,7 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
       );
     }
     accText += ' Ortalama hata ne kadar küçükse yönler o kadar isabetli gösterilmiş demektir; rastgele gösterilen yönlerin ortalama hatası 90 derecedir.';
-    if ((egoP || mirrorP) && !doubt) {
+    if ((egoP || mirrorP || oppP) && !doubt) {
       accText += v(
         ' Yanlışlarının bir kısmı belirli bir türde toplanıyor (hata türleri kartına bak).',
         ' Yanlışlarının bir kısmı belirli bir türde toplanıyor (hata türleri kartına bakın).',
@@ -6773,13 +6901,15 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
       );
     }
   }
-  if (unanswered > 0) {
+  if (unanswered > 0 && !none) {
     accText += v(
       ` Cevaplamadığın ${unanswered} soru, rastgele düzeyi olan 90 derece hata sayıldı.`,
       ` Cevaplanmayan ${unanswered} soru, rastgele düzeyi olan 90 derece hata sayıldı.`,
     );
   }
-  const hata: CognitiveBlock = {
+  const hata: CognitiveBlock = notRead
+    ? { ...card('ba_hata'), headline: 'Yorumlanmadı', text: accText }
+    : {
     ...card('ba_hata'),
     headline: `Ortalama hata ${degrees(m)}`,
     text: accText,
@@ -6877,7 +7007,8 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
     donus = {
       ...card('ba_donus'),
       headline: head,
-      text: `${counts} ${text}${rough}`,
+      // Grupların ortalama hataları kartın grafiğindedir; metin farkın anlamını söyler.
+      text: `${text}${rough}`,
       visual: {
         type: 'bars',
         label: 'Ortalama açı hatası',
@@ -6902,8 +7033,17 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
     rows: [
       { label: 'Haritaya yukarıdan bakar gibi', value: r.ego.count, max: Math.max(1, r.ego.eligible), valueLabel: `${r.ego.count}/${r.ego.eligible}` },
       { label: 'Sağ ile sol karışık', value: r.mirror.count, max: Math.max(1, r.mirror.eligible), valueLabel: `${r.mirror.count}/${r.mirror.eligible}` },
+      { label: 'Doğru yönün tam tersi', value: r.opposite.count, max: Math.max(1, r.opposite.eligible), valueLabel: `${r.opposite.count}/${r.opposite.eligible}` },
     ],
   };
+  const oppText = v(
+    `${paOf(r.opposite.count, r.n)} oku doğru yönün tam tersine gösterdin; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Oku hedeften sana doğru çizmiş ya da önünle arkanı karıştırmış olabilirsin.`,
+    `${paOf(r.opposite.count, r.n)} çocuğunuz oku doğru yönün tam tersine gösterdi; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Oku hedeften kendisine doğru çizmiş ya da önü ile arkayı karıştırmış olabilir.`,
+  );
+  const oppTip = v(
+    ' Ok her zaman senin durduğun yerden hedefe doğru gösterilir.',
+    ' Okun her zaman kişinin durduğu yerden hedefe doğru gösterildiğini hatırlatmak yardımcı olabilir.',
+  );
   const egoText = v(
     `Zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)} oku, hedefin haritadaki yönüne, yani haritaya yukarıdan bakar gibi gösterdin; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Bu sorularda kendini nesnenin yanında hayal etmek yerine haritayı olduğu gibi kullanmış olabilirsin.`,
     `Zihinde en az ${PA_EGO_MIN_SHIFT} derece dönmeyi gerektiren ${paOf(r.ego.count, r.ego.eligible)} çocuğunuz oku, hedefin haritadaki yönüne, yani haritaya yukarıdan bakar gibi gösterdi; rastgele gösterilen yönlerin bu kadar sık bu yöne düşmesi pek beklenmez. Bu sorularda kendini nesnenin yanında hayal etmek yerine haritayı olduğu gibi kullanmış olabilir.`,
@@ -6945,20 +7085,28 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
         `Hiçbir soruda çocuğunuzun gösterdiği ok doğru yönden ${PA_CLOSE} dereceden fazla kaymadı.`,
       ),
     };
-  } else if (egoP && mirrorP) {
-    tur = { ...card('ba_tur'), headline: 'İki hata türü birden', visual: kindVisual, text: `${egoText} ${mirrorText}${egoTip}${mirrorTip}` };
+  } else if ([egoP, mirrorP, oppP].filter(Boolean).length >= 2) {
+    const k = [egoP, mirrorP, oppP].filter(Boolean).length;
+    tur = {
+      ...card('ba_tur'),
+      headline: k === 3 ? 'Üç hata türü birden' : 'İki hata türü birden',
+      visual: kindVisual,
+      text: [egoP ? egoText : '', mirrorP ? mirrorText : '', oppP ? oppText : ''].filter(Boolean).join(' ') + (egoP ? egoTip : '') + (mirrorP ? mirrorTip : '') + (oppP ? oppTip : ''),
+    };
   } else if (egoP) {
     tur = { ...card('ba_tur'), headline: `Haritaya yukarıdan bakar gibi: ${r.ego.count} soru`, visual: kindVisual, text: egoText + egoTip };
   } else if (mirrorP) {
     tur = { ...card('ba_tur'), headline: `Sağ ile sol karışmış olabilir: ${r.mirror.count} soru`, visual: kindVisual, text: mirrorText + mirrorTip };
+  } else if (oppP) {
+    tur = { ...card('ba_tur'), headline: `Ters yön: ${r.opposite.count} soru`, visual: kindVisual, text: oppText + oppTip };
   } else {
     tur = {
       ...card('ba_tur'),
       headline: 'Belirgin bir hata türü yok',
       visual: kindVisual,
       text: v(
-        'Bu kart iki tür yanlışa bakar: yönü, kendini nesnenin yanında hayal etmeden haritaya yukarıdan bakar gibi göstermek ve sağ ile solu karıştırmak. Senin cevaplarında ikisi de, rastgele gösterilen yönlerde bile görülebilecek kadar az; yanlışların belirli bir türde toplanmıyor.',
-        'Bu kart iki tür yanlışa bakar: yönü, kendini nesnenin yanında hayal etmeden haritaya yukarıdan bakar gibi göstermek ve sağ ile solu karıştırmak. Çocuğunuzun cevaplarında ikisi de, rastgele gösterilen yönlerde bile görülebilecek kadar az; yanlışları belirli bir türde toplanmıyor.',
+        'Bu kart üç tür yanlışa bakar: yönü haritaya yukarıdan bakar gibi göstermek, sağ ile solu karıştırmak ve oku tam ters yöne göstermek. Senin cevaplarında üçü de, rastgele gösterilen yönlerde bile görülebilecek kadar az; yanlışların belirli bir türde toplanmıyor.',
+        'Bu kart üç tür yanlışa bakar: yönü haritaya yukarıdan bakar gibi göstermek, sağ ile solu karıştırmak ve oku tam ters yöne göstermek. Çocuğunuzun cevaplarında üçü de, rastgele gösterilen yönlerde bile görülebilecek kadar az; yanlışları belirli bir türde toplanmıyor.',
       ),
     };
   }
@@ -6987,7 +7135,7 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
   );
   const calisma: CognitiveBlock =
     r.medianRt === null
-      ? { ...card('ba_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') }
+      ? { ...card('ba_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') }
       : {
           ...card('ba_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
@@ -7003,16 +7151,15 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
   const bins = r.bins.filter((b) => b.n > 0);
   const sizes = bins.map((b) => b.n);
   const per = Math.min(...sizes) === Math.max(...sizes) ? `${sizes[0]}` : `${Math.min(...sizes)}–${Math.max(...sizes)}`;
-  const caution =
-    chance || high
-      ? ' Ortalama hata çok yüksek olduğu için gruplar arasındaki farklar yorumlanmamalıdır.'
-      : doubt
-        ? v(
-            ' Bazı sorularda düşünmeden cevap vermiş olabileceğin için gruplar arasındaki farklar yorumlanmamalıdır.',
-            ' Bazı sorularda düşünmeden cevap verilmiş olabileceği için gruplar arasındaki farklar yorumlanmamalıdır.',
-          )
-        : '';
-  const chart: CognitiveReport['chart'] = {
+  // Grafik yalnızca yorumlanan sonuçta çizilir; bazı sorularda düşünmeden cevap verilmiş olabilirse farklar yorumlanmaz.
+  const caution = doubt
+    ? v(
+        ' Bazı sorularda düşünmeden cevap vermiş olabileceğin için gruplar arasındaki farklar yorumlanmamalıdır.',
+        ' Bazı sorularda düşünmeden cevap verilmiş olabileceği için gruplar arasındaki farklar yorumlanmamalıdır.',
+      )
+    : '';
+  // Sonuç yorumlanmıyorsa dönme açısına göre ortalama hata grafiği de çizilmez.
+  const chart: CognitiveReport['chart'] = notRead ? undefined : {
     title: 'Zihinde dönme açısına göre ortalama hata',
     note:
       v(
@@ -7022,11 +7169,13 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
     rows: bins.map((b) => ({ label: `${b.from}–${b.to} derece dönüş (${b.n} soru)`, value: b.meanError, max: 180, valueLabel: `${nfDeg.format(b.meanError)}°` })),
   };
   const figures = [
-    { label: 'Ortalama hata', value: degrees(m) },
-    { label: 'Doğru yöne çok yakın cevaplar', value: `${r.close}/${r.n}`, note: `en çok ${PA_CLOSE} derece hata` },
+    { label: 'Ortalama hata', value: notRead ? 'Yorumlanmadı' : degrees(m) },
+    notRead
+      ? { label: 'Doğru yöne çok yakın cevaplar', value: 'Yorumlanmadı' }
+      : { label: 'Doğru yöne çok yakın cevaplar', value: `${r.close}/${r.n}`, note: `en çok ${PA_CLOSE} derece hata` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
-  return { blocks: [hata, donus, tur, calisma], chart, figures };
+  return { blocks: [hata, donus, tur, calisma], ...(chart ? { chart } : {}), figures };
 }
 
 /* ---------- Düşünerek karar verme ---------- */
@@ -7346,16 +7495,19 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   const mid = r.levels.filter((l) => l.moves > TOWER_SHORT && l.moves < TOWER_LONG);
   const M = { n: mid.reduce((s, l) => s + l.n, 0), optimal: mid.reduce((s, l) => s + l.optimal, 0), idle: mid.reduce((s, l) => s + l.idle, 0) };
   const midName = `${mid.map((l) => l.moves).join(' ve ')} hamlelik problemlerde`;
-  const shortName = `kısa problemlerde (${TOWER_SHORT - 1} ve ${TOWER_SHORT} hamle)`;
-  const longName = `uzun problemlerde (${TOWER_LONG} ve ${TOWER_LONG + 1} hamle)`;
-  const noneWhy = `Problemlerin ${r.idle} tanesinde, kısa problemlerin de ${S.idle} tanesinde hiç top taşınmadığı için`;
+  const noneWhy =
+    r.idle === r.n
+      ? 'Problemlerin hepsinde hiç top taşınmadığı için'
+      : `Problemlerin ${r.idle} tanesinde, kısa problemlerin de ${S.idle === S.n ? 'hepsinde' : `${S.idle} tanesinde`} hiç top taşınmadığı için`;
+  const idleOf = r.idle === r.n ? `${r.n} problemin hepsinde` : `${r.n} problemin ${r.idle} tanesinde`;
+  const shortIdle = S.idle === r.idle ? 'bunların hepsi' : `bunların ${S.idle} tanesi`;
 
   /* En az hamlede çözülenler */
   let accText: string;
   if (none) {
     accText = v(
-      `${r.n} problemin ${r.idle} tanesinde hiç top taşımadan süre doldu; bunların ${S.idle} tanesi 3 ve 4 hamlelik kısa problemlerdi. Testte ara vermiş, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı problemler yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
-      `Çocuğunuz ${r.n} problemin ${r.idle} tanesinde hiç top taşımadı ve bu problemlerde süre doldu; bunların ${S.idle} tanesi 3 ve 4 hamlelik kısa problemlerdi. Testte ara verilmiş, görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir; bu yüzden sonuç yorumlanmadı. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı problemler yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
+      `${idleOf} hiç top taşımadan süre doldu; ${shortIdle} 3 ve 4 hamlelik kısa problemlerdi. Testte ara vermiş, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Bu yüzden sonuç yorumlanmadı. Dinlendiğin bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir. Aynı problemler yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
+      `Çocuğunuz ${idleOf} hiç top taşımadı ve bu problemlerde süre doldu; ${shortIdle} 3 ve 4 hamlelik kısa problemlerdi. Testte ara vermiş, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilir. Bu yüzden sonuç yorumlanmadı. Dinlendiği bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir. Aynı problemler yeniden çözüleceği için ikinci denemede sonuç biraz yükselebilir.`,
     );
   } else {
     const intro = v(
@@ -7365,20 +7517,25 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
     let level: string;
     if (O === r.n) {
       level = v('Problemlerin hepsini en az hamlede çözdün.', 'Çocuğunuz problemlerin hepsini en az hamlede çözdü.');
-    } else if (O >= 16) {
+    } else if (O >= r.n - 2) {
       level = v(`Bunların ${O} tanesini en az hamlede çözdün: problemlerin hemen hepsinde en kısa yolu buldun.`, `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü: problemlerin hemen hepsinde en kısa yolu buldu.`);
     } else if (O >= 11) {
       level = v(`Bunların ${O} tanesini en az hamlede çözdün: problemlerin çoğunda en kısa yolu buldun.`, `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü: problemlerin çoğunda en kısa yolu buldu.`);
-    } else if (O >= 6) {
-      level = v(
-        `Bunların ${O} tanesini en az hamlede çözdün: problemlerin bir kısmında en kısa yolu buldun, bir kısmında daha çok hamle gerekti ya da hedefe ulaşamadın.`,
-        `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü: problemlerin bir kısmında en kısa yolu buldu, bir kısmında daha çok hamle gerekti ya da hedefe ulaşamadı.`,
-      );
     } else if (O > 0) {
-      level = v(
-        `Bunların ${O} tanesini en az hamlede çözdün; öteki problemlerde daha çok hamle gerekti ya da hedefe ulaşamadın.`,
-        `Çocuğunuz bunların ${O} tanesini en az hamlede çözdü; öteki problemlerde daha çok hamle gerekti ya da hedefe ulaşamadı.`,
-      );
+      // Öteki problemlerde ne olduğu sayılarla seçilir: daha çok hamle mi, hedefe ulaşamamak mı, ikisi birden mi.
+      const k = O === 1 ? 'birini' : `${O} tanesini`;
+      const restE = r.extra;
+      const restU = r.unsolved;
+      const rest =
+        restU === 0
+          ? v(`Öteki ${restE} problemde hedefe ulaştın ama daha çok hamle yaptın.`, `Öteki ${restE} problemde hedefe ulaştı ama daha çok hamle yaptı.`)
+          : restE === 0
+            ? v(`Öteki ${restU} problemde hedefe ulaşamadın.`, `Öteki ${restU} problemde hedefe ulaşamadı.`)
+            : v(
+                `Öteki problemlerin ${restE} tanesinde daha çok hamle yaptın, ${restU} tanesinde hedefe ulaşamadın.`,
+                `Öteki problemlerin ${restE} tanesinde daha çok hamle yaptı, ${restU} tanesinde hedefe ulaşamadı.`,
+              );
+      level = v(`Bunların ${k} en az hamlede çözdün. ${rest}`, `Çocuğunuz bunların ${k} en az hamlede çözdü. ${rest}`);
     } else {
       level = v('Bunların hiçbirini en az hamlede çözemedin.', 'Çocuğunuz bunların hiçbirini en az hamlede çözemedi.');
     }
@@ -7390,12 +7547,15 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
           ? v('çözümü kafanda ararken süre yetmemiş ya da ara vermiş olabilirsin', 'çözüm kafada aranırken süre yetmemiş ya da ara verilmiş olabilir')
           : v('çözümü kafanda ararken süre yetmemiş, ara vermiş ya da yönergeyi tam anlamamış olabilirsin', 'çözüm kafada aranırken süre yetmemiş, ara verilmiş ya da yönerge tam anlaşılmamış olabilir');
       accText += v(
-        ` ${r.idle} problemde hiç top taşımadan süre doldu; bu problemlerde ${why}. Bu yüzden bu sonuç seni tam yansıtmayabilir.`,
-        ` ${r.idle} problemde hiç top taşınmadan süre doldu; bu problemlerde ${why}. Bu yüzden bu sonuç çocuğunuzu tam yansıtmayabilir.`,
+        ` ${r.idle} problemde hiç top taşımadan süre doldu; bu problemlerde ${why}. Bu yüzden sonuç dikkatle okunmalı.`,
+        ` ${r.idle} problemde hiç top taşınmadan süre doldu; bu problemlerde ${why}. Bu yüzden sonuç dikkatle okunmalı.`,
       );
     }
   }
-  const dogru: CognitiveBlock = {
+  // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
+  const dogru: CognitiveBlock = none
+    ? { ...card('kg_dogru'), headline: 'Yorumlanmadı', text: accText }
+    : {
     ...card('kg_dogru'),
     headline: O === 0 ? `${r.n} problemin hiçbiri en az hamlede değil` : O === r.n ? `${r.n} problemin hepsi en az hamlede` : `${r.n} problemin ${O === 1 ? 'biri' : `${O} tanesi`} en az hamlede`,
     text: accText,
@@ -7412,18 +7572,16 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   if (none) {
     uzunluk = { ...card('kg_uzunluk'), headline: 'Yorumlanmadı', text: `${noneWhy} kısa ve uzun problemler karşılaştırılmadı.` };
   } else {
-    let text = v(
-      `En az hamlede çözdüğün problemler: ${shortName} ${S.optimal}/${S.n}, ${longName} ${L.optimal}/${L.n}.`,
-      `Çocuğunuzun en az hamlede çözdüğü problemler: ${shortName} ${S.optimal}/${S.n}, ${longName} ${L.optimal}/${L.n}.`,
-    );
+    // Kısa, orta ve uzun problemlerin sayıları rozette ve grafiktedir; metin değişimin anlamını söyler.
+    let text = '';
     const diff = S.optimal - L.optimal;
     if (S.optimal >= S.n - 1 && L.optimal >= L.n - 1) {
       const all = L.optimal === L.n ? 'hepsinde' : 'hemen hepsinde';
       if (M.optimal < M.n - 1) {
         // Kısa ve uzun problemler iyi, aradaki problemler değil: "düşmedi" denmez, aradaki sonuç da söylenir.
         text += v(
-          ` Kısa ve uzun problemlerde sonucun birbirine yakın; ${midName} ise ${M.optimal}/${M.n}.`,
-          ` Kısa ve uzun problemlerde sonucu birbirine yakın; ${midName} ise ${M.optimal}/${M.n}.`,
+          ` Kısa ve uzun problemlerde sonucun birbirine yakın; ${midName} ise daha az problemi en az hamlede çözdün.`,
+          ` Kısa ve uzun problemlerde sonucu birbirine yakın; ${midName} ise daha az problemi en az hamlede çözdü.`,
         );
       } else if (L.optimal >= S.optimal) {
         text += v(` Problemler uzadıkça sonucun düşmedi: uzun problemlerin ${all} en kısa yolu buldun.`, ` Problemler uzadıkça sonucu düşmedi: uzun problemlerin ${all} en kısa yolu buldu.`);
@@ -7441,10 +7599,15 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
               ' Uzun problemlerin yarısında ya da daha çoğunda süre içinde en kısa yolu bulamadın. Uzun problemlerde daha çok hamleyi kafanda sıraya koyman ve bazı topları geçici olarak başka bir yere koyman gerekir; bu, aynı anda akılda tutulacak adımları da artırır.',
               ' Çocuğunuz uzun problemlerin yarısında ya da daha çoğunda süre içinde en kısa yolu bulamadı. Uzun problemlerde daha çok hamleyi kafada sıraya koymak ve bazı topları geçici olarak başka bir yere koymak gerekir; bu, aynı anda akılda tutulacak adımları da artırır.',
             )
-          : v(
-              ' Problemler uzadıkça en kısa yolu bulman zorlaştı. Uzun problemlerde daha çok hamleyi kafanda sıraya koyman ve bazı topları geçici olarak başka bir yere koyman gerekir; bu, aynı anda akılda tutulacak adımları da artırır. Problem uzadıkça sonucun düşmesi bu görevde olağandır.',
-              ' Problemler uzadıkça en kısa yolu bulması zorlaştı. Uzun problemlerde daha çok hamleyi kafada sıraya koymak ve bazı topları geçici olarak başka bir yere koymak gerekir; bu, aynı anda akılda tutulacak adımları da artırır. Problem uzadıkça sonucun düşmesi bu görevde olağandır.',
-            );
+          : rapid
+            ? v(
+                ' Problemler uzadıkça en kısa yolu bulman zorlaştı. Uzun problemlerin çoğunda ilk topu çok çabuk aldın; bu düşüş bundan da kaynaklanmış olabilir (başlamadan önce düşünme kartına bak).',
+                ' Problemler uzadıkça en kısa yolu bulması zorlaştı. Uzun problemlerin çoğunda ilk topu çok çabuk aldı; bu düşüş bundan da kaynaklanmış olabilir (başlamadan önce düşünme kartına bakın).',
+              )
+            : v(
+                ' Problemler uzadıkça en kısa yolu bulman zorlaştı. Uzun problemlerde daha çok hamleyi kafanda sıraya koyman ve bazı topları geçici olarak başka bir yere koyman gerekir; bu, aynı anda akılda tutulacak adımları da artırır. Problem uzadıkça sonucun düşmesi bu görevde olağandır.',
+                ' Problemler uzadıkça en kısa yolu bulması zorlaştı. Uzun problemlerde daha çok hamleyi kafada sıraya koymak ve bazı topları geçici olarak başka bir yere koymak gerekir; bu, aynı anda akılda tutulacak adımları da artırır. Problem uzadıkça sonucun düşmesi bu görevde olağandır.',
+              );
     } else if (diff <= -3) {
       text += v(' Uzun problemlerde kısa problemlerden daha çok en kısa yolu buldun.', ' Çocuğunuz uzun problemlerde kısa problemlerden daha çok en kısa yolu buldu.');
       if (S.idle === 0) {
@@ -7465,7 +7628,7 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
     uzunluk = {
       ...card('kg_uzunluk'),
       headline: `Kısa problemlerde ${S.optimal}/${S.n}, uzun problemlerde ${L.optimal}/${L.n}`,
-      text,
+      text: text.trim(),
       visual: {
         type: 'bars',
         label: 'En az hamlede çözülen problemler',
@@ -7497,7 +7660,8 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
       );
     }
     if (U > 0) {
-      const idlePart = r.idle === 0 ? '' : r.idle === U ? (U === 1 ? '; bu problemde hiç top taşınmadı' : '; bunların hepsinde hiç top taşınmadı') : `; bunların ${r.idle} tanesinde hiç top taşınmadı`;
+      const where = r.idle === U ? (U === 1 ? 'bu problemde' : 'bunların hepsinde') : `bunların ${r.idle} tanesinde`;
+      const idlePart = r.idle === 0 ? '' : v(`; ${where} hiç top taşımadın`, `; ${where} hiç top taşımadı`);
       parts.push(v(`${U} problemde hedefe ulaşamadın${idlePart}.`, `Çocuğunuz ${U} problemde hedefe ulaşamadı${idlePart}.`));
     }
     if (!none && E >= 3 && E >= U) {
@@ -7510,14 +7674,21 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
     } else if (!none && U >= 3 && U > E && r.idle < U) {
       parts.push(
         v(
-          'Hedefe ulaşamadığın problemlerde süre yetmemiş ya da çözüm yolu bulunamamış olabilir.',
-          'Çocuğunuzun hedefe ulaşamadığı problemlerde süre yetmemiş ya da çözüm yolu bulunamamış olabilir.',
+          'Hedefe ulaşamadığın problemlerde süre yetmemiş ya da çözüm yolunu bulamamış olabilirsin.',
+          'Çocuğunuzun hedefe ulaşamadığı problemlerde süre yetmemiş ya da çözüm yolunu bulamamış olabilir.',
         ),
       );
     }
     cozumText = parts.join(' ');
   }
-  const cozum: CognitiveBlock = {
+  // Hiç top taşınmayan problemler "hedefe ulaşılamadı" sayılmaz: grafikte ayrı gösterilir. Sonuç yorumlanmıyorsa kart da yorumlanmaz.
+  const cozum: CognitiveBlock = none
+    ? {
+        ...card('kg_cozum'),
+        headline: 'Yorumlanmadı',
+        text: v(`${idleOf} hiç top taşımadın; bu yüzden çözüm biçimi yorumlanmadı.`, `Çocuğunuz ${idleOf} hiç top taşımadı; bu yüzden çözüm biçimi yorumlanmadı.`),
+      }
+    : {
     ...card('kg_cozum'),
     headline:
       E === 0 && U === 0
@@ -7531,7 +7702,8 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
       parts: [
         { label: 'En az hamlede çözüldü', value: O },
         { label: 'Fazla hamleyle çözüldü', value: E },
-        { label: 'Hedefe ulaşılamadı', value: U },
+        { label: 'Hedefe ulaşılamadı', value: U - r.idle },
+        { label: 'Hiç top taşınmadı', value: r.idle },
       ],
     } satisfies StackVisual,
   };
@@ -7541,7 +7713,7 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   if (none) {
     plan = { ...card('kg_plan'), headline: 'Yorumlanmadı', text: `${noneWhy} ilk hamleden önceki süreler yorumlanmadı.` };
   } else if (r.medianPick === null) {
-    plan = { ...card('kg_plan'), headline: 'Süre hesaplanamadı', text: 'Süreler alınamadığı için ilk hamleden önce ne kadar düşünüldüğü yorumlanmadı.' };
+    plan = { ...card('kg_plan'), headline: 'Süre hesaplanamadı', text: 'Süreler alınamadığı için ilk hamleden önceki süre hesaplanamadı.' };
   } else {
     const parts: string[] = [
       v(
@@ -7553,21 +7725,39 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
     if (r.pickShort !== null && r.pickLong !== null && !rapid) {
       const a = towerTenths(r.pickShort);
       const b = towerTenths(r.pickLong);
-      const which = `Uzun problemlerde (${TOWER_LONG} ve ${TOWER_LONG + 1} hamle) ilk hamleden önce kısa problemlerdekinden (${TOWER_SHORT - 1} ve ${TOWER_SHORT} hamle)`;
+      // İlk topa kadar geçen süre planın kendisi değildir (hamle yaparken de plan yapılabilir); küçük farklar "yakın" sayılır.
       if (b - a >= 2 && b >= 1.5 * a) {
-        parts.push(v(`${which} daha uzun düşündün: problem zorlaştıkça plana daha çok zaman ayırdın.`, `Çocuğunuz ${lowerFirst(which)} daha uzun düşündü: problem zorlaştıkça plana daha çok zaman ayırdı.`));
-      } else if (b > a) {
-        parts.push(v(`${which} biraz daha uzun düşündün.`, `Çocuğunuz ${lowerFirst(which)} biraz daha uzun düşündü.`));
+        parts.push(
+          v(
+            'Uzun problemlerde ilk topu almadan önce kısa problemlerdekinden daha uzun bekledin. Problem zorlaştıkça başlamadan önce düşünmeye daha çok zaman ayırmış olabilirsin.',
+            'Çocuğunuz uzun problemlerde ilk topu almadan önce kısa problemlerdekinden daha uzun bekledi. Problem zorlaştıkça başlamadan önce düşünmeye daha çok zaman ayırmış olabilir.',
+          ),
+        );
+      } else if (b - a >= 1 && b >= 1.2 * a) {
+        parts.push(
+          v(
+            'Uzun problemlerde ilk topu almadan önce kısa problemlerdekinden biraz daha uzun bekledin.',
+            'Çocuğunuz uzun problemlerde ilk topu almadan önce kısa problemlerdekinden biraz daha uzun bekledi.',
+          ),
+        );
       } else {
-        parts.push(v(`${which} daha uzun düşünmedin.`, `Çocuğunuz ${lowerFirst(which)} daha uzun düşünmedi.`));
+        parts.push(
+          a - b >= 1 && a >= 1.2 * b
+            ? v('Uzun problemlerde ilk topu, kısa problemlerdekinden daha çabuk aldın.', 'Çocuğunuz uzun problemlerde ilk topu, kısa problemlerdekinden daha çabuk aldı.')
+            : v(
+                'Kısa ve uzun problemlerde ilk topu almadan önce birbirine yakın süre bekledin.',
+                'Çocuğunuz kısa ve uzun problemlerde ilk topu almadan önce birbirine yakın süre bekledi.',
+              ),
+        );
         if (L.optimal >= L.n - 1) {
           const all = L.optimal === L.n ? 'hepsini' : 'hemen hepsini';
           parts.push(v(`Buna karşın uzun problemlerin de ${all} en az hamlede çözdün.`, `Buna karşın uzun problemlerin de ${all} en az hamlede çözdü.`));
         } else if (L.optimal <= L.n / 2) {
+          const miss = L.optimal === 0 ? v('Uzun problemlerin hiçbirini en az hamlede çözemedin', 'Uzun problemlerin hiçbirini en az hamlede çözemedi') : v('Uzun problemlerin yarısında ya da daha çoğunda en kısa yolu bulamadın', 'Uzun problemlerin yarısında ya da daha çoğunda en kısa yolu bulamadı');
           parts.push(
             v(
-              'Uzun problemlerin yarısında ya da daha çoğunda en kısa yolu bulamadın; uzun problemlerde topa dokunmadan önce ilk birkaç hamleyi kafanda denemek işine yarayabilir.',
-              'Uzun problemlerin yarısında ya da daha çoğunda en kısa yolu bulamadı; uzun problemlerde topa dokunmadan önce ilk birkaç hamleyi kafada denemesi ona yardım edebilir.',
+              `${miss}; uzun problemlerde topa dokunmadan önce ilk birkaç hamleyi kafanda denemek işine yarayabilir.`,
+              `${miss}; uzun problemlerde topa dokunmadan önce ilk birkaç hamleyi kafasında denemesi ona yardım edebilir.`,
             ),
           );
         }
@@ -7576,16 +7766,18 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
     if (rapid) {
       parts.push(
         v(
-          `${TOWER_RAPID_FROM} ya da daha çok hamlelik ${r.rapidOf} problemin ${r.rapid} tanesinde taşıdığın ilk topu ${TOWER_RAPID_MS / 1000} saniyeden kısa sürede aldın ve bu problemleri en az hamlede çözemedin; bu problemlerde düşünmeden başlamış olabilirsin. Topa dokunmadan önce ilk birkaç hamleyi kafanda denemek işine yarayabilir.`,
-          `Çocuğunuz ${TOWER_RAPID_FROM} ya da daha çok hamlelik ${r.rapidOf} problemin ${r.rapid} tanesinde taşıdığı ilk topu ${TOWER_RAPID_MS / 1000} saniyeden kısa sürede aldı ve bu problemleri en az hamlede çözemedi; bu problemlerde düşünmeden başlamış olabilir. Topa dokunmadan önce ilk birkaç hamleyi kafada denemesi ona yardım edebilir.`,
+          `${TOWER_RAPID_FROM} ya da daha çok hamlelik ${r.rapidOf} problemin ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} ilk topu ${TOWER_RAPID_MS / 1000} saniyeden kısa sürede aldın ve bu problemleri en az hamlede çözemedin. Bazı kişiler hamle yaparken de plan yapar. Yine de topa dokunmadan önce ilk birkaç hamleyi kafanda denemek işine yarayabilir.`,
+          `Çocuğunuz ${TOWER_RAPID_FROM} ya da daha çok hamlelik ${r.rapidOf} problemin ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} ilk topu ${TOWER_RAPID_MS / 1000} saniyeden kısa sürede aldı ve bu problemleri en az hamlede çözemedi. Bazı kişiler hamle yaparken de plan yapar. Yine de topa dokunmadan önce ilk birkaç hamleyi kafasında denemesi ona yardım edebilir.`,
         ),
       );
     }
     if (r.prePlan !== null) {
+      // Yetişkine yazılan raporda araştırmanın yetişkinlerle yapıldığı ayrıca söylenmez.
+      const study = audience === 'adult' ? 'Bir araştırmada' : 'Yetişkinlerle yapılan bir araştırmada';
       parts.push(
         v(
-          `Hedefe ulaştığın problemlerde sürenin ortalama %${r.prePlan} kadarını ilk hamleden önce, gerisini topları taşırken geçirdin. 18 yaş ve üstündeki kişilerle yapılan bir araştırmada, başlamadan önce düşünmeye daha büyük pay ayıranların daha çok problemi en az hamlede çözdüğü görülmüştür; bu bir ilişkidir, kesin bir kural değildir.`,
-          `Çocuğunuz hedefe ulaştığı problemlerde sürenin ortalama %${r.prePlan} kadarını ilk hamleden önce, gerisini topları taşırken geçirdi. 18 yaş ve üstündeki kişilerle yapılan bir araştırmada, başlamadan önce düşünmeye daha büyük pay ayıranların daha çok problemi en az hamlede çözdüğü görülmüştür; bu bir ilişkidir, kesin bir kural değildir.`,
+          `Hedefe ulaştığın problemlerde sürenin ortalama %${r.prePlan} kadarını ilk hamleden önce geçirdin. ${study}, başlamadan önce düşünmeye daha çok pay ayıranlar daha çok problemi en az hamlede çözmüştür. Bu bir ilişkidir, kesin bir kural değildir.`,
+          `Çocuğunuz hedefe ulaştığı problemlerde sürenin ortalama %${r.prePlan} kadarını ilk hamleden önce geçirdi. Yetişkinlerle yapılan bir araştırmada, başlamadan önce düşünmeye daha çok pay ayıranlar daha çok problemi en az hamlede çözmüştür. Bu bir ilişkidir, kesin bir kural değildir.`,
         ),
       );
     }
@@ -7613,7 +7805,8 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   }
 
   /* Grafikler ve öne çıkan sayılar */
-  const chart: CognitiveReport['chart'] = {
+  // Sonuç yorumlanmıyorsa problem uzunluğuna göre grafik de çizilmez.
+  const chart: CognitiveReport['chart'] = none ? undefined : {
     title: 'Problem uzunluğuna göre en az hamlede çözülenler',
     note: v(
       'Her satırda aynı uzunlukta dört problem vardır. Çubuk ne kadar uzunsa o problemlerin o kadar çoğunu en az hamlede çözmüşsün demektir.',
@@ -7622,9 +7815,9 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
     rows: r.levels.map((l) => ({ label: `${l.moves} hamlelik problemler`, value: l.optimal, max: l.n, valueLabel: `${l.optimal}/${l.n}` })),
   };
   const figures = [
-    { label: 'En az hamlede çözülen', value: `${O}/${r.n}` },
-    { label: 'Fazla hamleyle çözülen', value: String(E) },
-    { label: 'Hedefe ulaşılamayan', value: String(U) },
+    { label: 'En az hamlede çözülen', value: none ? 'Yorumlanmadı' : `${O}/${r.n}` },
+    { label: 'Fazla hamleyle çözülen', value: none ? 'Yorumlanmadı' : String(E) },
+    { label: 'Hedefe ulaşılamayan', value: none ? 'Yorumlanmadı' : String(U) },
     ...(r.medianPick !== null && !none ? [{ label: 'İlk hamleden önce tipik süre', value: towerSeconds(r.medianPick) }] : []),
   ];
   const profile: CognitiveReport['profile'] = none
@@ -7646,7 +7839,7 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
           band: '',
         })),
       };
-  return { blocks: [dogru, uzunluk, cozum, plan], chart, figures, ...(profile ? { profile } : {}) };
+  return { blocks: [dogru, uzunluk, cozum, plan], ...(chart ? { chart } : {}), figures, ...(profile ? { profile } : {}) };
 }
 
 /* ---------- Kelime bilgisi ---------- */

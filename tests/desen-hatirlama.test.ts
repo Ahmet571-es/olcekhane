@@ -298,8 +298,19 @@ describe('Desen hatırlama: rapor', () => {
     const floor = evaluate(SLUG, patternBody((q) => ({ cells: dhMissOne(q) })));
     expect(floor.student.items.map((i) => i.badge)).toEqual(['Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Desen başına tipik süre 6 saniye']);
     expect(floor.student.items.slice(0, 3).map((i) => i.visual)).toEqual([undefined, undefined, undefined]);
-    expect(floor.student.cautions.join(' ')).toContain('en küçük (3 kareli) desenlerin hiçbiri doğru hatırlanmadı');
+    // Her desende yalnızca bir kare eksik: yarıda bırakmak ya da bakmamak söylenmez.
+    expect(floor.student.items[0].text).toContain('Yine de karelerin çoğunu doğru yere koydun');
+    expect(floor.student.items[1].text).toBe('En küçük (3 kareli) desenler de tam doğru işaretlenemediği için doğru hatırlanan desenler yorumlanmadı.');
+    expect(floor.student.cautions).toEqual([
+      'Desen hatırlama testinde en küçük (3 kareli) desenlerin hiçbiri tam doğru işaretlenmedi; karelerin çoğu ise doğru yerdeydi. Bu sonuç yorumlanmamalıdır.',
+    ]);
     expect(floor.student.keyFigures.slice(0, 2).map((f) => f.value)).toEqual(['Yorumlanmadı', 'Yorumlanmadı']);
+    // Karelerin çoğu yanlış yerde: yönerge, bakmamak ya da yarıda bırakmak olasılıkları söylenir.
+    const floorFar = evaluate(SLUG, patternBody((q) => ({ cells: dhNoneRight(q) })));
+    expect(floorFar.student.items[0].badge).toBe('Yorumlanmadı');
+    expect(floorFar.student.items[0].text).toContain('Yönergeyi tam anlamamış, desenlere yeterince bakamamış ya da testi yarıda bırakmış olabilirsin.');
+    expect(floorFar.student.cautions.join(' ')).toContain('en küçük (3 kareli) desenlerin hiçbiri doğru hatırlanmadı');
+    expect(floorFar.student.items[1].text).toBe('En küçük (3 kareli) desenler de hatırlanamadığı için doğru hatırlanan desenler yorumlanmadı.');
   });
 
   it('ikinci tur incelemedeki durumlar: başlıklar, kısmi hatırlama, karışık hata türleri, hepsi "Hatırlamıyorum"', () => {
@@ -394,7 +405,7 @@ describe('Desen hatırlama: rapor', () => {
             expect(r.cautions.some((c) => c.includes('en küçük')), label).toBe(floor);
             expect(r.cautions.some((c) => c.includes('“Hatırlamıyorum” denmiş')), label).toBe(many);
             expect(r.cautions.some((c) => c.includes('çok kısa sürede işaretlenmiş ve karelerinin çoğu yanlış')), label).toBe(rapid);
-            expect(r.items[3].text.includes('çok kısa sürede işaretlendi ve karelerinin çoğu yanlıştı'), label).toBe(rapid);
+            expect(/çok kısa sürede işaretled(in|i) ve bu desenlerde karelerin çoğu yanlıştı/.test(r.items[3].text), label).toBe(rapid);
             const hedged = /tam yansıtmayabilir/.test(r.items[0].text);
             expect(hedged, label).toBe(many || rapid);
             expect(r.chart?.type === 'bars' ? r.chart.rows.map((x) => x.valueLabel) : [], label).toEqual(result.levels.map((l) => `${l.correct}/3`));
@@ -405,7 +416,7 @@ describe('Desen hatırlama: rapor', () => {
             if (!floor && result.attemptedWrong >= 2) {
               expect(/çoğunda desendekinden daha az|hepsinde desendekinden daha az/.test(h), label).toBe(2 * result.fewer > result.attemptedWrong);
               expect(/desendekinden daha çok kare/.test(h), label).toBe(2 * result.fewer <= result.attemptedWrong && 2 * result.more > result.attemptedWrong);
-              expect(/hemen yanına konmuştu/.test(h), label).toBe(result.shifted >= 2);
+              expect(/hemen yanına koydu/.test(h), label).toBe(result.shifted >= 2);
               expect(/yalnızca bir kare farklıydı/.test(h), label).toBe(2 * result.near >= result.attemptedWrong);
               expect(/ yarısında yalnızca bir kare/.test(h), label).toBe(2 * result.near === result.attemptedWrong);
               const sc = (q: string) => (result.skipped > 0 ? `İşaretlenenlerin ${q}` : `${q.charAt(0).toLocaleUpperCase('tr-TR')}${q.slice(1)}`);
@@ -413,7 +424,7 @@ describe('Desen hatırlama: rapor', () => {
               expect(r.items[2].badge === sc('çoğunda tek kare farkı'), label).toBe(2 * result.near > result.attemptedWrong && result.near < result.attemptedWrong);
               expect(r.items[2].badge === sc('hepsinde tek kare farkı'), label).toBe(result.near === result.attemptedWrong);
             } else {
-              expect(h, label).not.toMatch(/çoğunda|yarısında|hemen yanına konmuştu/);
+              expect(h, label).not.toMatch(/çoğunda|yarısında|hemen yanına koydu/);
             }
             // Kısmi hatırlama cümlesi yalnızca yanlış desenlerde karelerin en az dörtte üçü doğruysa (desende olmayan kareler düşülerek).
             if (!floor && r.items[1].text.includes('karelerin çoğunu doğru yerde')) {
