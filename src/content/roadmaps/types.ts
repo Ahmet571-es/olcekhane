@@ -85,6 +85,12 @@ export interface RoadmapTemplate {
    */
   wellbeing?: Wellbeing | Wellbeing[];
   /**
+   * Destek kutusunu açan bir madde (ölçek: supportItems) ölçeğin önerilerini düşük düzeye çevirir. `true` ise yalnızca orta
+   * (ve düşük) düzeyde çevirir; yüksek düzeyde kart olumlu kaldığı için öneriler de yüksek düzeyin önerileridir (kutu yine
+   * açılır). Verilmezse her düzeyde çevirir (ör. Öz-saygı, İyimserlik).
+   */
+  flaggedFromAverage?: boolean;
+  /**
    * Çok boyutlu testlerde (ör. 16 özellik) "Nasıl çalışabilirsin?" kartları, ortamlar ve veliye yaklaşım önerileri
    * yalnızca ortadan en uzak `count` boyut için verilir (en belirgin olandan başlayarak); grafik bütün boyutları gösterir.
    * Hesaplanan boyut sayısı `count`tan fazlaysa `note` ("{n}" yerine sayı yazılır) çalışma bölümünün girişine eklenir.

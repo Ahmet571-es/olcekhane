@@ -266,7 +266,10 @@ describe('Düşünme ve Çalışma Tarzı tanımı', () => {
     for (const it of d.items) {
       const hits = others.flatMap((o) => o.items.filter((x) => norm(x.source) === norm(it.source)).map((x) => ({ o, x })));
       if (NEW_ITEMS[it.source!]) {
-        expect(hits, it.source).toEqual([]);
+        // Bu testte ilk kez çevrilen maddeler; sonradan yayına giren testler aynı çeviriyi kullanır.
+        const LATER = ['oz-yeterlik'];
+        expect(hits.filter((h) => !LATER.includes(h.o.slug)), it.source).toEqual([]);
+        for (const h of hits) expect(h.x.text, `${it.source} (${h.o.slug})`).toBe(NEW_ITEMS[it.source!]);
         expect(it.text, it.source).toBe(NEW_ITEMS[it.source!]);
         continue;
       }

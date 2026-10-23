@@ -221,6 +221,13 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); rows=r["parent"]["chart"]["rows"]; assert len(rows) == 3 and all(x["ciLow"] is None for x in rows) and r["student"]["items"][0]["title"] == "Birlikte bakınca" and len(r["student"]["items"]) == 4; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and m["settings"] is not None and len(m["approach"]["items"]) == 3 and m["weeks"][1]["title"] == "Dinle ve anla" and not m["preview"]'; then
             sorun="$sorun empati-raporu"
           fi
+          # Öz-yeterlik: 29 madde (tas 10, soc 10, cop 9), üç alan, ölçüm payı yok; ilk madde "Birlikte bakınca"; yol haritasında
+          # üç sütun, 2. hafta "Küçük başarılar".
+          OY_GOVDE=$(python3 -c 'import json; n={"tas": 10, "soc": 10, "cop": 9}; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"{k}{i:02d}": {"value": (j + i) % 5 + 1, "rtMs": 2500} for j, k in enumerate(n) for i in range(1, n[k] + 1)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$OY_GOVDE" "https://$ALAN/api/rapor/oz-yeterlik" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); rows=r["parent"]["chart"]["rows"]; assert len(rows) == 3 and all(x["ciLow"] is None for x in rows) and r["student"]["items"][0]["title"] == "Birlikte bakınca" and len(r["student"]["items"]) == 4; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and len(m["approach"]["items"]) == 3 and m["weeks"][1]["title"] == "Küçük başarılar" and not m["preview"]'; then
+            sorun="$sorun oz-yeterlik-raporu"
+          fi
           # Kişilerarası Tarz: 32 madde, sekiz tarz çember grafiğinde; yol haritası (öneriler en belirgin üç tarz için).
           TARZ_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"ipc{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 33)}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TARZ_GOVDE" "https://$ALAN/api/rapor/kisilerarasi-tarz" |

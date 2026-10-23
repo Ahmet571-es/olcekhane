@@ -205,7 +205,13 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           Neyi ölçer?
         </h2>
         <div className="flex flex-col gap-6">
-          <p className="measure text-ink-2">{sc.whatItMeasures}</p>
+          <div className="flex flex-col gap-4">
+            {sc.whatItMeasures.split('\n\n').map((para) => (
+              <p key={para.slice(0, 40)} className="measure text-ink-2">
+                {para}
+              </p>
+            ))}
+          </div>
           {composites.length > 0 ? (
             <ul className="divide-y divide-rule border-y border-rule">
               {composites.map((d) => (

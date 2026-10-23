@@ -591,7 +591,27 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    testlerin olası olumsuz etkisi (Kling ve Bay-Williams, 2014). İki bağımsız inceleme (kaynak; rapor, puanlama ve ekran)
    düzeltildi; telefonda dokunarak ve masaüstünde klavyeyle baştan sona çözüldü, PDF açıldı. Açık not: çarpmanın 4. düzeyi
    (eldesiz iki basamaklı × tek basamaklı) bazı çocuklar için 3. düzeyden (6–9 tabloları) kolay olabilir.
-3. Öz-yeterlik: Kendine Güven (kişilik; IPIP)
+3. **Öz-yeterlik: Kendine Güven: yayında (2026-10-23, active; 9. sınıftan yetişkine).** IPIP'in üç ön ölçeği, 29 madde
+   (~5 dakika): NEO "Self-Efficacy" (C1) → "İşlerde kendine güven"; JPI-R "Social Confidence" → "İnsanlar arasında kendine
+   güven"; TCI "Low Self-Efficacy" (HA4, ters çevrilerek; IPIP'in dizininde "Self-efficacy: TCI: HA4-reflected") → "Zor
+   anlarda kendine güven". CPI "Independence" (öteki öz-yeterlik ölçeği) maddelerinin çoğu zihinsel yetenekle ilgili
+   olduğu için, Öğrenme ve Başarı'daki TCI P2 de zaten kullanıldığı için seçilmedi. 20 madde öteki testlerin çevirisiyle
+   aynı; 9 madde iki taslakla (biri öbürü görülmeden) çevrildi ("Çoğu şeyi anlayamam", "Bir şeyin neye yol açacağını önceden
+   kestiremem": "bir şeyleri" ve "olayların" belirsizliği giderildi). Beş karşıt çift; "Sık sık moralim bozuk olur"
+   cümlesine "Oldukça doğru" ya da "Tamamen doğru" destek kutusunu açar (İyimserlik'teki gibi); zor anlar düşükse de açılır.
+   Yeni şablon seçeneği `flaggedFromAverage`: bu cümle yalnızca orta düzeydeki zor anlar önerilerini düşük düzeye çevirir
+   (yüksek kartla çelişmesin; öteki testlerde davranış aynı). Rapor: "Birlikte bakınca" (öz-yeterlik ve öz-saygı farkı,
+   alana göre değişme, okul araştırmalarında başarıdan güvene giden yönün daha güçlü olması ve en güçlü kaynağın çoğu
+   zaman başarı deneyimi olması) ve birbirini dışlayan sekiz kural (bir alan yüksek öteki düşükken her zaman tam bir
+   kural). Yol haritası: 2. hafta "Küçük başarılar", zor anlar düşükken 3. hafta ona; ortamlar "sınır değil, ipucu";
+   "Öz-saygı nedir?" bağlantısı; son hafta Zihniyet ve İyimserlik. Bilim kartı: Bandura (1977), Telef ve Karaca (2012;
+   gençler için öz-yeterlik ölçeğinin Türkçesi), Yıldırım ve İlhan (2010), Aypay (2010), Richardson ve ark. (2012),
+   Talsma ve ark. (2018, 2021), Usher ve Pajares (2008), Byars-Winston ve ark. (2017), Arens ve Preckel (2025; öz-saygı ve
+   nevrotiklikle örtüşme), Caprara ve ark. (2008), Braithwaite ve Corr (2016), Cheek ve Buss'u aktaran Tang ve ark. (2014).
+   İki bağımsız inceleme (metin ve mantık; kaynak ve sayı) ve ikinci tur denetim düzeltildi; telefonda dokunarak (öğrenci)
+   ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı. Açık not: yol haritalarının ortak "herkes için en etkili
+   öğrenme yöntemleri aynıdır" cümlesi kaynaktan (Dunlosky ve ark., 2013: farklı yaş ve yetenekteki öğrencilere yararlı)
+   biraz güçlü; bütün sitede birlikte yumuşatılabilir.
 4. Şekil Benzetmeleri (zekâ; özgün sorular)
 5. Öz-denetim (kişilik; IPIP)
 6. Harf-Sayı Sıralama (zekâ; özgün görev)
@@ -642,8 +662,9 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    hız düzeyi değiştirmiyor; kayıtta kesinti varsa hız karşılaştırılmıyor.
    Okumada bekleyen içerik işi: bazı sorular metni okumadan da cevaplanabiliyor (başlık ana fikri veriyor, bazı kelime ve
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
-4. 3. listenin 2. testi (Zihinden Hesaplama Hızı) bu düzenle hazırlandı: **yayında (2026-10-22)**; her başlıkta grafik ve
-   iki bağımsız inceleme. Sıradaki: 3. listenin 3. testi (Öz-yeterlik: Kendine Güven).
+4. 3. listenin 2. testi (Zihinden Hesaplama Hızı) ve 3. testi (Öz-yeterlik: Kendine Güven) bu düzenle hazırlandı:
+   **yayında (2026-10-22, 2026-10-23)**; her başlıkta grafik ve iki bağımsız inceleme. Sıradaki: 3. listenin 4. testi
+   (Şekil Benzetmeleri).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -867,6 +888,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Desen Hatırlama | desen-hatirlama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Harf Dizileri | harf-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Empati | empati | Yayında (active; 9. sınıftan yetişkine) |
+| Öz-yeterlik: Kendine Güven | oz-yeterlik | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -979,6 +1001,17 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-23 (49): Yeni test Öz-yeterlik: Kendine Güven yayına alındı (3. listenin 3. testi; ayrıntı yukarıda). Kaynak
+  araştırması ayrı bir ajanla yapıldı; metin ve mantık incelemesi ile kaynak ve sayı incelemesinin bulguları uygulandı:
+  iki çeviri netleşti, destek cümlesinin eşiği İyimserlik'le aynı (4), yüksek düzeyde yol haritası kartla çelişmiyor
+  (`flaggedFromAverage`), veli raporunda 2. hafta ile yaklaşım önerileri aynı fikri tekrarlamıyor (test artık kök düzeyinde
+  de bakıyor), girişteki araştırma cümleleri okul araştırmalarıyla sınırlı ve "çoğu zaman" kaydıyla, Braithwaite ve Corr
+  cümlesi kaynağın tablosuna göre düzeltildi, aktarılan bilgiler "aktaran" diye anıldı, NEO tablosunun örneklemi
+  belirtmediği yazıldı. Düşünme ve Çalışma Tarzı testindeki "yalnızca bu testte" denetimi, aynı çeviriyi kullanan
+  sonraki testlere izin verecek biçimde güncellendi. İkinci tur denetimden sonra: veli kurallarındaki öneriler betimleyici
+  oldu (yaklaşım bölümüyle yarışmasın), "başardıkça güven artar" fikri sayfada bir kez söylenir, zor anlar düşükken o alan
+  "Kısaca"da öne çıkanların başında (`standoutFirst`). Test sayfasındaki "Neyi ölçer?" metni artık boş satırla (`\n\n`)
+  paragraflara bölünebilir (öteki testlerde değişiklik yok); bu testin uzun metni beş paragraftır.
 - 2026-10-22 (48): Yeni test Zihinden Hesaplama Hızı yayına alındı (3. listenin 2. testi; ayrıntı yukarıda). Kaynak
   incelemesinin ve rapor, puanlama ve ekran incelemesinin bulguları uygulandı: doğruluk sözcükleri rozetle aynı ("hemen
   hepsi" yalnızca %90 ve üstünde; hiç doğru yoksa "hiçbiri doğru değildi" ve uyarı); geçilen işlemler "bitirdin", tavan ve
@@ -1049,16 +1082,3 @@ En yeni üstte; en çok 10 madde tutulur.
   ilk topa kadar geçen süre "plan süresi" diye kesin anlatılmıyor; yorumlanmayan sonuçların rozeti, grafiği ve öne çıkan
   sayıları "Yorumlanmadı"; grafikteki sayılar metinde yinelenmiyor. Raporlar telefonda ve masaüstünde açıldı, PDF'ler
   incelendi.
-- 2026-10-22 (39): Raporlarda her başlığa grafik, 2. aşamanın 3. grubu (sırayla birleştirme, geriye dönük hatırlama,
-  kural değiştirme, hesapla ve hatırla, kelime listesi): bölüm süresi şeridi, yakalanan ve basılmadan geçilen harfler,
-  koşullara göre doğruluk ve süre, tam hatırlanan diziler merdiveni ("tam / eksik"), denemelere göre kelimeler. Bağımsız
-  incelemenin bulguları uygulandı: hesapla ve hatırlada süre dolması ya da bütün işlemlerin yanlış olması artık "rastgele
-  basma" sayılmıyor (yavaş çalışmak, düğmeleri ters kullanmak); yorumlanmayan harf sonucunun rozeti, grafiği ve öne çıkan
-  sayıları "Yorumlanmadı"; kural değiştirmede hiç cevap yoksa "Cevap verilmedi", kural değişince doğruluk rastgele düzeyine
-  inince bir önceki kurala göre basmaya devam etmek söylenir; geriye dönük hatırlamada iki düzeyde de hatasız sonuç "fark
-  yok" diye anlatılmıyor, hiç basılmayan düzey grafikte başarı gibi görünmüyor, bir geri kuralıyla devam etmek kartta da
-  söyleniyor; kelime listesinde tavan önce söyleniyor, yeni kelimelerin de birçoğuna "evet" denince tanıma "tanındı" diye
-  sunulmuyor, "1 tanesine" ve "0 kez" denmiyor; sırayla birleştirmede yanlış dokunuşun nedeni bölüme göre, tamamlanmayan
-  bölüm için "acele etme" yerine olası nedenler; "herkeste görülür" gibi abartılar ve ağır biçimler sadeleşti. On görev
-  testinin norm notunun son cümlesi okura göre yazıldı ("aynı sonuç farklı yaşlarda farklı anlama gelir"). Görev testlerinde
-  öğrenci sonuç notu "görevlerde yaptıklarına dayanır" der; grafiği olmayan raporda öne çıkan sayılar yine gösterilir.

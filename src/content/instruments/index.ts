@@ -15,6 +15,7 @@ import { hizliKisilikTesti } from './hizli-kisilik-testi';
 import { calismaDegerleri } from './calisma-degerleri';
 import { hobiIlgileri } from './hobi-ilgileri';
 import { empati } from './empati';
+import { ozYeterlik } from './oz-yeterlik';
 import { heyecanArayisi } from './heyecan-arayisi';
 import { iyimserlik } from './iyimserlik';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
@@ -104,6 +105,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   heyecanArayisi,
   iyimserlik,
   empati,
+  ozYeterlik,
   cocukKisilik,
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,

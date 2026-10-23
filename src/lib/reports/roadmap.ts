@@ -119,8 +119,12 @@ export function buildRoadmap(
   // Önerilerin düzeyi: bir maddesi destek kutusunu açan ölçekte (ör. "Sık sık kendimi hüzünlü hissederim" cümlesine
   // "Oldukça doğru") düşük düzeyin önerileri; cevapları iki uca ayrışan ölçekte orta düzeyinkiler (rapordaki kart
   // "Farklı cevaplar" der). Grafik, öne çıkanlar ve dengeli profil cümlesi puanın kendi düzeyini kullanır.
+  // Şablon isterse (`flaggedFromAverage`) destek maddesi yalnızca orta düzeydeki ölçeğin önerilerini düşük düzeye çevirir:
+  // yüksek düzeyde kart olumlu kalır, öneriler de onunla çelişmez (ör. Öz-yeterlik: "Sık sık moralim bozuk olur").
+  const flaggedLow = (s: (typeof sections)[number]) =>
+    !!s.flagged && (!t.flaggedFromAverage || (s.band !== null && bandGroup(s.band) !== 'high'));
   const groupOf = (s: (typeof sections)[number]): BandGroup | null =>
-    s.band === null ? null : s.flagged ? 'low' : s.split ? 'average' : bandGroup(s.band);
+    s.band === null ? null : flaggedLow(s) ? 'low' : s.split ? 'average' : bandGroup(s.band);
   const mid = (s: (typeof sections)[number]) => (s.min + s.max) / 2;
   const distance = (s: (typeof sections)[number]) => (s.value === null ? -1 : Math.abs(s.value - mid(s)));
 
@@ -178,7 +182,7 @@ export function buildRoadmap(
   // İyi oluş: şablondaki sırayla ilk uyan boyut (ör. Duygusal denge düşük, sonra Endişeye yatkınlık yüksek). Önerileri
   // en belirgin boyutlarla sınırlı testte bu boyutun kartı her zaman verilir ve ilk sıradadır (3. hafta ona ayrılır).
   // İyi oluş haftası boyutun kendi düzeyine bakar: alt özellikleri ayrışan (split) düşük bir boyut da haftayı açar.
-  const wellGroup = (s: (typeof sections)[number]) => (s.flagged ? 'low' : bandGroup(s.band));
+  const wellGroup = (s: (typeof sections)[number]) => (flaggedLow(s) ? 'low' : bandGroup(s.band));
   const wellbeing = (t.wellbeing ? [t.wellbeing].flat() : [])
     .map((w) => ({ w, s: sections.find((s) => s.scaleKey === w.scale && wellGroup(s) === w.group) }))
     .find((x) => x.s);

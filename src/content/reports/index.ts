@@ -9,6 +9,7 @@ import { dusunmeVeCalismaTarziReport } from './dusunme-ve-calisma-tarzi';
 import { calismaDegerleriReport } from './calisma-degerleri';
 import { hobiIlgileriReport } from './hobi-ilgileri';
 import { empatiReport } from './empati';
+import { ozYeterlikReport } from './oz-yeterlik';
 import { heyecanArayisiReport } from './heyecan-arayisi';
 import { iyimserlikReport } from './iyimserlik';
 import { hizliKisilikTestiReport } from './hizli-kisilik-testi';
@@ -45,6 +46,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'heyecan-arayisi': heyecanArayisiReport,
   iyimserlik: iyimserlikReport,
   empati: empatiReport,
+  'oz-yeterlik': ozYeterlikReport,
   'cocuk-kisilik-profili': cocukKisilikReport,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuReport,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiReport,
