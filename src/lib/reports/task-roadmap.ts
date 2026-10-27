@@ -8,7 +8,8 @@ import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadma
  * yollar. Görevlerde Türkiye normu olmadığı ve tek oturumluk sonuçlar güvenilir bir düzey sınıflaması vermediği için
  * öneriler sonuca göre değişmez; "Kısaca" bölümü raporun kendi kartlarının başlıklarını özetler. Puanı yükseltmeyi ya da
  * beyni çalıştırmayı vaat etmez. Üç boyutlu grafik yalnızca sonuçları aynı birimde olan görevlerde vardır (şekil akıl
- * yürütmede ve sayı dizilerinde kural türlerine, sözel akıl yürütmede soru türlerine, kâğıt katlamada katlama türlerine, kelime
+ * yürütmede ve sayı dizilerinde kural türlerine, şekil benzetmelerinde değişiklik türlerine, sözel akıl yürütmede soru
+ * türlerine, kâğıt katlamada katlama türlerine, kelime
  * bilgisinde soru türlerine göre doğru cevap oranı; kelime listesi hatırlamada listenin başından, ortasından ve sonundan
  * hatırlananların oranı; hesapla ve hatırlada dizi uzunluklarına göre doğru yerde hatırlanan harflerin oranı; zihinden hesaplamada dört
  * işlemin 60 saniyelik bölümlerinde doğru işlem sayısı); öteki görevlerde

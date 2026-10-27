@@ -23,6 +23,7 @@ import {
   scoreNumeric,
   scoreCube,
   scoreHidden,
+  scoreAnalogy,
   scorePattern,
   scoreReflection,
   scoreTower,
@@ -72,6 +73,8 @@ import {
   type CubeTrialInput,
   type HiddenResult,
   type HiddenTrialInput,
+  type AnalogyResult,
+  type AnalogyTrialInput,
   type PatternResult,
   type PatternTrialInput,
   type ReflectionResult,
@@ -218,6 +221,7 @@ export type TaskInputs =
   | NumericTrialInput[]
   | CubeTrialInput[]
   | HiddenTrialInput[]
+  | AnalogyTrialInput[]
   | PatternTrialInput[]
   | ReflectionTrialInput[]
   | TowerTrialInput[]
@@ -255,6 +259,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let numericRes: NumericResult | undefined;
   let cubeRes: CubeResult | undefined;
   let hiddenRes: HiddenResult | undefined;
+  let analogyRes: AnalogyResult | undefined;
   let patternRes: PatternResult | undefined;
   let reflectionRes: ReflectionResult | undefined;
   let towerRes: TowerResult | undefined;
@@ -502,6 +507,17 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'gs_yanilgi', raw: null, mean: null, nAnswered: result.wrong, nItems: result.n, band: null },
         { scaleKey: 'gs_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'figural_analogy') {
+      const { result } = scoreAnalogy(task, input as AnalogyTrialInput[]);
+      analogyRes = result;
+      // Beş ölçek tek görevden hesaplanır; ayrıntının tamamı "sb_dogru" satırında durur.
+      rows.push(
+        { scaleKey: 'sb_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'sb_duzey', raw: result.reached, mean: null, nAnswered: result.n, nItems: result.n, band: null },
+        { scaleKey: 'sb_tur', raw: null, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+        { scaleKey: 'sb_yanilgi', raw: null, mean: null, nAnswered: result.wrong, nItems: result.n, band: null },
+        { scaleKey: 'sb_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
+      );
     } else if (task.kind === 'pattern_memory') {
       const { result } = scorePattern(task, input as PatternTrialInput[]);
       patternRes = result;
@@ -628,6 +644,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       numeric: numericRes,
       cube: cubeRes,
       hidden: hiddenRes,
+      analogy: analogyRes,
       pattern: patternRes,
       reflection: reflectionRes,
       tower: towerRes,

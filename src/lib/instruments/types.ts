@@ -285,7 +285,8 @@ export type TaskKind =
   | 'hidden_figures'
   | 'pattern_memory'
   | 'letter_series'
-  | 'mental_arithmetic';
+  | 'mental_arithmetic'
+  | 'figural_analogy';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -971,6 +972,93 @@ export interface MentalArithmeticTask extends TaskBase {
 }
 
 /**
+ * Şekil benzetmeleri (geometrik benzetme, A : B :: C : ?): birinci şekil (A) ikinci şekle (B) dönüşür; üçüncü şeklin (C)
+ * aynı biçimde dönüşmüş hâli dört seçenekten seçilir. Bir şekil (pano) bir ya da iki parçadan oluşur; parçaların biçimi,
+ * rengi, büyüklüğü, duruşu (dönüş ve ayna görüntüsü), yeri ve sayısı vardır. C, A'dan yalnızca parçaların biçimiyle ayrılır:
+ * değişiklikler C'de A'daki gibi başlar. Bütün sorular Ölçekhane'nindir (content/instruments/sekil-benzetmeleri.ts; çizim
+ * ve dönüşümler lib/instruments/analogy.ts).
+ */
+export type AnalogyShape =
+  | 'circle'
+  | 'square'
+  | 'triangle'
+  | 'diamond'
+  | 'hexagon'
+  | 'star'
+  | 'cross'
+  | 'arrow'
+  | 'half'
+  | 'flag'
+  | 'ell'
+  | 'wedge';
+export type AnalogyFill = 'empty' | 'gray' | 'black';
+/** Parçanın yeri: orta, sol, sağ, üst, alt ve dört köşe. */
+export type AnalogySlot = 'c' | 'l' | 'r' | 't' | 'b' | 'tl' | 'tr' | 'bl' | 'br';
+
+export interface AnalogyElement {
+  shape: AnalogyShape;
+  fill: AnalogyFill;
+  /** 1 küçük, 2 orta, 3 büyük (büyük şekil, içine küçük bir şekil alan çerçeve gibi de kullanılır). */
+  size: 1 | 2 | 3;
+  /** Dönüş: derece, saat yönünde. */
+  angle: number;
+  /** Ayna görüntüsü: şekil önce dikey bir eksene göre (sağı sola gelecek biçimde) çevrilir, sonra döndürülür. */
+  flip: boolean;
+  slot: AnalogySlot;
+  /** Aynı şekilden kaç tane (1–4); yalnızca ortadaki küçük şekillerde birden çok olur. */
+  count: number;
+}
+
+/** Bir pano: soldan sağa ve büyükten küçüğe çizilen parçalar (A, B ve C'de aynı sırayla). */
+export type AnalogyPanel = AnalogyElement[];
+
+/** Değişiklik türleri: renk ve büyüklük (`look`), döndürme ve ayna görüntüsü (`turn`), yer ve sayı (`place`). */
+export type AnalogyChange = 'look' | 'turn' | 'place';
+
+/**
+ * Yanlış seçeneklerin türü: değişikliklerin hiçbiri uygulanmamış (C'nin aynısı, `copy`), bir kısmı uygulanmamış (`partial`),
+ * biri yanlış yönde, yanlış ölçüde ya da yanlış parçaya uygulanmış (`wrong`), hepsi doğru uygulanmış ama fazladan bir
+ * değişiklik de yapılmış (`extra`).
+ */
+export type AnalogyLure = 'copy' | 'partial' | 'wrong' | 'extra';
+
+export interface AnalogyItem {
+  key: string;
+  level: 1 | 2 | 3 | 4 | 5;
+  /** Sorudaki değişikliklerin türleri (raporda değişiklik türlerine göre sonuçlar bununla hesaplanır). */
+  changes: AnalogyChange[];
+  a: AnalogyPanel;
+  b: AnalogyPanel;
+  c: AnalogyPanel;
+  /** Dört seçenek, ekranda gösterilme sırasıyla. */
+  options: AnalogyPanel[];
+}
+
+export interface AnalogyPracticeItem extends AnalogyItem {
+  /** Doğru seçeneğin sırası (1–4). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+}
+
+export interface FiguralAnalogyTask extends TaskBase {
+  kind: 'figural_analogy';
+  practice: AnalogyPracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: AnalogyItem[];
+  /** Cevap anahtarı (1–4). Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /** Her seçeneğin yanılgı türü (doğru seçenekte `null`). Tarayıcıya boş gönderilir. */
+  optionLures: (AnalogyLure | null)[][];
+  /**
+   * Her seçenekte uygulanmamış ya da yanlış uygulanmış değişikliklerin türleri (doğru seçenekte ve yalnızca fazladan bir
+   * değişikliği olan seçenekte boş). Değişiklik türleri kartı her değişikliği ayrı sayar: rengi doğru değiştirip döndürmeyi
+   * unutan biri renk değişikliğini uygulamış sayılır. Tarayıcıya boş gönderilir.
+   */
+  optionMisses: AnalogyChange[][][];
+  levels: { level: number; name: string; plain: string }[];
+}
+
+/**
  * Küp açınımı: altı kareli bir açınım ve dört küp görünüşü; açınımdan oluşabilecek küp seçilir (content/instruments/
  * kup-acinimi.ts, geometri lib/instruments/cube.ts). Türler: yalnızca yüzlerin yerinin önemli olduğu sorular (`place`;
  * şekiller dönünce değişmez) ve şekillerin yönünün de önemli olduğu sorular (`turn`).
@@ -1212,7 +1300,8 @@ export type CognitiveTask =
   | HiddenFiguresTask
   | PatternMemoryTask
   | LetterSeriesTask
-  | MentalArithmeticTask;
+  | MentalArithmeticTask
+  | FiguralAnalogyTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];

@@ -31,6 +31,7 @@ import {
   complexSpanBody,
   perspectiveBody,
   hiddenBody,
+  analogyBody,
   patternBody,
   letterSeriesBody,
   foldingBody,
@@ -323,6 +324,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'hesapla-ve-hatirla': () => complexSpanBody(),
     'bakis-acisi-alma': () => perspectiveBody(),
     'gizli-sekiller': () => hiddenBody(),
+    'sekil-benzetmeleri': () => analogyBody(),
     'desen-hatirlama': () => patternBody(),
     'harf-dizileri': letterSeriesBody,
     'kagit-katlama': foldingBody,
@@ -367,6 +369,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
       'Gerçek mi, çıkarım mı?', 'Gizli nesneler', 'Göndermeden önce', 'Hangisi aynı?', 'Karşı örnek avı', 'Kelime avı', 'Kuralı değişen oyun',
       'Orantı mı, değil mi?', 'Parçalardan bütüne', 'Sade bir çalışma köşesi', 'Son kontrol', 'Tek iş', 'Tek iş saati', 'Terazi bulmacaları',
       'Tuzaklı bilmeceler', 'Yer imi', 'Zarın açınımı', 'İçinden tekrar', '“Kesin mi?” oyunu', 'Kısa ve sık', 'Türetme oyunu',
+      'Benzetme oyunları', 'Fark avı', 'Sözcüklerle benzetme',
     ]);
     const titles = new Set(['Gözden geçir']);
     for (const t of Object.values(TASK_ROADMAPS)) for (const x of [...t.supports, ...t.weeks]) titles.add(x.title);
@@ -449,6 +452,11 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
           expect(rm.bars.map((b) => b.key)).toEqual(['condValid', 'condInvalid', 'noConflict', 'conflict']);
           expect(rm.barsTitle).toMatch(/^Soru gruplarına göre (sonucun|sonuç)$/);
           expect(rm.barsNote).toContain('sekiz soruluk bir gruptur');
+        } else if (slug === 'sekil-benzetmeleri') {
+          // Değişiklik türlerine göre doğru cevap oranı (aynı birim): üç sütun.
+          expect(rm.bars.map((b) => b.key)).toEqual(['look', 'turn', 'place']);
+          expect(rm.barsTitle).toMatch(/^Değişiklik türlerine göre (sonucun|sonuç)$/);
+          expect(rm.barsNote).toContain('değişiklik türüdür');
         } else if (slug === 'sekil-akil-yurutme' || slug === 'sayi-dizileri' || slug === 'harf-dizileri') {
           // Kural türlerine göre doğru cevap oranı (aynı birim): beş sütun, kendi başlığı ve açıklamasıyla.
           expect(rm.bars.map((b) => b.key)).toEqual(

@@ -1826,6 +1826,103 @@ const gizliSekiller: TaskRoadmapTemplate = {
   sources: [KAYNAK.hock1974, KAYNAK.deWit2017, KAYNAK.milne2009, KAYNAK.xie2025, KAYNAK.uttal],
 };
 
+const benzetmeBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (şekillerle benzetme kurmayı) gösterir.',
+    'Değiştirilecek şey ve parça sayısı arttıkça bu tür sorular herkes için zorlaşır; aynı anda akılda tutulacak bilgi artar. Üç değişiklikli sorularda zorlanmak olağandır.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (şekillerle benzetme kurmayı) gösterir.',
+    'Küçük çocuklar, üçüncü şekle görünüşçe benzeyen yanlış seçeneği seçmeye daha yatkındır; bu eğilim yaşla azalır. Benzetme kurma becerisi çocukluk ve ergenlik boyunca gelişir.',
+    'Akıl yürütme becerileri alıştırmayla bir ölçüde gelişebilir; araştırmalarda bu tür eğitimlerin etkisi orta büyüklükte bulunmuştur. Tek bir sonuç kesin bir yargı için yeterli değildir.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine sonucun sınırlarıyla ilgili bilgi. */
+const benzetmeFacts: InfoBox = {
+  ...benzetmeBase,
+  items: {
+    ...benzetmeBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (şekillerle benzetme kurmayı) gösterir.',
+      'Değiştirilecek şey ve parça sayısı arttıkça bu tür sorular herkes için zorlaşır; aynı anda akılda tutulacak bilgi artar.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const sekilBenzetmeleri: TaskRoadmapTemplate = {
+  version: 'sekil-benzetmeleri-yol-haritasi-1',
+  what: {
+    student: 'iki şey arasındaki ilişkiyi bulup başka bir duruma aktarmayı nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun iki şey arasındaki ilişkiyi bulup başka bir duruma aktarmasını nasıl kolaylaştırabileceğiniz',
+    summary: 'iki şey arasındaki ilişkiyi bulup başka bir duruma aktarmayı kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Benzetme kurmayı ne kolaylaştırır?', parent: 'Çocuğunuzun benzetme kurmasını ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, iki şekil arasındaki ilişkiyi bulup başka bir şekle aynen uygulayabilmeyi ölçer. Bu beceri, yeni bir konuyu bildiğin bir konuya benzeterek anlamakta ve bir problemin çözüm yolunu benzer bir probleme aktarmakta kullanılır. “Bu ona neyse, şu da …” diye düşünmek de bu beceriye dayanır. Aşağıdaki yollar, bu tür işlerde karşılaştırmanı düzenlemeye yardım edebilir.',
+    'Bu test, iki şekil arasındaki ilişkiyi bulup başka bir şekle aynen uygulayabilmeyi ölçer. Bu beceri, yeni bir konuyu bilinen bir konuya benzeterek anlamakta ve bir problemin çözüm yolunu benzer bir probleme aktarmakta kullanılır. “Bu ona neyse, şu da …” diye düşünmek de bu beceriye dayanır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde karşılaştırmasını düzenlemeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'once', 'Önce ilk ikisine bak', 'Yöntem', t(
+      'Bir benzetmede seçeneklere ve üçüncü şekle geçmeden önce birinci ve ikinci şekli karşılaştır: aralarında ne değişti? Resimli benzetmelerle yapılan ve göz hareketlerinin izlendiği bir çalışmada, önce ilk iki resme bakan çocukların daha çok soruyu doğru çözdüğü görülmüştür.',
+      'Çocuğunuza, bir benzetmede seçeneklere ve üçüncü şekle geçmeden önce birinci ve ikinci şekli karşılaştırmasını önerin: aralarında ne değişti? Resimli benzetmelerle yapılan ve göz hareketlerinin izlendiği bir çalışmada, önce ilk iki resme bakan çocukların daha çok soruyu doğru çözdüğü görülmüştür.',
+    )),
+    support(1, 'say', 'Farkları say ve söyle', 'Alışkanlık', t(
+      'Farkları tek tek söyle: “Siyah oldu, çeyrek tur döndü, yeri değişmedi.” Renk, büyüklük, yön, yer ve sayıyı sırayla denetlemek, bir değişikliği gözden kaçırmanı ya da fazladan bir şey değiştirmeni önleyebilir. Küçük çocuklarla yapılan bir çalışmada ilişkiyi sözcüklerle söylemek doğru cevapları biraz artırmıştır.',
+      'Çocuğunuzdan farkları tek tek söylemesini isteyin: “Siyah oldu, çeyrek tur döndü, yeri değişmedi.” Renk, büyüklük, yön, yer ve sayıyı sırayla denetlemek, bir değişikliği gözden kaçırmasını ya da fazladan bir şey değiştirmesini önleyebilir. Küçük çocuklarla yapılan bir çalışmada ilişkiyi sözcüklerle söylemek doğru cevapları biraz artırmıştır.',
+    )),
+    support(2, 'kur', 'Cevabı kur, sonra denetle', 'Yöntem', t(
+      'Bulduğun değişiklikleri üçüncü şekle uygulayıp cevabı zihninde kur; sonra seçeneklerde onu ara ve seçtiğin şekli her değişikliğe göre bir kez daha denetle. Bir araştırmada, soru ile seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
+      'Çocuğunuza, bulduğu değişiklikleri üçüncü şekle uygulayıp cevabı zihninde kurmasını, sonra seçeneklerde onu aramasını önerin. Seçtiği şekli her değişikliğe göre bir kez daha denetlemesi yardımcı olabilir. Bir araştırmada, soru ile seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
+    )),
+    support(3, 'oyun', 'Benzetme oyunları', 'Etkinlik', t(
+      '“Kuş yuvaya neyse arı da kovana” gibi benzetmeler kurmak ve iki örneğin nasıl benzediğini bulmak, ilişkileri fark etmeyi keyifli bir uğraşa dönüştürür. Pek çok araştırmayı birleştiren bir incelemede akıl yürütme eğitimlerinin etkisi orta büyüklükte bulunmuştur. Yine de bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç, karşılaştırmaktan keyif almaktır.',
+      '“Kuş yuvaya neyse arı da kovana” gibi benzetmeler kurmak ve iki örneğin nasıl benzediğini bulmak, çocuğunuz için ilişkileri fark etmeyi keyifli bir uğraşa dönüştürür. Pek çok araştırmayı birleştiren bir incelemede akıl yürütme eğitimlerinin etkisi orta büyüklükte bulunmuştur. Yine de bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç, karşılaştırmaktan keyif almaktır.',
+    )),
+  ],
+  facts: benzetmeFacts,
+  approach: [
+    { title: 'Benzetmeleri birlikte kurun', text: 'Günlük konuşmalarda “Bu ona neyse, şu da …” diye birlikte benzetmeler kurun; bulduğu benzetmenin neden uyduğunu anlatmasını isteyin.' },
+    { title: 'Acele ettirmeyin', text: 'Bir soruda önce farkları bulmasına zaman tanıyın; hızlı cevap vermesinden çok, farkları tek tek söyleyebilmesini övün.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Fark avı',
+      text: t(
+        'Bu hafta birbirine benzeyen iki resim ya da eşya bul ve aralarındaki bütün farkları yaz: renk, büyüklük, yön, yer ve sayı. Hangi farkı en son fark ettiğini de not et.',
+        'Bu hafta çocuğunuzla birbirine benzeyen iki resim ya da eşya bulun ve aralarındaki bütün farkları yazın: renk, büyüklük, yön, yer ve sayı. Hangi farkı en son fark ettiğini sorun.',
+      ),
+    },
+    {
+      title: 'Kendi benzetmeni çiz',
+      text: t(
+        'Bu hafta kâğıda bir şekil çiz ve ona bir ya da iki değişiklik uygula (ör. içini boya ve çeyrek tur döndür). Sonra başka bir şekil çiz ve birinden ona aynı değişiklikleri uygulamasını iste; sonra rolleri değiştirin.',
+        'Bu hafta çocuğunuzdan kâğıda bir şekil çizip ona bir ya da iki değişiklik uygulamasını isteyin (ör. içini boyamak ve çeyrek tur döndürmek). Sonra başka bir şekil çizip size aynı değişiklikleri uygulatsın; sonra rolleri değiştirin.',
+      ),
+    },
+    {
+      title: 'Sözcüklerle benzetme',
+      text: t(
+        'Bu hafta her gün bir sözcük benzetmesi kur ya da çöz (“Kalem yazmaya neyse makas …”). Her birinde iki şey arasındaki ilişkiyi bir cümleyle söyle.',
+        'Bu hafta çocuğunuzla her gün bir sözcük benzetmesi kurun ya da çözün (“Kalem yazmaya neyse makas …”). Her birinde iki şey arasındaki ilişkiyi bir cümleyle söylemesini isteyin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda denediğin yollara bak: önce ilk iki şekle bakmak, farkları saymak, cevabı kurup denetlemek. Benzetme kurmanı en çok hangisi kolaylaştırdıysa onu yaz ve sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun benzetme kurmasını en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['sekil-akil-yurutme', 'sozel-akil-yurutme'],
+  nextPurpose: {
+    you: 'şekillerdeki kuralları ve sözcüklerle akıl yürütmeyi de görmek',
+    parent: 'çocuğunuzun şekillerdeki kuralları bulmasını ve sözcüklerle akıl yürütmesini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.starr2018, KAYNAK.glady2017, KAYNAK.laurence, KAYNAK.klauer2008, KAYNAK.thibaut2010],
+};
+
 const bakisAcisiAlma: TaskRoadmapTemplate = {
   version: 'bakis-acisi-alma-yol-haritasi-1',
   what: {
@@ -2639,6 +2736,7 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'hesapla-ve-hatirla': hesaplaVeHatirla,
   'bakis-acisi-alma': bakisAcisiAlma,
   'gizli-sekiller': gizliSekiller,
+  'sekil-benzetmeleri': sekilBenzetmeleri,
   'desen-hatirlama': desenHatirlama,
   'harf-dizileri': harfDizileri,
   'zihinden-hesaplama-hizi': zihindenHesaplama,

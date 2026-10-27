@@ -45,6 +45,8 @@ import {
   foldingOther,
   hiddenBody,
   hiddenLureOption,
+  analogyBody,
+  analogyLureOption,
   letterFar,
   letterSeriesBody,
   matrixBody,
@@ -365,5 +367,14 @@ export const TASK_VARIANTS: Record<string, Variants> = {
     ilkDuzey: () => hiddenBody((q) => ({ response: q.level === 1 ? hiddenLureOption(q, 'changed') : q.answer, rtMs: rising(q.level, 6000, 4000) })),
     rastgele: () => hiddenBody((q) => ({ response: hiddenLureOption(q), rtMs: 1200 })),
     suresiz: () => hiddenBody((q) => ({ response: q.answer, rtMs: null })),
+  },
+  'sekil-benzetmeleri': {
+    varsayilan: () => analogyBody(),
+    hepsi: () => analogyBody((q) => ({ response: q.answer, rtMs: rising(q.level, 5000, 3000) })),
+    kolay: () => analogyBody((q) => ({ response: q.level <= 2 ? q.answer : analogyLureOption(q, 'partial'), rtMs: rising(q.level, 5000, 3000) })),
+    ilkDuzey: () => analogyBody((q) => ({ response: q.level === 1 ? analogyLureOption(q, 'extra') : q.answer, rtMs: rising(q.level, 5000, 3000) })),
+    kopya: () => analogyBody((q) => ({ response: q.level <= 2 ? q.answer : analogyLureOption(q, 'copy'), rtMs: rising(q.level, 5000, 3000) })),
+    rastgele: () => analogyBody((q) => ({ response: analogyLureOption(q), rtMs: 1200 })),
+    suresiz: () => analogyBody((q) => ({ response: q.answer, rtMs: null })),
   },
 };

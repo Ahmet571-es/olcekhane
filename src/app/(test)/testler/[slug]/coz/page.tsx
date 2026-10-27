@@ -106,7 +106,9 @@ function payloadFor(def: InstrumentDef, grade: number): TestPayload {
                         ? { ...t, answers: [], kinds: [], ratios: [], lures: [] }
                         : t.kind === 'cube_net' || t.kind === 'hidden_figures'
                           ? { ...t, answers: [], optionLures: [], levels: [] }
-                          : t.kind === 'cognitive_reflection'
+                          : t.kind === 'figural_analogy'
+                            ? { ...t, answers: [], optionLures: [], optionMisses: [], levels: [] }
+                            : t.kind === 'cognitive_reflection'
                             ? { ...t, answers: [], domains: [], roles: [], lures: [], pairs: [] }
                             : t.kind === 'mental_rotation_3d'
                               ? { ...t, answers: [] }

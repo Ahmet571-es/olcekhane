@@ -7,6 +7,7 @@ import { Cancellation } from './cancellation';
 import { ColorWord } from './color-word';
 import { ArmedButton, useLeaveWarning } from './common';
 import { DigitSpan } from './digit-span';
+import { FiguralAnalogy } from './figural-analogy';
 import { Flanker } from './flanker';
 import { GoNoGo } from './go-nogo';
 import { MatrixReasoning } from './matrix-reasoning';
@@ -173,7 +174,7 @@ export function TaskRunner(props: {
   return (
     // Üç boyutlu şekiller büyük ekranda daha geniş bir alanda çizilir (beş şekil yan yana karşılaştırılır); bakış açısı almada
     // harita ile cevap çemberi büyük ekranda yan yanadır.
-    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' || task.kind === 'perspective' || task.kind === 'hidden_figures' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
+    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' || task.kind === 'perspective' || task.kind === 'hidden_figures' || task.kind === 'figural_analogy' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
       <TaskSteps tasks={tasks} done={done} current={current} />
       <h1 className="sr-only">{task.name}</h1>
       {task.kind === 'digit_span' && <DigitSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
@@ -208,6 +209,7 @@ export function TaskRunner(props: {
       {task.kind === 'complex_span' && <ComplexSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'perspective' && <Perspective key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'mental_arithmetic' && <MentalArithmetic key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'figural_analogy' && <FiguralAnalogy key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
     </div>
   );
 }

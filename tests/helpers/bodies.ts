@@ -50,6 +50,9 @@ import type {
   TowerTask,
   PerspectiveTask,
   HiddenFiguresTask,
+  FiguralAnalogyTask,
+  AnalogyChange,
+  AnalogyLure,
   PatternMemoryTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
@@ -588,6 +591,48 @@ export function hiddenBody(
   const task = def<TaskInstrument>('gizli-sekiller').tasks[0] as HiddenFiguresTask;
   const trials = task.items.map((it, index) => {
     const p = pick({ level: it.level, answer: task.answers[index], lures: task.optionLures[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+export type AnalogyCell = { level: number; answer: number; lures: (AnalogyLure | null)[]; misses: AnalogyChange[][]; i: number };
+
+/** Şekil benzetmelerinde seçilen yanılgı türündeki ilk seçenek (yoksa doğru olmayan ilk seçenek). */
+export const analogyLureOption = (q: AnalogyCell, kind?: AnalogyLure) => {
+  const at = kind ? q.lures.findIndex((l) => l === kind) : -1;
+  return at >= 0 ? at + 1 : q.lures.findIndex((l) => l !== null) + 1;
+};
+
+/**
+ * Şekil benzetmelerinde bir değişiklik türünü uygulamayan seçenek: o türü kaçıran yanlış seçeneklerden en az şeyi kaçıranı
+ * (yoksa -1). Bir türde zorlanan birinin seçeceği şekil.
+ */
+export const analogyMissOption = (q: AnalogyCell, type: AnalogyChange) => {
+  const at = q.misses
+    .map((m, j) => ({ m, j }))
+    .filter(({ m, j }) => j !== q.answer - 1 && m.includes(type))
+    .sort((x, y) => x.m.length - y.m.length)[0];
+  return at ? at.j + 1 : -1;
+};
+
+/** Şekil benzetmelerinde sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function analogyRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('sekil-benzetmeleri').tasks[0] as FiguralAnalogyTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Şekil benzetmeleri: varsayılan olarak 1–3. düzeyde doğru, üstünde her düzeyin ilk iki sorusu doğru; zor sorulara daha çok zaman. */
+export function analogyBody(
+  pick: (q: AnalogyCell) => { response: number; rtMs: number | null } = (q) => ({
+    response: q.level <= 3 || analogyRank(q) < 2 ? q.answer : analogyLureOption(q),
+    rtMs: 5000 + 3000 * q.level,
+  }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('sekil-benzetmeleri').tasks[0] as FiguralAnalogyTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, answer: task.answers[index], lures: task.optionLures[index], misses: task.optionMisses[index], i: index });
     return { index, response: p.response, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };

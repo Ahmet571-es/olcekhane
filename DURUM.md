@@ -612,7 +612,28 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı. Açık not: yol haritalarının ortak "herkes için en etkili
    öğrenme yöntemleri aynıdır" cümlesi kaynaktan (Dunlosky ve ark., 2013: farklı yaş ve yetenekteki öğrencilere yararlı)
    biraz güçlü; bütün sitede birlikte yumuşatılabilir.
-4. Şekil Benzetmeleri (zekâ; özgün sorular)
+4. **Şekil Benzetmeleri: yayında (2026-10-27, pilot; 3. sınıftan yetişkine).** Geometrik benzetme (A : B :: C : ?), yeni
+   görev türü `figural_analogy`: 24 özgün soru, beş düzey (1: tek renk ya da büyüklük; 2: tek döndürme, ayna, yer ya da sayı;
+   3: bir parçada iki; 4: iki parçada birer; 5: üç değişiklik), dört seçenek, geri bildirimli iki alıştırma. Çizim ve
+   dönüşümler `lib/instruments/analogy.ts` (12 biçim; renk, büyüklük, duruş, yer, sayı, iki parçanın yer değiştirmesi). C,
+   A'dan biçimiyle ayrılır, değişen özellikler C'de A'daki gibi başlar (mutlak ve göreli okuma aynı cevabı verir). Yanlış
+   seçenek türleri: değişmemiş şekil, eksik değişiklik, yanlış değişiklik, fazladan değişiklik (değişmemesi gereken özellik
+   B'deki değerini alır). Bağımsız denetleyici (`tests/helpers/analogy-check.ts`: çizim imzaları, bütün panoyu döndürme ve
+   aynalama, parça eşleşmeleri, mutlak ve göreli yorumlar) her sorunun tek doğru cevabını, düzeyleri, yanlış seçenek
+   türlerini, çizimlerin görünürlüğünü ve on kestirme yolu (seçeneklere bakarak çözme; I-RAVEN gibi dengeli seçenekler)
+   denetler: dokuzu 24 soruda en çok 7 doğru, değişiklik sayısını saymak ~10 doğru verir. Rapor: doğrular (düzeylere göre),
+   ulaşılan düzey, değişiklik türleri (her değişiklik ayrı sayılır: yanlış cevapta seçilen şeklin kaçırdığı değişiklikler,
+   `optionMisses`; bir tür yalnızca onu kaçıran seçeneğin bulunduğu sorularda sayılır, sb16'daki yer değişikliği sayılmaz),
+   yanlışlarda seçilen şekiller (Poisson-binom olasılıkla öne çıkan yanılgı), çalışma biçimi (3. düzey ve üstünde 3 sn'den
+   kısa yanlışlar, hep aynı sıra). Yol haritası: önce ilk ikisine bakmak, farkları söylemek, cevabı kurup denetlemek,
+   benzetme oyunları; son hafta Şekil Akıl Yürütme ve Sözel Akıl Yürütme. Bilim kartı: Blum ve Holling (2018), Novick ve
+   Tversky (1987), Stevenson ve ark. (2013, 2014a, 2014b), Lovett ve Forbus (2012), Becker ve ark. (2016), Laurence ve ark.
+   (2018), Starr ve ark. (2018), Glady ve ark. (2017), Tunteler ve ark. (2008), Thibaut ve ark. (2010), Richland ve ark.
+   (2006), Doumas ve ark. (2018), Klauer ve Phye (2008), Hu ve ark. (2021), Blum ve ark. (2011), Csapó (1997), Vendetti ve
+   ark. (2015), Scharfen ve ark. (2018); açılamayan kaynaklar (Mulholland, Bethell-Fox, Sternberg, Arendasy ve Sommer,
+   Hosenfeld) yalnızca "aktaran". Türkiye'de Türkçe normları yayımlanmış bir şekil benzetmesi uyarlaması bulunamadı.
+   Telefonda dokunarak ve masaüstünde klavyeyle (yetişkin) baştan sona çözüldü, PDF'ler açıldı. İki bağımsız inceleme (metin
+   ve mantık; kaynak ve sayı) yayından sonra bitti; bulguları ayrı işlemeyle uygulanır.
 5. Öz-denetim (kişilik; IPIP)
 6. Harf-Sayı Sıralama (zekâ; özgün görev)
 7. Merak (kişilik; IPIP, VIA dışı ölçek)
@@ -662,9 +683,9 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    hız düzeyi değiştirmiyor; kayıtta kesinti varsa hız karşılaştırılmıyor.
    Okumada bekleyen içerik işi: bazı sorular metni okumadan da cevaplanabiliyor (başlık ana fikri veriyor, bazı kelime ve
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
-4. 3. listenin 2. testi (Zihinden Hesaplama Hızı) ve 3. testi (Öz-yeterlik: Kendine Güven) bu düzenle hazırlandı:
-   **yayında (2026-10-22, 2026-10-23)**; her başlıkta grafik ve iki bağımsız inceleme. Sıradaki: 3. listenin 4. testi
-   (Şekil Benzetmeleri).
+4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
+   hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. Sıradaki:
+   3. listenin 5. testi (Öz-denetim).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -889,6 +910,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Harf Dizileri | harf-dizileri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Empati | empati | Yayında (active; 9. sınıftan yetişkine) |
 | Öz-yeterlik: Kendine Güven | oz-yeterlik | Yayında (active; 9. sınıftan yetişkine) |
+| Şekil Benzetmeleri | sekil-benzetmeleri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1001,6 +1023,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-27 (50): Yeni test Şekil Benzetmeleri yayına alındı (3. listenin 4. testi; ayrıntı yukarıda). Yeni görev türü
+  (`figural_analogy`): çizim ve dönüşümler, bağımsız denetleyici, puanlama, beş kartlı rapor, yol haritası. Değişiklik
+  türleri kartı her değişikliği ayrı sayar (yanlış cevapta seçilen şeklin kaçırdığı değişiklikler); böylece döndürmede
+  zorlanan birinin aynı sorulardaki renk değişiklikleri de yanlış sayılmaz. Kaynak araştırması ayrı bir ajanla yapıldı
+  (38 kaynak; açılamayanlar ayrıca listelendi).
 - 2026-10-23 (49): Yeni test Öz-yeterlik: Kendine Güven yayına alındı (3. listenin 3. testi; ayrıntı yukarıda). Kaynak
   araştırması ayrı bir ajanla yapıldı; metin ve mantık incelemesi ile kaynak ve sayı incelemesinin bulguları uygulandı:
   iki çeviri netleşti, destek cümlesinin eşiği İyimserlik'le aynı (4), yüksek düzeyde yol haritası kartla çelişmiyor
@@ -1070,15 +1097,3 @@ En yeni üstte; en çok 10 madde tutulur.
   hepsi" gibi nicelik hataları ortak bir yardımcıyla düzeldi; araştırma cümleleri kaynaklarla uyuşacak biçimde "Bir
   araştırmada…" diye yazıldı; ilk akla gelen yanlış cevap sayısı öne çıkan sayılardan çıktı. PDF'te dört kutulu satırda uzun
   değerler küçük yazılıyor. Raporlar telefonda ve masaüstünde açıldı, PDF'ler incelendi.
-- 2026-10-22 (40): Raporlarda her başlığa grafik, 2. aşamanın 4. grubu (zihinde döndürme, üç boyutlu döndürme, bakış
-  açısı alma, desen hatırlama, planlama kulesi): türlere ve açılara göre doğruluk, bölümlere göre doğrular, hata türleri,
-  açı hatası şeridi, büyüklüğe göre doğrular, problem uzunluğuna göre çözülenler, çözüm biçimi ve ilk hamleden önceki süre.
-  Bağımsız incelemenin bulguları uygulandı: zihinde döndürmede şans ve ters düğme kararı yalnızca cevap verilen
-  denemelerden veriliyor; denemelerin yarısından çoğunda süre dolması, çok erken basılması ya da ikisinin birlikte yarıyı
-  aşması sonucu yorumsuz bırakıyor (hepsi çok erken basılan sonuç "neredeyse hepsi doğru" diye anlatılmıyor); üç boyutlu
-  döndürmede çoğu soruda bir doğru şekil ile bir ayna görüntüsü seçmek rastgele sayılmıyor, yönergenin farklı anlaşılmış
-  olabileceği söyleniyor; bakış açısında oku tam ters yöne göstermek üçüncü hata türü oldu; desen hatırlamada en küçük
-  desenlerde kareler çoğunlukla doğruysa "yarıda bırakmış" denmiyor; kulede hiç top taşınmayan problemler grafikte ayrı,
-  ilk topa kadar geçen süre "plan süresi" diye kesin anlatılmıyor; yorumlanmayan sonuçların rozeti, grafiği ve öne çıkan
-  sayıları "Yorumlanmadı"; grafikteki sayılar metinde yinelenmiyor. Raporlar telefonda ve masaüstünde açıldı, PDF'ler
-  incelendi.

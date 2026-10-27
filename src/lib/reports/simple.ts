@@ -1078,7 +1078,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       // Tek görevli testlerde kartlar görevin sonuçlarıdır; çok görevli testte her kart bir görevdir.
       // Harf işaretleme tek görevlidir; bölüm grafiği olmasa da (çok az işaret) kartları görevin sonuçlarıdır.
       itemsTitle:
-        sections || blocks.some((b) => b.key === 'tempo' || /^(renk|dg|iz|gh|zd|th|sa|sd|sz|kk|kb|kd|kl|ma|sy|kp|dk|kg|ud|hb|ba|gs|dh|hd|zh)_/.test(b.key))
+        sections || blocks.some((b) => b.key === 'tempo' || /^(renk|dg|iz|gh|zd|th|sa|sd|sz|kk|kb|kd|kl|ma|sy|kp|dk|kg|ud|hb|ba|gs|dh|hd|zh|sb)_/.test(b.key))
           ? you
             ? 'Sonuçların'
             : 'Sonuçlar'

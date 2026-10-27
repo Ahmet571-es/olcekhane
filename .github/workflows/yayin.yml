@@ -484,6 +484,18 @@ jobs:
           if ! grep -q 'Saklanan şekli bul' <<<"$gs_sayfa" || ! grep -qF '\"answers\":[]' <<<"$gs_sayfa" || ! grep -qF '\"optionLures\":[]' <<<"$gs_sayfa"; then
             sorun="$sorun gizli-sekiller-anahtar"
           fi
+          # Şekil Benzetmeleri: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/sekil-benzetmeleri.test.ts güncel
+          # olduğunu denetler). Beş kart, beş düzey, yol haritasında değişiklik türlerinin üç sütunu. Çözme sayfasına cevap
+          # anahtarı, seçeneklerin yanılgı türleri ve kaçırdıkları değişiklikler gitmez.
+          SB_GOVDE=$(python3 -c 'import json; s=[2, 4, 1, 3, 3, 1, 4, 2, 1, 3, 2, 4, 4, 2, 3, 1, 2, 1, 4, 3, 3, 4, 1, 2]; print(json.dumps({"grade": 4, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"sekil-benzetmeleri": [{"index": i, "response": s[i], "rtMs": 8000 + 500 * i} for i in range(24)]}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$SB_GOVDE" "https://$ALAN/api/rapor/sekil-benzetmeleri" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); c=r["parent"]["chart"]; assert c["type"] == "bars" and len(c["rows"]) == 5 and len(r["student"]["items"]) == 5 and r["student"]["items"][0]["badge"] == "24 soruda 24 doğru" and r["student"]["items"][3]["badge"] == "Yanlış cevap yok"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun sekil-benzetmeleri-raporu"
+          fi
+          sb_sayfa=$("${C[@]}" -f "https://$ALAN/testler/sekil-benzetmeleri/coz?sinif=4") || sb_sayfa=""
+          if ! grep -q 'Şekillerle benzetme kur' <<<"$sb_sayfa" || ! grep -qF '\"answers\":[]' <<<"$sb_sayfa" || ! grep -qF '\"optionLures\":[]' <<<"$sb_sayfa" || ! grep -qF '\"optionMisses\":[]' <<<"$sb_sayfa"; then
+            sorun="$sorun sekil-benzetmeleri-anahtar"
+          fi
           # İyimserlik Ölçeği: 10 madde (o01–o10), hepsine "Ne doğru ne yanlış" (3): dört satır (toplam ve üç konu) orta,
           # destek kutusu yok; ilk madde "Bilmekte yarar var"; yol haritasında üç sütun, 2. hafta "En iyi olası gelecek".
           IYI_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"o{i:02d}": {"value": 3, "rtMs": 2500} for i in range(1, 11)}}}))')

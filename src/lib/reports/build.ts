@@ -41,6 +41,9 @@ import type {
   CubeNetTask,
   CubeType,
   HiddenFiguresTask,
+  FiguralAnalogyTask,
+  AnalogyChange,
+  AnalogyLure,
   MentalRotation3dTask,
   VocabularyLure,
   VocabularyTask,
@@ -184,6 +187,14 @@ import {
   hiddenRapid,
   hiddenSamePosition,
   type HiddenResult,
+  ANALOGY_CHANCE_MAX,
+  ANALOGY_LURE_NOTE,
+  ANALOGY_LURES_ORDER,
+  analogyChance,
+  analogyLureStandsOut,
+  analogyRapid,
+  analogySamePosition,
+  type AnalogyResult,
   patternFloor,
   patternManySkipped,
   patternRapid,
@@ -6179,6 +6190,338 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
   return { blocks: [dogru, duzey, yanilgi, calisma], chart, figures };
 }
 
+/* ---------- Şekil benzetmeleri ---------- */
+
+/** Değişiklik türlerinin adları (raporda ve üç boyutlu grafikte), kısa anlatımları ve renkleri. */
+export const ANALOGY_TYPES: Record<AnalogyChange, { name: string; plain: string; color: string }> = {
+  look: { name: 'Renk ve büyüklük', plain: 'bir şeklin renginin ya da büyüklüğünün nasıl değiştiğini görüp aynı değişikliği yapmak', color: '#0e9c8c' },
+  turn: { name: 'Döndürme ve ayna', plain: 'bir şeklin hangi yöne ve ne kadar döndüğünü ya da ayna görüntüsüne çevrildiğini görüp aynısını uygulamak', color: '#2f5ce0' },
+  place: { name: 'Yer ve sayı', plain: 'bir şeklin yerinin, şekillerin sayısının ya da iki parçanın yerlerinin nasıl değiştiğini görüp aynısını uygulamak', color: '#ee6a36' },
+};
+
+/** "“Renk ve büyüklük”" gibi: tür adı tırnak içinde, küçük harfle başlayarak. */
+const analogyTypeList = (types: AnalogyChange[]) =>
+  joinTr(types.map((t) => `“${ANALOGY_TYPES[t].name.charAt(0).toLocaleLowerCase('tr-TR')}${ANALOGY_TYPES[t].name.slice(1)}”`));
+
+/** Yanlışlarda seçilen şeklin adı ("… seçildi" cümlesinde). */
+export const ANALOGY_LURE_SEEN: Record<AnalogyLure, string> = {
+  copy: 'üçüncü şeklin hiç değiştirilmemiş hâli',
+  partial: 'değişikliklerin yalnızca bir kısmının uygulandığı şekil',
+  wrong: 'bir değişikliğin yanlış uygulandığı şekil',
+  extra: 'fazladan bir değişikliğin de yapıldığı şekil',
+};
+
+/** Kart grafiğinde ve başlıklarda yanlış seçeneklerin kısa adları. */
+export const ANALOGY_LURE_NAMES: Record<AnalogyLure, string> = {
+  copy: 'Değişmemiş şekil',
+  partial: 'Eksik değişiklik',
+  wrong: 'Yanlış değişiklik',
+  extra: 'Fazladan değişiklik',
+};
+
+/** Yanlış seçeneklerin yanılgıları için kısa bir ipucu (yanlışların yorumunda). */
+export const ANALOGY_LURE_TIP: Record<AnalogyLure, { you: string; parent: string }> = {
+  copy: {
+    you: 'Seçtiğin şekil üçüncü şekilden hiç farklı değilse birinci ve ikinci şekil arasındaki değişiklik gözden kaçmış olabilir. Önce iki şekil arasındaki farkları tek tek bulmak, sonra her birini üçüncü şekle uygulamak işine yarayabilir.',
+    parent: 'Seçilen şekil üçüncü şekilden hiç farklı değilse birinci ve ikinci şekil arasındaki değişiklik gözden kaçmış olabilir. Çocuğunuzun önce iki şekil arasındaki farkları tek tek bulması, sonra her birini üçüncü şekle uygulaması yardımcı olabilir.',
+  },
+  partial: {
+    you: 'Birden çok şey değiştiğinde birini bulunca durmak kolaydır. Farkları bulduktan sonra “Başka ne değişti?” diye sormak ve seçtiğin şekli her farka göre ayrı ayrı denetlemek işine yarayabilir.',
+    parent: 'Birden çok şey değiştiğinde birini bulunca durmak kolaydır. Çocuğunuzun farkları bulduktan sonra “Başka ne değişti?” diye sorması ve seçtiği şekli her farka göre ayrı ayrı denetlemesi yardımcı olabilir.',
+  },
+  wrong: {
+    you: 'Bir değişikliği bulmak yetmez; yönüne, ölçüsüne ve hangi parçada olduğuna da bakmak gerekir. Şeklin saat yönünde mi tersine mi döndüğünü, çeyrek tur mu yarım tur mu döndüğünü, döndü mü yoksa ayna görüntüsüne mi çevrildiğini ve hangi parçanın değiştiğini denetlemek işine yarayabilir.',
+    parent: 'Bir değişikliği bulmak yetmez; yönüne, ölçüsüne ve hangi parçada olduğuna da bakmak gerekir. Çocuğunuzun şeklin saat yönünde mi tersine mi döndüğünü, çeyrek tur mu yarım tur mu döndüğünü, döndü mü yoksa ayna görüntüsüne mi çevrildiğini ve hangi parçanın değiştiğini denetlemesi yardımcı olabilir.',
+  },
+  extra: {
+    you: 'Değişmeyen şeyler de kuralın parçasıdır: birinci ve ikinci şekilde aynı kalan bir özellik üçüncü şekilde de aynı kalmalı. Cevabın ikinci şekle benzemesi gerekmez; üçüncü şekle aynı değişikliklerin uygulanması gerekir.',
+    parent: 'Değişmeyen şeyler de kuralın parçasıdır: birinci ve ikinci şekilde aynı kalan bir özellik üçüncü şekilde de aynı kalmalı. Çocuğunuza, cevabın ikinci şekle benzemesinin gerekmediğini, üçüncü şekle aynı değişikliklerin uygulanması gerektiğini hatırlatabilirsiniz.',
+  },
+};
+
+/** Şekil benzetmelerinin beş sonuç kartı, düzeylere göre grafik, öne çıkan sayılar ve değişiklik türlerinin üç boyutlu grafiği. */
+function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const chance = analogyChance(r);
+  const rapid = analogyRapid(r);
+  const samePos = analogySamePosition(r);
+  const doubt = rapid || samePos;
+  // Yanlışlarda beklenenden sık görülen yanılgılar anlatılır; o zaman kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz.
+  // Sonuç kuşkuluysa (çok hızlı ya da hep aynı yer) dikkatsizlik de yanılgı da yorumlanmaz.
+  const noted = chance || doubt ? [] : ANALOGY_LURES_ORDER.filter((k) => analogyLureStandsOut(r, k));
+  const lureNoted = noted.length > 0;
+  const blame = !lureNoted && !doubt;
+  const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
+  const intro = `Sorular kolaydan zora doğru ${levelWord} düzeyde ilerledi: önce tek bir değişiklik, sonra iki ve üç değişiklik birlikte.`;
+
+  /* Doğru cevaplar */
+  let accText: string;
+  if (chance) {
+    accText = levelChanceText(v, r.n, ANALOGY_CHANCE_MAX);
+  } else {
+    accText =
+      `${intro} ` +
+      levelAccText({
+        v,
+        levels: r.levels,
+        n: r.n,
+        correct: r.correct,
+        allTail: ['en zor düzeyde üç değişikliği de doğru uygulayabildin', 'en zor düzeyde üç değişikliği de doğru uygulayabildi'],
+        dropWhy: [
+          'Bu beklenen bir durumdur: üst düzeylerde aynı anda izlenmesi gereken değişikliklerin ve parçaların sayısı artar; hepsini akılda tutup üçüncü şekle doğru uygulamak daha çok dikkat ve zaman ister.',
+          'Bu beklenen bir durumdur: üst düzeylerde aynı anda izlenmesi gereken değişikliklerin ve parçaların sayısı artar; hepsini akılda tutup üçüncü şekle doğru uygulamak daha çok dikkat ve zaman ister.',
+        ],
+        hardFrom: 4,
+        blame,
+        blameInLevel: r.reached === 0,
+        doubt,
+      });
+    if (lureNoted) {
+      accText += v(' Yanlış cevaplarında öne çıkan yanılgı için “Yanlışlarda seçilen şekiller” kartına bak.', ' Yanlış cevaplarda öne çıkan yanılgı için “Yanlışlarda seçilen şekiller” kartına bakın.');
+    }
+    if (doubt) {
+      accText += v(
+        ' Bazı sorularda şekillere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorularda şekillere bakmadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
+      );
+    }
+  }
+  const dogru: CognitiveBlock = { ...card('sb_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+
+  /* Ulaşılan düzey */
+  const duzey = reachedLevelBlock({
+    base: card('sb_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: lureNoted
+      ? [' Bu, yönergeyi tam anlamamaktan ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir ve tek başına yorumlanmamalıdır.']
+      : doubt
+        ? ZERO_DOUBT
+        : ZERO_CAUSE,
+    rapid,
+    doubt,
+  });
+
+  /* Değişiklik türleri */
+  // Her değişiklik ayrı sayılır (scoreAnalogy, `types`): yanlış cevapta seçilen şekilde doğru uygulanan değişiklikler de
+  // uygulanmış sayılır. Kartlar "soruların çoğu" der: ölçüt, türün geçtiği soruların yarısından fazlasında uygulanmasıdır.
+  const most = (x: { applied: number; n: number }) => x.applied * 2 > x.n;
+  const good = r.types.filter(most).map((x) => x.type);
+  const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
+  const method = v(
+    ' Bir soruda birden çok değişiklik olabildiği için her değişiklik ayrı sayıldı: yanlış cevaplarda bile seçtiğin şekilde doğru uyguladığın değişiklikler uygulanmış sayıldı. Renk ve büyüklük değişiklikleri en kolay düzeyde de sorulduğu için bu türde sonuç biraz daha yüksek çıkabilir; türler arasındaki fark yaklaşık bir fikir verir.',
+    ' Bir soruda birden çok değişiklik olabildiği için her değişiklik ayrı sayıldı: yanlış cevaplarda bile seçilen şekilde doğru uygulanan değişiklikler uygulanmış sayıldı. Renk ve büyüklük değişiklikleri en kolay düzeyde de sorulduğu için bu türde sonuç biraz daha yüksek çıkabilir; türler arasındaki fark yaklaşık bir fikir verir.',
+  );
+  let tur: CognitiveBlock;
+  if (chance || doubt) {
+    tur = {
+      ...card('sb_tur'),
+      headline: 'Yorumlanmadı',
+      text: chance
+        ? 'Doğru cevaplar çok az olduğu için değişiklik türleri karşılaştırılmadı.'
+        : 'Çalışma biçimi kartında anlatılan nedenle değişiklik türleri karşılaştırılmadı.',
+    };
+  } else {
+    const all = r.types.every((x) => x.applied === x.n);
+    const head = all
+      ? `${r.types.length} değişiklik türünün hepsi bütün sorularda doğru uygulandı`
+      : good.length === r.types.length
+        ? `${r.types.length} değişiklik türünün hepsi soruların çoğunda doğru uygulandı`
+        : good.length === 0
+          ? `${r.types.length} değişiklik türünün hiçbiri soruların çoğunda doğru uygulanmadı`
+          : `${r.types.length} değişiklik türünün ${good.length === 1 ? 'biri' : `${good.length} tanesi`} soruların çoğunda doğru uygulandı`;
+    let text: string;
+    if (all || good.length === r.types.length) {
+      const q = all ? 'hepsinde' : 'çoğunda';
+      text = v(
+        `Üç değişiklik türünün her birini, geçtiği soruların ${q} doğru uyguladın: renk ve büyüklük, döndürme ve ayna görüntüsü, yer ve sayı değişikliklerini görüp üçüncü şekle aktarabildin.`,
+        `Çocuğunuz üç değişiklik türünün her birini, geçtiği soruların ${q} doğru uyguladı: renk ve büyüklük, döndürme ve ayna görüntüsü, yer ve sayı değişikliklerini görüp üçüncü şekle aktarabildi.`,
+      );
+    } else if (good.length === 0) {
+      const best = [...r.types].sort((a, b) => b.applied / b.n - a.applied / a.n)[0];
+      text = v(
+        `Hiçbir değişiklik türünü, geçtiği soruların çoğunda doğru uygulayamadın; en çok ${analogyTypeList([best.type])} değişikliklerini doğru uyguladın.`,
+        `Çocuğunuz hiçbir değişiklik türünü, geçtiği soruların çoğunda doğru uygulayamadı; en çok ${analogyTypeList([best.type])} değişikliklerini doğru uyguladı.`,
+      );
+    } else {
+      const needs = hard.map((x) => capTr(`${analogyTypeList([x])} değişikliklerinde ${ANALOGY_TYPES[x].plain} gerekir.`)).join(' ');
+      text = v(
+        `${capTr(analogyTypeList(good))} değişikliklerini geçtikleri soruların çoğunda doğru uyguladın; ${analogyTypeList(hard)} değişikliklerinde zorlandın. ${needs}`,
+        `Çocuğunuz ${analogyTypeList(good)} değişikliklerini geçtikleri soruların çoğunda doğru uyguladı; ${analogyTypeList(hard)} değişikliklerinde zorlandı. ${needs}`,
+      );
+    }
+    tur = { ...card('sb_tur'), headline: head, text: text.replace(/\s+$/, '') + method };
+  }
+
+  /* Yanlışlarda seçilen şekiller */
+  const how =
+    'Yanlış seçenekler dört türdendi: üçüncü şeklin hiç değiştirilmemiş hâli; değişikliklerin yalnızca bir kısmının uygulandığı şekil; bir değişikliğin yanlış yönde, yanlış ölçüde, yanlış parçada ya da başka bir özellikte yapıldığı şekil; doğru değişikliklerin yanında şekli ikinci şekle benzeten fazladan bir değişikliğin de yapıldığı şekil.';
+  let yanilgi: CognitiveBlock;
+  if (chance) {
+    yanilgi = { ...card('sb_yanilgi'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
+  } else if (r.wrong === 0) {
+    yanilgi = {
+      ...card('sb_yanilgi'),
+      headline: 'Yanlış cevap yok',
+      text: v(
+        'Hiçbir soruda değişmemiş, eksik, yanlış ya da fazladan değişmiş bir şekil seçmedin; değişikliklerin hepsini doğru yönde ve doğru parçada uyguladın.',
+        'Çocuğunuz hiçbir soruda değişmemiş, eksik, yanlış ya da fazladan değişmiş bir şekil seçmedi; değişikliklerin hepsini doğru yönde ve doğru parçada uyguladı.',
+      ),
+    };
+  } else {
+    let text: string;
+    let head: string;
+    if (doubt) {
+      head = 'Yorumlanmadı';
+      text = `${how} Çalışma biçimi kartında anlatılan nedenle yanlışlarda seçilen şekiller yorumlanmadı.`;
+    } else if (lureNoted) {
+      const countWord = ['', 'Bir', 'İki', 'Üç', 'Dört'][noted.length];
+      head = noted.length > 1 ? `${countWord} yanılgı öne çıkıyor` : `${ANALOGY_LURE_NAMES[noted[0]]} öne çıkıyor`;
+      const seen = noted.map((x) => `${r.luresByKind[x] === r.wrong ? 'hepsinde' : `${r.luresByKind[x]} tanesinde`} ${ANALOGY_LURE_SEEN[x]} seçildi`);
+      const these = noted.length > 1 ? 'Bunlar' : 'Bu';
+      text = v(
+        `${how} ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => ANALOGY_LURE_TIP[x].you).join(' ')}`,
+        `${how} Çocuğunuzun ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => ANALOGY_LURE_TIP[x].parent).join(' ')}`,
+      );
+    } else if (r.wrong >= ANALOGY_LURE_NOTE) {
+      head = 'Belirgin bir yanılgı yok';
+      const only = ANALOGY_LURES_ORDER.find((k) => r.luresByKind[k] === r.wrong);
+      text = only
+        ? v(
+            `${how} ${r.wrong} yanlış cevabının hepsinde ${ANALOGY_LURE_SEEN[only]} seçildi. Yanlış sayısı az olduğu ya da bu tür seçenekler testte sık olduğu için bunun rastlantı olup olmadığı söylenemez.`,
+            `${how} Çocuğunuzun ${r.wrong} yanlış cevabının hepsinde ${ANALOGY_LURE_SEEN[only]} seçildi. Yanlış sayısı az olduğu ya da bu tür seçenekler testte sık olduğu için bunun rastlantı olup olmadığı söylenemez.`,
+          )
+        : v(
+            `${how} ${r.wrong} yanlış cevabın bu türlere dağılıyor; rastgele seçimde beklenenden belirgin sık görülen bir yanılgı yok.`,
+            `${how} Çocuğunuzun ${r.wrong} yanlış cevabı bu türlere dağılıyor; rastgele seçimde beklenenden belirgin sık görülen bir yanılgı yok.`,
+          );
+    } else {
+      head = r.wrong === 1 ? 'Bir yanlış' : `${r.wrong} yanlış`;
+      text = v(
+        `${how} Yanlış cevapların çok az olduğu için hangi yanılgının öne çıktığı söylenemez.`,
+        `${how} Çocuğunuzun yanlış cevapları çok az olduğu için hangi yanılgının öne çıktığı söylenemez.`,
+      );
+    }
+    yanilgi = { ...card('sb_yanilgi'), headline: head, text };
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (rapid) {
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
+    issues.push(
+      v(
+        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede iki şekil arasındaki değişiklikleri bulup dört seçeneği karşılaştırmak zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede iki şekil arasındaki değişiklikleri bulup dört seçeneği karşılaştırmak zordur; bu sorularda tahmin etmiş olabilir.`,
+      ),
+    );
+  }
+  if (samePos) {
+    issues.push(
+      v(
+        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
+      ),
+    );
+  }
+  let calisma: CognitiveBlock;
+  // Tek değişiklikli ve çok değişiklikli sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
+  if (r.medianRt === null) {
+    calisma = { ...card('sb_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+  } else {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
+      const hardLevels = r.levels.filter((l) => l.level >= 4);
+      const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
+      if (r.rtHard >= 1.5 * r.rtEasy) {
+        pace = v(
+          'Değişiklikler çoğaldığında sorulara daha çok zaman ayırdın. Birden çok değişikliği tek tek bulup seçenekleri her birine göre denetlemek zaman alır; bu iyi bir çalışma biçimidir.',
+          'Çocuğunuz değişiklikler çoğaldığında sorulara daha çok zaman ayırdı. Birden çok değişikliği tek tek bulup seçenekleri her birine göre denetlemek zaman alır; bu iyi bir çalışma biçimidir.',
+        );
+      } else if (r.rtHard * 1.2 <= r.rtEasy && hardAcc < 0.5) {
+        pace = v(
+          'Zor sorulara kolay sorulardan daha az zaman ayırdın ve bu sorularda doğru cevaplar azdı. Zor sorularda önce bütün değişiklikleri bulup sonra seçenekleri tek tek denetlemek işine yarayabilir.',
+          'Çocuğunuz zor sorulara kolay sorulardan daha az zaman ayırdı ve bu sorularda doğru cevaplar azdı. Zor sorularda önce bütün değişiklikleri bulup sonra seçenekleri tek tek denetlemek yardımcı olabilir.',
+        );
+      } else if (r.rtHard * 1.5 <= r.rtEasy) {
+        pace = v(
+          'Zor sorularda kolay sorulardakinden daha kısa sürede cevap verdin ve bu soruların çoğunu yine doğru buldun.',
+          'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
+        );
+      } else {
+        pace = paceClose(v, r.rtEasy, r.rtHard);
+      }
+    }
+    const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
+    calisma = {
+      ...card('sb_calisma'),
+      headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
+    };
+  }
+
+  /* Grafik ve öne çıkan sayılar */
+  const levelSizes = [...new Set(r.levels.map((l) => l.n))].sort((a, b) => a - b).join(' ya da ');
+  const chart: CognitiveReport['chart'] = {
+    title: 'Düzeylere göre doğru cevaplar',
+    note: v(
+      `Sorular kolaydan zora doğru ${levelWord} düzeye ayrılmıştır; her düzeyde ${levelSizes} soru vardır. Çubuk ne kadar uzunsa o düzeydeki soruların o kadar çoğunu doğru cevaplamışsın demektir.`,
+      `Sorular kolaydan zora doğru ${levelWord} düzeye ayrılmıştır; her düzeyde ${levelSizes} soru vardır. Çubuk ne kadar uzunsa o düzeydeki soruların o kadar çoğu doğru cevaplanmış demektir.`,
+    ),
+    rows: r.levels.map((l) => ({ label: `${l.level}. düzey`, value: l.correct, max: l.n, valueLabel: `${l.correct}/${l.n}` })),
+  };
+  const figures = [
+    { label: 'Doğru', value: `${r.correct}/${r.n}` },
+    chance
+      ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
+      : r.reached === 0
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
+        : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
+    ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
+  ];
+  // Değişiklik türleri kartı yorumlanmıyorsa türlerin üç boyutlu grafiği de çizilmez.
+  const profile: CognitiveReport['profile'] =
+    chance || doubt
+      ? undefined
+      : {
+          title: v('Değişiklik türlerine göre sonucun', 'Değişiklik türlerine göre sonuç'),
+          note: v(
+            'Her sütun bir değişiklik türüdür. Sütun ne kadar yüksekse o türdeki değişiklikleri, geçtikleri soruların o kadar çoğunda doğru uygulamışsın demektir; tam boy sütun, hepsinde doğru uyguladığın anlamına gelir. Renkler yalnızca türleri ayırır.',
+            'Her sütun bir değişiklik türüdür. Sütun ne kadar yüksekse o türdeki değişiklikler, geçtikleri soruların o kadar çoğunda doğru uygulanmış demektir; tam boy sütun, hepsinde doğru uygulandığı anlamına gelir. Renkler yalnızca türleri ayırır.',
+          ),
+          bars: r.types.map((x) => ({
+            key: x.type,
+            label: ANALOGY_TYPES[x.type].name,
+            value: Math.round((x.applied / x.n) * 100),
+            min: 0,
+            max: 100,
+            color: ANALOGY_TYPES[x.type].color,
+            valueLabel: `${x.applied}/${x.n}`,
+            band: '',
+          })),
+        };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (tur.headline !== 'Yorumlanmadı') tur.visual = typeBarsVisual('Değişikliklerin doğru uygulandığı sorular', r.types.map((x) => ({ name: ANALOGY_TYPES[x.type].name, correct: x.applied, n: x.n })));
+  if (yanilgi.headline !== 'Yorumlanmadı') {
+    yanilgi.visual = {
+      type: 'stack',
+      label: 'Soruların dağılımı',
+      total: r.n,
+      parts: [{ label: 'Doğru şekil', value: r.correct }, ...ANALOGY_LURES_ORDER.map((k) => ({ label: ANALOGY_LURE_NAMES[k], value: r.luresByKind[k] }))],
+    };
+  }
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  return { blocks: [dogru, duzey, tur, yanilgi, calisma], chart, figures, ...(profile ? { profile } : {}) };
+}
+
 /* ---------- Küp açınımı ---------- */
 
 /** Küp açınımında soru türlerinin adları ve kısa anlatımları. */
@@ -10066,6 +10409,9 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const gs = byKey.get('gs_dogru')?.extra as unknown as HiddenResult | undefined;
   const gst = def.tasks.find((t): t is HiddenFiguresTask => t.kind === 'hidden_figures');
   if (gs && gst) add(hiddenBlocks(gs, gst, audience, card));
+  const sb = byKey.get('sb_dogru')?.extra as unknown as AnalogyResult | undefined;
+  const sbt = def.tasks.find((t): t is FiguralAnalogyTask => t.kind === 'figural_analogy');
+  if (sb && sbt) add(analogyBlocks(sb, sbt, audience, card));
   const dk = byKey.get('dk_dogru')?.extra as unknown as ReflectionResult | undefined;
   if (dk && def.tasks.some((t) => t.kind === 'cognitive_reflection')) add(reflectionBlocks(dk, audience, card));
   const kg = byKey.get('kg_dogru')?.extra as unknown as TowerResult | undefined;
@@ -10082,7 +10428,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory', 'letter_series', 'mental_arithmetic'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory', 'letter_series', 'mental_arithmetic', 'figural_analogy'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

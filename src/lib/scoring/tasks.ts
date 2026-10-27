@@ -43,6 +43,9 @@ import type {
   LetterSeriesTask,
   ArithOp,
   MentalArithmeticTask,
+  AnalogyChange,
+  AnalogyLure,
+  FiguralAnalogyTask,
 } from '@/lib/instruments/types';
 import { TURKISH_ALPHABET } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
@@ -3165,6 +3168,166 @@ export function hiddenQualityNotes(r: HiddenResult): string[] {
   return notes;
 }
 
+/* ---------- Şekil benzetmeleri ---------- */
+
+export interface AnalogyTrialInput {
+  index: number;
+  /** Seçilen seçeneğin sırası (1–4). */
+  response: number;
+  rtMs: number | null;
+}
+
+export interface AnalogyResult {
+  n: number;
+  correct: number;
+  accuracy: number;
+  levels: MatrixLevelResult[];
+  reached: number;
+  /**
+   * Değişiklik türlerine göre: türün sınandığı sorular ve o türdeki değişikliğin doğru uygulandığı sorular. Doğru
+   * cevaplanan soruda bütün değişiklikler uygulanmış sayılır; yanlış cevapta seçilen şekle bakılır (`optionMisses`): rengi
+   * doğru değiştirip döndürmeyi unutan biri renk değişikliğini uygulamış, döndürmeyi uygulamamış sayılır. Bir tür, yalnızca
+   * o türü kaçıran bir yanlış seçeneğin bulunduğu sorularda sınanmış sayılır (yoksa hangi şekil seçilirse seçilsin
+   * uygulanmış görünürdü). Bir soruda birden çok tür olabilir.
+   */
+  types: { type: AnalogyChange; n: number; applied: number }[];
+  medianRt: number | null;
+  /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
+  rts: number[];
+  medianRtCorrect: number | null;
+  /** 1–2. düzeydeki (tek değişiklikli) ve 4–5. düzeydeki sorularda tipik süre. */
+  rtEasy: number | null;
+  rtHard: number | null;
+  /** 3. düzey ve üstündeki sorulardan `ANALOGY_RAPID_MS`'den kısa sürede yanlış cevaplananlar ve bu soruların sayısı. */
+  rapid: number;
+  rapidOf: number;
+  wrong: number;
+  /** Yanlışlarda seçilen seçeneğin türü ve her türün seçeneklerde kaç kez bulunduğu. */
+  luresByKind: Record<AnalogyLure, number>;
+  offeredByKind: Record<AnalogyLure, number>;
+  /** Her tür için, yanlışlarda rastgele seçilmiş olsaydı en az bu kadar sık görülme olasılığı (Poisson-binom). */
+  lureP: Record<AnalogyLure, number>;
+  samePosition: number;
+}
+
+export const ANALOGY_LURES_ORDER: AnalogyLure[] = ['copy', 'partial', 'wrong', 'extra'];
+export const ANALOGY_TYPES_ORDER: AnalogyChange[] = ['look', 'turn', 'place'];
+/** Üç şekli ve dört seçeneği karşılaştırmak için bundan kısa bir süre yetmez (3. düzey ve üstünde en az iki değişiklik var). */
+export const ANALOGY_RAPID_MS = 3000;
+/** Dört seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (10 ya da daha çok doğrunun olasılığı %5,5). */
+export const ANALOGY_CHANCE_MAX = 9;
+
+export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[]): { result: AnalogyResult } {
+  const n = task.items.length;
+  if (task.answers.length !== n || task.optionLures.length !== n || task.optionMisses.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
+  const byIndex = new Map<number, AnalogyTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= n) throw new TaskInputError('Geçersiz soru.');
+    if (!Number.isInteger(t.response) || t.response < 1 || t.response > task.items[t.index].options.length) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  if (byIndex.size !== n) throw new TaskInputError('Soruların hepsi cevaplanmadı.');
+  const scored = task.items.map((item, i) => {
+    const t = byIndex.get(i)!;
+    const correct = t.response === task.answers[i];
+    const missed = correct ? [] : task.optionMisses[i][t.response - 1];
+    return { item, correct, lure: correct ? null : task.optionLures[i][t.response - 1], missed, response: t.response, rt: t.rtMs };
+  });
+  const correct = scored.filter((x) => x.correct).length;
+  const levels = [...new Set(task.items.map((it) => it.level))]
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const here = scored.filter((x) => x.item.level === level);
+      return { level, n: here.length, correct: here.filter((x) => x.correct).length };
+    });
+  let reached = 0;
+  let upToCorrect = 0;
+  let upToN = 0;
+  for (const l of levels) {
+    upToCorrect += l.correct;
+    upToN += l.n;
+    if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
+  }
+  const types = ANALOGY_TYPES_ORDER.map((type) => {
+    const here = scored.filter((x, i) => x.item.changes.includes(type) && task.optionMisses[i].some((m) => m.includes(type)));
+    return { type, n: here.length, applied: here.filter((x) => !x.missed.includes(type)).length };
+  }).filter((x) => x.n > 0);
+  const luresByKind = Object.fromEntries(ANALOGY_LURES_ORDER.map((k) => [k, scored.filter((x) => x.lure === k).length])) as Record<AnalogyLure, number>;
+  const offeredByKind = Object.fromEntries(ANALOGY_LURES_ORDER.map((k) => [k, task.optionLures.flat().filter((x) => x === k).length])) as Record<AnalogyLure, number>;
+  // Yanlış cevaplanan her soruda yanlış seçeneklerden biri rastgele seçilseydi: türün o sorudaki payı (Poisson-binom).
+  const wrongIdx = scored.flatMap((x, i) => (x.correct ? [] : [i]));
+  const lureP = Object.fromEntries(
+    ANALOGY_LURES_ORDER.map((k) => {
+      const ps = wrongIdx.map((i) => {
+        const wrongs = task.optionLures[i].filter((x) => x !== null);
+        return wrongs.filter((x) => x === k).length / wrongs.length;
+      });
+      let dist = [1];
+      for (const q of ps) dist = [...dist, 0].map((v, j) => v * (1 - q) + (j > 0 ? dist[j - 1] * q : 0));
+      return [k, round(Math.min(1, dist.slice(luresByKind[k]).reduce((a, b) => a + b, 0)), 4)];
+    }),
+  ) as Record<AnalogyLure, number>;
+  const rts = (xs: typeof scored) => xs.flatMap((x) => (x.rt === null ? [] : [x.rt]));
+  const hardOnes = scored.filter((x) => x.item.level >= 3);
+  const positions = new Map<number, number>();
+  for (const x of scored) positions.set(x.response, (positions.get(x.response) ?? 0) + 1);
+  return {
+    result: {
+      n,
+      correct,
+      accuracy: round(correct / n, 3),
+      levels,
+      reached,
+      types,
+      medianRt: medianOrNull(rts(scored)),
+      rts: rts(scored),
+      medianRtCorrect: medianOrNull(rts(scored.filter((x) => x.correct))),
+      rtEasy: medianOrNull(rts(scored.filter((x) => x.item.level <= 2))),
+      rtHard: medianOrNull(rts(scored.filter((x) => x.item.level >= 4))),
+      rapid: hardOnes.filter((x) => !x.correct && x.rt !== null && x.rt < ANALOGY_RAPID_MS).length,
+      rapidOf: hardOnes.length,
+      wrong: n - correct,
+      luresByKind,
+      offeredByKind,
+      lureP,
+      samePosition: Math.max(0, ...positions.values()),
+    },
+  };
+}
+
+/** Şekil benzetmelerinde şans düzeyi (öteki şekil testlerindeki gibi: hiçbir düzeye ulaşılmadıysa). */
+export const analogyChance = (r: AnalogyResult) => r.correct <= ANALOGY_CHANCE_MAX && r.reached === 0;
+/** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
+export const analogyRapid = (r: AnalogyResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
+/** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
+export const ANALOGY_SAME_MAX_CORRECT = 12;
+/** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada ve doğru cevaplar çok değil. */
+export const analogySamePosition = (r: AnalogyResult) => r.samePosition >= Math.ceil(r.n / 2) && r.correct <= ANALOGY_SAME_MAX_CORRECT;
+/** Bir yanılgı türü yanlışlarda en az üç kez ve rastgele seçimde beklenenden belirgin sık (olasılık en çok %5) görülünce anlatılır. */
+export const ANALOGY_LURE_NOTE = 3;
+export const ANALOGY_LURE_P = 0.05;
+export const analogyLureStandsOut = (r: AnalogyResult, k: AnalogyLure) => r.luresByKind[k] >= ANALOGY_LURE_NOTE && r.lureP[k] <= ANALOGY_LURE_P;
+
+/** Şekil benzetmelerinde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, analogyBlocks aynı eşikleri kullanır). */
+export function analogyQualityNotes(r: AnalogyResult): string[] {
+  const notes: string[] = [];
+  if (analogyChance(r)) {
+    notes.push(
+      'Şekil benzetmeleri testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da şekillere bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+    );
+  }
+  if (analogyRapid(r)) {
+    notes.push(
+      `Şekil benzetmeleri testinde 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} yanlış bir cevap 3 saniyeden kısa sürede verilmiş; bu sorularda şekillere bakılmadan seçilmiş olabilir.`,
+    );
+  }
+  if (analogySamePosition(r)) {
+    notes.push('Şekil benzetmeleri testinde cevapların yarısında ya da daha çoğunda aynı sıradaki seçenek seçilmiş; birçok soruda bakılmadan aynı yere basılmış olabilir.');
+  }
+  return notes;
+}
+
 /* ---------- Desen hatırlama ---------- */
 
 export interface PatternTrialInput {
@@ -4397,6 +4560,7 @@ export function taskQualityNotes(parts: {
   numeric?: NumericResult;
   cube?: CubeResult;
   hidden?: HiddenResult;
+  analogy?: AnalogyResult;
   pattern?: PatternResult;
   reflection?: ReflectionResult;
   tower?: TowerResult;
@@ -4619,6 +4783,8 @@ export function taskQualityNotes(parts: {
   if (kp) notes.push(...cubeQualityNotes(kp));
   const gs = parts.hidden;
   if (gs) notes.push(...hiddenQualityNotes(gs));
+  const sb = parts.analogy;
+  if (sb) notes.push(...analogyQualityNotes(sb));
   const dh = parts.pattern;
   if (dh) notes.push(...patternQualityNotes(dh));
   const dk = parts.reflection;
