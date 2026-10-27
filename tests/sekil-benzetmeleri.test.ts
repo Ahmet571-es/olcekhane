@@ -18,6 +18,7 @@ import {
   ANALOGY_LURES_ORDER,
   ANALOGY_RAPID_MS,
   ANALOGY_SAME_MAX_CORRECT,
+  ANALOGY_TYPE_P,
   TaskInputError,
   analogyChance,
   analogyLureStandsOut,
@@ -51,11 +52,11 @@ const withoutRoadmap = (r: SimpleReport) => {
 const trialsOf = (body: ReturnType<typeof analogyBody>) => (body.data as unknown as { blocks: Record<string, AnalogyTrialInput[]> }).blocks[task.key];
 
 describe('Şekil benzetmeleri: sorular', () => {
-  it('24 soru, 5 düzey (4, 5, 5, 5, 5), kolaydan zora; 2 alıştırma; her soruda dört seçenek; parçalar bir ya da iki', () => {
+  it('24 soru, 5 düzey (4, 5, 5, 5, 5), kolaydan zora; 3 alıştırma; her soruda dört seçenek; parçalar bir ya da iki', () => {
     expect(task.items).toHaveLength(24);
     expect([1, 2, 3, 4, 5].map((l) => task.items.filter((it) => it.level === l).length)).toEqual([4, 5, 5, 5, 5]);
     for (let i = 1; i < task.items.length; i++) expect(task.items[i].level).toBeGreaterThanOrEqual(task.items[i - 1].level);
-    expect(task.practice).toHaveLength(2);
+    expect(task.practice).toHaveLength(3);
     expect(task.levels.map((l) => l.level)).toEqual([1, 2, 3, 4, 5]);
     for (const { it } of ITEMS) {
       expect(it.options, it.key).toHaveLength(4);
@@ -184,31 +185,53 @@ describe('Şekil benzetmeleri: sorular', () => {
     for (let i = 2; i < task.answers.length; i++) expect(task.answers[i] === task.answers[i - 1] && task.answers[i] === task.answers[i - 2], String(i)).toBe(false);
   });
 
-  it('alıştırma: seçeneklerin sırası açıklamadaki harflerle uyumlu', () => {
-    const [p1, p2] = task.practice;
+  it('alıştırma: renk, ayna görüntüsü ve iki değişiklik; seçeneklerin sırası açıklamadaki harflerle uyumlu', () => {
+    const [p1, p2, p3] = task.practice;
+    expect(task.practice.map((p) => p.changes)).toEqual([['look'], ['turn'], ['turn', 'look']]);
     expect(ITEMS.find((x) => x.it === p1)!.lures).toEqual(['copy', 'extra', null, 'wrong']);
     expect(p1.answer).toBe(3);
-    expect(p1.explain).toContain('B’deki büyük siyah üçgende büyüklük de değişmiş; D’deki büyük, içi boş üçgende ise renk yerine büyüklük değişmiş.');
-    expect(ITEMS.find((x) => x.it === p2)!.lures).toEqual(['partial', null, 'wrong', 'copy']);
-    expect(p2.answer).toBe(2);
-    expect(p2.explain).toContain('A’da yalnızca renk değişmiş, dönüş eksik; C’de bayrak ters yöne, saat yönünde dönmüş; D’de hiçbir şey değişmemiş.');
+    expect(p1.explain).toContain('A’da hiçbir şey değişmemiş; B’deki daha büyük siyah üçgende büyüklük de değişmiş; D’deki daha büyük, içi boş üçgende ise renk yerine büyüklük değişmiş.');
+    // Daha büyük seçenekler orta boy (C küçük).
+    expect([p1.c[0].size, p1.options[1][0].size, p1.options[3][0].size]).toEqual([1, 2, 2]);
+    expect(ITEMS.find((x) => x.it === p2)!.lures).toEqual(['wrong', 'extra', 'copy', null]);
+    expect(p2.answer).toBe(4);
+    expect(p2.explain).toContain('A’da şekil ayna yerine yarım tur döndürülmüş; B’de ayna görüntüsü doğru ama rengi de değişmiş; C’de hiçbir şey değişmemiş.');
+    // Doğru cevapta gri dik üçgen ayna görüntüsünde (dik köşesi sağ altta); A'da yarım tur dönmüş.
+    expect(p2.options[3][0]).toMatchObject({ shape: 'wedge', angle: 0, flip: true, fill: 'gray' });
+    expect(p2.options[0][0]).toMatchObject({ shape: 'wedge', angle: 180, flip: false, fill: 'gray' });
+    expect(p2.options[1][0]).toMatchObject({ shape: 'wedge', angle: 0, flip: true, fill: 'empty' });
+    expect(ITEMS.find((x) => x.it === p3)!.lures).toEqual(['partial', null, 'wrong', 'copy']);
+    expect(p3.answer).toBe(2);
+    expect(p3.explain).toContain('A’da yalnızca renk değişmiş, dönüş eksik; C’de bayrak ters yöne, saat yönünde dönmüş; D’de hiçbir şey değişmemiş.');
     // Alıştırmanın çizimleri: doğru cevapta bayrak saat yönünün tersine çeyrek tur dönmüş ve gri.
-    expect(p2.options[1][0]).toMatchObject({ shape: 'flag', angle: 270, flip: false, fill: 'gray' });
+    expect(p3.options[1][0]).toMatchObject({ shape: 'flag', angle: 270, flip: false, fill: 'gray' });
+  });
+
+  it('yanlış seçeneklerin türleri A–D arasında dengeli: bir sıradaki seçeneği hep seçmek bir yanılgı gibi görünmez', () => {
+    for (const range of [[0, 24], [0, 14], [14, 24]]) {
+      const idx = task.items.map((_, i) => i).filter((i) => i >= range[0] && i < range[1]);
+      for (const k of ANALOGY_LURES_ORDER) {
+        const at = [0, 1, 2, 3].map((p) => idx.filter((i) => task.optionLures[i][p] === k).length);
+        const total = at.reduce((a, b) => a + b, 0);
+        for (const [p, c] of at.entries()) expect(Math.abs(c - total / 4), `${range} ${k} ${p + 1}: ${at}`).toBeLessThanOrEqual(1.25);
+      }
+    }
   });
 
   it('sorular sabit: sorular ya da cevap anahtarı değişirse testin sürüm numarası artırılmalı', () => {
     const hash = createHash('sha256')
-      .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, lures: task.optionLures, levels: task.levels }))
+      .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, lures: task.optionLures, misses: task.optionMisses, levels: task.levels }))
       .digest('hex')
       .slice(0, 16);
-    expect({ version: sekilBenzetmeleri.version, hash }).toEqual({ version: 1, hash: SORU_IZI });
+    // Sürüm 2 (2026-10-27): yanlış seçeneklerin sırası A–D arasında dengelendi, ayna görüntüsü alıştırması eklendi.
+    expect({ version: sekilBenzetmeleri.version, hash }).toEqual({ version: 2, hash: SORU_IZI });
     // İçerik dosyasındaki tanımlar ile görevdeki sorular aynı.
     expect(ANALOGY_SPECS.map((s) => applyOps(s.c, s.ops)).map(panelSig)).toEqual(task.items.map((it, i) => panelSig(it.options[task.answers[i] - 1])));
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = 'cc08906d3edde1ea';
+/** Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
+const SORU_IZI = '6a31438599d070ae';
 
 describe('Şekil benzetmeleri: puanlama', () => {
   const all = (fn: (i: number) => Partial<AnalogyTrialInput> = () => ({})): AnalogyTrialInput[] =>
@@ -249,6 +272,11 @@ describe('Şekil benzetmeleri: puanlama', () => {
     const same = scoreAnalogy(task, all(() => ({ response: 3 }))).result;
     expect([same.samePosition, analogySamePosition(same)]).toEqual([24, true]);
     expect(ANALOGY_CHANCE_MAX).toBe(9);
+    // Yalnızca 1. düzeye dört sorunun üçüyle ulaşan ve en çok 9 doğru veren: rastgele seçimden ayırt edilemez.
+    const weak1 = scoreAnalogy(task, all((i) => (i === 0 || i >= 6 ? { response: analogyLureOption(cell(i)) } : {}))).result;
+    expect([weak1.correct, weak1.reached, analogyChance(weak1)]).toEqual([5, 1, true]);
+    const full1 = scoreAnalogy(task, all((i) => (i >= 6 ? { response: analogyLureOption(cell(i)) } : {}))).result;
+    expect([full1.correct, full1.reached, analogyChance(full1)]).toEqual([6, 1, false]);
     expect(ANALOGY_LURE_NOTE).toBe(3);
     const mixed = scoreAnalogy(task, all((i) => (i < 12 ? { rtMs: 5000 } : { response: analogyLureOption(cell(i)), rtMs: 30_000 }))).result;
     expect([mixed.medianRtCorrect, mixed.medianRt]).toEqual([5000, 17_500]);
@@ -284,7 +312,33 @@ describe('Şekil benzetmeleri: puanlama', () => {
     }
     const copyMany = scoreAnalogy(task, all((i) => (task.optionLures[i].includes('copy') ? { response: analogyLureOption(cell(i), 'copy') } : {}))).result;
     expect(ANALOGY_LURES_ORDER.filter((k) => analogyLureStandsOut(copyMany, k))).toEqual(['copy']);
-    expect(ANALOGY_LURE_P).toBe(0.05);
+    expect(ANALOGY_LURE_P).toBe(0.0125);
+  });
+
+  it('rastgele yanlışlar nadiren bir yanılgı ya da bir değişiklik türü gibi görünür (benzetim)', () => {
+    // Yanlışları seçenekler arasından rastgele seçen, her soruyu yarı olasılıkla doğru bilen 400 kişi.
+    let seed = 20261027;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
+    let read = 0;
+    let lureFlag = 0;
+    let typeFlag = 0;
+    for (let n = 0; n < 400; n++) {
+      const r = scoreAnalogy(
+        task,
+        all((i) => {
+          if (rnd() < 0.5) return {};
+          const wrongs = [1, 2, 3, 4].filter((p) => p !== task.answers[i]);
+          return { response: wrongs[Math.floor(rnd() * 3)] };
+        }),
+      ).result;
+      if (analogyChance(r) || analogySamePosition(r)) continue;
+      read++;
+      if (ANALOGY_LURES_ORDER.some((k) => analogyLureStandsOut(r, k))) lureFlag++;
+      if (r.types.some((x) => x.applied * 2 <= x.n && x.missP <= ANALOGY_TYPE_P)) typeFlag++;
+    }
+    expect(read).toBeGreaterThan(300);
+    expect(lureFlag / read).toBeLessThan(0.05);
+    expect(typeFlag / read).toBeLessThan(0.05);
   });
 
   it('aynı sıradaki seçenek: çok doğru cevap verende bakmadan seçmeye bağlanmaz', () => {
@@ -349,7 +403,7 @@ describe('Şekil benzetmeleri: rapor', () => {
       const r = evaluate(SLUG, analogyBody((q) => ({ response: q.lures.includes(k) && q.level >= 2 ? analogyLureOption(q, k) : q.answer, rtMs: 15_000 })));
       const n = task.optionLures.filter((ls, i) => ls.includes(k) && task.items[i].level >= 2).length;
       expect(r.student.items[3].badge, k).toBe(`${ANALOGY_LURE_NAMES[k]} öne çıkıyor`);
-      expect(r.student.items[3].text, k).toContain(`${n} yanlış cevabının hepsinde ${ANALOGY_LURE_SEEN[k]} seçildi. Bu, rastgele seçimle açıklanamayacak kadar sık.`);
+      expect(r.student.items[3].text, k).toContain(`${n} yanlış cevabının hepsinde ${ANALOGY_LURE_SEEN[k]} seçildi. Bu, rastgele seçimde beklenenden belirgin biçimde sık.`);
       expect(r.parent.items[3].text, k).toContain('Çocuğunuz');
       expect(r.student.items[0].text, k).toContain('öne çıkan yanılgı için “Yanlışlarda seçilen şekiller” kartına bak.');
     }
@@ -378,14 +432,29 @@ describe('Şekil benzetmeleri: rapor', () => {
     // Bir türde zorlanma: döndürme ve ayna değişikliklerinin geçtiği her soruda döndürmeyi kaçıran şekil seçiliyor. Öteki
     // değişiklikler o sorularda da doğru uygulandığı için yalnızca bu tür zor görünür.
     const turn = evaluate(SLUG, analogyBody((q) => ({ response: task.items[q.i].changes.includes('turn') ? analogyMissOption(q, 'turn') : q.answer, rtMs: 12_000 })));
-    expect(turn.student.items[2].badge).toBe('3 değişiklik türünün 2 tanesi soruların çoğunda doğru uygulandı');
-    expect(turn.student.items[2].text).toContain('“Renk ve büyüklük” ve “yer ve sayı” değişikliklerini geçtikleri soruların çoğunda doğru uyguladın; “döndürme ve ayna” değişikliklerinde zorlandın.');
-    expect(turn.student.items[2].text).toContain(ANALOGY_TYPES.turn.plain);
+    expect(turn.student.items[2].badge).toBe('3 değişiklik türünün 2 tanesi, geçtiği soruların çoğunda doğru uygulandı');
+    expect(turn.student.items[2].text).toContain(
+      '“Renk ve büyüklük” ve “yer ve sayı” değişikliklerini geçtikleri soruların çoğunda doğru uyguladın. “Döndürme ve ayna” değişikliklerinde zorlandın: yanlış cevaplarında bu değişiklikler, seçeneklerden rastgele seçimde beklenenden belirgin biçimde daha sık kaçırılmıştı.',
+    );
+    expect(turn.student.items[2].text).toContain(`Bu değişikliklerde ${ANALOGY_TYPES.turn.plain} gerekir.`);
     expect(turn.student.items[2].text).toContain('her değişiklik ayrı sayıldı');
     expect(turn.parent.items[2].text).toContain('Çocuğunuz “renk ve büyüklük” ve “yer ve sayı” değişikliklerini geçtikleri soruların çoğunda doğru uyguladı');
     const turnBars = turn.student.roadmap!.bars.map((b) => b.valueLabel);
     expect(turnBars[1]).toBe('0/15');
     expect(turn.student.items[2].visual?.type === 'bars' ? turn.student.items[2].visual.rows.map((x) => x.valueLabel) : []).toEqual(turnBars);
+
+    // Yanlışların hepsi fazladan değişiklik: gereken değişikliklerin hepsi uygulanmış; kart bunu yanlışlarla çelişmeden söyler.
+    const extra = evaluate(SLUG, analogyBody((q) => ({ response: q.level >= 3 && q.lures.includes('extra') ? analogyLureOption(q, 'extra') : q.answer, rtMs: 12_000 })));
+    expect(extra.student.items[2].badge).toBe('Gereken değişikliklerin hepsi uygulandı');
+    expect(extra.student.items[2].text).toContain('Yanlış cevaplarında gereken değişiklikler yapılmış ama fazladan bir değişiklik de yapılmıştı (“Yanlışlarda seçilen şekiller” kartına bak).');
+    expect(extra.parent.items[2].text).toContain('(“Yanlışlarda seçilen şekiller” kartına bakın).');
+    expect(extra.student.items[3].badge).toBe('Fazladan değişiklik öne çıkıyor');
+
+    // Değişmemiş şekil: bütün türler kaçırılmış sayılır ama hiçbir tür ayrıca "zor" denmez; kart bunu söyler.
+    const copy = evaluate(SLUG, analogyBody((q) => ({ response: q.level >= 2 && q.lures.includes('copy') ? analogyLureOption(q, 'copy') : q.answer, rtMs: 12_000 })));
+    expect(copy.student.items[2].text).not.toContain('zorlandın');
+    expect(copy.student.items[2].text).toContain('Değişmemiş şekli seçtiğin sorularda hiçbir değişiklik uygulanmamış sayıldı');
+    expect(copy.student.items[3].badge).toBe('Değişmemiş şekil öne çıkıyor');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {
@@ -457,7 +526,7 @@ describe('Şekil benzetmeleri: rapor', () => {
               if (doubt) expect(r.items[4].text, label).not.toMatch(/zaman ayır|yakın süreler/);
               if (!chance) expect(/şekillere bakmadan seçmiş/.test(r.items[0].text), label).toBe(doubt);
               const yan = r.items[3].text;
-              expect(yan.includes('rastgele seçimle açıklanamayacak kadar sık'), label).toBe(noted.length > 0);
+              expect(yan.includes('rastgele seçimde beklenenden belirgin biçimde sık'), label).toBe(noted.length > 0);
               for (const k of noted) {
                 const many = result.luresByKind[k] === result.wrong ? 'hepsinde' : `${result.luresByKind[k]} tanesinde`;
                 expect(yan, `${label} ${k}`).toContain(`${many} ${ANALOGY_LURE_SEEN[k]} seçildi`);
@@ -490,7 +559,15 @@ describe('Şekil benzetmeleri: rapor', () => {
                 const rows = r.items[2].visual?.type === 'bars' ? r.items[2].visual.rows : [];
                 expect(rows.map((x) => x.valueLabel), label).toEqual(result.types.map((x) => `${x.applied}/${x.n}`));
                 const good = result.types.filter((x) => x.applied * 2 > x.n).length;
-                expect(r.items[2].badge, label).toMatch(good === 3 ? / hepsi / : good === 0 ? / hiçbiri / : new RegExp(` ${good === 1 ? 'biri' : `${good} tanesi`} `));
+                expect(r.items[2].badge, label).toMatch(good === 3 ? / hepsi[ ,]|^Gereken değişikliklerin hepsi/ : good === 0 ? / hiçbiri,/ : new RegExp(` ${good === 1 ? 'biri' : `${good} tanesi`},`));
+                // "Zorlandı" yalnızca o tür yanlışlarda rastgele seçimde beklenenden belirgin sık kaçırıldıysa.
+                const flagged = result.types.filter((x) => x.applied * 2 <= x.n && x.missP <= ANALOGY_TYPE_P).length;
+                expect(/zorlandın?:/.test(r.items[2].text), label).toBe(flagged > 0);
+                if (result.types.every((x) => x.applied === x.n)) {
+                  expect(r.items[2].badge, label).toBe(result.wrong === 0 ? '3 değişiklik türünün hepsi bütün sorularda doğru uygulandı' : 'Gereken değişikliklerin hepsi uygulandı');
+                }
+                expect(r.items[2].text.includes('her değişiklik ayrı sayıldı'), label).toBe(result.wrong > 0);
+                expect(r.items[2].text.includes('türler arasındaki küçük farklar'), label).toBe(result.wrong > 0 && good < 3);
               } else expect(r.items[2].visual, label).toBeUndefined();
               expect(r.items[0].text.includes('Yanlışlarda seçilen şekiller” kartına'), label).toBe(noted.length > 0);
               if (noted.length || doubt) expect(r.items[0].text + r.items[1].text, label).not.toMatch(/dağılmasından/);

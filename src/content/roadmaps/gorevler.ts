@@ -1834,7 +1834,7 @@ const benzetmeBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (şekillerle benzetme kurmayı) gösterir.',
     'Küçük çocuklar, üçüncü şekle görünüşçe benzeyen yanlış seçeneği seçmeye daha yatkındır; bu eğilim yaşla azalır. Benzetme kurma becerisi çocukluk ve ergenlik boyunca gelişir.',
-    'Akıl yürütme becerileri alıştırmayla bir ölçüde gelişebilir; araştırmalarda bu tür eğitimlerin etkisi orta büyüklükte bulunmuştur. Tek bir sonuç kesin bir yargı için yeterli değildir.',
+    'Benzetme kurmayı öğreten eğitimler bu tür sorulardaki sonucu yükseltebilir; ancak bu çalışmaların çoğu küçüktür ve kazancın başka işlere ne kadar yansıdığı kesin değildir. Tek bir sonuç kesin bir yargı için yeterli değildir.',
   ],
 );
 /** Yetişkine: gelişimle ilgili cümle yerine sonucun sınırlarıyla ilgili bilgi. */
@@ -1873,12 +1873,12 @@ const sekilBenzetmeleri: TaskRoadmapTemplate = {
       'Çocuğunuzdan farkları tek tek söylemesini isteyin: “Siyah oldu, çeyrek tur döndü, yeri değişmedi.” Renk, büyüklük, yön, yer ve sayıyı sırayla denetlemek, bir değişikliği gözden kaçırmasını ya da fazladan bir şey değiştirmesini önleyebilir. Küçük çocuklarla yapılan bir çalışmada ilişkiyi sözcüklerle söylemek doğru cevapları biraz artırmıştır.',
     )),
     support(2, 'kur', 'Cevabı kur, sonra denetle', 'Yöntem', t(
-      'Bulduğun değişiklikleri üçüncü şekle uygulayıp cevabı zihninde kur; sonra seçeneklerde onu ara ve seçtiğin şekli her değişikliğe göre bir kez daha denetle. Bir araştırmada, soru ile seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
-      'Çocuğunuza, bulduğu değişiklikleri üçüncü şekle uygulayıp cevabı zihninde kurmasını, sonra seçeneklerde onu aramasını önerin. Seçtiği şekli her değişikliğe göre bir kez daha denetlemesi yardımcı olabilir. Bir araştırmada, soru ile seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
+      'Bulduğun değişiklikleri üçüncü şekle uygulayıp cevabı zihninde kur; sonra seçeneklerde onu ara ve seçtiğin şekli her değişikliğe göre bir kez daha denetle. Şekil matrisleriyle yapılan bir araştırmada, soru ile seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
+      'Çocuğunuza, bulduğu değişiklikleri üçüncü şekle uygulayıp cevabı zihninde kurmasını, sonra seçeneklerde onu aramasını önerin. Seçtiği şekli her değişikliğe göre bir kez daha denetlemesi yardımcı olabilir. Şekil matrisleriyle yapılan bir araştırmada, soru ile seçenekler arasında daha az gidip gelenlerin daha çok soruyu doğru cevapladığı görülmüştür.',
     )),
     support(3, 'oyun', 'Benzetme oyunları', 'Etkinlik', t(
-      '“Kuş yuvaya neyse arı da kovana” gibi benzetmeler kurmak ve iki örneğin nasıl benzediğini bulmak, ilişkileri fark etmeyi keyifli bir uğraşa dönüştürür. Pek çok araştırmayı birleştiren bir incelemede akıl yürütme eğitimlerinin etkisi orta büyüklükte bulunmuştur. Yine de bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç, karşılaştırmaktan keyif almaktır.',
-      '“Kuş yuvaya neyse arı da kovana” gibi benzetmeler kurmak ve iki örneğin nasıl benzediğini bulmak, çocuğunuz için ilişkileri fark etmeyi keyifli bir uğraşa dönüştürür. Pek çok araştırmayı birleştiren bir incelemede akıl yürütme eğitimlerinin etkisi orta büyüklükte bulunmuştur. Yine de bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç, karşılaştırmaktan keyif almaktır.',
+      '“Kuş yuvaya neyse arı da kovana” gibi benzetmeler kurmak ve iki örneğin nasıl benzediğini bulmak, ilişkileri fark etmeyi keyifli bir uğraşa dönüştürür. Karşılaştırmayı öğreten eğitimleri birleştiren bir incelemede bu eğitimlerden sonra akıl yürütme testlerindeki sonuçlar yükselmiştir; ama çalışmaların çoğu küçüktür. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç, karşılaştırmaktan keyif almaktır.',
+      '“Kuş yuvaya neyse arı da kovana” gibi benzetmeler kurmak ve iki örneğin nasıl benzediğini bulmak, çocuğunuz için ilişkileri fark etmeyi keyifli bir uğraşa dönüştürür. Karşılaştırmayı öğreten eğitimleri birleştiren bir incelemede bu eğitimlerden sonra akıl yürütme testlerindeki sonuçlar yükselmiştir; ama çalışmaların çoğu küçüktür. Bir oyunda ustalaşmak her işe kendiliğinden yansımaz; asıl kazanç, karşılaştırmaktan keyif almaktır.',
     )),
   ],
   facts: benzetmeFacts,
@@ -1891,8 +1891,8 @@ const sekilBenzetmeleri: TaskRoadmapTemplate = {
     {
       title: 'Fark avı',
       text: t(
-        'Bu hafta birbirine benzeyen iki resim ya da eşya bul ve aralarındaki bütün farkları yaz: renk, büyüklük, yön, yer ve sayı. Hangi farkı en son fark ettiğini de not et.',
-        'Bu hafta çocuğunuzla birbirine benzeyen iki resim ya da eşya bulun ve aralarındaki bütün farkları yazın: renk, büyüklük, yön, yer ve sayı. Hangi farkı en son fark ettiğini sorun.',
+        'Bu hafta birbirine benzeyen iki resim ya da eşya bul ve aralarındaki bütün farkları yaz: renk, büyüklük, yön, yer ve sayı. Hangi farkı en son gördüğünü de not et.',
+        'Bu hafta çocuğunuzla birbirine benzeyen iki resim ya da eşya bulun ve aralarındaki bütün farkları yazın: renk, büyüklük, yön, yer ve sayı. Hangi farkı en son gördüğünü sorun.',
       ),
     },
     {
@@ -1920,7 +1920,7 @@ const sekilBenzetmeleri: TaskRoadmapTemplate = {
     parent: 'çocuğunuzun şekillerdeki kuralları bulmasını ve sözcüklerle akıl yürütmesini de görmek',
   },
   links: [],
-  sources: [KAYNAK.starr2018, KAYNAK.glady2017, KAYNAK.laurence, KAYNAK.klauer2008, KAYNAK.thibaut2010],
+  sources: [KAYNAK.blum2018, KAYNAK.starr2018, KAYNAK.glady2017, KAYNAK.laurence, KAYNAK.klauer2008, KAYNAK.thibaut],
 };
 
 const bakisAcisiAlma: TaskRoadmapTemplate = {

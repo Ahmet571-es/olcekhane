@@ -614,7 +614,7 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    biraz güçlü; bütün sitede birlikte yumuşatılabilir.
 4. **Şekil Benzetmeleri: yayında (2026-10-27, pilot; 3. sınıftan yetişkine).** Geometrik benzetme (A : B :: C : ?), yeni
    görev türü `figural_analogy`: 24 özgün soru, beş düzey (1: tek renk ya da büyüklük; 2: tek döndürme, ayna, yer ya da sayı;
-   3: bir parçada iki; 4: iki parçada birer; 5: üç değişiklik), dört seçenek, geri bildirimli iki alıştırma. Çizim ve
+   3: bir parçada iki; 4: iki parçada birer; 5: üç değişiklik), dört seçenek, geri bildirimli üç alıştırma. Çizim ve
    dönüşümler `lib/instruments/analogy.ts` (12 biçim; renk, büyüklük, duruş, yer, sayı, iki parçanın yer değiştirmesi). C,
    A'dan biçimiyle ayrılır, değişen özellikler C'de A'daki gibi başlar (mutlak ve göreli okuma aynı cevabı verir). Yanlış
    seçenek türleri: değişmemiş şekil, eksik değişiklik, yanlış değişiklik, fazladan değişiklik (değişmemesi gereken özellik
@@ -630,10 +630,15 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    Tversky (1987), Stevenson ve ark. (2013, 2014a, 2014b), Lovett ve Forbus (2012), Becker ve ark. (2016), Laurence ve ark.
    (2018), Starr ve ark. (2018), Glady ve ark. (2017), Tunteler ve ark. (2008), Thibaut ve ark. (2010), Richland ve ark.
    (2006), Doumas ve ark. (2018), Klauer ve Phye (2008), Hu ve ark. (2021), Blum ve ark. (2011), Csapó (1997), Vendetti ve
-   ark. (2015), Scharfen ve ark. (2018); açılamayan kaynaklar (Mulholland, Bethell-Fox, Sternberg, Arendasy ve Sommer,
+   ark. (2015), Scharfen ve ark. (2018), Sertel (2019; ASİS); açılamayan kaynaklar (Mulholland, Bethell-Fox, Sternberg, Arendasy ve Sommer,
    Hosenfeld) yalnızca "aktaran". Türkiye'de Türkçe normları yayımlanmış bir şekil benzetmesi uyarlaması bulunamadı.
+   Sürüm 2 (2026-10-27): üç alıştırma (renk, ayna görüntüsü, iki değişiklik), seçenek türleri A–D arasında dengeli.
    Telefonda dokunarak ve masaüstünde klavyeyle (yetişkin) baştan sona çözüldü, PDF'ler açıldı. İki bağımsız inceleme (metin
-   ve mantık; kaynak ve sayı) yayından sonra bitti; bulguları ayrı işlemeyle uygulanır.
+   ve mantık; kaynak ve sayı) bulguları sürüm 2'de uygulandı (ayrıntı "Son yapılanlar"da). Açık notlar: (1) Gizli Şekiller ve
+   Küp Açınımı'nda yanılgının "öne çıkması" hâlâ tür başına %5 eşiğiyle ve "rastgele seçimle açıklanamayacak kadar sık"
+   cümlesiyle; benzetimde rastgele yanlışların ~%11'i bir türü öne çıkarıyordu, bu testte eşik %5/4'e indi; ötekiler de
+   aynı biçimde düzeltilebilir. (2) Ulaşılan düzey (bütün düzeyli şekil testlerinde ortak kural) aradaki %60'ın altındaki bir
+   düzeyin üstüne çıkabiliyor; ortak kural olduğu için değiştirilmedi.
 5. Öz-denetim (kişilik; IPIP)
 6. Harf-Sayı Sıralama (zekâ; özgün görev)
 7. Merak (kişilik; IPIP, VIA dışı ölçek)
@@ -1023,6 +1028,18 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-27 (51): Şekil Benzetmeleri sürüm 2: bağımsız incelemelerin bulguları uygulandı. Yanlış seçenek türleri A–D
+  sıraları arasında dengelendi (fazladan değişiklik 11 kez A'daydı; hep aynı sırayı seçmek bir yanılgı gibi görünüyordu;
+  test denetler); ayna görüntüsü alıştırması eklendi (üç alıştırma). Yanılgının öne çıkması için olasılık eşiği %5'ten
+  %1,25'e indi, cümle "rastgele seçimde beklenenden belirgin biçimde sık". Değişiklik türleri kartı: bir türde "zorlandın"
+  yalnızca o tür yanlış cevaplarda rastgele seçimde beklenenden belirgin sık kaçırıldıysa (`missP`, Poisson-binom; değişmemiş
+  şekil cevapları bu karşılaştırmaya girmez); yanlışların hepsi fazladan değişiklikse "Gereken değişikliklerin hepsi
+  uygulandı"; benzetimde rastgele yanlışlar %5'ten az raporda bir türü ya da yanılgıyı öne çıkarıyor (test denetler). Şans
+  kuralı: en çok 9 doğru ve 1. düzeye dört sorunun üçüyle ulaşmak da şans sayılır. Bilim kartı kaynaklarla yeniden
+  karşılaştırıldı: tek değişikliği uygulama olasılığı (.42/.58), "ne" ve "nerede" değişiklikleri, Thibaut'taki seçeneklerin
+  yalnızca bir özelliğinin ortak olduğu, Klauer ve Phye'nin sınırları, resimli ve matris çalışmaları açıkça belirtildi; ASİS'in
+  görsel analojik muhakeme alt testi anıldı (Sertel, 2019); Lovett ve Forbus künyesi bildirinin yayımlandığı yerle düzeldi.
+  Ortak Thibaut künyesindeki sayı numarası (106(1)) geri geldi. Yol haritası: eğitim cümleleri kazanç vaat etmiyor.
 - 2026-10-27 (50): Yeni test Şekil Benzetmeleri yayına alındı (3. listenin 4. testi; ayrıntı yukarıda). Yeni görev türü
   (`figural_analogy`): çizim ve dönüşümler, bağımsız denetleyici, puanlama, beş kartlı rapor, yol haritası. Değişiklik
   türleri kartı her değişikliği ayrı sayar (yanlış cevapta seçilen şeklin kaçırdığı değişiklikler); böylece döndürmede
@@ -1086,14 +1103,3 @@ En yeni üstte; en çok 10 madde tutulur.
   haritasının girişi önerilerin herkes için yazılmış genel öneriler olduğunu söylüyor; veli girişinde "işlerini nasıl
   kolaylaştırabileceğiniz"; bütün görev testlerinde "1 tanesinde", "0 tanesini" gibi nicelik sözleri "birinde",
   "hiçbirini" oldu (sembol eşleştirme, sırayla birleştirme, sayı ve harf dizileri, üç boyutlu döndürme dahil).
-- 2026-10-22 (41): Raporlarda her başlığa grafik, 2. aşamanın 5. grubu (mantıksal akıl yürütme, sayısal akıl yürütme,
-  düşünerek karar verme): soru türlerine göre doğru kararlar, durum ve eşitlik türleri, tuzaklı ve tuzaksız sorulardaki
-  cevaplar, yanlışların türü. Bağımsız incelemenin bulguları uygulandı: soruların çoğu okunamayacak kadar hızlı
-  cevaplandıysa, rastgele seçimin de altında doğru varsa ya da hep aynı cevap verildiyse sonuç yorumlanmıyor (rozet, grafik,
-  öne çıkan sayılar ve üç boyutlu grafik dahil); sayısal testte "Bilmiyorum" artık her kartta söyleniyor, hızlı denen
-  "Bilmiyorum" ve hızlı ama doğru yazılan cevaplar "okumadan cevap verdin" sayılmıyor; inandırıcılık etkisi ve sayısal–sözel
-  farkı yalnızca rastlantının zor açıklayacağı farklarda anlatılıyor; tuzaksız soruların ikisinde tuzak cevabı "her soruda
-  tuzak aramak" sayılmıyor; hiç doğru cevap yoksa "rastgele" denmiyor; "8 sorunun 8 tanesi", "0 tanesi", tam puanda "hemen
-  hepsi" gibi nicelik hataları ortak bir yardımcıyla düzeldi; araştırma cümleleri kaynaklarla uyuşacak biçimde "Bir
-  araştırmada…" diye yazıldı; ilk akla gelen yanlış cevap sayısı öne çıkan sayılardan çıktı. PDF'te dört kutulu satırda uzun
-  değerler küçük yazılıyor. Raporlar telefonda ve masaüstünde açıldı, PDF'ler incelendi.

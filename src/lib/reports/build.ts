@@ -192,6 +192,7 @@ import {
   ANALOGY_LURES_ORDER,
   analogyChance,
   analogyLureStandsOut,
+  ANALOGY_TYPE_P,
   analogyRapid,
   analogySamePosition,
   type AnalogyResult,
@@ -6222,16 +6223,16 @@ export const ANALOGY_LURE_NAMES: Record<AnalogyLure, string> = {
 /** Yanlış seçeneklerin yanılgıları için kısa bir ipucu (yanlışların yorumunda). */
 export const ANALOGY_LURE_TIP: Record<AnalogyLure, { you: string; parent: string }> = {
   copy: {
-    you: 'Seçtiğin şekil üçüncü şekilden hiç farklı değilse birinci ve ikinci şekil arasındaki değişiklik gözden kaçmış olabilir. Önce iki şekil arasındaki farkları tek tek bulmak, sonra her birini üçüncü şekle uygulamak işine yarayabilir.',
-    parent: 'Seçilen şekil üçüncü şekilden hiç farklı değilse birinci ve ikinci şekil arasındaki değişiklik gözden kaçmış olabilir. Çocuğunuzun önce iki şekil arasındaki farkları tek tek bulması, sonra her birini üçüncü şekle uygulaması yardımcı olabilir.',
+    you: 'Üçüncü şeklin hiç değişmemiş hâlini seçmek, birinci ve ikinci şekil arasındaki değişikliğin gözden kaçtığını düşündürebilir. Önce iki şekil arasındaki farkları tek tek bulmak, sonra her birini üçüncü şekle uygulamak işine yarayabilir.',
+    parent: 'Üçüncü şeklin hiç değişmemiş hâlini seçmek, birinci ve ikinci şekil arasındaki değişikliğin gözden kaçtığını düşündürebilir. Çocuğunuzun önce iki şekil arasındaki farkları tek tek bulması, sonra her birini üçüncü şekle uygulaması yardımcı olabilir.',
   },
   partial: {
     you: 'Birden çok şey değiştiğinde birini bulunca durmak kolaydır. Farkları bulduktan sonra “Başka ne değişti?” diye sormak ve seçtiğin şekli her farka göre ayrı ayrı denetlemek işine yarayabilir.',
     parent: 'Birden çok şey değiştiğinde birini bulunca durmak kolaydır. Çocuğunuzun farkları bulduktan sonra “Başka ne değişti?” diye sorması ve seçtiği şekli her farka göre ayrı ayrı denetlemesi yardımcı olabilir.',
   },
   wrong: {
-    you: 'Bir değişikliği bulmak yetmez; yönüne, ölçüsüne ve hangi parçada olduğuna da bakmak gerekir. Şeklin saat yönünde mi tersine mi döndüğünü, çeyrek tur mu yarım tur mu döndüğünü, döndü mü yoksa ayna görüntüsüne mi çevrildiğini ve hangi parçanın değiştiğini denetlemek işine yarayabilir.',
-    parent: 'Bir değişikliği bulmak yetmez; yönüne, ölçüsüne ve hangi parçada olduğuna da bakmak gerekir. Çocuğunuzun şeklin saat yönünde mi tersine mi döndüğünü, çeyrek tur mu yarım tur mu döndüğünü, döndü mü yoksa ayna görüntüsüne mi çevrildiğini ve hangi parçanın değiştiğini denetlemesi yardımcı olabilir.',
+    you: 'Bir şeyin değiştiğini görmek yetmez; neyin değiştiğine (renk mi, büyüklük mü, yön mü, yer mi), ne kadar değiştiğine ve hangi parçada değiştiğine de bakmak gerekir. Rengin griye mi siyaha mı döndüğünü, şeklin saat yönünde mi tersine mi, çeyrek tur mu yarım tur mu döndüğünü, döndü mü yoksa ayna görüntüsüne mi çevrildiğini denetlemek işine yarayabilir.',
+    parent: 'Bir şeyin değiştiğini görmek yetmez; neyin değiştiğine (renk mi, büyüklük mü, yön mü, yer mi), ne kadar değiştiğine ve hangi parçada değiştiğine de bakmak gerekir. Çocuğunuzun rengin griye mi siyaha mı döndüğünü, şeklin saat yönünde mi tersine mi, çeyrek tur mu yarım tur mu döndüğünü, döndü mü yoksa ayna görüntüsüne mi çevrildiğini denetlemesi yardımcı olabilir.',
   },
   extra: {
     you: 'Değişmeyen şeyler de kuralın parçasıdır: birinci ve ikinci şekilde aynı kalan bir özellik üçüncü şekilde de aynı kalmalı. Cevabın ikinci şekle benzemesi gerekmez; üçüncü şekle aynı değişikliklerin uygulanması gerekir.',
@@ -6308,14 +6309,31 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
 
   /* Değişiklik türleri */
   // Her değişiklik ayrı sayılır (scoreAnalogy, `types`): yanlış cevapta seçilen şekilde doğru uygulanan değişiklikler de
-  // uygulanmış sayılır. Kartlar "soruların çoğu" der: ölçüt, türün geçtiği soruların yarısından fazlasında uygulanmasıdır.
+  // uygulanmış sayılır. "Soruların çoğu": türün sınandığı soruların yarısından fazlası. Bir türde "zorlandın" yalnızca o tür,
+  // yanlış cevaplarda rastgele seçimde beklenenden belirgin sık kaçırıldıysa denir (`missP`): türler yanlış seçeneklerde
+  // farklı sıklıkta kaçırıldığı için yalnızca uygulanma oranına bakmak bazı türleri hep zor gösterirdi.
   const most = (x: { applied: number; n: number }) => x.applied * 2 > x.n;
   const good = r.types.filter(most).map((x) => x.type);
-  const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
-  const method = v(
-    ' Bir soruda birden çok değişiklik olabildiği için her değişiklik ayrı sayıldı: yanlış cevaplarda bile seçtiğin şekilde doğru uyguladığın değişiklikler uygulanmış sayıldı. Renk ve büyüklük değişiklikleri en kolay düzeyde de sorulduğu için bu türde sonuç biraz daha yüksek çıkabilir; türler arasındaki fark yaklaşık bir fikir verir.',
-    ' Bir soruda birden çok değişiklik olabildiği için her değişiklik ayrı sayıldı: yanlış cevaplarda bile seçilen şekilde doğru uygulanan değişiklikler uygulanmış sayıldı. Renk ve büyüklük değişiklikleri en kolay düzeyde de sorulduğu için bu türde sonuç biraz daha yüksek çıkabilir; türler arasındaki fark yaklaşık bir fikir verir.',
-  );
+  const weak = r.types.filter((x) => !most(x));
+  const flagged = weak.filter((x) => x.missP <= ANALOGY_TYPE_P).map((x) => x.type);
+  const unflagged = weak.filter((x) => x.missP > ANALOGY_TYPE_P).map((x) => x.type);
+  // Değişmemiş şekil notu ve türleri karşılaştırma uyarısı yalnızca bir türün çoğunda uygulanmadığı raporda gerekir.
+  const copyNote =
+    r.luresByKind.copy > 0 && weak.length > 0
+      ? v(
+          ' Değişmemiş şekli seçtiğin sorularda hiçbir değişiklik uygulanmamış sayıldı; bu cevaplar hangi türde zorlandığına karar verirken kullanılmadı.',
+          ' Değişmemiş şeklin seçildiği sorularda hiçbir değişiklik uygulanmamış sayıldı; bu cevaplar hangi türde zorlanıldığına karar verirken kullanılmadı.',
+        )
+      : '';
+  const method =
+    r.wrong === 0
+      ? ''
+      : v(
+          ' Bir soruda birden çok değişiklik olabildiği için her değişiklik ayrı sayıldı: yanlış cevaplarda bile seçtiğin şekilde doğru uyguladığın değişiklikler uygulanmış sayıldı.',
+          ' Bir soruda birden çok değişiklik olabildiği için her değişiklik ayrı sayıldı: yanlış cevaplarda bile seçilen şekilde doğru uygulanan değişiklikler uygulanmış sayıldı.',
+        ) +
+        copyNote +
+        (weak.length > 0 ? ' Türler yanlış seçeneklerde farklı sıklıkta yer aldığı için türler arasındaki küçük farklar yorumlanmamalıdır.' : '');
   let tur: CognitiveBlock;
   if (chance || doubt) {
     tur = {
@@ -6327,32 +6345,64 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
     };
   } else {
     const all = r.types.every((x) => x.applied === x.n);
+    const nT = r.types.length;
     const head = all
-      ? `${r.types.length} değişiklik türünün hepsi bütün sorularda doğru uygulandı`
-      : good.length === r.types.length
-        ? `${r.types.length} değişiklik türünün hepsi soruların çoğunda doğru uygulandı`
+      ? r.wrong === 0
+        ? `${nT} değişiklik türünün hepsi bütün sorularda doğru uygulandı`
+        : 'Gereken değişikliklerin hepsi uygulandı'
+      : good.length === nT
+        ? `${nT} değişiklik türünün hepsi, geçtiği soruların çoğunda doğru uygulandı`
         : good.length === 0
-          ? `${r.types.length} değişiklik türünün hiçbiri soruların çoğunda doğru uygulanmadı`
-          : `${r.types.length} değişiklik türünün ${good.length === 1 ? 'biri' : `${good.length} tanesi`} soruların çoğunda doğru uygulandı`;
+          ? `${nT} değişiklik türünün hiçbiri, geçtiği soruların çoğunda doğru uygulanmadı`
+          : `${nT} değişiklik türünün ${good.length === 1 ? 'biri' : `${good.length} tanesi`}, geçtiği soruların çoğunda doğru uygulandı`;
     let text: string;
-    if (all || good.length === r.types.length) {
+    if (all || good.length === nT) {
       const q = all ? 'hepsinde' : 'çoğunda';
       text = v(
         `Üç değişiklik türünün her birini, geçtiği soruların ${q} doğru uyguladın: renk ve büyüklük, döndürme ve ayna görüntüsü, yer ve sayı değişikliklerini görüp üçüncü şekle aktarabildin.`,
         `Çocuğunuz üç değişiklik türünün her birini, geçtiği soruların ${q} doğru uyguladı: renk ve büyüklük, döndürme ve ayna görüntüsü, yer ve sayı değişikliklerini görüp üçüncü şekle aktarabildi.`,
       );
-    } else if (good.length === 0) {
-      const best = [...r.types].sort((a, b) => b.applied / b.n - a.applied / a.n)[0];
-      text = v(
-        `Hiçbir değişiklik türünü, geçtiği soruların çoğunda doğru uygulayamadın; en çok ${analogyTypeList([best.type])} değişikliklerini doğru uyguladın.`,
-        `Çocuğunuz hiçbir değişiklik türünü, geçtiği soruların çoğunda doğru uygulayamadı; en çok ${analogyTypeList([best.type])} değişikliklerini doğru uyguladı.`,
-      );
+      if (all && r.wrong > 0) {
+        text += v(
+          ' Yanlış cevaplarında gereken değişiklikler yapılmış ama fazladan bir değişiklik de yapılmıştı (“Yanlışlarda seçilen şekiller” kartına bak).',
+          ' Yanlış cevaplarda gereken değişiklikler yapılmış ama fazladan bir değişiklik de yapılmıştı (“Yanlışlarda seçilen şekiller” kartına bakın).',
+        );
+      }
     } else {
-      const needs = hard.map((x) => capTr(`${analogyTypeList([x])} değişikliklerinde ${ANALOGY_TYPES[x].plain} gerekir.`)).join(' ');
-      text = v(
-        `${capTr(analogyTypeList(good))} değişikliklerini geçtikleri soruların çoğunda doğru uyguladın; ${analogyTypeList(hard)} değişikliklerinde zorlandın. ${needs}`,
-        `Çocuğunuz ${analogyTypeList(good)} değişikliklerini geçtikleri soruların çoğunda doğru uyguladı; ${analogyTypeList(hard)} değişikliklerinde zorlandı. ${needs}`,
-      );
+      const goodPart =
+        good.length > 0
+          ? v(
+              `${capTr(analogyTypeList(good))} değişikliklerini geçtikleri soruların çoğunda doğru uyguladın.`,
+              `Çocuğunuz ${analogyTypeList(good)} değişikliklerini geçtikleri soruların çoğunda doğru uyguladı.`,
+            )
+          : v('Hiçbir değişiklik türünü, geçtiği soruların çoğunda doğru uygulayamadın.', 'Çocuğunuz hiçbir değişiklik türünü, geçtiği soruların çoğunda doğru uygulayamadı.');
+      if (flagged.length > 0) {
+        const needs =
+          flagged.length === 1
+            ? `Bu değişikliklerde ${ANALOGY_TYPES[flagged[0]].plain} gerekir.`
+            : flagged.map((x) => capTr(`${analogyTypeList([x])} değişikliklerinde ${ANALOGY_TYPES[x].plain} gerekir.`)).join(' ');
+        const rest =
+          unflagged.length > 0
+            ? v(
+                ` ${capTr(analogyTypeList(unflagged))} değişikliklerini de soruların yarısında ya da daha azında uyguladın; ama bu, yanlış seçeneklerin kuruluşuyla da açıklanabilir.`,
+                ` ${capTr(analogyTypeList(unflagged))} değişikliklerini de soruların yarısında ya da daha azında uyguladı; ama bu, yanlış seçeneklerin kuruluşuyla da açıklanabilir.`,
+              )
+            : '';
+        text = v(
+          `${goodPart} ${capTr(analogyTypeList(flagged))} değişikliklerinde zorlandın: yanlış cevaplarında bu değişiklikler, seçeneklerden rastgele seçimde beklenenden belirgin biçimde daha sık kaçırılmıştı. ${needs}${rest}`,
+          `${goodPart} ${capTr(analogyTypeList(flagged))} değişikliklerinde zorlandı: yanlış cevaplarında bu değişiklikler, seçeneklerden rastgele seçimde beklenenden belirgin biçimde daha sık kaçırılmıştı. ${needs}${rest}`,
+        );
+      } else if (good.length > 0) {
+        text = v(
+          `${goodPart} ${capTr(analogyTypeList(unflagged))} değişikliklerini ise soruların yarısında ya da daha azında uyguladın. Ama yanlış cevaplarında bu değişikliklerin kaçırılması, seçeneklerden rastgele seçimde beklenenden belirgin biçimde sık değil; bu yüzden bu türde özel olarak zorlandığın söylenemez.`,
+          `${goodPart} ${capTr(analogyTypeList(unflagged))} değişikliklerini ise soruların yarısında ya da daha azında uyguladı. Ama yanlış cevaplarda bu değişikliklerin kaçırılması, seçeneklerden rastgele seçimde beklenenden belirgin biçimde sık değil; bu yüzden bu türde özel olarak zorlandığı söylenemez.`,
+        );
+      } else {
+        text = v(
+          `${goodPart} Yanlış cevaplarında hiçbir tür, seçeneklerden rastgele seçimde beklenenden belirgin biçimde daha sık kaçırılmamış; yani zorluk belirli bir türde değil, soruların bütününde görülüyor.`,
+          `${goodPart} Yanlış cevaplarda hiçbir tür, seçeneklerden rastgele seçimde beklenenden belirgin biçimde daha sık kaçırılmamış; yani zorluk belirli bir türde değil, soruların bütününde görülüyor.`,
+        );
+      }
     }
     tur = { ...card('sb_tur'), headline: head, text: text.replace(/\s+$/, '') + method };
   }
@@ -6384,8 +6434,8 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
       const seen = noted.map((x) => `${r.luresByKind[x] === r.wrong ? 'hepsinde' : `${r.luresByKind[x]} tanesinde`} ${ANALOGY_LURE_SEEN[x]} seçildi`);
       const these = noted.length > 1 ? 'Bunlar' : 'Bu';
       text = v(
-        `${how} ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => ANALOGY_LURE_TIP[x].you).join(' ')}`,
-        `${how} Çocuğunuzun ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => ANALOGY_LURE_TIP[x].parent).join(' ')}`,
+        `${how} ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimde beklenenden belirgin biçimde sık. ${noted.map((x) => ANALOGY_LURE_TIP[x].you).join(' ')}`,
+        `${how} Çocuğunuzun ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimde beklenenden belirgin biçimde sık. ${noted.map((x) => ANALOGY_LURE_TIP[x].parent).join(' ')}`,
       );
     } else if (r.wrong >= ANALOGY_LURE_NOTE) {
       head = 'Belirgin bir yanılgı yok';

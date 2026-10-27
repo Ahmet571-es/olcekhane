@@ -10,6 +10,8 @@ import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './c
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
 const countWord = (n: number) => ['sıfır', 'bir', 'iki', 'üç', 'dört', 'beş'][n] ?? String(n);
+/** "birini", "ikisini", "üçünü": alıştırmanın sonundaki cümlede. */
+const countAcc = (n: number) => ['', 'birini', 'ikisini', 'üçünü', 'dördünü', 'beşini'][n] ?? `${n} tanesini`;
 
 /** Tarayıcı süreyi en çok bu kadar (ms) gönderir. */
 const MAX_RT_MS = 120_000;
@@ -300,7 +302,8 @@ export function FiguralAnalogy({ task, onDone }: { task: FiguralAnalogyTask; onD
           aynı kalmalı.
         </p>
         <p className="measure text-lg">
-          Doğru seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
+          Doğru olduğunu düşündüğün seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu
+          çözelim.
         </p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–4 ya da A–D tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
         <ArmedButton
@@ -323,12 +326,12 @@ export function FiguralAnalogy({ task, onDone }: { task: FiguralAnalogyTask; onD
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${countWord(task.practice.length)} sorudan hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun ${task.practice.length === 2 ? 'ikisini de' : 'hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${countWord(task.practice.length)} sorudan ${countAcc(practiceScore)} doğru cevapladın.`}{' '}
           {low
-            ? 'Önce birinci ve ikinci şekil arasındaki farkları tek tek bul: renk mi, büyüklük mü, yön mü, yer mi, sayı mı değişti? Sonra her birini üçüncü şekle uygula ve değişmeyen şeyleri aynı bırak. İstersen alıştırmayı tekrarlayabilirsin.'
+            ? 'Önce birinci ve ikinci şekil arasındaki farkları tek tek bul: renk mi, büyüklük mü, yön mü, yer mi, sayı mı değişti? Sonra her birini üçüncü şekle uygula ve değişmeyen şeyleri aynı bırak. İstersen alıştırmayı tekrarlayabilirsin. Asıl sorularda cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
         </p>
         <p className="measure text-ink-2">

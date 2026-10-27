@@ -3189,8 +3189,13 @@ export interface AnalogyResult {
    * doğru değiştirip döndürmeyi unutan biri renk değişikliğini uygulamış, döndürmeyi uygulamamış sayılır. Bir tür, yalnızca
    * o türü kaçıran bir yanlış seçeneğin bulunduğu sorularda sınanmış sayılır (yoksa hangi şekil seçilirse seçilsin
    * uygulanmış görünürdü). Bir soruda birden çok tür olabilir.
+   *
+   * `missP`: değişmemiş şekil dışındaki yanlış cevaplarda bu türün kaçırılma sayısı, yanlış seçenekler arasından rastgele
+   * seçimde en az bu kadar olma olasılığı (Poisson-binom). Türler yanlış seçeneklerde farklı sıklıkta kaçırıldığı için
+   * bir türde zorlanıldığı yalnızca bu olasılık küçükse söylenir. Değişmemiş şekil bütün türleri birden kaçırır; o cevaplar
+   * bir türü ötekilerden ayırmadığı için burada sayılmaz.
    */
-  types: { type: AnalogyChange; n: number; applied: number }[];
+  types: { type: AnalogyChange; n: number; applied: number; missP: number }[];
   medianRt: number | null;
   /** Puanlanan soruların cevap süreleri (ms); tipik süre bunların ortancasıdır. Kartın süre şeridi bunları gösterir. */
   rts: number[];
@@ -3211,6 +3216,13 @@ export interface AnalogyResult {
 }
 
 export const ANALOGY_LURES_ORDER: AnalogyLure[] = ['copy', 'partial', 'wrong', 'extra'];
+
+/** Olasılıkları `ps` olan bağımsız denemelerde en az `k` başarı olasılığı (Poisson-binom). */
+function atLeast(ps: number[], k: number): number {
+  let dist = [1];
+  for (const q of ps) dist = [...dist, 0].map((v, j) => v * (1 - q) + (j > 0 ? dist[j - 1] * q : 0));
+  return Math.min(1, dist.slice(k).reduce((a, b) => a + b, 0));
+}
 export const ANALOGY_TYPES_ORDER: AnalogyChange[] = ['look', 'turn', 'place'];
 /** Üç şekli ve dört seçeneği karşılaştırmak için bundan kısa bir süre yetmez (3. düzey ve üstünde en az iki değişiklik var). */
 export const ANALOGY_RAPID_MS = 3000;
@@ -3250,8 +3262,15 @@ export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[
     if (l.correct / l.n >= MATRIX_LEVEL_PASS && upToCorrect / upToN >= MATRIX_LEVEL_PASS) reached = l.level;
   }
   const types = ANALOGY_TYPES_ORDER.map((type) => {
-    const here = scored.filter((x, i) => x.item.changes.includes(type) && task.optionMisses[i].some((m) => m.includes(type)));
-    return { type, n: here.length, applied: here.filter((x) => !x.missed.includes(type)).length };
+    const tested = scored.map((x, i) => ({ x, i })).filter(({ x, i }) => x.item.changes.includes(type) && task.optionMisses[i].some((m) => m.includes(type)));
+    // Değişmemiş şekil dışındaki yanlış cevaplar: rastgele seçimde bu türü kaçıran seçeneğin seçilme olasılığı.
+    const informative = tested.filter(({ x }) => !x.correct && x.lure !== 'copy');
+    const ps = informative.map(({ i }) => {
+      const others = task.optionLures[i].map((l, j) => ({ l, j })).filter(({ l }) => l !== null && l !== 'copy');
+      return others.filter(({ j }) => task.optionMisses[i][j].includes(type)).length / others.length;
+    });
+    const missed = informative.filter(({ x }) => x.missed.includes(type)).length;
+    return { type, n: tested.length, applied: tested.filter(({ x }) => !x.missed.includes(type)).length, missP: round(atLeast(ps, missed), 4) };
   }).filter((x) => x.n > 0);
   const luresByKind = Object.fromEntries(ANALOGY_LURES_ORDER.map((k) => [k, scored.filter((x) => x.lure === k).length])) as Record<AnalogyLure, number>;
   const offeredByKind = Object.fromEntries(ANALOGY_LURES_ORDER.map((k) => [k, task.optionLures.flat().filter((x) => x === k).length])) as Record<AnalogyLure, number>;
@@ -3263,9 +3282,7 @@ export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[
         const wrongs = task.optionLures[i].filter((x) => x !== null);
         return wrongs.filter((x) => x === k).length / wrongs.length;
       });
-      let dist = [1];
-      for (const q of ps) dist = [...dist, 0].map((v, j) => v * (1 - q) + (j > 0 ? dist[j - 1] * q : 0));
-      return [k, round(Math.min(1, dist.slice(luresByKind[k]).reduce((a, b) => a + b, 0)), 4)];
+      return [k, round(atLeast(ps, luresByKind[k]), 4)];
     }),
   ) as Record<AnalogyLure, number>;
   const rts = (xs: typeof scored) => xs.flatMap((x) => (x.rt === null ? [] : [x.rt]));
@@ -3296,17 +3313,26 @@ export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[
   };
 }
 
-/** Şekil benzetmelerinde şans düzeyi (öteki şekil testlerindeki gibi: hiçbir düzeye ulaşılmadıysa). */
-export const analogyChance = (r: AnalogyResult) => r.correct <= ANALOGY_CHANCE_MAX && r.reached === 0;
+/**
+ * Şekil benzetmelerinde şans düzeyi: doğrular rastgele seçimle ulaşılabilecek kadar az ve hiçbir düzeye ulaşılmamış ya da
+ * yalnızca 1. düzeye, dört sorunun üçüyle ulaşılmış (rastgele seçen biri bunu yirmide bir olasılıkla yapar).
+ */
+export const analogyChance = (r: AnalogyResult) =>
+  r.correct <= ANALOGY_CHANCE_MAX && (r.reached === 0 || (r.reached === 1 && r.levels[0].correct < r.levels[0].n));
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
 export const analogyRapid = (r: AnalogyResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
 export const ANALOGY_SAME_MAX_CORRECT = 12;
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada ve doğru cevaplar çok değil. */
 export const analogySamePosition = (r: AnalogyResult) => r.samePosition >= Math.ceil(r.n / 2) && r.correct <= ANALOGY_SAME_MAX_CORRECT;
-/** Bir yanılgı türü yanlışlarda en az üç kez ve rastgele seçimde beklenenden belirgin sık (olasılık en çok %5) görülünce anlatılır. */
+/**
+ * Bir yanılgı türü yanlışlarda en az üç kez ve rastgele seçimde beklenenden belirgin sık görülünce anlatılır: dört tür ayrı
+ * ayrı sınandığı için olasılık en çok %5 / 4.
+ */
 export const ANALOGY_LURE_NOTE = 3;
-export const ANALOGY_LURE_P = 0.05;
+export const ANALOGY_LURE_P = 0.0125;
+/** Bir değişiklik türünde zorlanıldığı, o tür yanlışlarda rastgele seçimde beklenenden belirgin sık kaçırıldıysa söylenir. */
+export const ANALOGY_TYPE_P = 0.05;
 export const analogyLureStandsOut = (r: AnalogyResult, k: AnalogyLure) => r.luresByKind[k] >= ANALOGY_LURE_NOTE && r.lureP[k] <= ANALOGY_LURE_P;
 
 /** Şekil benzetmelerinde sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts, analogyBlocks aynı eşikleri kullanır). */

@@ -47,7 +47,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('square')],
     c: [el('hexagon', { size: 1 })],
     ops: [F(0, 'black')],
-    lures: [L('copy'), L('wrong', S(0, 2)), L('wrong', F(0, 'gray'))],
+    lures: [L('wrong', S(0, 2)), L('copy'), L('wrong', F(0, 'gray'))],
     answer: 2,
   },
   {
@@ -57,7 +57,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('circle', { fill: 'gray' })],
     c: [el('star', { fill: 'black' })],
     ops: [S(0, 1)],
-    lures: [L('extra', S(0, 1), F(0, 'gray')), L('wrong', F(0, 'gray')), L('wrong', S(0, 3))],
+    lures: [L('wrong', F(0, 'gray')), L('extra', S(0, 1), F(0, 'gray')), L('wrong', S(0, 3))],
     answer: 4,
   },
   {
@@ -67,7 +67,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('diamond', { fill: 'black' })],
     c: [el('cross', { fill: 'black', size: 1 })],
     ops: [F(0, 'empty')],
-    lures: [L('extra', F(0, 'empty'), S(0, 2)), L('copy'), L('wrong', S(0, 2))],
+    lures: [L('wrong', S(0, 2)), L('copy'), L('extra', F(0, 'empty'), S(0, 2))],
     answer: 1,
   },
   {
@@ -77,7 +77,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('hexagon', { size: 1 })],
     c: [el('circle', { fill: 'gray', size: 1 })],
     ops: [S(0, 2)],
-    lures: [L('extra', S(0, 2), F(0, 'empty')), L('copy'), L('wrong', F(0, 'empty'))],
+    lures: [L('copy'), L('extra', S(0, 2), F(0, 'empty')), L('wrong', F(0, 'empty'))],
     answer: 3,
   },
   {
@@ -87,7 +87,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('ell')],
     c: [el('flag', { fill: 'gray' })],
     ops: [T(0, 90)],
-    lures: [L('copy'), L('wrong', F(0, 'empty')), L('wrong', T(0, 180))],
+    lures: [L('wrong', F(0, 'empty')), L('wrong', T(0, 180)), L('copy')],
     answer: 3,
   },
   {
@@ -97,7 +97,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('flag', { fill: 'gray' })],
     c: [el('wedge', { fill: 'black' })],
     ops: [M(0, 'v')],
-    lures: [L('copy'), L('wrong', F(0, 'gray')), L('wrong', T(0, 180))],
+    lures: [L('wrong', F(0, 'gray')), L('wrong', T(0, 180)), L('copy')],
     answer: 1,
   },
   {
@@ -107,7 +107,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('square', { size: 3 }), el('ell', { fill: 'black', size: 1, slot: 'tl' })],
     c: [el('square', { size: 3 }), el('arrow', { fill: 'gray', size: 1, slot: 'tl' })],
     ops: [MV(1, 'tr')],
-    lures: [L('extra', MV(1, 'tr'), F(1, 'black')), L('copy'), L('wrong', F(1, 'black'))],
+    lures: [L('wrong', F(1, 'black')), L('copy'), L('extra', MV(1, 'tr'), F(1, 'black'))],
     answer: 4,
   },
   {
@@ -127,7 +127,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('wedge', { fill: 'black' })],
     c: [el('arrow')],
     ops: [T(0, 270)],
-    lures: [L('copy'), L('wrong', F(0, 'black')), L('wrong', T(0, 180))],
+    lures: [L('copy'), L('wrong', T(0, 180)), L('wrong', F(0, 'black'))],
     answer: 1,
   },
   {
@@ -147,7 +147,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('ell')],
     c: [el('wedge', { fill: 'gray' })],
     ops: [M(0, 'v'), S(0, 1)],
-    lures: [L('extra', M(0, 'v'), S(0, 1), F(0, 'empty')), L('partial', M(0, 'v')), L('wrong', M(0, 'h'), F(0, 'empty'))],
+    lures: [L('extra', M(0, 'v'), S(0, 1), F(0, 'empty')), L('wrong', M(0, 'h'), F(0, 'empty')), L('partial', M(0, 'v'))],
     answer: 2,
   },
   {
@@ -157,7 +157,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('ell', { fill: 'black', slot: 'l' })],
     c: [el('star', { fill: 'black', size: 1, slot: 'l' })],
     ops: [MV(0, 'r'), F(0, 'gray')],
-    lures: [L('extra', MV(0, 'r'), F(0, 'gray'), S(0, 2)), L('wrong', F(0, 'gray'), S(0, 2)), L('wrong', MV(0, 't'), S(0, 2))],
+    lures: [L('wrong', F(0, 'gray'), S(0, 2)), L('wrong', MV(0, 't'), S(0, 2)), L('extra', MV(0, 'r'), F(0, 'gray'), S(0, 2))],
     answer: 4,
   },
   {
@@ -167,7 +167,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('square', { size: 3 }), el('flag', { fill: 'black', size: 1, slot: 'tl' })],
     c: [el('square', { size: 3 }), el('ell', { fill: 'gray', size: 1, slot: 'tl' })],
     ops: [MV(1, 'tr'), T(1, 180)],
-    lures: [L('partial', MV(1, 'tr')), L('wrong', MV(1, 'tr'), F(1, 'black')), L('wrong', MV(1, 'bl'), M(1, 'v'))],
+    lures: [L('wrong', MV(1, 'tr'), F(1, 'black')), L('wrong', MV(1, 'bl'), M(1, 'v')), L('partial', MV(1, 'tr'))],
     answer: 4,
   },
   {
@@ -177,7 +177,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('ell', { size: 1, count: 2 })],
     c: [el('flag', { fill: 'gray', size: 1, count: 2 })],
     ops: [N(0, 3), T(0, 90)],
-    lures: [L('extra', N(0, 3), T(0, 90), F(0, 'empty')), L('partial', T(0, 90)), L('wrong', T(0, 270), F(0, 'empty'))],
+    lures: [L('partial', T(0, 90)), L('wrong', T(0, 270), F(0, 'empty')), L('extra', N(0, 3), T(0, 90), F(0, 'empty'))],
     answer: 2,
   },
   {
@@ -187,7 +187,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('square', { size: 3 }), el('ell', { fill: 'black', size: 1 })],
     c: [el('circle', { size: 3 }), el('flag', { size: 1 })],
     ops: [F(0, 'gray'), T(1, 90)],
-    lures: [L('extra', F(0, 'gray'), T(1, 90), F(1, 'black')), L('wrong', F(0, 'gray'), F(1, 'black')), L('wrong', F(1, 'gray'), T(1, 90))],
+    lures: [L('wrong', F(0, 'gray'), F(1, 'black')), L('wrong', F(1, 'gray'), T(1, 90)), L('extra', F(0, 'gray'), T(1, 90), F(1, 'black'))],
     answer: 3,
   },
   {
@@ -197,7 +197,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('ell', { slot: 'l' }), el('circle', { fill: 'black', slot: 'r' })],
     c: [el('wedge', { fill: 'gray', slot: 'l' }), el('square', { fill: 'black', slot: 'r' })],
     ops: [SW, F(1, 'gray')],
-    lures: [L('extra', SW, F(1, 'gray'), F(0, 'empty')), L('partial', SW), L('wrong', SW, M(0, 'v'))],
+    lures: [L('partial', SW), L('extra', SW, F(1, 'gray'), F(0, 'empty')), L('wrong', SW, M(0, 'v'))],
     answer: 1,
   },
   {
@@ -207,7 +207,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('square', { size: 3 }), el('ell', { fill: 'black', size: 1, slot: 'tl' })],
     c: [el('square', { size: 3 }), el('wedge', { size: 1, slot: 'tl' })],
     ops: [F(0, 'gray'), MV(1, 'br')],
-    lures: [L('extra', F(0, 'gray'), MV(1, 'br'), F(1, 'black')), L('partial', MV(1, 'br')), L('wrong', MV(1, 'tr'), F(1, 'black'))],
+    lures: [L('wrong', MV(1, 'tr'), F(1, 'black')), L('extra', F(0, 'gray'), MV(1, 'br'), F(1, 'black')), L('partial', MV(1, 'br'))],
     answer: 2,
   },
   {
@@ -227,7 +227,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('ell', { slot: 't' }), el('circle', { fill: 'black', slot: 'b' })],
     c: [el('flag', { fill: 'gray', slot: 't' }), el('hexagon', { fill: 'black', slot: 'b' })],
     ops: [T(0, 180), F(1, 'gray')],
-    lures: [L('extra', T(0, 180), F(1, 'gray'), F(0, 'empty')), L('wrong', T(0, 180), F(0, 'black')), L('wrong', F(1, 'gray'), F(0, 'empty'))],
+    lures: [L('wrong', T(0, 180), F(0, 'black')), L('extra', T(0, 180), F(1, 'gray'), F(0, 'empty')), L('wrong', F(1, 'gray'), F(0, 'empty'))],
     answer: 4,
   },
   {
@@ -247,7 +247,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('flag', { slot: 'l' }), el('square', { fill: 'gray', slot: 'r' })],
     c: [el('ell', { fill: 'gray', slot: 'l' }), el('circle', { fill: 'gray', slot: 'r' })],
     ops: [SW, F(1, 'black'), T(0, 90)],
-    lures: [L('wrong', SW, F(1, 'black'), F(0, 'empty')), L('copy'), L('wrong', SW, M(0, 'v'), T(0, 90), F(0, 'empty'))],
+    lures: [L('copy'), L('wrong', SW, M(0, 'v'), T(0, 90), F(0, 'empty')), L('wrong', SW, F(1, 'black'), F(0, 'empty'))],
     answer: 3,
   },
   {
@@ -267,7 +267,7 @@ const SPECS: AnalogySpec[] = [
     a: [el('flag', { slot: 'l' }), el('ell', { fill: 'gray', slot: 'r' })],
     c: [el('wedge', { slot: 'l' }), el('flag', { fill: 'black', slot: 'r' })],
     ops: [M(0, 'v'), F(0, 'black'), T(1, 270)],
-    lures: [L('partial', M(0, 'v')), L('wrong', F(0, 'black'), T(1, 180), F(1, 'gray')), L('copy')],
+    lures: [L('copy'), L('wrong', F(0, 'black'), T(1, 180), F(1, 'gray')), L('partial', M(0, 'v'))],
     answer: 1,
   },
   {
@@ -277,12 +277,12 @@ const SPECS: AnalogySpec[] = [
     a: [el('hexagon', { size: 3 }), el('flag', { fill: 'black', size: 1 })],
     c: [el('circle', { size: 3 }), el('wedge', { size: 1 })],
     ops: [F(0, 'gray'), T(1, 90), S(1, 2)],
-    lures: [L('extra', F(0, 'gray'), T(1, 90), S(1, 2), F(1, 'black')), L('wrong', F(0, 'gray'), T(1, 90), F(1, 'black')), L('partial', F(0, 'gray'))],
+    lures: [L('extra', F(0, 'gray'), T(1, 90), S(1, 2), F(1, 'black')), L('partial', F(0, 'gray')), L('wrong', F(0, 'gray'), T(1, 90), F(1, 'black'))],
     answer: 2,
   },
 ];
 
-/** Alıştırma: biri tek değişiklikli, öteki iki değişiklikli; yanlış seçeneklerde dört türün hepsi var. */
+/** Alıştırma: bir renk değişikliği, bir ayna görüntüsü ve iki değişiklik birlikte; yanlış seçeneklerde dört türün hepsi var. */
 const PRACTICE_SPECS: (AnalogySpec & { explain: string })[] = [
   {
     key: 'sbp1',
@@ -294,10 +294,22 @@ const PRACTICE_SPECS: (AnalogySpec & { explain: string })[] = [
     lures: [L('copy'), L('extra', F(0, 'black'), S(0, 2)), L('wrong', S(0, 2))],
     answer: 3,
     explain:
-      'Birinci şekilden ikinciye yalnızca renk değişti: içi boş daire siyah oldu, büyüklüğü aynı kaldı. Üçüncü şekilde de yalnızca renk değişmeli: küçük üçgen siyah olur ama küçük kalır. B’deki büyük siyah üçgende büyüklük de değişmiş; D’deki büyük, içi boş üçgende ise renk yerine büyüklük değişmiş.',
+      'Birinci şekilden ikinciye yalnızca renk değişti: içi boş daire siyah oldu, büyüklüğü aynı kaldı. Üçüncü şekilde de yalnızca renk değişmeli: küçük üçgen siyah olur ama küçük kalır. A’da hiçbir şey değişmemiş; B’deki daha büyük siyah üçgende büyüklük de değişmiş; D’deki daha büyük, içi boş üçgende ise renk yerine büyüklük değişmiş.',
   },
   {
     key: 'sbp2',
+    level: 2,
+    changes: ['turn'],
+    a: [el('flag')],
+    c: [el('wedge', { fill: 'gray' })],
+    ops: [M(0, 'v')],
+    lures: [L('wrong', T(0, 180)), L('extra', M(0, 'v'), F(0, 'empty')), L('copy')],
+    answer: 4,
+    explain:
+      'Burada şekil ayna görüntüsüne çevrildi: sağa bakan bayrak sola bakar oldu; rengi ve büyüklüğü değişmedi. Üçüncü şekle de yalnızca ayna görüntüsünü uygulamak gerekir: D’de gri dik üçgenin dik köşesi sol alttan sağ alta geçmiş. A’da şekil ayna yerine yarım tur döndürülmüş; B’de ayna görüntüsü doğru ama rengi de değişmiş; C’de hiçbir şey değişmemiş.',
+  },
+  {
+    key: 'sbp3',
     level: 3,
     changes: ['turn', 'look'],
     a: [el('ell')],
@@ -345,7 +357,7 @@ const task: FiguralAnalogyTask = {
 
 export const sekilBenzetmeleri: TaskInstrument = {
   slug: 'sekil-benzetmeleri',
-  version: 1,
+  version: 2,
   engine: 'tasks',
   name: 'Şekil Benzetmeleri',
   shortName: 'Şekil benzetmeleri',
@@ -387,25 +399,25 @@ export const sekilBenzetmeleri: TaskInstrument = {
   tasks: [task],
   science: {
     basedOn:
-      'Şekil benzetmesi (geometrik ya da şekilsel analoji) düzeni: “Birinci şekil ikinciye neyse, üçüncü şekil de soru işaretine odur” (A : B :: C : ?). Birinci şekilden ikinciye olan değişiklik bir kuraldır; bu kuralı bulup üçüncü şekle uygulamak gerekir (Blum ve Holling, 2018). Sorulardaki değişiklikler (renk, büyüklük, döndürme, ayna görüntüsü, yer ve sayı), bu tür soruları inceleyen araştırmalarda kullanılan değişiklik türlerinden seçilmiştir (Novick ve Tversky, 1987; Stevenson, Alberto ve ark., 2014). Yanlış seçeneklerin ikisi, çocukların bu sorulardaki tipik cevaplarına dayanır: üçüncü şeklin hiç değişmemiş hâli ve değişikliklerin yalnızca bir kısmının uygulandığı şekil (Tunteler ve ark., 2008; Thibaut ve ark., 2010). Öteki ikisinde bir değişiklik yanlış uygulanmıştır ya da fazladan bir değişiklik yapılmıştır; böylece yanlış seçenekler hem doğru cevaba hem de birbirine benzer (Blum ve ark., 2011). Seçenekler, soruya bakmadan yalnızca seçeneklerden doğru cevabın bulunamayacağı bir düzenle seçilmiştir (Hu ve ark., 2021). Bütün şekiller, sorular ve seçenekler Ölçekhane tarafından özgün olarak hazırlanmıştır; zekâ ve yetenek testlerinin soruları, puanlama kuralları ya da normları kullanılmaz.',
+      'Şekil benzetmesi (geometrik ya da şekilsel analoji) düzeni: “Birinci şekil ikinciye neyse, üçüncü şekil de soru işaretine odur” (A : B :: C : ?). Birinci şekilden ikinciye olan değişiklik bir kuraldır; bu kuralı bulup üçüncü şekle uygulamak gerekir (Blum ve Holling, 2018). Sorulardaki değişiklikler (renk, büyüklük, döndürme, ayna görüntüsü, yer ve sayı), bu tür soruları inceleyen araştırmalarda kullanılan değişiklik türlerinden seçilmiştir (Novick ve Tversky, 1987; Stevenson, Alberto ve ark., 2014). Her soruda üç yanlış seçenek vardır ve bunlar dört türden seçilir. İki tür, çocukların bu tür sorulardaki tipik cevaplarına dayanır: üçüncü şeklin hiç değişmemiş hâli ve değişikliklerin yalnızca bir kısmının uygulandığı şekil (Tunteler ve ark., 2008); üçüncü şekle benzeyen seçenekler de çocukları çeker (Thibaut ve ark., 2010). Öteki iki türde bir değişiklik yanlış uygulanmıştır ya da fazladan bir değişiklik yapılmıştır; böylece yanlış seçenekler hem doğru cevaba hem de birbirine benzer (Blum ve ark., 2011). Seçenekler, yalnızca seçeneklerin ortak özelliklerine bakarak doğru cevabın bulunamayacağı biçimde dengelenmiştir (Hu ve ark., 2021); denenen bu tür kestirme yollar şans düzeyinin altında kalır. Yanlış seçeneklerin türleri A, B, C ve D sıraları arasında da dengelidir. Bütün şekiller, sorular ve seçenekler Ölçekhane tarafından özgün olarak hazırlanmıştır; zekâ ve yetenek testlerinin soruları, puanlama kuralları ya da normları kullanılmaz.',
     whatItMeasures:
-      'İki şekil arasındaki ilişkiyi bulup aynı ilişkiyi başka bir şekle uygulayabilmeyi, yani şekillerle benzetme kurarak akıl yürütmeyi ölçer. Benzetme kurmak, insan düşüncesinin temel bir özelliği ve öğrenme için önemli bir beceri olarak görülür (Stevenson, Alberto ve ark., 2014). Benzetme soruları, kuralları ve düzenlilikleri bulmaya dayanan tümevarımsal akıl yürütme görevlerindendir; diziler ve matrislerle aynı aileden sayılır (Klauer ve Phye, 2008). Genel zihinsel yetenekle en güçlü ilişki gösteren soru türleri arasında yer alır (Sternberg, 1982, aktaran Blum ve Holling, 2018). Yetişkinlerde şekil benzetmelerindeki başarı, şekilleri zihinde canlandırıp değiştirmeyi ölçen uzamsal testlerle orta ile yüksek düzeyde ilişkilidir (Novick ve Tversky, 1987).\n\nBir soruyu zorlaştıran en önemli şey, akılda tutulması gereken değişikliklerin ve parçaların sayısıdır. Yetişkinlerle yapılan bir çalışmada kural sayısı arttıkça doğru cevap oranı düşmüş (r = −.60), cevap süresi uzamıştır (r = .83) (Blum ve Holling, 2018). 5–9 yaşındaki çocuklarda da her fazladan değişiklik doğru cevap olasılığını düşürmüştür (Stevenson, Hickendorff ve ark., 2013). Parça sayısı ile değişiklik sayısı birlikte arttığında zorluk, ikisinin ayrı ayrı etkisinden daha çok artar; bunun, sorunun işleyen belleğin sınırını aşmasından kaynaklandığı düşünülmektedir (Mulholland ve ark., 1980, aktaran Lovett ve Forbus, 2012). Değişikliğin türü de önemlidir: 4–12 yaşındaki 1.422 çocukla yapılan bir çalışmada renk ve büyüklük değişiklikleri, yön, yer ve sayı değişikliklerinden daha kolay çözülmüş; bu fark yaş ve işleyen bellek arttıkça azalmıştır (Stevenson, Alberto ve ark., 2014). Bu testin beş düzeyi ve raporda anlatılan değişiklik türleri bu bulgulara göre kurulmuştur.\n\nBu tür soruları çözmenin iki yolu vardır: cevabı önce zihinde kurup sonra seçeneklerde aramak ya da seçenekleri tek tek soruyla karşılaştırıp yanlışları elemek (Becker ve ark., 2016). Göz hareketleriyle yapılan araştırmalar, cevabı önce zihinde kurmanın daha iyi bir yol olduğunu düşündürmektedir (Bethell-Fox ve ark., 1984, aktaran Laurence ve ark., 2018). Sorular zorlaştıkça insanlar seçenekleri tek tek denemeye geçebilir (Bethell-Fox ve ark., 1984, aktaran Lovett ve Forbus, 2012). Üniversite öğrencileriyle yapılan bir şekil testi çalışmasında, soru ile seçenekler arasında daha az gidip gelenler daha çok soruyu doğru cevaplamıştır (r = −.68; Laurence ve ark., 2018). 5–7 yaşındaki çocuklarda da önce birinci ve ikinci şekle bakmak daha çok doğru cevapla birlikte görülmüştür (r = .71; Starr ve ark., 2018). Resimli benzetmelerle yapılan bir çalışmada, 4–6 yaşındaki çocuklara ilk iki resmi önce göstermek ya da aralarındaki ilişkiyi söyletmek doğru cevapları biraz artırmıştır (%60’tan %65–66’ya; Glady ve ark., 2017). Seçenekler eleyerek çözmeye izin verdiğinde test sonucunun genel zihinsel yetenekle ilişkisi, cevabı zihinde kurmayı gerektiren seçeneklere göre daha düşük bulunmuştur (Arendasy ve Sommer, 2013, aktaran Becker ve ark., 2016). Bu yüzden bu testin seçenekleri, eleyerek ya da seçeneklerin ortak özelliklerine bakarak cevabı bulmayı zorlaştıracak biçimde seçilmiştir.\n\nÇocukların yanlışları belli türlerde toplanır. Benzetme kuramayan çocuklar çoğu zaman şekillerden birini olduğu gibi kopyalar; benzetme kurmaya başlayan çocuklar ise bazen değişikliklerin yalnızca bir kısmını uygular (Tunteler ve ark., 2008). 1. ve 2. sınıflardaki çocuklarla yapılan bir çalışmada, soruları henüz benzetme kurarak çözmeyen çocukların çözümlerinin yaklaşık %58’i bu kopyalama türündeyken benzetme kuran çocuklarda bu oran yaklaşık %3’tür (Hosenfeld ve ark., 1997, aktaran Doumas ve ark., 2018). Seçenekler arasında birinci, ikinci ve üçüncü şeklin aynıları birlikte bulunduğunda, 6, 8 ve 14 yaşındaki çocukların yanlışlarının çoğu üçüncü şeklin aynısında toplanmıştır. 6 yaşındakiler fark ettikleri ilk benzerliği seçmiş gibi görünmektedir; 14 yaşındakiler bu tür seçeneklerden çok daha az etkilenmiştir (Thibaut ve ark., 2010). Resimli benzetmelerde de çocukların dikkat dağıtan bir nesneyi seçmesi, ilişkiyi yanlış kurmasından daha sıktır ve bu eğilim yaşla azalır (Richland ve ark., 2006). Bu testin raporu, yanlışlarda hangi tür şeklin seçildiğini bu yüzden ayrıca anlatır.\n\nAnaokulundan 2. sınıfa kadar olan çocuklarda benzetme testindeki başarı, o yılki ve sonraki matematik ve okuma başarısını işleyen bellekten ayrı olarak da yordamıştır (Stevenson, Bergwerff ve ark., 2014). Benzetme kurmak öğretilebilir: benzerlikleri ve farkları karşılaştırmayı öğreten eğitimleri birleştiren bir incelemede, bu eğitimlerin zekâ testlerindeki sonuçları ortalama yarım standart sapma kadar, okuldaki öğrenmeyi ise biraz daha fazla artırdığı bulunmuştur. Ancak bu çalışmaların çoğu küçük ve yarı deneyseldir; yarısına yakını programın yazarı ya da öğrencileri tarafından yapılmıştır (Klauer ve Phye, 2008). Aynı tür sorularla alıştırma yapmak da o sorulardaki başarıyı artırır (Tunteler ve ark., 2008); bu, genel bir yeteneğin arttığı anlamına gelmez. Bu test bir zekâ puanı (IQ) vermez; sonuç, şekillerle benzetme kurma becerisinin bugünkü durumunu anlatır.',
+      'İki şekil arasındaki ilişkiyi bulup aynı ilişkiyi başka bir şekle uygulayabilmeyi, yani şekillerle benzetme kurarak akıl yürütmeyi ölçer. Benzetme kurmak, insan düşüncesinin temel bir özelliği ve öğrenme için önemli bir beceri olarak görülür (Stevenson, Alberto ve ark., 2014). Benzetme soruları, kuralları ve düzenlilikleri bulmaya dayanan tümevarımsal akıl yürütme görevlerindendir; diziler ve matrislerle aynı aileden sayılır (Klauer ve Phye, 2008). Genel zihinsel yetenekle en güçlü ilişki gösteren soru türleri arasında yer alır (Sternberg, 1982, aktaran Blum ve Holling, 2018). Yetişkinlerde şekil benzetmelerindeki başarı, şekilleri zihinde canlandırıp değiştirmeyi ölçen uzamsal testlerle orta ile yüksek düzeyde ilişkilidir (Novick ve Tversky, 1987).\n\nBir soruyu zorlaştıran başlıca etkenlerden biri, akılda tutulması gereken değişikliklerin ve parçaların sayısıdır. Yetişkinlerle yapılan bir çalışmada kural sayısı arttıkça sorulardaki doğru cevap oranı düşmüş (r = −.60), cevap süresi uzamıştır (r = .83) (Blum ve Holling, 2018). 5–9 yaşındaki çocuklarda da her fazladan değişiklik doğru cevap olasılığını düşürmüştür (Stevenson ve ark., 2013). Parça sayısı ile değişiklik sayısı birlikte arttığında zorluk, ikisinin ayrı ayrı etkisinden daha çok artar; bunun, sorunun işleyen belleğin sınırını aşmasından kaynaklandığı düşünülmektedir (Mulholland ve ark., 1980, aktaran Lovett ve Forbus, 2012). Değişikliğin türü de önemlidir: 4–12 yaşındaki 1.422 çocukla yapılan bir çalışmada renk ve büyüklük değişiklikleri; yön, yer ve sayı değişikliklerinden daha kolay çözülmüş, yön ve yer değişikliklerinin görece zorluğu yaş ve işleyen bellek arttıkça azalmıştır (Stevenson, Alberto ve ark., 2014). Bu testin düzeyleri, değişikliklerin sayısına ve bu bulgulara göre kurulmuştur.\n\nBu tür soruları çözmenin iki yolu vardır: cevabı önce zihinde kurup sonra seçeneklerde aramak ya da seçenekleri tek tek soruyla karşılaştırıp yanlışları elemek (Becker ve ark., 2016). Göz hareketleriyle yapılan bir araştırma, cevabı önce zihinde kurmanın daha iyi bir yol olduğunu düşündürmektedir (Bethell-Fox ve ark., 1984, aktaran Laurence ve ark., 2018). Sorular zorlaştıkça insanlar seçenekleri tek tek denemeye geçebilir (Bethell-Fox ve ark., 1984, aktaran Lovett ve Forbus, 2012). Üniversite öğrencilerinin bir şekil matrisleri testini çözdüğü bir çalışmada, soru ile seçenekler arasında daha az gidip gelenler daha çok soruyu doğru cevaplamıştır (r = −.68; Laurence ve ark., 2018). Resimli benzetmelerle yapılan bir göz izleme çalışmasında, 5–7 yaşındaki çocuklardan önce birinci ve ikinci resme daha sık bakanlar daha çok soruyu doğru çözmüştür (r = .71; Starr ve ark., 2018). Resimli benzetmelerle yapılan başka bir çalışmada, 4–6 yaşındaki çocuklara ilk iki resmi önce göstermek ya da aralarındaki ilişkiyi söyletmek doğru cevapları biraz artırmıştır (%60’tan %65–66’ya; Glady ve ark., 2017). Şekil matrisi testlerinde, seçenekler eleyerek çözmeye izin verdiğinde test sonucunun genel zihinsel yetenekle ilişkisi, cevabı zihinde kurmayı gerektiren seçeneklere göre daha düşük bulunmuştur (Arendasy ve Sommer, 2013, aktaran Becker ve ark., 2016). Bu yüzden bu testin seçenekleri, eleyerek ya da seçeneklerin ortak özelliklerine bakarak cevabı bulmayı zorlaştıracak biçimde seçilmiştir.\n\nÇocukların yanlışları belli türlerde toplanır. Benzetme kuramayan çocuklar çoğu zaman çağrışıma dayalı cevaplar verir, örneğin şekillerden birini ya da bir parçasını kopyalar; benzetme kurmaya başlayan çocuklar ise bazen değişikliklerin yalnızca bir kısmını uygular (Tunteler ve ark., 2008). 1. ve 2. sınıflardaki çocuklarla yapılan bir çalışmada, soruları henüz benzetme kurarak çözmeyen çocukların çözümlerinin yaklaşık %58’i bu çağrışıma dayalı türdeyken benzetme kuran çocuklarda bu oran yaklaşık %3’tür (Hosenfeld ve ark., 1997, aktaran Doumas ve ark., 2018). Seçenekler arasında birinci, ikinci ve üçüncü şekille birer özelliği (ör. biçimi ya da rengi) ortak olan şekiller birlikte bulunduğunda, 6, 8 ve 14 yaşındaki çocukların yanlışlarının çoğu üçüncü şekle benzeyen seçenekte toplanmıştır. 6 yaşındakiler fark ettikleri ilk benzerliği seçmiş gibi görünmektedir; 14 yaşındakiler bu tür seçeneklerden çok daha az etkilenmiştir (Thibaut ve ark., 2010). Resimli benzetmelerde de çocukların dikkat dağıtan bir nesneyi seçmesi, ilişkiyi yanlış kurmasından daha sıktır ve bu eğilim yaşla azalır (Richland ve ark., 2006). Bu testin raporu, yanlışlarda hangi tür şeklin seçildiğini bu yüzden ayrıca anlatır.\n\nAnaokulundan 2. sınıfa kadar olan çocuklarda, kısa bir eğitim içeren (dinamik) bir benzetme testindeki sonuçlar, aynı okul yılında iki kez ölçülen matematik ve okuma başarısıyla, sözel işleyen bellekten ayrı olarak da ilişkili bulunmuştur (Stevenson, Bergwerff ve ark., 2014). Tümevarımsal akıl yürütme öğretilebilir: benzerlikleri ve farkları karşılaştırmayı öğreten eğitimleri birleştiren bir incelemede, bu eğitimlerin zekâ testlerindeki sonuçları ortalama yarım standart sapma kadar, okuldaki öğrenmeyi ise biraz daha fazla artırdığı bulunmuştur. Ancak bu çalışmaların büyük çoğunluğu küçük örneklemlerle yapılmıştır; yarısına yakını programın yazarı ve ekibi tarafından yayımlanmıştır (Klauer ve Phye, 2008). Aynı tür sorularla alıştırma yapmak da o sorulardaki başarıyı artırabilir (Tunteler ve ark., 2008); bu, genel bir yeteneğin arttığı anlamına gelmez. Bu test bir zekâ puanı (IQ) vermez; sonuç, şekillerle benzetme kurma becerisinin bugünkü durumunu anlatır.',
     turkishVersion: 'Özgün test. Şekiller, sorular ve yönergeler Ölçekhane tarafından hazırlanmıştır.',
     reliability:
-      'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Her sorunun tek doğru cevabı olduğu, bağımsız ikinci bir bilgisayar programıyla denetlenmiştir. Program şekilleri çizim olarak karşılaştırır ve birinci şekli ikinciye götüren bütün yorumları arar: döndürme, ayna görüntüsü, renk, büyüklük, yer, sayı ve iki parçanın yer değiştirmesi. En yalın yorumlar üçüncü şekle uygulandığında her soruda yalnızca doğru seçenek çıkar; yanlış seçeneklerin hiçbiri bir fazla değişiklikli bir yorumla da çıkmaz. Yanlış seçeneklerin türleri de aynı programla denetlenmiştir. Soruya bakmadan yalnızca seçeneklerden cevabı bulmaya çalışan on kestirme yol da denenmiştir: seçeneklerde en sık görülen özellikleri seçmek, ikinci şekle en çok benzeyeni seçmek, üçüncü şekilden en az ya da en çok farklı olanı seçmek gibi. Bunlardan dokuzu 24 sorunun en çok 7’sini doğru bulur; rastgele seçimde beklenen 6’dır. Değişiklik sayısını bulup üçüncü şekilden o kadar özellikle ayrılan seçeneği seçmek yaklaşık 10 doğru verir; bu yol değişikliklerin neler olduğunu bulmayı gerektirir ama nasıl uygulanacaklarını atlar. Yetişkinlerle yapılan başka bir şekil benzetmesi testinin güvenirliği yüksek bulunmuştur (Cronbach alfa = .89; Blum ve Holling, 2018); ancak bu sonuç bu teste aktarılamaz.',
+      'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Her sorunun tek doğru cevabı olduğu, bağımsız ikinci bir bilgisayar programıyla denetlenmiştir. Program şekilleri çizim olarak karşılaştırır ve birinci şekli ikinciye götüren bütün yorumları arar: döndürme, ayna görüntüsü, renk, büyüklük, yer, sayı ve iki parçanın yer değiştirmesi. En yalın yorumlar üçüncü şekle uygulandığında her soruda yalnızca doğru seçenek çıkar; yanlış seçeneklerin hiçbiri bir fazla değişiklikli bir yorumla da çıkmaz. Yanlış seçeneklerin türleri de aynı programla denetlenmiştir. Soruyu çözmeden, seçeneklerin birbirine ya da sorudaki şekillere yüzeysel benzerliğine bakarak cevabı bulmaya çalışan on kestirme yol da denenmiştir: seçeneklerde en sık görülen özellikleri seçmek, ikinci şekle en çok benzeyeni seçmek, üçüncü şekilden en az ya da en çok farklı olanı seçmek gibi. Bunlardan dokuzu 24 sorunun en çok 7’sini doğru bulur; rastgele seçimde beklenen 6’dır. Değişiklik sayısını bulup üçüncü şekilden o kadar özellikle ayrılan seçeneği seçmek yaklaşık 10 doğru verir; bu yol değişikliklerin neler olduğunu bulmayı gerektirir ama nasıl uygulanacaklarını atlar. Yetişkinlerle yapılan başka bir şekil benzetmesi testinin güvenirliği yüksek bulunmuştur (Cronbach alfa = .89; Blum ve Holling, 2018); ancak bu sonuç bu teste aktarılamaz.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi tür değişikliklerde ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Ekim 2026’da yapılan taramada, Türkiye’de şekil benzetmeleri için Türkçe normları yayımlanmış bir test uyarlaması bulunamadı.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan, hangi düzeydeki sorularda ve hangi tür değişikliklerde ne kadar doğru cevap verildiğiyle anlatılır. Zekâ puanı (IQ) verilmez. Türkiye’de geliştirilen Anadolu-Sak Zekâ Ölçeği’nde (ASİS) “Görsel Analojik Muhakeme” adlı bir alt test bulunur (Sertel, 2019); bu alt testin soru biçimine ve normlarına açık kaynaklardan ulaşılamadı. Ekim 2026’da yapılan taramada, şekil benzetmeleri için Türkçe normları yayımlanmış başka bir test bulunamadı.',
     ageNote:
-      '3. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Şekil benzetmelerindeki başarı çocukluk boyunca artar: ortalama bir soruyu doğru çözme olasılığı 5 yaşında .42, 9 yaşında .58 bulunmuştur (Stevenson, Alberto ve ark., 2014). Dikkat dağıtan benzerliklere rağmen ilişkiyi güvenilir biçimde kurabilmek çoğu çocukta 9–11 yaşlarına doğru görülür (Richland ve ark., 2006, aktaran Vendetti ve ark., 2015). Sayı ve sözcük benzetmelerini de içeren tümevarımsal akıl yürütme testlerinde en hızlı gelişme 5. ile 9. sınıflar arasında görülmüş, 9. sınıftan sonra değişim azalmıştır (Csapó, 1997). Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir. Süre sınırı yoktur. Şekiller yalnızca beyaz, gri ve siyahla çizilir; renkleri ayırt etmeyi gerektirmez. Telefonla da çözülebilir; şekillerin rahat görülmesi için büyük bir ekran önerilir.',
+      '3. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Şekil benzetmelerindeki başarı çocukluk boyunca artar: 4–12 yaşındaki çocuklarla yapılan bir çalışmada, bir sorudaki tek bir değişikliği doğru uygulama olasılığı 5 yaşında .42, 9 yaşında .58 bulunmuştur (Stevenson, Alberto ve ark., 2014). Resimli sahne benzetmelerinde, dikkat dağıtan bilgiye rağmen doğru ilişkiyi güvenilir biçimde seçebilmek ancak 9–11 yaş civarında görülmüştür (Richland ve ark., 2006, aktaran Vendetti ve ark., 2015). Sayı ve sözcük benzetmelerini de içeren tümevarımsal akıl yürütme testlerinde en hızlı gelişme 5. ile 9. sınıflar arasında görülmüş, 9. sınıftan sonra değişim azalmıştır (Csapó, 1997). Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelir. Süre sınırı yoktur. Şekiller yalnızca beyaz, gri ve siyahla çizilir; renkleri ayırt etmeyi gerektirmez. Telefonla da çözülebilir; şekillerin rahat görülmesi için büyük bir ekran önerilir.',
     license: 'Özgün test. Şekiller, sorular, puanlama ve rapor Ölçekhane tarafından geliştirilmiştir.',
     limitations: [
       'Zekâ puanı (IQ) vermez ve tanı koymaz; kapsamlı bir değerlendirme yalnızca uzmanlarca, geçerliği gösterilmiş testlerle yapılabilir.',
       'Akıl yürütmenin yalnızca şekillerle kurulan benzetmeler yoluyla yapılan yönünü ölçer; sözel ve sayısal akıl yürütme, bilgi, bellek ve hız gibi öteki beceriler hakkında bilgi vermez.',
       'Her soruda dört seçenek olduğu için rastgele seçen biri de soruların yaklaşık dörtte birini doğru bulabilir; düşük sonuçlar bu yüzden dikkatle yorumlanmalıdır.',
-      'Düzeyler değişikliklerin sayısına ve türüne göre, araştırma bulgularına dayanarak kurulmuştur; soruların bu testteki gerçek zorluk sırası henüz katılımcı verileriyle sınanmadı. Değişiklik türlerinin zorluğu yaşa göre de değişebilir: yetişkinlerle yapılan bir çalışmada döndürme ve büyüklük değişiklikleri, yer değişikliğinden daha çok yanlışa yol açmıştır (Novick ve Tversky, 1987).',
+      'Düzeyler değişikliklerin sayısına ve türüne göre, araştırma bulgularına dayanarak kurulmuştur; soruların bu testteki gerçek zorluk sırası henüz katılımcı verileriyle sınanmadı. Değişiklik türlerinin zorluğu yaşa ve soruların malzemesine göre de değişebilir: yetişkinlerin geometrik şekillerle çözdüğü bir çalışmada döndürme ve büyüklük değişiklikleri, yer değişikliğinden daha çok yanlışa yol açmıştır (Novick ve Tversky, 1987).',
       'Sonuç; o günkü yorgunluk, isteklilik, dikkat ve ekranın büyüklüğünden etkilenir. Zihinsel beceri testleri yeniden çözüldüğünde sonuçlar genellikle yükselir (Scharfen ve ark., 2018); bu test yeniden çözüldüğünde soruları hatırlamak da sonucu yükseltebilir.',
-      'Benzetme kurmayı öğreten ya da aynı tür sorularla alıştırma yaptıran çalışmalar bu sorulardaki sonucu yükseltir (Tunteler ve ark., 2008; Klauer ve Phye, 2008); yükselen bir sonuç tek başına genel bir yeteneğin arttığını göstermez.',
+      'Benzetme kurmayı öğreten ya da aynı tür sorularla alıştırma yaptıran çalışmalar bu sorulardaki sonucu yükseltebilir (Tunteler ve ark., 2008); yükselen bir sonuç tek başına genel bir yeteneğin arttığını göstermez.',
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı.',
     ],
     citations: [
@@ -446,7 +458,7 @@ export const sekilBenzetmeleri: TaskInstrument = {
         url: 'https://doi.org/10.3389/fpsyg.2018.00380',
       },
       {
-        text: 'Lovett, A. ve Forbus, K. (2012). Modeling multiple strategies for solving geometric analogy problems [Bildiri]. Qualitative Reasoning Group, Northwestern University.',
+        text: 'Lovett, A. ve Forbus, K. (2012). Modeling multiple strategies for solving geometric analogy problems. Proceedings of the 34th Annual Conference of the Cognitive Science Society.',
         url: 'https://www.qrg.northwestern.edu/papers/Files/QRG_Dist_Files/QRG_2012/Lovett_CogSci12_GeoAnalogy_Final.pdf',
       },
       {
@@ -460,6 +472,10 @@ export const sekilBenzetmeleri: TaskInstrument = {
       {
         text: 'Scharfen, J., Peters, J. M. ve Holling, H. (2018). Retest effects in cognitive ability tests: A meta-analysis. Intelligence, 67, 44–66.',
         url: 'https://doi.org/10.1016/j.intell.2018.01.003',
+      },
+      {
+        text: 'Sertel, B. (2019). Anadolu-Sak Zekâ Ölçeği’nin dijital uygulaması d-ASİS’in geçerlik ve güvenirlik çalışması [Yüksek lisans tezi]. Anadolu Üniversitesi.',
+        url: 'https://acikerisim.anadolu.edu.tr/bitstreams/1650dbf0-c7d8-48ae-bbf4-c1e55a1bd73b/download',
       },
       {
         text: 'Starr, A., Vendetti, M. S. ve Bunge, S. A. (2018). Eye movements provide insight into individual differences in children’s analogical reasoning strategies. Acta Psychologica, 186, 18–26.',
@@ -478,11 +494,11 @@ export const sekilBenzetmeleri: TaskInstrument = {
         url: 'https://doi.org/10.1016/j.intell.2013.01.003',
       },
       {
-        text: 'Thibaut, J.-P., French, R. ve Vezneva, M. (2010). The development of analogy making in children: Cognitive load and executive functions. Journal of Experimental Child Psychology, 106, 1–19.',
+        text: 'Thibaut, J.-P., French, R. ve Vezneva, M. (2010). The development of analogy making in children: Cognitive load and executive functions. Journal of Experimental Child Psychology, 106(1), 1–19.',
         url: 'https://doi.org/10.1016/j.jecp.2010.01.001',
       },
       {
-        text: 'Tunteler, E., Pronk, C. M. E. ve Resing, W. C. M. (2008). Inter- and intra-individual variability in the process of change in the use of analogical strategies to solve geometric tasks in children: A microgenetic analysis. Learning and Individual Differences, 18, 44–60.',
+        text: 'Tunteler, E., Pronk, C. M. E. ve Resing, W. C. M. (2008). Inter- and intra-individual variability in the process of change in the use of analogical strategies to solve geometric tasks in children: A microgenetic analysis. Learning and Individual Differences, 18(1), 44–60.',
         url: 'https://doi.org/10.1016/j.lindif.2007.07.007',
       },
       {

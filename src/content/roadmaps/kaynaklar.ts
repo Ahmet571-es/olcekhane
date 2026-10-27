@@ -120,7 +120,7 @@ export const KAYNAK = {
     url: 'https://doi.org/10.1177/0898264313503987',
   },
   thibaut: {
-    text: 'Thibaut, J.-P., French, R. ve Vezneva, M. (2010). The development of analogy making in children: Cognitive load and executive functions. Journal of Experimental Child Psychology, 106, 1–19.',
+    text: 'Thibaut, J.-P., French, R. ve Vezneva, M. (2010). The development of analogy making in children: Cognitive load and executive functions. Journal of Experimental Child Psychology, 106(1), 1–19.',
     url: 'https://doi.org/10.1016/j.jecp.2010.01.001',
   },
   evans: {
@@ -143,6 +143,10 @@ export const KAYNAK = {
     text: 'Xie, Q., Yang, K., Ji, R., Qian, Y., Tong, L., Chao, C. N. G. ve Sin, K. F. (2025). Cognitive style and students’ academic achievement: A meta-analysis. Frontiers in Education, 10, 1634732.',
     url: 'https://doi.org/10.3389/feduc.2025.1634732',
   },
+  blum2018: {
+    text: 'Blum, D. ve Holling, H. (2018). Automatic generation of figural analogies with the IMak package. Frontiers in Psychology, 9, 1286.',
+    url: 'https://doi.org/10.3389/fpsyg.2018.01286',
+  },
   klauer2008: {
     text: 'Klauer, K. J. ve Phye, G. D. (2008). Inductive reasoning: A training approach. Review of Educational Research, 78(1), 85–123.',
     url: 'https://doi.org/10.3102/0034654307313402',
@@ -154,10 +158,6 @@ export const KAYNAK = {
   glady2017: {
     text: 'Glady, Y., French, R. M. ve Thibaut, J.-P. (2017). Children’s failure in analogical reasoning tasks: A problem of focus of attention and information integration? Frontiers in Psychology, 8, 707.',
     url: 'https://doi.org/10.3389/fpsyg.2017.00707',
-  },
-  thibaut2010: {
-    text: 'Thibaut, J.-P., French, R. ve Vezneva, M. (2010). The development of analogy making in children: Cognitive load and executive functions. Journal of Experimental Child Psychology, 106, 1–19.',
-    url: 'https://doi.org/10.1016/j.jecp.2010.01.001',
   },
   uttal: {
     text: 'Uttal, D. H., Meadow, N. G., Tipton, E., Hand, L. L., Alden, A. R., Warren, C. ve Newcombe, N. S. (2013). The malleability of spatial skills: A meta-analysis of training studies. Psychological Bulletin, 139(2), 352–402.',
