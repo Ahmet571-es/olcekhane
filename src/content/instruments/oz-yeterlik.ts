@@ -6,7 +6,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  * kullanılabilir (https://ipip.ori.org/newPermission.htm: "for any purpose, commercial or non-commercial") ve çevrilebilir
  * (https://ipip.ori.org/: "one can copy, edit, translate, or use them for any purpose without asking permission and without
  * paying a fee").
- *  - IPIP-NEO "Self-Efficacy" (C1) → İşlerde kendine güven (https://ipip.ori.org/newNEOKey.htm; 6 artı + 4 eksi madde,
+ *  - IPIP-NEO "Self-Efficacy" (C1) → İşlerde kendine güven (https://ipip.ori.org/newNEOFacetsKey.htm; 6 artı + 4 eksi madde,
  *    α .78, ortalama madde ilişkisi .27; NEO-PI-R'nin asıl "Competence" (C1) yönüyle ilişkisi .66, ölçüm hatası
  *    düzeltilince .89; tablo https://ipip.ori.org/newNEO_FacetsTable.htm).
  *  - JPI-R "Social Confidence" (Scf) → İnsanlar arasında kendine güven (https://ipip.ori.org/newJPI-RKey.htm; 5 artı + 5 eksi
@@ -219,7 +219,7 @@ export const ozYeterlik: LikertInstrument = {
       'Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı; kaynaktaki değerler bu çeviri için doğrudan geçerli sayılmamalıdır. Ölçüm payı hesaplanamadığı için sınıra yakın puanlar komşu düzeye de yakın sayılmalıdır.',
     ],
     citations: [
-      { text: 'IPIP. NEO-PI-R’ye benzeyen IPIP ölçeklerinin anahtarları (öz-yeterlik).', url: 'https://ipip.ori.org/newNEOKey.htm' },
+      { text: 'IPIP. NEO-PI-R’ye benzeyen IPIP ölçeklerinin anahtarları (öz-yeterlik).', url: 'https://ipip.ori.org/newNEOFacetsKey.htm' },
       { text: 'IPIP. NEO-PI-R yönlerinin özet tablosu (güvenirlik ve NEO-PI-R ile ilişki).', url: 'https://ipip.ori.org/newNEO_FacetsTable.htm' },
       { text: 'IPIP. JPI-R ölçeklerinin anahtarları (sosyal güven).', url: 'https://ipip.ori.org/newJPI-RKey.htm' },
       { text: 'IPIP. JPI-R ölçeklerinin özet tablosu (güvenirlik ve JPI-R ile ilişki).', url: 'https://ipip.ori.org/newJPI-RTable.htm' },

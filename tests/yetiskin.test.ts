@@ -42,6 +42,7 @@ const TARZ_DC = 'dusunme-ve-calisma-tarzi';
 const HEYECAN = 'heyecan-arayisi';
 const EMPATI = 'empati';
 const OZ_YETERLIK = 'oz-yeterlik';
+const OZ_DENETIM = 'oz-denetim';
 const IYIMSER = 'iyimserlik';
 const GIZLI = 'gizli-sekiller';
 const BENZETME = 'sekil-benzetmeleri';
@@ -88,7 +89,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT, HESAPLA, TARZ_DC, BAKIS, HEYECAN, GIZLI, IYIMSER, DESEN, HARF, EMPATI, ZIHINDEN, OZ_YETERLIK, BENZETME].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT, HESAPLA, TARZ_DC, BAKIS, HEYECAN, GIZLI, IYIMSER, DESEN, HARF, EMPATI, ZIHINDEN, OZ_YETERLIK, OZ_DENETIM, BENZETME].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);

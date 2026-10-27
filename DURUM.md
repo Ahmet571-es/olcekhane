@@ -639,7 +639,17 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    cümlesiyle; benzetimde rastgele yanlışların ~%11'i bir türü öne çıkarıyordu, bu testte eşik %5/4'e indi; ötekiler de
    aynı biçimde düzeltilebilir. (2) Ulaşılan düzey (bütün düzeyli şekil testlerinde ortak kural) aradaki %60'ın altındaki bir
    düzeyin üstüne çıkabiliyor; ortak kural olduğu için değiştirilmedi.
-5. Öz-denetim (kişilik; IPIP)
+5. **Öz-denetim: yayında (2026-10-27, active; 9. sınıftan yetişkine).** IPIP'in NEO-PI-R'ye benzeyen üç ölçeği: temkinlilik
+   (C6) → "Düşünerek davranma" (10 madde, 7'si ters), öz-disiplin (C5, 10 madde), ölçüsüzlük (N5, yönü çevrilerek) →
+   "Kendini tutabilme" (iki yeme maddesi sorulmaz: 8 madde). 28 madde; toplam puan yok; kaynak anahtarı
+   https://ipip.ori.org/newNEOFacetsKey.htm (iyimserlik ve öz-yeterlikteki yanlış anahtar bağlantısı da düzeldi). 23 maddenin
+   çevirisi sitedeki öteki testlerden; 5 yeni madde iki taslakla çevrildi. Dört karşıt çift (üçü öz-disiplinde, biri kendini
+   tutabilmede; düşünerek davranmada gerçek karşıt çift yok); uyarı en az ikisinde. Rapor: araştırma özetli giriş (alışkanlık
+   ve ortam; "iradenin tükenmesi" büyük tekrar çalışmalarında desteklenmedi), 27 birleşimde birbirini dışlayan 8 kural, 3×3
+   kart; yol haritası: 2. hafta eğer-o zaman planı, son hafta Erteleme ve Zaman Yönetimi ile Heyecan Arayışı. Test bir
+   sayfada aynı söz öbeğinin iki ayrı yerde geçmediğini de denetler. İki bağımsız inceleme (metin ve mantık; kaynak ve sayı)
+   bulguları yayından önce uygulandı (ayrıntı "Son yapılanlar"da). Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle
+   (yetişkin) baştan sona çözüldü; rapor ve PDF'ler açıldı.
 6. Harf-Sayı Sıralama (zekâ; özgün görev)
 7. Merak (kişilik; IPIP, VIA dışı ölçek)
 8. Simge Arama (zekâ; özgün görev)
@@ -689,8 +699,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    Okumada bekleyen içerik işi: bazı sorular metni okumadan da cevaplanabiliyor (başlık ana fikri veriyor, bazı kelime ve
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
-   hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. Sıradaki:
-   3. listenin 5. testi (Öz-denetim).
+   hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
+   (Öz-denetim) de yayında (2026-10-27). Sıradaki: 3. listenin 6. testi (Harf-Sayı Sıralama).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -916,6 +926,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Empati | empati | Yayında (active; 9. sınıftan yetişkine) |
 | Öz-yeterlik: Kendine Güven | oz-yeterlik | Yayında (active; 9. sınıftan yetişkine) |
 | Şekil Benzetmeleri | sekil-benzetmeleri | Yayında (pilot; 3. sınıftan yetişkine) |
+| Öz-denetim | oz-denetim | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1028,6 +1039,17 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-27 (52): Yeni test Öz-denetim yayına alındı (3. listenin 5. testi; ayrıntı yukarıda). Bağımsız incelemelerin
+  bulguları yayından önce uygulandı. Metin ve mantık: zayıf karşıt çift (Kelimelerimi özenle seçerim / Düşünmeden hareket
+  ederim) çıkarıldı, uyarı kuralının anlatımı düzeldi ("en az ikisinde"); kartlar kişinin vermemiş olabileceği tek cevapları
+  (para, kelime seçme) söylemiyor; "ayartı", "kendiliğindenlik", "harekete geçirmek" sadeleşti; bir sayfada aynı öneri
+  birden çok yerde tekrarlanmıyor (küçük başlangıç, ortamdan uzaklaştırma, günlük yazma); 1. hafta üç alanı birlikte
+  gözlemliyor, 3. hafta davranış denemesi (bir gece bekletmek, isteğin anında başka bir şey yapmak, kolay olan durumun
+  düzenini taşımak); veliye öneriler suçlamayan ve gözetlemeyen dilde. Kaynak ve sayı: IPIP anahtar bağlantısı
+  (newNEOFacetsKey; iyimserlik ve öz-yeterlikte de), Galla ve Duckworth (ödev sonucu altı çalışmanın biri), Duckworth ve
+  Seligman (zekâ karşılaştırması ikinci çalışma, 164 öğrenci), Vohs (iki ortak yöntem), Gollwitzer ve Sheeran (94 bağımsız
+  sınama), Friese (küçük ile orta; düzeltilince g = 0,13–0,24), Gülüm ve Tığrak DOI'si; neden-sonuç dili yumuşatıldı.
+  Heyecan Arayışı'nın örtüşme notu 15 maddeye güncellendi ("Çılgınlıklar yaparım." artık Öz-denetim'de de).
 - 2026-10-27 (51): Şekil Benzetmeleri sürüm 2: bağımsız incelemelerin bulguları uygulandı. Yanlış seçenek türleri A–D
   sıraları arasında dengelendi (fazladan değişiklik 11 kez A'daydı; hep aynı sırayı seçmek bir yanılgı gibi görünüyordu;
   test denetler); ayna görüntüsü alıştırması eklendi (üç alıştırma). Yanılgının öne çıkması için olasılık eşiği %5'ten
@@ -1098,8 +1120,3 @@ En yeni üstte; en çok 10 madde tutulur.
   sorunun (doğru cevabın, problemin) süresini nokta olarak gösteren şerit çiziliyor; çizgi tipik süredir (13 soru testi,
   renk-kelime, dur-git, zihinde döndürme, kural değiştirme, desen hatırlama, planlama kulesi). Çok ölçümlü şeritlerde
   noktalar küçülüp üst üste diziliyor. Raporlar telefonda ve masaüstünde açıldı, PDF incelendi.
-- 2026-10-22 (42): Görev testlerinde ortak düzeltmeler: veli raporunda yol haritasının öneri ve hafta başlıkları artık
-  veliye göre yazılıyor ("Kaldığın yeri işaretle" yerine "Kalınan yeri işaretlemek"); sonuç yorumlanmadığında yol
-  haritasının girişi önerilerin herkes için yazılmış genel öneriler olduğunu söylüyor; veli girişinde "işlerini nasıl
-  kolaylaştırabileceğiniz"; bütün görev testlerinde "1 tanesinde", "0 tanesini" gibi nicelik sözleri "birinde",
-  "hiçbirini" oldu (sembol eşleştirme, sırayla birleştirme, sayı ve harf dizileri, üç boyutlu döndürme dahil).

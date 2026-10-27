@@ -224,6 +224,10 @@ export const KAYNAK = {
     text: 'Teding van Berkhout, E. ve Malouff, J. M. (2016). The efficacy of empathy training: A meta-analysis of randomized controlled trials. Journal of Counseling Psychology, 63(1), 32–41.',
     url: 'https://doi.org/10.1037/cou0000093',
   },
+  duckworth2016: {
+    text: 'Duckworth, A. L., Gendler, T. S. ve Gross, J. J. (2016). Situational strategies for self-control. Perspectives on Psychological Science, 11(1), 35–55.',
+    url: 'https://doi.org/10.1177/1745691615623247',
+  },
   gollwitzer: {
     text: 'Gollwitzer, P. M. ve Sheeran, P. (2006). Implementation intentions and goal achievement: A meta-analysis of effects and processes. Advances in Experimental Social Psychology, 38, 69–119.',
     url: 'https://doi.org/10.1016/S0065-2601(06)38002-1',

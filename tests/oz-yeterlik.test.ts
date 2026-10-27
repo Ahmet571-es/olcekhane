@@ -24,7 +24,7 @@ type Level = 'high' | 'low' | 'mid';
 const LEVEL = { low: 'low', average: 'mid', high: 'high' } as const;
 
 /**
- * IPIP'in anahtar sayfaları: NEO "Self-Efficacy" (C1; https://ipip.ori.org/newNEOKey.htm), JPI-R "Social Confidence"
+ * IPIP'in anahtar sayfaları: NEO "Self-Efficacy" (C1; https://ipip.ori.org/newNEOFacetsKey.htm), JPI-R "Social Confidence"
  * (https://ipip.ori.org/newJPI-RKey.htm) ve TCI "Low Self-Efficacy" (HA4; https://ipip.ori.org/newTCIKey.htm). Her
  * ölçekte sayfanın artı ve eksi yönlü maddeleri, sayfadaki sırayla. HA4'te sayfanın artı yönlü maddeleri düşük
  * öz-yeterliği söyler: bu testte ölçek ters çevrildiği için onlar ters puanlanır (`flipped`).

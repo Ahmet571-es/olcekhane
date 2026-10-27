@@ -16,6 +16,7 @@ import { calismaDegerleri } from './calisma-degerleri';
 import { hobiIlgileri } from './hobi-ilgileri';
 import { empati } from './empati';
 import { ozYeterlik } from './oz-yeterlik';
+import { ozDenetim } from './oz-denetim';
 import { heyecanArayisi } from './heyecan-arayisi';
 import { iyimserlik } from './iyimserlik';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
@@ -108,6 +109,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   iyimserlik,
   empati,
   ozYeterlik,
+  ozDenetim,
   cocukKisilik,
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,

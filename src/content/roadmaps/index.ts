@@ -11,6 +11,7 @@ import { calismaDegerleriRoadmap } from './calisma-degerleri';
 import { hobiIlgileriRoadmap } from './hobi-ilgileri';
 import { empatiRoadmap } from './empati';
 import { ozYeterlikRoadmap } from './oz-yeterlik';
+import { ozDenetimRoadmap } from './oz-denetim';
 import { heyecanArayisiRoadmap } from './heyecan-arayisi';
 import { iyimserlikRoadmap } from './iyimserlik';
 import { hizliKisilikTestiRoadmap } from './hizli-kisilik-testi';
@@ -50,6 +51,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   iyimserlik: iyimserlikRoadmap,
   empati: empatiRoadmap,
   'oz-yeterlik': ozYeterlikRoadmap,
+  'oz-denetim': ozDenetimRoadmap,
   'cocuk-kisilik-profili': cocukKisilikRoadmap,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuRoadmap,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiRoadmap,

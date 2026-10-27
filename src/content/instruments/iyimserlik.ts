@@ -18,7 +18,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  * bakarım", "Geleceğe karamsar bakarım", "Hayatımın belli bir yönü olmadığını hissederim", "Her şeyde bir zorluk görürüm");
  * ikisi kendine bakışı ("Kendimle barışığım", "Kendimden hoşlanmam"), üçü ruh hâlini ("Kendimi nadiren hüzünlü
  * hissederim", "Sık sık kendimi hüzünlü hissederim", "Sık sık keyifsiz olurum") sorar. On maddenin beşi IPIP'in NEO
- * depresyon alt ölçeğinde de yer alır (https://ipip.ori.org/newNEOKey.htm: hüzün maddeleri, "Kendimden hoşlanmam",
+ * depresyon alt ölçeğinde de yer alır (https://ipip.ori.org/newNEOFacetsKey.htm: hüzün maddeleri, "Kendimden hoşlanmam",
  * "Kendimle barışığım", "Hayatımın belli bir yönü olmadığını hissederim"). Asıl puan on maddenin
  * ortalamasıdır (`iyimserlik`, bileşik ölçek). Raporda ayrıca bu üç konunun ortalamaları gösterilir (`gelecek`,
  * `kendine_bakis`, `ruh_hali`): bunlar Ölçekhane'nin cümlelerin içeriğine göre yaptığı bir ayrımdır, ayrı birer ölçek olarak
@@ -186,7 +186,7 @@ export const iyimserlik: LikertInstrument = {
       { text: 'IPIP. Tek yapılı ölçekler: Optimism maddeleri ve anahtarı.', url: 'https://ipip.ori.org/newSingleConstructsKey.htm' },
       { text: 'IPIP. Özgün ölçekler ile IPIP karşılıklarının karşılaştırması (iç tutarlılık ve ilişki).', url: 'https://ipip.ori.org/newSingleConstructs.htm' },
       { text: 'IPIP. Ölçek hazırlama yöntemi (IPIP scale-construction procedures).', url: 'https://ipip.ori.org/newScaleConstruction.htm' },
-      { text: 'IPIP. NEO alt ölçeklerinin maddeleri ve anahtarı (depresyon alt ölçeği).', url: 'https://ipip.ori.org/newNEOKey.htm' },
+      { text: 'IPIP. NEO alt ölçeklerinin maddeleri ve anahtarı (depresyon alt ölçeği).', url: 'https://ipip.ori.org/newNEOFacetsKey.htm' },
       {
         text: 'Goldberg, L. R., Johnson, J. A., Eber, H. W., Hogan, R., Ashton, M. C., Cloninger, C. R. ve Gough, H. G. (2006). The International Personality Item Pool and the future of public-domain personality measures. Journal of Research in Personality, 40(1), 84–96.',
         url: 'https://doi.org/10.1016/j.jrp.2005.08.007',

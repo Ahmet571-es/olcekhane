@@ -228,6 +228,13 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); rows=r["parent"]["chart"]["rows"]; assert len(rows) == 3 and all(x["ciLow"] is None for x in rows) and r["student"]["items"][0]["title"] == "Birlikte bakınca" and len(r["student"]["items"]) == 4; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and len(m["approach"]["items"]) == 3 and m["weeks"][1]["title"] == "Küçük başarılar" and not m["preview"]'; then
             sorun="$sorun oz-yeterlik-raporu"
           fi
+          # Öz-denetim: 28 madde (dus 10, dis 10, tut 8; tut01 ve tut05 sorulmaz), üç alan, ölçüm payı yok; ilk madde "Birlikte
+          # bakınca"; yol haritasında üç sütun, 2. hafta "Eğer-o zaman planı".
+          OD_GOVDE=$(python3 -c 'import json; k=["dus03", "dis01", "tut07", "dus04", "dis06", "tut04", "dus02", "dis03", "tut09", "dus07", "dis02", "tut02", "dus08", "dis08", "tut06", "dus05", "dis07", "tut03", "dus01", "dis04", "tut08", "dus06", "dis10", "tut10", "dus09", "dis05", "dus10", "dis09"]; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {x: {"value": i % 5 + 1, "rtMs": 2500} for i, x in enumerate(k)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$OD_GOVDE" "https://$ALAN/api/rapor/oz-denetim" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); rows=r["parent"]["chart"]["rows"]; assert len(rows) == 3 and all(x["ciLow"] is None for x in rows) and r["student"]["items"][0]["title"] == "Birlikte bakınca" and len(r["student"]["items"]) == 4; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and len(m["approach"]["items"]) == 3 and m["weeks"][1]["title"] == "Eğer-o zaman planı" and not m["preview"]'; then
+            sorun="$sorun oz-denetim-raporu"
+          fi
           # Kişilerarası Tarz: 32 madde, sekiz tarz çember grafiğinde; yol haritası (öneriler en belirgin üç tarz için).
           TARZ_GOVDE=$(python3 -c 'import json; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {f"ipc{i:02d}": {"value": i % 5 + 1, "rtMs": 2500} for i in range(1, 33)}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TARZ_GOVDE" "https://$ALAN/api/rapor/kisilerarasi-tarz" |

@@ -181,7 +181,7 @@ describe('Heyecan Arayışı tanımı', () => {
     expect(d.items[0].key).toBe('imp03');
   });
 
-  it('öteki kişilik testlerindeki aynı maddelerle aynı çeviri (14 madde)', () => {
+  it('öteki kişilik testlerindeki aynı maddelerle aynı çeviri (15 madde; biri sonradan Öz-denetim testine girdi)', () => {
     const others = INSTRUMENTS.filter((x) => x.slug !== SLUG && x.engine === 'likert' && x.domain === 'personality') as LikertInstrument[];
     const norm = (s?: string) => (s ?? '').replace(/[.]$/, '').trim();
     let shared = 0;
@@ -191,7 +191,7 @@ describe('Heyecan Arayışı tanımı', () => {
       shared++;
       expect(same.map((x) => x.text), it.source).toContain(it.text);
     }
-    expect(shared).toBe(14);
+    expect(shared).toBe(15);
     // Aynı ölçekteki iki "çılgınca" maddesi ve iki risk maddesi birbirinden farklı çevrilir.
     const text = (k: string) => d.items.find((i) => i.key === k)!.text;
     expect(text('imp02')).toBe('Çılgınca şeyler yaparım.');
@@ -246,7 +246,7 @@ describe('Heyecan Arayışı tanımı', () => {
     expect(lim).toContain('Tanı koymaz');
     expect(lim).toContain('“doğru” deme eğilimi');
     // Örtüşme notundaki sayılar sitedeki testlerle aynı (14 ortak madde; dokuzu Altı Boyutlu'da).
-    expect(lim).toContain('29 cümleden 14’ü');
+    expect(lim).toContain('29 cümleden 15’i');
     const alti = def<LikertInstrument>('alti-boyutlu-kisilik-profili');
     const norm = (x?: string) => (x ?? '').replace(/[.]$/, '');
     expect(d.items.filter((it) => alti.items.some((a) => norm(a.source) === norm(it.source)))).toHaveLength(9);
