@@ -329,7 +329,7 @@ describe('Merak tanımı', () => {
       expect(card, `${author} ${year}`).toMatch(new RegExp(`${author}[^()]{0,40}\\(?${year}`, 'u'));
     }
     // IPIP sayfalarındaki sayılar ve kaynak doğrulaması.
-    for (const x of ['.78', '.77', '.73 (ölçüm hatası düzeltilince .94', '.71 (ölçüm hatası düzeltilince .99', '.64', 'Tablolar örneklemi belirtmez', 'arşiv kopyasından', 'yedisi']) {
+    for (const x of ['.78', '.77', '.73 (ölçüm hatası düzeltilince .94', '.71 (ölçüm hatası düzeltilince .99', '.64', 'Tablolar örneklemi belirtmez', 'arşiv kopyasından', 'sekizi', 'resmî sayfasında da aynı değerleri']) {
       expect(s.reliability, x).toContain(x);
     }
     expect(s.citations.some((c) => c.url === 'https://ipip.ori.org/newNEOFacetsKey.htm')).toBe(true);
@@ -340,7 +340,7 @@ describe('Merak tanımı', () => {
     expect(s.whatItMeasures).toContain('birebir aynı değildir');
     // Notlarla ilişki küçük ve neden-sonuç değil; tahmin etmek hatırlamayı artırmadı.
     expect(s.whatItMeasures).toContain('tek başına notları yükselttiğini göstermez');
-    expect(s.whatItMeasures).toContain('hatırlanan toplam bilgiyi artırmamıştır');
+    expect(s.whatItMeasures).toContain('hatırlanan bilgi miktarını değiştirmemiştir');
     expect(s.ageNote).toContain('yetişkinler de çözebilir');
     expect(s.turkishVersion).toContain('336 yetişkin');
     const lim = s.limitations.join(' ');
@@ -532,7 +532,7 @@ describe('Merak raporu', () => {
       expect(x).toContain('küçük bir ilişki');
       expect(x).toContain('tek başına notları belirlediği anlamına gelmez');
     }
-    expect(lead.adult).toContain('sınırlı ölçüde öngörür');
+    expect(lead.adult).toContain('her zaman örtüşmez');
     expect(lead.student).toContain('Senin sonucun da');
     expect(lead.adult).toContain('Senin sonucun da');
     expect(lead.parent).toContain('Çocuğunuzun sonucu da');

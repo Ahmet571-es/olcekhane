@@ -12,7 +12,7 @@ import type { RoadmapTemplate } from './types';
  *    çalışmayı bir soruyla başlatır (konuyu soruya çevirmek, merak edilen soruları önceden yazmak); bu, merakın bilgideki bir
  *    boşlukla başladığı açıklamasına dayanır (Loewenstein, 1994; bilim kartında).
  *  - 2. hafta "Önce tahmin et"tir (Bilgi merakı): cevabı görmeden önce tahmin etmek o soruya duyulan merakı artırmış, ama
- *    hatırlanan toplam bilgiyi artırmamıştır (Brod ve Breitwieser, 2019). Bu yüzden haftada "daha iyi hatırlarsın" denmez;
+ *    hatırlanan bilgi miktarını değiştirmemiştir (29 üniversite öğrencisi; Brod ve Breitwieser, 2019). Bu yüzden haftada "daha iyi hatırlarsın" denmez;
  *    yalnızca merakı artırabileceği söylenir.
  *  - Merakı artırmaya ya da notları yükseltmeye dair bir sonuç vaat edilmez; ilişkiler küçüktür.
  *  - Ortamlar bugünkü duruma göre bir ipucudur, sınır değildir (`settingsNote`); bir meslek önerisi değildir.

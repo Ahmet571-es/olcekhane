@@ -12,8 +12,8 @@ import type { BandText, InsightRule, ReportTemplate } from './types';
  * konusunu anlatır.
  * Birlikte yorum ("Birlikte bakınca", `insight`): giriş her raporda araştırmaların kısa özetidir (kaynaklar bilim kartındadır):
  * merakın tanımı, bilgideki bir boşlukla başlaması, birden çok yüzü olması; öğrenci ve veliye merak ile notlar arasındaki
- * küçük ilişki ve okul yıllarında ilginin ortalamada biraz azalması, yetişkine anketlerin bilgi arama davranışını sınırlı
- * ölçüde öngörmesi. Ardından iki yönün birleşimine göre en çok bir kural. Kurallar birbirini dışlar: bir yön yüksek, öteki
+ * küçük ilişki ve okul yıllarında ilginin ortalamada biraz azalması, yetişkine merak anketlerinin sonucunun gerçek bilgi arama
+ * davranışıyla her zaman örtüşmemesi (Jach ve ark., 2024). Ardından iki yönün birleşimine göre en çok bir kural. Kurallar birbirini dışlar: bir yön yüksek, öteki
  * düşükken her zaman tam bir kural çıkar. İki yön yüksekken başarı notu gibi, ikisi düşükken eksiklik gibi anlatılmaz ve bir
  * sonuç vaat edilmez.
  * Kartlar okula ya da ergenliğe özgü sözcük içermez; yetişkin raporu öğrenci metinlerini kullanır.
@@ -38,7 +38,7 @@ const LEAD_RESEARCH =
 const LEAD_YOUNG =
   'Gençlerle yapılan çalışmalarda merak ile okul notları arasında küçük bir ilişki bulunmuştur; bu, meraklı olmanın tek başına notları belirlediği anlamına gelmez. Okul yılları boyunca ilgi ve içten gelen istek ortalamada biraz azalır.';
 const LEAD_ADULT =
-  'Merak anketleri, insanların gerçekte ne kadar bilgi aradığını ancak sınırlı ölçüde öngörür. Merak konuya ve duruma göre de farklılaşır.';
+  'Merak anketlerinin sonucu, insanların gerçekte nasıl bilgi aradığıyla her zaman örtüşmez. Merak konuya ve duruma göre de farklılaşır.';
 const LEAD_END = {
   you: 'Senin sonucun da kalıcı bir yargı değil, bugünün bir resmidir.',
   parent: 'Çocuğunuzun sonucu da kalıcı bir yargı değil, bugünün bir resmidir.',
