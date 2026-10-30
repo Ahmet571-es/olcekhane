@@ -6,9 +6,11 @@ import { getInstrumentDef, publicInstruments } from '@/content/instruments';
 import { DOMAIN_LABELS, gradeAllowed } from '@/lib/config';
 import { DOMAIN_ORDER, domainColor } from '@/lib/domain-style';
 import { breadcrumbLd, pageMeta } from '@/lib/seo';
+import { packageOpenFor } from '@/content/paket';
 import { GroupPicker } from './group-picker';
 import { GroupTests, type GroupSection } from './group-tests';
 import { PageHeader } from './page-header';
+import { PackagePromo } from './package-promo';
 import { PageGuide } from './page-guide';
 import { cardInfo } from './test-card';
 import { DOMAIN_ANCHORS } from './test-shelf';
@@ -128,6 +130,12 @@ export function GroupPage({ groupKey }: { groupKey: AgeGroupKey }) {
             </aside>
           )}
         </section>
+      )}
+
+      {packageOpenFor(g.grades) && (
+        <div className="container-page pt-14 md:pt-20">
+          <PackagePromo />
+        </div>
       )}
 
       <section className="container-page py-14 md:py-20" aria-label="Testler">

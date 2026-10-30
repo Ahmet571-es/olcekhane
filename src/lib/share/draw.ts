@@ -170,13 +170,20 @@ function drawRows(ctx: Ctx, block: Extract<ShareBlock, { kind: 'rows' }>, x: num
     const t = (r.value - r.min) / (r.max - r.min || 1);
     if (mode === 'dense') {
       const mid = ry + per / 2;
+      // Düzey sağda kendi genişliğiyle (uzunsa biraz küçülür), ad solda; cetvel aradaki boşlukta.
+      fit(ctx, r.band, w * 0.34, 700, 26, 'body', 20);
+      const bandW = Math.min(ctx.measureText(r.band).width, w * 0.34);
+      ctx.fillStyle = C.ink2;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(clip(ctx, r.band, w * 0.34), x + w, mid);
+      const barW = Math.max(110, Math.min(w * 0.3, w - bandW - w * 0.42 - 48));
+      const bx = x + w - bandW - 24 - barW;
       setFont(ctx, 700, 28, 'body');
       ctx.fillStyle = C.ink;
       ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(clip(ctx, r.label, w * 0.48), x, mid);
-      const bx = x + w * 0.51;
-      const bw = w * 0.28;
+      ctx.fillText(clip(ctx, r.label, bx - x - 24), x, mid);
+      const bw = barW;
       ctx.fillStyle = rgba(r.color, 0.2);
       rounded(ctx, bx, mid - 6, bw, 12, 6);
       ctx.fill();
@@ -184,27 +191,37 @@ function drawRows(ctx: Ctx, block: Extract<ShareBlock, { kind: 'rows' }>, x: num
       ctx.beginPath();
       ctx.arc(bx + t * bw, mid, 13, 0, Math.PI * 2);
       ctx.fill();
-      setFont(ctx, 700, 26, 'body');
-      ctx.fillStyle = C.ink2;
-      ctx.textAlign = 'right';
-      ctx.fillText(clip(ctx, r.band, w * 0.2), x + w, mid);
       return;
     }
     const full = mode === 'full';
     const labelSize = full ? 44 : 36;
     const barY = ry + (full ? 70 : 56);
     const barH = full ? 18 : 14;
-    // Ad solda, düzey sağda; ad uzunsa düzeye yer bırakılır.
-    setFont(ctx, 700, full ? 34 : 30, 'body');
-    const bandW = ctx.measureText(r.band).width;
+    // Ad solda, düzey sağda. İkisi bir satıra sığmazsa önce yazılar biraz küçülür ("Merak ve Hayal Gücü" ile
+    // "Belirgin biçimde yüksek" gibi); yine sığmazsa ad kısaltılır.
+    let ls = labelSize;
+    let bs = full ? 34 : 30;
+    const widths = () => {
+      setFont(ctx, 700, bs, 'body');
+      const bw = ctx.measureText(r.band).width;
+      setFont(ctx, 700, ls, 'display');
+      return { bw, lw: ctx.measureText(r.label).width };
+    };
+    let m = widths();
+    while (m.lw + m.bw + 28 > w && ls > labelSize - 12) {
+      ls -= 2;
+      if (bs > (full ? 26 : 24)) bs -= 2;
+      m = widths();
+    }
+    setFont(ctx, 700, bs, 'body');
     ctx.fillStyle = C.ink2;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'alphabetic';
     ctx.fillText(r.band, x + w, ry + labelSize);
-    setFont(ctx, 700, labelSize, 'display');
+    setFont(ctx, 700, ls, 'display');
     ctx.fillStyle = C.ink;
     ctx.textAlign = 'left';
-    ctx.fillText(clip(ctx, r.label, w - bandW - 28), x, ry + labelSize);
+    ctx.fillText(clip(ctx, r.label, w - m.bw - 28), x, ry + labelSize);
     // Cetvel: puanın yeri bir işaretle gösterilir; dolgu yoktur (çok ya da az, iyi ya da kötü anlamı taşımaz).
     ctx.fillStyle = rgba(r.color, 0.2);
     rounded(ctx, x, barY, w, barH, barH / 2);
@@ -382,11 +399,17 @@ export function drawShareCard(ctx: Ctx, card: ShareCard, host: string) {
   const iw = W + 48 - 2 * pad;
   const gap = 56;
   const avail = PANEL_BOTTOM - panelTop - 2 * pad - gap * (card.blocks.length - 1);
+  // Her blok önce en az yüksekliğini alır (satır başına 100: yazılar sığar); kalan yer isteklerine göre paylaşılır.
   const needs = card.blocks.map((b) => (b.kind === 'rows' ? rowsNeed(b) : 560));
-  const total = needs.reduce((a, b) => a + b, 0);
+  const mins = card.blocks.map((b) => (b.kind === 'rows' ? (b.title ? 84 : 0) + b.rows.length * 100 : 380));
+  const minTotal = mins.reduce((a, b) => a + b, 0);
+  const extraNeed = needs.reduce((a, b, i) => a + Math.max(0, b - mins[i]), 0);
+  const heights = card.blocks.map((_, i) =>
+    minTotal >= avail ? (avail * mins[i]) / minTotal : mins[i] + ((avail - minTotal) * Math.max(0, needs[i] - mins[i])) / (extraNeed || 1),
+  );
   let by = panelTop + pad;
   card.blocks.forEach((b, i) => {
-    const bh = (avail * needs[i]) / total;
+    const bh = heights[i];
     if (b.kind === 'rows') drawRows(ctx, b, ix, by, iw, bh);
     else drawRadar(ctx, b, ix, by, iw, bh);
     by += bh + gap;

@@ -161,6 +161,22 @@ function radarBlock(report: SimpleReport): ShareBlock | null {
   return null;
 }
 
+/**
+ * Holland profilinde raporun öne çıkardığı alanlar (en çok üç), puanı büyükten küçüğe; düzey adı raporun sıralama
+ * kartlarından ("1. Araştırmacı" — "Yüksek ilgi · eşit puan").
+ */
+function highlightRows(report: SimpleReport): ShareRow[] {
+  const chart = report.chart;
+  if (chart?.type !== 'hexagon') return [];
+  const top = new Set(chart.highlight);
+  const badgeOf = (label: string) => report.items.find((it) => it.title.replace(/^\d+\.\s*/, '') === label)?.badge?.split(' · ')[0] ?? '';
+  return chart.axes
+    .flatMap((a) => (top.has(a.key) && a.value !== null ? [{ label: a.label, value: a.value }] : []))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3)
+    .map((a, i) => ({ label: a.label, value: a.value, min: 1, max: 5, band: badgeOf(a.label), note: null, color: SHARE_COLORS[i % SHARE_COLORS.length] }));
+}
+
 function headlineOf(report: SimpleReport): ShareCard['headline'] {
   const code = report.keyFigures.find((k) => k.label === 'İlgi kodu');
   return code ? { label: 'İlgi kodum', value: code.value } : null;
@@ -202,7 +218,6 @@ export function shareCardFor(slug: string, report: SimpleReport): ShareCard | nu
  */
 export function packageShareCard(results: { slug: string; report: SimpleReport }[], path: string): ShareCard | null {
   const blocks: ShareBlock[] = [];
-  let headline: ShareCard['headline'] = null;
   let pilot = false;
   for (const { slug, report } of results) {
     const card = shareCardFor(slug, report);
@@ -212,10 +227,14 @@ export function packageShareCard(results: { slug: string; report: SimpleReport }
     if (spec.mode === 'profile' && !blocks.some((b) => b.kind === 'rows' && b.title === 'Kişiliğim')) {
       blocks.push({ ...block, title: 'Kişiliğim' } as ShareBlock);
     } else if (spec.mode !== 'profile' && !blocks.some((b) => b.title !== 'Kişiliğim')) {
-      // Paket kartında ilgiler kısa tutulur: en yüksek üç alan ya da altıgenin öne çıkan alanları.
+      // Paket kartında ilgiler kısa tutulur: en yüksek üç alan ya da (Holland profilinde) raporun öne çıkardığı alanlar;
+      // altıgen iki bloklu kartta küçük kalacağı için satırlarla gösterilir.
       if (block.kind === 'rows') blocks.push({ ...block, title: spec.topTitle ?? 'İlgilerim', rows: block.rows.slice(0, 3) });
-      else blocks.push({ ...block, title: 'İlgilerim' });
-      headline = headline ?? card.headline;
+      else {
+        const rows = highlightRows(report);
+        if (rows.length === 0) continue;
+        blocks.push({ kind: 'rows', title: 'Öne çıkan ilgi alanlarım', rows });
+      }
     } else continue;
     pilot = pilot || card.pilot;
   }
@@ -223,7 +242,8 @@ export function packageShareCard(results: { slug: string; report: SimpleReport }
   return {
     kicker: 'Kendimi tanıma profilim',
     title: 'Kendini Tanı Paketi',
-    headline,
+    // İki blok panele sığsın diye büyük yazılan sonuç (ilgi kodu) pakette yoktur; altıgenin altında öne çıkan alanlar yazar.
+    headline: null,
     blocks,
     path,
     pilot,

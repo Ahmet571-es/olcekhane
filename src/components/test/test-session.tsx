@@ -81,7 +81,7 @@ function readingGuide(audience: Audience, report: SimpleReport) {
 }
 
 /** Rastgele UUID (v4). Harf işaretleme sayfalarının tohumu; kimseye bağlı değildir. */
-function uuid4(): string {
+export function uuid4(): string {
   const b = crypto.getRandomValues(new Uint8Array(16));
   b[6] = (b[6] & 0x0f) | 0x40;
   b[8] = (b[8] & 0x3f) | 0x80;

@@ -43,7 +43,8 @@ Basamaklar:
    Sesli Okuma Değerlendirmesi (her sınıfa 3 metin; sayı sınırı yok, metin eklenebilir).
 5. **Yeni testler (sürekli):** aşağıdaki dalgalar; yanında zekâ, algı ve okuma tarafı genişler (şekil, sayı ve sözel
    akıl yürütme, görsel algı hızı, örüntü bulma, sınıfa özel okuma metinleri, kelime bilgisi). Sonunda yaş grubuna
-   göre "Kendini Tanı Paketi": birkaç test art arda, tek büyük PDF rapor.
+   göre "Kendini Tanı Paketi": birkaç test art arda, tek büyük PDF rapor. **Kendini Tanı Paketi hazır (2026-10-30)**; ayrıntı
+   "Son yapılanlar"da ve CLAUDE.md'de.
 
 ## Sıradaki işler
 
@@ -1027,6 +1028,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Site sahibi bilgileri** (ad, adres, telefon, e-posta): yasa gereği İletişim sayfasında ve aydınlatma metninde
   gösterilir; her yayında uyarı olarak çıkar. Gelince `yayin/ayarlar.env`'e yazılır (CLAUDE.md).
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
+- **GitHub ödemesi (2026-10-30):** GitHub, Actions işlerini "hesaptaki son ödemeler başarısız oldu ya da harcama sınırı
+  artırılmalı" diyerek başlatmıyor; bu yüzden Denetim ve Yayın çalışmıyor, gönderilen işlemeler canlıya çıkmıyor. Site
+  sahibi GitHub → Settings → Billing and plans'tan düzeltir. Düzelince `main`'e yeni bir işleme gönderilir (ya da GitHub'da
+  son çalışma yeniden başlatılır) ve yayın doğrulanır. Paylaşım kartı (53) ve Kendini Tanı Paketi (54) bunu bekliyor.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
 - **Hoca buluşması (2026-10-18 dolayı; 2026-10-11'den ertelendi):** platform bitmiş hâliyle sunulacak; yeni testler de
@@ -1039,6 +1044,18 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (54): Kendini Tanı Paketi (site sahibinin isteği; büyük planın 5. basamağındaki paket). Seçimleri: geniş
+  paket (yaklaşık bir saat), özet yeni yorum eklemez. Sınıfa göre 6–7 test art arda: kişilik (5. sınıf Çocuk Kişilik,
+  6. sınıftan mezuna Beş Faktör, yetişkin Ayrıntılı Kişilik), ilgi (7. sınıf Hobi, 8. sınıf Mesleki İlgi Profili, 9. sınıftan
+  yetişkine Meslek İlgi Alanları; 5–6. sınıfta yok), çalışma (5. sınıf Ders Çalışma Motivasyonu, 6. sınıftan mezuna Çalışma
+  Alışkanlıkları, yetişkin Erteleme ve Zaman Yönetimi), zihinsel beceriler (Şekil Akıl Yürütme, Kelime Bilgisi, Zihinde
+  Döndürme ya da yetişkinde Kâğıt Katlama, Desen Hatırlama); 49–73 dakika. Başlamadan test çıkarılabilir; testler arasında
+  mola ekranı (sıradaki testi başlat, atla ya da paketi bitir). Sonuç: kısa özet (her testin kendi raporundaki başlık ve
+  düzeyler), paylaşım kartı (kişilik ve ilgi), açılır kapanır test raporları, öğrenci/veli sekmeleri, tek PDF (özet sayfası +
+  bütün raporlar). Tanıtım sayfası `/kendini-tani-paketi` (site haritasında), Testler ve yaş grubu sayfalarında tanıtım kutusu.
+  Ayrılma uyarıları tek soruya indi (paket ve test aynı anda uyarınca paketin metni). Tarayıcıda telefon ve masaüstünde
+  denendi: üç anket testi çözüldü, ara ekran, erken bitirme, sonuç, veli PDF'i (17 sayfa), görev testinin açılışı. Denetim:
+  `tests/paket.test.ts`.
 - 2026-10-30 (53): Paylaşım kartı (site sahibinin isteği: sonuçlar Instagram ve WhatsApp'ta paylaşılsın, insanlar
   "Ölçekhane"yi tanısın). Kişilik ve ilgi testlerinin raporunda "Sonucunu paylaş" bölümü: rapordan 1080 × 1920'lik bir görsel
   (Instagram hikâyesi, WhatsApp durumu) yalnızca tarayıcıda çizilir; telefonda "Paylaş" düğmesi paylaşım ekranını açar,
@@ -1125,5 +1142,3 @@ En yeni üstte; en çok 10 madde tutulur.
   yönü, söylenen temel ve öteki fikirler. Grafikteki sayılar metinden çıkarıldı; okuma süresi "2 dakika 30 saniyede"
   diye yazılıyor; çubuk grafiğinde eksen kesikli çizgiyi de kapsıyor. Raporlar telefonda ve masaüstünde açıldı, PDF
   incelendi.
-- 2026-10-22 (44): Görev testlerinin yol haritalarında noktalı virgülle bağlanmış uzun cümleler kısa cümlelere bölündü
-  ("Bu beceri; …" cümleleri, dördüncü haftanın özet cümleleri, araştırma cümleleri); anlam ve kaynaklar değişmedi.

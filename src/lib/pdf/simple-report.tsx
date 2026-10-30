@@ -10,6 +10,8 @@ import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
 import type { OralMarkedToken } from '@/lib/scoring/oral';
 import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
 import { drawVisual, type DrawnVisual, type Tone } from '@/lib/reports/visual-draw';
+import { packageSummary, summaryIntro, type PackageEntry } from '@/lib/reports/package';
+import { PACKAGE_NAME } from '@/content/paket';
 import { compareGeometry, gaugeGeometry, type CompareVisual, type GaugeVisual, type ItemVisual } from '@/lib/reports/visuals';
 
 /**
@@ -1074,14 +1076,15 @@ function QuizReviewPdf({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) 
 
 /* ---------- Belge ---------- */
 
-export function SimpleReportDocument({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
+/** Bir raporun sayfaları (ana sayfa ve varsa yol haritası): tek raporun belgesinde ve Kendini Tanı Paketi'nin belgesinde. */
+function ReportPages({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
   const kind = report.audienceName ?? AUDIENCE_LABELS[report.audience].name;
   // Öğrenci ve yetişkin raporları ikinci tekil şahısla yazılır.
   const you = report.audience !== 'parent';
   const date = dateFmt.format(new Date(report.completedAt));
   const meta = [report.studentName, report.gradeLabel, date].filter(Boolean).join(' · ');
   return (
-    <Document title={`${report.instrumentName}: ${kind.toLocaleLowerCase('tr-TR')}`} author="Ölçekhane" creator="Ölçekhane" producer="Ölçekhane" language="tr-TR">
+    <>
       <Page size="A4" style={s.page}>
         <View style={s.top} fixed>
           <View>
@@ -1223,6 +1226,15 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
         </View>
       </Page>
       {report.roadmap && <RoadmapPage rm={report.roadmap} you={you} siteHost={siteHost} kind={kind} date={date} />}
+    </>
+  );
+}
+
+export function SimpleReportDocument({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
+  const kind = report.audienceName ?? AUDIENCE_LABELS[report.audience].name;
+  return (
+    <Document title={`${report.instrumentName}: ${kind.toLocaleLowerCase('tr-TR')}`} author="Ölçekhane" creator="Ölçekhane" producer="Ölçekhane" language="tr-TR">
+      <ReportPages report={report} siteHost={siteHost} />
     </Document>
   );
 }
@@ -1230,4 +1242,106 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
 export async function renderSimpleReportPdf(report: SimpleReport, siteHost: string): Promise<Buffer> {
   await registerFonts();
   return renderToBuffer(<SimpleReportDocument report={report} siteHost={siteHost} />);
+}
+
+/* ---------- Kendini Tanı Paketi ---------- */
+
+export interface PackagePdfInput {
+  /** Paketteki testlerin raporları, paketteki sırayla (aynı kişiye: öğrenci, veli ya da yetişkin). */
+  entries: PackageEntry[];
+  /** Pakette olup çözülmeyen (atlanan) testlerin adları. */
+  skipped: string[];
+  gradeLabel: string;
+  completedAt: Date;
+}
+
+/** Paket belgesinin ilk sayfası: başlık, gizlilik notu ve testlerin öne çıkan sonuçları (ekrandaki özetle aynı). */
+function PackageSummaryPage({ input, siteHost }: { input: PackagePdfInput; siteHost: string }) {
+  const first = input.entries[0].report;
+  const you = first.audience !== 'parent';
+  const kind = AUDIENCE_LABELS[first.audience].name;
+  const date = dateFmt.format(input.completedAt);
+  const summary = packageSummary(input.entries);
+  return (
+    <Page size="A4" style={s.page}>
+      <View style={s.top} fixed>
+        <View>
+          <Text style={s.brand}>Ölçekhane</Text>
+          <Text style={s.tag}>Tahmin değil, ölçüm.</Text>
+        </View>
+        <View style={s.topRight}>
+          <Text style={s.audience}>{kind}</Text>
+          <Text style={{ fontSize: 8.5, color: C.ink3 }}>{date}</Text>
+        </View>
+      </View>
+
+      <Text style={s.title}>{PACKAGE_NAME}</Text>
+      <Text style={s.meta}>{[input.gradeLabel, date].join(' · ')}</Text>
+
+      <Text style={s.privacy}>
+        Bu rapor, {siteHost} adresinde hesap açmadan art arda çözülen {input.entries.length} testten hazırlandı. Test cevapları ve bu rapor hiçbir
+        yerde saklanmadı; raporun tek kopyası bu dosyadır.
+      </Text>
+
+      <Text style={s.h2}>{you ? 'Sonuçlarına kısa bir bakış' : 'Sonuçlara kısa bir bakış'}</Text>
+      <Text style={[s.para, { color: C.ink2 }]}>{summaryIntro(you, input.entries.length)}</Text>
+
+      {summary.map((t) => (
+        <View key={t.slug} style={s.item} wrap={false}>
+          <View style={s.itemHead}>
+            <Text style={[s.itemTitle, { fontFamily: 'Bricolage', fontSize: 12 }]}>{t.name}</Text>
+            <Text style={s.itemBadge}>{t.skill}</Text>
+            {t.pilot && <Text style={s.chip}>Pilot test</Text>}
+          </View>
+          {t.lines.map((l) => (
+            <View key={l.label} style={{ flexDirection: 'row', gap: 8, marginTop: 1.5 }}>
+              <Text style={[s.para, { width: 190, color: C.ink2 }]}>{l.label}</Text>
+              <Text style={[s.para, { flex: 1, fontWeight: 700 }]}>{l.value}</Text>
+            </View>
+          ))}
+          {t.cautions > 0 && (
+            <Text style={[s.note, { color: C.warn }]}>
+              {you ? 'Bu testin raporunda okuman gereken bir uyarı var.' : 'Bu testin raporunda okumanız gereken bir uyarı var.'}
+            </Text>
+          )}
+        </View>
+      ))}
+
+      {input.skipped.length > 0 && (
+        <Text style={[s.note, { marginTop: 10 }]}>
+          Pakette olup çözülmeyen {input.skipped.length === 1 ? 'test' : 'testler'}: {input.skipped.join(', ')}.
+        </Text>
+      )}
+
+      <View style={s.disclaimer} wrap={false}>
+        <Text style={s.paraSmall}>
+          <Text style={{ fontWeight: 700 }}>Bu bir tanı değildir.</Text> Testler kişinin kendi cevaplarına ve o gün gösterdiği performansa dayanır.
+          Testlerin bilimsel dayanağı, sınırları ve norm durumu her testin kendi raporunda yazar.
+        </Text>
+      </View>
+
+      <View style={s.footer} fixed>
+        <Text>{siteHost}</Text>
+        <Text render={({ pageNumber, totalPages }) => `Sayfa ${pageNumber} / ${totalPages}`} />
+      </View>
+    </Page>
+  );
+}
+
+export function PackageReportDocument({ input, siteHost }: { input: PackagePdfInput; siteHost: string }) {
+  const kind = AUDIENCE_LABELS[input.entries[0].report.audience].name;
+  return (
+    <Document title={`${PACKAGE_NAME}: ${kind.toLocaleLowerCase('tr-TR')}`} author="Ölçekhane" creator="Ölçekhane" producer="Ölçekhane" language="tr-TR">
+      <PackageSummaryPage input={input} siteHost={siteHost} />
+      {input.entries.map((e) => (
+        <ReportPages key={e.slug} report={e.report} siteHost={siteHost} />
+      ))}
+    </Document>
+  );
+}
+
+export async function renderPackageReportPdf(input: PackagePdfInput, siteHost: string): Promise<Buffer> {
+  if (input.entries.length === 0) throw new Error('empty package');
+  await registerFonts();
+  return renderToBuffer(<PackageReportDocument input={input} siteHost={siteHost} />);
 }

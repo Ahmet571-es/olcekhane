@@ -154,4 +154,15 @@ export const answersBody = z.object({
 /** PDF isteği: aynı cevaplar ve raporun kimin için olduğu (öğrenci, veli ya da yetişkin). */
 export const pdfBody = answersBody.extend({ audience: z.enum(['student', 'parent', 'adult']) });
 
+/**
+ * Kendini Tanı Paketi'nin tek PDF'i: paketteki testlerin cevapları (her test bir kez) ve raporun kime yazıldığı. Hangi
+ * testlerin pakette olabileceğini sunucu sınıfa göre denetler (content/paket.ts).
+ */
+export const packagePdfBody = z.object({
+  grade: answersBody.shape.grade,
+  audience: z.enum(['student', 'parent', 'adult']),
+  tests: z.array(z.object({ slug: z.string().max(60), data: answersBody.shape.data })).min(1).max(10),
+  skipped: z.array(z.string().max(60)).max(10).default([]),
+});
+
 export type AnswersBody = z.infer<typeof answersBody>;

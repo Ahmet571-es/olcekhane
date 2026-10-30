@@ -5,6 +5,7 @@ import { publicInstruments } from '@/content/instruments';
 import { LEGAL_DOCS } from '@/content/legal';
 import { BEYIN_YOLU, DALLAR, hazirDersler } from '@/content/beyin';
 import { allGuides } from '@/content/rehber';
+import { PACKAGE_PATH, packageGrades } from '@/content/paket';
 import { siteUrl } from '@/lib/config';
 
 // APP_URL sunucu çalışırken okunur (derleme anında değil).
@@ -24,6 +25,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/bilimsel-yaklasim',
     '/hakkimizda',
     '/iletisim',
+    // Kendini Tanı Paketi: en az bir sınıfa açıksa.
+    ...(packageGrades().length > 0 ? [PACKAGE_PATH] : []),
   ].map((p) => ({ url: siteUrl(p) }));
 
   // Yaş grubu sayfaları: yalnızca yayında testi olan gruplar (testi olmayan grubun sayfası açılmaz).

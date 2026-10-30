@@ -1,4 +1,5 @@
 import { GroupPicker } from '@/components/site/group-picker';
+import { PackagePromo } from '@/components/site/package-promo';
 import { PageHeader } from '@/components/site/page-header';
 import { TestCards } from '@/components/site/test-cards';
 import { TestShelf } from '@/components/site/test-shelf';
@@ -33,6 +34,10 @@ export default function TestsPage() {
           </p>
         </PageGuide>
       </PageHeader>
+
+      <div className="container-page pt-14 md:pt-20">
+        <PackagePromo />
+      </div>
 
       <section className="container-page py-14 md:py-20" aria-labelledby="yayindakiler">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">

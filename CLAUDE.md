@@ -271,10 +271,24 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Site sahibinin 2026-10-30 isteği: sonuçlar Instagram hikâyesinde ve WhatsApp durumunda paylaşılabilsin. Raporda
   "Sonucunu paylaş" bölümü: 1080 × 1920'lik görsel yalnızca tarayıcıda çizilir (`lib/share/draw.ts`), sunucuya gitmez,
   saklanmaz; telefonda paylaşım ekranı, her yerde indirme. Görselde ad yazmaz; testin adresi yazar.
-- Kart yalnızca kişiliği betimleyen ve ilgileri ya da değerleri sıralayan testlerde olur; Kendini Tanı Paketi
-  hazırlanınca onda da (site sahibinin seçimi). Zihinsel görev, okuma, matematik ve "yüksek daha iyi" diye okunabilen ölçeklerde kart yoktur
+- Kart yalnızca kişiliği betimleyen ve ilgileri ya da değerleri sıralayan testlerde ve Kendini Tanı
+  Paketi'nde olur (site sahibinin seçimi; pakette yalnızca kişilik ve ilgi bloğu). Zihinsel görev, okuma, matematik ve "yüksek daha iyi" diye okunabilen ölçeklerde kart yoktur
   (çocuklar arasında kıyas ve alay olmasın). Yeni anket testi `lib/share/card.ts`'te ya `SHAREABLE`'a ya nedeniyle
   `NOT_SHAREABLE`'a yazılır (`tests/paylasim.test.ts` denetler). Veli sekmesinde kart gösterilmez.
+
+## Kendini Tanı Paketi
+
+- Site sahibinin 2026-10-30 isteği ve seçimleri: kişilik, ilgi, çalışma alışkanlıkları ve dört zihinsel beceri (akıl yürütme,
+  sözel, uzamsal, bellek) testi art arda, tek oturumda (geniş paket, yaklaşık bir saat); sonunda başta kısa bir özet, ardından
+  her testin kendi raporu ve yol haritası, tek PDF (`/api/paket/pdf`). Özet testleri birbirine bağlayan yeni bir yorum
+  eklemez: her satırı testin kendi raporunda aynen yazar (`lib/reports/package.ts`; `tests/paket.test.ts` denetler).
+- Testler sınıfa göre `content/paket.ts`'teki yuvaların adaylarından seçilir (sınıfa uygun ilk yayındaki test); paket 5.
+  sınıftan yetişkine açıktır. Yalnızca anket ve görev testleri pakete girer. Bir yuvaya test eklenecekse ya da paket
+  değişecekse site sahibine sorulur; süre 45–75 dakika arasında kalır (test denetler).
+- Hiçbir şey saklanmaz: cevaplar ve raporlar yalnızca açık sayfada durur; ayrılmadan önce paketin kendi uyarısı çıkar
+  (`useLeaveWarning`'in önceliği; birden çok uyarı etkinse tek soru sorulur). Sayfalar: tanıtım `/kendini-tani-paketi`
+  (site haritasında), çözme `/kendini-tani-paketi/coz` (arama motorlarına kapalı). Tanıtım kutusu Testler sayfasında ve
+  paketin açık olduğu yaş grubu sayfalarındadır (`components/site/package-promo.tsx`).
 
 ## Gelişim yol haritası
 

@@ -27,39 +27,58 @@ export const isAbort = (e: unknown) => e instanceof DOMException && e.name === '
 
 const LEAVE_TEXT = 'Sayfadan ayrılırsan bu testteki ilerlemen silinir; hiçbir yere kaydedilmez. Yine de ayrılmak istiyor musun?';
 
+/** Etkin uyarılar: aynı anda birden çok bileşen uyarı isteyebilir (ör. Kendini Tanı Paketi ve içindeki test). */
+const warnings = new Set<{ text: string; priority: number }>();
+/** Kişi bir bağlantıda ayrılmayı onayladıysa tarayıcı ikinci kez sormaz. */
+let leaveConfirmed = false;
+
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (!leaveConfirmed) e.preventDefault();
+}
+
+function onLeaveClick(e: MouseEvent) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
+  if (!(a instanceof HTMLAnchorElement) || a.target === '_blank' || a.hasAttribute('download')) return;
+  const url = new URL(a.href, window.location.href);
+  // Aynı sayfadaki bir bölüme giden bağlantı (#...) sayfadan çıkarmaz.
+  if (url.origin === window.location.origin && url.pathname === window.location.pathname && url.search === window.location.search) return;
+  // Birden çok uyarı etkinse tek soru sorulur: önceliği en yüksek olanın metniyle (eşitlikte ilk eklenen).
+  let top: { text: string; priority: number } | null = null;
+  for (const w of warnings) if (!top || w.priority > top.priority) top = w;
+  if (!top) return;
+  if (window.confirm(top.text)) {
+    leaveConfirmed = true;
+  } else {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}
+
 /**
  * Görev sürerken sayfadan ayrılmaya çalışıldığında uyarı. Tarayıcının kendi uyarısı (beforeunload) iPhone ve iPad'de
  * çıkmadığı için sayfadan çıkaran bağlantılarda (ör. "Vazgeç") ayrıca sorulur; onaylanırsa tarayıcı ikinci kez sormaz.
- * Geri kaydırma hareketi gibi tarayıcının kendi düğmeleri yakalanamaz.
+ * Geri kaydırma hareketi gibi tarayıcının kendi düğmeleri yakalanamaz. Birden çok bileşen aynı anda uyarı isterse tek
+ * soru sorulur; `priority` yüksek olanın metni kullanılır (pakette paketin metni, testin metninden önce gelir).
  */
-export function useLeaveWarning(active: boolean, text: string = LEAVE_TEXT) {
+export function useLeaveWarning(active: boolean, text: string = LEAVE_TEXT, priority = 0) {
   useEffect(() => {
     if (!active) return;
-    let confirmed = false;
-    const warn = (e: BeforeUnloadEvent) => {
-      if (!confirmed) e.preventDefault();
-    };
-    const click = (e: MouseEvent) => {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
-      if (!(a instanceof HTMLAnchorElement) || a.target === '_blank' || a.hasAttribute('download')) return;
-      const url = new URL(a.href, window.location.href);
-      // Aynı sayfadaki bir bölüme giden bağlantı (#...) sayfadan çıkarmaz.
-      if (url.origin === window.location.origin && url.pathname === window.location.pathname && url.search === window.location.search) return;
-      if (window.confirm(text)) {
-        confirmed = true;
-      } else {
-        e.preventDefault();
-        e.stopPropagation();
+    const w = { text, priority };
+    if (warnings.size === 0) {
+      leaveConfirmed = false;
+      window.addEventListener('beforeunload', onBeforeUnload);
+      document.addEventListener('click', onLeaveClick, true);
+    }
+    warnings.add(w);
+    return () => {
+      warnings.delete(w);
+      if (warnings.size === 0) {
+        window.removeEventListener('beforeunload', onBeforeUnload);
+        document.removeEventListener('click', onLeaveClick, true);
       }
     };
-    window.addEventListener('beforeunload', warn);
-    document.addEventListener('click', click, true);
-    return () => {
-      window.removeEventListener('beforeunload', warn);
-      document.removeEventListener('click', click, true);
-    };
-  }, [active, text]);
+  }, [active, text, priority]);
 }
 
 /**

@@ -1,14 +1,16 @@
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { jsonError, sameOrigin } from '@/lib/api-guard';
-import { ADULT_GRADE, AUDIENCE_LABELS, siteUrl } from '@/lib/config';
+import { ADULT_GRADE, AUDIENCE_LABELS, GRADE_LABELS, siteUrl } from '@/lib/config';
 import { errorSummary } from '@/lib/log';
 import { memoryRateLimit } from '@/lib/memory-rate-limit';
 import { clientIpBucket } from '@/lib/request';
 import type { Audience } from '@/lib/reports/build';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { AssessmentError, evaluateReports } from './evaluate';
-import { answersBody, pdfBody } from './schemas';
+import { answersBody, packagePdfBody, pdfBody } from './schemas';
+import { PACKAGE_AREAS, packageTests } from '@/content/paket';
+import type { PackageEntry } from '@/lib/reports/package';
 
 /**
  * Rapor uçlarının ortak işleyişi. İstek gövdesi (cevaplar) hiçbir yere yazılmaz: ne diske ne günlüğe.
@@ -18,10 +20,12 @@ import { answersBody, pdfBody } from './schemas';
 
 /** Bir test en çok birkaç bin cevap içerir; bundan büyük gövde okunmadan reddedilir. */
 const MAX_BODY_BYTES = 512 * 1024;
+/** Kendini Tanı Paketi'nin PDF isteği paketteki bütün testlerin cevaplarını taşır. */
+const MAX_PACKAGE_BYTES = 2 * 1024 * 1024;
 
-async function readJson(req: NextRequest): Promise<unknown> {
+async function readJson(req: NextRequest, max = MAX_BODY_BYTES): Promise<unknown> {
   const declared = Number(req.headers.get('content-length') ?? '0');
-  if (declared > MAX_BODY_BYTES) return null;
+  if (declared > max) return null;
   if (!req.body) return null;
   const reader = req.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -30,7 +34,7 @@ async function readJson(req: NextRequest): Promise<unknown> {
     const { done, value } = await reader.read();
     if (done) break;
     size += value.byteLength;
-    if (size > MAX_BODY_BYTES) {
+    if (size > max) {
       await reader.cancel().catch(() => {});
       return null;
     }
@@ -114,5 +118,52 @@ export async function pdfResponse(req: NextRequest, slug: string) {
   } catch (err) {
     if (err instanceof AssessmentError) return assessmentError(err);
     return unexpected('pdf', err);
+  }
+}
+
+/**
+ * Kendini Tanı Paketi'nin tek PDF'i. Her testin raporu aynı cevaplardan yeniden hazırlanır (tek testin PDF'indeki gibi);
+ * başta özet sayfası. Yalnızca o sınıfın paketindeki testler, her biri bir kez kabul edilir. Hiçbir şey kaydedilmez.
+ */
+export async function packagePdfResponse(req: NextRequest) {
+  if (!sameOrigin(req)) return jsonError(403, 'İstek reddedildi.');
+  if (await limited('pdf')) return jsonError(429, 'Çok sık istek gönderildi. Lütfen birkaç dakika sonra tekrar deneyin.');
+  const parsed = packagePdfBody.safeParse(await readJson(req, MAX_PACKAGE_BYTES));
+  if (!parsed.success) return jsonError(400, 'Geçersiz istek.');
+  const { grade, audience, tests, skipped } = parsed.data;
+  if ((audience === 'adult') !== (grade === ADULT_GRADE)) return jsonError(400, 'Geçersiz istek.');
+  const plan = packageTests(grade);
+  const inPlan = new Set(plan.map((p) => p.def.slug));
+  const solved = new Map(tests.map((t) => [t.slug, t.data]));
+  if (solved.size !== tests.length || tests.some((t) => !inPlan.has(t.slug))) return jsonError(400, 'Geçersiz istek.');
+  if (skipped.some((slug) => !inPlan.has(slug) || solved.has(slug))) return jsonError(400, 'Geçersiz istek.');
+  try {
+    const now = new Date();
+    const entries: PackageEntry[] = plan.flatMap((p) => {
+      const data = solved.get(p.def.slug);
+      if (!data) return [];
+      const reports: Partial<Record<Audience, SimpleReport>> = evaluateReports(p.def.slug, { grade, data }, now);
+      const report = reports[audience];
+      if (!report) throw new AssessmentError('invalid', 'Geçersiz istek.');
+      const areaName = PACKAGE_AREAS.find((a) => a.key === p.slot.area)!.name;
+      return [{ slug: p.def.slug, skill: p.slot.skill, areaName, report }];
+    });
+    const skippedNames = plan.filter((p) => skipped.includes(p.def.slug)).map((p) => p.def.name);
+    const { renderPackageReportPdf } = await import('@/lib/pdf/simple-report');
+    const pdf = await renderPackageReportPdf(
+      { entries, skipped: skippedNames, gradeLabel: GRADE_LABELS[grade] ?? `${grade}. sınıf`, completedAt: now },
+      new URL(siteUrl()).host,
+    );
+    const file = `olcekhane-kendini-tani-paketi-${AUDIENCE_LABELS[audience].file}-raporu.pdf`;
+    return new Response(new Uint8Array(pdf), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${file}"`,
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (err) {
+    if (err instanceof AssessmentError) return assessmentError(err);
+    return unexpected('paket-pdf', err);
   }
 }
