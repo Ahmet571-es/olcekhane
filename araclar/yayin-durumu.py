@@ -241,6 +241,14 @@ def main():
             return 3
         print('SONUÇ: Çalışma durduruldu (elle ya da GitHub tarafından). Yeniden yayın için main\'e yeni bir işleme gönderin.')
         return 1
+    # GitHub işleri hiç başlatmadıysa (ücretsiz aylık çalışma süresi bitti ya da hesapta ödeme sorunu var) sorun kodda değildir.
+    faturalama = ('spending limit', 'account payments have failed', 'locked due to a billing issue')
+    if any(any(f in m for f in faturalama) for ad in ('Denetim', 'Kurulum provası') for _, _, m in hepsi[ad]):
+        print("SONUÇ: GitHub iş akışlarını başlatmadı: ücretsiz aylık çalışma süresi bitmiş ya da hesapta ödeme sorunu var "
+              "(GitHub'ın mesajı yukarıda). Bu kodla ilgili değil; kodu değiştirmeyin. Değişiklik main'de, ama canlı site "
+              "önceki sürümde. Süre her ayın 1'inde (00:00 UTC) yenilenir; ondan sonra main'e bir işleme gönderin. Ayın "
+              "1'inden sonra da sürerse site sahibine bildirin (GitHub ödeme sayfası).")
+        return 1
     if den['conclusion'] != 'success':
         print('SONUÇ: Denetim başarısız; değişiklik yayına alınmadı, canlı site önceki sürümde. Hata notlarına göre '
               'düzeltip yeniden gönderin.')

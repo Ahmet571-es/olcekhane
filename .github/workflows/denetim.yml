@@ -1,5 +1,7 @@
-# Denetim: her gönderimde tür denetimi, biçim denetimi, birim testleri, üretim derlemesi ve Docker
-# görüntüsünün derlenip sunucudaki gibi (salt okunur dosya sistemiyle) çalıştırılması.
+# Denetim: her gönderimde tür denetimi, biçim denetimi, birim testleri ve Docker görüntüsünün derlenip sunucudaki
+# gibi (salt okunur dosya sistemiyle) çalıştırılması. Üretim derlemesi görüntünün içinde, ortam değişkeni olmadan
+# yapılır (Dockerfile, build aşaması); "Kod denetimi" işinde ayrıca derlenmez: aynı derleme iki kez GitHub'ın ücretsiz
+# aylık çalışma süresinden yiyordu (2026-10-30).
 name: Denetim
 
 on:
@@ -37,8 +39,6 @@ jobs:
         run: npm run lint
       - name: Birim testleri
         run: npm test
-      - name: Üretim derlemesi (ortam değişkeni olmadan)
-        run: env -i PATH="$PATH" HOME="$HOME" NEXT_TELEMETRY_DISABLED=1 sh -c 'npm run build'
 
   goruntu:
     name: Docker görüntüsü

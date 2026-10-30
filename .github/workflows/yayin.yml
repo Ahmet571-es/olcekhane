@@ -620,12 +620,14 @@ jobs:
             sorun="$sorun pdf"
           fi
           # Site haritasındaki her sayfa (yeni rehber yazıları dahil) internetten açılmalı. Bu adıma yeni bilgi notu
-          # eklenmez: sorunlu sayfalar aşağıdaki hata notunda listelenir.
+          # eklenmez: sorunlu sayfalar aşağıdaki hata notunda listelenir. Sayfalar altışar altışar aynı anda istenir
+          # (sırayla istemek her yayında bir dakikadan uzun sürüyordu).
           harita=$("${C[@]}" "https://$ALAN/sitemap.xml" | grep -o '<loc>[^<]*</loc>' | sed -e 's/<loc>//' -e 's#</loc>##') || harita=""
-          for sayfa_adresi in $harita; do
-            kod=$("${C[@]}" -o /dev/null -w '%{http_code}' "$sayfa_adresi") || kod=000
-            [ "$kod" = 200 ] || sorun="$sorun $sayfa_adresi=$kod"
-          done
+          if [ -n "$harita" ]; then
+            harita_sorun=$(printf '%s\n' $harita | xargs -P 6 -I{} sh -c \
+              'kod=$(curl -sS -m 30 -A olcekhane-yayin-denetimi -o /dev/null -w "%{http_code}" "$1" 2>/dev/null) || kod=000; [ "$kod" = 200 ] || printf " %s=%s" "$1" "$kod"' _ {})
+            sorun="$sorun$harita_sorun"
+          fi
           if [ -n "$sorun" ]; then
             echo "::error title=Site dışarıdan sınandı::Açılmayan ya da hatalı yanıt veren bölümler:$sorun"
             exit 1

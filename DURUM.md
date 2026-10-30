@@ -651,8 +651,8 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    sayfada aynı söz öbeğinin iki ayrı yerde geçmediğini de denetler. İki bağımsız inceleme (metin ve mantık; kaynak ve sayı)
    bulguları yayından önce uygulandı (ayrıntı "Son yapılanlar"da). Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle
    (yetişkin) baştan sona çözüldü; rapor ve PDF'ler açıldı.
-6. **Harf-Sayı Sıralama: hazır, `main`'de (2026-10-30, pilot; 3. sınıftan yetişkine); GitHub ödemesi düzelince
-   yayına girer (Site sahibinin bekleyen işleri).** Yeni görev türü `letter_number`: Gold ve ark.
+6. **Harf-Sayı Sıralama: hazır, `main`'de (2026-10-30, pilot; 3. sınıftan yetişkine); GitHub'ın aylık çalışma süresi
+   1 Kasım'da yenilenince yayına girer (Site sahibinin bekleyen işleri).** Yeni görev türü `letter_number`: Gold ve ark.
    (1997) harf-sayı sıralama düzeni, Mobile Toolbox "Sequences" (Slotkin ve ark., 2025) gibi ekranda: karışık sayılar (1–9) ve
    12 ünsüz (C D F H K L M N P R T Y; ünlü yok, sayıya benzeyen ve Türkçeye özgü harfler yok) tek tek 1 sn gösterilir; önce
    sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla girilir. Harf tuşları Türkçe Q klavyedeki gibi (alfabe sırasıyla
@@ -722,7 +722,7 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
    hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
-   (Öz-denetim) yayında (2026-10-27); 6. test (Harf-Sayı Sıralama) hazır, GitHub ödemesi düzelince yayına girer.
+   (Öz-denetim) yayında (2026-10-27); 6. test (Harf-Sayı Sıralama) hazır, 1 Kasım'da yayına girer.
    Sıradaki: 3. listenin 7. testi (Merak).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
@@ -950,7 +950,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Öz-yeterlik: Kendine Güven | oz-yeterlik | Yayında (active; 9. sınıftan yetişkine) |
 | Şekil Benzetmeleri | sekil-benzetmeleri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öz-denetim | oz-denetim | Yayında (active; 9. sınıftan yetişkine) |
-| Harf-Sayı Sıralama | harf-sayi-siralama | Hazır, yayın GitHub ödemesini bekliyor (pilot; 3. sınıftan yetişkine) |
+| Harf-Sayı Sıralama | harf-sayi-siralama | Hazır, 1 Kasım'da yayına girer (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1051,11 +1051,15 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **Site sahibi bilgileri** (ad, adres, telefon, e-posta): yasa gereği İletişim sayfasında ve aydınlatma metninde
   gösterilir; her yayında uyarı olarak çıkar. Gelince `yayin/ayarlar.env`'e yazılır (CLAUDE.md).
 - **Hostinger sunucusunun yenilenmesi:** 30 Ekim 2026'dan önce.
-- **GitHub ödemesi (2026-10-30):** GitHub, Actions işlerini "hesaptaki son ödemeler başarısız oldu ya da harcama sınırı
-  artırılmalı" diyerek başlatmıyor; bu yüzden Denetim ve Yayın çalışmıyor, gönderilen işlemeler canlıya çıkmıyor. Site
-  sahibi GitHub → Settings → Billing and plans'tan düzeltir. Düzelince `main`'e yeni bir işleme gönderilir (ya da GitHub'da
-  son çalışma yeniden başlatılır) ve yayın doğrulanır. Paylaşım kartı (53), Kendini Tanı Paketi (54) ve
-  Harf-Sayı Sıralama (55) bunu bekliyor; canlı site Öz-denetim (e1701da) sürümünde.
+- **GitHub aylık çalışma süresi (2026-10-30):** GitHub, Actions işlerini "recent account payments have failed or your
+  spending limit needs to be increased" diyerek başlatmıyor. Site sahibinin ödeme sayfası ekran görüntüsüne göre ödeme
+  sorunu yok (Copilot 0 dolar): ücretsiz hesabın aylık 12 dolarlık çalışma süresi bitti (Ekim'de 12,35 dolar: olcekhane
+  10,59; site sahibinin öteki depoları kt-radar, aym-radar, egitim-checkup-pro, hukukcularevi-deploy ve diğerleri
+  birlikte ~1,76). Site sahibi ödeme yapamıyor; kararı: ayın başını beklemek. Süre 1 Kasım 00:00 UTC'de (03:00 Türkiye)
+  yenilenir; ondan sonra `main`'e bir işleme gönderilip yayın doğrulanır. Paylaşım kartı (53), Kendini Tanı Paketi (54)
+  ve Harf-Sayı Sıralama (55) bunu bekliyor; canlı site Öz-denetim (e1701da) sürümünde. Süre yeniden bitmesin diye iş
+  akışlarının kullanımı azaltıldı (56). Kasım'da yeniden biterse site sahibine sorulur (bekleme, depoyu herkese açmak
+  ya da sunucunun kendini yayına alması).
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
 - **Hoca buluşması (2026-10-18 dolayı; 2026-10-11'den ertelendi):** platform bitmiş hâliyle sunulacak; yeni testler de
@@ -1068,8 +1072,14 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (56): GitHub'ın ücretsiz aylık çalışma süresi bitti (ödeme sorunu değil; ayrıntı: Site sahibinin bekleyen
+  işleri). Kullanım azaltıldı (Ekim'e göre ayda ~600 dakika, ~%35): Kurulum provası artık `yayin.yml` değişince çalışmıyor
+  (Ekim'deki 53 provanın 52'si yalnızca bu yüzdendi; prova `yayin.yml`'yi çalıştırmaz); Denetim'deki ikinci üretim
+  derlemesi kaldırıldı (derleme Docker görüntüsünde zaten yapılıyor); dış sınamada site haritasındaki sayfalar altışar
+  altışar aynı anda isteniyor. `araclar/yayin-durumu.py` bu durumu tanıyor ("kodla ilgili değil, ayın 1'inden sonra
+  gönder"); CLAUDE.md'ye not eklendi.
 - 2026-10-30 (55): Yeni test Harf-Sayı Sıralama hazırlandı ve `main`'e gönderildi (3. listenin 6. testi; ayrıntı
-  yukarıda); GitHub Actions ödeme sorunu yüzünden başlamadığı için henüz yayında değil. Yeni görev türü
+  yukarıda); GitHub'ın aylık çalışma süresi bittiği için henüz yayında değil. Yeni görev türü
   (`letter_number`): diziler, çözme ekranı (klavye düzeninde harf tuşları, telefonda 320 px'e sığan tuş takımı), puanlama,
   beş kartlı rapor, yol haritası, bilim kartı (kaynak araştırmasıyla), dış sınama; bağımsız kaynak, kod ve metin
   incelemelerinin bulguları uygulandı. Kart grafiklerinde parçalı çubuğun beşinci parçası artık içi boş, çerçeveli kutu
@@ -1160,12 +1170,3 @@ En yeni üstte; en çok 10 madde tutulur.
   ve altındaki not düzeyin nasıl belirlendiğini (akıcılık kuralı, soru sayısı) söylüyor. Yol haritasında öncelik düzeyi
   belirleyen ölçütte (önce doğru okuma, sonra anlama); metin zorsa 3. hafta kolay metinler, 4. hafta bir alt sınıfın metni.
   Rapor telefonda ve masaüstünde açıldı, PDF incelendi.
-- 2026-10-22 (46): Matematik ve okuma raporlarında bağımsız incelemenin bulguları uygulandı. Matematik: cevaplar tahmin
-  olabilirse (çok hızlı ya da çoğu aynı seçenek) ya da bütün sorularda "Bilmiyorum" denmişse genel sonuç, alanlar ve yol
-  haritası "Yorumlanmadı"; alan kartları sonucu sözle de anlatıyor; "Pekiştirilmeli" ama bazı alanlar öncelikliyse o
-  alanlar söyleniyor; hatalar bir alanda toplanınca "dikkatsizlik" denmiyor; yanlış yokken hata türü bölümü bunu söylüyor;
-  norm notu, uyarılar, yol haritası (sıralama, "sağlam görünüyor", ortak kat sorusu, hata defteri) sadeleşti. Okuma: hız
-  yorumlanmayınca hiçbir yerde hız sayısı yok; anlama kartı en çok zorlanılan soru türünü söylüyor, az doğruda rastgele
-  işaretlemeyle ayırt edilemeyeceğini belirtiyor; "Anlayarak okuma hızı" adı ve açıklaması; sesli okuma verisi aralıksız ve
-  "Ankara'da" diye; "metindeki bilgiyi hatırlama"; yol haritasında hız olağan ama anlama zayıfsa anlama önerisi, çok kısa
-  sürede anlama iyiyse ön bilgi uyarısı. 3–5. sınıf öğrencisinin raporunun sonundaki not küçük çocuğa göre.

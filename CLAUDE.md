@@ -38,13 +38,14 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
    - Çıkış kodu 0: yayında; sunucudaki sürüm bu işleme ve site dışarıdan sınandı.
    - 1: hata. Sorun koddaysa düzelt ve 3. adımdan devam et; ayrıntısız bir hatada (ör. yalnızca "Process completed
      with exit code 1") başarısız adımı yerelde çalıştır. SONUÇ sorunun kodda olmadığını söylüyorsa (yayın atlandı,
-     gizli değer eksik, site dışarıdan açılmıyor) kodu değiştirme, site sahibine sade dille anlat. İki düzeltme
+     gizli değer eksik, site dışarıdan açılmıyor, GitHub'ın aylık çalışma süresi bitti) kodu değiştirme, site sahibine
+     sade dille anlat. İki düzeltme
      denemesinden sonra hâlâ başarısızsa değişikliği `git revert` ile geri al, gönder, doğrula ve durumu anlat.
    - 2 ya da Bash zaman aşımı: henüz bitmedi; aynı komutu yeniden çalıştır (en çok 3 kez, sonra durumu anlat).
    - 3: bu işleme için sonuç alınamadı (GitHub'a ulaşılamadı, işleme `main`'de değil ya da çalışması daha yeni bir
      gönderim yüzünden durduruldu); SONUÇ satırındaki komutu çalıştır.
 
-   Denetim yaklaşık 3, Yayın 2, Kurulum provası 4 dakika sürer. Denetim'den geçmeyen işleme yayına alınmaz; canlı
+   Denetim yaklaşık 4, Yayın 3, Kurulum provası 6 dakika sürer. Denetim'den geçmeyen işleme yayına alınmaz; canlı
    site bir önceki sürümde kalır.
 6. **Raporla:** Sade Türkçe ve kısa yaz: ne değişti, canlıda nereden görülür (tam adres; incelemedeki testte
    doğrudan bağlantı), site sahibinin yapması gereken bir şey varsa o. Kod, dosya adı ve İngilizce terim kullanma;
@@ -53,10 +54,15 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 
 ## Yayına alma
 
-- `main` dalına gönderilen her işleme: **Denetim** (tür ve biçim denetimi, birim testleri, derleme, Docker
-  görüntüsü) → **Yayın** (sunucuya kurulum; ardından site dışarıdan sınanır: sayfalar, site haritasındaki bütün
-  sayfalar, test raporları, PDF ve robots.txt). Sunucu ya da yayın dosyaları değişince **Kurulum provası** da
-  çalışır.
+- `main` dalına gönderilen her işleme: **Denetim** (tür ve biçim denetimi, birim testleri, Docker görüntüsünün
+  içinde derleme) → **Yayın** (sunucuya kurulum; ardından site dışarıdan sınanır: sayfalar, site haritasındaki bütün
+  sayfalar, test raporları, PDF ve robots.txt). Sunucu ya da yayın betikleri (`sunucu/`, `yayin/`, Docker dosyaları,
+  `prova.yml`) değişince **Kurulum provası** da çalışır; `yayin.yml` değişince çalışmaz.
+- GitHub'ın ücretsiz aylık çalışma süresi (yaklaşık 2.000 dakika; site sahibinin bütün gizli depoları birlikte)
+  her ayın 1'inde (00:00 UTC) yenilenir. Ekim 2026'da yalnızca bu depo ~1.770 dakika kullandı ve süre 30 Ekim'de
+  bitti (iş akışları "recent account payments have failed or your spending limit needs to be increased" diyerek
+  başlamadı; ödeme sorunu yoktu). Site sahibi ödeme yapamıyor: iş akışlarına süre artıran adım ya da gereksiz
+  tetikleyici eklenmez; bu hata görülürse kod değiştirilmez, ayın 1'inden sonra `main`'e bir işleme gönderilir.
 - Site sahibinin 2026-10-07 kararı: yeni testler ve yol haritaları hoca onayı beklenmeden doğrudan yayına alınır:
   `pilot` (özgün test; sitede güvenirlik kanıtının henüz olmadığı yazar) ya da `active` (kaynağı doğrulanmış ölçek).
   Hoca yayındaki siteyi inceler; istediği düzeltmeler yapılıp yayına alınır. `status: 'review'` (yalnızca doğrudan
@@ -93,7 +99,7 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   içinde bir döngüyle tek tek denenir. Test telefon ve masaüstünde baştan sona çözülür; rapor ve PDF açılır.
 - `.github/workflows/yayin.yml`: örnek cevaplarla bir rapor denetimi dış sınamaya eklenir; incelemede tutulan
   (`review`) testlerin adresleri `ONIZLEME`'dedir (`tests/yayin.test.ts` denetler). O adıma yeni `::notice` satırı eklenmez: GitHub adım başına
-  10 not gösterir ve sondaki "Site dışarıdan sınandı" notu kaybolur. yayin.yml değişince Kurulum provası da çalışır.
+  10 not gösterir ve sondaki "Site dışarıdan sınandı" notu kaybolur.
 - Hoca için ayrı bir inceleme belgesi yalnızca site sahibi isterse hazırlanır (2026-10-07 kararı; hoca yayındaki
   siteyi inceler). İstenirse Claude Docs'ta "<Test adı> İncelemesi" (bağlantılar DURUM.md'de; en yenisi örnek):
   inceleme adımları ve testin bağlantısı, görevin ya da maddelerin düzeni, yönergeler, puanlama, öğrenci ve veli
