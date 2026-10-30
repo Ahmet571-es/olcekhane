@@ -42,7 +42,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *
  * Örtüşme (İngilizce asılları birebir aynı maddeler): göze alma ve keşfin beş maddesi ile tehlikeli heyecanlara ilginin üç
  * maddesi Altı Boyutlu Kişilik Profili'nin "Tehlikeden çekinme" alt özelliğinde de sorulur; göze almanın bir maddesi o testin
- * "Merak" alt özelliğindedir. Anlık heyecan arayışının beş maddesi öteki testlerdedir: "Macera ararım" ve "Çılgınca şeyler
+ * "Merak" alt özelliğindedir (aynı madde Merak testinin "Bilgi merakı" yönündedir). Anlık heyecan arayışının beş maddesi öteki testlerdedir: "Macera ararım" ve "Çılgınca şeyler
  * yaparım" Ayrıntılı Kişilik Profili'nin heyecan arayışında, "Uçsuz bucaksız hayallere dalmaktan hoşlanırım" onun hayal
  * gücünde; "Çılgınca şeyler yaparım" 16 Faktörlü Kişilik Profili'nin neşe ve canlılığında, "Beklenmedik şeyler yaparım" ve
  * "Uçsuz bucaksız..." onun hayal gücünde; "Aklıma estiği gibi davranmayı severim" Öğrenme ve Başarı Özellikleri'nin planlı ve
@@ -212,7 +212,7 @@ export const heyecanArayisi: LikertInstrument = {
       'Cümlelerin bir kısmı kişinin hiç yaşamadığı durumları sorar (ör. bungee jumping, paraşütle atlama); bu cümlelerde cevap, kişinin o durumda nasıl hissedeceğini düşündüğünü gösterir.',
       'Anlık heyecan arayışının on cümlesinin hepsi aynı yöndedir: cümlelerin çoğuna “doğru” deme eğilimi bu yönün puanını yükseltebilir.',
       'Bu IPIP ölçeklerinin maddeleri anlamlarına ve iç tutarlılığa göre seçilmiştir; IPIP sayfası bu ölçeklerin bilinen heyecan arama ölçekleriyle ya da kişilerin gerçek davranışlarıyla karşılaştırıldığı bir sonuç vermez.',
-      '29 cümleden 15’i sitedeki öteki kişilik testlerinde de sorulur: dokuzu Altı Boyutlu Kişilik Profili’nde (tehlikeden çekinme ve merak), beşi Ayrıntılı Kişilik Profili, 16 Faktörlü Kişilik Profili ve Öğrenme ve Başarı Özellikleri’nde; biri (“Çılgınlıklar yaparım.”) Öz-denetim testinde. Öz-denetim “Aklıma estiği gibi davranmayı severim.” cümlesini de sorar ve ikisini düşünerek davranmanın tersi olarak puanlar. Bu yüzden sonuçlar birbiriyle uyumlu çıkabilir: ör. tehlikeden çekinme puanı yüksek olan birinin göze alma ve keşif puanı düşük olabilir.',
+      '29 cümleden 15’i sitedeki öteki kişilik testlerinde de sorulur: dokuzu Altı Boyutlu Kişilik Profili’nde (tehlikeden çekinme ve merak), beşi Ayrıntılı Kişilik Profili, 16 Faktörlü Kişilik Profili ve Öğrenme ve Başarı Özellikleri’nde; biri (“Çılgınlıklar yaparım.”) Öz-denetim testinde. Altı Boyutlu’daki merak cümlesi (“Alışılmadık yerleri keşfetmeyi çok isterdim.”) Merak testinin bilgi merakı yönünde de sorulur. Öz-denetim “Aklıma estiği gibi davranmayı severim.” cümlesini de sorar ve ikisini düşünerek davranmanın tersi olarak puanlar. Bu yüzden sonuçlar birbiriyle uyumlu çıkabilir: ör. tehlikeden çekinme puanı yüksek olan birinin göze alma ve keşif puanı düşük olabilir.',
       'Uçların iyi ya da kötü anlamı yoktur. Test, kişinin riskli bir davranışta bulunup bulunmayacağını öngörmez.',
       'Tanı koymaz; bir ruh sağlığı ya da dürtüsellik taraması değildir ve uzman değerlendirmesinin yerini tutmaz.',
       'Ergenlerde güvenirliğini ve geçerliğini inceleyen bir çalışmaya ulaşılamadığı için lise öğrencilerinde sonuçlar dikkatle yorumlanmalıdır.',

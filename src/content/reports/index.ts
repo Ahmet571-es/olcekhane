@@ -11,6 +11,7 @@ import { hobiIlgileriReport } from './hobi-ilgileri';
 import { empatiReport } from './empati';
 import { ozYeterlikReport } from './oz-yeterlik';
 import { ozDenetimReport } from './oz-denetim';
+import { merakReport } from './merak';
 import { heyecanArayisiReport } from './heyecan-arayisi';
 import { iyimserlikReport } from './iyimserlik';
 import { hizliKisilikTestiReport } from './hizli-kisilik-testi';
@@ -49,6 +50,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   empati: empatiReport,
   'oz-yeterlik': ozYeterlikReport,
   'oz-denetim': ozDenetimReport,
+  merak: merakReport,
   'cocuk-kisilik-profili': cocukKisilikReport,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuReport,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiReport,

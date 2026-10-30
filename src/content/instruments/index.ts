@@ -17,6 +17,7 @@ import { hobiIlgileri } from './hobi-ilgileri';
 import { empati } from './empati';
 import { ozYeterlik } from './oz-yeterlik';
 import { ozDenetim } from './oz-denetim';
+import { merak } from './merak';
 import { heyecanArayisi } from './heyecan-arayisi';
 import { iyimserlik } from './iyimserlik';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
@@ -111,6 +112,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   empati,
   ozYeterlik,
   ozDenetim,
+  merak,
   harfSayiSiralama,
   cocukKisilik,
   dersCalismaMotivasyonu,

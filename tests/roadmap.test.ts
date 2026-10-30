@@ -312,6 +312,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'oz-yeterlik': 3 ** 3 * 3,
       // Üç alan; yetişkinlere de açık.
       'oz-denetim': 3 ** 3 * 3,
+      // İki yön; yetişkinlere de açık.
+      merak: 3 ** 2 * 3,
       'calisma-aliskanliklari': 5 ** 5 * 2,
       'ogrenme-ve-basari-ozellikleri': 3 ** 6 * 3,
       // Yalnızca 3–5. sınıflara açık: öğrenci ve veli.

@@ -81,6 +81,11 @@ export const SECICI_GOALS: SeciciGoal[] = [
         candidates: ['kisilerarasi-tarz'],
       },
       {
+        skill: 'Merak',
+        why: 'Yeni bilgilere ve yeni deneyimlere ne kadar ilgi duyduğunu gösterir.',
+        candidates: ['merak'],
+      },
+      {
         skill: 'Kişiliğin ayrıntıları',
         why: 'Kişiliği daha çok özellikle, ayrıntılı biçimde gösterir.',
         candidates: ['kisiligin-10-yonu', '16-faktorlu-kisilik-profili', 'alti-boyutlu-kisilik-profili'],

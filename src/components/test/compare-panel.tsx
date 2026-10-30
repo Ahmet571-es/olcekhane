@@ -165,9 +165,10 @@ export function ComparePanel({ compare, you }: { compare: CompareInfo; you: bool
               ))}
             </ul>
             <p className="t-small text-ink-3">
-              İçi boş daire önceki, dolu daire şimdiki puan. “Belirgin” değişim: fark, ölçeğin bilinen güvenirliğine göre hesaplanan ölçüm
-              payını aşıyor (güvenilir değişim ölçütü, %95; Jacobson ve Truax, 1991). Tek bir karşılaştırmadan kesin sonuç
-              çıkarılmamalı; insanlar zamanla değişir ve gelişir.
+              İçi boş daire önceki, dolu daire şimdiki puan.{' '}
+              {ok.known &&
+                '“Belirgin” değişim: fark, ölçeğin bilinen güvenirliğine göre hesaplanan ölçüm payını aşıyor (güvenilir değişim ölçütü, %95; Jacobson ve Truax, 1991). '}
+              Tek bir karşılaştırmadan kesin sonuç çıkarılmamalı; insanlar zamanla değişir ve gelişir.
             </p>
           </>
         )}

@@ -672,7 +672,19 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    doğrulayıcı model). Kod, metin ve ekran incelemesinin bulguları da uygulandı (diziler yeniden üretildi: ikişer ya da
    üçer artan sayılar ve "LC" yok; kartlarda sayı ve dil düzeltmeleri; alıştırma ipuçları tekil-çoğul ve türe göre; yol
    haritasında haftalık denemeler iki ayrı örnekle, alfabe oyununun teste benzediği notu).
-7. Merak (kişilik; IPIP, VIA dışı ölçek)
+7. **Merak: yayında (2026-10-30, active; 9. sınıftan yetişkine).** IPIP'in iki ölçeği, 20 madde (~4 dakika), toplam puan yok:
+   IPIP-HEXACO "Inquisitiveness" → "Bilgi merakı" (6 düz + 4 ters; α .78; Altı Boyutlu'nun "Merak" alt özelliğiyle aynı on
+   madde ve çeviri) ve IPIP-NEO "Adventurousness" (O4) → "Yenilik merakı" (4 düz + 6 ters; α .77). NEO anahtar ve tablo
+   sayfaları ile HEXACO tablo sayfası otomatik okumaya kapalı olduğu için IPIP sitesinin arşiv kopyasından okundu (on O4
+   maddesinin yedisi açılabilen resmî 6FPQ sayfasında birebir; bilim kartında yazılı). 15 maddenin çevirisi sitedeki öteki
+   testlerden; 5 yeni madde iki taslakla çevrildi ("Çoğu şeyi alıştığım biçimde yaparım.", "Tanımadığım yemekleri
+   denemekten çekinirim." gibi). Üç karşıt çift (iki okuma, iki siyaset maddesi; çeşitlilik / bildiklerine bağlı kalma);
+   uyarı en az ikisinde. Rapor: araştırma özetli giriş (bilgideki boşluk, merakın birden çok yüzü; öğrenci ve veliye notlarla
+   küçük ilişki ve okul yıllarında ilginin ortalamada azalması; yetişkine anketlerin bilgi arama davranışını sınırlı
+   öngörmesi), 9 birleşimde birbirini dışlayan 4 kural, 2×3 kart (bilgi merakı zekâ gibi okunmaz). Yol haritası: 2. hafta
+   "Önce tahmin et" (tahmin merakı artırır, hatırlamayı artırdığı söylenmez; Brod ve Breitwieser, 2019), son hafta Düşünmeyi
+   Sevme ve Heyecan Arayışı. "Hangi test bana uygun?"da kişilik alanında; paylaşım kartı yok ("yüksek daha iyi" diye
+   okunabilir). Heyecan Arayışı'nın örtüşme notu bu testi de anar. Bütün birleşimler `tests/merak.test.ts`'te.
 8. Simge Arama (zekâ; özgün görev)
 9. Liderlik (kişilik; IPIP, VIA dışı ölçek)
 10. Parça Birleştirme (zekâ; özgün sorular)
@@ -721,8 +733,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
    hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
-   (Öz-denetim) yayında (2026-10-27); 6. test (Harf-Sayı Sıralama) yayında (2026-10-30).
-   Sıradaki: 3. listenin 7. testi (Merak).
+   (Öz-denetim) yayında (2026-10-27); 6. test (Harf-Sayı Sıralama) ve 7. test (Merak) yayında (2026-10-30).
+   Sıradaki: 3. listenin 8. testi (Simge Arama).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -950,6 +962,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Şekil Benzetmeleri | sekil-benzetmeleri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öz-denetim | oz-denetim | Yayında (active; 9. sınıftan yetişkine) |
 | Harf-Sayı Sıralama | harf-sayi-siralama | Yayında (pilot; 3. sınıftan yetişkine) |
+| Merak | merak | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1074,6 +1087,10 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (59): Yeni test Merak yayına alındı (3. listenin 7. testi; site sahibinin seçtiği dört yeniliğin üçüncüsü;
+  ayrıntı yukarıda). İki yön (bilgi merakı, yenilik merakı), 20 madde, araştırma özetli "Birlikte bakınca", 2. hafta
+  "Önce tahmin et". Kayıtlar: test seçici (kişilik alanı), paylaşım kararı (kart yok), dış sınama, yetişkin ve yol haritası
+  testleri. Sıradaki yenilik: Simge Arama testi.
 - 2026-10-30 (58): "Gelişimini karşılaştır" (site sahibinin seçtiği dört yeniliğin ikincisi): anket testlerinin (26 test)
   raporunda "Önceki sonucunla karşılaştır"; aynı testin önceki PDF'i seçilir, tarayıcıda okunur; ölçek ölçek önce → şimdi,
   fark, belirgin mi (güvenilir değişim ölçütü; ölçüm payı yalnızca güvenirliği bilinen 7 testin ölçeklerinde,
@@ -1155,14 +1172,3 @@ En yeni üstte; en çok 10 madde tutulur.
   türleri kartı her değişikliği ayrı sayar (yanlış cevapta seçilen şeklin kaçırdığı değişiklikler); böylece döndürmede
   zorlanan birinin aynı sorulardaki renk değişiklikleri de yanlış sayılmaz. Kaynak araştırması ayrı bir ajanla yapıldı
   (38 kaynak; açılamayanlar ayrıca listelendi).
-- 2026-10-23 (49): Yeni test Öz-yeterlik: Kendine Güven yayına alındı (3. listenin 3. testi; ayrıntı yukarıda). Kaynak
-  araştırması ayrı bir ajanla yapıldı; metin ve mantık incelemesi ile kaynak ve sayı incelemesinin bulguları uygulandı:
-  iki çeviri netleşti, destek cümlesinin eşiği İyimserlik'le aynı (4), yüksek düzeyde yol haritası kartla çelişmiyor
-  (`flaggedFromAverage`), veli raporunda 2. hafta ile yaklaşım önerileri aynı fikri tekrarlamıyor (test artık kök düzeyinde
-  de bakıyor), girişteki araştırma cümleleri okul araştırmalarıyla sınırlı ve "çoğu zaman" kaydıyla, Braithwaite ve Corr
-  cümlesi kaynağın tablosuna göre düzeltildi, aktarılan bilgiler "aktaran" diye anıldı, NEO tablosunun örneklemi
-  belirtmediği yazıldı. Düşünme ve Çalışma Tarzı testindeki "yalnızca bu testte" denetimi, aynı çeviriyi kullanan
-  sonraki testlere izin verecek biçimde güncellendi. İkinci tur denetimden sonra: veli kurallarındaki öneriler betimleyici
-  oldu (yaklaşım bölümüyle yarışmasın), "başardıkça güven artar" fikri sayfada bir kez söylenir, zor anlar düşükken o alan
-  "Kısaca"da öne çıkanların başında (`standoutFirst`). Test sayfasındaki "Neyi ölçer?" metni artık boş satırla (`\n\n`)
-  paragraflara bölünebilir (öteki testlerde değişiklik yok); bu testin uzun metni beş paragraftır.

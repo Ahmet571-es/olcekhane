@@ -428,4 +428,8 @@ export const KAYNAK = {
     text: 'Caviola, S., Carey, E., Mammarella, I. C. ve Szucs, D. (2017). Stress, time pressure, strategy selection and math anxiety in mathematics: A review of the literature. Frontiers in Psychology, 8, 1488.',
     url: 'https://doi.org/10.3389/fpsyg.2017.01488',
   },
+  brod2019: {
+    text: 'Brod, G. ve Breitwieser, J. (2019). Lighting the wick in the candle of learning: Generating a prediction stimulates curiosity. npj Science of Learning, 4, 17.',
+    url: 'https://doi.org/10.1038/s41539-019-0056-y',
+  },
 } satisfies Record<string, { text: string; url: string }>;
