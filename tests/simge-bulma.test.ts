@@ -16,9 +16,13 @@ import {
   SG_MIN_ANSWERED,
   TaskInputError,
   scoreSymbolSearch,
+  sgAccGap,
   sgAccLower,
+  sgHalvesApart,
   sgNotRead,
-  sgRtLonger,
+  sgAbsentSlower,
+  sgLookFaster,
+  sgLookSlower,
   sgTooFast,
   type SymbolSearchResult,
   type SymbolSearchTrialInput,
@@ -128,8 +132,8 @@ describe('Simge bulma: denemeler', () => {
     expect(symbolSearchTrials(task, SEED)).not.toEqual(symbolSearchTrials(task, '0f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a12'));
   });
 
-  it('birçok tohumda: 160 deneme; sekizli bloklarda türler, yerler ve aranan simgeler dengeli; art arda denemelerde aranan simge yinelenmez', () => {
-    expect(task.trials).toBe(160);
+  it('birçok tohumda: 240 deneme; sekizli bloklarda türler, yerler ve aranan simgeler dengeli; art arda denemelerde aranan simge yinelenmez', () => {
+    expect(task.trials).toBe(240);
     expect(task.groupSize).toBe(4);
     expect(task.trials % SG_BLOCK).toBe(0);
     for (let s = 0; s < 60; s++) {
@@ -139,6 +143,13 @@ describe('Simge bulma: denemeler', () => {
       const asTarget = new Array(task.glyphs.length).fill(0);
       trials.forEach((t, i) => {
         checkTrial(t, `${seed} ${i}`);
+        // Çizgi düzeyinde: "var" denemesinde sıradaki tam bir simgenin çizgileri aranan simgelerden biriyle aynı, "yok"
+        // denemesinde hiçbiri aynı değil; benzerin çizgileri hiçbir aranan simgeninkiyle aynı değil.
+        const set = (x: string[]) => [...x].sort().join(' ');
+        const targetSets = t.targets.map((g) => set(task.glyphs[g]));
+        const groupSets = t.group.map((r) => set(r.l === undefined ? task.glyphs[r.g] : task.lookalikes[r.g][r.l]));
+        expect(groupSets.filter((x) => targetSets.includes(x)).length, `${seed} ${i}`).toBe(t.present ? 1 : 0);
+        for (const r of t.group) if (r.l !== undefined) expect(targetSets.includes(set(task.lookalikes[r.g][r.l])), `${seed} ${i}`).toBe(false);
         if (i > 0) for (const g of t.targets) expect(trials[i - 1].targets.includes(g), `${seed} ${i}`).toBe(false);
         for (const g of t.targets) asTarget[g]++;
       });
@@ -155,10 +166,10 @@ describe('Simge bulma: denemeler', () => {
         const looks = block.filter((t) => t.lookalike);
         expect(looks.map((t) => t.targets.indexOf(t.group.find((r) => r.l !== undefined)!.g)).sort(), label).toEqual([0, 0, 1, 1]);
       }
-      // Her simge aranan simge olarak yaklaşık eşit sıklıkta (beklenen 160 × 2 / 14 ≈ 22,9).
+      // Her simge aranan simge olarak yaklaşık eşit sıklıkta (beklenen 240 × 2 / 14 ≈ 34,3).
       for (const k of asTarget) {
-        expect(k, seed).toBeGreaterThanOrEqual(19);
-        expect(k, seed).toBeLessThanOrEqual(27);
+        expect(k, seed).toBeGreaterThanOrEqual(30);
+        expect(k, seed).toBeLessThanOrEqual(39);
       }
     }
   });
@@ -175,12 +186,15 @@ describe('Simge bulma: puanlama', () => {
     expect(r.quarters.reduce((a, b) => a + b, 0)).toBe(r.correct);
     expect(r.present.n + r.absent.n).toBe(r.answered);
     expect(r.look.n + r.plain.n).toBe(r.answered);
-    expect(r.fast.n + r.slow.n).toBe(r.answered);
+    // Hızlı ve yavaş kararlar ortanca süreye göre ayrılır; ortancaya eşit süreler ikisine de girmez.
+    expect(r.timed).toBe(r.answered);
+    expect(r.fast.n + r.slow.n).toBeLessThanOrEqual(r.timed);
+    expect(r.fast.medianRt!).toBeLessThan(r.slow.medianRt!);
     expect(r.finishedAll).toBe(false);
     expect(r.activeMs).toBe(task.durationMs);
     expect(r.perMinute).toBe(28);
     expect(sgNotRead(r)).toBeNull();
-    expect(sgRtLonger(r.absent, r.present)).toBe(true);
+    expect(sgAbsentSlower(r)).toBe(true);
   });
 
   it('boş blok kabul edilir (süre boyunca hiç karar yok); sonuç yorumlanmaz', () => {
@@ -204,13 +218,32 @@ describe('Simge bulma: puanlama', () => {
     expect(sgTooFast(resultOf(symbolSearchBody((q) => ({ ans: sgRight(q), rtMs: q.i % 10 === 0 ? 250 : 1500 }))))).toBe(false);
   });
 
+  it('bütün karar süreleri aynıysa hızlı ve yavaş kararlar ayrılmaz', () => {
+    const r = evaluate(SLUG, symbolSearchBody((q) => ({ ans: q.i % 8 === 0 ? sgWrong(q) : sgRight(q), rtMs: 1500 })));
+    expect(['Belirgin fark yok', 'Karşılaştırılmadı']).toContain(r.student.items[4].badge);
+    expect(r.student.items[4].text).toContain('süreleri birbirine çok yakın');
+  });
+
   it('bütün denemeler süre dolmadan cevaplanırsa çalışılan süre son cevabın anıdır', () => {
     const trials = symbolSearchTrials(task, SEED);
-    const input: SymbolSearchTrialInput[] = trials.map((t, i) => ({ index: i, response: { ans: t.present ? 'var' : 'yok', at: 600 * (i + 1) }, rtMs: 500 }));
+    const input: SymbolSearchTrialInput[] = trials.map((t, i) => ({ index: i, response: { ans: t.present ? 'var' : 'yok', at: 450 * (i + 1) }, rtMs: 420 }));
     const r = scoreSymbolSearch(task, trials, input).result;
     expect(r.finishedAll).toBe(true);
-    expect(r.activeMs).toBe(96_000);
-    expect(r.perMinute).toBe(100);
+    expect(r.activeMs).toBe(108_000);
+    expect(r.perMinute).toBe(133.3);
+  });
+
+  it('rapor: bütün denemeler süre dolmadan bittiyse sayılar çalışılan süreyle söylenir', () => {
+    const body = symbolSearchBody((q) => ({ ans: sgRight(q), rtMs: 330 }));
+    const r = evaluate(SLUG, body);
+    const res = resultOf(body);
+    expect(res.finishedAll).toBe(true);
+    const secs = Math.round(res.activeMs / 1000);
+    expect(r.student.items[0].text).toContain(`${secs} saniyede ${task.trials} karar verdin`);
+    expect(r.student.items[0].text).toContain('Bütün denemeleri süre dolmadan bitirdin. Bu yüzden doğru karar sayın hızını olduğundan düşük gösterebilir');
+    expect(r.parent.items[0].text).toContain('Çocuğunuz bütün denemeleri süre dolmadan bitirdi.');
+    expect(r.student.keyFigures[0].label).toBe(`Doğru karar (${secs} saniyede)`);
+    expect(r.student.chartNote).toContain(`Bütün denemeler ${secs}. saniyede bittiği için`);
   });
 
   it('geçersiz cevaplar reddedilir', () => {
@@ -225,7 +258,10 @@ describe('Simge bulma: puanlama', () => {
       [{ index: 0, response: { ans: 'belki' as 'var', at: 10 }, rtMs: 900 }],
       [{ index: 0, response: { ans: 'var', at: 10 }, rtMs: -1 }],
       [{ index: 0, response: { ans: 'var', at: Number.NaN }, rtMs: 900 }],
-      Array.from({ length: task.trials + 1 }, (_, i) => ok(i, 100 * i)),
+      // Karar süresi, önceki cevaptan bu yana geçen süreden (bir saniyelik payla) uzun olamaz.
+      Array.from({ length: 160 }, (_, i) => ({ index: i, response: { ans: 'var' as const, at: i + 1 }, rtMs: 900 })),
+      [ok(0, 1000), { index: 1, response: { ans: 'var', at: 1500 }, rtMs: 1600 }],
+      Array.from({ length: task.trials + 1 }, (_, i) => ({ index: i, response: { ans: 'var' as const, at: 100 * i }, rtMs: 50 })),
     ];
     for (const input of bad) expect(() => scoreSymbolSearch(task, trials, input), JSON.stringify(input[0])).toThrow(TaskInputError);
     // Tarayıcının gönderdiği biçim: cevap ve an; fazladan alan kabul edilmez.
@@ -253,7 +289,9 @@ describe('Simge bulma: rapor', () => {
     ]);
     expect(r.student.items[0].text).toContain('2 dakikada 63 karar verdin; bunların 56 tanesi doğruydu. Bu, dakikada yaklaşık 28 doğru karar demek.');
     expect(r.parent.items[0].text).toContain('Çocuğunuz 2 dakikada 63 karar verdi');
-    expect(r.student.items[1].text).toContain('Yanlış kararlarının 3 tanesinde aranan simge sıradayken “Yok”, 4 tanesinde sırada yokken “Var” dedin.');
+    // Grafikteki sayılar (doğru ve yanlış karar sayıları, tipik süre) metinde yinelenmez.
+    expect(r.student.items[1].text).toBe('Yanlışlarının bir kısmında aranan simge sıradayken “Yok”, bir kısmında sırada yokken “Var” dedin.');
+    expect(r.student.items[0].text).not.toContain('tipik olarak');
     const chart = r.student.chart;
     expect(chart?.type === 'bars' ? chart.rows.map((x) => x.label) : []).toEqual(['0–30 sn', '30–60 sn', '60–90 sn', '90–120 sn']);
     expect(r.student.roadmap!.bars).toEqual([]);
@@ -273,6 +311,7 @@ describe('Simge bulma: rapor', () => {
       karisik: (q) => (q.i % 9 === 0 ? sgWrong(q) : sgRight(q)),
       benzerHepsi: (q) => (q.trial.lookalike && q.i % 3 !== 0 ? sgWrong(q) : sgRight(q)),
       tekYanlis: (q) => (q.i === 5 ? sgWrong(q) : sgRight(q)),
+      duzHata: (q) => (!q.trial.lookalike && q.i % 2 === 0 ? sgWrong(q) : sgRight(q)),
       rastgele: (q) => (q.i % 2 ? 'var' : 'yok'),
       cogunYanlis: (q) => (q.i % 4 === 0 ? sgRight(q) : sgWrong(q)),
       tekDugme: () => 'var',
@@ -288,6 +327,7 @@ describe('Simge bulma: rapor', () => {
       benzerUzun: (q) => (q.trial.lookalike ? 2600 : 1300),
       aceleYanlis: (_, w) => (w ? 450 : 1700),
       yavasYanlis: (_, w) => (w ? 3200 : 1400),
+      benzerKisa: (q) => (q.trial.lookalike ? 1100 : 1900),
       cokHizli: (q) => (q.i % 4 === 0 ? 220 : 1500),
       yavas: () => 4200,
       suresiz: () => null,
@@ -316,17 +356,21 @@ describe('Simge bulma: rapor', () => {
             expect(r.cautions, label).toHaveLength(1);
             expect(r.cautions[0], label).toContain('Sonuç yorumlanmadı');
             expect(r.keyFigures.every((f) => f.value === 'Yorumlanmadı'), label).toBe(true);
+            expect(r.chart, label).toBeNull();
             continue;
           }
           // Yorumlanan sonuç: çalışma hızı kartı doğru sayısını söyler; uyarı yalnızca çok hızlı kararlar varsa.
           expect(hiz.badge, label).toBe(`${result.correct} doğru karar`);
           expect(r.cautions.length, label).toBe(rushed ? 1 : 0);
           expect(hiz.text.includes('0,3 saniyeden kısa'), label).toBe(rushed);
-          for (const c of [dog, ben, vy, den]) expect(c.text.includes('Çalışma hızı kartında anlatılan nedenle'), label).toBe(rushed);
+          for (const c of [dog, ben, vy, den]) if (c.badge !== 'Karşılaştırılmadı') expect(c.text.includes('Çalışma hızı kartında anlatılan nedenle'), label).toBe(rushed);
           // Doğruluk kartı ile öteki kartlar.
           expect(dog.badge === 'Hata yok', label).toBe(result.wrong === 0);
           if (dog.badge === 'Çoğu yanlışta simge gözden kaçtı') expect(result.falseYok, label).toBeGreaterThanOrEqual(result.falseVar + 2);
           if (dog.badge === 'Çoğu yanlışta olmayan simge görüldü') expect(result.falseVar, label).toBeGreaterThanOrEqual(result.falseYok + 2);
+          if (dog.badge === 'Yanlışlarda simge gözden kaçtı') expect(result.falseVar, label).toBe(0);
+          if (dog.badge === 'Yanlışlarda olmayan simge görüldü') expect(result.falseYok, label).toBe(0);
+          if (dog.text.includes('çoğunda sırada aranan simgeye çok benzeyen')) expect(result.falseVar, label).toBeGreaterThanOrEqual(4);
           if (vy.badge === '“Yok” kararları hızlı') expect(dog.badge, label).not.toBe('Çoğu yanlışta olmayan simge görüldü');
           if (result.wrong === 0) {
             expect([ben.badge, den.badge].every((b) => !b?.includes('yanılgı')), label).toBe(true);
@@ -334,7 +378,7 @@ describe('Simge bulma: rapor', () => {
           }
           // Benzer simgeler: başlık eşiklerle aynı.
           expect(ben.badge === 'Benzer simgelerde daha çok yanılgı', label).toBe(sgAccLower(result.look, result.plain));
-          if (ben.badge === 'Belirgin fark yok') expect(sgRtLonger(result.look, result.plain) || sgRtLonger(result.plain, result.look), label).toBe(false);
+          if (ben.badge === 'Belirgin fark yok') expect(sgLookSlower(result) || sgLookFaster(result), label).toBe(false);
           // Var mı, yok mu: süreler alınamadıysa karşılaştırılmaz.
           if (result.medianRt === null) {
             expect(vy.badge, label).toBe('Karşılaştırılmadı');
@@ -342,9 +386,17 @@ describe('Simge bulma: rapor', () => {
             expect(hiz.visual?.type, label).toBe('stack');
           } else {
             expect(hiz.visual?.type, label).toBe('strip');
-            expect(vy.badge === '“Yok” kararları daha uzun', label).toBe(sgRtLonger(result.absent, result.present));
+            expect(vy.badge === '“Yok” kararları daha uzun', label).toBe(sgAbsentSlower(result));
           }
-          expect(den.badge === 'Hızlı kararlarda daha çok yanılgı', label).toBe(result.fast.n + result.slow.n >= 20 && sgAccLower(result.fast, result.slow));
+          expect(den.badge === 'Hızlı kararlarda daha çok yanılgı', label).toBe(result.timed >= 20 && sgHalvesApart(result) && sgAccLower(result.fast, result.slow));
+          // Grafikte görülen küçük fark "belirgin sayılmaz" diye söylenir; "Belirgin fark yok" kartı farkı yok saymaz.
+          if (ben.badge === 'Belirgin fark yok' && Math.abs(sgAccGap(result.look, result.plain)) >= 0.05) expect(ben.text, label).toContain('belirgin sayılmaz');
+          // Açıklama cümleleri bir sayfada en çok bir kez; "herkes" denmez.
+          const page = r.items.map((i) => i.text).join(' ');
+          expect(page, label).not.toMatch(/herkes/);
+          for (const phrase of ['aramayı zorlaştırır', 'aramayı biraz zorlaştırır', 'bütün simgelere bakmak gerekir', 'gözden kaçırmak', 'yanılgıyı artırabilir', 'çoğu kişide']) {
+            expect(page.split(phrase).length - 1, `${label} ${phrase}`).toBeLessThanOrEqual(1);
+          }
           // Grafikler: karşılaştırılan kartlarda var; yorumlanmayan ya da karşılaştırılmayan kartta yok.
           for (const c of r.items) expect(!!c.visual, `${label} ${c.title}`).toBe(c.badge !== 'Karşılaştırılmadı');
         }
@@ -373,7 +425,11 @@ describe('Simge bulma: rapor', () => {
       '“Yok” kararları hızlı',
       '“Var” kararları daha uzun',
       'Hızlı kararlarda daha çok yanılgı',
-      'Uzun kararlarda daha çok yanılgı',
+      'Uzun süren kararlarda daha çok yanılgı',
+      'Yanlışlarda simge gözden kaçtı',
+      'Yanlışlarda olmayan simge görüldü',
+      'Benzer simgelerde daha az yanılgı',
+      'Benzer simgelerde kararlar daha kısa',
       'Karşılaştırılmadı',
     ]) {
       expect(seen.has(b), b).toBe(true);
@@ -403,6 +459,63 @@ describe('Simge bulma: rapor', () => {
   }, 60_000);
 });
 
+describe('Simge bulma: rastlantı farkları', () => {
+  /** Mulberry32: benzetim için belirlenimci rastgele sayılar. */
+  const rng = (seed: number) => {
+    let a = seed >>> 0;
+    return () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+  const gauss = (r: () => number) => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r());
+
+  it('benzer simgenin, hızın ve "var" ile "yok"un gerçek bir etkisi yokken kartlar fark bulmaz (her kartta en çok %5)', () => {
+    const PEOPLE = 150;
+    const total = { benzer: 0, varyok: 0, denge: 0 };
+    let all = 0;
+    for (const errRate of [0.04, 0.08, 0.15]) {
+      for (const base0 of [1000, 2500]) {
+        const claims = { benzer: 0, varyok: 0, denge: 0 };
+        let n = 0;
+        for (let k = 0; k < PEOPLE; k++) {
+          const seed = `00000000-0000-4000-8000-${String(k + 1000).padStart(12, '0')}`;
+          const trials = symbolSearchTrials(task, seed);
+          const r = rng(7000 + k + Math.round(errRate * 1000) + base0);
+          const base = base0 * (0.8 + 0.4 * r());
+          const input: SymbolSearchTrialInput[] = [];
+          let at = 0;
+          for (const [i, t] of trials.entries()) {
+            // Hata türden ve hızdan bağımsız; "yok" kararları "var" kararlarından uzun, benzer simgenin etkisi yok.
+            const rt = Math.max(350, Math.round(base * (t.present ? 1 : 1.35) * Math.exp(0.25 * gauss(r))));
+            const wrong = r() < errRate;
+            const next = at + rt + 200;
+            if (next > task.durationMs) break;
+            at = next;
+            input.push({ index: i, response: { ans: t.present !== wrong ? 'var' : 'yok', at }, rtMs: rt });
+          }
+          const rep = evaluate(SLUG, { grade: 8, data: { engine: 'tasks', seed, blocks: { [task.key]: input } } }).student;
+          if (rep.items[0].badge === 'Yorumlanmadı') continue;
+          n++;
+          if (rep.items[2].badge !== 'Belirgin fark yok') claims.benzer++;
+          if (rep.items[3].badge === '“Yok” kararları hızlı' || rep.items[3].badge === '“Var” kararları daha uzun') claims.varyok++;
+          if (rep.items[4].badge === 'Hızlı kararlarda daha çok yanılgı' || rep.items[4].badge === 'Uzun süren kararlarda daha çok yanılgı') claims.denge++;
+        }
+        // Her koşulda (150 kişilik benzetim, rastlantı payıyla) en çok %7,5; bütün koşullarda birlikte en çok %5.
+        for (const [card, c] of Object.entries(claims)) {
+          expect(c / n, `${card} %${errRate * 100} ${base0} ms`).toBeLessThanOrEqual(0.075);
+          total[card as keyof typeof total] += c;
+        }
+        all += n;
+      }
+    }
+    for (const [card, c] of Object.entries(total)) expect(c / all, card).toBeLessThanOrEqual(0.05);
+  }, 300_000);
+});
+
 describe('Simge bulma: bilim kartı ve yol haritası', () => {
   it('bilim kartı: yer tutucu yok; kaynaklar bağlantılı ve metinde yazar ve yılıyla anılıyor; ticari alt testle karıştırılmaz', () => {
     const s = simgeBulma.science;
@@ -410,7 +523,7 @@ describe('Simge bulma: bilim kartı ve yol haritası', () => {
     expect(all).not.toMatch(/YAZILACAK|TODO/);
     expect(s.normStatus).toBe('none');
     for (const c of s.citations) {
-      expect(c.url, c.text).toMatch(/^https:\/\//);
+      if (c.url) expect(c.url, c.text).toMatch(/^https:\/\//);
       const author = c.text.split(/,| \(/)[0];
       const year = /\((\d{4})\)/.exec(c.text)?.[1];
       expect(year, c.text).toBeDefined();

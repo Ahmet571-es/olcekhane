@@ -3862,11 +3862,17 @@ export interface SymbolSearchItem {
   at: number;
 }
 
-/** Bir deneme türündeki kararlar: sayı, doğru sayısı ve doğru kararların tipik (ortanca) süresi. */
+/**
+ * Bir deneme türündeki kararlar: sayı, doğru sayısı, doğru kararların tipik (ortanca) süresi ve dengelenmiş tipik süre (`rt`).
+ * Dengelenmiş süre, türün öteki etkene göre iki alt türündeki ortancaların ortalamasıdır (ör. "var" denemelerinde benzer simge
+ * olan ve olmayanların): böylece iki türün karşılaştırması, hangi alt türde daha çok doğru karar verildiğinden etkilenmez. Alt
+ * türlerden birinde ikiden az doğru karar varsa hesaplanmaz.
+ */
 export interface SgPart {
   n: number;
   correct: number;
   medianRt: number | null;
+  rt: number | null;
 }
 
 export interface SymbolSearchResult {
@@ -3898,9 +3904,22 @@ export interface SymbolSearchResult {
   absent: SgPart;
   look: SgPart;
   plain: SgPart;
-  /** Süresi bilinen kararların en hızlı yarısı ve geri kalanı. */
-  fast: { n: number; correct: number };
-  slow: { n: number; correct: number };
+  /**
+   * Süre farklarının rastlantıyla açıklanıp açıklanamayacağı (z): benzer simge olan denemelerin olmayanlardan (`lookZ`) ve
+   * "yok" denemelerinin "var" denemelerinden (`absentZ`) ne kadar uzun sürdüğü; doğru kararların süre logaritmalarıyla, öteki
+   * etkenin iki alt türünde ayrı ayrı hesaplanıp ortalanır. Pozitif: ilk tür daha uzun. Alt türlerden birinde ikiden az doğru
+   * karar varsa null.
+   */
+  lookZ: number | null;
+  absentZ: number | null;
+  /** Süresi bilinen kararlar. */
+  timed: number;
+  /**
+   * Süresi bilinen kararlardan ortanca süreden kısa (`fast`) ve uzun (`slow`) sürenler; ortancaya eşit olanlar ikisine de girmez.
+   * `medianRt`: o yarıdaki bütün kararların (doğru ya da yanlış) ortanca süresi.
+   */
+  fast: { n: number; correct: number; medianRt: number | null };
+  slow: { n: number; correct: number; medianRt: number | null };
   /** SG_TOO_FAST_MS'den kısa sürede verilen kararlar. */
   tooFast: number;
   /** "Var" denen kararlar. */
@@ -3927,25 +3946,63 @@ export const SG_TOO_FAST_SHARE = 0.2;
 /** Karşılaştırmalar: doğrulukta her türde en az SG_CMP_MIN karar, süre karşılaştırmasında her türde en az SG_RT_MIN doğru karar. */
 export const SG_CMP_MIN = 6;
 export const SG_RT_MIN = 4;
-/** Doğrulukta anılacak fark: en az 10 puan ve en az 3 yanlış fark. */
+/**
+ * Doğrulukta anılacak fark: en az 10 puan, en az 3 yanlış fark ve iki oranın farkı rastlantıyla açıklanamayacak kadar büyük
+ * (iki oran z ölçütü; her yön için %1,25, iki yön birlikte %2,5). Kişinin kendi kararları arasındaki karşılaştırmalar az sayıda
+ * karara dayanır ve bir kartta birden çok karşılaştırma yapılır (benzer simgeler kartında doğruluk ve süre, iki yönde): bir
+ * kartın gerçek bir etki yokken fark bulma olasılığı %5'i geçmesin (tests/simge-bulma.test.ts benzetimle denetler). Süre
+ * karşılaştırmaları da aynı z sınırını kullanır.
+ */
 export const SG_ACC_GAP = 0.1;
 export const SG_ERR_GAP = 3;
+export const SG_Z = 2.24;
+/** Belirgin sayılmayan ama grafikte görülebilen doğruluk farkı: en az 5 puan (kartta "küçük bir fark" diye anılır). */
+export const SG_SMALL_GAP = 0.05;
 /** Sürede anılacak fark: en az %15 ve en az 150 ms. */
 export const SG_RT_RATIO = 1.15;
 export const SG_RT_MS = 150;
-/** Hızlı ve yavaş yarıların karşılaştırılması için süresi bilinen en az bu kadar karar. */
+/** Hızlı ve yavaş kararların karşılaştırılması için süresi bilinen en az bu kadar karar. */
 export const SG_HALF_MIN = 20;
 
-const sgPart = (xs: SymbolSearchItem[]): SgPart => {
-  const ok = xs.filter((x) => x.correct);
-  const rts = ok.flatMap((x) => (x.rt === null ? [] : [x.rt]));
-  return { n: xs.length, correct: ok.length, medianRt: medianOrNull(rts) };
+const sgCorrectRts = (xs: SymbolSearchItem[]) => xs.flatMap((x) => (x.correct && x.rt !== null ? [x.rt] : []));
+/** Bir türün kararları; `split`: dengelenmiş süre için türü ikiye ayıran öteki etken. */
+const sgPart = (xs: SymbolSearchItem[], split: (x: SymbolSearchItem) => boolean): SgPart => {
+  const a = medianOrNull(sgCorrectRts(xs.filter(split)), 2);
+  const b = medianOrNull(sgCorrectRts(xs.filter((x) => !split(x))), 2);
+  return {
+    n: xs.length,
+    correct: xs.filter((x) => x.correct).length,
+    medianRt: medianOrNull(sgCorrectRts(xs)),
+    rt: a === null || b === null ? null : Math.round((a + b) / 2),
+  };
 };
+
+/** İki türün süre farkının z değeri (türler `inA` ile ayrılır; `stratum` öteki etkendir). */
+function sgRtZ(items: SymbolSearchItem[], inA: (x: SymbolSearchItem) => boolean, stratum: (x: SymbolSearchItem) => boolean): number | null {
+  const parts: { d: number; v: number }[] = [];
+  for (const sv of [true, false]) {
+    const xs = items.filter((x) => x.correct && x.rt !== null && x.rt > 0 && stratum(x) === sv);
+    const a = xs.filter(inA).map((x) => Math.log(x.rt as number));
+    const b = xs.filter((x) => !inA(x)).map((x) => Math.log(x.rt as number));
+    if (a.length < 2 || b.length < 2) return null;
+    const mean = (ys: number[]) => ys.reduce((s, y) => s + y, 0) / ys.length;
+    const variance = (ys: number[]) => {
+      const m = mean(ys);
+      return ys.reduce((s, y) => s + (y - m) ** 2, 0) / (ys.length - 1);
+    };
+    parts.push({ d: mean(a) - mean(b), v: variance(a) / a.length + variance(b) / b.length });
+  }
+  const d = (parts[0].d + parts[1].d) / 2;
+  const se = Math.sqrt(parts[0].v + parts[1].v) / 2;
+  if (se > 0) return d / se;
+  return d > 0 ? Infinity : d < 0 ? -Infinity : 0;
+}
 
 export function scoreSymbolSearch(task: SymbolSearchTask, trials: SymbolSearchTrial[], input: SymbolSearchTrialInput[]): { result: SymbolSearchResult } {
   if (!Array.isArray(input) || input.length > Math.min(task.trials, trials.length)) throw new TaskInputError('Geçersiz cevap.');
   const maxAt = task.durationMs + 5_000;
   let lastAt = 0;
+  let sumRt = 0;
   const items: SymbolSearchItem[] = input.map((t, i) => {
     // Denemeler sırayla gösterilir: cevaplar 0'dan başlayıp boşluksuz sıralanır.
     if (!t || t.index !== i) throw new TaskInputError('Geçersiz deneme.');
@@ -3953,6 +4010,11 @@ export function scoreSymbolSearch(task: SymbolSearchTask, trials: SymbolSearchTr
     if (!r || (r.ans !== 'var' && r.ans !== 'yok')) throw new TaskInputError('Geçersiz cevap.');
     if (!Number.isFinite(r.at) || r.at < 0 || r.at > maxAt || r.at < lastAt) throw new TaskInputError('Geçersiz süre.');
     if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0 || t.rtMs > 120_000)) throw new TaskInputError('Geçersiz süre.');
+    // Karar süresi, bir önceki cevaptan bu yana geçen çalışma süresinden (bir saniyelik payla) uzun olamaz; karar sürelerinin
+    // toplamı da cevabın anını (bir saniyelik payla) geçemez: her deneme bir önceki cevaptan sonra gösterilir.
+    if (t.rtMs !== null && t.rtMs > r.at - lastAt + 1_000) throw new TaskInputError('Geçersiz süre.');
+    sumRt += t.rtMs ?? 0;
+    if (sumRt > r.at + 1_000) throw new TaskInputError('Geçersiz süre.');
     lastAt = r.at;
     const trial = trials[i];
     return {
@@ -3969,11 +4031,11 @@ export function scoreSymbolSearch(task: SymbolSearchTask, trials: SymbolSearchTr
   const correct = items.filter((x) => x.correct).length;
   const finishedAll = answered === Math.min(task.trials, trials.length);
   const activeMs = finishedAll ? Math.max(1_000, Math.min(task.durationMs, lastAt)) : task.durationMs;
-  const rts = items.flatMap((x) => (x.correct && x.rt !== null ? [x.rt] : []));
-  const timed = items.filter((x) => x.rt !== null).sort((a, b) => (a.rt as number) - (b.rt as number) || a.index - b.index);
-  const half = Math.floor(timed.length / 2);
-  const fastItems = timed.slice(0, half);
-  const slowItems = timed.slice(half);
+  const rts = sgCorrectRts(items);
+  // Hızlı ve yavaş kararlar: ortanca süreden kısa ve uzun sürenler (ortancaya eşit olanlar dışarıda kalır).
+  const timedItems = items.filter((x) => x.rt !== null);
+  const mid = timedItems.length ? median(timedItems.map((x) => x.rt as number)) : 0;
+  const half = (xs: SymbolSearchItem[]) => ({ n: xs.length, correct: xs.filter((x) => x.correct).length, medianRt: medianOrNull(xs.map((x) => x.rt as number)) });
   const quarters = [0, 0, 0, 0];
   for (const x of items) if (x.correct) quarters[Math.min(3, Math.floor((4 * x.at) / task.durationMs))]++;
   return {
@@ -3992,12 +4054,15 @@ export function scoreSymbolSearch(task: SymbolSearchTask, trials: SymbolSearchTr
       perMinute: round(correct / (activeMs / 60_000), 1),
       rts,
       medianRt: medianOrNull(rts),
-      present: sgPart(items.filter((x) => x.present)),
-      absent: sgPart(items.filter((x) => !x.present)),
-      look: sgPart(items.filter((x) => x.lookalike)),
-      plain: sgPart(items.filter((x) => !x.lookalike)),
-      fast: { n: fastItems.length, correct: fastItems.filter((x) => x.correct).length },
-      slow: { n: slowItems.length, correct: slowItems.filter((x) => x.correct).length },
+      present: sgPart(items.filter((x) => x.present), (x) => x.lookalike),
+      absent: sgPart(items.filter((x) => !x.present), (x) => x.lookalike),
+      look: sgPart(items.filter((x) => x.lookalike), (x) => x.present),
+      plain: sgPart(items.filter((x) => !x.lookalike), (x) => x.present),
+      lookZ: sgRtZ(items, (x) => x.lookalike, (x) => x.present),
+      absentZ: sgRtZ(items, (x) => !x.present, (x) => x.lookalike),
+      timed: timedItems.length,
+      fast: half(timedItems.filter((x) => (x.rt as number) < mid)),
+      slow: half(timedItems.filter((x) => (x.rt as number) > mid)),
       tooFast: items.filter((x) => x.rt !== null && x.rt < SG_TOO_FAST_MS).length,
       varAnswers: items.filter((x) => x.ans === 'var').length,
       quarters,
@@ -4017,26 +4082,58 @@ export function sgNotRead(r: SymbolSearchResult): SgNotRead | null {
 }
 /** Çok kısa sürede verilen kararlar: en az SG_TOO_FAST_N ve kararların en az SG_TOO_FAST_SHARE kadarı. */
 export const sgTooFast = (r: SymbolSearchResult) => r.tooFast >= SG_TOO_FAST_N && r.tooFast >= SG_TOO_FAST_SHARE * r.answered;
-/** Bir türün doğruluğu ötekinden belirgin biçimde düşük mü (`low` türü daha düşük): en az 10 puan ve en az 3 yanlış fark. */
+/** İki türün doğruluk farkı (`high` eksi `low`, 0–1); türlerden birinde SG_CMP_MIN'den az karar varsa 0. */
+export function sgAccGap(low: { n: number; correct: number }, high: { n: number; correct: number }): number {
+  if (low.n < SG_CMP_MIN || high.n < SG_CMP_MIN) return 0;
+  return high.correct / high.n - low.correct / low.n;
+}
+/**
+ * Bir türün doğruluğu ötekinden belirgin biçimde düşük mü (`low` türü daha düşük): en az 10 puan, en az 3 yanlış fark ve iki
+ * oran z ölçütüyle en az SG_Z.
+ */
 export function sgAccLower(low: { n: number; correct: number }, high: { n: number; correct: number }): boolean {
-  if (low.n < SG_CMP_MIN || high.n < SG_CMP_MIN) return false;
-  const gap = high.correct / high.n - low.correct / low.n;
-  return gap >= SG_ACC_GAP - 1e-9 && low.n - low.correct - (high.n - high.correct) >= SG_ERR_GAP;
+  const gap = sgAccGap(low, high);
+  if (gap < SG_ACC_GAP - 1e-9 || low.n - low.correct - (high.n - high.correct) < SG_ERR_GAP) return false;
+  const p = (low.correct + high.correct) / (low.n + high.n);
+  const se = Math.sqrt(p * (1 - p) * (1 / low.n + 1 / high.n));
+  return se > 0 && gap / se >= SG_Z;
 }
-/** Bir türün tipik süresi ötekinden belirgin biçimde uzun mu: en az %15 ve en az 150 ms. */
-export function sgRtLonger(slow: SgPart, fast: SgPart): boolean {
-  if (slow.medianRt === null || fast.medianRt === null || slow.correct < SG_RT_MIN || fast.correct < SG_RT_MIN) return false;
-  return slow.medianRt >= SG_RT_RATIO * fast.medianRt && slow.medianRt - fast.medianRt >= SG_RT_MS;
+/**
+ * Bir türün (dengelenmiş) tipik süresi ötekinden belirgin biçimde uzun mu: en az %15 ve en az 150 ms, ve fark rastlantıyla
+ * açıklanamayacak kadar büyük (`z`, yavaş türün hızlı türden uzunluğu için; en az SG_Z).
+ */
+export function sgRtLonger(slow: SgPart, fast: SgPart, z: number | null): boolean {
+  if (slow.rt === null || fast.rt === null || z === null || slow.correct < SG_RT_MIN || fast.correct < SG_RT_MIN) return false;
+  return slow.rt >= SG_RT_RATIO * fast.rt && slow.rt - fast.rt >= SG_RT_MS && z >= SG_Z;
 }
+const neg = (z: number | null) => (z === null ? null : -z);
+/** Benzer simge olan denemeler belirgin biçimde uzun ya da kısa sürdü mü; "yok" ya da "var" kararları belirgin biçimde uzun mu. */
+export const sgLookSlower = (r: SymbolSearchResult) => sgRtLonger(r.look, r.plain, r.lookZ);
+export const sgLookFaster = (r: SymbolSearchResult) => sgRtLonger(r.plain, r.look, neg(r.lookZ));
+export const sgAbsentSlower = (r: SymbolSearchResult) => sgRtLonger(r.absent, r.present, r.absentZ);
+export const sgPresentSlower = (r: SymbolSearchResult) => sgRtLonger(r.present, r.absent, neg(r.absentZ));
+/** Hızlı ve yavaş kararlar ayrılabiliyor mu: süresi bilinen yeterli karar ve iki yarının tipik süreleri en az 150 ms farklı. */
+export const sgHalvesApart = (r: SymbolSearchResult) =>
+  r.fast.n >= SG_CMP_MIN && r.slow.n >= SG_CMP_MIN && r.fast.medianRt !== null && r.slow.medianRt !== null && r.slow.medianRt - r.fast.medianRt >= SG_RT_MS;
+
+/** "2 dakika", "90 saniye"; `sgDurationIn`: "2 dakikada", "90 saniyede". */
+export const sgDuration = (ms: number) => {
+  const secs = Math.round(ms / 1000);
+  return secs % 60 === 0 ? `${secs / 60} dakika` : `${secs} saniye`;
+};
+export const sgDurationIn = (ms: number) => {
+  const secs = Math.round(ms / 1000);
+  return secs % 60 === 0 ? `${secs / 60} dakikada` : `${secs} saniyede`;
+};
 
 /** Simge bulmada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts aynı eşikleri kullanır). */
 export function symbolSearchQualityNotes(r: SymbolSearchResult): string[] {
-  const secs = Math.round(r.durationMs / 1000);
+  const span = sgDuration(r.durationMs);
   switch (sgNotRead(r)) {
     case 'none':
-      return [`Simge bulma testinde ${secs} saniye boyunca hiç karar verilmedi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Sonuç yorumlanmadı.`];
+      return [`Simge bulma testinde ${span} boyunca hiç karar verilmedi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Sonuç yorumlanmadı.`];
     case 'few':
-      return [`Simge bulma testinde ${secs} saniyede yalnızca ${r.answered} karar verildi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Sonuç yorumlanmadı.`];
+      return [`Simge bulma testinde ${sgDurationIn(r.durationMs)} yalnızca ${r.answered} karar verildi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Sonuç yorumlanmadı.`];
     case 'oneButton':
       return [`Simge bulma testinde kararların ${r.varAnswers === r.answered || r.varAnswers === 0 ? 'hepsinde' : 'neredeyse hepsinde'} aynı düğmeye basıldı; simgelere bakılmadan basılmış olabilir. Sonuç yorumlanmadı.`];
     case 'chance':
@@ -4045,7 +4142,7 @@ export function symbolSearchQualityNotes(r: SymbolSearchResult): string[] {
       ];
   }
   return sgTooFast(r)
-    ? [`Simge bulma testinde ${r.tooFast} karar ${String(SG_TOO_FAST_MS / 1000).replace('.', ',')} saniyeden kısa sürede verildi; bu kadar kısa sürede simgeleri karşılaştırmak zordur. Simgelere tam bakılmamış ya da süreler cihaz yüzünden yanlış ölçülmüş olabilir; sonuç dikkatle yorumlanmalıdır.`]
+    ? [`Simge bulma testinde ${r.tooFast} karar ${String(SG_TOO_FAST_MS / 1000).replace('.', ',')} saniyeden kısa sürede verildi; bu kadar kısa sürede simgeleri karşılaştırmak zordur. Bu kararlarda simgelere tam bakılmamış olabilir; sonuç dikkatle yorumlanmalıdır.`]
     : [];
 }
 

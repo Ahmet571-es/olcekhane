@@ -213,13 +213,21 @@ import {
   LN_RESTARTS_NOTE,
   type LetterNumberResult,
   type LnPartTotals,
+  sgAccGap,
   sgAccLower,
+  sgDuration,
+  sgDurationIn,
+  sgHalvesApart,
   sgNotRead,
-  sgRtLonger,
+  sgLookSlower,
+  sgLookFaster,
+  sgAbsentSlower,
+  sgPresentSlower,
   sgTooFast,
   SG_CMP_MIN,
   SG_HALF_MIN,
   SG_RT_MIN,
+  SG_SMALL_GAP,
   type SymbolSearchResult,
   ROTATION3D_CHANCE_MAX,
   ROTATION3D_PART_GAP,
@@ -8686,8 +8694,6 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
 
 /* ---------- Simge bulma (işlem hızı) ---------- */
 
-/** "Kaç kararda": 1 → "birinde", 3 → "3 tanesinde". */
-const sgIn = (k: number) => (k === 1 ? 'birinde' : `${k} tanesinde`);
 /** "Kaç tanesi": hepsi, hiçbiri, biri ya da "12 tanesi". */
 const sgOf = (k: number, total: number) => (k === total ? 'hepsi' : k === 0 ? 'hiçbiri' : k === 1 ? 'biri' : `${k} tanesi`);
 /** Saniye, bir ondalıkla: 1 420 → "1,4". */
@@ -8700,30 +8706,38 @@ const sgPct = (a: number, b: number) => (b ? Math.floor((100 * a) / b) : 0);
  * uyarılarla (lib/scoring/tasks.ts, symbolSearchQualityNotes) aynıdır: hiç ya da çok az karar verildiyse, kararların neredeyse
  * hepsi aynı düğmeyse ya da doğruluk rastgele basma düzeyine yakınsa (%70'in altı) sonuç yorumlanmaz; kararların bir kısmı
  * simgeleri karşılaştırmaya yetmeyecek kadar kısa sürede verildiyse dikkatle okunur. Karşılaştırmalar (benzer simge, "Var" ve
- * "Yok", hızlı ve yavaş kararlar) kişinin kendi kararları arasındadır; bir fark yalnızca hem oran ya da süre olarak hem de
- * sayı olarak eşiği aşınca anılır (SG_ACC_GAP ve SG_ERR_GAP; SG_RT_RATIO ve SG_RT_MS). Bu etkiler herkeste görülen olgular
- * olarak anlatılır, iyi ya da kötü diye değil. Türkiye normu olmadığı için sonuç akranlarla karşılaştırılmaz.
+ * "Yok", hızlı ve yavaş kararlar) kişinin kendi kararları arasındadır. Doğrulukta bir fark yalnızca hem oran hem sayı olarak
+ * eşiği aşınca ve rastlantıyla açıklanamayacak kadar büyükse anılır (sgAccLower); grafikte görülen küçük farklar "belirgin
+ * sayılmaz" diye söylenir. Süreler dengelenmiş tipik sürelerle karşılaştırılır (SgPart.rt). Bu etkiler çoğu kişide görülen
+ * olgular olarak anlatılır, iyi ya da kötü diye değil. Türkiye normu olmadığı için sonuç akranlarla karşılaştırılmaz. Kartın
+ * grafiğindeki sayılar metinde yinelenmez.
  */
 function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: CardOf): TaskReport {
   const you = audience !== 'parent';
   const v = (student: string, parent: string) => (you ? student : parent);
   const why = sgNotRead(r);
   const rushed = !why && sgTooFast(r);
-  const secs = Math.round(r.durationMs / 1000);
-  const span = secs % 60 === 0 ? `${secs / 60} dakikada` : `${secs} saniyede`;
+  const span = sgDuration(r.durationMs);
+  const doneSecs = Math.round(r.activeMs / 1000);
+  // Bütün denemeler süre dolmadan bittiyse sayılar çalışılan süreyle söylenir.
+  const spanNow = r.finishedAll ? `${doneSecs} saniyede` : sgDurationIn(r.durationMs);
   const hedge = v('Çalışma hızı kartında anlatılan nedenle bu sonuç seni tam yansıtmayabilir.', 'Çalışma hızı kartında anlatılan nedenle bu sonuç çocuğunuzu tam yansıtmayabilir.');
   const notRead = (k: string): CognitiveBlock => ({ ...card(k), headline: 'Yorumlanmadı', text: 'Çalışma hızı kartında anlatılan nedenle bu kart yorumlanmadı.' });
   const withHedge = (parts: string[]) => (rushed ? [...parts, hedge] : parts).join(' ');
 
   /* Çalışma hızı */
   let hiz: CognitiveBlock;
+  const retry = v(
+    'Yönergeyi yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.',
+    'Yönergeyi yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.',
+  );
   if (why === 'none') {
     hiz = {
       ...card('sg_hiz'),
       headline: 'Yorumlanmadı',
       text: v(
-        `${secs} saniye boyunca hiç karar vermedin; bu yüzden sonuç yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Yönergeyi yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
-        `Çocuğunuz ${secs} saniye boyunca hiç karar vermedi; bu yüzden sonuç yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Yönergeyi yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
+        `${span} boyunca hiç karar vermedin; bu yüzden sonuç yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. ${retry}`,
+        `Çocuğunuz ${span} boyunca hiç karar vermedi; bu yüzden sonuç yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. ${retry}`,
       ),
     };
   } else if (why === 'few') {
@@ -8731,8 +8745,8 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
       ...card('sg_hiz'),
       headline: 'Yorumlanmadı',
       text: v(
-        `${secs} saniyede yalnızca ${r.answered} karar verdin; bu kadar az kararla sonuç yorumlanamaz. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Yönergeyi yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
-        `Çocuğunuz ${secs} saniyede yalnızca ${r.answered} karar verdi; bu kadar az kararla sonuç yorumlanamaz. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Yönergeyi yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
+        `${sgDurationIn(r.durationMs)} yalnızca ${r.answered} karar verdin; bu kadar az kararla sonuç yorumlanamaz. Çok yavaş ve dikkatli çalışmış, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. ${retry}`,
+        `Çocuğunuz ${sgDurationIn(r.durationMs)} yalnızca ${r.answered} karar verdi; bu kadar az kararla sonuç yorumlanamaz. Çok yavaş ve dikkatli çalışmış, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilir. ${retry}`,
       ),
     };
   } else if (why === 'oneButton') {
@@ -8742,7 +8756,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
       ...card('sg_hiz'),
       headline: 'Yorumlanmadı',
       text: v(
-        `Kararlarının ${howMany} aynı düğmeye (“${button}”) bastın; simgelere bakmadan basmış olabilirsin. Bu yüzden sonuç yorumlanmadı. Her denemede sıradaki simgelere bakıp aranan simgelerden biri tıpatıp aynısıyla varsa “Var”, yoksa “Yok” demek gerekir.`,
+        `Kararlarının ${howMany} aynı düğmeye (“${button}”) bastın; simgelere bakmadan basmış olabilirsin. Bu yüzden sonuç yorumlanmadı. Her denemede sıradaki simgelere bakıp öyle karar vermek gerekir.`,
         `Çocuğunuz kararlarının ${howMany} aynı düğmeye (“${button}”) bastı; simgelere bakılmadan basılmış olabilir. Bu yüzden sonuç yorumlanmadı. Yönergenin tam anlaşılmaması ya da görevin önemsenmemesi bunun nedeni olabilir.`,
       ),
     };
@@ -8751,41 +8765,37 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
       ...card('sg_hiz'),
       headline: 'Yorumlanmadı',
       text: v(
-        `${r.answered} kararının ancak %${sgPct(r.correct, r.answered)} kadarı doğruydu; rastgele basan biri de yaklaşık yarısını doğru bulur. Bu yüzden sonuç yorumlanmadı. Acele etmiş ya da yönergeyi tam anlamamış olabilirsin: aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var” demek gerekir; bir çizgisi farklı benzer simge aynı simge sayılmaz.`,
+        `${r.answered} kararının ancak %${sgPct(r.correct, r.answered)} kadarı doğruydu; rastgele basan biri de yaklaşık yarısını doğru bulur. Bu yüzden sonuç yorumlanmadı. Acele etmiş ya da yönergeyi tam anlamamış olabilirsin. Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var” demek gerekir. Bir çizgisi farklı benzer simge aynı simge sayılmaz.`,
         `Çocuğunuzun ${r.answered} kararının ancak %${sgPct(r.correct, r.answered)} kadarı doğruydu; rastgele basan biri de yaklaşık yarısını doğru bulur. Bu yüzden sonuç yorumlanmadı. Acele edilmiş ya da yönerge tam anlaşılmamış olabilir.`,
       ),
     };
   } else {
+    const perMin = nf0.format(Math.round(r.perMinute));
     const parts = [
       v(
-        `${span} ${r.answered} karar verdin; bunların ${sgOf(r.correct, r.answered)} doğruydu. Bu, dakikada yaklaşık ${nf0.format(Math.round(r.perMinute))} doğru karar demek.`,
-        `Çocuğunuz ${span} ${r.answered} karar verdi; bunların ${sgOf(r.correct, r.answered)} doğruydu. Bu, dakikada yaklaşık ${nf0.format(Math.round(r.perMinute))} doğru karar demektir.`,
+        `${spanNow} ${r.answered} karar verdin; bunların ${sgOf(r.correct, r.answered)} doğruydu. Bu, dakikada yaklaşık ${perMin} doğru karar demek.`,
+        `Çocuğunuz ${spanNow} ${r.answered} karar verdi; bunların ${sgOf(r.correct, r.answered)} doğruydu. Bu, dakikada yaklaşık ${perMin} doğru karar demektir.`,
       ),
     ];
-    if (r.medianRt !== null) {
-      parts.push(
-        v(`Doğru verdiğin bir karar tipik olarak ${sgSec(r.medianRt)} saniye sürdü.`, `Çocuğunuzun doğru verdiği bir karar tipik olarak ${sgSec(r.medianRt)} saniye sürdü.`),
-      );
-    }
     if (r.finishedAll) {
       parts.push(
         v(
-          'Bütün denemeleri süre dolmadan bitirdin; bu yüzden bu sayı hızını olduğundan düşük gösterebilir.',
-          'Çocuğunuz bütün denemeleri süre dolmadan bitirdi; bu yüzden bu sayı hızını olduğundan düşük gösterebilir.',
+          'Bütün denemeleri süre dolmadan bitirdin. Bu yüzden doğru karar sayın hızını olduğundan düşük gösterebilir; dakikadaki sayı yalnızca çalıştığın süreyle hesaplandı.',
+          'Çocuğunuz bütün denemeleri süre dolmadan bitirdi. Bu yüzden doğru karar sayısı hızını olduğundan düşük gösterebilir; dakikadaki sayı yalnızca çalıştığı süreyle hesaplandı.',
         ),
       );
     }
     parts.push(
       v(
-        'Bu sayı akranlarla karşılaştırılmadı. İşlem hızı yaşla çok değişir ve süreler cihaza göre biraz farklı ölçülür; bu yüzden sayı tek başına iyi ya da kötü diye okunmamalı, doğrulukla birlikte okunur.',
-        'Bu sayı akranlarla karşılaştırılmadı. İşlem hızı çocukluk boyunca belirgin biçimde artar ve süreler cihaza göre biraz farklı ölçülür; bu yüzden sayı tek başına iyi ya da kötü diye okunmamalı, doğrulukla birlikte okunmalıdır.',
+        'Bu sayı akranlarla karşılaştırılmadı. İşlem hızı yaşla çok değişir; süreler de cihaza göre biraz farklı ölçülür. Bu yüzden sayı tek başına iyi ya da kötü diye okunmamalı, doğrulukla birlikte okunur.',
+        'Bu sayı akranlarla karşılaştırılmadı. İşlem hızı çocukluk boyunca belirgin biçimde artar; süreler de cihaza göre biraz farklı ölçülür. Bu yüzden sayı tek başına iyi ya da kötü diye okunmamalı, doğrulukla birlikte okunmalıdır.',
       ),
     );
     if (rushed) {
       parts.push(
         v(
-          `Kararlarının ${r.tooFast} tanesini 0,3 saniyeden kısa sürede verdin. Bu kadar kısa sürede simgeleri karşılaştırmak zordur: bu kararlarda simgelere tam bakılmamış ya da süreler cihaz yüzünden yanlış ölçülmüş olabilir. Bu yüzden sonuç dikkatle okunmalı.`,
-          `Çocuğunuz kararlarının ${r.tooFast} tanesini 0,3 saniyeden kısa sürede verdi. Bu kadar kısa sürede simgeleri karşılaştırmak zordur: bu kararlarda simgelere tam bakılmamış ya da süreler cihaz yüzünden yanlış ölçülmüş olabilir. Bu yüzden sonuç dikkatle okunmalı.`,
+          `Kararlarının ${r.tooFast} tanesini 0,3 saniyeden kısa sürede verdin. Bu kadar kısa sürede simgeleri karşılaştırmak zordur; bu kararlarda simgelere tam bakmamış olabilirsin. Bu yüzden sonuç dikkatle okunmalı.`,
+          `Çocuğunuz kararlarının ${r.tooFast} tanesini 0,3 saniyeden kısa sürede verdi. Bu kadar kısa sürede simgeleri karşılaştırmak zordur; bu kararlarda simgelere tam bakmamış olabilir. Bu yüzden sonuç dikkatle okunmalı.`,
         ),
       );
     }
@@ -8793,6 +8803,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
       ...card('sg_hiz'),
       headline: `${r.correct} doğru karar`,
       text: parts.join(' '),
+      // Doğru kararların süreleri (tipik süre çizgide yazar); süreler alınamadıysa doğru ve yanlış kararlar.
       visual:
         r.medianRt !== null
           ? durationStrip({ label: 'Doğru kararların süreleri', rts: r.rts, median: r.medianRt, marker: `Tipik ${sgSec(r.medianRt)} sn`, item: 'bir doğru karar' })
@@ -8808,7 +8819,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
     };
   }
 
-  /* Doğruluk ve hata türleri */
+  /* Doğruluk ve hata türleri (kararların sayıları grafikte) */
   let dogruluk: CognitiveBlock;
   const stack: StackVisual = {
     type: 'stack',
@@ -8825,13 +8836,13 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
     dogruluk = {
       ...card('sg_dogruluk'),
       headline: 'Hata yok',
-      text: withHedge([v(`Verdiğin ${r.answered} kararın hepsi doğruydu; hiç yanılmadın.`, `Çocuğunuzun verdiği ${r.answered} kararın hepsi doğruydu.`)]),
+      text: withHedge([v('Kararlarının hepsi doğruydu; hiç yanılmadın.', 'Çocuğunuzun kararlarının hepsi doğruydu.')]),
       visual: stack,
     };
   } else {
-    const parts = [v(`Verdiğin ${r.answered} kararın ${sgOf(r.correct, r.answered)} doğruydu.`, `Çocuğunuzun verdiği ${r.answered} kararın ${sgOf(r.correct, r.answered)} doğruydu.`)];
     const Y = r.falseYok;
     const V = r.falseVar;
+    const parts: string[] = [];
     if (r.wrong === 1) {
       parts.push(
         Y
@@ -8839,33 +8850,41 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
           : v('Tek yanlış kararında aranan simge sırada yokken “Var” dedin.', 'Çocuğunuz tek yanlış kararında aranan simge sırada yokken “Var” dedi.'),
       );
     } else if (V === 0) {
-      parts.push(v('Yanlış kararlarının hepsinde aranan simge sıradayken “Yok” dedin.', 'Çocuğunuz yanlış kararlarının hepsinde aranan simge sıradayken “Yok” dedi.'));
+      parts.push(v('Yanlışlarının hepsinde aranan simge sıradayken “Yok” dedin.', 'Çocuğunuz yanlışlarının hepsinde aranan simge sıradayken “Yok” dedi.'));
     } else if (Y === 0) {
-      parts.push(v('Yanlış kararlarının hepsinde aranan simge sırada yokken “Var” dedin.', 'Çocuğunuz yanlış kararlarının hepsinde aranan simge sırada yokken “Var” dedi.'));
+      parts.push(v('Yanlışlarının hepsinde aranan simge sırada yokken “Var” dedin.', 'Çocuğunuz yanlışlarının hepsinde aranan simge sırada yokken “Var” dedi.'));
+    } else if (r.wrong === 2) {
+      parts.push(
+        v(
+          'Yanlışlarından birinde aranan simge sıradayken “Yok”, ötekinde sırada yokken “Var” dedin.',
+          'Çocuğunuz yanlışlarından birinde aranan simge sıradayken “Yok”, ötekinde sırada yokken “Var” dedi.',
+        ),
+      );
     } else {
       parts.push(
         v(
-          `Yanlış kararlarının ${sgIn(Y)} aranan simge sıradayken “Yok”, ${sgIn(V)} sırada yokken “Var” dedin.`,
-          `Çocuğunuz yanlış kararlarının ${sgIn(Y)} aranan simge sıradayken “Yok”, ${sgIn(V)} sırada yokken “Var” dedi.`,
+          'Yanlışlarının bir kısmında aranan simge sıradayken “Yok”, bir kısmında sırada yokken “Var” dedin.',
+          'Çocuğunuz yanlışlarının bir kısmında aranan simge sıradayken “Yok”, bir kısmında sırada yokken “Var” dedi.',
         ),
       );
     }
     let head = `%${sgPct(r.correct, r.answered)} doğru`;
+    if (r.wrong >= 2 && V === 0) head = 'Yanlışlarda simge gözden kaçtı';
+    else if (r.wrong >= 2 && Y === 0) head = 'Yanlışlarda olmayan simge görüldü';
+    else if (r.wrong >= 3 && Y >= V + 2) head = 'Çoğu yanlışta simge gözden kaçtı';
+    else if (r.wrong >= 3 && V >= Y + 2) head = 'Çoğu yanlışta olmayan simge görüldü';
     if (r.wrong >= 3 && Y >= V + 2) {
-      head = 'Çoğu yanlışta simge gözden kaçtı';
       parts.push(
-        v(
-          'Aramada en sık görülen yanılgı budur: sırada olan simgeyi gözden kaçırmak. “Yok” demeden önce sıradaki dört simgenin hepsine bakmak bu yanılgıyı azaltabilir.',
-          'Aramada en sık görülen yanılgı budur: sırada olan simgeyi gözden kaçırmak. “Yok” demeden önce sıradaki dört simgenin hepsine bakmak bu yanılgıyı azaltabilir.',
-        ),
+        'Böyle aramalarda en sık görülen yanılgı budur: sırada olan simgeyi gözden kaçırmak.',
+        '“Yok” demeden önce sıradaki dört simgenin hepsine bakmak bu yanılgıyı azaltabilir.',
       );
     } else if (r.wrong >= 3 && V >= Y + 2) {
-      head = 'Çoğu yanlışta olmayan simge görüldü';
+      const all = r.falseVarLook === V;
       parts.push(
-        3 * r.falseVarLook >= 2 * V
+        all || (V >= 4 && 3 * r.falseVarLook >= 2 * V)
           ? v(
-              `Yanlışlıkla “Var” dediğin kararların ${r.falseVarLook === V ? 'hepsinde' : 'çoğunda'} sırada aranan simgeye çok benzeyen, bir çizgisi farklı bir simge vardı. Benzer simgeyi aranan simge sanmış olabilirsin; “Var” demeden önce çizgileri tek tek karşılaştırmak işe yarayabilir.`,
-              `Çocuğunuzun yanlışlıkla “Var” dediği kararların ${r.falseVarLook === V ? 'hepsinde' : 'çoğunda'} sırada aranan simgeye çok benzeyen, bir çizgisi farklı bir simge vardı. Benzer simgeyi aranan simge sanmış olabilir; “Var” demeden önce çizgileri tek tek karşılaştırmak işe yarayabilir.`,
+              `Yanlışlıkla “Var” dediğin kararların ${all ? 'hepsinde' : 'çoğunda'} sırada aranan simgeye çok benzeyen, bir çizgisi farklı bir simge vardı. Benzer simgeyi aranan simge sanmış olabilirsin; “Var” demeden önce çizgileri tek tek karşılaştırmak işe yarayabilir.`,
+              `Çocuğunuzun yanlışlıkla “Var” dediği kararların ${all ? 'hepsinde' : 'çoğunda'} sırada aranan simgeye çok benzeyen, bir çizgisi farklı bir simge vardı. Benzer simgeyi aranan simge sanmış olabilir; “Var” demeden önce çizgileri tek tek karşılaştırmak işe yarayabilir.`,
             )
           : v(
               'Sırada olmayan bir simgeyi görmüş gibi “Var” demek, aramada daha az görülen bir yanılgıdır; bazı kararlarda acele etmiş olabilirsin.',
@@ -8890,34 +8909,45 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
   } else {
     const lookLower = sgAccLower(L, P);
     const plainLower = sgAccLower(P, L);
-    const lookSlower = sgRtLonger(L, P);
-    const lookFaster = sgRtLonger(P, L);
-    const timed = L.medianRt !== null && P.medianRt !== null && L.correct >= SG_RT_MIN && P.correct >= SG_RT_MIN;
+    const gap = sgAccGap(L, P);
+    const lookSlower = sgLookSlower(r);
+    const lookFaster = sgLookFaster(r);
+    const timed = L.rt !== null && P.rt !== null && L.correct >= SG_RT_MIN && P.correct >= SG_RT_MIN;
     const parts: string[] = [];
-    let head: string;
     if (lookLower) {
-      head = 'Benzer simgelerde daha çok yanılgı';
       parts.push(
         v(
           'Sırada aranan simgelerden birine çok benzeyen, bir çizgisi farklı bir simge olduğunda daha sık yanıldın.',
           'Çocuğunuz sırada aranan simgelerden birine çok benzeyen, bir çizgisi farklı bir simge olduğunda daha sık yanıldı.',
         ),
-        'Bu herkeste görülür: aranan simgeye benzeyen simgeler aramayı zorlaştırır.',
+        'Bu çoğu kişide görülür: aranan simgeye benzeyen simgeler aramayı zorlaştırır.',
       );
     } else if (plainLower) {
-      head = 'Benzer simgelerde daha az yanılgı';
       parts.push(
         v(
           'Sırada aranan simgeye çok benzeyen bir simge olduğunda, olmadığı zamankinden daha az yanıldın; genellikle tersi olur. Bu fark bir seferden ötekine değişebilir.',
           'Çocuğunuz sırada aranan simgeye çok benzeyen bir simge olduğunda, olmadığı zamankinden daha az yanıldı; genellikle tersi olur. Bu fark bir seferden ötekine değişebilir.',
         ),
       );
-    } else {
-      head = lookSlower ? 'Benzer simgelerde kararlar daha uzun' : lookFaster ? 'Benzer simgelerde kararlar daha kısa' : 'Belirgin fark yok';
+    } else if (gap >= SG_SMALL_GAP - 1e-9) {
       parts.push(
         v(
-          'Sırada aranan simgeye çok benzeyen bir simge olsa da olmasa da doğruluğun belirgin biçimde değişmedi.',
-          'Sırada aranan simgeye çok benzeyen bir simge olsa da olmasa da çocuğunuzun doğruluğu belirgin biçimde değişmedi.',
+          'Benzer simge varken biraz daha sık yanıldın; ama bu fark bu kadar kararla belirgin sayılmaz.',
+          'Çocuğunuz benzer simge varken biraz daha sık yanıldı; ama bu fark bu kadar kararla belirgin sayılmaz.',
+        ),
+      );
+    } else if (gap <= -SG_SMALL_GAP + 1e-9) {
+      parts.push(
+        v(
+          'Benzer simge yokken biraz daha sık yanıldın; ama bu fark bu kadar kararla belirgin sayılmaz.',
+          'Çocuğunuz benzer simge yokken biraz daha sık yanıldı; ama bu fark bu kadar kararla belirgin sayılmaz.',
+        ),
+      );
+    } else {
+      parts.push(
+        v(
+          'Sırada aranan simgeye çok benzeyen bir simge olsa da olmasa da doğruluğun hemen hemen aynıydı.',
+          'Sırada aranan simgeye çok benzeyen bir simge olsa da olmasa da çocuğunuzun doğruluğu hemen hemen aynıydı.',
         ),
       );
     }
@@ -8936,9 +8966,21 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
         ),
       );
     } else if (timed) {
-      parts.push(v('Doğru kararlarının süresi de iki tür denemede birbirine yakındı.', 'Çocuğunuzun doğru kararlarının süresi de iki tür denemede birbirine yakındı.'));
+      const conn = lookLower || plainLower ? 'ise' : 'de';
+      parts.push(
+        v(`Doğru kararlarının süresi ${conn} iki tür denemede birbirine yakındı.`, `Çocuğunuzun doğru kararlarının süresi ${conn} iki tür denemede birbirine yakındı.`),
+      );
     }
-    if (head === 'Belirgin fark yok') parts.push('Benzer simgeler çoğu kişide aramayı biraz zorlaştırır; bu oturumda belirgin bir etkisi görülmedi.');
+    const head = lookLower
+      ? 'Benzer simgelerde daha çok yanılgı'
+      : plainLower
+        ? 'Benzer simgelerde daha az yanılgı'
+        : lookSlower
+          ? 'Benzer simgelerde kararlar daha uzun'
+          : lookFaster
+            ? 'Benzer simgelerde kararlar daha kısa'
+            : 'Belirgin fark yok';
+    if (head === 'Belirgin fark yok') parts.push('Benzer simgeler çoğu kişide aramayı biraz zorlaştırır.');
     benzer = {
       ...card('sg_benzer'),
       headline: head,
@@ -8950,23 +8992,22 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
     };
   }
 
-  /* Var mı, yok mu? */
+  /* Var mı, yok mu? (dengelenmiş tipik süreler) */
   let varyok: CognitiveBlock;
   const A = r.absent;
   const Pr = r.present;
   if (why) varyok = notRead('sg_varyok');
-  else if (A.medianRt === null || Pr.medianRt === null || A.correct < SG_RT_MIN || Pr.correct < SG_RT_MIN) {
+  else if (r.medianRt === null) {
+    varyok = { ...card('sg_varyok'), headline: 'Karşılaştırılmadı', text: 'Kararların süreleri alınamadığı için “Var” ve “Yok” kararları karşılaştırılmadı.' };
+  } else if (A.rt === null || Pr.rt === null || A.correct < SG_RT_MIN || Pr.correct < SG_RT_MIN) {
     varyok = {
       ...card('sg_varyok'),
       headline: 'Karşılaştırılmadı',
-      text:
-        A.medianRt === null && Pr.medianRt === null && A.correct >= SG_RT_MIN && Pr.correct >= SG_RT_MIN
-          ? 'Kararların süreleri alınamadığı için “Var” ve “Yok” kararları karşılaştırılmadı.'
-          : 'Aranan simge sırada varken ve yokken yeterince doğru karar olmadığı için süreler karşılaştırılmadı.',
+      text: 'Aranan simge sırada varken ve yokken yeterince doğru karar olmadığı için süreler karşılaştırılmadı.',
     };
   } else {
-    const absentSlower = sgRtLonger(A, Pr);
-    const presentSlower = sgRtLonger(Pr, A);
+    const absentSlower = sgAbsentSlower(r);
+    const presentSlower = sgPresentSlower(r);
     const hastyNo = !absentSlower && sgAccLower(Pr, A);
     const parts: string[] = [];
     let head: string;
@@ -8977,14 +9018,18 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
           'Aranan simge sırada yokken doğru karar vermen, sıradayken vermenden daha uzun sürdü.',
           'Aranan simge sırada yokken çocuğunuzun doğru karar vermesi, sıradayken vermesinden daha uzun sürdü.',
         ),
-        'Bu herkeste görülür: “Yok” demek için sıradaki bütün simgelere bakmak gerekir, “Var” demek için ise simgeyi bulmak yeter.',
+        'Çoğu kişide böyledir: “Yok” demek için sıradaki bütün simgelere bakmak gerekir, “Var” demek için simgeyi bulmak yeter.',
       );
     } else if (hastyNo) {
       head = '“Yok” kararları hızlı';
       parts.push(
         v(
-          'Aranan simge sırada yokken verdiğin doğru kararlar, sıradayken verdiklerinden uzun sürmedi; oysa “Yok” demek için bütün simgelere bakmak gerekir. Aynı zamanda sırada olan simgeyi birçok kez gözden kaçırdın. “Yok” dediğin bazı denemelerde sıradaki bütün simgelere bakmadan karar vermiş olabilirsin.',
-          'Aranan simge sırada yokken çocuğunuzun verdiği doğru kararlar, sıradayken verdiklerinden uzun sürmedi; oysa “Yok” demek için bütün simgelere bakmak gerekir. Aynı zamanda sırada olan simgeyi birçok kez gözden kaçırdı. “Yok” dediği bazı denemelerde sıradaki bütün simgelere bakmadan karar vermiş olabilir.',
+          'Aranan simge sırada yokken verdiğin doğru kararlar, sıradayken verdiklerinden uzun sürmedi; oysa “Yok” demek için bütün simgelere bakmak gerekir.',
+          'Aranan simge sırada yokken çocuğunuzun verdiği doğru kararlar, sıradayken verdiklerinden uzun sürmedi; oysa “Yok” demek için bütün simgelere bakmak gerekir.',
+        ),
+        v(
+          'Aynı zamanda sırada olan simgeyi birçok kez gözden kaçırdın. “Yok” dediğin bazı denemelerde sıradaki bütün simgelere bakmadan karar vermiş olabilirsin.',
+          'Aynı zamanda sırada olan simgeyi birçok kez gözden kaçırdı. “Yok” dediği bazı denemelerde sıradaki bütün simgelere bakmadan karar vermiş olabilir.',
         ),
       );
     } else if (presentSlower) {
@@ -9010,54 +9055,63 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
       headline: head,
       text: withHedge(parts),
       visual: msBarsVisual('Doğru kararlarda tipik süre', [
-        { label: 'Simge sıradayken (“Var”)', ms: Pr.medianRt },
-        { label: 'Simge yokken (“Yok”)', ms: A.medianRt },
+        { label: 'Simge sıradayken (“Var”)', ms: Pr.rt },
+        { label: 'Simge yokken (“Yok”)', ms: A.rt },
       ]),
     };
   }
 
-  /* Hız ve doğruluk dengesi */
+  /* Hız ve doğruluk dengesi: ortanca süreden kısa ve uzun süren kararlar */
   let denge: CognitiveBlock;
   if (why) denge = notRead('sg_denge');
-  else if (r.fast.n + r.slow.n < SG_HALF_MIN) {
+  else if (r.timed < SG_HALF_MIN) {
     denge = {
       ...card('sg_denge'),
       headline: 'Karşılaştırılmadı',
       text: 'Süresi bilinen yeterince karar olmadığı için hızlı ve yavaş kararlar karşılaştırılmadı.',
     };
+  } else if (!sgHalvesApart(r)) {
+    denge = {
+      ...card('sg_denge'),
+      headline: 'Karşılaştırılmadı',
+      text: v(
+        'Kararlarının süreleri birbirine çok yakın olduğu için hızlı ve yavaş kararlar ayrılamadı.',
+        'Çocuğunuzun kararlarının süreleri birbirine çok yakın olduğu için hızlı ve yavaş kararlar ayrılamadı.',
+      ),
+    };
   } else {
     const fastLower = sgAccLower(r.fast, r.slow);
     const slowLower = sgAccLower(r.slow, r.fast);
+    const gap = sgAccGap(r.fast, r.slow);
     const parts: string[] = [];
     let head: string;
     if (fastLower) {
       head = 'Hızlı kararlarda daha çok yanılgı';
       parts.push(
-        v(
-          'En hızlı verdiğin kararlarda, daha uzun düşündüğün kararlardan daha sık yanıldın.',
-          'Çocuğunuz en hızlı verdiği kararlarda, daha uzun düşündüğü kararlardan daha sık yanıldı.',
-        ),
-        'Hızlanınca karar için daha az bilgi toplanır ve yanılgı artabilir; bu herkeste görülür.',
+        v('En hızlı verdiğin kararlarda, daha uzun düşündüğün kararlardan daha sık yanıldın.', 'Çocuğunuz en hızlı verdiği kararlarda, daha uzun düşündüğü kararlardan daha sık yanıldı.'),
+        'Hızlanınca simgelere daha kısa bakılır; bu da yanılgıyı artırabilir.',
         v('Biraz daha yavaş ama dikkatli çalışmak doğruluğunu artırabilir.', 'Biraz daha yavaş ama dikkatli çalışmak çocuğunuzun doğruluğunu artırabilir.'),
       );
     } else if (slowLower) {
-      head = 'Uzun kararlarda daha çok yanılgı';
+      head = 'Uzun süren kararlarda daha çok yanılgı';
       parts.push(
-        v(
-          'Daha uzun düşündüğün kararlarda, en hızlı verdiğin kararlardan daha sık yanıldın.',
-          'Çocuğunuz daha uzun düşündüğü kararlarda, en hızlı verdiği kararlardan daha sık yanıldı.',
-        ),
-        'Uzun süren kararlar çoğu zaman zor denemelerdir (ör. sırada benzer bir simgenin olduğu denemeler); bu yüzden bu olağandır.',
+        v('Daha uzun düşündüğün kararlarda, en hızlı verdiğin kararlardan daha sık yanıldın.', 'Çocuğunuz daha uzun düşündüğü kararlarda, en hızlı verdiği kararlardan daha sık yanıldı.'),
+        'Zor denemeler (ör. sırada benzer bir simgenin olduğu denemeler) hem daha uzun sürebilir hem de daha sık yanıltabilir; bu fark bundan kaynaklanabilir.',
       );
     } else {
       head = 'Belirgin fark yok';
       parts.push(
-        r.wrong === 0
+        r.fast.correct === r.fast.n && r.slow.correct === r.slow.n
           ? v('En hızlı verdiğin kararlar da daha uzun düşündüğün kararlar da doğruydu.', 'Çocuğunuzun en hızlı verdiği kararlar da daha uzun düşündüğü kararlar da doğruydu.')
-          : v(
-              'En hızlı verdiğin kararlarla daha uzun düşündüğün kararların doğruluğu birbirine yakındı: hızlandığın kararlarda belirgin biçimde daha sık yanılmadın.',
-              'Çocuğunuzun en hızlı verdiği kararlarla daha uzun düşündüğü kararların doğruluğu birbirine yakındı: hızlandığı kararlarda belirgin biçimde daha sık yanılmadı.',
-            ),
+          : Math.abs(gap) >= SG_SMALL_GAP - 1e-9
+            ? v(
+                'En hızlı verdiğin kararlarla daha uzun düşündüğün kararların doğruluğu arasında küçük bir fark var; bu kadar kararla belirgin sayılmaz.',
+                'Çocuğunuzun en hızlı verdiği kararlarla daha uzun düşündüğü kararların doğruluğu arasında küçük bir fark var; bu kadar kararla belirgin sayılmaz.',
+              )
+            : v(
+                'En hızlı verdiğin kararlarla daha uzun düşündüğün kararların doğruluğu birbirine yakındı.',
+                'Çocuğunuzun en hızlı verdiği kararlarla daha uzun düşündüğü kararların doğruluğu birbirine yakındı.',
+              ),
       );
     }
     denge = {
@@ -9065,35 +9119,40 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
       headline: head,
       text: withHedge(parts),
       visual: pctBarsVisual('Hızlı ve yavaş kararlarda doğru kararlar', [
-        { label: 'En hızlı yarı', rate: r.fast.n ? r.fast.correct / r.fast.n : 0 },
-        { label: 'Daha yavaş yarı', rate: r.slow.n ? r.slow.correct / r.slow.n : 0 },
+        { label: 'Hızlı kararlar', rate: r.fast.n ? r.fast.correct / r.fast.n : 0 },
+        { label: 'Yavaş kararlar', rate: r.slow.n ? r.slow.correct / r.slow.n : 0 },
       ]),
     };
   }
 
-  /* Grafik ve öne çıkan sayılar */
-  const q = secs / 4;
-  const whole = secs % 60 === 0 ? `${secs / 60} dakikanın` : `${secs} saniyenin`;
+  /* Grafik ve öne çıkan sayılar (yorumlanmayan sonuçta grafik yok) */
+  const q = Math.round(r.durationMs / 4000);
+  const whole = Math.round(r.durationMs / 1000) % 60 === 0 ? `${Math.round(r.durationMs / 60_000)} dakikanın` : `${Math.round(r.durationMs / 1000)} saniyenin`;
+  const early = r.finishedAll ? ` Bütün denemeler ${doneSecs}. saniyede bittiği için ${doneSecs > 3 * q ? 'son bölümde' : 'son bölümlerde'} daha az karar var.` : '';
   const chart: CognitiveReport['chart'] =
-    r.answered > 0
+    r.answered > 0 && !why
       ? {
           title: `${q} saniyelik bölümlerde doğru kararlar`,
-          note: v(
-            `Her çubuk, ${whole} bir çeyreğinde verdiğin doğru kararları gösterir. Hız görev boyunca biraz dalgalanabilir; tek bir oturumda bu dalgalanma yorumlanmaz.`,
-            `Her çubuk, ${whole} bir çeyreğinde verilen doğru kararları gösterir. Hız görev boyunca biraz dalgalanabilir; tek bir oturumda bu dalgalanma yorumlanmaz.`,
-          ),
+          note:
+            v(
+              `Her çubuk, ${whole} bir çeyreğinde verdiğin doğru kararları gösterir. Hız görev boyunca biraz dalgalanabilir; tek bir oturumda bu dalgalanma yorumlanmaz.`,
+              `Her çubuk, ${whole} bir çeyreğinde verilen doğru kararları gösterir. Hız görev boyunca biraz dalgalanabilir; tek bir oturumda bu dalgalanma yorumlanmaz.`,
+            ) + early,
           rows: r.quarters.map((x, i) => ({ label: `${i * q}–${(i + 1) * q} sn`, value: x, max: roundUp(Math.max(...r.quarters), 5), valueLabel: String(x) })),
         }
       : undefined;
   const figures = [
-    { label: `Doğru karar (${span})`, value: why ? 'Yorumlanmadı' : String(r.correct) },
+    { label: `Doğru karar (${spanNow})`, value: why ? 'Yorumlanmadı' : String(r.correct) },
     why ? { label: 'Doğruluk', value: 'Yorumlanmadı' } : { label: 'Doğruluk', value: `%${sgPct(r.correct, r.answered)}`, note: 'Verilen kararlardan doğru olanların oranı.' },
     why || r.medianRt === null
       ? { label: 'Tipik karar süresi', value: why ? 'Yorumlanmadı' : 'Hesaplanamadı' }
       : {
           label: 'Tipik karar süresi',
           value: `${sgSec(r.medianRt)} sn`,
-          note: 'Doğru kararların ortanca süresi. Telefon ve bilgisayar süreleri biraz farklı ölçebilir.',
+          note: v(
+            'Doğru kararlarının tipik süresi: yarısı bundan kısa, yarısı uzun sürdü. Telefon ve bilgisayar süreleri biraz farklı ölçebilir.',
+            'Doğru kararların ortanca süresi. Telefon ve bilgisayar süreleri biraz farklı ölçebilir.',
+          ),
         },
   ];
   return { blocks: [hiz, dogruluk, benzer, varyok, denge], ...(chart ? { chart } : {}), figures };

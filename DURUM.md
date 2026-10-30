@@ -686,7 +686,20 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    artırdığı söylenmez; Brod ve Breitwieser, 2019), son hafta Düşünmeyi Sevme ve Heyecan Arayışı. "Hangi test bana
    uygun?"da kişilik alanında; paylaşım kartı yok ("yüksek daha iyi" diye okunabilir). Heyecan Arayışı'nın örtüşme notu bu
    testi de anar. Bütün birleşimler `tests/merak.test.ts`'te.
-8. Simge Bulma (zekâ; özgün görev; WÇZÖ-IV'teki "Simge Arama" alt testiyle karışmasın diye bu ad): hazırlanıyor.
+8. **İşlem Hızı: Simge Bulma: yayında (2026-10-30, pilot; 3. sınıftan yetişkine).** Ad, WÇZÖ-IV'teki "Simge Arama" alt
+   testiyle karışmasın diye seçildi; bilim kartı o alt test olmadığını söyler. Yeni görev türü `symbol_search`: her
+   denemede iki aranan simge ve dört simgelik bir sıra; "Var" ya da "Yok" (← V / → Y), 6 geri bildirimli alıştırma
+   (4'ten azı doğruysa tekrar önerilir), 2 dakika. Simgeler 3 × 3 nokta ızgarasında dört çizgili 14 özgün simge (ikisi en
+   çok bir çizgiyi paylaşır; biri ötekinin döndürülmüşü ya da ayna görüntüsü değildir; harfe, rakama, oka benzeyenler
+   elendi) ve her birinin bir çizgisi bir eklem çevresinde döndürülmüş 2–3 benzeri. Denemeler uygulama kimliğinden
+   üretilir (240; sekizli bloklarda var/yok × benzer simge var/yok ikişer); bağımsız denetleyici çizgi düzeyinde denetler.
+   Rapor (beş kart, her birinde grafik): çalışma hızı (doğru karar, dakikadaki doğru karar, süre şeridi), doğruluk ve
+   hata türleri, benzer simgeler, var mı yok mu (dengeli ortanca süreler), hız ve doğruluk dengesi (ortanca süreye göre
+   hızlı ve yavaş yarılar). Kişinin kendi içindeki farklar yalnızca yüzde puanı, sayı ve z ≥ 2,24 ölçütlerinin hepsini
+   aşınca "fark" diye söylenir. 16'dan az karar, %70'in altında doğruluk ya da %90'ı tek düğme ise yorumlanmaz. Yol
+   haritası: önce doğruluk, sırayla bak, temel işleri akıcılaştır (Gersten ve ark., 2009), süre yetmediğinde konuş;
+   "daha hızlı düşünme" vaadi yok (Sala ve ark., 2019). Norm yok; Kail (1991) ve Hale (1990) yaşla gelişimi anlatır.
+   Telefonda dokunarak (4. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü; iki bağımsız inceleme uygulandı.
 9. Liderlik (kişilik; IPIP, VIA dışı ölçek)
 10. Parça Birleştirme (zekâ; özgün sorular)
 11. Yaratıcılık Eğilimi (kişilik; IPIP)
@@ -734,8 +747,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
    hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
-   (Öz-denetim) yayında (2026-10-27); 6. test (Harf-Sayı Sıralama) ve 7. test (Merak) yayında (2026-10-30).
-   Sıradaki: 3. listenin 8. testi (Simge Bulma).
+   (Öz-denetim) yayında (2026-10-27); 6., 7. ve 8. testler (Harf-Sayı Sıralama, Merak, Simge Bulma) yayında (2026-10-30).
+   Sıradaki: 3. listenin 9. testi (Liderlik).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -964,6 +977,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Öz-denetim | oz-denetim | Yayında (active; 9. sınıftan yetişkine) |
 | Harf-Sayı Sıralama | harf-sayi-siralama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Merak | merak | Yayında (active; 9. sınıftan yetişkine) |
+| İşlem Hızı: Simge Bulma | simge-bulma | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1088,6 +1102,18 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (60): Yeni test İşlem Hızı: Simge Bulma yayına alındı (3. listenin 8. testi; site sahibinin seçtiği dört
+  yeniliğin dördüncüsü; ayrıntı yukarıda). Ad: WÇZÖ-IV'teki "Simge Arama" alt testiyle karışmasın diye "Simge Bulma".
+  Yeni görev türü `symbol_search`; uygulama kimliğinden üretilen 240 deneme, sunucu yeniden üretip puanlar. Bağımsız
+  incelemelerin bulguları yayından önce uygulandı: kod ve mantık (tesadüfi farkları örüntü saymasın diye iki oran ve
+  log süre karşılaştırmasında z ≥ 2,24 ölçütü, sıfır etkili benzetimde her kart ≤ %5; hızlı ve yavaş yarılar ortanca
+  süreye göre ve süreler yakınsa karşılaştırılmaz; dengeli ortancalar; yorumlanmayan sonuçta çeyrek grafiği yok;
+  bütün denemeler bitince süre metni; alıştırma tekrarı; çift dokunma 200 ms; süre bitince gelen dokunuş sayılmaz;
+  sunucu karar sürelerini önceki cevaptan geçen süreyle sınar; kartta grafikteki sayılar yinelenmez; "herkes" yok) ve
+  kaynak ve sayı (Cronbach ve Warrington 1951, Wolfe 2021'in modeli yerine Langer 2017, RCH sayfasının beyin hasarı
+  bağlamı, 2.225 çocuk Öktem ve ark. 2016 aktaran Çelik 2021, Valentine ve Kratz 2023'te %35–39 ve oturumlar, Gersten
+  2009 önerisinin gerekçesi, Fry ve Hale sayfaları, Uluç ve Öktem künyesi). Telefonda dokunarak (4. sınıf) ve
+  masaüstünde klavyeyle (yetişkin) baştan sona çözüldü, PDF'ler açıldı. Site sahibinin seçtiği dört yenilik bitti.
 - 2026-10-30 (59): Yeni test Merak yayına alındı (3. listenin 7. testi; site sahibinin seçtiği dört yeniliğin üçüncüsü;
   ayrıntı yukarıda). İki yön (bilgi merakı, yenilik merakı), 20 madde, araştırma özetli "Birlikte bakınca", 2. hafta
   "Önce tahmin et". Kayıtlar: test seçici (kişilik alanı), paylaşım kararı (kart yok), dış sınama, yetişkin ve yol haritası
@@ -1174,8 +1200,3 @@ En yeni üstte; en çok 10 madde tutulur.
   yalnızca bir özelliğinin ortak olduğu, Klauer ve Phye'nin sınırları, resimli ve matris çalışmaları açıkça belirtildi; ASİS'in
   görsel analojik muhakeme alt testi anıldı (Sertel, 2019); Lovett ve Forbus künyesi bildirinin yayımlandığı yerle düzeldi.
   Ortak Thibaut künyesindeki sayı numarası (106(1)) geri geldi. Yol haritası: eğitim cümleleri kazanç vaat etmiyor.
-- 2026-10-27 (50): Yeni test Şekil Benzetmeleri yayına alındı (3. listenin 4. testi; ayrıntı yukarıda). Yeni görev türü
-  (`figural_analogy`): çizim ve dönüşümler, bağımsız denetleyici, puanlama, beş kartlı rapor, yol haritası. Değişiklik
-  türleri kartı her değişikliği ayrı sayar (yanlış cevapta seçilen şeklin kaçırdığı değişiklikler); böylece döndürmede
-  zorlanan birinin aynı sorulardaki renk değişiklikleri de yanlış sayılmaz. Kaynak araştırması ayrı bir ajanla yapıldı
-  (38 kaynak; açılamayanlar ayrıca listelendi).

@@ -10,7 +10,7 @@ type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 type Answer = 'var' | 'yok';
 
 /** Simgeler belirdikten sonra bundan kısa sürede gelen basış (ör. çift dokunma) cevap sayılmaz. */
-const BOUNCE_MS = 100;
+const BOUNCE_MS = 200;
 
 /** Simge: 3 × 3 nokta ızgarasında dört çizgi (ekranda ve raporda aynı kalınlıkta, uçları yuvarlak). */
 export function SymbolSearchGlyph({ strokes, size, title }: { strokes: string[]; size: number; title?: string }) {
@@ -96,6 +96,8 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
 
   function answer(ans: Answer, t: number) {
     if (!running || feedback !== null || finished.current) return;
+    // Süre dolduktan sonra (zamanlayıcı görevi bitirmeden önceki kısa arada) gelen basış sayılmaz.
+    if (step === 'test' && used.current + (t - segStart.current) >= task.durationMs) return;
     const rtMs = Math.round(t - onset.current);
     if (rtMs < BOUNCE_MS) return;
     const correct = (ans === 'var') === trial.present;
@@ -140,36 +142,59 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
     );
   }
 
-  if (step === 'ready' || step === 'practice-done') {
-    const first = step === 'ready';
-    const seconds = Math.round(task.durationMs / 1000);
+  const startPractice = () => {
+    setIndex(0);
+    setFeedback(null);
+    setPracticeHits(0);
+    setStep('practice');
+  };
+  const startTest = () => {
+    setIndex(0);
+    setFeedback(null);
+    finished.current = false;
+    records.current = [];
+    used.current = 0;
+    setRemaining(task.durationMs);
+    setStep('test');
+  };
+
+  if (step === 'ready') {
     return (
       <div className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          {first
-            ? `Önce ${task.practice.length} denemelik bir alıştırma yapalım. Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var”, yoksa “Yok” düğmesine bas.`
-            : `Alıştırmada ${task.practice.length} denemenin ${practiceHits === task.practice.length ? 'hepsinde' : practiceHits === 0 ? 'hiçbirinde' : `${practiceHits} tanesinde`} doğru karar verdin. Şimdi ${seconds % 60 === 0 ? `${seconds / 60} dakika` : `${seconds} saniye`} boyunca yapabildiğin kadar karar ver. Hem hızlı hem doğru olmaya çalış.`}
+          Önce {task.practice.length} denemelik bir alıştırma yapalım. Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var”, yoksa “Yok” düğmesine bas.
         </p>
-        <ArmedButton
-          className="btn btn-primary btn-lg"
-          autoFocus
-          onClick={() => {
-            setIndex(0);
-            setFeedback(null);
-            if (first) {
-              setPracticeHits(0);
-              setStep('practice');
-            } else {
-              finished.current = false;
-              records.current = [];
-              used.current = 0;
-              setRemaining(task.durationMs);
-              setStep('test');
-            }
-          }}
-        >
-          {first ? 'Alıştırmaya başla' : 'Göreve başla'}
+        <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={startPractice}>
+          Alıştırmaya başla
         </ArmedButton>
+      </div>
+    );
+  }
+
+  if (step === 'practice-done') {
+    const n = task.practice.length;
+    const seconds = Math.round(task.durationMs / 1000);
+    const low = practiceHits < 4;
+    const hits =
+      practiceHits === 0
+        ? `Alıştırmada ${n} denemenin hiçbirinde doğru karar veremedin.`
+        : `Alıştırmada ${n} denemenin ${practiceHits === n ? 'hepsinde' : `${practiceHits} tanesinde`} doğru karar verdin.`;
+    return (
+      <div key={step} className="flex flex-col items-center gap-6 text-center">
+        <p className="measure text-lg">
+          {hits}{' '}
+          {low
+            ? 'Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var” de; bir çizgisi farklı benzer simge aynı simge sayılmaz. İstersen alıştırmayı tekrarlayabilirsin.'
+            : `Şimdi ${seconds % 60 === 0 ? `${seconds / 60} dakika` : `${seconds} saniye`} boyunca yapabildiğin kadar karar ver; hem hızlı hem doğru olmaya çalış. Asıl bölümde doğru mu yanlış mı olduğunu görmeyeceksin.`}
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <ArmedButton className={`btn btn-lg ${low ? 'btn-primary' : 'btn-secondary'}`} autoFocus={low} onClick={startPractice}>
+            Alıştırmayı tekrarla
+          </ArmedButton>
+          <ArmedButton className={`btn btn-lg ${low ? 'btn-secondary' : 'btn-primary'}`} autoFocus={!low} onClick={startTest}>
+            Göreve başla
+          </ArmedButton>
+        </div>
       </div>
     );
   }
@@ -199,7 +224,7 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
           <span className="tabular w-14 text-right text-ink-3">{Math.ceil(remaining / 1000)} sn</span>
         </div>
       )}
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-rule bg-surface p-4 sm:p-6" aria-label="Aranan simgeler ve sıra">
+      <div role="group" className="flex flex-col items-center gap-4 rounded-2xl border border-rule bg-surface p-4 sm:p-6" aria-label="Aranan simgeler ve sıra">
         <div className="flex flex-col items-center gap-1.5">
           <p className="t-meta">Aranan simgeler</p>
           <div className="flex gap-3 rounded-xl border-[1.5px] border-rule-strong bg-surface-2 px-4 py-2.5">
@@ -210,7 +235,7 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
             ))}
           </div>
         </div>
-        <div className="grid w-full max-w-[22rem] grid-cols-4 gap-2" aria-label="Sıra">
+        <div role="group" className="grid w-full max-w-[22rem] grid-cols-4 gap-2" aria-label="Sıra">
           {trial.group.map((ref, i) => (
             <div
               key={`${index}-${i}`}
@@ -240,6 +265,10 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
               onPointerDown={(e) => {
                 e.preventDefault();
                 if (primaryPointer(e)) answer(a, e.timeStamp);
+              }}
+              onClick={(e) => {
+                // Klavyeyle (sekme tuşuyla gelip Enter) basıldığında; fare ve dokunuş zaten pointerdown ile sayıldı.
+                if (e.detail === 0) answer(a, e.timeStamp);
               }}
             >
               {a === 'var' ? 'Var' : 'Yok'}

@@ -2851,9 +2851,9 @@ const simgeFacts: InfoBox = {
 const simgeBulma: TaskRoadmapTemplate = {
   version: 'simge-bulma-yol-haritasi-1',
   what: {
-    student: 'hızlı ve doğru karşılaştırma gerektiren işleri nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun hızlı ve doğru karşılaştırma gerektiren işlerini nasıl kolaylaştırabileceğiniz',
-    summary: 'hızlı ve doğru karşılaştırma gerektiren işleri kolaylaştıran yollar',
+    student: 'karşılaştırma gerektiren işleri kolaylaştırmanın yolları',
+    parent: 'karşılaştırma gerektiren işleri kolaylaştırmanın yolları',
+    summary: 'karşılaştırma gerektiren işleri kolaylaştırmanın yolları',
   },
   studyTitle: { you: 'Hızlı ve doğru çalışmayı ne kolaylaştırır?', parent: 'Çocuğunuzun hızlı ve doğru çalışmasını ne kolaylaştırır?' },
   studyIntro: {
@@ -2864,43 +2864,47 @@ const simgeBulma: TaskRoadmapTemplate = {
   },
   supports: [
     support(0, 'dogruluk', 'Önce doğruluk', 'Yöntem', t(
-      'Hızlanmaya çalışırken önce doğru çalış. Acele edince karar için daha az bilgi toplanır ve yanılgı artabilir. Aynı işi doğru yaptıkça çoğu zaman o işte kendiliğinden hızlanırsın.',
-      'Çocuğunuza hızdan önce doğruluğun geldiğini hatırlatın. Acele edince karar için daha az bilgi toplanır ve yanılgı artabilir. Aynı işi doğru yaptıkça çocuğunuz çoğu zaman o işte kendiliğinden hızlanır.',
+      'Bir işte hızlanmak istiyorsan önce doğru çalışmayı alışkanlık hâline getir. Aynı işi doğru yaptıkça çoğu zaman o işte kendiliğinden hızlanırsın.',
+      'Çocuğunuza hızdan önce doğruluğun geldiğini hatırlatın. Aynı işi doğru yaptıkça çocuğunuz çoğu zaman o işte kendiliğinden hızlanır.',
     )),
     support(1, 'sira', 'Sırayla bak', 'Yöntem', t(
-      'Bir şey ararken (bir listede bir ad, bir tabloda bir sayı, bir yazıda bir hata) gözünü rastgele gezdirme; soldan sağa, satır satır ilerle. “Yok” demeden önce hepsine baktığından emin ol: aramada en sık yanılgı, var olan şeyi gözden kaçırmaktır.',
-      'Çocuğunuza bir şey ararken (bir listede bir ad, bir tabloda bir sayı, yazdığı bir metinde bir hata) gözünü rastgele gezdirmek yerine soldan sağa, satır satır ilerlemesini önerin. Aramada en sık yanılgı, var olan şeyi gözden kaçırmaktır; “Yok” demeden önce hepsine bakmak bunu azaltır.',
+      'Bir listede bir ad ya da bir yazıda bir hata ararken gözünü rastgele gezdirme. Soldan sağa, satır satır ilerle ve bitirmeden “Yok” deme.',
+      'Çocuğunuz bir listede bir ad ya da yazdığı bir metinde bir hata ararken soldan sağa, satır satır ilerlemesini önerin. Sırayla bakmak, var olan bir şeyi gözden kaçırmayı azaltır.',
     )),
     support(2, 'akici', 'Temel işleri akıcılaştır', 'Alışkanlık', {
       student:
-        'Sık yaptığın temel işleri (ör. çarpım tablosu ya da toplama ve çıkarma) kısa ama düzenli çalışmalarla akıcı hâle getir. Matematikte zorlananlar için hazırlanan bir kılavuz, her çalışmada yaklaşık 10 dakikanın temel işlemlere ayrılmasını önerir. Temel işler akıcı olunca zihin işin asıl kısmına ayrılabilir.',
+        'Sık yaptığın temel işleri (ör. çarpım tablosu, sık kullandığın formüller ya da kelimeler) kısa ama düzenli çalışmalarla akıcı hâle getir. Matematikte zorlananlar için hazırlanan bir kılavuz, her destek oturumunda yaklaşık 10 dakikanın temel işlemlere ayrılmasını önerir. Bu kılavuza göre temel işlemlerde akıcı olmak, daha ileri matematik konularını anlamayı kolaylaştırabilir.',
       parent:
-        'Çocuğunuzla temel işleri (ör. çarpım tablosu ya da toplama ve çıkarma) kısa ama düzenli çalışmalarla akıcı hâle getirin. Matematikte zorlanan öğrenciler için hazırlanan bir kılavuz, her çalışmada yaklaşık 10 dakikanın temel işlemleri akıcı hâle getirmeye ayrılmasını önerir. Temel işler akıcı olunca çocuğunuzun zihni işin asıl kısmına ayrılabilir.',
+        'Çocuğunuzla temel işleri (ör. çarpım tablosu ya da toplama ve çıkarma) kısa ama düzenli çalışmalarla akıcı hâle getirin. Matematikte zorlanan öğrenciler için hazırlanan bir kılavuz, her destek oturumunda yaklaşık 10 dakikanın temel işlemleri akıcı hâle getirmeye ayrılmasını önerir. Bu kılavuza göre temel işlemlerde akıcı olmak, daha ileri matematik konularını anlamayı kolaylaştırabilir.',
       adult:
-        'Sık yaptığın temel işleri (ör. sık kullandığın hesaplar ya da bir programdaki kısayollar) düzenli tekrarla akıcı hâle getir. Bir işi çok yapmak o işte hızlanmayı sağlar. Temel işler akıcı olunca zihin işin asıl kısmına ayrılabilir.',
+        'Sık yaptığın temel işleri (ör. sık kullandığın hesaplar ya da bir programdaki kısayollar) düzenli tekrarla akıcı hâle getir. Bir işi çok yapmak o işte hızlanmayı sağlar.',
     }),
     support(3, 'sure', 'Süre yetmediğinde konuş', 'Araç', {
       student:
-        'Süreli işlerde (ör. sınavlarda ya da yazılı çalışmalarda) süre sana sık sık yetmiyorsa bunu ailenle ya da öğretmeninle konuş. Uzmanlar böyle durumlarda ek süre ya da daha az iş gibi düzenlemeler önerir.',
+        'Süreli işlerde (ör. sınavlarda ya da yazılı çalışmalarda) süre sana sık sık yetmiyorsa bunu ailenle ya da öğretmeninle konuş. Bir çocuk hastanesinin bilgi sayfası, işlem hızı yavaşlamış çocuklar için ek süre ya da daha az iş gibi düzenlemeler önerir.',
       parent:
-        'Süreli işlerde süre çocuğunuza sık sık yetmiyorsa bunu öğretmeniyle konuşun. Uzmanlar böyle durumlarda ek süre vermeyi, işin miktarını azaltmayı ve süreli testleri sınırlamayı önerir. Bu sonuç tek başına böyle bir düzenleme için yeterli değildir; okuldaki gözlemlerle birlikte değerlendirilmelidir.',
+        'Süreli işlerde süre çocuğunuza sık sık yetmiyorsa bunu öğretmeniyle konuşun. Bir çocuk hastanesinin bilgi sayfası, işlem hızı yavaşlamış çocuklar için ek süre, daha az iş ve daha az süreli test önerir. Bu sonuç tek başına böyle bir düzenleme için yeterli değildir; okuldaki gözlemlerle birlikte değerlendirilmelidir.',
       adult:
         'Süreli işlerde süre sana sık sık yetmiyorsa, önemli işler için kendine fazladan zaman ayır ve işleri sıkıştırmadan planla. Gerekirse işin süresini ya da miktarını birlikte çalıştığın kişilerle konuş.',
     }),
   ],
   facts: simgeFacts,
   approach: [
-    { title: 'Acele ettirmeyin', text: 'Günlük işlerde “çabuk ol” baskısı yerine doğru yapmayı öne çıkarın. Acele etmek yanılgıları artırabilir; aynı işi doğru yaptıkça o işte hızlanmak olağandır.' },
+    { title: 'Acele ettirmeyin', text: 'Günlük işlerde “çabuk ol” baskısı yapmayın; doğru yaptığı işi fark edip söyleyin.' },
     { title: 'Cevap için zaman tanıyın', text: 'Bir şey sorduğunuzda ya da yönerge verdiğinizde çocuğunuza düşünüp cevap vermesi için zaman tanıyın; cevabı onun yerine hemen söylemeyin.' },
     { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; işlem hızı yaşla çok değişir ve tek bir oturum yalnızca o günü gösterir.' },
   ],
   weeks: [
     {
       title: 'Yavaş ve doğru',
-      text: t(
-        'Bu hafta her gün yaptığın bir işte (ör. bir listeyi kontrol etmek ya da bir yazıyı temize çekmek) önce acele etmeden, doğru çalış. Hafta sonunda aynı işi biraz daha hızlı yapmayı dene ve yanılgılarının artıp artmadığına bak.',
-        'Bu hafta çocuğunuz her gün yaptığı bir işte (ör. bir yazıyı temize çekmek ya da yaptığı bir işi kontrol etmek) önce acele etmeden, doğru çalışsın. Hafta sonunda aynı işi biraz daha hızlı yapmayı denesin; yanılgılarının artıp artmadığına birlikte bakın.',
-      ),
+      text: {
+        student:
+          'Bu hafta her gün yaptığın bir işte (ör. bir listeyi kontrol etmek ya da bir yazıyı temize çekmek) önce acele etmeden, doğru çalış. Hafta sonunda aynı işi biraz daha hızlı yapmayı dene ve yanılgılarının artıp artmadığına bak.',
+        parent:
+          'Bu hafta çocuğunuz her gün yaptığı bir işte (ör. bir yazıyı temize çekmek ya da yaptığı bir işi kontrol etmek) önce acele etmeden, doğru çalışsın. Hafta sonunda aynı işi biraz daha hızlı yapmayı denesin; yanılgılarının artıp artmadığına birlikte bakın.',
+        adult:
+          'Bu hafta her gün yaptığın bir işte (ör. bir listeyi, bir faturayı ya da bir formu kontrol etmek) önce acele etmeden, doğru çalış. Hafta sonunda aynı işi biraz daha hızlı yapmayı dene ve yanılgılarının artıp artmadığına bak.',
+      },
     },
     {
       title: 'Satır satır ara',
