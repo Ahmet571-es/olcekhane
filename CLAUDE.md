@@ -266,6 +266,16 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   kartın grafiği olmaz; kartın metnindeki sayılar grafikte olduğu için metinde yinelenmez. Görev testlerinin kalan grupları
   `DURUM.md`'de.
 
+## Paylaşım kartı
+
+- Site sahibinin 2026-10-30 isteği: sonuçlar Instagram hikâyesinde ve WhatsApp durumunda paylaşılabilsin. Raporda
+  "Sonucunu paylaş" bölümü: 1080 × 1920'lik görsel yalnızca tarayıcıda çizilir (`lib/share/draw.ts`), sunucuya gitmez,
+  saklanmaz; telefonda paylaşım ekranı, her yerde indirme. Görselde ad yazmaz; testin adresi yazar.
+- Kart yalnızca kişiliği betimleyen ve ilgileri ya da değerleri sıralayan testlerde olur; Kendini Tanı Paketi
+  hazırlanınca onda da (site sahibinin seçimi). Zihinsel görev, okuma, matematik ve "yüksek daha iyi" diye okunabilen ölçeklerde kart yoktur
+  (çocuklar arasında kıyas ve alay olmasın). Yeni anket testi `lib/share/card.ts`'te ya `SHAREABLE`'a ya nedeniyle
+  `NOT_SHAREABLE`'a yazılır (`tests/paylasim.test.ts` denetler). Veli sekmesinde kart gösterilmez.
+
 ## Gelişim yol haritası
 
 - Raporun sonundaki öneri bölümleri: üç boyutlu profil, kısaca, nasıl çalışabilir, rahat edilebilecek ortamlar,

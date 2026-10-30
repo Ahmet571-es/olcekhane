@@ -7,7 +7,7 @@ import { TestSession, type TestPayload } from '@/components/test/test-session';
 import { PROSODY_DIMENSIONS } from '@/content/reports/sesli-okuma';
 import { ROADMAP_IN_REVIEW, ROADMAP_PREVIEW_PARAM, hasRoadmap } from '@/content/roadmaps';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
-import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam } from '@/lib/config';
+import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam, siteUrl } from '@/lib/config';
 import { likertItemNoun } from '@/lib/instruments/nouns';
 import type { InstrumentDef } from '@/lib/instruments/types';
 import { oralWordCount } from '@/lib/oral/words';
@@ -174,6 +174,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
             grade={grade}
             gradeLabel={GRADE_LABELS[grade] ?? `${grade}. sınıf`}
             payload={payloadFor(def, grade)}
+            siteUrl={siteUrl()}
             roadmapPreview={roadmapPreview}
             oralAuto={oralAuto}
           />

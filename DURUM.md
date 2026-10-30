@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-22
+Son güncelleme: 2026-10-30
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -1039,6 +1039,17 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (53): Paylaşım kartı (site sahibinin isteği: sonuçlar Instagram ve WhatsApp'ta paylaşılsın, insanlar
+  "Ölçekhane"yi tanısın). Kişilik ve ilgi testlerinin raporunda "Sonucunu paylaş" bölümü: rapordan 1080 × 1920'lik bir görsel
+  (Instagram hikâyesi, WhatsApp durumu) yalnızca tarayıcıda çizilir; telefonda "Paylaş" düğmesi paylaşım ekranını açar,
+  her yerde "Görseli indir" var. Görselde ad yazmaz; testin adı, sonuç özeti (boyutlar düzey adlarıyla ya da en yüksek
+  beş alan ya da altıgen/çember grafiği), pilot etiketi, "Sen de ücretsiz çöz" ve testin adresi yazar. Site sahibinin
+  seçimi: yalnızca kişilik, ilgi ve (gelecek) paket; zihinsel görev, okuma, matematik ve "yüksek daha iyi" diye okunabilen
+  ölçekler (öz-saygı, iyimserlik, öz-yeterlik, öz-denetim, empati, duygusal zekâ, öğrenme ve başarı, düşünmeyi sevme) ile
+  Heyecan Arayışı'nda kart yok; veli sekmesinde gösterilmez; öğrenciye "paylaşmadan önce velinle konuşabilirsin" denir.
+  Kurallar `src/lib/share/card.ts` (`SHAREABLE`, `NOT_SHAREABLE`), çizim `draw.ts`, bölüm `components/share/share-panel.tsx`;
+  `tests/paylasim.test.ts` her anket testinin karara bağlandığını, bütün cevap örüntülerinde kartın kurulduğunu ve yazıların
+  görselden taşmadığını denetler.
 - 2026-10-27 (52): Yeni test Öz-denetim yayına alındı (3. listenin 5. testi; ayrıntı yukarıda). Bağımsız incelemelerin
   bulguları yayından önce uygulandı. Metin ve mantık: zayıf karşıt çift (Kelimelerimi özenle seçerim / Düşünmeden hareket
   ederim) çıkarıldı, uyarı kuralının anlatımı düzeldi ("en az ikisinde"); kartlar kişinin vermemiş olabileceği tek cevapları
@@ -1116,7 +1127,3 @@ En yeni üstte; en çok 10 madde tutulur.
   incelendi.
 - 2026-10-22 (44): Görev testlerinin yol haritalarında noktalı virgülle bağlanmış uzun cümleler kısa cümlelere bölündü
   ("Bu beceri; …" cümleleri, dördüncü haftanın özet cümleleri, araştırma cümleleri); anlam ve kaynaklar değişmedi.
-- 2026-10-22 (43): Görev testlerinde süre kartları: karşılaştırılacak ikinci bir süre olmadığında tek bir çubuk yerine her
-  sorunun (doğru cevabın, problemin) süresini nokta olarak gösteren şerit çiziliyor; çizgi tipik süredir (13 soru testi,
-  renk-kelime, dur-git, zihinde döndürme, kural değiştirme, desen hatırlama, planlama kulesi). Çok ölçümlü şeritlerde
-  noktalar küçülüp üst üste diziliyor. Raporlar telefonda ve masaüstünde açıldı, PDF incelendi.

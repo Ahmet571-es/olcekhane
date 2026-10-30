@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { LikertRunner } from '@/components/runner/likert-runner';
 import { QuizRunner, type QuizClientItem } from '@/components/runner/quiz-runner';
 import { ReadingRunner } from '@/components/runner/reading-runner';
@@ -9,11 +9,13 @@ import { OralRunner } from '@/components/runner/oral/oral-runner';
 import type { OralClientPassage, OralProsodyDimension } from '@/components/runner/oral/types';
 import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
+import { SharePanel } from '@/components/share/share-panel';
 import { PageGuide } from '@/components/site/page-guide';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { ItemNoun } from '@/lib/instruments/nouns';
 import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
+import { shareCardFor } from '@/lib/share/card';
 import { RoadmapView } from './roadmap-view';
 import { SimpleReportView } from './simple-report-view';
 
@@ -110,6 +112,7 @@ export function TestSession({
   grade,
   gradeLabel,
   payload,
+  siteUrl,
   roadmapPreview = false,
   oralAuto = false,
 }: {
@@ -117,6 +120,8 @@ export function TestSession({
   grade: number;
   gradeLabel: string;
   payload: TestPayload;
+  /** Sitenin adresi (paylaşım görselinde ve metninde testin adresi için). */
+  siteUrl: string;
   /** Uzman incelemesindeki gelişim yol haritasının önizlemesi (`?onizleme=yol-haritasi`). */
   roadmapPreview?: boolean;
   /** Sesli okumada otomatik analiz önizlemesi (`?onizleme=otomatik`): öğrenci tek başına okur, kaydı kimse dinlemez. */
@@ -137,7 +142,7 @@ export function TestSession({
     [grade, slug, roadmapPreview],
   );
 
-  if (result) return <ResultView slug={slug} gradeLabel={gradeLabel} reports={result.reports} body={result.body} />;
+  if (result) return <ResultView slug={slug} gradeLabel={gradeLabel} reports={result.reports} body={result.body} siteUrl={siteUrl} />;
 
   switch (payload.engine) {
     case 'likert':
@@ -188,7 +193,7 @@ export function TestSession({
   }
 }
 
-function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLabel: string; reports: Reports; body: Body }) {
+function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string; gradeLabel: string; reports: Reports; body: Body; siteUrl: string }) {
   const available = AUDIENCES.filter((a) => reports[a]);
   const [chosen, setAudience] = useState<Audience>(available[0] ?? 'student');
   const audience = reports[chosen] ? chosen : (available[0] ?? chosen);
@@ -196,6 +201,9 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<Set<Audience>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
+  // Paylaşım görseli öğrencinin ya da yetişkinin kendi raporundan çıkar; veli sekmesinde gösterilmez.
+  const own = reports.student ?? reports.adult;
+  const card = useMemo(() => (own ? shareCardFor(slug, own) : null), [slug, own]);
   // Rapor saklanmadığı için PDF indirilmeden sayfadan ayrılmak raporu kaybettirir.
   useLeaveWarning(!!report && saved.size === 0, 'Raporu PDF olarak indirmeden ayrılırsan rapor silinir; hiçbir yere kaydedilmez. Yine de ayrılmak istiyor musun?');
 
@@ -283,6 +291,8 @@ function ResultView({ slug, gradeLabel, reports, body }: { slug: string; gradeLa
       <SimpleReportView report={report} />
 
       {report.roadmap && <RoadmapView roadmap={report.roadmap} you={audience !== 'parent'} />}
+
+      {card && audience !== 'parent' && <SharePanel card={card} siteUrl={siteUrl} student={audience === 'student'} />}
 
       <section aria-labelledby="indir" className="panel flex flex-col gap-4 p-6">
         <h2 id="indir" className="t-h3">
