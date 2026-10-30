@@ -284,6 +284,18 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   (çocuklar arasında kıyas ve alay olmasın). Yeni anket testi `lib/share/card.ts`'te ya `SHAREABLE`'a ya nedeniyle
   `NOT_SHAREABLE`'a yazılır (`tests/paylasim.test.ts` denetler). Veli sekmesinde kart gösterilmez.
 
+## Gelişimini karşılaştır
+
+- Site sahibinin 2026-10-30 isteği: kişi aynı testi daha sonra yeniden çözünce önceki sonucuyla karşılaştırabilsin.
+  Anket testlerinin raporu ölçek ölçek puan, aralık, düzey ve (yalnızca α ile başvuru standart sapması bilinen ölçeklerde)
+  ölçüm payı taşır (`SimpleReport.compare`, `lib/assessment/evaluate.ts`). İndirilen PDF'in belge bilgilerine (anahtar
+  sözcükler) bunun küçük özeti yazılır (`lib/compare/record.ts`; paket PDF'inde paketteki anket testlerinin hepsi). Raporda
+  "Önceki sonucunla karşılaştır" (`components/test/compare-panel.tsx`; tek testte ve pakette): eski PDF seçilir, dosya
+  yalnızca tarayıcıda okunur, hiçbir şey gönderilmez ve saklanmaz. Değişim, güvenilir değişim ölçütüyle (|fark| / (√2·SEM)
+  ≥ 1,96; Jacobson ve Truax, 1991) "belirgin" ya da "ölçüm payı içinde" diye söylenir; ölçüm payı bilinmeyen ölçekte
+  yalnızca yön. Başka test ya da başka sürüm karşılaştırılmaz (test sürümü artınca eski PDF'ler karşılaştırılamaz).
+  Görev, okuma ve konu tarama testleri henüz yok. `tests/karsilastirma.test.ts` denetler.
+
 ## Kendini Tanı Paketi
 
 - Site sahibinin 2026-10-30 isteği ve seçimleri: kişilik, ilgi, çalışma alışkanlıkları ve dört zihinsel beceri (akıl yürütme,

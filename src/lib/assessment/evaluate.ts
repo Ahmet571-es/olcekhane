@@ -16,7 +16,9 @@ import { likertItemFlags, likertQuality, scoreLikert, type LikertAnswer, type Li
 import { OralInputError, scoreOral, type OralResult } from '@/lib/scoring/oral';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
+import { standardError } from '@/lib/scoring/stats';
 import { TaskInputError } from '@/lib/scoring/tasks';
+import type { CompareInfo } from '@/lib/compare/record';
 import type { AnswersBody } from './schemas';
 import { likertRows, quizRows, readingRows, taskScoreRows, toReportScore, type ScoreRow, type TaskInputs } from './score-rows';
 
@@ -184,8 +186,37 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     });
     const report = toSimpleReport(content);
     const roadmap = roadmapFor(def, content, body);
-    return roadmap ? { ...report, roadmap } : report;
+    const compare = compareInfo(def, content);
+    return { ...report, ...(roadmap ? { roadmap } : {}), ...(compare ? { compare } : {}) };
   };
+}
+
+/**
+ * Anket testlerinde karşılaştırma bilgisi (lib/compare/record.ts): ölçek ölçek puan, aralık, düzey ve ölçüm payı. Ölçüm payı
+ * yalnızca güvenirliği bilinen ölçeklerde (α ve başvuru standart sapması; puanlamadaki güven aralığıyla aynı hesap).
+ */
+function compareInfo(def: InstrumentDef, content: ReportContent): CompareInfo | undefined {
+  if (def.engine !== 'likert') return undefined;
+  const decimals = def.scoring.method === 'mean' ? 1 : 0;
+  // Ölçeklerin testteki sırasıyla (raporun bölümleri bazı testlerde puana göre sıralanır).
+  const scales = def.scales.flatMap((scale) => {
+    const sec = content.sections.find((x) => x.scaleKey === scale.key);
+    if (!sec || sec.value === null) return [];
+    const sem = scale.alpha && scale.sdRef ? standardError(scale.sdRef, scale.alpha) : null;
+    return [
+      {
+        key: sec.scaleKey,
+        label: scale.name,
+        value: Math.round(sec.value * 1000) / 1000,
+        min: sec.min,
+        max: sec.max,
+        sem: sem === null ? null : Math.round(sem * 10000) / 10000,
+        decimals: decimals as 0 | 1,
+        band: sec.band ? sec.bandLabel : null,
+      },
+    ];
+  });
+  return scales.length ? { slug: def.slug, version: def.version, date: content.completedAt, scales } : undefined;
 }
 
 /** Okul çağındaki biri için öğrenci ve veli raporları (ücretsiz, basit rapor). Hiçbir şey kaydedilmez. */

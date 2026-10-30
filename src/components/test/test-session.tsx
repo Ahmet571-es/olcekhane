@@ -17,6 +17,7 @@ import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { shareCardFor } from '@/lib/share/card';
 import { RoadmapView } from './roadmap-view';
+import { ComparePanel } from './compare-panel';
 import { SimpleReportView } from './simple-report-view';
 
 /** Öğrencinin tek başına okuduğu, okumayı cihazdaki yapay zekânın incelediği sesli okuma (önizleme): yalnızca gerekince yüklenir. */
@@ -290,6 +291,8 @@ function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string
 
       <SimpleReportView report={report} />
 
+      {report.compare && <ComparePanel compare={report.compare} you={audience !== 'parent'} />}
+
       {report.roadmap && <RoadmapView roadmap={report.roadmap} you={audience !== 'parent'} />}
 
       {card && audience !== 'parent' && <SharePanel card={card} siteUrl={siteUrl} student={audience === 'student'} />}
@@ -298,6 +301,13 @@ function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string
         <h2 id="indir" className="t-h3">
           Raporu sakla
         </h2>
+        {report.compare && (
+          <p className="text-ink-2">
+            {audience !== 'parent'
+              ? 'Testi ileride yeniden çözersen bu PDF ile sonuçlarını karşılaştırabilirsin.'
+              : 'Çocuğunuz testi ileride yeniden çözerse bu PDF ile sonuçları karşılaştırabilirsiniz.'}
+          </p>
+        )}
         {downloadBox}
       </section>
 

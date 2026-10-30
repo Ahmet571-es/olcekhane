@@ -1074,6 +1074,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (58): "Gelişimini karşılaştır" (site sahibinin seçtiği dört yeniliğin ikincisi): anket testlerinin (26 test)
+  raporunda "Önceki sonucunla karşılaştır"; aynı testin önceki PDF'i seçilir, tarayıcıda okunur; ölçek ölçek önce → şimdi,
+  fark, belirgin mi (güvenilir değişim ölçütü; ölçüm payı yalnızca güvenirliği bilinen 7 testin ölçeklerinde,
+  ötekilerde yalnızca yön), düzey değişimi ve küçük grafik. PDF'lere (paket dahil) sonuçların sayısal özeti yazılıyor;
+  karşılaştırma yalnızca 2026-10-30'dan sonra indirilen PDF'lerle olur. Telefonda ve masaüstünde baştan sona denendi
+  (iki çözüm, PDF indirildi, yüklendi; özetsiz dosyada uyarı). Görev, okuma ve konu tarama testleri sonraki adımda.
 - 2026-10-30 (57): "Hangi test bana uygun?" sayfası (`/hangi-test`; site sahibinin isteği, seçtiği dört yeniliğin ilki):
   kim çözecek (sınıf ya da yetişkin), ne öğrenilmek isteniyor (Hepsinden biraz, Kişilik, İlgi alanları ve meslek yönü,
   Öğrenme ve çalışma, Zihinsel güçlü yanlar, Okuma, Duygular ve ilişkiler, Dikkat ve kendini yönetme; birden çok) ve
@@ -1160,12 +1166,3 @@ En yeni üstte; en çok 10 madde tutulur.
   oldu (yaklaşım bölümüyle yarışmasın), "başardıkça güven artar" fikri sayfada bir kez söylenir, zor anlar düşükken o alan
   "Kısaca"da öne çıkanların başında (`standoutFirst`). Test sayfasındaki "Neyi ölçer?" metni artık boş satırla (`\n\n`)
   paragraflara bölünebilir (öteki testlerde değişiklik yok); bu testin uzun metni beş paragraftır.
-- 2026-10-22 (48): Yeni test Zihinden Hesaplama Hızı yayına alındı (3. listenin 2. testi; ayrıntı yukarıda). Kaynak
-  incelemesinin ve rapor, puanlama ve ekran incelemesinin bulguları uygulandı: doğruluk sözcükleri rozetle aynı ("hemen
-  hepsi" yalnızca %90 ve üstünde; hiç doğru yoksa "hiçbiri doğru değildi" ve uyarı); geçilen işlemler "bitirdin", tavan ve
-  ulaşılan düzey sayılmaz, bütünüyle geçilen düzeyler adıyla söylenir; hız kartının rozeti grafikle aynı süreyi söyler,
-  büyük sayılarla yavaşlama yalnızca gerçekten yavaşlandıysa anlatılır, eşit süreler birlikte adlandırılır; bölme
-  araştırma cümlesi yalnızca bölmenin doğruluğu en düşükse; çarpma ve bölme yanlışları ayrı türler; rakamların yer
-  değiştirmesi tablo yanlışından önce; uyarılar bölümler arasında birleşir; yüzdeler yuvarlanır; yetişkin norm notunda
-  okul sözcüğü yok (test artık bütün yetişkin testlerinin norm notunu denetler). Ekran: duraklatmadan önceki süre korunur,
-  süre dolduktan sonraki cevap sayılmaz, kalan süre ekran okuyucuya açık, süre dolunca "Süre doldu; bu bölüm bitti".

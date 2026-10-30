@@ -1,4 +1,5 @@
 import 'server-only';
+import { encodeRecords, toRecord } from '@/lib/compare/record';
 import { join } from 'node:path';
 import { Circle, Document, Font, G, Line, Page, Path, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { plainMath } from '@/components/quiz/math-text';
@@ -1233,7 +1234,15 @@ function ReportPages({ report, siteHost }: { report: SimpleReport; siteHost: str
 export function SimpleReportDocument({ report, siteHost }: { report: SimpleReport; siteHost: string }) {
   const kind = report.audienceName ?? AUDIENCE_LABELS[report.audience].name;
   return (
-    <Document title={`${report.instrumentName}: ${kind.toLocaleLowerCase('tr-TR')}`} author="Ölçekhane" creator="Ölçekhane" producer="Ölçekhane" language="tr-TR">
+    <Document
+      title={`${report.instrumentName}: ${kind.toLocaleLowerCase('tr-TR')}`}
+      author="Ölçekhane"
+      creator="Ölçekhane"
+      producer="Ölçekhane"
+      language="tr-TR"
+      // Gelişimini karşılaştır: sonuçların sayısal özeti (yalnızca bu dosyada durur; lib/compare/record.ts).
+      keywords={report.compare ? encodeRecords([toRecord(report.compare)]) : undefined}
+    >
       <ReportPages report={report} siteHost={siteHost} />
     </Document>
   );
@@ -1330,8 +1339,17 @@ function PackageSummaryPage({ input, siteHost }: { input: PackagePdfInput; siteH
 
 export function PackageReportDocument({ input, siteHost }: { input: PackagePdfInput; siteHost: string }) {
   const kind = AUDIENCE_LABELS[input.entries[0].report.audience].name;
+  // Paketteki anket testlerinin özetleri: her biri daha sonra kendi testinin raporunda karşılaştırılabilir.
+  const records = input.entries.flatMap((e) => (e.report.compare ? [toRecord(e.report.compare)] : []));
   return (
-    <Document title={`${PACKAGE_NAME}: ${kind.toLocaleLowerCase('tr-TR')}`} author="Ölçekhane" creator="Ölçekhane" producer="Ölçekhane" language="tr-TR">
+    <Document
+      title={`${PACKAGE_NAME}: ${kind.toLocaleLowerCase('tr-TR')}`}
+      author="Ölçekhane"
+      creator="Ölçekhane"
+      producer="Ölçekhane"
+      language="tr-TR"
+      keywords={records.length ? encodeRecords(records) : undefined}
+    >
       <PackageSummaryPage input={input} siteHost={siteHost} />
       {input.entries.map((e) => (
         <ReportPages key={e.slug} report={e.report} siteHost={siteHost} />

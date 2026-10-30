@@ -7,6 +7,7 @@ import { TaskRunner } from '@/components/runner/tasks/task-runner';
 import { SharePanel } from '@/components/share/share-panel';
 import { PageGuide } from '@/components/site/page-guide';
 import { RoadmapView } from '@/components/test/roadmap-view';
+import { ComparePanel } from '@/components/test/compare-panel';
 import { SimpleReportView } from '@/components/test/simple-report-view';
 import { uuid4, type TestPayload } from '@/components/test/test-session';
 import { AUDIENCE_LABELS } from '@/lib/config';
@@ -512,6 +513,7 @@ function PackageResult({
             </summary>
             <div className="flex flex-col gap-8 border-t border-rule p-5 sm:p-6">
               <SimpleReportView report={e.report} />
+              {e.report.compare && <ComparePanel compare={e.report.compare} you={you} />}
               {e.report.roadmap && <RoadmapView roadmap={e.report.roadmap} you={you} />}
             </div>
           </details>

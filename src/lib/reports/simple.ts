@@ -1,3 +1,4 @@
+import type { CompareInfo } from '@/lib/compare/record';
 import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
 import type { QuizChart, QuizFigure, QuizTable } from '@/lib/instruments/types';
 import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
@@ -127,6 +128,8 @@ export interface SimpleReport {
   oral?: OralReportBlock;
   /** Konu tarama testinde yanlış yapılan soruların incelemesi ve hata türleri. */
   quiz?: SimpleQuizReview;
+  /** Anket testlerinde önceki bir sonuçla karşılaştırma için ölçek ölçek puanlar (lib/compare/record.ts). */
+  compare?: CompareInfo;
 }
 
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
