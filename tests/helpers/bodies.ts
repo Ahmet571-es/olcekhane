@@ -4,6 +4,7 @@ import { cancellationSheet } from '@/lib/instruments/cancellation';
 import { disparity } from '@/lib/instruments/rotation';
 import { opTrue } from '@/lib/instruments/complex-span';
 import { lnAnswer, lnGrouped, lnLettersFirst } from '@/lib/instruments/letter-number';
+import { symbolSearchTrials } from '@/lib/instruments/symbol-search';
 import { arithAnswer } from '@/lib/instruments/arithmetic';
 import { correctAngle, egocentricAngle, headingOf, mirrorAngle, normDeg } from '@/lib/instruments/perspective';
 import { nBackRoles, type NBackRole } from '@/lib/instruments/sequences';
@@ -56,6 +57,8 @@ import type {
   AnalogyLure,
   PatternMemoryTask,
   LetterNumberTask,
+  SymbolSearchTask,
+  SymbolSearchTrial,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
@@ -907,4 +910,44 @@ export function letterNumberBody(
     if (hits === 0) break;
   }
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+export type SymbolSearchCell = { i: number; trial: SymbolSearchTrial };
+/** Bir denemedeki cevap ve karar süresi; `null`: kişi burada bırakır (kalan denemeler cevaplanmaz). */
+export type SymbolSearchPlay = { ans: 'var' | 'yok'; rtMs?: number | null } | null;
+
+/** Simge bulmada denemenin doğru cevabı. */
+export const sgRight = (q: SymbolSearchCell): 'var' | 'yok' => (q.trial.present ? 'var' : 'yok');
+/** Simge bulmada denemenin yanlış cevabı. */
+export const sgWrong = (q: SymbolSearchCell): 'var' | 'yok' => (q.trial.present ? 'yok' : 'var');
+
+/**
+ * Simge bulma: denemeler testin tohumundan üretilir (tarayıcıdaki gibi) ve süre dolana ya da `pick` null dönene kadar
+ * sırayla cevaplanır; iki deneme arasında 150 ms geçer. Varsayılan: aranan simge sıradayken 1,3–1,5 sn, yokken 1,7–2,0 sn
+ * (benzer simge varsa 0,25 sn daha uzun); her 9. denemede sıradaki simge gözden kaçar, her 7. benzer simgeli "yok"
+ * denemesinde "Var" denir.
+ */
+export function symbolSearchBody(pick?: (q: SymbolSearchCell) => SymbolSearchPlay, grade = 6): AnswersBody {
+  const task = def<TaskInstrument>('simge-bulma').tasks[0] as SymbolSearchTask;
+  const trials = symbolSearchTrials(task, SEED);
+  const play =
+    pick ??
+    ((q: SymbolSearchCell): SymbolSearchPlay => {
+      const { i, trial } = q;
+      const wrong = (trial.present && i % 9 === 0) || (!trial.present && trial.lookalike && i % 7 === 0);
+      const rtMs = (trial.present ? 1300 + (i % 5) * 50 : 1700 + (i % 4) * 100) + (trial.lookalike ? 250 : 0);
+      return { ans: wrong ? sgWrong(q) : sgRight(q), rtMs };
+    });
+  const out: { index: number; response: { ans: 'var' | 'yok'; at: number }; rtMs: number | null }[] = [];
+  let at = 0;
+  for (const [i, trial] of trials.entries()) {
+    const p = play({ i, trial });
+    if (!p) break;
+    const rtMs = p.rtMs === undefined ? (trial.present ? 1400 : 1800) : p.rtMs;
+    const next = at + (rtMs ?? 1500) + 150;
+    if (next > task.durationMs) break;
+    at = next;
+    out.push({ index: i, response: { ans: p.ans, at }, rtMs });
+  }
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: out } } };
 }

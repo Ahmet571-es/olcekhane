@@ -28,6 +28,7 @@ import { NumericalReasoning } from './numerical-reasoning';
 import { CubeNet } from './cube-net';
 import { HiddenFigures } from './hidden-figures';
 import { LetterNumber } from './letter-number';
+import { SymbolSearch } from './symbol-search';
 import { PatternMemory } from './pattern-memory';
 import { MentalRotation3d } from './mental-rotation-3d';
 import { CognitiveReflection } from './cognitive-reflection';
@@ -62,7 +63,7 @@ function TaskSteps({ tasks, done, current }: { tasks: CognitiveTask[]; done: Set
 
 /**
  * Görevlerin denemeleri sunucuya tek tek gönderilmez, yalnızca bu sayfada tutulur; bütün görevler
- * bitince hepsi birden `onFinish` ile verilir. `seed`, harf işaretleme sayfalarının tohumudur
+ * bitince hepsi birden `onFinish` ile verilir. `seed`, harf işaretleme sayfalarının ve simge bulma denemelerinin tohumudur
  * (tarayıcıda rastgele üretilir, kimseye bağlı değildir).
  */
 export function TaskRunner(props: {
@@ -205,6 +206,7 @@ export function TaskRunner(props: {
       {task.kind === 'hidden_figures' && <HiddenFigures key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'pattern_memory' && <PatternMemory key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'letter_number' && <LetterNumber key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'symbol_search' && <SymbolSearch key={task.key} task={task} seed={seed} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'mental_rotation_3d' && <MentalRotation3d key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cognitive_reflection' && <CognitiveReflection key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'tower' && <Tower key={task.key} task={task} onDone={(t) => save(task.key, t)} />}

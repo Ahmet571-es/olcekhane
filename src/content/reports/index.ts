@@ -80,6 +80,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'sekil-benzetmeleri': { version: 'sekil-benzetmeleri-rapor-2', bandLabels: {}, scales: {} },
   'desen-hatirlama': { version: 'desen-hatirlama-rapor-1', bandLabels: {}, scales: {} },
   'harf-sayi-siralama': { version: 'harf-sayi-siralama-rapor-1', bandLabels: {}, scales: {} },
+  'simge-bulma': { version: 'simge-bulma-rapor-1', bandLabels: {}, scales: {} },
   'harf-dizileri': { version: 'harf-dizileri-rapor-1', bandLabels: {}, scales: {} },
   'dusunerek-karar-verme': { version: 'dusunerek-karar-verme-rapor-1', bandLabels: {}, scales: {} },
   'planlama-kule-gorevi': { version: 'planlama-kule-gorevi-rapor-1', bandLabels: {}, scales: {} },

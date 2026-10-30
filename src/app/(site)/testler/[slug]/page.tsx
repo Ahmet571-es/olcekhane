@@ -93,6 +93,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                                           ? `${single.levels[0].cells}–${single.levels[single.levels.length - 1].cells} kareli desenler, her büyüklükte 3 desen`
                                           : single.kind === 'letter_number'
                                             ? `${single.levels[0].length}–${single.levels[single.levels.length - 1].length} öğeli diziler, her uzunlukta 3 dizi`
+                                            : single.kind === 'symbol_search'
+                                              ? `${single.practice.length} alıştırma, ${Math.round(single.durationMs / 60_000)} dakikalık süreli bölüm`
                 : null;
   // Zihinden hesaplama: her işlem ayrı, süreli bir görevdir (bölüm).
   const arith = def.engine === 'tasks' && def.tasks.length > 0 && def.tasks.every((t) => t.kind === 'mental_arithmetic') ? def.tasks : null;
@@ -475,6 +477,15 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                 <li>
                   Yanlış dizilerde öğelerin mi unutulduğu yoksa bütün öğeler hatırlanıp sıranın mı karıştığı, sayıların ve harflerin ayrı ayrı ne kadar hatırlanıp
                   sıraya konduğu ve dizilere nasıl çalışıldığı
+                </li>
+              </>
+            )}
+            {single?.kind === 'symbol_search' && (
+              <>
+                <li>İki dakikada verilen doğru kararlar, bir kararın tipik süresi (her doğru kararın süresiyle) ve 30 saniyelik bölümlere göre doğru kararlar grafiği</li>
+                <li>
+                  Doğruluk ve yanlışların türü (sıradaki simgenin gözden kaçması ya da sırada olmayan bir simgenin görülmesi), aranan simgeye çok benzeyen simgelerin
+                  etkisi, “Var” ve “Yok” kararlarının süresi ve en hızlı kararlarla daha uzun düşünülen kararların doğruluğu
                 </li>
               </>
             )}

@@ -44,6 +44,9 @@ const patternResponse = z.object({ cells: z.array(z.number().int().min(0).max(63
  */
 const letterNumberResponse = z.object({ seq: z.array(z.string().min(1).max(1)).max(9), restarts: z.number().int().min(0).max(50).optional() }).strict();
 
+/** Simge bulmada verilen cevap ("var" ya da "yok") ve cevabın, asıl bölümün başından geçen süredeki anı (ms). */
+const symbolSearchResponse = z.object({ ans: z.enum(['var', 'yok']), at: z.number().min(0).max(600_000) }).strict();
+
 /** Bakış açısı almada gösterilen yön (derece; 0 ileri, saat yönünde). */
 const perspectiveResponse = z.object({ deg: z.number().min(-180).max(180) }).strict();
 
@@ -66,6 +69,7 @@ export const taskTrial = z.object({
     perspectiveResponse,
     patternResponse,
     letterNumberResponse,
+    symbolSearchResponse,
     /** Kelime listesi hatırlamada yazılan kelimeler ve listenin baştan gösterilme sayısı. */
     z.object({ words: z.array(z.string().max(30)).max(40), restarts: z.number().int().min(0).max(50).optional() }),
     z.null(),
@@ -150,8 +154,8 @@ export const answersBody = z.object({
       engine: z.literal('tasks'),
       /** Harf işaretleme sayfalarının tohumu (tarayıcıda rastgele üretilir). */
       seed: z.uuid(),
-      // Süreli sembol eşleştirmede ve zihinden hesaplamanın bölümlerinde süre boyunca hiç cevap verilmeyebilir: boş blok
-      // kabul edilir, öteki görevlerde puanlama boş bloğu reddeder (taskScoreRows).
+      // Süreli sembol eşleştirmede, simge bulmada ve zihinden hesaplamanın bölümlerinde süre boyunca hiç cevap verilmeyebilir:
+      // boş blok kabul edilir, öteki görevlerde puanlama boş bloğu reddeder (taskScoreRows).
       blocks: z.record(z.string().max(40), z.array(taskTrial).max(400)).refine(fewKeys(12)),
     }),
   ]),

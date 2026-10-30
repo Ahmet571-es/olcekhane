@@ -287,7 +287,8 @@ export type TaskKind =
   | 'letter_series'
   | 'mental_arithmetic'
   | 'figural_analogy'
-  | 'letter_number';
+  | 'letter_number'
+  | 'symbol_search';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -1303,7 +1304,8 @@ export type CognitiveTask =
   | LetterSeriesTask
   | MentalArithmeticTask
   | FiguralAnalogyTask
-  | LetterNumberTask;
+  | LetterNumberTask
+  | SymbolSearchTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
@@ -1461,6 +1463,51 @@ export interface LetterNumberTask extends TaskBase {
   practice: string[];
   /** Uzunluklar kısadan uzuna; denemelerin sırası (`index`) uzunluk sırası × 3 + dizi. */
   levels: { length: number; items: string[] }[];
+}
+
+/**
+ * Simge bulmada bir simge: havuzdaki sırası (`g`) ya da o simgenin benzerlerinden biri (`l`: benzerin sırası). Benzer, simgenin
+ * dört çizgisinden birinin bir ucunun çevresinde döndürülmüş hâlidir (bir çizgisi farklı).
+ */
+export interface SymbolRef {
+  g: number;
+  l?: number;
+}
+
+/** Simge bulmada bir deneme: iki aranan simge ve dört simgelik sıra. */
+export interface SymbolSearchTrial {
+  /** Aranan iki simge (havuzdaki sıraları). */
+  targets: [number, number];
+  /** Sıradaki simgeler, soldan sağa. */
+  group: SymbolRef[];
+  /** Aranan simgelerden biri sırada var mı (doğru cevap "Var" mı)? */
+  present: boolean;
+  /** Sırada aranan simgelerden birinin benzeri var mı? */
+  lookalike: boolean;
+}
+
+/**
+ * Simge bulma (işlem hızı; görsel eşleştirme düzeni): her denemede iki aranan simge ve dört simgelik bir sıra gösterilir; aranan
+ * simgelerden biri sırada tıpatıp aynısıyla varsa "Var", yoksa "Yok" denir. Süre sınırlıdır; denemeler uygulama kimliğinden
+ * (tohum) belirlenimci olarak üretilir (lib/instruments/symbol-search.ts): sunucu aynı denemeleri üretip puanlar. Simgeler
+ * 3 × 3 nokta ızgarasında dört çizgidir; her çizgi "x1y1-x2y2" (0–2; y aşağı doğru).
+ */
+export interface SymbolSearchTask extends TaskBase {
+  kind: 'symbol_search';
+  /** Simge havuzu. */
+  glyphs: string[][];
+  /** Her simgenin benzerleri (bir çizgisi farklı). */
+  lookalikes: string[][][];
+  /** Sıradaki simge sayısı. */
+  groupSize: number;
+  /** Asıl bölümün süresi (ms); sayfa gizliyken süre durur. */
+  durationMs: number;
+  /** Üretilen deneme sayısı: kimse süre bitmeden bitiremesin diye uzun tutulur. */
+  trials: number;
+  /** Geri bildirimli alıştırma denemeleri (puanlanmaz). */
+  practice: SymbolSearchTrial[];
+  /** Üretim kuralının sürümü: kural değişirse bu ve testin sürümü artırılır. */
+  generator: number;
 }
 
 export interface TaskInstrument extends InstrumentBase {

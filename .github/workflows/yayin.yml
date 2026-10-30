@@ -540,6 +540,15 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert [i["badge"] for i in s["items"]][0] == "8 öğe (testin en uzun dizisi)" and s["items"][2]["badge"] == "Hata yok" and len(s["chart"]["rows"]) == 7 and s["cautions"] == []; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 0 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
             sorun="$sorun harf-sayi-siralama-raporu"
           fi
+          # Simge Bulma: ilk 40 denemenin hepsi doğru (SG_CEVAP, testin tohumundan üretilen denemelerin doğru cevaplarıdır; V: var,
+          # Y: yok; tests/simge-bulma.test.ts güncel olduğunu denetler): 40 doğru karar, hata yok, "Yok" kararları daha uzun, dört
+          # bölümlü grafik, uyarı yok; yol haritasında üç boyutlu grafik yok.
+          SG_CEVAP=VVVYYYVYYVYYYVVVVVYYVYVYVVYYYVYVYYYYVVVV
+          SG_GOVDE=$(python3 -c 'import json,sys; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"simge-bulma": [{"index": i, "response": {"ans": "var" if c == "V" else "yok", "at": 2500 * (i + 1)}, "rtMs": 1500 if c == "V" else 2200} for i, c in enumerate(sys.argv[1])]}}}))' "$SG_CEVAP")
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$SG_GOVDE" "https://$ALAN/api/rapor/simge-bulma" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert [i["badge"] for i in s["items"]][:2] == ["40 doğru karar", "Hata yok"] and s["items"][3]["badge"] == "“Yok” kararları daha uzun" and len(s["chart"]["rows"]) == 4 and s["cautions"] == []; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 0 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun simge-bulma-raporu"
+          fi
           # Kâğıt Katlama: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/kagit-katlama.test.ts güncel olduğunu
           # denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve yanılgı türleri gitmez.
           KK_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kagit-katlama": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')

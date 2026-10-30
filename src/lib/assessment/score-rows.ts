@@ -1,4 +1,5 @@
 import { cancellationSheet } from '@/lib/instruments/cancellation';
+import { symbolSearchTrials } from '@/lib/instruments/symbol-search';
 import type { CognitiveTask, QuizForm, TaskInstrument } from '@/lib/instruments/types';
 import type { ReportScore } from '@/lib/reports/build';
 import type { ScaleScore } from '@/lib/scoring/likert';
@@ -27,6 +28,8 @@ import {
   scorePattern,
   scoreLetterNumber,
   letterNumberQualityNotes,
+  scoreSymbolSearch,
+  symbolSearchQualityNotes,
   scoreReflection,
   scoreTower,
   scoreRotation3d,
@@ -81,6 +84,8 @@ import {
   type PatternTrialInput,
   type LetterNumberResult,
   type LetterNumberTrialInput,
+  type SymbolSearchResult,
+  type SymbolSearchTrialInput,
   type ReflectionResult,
   type ReflectionTrialInput,
   type TowerResult,
@@ -228,6 +233,7 @@ export type TaskInputs =
   | AnalogyTrialInput[]
   | PatternTrialInput[]
   | LetterNumberTrialInput[]
+  | SymbolSearchTrialInput[]
   | ReflectionTrialInput[]
   | TowerTrialInput[]
   | Rotation3dTrialInput[]
@@ -267,6 +273,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let analogyRes: AnalogyResult | undefined;
   let patternRes: PatternResult | undefined;
   let letterNumberRes: LetterNumberResult | undefined;
+  let symbolSearchRes: SymbolSearchResult | undefined;
   let reflectionRes: ReflectionResult | undefined;
   let towerRes: TowerResult | undefined;
   let rotation3dRes: Rotation3dResult | undefined;
@@ -282,9 +289,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   for (const task of def.tasks) {
     const input = inputs.get(task.key);
     if (!input) throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
-    // Yalnızca süreli görevlerde (sembol eşleştirme, zihinden hesaplama) hiç cevap verilmemiş olabilir; öteki görevler her
+    // Yalnızca süreli görevlerde (sembol eşleştirme, simge bulma, zihinden hesaplama) hiç cevap verilmemiş olabilir; öteki görevler her
     // denemeyi kaydeder.
-    if (input.length === 0 && task.kind !== 'symbol_match' && task.kind !== 'mental_arithmetic') throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
+    if (input.length === 0 && task.kind !== 'symbol_match' && task.kind !== 'symbol_search' && task.kind !== 'mental_arithmetic') throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
     if (task.kind === 'digit_span' || task.kind === 'spatial_span') {
       const { result } = scoreSpan(task, input as SpanTrialInput[]);
       rows.push({
@@ -545,6 +552,17 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'hs_turler', raw: null, mean: null, nAnswered: result.itemsRecalled, nItems: result.itemsShown, band: null },
         { scaleKey: 'hs_calisma', raw: result.medianRt, mean: null, nAnswered: result.trials, nItems: result.trials, band: null },
       );
+    } else if (task.kind === 'symbol_search') {
+      const { result } = scoreSymbolSearch(task, symbolSearchTrials(task, seed), input as SymbolSearchTrialInput[]);
+      symbolSearchRes = result;
+      // Beş ölçek tek görevden hesaplanır; ayrıntının tamamı "sg_hiz" satırında durur.
+      rows.push(
+        { scaleKey: 'sg_hiz', raw: result.correct, mean: result.medianRt, nAnswered: result.answered, nItems: task.trials, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'sg_dogruluk', raw: Math.round(result.accuracy * 1000) / 10, mean: null, nAnswered: result.correct, nItems: result.answered, band: null },
+        { scaleKey: 'sg_benzer', raw: null, mean: null, nAnswered: result.look.correct, nItems: result.look.n, band: null },
+        { scaleKey: 'sg_varyok', raw: null, mean: null, nAnswered: result.absent.correct, nItems: result.absent.n, band: null },
+        { scaleKey: 'sg_denge', raw: null, mean: null, nAnswered: result.fast.correct, nItems: result.fast.n, band: null },
+      );
     } else if (task.kind === 'cognitive_reflection') {
       const { result } = scoreReflection(task, input as ReflectionTrialInput[]);
       reflectionRes = result;
@@ -639,7 +657,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   }
   return {
     rows,
-    notes: [...(arith ? arithQualityNotes(arith) : []), ...(letterNumberRes ? letterNumberQualityNotes(letterNumberRes) : []), ...taskQualityNotes({
+    notes: [...(arith ? arithQualityNotes(arith) : []), ...(letterNumberRes ? letterNumberQualityNotes(letterNumberRes) : []), ...(symbolSearchRes ? symbolSearchQualityNotes(symbolSearchRes) : []), ...taskQualityNotes({
       flanker: flankerRes,
       symbol: symbolRes,
       cancellation: cancellationRes,

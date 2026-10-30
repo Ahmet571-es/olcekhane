@@ -261,6 +261,11 @@ export const SECICI_GOALS: SeciciGoal[] = [
         why: 'Ekranda beliren şeylere ne kadar hızlı tepki verebildiğini ölçer.',
         candidates: ['tepki-hizi'],
       },
+      {
+        skill: 'İşlem hızı',
+        why: 'Benzer şekilleri ne kadar hızlı ve doğru karşılaştırabildiğini ölçer.',
+        candidates: ['simge-bulma'],
+      },
     ],
   },
 ];

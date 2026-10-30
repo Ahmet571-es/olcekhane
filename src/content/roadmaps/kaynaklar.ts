@@ -432,4 +432,16 @@ export const KAYNAK = {
     text: 'Brod, G. ve Breitwieser, J. (2019). Lighting the wick in the candle of learning: Generating a prediction stimulates curiosity. npj Science of Learning, 4, 17.',
     url: 'https://doi.org/10.1038/s41539-019-0056-y',
   },
+  heitz2014: {
+    text: 'Heitz, R. P. (2014). The speed-accuracy tradeoff: History, physiology, methodology, and behavior. Frontiers in Neuroscience, 8, 150.',
+    url: 'https://doi.org/10.3389/fnins.2014.00150',
+  },
+  sala2019: {
+    text: 'Sala, G., Aksayli, N. D., Tatlidil, K. S., Tatsumi, T., Gondo, Y. ve Gobet, F. (2019). Near and far transfer in cognitive training: A second-order meta-analysis. Collabra: Psychology, 5(1), 18.',
+    url: 'https://doi.org/10.1525/collabra.203',
+  },
+  rch2025: {
+    text: 'The Royal Children’s Hospital Melbourne (2025). Brain injury – Speed of information processing [Bilgi sayfası].',
+    url: 'https://rch.org.au/kidsinfo/fact_sheets/Brain_injury_Speed_of_information_processing',
+  },
 } satisfies Record<string, { text: string; url: string }>;

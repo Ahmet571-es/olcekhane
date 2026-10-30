@@ -48,6 +48,7 @@ import { gizliSekiller } from './gizli-sekiller';
 import { sekilBenzetmeleri } from './sekil-benzetmeleri';
 import { desenHatirlama } from './desen-hatirlama';
 import { harfSayiSiralama } from './harf-sayi-siralama';
+import { simgeBulma } from './simge-bulma';
 import { harfDizileri } from './harf-dizileri';
 import { dusunerekKararVerme } from './dusunerek-karar-verme';
 import { planlamaKuleGorevi } from './planlama-kule-gorevi';
@@ -114,6 +115,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   ozDenetim,
   merak,
   harfSayiSiralama,
+  simgeBulma,
   cocukKisilik,
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,

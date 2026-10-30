@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller, Desen Hatırlama, Harf-Sayı Sıralama ve Harf Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller, Desen Hatırlama, Harf-Sayı Sıralama, Simge Bulma ve Harf Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -2815,6 +2815,125 @@ const zihindenHesaplama: TaskRoadmapTemplate = {
   sources: [KAYNAK.fuchs2021, KAYNAK.gersten2009, KAYNAK.torbeyns2004, KAYNAK.kling2014, KAYNAK.caviola2017, KAYNAK.gliksman2022, KAYNAK.koponen2016, KAYNAK.prado2013, KAYNAK.sorvo2017],
 };
 
+const simgeBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; işlem hızının yalnızca bir yönünü (benzer simgeleri hızlı ve doğru karşılaştırmayı) gösterir.',
+    'İşlem hızı çocuklukta hızla artar, büyüdükçe bu artış yavaşlar; küçük yaşta daha yavaş olmak olağandır.',
+    'Telefon ve bilgisayar süreleri biraz farklı ölçebilir; sonucunu ileride karşılaştıracaksan testi aynı tür cihazla çöz.',
+    'Testi yeniden çözdüğünde sonucun büyük olasılıkla biraz yükselir. Bu, görevi tanımaktan gelen bir alıştırma etkisidir; gerçek bir değişim olmayabilir.',
+    'Bir görevi çok çalışmak o görevde hızlanmayı sağlayabilir; ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; işlem hızının yalnızca bir yönünü (benzer simgeleri hızlı ve doğru karşılaştırmayı) gösterir.',
+    'İşlem hızı çocuklukta hızla artar, büyüdükçe bu artış yavaşlar; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+    'Telefon ve bilgisayar süreleri biraz farklı ölçebilir; sonuç ileride karşılaştırılacaksa test aynı tür cihazla çözülmelidir.',
+    'Test yeniden çözüldüğünde sonuç büyük olasılıkla biraz yükselir. Bu, görevi tanımaktan gelen bir alıştırma etkisidir; gerçek bir değişim olmayabilir.',
+    'Bir görevi çok çalışmak o görevde hızlanmayı sağlayabilir; ama bunun derslere ve başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine yetişkinlikteki değişim. */
+const simgeFacts: InfoBox = {
+  ...simgeBase,
+  items: {
+    ...simgeBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; işlem hızının yalnızca bir yönünü (benzer simgeleri hızlı ve doğru karşılaştırmayı) gösterir.',
+      'Yetişkinlikte yaş ilerledikçe işlem hızı yavaş yavaş azalır; bu olağandır.',
+      'Telefon ve bilgisayar süreleri biraz farklı ölçebilir; sonucunu ileride karşılaştıracaksan testi aynı tür cihazla çöz.',
+      'Testi yeniden çözdüğünde sonucun büyük olasılıkla biraz yükselir. Bu, görevi tanımaktan gelen bir alıştırma etkisidir; gerçek bir değişim olmayabilir.',
+      'Bir görevi çok çalışmak o görevde hızlanmayı sağlayabilir; ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const simgeBulma: TaskRoadmapTemplate = {
+  version: 'simge-bulma-yol-haritasi-1',
+  what: {
+    student: 'hızlı ve doğru karşılaştırma gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun hızlı ve doğru karşılaştırma gerektiren işlerini nasıl kolaylaştırabileceğiniz',
+    summary: 'hızlı ve doğru karşılaştırma gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Hızlı ve doğru çalışmayı ne kolaylaştırır?', parent: 'Çocuğunuzun hızlı ve doğru çalışmasını ne kolaylaştırır?' },
+  studyIntro: {
+    student:
+      'Bu test, benzer simgeleri ne kadar hızlı ve doğru karşılaştırabildiğini, yani işlem hızını ölçer. İşlem hızı, basit görsel bilgiyi çabuk fark edip karar vermeyi gerektiren işlerde kullanılır. Bir listede bir adı bulmak, iki numaranın aynı olup olmadığını kontrol etmek ve bir yazıdaki yazım hatalarını görmek bu tür işlerdir. Aşağıdaki yollar, bu işlerde hem doğru hem rahat çalışmana yardım edebilir.',
+    parent:
+      'Bu test, çocuğunuzun benzer simgeleri ne kadar hızlı ve doğru karşılaştırabildiğini, yani işlem hızını ölçer. İşlem hızı, basit görsel bilgiyi çabuk fark edip karar vermeyi gerektiren işlerde kullanılır. Tahtadaki bir şeyi deftere geçirmek, bir sorudaki sayıları kontrol etmek ve yazdığı bir metindeki hataları görmek bu tür işlerdir. Aşağıdaki yollar, çocuğunuzun bu işlerde hem doğru hem rahat çalışmasına yardım edebilir.',
+  },
+  supports: [
+    support(0, 'dogruluk', 'Önce doğruluk', 'Yöntem', t(
+      'Hızlanmaya çalışırken önce doğru çalış. Acele edince karar için daha az bilgi toplanır ve yanılgı artabilir. Aynı işi doğru yaptıkça çoğu zaman o işte kendiliğinden hızlanırsın.',
+      'Çocuğunuza hızdan önce doğruluğun geldiğini hatırlatın. Acele edince karar için daha az bilgi toplanır ve yanılgı artabilir. Aynı işi doğru yaptıkça çocuğunuz çoğu zaman o işte kendiliğinden hızlanır.',
+    )),
+    support(1, 'sira', 'Sırayla bak', 'Yöntem', t(
+      'Bir şey ararken (bir listede bir ad, bir tabloda bir sayı, bir yazıda bir hata) gözünü rastgele gezdirme; soldan sağa, satır satır ilerle. “Yok” demeden önce hepsine baktığından emin ol: aramada en sık yanılgı, var olan şeyi gözden kaçırmaktır.',
+      'Çocuğunuza bir şey ararken (bir listede bir ad, bir tabloda bir sayı, yazdığı bir metinde bir hata) gözünü rastgele gezdirmek yerine soldan sağa, satır satır ilerlemesini önerin. Aramada en sık yanılgı, var olan şeyi gözden kaçırmaktır; “Yok” demeden önce hepsine bakmak bunu azaltır.',
+    )),
+    support(2, 'akici', 'Temel işleri akıcılaştır', 'Alışkanlık', {
+      student:
+        'Sık yaptığın temel işleri (ör. çarpım tablosu ya da toplama ve çıkarma) kısa ama düzenli çalışmalarla akıcı hâle getir. Matematikte zorlananlar için hazırlanan bir kılavuz, her çalışmada yaklaşık 10 dakikanın temel işlemlere ayrılmasını önerir. Temel işler akıcı olunca zihin işin asıl kısmına ayrılabilir.',
+      parent:
+        'Çocuğunuzla temel işleri (ör. çarpım tablosu ya da toplama ve çıkarma) kısa ama düzenli çalışmalarla akıcı hâle getirin. Matematikte zorlanan öğrenciler için hazırlanan bir kılavuz, her çalışmada yaklaşık 10 dakikanın temel işlemleri akıcı hâle getirmeye ayrılmasını önerir. Temel işler akıcı olunca çocuğunuzun zihni işin asıl kısmına ayrılabilir.',
+      adult:
+        'Sık yaptığın temel işleri (ör. sık kullandığın hesaplar ya da bir programdaki kısayollar) düzenli tekrarla akıcı hâle getir. Bir işi çok yapmak o işte hızlanmayı sağlar. Temel işler akıcı olunca zihin işin asıl kısmına ayrılabilir.',
+    }),
+    support(3, 'sure', 'Süre yetmediğinde konuş', 'Araç', {
+      student:
+        'Süreli işlerde (ör. sınavlarda ya da yazılı çalışmalarda) süre sana sık sık yetmiyorsa bunu ailenle ya da öğretmeninle konuş. Uzmanlar böyle durumlarda ek süre ya da daha az iş gibi düzenlemeler önerir.',
+      parent:
+        'Süreli işlerde süre çocuğunuza sık sık yetmiyorsa bunu öğretmeniyle konuşun. Uzmanlar böyle durumlarda ek süre vermeyi, işin miktarını azaltmayı ve süreli testleri sınırlamayı önerir. Bu sonuç tek başına böyle bir düzenleme için yeterli değildir; okuldaki gözlemlerle birlikte değerlendirilmelidir.',
+      adult:
+        'Süreli işlerde süre sana sık sık yetmiyorsa, önemli işler için kendine fazladan zaman ayır ve işleri sıkıştırmadan planla. Gerekirse işin süresini ya da miktarını birlikte çalıştığın kişilerle konuş.',
+    }),
+  ],
+  facts: simgeFacts,
+  approach: [
+    { title: 'Acele ettirmeyin', text: 'Günlük işlerde “çabuk ol” baskısı yerine doğru yapmayı öne çıkarın. Acele etmek yanılgıları artırabilir; aynı işi doğru yaptıkça o işte hızlanmak olağandır.' },
+    { title: 'Cevap için zaman tanıyın', text: 'Bir şey sorduğunuzda ya da yönerge verdiğinizde çocuğunuza düşünüp cevap vermesi için zaman tanıyın; cevabı onun yerine hemen söylemeyin.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; işlem hızı yaşla çok değişir ve tek bir oturum yalnızca o günü gösterir.' },
+  ],
+  weeks: [
+    {
+      title: 'Yavaş ve doğru',
+      text: t(
+        'Bu hafta her gün yaptığın bir işte (ör. bir listeyi kontrol etmek ya da bir yazıyı temize çekmek) önce acele etmeden, doğru çalış. Hafta sonunda aynı işi biraz daha hızlı yapmayı dene ve yanılgılarının artıp artmadığına bak.',
+        'Bu hafta çocuğunuz her gün yaptığı bir işte (ör. bir yazıyı temize çekmek ya da yaptığı bir işi kontrol etmek) önce acele etmeden, doğru çalışsın. Hafta sonunda aynı işi biraz daha hızlı yapmayı denesin; yanılgılarının artıp artmadığına birlikte bakın.',
+      ),
+    },
+    {
+      title: 'Satır satır ara',
+      text: t(
+        'Bu hafta bir gazete ya da kitap sayfasında bir harfi (ör. bütün “k” harflerini) iki kez ara: bir kez gözünü rastgele gezdirerek, bir kez satır satır ilerleyerek. Hangisinde daha çok harf bulduğunu karşılaştır.',
+        'Bu hafta çocuğunuzla bir gazete ya da kitap sayfasında bir harfi (ör. bütün “k” harflerini) iki kez arayın: bir kez gözü rastgele gezdirerek, bir kez satır satır ilerleyerek. Hangisinde daha çok harf bulunduğunu birlikte konuşun.',
+      ),
+    },
+    {
+      title: 'Kısa ve sık',
+      text: {
+        student:
+          'Bu hafta her gün yaklaşık 10 dakika, sık kullandığın temel bir işi çalış (ör. çarpım tablosu ya da zihinden toplama). Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığına bak.',
+        parent:
+          'Bu hafta çocuğunuzla her gün yaklaşık 10 dakika, temel bir işi (ör. çarpım tablosu ya da zihinden toplama) çalışın. Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığını birlikte konuşun.',
+        adult:
+          'Bu hafta her gün yaklaşık 10 dakika, sık yaptığın temel bir işi (ör. zihinden hesap ya da bir programdaki kısayollar) bilerek tekrarla. Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığına bak.',
+      },
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda denediğin yollara bak: önce doğru çalışmak, sırayla bakmak ve temel işleri akıcılaştırmak. Hangisi işini en çok kolaylaştırdıysa onu yaz ve sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun işini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['kural-degistirme', 'zihinden-hesaplama-hizi'],
+  nextPurpose: {
+    you: 'hızın ve dikkatin başka işlerdeki yerini de görmek',
+    parent: 'çocuğunuzun hızının ve dikkatinin başka işlerdeki yerini de görmek',
+  },
+  links: [],
+  sources: [KAYNAK.heitz2014, KAYNAK.gersten2009, KAYNAK.rch2025, KAYNAK.sala2019],
+};
+
 /** Zihinsel görevlerin yol haritaları: becerinin günlük hayatta kullanıldığı işleri kolaylaştıran yollar (lib/reports/task-roadmap.ts). */
 export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'dikkat-ve-bellek': dikkatBellek,
@@ -2844,6 +2963,7 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'sekil-benzetmeleri': sekilBenzetmeleri,
   'desen-hatirlama': desenHatirlama,
   'harf-sayi-siralama': harfSayiSiralama,
+  'simge-bulma': simgeBulma,
   'harf-dizileri': harfDizileri,
   'zihinden-hesaplama-hizi': zihindenHesaplama,
 };

@@ -47,6 +47,8 @@ import type {
   AnalogyLure,
   FiguralAnalogyTask,
   LetterNumberTask,
+  SymbolSearchTask,
+  SymbolSearchTrial,
 } from '@/lib/instruments/types';
 import { TURKISH_ALPHABET } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
@@ -3837,6 +3839,214 @@ export function letterNumberQualityNotes(r: LetterNumberResult): string[] {
     );
   }
   return notes;
+}
+
+/* ---------- Simge bulma (işlem hızı) ---------- */
+
+export interface SymbolSearchTrialInput {
+  /** Denemenin sırası (0'dan; denemeler sırayla gösterilir). */
+  index: number;
+  /** Verilen cevap ve cevabın, asıl bölümün başından (duraklamalar sayılmadan) geçen süredeki anı (ms). */
+  response: { ans: 'var' | 'yok'; at: number };
+  /** Simgelerin ekrana gelmesinden cevaba kadar geçen süre (ms). */
+  rtMs: number | null;
+}
+
+export interface SymbolSearchItem {
+  index: number;
+  present: boolean;
+  lookalike: boolean;
+  ans: 'var' | 'yok';
+  correct: boolean;
+  rt: number | null;
+  at: number;
+}
+
+/** Bir deneme türündeki kararlar: sayı, doğru sayısı ve doğru kararların tipik (ortanca) süresi. */
+export interface SgPart {
+  n: number;
+  correct: number;
+  medianRt: number | null;
+}
+
+export interface SymbolSearchResult {
+  /** Asıl bölümün süresi (ms). */
+  durationMs: number;
+  /** Bütün denemeler süre dolmadan cevaplandı. */
+  finishedAll: boolean;
+  /** Çalışılan süre (ms): süre dolduysa bölümün süresi, bütün denemeler bittiyse son cevabın anı. */
+  activeMs: number;
+  answered: number;
+  correct: number;
+  wrong: number;
+  /** Aranan simge sırada yokken "Var" denen ve sıradayken "Yok" denen kararlar. */
+  falseVar: number;
+  falseYok: number;
+  /** Benzer simge olan denemelerde yanlışlıkla "Var" denen kararlar. */
+  falseVarLook: number;
+  /** Doğru kararların oranı (0–1). */
+  accuracy: number;
+  /** Doğru sayısından yanlış sayısı çıkınca kalan. */
+  net: number;
+  /** Dakikada doğru karar. */
+  perMinute: number;
+  /** Doğru kararların süreleri (ms) ve ortancası. */
+  rts: number[];
+  medianRt: number | null;
+  /** Aranan simge sırada varken ve yokken; benzer simge varken ve yokken. */
+  present: SgPart;
+  absent: SgPart;
+  look: SgPart;
+  plain: SgPart;
+  /** Süresi bilinen kararların en hızlı yarısı ve geri kalanı. */
+  fast: { n: number; correct: number };
+  slow: { n: number; correct: number };
+  /** SG_TOO_FAST_MS'den kısa sürede verilen kararlar. */
+  tooFast: number;
+  /** "Var" denen kararlar. */
+  varAnswers: number;
+  /** Bölümün dört çeyreğinde (ör. 30'ar saniye) verilen doğru kararlar. */
+  quarters: number[];
+  items: SymbolSearchItem[];
+}
+
+/** Bundan az karar verildiyse sonuç yorumlanmaz. */
+export const SG_MIN_ANSWERED = 16;
+/**
+ * Doğru kararlar bundan azsa sonuç yorumlanmaz: "var" ya da "yok" demenin rastgele yarısı doğrudur. Telefonda çözülen bir
+ * simge arama görevinde %70'in altındaki oturumlar rastgele basılmış sayılıp dışarıda bırakılmıştır (Valentine ve Kratz, 2023).
+ */
+export const SG_MIN_ACCURACY = 0.7;
+/** Kararların bu kadarı ya da daha çoğu aynı düğmeyse simgelere bakılmadan basılmış olabilir. */
+export const SG_ONE_BUTTON = 0.9;
+/** Bundan kısa sürede (ms) iki simgeyi dört simgeyle karşılaştırmak zordur. */
+export const SG_TOO_FAST_MS = 300;
+/** Çok hızlı kararlar en az bu sayıda ve kararların en az bu kadarıysa sonuç dikkatle okunur. */
+export const SG_TOO_FAST_N = 3;
+export const SG_TOO_FAST_SHARE = 0.2;
+/** Karşılaştırmalar: doğrulukta her türde en az SG_CMP_MIN karar, süre karşılaştırmasında her türde en az SG_RT_MIN doğru karar. */
+export const SG_CMP_MIN = 6;
+export const SG_RT_MIN = 4;
+/** Doğrulukta anılacak fark: en az 10 puan ve en az 3 yanlış fark. */
+export const SG_ACC_GAP = 0.1;
+export const SG_ERR_GAP = 3;
+/** Sürede anılacak fark: en az %15 ve en az 150 ms. */
+export const SG_RT_RATIO = 1.15;
+export const SG_RT_MS = 150;
+/** Hızlı ve yavaş yarıların karşılaştırılması için süresi bilinen en az bu kadar karar. */
+export const SG_HALF_MIN = 20;
+
+const sgPart = (xs: SymbolSearchItem[]): SgPart => {
+  const ok = xs.filter((x) => x.correct);
+  const rts = ok.flatMap((x) => (x.rt === null ? [] : [x.rt]));
+  return { n: xs.length, correct: ok.length, medianRt: medianOrNull(rts) };
+};
+
+export function scoreSymbolSearch(task: SymbolSearchTask, trials: SymbolSearchTrial[], input: SymbolSearchTrialInput[]): { result: SymbolSearchResult } {
+  if (!Array.isArray(input) || input.length > Math.min(task.trials, trials.length)) throw new TaskInputError('Geçersiz cevap.');
+  const maxAt = task.durationMs + 5_000;
+  let lastAt = 0;
+  const items: SymbolSearchItem[] = input.map((t, i) => {
+    // Denemeler sırayla gösterilir: cevaplar 0'dan başlayıp boşluksuz sıralanır.
+    if (!t || t.index !== i) throw new TaskInputError('Geçersiz deneme.');
+    const r = t.response;
+    if (!r || (r.ans !== 'var' && r.ans !== 'yok')) throw new TaskInputError('Geçersiz cevap.');
+    if (!Number.isFinite(r.at) || r.at < 0 || r.at > maxAt || r.at < lastAt) throw new TaskInputError('Geçersiz süre.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0 || t.rtMs > 120_000)) throw new TaskInputError('Geçersiz süre.');
+    lastAt = r.at;
+    const trial = trials[i];
+    return {
+      index: i,
+      present: trial.present,
+      lookalike: trial.lookalike,
+      ans: r.ans,
+      correct: (r.ans === 'var') === trial.present,
+      rt: t.rtMs === null ? null : Math.round(t.rtMs),
+      at: r.at,
+    };
+  });
+  const answered = items.length;
+  const correct = items.filter((x) => x.correct).length;
+  const finishedAll = answered === Math.min(task.trials, trials.length);
+  const activeMs = finishedAll ? Math.max(1_000, Math.min(task.durationMs, lastAt)) : task.durationMs;
+  const rts = items.flatMap((x) => (x.correct && x.rt !== null ? [x.rt] : []));
+  const timed = items.filter((x) => x.rt !== null).sort((a, b) => (a.rt as number) - (b.rt as number) || a.index - b.index);
+  const half = Math.floor(timed.length / 2);
+  const fastItems = timed.slice(0, half);
+  const slowItems = timed.slice(half);
+  const quarters = [0, 0, 0, 0];
+  for (const x of items) if (x.correct) quarters[Math.min(3, Math.floor((4 * x.at) / task.durationMs))]++;
+  return {
+    result: {
+      durationMs: task.durationMs,
+      finishedAll,
+      activeMs,
+      answered,
+      correct,
+      wrong: answered - correct,
+      falseVar: items.filter((x) => !x.correct && x.ans === 'var').length,
+      falseYok: items.filter((x) => !x.correct && x.ans === 'yok').length,
+      falseVarLook: items.filter((x) => !x.correct && x.ans === 'var' && x.lookalike).length,
+      accuracy: answered ? round(correct / answered, 3) : 0,
+      net: correct - (answered - correct),
+      perMinute: round(correct / (activeMs / 60_000), 1),
+      rts,
+      medianRt: medianOrNull(rts),
+      present: sgPart(items.filter((x) => x.present)),
+      absent: sgPart(items.filter((x) => !x.present)),
+      look: sgPart(items.filter((x) => x.lookalike)),
+      plain: sgPart(items.filter((x) => !x.lookalike)),
+      fast: { n: fastItems.length, correct: fastItems.filter((x) => x.correct).length },
+      slow: { n: slowItems.length, correct: slowItems.filter((x) => x.correct).length },
+      tooFast: items.filter((x) => x.rt !== null && x.rt < SG_TOO_FAST_MS).length,
+      varAnswers: items.filter((x) => x.ans === 'var').length,
+      quarters,
+      items,
+    },
+  };
+}
+
+/** Sonucun yorumlanmama nedeni: hiç ya da çok az karar, hep aynı düğme ya da rastgele düzeyde doğruluk. */
+export type SgNotRead = 'none' | 'few' | 'oneButton' | 'chance';
+export function sgNotRead(r: SymbolSearchResult): SgNotRead | null {
+  if (r.answered === 0) return 'none';
+  if (r.answered < SG_MIN_ANSWERED) return 'few';
+  if (Math.max(r.varAnswers, r.answered - r.varAnswers) >= SG_ONE_BUTTON * r.answered) return 'oneButton';
+  if (r.accuracy < SG_MIN_ACCURACY) return 'chance';
+  return null;
+}
+/** Çok kısa sürede verilen kararlar: en az SG_TOO_FAST_N ve kararların en az SG_TOO_FAST_SHARE kadarı. */
+export const sgTooFast = (r: SymbolSearchResult) => r.tooFast >= SG_TOO_FAST_N && r.tooFast >= SG_TOO_FAST_SHARE * r.answered;
+/** Bir türün doğruluğu ötekinden belirgin biçimde düşük mü (`low` türü daha düşük): en az 10 puan ve en az 3 yanlış fark. */
+export function sgAccLower(low: { n: number; correct: number }, high: { n: number; correct: number }): boolean {
+  if (low.n < SG_CMP_MIN || high.n < SG_CMP_MIN) return false;
+  const gap = high.correct / high.n - low.correct / low.n;
+  return gap >= SG_ACC_GAP - 1e-9 && low.n - low.correct - (high.n - high.correct) >= SG_ERR_GAP;
+}
+/** Bir türün tipik süresi ötekinden belirgin biçimde uzun mu: en az %15 ve en az 150 ms. */
+export function sgRtLonger(slow: SgPart, fast: SgPart): boolean {
+  if (slow.medianRt === null || fast.medianRt === null || slow.correct < SG_RT_MIN || fast.correct < SG_RT_MIN) return false;
+  return slow.medianRt >= SG_RT_RATIO * fast.medianRt && slow.medianRt - fast.medianRt >= SG_RT_MS;
+}
+
+/** Simge bulmada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts aynı eşikleri kullanır). */
+export function symbolSearchQualityNotes(r: SymbolSearchResult): string[] {
+  const secs = Math.round(r.durationMs / 1000);
+  switch (sgNotRead(r)) {
+    case 'none':
+      return [`Simge bulma testinde ${secs} saniye boyunca hiç karar verilmedi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Sonuç yorumlanmadı.`];
+    case 'few':
+      return [`Simge bulma testinde ${secs} saniyede yalnızca ${r.answered} karar verildi; görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Sonuç yorumlanmadı.`];
+    case 'oneButton':
+      return [`Simge bulma testinde kararların ${r.varAnswers === r.answered || r.varAnswers === 0 ? 'hepsinde' : 'neredeyse hepsinde'} aynı düğmeye basıldı; simgelere bakılmadan basılmış olabilir. Sonuç yorumlanmadı.`];
+    case 'chance':
+      return [
+        `Simge bulma testinde kararların ancak %${Math.floor((100 * r.correct) / r.answered)} kadarı doğru; rastgele basan biri de yaklaşık yarısını doğru bulur. Sonuç yorumlanmadı.`,
+      ];
+  }
+  return sgTooFast(r)
+    ? [`Simge bulma testinde ${r.tooFast} karar ${String(SG_TOO_FAST_MS / 1000).replace('.', ',')} saniyeden kısa sürede verildi; bu kadar kısa sürede simgeleri karşılaştırmak zordur. Simgelere tam bakılmamış ya da süreler cihaz yüzünden yanlış ölçülmüş olabilir; sonuç dikkatle yorumlanmalıdır.`]
+    : [];
 }
 
 /* ---------- Üç boyutlu zihinde döndürme ---------- */
