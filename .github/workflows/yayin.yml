@@ -525,6 +525,14 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert [i["badge"] for i in s["items"]][0] == "15 kare (testin en büyük deseni)" and s["items"][2]["badge"] == "Hata yok" and len(s["chart"]["rows"]) == 13 and s["cautions"] == []; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 0 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
             sorun="$sorun desen-hatirlama-raporu"
           fi
+          # Harf-Sayı Sıralama: 21 dizinin hepsi doğru sıralı (HS_CEVAP her dizinin doğru cevabıdır; tests/harf-sayi-siralama.test.ts
+          # güncel olduğunu denetler): en uzun doğru dizi 8 öğe, hata yok, 7 uzunluğun hepsi grafikte; yol haritasında üç boyutlu grafik yok.
+          HS_CEVAP=(4P 5C 9Y 67N 8FT 23L 13KY 89DM 24HL 15FKP 267HN 38PRT 169DMT 457CKY 124CNR 5689DHM 367FHLR 2458FNT 1679CKLR 2358DLMY 1379DHPR)
+          HS_GOVDE=$(python3 -c 'import json,sys; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"harf-sayi-siralama": [{"index": i, "response": {"seq": list(x)}, "rtMs": 6000} for i, x in enumerate(sys.argv[1:])]}}}))' "${HS_CEVAP[@]}")
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$HS_GOVDE" "https://$ALAN/api/rapor/harf-sayi-siralama" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert [i["badge"] for i in s["items"]][0] == "8 öğe (testin en uzun dizisi)" and s["items"][2]["badge"] == "Hata yok" and len(s["chart"]["rows"]) == 7 and s["cautions"] == []; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 0 and len(m["approach"]["items"]) == 3 and not m["preview"]'; then
+            sorun="$sorun harf-sayi-siralama-raporu"
+          fi
           # Kâğıt Katlama: 24 sorunun hepsi doğru (s, testin cevap anahtarıdır; tests/kagit-katlama.test.ts güncel olduğunu
           # denetler). Çözme sayfasına cevap anahtarı, çeldiriciler ve yanılgı türleri gitmez.
           KK_GOVDE=$(python3 -c 'import json; s=[2, 3, 1, 5, 2, 4, 1, 4, 3, 5, 2, 1, 4, 3, 1, 2, 4, 3, 5, 1, 4, 3, 2, 5]; print(json.dumps({"grade": 6, "data": {"engine": "tasks", "seed": "6f1c2e0b-3e4b-4a8a-9a55-5d1f0c8e2a11", "blocks": {"kagit-katlama": [{"index": i, "response": s[i], "rtMs": 9000 + 1000 * i} for i in range(24)]}}}))')

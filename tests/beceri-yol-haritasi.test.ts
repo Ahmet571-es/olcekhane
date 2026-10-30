@@ -33,6 +33,7 @@ import {
   hiddenBody,
   analogyBody,
   patternBody,
+  letterNumberBody,
   letterSeriesBody,
   foldingBody,
   vocabularyBody,
@@ -326,6 +327,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     'gizli-sekiller': () => hiddenBody(),
     'sekil-benzetmeleri': () => analogyBody(),
     'desen-hatirlama': () => patternBody(),
+    'harf-sayi-siralama': () => letterNumberBody(),
     'harf-dizileri': letterSeriesBody,
     'kagit-katlama': foldingBody,
     'kelime-bilgisi': vocabularyBody,
@@ -369,7 +371,7 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
       'Gerçek mi, çıkarım mı?', 'Gizli nesneler', 'Göndermeden önce', 'Hangisi aynı?', 'Karşı örnek avı', 'Kelime avı', 'Kuralı değişen oyun',
       'Orantı mı, değil mi?', 'Parçalardan bütüne', 'Sade bir çalışma köşesi', 'Son kontrol', 'Tek iş', 'Tek iş saati', 'Terazi bulmacaları',
       'Tuzaklı bilmeceler', 'Yer imi', 'Zarın açınımı', 'İçinden tekrar', '“Kesin mi?” oyunu', 'Kısa ve sık', 'Türetme oyunu',
-      'Benzetme oyunları', 'Fark avı', 'Sözcüklerle benzetme',
+      'Benzetme oyunları', 'Fark avı', 'Sözcüklerle benzetme', 'Sıralama oyunları', 'Alfabe oyunu',
     ]);
     const titles = new Set(['Gözden geçir']);
     for (const t of Object.values(TASK_ROADMAPS)) for (const x of [...t.supports, ...t.weeks]) titles.add(x.title);

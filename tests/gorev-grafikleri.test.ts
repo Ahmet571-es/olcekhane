@@ -5,7 +5,7 @@ import { getInstrumentDef } from '@/content/instruments';
 import { ADULT_GRADE } from '@/lib/config';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import type { SimpleReport } from '@/lib/reports/simple';
-import type { DrawnVisual } from '@/lib/reports/visual-draw';
+import { STACK_TONES, type DrawnVisual } from '@/lib/reports/visual-draw';
 import { checkDrawn } from './helpers/visual-check';
 import { TASK_VARIANTS } from './helpers/task-variants';
 
@@ -32,6 +32,7 @@ const NO_DATA = [
   'Ayna görüntüsü seçilmedi',
   'Belirgin kayma yok',
   '“Hatırlamıyorum” denen desenler',
+  '“Hatırlamıyorum” denen diziler',
   'Kısımlar karşılaştırılmadı',
 ];
 
@@ -84,6 +85,8 @@ describe('görev testlerinin kart grafikleri', () => {
             // Ortak eksendeki tek bir çubuk (ör. yalnızca "Bütün sorular") bilgi taşımaz: karşılaştırılacak ikinci bir değer
             // yoksa her sorunun süresi nokta şeridinde gösterilir.
             if (it.visual!.type === 'bars' && it.visual!.scale === 'scale') expect(it.visual!.rows.length, label).toBeGreaterThan(1);
+            // Parçalı çubuğun her parçası ayrı tondadır: tonlar yinelenirse iki parça aynı renkte görünür.
+            if (it.visual!.type === 'stack') expect(it.visual!.parts.length, label).toBeLessThanOrEqual(STACK_TONES.length);
             // Süre şeridinde her ölçüm bir nokta, tipik süre (ortanca) çizgi: çizgi noktaların ortasındadır.
             if (it.visual!.type === 'strip' && it.visual!.caption?.startsWith('Her nokta')) {
               const { points, marker } = it.visual!;

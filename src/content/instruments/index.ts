@@ -46,6 +46,7 @@ import { bakisAcisiAlma } from './bakis-acisi-alma';
 import { gizliSekiller } from './gizli-sekiller';
 import { sekilBenzetmeleri } from './sekil-benzetmeleri';
 import { desenHatirlama } from './desen-hatirlama';
+import { harfSayiSiralama } from './harf-sayi-siralama';
 import { harfDizileri } from './harf-dizileri';
 import { dusunerekKararVerme } from './dusunerek-karar-verme';
 import { planlamaKuleGorevi } from './planlama-kule-gorevi';
@@ -110,6 +111,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   empati,
   ozYeterlik,
   ozDenetim,
+  harfSayiSiralama,
   cocukKisilik,
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,

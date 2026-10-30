@@ -37,6 +37,13 @@ const complexSpanResponse = z.object({
  */
 const patternResponse = z.object({ cells: z.array(z.number().int().min(0).max(63)).max(64), restarts: z.number().int().min(0).max(50).optional() }).strict();
 
+/**
+ * Harf-sayı sıralamada girilen öğeler (sırasıyla; sayılar "1"–"9", harfler büyük harf; "Hatırlamıyorum" denirse boş) ve dizi
+ * gösterilirken sayfa gizlendiği için dizinin baştan gösterilme sayısı. Öğelerin dizide ya da görevde olup olmadığını
+ * puanlama denetler.
+ */
+const letterNumberResponse = z.object({ seq: z.array(z.string().min(1).max(1)).max(9), restarts: z.number().int().min(0).max(50).optional() }).strict();
+
 /** Bakış açısı almada gösterilen yön (derece; 0 ileri, saat yönünde). */
 const perspectiveResponse = z.object({ deg: z.number().min(-180).max(180) }).strict();
 
@@ -58,6 +65,7 @@ export const taskTrial = z.object({
     complexSpanResponse,
     perspectiveResponse,
     patternResponse,
+    letterNumberResponse,
     /** Kelime listesi hatırlamada yazılan kelimeler ve listenin baştan gösterilme sayısı. */
     z.object({ words: z.array(z.string().max(30)).max(40), restarts: z.number().int().min(0).max(50).optional() }),
     z.null(),

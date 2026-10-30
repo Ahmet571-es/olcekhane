@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller, Desen Hatırlama ve Harf Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller, Desen Hatırlama, Harf-Sayı Sıralama ve Harf Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -2504,6 +2504,111 @@ const desenHatirlama: TaskRoadmapTemplate = {
   sources: [KAYNAK.dellaSala1999, KAYNAK.wilson1987, KAYNAK.brown2006, KAYNAK.brownWesley2013, KAYNAK.melby2016],
 };
 
+const harfSayiBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; çalışma belleğinin yalnızca bir yönünü (gösterilen sayıları ve harfleri akılda tutup sıraya koymayı) gösterir.',
+    'Harfleri sıraya koyarken alfabenin sırasını rahat bilmek de rol oynar.',
+    'Çalışma belleği çocukluk ve ergenlik boyunca gelişir; küçük yaşta uzun dizilerde zorlanmak olağandır.',
+    'Bellek alıştırmaları alıştırılan görevde sonucu yükseltebilir; ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur.',
+    'Yol haritasındaki alfabe oyunu bu teste benzer; testi yeniden çözdüğünde sonucun yükselebilir. Bu, çalışma belleğinin genel olarak geliştiği anlamına gelmez.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; çalışma belleğinin yalnızca bir yönünü (gösterilen sayıları ve harfleri akılda tutup sıraya koymayı) gösterir.',
+    'Harfleri sıraya koyarken alfabenin sırasını rahat bilmek de rol oynar; küçük sınıflarda bu rahatlık henüz gelişiyor olabilir.',
+    'Çalışma belleği çocukluk ve ergenlik boyunca gelişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+    'Bellek alıştırmaları alıştırılan görevde sonucu yükseltebilir; ama bunun derslere ve başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur.',
+    'Yol haritasındaki alfabe oyunu bu teste benzer; çocuğunuz testi yeniden çözdüğünde sonucu yükselebilir. Bu, çalışma belleğinin genel olarak geliştiği anlamına gelmez.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const harfSayiFacts: InfoBox = {
+  ...harfSayiBase,
+  items: {
+    ...harfSayiBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; çalışma belleğinin yalnızca bir yönünü (gösterilen sayıları ve harfleri akılda tutup sıraya koymayı) gösterir.',
+      'Harfleri sıraya koyarken alfabenin sırasını rahat bilmek de rol oynar.',
+      'Bellek alıştırmaları alıştırılan görevde sonucu yükseltebilir; ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+      'Yol haritasındaki alfabe oyunu bu teste benzer; testi yeniden çözdüğünde sonucun yükselebilir. Bu, çalışma belleğinin genel olarak geliştiği anlamına gelmez.',
+    ],
+  },
+};
+
+const harfSayiSiralama: TaskRoadmapTemplate = {
+  version: 'harf-sayi-siralama-yol-haritasi-1',
+  what: {
+    student: 'bilgiyi aklında tutarken bir yandan onu düzenlemeyi gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun bilgiyi aklında tutarken bir yandan onu düzenlemesini gerektiren işlerini nasıl kolaylaştırabileceğiniz',
+    summary: 'bilgiyi akılda tutarken düzenlemeyi kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Bilgiyi aklında tutup düzenlemeyi ne kolaylaştırır?', parent: 'Çocuğunuzun bilgiyi aklında tutup düzenlemesini ne kolaylaştırır?' },
+  studyIntro: t(
+    'Bu test, karışık sayıları ve harfleri akılda tutup sıraya koyabilmeyi, yani çalışma belleğini ölçer. Çalışma belleği, bir bilgiyi kısa bir süre aklında tutarken onunla bir şey yapmayı gerektiren işlerde kullanılır. Duyduğun bir numarayı bir yere yazmak, birkaç sayıyı zihinden karşılaştırmak ve söylenen birkaç adımı doğru sırayla uygulamak bu tür işlerdir. Aşağıdaki yollar, bu işlerde aklındaki yükü hafifletmeye yardım edebilir.',
+    'Bu test, karışık sayıları ve harfleri akılda tutup sıraya koyabilmeyi, yani çalışma belleğini ölçer. Çalışma belleği, bir bilgiyi kısa bir süre akılda tutarken onunla bir şey yapmayı gerektiren işlerde kullanılır. Söylenen bir numarayı deftere yazmak, birkaç sayıyı zihinden karşılaştırmak ve öğretmenin söylediği birkaç adımı doğru sırayla uygulamak bu tür işlerdir. Aşağıdaki yollar, çocuğunuzun bu işlerde aklındaki yükü hafifletmeye yardım edebilir.',
+  ),
+  supports: [
+    support(0, 'obek', 'Öbeklere ayır', 'Yöntem', t(
+      'Aklında tutman gereken bir dizi bilgiyi küçük öbeklere ayır: on haneli bir telefon numarasını tek tek rakamlar yerine ikişerli ya da üçerli öbekler hâlinde tutmak gibi. Araştırmalarda insanların aynı anda aklında tutabildiği öbek sayısının az olduğu bulunmuştur. Öbekler, aynı bilgiyi daha az parça hâlinde tutmana yardım edebilir.',
+      'Çocuğunuza, aklında tutması gereken bir dizi bilgiyi küçük öbeklere ayırmasını önerin: on haneli bir telefon numarasını tek tek rakamlar yerine ikişerli ya da üçerli öbekler hâlinde tutmak gibi. Araştırmalarda insanların aynı anda aklında tutabildiği öbek sayısının az olduğu bulunmuştur. Öbekler, aynı bilgiyi daha az parça hâlinde tutmasına yardım edebilir.',
+    )),
+    support(1, 'tekrar', 'İçinden tekrarla', 'Yöntem', t(
+      'Kısa bir süre aklında tutman gereken bir bilgiyi (ör. duyduğun bir adresi) kullanana kadar içinden birkaç kez tekrarla ve araya başka bir iş sokma. Bunun sana yardım edip etmediğini kendin dene.',
+      'Çocuğunuza, kısa bir süre aklında tutması gereken bir bilgiyi (ör. söylenen bir sayfa numarasını) kullanana kadar içinden birkaç kez tekrarlamasını ve araya başka bir iş sokmamasını önerin. Bunun ona yardım edip etmediğini birlikte deneyin.',
+    )),
+    support(2, 'yaz', 'Önce yaz, sonra düzenle', 'Araç', t(
+      'Bir bilgiyi hem aklında tutman hem de düzenlemen gerektiğinde (ör. birkaç adı alfabe sırasına koymak ya da birkaç tarihi sıraya dizmek) önce hepsini kâğıda yaz, sonra kâğıt üzerinde sırala. Böylece aklını bilgiyi tutmaya değil, düzenlemeye ayırırsın.',
+      'Çocuğunuza, bir bilgiyi hem aklında tutması hem de düzenlemesi gerektiğinde (ör. birkaç sözcüğü alfabe sırasına koymak ya da birkaç tarihi sıraya dizmek) önce hepsini kâğıda yazmasını, sonra kâğıt üzerinde sıralamasını önerin. Böylece aklını bilgiyi tutmaya değil, düzenlemeye ayırır.',
+    )),
+    support(3, 'oyun', 'Sıralama oyunları', 'Etkinlik', t(
+      'Söylenen birkaç sözcüğü alfabe sırasına koyup söylemek ya da birkaç sayıyı küçükten büyüğe dizmek gibi oyunlar, bilgiyi aklında tutup düzenlemeyi keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir. Ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, birlikte keyifle oynamaktır.',
+      'Söylenen birkaç sözcüğü alfabe sırasına koyup söylemek ya da birkaç sayıyı küçükten büyüğe dizmek gibi oyunlar, çocuğunuz için bilgiyi aklında tutup düzenlemeyi keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir. Ama bunun derslere ve başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, birlikte keyifle oynamaktır.',
+    )),
+  ],
+  facts: harfSayiFacts,
+  approach: [
+    { title: 'Bilgileri birer birer verin', text: 'Birkaç bilgiyi aynı anda vermek yerine birer birer verin; sıranın önemli olduğu işlerde adımları kısa, yazılı bir listeyle destekleyin.' },
+    { title: 'Alfabeyi birlikte kullanın', text: 'Sözlükte bir sözcük bulmak, bir listede bir adı aramak ya da kitapları alfabe sırasına dizmek gibi günlük işleri birlikte yapın. Alfabe sırasını rahat bilmek bu tür işleri kolaylaştırır.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Numarayı öbekle',
+      text: t(
+        'Bu hafta iki ayrı numara seç (ör. iki telefon numarası). Birini tek tek rakamlarla, ötekini öbeklere ayırarak aklında tutmayı dene. Hangisinin daha kolay olduğunu bir cümleyle yaz.',
+        'Bu hafta çocuğunuzla iki ayrı telefon numarası seçin. Birini tek tek rakamlarla, ötekini öbeklere ayırarak aklında tutmayı deneyin. Hangisinin daha kolay olduğunu birlikte konuşun.',
+      ),
+    },
+    {
+      title: 'Alfabe oyunu',
+      text: t(
+        'Bu hafta biriyle şu oyunu oyna: biri birbiriyle ilgisiz üç sözcük söyler, öteki bu sözcükleri alfabe sırasına koyup söyler. Doğru sıralandıkça bir sözcük ekleyin, sonra rolleri değiştirin. Amaç sonucu yükseltmek değil, birlikte eğlenmek.',
+        'Bu hafta çocuğunuzla şu oyunu oynayın: siz birbiriyle ilgisiz üç sözcük söyleyin, çocuğunuz bu sözcükleri alfabe sırasına koyup söylesin. Doğru sıraladıkça bir sözcük ekleyin, sonra rolleri değiştirin. Amaç sonucu yükseltmek değil, birlikte eğlenmek.',
+      ),
+    },
+    {
+      title: 'Kâğıtta sırala',
+      text: t(
+        'Bu hafta sıraya koyman gereken iki ayrı şey seç (ör. o günün işleri ve bir alışveriş listesi). Birini yalnızca aklından, ötekini önce kâğıda yazıp sonra sıralayarak düzenle. Hangisinin daha kolay ve doğru olduğunu karşılaştır.',
+        'Bu hafta çocuğunuzla sıraya konması gereken iki ayrı şey seçin (ör. o günün işleri ve bir alışveriş listesi). Birini yalnızca akıldan, ötekini önce kâğıda yazıp sonra sıralayarak düzenleyin. Hangisinin daha kolay ve doğru olduğunu birlikte konuşun.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda denediğin yollara bak: öbeklere ayırmak, içinden tekrarlamak ya da önce yazıp sonra düzenlemek. Bilgiyi aklında tutup düzenlemeni en çok hangisi kolaylaştırdıysa onu yaz ve sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun bilgiyi aklında tutup düzenlemesini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['hesapla-ve-hatirla', 'desen-hatirlama', 'kelime-listesi-hatirlama'],
+  nextPurpose: {
+    you: 'belleğinin başka yönlerini de görmek',
+    parent: 'çocuğunuzun belleğinin başka yönlerini de görmek',
+    general: true,
+  },
+  links: [],
+  sources: [KAYNAK.cowan2010, KAYNAK.dunningHolmes2014, KAYNAK.melby, KAYNAK.melby2016],
+};
+
 const harfBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca harf dizileriyle yapılan yönünü gösterir.',
@@ -2738,6 +2843,7 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'gizli-sekiller': gizliSekiller,
   'sekil-benzetmeleri': sekilBenzetmeleri,
   'desen-hatirlama': desenHatirlama,
+  'harf-sayi-siralama': harfSayiSiralama,
   'harf-dizileri': harfDizileri,
   'zihinden-hesaplama-hizi': zihindenHesaplama,
 };

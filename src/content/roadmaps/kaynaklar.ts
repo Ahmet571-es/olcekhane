@@ -380,6 +380,14 @@ export const KAYNAK = {
     text: 'Wilson, J. T. L., Scott, J. H. ve Power, K. G. (1987). Developmental differences in the span of visual memory for pattern. British Journal of Developmental Psychology, 5(3), 249–255.',
     url: 'https://doi.org/10.1111/j.2044-835X.1987.tb01060.x',
   },
+  cowan2010: {
+    text: 'Cowan, N. (2010). The magical mystery four: How is working memory capacity limited, and why? Current Directions in Psychological Science, 19(1), 51–57.',
+    url: 'https://doi.org/10.1177/0963721409359277',
+  },
+  dunningHolmes2014: {
+    text: 'Dunning, D. L. ve Holmes, J. (2014). Does working memory training promote the use of strategies on untrained working memory tasks? Memory & Cognition, 42(6), 854–862.',
+    url: 'https://doi.org/10.3758/s13421-014-0410-5',
+  },
   melby2016: {
     text: 'Melby-Lervåg, M., Redick, T. S. ve Hulme, C. (2016). Working memory training does not improve performance on measures of intelligence or other measures of “far transfer”: Evidence from a meta-analytic review. Perspectives on Psychological Science, 11(4), 512–534.',
     url: 'https://doi.org/10.1177/1745691616635612',

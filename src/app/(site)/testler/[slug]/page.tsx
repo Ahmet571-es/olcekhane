@@ -91,6 +91,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                                         ? `${single.items.length} soru, ${single.practice.length} alıştırma`
                                         : single.kind === 'pattern_memory'
                                           ? `${single.levels[0].cells}–${single.levels[single.levels.length - 1].cells} kareli desenler, her büyüklükte 3 desen`
+                                          : single.kind === 'letter_number'
+                                            ? `${single.levels[0].length}–${single.levels[single.levels.length - 1].length} öğeli diziler, her uzunlukta 3 dizi`
                 : null;
   // Zihinden hesaplama: her işlem ayrı, süreli bir görevdir (bölüm).
   const arith = def.engine === 'tasks' && def.tasks.length > 0 && def.tasks.every((t) => t.kind === 'mental_arithmetic') ? def.tasks : null;
@@ -465,6 +467,15 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Bütün kareleriyle doğru hatırlanan en büyük desen (desen aralığı) ve desen büyüklüğüne göre doğru hatırlanan desenler grafiği</li>
                 <li>Yanlış hatırlanan desenlerde karelerin unutulup unutulmadığı, fazladan kare işaretlenip işaretlenmediği, yanlış karelerin doğru yerin yanında olup olmadığı ve desenlere nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'letter_number' && (
+              <>
+                <li>Bütün öğeleri doğru sırada girilen en uzun dizi ve dizi uzunluğuna göre doğru sıralanan diziler grafiği</li>
+                <li>
+                  Yanlış dizilerde öğelerin mi unutulduğu yoksa bütün öğeler hatırlanıp sıranın mı karıştığı, sayıların ve harflerin ayrı ayrı ne kadar hatırlanıp
+                  sıraya konduğu ve dizilere nasıl çalışıldığı
+                </li>
               </>
             )}
             {single?.kind === 'cognitive_reflection' && (

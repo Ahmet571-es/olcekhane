@@ -214,7 +214,10 @@ function drawBars(v: BarsVisual, W: number, fs: number): Drawing {
 
 /* ---------- Bir bütünün parçaları ---------- */
 
-const STACK_TONES: Tone[] = ['fill', 'soft', 'track2', 'ink3'];
+/** Parçaların tonları; beşinci parça içi boş (çerçeveli) kutudur. Daha çok parça olmamalı: tonlar yinelenir (testler denetler). */
+export const STACK_TONES: Tone[] = ['fill', 'soft', 'track2', 'ink3', 'surface'];
+/** Açık tonlu parçaların çerçevesi: yanındaki parçadan ve zeminden ayrılsın. */
+const STACK_STROKE: Partial<Record<Tone, Tone>> = { soft: 'fill', surface: 'ink3' };
 
 function drawStack(v: StackVisual, W: number, fs: number): Drawing {
   const shapes: Shape[] = [];
@@ -226,7 +229,8 @@ function drawStack(v: StackVisual, W: number, fs: number): Drawing {
     if (p.value <= 0) return;
     const w = (p.value / total) * W;
     const tone = STACK_TONES[i % STACK_TONES.length];
-    shapes.push({ k: 'rect', x: r2(x), y: 0, w: r2(Math.max(1, w - 0.8)), h: barH, r: 1.5, fill: tone, ...(tone === 'soft' ? { stroke: 'fill' as Tone, sw: 0.9 } : {}) });
+    const stroke = STACK_STROKE[tone];
+    shapes.push({ k: 'rect', x: r2(x), y: 0, w: r2(Math.max(1, w - 0.8)), h: barH, r: 1.5, fill: tone, ...(stroke ? { stroke, sw: 0.9 } : {}) });
     x += w;
   });
   const ls = r2(fs * 0.9);
@@ -235,7 +239,8 @@ function drawStack(v: StackVisual, W: number, fs: number): Drawing {
   v.parts.forEach((p, i) => {
     const base = y + ls;
     const tone = STACK_TONES[i % STACK_TONES.length];
-    shapes.push({ k: 'rect', x: 0, y: r2(base - sw * 0.85), w: sw, h: sw, r: r2(sw * 0.2), fill: tone, ...(tone === 'soft' ? { stroke: 'fill' as Tone, sw: 0.9 } : {}) });
+    const stroke = STACK_STROKE[tone];
+    shapes.push({ k: 'rect', x: 0, y: r2(base - sw * 0.85), w: sw, h: sw, r: r2(sw * 0.2), fill: tone, ...(stroke ? { stroke, sw: 0.9 } : {}) });
     const label = fitLabel(p.label, ls, W - sw - ls * 0.5 - textWidth(String(p.value), ls) - ls);
     label.lines.forEach((line, j) =>
       shapes.push({ k: 'text', x: r2(sw + ls * 0.5), y: r2(base + j * label.size * 1.15), text: line, size: label.size, weight: 400, fill: 'ink2', anchor: 'start' }),

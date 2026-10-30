@@ -27,6 +27,7 @@ import { LogicalReasoning } from './logical-reasoning';
 import { NumericalReasoning } from './numerical-reasoning';
 import { CubeNet } from './cube-net';
 import { HiddenFigures } from './hidden-figures';
+import { LetterNumber } from './letter-number';
 import { PatternMemory } from './pattern-memory';
 import { MentalRotation3d } from './mental-rotation-3d';
 import { CognitiveReflection } from './cognitive-reflection';
@@ -203,6 +204,7 @@ export function TaskRunner(props: {
       {task.kind === 'cube_net' && <CubeNet key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'hidden_figures' && <HiddenFigures key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'pattern_memory' && <PatternMemory key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'letter_number' && <LetterNumber key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'mental_rotation_3d' && <MentalRotation3d key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cognitive_reflection' && <CognitiveReflection key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'tower' && <Tower key={task.key} task={task} onDone={(t) => save(task.key, t)} />}

@@ -3,6 +3,7 @@ import { REPORT_TEMPLATES } from '@/content/reports';
 import type { BandText, InsightTemplate, LevelGroup, MotivationTemplate, PairText, ValuesTemplate } from '@/content/reports/types';
 import { GRADE_LABELS } from '@/lib/config';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
+import type { LnErrorKind } from '@/lib/instruments/letter-number';
 import { niceMax } from './visual-draw';
 import { bandZones, type BarsVisual, type ColumnsVisual, type DotsVisual, type ItemVisual, type LadderVisual, type StackVisual, type StepsVisual, type StripVisual, type Zone } from './visuals';
 import type {
@@ -202,6 +203,16 @@ import {
   PATTERN_LARGE,
   PATTERN_RESTARTS_NOTE,
   type PatternResult,
+  lnFloor,
+  lnGaveUpSorting,
+  lnLettersFirstHabit,
+  lnManySkipped,
+  lnRapid,
+  lnUnsorted,
+  LN_LONG,
+  LN_RESTARTS_NOTE,
+  type LetterNumberResult,
+  type LnPartTotals,
   ROTATION3D_CHANCE_MAX,
   ROTATION3D_PART_GAP,
   rotation3dMirrorPick,
@@ -3295,9 +3306,9 @@ function typeBarsVisual(label: string, rows: { name: string; correct: number; n:
  * Karşılaştırılacak ikinci bir süre yokken "Çalışma biçimi" kartının grafiği: her sorunun cevap süresi bir nokta, tipik süre
  * (ortanca) dikey çizgi. Tek bir çubuk bilgi taşımaz; şerit, sürelerin sorudan soruya ne kadar değiştiğini de gösterir.
  */
-function timeStrip(rts: number[], median: number, item: 'soru' | 'desen' = 'soru'): StripVisual {
+function timeStrip(rts: number[], median: number, item: 'soru' | 'desen' | 'dizi' = 'soru'): StripVisual {
   return durationStrip({
-    label: item === 'soru' ? 'Sorulardaki cevap süreleri' : 'Desenlerdeki işaretleme süreleri',
+    label: item === 'soru' ? 'Sorulardaki cevap süreleri' : item === 'desen' ? 'Desenlerdeki işaretleme süreleri' : 'Dizilerdeki cevap süreleri',
     rts,
     median,
     marker: `Tipik ${secShort(median)}`,
@@ -8080,6 +8091,591 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   return { blocks: [aralik, desen, hata, calisma], chart, figures };
 }
 
+const hsCount = (k: number, suffix: 'i' | 'inde' | 'ini') => (k === 1 ? `bir${suffix}` : `${k} tanes${suffix}`);
+/** Yüzde (aşağı yuvarlanır: bir eksik varken %100 görünmesin). */
+const hsPct = (a: number, b: number) => (b ? Math.floor((100 * a) / b) : 0);
+/**
+ * Sayılarla harfler arasında anılacak fark. Hatırlamada: her türde en az 20 gösterilen öğe, en az 15 puan ve en az 4 öğe fark.
+ * Sıralamada: her türde birden çok öğenin girildiği en az 6 dizi, en az 20 puan ve en az 2 dizi fark. Harfler hep sayılardan
+ * sonra girildiği için yarıda kalan cevaplarda harfler daha çok eksik kalır; bu yüzden eşikler yüksektir ve harflerin daha
+ * az hatırlandığı söylenirken bu not edilir.
+ */
+const HS_RECALL_GAP = 15;
+const HS_RECALL_MIN = 20;
+const HS_RECALL_ITEMS = 4;
+const HS_ORDER_GAP = 20;
+const HS_ORDER_MIN = 6;
+const HS_ORDER_TRIALS = 2;
+
+/**
+ * Harf-sayı sıralamanın beş sonuç kartı, dizi uzunluğuna göre grafik ve öne çıkan sayılar. Durumların sırası ve eşikleri
+ * uyarılarla (lib/scoring/tasks.ts, letterNumberQualityNotes) aynıdır: en kısa diziler de doğru sıralanamamışsa sonuç
+ * yorumlanmaz; kural hiçbir uzun dizide uygulanmadan yanlışların çoğunda öğeler sıralanmadan ya da önce harfler girildiyse
+ * kuralın tam uygulanmadığı, testin bittiği uzunluktan önceki dizilerin yarısında "Hatırlamıyorum" denmişse ya da yanlışların
+ * bir kısmı bakılmadan girilmiş olabilecek kadar hızlıysa sonuç dikkatle okunur. Kural kısa dizilerde uygulanıp uzun
+ * dizilerde bırakıldıysa bu yük olarak anlatılır, uyarı olmaz. Türkiye normu olmadığı için sonuç akranlarla
+ * karşılaştırılmaz; dizilerin uzunluğuyla anlatılır.
+ */
+function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const floor = lnFloor(r);
+  const unsorted = !floor && lnUnsorted(r);
+  const lettersFirst = !floor && !unsorted && lnLettersFirstHabit(r);
+  const gaveUp = !floor && lnGaveUpSorting(r);
+  const manySkip = !floor && lnManySkipped(r);
+  const rapid = !floor && lnRapid(r);
+  const ruleDoubt = unsorted || lettersFirst;
+  const workDoubt = manySkip || rapid;
+  const where = ruleDoubt && workDoubt ? 'Hata türleri ve çalışma biçimi kartlarında anlatılan nedenlerle' : ruleDoubt ? 'Hata türleri kartında anlatılan nedenle' : 'Çalışma biçimi kartında anlatılan nedenle';
+  const hedge = v(`${where} bu sonuç seni tam yansıtmayabilir.`, `${where} bu sonuç çocuğunuzu tam yansıtmayabilir.`);
+  const doubt = ruleDoubt || workDoubt;
+  const lastLevel = r.levels[r.levels.length - 1];
+  const RULE = 'önce sayıları küçükten büyüğe, sonra harfleri alfabe sırasıyla';
+  const notRead = `En kısa (${r.start} öğeli) diziler de doğru sıralanamadığı için bu kart yorumlanmadı.`;
+
+  /* En uzun doğru dizi */
+  let aralik: CognitiveBlock;
+  if (floor && lnLettersFirstHabit(r)) {
+    aralik = {
+      ...card('hs_aralik'),
+      headline: 'Yorumlanmadı',
+      text: v(
+        `En kısa (${r.start} öğeli) dizilerin hepsinde harfi sayıdan önce yazdın; oysa kural önce sayıyı, sonra harfi yazmaktı. Test bu yüzden ilk uzunlukta bitti ve sonuç yorumlanmadı. Kuralı yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
+        `Çocuğunuz en kısa (${r.start} öğeli) dizilerin hepsinde harfi sayıdan önce yazdı; oysa kural önce sayıyı, sonra harfi yazmaktı. Test bu yüzden ilk uzunlukta bitti ve sonuç yorumlanmadı. Kuralı yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
+      ),
+    };
+  } else if (floor) {
+    aralik = {
+      ...card('hs_aralik'),
+      headline: 'Yorumlanmadı',
+      text: v(
+        `En kısa (${r.start} öğeli) üç dizinin hiçbirini doğru sıralayamadın; bu yüzden en uzun doğru dizi belirtilmedi. Yönergeyi tam anlamamış, dizilere yeterince bakamamış ya da testi yarıda bırakmış olabilirsin. Dinlendiğin bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
+        `Çocuğunuz en kısa (${r.start} öğeli) üç dizinin hiçbirini doğru sıralayamadı; bu yüzden en uzun doğru dizi belirtilmedi. Yönerge tam anlaşılmamış, dizilere yeterince bakılamamış ya da test yarıda bırakılmış olabilir. Dinlendiği bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
+      ),
+    };
+  } else {
+    const parts = [`Diziler ${r.start} öğeden ${r.max} öğeye kadar uzuyordu; her uzunlukta üç dizi vardı.`];
+    if (r.stoppedAt === null) {
+      const c = lastLevel.correct;
+      const which = c === lastLevel.n ? `en uzun (${r.max} öğeli) dizilerin hepsini` : `en uzun (${r.max} öğeli) dizilerden ${hsCount(c, 'ini')}`;
+      parts.push(
+        v(
+          `${capTr(which)} de doğru sıraladın. Testte daha uzun dizi olmadığı için sınırının daha da yukarıda olup olmadığı bilinmiyor.`,
+          `Çocuğunuz ${which} de doğru sıraladı. Testte daha uzun dizi olmadığı için sınırının daha da yukarıda olup olmadığı bilinmiyor.`,
+        ),
+      );
+    } else {
+      parts.push(
+        v(
+          `Bütün öğeleriyle doğru sıraladığın en uzun dizi ${r.span} öğeliydi. Test, ${r.stoppedAt} öğeli üç dizinin hiçbirini doğru sıralayamadığın için orada bitti.`,
+          `Çocuğunuzun bütün öğeleriyle doğru sıraladığı en uzun dizi ${r.span} öğeliydi. Test, ${r.stoppedAt} öğeli üç dizinin hiçbirini doğru sıralayamadığı için orada bitti.`,
+        ),
+        'Her uzunlukta yalnızca üç dizi olduğu ve üçü de yanlış olunca test bittiği için bu sayı kabaca fikir verir. O anki kısa bir dalgınlık da sonucu düşürebilir.',
+      );
+    }
+    if (doubt) parts.push(hedge);
+    aralik = {
+      ...card('hs_aralik'),
+      headline: r.stoppedAt === null ? `${r.span} öğe (testin en uzun dizisi)` : `${r.span} öğe`,
+      text: parts.join(' '),
+      // Her uzunluktaki diziler (dolu daire: doğru sıralandı); test bittiği için gösterilmeyen uzunluklar soluk.
+      visual: {
+        type: 'ladder',
+        label: 'Dizi uzunluğuna göre doğru sıralanan diziler',
+        rows: Array.from({ length: r.max - r.start + 1 }, (_, k) => r.start + k).map((length) => ({
+          length,
+          results: r.items.filter((x) => x.length === length).map((x) => x.correct),
+        })),
+        reached: r.span > 0 ? r.span : null,
+        unit: 'öğe',
+        caption: 'Dizideki öğe sayısı',
+        bestLabel: 'En uzun',
+      } satisfies LadderVisual,
+    };
+  }
+
+  /* Doğru sıralanan diziler */
+  let dizi: CognitiveBlock;
+  if (floor) {
+    dizi = { ...card('hs_dizi'), headline: 'Yorumlanmadı', text: notRead };
+  } else {
+    const all = r.correct === r.trials;
+    const parts = [
+      all
+        ? v(`Gösterilen ${r.trials} dizinin hepsini bütün öğeleriyle doğru sıraladın.`, `Çocuğunuz gösterilen ${r.trials} dizinin hepsini bütün öğeleriyle doğru sıraladı.`)
+        : v(
+            `Gösterilen ${r.trials} dizinin ${hsCount(r.correct, 'ini')} bütün öğeleriyle doğru sıraladın.`,
+            `Çocuğunuz gösterilen ${r.trials} dizinin ${hsCount(r.correct, 'ini')} bütün öğeleriyle doğru sıraladı.`,
+          ),
+    ];
+    if (!all) {
+      const firstMiss = r.levels.findIndex((l) => l.correct < l.n);
+      const later = r.levels.slice(firstMiss + 1);
+      const laterSome = r.levels.slice(firstMiss).some((l) => l.correct > 0);
+      const missLevel = r.levels[firstMiss];
+      const mixed = v('daha uzun dizilerin bazılarını doğru sıraladın, bazılarını sıralayamadın', 'daha uzun dizilerin bazılarını doğru sıraladı, bazılarını sıralayamadı');
+      if (firstMiss > 0) {
+        const fullUpTo = r.levels[firstMiss - 1].length;
+        const upTo = fullUpTo === r.start ? `En kısa (${r.start} öğeli) dizilerin` : `Uzunluğu ${fullUpTo} öğeye kadar olan dizilerin`;
+        parts.push(
+          laterSome
+            ? v(`${upTo} hepsini doğru sıraladın; ${mixed}.`, `${upTo} hepsini doğru sıraladı; ${mixed}.`)
+            : v(
+                `${upTo} hepsini doğru sıraladın; ${missLevel.length} öğeli dizilerin hiçbirini doğru sıralayamadın.`,
+                `${upTo} hepsini doğru sıraladı; ${missLevel.length} öğeli dizilerin hiçbirini doğru sıralayamadı.`,
+              ),
+        );
+        // Yanlışlar uzun dizilerde başladıysa: akılda tutulacak ve sıraya konacak öğe arttıkça yanılmak olağandır.
+        if (missLevel.length >= LN_LONG) {
+          parts.push('Diziler uzadıkça akılda tutulacak ve sıraya konacak öğe arttığı için uzun dizilerde yanılmak bu testte olağandır.');
+        }
+      } else {
+        const m = missLevel.n - missLevel.correct;
+        // Sonraki uzunluklardan baştaki hepsi doğru olanlar ayrıca söylenir ("Sonra 3–6 öğeli dizilerin hepsini…").
+        const p = later.findIndex((l) => l.correct < l.n);
+        const tail = p < 0 ? [] : later.slice(p);
+        const tailText = (lead: string) =>
+          tail.every((l) => l.correct === 0)
+            ? v(`${lead} ${tail[0].length} öğeli dizilerin hiçbirini doğru sıralayamadın.`, `${lead} ${tail[0].length} öğeli dizilerin hiçbirini doğru sıralayamadı.`)
+            : `${lead} ${mixed}.`;
+        let rest: string;
+        if (later.length === 0) rest = '.';
+        else if (p < 0) rest = v('; daha uzun dizilerin hepsini doğru sıraladın.', '; daha uzun dizilerin hepsini doğru sıraladı.');
+        else if (p === 0) rest = tailText(';');
+        else {
+          const range = p === 1 ? `${later[0].length} öğeli` : `${later[0].length}–${later[p - 1].length} öğeli`;
+          rest = v(`. Sonra ${range} dizilerin hepsini doğru sıraladın`, `. Sonra ${range} dizilerin hepsini doğru sıraladı`) + tailText(';');
+        }
+        parts.push(
+          v(
+            `En kısa (${r.start} öğeli) dizilerden ${m === 1 ? 'birini' : `${m} tanesini`} doğru sıralayamadın${rest}`,
+            `Çocuğunuz en kısa (${r.start} öğeli) dizilerden ${m === 1 ? 'birini' : `${m} tanesini`} doğru sıralayamadı${rest}`,
+          ),
+        );
+      }
+      // Tam doğru olmayan dizilerde öğelerin çoğu yine de hatırlandıysa (sırası ne olursa olsun): her yanlış dizide öğelerin en
+      // az yarısı, hepsinde birlikte en az dörtte üçü. Bakmadan girme kuşkusu varsa söylenmez.
+      const tried = r.items.filter((x) => !x.correct && !x.skipped);
+      const triedItems = tried.reduce((a, x) => a + x.length, 0);
+      const triedRecalled = tried.reduce((a, x) => a + x.recalled, 0);
+      if (!rapid && tried.length >= 2 && tried.every((x) => 2 * x.recalled >= x.length) && triedRecalled >= 0.75 * triedItems) {
+        parts.push(
+          r.skipped > 0
+            ? v(
+                'Cevap girdiğin yanlış dizilerde de öğelerin çoğunu hatırladın; yanlışlar birkaç öğede ya da sıralamada.',
+                'Çocuğunuz cevap girdiği yanlış dizilerde de öğelerin çoğunu hatırladı; yanlışlar birkaç öğede ya da sıralamada.',
+              )
+            : v(
+                'Doğru sıralayamadığın dizilerde de öğelerin çoğunu hatırladın; yanlışlar birkaç öğede ya da sıralamada.',
+                'Çocuğunuz doğru sıralayamadığı dizilerde de öğelerin çoğunu hatırladı; yanlışlar birkaç öğede ya da sıralamada.',
+              ),
+        );
+      }
+    }
+    if (doubt) parts.push(hedge);
+    dizi = {
+      ...card('hs_dizi'),
+      headline: all ? `${r.trials} dizinin hepsi doğru` : `${r.trials} diziden ${r.correct} doğru`,
+      text: parts.join(' '),
+      visual: {
+        type: 'stack',
+        label: 'Gösterilen diziler',
+        total: r.trials,
+        parts: [
+          { label: 'Bütün öğeleriyle doğru sırada', value: r.correct },
+          { label: 'Cevap girildi, tam doğru değil', value: r.attemptedWrong },
+          { label: '“Hatırlamıyorum” dendi', value: r.skipped },
+        ],
+      } satisfies StackVisual,
+    };
+  }
+
+  /* Hata türleri: öğeler mi unutuldu, sıra mı karıştı? */
+  let hata: CognitiveBlock;
+  const W = r.attemptedWrong;
+  const K = r.kinds;
+  const M = K.items;
+  const O = K.shown + K.grouped + K.lettersFirst + K.order;
+  const hataVisual: StackVisual = {
+    type: 'stack',
+    label: 'Doğru sıralanamayan diziler',
+    total: r.wrong,
+    parts: [
+      { label: 'Öğe eksik ya da dizide yok', value: M },
+      { label: 'Öğeler tam, sırası karışık', value: K.order },
+      { label: 'Sıraya konmadan girildi', value: K.shown + K.grouped },
+      { label: 'Önce harfler girildi', value: K.lettersFirst },
+      { label: '“Hatırlamıyorum” dendi', value: r.skipped },
+    ],
+  };
+  if (floor) {
+    hata = { ...card('hs_hata'), headline: 'Yorumlanmadı', text: notRead };
+  } else if (r.wrong === 0) {
+    hata = {
+      ...card('hs_hata'),
+      headline: 'Hata yok',
+      text: v('Gösterilen bütün dizileri doğru sıraladın; hiçbir öğede yanılmadın.', 'Çocuğunuz gösterilen bütün dizileri doğru sıraladı; hiçbir öğede yanılmadı.'),
+    };
+  } else if (W === 0) {
+    hata = {
+      ...card('hs_hata'),
+      headline: '“Hatırlamıyorum” denen diziler',
+      text: v(
+        `Doğru sıralayamadığın ${r.wrong === 1 ? 'dizide' : `${r.wrong} dizinin hepsinde`} “Hatırlamıyorum” düğmesine bastın; bu yüzden hangi tür hatanın öne çıktığı söylenemez.`,
+        `Çocuğunuz doğru sıralayamadığı ${r.wrong === 1 ? 'dizide' : `${r.wrong} dizinin hepsinde`} “Hatırlamıyorum” düğmesine bastı; bu yüzden hangi tür hatanın öne çıktığı söylenemez.`,
+      ),
+    };
+  } else {
+    const parts: string[] = [];
+    if (r.skipped > 0) {
+      parts.push(
+        v(
+          `Doğru sıralayamadığın ${r.wrong} dizinin ${hsCount(r.skipped, 'inde')} “Hatırlamıyorum” düğmesine bastın; öteki ${W === 1 ? 'dizide' : `${W} dizide`} cevap girdin.`,
+          `Çocuğunuz doğru sıralayamadığı ${r.wrong} dizinin ${hsCount(r.skipped, 'inde')} “Hatırlamıyorum” düğmesine bastı; öteki ${W === 1 ? 'dizide' : `${W} dizide`} cevap girdi.`,
+        ),
+      );
+    }
+    const subject = r.skipped > 0 ? v('Cevap girdiğin yanlış dizilerin', 'Cevap girilen yanlış dizilerin') : v('Doğru sıralayamadığın dizilerin', 'Doğru sıralanamayan dizilerin');
+    const q = (k: number) => (k === W ? 'hepsinde' : 2 * k === W ? 'yarısında' : hsCount(k, 'inde'));
+    // Sıralanmadan girilen cevapların türleri (gösterildiği sırayla ya da sayılar önce ama kendi içinde sıralanmadan).
+    const unsortedHow = () => {
+      const k = K.shown + K.grouped;
+      const both = K.shown > 0 && K.grouped > 0;
+      const how = both
+        ? v(
+            `Bunlardan ${hsCount(K.shown, 'inde')} öğeleri gösterildikleri sırayla girdin. Bunlardan ${hsCount(K.grouped, 'inde')} sayıları harflerden önce yazdın ama kendi içlerinde sıraya koymadın.`,
+            `Bunlardan ${hsCount(K.shown, 'inde')} çocuğunuz öğeleri gösterildikleri sırayla girdi. Bunlardan ${hsCount(K.grouped, 'inde')} sayıları harflerden önce yazdı ama kendi içlerinde sıraya koymadı.`,
+          )
+        : K.shown > 0
+          ? v('öğeleri gösterildikleri sırayla girdin.', 'çocuğunuz öğeleri gösterildikleri sırayla girdi.')
+          : v(
+              'sayıları harflerden önce yazdın ama sayıları ve harfleri kendi içlerinde gösterildikleri sırada bıraktın.',
+              'çocuğunuz sayıları harflerden önce yazdı ama sayıları ve harfleri kendi içlerinde gösterildikleri sırada bıraktı.',
+            );
+      return both ? `${subject} ${q(k)} öğeler sıraya konmadan girildi. ${how}` : `${subject} ${q(k)} ${how}`;
+    };
+    // Öğe hatalarının türü: öğe mi eksik, dizide olmayan öğe mi girildi, ikisi birden mi?
+    const itemWrongs = r.items.filter((x) => x.kind === 'items');
+    const withIntrusion = itemWrongs.filter((x) => x.intrusions > 0).length;
+    const itemsWhat = (where: string) =>
+      withIntrusion === 0
+        ? v(`${subject} ${where} bir ya da birkaç öğe aklında kalmadı.`, `${subject} ${where} bir ya da birkaç öğe çocuğunuzun aklında kalmadı.`)
+        : withIntrusion === itemWrongs.length
+          ? v(`${subject} ${where} dizide olmayan öğe girdin.`, `${subject} ${where} çocuğunuz dizide olmayan öğe girdi.`)
+          : v(
+              `${subject} ${where} bir ya da birkaç öğe aklında kalmadı ya da dizide olmayan öğe girdin.`,
+              `${subject} ${where} bir ya da birkaç öğe çocuğunuzun aklında kalmadı ya da çocuğunuz dizide olmayan öğe girdi.`,
+            );
+    // Öğe hatalarında girilen öğeler birbirine göre doğru sıradaysa (en az üç öğe, sayı ve harf birlikte; dizide olmayan öğe
+    // yok) kural uygulanmış, öğeler unutulmuştur. Bu diziler öğe hatalarının en az yarısıysa söylenir.
+    const kept = r.itemsOrderKept;
+    const keptWhen = r.itemsOrderKeptLong === kept ? 'dizi uzayınca ' : '';
+    const keptShown = M >= 2 && kept >= 2 && 2 * kept >= M;
+    const keptLine = keptShown
+        ? v(
+            `Bu dizilerin ${kept === M ? 'hepsinde' : hsCount(kept, 'inde')} girdiğin öğeleri doğru sıraya koydun. Yani sıralama kuralını uyguladın; zorlayan, ${keptWhen}bütün öğeleri aklında tutmaktı.`,
+            `Çocuğunuz bu dizilerin ${kept === M ? 'hepsinde' : hsCount(kept, 'inde')} girdiği öğeleri doğru sıraya koydu. Yani sıralama kuralını uyguladı; onu zorlayan, ${keptWhen}bütün öğeleri aklında tutmaktı.`,
+          )
+        : '';
+    let head: string;
+    if (unsorted) {
+      head = 'Sıraya konmadan girilmiş';
+      parts.push(
+        unsortedHow(),
+        v(
+          `Kural, ${RULE} yazmaktı. Bu yüzden bu sonuç belleğinden çok kuralı nasıl uyguladığını yansıtıyor olabilir; kuralı yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
+          `Kural, ${RULE} yazmaktı. Bu yüzden bu sonuç çocuğunuzun belleğinden çok kuralı nasıl uyguladığını yansıtıyor olabilir; kuralı yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
+        ),
+      );
+    } else if (lettersFirst) {
+      head = 'Önce harfler girilmiş';
+      parts.push(
+        v(
+          `${subject} ${q(K.lettersFirst)} önce harfleri, sonra sayıları yazdın; oysa kural önce sayıları yazmaktı. Bu yüzden bu sonuç belleğinden çok kuralı nasıl uyguladığını yansıtıyor olabilir.`,
+          `${subject} ${q(K.lettersFirst)} çocuğunuz önce harfleri, sonra sayıları yazdı; oysa kural önce sayıları yazmaktı. Bu yüzden bu sonuç çocuğunuzun belleğinden çok kuralı nasıl uyguladığını yansıtıyor olabilir.`,
+        ),
+      );
+    } else if (gaveUp) {
+      // Kural kısa dizilerde uygulandı: uzun dizilerde sıralamayı bırakmak yükün arttığını düşündürür (uyarı yok).
+      head = 'Uzun dizilerde sıraya konmadan girilmiş';
+      parts.push(
+        unsortedHow(),
+        v(
+          'Daha kısa dizileri doğru sıraladığın için bu, kuralı bilmediğini göstermez; dizi uzayınca öğeleri aklında tutarken bir de sıraya koymak zorlaşmış olabilir.',
+          'Çocuğunuz daha kısa dizileri doğru sıraladığı için bu, kuralı bilmediğini göstermez; dizi uzayınca öğeleri aklında tutarken bir de sıraya koymak zorlaşmış olabilir.',
+        ),
+      );
+    } else if (W === 1) {
+      const one = r.items.find((x) => !x.correct && !x.skipped)!;
+      const lead = r.skipped > 0 ? v('Cevap girdiğin tek yanlış dizide', 'Çocuğunuzun cevap girdiği tek yanlış dizide') : v('Tek yanlış dizide', 'Çocuğunuzun tek yanlış dizisinde');
+      const what: Record<LnErrorKind, string> = {
+        items:
+          one.intrusions > 0
+            ? `dizide olmayan ${one.intrusions === 1 ? 'bir öğe' : `${one.intrusions} öğe`} girildi`
+            : one.missing === 1
+              ? 'bir öğe eksikti'
+              : `${one.missing} öğe eksikti`,
+        order: 'bütün öğeler vardı ama sıraları karıştı',
+        lettersFirst: 'harfler sayılardan önce yazıldı',
+        shown: 'öğeler gösterildikleri sırayla girildi',
+        grouped: 'sayılar harflerden önce yazıldı ama kendi içlerinde sıraya konmadı',
+      };
+      head = r.skipped > 0 ? 'Cevap girilen bir yanlış dizi' : 'Bir yanlış dizi';
+      parts.push(
+        `${lead} ${what[one.kind!]}.`,
+        r.skipped > 0
+          ? 'Cevap girilen tek bir yanlış dizi olduğu için hangi tür hatanın öne çıktığı söylenemez.'
+          : 'Tek bir yanlış dizi olduğu için hangi tür hatanın öne çıktığı söylenemez.',
+      );
+    } else if (2 * M > W) {
+      head = M === W ? 'Hepsinde öğe eksik' : 'Çoğunda öğe eksik';
+      parts.push(itemsWhat(q(M)));
+      if (keptLine) parts.push(keptLine);
+      if (O > 0) parts.push(`Öteki ${O === 1 ? 'dizide' : `${O} dizide`} bütün öğeler vardı ama sıra karıştı.`);
+    } else if (2 * O > W) {
+      head = O === W ? 'Hepsinde sıra karışık' : 'Çoğunda sıra karışık';
+      // Sıranın nasıl karıştığı tek cümlede: "Bunlardan 2 tanesinde …, birinde … ve birinde …" (tek türse "Bunların hepsinde …").
+      const orderHow = () => {
+        const how = (
+          [
+            [K.order, 'iki ya da daha çok öğenin yeri karıştı'],
+            [K.lettersFirst, 'önce harfler yazıldı'],
+            [K.grouped, 'sayılar harflerden önce yazıldı ama kendi içlerinde sıraya konmadı'],
+            [K.shown, 'öğeler gösterildikleri sırayla girildi'],
+          ] as const
+        ).filter(([k]) => k > 0);
+        return how.length === 1 ? `Bunların hepsinde ${how[0][1]}.` : `Bunlardan ${joinTr(how.map(([k, t]) => `${hsCount(k, 'inde')} ${t}`))}.`;
+      };
+      parts.push(
+        v(`${subject} ${q(O)} bütün öğeleri hatırladın ama sıraya koyarken yanıldın.`, `${subject} ${q(O)} çocuğunuz bütün öğeleri hatırladı ama sıraya koyarken yanıldı.`),
+        orderHow(),
+        v(
+          'Yani öğeleri aklında tutabildin; onları aklında tutarken bir yandan sıraya koymak seni daha çok zorladı.',
+          'Yani çocuğunuz öğeleri aklında tutabildi; onları aklında tutarken bir yandan sıraya koymak onu daha çok zorladı.',
+        ),
+      );
+      if (M > 0) {
+        const missWhat = withIntrusion === 0 ? 'bir ya da birkaç öğe eksikti' : withIntrusion === M ? 'dizide olmayan öğe girildi' : 'bir ya da birkaç öğe eksikti ya da dizide olmayan öğe girildi';
+        parts.push(`Öteki ${M === 1 ? 'dizide' : `${M} dizide`} ${missWhat}.`);
+      }
+    } else {
+      head = 'Eksik öğe ve sıra karışıklığı';
+      const missWhat =
+        withIntrusion === 0 ? 'bir ya da birkaç öğe eksikti' : withIntrusion === M ? 'dizide olmayan öğe girildi' : 'bir ya da birkaç öğe eksikti ya da dizide olmayan öğe girildi';
+      parts.push(
+        `${subject} ${hsCount(M, 'inde')} ${missWhat}; ${hsCount(O, 'inde')} bütün öğeler vardı ama sıra karıştı.`,
+        v(
+          'Hem öğeleri aklında tutmak hem de onları sıraya koymak seni zaman zaman zorladı.',
+          'Hem öğeleri aklında tutmak hem de onları sıraya koymak çocuğunuzu zaman zaman zorladı.',
+        ),
+      );
+      // Sıra hataları da olduğu için burada yalnızca öğe eksik dizilerdeki sıra söylenir, kuralla ilgili sonuç çıkarılmaz.
+      if (keptShown) {
+        const k = kept === M ? 'hepsinde' : hsCount(kept, 'inde');
+        parts.push(
+          v(`Öğe eksik olan dizilerin ${k} girdiğin öğeleri doğru sıraya koydun.`, `Çocuğunuz öğe eksik olan dizilerin ${k} girdiği öğeleri doğru sıraya koydu.`),
+        );
+      }
+    }
+    if (workDoubt) parts.push(v('Çalışma biçimi kartında anlatılan nedenle bu kart seni tam yansıtmayabilir.', 'Çalışma biçimi kartında anlatılan nedenle bu kart çocuğunuzu tam yansıtmayabilir.'));
+    hata = { ...card('hs_hata'), headline: head, text: parts.join(' '), visual: hataVisual };
+  }
+
+  /* Sayılar ve harfler */
+  let turler: CognitiveBlock;
+  const D = r.digits;
+  const L = r.letters;
+  if (floor) {
+    turler = { ...card('hs_turler'), headline: 'Yorumlanmadı', text: notRead };
+  } else {
+    const dR = hsPct(D.recalled, D.shown);
+    const lR = hsPct(L.recalled, L.shown);
+    const dO = hsPct(D.ordered, D.orderTrials);
+    const lO = hsPct(L.ordered, L.orderTrials);
+    // Sıralanmadan girilen cevaplar çoğunluktaysa iki türün sıralanması karşılaştırılmaz.
+    const sortingOff = ruleDoubt || gaveUp;
+    const recallComparable = !sortingOff && D.shown >= HS_RECALL_MIN && L.shown >= HS_RECALL_MIN;
+    const orderComparable = !sortingOff && D.orderTrials >= HS_ORDER_MIN && L.orderTrials >= HS_ORDER_MIN;
+    // Fark iki yönde de hem yüzde olarak hem de öğe ya da dizi sayısı olarak yeterince büyükse anılır (-1: harfler, 1: sayılar zorladı).
+    const side = (gap: number, extra: number, minGap: number, minExtra: number) => (gap >= minGap && extra >= minExtra ? 1 : gap <= -minGap && extra <= -minExtra ? -1 : 0);
+    const recallDiff = recallComparable ? side(lR - dR, D.shown - D.recalled - (L.shown - L.recalled), HS_RECALL_GAP, HS_RECALL_ITEMS) : 0;
+    const orderDiff = orderComparable ? side(lO - dO, D.orderTrials - D.ordered - (L.orderTrials - L.ordered), HS_ORDER_GAP, HS_ORDER_TRIALS) : 0;
+    const amount = (k: number, n: number) => (k === n ? 'hepsini' : `${hsCount(k, 'ini')} (%${hsPct(k, n)})`);
+    const parts = [
+      v(
+        `Gösterilen ${D.shown} sayının ${amount(D.recalled, D.shown)}, ${L.shown} harfin ${amount(L.recalled, L.shown)} hatırladın; burada sıraya bakılmaz.`,
+        `Çocuğunuz gösterilen ${D.shown} sayının ${amount(D.recalled, D.shown)}, ${L.shown} harfin ${amount(L.recalled, L.shown)} hatırladı; burada sıraya bakılmaz.`,
+      ),
+    ];
+    // Sayıların ve harflerin kendi içinde sıralanması: her tür için ayrı bir cümle (hepsinde, hiçbirinde, bir kısmında).
+    const orderLine = (p: LnPartTotals, what: 'sayı' | 'harf') => {
+      if (p.orderTrials === 0) return '';
+      const how = what === 'sayı' ? 'sayıları küçükten büyüğe' : 'harfleri alfabe sırasıyla';
+      const where = p.orderTrials === 1 ? 'tek dizide' : p.ordered === p.orderTrials ? `${p.orderTrials} dizinin hepsinde` : p.ordered === 0 ? `${p.orderTrials} dizinin hiçbirinde` : `${p.orderTrials} dizinin ${hsCount(p.ordered, 'inde')}`;
+      const done = p.ordered > 0;
+      return v(
+        `Birden çok ${what} girdiğin ${where} ${how} ${done ? 'dizdin' : 'dizmedin'}.`,
+        `Çocuğunuz birden çok ${what} girdiği ${where} ${how} ${done ? 'dizdi' : 'dizmedi'}.`,
+      );
+    };
+    parts.push(...[orderLine(D, 'sayı'), orderLine(L, 'harf')].filter(Boolean));
+    let head: string;
+    if (recallDiff < 0) {
+      head = 'Harfler daha çok zorladı';
+      parts.push(
+        v('Harfleri aklında tutmak seni sayılardan daha çok zorladı.', 'Harfleri aklında tutmak çocuğunuzu sayılardan daha çok zorladı.'),
+        'Harfler hep sayılardan sonra girildiği için bu fark kısmen girme sırasından da kaynaklanabilir: yarıda kalan cevaplarda önce harfler eksik kalır.',
+      );
+    } else if (recallDiff > 0) {
+      head = 'Sayılar daha çok zorladı';
+      parts.push(v('Sayıları aklında tutmak seni harflerden daha çok zorladı.', 'Sayıları aklında tutmak çocuğunuzu harflerden daha çok zorladı.'));
+    } else if (orderDiff < 0) {
+      head = 'Harfleri sıralamak daha çok zorladı';
+      parts.push(
+        v(
+          'Harfleri alfabe sırasına koymak seni sayıları küçükten büyüğe dizmekten daha çok zorladı.',
+          'Harfleri alfabe sırasına koymak çocuğunuzu sayıları küçükten büyüğe dizmekten daha çok zorladı.',
+        ),
+      );
+    } else if (orderDiff > 0) {
+      head = 'Sayıları sıralamak daha çok zorladı';
+      parts.push(
+        v(
+          'Sayıları küçükten büyüğe dizmek seni harfleri alfabe sırasına koymaktan daha çok zorladı.',
+          'Sayıları küçükten büyüğe dizmek çocuğunuzu harfleri alfabe sırasına koymaktan daha çok zorladı.',
+        ),
+      );
+    } else if (sortingOff) {
+      head = 'Karşılaştırılmadı';
+      parts.push(
+        gaveUp
+          ? 'Uzun dizilerde öğeler sıraya konmadan girildiği için sayılar ve harfler karşılaştırılmadı.'
+          : 'Yanlış dizilerin çoğunda kural tam uygulanmadığı için sayılar ve harfler karşılaştırılmadı.',
+      );
+    } else if (recallComparable || orderComparable) {
+      head = 'Belirgin fark yok';
+      parts.push('Sayılarla harfler arasında belirgin bir fark yok.');
+    } else {
+      head = 'Karşılaştırılmadı';
+      parts.push('Gösterilen sayı ve harf az olduğu için ikisi karşılaştırılmadı.');
+    }
+    // Kural yüzünden karşılaştırılmadıysa bunun nedeni zaten yazılı; çekince yalnızca çalışma biçimi için eklenir.
+    if (sortingOff ? workDoubt : doubt) parts.push(sortingOff ? v('Çalışma biçimi kartında anlatılan nedenle bu sonuç seni tam yansıtmayabilir.', 'Çalışma biçimi kartında anlatılan nedenle bu sonuç çocuğunuzu tam yansıtmayabilir.') : hedge);
+    const rows = [
+      { label: 'Hatırlanan sayılar', value: D.recalled, max: D.shown, valueLabel: `${D.recalled}/${D.shown}` },
+      { label: 'Hatırlanan harfler', value: L.recalled, max: L.shown, valueLabel: `${L.recalled}/${L.shown}` },
+      ...(D.orderTrials > 0 ? [{ label: 'Sayıların sıralı olduğu diziler', value: D.ordered, max: D.orderTrials, valueLabel: `${D.ordered}/${D.orderTrials}` }] : []),
+      ...(L.orderTrials > 0 ? [{ label: 'Harflerin sıralı olduğu diziler', value: L.ordered, max: L.orderTrials, valueLabel: `${L.ordered}/${L.orderTrials}` }] : []),
+    ];
+    turler = {
+      ...card('hs_turler'),
+      headline: head,
+      text: parts.join(' '),
+      // Az öğe gösterildiği için karşılaştırılmayan kartta grafik yok; kural yüzünden karşılaştırılmayanda sayılar yine gösterilir.
+      ...(head === 'Karşılaştırılmadı' && !sortingOff ? {} : { visual: { type: 'bars', label: 'Sayılar ve harfler', scale: 'share', rows } satisfies BarsVisual }),
+    };
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (manySkip) {
+    const k = r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : hsCount(r.skippedBeforeStop, 'inde');
+    issues.push(
+      v(
+        `Testin bittiği uzunluktan önceki ${r.beforeStop} dizinin ${k} “Hatırlamıyorum” düğmesine bastın. Bu düğme, hatırlamadığın dizide tahmin etmek yerine kullanılır. Ama bu kadar sık kullanıldığında dikkatin dalgalanmış olabilir ya da emin olmadığın dizileri hiç denememiş olabilirsin. Bu yüzden sonuç dikkatle okunmalı.`,
+        `Çocuğunuz testin bittiği uzunluktan önceki ${r.beforeStop} dizinin ${k} “Hatırlamıyorum” düğmesine bastı. Bu düğme, hatırlanmayan dizide tahmin etmek yerine kullanılır. Ama bu kadar sık kullanıldığında çocuğunuzun dikkati dalgalanmış olabilir ya da emin olmadığı dizileri hiç denememiş olabilir. Bu yüzden sonuç dikkatle okunmalı.`,
+      ),
+    );
+  }
+  if (rapid) {
+    issues.push(
+      v(
+        `Cevabını çok kısa sürede girdiğin ${r.rapid} dizide öğelerin çoğu eksik ya da yanlıştı. Bu dizilerde cevabı dikkatle girmemiş olabilirsin.`,
+        `Çocuğunuzun cevabını çok kısa sürede girdiği ${r.rapid} dizide öğelerin çoğu eksik ya da yanlıştı. Bu dizilerde cevabı dikkatle girmemiş olabilir.`,
+      ),
+    );
+  }
+  if (r.restarts >= LN_RESTARTS_NOTE) {
+    issues.push(
+      v(
+        `Dizi gösterilirken ${r.restarts} kez başka bir uygulamaya geçtin; bu diziler yeniden gösterildi. Dizileri birden çok kez görmek sonucu biraz yükseltebilir.`,
+        `Dizi gösterilirken ${r.restarts} kez başka bir uygulamaya geçildi; bu diziler yeniden gösterildi. Dizileri birden çok kez görmek sonucu biraz yükseltebilir.`,
+      ),
+    );
+  }
+  const noLimit = v(
+    'Bu testte cevabı girmek için süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.',
+    'Bu testte cevabı girmek için süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan diziyi doğru sıralamaktır.',
+  );
+  const skipLine = floor
+    ? ''
+    : r.skipped === 0
+      ? v('Hiçbir dizide “Hatırlamıyorum” düğmesine basmadın.', 'Çocuğunuz hiçbir dizide “Hatırlamıyorum” düğmesine basmadı.')
+      : manySkip
+        ? ''
+        : v(
+            `${r.skipped === 1 ? 'Bir dizide' : `Toplam ${r.skipped} dizide`} “Hatırlamıyorum” düğmesine bastın. Hatırlamadığın bir dizide tahmin etmek yerine bu düğmeyi kullanmak doğru sıralanan dizilerin sayısını değiştirmez.`,
+            `Çocuğunuz ${r.skipped === 1 ? 'bir dizide' : `${r.skipped} dizide`} “Hatırlamıyorum” düğmesine bastı. Hatırlanmayan bir dizide tahmin etmek yerine bu düğmeyi kullanmak doğru sıralanan dizilerin sayısını değiştirmez.`,
+          );
+  let calisma: CognitiveBlock;
+  if (r.skipped === r.trials) {
+    calisma = {
+      ...card('hs_calisma'),
+      headline: '“Hatırlamıyorum” denen diziler',
+      text: [
+        v(
+          `Gösterilen ${r.trials} dizinin hepsinde “Hatırlamıyorum” düğmesine bastın; hiç cevap girilmediği için cevap süresi yok.`,
+          `Çocuğunuz gösterilen ${r.trials} dizinin hepsinde “Hatırlamıyorum” düğmesine bastı; hiç cevap girilmediği için cevap süresi yok.`,
+        ),
+        ...issues,
+      ].join(' '),
+    };
+  } else if (r.medianRt === null) {
+    calisma = {
+      ...card('hs_calisma'),
+      headline: 'Süre hesaplanamadı',
+      text: [skipLine, ...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].filter(Boolean).join(' '),
+    };
+  } else {
+    calisma = {
+      ...card('hs_calisma'),
+      headline: `Dizi başına tipik süre ${seconds(r.medianRt)}`,
+      visual: timeStrip(r.rts, r.medianRt, 'dizi'),
+      text: [
+        v(`Bir dizinin cevabını girmen tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir dizinin cevabını girmesi tipik olarak ${seconds(r.medianRt)} sürdü.`),
+        skipLine,
+        ...issues,
+        noLimit,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    };
+  }
+
+  /* Grafik ve öne çıkan sayılar */
+  const chart: CognitiveReport['chart'] = {
+    title: 'Dizi uzunluğuna göre doğru sıralanan diziler',
+    note: v(
+      'Her satırda aynı uzunluktaki üç dizi vardır. Çubuk ne kadar uzunsa o uzunluktaki dizilerin o kadar çoğunu doğru sıralamışsın demektir. Test, üç dizinin hiçbirinin doğru sıralanamadığı uzunlukta biter; daha uzun diziler gösterilmez.',
+      'Her satırda aynı uzunluktaki üç dizi vardır. Çubuk ne kadar uzunsa o uzunluktaki dizilerin o kadar çoğu doğru sıralanmış demektir. Test, üç dizinin hiçbirinin doğru sıralanamadığı uzunlukta biter; daha uzun diziler gösterilmez.',
+    ),
+    rows: r.levels.map((l) => ({ label: `${l.length} öğeli`, value: l.correct, max: l.n, valueLabel: `${l.correct}/${l.n}` })),
+  };
+  const figures = [
+    { label: 'En uzun doğru dizi', value: floor ? 'Yorumlanmadı' : `${r.span} öğe` },
+    { label: 'Doğru sıralanan dizi', value: floor ? 'Yorumlanmadı' : `${r.correct}/${r.trials}` },
+    floor
+      ? { label: 'Doğru sıradaki öğeler', value: 'Yorumlanmadı' }
+      : {
+          label: 'Doğru sıradaki öğeler',
+          value: `%${hsPct(r.itemsInOrder, r.itemsShown)}`,
+          note: 'Bütün dizilerde gösterilen sayı ve harflerden cevapta yer alan ve birbirine göre doğru sırada girilenler. Yanlış dizilerdeki doğru sıralı öğeler de sayılır; “Hatırlamıyorum” denen dizilerin öğeleri girilmemiş sayılır.',
+        },
+  ];
+  return { blocks: [aralik, dizi, hata, turler, calisma], chart, figures };
+}
+
 /* ---------- Bakış açısı alma ---------- */
 
 const nfDeg = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
@@ -10471,6 +11067,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   if (ud && udt) add(rotation3dBlocks(ud, udt, audience, card));
   const dh = byKey.get('dh_aralik')?.extra as unknown as PatternResult | undefined;
   if (dh && def.tasks.some((t) => t.kind === 'pattern_memory')) add(patternBlocks(dh, audience, card));
+  const hs = byKey.get('hs_aralik')?.extra as unknown as LetterNumberResult | undefined;
+  if (hs && def.tasks.some((t) => t.kind === 'letter_number')) add(letterNumberBlocks(hs, audience, card));
   const hb = byKey.get('hb_harf')?.extra as unknown as ComplexSpanResult | undefined;
   if (hb && def.tasks.some((t) => t.kind === 'complex_span')) add(complexSpanBlocks(hb, audience, card));
   const ba = byKey.get('ba_hata')?.extra as unknown as PerspectiveResult | undefined;
@@ -10478,7 +11076,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory', 'letter_series', 'mental_arithmetic', 'figural_analogy'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory', 'letter_series', 'mental_arithmetic', 'figural_analogy', 'letter_number'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 

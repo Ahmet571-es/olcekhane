@@ -651,7 +651,27 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    sayfada aynı söz öbeğinin iki ayrı yerde geçmediğini de denetler. İki bağımsız inceleme (metin ve mantık; kaynak ve sayı)
    bulguları yayından önce uygulandı (ayrıntı "Son yapılanlar"da). Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle
    (yetişkin) baştan sona çözüldü; rapor ve PDF'ler açıldı.
-6. Harf-Sayı Sıralama (zekâ; özgün görev)
+6. **Harf-Sayı Sıralama: yayında (2026-10-30, pilot; 3. sınıftan yetişkine).** Yeni görev türü `letter_number`: Gold ve ark.
+   (1997) harf-sayı sıralama düzeni, Mobile Toolbox "Sequences" (Slotkin ve ark., 2025) gibi ekranda: karışık sayılar (1–9) ve
+   12 ünsüz (C D F H K L M N P R T Y; ünlü yok, sayıya benzeyen ve Türkçeye özgü harfler yok) tek tek 1 sn gösterilir; önce
+   sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla girilir. Harf tuşları Türkçe Q klavyedeki gibi (alfabe sırasıyla
+   değil; silme tuşu son harf satırında), sayılar 3 × 3; bilgisayarda klavyeyle. 3 geri bildirimli alıştırma (2, 3, 4 öğe;
+   yanlışta nedeni söylenir), 2–8 öğe × 3 özgün dizi (21), bir uzunluğun üçü de yanlışsa biter (sunucu da denetler). Diziler
+   üreticiyle (scratchpad) seçildi; bağımsız denetleyici (`tests/helpers/letter-number-check.ts`): iki öğelide harf önce; her
+   türde sıralama gerekir; dört cevap biçimi (doğru, gösterildiği sıra, önce harfler, ayrılmış ama sıralanmamış) birbirinden
+   farklı; art arda üç değer, kısaltma, "3D", bilinen yıl yok; öğe sıklığı dengeli; dizi izi `DIZI_IZI`. Rapor (beş kart): en
+   uzun doğru dizi (merdiven), doğru sıralanan diziler, hata türleri (öğe eksik ya da dizide yok; öğeler tam ama sıra karışık;
+   sıraya konmadan; önce harfler), sayılar ve harfler (hatırlanan ve sıralı; fark hem yüzde hem öğe ya da dizi sayısıyla
+   eşiği aşmalı; harfler daha az hatırlandıysa girme sırasının payı söylenir; kural sorununda karşılaştırılmaz), çalışma
+   biçimi; öne çıkan sayı "doğru sıradaki öğeler". Kural hiçbir uzun dizide uygulanmadan yanlışların ≥3'ü ve ⅔'ü
+   sıralanmamışsa ya da önce harfler girildiyse sonuç dikkatle okunur; kural kısa dizilerde uygulanıp uzun dizilerde
+   bırakıldıysa bu yük olarak anlatılır, uyarı yok (`lnGaveUpSorting`). Yol haritası: öbeklere ayır, içinden tekrarla, önce yaz sonra düzenle, sıralama oyunları. Türkiye: WÇZÖ-IV
+   "Harf-Rakam Dizisi", WMS-III Türkçe "Harf-Sayı Dizisi"; norm yok. Telefonda dokunarak (4. sınıf) ve masaüstünde klavyeyle
+   (yetişkin) çözüldü, PDF'ler açıldı. Kaynak ve sayı incelemesinin bulguları uygulandı (Conrad 1965 Li ve ark.'tan
+   aktarılıyor, Shelton'daki üç görev, Mobile Toolbox'taki sunum hızı, Egeland tek yazar, MEB'de "harf grupları", Çelik
+   doğrulayıcı model). Kod, metin ve ekran incelemesinin bulguları da uygulandı (diziler yeniden üretildi: ikişer ya da
+   üçer artan sayılar ve "LC" yok; kartlarda sayı ve dil düzeltmeleri; alıştırma ipuçları tekil-çoğul ve türe göre; yol
+   haritasında haftalık denemeler iki ayrı örnekle, alfabe oyununun teste benzediği notu).
 7. Merak (kişilik; IPIP, VIA dışı ölçek)
 8. Simge Arama (zekâ; özgün görev)
 9. Liderlik (kişilik; IPIP, VIA dışı ölçek)
@@ -701,7 +721,7 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
    hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
-   (Öz-denetim) de yayında (2026-10-27). Sıradaki: 3. listenin 6. testi (Harf-Sayı Sıralama).
+   (Öz-denetim) ve 6. test (Harf-Sayı Sıralama) de yayında (2026-10-27, 2026-10-30). Sıradaki: 3. listenin 7. testi (Merak).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -928,6 +948,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Öz-yeterlik: Kendine Güven | oz-yeterlik | Yayında (active; 9. sınıftan yetişkine) |
 | Şekil Benzetmeleri | sekil-benzetmeleri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öz-denetim | oz-denetim | Yayında (active; 9. sınıftan yetişkine) |
+| Harf-Sayı Sıralama | harf-sayi-siralama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1044,6 +1065,14 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (55): Yeni test Harf-Sayı Sıralama yayına alındı (3. listenin 6. testi; ayrıntı yukarıda). Yeni görev türü
+  (`letter_number`): diziler, çözme ekranı (klavye düzeninde harf tuşları, telefonda 320 px'e sığan tuş takımı), puanlama,
+  beş kartlı rapor, yol haritası, bilim kartı (kaynak araştırmasıyla), dış sınama; bağımsız kaynak, kod ve metin
+  incelemelerinin bulguları uygulandı. Kart grafiklerinde parçalı çubuğun beşinci parçası artık içi boş, çerçeveli kutu
+  (önceden birinci parçanın rengini alıyordu; Şekil Benzetmeleri'nin "Yanlışlarda seçilen şekiller" grafiği de düzeldi;
+  `tests/gorev-grafikleri.test.ts` denetler). Kaynak notları: WAIS-IV'te harf-sayı
+  sıralama yedek alt test; Türkiye'de WÇZÖ-IV "Harf-Rakam Dizisi"; MEB 2019 programında alfabe sırasıyla ilgili bir kazanım
+  doğrulanamadı (1. sınıfta harfler harf grupları hâlinde öğretilir).
 - 2026-10-30 (54): Kendini Tanı Paketi (site sahibinin isteği; büyük planın 5. basamağındaki paket). Seçimleri: geniş
   paket (yaklaşık bir saat), özet yeni yorum eklemez. Sınıfa göre 6–7 test art arda: kişilik (5. sınıf Çocuk Kişilik,
   6. sınıftan mezuna Beş Faktör, yetişkin Ayrıntılı Kişilik), ilgi (7. sınıf Hobi, 8. sınıf Mesleki İlgi Profili, 9. sınıftan
@@ -1136,9 +1165,3 @@ En yeni üstte; en çok 10 madde tutulur.
   işaretlemeyle ayırt edilemeyeceğini belirtiyor; "Anlayarak okuma hızı" adı ve açıklaması; sesli okuma verisi aralıksız ve
   "Ankara'da" diye; "metindeki bilgiyi hatırlama"; yol haritasında hız olağan ama anlama zayıfsa anlama önerisi, çok kısa
   sürede anlama iyiyse ön bilgi uyarısı. 3–5. sınıf öğrencisinin raporunun sonundaki not küçük çocuğa göre.
-- 2026-10-22 (45): Raporlarda her başlığa grafik, 3. aşama (okuma hızı ve anlama, sesli okuma, matematik konu tarama):
-  genel sonuç ve doğru okuma oranı düzey çubuğunda, alanlar ve sorular kare kare, okuma hızıyla anlayarak okuma ve
-  dakikada okunan ile doğru okunan kelime çubuklarla (kendi sınıfının metninde sınıf ortalaması çizgisi), akıcılığın dört
-  yönü, söylenen temel ve öteki fikirler. Grafikteki sayılar metinden çıkarıldı; okuma süresi "2 dakika 30 saniyede"
-  diye yazılıyor; çubuk grafiğinde eksen kesikli çizgiyi de kapsıyor. Raporlar telefonda ve masaüstünde açıldı, PDF
-  incelendi.

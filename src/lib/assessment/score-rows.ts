@@ -25,6 +25,8 @@ import {
   scoreHidden,
   scoreAnalogy,
   scorePattern,
+  scoreLetterNumber,
+  letterNumberQualityNotes,
   scoreReflection,
   scoreTower,
   scoreRotation3d,
@@ -77,6 +79,8 @@ import {
   type AnalogyTrialInput,
   type PatternResult,
   type PatternTrialInput,
+  type LetterNumberResult,
+  type LetterNumberTrialInput,
   type ReflectionResult,
   type ReflectionTrialInput,
   type TowerResult,
@@ -223,6 +227,7 @@ export type TaskInputs =
   | HiddenTrialInput[]
   | AnalogyTrialInput[]
   | PatternTrialInput[]
+  | LetterNumberTrialInput[]
   | ReflectionTrialInput[]
   | TowerTrialInput[]
   | Rotation3dTrialInput[]
@@ -261,6 +266,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let hiddenRes: HiddenResult | undefined;
   let analogyRes: AnalogyResult | undefined;
   let patternRes: PatternResult | undefined;
+  let letterNumberRes: LetterNumberResult | undefined;
   let reflectionRes: ReflectionResult | undefined;
   let towerRes: TowerResult | undefined;
   let rotation3dRes: Rotation3dResult | undefined;
@@ -528,6 +534,17 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'dh_hata', raw: null, mean: null, nAnswered: result.wrong, nItems: result.trials, band: null },
         { scaleKey: 'dh_calisma', raw: result.medianRt, mean: null, nAnswered: result.trials, nItems: result.trials, band: null },
       );
+    } else if (task.kind === 'letter_number') {
+      const { result } = scoreLetterNumber(task, input as LetterNumberTrialInput[]);
+      letterNumberRes = result;
+      // Beş ölçek tek görevden hesaplanır; ayrıntının tamamı "hs_aralik" satırında durur.
+      rows.push(
+        { scaleKey: 'hs_aralik', raw: result.span, mean: null, nAnswered: result.correct, nItems: result.trials, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'hs_dizi', raw: result.correct, mean: null, nAnswered: result.correct, nItems: result.trials, band: null },
+        { scaleKey: 'hs_hata', raw: null, mean: null, nAnswered: result.wrong, nItems: result.trials, band: null },
+        { scaleKey: 'hs_turler', raw: null, mean: null, nAnswered: result.itemsRecalled, nItems: result.itemsShown, band: null },
+        { scaleKey: 'hs_calisma', raw: result.medianRt, mean: null, nAnswered: result.trials, nItems: result.trials, band: null },
+      );
     } else if (task.kind === 'cognitive_reflection') {
       const { result } = scoreReflection(task, input as ReflectionTrialInput[]);
       reflectionRes = result;
@@ -622,7 +639,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   }
   return {
     rows,
-    notes: [...(arith ? arithQualityNotes(arith) : []), ...taskQualityNotes({
+    notes: [...(arith ? arithQualityNotes(arith) : []), ...(letterNumberRes ? letterNumberQualityNotes(letterNumberRes) : []), ...taskQualityNotes({
       flanker: flankerRes,
       symbol: symbolRes,
       cancellation: cancellationRes,

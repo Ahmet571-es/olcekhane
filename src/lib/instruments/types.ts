@@ -286,7 +286,8 @@ export type TaskKind =
   | 'pattern_memory'
   | 'letter_series'
   | 'mental_arithmetic'
-  | 'figural_analogy';
+  | 'figural_analogy'
+  | 'letter_number';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -1301,7 +1302,8 @@ export type CognitiveTask =
   | PatternMemoryTask
   | LetterSeriesTask
   | MentalArithmeticTask
-  | FiguralAnalogyTask;
+  | FiguralAnalogyTask
+  | LetterNumberTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
@@ -1436,6 +1438,29 @@ export interface PatternMemoryTask extends TaskBase {
   practice: PatternItem[];
   /** Düzeyler küçükten büyüğe; denemelerin sırası (`index`) düzey × 3 + desen. */
   levels: { cells: number; items: PatternItem[] }[];
+}
+
+/**
+ * Harf-sayı sıralama (Gold ve ark., 1997'deki düzen; çalışma belleği): karışık sayılar ve harfler tek tek gösterilir, ardından
+ * önce sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla girilir. Diziler 2 öğeden başlayıp uzar (her uzunlukta üç dizi);
+ * bir uzunluğun üç dizisinin hiçbiri tam doğru değilse görev biter. Bir dizi, her öğesi tek bir karakter olan bir yazıdır
+ * ("K93C6R"); doğru cevap diziden hesaplanır (lib/instruments/letter-number.ts). Diziler ekranda gösterildiği için tarayıcıya
+ * gider; puanlama sunucuda, girilen öğelerden yeniden yapılır.
+ */
+export interface LetterNumberTask extends TaskBase {
+  kind: 'letter_number';
+  /** Her öğenin ekranda kalma ve aradaki boşluk süreleri (ms). */
+  onMs: number;
+  offMs: number;
+  /** Kullanılan sayılar ve harfler (alfabe sırasıyla). */
+  digits: string;
+  letters: string;
+  /** Ekrandaki harf tuşlarının satırları (klavyedeki gibi; alfabe sırasıyla değil). */
+  keyRows: string[];
+  /** Geri bildirimli alıştırma dizileri (puanlanmaz). */
+  practice: string[];
+  /** Uzunluklar kısadan uzuna; denemelerin sırası (`index`) uzunluk sırası × 3 + dizi. */
+  levels: { length: number; items: string[] }[];
 }
 
 export interface TaskInstrument extends InstrumentBase {

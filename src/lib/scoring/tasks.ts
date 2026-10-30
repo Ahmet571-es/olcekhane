@@ -46,10 +46,12 @@ import type {
   AnalogyChange,
   AnalogyLure,
   FiguralAnalogyTask,
+  LetterNumberTask,
 } from '@/lib/instruments/types';
 import { TURKISH_ALPHABET } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
+import { lnCheck, type LnCheck, type LnErrorKind } from '@/lib/instruments/letter-number';
 import { LOGIC_CONDITIONAL, LOGIC_CONFLICT, logicRapidMs } from '@/lib/instruments/logic';
 import { NUMERIC_EQUAL, NUMERIC_KINDS, NUMERIC_NONPROP, NUMERIC_PROP, numericRapidMs } from '@/lib/instruments/numeric';
 import { DISPARITIES, disparity } from '@/lib/instruments/rotation';
@@ -3594,6 +3596,244 @@ export function patternQualityNotes(r: PatternResult): string[] {
   if (r.restarts >= PATTERN_RESTARTS_NOTE) {
     notes.push(
       `Desen hatırlama testinde desen gösterilirken ${r.restarts} kez başka bir uygulamaya geçilmiş; bu desenler yeniden gösterildi. Desenleri birden çok kez görmek sonucu biraz yükseltebilir.`,
+    );
+  }
+  return notes;
+}
+
+/* ---------- Harf-sayı sıralama ---------- */
+
+export interface LetterNumberTrialInput {
+  /** Denemenin sırası: uzunluk sırası × 3 + dizi (0'dan). */
+  index: number;
+  /**
+   * Girilen öğeler (sırasıyla; "Hatırlamıyorum" denirse boş). `restarts`: dizi gösterilirken sayfa gizlendiği için dizinin baştan
+   * gösterilme sayısı.
+   */
+  response: { seq: string[]; restarts?: number };
+  rtMs: number | null;
+}
+
+export interface LetterNumberTrialResult extends LnCheck {
+  index: number;
+  /** Dizideki öğe sayısı. */
+  length: number;
+  /** Gösterilen dizi ve girilen cevap (raporda örnek göstermek için). */
+  seq: string;
+  response: string[];
+  restarts: number;
+  rt: number | null;
+}
+
+export interface LetterNumberLevelResult {
+  length: number;
+  n: number;
+  correct: number;
+}
+
+export interface LnPartTotals {
+  /** Gösterilen ve cevapta yer alan öğeler (bütün dizilerde). */
+  shown: number;
+  recalled: number;
+  /** Bu türden en az iki öğenin girildiği diziler ve bunlardan öğelerin doğru sırada olduğu diziler. */
+  orderTrials: number;
+  ordered: number;
+}
+
+export interface LetterNumberResult {
+  /** Testteki en kısa ve en uzun dizi. */
+  start: number;
+  max: number;
+  /** Tam doğru sıralanan en uzun dizi (öğe sayısı). En kısa dizilerde de doğru yoksa 0. */
+  span: number;
+  /** Görevin bittiği uzunluk (üç dizisi de yanlış); en uzun diziye kadar her uzunlukta en az bir doğru varsa `null`. */
+  stoppedAt: number | null;
+  trials: number;
+  correct: number;
+  levels: LetterNumberLevelResult[];
+  /** Bütün dizilerdeki öğeler; cevapta yer alanlar; cevapta yer alıp birbirine göre doğru sırada olanlar. */
+  itemsShown: number;
+  itemsRecalled: number;
+  itemsInOrder: number;
+  /** Yanlış diziler ("Hatırlamıyorum" dahil), "Hatırlamıyorum" denenler ve öğe girilen yanlış diziler. */
+  wrong: number;
+  skipped: number;
+  attemptedWrong: number;
+  /** Öğe girilen yanlış dizilerin türleri (lib/instruments/letter-number.ts, `LnErrorKind`). */
+  kinds: Record<LnErrorKind, number>;
+  /**
+   * Öğe hatası olan dizilerden, girilen öğelerin hepsinin dizide olduğu, en az üç öğe (sayı ve harf birlikte) girildiği ve
+   * bunların birbirine göre doğru sırada olduğu diziler: kural uygulanmış, öğeler unutulmuş. `itemsOrderKeptLong`: bunlardan
+   * `LN_LONG` ve daha uzun dizilerde olanlar.
+   */
+  itemsOrderKept: number;
+  itemsOrderKeptLong: number;
+  /** Sayılar ve harfler ayrı ayrı. */
+  digits: LnPartTotals;
+  letters: LnPartTotals;
+  /** Öğe girilen dizilerin süreleri (ms); tipik süre bunların ortancasıdır. */
+  rts: number[];
+  medianRt: number | null;
+  /** Bakmadan girilmiş olabilecek diziler (`LN_RAPID_BASE_MS`). */
+  rapid: number;
+  restarts: number;
+  /** Testin bittiği uzunluk dışındaki diziler ve bunlarda "Hatırlamıyorum" denenler. */
+  beforeStop: number;
+  skippedBeforeStop: number;
+  items: LetterNumberTrialResult[];
+}
+
+/** Bir uzunlukta gösterilen dizi sayısı. */
+export const LN_PER_LEVEL = 3;
+/**
+ * Bakmadan girme: yanlış, gösterilen öğelerin yarısından azı cevapta ve dizi ekrandan kalktıktan sonra `LN_RAPID_BASE_MS` +
+ * girilen öğe başına `LN_RAPID_MS_PER_ITEM` süreden kısa sürede girilmiş.
+ */
+export const LN_RAPID_BASE_MS = 600;
+export const LN_RAPID_MS_PER_ITEM = 250;
+/** Raporda "uzun dizi" sayılan en kısa uzunluk: yanlışlar bu uzunlukta ya da sonra başladıysa olağan olduğu söylenir. */
+export const LN_LONG = 5;
+/** Dizi gösterilirken başka bir uygulamaya geçildiği için en az bu kadar dizi baştan gösterildiyse not düşülür. */
+export const LN_RESTARTS_NOTE = 2;
+
+export function scoreLetterNumber(task: LetterNumberTask, input: LetterNumberTrialInput[]): { result: LetterNumberResult } {
+  const flat = task.levels.flatMap((l) => l.items.map((seq) => ({ seq, length: l.length })));
+  const symbols = new Set([...task.digits, ...task.letters]);
+  const byIndex = new Map<number, LetterNumberTrialInput>();
+  for (const t of input) {
+    if (!Number.isInteger(t.index) || t.index < 0 || t.index >= flat.length) throw new TaskInputError('Geçersiz dizi.');
+    const seq = t.response?.seq;
+    if (!Array.isArray(seq) || seq.length > flat[t.index].length) throw new TaskInputError('Geçersiz cevap.');
+    if (seq.some((c) => typeof c !== 'string' || !symbols.has(c)) || new Set(seq).size !== seq.length) throw new TaskInputError('Geçersiz cevap.');
+    const restarts = t.response.restarts;
+    if (restarts !== undefined && (!Number.isInteger(restarts) || restarts < 0 || restarts > 50)) throw new TaskInputError('Geçersiz cevap.');
+    if (t.rtMs !== null && (!Number.isFinite(t.rtMs) || t.rtMs < 0)) throw new TaskInputError('Geçersiz süre.');
+    if (!byIndex.has(t.index)) byIndex.set(t.index, t);
+  }
+  const shown = byIndex.size;
+  if (shown < LN_PER_LEVEL || shown % LN_PER_LEVEL !== 0) throw new TaskInputError('Dizilerin hepsi cevaplanmadı.');
+  for (let i = 0; i < shown; i++) if (!byIndex.has(i)) throw new TaskInputError('Dizilerin hepsi cevaplanmadı.');
+
+  const items: LetterNumberTrialResult[] = flat.slice(0, shown).map(({ seq, length }, index) => {
+    const t = byIndex.get(index)!;
+    return { ...lnCheck(seq, t.response.seq), index, length, seq, response: [...t.response.seq], restarts: t.response.restarts ?? 0, rt: t.rtMs };
+  });
+
+  // Uzunluklar: bir uzunluğun üç dizisinin hiçbiri doğru değilse görev orada biter; daha uzun diziler gelmemiş olmalı.
+  const levels: LetterNumberLevelResult[] = [];
+  for (let li = 0; li * LN_PER_LEVEL < shown; li++) {
+    const here = items.slice(li * LN_PER_LEVEL, (li + 1) * LN_PER_LEVEL);
+    levels.push({ length: task.levels[li].length, n: here.length, correct: here.filter((x) => x.correct).length });
+  }
+  levels.forEach((l, i) => {
+    if (l.correct === 0 && i < levels.length - 1) throw new TaskInputError('Geçersiz deneme dizisi.');
+  });
+  const last = levels[levels.length - 1];
+  if (last.correct > 0 && levels.length < task.levels.length) throw new TaskInputError('Dizilerin hepsi cevaplanmadı.');
+  const passed = levels.filter((l) => l.correct > 0);
+  const wrongs = items.filter((x) => !x.correct && !x.skipped);
+  const answered = items.filter((x) => !x.skipped);
+  const kinds: Record<LnErrorKind, number> = { shown: 0, grouped: 0, lettersFirst: 0, order: 0, items: 0 };
+  for (const x of wrongs) kinds[x.kind!]++;
+  const part = (k: 'digits' | 'letters'): LnPartTotals => ({
+    shown: items.reduce((a, x) => a + x[k].shown, 0),
+    recalled: items.reduce((a, x) => a + x[k].recalled, 0),
+    orderTrials: answered.filter((x) => x[k].ordered !== null).length,
+    ordered: answered.filter((x) => x[k].ordered === true).length,
+  });
+  const rts = answered.flatMap((x) => (x.rt === null ? [] : [x.rt]));
+  const beforeStop = items.filter((x) => x.length !== last.length);
+  const kept = wrongs.filter(
+    (x) => x.kind === 'items' && x.intrusions === 0 && x.recalled >= 3 && x.digits.recalled > 0 && x.letters.recalled > 0 && x.inOrder === x.recalled,
+  );
+  return {
+    result: {
+      start: task.levels[0].length,
+      max: task.levels[task.levels.length - 1].length,
+      span: passed.length ? passed[passed.length - 1].length : 0,
+      stoppedAt: last.correct === 0 ? last.length : null,
+      trials: shown,
+      correct: items.filter((x) => x.correct).length,
+      levels,
+      itemsShown: items.reduce((a, x) => a + x.length, 0),
+      itemsRecalled: items.reduce((a, x) => a + x.recalled, 0),
+      itemsInOrder: items.reduce((a, x) => a + x.inOrder, 0),
+      wrong: items.filter((x) => !x.correct).length,
+      skipped: items.filter((x) => x.skipped).length,
+      attemptedWrong: wrongs.length,
+      kinds,
+      itemsOrderKept: kept.length,
+      itemsOrderKeptLong: kept.filter((x) => x.length >= LN_LONG).length,
+      digits: part('digits'),
+      letters: part('letters'),
+      rts,
+      medianRt: medianOrNull(rts),
+      rapid: wrongs.filter((x) => 2 * x.recalled < x.length && x.rt !== null && x.rt < LN_RAPID_BASE_MS + LN_RAPID_MS_PER_ITEM * x.response.length).length,
+      restarts: items.reduce((a, x) => a + x.restarts, 0),
+      beforeStop: beforeStop.length,
+      skippedBeforeStop: beforeStop.filter((x) => x.skipped).length,
+      items,
+    },
+  };
+}
+
+/** En kısa dizilerin de hiçbiri doğru sıralanmadı: sonuç yorumlanmaz. */
+export const lnFloor = (r: LetterNumberResult) => r.span === 0;
+/** Testin bittiği uzunluktan önceki dizilerin (en az altı dizi) yarısında ya da daha çoğunda "Hatırlamıyorum" dendi. */
+export const lnManySkipped = (r: LetterNumberResult) => r.beforeStop >= 2 * LN_PER_LEVEL && 2 * r.skippedBeforeStop >= r.beforeStop;
+/** Bakmadan girilmiş olabilecek diziler: en az üç dizi ve öğe girilen yanlışların en az üçte biri. */
+export const lnRapid = (r: LetterNumberResult) => r.rapid >= 3 && 3 * r.rapid >= r.attemptedWrong;
+/**
+ * Kural gösterildi: üç ve daha uzun dizilerden en az ikisi doğru sıralandı (bu dizilerde hem sayılar ile harflerin sırası hem
+ * de bir türün kendi içindeki sırası gerekir). Kural gösterildiyse uzun dizilerdeki sıralanmamış cevaplar kuralın
+ * anlaşılmadığını değil, yükün arttığını düşündürür.
+ */
+export const lnRuleShown = (r: LetterNumberResult) => r.items.filter((x) => x.correct && x.length >= 3).length >= 2;
+/** Öğe girilen yanlışların en az üçü ve üçte ikisi öğeleri sıralanmadan (`shown` ya da `grouped`) girilmiş cevaplar. */
+const lnUnsortedMost = (r: LetterNumberResult) => {
+  const k = r.kinds.shown + r.kinds.grouped;
+  return k >= 3 && 3 * k >= 2 * r.attemptedWrong;
+};
+/** Sıralama kuralı uygulanmamış olabilir: yanlışların çoğu sıralanmamış ve kural hiçbir uzun dizide gösterilmedi. */
+export const lnUnsorted = (r: LetterNumberResult) => lnUnsortedMost(r) && !lnRuleShown(r);
+/** Kural kısa dizilerde uygulandı, uzun dizilerde öğeler sıralanmadan girildi (yük arttı; kuralın anlaşılmadığı söylenmez). */
+export const lnGaveUpSorting = (r: LetterNumberResult) => lnUnsortedMost(r) && lnRuleShown(r);
+/**
+ * Önce harfler yazılmış: öğe girilen yanlışların en az üçü ve üçte ikisi `lettersFirst` (en kısa dizilerde de sayılır) ve kural
+ * hiçbir uzun dizide gösterilmedi.
+ */
+export const lnLettersFirstHabit = (r: LetterNumberResult) =>
+  r.kinds.lettersFirst >= 3 && 3 * r.kinds.lettersFirst >= 2 * r.attemptedWrong && !lnRuleShown(r);
+
+/** Harf-sayı sıralamada sonucu dikkatle yorumlamayı gerektiren durumlar (lib/reports/build.ts aynı eşikleri kullanır). */
+export function letterNumberQualityNotes(r: LetterNumberResult): string[] {
+  const notes: string[] = [];
+  if (lnFloor(r)) {
+    notes.push(
+      lnLettersFirstHabit(r)
+        ? `Harf-sayı sıralama testinde en kısa (${r.start} öğeli) dizilerin hiçbiri doğru sıralanmadı: hepsinde harf sayıdan önce yazıldı, oysa kural önce sayıyı yazmaktı. Bu sonuç yorumlanmamalıdır.`
+        : `Harf-sayı sıralama testinde en kısa (${r.start} öğeli) dizilerin hiçbiri doğru sıralanmadı; yönerge tam anlaşılmamış ya da test yarıda bırakılmış olabilir. Bu sonuç tek başına yorumlanmamalıdır.`,
+    );
+  } else {
+    if (lnUnsorted(r)) {
+      notes.push(
+        'Harf-sayı sıralama testinde yanlış dizilerin çoğunda öğeler kendi içinde sıraya konmadan girilmiş; sıralama kuralı tam uygulanmamış olabilir. Sonuç dikkatle yorumlanmalıdır.',
+      );
+    } else if (lnLettersFirstHabit(r)) {
+      notes.push('Harf-sayı sıralama testinde yanlış dizilerin çoğunda önce harfler, sonra sayılar yazılmış; kural önce sayıları yazmaktı. Sonuç dikkatle yorumlanmalıdır.');
+    }
+    if (lnManySkipped(r)) {
+      notes.push(
+        `Harf-sayı sıralama testinde, testin bittiği uzunluktan önceki ${r.beforeStop} dizinin ${r.skippedBeforeStop === r.beforeStop ? 'hepsinde' : `${r.skippedBeforeStop} tanesinde`} “Hatırlamıyorum” denmiş. Dikkat dalgalanmış ya da emin olunmayan diziler denenmemiş olabilir. Sonuç dikkatle yorumlanmalıdır.`,
+      );
+    }
+    if (lnRapid(r)) {
+      notes.push(`Harf-sayı sıralama testinde ${r.rapid} dizi çok kısa sürede girilmiş ve öğelerinin çoğu eksik ya da yanlış; bu dizilerde cevap dikkatle girilmemiş olabilir.`);
+    }
+  }
+  if (r.restarts >= LN_RESTARTS_NOTE) {
+    notes.push(
+      `Harf-sayı sıralama testinde dizi gösterilirken ${r.restarts} kez başka bir uygulamaya geçilmiş; bu diziler yeniden gösterildi. Dizileri birden çok kez görmek sonucu biraz yükseltebilir.`,
     );
   }
   return notes;

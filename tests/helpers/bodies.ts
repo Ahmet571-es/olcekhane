@@ -3,6 +3,7 @@ import type { AnswersBody } from '@/lib/assessment/schemas';
 import { cancellationSheet } from '@/lib/instruments/cancellation';
 import { disparity } from '@/lib/instruments/rotation';
 import { opTrue } from '@/lib/instruments/complex-span';
+import { lnAnswer, lnGrouped, lnLettersFirst } from '@/lib/instruments/letter-number';
 import { arithAnswer } from '@/lib/instruments/arithmetic';
 import { correctAngle, egocentricAngle, headingOf, mirrorAngle, normDeg } from '@/lib/instruments/perspective';
 import { nBackRoles, type NBackRole } from '@/lib/instruments/sequences';
@@ -54,6 +55,7 @@ import type {
   AnalogyChange,
   AnalogyLure,
   PatternMemoryTask,
+  LetterNumberTask,
 } from '@/lib/instruments/types';
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
@@ -854,4 +856,55 @@ export function arithBody(
     blocks[task.key] = trials;
   }
   return { grade, data: { engine: 'tasks', seed: SEED, blocks } };
+}
+
+export type LetterNumberCell = { length: number; k: number; seq: string; answer: string[]; i: number };
+export type LetterNumberPlay = { seq: string[]; rtMs?: number | null; restarts?: number };
+
+/** Harf-sayı sıralama: doğru cevabın son öğesi eksik. */
+export const hsMissOne = (q: LetterNumberCell): string[] => q.answer.slice(0, -1);
+/** Öğeler gösterildikleri sırayla (sıralama yapılmadan). */
+export const hsShown = (q: LetterNumberCell): string[] => [...q.seq];
+/** Önce harfler (sıralı), sonra sayılar (sıralı). */
+export const hsLettersFirst = (q: LetterNumberCell): string[] => lnLettersFirst(q.seq);
+/** Sayılar ve harfler ayrılmış ama kendi içlerinde gösterildikleri sırada. */
+export const hsGrouped = (q: LetterNumberCell): string[] => lnGrouped(q.seq);
+/** Doğru cevabın son iki öğesi yer değiştirmiş (sıra karışıklığı). */
+export const hsSwapLast = (q: LetterNumberCell): string[] => [...q.answer.slice(0, -2), q.answer[q.answer.length - 1], q.answer[q.answer.length - 2]];
+/** Son öğenin yerine dizide olmayan bir öğe (önce bir önceki diziden, yoksa görevin ilk uygun öğesi). */
+export function hsIntrude(q: LetterNumberCell, prev?: string): string[] {
+  const task = def<TaskInstrument>('harf-sayi-siralama').tasks[0] as LetterNumberTask;
+  const pool = [...(prev ?? ''), ...task.digits, ...task.letters];
+  const other = pool.find((c) => !q.seq.includes(c))!;
+  return [...q.answer.slice(0, -1), other];
+}
+
+/**
+ * Harf-sayı sıralama: bütün uzunluklar sırayla oynanır; bir uzunluğun üç dizisinin hiçbiri doğru değilse görev orada biter
+ * (tarayıcıdaki kural). Varsayılan: 5 öğeye kadar bütün diziler doğru; 6 öğede ilki doğru, öbürlerinde son öğe eksik; 7 öğede
+ * üçü de eksik (test 7 öğede biter). Dizi başına 1,5 + 0,8 × uzunluk saniye.
+ */
+export function letterNumberBody(
+  pick: (q: LetterNumberCell) => LetterNumberPlay = (q) => ({ seq: q.length <= 5 || (q.length === 6 && q.k === 0) ? q.answer : hsMissOne(q) }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('harf-sayi-siralama').tasks[0] as LetterNumberTask;
+  const trials: { index: number; response: { seq: string[]; restarts?: number }; rtMs: number | null }[] = [];
+  let i = 0;
+  for (const level of task.levels) {
+    let hits = 0;
+    for (const [k, seq] of level.items.entries()) {
+      const answer = lnAnswer(seq);
+      const p = pick({ length: level.length, k, seq, answer, i });
+      if (p.seq.length === answer.length && p.seq.every((c, j) => c === answer[j])) hits++;
+      trials.push({
+        index: i,
+        response: p.restarts === undefined ? { seq: p.seq } : { seq: p.seq, restarts: p.restarts },
+        rtMs: p.rtMs === undefined ? 1500 + 800 * level.length : p.rtMs,
+      });
+      i++;
+    }
+    if (hits === 0) break;
+  }
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
 }
