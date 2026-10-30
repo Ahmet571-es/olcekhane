@@ -12,5 +12,8 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
     environment: 'node',
+    // Ağır testler (bütün durum birleşimleri, PDF) yerelde 3–5 sn sürüyor; GitHub'da öteki testlerle birlikte 5 sn'lik
+    // varsayılan süreyi aşabiliyor (2026-10-30). Uzun süren testler kendi sürelerini ayrıca verir.
+    testTimeout: 20_000,
   },
 });

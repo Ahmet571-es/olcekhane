@@ -135,7 +135,9 @@ describe('Gizli şekiller: sorular', () => {
       for (let j = i + 1; j < scored.length; j++) expect(shapeDistance(scored[i].target, scored[j].target), `${scored[i].key}–${scored[j].key}`).toBeGreaterThanOrEqual(4);
       for (const o of others) expect(shapeDistance(scored[i].target, o.target), `${scored[i].key}–${o.key}`).toBeGreaterThanOrEqual(4);
     }
-  });
+    // Bütün şekil çiftlerini her yönde karşılaştırır: tek başına ~5 sn sürer; GitHub'da öteki testlerle birlikte 5 sn'lik
+    // varsayılan süreyi aştı (2026-10-30).
+  }, 60_000);
 
   it('bir sorunun yanlış seçeneğinde, sonra gelen bir sorunun (alıştırmalar önce) aranan şekli yok', () => {
     const order = [...ALL.filter((q) => q.key.startsWith('gsp')), ...ALL.filter((q) => !q.key.startsWith('gsp'))];

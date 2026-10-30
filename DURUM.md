@@ -1079,7 +1079,8 @@ En yeni üstte; en çok 10 madde tutulur.
   (Ekim'deki 53 provanın 52'si yalnızca bu yüzdendi; prova `yayin.yml`'yi çalıştırmaz); Denetim'deki ikinci üretim
   derlemesi kaldırıldı (derleme Docker görüntüsünde zaten yapılıyor); dış sınamada site haritasındaki sayfalar altışar
   altışar aynı anda isteniyor. `araclar/yayin-durumu.py` bu durumu tanıyor ("kodla ilgili değil, ayın 1'inden sonra
-  gönder"); CLAUDE.md'ye not eklendi.
+  gönder"); CLAUDE.md'ye not eklendi. Testlerin varsayılan süresi 20 sn'ye çıkarıldı (Gizli Şekiller'deki şekil
+  karşılaştırma testi yerelde ~5 sn sürüyor, GitHub'da 5 sn'lik sınırı aştı).
 - 2026-10-30 (55): Yeni test Harf-Sayı Sıralama hazırlandı ve `main`'e gönderildi (3. listenin 6. testi; ayrıntı
   yukarıda); depo kısa süre herkese açılarak aynı gün yayına alındı. Yeni görev türü
   (`letter_number`): diziler, çözme ekranı (klavye düzeninde harf tuşları, telefonda 320 px'e sığan tuş takımı), puanlama,
