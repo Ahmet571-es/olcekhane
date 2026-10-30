@@ -1074,6 +1074,14 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-30 (57): "Hangi test bana uygun?" sayfası (`/hangi-test`; site sahibinin isteği, seçtiği dört yeniliğin ilki):
+  kim çözecek (sınıf ya da yetişkin), ne öğrenilmek isteniyor (Hepsinden biraz, Kişilik, İlgi alanları ve meslek yönü,
+  Öğrenme ve çalışma, Zihinsel güçlü yanlar, Okuma, Duygular ve ilişkiler, Dikkat ve kendini yönetme; birden çok) ve
+  vakit (15, 30, 60+ dakika) seçilir; her alanın yuvalarından sınıfa uygun, süreye sığan testler dönüşümlü önerilir (en
+  çok 5), uygunsa Kendini Tanı Paketi de; uygun testi olmayan alan söylenir. Hesap tarayıcıda; seçimler saklanmaz.
+  Yayındaki her test bir yuvada (test denetler; yeni testte yuvaya yazılır). Bağlantılar Testler sayfasında ve ana
+  sayfada; site haritasında. Sıradaki yenilikler (site sahibinin seçimi): Gelişimini karşılaştır, Merak testi, Simge
+  Arama testi.
 - 2026-10-30 (56): GitHub'ın ücretsiz aylık çalışma süresi bitti (ödeme sorunu değil; ayrıntı: Site sahibinin bekleyen
   işleri). Kullanım azaltıldı (Ekim'e göre ayda ~600 dakika, ~%35): Kurulum provası artık `yayin.yml` değişince çalışmıyor
   (Ekim'deki 53 provanın 52'si yalnızca bu yüzdendi; prova `yayin.yml`'yi çalıştırmaz); Denetim'deki ikinci üretim
@@ -1161,15 +1169,3 @@ En yeni üstte; en çok 10 madde tutulur.
   değiştirmesi tablo yanlışından önce; uyarılar bölümler arasında birleşir; yüzdeler yuvarlanır; yetişkin norm notunda
   okul sözcüğü yok (test artık bütün yetişkin testlerinin norm notunu denetler). Ekran: duraklatmadan önceki süre korunur,
   süre dolduktan sonraki cevap sayılmaz, kalan süre ekran okuyucuya açık, süre dolunca "Süre doldu; bu bölüm bitti".
-- 2026-10-22 (47): Sesli okuma raporunda bağımsız incelemenin bulguları uygulandı. Okuma metin bitmeden durduysa ve
-  metnin en az yarısı okunduysa doğru okuma oranı okunan kısımdan hesaplanıyor (okunmayan kelimeler "zorlanma" sayılmıyor;
-  yarısından azı okunduysa sayılıyor ama bu açıkça söyleniyor, profil verilmiyor, yeni değerlendirme isteniyor). Süre
-  metne göre çok kısaysa hız hiçbir yerde gösterilmiyor; kayıtta kesinti varsa hız karşılaştırılmıyor; süre düğmelerle
-  ölçüldüyse yavaş hız düzeyi değiştirmiyor. Hız karşılaştırması "Ankara, 2002, ders yılının sonu" diye ve aralıkla
-  anlatılıyor; öğrenciye kısa ve kaynaksız. Akıcılık eşiği kaynağın yorumuna göre (8'in altı). Uzman kutusu yalnızca
-  kelimelerde sık zorlanmada ya da hem sorularda hem anlatmada zorlanmada açılıyor; "disleksi" sözü kalktı. Anlama kartı
-  soru türünü yalnızca en az iki yanlış bir türde toplanınca söylüyor; sorular ile yeniden anlatma ayrışınca veliye
-  açıklanıyor. Öğrenci raporunda başlık ve rozetler "sen" diliyle; sonraki değerlendirmede sınıf adı açık; ölçüt tablosu
-  ve altındaki not düzeyin nasıl belirlendiğini (akıcılık kuralı, soru sayısı) söylüyor. Yol haritasında öncelik düzeyi
-  belirleyen ölçütte (önce doğru okuma, sonra anlama); metin zorsa 3. hafta kolay metinler, 4. hafta bir alt sınıfın metni.
-  Rapor telefonda ve masaüstünde açıldı, PDF incelendi.

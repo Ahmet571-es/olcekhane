@@ -95,6 +95,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Sesli okuma (Okuma sekmesi, `engine: 'oral'`): yeni metin `src/content/instruments/sesli-okuma/sinif-*.ts`'e eklenir;
   kurallar (kelime sayısı, soru ve fikir düzeni, yazım) `tests/sesli-okuma.test.ts`'tedir. Metin özgündür, sınıfına
   göre yazılır ve eklenmeden önce bilgi doğruluğu ile soruların birbirini ele vermemesi denetlenir.
+- Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır
+  (`src/content/test-secici.ts`; `tests/test-secici.test.ts` yayındaki her testin bir yuvada olduğunu denetler).
 - Rapordaki kartlar, uyarılar ve kalite notları birbiriyle çelişmez: bütün durum birleşimleri `tests/<ad>.test.ts`
   içinde bir döngüyle tek tek denenir. Test telefon ve masaüstünde baştan sona çözülür; rapor ve PDF açılır.
 - `.github/workflows/yayin.yml`: örnek cevaplarla bir rapor denetimi dış sınamaya eklenir; incelemede tutulan
@@ -327,6 +329,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Her sayfanın başında yol gösterici kutu (`PageGuide`, `components/site/page-guide.tsx`) bulunur: sayfada ne
   yapılacağı ve sıradaki adım. Yeni sayfa eklenirken kutusu da eklenir; `tests/age-groups.test.ts` denetler.
 - Zihinsel beceri alanının adı "Zekâ ve zihinsel beceriler"dir; zekâ puanı (IQ) verilmez, her beceri ayrı anlatılır.
+- "Hangi test bana uygun?" (`/hangi-test`, site sahibinin 2026-10-30 isteği): kim çözecek, ne öğrenilmek isteniyor
+  (birden çok alan) ve vakit seçilir; her alanın yuvalarından sınıfa uygun ve süreye sığan testler dönüşümlü önerilir
+  (`lib/test-secici.ts`), uygunsa Kendini Tanı Paketi de. Hesap tarayıcıda, yalnızca testlerin adı, süresi ve sınıf
+  aralığıyla yapılır; seçimler kaydedilmez. Bağlantıları Testler sayfasında ve ana sayfada.
 
 ## Git
 

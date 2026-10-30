@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { JsonLd } from '@/components/seo/json-ld';
 import { CountUp } from '@/components/site/count-up';
 import { GroupPicker } from '@/components/site/group-picker';
+import { SECICI_NAME, SECICI_PATH } from '@/content/test-secici';
 import { Marquee } from '@/components/site/marquee';
 import { MeasureStory } from '@/components/site/measure-story';
 import { PageGuide } from '@/components/site/page-guide';
@@ -206,6 +207,10 @@ export default function Home() {
           <p className="t-lede">Sana uygun testleri bölüm bölüm gösterelim. Veliyseniz çocuğunuzun sınıfına uyan grubu seçin.</p>
         </div>
         <GroupPicker />
+        <p className="mt-6 text-ink-2">
+          Ne çözeceğine karar veremedin mi? <Link href={SECICI_PATH} className="font-bold">{SECICI_NAME}</Link> Üç kısa seçimle sana uygun
+          testleri sırasıyla önerelim.
+        </p>
         <PageGuide
           title="Bu sitede neler var?"
           className="mt-8"

@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import { GroupPicker } from '@/components/site/group-picker';
 import { PackagePromo } from '@/components/site/package-promo';
 import { PageHeader } from '@/components/site/page-header';
 import { TestCards } from '@/components/site/test-cards';
 import { TestShelf } from '@/components/site/test-shelf';
+import { SECICI_NAME, SECICI_PATH } from '@/content/test-secici';
 import { pageMeta } from '@/lib/seo';
 import { PageGuide } from '@/components/site/page-guide';
 
@@ -31,6 +33,10 @@ export default function TestsPage() {
           <GroupPicker compact />
           <p className="t-small text-ink-2">
             Ya da aşağıdan alan, sınıf ve süreye göre süzün. Testin adına basınca neyi ölçtüğünü okursunuz; “Çöz” düğmesi testi başlatır.
+          </p>
+          <p className="t-small text-ink-2">
+            Karar veremediniz mi? <Link href={SECICI_PATH} className="font-bold">{SECICI_NAME}</Link> sayfası amaca, sınıfa ve vakte göre test
+            önerir.
           </p>
         </PageGuide>
       </PageHeader>
