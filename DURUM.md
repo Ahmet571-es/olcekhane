@@ -651,7 +651,8 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    sayfada aynı söz öbeğinin iki ayrı yerde geçmediğini de denetler. İki bağımsız inceleme (metin ve mantık; kaynak ve sayı)
    bulguları yayından önce uygulandı (ayrıntı "Son yapılanlar"da). Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle
    (yetişkin) baştan sona çözüldü; rapor ve PDF'ler açıldı.
-6. **Harf-Sayı Sıralama: yayında (2026-10-30, pilot; 3. sınıftan yetişkine).** Yeni görev türü `letter_number`: Gold ve ark.
+6. **Harf-Sayı Sıralama: hazır, `main`'de (2026-10-30, pilot; 3. sınıftan yetişkine); GitHub ödemesi düzelince
+   yayına girer (Site sahibinin bekleyen işleri).** Yeni görev türü `letter_number`: Gold ve ark.
    (1997) harf-sayı sıralama düzeni, Mobile Toolbox "Sequences" (Slotkin ve ark., 2025) gibi ekranda: karışık sayılar (1–9) ve
    12 ünsüz (C D F H K L M N P R T Y; ünlü yok, sayıya benzeyen ve Türkçeye özgü harfler yok) tek tek 1 sn gösterilir; önce
    sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla girilir. Harf tuşları Türkçe Q klavyedeki gibi (alfabe sırasıyla
@@ -721,7 +722,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
    hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
-   (Öz-denetim) ve 6. test (Harf-Sayı Sıralama) de yayında (2026-10-27, 2026-10-30). Sıradaki: 3. listenin 7. testi (Merak).
+   (Öz-denetim) yayında (2026-10-27); 6. test (Harf-Sayı Sıralama) hazır, GitHub ödemesi düzelince yayına girer.
+   Sıradaki: 3. listenin 7. testi (Merak).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -948,7 +950,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Öz-yeterlik: Kendine Güven | oz-yeterlik | Yayında (active; 9. sınıftan yetişkine) |
 | Şekil Benzetmeleri | sekil-benzetmeleri | Yayında (pilot; 3. sınıftan yetişkine) |
 | Öz-denetim | oz-denetim | Yayında (active; 9. sınıftan yetişkine) |
-| Harf-Sayı Sıralama | harf-sayi-siralama | Yayında (pilot; 3. sınıftan yetişkine) |
+| Harf-Sayı Sıralama | harf-sayi-siralama | Hazır, yayın GitHub ödemesini bekliyor (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1052,7 +1054,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 - **GitHub ödemesi (2026-10-30):** GitHub, Actions işlerini "hesaptaki son ödemeler başarısız oldu ya da harcama sınırı
   artırılmalı" diyerek başlatmıyor; bu yüzden Denetim ve Yayın çalışmıyor, gönderilen işlemeler canlıya çıkmıyor. Site
   sahibi GitHub → Settings → Billing and plans'tan düzeltir. Düzelince `main`'e yeni bir işleme gönderilir (ya da GitHub'da
-  son çalışma yeniden başlatılır) ve yayın doğrulanır. Paylaşım kartı (53) ve Kendini Tanı Paketi (54) bunu bekliyor.
+  son çalışma yeniden başlatılır) ve yayın doğrulanır. Paylaşım kartı (53), Kendini Tanı Paketi (54) ve
+  Harf-Sayı Sıralama (55) bunu bekliyor; canlı site Öz-denetim (e1701da) sürümünde.
 - **Hukuki işler:** Hostinger ile KVKK standart sözleşmesi ve Kurula bildirim; metinlerin avukat kontrolü;
   e-posta sağlayıcısının aydınlatma metninde anılması; Karakter Güçlü Yanları için avukat görüşü.
 - **Hoca buluşması (2026-10-18 dolayı; 2026-10-11'den ertelendi):** platform bitmiş hâliyle sunulacak; yeni testler de
@@ -1065,7 +1068,8 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
-- 2026-10-30 (55): Yeni test Harf-Sayı Sıralama yayına alındı (3. listenin 6. testi; ayrıntı yukarıda). Yeni görev türü
+- 2026-10-30 (55): Yeni test Harf-Sayı Sıralama hazırlandı ve `main`'e gönderildi (3. listenin 6. testi; ayrıntı
+  yukarıda); GitHub Actions ödeme sorunu yüzünden başlamadığı için henüz yayında değil. Yeni görev türü
   (`letter_number`): diziler, çözme ekranı (klavye düzeninde harf tuşları, telefonda 320 px'e sığan tuş takımı), puanlama,
   beş kartlı rapor, yol haritası, bilim kartı (kaynak araştırmasıyla), dış sınama; bağımsız kaynak, kod ve metin
   incelemelerinin bulguları uygulandı. Kart grafiklerinde parçalı çubuğun beşinci parçası artık içi boş, çerçeveli kutu
