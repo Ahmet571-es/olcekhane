@@ -1110,6 +1110,15 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-31 (63): "Raporu sesli dinle" (site sahibinin 31 Ekim'de seçtiği dört yeniliğin dördüncüsü): her raporun
+  başında oynatıcı; önce sonuçlar, istenirse yol haritası; duraklat, durdur, hız. Ses yalnızca cihazın kendi Türkçe
+  sesiyle (tarayıcının "yerel" dediği tr sesi); ağ sesine ya da başka dile geçilmez, Türkçe ses yoksa oynatıcı görünmez.
+  Sayfa, Android'de "yerel" sesin nasıl üretildiğini denetleyemediği için "ses her zaman internetsiz" denmiyor; sayfada
+  "Site raporunu hiçbir yere göndermez" yazıyor. Okunacak metin raporun verisinden; sayılar ve işaretler sözle, kaynak
+  gösterimleri ve grafiğin görünüşünü anlatan cümleler okunmaz. Bağımsız incelemenin bulguları uygulandı (sıra sayısı gibi
+  okunan sayılar, "1. Kazanç"ın bölünmesi, sesin her parçadan önce yeniden denetlenmesi, takılıp kalan oynatıcı, odak,
+  ekranda görünmeyen bölümün okunması). Gerçek tarayıcıda sahte yerel Türkçe sesle denendi (telefon ve masaüstü: okuma,
+  duraklatma, sekme değişince susma; ağ sesiyle oynatıcı görünmüyor). Gerçek telefonlarda (iPhone, Android) denenmedi.
 - 2026-10-31 (62): Yeni test Liderlik Eğilimleri yayına alındı (3. listenin 9. testi; site sahibinin 31 Ekim'de seçtiği
   dört yeniliğin ikincisi; ayrıntı yukarıda). İki bağımsız inceleme yayından önce uygulandı. Metin ve mantık: düşük
   puanlar "eksik beceri" gibi anlatılmıyor (yetişkin eğitimi bulgusu gençlere uygulanmıyor), "güven" dili düşük düzeyli
@@ -1197,14 +1206,3 @@ En yeni üstte; en çok 10 madde tutulur.
   Ayrılma uyarıları tek soruya indi (paket ve test aynı anda uyarınca paketin metni). Tarayıcıda telefon ve masaüstünde
   denendi: üç anket testi çözüldü, ara ekran, erken bitirme, sonuç, veli PDF'i (17 sayfa), görev testinin açılışı. Denetim:
   `tests/paket.test.ts`.
-- 2026-10-30 (53): Paylaşım kartı (site sahibinin isteği: sonuçlar Instagram ve WhatsApp'ta paylaşılsın, insanlar
-  "Ölçekhane"yi tanısın). Kişilik ve ilgi testlerinin raporunda "Sonucunu paylaş" bölümü: rapordan 1080 × 1920'lik bir görsel
-  (Instagram hikâyesi, WhatsApp durumu) yalnızca tarayıcıda çizilir; telefonda "Paylaş" düğmesi paylaşım ekranını açar,
-  her yerde "Görseli indir" var. Görselde ad yazmaz; testin adı, sonuç özeti (boyutlar düzey adlarıyla ya da en yüksek
-  beş alan ya da altıgen/çember grafiği), pilot etiketi, "Sen de ücretsiz çöz" ve testin adresi yazar. Site sahibinin
-  seçimi: yalnızca kişilik, ilgi ve (gelecek) paket; zihinsel görev, okuma, matematik ve "yüksek daha iyi" diye okunabilen
-  ölçekler (öz-saygı, iyimserlik, öz-yeterlik, öz-denetim, empati, duygusal zekâ, öğrenme ve başarı, düşünmeyi sevme) ile
-  Heyecan Arayışı'nda kart yok; veli sekmesinde gösterilmez; öğrenciye "paylaşmadan önce velinle konuşabilirsin" denir.
-  Kurallar `src/lib/share/card.ts` (`SHAREABLE`, `NOT_SHAREABLE`), çizim `draw.ts`, bölüm `components/share/share-panel.tsx`;
-  `tests/paylasim.test.ts` her anket testinin karara bağlandığını, bütün cevap örüntülerinde kartın kurulduğunu ve yazıların
-  görselden taşmadığını denetler.
