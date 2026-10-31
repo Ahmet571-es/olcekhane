@@ -295,12 +295,18 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   yalnızca tarayıcıda okunur, hiçbir şey gönderilmez ve saklanmaz. Değişim, güvenilir değişim ölçütüyle (|fark| / (√2·SEM)
   ≥ 1,96; Jacobson ve Truax, 1991) "belirgin" ya da "ölçüm payı içinde" diye söylenir; ölçüm payı bilinmeyen ölçekte
   yalnızca yön. Başka test ya da başka sürüm karşılaştırılmaz (test sürümü artınca eski PDF'ler karşılaştırılamaz).
-  Görev (zekâ ve dikkat) testlerinde (2026-10-31'den) raporun yorumlanan ana sonuçları karşılaştırılır: doğru sayısı ya da
-  oranı, ulaşılan düzey, en uzun dizi, tipik süre (`lib/compare/tasks.ts`; birim ve "süre uzadı/kısaldı"). Dökümler ve fark
-  puanları (renk-kelime etkisi, kural değiştirme gibi) karşılaştırılmaz; kartı yorumlanmayan sayı özete yazılmaz. Ölçüm payı
-  bilinmediği için yalnızca yön; testi yeniden çözmenin sonucu yükseltebileceği (Scharfen ve ark., 2018) ve aynı soruların
-  geldiği testlerde hatırlananların da etkileyebileceği söylenir. Yeni görev testi `TASK_COMPARE`'e yazılır (test denetler).
-  Okuma, sesli okuma ve konu tarama testlerinde yok (form ve metin sınıfa göre değişir). `tests/karsilastirma.test.ts` denetler.
+  Görev (zekâ ve dikkat) testlerinde (2026-10-31'den) raporda yazan ana sonuçlar karşılaştırılır: doğru sayısı ya da
+  oranı, ulaşılan düzey, en uzun dizi, tipik süre (`lib/compare/tasks.ts`, `TASK_COMPARE`). Sayılar raporun kendi
+  yardımcılarıyla (`pctValue`, `snValue`, `secondsValue`, `sgPct`, `arithPct`, `towerTenths` …, `lib/reports/build.ts`)
+  hesaplanır ve raporla aynı yazılır ("18/24", "%88", "0,73 sn", "1 dk 15 sn", "8,2 derece"; sürelerde "uzadı/kısaldı").
+  Kart yorumlanmadıysa sayısı özete yazılmaz: kartı kuran işlev "Yorumlanmadı", hesaplanamadı ya da sonucun rastgele
+  cevaplarla da çıkabileceğini yazdığı yerde `interpreted: false` verir (yeni kartta da). Dökümler ve fark puanları
+  (renk-kelime etkisi, kural değiştirme gibi) karşılaştırılmaz; zihinden hesaplamada toplamlar yalnızca dört bölüm de
+  yorumlandıysa. Ölçüm payı bilinmediği için yalnızca yön; testi yeniden çözmenin sonucu yükseltebileceği (Scharfen ve
+  ark., 2018) ve aynı soruların geldiği testlerde hatırlananların da etkileyebileceği söylenir. Anahtarlar ve anlamları
+  kalıcıdır (eski PDF'lerle eşleşir): bir sayının anlamı, birimi ya da yuvarlaması değişirse testin sürümü artırılır; test
+  tablonun kopyasını tutar. Yeni görev testi `TASK_COMPARE`'e yazılır. Okuma, sesli okuma ve konu tarama testlerinde yok
+  (form ve metin sınıfa göre değişir). `tests/karsilastirma.test.ts` denetler (her sayı kendi kartında aynı biçimde yazar).
 
 ## Kendini Tanı Paketi
 

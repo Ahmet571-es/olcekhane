@@ -1104,11 +1104,16 @@ En yeni üstte; en çok 10 madde tutulur.
 
 - 2026-10-31 (61): "Gelişimini karşılaştır" görev (zekâ ve dikkat) testlerine genişletildi (site sahibinin 31 Ekim'deki
   "birkaç yenilik daha" isteği; seçtiği yeniliklerin ilki). Yayındaki 30 görev testinin raporunda ve PDF'inde (pakette de)
-  yorumlanan ana sonuçların özeti: doğru sayısı ya da oranı, ulaşılan düzey, en uzun dizi, tipik süre (`lib/compare/tasks.ts`;
-  birimler %, sn ve derece; sürelerde "uzadı/kısaldı"). Dökümler ve fark puanları karşılaştırılmaz; kartı yorumlanmayan
-  sayı özete yazılmaz, hiçbir sonuç yorumlanmadıysa bölüm yok. Ölçüm payı bilinmediği için yalnızca yön; panelde alıştırma
-  etkisi notu (Scharfen ve ark., 2018), aynı soruların geldiği 16 testte hatırlananların da etkileyebileceği. Özetsiz
-  dosyada uyarı testin tarihini söyler (görevlerde 31 Ekim 2026). Okuma, sesli okuma ve konu tarama testlerinde yok.
+  raporda yazan ana sonuçların özeti: doğru sayısı ya da oranı, ulaşılan düzey, en uzun dizi, tipik süre
+  (`lib/compare/tasks.ts`). Sayılar raporun kendi yuvarlama yardımcılarıyla hesaplanır ve raporla aynı yazılır ("18/24",
+  "%88", "1 dk 15 sn", "8,2 derece"; sürelerde "uzadı/kısaldı"); test her sayının kendi kartında aynı biçimde yazdığını
+  denetler. Kartı kuran işlev yorumlanmayan sonucu açıkça işaretler (`interpreted: false`: "Yorumlanmadı", hesaplanamadı,
+  rastgele düzeyde doğru, soruların çoğunda "Bilmiyorum", hiç basılmadı gibi); o sayı özete girmez, hiçbir sonuç
+  yorumlanmadıysa bölüm yok. Zihinden hesaplamada toplamlar yalnızca dört bölüm de yorumlandıysa. Dökümler ve fark puanları
+  karşılaştırılmaz. Ölçüm payı bilinmediği için yalnızca yön; panelde alıştırma etkisi notu (Scharfen ve ark., 2018), aynı
+  soruların geldiği 16 testte hatırlananların da etkileyebileceği. Özetsiz dosyada, bu testin özeti olmayan paket
+  raporunda ve sonuçsuz görev raporunda ayrı uyarı. Bağımsız kod ve metin incelemesinin bulguları uygulandı. Okuma, sesli
+  okuma ve konu tarama testlerinde yok.
 - 2026-10-30 (60): Yeni test İşlem Hızı: Simge Bulma yayına alındı (3. listenin 8. testi; site sahibinin seçtiği dört
   yeniliğin dördüncüsü; ayrıntı yukarıda). Ad: WÇZÖ-IV'teki "Simge Arama" alt testiyle karışmasın diye "Simge Bulma".
   Yeni görev türü `symbol_search`; uygulama kimliğinden üretilen 240 deneme, sunucu yeniden üretip puanlar. Bağımsız

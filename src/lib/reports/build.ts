@@ -466,6 +466,12 @@ export interface CognitiveBlock {
   sections?: { label: string; value: number }[];
   /** Kartın grafiği: kartın sözel açıklamasını görsel olarak da anlatır (lib/reports/visuals.ts). */
   visual?: ItemVisual;
+  /**
+   * false: kartın sonucu yorumlanmadı ("Yorumlanmadı", hesaplanamadı, cevap verilmedi ya da sonuç rastgele cevaplarla da
+   * çıkabilecek kadar az, tek başına bir şey söylemez). Önceki sonuçla karşılaştırmada bu kartın sayısı kullanılmaz
+   * (lib/compare/tasks.ts). Verilmezse kart yorumlanmıştır.
+   */
+  interpreted?: boolean;
 }
 
 export interface CognitiveReport {
@@ -1369,7 +1375,9 @@ function buildAcademic(
   };
 }
 
-const pct = (x: number) => `%${nf0.format(Math.round(x * 100))}`;
+/** Rapordaki yüzde sayısı (oran → tam sayı yüzde); `pct` bununla yazar, karşılaştırma da bunu kullanır (lib/compare/tasks.ts). */
+export const pctValue = (x: number) => Math.round(x * 100);
+const pct = (x: number) => `%${nf0.format(pctValue(x))}`;
 
 /** Dizi görevinin merdiveni: görevdeki bütün uzunluklar, her uzunluktaki denemeler ve doğru tekrarlanan en uzun dizi. */
 function spanLadder(label: string, r: SpanResult, unit: string, task: { startLength: number; sequences: unknown[] } | undefined): LadderVisual {
@@ -1440,15 +1448,15 @@ function cancellationBlocks(
     return [
       {
         ...card('tempo'),
-        headline: 'Yorumlanmadı',
+        headline: 'Yorumlanmadı', interpreted: false,
         text: v(
           'Çok az harf işaretlediğin için bu sonuç yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin.',
           'Çocuğunuz çok az harf işaretlediği için bu sonuç yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir.',
         ),
       },
-      { ...card('isabet'), headline: 'Yorumlanmadı', text: short },
-      { ...card('net'), headline: 'Yorumlanmadı', text: short },
-      { ...card('surdurme'), headline: 'Yorumlanmadı', text: short },
+      { ...card('isabet'), headline: 'Yorumlanmadı', interpreted: false, text: short },
+      { ...card('net'), headline: 'Yorumlanmadı', interpreted: false, text: short },
+      { ...card('surdurme'), headline: 'Yorumlanmadı', interpreted: false, text: short },
     ];
   }
 
@@ -1502,6 +1510,8 @@ function cancellationBlocks(
   const isabet: CognitiveBlock = {
     ...card('isabet'),
     headline: `Bulma oranı ${pct(r.hitRate)}`,
+    // Yanlış işaretler doğrulardan fazlaysa bulma oranı tek başına bir şey söylemez.
+    ...(random ? { interpreted: false } : {}),
     ...(r.strays ? { detail: `Taranan kısmın çok ilerisindeki ${n(r.strays)} dokunuş yanlışlıkla dokunma sayıldı, puana katılmadı.` } : {}),
     text: found + falseMarks,
   };
@@ -1633,7 +1643,9 @@ function cancellationBlocks(
 
 const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 /** Milisaniyeyi saniye olarak yazar: 820 → "0,82". */
-const sn = (ms: number) => nf2.format(ms / 1000);
+/** Saniyenin yüzde biri duyarlılığında süre (saniye); `sn` bununla yazar, karşılaştırma da bunu kullanır. */
+export const snValue = (ms: number) => Math.round(ms / 10) / 100;
+const sn = (ms: number) => nf2.format(snValue(ms));
 /** Çubuk grafiğin üst sınırı: en büyük değerden büyük ya da ona eşit ilk yuvarlak sayı. */
 const roundUp = (v: number, step: number) => Math.max(step, Math.ceil(v / step) * step);
 
@@ -1681,6 +1693,7 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
   }[errorKind];
   // Doğruluk düşükken hataların çoğu süre aşımı ya da çok erken cevapsa bu ayrıca söylenir.
   const mostlyMissed = colorWordMostlyMissed(r);
+  let accUnread = false;
   let accText: string;
   if (r.accuracy === 1) {
     accText = you ? 'Yazıların rengini her seferinde doğru buldun.' : 'Çocuğunuz yazıların rengini her seferinde doğru buldu.';
@@ -1695,7 +1708,8 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
     accText = you ? 'Yazıların rengini çoğu zaman doğru buldun, bazı denemelerde yanıldın.' : 'Çocuğunuz yazıların rengini çoğu zaman doğru buldu, bazı denemelerde yanıldı.';
     if (drop) accText += incongruentNote;
   } else if (mostlyMissed && !(drop && errorKind === 'reading')) {
-    // Doğru olmayan cevapların çoğu süre aşımı ya da çok erken cevap: "rengi bulmakta zorlandı" denmez.
+    // Doğru olmayan cevapların çoğu süre aşımı ya da çok erken cevap: "rengi bulmakta zorlandı" denmez; sonuç yorumlanmaz.
+    accUnread = true;
     const missed = r.timeouts + r.anticipations;
     const some = missed > r.n / 2 ? 'denemelerin çoğunda' : 'denemelerin bir kısmında';
     accText = you
@@ -1723,13 +1737,14 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
     ...card('renk_dogruluk'),
     headline: `${pct(r.accuracy)} doğru`,
     text: accText,
+    ...(accUnread ? { interpreted: false } : {}),
   };
 
   const hiz: CognitiveBlock =
     r.medianRt === null
       ? {
           ...card('renk_hiz'),
-          headline: 'Hesaplanamadı',
+          headline: 'Hesaplanamadı', interpreted: false,
           text: you ? 'Yeterince doğru cevap olmadığı için cevap süren hesaplanamadı.' : 'Yeterince doğru cevap olmadığı için cevap süresi hesaplanamadı.',
         }
       : {
@@ -1750,7 +1765,7 @@ function colorWordBlocks(r: ColorWordResult, audience: Audience, card: CardOf): 
   if (c === null || i === null) {
     etki = {
       ...card('renk_etki'),
-      headline: 'Hesaplanamadı',
+      headline: 'Hesaplanamadı', interpreted: false,
       text: 'Yeterince doğru cevap olmadığı için kelime ile rengin aynı olduğu ve farklı olduğu denemeler karşılaştırılamadı.',
     };
   } else {
@@ -1887,6 +1902,7 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
   const durma: CognitiveBlock = {
     ...card('dg_durma'),
     headline: stopUnread ? 'Yorumlanmadı' : `Durma oranı ${pct(r.stopRate)}`,
+    ...(stopUnread ? { interpreted: false } : {}),
     text: durmaText,
   };
 
@@ -1925,11 +1941,13 @@ function goNoGoBlocks(r: GoNoGoResult, task: GoNoGoTask, audience: Audience, car
     ...card('dg_tepki'),
     headline: `Basma oranı ${pct(r.hitRate)}`,
     text: tepkiText,
+    // Hiç basılmadıysa sonuç yorumlanmaz (metin bunu söyler).
+    ...(r.hitRate < 0.85 && !early && none ? { interpreted: false } : {}),
   };
 
   let hiz: CognitiveBlock;
   if (r.medianRt === null) {
-    hiz = { ...card('dg_hiz'), headline: 'Hesaplanamadı', text: 'Zamanında basış çok az olduğu için tepki süresi hesaplanamadı.' };
+    hiz = { ...card('dg_hiz'), headline: 'Hesaplanamadı', interpreted: false, text: 'Zamanında basış çok az olduğu için tepki süresi hesaplanamadı.' };
   } else {
     // Dikkatli gidip harf kaçırmak durabilme kartında anlatılır; burada yinelenmez.
     const pattern = speedy
@@ -2024,7 +2042,7 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
           ? `Sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdin.${errText(a, false)} Bu bölüm, ekranı tarayıp aradığını hızla bulabilmeyi ve el-göz uyumunu gösterir; süre, kullandığın cihazdan da etkilenir.`
           : `Çocuğunuz sayıları sırayla (${a.n} daire) ${s1(a.timeMs)} saniyede birleştirdi.${errText(a, false)} Bu bölüm, ekranı tarayıp aranan daireyi bulma hızını ve el-göz uyumunu yansıtır; süre, kullanılan cihazdan (dokunmatik ekran ya da fare) belirgin biçimde etkilenir.`,
       }
-    : { ...card('iz_a'), headline: 'Süre içinde tamamlanamadı', text: incomplete(a) };
+    : { ...card('iz_a'), headline: 'Süre içinde tamamlanamadı', interpreted: false, text: incomplete(a) };
 
   const blockB: CognitiveBlock = b.completed
     ? {
@@ -2034,13 +2052,13 @@ function trailBlocks(r: TrailResult, task: TrailTask, audience: Audience, card: 
           ? `Sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdin.${errText(b, true)} Bu bölümde bir sayıya bir harfe geçerek ilerlemen gerekir.`
           : `Çocuğunuz sayı ve harfleri sırayla (${b.n} daire) ${s1(b.timeMs)} saniyede birleştirdi.${errText(b, true)} Bu bölümde sayılar ile harfler arasında gidip gelmek gerekir; alfabe sırasını akıcı bilmek de süreyi etkiler.`,
       }
-    : { ...card('iz_b'), headline: 'Süre içinde tamamlanamadı', text: incomplete(b) };
+    : { ...card('iz_b'), headline: 'Süre içinde tamamlanamadı', interpreted: false, text: incomplete(b) };
 
   let gecis: CognitiveBlock;
   if (r.ratio === null || r.diffMs === null) {
     gecis = {
       ...card('iz_gecis'),
-      headline: 'Hesaplanamadı',
+      headline: 'Hesaplanamadı', interpreted: false,
       text:
         !a.completed && !b.completed
           ? 'İki bölüm de süre içinde tamamlanamadığı için iki bölüm karşılaştırılamadı.'
@@ -2182,7 +2200,7 @@ function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], aud
     // Hiç basılmayan düzey yorumlanmaz; grafiği de olmaz.
     return {
       ...card(key),
-      headline: 'Hiç basılmadı',
+      headline: 'Hiç basılmadı', interpreted: false,
       text: v(
         `${W} hiç basmadın; bu yüzden aynı harfleri yakalayıp yakalayamadığın anlaşılamadı. Yönergeyi tam anlamamış ya da görevi yarıda bırakmış olabilirsin.`,
         `Çocuğunuz ${where} hiç basmadı; bu yüzden aynı harfleri yakalayıp yakalayamadığı anlaşılamadı. Yönerge tam anlaşılmamış ya da görev yarıda bırakılmış olabilir; bu sonuç yorumlanmamalıdır.`,
@@ -2310,7 +2328,8 @@ function nBackLevelBlock(l: NBackLevelResult, blocks: NBackResult['blocks'], aud
       ` Çocuğunuz ${which} bölümde hiç basmadı; bu bölüm yarıda bırakılmış olabilir. Bu yüzden bu sonuç onu tam yansıtmayabilir.`,
     );
   }
-  return { ...card(key), headline, text: `${first} ${second}`, visual };
+  // Rastgele basma ya da iki geride bir geri kuralıyla devam: sonuç tek başına bir şey söylemez (yorumlanmamış sayılır).
+  return { ...card(key), headline, text: `${first} ${second}`, visual, ...(pattern === 'random' || keptOneBack ? { interpreted: false } : {}) };
 }
 
 /** "Zorluk artınca" kartı: bir geriden iki geriye ayırt etme puanı nasıl değişti? Güvenilmeyen durumlarda karşılaştırılmaz. */
@@ -2591,7 +2610,7 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
   }
   // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
   const dogruluk: CognitiveBlock = notRead
-    ? { ...card('zd_dogruluk'), headline: 'Yorumlanmadı', text: accText }
+    ? { ...card('zd_dogruluk'), headline: 'Yorumlanmadı', interpreted: false, text: accText }
     : {
         ...card('zd_dogruluk'),
         headline: `${pct(r.accuracy)} doğru`,
@@ -2615,11 +2634,11 @@ function mentalRotationBlocks(r: RotationResult, task: MentalRotationTask, audie
             : 'Doğru cevaplar rastgele basmayla da bulunabilecek kadar az olduğu için';
   const usable = !notRead && r.medianRt !== null;
   const hiz: CognitiveBlock = notRead
-    ? { ...card('zd_hiz'), headline: 'Yorumlanmadı', text: `${why} karar süresi yorumlanmadı.` }
+    ? { ...card('zd_hiz'), headline: 'Yorumlanmadı', interpreted: false, text: `${why} karar süresi yorumlanmadı.` }
     : r.medianRt === null
       ? {
           ...card('zd_hiz'),
-          headline: 'Hesaplanamadı',
+          headline: 'Hesaplanamadı', interpreted: false,
           text: v(
             'Doğru bulduğun aynı şekiller yeterince çok olmadığı için karar süren hesaplanamadı.',
             'Doğru bulunan aynı şekiller yeterince çok olmadığı için karar süresi hesaplanamadı.',
@@ -2790,7 +2809,7 @@ function reactionPartBlock(p: ReactionPartResult, audience: Audience, card: Card
   const verdict = v(computed ? 'tepki süren yorumlanmadı' : 'tepki süren hesaplanamadı', computed ? 'tepki süresi yorumlanmadı' : 'tepki süresi hesaplanamadı');
   // Erken basış ve süre aşımları, öteki taraf kartlarına da sayılarla eklenir.
   const extra = p.early || p.misses ? v(` Ayrıca ${p.n} denemenin ${counts(false)}.`, ` Ayrıca ${p.n} denemenin ${counts(false)}.`) : '';
-  const no = (text: string): CognitiveBlock => ({ ...base, headline, detail, text });
+  const no = (text: string): CognitiveBlock => ({ ...base, headline, interpreted: false, detail, text });
   switch (reactionStatus(p)) {
     case 'missed':
       return no(
@@ -3043,9 +3062,12 @@ function inTime(ms: number): string {
   return `${t}${t.endsWith('dakika') ? 'da' : 'de'}`;
 }
 
+/** `seconds` ile yazılan süre (tam saniye; yarım saniyeden kısaysa 0: "bir saniyeden kısa"). Karşılaştırma bunu kullanır. */
+export const secondsValue = (ms: number) => (ms < 500 ? 0 : Math.round(ms / 1000));
+
 function seconds(ms: number): string {
   if (ms < 500) return 'bir saniyeden kısa';
-  const s = Math.round(ms / 1000);
+  const s = secondsValue(ms);
   if (s < 60) return `${s} saniye`;
   const m = Math.floor(s / 60);
   return s % 60 ? `${m} dakika ${s % 60} saniye` : `${m} dakika`;
@@ -3114,6 +3136,11 @@ function reachedLevelBlock(o: {
   doubt: boolean;
   /** Düzeylerin anlatımında birden çok iş sayılıyorsa "şunlar gerekiyordu". */
   plural?: boolean;
+  /**
+   * Hiçbir düzeye ulaşılmadığında sonuç tek başına bir şey söylemez (çalışma biçimindeki kuşku ya da soruların çoğunda
+   * "Bilmiyorum"): kart yorumlanmamış sayılır (karşılaştırmaya girmez).
+   */
+  zeroUnread?: boolean;
 }): CognitiveBlock {
   const { v } = o;
   const pass = Math.round(MATRIX_LEVEL_PASS * 100);
@@ -3121,7 +3148,7 @@ function reachedLevelBlock(o: {
   const lower = (x: string) => x.charAt(0).toLocaleLowerCase('tr-TR') + x.slice(1).replace(/\.$/, '');
   const need = o.plural ? 'şunlar' : 'şu';
   const rule = `Bir düzeye ulaşmak için o düzeydeki ve daha kolay düzeylerdeki soruların en az %${pass}’ını doğru bulmak gerekir`;
-  if (o.noInterpret) return { ...o.base, headline: 'Yorumlanmadı', text: o.noInterpret };
+  if (o.noInterpret) return { ...o.base, headline: 'Yorumlanmadı', interpreted: false, text: o.noInterpret };
   const first = o.levels[0];
   if (o.reached === 0) {
     const high = o.levels.filter((l) => l.level > 1 && passed(l));
@@ -3131,6 +3158,7 @@ function reachedLevelBlock(o: {
     return {
       ...o.base,
       headline: 'Düzey belirtilmedi',
+      ...(o.zeroUnread ? { interpreted: false } : {}),
       text:
         v(`En kolay düzeydeki ${first.n} sorunun ${found}${first.correct === 0 ? 'dın' : 'dun'}.`, `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${found}${first.correct === 0 ? 'dı' : 'du'}.`) +
         ` ${rule}; hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi.` +
@@ -3423,7 +3451,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('sa_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('sa_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
 
   /* Ulaşılan düzey */
   const duzey = reachedLevelBlock({
@@ -3434,6 +3462,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
     plans: task.levels,
     noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
     zeroCause: doubt ? ZERO_DOUBT : ZERO_CAUSE,
+    zeroUnread: doubt,
     rapid: rapid,
     doubt,
   });
@@ -3455,7 +3484,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   const rough = ` Her türde yalnızca birkaç soru vardı ve bazı türler yalnızca kolay, bazıları yalnızca zor düzeylerde soruldu (ör. ${ruleList(['constant'])} soruları ${where('constant')}, ${ruleList(['xor'])} soruları ${where('xor')}). Bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.`;
   let kural: CognitiveBlock;
   if (chance) {
-    kural = { ...card('sa_kural'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.' };
+    kural = { ...card('sa_kural'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.' };
   } else {
     const all = r.rules.every((x) => x.correct === x.n);
     const head = all
@@ -3524,7 +3553,7 @@ function matrixBlocks(r: MatrixResult, task: MatrixReasoningTask, audience: Audi
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('sa_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('sa_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = chance ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -3698,7 +3727,7 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('sd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('sd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !(few || skippedMost) };
 
   /* Ulaşılan düzey */
   const skipCause: [string, string] = [
@@ -3713,6 +3742,7 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
     plans: task.levels,
     noInterpret: null,
     zeroCause: skippedMost ? skipCause : doubt ? ZERO_DOUBT : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da toplama ve çıkarmada henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    zeroUnread: skippedMost || doubt,
     rapid: rapid,
     doubt,
   });
@@ -3736,7 +3766,7 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
   if (few || skippedMost) {
     kural = {
       ...card('sd_kural'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: few
         ? 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.'
         : v('Soruların çoğunda “Bilmiyorum” dediğin için kural türleri karşılaştırılmadı.', 'Çocuğunuz soruların çoğunda “Bilmiyorum” dediği için kural türleri karşılaştırılmadı.'),
@@ -3808,7 +3838,7 @@ function numberSeriesBlocks(r: NumberSeriesResult, task: NumberSeriesTask, audie
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !few && !skippedMost && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('sd_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('sd_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = few || skippedMost ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -3984,7 +4014,7 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('hd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('hd_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !(few || skippedMost) };
 
   /* Ulaşılan düzey */
   const skipCause: [string, string] = [
@@ -3999,6 +4029,7 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
     plans: task.levels,
     noInterpret: null,
     zeroCause: skippedMost ? skipCause : doubt ? ZERO_DOUBT : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da alfabenin sırasını henüz yeterince rahat bilmemesinden kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    zeroUnread: skippedMost || doubt,
     rapid: rapid,
     doubt,
   });
@@ -4022,7 +4053,7 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
   if (few || skippedMost) {
     kural = {
       ...card('hd_kural'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: few
         ? 'Doğru cevaplar çok az olduğu için kural türleri karşılaştırılmadı.'
         : v('Soruların çoğunda “Bilmiyorum” dediğin için kural türleri karşılaştırılmadı.', 'Çocuğunuz soruların çoğunda “Bilmiyorum” dediği için kural türleri karşılaştırılmadı.'),
@@ -4094,7 +4125,7 @@ function letterSeriesBlocks(r: LetterSeriesResult, task: LetterSeriesTask, audie
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !few && !skippedMost && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('hd_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('hd_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = few || skippedMost ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -4270,7 +4301,7 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('sz_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('sz_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
 
   /* Ulaşılan düzey */
   const duzey = reachedLevelBlock({
@@ -4281,6 +4312,7 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
     plans: task.levels,
     noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
     zeroCause: doubt ? ZERO_DOUBT : lurePattern ? [' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu; yönergeyi tam anlamamasından, doğru cevaplar kartında anlatılan yanılgılardan ya da soruları okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da soruları okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    zeroUnread: doubt,
     rapid: rapid,
     doubt,
     plural: true,
@@ -4294,7 +4326,7 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
   const rough = ' Her türde yalnızca altı soru vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.';
   let tur: CognitiveBlock;
   if (chance) {
-    tur = { ...card('sz_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
+    tur = { ...card('sz_tur'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
   } else {
     // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs =
@@ -4355,7 +4387,7 @@ function verbalBlocks(r: VerbalResult, task: VerbalReasoningTask, audience: Audi
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('sz_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('sz_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = chance ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -4515,7 +4547,7 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('kk_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('kk_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
 
   /* Ulaşılan düzey */
   const duzey = reachedLevelBlock({
@@ -4526,6 +4558,7 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
     plans: task.levels,
     noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
     zeroCause: doubt ? ZERO_DOUBT : lurePattern ? [' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : ZERO_CAUSE,
+    zeroUnread: doubt,
     rapid: rapid,
     doubt,
   });
@@ -4537,7 +4570,7 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
   const rough = ' Her türde yalnızca sekiz soru vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.';
   let tur: CognitiveBlock;
   if (chance) {
-    tur = { ...card('kk_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için katlama türleri karşılaştırılmadı.' };
+    tur = { ...card('kk_tur'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için katlama türleri karşılaştırılmadı.' };
   } else {
     // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs =
@@ -4598,7 +4631,7 @@ function foldingBlocks(r: FoldingResult, task: PaperFoldingTask, audience: Audie
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('kk_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('kk_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = chance ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -4794,7 +4827,7 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
   }
   // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
   const dogru: CognitiveBlock = notRead
-    ? { ...card('ma_dogru'), headline: 'Yorumlanmadı', text: accText }
+    ? { ...card('ma_dogru'), headline: 'Yorumlanmadı', interpreted: false, text: accText }
     : {
         ...card('ma_dogru'),
         headline: `${r.n} soruda ${r.correct} doğru`,
@@ -4828,7 +4861,7 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
   );
   let kosul: CognitiveBlock;
   if (notRead) {
-    kosul = { ...card('ma_kosul'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
+    kosul = { ...card('ma_kosul'), headline: 'Yorumlanmadı', interpreted: false, text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
   } else {
     let text: string;
     let mtSaid = false;
@@ -4902,7 +4935,7 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
   const noCompare = !notRead && weak(nc);
   let inanc: CognitiveBlock;
   if (notRead) {
-    inanc = { ...card('ma_inanc'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
+    inanc = { ...card('ma_inanc'), headline: 'Yorumlanmadı', interpreted: false, text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
   } else if (noCompare) {
     const missQ = nc.correct === 0 ? 'hiçbirinde' : 'yarısında ya da daha çoğunda';
     inanc = {
@@ -4981,7 +5014,7 @@ function logicBlocks(r: LogicResult, audience: Audience, card: CardOf): TaskRepo
     r.medianRt === null
       ? {
           ...card('ma_calisma'),
-          headline: 'Süre hesaplanamadı',
+          headline: 'Süre hesaplanamadı', interpreted: false,
           text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' '),
         }
       : {
@@ -5134,7 +5167,7 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
   }
   // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
   const dogru: CognitiveBlock = notRead
-    ? { ...card('sy_dogru'), headline: 'Yorumlanmadı', text: accText }
+    ? { ...card('sy_dogru'), headline: 'Yorumlanmadı', interpreted: false, text: accText }
     : {
         ...card('sy_dogru'),
         headline: `${r.n} soruda ${r.correct} doğru`,
@@ -5167,7 +5200,7 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
   const driven = numericNumberDriven(r);
   let oranti: CognitiveBlock;
   if (notRead) {
-    oranti = { ...card('sy_oranti'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
+    oranti = { ...card('sy_oranti'), headline: 'Yorumlanmadı', interpreted: false, text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
   } else {
     let oText: string;
     if (good(P) && good(N)) {
@@ -5249,7 +5282,7 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
   const part = r.lures.partial;
   let esitlik: CognitiveBlock;
   if (notRead) {
-    esitlik = { ...card('sy_esitlik'), headline: 'Yorumlanmadı', text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
+    esitlik = { ...card('sy_esitlik'), headline: 'Yorumlanmadı', interpreted: false, text: `${notReadWhy} bu sorulardaki sonuç yorumlanmadı.` };
   } else {
     let eText: string;
     // "Çoğunlukla buldun" yalnızca eşitlik yanılgılarından biri iki ya da daha çok cevapta görülmemişken.
@@ -5344,7 +5377,7 @@ function numericBlocks(r: NumericResult, audience: Audience, card: CardOf): Task
     : v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru sonuca ulaşabilmektir.');
   const calisma: CognitiveBlock =
     r.medianRt === null
-      ? { ...card('sy_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') }
+      ? { ...card('sy_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') }
       : {
           ...card('sy_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
@@ -5436,15 +5469,16 @@ const ARITH_SIZE_NOTE = 'Sayılar büyüdükçe işlemlerin daha uzun sürmesi o
 
 const nf1Arith = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 /** Saniye, bir ondalıkla: 1450 → "1,5". */
-const sec1 = (ms: number) => nf1Arith.format(Math.round(ms / 100) / 10);
-const sec1Value = (ms: number) => Math.round(ms / 100) / 10;
-const arithMedian = (xs: number[]) => {
+export const sec1Value = (ms: number) => Math.round(ms / 100) / 10;
+const sec1 = (ms: number) => nf1Arith.format(sec1Value(ms));
+/** Zihinden hesaplamada süre ortancası (rapor ve karşılaştırma aynı hesabı kullanır). */
+export const arithMedian = (xs: number[]) => {
   const s = [...xs].sort((a, b) => a - b);
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 /** Yüzde, yuvarlanarak; yanlış varsa en çok %99 (8/12 → %67). */
-const arithPct = (correct: number, answered: number) => Math.min(Math.round((correct / answered) * 100), correct < answered ? 99 : 100);
+export const arithPct = (correct: number, answered: number) => Math.min(Math.round((correct / answered) * 100), correct < answered ? 99 : 100);
 /**
  * Yazılan cevapların ne kadarı doğru: "hemen hepsi", "çoğu", "yarısından azı", "pek azı". Hiçbiri doğru değilse `null`
  * (olumsuz cümle gerekir: "hiçbiri doğru değildi").
@@ -5499,7 +5533,7 @@ function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audienc
   /* Dört işlemde doğru cevaplar */
   let genel: CognitiveBlock;
   if (none) {
-    genel = { ...card('zh_genel'), headline: 'Yorumlanmadı', text: notReadText };
+    genel = { ...card('zh_genel'), headline: 'Yorumlanmadı', interpreted: false, text: notReadText };
   } else {
     const parts = [
       v(
@@ -5584,7 +5618,7 @@ function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audienc
                   'Bu bölümde cevapların çoğunu, işlemi okuyup sonucu yazmaya yetmeyecek kadar kısa sürede verdin ve bu cevaplar yanlıştı. Tuşlara işleme bakmadan basmış olabilirsin.',
                   'Çocuğunuz bu bölümde cevapların çoğunu, işlemi okuyup sonucu yazmaya yetmeyecek kadar kısa sürede verdi ve bu cevaplar yanlıştı. Tuşlara işleme bakmadan basılmış olabilir.',
                 );
-      return { ...c, headline: 'Yorumlanmadı', text: `${why} Bu yüzden bu bölümün sonucu yorumlanmadı.` };
+      return { ...c, headline: 'Yorumlanmadı', interpreted: false, text: `${why} Bu yüzden bu bölümün sonucu yorumlanmadı.` };
     }
     const parts: string[] = [];
     const L = NUMBER_WORD[t.levels.length];
@@ -5690,7 +5724,7 @@ function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audienc
   /* Doğruluk ve hata türleri */
   let dogruluk: CognitiveBlock;
   if (none || answered === 0) {
-    dogruluk = { ...card('zh_dogruluk'), headline: 'Yorumlanmadı', text: 'Yorumlanan bölüm olmadığı için doğruluk hesaplanmadı.' };
+    dogruluk = { ...card('zh_dogruluk'), headline: 'Yorumlanmadı', interpreted: false, text: 'Yorumlanan bölüm olmadığı için doğruluk hesaplanmadı.' };
   } else {
     // Örnek önce büyük sayılarla yapılan işlemlerden seçilir (tek basamaklı işlemde "elde" doğal bir açıklama değildir).
     // Elde örneğinde tek basamaklı toplama en sona kalır.
@@ -5806,6 +5840,7 @@ function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audienc
     hiz = {
       ...card('zh_hiz'),
       headline: none ? 'Yorumlanmadı' : 'Hesaplanamadı',
+      interpreted: false,
       text: none
         ? 'Yorumlanan bölüm olmadığı için süre hesaplanmadı.'
         : sum((s) => s.factCorrect) >= ARITH_MIN_RTS && sum((s) => s.factRts.length) < ARITH_MIN_RTS
@@ -6041,7 +6076,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('gs_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('gs_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
 
   /* Ulaşılan düzey */
   const duzey = reachedLevelBlock({
@@ -6052,6 +6087,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
     plans: task.levels,
     noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
     zeroCause: lureNoted ? [' Bu, yönergeyi tam anlamamaktan ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : doubt ? ZERO_DOUBT : levelCardBlames ? ZERO_CAUSE : ['', ''],
+    zeroUnread: !lureNoted && doubt,
     rapid: rapid,
     doubt,
   });
@@ -6059,7 +6095,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
   /* Yanlışlarda seçilen şekiller */
   let yanilgi: CognitiveBlock;
   if (chance) {
-    yanilgi = { ...card('gs_yanilgi'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
+    yanilgi = { ...card('gs_yanilgi'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
   } else if (r.wrong === 0) {
     yanilgi = {
       ...card('gs_yanilgi'),
@@ -6107,7 +6143,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
         `${how} Çocuğunuzun yanlış cevapları çok az olduğu için hangi yanılgının öne çıktığı söylenemez.`,
       );
     }
-    yanilgi = { ...card('gs_yanilgi'), headline: head, text };
+    yanilgi = { ...card('gs_yanilgi'), headline: head, text, ...(head === 'Yorumlanmadı' ? { interpreted: false } : {}) };
   }
 
   /* Çalışma biçimi */
@@ -6133,7 +6169,7 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('gs_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('gs_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = chance ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -6315,7 +6351,7 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('sb_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('sb_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
 
   /* Ulaşılan düzey */
   const duzey = reachedLevelBlock({
@@ -6330,6 +6366,7 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
       : doubt
         ? ZERO_DOUBT
         : ZERO_CAUSE,
+    zeroUnread: !lureNoted && doubt,
     rapid,
     doubt,
   });
@@ -6365,7 +6402,7 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
   if (chance || doubt) {
     tur = {
       ...card('sb_tur'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: chance
         ? 'Doğru cevaplar çok az olduğu için değişiklik türleri karşılaştırılmadı.'
         : 'Çalışma biçimi kartında anlatılan nedenle değişiklik türleri karşılaştırılmadı.',
@@ -6439,7 +6476,7 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
     'Yanlış seçenekler dört türdendi: üçüncü şeklin hiç değiştirilmemiş hâli; değişikliklerin yalnızca bir kısmının uygulandığı şekil; bir değişikliğin yanlış yönde, yanlış ölçüde, yanlış parçada ya da başka bir özellikte yapıldığı şekil; doğru değişikliklerin yanında şekli ikinci şekle benzeten fazladan bir değişikliğin de yapıldığı şekil.';
   let yanilgi: CognitiveBlock;
   if (chance) {
-    yanilgi = { ...card('sb_yanilgi'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
+    yanilgi = { ...card('sb_yanilgi'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
   } else if (r.wrong === 0) {
     yanilgi = {
       ...card('sb_yanilgi'),
@@ -6483,7 +6520,7 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
         `${how} Çocuğunuzun yanlış cevapları çok az olduğu için hangi yanılgının öne çıktığı söylenemez.`,
       );
     }
-    yanilgi = { ...card('sb_yanilgi'), headline: head, text };
+    yanilgi = { ...card('sb_yanilgi'), headline: head, text, ...(head === 'Yorumlanmadı' ? { interpreted: false } : {}) };
   }
 
   /* Çalışma biçimi */
@@ -6509,7 +6546,7 @@ function analogyBlocks(r: AnalogyResult, task: FiguralAnalogyTask, audience: Aud
   // Tek değişiklikli ve çok değişiklikli sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('sb_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('sb_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = chance ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -6671,7 +6708,7 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('kp_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('kp_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
 
   /* Ulaşılan düzey */
   const duzey = reachedLevelBlock({
@@ -6682,6 +6719,7 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
     plans: task.levels,
     noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
     zeroCause: doubt ? ZERO_DOUBT : lureNoted ? [' Bu, yönergeyi tam anlamamaktan ya da yüzlerin yeri ve şekillerin yönü kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da yüzlerin yeri ve şekillerin yönü kartında anlatılan yanılgılardan kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : ZERO_CAUSE,
+    zeroUnread: doubt,
     rapid: rapid,
     doubt,
   });
@@ -6694,7 +6732,7 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
   const rough = ` Her türde ${sizes.length === 1 ? `yalnızca ${sizes[0]} soru` : 'yalnızca birkaç soru'} vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden iki tür arasındaki fark yalnızca yaklaşık bir fikir verir.`;
   let tur: CognitiveBlock;
   if (chance) {
-    tur = { ...card('kp_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı ve yanlışlardaki yanılgılar yorumlanmadı.' };
+    tur = { ...card('kp_tur'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı ve yanlışlardaki yanılgılar yorumlanmadı.' };
   } else {
     const needs =
       hard.length === 1
@@ -6768,7 +6806,7 @@ function cubeBlocks(r: CubeResult, task: CubeNetTask, audience: Audience, card: 
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('kp_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('kp_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = chance ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -6929,7 +6967,7 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   }
   // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
   const dogru: CognitiveBlock = notRead
-    ? { ...card('ud_dogru'), headline: 'Yorumlanmadı', text: accText }
+    ? { ...card('ud_dogru'), headline: 'Yorumlanmadı', interpreted: false, text: accText }
     : {
     ...card('ud_dogru'),
     headline: `${r.n} soruda ${r.correct} doğru`,
@@ -6956,7 +6994,7 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
       : halfPick
         ? 'Yönerge farklı anlaşılmış olabileceği için'
         : 'Doğru cevaplar çok az olduğu için';
-    bolum = { ...card('ud_bolum'), headline: 'Yorumlanmadı', text: `${why} iki bölüm karşılaştırılmadı.` };
+    bolum = { ...card('ud_bolum'), headline: 'Yorumlanmadı', interpreted: false, text: `${why} iki bölüm karşılaştırılmadı.` };
   } else {
     const gap = p1.correct - p2.correct;
     const found = (p: Rotation3dPartResult) =>
@@ -6980,7 +7018,7 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
       // Bazı sorularda bakmadan seçilmiş olabilir: bölümler arasındaki fark yorumlanmaz; sayılar metinde kalır, grafik çizilmez.
       bolum = {
         ...card('ud_bolum'),
-        headline: 'Yorumlanmadı',
+        headline: 'Yorumlanmadı', interpreted: false,
         text: `${counts} ${v(
           'Bazı sorularda şekillere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) iki bölüm arasındaki fark yorumlanmadı.',
           'Bazı sorularda şekillere bakılmadan seçilmiş olabileceği için (çalışma biçimi kartına bakın) iki bölüm arasındaki fark yorumlanmadı.',
@@ -7058,7 +7096,7 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   if (reversed) {
     ayna = {
       ...card('ud_ayna'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `${wrong} yanlış cevabının ${noneOfWrong} iki ayna görüntüsünü birden seçtin. Yönergeyi ters anlamış olabileceğin için bu sonuç yorumlanmadı (doğru cevaplar kartına bak).`,
         `Çocuğunuz ${wrong} yanlış cevabının ${noneOfWrong} iki ayna görüntüsünü birden seçti. Yönerge ters anlaşılmış olabileceği için bu sonuç yorumlanmadı (doğru cevaplar kartına bakın).`,
@@ -7067,14 +7105,14 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   } else if (halfPick) {
     ayna = {
       ...card('ud_ayna'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `Yanlış cevaplarının ${r.half === wrong ? 'hepsinde' : 'çoğunda'} bir doğru şekil ile bir ayna görüntüsü seçtin; yönergeyi farklı anlamış olabileceğin için bu seçimler yorumlanmadı (doğru cevaplar kartına bak).`,
         `Çocuğunuz yanlış cevaplarının ${r.half === wrong ? 'hepsinde' : 'çoğunda'} bir doğru şekil ile bir ayna görüntüsü seçti; yönerge farklı anlaşılmış olabileceği için bu seçimler yorumlanmadı (doğru cevaplar kartına bakın).`,
       ),
     };
   } else if (chance) {
-    ayna = { ...card('ud_ayna'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için yanlış cevaplardaki seçimler yorumlanmadı.' };
+    ayna = { ...card('ud_ayna'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için yanlış cevaplardaki seçimler yorumlanmadı.' };
   } else if (wrong === 0) {
     ayna = {
       ...card('ud_ayna'),
@@ -7084,7 +7122,7 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
   } else if (doubt) {
     ayna = {
       ...card('ud_ayna'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         'Bazı sorularda şekillere bakmadan seçmiş olabileceğin için yanlış cevaplarındaki seçimler yorumlanmadı.',
         'Bazı sorularda şekillere bakılmadan seçilmiş olabileceği için yanlış cevaplardaki seçimler yorumlanmadı.',
@@ -7149,7 +7187,7 @@ function rotation3dBlocks(r: Rotation3dResult, task: MentalRotation3dTask, audie
     ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.',
   );
   if (r.medianRt === null) {
-    calisma = { ...card('ud_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') };
+    calisma = { ...card('ud_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') };
   } else {
     let pace = '';
     // Bölümler karşılaştırılmadıysa (doğrular çok az) ya da bakmadan seçilmiş olabilirse süreler de karşılaştırılmaz.
@@ -7354,7 +7392,7 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   }
   // Yorumlanmayan harf sonucu rozetiyle ve grafiğiyle yorumlanmış gibi görünmez.
   const harf: CognitiveBlock = noRead
-    ? { ...card('hb_harf'), headline: 'Yorumlanmadı', text: harfText }
+    ? { ...card('hb_harf'), headline: 'Yorumlanmadı', interpreted: false, text: harfText }
     : {
         ...card('hb_harf'),
         headline: X === 0 ? `${N} harfin hiçbiri doğru yerde değil` : X === N ? `${N} harfin hepsi doğru yerde` : `${N} harften ${csCount(X, 'i')} doğru yerde`,
@@ -7381,7 +7419,7 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   };
   let uzunluk: CognitiveBlock;
   if (noRead) {
-    uzunluk = { ...card('hb_uzunluk'), headline: 'Yorumlanmadı', text: `${noReadWhy} dizi uzunluklarına göre sonuç yorumlanmadı.` };
+    uzunluk = { ...card('hb_uzunluk'), headline: 'Yorumlanmadı', interpreted: false, text: `${noReadWhy} dizi uzunluklarına göre sonuç yorumlanmadı.` };
   } else {
     const pShort = share([3, 4]);
     const pLong = share([6, 7]);
@@ -7561,6 +7599,8 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   }
   const islem: CognitiveBlock = {
     ...card('hb_islem'),
+    // Süre çoğunlukla dolduysa, düğmeler ters kullanıldıysa ya da doğrular rastgele düzeydeyse sonuç yorumlanmaz.
+    ...(opsSlow || opsReversed || opsChance ? { interpreted: false } : {}),
     headline:
       O.correct === 0
         ? `${O.n} işlemin hiçbiri doğru değil`
@@ -7584,7 +7624,7 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
   const E = N - X;
   let hata: CognitiveBlock;
   if (noRead) {
-    hata = { ...card('hb_hata'), headline: 'Yorumlanmadı', text: `${noReadWhy} doğru yerde olmayan harflerin türü yorumlanmadı.` };
+    hata = { ...card('hb_hata'), headline: 'Yorumlanmadı', interpreted: false, text: `${noReadWhy} doğru yerde olmayan harflerin türü yorumlanmadı.` };
   } else if (E === 0) {
     hata = {
       ...card('hb_hata'),
@@ -7714,7 +7754,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   if (floor && floorClose) {
     aralik = {
       ...card('dh_aralik'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `En küçük (${r.start} kareli) üç desenin hiçbirini tam doğru işaretleyemedin. Yine de karelerin çoğunu doğru yere koydun; her desende birkaç kare eksik, fazla ya da yanlış yerdeydi. Test bu yüzden ilk büyüklükte bitti ve sonuç yorumlanmadı. Yönergeyi yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
         `Çocuğunuz en küçük (${r.start} kareli) üç desenin hiçbirini tam doğru işaretleyemedi. Yine de karelerin çoğunu doğru yere koydu; her desende birkaç kare eksik, fazla ya da yanlış yerdeydi. Test bu yüzden ilk büyüklükte bitti ve sonuç yorumlanmadı. Yönergeyi yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
@@ -7723,7 +7763,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   } else if (floor) {
     aralik = {
       ...card('dh_aralik'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `En küçük (${r.start} kareli) üç desenin hiçbirini tam doğru hatırlayamadın; bu yüzden hatırlanan en büyük desen belirtilmedi. Yönergeyi tam anlamamış, desenlere yeterince bakamamış ya da testi yarıda bırakmış olabilirsin. Dinlenmiş olduğun bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı desenler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
         `Çocuğunuz en küçük (${r.start} kareli) üç desenin hiçbirini tam doğru hatırlayamadı; bu yüzden hatırlanan en büyük desen belirtilmedi. Yönerge tam anlaşılmamış, desenlere yeterince bakılamamış ya da test yarıda bırakılmış olabilir. Dinlenmiş olduğu bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı desenler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
@@ -7778,7 +7818,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   /* Doğru hatırlanan desenler */
   let desen: CognitiveBlock;
   if (floor) {
-    desen = { ...card('dh_desen'), headline: 'Yorumlanmadı', text: `${noReadWhy} doğru hatırlanan desenler yorumlanmadı.` };
+    desen = { ...card('dh_desen'), headline: 'Yorumlanmadı', interpreted: false, text: `${noReadWhy} doğru hatırlanan desenler yorumlanmadı.` };
   } else {
     const all = r.correct === r.trials;
     const parts = [
@@ -7872,7 +7912,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   let hata: CognitiveBlock;
   const W = r.attemptedWrong;
   if (floor) {
-    hata = { ...card('dh_hata'), headline: 'Yorumlanmadı', text: `${noReadWhy} yanlış desenlerdeki hatalar yorumlanmadı.` };
+    hata = { ...card('dh_hata'), headline: 'Yorumlanmadı', interpreted: false, text: `${noReadWhy} yanlış desenlerdeki hatalar yorumlanmadı.` };
   } else if (r.wrong === 0) {
     hata = {
       ...card('dh_hata'),
@@ -8063,7 +8103,7 @@ function patternBlocks(r: PatternResult, audience: Audience, card: CardOf): Task
   } else if (r.medianRt === null) {
     calisma = {
       ...card('dh_calisma'),
-      headline: 'Süre hesaplanamadı',
+      headline: 'Süre hesaplanamadı', interpreted: false,
       text: [skipLine, ...issues, 'İşaretleme süreleri alınamadığı için süreler hesaplanamadı.'].filter(Boolean).join(' '),
     };
   } else {
@@ -8155,7 +8195,7 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
   if (floor && lnLettersFirstHabit(r)) {
     aralik = {
       ...card('hs_aralik'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `En kısa (${r.start} öğeli) dizilerin hepsinde harfi sayıdan önce yazdın; oysa kural önce sayıyı, sonra harfi yazmaktı. Test bu yüzden ilk uzunlukta bitti ve sonuç yorumlanmadı. Kuralı yeniden okuyup testi başka bir gün çözmek daha doğru bir sonuç verebilir.`,
         `Çocuğunuz en kısa (${r.start} öğeli) dizilerin hepsinde harfi sayıdan önce yazdı; oysa kural önce sayıyı, sonra harfi yazmaktı. Test bu yüzden ilk uzunlukta bitti ve sonuç yorumlanmadı. Kuralı yeniden okuyup testi başka bir gün çözmesi daha doğru bir sonuç verebilir.`,
@@ -8164,7 +8204,7 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
   } else if (floor) {
     aralik = {
       ...card('hs_aralik'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `En kısa (${r.start} öğeli) üç dizinin hiçbirini doğru sıralayamadın; bu yüzden en uzun doğru dizi belirtilmedi. Yönergeyi tam anlamamış, dizilere yeterince bakamamış ya da testi yarıda bırakmış olabilirsin. Dinlendiğin bir gün, yönergeyi yeniden okuyup testi baştan çözmek daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
         `Çocuğunuz en kısa (${r.start} öğeli) üç dizinin hiçbirini doğru sıralayamadı; bu yüzden en uzun doğru dizi belirtilmedi. Yönerge tam anlaşılmamış, dizilere yeterince bakılamamış ya da test yarıda bırakılmış olabilir. Dinlendiği bir gün, yönergeyi yeniden okuyup testi baştan çözmesi daha doğru bir sonuç verebilir; aynı diziler yeniden gösterileceği için ikinci denemede sonuç biraz yükselebilir.`,
@@ -8214,7 +8254,7 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
   /* Doğru sıralanan diziler */
   let dizi: CognitiveBlock;
   if (floor) {
-    dizi = { ...card('hs_dizi'), headline: 'Yorumlanmadı', text: notRead };
+    dizi = { ...card('hs_dizi'), headline: 'Yorumlanmadı', interpreted: false, text: notRead };
   } else {
     const all = r.correct === r.trials;
     const parts = [
@@ -8326,7 +8366,7 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
     ],
   };
   if (floor) {
-    hata = { ...card('hs_hata'), headline: 'Yorumlanmadı', text: notRead };
+    hata = { ...card('hs_hata'), headline: 'Yorumlanmadı', interpreted: false, text: notRead };
   } else if (r.wrong === 0) {
     hata = {
       ...card('hs_hata'),
@@ -8503,7 +8543,7 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
   const D = r.digits;
   const L = r.letters;
   if (floor) {
-    turler = { ...card('hs_turler'), headline: 'Yorumlanmadı', text: notRead };
+    turler = { ...card('hs_turler'), headline: 'Yorumlanmadı', interpreted: false, text: notRead };
   } else {
     const dR = hsPct(D.recalled, D.shown);
     const lR = hsPct(L.recalled, L.shown);
@@ -8650,7 +8690,7 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
   } else if (r.medianRt === null) {
     calisma = {
       ...card('hs_calisma'),
-      headline: 'Süre hesaplanamadı',
+      headline: 'Süre hesaplanamadı', interpreted: false,
       text: [skipLine, ...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].filter(Boolean).join(' '),
     };
   } else {
@@ -8697,9 +8737,11 @@ function letterNumberBlocks(r: LetterNumberResult, audience: Audience, card: Car
 /** "Kaç tanesi": hepsi, hiçbiri, biri ya da "12 tanesi". */
 const sgOf = (k: number, total: number) => (k === total ? 'hepsi' : k === 0 ? 'hiçbiri' : k === 1 ? 'biri' : `${k} tanesi`);
 /** Saniye, bir ondalıkla: 1 420 → "1,4". */
-const sgSec = (ms: number) => nf1.format(Math.round(ms / 100) / 10);
+/** Simge Bulma'da süre (saniyenin onda biri). */
+export const sgSecValue = (ms: number) => Math.round(ms / 100) / 10;
+const sgSec = (ms: number) => nf1.format(sgSecValue(ms));
 /** Yüzde (aşağı yuvarlanır: bir yanlış varken %100 görünmesin). */
-const sgPct = (a: number, b: number) => (b ? Math.floor((100 * a) / b) : 0);
+export const sgPct = (a: number, b: number) => (b ? Math.floor((100 * a) / b) : 0);
 
 /**
  * Simge bulmanın beş sonuç kartı, 30 saniyelik bölümlere göre grafik ve öne çıkan sayılar. Durumların sırası ve eşikleri
@@ -8722,7 +8764,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
   // Bütün denemeler süre dolmadan bittiyse sayılar çalışılan süreyle söylenir.
   const spanNow = r.finishedAll ? `${doneSecs} saniyede` : sgDurationIn(r.durationMs);
   const hedge = v('Çalışma hızı kartında anlatılan nedenle bu sonuç seni tam yansıtmayabilir.', 'Çalışma hızı kartında anlatılan nedenle bu sonuç çocuğunuzu tam yansıtmayabilir.');
-  const notRead = (k: string): CognitiveBlock => ({ ...card(k), headline: 'Yorumlanmadı', text: 'Çalışma hızı kartında anlatılan nedenle bu kart yorumlanmadı.' });
+  const notRead = (k: string): CognitiveBlock => ({ ...card(k), headline: 'Yorumlanmadı', interpreted: false, text: 'Çalışma hızı kartında anlatılan nedenle bu kart yorumlanmadı.' });
   const withHedge = (parts: string[]) => (rushed ? [...parts, hedge] : parts).join(' ');
 
   /* Çalışma hızı */
@@ -8734,7 +8776,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
   if (why === 'none') {
     hiz = {
       ...card('sg_hiz'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `${span} boyunca hiç karar vermedin; bu yüzden sonuç yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. ${retry}`,
         `Çocuğunuz ${span} boyunca hiç karar vermedi; bu yüzden sonuç yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. ${retry}`,
@@ -8743,7 +8785,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
   } else if (why === 'few') {
     hiz = {
       ...card('sg_hiz'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `${sgDurationIn(r.durationMs)} yalnızca ${r.answered} karar verdin; bu kadar az kararla sonuç yorumlanamaz. Çok yavaş ve dikkatli çalışmış, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. ${retry}`,
         `Çocuğunuz ${sgDurationIn(r.durationMs)} yalnızca ${r.answered} karar verdi; bu kadar az kararla sonuç yorumlanamaz. Çok yavaş ve dikkatli çalışmış, görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilir. ${retry}`,
@@ -8754,7 +8796,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
     const howMany = r.varAnswers === r.answered || r.varAnswers === 0 ? 'hepsinde' : 'neredeyse hepsinde';
     hiz = {
       ...card('sg_hiz'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `Kararlarının ${howMany} aynı düğmeye (“${button}”) bastın; simgelere bakmadan basmış olabilirsin. Bu yüzden sonuç yorumlanmadı. Her denemede sıradaki simgelere bakıp öyle karar vermek gerekir.`,
         `Çocuğunuz kararlarının ${howMany} aynı düğmeye (“${button}”) bastı; simgelere bakılmadan basılmış olabilir. Bu yüzden sonuç yorumlanmadı. Yönergenin tam anlaşılmaması ya da görevin önemsenmemesi bunun nedeni olabilir.`,
@@ -8763,7 +8805,7 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
   } else if (why === 'chance') {
     hiz = {
       ...card('sg_hiz'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         `${r.answered} kararının ancak %${sgPct(r.correct, r.answered)} kadarı doğruydu; rastgele basan biri de yaklaşık yarısını doğru bulur. Bu yüzden sonuç yorumlanmadı. Acele etmiş ya da yönergeyi tam anlamamış olabilirsin. Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var” demek gerekir. Bir çizgisi farklı benzer simge aynı simge sayılmaz.`,
         `Çocuğunuzun ${r.answered} kararının ancak %${sgPct(r.correct, r.answered)} kadarı doğruydu; rastgele basan biri de yaklaşık yarısını doğru bulur. Bu yüzden sonuç yorumlanmadı. Acele edilmiş ya da yönerge tam anlaşılmamış olabilir.`,
@@ -9162,7 +9204,9 @@ function symbolSearchBlocks(r: SymbolSearchResult, audience: Audience, card: Car
 
 const nfDeg = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
 /** "24,3 derece", "90 derece". */
-const degrees = (x: number) => `${nfDeg.format(x)} derece`;
+/** Derece (en çok bir ondalık); `degrees` bununla yazar. */
+export const degreesValue = (x: number) => Math.round(x * 10) / 10;
+const degrees = (x: number) => `${nfDeg.format(degreesValue(x))} derece`;
 
 /** Bakış açısı almada büyük ve küçük dönüşlü soruların ortalama hatası en az bu kadar (derece) farklıysa fark belirgin sayılır. */
 export const PA_GAP = 15;
@@ -9250,7 +9294,7 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
     );
   }
   const hata: CognitiveBlock = notRead
-    ? { ...card('ba_hata'), headline: 'Yorumlanmadı', text: accText }
+    ? { ...card('ba_hata'), headline: 'Yorumlanmadı', interpreted: false, text: accText }
     : {
     ...card('ba_hata'),
     headline: `Ortalama hata ${degrees(m)}`,
@@ -9280,13 +9324,13 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
   if (chance) {
     donus = {
       ...card('ba_donus'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: 'Gösterilen yönler rastgele gösterilen yönlerden belirgin biçimde daha isabetli olmadığı için iki soru grubu karşılaştırılmadı.',
     };
   } else if (high) {
     donus = {
       ...card('ba_donus'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         'Ortalama hata çok yüksek olduğu ve yanlışlar belirli bir türde toplandığı için (hata türleri kartına bak) iki soru grubu karşılaştırılmadı.',
         'Ortalama hata çok yüksek olduğu ve yanlışlar belirli bir türde toplandığı için (hata türleri kartına bakın) iki soru grubu karşılaştırılmadı.',
@@ -9296,7 +9340,7 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
     // Sayılar verilir ama aradaki fark yorumlanmaz; başlık da bir fark söylemez (yol haritasının "Kısaca" bölümünde görünür).
     donus = {
       ...card('ba_donus'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: `${counts} ${v(
         'Bazı sorularda düşünmeden cevap vermiş olabileceğin için (çalışma biçimi kartına bak) iki grup arasındaki fark yorumlanmadı.',
         'Bazı sorularda düşünmeden cevap verilmiş olabileceği için (çalışma biçimi kartına bakın) iki grup arasındaki fark yorumlanmadı.',
@@ -9406,13 +9450,13 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
   if (chance && !doubt) {
     tur = {
       ...card('ba_tur'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: 'Gösterilen yönler rastgele gösterilen yönlerden belirgin biçimde daha isabetli olmadığı için yanlışların türü yorumlanmadı.',
     };
   } else if (doubt) {
     tur = {
       ...card('ba_tur'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: v(
         'Bazı sorularda düşünmeden cevap vermiş olabileceğin için yanlışlarının türü yorumlanmadı.',
         'Bazı sorularda düşünmeden cevap verilmiş olabileceği için yanlışların türü yorumlanmadı.',
@@ -9477,7 +9521,7 @@ function perspectiveBlocks(r: PerspectiveResult, audience: Audience, card: CardO
   );
   const calisma: CognitiveBlock =
     r.medianRt === null
-      ? { ...card('ba_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') }
+      ? { ...card('ba_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') }
       : {
           ...card('ba_calisma'),
           headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
@@ -9632,7 +9676,7 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
     }
   }
   const dogru: CognitiveBlock = notRead
-    ? { ...card('dk_dogru'), headline: 'Yorumlanmadı', text: accText }
+    ? { ...card('dk_dogru'), headline: 'Yorumlanmadı', interpreted: false, text: accText }
     : {
         ...card('dk_dogru'),
         headline: `${L.n} tuzaklı soruda ${L.correct} doğru`,
@@ -9653,7 +9697,7 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
   if (notRead) {
     yanlis = {
       ...card('dk_yanlis'),
-      headline: 'Yorumlanmadı',
+      headline: 'Yorumlanmadı', interpreted: false,
       text: below
         ? 'Doğru cevaplar rastgele seçimde beklenenden de az olduğu için yanlışların türü yorumlanmadı.'
         : chance
@@ -9673,7 +9717,7 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
     };
   } else if (doubt) {
     // Okumadan seçilmiş olabilirse yanlışların türü yorumlanmaz: rozet, grafik ve sayılar da yorumlanmış gibi görünmez.
-    yanlis = { ...card('dk_yanlis'), headline: 'Yorumlanmadı', text: `${doubtWhy} yanlışların türü yorumlanmadı.` };
+    yanlis = { ...card('dk_yanlis'), headline: 'Yorumlanmadı', interpreted: false, text: `${doubtWhy} yanlışların türü yorumlanmadı.` };
   } else {
     let text: string;
     if (wrong === 1) {
@@ -9766,7 +9810,7 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
   // çoğu yanlışsa kart, sonucun neden yorumlanmadığını sayılarla gösterir.
   const es: CognitiveBlock =
     rushed || doubt
-      ? { ...card('dk_es'), headline: 'Yorumlanmadı', text: esText }
+      ? { ...card('dk_es'), headline: 'Yorumlanmadı', interpreted: false, text: esText }
       : {
           ...card('dk_es'),
           headline: `${C.n} tuzaksız soruda ${C.correct} doğru`,
@@ -9808,7 +9852,7 @@ function reflectionBlocks(r: ReflectionResult, audience: Audience, card: CardOf)
     ? ''
     : v(' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir.', ' Bu testte süre sınırı yoktu; hız tek başına iyi ya da kötü değildir, önemli olan doğru cevaba ulaşabilmektir.');
   if (r.medianRt === null) {
-    calisma = { ...card('dk_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') };
+    calisma = { ...card('dk_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler hesaplanamadı.'].join(' ') };
   } else {
     const a = r.rtLureCorrect;
     const b = r.rtLureIntuitive;
@@ -9908,7 +9952,7 @@ const towerSeconds = (ms: number) => (ms < 500 ? 'bir saniyeden kısa' : ms < 10
 /** Grafikte `towerSeconds` ile aynı süre, kısa yazımla: "4,2 sn", "1 sn’den kısa". */
 const towerSecShort = (ms: number) => (ms < 500 ? '1 sn’den kısa' : ms < 10_000 ? `${String(towerTenths(ms)).replace('.', ',')} sn` : secShort(ms));
 /** `towerSeconds` ile yazılan süre (saniye): karşılaştırmalar yazılan sürelerle yapılır. */
-const towerTenths = (ms: number) => (ms < 500 ? 0 : ms < 10_000 ? Math.round(ms / 100) / 10 : Math.round(ms / 1000));
+export const towerTenths = (ms: number) => (ms < 500 ? 0 : ms < 10_000 ? Math.round(ms / 100) / 10 : Math.round(ms / 1000));
 
 /** Kule görevinin dört sonuç kartı, problem uzunluğuna göre grafik, öne çıkan sayılar ve üç boyutlu grafik. */
 function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskReport {
@@ -9982,7 +10026,7 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   }
   // Yorumlanmayan sonucun rozeti ve grafiği de yorumlanmış gibi görünmez.
   const dogru: CognitiveBlock = none
-    ? { ...card('kg_dogru'), headline: 'Yorumlanmadı', text: accText }
+    ? { ...card('kg_dogru'), headline: 'Yorumlanmadı', interpreted: false, text: accText }
     : {
     ...card('kg_dogru'),
     headline: O === 0 ? `${r.n} problemin hiçbiri en az hamlede değil` : O === r.n ? `${r.n} problemin hepsi en az hamlede` : `${r.n} problemin ${O === 1 ? 'biri' : `${O} tanesi`} en az hamlede`,
@@ -9998,7 +10042,7 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   /* Problem uzadıkça */
   let uzunluk: CognitiveBlock;
   if (none) {
-    uzunluk = { ...card('kg_uzunluk'), headline: 'Yorumlanmadı', text: `${noneWhy} kısa ve uzun problemler karşılaştırılmadı.` };
+    uzunluk = { ...card('kg_uzunluk'), headline: 'Yorumlanmadı', interpreted: false, text: `${noneWhy} kısa ve uzun problemler karşılaştırılmadı.` };
   } else {
     // Kısa, orta ve uzun problemlerin sayıları rozette ve grafiktedir; metin değişimin anlamını söyler.
     let text = '';
@@ -10113,7 +10157,7 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   const cozum: CognitiveBlock = none
     ? {
         ...card('kg_cozum'),
-        headline: 'Yorumlanmadı',
+        headline: 'Yorumlanmadı', interpreted: false,
         text: v(`${idleOf} hiç top taşımadın; bu yüzden çözüm biçimi yorumlanmadı.`, `Çocuğunuz ${idleOf} hiç top taşımadı; bu yüzden çözüm biçimi yorumlanmadı.`),
       }
     : {
@@ -10139,9 +10183,9 @@ function towerBlocks(r: TowerResult, audience: Audience, card: CardOf): TaskRepo
   /* Başlamadan önce düşünme: problem ekrana geldikten sonra taşınan ilk topun alındığı ana kadar geçen süre */
   let plan: CognitiveBlock;
   if (none) {
-    plan = { ...card('kg_plan'), headline: 'Yorumlanmadı', text: `${noneWhy} ilk hamleden önceki süreler yorumlanmadı.` };
+    plan = { ...card('kg_plan'), headline: 'Yorumlanmadı', interpreted: false, text: `${noneWhy} ilk hamleden önceki süreler yorumlanmadı.` };
   } else if (r.medianPick === null) {
-    plan = { ...card('kg_plan'), headline: 'Süre hesaplanamadı', text: 'Süreler alınamadığı için ilk hamleden önceki süre hesaplanamadı.' };
+    plan = { ...card('kg_plan'), headline: 'Süre hesaplanamadı', interpreted: false, text: 'Süreler alınamadığı için ilk hamleden önceki süre hesaplanamadı.' };
   } else {
     const parts: string[] = [
       v(
@@ -10360,7 +10404,7 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
       );
     }
   }
-  const dogru: CognitiveBlock = { ...card('kb_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText };
+  const dogru: CognitiveBlock = { ...card('kb_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
 
   /* Ulaşılan düzey */
   const duzey = reachedLevelBlock({
@@ -10371,6 +10415,7 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
     plans: task.levels,
     noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
     zeroCause: doubt ? ZERO_DOUBT : lurePattern ? [' Bu, yönergeyi tam anlamamaktan ya da doğru cevaplar kartında anlatılan yanılgılardan kaynaklanabilir.', ' Bu; çocuğunuzun yönergeyi tam anlamamasından, doğru cevaplar kartında anlatılan yanılgılardan ya da okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'] : [ZERO_CAUSE[0], ' Bu; çocuğunuzun dikkatinin dağılmasından, acele etmesinden, yönergeyi tam anlamamasından ya da okumakta henüz yeterince rahat olmamasından kaynaklanabilir ve tek başına yorumlanmamalıdır.'],
+    zeroUnread: doubt,
     rapid: rapid,
     doubt,
   });
@@ -10382,7 +10427,7 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
   const rough = ' Her türde yalnızca altı soru vardı ve her türde kolaydan zora sorular bulunuyordu; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.';
   let tur: CognitiveBlock;
   if (chance) {
-    tur = { ...card('kb_tur'), headline: 'Yorumlanmadı', text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
+    tur = { ...card('kb_tur'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
   } else {
     // Zorlanılan türlerde ne gerektiği en çok iki tür için yazılır (uzun bir liste okunmaz).
     const needs =
@@ -10443,7 +10488,7 @@ function vocabularyBlocks(r: VocabularyResult, task: VocabularyTask, audience: A
   // Kolay ve zor sorulardaki süreler yalnızca sonuç yorumlanıyorsa karşılaştırılır.
   const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
   if (r.medianRt === null) {
-    calisma = { ...card('kb_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+    calisma = { ...card('kb_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
   } else {
     let pace = chance ? v(...PACE_SKIPPED) : '';
     if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
@@ -10585,11 +10630,13 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
     }
   }
   const dogruluk: CognitiveBlock = none
-    ? { ...card('kd_dogruluk'), headline: 'Cevap verilmedi', text: accText }
+    ? { ...card('kd_dogruluk'), headline: 'Cevap verilmedi', interpreted: false, text: accText }
     : {
         ...card('kd_dogruluk'),
         headline: `${pct(r.accuracy)} doğru`,
         text: accText,
+        // Rastgele basma düzeyinde sonuç yorumlanmaz (metin bunu söyler).
+        ...(chance ? { interpreted: false } : {}),
         visual: pctBarsVisual('Doğru cevap oranı', [
           { label: 'Tek kurallı bölümler', rate: r.pure.accuracy },
           { label: 'İki kural karışınca: kural sürerken', rate: r.repeat.accuracy },
@@ -10601,11 +10648,11 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
   let degisim: CognitiveBlock;
   let switchFig: { value: string; note?: string } = { value: 'Yorumlanmadı' };
   if (chance) {
-    degisim = { ...card('kd_degisim'), headline: 'Yorumlanmadı', text: `${chanceWhy} kural değiştirmenin etkisi yorumlanmadı.` };
+    degisim = { ...card('kd_degisim'), headline: 'Yorumlanmadı', interpreted: false, text: `${chanceWhy} kural değiştirmenin etkisi yorumlanmadı.` };
   } else if (r.repeat.medianRt === null || r.switch.medianRt === null) {
     degisim = {
       ...card('kd_degisim'),
-      headline: 'Hesaplanamadı',
+      headline: 'Hesaplanamadı', interpreted: false,
       text: 'Kuralın sürdüğü ya da değiştiği denemelerden birinde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.',
     };
     switchFig = { value: 'Hesaplanamadı' };
@@ -10678,11 +10725,11 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
   /* İki kuralı akılda tutma */
   let karisik: CognitiveBlock;
   if (chance) {
-    karisik = { ...card('kd_karisik'), headline: 'Yorumlanmadı', text: `${chanceWhy} iki kuralın karıştığı bölüm yorumlanmadı.` };
+    karisik = { ...card('kd_karisik'), headline: 'Yorumlanmadı', interpreted: false, text: `${chanceWhy} iki kuralın karıştığı bölüm yorumlanmadı.` };
   } else if (r.pure.medianRt === null || r.repeat.medianRt === null) {
     karisik = {
       ...card('kd_karisik'),
-      headline: 'Hesaplanamadı',
+      headline: 'Hesaplanamadı', interpreted: false,
       text: 'Tek kurallı bölümlerde ya da iki kuralın karıştığı bölümde yeterince doğru cevap olmadığı için karşılaştırma yapılamadı.',
     };
   } else {
@@ -10766,11 +10813,11 @@ function ruleSwitchBlocks(r: RuleSwitchResult, audience: Audience, card: CardOf)
   // Doğru cevaplar şans düzeyindeyse onların süresi de bir şey söylemez: kart yorumlanmaz, grafiği olmaz.
   const calisma: CognitiveBlock =
     r.medianRt === null
-      ? { ...card('kd_calisma'), headline: 'Süre hesaplanamadı', text: [...issues, 'Yeterince doğru cevap olmadığı için cevap süreleri yorumlanmadı.'].join(' ') }
+      ? { ...card('kd_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Yeterince doğru cevap olmadığı için cevap süreleri yorumlanmadı.'].join(' ') }
       : chance
         ? {
             ...card('kd_calisma'),
-            headline: 'Yorumlanmadı',
+            headline: 'Yorumlanmadı', interpreted: false,
             text: [
               ...issues,
               mostlyTimeouts
@@ -10891,7 +10938,7 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
   if (none) {
     ogrenme = {
       ...card('kl_ogrenme'),
-      headline: 'Cevap verilmedi',
+      headline: 'Cevap verilmedi', interpreted: false,
       text: v(
         'Hatırlama bölümlerinin hiçbirinde kelime yazmadın; bu yüzden sonuç yorumlanmadı. Yönergeyi tam anlamamış ya da görevi yarıda bırakmış olabilirsin.',
         'Çocuğunuz hatırlama bölümlerinin hiçbirinde kelime yazmadı; bu yüzden sonuç yorumlanmadı. Yönerge anlaşılmamış ya da görev yarıda kalmış olabilir.',
@@ -10961,7 +11008,7 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
   let koruma: CognitiveBlock;
   const skipped = wordListDelayedSkipped(r);
   if (none) {
-    koruma = { ...card('kl_koruma'), headline: 'Cevap verilmedi', text: v('Kelime yazmadığın için bu bölüm yorumlanmadı.', 'Kelime yazılmadığı için bu bölüm yorumlanmadı.') };
+    koruma = { ...card('kl_koruma'), headline: 'Cevap verilmedi', interpreted: false, text: v('Kelime yazmadığın için bu bölüm yorumlanmadı.', 'Kelime yazılmadığı için bu bölüm yorumlanmadı.') };
   } else {
     const bPart =
       r.b.correct > 0
@@ -11052,7 +11099,7 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
       );
     }
     parts.push('Bu bölüm, yeni bir bilginin daha önce öğrenilenleri hatırlamayı nasıl etkilediğini gösterir (Oliveira ve Charchat-Fichman, 2008).');
-    koruma = { ...card('kl_koruma'), headline, text: parts.join(' ') };
+    koruma = { ...card('kl_koruma'), headline, text: parts.join(' '), ...(headline === 'Yorumlanmadı' ? { interpreted: false } : {}) };
     // Kartın karşılaştırdığı sayılar: üçüncü deneme, ikinci liste ve araya giren listeden sonra ilk liste. Karşılaştırma
     // yorumlanmadıysa grafiği de çizilmez.
     if (!skipped && t3 >= WL_RETENTION_MIN) {
@@ -11096,7 +11143,7 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
             'İlk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dedin; tahminle cevap vermiş olabilirsin. Bu yüzden tanıma sonucu yorumlanmadı.',
             'İlk listedeki ve ilk listede olmayan kelimelere benzer oranda “evet” dedi; tahminle cevap vermiş olabilir. Bu yüzden tanıma sonucu yorumlanmadı.',
           );
-    tanima = { ...card('kl_tanima'), headline: 'Yorumlanmadı', text: `${base} ${why}` };
+    tanima = { ...card('kl_tanima'), headline: 'Yorumlanmadı', interpreted: false, text: `${base} ${why}` };
   } else {
     const parts: string[] = [base];
     if (fa === 1) {
@@ -11213,7 +11260,7 @@ function wordListBlocks(r: WordListResult, audience: Audience, card: CardOf): Ta
   }
   let calisma: CognitiveBlock;
   if (none) {
-    calisma = { ...card('kl_calisma'), headline: 'Cevap verilmedi', text: [v('Kelime yazmadığın için bu bölüm yorumlanmadı.', 'Kelime yazılmadığı için bu bölüm yorumlanmadı.'), ...issues].join(' ') };
+    calisma = { ...card('kl_calisma'), headline: 'Cevap verilmedi', interpreted: false, text: [v('Kelime yazmadığın için bu bölüm yorumlanmadı.', 'Kelime yazılmadığı için bu bölüm yorumlanmadı.'), ...issues].join(' ') };
   } else {
     const third = p.of / r.trials.length;
     // "0 kez" denmez: ortadaki kelimelerin hiçbiri hatırlanmadıysa bu ayrıca söylenir.
@@ -11352,6 +11399,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       name: scale('digit_forward').name,
       plain: scale('digit_forward').plain,
       headline: fwd.span ? `${fwd.span} rakamlık diziye kadar` : 'En kısa dizi doğru tekrarlanmadı',
+      // En kısa dizi de doğru tekrarlanmadıysa bir dizi uzunluğu ölçülmüş olmaz (karşılaştırılmaz).
+      ...(fwd.span ? {} : { interpreted: false }),
       text: spanText(fwd, audience, {
         unit: 'rakam',
         floor: {
@@ -11375,6 +11424,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       name: scale('digit_backward').name,
       plain: scale('digit_backward').plain,
       headline: bwd.span ? `${bwd.span} rakamlık diziye kadar` : 'En kısa dizi doğru tekrarlanmadı',
+      // En kısa dizi de doğru tekrarlanmadıysa bir dizi uzunluğu ölçülmüş olmaz (karşılaştırılmaz).
+      ...(bwd.span ? {} : { interpreted: false }),
       text: spanText(bwd, audience, {
         unit: 'rakam',
         floor: {
@@ -11398,6 +11449,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       name: scale('spatial').name,
       plain: scale('spatial').plain,
       headline: sp.span ? `${sp.span} kutuluk diziye kadar` : 'En kısa dizi doğru tekrarlanmadı',
+      // En kısa dizi de doğru tekrarlanmadıysa bir dizi uzunluğu ölçülmüş olmaz (karşılaştırılmaz).
+      ...(sp.span ? {} : { interpreted: false }),
       text: spanText(sp, audience, {
         unit: 'kutu',
         floor: {
@@ -11444,6 +11497,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
       name: scale('speed').name,
       plain: scale('speed').plain,
       headline: spd.attempted === 0 ? 'Cevap verilmedi' : `${secs} saniyede ${spd.correct} doğru eşleştirme`,
+      ...(spd.attempted === 0 ? { interpreted: false } : {}),
       // Süre boyunca hiç cevap verilmediyse (yönerge anlaşılmamış, görev yarıda kalmış) yalnızca bu görev yorumlanmaz.
       text:
         spd.attempted === 0

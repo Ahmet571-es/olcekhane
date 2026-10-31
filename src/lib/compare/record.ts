@@ -1,8 +1,9 @@
 /**
- * Gelişimini karşılaştır (site sahibinin 2026-10-30 isteği): bir anket testinin (kişilik, ilgi, öğrenme, beceri ölçekleri)
- * raporu PDF olarak indirilince, PDF'in belge bilgilerine (anahtar sözcükler) sonuçların küçük bir sayısal özeti yazılır.
- * Kişi aynı testi daha sonra yeniden çözüp eski PDF'ini seçince, dosya yalnızca tarayıcıda okunur ve iki sonuç ölçek
- * ölçek karşılaştırılır. Sunucuya hiçbir şey gitmez, hiçbir şey saklanmaz; özet yalnızca kişinin kendi dosyasındadır.
+ * Gelişimini karşılaştır (site sahibinin 2026-10-30 isteği): bir anket testinin (kişilik, ilgi, öğrenme, beceri ölçekleri) ya
+ * da (2026-10-31'den) bir görev testinin raporu PDF olarak indirilince, PDF'in belge bilgilerine (anahtar sözcükler)
+ * sonuçların küçük bir sayısal özeti yazılır. Kişi aynı testi daha sonra yeniden çözüp eski PDF'ini seçince, dosya yalnızca
+ * tarayıcıda okunur ve iki sonuç ölçek ölçek (görevlerde sonuç sonuç) karşılaştırılır. Sunucuya hiçbir şey gitmez, hiçbir
+ * şey saklanmaz; özet yalnızca kişinin kendi dosyasındadır.
  *
  * Değişimin ölçüm payını aşıp aşmadığı, ölçeğin bilinen güvenirliğinden (Cronbach α ve başvuru standart sapması; ölçüm
  * payı SEM = SD·√(1−α)) güvenilir değişim ölçütüyle hesaplanır: |fark| / (√2·SEM) ≥ 1,96 (Jacobson ve Truax, 1991).
@@ -19,9 +20,27 @@ export const RECORD_MARK = 'olcekhane-sonuc:1:';
 export const RCI_CRITERION = 1.96;
 
 /** Sayının birimi: boş (sayı, puan), yüzde, saniye ya da derece. */
-export type CompareUnit = '' | '%' | 'sn' | '°';
+export type CompareUnit = '' | '%' | 'sn' | 'derece';
+/**
+ * Sayının yazımı (görev testlerinde, raporla aynı): "clock" tam saniye (0 → "1 sn’den kısa", 60 ve üstü dakikayla), "trim"
+ * ondalıktaki sondaki sıfırlar yazılmaz ("4 sn", "4,2 sn"); verilmezse `decimals` kadar ondalık.
+ */
+export type CompareFormat = 'clock' | 'trim';
 
-export interface CompareScale {
+/** Sayının gösterimiyle ilgili alanlar (görev testlerinde; anket testlerinde hiçbiri yoktur). */
+export interface CompareDisplay {
+  /** Birim (verilmezse birimsiz sayı). */
+  unit?: CompareUnit;
+  format?: CompareFormat;
+  /** Süre: büyümesi yavaşlamak demektir ("Süre uzadı/kısaldı" denir). */
+  time?: true;
+  /** "18/24" gibi, en çok değerle birlikte yazılır. */
+  outOf?: true;
+  /** Üst sınır yalnızca bozuk değeri ayıklar: çizimde aralık iki değere göre seçilir (süreler, dakikadaki harf). */
+  open?: true;
+}
+
+export interface CompareScale extends CompareDisplay {
   key: string;
   label: string;
   value: number;
@@ -33,13 +52,9 @@ export interface CompareScale {
   decimals: 0 | 1 | 2;
   /** Düzeyin rapordaki adı ("Orta" gibi). */
   band: string | null;
-  /** Birim (görev testlerinde; verilmezse birimsiz sayı). */
-  unit?: CompareUnit;
-  /** Süre: büyümesi yavaşlamak demektir ("Süre uzadı/kısaldı" denir). */
-  time?: true;
 }
 
-/** Raporun karşılaştırma bilgisi (yalnızca anket testlerinde). */
+/** Raporun karşılaştırma bilgisi (anket ve görev testlerinde; okuma ve konu tarama testlerinde yoktur). */
 export interface CompareInfo {
   slug: string;
   version: number;
@@ -115,7 +130,7 @@ export function readRecords(bytes: Uint8Array): ResultRecord[] | null {
 
 export type ChangeVerdict = 'up' | 'down' | 'stable' | 'up-unknown' | 'down-unknown' | 'same';
 
-export interface CompareRow {
+export interface CompareRow extends CompareDisplay {
   key: string;
   label: string;
   before: number;
@@ -123,8 +138,6 @@ export interface CompareRow {
   min: number;
   max: number;
   decimals: 0 | 1 | 2;
-  unit?: CompareUnit;
-  time?: true;
   bandBefore: string | null;
   bandAfter: string | null;
   /**
@@ -136,7 +149,8 @@ export interface CompareRow {
 
 export type CompareOutcome =
   | { status: 'ok'; rows: CompareRow[]; days: number; known: boolean }
-  | { status: 'other-test' }
+  /** Dosyada bu testin özeti yok; `many`: dosyada birden çok testin özeti var (paket raporu). */
+  | { status: 'other-test'; many?: true }
   | { status: 'version' };
 
 const shown = (x: number, decimals: 0 | 1 | 2) => Math.round(x * 10 ** decimals) / 10 ** decimals;
@@ -144,7 +158,7 @@ const shown = (x: number, decimals: 0 | 1 | 2) => Math.round(x * 10 ** decimals)
 /** Şimdiki sonucu PDF'teki özetlerden aynı teste ait olanla karşılaştırır. */
 export function compareResults(current: CompareInfo, records: ResultRecord[]): CompareOutcome {
   const same = records.filter((r) => r.s === current.slug);
-  if (same.length === 0) return { status: 'other-test' };
+  if (same.length === 0) return records.length > 1 ? { status: 'other-test', many: true } : { status: 'other-test' };
   const prev = same.find((r) => r.v === current.version);
   if (!prev) return { status: 'version' };
   const before = new Map(prev.r.map(([k, v, b]) => [k, { v, b }]));
@@ -166,7 +180,10 @@ export function compareResults(current: CompareInfo, records: ResultRecord[]): C
       max: s.max,
       decimals: s.decimals,
       ...(s.unit ? { unit: s.unit } : {}),
+      ...(s.format ? { format: s.format } : {}),
       ...(s.time ? { time: true as const } : {}),
+      ...(s.outOf ? { outOf: true as const } : {}),
+      ...(s.open ? { open: true as const } : {}),
       bandBefore: p.b,
       bandAfter: s.band,
       verdict,

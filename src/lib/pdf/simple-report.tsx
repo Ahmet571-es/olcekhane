@@ -1339,7 +1339,7 @@ function PackageSummaryPage({ input, siteHost }: { input: PackagePdfInput; siteH
 
 export function PackageReportDocument({ input, siteHost }: { input: PackagePdfInput; siteHost: string }) {
   const kind = AUDIENCE_LABELS[input.entries[0].report.audience].name;
-  // Paketteki anket testlerinin özetleri: her biri daha sonra kendi testinin raporunda karşılaştırılabilir.
+  // Paketteki anket ve görev testlerinin özetleri: her biri daha sonra kendi testinin raporunda karşılaştırılabilir.
   const records = input.entries.flatMap((e) => (e.report.compare ? [toRecord(e.report.compare)] : []));
   return (
     <Document

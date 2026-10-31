@@ -7,17 +7,44 @@ import { compareResults, gapText, readRecords, type CompareInfo, type CompareOut
 const MAX_BYTES = 20 * 1024 * 1024;
 
 type Digits = 0 | 1 | 2;
-const fmt = (x: number, d: Digits) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(x);
-/** Birimiyle sayı: "%88", "1,5 sn", "8,2°", "18". */
-export const withUnit = (text: string, unit: CompareUnit | undefined) =>
-  unit === '%' ? `%${text}` : unit === 'sn' ? `${text} sn` : unit === '°' ? `${text}°` : text;
-const signed = (x: number, d: Digits, unit?: CompareUnit) => {
-  const r = Math.round(x * 10 ** d) / 10 ** d;
-  const v = withUnit(fmt(Math.abs(r), d), unit === '%' ? undefined : unit);
-  // Yüzdelerin farkı yüzde puanıdır: "+4 puan".
-  const body = unit === '%' ? `${fmt(Math.abs(r), d)} puan` : v;
-  return r > 0 ? `+${body}` : r < 0 ? `−${body}` : unit === '%' ? `${fmt(0, d)} puan` : withUnit(fmt(0, d), unit);
+/** Eksi işareti her yerde aynı: "−". */
+const minus = (t: string) => t.replace(/^-/, '−');
+const fmt = (x: number, d: Digits) => minus(new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(x));
+const fmtTrim = (x: number, d: Digits) => minus(new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: d }).format(x));
+/** Tam saniye, raporun kısa yazımıyla: "18 sn", "1 dk 15 sn". */
+const clockText = (s: number) => {
+  if (s < 60) return `${s} sn`;
+  const m = Math.floor(s / 60);
+  return s % 60 ? `${m} dk ${s % 60} sn` : `${m} dk`;
 };
+
+type Shown = Pick<CompareRow, 'decimals' | 'unit' | 'format' | 'outOf' | 'max'>;
+
+/** Birimiyle sayı: "%88", "1,5 sn", "8,2 derece", "18". */
+export const withUnit = (text: string, unit: CompareUnit | undefined) =>
+  unit === '%' ? `%${text}` : unit === 'sn' ? `${text} sn` : unit === 'derece' ? `${text} derece` : text;
+
+/** Bir sonucun raporla aynı yazımı: "18/24", "%88", "1,65 sn", "1 sn’den kısa", "1 dk 15 sn", "4,2 sn", "8,2 derece". */
+export function valueText(x: number, r: Shown): string {
+  if (r.unit === 'sn' && x === 0 && (r.format === 'clock' || r.format === 'trim')) return '1 sn’den kısa';
+  if (r.format === 'clock') return clockText(x);
+  const n = r.format === 'trim' ? fmtTrim(x, r.decimals) : fmt(x, r.decimals);
+  return r.outOf ? `${n}/${fmt(r.max, 0)}` : withUnit(n, r.unit);
+}
+
+/** Farkın yazımı: "+2", "−0,25 sn", "+4 puan" (yüzde farkı), "−1 dk 5 sn", "0". */
+export function signed(diff: number, r: Shown): string {
+  const d = r.decimals;
+  const v = Math.round(diff * 10 ** d) / 10 ** d;
+  const a = Math.abs(v);
+  const body =
+    r.unit === '%'
+      ? `${fmt(a, d)} puan`
+      : r.format === 'clock'
+        ? clockText(a)
+        : withUnit(r.format === 'trim' ? fmtTrim(a, d) : fmt(a, d), r.unit);
+  return v > 0 ? `+${body}` : v < 0 ? `−${body}` : body;
+}
 
 /** Ay adlarıyla tarih: "31 Ekim 2026". */
 const dateLabel = (iso: string) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Istanbul' }).format(new Date(`${iso}T12:00:00Z`));
@@ -47,22 +74,33 @@ export function rowText(row: CompareRow): string {
   }
 }
 
+/** Çizimin genişliği ve kenar boşluğu. */
+const TRACK_W = 200;
+const TRACK_PAD = 6;
+
 /**
- * Önceki (içi boş daire) ve şimdiki (dolu daire) puan, ölçeğin aralığında. Sürelerin üst sınırı yoktur: çizgi sıfırdan iki
- * sürenin büyüğünün biraz ötesine kadardır.
+ * Çizimdeki yer: değer, ölçeğin aralığında (sınır dışı değerler kenara çekilir). Üst sınırı yalnızca bozuk değeri ayıklayan
+ * sayılarda (süreler, dakikadaki harf) aralık sıfırdan iki değerin büyüğünün biraz ötesine kadardır; ikisi de sıfırsa çizgi
+ * ortadadır.
  */
+export function trackX(row: Pick<CompareRow, 'min' | 'max' | 'before' | 'after' | 'open'>, v: number, W = TRACK_W): number {
+  const lo = row.open ? 0 : row.min;
+  const top = Math.max(row.before, row.after);
+  if (row.open && top <= 0) return W / 2;
+  const hi = row.open ? top * 1.25 : row.max;
+  const clamped = Math.min(hi, Math.max(lo, v));
+  return TRACK_PAD + ((clamped - lo) / (hi - lo || 1)) * (W - 2 * TRACK_PAD);
+}
+
+/** Önceki (içi boş daire) ve şimdiki (dolu daire) sonuç. */
 function Track({ row }: { row: CompareRow }) {
-  const W = 200;
-  const lo = row.time ? 0 : row.min;
-  const hi = row.time ? Math.max(row.before, row.after) * 1.25 || 1 : row.max;
-  const clamp = (v: number) => Math.min(hi, Math.max(lo, v));
-  const x = (v: number) => 6 + ((clamp(v) - lo) / (hi - lo || 1)) * (W - 12);
-  const a = x(row.before);
-  const b = x(row.after);
+  const W = TRACK_W;
+  const a = trackX(row, row.before);
+  const b = trackX(row, row.after);
   const strong = row.verdict === 'up' || row.verdict === 'down';
   return (
     <svg viewBox={`0 0 ${W} 22`} preserveAspectRatio="xMinYMid meet" className="h-[22px] w-full max-w-[16.5rem]" aria-hidden="true">
-      <rect x={6} y={9.5} width={W - 12} height={3} rx={1.5} fill="var(--rule)" />
+      <rect x={TRACK_PAD} y={9.5} width={W - 2 * TRACK_PAD} height={3} rx={1.5} fill="var(--rule)" />
       {Math.abs(b - a) > 1 && <line x1={a} y1={11} x2={b} y2={11} stroke="var(--brass)" strokeWidth={strong ? 3 : 2} strokeDasharray={strong ? undefined : '3 2.5'} />}
       <circle cx={a} cy={11} r={5} fill="var(--surface)" stroke="var(--ink-2)" strokeWidth={1.6} />
       <circle cx={b} cy={11} r={5} fill="var(--ink)" />
@@ -76,10 +114,32 @@ function Track({ row }: { row: CompareRow }) {
  */
 export function retestNote(retest: 'items' | 'practice', you: boolean): string {
   const base = you
-    ? 'Bu tür testleri yeniden çözünce, testi tanımaktan dolayı sonuç çoğu zaman biraz yükselir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim sayma.'
-    : 'Bu tür testler yeniden çözülünce, testi tanımaktan dolayı sonuç çoğu zaman biraz yükselir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim saymayın.';
+    ? 'Bu tür testleri yeniden çözünce, testi tanımaktan dolayı doğru sayısı çoğu zaman biraz artar, süreler de biraz kısalabilir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim sayma.'
+    : 'Bu tür testler yeniden çözülünce, testi tanımaktan dolayı doğru sayısı çoğu zaman biraz artar, süreler de biraz kısalabilir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim saymayın.';
   const items = retest === 'items' ? ' Bu testte her seferinde aynı sorular gelir; önceki çözüşten akılda kalanlar da sonucu yükseltebilir.' : '';
   return `${base}${items}`;
+}
+
+/** Seçilen dosyada hiç özet yoksa. Görev testinde, hiçbir sonucu yorumlanmayan raporun PDF'inde de özet yoktur. */
+export function noneText(compare: CompareInfo): string {
+  const date = dateLabel(compare.since ?? '2026-10-30');
+  return compare.retest
+    ? `Bu dosyada karşılaştırma bilgisi bulunamadı: dosya ${date} öncesinde indirilmiş ya da o raporda karşılaştırılabilecek bir sonuç yoktu.`
+    : `Bu dosyada karşılaştırma bilgisi bulunamadı. Bu testte karşılaştırma, ${date} ve sonrasında indirilen PDF raporlarıyla yapılabilir.`;
+}
+
+/** Dosyada bu testin özeti yoksa: tek testin raporu başka bir testinse ya da paket raporunda bu test yoksa. */
+export function otherTestText(compare: CompareInfo, many: boolean, you: boolean): string {
+  if (many) return `Bu dosyada bu testin karşılaştırma bilgisi yok (dosya başka testlerin raporu ya da ${dateLabel(compare.since ?? '2026-10-30')} öncesinde indirilmiş).`;
+  return you ? 'Bu dosya başka bir testin raporu. Aynı testin önceki raporunu seç.' : 'Bu dosya başka bir testin raporu. Aynı testin önceki raporunu seçin.';
+}
+
+/** Bölümün sonundaki not: PDF'lerin özet taşıdığı. */
+export function footerText(compare: CompareInfo, you: boolean): string {
+  const what = compare.retest ? (you ? 'sonuçlarının' : 'sonuçların') : you ? 'puanlarının' : 'puanların';
+  return you
+    ? `İndirdiğin PDF raporları, karşılaştırma için ${what} sayısal bir özetini de taşır; bu özet yalnızca senin dosyandadır.`
+    : `İndirdiğiniz PDF raporları, karşılaştırma için ${what} sayısal bir özetini de taşır; bu özet yalnızca sizin dosyanızdadır.`;
 }
 
 /**
@@ -143,18 +203,13 @@ export function ComparePanel({ compare, you }: { compare: CompareInfo; you: bool
 
       <div aria-live="polite" className="flex flex-col gap-4">
         {outcome?.status === 'none' && (
-          <p className="notice notice-warn">
-            Bu dosyada karşılaştırma bilgisi bulunamadı. Bu testte karşılaştırma, {dateLabel(compare.since ?? '2026-10-30')} ve sonrasında
-            indirilen PDF raporlarıyla yapılabilir.
-          </p>
+          <p className="notice notice-warn">{noneText(compare)}</p>
         )}
         {outcome?.status === 'error' && (
           <p className="notice notice-danger">{v('Dosya okunamadı. Başka bir dosya seçmeyi dene.', 'Dosya okunamadı. Başka bir dosya seçmeyi deneyin.')}</p>
         )}
         {outcome?.status === 'other-test' && (
-          <p className="notice notice-warn">
-            {v('Bu dosya başka bir testin raporu. Aynı testin önceki raporunu seç.', 'Bu dosya başka bir testin raporu. Aynı testin önceki raporunu seçin.')}
-          </p>
+          <p className="notice notice-warn">{otherTestText(compare, !!outcome.many, you)}</p>
         )}
         {outcome?.status === 'version' && (
           <p className="notice notice-warn">Testin soruları o tarihten bu yana değiştiği için iki sonuç karşılaştırılamaz.</p>
@@ -189,8 +244,7 @@ export function ComparePanel({ compare, you }: { compare: CompareInfo; you: bool
                     <p className="flex flex-wrap items-baseline gap-x-2">
                       <span className="font-bold">{r.label}</span>
                       <span className="t-small tabular text-ink-2">
-                        {withUnit(fmt(r.before, r.decimals), r.unit)} → {withUnit(fmt(r.after, r.decimals), r.unit)} (
-                        {signed(r.after - r.before, r.decimals, r.unit)})
+                        {valueText(r.before, r)} → {valueText(r.after, r)} ({signed(r.after - r.before, r)})
                       </span>
                     </p>
                     <p className="t-small text-ink-2">{rowText(r)}</p>
@@ -208,12 +262,7 @@ export function ComparePanel({ compare, you }: { compare: CompareInfo; you: bool
           </>
         )}
       </div>
-      <p className="t-small text-ink-3">
-        {v(
-          'İndirdiğin PDF raporları, karşılaştırma için puanlarının sayısal bir özetini de taşır; bu özet yalnızca senin dosyandadır.',
-          'İndirdiğiniz PDF raporları, karşılaştırma için puanların sayısal bir özetini de taşır; bu özet yalnızca sizin dosyanızdadır.',
-        )}
-      </p>
+      <p className="t-small text-ink-3">{footerText(compare, you)}</p>
     </section>
   );
 }
