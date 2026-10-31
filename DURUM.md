@@ -48,6 +48,28 @@ Basamaklar:
 
 ## Sıradaki işler
 
+**ŞU AN: Raporları genişletme (site sahibinin 2026-10-31 isteği; seçimleri aynı gün).** Site sahibi sesli dinlemeyi
+telefonunda denedi ("her şey çalışıyor") ve raporların kapsamını düşük buldu: "Rapor çok daha kapsamlı, yol gösterici
+olsun; biz klinik değiliz, tanı koymuyoruz; her açıklamanın o açıklamaya uygun bir grafiği olsun; analizler çok bilimsel
+ama dili çok sade olsun; ses asistanı raporu eksiksiz okusun." Seçimleri: dört yeni bölümün hepsi ve **bütün testler aynı
+anda** (anket, görev, okuma, sesli okuma, matematik). Bölümler:
+1. **Cevapların tek tek:** her ölçek için cevaplanan cümleler ve verilen cevaplar grafikte (ters puanlanan cümleler
+   belirtilir); görev testlerinde soru soru (doğru/yanlış, süre, düzey); okuma ve matematikte soru soru.
+2. **Düzeylerin anlamı:** her ölçekte düşük, orta ve yüksek düzeyin ne anlattığı yan yana, kişinin düzeyi grafikte
+   işaretli (ölçüm payı biliniyorsa puanın çevresinde gösterilir); görev testlerinde düzeylerin ve ölçülerin anlamı.
+3. **Günlük hayatta nasıl görünür:** her ölçek ve düzey için okulda/işte, arkadaşlarla ve evde kısa örnekler (öğrenci,
+   veli, yetişkin); görev testlerinde becerinin günlük hayatta nerede kullanıldığı. Her test için yeni metin; teşhis ve
+   kesin hüküm yok; örnekler maddelerin içeriğinden çıkar.
+4. **Cevaplarına ne kadar güvenebiliriz:** cevap tutarlılığı (karşıt çiftler), hız, hep aynı cevap, boş cevap; görev
+   testlerinde şans düzeyi, çok hızlı cevaplar, hep aynı yer; her biri grafikle, uyarı kutusunun yerine ya da yanında.
+Ayrıca: raporda açıklama yapan her bölümün (yol haritası dahil: öneriler, ortamlar, yaklaşım, haftalar) kendi içeriğine
+uygun bir grafiği olur; yalnızca "tanı değildir" gibi standart notlar grafiksiz kalabilir. Sesli dinleme raporu baştan
+sona eksiksiz okur (yol haritası dahil, ayrıca düğmeye basmadan; kaynak listesinin varlığı söylenir). Ekran ve PDF aynı.
+Her aşama iki bağımsız incelemeden geçer (metin ve mantık; bilgi ve kaynak); telefonda ve masaüstünde denenir.
+Aşamalar (her biri bütün testleri kapsar, ayrı ayrı yayına alınır): (a) ortak altyapı ve anket testlerinde 1, 2, 4;
+(b) görev testlerinde 1, 2, 4; (c) okuma, sesli okuma ve matematikte 1, 2, 4; (d) 3 (günlük hayat metinleri, test
+test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinlemenin eksiksiz okuması. İlerleme buraya yazılır.
+
 **Kalite incelemesi (2026-10-08): 6 acil hata, site sahibinin isteğiyle her işlemede bir hata düzeltilip yayına
 alınıyor.** Rapor: Claude Docs'taki **Ölçekhane Test Kalite Raporu** (https://claude.ai/artifact/8btJRknY53xATRsLhX2HsH;
 sonundaki "Teknik ek" dosya ve satırları verir; her bulgu düzeltmeden önce kodda yeniden doğrulanır). Sıra:
