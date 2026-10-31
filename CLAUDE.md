@@ -308,6 +308,24 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   tablonun kopyasını tutar. Yeni görev testi `TASK_COMPARE`'e yazılır. Okuma, sesli okuma ve konu tarama testlerinde yok
   (form ve metin sınıfa göre değişir). `tests/karsilastirma.test.ts` denetler (her sayı kendi kartında aynı biçimde yazar).
 
+## Raporu sesli dinle
+
+- Site sahibinin 2026-10-31 isteği: küçük çocuklar ve okumakta zorlananlar raporu dinleyebilsin. Raporun başında oynatıcı
+  (`components/test/report-speech.tsx`; tek testte öğrenci, veli ve yetişkin sekmesinde, pakette açılan her raporda):
+  önce sonuçlar okunur, bitince (varsa) "Yol haritasını da dinle"; duraklat ve devam (kalınan cümlenin başından), durdur,
+  hız (Normal / Yavaş). Ayarlar yalnızca sayfada durur. Sekme değişince, rapor kapanınca, sayfa gizlenince ya da
+  sayfadan çıkınca susar; sayfada aynı anda yalnızca bir oynatıcı konuşur.
+- Ses yalnızca cihazın kendi Türkçe sesiyle üretilir: `localService === true` ve dili `tr` (öncelik tr-TR) olan ses
+  (`lib/speech/voice.ts`). Metni bir sunucuya gönderen seslere (ör. masaüstü Chrome'daki "Google Türkçe") ve başka dillere
+  hiçbir zaman geçilmez; böyle bir ses yoksa oynatıcı görünmez. Hiçbir şey gönderilmez, saklanmaz.
+- Okunacak metin raporun verisinden kurulur, DOM'dan değil (`lib/speech/report-text.ts`): ekrandaki sırayla başlık,
+  uyarılar, öne çıkan sayılar, grafik (sözle), kartlar, notlar; yol haritasında giriş, kısaca, öneriler, ortamlar, yaklaşım
+  ve haftalar (kaynak listesi okunmaz). Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak
+  gösterimleri ("(Kail, 1991)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "1,5 sn" → "1,5 saniye",
+  "ve ark." → "ve arkadaşları", "ör." → "örneğin"; oklar ve tırnaklar okunmaz; parçalar en çok 200 karakter.
+  `tests/sesli-dinle.test.ts` bütün anket ve görev raporlarında (görevlerin bütün sonuç örüntüleri), okuma, sesli okuma
+  ve konu taramada okunacak metni ve ses seçimini denetler.
+
 ## Kendini Tanı Paketi
 
 - Site sahibinin 2026-10-30 isteği ve seçimleri: kişilik, ilgi, çalışma alışkanlıkları ve dört zihinsel beceri (akıl yürütme,

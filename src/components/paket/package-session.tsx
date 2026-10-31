@@ -6,6 +6,7 @@ import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
 import { SharePanel } from '@/components/share/share-panel';
 import { PageGuide } from '@/components/site/page-guide';
+import { ReportSpeech } from '@/components/test/report-speech';
 import { RoadmapView } from '@/components/test/roadmap-view';
 import { ComparePanel } from '@/components/test/compare-panel';
 import { SimpleReportView } from '@/components/test/simple-report-view';
@@ -512,6 +513,8 @@ function PackageResult({
               <span className="t-meta">{e.skill}</span>
             </summary>
             <div className="flex flex-col gap-8 border-t border-rule p-5 sm:p-6">
+              {/* Oynatıcı yalnızca açık raporda; rapor kapanınca ya da rapor türü değişince susar. */}
+              {open.has(e.slug) && <ReportSpeech key={`${e.slug}-${audience}`} report={e.report} you={you} />}
               <SimpleReportView report={e.report} />
               {e.report.compare && <ComparePanel compare={e.report.compare} you={you} />}
               {e.report.roadmap && <RoadmapView roadmap={e.report.roadmap} you={you} />}

@@ -16,6 +16,7 @@ import type { ItemNoun } from '@/lib/instruments/nouns';
 import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { shareCardFor } from '@/lib/share/card';
+import { ReportSpeech } from './report-speech';
 import { RoadmapView } from './roadmap-view';
 import { ComparePanel } from './compare-panel';
 import { SimpleReportView } from './simple-report-view';
@@ -286,6 +287,9 @@ function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string
           <p className="t-meta">{gradeLabel}</p>
         </div>
       )}
+
+      {/* Rapor türü değişince oynatıcı yeniden kurulur: okunan rapor susar. */}
+      <ReportSpeech key={audience} report={report} you={audience !== 'parent'} />
 
       {readingGuide(audience, report)}
 
