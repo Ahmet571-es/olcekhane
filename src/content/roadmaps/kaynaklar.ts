@@ -140,7 +140,7 @@ export const KAYNAK = {
     url: 'https://doi.org/10.2478/v10053-008-0062-8',
   },
   ivieEmbretson2010: {
-    text: 'Ivie, J. L. ve Embretson, S. E. (2010). Cognitive process modeling of spatial ability: The assembling objects task. Intelligence, 38, 324–335.',
+    text: 'Ivie, J. L. ve Embretson, S. E. (2010). Cognitive process modeling of spatial ability: The assembling objects task. Intelligence, 38(3), 324–335.',
     url: 'https://doi.org/10.1016/j.intell.2010.02.002',
   },
   levine2012: {

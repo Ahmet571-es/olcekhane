@@ -1628,7 +1628,7 @@ export type AssemblyType = 'slide' | 'turn' | 'mirror';
  * büyüklüğü farklı (`size`: bir parça bir kare büyük ya da küçük; yalnızca kolay düzeylerde), parça sayısı farklı (`odd`:
  * yalnızca 1. düzeyde).
  */
-export type AssemblyLure = 'piece' | 'cut' | 'mirror' | 'size' | 'odd';
+export type AssemblyLure = 'piece' | 'mirror' | 'size' | 'odd';
 
 export interface AssemblyItem {
   key: string;

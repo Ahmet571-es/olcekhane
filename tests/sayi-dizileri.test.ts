@@ -350,7 +350,7 @@ describe('Sayı dizileri: rapor', () => {
     // Hiçbir düzey ölçüte uymuyor.
     const low = evaluate(SLUG, numberSeriesBody((q) => ({ answer: numberSeriesRank(q) < [2, 3, 2, 1, 0][q.level - 1] ? q.answer : far(q), rtMs: 15_000 })));
     expect(low.student.items[1].badge).toBe('Düzey belirtilmedi');
-    expect(low.student.items[1].text).toContain('hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi');
+    expect(low.student.items[1].text).toContain('Hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi');
     expect(low.parent.items[1].badge).toBe('Düzey belirtilmedi');
   });
 

@@ -3215,7 +3215,7 @@ export interface AssemblyResult {
   samePosition: number;
 }
 
-export const ASSEMBLY_LURES_ORDER: AssemblyLure[] = ['piece', 'mirror', 'cut', 'size', 'odd'];
+export const ASSEMBLY_LURES_ORDER: AssemblyLure[] = ['piece', 'mirror', 'size', 'odd'];
 export const ASSEMBLY_TYPES_ORDER: AssemblyType[] = ['slide', 'turn', 'mirror'];
 /** Parçaları dört seçenekle karşılaştırmak için bundan kısa bir süre yetmez (3. düzey ve üstünde üç ya da daha çok parça vardır). */
 export const ASSEMBLY_RAPID_MS = 3000;
@@ -3317,12 +3317,12 @@ export function assemblyQualityNotes(r: AssemblyResult): string[] {
   const notes: string[] = [];
   if (assemblyChance(r)) {
     notes.push(
-      'Parçalardan şekil testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az; sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da seçeneklere bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
+      'Parçalardan şekil testinde doğru cevaplar, seçeneklerden rastgele seçen birinin de bulabileceği kadar az. Sorular çok zor gelmiş, yönerge tam anlaşılmamış ya da seçeneklere bakılmadan seçilmiş olabilir. Bu sonuç tek başına yorumlanmamalıdır.',
     );
   }
   if (assemblyRapid(r)) {
     notes.push(
-      `Parçalardan şekil testinde 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} yanlış bir cevap 3 saniyeden kısa sürede verilmiş; bu sorularda parçalar seçeneklerle karşılaştırılmadan seçilmiş olabilir.`,
+      `Parçalardan şekil testinde 3. düzey ve üstündeki ${r.rapidOf} sorunun ${r.rapid === r.rapidOf ? 'hepsinde' : `${r.rapid} tanesinde`} yanlış bir cevap 3 saniyeden kısa sürede verilmiş. Bu sorularda parçalar seçeneklerle karşılaştırılmadan cevap verilmiş olabilir.`,
     );
   }
   if (assemblySamePosition(r)) {

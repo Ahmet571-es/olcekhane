@@ -19,7 +19,7 @@ const INK = '#1f2937';
 const FILL = '#cfe0f5';
 /** Çizgi kalınlıkları ve kenar boşluğu (ızgara birimi): dış hat kalın, parçaların sınırları ince. */
 const OUTLINE = 0.085;
-const INNER = 0.04;
+const INNER = 0.055;
 const MARGIN = 0.15;
 /**
  * Izgara biriminin ekrandaki boyu (`--u`): parçalar ve seçenekler aynı ölçekle çizilir (parçaların büyüklüğü seçeneklerdeki
@@ -58,15 +58,14 @@ function Pieces({ item }: { item: AssemblyItem }) {
   const W = Math.max(...boxes.map((b) => b.x + b.w));
   const H = Math.max(...boxes.map((b) => b.y + b.h));
   return (
-    <div className="flex flex-col items-center gap-2">
-      <p className="text-center font-bold">Parçalar:</p>
-      <div className="rounded-xl border-2 border-ink px-3 py-3" style={{ background: PANEL_BG }}>
+    <div className="flex flex-col items-center">
+      <div className="rounded-xl border-2 border-ink px-3 py-2" style={{ background: PANEL_BG }}>
         <svg
           viewBox={`${-MARGIN} ${-MARGIN} ${W + 2 * MARGIN} ${H + 2 * MARGIN}`}
           style={{ width: `calc(${UNIT} * ${W + 2 * MARGIN})` }}
           className="block h-auto"
           role="img"
-          aria-label={`${item.pieces.length} parça`}
+          aria-label={`Parçalar: ${item.pieces.length} parça`}
         >
           {item.pieces.map((p, i) => {
             const d = drawShape(p.shape);
@@ -108,7 +107,12 @@ function Options({
   const n = item.options.length;
   const box = boxOf(item);
   const onKey = (e: React.KeyboardEvent<HTMLButtonElement>, i: number) => {
-    const step: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+    const step: Record<string, number> = {
+      ArrowRight: 1,
+      ArrowDown: 1,
+      ArrowLeft: -1,
+      ArrowUp: -1,
+    };
     if (e.key in step) {
       e.preventDefault();
       const next = (i + step[e.key] + n) % n;
@@ -125,7 +129,13 @@ function Options({
         const right = marks?.right === i;
         const wrongPick = marks && marks.chosen === i && !right;
         const on = selected === i;
-        const border = right ? 'border-ok ring-2 ring-ok' : wrongPick ? 'border-danger ring-2 ring-danger' : on ? 'border-brass ring-2 ring-brass' : 'border-rule-strong';
+        const border = right
+          ? 'border-ok ring-2 ring-ok'
+          : wrongPick
+            ? 'border-danger ring-2 ring-danger'
+            : on
+              ? 'border-brass ring-2 ring-brass'
+              : 'border-rule-strong';
         return (
           <button
             key={i}
@@ -159,7 +169,15 @@ function Example() {
   return (
     <figure className="flex w-full max-w-[26rem] flex-col items-center gap-2">
       <div className="flex w-full flex-wrap items-center justify-center gap-4 rounded-xl border border-rule p-3" style={{ background: PANEL_BG }}>
-        <Pieces item={{ key: 'ornek', level: 1, type: 'slide', pieces: ASSEMBLY_EXAMPLE.pieces, options: [] }} />
+        <Pieces
+          item={{
+            key: 'ornek',
+            level: 1,
+            type: 'slide',
+            pieces: ASSEMBLY_EXAMPLE.pieces,
+            options: [],
+          }}
+        />
         <span className="text-2xl font-bold text-ink-2" aria-hidden="true">
           →
         </span>
@@ -181,7 +199,10 @@ export function ShapeAssembly({ task, onDone }: { task: ShapeAssemblyTask; onDon
   const [step, setStep] = useState<Step>('ready');
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<{ chosen: number; good: boolean } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    chosen: number;
+    good: boolean;
+  } | null>(null);
   const [practiceScore, setPracticeScore] = useState(0);
   const out = useRef<AssemblyTrialInput[]>([]);
   const shownAt = useRef(0);
@@ -283,13 +304,11 @@ export function ShapeAssembly({ task, onDone }: { task: ShapeAssemblyTask; onDon
   if (step === 'ready') {
     return (
       <div key={step} className={`flex flex-col items-center gap-6 text-center ${UNIT_VARS}`}>
-        <p className="measure text-lg">
-          Her soruda üstte birkaç parça, altında dört bütün şekil göreceksin. Parçaların hepsi birleşince hangi şeklin oluşacağını bul.
-        </p>
-        <p className="measure text-lg">
-          Parçaları zihninde kaydırabilir ve döndürebilirsin ama ters çeviremezsin (ayna görüntüsünü alamazsın). Bütün şekillerde parçaların birleştiği yerler ince
-          çizgilerle gösterilir: doğru şekilde her parça, üstteki parçalardan biriyle tıpatıp aynıdır. Hiçbir parça artmaz, eksik kalmaz.
-        </p>
+        {task.instructions.map((p) => (
+          <p key={p} className="measure text-lg">
+            {p}
+          </p>
+        ))}
         <Example />
         <p className="measure text-lg">
           Doğru seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.

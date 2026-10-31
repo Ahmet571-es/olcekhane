@@ -459,8 +459,8 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>
-                  Yalnızca kaydırma gereken, döndürme gereken ve ayna tuzaklı soruların karşılaştırması (üç boyutlu grafikle); yanlış cevaplarda parçalarından biri
-                  farklı, bir parçası ters çevrilmiş ya da başka parçalara bölünmüş şekillerden birinin öne çıkıp çıkmadığı ve sorulara nasıl çalışıldığı
+                  Yalnızca kaydırma gereken, döndürme gereken ve ayna tuzaklı soruların karşılaştırması (üç boyutlu grafikle); yanlış cevaplarda parçalarından en az
+                  biri farklı ya da bir parçası ters çevrilmiş şekillerden birinin öne çıkıp çıkmadığı ve sorulara nasıl çalışıldığı
                 </li>
               </>
             )}

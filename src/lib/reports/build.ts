@@ -3172,7 +3172,7 @@ function reachedLevelBlock(o: {
       ...(o.zeroUnread ? { interpreted: false } : {}),
       text:
         v(`En kolay düzeydeki ${first.n} sorunun ${found}${first.correct === 0 ? 'dın' : 'dun'}.`, `Çocuğunuz en kolay düzeydeki ${first.n} sorunun ${found}${first.correct === 0 ? 'dı' : 'du'}.`) +
-        ` ${rule}; hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi.` +
+        ` ${rule}. Hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi.` +
         (high.length
           ? v(
               ` ${highNames} düzeydeki soruların ${highShare} doğru bulmana rağmen, kolay düzeylerdeki yanlışlar yüzünden bu ölçüte ulaşılmadı.`,
@@ -6280,18 +6280,16 @@ const assemblyTypeList = (types: AssemblyType[]) =>
 
 /** Yanlışlarda seçilen şeklin adı ("… seçildi" cümlesinde). */
 export const ASSEMBLY_LURE_SEEN: Record<AssemblyLure, string> = {
-  piece: 'parçalarından biri farklı olan şekil',
+  piece: 'parçalarından en az biri farklı olan şekil',
   mirror: 'bir parçası ters çevrilmiş (ayna görüntüsü) şekil',
-  cut: 'dış hattı doğru ama başka parçalara bölünmüş şekil',
   size: 'bir parçası daha büyük ya da daha küçük olan şekil',
   odd: 'parça sayısı farklı olan şekil',
 };
 
 /** Kart grafiğinde ve başlıklarda yanlış seçeneklerin kısa adları. */
 export const ASSEMBLY_LURE_NAMES: Record<AssemblyLure, string> = {
-  piece: 'Bir parçası farklı',
+  piece: 'Parçası farklı',
   mirror: 'Ters çevrilmiş parça',
-  cut: 'Başka parçalara bölünmüş',
   size: 'Bir parçası büyük ya da küçük',
   odd: 'Parça sayısı farklı',
 };
@@ -6305,10 +6303,6 @@ export const ASSEMBLY_LURE_TIP: Record<AssemblyLure, { you: string; parent: stri
   mirror: {
     you: 'Parçalar döndürülebilir ama ters çevrilemez. Bir parçanın eğik kenarının ya da çıkıntısının hangi yana baktığını denetlemek işine yarayabilir.',
     parent: 'Parçalar döndürülebilir ama ters çevrilemez. Çocuğunuzun, bir parçanın eğik kenarının ya da çıkıntısının hangi yana baktığını denetlemesi yardımcı olabilir.',
-  },
-  cut: {
-    you: 'Bütünün dış hattının uyması yetmez. Seçenekteki ince çizgilere bakıp her parçanın yukarıdakilerden biriyle tıpatıp aynı olup olmadığını denetlemek işine yarayabilir.',
-    parent: 'Bütünün dış hattının uyması yetmez. Çocuğunuzun seçenekteki ince çizgilere bakıp her parçanın yukarıdakilerden biriyle tıpatıp aynı olup olmadığını denetlemesi yardımcı olabilir.',
   },
   size: {
     you: 'Parçaların büyüklüğünü kare kare saymak işine yarayabilir.',
@@ -6387,11 +6381,16 @@ function assemblyBlocks(r: AssemblyResult, task: ShapeAssemblyTask, audience: Au
   const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
   const good = r.types.filter(most).map((x) => x.type);
   const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
-  const typeSizes = joinTr(r.types.map((x) => `${ASSEMBLY_TYPES[x.type].name.charAt(0).toLocaleLowerCase('tr-TR')}${ASSEMBLY_TYPES[x.type].name.slice(1)} sorusu ${x.n}`));
-  const rough = ` Türlerde birkaç soru vardı (${typeSizes}) ve yalnızca kaydırma soruları daha çok kolay düzeylerdeydi; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.`;
+  const rough =
+    ' Her türde yalnızca birkaç soru vardı. Yalnızca kaydırma sorularının çoğu 1. düzeydeydi; ayna tuzaklı sorular ise yalnızca 3–5. düzeylerde soruldu. Bu yüzden türler arasındaki fark düzeylerin zorluğundan da gelebilir ve yalnızca yaklaşık bir fikir verir.';
   let tur: CognitiveBlock;
-  if (chance) {
-    tur = { ...card('ps_tur'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
+  if (chance || doubt) {
+    tur = {
+      ...card('ps_tur'),
+      headline: 'Yorumlanmadı',
+      interpreted: false,
+      text: chance ? 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' : 'Çalışma biçimi kartında anlatılan nedenle soru türleri karşılaştırılmadı.',
+    };
   } else {
     const allRight = r.types.every((x) => x.correct === x.n);
     const head = allRight
@@ -6404,14 +6403,16 @@ function assemblyBlocks(r: AssemblyResult, task: ShapeAssemblyTask, audience: Au
     let text: string;
     if (hard.length === 0) {
       text = v(
-        `Üç soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldun: parçaları kaydırarak da döndürerek de birleştirebildin ve ters çevrilmiş parçayla kurulan şekli ayırabildin.`,
-        `Çocuğunuz üç soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldu: parçaları kaydırarak da döndürerek de birleştirebildi ve ters çevrilmiş parçayla kurulan şekli ayırabildi.`,
+        `Üç soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldun. Parçaları kaydırarak da döndürerek de birleştirebildin ve ters çevrilmiş parçayla kurulan şekli ayırabildin.`,
+        `Çocuğunuz üç soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldu. Parçaları kaydırarak da döndürerek de birleştirebildi ve ters çevrilmiş parçayla kurulan şekli ayırabildi.`,
       );
     } else if (good.length === 0) {
-      const best = [...r.types].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      const top = Math.max(...r.types.map((x) => x.correct / x.n));
+      const best = r.types.filter((x) => Math.abs(x.correct / x.n - top) < 1e-9).map((x) => x.type);
+      const where = `${assemblyTypeList(best)} ${best.length > 1 ? 'sorularındaydı (eşit)' : 'sorularındaydı'}`;
       text = v(
-        `Hiçbir soru türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${assemblyTypeList([best.type])} sorularında verdin.`,
-        `Çocuğunuz hiçbir soru türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${assemblyTypeList([best.type])} sorularında verdi.`,
+        `Hiçbir soru türünde soruların çoğunu doğru bulamadın. En yüksek doğru oranın ${where}.`,
+        `Çocuğunuz hiçbir soru türünde soruların çoğunu doğru bulamadı. En yüksek doğru oranı ${where}.`,
       );
     } else {
       const needs = hard.map((x) => capTr(`${assemblyTypeList([x])} sorularında ${ASSEMBLY_TYPES[x].plain} gerekir.`)).join(' ');
@@ -6425,7 +6426,7 @@ function assemblyBlocks(r: AssemblyResult, task: ShapeAssemblyTask, audience: Au
 
   /* Yanlışlarda seçilen şekiller */
   let yanilgi: CognitiveBlock;
-  const how = 'Yanlış seçeneklerde parçalardan biri farklıydı, bir parça ters çevrilmişti, dış hat doğru olduğu hâlde şekil başka parçalara bölünmüştü ya da (kolay düzeylerde) bir parçanın büyüklüğü ya da parça sayısı farklıydı.';
+  const how = 'Yanlış seçeneklerde parçalardan en az biri farklıydı ya da biri ters çevrilmişti. Kolay düzeylerde bir parçanın büyüklüğü ya da parça sayısı da farklı olabiliyordu.';
   if (chance) {
     yanilgi = { ...card('ps_yanilgi'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
   } else if (r.wrong === 0) {
@@ -6500,7 +6501,7 @@ function assemblyBlocks(r: AssemblyResult, task: ShapeAssemblyTask, audience: Au
           'Zor sorulara kolay sorulardan daha çok zaman ayırdın. Zor sorularda parça sayısı artar ve parçalar döndürülmüş durur; her parçayı yerine oturtmak zaman alır ve bu iyi bir çalışma biçimidir.',
           'Çocuğunuz zor sorulara kolay sorulardan daha çok zaman ayırdı. Zor sorularda parça sayısı artar ve parçalar döndürülmüş durur; her parçayı yerine oturtmak zaman alır ve bu iyi bir çalışma biçimidir.',
         );
-      } else if (r.rtHard * 1.2 <= r.rtEasy && hardAcc <= 0.5) {
+      } else if (r.rtHard * 1.2 <= r.rtEasy && hardAcc < 0.5) {
         pace = v(
           'Zor sorulara kolay sorulardan daha az zaman ayırdın ve bu sorularda doğru cevaplar azdı. Zor sorularda parçaları seçeneklerde tek tek aramak işine yarayabilir.',
           'Çocuğunuz zor sorulara kolay sorulardan daha az zaman ayırdı ve bu sorularda doğru cevaplar azdı. Zor sorularda vazgeçmiş ya da acele etmiş olabilir; parçaları seçeneklerde tek tek aramak yardımcı olabilir.',
@@ -6541,7 +6542,7 @@ function assemblyBlocks(r: AssemblyResult, task: ShapeAssemblyTask, audience: Au
         : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
     ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
   ];
-  const profile: CognitiveReport['profile'] = chance
+  const profile: CognitiveReport['profile'] = chance || doubt
     ? undefined
     : {
         title: v('Soru türlerine göre sonucun', 'Soru türlerine göre sonuç'),
@@ -6564,7 +6565,7 @@ function assemblyBlocks(r: AssemblyResult, task: ShapeAssemblyTask, audience: Au
   // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
   dogru.visual = levelDotsVisual(r.levels);
   if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
-  if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: ASSEMBLY_TYPES[x.type].name, correct: x.correct, n: x.n })));
+  if (tur.headline !== 'Yorumlanmadı') tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: ASSEMBLY_TYPES[x.type].name, correct: x.correct, n: x.n })));
   if (yanilgi.headline !== 'Yorumlanmadı') {
     const kinds = ASSEMBLY_LURES_ORDER.filter((k) => r.luresByKind[k] > 0);
     const other = r.wrong - kinds.reduce((a, k) => a + r.luresByKind[k], 0);

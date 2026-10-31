@@ -32,10 +32,16 @@ import sitemap from '../src/app/sitemap';
 import {
   areaOf,
   box,
+  canonOf,
   congruent,
   connected,
+  edgesOf,
+  exactOf,
   fullSquares,
   halfSquares,
+  longSentences,
+  sentences,
+  minRotated,
   orthoConvex,
   outline,
   overlap,
@@ -52,7 +58,13 @@ const SLUG = 'parcalardan-sekil';
 const task = parcalardanSekil.tasks[0] as ShapeAssemblyTask;
 const TITLES = ['Doğru cevaplar', 'Ulaşılan düzey', 'Soru türleri', 'Yanlışlarda seçilen şekiller', 'Çalışma biçimi'];
 /** Her düzeyde parça sayısı. */
-const PIECES_BY_LEVEL: Record<number, number[]> = { 1: [2], 2: [2, 3], 3: [3], 4: [4], 5: [4, 5] };
+const PIECES_BY_LEVEL: Record<number, number[]> = {
+  1: [2],
+  2: [2, 3],
+  3: [3],
+  4: [4],
+  5: [4, 5],
+};
 
 /** Sorular ve alıştırmalar, bağımsız denetimin okuduğu biçimiyle. */
 const ALL = [...ASSEMBLY_SPECS, ...ASSEMBLY_PRACTICE_SPECS].map((s) => ({
@@ -66,11 +78,12 @@ const ALL = [...ASSEMBLY_SPECS, ...ASSEMBLY_PRACTICE_SPECS].map((s) => ({
   answer: s.lures.indexOf(null),
 }));
 const ITEMS = ALL.filter((q) => !q.practice);
+/** Parçaların (alan, yarım kare) imzaları, sıralı. */
+const pieceSigs = (pieces: ReturnType<typeof outline>[]) => pieces.map((p) => `${areaOf(p)}|${halfSquares(p)}`).sort();
+const countSigs = (o: string) => pieceSigs([...parts(o).values()]);
 
 const text = (r: SimpleReport) =>
-  [...r.items.flatMap((i) => [i.title, i.badge, i.text]), ...r.cautions, r.chartNote, ...r.keyFigures.flatMap((f) => [f.label, f.value, f.note])]
-    .filter(Boolean)
-    .join(' ');
+  [...r.items.flatMap((i) => [i.title, i.badge, i.text]), ...r.cautions, r.chartNote, ...r.keyFigures.flatMap((f) => [f.label, f.value, f.note])].filter(Boolean).join(' ');
 const withoutRoadmap = (r: SimpleReport) => {
   const { roadmap, ...rest } = r;
   void roadmap;
@@ -123,7 +136,10 @@ describe('Parçalardan şekil: sorular', () => {
 
   it('tek doğru cevap: doğru seçenekte çizilen parçalar verilen parçalarla bire bir aynı (yalnızca döndürerek); öteki seçeneklerde değil', () => {
     for (const q of ALL) {
-      expect(q.lures.filter((l) => l === null), q.key).toHaveLength(1);
+      expect(
+        q.lures.filter((l) => l === null),
+        q.key,
+      ).toHaveLength(1);
       const correct = q.options[q.answer];
       expect(partsMatch(correct, q.pieces, 'rotate'), q.key).toBe(true);
       expect(tiles(outline(correct), q.pieces, false), q.key).toBe(true);
@@ -146,9 +162,11 @@ describe('Parçalardan şekil: sorular', () => {
         const drawn = parts(o).size;
         switch (lure) {
           case 'piece':
-            // Bir parçası aynı büyüklükte ama başka biçimde: parçalar bu şekli ne döndürerek ne ters çevirerek oluşturur.
+            // Bir ya da iki parçası aynı büyüklükte ama başka biçimde: parçalar bu şekli ne döndürerek ne ters çevirerek oluşturur.
             expect([drawn, areaOf(ol)], label).toEqual([k, areaOf(correct)]);
             expect(tiles(ol, q.pieces, true), label).toBe(false);
+            // 2. düzeyden itibaren değişen parçalar tam ve yarım kare sayılarını korur: kareleri saymak yanlışı ele vermez.
+            if (q.level >= 2) expect(countSigs(o), label).toEqual(pieceSigs(q.pieces));
             break;
           case 'mirror':
             // Parçalardan biri ters çevrilmiş: çizilen parçalar ancak ters çevirmeyle eşleşir; şekil ancak ters çevirerek kurulur.
@@ -156,13 +174,6 @@ describe('Parçalardan şekil: sorular', () => {
             expect(partsMatch(o, q.pieces, 'flip'), label).toBe(true);
             expect(tiles(ol, q.pieces, false), label).toBe(false);
             expect(tiles(ol, q.pieces, true), label).toBe(true);
-            break;
-          case 'cut':
-            // Dış hattı doğru şekille aynı (başka yöne döndürülmüş), parçalara başka yerlerden bölünmüş.
-            expect(congruent(ol, correct, false), label).toBe(true);
-            expect(sameByTranslation(ol, correct), label).toBe(false);
-            expect(drawn, label).toBe(k);
-            expect(partsMatch(o, q.pieces, 'flip'), label).toBe(false);
             break;
           case 'size':
             // Bir parçası bir kare büyük ya da küçük; yalnızca 1. ve 2. düzeyde.
@@ -177,8 +188,9 @@ describe('Parçalardan şekil: sorular', () => {
             expect(tiles(ol, q.pieces, true), label).toBe(false);
             break;
         }
-        // Dış hattı doğru şekille aynı olan tek yanlış seçenek "başka parçalara bölünmüş" olandır.
-        if (lure !== 'cut') expect(congruent(ol, correct, true), label).toBe(false);
+        // Hiçbir yanlış seçeneğin dış hattı doğru şekle benzemez; parçalar döndürülerek hiçbirini tıpatıp dolduramaz.
+        expect(congruent(ol, correct, true), label).toBe(false);
+        expect(tiles(ol, q.pieces, false), label).toBe(false);
       }
       // Yanlış seçeneklerin dış hatları birbirinden farklı.
       const wrong = q.options.filter((_, j) => j !== q.answer).map(outline);
@@ -199,7 +211,11 @@ describe('Parçalardan şekil: sorular', () => {
       if (q.level === 5) {
         // Her parça, doğru şekildeki yönünden başka bir yöne döndürülmüş gösterilir.
         const drawn = [...parts(correct).values()];
-        for (const [i, p] of q.pieces.entries()) expect(drawn.some((d) => sameByTranslation(d, p)), `${q.key} ${i}`).toBe(false);
+        for (const [i, p] of q.pieces.entries())
+          expect(
+            drawn.some((d) => sameByTranslation(d, p)),
+            `${q.key} ${i}`,
+          ).toBe(false);
       }
     }
     const count = (t: string) => ITEMS.filter((q) => q.type === t).length;
@@ -209,30 +225,52 @@ describe('Parçalardan şekil: sorular', () => {
     // Kolay yanılgılar yalnızca kolay düzeylerde; ayna yanılgısı 3. düzeyden itibaren.
     const offered = (l: AssemblyLure) => ITEMS.filter((q) => q.lures.includes(l)).map((q) => q.level);
     expect(Math.max(...offered('odd'))).toBe(1);
-    expect(Math.max(...offered('size'))).toBe(2);
+    expect(Math.max(...offered('size'))).toBeLessThanOrEqual(2);
     expect(Math.min(...offered('mirror'))).toBe(3);
-    expect(offered('cut')).toHaveLength(5);
-    expect(new Set(offered('cut')).size).toBe(5);
+    expect(new Set(ALL.flatMap((q) => q.lures))).toEqual(new Set([null, 'piece', 'mirror', 'size', 'odd']));
+    // Düzey anlatımlarındaki döndürülmüş parça sayıları: 1. düzeyde yok, 2. ve 3. düzeyde bir (kaydırma sorusunda yok),
+    // 4. düzeyde iki (kaydırma sorusunda yok), 5. düzeyde hepsi.
+    const turned = (l: number) => ITEMS.filter((q) => q.level === l).map((q) => `${q.type}:${minRotated(q.options[q.answer], q.pieces)}/${q.pieces.length}`);
+    expect(turned(1)).toEqual(['slide:0/2', 'slide:0/2', 'slide:0/2', 'slide:0/2']);
+    expect(turned(2).map((x) => x.split('/')[0])).toEqual(['turn:1', 'turn:1', 'turn:1', 'turn:1']);
+    expect(turned(3).map((x) => x.split('/')[0])).toEqual(['slide:0', 'turn:1', 'mirror:1', 'mirror:1']);
+    expect(turned(4).map((x) => x.split('/')[0])).toEqual(['slide:0', 'turn:2', 'mirror:2', 'mirror:2']);
+    for (const x of turned(5)) expect(x.split(':')[1].split('/')[0], x).toBe(x.split('/')[1]);
+    expect(task.levels.map((l) => l.plain)).toEqual([
+      'Döndürülmeden gösterilen iki parçanın, yalnızca yan yana kaydırılınca hangi şekli oluşturduğunu bulmak.',
+      'İki ya da üç parçadan biri döndürülmüş gösterildiğinde, onu zihinde çevirip bütünü bulmak.',
+      'Dağınık duran üç parçayı birleştirmek ve bazı sorularda ters çevrilmiş bir parçayla kurulan şekli doğru şekilden ayırmak.',
+      'Dört parçayı (çoğu soruda ikisi döndürülmüşken) birleştirmek ve birbirine çok benzeyen seçenekleri ayırmak.',
+      'Hepsi döndürülmüş dört ya da beş parçayı birleştirmek ve doğru şekle çok benzeyen seçenekleri ayırmak.',
+    ]);
+    // Rapordaki tür kartının cümlesi: yalnızca kaydırma sorularının çoğu 1. düzeyde, ayna tuzaklı sorular yalnızca 3–5. düzeylerde.
+    const slides = ITEMS.filter((q) => q.type === 'slide');
+    expect(slides.filter((q) => q.level === 1).length * 2).toBeGreaterThan(slides.length);
+    expect(new Set(ITEMS.filter((q) => q.type === 'mirror').map((q) => q.level))).toEqual(new Set([3, 4, 5]));
+    // Parça sayıları (2. düzey "iki ya da üç", 5. düzey "dört ya da beş").
+    expect(new Set(ITEMS.filter((q) => q.level === 2).map((q) => q.pieces.length))).toEqual(new Set([2, 3]));
+    expect(new Set(ITEMS.filter((q) => q.level === 5).map((q) => q.pieces.length))).toEqual(new Set([4, 5]));
   });
 
   it('doğru cevapların yeri dengeli: her harf beş kez, art arda aynı harf yok', () => {
     const answers = ITEMS.map((q) => q.answer + 1);
-    for (const a of [1, 2, 3, 4]) expect(answers.filter((x) => x === a), String(a)).toHaveLength(5);
+    for (const a of [1, 2, 3, 4])
+      expect(
+        answers.filter((x) => x === a),
+        String(a),
+      ).toHaveLength(5);
     expect(answers.every((a, i) => i === 0 || a !== answers[i - 1])).toBe(true);
     expect(new Set(task.practice.map((p) => p.answer)).size).toBe(3);
   });
 
-  it('doğru seçenek kestirme yollarla bulunamaz: alan, kare sayısı, simetri, öteki seçeneklere benzerlik, parça sayısı', () => {
+  it('doğru seçenek kestirme yollarla bulunamaz: her yol 20 soruda en çok 7 doğru verir (rastgele seçim: 5)', () => {
     type Q = (typeof ITEMS)[number];
     const metric: Record<string, (q: Q, o: string) => number> = {
       alan: (_, o) => areaOf(outline(o)),
       tamKare: (_, o) => fullSquares(outline(o)),
       yarimKare: (_, o) => halfSquares(outline(o)),
       simetri: (_, o) => symmetry(outline(o)),
-      benzerlik: (q, o) =>
-        q.options
-          .filter((x) => x !== o)
-          .reduce((a, x) => a + overlap(outline(o), outline(x)), 0),
+      benzerlik: (q, o) => q.options.filter((x) => x !== o).reduce((a, x) => a + overlap(outline(o), outline(x)), 0),
       parcaSayisi: (_, o) => parts(o).size,
       ikiziVar: (q, o) => (q.options.some((x) => x !== o && congruent(outline(x), outline(o), false)) ? 1 : 0),
       genislik: (_, o) => box(outline(o))[0] * 10 + box(outline(o))[1],
@@ -249,8 +287,82 @@ describe('Parçalardan şekil: sorular', () => {
           const tied = v.flatMap((x, j) => (Math.abs(x - best) < 1e-9 ? [j] : []));
           if (tied.includes(q.answer)) hits += 1 / tied.length;
         }
-        expect(hits, `${name} ${dir > 0 ? 'en çok' : 'en az'}`).toBeLessThanOrEqual(8);
+        expect(hits, `${name} ${dir > 0 ? 'en çok' : 'en az'}`).toBeLessThanOrEqual(7);
       }
+    }
+    // Eleme yolları: seçeneklerden bir özelliği tutanlar bırakılır, aralarından rastgele seçilir (hiçbiri tutmuyorsa hepsi).
+    const keep: Record<string, (q: Q, o: string) => boolean> = {
+      // Parçaların tam ve yarım kare sayıları verilen parçalarınkiyle aynı.
+      sayim: (q, o) => JSON.stringify(countSigs(o)) === JSON.stringify(pieceSigs(q.pieces)),
+      parcaAlanlari: (q, o) => JSON.stringify([...parts(o).values()].map(areaOf).sort()) === JSON.stringify(q.pieces.map(areaOf).sort()),
+      ucgenSayisi: (q, o) => [...parts(o).values()].reduce((a, p) => a + halfSquares(p), 0) === q.pieces.reduce((a, p) => a + halfSquares(p), 0),
+    };
+    for (const [name, ok] of Object.entries(keep)) {
+      let hits = 0;
+      for (const q of ITEMS) {
+        const kept = q.options.flatMap((o, j) => (ok(q, o) ? [j] : []));
+        const pool = kept.length ? kept : [0, 1, 2, 3];
+        if (pool.includes(q.answer)) hits += 1 / pool.length;
+      }
+      expect(hits, name).toBeLessThanOrEqual(7);
+    }
+    // Ortak parça: ötekilerle en çok parça paylaşan seçenek (döndürerek, ters çevirerek ya da olduğu gibi aynı parçalar;
+    // tam ve yarım kare sayısı ya da yalnızca alanı aynı parçalar).
+    const classes: Record<string, (p: ReturnType<typeof outline>) => string> = {
+      ortakParca: (p) => canonOf(p, false),
+      ortakParcaAyna: (p) => canonOf(p, true),
+      ortakParcaAyni: (p) => exactOf(p),
+      ortakSayim: (p) => `${areaOf(p)}|${halfSquares(p)}`,
+      ortakAlan: (p) => String(areaOf(p)),
+    };
+    const shared = (a: string[], b: string[]) => {
+      const rest = [...b];
+      let n = 0;
+      for (const x of a) {
+        const i = rest.indexOf(x);
+        if (i < 0) continue;
+        rest.splice(i, 1);
+        n++;
+      }
+      return n;
+    };
+    for (const [name, cls] of Object.entries(classes)) {
+      let hits = 0;
+      for (const q of ITEMS) {
+        const c = q.options.map((o) => [...parts(o).values()].map(cls));
+        const v = c.map((x, i) => c.reduce((a, y, j) => (j === i ? a : a + shared(x, y)), 0));
+        const best = Math.max(...v);
+        const tied = v.flatMap((x, j) => (x === best ? [j] : []));
+        if (tied.includes(q.answer)) hits += 1 / tied.length;
+      }
+      expect(hits, name).toBeLessThanOrEqual(7);
+    }
+    // Tek kalan ya da çoğunluktaki seçenek: kutunun yönü ve boyu, dış hattın yarım kareleri ve kenarları, simetri, parçalardaki
+    // yarım kareler, alan, parça sayısı.
+    const feats: Record<string, (o: string) => string> = {
+      kutuYonu: (o) => String(box(outline(o))[0] > box(outline(o))[1]),
+      kutu: (o) => box(outline(o)).join('x'),
+      disYarim: (o) => String(halfSquares(outline(o))),
+      kenarlar: (o) => edgesOf(outline(o)),
+      simetri: (o) => String(symmetry(outline(o))),
+      parcaYarim: (o) => String([...parts(o).values()].reduce((a, p) => a + halfSquares(p), 0)),
+      alan: (o) => String(areaOf(outline(o))),
+      parcaSayisi: (o) => String(parts(o).size),
+    };
+    for (const [name, f] of Object.entries(feats)) {
+      let odd = 0;
+      let major = 0;
+      for (const q of ITEMS) {
+        const vals = q.options.map(f);
+        const n = (x: string) => vals.filter((y) => y === x).length;
+        const uniq = vals.flatMap((x, j) => (n(x) === 1 ? [j] : []));
+        odd += uniq.length === 1 ? (uniq[0] === q.answer ? 1 : 0) : 0.25;
+        const m = Math.max(...vals.map(n));
+        const kept = vals.flatMap((x, j) => (n(x) === m ? [j] : []));
+        if (kept.includes(q.answer)) major += 1 / kept.length;
+      }
+      expect(odd, `tek kalan ${name}`).toBeLessThanOrEqual(7);
+      expect(major, `çoğunlukta ${name}`).toBeLessThanOrEqual(7);
     }
   });
 
@@ -258,11 +370,27 @@ describe('Parçalardan şekil: sorular', () => {
     const [p1, p2, p3] = ALL.filter((q) => q.practice);
     expect([p1.type, p2.type, p3.type]).toEqual(['slide', 'turn', 'mirror']);
     expect([...p1.lures].sort()).toEqual([null, 'odd', 'piece', 'size'].sort());
-    expect(p2.lures).toContain('cut');
     expect(p3.lures).toContain('mirror');
-    expect(task.practice[0].explain).toMatch(/parça sayısı farklıdır.*daha büyük ya da daha küçüktür.*başka biçimdedir/);
-    expect(task.practice[1].explain).toContain('dış hattı doğru şekle benziyor');
-    expect(task.practice[2].explain).toContain('ters çevrilmiş (ayna görüntüsü)');
+    // Açıklama doğru harfi söyler ve her yanlış harfin neden yanlış olduğunu kendi türünün sözüyle anlatır.
+    const WORD: Record<string, RegExp> = {
+      piece: /başka biçimde/,
+      mirror: /ters çevrilmiş/,
+      size: /daha büyük|daha küçük/,
+      odd: /parça sayısı farklı/,
+    };
+    for (const [n, q] of [p1, p2, p3].entries()) {
+      const ex = task.practice[n].explain;
+      expect(ex.startsWith(`${'ABCD'[q.answer]} şekli doğru:`), ex).toBe(true);
+      const parts = sentences(ex);
+      for (const [j, l] of q.lures.entries()) {
+        if (l === null) continue;
+        const L = 'ABCD'[j];
+        expect(
+          parts.some((x) => new RegExp(`(^|\\s)${L}( |\\s|$)|(^|\\s)${L} şekl`).test(x) && WORD[l].test(x)),
+          `${n} ${L} ${l}`,
+        ).toBe(true);
+      }
+    }
     // Örnek: iki parça döndürülmeden yan yana birleşince bütün olur.
     const ex = ASSEMBLY_EXAMPLE.pieces.map((p) => outline(p.shape));
     expect(partsMatch(ASSEMBLY_EXAMPLE.whole, ex, 'translate')).toBe(true);
@@ -282,20 +410,42 @@ describe('Parçalardan şekil: sorular', () => {
 
   it('sorular sabit: sorular ya da cevap anahtarı değişirse testin sürüm numarası artırılmalı', () => {
     const hash = createHash('sha256')
-      .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, lures: task.optionLures, levels: task.levels }))
+      .update(
+        JSON.stringify({
+          items: task.items,
+          practice: task.practice,
+          answers: task.answers,
+          lures: task.optionLures,
+          levels: task.levels,
+        }),
+      )
       .digest('hex')
       .slice(0, 16);
-    expect({ version: parcalardanSekil.version, hash }).toEqual({ version: 1, hash: SORU_IZI });
+    expect({ version: parcalardanSekil.version, hash }).toEqual({
+      version: 1,
+      hash: SORU_IZI,
+    });
   });
 });
 
 /** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = 'a629d433c6f0ec8d';
+const SORU_IZI = 'cecf933fb5655d3a';
 
 describe('Parçalardan şekil: puanlama', () => {
   const all = (fn: (i: number) => Partial<AssemblyTrialInput> = () => ({})): AssemblyTrialInput[] =>
-    task.items.map((_, index) => ({ index, response: task.answers[index], rtMs: 12_000, ...fn(index) }));
-  const cell = (i: number): AssemblyCell => ({ level: task.items[i].level, type: task.items[i].type, answer: task.answers[i], lures: task.optionLures[i], i });
+    task.items.map((_, index) => ({
+      index,
+      response: task.answers[index],
+      rtMs: 12_000,
+      ...fn(index),
+    }));
+  const cell = (i: number): AssemblyCell => ({
+    level: task.items[i].level,
+    type: task.items[i].type,
+    answer: task.answers[i],
+    lures: task.optionLures[i],
+    i,
+  });
 
   it('hatasız: 20 doğru, bütün düzeyler tam, üç soru türü', () => {
     const { result } = scoreAssembly(task, all());
@@ -309,20 +459,43 @@ describe('Parçalardan şekil: puanlama', () => {
   });
 
   it('yanılgı türleri, çok hızlı yanlış ve hep aynı yer ayrı ayrı sayılır', () => {
-    const mirror = scoreAssembly(task, all((i) => (task.items[i].type === 'mirror' ? { response: assemblyLureOption(cell(i), 'mirror') } : {}))).result;
+    const mirror = scoreAssembly(
+      task,
+      all((i) => (task.items[i].type === 'mirror' ? { response: assemblyLureOption(cell(i), 'mirror') } : {})),
+    ).result;
     expect([mirror.wrong, mirror.luresByKind.mirror, mirror.luresByKind.piece]).toEqual([6, 6, 0]);
     expect(mirror.types.map((x) => `${x.type} ${x.correct}/${x.n}`)).toEqual(['slide 6/6', 'turn 8/8', 'mirror 0/6']);
-    const piece = scoreAssembly(task, all((i) => (i % 2 ? { response: assemblyLureOption(cell(i), 'piece') } : {}))).result;
+    const piece = scoreAssembly(
+      task,
+      all((i) => (i % 2 ? { response: assemblyLureOption(cell(i), 'piece') } : {})),
+    ).result;
     expect([piece.wrong, piece.luresByKind.piece]).toEqual([10, 10]);
-    const rapid = scoreAssembly(task, all((i) => ({ rtMs: ASSEMBLY_RAPID_MS - 1, response: assemblyLureOption(cell(i)) }))).result;
+    const rapid = scoreAssembly(
+      task,
+      all((i) => ({
+        rtMs: ASSEMBLY_RAPID_MS - 1,
+        response: assemblyLureOption(cell(i)),
+      })),
+    ).result;
     expect([rapid.rapid, rapid.rapidOf, assemblyRapid(rapid)]).toEqual([12, 12, true]);
-    expect(scoreAssembly(task, all(() => ({ rtMs: ASSEMBLY_RAPID_MS - 1 }))).result.rapid).toBe(0);
-    const same = scoreAssembly(task, all(() => ({ response: 3 }))).result;
+    expect(
+      scoreAssembly(
+        task,
+        all(() => ({ rtMs: ASSEMBLY_RAPID_MS - 1 })),
+      ).result.rapid,
+    ).toBe(0);
+    const same = scoreAssembly(
+      task,
+      all(() => ({ response: 3 })),
+    ).result;
     expect([same.samePosition, assemblySamePosition(same)]).toEqual([20, true]);
     expect(ASSEMBLY_CHANCE_MAX).toBe(8);
     expect(ASSEMBLY_LURE_NOTE).toBe(3);
     // Kolay ve zor sorulardaki tipik süre ayrı hesaplanır.
-    const pace = scoreAssembly(task, all((i) => ({ rtMs: 1000 * task.items[i].level }))).result;
+    const pace = scoreAssembly(
+      task,
+      all((i) => ({ rtMs: 1000 * task.items[i].level })),
+    ).result;
     expect([pace.rtEasy, pace.rtHard, pace.medianRt]).toEqual([1500, 4500, 3000]);
   });
 
@@ -337,10 +510,16 @@ describe('Parçalardan şekil: puanlama', () => {
     const p8 = p9 + binom(20, 8) * 0.25 ** 8 * 0.75 ** 12;
     expect(p9).toBeLessThan(0.05);
     expect(p8).toBeGreaterThan(0.05);
-    const eight = scoreAssembly(task, all((i) => (i >= 8 ? { response: assemblyLureOption(cell(i)) } : {}))).result;
+    const eight = scoreAssembly(
+      task,
+      all((i) => (i >= 8 ? { response: assemblyLureOption(cell(i)) } : {})),
+    ).result;
     expect([eight.correct, eight.reached]).toEqual([8, 2]);
     expect(assemblyChance(eight)).toBe(false);
-    const scattered = scoreAssembly(task, all((i) => (i % 5 < 2 ? {} : { response: assemblyLureOption(cell(i)) }))).result;
+    const scattered = scoreAssembly(
+      task,
+      all((i) => (i % 5 < 2 ? {} : { response: assemblyLureOption(cell(i)) })),
+    ).result;
     expect([scattered.correct, scattered.reached, assemblyChance(scattered)]).toEqual([8, 0, true]);
   });
 
@@ -362,7 +541,7 @@ describe('Parçalardan şekil: puanlama', () => {
     const patterns: ((i: number) => Partial<AssemblyTrialInput>)[] = [
       (i) => (task.items[i].type === 'mirror' ? { response: assemblyLureOption(cell(i), 'mirror') } : {}),
       (i) => (i % 2 ? { response: assemblyLureOption(cell(i), 'piece') } : {}),
-      (i) => (i >= 12 ? { response: assemblyLureOption(cell(i), 'cut') } : {}),
+      (i) => (i >= 12 ? { response: assemblyLureOption(cell(i), 'piece') } : {}),
       (i) => (i % 3 === 0 ? { response: assemblyLureOption(cell(i)) } : {}),
     ];
     for (const [n, fn] of patterns.entries()) {
@@ -372,18 +551,36 @@ describe('Parçalardan şekil: puanlama', () => {
       expect(wrongIdx.length, String(n)).toBeLessThanOrEqual(10);
       for (const k of ASSEMBLY_LURES_ORDER) expect(r.lureP[k], `${n} ${k}`).toBeCloseTo(exact(r, wrongIdx, k), 3);
     }
-    const mirror = scoreAssembly(task, all((i) => (task.items[i].type === 'mirror' ? { response: assemblyLureOption(cell(i), 'mirror') } : {}))).result;
+    const mirror = scoreAssembly(
+      task,
+      all((i) => (task.items[i].type === 'mirror' ? { response: assemblyLureOption(cell(i), 'mirror') } : {})),
+    ).result;
     expect(ASSEMBLY_LURES_ORDER.filter((k) => assemblyLureStandsOut(mirror, k))).toEqual(['mirror']);
-    const spread = scoreAssembly(task, all((i) => (i % 2 ? { response: assemblyLureOption(cell(i), ASSEMBLY_LURES_ORDER[i % 3]) } : {}))).result;
+    const spread = scoreAssembly(
+      task,
+      all((i) =>
+        i % 2
+          ? {
+              response: assemblyLureOption(cell(i), ASSEMBLY_LURES_ORDER[i % 3]),
+            }
+          : {},
+      ),
+    ).result;
     expect(spread.wrong).toBe(10);
     expect(ASSEMBLY_LURE_P).toBe(0.05);
   });
 
   it('aynı sıradaki seçenek: çok doğru cevap verende bakmadan seçmeye bağlanmaz', () => {
-    const strong = scoreAssembly(task, all((i) => (i >= 16 ? { response: 1 } : {}))).result;
+    const strong = scoreAssembly(
+      task,
+      all((i) => (i >= 16 ? { response: 1 } : {})),
+    ).result;
     expect(strong.correct).toBeGreaterThan(ASSEMBLY_SAME_MAX_CORRECT);
     expect(assemblySamePosition(strong)).toBe(false);
-    const weak = scoreAssembly(task, all((i) => (i >= 8 ? { response: 1 } : {}))).result;
+    const weak = scoreAssembly(
+      task,
+      all((i) => (i >= 8 ? { response: 1 } : {})),
+    ).result;
     expect([weak.correct <= ASSEMBLY_SAME_MAX_CORRECT, weak.samePosition >= 10, assemblySamePosition(weak)]).toEqual([true, true, true]);
   });
 
@@ -391,9 +588,21 @@ describe('Parçalardan şekil: puanlama', () => {
     const ok = all();
     expect(() => scoreAssembly(task, ok.slice(1))).toThrow(TaskInputError);
     for (const bad of [0, 5, 2.5, Number.NaN]) {
-      expect(() => scoreAssembly(task, ok.map((t, i) => (i === 3 ? { ...t, response: bad } : t))), String(bad)).toThrow(TaskInputError);
+      expect(
+        () =>
+          scoreAssembly(
+            task,
+            ok.map((t, i) => (i === 3 ? { ...t, response: bad } : t)),
+          ),
+        String(bad),
+      ).toThrow(TaskInputError);
     }
-    expect(() => scoreAssembly(task, ok.map((t, i) => (i === 3 ? { ...t, rtMs: -5 } : t)))).toThrow(TaskInputError);
+    expect(() =>
+      scoreAssembly(
+        task,
+        ok.map((t, i) => (i === 3 ? { ...t, rtMs: -5 } : t)),
+      ),
+    ).toThrow(TaskInputError);
     expect(() => scoreAssembly(task, [...ok, { index: 20, response: 1, rtMs: 1 }])).toThrow(TaskInputError);
     expect(scoreAssembly(task, [...ok, { index: 0, response: 1, rtMs: 1 }]).result.correct).toBe(20);
     expect(() => scoreAssembly({ ...task, answers: [], optionLures: [] }, ok)).toThrow(TaskInputError);
@@ -405,7 +614,13 @@ describe('Parçalardan şekil: puanlama', () => {
 
 describe('Parçalardan şekil: rapor', () => {
   it('hatasız: beş kart, öne çıkan sayılar, düzeylere göre grafik ve soru türlerinin üç boyutlu grafiği', () => {
-    const r = evaluate(SLUG, assemblyBody((q) => ({ response: q.answer, rtMs: 6000 + 4000 * q.level })));
+    const r = evaluate(
+      SLUG,
+      assemblyBody((q) => ({
+        response: q.answer,
+        rtMs: 6000 + 4000 * q.level,
+      })),
+    );
     expect(r.student.items.map((i) => [i.title, i.badge])).toEqual([
       ['Doğru cevaplar', '20 soruda 20 doğru'],
       ['Ulaşılan düzey', '5. düzey'],
@@ -422,8 +637,10 @@ describe('Parçalardan şekil: rapor', () => {
     const paceRows = r.student.items[4].visual?.type === 'bars' ? r.student.items[4].visual.rows : [];
     expect(paceRows.map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Bütün sorular 18 sn', 'Kolay sorular (1–2. düzey) 12 sn', 'Zor sorular (4–5. düzey) 24 sn']);
     expect(r.student.items[4].text).toContain('Zor sorulara kolay sorulardan daha çok zaman ayırdın.');
-    expect(r.student.items[2].text).toContain('Üç soru türünün her birinde bütün soruları doğru buldun');
-    expect(r.student.items[2].text).toContain('Türlerde birkaç soru vardı (yalnızca kaydırma sorusu 6, döndürme gereken sorusu 8 ve ayna tuzaklı sorusu 6)');
+    expect(r.student.items[2].text).toContain('Üç soru türünün her birinde bütün soruları doğru buldun.');
+    expect(r.student.items[2].text).toContain(
+      'Her türde yalnızca birkaç soru vardı. Yalnızca kaydırma sorularının çoğu 1. düzeydeydi; ayna tuzaklı sorular ise yalnızca 3–5. düzeylerde soruldu.',
+    );
     const rm = r.student.roadmap!;
     expect(rm.bars.map((b) => [b.key, b.valueLabel])).toEqual([
       ['slide', '6/6'],
@@ -436,13 +653,22 @@ describe('Parçalardan şekil: rapor', () => {
   });
 
   it('durumlar: rastgele düzeyi, ayna yanılgısı, çok hızlı, hep aynı yer, kolay sorularda yanılma, türlerde zorlanma', () => {
-    const none = evaluate(SLUG, assemblyBody((q) => ({ response: assemblyLureOption(q), rtMs: 9000 })));
+    const none = evaluate(
+      SLUG,
+      assemblyBody((q) => ({ response: assemblyLureOption(q), rtMs: 9000 })),
+    );
     expect(none.student.items.map((i) => i.badge)).toEqual(['20 soruda 0 doğru', 'Yorumlanmadı', 'Yorumlanmadı', 'Yorumlanmadı', 'Soru başına tipik süre 9 saniye']);
     expect(none.student.cautions.join(' ')).toContain('rastgele seçen birinin de bulabileceği kadar az');
     expect(none.student.roadmap!.bars).toEqual([]);
     for (const i of none.student.items.slice(1, 4)) expect(i.visual, i.title).toBeUndefined();
 
-    const ayna = evaluate(SLUG, assemblyBody((q) => ({ response: q.type === 'mirror' ? assemblyLureOption(q, 'mirror') : q.answer, rtMs: 15_000 })));
+    const ayna = evaluate(
+      SLUG,
+      assemblyBody((q) => ({
+        response: q.type === 'mirror' ? assemblyLureOption(q, 'mirror') : q.answer,
+        rtMs: 15_000,
+      })),
+    );
     expect(ayna.student.items[3].badge).toBe('“Ters çevrilmiş parça” öne çıkıyor');
     expect(ayna.student.items[3].text).toContain(`6 yanlış cevabının hepsinde ${ASSEMBLY_LURE_SEEN.mirror} seçildi. Bu, rastgele seçimle açıklanamayacak kadar sık.`);
     expect(ayna.student.items[3].text).toContain('Parçalar döndürülebilir ama ters çevrilemez.');
@@ -452,16 +678,35 @@ describe('Parçalardan şekil: rapor', () => {
     expect(ayna.student.items[2].text).toContain('“Yalnızca kaydırma” ve “döndürme gereken” sorularının çoğunu doğru buldun; “ayna tuzaklı” sorularında zorlandın.');
     expect(ayna.student.items[2].text).toContain('“Ayna tuzaklı” sorularında bir parçanın ters çevrilmiş');
 
-    const rapid = evaluate(SLUG, assemblyBody((q) => ({ response: q.level >= 3 ? assemblyLureOption(q) : q.answer, rtMs: q.level >= 3 ? 1500 : 12_000 })));
+    const rapid = evaluate(
+      SLUG,
+      assemblyBody((q) => ({
+        response: q.level >= 3 ? assemblyLureOption(q) : q.answer,
+        rtMs: q.level >= 3 ? 1500 : 12_000,
+      })),
+    );
     expect(rapid.student.cautions.join(' ')).toContain('3. düzey ve üstündeki 12 sorunun hepsinde yanlış bir cevap 3 saniyeden kısa sürede verilmiş');
     expect(rapid.student.items[4].text).toContain('3. düzey ve üstündeki 12 sorunun hepsine 3 saniyeden kısa sürede yanlış cevap verdin.');
     expect(rapid.student.items[3].badge).toBe('Yorumlanmadı');
+    // Sonuç kuşkuluyken soru türleri de karşılaştırılmaz: kart, üç boyutlu grafik ve kartın grafiği yok.
+    expect([rapid.student.items[2].badge, rapid.student.items[2].text]).toEqual(['Yorumlanmadı', 'Çalışma biçimi kartında anlatılan nedenle soru türleri karşılaştırılmadı.']);
+    expect(rapid.student.items[2].visual).toBeUndefined();
+    expect(rapid.student.roadmap!.bars).toEqual([]);
     expect(rapid.student.items[0].text).toContain('seçeneklere bakmadan seçmiş olabileceğin');
 
-    const same = evaluate(SLUG, assemblyBody(() => ({ response: 2, rtMs: 9000 })));
+    const same = evaluate(
+      SLUG,
+      assemblyBody(() => ({ response: 2, rtMs: 9000 })),
+    );
     expect(same.student.items[4].text).toContain('Bütün cevaplarında aynı sıradaki seçeneği seçtin');
 
-    const slip = evaluate(SLUG, assemblyBody((q) => ({ response: q.level === 1 && assemblyRank(q) < 2 ? assemblyLureOption(q) : q.answer, rtMs: 12_000 })));
+    const slip = evaluate(
+      SLUG,
+      assemblyBody((q) => ({
+        response: q.level === 1 && assemblyRank(q) < 2 ? assemblyLureOption(q) : q.answer,
+        rtMs: 12_000,
+      })),
+    );
     expect(slip.student.items[0].text).toContain('1. düzeydeki kolay sorulardan 2 tanesini doğru cevaplamadın');
     expect(slip.student.items[3].badge).toBe('2 yanlış');
 
@@ -470,11 +715,20 @@ describe('Parçalardan şekil: rapor', () => {
     expect(drop.student.items[1].badge).toBe('3. düzey');
     expect(drop.student.items[1].text).toContain('4. düzeydeki 4 sorunun 2 tanesini doğru bulamadın');
 
-    const hard0 = evaluate(SLUG, assemblyBody((q) => ({ response: q.level <= 3 ? q.answer : assemblyLureOption(q), rtMs: 12_000 })));
+    const hard0 = evaluate(
+      SLUG,
+      assemblyBody((q) => ({
+        response: q.level <= 3 ? q.answer : assemblyLureOption(q),
+        rtMs: 12_000,
+      })),
+    );
     expect(hard0.student.items[1].badge).toBe('3. düzey');
     expect(hard0.student.items[1].text).toContain('4. düzeydeki 4 sorunun hiçbirini doğru bulamadın');
 
-    const all = evaluate(SLUG, assemblyBody((q) => ({ response: q.answer, rtMs: 9000 })));
+    const all = evaluate(
+      SLUG,
+      assemblyBody((q) => ({ response: q.answer, rtMs: 9000 })),
+    );
     expect(all.student.items[0].text).toContain('Bütün soruları doğru cevapladın');
     expect(all.student.items[1].text).toContain('5. düzey testin en zor düzeyiydi.');
   });
@@ -502,8 +756,8 @@ describe('Parçalardan şekil: rapor', () => {
     const wrongKinds: Record<string, (q: AssemblyCell) => number> = {
       parca: (q) => assemblyLureOption(q, 'piece'),
       ayna: (q) => assemblyLureOption(q, 'mirror'),
-      kesik: (q) => assemblyLureOption(q, 'cut'),
-      karisik: (q) => assemblyLureOption(q, ASSEMBLY_LURES_ORDER[q.i % 5]),
+      boyut: (q) => assemblyLureOption(q, 'size'),
+      karisik: (q) => assemblyLureOption(q, ASSEMBLY_LURES_ORDER[q.i % 4]),
     };
     const times: Record<string, (q: AssemblyCell) => number | null> = {
       artan: (q) => 5000 + 5000 * q.level,
@@ -516,16 +770,30 @@ describe('Parçalardan şekil: rapor', () => {
       for (const [wName, wrong] of Object.entries(wrongKinds)) {
         for (const [tName, rt] of Object.entries(times)) {
           for (const samePos of [false, true]) {
-            const body = assemblyBody((q) => ({ response: samePos ? 2 : correct(q) ? q.answer : wrong(q), rtMs: rt(q) }), 7);
+            const body = assemblyBody(
+              (q) => ({
+                response: samePos ? 2 : correct(q) ? q.answer : wrong(q),
+                rtMs: rt(q),
+              }),
+              7,
+            );
             const label = `${cName}/${wName}/${tName}/${samePos}`;
             const res = evaluate(SLUG, body);
             const result: AssemblyResult = scoreAssembly(task, trialsOf(body)).result;
-            const adult = evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE }).adult;
+            const adult = evaluateAdult(SLUG, {
+              ...body,
+              grade: ADULT_GRADE,
+            }).adult;
             const chance = assemblyChance(result);
             const doubt = assemblyRapid(result) || assemblySamePosition(result);
             const noted = chance || doubt ? [] : ASSEMBLY_LURES_ORDER.filter((k) => result.luresByKind[k] >= ASSEMBLY_LURE_NOTE && result.lureP[k] <= ASSEMBLY_LURE_P);
             for (const r of [res.student, res.parent, adult]) {
               const t = text(r);
+              // Cümleler kısa: en çok 22 sözcük.
+              expect(
+                [...r.items.map((i) => i.text), ...r.cautions].flatMap((x) => longSentences(x)),
+                label,
+              ).toEqual([]);
               expect(t, label).not.toMatch(/undefined|NaN|null|\[object|  |\.\.|\s[,.;]|: \./);
               expect(
                 r.items.map((i) => i.title),
@@ -534,13 +802,13 @@ describe('Parçalardan şekil: rapor', () => {
               for (const i of r.items) expect(i.text, `${label} ${i.title}`).toMatch(/[.!]$/);
               expect(r.items[0].badge, label).toBe(`20 soruda ${result.correct} doğru`);
               expect(r.items[1].badge === 'Yorumlanmadı', label).toBe(chance);
-              expect(r.items[2].badge === 'Yorumlanmadı', label).toBe(chance);
+              expect(r.items[2].badge === 'Yorumlanmadı', label).toBe(chance || doubt);
               expect(r.items[3].badge === 'Yorumlanmadı', label).toBe(chance || (doubt && result.wrong > 0));
               // Üç boyutlu grafik (yol haritasında) yalnızca sonuç yorumlanıyorsa; sütunlar soru türlerinin doğruları.
               expect(
                 r.roadmap!.bars.map((b) => b.valueLabel),
                 label,
-              ).toEqual(chance ? [] : result.types.map((x) => `${x.correct}/${x.n}`));
+              ).toEqual(chance || doubt ? [] : result.types.map((x) => `${x.correct}/${x.n}`));
               expect(
                 r.cautions.some((c) => c.includes('rastgele seçen')),
                 label,
@@ -567,7 +835,7 @@ describe('Parçalardan şekil: rapor', () => {
                     : noted.length > 1
                       ? 'Birden çok yanılgı öne çıkıyor'
                       : noted.length === 1
-                        ? `“${{ piece: 'Bir parçası farklı', mirror: 'Ters çevrilmiş parça', cut: 'Başka parçalara bölünmüş', size: 'Bir parçası büyük ya da küçük', odd: 'Parça sayısı farklı' }[noted[0]]}” öne çıkıyor`
+                        ? `“${{ piece: 'Parçası farklı', mirror: 'Ters çevrilmiş parça', size: 'Bir parçası büyük ya da küçük', odd: 'Parça sayısı farklı' }[noted[0]]}” öne çıkıyor`
                         : result.wrong >= ASSEMBLY_LURE_NOTE
                           ? 'Belirgin bir yanılgı yok'
                           : result.wrong === 1
@@ -578,14 +846,26 @@ describe('Parçalardan şekil: rapor', () => {
               if (r.items[3].badge !== 'Yorumlanmadı') {
                 const stack = r.items[3].visual?.type === 'stack' ? r.items[3].visual : null;
                 expect(stack?.parts[0].value, label).toBe(result.correct);
-                expect(stack?.parts.reduce((a, x) => a + x.value, 0), label).toBe(result.n);
+                expect(
+                  stack?.parts.reduce((a, x) => a + x.value, 0),
+                  label,
+                ).toBe(result.n);
                 for (const k of ASSEMBLY_LURES_ORDER) {
-                  const at = stack?.parts.find((x) => x.label === { piece: 'Bir parçası farklı', mirror: 'Ters çevrilmiş parça', cut: 'Başka parçalara bölünmüş', size: 'Bir parçası büyük ya da küçük', odd: 'Parça sayısı farklı' }[k]);
+                  const at = stack?.parts.find(
+                    (x) =>
+                      x.label ===
+                      {
+                        piece: 'Parçası farklı',
+                        mirror: 'Ters çevrilmiş parça',
+                        size: 'Bir parçası büyük ya da küçük',
+                        odd: 'Parça sayısı farklı',
+                      }[k],
+                  );
                   expect(at?.value ?? 0, `${label} ${k}`).toBe(result.luresByKind[k]);
                 }
               } else expect(r.items[3].visual, label).toBeUndefined();
               // Soru türleri kartı: grafikteki doğrular puanlamadakilerle aynı; yorumlanmıyorsa grafik yok.
-              if (chance) expect(r.items[2].visual, label).toBeUndefined();
+              if (chance || doubt) expect(r.items[2].visual, label).toBeUndefined();
               else {
                 const rows = r.items[2].visual?.type === 'bars' ? r.items[2].visual.rows : [];
                 expect(
@@ -594,8 +874,13 @@ describe('Parçalardan şekil: rapor', () => {
                 ).toEqual(result.types.map((x) => x.correct));
                 // "Çoğu doğru" ile "zorlandı" türleri sayılarla uyumlu.
                 for (const x of result.types) {
-                  const name = { slide: 'yalnızca kaydırma', turn: 'döndürme gereken', mirror: 'ayna tuzaklı' }[x.type];
-                  if (x.correct * 2 <= x.n && result.types.some((y) => y.correct * 2 > y.n)) expect(r.items[2].text, `${label} ${x.type}`).toMatch(new RegExp(`zorlan[dı].*${name}|${name}.*zorlan`, 'i'));
+                  const name = {
+                    slide: 'yalnızca kaydırma',
+                    turn: 'döndürme gereken',
+                    mirror: 'ayna tuzaklı',
+                  }[x.type];
+                  if (x.correct * 2 <= x.n && result.types.some((y) => y.correct * 2 > y.n))
+                    expect(r.items[2].text, `${label} ${x.type}`).toMatch(new RegExp(`zorlan[dı].*${name}|${name}.*zorlan`, 'i'));
                 }
               }
               expect(r.items[0].text.includes('Yanlışlarda seçilen şekiller” kartına'), label).toBe(noted.length > 0);
@@ -653,14 +938,23 @@ describe('Parçalardan şekil: rapor', () => {
     const g3 = evaluate(SLUG, assemblyBody(undefined, 3)).student.roadmap!.weeks[3].text;
     expect(g3).not.toContain('Zihinde Döndürme');
     const g6 = evaluate(SLUG, assemblyBody(undefined, 6)).student.roadmap!.weeks[3].text;
-    expect(g6).toContain('şekilleri zihinde döndürmeyi ve katlanan bir kâğıdı zihinde açmayı da görmek için');
+    expect(g6).toContain('şekilleri zihinde döndürmeyi ve katlamayı da görmek için');
   });
 
   it('yayındaki sitenin dış sınamasındaki örnek cevaplar testin güncel cevap anahtarıdır', () => {
     const yml = readFileSync(new URL('../.github/workflows/yayin.yml', import.meta.url), 'utf8');
     const m = /PS_GOVDE=.*?s=\[([\d, ]+)\]/.exec(yml);
     expect(m?.[1].split(',').map(Number)).toEqual(task.answers);
-    const r = evaluate(SLUG, assemblyBody((q) => ({ response: Number(m![1].split(',')[q.i]), rtMs: 8000 + 500 * q.i }), 4));
+    const r = evaluate(
+      SLUG,
+      assemblyBody(
+        (q) => ({
+          response: Number(m![1].split(',')[q.i]),
+          rtMs: 8000 + 500 * q.i,
+        }),
+        4,
+      ),
+    );
     expect(r.student.items[0].badge).toBe('20 soruda 20 doğru');
     expect(r.student.items[3].badge).toBe('Yanlış cevap yok');
     expect(r.parent.chart?.type === 'bars' && r.parent.chart.rows).toHaveLength(5);
@@ -671,9 +965,49 @@ describe('Parçalardan şekil: rapor', () => {
     expect(parcalardanSekil.intro.title).toBe('Parçaları birleştir');
   });
 
+  it('testin bütün metinlerinde cümleler en çok 22 sözcük: yönerge, alıştırmalar, düzeyler, bilim kartı, yol haritası', () => {
+    const sc = parcalardanSekil.science;
+    const rm = TASK_ROADMAPS[SLUG];
+    const audienceTexts = (x: { student: string; parent: string; adult?: string }) => [x.student, x.parent, x.adult ?? ''];
+    const texts = [
+      parcalardanSekil.tagline,
+      parcalardanSekil.description,
+      ...parcalardanSekil.intro.paragraphs,
+      ...parcalardanSekil.scales.map((x) => x.plain),
+      ...task.instructions,
+      ...task.practice.map((p) => p.explain),
+      ...task.levels.map((l) => l.plain),
+      sc.basedOn,
+      sc.whatItMeasures,
+      sc.reliability,
+      sc.normNote,
+      sc.ageNote,
+      ...sc.limitations,
+      ...audienceTexts(rm.what),
+      ...audienceTexts(rm.studyIntro),
+      ...audienceTexts(rm.lastWeek),
+      ...rm.supports.flatMap((x) => audienceTexts(x.text)),
+      ...rm.weeks.flatMap((x) => audienceTexts(x.text)),
+      ...rm.approach.map((x) => x.text),
+      ...rm.facts.items.student,
+      ...rm.facts.items.parent,
+      ...(rm.facts.items.adult ?? []),
+    ];
+    expect(texts.flatMap((x) => longSentences(x))).toEqual([]);
+    const r = evaluate(SLUG, assemblyBody());
+    for (const rep of [r.student, r.parent])
+      expect(
+        rep.roadmap!.weeks.flatMap((w) => longSentences(w.text)),
+        rep.audience,
+      ).toEqual([]);
+  });
+
   it('PDF raporu üretilir (öğrenci, veli, yetişkin)', async () => {
     const r = evaluate(SLUG, assemblyBody());
-    const adult = evaluateAdult(SLUG, { ...assemblyBody(), grade: ADULT_GRADE }).adult;
+    const adult = evaluateAdult(SLUG, {
+      ...assemblyBody(),
+      grade: ADULT_GRADE,
+    }).adult;
     for (const rep of [r.student, r.parent, adult]) {
       const pdf = await renderSimpleReportPdf(rep, 'olcekhane.com');
       expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
@@ -694,7 +1028,16 @@ describe('Parçalardan şekil: rapor', () => {
     expect(JSON.stringify(sc)).not.toMatch(/YAZILACAK/);
     expect(sc.citations.every((c) => c.url?.startsWith('https://'))).toBe(true);
     const body = JSON.stringify({ ...sc, citations: [] });
-    for (const a of ['Embretson, 1996', 'Ivie ve Embretson, 2010', 'Shi, Wind ve Lakin, 2023', 'Levine, Huttenlocher, Taylor ve Langrock, 1999', 'Levine, Ratliff, Huttenlocher ve Cannon, 2012', 'Soysal, Tan ve Aldemir, 2012', 'Uttal ve ark., 2013', 'Wai, Lubinski ve Benbow, 2009']) {
+    for (const a of [
+      'Embretson, 1996',
+      'Ivie ve Embretson, 2010',
+      'Shi, Wind ve Lakin, 2023',
+      'Levine, Huttenlocher, Taylor ve Langrock, 1999',
+      'Levine, Ratliff, Huttenlocher ve Cannon, 2012',
+      'Soysal, Tan ve Aldemir, 2012',
+      'Uttal ve ark., 2013',
+      'Wai, Lubinski ve Benbow, 2009',
+    ]) {
       expect(body, a).toContain(a);
     }
     for (const c of sc.citations) expect(body, c.text).toContain(c.text.split(',')[0].replace(/\.$/, ''));
@@ -707,8 +1050,11 @@ describe('Parçalardan şekil: rapor', () => {
     expect(all).not.toMatch(/kısa (biçimi|formu)|eşdeğeri|Türkçe uyarlaması/);
     const rm = TASK_ROADMAPS[SLUG];
     expect(rm.sources.map((x) => x.text.split(',')[0])).toEqual(['Ivie', 'Shi', 'Levine', 'Uttal']);
-    for (const x of rm.sources) expect(sc.citations.some((c) => c.text === x.text), x.text).toBe(true);
+    for (const x of rm.sources)
+      expect(
+        sc.citations.some((c) => c.text === x.text),
+        x.text,
+      ).toBe(true);
     expect(rm.nextTests).toEqual(['zihinde-dondurme', 'kagit-katlama']);
   });
 });
-

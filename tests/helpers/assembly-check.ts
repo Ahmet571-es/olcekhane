@@ -166,7 +166,12 @@ export function connected(pts: Pt[]): boolean {
     const u = x - cx;
     const v = y - cy;
     // Aynı karedeki komşu üçgenler.
-    const ring: Pt[] = [[3, 1], [5, 3], [3, 5], [1, 3]];
+    const ring: Pt[] = [
+      [3, 1],
+      [5, 3],
+      [3, 5],
+      [1, 3],
+    ];
     const at = ring.findIndex(([a, b]) => a === u && b === v);
     const near: Pt[] = [ring[(at + 1) % 4], ring[(at + 3) % 4]].map(([a, b]) => [cx + a, cy + b] as Pt);
     // Komşu karedeki karşılıklı üçgen.
@@ -222,7 +227,10 @@ export function box(pts: Pt[]): [number, number] {
  */
 export function orthoConvex(shape: string): boolean {
   const R = 8;
-  const rows = shape.trim().split('/').map((r) => r.trim().split(/\s+/));
+  const rows = shape
+    .trim()
+    .split('/')
+    .map((r) => r.trim().split(/\s+/));
   const W = Math.max(...rows.map((r) => r.length)) * R;
   const H = rows.length * R;
   const inside = (px: number, py: number): boolean => {
@@ -243,3 +251,65 @@ export function orthoConvex(shape: string): boolean {
   for (let x = 0; x < W; x++) if (!oneRun([...Array(H)].map((_, y) => inside(x, y)))) return false;
   return true;
 }
+
+/** Şeklin döndürmeye (isteğe göre ters çevirmeye) göre değişmeyen adı: yönlerinin en küçük imzası. */
+export const canonOf = (pts: Pt[], flips: boolean) => orientations(pts, flips).map(sig).sort()[0];
+/** Şeklin olduğu gibi (yalnızca kaydırmaya göre) adı. */
+export const exactOf = (pts: Pt[]) => sig(pts);
+
+/**
+ * Doğru seçenekte, ekranda doğru şekildeki yönünden başka bir yöne döndürülmüş gösterilen en az parça sayısı (parçalarla
+ * çizilen bölgeler arasındaki bütün eşleşmeler üstünden).
+ */
+export function minRotated(option: string, pieces: Pt[][]): number | null {
+  const drawn = [...parts(option).values()];
+  let best: number | null = null;
+  const used = pieces.map(() => false);
+  const rec = (i: number, n: number) => {
+    if (best !== null && n >= best) return;
+    if (i === drawn.length) {
+      best = n;
+      return;
+    }
+    for (let j = 0; j < pieces.length; j++) {
+      if (used[j] || !congruent(drawn[i], pieces[j], false)) continue;
+      used[j] = true;
+      rec(i + 1, n + (sameByTranslation(drawn[i], pieces[j]) ? 0 : 1));
+      used[j] = false;
+    }
+  };
+  rec(0, 0);
+  return best;
+}
+
+/** Dış hattın kenarları: kare kenarları (birim) ve köşegen kenarlar (birim köşegen) "eksen|köşegen" olarak. */
+export function edgesOf(pts: Pt[]): string {
+  const set = new Set(pts.map(key));
+  const ring: Pt[] = [
+    [3, 1],
+    [5, 3],
+    [3, 5],
+    [1, 3],
+  ];
+  const across: Pt[] = [
+    [3, -1],
+    [7, 3],
+    [3, 7],
+    [-1, 3],
+  ];
+  let ax = 0;
+  let dg = 0;
+  for (const [x, y] of pts) {
+    const cx = Math.floor(x / 6) * 6;
+    const cy = Math.floor(y / 6) * 6;
+    const at = ring.findIndex(([a, b]) => a === x - cx && b === y - cy);
+    if (!set.has(key([cx + across[at][0], cy + across[at][1]]))) ax++;
+    for (const nb of [ring[(at + 1) % 4], ring[(at + 3) % 4]]) if (!set.has(key([cx + nb[0], cy + nb[1]]))) dg++;
+  }
+  return `${ax}|${dg / 2}`;
+}
+
+/** Bir metindeki cümleler (nokta, soru ya da ünlemden sonra büyük harf ya da rakamla başlayan yerde bölünür). */
+export const sentences = (text: string) => text.split(/(?<=[.!?])\s+(?=[A-ZÇĞİÖŞÜ0-9“"])/u).filter(Boolean);
+/** 22 sözcükten uzun cümleler. */
+export const longSentences = (text: string, max = 22) => sentences(text).filter((s) => s.split(/\s+/).length > max);

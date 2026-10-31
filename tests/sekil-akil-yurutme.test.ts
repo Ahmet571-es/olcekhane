@@ -350,7 +350,7 @@ describe('Şekil akıl yürütme: rapor', () => {
     // Hiçbir düzey ölçüte uymuyorsa bunun nedeni ölçütle söylenir (bir düzeyde soruların çoğu doğru olsa bile).
     const none = evaluate(SLUG, matrixBody((q) => ({ choice: matrixRank(q) < [2, 3, 2, 1, 0][q.level - 1] ? q.answer : optionAt(q.i, 2), rtMs: 15_000 })));
     expect(none.student.items[1].badge).toBe('Düzey belirtilmedi');
-    expect(none.student.items[1].text).toContain('hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi. 2. düzeydeki soruların çoğunu doğru bulmana rağmen');
+    expect(none.student.items[1].text).toContain('Hiçbir düzeyde buna ulaşılmadığı için düzey belirtilmedi. 2. düzeydeki soruların çoğunu doğru bulmana rağmen');
   });
 
   it('bütün durum birleşimlerinde kartlar, uyarılar ve grafikler birbiriyle çelişmez', () => {

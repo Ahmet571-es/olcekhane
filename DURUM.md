@@ -708,7 +708,16 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    çift. Rapor: araştırma özetli giriş, 27 birleşimde birbirini dışlayan dokuz kural (hepsi yüksekken övgü yok, orta
    düzeyde atılganlığın daha iyi değerlendirildiği; hepsi düşükken eksiklik yok; sakin liderler); yol haritası: 1. hafta
    gruptaki rolleri gözlemle, 2. hafta "Dene ve geri bildirim al", gençler için güvenli küçük adımlar. Paylaşım kartı yok.
-10. Parça Birleştirme (zekâ; özgün sorular)
+10. **Parçalardan Şekil: yayında (2026-10-31, pilot; 3. sınıftan yetişkine).** Ad, WISC-R Türkçe sürümündeki "Parça
+   Birleştirme" alt testiyle karışmasın diye seçildi; bilim kartı o test ya da Visual Puzzles, ASVAB, kâğıt şekil tahtası
+   testleri olmadığını söyler. Yeni görev türü `shape_assembly`: dağınık gösterilen 2–5 parçanın kaydırılıp döndürülerek
+   (ters çevirmeden) hangi bütün şekli oluşturduğu dört seçenekten bulunur; süre sınırı yok; 3 alıştırma, 5 düzey × 4
+   soru (kaydırma 6, döndürme 8, ayna tuzaklı 6). Yanlış seçenekler: bir ya da iki parça farklı, bir parça ters çevrilmiş,
+   (kolay düzeylerde) büyüklük ya da parça sayısı farklı; 3. düzeyden alan ve parça sayısı eşit. Bağımsız denetleyici:
+   döşeme çözücü (yalnızca doğru seçenek kurulur, ayna seçeneği yalnızca ters çevirerek), 46 kestirme kuralı (≤ 7 / 20).
+   Rapor beş kart (doğrular düzeylere göre, ulaşılan düzey %60 kuralı, soru türleri, yanlışlarda seçilen şekiller,
+   çalışma biçimi); rastgele ya da çok hızlı cevapta yorumlanmayan kartlar. Yol haritası: önce bir parçayı yerleştir,
+   ters çevirmeyi denetle, zorluk nereden gelir, birleştirme oyunları (Levine 2012 gözlem; Uttal 2013).
 11. Yaratıcılık Eğilimi (kişilik; IPIP)
 12. Kelime Bulma (zekâ; özgün sorular)
 
@@ -755,7 +764,7 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
    hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
    (Öz-denetim) yayında (2026-10-27); 6., 7. ve 8. testler (Harf-Sayı Sıralama, Merak, Simge Bulma) yayında (2026-10-30); 9. test (Liderlik Eğilimleri) yayında (2026-10-31).
-   Sıradaki: 3. listenin 10. testi (Parçalardan Şekil; ad, WISC-R'deki "Parça Birleştirme" alt testiyle karışmasın diye).
+   10. test (Parçalardan Şekil) yayında (2026-10-31). Sıradaki: 3. listenin 11. testi (Yaratıcılık Eğilimi).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -986,6 +995,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Merak | merak | Yayında (active; 9. sınıftan yetişkine) |
 | İşlem Hızı: Simge Bulma | simge-bulma | Yayında (pilot; 3. sınıftan yetişkine) |
 | Liderlik Eğilimleri | liderlik-egilimleri | Yayında (active; 9. sınıftan yetişkine) |
+| Parçalardan Şekil | parcalardan-sekil | Yayında (pilot; 3. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1110,6 +1120,16 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-31 (64): Yeni test Parçalardan Şekil yayına alındı (3. listenin 10. testi; site sahibinin 31 Ekim'de seçtiği
+  dört yeniliğin üçüncüsü; ayrıntı yukarıda). Ad: WISC-R'deki "Parça Birleştirme" alt testiyle karışmasın diye. İki bağımsız
+  inceleme yayından önce uygulandı. Sorular: "dış hattı doğru, bölünüşü farklı" yanlış seçenekleri iki doğru cevap
+  doğurduğu için kaldırıldı; parçalar sayılarak (tam ve yarım kare) ya da seçenekler birbiriyle karşılaştırılarak doğru
+  cevabı bulma yolları (önce 10,25 ve 17,83 / 20) kapatıldı: yanlış seçenekler yeniden üretildi, 46 kestirme kuralının
+  hepsi en çok 5,4 / 20 (rastgele 5); bağımsız döşeme çözücüyle denetlendi. Rapor: kararsız ya da rastgele sonuçta soru
+  türleri kartı yorumlanmıyor; alıştırma açıklamaları harfleri söylüyor; ince çizgiler kalınlaştı. Kaynak ve sayı: Ivie
+  ve Embretson (2010) ile Shi ve ark. (2023) zorluk bulguları ayrı ayrı; Embretson (1996), Levine (1999, 2012), Uttal
+  (2013), Wai (2009) ifadeleri kaynağa göre; künyeler. Düzeye ulaşma cümlesi (ortak) iki cümleye bölündü. Telefonda
+  dokunarak (4. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
 - 2026-10-31 (63): "Raporu sesli dinle" (site sahibinin 31 Ekim'de seçtiği dört yeniliğin dördüncüsü): her raporun
   başında oynatıcı; önce sonuçlar, istenirse yol haritası; duraklat, durdur, hız. Ses yalnızca cihazın kendi Türkçe
   sesiyle (tarayıcının "yerel" dediği tr sesi); ağ sesine ya da başka dile geçilmez, Türkçe ses yoksa oynatıcı görünmez.
@@ -1194,15 +1214,3 @@ En yeni üstte; en çok 10 madde tutulur.
   `tests/gorev-grafikleri.test.ts` denetler). Kaynak notları: WAIS-IV'te harf-sayı
   sıralama yedek alt test; Türkiye'de WÇZÖ-IV "Harf-Rakam Dizisi"; MEB 2019 programında alfabe sırasıyla ilgili bir kazanım
   doğrulanamadı (1. sınıfta harfler harf grupları hâlinde öğretilir).
-- 2026-10-30 (54): Kendini Tanı Paketi (site sahibinin isteği; büyük planın 5. basamağındaki paket). Seçimleri: geniş
-  paket (yaklaşık bir saat), özet yeni yorum eklemez. Sınıfa göre 6–7 test art arda: kişilik (5. sınıf Çocuk Kişilik,
-  6. sınıftan mezuna Beş Faktör, yetişkin Ayrıntılı Kişilik), ilgi (7. sınıf Hobi, 8. sınıf Mesleki İlgi Profili, 9. sınıftan
-  yetişkine Meslek İlgi Alanları; 5–6. sınıfta yok), çalışma (5. sınıf Ders Çalışma Motivasyonu, 6. sınıftan mezuna Çalışma
-  Alışkanlıkları, yetişkin Erteleme ve Zaman Yönetimi), zihinsel beceriler (Şekil Akıl Yürütme, Kelime Bilgisi, Zihinde
-  Döndürme ya da yetişkinde Kâğıt Katlama, Desen Hatırlama); 49–73 dakika. Başlamadan test çıkarılabilir; testler arasında
-  mola ekranı (sıradaki testi başlat, atla ya da paketi bitir). Sonuç: kısa özet (her testin kendi raporundaki başlık ve
-  düzeyler), paylaşım kartı (kişilik ve ilgi), açılır kapanır test raporları, öğrenci/veli sekmeleri, tek PDF (özet sayfası +
-  bütün raporlar). Tanıtım sayfası `/kendini-tani-paketi` (site haritasında), Testler ve yaş grubu sayfalarında tanıtım kutusu.
-  Ayrılma uyarıları tek soruya indi (paket ve test aynı anda uyarınca paketin metni). Tarayıcıda telefon ve masaüstünde
-  denendi: üç anket testi çözüldü, ara ekran, erken bitirme, sonuç, veli PDF'i (17 sayfa), görev testinin açılışı. Denetim:
-  `tests/paket.test.ts`.
