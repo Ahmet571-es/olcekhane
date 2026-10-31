@@ -7,12 +7,19 @@
  * Değişimin ölçüm payını aşıp aşmadığı, ölçeğin bilinen güvenirliğinden (Cronbach α ve başvuru standart sapması; ölçüm
  * payı SEM = SD·√(1−α)) güvenilir değişim ölçütüyle hesaplanır: |fark| / (√2·SEM) ≥ 1,96 (Jacobson ve Truax, 1991).
  * Güvenirliği bilinmeyen ölçekte yalnızca farkın yönü söylenir, belirgin olup olmadığı söylenmez.
+ *
+ * Görev (zekâ ve dikkat) testlerinde de raporun ana sonuçları (doğru sayısı ya da oranı, düzey, en uzun dizi, tipik süre)
+ * özete yazılır (lib/compare/tasks.ts); bu testlerin ölçüm payı bilinmediği için yalnızca farkın yönü söylenir ve testi
+ * yeniden çözmenin sonucu yükseltebileceği (alıştırma etkisi) ayrıca belirtilir.
  */
 
 /** PDF'teki özetin başı: sürüm 1. */
 export const RECORD_MARK = 'olcekhane-sonuc:1:';
 /** Güvenilir değişim ölçütü (iki yönlü %95). */
 export const RCI_CRITERION = 1.96;
+
+/** Sayının birimi: boş (sayı, puan), yüzde, saniye ya da derece. */
+export type CompareUnit = '' | '%' | 'sn' | '°';
 
 export interface CompareScale {
   key: string;
@@ -22,10 +29,14 @@ export interface CompareScale {
   max: number;
   /** Ölçüm payı (SEM, puanla aynı ölçekte); ölçeğin güvenirliği bilinmiyorsa null. */
   sem: number | null;
-  /** Puanın gösterildiği ondalık sayısı (ortalama puanda 1, toplam puanda 0). */
-  decimals: 0 | 1;
+  /** Puanın gösterildiği ondalık sayısı (anketlerde ortalama puanda 1, toplam puanda 0; görevlerde sürelerde 1 ya da 2). */
+  decimals: 0 | 1 | 2;
   /** Düzeyin rapordaki adı ("Orta" gibi). */
   band: string | null;
+  /** Birim (görev testlerinde; verilmezse birimsiz sayı). */
+  unit?: CompareUnit;
+  /** Süre: büyümesi yavaşlamak demektir ("Süre uzadı/kısaldı" denir). */
+  time?: true;
 }
 
 /** Raporun karşılaştırma bilgisi (yalnızca anket testlerinde). */
@@ -35,6 +46,14 @@ export interface CompareInfo {
   /** Raporun tarihi (ISO). */
   date: string;
   scales: CompareScale[];
+  /**
+   * Görev testi: yeniden çözünce alıştırma etkisiyle sonuç biraz yükselebilir. "items": her seferinde aynı sorular (ya da
+   * aynı kelimeler) gelir, hatırlananlar da sonucu etkileyebilir; "practice": sorular ya da denemeler hatırlanacak türden
+   * değildir ya da her seferinde yeniden üretilir. Anket testlerinde yoktur.
+   */
+  retest?: 'items' | 'practice';
+  /** Bu testin özetinin PDF'lere yazılmaya başlandığı gün (ISO tarih; verilmezse 2026-10-30). */
+  since?: string;
 }
 
 /** PDF'e yazılan özet: test, sürüm, tarih ve ölçek ölçek [anahtar, puan, düzey]. */
@@ -103,7 +122,9 @@ export interface CompareRow {
   after: number;
   min: number;
   max: number;
-  decimals: 0 | 1;
+  decimals: 0 | 1 | 2;
+  unit?: CompareUnit;
+  time?: true;
   bandBefore: string | null;
   bandAfter: string | null;
   /**
@@ -118,7 +139,7 @@ export type CompareOutcome =
   | { status: 'other-test' }
   | { status: 'version' };
 
-const shown = (x: number, decimals: 0 | 1) => Math.round(x * 10 ** decimals) / 10 ** decimals;
+const shown = (x: number, decimals: 0 | 1 | 2) => Math.round(x * 10 ** decimals) / 10 ** decimals;
 
 /** Şimdiki sonucu PDF'teki özetlerden aynı teste ait olanla karşılaştırır. */
 export function compareResults(current: CompareInfo, records: ResultRecord[]): CompareOutcome {
@@ -136,7 +157,20 @@ export function compareResults(current: CompareInfo, records: ResultRecord[]): C
     if (shown(s.value, s.decimals) === shown(p.v, s.decimals)) verdict = 'same';
     else if (s.sem && s.sem > 0) verdict = Math.abs(diff) / (Math.SQRT2 * s.sem) >= RCI_CRITERION ? (diff > 0 ? 'up' : 'down') : 'stable';
     else verdict = diff > 0 ? 'up-unknown' : 'down-unknown';
-    rows.push({ key: s.key, label: s.label, before: p.v, after: s.value, min: s.min, max: s.max, decimals: s.decimals, bandBefore: p.b, bandAfter: s.band, verdict });
+    rows.push({
+      key: s.key,
+      label: s.label,
+      before: p.v,
+      after: s.value,
+      min: s.min,
+      max: s.max,
+      decimals: s.decimals,
+      ...(s.unit ? { unit: s.unit } : {}),
+      ...(s.time ? { time: true as const } : {}),
+      bandBefore: p.b,
+      bandAfter: s.band,
+      verdict,
+    });
   }
   const days = Math.round((Date.parse(current.date) - Date.parse(prev.d)) / 86_400_000);
   return { status: 'ok', rows, days, known: current.scales.some((s) => !!s.sem) };

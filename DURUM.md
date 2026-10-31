@@ -1102,6 +1102,13 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-31 (61): "Gelişimini karşılaştır" görev (zekâ ve dikkat) testlerine genişletildi (site sahibinin 31 Ekim'deki
+  "birkaç yenilik daha" isteği; seçtiği yeniliklerin ilki). Yayındaki 30 görev testinin raporunda ve PDF'inde (pakette de)
+  yorumlanan ana sonuçların özeti: doğru sayısı ya da oranı, ulaşılan düzey, en uzun dizi, tipik süre (`lib/compare/tasks.ts`;
+  birimler %, sn ve derece; sürelerde "uzadı/kısaldı"). Dökümler ve fark puanları karşılaştırılmaz; kartı yorumlanmayan
+  sayı özete yazılmaz, hiçbir sonuç yorumlanmadıysa bölüm yok. Ölçüm payı bilinmediği için yalnızca yön; panelde alıştırma
+  etkisi notu (Scharfen ve ark., 2018), aynı soruların geldiği 16 testte hatırlananların da etkileyebileceği. Özetsiz
+  dosyada uyarı testin tarihini söyler (görevlerde 31 Ekim 2026). Okuma, sesli okuma ve konu tarama testlerinde yok.
 - 2026-10-30 (60): Yeni test İşlem Hızı: Simge Bulma yayına alındı (3. listenin 8. testi; site sahibinin seçtiği dört
   yeniliğin dördüncüsü; ayrıntı yukarıda). Ad: WÇZÖ-IV'teki "Simge Arama" alt testiyle karışmasın diye "Simge Bulma".
   Yeni görev türü `symbol_search`; uygulama kimliğinden üretilen 240 deneme, sunucu yeniden üretip puanlar. Bağımsız
@@ -1188,15 +1195,3 @@ En yeni üstte; en çok 10 madde tutulur.
   Seligman (zekâ karşılaştırması ikinci çalışma, 164 öğrenci), Vohs (iki ortak yöntem), Gollwitzer ve Sheeran (94 bağımsız
   sınama), Friese (küçük ile orta; düzeltilince g = 0,13–0,24), Gülüm ve Tığrak DOI'si; neden-sonuç dili yumuşatıldı.
   Heyecan Arayışı'nın örtüşme notu 15 maddeye güncellendi ("Çılgınlıklar yaparım." artık Öz-denetim'de de).
-- 2026-10-27 (51): Şekil Benzetmeleri sürüm 2: bağımsız incelemelerin bulguları uygulandı. Yanlış seçenek türleri A–D
-  sıraları arasında dengelendi (fazladan değişiklik 11 kez A'daydı; hep aynı sırayı seçmek bir yanılgı gibi görünüyordu;
-  test denetler); ayna görüntüsü alıştırması eklendi (üç alıştırma). Yanılgının öne çıkması için olasılık eşiği %5'ten
-  %1,25'e indi, cümle "rastgele seçimde beklenenden belirgin biçimde sık". Değişiklik türleri kartı: bir türde "zorlandın"
-  yalnızca o tür yanlış cevaplarda rastgele seçimde beklenenden belirgin sık kaçırıldıysa (`missP`, Poisson-binom; değişmemiş
-  şekil cevapları bu karşılaştırmaya girmez); yanlışların hepsi fazladan değişiklikse "Gereken değişikliklerin hepsi
-  uygulandı"; benzetimde rastgele yanlışlar %5'ten az raporda bir türü ya da yanılgıyı öne çıkarıyor (test denetler). Şans
-  kuralı: en çok 9 doğru ve 1. düzeye dört sorunun üçüyle ulaşmak da şans sayılır. Bilim kartı kaynaklarla yeniden
-  karşılaştırıldı: tek değişikliği uygulama olasılığı (.42/.58), "ne" ve "nerede" değişiklikleri, Thibaut'taki seçeneklerin
-  yalnızca bir özelliğinin ortak olduğu, Klauer ve Phye'nin sınırları, resimli ve matris çalışmaları açıkça belirtildi; ASİS'in
-  görsel analojik muhakeme alt testi anıldı (Sertel, 2019); Lovett ve Forbus künyesi bildirinin yayımlandığı yerle düzeldi.
-  Ortak Thibaut künyesindeki sayı numarası (106(1)) geri geldi. Yol haritası: eğitim cümleleri kazanç vaat etmiyor.

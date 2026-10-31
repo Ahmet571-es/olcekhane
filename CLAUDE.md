@@ -88,7 +88,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   `src/lib/scoring/tasks.ts`, `src/lib/reports/build.ts`, `src/lib/reports/simple.ts` (ölçek öneklerinin düzenli
   ifadesi "Sonuçların" ile "Görevler" başlığını belirler), `src/lib/assessment/score-rows.ts`,
   `src/lib/assessment/schemas.ts`, `src/components/runner/tasks/<görev>.tsx` ve
-  `src/components/runner/tasks/task-runner.tsx`, `tests/helpers/bodies.ts`.
+  `src/components/runner/tasks/task-runner.tsx`, `tests/helpers/bodies.ts`, `src/lib/compare/tasks.ts` (önceki sonuçla
+  karşılaştırılan sayılar).
 - Madde testinde ayrıca: `src/content/reports/<ad>.ts`; yeni bir grafik türü gerekiyorsa
   `src/components/test/simple-report-view.tsx` ve `src/lib/pdf/simple-report.tsx`; `tests/evaluate.test.ts`;
   yetişkinlere de açıksa (`adults: true`) `tests/yetiskin.test.ts`.
@@ -289,12 +290,17 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Site sahibinin 2026-10-30 isteği: kişi aynı testi daha sonra yeniden çözünce önceki sonucuyla karşılaştırabilsin.
   Anket testlerinin raporu ölçek ölçek puan, aralık, düzey ve (yalnızca α ile başvuru standart sapması bilinen ölçeklerde)
   ölçüm payı taşır (`SimpleReport.compare`, `lib/assessment/evaluate.ts`). İndirilen PDF'in belge bilgilerine (anahtar
-  sözcükler) bunun küçük özeti yazılır (`lib/compare/record.ts`; paket PDF'inde paketteki anket testlerinin hepsi). Raporda
-  "Önceki sonucunla karşılaştır" (`components/test/compare-panel.tsx`; tek testte ve pakette): eski PDF seçilir, dosya
+  sözcükler) bunun küçük özeti yazılır (`lib/compare/record.ts`; paket PDF'inde paketteki anket ve görev testlerinin hepsi).
+  Raporda "Önceki sonucunla karşılaştır" (`components/test/compare-panel.tsx`; tek testte ve pakette): eski PDF seçilir, dosya
   yalnızca tarayıcıda okunur, hiçbir şey gönderilmez ve saklanmaz. Değişim, güvenilir değişim ölçütüyle (|fark| / (√2·SEM)
   ≥ 1,96; Jacobson ve Truax, 1991) "belirgin" ya da "ölçüm payı içinde" diye söylenir; ölçüm payı bilinmeyen ölçekte
   yalnızca yön. Başka test ya da başka sürüm karşılaştırılmaz (test sürümü artınca eski PDF'ler karşılaştırılamaz).
-  Görev, okuma ve konu tarama testleri henüz yok. `tests/karsilastirma.test.ts` denetler.
+  Görev (zekâ ve dikkat) testlerinde (2026-10-31'den) raporun yorumlanan ana sonuçları karşılaştırılır: doğru sayısı ya da
+  oranı, ulaşılan düzey, en uzun dizi, tipik süre (`lib/compare/tasks.ts`; birim ve "süre uzadı/kısaldı"). Dökümler ve fark
+  puanları (renk-kelime etkisi, kural değiştirme gibi) karşılaştırılmaz; kartı yorumlanmayan sayı özete yazılmaz. Ölçüm payı
+  bilinmediği için yalnızca yön; testi yeniden çözmenin sonucu yükseltebileceği (Scharfen ve ark., 2018) ve aynı soruların
+  geldiği testlerde hatırlananların da etkileyebileceği söylenir. Yeni görev testi `TASK_COMPARE`'e yazılır (test denetler).
+  Okuma, sesli okuma ve konu tarama testlerinde yok (form ve metin sınıfa göre değişir). `tests/karsilastirma.test.ts` denetler.
 
 ## Kendini Tanı Paketi
 

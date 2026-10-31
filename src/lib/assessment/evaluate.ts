@@ -19,6 +19,7 @@ import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
 import { standardError } from '@/lib/scoring/stats';
 import { TaskInputError } from '@/lib/scoring/tasks';
 import type { CompareInfo } from '@/lib/compare/record';
+import { taskCompareInfo } from '@/lib/compare/tasks';
 import type { AnswersBody } from './schemas';
 import { likertRows, quizRows, readingRows, taskScoreRows, toReportScore, type ScoreRow, type TaskInputs } from './score-rows';
 
@@ -186,16 +187,19 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     });
     const report = toSimpleReport(content);
     const roadmap = roadmapFor(def, content, body);
-    const compare = compareInfo(def, content);
+    const compare = compareInfo(def, content, rows);
     return { ...report, ...(roadmap ? { roadmap } : {}), ...(compare ? { compare } : {}) };
   };
 }
 
 /**
- * Anket testlerinde karşılaştırma bilgisi (lib/compare/record.ts): ölçek ölçek puan, aralık, düzey ve ölçüm payı. Ölçüm payı
- * yalnızca güvenirliği bilinen ölçeklerde (α ve başvuru standart sapması; puanlamadaki güven aralığıyla aynı hesap).
+ * Karşılaştırma bilgisi (lib/compare/record.ts). Anket testlerinde ölçek ölçek puan, aralık, düzey ve ölçüm payı; ölçüm payı
+ * yalnızca güvenirliği bilinen ölçeklerde (α ve başvuru standart sapması; puanlamadaki güven aralığıyla aynı hesap). Görev
+ * testlerinde raporun yorumlanan ana sonuçları (lib/compare/tasks.ts). Konu tarama ve okuma testlerinde (form ve metin sınıfa
+ * göre değişir) yoktur.
  */
-function compareInfo(def: InstrumentDef, content: ReportContent): CompareInfo | undefined {
+function compareInfo(def: InstrumentDef, content: ReportContent, rows: ScoreRow[]): CompareInfo | undefined {
+  if (def.engine === 'tasks') return taskCompareInfo(def, content, rows);
   if (def.engine !== 'likert') return undefined;
   const decimals = def.scoring.method === 'mean' ? 1 : 0;
   // Ölçeklerin testteki sırasıyla (raporun bölümleri bazı testlerde puana göre sıralanır).
