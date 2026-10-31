@@ -7,10 +7,14 @@ import type { SimpleChart, SimpleReport } from '@/lib/reports/simple';
  * raporun verisinden (SimpleReport ve yol haritası) ekrandaki sırayla kurulur. Ses yalnızca cihazdaki Türkçe sesle üretilir
  * (lib/speech/voice.ts); metin hiçbir yere gönderilmez.
  *
- * Okunuş kuralları (`speakable`): metindeki kaynak gösterimleri ("(Kail, 1991)") okunmaz; "%88" → "yüzde 88",
- * "3,4 / 5" → "5 üzerinden 3,4", "1,5 sn" → "1,5 saniye", "ve ark." → "ve arkadaşları", oklar ve tırnaklar okunmaz.
- * Bazı ses motorları uzun bir parçayı yarıda kestiği için metin kısa parçalara (cümle, gerekirse cümlenin bölümleri)
- * bölünür (`splitUtterances`).
+ * Okunuş kuralları (`speakable`): metindeki kaynak gösterimleri ("(Kail, 1991)") ve tek ya da iki büyük harfli ayraçlar
+ * ("(A)", "(IQ)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "62 kelime/dakika" → "dakikada 62 kelime",
+ * "5–8. sınıf" → "5. ile 8. sınıf", "1,5 sn" → "1,5 saniye", "÷" → "bölü", "□" → "boş kutu", " = " → "eşittir",
+ * "ve ark." → "ve arkadaşları"; oklar ve tırnaklar okunmaz. Grafiğin görünüşünü anlatan cümleler (renk, işaret, bant…)
+ * okunmaz (`spokenNote`); değerler grafiğin satırlarından sözle okunur. Bazı ses motorları uzun bir parçayı yarıda
+ * kestiği için metin kısa parçalara (cümle, gerekirse cümlenin bölümleri) bölünür (`splitUtterances`); sıra numarasından
+ * ("1. Kazanç") sonra bölünmez, parçanın sonundaki "8." sıra sayısı gibi okunmasın diye noktasız okunur. Bölümler
+ * ekrandaki görünme koşullarıyla okunur (ör. yol haritasında öneri yoksa öneriler bölümü yok).
  */
 
 /** Bir okuma parçasının en büyük uzunluğu (karakter); bölünemeyen tek bir kelime bunu aşamaz. */
@@ -43,13 +47,19 @@ export function speakable(input: string): string {
   // Kesirler {3/4} → "3 bölü 4" (konu tarama testlerinde).
   s = s.replace(/\{(\d+)\/(\d+)\}/g, '$1 bölü $2');
   s = s.replace(CITATION, '');
+  // Tek ya da iki büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz.
+  s = s.replace(/\s*\((?:[A-ZÇĞİÖŞÜ]{1,2})\)/g, '');
   s = s.replace(/\bve ark\./g, 've arkadaşları');
   s = s.replace(/(?<!\p{L})([Öö])r\.\s/gu, (_, c: string) => (c === 'Ö' ? 'Örneğin ' : 'örneğin '));
   s = s.replace(/\bvb\./g, 've benzeri');
   // Yüzde: "%88", "% 88,5".
   s = s.replace(/%\s?(\d+(?:,\d+)?)/g, 'yüzde $1');
+  // "62 kelime/dakika" → "dakikada 62 kelime".
+  s = s.replace(/(\d+(?:,\d+)?),?\s*kelime\/(?:dakika|dk)\b/g, 'dakikada $1 kelime');
   // "3,4 / 5" ve "15/15" → "5 üzerinden 3,4".
   s = s.replace(/(\d+(?:,\d+)?)\s*\/\s*(\d+(?:,\d+)?)/g, '$2 üzerinden $1');
+  // Sıra sayısı aralıkları: "5–8. sınıf" → "5. ile 8. sınıf".
+  s = s.replace(/(\d+)\s*[–—-]\s*(\d+)\.(?=\s+\p{Ll})/gu, '$1. ile $2.');
   // Aralıklar: "1–5", "0–30 sn" → "1 ile 5".
   s = s.replace(/(\d)\s*[–—-]\s*(\d)/g, '$1 ile $2');
   // Birimler (bir sayıdan sonra).
@@ -66,6 +76,8 @@ export function speakable(input: string): string {
   // Tırnaklar okunmaz; kelimenin içindeki kesme işareti ("Türkiye’de") düz kesme olur.
   s = s.replace(/(\p{L}|\d)[’'](\p{L})/gu, "$1'$2");
   s = s.replace(/[“”"‘’«»]/g, '');
+  // İşlem işaretleri (konu taramada).
+  s = s.replace(/÷/g, ' bölü ').replace(/□/g, ' boş kutu ').replace(/\s\+\s/g, ' artı ').replace(/(^|\s)=(?=\s|[.,;)]|$)/g, '$1eşittir');
   // Boşluklar ve noktalama.
   s = s.replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').replace(/,\s*,/g, ',').replace(/^[,\s]+/, '');
   return s.trim();
@@ -106,15 +118,43 @@ export function splitUtterances(text: string, max = MAX_UTTERANCE): string[] {
     .split(/\n+/)
     .map(speakable)
     .filter(Boolean)
-    .flatMap((para) => para.split(/(?<=[.!?…])\s+(?=[\p{Lu}\d])/u))
+    // "1. Kazanç" gibi bir sıra numarasından sonra bölünmez.
+    .flatMap((para) => para.split(/(?<=[.!?…])(?<!(?:^|[.!?…]\s+)\d{1,3}\.)\s+(?=[\p{Lu}\d])/u))
     .map((s) => s.trim())
     .filter((s) => /[\p{L}\d]/u.test(s))
-    .flatMap((s) => splitLong(s, max));
+    .flatMap((s) => splitLong(s, max))
+    // Sondaki "8." sıra sayısı gibi okunmasın: "8 üzerinden 8." → "8 üzerinden 8".
+    .map((s) => s.replace(/(\d)\.$/, '$1'));
 }
 
 /** Bölümleri okuma parçalarına çevirir. */
 export function utterancesOf(segments: SpeechSegment[], max = MAX_UTTERANCE): Utterance[] {
   return segments.flatMap((seg) => seg.lines.flatMap((l) => splitUtterances(l, max)).map((text) => ({ text, segment: seg.title })));
+}
+
+const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+/**
+ * Grafiğin görünüşünü anlatan cümleler (renk, işaret, bant, nokta, çizgi, eksen, köşe, harita…) sesle bir şey anlatmaz:
+ * okunmaz. Değerler grafiğin satırlarından sözle okunur.
+ */
+const VISUAL = /(?<!\p{L})(?:kırmızı|sarı|mavi|yeşil|turuncu|gri|renk|işaret|bant|nokta|çizgi|eksen|köşe|altıgen|harita|sütun|çubu|daire|kesikli)|(?<!\p{L})mor(?!\p{L})/iu;
+
+/** Bir grafik notunun sesle anlam taşıyan cümleleri. */
+export function spokenNote(note: string | undefined): string | null {
+  if (!note) return null;
+  // Görünüşü anlatan cümlenin noktalı virgülle ayrılmış öteki bölümleri (ör. "…daha az kesindir; sarı bantların…") kalır.
+  const kept = note
+    .split(/(?<=[.!?])\s+(?=[\p{Lu}\d])/u)
+    .map((x) => {
+      if (!VISUAL.test(x)) return x;
+      const clauses = x.replace(/[.!?]$/, '').split(/;\s*/).filter((c) => !VISUAL.test(c));
+      return clauses.length > 0 ? `${clauses.join('; ')}.` : '';
+    })
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  return kept || null;
 }
 
 /** Grafiğin sözlü anlatımı: her satırın adı ve değeri. */
@@ -125,13 +165,28 @@ function chartLines(chart: SimpleChart): string[] {
     case 'bars':
       return chart.rows.map((r) => sentence(`${r.label}: ${r.valueLabel}`));
     case 'columns':
-      return [...chart.rows.map((r) => sentence(`${r.label}: ${r.value}`)), sentence(chart.caption)];
+      return [...chart.rows.map((r) => sentence(`${r.label}: ${r.value}`)), spokenNote(chart.caption) ?? ''].filter(Boolean);
     case 'hexagon':
     case 'circle':
-      return chart.axes.filter((a) => a.value !== null).map((a) => sentence(`${a.label}: 5 üzerinden ${String(Math.round((a.value as number) * 10) / 10).replace('.', ',')}`));
+      return chart.axes.filter((a) => a.value !== null).map((a) => sentence(`${a.label}: 5 üzerinden ${nf1.format(a.value as number)}`));
     case 'quadrant':
-      return chart.activeLabel ? [sentence(chart.activeLabel)] : [];
+      return [
+        ...[chart.x, chart.y].filter((a) => a.value !== null).map((a) => sentence(`${a.label}: ${chart.max} üzerinden ${nf1.format(a.value as number)}`)),
+        ...(chart.activeLabel ? [sentence(chart.activeLabel)] : []),
+      ];
   }
+}
+
+/**
+ * Öne çıkan sayı: ad, değer ve (varsa) not. Not küçük harf ya da rakamla başlıyorsa değerin devamıdır ("72, dört
+ * bölümde"; "72. dört bölümde" sıra sayısı gibi okunmasın); büyük harfle başlıyorsa ayrı cümledir. Büyük harfli kodlar
+ * ("IAE") harf harf okunur.
+ */
+function keyFigureLine(f: { label: string; value: string; note?: string }): string {
+  const value = /^[A-ZÇĞİÖŞÜ]{2,4}$/.test(f.value) ? [...f.value].join(', ') : f.value;
+  const note = f.note?.trim();
+  if (!note) return sentence(`${f.label}: ${value}`);
+  return /^[\p{Ll}\d]/u.test(note) ? sentence(`${f.label}: ${value}, ${note}`) : `${sentence(`${f.label}: ${value}`)} ${sentence(note)}`;
 }
 
 /** Sonuçlar kısmı: ekrandaki sırayla (başlık, uyarılar, öne çıkan sayılar, grafik, kartlar, notlar). */
@@ -150,16 +205,13 @@ function resultSegments(report: SimpleReport): SpeechSegment[] {
   }
   const oral = report.oral;
   if (oral) push(oral.level.label, [sentence(oral.level.label), oral.level.text, oral.level.profile]);
-  if (report.keyFigures.length > 0) {
-    push(
-      'Öne çıkan sayılar',
-      report.keyFigures.map((f) => [sentence(`${f.label}: ${f.value}`), f.note ? sentence(f.note) : ''].filter(Boolean).join(' ')),
-    );
-  }
+  if (report.keyFigures.length > 0) push('Öne çıkan sayılar', report.keyFigures.map(keyFigureLine));
   if (report.chart) {
-    push(report.chartTitle, [sentence(report.chartTitle), ...chartLines(report.chart), report.chartNote && sentence(report.chartNote)]);
+    const note = spokenNote(report.chartNote);
+    push(report.chartTitle, [sentence(report.chartTitle), ...chartLines(report.chart), note && sentence(note)]);
   }
-  push(report.itemsTitle, [sentence(report.itemsTitle), report.groupsNote && sentence(report.groupsNote)]);
+  const groupsNote = spokenNote(report.groupsNote);
+  push(report.itemsTitle, [sentence(report.itemsTitle), groupsNote && sentence(groupsNote)]);
   for (const it of report.items) push(it.title, [sentence(it.title), it.badge && sentence(it.badge), it.text]);
   for (const g of report.groups ?? []) {
     push(g.title, [
@@ -201,16 +253,20 @@ function roadmapSegments(rm: Roadmap, you: boolean): SpeechSegment[] {
   };
   const head = you ? 'Senin yol haritan' : 'Çocuğunuz için yol haritası';
   push(head, [sentence(head), rm.intro]);
-  if (rm.standout.length > 0 || rm.standoutNote) {
-    push('Kısaca', ['Kısaca.', ...rm.standout.map((s) => sentence(`${s.title}: ${s.text}`)), rm.standoutNote]);
+  // Ekrandaki gibi: öne çıkanlar varsa onlar, yoksa not.
+  push('Kısaca', ['Kısaca.', ...(rm.standout.length > 0 ? rm.standout.map((s) => sentence(`${s.title}: ${s.text}`)) : [rm.standoutNote])]);
+  // Öneriler bölümü ekranda yalnızca öneri varsa görünür.
+  if (rm.study.items.length > 0) {
+    push(rm.study.title, [sentence(rm.study.title), rm.study.intro]);
+    for (const it of rm.study.items) push(it.title, [sentence(it.title), it.badge && sentence(it.badge), it.text]);
   }
-  push(rm.study.title, [sentence(rm.study.title), rm.study.intro]);
-  for (const it of rm.study.items) push(it.title, [sentence(it.title), it.badge && sentence(it.badge), it.text]);
   if (rm.settings) push(rm.settings.title, [sentence(rm.settings.title), rm.settings.intro, ...rm.settings.items.map(sentence), rm.settings.note]);
+  // Yaklaşım önerileri ekranda yalnızca öneri varsa görünür.
   if (rm.approach && rm.approach.items.length > 0) {
     push(rm.approach.title, [sentence(rm.approach.title), ...rm.approach.items.map((it) => `${sentence(it.title)} ${it.text}`)]);
   }
-  if (rm.weeks.length > 0) {
+  // Haftalar bölümü ekranda her zaman görünür.
+  {
     const t = weeksTitle(rm.weeks.length);
     push(t, [sentence(t)]);
     for (const w of rm.weeks) push(`${w.label}: ${w.title}`, [sentence(w.label), sentence(w.title), w.text]);

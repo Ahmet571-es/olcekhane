@@ -313,18 +313,27 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Site sahibinin 2026-10-31 isteği: küçük çocuklar ve okumakta zorlananlar raporu dinleyebilsin. Raporun başında oynatıcı
   (`components/test/report-speech.tsx`; tek testte öğrenci, veli ve yetişkin sekmesinde, pakette açılan her raporda):
   önce sonuçlar okunur, bitince (varsa) "Yol haritasını da dinle"; duraklat ve devam (kalınan cümlenin başından), durdur,
-  hız (Normal / Yavaş). Ayarlar yalnızca sayfada durur. Sekme değişince, rapor kapanınca, sayfa gizlenince ya da
-  sayfadan çıkınca susar; sayfada aynı anda yalnızca bir oynatıcı konuşur.
-- Ses yalnızca cihazın kendi Türkçe sesiyle üretilir: `localService === true` ve dili `tr` (öncelik tr-TR) olan ses
-  (`lib/speech/voice.ts`). Metni bir sunucuya gönderen seslere (ör. masaüstü Chrome'daki "Google Türkçe") ve başka dillere
-  hiçbir zaman geçilmez; böyle bir ses yoksa oynatıcı görünmez. Hiçbir şey gönderilmez, saklanmaz.
-- Okunacak metin raporun verisinden kurulur, DOM'dan değil (`lib/speech/report-text.ts`): ekrandaki sırayla başlık,
-  uyarılar, öne çıkan sayılar, grafik (sözle), kartlar, notlar; yol haritasında giriş, kısaca, öneriler, ortamlar, yaklaşım
-  ve haftalar (kaynak listesi okunmaz). Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak
-  gösterimleri ("(Kail, 1991)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "1,5 sn" → "1,5 saniye",
-  "ve ark." → "ve arkadaşları", "ör." → "örneğin"; oklar ve tırnaklar okunmaz; parçalar en çok 200 karakter.
-  `tests/sesli-dinle.test.ts` bütün anket ve görev raporlarında (görevlerin bütün sonuç örüntüleri), okuma, sesli okuma
-  ve konu taramada okunacak metni ve ses seçimini denetler.
+  hız (Normal / Yavaş). Ayarlar yalnızca sayfada durur. Sekme değişince, rapor kapanınca susar; sayfa gizlenince ya da
+  sayfadan çıkarken duraklar; sayfada aynı anda yalnızca bir oynatıcı konuşur. Okuma kuyruğu tarayıcıdan bağımsız bir
+  denetleyicidedir (`lib/speech/player.ts`; ilk parça düğmeye basılınca hemen okunur, iptal edilen konuşmanın geç gelen
+  olayları yok sayılır, "bitti" olayı kaybolursa ilerler, başlattıktan hemen sonraki duraklatma yok sayılır).
+- Ses, cihazın kendi konuşma özelliğinin Türkçe sesiyle üretilir: tarayıcının `localService === true` dediği ve dili `tr`
+  (öncelik tr-TR) olan ses (`lib/speech/voice.ts`); ses her parçadan önce yeniden aranır, kaybolursa okuma durur ve oynatıcı
+  gizlenir. Kendini ağdan çalışan diye bildiren seslere (ör. masaüstü Chrome'daki "Google Türkçe") ve başka dillere hiçbir
+  zaman geçilmez. Sınır: sayfa, tarayıcının "yerel" dediği sesin cihazda nasıl üretildiğini denetleyemez (ör. Android'de
+  Türkçe ses paketi yoksa konuşma motoru çevrim içi sese ya da başka bir dile geçebilir); bu yüzden sitede "ses her zaman
+  internetsiz üretilir" denmez. Sayfada: "Site raporunu hiçbir yere göndermez; ses, cihazının kendi konuşma özelliğiyle
+  üretilir" ve Türkçe ses yoksa ayarlardan indirme önerisi. Site metni hiçbir yere göndermez, saklamaz.
+- Okunacak metin raporun verisinden kurulur, DOM'dan değil (`lib/speech/report-text.ts`): ekrandaki sırayla ve ekrandaki
+  görünme koşullarıyla başlık, uyarılar, öne çıkan sayılar, grafik (değerleri sözle; görünüşünü anlatan cümleler okunmaz),
+  kartlar, notlar; yol haritasında giriş, kısaca, öneriler (varsa), ortamlar, yaklaşım, haftalar (kaynak listesi okunmaz).
+  Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak gösterimleri ("(Kail, 1991)") ve kısa
+  büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "62 kelime/dakika" →
+  "dakikada 62 kelime", "1,5 sn" → "1,5 saniye", "5–8. sınıf" → "5. ile 8. sınıf", "÷", "□", "=" ve "+" sözle; "ve ark."
+  → "ve arkadaşları"; öne çıkan sayının notu küçük harfle başlıyorsa değerin devamı ("72, dört bölümde"); parçalar en çok
+  200 karakter, sıra numarasından sonra bölünmez, sondaki sayı noktasız. `tests/sesli-dinle.test.ts` bütün anket ve görev
+  raporlarında (görevlerin bütün sonuç örüntüleri), okuma, sesli okuma ve konu taramada okunacak metni, ses seçimini ve
+  okuma kuyruğunu (sahte konuşma özelliğiyle) denetler.
 
 ## Kendini Tanı Paketi
 
