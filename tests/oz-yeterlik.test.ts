@@ -204,9 +204,10 @@ describe('Öz-yeterlik tanımı', () => {
     expect(count('bes-faktor-kisilik')).toBe(4);
     expect(count('kisiligin-10-yonu')).toBe(4);
     expect(count('ogrenme-ve-basari-ozellikleri')).toBe(1);
+    expect(count('liderlik-egilimleri')).toBe(6);
     const lim = d.science.limitations.join(' ');
     expect(lim).toContain('29 cümleden 20’si');
-    for (const slug of ['ayrintili-kisilik-profili', 'alti-boyutlu-kisilik-profili', '16-faktorlu-kisilik-profili', 'bes-faktor-kisilik', 'kisiligin-10-yonu']) {
+    for (const slug of ['ayrintili-kisilik-profili', 'alti-boyutlu-kisilik-profili', '16-faktorlu-kisilik-profili', 'bes-faktor-kisilik', 'kisiligin-10-yonu', 'liderlik-egilimleri']) {
       expect(lim, slug).toContain(others.find((x) => x.slug === slug)!.name);
     }
     expect(d.science.turkishVersion).toContain('20 maddenin');

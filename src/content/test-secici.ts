@@ -86,6 +86,11 @@ export const SECICI_GOALS: SeciciGoal[] = [
         candidates: ['merak'],
       },
       {
+        skill: 'Liderlik eğilimleri',
+        why: 'Bir grupta öne çıkıp yön verme, insanlar arasında rahat olma ve üstlendiğini sonuna götürme eğilimlerini gösterir.',
+        candidates: ['liderlik-egilimleri'],
+      },
+      {
         skill: 'Kişiliğin ayrıntıları',
         why: 'Kişiliği daha çok özellikle, ayrıntılı biçimde gösterir.',
         candidates: ['kisiligin-10-yonu', '16-faktorlu-kisilik-profili', 'alti-boyutlu-kisilik-profili'],

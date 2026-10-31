@@ -13,6 +13,7 @@ import { empatiRoadmap } from './empati';
 import { ozYeterlikRoadmap } from './oz-yeterlik';
 import { ozDenetimRoadmap } from './oz-denetim';
 import { merakRoadmap } from './merak';
+import { liderlikEgilimleriRoadmap } from './liderlik-egilimleri';
 import { heyecanArayisiRoadmap } from './heyecan-arayisi';
 import { iyimserlikRoadmap } from './iyimserlik';
 import { hizliKisilikTestiRoadmap } from './hizli-kisilik-testi';
@@ -54,6 +55,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'oz-yeterlik': ozYeterlikRoadmap,
   'oz-denetim': ozDenetimRoadmap,
   merak: merakRoadmap,
+  'liderlik-egilimleri': liderlikEgilimleriRoadmap,
   'cocuk-kisilik-profili': cocukKisilikRoadmap,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuRoadmap,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiRoadmap,

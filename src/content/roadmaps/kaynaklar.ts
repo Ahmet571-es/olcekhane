@@ -444,4 +444,8 @@ export const KAYNAK = {
     text: 'The Royal Children’s Hospital Melbourne (2025). Brain injury – Speed of information processing [Bilgi sayfası].',
     url: 'https://rch.org.au/kidsinfo/fact_sheets/Brain_injury_Speed_of_information_processing',
   },
+  lacerenza2017: {
+    text: 'Lacerenza, C. N., Reyes, D. L., Marlow, S. L., Joseph, D. L. ve Salas, E. (2017). Leadership training design, delivery, and implementation: A meta-analysis. Journal of Applied Psychology, 102(12), 1686–1718.',
+    url: 'https://doi.org/10.1037/apl0000241',
+  },
 } satisfies Record<string, { text: string; url: string }>;

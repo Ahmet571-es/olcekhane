@@ -18,6 +18,7 @@ import { empati } from './empati';
 import { ozYeterlik } from './oz-yeterlik';
 import { ozDenetim } from './oz-denetim';
 import { merak } from './merak';
+import { liderlikEgilimleri } from './liderlik-egilimleri';
 import { heyecanArayisi } from './heyecan-arayisi';
 import { iyimserlik } from './iyimserlik';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
@@ -114,6 +115,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   ozYeterlik,
   ozDenetim,
   merak,
+  liderlikEgilimleri,
   harfSayiSiralama,
   simgeBulma,
   cocukKisilik,

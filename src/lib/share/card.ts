@@ -56,6 +56,7 @@ export const NOT_SHAREABLE: Record<string, string> = {
   'oz-yeterlik': 'kendine güven; kıyas konusu olmasın',
   'oz-denetim': '"yüksek daha iyi" diye okunabilir',
   merak: '"yüksek daha iyi" diye okunabilir',
+  'liderlik-egilimleri': '"yüksek daha iyi" diye okunabilir',
   'oz-saygi': 'öz-saygı; kıyas ve alay konusu olmasın',
   'duygusal-zeka-bilesenleri': '"zekâ" adı taşıyan, "yüksek daha iyi" diye okunabilen ölçekler',
 };

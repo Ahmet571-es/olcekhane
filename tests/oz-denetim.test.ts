@@ -209,6 +209,7 @@ describe('Öz-denetim tanımı', () => {
       'alti-boyutlu-kisilik-profili': 5,
       'kisiligin-10-yonu': 4,
       'dusunme-ve-calisma-tarzi': 3,
+      'liderlik-egilimleri': 3,
       'bes-faktor-kisilik': 2,
       'heyecan-arayisi': 2,
       'hizli-kisilik-testi': 1,
@@ -219,11 +220,11 @@ describe('Öz-denetim tanımı', () => {
     for (const o of others.filter((x) => !(x.slug in COUNTS) && x.slug !== 'cocuk-kisilik-profili')) expect(count(o.slug), o.slug).toBe(0);
     const lim = d.science.limitations.join(' ');
     expect(lim).toContain('28 cümlenin 23’ü');
-    const WORDS = ['on ikisi', 'onu', 'beşi', 'dördü', 'üçü', 'ikisi', 'ikisi', 'birer', 'birer'];
+    const WORDS = ['on ikisi', 'onu', 'beşi', 'dördü', 'üçü', 'üçü', 'ikisi', 'ikisi', 'birer', 'birer'];
     for (const [i, slug] of Object.keys(COUNTS).entries()) {
       const name = others.find((x) => x.slug === slug)!.name;
       expect(lim, slug).toContain(name);
-      if (i < 7) expect(lim, slug).toContain(`${WORDS[i]} ${name}’`);
+      if (i < 8) expect(lim, slug).toContain(`${WORDS[i]} ${name}’`);
     }
     expect(d.science.turkishVersion).toContain('23 maddenin');
     // Heyecan Arayışı'ndaki iki cümle orada düz, burada ters yönde: bilim kartı bunu söyler.
