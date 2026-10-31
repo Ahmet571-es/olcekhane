@@ -173,7 +173,9 @@ describe('Anket testlerinin kart grafikleri', () => {
   it('PDF her anket testinde grafiklerle üretilir', async () => {
     for (const d of LIKERT) {
       const [student] = reportsOf(d, patterns(d)[7]);
-      const pdf = await renderSimpleReportPdf(student, 'olcekhane.com');
+      // Ek bölümler (düzeylerin anlamı, cevaplar tek tek, cevap kalitesi) uzun testlerde PDF'i birkaç kat uzatır; onların
+      // PDF'i tests/rapor-bolumleri.test.ts ve tests/evaluate.test.ts'te denenir (GitHub'ın aylık çalışma süresi sınırlı).
+      const pdf = await renderSimpleReportPdf({ ...student, parts: undefined }, 'olcekhane.com');
       expect(pdf.subarray(0, 5).toString(), d.slug).toBe('%PDF-');
     }
   }, 240_000);

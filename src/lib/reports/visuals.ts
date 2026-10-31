@@ -155,7 +155,61 @@ export interface LadderVisual {
   bestLabel?: string;
 }
 
-export type ItemVisual = GaugeVisual | CompareVisual | DotsVisual | BarsVisual | StackVisual | StepsVisual | ColumnsVisual | StripVisual | LadderVisual;
+/**
+ * Cevaplar tek tek (anket testlerinin "Cevapların tek tek" bölümü): her satır bir madde; nokta, maddenin puana katkısı
+ * (ters puanlanan maddede çevrilmiş değer; içi boş nokta), boş bırakılan madde noktasız. Dikey işaret ölçeğin ortalamasıdır
+ * (noktaların ortalaması; ortalama puanlı ölçekte ölçeğin puanıyla aynı). Eksen cevap seçeneklerinin değerleridir.
+ */
+export interface AnswersVisual {
+  type: 'answers';
+  label: string;
+  min: number;
+  max: number;
+  rows: { label: string; value: number | null; reverse: boolean }[];
+  mean: { value: number; label: string } | null;
+  /** Eksenin uçlarının ve ortasının adı ("düşük", "puana katkı", "yüksek"). */
+  axis: [string, string, string];
+  /** Lejant: dolu nokta, içi boş nokta (ters madde varsa) ve boş madde (varsa). */
+  legend: { filled: string; hollow?: string; missing?: string };
+}
+
+/**
+ * Denetim çubuğu (cevap kalitesi denetimleri): ortak bir eksende bir ya da birkaç satır; eksen "uygun" ve "dikkat"
+ * bölgelerine ayrılır (sınırlar denetimin kendi sınırlarıdır), kişinin değeri işaretle gösterilir. Bölgeler tek tonludur:
+ * "dikkat" bölgesi açık pirinç, öteki gri.
+ */
+export interface MeterVisual {
+  type: 'meter';
+  label: string;
+  min: number;
+  max: number;
+  zones: { from: number; to: number; label: string; warn: boolean }[];
+  rows: { label: string; value: number; valueLabel: string }[];
+  /** Değerler tam sayıdır (ör. çift sayısı): sınırlar sözel karşılıkta "0–2, 3–5" diye yazılır. */
+  discrete?: boolean;
+  caption?: string;
+}
+
+/** Sayım bölgesinin tam sayı aralığı: [0; 2,5) → "0–2", [2,5; 5] → "3–5" (sınır iki tam sayının arasında). */
+export function meterRange(v: Pick<MeterVisual, 'zones'>, i: number): string {
+  const z = v.zones[i];
+  const lo = Math.ceil(z.from - 1e-9);
+  const hi = i === v.zones.length - 1 ? Math.floor(z.to + 1e-9) : Math.ceil(z.to - 1e-9) - 1;
+  return lo === hi ? String(lo) : `${lo}–${hi}`;
+}
+
+export type ItemVisual =
+  | GaugeVisual
+  | CompareVisual
+  | DotsVisual
+  | BarsVisual
+  | StackVisual
+  | StepsVisual
+  | ColumnsVisual
+  | StripVisual
+  | LadderVisual
+  | AnswersVisual
+  | MeterVisual;
 
 /**
  * Ölçeğin düzey bölgeleri: testin eşikleri (anchoredBands) ve şablonun düzey adları. Şablonda metni olmayan düzey en yakın
@@ -381,6 +435,14 @@ export function visualDescription(v: ItemVisual): string {
       const none = v.legend ? `${yes.charAt(0).toLocaleUpperCase('tr-TR')}${yes.slice(1)} dizi yok` : 'Doğru tekrarlanan dizi yok';
       const best = v.bestLabel ? `${v.bestLabel}: ${v.reached} ${v.unit}` : `En uzun ${yes} dizi ${v.reached} ${v.unit}`;
       return `${v.label}: ${rows.join('; ')}. ${v.reached === null ? none : best}.`;
+    }
+    case 'answers': {
+      const rows = v.rows.map((r) => `${r.label}: ${r.value === null ? (v.legend.missing ?? 'boş') : `${formatTick(r.value)}${r.reverse ? ` (${v.legend.hollow ?? 'ters'})` : ''}`}`);
+      return `${v.label}: ${rows.join('; ')}.${v.mean ? ` ${v.mean.label}.` : ''}`;
+    }
+    case 'meter': {
+      const zone = (z: MeterVisual['zones'][number], i: number) => `${z.label} ${v.discrete ? meterRange(v, i) : `${formatTick(z.from)}–${formatTick(z.to)}`}`;
+      return `${v.label}: ${v.rows.map((r) => `${r.label} ${r.valueLabel}`).join('; ')}. Bölgeler: ${v.zones.map(zone).join(', ')}.`;
     }
   }
 }

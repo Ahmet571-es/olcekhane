@@ -3,6 +3,7 @@ import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
 import type { QuizChart, QuizFigure, QuizTable } from '@/lib/instruments/types';
 import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
 import type { OralReportBlock } from './oral';
+import type { ReportPart } from './parts';
 import type { Roadmap } from './roadmap';
 import { QUIZ_THRESHOLDS } from '@/lib/scoring/quiz';
 import type { BarsVisual, CompareVisual, DotsVisual, GaugeVisual, ItemVisual, Zone } from './visuals';
@@ -130,6 +131,11 @@ export interface SimpleReport {
   quiz?: SimpleQuizReview;
   /** Anket testlerinde önceki bir sonuçla karşılaştırma için ölçek ölçek puanlar (lib/compare/record.ts). */
   compare?: CompareInfo;
+  /**
+   * Ek bölümler (lib/reports/parts.ts): anket testlerinde "Düzeylerin anlamı", "Cevapların tek tek" ve "Cevaplarına ne kadar
+   * güvenebiliriz?". Ekranda ve PDF'te destek kutusundan sonra, "bu bir tanı değildir" notundan önce gösterilir.
+   */
+  parts?: ReportPart[];
 }
 
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
@@ -161,29 +167,42 @@ export function facetNote(facetItems: number, margin: boolean, terms: typeof FAC
  * çift varsa uyarı. Maddelerin hepsi düz yönlü olduğu için cümlelerin çoğuna katılma (ya da katılmama) eğilimi bütün
  * tarzları birlikte yükseltir (ya da düşürür); olağan cevaplarda iki çiftin birden böyle çıkması seyrektir.
  */
-function circumplexNotes(
+export function circumplexOpposites(
   axes: { key: string; angle: number }[],
-  byKey: Map<string, ReportContent['sections'][number]>,
-  audience: Audience,
-): string[] {
+  byKey: Map<string, Pick<ReportContent['sections'][number], 'band'>>,
+): { pairs: number; bothHigh: number; bothLow: number } {
   const band = (key: string) => byKey.get(key)?.band ?? null;
+  let pairs = 0;
   let bothHigh = 0;
   let bothLow = 0;
   for (const a of axes.filter((x) => x.angle < 180)) {
     const b = axes.find((x) => x.angle === a.angle + 180);
     if (!b) continue;
+    pairs++;
     const [x, y] = [band(a.key), band(b.key)];
     if ((x === 'high' || x === 'very_high') && (y === 'high' || y === 'very_high')) bothHigh++;
     if ((x === 'low' || x === 'very_low') && (y === 'low' || y === 'very_low')) bothLow++;
   }
+  return { pairs, bothHigh, bothLow };
+}
+
+/** Karşıt tarz çiftlerinde uyarı için gereken en az çift sayısı (ikisi de yüksek ya da ikisi de düşük). */
+export const CIRCUMPLEX_PAIRS_NEEDED = 2;
+
+function circumplexNotes(
+  axes: { key: string; angle: number }[],
+  byKey: Map<string, ReportContent['sections'][number]>,
+  audience: Audience,
+): string[] {
+  const { bothHigh, bothLow } = circumplexOpposites(axes, byKey);
   const notes: string[] = [];
   const note = (level: string, tendency: string) =>
     byAudience(audience, {
       student: `Birbirinin tersi olan bazı tarzlarda ikisi de ${level} çıktı. Bu, cümlelerin çoğuna ${tendency} eğiliminden kaynaklanabilir; bu tarzları yorumlarken dikkatli ol.`,
       parent: `Birbirinin tersi olan bazı tarzlarda ikisi de ${level} çıktı. Bu, cümlelerin çoğuna ${tendency} eğiliminden kaynaklanabilir; bu tarzlar dikkatle yorumlanmalıdır.`,
     });
-  if (bothHigh >= 2) notes.push(note('yüksek', 'katılma'));
-  if (bothLow >= 2) notes.push(note('düşük', 'katılmama'));
+  if (bothHigh >= CIRCUMPLEX_PAIRS_NEEDED) notes.push(note('yüksek', 'katılma'));
+  if (bothLow >= CIRCUMPLEX_PAIRS_NEEDED) notes.push(note('düşük', 'katılmama'));
   return notes;
 }
 

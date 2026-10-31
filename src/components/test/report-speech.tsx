@@ -151,6 +151,12 @@ function Player({ voice, lists, you }: { voice: SpeechSynthesisVoice; lists: Par
               {second === 'stop' ? 'Durdur' : v('Sonuçları baştan dinle', 'Sonuçları baştan dinleyin')}
             </button>
           )}
+          {/* Uzun bölümler (ör. cevaplar tek tek) için: okunan bölümün sonrasına geçer. */}
+          {(status === 'playing' || status === 'paused') && (
+            <button key="gec" type="button" className="btn btn-secondary" onClick={() => player.skipSection()}>
+              Bölümü geç
+            </button>
+          )}
         </>
         <div className="inline-flex items-center gap-2" role="group" aria-label="Okuma hızı">
           <span className="t-small text-ink-2">Hız:</span>

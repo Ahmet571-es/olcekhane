@@ -1,6 +1,7 @@
 import { MathText } from '@/components/quiz/math-text';
 import { QuizVisual } from '@/components/quiz/quiz-visuals';
 import { ItemVisualView } from '@/components/report/item-visual';
+import { ReportParts } from '@/components/report/report-parts';
 import { ScaleRuler } from '@/components/report/scale-ruler';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleGroup, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
@@ -496,6 +497,9 @@ export function SimpleReportView({ report }: { report: SimpleReport }) {
           </ul>
         </section>
       )}
+
+      {/* Ek bölümler (düzeylerin anlamı, cevaplar tek tek, cevap kalitesi): destek kutusundan sonra, notlardan önce (PDF'teki sırayla). */}
+      {report.parts && report.parts.length > 0 && <ReportParts parts={report.parts} you={you} />}
 
       <div className="flex flex-col gap-2 text-[0.95rem] text-ink-2">
         <p>

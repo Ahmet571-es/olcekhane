@@ -243,10 +243,17 @@ describe('İyimserlik Ölçeği tanımı', () => {
     }
     expect(likertQuality(d, same(3)).sameAnswer).toBe(false);
     expect(likertQuality(d, keyedAnswers(() => 'high')).notes).toEqual([]);
-    // Eksik cevapta (dokuz madde) "aynı cevap" notu yok; yalnızca eksik madde notu.
+    // Boş bırakılan madde denetimi bozmaz (2026-11-01): cevaplanan dokuz maddenin hepsine aynı cevap da not verir.
     const nine = same(5);
     delete nine.o01;
-    expect(likertQuality(d, nine).sameAnswer).toBe(false);
+    const q9 = likertQuality(d, nine);
+    expect(q9.sameAnswer).toBe(true);
+    expect(q9.incomplete).toBe(true);
+    expect(q9.notes.some((n) => n.startsWith('Cevaplanan bütün cümlelere aynı cevap (“Tamamen doğru”)'))).toBe(true);
+    // Ortadaki seçenek yine sayılmaz.
+    const nineMid = same(3);
+    delete nineMid.o01;
+    expect(likertQuality(d, nineMid).sameAnswer).toBe(false);
     // Rapor: not uyarılarda görünür.
     const r = evaluate(SLUG, { grade: 10, data: { engine: 'likert', answers: same(5) } });
     expect(r.student.cautions.join(' ')).toContain('Bütün cümlelere aynı cevap (“Tamamen doğru”)');

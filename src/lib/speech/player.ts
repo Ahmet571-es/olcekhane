@@ -215,6 +215,28 @@ export class SpeechPlayer<V extends VoiceLike> {
     this.set({ status: 'idle', part: 'results', current: null });
   }
 
+  /**
+   * Bölümü geç: okunan bölümün (ek bölümün hepsi ya da raporun bir kartı) ardından gelen ilk parçadan sürer; bölüm
+   * sonuncuysa okuma biter. Duraklatılmışken de çalışır (sonraki bölümden okumaya başlar).
+   */
+  skipSection() {
+    if (this.state.status !== 'playing' && this.state.status !== 'paused') return;
+    const part = this.state.part;
+    const list = this.lists[part];
+    const sectionOf = (k: number) => list[k]?.section ?? list[k]?.segment;
+    const here = sectionOf(this.index);
+    let k = this.index + 1;
+    while (k < list.length && sectionOf(k) === here) k++;
+    if (k >= list.length) {
+      this.halt();
+      this.index = 0;
+      this.hub.release(this);
+      this.set({ status: 'done', current: null });
+      return;
+    }
+    this.play(part, k);
+  }
+
   /** Hız; okurken değişirse okunan parça yeni hızla bir kez baştan okunur. */
   setRate(rate: number) {
     if (rate === this.state.rate) return;

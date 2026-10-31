@@ -69,6 +69,11 @@ Her aşama iki bağımsız incelemeden geçer (metin ve mantık; bilgi ve kaynak
 Aşamalar (her biri bütün testleri kapsar, ayrı ayrı yayına alınır): (a) ortak altyapı ve anket testlerinde 1, 2, 4;
 (b) görev testlerinde 1, 2, 4; (c) okuma, sesli okuma ve matematikte 1, 2, 4; (d) 3 (günlük hayat metinleri, test
 test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinlemenin eksiksiz okuması. İlerleme buraya yazılır.
+- (a) **yayında (2026-11-01):** anket testlerinde "Düzeylerin anlamı", "Cevapların tek tek", "Cevaplarına ne kadar
+  güvenebiliriz?" (ortak model `lib/reports/parts.ts`, ayrıntı CLAUDE.md "Raporun ek bölümleri"). Claude'un kararı (site
+  sahibi değiştirebilir): çocuğun cevapları tek tek yalnızca öğrencinin kendi raporunda; veli raporunda yok ("Çocuğunuz
+  isterse birlikte bakabilirsiniz"); test başında öğrenciye söylenir. Sesli dinlemede "Bölümü geç". Bağımsız inceleme
+  bulguları uygulandı. Sıradaki: (b) görev testleri.
 
 **Kalite incelemesi (2026-10-08): 6 acil hata, site sahibinin isteğiyle her işlemede bir hata düzeltilip yayına
 alınıyor.** Rapor: Claude Docs'taki **Ölçekhane Test Kalite Raporu** (https://claude.ai/artifact/8btJRknY53xATRsLhX2HsH;
@@ -1142,6 +1147,13 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-01 (65): Raporları genişletme (a) yayına alındı: bütün anket testlerinin öğrenci, veli ve yetişkin raporunda üç
+  yeni bölüm, her kartın kendi grafiğiyle: "Düzeylerin anlamı" (düzeyler yan yana, kişinin düzeyi ve ölçümün doğal payı
+  işaretli, sınıra yakınsa komşu düzeyde "Bu da uyabilir"), "Cevapların tek tek" (her ölçeğin cümleleri, verilen cevap,
+  ters puanlanan cümleler; yalnızca öğrencinin ve yetişkinin kendi raporunda, PDF'te ekte), "Cevaplarına ne kadar
+  güvenebiliriz?" (hız, arka arkaya aynı cevap, karşıt çiftler, hep aynı cevap, boşlar; uyarı kutusuyla aynı sınırlar).
+  Sesli dinleme yeni bölümleri de okuyor ve "Bölümü geç" düğmesi var. Bağımsız inceleme bulguları uygulandı (gizlilik,
+  çelişen iki kart, yanlış anlatılan uyarı kuralı, tekrarlar, PDF süresi ve sayfa düzeni). Tarayıcıda denendi.
 - 2026-10-31 (64): Yeni test Parçalardan Şekil yayına alındı (3. listenin 10. testi; site sahibinin 31 Ekim'de seçtiği
   dört yeniliğin üçüncüsü; ayrıntı yukarıda). Ad: WISC-R'deki "Parça Birleştirme" alt testiyle karışmasın diye. İki bağımsız
   inceleme yayından önce uygulandı. Sorular: "dış hattı doğru, bölünüşü farklı" yanlış seçenekleri iki doğru cevap
@@ -1227,12 +1239,3 @@ En yeni üstte; en çok 10 madde tutulur.
   altışar aynı anda isteniyor. `araclar/yayin-durumu.py` bu durumu tanıyor ("kodla ilgili değil, ayın 1'inden sonra
   gönder"); CLAUDE.md'ye not eklendi. Testlerin varsayılan süresi 20 sn'ye çıkarıldı (Gizli Şekiller'deki şekil
   karşılaştırma testi yerelde ~5 sn sürüyor, GitHub'da 5 sn'lik sınırı aştı).
-- 2026-10-30 (55): Yeni test Harf-Sayı Sıralama hazırlandı ve `main`'e gönderildi (3. listenin 6. testi; ayrıntı
-  yukarıda); depo kısa süre herkese açılarak aynı gün yayına alındı. Yeni görev türü
-  (`letter_number`): diziler, çözme ekranı (klavye düzeninde harf tuşları, telefonda 320 px'e sığan tuş takımı), puanlama,
-  beş kartlı rapor, yol haritası, bilim kartı (kaynak araştırmasıyla), dış sınama; bağımsız kaynak, kod ve metin
-  incelemelerinin bulguları uygulandı. Kart grafiklerinde parçalı çubuğun beşinci parçası artık içi boş, çerçeveli kutu
-  (önceden birinci parçanın rengini alıyordu; Şekil Benzetmeleri'nin "Yanlışlarda seçilen şekiller" grafiği de düzeldi;
-  `tests/gorev-grafikleri.test.ts` denetler). Kaynak notları: WAIS-IV'te harf-sayı
-  sıralama yedek alt test; Türkiye'de WÇZÖ-IV "Harf-Rakam Dizisi"; MEB 2019 programında alfabe sırasıyla ilgili bir kazanım
-  doğrulanamadı (1. sınıfta harfler harf grupları hâlinde öğretilir).

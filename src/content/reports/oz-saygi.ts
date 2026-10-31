@@ -42,7 +42,7 @@ export const ozSaygiReport: ReportTemplate = {
         ],
       },
       average: {
-        summary: 'Dengeli',
+        summary: 'Kendine bazen olumlu, bazen şüpheyle bakan',
         student:
           'Kendini değerli ve yeterli gördüğün zamanlar da, kendinden şüphe duyduğun zamanlar da olduğunu söylüyorsun. Bu çok yaygındır.',
         parent:
@@ -54,7 +54,7 @@ export const ozSaygiReport: ReportTemplate = {
         tipsParent: ['Sonuçtan çok çabayı övün.', 'Onu başkalarıyla karşılaştırmaktan kaçının.'],
       },
       low: {
-        summary: 'Kendine karşı eleştirel',
+        summary: 'Kendine çoğu zaman eleştirel bakan',
         student:
           'Kendine karşı eleştirel bir bakışın olduğunu söylüyorsun. Böyle hissetmek zor olabilir; ama bu duygular değişebilir ve bu konuda destek almak mümkün.',
         parent:

@@ -54,9 +54,21 @@ const SIMGE = 'simge-bulma';
 const PARCA = 'parcalardan-sekil';
 const HARF = 'harf-dizileri';
 
-/** Raporda kişiye gösterilen bütün metinler. */
+/**
+ * Raporda kişiye gösterilen bütün metinler. "Cevapların tek tek" bölümündeki madde metinleri testin kendi maddeleridir (kişi
+ * onları çözerken gördü); yönerge testindeki gibi aranmaz: ilgi testinde "ilkokul öğretmeni olmak" gibi meslekler yetişkin
+ * için de doğrudur. Bölümün kendi metinleri (giriş, cevaplar, etiketler) aranır.
+ */
+function withoutItemTexts(r: SimpleReport): SimpleReport {
+  if (!r.parts) return r;
+  return {
+    ...r,
+    parts: r.parts.map((p) => ({ ...p, groups: p.groups.map((g) => ({ ...g, cards: g.cards.map((c) => (c.rows ? { ...c, rows: c.rows.map((x) => ({ ...x, text: '' })) } : c)) })) })),
+  };
+}
+
 function reportText(r: SimpleReport): string {
-  return JSON.stringify(r);
+  return JSON.stringify(withoutItemTexts(r));
 }
 
 /**
@@ -64,7 +76,7 @@ function reportText(r: SimpleReport): string {
  * denetlenir: orada "önemli bir sınav ya da sunum" bilerek geçer ve bağlantı adları rehber yazılarının adlarıdır.
  */
 function reportTextWithoutRoadmap(r: SimpleReport): string {
-  const { roadmap, ...rest } = r;
+  const { roadmap, ...rest } = withoutItemTexts(r);
   void roadmap;
   return JSON.stringify(rest);
 }

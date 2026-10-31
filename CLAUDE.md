@@ -326,7 +326,7 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   üretilir" ve Türkçe ses yoksa ayarlardan indirme önerisi. Site metni hiçbir yere göndermez, saklamaz.
 - Okunacak metin raporun verisinden kurulur, DOM'dan değil (`lib/speech/report-text.ts`): ekrandaki sırayla ve ekrandaki
   görünme koşullarıyla başlık, uyarılar, öne çıkan sayılar, grafik (değerleri sözle; görünüşünü anlatan cümleler okunmaz),
-  kartlar, notlar; yol haritasında giriş, kısaca, öneriler (varsa), ortamlar, yaklaşım, haftalar (kaynak listesi okunmaz).
+  kartlar, ek bölümler (eksiksiz: düzeyler, maddeler ve cevaplar, denetimler; "Bölümü geç" düğmesi), notlar; yol haritasında giriş, kısaca, öneriler (varsa), ortamlar, yaklaşım, haftalar (kaynak listesi okunmaz).
   Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak gösterimleri ("(Kail, 1991)") ve kısa
   büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "62 kelime/dakika" →
   "dakikada 62 kelime", "1,5 sn" → "1,5 saniye", "5–8. sınıf" → "5. ile 8. sınıf", "÷", "□", "=" ve "+" sözle; "ve ark."
@@ -334,6 +334,42 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   200 karakter, sıra numarasından sonra bölünmez, sondaki sayı noktasız. `tests/sesli-dinle.test.ts` bütün anket ve görev
   raporlarında (görevlerin bütün sonuç örüntüleri), okuma, sesli okuma ve konu taramada okunacak metni, ses seçimini ve
   okuma kuyruğunu (sahte konuşma özelliğiyle) denetler.
+
+## Raporun ek bölümleri
+
+- Site sahibinin 2026-10-31 isteği (raporlar çok daha kapsamlı ve yol gösterici; her açıklamanın kendi grafiği; analiz
+  bilimsel, dil çok sade; aşamalar ve ilerleme `DURUM.md`'de). Ortak model `lib/reports/parts.ts` (`SimpleReport.parts`:
+  bölüm → grup → kart; kartta metin, grafik, yan yana düzeyler, madde satırları ve grafiğin sözle anlatımı `spoken`).
+  Ekranda `components/report/report-parts.tsx` (uzun bölümde kartlar açılır kapanır kutular), PDF'te `PartsPdf` ve ek
+  sayfa `AppendixPage` (`lib/pdf/simple-report.tsx`), sesli dinlemede `partSegments` (grafiğin nasıl okunacağını anlatan
+  `note`/`introNote` ve girişin görünüş cümleleri okunmaz; bir ek bölümün bütün parçaları tek bölümdür, oynatıcıdaki
+  "Bölümü geç" hepsini atlar; ~3 dakikadan uzun bölümün başında yaklaşık süresi söylenir). Sıra: sonuç kartları, destek
+  kutusu (uzun listelerin altında kalmasın), ek bölümler, "tanı değildir" notu, karşılaştırma, yol haritası; PDF'te
+  "Cevapların tek tek" yol haritasından sonra ektir (60'tan çok maddeli testte grafiksiz). Görev, okuma, sesli okuma ve
+  matematik testleri sonraki aşamalarda aynı modeli kullanır.
+- Anket testleri (`lib/reports/likert-parts.ts`, `evaluate.ts` kurar): **Düzeylerin anlamı** (her ölçekte kartın düzey
+  çubuğunun aynısı; düzeylerin anlatımı şablondaki kısa başlıklar `summary`, düzeyin adını yinelemez, kartın uzun metni
+  yinelenmez; şablonda metni olmayan ve ters maddesi olmayan ölçekte cevapların ortalamasının yakın olduğu seçenek, Holland
+  profilinde girişte bir kez; ölçümün doğal payı yalnızca α ve `sdRef` bilinen ölçekte, %90 aralık; pay komşu düzeye
+  uzanıyorsa o düzeyde "Bu da uyabilir"), **Cevapların tek tek** (bileşik olmayan her ölçeğin maddeleri testteki
+  numarasıyla, verilen cevap, ters puanlanan ve başka ölçeğe de katılan maddeler, boşlar; grafik `answers`; örnek ters
+  madde hassas olmayan bir maddedir), **Cevaplarına ne kadar güvenebiliriz?** (uyarı kutusundaki denetimler kart kart: hız
+  `strip`, arka arkaya aynı cevap, karşıt çiftler ve çemberin karşıt tarzları `meter` (sayımlarda sınır iki tam sayının
+  arasında), hep aynı cevap, motivasyonda çelişki, boşlar). Denetimlerin sınırları uyarılarla ortaktır (`LIKERT_QUALITY`,
+  `runIgnored`, `circumplexOpposites`, `MotivationReport.contradiction`): kart ve uyarı hiçbir zaman çelişmez. Ölçeklerin
+  adı raporun kendi adıdır (`UNIT_BY_SLUG`: boyut, yön, tarz, alan…). Kaynak: Meade ve Craig (2012; Europe PMC özetinden
+  okundu).
+- Öğrenci mahremiyeti (2026-11-01 kararı; site sahibi değiştirebilir): maddeler ve cevaplar yalnızca öğrencinin (ya da
+  yetişkinin) kendi raporunda ve PDF'indedir; veli raporunda bölüm yalnızca bunu söyler, kalite kartları da madde ya da
+  cevap göstermez. Öğrenci raporunda bölüm kapalı kutularla başlar ve "raporunu kiminle paylaşacağına sen karar verirsin"
+  der; test başlangıç sayfası da söyler. Hiçbir şey saklanmaz. Ek bölümler uzun testlerin PDF'ini uzatır (240 madde
+  yerelde ~4 sn).
+- Yeni anket testi bölümleri kendiliğinden alır; şablonda her düzeyin düzey adından farklı bir `summary`'si olmalı; ölçek
+  adı raporun genel bakışındakinden farklıysa `UNIT_BY_SLUG`'a yazılır. `tests/rapor-bolumleri.test.ts` yayındaki her anket
+  testinde öğrenci, veli ve yetişkin raporunu dener: bölümler ve grafikleri, madde ve cevapların testle aynı olması, veli
+  raporunda madde olmaması, ters maddeler, düzeyin kartla ve genel bakışla aynı olması, denetimlerin uyarılarla aynı olması
+  (hızlı, hep aynı, hep "evet", boş, süre yok, 1 + 1 çift), dil (sen/çocuğunuz, yetişkinde okul sözcüğü yok, cümleler en çok
+  22 sözcük), ekrandaki sıra, sesli okuma, PDF ve paket PDF'i.
 
 ## Kendini Tanı Paketi
 

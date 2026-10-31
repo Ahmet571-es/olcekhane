@@ -10,9 +10,10 @@ import { buildOralReport } from '@/lib/reports/oral';
 import { buildOralRoadmap } from '@/lib/reports/oral-roadmap';
 import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
 import { buildRoadmap, type NextTest, type Roadmap } from '@/lib/reports/roadmap';
+import { likertParts } from '@/lib/reports/likert-parts';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { buildTaskRoadmap } from '@/lib/reports/task-roadmap';
-import { likertItemFlags, likertQuality, scoreLikert, type LikertAnswer, type LikertItemFlags } from '@/lib/scoring/likert';
+import { likertItemFlags, likertQuality, scoreLikert, type LikertAnswer, type LikertItemFlags, type QualityReport } from '@/lib/scoring/likert';
 import { OralInputError, scoreOral, type OralResult } from '@/lib/scoring/oral';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
@@ -60,7 +61,15 @@ export function solvableInstrument(slug: string): InstrumentDef | null {
  * Cevapları puanlar. Norm tablosu kullanılmaz: Likert ölçekleri puanın cevap aralığındaki konumuna
  * göre (scoring/likert, anchoredBand), diğer testler kendi ölçütlerine göre yorumlanır.
  */
-function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes: string[]; items?: LikertItemFlags } {
+interface Scored {
+  rows: ScoreRow[];
+  notes: string[];
+  items?: LikertItemFlags;
+  /** Anket testlerinde cevaplar ve cevap kalitesi denetimleri: raporun ek bölümleri için (lib/reports/likert-parts.ts). */
+  likert?: { answers: Record<string, LikertAnswer>; quality: QualityReport };
+}
+
+function score(def: InstrumentDef, body: AnswersBody): Scored {
   const { data, grade } = body;
   if (def.engine !== data.engine) throw new AssessmentError('invalid', 'Geçersiz istek.');
 
@@ -75,7 +84,8 @@ function score(def: InstrumentDef, body: AnswersBody): { rows: ScoreRow[]; notes
     if (Object.keys(answers).length < Math.ceil(def.items.length * def.scoring.minAnsweredRatio)) {
       throw new AssessmentError('invalid', 'Testi bitirmek için maddelerin çoğunu cevaplamak gerekiyor.');
     }
-    return { rows: likertRows(scoreLikert(def, answers, {})), notes: likertQuality(def, answers).notes, items: likertItemFlags(def, answers) };
+    const quality = likertQuality(def, answers);
+    return { rows: likertRows(scoreLikert(def, answers, {})), notes: quality.notes, items: likertItemFlags(def, answers), likert: { answers, quality } };
   }
 
   if (def.engine === 'quiz' && data.engine === 'quiz') {
@@ -172,7 +182,7 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
       return withRoadmap ? { ...report, roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : report;
     };
   }
-  const { rows, notes, items } = score(def, body);
+  const { rows, notes, items, likert } = score(def, body);
   const scores = rows.map(toReportScore);
   return (audience, now) => {
     const content = buildReport({
@@ -188,7 +198,9 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     const report = toSimpleReport(content);
     const roadmap = roadmapFor(def, content, body);
     const compare = compareInfo(def, content, rows);
-    return { ...report, ...(roadmap ? { roadmap } : {}), ...(compare ? { compare } : {}) };
+    // Ek bölümler: anket testlerinde düzeylerin anlamı, cevaplar tek tek ve cevap kalitesi (lib/reports/likert-parts.ts).
+    const parts = def.engine === 'likert' && likert ? likertParts({ def, content, report, answers: likert.answers, quality: likert.quality }) : [];
+    return { ...report, ...(roadmap ? { roadmap } : {}), ...(compare ? { compare } : {}), ...(parts.length ? { parts } : {}) };
   };
 }
 

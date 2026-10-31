@@ -82,7 +82,7 @@ describe('Öz-saygı Ölçeği: cevap denetimi ve madde düzeyinde destek', () =
   it('hep "Tamamen katılıyorum": toplam 15, "Dengeli"; uyarı gösterilir ve destek kutusu nedenini söyleyerek açılır', () => {
     const r = evaluate(SLUG, body(same(3)));
     expect(total(same(3))).toBe(15);
-    expect(r.student.items[0].badge).toBe('Dengeli');
+    expect(r.student.items[0].badge).toBe('Dengeli · Kendine bazen olumlu, bazen şüpheyle bakan');
     expect(r.student.items[0].text).not.toMatch(/genel olarak olumlu/i);
     expect(r.student.cautions.join(' ')).toContain('Bütün cümlelere aynı cevap (“Tamamen katılıyorum”)');
     expect(r.parent.cautions.join(' ')).toContain('Bütün cümlelere aynı cevap (“Tamamen katılıyorum”)');
@@ -96,7 +96,7 @@ describe('Öz-saygı Ölçeği: cevap denetimi ve madde düzeyinde destek', () =
       expect(x).not.toMatch(/eleştirel bakış/);
     }
     // Dengeli profil cümlesi yok (tek boyutlu test); öne çıkan kart düzeyin kısa adıdır.
-    expect(r.student.roadmap!.standout).toEqual([{ title: 'Öz-saygı', text: 'Dengeli' }]);
+    expect(r.student.roadmap!.standout).toEqual([{ title: 'Öz-saygı', text: 'Kendine bazen olumlu, bazen şüpheyle bakan' }]);
   });
 
   it('toplam puan yüksekken tek bir cevap da destek kutusunu açar; "bazen işe yaramaz" cümlesine yalnızca "Katılıyorum" açmaz', () => {
@@ -159,7 +159,9 @@ describe('Öz-saygı Ölçeği: rapor metinleri', () => {
       expect(s[b]!.parent, b).toMatch(/^Çocuğunuz .* belirtiyor/);
     }
     expect(t.bandLabels.average).toBe('Dengeli');
-    expect(s.average!.summary).toBe('Dengeli');
+    // Kısa başlık düzeyin adını yinelemez ("Düzeylerin anlamı" bölümünde düzeyi anlatır).
+    expect(s.average!.summary).toBe('Kendine bazen olumlu, bazen şüpheyle bakan');
+    expect(s.low!.summary).toBe('Kendine çoğu zaman eleştirel bakan');
     expect(`${s.average!.student} ${s.average!.parent}`).not.toMatch(/genel olarak olumlu/i);
     expect(s.low!.student).not.toMatch(/oldukça|son zamanlarda/i);
     expect(s.low!.parent).not.toMatch(/oldukça|dikkate alınması gereken/i);

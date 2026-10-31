@@ -1,10 +1,14 @@
 import {
+  formatTick,
+  meterRange,
   textWidth,
+  type AnswersVisual,
   type BarsVisual,
   type ColumnsVisual,
   type DotsVisual,
   type ItemVisual,
   type LadderVisual,
+  type MeterVisual,
   type StackVisual,
   type StepsVisual,
   type StripVisual,
@@ -36,7 +40,7 @@ export interface Drawing {
   shapes: Shape[];
 }
 
-export type DrawnVisual = DotsVisual | BarsVisual | StackVisual | StepsVisual | ColumnsVisual | StripVisual | LadderVisual;
+export type DrawnVisual = DotsVisual | BarsVisual | StackVisual | StepsVisual | ColumnsVisual | StripVisual | LadderVisual | AnswersVisual | MeterVisual;
 
 export const isDrawn = (v: ItemVisual): v is DrawnVisual => v.type !== 'gauge' && v.type !== 'compare';
 
@@ -458,8 +462,168 @@ function drawLadder(v: LadderVisual, W: number, fs: number): Drawing {
   return { width: W, height: r2(legendY + ls * 0.4), shapes };
 }
 
+/* ---------- Cevaplar tek tek ---------- */
+
+/**
+ * Her satır bir madde: solda maddenin testteki numarası, sağda cevap seçeneklerinin ekseninde maddenin puana katkısı (dolu
+ * nokta; ters puanlanan maddede içi boş nokta). Boş bırakılan maddede nokta yerine "boş" yazar. Dikey kırmızı çizgi
+ * ölçeğin ortalamasıdır; adı grafiğin üstünde. Altta seçeneklerin değerleri, eksenin anlamı ve lejant.
+ */
+function drawAnswers(v: AnswersVisual, W: number, fs: number): Drawing {
+  const shapes: Shape[] = [];
+  const ls = r2(fs * 0.85);
+  const labelW = Math.max(textWidth('00', ls), ...v.rows.map((r) => textWidth(r.label, ls)));
+  const x0 = labelW + fs * 0.5;
+  const pad = fs * 0.6;
+  const span = v.max - v.min || 1;
+  const x = (val: number) => x0 + pad + ((Math.min(v.max, Math.max(v.min, val)) - v.min) / span) * (W - x0 - 2 * pad);
+  const top = fs * 1.55;
+  const rh = r2(fs * 1.2);
+  const bottom = top + v.rows.length * rh;
+  // Seçeneklerin değerlerinde dikey kılavuz çizgileri ve her satırda yatay iz.
+  const ticks: number[] = [];
+  for (let t = Math.ceil(v.min - 1e-9); t <= v.max + 1e-9; t++) ticks.push(t);
+  for (const t of ticks) shapes.push({ k: 'line', x1: r2(x(t)), y1: r2(top), x2: r2(x(t)), y2: r2(bottom), stroke: 'axis', sw: 0.5 });
+  v.rows.forEach((_, i) => {
+    const cy = r2(top + i * rh + rh / 2);
+    shapes.push({ k: 'line', x1: r2(x(v.min)), y1: cy, x2: r2(x(v.max)), y2: cy, stroke: 'track2', sw: 0.8 });
+  });
+  // Ortalama: noktaların arkasında kırmızı çizgi; adı üstte.
+  if (v.mean) {
+    const mx = r2(x(v.mean.value));
+    shapes.push({ k: 'line', x1: mx, y1: r2(top - fs * 0.3), x2: mx, y2: r2(bottom + fs * 0.1), stroke: 'marker', sw: 1.6 });
+    const at = centered(v.mean.label, mx, fs, W);
+    shapes.push({ k: 'text', x: r2(at.x), y: r2(fs * 0.95), text: v.mean.label, size: fs, weight: 700, fill: 'ink', anchor: at.anchor });
+  }
+  const dr = r2(fs * 0.36);
+  const missing = v.legend.missing ? 'boş' : '';
+  v.rows.forEach((row, i) => {
+    const cy = r2(top + i * rh + rh / 2);
+    shapes.push({ k: 'text', x: r2(labelW), y: r2(cy + ls * 0.33), text: row.label, size: ls, weight: 400, fill: 'ink3', anchor: 'end' });
+    if (row.value === null) {
+      // Boş madde: noktasız; "boş" yazısı zeminle örtülü (kılavuz çizgileri yazının üstünden geçmez).
+      const tw = textWidth(missing || 'boş', ls);
+      shapes.push({ k: 'rect', x: r2(x0 + pad - 1), y: r2(cy - ls * 0.6), w: r2(tw + 2), h: r2(ls * 1.2), r: 1, fill: 'surface' });
+      shapes.push({ k: 'text', x: r2(x0 + pad), y: r2(cy + ls * 0.33), text: missing || 'boş', size: ls, weight: 400, fill: 'ink3', anchor: 'start' });
+    } else if (row.reverse) {
+      shapes.push({ k: 'circle', x: r2(x(row.value)), y: cy, r: dr, fill: 'surface', stroke: 'fill', sw: r2(Math.max(1, fs * 0.13)) });
+    } else {
+      shapes.push({ k: 'circle', x: r2(x(row.value)), y: cy, r: dr, fill: 'fill', stroke: 'fill', sw: 0.6 });
+    }
+  });
+  // Eksen: seçeneklerin değerleri ve eksenin anlamı.
+  const numY = r2(bottom + fs * 1.0);
+  for (const t of ticks) shapes.push({ k: 'text', x: r2(x(t)), y: numY, text: formatTick(t), size: ls, weight: 400, fill: 'ink3', anchor: 'middle' });
+  const capY = r2(numY + ls * 1.35);
+  shapes.push({ k: 'text', x: r2(x0), y: capY, text: v.axis[0], size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
+  shapes.push({ k: 'text', x: r2((x0 + W) / 2), y: capY, text: v.axis[1], size: ls, weight: 400, fill: 'ink2', anchor: 'middle' });
+  shapes.push({ k: 'text', x: W, y: capY, text: v.axis[2], size: ls, weight: 400, fill: 'ink2', anchor: 'end' });
+  // Lejant: dolu nokta, içi boş nokta ve boş madde; sığmayan öğe alt satıra geçer.
+  const lr = r2(ls * 0.38);
+  const items: { text: string; mark: 'filled' | 'hollow' | 'none' }[] = [
+    { text: v.legend.filled, mark: 'filled' },
+    ...(v.legend.hollow ? [{ text: v.legend.hollow, mark: 'hollow' as const }] : []),
+    ...(v.legend.missing ? [{ text: v.legend.missing, mark: 'none' as const }] : []),
+  ];
+  let lx = 0;
+  let ly = capY + ls * 1.5;
+  for (const it of items) {
+    const w = (it.mark === 'none' ? 0 : lr * 2 + ls * 0.4) + textWidth(it.text, ls);
+    if (lx > 0 && lx + w > W) {
+      lx = 0;
+      ly += ls * 1.35;
+    }
+    if (it.mark !== 'none') {
+      shapes.push({
+        k: 'circle',
+        x: r2(lx + lr),
+        y: r2(ly - lr * 0.9),
+        r: lr,
+        fill: it.mark === 'filled' ? 'fill' : 'surface',
+        stroke: 'fill',
+        sw: it.mark === 'filled' ? 0.6 : r2(Math.max(1, fs * 0.13)),
+      });
+    }
+    const tx = it.mark === 'none' ? lx : lx + lr * 2 + ls * 0.4;
+    shapes.push({ k: 'text', x: r2(tx), y: r2(ly), text: it.text, size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
+    lx += w + ls * 1.3;
+  }
+  return { width: W, height: r2(ly + ls * 0.4), shapes };
+}
+
+/* ---------- Denetim çubuğu ---------- */
+
+/**
+ * Bir ya da birkaç satır, ortak eksende: her satırda adı ve değeri, altında "uygun" (gri) ve "dikkat" (açık pirinç) bölgeleri
+ * ve kişinin değeri (kırmızı çizgi). Altta bölge sınırlarındaki sayılar ve bölgelerin adları.
+ */
+function drawMeter(v: MeterVisual, W: number, fs: number): Drawing {
+  const shapes: Shape[] = [];
+  const pad = 2;
+  const span = v.max - v.min || 1;
+  const x = (val: number) => pad + ((Math.min(v.max, Math.max(v.min, val)) - v.min) / span) * (W - 2 * pad);
+  const trackH = r2(fs * 0.85);
+  let y = 0;
+  for (const r of v.rows) {
+    const valueW = textWidth(r.valueLabel, fs);
+    const label = fitLabel(r.label, fs, W - valueW - fs);
+    label.lines.forEach((line, i) =>
+      shapes.push({ k: 'text', x: 0, y: r2(y + fs * 0.85 + i * label.size * 1.15), text: line, size: label.size, weight: 600, fill: 'ink', anchor: 'start' }),
+    );
+    shapes.push({ k: 'text', x: W, y: r2(y + fs * 0.85), text: r.valueLabel, size: fs, weight: 700, fill: 'ink', anchor: 'end' });
+    const ty = r2(y + fs * 0.85 + (label.lines.length - 1) * label.size * 1.15 + fs * 0.65);
+    for (const z of v.zones) {
+      const zx = x(z.from);
+      shapes.push({
+        k: 'rect',
+        x: r2(zx),
+        y: ty,
+        w: r2(Math.max(0.5, x(z.to) - zx - 0.8)),
+        h: trackH,
+        r: 1.5,
+        fill: z.warn ? 'soft' : 'track',
+        ...(z.warn ? { stroke: 'fill' as const, sw: 0.6 } : {}),
+      });
+    }
+    const mx = r2(x(r.value));
+    shapes.push({ k: 'line', x1: mx, y1: r2(ty - fs * 0.3), x2: mx, y2: r2(ty + trackH + fs * 0.3), stroke: 'marker', sw: 2 });
+    y = ty + trackH + fs * 0.6;
+  }
+  const ts = r2(fs * 0.85);
+  const tickY = r2(y + fs * 0.75);
+  // Sayımlarda (çift, dizi) sınır iki tam sayının arasındadır: eksende yalnızca uçlar, bölgelerin adında aralıkları yazar.
+  const bounds = v.discrete ? [v.min, v.max] : [v.min, ...v.zones.slice(1).map((z) => z.from), v.max];
+  bounds.forEach((b, i) =>
+    shapes.push({
+      k: 'text',
+      x: r2(i === 0 ? 0 : i === bounds.length - 1 ? W : x(b)),
+      y: tickY,
+      text: formatTick(b),
+      size: ts,
+      weight: 400,
+      fill: 'ink3',
+      anchor: i === 0 ? 'start' : i === bounds.length - 1 ? 'end' : 'middle',
+    }),
+  );
+  let bottom = tickY + ts * 1.35;
+  v.zones.forEach((z, i) => {
+    const text = v.discrete ? `${z.label} ${meterRange(v, i)}` : z.label;
+    const at = centered(text, (x(z.from) + x(z.to)) / 2, ts, W);
+    shapes.push({ k: 'text', x: r2(at.x), y: r2(bottom), text, size: ts, weight: z.warn ? 700 : 400, fill: z.warn ? 'ink' : 'ink2', anchor: at.anchor });
+  });
+  if (v.caption) {
+    bottom += ts * 1.35;
+    shapes.push({ k: 'text', x: 0, y: r2(bottom), text: v.caption, size: ts, weight: 400, fill: 'ink3', anchor: 'start' });
+  }
+  return { width: W, height: r2(bottom + ts * 0.4), shapes };
+}
+
 export function drawVisual(v: DrawnVisual, width: number, fontSize: number): Drawing {
   switch (v.type) {
+    case 'answers':
+      return drawAnswers(v, width, fontSize);
+    case 'meter':
+      return drawMeter(v, width, fontSize);
     case 'dots':
       return drawDots(v, width, fontSize);
     case 'bars':

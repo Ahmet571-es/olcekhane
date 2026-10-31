@@ -326,6 +326,36 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
     expect(player.getState()).toMatchObject({ status: 'done', current: null });
   });
 
+  it('Bölümü geç: okunan bölümün hepsi atlanır; duraklatılmışken de sonraki bölümden başlar; son bölümde okuma biter', () => {
+    const { synth, player, tick } = setup();
+    const u = (text: string, section: string) => ({ text, segment: text, section });
+    player.setLists({ results: [u('A1', 'A'), u('B1', 'B'), u('B2', 'B'), u('B3', 'B'), u('C1', 'C'), u('C2', 'C')], roadmap: [] });
+    // Okunmuyorken bir şey yapmaz.
+    player.skipSection();
+    expect(synth.spoken).toEqual([]);
+    player.play('results');
+    tick(500);
+    synth.finish();
+    expect(synth.spoken.at(-1)!.text).toBe('B1');
+    tick(500);
+    player.skipSection();
+    expect(synth.spoken.at(-1)!.text).toBe('C1');
+    expect(player.getState()).toMatchObject({ status: 'playing', current: 'C1' });
+    // Atlanan bölümün geç gelen olayı okumayı ilerletmez.
+    expect(synth.spoken.filter((x) => x.text.startsWith('B')).map((x) => x.text)).toEqual(['B1']);
+    tick(500);
+    player.pause();
+    expect(player.getState().status).toBe('paused');
+    player.skipSection();
+    expect(player.getState()).toMatchObject({ status: 'done', current: null });
+    // Raporun kendi metninde: ek bölümün bütün parçaları tek bölüm; ötekilerde her kart ayrı.
+    const r = evaluate('empati', likertBody('empati', 9, (i) => (i * 3 + 1) % 5)).student;
+    const list = utterancesOf(reportSpeech(r).results);
+    const answers = list.filter((x) => x.section === 'Cevapların tek tek');
+    expect(new Set(answers.map((x) => x.segment)).size).toBeGreaterThan(2);
+    expect(list.filter((x) => x.segment === r.items[0].title).every((x) => x.section === x.segment)).toBe(true);
+  });
+
   it('ses kaybolursa ya da ağdan çalışan sese dönüşürse okuma durur, başka sese geçilmez', () => {
     const { synth, player } = setup();
     player.play('results');

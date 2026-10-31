@@ -162,6 +162,11 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
                   {def.adults
                     ? 'Okula gidiyorsan ya da mezun olup üniversiteye hazırlanıyorsan sınıfını seç: sana ve veline ayrı ayrı yazılmış iki rapor hazırlanır. 18 yaşını doldurduysan ve testi kendin için çözüyorsan “Yetişkinim”i seç: sana yazılmış tek bir rapor hazırlanır, veli raporu olmaz.'
                     : 'Sorular ve rapor sınıf düzeyine göre hazırlanır.'}
+                  {/* Öğrenci mahremiyeti: anket testlerinde cevaplar tek tek yalnızca öğrencinin kendi raporundadır. */}
+                  {def.engine === 'likert' &&
+                    (def.adults
+                      ? ' Cevapların tek tek yalnızca senin raporunda yer alır; veli raporunda yer almaz.'
+                      : ' Öğrenciye ve veliye ayrı rapor hazırlanır; cevaplar tek tek yalnızca öğrencinin kendi raporunda yer alır.')}
                 </p>
               </div>
               <div>

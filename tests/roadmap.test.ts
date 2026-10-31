@@ -475,8 +475,8 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(rm.bars).toHaveLength(1);
     expect(rm.settings).toBeNull();
     expect(rm.intro).not.toContain('ortamlarda');
-    expect(rm.standout).toEqual([{ title: 'Öz-saygı', text: 'Kendine karşı eleştirel' }]);
-    expect(rm.study.items[0].badge).toBe('Kendine karşı eleştirel');
+    expect(rm.standout).toEqual([{ title: 'Öz-saygı', text: 'Kendine çoğu zaman eleştirel bakan' }]);
+    expect(rm.study.items[0].badge).toBe('Kendine karşı eleştirel · Kendine çoğu zaman eleştirel bakan');
     expect(rm.weeks.map((w) => w.title)).toEqual(['Fark et', 'Kendine bakış', 'Gerçek bir sorumluluk', 'Gözden geçir']);
     expect(rm.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri', '/rehber/oz-saygi-nedir']);
     expect(low.parent.roadmap!.approach!.items).toHaveLength(1);

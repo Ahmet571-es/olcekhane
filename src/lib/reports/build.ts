@@ -411,6 +411,13 @@ export interface MotivationReport {
   chartNote: string;
   /** Gruplar: bileşik ölçekler ve haritada olmayan ölçek; her birinin açıklaması ve cetvelleri gösterilecek ölçekler. */
   groups: { key: string; text: string; scales: string[] }[];
+  /**
+   * Cevaplar birbirine ters düşüyor: kendi isteğiyle çalışma (ya da parçalarından biri) yüksekken isteksizlik de yüksek
+   * (uyarı kutusunda şablonun `contradiction` metni). `contradictionScales`: denetlenen ölçekler (yatay eksen, parçaları ve
+   * isteksizlik).
+   */
+  contradiction: boolean;
+  contradictionScales: string[];
 }
 
 export interface AcademicReport {
@@ -1017,6 +1024,8 @@ function buildMotivation(
         text: pick(t.groupText[key]),
         scales: scales.find((s) => s.key === key)?.of ?? [key],
       })),
+      contradiction: caution !== null,
+      contradictionScales: [t.x, ...(scales.find((s) => s.key === t.x)?.of ?? []), t.alone],
     },
     caution,
   };

@@ -14,6 +14,7 @@ import { drawVisual, type DrawnVisual, type Tone } from '@/lib/reports/visual-dr
 import { packageSummary, summaryIntro, type PackageEntry } from '@/lib/reports/package';
 import { PACKAGE_NAME } from '@/content/paket';
 import { compareGeometry, gaugeGeometry, type CompareVisual, type GaugeVisual, type ItemVisual } from '@/lib/reports/visuals';
+import type { PartCard, ReportPart } from '@/lib/reports/parts';
 
 /**
  * Basit raporun PDF'i. Sunucuda bellekte üretilir ve doğrudan indirilir; dosya hiçbir yere kaydedilmez.
@@ -1075,6 +1076,147 @@ function QuizReviewPdf({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) 
   );
 }
 
+/* ---------- Ek bölümler (lib/reports/parts.ts; ekrandaki components/report/report-parts.tsx ile aynı içerik) ---------- */
+
+function PartCardPdf({ card, you, visuals }: { card: PartCard; you: boolean; visuals: boolean }) {
+  const long = (card.rows?.length ?? 0) > 12;
+  const visual = visuals ? card.visual : undefined;
+  return (
+    <View style={s.item} wrap={long}>
+      <View style={{ flexDirection: 'row', gap: 14 }}>
+        <View style={{ flex: 1 }}>
+          {/* Kartın başı sayfanın dibinde tek başına kalmasın. */}
+          <View style={s.itemHead} minPresenceAhead={70}>
+            <Text style={s.itemTitle}>{card.title}</Text>
+            {card.badge && <Text style={[s.itemBadge, card.status === 'warn' ? { color: C.warn } : card.status ? { color: C.ink2 } : {}]}>{card.badge}</Text>}
+          </View>
+          {card.text && <Text style={s.para}>{card.text}</Text>}
+          {visual && card.note && <Text style={[s.note, { marginTop: 2 }]}>{card.note}</Text>}
+          {card.rows && (
+            // Her madde tek bir yazı satırı (iç içe yazılarla; ayrı kutular uzun testlerde PDF'i yavaşlatıyordu).
+            <View style={{ marginTop: 2 }}>
+              {card.rows.map((r) => (
+                <Text key={r.no} style={{ fontSize: 8.5, lineHeight: 1.4, marginTop: 2.5, color: r.muted ? C.ink3 : C.ink }}>
+                  <Text style={{ color: C.ink3 }}>{r.no}. </Text>
+                  {r.text}
+                  <Text style={{ fontWeight: r.muted ? 400 : 700 }}> · {r.value}</Text>
+                  {r.tags.length > 0 && <Text style={{ fontSize: 7.5, color: C.brassInk }}> · {r.tags.join(' · ')}</Text>}
+                </Text>
+              ))}
+            </View>
+          )}
+        </View>
+        {visual && (
+          <View style={{ width: VW, paddingTop: 2 }}>
+            <ItemVisualPdf visual={visual} />
+          </View>
+        )}
+      </View>
+      {card.levels && (
+        <View style={{ flexDirection: 'row', gap: 5, marginTop: 5 }}>
+          {card.levels.map((l) => (
+            <View
+              key={l.label}
+              style={{ flex: 1, borderWidth: l.active ? 1 : 0.75, borderColor: l.active ? C.brass : C.rule, backgroundColor: l.active ? C.brassSoft : C.paper, borderRadius: 4, padding: 5 }}
+            >
+              <Text style={{ fontSize: 8.5, fontWeight: 700, color: l.active ? C.ink : C.ink2 }}>{l.label}</Text>
+              {l.text ? <Text style={{ fontSize: 8, lineHeight: 1.35, color: C.ink2 }}>{l.text}</Text> : null}
+              {l.active && (
+                <Text style={{ fontSize: 7.5, fontWeight: 700, color: C.brassInk, marginTop: 1 }}>
+                  {you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi'}
+                  {card.badge && l.label.includes(' · ') ? `: ${card.badge}` : ''}
+                </Text>
+              )}
+              {l.near && <Text style={{ fontSize: 7.5, fontWeight: 700, color: C.ink2, marginTop: 1 }}>Bu da uyabilir</Text>}
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+/** Bölümün başlığı, girişi ve grafik notu bir arada (sayfanın dibinde tek başına kalmaz). */
+function PartHeadPdf({ part, first }: { part: ReportPart; first?: boolean }) {
+  return (
+    <View wrap={false} minPresenceAhead={90}>
+      <Text style={first ? [s.title, { marginTop: 8 }] : s.h2}>{part.title}</Text>
+      <Text style={[s.para, { color: C.ink2, marginTop: first ? 6 : 0 }]}>{part.intro}</Text>
+      {part.introNote && part.pdfVisuals !== false && <Text style={[s.note, { marginBottom: 4 }]}>{part.introNote}</Text>}
+    </View>
+  );
+}
+
+function PartBodyPdf({ part, you }: { part: ReportPart; you: boolean }) {
+  return (
+    <>
+      {part.groups.map((g, i) => (
+        <View key={g.title ?? i} style={{ marginTop: g.title ? 8 : 4 }}>
+          {g.title && (
+            <Text style={[s.itemTitle, { fontFamily: 'Bricolage', fontSize: 12.5, marginBottom: 2 }]} minPresenceAhead={90}>
+              {g.title}
+            </Text>
+          )}
+          {g.cards.map((card) => (
+            <PartCardPdf key={card.key} card={card} you={you} visuals={part.pdfVisuals !== false} />
+          ))}
+        </View>
+      ))}
+      {part.sources && part.sources.length > 0 && (
+        <Text style={[s.note, { marginTop: 4 }]}>Kaynak: {part.sources.map((x) => `${x.text} ${x.url ?? ''}`.trim()).join(' · ')}</Text>
+      )}
+    </>
+  );
+}
+
+/** PDF'te ek olarak verilen bölüm (kartları olan `appendix` bölümü): yol haritasından sonra, kendi sayfalarında. */
+const inAppendix = (p: ReportPart) => !!p.appendix && p.groups.some((g) => g.cards.length > 0);
+
+function PartsPdf({ parts, you }: { parts: ReportPart[]; you: boolean }) {
+  return (
+    <View>
+      {parts
+        .filter((p) => !inAppendix(p))
+        .map((p) => (
+          <View key={p.key}>
+            <PartHeadPdf part={p} />
+            <PartBodyPdf part={p} you={you} />
+          </View>
+        ))}
+    </View>
+  );
+}
+
+function AppendixPage({ parts, you, siteHost, kind, date }: { parts: ReportPart[]; you: boolean; siteHost: string; kind: string; date: string }) {
+  return (
+    <Page size="A4" style={s.page}>
+      <View style={s.top} fixed>
+        <View>
+          <Text style={s.brand}>Ölçekhane</Text>
+          <Text style={s.tag}>Tahmin değil, ölçüm.</Text>
+        </View>
+        <View style={s.topRight}>
+          <Text style={s.audience}>{kind}</Text>
+          <Text style={{ fontSize: 8.5, color: C.ink3 }}>{date}</Text>
+        </View>
+      </View>
+      <View style={s.chips}>
+        <Text style={s.chip}>Ek</Text>
+      </View>
+      {parts.map((p, i) => (
+        <View key={p.key}>
+          <PartHeadPdf part={p} first={i === 0} />
+          <PartBodyPdf part={p} you={you} />
+        </View>
+      ))}
+      <View style={s.footer} fixed>
+        <Text>{siteHost}</Text>
+        <Text render={({ pageNumber, totalPages }) => `Sayfa ${pageNumber} / ${totalPages}`} />
+      </View>
+    </Page>
+  );
+}
+
 /* ---------- Belge ---------- */
 
 /** Bir raporun sayfaları (ana sayfa ve varsa yol haritası): tek raporun belgesinde ve Kendini Tanı Paketi'nin belgesinde. */
@@ -1214,6 +1356,9 @@ function ReportPages({ report, siteHost }: { report: SimpleReport; siteHost: str
           </View>
         )}
 
+        {/* Ek bölümler: destek kutusundan sonra, notlardan önce (ekrandaki sırayla). */}
+        {report.parts && report.parts.length > 0 && <PartsPdf parts={report.parts} you={you} />}
+
         <View style={s.disclaimer} wrap={false}>
           <Text style={s.paraSmall}>
             <Text style={{ fontWeight: 700 }}>{report.disclaimer.title}</Text> {report.disclaimer.text}
@@ -1227,6 +1372,8 @@ function ReportPages({ report, siteHost }: { report: SimpleReport; siteHost: str
         </View>
       </Page>
       {report.roadmap && <RoadmapPage rm={report.roadmap} you={you} siteHost={siteHost} kind={kind} date={date} />}
+      {/* "Cevapların tek tek" PDF'te ektir: yol haritasından sonra (ekrandaki sıra değişmez). */}
+      {report.parts?.some(inAppendix) && <AppendixPage parts={report.parts.filter(inAppendix)} you={you} siteHost={siteHost} kind={kind} date={date} />}
     </>
   );
 }

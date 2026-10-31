@@ -1,5 +1,6 @@
 import { AUDIENCE_LABELS } from '@/lib/config';
 import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
+import type { ReportPart } from '@/lib/reports/parts';
 import type { SimpleChart, SimpleReport } from '@/lib/reports/simple';
 
 /**
@@ -24,6 +25,8 @@ export const MAX_UTTERANCE = 200;
 export interface SpeechSegment {
   title: string;
   lines: string[];
+  /** Bölümün adı ("Bölümü geç" bütün bölümü atlar): ek bölümün kartlarında bölümün başlığı; verilmezse `title`. */
+  section?: string;
 }
 
 /** Raporun okunacak iki kısmı: sonuçlar ve (varsa) gelişim yol haritası. */
@@ -36,7 +39,14 @@ export interface Utterance {
   text: string;
   /** Parçanın ait olduğu bölümün adı ("Okunuyor: …"). */
   segment: string;
+  /** "Bölümü geç" düğmesinin atladığı bölüm (ek bölümlerde bütün bölüm; ötekilerde `segment`). */
+  section?: string;
 }
+
+/** Sesli okumanın yaklaşık hızı (karakter/saniye): uzun bölümün süresi bununla tahmin edilir. */
+export const SPEECH_CHARS_PER_SECOND = 15;
+/** Bundan uzun sürecek ek bölümün başında yaklaşık süresi söylenir (saniye). */
+export const LONG_PART_SECONDS = 180;
 
 /** Ayraç içindeki kaynak gösterimi: içinde bir yıl (1800–2099) ve bir harf geçen ayraç ("(Kail, 1991)", "(aktaran …)"). */
 const CITATION = /\s*\((?=[^()]*\p{L})(?=[^()]*\b(?:18|19|20)\d{2}[a-z]?\b)[^()]*\)/gu;
@@ -129,7 +139,7 @@ export function splitUtterances(text: string, max = MAX_UTTERANCE): string[] {
 
 /** Bölümleri okuma parçalarına çevirir. */
 export function utterancesOf(segments: SpeechSegment[], max = MAX_UTTERANCE): Utterance[] {
-  return segments.flatMap((seg) => seg.lines.flatMap((l) => splitUtterances(l, max)).map((text) => ({ text, segment: seg.title })));
+  return segments.flatMap((seg) => seg.lines.flatMap((l) => splitUtterances(l, max)).map((text) => ({ text, segment: seg.title, section: seg.section ?? seg.title })));
 }
 
 const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -240,7 +250,59 @@ function resultSegments(report: SimpleReport): SpeechSegment[] {
     }
   }
   if (report.support) push(report.support.title, [sentence(report.support.title), ...report.support.lines.map(sentence)]);
+  // Ek bölümler (düzeylerin anlamı, cevaplar tek tek, cevap kalitesi): ekrandaki sırayla, eksiksiz.
+  for (const part of report.parts ?? []) out.push(...partSegments(part, you));
   push(report.disclaimer.title, [`${sentence(report.disclaimer.title)} ${report.disclaimer.text}`, report.normNote]);
+  return out;
+}
+
+/**
+ * Ek bir bölüm (lib/reports/parts.ts): başlık ve giriş (grafiğin görünüşünü anlatan cümleleri okunmaz); her kartın adı,
+ * rozeti, açıklaması, düzeyleri ("Düşük: …"; puanın sınırına yakın olduğu komşu düzeyin ardından o düzeyin de uyabileceği),
+ * madde madde cevapları ("12. cümle: …. Cevabın: Oldukça doğru. Ters puanlanır.") ve grafiğinin değerleri (`spoken`).
+ * Grafiğin nasıl okunacağını anlatan notlar okunmaz; kaynakların varlığı söylenir. Bölüm uzun sürecekse (`LONG_PART_SECONDS`)
+ * girişte yaklaşık süresi ve "Bölümü geç" düğmesi söylenir. Bütün parçalar aynı bölümdedir: düğme bölümün hepsini atlar.
+ */
+function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
+  const section = part.title.trim().replace(/[.:?]$/, '');
+  const out: SpeechSegment[] = [];
+  const push = (title: string, lines: (string | null | undefined | false)[]) => {
+    const l = lines.filter((x): x is string => !!x && x.trim() !== '');
+    if (l.length > 0) out.push({ title: title.trim().replace(/[.:?]$/, ''), lines: l, section });
+  };
+  push(part.title, [sentence(part.title), spokenNote(part.intro)]);
+  for (const g of part.groups) {
+    if (g.title) push(g.title, [sentence(g.title)]);
+    for (const c of g.cards) {
+      const levels = (c.levels ?? []).flatMap((l) => [l.text ? sentence(`${l.label}: ${l.text}`) : sentence(l.label), ...(l.spoken ? [l.spoken] : [])]);
+      const current = c.levels?.some((l) => l.active);
+      const rows = (c.rows ?? []).map((r) => {
+        const head = `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(r.text)}`;
+        const value = r.muted ? sentence(r.value) : sentence(`${c.rowsHead?.value ?? 'Cevap'}: ${r.value}`);
+        return [head, value, ...r.tags.map((t) => sentence(t.charAt(0).toLocaleUpperCase('tr-TR') + t.slice(1)))].join(' ');
+      });
+      // Düzey kartında önce düzeyler, sonra kişinin düzeyi (rozetteki ad; birleşik düzeyde de tek ad), puanı ve açıklama.
+      push(
+        c.title,
+        levels.length
+          ? [
+              sentence(c.title),
+              sentence('Düzeyler'),
+              ...levels,
+              current && c.badge ? sentence(`${you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi'}: ${c.badge}`) : c.badge && sentence(c.badge),
+              ...(c.spoken ?? []),
+              c.text,
+            ]
+          : [sentence(c.title), c.badge && sentence(c.badge), c.text, ...(c.spoken ?? []), ...rows],
+      );
+    }
+  }
+  if (part.sources?.length) push('Kaynak', [part.sources.length > 1 ? 'Kaynaklar ekranda ve PDF dosyasında yazılıdır.' : 'Kaynak ekranda ve PDF dosyasında yazılıdır.']);
+  const seconds = out.reduce((n, seg) => n + seg.lines.join(' ').length, 0) / SPEECH_CHARS_PER_SECOND;
+  if (seconds > LONG_PART_SECONDS && out.length > 0) {
+    const minutes = Math.round(seconds / 60);
+    out[0].lines.push(`Bu bölüm yaklaşık ${minutes} dakika sürer. Geçmek için “Bölümü geç” düğmesine ${you ? 'basabilirsin' : 'basabilirsiniz'}.`);
+  }
   return out;
 }
 

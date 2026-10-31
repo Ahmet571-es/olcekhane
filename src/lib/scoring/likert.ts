@@ -1,4 +1,4 @@
-import { ITEM_NOUN_PLURAL, likertItemNoun } from '@/lib/instruments/nouns';
+import { ITEM_NOUN_DATIVE, ITEM_NOUN_PLURAL, likertItemNoun } from '@/lib/instruments/nouns';
 import type { AnchoredBands, Band, LikertInstrument, LikertItemDef, ScaleDef } from '@/lib/instruments/types';
 import { clamp, median, normalCdf, round, standardError, Z90 } from './stats';
 
@@ -59,6 +59,45 @@ export interface QualityReport {
   /** Bütün maddelere aynı (ortada olmayan) cevap; yalnızca `sameAnswerCheck` verilen ölçeklerde denetlenir. */
   sameAnswer: boolean;
   notes: string[];
+  /** Hız denetiminde kullanılan cevap süreleri (ms; testteki sırayla, yalnızca ölçülenler). */
+  rtsMs: number[];
+  /** Cevaplanan madde sayısı ve testin madde sayısı. */
+  answered: number;
+  total: number;
+  /** Uyarı için ikisine de aynı uç cevabın verildiği en az çift sayısı (çift yoksa null). */
+  pairsNeeded: number | null;
+  /** Her seçeneğe kaç cevap verildiği (seçeneklerin sırasıyla). */
+  counts: number[];
+}
+
+/**
+ * Cevap kalitesi denetimlerinin sınırları. Uyarılar (`likertQuality`) ve raporun "Cevaplarına ne kadar güvenebiliriz?"
+ * bölümü (lib/reports/likert-parts.ts) aynı sınırları kullanır; ikisi hiçbir zaman çelişmez.
+ */
+export const LIKERT_QUALITY = {
+  /** Madde başına ortanca cevap süresi bunun altındaysa cevaplar çok hızlıdır (ms). */
+  fastMs: 700,
+  /** Hız denetimi için en az bu kadar ölçülmüş cevap süresi gerekir. */
+  fastMinRts: 5,
+  /** "Hep aynı seçenek" denetimi en az bu kadar maddeli testlerde yapılır. */
+  runMinItems: 20,
+  /** Üst üste bu kadar ya da daha çok maddeye aynı seçenek verilirse uyarı gösterilir. */
+  runLength: 12,
+} as const;
+
+/** Birbirinin tersi olan çiftlerde uyarı için gereken en az çift sayısı: çiftlerin yarısı (yukarı yuvarlanır). */
+export const oppositePairsNeeded = (pairs: number) => Math.ceil(pairs / 2);
+
+/**
+ * Bir cevabın "uç" sayılıp sayılmadığı: beş ya da daha çok seçenekli ölçekte uçtaki iki seçenek ("Oldukça doğru" ve
+ * "Tamamen doğru"), az seçenekli ölçekte yalnızca en uçtaki.
+ */
+export function extremeOptions(def: Pick<LikertInstrument, 'options'>): { agree: number[]; disagree: number[] } {
+  const values = def.options.map((o) => o.value);
+  const lowest = Math.min(...values);
+  const highest = Math.max(...values);
+  const wide = def.options.length >= 5 ? 1 : 0;
+  return { agree: values.filter((v) => v >= highest - wide), disagree: values.filter((v) => v <= lowest + wide) };
 }
 
 /**
@@ -220,9 +259,11 @@ export function scoreLikert(
 /**
  * Cevap kalitesi göstergeleri. Sonucu geçersiz kılmaz; raporda dikkat notu olarak gösterilir.
  * - Çok hızlı: madde başına ortanca cevap süresi 700 ms'den kısa (cümleyi okumaya yetmeyecek kadar).
- * - Düz çizgi: 12 veya daha fazla madde üst üste aynı seçenek (ters maddeler olduğu için anlamlı değildir). Sıklık
- *   soran etkinlik testlerinde (profil: activities) "hiç yapmadım" ve "son bir yılda yapmadım" cevaplarının üst üste
- *   gelmesi olağandır (az etkinlik yapan biri için); bu iki cevabın dizileri sayılmaz.
+ * - Düz çizgi: 12 veya daha fazla madde üst üste aynı seçenek (ters maddeler olduğu için anlamlı değildir). Bazı
+ *   cevapların dizileri sayılmaz (`runIgnored`): etkinlik testinde "hiç yapmadım" ve "son bir yılda yapmadım", ilgi
+ *   testlerinde en düşük seçenek ("Hiç hoşlanmam"); bunlar dürüst cevaplarda da üst üste gelebilir.
+ * - Hep aynı cevap (`sameAnswerCheck`): cevaplanan bütün maddelere aynı (ortada olmayan) cevap; boş madde denetimi bozmaz.
+ * Notlar maddenin adıyla yazılır (cümle, etkinlik, ifade).
  */
 export function likertQuality(def: LikertInstrument, answers: Record<string, LikertAnswer>): QualityReport {
   const ordered = def.items.map((i) => answers[i.key]);
@@ -230,7 +271,7 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   const rts = answered.map((a) => a.rtMs).filter((v): v is number => typeof v === 'number' && v > 0);
   const medianRtMs = rts.length ? median(rts) : null;
   const lowest = Math.min(...def.options.map((o) => o.value));
-  const ignoredRun = (v: number) => def.profile === 'activities' && v <= lowest + 1;
+  const ignoredRun = (v: number) => runIgnored(def, v);
 
   let longestRun = 0;
   let run = 0;
@@ -252,21 +293,26 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   // Beş ya da daha çok seçenekli ölçekte uçtaki iki seçenek birlikte sayılır ("Sık sık" ve "Her zaman"): evet deme
   // eğilimi olan biri her cümleye en uç seçeneği vermeyebilir; az seçenekli ölçekte (ör. üç seçenek) yalnızca en uç.
   const wide = def.options.length >= 5 ? 1 : 0;
-  const agrees = (v: number | undefined) => v !== undefined && v >= highest - wide;
-  const disagrees = (v: number | undefined) => v !== undefined && v <= lowest + wide;
+  const extreme = extremeOptions(def);
+  const agrees = (v: number | undefined) => v !== undefined && extreme.agree.includes(v);
+  const disagrees = (v: number | undefined) => v !== undefined && extreme.disagree.includes(v);
   const oppositeAgree = pairs.filter(([x, y]) => agrees(x) && agrees(y)).length;
   const oppositeDisagree = pairs.filter(([x, y]) => disagrees(x) && disagrees(y)).length;
-  const tendency = (n: number) => def.oppositePairs !== undefined && n >= Math.ceil(def.oppositePairs.length / 2);
+  const tendency = (n: number) => def.oppositePairs !== undefined && n >= oppositePairsNeeded(def.oppositePairs.length);
   const label = (v: number) => def.options.find((o) => o.value === v)?.label ?? '';
   const labels = (v: number, toward: number) => (wide ? `“${label(Math.min(v, v + toward))}” ya da “${label(Math.max(v, v + toward))}”` : `“${label(v)}”`);
 
   const notes: string[] = [];
-  const tooFast = medianRtMs !== null && rts.length >= 5 && medianRtMs < 700;
-  const straightLining = def.items.length >= 20 && longestRun >= 12;
+  const tooFast = medianRtMs !== null && rts.length >= LIKERT_QUALITY.fastMinRts && medianRtMs < LIKERT_QUALITY.fastMs;
+  const straightLining = def.items.length >= LIKERT_QUALITY.runMinItems && longestRun >= LIKERT_QUALITY.runLength;
   const incomplete = answered.length < def.items.length;
   if (tooFast) notes.push(`Cevaplar çok hızlı verilmiş; bazı ${ITEM_NOUN_PLURAL[likertItemNoun(def)]} okunmadan işaretlenmiş olabilir.`);
-  if (straightLining) notes.push('Uzun bir bölümde hep aynı seçenek işaretlenmiş. Bu, cümlelere tek tek bakmadan cevap verildiğini gösterebilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.');
-  if (incomplete) notes.push('Bazı cümleler cevaplanmamış; daha az cümleye dayanan sonuçlar daha az kesindir.');
+  const noun = likertItemNoun(def);
+  if (straightLining)
+    notes.push(
+      `Uzun bir bölümde hep aynı seçenek işaretlenmiş. Bu, ${ITEM_NOUN_PLURAL[noun]}e tek tek bakmadan cevap verildiğini gösterebilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
+    );
+  if (incomplete) notes.push(`Bazı ${ITEM_NOUN_PLURAL[noun]} cevaplanmamış; daha az ${ITEM_NOUN_DATIVE[noun]} dayanan sonuçlar daha az kesindir.`);
   for (const [n, v, toward, what] of [
     [oppositeAgree, highest, -1, 'evet'],
     [oppositeDisagree, lowest, 1, 'hayır'],
@@ -281,7 +327,7 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
   const first = answered[0]?.value;
   const sameAnswer =
     !!def.sameAnswerCheck &&
-    !incomplete &&
+    answered.length > 1 &&
     first !== undefined &&
     first !== middle &&
     answered.every((a) => a.value === first) &&
@@ -292,8 +338,36 @@ export function likertQuality(def: LikertInstrument, answers: Record<string, Lik
     const plural = ITEM_NOUN_PLURAL[likertItemNoun(def)];
     const of = `${plural.charAt(0).toLocaleUpperCase('tr-TR')}${plural.slice(1)}in`;
     notes.push(
-      `Bütün ${plural}e aynı cevap (“${label(first)}”) verilmiş. ${of} bir kısmı olumlu, bir kısmı olumsuz bir şey söylediği için bu, ne söylediklerine bakmadan cevap verme eğiliminden kaynaklanabilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
+      `${incomplete ? `Cevaplanan bütün ${plural}e` : `Bütün ${plural}e`} aynı cevap (“${label(first)}”) verilmiş. ${of} bir kısmı olumlu, bir kısmı olumsuz bir şey söylediği için bu, ne söylediklerine bakmadan cevap verme eğiliminden kaynaklanabilir; bu yüzden sonuçlar dikkatle yorumlanmalıdır.`,
     );
   }
-  return { tooFast, straightLining, incomplete, oppositeAgree, oppositeDisagree, medianRtMs, longestRun, sameAnswer, notes };
+  return {
+    tooFast,
+    straightLining,
+    incomplete,
+    oppositeAgree,
+    oppositeDisagree,
+    medianRtMs,
+    longestRun,
+    sameAnswer,
+    notes,
+    rtsMs: rts,
+    answered: answered.length,
+    total: def.items.length,
+    pairsNeeded: def.oppositePairs ? oppositePairsNeeded(def.oppositePairs.length) : null,
+    counts: def.options.map((o) => answered.filter((a) => a.value === o.value).length),
+  };
+}
+
+/**
+ * "Hep aynı seçenek" denetiminde dizisi sayılmayan cevaplar. Sıklık soran etkinlik testlerinde (profil: activities) "hiç
+ * yapmadım" ve "son bir yılda yapmadım" cevaplarının üst üste gelmesi olağandır (az etkinlik yapan biri için). İlgi
+ * testlerinde (riasec, interests) en düşük seçenek ("Hiç hoşlanmam"): ilgi duyulmayan bir alanın etkinlikleri art arda
+ * gelebilir ve dürüst bir "hiç" cevabı dikkatsizlik sayılmaz.
+ */
+export function runIgnored(def: Pick<LikertInstrument, 'profile' | 'options'>, value: number): boolean {
+  const lowest = Math.min(...def.options.map((o) => o.value));
+  if (def.profile === 'activities') return value <= lowest + 1;
+  if (def.profile === 'riasec' || def.profile === 'interests') return value === lowest;
+  return false;
 }
