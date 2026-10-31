@@ -700,7 +700,14 @@ iki tur bağımsız inceleme, telefonda ve masaüstünde çözme. Site sahibi ba
    haritası: önce doğruluk, sırayla bak, temel işleri akıcılaştır (Gersten ve ark., 2009), süre yetmediğinde konuş;
    "daha hızlı düşünme" vaadi yok (Sala ve ark., 2019). Norm yok; Kail (1991) ve Hale (1990) yaşla gelişimi anlatır.
    Telefonda dokunarak (4. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü; iki bağımsız inceleme uygulandı.
-9. Liderlik (kişilik; IPIP, VIA dışı ölçek)
+9. **Liderlik Eğilimleri: yayında (2026-10-31, active; 9. sınıftan yetişkine).** Liderlik becerisini ya da
+   potansiyelini değil, araştırmaların liderlik rolü almakla ilişkili bulduğu kişilik eğilimlerini anlatır (Judge ve ark.,
+   2002). IPIP'in üç ölçeği, toplam puan yok: HPI Leadership → "Öne çıkıp yön verme" (6 madde), HEXACO Social Boldness →
+   "Sosyal cesaret" (10 madde; Altı Boyutlu'daki ölçekle aynı), AB5C Purposefulness → "Kararlılık ve sorumluluk" (12
+   madde). 28 maddenin 25'i sitedeki öteki testlerin çevirisiyle aynı, 3 yeni madde iki taslakla çevrildi. Dört karşıt
+   çift. Rapor: araştırma özetli giriş, 27 birleşimde birbirini dışlayan dokuz kural (hepsi yüksekken övgü yok, orta
+   düzeyde atılganlığın daha iyi değerlendirildiği; hepsi düşükken eksiklik yok; sakin liderler); yol haritası: 1. hafta
+   gruptaki rolleri gözlemle, 2. hafta "Dene ve geri bildirim al", gençler için güvenli küçük adımlar. Paylaşım kartı yok.
 10. Parça Birleştirme (zekâ; özgün sorular)
 11. Yaratıcılık Eğilimi (kişilik; IPIP)
 12. Kelime Bulma (zekâ; özgün sorular)
@@ -747,8 +754,8 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    bilgi soruları genel bilgiyle çözülüyor); pilot veriyle sorular yeniden yazılmalı.
 4. 3. listenin 2., 3. ve 4. testleri (Zihinden Hesaplama Hızı, Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri) bu düzenle
    hazırlandı: **yayında (2026-10-22, 2026-10-23, 2026-10-27)**; her başlıkta grafik ve iki bağımsız inceleme. 5. test
-   (Öz-denetim) yayında (2026-10-27); 6., 7. ve 8. testler (Harf-Sayı Sıralama, Merak, Simge Bulma) yayında (2026-10-30).
-   Sıradaki: 3. listenin 9. testi (Liderlik).
+   (Öz-denetim) yayında (2026-10-27); 6., 7. ve 8. testler (Harf-Sayı Sıralama, Merak, Simge Bulma) yayında (2026-10-30); 9. test (Liderlik Eğilimleri) yayında (2026-10-31).
+   Sıradaki: 3. listenin 10. testi (Parçalardan Şekil; ad, WISC-R'deki "Parça Birleştirme" alt testiyle karışmasın diye).
 
 **ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
@@ -978,6 +985,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Harf-Sayı Sıralama | harf-sayi-siralama | Yayında (pilot; 3. sınıftan yetişkine) |
 | Merak | merak | Yayında (active; 9. sınıftan yetişkine) |
 | İşlem Hızı: Simge Bulma | simge-bulma | Yayında (pilot; 3. sınıftan yetişkine) |
+| Liderlik Eğilimleri | liderlik-egilimleri | Yayında (active; 9. sınıftan yetişkine) |
 | Sesli Okuma Değerlendirmesi | sesli-okuma-degerlendirmesi | Yayında (pilot; Okuma sekmesinde) |
 
 Hazırlanıyor listesinde (katalogda bağlantısız): Türkçe Konu Tarama Testi (`src/content/roadmap.ts`).
@@ -1102,6 +1110,17 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-10-31 (62): Yeni test Liderlik Eğilimleri yayına alındı (3. listenin 9. testi; site sahibinin 31 Ekim'de seçtiği
+  dört yeniliğin ikincisi; ayrıntı yukarıda). İki bağımsız inceleme yayından önce uygulandı. Metin ve mantık: düşük
+  puanlar "eksik beceri" gibi anlatılmıyor (yetişkin eğitimi bulgusu gençlere uygulanmıyor), "güven" dili düşük düzeyli
+  kurallardan çıktı, tek araştırmaya dayanan cümleler "bir araştırmada" diye; kartlar tek maddeyi değil ölçeğin ortak
+  temasını anlatıyor; aynı sayfada tekrar eden fikirler (geri durma, sunum, "kolaylaştırabilir") sınırlandı ve test
+  ediliyor; "Sosyal cesaret: Düşük" kartı cesaretin bütününü anlatmadığını söylüyor; yan yana iki "-mekte zorlanırım"
+  maddesi ayrıldı; giriş "yüksek puan iyi demek değildir" diyor. Kaynak ve sayı: maddeler, α'lar ve örtüşme sayıları
+  doğru; HEXACO değerleri Ashton, Lee ve Goldberg (2007, Tablo 2; 411 kişi); Grant ve ark. (2011) "girişken ekiplerde
+  sakin davranan liderler"; MacLaren (2020) küçük gruplar; Cheng (2013) iki yolun da etki kazandırdığı; De Neve künyesi.
+  Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı, karşılaştırma denendi.
+  Yol haritası testinin süre sınırı 120 sn'ye çıktı (test sayısı arttıkça 60 sn'ye yaklaşıyordu).
 - 2026-10-31 (61): "Gelişimini karşılaştır" görev (zekâ ve dikkat) testlerine genişletildi (site sahibinin 31 Ekim'deki
   "birkaç yenilik daha" isteği; seçtiği yeniliklerin ilki). Yayındaki 30 görev testinin raporunda ve PDF'inde (pakette de)
   raporda yazan ana sonuçların özeti: doğru sayısı ya da oranı, ulaşılan düzey, en uzun dizi, tipik süre
@@ -1189,14 +1208,3 @@ En yeni üstte; en çok 10 madde tutulur.
   Kurallar `src/lib/share/card.ts` (`SHAREABLE`, `NOT_SHAREABLE`), çizim `draw.ts`, bölüm `components/share/share-panel.tsx`;
   `tests/paylasim.test.ts` her anket testinin karara bağlandığını, bütün cevap örüntülerinde kartın kurulduğunu ve yazıların
   görselden taşmadığını denetler.
-- 2026-10-27 (52): Yeni test Öz-denetim yayına alındı (3. listenin 5. testi; ayrıntı yukarıda). Bağımsız incelemelerin
-  bulguları yayından önce uygulandı. Metin ve mantık: zayıf karşıt çift (Kelimelerimi özenle seçerim / Düşünmeden hareket
-  ederim) çıkarıldı, uyarı kuralının anlatımı düzeldi ("en az ikisinde"); kartlar kişinin vermemiş olabileceği tek cevapları
-  (para, kelime seçme) söylemiyor; "ayartı", "kendiliğindenlik", "harekete geçirmek" sadeleşti; bir sayfada aynı öneri
-  birden çok yerde tekrarlanmıyor (küçük başlangıç, ortamdan uzaklaştırma, günlük yazma); 1. hafta üç alanı birlikte
-  gözlemliyor, 3. hafta davranış denemesi (bir gece bekletmek, isteğin anında başka bir şey yapmak, kolay olan durumun
-  düzenini taşımak); veliye öneriler suçlamayan ve gözetlemeyen dilde. Kaynak ve sayı: IPIP anahtar bağlantısı
-  (newNEOFacetsKey; iyimserlik ve öz-yeterlikte de), Galla ve Duckworth (ödev sonucu altı çalışmanın biri), Duckworth ve
-  Seligman (zekâ karşılaştırması ikinci çalışma, 164 öğrenci), Vohs (iki ortak yöntem), Gollwitzer ve Sheeran (94 bağımsız
-  sınama), Friese (küçük ile orta; düzeltilince g = 0,13–0,24), Gülüm ve Tığrak DOI'si; neden-sonuç dili yumuşatıldı.
-  Heyecan Arayışı'nın örtüşme notu 15 maddeye güncellendi ("Çılgınlıklar yaparım." artık Öz-denetim'de de).

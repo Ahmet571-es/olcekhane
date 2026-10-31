@@ -82,7 +82,7 @@ const PAGE = new Map(
 /** Bu testte ilk kez çevrilen üç madde (iki taslakla). */
 const NEW_ITEMS: Record<string, string> = {
   'Am not easily distracted.': 'Dikkatim kolay kolay dağılmaz.',
-  'Do things at the last minute.': 'Yapacaklarımı son ana bırakırım.',
+  'Do things at the last minute.': 'Yapmam gerekenleri son ana bırakırım.',
   "Can't make up my mind.": 'Karar vermekte zorlanırım.',
 };
 
@@ -143,6 +143,14 @@ const longest = (text: string) =>
       .split(/(?<=[.?!])\s+|;\s+/u)
       .map((s) => (s.match(/[\p{L}\d]+/gu) ?? []).length),
   );
+
+/** Bir sayfada en çok kaç kez geçebileceği sınırlanan içerik sözcükleri (metin incelemesinin bulgusu). */
+const PAGE_STEMS: [string, RegExp, number][] = [
+  ['kolaylaştır', /kolaylaştır/gu, 2],
+  ['güven/emanet', /güven|emanet/gu, 1],
+  ['destek', /destek/gu, 2],
+  ['geri durma', /başkalarının da yön vermesine|geri dur|her grupta öne çık/gu, 2],
+];
 
 const norm = (s?: string) => (s ?? '').replace(/[.]$/, '').trim();
 const OTHERS = INSTRUMENTS.filter((x) => x.slug !== SLUG && x.engine === 'likert') as LikertInstrument[];
@@ -242,10 +250,12 @@ describe('Liderlik Eğilimleri tanımı', () => {
     ]) {
       far(a, b, 6);
     }
-    // Aynı sözle başlayan maddeler art arda gelmez.
+    // Aynı sözle başlayan ya da aynı sözle biten maddeler art arda gelmez ("… konuşmakta zorlanırım." / "Karar vermekte
+    // zorlanırım." gibi).
+    const words = (t: string) => t.toLocaleLowerCase('tr-TR').match(/\p{L}+/gu)!;
     for (let i = 1; i < d.items.length; i++) {
-      const first = (t: string) => t.split(' ')[0];
-      expect(first(d.items[i].text), d.items[i].key).not.toBe(first(d.items[i - 1].text));
+      expect(words(d.items[i].text)[0], d.items[i].key).not.toBe(words(d.items[i - 1].text)[0]);
+      expect(words(d.items[i].text).at(-1), d.items[i].key).not.toBe(words(d.items[i - 1].text).at(-1));
     }
     // İlk madde yumuşak bir başlangıçtır.
     expect(d.items[0].key).toBe('ces03');
@@ -317,7 +327,7 @@ describe('Liderlik Eğilimleri tanımı', () => {
   it('birbirinin tersini söyleyen dört çift: biri düz biri ters, aynı ölçekte; ikisine aynı uç cevap uyarı verir', () => {
     expect(d.oppositePairs).toHaveLength(4);
     expect(d.science.limitations.join(' ')).toContain(
-      'dört cümle çiftinden (biri öne çıkıp yön vermede, ikisi sosyal cesarette, biri kararlılık ve sorumlulukta) en az ikisinde',
+      'dört cümle çifti vardır: biri öne çıkıp yön vermede, ikisi sosyal cesarette, biri kararlılık ve sorumluluktadır. En az iki çiftte',
     );
     for (const [x, y] of d.oppositePairs!) {
       const a = d.items.find((i) => i.key === x)!;
@@ -370,7 +380,7 @@ describe('Liderlik Eğilimleri tanımı', () => {
       expect(card, `${author} ${year}`).toMatch(new RegExp(`${author}[^()]{0,40}\\(?${year}`, 'u'));
     }
     // IPIP sayfalarındaki sayılar ve kaynak doğrulaması.
-    for (const x of ['.81', '.86', '.66 (ölçüm hatası düzeltilince .79', '.83 (düzeltilince .97', '501 yetişkin', 'arşiv kopyasından', 'beş maddesi']) {
+    for (const x of ['.81', '.86', '.66 (ölçüm hatası düzeltilince .79', '.83 (düzeltilince .97', '501 yetişkin', '411 yetişkin', 'arşiv kopyasından', 'beş maddesi']) {
       expect(s.reliability, x).toContain(x);
     }
     expect(s.citations.some((c) => c.url === 'https://ipip.ori.org/newHPIKeys.htm')).toBe(true);
@@ -392,6 +402,27 @@ describe('Liderlik Eğilimleri tanımı', () => {
     for (const x of ['Öz bildirime dayanır', 'liderlik becerisini ölçmez', 'Tanı koymaz', '“doğru” deme eğilimi', 'meslek önerisi değildir', 'İkna etme']) {
       expect(lim, x).toContain(x);
     }
+    // "Liderlik yeteneğim var." cümlesi de yeteneği ölçmez.
+    expect(lim).toContain('Sosyal cesaretin bir cümlesi (“Liderlik yeteneğim var.”)');
+    // Kaynakların söylediği gibi: iki çalışma (Ames ve Flynn); sakin liderlerin üstünlüğü yalnızca girişken ekiplerde (Grant).
+    expect(s.whatItMeasures).toContain('İş arkadaşlarının ve çalışanların değerlendirmelerine dayanan iki çalışmada');
+    expect(s.whatItMeasures).toContain('Ekip üyeleri edilgen olduğunda ise sonuç tersine dönmüştür');
+    expect(s.whatItMeasures).toContain('%24 ile %30’u');
+    expect(s.whatItMeasures).toContain('incelenen dört liderlik rolünün hiçbirinde');
+    expect(s.whatItMeasures).not.toMatch(/içedönük kişiler de iyi liderlik/);
+    // Bilim kartında ve tanıtımda cümleler kısa (22 sözcüğü geçmez); liste cümleleri de bölünür.
+    const prose = [
+      d.description,
+      ...d.intro.paragraphs,
+      s.basedOn,
+      ...s.whatItMeasures.split('\n\n'),
+      s.turkishVersion,
+      s.reliability,
+      s.normNote,
+      s.ageNote,
+      ...s.limitations,
+    ];
+    for (const x of prose) expect(longest(x), x.slice(0, 60)).toBeLessThanOrEqual(22);
   });
 
   it('hep aynı cevap ve çok hızlı cevap kalite notu verir', () => {
@@ -576,10 +607,15 @@ describe('Liderlik Eğilimleri raporu', () => {
         /başarı|eksik|zayıf|yetersiz|üstün|güçlü yan|doğuştan|lider olursun|lider olacak|potansiyel|kusur/u,
       );
     }
-    // Giriş: üç eğilim, dışadönüklük ve sorumluluk, orta büyüklükte ilişki; liderlik yalnızca başkanlık değildir.
+    // Giriş: dışadönüklük (kısaca açıklanır) ve sorumluluk (testteki eğilimden daha geniş), çok güçlü olmayan ilişkiler;
+    // liderlik yalnızca başkanlık değildir. Genel bakışta anlatılan üç eğilim girişte yinelenmez.
     for (const x of [lead.student, lead.parent, lead.adult!]) {
-      expect(x).toContain('“Öne çıkıp yön verme”, “Sosyal cesaret” ve “Kararlılık ve sorumluluk”');
-      expect(x).toContain('dışadönüklüktür');
+      expect(x).not.toContain('“Öne çıkıp yön verme”, “Sosyal cesaret” ve “Kararlılık ve sorumluluk”');
+      expect(x).not.toMatch(/ayrı ayrı|orta büyüklükte/);
+      expect(x).toContain('dışadönüklüktür: insanlarla birlikte olmaktan hoşlanma');
+      expect(x).toContain('buna yakın ama daha dar bir eğilimdir');
+      expect(x).toContain('çok güçlü değildir');
+      expect((x.match(/liderlikle/g) ?? []).length).toBe(1);
       expect(x).toContain('tek başına belirlemez');
       expect(x).toContain('kalıcı bir yargı değil, bugünün bir resmidir.');
       expect(x).toContain('farklı roller de liderliğin parçasıdır');
@@ -591,6 +627,63 @@ describe('Liderlik Eğilimleri raporu', () => {
     // Giriş ile kurallar aynı söz öbeğini tekrarlamaz.
     for (const x of t.rules) expect(shared(lead.student, x.text.student), x.text.student.slice(0, 40)).toEqual([]);
   }, 120_000);
+
+  it('metin kuralları: kart ve kurallarda "beceri" yok; düşük eğilimi anan kuralda "güven" yok; "Bu sonuç / Bu bir" ile cümle başlamaz; kartta "lider" yalnızca araştırma bulgusu; velinin cümlelerinde özne belli', () => {
+    const t = REPORT_TEMPLATES[SLUG];
+    const ins = t.insight!;
+    const rm = ROADMAPS[SLUG];
+    const cards = SCALES.flatMap((s) => BANDS.map((b) => t.scales[s][b]!));
+    const insightTexts = [...ins.rules.map((r) => r.text), ins.fallback!, ins.lead[0].text];
+    // "beceri" yalnızca genel bakışta, testin beceri ölçmediğini söylerken geçer.
+    for (const x of [...cards.flatMap((c) => [c.summary, c.student, c.parent]), ...insightTexts.flatMap((r) => [r.student, r.parent, r.adult ?? ''])]) {
+      expect(x, x.slice(0, 50)).not.toMatch(/beceri/iu);
+    }
+    expect(t.overview!.student).toMatch(/liderlik becerini ya da iyi bir lider olup olmadığını değil/);
+    // Bir eğilimin düşük olduğu birleşimde "güven" sözü geçmez (düşük puan güvenilmezlik gibi okunmasın).
+    for (const r of ins.rules) {
+      if (Object.values(r.when).some((v) => v.includes('low'))) expect(`${r.text.student} ${r.text.parent}`, r.text.student.slice(0, 40)).not.toMatch(/güven/u);
+    }
+    // Rapor ve yol haritası metinleri
+    const studentish = [
+      t.overview!.student,
+      ...cards.map((c) => c.student),
+      ...insightTexts.flatMap((r) => [r.student, r.adult ?? '']),
+      ...Object.values(rm.scales).flatMap((x) => [...Object.values(x.study), ...Object.values(x.action)].flatMap((y) => [y.student, y.adult ?? ''])),
+      rm.firstWeek.student,
+      rm.balancedNote!.student,
+      rm.studyIntro.student,
+      rm.settingsNote!.student,
+    ].filter(Boolean);
+    const parentish = [
+      t.overview!.parent,
+      ...cards.map((c) => c.parent),
+      ...insightTexts.map((r) => r.parent),
+      ...Object.values(rm.scales).flatMap((x) => [...Object.values(x.study), ...Object.values(x.action)].map((y) => y.parent)),
+      ...Object.values(rm.approach!).flatMap((y) => Object.values(y)),
+      rm.firstWeek.parent,
+      rm.balancedNote!.parent,
+      rm.studyIntro.parent,
+      rm.settingsNote!.parent,
+    ];
+    for (const x of [...studentish, ...parentish]) expect(x, x.slice(0, 50)).not.toMatch(/(^|[.!?]\s)Bu (sonuç|bir)(?!\p{L})/u);
+    // Kartlarda "lider" geçen cümle bir araştırmanın bulgusudur.
+    for (const c of cards) {
+      for (const x of [c.student, c.parent]) {
+        for (const sent of x.split(/(?<=[.?!])\s+/u)) if (/lider/iu.test(sent)) expect(sent).toMatch(/araştırma|çalışma/u);
+      }
+    }
+    // Velinin metninde "istediğinde" ya da "…mak/…mek … kolaylaştırabilir" geçen cümlede kimden söz edildiği bellidir.
+    for (const x of parentish) {
+      for (const sent of x.split(/(?<=[.?!])\s+/u)) {
+        if (/istediğinde|m[ae]k(?!\p{L}).*kolaylaştırabilir/u.test(sent)) {
+          expect(sent).toMatch(/[Çç]ocuğunuz|(?<!\p{L})(onun|ona)(?!\p{L})/u);
+        }
+      }
+    }
+    // Öne çıkıp yön vermede 2. haftanın düşük düzeyi bir seçim bırakır.
+    expect(rm.scales.lead.action.low.student).toMatch(/^İstersen /);
+    expect(rm.scales.lead.action.low.parent).toMatch(/seçsin/);
+  });
 
   it('uç ve orta cevaplar: üç eğilim aynı düzeyde; 9.–13. sınıfların hepsinde rapor', () => {
     for (const grade of [9, 10, 11, 12, 13]) {
@@ -771,6 +864,16 @@ describe('Liderlik Eğilimleri gelişim yol haritası', () => {
             expect(shared(blocks[i][1], blocks[j][1]), label).toEqual([]);
           }
         }
+        // Aynı içerik sözcüğü bir sayfada birikmez; "geri durma" fikri en çok iki yerde geçer.
+        const page = blocks.map((x) => x[1]).join(' ').toLocaleLowerCase('tr-TR');
+        for (const [name, re, max] of PAGE_STEMS) {
+          expect((page.match(re) ?? []).length, `${label3(g)} ${who}: ${name}`).toBeLessThanOrEqual(max);
+        }
+        // Veliye yaklaşım ile haftalık adımlar aynı etkinliği (sunum, konuşma hazırlama) önermez.
+        const approach = (rm.approach?.items ?? []).map((x) => x.text).join(' ');
+        const weeks = rm.weeks.map((w) => w.text).join(' ');
+        const ACT = /sunum|tanıtım|konuşma hazırla/u;
+        expect(ACT.test(approach) && ACT.test(weeks), `${label3(g)} ${who}: yaklaşım – hafta`).toBe(false);
       }
     }
   }, 120_000);

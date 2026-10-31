@@ -11,9 +11,9 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *    yetişkin, Eugene-Springfield Topluluk Örneklemi).
  *  - IPIP-HEXACO "Social Boldness" (X: SocB; Ashton, Lee ve Goldberg, 2007) → Sosyal cesaret
  *    (https://ipip.ori.org/newHEXACO_PI_key.htm; 5 artı + 5 eksi madde, α .86). Sitedeki Altı Boyutlu Kişilik Profili'nin
- *    "Sosyal cesaret" alt özelliğiyle aynı on maddedir; çeviriler ve düzey eşikleri de aynıdır. HEXACO-PI'nin asıl ölçeğiyle
- *    (8 madde) ilişkisi .83, köşeli parantezde .97 (tablo https://ipip.ori.org/newHEXACO_PI_table.htm; tablo örneklemi
- *    belirtmez; sütun başlıkları düzensiz olduğu için tablodaki α'lardan yalnızca anahtar sayfasındaki .86 kullanıldı).
+ *    "Sosyal cesaret" alt özelliğiyle aynı on maddedir; çeviriler ve düzey eşikleri de aynıdır. Ashton, Lee ve Goldberg (2007,
+ *    Tablo 2): ESCS'den 411 kişi; IPIP α .86, HEXACO-PI α .85; HEXACO-PI'nin asıl ölçeğiyle (8 madde) ilişkisi .83,
+ *    düzeltilince .97 (tablo https://ipip.ori.org/newHEXACO_PI_table.htm).
  *  - AB5C ölçeklerinden "Purposefulness" (III+/IV+) → Kararlılık ve sorumluluk (https://ipip.ori.org/newAB5CKey.htm; 5 artı
  *    + 7 eksi madde, α .81, ortalama madde ilişkisi .27; tablo https://ipip.ori.org/newAB5CTable.htm; 501 yetişkin,
  *    Eugene-Springfield Topluluk Örneklemi). AB5C bir envanter olmadığı için asıl bir ölçekle ilişkisi yoktur.
@@ -47,9 +47,9 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *    "Am not easily distracted": "Dikkatim kolay kolay dağılmaz." / "Bir işe odaklandığımda kolayca başka şeylere kaymam." →
  *    birincisi (kısa ve doğal; karşıtı "Dikkatim kolayca dağılır." Kişiliğin 10 Yönü'ndeki çeviridir).
  *    "Do things at the last minute": "İşleri son dakikaya bırakırım." / "Yapacaklarımı genellikle son ana bırakırım." →
- *    ikincisinden "Yapacaklarımı son ana bırakırım." ("genellikle" aslında yok; "son dakika" sitedeki "Planlarımı sık sık son
- *    dakikada yaparım." ve "Ödevlerimi çoğu zaman son dakikaya bırakırım." cümlelerine çok benzerdi; bu testte "İşleri" ile
- *    başlayan dört madde zaten var).
+ *    ikincisinden, metin ve mantık incelemesinin önerisiyle "Yapmam gerekenleri son ana bırakırım." ("genellikle" aslında
+ *    yok; "Yapacaklarım" az kullanılır; "son dakika" sitedeki "Planlarımı sık sık son dakikada yaparım." ve "Ödevlerimi çoğu
+ *    zaman son dakikaya bırakırım." cümlelerine çok benzerdi; bu testte "İşleri" ile başlayan dört madde zaten var).
  *    "Can't make up my mind": "Karar vermekte zorlanırım." / "Bir türlü karar veremem." → birincisi ("bir türlü" aslından
  *    daha güçlü; "Karar vermeyi ertelerim." maddesinden ayrıdır).
  *  - Bu IPIP ölçeklerinin yayımlanmış bir Türkçe uyarlamasına ulaşılamadı.
@@ -57,7 +57,8 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  * Madde anahtarı: ölçeğin kısaltması (yon, ces, kar) + maddenin IPIP anahtar sayfasındaki sırası (sayfalar her ölçekte önce
  * artı, sonra eksi yönlü maddeleri verir; ces anahtarları Altı Boyutlu'daki socb anahtarlarıyla aynı sıradadır). Uygulama
  * sırası: art arda iki madde aynı ölçekten değildir; aynı yönde en çok üç madde art arda gelir; ilk madde yumuşak bir
- * başlangıçtır; art arda iki madde aynı sözle başlamaz. Birbirinin tersini söyleyen ya da birbirine çok benzeyen maddeler en az
+ * başlangıçtır; art arda iki madde aynı sözle başlamaz ve aynı sözle bitmez ("Karar vermekte zorlanırım." ile "Başkalarının
+ * yanına gidip konuşmakta zorlanırım." bu yüzden ayrıdır). Birbirinin tersini söyleyen ya da birbirine çok benzeyen maddeler en az
  * 10 madde arayla gelir (idareyi ele alma / yolu başkalarının göstermesini bekleme; ilgi odağı olmak; topluluk önünde
  * konuşma; dikkatin dağılması; "işleri birbirine karıştırırım" / "işleri yüzüme gözüme bulaştırırım"); benzer konulardaki
  * öteki maddeler (iki "liderlik" maddesi, iki "karar" maddesi, iki "işlerin başında olma" maddesi, işi bitirme ve işe başlama
@@ -94,11 +95,11 @@ const ITEMS: [string, boolean, string, string][] = [
   ['ces01', false, 'Hazırlıksız konuşma yapmakta iyiyim.', 'Am good at making impromptu speeches.'],
   ['kar04', false, 'Dikkatim kolay kolay dağılmaz.', 'Am not easily distracted.'],
   ['ces05', false, 'Güçlü bir kişiliğim var.', 'Have a strong personality.'],
-  ['kar12', true, 'Karar vermekte zorlanırım.', "Can't make up my mind."],
+  ['kar11', true, 'Yapmam gerekenleri son ana bırakırım.', 'Do things at the last minute.'],
   ['ces08', true, 'Başkalarının yanına gidip konuşmakta zorlanırım.', 'Find it difficult to approach others.'],
   ['kar02', false, 'Yaptığım planları uygularım.', 'Carry out my plans.'],
   ['ces07', true, 'Kalabalıkta geri planda kalmayı tercih ederim.', 'Keep in the background.'],
-  ['kar11', true, 'Yapacaklarımı son ana bırakırım.', 'Do things at the last minute.'],
+  ['kar12', true, 'Karar vermekte zorlanırım.', "Can't make up my mind."],
   ['yon02', false, 'İşlerin başında ben olmak isterim.', 'Want to be in charge.'],
   ['ces10', true, 'Genellikle söyleyecek pek bir şeyim olmaz.', 'Have little to say.'],
   ['kar06', true, 'İşleri birbirine karıştırırım.', 'Make a mess of things.'],
@@ -140,15 +141,15 @@ export const liderlikEgilimleri: LikertInstrument = {
   adults: true,
   estimatedMinutes: 5,
   sortOrder: 15.995,
-  tagline: 'Araştırmalarda liderlikle ilişkili bulunan üç eğilimini gösterir: öne çıkıp yön verme, sosyal cesaret, kararlılık ve sorumluluk.',
+  tagline: 'Araştırmalarda liderlikle ilişkili bulunan üç eğilimini gösterir: “Öne çıkıp yön verme”, “Sosyal cesaret” ve “Kararlılık ve sorumluluk”.',
   description:
     'Bu test, araştırmalarda liderlikle ilişkili bulunan üç kişilik eğilimini ayrı ayrı gösterir. Birincisi bir grupta idareyi ele alıp yön verme isteğidir. İkincisi topluluk içinde rahat olmak, söz almak ve ilgi odağı olmaktan çekinmemektir. Üçüncüsü hazırlıklı olmak, planları uygulamak ve üstlenilen işi sonuna götürmektir. Kamu malı olan Uluslararası Kişilik Madde Havuzu’nun (IPIP) üç ölçeğine dayanır; 28 kısa cümleden oluşur ve yaklaşık 5 dakika sürer. Rapor, üç eğilimin birlikte ne anlatabileceğini ve gündelik hayatta denenebilecek küçük adımları da anlatır. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır. Test liderlik becerisini ya da iyi bir lider olup olmadığını ölçmez; kişinin kendini nasıl tanımladığını gösterir. Tanı koymaz.',
   intro: {
-    title: 'Bir grupta nasıl davranırsın?',
+    title: 'Gruplarda ve üstlendiğin işlerde nasılsın?',
     paragraphs: [
       'Birazdan seni anlatan 28 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
-      'Cümleler bir grupta yön vermekle, insanlar arasında konuşmakla ve üstlendiğin işleri yürütmekle ilgili. Belirli bir günü değil, genellikle nasıl olduğunu düşünerek cevap ver.',
-      'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Yaklaşık 5 dakika sürer.',
+      'Cümleler bir grupta yön vermekle, insanlar arasında konuşmakla ve üstlendiğin işleri yürütmekle ilgili. Belirli bir günü değil, çoğu zaman nasıl davrandığını düşünerek cevap ver.',
+      'Doğru ya da yanlış cevap yok; yüksek puan iyi, düşük puan kötü demek değildir. En faydalı sonuç, olmak istediğin hâli değil, gerçekte nasıl olduğunu anlattığında çıkar. Yaklaşık 5 dakika sürer.',
     ],
   },
   prompt: 'Bu cümle seni ne kadar doğru anlatıyor?',
@@ -207,11 +208,11 @@ export const liderlikEgilimleri: LikertInstrument = {
     basedOn:
       'Uluslararası Kişilik Madde Havuzu’nun (IPIP) üç ölçeği. Birincisi Hogan Kişilik Envanteri’ne (HPI) benzeyen IPIP ölçeklerinden liderliktir (Leadership). İkincisi IPIP-HEXACO ölçeklerinden sosyal cesarettir (Social Boldness; Ashton, Lee ve Goldberg, 2007). Üçüncüsü AB5C ölçeklerinden amaçlı ve kararlı davranmadır (Purposefulness). Bu testte bunlar sırasıyla “Öne çıkıp yön verme”, “Sosyal cesaret” ve “Kararlılık ve sorumluluk” adıyla kullanılır. Maddeler IPIP’indir (Goldberg ve ark., 2006). Üç ölçeğin bütün maddeleri sorulur: 28 madde; ölçekler arasında ortak madde yoktur. Öne çıkıp yön vermenin ve kararlılık ve sorumluluğun maddeleri IPIP sitesinin bir arşiv kopyasından alındı ve IPIP’in öteki resmî sayfalarıyla karşılaştırıldı.',
     whatItMeasures:
-      'Bu test liderlik becerisini, liderlik potansiyelini ya da iyi bir lider olup olmadığını ölçmez. Araştırmalarda liderlikle ilişkili bulunan üç kişilik eğilimini kişinin kendi gözünden gösterir. Bunlar bir grupta idareyi ele alıp yön verme isteği, topluluk içinde rahat olma ve üstlenilen işi sonuna götürmedir. Üç eğilim ayrı ayrı puanlanır ve toplam bir puan hesaplanmaz.\n\n60 çalışmayı birleştiren bir incelemede liderlikle en tutarlı ilişkili kişilik özelliği dışadönüklük bulunmuştur (.31). Sorumluluk (.28), deneyime açıklık (.24) ve duygusal denge (.24) de liderlikle ilişkilidir (Judge ve ark., 2002). Bir grupta lider olarak öne çıkmada dışadönüklüğün ve sorumluluğun ilişkisi .33’tür. Beş kişilik boyutunun liderlikle birlikte ilişkisi .48’dir. Yani kişilik önemlidir, ama kimin lider olacağını tek başına belirlemez.\n\nDışadönüklüğün liderlikle ilişkili yanı, insanlarla vakit geçirmeyi sevmekten çok öne çıkıp yön vermektir (Do ve Minbashian, 2014). Ama öne çıkmanın fazlası da iyi değildir. İş arkadaşlarının değerlendirmelerine dayanan çalışmalarda, orta düzeyde atılgan olanlar çok az ya da çok fazla atılgan olanlardan daha iyi lider olarak görülmüştür (Ames ve Flynn, 2007). Korkutarak etki kurmak ile bilgisini paylaşarak saygı kazanmak farklı yollardır; ikincisini kullananlar daha çok sevilir (Cheng ve ark., 2013). Küçük gruplarda çok konuşan kişinin lider olarak görülme olasılığı daha yüksektir (MacLaren ve ark., 2020). Çok konuşmak ise iyi liderlik demek değildir.\n\nSessiz ve içedönük kişiler de iyi liderlik yapabilir. Bir çalışmada ekip üyeleri girişkenken, içedönük davranan liderlerin ekipleri daha iyi sonuç almıştır (Grant, Gino ve Hofmann, 2011). Liderlik yalnızca başkanlık ya da kaptanlık da değildir. Spor takımlarıyla yapılan bir çalışmada katılımcıların %44’ü kaptanı hiçbir liderlik rolünde baş lider olarak görmemiştir (Fransen ve ark., 2014). Liderliğin birkaç kişi arasında paylaşılması, takımların etkililiğiyle ilişkilidir (Wang, Waldman ve Zhang, 2014).\n\nİkiz çalışmalarında, liderlik görevlerinde bulunmadaki farkların yaklaşık dörtte biri ile üçte biri genlerle ilişkilendirilmiştir; büyük bölümü genlerle açıklanmamıştır (Arvey ve ark., 2006; De Neve ve ark., 2013). Yetişkinlerle yapılan liderlik eğitimleri öğrenmeyi ve işteki davranışı ortalamada belirgin biçimde artırmıştır. Uygulama ve geri bildirim içeren eğitimler daha etkili bulunmuştur (Lacerenza ve ark., 2017). Gençlere yönelik liderlik programlarının kanıtı ise henüz sınırlıdır; bu çalışmaların çoğunda karşılaştırma grubu yoktur (Karagianni ve Montgomery, 2018).',
+      'Bu test liderlik becerisini, liderlik potansiyelini ya da iyi bir lider olup olmadığını ölçmez. Araştırmalarda liderlikle ilişkili bulunan üç kişilik eğilimini kişinin kendi gözünden gösterir. Bunlar bir grupta idareyi ele alıp yön verme isteği, topluluk içinde rahat olma ve üstlenilen işi sonuna götürmedir. Üç eğilim ayrı ayrı puanlanır ve toplam bir puan hesaplanmaz.\n\n60 çalışmayı birleştiren bir incelemede liderlikle en tutarlı ilişkili kişilik özelliği dışadönüklük bulunmuştur (.31). Sorumluluk (.28), deneyime açıklık (.24) ve duygusal denge (.24) de liderlikle ilişkilidir (Judge ve ark., 2002). Bir grupta lider olarak görülmede dışadönüklüğün ve sorumluluğun ilişkisi .33’tür. Beş kişilik boyutunun liderlikle birlikte ilişkisi .48’dir. Yani kişilik önemlidir, ama kimin lider olacağını tek başına belirlemez.\n\nDışadönüklüğün liderlikle ilişkili yanı, insanlarla vakit geçirmeyi sevmekten çok öne çıkıp yön vermektir (Do ve Minbashian, 2014). Ama öne çıkmanın fazlası da her zaman iyi sonuç vermez. İş arkadaşlarının ve çalışanların değerlendirmelerine dayanan iki çalışmada orta düzeyde atılgan olanlar daha iyi lider olarak görülmüştür (Ames ve Flynn, 2007). Çok az ya da çok fazla atılgan olanlar daha düşük değerlendirilmiştir. Korkutarak etki kurmak ile bilgisini paylaşarak saygı kazanmak farklı yollardır. Bir çalışmada ikisi de etki kazandırmış; ama bilgisini paylaşanlar sevilmiş, korkutanlar pek sevilmemiştir (Cheng ve ark., 2013). Küçük gruplarda çok konuşan kişinin lider olarak görülme olasılığı daha yüksektir (MacLaren ve ark., 2020). Çok konuşmak ise iyi liderlik demek değildir.\n\nSessiz davranmak da bazı durumlarda işe yarayabilir. Bir çalışmada ekip üyeleri girişkenken, sakin davranan liderlerin ekipleri daha iyi sonuç almıştır (Grant, Gino ve Hofmann, 2011). Ekip üyeleri edilgen olduğunda ise sonuç tersine dönmüştür. Liderlik yalnızca başkanlık ya da kaptanlık da değildir. Spor takımlarıyla yapılan bir çalışmada katılımcıların %44’ü, incelenen dört liderlik rolünün hiçbirinde kaptanı baş lider olarak görmemiştir (Fransen ve ark., 2014). Liderliğin birkaç kişi arasında paylaşılması, takımların etkililiğiyle ilişkilidir (Wang, Waldman ve Zhang, 2014).\n\nİkiz çalışmalarında, liderlik görevlerinde bulunmadaki farkların yaklaşık %24 ile %30’u genlerle ilişkilendirilmiştir; büyük bölümü genlerle açıklanmamıştır (Arvey ve ark., 2006; De Neve ve ark., 2013). Yetişkinlerle yapılan liderlik eğitimleri öğrenmeyi ve işteki davranışı ortalamada belirgin biçimde artırmıştır. Uygulama ve geri bildirim içeren eğitimler daha etkili bulunmuştur (Lacerenza ve ark., 2017). Gençlere yönelik liderlik programlarının kanıtı ise henüz sınırlıdır; bu çalışmaların çoğunda karşılaştırma grubu yoktur (Karagianni ve Montgomery, 2018).',
     turkishVersion:
       'Maddeler Ölçekhane tarafından Türkçeye çevrildi. Sitedeki öteki testlerde birebir aynı olan 25 maddenin çevirisi korundu; sosyal cesaretin on maddesi Altı Boyutlu Kişilik Profili’ndekiyle aynıdır. Kalan 3 madde iki ayrı taslakla çevrilip karşılaştırıldı. Bu IPIP ölçeklerinin yayımlanmış bir Türkçe uyarlamasına ulaşılamadı. Türkiye’de gençler için geliştirilmiş liderlik ölçekleri vardır; örneğin Gençlik Liderlik Özellikleri Ölçeği, İstanbul’da 14–17 yaş arasındaki 1.123 öğrenciyle geliştirilmiştir (Cansoy ve Turan, 2016). Bu testin maddeleri o ölçeğin maddeleri değildir ve o çalışmanın sonuçları bu test için norm sayılmaz. Bu çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı.',
     reliability:
-      'IPIP’in sayfalarında iç tutarlılık (Cronbach α) şöyle bildirilir: liderlik (bu testte öne çıkıp yön verme) .81, sosyal cesaret .86, amaçlı ve kararlı davranma (bu testte kararlılık ve sorumluluk) .81. Öne çıkıp yön verme ile kararlılık ve sorumluluğun değerleri ABD’de 501 yetişkinle hesaplanmıştır. IPIP ölçeklerinin asıl envanterlerdeki karşılıklarıyla ilişkisi: öne çıkıp yön verme, Hogan Kişilik Envanteri’nin liderlik alt bileşeniyle .66 (ölçüm hatası düzeltilince .79); sosyal cesaret, HEXACO Kişilik Envanteri’nin sosyal cesaret ölçeğiyle .83 (düzeltilince .97). Kararlılık ve sorumluluğun karşılaştırılacağı asıl bir envanter yoktur. Öne çıkıp yön vermenin ve kararlılık ve sorumluluğun anahtarları ile tablolar IPIP sitesinin bir arşiv kopyasından alındı. Öne çıkıp yön vermenin altı maddesinin hepsi, kararlılık ve sorumluluğun beş maddesi IPIP’in öteki resmî sayfalarında da birebir aynı metinle yer alır. Açık veriye bu çalışmada ulaşılamadığı için standart sapmalar hesaplanamadı; raporda ölçüm payı gösterilmez. Türkçe çevirinin güvenirliği henüz incelenmedi.',
+      'IPIP’in sayfalarında iç tutarlılık (Cronbach α) şöyle bildirilir. Liderlik (bu testte öne çıkıp yön verme) .81, sosyal cesaret .86’dır. Amaçlı ve kararlı davranma (bu testte kararlılık ve sorumluluk) da .81’dir. Öne çıkıp yön verme ile kararlılık ve sorumluluğun değerleri ABD’de 501 yetişkinle hesaplanmıştır. Sosyal cesaretin değerleri aynı örneklemden 411 yetişkinle hesaplanmıştır (Ashton, Lee ve Goldberg, 2007). IPIP ölçekleri asıl envanterlerdeki karşılıklarıyla da karşılaştırılmıştır. Öne çıkıp yön verme, Hogan Kişilik Envanteri’nin liderlik alt bileşeniyle .66 (ölçüm hatası düzeltilince .79) ilişkilidir. Sosyal cesaret, HEXACO Kişilik Envanteri’nin sosyal cesaret ölçeğiyle .83 (düzeltilince .97) ilişkilidir. Kararlılık ve sorumluluğun karşılaştırılacağı asıl bir envanter yoktur. Öne çıkıp yön vermenin ve kararlılık ve sorumluluğun anahtarları ile tablolar IPIP sitesinin bir arşiv kopyasından alındı. Öne çıkıp yön vermenin altı maddesi ile kararlılık ve sorumluluğun beş maddesi IPIP’in öteki resmî sayfalarında da yer alır. Açık veriye bu çalışmada ulaşılamadığı için standart sapmalar hesaplanamadı; raporda ölçüm payı gösterilmez. Türkçe çevirinin güvenirliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
       'Bu test için Türkiye’de henüz bir karşılaştırma çalışması (norm) yapılmadı. Puanlar 1–5 cevap aralığına göre yorumlanır: sonuç kişinin kendini nasıl tanımladığını gösterir, başkalarıyla karşılaştırma yapmaz.',
@@ -222,11 +223,12 @@ export const liderlikEgilimleri: LikertInstrument = {
     limitations: [
       'Öz bildirime dayanır; sonuç kişinin kendini nasıl gördüğünü yansıtır. Kişinin bir grupta gerçekte nasıl davrandığını ya da başkalarınca nasıl görüldüğünü ölçmez.',
       'Test liderlik becerisini ölçmez; kişinin ileride yönetici olup olmayacağını ya da iş hayatında ne kadar başarılı olacağını öngörmez. Bir meslek önerisi değildir; meslek için ilgi testlerine bakılabilir.',
+      'Sosyal cesaretin bir cümlesi (“Liderlik yeteneğim var.”) kişinin kendi liderlik yeteneği hakkındaki görüşünü sorar. Bu cümle de yeteneği ölçmez; kişinin kendini nasıl gördüğünü gösterir.',
       'Yüksek puan her zaman daha iyi demek değildir: atılganlığın fazlası da bir grupta ilişkileri yıpratabilir (Ames ve Flynn, 2007). Düşük puan da liderlik yapılamayacağı anlamına gelmez.',
-      'Öne çıkıp yön vermenin altı cümlesinden dördü düz, ikisi ters yöndedir; sosyal cesarette beşi düz, beşi ters; kararlılık ve sorumlulukta beşi düz, yedisi ters yöndedir. Cümlelerin çoğuna “doğru” deme eğilimi öne çıkıp yön verme puanını biraz yükseltip kararlılık ve sorumluluk puanını biraz düşürebilir. Birbirinin tersini söyleyen dört cümle çiftinden (biri öne çıkıp yön vermede, ikisi sosyal cesarette, biri kararlılık ve sorumlulukta) en az ikisinde iki cümleye de “Oldukça doğru” ya da “Tamamen doğru” denirse raporda bir uyarı gösterilir. Aynı uyarı, en az iki çiftte iki cümleye de “Hiç doğru değil” ya da “Pek doğru değil” denirse de gösterilir.',
+      'Öne çıkıp yön vermenin altı cümlesinden dördü düz, ikisi ters yöndedir; sosyal cesarette beşi düz, beşi ters; kararlılık ve sorumlulukta beşi düz, yedisi ters yöndedir. Cümlelerin çoğuna “doğru” deme eğilimi öne çıkıp yön verme puanını biraz yükseltip kararlılık ve sorumluluk puanını biraz düşürebilir. Testte birbirinin tersini söyleyen dört cümle çifti vardır: biri öne çıkıp yön vermede, ikisi sosyal cesarette, biri kararlılık ve sorumluluktadır. En az iki çiftte iki cümleye de “Oldukça doğru” ya da “Tamamen doğru” denirse raporda bir uyarı gösterilir. Aynı uyarı, en az iki çiftte iki cümleye de “Hiç doğru değil” ya da “Pek doğru değil” denirse de gösterilir.',
       'Sosyal cesaretin bazı cümleleri (topluluk önünde konuşma, hazırlıksız konuşma gibi) kişinin bu tür durumlarla ne kadar karşılaştığına da bağlıdır. Böyle durumlarla pek karşılaşmamış biri bu cümlelere tahmine dayalı bir cevap verebilir.',
       'İkna etme, insanları bir araya getirme ve ekip çalışması gibi liderliğin öteki yanları bu testte ayrı ayrı ölçülmez; IPIP’te bunlar için uygun bir ölçek bulunamadı.',
-      '28 cümlenin 25’i sitedeki öteki testlerde de sorulur: onu Altı Boyutlu Kişilik Profili’nde, dokuzu 16 Faktörlü Kişilik Profili’nde, sekizi Ayrıntılı Kişilik Profili’nde, yedisi Beş Faktör Kişilik Profili’nde, yedisi Kişiliğin 10 Yönü’nde, altısı Öz-yeterlik: Kendine Güven’de, üçü Öğrenme ve Başarı Özellikleri’nde, üçü Öz-denetim’de; ikişer cümle de Hızlı Kişilik Testi ve Kişilerarası Tarz’da (bir cümle birden çok testte olabilir). Sosyal cesaretin on cümlesinin hepsi Altı Boyutlu Kişilik Profili’nin “Sosyal cesaret” alt özelliğidir; o testi çözen biri burada aynı cümleleri görür ve iki sonuç çok benzer çıkar. Öne çıkıp yön vermenin dört cümlesi 16 Faktörlü Kişilik Profili’nin “Atılganlık” özelliğinde, üçü Ayrıntılı Kişilik Profili’nin “Liderlik” özelliğinde de vardır. Bu yüzden sonuçlar birbirine benzeyebilir.',
+      '28 cümlenin 25’i sitedeki öteki testlerde de sorulur; bir cümle birden çok testte olabilir. Bu cümlelerin onu Altı Boyutlu Kişilik Profili’nde, dokuzu 16 Faktörlü Kişilik Profili’nde, sekizi Ayrıntılı Kişilik Profili’nde vardır. Bunların yedisi Beş Faktör Kişilik Profili’nde, yedisi Kişiliğin 10 Yönü’nde, altısı Öz-yeterlik: Kendine Güven’de de sorulur. Ayrıca üçü Öğrenme ve Başarı Özellikleri’nde, üçü Öz-denetim’de sorulur; ikişer cümle de Hızlı Kişilik Testi ve Kişilerarası Tarz’dadır. Sosyal cesaretin on cümlesinin hepsi Altı Boyutlu Kişilik Profili’nin “Sosyal cesaret” alt özelliğidir; o testi çözen biri burada aynı cümleleri görür ve iki sonuç çok benzer çıkar. Öne çıkıp yön vermenin dört cümlesi 16 Faktörlü Kişilik Profili’nin “Atılganlık” özelliğinde, üçü Ayrıntılı Kişilik Profili’nin “Liderlik” özelliğinde de vardır. Bu yüzden sonuçlar birbirine benzeyebilir.',
       'Tanı koymaz ve uzman değerlendirmesinin yerini tutmaz.',
       'Ergenlerde güvenirliğini ve geçerliğini inceleyen bir çalışmaya ulaşılamadığı için lise öğrencilerinde sonuçlar dikkatle yorumlanmalıdır.',
       'Türkçe çevirinin güvenirlik ve geçerlik çalışması henüz yapılmadı; kaynaktaki değerler bu çeviri için doğrudan geçerli sayılmamalıdır. Ölçüm payı hesaplanamadığı için sınıra yakın puanlar komşu düzeye de yakın sayılmalıdır.',
@@ -272,7 +274,7 @@ export const liderlikEgilimleri: LikertInstrument = {
       },
       {
         text: 'Grant, A. M., Gino, F. ve Hofmann, D. A. (2011). Reversing the extraverted leadership advantage: The role of employee proactivity. Academy of Management Journal, 54(3), 528–550.',
-        url: 'https://core.ac.uk/download/475610468.pdf',
+        url: 'https://doi.org/10.5465/amj.2011.61968043',
       },
       {
         text: 'Fransen, K., Vanbeselaere, N., De Cuyper, B., Vande Broek, G. ve Boen, F. (2014). The myth of the team captain as principal leader: Extending the athlete leadership classification within sport teams. Journal of Sports Sciences, 32(14), 1389–1397.',
@@ -284,10 +286,10 @@ export const liderlikEgilimleri: LikertInstrument = {
       },
       {
         text: 'Arvey, R. D., Rotundo, M., Johnson, W., Zhang, Z. ve McGue, M. (2006). The determinants of leadership role occupancy: Genetic and personality factors. The Leadership Quarterly, 17(1), 1–20.',
-        url: 'https://web2-bschool.nus.edu.sg/wp-content/uploads/media_rp/publications/6tkCq1422939617.pdf',
+        url: 'https://doi.org/10.1016/j.leaqua.2005.10.009',
       },
       {
-        text: 'De Neve, J.-E., Mikhaylov, S., Dawes, C. T., Christakis, N. A. ve Fowler, J. H. (2013). Born to lead? A twin design and genetic association study of leadership role occupancy. The Leadership Quarterly, 24, 45–60.',
+        text: 'De Neve, J.-E., Mikhaylov, S., Dawes, C. T., Christakis, N. A. ve Fowler, J. H. (2013). Born to lead? A twin design and genetic association study of leadership role occupancy. The Leadership Quarterly, 24(1), 45–60.',
         url: 'https://doi.org/10.1016/j.leaqua.2012.08.001',
       },
       {

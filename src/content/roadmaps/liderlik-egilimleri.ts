@@ -28,8 +28,8 @@ export const liderlikEgilimleriRoadmap: RoadmapTemplate = {
   planningTitle: 'Dene ve geri bildirim al',
   unit: { one: 'eğilim', toPlural: 'eğilimlere' },
   balancedNote: {
-    student: 'Üç eğilimde de puanın orta düzeyde; hiçbir eğilim belirgin biçimde öne çıkmıyor.',
-    parent: 'Çocuğunuzun puanı üç eğilimde de orta düzeyde; hiçbir eğilim belirgin biçimde öne çıkmıyor.',
+    student: 'Üç eğilimde de puanın orta düzeyde; hiçbir eğilim ötekilerden belirgin biçimde ayrılmıyor.',
+    parent: 'Çocuğunuzun puanı üç eğilimde de orta düzeyde; hiçbir eğilim ötekilerden belirgin biçimde ayrılmıyor.',
   },
   studyIntro: {
     student:
@@ -58,18 +58,18 @@ export const liderlikEgilimleriRoadmap: RoadmapTemplate = {
   approach: {
     lead: {
       low: 'Bir grupta yönü başkalarına bırakmasını eleştirmeyin; ailede bir şey planlanırken onun da fikrini sorun ve önerisini ciddiye alın.',
-      average: 'Hangi durumlarda yön vermeyi sevdiğini, hangilerinde başkasını izlemeyi tercih ettiğini merakla sorun.',
-      high: 'Yönettiği işlerde ara sıra başkalarının da yön vermesine fırsat tanımasını konuşun; liderliğin paylaşılabileceğini hatırlatın.',
+      average: 'Yön vermediği zamanlarda da gruba ne kattığını fark edin ve bunu ona söyleyin.',
+      high: 'Yönettiği işlerde ara sıra başkalarının da yön vermesine fırsat tanımasını konuşun.',
     },
     bold: {
       low: 'Kalabalık ortamlarda konuşması için ısrar etmeyin; sessiz kalmayı seçmesini olağan karşılayın ve anlattıklarını sözünü kesmeden dinleyin.',
-      average: 'Hangi ortamlarda rahat konuştuğunu fark etmesine yardım edin; bunu düzeltilecek bir şey gibi değil, tanınacak bir özellik gibi konuşun.',
-      high: 'Söz alma rahatlığını destekleyin; bu rahatlığı bir sunum ya da tanıtım gibi yeni bir alanda denemesi için fırsatlar arayın.',
+      average: 'Hangi ortamlarda kendini rahat hissettiğini merak edin; bunu düzeltilecek bir şey gibi değil, tanınacak bir özellik gibi ele alın.',
+      high: 'Kalabalıkta rahat olmasını olağan karşılayın; onu daha sessiz kardeşleri ya da arkadaşlarıyla karşılaştırmayın.',
     },
     purpose: {
       low: 'Sürekli hatırlatmak yerine, işlerini hangi saatlerde yapacağını kendisinin seçmesine fırsat verin; seçtiği zamana saygı gösterin.',
-      average: 'Hangi işleri kolayca bitirdiğini, hangilerinde zorlandığını birlikte fark edin; bunu yargılamadan konuşun.',
-      high: 'Üstlendiği işleri bitirmesine güvendiğinizi gösterin; dinlenmeye de zaman ayırmasını önemseyin.',
+      average: 'Zorlandığı bir işte nasıl bir yardım istediğini ona sorun; işi onun yerine yapmayın.',
+      high: 'Üstlendiği işleri kendi düzeniyle yürütmesine alan bırakın; dinlenmeye de zaman ayırmasını önemseyin.',
     },
   },
   scales: {
@@ -104,9 +104,9 @@ export const liderlikEgilimleriRoadmap: RoadmapTemplate = {
       action: {
         high: {
           student:
-            'Bu hafta yön verdiğin bir işte, karar vermeden önce herkesin önerisini sor ve en az birini kullan. İş bitince ekiptekilere bunun nasıl geldiğini sor.',
+            'Bu hafta yön verdiğin bir işte, karar vermeden önce herkesin önerisini sor ve en az birini kullan. İş bitince ekiptekilere, önerilerinin sorulmasını nasıl bulduklarını sor.',
           parent:
-            'Bu hafta çocuğunuza, yön verdiği bir işte karar vermeden önce herkesin önerisini sormasını ve en az birini kullanmasını önerin. İş bitince ekiptekilere nasıl geldiğini sorsun.',
+            'Bu hafta çocuğunuza, yön verdiği bir işte karar vermeden önce herkesin önerisini sormasını ve en az birini kullanmasını önerin. İş bitince ekiptekilere, önerilerinin sorulmasını nasıl bulduklarını sorsun.',
         },
         average: {
           student:
@@ -116,7 +116,7 @@ export const liderlikEgilimleriRoadmap: RoadmapTemplate = {
         },
         low: {
           student:
-            'Bu hafta bir arkadaş grubunda küçük bir işin düzenini üstlen (bir buluşmanın saatini ya da yerini belirlemek gibi). Sonra birine nasıl geçtiğini sor.',
+            'İstersen bu hafta bir arkadaş grubunda küçük bir işin düzenini üstlen (bir buluşmanın saatini ya da yerini belirlemek gibi). Sonra birine nasıl geçtiğini sor.',
           parent:
             'Bu hafta çocuğunuza bir arkadaş grubunda küçük bir işin düzenini üstlenmesini önerin (bir buluşmanın saatini ya da yerini belirlemek gibi). Neyi üstleneceğini o seçsin; sonra birine nasıl geçtiğini sorsun.',
         },
@@ -131,11 +131,11 @@ export const liderlikEgilimleriRoadmap: RoadmapTemplate = {
       study: {
         high: {
           student:
-            'Topluluk içinde rahat olman konuyu sesli anlatmanı kolaylaştırabilir: öğrendiğini kitaba bakmadan birine anlat. Takıldığın yerleri not et ve ertesi gün önce o yerlere dön.',
+            'Topluluk içinde rahat olduğun için konuyu sesli anlatmak sana kolay gelebilir: öğrendiğini kitaba bakmadan birine anlat. Takıldığın yerleri not et ve ertesi gün önce o yerlere dön.',
           parent:
-            'Topluluk içinde rahat olması konuyu sesli anlatmasını kolaylaştırabilir: çocuğunuz öğrendiğini kitaba bakmadan birine anlatabilir. Takıldığı yerleri not edip ertesi gün önce o yerlere dönmesi ona uyabilir.',
+            'Topluluk içinde rahat olduğu için konuyu sesli anlatmak çocuğunuza kolay gelebilir: öğrendiğini kitaba bakmadan birine anlatabilir. Takıldığı yerleri not edip ertesi gün önce o yerlere dönmesi ona uyabilir.',
           adult:
-            'Topluluk içinde rahat olman konuyu sesli anlatmanı kolaylaştırabilir: öğrendiğini kaynağa bakmadan birine anlat. Takıldığın yerleri not et ve ertesi gün önce o yerlere dön.',
+            'Topluluk içinde rahat olduğun için konuyu sesli anlatmak sana kolay gelebilir: öğrendiğini kaynağa bakmadan birine anlat. Takıldığın yerleri not et ve ertesi gün önce o yerlere dön.',
         },
         average: {
           student:
@@ -157,9 +157,9 @@ export const liderlikEgilimleriRoadmap: RoadmapTemplate = {
       action: {
         high: {
           student:
-            'Bu hafta ilgini çeken bir konuyu üç dakikada anlatan kısa bir konuşma hazırla. Konuşmanı tanıdığın birkaç kişiye anlat.',
+            'Bu hafta ilgini çeken bir konuyu üç dakikada anlatan kısa bir konuşma hazırla. Bu konuşmayı tanıdığın birkaç kişinin önünde yap.',
           parent:
-            'Bu hafta çocuğunuza, ilgisini çeken bir konuyu üç dakikada anlatan kısa bir konuşma hazırlamasını önerin. İsterse konuşmasını ailede anlatsın.',
+            'Bu hafta çocuğunuza, ilgisini çeken bir konuyu üç dakikada anlatan kısa bir konuşma hazırlamasını önerin. İsterse bu konuşmayı ailenin önünde yapsın.',
         },
         average: {
           student: 'Bu hafta genelde sessiz kaldığın bir ortamda bir kez söz al; bir soru sormak bile yeter.',

@@ -244,7 +244,7 @@ jobs:
           fi
           # Liderlik Eğilimleri: 28 madde (yon 6, ces 10, kar 12), üç eğilim, ölçüm payı yok; ilk madde "Birlikte bakınca"; yol
           # haritasında üç sütun, ortamlar var, 2. hafta "Dene ve geri bildirim al".
-          LDR_GOVDE=$(python3 -c 'import json; k=["ces03", "yon03", "kar05", "yon05", "ces01", "kar04", "ces05", "kar12", "ces08", "kar02", "ces07", "kar11", "yon02", "ces10", "kar06", "ces02", "yon04", "kar03", "yon06", "kar07", "yon01", "kar10", "ces06", "kar09", "ces04", "kar01", "ces09", "kar08"]; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {x: {"value": i % 5 + 1, "rtMs": 2500} for i, x in enumerate(k)}}}))')
+          LDR_GOVDE=$(python3 -c 'import json; k=["ces03", "yon03", "kar05", "yon05", "ces01", "kar04", "ces05", "kar11", "ces08", "kar02", "ces07", "kar12", "yon02", "ces10", "kar06", "ces02", "yon04", "kar03", "yon06", "kar07", "yon01", "kar10", "ces06", "kar09", "ces04", "kar01", "ces09", "kar08"]; print(json.dumps({"grade": 10, "data": {"engine": "likert", "answers": {x: {"value": i % 5 + 1, "rtMs": 2500} for i, x in enumerate(k)}}}))')
           if ! "${C[@]}" -f -H 'content-type: application/json' -d "$LDR_GOVDE" "https://$ALAN/api/rapor/liderlik-egilimleri" |
             python3 -c 'import json,sys; r=json.load(sys.stdin); rows=r["parent"]["chart"]["rows"]; assert len(rows) == 3 and all(x["ciLow"] is None for x in rows) and r["student"]["items"][0]["title"] == "Birlikte bakınca" and len(r["student"]["items"]) == 4; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 3 and m["settings"] is not None and m["weeks"][1]["title"] == "Dene ve geri bildirim al" and not m["preview"]'; then
             sorun="$sorun liderlik-egilimleri-raporu"

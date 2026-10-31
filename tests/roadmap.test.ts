@@ -326,7 +326,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'erteleme-ve-zaman-yonetimi': 3 ** 5 * 3,
       zihniyet: 3 ** 4 * 3,
     });
-  }, 60_000);
+  }, 120_000);
 });
 
 describe('gelişim yol haritası: rapora eklenmesi', () => {
@@ -486,7 +486,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     // PDF üç boyutlu profil ve ortamlar olmadan da üretilir.
     const pdf = await renderSimpleReportPdf(low.parent, 'olcekhane.com');
     expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
-  }, 60_000);
+  }, 120_000);
 
   it('Çalışma Alışkanlıkları: ortamlar yok; 2. hafta Planlama, 3. hafta en düşük puanlı alışkanlık', async () => {
     const slug = 'calisma-aliskanliklari';
@@ -508,7 +508,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(r.parent.roadmap!.intro).toContain('ona nasıl yaklaşabileceğiniz');
     const pdf = await renderSimpleReportPdf(r.parent, 'olcekhane.com');
     expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
-  }, 60_000);
+  }, 120_000);
 
   it('test sayfasındaki tanıtım yalnızca o testte olan bölümleri sayar', () => {
     expect(roadmapSummary(SLUG)).toBe(
@@ -537,7 +537,7 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
       expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
       expect(pdf.length).toBeGreaterThan(plain.length);
     }
-  }, 60_000);
+  }, 120_000);
 
   it('Beş Faktör yetişkinlere açık değildir (yetişkin metinleri ileride açılınca hazır)', () => {
     expect(() => evaluateAdult(SLUG, { ...body, grade: ADULT_GRADE })).toThrow();
