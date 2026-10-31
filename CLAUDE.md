@@ -370,6 +370,20 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   raporunda madde olmaması, ters maddeler, düzeyin kartla ve genel bakışla aynı olması, denetimlerin uyarılarla aynı olması
   (hızlı, hep aynı, hep "evet", boş, süre yok, 1 + 1 çift), dil (sen/çocuğunuz, yetişkinde okul sözcüğü yok, cümleler en çok
   22 sözcük), ekrandaki sıra, sesli okuma, PDF ve paket PDF'i.
+- Görev (zekâ ve dikkat) testleri (aşama b; `lib/reports/task-parts.ts`, türlere göre kartlar `task-parts-kinds.ts`, ortak
+  yardımcılar `task-parts-core.ts`; `evaluate.ts` kurar, pakette de): **Düzeylerin ve ölçülerin anlamı** (düzeyli testte testin
+  kendi düzey anlatımları ve ulaşılan düzey, rozet raporun kartıyla aynı; düzey kuralı: o düzeyin ve o düzeye kadarki soruların
+  en az %60'ı; raporda geçen her ölçünün ne olduğu ve nasıl hesaplandığı, değeri grafikte; başka kişilerle karşılaştırma yok),
+  **Soru soru cevapların** (puanlamanın kendi soru soru sonuçlarından: `ItemTrace`, puanlama işlevleri `items` döndürür; düzey,
+  gösterilen, verilen ve doğru cevap, yanılgı türü, süre; grafik `items`: işaretler sırayla, yükseklik süre, "çok hızlı" bandı;
+  yüzlerce denemeli hızlı görevlerde "Deneme deneme sonuçların": çeyrek, yarı ya da bölüm özetleri, grafik `blocks`; görevdeki
+  cevap bir performans olduğu için veli raporunda da var; PDF'te ek), **Sonuca ne kadar güvenebiliriz?** (uyarı kutusundaki ve
+  "Yorumlanmadı" kartlarındaki denetimler, aynı işlev ve sabitlerle (`lib/scoring/tasks.ts`: `TASK_QUALITY`, `…Rapid`,
+  `…Chance` …): şans, çok hızlı, hep aynı yer ya da düğme, "Bilmiyorum", cevapsız ve erken denemeler, en kısa diziler, yeniden
+  gösterme, sürelerin cihazda ölçülmesi; yapılamayan denetim "Denetlenemedi" der ve grafiği yoktur). Yeni görev testinin türü
+  `task-parts-kinds.ts`'e eklenir; `tests/rapor-bolumleri-gorev.test.ts` bütün örüntülerde (`task-variants.ts`) dener: bölümler
+  ve grafikleri, satırların puanlamayla aynı olması, denetimlerin uyarılarla uyumu ve elle kurulan örüntüler, dil, ekrandaki
+  sıra, sesli okuma, PDF.
 
 ## Kendini Tanı Paketi
 

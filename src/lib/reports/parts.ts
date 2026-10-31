@@ -9,6 +9,8 @@ import type { ItemVisual } from './visuals';
  *
  * Anket testlerinde (lib/reports/likert-parts.ts) üç bölüm: "Düzeylerin anlamı", "Cevapların tek tek", "Cevaplarına ne
  * kadar güvenebiliriz?". Sonraki aşamalarda görev, okuma, sesli okuma ve matematik testleri aynı modeli kullanır.
+ * Görev testlerinde (lib/reports/task-parts.ts) "Düzeylerin ve ölçülerin anlamı", "Soru soru cevapların" (hızlı görevlerde
+ * "Deneme deneme sonuçların") ve "Sonuca ne kadar güvenebiliriz?".
  */
 
 export type PartKey = 'levels' | 'answers' | 'quality';
@@ -40,6 +42,8 @@ export interface PartRow {
   tags: string[];
   /** Cevaplanmadı: soluk gösterilir. */
   muted?: boolean;
+  /** Metnin sesli okunuşu, ekrandakinden farklıysa (ör. "2, 4, 8, ?" → "2, 4, 8 ve eksik sayı"). */
+  say?: string;
 }
 
 export interface PartCard {

@@ -93,6 +93,28 @@ import { median, round } from './stats';
 
 export class TaskInputError extends Error {}
 
+/**
+ * Bir sorunun ya da denemenin puanlamadaki sonucu: raporun "Soru soru cevapların" bölümü bunları gösterir
+ * (lib/reports/task-parts.ts). Puanlama işlevi bu listeyi sonucu hesapladığı aynı kararlardan kurar; bölümün satırları ve
+ * kartların sayıları hiçbir zaman ayrışmaz (tests/rapor-bolumleri-gorev.test.ts denetler). Liste yalnızca sunucuda, cevaplar
+ * gönderildikten sonra kurulur.
+ *  - `correct`: doğru; `wrong`: yanlış; `skip`: "Bilmiyorum", "Geç", "Hatırlamıyorum" ya da boş; `miss`: süre içinde cevap
+ *    verilmedi (ya da basılması gerekirken basılmadı); `early`: uyarana bakılamayacak kadar erken basıldı (doğru sayılmaz).
+ *  - `response`: verilen cevap, görevin kendi biçiminde (seçenek sırası, yazılan sayı, harf…); boşsa null.
+ *  - `lure`: yanlış cevabın türü, görev bunu ayırıyorsa (ör. tuzak cevap, döndürülmüş biçim).
+ *  - `rapid`: uyarıdaki "çok hızlı" sayımına girdi.
+ *  - `kind`: denemenin türü ya da koşulu (ör. "go"/"stop", "congruent"), görev bunu ayırıyorsa.
+ */
+export interface ItemTrace {
+  index: number;
+  status: 'correct' | 'wrong' | 'skip' | 'miss' | 'early';
+  response: unknown;
+  rtMs: number | null;
+  lure?: string | null;
+  rapid?: boolean;
+  kind?: string;
+}
+
 /* ---------- Dizi görevleri (sayı ve kutu) ---------- */
 
 export interface SpanTrialInput {
@@ -654,13 +676,14 @@ export const GO_ANTICIPATION_MS = 150;
 /** Tipik tepki süresi en az bu kadar doğru basıştan hesaplanır. */
 export const GO_MIN_HITS = 10;
 
-export function scoreGoNoGo(task: GoNoGoTask, input: GoNoGoTrialInput[]): { result: GoNoGoResult } {
+export function scoreGoNoGo(task: GoNoGoTask, input: GoNoGoTrialInput[]): { result: GoNoGoResult; items: ItemTrace[] } {
   const seen = new Set<number>();
   let hits = 0;
   let omissions = 0;
   let commissions = 0;
   let anticipations = 0;
   const rts: number[] = [];
+  const items: ItemTrace[] = [];
   for (const t of input) {
     if (!Number.isInteger(t.index) || t.index < 0 || t.index >= task.trials.length) throw new TaskInputError('Geçersiz deneme.');
     if (t.response !== null && t.response !== 1) throw new TaskInputError('Geçersiz cevap.');
@@ -670,19 +693,29 @@ export function scoreGoNoGo(task: GoNoGoTask, input: GoNoGoTrialInput[]): { resu
     const stim = task.trials[t.index];
     // Cevap penceresinden sonra gelen (tarayıcının zamanlayıcısı gecikmiş) basış sayılmaz.
     const pressed = t.response === 1 && (t.rtMs as number) <= task.responseMs + 200;
+    let status: ItemTrace['status'];
     if (!stim.go) {
       if (pressed) commissions++;
-    } else if (!pressed) omissions++;
-    else if ((t.rtMs as number) < GO_ANTICIPATION_MS) anticipations++;
-    else {
+      status = pressed ? 'wrong' : 'correct';
+    } else if (!pressed) {
+      omissions++;
+      status = 'miss';
+    } else if ((t.rtMs as number) < GO_ANTICIPATION_MS) {
+      anticipations++;
+      status = 'early';
+    } else {
       hits++;
       rts.push(t.rtMs as number);
+      status = 'correct';
     }
+    items.push({ index: t.index, status, response: pressed ? 1 : null, rtMs: pressed ? (t.rtMs as number) : null, kind: stim.go ? 'go' : 'stop' });
   }
   if (seen.size !== task.trials.length) throw new TaskInputError('Denemelerin hepsi gönderilmedi.');
+  items.sort((a, b) => a.index - b.index);
   const goTrials = task.trials.filter((t) => t.go).length;
   const stopTrials = task.trials.length - goTrials;
   return {
+    items,
     result: {
       goTrials,
       stopTrials,
@@ -868,7 +901,7 @@ export const nBackSilent = (x: { hits: number; falseAlarms: number }) => x.hits 
  */
 export const nBackKeptOneBack = (l: NBackLevelResult) => l.n === 2 && l.lures > 0 && l.lureFalseAlarms / l.lures >= 0.5 && l.hitRate < 0.3;
 
-export function scoreNBack(task: NBackTask, input: NBackTrialInput[]): { result: NBackResult } {
+export function scoreNBack(task: NBackTask, input: NBackTrialInput[]): { result: NBackResult; items: ItemTrace[] } {
   // Bütün bölümlerin harfleri tek bir sırada: her denemenin bölümü, rolü ve n'i.
   const cells = task.blocks.flatMap((b, block) => nBackRoles(b.letters, b.n).map((role) => ({ n: b.n, role, block })));
   const blocks: NBackBlockResult[] = task.blocks.map((b, index) => ({
@@ -890,6 +923,7 @@ export function scoreNBack(task: NBackTask, input: NBackTrialInput[]): { result:
       if (c.role === 'lure') a.lures++;
     }
   }
+  const items: ItemTrace[] = [];
   for (const t of input) {
     if (!Number.isInteger(t.index) || t.index < 0 || t.index >= cells.length) throw new TaskInputError('Geçersiz deneme.');
     if (t.response !== null && t.response !== 1) throw new TaskInputError('Geçersiz cevap.');
@@ -899,23 +933,32 @@ export function scoreNBack(task: NBackTask, input: NBackTrialInput[]): { result:
     const c = cells[t.index];
     const a = acc.get(c.n)!;
     const rt = t.rtMs as number;
+    const trace = (status: ItemTrace['status'], pressed: boolean) =>
+      items.push({ index: t.index, status, response: pressed ? 1 : null, rtMs: pressed ? rt : null, kind: c.role, ...(c.role === 'lure' && status === 'wrong' ? { lure: 'lure' } : {}) });
     // Cevap penceresinden sonra gelen (tarayıcının zamanlayıcısı gecikmiş) basış sayılmaz.
-    if (t.response !== 1 || rt > task.trialMs + 100) continue;
+    if (t.response !== 1 || rt > task.trialMs + 100) {
+      trace(c.role === 'target' ? 'miss' : 'correct', false);
+      continue;
+    }
     if (rt < NBACK_ANTICIPATION_MS) {
       a.anticipations++;
+      trace('early', true);
       continue;
     }
     if (c.role === 'target') {
       a.hits++;
       a.rts.push(rt);
       blocks[c.block].hits++;
+      trace('correct', true);
     } else {
       a.falseAlarms++;
       blocks[c.block].falseAlarms++;
       if (c.role === 'lure') a.lureFalseAlarms++;
+      trace('wrong', true);
     }
   }
   if (seen.size !== cells.length) throw new TaskInputError('Denemelerin hepsi gönderilmedi.');
+  items.sort((a, b) => a.index - b.index);
   const levels = [...acc.entries()]
     .sort(([x], [y]) => x - y)
     .map(([n, a]): NBackLevelResult => {
@@ -937,7 +980,7 @@ export function scoreNBack(task: NBackTask, input: NBackTrialInput[]): { result:
         medianRt: medianOrNull(a.rts, NBACK_MIN_HITS),
       };
     });
-  return { result: { levels, blocks } };
+  return { result: { levels, blocks }, items };
 }
 
 /* ---------- Zihinde döndürme ---------- */
@@ -1026,10 +1069,11 @@ export function rotationMissedKind(ro: RotationResult): 'timeouts' | 'early' | '
 export const ROTATION_MIN_PER_ANGLE = 3;
 export const ROTATION_MIN_PER_GROUP = 6;
 
-export function scoreRotation(task: MentalRotationTask, input: RotationTrialInput[]): { result: RotationResult } {
+export function scoreRotation(task: MentalRotationTask, input: RotationTrialInput[]): { result: RotationResult; items: ItemTrace[] } {
   const seen = new Set<number>();
   type Scored = { angle: number; mirror: boolean; correct: boolean; timeout: boolean; anticipation: boolean; response: number | null; rt: number | null };
   const trials: Scored[] = [];
+  const items: ItemTrace[] = [];
   let sameSaidMirror = 0;
   let sameSaidMirrorLarge = 0;
   let mirrorSaidSame = 0;
@@ -1045,6 +1089,13 @@ export function scoreRotation(task: MentalRotationTask, input: RotationTrialInpu
     const anticipation = !timeout && (t.rtMs as number) < ROTATION_ANTICIPATION_MS;
     const correct = !timeout && !anticipation && t.response === (stim.mirror ? 2 : 1);
     trials.push({ angle: disparity(stim.angle), mirror: stim.mirror, correct, timeout, anticipation, response: timeout ? null : t.response, rt: t.rtMs });
+    items.push({
+      index: t.index,
+      status: timeout ? 'miss' : anticipation ? 'early' : correct ? 'correct' : 'wrong',
+      response: timeout ? null : t.response,
+      rtMs: timeout ? null : t.rtMs,
+      kind: stim.mirror ? 'mirror' : 'same',
+    });
     if (!timeout && !anticipation && !correct) {
       if (stim.mirror) mirrorSaidSame++;
       else {
@@ -1054,6 +1105,7 @@ export function scoreRotation(task: MentalRotationTask, input: RotationTrialInpu
     }
   }
   if (trials.length !== task.trials.length) throw new TaskInputError('Denemelerin hepsi gönderilmedi.');
+  items.sort((a, b) => a.index - b.index);
   const acc = (xs: Scored[]) => (xs.length ? round(xs.filter((t) => t.correct).length / xs.length, 3) : 0);
   const rtOf = (xs: Scored[], min: number) =>
     medianOrNull(
@@ -1070,6 +1122,7 @@ export function scoreRotation(task: MentalRotationTask, input: RotationTrialInpu
     ROTATION_MIN_PER_GROUP,
   );
   return {
+    items,
     result: {
       n: trials.length,
       correct: trials.filter((t) => t.correct).length,
@@ -1152,12 +1205,13 @@ export const REACTION_MIN_VALID = 10;
 /** Seçmeli bölümde cevapların en az bu kadarı fareyle verildiyse süreye imlecin yolu da karışmıştır. */
 export const REACTION_MOUSE_SHARE = 0.25;
 
-export function scoreReaction(task: ReactionTimeTask, input: ReactionTrialInput[]): { result: ReactionResult } {
+export function scoreReaction(task: ReactionTimeTask, input: ReactionTrialInput[]): { result: ReactionResult; items: ItemTrace[] } {
   const cells = task.parts.flatMap((p) => p.trials.map((t) => ({ part: p.key, boxes: p.boxes, box: t.box })));
   const tally = new Map(
     task.parts.map((p) => [p.key, { n: p.trials.length, answered: 0, correct: 0, wrong: 0, early: 0, misses: 0, left: 0, mouse: 0, rts: [] as number[] }]),
   );
   const seen = new Set<number>();
+  const items: ItemTrace[] = [];
   for (const t of input) {
     if (!Number.isInteger(t.index) || t.index < 0 || t.index >= cells.length) throw new TaskInputError('Geçersiz deneme.');
     const cell = cells[t.index];
@@ -1166,20 +1220,31 @@ export function scoreReaction(task: ReactionTimeTask, input: ReactionTrialInput[
     if (seen.has(t.index)) continue;
     seen.add(t.index);
     const part = tally.get(cell.part)!;
+    let status: ItemTrace['status'];
     // Süre dolduktan sonra gelen (tarayıcının zamanlayıcısı gecikmiş) basış, süre aşımı sayılır.
-    if (t.response === null || t.rtMs === null || t.rtMs > task.timeoutMs) part.misses++;
-    else if (t.rtMs < REACTION_EARLY_MS) part.early++;
-    else {
+    if (t.response === null || t.rtMs === null || t.rtMs > task.timeoutMs) {
+      part.misses++;
+      status = 'miss';
+    } else if (t.rtMs < REACTION_EARLY_MS) {
+      part.early++;
+      status = 'early';
+    } else {
       part.answered++;
       if (t.response === 1) part.left++;
       if (t.input === 'mouse') part.mouse++;
       if (t.response === cell.box + 1) {
         part.correct++;
         part.rts.push(t.rtMs);
-      } else part.wrong++;
+        status = 'correct';
+      } else {
+        part.wrong++;
+        status = 'wrong';
+      }
     }
+    items.push({ index: t.index, status, response: status === 'miss' ? null : t.response, rtMs: status === 'miss' ? null : t.rtMs, kind: cell.part });
   }
   if (seen.size !== cells.length) throw new TaskInputError('Denemelerin hepsi gönderilmedi.');
+  items.sort((a, b) => a.index - b.index);
   const result = (key: 'simple' | 'choice'): ReactionPartResult => {
     const p = tally.get(key);
     if (!p) throw new TaskInputError('Görevde basit ve seçmeli bölümler bulunmalı.');
@@ -1204,6 +1269,7 @@ export function scoreReaction(task: ReactionTimeTask, input: ReactionTrialInput[
   const simple = result('simple');
   const choice = result('choice');
   return {
+    items,
     result: {
       simple,
       choice,
@@ -1278,7 +1344,7 @@ export const MATRIX_CHANCE_MAX = 6;
 export const MATRIX_NEAR_SHARE = 0.7;
 export const MATRIX_NEAR_MIN = 4;
 
-export function scoreMatrix(task: MatrixReasoningTask, input: MatrixTrialInput[]): { result: MatrixResult } {
+export function scoreMatrix(task: MatrixReasoningTask, input: MatrixTrialInput[]): { result: MatrixResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.optionDistance.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, MatrixTrialInput>();
@@ -1319,6 +1385,14 @@ export function scoreMatrix(task: MatrixReasoningTask, input: MatrixTrialInput[]
   const positions = new Map<number, number>();
   for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.correct ? 'correct' : 'wrong',
+      response: s.response,
+      rtMs: s.rt,
+      lure: s.correct ? null : s.distance === 1 ? 'near' : null,
+      rapid: s.item.level >= 3 && !s.correct && s.rt !== null && s.rt < task.rapidMs,
+    })),
     result: {
       n,
       correct,
@@ -1396,7 +1470,7 @@ export const nearMissTolerance = (answer: number) => Math.max(2, Math.round(answ
 /** Yanlışların yorumlanması için en az bu kadar ve yanlışların en az yarısı aynı türden olmalı. */
 export const NUMBER_PATTERN_MIN = 3;
 
-export function scoreNumberSeries(task: NumberSeriesTask, input: NumberSeriesTrialInput[]): { result: NumberSeriesResult } {
+export function scoreNumberSeries(task: NumberSeriesTask, input: NumberSeriesTrialInput[]): { result: NumberSeriesResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.traps.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, NumberSeriesTrialInput>();
@@ -1444,6 +1518,14 @@ export function scoreNumberSeries(task: NumberSeriesTask, input: NumberSeriesTri
   const values = new Map<number, number>();
   for (const s of scored) if (s.value !== null) values.set(s.value, (values.get(s.value) ?? 0) + 1);
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.value === null ? 'skip' : s.correct ? 'correct' : 'wrong',
+      response: s.value,
+      rtMs: s.rt,
+      lure: s.trap ? 'trap' : s.near ? 'near' : null,
+      rapid: s.item.level >= 3 && s.value !== null && !s.correct && s.rt !== null && s.rt < task.rapidMs,
+    })),
     result: {
       n,
       correct,
@@ -1522,7 +1604,7 @@ export interface LetterSeriesResult {
 /** Yanlışların yorumlanması için en az bu kadar ve yanlışların en az yarısı aynı türden olmalı. */
 export const LETTER_PATTERN_MIN = 3;
 
-export function scoreLetterSeries(task: LetterSeriesTask, input: LetterSeriesTrialInput[]): { result: LetterSeriesResult } {
+export function scoreLetterSeries(task: LetterSeriesTask, input: LetterSeriesTrialInput[]): { result: LetterSeriesResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.traps.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const alphabet: readonly string[] = TURKISH_ALPHABET;
@@ -1571,6 +1653,14 @@ export function scoreLetterSeries(task: LetterSeriesTask, input: LetterSeriesTri
   const values = new Map<string, number>();
   for (const s of scored) if (s.value !== null) values.set(s.value, (values.get(s.value) ?? 0) + 1);
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.value === null ? 'skip' : s.correct ? 'correct' : 'wrong',
+      response: s.value,
+      rtMs: s.rt,
+      lure: s.trap ? 'trap' : s.near ? 'near' : null,
+      rapid: s.item.level >= 3 && s.value !== null && !s.correct && s.rt !== null && s.rt < task.rapidMs,
+    })),
     result: {
       n,
       correct,
@@ -1654,7 +1744,7 @@ export const VERBAL_CHANCE_MAX = 8;
 export const VERBAL_LURE_SHARE = 0.6;
 export const VERBAL_LURE_MIN = 4;
 
-export function scoreVerbal(task: VerbalReasoningTask, input: VerbalTrialInput[]): { result: VerbalResult } {
+export function scoreVerbal(task: VerbalReasoningTask, input: VerbalTrialInput[]): { result: VerbalResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.lures.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, VerbalTrialInput>();
@@ -1698,6 +1788,14 @@ export function scoreVerbal(task: VerbalReasoningTask, input: VerbalTrialInput[]
     number
   >;
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.correct ? 'correct' : 'wrong',
+      response: s.response,
+      rtMs: s.rt,
+      lure: s.lure ? 'lure' : null,
+      rapid: s.item.level >= 3 && !s.correct && s.rt !== null && s.rt < verbalRapidMs(s.item),
+    })),
     result: {
       n,
       correct,
@@ -1764,7 +1862,7 @@ export const FOLDING_RAPID_MS = 2500;
 /** Beş seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (sözel akıl yürütmedeki gibi; %5 sınırı). */
 export const FOLDING_CHANCE_MAX = 8;
 
-export function scoreFolding(task: PaperFoldingTask, input: FoldingTrialInput[]): { result: FoldingResult } {
+export function scoreFolding(task: PaperFoldingTask, input: FoldingTrialInput[]): { result: FoldingResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.lures.length !== n || task.lureKinds.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, FoldingTrialInput>();
@@ -1805,6 +1903,14 @@ export function scoreFolding(task: PaperFoldingTask, input: FoldingTrialInput[])
   const positions = new Map<number, number>();
   for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.correct ? 'correct' : 'wrong',
+      response: s.response,
+      rtMs: s.rt,
+      lure: s.lure ? s.kind : null,
+      rapid: s.item.level >= 3 && !s.correct && s.rt !== null && s.rt < FOLDING_RAPID_MS,
+    })),
     result: {
       n,
       correct,
@@ -1869,7 +1975,7 @@ export const VOCABULARY_TYPES_ORDER: VocabularyType[] = ['synonym', 'antonym', '
 /** Beş seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (sözel akıl yürütmedeki gibi; %5 sınırı). */
 export const VOCABULARY_CHANCE_MAX = 8;
 
-export function scoreVocabulary(task: VocabularyTask, input: VocabularyTrialInput[]): { result: VocabularyResult } {
+export function scoreVocabulary(task: VocabularyTask, input: VocabularyTrialInput[]): { result: VocabularyResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.lures.length !== n || task.lureKinds.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, VocabularyTrialInput>();
@@ -1910,6 +2016,14 @@ export function scoreVocabulary(task: VocabularyTask, input: VocabularyTrialInpu
   const positions = new Map<number, number>();
   for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.correct ? 'correct' : 'wrong',
+      response: s.response,
+      rtMs: s.rt,
+      lure: s.lure ? s.kind : null,
+      rapid: s.item.level >= 3 && !s.correct && s.rt !== null && s.rt < vocabularyRapidMs(s.item),
+    })),
     result: {
       n,
       correct,
@@ -1996,7 +2110,7 @@ const ruleCond = (xs: { correct: boolean; rt: number | null }[]): RuleSwitchCond
   return { n: xs.length, correct, accuracy: xs.length ? round(correct / xs.length, 3) : 0, medianRt: rts.length >= RULE_MIN_RTS ? medianOrNull(rts) : null, nRt: rts.length };
 };
 
-export function scoreRuleSwitch(task: RuleSwitchTask, input: RuleSwitchTrialInput[]): { result: RuleSwitchResult } {
+export function scoreRuleSwitch(task: RuleSwitchTask, input: RuleSwitchTrialInput[]): { result: RuleSwitchResult; items: ItemTrace[] } {
   const n = task.trials.length;
   const byIndex = new Map<number, RuleSwitchTrialInput>();
   for (const t of input) {
@@ -2031,7 +2145,16 @@ export function scoreRuleSwitch(task: RuleSwitchTask, input: RuleSwitchTrialInpu
   const con = mixed.filter((s) => ruleCongruent(s.trial) && s.answered && !s.fast);
   const sides = [1, 2].map((r) => scored.filter((s) => s.response === r).length);
   const allRts = scored.flatMap((s, i) => (s.correct && timed[i].rt !== null ? [timed[i].rt as number] : []));
+  const mixedKind = (k: string) => k === 'repeat' || k === 'switch' || k === 'first';
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: !s.answered ? 'miss' : s.fast ? 'early' : s.correct ? 'correct' : 'wrong',
+      response: s.response,
+      rtMs: s.answered ? byIndex.get(i)!.rtMs : null,
+      kind: s.kind,
+      lure: s.answered && !s.fast && !s.correct && mixedKind(s.kind) && !ruleCongruent(s.trial) ? 'rule' : null,
+    })),
     result: {
       n,
       correct,
@@ -2135,7 +2258,11 @@ export interface WordListResult {
 /** Bir hatırlama denemesinde en çok bu kadar kelime alınır. */
 export const WORD_LIST_MAX_ENTRIES = 40;
 
-export function scoreWordList(task: WordListTask, input: WordListTrialInput[]): { result: WordListResult } {
+/**
+ * Kelime listesi: `items` tanıma bölümünün kelimeleridir (`index` tanımadaki sırası; `kind` kelimenin türü: ilk listeden ya da
+ * yanılgı türü). Hatırlama denemelerinin sonuçları `result.trials`, `result.b` ve `result.delayed`'dadır.
+ */
+export function scoreWordList(task: WordListTask, input: WordListTrialInput[]): { result: WordListResult; items: ItemTrace[] } {
   const recalls = wordListRecalls(task);
   const nRecog = task.recognition.length;
   const n = recalls.length + nRecog;
@@ -2197,6 +2324,7 @@ export function scoreWordList(task: WordListTask, input: WordListTrialInput[]): 
   let yes = 0;
   let tooFast = 0;
   const rts: number[] = [];
+  const items: ItemTrace[] = [];
   task.recognitionKey.forEach((key, j) => {
     const t = byIndex.get(recalls.length + j)!;
     const said = t.response === 1;
@@ -2205,6 +2333,16 @@ export function scoreWordList(task: WordListTask, input: WordListTrialInput[]): 
       if (t.rtMs < WORD_RECOGNITION_FAST_MS) tooFast++;
       rts.push(t.rtMs);
     }
+    const right = (key.kind === 'target') === said;
+    items.push({
+      index: j,
+      status: right ? 'correct' : 'wrong',
+      response: said ? 1 : 2,
+      rtMs: t.rtMs,
+      kind: key.kind,
+      lure: !right && key.kind !== 'target' ? key.kind : null,
+      rapid: t.rtMs !== null && t.rtMs < WORD_RECOGNITION_FAST_MS,
+    });
     if (key.kind === 'target') {
       targets++;
       if (said) hits++;
@@ -2222,6 +2360,7 @@ export function scoreWordList(task: WordListTask, input: WordListTrialInput[]): 
   const falseRate = nLures ? nFalse / nLures : 0;
 
   return {
+    items,
     result: {
       listLength: L,
       trials,
@@ -2327,7 +2466,7 @@ export const LOGIC_WEAK = 4;
 /** 32 sorunun en çok 10'u doğru: iki seçenekte rastgele seçimin de altında (yönerge ters anlaşılmış olabilir). */
 export const LOGIC_BELOW_CHANCE = 10;
 
-export function scoreLogic(task: LogicalReasoningTask, input: LogicTrialInput[]): { result: LogicResult } {
+export function scoreLogic(task: LogicalReasoningTask, input: LogicTrialInput[]): { result: LogicResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.forms.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, LogicTrialInput>();
@@ -2362,6 +2501,14 @@ export function scoreLogic(task: LogicalReasoningTask, input: LogicTrialInput[])
   const rts = scored.flatMap((s) => (s.rt === null ? [] : [s.rt]));
   const fast = scored.filter((s) => s.rt !== null && s.rt < logicRapidMs(s.item));
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.correct ? 'correct' : 'wrong',
+      response: s.yes ? 1 : 2,
+      rtMs: s.rt,
+      kind: s.form,
+      rapid: s.rt !== null && s.rt < logicRapidMs(s.item),
+    })),
     result: {
       n,
       correct,
@@ -2500,7 +2647,7 @@ export const NUMERIC_RAPID_WRONG = 6;
 /** Bu kadar ya da daha çok soruda kısa sürede "Bilmiyorum" denmişse bu sorular atlanmış olabilir. */
 export const NUMERIC_RAPID_BLANK = 3;
 
-export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialInput[]): { result: NumericResult } {
+export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialInput[]): { result: NumericResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.kinds.length !== n || task.ratios.length !== n || task.lures.length !== n) {
     throw new TaskInputError('Cevap anahtarı eksik.');
@@ -2537,6 +2684,16 @@ export function scoreNumeric(task: NumericalReasoningTask, input: NumericTrialIn
   const quick = scored.filter((s) => s.rt !== null && s.rt < numericRapidMs(s.item));
   const fast = quick.filter((s) => s.value !== null);
   return {
+    // `rapid`: kısa sürede yazılan cevaplar (doğru ya da yanlış; "Bilmiyorum" sayılmaz): sonuçtaki `rapid` sayımı.
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.value === null ? 'skip' : s.correct ? 'correct' : 'wrong',
+      response: s.value,
+      rtMs: s.rt,
+      kind: s.kind,
+      lure: s.lure,
+      rapid: s.value !== null && s.rt !== null && s.rt < numericRapidMs(s.item),
+    })),
     result: {
       n,
       correct,
@@ -2696,7 +2853,7 @@ export const ARITH_MIN_RTS = 3;
 /** Süre toplamında tarayıcı ölçümlerinin yuvarlanmasına tanınan pay (ms). */
 const ARITH_TIME_SLACK_MS = 3000;
 
-export function scoreArithmetic(task: MentalArithmeticTask, input: ArithTrialInput[]): { result: ArithSectionResult } {
+export function scoreArithmetic(task: MentalArithmeticTask, input: ArithTrialInput[]): { result: ArithSectionResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (n !== task.levels.length * task.perLevel) throw new TaskInputError('İşlem listesi eksik.');
   if (input.length > n) throw new TaskInputError('Geçersiz işlem.');
@@ -2742,7 +2899,16 @@ export function scoreArithmetic(task: MentalArithmeticTask, input: ArithTrialInp
     return { level: l + 1, attempted: here.length, correct: here.filter((s) => s.correct).length, skipped: here.filter((s) => s.value === null).length };
   });
   const lastAnswered = answered.length ? answered[answered.length - 1].i : -1;
+  const kindOf = new Map(wrongs.map((w) => [w.index, w.kind]));
   return {
+    items: scored.map((s) => ({
+      index: s.i,
+      status: s.value === null ? 'skip' : s.correct ? 'correct' : 'wrong',
+      response: s.value,
+      rtMs: s.rt,
+      lure: kindOf.get(s.i) ?? null,
+      rapid: s.value !== null && s.rt < ARITH_RAPID_MS,
+    })),
     result: {
       op: task.op,
       n,
@@ -2917,7 +3083,7 @@ export const CUBE_RAPID_MS = 3000;
 /** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
 export const CUBE_CHANCE_MAX = 8;
 
-export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result: CubeResult } {
+export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result: CubeResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.optionLures.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, CubeTrialInput>();
@@ -2972,6 +3138,14 @@ export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result:
   const positions = new Map<number, number>();
   for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.correct ? 'correct' : 'wrong',
+      response: s.response,
+      rtMs: s.rt,
+      lure: s.lure,
+      rapid: s.item.level >= 3 && !s.correct && s.rt !== null && s.rt < CUBE_RAPID_MS,
+    })),
     result: {
       n,
       correct,
@@ -3066,7 +3240,7 @@ export const HIDDEN_RAPID_MS = 3000;
 /** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
 export const HIDDEN_CHANCE_MAX = 8;
 
-export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]): { result: HiddenResult } {
+export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]): { result: HiddenResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.optionLures.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, HiddenTrialInput>();
@@ -3117,6 +3291,14 @@ export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]):
   const positions = new Map<number, number>();
   for (const x of scored) positions.set(x.response, (positions.get(x.response) ?? 0) + 1);
   return {
+    items: scored.map((x, i) => ({
+      index: i,
+      status: x.correct ? 'correct' : 'wrong',
+      response: x.response,
+      rtMs: x.rt,
+      lure: x.lure,
+      rapid: x.item.level >= 3 && !x.correct && x.rt !== null && x.rt < HIDDEN_RAPID_MS,
+    })),
     result: {
       n,
       correct,
@@ -3222,7 +3404,7 @@ export const ASSEMBLY_RAPID_MS = 3000;
 /** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
 export const ASSEMBLY_CHANCE_MAX = 8;
 
-export function scoreAssembly(task: ShapeAssemblyTask, input: AssemblyTrialInput[]): { result: AssemblyResult } {
+export function scoreAssembly(task: ShapeAssemblyTask, input: AssemblyTrialInput[]): { result: AssemblyResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.optionLures.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, AssemblyTrialInput>();
@@ -3277,6 +3459,14 @@ export function scoreAssembly(task: ShapeAssemblyTask, input: AssemblyTrialInput
   const positions = new Map<number, number>();
   for (const x of scored) positions.set(x.response, (positions.get(x.response) ?? 0) + 1);
   return {
+    items: scored.map((x, i) => ({
+      index: i,
+      status: x.correct ? 'correct' : 'wrong',
+      response: x.response,
+      rtMs: x.rt,
+      lure: x.lure,
+      rapid: x.item.level >= 3 && !x.correct && x.rt !== null && x.rt < ASSEMBLY_RAPID_MS,
+    })),
     result: {
       n,
       correct,
@@ -3392,7 +3582,7 @@ export const ANALOGY_RAPID_MS = 3000;
 /** Dört seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (10 ya da daha çok doğrunun olasılığı %5,5). */
 export const ANALOGY_CHANCE_MAX = 9;
 
-export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[]): { result: AnalogyResult } {
+export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[]): { result: AnalogyResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.optionLures.length !== n || task.optionMisses.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, AnalogyTrialInput>();
@@ -3453,6 +3643,14 @@ export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[
   const positions = new Map<number, number>();
   for (const x of scored) positions.set(x.response, (positions.get(x.response) ?? 0) + 1);
   return {
+    items: scored.map((x, i) => ({
+      index: i,
+      status: x.correct ? 'correct' : 'wrong',
+      response: x.response,
+      rtMs: x.rt,
+      lure: x.lure,
+      rapid: x.item.level >= 3 && !x.correct && x.rt !== null && x.rt < ANALOGY_RAPID_MS,
+    })),
     result: {
       n,
       correct,
@@ -4370,7 +4568,7 @@ export const ROTATION3D_RAPID_MS = 4000;
 /** İki bölümün doğru sayıları arasında en az bu kadar fark varsa bölümler arasında belirgin bir fark sayılır. */
 export const ROTATION3D_PART_GAP = 3;
 
-export function scoreRotation3d(task: MentalRotation3dTask, input: Rotation3dTrialInput[]): { result: Rotation3dResult } {
+export function scoreRotation3d(task: MentalRotation3dTask, input: Rotation3dTrialInput[]): { result: Rotation3dResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n) throw new TaskInputError('Cevap anahtarı eksik.');
   const byIndex = new Map<number, Rotation3dTrialInput>();
@@ -4409,6 +4607,16 @@ export function scoreRotation3d(task: MentalRotation3dTask, input: Rotation3dTri
   for (const s of scored) pairs.set(s.pair, (pairs.get(s.pair) ?? 0) + 1);
   const correct = scored.filter((s) => s.hits === 2).length;
   return {
+    // `lure`: bir doğru şekil ile bir ayna görüntüsü (`half`) ya da iki ayna görüntüsü (`none`) seçildi.
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.hits === 2 ? 'correct' : 'wrong',
+      response: s.pair,
+      rtMs: s.rt,
+      lure: s.hits === 1 ? 'half' : s.hits === 0 ? 'none' : null,
+      rapid: s.hits < 2 && s.rt !== null && s.rt < ROTATION3D_RAPID_MS,
+      kind: String(s.part),
+    })),
     result: {
       n,
       correct,
@@ -4558,7 +4766,23 @@ export const CS_RECALL_CHANCE_MAX = 8;
 /** Bir işlemi okuyup hesaplamak için bundan kısa bir süre yetmez. */
 export const CS_RAPID_MS = 500;
 
-export function scoreComplexSpan(task: ComplexSpanTask, input: ComplexSpanTrialInput[]): { result: ComplexSpanResult } {
+/** Hesapla ve hatırlada bir dizinin raporda gösterilen ayrıntısı (`ItemTrace.response`). */
+export interface ComplexSpanSetTrace {
+  /** Seçilen harfler (harflerin listedeki sırası; "Boş" ya da eksik yer null). */
+  recall: (number | null)[];
+  /** Doğru yerde hatırlanan harfler; yeri karışan, dizide olmayan ve boş kalan yerler. */
+  correct: number;
+  order: number;
+  intrusion: number;
+  blank: number;
+  /** Dizideki işlemler: sayısı, doğru cevaplananlar ve süresi dolanlar. */
+  ops: number;
+  opsCorrect: number;
+  opsTimeouts: number;
+}
+
+/** `items`: her dizi (`index` dizinin sırası; `kind` uzunluğu); bütün harfleri doğru sırayla hatırlanan dizi doğru sayılır. */
+export function scoreComplexSpan(task: ComplexSpanTask, input: ComplexSpanTrialInput[]): { result: ComplexSpanResult; items: ItemTrace[] } {
   const n = task.sets.length;
   const blank = blankOf(task);
   const byIndex = new Map<number, ComplexSpanTrialInput>();
@@ -4588,17 +4812,28 @@ export function scoreComplexSpan(task: ComplexSpanTask, input: ComplexSpanTrialI
   const recallMs: number[] = [];
   const ops = { n: 0, correct: 0, wrong: 0, timeouts: 0, rapid: 0 };
   let limitMs: number | null = null;
+  const items: ItemTrace[] = [];
   task.sets.forEach((set, i) => {
     const t = byIndex.get(i)!;
     const size = set.letters.length;
     let here = 0;
+    const tr: ComplexSpanSetTrace = { recall: [], correct: 0, order: 0, intrusion: 0, blank: 0, ops: set.ops.length, opsCorrect: 0, opsTimeouts: 0 };
     for (let k = 0; k < size; k++) {
       const x = t.response.recall[k];
+      tr.recall.push(x === undefined || x === blank ? null : x);
       if (x === set.letters[k]) here++;
-      else if (x === undefined || x === blank) blankN++;
-      else if (set.letters.includes(x)) order++;
-      else intrusion++;
+      else if (x === undefined || x === blank) {
+        blankN++;
+        tr.blank++;
+      } else if (set.letters.includes(x)) {
+        order++;
+        tr.order++;
+      } else {
+        intrusion++;
+        tr.intrusion++;
+      }
     }
+    tr.correct = here;
     correct += here;
     const s = sizes.get(size) ?? { size, sets: 0, letters: 0, correct: 0, perfect: 0 };
     s.sets++;
@@ -4609,9 +4844,13 @@ export function scoreComplexSpan(task: ComplexSpanTask, input: ComplexSpanTrialI
     set.ops.forEach((op, k) => {
       const o = t.response.ops[k];
       ops.n++;
-      if (o.a === null) ops.timeouts++;
-      else if (o.a === opTrue(op)) ops.correct++;
-      else ops.wrong++;
+      if (o.a === null) {
+        ops.timeouts++;
+        tr.opsTimeouts++;
+      } else if (o.a === opTrue(op)) {
+        ops.correct++;
+        tr.opsCorrect++;
+      } else ops.wrong++;
       if (o.a !== null && o.ms !== null) {
         opMs.push(o.ms);
         if (o.ms < CS_RAPID_MS) ops.rapid++;
@@ -4619,11 +4858,13 @@ export function scoreComplexSpan(task: ComplexSpanTask, input: ComplexSpanTrialI
     });
     if (t.rtMs !== null) recallMs.push(t.rtMs);
     limitMs = t.response.limitMs;
+    items.push({ index: i, status: here === size ? 'correct' : tr.blank === size ? 'skip' : 'wrong', response: tr, rtMs: t.rtMs, kind: String(size) });
   });
   const bySize = [...sizes.values()].sort((a, b) => a.size - b.size);
   const letters = task.sets.reduce((s, x) => s + x.letters.length, 0);
   const perfect = bySize.filter((s) => s.perfect > 0);
   return {
+    items,
     result: {
       sets: n,
       letters,
@@ -4976,7 +5217,8 @@ export const REFLECTION_SAME_MAX_CORRECT = 15;
 /** Tipik sürelerin karşılaştırılması için en az bu kadar cevap gerekir. */
 export const REFLECTION_RT_MIN = 3;
 
-export function scoreReflection(task: CognitiveReflectionTask, input: ReflectionTrialInput[]): { result: ReflectionResult } {
+/** `items`: `kind` sorunun rolü ve alanı ("lure:num"); `lure` tuzak seçeneği seçildiyse ("lure"). */
+export function scoreReflection(task: CognitiveReflectionTask, input: ReflectionTrialInput[]): { result: ReflectionResult; items: ItemTrace[] } {
   const n = task.items.length;
   if (task.answers.length !== n || task.roles.length !== n || task.domains.length !== n || task.lures.length !== n || task.pairs.length !== n) {
     throw new TaskInputError('Cevap anahtarı eksik.');
@@ -5012,6 +5254,15 @@ export function scoreReflection(task: CognitiveReflectionTask, input: Reflection
   const positions = new Map<number, number>();
   for (const s of scored) positions.set(s.response, (positions.get(s.response) ?? 0) + 1);
   return {
+    items: scored.map((s) => ({
+      index: s.i,
+      status: s.kind === 'correct' ? 'correct' : 'wrong',
+      response: s.response,
+      rtMs: s.rt,
+      kind: `${s.role}:${s.domain}`,
+      lure: s.kind === 'lure' ? 'lure' : null,
+      rapid: s.rt !== null && s.rt < reflectionRapidMs(s.item),
+    })),
     result: {
       n,
       correct: scored.filter((s) => s.kind === 'correct').length,
@@ -5165,7 +5416,12 @@ export const TOWER_PREPLAN_MIN = 5;
 /** Bu kadar problemde hiç top taşınmadıysa sonuç dikkatle yorumlanır. */
 export const TOWER_IDLE_NOTE = 3;
 
-export function scoreTower(task: TowerTask, input: TowerTrialInput[]): { result: TowerResult } {
+/**
+ * `items`: her problem (`kind` en az hamle sayısı; `response` yapılan hamle sayısı ve ilk topun alındığı an). En az hamlede
+ * çözülen doğru, fazla hamleyle çözülen yanlış (`lure` "extra"), süre içinde çözülemeyen `miss`, hiç top taşınmayan `skip`;
+ * `rtMs` çözüm süresi (çözülmediyse null).
+ */
+export function scoreTower(task: TowerTask, input: TowerTrialInput[]): { result: TowerResult; items: ItemTrace[] } {
   const n = task.items.length;
   const byIndex = new Map<number, TowerTrialInput>();
   const finite = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
@@ -5221,6 +5477,15 @@ export function scoreTower(task: TowerTask, input: TowerTrialInput[]): { result:
   const hard = scored.filter((s) => s.item.minMoves >= TOWER_RAPID_FROM);
   const shares = scored.flatMap((s) => (s.end !== null && s.end > 0 && s.pick !== null ? [s.pick / s.end] : []));
   return {
+    items: scored.map((s, i) => ({
+      index: i,
+      status: s.moves === 0 ? 'skip' : s.outcome === 'optimal' ? 'correct' : s.outcome === 'extra' ? 'wrong' : 'miss',
+      response: { moves: s.moves, pick: s.pick },
+      rtMs: s.end,
+      kind: String(s.item.minMoves),
+      lure: s.outcome === 'extra' ? 'extra' : null,
+      rapid: s.item.minMoves >= TOWER_RAPID_FROM && s.pick !== null && s.pick < TOWER_RAPID_MS && s.outcome !== 'optimal',
+    })),
     result: {
       n,
       optimal: count(scored, 'optimal'),
@@ -5273,6 +5538,38 @@ export function towerQualityNotes(r: TowerResult): string[] {
   return [];
 }
 
+/**
+ * Hızlı görevlerin cevap kalitesi notlarının sınırları (`taskQualityNotes`). Raporun "Sonuca ne kadar güvenebiliriz?" bölümü
+ * (lib/reports/task-parts.ts) aynı sınırları kullanır; kartlar ve uyarılar hiçbir zaman çelişmez.
+ *  - Ok görevinde ve renk-kelime görevinde doğruluk bunun altındaysa düşük sayılır.
+ *  - Erken cevaplar (uyarana bakmadan) ve süre aşımları denemelerin bu payından çoksa not düşülür (ok, renk-kelime, dur-git,
+ *    zihinde döndürme).
+ *  - Sembol eşleştirmede bundan az cevap "çok az", doğruluk bunun altında "hata oranı yüksek" sayılır.
+ *  - Dur-git: bas harflerinde zamanında basış ve X harflerinde durma bu oranların altındaysa not.
+ *  - Aynı düğme: cevapların bu payından çoğu aynı düğmeyse (ya da öteki düğme bu paydan azsa).
+ *  - Tepki hızı (seçmeli bölüm): doğruluk sırasıyla "ters", "rastgele" ve "sık yanılma" sınırları; süre aşımı ve erken basış
+ *    için "birçok" ve "bir kısım" payları.
+ */
+export const TASK_QUALITY = {
+  flankerMinAcc: 0.6,
+  earlyShare: 0.1,
+  timeoutShare: 0.2,
+  symbolFew: 10,
+  symbolMinAcc: 0.7,
+  cancellationMinHitRate: 0.5,
+  colorWordMinAcc: 0.6,
+  colorWordOtherErrors: 6,
+  goMinHitRate: 0.5,
+  goMinStopRate: 0.2,
+  oneButton: 0.85,
+  oneButtonLow: 0.15,
+  reactionReversedAcc: 0.4,
+  reactionChanceAcc: 0.6,
+  reactionSlipAcc: 0.8,
+  reactionManyShare: 0.25,
+  reactionSomeShare: 0.1,
+} as const;
+
 export function taskQualityNotes(parts: {
   flanker?: FlankerResult;
   symbol?: SymbolResult;
@@ -5307,25 +5604,25 @@ export function taskQualityNotes(parts: {
   const notes: string[] = [];
   const f = parts.flanker;
   if (f && f.n > 0) {
-    if (f.accuracy < 0.6) notes.push('Ok görevinde doğruluk düşük; yönerge tam anlaşılmamış ya da düğmelere rastgele basılmış olabilir.');
-    if (f.anticipations / f.n > 0.1) notes.push('Ok görevinde bazı cevaplar oklar görünür görünmez, onlara bakmadan verilmiş.');
-    if (f.timeouts / f.n > 0.2) notes.push('Ok görevinde denemelerin bir kısmında süre içinde cevap verilmemiş.');
+    if (f.accuracy < TASK_QUALITY.flankerMinAcc) notes.push('Ok görevinde doğruluk düşük; yönerge tam anlaşılmamış ya da düğmelere rastgele basılmış olabilir.');
+    if (f.anticipations / f.n > TASK_QUALITY.earlyShare) notes.push('Ok görevinde bazı cevaplar oklar görünür görünmez, onlara bakmadan verilmiş.');
+    if (f.timeouts / f.n > TASK_QUALITY.timeoutShare) notes.push('Ok görevinde denemelerin bir kısmında süre içinde cevap verilmemiş.');
   }
   const s = parts.symbol;
   if (s) {
     if (s.attempted === 0) notes.push('Sembol eşleştirme görevinde hiç cevap verilmedi.');
-    else if (s.attempted < 10) notes.push('Sembol eşleştirme görevinde çok az cevap verilmiş; görev yarıda bırakılmış olabilir.');
-    else if (s.accuracy < 0.7) notes.push('Sembol eşleştirme görevinde hata oranı yüksek; hızdan çok doğruluğa odaklanmak gerekebilir.');
+    else if (s.attempted < TASK_QUALITY.symbolFew) notes.push('Sembol eşleştirme görevinde çok az cevap verilmiş; görev yarıda bırakılmış olabilir.');
+    else if (s.accuracy < TASK_QUALITY.symbolMinAcc) notes.push('Sembol eşleştirme görevinde hata oranı yüksek; hızdan çok doğruluğa odaklanmak gerekebilir.');
   }
   const c = parts.cancellation;
   if (c) {
     if (c.hits < CANCELLATION_FEW_HITS) notes.push('Harf işaretleme görevinde çok az harf işaretlenmiş; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.');
     else if (c.commissions > c.hits) notes.push('Harf işaretleme görevinde yanlış işaretler doğru işaretlerden fazla; harflere rastgele dokunulmuş olabilir.');
-    else if (c.hitRate < 0.5) notes.push('Harf işaretleme görevinde aranan harflerin yarısından azı bulunmuş; satırlar atlanmış ya da çok hızlı gidilmiş olabilir.');
+    else if (c.hitRate < TASK_QUALITY.cancellationMinHitRate) notes.push('Harf işaretleme görevinde aranan harflerin yarısından azı bulunmuş; satırlar atlanmış ya da çok hızlı gidilmiş olabilir.');
     if (c.ceiling) notes.push('Harf işaretleme görevinde en az bir bölümde sayfanın sonuna ulaşılmış; çalışma hızı olduğundan düşük görünebilir.');
   }
   const cw = parts.colorWord;
-  if (cw && cw.n > 0 && cw.accuracy < 0.6 && colorWordMostlyMissed(cw)) {
+  if (cw && cw.n > 0 && cw.accuracy < TASK_QUALITY.colorWordMinAcc && colorWordMostlyMissed(cw)) {
     // Doğru olmayan cevapların çoğu süre aşımı ya da çok erken cevap: tek bir not (renk körlüğü ya da süre notu yinelenmez).
     notes.push(
       `Renk-kelime görevinde ${cw.timeouts + cw.anticipations > cw.n / 2 ? 'denemelerin çoğunda' : 'denemelerin bir kısmında'} süre içinde cevap verilmemiş ya da kelimeye bakmadan çok erken basılmış; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir. Bu görevin sonucu yorumlanmamalıdır.`,
@@ -5336,13 +5633,13 @@ export function taskQualityNotes(parts: {
         `Renk-kelime görevinin başındaki renk denemesinde ${cw.checkTrials} denemenin ${cw.checkErrors} tanesinde başka bir rengin düğmesine basıldı. Renkler birbirine karışmış ya da düğmelere yanlışlıkla basılmış olabilir.`,
       );
     }
-    if (cw.accuracy < 0.6) {
+    if (cw.accuracy < TASK_QUALITY.colorWordMinAcc) {
       notes.push('Renk-kelime görevinde doğruluk düşük; yönerge tam anlaşılmamış, düğmelere rastgele basılmış ya da renkler ayırt edilememiş (renk körlüğü) olabilir.');
-    } else if (cw.otherErrors >= 6 && !cw.checkFlag) {
+    } else if (cw.otherErrors >= TASK_QUALITY.colorWordOtherErrors && !cw.checkFlag) {
       notes.push('Renk-kelime görevinde bazı hatalarda ne yazının rengine ne de kelimeye basılmış; renkler birbirine karıştırılmış ya da düğmelere yanlışlıkla basılmış olabilir.');
     }
-    if (cw.anticipations / cw.n > 0.1) notes.push('Renk-kelime görevinde bazı cevaplar kelime görünür görünmez, ona bakmadan verilmiş.');
-    if (cw.timeouts / cw.n > 0.2) {
+    if (cw.anticipations / cw.n > TASK_QUALITY.earlyShare) notes.push('Renk-kelime görevinde bazı cevaplar kelime görünür görünmez, ona bakmadan verilmiş.');
+    if (cw.timeouts / cw.n > TASK_QUALITY.timeoutShare) {
       notes.push(`Renk-kelime görevinde denemelerin ${cw.timeouts > cw.n / 2 ? 'yarısından çoğunda' : 'bir kısmında'} süre içinde cevap verilmemiş.`);
     }
   }
@@ -5350,7 +5647,7 @@ export function taskQualityNotes(parts: {
   if (g && g.goTrials > 0) {
     if (g.hits === 0 && g.anticipations === 0) {
       notes.push('Dur-git görevinde basılması gereken harflerin hiçbirinde basılmamış; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.');
-    } else if (g.hitRate < 0.5) {
+    } else if (g.hitRate < TASK_QUALITY.goMinHitRate) {
       const late = 'Dur-git görevinde basılması gereken harflerin yarısından çoğunda zamanında basılmamış';
       notes.push(
         g.anticipations > g.goTrials / 2
@@ -5359,8 +5656,8 @@ export function taskQualityNotes(parts: {
             ? `${late}; bunların çoğunda harfe bakılmadan, çok erken basılmış. Düğmeye harfi beklemeden basılmış olabilir.`
             : `${late}; görev yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.`,
       );
-    } else if (g.stopRate < 0.2) notes.push('Dur-git görevinde X harflerinin çoğunda da basılmış; yönerge anlaşılmamış olabilir.');
-    if (g.hitRate >= 0.5 && g.anticipations / g.goTrials > 0.1) {
+    } else if (g.stopRate < TASK_QUALITY.goMinStopRate) notes.push('Dur-git görevinde X harflerinin çoğunda da basılmış; yönerge anlaşılmamış olabilir.');
+    if (g.hitRate >= TASK_QUALITY.goMinHitRate && g.anticipations / g.goTrials > TASK_QUALITY.earlyShare) {
       notes.push('Dur-git görevinde bazı basışlar harf görünür görünmez, ona bakmadan yapılmış; düğmeye harfi beklemeden basılmış olabilir.');
     }
   }
@@ -5440,14 +5737,14 @@ export function taskQualityNotes(parts: {
           'Zihinde döndürme görevinde cevap verilen denemelerin yarıya yakını doğru: rastgele basan biri de yaklaşık yarısını bulur. Yönerge anlaşılmamış ya da düğmelere rastgele basılmış olabilir.',
         );
       }
-      if (ro.sameShare !== null && (ro.sameShare > 0.85 || ro.sameShare < 0.15)) {
+      if (ro.sameShare !== null && (ro.sameShare > TASK_QUALITY.oneButton || ro.sameShare < TASK_QUALITY.oneButtonLow)) {
         notes.push('Zihinde döndürme görevinde cevapların çoğunda aynı düğmeye basılmış; yönerge anlaşılmamış olabilir.');
       }
-      if (ro.timeouts / ro.n > 0.2 && !(status === 'missed' && kind !== 'early')) {
+      if (ro.timeouts / ro.n > TASK_QUALITY.timeoutShare && !(status === 'missed' && kind !== 'early')) {
         notes.push('Zihinde döndürme görevinde denemelerin bir kısmında süre içinde cevap verilmemiş.');
       }
     }
-    if (ro.anticipations / ro.n > 0.1 && !earlySaid) notes.push('Zihinde döndürme görevinde bazı cevaplar şekiller görünür görünmez, onlara bakmadan verilmiş.');
+    if (ro.anticipations / ro.n > TASK_QUALITY.earlyShare && !earlySaid) notes.push('Zihinde döndürme görevinde bazı cevaplar şekiller görünür görünmez, onlara bakmadan verilmiş.');
   }
   const re = parts.reaction;
   if (re) {
@@ -5474,16 +5771,16 @@ export function taskQualityNotes(parts: {
       if (p.key === 'choice' && p.answered >= REACTION_MIN_VALID) {
         const acc = p.correct / p.answered;
         const left = p.left / p.answered;
-        if (acc < 0.4) notes.push(`${where} cevapların çoğunda dairenin olmadığı taraftaki düğmeye basılmış; yönerge anlaşılmamış olabilir.`);
-        else if (left > 0.85 || left < 0.15) notes.push(`${where} cevapların çoğunda aynı düğmeye basılmış; yönerge anlaşılmamış olabilir.`);
-        else if (acc < 0.6) {
+        if (acc < TASK_QUALITY.reactionReversedAcc) notes.push(`${where} cevapların çoğunda dairenin olmadığı taraftaki düğmeye basılmış; yönerge anlaşılmamış olabilir.`);
+        else if (left > TASK_QUALITY.oneButton || left < TASK_QUALITY.oneButtonLow) notes.push(`${where} cevapların çoğunda aynı düğmeye basılmış; yönerge anlaşılmamış olabilir.`);
+        else if (acc < TASK_QUALITY.reactionChanceAcc) {
           notes.push(`${where} dairenin olduğu taraftaki düğmeye cevapların yarıya yakınında basılmış: rastgele basan biri de yaklaşık yarısını doğru bulur. Düğmelere rastgele basılmış olabilir.`);
-        } else if (acc < 0.8) notes.push(`${where} öteki taraftaki düğmeye sık basılmış; acele edilmiş ya da sol ile sağ karıştırılmış olabilir.`);
+        } else if (acc < TASK_QUALITY.reactionSlipAcc) notes.push(`${where} öteki taraftaki düğmeye sık basılmış; acele edilmiş ya da sol ile sağ karıştırılmış olabilir.`);
       }
-      if (p.misses / p.n > 0.25) notes.push(`${where} denemelerin birçoğunda süre içinde basılmamış; sonuç dikkatle yorumlanmalıdır.`);
-      else if (p.misses / p.n > 0.1) notes.push(`${where} denemelerin bir kısmında süre içinde basılmamış.`);
-      if (p.early / p.n > 0.25) notes.push(`${where} denemelerin birçoğunda daire belirmeden ya da belirir belirmez basılmış; sonuç dikkatle yorumlanmalıdır.`);
-      else if (p.early / p.n > 0.1) notes.push(`${where} bazı denemelerde daire belirmeden ya da belirir belirmez basılmış.`);
+      if (p.misses / p.n > TASK_QUALITY.reactionManyShare) notes.push(`${where} denemelerin birçoğunda süre içinde basılmamış; sonuç dikkatle yorumlanmalıdır.`);
+      else if (p.misses / p.n > TASK_QUALITY.reactionSomeShare) notes.push(`${where} denemelerin bir kısmında süre içinde basılmamış.`);
+      if (p.early / p.n > TASK_QUALITY.reactionManyShare) notes.push(`${where} denemelerin birçoğunda daire belirmeden ya da belirir belirmez basılmış; sonuç dikkatle yorumlanmalıdır.`);
+      else if (p.early / p.n > TASK_QUALITY.reactionSomeShare) notes.push(`${where} bazı denemelerde daire belirmeden ya da belirir belirmez basılmış.`);
       if (p.key === 'choice' && p.answered && p.mouse / p.answered >= REACTION_MOUSE_SHARE) {
         const who = p.mouse === p.answered ? 'cevaplar' : p.mouse / p.answered > 0.5 ? 'cevapların çoğu' : 'cevapların bir kısmı';
         notes.push(

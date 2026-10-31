@@ -4,6 +4,8 @@ import {
   textWidth,
   type AnswersVisual,
   type BarsVisual,
+  type BlocksVisual,
+  type ItemsVisual,
   type ColumnsVisual,
   type DotsVisual,
   type ItemVisual,
@@ -40,7 +42,18 @@ export interface Drawing {
   shapes: Shape[];
 }
 
-export type DrawnVisual = DotsVisual | BarsVisual | StackVisual | StepsVisual | ColumnsVisual | StripVisual | LadderVisual | AnswersVisual | MeterVisual;
+export type DrawnVisual =
+  | DotsVisual
+  | BarsVisual
+  | StackVisual
+  | StepsVisual
+  | ColumnsVisual
+  | StripVisual
+  | LadderVisual
+  | AnswersVisual
+  | MeterVisual
+  | ItemsVisual
+  | BlocksVisual;
 
 export const isDrawn = (v: ItemVisual): v is DrawnVisual => v.type !== 'gauge' && v.type !== 'compare';
 
@@ -618,8 +631,177 @@ function drawMeter(v: MeterVisual, W: number, fs: number): Drawing {
   return { width: W, height: r2(bottom + ts * 0.4), shapes };
 }
 
+/* ---------- Soru şeridi ---------- */
+
+/** Lejant öğeleri yan yana; sığmayan alt satıra geçer. Her öğenin işareti `mark` ile çizilir (genişliği `mw`). */
+function legendRow(
+  shapes: Shape[],
+  items: { text: string; mw: number; mark: (x: number, base: number) => void }[],
+  W: number,
+  ls: number,
+  top: number,
+): number {
+  let lx = 0;
+  let ly = top + ls;
+  for (const it of items) {
+    const w = it.mw + ls * 0.4 + textWidth(it.text, ls);
+    if (lx > 0 && lx + w > W) {
+      lx = 0;
+      ly += ls * 1.4;
+    }
+    it.mark(lx, ly);
+    shapes.push({ k: 'text', x: r2(lx + it.mw + ls * 0.4), y: r2(ly), text: it.text, size: ls, weight: 400, fill: 'ink2', anchor: 'start' });
+    lx += w + ls * 1.2;
+  }
+  return ly;
+}
+
+/**
+ * Soru şeridi: her soru bir sütun; gruplar arasında boşluk ve açık zemin. Süre varsa işaretin yüksekliği süredir (altta 0,
+ * üstte `max`), yoksa işaretler tek sırada. Dolu daire doğru, içi boş daire yanlış, kısa çizgi cevapsız. Altta grup adları,
+ * grupların ne olduğu, (varsa) "çok hızlı" bölgesi ve lejant.
+ */
+function drawItems(v: ItemsVisual, W: number, fs: number): Drawing {
+  const shapes: Shape[] = [];
+  const ts = r2(fs * 0.85);
+  const n = Math.max(1, v.items.length);
+  const timed = v.max !== null;
+  const maxLabel = timed ? `${axisNum(v.max as number)} sn` : '';
+  const x0 = timed ? textWidth(maxLabel, ts) + fs * 0.35 : 0;
+  const ng = Math.max(1, v.groups.length);
+  const gap = ng > 1 ? Math.min(fs * 0.6, (W - x0) * 0.04) : 0;
+  const slot = (W - x0 - gap * (ng - 1)) / n;
+  const top = fs * 0.5;
+  const plotH = timed ? fs * 4.4 : fs * 1.5;
+  const base = top + plotH;
+  const y = (sec: number) => base - (Math.min(sec, v.max as number) / (v.max as number)) * (plotH - fs * 0.4) - fs * 0.2;
+  // Her sorunun sütunu: grupların öncesindeki boşluklar eklenir.
+  const xs: number[] = [];
+  const spans = v.groups.map(() => ({ from: Number.POSITIVE_INFINITY, to: 0 }));
+  v.items.forEach((it, i) => {
+    const x = x0 + it.group * gap + i * slot;
+    xs.push(x + slot / 2);
+    const s = spans[it.group];
+    if (s) {
+      s.from = Math.min(s.from, x);
+      s.to = Math.max(s.to, x + slot);
+    }
+  });
+  // Grupların zemini (sırayla iki ton) ve çok hızlı bölgesi.
+  spans.forEach((s, g) => {
+    if (s.to <= s.from) return;
+    shapes.push({ k: 'rect', x: r2(s.from), y: r2(top), w: r2(s.to - s.from), h: r2(plotH), r: 1.5, fill: g % 2 ? 'track' : 'surface' });
+  });
+  if (timed && v.rapid) {
+    const ry = y(v.rapid.to);
+    shapes.push({ k: 'rect', x: r2(x0), y: r2(ry), w: r2(W - x0), h: r2(Math.max(0.8, base - ry)), r: 1, fill: 'soft' });
+  }
+  shapes.push({ k: 'line', x1: r2(x0), y1: r2(base), x2: W, y2: r2(base), stroke: 'axis', sw: 0.8 });
+  if (timed) {
+    shapes.push({ k: 'text', x: 0, y: r2(top + ts * 0.8), text: maxLabel, size: ts, weight: 400, fill: 'ink3', anchor: 'start' });
+    shapes.push({ k: 'text', x: 0, y: r2(base), text: '0', size: ts, weight: 400, fill: 'ink3', anchor: 'start' });
+  }
+  const dr = r2(Math.max(0.9, Math.min(slot * 0.36, fs * 0.36)));
+  const sw = r2(Math.max(0.7, Math.min(dr * 0.45, fs * 0.13)));
+  v.items.forEach((it, i) => {
+    const cx = r2(xs[i]);
+    const cy = r2(timed && it.sec !== null ? y(it.sec) : timed ? base - fs * 0.6 : top + plotH / 2);
+    if (it.mark === 'ok') shapes.push({ k: 'circle', x: cx, y: cy, r: dr, fill: 'fill', stroke: 'fill', sw: 0.5 });
+    else if (it.mark === 'wrong') shapes.push({ k: 'circle', x: cx, y: cy, r: r2(Math.max(0.6, dr - sw / 2)), fill: 'surface', stroke: 'ink2', sw });
+    else shapes.push({ k: 'line', x1: r2(cx - dr), y1: cy, x2: r2(cx + dr), y2: cy, stroke: 'ink3', sw: r2(Math.max(0.9, sw * 1.2)) });
+  });
+  // Grup adları: grubun ortasında; sığmayan grupların adları birer atlanarak yazılır.
+  const labelY = r2(base + fs * 1.1);
+  const centers = spans.map((s) => (s.to > s.from ? (s.from + s.to) / 2 : null));
+  const fits = (step: number) => {
+    let prevRight = Number.NEGATIVE_INFINITY;
+    for (let g = 0; g < v.groups.length; g += step) {
+      const c = centers[g];
+      if (c === null || !v.groups[g]) continue;
+      const at = centered(v.groups[g], c, ts, W);
+      const w = textWidth(v.groups[g], ts);
+      const left = at.anchor === 'start' ? at.x : at.anchor === 'end' ? at.x - w : at.x - w / 2;
+      if (left < prevRight + ts * 0.4) return false;
+      prevRight = left + w;
+    }
+    return true;
+  };
+  const step = [1, 2, 3, 4, 5].find(fits) ?? 6;
+  for (let g = 0; g < v.groups.length; g += step) {
+    const c = centers[g];
+    if (c === null || !v.groups[g]) continue;
+    const at = centered(v.groups[g], c, ts, W);
+    shapes.push({ k: 'text', x: r2(at.x), y: labelY, text: v.groups[g], size: ts, weight: 400, fill: 'ink3', anchor: at.anchor });
+  }
+  const capY = r2(labelY + ts * 1.35);
+  shapes.push({ k: 'text', x: 0, y: capY, text: v.groupCaption, size: ts, weight: 400, fill: 'ink3', anchor: 'start' });
+  const lr = r2(ts * 0.38);
+  const legend: { text: string; mw: number; mark: (x: number, b: number) => void }[] = [
+    { text: v.legend.ok, mw: lr * 2, mark: (x, b) => shapes.push({ k: 'circle', x: r2(x + lr), y: r2(b - lr * 0.9), r: lr, fill: 'fill', stroke: 'fill', sw: 0.5 }) },
+    {
+      text: v.legend.wrong,
+      mw: lr * 2,
+      mark: (x, b) => shapes.push({ k: 'circle', x: r2(x + lr), y: r2(b - lr * 0.9), r: r2(lr * 0.85), fill: 'surface', stroke: 'ink2', sw: r2(Math.max(0.8, lr * 0.35)) }),
+    },
+    ...(v.legend.none && v.items.some((x) => x.mark === 'none')
+      ? [{ text: v.legend.none, mw: lr * 2, mark: (x: number, b: number) => shapes.push({ k: 'line', x1: r2(x), y1: r2(b - lr * 0.9), x2: r2(x + lr * 2), y2: r2(b - lr * 0.9), stroke: 'ink3', sw: 1.2 }) }]
+      : []),
+    ...(timed && v.rapid
+      ? [{ text: v.rapid.label, mw: lr * 2.4, mark: (x: number, b: number) => shapes.push({ k: 'rect', x: r2(x), y: r2(b - lr * 1.8), w: r2(lr * 2.4), h: r2(lr * 1.8), r: 1, fill: 'soft' }) }]
+      : []),
+  ];
+  const last = legendRow(shapes, legend, W, ts, capY + ts * 0.35);
+  return { width: W, height: r2(last + ts * 0.4), shapes };
+}
+
+/* ---------- Bölüm bölüm parçalar ---------- */
+
+function drawBlocks(v: BlocksVisual, W: number, fs: number): Drawing {
+  const shapes: Shape[] = [];
+  const barH = r2(fs * 0.85);
+  const most = Math.max(1, ...v.rows.map((r) => r.parts.reduce((a, b) => a + b, 0)));
+  let y = 0;
+  for (const r of v.rows) {
+    const valueW = textWidth(r.valueLabel, fs);
+    const label = fitLabel(r.label, fs, W - valueW - fs);
+    label.lines.forEach((line, i) =>
+      shapes.push({ k: 'text', x: 0, y: r2(y + fs * 0.85 + i * label.size * 1.15), text: line, size: label.size, weight: 600, fill: 'ink', anchor: 'start' }),
+    );
+    shapes.push({ k: 'text', x: W, y: r2(y + fs * 0.85), text: r.valueLabel, size: fs, weight: 700, fill: 'ink', anchor: 'end' });
+    const ty = r2(y + fs * 0.85 + (label.lines.length - 1) * label.size * 1.15 + fs * 0.5);
+    shapes.push({ k: 'rect', x: 0, y: ty, w: W, h: barH, r: 1.5, fill: 'track' });
+    let x = 0;
+    r.parts.forEach((p, i) => {
+      if (p <= 0) return;
+      const w = (p / most) * W;
+      const tone = STACK_TONES[i % STACK_TONES.length];
+      const stroke = STACK_STROKE[tone];
+      shapes.push({ k: 'rect', x: r2(x), y: ty, w: r2(Math.max(0.8, w - 0.6)), h: barH, r: 1, fill: tone, ...(stroke ? { stroke, sw: 0.8 } : {}) });
+      x += w;
+    });
+    y = ty + barH + fs * 0.7;
+  }
+  const ls = r2(fs * 0.85);
+  const sq = r2(ls * 0.95);
+  const items = v.legend.map((text, i) => {
+    const tone = STACK_TONES[i % STACK_TONES.length];
+    const stroke = STACK_STROKE[tone];
+    return {
+      text,
+      mw: sq,
+      mark: (x: number, b: number) => shapes.push({ k: 'rect', x: r2(x), y: r2(b - sq * 0.85), w: sq, h: sq, r: r2(sq * 0.2), fill: tone, ...(stroke ? { stroke, sw: 0.8 } : {}) }),
+    };
+  });
+  const last = legendRow(shapes, items, W, ls, y - fs * 0.1);
+  return { width: W, height: r2(last + ls * 0.4), shapes };
+}
+
 export function drawVisual(v: DrawnVisual, width: number, fontSize: number): Drawing {
   switch (v.type) {
+    case 'items':
+      return drawItems(v, width, fontSize);
+    case 'blocks':
+      return drawBlocks(v, width, fontSize);
     case 'answers':
       return drawAnswers(v, width, fontSize);
     case 'meter':

@@ -57,8 +57,9 @@ function checkSpoken(r: SimpleReport, label: string) {
     if (r.roadmap.standout.length > 0) for (const st of r.roadmap.standout) expect(kisaca?.lines.join(' '), label).toContain(st.text);
     else if (r.roadmap.standoutNote) expect(kisaca?.lines.join(' '), label).toContain(r.roadmap.standoutNote);
   }
-  // Grafiğin görünüşünü anlatan cümleler okunmaz.
-  for (const u of res) expect(u.text, `${label}: ${u.text}`).not.toMatch(/(?<!\p{L})(?:kırmızı|sarı bant|kesikli)/iu);
+  // Grafiğin görünüşünü anlatan cümleler okunmaz (görev testlerinin "Soru soru cevapların" bölümü soruların kendi metnini okur).
+  const questions = new Set((r.parts ?? []).filter((p) => p.key === 'answers').map((p) => p.title.replace(/[.:?]$/, '')));
+  for (const u of res) if (!questions.has(u.section ?? '')) expect(u.text, `${label}: ${u.text}`).not.toMatch(/(?<!\p{L})(?:kırmızı|sarı bant|kesikli)/iu);
   return res;
 }
 

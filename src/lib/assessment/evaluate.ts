@@ -13,12 +13,13 @@ import { buildRoadmap, type NextTest, type Roadmap } from '@/lib/reports/roadmap
 import { likertParts } from '@/lib/reports/likert-parts';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { buildTaskRoadmap } from '@/lib/reports/task-roadmap';
+import { taskParts } from '@/lib/reports/task-parts';
 import { likertItemFlags, likertQuality, scoreLikert, type LikertAnswer, type LikertItemFlags, type QualityReport } from '@/lib/scoring/likert';
 import { OralInputError, scoreOral, type OralResult } from '@/lib/scoring/oral';
 import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
 import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
 import { standardError } from '@/lib/scoring/stats';
-import { TaskInputError } from '@/lib/scoring/tasks';
+import { TaskInputError, type ItemTrace } from '@/lib/scoring/tasks';
 import type { CompareInfo } from '@/lib/compare/record';
 import { taskCompareInfo } from '@/lib/compare/tasks';
 import type { AnswersBody } from './schemas';
@@ -67,6 +68,8 @@ interface Scored {
   items?: LikertItemFlags;
   /** Anket testlerinde cevaplar ve cevap kalitesi denetimleri: raporun ek bölümleri için (lib/reports/likert-parts.ts). */
   likert?: { answers: Record<string, LikertAnswer>; quality: QualityReport };
+  /** Görev testlerinde soru soru (deneme deneme) sonuçlar: raporun ek bölümleri için (lib/reports/task-parts.ts). */
+  traces?: Record<string, ItemTrace[]>;
 }
 
 function score(def: InstrumentDef, body: AnswersBody): Scored {
@@ -182,7 +185,7 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
       return withRoadmap ? { ...report, roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : report;
     };
   }
-  const { rows, notes, items, likert } = score(def, body);
+  const { rows, notes, items, likert, traces } = score(def, body);
   const scores = rows.map(toReportScore);
   return (audience, now) => {
     const content = buildReport({
@@ -199,7 +202,13 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     const roadmap = roadmapFor(def, content, body);
     const compare = compareInfo(def, content, rows);
     // Ek bölümler: anket testlerinde düzeylerin anlamı, cevaplar tek tek ve cevap kalitesi (lib/reports/likert-parts.ts).
-    const parts = def.engine === 'likert' && likert ? likertParts({ def, content, report, answers: likert.answers, quality: likert.quality }) : [];
+    // Görev testlerinde düzeylerin ve ölçülerin anlamı, soru soru cevaplar ve sonucun güvenilirliği (lib/reports/task-parts.ts).
+    const parts =
+      def.engine === 'likert' && likert
+        ? likertParts({ def, content, report, answers: likert.answers, quality: likert.quality })
+        : def.engine === 'tasks' && traces
+          ? taskParts({ def, content, report, scores, traces })
+          : [];
     return { ...report, ...(roadmap ? { roadmap } : {}), ...(compare ? { compare } : {}), ...(parts.length ? { parts } : {}) };
   };
 }

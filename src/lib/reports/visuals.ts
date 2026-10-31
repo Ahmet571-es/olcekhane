@@ -190,6 +190,38 @@ export interface MeterVisual {
   caption?: string;
 }
 
+/**
+ * Soru şeridi (görev testlerinin "Soru soru cevapların" bölümü): her soru ya da deneme bir işaret, testteki sırasıyla soldan
+ * sağa; gruplar (düzeyler, dizi uzunlukları, bölümler) arasında küçük boşluk ve grubun adı altta. Dolu daire doğru, içi boş
+ * daire yanlış, kısa çizgi cevapsız (ör. "Bilmiyorum", süre doldu). Süre biliniyorsa işaretin yüksekliği cevap süresidir
+ * (`max` saniyeye kadar; daha uzunlar üst kenarda); `rapid`: testin "çok hızlı" saydığı süre bölgesi (alttaki açık bant).
+ * Renkler tek tonludur: doğru ve yanlış biçimle ayrılır (yeşil ya da kırmızı yoktur).
+ */
+export interface ItemsVisual {
+  type: 'items';
+  label: string;
+  items: { mark: 'ok' | 'wrong' | 'none'; sec: number | null; group: number }[];
+  /** Grupların kısa adları (ör. "1.", "2."); `groupCaption` ne olduklarını söyler ("Düzeyler, kolaydan zora"). */
+  groups: string[];
+  groupCaption: string;
+  /** Süre ekseninin en çoğu (saniye); süreler yoksa null (işaretler tek sırada). */
+  max: number | null;
+  rapid?: { to: number; label: string };
+  legend: { ok: string; wrong: string; none?: string };
+}
+
+/**
+ * Bölüm bölüm parçalar (hızlı görevlerin özeti: çeyrekler, bölümler, koşullar): her satır bir bölümün denemeleri, tek çubukta
+ * parçalarına ayrılmış (ör. doğru, yanlış, cevapsız); çubuklar ortak eksende (en kalabalık bölüm tam boy). Parçaların tonları
+ * `STACK_TONES` sırasıyladır; altta lejant.
+ */
+export interface BlocksVisual {
+  type: 'blocks';
+  label: string;
+  rows: { label: string; parts: number[]; valueLabel: string }[];
+  legend: string[];
+}
+
 /** Sayım bölgesinin tam sayı aralığı: [0; 2,5) → "0–2", [2,5; 5] → "3–5" (sınır iki tam sayının arasında). */
 export function meterRange(v: Pick<MeterVisual, 'zones'>, i: number): string {
   const z = v.zones[i];
@@ -209,7 +241,9 @@ export type ItemVisual =
   | StripVisual
   | LadderVisual
   | AnswersVisual
-  | MeterVisual;
+  | MeterVisual
+  | ItemsVisual
+  | BlocksVisual;
 
 /**
  * Ölçeğin düzey bölgeleri: testin eşikleri (anchoredBands) ve şablonun düzey adları. Şablonda metni olmayan düzey en yakın
@@ -444,5 +478,15 @@ export function visualDescription(v: ItemVisual): string {
       const zone = (z: MeterVisual['zones'][number], i: number) => `${z.label} ${v.discrete ? meterRange(v, i) : `${formatTick(z.from)}–${formatTick(z.to)}`}`;
       return `${v.label}: ${v.rows.map((r) => `${r.label} ${r.valueLabel}`).join('; ')}. Bölgeler: ${v.zones.map(zone).join(', ')}.`;
     }
+    case 'items': {
+      const count = (g: number | null, m: ItemsVisual['items'][number]['mark']) => v.items.filter((x) => (g === null || x.group === g) && x.mark === m).length;
+      const groups = v.groups.map((name, g) => {
+        const parts = [`${count(g, 'ok')} ${v.legend.ok}`, `${count(g, 'wrong')} ${v.legend.wrong}`, ...(v.legend.none && count(g, 'none') ? [`${count(g, 'none')} ${v.legend.none}`] : [])];
+        return `${name} ${parts.join(', ')}`;
+      });
+      return `${v.label} (${v.groupCaption}): ${groups.join('; ')}.${v.rapid ? ` ${v.rapid.label}.` : ''}`;
+    }
+    case 'blocks':
+      return `${v.label}: ${v.rows.map((r) => `${r.label} ${r.parts.map((p, i) => `${v.legend[i]} ${p}`).join(', ')}`).join('; ')}.`;
   }
 }

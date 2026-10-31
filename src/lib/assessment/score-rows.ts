@@ -110,6 +110,7 @@ import {
   type ArithTrialInput,
   type TrailPartInput,
   type TrailResult,
+  type ItemTrace,
 } from '@/lib/scoring/tasks';
 
 /** Ölçek puanı satırları: puanlamanın sonucu. Hiçbir yere yazılmaz, doğrudan rapora verilir. */
@@ -254,9 +255,18 @@ function spanScale(t: CognitiveTask): string {
  * Bilişsel görevlerin ölçek puanları ve cevap kalitesi notları. Bütün görevlerin denemeleri gerekir.
  * `seed`, harf işaretleme sayfalarının üretildiği tohumdur (tarayıcıda rastgele üretilir).
  * Geçersiz veri TaskInputError fırlatır.
+ *
+ * `traces`: görev görev her sorunun ya da denemenin puanlamadaki sonucu (raporun "Soru soru cevapların" bölümü,
+ * lib/reports/task-parts.ts). Ayrıntısı zaten sonucunda olan görevlerde (harf işaretleme, sırayla birleştirme, desen
+ * hatırlama, harf-sayı sıralama, simge bulma, bakış açısı alma) yoktur; kelime listesinde tanıma bölümünün kelimeleridir.
  */
-export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInputs>, seed: string): { rows: ScoreRow[]; notes: string[] } {
+export function taskScoreRows(
+  def: TaskInstrument,
+  inputs: Map<string, TaskInputs>,
+  seed: string,
+): { rows: ScoreRow[]; notes: string[]; traces: Record<string, ItemTrace[]> } {
   const rows: ScoreRow[] = [];
+  const traces: Record<string, ItemTrace[]> = {};
   let flankerRes: FlankerResult | undefined;
   let symbolRes: SymbolResult | undefined;
   let cancellationRes: CancellationResult | undefined;
@@ -298,7 +308,14 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
     // denemeyi kaydeder.
     if (input.length === 0 && task.kind !== 'symbol_match' && task.kind !== 'symbol_search' && task.kind !== 'mental_arithmetic') throw new TaskInputError('Görevlerin hepsi tamamlanmadan sonuç hesaplanamaz.');
     if (task.kind === 'digit_span' || task.kind === 'spatial_span') {
-      const { result } = scoreSpan(task, input as SpanTrialInput[]);
+      const { result, trials } = scoreSpan(task, input as SpanTrialInput[]);
+      traces[task.key] = trials.map((t, i) => ({
+        index: i,
+        status: t.correct ? 'correct' : t.response.length === 0 ? 'skip' : 'wrong',
+        response: { shown: t.stimulus, given: t.response },
+        rtMs: t.rtMs,
+        kind: String(t.length),
+      }));
       rows.push({
         scaleKey: spanScale(task),
         raw: result.span,
@@ -309,8 +326,15 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         extra: result as unknown as Record<string, unknown>,
       });
     } else if (task.kind === 'flanker') {
-      const { result } = scoreFlanker(task, input as FlankerTrialInput[]);
+      const { result, trials } = scoreFlanker(task, input as FlankerTrialInput[]);
       flankerRes = result;
+      traces[task.key] = trials.map((t) => ({
+        index: t.index,
+        status: t.timeout ? 'miss' : t.anticipation ? 'early' : t.correct ? 'correct' : 'wrong',
+        response: t.timeout ? null : t.response,
+        rtMs: t.timeout ? null : t.rtMs,
+        kind: t.congruent ? 'congruent' : 'incongruent',
+      }));
       rows.push({
         scaleKey: 'attention',
         raw: Math.round(result.accuracy * 1000) / 10,
@@ -348,8 +372,20 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         },
       );
     } else if (task.kind === 'color_word') {
-      const { result } = scoreColorWord(task, input as ColorWordTrialInput[]);
+      const { result, trials } = scoreColorWord(task, input as ColorWordTrialInput[]);
       colorWordRes = result;
+      traces[task.key] = trials.map((t) => {
+        const stim = task.trials[t.index];
+        const valid = !t.timeout && !t.anticipation;
+        return {
+          index: t.index,
+          status: t.timeout ? 'miss' : t.anticipation ? 'early' : t.correct ? 'correct' : 'wrong',
+          response: t.timeout ? null : t.response,
+          rtMs: t.timeout ? null : t.rtMs,
+          kind: t.congruent ? 'congruent' : 'incongruent',
+          lure: valid && !t.correct ? (!t.congruent && t.response === stim.word + 1 ? 'word' : 'other') : null,
+        };
+      });
       const correct = Math.round(result.accuracy * result.n);
       // Üç ölçek tek görevden hesaplanır; ayrıntının tamamı "renk_dogruluk" satırında durur.
       rows.push(
@@ -358,8 +394,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'renk_etki', raw: result.interferenceMs, mean: null, nAnswered: correct, nItems: result.n, band: null },
       );
     } else if (task.kind === 'go_nogo') {
-      const { result } = scoreGoNoGo(task, input as GoNoGoTrialInput[]);
+      const { result, items } = scoreGoNoGo(task, input as GoNoGoTrialInput[]);
       goNoGoRes = result;
+      traces[task.key] = items;
       rows.push(
         {
           scaleKey: 'dg_durma',
@@ -384,8 +421,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'iz_gecis', raw: result.ratio, mean: null, nAnswered: a.reached + b.reached, nItems: a.n + b.n, band: null },
       );
     } else if (task.kind === 'n_back') {
-      const { result } = scoreNBack(task, input as NBackTrialInput[]);
+      const { result, items } = scoreNBack(task, input as NBackTrialInput[]);
       nBackRes = result;
+      traces[task.key] = items;
       const one = result.levels.find((l) => l.n === 1);
       const two = result.levels.find((l) => l.n === 2);
       if (!one || !two) throw new TaskInputError('Görevde bir geri ve iki geri bölümleri bulunmalı.');
@@ -397,8 +435,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'gh_yuk', raw: pct(one.pr - two.pr), mean: null, nAnswered: one.hits + two.hits, nItems: one.targets + two.targets, band: null },
       );
     } else if (task.kind === 'mental_rotation') {
-      const { result } = scoreRotation(task, input as RotationTrialInput[]);
+      const { result, items } = scoreRotation(task, input as RotationTrialInput[]);
       rotationRes = result;
+      traces[task.key] = items;
       // Üç ölçek tek görevden hesaplanır; ayrıntının tamamı "zd_dogruluk" satırında durur.
       rows.push(
         { scaleKey: 'zd_dogruluk', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -406,8 +445,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'zd_aci', raw: result.rotationCostMs, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
       );
     } else if (task.kind === 'reaction_time') {
-      const { result } = scoreReaction(task, input as ReactionTrialInput[]);
+      const { result, items } = scoreReaction(task, input as ReactionTrialInput[]);
       reactionRes = result;
+      traces[task.key] = items;
       const { simple, choice } = result;
       // Üç ölçek tek görevden hesaplanır; ayrıntının tamamı "th_basit" satırında durur.
       rows.push(
@@ -416,8 +456,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'th_fark', raw: result.choiceCostMs, mean: null, nAnswered: simple.correct + choice.correct, nItems: simple.n + choice.n, band: null },
       );
     } else if (task.kind === 'matrix_reasoning') {
-      const { result } = scoreMatrix(task, input as MatrixTrialInput[]);
+      const { result, items } = scoreMatrix(task, input as MatrixTrialInput[]);
       matrixRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "sa_dogru" satırında durur.
       rows.push(
         { scaleKey: 'sa_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -426,8 +467,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'sa_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'number_series') {
-      const { result } = scoreNumberSeries(task, input as NumberSeriesTrialInput[]);
+      const { result, items } = scoreNumberSeries(task, input as NumberSeriesTrialInput[]);
       numberSeriesRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "sd_dogru" satırında durur.
       rows.push(
         { scaleKey: 'sd_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -436,8 +478,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'sd_calisma', raw: result.medianRt, mean: null, nAnswered: result.n - result.skipped, nItems: result.n, band: null },
       );
     } else if (task.kind === 'letter_series') {
-      const { result } = scoreLetterSeries(task, input as LetterSeriesTrialInput[]);
+      const { result, items } = scoreLetterSeries(task, input as LetterSeriesTrialInput[]);
       letterSeriesRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "hd_dogru" satırında durur.
       rows.push(
         { scaleKey: 'hd_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -446,8 +489,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'hd_calisma', raw: result.medianRt, mean: null, nAnswered: result.n - result.skipped, nItems: result.n, band: null },
       );
     } else if (task.kind === 'verbal_reasoning') {
-      const { result } = scoreVerbal(task, input as VerbalTrialInput[]);
+      const { result, items } = scoreVerbal(task, input as VerbalTrialInput[]);
       verbalRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "sz_dogru" satırında durur.
       rows.push(
         { scaleKey: 'sz_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -456,8 +500,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'sz_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'paper_folding') {
-      const { result } = scoreFolding(task, input as FoldingTrialInput[]);
+      const { result, items } = scoreFolding(task, input as FoldingTrialInput[]);
       foldingRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "kk_dogru" satırında durur.
       rows.push(
         { scaleKey: 'kk_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -466,8 +511,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'kk_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'vocabulary') {
-      const { result } = scoreVocabulary(task, input as VocabularyTrialInput[]);
+      const { result, items } = scoreVocabulary(task, input as VocabularyTrialInput[]);
       vocabularyRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "kb_dogru" satırında durur.
       rows.push(
         { scaleKey: 'kb_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -476,8 +522,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'kb_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'rule_switch') {
-      const { result } = scoreRuleSwitch(task, input as RuleSwitchTrialInput[]);
+      const { result, items } = scoreRuleSwitch(task, input as RuleSwitchTrialInput[]);
       ruleSwitchRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "kd_dogruluk" satırında durur.
       rows.push(
         { scaleKey: 'kd_dogruluk', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -486,8 +533,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'kd_calisma', raw: result.medianRt, mean: null, nAnswered: result.answered, nItems: result.n, band: null },
       );
     } else if (task.kind === 'logical_reasoning') {
-      const { result } = scoreLogic(task, input as LogicTrialInput[]);
+      const { result, items } = scoreLogic(task, input as LogicTrialInput[]);
       logicRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "ma_dogru" satırında durur.
       rows.push(
         { scaleKey: 'ma_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -496,8 +544,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'ma_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'numerical_reasoning') {
-      const { result } = scoreNumeric(task, input as NumericTrialInput[]);
+      const { result, items } = scoreNumeric(task, input as NumericTrialInput[]);
       numericRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "sy_dogru" satırında durur.
       rows.push(
         { scaleKey: 'sy_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -506,8 +555,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'sy_calisma', raw: result.medianRt, mean: null, nAnswered: result.n - result.blank, nItems: result.n, band: null },
       );
     } else if (task.kind === 'cube_net') {
-      const { result } = scoreCube(task, input as CubeTrialInput[]);
+      const { result, items } = scoreCube(task, input as CubeTrialInput[]);
       cubeRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "kp_dogru" satırında durur.
       rows.push(
         { scaleKey: 'kp_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -516,8 +566,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'kp_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'hidden_figures') {
-      const { result } = scoreHidden(task, input as HiddenTrialInput[]);
+      const { result, items } = scoreHidden(task, input as HiddenTrialInput[]);
       hiddenRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "gs_dogru" satırında durur.
       rows.push(
         { scaleKey: 'gs_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -526,8 +577,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'gs_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'shape_assembly') {
-      const { result } = scoreAssembly(task, input as AssemblyTrialInput[]);
+      const { result, items } = scoreAssembly(task, input as AssemblyTrialInput[]);
       assemblyRes = result;
+      traces[task.key] = items;
       // Beş ölçek tek görevden hesaplanır; ayrıntının tamamı "ps_dogru" satırında durur.
       rows.push(
         { scaleKey: 'ps_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -537,8 +589,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'ps_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'figural_analogy') {
-      const { result } = scoreAnalogy(task, input as AnalogyTrialInput[]);
+      const { result, items } = scoreAnalogy(task, input as AnalogyTrialInput[]);
       analogyRes = result;
+      traces[task.key] = items;
       // Beş ölçek tek görevden hesaplanır; ayrıntının tamamı "sb_dogru" satırında durur.
       rows.push(
         { scaleKey: 'sb_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -580,8 +633,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'sg_denge', raw: null, mean: null, nAnswered: result.fast.correct, nItems: result.fast.n, band: null },
       );
     } else if (task.kind === 'cognitive_reflection') {
-      const { result } = scoreReflection(task, input as ReflectionTrialInput[]);
+      const { result, items } = scoreReflection(task, input as ReflectionTrialInput[]);
       reflectionRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "dk_dogru" satırında durur.
       rows.push(
         { scaleKey: 'dk_dogru', raw: pct(result.lure.correct / result.lure.n), mean: null, nAnswered: result.lure.correct, nItems: result.lure.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -590,8 +644,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'dk_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
     } else if (task.kind === 'mental_rotation_3d') {
-      const { result } = scoreRotation3d(task, input as Rotation3dTrialInput[]);
+      const { result, items } = scoreRotation3d(task, input as Rotation3dTrialInput[]);
       rotation3dRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "ud_dogru" satırında durur.
       rows.push(
         { scaleKey: 'ud_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -611,8 +666,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'ba_calisma', raw: result.medianRt, mean: null, nAnswered: result.answered, nItems: result.n, band: null },
       );
     } else if (task.kind === 'complex_span') {
-      const { result } = scoreComplexSpan(task, input as ComplexSpanTrialInput[]);
+      const { result, items } = scoreComplexSpan(task, input as ComplexSpanTrialInput[]);
       complexSpanRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "hb_harf" satırında durur.
       rows.push(
         { scaleKey: 'hb_harf', raw: result.correct, mean: null, nAnswered: result.correct, nItems: result.letters, band: null, extra: result as unknown as Record<string, unknown> },
@@ -621,8 +677,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'hb_hata', raw: null, mean: null, nAnswered: result.order + result.intrusion + result.blank, nItems: result.letters, band: null },
       );
     } else if (task.kind === 'tower') {
-      const { result } = scoreTower(task, input as TowerTrialInput[]);
+      const { result, items } = scoreTower(task, input as TowerTrialInput[]);
       towerRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "kg_dogru" satırında durur.
       rows.push(
         { scaleKey: 'kg_dogru', raw: pct(result.optimal / result.n), mean: null, nAnswered: result.optimal, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
@@ -631,8 +688,9 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'kg_plan', raw: result.medianPick, mean: null, nAnswered: result.n - result.idle, nItems: result.n, band: null },
       );
     } else if (task.kind === 'word_list') {
-      const { result } = scoreWordList(task, input as WordListTrialInput[]);
+      const { result, items } = scoreWordList(task, input as WordListTrialInput[]);
       wordListRes = result;
+      traces[task.key] = items;
       // Dört ölçek tek görevden hesaplanır; ayrıntının tamamı "kl_ogrenme" satırında durur.
       const last = result.trials[result.trials.length - 1];
       rows.push(
@@ -644,13 +702,15 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
     } else if (task.kind === 'mental_arithmetic') {
       // Her işlem ayrı bir görevdir; bölümün ayrıntısı kendi satırında, dört bölümün birleşimi döngüden sonra "zh_genel"
       // satırında durur.
-      const { result } = scoreArithmetic(task, input as ArithTrialInput[]);
+      const { result, items } = scoreArithmetic(task, input as ArithTrialInput[]);
       arithSections.push(result);
+      traces[task.key] = items;
       const key = { add: 'zh_toplama', sub: 'zh_cikarma', mul: 'zh_carpma', div: 'zh_bolme' }[task.op];
       rows.push({ scaleKey: key, raw: result.correct, mean: null, nAnswered: result.answered, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> });
     } else {
-      const { result } = scoreSymbol(task, input as SymbolTrialInput[]);
+      const { result, trials } = scoreSymbol(task, input as SymbolTrialInput[]);
       symbolRes = result;
+      traces[task.key] = trials.map((t) => ({ index: t.index, status: t.correct ? 'correct' : 'wrong', response: t.response, rtMs: t.rtMs, kind: String(t.symbol) }));
       rows.push({
         scaleKey: 'speed',
         raw: result.perMinute,
@@ -673,6 +733,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   }
   return {
     rows,
+    traces,
     notes: [...(arith ? arithQualityNotes(arith) : []), ...(letterNumberRes ? letterNumberQualityNotes(letterNumberRes) : []), ...(symbolSearchRes ? symbolSearchQualityNotes(symbolSearchRes) : []), ...taskQualityNotes({
       flanker: flankerRes,
       symbol: symbolRes,

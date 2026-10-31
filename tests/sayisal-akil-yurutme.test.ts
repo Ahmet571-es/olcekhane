@@ -37,9 +37,11 @@ const text = (r: SimpleReport) =>
   [...r.items.flatMap((i) => [i.title, i.badge, i.text]), ...r.cautions, r.chartNote, ...r.keyFigures.flatMap((f) => [f.label, f.value, f.note])]
     .filter(Boolean)
     .join(' ');
+// Ek bölümler soruların kendi metnini de gösterir; bölümlerin dili tests/rapor-bolumleri-gorev.test.ts'te denetlenir.
 const withoutRoadmap = (r: SimpleReport) => {
-  const { roadmap, ...rest } = r;
+  const { roadmap, parts, ...rest } = r;
   void roadmap;
+  void parts;
   return JSON.stringify(rest);
 };
 const count = (k: NumericKind) => task.kinds.filter((x) => x === k).length;

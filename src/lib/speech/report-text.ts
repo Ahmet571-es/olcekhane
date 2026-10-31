@@ -277,7 +277,7 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
       const levels = (c.levels ?? []).flatMap((l) => [l.text ? sentence(`${l.label}: ${l.text}`) : sentence(l.label), ...(l.spoken ? [l.spoken] : [])]);
       const current = c.levels?.some((l) => l.active);
       const rows = (c.rows ?? []).map((r) => {
-        const head = `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(r.text)}`;
+        const head = `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(r.say ?? r.text)}`;
         const value = r.muted ? sentence(r.value) : sentence(`${c.rowsHead?.value ?? 'Cevap'}: ${r.value}`);
         return [head, value, ...r.tags.map((t) => sentence(t.charAt(0).toLocaleUpperCase('tr-TR') + t.slice(1)))].join(' ');
       });

@@ -3085,7 +3085,7 @@ function inTime(ms: number): string {
 /** `seconds` ile yazılan süre (tam saniye; yarım saniyeden kısaysa 0: "bir saniyeden kısa"). Karşılaştırma bunu kullanır. */
 export const secondsValue = (ms: number) => (ms < 500 ? 0 : Math.round(ms / 1000));
 
-function seconds(ms: number): string {
+export function seconds(ms: number): string {
   if (ms < 500) return 'bir saniyeden kısa';
   const s = secondsValue(ms);
   if (s < 60) return `${s} saniye`;
@@ -3099,7 +3099,7 @@ function seconds(ms: number): string {
  * Grafiklerde kısa süre yazımı: seconds() ile aynı yuvarlama (kartın metniyle aynı sayı). 23 400 → "23 sn",
  * 75 000 → "1 dk 15 sn", 400 → "1 sn'den kısa".
  */
-function secShort(ms: number): string {
+export function secShort(ms: number): string {
   if (ms < 500) return '1 sn’den kısa';
   const s = Math.round(ms / 1000);
   if (s < 60) return `${s} sn`;
@@ -5471,7 +5471,7 @@ const NUMBER_WORD: Record<number, string> = { 1: 'bir', 2: 'iki', 3: 'üç', 4: 
 /** Cümle sonunda işlemin adı: "en kısa süren toplamaydı". */
 const ARITH_WAS: Record<ArithOp, string> = { add: 'toplamaydı', sub: 'çıkarmaydı', mul: 'çarpmaydı', div: 'bölmeydi' };
 /** Yanlışların türü, grafikteki adıyla. */
-const ARITH_ERROR_NAME: Record<ArithErrorKind, string> = {
+export const ARITH_ERROR_NAME: Record<ArithErrorKind, string> = {
   operation: 'Başka işlemin sonucu',
   regroup: 'Elde ya da onluk bozma',
   table: 'Tablodaki başka bir sonuç',
