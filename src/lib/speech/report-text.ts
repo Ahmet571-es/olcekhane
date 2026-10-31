@@ -99,7 +99,7 @@ export function speakable(input: string): string {
 /** Cümle sonunda nokta yoksa ekler (başlıklar ve kısa satırlar okunurken ses düşsün). */
 function sentence(s: string): string {
   const t = s.trim();
-  return t === '' || /[.!?…:]$/.test(t) ? t : `${t}.`;
+  return t === '' || /[.!?…:]["”’»)]*$/.test(t) ? t : `${t}.`;
 }
 
 /** Uzun bir parçayı, önce noktalı virgül ve iki noktadan, sonra virgülden, en son boşluktan böler. */
@@ -278,11 +278,12 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
     if (g.title) push(g.title, [sentence(g.title)]);
     for (const c of g.cards) {
       const levels = (c.levels ?? []).flatMap((l) => [l.text ? sentence(`${l.label}: ${l.text}`) : sentence(l.label), ...(l.spoken ? [l.spoken] : [])]);
-      const current = c.levels?.some((l) => l.active);
+      const active = c.levels?.find((l) => l.active);
       const rows = (c.rows ?? []).map((r) => {
         // Satırın sesli okunuşu metninden farklıysa o okunur: `spoken` (konu taramada soru metni okunmaz: boş) ya da `say`.
         const said = r.spoken ?? r.say ?? r.text;
-        const head = said ? `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(said)}` : sentence(`${r.no}. ${c.rowsHead?.item ?? 'madde'}`);
+        const head =
+          r.label !== undefined ? sentence(said) : said ? `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(said)}` : sentence(`${r.no}. ${c.rowsHead?.item ?? 'madde'}`);
         const value = r.muted ? sentence(r.value) : sentence(`${c.rowsHead?.value ?? 'Cevap'}: ${r.value}`);
         return [head, value, ...r.tags.map((t) => sentence(t.charAt(0).toLocaleUpperCase('tr-TR') + t.slice(1)))].join(' ');
       });
@@ -294,7 +295,8 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
               sentence(c.title),
               sentence('Düzeyler'),
               ...levels,
-              current && c.badge ? sentence(`${c.activeLabel ?? (you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi')}: ${c.badge}`) : c.badge && sentence(c.badge),
+              // Kişinin düzeyinin adı; birleşik düzeyde ("Çok az · Az kullanılıyor") rozetteki tek ad.
+              active ? sentence(`${c.activeLabel ?? (you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi')}: ${active.label.includes(' · ') && c.badge ? c.badge : active.label}`) : c.badge && sentence(c.badge),
               ...(c.spoken ?? []),
               c.text,
             ]

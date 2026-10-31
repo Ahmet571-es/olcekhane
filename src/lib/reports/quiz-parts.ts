@@ -185,9 +185,9 @@ export function quizParts(input: { def: QuizInstrument; result: QuizResult; cont
 
   /* ---------- 1. Düzeylerin ve ölçülerin anlamı ---------- */
   const LEVEL_TEXT: Record<'low' | 'average' | 'high', string> = {
-    low: 'Temel konuların çoğunda eksik var; konular baştan, adım adım tekrar edilmeli.',
+    low: 'Soruların yarısından azı doğru; birçok konu pekiştirilmeli. Bazı konular henüz işlenmemiş olabilir.',
     average: 'Temel konuların bir kısmı sağlam, bir kısmı pekiştirilmeli.',
-    high: 'Temel konuların çoğu sağlam; yeni konulara güvenle geçilebilir.',
+    high: 'Soruların çoğu doğru; temel konular büyük ölçüde sağlam görünüyor.',
   };
   const order = ['low', 'average', 'high'] as const;
   const gauge = a.interpreted ? quizGauge(a) : null;
@@ -262,9 +262,12 @@ export function quizParts(input: { def: QuizInstrument; result: QuizResult; cont
     key: 'kinds',
     title: 'Doğru, yanlış ve “Bilmiyorum”',
     text: [
-      'Her yanlış seçenek, öğrencilerin sık yaptığı bir hataya göre yazıldı.',
-      v({ you: 'Bu yüzden yanlış cevapların hangi hatayı yaptığını gösterebilir.', parent: 'Bu yüzden yanlış cevaplar hangi hatanın yapıldığını gösterebilir.' }),
-      '“Bilmiyorum” hata sayılmaz ve hata türü göstermez; o konunun henüz öğrenilmediğini gösterir.',
+      'Yanlış seçeneklerin çoğu, öğrencilerin sık yaptığı bir hataya göre yazıldı.',
+      v({
+        you: 'Bu yüzden yanlış cevapların, hangi hatayı yapmış olabileceğini gösterir.',
+        parent: 'Bu yüzden yanlış cevaplar, hangi hatanın yapılmış olabileceğini gösterir.',
+      }),
+      '“Bilmiyorum” hata sayılmaz ve hata türü göstermez; o konunun henüz öğrenilmemiş olabileceğini gösterir.',
       v({
         you: 'Bilmediğin soruda tahmin etmek yerine “Bilmiyorum” demek, raporun daha doğru olmasını sağlar.',
         parent: 'Bilinmeyen soruda tahmin etmek yerine “Bilmiyorum” demek, raporun daha doğru olmasını sağlar.',
@@ -280,7 +283,7 @@ export function quizParts(input: { def: QuizInstrument; result: QuizResult; cont
       key: 'errors',
       title: 'Hata türleri',
       text: [
-        'Seçilen yanlış seçenek, o soruda hangi hatanın yapıldığını gösterir.',
+        'Seçilen yanlış seçenek, o soruda hangi hatanın yapılmış olabileceğini gösterir.',
         'Bir hata türü birden çok soruda görülürse daha dikkate değer bir işarettir.',
         'Tek soruda görülen hata dikkatsizlik ya da tahmin de olabilir.',
         ...(report.quiz?.errorsTitle ? [`Her hata türünün açıklaması ve önerisi yukarıda, “${report.quiz.errorsTitle.replace(/\?$/, '')}” bölümünde.`] : []),
@@ -369,6 +372,10 @@ export function quizParts(input: { def: QuizInstrument; result: QuizResult; cont
             }),
           ]
         : []),
+      v({
+        you: 'Testi yeniden çözersen aynı sorular gelir; doğru cevapları gördüğün için sonuç yüksek çıkabilir.',
+        parent: 'Test yeniden çözülürse aynı sorular gelir; doğru cevaplar görüldüğü için sonuç yüksek çıkabilir.',
+      }),
       v({
         you: 'Cevapların yalnızca bu sayfada ve indirdiğin PDF dosyasında görünür; hiçbir yerde saklanmaz.',
         parent: 'Cevaplar yalnızca bu sayfada ve indirilen PDF dosyasında görünür; hiçbir yerde saklanmaz.',

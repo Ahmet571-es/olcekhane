@@ -28,7 +28,13 @@ import { drawCells, drawGrid, drawWordMap, type CellsKindVisual } from './visual
  * Renk adları. `fill`: kişinin sonucu (pirinç), `soft`: açık pirinç (vurgulu aralık), `track` ve `track2`: boş yer ve
  * bölgeler (iki gri ton), `axis`: eksen çizgisi, `marker`: tipik değer ya da puan işareti (kırmızı), `surface`: zemin.
  */
-export type Tone = 'fill' | 'soft' | 'track' | 'track2' | 'ink' | 'ink2' | 'ink3' | 'axis' | 'marker' | 'surface';
+export type Tone = 'fill' | 'soft' | 'track' | 'track2' | 'ink' | 'ink2' | 'ink3' | 'axis' | 'marker' | 'surface' | MarkTone;
+
+/**
+ * Sesli okumanın işaretli metniyle aynı renkler (yalnızca metin haritasında, lib/reports/visual-cells.ts): hata sayılan
+ * kelime kırmızı, hata sayılmayan gözlem sarı.
+ */
+export type MarkTone = 'danger' | 'warn' | 'warnBg';
 
 export type Shape =
   | { k: 'rect'; x: number; y: number; w: number; h: number; r: number; fill: Tone; stroke?: Tone; sw?: number }
@@ -621,10 +627,13 @@ function drawMeter(v: MeterVisual, W: number, fs: number): Drawing {
     }),
   );
   let bottom = tickY + ts * 1.35;
+  // Kişinin değerinin düştüğü bölgenin adı koyu (ör. değer "Uygun"dayken "Dikkat" koyu yazılmaz).
+  const zoneOf = (val: number) => Math.max(0, v.zones.findLastIndex((z) => val >= z.from - 1e-9));
+  const held = new Set(v.rows.map((r) => zoneOf(r.value)));
   v.zones.forEach((z, i) => {
     const text = v.discrete ? `${z.label} ${meterRange(v, i)}` : z.label;
     const at = centered(text, (x(z.from) + x(z.to)) / 2, ts, W);
-    shapes.push({ k: 'text', x: r2(at.x), y: r2(bottom), text, size: ts, weight: z.warn ? 700 : 400, fill: z.warn ? 'ink' : 'ink2', anchor: at.anchor });
+    shapes.push({ k: 'text', x: r2(at.x), y: r2(bottom), text, size: ts, weight: held.has(i) ? 700 : 400, fill: held.has(i) ? 'ink' : 'ink2', anchor: at.anchor });
   });
   if (v.caption) {
     bottom += ts * 1.35;

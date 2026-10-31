@@ -372,15 +372,21 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   aynısı, anlama, dakikada doğru kelime (Erden ortalaması yalnızca hız kartının da karşılaştırdığı durumda, `rateCompared`),
   akıcılık 4–16, yeniden anlatma, duraklamalar; matematikte genel sonuç kartın çubuğunun aynısı, alanlar, doğru/yanlış/
   "Bilmiyorum", hata türleri; yorumlanmayan sonuçta grafik ve düzey yok; norm olmayan yerde karşılaştırma yok),
-  **Cevapların soru soru** (sesli okumada "Okuman ve cevapların tek tek": metin haritası, yalnızca işaretli cümleler, sorular,
-  yeniden anlatmada söylenen fikirler; net anlaşılamayan kelime hiçbir yerde hata sayılmaz; matematikte alan alan sorular,
+  **Cevapların soru soru** (sesli okumada "Okuman ve cevapların tek tek": metin haritası işaretli metnin renkleriyle (hata
+  kırmızı, gözlem sarı; pirinç "senin düzeyin" anlamında kaldığı için kullanılmaz), yalnızca işaretli cümleler (hiç okunmayan
+  art arda cümleler tek satırda, `PartRow.label`: "7.–18. cümleler okunmadı"; hata sayısı olarak yazılmaz), sorular,
+  yeniden anlatmada söylenen fikirler; net anlaşılamayan kelime hiçbir yerde hata sayılmaz; aynı metin ya da form yeniden
+  çözülünce sonucun yükselebileceği söylenir; matematikte alan alan sorular,
   verilen ve doğru cevap, hata türü, süre; çözümler raporun soru soru incelemesinde kalır, burada yinelenmez; soru metni sesli
   okunmaz: `PartRow.spoken`), **Sonuca ne kadar güvenebiliriz?** (okumada çok kısa ve çok uzun süre, tahminle gelebilecek
   doğrular `chanceLike`; sesli okumada net anlaşılamadı `UNCLEAR_HIGH`/`UNCLEAR_MAX` ve metinle eşleşme `MIN_MATCH_SHARE`
   (lib/oral/auto.ts), kaydın dinlenmesi, okuma süresi (düğmeyle ölçüm, kesinti, `ORAL_MAX_WPM`), metnin sonuna kadar okuma;
   matematikte hız, aynı seçenek, "Bilmiyorum" `manyDontKnow`). Bu cevaplar kişisel ifade değil, performanstır: veli
   raporunda da vardır. Sesli okumanın veli ve öğretmen raporu öğrenciden üçüncü kişi olarak söz eder ("Öğrencinin düzeyi",
-  `PartCard.activeLabel`). Yeniden anlatma listesi yalnızca bu bölümdedir (sesli okuma bölümünde yönlendirme cümlesi).
+  `PartCard.activeLabel`; sesli dinlemede kişinin düzeyinin adı okunur: "Senin hızın: Olağan"). Raporun sesli okuma bölümünde
+  zaten olan şeyler yinelenmez, yönlendirilir ("Düzey nasıl belirlendi?", "Okuma(n), kelime kelime", soru türleri);
+  yeniden anlatma listesi yalnızca bu bölümdedir. Doğru okuma oranının tanımı kodun hesabıyla aynıdır ((kelime − hata) ÷
+  kelime; eklemeler hata; metin bitmeden durunca okunan kısım) ve oran aşağı yuvarlanır (düzey yuvarlanmamış orana göre).
   `tests/rapor-bolumleri-okuma.test.ts` bütün sınıflarda ve sonuç örüntülerinde (hız uçları, tahmin, "Bilmiyorum", hep aynı
   seçenek, süre yok, otomatik analiz, metin bitmeden durma, kesinti, düğmeyle süre, yarım dinleme) bölümleri, kartların
   raporla ve uyarı kutusuyla aynı olmasını, dili, sesli okumayı, ekranı ve PDF'i dener.

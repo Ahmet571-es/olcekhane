@@ -50,6 +50,8 @@ export interface PartRow {
    * metinleri (kesirler, tablolar, şekiller) sesli okunmaz: "3. soru." ve cevap okunur.
    */
   spoken?: string;
+  /** Numaranın yerine yazılan ad (ör. birleştirilmiş satırda "7.–18."); verilirse sesli okumada yalnızca `spoken` okunur. */
+  label?: string;
 }
 
 export interface PartCard {

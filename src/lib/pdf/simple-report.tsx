@@ -486,6 +486,9 @@ const TONES: Record<Tone, string> = {
   axis: C.ruleStrong,
   marker: C.marker,
   surface: C.paper,
+  danger: C.danger,
+  warn: C.warn,
+  warnBg: C.warnBg,
 };
 
 function DrawnPdf({ v }: { v: DrawnVisual }) {
@@ -1088,7 +1091,7 @@ function PartCardPdf({ card, you, visuals }: { card: PartCard; you: boolean; vis
             <View style={{ marginTop: 2 }}>
               {card.rows.map((r) => (
                 <Text key={r.no} style={{ fontSize: 8.5, lineHeight: 1.4, marginTop: 2.5, color: r.muted ? C.ink3 : C.ink }}>
-                  <Text style={{ color: C.ink3 }}>{r.no}. </Text>
+                  <Text style={{ color: C.ink3 }}>{r.label ?? `${r.no}.`} </Text>
                   {pdfMath(r.text)}
                   <Text style={{ fontWeight: r.muted ? 400 : 700 }}> · {pdfMath(r.value)}</Text>
                   {r.tags.length > 0 && <Text style={{ fontSize: 7.5, color: C.brassInk }}> · {pdfMath(r.tags.join(' · '))}</Text>}

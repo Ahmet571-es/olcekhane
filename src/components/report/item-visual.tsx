@@ -115,6 +115,9 @@ const TONES: Record<Tone, string> = {
   axis: 'var(--rule-strong)',
   marker: 'var(--marker)',
   surface: 'var(--surface)',
+  danger: 'var(--danger)',
+  warn: 'var(--warn)',
+  warnBg: 'var(--warn-bg)',
 };
 
 function Drawn({ v }: { v: DrawnVisual }) {

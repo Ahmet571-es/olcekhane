@@ -401,7 +401,8 @@ export function scoreOral(def: OralReadingInstrument, grade: number, input: Oral
     counts,
     errors,
     wordsCorrect,
-    accuracyPct: round(accuracy, 1),
+    // Aşağı yuvarlanır: düzey yuvarlanmamış orana göre verildiği için %96,96 "%97" görünüp "destekle" yazmasın.
+    accuracyPct: Math.floor(accuracy * 10 + 1e-9) / 10,
     wpm: round(wpm, 0),
     wcpm: round(wcpm, 0),
     accuracyLevel: accLevel,

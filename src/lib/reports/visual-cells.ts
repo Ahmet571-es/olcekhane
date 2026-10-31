@@ -11,7 +11,8 @@ import type { Drawing, Shape, Tone } from './visual-draw';
  *    biçimi kelimenin durumudur: doğru okundu, hata sayıldı, hata sayılmayan bir gözlem, net anlaşılamadı, okunmadı.
  *  - Sayı kutuları (`cells`): bir sayımın bütün değerleri yan yana kutular (ör. 8 sorudan 0–8 doğru); düzeyler kutuların
  *    altında adlarıyla, kişinin düzeyinin kutuları vurgulu, kişinin değeri dolu kutu.
- * Renkler tek tonludur (pirinç ve gri): doğru ve yanlış için yeşil ya da kırmızı kullanılmaz.
+ * Soru ve sayı kutularında renkler tek tonludur (pirinç ve gri): doğru ve yanlış için yeşil ya da kırmızı kullanılmaz. Metin
+ * haritası raporun işaretli metniyle aynı renkleri kullanır (hata sayılan kırmızı, gözlem sarı).
  *
  * Bu dosya lib/reports/visuals.ts'ten çalışma anında bir şey almaz (döngü olmasın): yazı genişliği aynı formülle hesaplanır.
  */
@@ -157,10 +158,12 @@ function wordShapes(mark: WordMark, x: number, y: number, w: number, h: number, 
   switch (mark) {
     case 'ok':
       return [{ k: 'rect', x: r2(x), y: r2(y), w: r2(w), h: r2(h), r: r2(h * 0.25), fill: 'track2' }];
+    // İşaretli metinle aynı renkler: hata sayılan kırmızı, hata sayılmayan gözlem sarı (pirinç "senin düzeyin" anlamında
+    // kullanıldığı için burada kullanılmaz).
     case 'error':
-      return [{ k: 'rect', x: r2(x), y: r2(y), w: r2(w), h: r2(h), r: r2(h * 0.25), fill: 'fill' }];
+      return [{ k: 'rect', x: r2(x), y: r2(y), w: r2(w), h: r2(h), r: r2(h * 0.25), fill: 'danger' }];
     case 'note':
-      return [{ k: 'rect', x: r2(x), y: r2(y), w: r2(w), h: r2(h), r: r2(h * 0.25), fill: 'soft', stroke: 'fill', sw }];
+      return [{ k: 'rect', x: r2(x), y: r2(y), w: r2(w), h: r2(h), r: r2(h * 0.25), fill: 'warnBg', stroke: 'warn', sw }];
     case 'unclear':
       return [{ k: 'rect', x: r2(x), y: r2(y), w: r2(w), h: r2(h), r: r2(h * 0.25), fill: 'surface', stroke: 'ink3', sw }];
     case 'unread':
@@ -199,7 +202,7 @@ export function drawWordMap(v: WordMapVisual, W: number, fs: number): Drawing {
           x = x0;
           y += h + fs * 0.25;
         }
-        shapes.push({ k: 'rect', x: r2(x), y: r2(y), w: insW, h, r: r2(insW * 0.3), fill: 'fill' });
+        shapes.push({ k: 'rect', x: r2(x), y: r2(y), w: insW, h, r: r2(insW * 0.3), fill: 'danger' });
         x += insW + g;
       }
     }

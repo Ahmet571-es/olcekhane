@@ -54,9 +54,10 @@ function Rows({ rows, head }: { rows: PartRow[]; head?: PartCard['rowsHead'] }) 
     <ol className="flex flex-col divide-y divide-rule border-y border-rule">
       {rows.map((r) => (
         <li key={r.no} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-2 py-2.5">
-          <span className="tabular pt-px text-[0.9375rem] text-ink-3">{r.no}.</span>
+          <span className="tabular pt-px text-[0.9375rem] text-ink-3">{r.label ? '' : `${r.no}.`}</span>
           <div className="flex flex-col gap-1">
             <p className={r.muted ? 'text-ink-3' : ''}>
+              {r.label && <span className="tabular">{r.label} </span>}
               <Txt t={r.text} />
             </p>
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.9375rem]">

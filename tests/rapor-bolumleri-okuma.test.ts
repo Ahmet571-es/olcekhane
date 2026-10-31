@@ -20,6 +20,7 @@ import type { BarsVisual, GaugeVisual, MeterVisual, StackVisual, StripVisual } f
 import { MIN_LISTENED, ORAL_MAX_WPM, UNCLEAR_HIGH, UNCLEAR_MAX, oralPassagesFor, scoreOral, type OralInput, type OralMark } from '@/lib/scoring/oral';
 import { QUIZ_LETTER_SHARE, QUIZ_TOO_FAST_MS, formForGrade } from '@/lib/scoring/quiz';
 import { READING_TOO_SLOW, chanceLike, countWords, passageForGrade, readingPace } from '@/lib/scoring/reading';
+import { SLOW_AXIS_MAX } from '@/lib/reports/reading-parts';
 import { MAX_UTTERANCE, reportSpeech, speakable, utterancesOf } from '@/lib/speech/report-text';
 import { checkDrawn } from './helpers/visual-check';
 
@@ -128,7 +129,7 @@ const autoOf = (i: OralInput, marks: Record<string, OralMark> = i.marks): OralIn
 function mixedMarks(n: number, auto = false): Record<string, OralMark> {
   const m: Record<string, OralMark> = {};
   for (let i = 1; i < n - 4; i += 7) {
-    const k = (i / 7) % 6;
+    const k = ((i - 1) / 7) % 6;
     m[String(i)] =
       k === 0
         ? { s: 'sub', said: 'kelime' }
@@ -168,6 +169,7 @@ function oralCases(): OralCase[] {
       { name: 'metin bitmeden (yarıdan çok)', grade, input: { ...base, marks: trailing(n, Math.ceil(n * 0.6)) } },
       { name: 'kesinti', grade, input: { ...base, audio: { ...base.audio!, interrupted: true } } },
       { name: 'düğmeyle süre', grade, input: { ...base, timingAuto: false } },
+      { name: 'düğmeyle süre, yavaş', grade, input: { ...base, timingAuto: false, readingMs: Math.round((n / 20) * 60_000) } },
       { name: 'çok hızlı', grade, input: { ...base, readingMs: Math.max(1000, Math.round((n / (ORAL_MAX_WPM + 40)) * 60_000)), timingAuto: false } },
       { name: 'yavaş', grade, input: { ...base, readingMs: Math.round((n / 25) * 60_000) } },
       { name: 'yarım dinleme', grade, input: { ...base, listened: 0.5 } },
@@ -281,6 +283,8 @@ function checkSpeech(r: SimpleReport, label: string) {
     expect(u.text.length, at).toBeLessThanOrEqual(MAX_UTTERANCE);
     expect(u.text, at).not.toMatch(/[%“”"→←·°×≥≤{}/÷□]|\bsn\b|\bve ark\.|\((?=[^)]*\b(?:19|20)\d{2}\b)[^)]*\)|\s[=+]\s|\([A-ZÇĞİÖŞÜ]{1,2}\)/u);
     expect(u.text, at).not.toMatch(/\d\.$/);
+    // Tırnakla biten cümleye ayrıca nokta konmaz ("…kapanıyor?”" → "?.").
+    expect(u.text, at).not.toMatch(/[?!…]\.$/);
   }
   // Ek bölümlerde grafiğin görünüşünü anlatan cümleler okunmaz.
   // (Soru, seçenek, cümle ve fikir metinleri testin içeriğidir: "Kırmızı bir atkı" okunur.)
@@ -301,10 +305,13 @@ function checkSpeech(r: SimpleReport, label: string) {
       if (c.note) expect(text, label).not.toContain(speakable(c.note).slice(0, 30));
       for (const row of c.rows ?? []) {
         if (row.spoken === undefined) expect(text, `${label} ${row.text}`).toContain(plain(speakable(row.text)).replace(/[.!?]$/, ''));
+        else if (row.label) expect(text, `${label} ${row.spoken}`).toContain(plain(speakable(row.spoken)));
         else expect(text, `${label} ${row.text}`).not.toContain(plain(speakable(row.text)).slice(0, 30));
         expect(text, `${label} ${row.value}`).toContain(plain(speakable(row.value)).replace(/[.!?]$/, ''));
       }
-      if (c.levels?.some((l) => l.active)) expect(text, label).toContain(plain(speakable(`${c.activeLabel ?? (r.audience === 'parent' ? 'Çocuğunuzun düzeyi' : 'Senin düzeyin')}: ${c.badge}`)));
+      // Kişinin düzeyi adıyla okunur ("Senin hızın: Olağan"); rozetteki değer ("Dakikada 90 kelime") düzeyin adı değildir.
+      const active = c.levels?.find((l) => l.active);
+      if (active) expect(text, label).toContain(plain(speakable(`${c.activeLabel ?? (r.audience === 'parent' ? 'Çocuğunuzun düzeyi' : 'Senin düzeyin')}: ${active.label}`)));
     }
   }
 }
@@ -630,12 +637,31 @@ describe('Sesli Okuma Değerlendirmesi: ek bölümler', () => {
         const errs = words.filter((w) => w.mark === 'error').length + words.reduce((k, w) => k + (w.ins ?? 0), 0);
         expect(errs, label).toBe(result.errors);
         expect(words.filter((w) => w.mark === 'unclear').length, label).toBe(result.counts.unclear);
-        const rowErrors = (text.rows ?? []).reduce((k, x) => k + (x.value === 'Hata yok' ? 0 : x.value === 'Bir hata' ? 1 : Number(x.value.split(' ')[0])), 0);
-        expect(rowErrors, label).toBe(result.errors);
+        // Satırların hata sayıları okunan kelimelerdendir; okunmayanlar (metnin yarısından azı okunduysa atlama sayılır) ayrı.
+        const plainRows = (text.rows ?? []).filter((x) => !x.label);
+        const rowErrors = plainRows.reduce((k, x) => k + (x.value === 'Hata yok' ? 0 : x.value === 'Bir hata' ? 1 : Number(x.value.split(' ')[0])), 0);
+        const counted = result.unread > 0 && result.readWords === result.wordCount;
+        expect(rowErrors + (counted ? result.unread : 0), label).toBe(result.errors);
+        // Hiç okunmayan art arda cümleler tek satır: "7.–18. cümleler okunmadı", hata sayısı olarak yazılmaz.
+        for (const x of (text.rows ?? []).filter((y) => y.label)) {
+          expect(x.label, label).toMatch(/^\d+\.(?:–\d+\.)?$/);
+          expect(x.value, label).toMatch(/kelime$/);
+          expect(x.value, label).not.toMatch(/hata/);
+          expect(x.tags.length > 0, label).toBe(counted);
+        }
+        const merged = (text.rows ?? []).filter((y) => y.label);
+        expect(merged.length, label).toBeLessThanOrEqual(1);
+        if (result.unread >= 30) expect(merged.length, label).toBe(1);
         // İşaretsiz cümleler listede yok; işaretli her cümle var.
         const marked = map.rows.filter((x) => x.words.some((w) => w.mark !== 'ok' || w.ins)).map((x) => Number(x.label));
-        expect((text.rows ?? []).map((x) => x.no), label).toEqual(marked);
-        for (const row of text.rows ?? []) expect(row.tags.length, label).toBeGreaterThan(0);
+        const listed = (text.rows ?? []).flatMap((x) => {
+          const m = x.label?.match(/^(\d+)\.(?:–(\d+)\.)?$/);
+          if (!m) return [x.no];
+          const to = Number(m[2] ?? m[1]);
+          return Array.from({ length: to - Number(m[1]) + 1 }, (_, i) => Number(m[1]) + i);
+        });
+        expect(listed, label).toEqual(marked);
+        for (const row of (text.rows ?? []).filter((x) => !x.label)) expect(row.tags.length, label).toBeGreaterThan(0);
         if (result.counts.unclear) expect(text.rows!.some((x) => x.tags.some((t) => t.endsWith('net anlaşılamadı'))), label).toBe(true);
         // Sorular.
         const qs = cardOf(r, 'answers', 'questions')!;
@@ -794,5 +820,143 @@ describe('Okuma ve konu tarama bölümleri: çizimler, okunuş, ekran ve PDF', (
     // Sesli okumada ses yalnızca cihazda: rapor ses kaydı istemez (şema yalnızca özet alır).
     const p = oralPassagesFor(ORAL, 3)[0];
     expect(Object.keys(oralInput(p)).sort()).not.toContain('recording');
+  });
+});
+
+/* ======================= Bağımsız incelemenin bulguları (2026-11-01) ======================= */
+
+describe('İnceleme bulguları: tanımlar, sınırlar ve sözcükler raporun sayılarıyla aynı', () => {
+  it('doğru okuma oranının tanımı gösterilen sayıyı verir (eklemeler dahil; metin bitmeden durunca okunan kısım)', () => {
+    for (const c of oralCases()) {
+      const res = scoreOral(ORAL, c.grade, c.input);
+      for (const r of oralReports(c)) {
+        const label = `sesli ${c.grade} ${c.name} ${r.audience}`;
+        const card = cardOf(r, 'levels', 'accuracy')!;
+        expect(card.text, label).toContain('Metindeki kelime sayısından hatalar çıkarılır; kalan, kelime sayısına bölünür.');
+        expect(card.text!.includes('yalnızca okunan kısım sayıldı'), label).toBe(res.readWords < res.wordCount);
+        // Tanımla hesap: (kelime sayısı − hatalar) ÷ kelime sayısı; kelime sayısı metin bitmeden durunca okunan kısımdır.
+        const byDefinition = Math.floor(Math.max(0, (res.readWords - res.errors) / res.readWords) * 1000 + 1e-9) / 10;
+        expect((card.visual as GaugeVisual).value, label).toBe(byDefinition);
+        expect(card.spoken![0], label).toBe(`Doğru okuma oranı: %${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 }).format(byDefinition)}.`);
+      }
+    }
+  });
+
+  it('tahmin sınırına yakın doğrularda "belirgin biçimde" denmez', () => {
+    for (const [correct, want] of [
+      [4, 'sınıra yakın'],
+      [5, 'belirgin biçimde'],
+      [8, 'belirgin biçimde'],
+    ] as const) {
+      const res = evaluate(READING.slug, readingBody({ grade: 5, correct, wpm: 120 }));
+      for (const r of both(res)) {
+        const t = cardOf(r, 'quality', 'chance')!.text!;
+        expect(t, `${correct} ${r.audience}`).toContain(want);
+        expect(t, `${correct} ${r.audience}`).toContain(r.audience === 'parent' ? 'Doğru cevaplar tahminle' : 'Doğru cevapların tahminle');
+      }
+    }
+  });
+
+  it('matematikteki iddialar formlarla uyuşur: yanlış seçeneklerin çoğu bir hataya göre yazıldı; doğru cevaplar eşit dağıldı', () => {
+    for (const f of QUIZ.forms) {
+      const wrong = f.items.flatMap((it) => it.options.filter((o) => o.key !== it.answer));
+      expect(wrong.filter((o) => o.misconception).length * 2, f.key).toBeGreaterThan(wrong.length);
+      const counts = ['A', 'B', 'C', 'D'].map((l) => f.items.filter((it) => it.answer === l).length);
+      const r = evaluate(QUIZ.slug, quizBody(f.grade, (i) => (i % 3 ? 'right' : 'wrong'))).student;
+      expect(cardOf(r, 'quality', 'letter')!.text!.includes('eşit dağıtıldı'), f.key).toBe(counts.every((x) => x === counts[0]));
+      expect(cardOf(r, 'levels', 'kinds')!.text, f.key).toContain('Yanlış seçeneklerin çoğu');
+      expect(cardOf(r, 'levels', 'kinds')!.text, f.key).toContain('yapmış olabileceğini');
+      expect(cardOf(r, 'levels', 'kinds')!.text, f.key).toContain('öğrenilmemiş olabileceğini');
+    }
+  });
+
+  it('karışık işaret örnekleri her işaret türünü içerir', () => {
+    for (const c of oralCases().filter((x) => x.name.includes('karışık'))) {
+      const res = scoreOral(ORAL, c.grade, c.input);
+      const n = res.counts;
+      const label = `${c.grade} ${c.name}`;
+      for (const k of ['sub', 'omit', 'self', 'rep', 'syl', 'hes', 'ins'] as const) expect(n[k], `${label} ${k}`).toBeGreaterThan(0);
+      expect(n.kinds.suffix, label).toBeGreaterThan(0);
+      if (c.input.auto) expect(n.unclear, label).toBeGreaterThan(0);
+      else expect(n.help, label).toBeGreaterThan(0);
+      expect(Object.values(c.input.marks).some((m) => m.said), label).toBe(true);
+    }
+  });
+
+  it('sesli okumada hız: ders yılı başı notu; düğmeyle ölçülen süre karşılaştırma ya da "çoğundan az" yorumunda söylenir', () => {
+    for (const c of oralCases().filter((x) => x.name.startsWith('düğmeyle süre') || x.name === 'olağan')) {
+      const res = scoreOral(ORAL, c.grade, c.input);
+      for (const r of oralReports(c)) {
+        const label = `sesli ${c.grade} ${c.name} ${r.audience}`;
+        const card = cardOf(r, 'levels', 'rate')!;
+        const compared = card.visual?.type === 'strip';
+        expect(card.text!.includes('Ders yılının başında daha düşük hızlar olağandır.'), label).toBe(compared);
+        expect(card.text!.includes('Süre düğmelere göre ölçüldüğü için'), label).toBe(res.flags.manualTiming && (compared || res.fluency.slowRate));
+        if (compared) expect(card.text, label).toContain(r.audience === 'parent' ? 'okuduğu kelime sayısı' : 'okuduğun kelime sayın');
+      }
+    }
+    // Düğmeyle ölçülen ve yavaş okuma: 1–5. sınıfta karşılaştırılır ve not söylenir.
+    const slow = oralCases().find((x) => x.name === 'düğmeyle süre, yavaş' && x.grade === 3)!;
+    expect(cardOf(oralReports(slow)[1], 'levels', 'rate')!.text).toContain('Süre düğmelere göre ölçüldüğü için hız olduğundan biraz düşük çıkmış olabilir.');
+  });
+
+  it('çubukların ekseni kişinin değerini içine alır (yalnızca çok uç hızlar sağ uçta); koyu yazılan bölge kişinin bölgesidir', () => {
+    const reports: [string, SimpleReport][] = [
+      ...readingCases().flatMap((c) => both(evaluate(READING.slug, readingBody(c))).map((r) => [`okuma ${c.grade} ${c.correct} ${Math.round(c.wpm)}`, r] as [string, SimpleReport])),
+      ...oralCases().flatMap((c) => oralReports(c).map((r) => [`sesli ${c.grade} ${c.name}`, r] as [string, SimpleReport])),
+      ...QUIZ_CASES.flatMap(([name, make]) => both(evaluate(QUIZ.slug, make(7))).map((r) => [`matematik ${name}`, r] as [string, SimpleReport])),
+    ];
+    for (const [label, r] of reports) {
+      for (const p of r.parts!) {
+        for (const c of partCards(p)) {
+          if (c.visual?.type !== 'meter') continue;
+          const m = c.visual;
+          for (const row of m.rows) {
+            if (c.key === 'slow' && row.value > SLOW_AXIS_MAX) continue;
+            expect(row.value, `${label} ${c.title}`).toBeGreaterThanOrEqual(m.min);
+            expect(row.value, `${label} ${c.title}`).toBeLessThanOrEqual(m.max);
+          }
+          const bold = drawVisual(m, 240, 10).shapes.flatMap((x) => (x.k === 'text' && x.weight === 700 && m.zones.some((z) => x.text.startsWith(z.label)) ? [x.text] : []));
+          const zone = m.zones[Math.max(0, m.zones.findLastIndex((z) => m.rows[0].value >= z.from - 1e-9))];
+          if (m.rows.length === 1) expect(bold.map((x) => x.split(' ')[0]), `${label} ${c.title}`).toEqual([zone.label.split(' ')[0]]);
+        }
+      }
+    }
+  }, 240_000);
+
+  it('otomatik analiz: akıcılık anılmaz, yanlış okumada "duyuldu" denir; çok hızlı ve düğmeyle ölçülen sürede çelişkili cümle yok', () => {
+    for (const c of oralCases()) {
+      for (const r of oralReports(c)) {
+        const label = `sesli ${c.grade} ${c.name} ${r.audience}`;
+        const res = scoreOral(ORAL, c.grade, c.input);
+        expect(partOf(r, 'levels').intro.includes('akıcılık'), label).toBe(!!res.prosody);
+        const tags = (cardOf(r, 'answers', 'text')!.rows ?? []).flatMap((x) => x.tags);
+        if (c.input.auto) expect(tags.some((t) => / dedi(?:n)?$/.test(t)), label).toBe(false);
+        if (c.name === 'otomatik karışık') expect(tags.some((t) => t.endsWith('duyuldu')), label).toBe(true);
+        const timing = cardOf(r, 'quality', 'timing')!.text!;
+        if (res.flags.tooFast && res.flags.manualTiming) {
+          expect(timing, label).toContain('Süre, düğmelere basılan anlara göre ölçüldü.');
+          expect(timing, label).not.toContain('düşük çıkmış');
+        }
+        // Soru türlerinin sonuçları sesli okuma bölümünde: ek bölümde yinelenmez, yönlendirilir.
+        expect(cardOf(r, 'levels', 'skills'), label).toBeUndefined();
+        expect(cardOf(r, 'levels', 'comprehension')!.text, label).toContain(r.audience === 'parent' ? '“Okuduğunu anlama” bölümünde' : '“Okuduğunu anlaman” bölümünde');
+        expect(partOf(r, 'levels').intro, label).toContain('“Düzey nasıl belirlendi?” bölümünde');
+        // Aynı metinle yeniden değerlendirmenin sonucu yükseltebileceği söylenir.
+        expect(partOf(r, 'answers').intro, label).toContain('sonuç yüksek çıkabilir');
+        if (cardOf(r, 'quality', 'unclear')) expect(cardOf(r, 'quality', 'unclear')!.spoken!.join(' '), label).toContain("Dikkat sınırı: yüzde 10'un üstü. Yüzde 30'un üstünde rapor verilmez.");
+        if (cardOf(r, 'quality', 'listen')) expect(cardOf(r, 'quality', 'listen')!.spoken!.join(' '), label).toContain("Uyarı: dinlenen kısım yüzde 90'ın altındaysa.");
+      }
+    }
+    for (const r of both(evaluate(QUIZ.slug, quizBody(6, () => 'right')))) expect(partOf(r, 'answers').intro).toContain('sonuç yüksek çıkabilir');
+  });
+
+  it('metin haritası işaretli metnin renkleriyle çizilir (hata kırmızı, gözlem sarı); pirinç kullanılmaz', () => {
+    const c = oralCases().find((x) => x.name === 'karışık işaretler' && x.grade === 5)!;
+    const map = cardOf(oralReports(c)[0], 'answers', 'text')!.visual as WordMapVisual;
+    const fills = new Set(drawVisual(map, 240, 10).shapes.flatMap((x) => (x.k === 'rect' ? [x.fill] : [])));
+    expect(fills.has('danger')).toBe(true);
+    expect(fills.has('warnBg')).toBe(true);
+    expect(fills.has('fill') || fills.has('soft')).toBe(false);
   });
 });

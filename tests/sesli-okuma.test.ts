@@ -270,7 +270,7 @@ describe('Sesli okuma: puanlama', () => {
     expect([r.counts.sub, r.counts.omit, r.counts.help, r.counts.ins, r.counts.self, r.counts.rep, r.counts.syl, r.counts.hes]).toEqual([1, 1, 1, 2, 1, 1, 1, 1]);
     expect(r.errors).toBe(5);
     expect(r.wordsCorrect).toBe(n - 3);
-    expect(r.accuracyPct).toBe(Math.round(((n - 5) / n) * 1000) / 10);
+    expect(r.accuracyPct).toBe(Math.floor(((n - 5) / n) * 1000 + 1e-9) / 10);
     expect(r.wpm).toBe(n);
     expect(r.wcpm).toBe(n - 3);
     expect(r.counts.kinds.suffix).toBe(1);
@@ -548,7 +548,7 @@ describe('Sesli okuma: otomatik analiz (cihazdaki yapay zekâ)', () => {
     expect([r.counts.sub, r.counts.omit, r.counts.help, r.counts.ins, r.counts.self, r.counts.unclear]).toEqual([1, 1, 0, 1, 1, 4]);
     expect(r.errors).toBe(3);
     expect(r.wordsCorrect).toBe(n - 2);
-    expect(r.accuracyPct).toBe(Math.round(((n - 3) / n) * 1000) / 10);
+    expect(r.accuracyPct).toBe(Math.floor(((n - 3) / n) * 1000 + 1e-9) / 10);
     expect(r.wcpm).toBe(n - 2);
     expect(r.prosody).toBeNull();
     expect(r.retell).toBeNull();

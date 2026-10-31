@@ -125,6 +125,9 @@ const CHANCE_WORDS: Record<number, string> = { 2: 'yarıdır', 3: 'üçte birdir
 
 /* ======================= Okuma Hızı ve Anlama ======================= */
 
+/** "Çok uzun okuma süresi" çubuğunun ekseninin en çoğu (dakikada kelime): daha genişte "15" ile "0" üst üste biner. */
+export const SLOW_AXIS_MAX = 450;
+
 export function readingParts(input: {
   def: ReadingInstrument;
   passage: ReadingPassage;
@@ -143,14 +146,16 @@ export function readingParts(input: {
   const top = niceMax(lim.max * 1.25);
 
   /* ---------- 3. Sonuca ne kadar güvenebiliriz? (önce: düzeyler bölümü "Dikkat"i anar) ---------- */
+  // Çubuğun ekseni hızı içine alır (çok yüksek hızda en çok dört katına kadar; daha ötesi sağ uçta).
+  const fastTop = Math.min(top * 4, Math.max(top, niceMax(wpm * 1.05)));
   const fastVisual: MeterVisual = {
     type: 'meter',
     label: 'Dakikada okunan kelime',
     min: 0,
-    max: top,
+    max: fastTop,
     zones: [
       { from: 0, to: lim.max, label: 'Uygun', warn: false },
-      { from: lim.max, to: top, label: 'Çok hızlı', warn: true },
+      { from: lim.max, to: fastTop, label: 'Çok hızlı', warn: true },
     ],
     rows: [{ label: v({ you: 'Okuma hızın', parent: 'Okuma hızı' }), value: wpm, valueLabel: `${n0(wpm)} kelime` }],
   };
@@ -168,8 +173,8 @@ export function readingParts(input: {
       ...(knew
         ? [
             v({
-              you: 'Buna rağmen soruların çoğu doğru; konuyu önceden biliyor olabilirsin. O zaman anlama sonucu, metinden çok önceki bilgini gösterir.',
-              parent: 'Buna rağmen soruların çoğu doğru; konu önceden biliniyor olabilir. O zaman anlama sonucu, metinden çok önceki bilgiyi gösterir.',
+              you: 'Buna rağmen soruların çoğu doğru; konuyu önceden biliyor olabilirsin. O zaman anlama sonucu, metinden çok önceki bilgini gösterebilir.',
+              parent: 'Buna rağmen soruların çoğu doğru; konu önceden biliniyor olabilir. O zaman anlama sonucu, metinden çok önceki bilgiyi gösterebilir.',
             }),
           ]
         : []),
@@ -178,7 +183,9 @@ export function readingParts(input: {
     visual: fastVisual,
     spoken: [`${v({ you: 'Okuma hızın', parent: 'Okuma hızı' })}: dakikada ${n0(wpm)} kelime.`, `Çok hızlı sayılan: dakikada ${lim.max} kelimenin üstü.`],
   });
-  const slowTop = Math.max(60, lim.slow);
+  // Eksen hızı içine alır; ama en çok 450: daha geniş eksende sınırın sayısı (15) sıfırın üstüne biner. Çok hızlı geçilen
+  // metinde (bu denetim zaten uygun) hız sağ uçta kalabilir.
+  const slowTop = Math.min(top, SLOW_AXIS_MAX, Math.max(60, lim.slow, niceMax(wpm * 1.1)));
   const slowCard = checkCard('slow', 'Çok uzun okuma süresi', tooSlow ? 'warn' : 'ok', {
     text: [
       'Çok yavaş bir okuma, okurken uzun bir ara verildiğini düşündürür.',
@@ -216,7 +223,9 @@ export function readingParts(input: {
             you: 'Doğru cevap sayın tahminle de çıkabilecek kadar az; bu yüzden sonuç, neyi anlayıp neyi anlamadığını tam göstermez.',
             parent: 'Doğru cevap sayısı tahminle de çıkabilecek kadar az; bu yüzden sonuç, çocuğunuzun neyi anlayıp neyi anlamadığını tam göstermez.',
           })
-        : v({ you: 'Doğru cevapların tahminle beklenenin belirgin biçimde üstünde.', parent: 'Doğru cevaplar tahminle beklenenin belirgin biçimde üstünde.' }),
+        : rr.correct >= chanceMax + 2
+          ? v({ you: 'Doğru cevapların tahminle beklenenin belirgin biçimde üstünde.', parent: 'Doğru cevaplar tahminle beklenenin belirgin biçimde üstünde.' })
+          : v({ you: 'Doğru cevapların tahminle beklenenin üstünde; ama sınıra yakın.', parent: 'Doğru cevaplar tahminle beklenenin üstünde; ama sınıra yakın.' }),
       ...(rr.correct === 0 ? ['Hiçbir soru doğru değil; sorular dikkatle okunmadan işaretlenmiş olabilir.'] : []),
     ].join(' '),
     note: 'Kırmızı çizgi doğru sayısını, renkli bölge tahminle de çıkabilecek sonuçları gösterir.',
@@ -282,7 +291,7 @@ export function readingParts(input: {
   ];
   const paceActive = tooSlow ? null : tooFast ? 3 : rr.pace === 'slow' ? 0 : rr.pace === 'ok' ? 1 : 2;
   const PACE_TEXT = [
-    'Metnin düzeyine göre yavaş. Dikkatli okumaktan da kaynaklanabilir; akıcılık çalışması yararlı olur.',
+    'Metnin düzeyine göre yavaş. Dikkatli okumaktan da kaynaklanabilir; akıcılık çalışması yararlı olabilir.',
     'Metnin düzeyine göre olağan bir hız.',
     'Metnin düzeyine göre hızlı. Anlama da iyiyse güzel bir işaret; anlama zayıfsa yavaşlamak iyi gelir.',
     'Bu sürede metnin hepsi okunamaz; hız yorumlanmaz.',
@@ -308,8 +317,8 @@ export function readingParts(input: {
       'Süre “Okumaya başla” ile “Okudum” düğmeleri arasında ölçülür; başka sekmede geçen süre sayılmaz.',
       'Sınırlar metnin düzeyine göre değişir ve Ölçekhane’nin deneme ölçütleridir.',
       v({
-        you: 'Sessiz okuma için Türkiye’de yayımlanmış bir ölçüt yok; bu yüzden hızın başka öğrencilerle karşılaştırılmaz.',
-        parent: 'Sessiz okuma için Türkiye’de yayımlanmış bir ölçüt yok; bu yüzden hız başka çocuklarla karşılaştırılmaz.',
+        you: 'Bildiğimiz kadarıyla sessiz okuma hızı için Türkiye’yi temsil eden bir ölçüt yayımlanmadı; bu yüzden hızın başka öğrencilerle karşılaştırılmaz.',
+        parent: 'Bildiğimiz kadarıyla sessiz okuma hızı için Türkiye’yi temsil eden bir ölçüt yayımlanmadı; bu yüzden hız başka çocuklarla karşılaştırılmaz.',
       }),
       ...(tooSlow ? [v({ you: 'Okuma süren çok uzun ölçüldüğü için hızın yorumlanmadı.', parent: 'Okuma süresi çok uzun ölçüldüğü için hız yorumlanmadı.' })] : []),
       ...(tooFast ? [v({ you: 'Metni çok kısa sürede geçtiğin için hızın yorumlanmadı.', parent: 'Metin çok kısa sürede geçildiği için hız yorumlanmadı.' })] : []),
@@ -331,7 +340,7 @@ export function readingParts(input: {
     badge: eff !== null ? `Dakikada ${n0(eff)} kelime` : 'Hesaplanmadı',
     text: [
       'Okuma hızını anlamayla birlikte gösterir: okuma hızı, şansla düzeltilmiş anlama oranıyla çarpılır.',
-      'Şansla düzeltmede her üç yanlışa karşılık bir doğrunun tahminle gelmiş olabileceği kabul edilir.',
+      'Şansla düzeltmede her üç yanlış ya da boş cevaba karşılık bir doğrunun tahminle gelmiş olabileceği kabul edilir.',
       'Bütün sorular doğruysa okuma hızına eşittir; yanlışlar arttıkça küçülür.',
       'Yalnızca hız yorumlanıyorsa ve soruların en az dörtte üçü doğruysa hesaplanır.',
       ...(eff === null
@@ -354,7 +363,8 @@ export function readingParts(input: {
               eff !== null ? { label: 'Anlayarak okuma hızı', value: eff, valueLabel: n0(eff) } : { label: 'Anlayarak okuma hızı', value: 0, valueLabel: 'hesaplanmadı' },
             ],
           } satisfies BarsVisual,
-          spoken: [`Okuma hızı: dakikada ${n0(wpm)} kelime.`, eff !== null ? `Anlayarak okuma hızı: dakikada ${n0(eff)} kelime.` : 'Anlayarak okuma hızı hesaplanmadı.'],
+          // Anlayarak okuma hızı rozette okunur; burada yalnızca karşılaştırılan okuma hızı.
+          spoken: [`Okuma hızı: dakikada ${n0(wpm)} kelime.`],
         }
       : {}),
   };
@@ -485,8 +495,8 @@ export function oralParts(input: {
           'Net anlaşılamayan kelime çok olsaydı da rapor verilmez, yeniden okuma istenirdi.',
           r.flags.unclearHigh
             ? v({
-                you: 'Senin okumanda net anlaşılamayan kelime çok; bu yüzden sonuçların yaklaşık. Sessiz bir yerde yeniden okursan daha net bir sonuç alırsın.',
-                parent: 'Bu okumada net anlaşılamayan kelime çok; doğru okuma oranı ve hız olduğundan yüksek görünebilir.',
+                you: 'Yapay zekâ okumanda birçok kelimeyi net ayırt edemedi; bu yüzden sonuçların yaklaşık. Sessiz bir yerde yeniden okursan daha net bir sonuç alırsın.',
+                parent: 'Yapay zekâ bu okumada birçok kelimeyi net ayırt edemedi; doğru okuma oranı ve dakikada doğru okunan kelime olduğundan yüksek görünebilir.',
               })
             : v({ you: 'Net anlaşılamayan kelimeler az; bu açıdan bir sorun görünmüyor.', parent: 'Net anlaşılamayan kelimeler az; bu açıdan bir sorun görünmüyor.' }),
         ].join(' '),
@@ -505,7 +515,7 @@ export function oralParts(input: {
         },
         spoken: [
           `Net anlaşılamayan kelimeler: ${spokenCount(c.unclear, 'kelime')}, yüzde ${nf1.format(shown)}.`,
-          `Dikkat sınırı: yüzde ${Math.round(UNCLEAR_HIGH * 100)}. Bundan sonra rapor verilmeyen sınır: yüzde ${Math.round(UNCLEAR_MAX * 100)}.`,
+          `Dikkat sınırı: yüzde ${Math.round(UNCLEAR_HIGH * 100)}'un üstü. Yüzde ${Math.round(UNCLEAR_MAX * 100)}'un üstünde rapor verilmez.`,
         ],
       }),
     );
@@ -535,7 +545,7 @@ export function oralParts(input: {
           ],
           rows: [{ label: 'Dinlenen kısım', value: heard, valueLabel: `%${heard}` }],
         },
-        spoken: [`Kaydın dinlenen kısmı: yüzde ${heard}.`, `Uyarı sınırı: yüzde ${Math.round(MIN_LISTENED * 100)}.`],
+        spoken: [`Kaydın dinlenen kısmı: yüzde ${heard}.`, `Uyarı: dinlenen kısım yüzde ${Math.round(MIN_LISTENED * 100)}'ın altındaysa.`],
       }),
     );
   }
@@ -545,7 +555,9 @@ export function oralParts(input: {
     checkCard('timing', 'Okuma süresi', timingWarn ? 'warn' : 'ok', {
       text: [
         r.flags.manualTiming
-          ? 'Kayıtta okumanın başı ve sonu ayırt edilemediği için süre, düğmelere basılan anlara göre ölçüldü. Bu yüzden hız olduğundan biraz düşük çıkmış olabilir.'
+          ? r.flags.tooFast
+            ? 'Süre, düğmelere basılan anlara göre ölçüldü.'
+            : 'Kayıtta okumanın başı ve sonu ayırt edilemediği için süre, düğmelere basılan anlara göre ölçüldü. Bu yüzden hız olduğundan biraz düşük çıkmış olabilir.'
           : 'Süre, kayıttaki ilk sesten son sese ölçüldü; baştaki ve sondaki sessizlik sayılmadı.',
         ...(r.flags.interrupted ? ['Kayıt sırasında bir kesinti oldu (ör. ekran kapandı); süre ve hız doğru ölçülmemiş olabilir.'] : []),
         'Sesli okumada çok yüksek bir hız inandırıcı değildir; metnin tamamı okunmamış ya da kayıt erken bitirilmiş olabilir.',
@@ -628,7 +640,8 @@ export function oralParts(input: {
     title: 'Doğru okuma oranı',
     badge: accLabels[r.accuracyLevel],
     text: [
-      'Doğru okunan kelimelerin bütün kelimelere oranıdır.',
+      'Metindeki kelime sayısından hatalar çıkarılır; kalan, kelime sayısına bölünür.',
+      ...(r.readWords < r.wordCount ? ['Okuma metin bitmeden durduğu için yalnızca okunan kısım sayıldı.'] : []),
       `Yanlış okuma, atlama${auto ? '' : ', yardımla okuma'} ve metne kelime ekleme hata sayılır.`,
       v({ you: 'Kendi düzeltmen, tekrar, heceleme ve duraksama hata sayılmaz.', parent: 'Öğrencinin kendi düzelttiği okuma, tekrar, heceleme ve duraksama hata sayılmaz.' }),
       ...(auto ? ['Yapay zekânın net anlayamadığı kelimeler hata sayılmaz; doğru okunmuş gibi hesaba katılır.'] : []),
@@ -659,6 +672,10 @@ export function oralParts(input: {
         parent: 'Metin kapandıktan sonra sorulan sorulardan kaç tanesinin doğru cevaplandığına bakılır.',
       }),
       'Sorular az olduğu için tek bir soru düzeyi değiştirebilir.',
+      v({
+        you: 'Soru türlerine göre sonuçların yukarıda, “Okuduğunu anlaman” bölümünde.',
+        parent: 'Soru türlerine göre sonuçlar yukarıda, “Okuduğunu anlama” bölümünde.',
+      }),
     ].join(' '),
     note: v({ you: 'Her kutu bir doğru sayısıdır; dolu kutu senin sonucun, vurgulu kutular düzeyin.', parent: 'Her kutu bir doğru sayısıdır; dolu kutu öğrencinin sonucu, vurgulu kutular düzeyidir.' }),
     visual: { type: 'cells', label: 'Anlama: doğru cevaplar', min: 0, max: cm.total, value: cm.correct, valueLabel: `${cm.correct}/${cm.total}`, zones: compZones.zones, active: compActive >= 0 ? compActive : null },
@@ -667,7 +684,8 @@ export function oralParts(input: {
     spoken: [`Doğru cevaplar: ${cm.correct} / ${cm.total}.`, zonesSpoken(compZones.zones, 'doğru')],
   };
 
-  const levelCards: PartCard[] = [accCard, compCard, skillsCard(cm.skills)];
+  // Soru türlerinin sonuçları sesli okuma bölümünde ("Okuduğunu anlama") zaten var: burada yinelenmez.
+  const levelCards: PartCard[] = [accCard, compCard];
   const sources: NonNullable<ReportPart['sources']> = [];
   const ref = def.referenceRates.find((x) => x.grade === grade);
   if (r.flags.tooFast) {
@@ -692,11 +710,12 @@ export function oralParts(input: {
       parts.push(
         'Karşılaştırma, Ankara’da yapılmış bir çalışmanın ders yılı sonundaki sonuçlarıyla yapılır (Erden ve ark., 2002).',
         'Çalışma eskidir ve tek bir ile aittir; yalnızca kaba bir fikir verir.',
+        'Ders yılının başında daha düşük hızlar olağandır.',
         r.fluency.slowRate
-          ? v({ you: 'Dakikada doğru okuduğun kelime, o çalışmadaki öğrencilerin çoğundan az.', parent: 'Dakikada doğru okuduğu kelime, o çalışmadaki öğrencilerin çoğundan az.' })
+          ? v({ you: 'Dakikada doğru okuduğun kelime sayın, o çalışmadaki öğrencilerin çoğundan az.', parent: 'Dakikada doğru okuduğu kelime sayısı, o çalışmadaki öğrencilerin çoğundan az.' })
           : r.wcpm > hi
-            ? v({ you: 'Dakikada doğru okuduğun kelime, o çalışmadaki öğrencilerin çoğundan fazla.', parent: 'Dakikada doğru okuduğu kelime, o çalışmadaki öğrencilerin çoğundan fazla.' })
-            : v({ you: 'Dakikada doğru okuduğun kelime, o çalışmadaki öğrencilerin çoğunun aralığında.', parent: 'Dakikada doğru okuduğu kelime, o çalışmadaki öğrencilerin çoğunun aralığında.' }),
+            ? v({ you: 'Dakikada doğru okuduğun kelime sayın, o çalışmadaki öğrencilerin çoğundan fazla.', parent: 'Dakikada doğru okuduğu kelime sayısı, o çalışmadaki öğrencilerin çoğundan fazla.' })
+            : v({ you: 'Dakikada doğru okuduğun kelime sayın, o çalışmadaki öğrencilerin çoğunun aralığında.', parent: 'Dakikada doğru okuduğu kelime sayısı, o çalışmadaki öğrencilerin çoğunun aralığında.' }),
       );
     } else if (!ref) {
       parts.push('Karşılaştırmada kullanılabilecek çalışma yalnızca 1–5. sınıfları kapsıyor; bu yüzden karşılaştırma yapılmadı.');
@@ -707,11 +726,15 @@ export function oralParts(input: {
       if (r.fluency.slowRate) {
         parts.push(
           v({
-            you: 'Yine de daha kolay bir metinde dakikada doğru okuduğun kelime, o çalışmadaki aynı sınıf öğrencilerinin çoğundan az (Erden ve ark., 2002).',
-            parent: 'Yine de daha kolay bir metinde dakikada doğru okuduğu kelime, o çalışmadaki aynı sınıf öğrencilerinin çoğundan az (Erden ve ark., 2002).',
+            you: 'Yine de daha kolay bir metinde dakikada doğru okuduğun kelime sayın, o çalışmadaki aynı sınıf öğrencilerinin çoğundan az (Erden ve ark., 2002).',
+            parent: 'Yine de daha kolay bir metinde dakikada doğru okuduğu kelime sayısı, o çalışmadaki aynı sınıf öğrencilerinin çoğundan az (Erden ve ark., 2002).',
           }),
         );
       }
+    }
+    // Düğmeyle ölçülen süre hızı biraz düşük gösterebilir: karşılaştırma ya da "çoğundan az" yorumu varsa söylenir.
+    if (r.flags.manualTiming && ((compared && ref) || r.fluency.slowRate)) {
+      parts.push('Süre düğmelere göre ölçüldüğü için hız olduğundan biraz düşük çıkmış olabilir.');
     }
     if ((compared && ref) || r.fluency.slowRate) {
       const erden = def.science.citations?.find((s) => s.text.startsWith('Erden'));
@@ -754,8 +777,8 @@ export function oralParts(input: {
           }
         : {}),
       visual,
+      // Dakikada doğru kelime rozette okunur; burada bütün kelimeler ve (varsa) karşılaştırma.
       spoken: [
-        `Dakikada doğru okunan kelime: ${n0(r.wcpm)}.`,
         `Dakikada okunan bütün kelime: ${n0(r.wpm)}.`,
         ...(compared && ref ? [`${grade}. sınıf ortalaması: ${ref.wpm}. Öğrencilerin çoğu ${lo}–${hi} arasında.`] : []),
       ],
@@ -766,7 +789,7 @@ export function oralParts(input: {
     const total = r.prosody.total;
     const pz = cellZones(4, 16, (k) => prosodyLabel(k), (l) => l);
     const P_TEXT: Record<string, string> = {
-      'Desteğe ihtiyaç var': 'Okuma sık sık takılıyor ya da kelime kelime ilerliyor; tekrarlı okuma yararlı olur.',
+      'Desteğe ihtiyaç var': 'Okuma sık sık takılıyor ya da kelime kelime ilerliyor; tekrarlı okuma yararlı olabilir.',
       Gelişiyor: 'Akıcılık gelişiyor; bazı yönler henüz oturmadı.',
       'Akıcı ve anlamlı': 'Konuşur gibi, anlama uygun vurgu ve tonlamayla okunuyor.',
     };
@@ -813,7 +836,7 @@ export function oralParts(input: {
           you: 'Metni kendi cümlelerinle anlatırken söylediğin fikirler sayılır.',
           parent: 'Öğrencinin metni kendi cümleleriyle anlatırken söylediği fikirler sayılır.',
         }),
-        'Temel fikirler, metni anlayan birinin mutlaka söyleyeceği fikirlerdir; düzeyi onlar belirler.',
+        'Temel fikirler, metnin özünü taşıyan fikirlerdir; düzeyi onlar belirler.',
         'Ayrıntılar ayrıca sayılır ama düzeyi değiştirmez.',
       ].join(' '),
       note: v({ you: 'Her kutu bir sayıdır; dolu kutu söylediğin temel fikirlerin sayısı, vurgulu kutular düzeyin.', parent: 'Her kutu bir sayıdır; dolu kutu söylenen temel fikirlerin sayısı, vurgulu kutular düzeyidir.' }),
@@ -855,7 +878,7 @@ export function oralParts(input: {
         caption: lens.some((x) => x > max) ? `Her nokta bir sessizlik; ${max} sn’den uzunlar sağ uçta` : 'Her nokta bir sessizlik',
       },
       spoken: [
-        `${PAUSE_MS / 1000} saniyeden uzun duraklama: ${spokenCount(p.count)}.`,
+        `Sayılan duraklamalar ${PAUSE_MS / 1000} saniyeden uzun olanlardır.`,
         `${LONG_PAUSE_MS / 1000} saniyeden uzun duraklama: ${spokenCount(p.long)}.`,
       ],
     });
@@ -869,7 +892,8 @@ export function oralParts(input: {
         you: 'Bu bölüm her ölçünün ne anlattığını ve nasıl hesaplandığını anlatır; senin sonucun grafiklerde işaretli.',
         parent: 'Bu bölüm her ölçünün ne anlattığını ve nasıl hesaplandığını anlatır; öğrencinin sonucu grafiklerde işaretli.',
       }),
-      'Sınırlar Ölçekhane’nin deneme ölçütleridir; doğru okuma, anlama ve akıcılık başka öğrencilerle karşılaştırılmaz.',
+      `Sınırlar Ölçekhane’nin deneme ölçütleridir; ${r.prosody ? 'doğru okuma, anlama ve akıcılık' : 'doğru okuma ve anlama'} başka öğrencilerle karşılaştırılmaz.`,
+      'Metnin düzeyinin nasıl belirlendiği yukarıda, “Düzey nasıl belirlendi?” bölümünde.',
       ...(hasWarn(quality)
         ? [v({ you: 'Güven denetimlerinde “Dikkat” olduğu için sonuçlarını dikkatle oku.', parent: 'Güven denetimlerinde “Dikkat” olduğu için sonuçları dikkatle okuyun.' })]
         : []),
@@ -894,24 +918,48 @@ export function oralParts(input: {
   const NAMES = { sub: 'yanlış okuma', omit: 'atlama', help: 'yardımla okuma', unclear: 'net anlaşılamadı' } as const;
   const rows: PartRow[] = [];
   const map: WordMapVisual['rows'] = [];
+  // Hiç okunmayan art arda cümleler tek satırda ("7.–18. cümleler okunmadı"); hata sayısı olarak yazılmaz.
+  let run: { from: number; to: number; words: number } | null = null;
+  const flush = () => {
+    if (!run) return;
+    const one = run.from === run.to;
+    rows.push({
+      no: run.from,
+      label: one ? `${run.from}.` : `${run.from}.–${run.to}.`,
+      text: one ? 'cümle okunmadı' : 'cümleler okunmadı',
+      spoken: one ? `${run.from}. cümle okunmadı` : `${run.from}. ile ${run.to}. cümleler okunmadı`,
+      value: countText(run.words, 'kelime'),
+      tags: unreadCounted ? ['metnin yarısından azı okunduğu için atlama sayıldı'] : [],
+      muted: true,
+    });
+    run = null;
+  };
   sentences.forEach((sent, k) => {
     const no = k + 1;
     map.push({ label: String(no), words: sent.map((w) => ({ len: Math.max(1, bare(w.text).length), mark: markOf(w), ...(w.m.ins ? { ins: w.m.ins } : {}) })) });
+    if (sent.every((w) => w.i >= unreadFrom)) {
+      if (run) {
+        run.to = no;
+        run.words += sent.length;
+      } else run = { from: no, to: no, words: sent.length };
+      return;
+    }
+    flush();
     const tags: string[] = [];
+    // Satırın hata sayısı okunan kelimelerindendir; okunmayan kelimeler ayrı etikette.
     let errors = 0;
     let unread = 0;
     for (const w of sent) {
       const word = bare(w.text);
       if (w.i >= unreadFrom) {
         unread++;
-        if (unreadCounted) errors++;
         continue;
       }
       const notes: string[] = [];
       const s = w.m.s;
       if (s === 'sub') {
         errors++;
-        if (w.m.said) tags.push(`“${word}” yerine “${w.m.said}” ${said}`);
+        if (w.m.said) tags.push(auto ? `“${word}” yerine “${w.m.said}” duyuldu` : `“${word}” yerine “${w.m.said}” ${said}`);
         else notes.push(NAMES.sub);
       } else if (s === 'omit' || s === 'help') {
         errors++;
@@ -931,6 +979,7 @@ export function oralParts(input: {
     if (tags.length === 0) return;
     rows.push({ no, text: sent.map((w) => w.text).join(' '), value: errors === 0 ? 'Hata yok' : errors === 1 ? 'Bir hata' : `${errors} hata`, tags });
   });
+  flush();
   const usedMarks = new Set(map.flatMap((m) => m.words.map((w) => w.mark)));
   const WORD_LEGEND: { mark: WordMark; text: string }[] = [
     { mark: 'ok', text: 'doğru' },
@@ -957,6 +1006,10 @@ export function oralParts(input: {
           ? 'Aşağıda yalnızca işaret olan cümleler yazıyor; işaretsiz okunan cümleler haritada görünür.'
           : 'Her cümlede en az bir işaret var.',
       ...(auto ? ['Net anlaşılamayan kelimeler hata sayılmadı.'] : []),
+      v({
+        you: 'Kelimelerin işaretleri yukarıda, “Okuman, kelime kelime” bölümünde de var.',
+        parent: 'Kelimelerin işaretleri yukarıda, “Okuma, kelime kelime” bölümünde de var.',
+      }),
     ].join(' '),
     note: 'Her satır bir cümle, her kutu bir kelimedir; kutunun genişliği kelimenin uzunluğuna göredir. Dar dolu kutu bir eklemedir.',
     visual: wordmap,
@@ -1020,6 +1073,10 @@ export function oralParts(input: {
             parent: 'Bu bölüm okumayı cümle cümle, soruları ve metnin anlatılmasını tek tek gösterir.',
           })
         : v({ you: 'Bu bölüm okumanı cümle cümle ve soruları tek tek gösterir.', parent: 'Bu bölüm okumayı cümle cümle ve soruları tek tek gösterir.' }),
+      v({
+        you: 'Aynı metni yeniden okursan soruların cevaplarını gördüğün için sonuç yüksek çıkabilir; başka bir metin seçmek daha doğru olur.',
+        parent: 'Aynı metinle yeniden değerlendirme yapılırsa cevaplar görüldüğü için sonuç yüksek çıkabilir; başka bir metin seçmek daha doğru olur.',
+      }),
       v({
         you: 'Bu bilgiler yalnızca bu sayfada ve indirdiğin PDF dosyasında görünür; hiçbir yerde saklanmaz.',
         parent: 'Bu bilgiler yalnızca bu sayfada ve indirilen PDF dosyasında görünür; hiçbir yerde saklanmaz.',
