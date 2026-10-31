@@ -329,7 +329,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   kartlar, ek bölümler (eksiksiz: düzeyler, maddeler ve cevaplar, denetimler; "Bölümü geç" düğmesi), notlar; yol haritasında giriş, kısaca, öneriler (varsa), ortamlar, yaklaşım, haftalar (kaynak listesi okunmaz).
   Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak gösterimleri ("(Kail, 1991)") ve kısa
   büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "62 kelime/dakika" →
-  "dakikada 62 kelime", "1,5 sn" → "1,5 saniye", "5–8. sınıf" → "5. ile 8. sınıf", "÷", "□", "=" ve "+" sözle; "ve ark."
+  "dakikada 62 kelime", "1,5 sn" → "1,5 saniye", "5–8. sınıf" → "5. ile 8. sınıf", "{1 3/4}" → "1 tam 3 bölü 4", "102 045" tek
+  sayı, "÷", "□", "=" ve "+" sözle; "ve ark."
   → "ve arkadaşları"; öne çıkan sayının notu küçük harfle başlıyorsa değerin devamı ("72, dört bölümde"); parçalar en çok
   200 karakter, sıra numarasından sonra bölünmez, sondaki sayı noktasız. `tests/sesli-dinle.test.ts` bütün anket ve görev
   raporlarında (görevlerin bütün sonuç örüntüleri), okuma, sesli okuma ve konu taramada okunacak metni, ses seçimini ve
@@ -345,8 +346,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   `note`/`introNote` ve girişin görünüş cümleleri okunmaz; bir ek bölümün bütün parçaları tek bölümdür, oynatıcıdaki
   "Bölümü geç" hepsini atlar; ~3 dakikadan uzun bölümün başında yaklaşık süresi söylenir). Sıra: sonuç kartları, destek
   kutusu (uzun listelerin altında kalmasın), ek bölümler, "tanı değildir" notu, karşılaştırma, yol haritası; PDF'te
-  "Cevapların tek tek" yol haritasından sonra ektir (60'tan çok maddeli testte grafiksiz). Görev, okuma, sesli okuma ve
-  matematik testleri sonraki aşamalarda aynı modeli kullanır.
+  "Cevapların tek tek" yol haritasından sonra ektir (60'tan çok maddeli testte grafiksiz). Görev testleri sonraki aşamada
+  aynı modeli kullanır; okuma, sesli okuma ve matematik aşağıda.
 - Anket testleri (`lib/reports/likert-parts.ts`, `evaluate.ts` kurar): **Düzeylerin anlamı** (her ölçekte kartın düzey
   çubuğunun aynısı; düzeylerin anlatımı şablondaki kısa başlıklar `summary`, düzeyin adını yinelemez, kartın uzun metni
   yinelenmez; şablonda metni olmayan ve ters maddesi olmayan ölçekte cevapların ortalamasının yakın olduğu seçenek, Holland
@@ -364,6 +365,25 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   cevap göstermez. Öğrenci raporunda bölüm kapalı kutularla başlar ve "raporunu kiminle paylaşacağına sen karar verirsin"
   der; test başlangıç sayfası da söyler. Hiçbir şey saklanmaz. Ek bölümler uzun testlerin PDF'ini uzatır (240 madde
   yerelde ~4 sn).
+- Okuma, sesli okuma ve konu tarama (`lib/reports/reading-parts.ts`, `quiz-parts.ts`; `evaluate.ts` kurar; grafikler
+  `lib/reports/visual-cells.ts`: soru kutuları `grid`, metin haritası `wordmap`, sayı kutuları `cells`): **Düzeylerin ve
+  ölçülerin anlamı** (her ölçünün ne anlattığı ve nasıl hesaplandığı, kişinin değeri testin kendi sınırlarıyla: okumada anlama
+  0–8 ve hız `READING_PACE` bölgeleri, soru türleri, anlayarak okuma hızı; sesli okumada doğru okuma oranı kartın çubuğunun
+  aynısı, anlama, dakikada doğru kelime (Erden ortalaması yalnızca hız kartının da karşılaştırdığı durumda, `rateCompared`),
+  akıcılık 4–16, yeniden anlatma, duraklamalar; matematikte genel sonuç kartın çubuğunun aynısı, alanlar, doğru/yanlış/
+  "Bilmiyorum", hata türleri; yorumlanmayan sonuçta grafik ve düzey yok; norm olmayan yerde karşılaştırma yok),
+  **Cevapların soru soru** (sesli okumada "Okuman ve cevapların tek tek": metin haritası, yalnızca işaretli cümleler, sorular,
+  yeniden anlatmada söylenen fikirler; net anlaşılamayan kelime hiçbir yerde hata sayılmaz; matematikte alan alan sorular,
+  verilen ve doğru cevap, hata türü, süre; çözümler raporun soru soru incelemesinde kalır, burada yinelenmez; soru metni sesli
+  okunmaz: `PartRow.spoken`), **Sonuca ne kadar güvenebiliriz?** (okumada çok kısa ve çok uzun süre, tahminle gelebilecek
+  doğrular `chanceLike`; sesli okumada net anlaşılamadı `UNCLEAR_HIGH`/`UNCLEAR_MAX` ve metinle eşleşme `MIN_MATCH_SHARE`
+  (lib/oral/auto.ts), kaydın dinlenmesi, okuma süresi (düğmeyle ölçüm, kesinti, `ORAL_MAX_WPM`), metnin sonuna kadar okuma;
+  matematikte hız, aynı seçenek, "Bilmiyorum" `manyDontKnow`). Bu cevaplar kişisel ifade değil, performanstır: veli
+  raporunda da vardır. Sesli okumanın veli ve öğretmen raporu öğrenciden üçüncü kişi olarak söz eder ("Öğrencinin düzeyi",
+  `PartCard.activeLabel`). Yeniden anlatma listesi yalnızca bu bölümdedir (sesli okuma bölümünde yönlendirme cümlesi).
+  `tests/rapor-bolumleri-okuma.test.ts` bütün sınıflarda ve sonuç örüntülerinde (hız uçları, tahmin, "Bilmiyorum", hep aynı
+  seçenek, süre yok, otomatik analiz, metin bitmeden durma, kesinti, düğmeyle süre, yarım dinleme) bölümleri, kartların
+  raporla ve uyarı kutusuyla aynı olmasını, dili, sesli okumayı, ekranı ve PDF'i dener.
 - Yeni anket testi bölümleri kendiliğinden alır; şablonda her düzeyin düzey adından farklı bir `summary`'si olmalı; ölçek
   adı raporun genel bakışındakinden farklıysa `UNIT_BY_SLUG`'a yazılır. `tests/rapor-bolumleri.test.ts` yayındaki her anket
   testinde öğrenci, veli ve yetişkin raporunu dener: bölümler ve grafikleri, madde ve cevapların testle aynı olması, veli

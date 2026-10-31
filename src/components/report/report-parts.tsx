@@ -1,3 +1,4 @@
+import { MathText } from '@/components/quiz/math-text';
 import { ItemVisualView } from '@/components/report/item-visual';
 import type { PartCard, PartLevel, PartRow, PartStatus, ReportPart } from '@/lib/reports/parts';
 
@@ -20,7 +21,7 @@ function Badge({ text, status }: { text: string; status?: PartStatus }) {
  * Düzeyler yan yana (telefonda alt alta); kişinin düzeyi vurgulu. Birleşik kutuda ("Çok az · Az kullanılıyor") kişinin düzeyi
  * adıyla yazılır; puanın sınırına yakın olduğu komşu düzeyde "Bu da uyabilir".
  */
-function Levels({ levels, you, badge }: { levels: PartLevel[]; you: boolean; badge?: string }) {
+function Levels({ levels, you, badge, whose }: { levels: PartLevel[]; you: boolean; badge?: string; whose?: string }) {
   return (
     <ul className={`grid gap-2 ${LEVEL_COLS[levels.length] ?? 'sm:grid-cols-3'}`}>
       {levels.map((l) => (
@@ -33,7 +34,7 @@ function Levels({ levels, you, badge }: { levels: PartLevel[]; you: boolean; bad
           {l.text && <span className="text-[0.9375rem] text-ink-2">{l.text}</span>}
           {l.active && (
             <span className="t-small font-bold text-brass-ink">
-              {you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi'}
+              {whose ?? (you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi')}
               {badge && l.label.includes(' · ') ? `: ${badge}` : ''}
             </span>
           )}
@@ -44,6 +45,9 @@ function Levels({ levels, you, badge }: { levels: PartLevel[]; you: boolean; bad
   );
 }
 
+/** Konu taramada soru ve seçenek metinlerindeki kesirler ({3/4}) alt alta yazılır; öteki metinler olduğu gibi. */
+const Txt = ({ t }: { t: string }) => (t.includes('{') ? <MathText text={t} /> : <>{t}</>);
+
 /** Madde madde liste: numara, metin, verilen cevap ve etiketler. */
 function Rows({ rows, head }: { rows: PartRow[]; head?: PartCard['rowsHead'] }) {
   return (
@@ -52,13 +56,18 @@ function Rows({ rows, head }: { rows: PartRow[]; head?: PartCard['rowsHead'] }) 
         <li key={r.no} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-2 py-2.5">
           <span className="tabular pt-px text-[0.9375rem] text-ink-3">{r.no}.</span>
           <div className="flex flex-col gap-1">
-            <p className={r.muted ? 'text-ink-3' : ''}>{r.text}</p>
+            <p className={r.muted ? 'text-ink-3' : ''}>
+              <Txt t={r.text} />
+            </p>
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.9375rem]">
               {head && <span className="sr-only">{head.value}:</span>}
-              <span className={r.muted ? 'italic text-ink-3' : 'font-bold'}>{r.value}</span>
+              <span className={r.muted ? 'italic text-ink-3' : 'font-bold'}>
+                <Txt t={r.value} />
+              </span>
               {r.tags.map((t) => (
-                <span key={t} className="chip chip-brass">
-                  {t}
+                // Uzun etiket (ör. "doğru cevap: …") telefonda satırı taşırmasın: alt satıra geçer.
+                <span key={t} className="chip chip-brass max-w-full whitespace-normal">
+                  <Txt t={t} />
                 </span>
               ))}
             </p>
@@ -81,7 +90,7 @@ function CardBody({ card, you }: { card: PartCard; you: boolean }) {
       {card.note && <p className="t-meta measure md:col-start-1">{card.note}</p>}
       {card.levels && (
         <div className="md:col-span-2">
-          <Levels levels={card.levels} you={you} badge={card.badge} />
+          <Levels levels={card.levels} you={you} badge={card.badge} whose={card.activeLabel} />
         </div>
       )}
       {card.rows && (

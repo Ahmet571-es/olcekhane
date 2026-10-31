@@ -40,6 +40,12 @@ export const READING_TOO_SLOW = 15;
 /** "Anlayarak okuma" en az bu kadar doğruda hesaplanır (8 soruda 6). */
 export const EFFECTIVE_MIN_RATIO = 0.75;
 
+/**
+ * Dört seçenekli 8 soruda tahminle beklenen doğru sayısı 2'dir; 3 ve daha azı (soruların %37,5'i) rastgele işaretlemeyle de
+ * çıkabilir. Anlama kartı ve raporun "Sonuca ne kadar güvenebiliriz?" bölümü bu sınırı kullanır.
+ */
+export const chanceLike = (correct: number, total: number) => correct * 8 <= total * 3;
+
 export function readingPace(passage: Pick<ReadingPassage, 'minGrade'>) {
   return [...READING_PACE].reverse().find((x) => passage.minGrade >= x.minGrade) ?? READING_PACE[0];
 }

@@ -263,26 +263,10 @@ export function OralReportSections({ report }: { report: SimpleReport }) {
           ))}
         </ul>
         {oral.retell && (
-          <div className="flex flex-col gap-2">
-            <h3 className="font-bold">{you ? 'Metni anlatırken söylediğin fikirler' : 'Yeniden anlatmada söylenen fikirler'}</h3>
-            <ul className="flex flex-col gap-1.5">
-              {oral.retell.map((x) => (
-                <li key={x.text} className="flex items-start gap-2.5">
-                  <span
-                    className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded text-[0.8rem] font-bold ${x.said ? 'bg-ok text-paper' : 'bg-surface-2 text-ink-3 ring-1 ring-rule-strong'}`}
-                    aria-hidden="true"
-                  >
-                    {x.said ? '✓' : '–'}
-                  </span>
-                  <span className={x.said ? '' : 'text-ink-3'}>
-                    {x.text}
-                    {x.core && <span className="t-small ml-2 font-bold text-brass-ink">temel</span>}
-                    <span className="sr-only">{x.said ? ' (söylendi)' : ' (söylenmedi)'}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          // Söylenen fikirler tek tek raporun ek bölümünde (lib/reports/reading-parts.ts; grafikli, sesli okunur).
+          <p className="t-small text-ink-2">
+            {you ? 'Metni anlatırken söylediğin fikirler tek tek aşağıda, “Okuman ve cevapların tek tek” bölümünde.' : 'Yeniden anlatmada söylenen fikirler tek tek aşağıda, “Okuma ve cevaplar tek tek” bölümünde.'}
+          </p>
         )}
       </section>
 

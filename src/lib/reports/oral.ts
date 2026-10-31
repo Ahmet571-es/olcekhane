@@ -224,7 +224,7 @@ function accuracyItem(r: OralResult, audience: Audience): SimpleItem {
 }
 
 /** Okuma metnin yarısına varmadan durdu: okunmayan kelimeler atlama sayıldı (lib/scoring/oral.ts, readWords). */
-const halfUnread = (r: OralResult) => r.unread > 0 && r.readWords === r.wordCount;
+export const halfUnread = (r: OralResult) => r.unread > 0 && r.readWords === r.wordCount;
 
 /** Okunan kısımdaki doğru okuma oranı (metnin sonundaki okunmayan kelimeler sayılmadan). */
 const readPartAccuracy = (r: OralResult) => {
@@ -234,11 +234,12 @@ const readPartAccuracy = (r: OralResult) => {
 
 /**
  * Doğru okuma oranı, düzeyin eşikleriyle (%90 ve %97) üç bölgeli çubukta. Eksen %80'den başlar (eşikler arası okunur
- * kalsın); oran daha düşükse eksen onu da içine alacak kadar aşağıdan başlar.
+ * kalsın); oran daha düşükse eksen %70'ten başlar. Daha aşağıdan başlarsa %97 ile %100'ün sayıları üst üste biner: %70'in
+ * altındaki oran (ör. metnin yarısından azı okunduğunda) çubuğun sol ucunda, kendi değeriyle yazılır.
  */
-function accuracyGauge(r: OralResult, labels: Record<OralLevel, string>): GaugeVisual {
+export function accuracyGauge(r: OralResult, labels: Record<OralLevel, string>): GaugeVisual {
   const value = Math.floor(r.accuracyPct * 10 + 1e-9) / 10;
-  const min = Math.min(80, Math.floor(value / 10) * 10);
+  const min = value < 80 ? 70 : 80;
   const { easy, support } = ORAL_CRITERIA.accuracy;
   return {
     type: 'gauge',
@@ -256,6 +257,14 @@ function accuracyGauge(r: OralResult, labels: Record<OralLevel, string>): GaugeV
     ],
     active: r.accuracyLevel === 'easy' ? 2 : r.accuracyLevel === 'support' ? 1 : 0,
   };
+}
+
+/**
+ * Okuma hızı sınıf ortalamasıyla (Erden ve ark., 2002) karşılaştırılır mı: yalnızca verisi olan sınıflarda (1–5), kendi
+ * sınıfının metninde, kayıt kesintisizken ve süre güvenilirken (hız kartı ve raporun ek bölümü aynı kuralla).
+ */
+export function rateCompared(r: OralResult, def: OralReadingInstrument, grade: number): boolean {
+  return !!def.referenceRates.find((x) => x.grade === grade) && r.passageGrade === grade && !r.flags.interrupted && !r.flags.tooFast;
 }
 
 function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audience: Audience): SimpleItem {
@@ -282,8 +291,7 @@ function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audi
         : 'Grafikteki iki çubuk, dakikada okuduğun bütün kelimeleri ve bunların doğru okunanlarını gösterir.',
   ];
   const ref = def.referenceRates.find((x) => x.grade === grade);
-  // Karşılaştırma (ve grafikteki ortalama çizgisi) yalnızca kendi sınıfının metninde ve kayıt kesintisizken yapılır.
-  const compared = !!ref && r.passageGrade === grade && !r.flags.interrupted;
+  const compared = rateCompared(r, def, grade);
   const lo = ref ? Math.max(0, ref.wpm - ref.sd) : 0;
   const hi = ref ? ref.wpm + ref.sd : 0;
   const manual = r.flags.manualTiming ? ' Süre düğmelere göre ölçüldüğü için hız olduğundan biraz düşük çıkmış olabilir; bu karşılaştırmayı temkinle yorumlayın.' : '';

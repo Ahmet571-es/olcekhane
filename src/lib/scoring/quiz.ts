@@ -25,6 +25,13 @@ export function quizBand(ratio: number): Band {
 
 /** Soru başına ortanca süre bunun altındaysa cevapların bir kısmının okunmadan verildiği düşünülür. */
 export const QUIZ_TOO_FAST_MS = 5000;
+/** Hız denetimi en az bu kadar soruda bir seçenek işaretlendiyse yapılır. */
+export const QUIZ_SPEED_MIN_CHOSEN = 8;
+/** Aynı seçenek denetimi en az bu kadar soruda bir seçenek işaretlendiyse yapılır; en sık seçenek bu payı bulursa uyarı. */
+export const QUIZ_LETTER_MIN_CHOSEN = 10;
+export const QUIZ_LETTER_SHARE = 0.6;
+/** Soruların yarısından çoğunda "Bilmiyorum" denmiş: sonuç dikkatle okunmalı (hepsindeyse yorumlanmaz). */
+export const manyDontKnow = (dontKnow: number, n: number) => dontKnow * 2 > n;
 
 export interface QuizAnswer {
   choice: QuizChoice;
@@ -142,11 +149,11 @@ export function scoreQuiz(form: QuizForm, answers: Record<string, QuizAnswer | u
   const chosen = items.filter((i) => i.choice !== null && i.choice !== DONT_KNOW);
   const rts = chosen.map((i) => i.rtMs).filter((x): x is number => typeof x === 'number' && x > 0);
   const medianRtMs = median(rts);
-  const tooFast = chosen.length >= 8 && medianRtMs !== null && medianRtMs < QUIZ_TOO_FAST_MS;
+  const tooFast = chosen.length >= QUIZ_SPEED_MIN_CHOSEN && medianRtMs !== null && medianRtMs < QUIZ_TOO_FAST_MS;
   const letterCounts = new Map<string, number>();
   for (const i of chosen) letterCounts.set(i.choice!, (letterCounts.get(i.choice!) ?? 0) + 1);
   const maxLetter = Math.max(0, ...letterCounts.values());
-  const sameLetter = chosen.length >= 10 && maxLetter / chosen.length >= 0.6;
+  const sameLetter = chosen.length >= QUIZ_LETTER_MIN_CHOSEN && maxLetter / chosen.length >= QUIZ_LETTER_SHARE;
 
   const notes: string[] = [];
   if (tooFast) {
@@ -160,7 +167,7 @@ export function scoreQuiz(form: QuizForm, answers: Record<string, QuizAnswer | u
   // "Bilmiyorum" cevapları hız ve seçenek denetimine girmez: soruların çoğunda "Bilmiyorum" denmişse ayrıca söylenir.
   if (dontKnow === n && n > 0) {
     notes.push('Bütün sorularda “Bilmiyorum” denmiş; bu yüzden sonuç yorumlanmadı.');
-  } else if (dontKnow * 2 > n) {
+  } else if (manyDontKnow(dontKnow, n)) {
     notes.push('Soruların yarısından çoğunda “Bilmiyorum” denmiş. Bu konuların bir kısmı okulda henüz işlenmemiş olabilir; sonuç dikkatle okunmalı.');
   }
 

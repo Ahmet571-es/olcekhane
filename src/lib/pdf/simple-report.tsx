@@ -742,19 +742,10 @@ function OralSectionsPdf({ report }: { report: SimpleReport }) {
         <Bars rows={oral.skills.map((x) => ({ label: x.label, value: x.correct, max: x.total, valueLabel: `${x.correct} / ${x.total}` }))} />
       </View>
       {oral.retell && (
-        <View wrap={false} style={{ marginTop: 8 }}>
-          <Text style={{ fontWeight: 700, marginBottom: 3 }}>{you ? 'Metni anlatırken söylediğin fikirler' : 'Yeniden anlatmada söylenen fikirler'}</Text>
-          {oral.retell.map((x) => (
-            <View key={x.text} style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', marginBottom: 2 }}>
-              <View style={{ width: 8, height: 8, marginTop: 3, borderRadius: 4, borderWidth: 1.2, borderColor: x.said ? C.ok : C.ruleStrong, backgroundColor: x.said ? C.ok : C.paper }} />
-              <Text style={[s.para, { flex: 1, color: x.said ? C.ink : C.ink3 }]}>
-                {x.text}
-                {x.core ? <Text style={{ fontSize: 8, fontWeight: 700, color: C.brassInk }}> (temel)</Text> : null}
-                <Text style={{ fontSize: 8, color: C.ink3 }}>{x.said ? ' söylendi' : ' söylenmedi'}</Text>
-              </Text>
-            </View>
-          ))}
-        </View>
+        // Söylenen fikirler tek tek raporun ekinde (lib/reports/reading-parts.ts).
+        <Text style={[s.paraSmall, { marginTop: 6, color: C.ink2 }]}>
+          {you ? 'Metni anlatırken söylediğin fikirler tek tek ekte, “Okuman ve cevapların tek tek” bölümünde.' : 'Yeniden anlatmada söylenen fikirler tek tek ekte, “Okuma ve cevaplar tek tek” bölümünde.'}
+        </Text>
       )}
 
       <View style={s.support} wrap={false}>
@@ -1098,9 +1089,9 @@ function PartCardPdf({ card, you, visuals }: { card: PartCard; you: boolean; vis
               {card.rows.map((r) => (
                 <Text key={r.no} style={{ fontSize: 8.5, lineHeight: 1.4, marginTop: 2.5, color: r.muted ? C.ink3 : C.ink }}>
                   <Text style={{ color: C.ink3 }}>{r.no}. </Text>
-                  {r.text}
-                  <Text style={{ fontWeight: r.muted ? 400 : 700 }}> · {r.value}</Text>
-                  {r.tags.length > 0 && <Text style={{ fontSize: 7.5, color: C.brassInk }}> · {r.tags.join(' · ')}</Text>}
+                  {pdfMath(r.text)}
+                  <Text style={{ fontWeight: r.muted ? 400 : 700 }}> · {pdfMath(r.value)}</Text>
+                  {r.tags.length > 0 && <Text style={{ fontSize: 7.5, color: C.brassInk }}> · {pdfMath(r.tags.join(' · '))}</Text>}
                 </Text>
               ))}
             </View>
@@ -1123,7 +1114,7 @@ function PartCardPdf({ card, you, visuals }: { card: PartCard; you: boolean; vis
               {l.text ? <Text style={{ fontSize: 8, lineHeight: 1.35, color: C.ink2 }}>{l.text}</Text> : null}
               {l.active && (
                 <Text style={{ fontSize: 7.5, fontWeight: 700, color: C.brassInk, marginTop: 1 }}>
-                  {you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi'}
+                  {card.activeLabel ?? (you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi')}
                   {card.badge && l.label.includes(' · ') ? `: ${card.badge}` : ''}
                 </Text>
               )}

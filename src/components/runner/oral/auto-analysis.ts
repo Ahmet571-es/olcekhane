@@ -9,7 +9,7 @@ import {
   type ClipWords,
 } from '@/lib/oral/align';
 import { TARGET_RATE, analyzeRecording, type AudioAnalysis } from '@/lib/oral/audio';
-import { MIC_CHECK_SENTENCE, type AsrWord } from '@/lib/oral/auto';
+import { MIC_CHECK_SENTENCE, MIN_MATCH_SHARE, MIN_WORD_SHARE, type AsrWord } from '@/lib/oral/auto';
 import { oralWordCount } from '@/lib/oral/words';
 import { UNCLEAR_MAX, type OralMark } from '@/lib/scoring/oral';
 import type { AsrClient, AsrProgress } from './asr-client';
@@ -23,13 +23,8 @@ import type { AsrClient, AsrProgress } from './asr-client';
 
 export type AnalysisErrorKind = 'memory' | 'network' | 'unsupported' | 'unknown' | 'nomatch';
 
-/** Yazıya dökülen kelimeler metnin bu oranından azsa (konuşma varken) tanıma başarısız sayılır: rapor yanıltmasın. */
-const MIN_WORD_SHARE = 0.15;
-/**
- * Tanınan kelimelerin bu oranından azı metinle eşleştiyse öğrenci ekrandaki metni okumamış (başka bir şey okumuş ya da
- * konuşmuş) ya da tanıma bozulmuştur: rapor verilmez (bkz. matchedShare; okunan metinlerde ≥ 0,75, başka metinde ≤ 0,11).
- */
-export const MIN_MATCH_SHARE = 0.3;
+// Okumanın metinle eşleşme sınırları (MIN_WORD_SHARE, MIN_MATCH_SHARE) lib/oral/auto.ts'te: raporun "Sonuca ne kadar
+// güvenebiliriz?" bölümü de aynı sınırları anlatır.
 /** Tek ilerleme çubuğunda yazıya dökmenin payı; kalanı belirsiz yerlerin yeniden dinlenmesi. */
 const TRANSCRIBE_SHARE = 0.8;
 /** Mikrofon denemesi: cümlenin kelimelerinin en az bu oranı tanınmalı; kelime benzerliği (katlanmış biçimde) en az bu kadar. */

@@ -49,5 +49,14 @@ export type AsrResponse =
   | { id: number; type: 'clipWords'; words: (AsrWord[] | null)[] }
   | { id: number; type: 'error'; kind: 'memory' | 'network' | 'unsupported' | 'unknown'; message: string };
 
+/**
+ * Okumanın metinle eşleşmesi (components/runner/oral/auto-analysis.ts): yazıya dökülen kelimeler metnin bu oranından azsa
+ * (konuşma varken) tanıma başarısız sayılır; tanınan kelimelerin `MIN_MATCH_SHARE` oranından azı metinle eşleştiyse öğrenci
+ * ekrandaki metni okumamış (başka bir şey okumuş ya da konuşmuş) ya da tanıma bozulmuştur (bkz. matchedShare; okunan
+ * metinlerde ≥ 0,75, başka metinde ≤ 0,11). İki durumda da rapor verilmez, yeniden okuma istenir.
+ */
+export const MIN_WORD_SHARE = 0.15;
+export const MIN_MATCH_SHARE = 0.3;
+
 /** Mikrofon denemesinde öğrencinin söylediği cümle; yapay zekâ bunu anlaşılır duymalı. */
 export const MIC_CHECK_SENTENCE = 'Merhaba, ben okumaya hazırım.';

@@ -11,13 +11,15 @@ import { buildOralRoadmap } from '@/lib/reports/oral-roadmap';
 import { buildReadingRoadmap } from '@/lib/reports/reading-roadmap';
 import { buildRoadmap, type NextTest, type Roadmap } from '@/lib/reports/roadmap';
 import { likertParts } from '@/lib/reports/likert-parts';
+import { quizParts } from '@/lib/reports/quiz-parts';
+import { oralParts, readingParts } from '@/lib/reports/reading-parts';
 import { toSimpleReport, type SimpleReport } from '@/lib/reports/simple';
 import { buildTaskRoadmap } from '@/lib/reports/task-roadmap';
 import { taskParts } from '@/lib/reports/task-parts';
 import { likertItemFlags, likertQuality, scoreLikert, type LikertAnswer, type LikertItemFlags, type QualityReport } from '@/lib/scoring/likert';
 import { OralInputError, scoreOral, type OralResult } from '@/lib/scoring/oral';
-import { formForGrade, scoreQuiz, type QuizAnswer } from '@/lib/scoring/quiz';
-import { passageForGrade, scoreReading } from '@/lib/scoring/reading';
+import { formForGrade, scoreQuiz, type QuizAnswer, type QuizResult } from '@/lib/scoring/quiz';
+import { passageForGrade, scoreReading, type ReadingResult } from '@/lib/scoring/reading';
 import { standardError } from '@/lib/scoring/stats';
 import { TaskInputError, type ItemTrace } from '@/lib/scoring/tasks';
 import type { CompareInfo } from '@/lib/compare/record';
@@ -180,9 +182,12 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     const preview = ROADMAP_IN_REVIEW.has(def.slug);
     const withRoadmap = !!template && (!preview || !!body.roadmapPreview);
     const next = withRoadmap ? nextTestsFor(template.nextTests, def.slug, body.grade) : [];
+    const data = body.data;
     return (audience, now) => {
       const report = buildOralReport({ def, passage, result, audience, grade: body.grade, completedAt: now });
-      return withRoadmap ? { ...report, roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : report;
+      // Ek bölümler: ölçülerin anlamı, okuma ve cevaplar tek tek, sonucun güvenilirliği (lib/reports/reading-parts.ts).
+      const parts = oralParts({ def, passage, result, audience, grade: body.grade, answers: data.answers, ...(data.listened !== undefined ? { listened: data.listened } : {}) });
+      return { ...report, ...(withRoadmap ? { roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : {}), parts };
     };
   }
   const { rows, notes, items, likert, traces } = score(def, body);
@@ -202,13 +207,18 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     const roadmap = roadmapFor(def, content, body);
     const compare = compareInfo(def, content, rows);
     // Ek bölümler: anket testlerinde düzeylerin anlamı, cevaplar tek tek ve cevap kalitesi (lib/reports/likert-parts.ts).
-    // Görev testlerinde düzeylerin ve ölçülerin anlamı, soru soru cevaplar ve sonucun güvenilirliği (lib/reports/task-parts.ts).
+    // Görev testlerinde düzeylerin ve ölçülerin anlamı, soru soru cevaplar ve sonucun güvenilirliği (lib/reports/task-parts.ts);
+    // okuma ve konu taramada da aynı üç bölüm (reading-parts.ts, quiz-parts.ts).
     const parts =
       def.engine === 'likert' && likert
         ? likertParts({ def, content, report, answers: likert.answers, quality: likert.quality })
         : def.engine === 'tasks' && traces
           ? taskParts({ def, content, report, scores, traces })
-          : [];
+          : def.engine === 'reading' && body.data.engine === 'reading'
+            ? readingParts({ def, passage: passageForGrade(def, body.grade), answers: body.data.answers, result: rows[0].extra as unknown as ReadingResult, content })
+            : def.engine === 'quiz'
+              ? quizParts({ def, result: rows[0].extra as unknown as QuizResult, content, report })
+              : [];
     return { ...report, ...(roadmap ? { roadmap } : {}), ...(compare ? { compare } : {}), ...(parts.length ? { parts } : {}) };
   };
 }

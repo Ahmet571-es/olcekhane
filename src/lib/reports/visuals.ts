@@ -1,6 +1,7 @@
 import type { ReportTemplate } from '@/content/reports/types';
 import type { AnchoredBands, Band } from '@/lib/instruments/types';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
+import { cellsDescription, type CellsKindVisual } from './visual-cells';
 
 /**
  * Rapor kartlarının grafikleri: her sonuç kartının (ölçek, alan, birlikte yorum) yanında, kartın sözel açıklamasını
@@ -243,7 +244,9 @@ export type ItemVisual =
   | AnswersVisual
   | MeterVisual
   | ItemsVisual
-  | BlocksVisual;
+  | BlocksVisual
+  // Okuma, sesli okuma ve konu taramanın ek bölümleri (lib/reports/visual-cells.ts): soru kutuları, metin haritası, sayı kutuları.
+  | CellsKindVisual;
 
 /**
  * Ölçeğin düzey bölgeleri: testin eşikleri (anchoredBands) ve şablonun düzey adları. Şablonda metni olmayan düzey en yakın
@@ -474,6 +477,10 @@ export function visualDescription(v: ItemVisual): string {
       const rows = v.rows.map((r) => `${r.label}: ${r.value === null ? (v.legend.missing ?? 'boş') : `${formatTick(r.value)}${r.reverse ? ` (${v.legend.hollow ?? 'ters'})` : ''}`}`);
       return `${v.label}: ${rows.join('; ')}.${v.mean ? ` ${v.mean.label}.` : ''}`;
     }
+    case 'grid':
+    case 'wordmap':
+    case 'cells':
+      return cellsDescription(v);
     case 'meter': {
       const zone = (z: MeterVisual['zones'][number], i: number) => `${z.label} ${v.discrete ? meterRange(v, i) : `${formatTick(z.from)}–${formatTick(z.to)}`}`;
       return `${v.label}: ${v.rows.map((r) => `${r.label} ${r.valueLabel}`).join('; ')}. Bölgeler: ${v.zones.map(zone).join(', ')}.`;

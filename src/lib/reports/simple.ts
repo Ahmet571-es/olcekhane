@@ -625,7 +625,7 @@ const withVisual = <T extends object>(x: T, visual: ItemVisual | undefined): T &
  * Konu taramasının genel sonucu: doğru sayısı, testin eşikleriyle (doğruların %50'si ve %75'i) üç bölgeli düzey çubuğunda.
  * Bölgeler soru sayısından hesaplanır: 20 soruda 0–9, 10–14 ve 15–20 doğru.
  */
-function quizGauge(a: NonNullable<ReportContent['academic']>): GaugeVisual {
+export function quizGauge(a: Pick<NonNullable<ReportContent['academic']>, 'n' | 'correct' | 'band' | 'bandNames'>): GaugeVisual {
   const avg = Math.ceil(a.n * QUIZ_THRESHOLDS.average - 1e-9);
   const high = Math.ceil(a.n * QUIZ_THRESHOLDS.high - 1e-9);
   const zones: Zone[] = [

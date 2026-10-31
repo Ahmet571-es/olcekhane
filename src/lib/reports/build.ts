@@ -269,7 +269,7 @@ import {
   paOf,
 } from '@/lib/scoring/tasks';
 import { PA_CLOSE, PA_EGO_MIN_SHIFT, PA_SMALL_MAX } from '@/lib/instruments/perspective';
-import type { ReadingResult } from '@/lib/scoring/reading';
+import { chanceLike, type ReadingResult } from '@/lib/scoring/reading';
 
 /**
  * Raporun kime yazıldığı. Okul çağındaki biri için iki rapor hazırlanır: öğrenciye (ikinci tekil şahısla) ve veliye
@@ -758,7 +758,7 @@ export function buildReport(input: {
               : ` En çok zorlandığı soru ${weakest.length > 1 ? 'türleri' : 'türü'}: ${weakList}.`;
       // Dört seçenekli 8 soruda tahminle beklenen doğru sayısı 2'dir; 3 ve daha azı rastgele işaretlemeyle de çıkabilir.
       const chanceNote =
-        rr.correct * 8 <= rr.total * 3
+        chanceLike(rr.correct, rr.total)
           ? you
             ? ' Dört seçenekli sorularda bu kadar doğru, rastgele işaretlemeyle de çıkabilir. Bu yüzden bu sonuç, neyi anlayıp neyi anlamadığını tam göstermez.'
             : ' Dört seçenekli sorularda bu kadar doğru cevap, soruların rastgele işaretlenmesiyle de çıkabilir. Bu yüzden sonuç, çocuğunuzun neyi anlayıp neyi anlamadığını tam göstermez; okuldaki gözlemlerle birlikte değerlendirin.'

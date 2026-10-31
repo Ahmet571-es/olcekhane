@@ -15,6 +15,7 @@ import {
   type StepsVisual,
   type StripVisual,
 } from './visuals';
+import { drawCells, drawGrid, drawWordMap, type CellsKindVisual } from './visual-cells';
 
 /**
  * Görev testlerinin kart grafiklerinin çizimi (lib/reports/visuals.ts'teki türler). Her grafik basit şekillere çevrilir;
@@ -53,7 +54,8 @@ export type DrawnVisual =
   | AnswersVisual
   | MeterVisual
   | ItemsVisual
-  | BlocksVisual;
+  | BlocksVisual
+  | CellsKindVisual;
 
 export const isDrawn = (v: ItemVisual): v is DrawnVisual => v.type !== 'gauge' && v.type !== 'compare';
 
@@ -802,6 +804,12 @@ export function drawVisual(v: DrawnVisual, width: number, fontSize: number): Dra
       return drawItems(v, width, fontSize);
     case 'blocks':
       return drawBlocks(v, width, fontSize);
+    case 'grid':
+      return drawGrid(v, width, fontSize);
+    case 'wordmap':
+      return drawWordMap(v, width, fontSize);
+    case 'cells':
+      return drawCells(v, width, fontSize);
     case 'answers':
       return drawAnswers(v, width, fontSize);
     case 'meter':

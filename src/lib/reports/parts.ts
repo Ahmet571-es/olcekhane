@@ -8,9 +8,10 @@ import type { ItemVisual } from './visuals';
  * (lib/pdf/simple-report.tsx) çizilir; ses asistanı bölümleri lib/speech/report-text.ts'te okur.
  *
  * Anket testlerinde (lib/reports/likert-parts.ts) üç bölüm: "Düzeylerin anlamı", "Cevapların tek tek", "Cevaplarına ne
- * kadar güvenebiliriz?". Sonraki aşamalarda görev, okuma, sesli okuma ve matematik testleri aynı modeli kullanır.
- * Görev testlerinde (lib/reports/task-parts.ts) "Düzeylerin ve ölçülerin anlamı", "Soru soru cevapların" (hızlı görevlerde
- * "Deneme deneme sonuçların") ve "Sonuca ne kadar güvenebiliriz?".
+ * kadar güvenebiliriz?". Görev testlerinde (lib/reports/task-parts.ts) "Düzeylerin ve ölçülerin anlamı", "Soru soru
+ * cevapların" (hızlı görevlerde "Deneme deneme sonuçların") ve "Sonuca ne kadar güvenebiliriz?". Okuma ve sesli okumada
+ * (lib/reports/reading-parts.ts) ve konu taramada (lib/reports/quiz-parts.ts) aynı üç bölüm: "Düzeylerin ve ölçülerin
+ * anlamı", soru soru (sesli okumada cümle cümle) cevaplar, "Sonuca ne kadar güvenebiliriz?".
  */
 
 export type PartKey = 'levels' | 'answers' | 'quality';
@@ -44,6 +45,11 @@ export interface PartRow {
   muted?: boolean;
   /** Metnin sesli okunuşu, ekrandakinden farklıysa (ör. "2, 4, 8, ?" → "2, 4, 8 ve eksik sayı"). */
   say?: string;
+  /**
+   * Sesli okumada metnin yerine okunan (boşsa yalnızca numara ve satırın adı okunur; `say`dan önce gelir). Konu taramada soru
+   * metinleri (kesirler, tablolar, şekiller) sesli okunmaz: "3. soru." ve cevap okunur.
+   */
+  spoken?: string;
 }
 
 export interface PartCard {
@@ -58,6 +64,11 @@ export interface PartCard {
   note?: string;
   visual?: ItemVisual;
   levels?: PartLevel[];
+  /**
+   * Kişinin düzeyinin etiketi (verilmezse "Senin düzeyin" ya da "Çocuğunuzun düzeyi"); ör. okuma hızında "Senin hızın", sesli
+   * okumanın veli ve öğretmen raporunda "Öğrencinin düzeyi".
+   */
+  activeLabel?: string;
   rows?: PartRow[];
   /** Satırların başlıkları ("cümle", "Cevabın"); satırlar sesli okunurken de kullanılır ("12. cümle … Cevabın: …"). */
   rowsHead?: { item: string; value: string };

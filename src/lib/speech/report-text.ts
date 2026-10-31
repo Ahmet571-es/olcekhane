@@ -54,8 +54,11 @@ const CITATION = /\s*\((?=[^()]*\p{L})(?=[^()]*\b(?:18|19|20)\d{2}[a-z]?\b)[^()]
 /** Metni sesli okumaya uygun hâle getirir (bkz. dosyanın başındaki kurallar). */
 export function speakable(input: string): string {
   let s = input;
-  // Kesirler {3/4} → "3 bölü 4" (konu tarama testlerinde).
+  // Kesirler {3/4} → "3 bölü 4", tam sayılı kesirler {1 3/4} → "1 tam 3 bölü 4" (konu tarama testlerinde).
+  s = s.replace(/\{(\d+) (\d+)\/(\d+)\}/g, '$1 tam $2 bölü $3');
   s = s.replace(/\{(\d+)\/(\d+)\}/g, '$1 bölü $2');
+  // Üçerli gruplanmış sayılar ("102 045") tek sayı olarak okunsun.
+  s = s.replace(/(?<![\d,])\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?![\d,])/g, (m) => m.replace(/[ \u00a0\u202f]/g, ''));
   s = s.replace(CITATION, '');
   // Tek ya da iki büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz.
   s = s.replace(/\s*\((?:[A-ZÇĞİÖŞÜ]{1,2})\)/g, '');
@@ -277,7 +280,9 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
       const levels = (c.levels ?? []).flatMap((l) => [l.text ? sentence(`${l.label}: ${l.text}`) : sentence(l.label), ...(l.spoken ? [l.spoken] : [])]);
       const current = c.levels?.some((l) => l.active);
       const rows = (c.rows ?? []).map((r) => {
-        const head = `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(r.say ?? r.text)}`;
+        // Satırın sesli okunuşu metninden farklıysa o okunur: `spoken` (konu taramada soru metni okunmaz: boş) ya da `say`.
+        const said = r.spoken ?? r.say ?? r.text;
+        const head = said ? `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(said)}` : sentence(`${r.no}. ${c.rowsHead?.item ?? 'madde'}`);
         const value = r.muted ? sentence(r.value) : sentence(`${c.rowsHead?.value ?? 'Cevap'}: ${r.value}`);
         return [head, value, ...r.tags.map((t) => sentence(t.charAt(0).toLocaleUpperCase('tr-TR') + t.slice(1)))].join(' ');
       });
@@ -289,7 +294,7 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
               sentence(c.title),
               sentence('Düzeyler'),
               ...levels,
-              current && c.badge ? sentence(`${you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi'}: ${c.badge}`) : c.badge && sentence(c.badge),
+              current && c.badge ? sentence(`${c.activeLabel ?? (you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi')}: ${c.badge}`) : c.badge && sentence(c.badge),
               ...(c.spoken ?? []),
               c.text,
             ]
