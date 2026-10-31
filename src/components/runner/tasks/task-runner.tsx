@@ -29,6 +29,7 @@ import { CubeNet } from './cube-net';
 import { HiddenFigures } from './hidden-figures';
 import { LetterNumber } from './letter-number';
 import { SymbolSearch } from './symbol-search';
+import { ShapeAssembly } from './shape-assembly';
 import { PatternMemory } from './pattern-memory';
 import { MentalRotation3d } from './mental-rotation-3d';
 import { CognitiveReflection } from './cognitive-reflection';
@@ -176,7 +177,7 @@ export function TaskRunner(props: {
   return (
     // Üç boyutlu şekiller büyük ekranda daha geniş bir alanda çizilir (beş şekil yan yana karşılaştırılır); bakış açısı almada
     // harita ile cevap çemberi büyük ekranda yan yanadır.
-    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' || task.kind === 'perspective' || task.kind === 'hidden_figures' || task.kind === 'figural_analogy' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
+    <div className={`mx-auto flex w-full flex-col gap-6 ${task.kind === 'mental_rotation_3d' || task.kind === 'perspective' || task.kind === 'hidden_figures' || task.kind === 'shape_assembly' || task.kind === 'figural_analogy' ? 'max-w-2xl lg:max-w-4xl' : 'max-w-2xl'}`}>
       <TaskSteps tasks={tasks} done={done} current={current} />
       <h1 className="sr-only">{task.name}</h1>
       {task.kind === 'digit_span' && <DigitSpan key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
@@ -204,6 +205,7 @@ export function TaskRunner(props: {
       {task.kind === 'numerical_reasoning' && <NumericalReasoning key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'cube_net' && <CubeNet key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'hidden_figures' && <HiddenFigures key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
+      {task.kind === 'shape_assembly' && <ShapeAssembly key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'pattern_memory' && <PatternMemory key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'letter_number' && <LetterNumber key={task.key} task={task} onDone={(t) => save(task.key, t)} />}
       {task.kind === 'symbol_search' && <SymbolSearch key={task.key} task={task} seed={seed} onDone={(t) => save(task.key, t)} />}

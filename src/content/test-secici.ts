@@ -167,7 +167,7 @@ export const SECICI_GOALS: SeciciGoal[] = [
       {
         skill: 'Uzamsal beceri',
         why: 'Şekilleri zihinde canlandırıp döndürebilmeyi ve parçayı bütünün içinde görebilmeyi ölçer.',
-        candidates: ['kagit-katlama', 'zihinde-dondurme', 'kup-acinimi', 'uc-boyutlu-zihinde-dondurme', 'bakis-acisi-alma', 'gizli-sekiller'],
+        candidates: ['kagit-katlama', 'zihinde-dondurme', 'kup-acinimi', 'uc-boyutlu-zihinde-dondurme', 'bakis-acisi-alma', 'gizli-sekiller', 'parcalardan-sekil'],
       },
       BELLEK,
       {

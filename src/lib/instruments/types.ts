@@ -288,7 +288,8 @@ export type TaskKind =
   | 'mental_arithmetic'
   | 'figural_analogy'
   | 'letter_number'
-  | 'symbol_search';
+  | 'symbol_search'
+  | 'shape_assembly';
 
 interface TaskBase {
   /** Görevin anahtarı: tarayıcının gönderdiği denemeler bu anahtarla gelir. */
@@ -1305,7 +1306,8 @@ export type CognitiveTask =
   | MentalArithmeticTask
   | FiguralAnalogyTask
   | LetterNumberTask
-  | SymbolSearchTask;
+  | SymbolSearchTask
+  | ShapeAssemblyTask;
 
 /** Hesapla ve hatırlada bir işlem: (a × b) + c ya da (a × b) − c; ekranda gösterilen sonuç `shown` (doğru ya da 1–2 eksik/fazla). */
 export type ComplexSpanOp = [a: number, b: number, sign: 1 | -1, c: number, shown: number];
@@ -1609,3 +1611,49 @@ export interface QuizInstrument extends InstrumentBase {
 }
 
 export type InstrumentDef = LikertInstrument | ReadingInstrument | OralReadingInstrument | TaskInstrument | QuizInstrument;
+
+/**
+ * Parçalardan şekil: üstte iki ila beş düz parça (her biri kendi yönünde, dağınık), altta dört bütün şekil; parçalar
+ * kaydırılıp döndürülerek (ters çevrilmeden) birleştirilince hangi bütünün oluştuğu seçilir (content/instruments/
+ * parcalardan-sekil.ts; geometri lib/instruments/assembly.ts). Seçeneklerde parçaların sınırları çizilir.
+ *
+ * Soru türleri: yalnızca kaydırma (`slide`: parçalar doğru seçenekteki yönleriyle gösterilir), döndürme gereken (`turn`: en az
+ * bir parça döndürülmüş gösterilir), ayna tuzağı (`mirror`: bir yanlış seçenek, parçalardan birinin ayna görüntüsüyle
+ * kurulmuştur).
+ */
+export type AssemblyType = 'slide' | 'turn' | 'mirror';
+/**
+ * Yanlış seçeneğin türü: bir parçası farklı (`piece`: parçalardan biri aynı büyüklükte ama başka biçimde), kesik yeri farklı
+ * (`cut`: bütünün dış hattı doğru ama parçalara başka yerlerden bölünmüş), ayna (`mirror`: bir parça ters çevrilmiş),
+ * büyüklüğü farklı (`size`: bir parça bir kare büyük ya da küçük; yalnızca kolay düzeylerde), parça sayısı farklı (`odd`:
+ * yalnızca 1. düzeyde).
+ */
+export type AssemblyLure = 'piece' | 'cut' | 'mirror' | 'size' | 'odd';
+
+export interface AssemblyItem {
+  key: string;
+  level: 1 | 2 | 3 | 4 | 5;
+  type: AssemblyType;
+  /** Görünen parçalar (soldan sağa; her biri tek parçalı simge dizisi) ve üstten kaymaları (birim). */
+  pieces: { shape: string; dy: number }[];
+  /** Dört seçenek: parçaların sınırlarıyla bütün şekiller (simge dizisi). */
+  options: string[];
+}
+
+export interface AssemblyPracticeItem extends AssemblyItem {
+  /** Doğru seçeneğin sırası (1–4). Alıştırma puanlanmadığı için tarayıcıya gider. */
+  answer: number;
+  explain: string;
+}
+
+export interface ShapeAssemblyTask extends TaskBase {
+  kind: 'shape_assembly';
+  practice: AssemblyPracticeItem[];
+  /** Asıl sorular, kolaydan zora. */
+  items: AssemblyItem[];
+  /** Cevap anahtarı (1–4). Tarayıcıya boş gönderilir. */
+  answers: number[];
+  /** Her seçeneğin yanılgı türü (doğru seçenekte `null`). Tarayıcıya boş gönderilir. */
+  optionLures: (AssemblyLure | null)[][];
+  levels: { level: number; name: string; plain: string }[];
+}

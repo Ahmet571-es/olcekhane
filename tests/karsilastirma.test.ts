@@ -475,7 +475,7 @@ describe('Gelişimini karşılaştır: görev testleri', () => {
     }
     // Hangi testte aynı soruların geldiği, tablodan bağımsız olarak testlerin görev türünden: soru ve kelime listesi
     // görevleri "items"; tepki, dikkat, bellek dizisi ve her seferinde yeniden üretilen görevler "practice".
-    const ITEMS = ['sekil-akil-yurutme', 'sekil-benzetmeleri', 'sayi-dizileri', 'harf-dizileri', 'sozel-akil-yurutme', 'kagit-katlama', 'kup-acinimi', 'gizli-sekiller', 'kelime-bilgisi', 'mantiksal-akil-yurutme', 'sayisal-akil-yurutme', 'uc-boyutlu-zihinde-dondurme', 'dusunerek-karar-verme', 'bakis-acisi-alma', 'planlama-kule-gorevi', 'kelime-listesi-hatirlama'];
+    const ITEMS = ['sekil-akil-yurutme', 'sekil-benzetmeleri', 'sayi-dizileri', 'harf-dizileri', 'sozel-akil-yurutme', 'kagit-katlama', 'kup-acinimi', 'gizli-sekiller', 'parcalardan-sekil', 'kelime-bilgisi', 'mantiksal-akil-yurutme', 'sayisal-akil-yurutme', 'uc-boyutlu-zihinde-dondurme', 'dusunerek-karar-verme', 'bakis-acisi-alma', 'planlama-kule-gorevi', 'kelime-listesi-hatirlama'];
     for (const d of TASKS) {
       const c = variantReports(d, Object.keys(TASK_VARIANTS[d.slug])[0])[0].compare;
       if (c) expect(c.retest, d.slug).toBe(ITEMS.includes(d.slug) ? 'items' : 'practice');
@@ -534,6 +534,11 @@ const TASK_COMPARE_SNAPSHOT: Record<string, string[]> = {
     'gs_dogru||0||Doğru cevaplar',
     'gs_duzey||0||Ulaşılan düzey',
     'gs_calisma|sn|0|clock|Soru başına tipik süre',
+  ],
+  'parcalardan-sekil': [
+    'ps_dogru||0||Doğru cevaplar',
+    'ps_duzey||0||Ulaşılan düzey',
+    'ps_calisma|sn|0|clock|Soru başına tipik süre',
   ],
   'kelime-bilgisi': [
     'kb_dogru||0||Doğru cevaplar',

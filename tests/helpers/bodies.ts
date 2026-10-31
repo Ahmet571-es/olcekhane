@@ -52,6 +52,9 @@ import type {
   TowerTask,
   PerspectiveTask,
   HiddenFiguresTask,
+  ShapeAssemblyTask,
+  AssemblyLure,
+  AssemblyType,
   FiguralAnalogyTask,
   AnalogyChange,
   AnalogyLure,
@@ -596,6 +599,36 @@ export function hiddenBody(
   const task = def<TaskInstrument>('gizli-sekiller').tasks[0] as HiddenFiguresTask;
   const trials = task.items.map((it, index) => {
     const p = pick({ level: it.level, answer: task.answers[index], lures: task.optionLures[index], i: index });
+    return { index, response: p.response, rtMs: p.rtMs };
+  });
+  return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };
+}
+
+export type AssemblyCell = { level: number; type: AssemblyType; answer: number; lures: (AssemblyLure | null)[]; i: number };
+
+/** Parçalardan şekilde seçilen yanılgı türündeki ilk seçenek (yoksa doğru olmayan ilk seçenek). */
+export const assemblyLureOption = (q: AssemblyCell, kind?: AssemblyLure) => {
+  const at = kind ? q.lures.findIndex((l) => l === kind) : -1;
+  return at >= 0 ? at + 1 : q.lures.findIndex((l) => l !== null) + 1;
+};
+
+/** Parçalardan şekilde sorunun kendi düzeyindeki sırası (0'dan başlar). */
+export function assemblyRank(q: { level: number; i: number }): number {
+  const task = def<TaskInstrument>('parcalardan-sekil').tasks[0] as ShapeAssemblyTask;
+  return task.items.slice(0, q.i).filter((it) => it.level === q.level).length;
+}
+
+/** Parçalardan şekil: varsayılan olarak 1–3. düzeyde doğru, 4–5. düzeyde ilk iki soru doğru; zor sorulara daha çok zaman. */
+export function assemblyBody(
+  pick: (q: AssemblyCell) => { response: number; rtMs: number | null } = (q) => ({
+    response: q.level <= 3 || assemblyRank(q) < 2 ? q.answer : assemblyLureOption(q),
+    rtMs: 6000 + 4000 * q.level,
+  }),
+  grade = 6,
+): AnswersBody {
+  const task = def<TaskInstrument>('parcalardan-sekil').tasks[0] as ShapeAssemblyTask;
+  const trials = task.items.map((it, index) => {
+    const p = pick({ level: it.level, type: it.type, answer: task.answers[index], lures: task.optionLures[index], i: index });
     return { index, response: p.response, rtMs: p.rtMs };
   });
   return { grade, data: { engine: 'tasks', seed: SEED, blocks: { [task.key]: trials } } };

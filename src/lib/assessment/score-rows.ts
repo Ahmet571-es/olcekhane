@@ -24,6 +24,7 @@ import {
   scoreNumeric,
   scoreCube,
   scoreHidden,
+  scoreAssembly,
   scoreAnalogy,
   scorePattern,
   scoreLetterNumber,
@@ -78,6 +79,8 @@ import {
   type CubeTrialInput,
   type HiddenResult,
   type HiddenTrialInput,
+  type AssemblyResult,
+  type AssemblyTrialInput,
   type AnalogyResult,
   type AnalogyTrialInput,
   type PatternResult,
@@ -230,6 +233,7 @@ export type TaskInputs =
   | NumericTrialInput[]
   | CubeTrialInput[]
   | HiddenTrialInput[]
+  | AssemblyTrialInput[]
   | AnalogyTrialInput[]
   | PatternTrialInput[]
   | LetterNumberTrialInput[]
@@ -270,6 +274,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
   let numericRes: NumericResult | undefined;
   let cubeRes: CubeResult | undefined;
   let hiddenRes: HiddenResult | undefined;
+  let assemblyRes: AssemblyResult | undefined;
   let analogyRes: AnalogyResult | undefined;
   let patternRes: PatternResult | undefined;
   let letterNumberRes: LetterNumberResult | undefined;
@@ -520,6 +525,17 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
         { scaleKey: 'gs_yanilgi', raw: null, mean: null, nAnswered: result.wrong, nItems: result.n, band: null },
         { scaleKey: 'gs_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
       );
+    } else if (task.kind === 'shape_assembly') {
+      const { result } = scoreAssembly(task, input as AssemblyTrialInput[]);
+      assemblyRes = result;
+      // Beş ölçek tek görevden hesaplanır; ayrıntının tamamı "ps_dogru" satırında durur.
+      rows.push(
+        { scaleKey: 'ps_dogru', raw: pct(result.accuracy), mean: null, nAnswered: result.correct, nItems: result.n, band: null, extra: result as unknown as Record<string, unknown> },
+        { scaleKey: 'ps_duzey', raw: result.reached, mean: null, nAnswered: result.n, nItems: result.n, band: null },
+        { scaleKey: 'ps_tur', raw: null, mean: null, nAnswered: result.correct, nItems: result.n, band: null },
+        { scaleKey: 'ps_yanilgi', raw: null, mean: null, nAnswered: result.wrong, nItems: result.n, band: null },
+        { scaleKey: 'ps_calisma', raw: result.medianRt, mean: null, nAnswered: result.n, nItems: result.n, band: null },
+      );
     } else if (task.kind === 'figural_analogy') {
       const { result } = scoreAnalogy(task, input as AnalogyTrialInput[]);
       analogyRes = result;
@@ -679,6 +695,7 @@ export function taskScoreRows(def: TaskInstrument, inputs: Map<string, TaskInput
       numeric: numericRes,
       cube: cubeRes,
       hidden: hiddenRes,
+      assembly: assemblyRes,
       analogy: analogyRes,
       pattern: patternRes,
       reflection: reflectionRes,

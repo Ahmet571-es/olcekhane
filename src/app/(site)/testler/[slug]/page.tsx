@@ -77,7 +77,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
                           ? `${single.items.length} soru, 2 soru türü`
                           : single.kind === 'numerical_reasoning'
                             ? `${single.items.length} soru, 3 soru grubu`
-                            : single.kind === 'cube_net' || single.kind === 'hidden_figures' || single.kind === 'figural_analogy'
+                            : single.kind === 'cube_net' || single.kind === 'hidden_figures' || single.kind === 'shape_assembly' || single.kind === 'figural_analogy'
                               ? `${single.items.length} soru, ${single.levels.length} düzey`
                               : single.kind === 'cognitive_reflection'
                                 ? `${single.items.length} kısa soru, dört seçenekli`
@@ -453,6 +453,15 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
                 <li>Yanlış cevaplarda şeklin döndürülmüş ya da ters çevrilmiş biçiminin mi, bir köşesi farklı benzerinin mi seçildiği ve sorulara nasıl çalışıldığı</li>
+              </>
+            )}
+            {single?.kind === 'shape_assembly' && (
+              <>
+                <li>Doğru cevap sayısı, düzeylere göre doğru cevaplar grafiği ve ulaşılan düzeyin ne anlama geldiği</li>
+                <li>
+                  Yalnızca kaydırma gereken, döndürme gereken ve ayna tuzaklı soruların karşılaştırması (üç boyutlu grafikle); yanlış cevaplarda parçalarından biri
+                  farklı, bir parçası ters çevrilmiş ya da başka parçalara bölünmüş şekillerden birinin öne çıkıp çıkmadığı ve sorulara nasıl çalışıldığı
+                </li>
               </>
             )}
             {single?.kind === 'figural_analogy' && (

@@ -13,7 +13,7 @@ import type { AudienceText, InfoBox, TaskRoadmapTemplate } from './types';
  *    özetlenir. Gelişimle ilgili cümleler testin bilim kartındaki kaynaklara dayanır.
  *  - Metinler 3. sınıftan mezunlara kadar herkesin anlayacağı sadelikte yazılır. Tanı koyan dil kullanılmaz; süreğen bir
  *    endişede veliye okulun rehberlik servisi ya da bir uzman önerilir. Görevlerden yalnızca Şekil Akıl Yürütme, Sayı
- *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller, Desen Hatırlama, Harf-Sayı Sıralama, Simge Bulma ve Harf Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
+ *    Dizileri, Sözel Akıl Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama, Mantıksal Akıl Yürütme, Sayısal Akıl Yürütme, Küp Açınımı, Üç Boyutlu Zihinde Döndürme, Düşünerek Karar Verme, Kule Görevi, Hesapla ve Hatırla, Bakış Açısı Alma, Gizli Şekiller, Parçalardan Şekil, Desen Hatırlama, Harf-Sayı Sıralama, Simge Bulma ve Harf Dizileri yetişkinlere de açıktır; onların metinleri okula özgü değildir, yetişkine
  *    öğrenci metni (ya da `adult` metni) gösterilir.
  */
 const t = (student: string, parent: string): AudienceText => ({ student, parent });
@@ -1826,6 +1826,107 @@ const gizliSekiller: TaskRoadmapTemplate = {
   sources: [KAYNAK.hock1974, KAYNAK.deWit2017, KAYNAK.milne2009, KAYNAK.xie2025, KAYNAK.uttal],
 };
 
+const parcaBase = facts(
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (parçaları zihinde bir bütüne yerleştirmeyi) gösterir.',
+    'Yapboz ve tangram gibi parça oyunlarına alışkın olmak sonucu etkileyebilir. Aynı testi yeniden çözmek de soruları tanıdığın için sonucu biraz yükseltebilir.',
+  ],
+  [
+    'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (parçaları zihinde bir bütüne yerleştirmeyi) gösterir.',
+    'Yapboz ve tangram gibi parça oyunlarına alışkın olmak sonucu etkileyebilir. Aynı testi yeniden çözmek de soruları tanıdığı için sonucu biraz yükseltebilir.',
+    'Uzamsal beceriler yaşla ve deneyimle değişir; sonuç akranlarla karşılaştırılmadığı için tek başına yorumlanmamalıdır.',
+  ],
+);
+/** Yetişkine: gelişimle ilgili cümle yerine alışkanlıkla ilgili bilgi. */
+const parcaFacts: InfoBox = {
+  ...parcaBase,
+  items: {
+    ...parcaBase.items,
+    adult: [
+      'Bu sonuç tek bir oturuma dayanır: o günkü uyku, yorgunluk, ilgi ve kullandığın cihaz sonucu etkileyebilir.',
+      'Bu sonuç bir zekâ puanı (IQ) değildir; uzamsal becerilerin yalnızca bir yönünü (parçaları zihinde bir bütüne yerleştirmeyi) gösterir.',
+      'Yapboz, tangram, eşya kurma ya da teknik çizim gibi işlere alışkın olmak sonucu etkileyebilir. Aynı testi yeniden çözmek de soruları tanıdığın için sonucu biraz yükseltebilir.',
+      'Bu tür görevlerde aynı kişinin sonucu bir günden ötekine değişebilir; tek bir sonuçla kendin hakkında kesin bir yargıya varma.',
+    ],
+  },
+};
+
+const parcalardanSekil: TaskRoadmapTemplate = {
+  version: 'parcalardan-sekil-yol-haritasi-1',
+  what: {
+    student: 'parçaları zihinde bir bütüne yerleştirmeyi gerektiren işleri nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun parçaları zihinde bir bütüne yerleştirmeyi gerektiren işlerini nasıl kolaylaştırabileceğiniz',
+    summary: 'parçaları zihinde bir bütüne yerleştirmeyi gerektiren işleri kolaylaştıran yollar',
+  },
+  studyTitle: { you: 'Parçaları zihinde birleştirmeyi ne kolaylaştırır?', parent: 'Çocuğunuzun parçaları zihinde birleştirmesini ne kolaylaştırır?' },
+  studyIntro: {
+    student:
+      'Bu test, ayrı ayrı gösterilen parçaları zihninde kaydırıp döndürerek hangi bütün şekli oluşturduklarını görebilmeyi ölçer. Buna uzamsal görselleştirme denir. Bu beceri bir yapbozu tamamlamakta, bir eşyayı parçalarından kurmakta, bir krokiyi okumakta ve geometride bir şekli parçalarına ayırmakta kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+    parent:
+      'Bu test, ayrı ayrı gösterilen parçaları zihinde kaydırıp döndürerek hangi bütün şekli oluşturduklarını görebilmeyi ölçer. Buna uzamsal görselleştirme denir. Bu beceri bir yapbozu tamamlamakta, bir eşyayı parçalarından kurmakta, bir krokiyi okumakta ve geometride bir şekli parçalarına ayırmakta kullanılır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
+    adult:
+      'Bu test, ayrı ayrı gösterilen parçaları zihninde kaydırıp döndürerek hangi bütün şekli oluşturduklarını görebilmeyi ölçer. Buna uzamsal görselleştirme denir. Bu beceri bir eşyayı parçalarından kurmakta, bir odaya eşya yerleştirmeyi tasarlamakta, bir krokiyi ya da planı okumakta ve bir yapbozu tamamlamakta kullanılır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+  },
+  supports: [
+    support(0, 'parca', 'Önce bir parçayı yerleştir', 'Yöntem', t(
+      'Bütün parçaları birden aklında tutmaya çalışma. En büyük ya da en ayırt edici parçayı seç ve her seçenekte onun sığabileceği bir yer ara; sığmayan seçeneği ele. Sonra sıradaki parçaya geç. Bir araştırmada bu tür soruları çözen kişilerin çoğunun önce bir iki parçaya bakıp seçenekleri bu parçalarla elediği görülmüştür.',
+      'Çocuğunuza bütün parçaları birden aklında tutmaya çalışmamasını önerin. En büyük ya da en ayırt edici parçayı seçip her seçenekte onun sığabileceği bir yer arayabilir; sığmayan seçeneği eleyip sıradaki parçaya geçebilir. Bir araştırmada bu tür soruları çözen kişilerin çoğunun önce bir iki parçaya bakıp seçenekleri bu parçalarla elediği görülmüştür.',
+    )),
+    support(1, 'ayna', 'Ters çevirmeyi denetle', 'Alışkanlık', t(
+      'Doğru gibi görünen bir seçenekte son bir denetim yap: her parça orada yalnızca kaydırılıp döndürülerek mi duruyor, yoksa ters çevrilmesi mi gerekiyor? Bir parçanın ayna görüntüsü, kendisiyle aynı parça sayılmaz. Bu kısa denetim, ayna görüntüsüne aldanmayı önleyebilir.',
+      'Çocuğunuza, doğru gibi görünen bir seçenekte son bir denetim yapmasını önerin: her parça orada yalnızca kaydırılıp döndürülerek mi duruyor, yoksa ters çevrilmesi mi gerekiyor? Bir parçanın ayna görüntüsü, kendisiyle aynı parça sayılmaz. Bu kısa denetim, ayna görüntüsüne aldanmayı önleyebilir.',
+    )),
+    support(2, 'zorluk', 'Zorluk nereden gelir?', 'Bilgi', t(
+      'Araştırmalarda bu tür soruları en çok zorlaştıran şeyler, kaç parçanın yerinden oynatıldığı ve yanlış seçeneklerin doğru şekle ne kadar benzediği olmuştur. Parçaların döndürülmesinin etkisi ise çalışmadan çalışmaya değişmiştir. Bu yüzden parçası çok olan bir soruda her parçanın yerini tek tek bulmak için kendine zaman tanıman doğaldır.',
+      'Araştırmalarda bu tür soruları en çok zorlaştıran şeyler, kaç parçanın yerinden oynatıldığı ve yanlış seçeneklerin doğru şekle ne kadar benzediği olmuştur. Parçaların döndürülmesinin etkisi ise çalışmadan çalışmaya değişmiştir. Çocuğunuza, parçası çok olan bir soruda her parçanın yerini tek tek bulmak için kendine zaman tanımasının doğal olduğunu hatırlatabilirsiniz.',
+    )),
+    support(3, 'oyun', 'Birleştirme oyunları', 'Etkinlik', t(
+      'Yapboz, tangram ve blok oyunları, parçalarla düşünmeyi keyifli bir uğraşa dönüştürür. Küçük yaşta yapbozla oynayan çocukların birkaç yıl sonra şekilleri zihinde dönüştürmede daha başarılı olduğu gözlenmiştir; ama bu bir gözlemdir, oyunun tek başına beceriyi artırdığını göstermez. Pek çok araştırmayı birlikte inceleyen bir çalışmada ise uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür. Asıl kazanç, şekillerle uğraşmaktan keyif almaktır.',
+      'Yapboz, tangram ve blok oyunları, çocuğunuz için parçalarla düşünmeyi keyifli bir uğraşa dönüştürür. Küçük yaşta yapbozla oynayan çocukların birkaç yıl sonra şekilleri zihinde dönüştürmede daha başarılı olduğu gözlenmiştir; ama bu bir gözlemdir, oyunun tek başına beceriyi artırdığını göstermez. Pek çok araştırmayı birlikte inceleyen bir çalışmada ise uzamsal becerilerin alıştırmayla gelişebildiği görülmüştür. Asıl kazanç, şekillerle uğraşmaktan keyif almaktır.',
+    )),
+  ],
+  facts: parcaFacts,
+  approach: [
+    { title: 'Birlikte yapboz yapın', text: 'Bir yapbozu ya da tangramı birlikte yapın; bir parçayı nereye ve hangi yönde koyacağına nasıl karar verdiğini merak edin.' },
+    { title: 'Acele ettirmeyin', text: 'Parçası çok olan bir soruda uzun düşünmesine izin verin; hızlı olmasından çok, parçaları tek tek denetlemesini övün.' },
+    { title: 'Karşılaştırmayın', text: 'Bu sonucu kardeşleriyle ya da arkadaşlarıyla karşılaştırmayın; okuldaki çalışmaları ve öğretmen gözlemleriyle birlikte değerlendirin.' },
+  ],
+  weeks: [
+    {
+      title: 'Kes ve birleştir',
+      text: t(
+        'Bu hafta kareli kâğıda bir dikdörtgen çiz, onu iki üç parçaya kes ve parçaları karıştır. Sonra bütünü yeniden kur. Bir parçayı döndürmen gerektiğini nasıl fark ettiğini bir cümleyle yaz.',
+        'Bu hafta çocuğunuzla kareli kâğıda bir dikdörtgen çizin, onu iki üç parçaya kesin ve parçaları karıştırın. Sonra bütünü yeniden kurmasını isteyin. Bir parçayı döndürmesi gerektiğini nasıl fark ettiğini sorun.',
+      ),
+    },
+    {
+      title: 'Önce tahmin, sonra deneme',
+      text: t(
+        'Bu hafta bir yapbozda ya da tangramda bir parçayı yerleştirmeden önce nereye ve hangi yönde gideceğini tahmin et. Sonra yerleştirip tahminini kontrol et.',
+        'Bu hafta çocuğunuzdan bir yapbozda ya da tangramda bir parçayı yerleştirmeden önce nereye ve hangi yönde gideceğini tahmin etmesini isteyin. Sonra parçayı yerleştirip tahminini birlikte kontrol edin.',
+      ),
+    },
+    {
+      title: 'Kendi sorunu yap',
+      text: t(
+        'Bu hafta kareli kâğıda bir şekil çiz ve onu parçalara böl. Parçaları ayrı ayrı, biraz döndürerek yeniden çiz. Altına dört bütün şekil çiz: biri doğru olsun, ötekilerde bir parça farklı ya da ters çevrilmiş olsun. Birine çözdür; sonra rolleri değiştirin.',
+        'Bu hafta çocuğunuzdan kareli kâğıda bir şekil çizip parçalara bölmesini ve parçaları ayrı ayrı, biraz döndürerek yeniden çizmesini isteyin. Altına biri doğru, ötekileri biraz farklı dört bütün şekil çizsin. Siz çözün; sonra rolleri değiştirin.',
+      ),
+    },
+  ],
+  lastWeek: t(
+    'Dört haftanın sonunda denediğin yollara bak: önce bir parçayı yerleştirmek, ters çevirmeyi denetlemek ve parçalarla uğraşmak. Parçaları zihninde birleştirmeni en çok hangisi kolaylaştırdıysa onu yaz ve sürdür.',
+    'Dört haftanın sonunda hangi yolun çocuğunuzun parçaları zihinde birleştirmesini en çok kolaylaştırdığını birlikte konuşun ve onu sürdürün.',
+  ),
+  nextTests: ['zihinde-dondurme', 'kagit-katlama'],
+  nextPurpose: {
+    you: 'şekilleri zihinde döndürmeyi ve katlanan bir kâğıdı zihinde açmayı da görmek',
+    parent: 'çocuğunuzun şekilleri zihinde döndürmesini ve katlanan bir kâğıdı zihinde açmasını da görmek',
+  },
+  links: [],
+  sources: [KAYNAK.ivieEmbretson2010, KAYNAK.shi2023, KAYNAK.levine2012, KAYNAK.uttal],
+};
+
 const benzetmeBase = facts(
   [
     'Bu sonuç bir zekâ puanı (IQ) değildir; akıl yürütmenin yalnızca bir yönünü (şekillerle benzetme kurmayı) gösterir.',
@@ -2964,6 +3065,7 @@ export const TASK_ROADMAPS: Record<string, TaskRoadmapTemplate> = {
   'hesapla-ve-hatirla': hesaplaVeHatirla,
   'bakis-acisi-alma': bakisAcisiAlma,
   'gizli-sekiller': gizliSekiller,
+  'parcalardan-sekil': parcalardanSekil,
   'sekil-benzetmeleri': sekilBenzetmeleri,
   'desen-hatirlama': desenHatirlama,
   'harf-sayi-siralama': harfSayiSiralama,

@@ -139,6 +139,18 @@ export const KAYNAK = {
     text: 'Milne, E. ve Szczerbinski, M. (2009). Global and local perceptual style, field-independence, and central coherence: An attempt at concept validation. Advances in Cognitive Psychology, 5, 1–26.',
     url: 'https://doi.org/10.2478/v10053-008-0062-8',
   },
+  ivieEmbretson2010: {
+    text: 'Ivie, J. L. ve Embretson, S. E. (2010). Cognitive process modeling of spatial ability: The assembling objects task. Intelligence, 38, 324–335.',
+    url: 'https://doi.org/10.1016/j.intell.2010.02.002',
+  },
+  levine2012: {
+    text: 'Levine, S. C., Ratliff, K. R., Huttenlocher, J. ve Cannon, J. (2012). Early puzzle play: A predictor of preschoolers’ spatial transformation skill. Developmental Psychology, 48(2), 530–542.',
+    url: 'https://doi.org/10.1037/a0025913',
+  },
+  shi2023: {
+    text: 'Shi, Q., Wind, S. A. ve Lakin, J. M. (2023). Exploring the influence of item characteristics in a spatial reasoning task. Journal of Intelligence, 11(8), 152.',
+    url: 'https://doi.org/10.3390/jintelligence11080152',
+  },
   xie2025: {
     text: 'Xie, Q., Yang, K., Ji, R., Qian, Y., Tong, L., Chao, C. N. G. ve Sin, K. F. (2025). Cognitive style and students’ academic achievement: A meta-analysis. Frontiers in Education, 10, 1634732.',
     url: 'https://doi.org/10.3389/feduc.2025.1634732',

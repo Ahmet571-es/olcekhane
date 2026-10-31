@@ -50,6 +50,7 @@ import { sekilBenzetmeleri } from './sekil-benzetmeleri';
 import { desenHatirlama } from './desen-hatirlama';
 import { harfSayiSiralama } from './harf-sayi-siralama';
 import { simgeBulma } from './simge-bulma';
+import { parcalardanSekil } from './parcalardan-sekil';
 import { harfDizileri } from './harf-dizileri';
 import { dusunerekKararVerme } from './dusunerek-karar-verme';
 import { planlamaKuleGorevi } from './planlama-kule-gorevi';
@@ -118,6 +119,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   liderlikEgilimleri,
   harfSayiSiralama,
   simgeBulma,
+  parcalardanSekil,
   cocukKisilik,
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,

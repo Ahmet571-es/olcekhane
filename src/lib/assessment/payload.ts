@@ -71,6 +71,8 @@ export function payloadFor(def: InstrumentDef, grade: number, { sessionNote = tr
       // Desen hatırlamada da gizlenecek bir anahtar yoktur: desenler ekranda gösterilir; puanlama sunucuda yapılır.
       // Bakış açısı almada da gizlenecek bir anahtar yoktur: haritayı çizmek için nesnelerin konumları gönderilir ve doğru
       // yönler bunlardan hesaplanabilir (test bir sınav değildir); puanlama sunucuda yapılır.
+      // Parçalardan şekilde cevap anahtarı, seçeneklerin yanılgı türleri ve düzey anlatımları gönderilmez. Seçeneklerin
+      // çizimi parçaların sınırlarını taşır; doğru seçenek bundan hesaplanabilir (test bir sınav değildir).
       return {
         engine: 'tasks',
         intro,
@@ -89,7 +91,7 @@ export function payloadFor(def: InstrumentDef, grade: number, { sessionNote = tr
                       ? { ...t, answers: [], forms: [] }
                       : t.kind === 'numerical_reasoning'
                         ? { ...t, answers: [], kinds: [], ratios: [], lures: [] }
-                        : t.kind === 'cube_net' || t.kind === 'hidden_figures'
+                        : t.kind === 'cube_net' || t.kind === 'hidden_figures' || t.kind === 'shape_assembly'
                           ? { ...t, answers: [], optionLures: [], levels: [] }
                           : t.kind === 'figural_analogy'
                             ? { ...t, answers: [], optionLures: [], optionMisses: [], levels: [] }

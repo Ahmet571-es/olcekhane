@@ -42,6 +42,9 @@ import type {
   CubeNetTask,
   CubeType,
   HiddenFiguresTask,
+  ShapeAssemblyTask,
+  AssemblyLure,
+  AssemblyType,
   FiguralAnalogyTask,
   AnalogyChange,
   AnalogyLure,
@@ -188,6 +191,14 @@ import {
   hiddenRapid,
   hiddenSamePosition,
   type HiddenResult,
+  ASSEMBLY_CHANCE_MAX,
+  ASSEMBLY_LURE_NOTE,
+  ASSEMBLY_LURES_ORDER,
+  assemblyChance,
+  assemblyLureStandsOut,
+  assemblyRapid,
+  assemblySamePosition,
+  type AssemblyResult,
   ANALOGY_CHANCE_MAX,
   ANALOGY_LURE_NOTE,
   ANALOGY_LURES_ORDER,
@@ -6254,6 +6265,324 @@ function hiddenBlocks(r: HiddenResult, task: HiddenFiguresTask, audience: Audien
   return { blocks: [dogru, duzey, yanilgi, calisma], chart, figures };
 }
 
+/* ---------- Parçalardan şekil ---------- */
+
+/** Soru türlerinin adları (raporda ve üç boyutlu grafikte), kısa anlatımları ve renkleri. */
+export const ASSEMBLY_TYPES: Record<AssemblyType, { name: string; plain: string; color: string }> = {
+  slide: { name: 'Yalnızca kaydırma', plain: 'parçaları döndürmeden, yalnızca kaydırarak yerlerine koymak', color: '#0e9c8c' },
+  turn: { name: 'Döndürme gereken', plain: 'bir ya da birkaç parçayı zihinde döndürerek yerine oturtmak', color: '#2f5ce0' },
+  mirror: { name: 'Ayna tuzaklı', plain: 'bir parçanın ters çevrilmiş (ayna görüntüsü) hâliyle kurulmuş şekli doğru şekilden ayırmak', color: '#ee6a36' },
+};
+
+/** "“Yalnızca kaydırma”" gibi: tür adları tırnak içinde, ilk harfi küçük. */
+const assemblyTypeList = (types: AssemblyType[]) =>
+  joinTr(types.map((t) => `“${ASSEMBLY_TYPES[t].name.charAt(0).toLocaleLowerCase('tr-TR')}${ASSEMBLY_TYPES[t].name.slice(1)}”`));
+
+/** Yanlışlarda seçilen şeklin adı ("… seçildi" cümlesinde). */
+export const ASSEMBLY_LURE_SEEN: Record<AssemblyLure, string> = {
+  piece: 'parçalarından biri farklı olan şekil',
+  mirror: 'bir parçası ters çevrilmiş (ayna görüntüsü) şekil',
+  cut: 'dış hattı doğru ama başka parçalara bölünmüş şekil',
+  size: 'bir parçası daha büyük ya da daha küçük olan şekil',
+  odd: 'parça sayısı farklı olan şekil',
+};
+
+/** Kart grafiğinde ve başlıklarda yanlış seçeneklerin kısa adları. */
+export const ASSEMBLY_LURE_NAMES: Record<AssemblyLure, string> = {
+  piece: 'Bir parçası farklı',
+  mirror: 'Ters çevrilmiş parça',
+  cut: 'Başka parçalara bölünmüş',
+  size: 'Bir parçası büyük ya da küçük',
+  odd: 'Parça sayısı farklı',
+};
+
+/** Yanlış seçeneklerin yanılgıları için kısa bir ipucu (yanlışların yorumunda). */
+export const ASSEMBLY_LURE_TIP: Record<AssemblyLure, { you: string; parent: string }> = {
+  piece: {
+    you: 'Seçenekteki parçaları yukarıdaki parçalarla tek tek karşılaştırmak işine yarayabilir: her parçanın kaç kareden oluştuğuna, köşelerine ve eğik kenarlarına bak.',
+    parent: 'Çocuğunuzun seçenekteki parçaları yukarıdaki parçalarla tek tek karşılaştırması yardımcı olabilir: her parçanın kaç kareden oluştuğu, köşeleri ve eğik kenarları.',
+  },
+  mirror: {
+    you: 'Parçalar döndürülebilir ama ters çevrilemez. Bir parçanın eğik kenarının ya da çıkıntısının hangi yana baktığını denetlemek işine yarayabilir.',
+    parent: 'Parçalar döndürülebilir ama ters çevrilemez. Çocuğunuzun, bir parçanın eğik kenarının ya da çıkıntısının hangi yana baktığını denetlemesi yardımcı olabilir.',
+  },
+  cut: {
+    you: 'Bütünün dış hattının uyması yetmez. Seçenekteki ince çizgilere bakıp her parçanın yukarıdakilerden biriyle tıpatıp aynı olup olmadığını denetlemek işine yarayabilir.',
+    parent: 'Bütünün dış hattının uyması yetmez. Çocuğunuzun seçenekteki ince çizgilere bakıp her parçanın yukarıdakilerden biriyle tıpatıp aynı olup olmadığını denetlemesi yardımcı olabilir.',
+  },
+  size: {
+    you: 'Parçaların büyüklüğünü kare kare saymak işine yarayabilir.',
+    parent: 'Çocuğunuzun parçaların büyüklüğünü kare kare sayması yardımcı olabilir.',
+  },
+  odd: {
+    you: 'Önce seçenekteki parça sayısını yukarıdaki parça sayısıyla karşılaştırmak işine yarayabilir.',
+    parent: 'Çocuğunuzun önce seçenekteki parça sayısını yukarıdaki parça sayısıyla karşılaştırması yardımcı olabilir.',
+  },
+};
+
+/** Parçalardan şeklin beş sonuç kartı, düzeylere göre grafik, öne çıkan sayılar ve soru türlerinin üç boyutlu grafiği. */
+function assemblyBlocks(r: AssemblyResult, task: ShapeAssemblyTask, audience: Audience, card: CardOf): TaskReport {
+  const you = audience !== 'parent';
+  const v = (student: string, parent: string) => (you ? student : parent);
+  const chance = assemblyChance(r);
+  const rapid = assemblyRapid(r);
+  const samePos = assemblySamePosition(r);
+  const doubt = rapid || samePos;
+  // Yanlışlarda beklenenden sık görülen yanılgılar anlatılır; o zaman kolay sorulardaki yanlışlar dikkatsizliğe bağlanmaz.
+  const noted = chance || doubt ? [] : ASSEMBLY_LURES_ORDER.filter((k) => assemblyLureStandsOut(r, k));
+  const lureNoted = noted.length > 0;
+  const levelWord = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı'][r.levels.length] ?? String(r.levels.length);
+
+  /* Doğru cevaplar */
+  let accText: string;
+  if (chance) {
+    accText = levelChanceText(v, r.n, ASSEMBLY_CHANCE_MAX);
+  } else {
+    accText = levelAccText({
+      v,
+      levels: r.levels,
+      n: r.n,
+      correct: r.correct,
+      allTail: ['dört ya da beş parçalı, parçaları döndürülmüş soruları da zihninde birleştirebildin', 'dört ya da beş parçalı, parçaları döndürülmüş soruları da zihinde birleştirebildi'],
+      dropWhy: [
+        'Bu beklenen bir durumdur: üst düzeylerde parça sayısı artar, parçalar daha çok döndürülmüş gösterilir ve yanlış seçenekler doğru şekle daha çok benzer.',
+        'Bu beklenen bir durumdur: üst düzeylerde parça sayısı artar, parçalar daha çok döndürülmüş gösterilir ve yanlış seçenekler doğru şekle daha çok benzer.',
+      ],
+      hardFrom: 4,
+      blame: !doubt && !lureNoted,
+      blameInLevel: r.reached === 0,
+      doubt,
+    });
+    if (lureNoted) {
+      accText += v(' Yanlış cevaplarında öne çıkan yanılgı için “Yanlışlarda seçilen şekiller” kartına bak.', ' Yanlış cevaplarda öne çıkan yanılgı için “Yanlışlarda seçilen şekiller” kartına bakın.');
+    }
+    if (doubt) {
+      accText += v(
+        ' Bazı sorularda seçeneklere bakmadan seçmiş olabileceğin için (çalışma biçimi kartına bak) bu sonuç seni tam yansıtmayabilir.',
+        ' Çocuğunuz bazı sorularda seçeneklere bakmadan seçmiş olabileceği için (çalışma biçimi kartına bakın) bu sonuç onu tam yansıtmayabilir.',
+      );
+    }
+  }
+  const dogru: CognitiveBlock = { ...card('ps_dogru'), headline: `${r.n} soruda ${r.correct} doğru`, text: accText, interpreted: !chance };
+
+  /* Ulaşılan düzey */
+  const duzey = reachedLevelBlock({
+    base: card('ps_duzey'),
+    v,
+    levels: r.levels,
+    reached: r.reached,
+    plans: task.levels,
+    noInterpret: chance ? 'Doğru cevaplar çok az olduğu için ulaşılan düzey yorumlanmadı.' : null,
+    zeroCause: lureNoted
+      ? [' Bu, yönergeyi tam anlamamaktan ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir.', ' Bu, çocuğunuzun yönergeyi tam anlamamasından ya da “Yanlışlarda seçilen şekiller” kartında anlatılan yanılgıdan kaynaklanabilir ve tek başına yorumlanmamalıdır.']
+      : doubt
+        ? ZERO_DOUBT
+        : ZERO_CAUSE,
+    zeroUnread: !lureNoted && doubt,
+    rapid,
+    doubt,
+  });
+
+  /* Soru türleri */
+  const most = (x: { correct: number; n: number }) => x.correct * 2 > x.n;
+  const good = r.types.filter(most).map((x) => x.type);
+  const hard = r.types.filter((x) => !most(x)).map((x) => x.type);
+  const typeSizes = joinTr(r.types.map((x) => `${ASSEMBLY_TYPES[x.type].name.charAt(0).toLocaleLowerCase('tr-TR')}${ASSEMBLY_TYPES[x.type].name.slice(1)} sorusu ${x.n}`));
+  const rough = ` Türlerde birkaç soru vardı (${typeSizes}) ve yalnızca kaydırma soruları daha çok kolay düzeylerdeydi; bu yüzden türler arasındaki fark yalnızca yaklaşık bir fikir verir.`;
+  let tur: CognitiveBlock;
+  if (chance) {
+    tur = { ...card('ps_tur'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için soru türleri karşılaştırılmadı.' };
+  } else {
+    const allRight = r.types.every((x) => x.correct === x.n);
+    const head = allRight
+      ? `${r.types.length} soru türünün hepsinde bütün sorular doğru`
+      : good.length === r.types.length
+        ? `${r.types.length} soru türünün hepsinde soruların çoğu doğru`
+        : good.length === 0
+          ? `${r.types.length} soru türünün hiçbirinde soruların çoğu doğru değil`
+          : `${r.types.length} soru türünün ${good.length === 1 ? 'birinde' : `${good.length} tanesinde`} soruların çoğu doğru`;
+    let text: string;
+    if (hard.length === 0) {
+      text = v(
+        `Üç soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldun: parçaları kaydırarak da döndürerek de birleştirebildin ve ters çevrilmiş parçayla kurulan şekli ayırabildin.`,
+        `Çocuğunuz üç soru türünün her birinde ${allRight ? 'bütün soruları' : 'soruların çoğunu'} doğru buldu: parçaları kaydırarak da döndürerek de birleştirebildi ve ters çevrilmiş parçayla kurulan şekli ayırabildi.`,
+      );
+    } else if (good.length === 0) {
+      const best = [...r.types].sort((a, b) => b.correct / b.n - a.correct / a.n)[0];
+      text = v(
+        `Hiçbir soru türünde soruların çoğunu doğru bulamadın; en çok doğru cevabı ${assemblyTypeList([best.type])} sorularında verdin.`,
+        `Çocuğunuz hiçbir soru türünde soruların çoğunu doğru bulamadı; en çok doğru cevabı ${assemblyTypeList([best.type])} sorularında verdi.`,
+      );
+    } else {
+      const needs = hard.map((x) => capTr(`${assemblyTypeList([x])} sorularında ${ASSEMBLY_TYPES[x].plain} gerekir.`)).join(' ');
+      text = v(
+        `${assemblyTypeList(good)} sorularının çoğunu doğru buldun; ${assemblyTypeList(hard)} sorularında zorlandın. ${needs}`,
+        `Çocuğunuz ${assemblyTypeList(good)} sorularının çoğunu doğru buldu; ${assemblyTypeList(hard)} sorularında zorlandı. ${needs}`,
+      );
+    }
+    tur = { ...card('ps_tur'), headline: head, text: capTr(text.trim()) + rough };
+  }
+
+  /* Yanlışlarda seçilen şekiller */
+  let yanilgi: CognitiveBlock;
+  const how = 'Yanlış seçeneklerde parçalardan biri farklıydı, bir parça ters çevrilmişti, dış hat doğru olduğu hâlde şekil başka parçalara bölünmüştü ya da (kolay düzeylerde) bir parçanın büyüklüğü ya da parça sayısı farklıydı.';
+  if (chance) {
+    yanilgi = { ...card('ps_yanilgi'), headline: 'Yorumlanmadı', interpreted: false, text: 'Doğru cevaplar çok az olduğu için yanlışlarda seçilen şekiller yorumlanmadı.' };
+  } else if (r.wrong === 0) {
+    yanilgi = {
+      ...card('ps_yanilgi'),
+      headline: 'Yanlış cevap yok',
+      text: v(
+        'Hiçbir soruda yanlış seçeneklerden birini seçmedin; parçaların hem biçimine hem yönüne dikkat ettin.',
+        'Çocuğunuz hiçbir soruda yanlış seçeneklerden birini seçmedi; parçaların hem biçimine hem yönüne dikkat etti.',
+      ),
+    };
+  } else {
+    let text: string;
+    let head: string;
+    if (doubt) {
+      head = 'Yorumlanmadı';
+      text = `${how} Çalışma biçimi kartında anlatılan nedenle yanlışlarda seçilen şekiller yorumlanmadı.`;
+    } else if (lureNoted) {
+      head = noted.length > 1 ? 'Birden çok yanılgı öne çıkıyor' : `“${ASSEMBLY_LURE_NAMES[noted[0]]}” öne çıkıyor`;
+      const seen = noted.map((x) => `${r.luresByKind[x] === r.wrong ? 'hepsinde' : `${r.luresByKind[x]} tanesinde`} ${ASSEMBLY_LURE_SEEN[x]} seçildi`);
+      const these = noted.length > 1 ? 'Bunlar' : 'Bu';
+      text = v(
+        `${how} ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => ASSEMBLY_LURE_TIP[x].you).join(' ')}`,
+        `${how} Çocuğunuzun ${r.wrong} yanlış cevabının ${joinTr(seen)}. ${these}, rastgele seçimle açıklanamayacak kadar sık. ${noted.map((x) => ASSEMBLY_LURE_TIP[x].parent).join(' ')}`,
+      );
+    } else if (r.wrong >= ASSEMBLY_LURE_NOTE) {
+      head = 'Belirgin bir yanılgı yok';
+      const only = ASSEMBLY_LURES_ORDER.find((k) => r.luresByKind[k] === r.wrong);
+      text = only
+        ? v(
+            `${how} ${r.wrong} yanlış cevabının hepsinde ${ASSEMBLY_LURE_SEEN[only]} seçildi. Yanlış sayısı az olduğu ya da bu tür seçenekler sık bulunduğu için bunun rastlantı olup olmadığı söylenemez.`,
+            `${how} Çocuğunuzun ${r.wrong} yanlış cevabının hepsinde ${ASSEMBLY_LURE_SEEN[only]} seçildi. Yanlış sayısı az olduğu ya da bu tür seçenekler sık bulunduğu için bunun rastlantı olup olmadığı söylenemez.`,
+          )
+        : v(`${how} ${r.wrong} yanlış cevabın bu türlere dağılıyor; öne çıkan bir yanılgı görülmedi.`, `${how} Çocuğunuzun ${r.wrong} yanlış cevabı bu türlere dağılıyor; öne çıkan bir yanılgı görülmedi.`);
+    } else {
+      head = r.wrong === 1 ? 'Bir yanlış' : `${r.wrong} yanlış`;
+      text = v(`${how} Yanlış cevapların çok az olduğu için hangi yanılgının öne çıktığı söylenemez.`, `${how} Çocuğunuzun yanlış cevapları çok az olduğu için hangi yanılgının öne çıktığı söylenemez.`);
+    }
+    yanilgi = { ...card('ps_yanilgi'), headline: head, text, ...(head === 'Yorumlanmadı' ? { interpreted: false } : {}) };
+  }
+
+  /* Çalışma biçimi */
+  const issues: string[] = [];
+  if (rapid) {
+    const which = r.rapid === r.rapidOf ? 'hepsine' : `${r.rapid} tanesine`;
+    issues.push(
+      v(
+        `3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdin. Bu kadar kısa sürede parçaları dört seçenekle karşılaştırmak çok zordur; bu sorularda tahmin etmiş olabilirsin.`,
+        `Çocuğunuz 3. düzey ve üstündeki ${r.rapidOf} sorunun ${which} 3 saniyeden kısa sürede yanlış cevap verdi. Bu kadar kısa sürede parçaları dört seçenekle karşılaştırmak çok zordur; bu sorularda tahmin etmiş olabilir.`,
+      ),
+    );
+  }
+  if (samePos) {
+    issues.push(
+      v(
+        `${r.samePosition === r.n ? 'Bütün cevaplarında' : `Cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçtin; birçok soruda bakmadan aynı yere basmış olabilirsin.`,
+        `Çocuğunuz ${r.samePosition === r.n ? 'bütün cevaplarında' : `cevaplarının ${r.samePosition} tanesinde`} aynı sıradaki seçeneği seçti; birçok soruda bakmadan aynı yere basmış olabilir.`,
+      ),
+    );
+  }
+  let calisma: CognitiveBlock;
+  const comparePace = !doubt && !chance && r.rtEasy !== null && r.rtHard !== null;
+  if (r.medianRt === null) {
+    calisma = { ...card('ps_calisma'), headline: 'Süre hesaplanamadı', interpreted: false, text: [...issues, 'Cevap süreleri alınamadığı için süreler yorumlanmadı.'].join(' ') };
+  } else {
+    let pace = chance ? v(...PACE_SKIPPED) : '';
+    if (comparePace && r.rtEasy !== null && r.rtHard !== null) {
+      const hardLevels = r.levels.filter((l) => l.level >= 4);
+      const hardAcc = hardLevels.reduce((a, l) => a + l.correct, 0) / Math.max(1, hardLevels.reduce((a, l) => a + l.n, 0));
+      if (r.rtHard >= 1.5 * r.rtEasy) {
+        pace = v(
+          'Zor sorulara kolay sorulardan daha çok zaman ayırdın. Zor sorularda parça sayısı artar ve parçalar döndürülmüş durur; her parçayı yerine oturtmak zaman alır ve bu iyi bir çalışma biçimidir.',
+          'Çocuğunuz zor sorulara kolay sorulardan daha çok zaman ayırdı. Zor sorularda parça sayısı artar ve parçalar döndürülmüş durur; her parçayı yerine oturtmak zaman alır ve bu iyi bir çalışma biçimidir.',
+        );
+      } else if (r.rtHard * 1.2 <= r.rtEasy && hardAcc <= 0.5) {
+        pace = v(
+          'Zor sorulara kolay sorulardan daha az zaman ayırdın ve bu sorularda doğru cevaplar azdı. Zor sorularda parçaları seçeneklerde tek tek aramak işine yarayabilir.',
+          'Çocuğunuz zor sorulara kolay sorulardan daha az zaman ayırdı ve bu sorularda doğru cevaplar azdı. Zor sorularda vazgeçmiş ya da acele etmiş olabilir; parçaları seçeneklerde tek tek aramak yardımcı olabilir.',
+        );
+      } else if (r.rtHard * 1.5 <= r.rtEasy) {
+        pace = v(
+          'Zor sorularda kolay sorulardakinden daha kısa sürede cevap verdin ve bu soruların çoğunu yine doğru buldun.',
+          'Çocuğunuz zor sorularda kolay sorulardakinden daha kısa sürede cevap verdi ve bu soruların çoğunu yine doğru buldu.',
+        );
+      } else {
+        pace = paceClose(v, r.rtEasy, r.rtHard);
+      }
+    }
+    const base = v(`Bir soruyu cevaplaman tipik olarak ${seconds(r.medianRt)} sürdü.`, `Çocuğunuzun bir soruyu cevaplaması tipik olarak ${seconds(r.medianRt)} sürdü.`);
+    calisma = {
+      ...card('ps_calisma'),
+      headline: `Soru başına tipik süre ${seconds(r.medianRt)}`,
+      text: [base, ...issues, pace].filter(Boolean).join(' ') + noLimitText(v, rapid),
+    };
+  }
+
+  /* Grafikler ve öne çıkan sayılar */
+  const sizes = [...new Set(r.levels.map((l) => l.n))].sort((a, b) => a - b).join(' ya da ');
+  const chart: CognitiveReport['chart'] = {
+    title: 'Düzeylere göre doğru cevaplar',
+    note: v(
+      `Sorular kolaydan zora doğru ${levelWord} düzeye ayrılmıştır; her düzeyde ${sizes} soru vardır. Çubuk ne kadar uzunsa o düzeydeki soruların o kadar çoğunu doğru cevaplamışsın demektir.`,
+      `Sorular kolaydan zora doğru ${levelWord} düzeye ayrılmıştır; her düzeyde ${sizes} soru vardır. Çubuk ne kadar uzunsa o düzeydeki soruların o kadar çoğu doğru cevaplanmış demektir.`,
+    ),
+    rows: r.levels.map((l) => ({ label: `${l.level}. düzey`, value: l.correct, max: l.n, valueLabel: `${l.correct}/${l.n}` })),
+  };
+  const figures = [
+    { label: 'Doğru', value: `${r.correct}/${r.n}` },
+    chance
+      ? { label: 'Ulaşılan düzey', value: 'Yorumlanmadı' }
+      : r.reached === 0
+        ? { label: 'Ulaşılan düzey', value: 'Belirtilmedi', note: 'ölçüte ulaşılmadı' }
+        : { label: 'Ulaşılan düzey', value: `${r.reached}. düzey`, note: `${r.levels.length} düzeyden` },
+    ...(r.medianRt !== null ? [{ label: 'Soru başına tipik süre', value: seconds(r.medianRt) }] : []),
+  ];
+  const profile: CognitiveReport['profile'] = chance
+    ? undefined
+    : {
+        title: v('Soru türlerine göre sonucun', 'Soru türlerine göre sonuç'),
+        note: v(
+          'Her sütun bir soru türüdür. Sütun ne kadar yüksekse o türdeki soruların o kadar çoğunu doğru bulmuşsun demektir; tam boy sütun, hepsini doğru bulduğun anlamına gelir. Renkler yalnızca türleri ayırır.',
+          'Her sütun bir soru türüdür. Sütun ne kadar yüksekse o türdeki soruların o kadar çoğu doğru bulunmuş demektir; tam boy sütun, hepsinin doğru bulunduğu anlamına gelir. Renkler yalnızca türleri ayırır.',
+        ),
+        bars: r.types.map((x) => ({
+          key: x.type,
+          label: ASSEMBLY_TYPES[x.type].name,
+          value: Math.round((x.correct / x.n) * 100),
+          min: 0,
+          max: 100,
+          color: ASSEMBLY_TYPES[x.type].color,
+          valueLabel: `${x.correct}/${x.n}`,
+          band: '',
+        })),
+      };
+  /* Kart grafikleri */
+  // Yorumlanmayan kartın grafiği olmaz: grafik, kartın yapmadığı bir karşılaştırmayı yapmış olurdu.
+  dogru.visual = levelDotsVisual(r.levels);
+  if (!chance) duzey.visual = levelStepsVisual(r.levels.length, r.reached);
+  if (!chance) tur.visual = typeBarsVisual('Soru türlerine göre doğru cevaplar', r.types.map((x) => ({ name: ASSEMBLY_TYPES[x.type].name, correct: x.correct, n: x.n })));
+  if (yanilgi.headline !== 'Yorumlanmadı') {
+    const kinds = ASSEMBLY_LURES_ORDER.filter((k) => r.luresByKind[k] > 0);
+    const other = r.wrong - kinds.reduce((a, k) => a + r.luresByKind[k], 0);
+    yanilgi.visual = {
+      type: 'stack',
+      label: 'Soruların dağılımı',
+      total: r.n,
+      parts: [
+        { label: 'Doğru şekil', value: r.correct },
+        ...kinds.map((k) => ({ label: ASSEMBLY_LURE_NAMES[k], value: r.luresByKind[k] })),
+        ...(other > 0 ? [{ label: 'Başka bir yanlış seçenek', value: other }] : []),
+      ],
+    };
+  }
+  if (r.medianRt !== null) calisma.visual = paceVisual(r.medianRt, r.rts, { label: '1–2. düzey', ms: comparePace ? r.rtEasy : null }, { label: '4–5. düzey', ms: comparePace ? r.rtHard : null });
+  return { blocks: [dogru, duzey, tur, yanilgi, calisma], chart, figures, ...(profile ? { profile } : {}) };
+}
+
 /* ---------- Şekil benzetmeleri ---------- */
 
 /** Değişiklik türlerinin adları (raporda ve üç boyutlu grafikte), kısa anlatımları ve renkleri. */
@@ -11591,6 +11920,9 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
   const gs = byKey.get('gs_dogru')?.extra as unknown as HiddenResult | undefined;
   const gst = def.tasks.find((t): t is HiddenFiguresTask => t.kind === 'hidden_figures');
   if (gs && gst) add(hiddenBlocks(gs, gst, audience, card));
+  const ps = byKey.get('ps_dogru')?.extra as unknown as AssemblyResult | undefined;
+  const pst = def.tasks.find((t): t is ShapeAssemblyTask => t.kind === 'shape_assembly');
+  if (ps && pst) add(assemblyBlocks(ps, pst, audience, card));
   const sb = byKey.get('sb_dogru')?.extra as unknown as AnalogyResult | undefined;
   const sbt = def.tasks.find((t): t is FiguralAnalogyTask => t.kind === 'figural_analogy');
   if (sb && sbt) add(analogyBlocks(sb, sbt, audience, card));
@@ -11614,7 +11946,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
 
   if (def.tasks.every((t) => t.kind === 'cancellation')) return { blocks, tips: SUSTAINED_TIPS[voice(audience)] };
   // Bu görevler için öneriler (kapsamlı rapor) henüz yazılmadı; basit raporda öneri gösterilmez.
-  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'pattern_memory', 'letter_series', 'mental_arithmetic', 'figural_analogy', 'letter_number', 'symbol_search'].includes(t.kind))) {
+  if (def.tasks.every((t) => ['color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'matrix_reasoning', 'number_series', 'verbal_reasoning', 'paper_folding', 'vocabulary', 'rule_switch', 'word_list', 'logical_reasoning', 'numerical_reasoning', 'cube_net', 'cognitive_reflection', 'tower', 'mental_rotation_3d', 'complex_span', 'perspective', 'hidden_figures', 'shape_assembly', 'pattern_memory', 'letter_series', 'mental_arithmetic', 'figural_analogy', 'letter_number', 'symbol_search'].includes(t.kind))) {
     return { blocks, tips: [], chart, ...(figures ? { figures } : {}), ...(profile ? { profile } : {}) };
   }
 
