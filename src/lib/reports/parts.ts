@@ -52,6 +52,11 @@ export interface PartRow {
   spoken?: string;
   /** Numaranın yerine yazılan ad (ör. birleştirilmiş satırda "7.–18."); verilirse sesli okumada yalnızca `spoken` okunur. */
   label?: string;
+  /**
+   * Sesli okumada okunmaz (çok uzun listelerde doğru cevaplanan satırlar ya da bütün satırlar); kartın `spoken`'ı neyin tek tek
+   * okunmadığını söyler. Ekranda ve PDF'te satır yine yazılır.
+   */
+  silent?: boolean;
 }
 
 export interface PartCard {
@@ -73,7 +78,12 @@ export interface PartCard {
   activeLabel?: string;
   rows?: PartRow[];
   /** Satırların başlıkları ("cümle", "Cevabın"); satırlar sesli okunurken de kullanılır ("12. cümle … Cevabın: …"). */
-  rowsHead?: { item: string; value: string };
+  rowsHead?: {
+    item: string;
+    value: string;
+    /** false: satırlar sesli okunurken numara ve ad okunmaz (satırın adı kendini anlatır: "Basit bölüm, ilk yarı"). */
+    numbered?: false;
+  };
   /** Grafiğin sözle anlatımı (sesli okuma): değerler, görünüşü değil. */
   spoken?: string[];
 }

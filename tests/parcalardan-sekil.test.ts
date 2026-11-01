@@ -422,7 +422,7 @@ describe('Parçalardan şekil: sorular', () => {
       .digest('hex')
       .slice(0, 16);
     expect({ version: parcalardanSekil.version, hash }).toEqual({
-      version: 1,
+      version: 2,
       hash: SORU_IZI,
     });
   });

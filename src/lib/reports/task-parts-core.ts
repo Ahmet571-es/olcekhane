@@ -1,7 +1,7 @@
 import type { Audience, CognitiveBlock, ReportScore } from './build';
 import { secShort } from './build';
 import type { PartCard, PartLevel, PartRow, PartStatus } from './parts';
-import { niceMax } from './visual-draw';
+import { ITEMS_WRAP_AT, niceMax } from './visual-draw';
 import type { BlocksVisual, DotsVisual, ItemVisual, ItemsVisual, MeterVisual, StackVisual, StripVisual } from './visuals';
 import type { ItemTrace } from '@/lib/scoring/tasks';
 import type { TaskInstrument } from '@/lib/instruments/types';
@@ -34,6 +34,11 @@ export interface KindParts {
 }
 
 export const v = (c: Ctx, you: string, parent: string) => (c.you ? you : parent);
+
+/** Denetimler bölümünün adı (metinlerde bu adla anılır). */
+export const QUALITY_TITLE = 'Sonuca ne kadar güvenebiliriz?';
+/** Yorumlanmayan sonucun kartına eklenen cümle. */
+export const UNREAD_WHY = `Bu sonuç yorumlanmadı; nedeni “${QUALITY_TITLE}” bölümünde yazıyor.`;
 export const cap = (s: string) => s.charAt(0).toLocaleUpperCase('tr-TR') + s.slice(1);
 export const lower = (s: string) => s.charAt(0).toLocaleLowerCase('tr-TR') + s.slice(1);
 
@@ -107,7 +112,10 @@ export interface ItemRow {
   status: Status;
   /** Verilen cevap (sözle); doğru ya da yanlış sözünden önce yazılır. */
   given?: string | null;
-  /** Doğru cevap (yanlış ya da boş cevapta yazılır). */
+  /**
+   * Doğru cevap (yanlış ya da boş cevapta). Yalnızca `ItemsSpec.showKey` ile yazılır: aynı soruların geldiği testlerde rapor
+   * cevap anahtarı olmasın (bkz. lib/compare/tasks.ts, `SAME_ITEMS`).
+   */
   expected?: string | null;
   /** Yanlışın türü gibi kısa etiketler. */
   tags?: string[];
@@ -138,8 +146,14 @@ export interface ItemsSpec {
   wrongLabel?: string;
   /** Satırda süre yazılmasın (ör. dizi görevlerinde cevabı yazma süresi bir şey anlatmaz). */
   noTime?: boolean;
+  /** Doğru cevap yazılsın (soruları her seferinde değişen ya da cevabı sorudan hesaplanan görevler; ör. zihinden hesaplama). */
+  showKey?: boolean;
   text?: string;
 }
+
+/** Bundan uzun listelerde doğru satırlar sesli okunmaz; öteki satırlar da bundan çoksa hiçbiri tek tek okunmaz. */
+export const SPEECH_ROWS_MAX = 40;
+export const SPEECH_NOTABLE_MAX = 20;
 
 const pick = <T>(xs: T[], q: number) => xs[Math.min(xs.length - 1, Math.max(0, Math.floor(xs.length * q)))];
 
@@ -147,7 +161,7 @@ const pick = <T>(xs: T[], q: number) => xs[Math.min(xs.length - 1, Math.max(0, M
 function rowValue(s: ItemsSpec, r: ItemRow): string {
   // Cümle olan seçeneklerin sonundaki nokta düşer ("… kırmızıdır, doğru").
   const given = r.given?.replace(/\.+$/, '');
-  const expected = r.expected ? `; doğrusu ${r.expected.replace(/\.+$/, '')}` : '';
+  const expected = s.showKey && r.expected ? `; doğrusu ${r.expected.replace(/\.+$/, '')}` : '';
   switch (r.status) {
     case 'correct':
       return given ? `${given}, ${s.okLabel ?? 'doğru'}` : cap(s.okLabel ?? 'doğru');
@@ -171,7 +185,9 @@ function timeAxis(rows: ItemRow[], rapidMs?: number): number | null {
 
 /** Soru soru cevaplar kartı: soru şeridi ve satırlar (soru, cevap, doğrusu, yanlışın türü, süre). */
 export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
-  const max = s.timed ? timeAxis(s.rows, s.rapid?.ms) : null;
+  // Uzun listede şerit satır satır çizilir ve süre çizilmez (lib/reports/visual-draw.ts, ITEMS_WRAP_AT).
+  const wrapped = s.rows.length > ITEMS_WRAP_AT;
+  const max = s.timed && !wrapped ? timeAxis(s.rows, s.rapid?.ms) : null;
   const timed = max !== null;
   const ok = s.rows.filter((r) => r.status === 'correct').length;
   const wrong = s.rows.filter((r) => r.status === 'wrong').length;
@@ -197,6 +213,9 @@ export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
       ...(none ? { none: noneName } : {}),
     },
   };
+  // Sesli okumada çok uzun liste kısaltılır: doğru satırlar okunmaz; geri kalan da çoksa hiçbiri tek tek okunmaz.
+  const long = s.rows.length > SPEECH_ROWS_MAX;
+  const quietAll = long && s.rows.length - ok > SPEECH_NOTABLE_MAX;
   const rows: PartRow[] = s.rows.map((r, i) => ({
     no: i + 1,
     text: r.shown,
@@ -204,13 +223,25 @@ export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
     value: rowValue(s, r),
     tags: [...(r.tags ?? []), ...(r.rapid ? ['çok hızlı'] : []), ...(r.rtMs !== null && !s.noTime ? [secTag(r.rtMs)] : [])],
     ...(r.status === 'correct' || r.status === 'wrong' ? {} : { muted: true }),
+    ...(quietAll || (long && r.status === 'correct') ? { silent: true } : {}),
   }));
-  const note = [
-    `Her işaret bir ${s.noun}; soldan sağa testteki sırayla, gruplar altta yazılı.`,
-    `Dolu daire ${okName}, içi boş daire ${wrongName}${none ? `, kısa çizgi ${noneName}` : ''}.`,
-    ...(timed ? [`İşaret ne kadar yüksekse ${s.noun} o kadar uzun sürdü; çok uzun süreler üst kenarda.`] : []),
-    ...(timed && s.rapid ? ['Alttaki açık bant, testin çok hızlı saydığı süredir.'] : []),
-  ].join(' ');
+  const note = wrapped
+    ? [
+        `Her işaret bir ${s.noun}; her satır bir grup, işaretler testteki sırayla.`,
+        `Dolu daire ${okName}, içi boş daire ${wrongName}${none ? `, kısa çizgi ${noneName}` : ''}.`,
+        'Liste uzun olduğu için süreler çizilmedi; satırlarda yazıyor.',
+      ].join(' ')
+    : [
+        `Her işaret bir ${s.noun}; soldan sağa testteki sırayla, gruplar altta yazılı.`,
+        `Dolu daire ${okName}, içi boş daire ${wrongName}${none ? `, kısa çizgi ${noneName}` : ''}.`,
+        ...(timed ? [`İşaret ne kadar yüksekse ${s.noun} o kadar uzun sürdü; çok uzun süreler üst kenarda.`] : []),
+        ...(timed && s.rapid ? ['Alttaki açık bant, testin çok hızlı saydığı süredir.'] : []),
+      ].join(' ');
+  const quietNote = quietAll
+    ? `${cap(pl(s.noun))} tek tek okunmaz; ekranda ve PDF dosyasında listelenir.`
+    : long && ok
+      ? `${cap(okName)} ${pl(s.noun)} tek tek okunmaz; ekranda ve PDF dosyasında listelenir.`
+      : null;
   return {
     key: s.key,
     title: s.title,
@@ -222,6 +253,7 @@ export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
     rowsHead: { item: s.noun, value: v(c, 'Cevabın', 'Cevabı') },
     spoken: [
       `${cap(okName)}: ${sayCount(ok)}. ${cap(wrongName)}: ${sayCount(wrong)}.${none ? ` ${cap(noneName.replace(/[“”]/g, ''))}: ${sayCount(none)}.` : ''}`,
+      ...(quietNote ? [quietNote] : []),
     ],
   };
 }
@@ -281,7 +313,8 @@ export function blocksCard(
       value: r.detail,
       tags: r.tags ?? [],
     })),
-    rowsHead: { item: o.noun, value: o.valueHead ?? 'Sonuç' },
+    // Satırın adı kendini anlatır ("Basit bölüm, ilk yarı"): sesli okumada numara ve ad okunmaz.
+    rowsHead: { item: o.noun, value: o.valueHead ?? 'Sonuç', numbered: false },
   };
 }
 
@@ -332,8 +365,8 @@ export function levelsCard(
     ...(!o.read
       ? [
           o.reached === 0 && o.headline !== 'Yorumlanmadı'
-            ? 'Denetimlerde anlatılan nedenle bu sonuç tek başına bir şey söylemez.'
-            : 'Bu testte ulaşılan düzey yorumlanmadı; nedeni denetimler bölümünde yazıyor.',
+            ? `Bu sonuç tek başına bir şey söylemez; nedeni “${QUALITY_TITLE}” bölümünde yazıyor.`
+            : `Bu testte ulaşılan düzey yorumlanmadı; nedeni “${QUALITY_TITLE}” bölümünde yazıyor.`,
         ]
       : []),
   ].join(' ');
@@ -342,24 +375,48 @@ export function levelsCard(
     title: 'Düzeyler',
     badge: o.headline ?? (!o.read ? 'Yorumlanmadı' : o.reached === 0 ? 'Düzey belirtilmedi' : `${o.reached}. düzey`),
     text,
-    note: `Grafikte her satır bir düzey; dolu kare doğru cevaplanan bir ${noun}.`,
-    visual: dots,
+    // Yorumlanmayan sonucun grafiği olmaz (raporun kartlarındaki kural).
+    ...(o.read
+      ? {
+          note: `Grafikte her satır bir düzey; dolu kare doğru cevaplanan bir ${noun}.`,
+          visual: dots,
+          spoken: o.results.map((l) => `${l.level}. düzey: ${l.n} ${abl(noun)} ${l.correct === 0 ? 'hiçbiri' : l.correct === 1 ? 'biri' : l.correct} doğru.`),
+        }
+      : {}),
     levels,
-    spoken: o.results.map((l) => `${l.level}. düzey: ${l.n} ${abl(noun)} ${l.correct === 0 ? 'hiçbiri' : l.correct === 1 ? 'biri' : l.correct} doğru.`),
   };
 }
 
-/** Bir ölçünün kartı: ne anlattığı ve nasıl hesaplandığı; değeri grafikte. */
-export function measureCard(o: { key: string; title: string; badge?: string; text: string; note?: string; visual?: ItemVisual; spoken?: string[] }): PartCard {
+/**
+ * Bir ölçünün kartı: ne anlattığı ve nasıl hesaplandığı; değeri grafikte. Sonuç yorumlanmadıysa (`unread` ya da rozet
+ * "Yorumlanmadı") grafik ve değerin sözle okunuşu olmaz; metin nedenin nerede yazdığını söyler.
+ */
+export function measureCard(o: {
+  key: string;
+  title: string;
+  badge?: string;
+  unread?: boolean;
+  text: string;
+  note?: string;
+  visual?: ItemVisual;
+  spoken?: string[];
+}): PartCard {
+  const unread = o.unread || o.badge === 'Yorumlanmadı';
   return {
     key: o.key,
     title: o.title,
     ...(o.badge ? { badge: o.badge } : {}),
-    text: o.text,
-    ...(o.note ? { note: o.note } : {}),
-    ...(o.visual ? { visual: o.visual } : {}),
-    ...(o.spoken?.length ? { spoken: o.spoken } : {}),
+    text: unread ? `${o.text} ${UNREAD_WHY}` : o.text,
+    ...(!unread && o.note ? { note: o.note } : {}),
+    ...(!unread && o.visual ? { visual: o.visual } : {}),
+    ...(!unread && o.spoken?.length ? { spoken: o.spoken } : {}),
   };
+}
+
+/** Ölçü kartının rozeti raporun sonuç kartından: başlığı ve yorumlanıp yorumlanmadığı. */
+export function blockBadge(c: Ctx, key: string): { badge?: string; unread: boolean } {
+  const b = c.block(key);
+  return { ...(b?.headline ? { badge: b.headline } : {}), unread: b?.interpreted === false };
 }
 
 /** Parçalara ayrılmış toplam (ör. doğru, yanlış, "Bilmiyorum"). */
@@ -381,6 +438,8 @@ export function stripOf(o: {
   item: string;
   digits?: 1 | 2;
   zone?: StripVisual['zone'];
+  /** Çizginin anlamı: tipik süre (ortanca) ya da ortalama. */
+  line?: 'tipik süre' | 'ortalama';
 }): StripVisual {
   const f = o.digits === 2 ? 100 : 10;
   const points = o.rts.map((ms) => Math.round((ms / 1000) * f) / f);
@@ -393,7 +452,7 @@ export function stripOf(o: {
     points,
     marker: { value: Math.round((o.median / 1000) * f) / f, label: o.marker },
     ...(o.zone ? { zone: o.zone } : {}),
-    caption: `Her nokta ${o.item}; çizgi tipik süre`,
+    caption: `Her nokta ${o.item}; çizgi ${o.line ?? 'tipik süre'}`,
   };
 }
 
@@ -420,15 +479,17 @@ export function check(
     spoken?: string[];
   },
 ): PartCard {
+  // Yapılamayan denetimin grafiği ve sözle okunan değeri olmaz (değer bir şey söylemez).
+  const shown = status !== 'none';
   return {
     key,
     title,
     status,
     badge: statusBadge(status),
     text: [o.what, o.result, ...(status === 'warn' && o.todo ? [o.todo] : [])].join(' '),
-    ...(o.visual && o.note ? { note: o.note } : {}),
-    ...(o.visual ? { visual: o.visual } : {}),
-    ...(o.spoken?.length ? { spoken: o.spoken } : {}),
+    ...(shown && o.visual && o.note ? { note: o.note } : {}),
+    ...(shown && o.visual ? { visual: o.visual } : {}),
+    ...(shown && o.spoken?.length ? { spoken: o.spoken } : {}),
   };
 }
 
@@ -436,11 +497,24 @@ export function check(
  * Sayım denetiminin çubuğu (tam sayılar): `warnAt` ve üstü "Dikkat" (`low`: `warnAt` ve altı "Dikkat"). Sınır iki tam sayının
  * arasındadır; boş kalan bölge çizilmez.
  */
-export function countMeter(label: string, max: number, warnAt: number, rows: MeterVisual['rows'], low = false): MeterVisual {
+export function countMeter(
+  label: string,
+  max: number,
+  warnAt: number,
+  rows: MeterVisual['rows'],
+  low = false,
+  /**
+   * `warnLabel`: uyarı bölgesinin adı (ör. "Şansla da ulaşılabilir"). `calm`: bölge bu kişide uyarı değildir (ör. doğrular az
+   * ama 1. düzeydeki doğrular şansla açıklanamıyor): bölge adıyla çizilir, "Dikkat" rengi taşımaz.
+   */
+  opts: { warnLabel?: string; calm?: boolean } = {},
+): MeterVisual {
   const cut = low ? warnAt + 0.5 : warnAt - 0.5;
+  const warnLabel = opts.warnLabel ?? 'Dikkat';
+  const warn = !opts.calm;
   const zones = low
     ? [
-        { from: 0, to: Math.min(max, cut), label: 'Dikkat', warn: true },
+        { from: 0, to: Math.min(max, cut), label: warnLabel, warn },
         { from: Math.min(max, cut), to: max, label: 'Uygun', warn: false },
       ]
     : [
@@ -453,8 +527,8 @@ export function countMeter(label: string, max: number, warnAt: number, rows: Met
         {
           from: Math.min(max, Math.max(0, cut)),
           to: max,
-          label: 'Dikkat',
-          warn: true,
+          label: warnLabel,
+          warn,
         },
       ];
   return {
@@ -468,8 +542,19 @@ export function countMeter(label: string, max: number, warnAt: number, rows: Met
   };
 }
 
-/** Oran denetiminin çubuğu (yüzde, 0–100): `from` ile `to` arası "Dikkat" (birden çok bölge olabilir). */
-export function shareMeter(label: string, warn: [number, number][], rows: MeterVisual['rows']): MeterVisual {
+/**
+ * Oran denetiminin kuralı (yüzde): `['>', 10]` yüzde 10'dan çok, `['≥', 25]` yüzde 25 ya da daha çok, `['<', 50]` yüzde 50'den
+ * az, `['≤', 60]` yüzde 60 ya da daha az "Dikkat". Sınırın kendisi kuralın dediği tarafta kalır.
+ */
+export type ShareRule = ['>' | '≥' | '<' | '≤', number];
+/** Kesin eşitsizlikte sınır değerin hangi bölgeye düştüğünü ayıran küçük pay (çizimde görünmez). */
+const EDGE = 1e-6;
+
+/** Oran denetiminin çubuğu (yüzde, 0–100): kuralların dediği aralıklar "Dikkat". */
+export function shareMeter(label: string, rules: ShareRule[], rows: MeterVisual['rows']): MeterVisual {
+  const warn: [number, number][] = rules.map(([op, b]) =>
+    op === '>' ? [b + EDGE, 100] : op === '≥' ? [b, 100] : op === '<' ? [0, b] : [0, Math.min(100, b + EDGE)],
+  );
   const cuts = [...new Set([0, 100, ...warn.flat()])].sort((a, b) => a - b);
   const zones = cuts.slice(0, -1).map((from, i) => {
     const to = cuts[i + 1];

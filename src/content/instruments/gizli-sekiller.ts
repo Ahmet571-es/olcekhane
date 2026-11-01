@@ -373,7 +373,7 @@ const task: HiddenFiguresTask = {
 
 export const gizliSekiller: TaskInstrument = {
   slug: 'gizli-sekiller',
-  version: 1,
+  version: 2,
   engine: 'tasks',
   name: 'Gizli Şekiller',
   shortName: 'Gizli şekiller',

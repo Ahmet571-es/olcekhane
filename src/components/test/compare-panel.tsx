@@ -116,7 +116,13 @@ export function retestNote(retest: 'items' | 'practice', you: boolean): string {
   const base = you
     ? 'Bu tür testleri yeniden çözünce, testi tanımaktan dolayı doğru sayısı çoğu zaman biraz artar, süreler de biraz kısalabilir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim sayma.'
     : 'Bu tür testler yeniden çözülünce, testi tanımaktan dolayı doğru sayısı çoğu zaman biraz artar, süreler de biraz kısalabilir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim saymayın.';
-  const items = retest === 'items' ? ' Bu testte her seferinde aynı sorular gelir; önceki çözüşten akılda kalanlar da sonucu yükseltebilir.' : '';
+  // Aynı soruların geldiği testlerde rapor hangi cevapların doğru olduğunu yazar (doğru cevabın kendisini yazmaz).
+  const items =
+    retest !== 'items'
+      ? ''
+      : you
+        ? ' Bu testte her seferinde aynı sorular gelir ve raporunda hangi cevaplarının doğru olduğu yazılıdır; önceki çözüşten akılda kalanlar sonucu yükseltebilir.'
+        : ' Bu testte her seferinde aynı sorular gelir ve raporda çocuğunuzun hangi cevaplarının doğru olduğu yazılıdır; önceki çözüşten akılda kalanlar sonucu yükseltebilir.';
   return `${base}${items}`;
 }
 

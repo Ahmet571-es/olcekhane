@@ -20,7 +20,9 @@ import {
   VERBAL_SAME_MAX_CORRECT,
   VOCABULARY_CHANCE_MAX,
   VOCABULARY_SAME_MAX_CORRECT,
+  LEVEL_ONE_CHANCE_P,
   analogyChance,
+  chanceAtLeast,
   analogyRapid,
   analogySamePosition,
   assemblyChance,
@@ -54,6 +56,7 @@ import {
   type VerbalResult,
   type VocabularyResult,
 } from '@/lib/scoring/tasks';
+import { SAME_ITEMS } from '@/lib/compare/tasks';
 import type {
   CognitiveTask,
   CubeNetTask,
@@ -66,10 +69,22 @@ import type {
   VerbalReasoningTask,
   VocabularyTask,
 } from '@/lib/instruments/types';
-import { ANALOGY_LURE_NAMES, ASSEMBLY_LURE_NAMES, CUBE_LURE_TEXT, FOLDING_LURE_TEXT, HIDDEN_LURE_SEEN, VOCABULARY_LURE_TEXT, secShort, type ReportContent, type ReportScore } from './build';
+import {
+  ANALOGY_LURE_NAMES,
+  ASSEMBLY_LURE_NAMES,
+  CUBE_LURE_TEXT,
+  FOLDING_LURE_TEXT,
+  HIDDEN_LURE_SEEN,
+  VOCABULARY_LURE_TEXT,
+  secShort,
+  type ReportContent,
+  type ReportScore,
+} from './build';
 import type { PartCard, PartGroup, ReportPart } from './parts';
 import type { SimpleReport } from './simple';
 import {
+  QUALITY_TITLE,
+  blockBadge,
   cap,
   check,
   countMeter,
@@ -164,16 +179,23 @@ function choiceKind(c: Ctx, s: ChoiceSpec): KindParts {
 
   /* Düzeyler ve ölçüler */
   const duzey = c.block(`${prefix}_duzey`);
-  const levels = levelsCard(c, { key: 'duzeyler', levels: task.levels, results: r.levels, reached: r.reached, read: read(c, `${prefix}_duzey`), headline: duzey?.headline });
+  const levels = levelsCard(c, {
+    key: 'duzeyler',
+    levels: task.levels,
+    results: r.levels,
+    reached: r.reached,
+    read: read(c, `${prefix}_duzey`),
+    headline: duzey?.headline,
+  });
   const accuracy = measureCard({
     key: 'dogru',
     title: 'Doğru sayısı',
-    badge: c.block(`${prefix}_dogru`)?.headline,
+    ...blockBadge(c, `${prefix}_dogru`),
     text: [
       'Doğru sayısı, doğru cevaplanan soruların sayısıdır; her soru aynı değerdedir.',
       'Yanlış bir cevap puandan bir şey götürmez.',
       `Her soruda ${s.options} seçenek olduğu için rastgele seçen biri de ortalama her ${s.options} sorudan birini bulur.`,
-      'Bu yüzden çok az doğru, şansla da açıklanabilir; bunu denetimler bölümü ayrıca denetler.',
+      `Bu yüzden çok az doğru, şansla da açıklanabilir; bunu “${QUALITY_TITLE}” bölümü ayrıca denetler.`,
     ].join(' '),
     note: 'Çubuk bütün soruları gösterir; parçalar doğru ve yanlış cevaplardır.',
     visual: stackOf('Doğru ve yanlış cevaplar', [
@@ -189,49 +211,94 @@ function choiceKind(c: Ctx, s: ChoiceSpec): KindParts {
           key: 'sure',
           title: 'Tipik süre',
           badge: `Tipik ${secShort(r.medianRt)}`,
-          text: [
-            medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'),
-            'Bu testte süre sınırı yoktu; süre tek başına iyi ya da kötü değildir.',
-            'Zor bir soruda daha uzun düşünmek olağandır.',
-          ].join(' '),
+          // Süre sınırının olmadığı ve hızın tek başına iyi ya da kötü olmadığı raporun "Çalışma biçimi" kartında yazar.
+          text: [medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'), 'Zor bir soruda daha uzun düşünmek olağandır.'].join(' '),
           note: 'Her nokta bir sorunun süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({ label: 'Sorulardaki cevap süreleri', rts: r.rts, median: r.medianRt, marker: `Tipik ${secShort(r.medianRt)}`, item: 'bir soru' }),
-          spoken: [`Tipik süre: ${secShort(r.medianRt)}.`],
         });
 
   /* Denetimler */
   const lowCorrect = r.correct <= s.chanceMax;
+  // Doğrular az ama sonuç yorumlandıysa ulaşılan düzeye kadarki doğruların rastgele seçimle çıkma olasılığı: yalnızca %5'ten
+  // küçükse "şansla açıklanamayacak kadar çok" denir (lib/scoring/tasks.ts, levelOneByChance ile aynı ölçüt).
+  const upTo = r.levels.filter((l) => l.level <= r.reached);
+  const tail = chanceAtLeast(
+    upTo.reduce((a, l) => a + l.correct, 0),
+    upTo.reduce((a, l) => a + l.n, 0),
+    s.options,
+  );
   const chanceCard = check('sans', 'Şans düzeyi', s.chance ? 'warn' : 'ok', {
     what: `${s.options} seçenekli bu testte rastgele seçen biri de birkaç soruyu doğru bulabilir. ${s.chanceRule}`,
     result: s.chance
-      ? v(c, 'Senin sonucun bu sınırda kaldı; bu yüzden doğru sayısı ve düzey yorumlanmadı.', 'Çocuğunuzun sonucu bu sınırda kaldı; bu yüzden doğru sayısı ve düzey yorumlanmadı.')
-      : lowCorrect
-        ? v(c, 'Doğru cevapların az, ama kolay sorulardaki doğrular şansla açıklanamayacak kadar çok; sonuç yorumlandı.', 'Çocuğunuzun doğru cevapları az, ama kolay sorulardaki doğrular şansla açıklanamayacak kadar çok; sonuç yorumlandı.')
-        : v(c, 'Doğru cevapların rastgele seçimle beklenenin belirgin biçimde üstünde.', 'Çocuğunuzun doğru cevapları rastgele seçimle beklenenin belirgin biçimde üstünde.'),
+      ? v(
+          c,
+          'Senin sonucun bu sınırda kaldı; bu yüzden doğru sayısı ve düzey yorumlanmadı.',
+          'Çocuğunuzun sonucu bu sınırda kaldı; bu yüzden doğru sayısı ve düzey yorumlanmadı.',
+        )
+      : lowCorrect && tail < LEVEL_ONE_CHANCE_P
+        ? v(
+            c,
+            'Doğru cevapların az, ama kolay sorulardaki doğrular şansla açıklanamayacak kadar çok; sonuç yorumlandı.',
+            'Çocuğunuzun doğru cevapları az, ama kolay sorulardaki doğrular şansla açıklanamayacak kadar çok; sonuç yorumlandı.',
+          )
+        : lowCorrect
+          ? v(
+              c,
+              'Doğru cevapların az, ama birden çok düzeye ulaştığın için sonuç yorumlandı.',
+              'Çocuğunuzun doğru cevapları az, ama birden çok düzeye ulaştığı için sonuç yorumlandı.',
+            )
+          : v(
+              c,
+              'Doğru cevapların rastgele seçimle beklenenin belirgin biçimde üstünde.',
+              'Çocuğunuzun doğru cevapları rastgele seçimle beklenenin belirgin biçimde üstünde.',
+            ),
     todo: retake(c, 'her soruya bakarak'),
-    note: 'Kırmızı çizgi doğru sayısı; renkli bölge şansla da ulaşılabilecek bölge.',
-    visual: countMeter('Doğru cevaplar', n, s.chanceMax, [{ label: v(c, 'Doğru cevapların', 'Doğru cevaplar'), value: r.correct, valueLabel: `${r.correct} doğru` }], true),
+    note: 'Kırmızı çizgi doğru sayısı; renkli bölge şansla da ulaşılabilecek doğru sayıları.',
+    // Doğrular bu bölgede ama sonuç yorumlandıysa bölge bu kişi için bir uyarı değildir (renksiz çizilir).
+    visual: countMeter(
+      'Doğru cevaplar',
+      n,
+      s.chanceMax,
+      [{ label: v(c, 'Doğru cevapların', 'Doğru cevaplar'), value: r.correct, valueLabel: `${r.correct} doğru` }],
+      true,
+      {
+        warnLabel: 'Şansla da ulaşılabilir',
+        calm: !s.chance,
+      },
+    ),
     spoken: [`Doğru cevaplar: ${sayCount(r.correct)}.`, `Şansla da ulaşılabilecek bölge: ${s.chanceMax} ya da daha az doğru.`],
   });
   const timed = traces.some((t) => t.rtMs !== null);
   const need = Math.max(2, Math.ceil(r.rapidOf / 4));
   const rapidCard = !timed
-    ? check('hizli', 'Çok hızlı yanlış cevaplar', 'none', { what: `3. düzey ve üstündeki sorularda ${rapidText} verilen yanlış cevaplar sayılır.`, result: 'Süreler ölçülemediği için bu denetim yapılamadı.' })
-    : check('hizli', 'Çok hızlı yanlış cevaplar', s.rapid ? 'warn' : 'ok', {
-        what: [
-          `3. düzey ve üstündeki sorularda ${rapidText} verilen yanlış cevaplar sayılır.`,
-          `Bu kadar kısa sürede ${s.seeing} çok zordur.`,
-          'Hızlı ama doğru bir cevap tahmin sayılmaz.',
-          'Bu soruların dörtte birinde böyle cevap varsa “Dikkat” yazar.',
-        ].join(' '),
-        result: s.rapid
-          ? v(c, 'Senin cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilirsin.', 'Çocuğunuzun cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilir.')
-          : v(c, 'Senin cevaplarında bu tür cevaplar uyarı sınırının altında.', 'Çocuğunuzun cevaplarında bu tür cevaplar uyarı sınırının altında.'),
-        todo: v(c, 'Yeniden çözersen zor sorulara acele etmeden bak.', 'Yeniden çözerse zor sorulara acele etmeden bakmasını önerebilirsiniz.'),
-        note: 'Kırmızı çizgi bu tür cevapların sayısı; renkli bölge uyarı bölgesi.',
-        visual: countMeter('Çok hızlı yanlış cevaplar', r.rapidOf, need, [{ label: '3. düzey ve üstünde', value: r.rapid, valueLabel: `${r.rapid} soru` }]),
-        spoken: [`Çok hızlı yanlış cevaplar: ${sayCount(r.rapid)}.`, `Uyarı sınırı: ${r.rapidOf} sorudan ${need}.`],
-      });
+    ? check('hizli', 'Çok hızlı yanlış cevaplar', 'none', {
+        what: `3. düzey ve üstündeki sorularda ${rapidText} verilen yanlış cevaplar sayılır.`,
+        result: 'Süreler ölçülemediği için bu denetim yapılamadı.',
+      })
+    : r.rapidOf === 0
+      ? check('hizli', 'Çok hızlı yanlış cevaplar', 'none', {
+          what: `3. düzey ve üstündeki sorularda ${rapidText} verilen yanlış cevaplar sayılır.`,
+          result: 'Bu sorularda sayılacak cevap olmadığı için bu denetim yapılmadı.',
+        })
+      : check('hizli', 'Çok hızlı yanlış cevaplar', s.rapid ? 'warn' : 'ok', {
+          what: [
+            `3. düzey ve üstündeki sorularda ${rapidText} verilen yanlış cevaplar sayılır.`,
+            `Bu kadar kısa sürede ${s.seeing} çok zordur.`,
+            'Hızlı ama doğru bir cevap tahmin sayılmaz.',
+            'Bu soruların dörtte birinde böyle cevap varsa “Dikkat” yazar.',
+          ].join(' '),
+          result: s.rapid
+            ? v(
+                c,
+                'Senin cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilirsin.',
+                'Çocuğunuzun cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilir.',
+              )
+            : v(c, 'Senin cevaplarında bu tür cevaplar uyarı sınırının altında.', 'Çocuğunuzun cevaplarında bu tür cevaplar uyarı sınırının altında.'),
+          todo: v(c, 'Yeniden çözersen zor sorulara acele etmeden bak.', 'Yeniden çözerse zor sorulara acele etmeden bakmasını önerebilirsiniz.'),
+          note: 'Kırmızı çizgi bu tür cevapların sayısı; renkli bölge uyarı bölgesi.',
+          visual: countMeter('Çok hızlı yanlış cevaplar', r.rapidOf, need, [{ label: '3. düzey ve üstünde', value: r.rapid, valueLabel: `${r.rapid} soru` }]),
+          spoken: [`Çok hızlı yanlış cevaplar: ${sayCount(r.rapid)}.`, `Uyarı sınırı: ${r.rapidOf} sorudan ${need}.`],
+        });
   const half = Math.ceil(n / 2);
   const sameCard = check('ayni-yer', 'Hep aynı sıradaki seçenek', s.samePos ? 'warn' : 'ok', {
     what: [
@@ -239,14 +306,33 @@ function choiceKind(c: Ctx, s: ChoiceSpec): KindParts {
       'Cevapların yarısı ya da daha çoğu aynı sıradaki seçenekse ve doğrular çok değilse, bakmadan aynı yere basılmış olabilir.',
     ].join(' '),
     result: s.samePos
-      ? v(c, 'Senin cevaplarında bu görüldü; birçok soruda aynı yere basmış olabilirsin.', 'Çocuğunuzun cevaplarında bu görüldü; birçok soruda aynı yere basmış olabilir.')
+      ? v(
+          c,
+          'Senin cevaplarında bu görüldü; birçok soruda aynı yere basmış olabilirsin.',
+          'Çocuğunuzun cevaplarında bu görüldü; birçok soruda aynı yere basmış olabilir.',
+        )
       : r.samePosition >= half
-        ? v(c, 'Aynı sıradaki seçeneği sık seçtin, ama doğru cevapların çok olduğu için bu bakmadan seçmeye bağlanmadı.', 'Çocuğunuz aynı sıradaki seçeneği sık seçti, ama doğru cevapları çok olduğu için bu bakmadan seçmeye bağlanmadı.')
+        ? v(
+            c,
+            'Aynı sıradaki seçeneği sık seçtin, ama doğru cevapların çok olduğu için bu bakmadan seçmeye bağlanmadı.',
+            'Çocuğunuz aynı sıradaki seçeneği sık seçti, ama doğru cevapları çok olduğu için bu bakmadan seçmeye bağlanmadı.',
+          )
         : v(c, 'Senin cevaplarında böyle bir yığılma yok.', 'Çocuğunuzun cevaplarında böyle bir yığılma yok.'),
     todo: retake(c, 'her soruya bakarak'),
     note: 'Kırmızı çizgi en sık seçilen sıranın sayısı; renkli bölge uyarı bölgesi.',
-    visual: countMeter('Aynı sıradaki seçenek', n, half, [{ label: 'En sık seçilen sıra', value: r.samePosition, valueLabel: `${r.samePosition} cevap` }]),
-    spoken: [`En sık seçilen sıradaki cevaplar: ${sayCount(r.samePosition)}.`, `Uyarı sınırı: ${n} sorudan ${half}; doğrular ${s.sameMax} ya da daha az olmalı.`],
+    // Doğrular çoksa aynı sıranın sık seçilmesi uyarı değildir: bölge renksiz çizilir.
+    visual: countMeter(
+      'Aynı sıradaki seçenek',
+      n,
+      half,
+      [{ label: 'En sık seçilen sıra', value: r.samePosition, valueLabel: `${r.samePosition} cevap` }],
+      false,
+      s.samePos ? {} : { calm: true, warnLabel: 'Yarısı ya da çoğu' },
+    ),
+    spoken: [
+      `En sık seçilen sıradaki cevaplar: ${sayCount(r.samePosition)}.`,
+      `Uyarı sınırı: ${n} sorudan ${half}; doğrular ${s.sameMax} ya da daha az olmalı.`,
+    ],
   });
   return {
     name: task.name,
@@ -256,7 +342,8 @@ function choiceKind(c: Ctx, s: ChoiceSpec): KindParts {
   };
 }
 
-const levelChance = 'Doğru cevaplar bu kadar azsa ve en kolay düzeye de ulaşılmadıysa sonuç yorumlanmaz.';
+const levelChance =
+  'Doğru cevaplar bu kadar azsa ve hiçbir düzeye ulaşılmadıysa sonuç yorumlanmaz. Yalnızca 1. düzeye ulaşıldıysa ve oradaki doğrular rastgele seçimle de çıkabiliyorsa yine yorumlanmaz.';
 const seçenek = (k: number) => `${k}. seçenek`;
 const quote = (s: string) => `“${s}”`;
 
@@ -297,7 +384,8 @@ function verbalKind(c: Ctx, task: VerbalReasoningTask, r: VerbalResult): KindPar
     sameMax: VERBAL_SAME_MAX_CORRECT,
     shown: (i) => {
       const it = task.items[i];
-      if (it.type === 'analogy') return { text: `${it.stem[0]} → ${it.stem[1]}; ${it.stem[2]} → ?`, say: `${it.stem[0]} ile ${it.stem[1]} gibi, ${it.stem[2]} ile hangi kelime?` };
+      if (it.type === 'analogy')
+        return { text: `${it.stem[0]} → ${it.stem[1]}; ${it.stem[2]} → ?`, say: `${it.stem[0]} ile ${it.stem[1]} gibi, ${it.stem[2]} ile hangi kelime?` };
       if (it.type === 'classification') return { text: `${it.stem.join(', ')} ve ?`, say: `${it.stem.join(', ')} ve hangi kelime?` };
       return { text: [...it.stem, ...(it.question ? [it.question] : [])].join(' ') };
     },
@@ -425,8 +513,7 @@ function analogyKind(c: Ctx, task: FiguralAnalogyTask, r: AnalogyResult): KindPa
     options: 4,
     chanceMax: ANALOGY_CHANCE_MAX,
     chance: analogyChance(r),
-    chanceRule:
-      'Doğru cevaplar bu kadar azsa ve hiçbir düzeye ulaşılmadıysa sonuç yorumlanmaz. En kolay düzeye de yalnızca dört sorunun üçüyle ulaşıldıysa yine yorumlanmaz.',
+    chanceRule: levelChance,
     rapid: analogyRapid(r),
     rapidMs: ANALOGY_RAPID_MS,
     seeing: 'üç şekli ve seçenekleri karşılaştırmak',
@@ -483,9 +570,45 @@ function kindParts(c: Ctx, task: CognitiveTask, done: Set<string>): KindParts | 
 }
 
 /** Hızlı (çok denemeli) görevler: denemeler tek tek değil, bölüm bölüm özetlenir. */
-const TRIAL_KINDS = new Set(['flanker', 'symbol_match', 'cancellation', 'color_word', 'go_nogo', 'trail', 'n_back', 'mental_rotation', 'reaction_time', 'rule_switch', 'symbol_search']);
+const TRIAL_KINDS = new Set([
+  'flanker',
+  'symbol_match',
+  'cancellation',
+  'color_word',
+  'go_nogo',
+  'trail',
+  'n_back',
+  'mental_rotation',
+  'reaction_time',
+  'rule_switch',
+  'symbol_search',
+]);
+/** Soru soran görevler ("Soru soru cevapların"); ötekiler dizi, desen, problem, işlem ya da kelimedir ("Tek tek cevapların"). */
+const QUESTION_KINDS = new Set([
+  'matrix_reasoning',
+  'figural_analogy',
+  'number_series',
+  'letter_series',
+  'verbal_reasoning',
+  'paper_folding',
+  'vocabulary',
+  'cube_net',
+  'hidden_figures',
+  'shape_assembly',
+  'logical_reasoning',
+  'numerical_reasoning',
+  'cognitive_reflection',
+  'mental_rotation_3d',
+  'perspective',
+]);
 
-export function taskParts(input: { def: TaskInstrument; content: ReportContent; report: SimpleReport; scores: ReportScore[]; traces: Record<string, ItemTrace[]> }): ReportPart[] {
+export function taskParts(input: {
+  def: TaskInstrument;
+  content: ReportContent;
+  report: SimpleReport;
+  scores: ReportScore[];
+  traces: Record<string, ItemTrace[]>;
+}): ReportPart[] {
   const { def, content } = input;
   const byKey = new Map(input.scores.map((s) => [s.scaleKey, s]));
   const blocks = new Map((content.cognitive?.blocks ?? []).map((b) => [b.key, b]));
@@ -503,7 +626,10 @@ export function taskParts(input: { def: TaskInstrument; content: ReportContent; 
   if (!kinds.length) return [];
   const multi = kinds.length > 1;
   const group = (k: KindParts, cards: PartCard[]): PartGroup => ({ ...(multi ? { title: k.name } : {}), cards });
-  const trials = def.tasks.some((t) => TRIAL_KINDS.has(t.kind) || t.kind === 'digit_span' || t.kind === 'spatial_span');
+  const trials = def.tasks.some((t) => TRIAL_KINDS.has(t.kind));
+  const questions = def.tasks.every((t) => QUESTION_KINDS.has(t.kind));
+  // Her seferinde aynı soruların geldiği görevlerde rapor cevap anahtarı olmaz (lib/compare/tasks.ts, SAME_ITEMS).
+  const fixed = def.tasks.some((t) => SAME_ITEMS.has(t.kind));
 
   /* 3. Denetimler (önce kurulur: "Dikkat" varsa ölçüler de bunu söyler). */
   const checks = kinds.flatMap((k) => k.checks);
@@ -522,9 +648,13 @@ export function taskParts(input: { def: TaskInstrument; content: ReportContent; 
         : `${cap(NUMBER[warns] ?? String(warns))} denetimde “Dikkat” yazıyor; ayrıntıları aşağıda.`;
   const quality: ReportPart = {
     key: 'quality',
-    title: 'Sonuca ne kadar güvenebiliriz?',
+    title: QUALITY_TITLE,
     intro: [
-      v(c, 'Bu bölüm, görevdeki cevaplarının sonucu ne kadar iyi yansıttığını denetler.', 'Bu bölüm, çocuğunuzun görevdeki cevaplarının sonucu ne kadar iyi yansıttığını denetler.'),
+      v(
+        c,
+        'Bu bölüm, görevdeki cevaplarının sonucu ne kadar iyi yansıttığını denetler.',
+        'Bu bölüm, çocuğunuzun görevdeki cevaplarının sonucu ne kadar iyi yansıttığını denetler.',
+      ),
       'Her denetimin sınırı, raporun başındaki uyarılarla ve sonuç kartlarıyla aynıdır.',
       '“Dikkat” yazan bir denetim sonucun yanlış olduğunu göstermez; sonucun dikkatle okunması gerektiğini gösterir.',
       summary,
@@ -540,7 +670,9 @@ export function taskParts(input: { def: TaskInstrument; content: ReportContent; 
     title: hasLevels ? 'Düzeylerin ve ölçülerin anlamı' : 'Ölçülerin anlamı',
     intro: [
       'Bu bölüm, raporda geçen ölçülerin ne anlattığını ve nasıl hesaplandığını anlatır.',
-      ...(hasLevels ? [v(c, 'Düzeylerin ne istediği de yazıyor; ulaştığın düzey vurgulu.', 'Düzeylerin ne istediği de yazıyor; çocuğunuzun ulaştığı düzey vurgulu.')] : []),
+      ...(hasLevels
+        ? [v(c, 'Düzeylerin ne istediği de yazıyor; ulaştığın düzey vurgulu.', 'Düzeylerin ne istediği de yazıyor; çocuğunuzun ulaştığı düzey vurgulu.')]
+        : []),
       v(
         c,
         'Ölçüler başka kişilerle karşılaştırılmaz: grafikler yalnızca senin cevaplarını ve testin kendi sınırlarını gösterir.',
@@ -552,16 +684,37 @@ export function taskParts(input: { def: TaskInstrument; content: ReportContent; 
     ...(levelCards.length > 8 ? { collapsed: true } : {}),
   };
 
-  /* 2. Soru soru cevaplar */
+  /* 2. Soru soru cevaplar: anlatım kartların türünden kurulur (tek tek satırlar ya da bölüm bölüm özet). */
+  const answerCards = kinds.flatMap((k) => k.answers);
+  const itemNouns = [...new Set(answerCards.filter((x) => x.visual?.type === 'items').map((x) => x.rowsHead?.item ?? 'soru'))];
+  const summed = answerCards.some((x) => x.visual?.type === 'blocks');
   const answers: ReportPart = {
     key: 'answers',
-    title: trials ? v(c, 'Deneme deneme sonuçların', 'Deneme deneme sonuçlar') : v(c, 'Soru soru cevapların', 'Soru soru çocuğunuzun cevapları'),
+    title: trials
+      ? v(c, 'Deneme deneme sonuçların', 'Deneme deneme sonuçlar')
+      : questions
+        ? v(c, 'Soru soru cevapların', 'Soru soru çocuğunuzun cevapları')
+        : v(c, 'Tek tek cevapların', 'Çocuğunuzun cevapları tek tek'),
     intro: [
-      trials
-        ? 'Bu bölüm görevdeki denemeleri gösterir: kısa görevlerde tek tek, yüzlerce denemeli hızlı görevlerde bölüm bölüm özetle.'
-        : 'Bu bölüm her soruyu tek tek gösterir: verilen cevap, doğrusu, yanlışın türü ve süre.',
+      ...(itemNouns.length
+        ? [`Her ${joinWords(itemNouns)} tek tek yazılır: verilen cevap, doğru ya da yanlış olduğu${fixed ? '' : ', yanlışsa doğrusu'}, yanlışın türü ve süre.`]
+        : []),
+      ...(summed ? ['Çok denemeli hızlı görevlerde denemeler bölüm bölüm özetlenir; her deneme bir parçada sayılır.'] : []),
+      ...(fixed
+        ? [
+            v(
+              c,
+              'Bu testte her seferinde aynı sorular geldiği için doğru cevaplar yazılmaz; yalnızca cevabının doğru ya da yanlış olduğu yazılır.',
+              'Bu testte her seferinde aynı sorular geldiği için doğru cevaplar yazılmaz; yalnızca cevabın doğru ya da yanlış olduğu yazılır.',
+            ),
+          ]
+        : []),
       ...(c.adult ? [] : ['Görevdeki cevaplar bir görüş bildirmez, bir görevin nasıl yapıldığını gösterir; bu yüzden bu bölüm veli raporunda da yer alır.']),
-      v(c, 'Cevapların yalnızca bu sayfada ve indirdiğin PDF dosyasında görünür; hiçbir yerde saklanmaz.', 'Cevaplar yalnızca bu sayfada ve indirdiğiniz PDF dosyasında görünür; hiçbir yerde saklanmaz.'),
+      v(
+        c,
+        'Cevapların yalnızca bu sayfada ve indirdiğin PDF dosyasında görünür; hiçbir yerde saklanmaz.',
+        'Cevaplar yalnızca bu sayfada ve indirdiğiniz PDF dosyasında görünür; hiçbir yerde saklanmaz.',
+      ),
     ].join(' '),
     groups: kinds.filter((k) => k.answers.length).map((k) => group(k, k.answers)),
     collapsed: true,
@@ -570,4 +723,7 @@ export function taskParts(input: { def: TaskInstrument; content: ReportContent; 
   return [levels, answers, quality].filter((p) => p.groups.some((g) => g.cards.length));
 }
 
-
+/** "soru", "dizi ve işlem", "dizi, desen ve kelime" */
+function joinWords(xs: string[]): string {
+  return xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} ve ${xs[xs.length - 1]}`;
+}

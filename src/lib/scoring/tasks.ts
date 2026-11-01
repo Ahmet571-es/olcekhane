@@ -1336,6 +1336,24 @@ export interface MatrixResult {
 /** Ulaşılan düzey için o düzeydeki ve o düzeye kadarki soruların en az bu kadarı doğru olmalı. */
 export const MATRIX_LEVEL_PASS = 0.6;
 /**
+ * Yalnızca 1. düzeye ulaşılmışsa oradaki doğrular da şansla açıklanabilir mi: rastgele seçen birinin 1. düzeyin sorularında en
+ * az bu kadar doğru bulma olasılığı bu sınırdan küçük değilse (binom dağılımı, p = 1 / seçenek sayısı) düzey şansa bağlanır.
+ */
+export const LEVEL_ONE_CHANCE_P = 0.05;
+/** `n` soruda, her soruda `options` seçenekten rastgele seçen birinin en az `k` doğru bulma olasılığı (binom dağılımı). */
+export const chanceAtLeast = (k: number, n: number, options: number) => atLeast(Array.from({ length: n }, () => 1 / options), k);
+/**
+ * Düzeyli seçenekli testlerde 1. düzeye şansla da ulaşılabilir: yalnızca 1. düzeye ulaşılmış ve oradaki doğrular rastgele
+ * seçimle %5 ya da daha büyük olasılıkla çıkabilir. Dört seçenekli beş sorunun üçü (%10,4) ve dört seçenekli dört sorunun
+ * üçü (%5,1) böyledir; sekiz seçenekli dört sorunun üçü (%0,7) ve beş seçenekli dört sorunun üçü (%2,7) değildir.
+ */
+export function levelOneByChance(r: { reached: number; levels: { n: number; correct: number }[] }, options: number): boolean {
+  const first = r.levels[0];
+  return r.reached === 1 && first !== undefined && chanceAtLeast(first.correct, first.n, options) >= LEVEL_ONE_CHANCE_P;
+}
+/** Şekil akıl yürütmede her sorunun seçenek sayısı. */
+export const MATRIX_OPTIONS = 8;
+/**
  * Bu kadar ya da daha az doğru, sekiz seçenekli 24 soruda rastgele seçimle de ulaşılabilir: rastgele seçen birinin 7 ya
  * da daha çok doğru bulma olasılığı %5'in altındadır (binom dağılımı, p = 1/8).
  */
@@ -1861,6 +1879,8 @@ export const FOLDING_TYPES_ORDER: FoldingType[] = ['half', 'partial', 'diagonal'
 export const FOLDING_RAPID_MS = 2500;
 /** Beş seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (sözel akıl yürütmedeki gibi; %5 sınırı). */
 export const FOLDING_CHANCE_MAX = 8;
+/** Kâğıt katlamada her sorunun seçenek sayısı. */
+export const FOLDING_OPTIONS = 5;
 
 export function scoreFolding(task: PaperFoldingTask, input: FoldingTrialInput[]): { result: FoldingResult; items: ItemTrace[] } {
   const n = task.items.length;
@@ -1974,6 +1994,8 @@ export const VOCABULARY_LURES_ORDER: VocabularyLure[] = ['swap', 'related', 'sou
 export const VOCABULARY_TYPES_ORDER: VocabularyType[] = ['synonym', 'antonym', 'context', 'idiom'];
 /** Beş seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (sözel akıl yürütmedeki gibi; %5 sınırı). */
 export const VOCABULARY_CHANCE_MAX = 8;
+/** Kelime bilgisinde her sorunun seçenek sayısı. */
+export const VOCABULARY_OPTIONS = 5;
 
 export function scoreVocabulary(task: VocabularyTask, input: VocabularyTrialInput[]): { result: VocabularyResult; items: ItemTrace[] } {
   const n = task.items.length;
@@ -3082,6 +3104,8 @@ export const CUBE_TYPES_ORDER: CubeType[] = ['place', 'turn'];
 export const CUBE_RAPID_MS = 3000;
 /** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
 export const CUBE_CHANCE_MAX = 8;
+/** Küp açınımında her sorunun seçenek sayısı. */
+export const CUBE_OPTIONS = 4;
 
 export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result: CubeResult; items: ItemTrace[] } {
   const n = task.items.length;
@@ -3170,7 +3194,7 @@ export function scoreCube(task: CubeNetTask, input: CubeTrialInput[]): { result:
 
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
 /** Küp açınımında şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
-export const cubeChance = (r: CubeResult) => r.correct <= CUBE_CHANCE_MAX && r.reached === 0;
+export const cubeChance = (r: CubeResult) => r.correct <= CUBE_CHANCE_MAX && (r.reached === 0 || levelOneByChance(r, CUBE_OPTIONS));
 export const cubeRapid = (r: CubeResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
 export const CUBE_SAME_MAX_CORRECT = 12;
@@ -3239,6 +3263,8 @@ export const HIDDEN_LURES_ORDER: HiddenLure[] = ['turned', 'changed'];
 export const HIDDEN_RAPID_MS = 3000;
 /** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
 export const HIDDEN_CHANCE_MAX = 8;
+/** Gizli şekillerde her sorunun seçenek sayısı. */
+export const HIDDEN_OPTIONS = 4;
 
 export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]): { result: HiddenResult; items: ItemTrace[] } {
   const n = task.items.length;
@@ -3323,7 +3349,7 @@ export function scoreHidden(task: HiddenFiguresTask, input: HiddenTrialInput[]):
 
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
 /** Gizli şekillerde şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
-export const hiddenChance = (r: HiddenResult) => r.correct <= HIDDEN_CHANCE_MAX && r.reached === 0;
+export const hiddenChance = (r: HiddenResult) => r.correct <= HIDDEN_CHANCE_MAX && (r.reached === 0 || levelOneByChance(r, HIDDEN_OPTIONS));
 export const hiddenRapid = (r: HiddenResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
 export const HIDDEN_SAME_MAX_CORRECT = 12;
@@ -3403,6 +3429,8 @@ export const ASSEMBLY_TYPES_ORDER: AssemblyType[] = ['slide', 'turn', 'mirror'];
 export const ASSEMBLY_RAPID_MS = 3000;
 /** Dört seçenekli 20 soruda rastgele seçimle ulaşılabilecek doğru sayısı (%5 sınırı: 9 ya da daha çok doğrunun olasılığı %4). */
 export const ASSEMBLY_CHANCE_MAX = 8;
+/** Parçalardan şekilde her sorunun seçenek sayısı. */
+export const ASSEMBLY_OPTIONS = 4;
 
 export function scoreAssembly(task: ShapeAssemblyTask, input: AssemblyTrialInput[]): { result: AssemblyResult; items: ItemTrace[] } {
   const n = task.items.length;
@@ -3490,7 +3518,7 @@ export function scoreAssembly(task: ShapeAssemblyTask, input: AssemblyTrialInput
 }
 
 /** Parçalardan şekilde şans düzeyi (öteki düzeyli testlerdeki gibi: hiçbir düzeye ulaşılmadıysa). */
-export const assemblyChance = (r: AssemblyResult) => r.correct <= ASSEMBLY_CHANCE_MAX && r.reached === 0;
+export const assemblyChance = (r: AssemblyResult) => r.correct <= ASSEMBLY_CHANCE_MAX && (r.reached === 0 || levelOneByChance(r, ASSEMBLY_OPTIONS));
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
 export const assemblyRapid = (r: AssemblyResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
@@ -3581,6 +3609,8 @@ export const ANALOGY_TYPES_ORDER: AnalogyChange[] = ['look', 'turn', 'place'];
 export const ANALOGY_RAPID_MS = 3000;
 /** Dört seçenekli 24 soruda rastgele seçimle ulaşılabilecek doğru sayısı (10 ya da daha çok doğrunun olasılığı %5,5). */
 export const ANALOGY_CHANCE_MAX = 9;
+/** Şekil benzetmelerinde her sorunun seçenek sayısı. */
+export const ANALOGY_OPTIONS = 4;
 
 export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[]): { result: AnalogyResult; items: ItemTrace[] } {
   const n = task.items.length;
@@ -3676,10 +3706,9 @@ export function scoreAnalogy(task: FiguralAnalogyTask, input: AnalogyTrialInput[
 
 /**
  * Şekil benzetmelerinde şans düzeyi: doğrular rastgele seçimle ulaşılabilecek kadar az ve hiçbir düzeye ulaşılmamış ya da
- * yalnızca 1. düzeye, dört sorunun üçüyle ulaşılmış (rastgele seçen biri bunu yirmide bir olasılıkla yapar).
+ * yalnızca 1. düzeye, dört sorunun üçüyle ulaşılmış (rastgele seçen biri bunu yirmide bir olasılıkla yapar; `levelOneByChance`).
  */
-export const analogyChance = (r: AnalogyResult) =>
-  r.correct <= ANALOGY_CHANCE_MAX && (r.reached === 0 || (r.reached === 1 && r.levels[0].correct < r.levels[0].n));
+export const analogyChance = (r: AnalogyResult) => r.correct <= ANALOGY_CHANCE_MAX && (r.reached === 0 || levelOneByChance(r, ANALOGY_OPTIONS));
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
 export const analogyRapid = (r: AnalogyResult) => r.rapidOf > 0 && r.rapid >= Math.max(2, Math.ceil(r.rapidOf / 4));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
@@ -5857,7 +5886,7 @@ export function foldingQualityNotes(kf: FoldingResult): string[] {
  * düzeyin çoğu doğruysa (ulaşılan düzey en az 1) toplam az olsa da sonuç rastgele seçim sayılmaz: kolay sorular gerçekten
  * çözülmüştür, daha zor sorular zor gelmiştir.
  */
-export const foldingChance = (kf: FoldingResult) => kf.correct <= FOLDING_CHANCE_MAX && kf.reached === 0;
+export const foldingChance = (kf: FoldingResult) => kf.correct <= FOLDING_CHANCE_MAX && (kf.reached === 0 || levelOneByChance(kf, FOLDING_OPTIONS));
 export const foldingRapid = (kf: FoldingResult) => kf.rapidOf > 0 && kf.rapid >= Math.max(2, Math.ceil(kf.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
@@ -5960,7 +5989,7 @@ export function vocabularyQualityNotes(kb: VocabularyResult): string[] {
 
 /** Zor sorularda okunamayacak kadar hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri (en az 2). */
 /** Kelime bilgisinde şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
-export const vocabularyChance = (kb: VocabularyResult) => kb.correct <= VOCABULARY_CHANCE_MAX && kb.reached === 0;
+export const vocabularyChance = (kb: VocabularyResult) => kb.correct <= VOCABULARY_CHANCE_MAX && (kb.reached === 0 || levelOneByChance(kb, VOCABULARY_OPTIONS));
 export const vocabularyRapid = (kb: VocabularyResult) => kb.rapidOf > 0 && kb.rapid >= Math.max(2, Math.ceil(kb.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
@@ -5995,7 +6024,7 @@ export function verbalQualityNotes(vr: VerbalResult): string[] {
 export const verbalRapid = (vr: VerbalResult) => vr.rapidOf > 0 && vr.rapid >= Math.max(2, Math.ceil(vr.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */
 /** Sözel akıl yürütmede şans düzeyi (şekil akıl yürütmedeki gibi: hiçbir düzeye ulaşılmadıysa). */
-export const verbalChance = (vr: VerbalResult) => vr.correct <= VERBAL_CHANCE_MAX && vr.reached === 0;
+export const verbalChance = (vr: VerbalResult) => vr.correct <= VERBAL_CHANCE_MAX && (vr.reached === 0 || levelOneByChance(vr, VERBAL_OPTIONS));
 /** Bundan çok doğru cevap verende aynı sıradaki seçeneğin sık seçilmesi bakmadan seçmeye bağlanmaz. */
 export const VERBAL_SAME_MAX_CORRECT = 12;
 export const verbalSamePosition = (vr: VerbalResult) => vr.samePosition >= Math.ceil(vr.n / 2) && vr.correct <= VERBAL_SAME_MAX_CORRECT;
@@ -6087,7 +6116,7 @@ export function matrixQualityNotes(mx: MatrixResult): string[] {
  * düzeyin çoğu doğruysa (ulaşılan düzey en az 1) toplam az olsa da sonuç rastgele seçim sayılmaz: kolay sorular gerçekten
  * çözülmüştür, daha zor sorular zor gelmiştir.
  */
-export const matrixChance = (mx: MatrixResult) => mx.correct <= MATRIX_CHANCE_MAX && mx.reached === 0;
+export const matrixChance = (mx: MatrixResult) => mx.correct <= MATRIX_CHANCE_MAX && (mx.reached === 0 || levelOneByChance(mx, MATRIX_OPTIONS));
 /** Zor sorularda çok hızlı yanlış cevaplar: 3. düzey ve üstündeki soruların en az dörtte biri. */
 export const matrixRapid = (mx: MatrixResult) => mx.rapidOf > 0 && mx.rapid >= Math.max(2, Math.ceil(mx.rapidOf / 4));
 /** Hep aynı sıradaki seçeneği seçme: cevapların en az yarısı aynı sırada. */

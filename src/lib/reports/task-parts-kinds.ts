@@ -46,6 +46,7 @@ import {
   NBACK_RANDOM_FA,
   NUMERIC_BLANK_MANY,
   NUMERIC_MIN_ANSWERED,
+  NUMERIC_RAPID_BLANK,
   NUMERIC_RAPID_WRONG,
   PA_CHANCE_MEAN,
   PA_PATTERN_MIN,
@@ -60,11 +61,13 @@ import {
   REFLECTION_CONTROL_NONE,
   REFLECTION_SAME_MAX_CORRECT,
   ROTATION3D_CHANCE_MAX,
+  ROTATION3D_FIGURES_ABOVE,
   ROTATION3D_HALF_SYSTEMATIC,
   ROTATION3D_MIRROR_NOTE,
   ROTATION3D_RAPID_MS,
   ROTATION3D_SAME_MAX_CORRECT,
   ROTATION_MIN_ANSWERED,
+  RULE_CHANCE_ACC,
   RULE_TOO_FAST_MS,
   SG_MIN_ACCURACY,
   SG_MIN_ANSWERED,
@@ -167,10 +170,13 @@ import {
   type TrailResult,
   type WordListResult,
 } from '@/lib/scoring/tasks';
-import { ARITH_ERROR_NAME, LETTER_FEW_MAX, LOGIC_FORM_NAMES, NUMBER_FEW_MAX, secShort } from './build';
+import { ARITH_ERROR_NAME, LETTER_FEW_MAX, NUMBER_FEW_MAX, secShort } from './build';
 import type { PartCard, PartLevel } from './parts';
 import {
+  QUALITY_TITLE,
+  blockBadge,
   blocksCard,
+  cap,
   check,
   countMeter,
   dec1,
@@ -204,6 +210,8 @@ import type { BarsVisual, ColumnsVisual, LadderVisual, MeterVisual } from './vis
 const quote = (s: string) => `“${s}”`;
 const res = <T>(c: Ctx, key: string) => c.score(key)?.extra as unknown as T | undefined;
 const pctVal = (x: number) => Math.round(x * 100);
+/** Çubuktaki işaretin yeri: yuvarlanmamış yüzde (yuvarlama işareti sınırın öteki yanına geçirmesin; yazısı yuvarlanır). */
+const pctExact = (x: number) => x * 100;
 /** Yüzde çubukları (her biri 100 üzerinden). */
 const pctBars = (label: string, rows: { label: string; rate: number }[]): BarsVisual => ({
   type: 'bars',
@@ -257,7 +265,7 @@ function counts(parts: { n: number; label: string }[]): string {
 const statusCount = (ts: ItemTrace[], s: ItemTrace['status']) => ts.filter((t) => t.status === s).length;
 const timedCount = (ts: ItemTrace[]) => ts.filter((t) => t.rtMs !== null).length;
 /** Seçenekli bir sorunun cevabı. */
-const yesNo = (r: number) => (r === 1 ? 'Evet, kesin olarak doğru' : 'Hayır, kesin değil');
+const yesNo = (r: number) => (r === 1 ? '“Evet, kesin olarak doğru”' : '“Hayır, kesin değil”');
 
 /** Uyarının yüzde sınırı için kısa açıklama ("yüzde 10'dan çok"). */
 const shareOf = (x: number, n: number) => (n ? (100 * x) / n : 0);
@@ -320,7 +328,7 @@ function seriesKind(
   const accuracy = measureCard({
     key: 'dogru',
     title: 'Doğru sayısı',
-    badge: c.block(`${prefix}_dogru`)?.headline,
+    ...blockBadge(c, `${prefix}_dogru`),
     text: [
       `Doğru sayısı, eksik ${o.unit === 'sayı' ? 'sayının' : 'harfin'} doğru bulunduğu soruların sayısıdır; her soru aynı değerdedir.`,
       'Cevap seçilmeden yazıldığı için şansla doğru bulmak çok zordur.',
@@ -341,10 +349,8 @@ function seriesKind(
           key: 'sure',
           title: 'Tipik süre',
           badge: `Tipik ${secShort(r.medianRt)}`,
-          text: [
-            medianText('soru', 'dizinin ekrana gelmesinden cevabın verilmesine kadar'),
-            'Bu testte süre sınırı yoktu; süre tek başına iyi ya da kötü değildir.',
-          ].join(' '),
+          // Süre sınırının olmadığı raporun "Çalışma biçimi" kartında yazar; tipik süre rozette okunur.
+          text: medianText('soru', 'dizinin ekrana gelmesinden cevabın verilmesine kadar'),
           note: 'Her nokta bir sorunun süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
             label: 'Sorulardaki cevap süreleri',
@@ -353,7 +359,6 @@ function seriesKind(
             marker: `Tipik ${secShort(r.medianRt)}`,
             item: 'bir soru',
           }),
-          spoken: [`Tipik süre: ${secShort(r.medianRt)}.`],
         });
 
   const few = r.correct <= o.fewMax;
@@ -411,36 +416,39 @@ function seriesKind(
         what: `3. düzey ve üstünde ${secLimit(task.rapidMs)} saniyeden kısa sürede yazılan yanlış cevaplar sayılır.`,
         result: 'Süreler ölçülemediği için bu denetim yapılamadı.',
       })
-    : check('hizli', 'Çok hızlı yanlış cevaplar', o.rapid ? 'warn' : 'ok', {
-        what: [
-          `3. düzey ve üstünde cevap yazılan sorulardan ${secLimit(task.rapidMs)} saniyeden kısa sürede yazılan yanlış cevaplar sayılır.`,
-          'Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur.',
-          'Bu soruların dörtte birinde böyle cevap varsa “Dikkat” yazar.',
-        ].join(' '),
-        result: o.rapid
-          ? v(
-              c,
-              'Senin cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilirsin.',
-              'Çocuğunuzun cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilir.',
-            )
-          : r.rapidOf === 0
-            ? '3. düzey ve üstünde cevap yazılmadığı için sayılacak cevap yok.'
+    : r.rapidOf === 0
+      ? check('hizli', 'Çok hızlı yanlış cevaplar', 'none', {
+          what: `3. düzey ve üstünde ${secLimit(task.rapidMs)} saniyeden kısa sürede yazılan yanlış cevaplar sayılır.`,
+          result: '3. düzey ve üstünde cevap yazılmadığı için bu denetim yapılmadı.',
+        })
+      : check('hizli', 'Çok hızlı yanlış cevaplar', o.rapid ? 'warn' : 'ok', {
+          what: [
+            `3. düzey ve üstünde cevap yazılan sorulardan ${secLimit(task.rapidMs)} saniyeden kısa sürede yazılan yanlış cevaplar sayılır.`,
+            'Bu kadar kısa sürede diziyi inceleyip kuralı bulmak çok zordur.',
+            'Bu soruların dörtte birinde böyle cevap varsa “Dikkat” yazar.',
+          ].join(' '),
+          result: o.rapid
+            ? v(
+                c,
+                'Senin cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilirsin.',
+                'Çocuğunuzun cevaplarında bu sınıra ulaşıldı; bu sorularda tahmin etmiş olabilir.',
+              )
             : v(c, 'Senin cevaplarında bu tür cevaplar uyarı sınırının altında.', 'Çocuğunuzun cevaplarında bu tür cevaplar uyarı sınırının altında.'),
-        todo: v(
-          c,
-          'Yeniden çözersen cevabı yazmadan önce kuralı dizinin bütün sayılarında dene.',
-          'Yeniden çözerse cevabı yazmadan önce kuralı dizinin bütününde denemesini önerebilirsiniz.',
-        ),
-        note: 'Kırmızı çizgi bu tür cevapların sayısı; renkli bölge uyarı bölgesi.',
-        visual: countMeter('Çok hızlı yanlış cevaplar', Math.max(1, r.rapidOf), need, [
-          {
-            label: '3. düzey ve üstünde',
-            value: r.rapid,
-            valueLabel: `${r.rapid} soru`,
-          },
-        ]),
-        spoken: [`Çok hızlı yanlış cevaplar: ${sayCount(r.rapid)}.`, `Uyarı sınırı: ${r.rapidOf} sorudan ${need}.`],
-      });
+          todo: v(
+            c,
+            'Yeniden çözersen cevabı yazmadan önce kuralı dizinin bütün sayılarında dene.',
+            'Yeniden çözerse cevabı yazmadan önce kuralı dizinin bütününde denemesini önerebilirsiniz.',
+          ),
+          note: 'Kırmızı çizgi bu tür cevapların sayısı; renkli bölge uyarı bölgesi.',
+          visual: countMeter('Çok hızlı yanlış cevaplar', r.rapidOf, need, [
+            {
+              label: '3. düzey ve üstünde',
+              value: r.rapid,
+              valueLabel: `${r.rapid} soru`,
+            },
+          ]),
+          spoken: [`Çok hızlı yanlış cevaplar: ${sayCount(r.rapid)}.`, `Uyarı sınırı: ${r.rapidOf} sorudan ${need}.`],
+        });
   const sameNeed = Math.max(6, Math.ceil(n / 2));
   const sameCard = check('ayni-cevap', `Hep aynı ${o.unit}`, o.same ? 'warn' : 'ok', {
     what: `Her sorunun cevabı farklıdır. Soruların yarısında ya da daha çoğunda aynı ${o.unit} yazılırsa sorulara bakmadan cevap verilmiş olabilir.`,
@@ -460,7 +468,10 @@ function seriesKind(
         valueLabel: `${r.sameAnswer} soru`,
       },
     ]),
-    spoken: [`En sık yazılan ${o.unit}: ${sayCount(r.sameAnswer, 'soruda')}.`, `Uyarı sınırı: ${sameNeed} soru.`],
+    spoken: [
+      r.sameAnswer === 0 ? `Yazılan ${o.unit} yok.` : `En sık yazılan ${o.unit} ${r.sameAnswer === 1 ? 'yalnızca bir' : r.sameAnswer} soruda yazıldı.`,
+      `Uyarı sınırı: ${sameNeed} soru.`,
+    ],
   });
   return {
     name: task.name,
@@ -488,8 +499,7 @@ function logicKind(c: Ctx, task: LogicalReasoningTask, r: LogicResult): KindPart
         shown: `${it.premises.join(' ')} Sonuç: ${it.conclusion}`,
         status: t.status,
         given: yesNo(t.response as number),
-        expected: t.status === 'correct' ? null : yesNo(task.answers[t.index]),
-        tags: [`tür: ${LOGIC_FORM_NAMES[task.forms[t.index]]}`],
+        // Sorunun türü (geçerli ya da geçersiz çıkarım) yazılmaz: aynı sorular geldiği için cevabı ele verirdi.
         rtMs: t.rtMs,
         rapid: !!t.rapid,
       };
@@ -499,7 +509,7 @@ function logicKind(c: Ctx, task: LogicalReasoningTask, r: LogicResult): KindPart
   const accuracy = measureCard({
     key: 'dogru',
     title: 'Doğru sayısı',
-    badge: c.block('ma_dogru')?.headline,
+    ...blockBadge(c, 'ma_dogru'),
     text: [
       'Doğru sayısı, sonucun kesin olup olmadığına doğru karar verilen soruların sayısıdır.',
       'Her soruda iki seçenek olduğu için rastgele seçen biri de soruların yaklaşık yarısını bulur.',
@@ -519,10 +529,7 @@ function logicKind(c: Ctx, task: LogicalReasoningTask, r: LogicResult): KindPart
           key: 'sure',
           title: 'Tipik süre',
           badge: `Tipik ${secShort(r.medianRt)}`,
-          text: [
-            medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'),
-            'Uzun bilgileri okumak zaman alır; süre tek başına iyi ya da kötü değildir.',
-          ].join(' '),
+          text: [medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'), 'Uzun bilgileri okumak zaman alır.'].join(' '),
           note: 'Her nokta bir sorunun süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
             label: 'Sorulardaki cevap süreleri',
@@ -531,7 +538,6 @@ function logicKind(c: Ctx, task: LogicalReasoningTask, r: LogicResult): KindPart
             marker: `Tipik ${secShort(r.medianRt)}`,
             item: 'bir soru',
           }),
-          spoken: [`Tipik süre: ${secShort(r.medianRt)}.`],
         });
   const side = logicSameSide(r);
   const lowYes = n - LOGIC_SAME_SIDE;
@@ -626,14 +632,25 @@ function logicKind(c: Ctx, task: LogicalReasoningTask, r: LogicResult): KindPart
             : v(c, 'Senin cevaplarında bu tür cevaplar uyarı sınırının altında.', 'Çocuğunuzun cevaplarında bu tür cevaplar uyarı sınırının altında.'),
         todo: v(c, 'Yeniden çözersen her soruyu sonuna kadar oku.', 'Yeniden çözerse her soruyu sonuna kadar okumasını önerebilirsiniz.'),
         note: 'Kırmızı çizgi çok hızlı cevapların sayısı; renkli bölge uyarı bölgesi.',
-        visual: countMeter('Çok hızlı cevaplar', n, need, [
-          {
-            label: 'Çok hızlı',
-            value: r.rapid,
-            valueLabel: `${r.rapid} soru`,
-          },
-        ]),
-        spoken: [`Çok hızlı cevaplar: ${sayCount(r.rapid)}; bunlardan doğru olanlar: ${sayCount(r.rapidCorrect)}.`, `Uyarı sınırı: ${need} soru.`],
+        // Çok hızlı cevapların çoğu doğruysa sayı sınırı aşsa da uyarı yoktur: bölge renksiz çizilir.
+        visual: countMeter(
+          'Çok hızlı cevaplar',
+          n,
+          need,
+          [
+            {
+              label: 'Çok hızlı',
+              value: r.rapid,
+              valueLabel: `${r.rapid} soru`,
+            },
+          ],
+          false,
+          rapid ? {} : { calm: true, warnLabel: 'Çok hızlı' },
+        ),
+        spoken: [
+          `Çok hızlı cevaplar: ${sayCount(r.rapid)}${r.rapid ? `; bunlardan doğru olanlar: ${sayCount(r.rapidCorrect)}` : ''}.`,
+          `Uyarı sınırı: ${need} soru.`,
+        ],
       });
   return {
     name: task.name,
@@ -683,7 +700,7 @@ function numericKind(c: Ctx, task: NumericalReasoningTask, r: NumericResult): Ki
   const accuracy = measureCard({
     key: 'dogru',
     title: 'Doğru sayısı',
-    badge: c.block('sy_dogru')?.headline,
+    ...blockBadge(c, 'sy_dogru'),
     text: [
       'Doğru sayısı, doğru sayının yazıldığı soruların sayısıdır.',
       'Cevap seçilmeden yazıldığı için şansla doğru bulmak çok zordur.',
@@ -704,10 +721,7 @@ function numericKind(c: Ctx, task: NumericalReasoningTask, r: NumericResult): Ki
           key: 'sure',
           title: 'Tipik süre',
           badge: `Tipik ${secShort(r.medianRt)}`,
-          text: [
-            medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'),
-            'Uzun bir durumu okuyup hesaplamak zaman alır; süre tek başına iyi ya da kötü değildir.',
-          ].join(' '),
+          text: [medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'), 'Uzun bir durumu okuyup hesaplamak zaman alır.'].join(' '),
           note: 'Her nokta bir sorunun süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
             label: 'Sorulardaki cevap süreleri',
@@ -716,7 +730,6 @@ function numericKind(c: Ctx, task: NumericalReasoningTask, r: NumericResult): Ki
             marker: `Tipik ${secShort(r.medianRt)}`,
             item: 'bir soru',
           }),
-          spoken: [`Tipik süre: ${secShort(r.medianRt)}.`],
         });
   const few = numericFewAnswered(r);
   const many = r.blank >= NUMERIC_BLANK_MANY;
@@ -795,11 +808,46 @@ function numericKind(c: Ctx, task: NumericalReasoningTask, r: NumericResult): Ki
           ]),
           spoken: [`Çok hızlı yazılan yanlış cevaplar: ${sayCount(rapidWrong)}.`, `Uyarı sınırı: ${NUMERIC_RAPID_WRONG} soru.`],
         });
+  // Raporun "Çalışma biçimi" kartındaki gözlem (lib/reports/build.ts, numericBlocks): kısa sürede denen "Bilmiyorum".
+  const quickBlank = r.rapidBlank >= NUMERIC_RAPID_BLANK;
+  const quickBlankCard = few
+    ? check('hizli-bilmiyorum', 'Çok hızlı “Bilmiyorum” cevapları', 'none', {
+        what: 'Soruyu okumaya yetmeyecek kadar kısa sürede denen “Bilmiyorum” cevapları sayılır.',
+        result: 'Cevap yazılan soru çok az olduğu için bu denetim yapılmadı.',
+      })
+    : !traces.some((t) => t.rtMs !== null)
+      ? check('hizli-bilmiyorum', 'Çok hızlı “Bilmiyorum” cevapları', 'none', {
+          what: 'Soruyu okumaya yetmeyecek kadar kısa sürede denen “Bilmiyorum” cevapları sayılır.',
+          result: 'Süreler ölçülemediği için bu denetim yapılamadı.',
+        })
+      : check('hizli-bilmiyorum', 'Çok hızlı “Bilmiyorum” cevapları', quickBlank ? 'warn' : 'ok', {
+          what: [
+            'Soruyu okumaya yetmeyecek kadar kısa sürede denen “Bilmiyorum” cevapları sayılır; sınır sorunun uzunluğuna göredir.',
+            `En az ${NUMERIC_RAPID_BLANK} soruda böyleyse bu sorular atlanmış olabilir.`,
+          ].join(' '),
+          result: quickBlank
+            ? v(
+                c,
+                'Senin cevaplarında bu görüldü; raporun “Çalışma biçimi” kartında da yazıyor.',
+                'Çocuğunuzun cevaplarında bu görüldü; raporun “Çalışma biçimi” kartında da yazıyor.',
+              )
+            : v(c, 'Senin cevaplarında bu tür cevaplar uyarı sınırının altında.', 'Çocuğunuzun cevaplarında bu tür cevaplar uyarı sınırının altında.'),
+          todo: v(c, 'Yeniden çözersen her soruyu okuyup denemeye çalış.', 'Yeniden çözerse her soruyu okuyup denemesini önerebilirsiniz.'),
+          note: 'Kırmızı çizgi bu tür cevapların sayısı; renkli bölge uyarı bölgesi.',
+          visual: countMeter('Çok hızlı “Bilmiyorum”', n, NUMERIC_RAPID_BLANK, [
+            {
+              label: 'Çok hızlı “Bilmiyorum”',
+              value: r.rapidBlank,
+              valueLabel: `${r.rapidBlank} soru`,
+            },
+          ]),
+          spoken: [`Çok hızlı denen Bilmiyorum: ${sayCount(r.rapidBlank)}.`, `Uyarı sınırı: ${NUMERIC_RAPID_BLANK} soru.`],
+        });
   return {
     name: task.name,
     answers: [answers],
     levels: [accuracy, ...(time ? [time] : [])],
-    checks: [blankCard, rapidCard, timingCard(c, { noun: 'soru', measured: timedCount(traces), total: n })],
+    checks: [blankCard, rapidCard, quickBlankCard, timingCard(c, { noun: 'soru', measured: timedCount(traces), total: n })],
   };
 }
 
@@ -816,14 +864,12 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
     groupCaption: 'Sorular, testteki sırasıyla',
     rows: traces.map((t) => {
       const it = task.items[t.index];
-      const lureRole = task.roles[t.index] === 'lure';
+      // Sorunun tuzaklı mı eş mi olduğu ve yanlışın türü yazılmaz: aynı sorular geldiği için cevabı ele verirdi.
       return {
         group: 0,
         shown: `${it.stem.join(' ')} ${it.question}`,
         status: t.status,
         given: quote(it.options[(t.response as number) - 1]),
-        expected: t.status === 'correct' ? null : quote(it.options[task.answers[t.index] - 1]),
-        tags: [lureRole ? 'tuzaklı soru' : 'tuzaksız eş soru', ...(t.lure ? [lureRole ? 'ilk akla gelen cevap' : 'tuzak varmış gibi cevap'] : [])],
         rtMs: t.rtMs,
         rapid: !!t.rapid,
       };
@@ -835,7 +881,7 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
   const lureCard = measureCard({
     key: 'tuzakli',
     title: 'Tuzaklı sorular',
-    badge: c.block('dk_dogru')?.headline,
+    ...blockBadge(c, 'dk_dogru'),
     text: [
       'Tuzaklı sorularda ilk akla gelen cevap yanlıştır; doğruyu bulmak için durup ilk cevabı denetlemek gerekir.',
       'Bu ölçü, tuzaklı soruların kaçında doğru cevaba ulaşıldığıdır.',
@@ -851,7 +897,7 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
   const controlCard = measureCard({
     key: 'es',
     title: 'Tuzaksız eş sorular',
-    badge: c.block('dk_es')?.headline,
+    ...blockBadge(c, 'dk_es'),
     text: [
       'Eş sorular tuzaklı sorulara benzer ama tuzak içermez; ilk akla gelen cevap doğrudur.',
       'Bu sorular, soruların dikkatle okunup okunmadığını gösterir.',
@@ -871,10 +917,7 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
           key: 'sure',
           title: 'Tipik süre',
           badge: `Tipik ${secShort(r.medianRt)}`,
-          text: [
-            medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'),
-            'Durup düşünmek zaman alır; süre tek başına iyi ya da kötü değildir.',
-          ].join(' '),
+          text: [medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'), 'Durup düşünmek zaman alır.'].join(' '),
           note: 'Her nokta bir sorunun süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
             label: 'Sorulardaki cevap süreleri',
@@ -883,11 +926,13 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
             marker: `Tipik ${secShort(r.medianRt)}`,
             item: 'bir soru',
           }),
-          spoken: [`Tipik süre: ${secShort(r.medianRt)}.`],
         });
   const chance = reflectionChance(r);
   const doubt = reflectionRapid(r) || reflectionSamePosition(r);
   const low = reflectionControlLow(r) && !doubt;
+  // Eş sorulardaki yanlışların çoğu tuzak varmış gibi cevapsa doğrular çok az olsa da sonuç yorumlanır (reflectionChance):
+  // o zaman "Yorumlanmaz" bölgesi çizilmez.
+  const trapSeeking = low && C.correct <= REFLECTION_CONTROL_NONE;
   const controlMeter: MeterVisual = {
     type: 'meter',
     label: 'Eş sorularda doğru',
@@ -895,14 +940,18 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
     max: C.n,
     discrete: true,
     zones: [
+      ...(trapSeeking
+        ? []
+        : [
+            {
+              from: 0,
+              to: REFLECTION_CONTROL_NONE + 0.5,
+              label: 'Yorumlanmaz',
+              warn: true,
+            },
+          ]),
       {
-        from: 0,
-        to: REFLECTION_CONTROL_NONE + 0.5,
-        label: 'Yorumlanmaz',
-        warn: true,
-      },
-      {
-        from: REFLECTION_CONTROL_NONE + 0.5,
+        from: trapSeeking ? 0 : REFLECTION_CONTROL_NONE + 0.5,
         to: REFLECTION_CONTROL_LOW + 0.5,
         label: 'Dikkat',
         warn: true,
@@ -922,7 +971,8 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
       },
     ],
   };
-  const controlCheck = check('es', 'Eş soruların okunması', chance || low ? 'warn' : 'ok', {
+  // Eş soruların bir kısmı yanlış ama çok hızlı cevaplar ya da aynı yere basmak da açıklayabiliyorsa bu denetim ayrıca yapılmaz.
+  const controlCheck = check('es', 'Eş soruların okunması', chance || low ? 'warn' : reflectionControlLow(r) ? 'none' : 'ok', {
     what: 'Tuzaksız eş soruların çoğu doğru olmalıdır. Bunların da çoğu yanlışsa sorular dikkatle okunmamış ya da yönerge farklı anlaşılmış olabilir.',
     result: chance
       ? v(
@@ -930,25 +980,29 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
           'Senin cevaplarında eş soruların çok azı doğru; bu yüzden sonuç yorumlanmadı.',
           'Çocuğunuzun cevaplarında eş soruların çok azı doğru; bu yüzden sonuç yorumlanmadı.',
         )
-      : low
+      : trapSeeking
         ? v(
             c,
-            'Eş soruların bir kısmında da yanlış cevap verdin; sonuç dikkatle okunmalı.',
-            'Çocuğunuz eş soruların bir kısmında da yanlış cevap verdi; sonuç dikkatle okunmalı.',
+            'Eş sorulardaki yanlışların çoğunda tuzak varmış gibi cevap verdin. Tuzak olmayan sorularda da tuzak aramış olabilirsin; sonuç dikkatle okunmalı.',
+            'Eş sorulardaki yanlışların çoğunda tuzak varmış gibi cevap verildi. Çocuğunuz tuzak olmayan sorularda da tuzak aramış olabilir; sonuç dikkatle okunmalı.',
           )
-        : reflectionControlLow(r)
+        : low
           ? v(
               c,
-              'Eş soruların bir kısmı yanlış, ama bunu çok hızlı cevaplar ya da aynı yere basmak açıklayabilir; ona aşağıda bakılır.',
-              'Eş soruların bir kısmı yanlış, ama bunu çok hızlı cevaplar ya da aynı yere basmak açıklayabilir; ona aşağıda bakılır.',
+              'Eş soruların bir kısmında da yanlış cevap verdin; sonuç dikkatle okunmalı.',
+              'Çocuğunuz eş soruların bir kısmında da yanlış cevap verdi; sonuç dikkatle okunmalı.',
             )
-          : v(c, 'Eş soruların çoğunu doğru cevapladın.', 'Çocuğunuz eş soruların çoğunu doğru cevapladı.'),
+          : reflectionControlLow(r)
+            ? 'Eş soruların bir kısmı yanlış; bunu çok hızlı cevaplar ya da aynı yere basmak da açıklayabildiği için bu denetim ayrıca yapılmadı.'
+            : v(c, 'Eş soruların çoğunu doğru cevapladın.', 'Çocuğunuz eş soruların çoğunu doğru cevapladı.'),
     todo: retake(c, 'her soruyu sonuna kadar okuyarak'),
     note: 'Kırmızı çizgi eş sorulardaki doğru sayısı; renkli bölgeler uyarı bölgeleri.',
     visual: controlMeter,
     spoken: [
       `Eş sorularda doğru: ${C.correct}/${C.n}.`,
-      `Yorumlanmaz: ${REFLECTION_CONTROL_NONE} ya da daha az; dikkat: ${REFLECTION_CONTROL_LOW} ya da daha az.`,
+      trapSeeking
+        ? `Dikkat: ${REFLECTION_CONTROL_LOW} ya da daha az.`
+        : `Yorumlanmaz: ${REFLECTION_CONTROL_NONE} ya da daha az; dikkat: ${REFLECTION_CONTROL_LOW} ya da daha az.`,
     ],
   });
   const rapid = reflectionRapid(r);
@@ -972,14 +1026,25 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
           : v(c, 'Senin cevaplarında bu tür cevaplar uyarı sınırının altında.', 'Çocuğunuzun cevaplarında bu tür cevaplar uyarı sınırının altında.'),
         todo: v(c, 'Yeniden çözersen her soruyu sonuna kadar oku.', 'Yeniden çözerse her soruyu sonuna kadar okumasını önerebilirsiniz.'),
         note: 'Kırmızı çizgi çok hızlı cevapların sayısı; renkli bölge uyarı bölgesi.',
-        visual: countMeter('Çok hızlı cevaplar', n, need, [
-          {
-            label: 'Çok hızlı',
-            value: r.rapid,
-            valueLabel: `${r.rapid} soru`,
-          },
-        ]),
-        spoken: [`Çok hızlı cevaplar: ${sayCount(r.rapid)}; bunlardan doğru olanlar: ${sayCount(r.rapidCorrect)}.`, `Uyarı sınırı: ${need} soru.`],
+        // Çok hızlı cevapların çoğu doğruysa sayı sınırı aşsa da uyarı yoktur: bölge renksiz çizilir.
+        visual: countMeter(
+          'Çok hızlı cevaplar',
+          n,
+          need,
+          [
+            {
+              label: 'Çok hızlı',
+              value: r.rapid,
+              valueLabel: `${r.rapid} soru`,
+            },
+          ],
+          false,
+          rapid ? {} : { calm: true, warnLabel: 'Çok hızlı' },
+        ),
+        spoken: [
+          `Çok hızlı cevaplar: ${sayCount(r.rapid)}${r.rapid ? `; bunlardan doğru olanlar: ${sayCount(r.rapidCorrect)}` : ''}.`,
+          `Uyarı sınırı: ${need} soru.`,
+        ],
       });
   const same = reflectionSamePosition(r);
   const half = Math.ceil(n / 2);
@@ -990,13 +1055,20 @@ function reflectionKind(c: Ctx, task: CognitiveReflectionTask, r: ReflectionResu
       : v(c, 'Senin cevaplarında böyle bir yığılma yok.', 'Çocuğunuzun cevaplarında böyle bir yığılma yok.'),
     todo: retake(c, 'her soruya bakarak'),
     note: 'Kırmızı çizgi en sık seçilen sıranın sayısı; renkli bölge uyarı bölgesi.',
-    visual: countMeter('Aynı sıradaki seçenek', n, half, [
-      {
-        label: 'En sık seçilen sıra',
-        value: r.samePosition,
-        valueLabel: `${r.samePosition} cevap`,
-      },
-    ]),
+    visual: countMeter(
+      'Aynı sıradaki seçenek',
+      n,
+      half,
+      [
+        {
+          label: 'En sık seçilen sıra',
+          value: r.samePosition,
+          valueLabel: `${r.samePosition} cevap`,
+        },
+      ],
+      false,
+      same ? {} : { calm: true, warnLabel: 'Yarısı ya da çoğu' },
+    ),
     spoken: [
       `En sık seçilen sıradaki cevaplar: ${sayCount(r.samePosition)}.`,
       `Uyarı sınırı: ${half}; doğrular ${REFLECTION_SAME_MAX_CORRECT} ya da daha az olmalı.`,
@@ -1033,8 +1105,8 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
         shown: `${it.part}. bölüm`,
         status: t.status,
         given: `${pair(t.response as string)} şekil`,
-        expected: t.status === 'correct' ? null : `${task.answers[t.index].map((x) => `${x}.`).join(' ve ')} şekil`,
-        tags: t.lure === 'half' ? ['bir doğru şekil, bir ayna görüntüsü'] : t.lure === 'none' ? ['iki ayna görüntüsü'] : [],
+        // "İki ayna görüntüsü" yazılmaz: seçilmeyen iki şeklin doğru olduğunu ele verirdi (aynı sorular gelir).
+        tags: t.lure === 'half' ? ['bir doğru şekil, bir ayna görüntüsü'] : [],
         rtMs: t.rtMs,
         rapid: !!t.rapid,
       };
@@ -1048,11 +1120,11 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
   const accuracy = measureCard({
     key: 'dogru',
     title: 'Doğru sayısı',
-    badge: c.block('ud_dogru')?.headline,
+    ...blockBadge(c, 'ud_dogru'),
     text: [
       'Her soruda iki doğru şekil seçilir; ikisi birden bulunursa soru doğru sayılır.',
       'Bir doğru şekil ile bir ayna görüntüsü seçilirse soru yanlış sayılır.',
-      'Dört seçenekten iki şekil seçmenin altı yolu vardır; rastgele seçen biri her altı sorudan birini bulur.',
+      'Dört seçenekten iki şekil seçmenin altı yolu vardır; rastgele seçen biri ortalama her altı sorudan birini bulur.',
     ].join(' '),
     note: 'Çubuk bütün soruları gösterir; parçalar iki doğru, bir doğru bir ayna ve iki ayna seçilen sorulardır.',
     visual: stackOf('Seçilen şekiller', [
@@ -1069,10 +1141,7 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
           key: 'sure',
           title: 'Tipik süre',
           badge: `Tipik ${secShort(r.medianRt)}`,
-          text: [
-            medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'),
-            'Şekli zihinde çevirmek zaman alır; süre tek başına iyi ya da kötü değildir.',
-          ].join(' '),
+          text: [medianText('soru', 'sorunun ekrana gelmesinden cevabın verilmesine kadar'), 'Şekli zihinde çevirmek zaman alır.'].join(' '),
           note: 'Her nokta bir sorunun süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
             label: 'Sorulardaki cevap süreleri',
@@ -1081,7 +1150,6 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
             marker: `Tipik ${secShort(r.medianRt)}`,
             item: 'bir soru',
           }),
-          spoken: [`Tipik süre: ${secShort(r.medianRt)}.`],
         });
   const low = r.correct <= ROTATION3D_CHANCE_MAX;
   const doubt = rotation3dRapid(r) || rotation3dSamePair(r);
@@ -1104,12 +1172,13 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
     spoken: [`Doğru cevaplar: ${sayCount(r.correct)}.`, `Şansla da ulaşılabilecek bölge: ${ROTATION3D_CHANCE_MAX} ya da daha az.`],
   });
   const mirror = rotation3dMirrorPick(r) && !doubt;
-  const mirrorCard = check('ayna', 'İki ayna görüntüsü', mirror ? 'warn' : 'ok', {
+  // Sık görüldü ama çok hızlı cevaplar ya da aynı yere basmak da açıklayabiliyor: bu denetim ayrıca yapılmaz.
+  const mirrorCard = check('ayna', 'İki ayna görüntüsü', mirror ? 'warn' : rotation3dMirrorPick(r) ? 'none' : 'ok', {
     what: 'İki ayna görüntüsünün birden seçilmesi rastgele seçimde de arada bir olur. Çok sık olursa yönerge ters anlaşılmış ya da şeklin derinliği ters görülmüş olabilir.',
     result: mirror
       ? v(c, 'Senin cevaplarında bu sık görüldü; sonuç dikkatle okunmalı.', 'Çocuğunuzun cevaplarında bu sık görüldü; sonuç dikkatle okunmalı.')
       : rotation3dMirrorPick(r)
-        ? 'Bu sık görüldü, ama çok hızlı cevaplar ya da aynı yere basmak da açıklayabileceği için ayrıca yorumlanmadı.'
+        ? 'Bu sık görüldü, ama çok hızlı cevaplar ya da aynı yere basmak da açıklayabildiği için bu denetim ayrıca yapılmadı.'
         : v(c, 'Senin cevaplarında bu sınırın altında kaldı.', 'Çocuğunuzun cevaplarında bu sınırın altında kaldı.'),
     todo: v(c, 'Yeniden çözersen yönergedeki örneğe bir kez daha bak.', 'Yeniden çözerse yönergedeki örneğe bir kez daha bakmasını önerebilirsiniz.'),
     note: 'Kırmızı çizgi iki ayna seçilen soru sayısı; renkli bölge uyarı bölgesi.',
@@ -1117,25 +1186,44 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
     spoken: [`İki ayna görüntüsü seçilen sorular: ${sayCount(r.none)}.`, `Uyarı sınırı: ${ROTATION3D_MIRROR_NOTE} soru.`],
   });
   const halfPick = rotation3dHalfPick(r);
-  const halfCard = check('yarim', 'Hep bir doğru, bir ayna', halfPick ? 'warn' : 'ok', {
-    what: 'Doğrular azken soruların hemen hepsinde bir doğru şekil ile bir ayna görüntüsü seçildiyse bu rastgele değildir. Yönerge farklı anlaşılmış olabilir.',
+  // Kuralın iki yolu var (lib/scoring/tasks.ts, rotation3dHalfPick): soruların en az 18'inde bir doğru, bir ayna seçilmesi ya da
+  // seçilen 40 şeklin en az 25'inin döndürülmüş şekil olması. Grafik kararı veren yolu gösterir.
+  const halfCond = low && (r.figures >= ROTATION3D_FIGURES_ABOVE || r.half >= ROTATION3D_HALF_SYSTEMATIC);
+  // Doğrular çoksa döndürülmüş şekillerin çok seçilmesi olağandır: o zaman grafik bir doğru, bir ayna seçilen soruları gösterir.
+  const byFigures = halfCond && r.half < ROTATION3D_HALF_SYSTEMATIC;
+  const halfCard = check('yarim', 'Hep bir doğru, bir ayna', halfPick ? 'warn' : halfCond ? 'none' : 'ok', {
+    what: [
+      `Doğrular azken soruların en az ${ROTATION3D_HALF_SYSTEMATIC} tanesinde bir doğru şekil ile bir ayna görüntüsü seçildiyse bu rastgele değildir.`,
+      `Seçilen ${2 * n} şeklin en az ${ROTATION3D_FIGURES_ABOVE} tanesi döndürülmüş şekilse de böyledir; yönerge farklı anlaşılmış olabilir.`,
+    ].join(' '),
     result: halfPick
       ? v(c, 'Senin cevaplarında bu görüldü; bu yüzden sonuç yorumlanmadı.', 'Çocuğunuzun cevaplarında bu görüldü; bu yüzden sonuç yorumlanmadı.')
-      : v(c, 'Senin cevaplarında böyle bir düzen görülmedi.', 'Çocuğunuzun cevaplarında böyle bir düzen görülmedi.'),
+      : halfCond
+        ? 'Bu düzen görüldü, ama başka bir denetimde anlatılan durum da açıklayabildiği için bu denetim ayrıca yapılmadı.'
+        : v(c, 'Senin cevaplarında böyle bir düzen görülmedi.', 'Çocuğunuzun cevaplarında böyle bir düzen görülmedi.'),
     todo: v(
       c,
       'Her soruda iki döndürülmüş şekil seçildiğini hatırlayarak yeniden çözebilirsin.',
       'Her soruda iki döndürülmüş şekil seçildiğini hatırlatarak yeniden çözmesini önerebilirsiniz.',
     ),
-    note: 'Kırmızı çizgi bir doğru, bir ayna seçilen soru sayısı; renkli bölge uyarı bölgesi.',
-    visual: countMeter('Bir doğru, bir ayna', n, ROTATION3D_HALF_SYSTEMATIC, [
-      {
-        label: 'Bir doğru, bir ayna',
-        value: r.half,
-        valueLabel: `${r.half} soru`,
-      },
-    ]),
-    spoken: [`Bir doğru, bir ayna seçilen sorular: ${sayCount(r.half)}.`, `Uyarı sınırı: ${ROTATION3D_HALF_SYSTEMATIC} soru.`],
+    note: byFigures
+      ? 'Kırmızı çizgi seçilen döndürülmüş şekillerin sayısı; renkli bölge uyarı bölgesi.'
+      : 'Kırmızı çizgi bir doğru, bir ayna seçilen soru sayısı; renkli bölge uyarı bölgesi.',
+    visual: byFigures
+      ? countMeter('Seçilen döndürülmüş şekiller', 2 * n, ROTATION3D_FIGURES_ABOVE, [
+          { label: 'Döndürülmüş şekil', value: r.figures, valueLabel: `${r.figures} şekil` },
+        ])
+      : countMeter('Bir doğru, bir ayna', n, ROTATION3D_HALF_SYSTEMATIC, [
+          {
+            label: 'Bir doğru, bir ayna',
+            value: r.half,
+            valueLabel: `${r.half} soru`,
+          },
+        ]),
+    spoken: [
+      `Bir doğru, bir ayna seçilen sorular: ${sayCount(r.half)}. Seçilen döndürülmüş şekiller: ${sayCount(r.figures)}.`,
+      `Uyarı sınırı: ${ROTATION3D_HALF_SYSTEMATIC} soru ya da ${ROTATION3D_FIGURES_ABOVE} şekil.`,
+    ],
   });
   const rapid = rotation3dRapid(r);
   const need = Math.max(3, Math.ceil(n / 4));
@@ -1173,13 +1261,20 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
       : v(c, 'Senin cevaplarında böyle bir yığılma yok.', 'Çocuğunuzun cevaplarında böyle bir yığılma yok.'),
     todo: retake(c, 'her soruya bakarak'),
     note: 'Kırmızı çizgi en sık seçilen yer çiftinin sayısı; renkli bölge uyarı bölgesi.',
-    visual: countMeter('Aynı yer çifti', n, half, [
-      {
-        label: 'En sık seçilen çift',
-        value: r.samePair,
-        valueLabel: `${r.samePair} cevap`,
-      },
-    ]),
+    visual: countMeter(
+      'Aynı yer çifti',
+      n,
+      half,
+      [
+        {
+          label: 'En sık seçilen çift',
+          value: r.samePair,
+          valueLabel: `${r.samePair} cevap`,
+        },
+      ],
+      false,
+      same ? {} : { calm: true, warnLabel: 'Yarısı ya da çoğu' },
+    ),
     spoken: [
       `En sık seçilen yer çifti: ${sayCount(r.samePair, 'cevap')}.`,
       `Uyarı sınırı: ${half}; doğrular ${ROTATION3D_SAME_MAX_CORRECT} ya da daha az olmalı.`,
@@ -1210,13 +1305,9 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
         shown: questionText(task.objects, task.items[x.index]),
         status,
         given: x.response === null ? null : sectorWords(x.response),
-        expected: status === 'correct' ? null : sectorWords(x.correct),
-        tags: [
-          ...(x.response === null ? [] : [`${dec1(x.error)}° fark`]),
-          ...(x.ego ? ['haritaya göre yön'] : []),
-          ...(x.mirror ? ['sağ ile sol karışık'] : []),
-          ...(x.opposite ? ['tam ters yön'] : []),
-        ],
+        // Uzak cevapta açı farkı ve hata türü yazılmaz: verilen yönle birlikte doğru yönü ele verirdi (aynı sorular gelir).
+        // Türlerin sayısı "Belirli bir hata türü" denetimindedir.
+        tags: status === 'correct' ? [`${dec1(x.error)}° fark`] : [],
         rtMs: x.rt,
         rapid: x.response !== null && x.rt !== null && x.rt < PA_RAPID_MS && x.error > 45,
       };
@@ -1228,10 +1319,12 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
     skipLabel: 'Cevap verilmedi',
   });
   const errors = r.items.map((x) => x.error);
+  // Rozet ortalama hatayı söylüyorsa sesli okumada ikinci kez okunmaz.
+  const hataBadge = blockBadge(c, 'ba_hata');
   const meanCard = measureCard({
     key: 'hata',
     title: 'Ortalama yön hatası',
-    badge: c.block('ba_hata')?.headline,
+    ...hataBadge,
     text: [
       'Her soruda gösterilen yön ile doğru yön arasındaki açı ölçülür; açı 0 ile 180 derece arasındadır.',
       'Ortalama yön hatası bu açıların ortalamasıdır; küçük olan daha isabetlidir.',
@@ -1250,7 +1343,10 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
       zone: { from: 0, to: PA_CLOSE, label: 'Doğru yöne çok yakın' },
       reference: { value: 90, label: 'Rastgele: 90°' },
     },
-    spoken: [`Ortalama yön hatası: ${dec1(r.meanError)} derece.`, `Doğru yöne çok yakın cevaplar: ${sayCount(r.close)}.`],
+    spoken: [
+      ...(hataBadge.badge ? [] : [`Ortalama yön hatası: ${dec1(r.meanError)} derece.`]),
+      `Doğru yöne çok yakın cevaplar: ${sayCount(r.close)}.`,
+    ],
   });
   const time =
     r.medianRt === null
@@ -1259,10 +1355,7 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
           key: 'sure',
           title: 'Tipik süre',
           badge: `Tipik ${secShort(r.medianRt)}`,
-          text: [
-            medianText('soru', 'sorunun ekrana gelmesinden okun yerleştirilmesine kadar'),
-            'Kendini başka bir yerde hayal etmek zaman alır; süre tek başına iyi ya da kötü değildir.',
-          ].join(' '),
+          text: [medianText('soru', 'sorunun ekrana gelmesinden okun yerleştirilmesine kadar'), 'Kendini başka bir yerde hayal etmek zaman alır.'].join(' '),
           note: 'Her nokta bir sorunun süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
             label: 'Sorulardaki cevap süreleri',
@@ -1271,10 +1364,10 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
             marker: `Tipik ${secShort(r.medianRt)}`,
             item: 'bir soru',
           }),
-          spoken: [`Tipik süre: ${secShort(r.medianRt)}.`],
         });
   const chance = perspectiveChance(r);
-  const chanceCard = check('sans', 'Rastgele yönlerden ayrılma', chance ? 'warn' : 'ok', {
+  // Ortalama hata rastgele düzeyindeyse ama yanlışlar belirli bir türde toplandıysa da "Dikkat": sonuç yine yorumlanmaz.
+  const chanceCard = check('sans', 'Rastgele yönlerden ayrılma', chance || perspectivePatternHigh(r) ? 'warn' : 'ok', {
     what: 'Rastgele gösterilen yönlerin ortalama hatası 90 derece civarındadır. Ortalama hata rastgele düzeyinden belirgin biçimde ayrılmıyorsa sonuç tek başına yorumlanmaz.',
     result: chance
       ? v(
@@ -1283,7 +1376,11 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
           'Çocuğunuzun gösterdiği yönler rastgele yönlerden belirgin biçimde ayrılmadı; bu yüzden sonuç yorumlanmadı.',
         )
       : perspectivePatternHigh(r)
-        ? 'Ortalama hata yüksek, ama yanlışlar belirli bir türde toplandığı için bu rastgele sayılmadı; bir sonraki denetime bak.'
+        ? v(
+            c,
+            'Ortalama hata rastgele düzeyinden ayrılmıyor. Yanlışlar belirli bir türde toplandığı için bu, rastgele seçime bağlanmadı; bir sonraki denetime bak.',
+            'Ortalama hata rastgele düzeyinden ayrılmıyor. Yanlışlar belirli bir türde toplandığı için bu, rastgele seçime bağlanmadı; bir sonraki denetime bakın.',
+          )
         : v(
             c,
             'Senin gösterdiğin yönler rastgele yönlerden belirgin biçimde daha isabetli.',
@@ -1296,9 +1393,10 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
       label: 'Ortalama yön hatası',
       min: 0,
       max: 180,
+      // Kural "65 dereceden çok": sınırın kendisi "Uygun" bölgede kalır.
       zones: [
-        { from: 0, to: PA_CHANCE_MEAN, label: 'Uygun', warn: false },
-        { from: PA_CHANCE_MEAN, to: 180, label: 'Dikkat', warn: true },
+        { from: 0, to: PA_CHANCE_MEAN + 1e-6, label: 'Uygun', warn: false },
+        { from: PA_CHANCE_MEAN + 1e-6, to: 180, label: 'Dikkat', warn: true },
       ],
       rows: [
         {
@@ -1426,6 +1524,9 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
     return r ? [{ task: t, r, key }] : [];
   });
   if (!secs.length) return null;
+  // Bölüm adları cümle içinde küçük harfle, sonuncusundan önce "ve": "toplama, çıkarma ve bölme".
+  const names = (xs: { task: MentalArithmeticTask }[]) => joinAnd(xs.map(({ task }) => lower(OP[task.op].name)));
+  const inSections = (xs: { task: MentalArithmeticTask }[]) => `${cap(names(xs))} ${xs.length === 1 ? 'bölümünde' : 'bölümlerinde'}`;
   const answers: PartCard[] = secs.map(({ task, r }) => {
     const traces = c.traces[task.key] ?? [];
     if (!traces.length) {
@@ -1456,7 +1557,8 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
           status: t.status,
           given: t.response === null ? null : String(t.response),
           expected: t.status === 'correct' ? null : String(arithAnswer(task.op, task.items[t.index])),
-          tags: t.lure ? [lower(ARITH_ERROR_NAME[t.lure as keyof typeof ARITH_ERROR_NAME])] : [],
+          // "Öteki yanlışlar" bir tür değildir: etiketi yazılmaz.
+          tags: t.lure && t.lure !== 'other' ? [lower(ARITH_ERROR_NAME[t.lure as keyof typeof ARITH_ERROR_NAME])] : [],
           rtMs: t.rtMs,
           rapid: !!t.rapid && t.status === 'wrong',
         };
@@ -1468,20 +1570,35 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
       },
       none: 'geçilen',
       skipLabel: '“Geç”',
+      // İşlemin sonucu gösterilen işlemden hesaplanır; yanlış cevabın doğrusu yazılır.
+      showKey: true,
     });
   });
 
   /* Düzeyler ve ölçüler: her bölümün düzeyleri, bölüm bölüm doğrular, doğruluk ve temel işlemlerde süre. */
+  // Yorumlanmayan bölümde (çok az cevap, çok hızlı ve yanlış cevaplar) düzey vurgulanmaz ve grafiği olmaz.
   const levelCards: PartCard[] = secs.map(({ task, r }) => {
-    const levels: PartLevel[] = task.levels.map((name, i) => ({ label: `${i + 1}. düzey`, text: name, active: r.reached === i + 1 }));
+    const ok = arithRead(r);
+    const levels: PartLevel[] = task.levels.map((name, i) => ({ label: `${i + 1}. düzey`, text: name, active: ok && r.reached === i + 1 }));
+    const text = [
+      `İşlemler kolaydan zora ${task.levels.length} düzeyde sırayla gelir; her düzeyde ${task.perLevel} işlem vardır.`,
+      'Vurgulu düzey, cevap yazılan en zor düzeydir; geçilen işlemler ilerleme sayılmaz.',
+    ].join(' ');
+    if (!ok)
+      return {
+        key: `${task.key}-duzey`,
+        title: `${OP[task.op].name} düzeyleri`,
+        badge: 'Yorumlanmadı',
+        text: `${text} Bu bölüm yorumlanmadı; nedeni “${QUALITY_TITLE}” bölümünde yazıyor.`,
+        levels,
+      };
     return {
       key: `${task.key}-duzey`,
       title: `${OP[task.op].name} düzeyleri`,
       badge: r.reached ? `${r.reached}. düzeye kadar` : 'Cevap yazılmadı',
-      text: [
-        `İşlemler kolaydan zora ${task.levels.length} düzeyde sırayla gelir; her düzeyde ${task.perLevel} işlem vardır.`,
-        'Vurgulu düzey, cevap yazılan en zor düzeydir; geçilen işlemler ilerleme sayılmaz.',
-      ].join(' '),
+      text,
+      // Vurgulu düzey bir başarı düzeyi değil, cevap yazılan en zor düzeydir.
+      activeLabel: 'Cevap yazılan en zor düzey',
       note: 'Grafikte her satır bir düzey; dolu kare doğru, boş kare doğru olmayan işlem.',
       visual: {
         type: 'dots',
@@ -1505,10 +1622,10 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
   const countCard = measureCard({
     key: 'dogru-islem',
     title: 'Doğru işlem sayısı',
-    badge: c.block('zh_genel')?.headline,
+    ...blockBadge(c, 'zh_genel'),
     text: [
       'Her bölüm kısa bir süre sürer; süre içinde doğru cevaplanan işlemler sayılır.',
-      'Dakikada doğru, bu sayının bir dakikaya düşen payıdır.',
+      'Dakikada doğru, bu sayının bir dakikaya düşen payıdır; bölüm süre dolmadan biterse geçen süre kullanılır.',
       'Geçilen işlemler ve yanlış cevaplar puandan bir şey götürmez.',
     ].join(' '),
     note: 'Her satır bir bölüm; parçalar doğru, yanlış ve geçilen işlemlerdir.',
@@ -1530,7 +1647,7 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
     : measureCard({
         key: 'dogruluk',
         title: 'Doğruluk',
-        badge: c.block('zh_dogruluk')?.headline,
+        ...blockBadge(c, 'zh_dogruluk'),
         text: 'Doğruluk, cevap yazılan işlemlerin doğru olan payıdır; geçilen işlemler katılmaz. Hız ile doğruluk birlikte okunur: hızlı ama çok yanlışlı bir sonuç, yavaş ama doğru bir sonuçla aynı şeyi anlatmaz.',
         note: 'Her çubuk bir bölümde yazılan cevaplar; dolu kısım doğru olanlar.',
         visual: shareBars(
@@ -1550,7 +1667,7 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
     ? measureCard({
         key: 'temel-sure',
         title: 'Temel işlemlerde tipik süre',
-        badge: c.block('zh_hiz')?.headline,
+        ...blockBadge(c, 'zh_hiz'),
         text: [
           'Temel işlemler, ilk düzeylerdeki kısa işlemlerdir: tek basamaklı toplama ve çıkarma ya da çarpım tablosu.',
           'Tipik süre, bu işlemlerdeki doğru cevapların sürelerinin ortasındaki değerdir.',
@@ -1575,7 +1692,7 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
   const fewCard = check('az-cevap', 'Cevap yazılan işlemler', few.length ? 'warn' : 'ok', {
     what: 'Bir bölümde çok az işleme cevap yazılırsa o bölüm yorumlanmaz; bölüm yarıda bırakılmış ya da yönerge anlaşılmamış olabilir.',
     result: few.length
-      ? `${few.map(({ task }) => OP[task.op].name).join(', ')} ${few.length === 1 ? 'bölümünde' : 'bölümlerinde'} bu sınıra ulaşıldı; ${few.length === 1 ? 'o bölüm' : 'o bölümler'} yorumlanmadı.`
+      ? `${inSections(few)} bu sınıra ulaşıldı; ${few.length === 1 ? 'o bölüm' : 'o bölümler'} yorumlanmadı.`
       : 'Her bölümde yeterince cevap yazıldı.',
     todo: retake(c, 'her bölümde süre bitene kadar çalışarak'),
     note: 'Kırmızı çizgiler bölümlerde yazılan cevap sayısı; renkli bölge uyarı bölgesi.',
@@ -1602,7 +1719,7 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
     result: !withAnswers.length
       ? 'Hiç cevap yazılmadığı için bu denetim yapılamadı.'
       : rushed.length
-        ? `${rushed.map(({ task }) => OP[task.op].name).join(', ')} ${rushed.length === 1 ? 'bölümünde' : 'bölümlerinde'} tuşlara işleme bakmadan basılmış olabilir.`
+        ? `${inSections(rushed)} tuşlara işleme bakmadan basılmış olabilir.`
         : 'Hiçbir bölümde bu görülmedi.',
     todo: retake(c, 'her işleme bakarak'),
     note: 'Kırmızı çizgiler çok hızlı ve yanlış cevapların yüzdesi; renkli bölge uyarı bölgesi.',
@@ -1610,10 +1727,10 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
       ? {
           visual: shareMeter(
             'Çok hızlı ve yanlış cevaplar',
-            [[50, 100]],
+            [['≥', 50]],
             withAnswers.map(({ task, r }) => ({
               label: OP[task.op].name,
-              value: Math.round((100 * r.rapidWrong) / r.answered),
+              value: (100 * r.rapidWrong) / r.answered,
               valueLabel: `%${Math.round((100 * r.rapidWrong) / r.answered)}`,
             })),
           ),
@@ -1628,7 +1745,7 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
     result: !readSecs.length
       ? 'Yorumlanan bölüm olmadığı için bu denetim yapılamadı.'
       : zero.length
-        ? `${zero.map(({ task }) => OP[task.op].name).join(', ')} ${zero.length === 1 ? 'bölümünde' : 'bölümlerinde'} bu görüldü.`
+        ? `${inSections(zero)} bu görüldü.`
         : 'Yorumlanan her bölümde doğru cevap var.',
     todo: v(c, 'Yeniden çözersen her işlemin işaretine bak.', 'Yeniden çözerse her işlemin işaretine bakmasını önerebilirsiniz.'),
     note: 'Her çubuk bir bölümde yazılan cevaplar; dolu kısım doğru olanlar.',
@@ -1646,32 +1763,63 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
       : {}),
     spoken: readSecs.map(({ task, r }) => `${OP[task.op].name}: ${sayN(r.correct, 'doğru')}.`),
   });
+  // Kural (arithManySkips): yorumlanan bölümde en az 4 işlem ve yazılan cevaplar kadar ya da daha çok geçilmiş. En az 4 işlemin
+  // geçildiği bölümlerde grafik geçilenlerin payını gösterir (yarısı ya da daha çoğu "Dikkat"); öyle bölüm yoksa geçilen sayısını.
   const skips = readSecs.filter(({ r }) => arithManySkips(r));
-  const skipCard = check('gecilen', 'Geçilen işlemler', skips.length ? 'warn' : 'ok', {
-    what: '“Geç” demek zor bir işlemde süreyi korur. Ama bir bölümde çok sayıda işlem ve yazılan cevaplar kadar ya da daha çok geçilirse bu ayrıca söylenir; geçilen işlemler doğru sayılmaz.',
-    result: skips.length
-      ? `${skips.map(({ task }) => OP[task.op].name).join(', ')} ${skips.length === 1 ? 'bölümünde' : 'bölümlerinde'} çok sayıda işlem geçildi.`
-      : 'Hiçbir bölümde bu görülmedi.',
+  const skipHeavy = readSecs.filter(({ r }) => r.skipped >= 4);
+  const skipCard = check('gecilen', 'Geçilen işlemler', !readSecs.length ? 'none' : skips.length ? 'warn' : 'ok', {
+    what: '“Geç” demek zor bir işlemde süreyi korur. Bir bölümde en az 4 işlem ve yazılan cevaplar kadar ya da daha çok geçilirse bu ayrıca söylenir.',
+    result: !readSecs.length
+      ? 'Yorumlanan bölüm olmadığı için bu denetim yapılamadı.'
+      : skips.length
+        ? `${inSections(skips)} çok sayıda işlem geçildi.`
+        : 'Yorumlanan hiçbir bölümde bu görülmedi.',
     todo: v(c, 'Yeniden çözersen bildiğin işlemleri geçmeden çözmeye çalış.', 'Yeniden çözerse bildiği işlemleri geçmeden çözmesini önerebilirsiniz.'),
-    note: 'Kırmızı çizgiler geçilen işlem sayısı; renkli bölge uyarı bölgesi.',
-    visual: countMeter(
-      'Geçilen işlemler',
-      Math.max(10, ...secs.map(({ r }) => r.skipped)),
-      4,
-      secs.map(({ task, r }) => ({
-        label: OP[task.op].name,
-        value: r.skipped,
-        valueLabel: `${r.skipped} işlem`,
-      })),
-    ),
-    spoken: [...secs.map(({ task, r }) => `${OP[task.op].name}: ${sayN(r.skipped, 'geçilen')}.`), 'Uyarı: 4 ya da daha çok ve yazılan cevaplar kadar.'],
+    note: skipHeavy.length
+      ? 'Kırmızı çizgiler en az 4 işlemin geçildiği bölümlerde geçilenlerin payı; renkli bölge uyarı bölgesi.'
+      : 'Kırmızı çizgiler yorumlanan bölümlerde geçilen işlem sayısı; renkli bölge uyarı bölgesi.',
+    visual: skipHeavy.length
+      ? shareMeter(
+          'Geçilen işlemlerin payı',
+          [['≥', 50]],
+          skipHeavy.map(({ task, r }) => ({
+            label: OP[task.op].name,
+            value: shareOf(r.skipped, r.skipped + r.answered),
+            valueLabel: `${r.skipped} geçilen, ${r.answered} cevap`,
+          })),
+        )
+      : countMeter(
+          'Geçilen işlemler',
+          10,
+          4,
+          readSecs.map(({ task, r }) => ({
+            label: OP[task.op].name,
+            value: r.skipped,
+            valueLabel: `${r.skipped} işlem`,
+          })),
+        ),
+    spoken: [
+      ...readSecs.map(({ task, r }) => `${OP[task.op].name}: ${sayN(r.skipped, 'geçilen')}, ${sayN(r.answered, 'cevap')}.`),
+      'Uyarı: en az 4 ve yazılan cevaplar kadar.',
+    ],
   });
+  // Tavan (lib/scoring/tasks.ts): işlemler süre dolmadan bitti, en çok 2 işlem geçildi ve en çok 4 işlem doğru değil.
   const top = readSecs.filter(({ r }) => r.ceiling);
-  const topCard = check('tavan', 'Bölümün bitmesi', top.length ? 'warn' : 'ok', {
-    what: 'Bir bölümün bütün işlemleri süre dolmadan biter ve hemen hepsi doğruysa doğru sayısı bölümdeki işlem sayısıyla sınırlı kalır. Gerçek hız bundan da yüksek olabilir.',
-    result: top.length
-      ? `${top.map(({ task }) => OP[task.op].name).join(', ')} ${top.length === 1 ? 'bölümünde' : 'bölümlerinde'} bu oldu.`
-      : 'Hiçbir bölümde işlemler süreden önce bitmedi.',
+  const finishedOnly = readSecs.filter(({ r }) => r.attempted === r.n && !r.ceiling);
+  const topCard = check('tavan', 'Bölümün bitmesi', !readSecs.length ? 'none' : top.length ? 'warn' : 'ok', {
+    what: [
+      'Bir bölümün işlemleri süre dolmadan biterse doğru sayısı bölümdeki işlem sayısıyla sınırlı kalabilir.',
+      'En çok 2 işlem geçildiyse ve en çok 4 işlem doğru değilse gerçek hız bundan da yüksek olabilir.',
+    ].join(' '),
+    result: !readSecs.length
+      ? 'Yorumlanan bölüm olmadığı için bu denetim yapılamadı.'
+      : [
+          ...(top.length ? [`${inSections(top)} bu oldu.`] : []),
+          ...(finishedOnly.length
+            ? [`${inSections(finishedOnly)} işlemler süre dolmadan bitti; ama geçilen ya da doğru olmayan işlemler bu sınırı aştı.`]
+            : []),
+          ...(!top.length && !finishedOnly.length ? ['Yorumlanan hiçbir bölümde işlemler süreden önce bitmedi.'] : []),
+        ].join(' '),
     note: 'Her çubuk bir bölümün işlemleri; dolu kısım gösterilenler.',
     visual: shareBars(
       'Gösterilen işlemler',
@@ -1737,6 +1885,8 @@ function spanKind(c: Ctx, task: DigitSpanTask | SpatialSpanTask, key: string): K
     noTime: true,
     none: 'boş',
     skipLabel: 'Boş',
+    // Dizi görevleri "yeniden çözmede alıştırma" türündedir (lib/compare/tasks.ts): doğru dizi yazılır.
+    showKey: true,
   });
   const maxLength = task.startLength + task.sequences.length - 1;
   const ladder: LadderVisual = {
@@ -1755,7 +1905,7 @@ function spanKind(c: Ctx, task: DigitSpanTask | SpatialSpanTask, key: string): K
   const span = measureCard({
     key: 'aralik',
     title: 'En uzun dizi',
-    badge: c.block(key)?.headline,
+    ...blockBadge(c, key),
     text: [
       `Diziler kısadan uzuna gider; her uzunlukta iki dizi gösterilir.`,
       'Aynı uzunluktaki iki dizinin ikisi de yanlış olunca görev biter.',
@@ -1763,7 +1913,8 @@ function spanKind(c: Ctx, task: DigitSpanTask | SpatialSpanTask, key: string): K
     ].join(' '),
     note: 'Her sütun bir uzunluk; dolu daire doğru, boş daire yanlış tekrarlanan dizi.',
     visual: ladder,
-    spoken: [r.span ? `En uzun dizi: ${r.span} ${unit}.` : 'En kısa dizi de doğru tekrarlanmadı.'],
+    // Rozet en uzun diziyi söylüyorsa ikinci kez okunmaz.
+    spoken: r.span && c.block(key)?.headline ? undefined : [r.span ? `En uzun dizi: ${r.span} ${unit}.` : 'En kısa dizi de doğru tekrarlanmadı.'],
   });
   const first = r.ladder[0]?.results ?? [];
   const firstOk = first.filter(Boolean).length;
@@ -1838,7 +1989,7 @@ function flankerKind(c: Ctx, task: FlankerTask): KindParts | null {
   const accuracy = measureCard({
     key: 'dogruluk',
     title: 'Doğruluk',
-    badge: c.block('attention')?.headline,
+    ...blockBadge(c, 'attention'),
     text: [
       'Doğruluk, ortadaki okun yönünün doğru bildirildiği denemelerin payıdır.',
       'Çok erken basılan ve süresi dolan denemeler doğru sayılmaz.',
@@ -1865,6 +2016,7 @@ function flankerKind(c: Ctx, task: FlankerTask): KindParts | null {
             rts: okRts,
             median: r.meanRt,
             marker: `Ortalama ${sec2(r.meanRt)}`,
+            line: 'ortalama',
             item: 'bir doğru cevap',
             digits: 2,
           }),
@@ -1885,16 +2037,16 @@ function flankerKind(c: Ctx, task: FlankerTask): KindParts | null {
       note: 'Kırmızı çizgi doğruluk yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Doğruluk',
-        [[0, minAcc]],
+        [['<', minAcc]],
         [
           {
             label: 'Doğru cevaplar',
-            value: pctVal(r.accuracy),
+            value: pctExact(r.accuracy),
             valueLabel: pctText(r.accuracy),
           },
         ],
       ),
-      spoken: [`Doğruluk: ${pctText(r.accuracy)}.`, `Uyarı: yüzde ${minAcc}'ın altı.`],
+      spoken: [`Doğruluk: ${pctText(r.accuracy)}.`, `Uyarı: yüzde ${minAcc}’ın altı.`],
     }),
     check('erken', 'Çok erken cevaplar', early ? 'warn' : 'ok', {
       what: 'Okların görünmesinden hemen sonra verilen cevaplar oklara bakmadan verilmiş sayılır. Denemelerin onda birinden çoğunda böyleyse “Dikkat” yazar.',
@@ -1905,11 +2057,11 @@ function flankerKind(c: Ctx, task: FlankerTask): KindParts | null {
       note: 'Kırmızı çizgi çok erken cevapların yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Çok erken cevaplar',
-        [[TASK_QUALITY.earlyShare * 100, 100]],
+        [['>', TASK_QUALITY.earlyShare * 100]],
         [
           {
             label: 'Çok erken',
-            value: Math.round(shareOf(r.anticipations, n)),
+            value: shareOf(r.anticipations, n),
             valueLabel: `${r.anticipations} deneme`,
           },
         ],
@@ -1925,11 +2077,11 @@ function flankerKind(c: Ctx, task: FlankerTask): KindParts | null {
       note: 'Kırmızı çizgi süresi dolan denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Süresi dolan denemeler',
-        [[TASK_QUALITY.timeoutShare * 100, 100]],
+        [['>', TASK_QUALITY.timeoutShare * 100]],
         [
           {
             label: 'Süre doldu',
-            value: Math.round(shareOf(r.timeouts, n)),
+            value: shareOf(r.timeouts, n),
             valueLabel: `${r.timeouts} deneme`,
           },
         ],
@@ -1990,7 +2142,7 @@ function symbolKind(c: Ctx, task: SymbolMatchTask): KindParts | null {
   const count = measureCard({
     key: 'dogru',
     title: 'Doğru eşleştirme',
-    badge: c.block('speed')?.headline,
+    ...blockBadge(c, 'speed'),
     text: [
       `Görev ${secs} saniye sürer; bu sürede doğru eşleştirilen semboller sayılır.`,
       'Dakikada doğru eşleştirme, bu sayının bir dakikaya düşen payıdır.',
@@ -2048,18 +2200,18 @@ function symbolKind(c: Ctx, task: SymbolMatchTask): KindParts | null {
         ? {
             visual: shareMeter(
               'Doğruluk',
-              [[0, minAcc]],
+              [['<', minAcc]],
               [
                 {
                   label: 'Doğru eşleştirme',
-                  value: pctVal(r.accuracy),
+                  value: pctExact(r.accuracy),
                   valueLabel: pctText(r.accuracy),
                 },
               ],
             ),
           }
         : {}),
-      spoken: r.attempted ? [`Doğruluk: ${pctText(r.accuracy)}.`, `Uyarı: yüzde ${minAcc}'in altı.`] : [],
+      spoken: r.attempted ? [`Doğruluk: ${pctText(r.accuracy)}.`, `Uyarı: yüzde ${minAcc}’in altı.`] : [],
     }),
     ...(traces.length
       ? [
@@ -2104,7 +2256,7 @@ function cancellationKind(c: Ctx, task: CancellationTask): KindParts | null {
   const tempo = measureCard({
     key: 'tempo',
     title: 'Dakikada taranan harf',
-    badge: c.block('tempo')?.headline,
+    ...blockBadge(c, 'tempo'),
     text: [
       'Taranan kısım, sayfanın başından kesintisiz çalışmanın son işaretine kadardır.',
       'Dakikada taranan harf, bu kısımdaki harflerin bölüm sürelerine bölünmesiyle bulunur.',
@@ -2126,7 +2278,7 @@ function cancellationKind(c: Ctx, task: CancellationTask): KindParts | null {
   const isabet = measureCard({
     key: 'isabet',
     title: 'Bulma oranı',
-    badge: c.block('isabet')?.headline,
+    ...blockBadge(c, 'isabet'),
     text: 'Bulma oranı, taranan kısımdaki aranan harflerin işaretlenen payıdır. Yanlış işaretler ayrıca sayılır; aranmayan harflere dokunmak bulma oranını yükseltmez ama net doğruyu düşürür.',
     note: 'Çubuk taranan kısımdaki aranan harfleri gösterir; parçalar bulunan ve atlanan harflerdir.',
     visual: stackOf('Aranan harfler', [
@@ -2138,11 +2290,12 @@ function cancellationKind(c: Ctx, task: CancellationTask): KindParts | null {
   const sustain = measureCard({
     key: 'surdurme',
     title: 'Dikkati sürdürme',
-    badge: c.block('surdurme')?.headline,
+    ...blockBadge(c, 'surdurme'),
     text: [
       'Net doğru, bulunan harflerden yanlış işaretlerin çıkarılmasıyla bulunur.',
       'Sürdürme, ikinci yarıdaki bölümlerin dakikadaki net doğrusunun ilk yarıyla karşılaştırılmasıdır.',
-      'Fark ölçümün kendi oynaklığını aşmıyorsa “belirgin değişim yok” denir.',
+      // lib/reports/build.ts: SUSTAIN_THRESHOLD (%15) ve sustainClear.
+      'Fark %15’ten küçükse ya da ölçümün kendi oynaklığını aşmıyorsa “belirgin değişim yok” denir.',
     ].join(' '),
     note: 'Her sütun bir bölümün net doğrusu.',
     visual: {
@@ -2213,11 +2366,11 @@ function cancellationKind(c: Ctx, task: CancellationTask): KindParts | null {
       note: 'Kırmızı çizgi bulma yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Bulma oranı',
-        [[0, TASK_QUALITY.cancellationMinHitRate * 100]],
+        [['<', TASK_QUALITY.cancellationMinHitRate * 100]],
         [
           {
             label: 'Bulunan',
-            value: pctVal(r.hitRate),
+            value: pctExact(r.hitRate),
             valueLabel: pctText(r.hitRate),
           },
         ],
@@ -2226,9 +2379,7 @@ function cancellationKind(c: Ctx, task: CancellationTask): KindParts | null {
     }),
     check('tavan', 'Son satır', r.ceiling ? 'warn' : 'ok', {
       what: 'Bir bölümde sayfanın son satırına ulaşılırsa sayfa kısa kalmıştır; çalışma hızı olduğundan düşük görünebilir.',
-      result: r.ceiling
-        ? v(c, 'En az bir bölümde son satıra ulaştın.', 'En az bir bölümde son satıra ulaşıldı.')
-        : 'Hiçbir bölümde son satıra ulaşılmadı.',
+      result: r.ceiling ? v(c, 'En az bir bölümde son satıra ulaştın.', 'En az bir bölümde son satıra ulaşıldı.') : 'Hiçbir bölümde son satıra ulaşılmadı.',
       note: 'Her çubuk bir bölümün sayfası; dolu kısım taranan harfler.',
       visual: shareBars(
         'Taranan harfler',
@@ -2286,7 +2437,7 @@ function colorWordKind(c: Ctx, task: ColorWordTask): KindParts | null {
   const accuracy = measureCard({
     key: 'dogruluk',
     title: 'Doğruluk',
-    badge: c.block('renk_dogruluk')?.headline,
+    ...blockBadge(c, 'renk_dogruluk'),
     text: [
       'Doğruluk, yazının renginin doğru bildirildiği denemelerin payıdır.',
       'Kelime ile rengin aynı ve farklı olduğu denemeler ayrı ayrı hesaplanır.',
@@ -2304,7 +2455,7 @@ function colorWordKind(c: Ctx, task: ColorWordTask): KindParts | null {
       ? measureCard({
           key: 'etki',
           title: 'Tipik süre ve renk-kelime etkisi',
-          badge: c.block('renk_etki')?.headline,
+          ...blockBadge(c, 'renk_etki'),
           text: [
             'Tipik süre, doğru cevapların sürelerinin ortasındaki değerdir.',
             'Renk-kelime etkisi, kelime ile renk farklıyken geçen tipik süreden aynıyken geçen tipik sürenin çıkarılmasıyla bulunur.',
@@ -2320,6 +2471,8 @@ function colorWordKind(c: Ctx, task: ColorWordTask): KindParts | null {
       : null;
   const n = r.n;
   const mm = n > 0 && r.accuracy < TASK_QUALITY.colorWordMinAcc && colorWordMostlyMissed(r);
+  // Görev çoğunlukla cevapsız ya da erken kaldıysa sınırı aşan denetim yine "Dikkat" der ve ilk denetime gönderir.
+  const said = 'Bu, yukarıdaki “Cevapsız ve erken denemeler” denetiminde söylendi.';
   const skipped = 'Denemelerin çoğu cevapsız ya da erken kaldığı için bu denetim ayrıca yapılmadı.';
   const minAcc = Math.round(TASK_QUALITY.colorWordMinAcc * 100);
   const checks = [
@@ -2354,10 +2507,10 @@ function colorWordKind(c: Ctx, task: ColorWordTask): KindParts | null {
       ]),
       spoken: [`Renk denemesinde yanlış: ${sayCount(r.checkErrors)}.`, `Uyarı sınırı: ${task.checkLimit}.`],
     }),
-    check('dogruluk', 'Doğruluk', mm ? 'none' : r.accuracy < TASK_QUALITY.colorWordMinAcc ? 'warn' : 'ok', {
+    check('dogruluk', 'Doğruluk', r.accuracy < TASK_QUALITY.colorWordMinAcc ? 'warn' : 'ok', {
       what: 'Dört düğmeli bu görevde doğruluk çok düşükse yönerge anlaşılmamış, rastgele basılmış ya da renkler ayırt edilememiş olabilir.',
       result: mm
-        ? skipped
+        ? said
         : r.accuracy < TASK_QUALITY.colorWordMinAcc
           ? v(c, 'Senin doğruluğun bu sınırın altında kaldı.', 'Çocuğunuzun doğruluğu bu sınırın altında kaldı.')
           : v(c, 'Senin doğruluğun bu sınırın üstünde.', 'Çocuğunuzun doğruluğu bu sınırın üstünde.'),
@@ -2365,11 +2518,11 @@ function colorWordKind(c: Ctx, task: ColorWordTask): KindParts | null {
       note: 'Kırmızı çizgi doğruluk yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Doğruluk',
-        [[0, minAcc]],
+        [['<', minAcc]],
         [
           {
             label: 'Doğru cevaplar',
-            value: pctVal(r.accuracy),
+            value: pctExact(r.accuracy),
             valueLabel: pctText(r.accuracy),
           },
         ],
@@ -2400,44 +2553,48 @@ function colorWordKind(c: Ctx, task: ColorWordTask): KindParts | null {
         spoken: [`Başka renge basılan hatalar: ${sayCount(r.otherErrors)}.`, `Uyarı sınırı: ${TASK_QUALITY.colorWordOtherErrors}.`],
       },
     ),
-    check('erken', 'Çok erken cevaplar', mm ? 'none' : r.anticipations / n > TASK_QUALITY.earlyShare ? 'warn' : 'ok', {
+    check('erken', 'Çok erken cevaplar', r.anticipations / n > TASK_QUALITY.earlyShare ? 'warn' : 'ok', {
       what: 'Kelimenin görünmesinden hemen sonra verilen cevaplar kelimeye bakmadan verilmiş sayılır. Denemelerin onda birinden çoğunda böyleyse “Dikkat” yazar.',
-      result: mm
-        ? skipped
-        : r.anticipations / n > TASK_QUALITY.earlyShare
-          ? v(c, 'Senin cevaplarında bu sınır aşıldı.', 'Çocuğunuzun cevaplarında bu sınır aşıldı.')
-          : 'Bu sınırın altında kaldı.',
+      result: !(r.anticipations / n > TASK_QUALITY.earlyShare)
+        ? 'Bu sınırın altında kaldı.'
+        : mm
+          ? said
+          : r.anticipations / n > TASK_QUALITY.earlyShare
+            ? v(c, 'Senin cevaplarında bu sınır aşıldı.', 'Çocuğunuzun cevaplarında bu sınır aşıldı.')
+            : 'Bu sınırın altında kaldı.',
       todo: retake(c, 'kelimenin görünmesini bekleyerek'),
       note: 'Kırmızı çizgi çok erken cevapların yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Çok erken cevaplar',
-        [[TASK_QUALITY.earlyShare * 100, 100]],
+        [['>', TASK_QUALITY.earlyShare * 100]],
         [
           {
             label: 'Çok erken',
-            value: Math.round(shareOf(r.anticipations, n)),
+            value: shareOf(r.anticipations, n),
             valueLabel: `${r.anticipations} deneme`,
           },
         ],
       ),
       spoken: [`Çok erken cevaplar: ${sayCount(r.anticipations)}.`],
     }),
-    check('sure-doldu', 'Süre içinde verilmeyen cevaplar', mm ? 'none' : r.timeouts / n > TASK_QUALITY.timeoutShare ? 'warn' : 'ok', {
+    check('sure-doldu', 'Süre içinde verilmeyen cevaplar', r.timeouts / n > TASK_QUALITY.timeoutShare ? 'warn' : 'ok', {
       what: 'Denemelerin beşte birinden çoğunda süre içinde cevap verilmezse “Dikkat” yazar.',
-      result: mm
-        ? skipped
-        : r.timeouts / n > TASK_QUALITY.timeoutShare
-          ? v(c, 'Senin cevaplarında bu sınır aşıldı.', 'Çocuğunuzun cevaplarında bu sınır aşıldı.')
-          : 'Bu sınırın altında kaldı.',
+      result: !(r.timeouts / n > TASK_QUALITY.timeoutShare)
+        ? 'Bu sınırın altında kaldı.'
+        : mm
+          ? said
+          : r.timeouts / n > TASK_QUALITY.timeoutShare
+            ? v(c, 'Senin cevaplarında bu sınır aşıldı.', 'Çocuğunuzun cevaplarında bu sınır aşıldı.')
+            : 'Bu sınırın altında kaldı.',
       todo: retake(c, 'sessiz bir yerde'),
       note: 'Kırmızı çizgi süresi dolan denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Süresi dolan denemeler',
-        [[TASK_QUALITY.timeoutShare * 100, 100]],
+        [['>', TASK_QUALITY.timeoutShare * 100]],
         [
           {
             label: 'Süre doldu',
-            value: Math.round(shareOf(r.timeouts, n)),
+            value: shareOf(r.timeouts, n),
             valueLabel: `${r.timeouts} deneme`,
           },
         ],
@@ -2485,7 +2642,7 @@ function goNoGoKind(c: Ctx, task: GoNoGoTask): KindParts | null {
   const stopCard = measureCard({
     key: 'durma',
     title: 'Durma oranı',
-    badge: c.block('dg_durma')?.headline,
+    ...blockBadge(c, 'dg_durma'),
     text: 'Durma oranı, X harflerinden basılmadan geçilenlerin payıdır. Basma alışkanlığı oluştuğu için durmak çaba ister.',
     note: 'Çubuk bütün X harflerini gösterir; parçalar durulan ve basılan harflerdir.',
     visual: stackOf('X harfleri', [
@@ -2497,7 +2654,7 @@ function goNoGoKind(c: Ctx, task: GoNoGoTask): KindParts | null {
   const hitCard = measureCard({
     key: 'basma',
     title: 'Zamanında basma',
-    badge: c.block('dg_tepki')?.headline,
+    ...blockBadge(c, 'dg_tepki'),
     text: 'Zamanında basma oranı, bas harflerinden süre içinde basılanların payıdır. Harf görünür görünmez yapılan basışlar harfe bakmadan yapılmış sayılır.',
     note: 'Çubuk bütün bas harflerini gösterir; parçalar zamanında, kaçırılan ve erken basışlardır.',
     visual: stackOf('Bas harfleri', [
@@ -2507,13 +2664,14 @@ function goNoGoKind(c: Ctx, task: GoNoGoTask): KindParts | null {
     ]),
     spoken: [`Zamanında: ${sayCount(r.hits)}. Kaçırılan: ${sayCount(r.omissions)}. Erken: ${sayCount(r.anticipations)}.`],
   });
+  const dgHiz = blockBadge(c, 'dg_hiz');
   const time =
     r.medianRt === null
       ? null
       : measureCard({
           key: 'sure',
           title: 'Tipik tepki süresi',
-          badge: c.block('dg_hiz')?.headline,
+          ...dgHiz,
           text: medianText('basış', 'harfin görünmesinden düğmeye basılmasına kadar'),
           note: 'Her nokta bir zamanında basışın süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
@@ -2524,7 +2682,8 @@ function goNoGoKind(c: Ctx, task: GoNoGoTask): KindParts | null {
             item: 'bir basış',
             digits: 2,
           }),
-          spoken: [`Tipik tepki süresi: ${sec2(r.medianRt)}.`],
+          // Rozet tipik süreyi söylüyorsa ikinci kez okunmaz.
+          spoken: dgHiz.badge ? undefined : [`Tipik tepki süresi: ${sec2(r.medianRt)}.`],
         });
   const none = r.hits === 0 && r.anticipations === 0;
   const lowHit = !none && r.hitRate < TASK_QUALITY.goMinHitRate;
@@ -2540,11 +2699,11 @@ function goNoGoKind(c: Ctx, task: GoNoGoTask): KindParts | null {
       note: 'Kırmızı çizgi zamanında basma yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Zamanında basma',
-        [[0, goMin]],
+        [['<', goMin]],
         [
           {
             label: 'Zamanında',
-            value: pctVal(r.hitRate),
+            value: pctExact(r.hitRate),
             valueLabel: pctText(r.hitRate),
           },
         ],
@@ -2563,11 +2722,11 @@ function goNoGoKind(c: Ctx, task: GoNoGoTask): KindParts | null {
       note: 'Kırmızı çizgi durma yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Durma oranı',
-        [[0, TASK_QUALITY.goMinStopRate * 100]],
+        [['<', TASK_QUALITY.goMinStopRate * 100]],
         [
           {
             label: 'Durulan',
-            value: pctVal(r.stopRate),
+            value: pctExact(r.stopRate),
             valueLabel: pctText(r.stopRate),
           },
         ],
@@ -2590,11 +2749,11 @@ function goNoGoKind(c: Ctx, task: GoNoGoTask): KindParts | null {
         note: 'Kırmızı çizgi erken basışların yüzdesi; renkli bölge uyarı bölgesi.',
         visual: shareMeter(
           'Erken basışlar',
-          [[TASK_QUALITY.earlyShare * 100, 100]],
+          [['>', TASK_QUALITY.earlyShare * 100]],
           [
             {
               label: 'Erken',
-              value: Math.round(shareOf(r.anticipations, r.goTrials)),
+              value: shareOf(r.anticipations, r.goTrials),
               valueLabel: `${r.anticipations} basış`,
             },
           ],
@@ -2728,11 +2887,10 @@ function nBackKind(c: Ctx, task: NBackTask): KindParts | null {
   const prCard = measureCard({
     key: 'ayirt',
     title: 'Ayırt etme puanı',
-    badge: c.block('gh_iki')?.headline,
+    // Rozet yok: kart iki düzeyi birlikte anlatır (düzeylerin puanı grafikte). Hesabın kendisi raporun kartında da yazar.
     text: [
-      'Ayırt etme puanı, aynı harflerde basma oranından aynı olmayan harflerde basma oranının çıkarılmasıyla bulunur.',
-      'Hiç yanılmayan biri 100 alır; rastgele basan ya da hiç basmayan biri 0 civarında kalır.',
-      'Yükün etkisi, bir geriden iki geriye geçince puanın ne kadar düştüğüdür.',
+      'Puan, aynı harfleri yakalamanın aynı olmayan harflerde basmaktan ne kadar fazla olduğunu 100 üzerinden gösterir.',
+      'Yanlış basmalar yakalamalardan çoksa puan eksiye düşmez, 0 yazılır.',
     ].join(' '),
     note: 'Her çubuk bir düzeyin ayırt etme puanı.',
     visual: {
@@ -2781,10 +2939,10 @@ function nBackKind(c: Ctx, task: NBackTask): KindParts | null {
       note: 'Kırmızı çizgiler aynı olmayan harflerde basma yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Aynı olmayan harflerde basma',
-        [[NBACK_RANDOM_FA * 100, 100]],
+        [['>', NBACK_RANDOM_FA * 100]],
         r.levels.map((l) => ({
           label: `${l.n === 1 ? 'Bir' : 'İki'} geri`,
-          value: pctVal(l.falseAlarmRate),
+          value: pctExact(l.falseAlarmRate),
           valueLabel: pctText(l.falseAlarmRate),
         })),
       ),
@@ -2852,7 +3010,7 @@ function rotationKind(c: Ctx, task: MentalRotationTask): KindParts | null {
   const accuracy = measureCard({
     key: 'dogruluk',
     title: 'Doğruluk',
-    badge: c.block('zd_dogruluk')?.headline,
+    ...blockBadge(c, 'zd_dogruluk'),
     text: 'Doğruluk, “Aynı” ya da “Ayna görüntüsü” kararının doğru verildiği denemelerin payıdır. Süresi dolan ve çok erken cevaplar doğru sayılmaz.',
     note: 'Çubuk bütün denemeleri gösterir; parçalar doğru, yanlış, süresi dolan ve çok erken denemelerdir.',
     visual: stackOf('Denemeler', [
@@ -2871,22 +3029,22 @@ function rotationKind(c: Ctx, task: MentalRotationTask): KindParts | null {
       : measureCard({
           key: 'sure',
           title: 'Tipik karar süresi',
-          badge: c.block('zd_hiz')?.headline,
+          ...blockBadge(c, 'zd_hiz'),
           text: [
             'Karar süresi, şekillerin görünmesinden düğmeye basılmasına kadar geçen süredir.',
             'Tipik süre, doğru bulunan “aynı” şekillerdeki sürelerin ortasındaki değerdir.',
             'Döndürme etkisi, çok döndürülmüş şekillerdeki tipik süreden az döndürülmüşlerdekinin çıkarılmasıyla bulunur.',
           ].join(' '),
-          note: 'Her nokta bir doğru kararın süresi; kırmızı çizgi tipik süre.',
+          // Tipik süre yalnızca doğru bulunan "aynı" şekillerden hesaplanır (lib/scoring/tasks.ts, scoreRotation).
+          note: 'Her nokta doğru bulunan bir “aynı” şeklin süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
-            label: 'Doğru kararların süreleri',
+            label: 'Doğru bulunan “aynı” şekillerin süreleri',
             rts: r.rts,
             median: r.medianRt,
             marker: `Tipik ${sec2(r.medianRt)}`,
-            item: 'bir doğru karar',
+            item: 'doğru bir “aynı”',
             digits: 2,
           }),
-          spoken: [`Tipik karar süresi: ${sec2(r.medianRt)}.`],
         });
   const n = r.n;
   const status = rotationStatus(r);
@@ -2894,7 +3052,12 @@ function rotationKind(c: Ctx, task: MentalRotationTask): KindParts | null {
   const invalid = status === 'abandoned' || status === 'rushed' || status === 'invalid';
   const answered = r.correct + r.sameSaidMirror + r.mirrorSaidSame;
   const earlySaid = status === 'rushed' || status === 'invalid' || (status === 'missed' && kind !== 'timeouts');
+  const lateSaid = invalid || (status === 'missed' && kind !== 'early');
   const skipped = 'Denemelerin çoğu cevapsız ya da çok erken kaldığı için bu denetim ayrıca yapılmadı.';
+  // Sınırı aşan denetim, durumu daha önce bir denetim söylemiş olsa da "Dikkat" der ve o denetime gönderir.
+  const saidIn = (card: string) => `Bu, yukarıdaki “${card}” denetiminde söylendi.`;
+  const lateMany = r.timeouts / n > TASK_QUALITY.timeoutShare;
+  const earlyMany = r.anticipations / n > TASK_QUALITY.earlyShare;
   const checks = [
     check('gecersiz', 'Cevapsız ve çok erken denemeler', invalid ? 'warn' : 'ok', {
       what: 'Denemelerin yarısından çoğunda süre dolar ya da şekiller görünür görünmez basılırsa görev yorumlanmaz.',
@@ -2905,21 +3068,21 @@ function rotationKind(c: Ctx, task: MentalRotationTask): KindParts | null {
       note: 'Kırmızı çizgiler süresi dolan ve çok erken denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Cevapsız ve çok erken',
-        [[50, 100]],
+        [['>', 50]],
         [
           {
             label: 'Süre doldu',
-            value: Math.round(shareOf(r.timeouts, n)),
+            value: shareOf(r.timeouts, n),
             valueLabel: `${r.timeouts} deneme`,
           },
           {
             label: 'Çok erken',
-            value: Math.round(shareOf(r.anticipations, n)),
+            value: shareOf(r.anticipations, n),
             valueLabel: `${r.anticipations} deneme`,
           },
           {
             label: 'İkisi birlikte',
-            value: Math.round(shareOf(r.timeouts + r.anticipations, n)),
+            value: shareOf(r.timeouts + r.anticipations, n),
             valueLabel: `${r.timeouts + r.anticipations} deneme`,
           },
         ],
@@ -2947,11 +3110,11 @@ function rotationKind(c: Ctx, task: MentalRotationTask): KindParts | null {
           ? {
               visual: shareMeter(
                 'Cevap verilenlerde doğruluk',
-                [[0, 60]],
+                [['<', 60]],
                 [
                   {
                     label: 'Doğru',
-                    value: Math.round(shareOf(r.correct, answered)),
+                    value: shareOf(r.correct, answered),
                     valueLabel: `%${Math.round(shareOf(r.correct, answered))}`,
                   },
                 ],
@@ -2997,13 +3160,13 @@ function rotationKind(c: Ctx, task: MentalRotationTask): KindParts | null {
               visual: shareMeter(
                 '“Aynı” cevapları',
                 [
-                  [0, TASK_QUALITY.oneButtonLow * 100],
-                  [TASK_QUALITY.oneButton * 100, 100],
+                  ['<', TASK_QUALITY.oneButtonLow * 100],
+                  ['>', TASK_QUALITY.oneButton * 100],
                 ],
                 [
                   {
                     label: '“Aynı”',
-                    value: pctVal(r.sameShare),
+                    value: pctExact(r.sameShare),
                     valueLabel: pctText(r.sameShare),
                   },
                 ],
@@ -3013,52 +3176,44 @@ function rotationKind(c: Ctx, task: MentalRotationTask): KindParts | null {
         spoken: r.sameShare !== null ? [`Aynı cevaplarının payı: ${pctText(r.sameShare)}.`] : [],
       },
     ),
-    check(
-      'sure-doldu',
-      'Süre içinde verilmeyen cevaplar',
-      invalid ? 'none' : r.timeouts / n > TASK_QUALITY.timeoutShare && !(status === 'missed' && kind !== 'early') ? 'warn' : 'ok',
-      {
-        what: 'Denemelerin beşte birinden çoğunda süre içinde cevap verilmezse “Dikkat” yazar.',
-        result: invalid
-          ? skipped
-          : r.timeouts / n > TASK_QUALITY.timeoutShare
-            ? status === 'missed' && kind !== 'early'
-              ? 'Bu, yukarıdaki denetimde söylendi.'
-              : v(c, 'Senin denemelerinde bu sınır aşıldı.', 'Çocuğunuzun denemelerinde bu sınır aşıldı.')
-            : 'Bu sınırın altında kaldı.',
-        todo: retake(c, 'sessiz bir yerde'),
-        note: 'Kırmızı çizgi süresi dolan denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
-        visual: shareMeter(
-          'Süresi dolan denemeler',
-          [[TASK_QUALITY.timeoutShare * 100, 100]],
-          [
-            {
-              label: 'Süre doldu',
-              value: Math.round(shareOf(r.timeouts, n)),
-              valueLabel: `${r.timeouts} deneme`,
-            },
-          ],
-        ),
-        spoken: [`Süresi dolan denemeler: ${sayCount(r.timeouts)}.`],
-      },
-    ),
-    check('erken', 'Çok erken cevaplar', r.anticipations / n > TASK_QUALITY.earlyShare && !earlySaid ? 'warn' : 'ok', {
+    check('sure-doldu', 'Süre içinde verilmeyen cevaplar', lateMany ? 'warn' : 'ok', {
+      what: 'Denemelerin beşte birinden çoğunda süre içinde cevap verilmezse “Dikkat” yazar.',
+      result: !lateMany
+        ? 'Bu sınırın altında kaldı.'
+        : lateSaid
+          ? saidIn(invalid ? 'Cevapsız ve çok erken denemeler' : 'Doğru sayılmayan denemeler')
+          : v(c, 'Senin denemelerinde bu sınır aşıldı.', 'Çocuğunuzun denemelerinde bu sınır aşıldı.'),
+      todo: retake(c, 'sessiz bir yerde'),
+      note: 'Kırmızı çizgi süresi dolan denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
+      visual: shareMeter(
+        'Süresi dolan denemeler',
+        [['>', TASK_QUALITY.timeoutShare * 100]],
+        [
+          {
+            label: 'Süre doldu',
+            value: shareOf(r.timeouts, n),
+            valueLabel: `${r.timeouts} deneme`,
+          },
+        ],
+      ),
+      spoken: [`Süresi dolan denemeler: ${sayCount(r.timeouts)}.`],
+    }),
+    check('erken', 'Çok erken cevaplar', earlyMany ? 'warn' : 'ok', {
       what: 'Şekiller görünür görünmez verilen cevaplar şekillere bakmadan verilmiş sayılır. Denemelerin onda birinden çoğunda böyleyse “Dikkat” yazar.',
-      result:
-        r.anticipations / n > TASK_QUALITY.earlyShare
-          ? earlySaid
-            ? 'Bu, yukarıdaki denetimde söylendi.'
-            : v(c, 'Senin cevaplarında bu sınır aşıldı.', 'Çocuğunuzun cevaplarında bu sınır aşıldı.')
-          : 'Bu sınırın altında kaldı.',
+      result: !earlyMany
+        ? 'Bu sınırın altında kaldı.'
+        : earlySaid
+          ? saidIn(status === 'missed' ? 'Doğru sayılmayan denemeler' : 'Cevapsız ve çok erken denemeler')
+          : v(c, 'Senin cevaplarında bu sınır aşıldı.', 'Çocuğunuzun cevaplarında bu sınır aşıldı.'),
       todo: retake(c, 'şekillere bakarak'),
       note: 'Kırmızı çizgi çok erken cevapların yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Çok erken cevaplar',
-        [[TASK_QUALITY.earlyShare * 100, 100]],
+        [['>', TASK_QUALITY.earlyShare * 100]],
         [
           {
             label: 'Çok erken',
-            value: Math.round(shareOf(r.anticipations, n)),
+            value: shareOf(r.anticipations, n),
             valueLabel: `${r.anticipations} deneme`,
           },
         ],
@@ -3115,13 +3270,10 @@ function reactionKind(c: Ctx, task: ReactionTimeTask): KindParts | null {
     return measureCard({
       key: `sure-${k}`,
       title: `${partName(k)}: tipik süre`,
-      badge: c.block(k === 'simple' ? 'th_basit' : 'th_secmeli')?.headline,
-      text: [
-        'Tepki süresi, dairenin belirmesinden düğmeye basılmasına kadar geçen süredir.',
-        'Tipik süre doğru tepkilerin ortasındaki değerdir.',
-        'Kutu, doğru tepkilerin ortadaki yarısının bulunduğu aralıktır; dar kutu tepkilerin birbirine yakın olduğunu gösterir.',
-      ].join(' '),
-      note: 'Her nokta bir doğru tepki; kırmızı çizgi tipik süre, kutu ortadaki yarı.',
+      ...blockBadge(c, k === 'simple' ? 'th_basit' : 'th_secmeli'),
+      text: ['Tepki süresi, dairenin belirmesinden düğmeye basılmasına kadar geçen süredir.', 'Tipik süre doğru tepkilerin ortasındaki değerdir.'].join(' '),
+      // Kutunun anlatımı grafiğin nasıl okunacağıdır: sesli okunmaz.
+      note: 'Her nokta bir doğru tepki; kırmızı çizgi tipik süre. Kutu, doğru tepkilerin ortadaki yarısı: dar kutu tepkilerin birbirine yakın olduğunu gösterir.',
       visual: {
         ...stripOf({
           label: `${partName(k)}: doğru tepkiler`,
@@ -3141,7 +3293,6 @@ function reactionKind(c: Ctx, task: ReactionTimeTask): KindParts | null {
             }
           : {}),
       },
-      spoken: [`${partName(k)}: tipik süre ${sec2(p.medianRt)}.`],
     });
   };
   const levels = [partCard('simple'), partCard('choice')].filter((x): x is PartCard => x !== null);
@@ -3152,7 +3303,7 @@ function reactionKind(c: Ctx, task: ReactionTimeTask): KindParts | null {
   const acc = chValid ? ch.correct / ch.answered : null;
   const left = chValid ? ch.left / ch.answered : null;
   const choiceWarn = acc !== null && left !== null && (acc < TASK_QUALITY.reactionSlipAcc || left > TASK_QUALITY.oneButton || left < TASK_QUALITY.oneButtonLow);
-  const share = (p: ReactionResult['simple'], x: number) => Math.round(shareOf(x, p.n));
+  const share = (p: ReactionResult['simple'], x: number) => shareOf(x, p.n);
   const checks = [
     check('gecersiz', 'Cevapsız ve erken denemeler', parts.some(invalid) ? 'warn' : 'ok', {
       what: 'Bir bölümde denemelerin yarısından çoğunda süre içinde basılmaz ya da daire belirmeden basılırsa o bölüm yorumlanmaz.',
@@ -3166,7 +3317,7 @@ function reactionKind(c: Ctx, task: ReactionTimeTask): KindParts | null {
       note: 'Kırmızı çizgiler cevapsız ve erken denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Cevapsız ve erken',
-        [[50, 100]],
+        [['>', 50]],
         parts.map((p) => ({
           label: partName(p.key),
           value: share(p, p.misses + p.early),
@@ -3224,7 +3375,7 @@ function reactionKind(c: Ctx, task: ReactionTimeTask): KindParts | null {
               rows: [
                 {
                   label: 'Doğru taraf',
-                  value: pctVal(acc),
+                  value: pctExact(acc),
                   valueLabel: pctText(acc),
                 },
               ],
@@ -3233,60 +3384,63 @@ function reactionKind(c: Ctx, task: ReactionTimeTask): KindParts | null {
         : {}),
       spoken: acc !== null ? [`Doğru taraftaki basışlar: ${pctText(acc)}.`] : [],
     }),
-    check('kacan', 'Süre içinde basılmayanlar', parts.some((p) => !invalid(p) && p.misses / p.n > TASK_QUALITY.reactionSomeShare) ? 'warn' : 'ok', {
-      what: 'Bir bölümde denemelerin onda birinden çoğunda süre içinde basılmazsa bu söylenir; dörtte birinden çoğundaysa sonuç dikkatle okunur.',
-      result: parts.some((p) => !invalid(p) && p.misses / p.n > TASK_QUALITY.reactionSomeShare)
-        ? v(c, 'Senin denemelerinde bu görüldü.', 'Çocuğunuzun denemelerinde bu görüldü.')
-        : 'Bu sınırın altında kaldı.',
-      todo: retake(c, 'sessiz bir yerde'),
-      note: 'Kırmızı çizgiler süresi dolan denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
-      visual: shareMeter(
-        'Süresi dolan',
-        [[TASK_QUALITY.reactionSomeShare * 100, 100]],
-        parts.map((p) => ({
-          label: partName(p.key),
-          value: share(p, p.misses),
-          valueLabel: `${p.misses} deneme`,
-        })),
-      ),
-      spoken: parts.map((p) => `${partName(p.key)}: ${sayN(p.misses, 'süresi dolan')}.`),
+    // Yorumlanmayan bölüm (yukarıdaki denetim) bu iki denetime katılmaz: grafik yalnızca yorumlanan bölümleri gösterir.
+    ...(['misses', 'early'] as const).map((f) => {
+      const valid = parts.filter((p) => !invalid(p));
+      const many = valid.filter((p) => p[f] / p.n > TASK_QUALITY.reactionSomeShare);
+      const left = parts.filter(invalid);
+      const name = f === 'misses' ? 'Süre içinde basılmayanlar' : 'Çok erken basışlar';
+      const what =
+        f === 'misses'
+          ? 'Bir bölümde denemelerin onda birinden çoğunda süre içinde basılmazsa bu söylenir; dörtte birinden çoğundaysa sonuç dikkatle okunur.'
+          : 'Daire belirmeden ya da belirir belirmez basılan denemeler tepki sayılmaz. Bir bölümde onda birinden çoğundaysa bu söylenir.';
+      const leftOut = left.length ? [`${joinAnd(left.map((p) => partName(p.key)))} yukarıdaki denetimde yorumlanmadığı için bu denetime katılmadı.`] : [];
+      if (!valid.length) return check(f === 'misses' ? 'kacan' : 'erken', name, 'none', { what, result: leftOut.join(' ') });
+      return check(f === 'misses' ? 'kacan' : 'erken', name, many.length ? 'warn' : 'ok', {
+        what,
+        result: [
+          many.length
+            ? v(c, 'Senin denemelerinde bu görüldü.', 'Çocuğunuzun denemelerinde bu görüldü.')
+            : `Yorumlanan ${valid.length === 1 ? 'bölümde' : 'bölümlerde'} bu oran onda birin altında kaldı.`,
+          ...leftOut,
+        ].join(' '),
+        todo: f === 'misses' ? retake(c, 'sessiz bir yerde') : retake(c, 'daireyi bekleyerek'),
+        note:
+          f === 'misses'
+            ? 'Kırmızı çizgiler süresi dolan denemelerin yüzdesi; renkli bölge uyarı bölgesi.'
+            : 'Kırmızı çizgiler çok erken basışların yüzdesi; renkli bölge uyarı bölgesi.',
+        visual: shareMeter(
+          f === 'misses' ? 'Süresi dolan' : 'Çok erken',
+          [['>', TASK_QUALITY.reactionSomeShare * 100]],
+          valid.map((p) => ({
+            label: partName(p.key),
+            value: share(p, p[f]),
+            valueLabel: `${p[f]} deneme`,
+          })),
+        ),
+        spoken: valid.map((p) => `${partName(p.key)}: ${sayN(p[f], f === 'misses' ? 'süresi dolan' : 'çok erken')}.`),
+      });
     }),
-    check('erken', 'Çok erken basışlar', parts.some((p) => !invalid(p) && p.early / p.n > TASK_QUALITY.reactionSomeShare) ? 'warn' : 'ok', {
-      what: 'Daire belirmeden ya da belirir belirmez basılan denemeler tepki sayılmaz. Onda birinden çoğundaysa bu söylenir.',
-      result: parts.some((p) => !invalid(p) && p.early / p.n > TASK_QUALITY.reactionSomeShare)
-        ? v(c, 'Senin denemelerinde bu görüldü.', 'Çocuğunuzun denemelerinde bu görüldü.')
-        : 'Bu sınırın altında kaldı.',
-      todo: retake(c, 'daireyi bekleyerek'),
-      note: 'Kırmızı çizgiler çok erken basışların yüzdesi; renkli bölge uyarı bölgesi.',
-      visual: shareMeter(
-        'Çok erken',
-        [[TASK_QUALITY.reactionSomeShare * 100, 100]],
-        parts.map((p) => ({
-          label: partName(p.key),
-          value: share(p, p.early),
-          valueLabel: `${p.early} deneme`,
-        })),
-      ),
-      spoken: parts.map((p) => `${partName(p.key)}: ${sayN(p.early, 'çok erken')}.`),
-    }),
-    check('fare', 'Fareyle verilen cevaplar', !invalid(ch) && ch.answered && ch.mouse / ch.answered >= REACTION_MOUSE_SHARE ? 'warn' : 'ok', {
+    check('fare', 'Fareyle verilen cevaplar', invalid(ch) || !ch.answered ? 'none' : ch.mouse / ch.answered >= REACTION_MOUSE_SHARE ? 'warn' : 'ok', {
       what: 'Fareyle verilen cevaplarda süreye imlecin iki düğme arasındaki yolu da eklenir. Seçmeli bölümde cevapların dörtte biri ya da daha çoğu fareyle verildiyse bu söylenir.',
       result:
-        !invalid(ch) && ch.answered && ch.mouse / ch.answered >= REACTION_MOUSE_SHARE
-          ? v(
-              c,
-              'Senin cevaplarında bu görüldü; bilgisayarda ok tuşlarıyla daha doğru ölçülür.',
-              'Çocuğunuzun cevaplarında bu görüldü; bilgisayarda ok tuşlarıyla daha doğru ölçülür.',
-            )
-          : 'Bu sınırın altında kaldı.',
+        invalid(ch) || !ch.answered
+          ? 'Seçmeli bölüm yorumlanmadığı için bu denetim yapılmadı.'
+          : ch.mouse / ch.answered >= REACTION_MOUSE_SHARE
+            ? v(
+                c,
+                'Senin cevaplarında bu görüldü; bilgisayarda ok tuşlarıyla daha doğru ölçülür.',
+                'Çocuğunuzun cevaplarında bu görüldü; bilgisayarda ok tuşlarıyla daha doğru ölçülür.',
+              )
+            : 'Bu sınırın altında kaldı.',
       note: 'Kırmızı çizgi fareyle verilen cevapların yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Fareyle verilen',
-        [[REACTION_MOUSE_SHARE * 100, 100]],
+        [['≥', REACTION_MOUSE_SHARE * 100]],
         [
           {
             label: 'Seçmeli bölüm',
-            value: Math.round(shareOf(ch.mouse, ch.answered)),
+            value: shareOf(ch.mouse, ch.answered),
             valueLabel: `${ch.mouse} cevap`,
           },
         ],
@@ -3334,7 +3488,7 @@ function ruleSwitchKind(c: Ctx, task: RuleSwitchTask): KindParts | null {
   const accuracy = measureCard({
     key: 'dogruluk',
     title: 'Doğruluk',
-    badge: c.block('kd_dogruluk')?.headline,
+    ...blockBadge(c, 'kd_dogruluk'),
     text: 'Doğruluk, işaretin söylediği kurala göre doğru düğmeye basılan denemelerin payıdır. Süresi dolan ve çok erken cevaplar doğru sayılmaz.',
     note: 'Çubuk bütün denemeleri gösterir; parçalar doğru, yanlış, süresi dolan ve çok erken denemelerdir.',
     visual: stackOf('Denemeler', [
@@ -3355,9 +3509,9 @@ function ruleSwitchKind(c: Ctx, task: RuleSwitchTask): KindParts | null {
     : measureCard({
         key: 'bedel',
         title: 'Kural değiştirmenin ve karışık bölümün etkisi',
-        badge: c.block('kd_degisim')?.headline,
+        ...blockBadge(c, 'kd_degisim'),
         text: [
-          'Tipik süreler yalnızca doğru cevaplardan ve bir hatadan hemen sonra gelmeyen denemelerden hesaplanır.',
+          'Tipik süreler doğru cevaplardan hesaplanır; her bölümün ilk denemesi ve bir hatadan hemen sonraki deneme katılmaz.',
           'Kural değiştirmenin etkisi, kural değişince geçen tipik süreden kural sürerken geçenin çıkarılmasıyla bulunur.',
           'Karışık bölümün etkisi, karışık bölümde kural sürerken geçen süreden tek kurallı bölümlerdekinin çıkarılmasıyla bulunur.',
         ].join(' '),
@@ -3370,22 +3524,23 @@ function ruleSwitchKind(c: Ctx, task: RuleSwitchTask): KindParts | null {
   const timeouts = r.answered === 0 || ruleSwitchTimeouts(r);
   const fastNeed = Math.max(3, Math.ceil(0.1 * n));
   const checks = [
-    check('sans', 'Şans düzeyi', chance ? 'warn' : 'ok', {
+    // Doğruluk düşük ama nedeni süre içinde verilmeyen cevaplarsa bu denetim yapılmaz (süre denetimi aşağıda).
+    check('sans', 'Şans düzeyi', chance ? 'warn' : ruleSwitchChance(r) ? 'none' : 'ok', {
       what: 'İki düğmeli bu görevde rastgele basan biri de denemelerin yaklaşık yarısını bulur. Doğruluk bunun az üstündeyse sonuç yorumlanmaz.',
       result: chance
         ? v(c, 'Senin doğruluğun bu sınırda kaldı.', 'Çocuğunuzun doğruluğu bu sınırda kaldı.')
         : ruleSwitchChance(r)
-          ? 'Doğruluk düşük, ama nedeni süre içinde verilmeyen cevaplar; bu aşağıda denetlenir.'
+          ? 'Doğruluk düşük, ama nedeni süre içinde verilmeyen cevaplar; bu yüzden bu denetim yapılmadı, süre aşağıda denetlenir.'
           : v(c, 'Senin doğruluğun bu sınırın üstünde.', 'Çocuğunuzun doğruluğu bu sınırın üstünde.'),
       todo: retake(c, 'işarete ve şekle bakarak'),
       note: 'Kırmızı çizgi doğruluk yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Doğruluk',
-        [[0, 60]],
+        [['≤', RULE_CHANCE_ACC * 100]],
         [
           {
             label: 'Doğru',
-            value: pctVal(r.accuracy),
+            value: shareOf(r.correct, r.n),
             valueLabel: pctText(r.accuracy),
           },
         ],
@@ -3394,16 +3549,18 @@ function ruleSwitchKind(c: Ctx, task: RuleSwitchTask): KindParts | null {
     }),
     check('sure-doldu', 'Süre içinde verilmeyen cevaplar', timeouts ? 'warn' : 'ok', {
       what: 'Denemelerin dörtte birinde ya da daha çoğunda süre içinde cevap verilmezse görev yarıda bırakılmış ya da dikkat dağılmış olabilir.',
-      result: timeouts ? v(c, 'Senin denemelerinde bu görüldü.', 'Çocuğunuzun denemelerinde bu görüldü.') : 'Bu sınırın altında kaldı.',
+      result: timeouts
+        ? v(c, 'Senin denemelerinde bu görüldü.', 'Çocuğunuzun denemelerinde bu görüldü.')
+        : 'Süresi dolan denemeler dörtte birin altında kaldı.',
       todo: retake(c, 'sessiz bir yerde'),
       note: 'Kırmızı çizgi süresi dolan denemelerin yüzdesi; renkli bölge uyarı bölgesi.',
       visual: shareMeter(
         'Süresi dolan denemeler',
-        [[25, 100]],
+        [['≥', 25]],
         [
           {
             label: 'Süre doldu',
-            value: Math.round(shareOf(r.timeouts, n)),
+            value: shareOf(r.timeouts, n),
             valueLabel: `${r.timeouts} deneme`,
           },
         ],
@@ -3411,10 +3568,10 @@ function ruleSwitchKind(c: Ctx, task: RuleSwitchTask): KindParts | null {
       spoken: [`Süresi dolan denemeler: ${sayCount(r.timeouts)}.`],
     }),
     check('erken', 'Çok erken cevaplar', ruleSwitchFast(r) ? 'warn' : 'ok', {
-      what: `Şekil göründükten sonraki ${secLimit(RULE_TOO_FAST_MS)} saniye içinde basılan denemeler şekle bakmadan basılmış sayılır ve doğru sayılmaz.`,
+      what: `Şekil göründükten sonraki ${secLimit(RULE_TOO_FAST_MS)} saniye içinde basılan denemeler şekle bakmadan basılmış sayılır ve doğru sayılmaz. Denemelerin onda biri ya da en az ${fastNeed} tanesi böyleyse “Dikkat” yazar.`,
       result: ruleSwitchFast(r)
         ? v(c, 'Senin denemelerinde bu sınıra ulaşıldı.', 'Çocuğunuzun denemelerinde bu sınıra ulaşıldı.')
-        : 'Bu sınırın altında kaldı.',
+        : `Çok erken cevaplar ${fastNeed} sınırının altında kaldı.`,
       todo: retake(c, 'şekli görünce basarak'),
       note: 'Kırmızı çizgi çok erken cevapların sayısı; renkli bölge uyarı bölgesi.',
       visual: countMeter('Çok erken cevaplar', Math.max(2 * fastNeed, r.tooFast), fastNeed, [
@@ -3426,24 +3583,26 @@ function ruleSwitchKind(c: Ctx, task: RuleSwitchTask): KindParts | null {
       ]),
       spoken: [`Çok erken cevaplar: ${sayCount(r.tooFast)}.`, `Uyarı sınırı: ${fastNeed}.`],
     }),
-    check('ayni-dugme', 'Aynı düğme', !r.answered ? 'none' : ruleSwitchOneSide(r) ? 'warn' : 'ok', {
+    // Kural en az 20 cevapta denetlenir (lib/scoring/tasks.ts, ruleSwitchOneSide).
+    check('ayni-dugme', 'Aynı düğme', r.answered < 20 ? 'none' : ruleSwitchOneSide(r) ? 'warn' : 'ok', {
       what: 'Denemelerin yaklaşık yarısında sol, yarısında sağ düğme doğrudur. Cevapların çoğunda aynı düğmeye basılırsa şekillere bakılmamış olabilir.',
-      result: !r.answered
-        ? 'Hiç cevap verilmediği için bu denetim yapılamadı.'
-        : ruleSwitchOneSide(r)
-          ? v(c, 'Senin cevaplarında bu görüldü.', 'Çocuğunuzun cevaplarında bu görüldü.')
-          : 'İki düğme de yeterince kullanıldı.',
+      result:
+        r.answered < 20
+          ? 'Cevap verilen deneme az olduğu için bu denetim yapılamadı.'
+          : ruleSwitchOneSide(r)
+            ? v(c, 'Senin cevaplarında bu görüldü.', 'Çocuğunuzun cevaplarında bu görüldü.')
+            : 'İki düğme de yeterince kullanıldı.',
       todo: retake(c, 'her şekle bakarak'),
       note: 'Kırmızı çizgi en çok basılan düğmenin yüzdesi; renkli bölge uyarı bölgesi.',
       ...(r.answered
         ? {
             visual: shareMeter(
               'En çok basılan düğme',
-              [[85, 100]],
+              [['≥', 85]],
               [
                 {
                   label: 'Aynı düğme',
-                  value: Math.round(shareOf(r.sameSide, r.answered)),
+                  value: shareOf(r.sameSide, r.answered),
                   valueLabel: `${r.sameSide} cevap`,
                 },
               ],
@@ -3473,7 +3632,7 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
     const xs = r.items.filter((x) => q(x.at) === k);
     const ok = xs.filter((x) => x.correct).length;
     return {
-      label: `${k * qSec}–${(k + 1) * qSec}. saniyeler`,
+      label: `${k * qSec}–${(k + 1) * qSec} sn`,
       parts: [ok, xs.length - ok],
       detail: counts([
         { n: ok, label: 'doğru karar' },
@@ -3502,10 +3661,13 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
         ]),
         spoken: ['Karar: yok.'],
       });
+  // Raporun kartının başlığı doğru karar sayısıdır; bu kartın rozeti dakikadaki değeri yazar (yorumlanmadıysa "Yorumlanmadı").
+  const sgBadge = blockBadge(c, 'sg_hiz');
   const perMin = measureCard({
     key: 'hiz',
     title: 'Dakikada doğru karar',
-    badge: c.block('sg_hiz')?.headline,
+    badge: sgBadge.unread ? sgBadge.badge : `Dakikada ${dec1(r.perMinute)} doğru karar`,
+    unread: sgBadge.unread,
     text: [
       'Doğru karar sayısı, çalışılan sürenin dakikasına bölünür.',
       'Süre dolmadan bütün denemeler biterse çalışılan süre son cevabın anıdır.',
@@ -3531,7 +3693,8 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
       : measureCard({
           key: 'sure',
           title: 'Tipik karar süresi',
-          text: medianText('karar', 'simgelerin ekrana gelmesinden cevaba kadar'),
+          // Tipik süre yalnızca doğru kararlardan hesaplanır (lib/scoring/tasks.ts, scoreSymbolSearch).
+          text: medianText('doğru karar', 'simgelerin ekrana gelmesinden cevaba kadar'),
           note: 'Her nokta bir doğru kararın süresi; kırmızı çizgi tipik süre.',
           visual: stripOf({
             label: 'Doğru kararların süreleri',
@@ -3581,11 +3744,11 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
         ? {
             visual: shareMeter(
               'En çok basılan düğme',
-              [[SG_ONE_BUTTON * 100, 100]],
+              [['≥', SG_ONE_BUTTON * 100]],
               [
                 {
                   label: 'Aynı düğme',
-                  value: Math.round(shareOf(sameMax, r.answered)),
+                  value: shareOf(sameMax, r.answered),
                   valueLabel: `${sameMax} karar`,
                 },
               ],
@@ -3595,7 +3758,7 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
       spoken: r.answered ? [`En çok basılan düğme: yüzde ${Math.round(shareOf(sameMax, r.answered))}.`] : [],
     }),
     check('dogruluk', 'Doğruluk', few || oneBtn ? 'none' : chance ? 'warn' : 'ok', {
-      what: '“Var” ya da “Yok” demenin rastgele yarısı doğrudur. Doğruluk bunun az üstündeyse sonuç yorumlanmaz.',
+      what: 'Rastgele “Var” ya da “Yok” diyen biri de kararların yaklaşık yarısını bulur. Doğruluk bunun az üstündeyse sonuç yorumlanmaz.',
       result:
         few || oneBtn
           ? 'Yukarıdaki denetim nedeniyle bu denetim ayrıca yapılmadı.'
@@ -3608,11 +3771,11 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
         ? {
             visual: shareMeter(
               'Doğruluk',
-              [[0, SG_MIN_ACCURACY * 100]],
+              [['<', SG_MIN_ACCURACY * 100]],
               [
                 {
                   label: 'Doğru karar',
-                  value: pctVal(r.accuracy),
+                  value: pctExact(r.accuracy),
                   valueLabel: pctText(r.accuracy),
                 },
               ],
@@ -3622,7 +3785,7 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
       spoken: r.answered ? [`Doğruluk: ${pctText(r.accuracy)}.`] : [],
     }),
     check('hizli', 'Çok hızlı kararlar', why !== null ? 'none' : sgTooFast(r) ? 'warn' : 'ok', {
-      what: `${secLimit(SG_TOO_FAST_MS)} saniyeden kısa sürede iki simgeyi dört simgeyle karşılaştırmak zordur. Bu kadar hızlı kararlar birkaç tane ve kararların beşte biriyse “Dikkat” yazar.`,
+      what: `${secLimit(SG_TOO_FAST_MS)} saniyeden kısa sürede iki simgeyi dört simgeyle karşılaştırmak zordur. Bu kadar hızlı kararlar en az ${SG_TOO_FAST_N} tane ve kararların beşte biri ya da daha çoğuysa “Dikkat” yazar.`,
       result:
         why !== null
           ? 'Yukarıdaki denetim nedeniyle bu denetim ayrıca yapılmadı.'
@@ -3651,14 +3814,6 @@ function symbolSearchKind(c: Ctx, task: SymbolSearchTask): KindParts | null {
 }
 
 /* ---------- Kelime listesi ---------- */
-
-const WL_KIND: Record<string, string> = {
-  target: 'ilk listeden',
-  b: 'ikinci listeden',
-  semantic: 'anlamca yakın yeni kelime',
-  sound: 'sesi benzer yeni kelime',
-  new: 'ilgisiz yeni kelime',
-};
 
 function wordListKind(c: Ctx, task: WordListTask): KindParts | null {
   const r = res<WordListResult>(c, 'kl_ogrenme');
@@ -3719,8 +3874,7 @@ function wordListKind(c: Ctx, task: WordListTask): KindParts | null {
       shown: task.recognition[t.index],
       status: t.status,
       given: t.response === 1 ? 'Evet' : 'Hayır',
-      expected: t.status === 'correct' ? null : t.kind === 'target' ? 'Evet' : 'Hayır',
-      tags: [WL_KIND[t.kind ?? ''] ?? ''].filter(Boolean),
+      // Kelimenin türü (ilk listeden, ikinci listeden, benzer yeni kelime) yazılmaz: liste her seferinde aynıdır.
       rtMs: t.rtMs,
       rapid: !!t.rapid,
     })),
@@ -3730,7 +3884,7 @@ function wordListKind(c: Ctx, task: WordListTask): KindParts | null {
   const learn = measureCard({
     key: 'ogrenme',
     title: 'Öğrenme toplamı',
-    badge: c.block('kl_ogrenme')?.headline,
+    ...blockBadge(c, 'kl_ogrenme'),
     text: [
       `İlk liste ${r.trials.length} kez gösterilir; her seferinde hatırlanan kelimeler sayılır.`,
       'Öğrenme toplamı bu denemelerdeki doğruların toplamıdır.',
@@ -3753,7 +3907,7 @@ function wordListKind(c: Ctx, task: WordListTask): KindParts | null {
   const keep = measureCard({
     key: 'koruma',
     title: 'Öğrenileni koruma',
-    badge: c.block('kl_koruma')?.headline,
+    ...blockBadge(c, 'kl_koruma'),
     text: 'Araya ikinci bir liste girdikten sonra ilk liste yeniden gösterilmeden hatırlanır. Koruma, bu denemedeki doğruların son öğrenme denemesiyle karşılaştırılmasıdır.',
     note: 'Çubuklar son öğrenme denemesinde ve araya giren listeden sonra hatırlanan kelimeler.',
     visual: shareBars('Öğrenileni koruma', [
@@ -3776,14 +3930,14 @@ function wordListKind(c: Ctx, task: WordListTask): KindParts | null {
   const tanima = measureCard({
     key: 'tanima',
     title: 'Tanıma',
-    badge: c.block('kl_tanima')?.headline,
-    text: 'Tanımada ilk listedeki kelimelere “evet”, ötekilere “hayır” denir. Ayırt etme, ilk listedeki kelimelerde “evet” oranından yanılgılardaki “evet” oranının çıkarılmasıyla bulunur.',
-    note: 'Çubuklar ilk listedeki kelimelerde ve yanılgılarda “evet” denenlerin payı.',
+    ...blockBadge(c, 'kl_tanima'),
+    text: 'Tanımada ilk listedeki kelimelere “evet”, ötekilere “hayır” denir. Ayırt etme, ilk listedeki kelimelerde “evet” oranından ilk listede olmayan kelimelerdeki “evet” oranının çıkarılmasıyla bulunur.',
+    note: 'Çubuklar ilk listedeki ve ilk listede olmayan kelimelerde “evet” denenlerin payı.',
     visual: pctBars('“Evet” denen kelimeler', [
       { label: 'İlk listedeki kelimeler', rate: R.hitRate },
-      { label: 'Yanılgılar', rate: R.falseRate },
+      { label: 'İlk listede olmayanlar', rate: R.falseRate },
     ]),
-    spoken: [`İlk listedeki kelimelerde evet: ${pctText(R.hitRate)}. Yanılgılarda evet: ${pctText(R.falseRate)}.`],
+    spoken: [`İlk listedeki kelimelerde evet: ${pctText(R.hitRate)}. İlk listede olmayan kelimelerde evet: ${pctText(R.falseRate)}.`],
   });
   const noInput = wordListNoInput(r);
   const one = wordListRecogOneSided(r);
@@ -3908,7 +4062,7 @@ function towerKind(c: Ctx, task: TowerTask): KindParts | null {
   const optimal = measureCard({
     key: 'dogru',
     title: 'En az hamlede çözülen problemler',
-    badge: c.block('kg_dogru')?.headline,
+    ...blockBadge(c, 'kg_dogru'),
     text: [
       'Her problemin en az hamle sayısı ekranda yazılıdır.',
       'Bu sayıda hamleyle çözülen problemler sayılır; fazla hamleyle çözülenler ayrı tutulur.',
@@ -3923,13 +4077,14 @@ function towerKind(c: Ctx, task: TowerTask): KindParts | null {
     ]),
     spoken: [`En az hamlede: ${sayCount(r.optimal)}. Fazla hamleyle: ${sayCount(r.extra)}. Çözülemedi: ${sayCount(r.unsolved)}.`],
   });
+  const kgPlan = blockBadge(c, 'kg_plan');
   const plan =
     r.medianPick === null
       ? null
       : measureCard({
           key: 'plan',
           title: 'İlk hamleden önceki süre',
-          badge: c.block('kg_plan')?.headline,
+          ...kgPlan,
           text: [
             'İlk topun alınmasına kadar geçen süre, hamle yapmadan önce düşünmeye ayrılan süreyi gösterir.',
             'Tipik süre bu sürelerin ortasındaki değerdir.',
@@ -3943,7 +4098,7 @@ function towerKind(c: Ctx, task: TowerTask): KindParts | null {
             marker: `Tipik ${secTag(r.medianPick)}`,
             item: 'bir problem',
           }),
-          spoken: [`İlk hamleden önceki tipik süre: ${secTag(r.medianPick)}.`],
+          spoken: kgPlan.badge ? undefined : [`İlk hamleden önceki tipik süre: ${secTag(r.medianPick)}.`],
         });
   const none = towerNone(r);
   const idle = towerIdle(r);
@@ -3973,7 +4128,7 @@ function towerKind(c: Ctx, task: TowerTask): KindParts | null {
       ]),
       spoken: [`Hiç top taşınmayan problemler: ${sayCount(r.idle)}; bunlardan kısa olanlar: ${sayCount(r.short.idle)}.`],
     }),
-    check('hizli', 'Düşünmeden başlanan uzun problemler', rapid ? 'warn' : 'ok', {
+    check('hizli', 'Düşünmeden başlanan uzun problemler', r.rapidOf === 0 ? 'none' : rapid ? 'warn' : 'ok', {
       what: `${TOWER_RAPID_FROM} ve daha çok hamlelik problemlerde ilk top ${secLimit(TOWER_RAPID_MS)} saniyeden kısa sürede alınıp problem en az hamlede çözülemezse sayılır. Bu problemlerin üçte birinde böyleyse çalışma biçimi kartında söylenir.`,
       result: rapid
         ? v(
@@ -3981,7 +4136,9 @@ function towerKind(c: Ctx, task: TowerTask): KindParts | null {
             'Senin problemlerinde bu görüldü; topa dokunmadan önce ilk hamleleri kafanda denemek işine yarayabilir.',
             'Çocuğunuzun problemlerinde bu görüldü; topa dokunmadan önce ilk hamleleri kafasında denemesi yardımcı olabilir.',
           )
-        : 'Bu sınırın altında kaldı.',
+        : r.rapidOf === 0
+          ? 'Sayılacak uzun problem olmadığı için bu denetim yapılmadı.'
+          : 'Bu sınırın altında kaldı.',
       note: 'Kırmızı çizgi bu tür problemlerin sayısı; renkli bölge uyarı bölgesi.',
       visual: countMeter('Hızlı başlanan uzun problemler', Math.max(1, r.rapidOf), need, [
         {
@@ -4046,7 +4203,7 @@ function complexSpanKind(c: Ctx, task: ComplexSpanTask): KindParts | null {
   const letters = measureCard({
     key: 'harf',
     title: 'Doğru yerde hatırlanan harfler',
-    badge: c.block('hb_harf')?.headline,
+    ...blockBadge(c, 'hb_harf'),
     text: [
       'Her harf, dizinin tamamı doğru olmasa da kendi yerinde hatırlandıysa bir puan alır.',
       'Doğru yerde olmayan harfler üç türe ayrılır: dizide olan ama yeri karışan, dizide olmayan ve boş kalan yer.',
@@ -4064,7 +4221,7 @@ function complexSpanKind(c: Ctx, task: ComplexSpanTask): KindParts | null {
   const ops = measureCard({
     key: 'islem',
     title: 'İşlemler',
-    badge: c.block('hb_islem')?.headline,
+    ...blockBadge(c, 'hb_islem'),
     text: [
       'Her harften önce kısa bir işlemin doğru olup olmadığına karar verilir.',
       `Bu tür testlerde işlemlerin en az %${Math.round(CS_OPS_TARGET * 100)}’inin doğru olması beklenir; işlemler yapılmadan harfleri akılda tutmak kolaylaşır.`,
@@ -4119,7 +4276,7 @@ function complexSpanKind(c: Ctx, task: ComplexSpanTask): KindParts | null {
       spoken: [`Süresi dolan işlemler: ${sayCount(O.timeouts)}.`],
     }),
     check('islem-sans', 'İşlemlerde şans düzeyi', slow ? 'none' : rev || ch ? 'warn' : 'ok', {
-      what: 'İki düğmeyle verilen işlem cevaplarında rastgele basan biri de yarısını bulur. Doğrular bunun altındaysa düğmeler ters kullanılmış ya da rastgele basılmış olabilir.',
+      what: 'İki düğmeyle verilen işlem cevaplarında rastgele basan biri de yarısını bulur. Doğrular yarıdan belirgin biçimde fazla değilse düğmeler ters kullanılmış ya da rastgele basılmış olabilir.',
       result: slow
         ? 'Yukarıdaki denetim nedeniyle bu denetim ayrıca yapılmadı.'
         : rev
@@ -4214,7 +4371,7 @@ function patternKind(c: Ctx, task: PatternMemoryTask): KindParts | null {
   const span = measureCard({
     key: 'aralik',
     title: 'En büyük doğru desen',
-    badge: c.block('dh_aralik')?.headline,
+    ...blockBadge(c, 'dh_aralik'),
     text: [
       'Desenler küçükten büyüğe gider; her büyüklükte üç desen gösterilir.',
       'Bir büyüklüğün üç deseninin hiçbiri tam doğru değilse görev biter.',
@@ -4222,12 +4379,12 @@ function patternKind(c: Ctx, task: PatternMemoryTask): KindParts | null {
     ].join(' '),
     note: 'Her sütun bir desen büyüklüğü; dolu daire tam doğru, boş daire yanlış desen.',
     visual: ladder,
-    spoken: [r.span ? `En büyük doğru desen: ${r.span} kare.` : 'En küçük desenlerin de hiçbiri tam doğru değil.'],
+    spoken: r.span && c.block('dh_aralik')?.headline ? undefined : [r.span ? `En büyük doğru desen: ${r.span} kare.` : 'En küçük desenlerin de hiçbiri tam doğru değil.'],
   });
   const cells = measureCard({
     key: 'kare',
     title: 'Doğru işaretlenen kareler',
-    badge: c.block('dh_desen')?.headline,
+    ...blockBadge(c, 'dh_desen'),
     text: 'Desenlerdeki dolu karelerden doğru yerde işaretlenenler sayılır. Kısmi puan, her desende doğru işaretlenen karelerden desende olmayan işaretlerin çıkarılmasıyla bulunur.',
     note: 'Çubuk gösterilen bütün dolu kareleri gösterir; parçalar doğru işaretlenen ve işaretlenmeyen karelerdir.',
     visual: stackOf('Gösterilen kareler', [
@@ -4276,7 +4433,7 @@ function patternKind(c: Ctx, task: PatternMemoryTask): KindParts | null {
           max: Math.max(1, r.beforeStop),
         },
       ]),
-      spoken: [`Bitişten önceki desenler: ${r.skippedBeforeStop}/${r.beforeStop} desende hatırlamıyorum dendi.`],
+      spoken: r.beforeStop ? [`Bitişten önceki ${r.beforeStop} desenden hatırlamıyorum denen: ${sayCount(r.skippedBeforeStop)}.`] : [],
     }),
     check('hizli', 'Çok hızlı işaretlenen desenler', floor ? 'none' : rapid ? 'warn' : 'ok', {
       what: 'Çok kısa sürede işaretlenen ve karelerinin çoğu yanlış olan desenler sayılır. En az üç desen ve yanlışların üçte biriyse “Dikkat” yazar.',
@@ -4351,6 +4508,8 @@ function letterNumberKind(c: Ctx, task: LetterNumberTask): KindParts | null {
     timed: true,
     none: '“Hatırlamıyorum”',
     skipLabel: '“Hatırlamıyorum”',
+    // Dizi görevleri "yeniden çözmede alıştırma" türündedir (lib/compare/tasks.ts): doğru sıra yazılır.
+    showKey: true,
   });
   const ladder: LadderVisual = {
     type: 'ladder',
@@ -4366,7 +4525,7 @@ function letterNumberKind(c: Ctx, task: LetterNumberTask): KindParts | null {
   const span = measureCard({
     key: 'aralik',
     title: 'En uzun doğru dizi',
-    badge: c.block('hs_aralik')?.headline,
+    ...blockBadge(c, 'hs_aralik'),
     text: [
       'Doğru cevapta önce sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla yazılır.',
       'Her uzunlukta üç dizi gösterilir; üçü de yanlışsa görev biter.',
@@ -4374,12 +4533,12 @@ function letterNumberKind(c: Ctx, task: LetterNumberTask): KindParts | null {
     ].join(' '),
     note: 'Her sütun bir dizi uzunluğu; dolu daire doğru, boş daire yanlış dizi.',
     visual: ladder,
-    spoken: [r.span ? `En uzun doğru dizi: ${r.span} öğe.` : 'En kısa dizilerin de hiçbiri doğru sıralanmadı.'],
+    spoken: r.span && c.block('hs_aralik')?.headline ? undefined : [r.span ? `En uzun doğru dizi: ${r.span} öğe.` : 'En kısa dizilerin de hiçbiri doğru sıralanmadı.'],
   });
   const items = measureCard({
     key: 'oge',
     title: 'Hatırlanan öğeler',
-    badge: c.block('hs_turler')?.headline,
+    ...blockBadge(c, 'hs_turler'),
     text: 'Bütün dizilerde gösterilen öğelerden cevapta yer alanlar sayılır; sıra doğru olmasa da. Bu, sıralamadan ayrı olarak akılda tutmayı gösterir.',
     note: 'Çubuk gösterilen bütün öğeleri gösterir; parçalar cevapta yer alan ve almayan öğelerdir.',
     visual: stackOf('Gösterilen öğeler', [
@@ -4462,7 +4621,7 @@ function letterNumberKind(c: Ctx, task: LetterNumberTask): KindParts | null {
           max: Math.max(1, r.beforeStop),
         },
       ]),
-      spoken: [`Bitişten önceki diziler: ${r.skippedBeforeStop}/${r.beforeStop} dizide hatırlamıyorum dendi.`],
+      spoken: r.beforeStop ? [`Bitişten önceki ${r.beforeStop} diziden hatırlamıyorum denen: ${sayCount(r.skippedBeforeStop)}.`] : [],
     }),
     check('hizli', 'Çok hızlı girilen diziler', floor ? 'none' : rapid ? 'warn' : 'ok', {
       what: 'Çok kısa sürede girilen ve öğelerinin çoğu eksik ya da yanlış olan diziler sayılır. En az üç dizi ve yanlışların üçte biriyse “Dikkat” yazar.',
@@ -4606,4 +4765,9 @@ export function moreKinds(c: Ctx, task: CognitiveTask, done: Set<string>): KindP
     default:
       return null;
   }
+}
+
+/** "toplama", "toplama ve bölme", "toplama, çıkarma ve bölme" */
+function joinAnd(xs: string[]): string {
+  return xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} ve ${xs[xs.length - 1]}`;
 }

@@ -357,7 +357,7 @@ describe('Küp açınımı: sorular', () => {
       .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, lures: task.optionLures, levels: task.levels }))
       .digest('hex')
       .slice(0, 16);
-    expect({ version: kupAcinimi.version, hash }).toEqual({ version: 1, hash: SORU_IZI });
+    expect({ version: kupAcinimi.version, hash }).toEqual({ version: 2, hash: SORU_IZI });
   });
 });
 

@@ -231,7 +231,7 @@ const task: CubeNetTask = {
 
 export const kupAcinimi: TaskInstrument = {
   slug: 'kup-acinimi',
-  version: 1,
+  version: 2,
   engine: 'tasks',
   name: 'Küp Açınımı',
   shortName: 'Küp açınımı',

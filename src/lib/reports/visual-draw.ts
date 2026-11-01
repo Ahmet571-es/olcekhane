@@ -243,6 +243,8 @@ function drawBars(v: BarsVisual, W: number, fs: number): Drawing {
 export const STACK_TONES: Tone[] = ['fill', 'soft', 'track2', 'ink3', 'surface'];
 /** Açık tonlu parçaların çerçevesi: yanındaki parçadan ve zeminden ayrılsın. */
 const STACK_STROKE: Partial<Record<Tone, Tone>> = { soft: 'fill', surface: 'ink3' };
+/** Bölüm çubuklarında (`blocks`) gri parça da çerçeveli: satırların zemini de gri olduğu için ayrılsın. */
+const BLOCK_STROKE: Partial<Record<Tone, Tone>> = { ...STACK_STROKE, track2: 'ink3' };
 
 function drawStack(v: StackVisual, W: number, fs: number): Drawing {
   const shapes: Shape[] = [];
@@ -672,7 +674,58 @@ function legendRow(
  * üstte `max`), yoksa işaretler tek sırada. Dolu daire doğru, içi boş daire yanlış, kısa çizgi cevapsız. Altta grup adları,
  * grupların ne olduğu, (varsa) "çok hızlı" bölgesi ve lejant.
  */
+/** Soru şeridinde bundan çok işaret varsa tek satıra sığmaz: her grup kendi satırında, süre çizilmeden (işaretler okunur kalsın). */
+export const ITEMS_WRAP_AT = 25;
+/** Satırlı soru şeridinde işaretin en küçük yarıçapı (ekranda ve PDF'te birim). */
+export const ITEMS_MIN_RADIUS = 2.2;
+
+/** Uzun soru şeridi: her grup bir satır (sığmazsa alt satıra geçer), grubun adı solda; işaretler testteki sırayla. */
+function drawItemsWrapped(v: ItemsVisual, W: number, fs: number): Drawing {
+  const shapes: Shape[] = [];
+  const ts = r2(fs * 0.85);
+  const dr = r2(Math.max(ITEMS_MIN_RADIUS, fs * 0.32));
+  const sw = r2(Math.max(0.7, Math.min(dr * 0.4, fs * 0.13)));
+  const slot = dr * 2 + Math.max(dr * 0.9, 1.6);
+  const labelW = Math.max(0, ...v.groups.map((g) => (g ? textWidth(g, ts) : 0)));
+  const x0 = labelW ? labelW + fs * 0.6 : 0;
+  const perLine = Math.max(1, Math.floor((W - x0) / slot));
+  const lineH = Math.max(dr * 2 + fs * 0.45, ts * 1.3);
+  let y = fs * 0.4;
+  v.groups.forEach((g, gi) => {
+    const items = v.items.filter((it) => it.group === gi);
+    if (!items.length) return;
+    const lines = Math.ceil(items.length / perLine);
+    if (gi % 2) shapes.push({ k: 'rect', x: r2(x0 - fs * 0.25), y: r2(y), w: r2(W - x0 + fs * 0.25), h: r2(lineH * lines), r: 1.5, fill: 'track' });
+    if (g) shapes.push({ k: 'text', x: 0, y: r2(y + lineH / 2 + ts * 0.35), text: g, size: ts, weight: 400, fill: 'ink3', anchor: 'start' });
+    items.forEach((it, i) => {
+      const cx = r2(x0 + (i % perLine) * slot + slot / 2);
+      const cy = r2(y + Math.floor(i / perLine) * lineH + lineH / 2);
+      if (it.mark === 'ok') shapes.push({ k: 'circle', x: cx, y: cy, r: dr, fill: 'fill', stroke: 'fill', sw: 0.5 });
+      else if (it.mark === 'wrong') shapes.push({ k: 'circle', x: cx, y: cy, r: r2(dr - sw / 2), fill: 'surface', stroke: 'ink2', sw });
+      else shapes.push({ k: 'line', x1: r2(cx - dr), y1: cy, x2: r2(cx + dr), y2: cy, stroke: 'ink3', sw: r2(Math.max(0.9, sw * 1.2)) });
+    });
+    y += lineH * lines;
+  });
+  const capY = r2(y + ts * 1.2);
+  shapes.push({ k: 'text', x: 0, y: capY, text: v.groupCaption, size: ts, weight: 400, fill: 'ink3', anchor: 'start' });
+  const lr = r2(ts * 0.38);
+  const legend: { text: string; mw: number; mark: (x: number, b: number) => void }[] = [
+    { text: v.legend.ok, mw: lr * 2, mark: (x, b) => shapes.push({ k: 'circle', x: r2(x + lr), y: r2(b - lr * 0.9), r: lr, fill: 'fill', stroke: 'fill', sw: 0.5 }) },
+    {
+      text: v.legend.wrong,
+      mw: lr * 2,
+      mark: (x, b) => shapes.push({ k: 'circle', x: r2(x + lr), y: r2(b - lr * 0.9), r: r2(lr * 0.85), fill: 'surface', stroke: 'ink2', sw: r2(Math.max(0.8, lr * 0.35)) }),
+    },
+    ...(v.legend.none && v.items.some((x) => x.mark === 'none')
+      ? [{ text: v.legend.none, mw: lr * 2, mark: (x: number, b: number) => shapes.push({ k: 'line', x1: r2(x), y1: r2(b - lr * 0.9), x2: r2(x + lr * 2), y2: r2(b - lr * 0.9), stroke: 'ink3', sw: 1.2 }) }]
+      : []),
+  ];
+  const last = legendRow(shapes, legend, W, ts, capY + ts * 0.35);
+  return { width: W, height: r2(last + ts * 0.4), shapes };
+}
+
 function drawItems(v: ItemsVisual, W: number, fs: number): Drawing {
+  if (v.items.length > ITEMS_WRAP_AT) return drawItemsWrapped(v, W, fs);
   const shapes: Shape[] = [];
   const ts = r2(fs * 0.85);
   const n = Math.max(1, v.items.length);
@@ -786,7 +839,7 @@ function drawBlocks(v: BlocksVisual, W: number, fs: number): Drawing {
       if (p <= 0) return;
       const w = (p / most) * W;
       const tone = STACK_TONES[i % STACK_TONES.length];
-      const stroke = STACK_STROKE[tone];
+      const stroke = BLOCK_STROKE[tone];
       shapes.push({ k: 'rect', x: r2(x), y: ty, w: r2(Math.max(0.8, w - 0.6)), h: barH, r: 1, fill: tone, ...(stroke ? { stroke, sw: 0.8 } : {}) });
       x += w;
     });
@@ -796,7 +849,7 @@ function drawBlocks(v: BlocksVisual, W: number, fs: number): Drawing {
   const sq = r2(ls * 0.95);
   const items = v.legend.map((text, i) => {
     const tone = STACK_TONES[i % STACK_TONES.length];
-    const stroke = STACK_STROKE[tone];
+    const stroke = BLOCK_STROKE[tone];
     return {
       text,
       mw: sq,

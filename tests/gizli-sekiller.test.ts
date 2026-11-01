@@ -306,7 +306,7 @@ describe('Gizli şekiller: sorular', () => {
       .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, lures: task.optionLures, levels: task.levels }))
       .digest('hex')
       .slice(0, 16);
-    expect({ version: gizliSekiller.version, hash }).toEqual({ version: 1, hash: SORU_IZI });
+    expect({ version: gizliSekiller.version, hash }).toEqual({ version: 2, hash: SORU_IZI });
   });
 });
 

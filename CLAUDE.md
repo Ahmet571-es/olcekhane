@@ -376,14 +376,24 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   kendi düzey anlatımları ve ulaşılan düzey, rozet raporun kartıyla aynı; düzey kuralı: o düzeyin ve o düzeye kadarki soruların
   en az %60'ı; raporda geçen her ölçünün ne olduğu ve nasıl hesaplandığı, değeri grafikte; başka kişilerle karşılaştırma yok),
   **Soru soru cevapların** (puanlamanın kendi soru soru sonuçlarından: `ItemTrace`, puanlama işlevleri `items` döndürür; düzey,
-  gösterilen, verilen ve doğru cevap, yanılgı türü, süre; grafik `items`: işaretler sırayla, yükseklik süre, "çok hızlı" bandı;
-  yüzlerce denemeli hızlı görevlerde "Deneme deneme sonuçların": çeyrek, yarı ya da bölüm özetleri, grafik `blocks`; görevdeki
-  cevap bir performans olduğu için veli raporunda da var; PDF'te ek), **Sonuca ne kadar güvenebiliriz?** (uyarı kutusundaki ve
-  "Yorumlanmadı" kartlarındaki denetimler, aynı işlev ve sabitlerle (`lib/scoring/tasks.ts`: `TASK_QUALITY`, `…Rapid`,
-  `…Chance` …): şans, çok hızlı, hep aynı yer ya da düğme, "Bilmiyorum", cevapsız ve erken denemeler, en kısa diziler, yeniden
-  gösterme, sürelerin cihazda ölçülmesi; yapılamayan denetim "Denetlenemedi" der ve grafiği yoktur). Yeni görev testinin türü
-  `task-parts-kinds.ts`'e eklenir; `tests/rapor-bolumleri-gorev.test.ts` bütün örüntülerde (`task-variants.ts`) dener: bölümler
-  ve grafikleri, satırların puanlamayla aynı olması, denetimlerin uyarılarla uyumu ve elle kurulan örüntüler, dil, ekrandaki
+  gösterilen ve verilen cevap, doğru mu, yanılgı türü, süre; her seferinde aynı soruların geldiği testlerde (`SAME_ITEMS`,
+  `lib/compare/tasks.ts`) doğru cevap ve cevabı ele veren etiket yazılmaz (cevap anahtarı yayılmasın; karşılaştırma notu da
+  söyler), üretilen ya da alıştırma sorularında (dizi, zihinden hesaplama) doğrusu yazılır; grafik `items`: işaretler sırayla,
+  yükseklik süre, "çok hızlı" bandı, 25'ten çok soruda her grup ayrı satırda ve süresiz; yüzlerce denemeli hızlı görevlerde
+  "Deneme deneme sonuçların": çeyrek, yarı ya da bölüm özetleri, grafik `blocks`; görevdeki cevap bir performans olduğu için
+  veli raporunda da var; uzun listelerde sesli dinleme yalnızca dikkat çeken satırları okur; PDF'te ek), **Sonuca ne kadar
+  güvenebiliriz?** (uyarı kutusundaki ve "Yorumlanmadı" kartlarındaki denetimler, aynı işlev ve sabitlerle
+  (`lib/scoring/tasks.ts`: `TASK_QUALITY`, `…Rapid`, `…Chance` …): şans, çok hızlı, hep aynı yer ya da düğme, "Bilmiyorum",
+  cevapsız ve erken denemeler, en kısa diziler, yeniden gösterme, sürelerin cihazda ölçülmesi; çubuğun bölgesi kartın durumuyla
+  aynıdır (sayımlarda sınır iki tam sayının arasında; iki koşullu kuralda tek koşul "Dikkat" değil sakin bölgedir); yapılamayan
+  ya da bu sonuçta geçerli olmayan denetim (durum `none`) "Denetlenemedi" der, grafiği ve sesli değeri yoktur; "Yorumlanmadı"
+  kartlarında da grafik ve değer yoktur, metin nedenin yazdığı bölümü söyler). Düzeyli seçmeli testlerde yalnızca 1. düzeye
+  ulaşılmışsa ve oradaki doğrular rastgele seçimle de çıkabiliyorsa (`levelOneByChance`: ikiterimli kuyruk olasılığı ≥ .05)
+  sonuç şansla açıklanabilir sayılır; "şansla açıklanamayacak kadar çok" yalnızca olasılık .05'in altındaysa yazılır. Bu kural
+  bir sonucu değiştirebiliyorsa testin sürümü artırılır (küp açınımı, gizli şekiller, parçalardan şekil: 2). Yeni görev testinin
+  türü `task-parts-kinds.ts`'e eklenir; `tests/rapor-bolumleri-gorev.test.ts` bütün örüntülerde (`task-variants.ts`) dener:
+  bölümler ve grafikleri, satırların puanlamayla aynı olması, aynı sorulu testlerde cevap anahtarı olmaması, denetimlerin
+  uyarılarla ve çubuk bölgeleriyle uyumu, elle kurulan örüntüler (şans kuralı dahil), işaretlerin en küçük boyu, dil, ekrandaki
   sıra, sesli okuma, PDF.
 - Okuma, sesli okuma ve konu tarama (`lib/reports/reading-parts.ts`, `quiz-parts.ts`; `evaluate.ts` kurar; grafikler
   `lib/reports/visual-cells.ts`: soru kutuları `grid`, metin haritası `wordmap`, sayı kutuları `cells`): **Düzeylerin ve

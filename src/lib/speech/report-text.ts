@@ -279,11 +279,16 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
     for (const c of g.cards) {
       const levels = (c.levels ?? []).flatMap((l) => [l.text ? sentence(`${l.label}: ${l.text}`) : sentence(l.label), ...(l.spoken ? [l.spoken] : [])]);
       const active = c.levels?.find((l) => l.active);
-      const rows = (c.rows ?? []).map((r) => {
+      // Çok uzun listelerde bazı satırlar okunmaz (`silent`); kartın `spoken`'ı bunu söyler.
+      const rows = (c.rows ?? []).filter((r) => !r.silent).map((r) => {
         // Satırın sesli okunuşu metninden farklıysa o okunur: `spoken` (konu taramada soru metni okunmaz: boş) ya da `say`.
         const said = r.spoken ?? r.say ?? r.text;
         const head =
-          r.label !== undefined ? sentence(said) : said ? `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(said)}` : sentence(`${r.no}. ${c.rowsHead?.item ?? 'madde'}`);
+          r.label !== undefined || c.rowsHead?.numbered === false
+            ? sentence(said)
+            : said
+              ? `${r.no}. ${c.rowsHead?.item ?? 'madde'}: ${sentence(said)}`
+              : sentence(`${r.no}. ${c.rowsHead?.item ?? 'madde'}`);
         const value = r.muted ? sentence(r.value) : sentence(`${c.rowsHead?.value ?? 'Cevap'}: ${r.value}`);
         return [head, value, ...r.tags.map((t) => sentence(t.charAt(0).toLocaleUpperCase('tr-TR') + t.slice(1)))].join(' ');
       });
@@ -293,7 +298,8 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
         levels.length
           ? [
               sentence(c.title),
-              sentence('Düzeyler'),
+              // Kartın adı zaten "Düzeyler"se ikinci kez okunmaz.
+              c.title !== 'Düzeyler' && sentence('Düzeyler'),
               ...levels,
               // Kişinin düzeyi rozetteki adla okunur; kendi etiketi olan kartta (`activeLabel`, ör. "Senin hızın") rozet bir değerdir
               // ("Dakikada 90 kelime"): düzeyin adı okunur ("Senin hızın: Olağan"; birleşik düzeyde yine rozetteki tek ad).

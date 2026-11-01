@@ -413,7 +413,7 @@ const task: ShapeAssemblyTask = {
 
 export const parcalardanSekil: TaskInstrument = {
   slug: 'parcalardan-sekil',
-  version: 1,
+  version: 2,
   engine: 'tasks',
   name: 'Parçalardan Şekil',
   shortName: 'Parçalardan şekil',
