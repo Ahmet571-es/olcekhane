@@ -81,7 +81,6 @@ export const DAILY_PENDING: string[] = [
   'dusunmeyi-sevme-olcegi',
   'dusunme-ve-calisma-tarzi',
   'heyecan-arayisi',
-  'empati',
   'oz-yeterlik',
   'oz-denetim',
   'liderlik-egilimleri',
