@@ -90,7 +90,6 @@ export const DAILY_PENDING: string[] = [
   'ders-calisma-motivasyonu',
   'erteleme-ve-zaman-yonetimi',
   'zihniyet',
-  'duygusal-zeka-bilesenleri',
   // Görev testleri
   'sekil-benzetmeleri',
   'sayi-dizileri',

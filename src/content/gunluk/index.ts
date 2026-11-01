@@ -1,4 +1,5 @@
 import { besFaktorDaily } from './bes-faktor-kisilik';
+import { duygusalZekaBilesenleriDaily } from './duygusal-zeka-bilesenleri';
 import { empatiDaily } from './empati';
 import { iyimserlikDaily } from './iyimserlik';
 import { matematikDaily } from './matematik-konu-tarama-testi';
@@ -30,4 +31,5 @@ export const DAILY: Record<string, DailyContent> = {
   empati: empatiDaily,
   'oz-yeterlik': ozYeterlikDaily,
   'oz-denetim': ozDenetimDaily,
+  'duygusal-zeka-bilesenleri': duygusalZekaBilesenleriDaily,
 };
