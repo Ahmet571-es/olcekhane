@@ -27,7 +27,7 @@ export type CompareUnit = '' | '%' | 'sn' | 'derece';
  */
 export type CompareFormat = 'clock' | 'trim';
 
-/** Sayının gösterimiyle ilgili alanlar (görev testlerinde; anket testlerinde hiçbiri yoktur). */
+/** Sayının gösterimiyle ilgili alanlar (görev testlerinde; anket testlerinde yalnızca toplam puanda `format: 'trim'`). */
 export interface CompareDisplay {
   /** Birim (verilmezse birimsiz sayı). */
   unit?: CompareUnit;
@@ -48,7 +48,10 @@ export interface CompareScale extends CompareDisplay {
   max: number;
   /** Ölçüm payı (SEM, puanla aynı ölçekte); ölçeğin güvenirliği bilinmiyorsa null. */
   sem: number | null;
-  /** Puanın gösterildiği ondalık sayısı (anketlerde ortalama puanda 1, toplam puanda 0; görevlerde sürelerde 1 ya da 2). */
+  /**
+   * Puanın gösterildiği ondalık sayısı (anketlerde 1: ortalama puan "3,4"; toplam puan sondaki sıfır yazılmadan, "24" ya da bir
+   * madde boş kalıp orantılandıysa "25,6"; görevlerde sürelerde 1 ya da 2).
+   */
   decimals: 0 | 1 | 2;
   /** Düzeyin rapordaki adı ("Orta" gibi). */
   band: string | null;

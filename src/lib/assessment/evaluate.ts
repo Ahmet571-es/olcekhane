@@ -243,7 +243,9 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
 function compareInfo(def: InstrumentDef, content: ReportContent, rows: ScoreRow[]): CompareInfo | undefined {
   if (def.engine === 'tasks') return taskCompareInfo(def, content, rows);
   if (def.engine !== 'likert') return undefined;
-  const decimals = def.scoring.method === 'mean' ? 1 : 0;
+  // Ortalama puan bir ondalıkla; toplam puan raporda tam sayıyla, bir madde boş kalıp orantılandıysa bir ondalıkla yazılır
+  // (lib/reports/build.ts, sumText): karşılaştırmada da sondaki sıfır yazılmadan bir ondalık ("24", "25,6").
+  const sum = def.scoring.method === 'sum';
   // Ölçeklerin testteki sırasıyla (raporun bölümleri bazı testlerde puana göre sıralanır).
   const scales = def.scales.flatMap((scale) => {
     const sec = content.sections.find((x) => x.scaleKey === scale.key);
@@ -257,7 +259,8 @@ function compareInfo(def: InstrumentDef, content: ReportContent, rows: ScoreRow[
         min: sec.min,
         max: sec.max,
         sem: sem === null ? null : Math.round(sem * 10000) / 10000,
-        decimals: decimals as 0 | 1,
+        decimals: 1 as const,
+        ...(sum ? { format: 'trim' as const } : {}),
         band: sec.band ? sec.bandLabel : null,
       },
     ];

@@ -608,6 +608,19 @@ export interface InterestProfile {
 
 const nf1 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
+const nfSum2 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+
+/**
+ * Toplam puanın yazımı. Bir madde boş kalınca toplam cevapların ortalamasıyla orantılanır ve tam sayı olmayabilir
+ * (öz-saygıda 9 cevapla 23 × 10 / 9 = 25,56). Düzey bu kesirli puandan belirlenir; tam sayıya yuvarlanırsa sınırın öbür
+ * yanında görünebilirdi ("26 / 30 · Dengeli", eşik 26). Bu yüzden kesirli toplam bir ondalıkla yazılır ("25,6"); bir ondalık
+ * tam sayıya yuvarlıyorsa (ör. 25,96) iki ondalıkla. Tam sayı olan toplam olduğu gibi.
+ */
+export function sumText(value: number): string {
+  if (Math.abs(value - Math.round(value)) < 1e-6) return nf0.format(value);
+  const one = Math.round(value * 10) / 10;
+  return Math.abs(one - Math.round(one)) < 1e-9 ? nfSum2.format(value) : nf1.format(value);
+}
 
 const SKILL_LABELS: Record<string, string> = {
   // Metin sorulardan önce kapanır: bilgi metinde bulunmaz, hatırlanır.
@@ -681,7 +694,7 @@ export function buildReport(input: {
         text: s && band ? picked.text : 'Bu bölümdeki maddelerin yeterince cevaplanmadığı için puan hesaplanamadı.',
         tips: s && band ? picked.tips : [],
         value,
-        valueLabel: value === null ? '—' : `${isMean ? nf1.format(value) : nf0.format(value)} / ${isMean ? nf0.format(max) : nf0.format(max)}`,
+        valueLabel: value === null ? '—' : `${isMean ? nf1.format(value) : sumText(value)} / ${nf0.format(max)}`,
         min,
         max,
         ciLow: s?.ciLow ?? null,

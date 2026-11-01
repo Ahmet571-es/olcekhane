@@ -1,5 +1,15 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { valueText } from '@/components/test/compare-panel';
 import { REPORT_TEMPLATES } from '@/content/reports';
+import { compareResults, toRecord } from '@/lib/compare/record';
+import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
+import { sumText } from '@/lib/reports/build';
+import { reportSpeech, utterancesOf } from '@/lib/speech/report-text';
+import { HAS_PDFTOTEXT } from './helpers/pdf-overlap';
 import { ROADMAPS } from '@/content/roadmaps';
 import { evaluate } from '@/lib/assessment/evaluate';
 import type { LikertInstrument } from '@/lib/instruments/types';
@@ -197,4 +207,54 @@ describe('Öz-saygı Ölçeği: rapor metinleri', () => {
     expect(tenth.parent.roadmap!.weeks[3].text).toContain('çocuğunuzun kendine ve geleceğe bakışını başka yönlerden de görmek için');
     expect(tenth.parent.roadmap!.weeks[3].text).not.toMatch(/ilgi/);
   });
+});
+
+describe('Öz-saygı Ölçeği: boş bırakılan cümle', () => {
+  it('toplam puan tam sayıysa olduğu gibi, orantılandıysa bir ondalıkla yazılır (sınıra yuvarlanmaz)', () => {
+    expect(sumText(24)).toBe('24');
+    expect(sumText(23 * (10 / 9))).toBe('25,6');
+    expect(sumText((26 * 10) / 9)).toBe('28,9');
+    // Bir ondalık tam sayıya yuvarlıyorsa iki ondalık (uzun ölçeklerde olabilir): düzeyin sınırı yanlış yanda görünmesin.
+    expect(sumText(25.96)).toBe('25,96');
+  });
+
+  it('bir cümle boş: toplam orantılanır, kartta, genel bakışta, düzeylerde, sesli dinlemede, PDF\'te ve karşılaştırmada "25,6 / 30"; düzey ve özet değişmez', async () => {
+    // R10 boş; işlenmiş dokuz cevabın toplamı 23 → 23 × 10 / 9 = 25,56: "Dengeli" (eşik 26). Önceden "26 / 30 · Dengeli"
+    // yazıyordu (sayı eşikte, düzey altında).
+    const keyed = [3, 3, 3, 3, 3, 2, 2, 2, 2];
+    const answered = d.items.filter((it) => it.key !== 'R10');
+    const raw: Raw = Object.fromEntries(answered.map((it, i) => [it.key, it.reverse ? 3 - keyed[i] : keyed[i]]));
+    const r = evaluate(SLUG, body(raw));
+    const dir = mkdtempSync(join(tmpdir(), 'oz-saygi-'));
+    for (const rep of [r.student, r.parent]) {
+      const json = JSON.stringify(rep);
+      expect(json, rep.audience).toContain('25,6 / 30');
+      expect(json, rep.audience).not.toMatch(/(?<![\d,])26 \/ 30/);
+      expect(rep.items[0].badge, rep.audience).toMatch(/^Dengeli/);
+      const levels = rep.parts!.find((p) => p.key === 'levels')!;
+      expect(JSON.stringify(levels), rep.audience).toContain('25,6 / 30');
+      const speech = utterancesOf(reportSpeech(rep).results)
+        .map((u) => u.text)
+        .join(' ');
+      expect(speech, rep.audience).toContain('30 üzerinden 25,6');
+      expect(speech, rep.audience).not.toMatch(/30 üzerinden 26(?![,\d])/);
+      if (HAS_PDFTOTEXT) {
+        const file = join(dir, `${rep.audience}.pdf`);
+        writeFileSync(file, await renderSimpleReportPdf(rep, 'olcekhane.com'));
+        const text = execFileSync('pdftotext', [file, '-'], { encoding: 'utf8' });
+        expect(text, rep.audience).toContain('25,6 / 30');
+        expect(text, rep.audience).not.toMatch(/(?<![\d,])26 \/ 30/);
+      }
+    }
+    // Karşılaştırma: özetin anahtarı, değeri ve düzeyi eskisi gibi; sayı raporla aynı yazılır.
+    const c = r.student.compare!;
+    expect(c.scales.map((x) => [x.key, x.value, x.decimals, x.format])).toEqual([['self_esteem', 25.556, 1, 'trim']]);
+    expect(toRecord(c).r).toEqual([['self_esteem', 25.556, 'Dengeli']]);
+    const row = { decimals: 1 as const, format: 'trim' as const, max: 30 };
+    expect([valueText(25.556, row), valueText(24, row)]).toEqual(['25,6', '24']);
+    // Önceki sonuç tam 26 ("Olumlu"): gösterilen puanlar farklı, "aynı" denmez; düzey değişimi söylenir.
+    const out = compareResults(c, [{ ...toRecord(c), r: [['self_esteem', 26, 'Olumlu']] }]);
+    expect(out.status).toBe('ok');
+    if (out.status === 'ok') expect(out.rows[0].verdict).not.toBe('same');
+  }, 60_000);
 });

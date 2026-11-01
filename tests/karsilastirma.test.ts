@@ -60,7 +60,8 @@ describe('Gelişimini karşılaştır: raporlardaki bilgi', () => {
             expect(s.label).toBe(scale.name);
             expect(s.value, `${d.slug} ${s.key}`).toBeGreaterThanOrEqual(s.min);
             expect(s.value, `${d.slug} ${s.key}`).toBeLessThanOrEqual(s.max);
-            expect(s.decimals).toBe(d.scoring.method === 'mean' ? 1 : 0);
+            // Ortalama puan bir ondalıkla; toplam puan sondaki sıfır yazılmadan (orantılanmış toplam "25,6").
+            expect([s.decimals, s.format], `${d.slug} ${s.key}`).toEqual([1, d.scoring.method === 'sum' ? 'trim' : undefined]);
             expect(s.sem !== null, `${d.slug} ${s.key}`).toBe(!!(scale.alpha && scale.sdRef));
             if (s.sem !== null) expect(s.sem).toBeGreaterThan(0);
             expect(s.band, `${d.slug} ${s.key}`).toBeTruthy();
