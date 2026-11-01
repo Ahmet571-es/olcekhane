@@ -1,3 +1,4 @@
+import { ayrintiliKisilikDaily } from './ayrintili-kisilik-profili';
 import { bakisAcisiAlmaDaily } from './bakis-acisi-alma';
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { calismaAliskanliklariDaily } from './calisma-aliskanliklari';
@@ -69,6 +70,7 @@ export const DAILY: Record<string, DailyContent> = {
   'bes-faktor-kisilik': besFaktorDaily,
   'cocuk-kisilik-profili': cocukKisilikDaily,
   'hizli-kisilik-testi': hizliKisilikDaily,
+  'ayrintili-kisilik-profili': ayrintiliKisilikDaily,
   'simge-bulma': simgeBulmaDaily,
   'sekil-akil-yurutme': sekilAkilYurutmeDaily,
   'okuma-hizi-ve-anlama': okumaHiziDaily,
