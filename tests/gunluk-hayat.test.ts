@@ -91,7 +91,6 @@ export const DAILY_PENDING: string[] = [
   'erteleme-ve-zaman-yonetimi',
   'zihniyet',
   // Görev testleri
-  'kelime-bilgisi',
   'planlama-kule-gorevi',
   'dikkat-ve-bellek',
   'surekli-dikkat',
@@ -361,6 +360,10 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
   'dusunerek-karar-verme': [
     { pattern: /bütün kararlar|hayat kararı|önemli kararlar/iu, limitation: 'günlük hayattaki bütün kararlar' },
     { pattern: /haber|iddia/iu, sibling: 'mantiksal-akil-yurutme' },
+  ],
+  'kelime-bilgisi': [
+    { pattern: /yazarken|konuşurken|yazım|dil bilgisi|cümle kur|kompozisyon/iu, limitation: 'yazım ya da dil bilgisi' },
+    { pattern: /ilişkiyi bul|grupla|gruba uymayan/iu, sibling: 'sozel-akil-yurutme' },
   ],
 };
 

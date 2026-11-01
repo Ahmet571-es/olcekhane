@@ -7,6 +7,7 @@ import { gizliSekillerDaily } from './gizli-sekiller';
 import { harfDizileriDaily } from './harf-dizileri';
 import { iyimserlikDaily } from './iyimserlik';
 import { kagitKatlamaDaily } from './kagit-katlama';
+import { kelimeBilgisiDaily } from './kelime-bilgisi';
 import { kupAcinimiDaily } from './kup-acinimi';
 import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
 import { matematikDaily } from './matematik-konu-tarama-testi';
@@ -60,4 +61,5 @@ export const DAILY: Record<string, DailyContent> = {
   'bakis-acisi-alma': bakisAcisiAlmaDaily,
   'gizli-sekiller': gizliSekillerDaily,
   'dusunerek-karar-verme': dusunerekKararVermeDaily,
+  'kelime-bilgisi': kelimeBilgisiDaily,
 };
