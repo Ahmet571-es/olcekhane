@@ -2,10 +2,13 @@ import type { SkillsDaily } from './types';
 
 /**
  * Şekil Akıl Yürütme: günlük hayatta nerede kullanılır (3. sınıftan yetişkine).
- * Kaynak: testin tanıtımı ("kuralı bulup yeni bir duruma uygulayabilmek") ve yol haritası (src/content/roadmaps/gorevler.ts,
- * sekilAkilYurutme: bir örüntüyü fark etmek, bir problemi adımlara ayırmak, yeni bir durumda ne yapılacağını kestirmek;
- * takvim, döşeme desenleri, bir şarkıdaki tekrarlar; sudoku, tangram, satranç gibi kurallı oyunlar). Örnekler tanımlayıcıdır;
- * zekâ puanı ya da sonucun bu işlerde ne olacağı söylenmez.
+ * Kaynak: testin tanıtımı ("daha önce görülmemiş bir düzende kuralı bulup onu yeni bir duruma uygulayabilmek") ve yol
+ * haritası (src/content/roadmaps/gorevler.ts, sekilAkilYurutme: bir örüntüyü fark etmek, yeni bir durumda ne yapılacağını
+ * kestirmek; döşeme desenleri, bir şarkıdaki tekrarlar). Test "yalnızca şekillerle yapılan yönünü ölçer; sözel ve sayısal akıl
+ * yürütme … hakkında bilgi vermez": sayı dizisi ve sözel örnek yoktur (sayı dizilerini sitede Sayı Dizileri testi ölçer). Bir
+ * işi adımlara ayırmak planlamadır (Kule Görevi); sudoku ve satrançta kurallar oyuncuya verilir, kural bulmayı değil
+ * uygulamayı ister: bu örnekler de kullanılmaz. Örnekler tanımlayıcıdır; zekâ puanı ya da sonucun bu işlerde ne olacağı
+ * söylenmez.
  */
 export const sekilAkilYurutmeDaily: SkillsDaily = {
   kind: 'skills',
@@ -15,25 +18,25 @@ export const sekilAkilYurutmeDaily: SkillsDaily = {
       key: 'sekil-akil-yurutme',
       title: 'Kural bulma ve uygulama',
       short: 'Kural bulma',
-      text: 'Bu beceri, bir örüntüyü fark etmek, bir problemi adımlara ayırmak ve yeni bir durumda ne yapılacağını kestirmek gibi işlerde kullanılır.',
+      text: 'Bu beceri, şekillerdeki bir düzeni fark edip kuralını bulmak ve o kuralı yeni bir duruma uygulamak gereken işlerde kullanılır.',
       branches: {
-        school: 'Sayı örüntüleri',
-        friends: 'Kurallı oyunlar',
+        school: 'Şekil örüntüleri',
+        friends: 'Örüntü bulmacaları',
         home: 'Desendeki tekrar',
-        work: 'İşin adımlarını çıkarmak',
+        work: 'Düzeni fark edip kestirmek',
       },
       student: {
-        school: 'Bir sayı dizisinin kuralını bulmak bu tür bir iştir. Bir problemi adımlara ayırmak da kural aramayı ister.',
-        friends: 'Sudoku ya da satranç gibi kurallı oyunlar da kural bulmayı ister.',
+        school: 'Matematik dersinde bir şekil örüntüsünün devamını bulmak bu tür bir iştir.',
+        friends: 'Arkadaşlarınla “Sıradaki hangisi?” bulmacaları çözmek de kural bulmayı ister.',
         home: 'Bir kumaş desenindeki ya da bir şarkıdaki tekrarı fark etmek de örüntü bulmaktır.',
       },
       parent: {
-        school: 'Çocuğunuzun bir sayı dizisinin kuralını bulması bu tür bir iştir. Bir problemi adımlara ayırmak da kural aramayı ister.',
-        friends: 'Sudoku ya da satranç gibi kurallı oyunlar da kural bulmayı ister.',
+        school: 'Çocuğunuzun matematik dersinde bir şekil örüntüsünün devamını bulması bu tür bir iştir.',
+        friends: 'Arkadaşlarıyla “Sıradaki hangisi?” bulmacaları çözmek de kural bulmayı ister.',
         home: 'Bir kumaş desenindeki ya da bir şarkıdaki tekrarı fark etmek de örüntü bulmaktır.',
       },
       adult: {
-        work: 'Yeni bir işin hangi adımlarla yürüdüğünü çıkarmak bu tür bir iştir.',
+        work: 'Tekrar eden bir düzeni fark edip yeni bir durumda ne yapılacağını kestirmek bu tür bir iştir.',
       },
     },
   ],

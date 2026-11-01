@@ -5,14 +5,16 @@ import type { Drawing, Shape } from './visual-draw';
  * çevrilir; ekranda (components/report/item-visual.tsx) ve PDF'te (lib/pdf/simple-report.tsx) aynen çizilir
  * (lib/reports/visual-draw.ts, drawVisual).
  *
- *  - İki uç (`poles`): anket testlerinde bir ölçeğin iki ucunun günlük hayattaki karşılığı (ör. "Temel bilgiyle yetinir" ↔
- *    "Konunun derinine iner") yatay bir hattın iki başında; kişinin düzeyinin bölgesi açık pirinçle, yeri kırmızı işaretle.
+ *  - İki uç (`poles`): anket testlerinde bir ölçeğin iki ucunun günlük hayattaki karşılığı (ör. "İşine yarayanı öğrenir" ↔
+ *    "Bilginin peşine düşer") yatay bir hattın iki başında; kişinin düzeyinin bölgesi açık pirinçle, yeri kırmızı işaretle.
  *    Hat ölçeğin kendi aralığıdır (ör. 1–5); bölge kartın düzey çubuğundaki bölgenin aynısıdır. Renkler tek tonludur: iki
  *    uç da aynı gri, hiçbir uç iyi ya da kötü diye boyanmaz.
  *  - Kullanıldığı yerler (`contexts`): görev, okuma ve konu tarama testlerinde becerinin adı solda bir kutuda, üç dal sağda:
  *    ortamın adı (Okulda, Oyunda ve arkadaşlarla, Evde; yetişkinde İşte ya da günlük işlerde…) ve 2–4 sözcüklük örnek. Veri
  *    ve işaret yoktur: grafik kartın açıklamasını anlatır, sonuca göre değişmez.
  * Yazılar grafiğin dışına taşmaz ve birbirinin üstüne binmez (tests/gunluk-hayat.test.ts, tests/helpers/visual-check.ts).
+ * En küçük yazı yazı boyunun DAILY_MIN_TEXT katıdır (PDF'te 7 × 1,075 ≈ 7,5 punto; ekranda 240 birimlik çizim 264 pikselde
+ * en az ≈ 11,8 piksel): sığmayan ad küçülmez, iki satıra geçer. İki ucun adı aynı boyda yazılır.
  *
  * Bu dosya lib/reports/visuals.ts'ten çalışma anında bir şey almaz (döngü olmasın): yazı genişliği aynı formülle hesaplanır.
  */
@@ -57,6 +59,10 @@ export type DailyKindVisual = PolesVisual | ContextsVisual;
 export const POLE_MAX_CHARS = 26;
 export const CENTER_MAX_CHARS = 18;
 export const BRANCH_MAX_CHARS = 28;
+/** Kutudaki kısa adın bir sözcüğünün en çok uzunluğu: tek sözcük bölünemez, en küçük boyda kutuya sığmalı. */
+export const CENTER_WORD_MAX_CHARS = 12;
+/** En küçük yazı: yazı boyunun bu katı (PDF'te ≈ 7,5 punto). */
+export const DAILY_MIN_TEXT = 1.075;
 
 /* ---------- Ortak ---------- */
 
@@ -77,16 +83,19 @@ function twoLines(label: string): string[] {
 }
 
 /**
- * Bir adı `room` genişliğine sığdırır: tam boyda tek satır; olmazsa en çok %15 küçülterek tek satır; olmazsa iki satır (iki
- * satırın en uzunu sığmazsa yazı küçülür, en az yazı boyunun %75'i).
+ * Bir adı `room` genişliğine sığdırır: tam boyda tek satır; olmazsa en küçük boya (`floor`) kadar küçülterek tek satır;
+ * olmazsa iki satır (iki satırın en uzunu sığmazsa yazı küçülür, ama `floor`'un altına inmez).
  */
-function fit(text: string, size: number, room: number): { lines: string[]; size: number } {
+function fit(text: string, size: number, room: number, floor: number): { lines: string[]; size: number } {
   if (tw(text, size) <= room) return { lines: [text], size };
-  if (tw(text, size * 0.85) <= room) return { lines: [text], size: r2(room / (text.length * 0.56)) };
+  if (tw(text, floor) <= room) return { lines: [text], size: r2(Math.max(floor, room / (text.length * 0.56))) };
   const lines = twoLines(text);
   const longest = Math.max(...lines.map((l) => l.length));
-  return { lines, size: r2(Math.max(size * 0.75, Math.min(size, room / (longest * 0.56)))) };
+  return { lines, size: r2(Math.max(floor, Math.min(size, room / (longest * 0.56)))) };
 }
+
+/** Verilen boyda tek satır sığıyorsa tek satır, sığmıyorsa iki satır. */
+const linesAt = (text: string, size: number, room: number) => (tw(text, size) <= room ? [text] : twoLines(text));
 
 /** Yazıyı verilen noktaya ortalar; grafiğin kenarından taşacaksa kenara yaslar. */
 function centered(text: string, x: number, size: number, W: number): { x: number; anchor: 'start' | 'middle' | 'end' } {
@@ -105,14 +114,17 @@ function centered(text: string, x: number, size: number, W: number): { x: number
 export function drawPoles(v: PolesVisual, W: number, fs: number): Drawing {
   const shapes: Shape[] = [];
   const half = W * 0.47;
-  const low = fit(v.low, fs, half);
-  const high = fit(v.high, fs, half);
-  const lh = (f: { size: number }) => f.size * 1.18;
-  let y = fs * 0.85;
-  const rows = Math.max(low.lines.length, high.lines.length);
-  low.lines.forEach((line, i) => shapes.push({ k: 'text', x: 0, y: r2(y + i * lh(low)), text: line, size: low.size, weight: 600, fill: 'ink', anchor: 'start' }));
-  high.lines.forEach((line, i) => shapes.push({ k: 'text', x: W, y: r2(y + i * lh(high)), text: line, size: high.size, weight: 600, fill: 'ink', anchor: 'end' }));
-  y += (rows - 1) * lh({ size: fs }) + fs * 1.15;
+  const floor = r2(fs * DAILY_MIN_TEXT);
+  // İki uç aynı boyda: ikisinden küçük olanın boyu; her ad o boyda tek satıra sığmazsa iki satır.
+  const size = Math.min(fit(v.low, fs * 1.1, half, floor).size, fit(v.high, fs * 1.1, half, floor).size);
+  const low = linesAt(v.low, size, half);
+  const high = linesAt(v.high, size, half);
+  const lh = size * 1.18;
+  let y = size * 0.95;
+  const rows = Math.max(low.length, high.length);
+  low.forEach((line, i) => shapes.push({ k: 'text', x: 0, y: r2(y + i * lh), text: line, size, weight: 600, fill: 'ink', anchor: 'start' }));
+  high.forEach((line, i) => shapes.push({ k: 'text', x: W, y: r2(y + i * lh), text: line, size, weight: 600, fill: 'ink', anchor: 'end' }));
+  y += (rows - 1) * lh + size * 0.3 + fs * 0.85;
   // Hat: kişinin işareti hattın üstünde (üçgen), adı altında.
   const pad = r2(fs * 0.45);
   const span = v.max - v.min || 1;
@@ -130,7 +142,7 @@ export function drawPoles(v: PolesVisual, W: number, fs: number): Drawing {
   shapes.push({ k: 'circle', x: r2(pad), y: cy, r: dr, fill: 'ink3' });
   shapes.push({ k: 'circle', x: r2(W - pad), y: cy, r: dr, fill: 'ink3' });
   let bottom = trackY + trackH + fs * 0.3;
-  const ts = r2(fs * 0.85);
+  const ts = floor;
   if (v.value !== null) {
     const mx = r2(x(v.value));
     shapes.push({ k: 'line', x1: mx, y1: r2(trackY - fs * 0.25), x2: mx, y2: r2(trackY + trackH + fs * 0.25), stroke: 'marker', sw: r2(Math.max(1.4, fs * 0.2)) });
@@ -153,21 +165,21 @@ export function drawPoles(v: PolesVisual, W: number, fs: number): Drawing {
  */
 export function drawContexts(v: ContextsVisual, W: number, base: number): Drawing {
   const shapes: Shape[] = [];
-  // Şemada öteki grafiklerden çok yazı var: yazılar biraz büyük (ortam adları en az yazı boyunun %90'ı).
+  // Şemada öteki grafiklerden çok yazı var: örnekler biraz büyük; ortam adları en küçük boyda (gri, ince).
   const fs = base * 1.1;
+  const floor = r2(base * DAILY_MIN_TEXT);
   const padX = fs * 0.55;
   // Ortadaki kutu: en çok genişliğin %36'sı; ad sığmazsa iki satır.
   const maxBox = W * 0.36;
-  const center = fit(v.center, fs, maxBox - 2 * padX);
+  const center = fit(v.center, fs, maxBox - 2 * padX, floor);
   const boxW = r2(Math.min(maxBox, Math.max(...center.lines.map((l) => tw(l, center.size))) + 2 * padX));
   const gap = fs * 2.1;
   const x0 = boxW + gap;
   const room = W - x0;
-  const hs = r2(base * 0.9);
-  // Dallar: ortamın adı ve örnek.
+  // Dallar: ortamın adı (sığmazsa iki satır) ve örnek.
   const blocks = v.branches.map((b) => {
-    const head = fit(b.context, hs, room);
-    const label = fit(b.label, fs, room);
+    const head = { lines: linesAt(b.context, floor, room), size: floor };
+    const label = fit(b.label, fs, room, floor);
     const h = head.lines.length * head.size * 1.15 + label.lines.length * label.size * 1.18;
     return { head, label, h };
   });

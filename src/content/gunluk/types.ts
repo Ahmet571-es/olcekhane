@@ -13,58 +13,90 @@ import type { LevelGroup } from '@/content/reports/types';
  *    ortamda nerede kullanıldığı. Sonuca göre değişmez; herkes aynı metni görür.
  *
  * ============================== YAZARIN DENETİM LİSTESİ ==============================
+ * (T) işaretli kuralları tests/gunluk-hayat.test.ts denetler; ötekiler yazarın ve dosyayı yazmamış ikinci bir okurun işidir.
  *
  * Kaynak: örnekler testin kendi maddelerinden ve sitedeki metinlerden çıkar; yeni bir psikolojik ya da bilimsel iddia
  * eklenmez, yeni araştırma anılmaz.
  *  1. Önce testin maddelerini oku (src/content/instruments/<test>.ts): her ölçeğin düz ve ters puanlanan maddeleri hangi
- *     günlük davranışları soruyor? Sonra rapor metinlerini oku (src/content/reports/<test>.ts: düzeylerin `summary`,
- *     `student`, `parent`, `adult` metinleri ve öneriler) ve dosyanın başındaki ilkeleri (ör. Merak'ta bilgi merakının
- *     kartları değişiklikten söz etmez). Görev testlerinde testin tanıtımını ve yol haritasındaki "nerede kullanılır"
- *     cümlelerini oku (src/content/roadmaps/gorevler.ts, okuma.ts, matematik.ts).
- *  2. Her örnek bir ya da iki maddeye dayanır ve okuyan onu tanıyabilmeli: "Yeni yerler görmeyi severim" → "Arkadaşların
- *     yeni bir yer önerince hemen katılabilirsin." Maddede olmayan bir davranış (ör. "kitap kurdu", "lider") yazılmaz.
- *     Dosyada her ölçeğin üstüne hangi maddelere dayandığını kısa bir yorumla yaz.
- *  3. Hassas ölçekler (rapor şablonunda `support: true` olan düzeyler: duygusal denge, ruh hâli, öz-saygı…) çok yumuşak
- *     yazılır: belirti listesi, korkutan ya da klinik sözcük yok; zor anı anlatan örneğin yanında bir dayanak (ör.
- *     "güvendiğin biriyle konuşmak iyi gelebilir") olabilir. Destek kutusunu bu bölüm açmaz, anmaz.
+ *     günlük davranışları soruyor? Her anket örneği bir ya da iki maddeye dayanır ve okuyan onu tanıyabilmeli ("Yeni yerler
+ *     görmeyi severim" → "Arkadaşların yeni bir yer önerince hemen katılabilirsin"). Dayandığı maddelerin anahtarları
+ *     satırın yanına yazılır (`from`; yetişkinin iş satırı için `work`) (T: anahtar testte var ve o ölçeğin ya da boyutun alt
+ *     özelliğinin maddesi). Düzeyin yönü maddenin yönüne uyar: düşük düzeyin örneği ya düz bir maddenin düşük cevabından ya
+ *     ters bir maddenin yüksek cevabından gelir. Maddede olmayan bir davranış (ör. "kitap kurdu", "lider", "eşya onarmak")
+ *     yazılmaz.
+ *  2. Rapor metinleri (src/content/reports/<test>.ts: `summary`, `student`, `parent`, öneriler) yalnızca tonu verir. Rapordaki
+ *     bir öneri ya da yorum hiçbir maddeye dayanmıyorsa ("dinlenme zamanı", "elle yapılan etkinlikler", "somut örnek işini
+ *     kolaylaştırır", "konuşmadan önce düşünür") örneğe taşınmaz.
+ *  3. Bir duyguyu ya da tercihi beceriye çevirme ("hemen fark edersin", "kolayca uyum sağlarsın", "sunumda rahatsın"). Komşu
+ *     bir yapıyı getirme (duygusunu saklamak, bir şeyi uzun uzun düşünüp durmak, söz almadan önce düşünmek, işe başlayamamak).
+ *     Bir düzeyi bir öğretme biçimiyle eşleştirme (kişiliğe göre "öğrenme stili" yoktur; "somut örnekle daha iyi öğrenirsin"
+ *     yazılmaz).
+ *  4. Karşılaştırma yok: başkalarıyla ("arkadaşlarından daha…"; T: "-den daha"), yaygınlık ("bu düzeydeki birçok kişide";
+ *     T), gruptaki rol ("… kişi sen olabilirsin", "ilk … sen"; T).
+ *  5. Ton (lib/reports/daily-parts.ts, `scaleTone`; T: her ölçeğin tonu testte listelenir):
+ *     - Özellik tonu (kişilik, merak, ilgi, değer, tarz): iki uç da eşittir. Düşük ve yüksek düzeyin üç örneğinden en az biri
+ *       gerçek bir güçlü yan, en az biri gerçek ama yumuşak bir zorluk söyler; orta düzey "duruma göre" iki yanı birlikte
+ *       anlatır. Uçlar tarafsızdır ("Bildiği yolu seçer" ↔ "Yeniyi dener").
+ *     - Gelişim tonu (şablonu değerlendirici testler, destek kutusu açabilen ölçekler ve öz-saygı, iyimserlik, öz-yeterlik,
+ *       zihniyet, duygusal zekâ, empati, öz-denetim, motivasyonda isteksizlik): örnekler bugünkü durumu anlatır ve
+ *       değişebileceğini sezdirir; suçlamaz, utandırmaz. Düşük uca uydurma bir güçlü yan, yüksek uca uydurma bir zorluk
+ *       yazılmaz. Değerlendirici testte düşük uç "Henüz" diye başlar (T): "Henüz plan yapmadan başlar" ↔ "Önceden plan yapar".
+ *     - Hassas ölçekler (şablonda `support: true` olan düzeyler: duygusal denge, ruh hâli, öz-saygı…) çok yumuşak yazılır:
+ *       belirti listesi, korkutan ya da klinik sözcük yok (T); zor anı anlatan örneğin yanında bir dayanak (ör. "güvendiğin
+ *       biriyle konuşmak iyi gelebilir") olur. Bu bölüm destek kutusunu açmaz ve anmaz; destek önerisini bu ölçekteki bir
+ *       cevap açtıysa (`flagged`) kart örnek göstermez ve yalnızca o cevabın destek kutusunda ele alındığını söyler (T).
+ *  6. Görev, okuma ve konu tarama testleri: önce testin `whatItMeasures` ve `limitations` metnini oku. Bir örnek, testin
+ *     "bilgi vermez" dediği bir beceriye ya da sitede başka bir testin ölçtüğü beceriye (Sayı Dizileri, Kule Görevi, Görsel
+ *     Algı Hızı, Kelime Bilgisi…) dayanmaz (T: tests/gunluk-hayat.test.ts'teki `EXCLUDED` tablosu). Örnek testin nasıl
+ *     çözüldüğüne uyar (Okuma'da sorular metne bakmadan cevaplanır: "bulmak" değil "hatırlamak"). Oyun örneği becerinin
+ *     kendisini ister (sudoku ve satrançta kurallar verilir: kural bulmayı değil uygulamayı ister). Kardeş testlerin
+ *     örnekleri birbirinden farklıdır.
+ *  7. Matematik ve gerçek dünya bilgisi: her örnek, formun konu tanımındaki (`plain`) bir konunun doğru bir örneğidir; kartın
+ *     metni gösterildiği her forma uyar (konular formdan forma değişiyorsa kart forma göre bölünür: `forms`). Sayıları elle
+ *     hesapla. Hiçbir örnek misconceptions.ts'teki bir yanılgıyı beslemez (tek bir zarda bir sayının "daha olası" olması
+ *     gibi). Bölmeyle çözülen bir problem cebir örneği değildir.
+ *  8. Kapsayıcılık: telefon, mesaj, tablet ya da internet varsayılmaz (1–4. sınıfa açık testte T); kendi odası, asansör,
+ *     bahçe, araba, tatil, yurt dışı gezisi, özel ders, yakın arkadaş ya da kardeş varsayılmaz (T: sözcükler); "annen, baban"
+ *     yerine "evdekiler"; kız ya da erkek işi diye bir örnek yok. Arkadaş anılırken "bir iki yakın arkadaş" değil "az kişi",
+ *     "biri".
+ *  9. Uçlar (`poles`) bir maddeyi değil bütün ölçeği anlatır: testin `poles` metninden ve şablondaki `summary`'den başla.
+ *     Değer taşıyan fiil yok ("yetinir", "kaçınır"; T: sözcük listesi). Sor: bu uç senin için söylense incitir mi?
+ * 10. Yayından önce dosyayı yazmamış bir ajan her satırı dayandığı maddelerle karşılaştırır (Beyin Akademisi'ndeki gibi).
  *
- * Temkinli dil: her anket örneği bir olasılık söyler: "-abilir / -ebilir", "çoğu zaman", "bazen", "genellikle", "…e daha
- * yatkın olabilirsin" (test her satırda arar). "Her zaman", "asla", "kesinlikle" ve kişiyi tanımlayan ad ("içe dönük
- * biri", "dağınık") kullanılmaz; davranış anlatılır.
- *
- * Değerlendirici olmayan ölçekler (kişilik, merak, ilgi, değer; şablonda `evaluative` yok): iki uç da eşittir. Düşük ve
- * yüksek düzeyin üç örneğinden en az biri gerçek bir güçlü yan, en az biri gerçek ama yumuşak bir zorluk söyler; orta düzey
- * "duruma göre" iki yanı birlikte anlatır. `poles`'un iki ucu da tarafsızdır ("Bildiği yolu seçer" ↔ "Yeniyi dener");
- * hiçbir uç eksiklik gibi okunmaz.
- * Değerlendirici ölçekler (şablonda `evaluative: true`: çalışma alışkanlıkları, erteleme…): düşük uç "henüz" diye okunur,
- * utandırmaz ("Henüz plan yapmadan başlar" ↔ "Önceden plan yapar"); düşük düzey örnekleri bugünkü durumu anlatır ve
- * değişebileceğini sezdirir, suçlamaz.
- * İlgi, değer ve motivasyon testleri: ilginin günlük hayatta nerede göründüğü anlatılır; meslek önerilmez, yetenek
- * söylenmez ("İlgi, yetenek demek değildir"). Düşük ilgi bir eksiklik değildir ("başka alanlara daha çok zaman
- * ayırabilirsin").
+ * Temkinli dil (anket): her cümle bir olasılık söyler: "-abilir / -ebilir", "çoğu zaman", "bazen", "genellikle", "…e daha
+ * yatkın olabilirsin" (T: her cümlede). "Her zaman", "asla", "kesinlikle", "hiçbir zaman", "daima", "mutlaka", "her
+ * seferinde", "hiç" (T) ve kişiyi tanımlayan ad ("içe dönük biri", "dağınık") kullanılmaz; davranış anlatılır. Yetenek,
+ * zekâ ya da üstünlük söylenmez ("yetenekli", "zeki", "üstün"; T; "zekâ oyunu" bir oyun adıdır).
+ * İlgi, değer ve motivasyon testleri: ilginin günlük hayatta nerede göründüğü anlatılır; meslek önerilmez ("İlgi, yetenek
+ * demek değildir"). Düşük ilgi bir eksiklik değildir ("başka alanlara daha çok zaman ayırabilirsin").
  *
  * Görev, okuma ve konu tarama testleri: tanımlayıcı yazılır, kestirimde bulunulmaz: "Bu tür işlerdir", "bu beceriyi
- * kullanır", "… gerektiren işlerde kullanılır". Sonuç, puan, zorlanma ve başarı anılmaz (test "zorlan", "başarı", "puan",
- * "sonuç" sözcüklerini arar); düşük sonucun hayatta zorlanmak demek olduğu ima edilmez; geliştirme ya da "beyni
- * çalıştırma" vaadi verilmez.
+ * kullanır", "… gerektiren işlerde kullanılır". Sonuç, puan, zorlanma, başarı, test ve geliştirme anılmaz (T: "zorlan",
+ * "başarı", "sonucun", "puanın", "daha iyi", "geliştir", "güçlendir", "test"); düşük sonucun hayatta zorlanmak demek olduğu
+ * ima edilmez; "beyni çalıştırma" vaadi verilmez. Kartın metni başlığıyla başlamaz (T: "İşlem hızı" kartında "Bu beceri, …").
  *
  * Kime yazıldığı:
- *  - Öğrenci (`student`): "sen". Veli (`parent`): "çocuğunuz", üçüncü kişi; her düzeyin üç satırından en az birinde
- *    "çocuğunuz" geçer ve hiçbir satırda "sen" eki yoktur. Sesli okumanın veli ve öğretmen raporu "öğrenci" der.
- *  - Yetişkin (`adult`; test yetişkinlere açıksa zorunlu): ilk ortam okul değil "İşte ya da günlük işlerde" (`work`);
- *    arkadaş ve ev satırları öğrenci metninde okul sözcüğü yoksa yazılmaz (öğrencininki kullanılır). Yetişkin metninde
- *    okul, ders, sınav, öğretmen, ödev, sınıf gibi sözcükler geçmez (test denetler).
+ *  - Öğrenci (`student`) ve yetişkin (`adult`): "sen"; ankette her satırda "sen" eki ya da sözcüğü vardır (T), "siz" yoktur
+ *    (T). Veli (`parent`): "çocuğunuz", üçüncü kişi; her düzeyin üç satırından en az birinde "çocuğunuz" geçer ve hiçbir
+ *    satırda "sen" eki, "-dığın" ortacı ya da "ilgin, canın, eşyaların…" gibi ikinci kişi iyelik eki yoktur (T). Sesli
+ *    okumanın veli ve öğretmen raporu "öğrenci" der (T).
+ *  - Aynı ölçeğin bir kitledeki dokuz satırı birbirinden farklıdır (T: düzeyler kopyalanmaz); anket satırı öğrenci ve veli
+ *    için aynı olamaz (T).
+ *  - Yetişkin (`adult`; test yetişkinlere açıksa zorunlu, T): ilk ortam okul değil "İşte ya da günlük işlerde" (`work`);
+ *    arkadaş ve ev satırları öğrenci metninde okul sözcüğü yoksa yazılmaz (öğrencininki kullanılır). Yetişkin metninde,
+ *    kısa adda, başlıkta ve dallarda okul, ders, sınav, öğretmen, ödev, sınıf, teneffüs, karne, kantin, dershane, etüt gibi
+ *    sözcükler geçmez (T: tests/helpers/school.ts).
+ *  - Mezun (13. sınıf): yetişkinlere açık olmayan testte ilk ortamın adı "Okulda ya da derslerde" olur; örnekler aynıdır.
+ *    Bu yüzden okul satırı sınava hazırlanan bir mezun için de anlamlı olmalıdır (ders, çalışma, sınav).
  *  - Sınıf aralığı: test 3–4. sınıfa açıksa öğrenci metni 8–9 yaşındaki bir çocuğun anlayacağı kadar somut ve kısa olur
  *    (teneffüs, oyun, ödev, sofra); lise testlerinde ergenin hayatından örnekler (kulüp, proje, sınav haftası).
- *  - Aile yapısı, cinsiyet, kültür ve gelir varsayılmaz: "annen, baban" yerine "evdekiler, ailen"; "kendi odan", pahalı
- *    uğraşlar (yurt dışı gezisi, özel ders) yok; kız ya da erkek işi diye bir örnek yok. Başkalarıyla karşılaştırma yok
- *    ("arkadaşlarından daha…").
  *
- * Biçim: her örnek bir cümle (en çok iki); cümle ortalama 10–13, en çok 22 sözcük. Sade Türkçe; Türkçesi olan yabancı sözcük
- * yok; "seviye" değil "düzey"; kesme işareti TDK'ye göre ("Türkiye'de"). Ortamın adı satırın başına yazılmaz (bölüm ekler).
- * `poles` ve dallar 2–4 sözcük; uç en çok POLE_MAX_CHARS, dal en çok BRANCH_MAX_CHARS, kutudaki kısa ad en çok
- * CENTER_MAX_CHARS karakter (lib/reports/visual-daily.ts). "tanı", "teşhis", "bozukluk", "hastalık", "normal", "zekâ puanı",
- * "IQ" ve kişiyi yargılayan sözcükler yazılmaz.
+ * Biçim: her örnek bir cümle (en çok iki); cümle ortalama 10–13, en çok 22 sözcük (T). Sade Türkçe; Türkçesi olan yabancı
+ * sözcük yok; "seviye" değil "düzey"; noktalama ve kesme işareti TDK'ye göre ("Türkiye'de"; özneden sonra virgül: "Bu beceri,
+ * …"). Ortamın adı satırın başına yazılmaz (T; bölüm ekler). `poles` ve dallar 2–4 sözcük; uç en çok POLE_MAX_CHARS, dal en
+ * çok BRANCH_MAX_CHARS, kutudaki kısa ad en çok CENTER_MAX_CHARS karakter ve sözcükleri en çok CENTER_WORD_MAX_CHARS
+ * karakter (lib/reports/visual-daily.ts; T). "tanı", "teşhis", "bozukluk", "hastalık", "normal", "zekâ puanı", "IQ" ve kişiyi
+ * yargılayan sözcükler yazılmaz (T).
  *
  * Yeni dosya: örneklere bak (anket: merak.ts tek ölçekli olmayan, yetişkinli; bes-faktor-kisilik.ts beş boyutlu, beş
  * düzeyli; görev: simge-bulma.ts, sekil-akil-yurutme.ts; okuma: okuma-hizi-ve-anlama.ts; konu tarama:
@@ -91,6 +123,12 @@ export interface AdultLines {
 
 /** Bir düzey grubunun örnekleri. */
 export interface DailyBand {
+  /**
+   * Her ortamın örneğinin dayandığı maddelerin anahtarları (öğrenci, veli ve yetişkin aynı örneği kendi diliyle söyler;
+   * yetişkinin iş satırı `work`). Anahtar testte bulunmalı ve bu ölçeğin (ayrıntılı profilde boyutun alt özelliklerinin)
+   * maddesi olmalıdır.
+   */
+  from: { school: string[]; friends: string[]; home: string[]; work?: string[] };
   student: DailyLines;
   parent: DailyLines;
   /** Test yetişkinlere açıksa zorunlu. */
@@ -99,7 +137,7 @@ export interface DailyBand {
 
 /** Bir ölçeğin günlük hayattaki görünüşü. */
 export interface ScaleDaily {
-  /** Grafiğin iki ucu: düşük ve yüksek puanın günlük karşılığı (2–4 sözcük; değerlendirici ölçekte düşük uç "henüz"). */
+  /** Grafiğin iki ucu: düşük ve yüksek puanın günlük karşılığı (2–4 sözcük; değerlendirici testte düşük uç "Henüz" ile başlar). */
   poles: { low: string; high: string };
   /** Düşük (çok düşük dahil), orta ve yüksek (çok yüksek dahil) düzeyin örnekleri. */
   bands: Record<LevelGroup, DailyBand>;

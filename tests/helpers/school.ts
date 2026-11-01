@@ -6,7 +6,8 @@
  */
 export const SCHOOL = [
   'okul', 'öğretmen', 'sınav', 'sınıf', 'ders', 'ödev', 'öğrenci', 'lise', 'ergen', 'veli', 'ailen', 'münazara', 'olimpiyat', 'tübitak',
-  'izcilik', 'harçlık', 'yaşıt', 'yaşında', 'yetişkinle', 'yetişkine', 'yetişkinden',
+  'izcilik', 'harçlık', 'yaşıt', 'yaşında', 'yetişkinle', 'yetişkine', 'yetişkinden', 'teneffüs', 'karne', 'kantin', 'dershane',
+  'etüt',
 ];
 /** İzin verilen sözcükler ekleriyle birlikte ("sınıflamada"). */
 const ALLOWED = ['öğretmenlik', 'sınıflama'];

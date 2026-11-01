@@ -4,6 +4,7 @@ import type { AdultLines, DailyLines, SkillDaily, SkillsDaily, SurveyDaily } fro
 import { ITEM_NOUN_PLURAL, likertItemNoun } from '@/lib/instruments/nouns';
 import type { InstrumentDef, LikertInstrument, ScaleDef } from '@/lib/instruments/types';
 import { formForGrade } from '@/lib/scoring/quiz';
+import type { LevelGroup } from '@/content/reports/types';
 import type { Audience, ReportContent, ReportSection } from './build';
 import { unitOf } from './likert-parts';
 import { hasWarn } from './part-kit';
@@ -19,9 +20,13 @@ import type { ContextsVisual, PolesVisual } from './visual-daily';
  *
  *  - Anket testleri: sonuç kartı olan her ölçek (`dailyScales`) için bir kart. Rozet "Düzeylerin anlamı"ndaki kartın rozetidir
  *    (aynı düzey); grafik iki uç (`poles`): ölçeğin iki ucunun günlük karşılığı, kişinin düzeyinin bölgesi ve yeri; satırlar
- *    o düzeyin grubundaki (düşük, orta, yüksek) üç ortamın örnekleri. Puan hesaplanamadıysa ya da cevaplar iki uca
- *    ayrıldığı için kartta düzeyin genel anlatımı yerine ayrışma anlatıldıysa örnek seçilmez (kısa nedeniyle); destek
- *    önerisini bir cevap açtıysa örneklerin genel düzeye göre seçildiği söylenir.
+ *    o düzeyin grubundaki (düşük, orta, yüksek) üç ortamın örnekleri. Örnek seçilmeyen durumlar (kart kısa nedenini söyler;
+ *    rozet ve iki uç kalır): puan hesaplanamadı; cevaplar iki uca ayrıldığı için kartta düzeyin genel anlatımı yerine ayrışma
+ *    anlatıldı; destek önerisini bu ölçekteki bir cevap açtı (`flagged`: o cevap destek kutusunda ele alınır; düzeyin
+ *    örnekleri kutunun yanında yersiz kalabilirdi). Puanın ölçüm payı komşu bir düzey grubuna uzanıyorsa ("Bu da uyabilir")
+ *    kart bunu bir cümleyle söyler. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
+ *    "özellik" (iki uç da eşit), değerlendirici, destek kutusu açabilen ve gelişime açık ölçeklerde "gelişim" (örnekler
+ *    bugünkü durumu anlatır).
  *  - Görev, okuma, sesli okuma ve konu tarama testleri: her beceri (ya da konu alanı) için bir kart: tanım, grafik
  *    (`contexts`: ortada becerinin adı, üç dalda kullanıldığı yerler) ve üç ortamın örnekleri. Sonuca göre değişmez.
  * Bir testin metin dosyası yoksa bölüm yoktur (tests/gunluk-hayat.test.ts'teki `DAILY_PENDING` listesi küçülerek biter).
@@ -40,7 +45,16 @@ export const SKILL_CONTEXTS = {
 } as const;
 
 const cap = (s: string) => s.charAt(0).toLocaleUpperCase('tr-TR') + s.slice(1);
-const lower = (s: string) => s.toLocaleLowerCase('tr-TR');
+/** Yalnızca ilk harf küçülür (ortamın ya da ucun adı cümlenin içinde; özel adlar ve kısaltmalar korunur). */
+export const lowerFirst = (s: string) => s.charAt(0).toLocaleLowerCase('tr-TR') + s.slice(1);
+
+/**
+ * Mezun (12. sınıftan sonra; `grade` 13) okulda olmayabilir: yetişkinlere açık olmayan testlerde ilk ortamın adı "Okulda ya
+ * da derslerde" olur (örnekler aynıdır; sınava hazırlanan mezun için de dersler ve çalışma saatleri geçerlidir).
+ */
+export const GRADUATE_SCHOOL_CONTEXT = 'Okulda ya da derslerde';
+const graduateContexts = <T extends readonly string[]>(contexts: T, graduate: boolean): string[] =>
+  graduate ? [GRADUATE_SCHOOL_CONTEXT, ...contexts.slice(1)] : [...contexts];
 
 type Voice = { you: string; parent: string; adult?: string };
 const by = (a: Audience, t: Voice) => (a === 'parent' ? t.parent : a === 'adult' ? (t.adult ?? t.you) : t.you);
@@ -88,19 +102,68 @@ export const skillInForm = (s: Pick<SkillDaily, 'forms'>, form: string | undefin
 
 /* ---------- Anket testleri ---------- */
 
-/** Kişinin yerinin sözle anlatımı: hangi uca daha yakın (düzeyin grubuna göre; rozetle aynı). */
-function polesSpoken(v: PolesVisual, group: 'low' | 'average' | 'high' | null, a: Audience): string[] {
-  // Uçların adları cümlenin içinde küçük harfle ("İki uç: “önce dinler” ve “sohbeti başlatır”").
-  const low = lower(v.low);
-  const high = lower(v.high);
-  const head = `İki uç: “${low}” ve “${high}”.`;
-  if (v.value === null || group === null) return [head, 'Yer belirlenemedi.'];
-  const whose = by(a, { you: 'Senin yerin', parent: 'Çocuğunuzun yeri' });
-  if (group === 'average') return [head, `${whose} iki ucun arasında.`];
-  return [head, `${whose} “${group === 'low' ? low : high}” ucuna daha yakın.`];
+/**
+ * Ölçeğin örneklerinin tonu. "Özellik" (`trait`): kişilik, merak, ilgi, değer ve tarz gibi uçları iyi ya da kötü olmayan
+ * ölçekler; iki ucun da gerçek bir kolaylığı ve gerçek ama yumuşak bir zorluğu anlatılır. "Gelişim" (`growth`): şablonu
+ * değerlendirici olan testler (yüksek puan gelişmiş bir alışkanlık demektir), düzeylerinden biri destek kutusu açabilen
+ * ölçekler (şablonda `support`; ayrıntılı profilde boyutun alt özellikleri de) ve aşağıdaki listede adı geçen, kişinin bugünkü
+ * durumunu anlatan ölçekler. Gelişim tonunda örnekler bugünkü durumu anlatır: düşük uca uydurma bir güçlü yan, yüksek uca
+ * uydurma bir zorluk yazılmaz; giriş (ya da karışık testte kart) durumun değişebileceğini söyler. tests/gunluk-hayat.test.ts
+ * yayındaki her anket testinde sonucu tek tek listeler.
+ */
+export type DailyTone = 'trait' | 'growth';
+/** Bütün ölçekleri gelişim tonunda olan testler (şablonları değerlendirici değil, ama ölçtükleri şey bugünkü durumdur). */
+const GROWTH_SLUGS = new Set(['oz-saygi', 'iyimserlik', 'oz-yeterlik', 'zihniyet', 'duygusal-zeka-bilesenleri', 'empati', 'oz-denetim']);
+/** Tek tek gelişim tonundaki ölçekler (motivasyon profilinde isteksizlik). */
+const GROWTH_SCALES: Record<string, string[]> = { 'ders-calisma-motivasyonu': ['amotivation'] };
+
+export function scaleTone(def: LikertInstrument, key: string): DailyTone {
+  const t = REPORT_TEMPLATES[def.slug];
+  if (t?.evaluative || GROWTH_SLUGS.has(def.slug) || GROWTH_SCALES[def.slug]?.includes(key)) return 'growth';
+  const keys = [key, ...(def.scales.find((s) => s.key === key)?.of ?? [])];
+  return keys.some((k) => Object.values(t?.scales[k] ?? {}).some((b) => b?.support)) ? 'growth' : 'trait';
 }
 
-function surveyCard(def: LikertInstrument, content: ReportContent, daily: SurveyDaily, scale: ScaleDef, sec: ReportSection): PartCard | null {
+const GROWTH_SENTENCE = 'Örnekler bugünkü durumu anlatır; bu durum zamanla değişebilir.';
+
+/** Kişinin yerinin sözle anlatımı: iki uç ve hangisine daha yakın olduğu (düzeyin grubuna göre; rozetle aynı). */
+function polesSpoken(v: PolesVisual, group: LevelGroup | null, a: Audience): string[] {
+  // Uçların adları tırnak içinde, ilk harfi küçük ("Bir uç: “önce dinler”."); sesli okumada tırnaklar okunmaz.
+  const low = lowerFirst(v.low);
+  const high = lowerFirst(v.high);
+  const head = [`Bir uç: “${low}”.`, `Öbür uç: “${high}”.`];
+  if (v.value === null || group === null) return [...head, 'Yer belirlenemedi.'];
+  const whose = by(a, { you: 'Senin yerin', parent: 'Çocuğunuzun yeri' });
+  if (group === 'average') return [...head, `${whose} iki ucun arasında.`];
+  return [...head, `${whose} şu uca daha yakın: “${group === 'low' ? low : high}”.`];
+}
+
+/**
+ * Puanın ölçüm payı komşu bir düzeye uzanıyor ve o düzey başka bir gruptaysa (ör. orta → yüksek) "Düzeylerin anlamı"
+ * kartında "Bu da uyabilir" yazar: kart, o düzeyin örneklerinin de uyabileceğini söyler (likert-parts.ts ile aynı hesap).
+ */
+export function nearGroups(sec: ReportSection): LevelGroup[] {
+  const gauge = gaugeOf(sec);
+  if (!gauge || sec.value === null || gauge.ciLow === null || gauge.ciHigh === null || gauge.active === null) return [];
+  const i = gauge.active;
+  const own = bandGroup(gauge.zones[i].band);
+  const near: LevelGroup[] = [];
+  if (i > 0 && gauge.ciLow < gauge.zones[i].from - 1e-9) near.push(bandGroup(gauge.zones[i - 1].band)!);
+  if (i < gauge.zones.length - 1 && gauge.ciHigh > gauge.zones[i].to + 1e-9) near.push(bandGroup(gauge.zones[i + 1].band)!);
+  return near.filter((g) => g && g !== own);
+}
+
+function surveyCard(input: {
+  def: LikertInstrument;
+  content: ReportContent;
+  daily: SurveyDaily;
+  scale: ScaleDef;
+  sec: ReportSection;
+  contexts: string[];
+  /** Testte iki ton birlikte varsa gelişim tonundaki kart bunu kendisi söyler (giriş özellik tonunu anlatır). */
+  mixed: boolean;
+}): PartCard | null {
+  const { def, content, daily, scale, sec, contexts, mixed } = input;
   const t = daily.scales[scale.key];
   const gauge = gaugeOf(sec);
   if (!t || !gauge) return null;
@@ -123,14 +186,13 @@ function surveyCard(def: LikertInstrument, content: ReportContent, daily: Survey
     marker: by(a, { you: 'Senin yerin', parent: 'Çocuğunuzun yeri' }),
   };
   const group = sec.value === null ? null : bandGroup(sec.band);
-  const contexts = a === 'adult' ? SURVEY_CONTEXTS.adult : SURVEY_CONTEXTS.you;
   const base = { key: scale.key, title: scale.name, badge: sec.band ? sec.bandLabel : 'Hesaplanamadı', visual, spoken: polesSpoken(visual, group, a) };
   if (sec.value === null || group === null) {
     return { ...base, text: `${cap(unit.inThis)} yeterince ${noun} cevaplanmadığı için düzey belirlenemedi; bu yüzden örnek seçilmedi.` };
   }
   if (sec.split) {
     // Kartta düzeyin genel anlatımı yerine ayrışma anlatıldı: düzeyin örnekleri de kartla çelişirdi.
-    const parts = `${lower(content.facetTerms?.subject ?? 'Alt özellikler')}i`;
+    const parts = `${lowerFirst(content.facetTerms?.subject ?? 'Alt özellikler')}i`;
     const text = scale.of
       ? by(a, {
           you: `Bu boyutun ${parts} birbirinden ayrıştığı için düzeye göre örnek seçilmedi. Kartındaki anlatım bu ayrışmayı anlatıyor.`,
@@ -142,23 +204,43 @@ function surveyCard(def: LikertInstrument, content: ReportContent, daily: Survey
         });
     return { ...base, text };
   }
+  if (sec.flagged) {
+    // Destek önerisini bu ölçekteki bir cevap açtı: o cevap destek kutusunda ele alınır; düzeyin örnekleri gösterilmez.
+    return {
+      ...base,
+      text: by(a, {
+        you: `${cap(unit.inThis)} örnek gösterilmedi; cevaplarından biri yukarıdaki destek kutusunda ayrıca ele alınıyor.`,
+        parent: `${cap(unit.inThis)} örnek gösterilmedi; çocuğunuzun cevaplarından biri yukarıdaki destek kutusunda ayrıca ele alınıyor.`,
+      }),
+    };
+  }
   const lines = linesOf(t.bands[group], a);
+  const near = nearGroups(sec);
+  const text = [
+    ...(mixed && scaleTone(def, scale.key) === 'growth' ? [GROWTH_SENTENCE] : []),
+    ...(near.length
+      ? [
+          near.length > 1
+            ? by(a, {
+                you: 'Puanın komşu düzeylerin sınırına yakın; o düzeylerin örnekleri de uyabilir.',
+                parent: 'Çocuğunuzun puanı komşu düzeylerin sınırına yakın; o düzeylerin örnekleri de uyabilir.',
+              })
+            : by(a, {
+                you: 'Puanın komşu düzeyin sınırına yakın; o düzeyin örnekleri de uyabilir.',
+                parent: 'Çocuğunuzun puanı komşu düzeyin sınırına yakın; o düzeyin örnekleri de uyabilir.',
+              }),
+        ]
+      : []),
+  ].join(' ');
   return {
     ...base,
-    ...(sec.flagged
-      ? {
-          text: by(a, {
-            you: `Cevaplarından biri raporda destek önerisinin çıkmasına yol açtı. Bu örnekler o cevaba göre değil, ${unit.of} genel düzeyine göre seçildi.`,
-            parent: `Çocuğunuzun cevaplarından biri raporda destek önerisinin çıkmasına yol açtı. Bu örnekler o cevaba göre değil, ${unit.of} genel düzeyine göre seçildi.`,
-          }),
-        }
-      : {}),
+    ...(text ? { text } : {}),
     lines: contexts.map((label, i) => ({ label, text: lines[i] })),
   };
 }
 
-/** Ölçek profilinin türüne göre girişteki cümle (düzeylerin anlamıyla aynı ilkeler). */
-function kindSentence(def: LikertInstrument, content: ReportContent, evaluative: boolean): string {
+/** Ölçek profilinin türüne ve ölçeklerin tonuna göre girişteki cümle: bütün kartlar için doğru olmalıdır. */
+function kindSentence(def: LikertInstrument, content: ReportContent, tones: DailyTone[]): string {
   const a = content.audience;
   if (def.profile === 'riasec' || def.profile === 'interests' || def.profile === 'activities') {
     return by(a, {
@@ -167,13 +249,8 @@ function kindSentence(def: LikertInstrument, content: ReportContent, evaluative:
     });
   }
   if (def.profile === 'values') return 'Değerlerin doğrusu ya da yanlışı yoktur; örnekler yalnızca neyin öne çıkabileceğini anlatır.';
-  if (evaluative) {
-    return by(a, {
-      you: 'Örnekler bugünkü alışkanlıklarını anlatır; alışkanlıklar denedikçe değişebilir.',
-      parent: 'Örnekler çocuğunuzun bugünkü alışkanlıklarını anlatır; alışkanlıklar denedikçe değişebilir.',
-    });
-  }
-  return 'İki ucun da kendine göre kolaylıkları ve zorlukları vardır.';
+  if (tones.every((t) => t === 'growth')) return GROWTH_SENTENCE;
+  return 'Örnekler bir ucu iyi, ötekini kötü diye anlatmaz; günlük hayatta neyin öne çıkabileceğini gösterir.';
 }
 
 export function surveyDailyPart(input: {
@@ -189,12 +266,16 @@ export function surveyDailyPart(input: {
   if (!found || found.kind !== 'survey') return null;
   const daily = found;
   const a = content.audience;
-  const wanted = new Set(dailyScales(def).map((s) => s.key));
+  const wanted = dailyScales(def).filter((s) => daily.scales[s.key]);
+  const tones = wanted.map((s) => scaleTone(def, s.key));
+  const mixed = new Set(tones).size > 1;
+  const graduate = !!content.graduate && a !== 'adult';
+  const contexts = a === 'adult' ? [...SURVEY_CONTEXTS.adult] : graduateContexts(SURVEY_CONTEXTS.you, graduate);
   const byKey = new Map(content.sections.map((s) => [s.scaleKey, s]));
   const card = (key: string) => {
-    const scale = def.scales.find((s) => s.key === key);
+    const scale = wanted.find((s) => s.key === key);
     const sec = byKey.get(key);
-    return scale && sec && wanted.has(key) ? surveyCard(def, content, daily, scale, sec) : null;
+    return scale && sec ? surveyCard({ def, content, daily, scale, sec, contexts, mixed }) : null;
   };
   // Sıra ve gruplar "Düzeylerin anlamı"ndaki gibi; o bölüm yoksa testteki sırayla.
   const levels = parts.find((p) => p.key === 'levels');
@@ -211,24 +292,20 @@ export function surveyDailyPart(input: {
   const unit = unitOf(def);
   const plural = ITEM_NOUN_PLURAL[likertItemNoun(def)];
   const one = cards.length === 1;
-  const where = a === 'adult' ? 'işte ya da günlük işlerde, arkadaşlarla ve evde' : 'okulda, arkadaşlarla ve evde';
+  const where = contexts.map(lowerFirst).join(', ').replace(/, ([^,]+)$/, ' ve $1');
   const quality = parts.find((p) => p.key === 'quality');
-  const evaluative = !!REPORT_TEMPLATES[def.slug]?.evaluative;
   const intro = [
     by(a, {
-      you: `Bu bölümde ${one ? 'sonucunun' : lower(unit.eachOf)} günlük hayatta nasıl görünebileceğine dair örnekler var: ${where}.`,
-      parent: `Bu bölümde ${one ? 'çocuğunuzun sonucunun' : lower(unit.eachOf)} günlük hayatta nasıl görünebileceğine dair örnekler var: ${where}.`,
+      you: `Bu bölümde ${one ? 'sonucunun' : lowerFirst(unit.eachOf)} günlük hayatta nasıl görünebileceğine dair örnekler var: ${where}.`,
+      parent: `Bu bölümde ${one ? 'çocuğunuzun sonucunun' : lowerFirst(unit.eachOf)} günlük hayatta nasıl görünebileceğine dair örnekler var: ${where}.`,
     }),
+    // Örnekler kişinin tek tek cevaplarından değil, testteki cümlelerin konusundan yazıldı (bir düzeydeki herkese aynıdır).
     by(a, {
-      you: `Örnekler, cevapladığın ${plural}den çıkarıldı ve senin düzeyine göre seçildi.`,
-      parent: `Örnekler, çocuğunuzun cevapladığı ${plural}den çıkarıldı ve onun düzeyine göre seçildi.`,
+      you: `Örnekler, testteki ${plural}in konusundan yazıldı ve senin düzeyine göre seçildi.`,
+      parent: `Örnekler, testteki ${plural}in konusundan yazıldı ve çocuğunuzun düzeyine göre seçildi.`,
     }),
-    by(a, {
-      you: 'Bu düzeydeki birçok kişide görülebilir; hepsi sende olmayabilir.',
-      parent: 'Bu düzeydeki birçok çocukta görülebilir; hepsi çocuğunuzda olmayabilir.',
-    }),
-    kindSentence(def, content, evaluative),
-    'Bunlar kesin bir yargı değil, birer örnektir.',
+    by(a, { you: 'Tek tek cevaplarını yansıtmaz; hepsi sana uymayabilir.', parent: 'Onun tek tek cevaplarını yansıtmaz; hepsi çocuğunuza uymayabilir.' }),
+    kindSentence(def, content, tones),
     ...(quality && hasWarn(quality)
       ? [by(a, { you: 'Cevap denetimlerinde “Dikkat” olduğu için örnekleri de dikkatle oku.', parent: 'Cevap denetimlerinde “Dikkat” olduğu için örnekleri de dikkatle okuyun.' })]
       : []),
@@ -267,7 +344,8 @@ export function skillsDailyPart(input: {
   const adult = a === 'adult';
   // Sesli okumanın veli ve öğretmen raporu öğrenciden üçüncü kişi olarak söz eder.
   const oral = def.engine === 'oral';
-  const contexts = adult ? SKILL_CONTEXTS.adult : SKILL_CONTEXTS.you;
+  // Mezun (13): ilk ortam "Okulda ya da derslerde" (yetişkin raporu kendi ortamlarını kullanır).
+  const contexts = adult ? [...SKILL_CONTEXTS.adult] : graduateContexts(SKILL_CONTEXTS.you, grade === 13);
   const cards: PartCard[] = skills.map((s) => {
     const lines = linesOf(s, a);
     const branchTexts = [adult ? (s.branches.work ?? s.branches.school) : s.branches.school, s.branches.friends, s.branches.home];
@@ -282,7 +360,8 @@ export function skillsDailyPart(input: {
       title: visual.label,
       text: s.text,
       visual,
-      spoken: [`Kısaca: ${visual.branches.map((b) => `${lower(b.context)} ${lower(b.label)}`).join('; ')}.`],
+      // Şemanın sözle anlatımı: ortam ve dal ("Kullanıldığı yerler: okulda, şekil örüntüleri; …").
+      spoken: [`Kullanıldığı yerler: ${visual.branches.map((b) => `${lowerFirst(b.context)}, ${lowerFirst(b.label)}`).join('; ')}.`],
       lines: contexts.map((label, i) => ({ label, text: lines[i] })),
     };
   });
