@@ -18,6 +18,7 @@ import { gizliSekillerDaily } from './gizli-sekiller';
 import { harfDizileriDaily } from './harf-dizileri';
 import { harfSayiDaily } from './harf-sayi-siralama';
 import { hesaplaDaily } from './hesapla-ve-hatirla';
+import { hizliKisilikDaily } from './hizli-kisilik-testi';
 import { hobiIlgileriDaily } from './hobi-ve-serbest-zaman-ilgileri';
 import { iyimserlikDaily } from './iyimserlik';
 import { kagitKatlamaDaily } from './kagit-katlama';
@@ -67,6 +68,7 @@ export const DAILY: Record<string, DailyContent> = {
   merak: merakDaily,
   'bes-faktor-kisilik': besFaktorDaily,
   'cocuk-kisilik-profili': cocukKisilikDaily,
+  'hizli-kisilik-testi': hizliKisilikDaily,
   'simge-bulma': simgeBulmaDaily,
   'sekil-akil-yurutme': sekilAkilYurutmeDaily,
   'okuma-hizi-ve-anlama': okumaHiziDaily,
