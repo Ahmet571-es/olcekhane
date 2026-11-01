@@ -83,9 +83,14 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   Küp Açınımı, Gizli Şekiller ve Parçalardan Şekil'de şans kuralı düzeltildi (yalnızca 1. düzeye, rastgele seçimle de
   ulaşılabilecek kadar az doğruyla ulaşıldıysa sonuç yorumlanmaz; sürüm 2: bu üç testin eski PDF'leri karşılaştırılamaz).
   İki bağımsız inceleme bulguları uygulandı.
-- (d) **hazırlanıyor:** "Günlük hayatta nasıl görünür" (anket) ve "Günlük hayatta nerede kullanılır" (görev, okuma,
-  matematik): altyapı ve 7 örnek test ayrı dalda (`asama-d`), iki bağımsız inceleme sürüyor; ardından kalan testlerin
-  metinleri gruplar hâlinde, her grup bağımsız denetimle. Sonra (e) ve (f).
+- (d) **kısmen yayında (2026-11-01):** "Günlük hayatta nasıl görünür" (anket: her ölçek ve düzey için okulda/işte,
+  arkadaşlarla, evde örnekler; grafikte ölçeğin iki ucu ve kişinin yeri) ve "Günlük hayatta nerede kullanılır" (görev, okuma,
+  matematik: becerinin kullanıldığı yerler, kavram şeması). Altyapı ve 7 test yayında: Merak, Beş Faktör, Simge Bulma, Şekil
+  Akıl Yürütme, Okuma Hızı ve Anlama, Sesli Okuma, Matematik Konu Tarama. Kalan testler `tests/gunluk-hayat.test.ts`
+  `DAILY_PENDING` listesinde; gruplar hâlinde yazılıp her grup bağımsız denetimle (her satır testin maddelerine dayanır,
+  `from` alanı) yayına alınır. Yazım kuralları `src/content/gunluk/types.ts`'te.
+- (e) yol haritası grafikleri ve (f) sesli dinlemenin raporu yol haritası dahil baştan sona okuması **hazırlanıyor**
+  (ayrı dal `asama-e`).
 
 **Kalite incelemesi (2026-10-08): 6 acil hata, site sahibinin isteğiyle her işlemede bir hata düzeltilip yayına
 alınıyor.** Rapor: Claude Docs'taki **Ölçekhane Test Kalite Raporu** (https://claude.ai/artifact/8btJRknY53xATRsLhX2HsH;
@@ -1159,6 +1164,13 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-01 (67): PDF düzeltmesi: ek bölümlü bazı raporların PDF'inde yazılar üst üste biniyor, sayfa dışındakiler
+  kayboluyordu (yayında 11 rapor, ör. Kişiliğin 10 Yönü, Çalışma Değerleri, Ayrıntılı Kişilik veli raporu); bölümler artık
+  sayfaya doğrudan diziliyor, yeni test her testin PDF'inde kelime çakışmasını arıyor. Yol haritası profilinde uzun ad değerin
+  üstüne biniyordu; PDF'te kutu işareti "¡" çıkıyordu (düzeltildi). Raporları genişletme (d) ilk kısmı yayında: "Günlük
+  hayatta" bölümü 7 testte (yukarıda); iki bağımsız inceleme (metin-mantık; bilgi-kaynak) bulguları uygulandı (yanlış zar
+  örneği, maddeye dayanmayan satırlar, kişiliği öğretme yöntemine bağlama, sıklık iddiası). Öz-saygıda boş madde olunca
+  orantılanan toplam artık bir ondalıkla yazıyor ("25,6 / 30"; düzeyle çelişmesin). Telefonda ve masaüstünde denendi.
 - 2026-11-01 (66): Raporları genişletme (b) ve (c) yayına alındı: bütün görev (zekâ ve dikkat) testlerinde, okuma,
   sesli okuma ve matematikte üç yeni bölüm, her kartın kendi grafiğiyle (düzeylerin ve ölçülerin anlamı, soru soru ya da
   deneme deneme cevaplar, sonucun güvenilirliği). Aynı soruların geldiği zekâ testlerinde cevaplar yazılmaz (yalnızca
@@ -1244,11 +1256,3 @@ En yeni üstte; en çok 10 madde tutulur.
   ötekilerde yalnızca yön), düzey değişimi ve küçük grafik. PDF'lere (paket dahil) sonuçların sayısal özeti yazılıyor;
   karşılaştırma yalnızca 2026-10-30'dan sonra indirilen PDF'lerle olur. Telefonda ve masaüstünde baştan sona denendi
   (iki çözüm, PDF indirildi, yüklendi; özetsiz dosyada uyarı). Görev, okuma ve konu tarama testleri sonraki adımda.
-- 2026-10-30 (57): "Hangi test bana uygun?" sayfası (`/hangi-test`; site sahibinin isteği, seçtiği dört yeniliğin ilki):
-  kim çözecek (sınıf ya da yetişkin), ne öğrenilmek isteniyor (Hepsinden biraz, Kişilik, İlgi alanları ve meslek yönü,
-  Öğrenme ve çalışma, Zihinsel güçlü yanlar, Okuma, Duygular ve ilişkiler, Dikkat ve kendini yönetme; birden çok) ve
-  vakit (15, 30, 60+ dakika) seçilir; her alanın yuvalarından sınıfa uygun, süreye sığan testler dönüşümlü önerilir (en
-  çok 5), uygunsa Kendini Tanı Paketi de; uygun testi olmayan alan söylenir. Hesap tarayıcıda; seçimler saklanmaz.
-  Yayındaki her test bir yuvada (test denetler; yeni testte yuvaya yazılır). Bağlantılar Testler sayfasında ve ana
-  sayfada; site haritasında. Sıradaki yenilikler (site sahibinin seçimi): Gelişimini karşılaştır, Merak testi, Simge
-  Arama testi.
