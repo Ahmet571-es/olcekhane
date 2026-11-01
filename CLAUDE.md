@@ -342,7 +342,9 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   bilimsel, dil çok sade; aşamalar ve ilerleme `DURUM.md`'de). Ortak model `lib/reports/parts.ts` (`SimpleReport.parts`:
   bölüm → grup → kart; kartta metin, grafik, yan yana düzeyler, madde satırları ve grafiğin sözle anlatımı `spoken`).
   Ekranda `components/report/report-parts.tsx` (uzun bölümde kartlar açılır kapanır kutular), PDF'te `PartsPdf` ve ek
-  sayfa `AppendixPage` (`lib/pdf/simple-report.tsx`), sesli dinlemede `partSegments` (grafiğin nasıl okunacağını anlatan
+  sayfa `AppendixPage` (`lib/pdf/simple-report.tsx`; bölümler sarmalayıcı `View` olmadan sayfanın doğrudan çocuklarıdır,
+  yoksa react-pdf sığmayan bölümü üst üste sıkıştırır: `tests/pdf-ust-uste.test.ts` her testin PDF'inde kelimelerin
+  çakışmadığını `pdftotext -bbox` ile denetler; PDF yazı tipinde olmayan işaretler `pdfSafe`'te değiştirilir), sesli dinlemede `partSegments` (grafiğin nasıl okunacağını anlatan
   `note`/`introNote` ve girişin görünüş cümleleri okunmaz; bir ek bölümün bütün parçaları tek bölümdür, oynatıcıdaki
   "Bölümü geç" hepsini atlar; ~3 dakikadan uzun bölümün başında yaklaşık süresi söylenir). Sıra: sonuç kartları, destek
   kutusu (uzun listelerin altında kalmasın), ek bölümler, "tanı değildir" notu, karşılaştırma, yol haritası; PDF'te

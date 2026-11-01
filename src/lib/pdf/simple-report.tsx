@@ -1,6 +1,7 @@
 import 'server-only';
 import { encodeRecords, toRecord } from '@/lib/compare/record';
 import { join } from 'node:path';
+import { Fragment } from 'react';
 import { Circle, Document, Font, G, Line, Page, Path, Polygon, Rect, StyleSheet, Svg, Text, View, renderToBuffer } from '@react-pdf/renderer';
 import { plainMath } from '@/components/quiz/math-text';
 import { FRONT_LABELS_NOTE, LABEL_ALL_MAX, bars3dScene, defaultYaw } from '@/lib/charts/bars3d';
@@ -809,9 +810,12 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
         {rm.bars.map((b) => (
           <View key={b.key} style={{ width: '50%', flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 2 }}>
             <View style={{ width: 8, height: 8, borderRadius: 1.5, backgroundColor: b.color }} />
-            <Text style={{ fontSize: 9.5, fontWeight: 700 }}>{b.label}</Text>
-            <Text style={{ fontSize: 9.5, color: C.ink2 }}>{b.valueLabel}</Text>
-            <Text style={{ fontSize: 8.5, color: C.ink3 }}>{b.band}</Text>
+            {/* Tek metin: uzun ad değerin üstüne binmez, satır kaydırılır. */}
+            <Text style={{ flex: 1, fontSize: 9.5, paddingRight: 6 }}>
+              <Text style={{ fontWeight: 700 }}>{b.label}</Text>
+              <Text style={{ color: C.ink2 }}>{`  ${b.valueLabel}`}</Text>
+              <Text style={{ fontSize: 8.5, color: C.ink3 }}>{`  ${b.band}`}</Text>
+            </Text>
           </View>
         ))}
       </View>
@@ -1170,18 +1174,23 @@ function PartBodyPdf({ part, you }: { part: ReportPart; you: boolean }) {
 /** PDF'te ek olarak verilen bölüm (kartları olan `appendix` bölümü): yol haritasından sonra, kendi sayfalarında. */
 const inAppendix = (p: ReportPart) => !!p.appendix && p.groups.some((g) => g.cards.length > 0);
 
+/**
+ * Bölümler sarmalayıcı `View` olmadan, sayfanın doğrudan çocukları olarak dizilir. react-pdf, bir `View`in ilk
+ * çocuğundaki bölünmez blok (başlık) sayfaya sığmayınca onu sonraki sayfaya taşımak yerine bütün bölümü kalan yere
+ * sıkıştırıyordu: kartlar üst üste biniyor, sayfanın dışında kalanlar kayboluyordu.
+ */
 function PartsPdf({ parts, you }: { parts: ReportPart[]; you: boolean }) {
   return (
-    <View>
+    <>
       {parts
         .filter((p) => !inAppendix(p))
         .map((p) => (
-          <View key={p.key}>
+          <Fragment key={p.key}>
             <PartHeadPdf part={p} />
             <PartBodyPdf part={p} you={you} />
-          </View>
+          </Fragment>
         ))}
-    </View>
+    </>
   );
 }
 
@@ -1202,10 +1211,10 @@ function AppendixPage({ parts, you, siteHost, kind, date }: { parts: ReportPart[
         <Text style={s.chip}>Ek</Text>
       </View>
       {parts.map((p, i) => (
-        <View key={p.key}>
+        <Fragment key={p.key}>
           <PartHeadPdf part={p} first={i === 0} />
           <PartBodyPdf part={p} you={you} />
-        </View>
+        </Fragment>
       ))}
       <View style={s.footer} fixed>
         <Text>{siteHost}</Text>
@@ -1393,9 +1402,22 @@ export function SimpleReportDocument({ report, siteHost }: { report: SimpleRepor
   );
 }
 
+/**
+ * PDF yazı tiplerinde bulunmayan işaretler bütün rapor metinlerinde karşılıklarıyla değiştirilir (ör. yol haritasındaki
+ * "7 + 5 = □ + 4" PDF'te "¡" diye çıkıyordu). Yalnızca dizi ve düz nesnelerin içine inilir; tarih gibi değerler korunur.
+ */
+export function pdfSafe<T>(x: T): T {
+  if (typeof x === 'string') return x.replaceAll('□', '[ ]') as T;
+  if (Array.isArray(x)) return x.map(pdfSafe) as T;
+  if (x !== null && typeof x === 'object' && Object.getPrototypeOf(x) === Object.prototype) {
+    return Object.fromEntries(Object.entries(x).map(([k, v]) => [k, pdfSafe(v)])) as T;
+  }
+  return x;
+}
+
 export async function renderSimpleReportPdf(report: SimpleReport, siteHost: string): Promise<Buffer> {
   await registerFonts();
-  return renderToBuffer(<SimpleReportDocument report={report} siteHost={siteHost} />);
+  return renderToBuffer(<SimpleReportDocument report={pdfSafe(report)} siteHost={siteHost} />);
 }
 
 /* ---------- Kendini Tanı Paketi ---------- */
@@ -1506,5 +1528,6 @@ export function PackageReportDocument({ input, siteHost }: { input: PackagePdfIn
 export async function renderPackageReportPdf(input: PackagePdfInput, siteHost: string): Promise<Buffer> {
   if (input.entries.length === 0) throw new Error('empty package');
   await registerFonts();
-  return renderToBuffer(<PackageReportDocument input={input} siteHost={siteHost} />);
+  const safe = { ...input, entries: input.entries.map((e) => ({ ...e, report: pdfSafe(e.report) })) };
+  return renderToBuffer(<PackageReportDocument input={safe} siteHost={siteHost} />);
 }
