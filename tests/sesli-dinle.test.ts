@@ -228,6 +228,53 @@ describe('Raporu sesli dinle: raporlardan okunacak metin', () => {
   });
 });
 
+describe('Raporu sesli dinle: günlük hayat bölümü', () => {
+  /**
+   * "Günlük hayatta nasıl görünür / nerede kullanılır" bölümü tek dokunuşla okunan raporda kendi yerinde ("Düzeylerin anlamı"
+   * bölümünün hemen ardında) okunur: başlığı, kartları, grafiklerinin sözlü anlatımı (iki uç ya da kullanıldığı yerler) ve
+   * ortam ortam örnekleri ("Okulda: …"); bölümün bütün parçaları tek bölümdür ("Bölümü geç").
+   */
+  function checkDaily(r: SimpleReport, label: string) {
+    const parts = r.parts ?? [];
+    const at = parts.findIndex((p) => p.key === 'daily');
+    expect(at, label).toBeGreaterThan(0);
+    const daily = parts[at];
+    expect(parts[at - 1].key, label).toBe('levels');
+    const all = utterancesOf(allSegments(reportSpeech(r)));
+    const section = daily.title.replace(/[.:?]$/, '');
+    const levelsTitle = parts[at - 1].title.replace(/[.:?]$/, '');
+    const first = all.findIndex((u) => u.section === section);
+    const last = all.map((u) => u.section).lastIndexOf(section);
+    expect(first, label).toBeGreaterThan(0);
+    // Hemen önünde "Düzeylerin anlamı" bölümü, bütün parçaları art arda.
+    expect(all[first - 1].section, label).toBe(levelsTitle);
+    expect(all.slice(first, last + 1).every((u) => u.section === section), label).toBe(true);
+    const text = all.slice(first, last + 1).map((u) => u.text).join(' ');
+    const cards = daily.groups.flatMap((g) => g.cards);
+    expect(cards.length, label).toBeGreaterThan(0);
+    for (const c of cards) {
+      expect(text, `${label} ${c.title}`).toContain(speakable(c.title).replace(/\.$/, ''));
+      for (const line of c.spoken ?? []) expect(text, `${label} ${c.title}`).toContain(speakable(line).replace(/\.$/, '').slice(0, 60));
+      for (const l of c.lines ?? []) expect(text, `${label} ${c.title} ${l.label}`).toContain(speakable(`${l.label}: ${l.text}`).replace(/\.$/, '').slice(0, 60));
+    }
+    // Ortam örnekleri olan kart en az bir tane; grafiklerin sözlü anlatımı var.
+    expect(cards.some((c) => (c.lines ?? []).length > 0), label).toBe(true);
+    expect(cards.filter((c) => c.visual).every((c) => (c.spoken ?? []).length > 0), label).toBe(true);
+  }
+
+  it('anket testi (Merak): öğrenci, veli ve yetişkin raporunda', () => {
+    for (const g of [9, ADULT_GRADE]) {
+      for (const r of reportsOf('merak', likertBody('merak', g, (i) => (i * 3 + 1) % 5))) checkDaily(r, `merak ${r.audience}`);
+    }
+  });
+
+  it('beceri testi (Simge Bulma): öğrenci, veli ve yetişkin raporunda', () => {
+    const body = Object.values(TASK_VARIANTS['simge-bulma'])[0]();
+    for (const r of reportsOf('simge-bulma', body)) checkDaily(r, `simge ${r.audience}`);
+    for (const r of reportsOf('simge-bulma', { ...body, grade: ADULT_GRADE })) checkDaily(r, `simge ${r.audience}`);
+  });
+});
+
 describe('Raporu sesli dinle: ses', () => {
   const v = (name: string, lang: string, localService: boolean, def = false): VoiceLike => ({ name, lang, localService, default: def });
 
