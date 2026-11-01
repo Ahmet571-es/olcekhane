@@ -70,7 +70,6 @@ import { VISUAL_SIZES, checkDrawn } from './helpers/visual-check';
  */
 export const DAILY_PENDING: string[] = [
   // Anket testleri
-  'alti-boyutlu-kisilik-profili',
 
   // Görev testleri
 
