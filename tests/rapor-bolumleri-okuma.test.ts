@@ -312,6 +312,8 @@ function checkSpeech(r: SimpleReport, label: string) {
       // Kişinin düzeyi adıyla okunur ("Senin hızın: Olağan"); rozetteki değer ("Dakikada 90 kelime") düzeyin adı değildir.
       const active = c.levels?.find((l) => l.active);
       if (active) expect(text, label).toContain(plain(speakable(`${c.activeLabel ?? (r.audience === 'parent' ? 'Çocuğunuzun düzeyi' : 'Senin düzeyin')}: ${active.label}`)));
+      // Bu testlerin kartlarında rozet, kendi etiketi olmayan düzey kartında düzeyin adıyla aynıdır (okunuş iki kurala göre de aynı).
+      if (active && !c.activeLabel) expect(c.badge, label).toBe(active.label);
     }
   }
 }

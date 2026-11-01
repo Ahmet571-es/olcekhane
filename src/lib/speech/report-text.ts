@@ -295,8 +295,13 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
               sentence(c.title),
               sentence('Düzeyler'),
               ...levels,
-              // Kişinin düzeyinin adı; birleşik düzeyde ("Çok az · Az kullanılıyor") rozetteki tek ad.
-              active ? sentence(`${c.activeLabel ?? (you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi')}: ${active.label.includes(' · ') && c.badge ? c.badge : active.label}`) : c.badge && sentence(c.badge),
+              // Kişinin düzeyi rozetteki adla okunur; kendi etiketi olan kartta (`activeLabel`, ör. "Senin hızın") rozet bir değerdir
+              // ("Dakikada 90 kelime"): düzeyin adı okunur ("Senin hızın: Olağan"; birleşik düzeyde yine rozetteki tek ad).
+              active && (c.badge || c.activeLabel)
+                ? sentence(
+                    `${c.activeLabel ?? (you ? 'Senin düzeyin' : 'Çocuğunuzun düzeyi')}: ${c.activeLabel && !(active.label.includes(' · ') && c.badge) ? active.label : c.badge}`,
+                  )
+                : c.badge && sentence(c.badge),
               ...(c.spoken ?? []),
               c.text,
             ]

@@ -346,8 +346,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   `note`/`introNote` ve girişin görünüş cümleleri okunmaz; bir ek bölümün bütün parçaları tek bölümdür, oynatıcıdaki
   "Bölümü geç" hepsini atlar; ~3 dakikadan uzun bölümün başında yaklaşık süresi söylenir). Sıra: sonuç kartları, destek
   kutusu (uzun listelerin altında kalmasın), ek bölümler, "tanı değildir" notu, karşılaştırma, yol haritası; PDF'te
-  "Cevapların tek tek" yol haritasından sonra ektir (60'tan çok maddeli testte grafiksiz). Görev testleri sonraki aşamada
-  aynı modeli kullanır; okuma, sesli okuma ve matematik aşağıda.
+  "Cevapların tek tek" yol haritasından sonra ektir (60'tan çok maddeli testte grafiksiz). Anket, görev, okuma, sesli
+  okuma ve matematik testlerinin hepsi bu modeli kullanır (her biri aşağıda).
 - Anket testleri (`lib/reports/likert-parts.ts`, `evaluate.ts` kurar): **Düzeylerin anlamı** (her ölçekte kartın düzey
   çubuğunun aynısı; düzeylerin anlatımı şablondaki kısa başlıklar `summary`, düzeyin adını yinelemez, kartın uzun metni
   yinelenmez; şablonda metni olmayan ve ters maddesi olmayan ölçekte cevapların ortalamasının yakın olduğu seçenek, Holland
@@ -365,31 +365,6 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   cevap göstermez. Öğrenci raporunda bölüm kapalı kutularla başlar ve "raporunu kiminle paylaşacağına sen karar verirsin"
   der; test başlangıç sayfası da söyler. Hiçbir şey saklanmaz. Ek bölümler uzun testlerin PDF'ini uzatır (240 madde
   yerelde ~4 sn).
-- Okuma, sesli okuma ve konu tarama (`lib/reports/reading-parts.ts`, `quiz-parts.ts`; `evaluate.ts` kurar; grafikler
-  `lib/reports/visual-cells.ts`: soru kutuları `grid`, metin haritası `wordmap`, sayı kutuları `cells`): **Düzeylerin ve
-  ölçülerin anlamı** (her ölçünün ne anlattığı ve nasıl hesaplandığı, kişinin değeri testin kendi sınırlarıyla: okumada anlama
-  0–8 ve hız `READING_PACE` bölgeleri, soru türleri, anlayarak okuma hızı; sesli okumada doğru okuma oranı kartın çubuğunun
-  aynısı, anlama, dakikada doğru kelime (Erden ortalaması yalnızca hız kartının da karşılaştırdığı durumda, `rateCompared`),
-  akıcılık 4–16, yeniden anlatma, duraklamalar; matematikte genel sonuç kartın çubuğunun aynısı, alanlar, doğru/yanlış/
-  "Bilmiyorum", hata türleri; yorumlanmayan sonuçta grafik ve düzey yok; norm olmayan yerde karşılaştırma yok),
-  **Cevapların soru soru** (sesli okumada "Okuman ve cevapların tek tek": metin haritası işaretli metnin renkleriyle (hata
-  kırmızı, gözlem sarı; pirinç "senin düzeyin" anlamında kaldığı için kullanılmaz), yalnızca işaretli cümleler (hiç okunmayan
-  art arda cümleler tek satırda, `PartRow.label`: "7.–18. cümleler okunmadı"; hata sayısı olarak yazılmaz), sorular,
-  yeniden anlatmada söylenen fikirler; net anlaşılamayan kelime hiçbir yerde hata sayılmaz; aynı metin ya da form yeniden
-  çözülünce sonucun yükselebileceği söylenir; matematikte alan alan sorular,
-  verilen ve doğru cevap, hata türü, süre; çözümler raporun soru soru incelemesinde kalır, burada yinelenmez; soru metni sesli
-  okunmaz: `PartRow.spoken`), **Sonuca ne kadar güvenebiliriz?** (okumada çok kısa ve çok uzun süre, tahminle gelebilecek
-  doğrular `chanceLike`; sesli okumada net anlaşılamadı `UNCLEAR_HIGH`/`UNCLEAR_MAX` ve metinle eşleşme `MIN_MATCH_SHARE`
-  (lib/oral/auto.ts), kaydın dinlenmesi, okuma süresi (düğmeyle ölçüm, kesinti, `ORAL_MAX_WPM`), metnin sonuna kadar okuma;
-  matematikte hız, aynı seçenek, "Bilmiyorum" `manyDontKnow`). Bu cevaplar kişisel ifade değil, performanstır: veli
-  raporunda da vardır. Sesli okumanın veli ve öğretmen raporu öğrenciden üçüncü kişi olarak söz eder ("Öğrencinin düzeyi",
-  `PartCard.activeLabel`; sesli dinlemede kişinin düzeyinin adı okunur: "Senin hızın: Olağan"). Raporun sesli okuma bölümünde
-  zaten olan şeyler yinelenmez, yönlendirilir ("Düzey nasıl belirlendi?", "Okuma(n), kelime kelime", soru türleri);
-  yeniden anlatma listesi yalnızca bu bölümdedir. Doğru okuma oranının tanımı kodun hesabıyla aynıdır ((kelime − hata) ÷
-  kelime; eklemeler hata; metin bitmeden durunca okunan kısım) ve oran aşağı yuvarlanır (düzey yuvarlanmamış orana göre).
-  `tests/rapor-bolumleri-okuma.test.ts` bütün sınıflarda ve sonuç örüntülerinde (hız uçları, tahmin, "Bilmiyorum", hep aynı
-  seçenek, süre yok, otomatik analiz, metin bitmeden durma, kesinti, düğmeyle süre, yarım dinleme) bölümleri, kartların
-  raporla ve uyarı kutusuyla aynı olmasını, dili, sesli okumayı, ekranı ve PDF'i dener.
 - Yeni anket testi bölümleri kendiliğinden alır; şablonda her düzeyin düzey adından farklı bir `summary`'si olmalı; ölçek
   adı raporun genel bakışındakinden farklıysa `UNIT_BY_SLUG`'a yazılır. `tests/rapor-bolumleri.test.ts` yayındaki her anket
   testinde öğrenci, veli ve yetişkin raporunu dener: bölümler ve grafikleri, madde ve cevapların testle aynı olması, veli
@@ -410,6 +385,32 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   `task-parts-kinds.ts`'e eklenir; `tests/rapor-bolumleri-gorev.test.ts` bütün örüntülerde (`task-variants.ts`) dener: bölümler
   ve grafikleri, satırların puanlamayla aynı olması, denetimlerin uyarılarla uyumu ve elle kurulan örüntüler, dil, ekrandaki
   sıra, sesli okuma, PDF.
+- Okuma, sesli okuma ve konu tarama (`lib/reports/reading-parts.ts`, `quiz-parts.ts`; `evaluate.ts` kurar; grafikler
+  `lib/reports/visual-cells.ts`: soru kutuları `grid`, metin haritası `wordmap`, sayı kutuları `cells`): **Düzeylerin ve
+  ölçülerin anlamı** (her ölçünün ne anlattığı ve nasıl hesaplandığı, kişinin değeri testin kendi sınırlarıyla: okumada anlama
+  0–8 ve hız `READING_PACE` bölgeleri, soru türleri, anlayarak okuma hızı; sesli okumada doğru okuma oranı kartın çubuğunun
+  aynısı, anlama, dakikada doğru kelime (Erden ortalaması yalnızca hız kartının da karşılaştırdığı durumda, `rateCompared`),
+  akıcılık 4–16, yeniden anlatma, duraklamalar; matematikte genel sonuç kartın çubuğunun aynısı, alanlar, doğru/yanlış/
+  "Bilmiyorum", hata türleri; yorumlanmayan sonuçta grafik ve düzey yok; norm olmayan yerde karşılaştırma yok),
+  **Cevapların soru soru** (sesli okumada "Okuman ve cevapların tek tek": metin haritası işaretli metnin renkleriyle (hata
+  kırmızı, gözlem sarı; pirinç "senin düzeyin" anlamında kaldığı için kullanılmaz), yalnızca işaretli cümleler (hiç okunmayan
+  art arda cümleler tek satırda, `PartRow.label`: "7.–18. cümleler okunmadı"; hata sayısı olarak yazılmaz), sorular,
+  yeniden anlatmada söylenen fikirler; net anlaşılamayan kelime hiçbir yerde hata sayılmaz; aynı metin ya da form yeniden
+  çözülünce sonucun yükselebileceği söylenir; matematikte alan alan sorular,
+  verilen ve doğru cevap, hata türü, süre; çözümler raporun soru soru incelemesinde kalır, burada yinelenmez; soru metni sesli
+  okunmaz: `PartRow.spoken`), **Sonuca ne kadar güvenebiliriz?** (okumada çok kısa ve çok uzun süre, tahminle gelebilecek
+  doğrular `chanceLike`; sesli okumada net anlaşılamadı `UNCLEAR_HIGH`/`UNCLEAR_MAX` ve metinle eşleşme `MIN_MATCH_SHARE`
+  (lib/oral/auto.ts), kaydın dinlenmesi, okuma süresi (düğmeyle ölçüm, kesinti, `ORAL_MAX_WPM`), metnin sonuna kadar okuma;
+  matematikte hız, aynı seçenek, "Bilmiyorum" `manyDontKnow`). Bu cevaplar kişisel ifade değil, performanstır: veli
+  raporunda da vardır. Sesli okumanın veli ve öğretmen raporu öğrenciden üçüncü kişi olarak söz eder ("Öğrencinin düzeyi",
+  `PartCard.activeLabel`; böyle kartta rozet bir değer olabilir, sesli dinlemede düzeyin adı okunur: "Senin hızın: Olağan";
+  öteki kartlarda rozetteki ad). Raporun sesli okuma bölümünde
+  zaten olan şeyler yinelenmez, yönlendirilir ("Düzey nasıl belirlendi?", "Okuma(n), kelime kelime", soru türleri);
+  yeniden anlatma listesi yalnızca bu bölümdedir. Doğru okuma oranının tanımı kodun hesabıyla aynıdır ((kelime − hata) ÷
+  kelime; eklemeler hata; metin bitmeden durunca okunan kısım) ve oran aşağı yuvarlanır (düzey yuvarlanmamış orana göre).
+  `tests/rapor-bolumleri-okuma.test.ts` bütün sınıflarda ve sonuç örüntülerinde (hız uçları, tahmin, "Bilmiyorum", hep aynı
+  seçenek, süre yok, otomatik analiz, metin bitmeden durma, kesinti, düğmeyle süre, yarım dinleme) bölümleri, kartların
+  raporla ve uyarı kutusuyla aynı olmasını, dili, sesli okumayı, ekranı ve PDF'i dener.
 
 ## Kendini Tanı Paketi
 
