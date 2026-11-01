@@ -92,6 +92,17 @@ function CardBody({ card, you }: { card: PartCard; you: boolean }) {
       )}
       {card.text && <p className="measure whitespace-pre-line text-ink-2 md:col-start-1 md:row-start-1">{card.text}</p>}
       {card.note && <p className="t-meta measure md:col-start-1">{card.note}</p>}
+      {card.lines && (
+        // Ortam ortam örnekler ("Günlük hayatta nasıl görünür"): ortamın adı ve örnek.
+        <dl className="measure flex flex-col gap-2.5 md:col-start-1">
+          {card.lines.map((l) => (
+            <div key={l.label} className="flex flex-col gap-0.5">
+              <dt className="t-small font-bold text-brass-ink">{l.label}</dt>
+              <dd>{l.text}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
       {card.levels && (
         <div className="md:col-span-2">
           <Levels levels={card.levels} you={you} badge={card.badge} whose={card.activeLabel} />

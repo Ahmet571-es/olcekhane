@@ -156,7 +156,8 @@ describe('Görev testlerinin ek bölümleri: bütün testler, bütün örüntül
         for (const r of reportsOf(d.slug, make())) {
           const label = `${d.slug} ${name} ${r.audience}`;
           const keys = (r.parts ?? []).map((p) => p.key);
-          expect(keys.filter((k) => k !== 'levels'), label).toEqual(['answers', 'quality']);
+          // "Günlük hayatta nerede kullanılır" (tests/gunluk-hayat.test.ts) ölçülerin anlamından hemen sonra gelir.
+          expect(keys.filter((k) => k !== 'levels' && k !== 'daily'), label).toEqual(['answers', 'quality']);
           if (keys.includes('levels')) expect(keys[0], label).toBe('levels');
           const answers = partOf(r, 'answers')!;
           expect(answers.collapsed && answers.appendix, label).toBe(true);
@@ -183,7 +184,8 @@ describe('Görev testlerinin ek bölümleri: bütün testler, bütün örüntül
             }
           }
           // Birden çok görevli testte gruplar görevlerin adıyla.
-          if (d.tasks.length > 1 && d.slug !== 'zihinden-hesaplama-hizi') for (const p of r.parts!) expect(p.groups.every((g) => g.title), label).toBe(true);
+          // (Günlük hayat bölümünün kartları becerilerdir; bir kart birkaç görevi anlatabilir.)
+          if (d.tasks.length > 1 && d.slug !== 'zihinden-hesaplama-hizi') for (const p of r.parts!.filter((x) => x.key !== 'daily')) expect(p.groups.every((g) => g.title), label).toBe(true);
         }
       }
     }

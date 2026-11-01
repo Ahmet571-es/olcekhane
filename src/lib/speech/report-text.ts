@@ -262,7 +262,8 @@ function resultSegments(report: SimpleReport): SpeechSegment[] {
 /**
  * Ek bir bölüm (lib/reports/parts.ts): başlık ve giriş (grafiğin görünüşünü anlatan cümleleri okunmaz); her kartın adı,
  * rozeti, açıklaması, düzeyleri ("Düşük: …"; puanın sınırına yakın olduğu komşu düzeyin ardından o düzeyin de uyabileceği),
- * madde madde cevapları ("12. cümle: …. Cevabın: Oldukça doğru. Ters puanlanır.") ve grafiğinin değerleri (`spoken`).
+ * madde madde cevapları ("12. cümle: …. Cevabın: Oldukça doğru. Ters puanlanır."), grafiğinin değerleri (`spoken`) ve ortam
+ * ortam örnekleri ("Okulda: …").
  * Grafiğin nasıl okunacağını anlatan notlar okunmaz; kaynakların varlığı söylenir. Bölüm uzun sürecekse (`LONG_PART_SECONDS`)
  * girişte yaklaşık süresi ve "Bölümü geç" düğmesi söylenir. Bütün parçalar aynı bölümdedir: düğme bölümün hepsini atlar.
  */
@@ -311,7 +312,7 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
               ...(c.spoken ?? []),
               c.text,
             ]
-          : [sentence(c.title), c.badge && sentence(c.badge), c.text, ...(c.spoken ?? []), ...rows],
+          : [sentence(c.title), c.badge && sentence(c.badge), c.text, ...(c.spoken ?? []), ...rows, ...(c.lines ?? []).map((l) => `${l.label}: ${sentence(l.text)}`)],
       );
     }
   }

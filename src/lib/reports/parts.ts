@@ -12,9 +12,13 @@ import type { ItemVisual } from './visuals';
  * cevapların" (hızlı görevlerde "Deneme deneme sonuçların") ve "Sonuca ne kadar güvenebiliriz?". Okuma ve sesli okumada
  * (lib/reports/reading-parts.ts) ve konu taramada (lib/reports/quiz-parts.ts) aynı üç bölüm: "Düzeylerin ve ölçülerin
  * anlamı", soru soru (sesli okumada cümle cümle) cevaplar, "Sonuca ne kadar güvenebiliriz?".
+ *
+ * Bütün test türlerinde ilk bölümün ardından "Günlük hayatta nasıl görünür" (`daily`; lib/reports/daily-parts.ts, metinler
+ * src/content/gunluk/): anket testlerinde her ölçeğin kişinin düzeyindeki örnekleri, öteki testlerde becerinin günlük hayatta
+ * nerede kullanıldığı; kartlarda ortam ortam satırlar (`lines`).
  */
 
-export type PartKey = 'levels' | 'answers' | 'quality';
+export type PartKey = 'levels' | 'daily' | 'answers' | 'quality';
 
 /** Kartın rozetinin anlamı (kalite denetimlerinde): uygun, dikkat ya da denetim yapılamadı. */
 export type PartStatus = 'ok' | 'warn' | 'none';
@@ -86,6 +90,11 @@ export interface PartCard {
   };
   /** Grafiğin sözle anlatımı (sesli okuma): değerler, görünüşü değil. */
   spoken?: string[];
+  /**
+   * Ortam ortam örnekler ("Günlük hayatta nasıl görünür"): ortamın adı ("Okulda") ve örnek. Ekranda ve PDF'te adıyla alt alta,
+   * sesli okumada "Okulda: …" diye okunur.
+   */
+  lines?: { label: string; text: string }[];
 }
 
 export interface PartGroup {

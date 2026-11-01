@@ -1,0 +1,680 @@
+import { readdirSync } from 'node:fs';
+import path from 'node:path';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
+import { publicInstruments } from '@/content/instruments';
+import { DAILY } from '@/content/gunluk';
+import type { AdultLines, DailyLines, SkillDaily, SkillsDaily, SurveyDaily } from '@/content/gunluk/types';
+import { PACKAGE_AREAS, packageTests } from '@/content/paket';
+import { SimpleReportView } from '@/components/test/simple-report-view';
+import { evaluate, evaluateAdult, evaluateReports } from '@/lib/assessment/evaluate';
+import type { AnswersBody } from '@/lib/assessment/schemas';
+import { likertRows, toReportScore } from '@/lib/assessment/score-rows';
+import { ADULT_GRADE } from '@/lib/config';
+import type { InstrumentDef, LikertInstrument, OralReadingInstrument, QuizInstrument } from '@/lib/instruments/types';
+import { oralWordCount } from '@/lib/oral/words';
+import { renderPackageReportPdf, renderSimpleReportPdf } from '@/lib/pdf/simple-report';
+import { buildReport, type Audience } from '@/lib/reports/build';
+import { SKILL_CONTEXTS, SURVEY_CONTEXTS, dailyScales, dailySources, linesOf, skillInForm, skillsDailyPart, surveyDailyPart } from '@/lib/reports/daily-parts';
+import type { PackageEntry } from '@/lib/reports/package';
+import { partCards, type ReportPart } from '@/lib/reports/parts';
+import { bandGroup } from '@/lib/reports/roadmap';
+import type { SimpleReport } from '@/lib/reports/simple';
+import { BRANCH_MAX_CHARS, CENTER_MAX_CHARS, POLE_MAX_CHARS, type ContextsVisual, type PolesVisual } from '@/lib/reports/visual-daily';
+import type { GaugeVisual } from '@/lib/reports/visuals';
+import { likertItemFlags, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
+import { oralPassagesFor } from '@/lib/scoring/oral';
+import { reportSpeech, speakable, utterancesOf } from '@/lib/speech/report-text';
+import { likertBody, quizBody, readingBody } from './helpers/bodies';
+import { schoolWords } from './helpers/school';
+import { TASK_VARIANTS } from './helpers/task-variants';
+import { checkDrawn } from './helpers/visual-check';
+
+/**
+ * "Günlük hayatta nasıl görünür" (site sahibinin 2026-10-31 isteği; aşama d; lib/reports/daily-parts.ts, metinler
+ * src/content/gunluk/). Metni yazılmış her testte: metnin eksiksiz olması (her ölçek, düzey grubu, ortam ve kitle; görevlerde
+ * her görev ya da konu alanı), raporda öğrenci, veli ve yetişkin için doğru yerde ve kartla aynı düzeyle görünmesi, ekran,
+ * PDF ve sesli dinleme, Kendini Tanı Paketi, dil kuralları ve grafiklerin taşmaması.
+ */
+
+/**
+ * Henüz metni yazılmamış yayındaki testler. Bir testin dosyası eklenince adresi bu listeden silinir; liste yalnızca küçülür
+ * ve aşama d'nin sonunda boş olur (yeni yayına giren test metniyle birlikte gelir).
+ */
+export const DAILY_PENDING: string[] = [
+  // Anket testleri
+  'cocuk-kisilik-profili',
+  'hizli-kisilik-testi',
+  'ayrintili-kisilik-profili',
+  'kisiligin-10-yonu',
+  'alti-boyutlu-kisilik-profili',
+  'kisilerarasi-tarz',
+  '16-faktorlu-kisilik-profili',
+  'ogrenme-ve-basari-ozellikleri',
+  'dusunmeyi-sevme-olcegi',
+  'dusunme-ve-calisma-tarzi',
+  'heyecan-arayisi',
+  'iyimserlik',
+  'empati',
+  'oz-yeterlik',
+  'oz-denetim',
+  'liderlik-egilimleri',
+  'oz-saygi',
+  'mesleki-ilgi-profili',
+  'meslek-ilgi-alanlari',
+  'hobi-ve-serbest-zaman-ilgileri',
+  'calisma-degerleri',
+  'calisma-aliskanliklari',
+  'ders-calisma-motivasyonu',
+  'erteleme-ve-zaman-yonetimi',
+  'zihniyet',
+  'duygusal-zeka-bilesenleri',
+  // Görev testleri
+  'sekil-benzetmeleri',
+  'sayi-dizileri',
+  'harf-dizileri',
+  'sozel-akil-yurutme',
+  'mantiksal-akil-yurutme',
+  'kagit-katlama',
+  'sayisal-akil-yurutme',
+  'zihinden-hesaplama-hizi',
+  'kup-acinimi',
+  'parcalardan-sekil',
+  'uc-boyutlu-zihinde-dondurme',
+  'bakis-acisi-alma',
+  'gizli-sekiller',
+  'dusunerek-karar-verme',
+  'kelime-bilgisi',
+  'planlama-kule-gorevi',
+  'dikkat-ve-bellek',
+  'surekli-dikkat',
+  'renk-kelime-gorevi',
+  'dur-git-gorevi',
+  'sirayla-birlestirme-gorevi',
+  'geriye-donuk-hatirlama',
+  'hesapla-ve-hatirla',
+  'harf-sayi-siralama',
+  'desen-hatirlama',
+  'kelime-listesi-hatirlama',
+  'zihinde-dondurme',
+  'tepki-hizi',
+  'kural-degistirme',
+];
+/** Listenin örnek dosyalardan sonraki uzunluğu: liste bundan uzun olamaz (her yeni dosyada bu sayı da küçültülebilir). */
+const PENDING_AT_START = 55;
+
+const LIVE = publicInstruments();
+const WITH_CONTENT = LIVE.filter((d) => DAILY[d.slug]);
+const PART_TITLE = { survey: 'Günlük hayatta nasıl görünür', skills: 'Günlük hayatta nerede kullanılır' } as const;
+
+const lower = (s: string) => s.toLocaleLowerCase('tr-TR');
+
+/* ---------- İstek gövdeleri ---------- */
+
+type Answers = Record<string, { value: number; rtMs: number | null }>;
+const values = (d: LikertInstrument) => d.options.map((o) => o.value);
+const lo = (d: LikertInstrument) => Math.min(...values(d));
+const hi = (d: LikertInstrument) => Math.max(...values(d));
+const all = (d: LikertInstrument, v: number): Answers => Object.fromEntries(d.items.map((it) => [it.key, { value: v, rtMs: 3000 }]));
+/** Ölçek ölçek yukarı ya da aşağı (ters maddeler çevrilerek): düzeyler uçlarda. */
+const keyed = (d: LikertInstrument, up: (si: number) => boolean): Answers =>
+  Object.fromEntries(
+    d.items.map((it) => {
+      const si = d.scales.findIndex((s) => s.key === it.scale);
+      return [it.key, { value: up(si) !== !!it.reverse ? hi(d) : lo(d), rtMs: 3100 }];
+    }),
+  );
+const middle = (d: LikertInstrument) => values(d)[Math.floor(values(d).length / 2)];
+
+/** Testin bir dizi sonuç örüntüsü (her ölçek her düzey grubuna en az bir kez düşsün). */
+function bodiesFor(d: InstrumentDef): AnswersBody[] {
+  switch (d.engine) {
+    case 'likert': {
+      const grade = d.minGrade;
+      const mixed = (likertBody(d.slug, grade, (i) => (i * 3 + 1) % 5).data as { answers: Answers }).answers;
+      const sets = [all(d, lo(d)), all(d, hi(d)), all(d, middle(d)), keyed(d, (i) => i % 2 === 0), keyed(d, (i) => i % 2 === 1), mixed];
+      return sets.map((answers) => ({ grade, data: { engine: 'likert' as const, answers } }));
+    }
+    case 'tasks':
+      return Object.values(TASK_VARIANTS[d.slug] as Record<string, () => AnswersBody>).map((make) => {
+        const body = make();
+        return { ...body, grade: Math.max(body.grade, d.minGrade) };
+      });
+    case 'reading':
+      return [3, 6, 9, 12].filter((g) => g >= d.minGrade && g <= d.maxGrade).map((g) => readingBody(g));
+    case 'quiz':
+      return (d as QuizInstrument).forms.map((f) => quizBody(f.grade, 3));
+    case 'oral':
+      return [1, 4, 8].map((g) => oralBody(d, g));
+    default:
+      throw new Error(`${(d as InstrumentDef).slug}: bu türün örnek gövdesi testte yok`);
+  }
+}
+
+/** Sesli okuma: sınıfın kendi metni, yetişkinin işaretlediği sürüm (tests/rapor-bolumleri-okuma.test.ts'teki girdiye benzer). */
+function oralBody(d: OralReadingInstrument, grade: number): AnswersBody {
+  const p = oralPassagesFor(d, grade).find((x) => x.grade === grade)!;
+  const words = oralWordCount(p.paragraphs);
+  return {
+    grade,
+    data: {
+      engine: 'oral',
+      passageKey: p.key,
+      recordMs: 120_000,
+      readingMs: Math.round((words / 70) * 60_000),
+      timingAuto: true,
+      audio: { quality: 'good', pauses: [[1000, 1400]], speechMs: 40_000, contour: Array.from({ length: 60 }, (_, i) => (i * 7) % 100), interrupted: false },
+      marks: {},
+      listened: 1,
+      retell: { recorded: true, ideas: p.ideas.filter((_, i) => i % 2 === 0).map((x) => x.key) },
+      answers: Object.fromEntries(p.questions.map((q) => [q.key, q.answer])),
+      prosody: { expression: 3, phrasing: 2, smoothness: 3, pace: 3 },
+    },
+  };
+}
+
+function reportsOf(d: InstrumentDef, body: AnswersBody): SimpleReport[] {
+  const r = evaluate(d.slug, body);
+  return [r.student, r.parent, ...(d.adults ? [evaluateAdult(d.slug, { ...body, grade: ADULT_GRADE }).adult] : [])];
+}
+
+const partOf = (r: SimpleReport, key: ReportPart['key']) => r.parts?.find((p) => p.key === key);
+
+/* ---------- Dil ---------- */
+
+/** Cümleler; tırnak içindeki ifade tek sözcük sayılır. */
+const sentences = (text: string) =>
+  text
+    .replace(/“[^”]*”/g, 'X')
+    .split(/(?<=[.!?])\s+(?=[\p{Lu}\d“])/u)
+    .filter((s) => s.trim());
+const wordCount = (s: string) => s.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w)).length;
+
+/** Tanı koyan, yargılayan, karşılaştıran ya da varsayımda bulunan sözcükler (sözcük başı, büyük-küçük harf duyarsız). */
+const BANNED =
+  /(?<!\p{L})(?:tanı|teşhis|iq|zekâ puanı|zeka puanı|hastalık|bozukluk|normal|anormal|seviye|depresyon|anksiyete|dehb|disleksi|tembel|aptal|zeki|yetersiz|başarısız|kusur|sorunlu|beceriksiz|akranların|yaşıtların|arkadaşlarından daha|diğer çocuklardan|çoğu çocuktan|anne|annen|annesi|baba|baban|babası|kız|erkek|her zaman|asla|kesinlikle)(?!\p{L})/iu;
+/** Veli metninde olmaması gereken "sen" ekleri ve sözcükleri. */
+const SECOND_PERSON =
+  /(?<!\p{L})(?:sen|senin|sana|seni|sende|senden|seninle)(?!\p{L})|\p{L}{3,}(?:sın|sin|sun|sün)(?!\p{L})|\p{L}+(?:ınla|inle|unla|ünle)(?!\p{L})/iu;
+// "Herkesin" ilgi hâlidir (herkes + -in); "olsun" ve "onunla" üçüncü kişidir.
+const SECOND_PERSON_OK = new Set(['olsun', 'onunla', 'herkesin']);
+const hasSecondPerson = (t: string) => {
+  const words = t.toLocaleLowerCase('tr-TR').match(/\p{L}+/gu) ?? [];
+  return words.some((w) => !SECOND_PERSON_OK.has(w) && SECOND_PERSON.test(w));
+};
+/** "Sen" diliyle yazıldığını gösteren ekler (öğrenci metninde her düzeyin satırlarından en az birinde). */
+const ADDRESSES_YOU = /(?:sın|sin|sun|sün|sınız|siniz)(?!\p{L})|(?<!\p{L})(?:sen|sana|seni|senin)(?!\p{L})|\p{L}(?:ınla|inle|unla|ünle)(?!\p{L})/u;
+/** Anket örneklerinde olasılık bildiren biçimler. */
+const HEDGE = /abilir|ebilir|bazen|çoğu zaman|genellikle|yatkın/u;
+/** Görev, okuma ve konu tarama metinlerinde sonuca bağlanan sözcükler. */
+const RESULT_WORDS = /zorlan|başarı|sonucun|puanın|daha iyi/iu;
+const CONTEXT_PREFIX = /^(?:Okulda|Arkadaşlarla|Evde|İşte|Oyunda|Boş zamanda)\b/u;
+
+interface Line {
+  where: string;
+  audience: 'student' | 'parent' | 'adult';
+  text: string;
+}
+
+/** Bir kitlenin üç satırı (yetişkinde öğrenci satırlarıyla tamamlanmış hâli). */
+function allLines(t: { student: DailyLines; parent: DailyLines; adult?: AdultLines }, where: string, adults: boolean): Line[][] {
+  const out: Line[][] = [];
+  for (const audience of ['student', 'parent', ...(adults ? (['adult'] as const) : [])] as const) {
+    out.push(linesOf(t, audience).map((text) => ({ where: `${where} ${audience}`, audience, text })));
+  }
+  return out;
+}
+
+function checkLine(l: Line, kind: 'survey' | 'skills') {
+  const at = `${l.where}: ${l.text}`;
+  expect(l.text.trim(), at).toBe(l.text);
+  expect(l.text, at).toMatch(/[.!?]$/);
+  expect(l.text, at).not.toMatch(CONTEXT_PREFIX);
+  expect(l.text, at).not.toMatch(BANNED);
+  expect(sentences(l.text).length, at).toBeLessThanOrEqual(2);
+  for (const s of sentences(l.text)) expect(wordCount(s), `${at} (${s})`).toBeLessThanOrEqual(22);
+  if (l.audience === 'parent') expect(hasSecondPerson(l.text), at).toBe(false);
+  else expect(l.text, at).not.toMatch(/çocuğunuz/iu);
+  if (l.audience === 'adult') expect(schoolWords(l.text.replace(/“[^”]*”/g, '')), at).toEqual([]);
+  if (kind === 'survey') expect(l.text, at).toMatch(HEDGE);
+  else expect(l.text, at).not.toMatch(RESULT_WORDS);
+}
+
+/** 2–4 sözcük, büyük harfle başlar, noktasız, en çok `max` karakter. */
+function checkShort(text: string, max: number, at: string, words: [number, number] = [2, 4]) {
+  expect(text.length, `${at}: ${text}`).toBeLessThanOrEqual(max);
+  expect(wordCount(text), `${at}: ${text}`).toBeGreaterThanOrEqual(words[0]);
+  expect(wordCount(text), `${at}: ${text}`).toBeLessThanOrEqual(words[1]);
+  expect(text, at).toMatch(/^\p{Lu}/u);
+  expect(text, at).not.toMatch(/[.!?:;]$/);
+  expect(text, at).not.toMatch(BANNED);
+}
+
+/* ---------- Kapsam ---------- */
+
+describe('Günlük hayat: kapsam', () => {
+  it('yayındaki her testin ya metni var ya da bekleyenler listesinde; liste yalnızca küçülür', () => {
+    const live = LIVE.map((d) => d.slug);
+    expect(new Set(DAILY_PENDING).size).toBe(DAILY_PENDING.length);
+    expect(DAILY_PENDING.length).toBeLessThanOrEqual(PENDING_AT_START);
+    for (const s of DAILY_PENDING) {
+      expect(DAILY[s], `${s} metni yazıldı: bekleyenler listesinden sil`).toBeUndefined();
+      expect(live, `${s} yayında değil`).toContain(s);
+    }
+    for (const s of live) expect(!!DAILY[s] || DAILY_PENDING.includes(s), `${s}: metin yok ve bekleyenler listesinde de değil`).toBe(true);
+    for (const s of Object.keys(DAILY)) expect(live, s).toContain(s);
+    // Her dosyanın adı testin adresidir; her dosya kayıtlıdır.
+    const dir = path.join(import.meta.dirname, '../src/content/gunluk');
+    const files = readdirSync(dir).filter((f) => f !== 'index.ts' && f !== 'types.ts').map((f) => f.replace(/\.ts$/, ''));
+    expect(files.sort()).toEqual(Object.keys(DAILY).sort());
+  });
+
+  it('anket testleri: sonuç kartı olan her ölçek, üç düzey grubu, üç ortam ve gereken her kitle', () => {
+    for (const d of WITH_CONTENT.filter((x): x is LikertInstrument => x.engine === 'likert')) {
+      const c = DAILY[d.slug] as SurveyDaily;
+      expect(c.kind, d.slug).toBe('survey');
+      expect(c.version, d.slug).toMatch(/^[a-z0-9-]+-gunluk-\d+$/);
+      const wanted = dailyScales(d).map((s) => s.key);
+      expect(Object.keys(c.scales).sort(), d.slug).toEqual([...wanted].sort());
+      for (const key of wanted) {
+        const s = c.scales[key];
+        const at = `${d.slug} ${key}`;
+        checkShort(s.poles.low, POLE_MAX_CHARS, `${at} düşük uç`);
+        checkShort(s.poles.high, POLE_MAX_CHARS, `${at} yüksek uç`);
+        expect(lower(s.poles.low), at).not.toBe(lower(s.poles.high));
+        for (const g of ['low', 'average', 'high'] as const) {
+          const b = s.bands[g];
+          for (const lines of [b.student, b.parent]) for (const k of ['school', 'friends', 'home'] as const) expect(lines[k], `${at} ${g} ${k}`).toBeTruthy();
+          // Yetişkine açık testte iş satırı zorunlu; yetişkine açık olmayan testte yetişkin metni yazılmaz.
+          expect(!!b.adult?.work, `${at} ${g} yetişkin`).toBe(!!d.adults);
+          if (!d.adults) expect(b.adult, at).toBeUndefined();
+        }
+      }
+    }
+  });
+
+  it('görev, okuma ve konu tarama testleri: her sonuç parçası (her formda) tam bir kartla anlatılır', () => {
+    for (const d of WITH_CONTENT.filter((x) => x.engine !== 'likert')) {
+      const c = DAILY[d.slug] as SkillsDaily;
+      expect(c.kind, d.slug).toBe('skills');
+      expect(c.version, d.slug).toMatch(/^[a-z0-9-]+-gunluk-\d+$/);
+      const grades = d.engine === 'quiz' ? (d as QuizInstrument).forms.map((f) => f.grade) : [d.minGrade];
+      const used = new Set<SkillDaily>();
+      for (const g of grades) {
+        const { sources, form } = dailySources(d, g);
+        expect(sources.length, d.slug).toBeGreaterThan(0);
+        const here = c.skills.filter((s) => skillInForm(s, form));
+        for (const src of sources) {
+          const covering = here.filter((s) => (s.covers ?? [s.key]).includes(src.key));
+          expect(covering.length, `${d.slug} ${form ?? ''} ${src.key}`).toBe(1);
+          used.add(covering[0]);
+        }
+        expect(new Set(here.map((s) => s.key)).size, `${d.slug} ${form ?? ''}`).toBe(here.length);
+      }
+      // Hiçbir kart boşta kalmaz.
+      for (const s of c.skills) expect(used.has(s), `${d.slug} ${s.key} ${s.forms?.join(',') ?? ''}`).toBe(true);
+      for (const s of c.skills) {
+        const at = `${d.slug} ${s.key}`;
+        checkShort(s.short, CENTER_MAX_CHARS, `${at} kısa ad`, [1, 3]);
+        for (const k of ['school', 'friends', 'home'] as const) checkShort(s.branches[k], BRANCH_MAX_CHARS, `${at} dal ${k}`);
+        expect(!!s.branches.work, `${at} iş dalı`).toBe(!!d.adults);
+        if (s.branches.work) checkShort(s.branches.work, BRANCH_MAX_CHARS, `${at} dal work`);
+        expect(!!s.adult?.work, `${at} yetişkin`).toBe(!!d.adults);
+        if (s.title) checkShort(s.title, 40, `${at} başlık`, [1, 6]);
+      }
+    }
+  });
+});
+
+/* ---------- Dil ---------- */
+
+describe('Günlük hayat: dil', () => {
+  it('satırlar: bir ya da iki cümle, en çok 22 sözcük; sen/çocuğunuz; yetişkinde okul sözcüğü yok; temkinli ve yargısız', () => {
+    for (const d of WITH_CONTENT) {
+      const c = DAILY[d.slug];
+      const groups: { kind: 'survey' | 'skills'; lines: Line[][] }[] = [];
+      if (c.kind === 'survey') {
+        for (const [key, s] of Object.entries(c.scales))
+          for (const g of ['low', 'average', 'high'] as const) groups.push({ kind: 'survey', lines: allLines(s.bands[g], `${d.slug} ${key} ${g}`, !!d.adults) });
+      } else {
+        for (const s of c.skills) {
+          groups.push({ kind: 'skills', lines: allLines(s, `${d.slug} ${s.key}`, !!d.adults) });
+          const at = `${d.slug} ${s.key} tanım`;
+          // Tanım herkese aynıdır: kişisiz.
+          expect(s.text, at).not.toMatch(BANNED);
+          expect(s.text, at).not.toMatch(RESULT_WORDS);
+          expect(s.text, at).not.toMatch(/çocuğunuz/iu);
+          expect(hasSecondPerson(s.text), at).toBe(false);
+          if (d.adults) expect(schoolWords(s.text), at).toEqual([]);
+          expect(sentences(s.text).length, at).toBeLessThanOrEqual(2);
+          for (const x of sentences(s.text)) expect(wordCount(x), `${at}: ${x}`).toBeLessThanOrEqual(22);
+        }
+      }
+      const words: number[] = [];
+      for (const { kind, lines } of groups) {
+        for (const set of lines) {
+          for (const l of set) {
+            checkLine(l, kind);
+            words.push(...sentences(l.text).map(wordCount));
+          }
+          // Veli satırları çocuğunuzdan (sesli okumanın veli ve öğretmen raporunda öğrenciden) söz eder; öğrenci satırları "sen" der.
+          const audience = set[0].audience;
+          if (audience === 'parent') expect(set.some((l) => (d.engine === 'oral' ? /öğrenci/iu : /çocuğunuz/iu).test(l.text)), set[0].where).toBe(true);
+          if (audience === 'parent' && d.engine === 'oral') for (const l of set) expect(l.text, l.where).not.toMatch(/çocuğunuz/iu);
+          if (kind === 'survey' && audience !== 'parent') expect(set.some((l) => ADDRESSES_YOU.test(l.text)), set[0].where).toBe(true);
+        }
+      }
+      // Ortalama cümle uzunluğu sade dilin sınırında.
+      const mean = words.reduce((a, b) => a + b, 0) / words.length;
+      expect(mean, `${d.slug} ortalama ${mean.toFixed(1)} sözcük`).toBeLessThanOrEqual(13);
+    }
+  });
+
+  it('bölümün kendi metinleri: kısa cümleler, sen/çocuğunuz, yetişkinde okul sözcüğü yok, tanı ve karşılaştırma yok', () => {
+    for (const d of WITH_CONTENT) {
+      for (const r of reportsOf(d, bodiesFor(d)[0])) {
+        const p = partOf(r, 'daily')!;
+        const own = [p.title, p.intro, p.introNote ?? '', ...partCards(p).flatMap((c) => [c.title, c.badge ?? '', c.text ?? '', ...(c.spoken ?? [])])].filter(Boolean);
+        const label = `${d.slug} ${r.audience}`;
+        for (const t of own) {
+          expect(t, label).not.toMatch(BANNED);
+          for (const s of sentences(t)) expect(wordCount(s), `${label}: ${s}`).toBeLessThanOrEqual(22);
+        }
+        const joined = own.join(' ');
+        if (r.audience === 'parent') expect(hasSecondPerson(joined.replace(/“[^”]*”/g, '')), `${label}: ${joined}`).toBe(false);
+        else expect(joined, label).not.toMatch(/çocuğunuz/iu);
+        if (r.audience === 'adult') expect(schoolWords(joined.replace(/“[^”]*”/g, '')), label).toEqual([]);
+      }
+    }
+  });
+});
+
+/* ---------- Raporda ---------- */
+
+/** Bölüm "Düzeylerin anlamı"nın hemen ardında, cevaplardan ve denetimlerden önce. */
+function checkOrder(r: SimpleReport, label: string) {
+  const keys = (r.parts ?? []).map((p) => p.key);
+  const i = keys.indexOf('daily');
+  expect(i, `${label}: ${keys.join(',')}`).toBeGreaterThan(-1);
+  if (keys.includes('levels')) expect(keys[i - 1], label).toBe('levels');
+  else expect(i, label).toBe(0);
+  expect(keys.slice(i + 1), label).toEqual(keys.filter((k) => k === 'answers' || k === 'quality'));
+}
+
+function checkSurvey(d: LikertInstrument, r: SimpleReport, label: string, seen: Map<string, Set<string>>) {
+  const content = DAILY[d.slug] as SurveyDaily;
+  const p = partOf(r, 'daily')!;
+  expect(p.title, label).toBe(PART_TITLE.survey);
+  const levels = new Map(partCards(partOf(r, 'levels')!).map((c) => [c.key, c]));
+  const cards = partCards(p);
+  expect(cards.map((c) => c.key).sort(), label).toEqual(dailyScales(d).map((s) => s.key).sort());
+  // Sıra "Düzeylerin anlamı"ndaki gibi.
+  const order = [...levels.keys()];
+  expect(cards.map((c) => order.indexOf(c.key)), label).toEqual(cards.map((c) => order.indexOf(c.key)).sort((a, b) => a - b));
+  const contexts = r.audience === 'adult' ? SURVEY_CONTEXTS.adult : SURVEY_CONTEXTS.you;
+  for (const c of cards) {
+    const at = `${label} ${c.key}`;
+    const scale = d.scales.find((s) => s.key === c.key)!;
+    const lc = levels.get(c.key)!;
+    const g = lc.visual as GaugeVisual;
+    const v = c.visual as PolesVisual;
+    expect(c.title, at).toBe(scale.name);
+    // Rozet "Düzeylerin anlamı"ndaki kartın rozetiyle (ve dolayısıyla sonuç kartıyla, genel bakışla) aynıdır.
+    expect(c.badge, at).toBe(lc.badge);
+    expect(v.type, at).toBe('poles');
+    expect([v.label, v.low, v.high, v.min, v.max], at).toEqual([scale.name, content.scales[c.key].poles.low, content.scales[c.key].poles.high, g.min, g.max]);
+    checkDrawn(v, at);
+    if (g.value === null || g.active === null) {
+      expect([v.value, v.zone, c.lines], at).toEqual([null, null, undefined]);
+      expect(c.badge, at).toBe('Hesaplanamadı');
+      expect(c.text, at).toMatch(/düzey belirlenemedi/);
+      continue;
+    }
+    const zone = g.zones[g.active];
+    expect(v.zone, at).toEqual({ from: zone.from, to: zone.to, label: zone.label });
+    expect(v.zone!.label, at).toBe(c.badge);
+    // İşaret kişinin bölgesinde; puandan en çok yuvarlama payı kadar uzak.
+    expect(v.value!, at).toBeGreaterThanOrEqual(zone.from - 1e-9);
+    expect(v.value!, at).toBeLessThanOrEqual(zone.to + 1e-9);
+    expect(Math.abs(v.value! - g.value), at).toBeLessThanOrEqual(0.051);
+    const group = bandGroup(zone.band)!;
+    const spoken = (c.spoken ?? []).join(' ');
+    expect(spoken, at).toContain(`İki uç: “${lower(v.low)}” ve “${lower(v.high)}”.`);
+    expect(spoken, at).toContain(group === 'average' ? 'iki ucun arasında' : `“${lower(group === 'low' ? v.low : v.high)}” ucuna daha yakın`);
+    if (/ayrı(ş|l)/.test(c.text ?? '')) {
+      // Cevaplar iki uca ayrıldıysa örnek seçilmez (kart da düzeyin genel anlatımı yerine ayrışmayı anlatır).
+      expect(c.lines, at).toBeUndefined();
+      continue;
+    }
+    expect(c.lines?.map((l) => l.label), at).toEqual([...contexts]);
+    expect(c.lines?.map((l) => l.text), at).toEqual(linesOf(content.scales[c.key].bands[group], r.audience as Audience));
+    if (!seen.has(c.key)) seen.set(c.key, new Set());
+    seen.get(c.key)!.add(group);
+  }
+}
+
+function checkSkills(d: InstrumentDef, r: SimpleReport, grade: number, label: string) {
+  const content = DAILY[d.slug] as SkillsDaily;
+  const p = partOf(r, 'daily')!;
+  expect(p.title, label).toBe(PART_TITLE.skills);
+  const { sources, form } = dailySources(d, grade);
+  const expected = content.skills.filter((s) => skillInForm(s, form) && (s.covers ?? [s.key]).some((k) => sources.some((x) => x.key === k)));
+  const cards = partCards(p);
+  expect(cards.map((c) => c.key).sort(), label).toEqual(expected.map((s) => s.key).sort());
+  const adult = r.audience === 'adult';
+  const contexts = adult ? SKILL_CONTEXTS.adult : SKILL_CONTEXTS.you;
+  for (const c of cards) {
+    const s = expected.find((x) => x.key === c.key)!;
+    const at = `${label} ${c.key}`;
+    const v = c.visual as ContextsVisual;
+    expect(v.type, at).toBe('contexts');
+    expect(c.title, at).toBe(s.title ?? sources.find((x) => (s.covers ?? [s.key]).includes(x.key))!.name);
+    expect(v.center, at).toBe(s.short);
+    expect(v.branches, at).toEqual(contexts.map((context, i) => ({ context, label: [adult ? s.branches.work! : s.branches.school, s.branches.friends, s.branches.home][i] })));
+    expect(c.text, at).toBe(s.text);
+    expect(c.badge, at).toBeUndefined();
+    expect(c.spoken?.length, at).toBe(1);
+    expect(c.lines?.map((l) => l.label), at).toEqual([...contexts]);
+    expect(c.lines?.map((l) => l.text), at).toEqual(linesOf(s, r.audience as Audience));
+    checkDrawn(v, at);
+  }
+}
+
+/** Sesli dinleme bölümü eksiksiz okur: başlık, giriş, her kartın adı, grafiğin sözle anlatımı ve her satır "Okulda: …". */
+function checkSpeech(r: SimpleReport, label: string) {
+  const p = partOf(r, 'daily')!;
+  const utter = utterancesOf(reportSpeech(r).results);
+  const mine = utter.filter((u) => u.section === p.title);
+  expect(mine.length, label).toBeGreaterThan(0);
+  const text = mine.map((u) => u.text).join(' ');
+  expect(text, label).toContain(speakable(p.title));
+  for (const c of partCards(p)) {
+    expect(mine.some((u) => u.segment === c.title), `${label} ${c.title}`).toBe(true);
+    for (const s of c.spoken ?? []) expect(text, `${label} ${s}`).toContain(speakable(s).replace(/\.$/, ''));
+    for (const l of c.lines ?? []) expect(text, `${label} ${l.label}`).toContain(speakable(`${l.label}: ${l.text}`).replace(/\.$/, ''));
+    if (c.text) expect(text, label).toContain(speakable(c.text).replace(/\.$/, ''));
+  }
+  // Grafiğin nasıl okunacağı sesli okunmaz.
+  if (p.introNote) expect(text, label).not.toContain(speakable(p.introNote).slice(0, 30));
+  expect(text, label).not.toMatch(/(?<!\p{L})(?:kırmızı|vurgulu bölge)/iu);
+}
+
+describe('Günlük hayat: raporda', () => {
+  it('öğrenci, veli ve yetişkin raporunda doğru yerde; kartlar ölçeklerle, rozetler kartın düzeyiyle aynı; her düzey grubu görünür', () => {
+    let cards = 0;
+    for (const d of WITH_CONTENT) {
+      const seen = new Map<string, Set<string>>();
+      for (const body of bodiesFor(d)) {
+        for (const r of reportsOf(d, body)) {
+          const label = `${d.slug} ${r.audience} (${body.grade})`;
+          checkOrder(r, label);
+          const p = partOf(r, 'daily')!;
+          expect(p.intro, label).toBeTruthy();
+          expect(p.collapsed ?? false, label).toBe(partCards(p).length > 8);
+          if (d.engine === 'likert') checkSurvey(d, r, label, seen);
+          else checkSkills(d, r, body.grade, label);
+          cards += partCards(p).length;
+        }
+      }
+      // Anket testlerinde her ölçeğin üç düzey grubunun da örnekleri raporda göründü.
+      if (d.engine === 'likert') for (const s of dailyScales(d)) expect([...(seen.get(s.key) ?? [])].sort(), `${d.slug} ${s.key}`).toEqual(['average', 'high', 'low']);
+    }
+    expect(cards).toBeGreaterThan(100);
+  }, 240_000);
+
+  it('sesli dinleme bölümü eksiksiz okur', () => {
+    for (const d of WITH_CONTENT) for (const body of bodiesFor(d).slice(0, 2)) for (const r of reportsOf(d, body)) checkSpeech(r, `${d.slug} ${r.audience}`);
+  }, 120_000);
+
+  it('ekranda: bölüm "Düzeylerin anlamı"ndan sonra, cevaplardan önce; satırlar ve grafik sayfada', () => {
+    const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/'/g, '&#x27;').replace(/"/g, '&quot;');
+    for (const d of WITH_CONTENT) {
+      for (const r of reportsOf(d, bodiesFor(d)[0])) {
+        const html = renderToStaticMarkup(createElement(SimpleReportView, { report: r }));
+        const label = `${d.slug} ${r.audience}`;
+        const at = (key: ReportPart['key']) => html.indexOf(`id="bolum-${key}"`);
+        expect(at('daily'), label).toBeGreaterThan(at('levels'));
+        expect(at('daily'), label).toBeLessThan(at('answers'));
+        const p = partOf(r, 'daily')!;
+        for (const c of partCards(p)) {
+          for (const l of c.lines ?? []) expect(html, `${label} ${l.text}`).toContain(esc(l.text));
+          expect(html, label).toContain(esc(c.title));
+        }
+        expect(html.slice(at('daily'), at('answers')), label).toContain('<svg');
+      }
+    }
+  });
+
+  it('PDF: her test ve her kitle için üretilir; Kendini Tanı Paketi bölümleri içerir', async () => {
+    for (const d of WITH_CONTENT) {
+      for (const r of reportsOf(d, bodiesFor(d)[0])) {
+        const pdf = await renderSimpleReportPdf(r, 'olcekhane.com');
+        expect(pdf.subarray(0, 5).toString(), `${d.slug} ${r.audience}`).toBe('%PDF-');
+      }
+    }
+    // Paket: 7. sınıfta Beş Faktör ve Şekil Akıl Yürütme pakette; yetişkinde Şekil Akıl Yürütme.
+    for (const [grade, audience] of [
+      [7, 'student'],
+      [7, 'parent'],
+      [ADULT_GRADE, 'adult'],
+    ] as const) {
+      const entries: PackageEntry[] = packageTests(grade).map(({ slot, def }) => {
+        const body = def.engine === 'likert' ? likertBody(def.slug, grade, (i) => (i * 3 + 1) % 5) : { ...(Object.values(TASK_VARIANTS[def.slug])[0] as () => AnswersBody)(), grade };
+        const reports = evaluateReports(def.slug, { ...body, grade }) as Partial<Record<Audience, SimpleReport>>;
+        return { slug: def.slug, skill: slot.skill, areaName: PACKAGE_AREAS.find((a) => a.key === slot.area)!.name, report: reports[audience]! };
+      });
+      const withDaily = entries.filter((e) => DAILY[e.slug]);
+      expect(withDaily.length, `${grade} ${audience}`).toBeGreaterThan(0);
+      for (const e of entries) expect(!!partOf(e.report, 'daily'), `${e.slug} ${audience}`).toBe(!!DAILY[e.slug]);
+      for (const e of withDaily) checkOrder(e.report, `paket ${e.slug} ${audience}`);
+      const pdf = await renderPackageReportPdf({ entries, skipped: [], gradeLabel: String(grade), completedAt: new Date() }, 'olcekhane.com');
+      expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+    }
+  }, 240_000);
+});
+
+/* ---------- Özel durumlar ---------- */
+
+/** Anket raporunun içeriği (evaluate'in kurduğu gibi): durumları elle değiştirip bölümü yeniden kurmak için. */
+function surveyContent(d: LikertInstrument, answers: Record<string, LikertAnswer>, audience: Audience) {
+  const scores = likertRows(scoreLikert(d, answers, {})).map(toReportScore);
+  return buildReport({ def: d, scores, audience, studentName: '', grade: audience === 'adult' ? ADULT_GRADE : d.minGrade, completedAt: new Date(), qualityNotes: [], items: likertItemFlags(d, answers) });
+}
+
+describe('Günlük hayat: özel durumlar', () => {
+  const merak = LIVE.find((d) => d.slug === 'merak') as LikertInstrument;
+  const answers = Object.fromEntries(merak.items.map((it, i) => [it.key, { value: [2, 3, 4, 5][i % 4], rtMs: 3000 }]));
+
+  it('puan hesaplanamadıysa örnek yok, grafikte işaret yok, nedeni yazar; ayrışmada örnek yok; destek önerisi açıldıysa söylenir', () => {
+    for (const audience of ['student', 'parent', 'adult'] as const) {
+      const content = surveyContent(merak, answers, audience);
+      const sec = content.sections.find((s) => s.scaleKey === 'knowledge')!;
+      const run = (patch: Partial<typeof sec>) => {
+        const c = { ...content, sections: content.sections.map((s) => (s === sec ? { ...s, ...patch } : s)) };
+        return partCards(surveyDailyPart({ def: merak, content: c, parts: [] })!).find((x) => x.key === 'knowledge')!;
+      };
+      const none = run({ value: null, band: null });
+      expect([none.badge, none.lines, (none.visual as PolesVisual).value, (none.visual as PolesVisual).zone], audience).toEqual(['Hesaplanamadı', undefined, null, null]);
+      expect(none.text, audience).toContain('düzey belirlenemedi; bu yüzden örnek seçilmedi');
+      expect(none.spoken, audience).toContain('Yer belirlenemedi.');
+      checkDrawn(none.visual!, `hesaplanamadı ${audience}`);
+      const split = run({ split: true });
+      expect(split.lines, audience).toBeUndefined();
+      expect(split.text, audience).toMatch(/iki uca ayrıl/);
+      const flagged = run({ flagged: true });
+      expect(flagged.lines?.length, audience).toBe(3);
+      expect(flagged.text, audience).toMatch(/destek önerisinin çıkmasına yol açtı/);
+      for (const c of [none, split, flagged]) {
+        for (const s of sentences(c.text ?? '')) expect(wordCount(s), s).toBeLessThanOrEqual(22);
+        if (audience === 'parent') expect(hasSecondPerson(c.text ?? ''), c.text).toBe(false);
+      }
+    }
+  });
+
+  it('metni olmayan testte bölüm yok; sesli okumanın veli raporu öğrenciden söz eder', () => {
+    const oz = LIVE.find((d) => d.slug === 'oz-saygi') as LikertInstrument;
+    if (!DAILY[oz.slug]) {
+      const r = evaluate(oz.slug, likertBody(oz.slug, oz.minGrade, (i) => i % 4));
+      expect(partOf(r.student, 'daily')).toBeUndefined();
+    }
+    const oral = LIVE.find((d) => d.engine === 'oral')!;
+    const fake: SkillsDaily = {
+      kind: 'skills',
+      version: 'deneme-gunluk-1',
+      skills: [
+        {
+          key: 'oral',
+          covers: ['accuracy', 'rate', 'prosody'],
+          title: 'Sesli okuma',
+          short: 'Sesli okuma',
+          text: 'Sesli okuma, bir metni doğru ve akıcı okumayı gerektiren işlerde kullanılır.',
+          branches: { school: 'Sınıfta okumak', friends: 'Oyun yönergesi', home: 'Masal okumak' },
+          student: { school: 'a.', friends: 'b.', home: 'c.' },
+          parent: { school: 'd.', friends: 'e.', home: 'f.' },
+        },
+        {
+          key: 'comprehension',
+          covers: ['comprehension', 'retell'],
+          title: 'Okuduğunu anlama',
+          short: 'Anlama',
+          text: 'Anlama.',
+          branches: { school: 'A b', friends: 'C d', home: 'E f' },
+          student: { school: 'a.', friends: 'b.', home: 'c.' },
+          parent: { school: 'd.', friends: 'e.', home: 'f.' },
+        },
+      ],
+    };
+    const p = skillsDailyPart({ def: oral, audience: 'parent', grade: 3, daily: fake })!;
+    expect(p.intro).toContain('Örnekler öğrencinin sonucuna göre seçilmedi');
+    expect(p.intro).not.toMatch(/çocuğunuz/i);
+    expect(partCards(p).map((c) => c.title)).toEqual(['Sesli okuma', 'Okuduğunu anlama']);
+  });
+});
+
+/* ---------- Grafikler ---------- */
+
+describe('Günlük hayat: grafikler', () => {
+  it('iki uç: uzun adlar, uç değerler ve hesaplanamayan puan taşmaz; yazılar üst üste binmez', () => {
+    const long = 'Kendini ve duygularını saklar'.slice(0, POLE_MAX_CHARS);
+    const base: PolesVisual = { type: 'poles', label: 'Deneme', low: long, high: 'Başkalarına zaman ayırır', min: 1, max: 5, value: 3, zone: { from: 2.6, to: 3.4, label: 'Orta' }, marker: 'Çocuğunuzun yeri' };
+    for (const value of [1, 1.4, 3, 4.6, 5]) {
+      const zone = value < 2.6 ? { from: 1, to: 2.6, label: 'Düşük' } : value < 3.4 ? { from: 2.6, to: 3.4, label: 'Orta' } : { from: 3.4, to: 5, label: 'Yüksek' };
+      checkDrawn({ ...base, value, zone }, `iki uç ${value}`);
+      checkDrawn({ ...base, low: 'Önce dinler', high: 'Uzun soluklu bir konunun derinine', value, zone }, `iki uç uzun sağ ${value}`);
+    }
+    checkDrawn({ ...base, value: null, zone: null }, 'iki uç hesaplanamadı');
+    checkDrawn({ ...base, min: 10, max: 50, value: 10, zone: { from: 10, to: 25, label: 'Düşük' } }, 'toplam puan');
+  });
+
+  it('kullanıldığı yerler: en uzun ortam adları ve dallar, iki satırlık kısa ad taşmaz', () => {
+    const branch = 'Uzun bir listede bir ad bulmak'.slice(0, BRANCH_MAX_CHARS);
+    for (const contexts of [SKILL_CONTEXTS.you, SKILL_CONTEXTS.adult]) {
+      for (const center of ['Veri', 'Okuduğunu anlama', 'Geometri ve ölçme', 'Karşılaştırmalar'.slice(0, CENTER_MAX_CHARS)]) {
+        const v: ContextsVisual = { type: 'contexts', label: 'Deneme', center, branches: contexts.map((context) => ({ context, label: branch })) };
+        checkDrawn(v, `dallar ${center} ${contexts[0]}`);
+        checkDrawn({ ...v, branches: contexts.map((context) => ({ context, label: 'Kısa iş' })) }, `kısa dallar ${center}`);
+      }
+    }
+  });
+});

@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { DAILY } from '@/content/gunluk';
 import { publicInstruments } from '@/content/instruments';
 import { PACKAGE_AREAS, packageTests } from '@/content/paket';
 import { REPORT_TEMPLATES } from '@/content/reports';
@@ -137,7 +138,8 @@ describe('Ek bölümler: bütün anket testleri', () => {
       for (const answers of [mixed(d, 7), keyed(d, (i) => i % 2 === 0)]) {
         for (const r of reportsOf(d, answers)) {
           const label = `${d.slug} ${r.audience}`;
-          expect(r.parts?.map((p) => p.key), label).toEqual(['levels', 'answers', 'quality']);
+          // "Günlük hayatta nasıl görünür" metni yazılmış testlerde (tests/gunluk-hayat.test.ts) ikinci bölümdür.
+          expect(r.parts?.map((p) => p.key), label).toEqual(DAILY[d.slug] ? ['levels', 'daily', 'answers', 'quality'] : ['levels', 'answers', 'quality']);
           for (const p of r.parts!) {
             expect(p.intro, label).toBeTruthy();
             for (const c of partCards(p)) {

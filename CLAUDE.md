@@ -326,7 +326,7 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   üretilir" ve Türkçe ses yoksa ayarlardan indirme önerisi. Site metni hiçbir yere göndermez, saklamaz.
 - Okunacak metin raporun verisinden kurulur, DOM'dan değil (`lib/speech/report-text.ts`): ekrandaki sırayla ve ekrandaki
   görünme koşullarıyla başlık, uyarılar, öne çıkan sayılar, grafik (değerleri sözle; görünüşünü anlatan cümleler okunmaz),
-  kartlar, ek bölümler (eksiksiz: düzeyler, maddeler ve cevaplar, denetimler; "Bölümü geç" düğmesi), notlar; yol haritasında giriş, kısaca, öneriler (varsa), ortamlar, yaklaşım, haftalar (kaynak listesi okunmaz).
+  kartlar, ek bölümler (eksiksiz: düzeyler, günlük hayat örnekleri, maddeler ve cevaplar, denetimler; "Bölümü geç" düğmesi), notlar; yol haritasında giriş, kısaca, öneriler (varsa), ortamlar, yaklaşım, haftalar (kaynak listesi okunmaz).
   Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak gösterimleri ("(Kail, 1991)") ve kısa
   büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "62 kelime/dakika" →
   "dakikada 62 kelime", "1,5 sn" → "1,5 saniye", "5–8. sınıf" → "5. ile 8. sınıf", "{1 3/4}" → "1 tam 3 bölü 4", "102 045" tek
@@ -427,6 +427,22 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   `tests/rapor-bolumleri-okuma.test.ts` bütün sınıflarda ve sonuç örüntülerinde (hız uçları, tahmin, "Bilmiyorum", hep aynı
   seçenek, süre yok, otomatik analiz, metin bitmeden durma, kesinti, düğmeyle süre, yarım dinleme) bölümleri, kartların
   raporla ve uyarı kutusuyla aynı olmasını, dili, sesli okumayı, ekranı ve PDF'i dener.
+- Günlük hayat örnekleri (aşama d; `lib/reports/daily-parts.ts`, `evaluate.ts` ilk ek bölümün ardına koyar; ekranda, PDF'te,
+  sesli dinlemede ve pakette): metinler testin adresiyle `src/content/gunluk/<adres>.ts` (kayıt `index.ts`; model, örnekler ve
+  **yazarın denetim listesi** `types.ts`'in başında). Anket testlerinde **Günlük hayatta nasıl görünür**: sonuç kartı olan her
+  ölçek (`dailyScales`: ayrıntılı ve motivasyon profilinde boyutlar, ötekilerde bütün ölçekler) için iki ucun günlük karşılığı
+  (`poles`, 2–4 sözcük; değerlendirici ölçekte düşük uç "henüz") ve düşük/orta/yüksek grubunda üç ortam: Okulda, Arkadaşlarla,
+  Evde (yetişkinde "İşte ya da günlük işlerde"; `adult.work` zorunlu, öteki satırlar okul sözcüğü yoksa öğrencininki). Rozet
+  "Düzeylerin anlamı"ndaki rozettir; grafik `poles` (iki uç, düzeyin bölgesi, kişinin yeri; tek tonlu); sesli okumada "İki uç: …
+  Senin yerin … ucuna daha yakın" ve "Okulda: …". Puan hesaplanamadıysa ya da cevaplar iki uca ayrıldıysa örnek seçilmez (kısa
+  nedeniyle). Görev, okuma, sesli okuma ve konu taramada **Günlük hayatta nerede kullanılır**: her beceri ya da konu alanı
+  (`dailySources`; konu taramada formdan forma değişen alan `forms` ile ayrı kart) için tanım, grafik `contexts` (ortada kısa ad,
+  üç dalda yerler) ve üç ortam (Okulda, Oyunda ve arkadaşlarla, Evde); sonuca göre değişmez. Yazım: örnekler maddelerden ve
+  sitedeki metinlerden çıkar, yeni iddia yok; anket örnekleri temkinli ("-abilir", "bazen"), değerlendirici olmayan ölçekte iki
+  uç da bir kolaylık ve bir zorlukla; görevlerde tanımlayıcı ("bu tür işlerdir"), sonuç, zorlanma ve vaat yok; tanı, kıyas,
+  aile/cinsiyet varsayımı yok; cümle en çok 22, ortalama en çok 13 sözcük; 3. sınıfa açık testte çocuk dili. Yeni testin dosyası
+  eklenince `tests/gunluk-hayat.test.ts`'teki `DAILY_PENDING`'den adresi silinir; test kapsamı (her ölçek, grup, ortam, kitle;
+  her görev ve form), raporda yeri ve rozeti, işaretin bölgede olmasını, dili, sesli okumayı, ekranı, PDF'i ve paketi dener.
 
 ## Kendini Tanı Paketi
 

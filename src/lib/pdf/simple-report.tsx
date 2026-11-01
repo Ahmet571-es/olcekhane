@@ -1090,6 +1090,17 @@ function PartCardPdf({ card, you, visuals }: { card: PartCard; you: boolean; vis
           </View>
           {card.text && <Text style={s.para}>{card.text}</Text>}
           {visual && card.note && <Text style={[s.note, { marginTop: 2 }]}>{card.note}</Text>}
+          {card.lines && (
+            // Ortam ortam örnekler ("Günlük hayatta nasıl görünür"): ortamın adı kalın, ardından örnek.
+            <View style={{ marginTop: 2 }}>
+              {card.lines.map((l) => (
+                <Text key={l.label} style={{ fontSize: 9.5, lineHeight: 1.45, marginTop: 3 }}>
+                  <Text style={{ fontWeight: 700, color: C.brassInk }}>{l.label}: </Text>
+                  {l.text}
+                </Text>
+              ))}
+            </View>
+          )}
           {card.rows && (
             // Her madde tek bir yazı satırı (iç içe yazılarla; ayrı kutular uzun testlerde PDF'i yavaşlatıyordu).
             <View style={{ marginTop: 2 }}>

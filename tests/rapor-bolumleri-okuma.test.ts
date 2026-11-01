@@ -319,7 +319,10 @@ function checkSpeech(r: SimpleReport, label: string) {
 }
 
 function checkVisuals(r: SimpleReport, label: string) {
-  expect(r.parts?.map((p) => p.key), label).toEqual(['levels', 'answers', 'quality']);
+  // "Günlük hayatta nerede kullanılır" metni yazılmış testlerde (tests/gunluk-hayat.test.ts) ikinci bölümdür.
+  const keys = r.parts?.map((p) => p.key) ?? [];
+  expect(keys.filter((k) => k !== 'daily'), label).toEqual(['levels', 'answers', 'quality']);
+  if (keys.includes('daily')) expect(keys.indexOf('daily'), label).toBe(1);
   for (const p of r.parts!) {
     expect(p.intro, label).toBeTruthy();
     for (const c of partCards(p)) if (c.visual) checkDrawn(c.visual, `${label} ${p.key} ${c.title}`);

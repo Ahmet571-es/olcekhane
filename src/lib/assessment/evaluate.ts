@@ -5,6 +5,7 @@ import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
 import type { InstrumentDef } from '@/lib/instruments/types';
 import { buildAcademicRoadmap } from '@/lib/reports/academic-roadmap';
 import { buildReport, type Audience, type ReportContent } from '@/lib/reports/build';
+import { skillsDailyPart, surveyDailyPart, withDaily } from '@/lib/reports/daily-parts';
 import { buildInterestRoadmap } from '@/lib/reports/interest-roadmap';
 import { buildOralReport } from '@/lib/reports/oral';
 import { buildOralRoadmap } from '@/lib/reports/oral-roadmap';
@@ -185,8 +186,10 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     const data = body.data;
     return (audience, now) => {
       const report = buildOralReport({ def, passage, result, audience, grade: body.grade, completedAt: now });
-      // Ek bölümler: ölçülerin anlamı, okuma ve cevaplar tek tek, sonucun güvenilirliği (lib/reports/reading-parts.ts).
-      const parts = oralParts({ def, passage, result, audience, grade: body.grade, answers: data.answers, ...(data.listened !== undefined ? { listened: data.listened } : {}) });
+      // Ek bölümler: ölçülerin anlamı, günlük hayatta nerede kullanılır, okuma ve cevaplar tek tek, sonucun güvenilirliği
+      // (lib/reports/reading-parts.ts, daily-parts.ts).
+      const base = oralParts({ def, passage, result, audience, grade: body.grade, answers: data.answers, ...(data.listened !== undefined ? { listened: data.listened } : {}) });
+      const parts = withDaily(base, skillsDailyPart({ def, audience, grade: body.grade }));
       return { ...report, ...(withRoadmap ? { roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : {}), parts };
     };
   }
@@ -206,10 +209,11 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
     const report = toSimpleReport(content);
     const roadmap = roadmapFor(def, content, body);
     const compare = compareInfo(def, content, rows);
-    // Ek bölümler: anket testlerinde düzeylerin anlamı, cevaplar tek tek ve cevap kalitesi (lib/reports/likert-parts.ts).
+    // Ek bölümler: anket testlerinde düzeylerin anlamı, günlük hayatta nasıl görünür, cevaplar tek tek ve cevap kalitesi
+    // (lib/reports/likert-parts.ts).
     // Görev testlerinde düzeylerin ve ölçülerin anlamı, soru soru cevaplar ve sonucun güvenilirliği (lib/reports/task-parts.ts);
     // okuma ve konu taramada da aynı üç bölüm (reading-parts.ts, quiz-parts.ts).
-    const parts =
+    const base =
       def.engine === 'likert' && likert
         ? likertParts({ def, content, report, answers: likert.answers, quality: likert.quality })
         : def.engine === 'tasks' && traces
@@ -219,6 +223,13 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
             : def.engine === 'quiz'
               ? quizParts({ def, result: rows[0].extra as unknown as QuizResult, content, report })
               : [];
+    // "Günlük hayatta nasıl görünür" (lib/reports/daily-parts.ts; metinler src/content/gunluk/): ilk ek bölümün ardından.
+    const daily = !base.length
+      ? null
+      : def.engine === 'likert'
+        ? surveyDailyPart({ def, content, parts: base })
+        : skillsDailyPart({ def, audience, grade: body.grade });
+    const parts = withDaily(base, daily);
     return { ...report, ...(roadmap ? { roadmap } : {}), ...(compare ? { compare } : {}), ...(parts.length ? { parts } : {}) };
   };
 }
