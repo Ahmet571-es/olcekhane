@@ -92,14 +92,11 @@ export const DAILY_PENDING: string[] = [
   'zihniyet',
   // Görev testleri
   'kagit-katlama',
-  'sayisal-akil-yurutme',
-  'zihinden-hesaplama-hizi',
   'kup-acinimi',
   'parcalardan-sekil',
   'uc-boyutlu-zihinde-dondurme',
   'bakis-acisi-alma',
   'gizli-sekiller',
-  'dusunerek-karar-verme',
   'kelime-bilgisi',
   'planlama-kule-gorevi',
   'dikkat-ve-bellek',
@@ -317,6 +314,21 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
     { pattern: /şekil|sayı|matematik/iu, limitation: 'şekillerle ya da sayılarla akıl yürütme' },
     { pattern: /grupla|sırayı kur|ilişkiyi bul/iu, sibling: 'sozel-akil-yurutme' },
     { pattern: /ilk akla gelen|acele/iu, sibling: 'dusunerek-karar-verme' },
+  ],
+  'sayisal-akil-yurutme': [
+    { pattern: /konu bilgisi|matematik notu|karne/iu, limitation: 'matematik başarısını ya da konu bilgisini ölçmez' },
+    { pattern: /dizi|örüntü/iu, sibling: 'sayi-dizileri' },
+    { pattern: /zihinden|kafadan|çarpım tablosu|para üstü/iu, sibling: 'zihinden-hesaplama-hizi' },
+  ],
+  'zihinden-hesaplama-hizi': [
+    { pattern: /problem çöz/iu, limitation: 'problem çözmenin tamamını ölçmez' },
+    { pattern: /orantı|tarif/iu, sibling: 'sayisal-akil-yurutme' },
+    { pattern: /dizi|örüntü/iu, sibling: 'sayi-dizileri' },
+    { pattern: /eşit gruplara|kurabiye/iu, sibling: 'matematik-konu-tarama-testi' },
+  ],
+  'dusunerek-karar-verme': [
+    { pattern: /bütün kararlar|hayat kararı|önemli kararlar/iu, limitation: 'günlük hayattaki bütün kararlar' },
+    { pattern: /haber|iddia/iu, sibling: 'mantiksal-akil-yurutme' },
   ],
 };
 

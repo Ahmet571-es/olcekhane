@@ -1,4 +1,5 @@
 import { besFaktorDaily } from './bes-faktor-kisilik';
+import { dusunerekKararVermeDaily } from './dusunerek-karar-verme';
 import { duygusalZekaBilesenleriDaily } from './duygusal-zeka-bilesenleri';
 import { empatiDaily } from './empati';
 import { harfDizileriDaily } from './harf-dizileri';
@@ -11,12 +12,14 @@ import { ozDenetimDaily } from './oz-denetim';
 import { ozSaygiDaily } from './oz-saygi';
 import { ozYeterlikDaily } from './oz-yeterlik';
 import { sayiDizileriDaily } from './sayi-dizileri';
+import { sayisalAkilYurutmeDaily } from './sayisal-akil-yurutme';
 import { sekilAkilYurutmeDaily } from './sekil-akil-yurutme';
 import { sekilBenzetmeleriDaily } from './sekil-benzetmeleri';
 import { sesliOkumaDaily } from './sesli-okuma-degerlendirmesi';
 import { simgeBulmaDaily } from './simge-bulma';
 import { sozelAkilYurutmeDaily } from './sozel-akil-yurutme';
 import type { DailyContent } from './types';
+import { zihindenHesaplamaDaily } from './zihinden-hesaplama-hizi';
 
 /**
  * "Günlük hayatta nasıl görünür" metinlerinin kaydı: anahtar testin adresi (dosyanın adı da odur). Bir test buraya girince
@@ -42,4 +45,7 @@ export const DAILY: Record<string, DailyContent> = {
   'harf-dizileri': harfDizileriDaily,
   'sozel-akil-yurutme': sozelAkilYurutmeDaily,
   'mantiksal-akil-yurutme': mantiksalAkilYurutmeDaily,
+  'sayisal-akil-yurutme': sayisalAkilYurutmeDaily,
+  'zihinden-hesaplama-hizi': zihindenHesaplamaDaily,
+  'dusunerek-karar-verme': dusunerekKararVermeDaily,
 };
