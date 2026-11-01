@@ -81,7 +81,6 @@ export const DAILY_PENDING: string[] = [
   'dusunmeyi-sevme-olcegi',
   'dusunme-ve-calisma-tarzi',
   'heyecan-arayisi',
-  'iyimserlik',
   'empati',
   'oz-yeterlik',
   'oz-denetim',
@@ -158,6 +157,13 @@ const keyed = (d: LikertInstrument, up: (si: number) => boolean): Answers => {
   );
 };
 const middle = (d: LikertInstrument) => values(d)[Math.floor(values(d).length / 2)];
+/**
+ * Düz maddeler en altta, ters maddeler ortanın hemen altında (beş seçenekte ortada): ters bir maddesi destek kutusunu açan
+ * ölçeklerde düşük düzey işaretsiz de görünsün (İyimserlik'te kendine bakış ve ruh hâli, Öz-saygı). Öteki örüntülerde bu
+ * ölçeklerin düşük düzeyi ya ters maddenin işaretiyle (örnek yok) ya da hiç görünmez.
+ */
+const softLow = (d: LikertInstrument): Answers =>
+  Object.fromEntries(d.items.map((it) => [it.key, { value: it.reverse ? values(d)[Math.floor((values(d).length - 1) / 2)] : lo(d), rtMs: 3200 }]));
 
 /** Testin bir dizi sonuç örüntüsü (her ölçek her düzey grubuna en az bir kez düşsün). */
 function bodiesFor(d: InstrumentDef): AnswersBody[] {
@@ -165,7 +171,7 @@ function bodiesFor(d: InstrumentDef): AnswersBody[] {
     case 'likert': {
       const grade = d.minGrade;
       const mixed = (likertBody(d.slug, grade, (i) => (i * 3 + 1) % 5).data as { answers: Answers }).answers;
-      const sets = [all(d, lo(d)), all(d, hi(d)), all(d, middle(d)), keyed(d, (i) => i % 2 === 0), keyed(d, (i) => i % 2 === 1), mixed];
+      const sets = [all(d, lo(d)), all(d, hi(d)), all(d, middle(d)), keyed(d, (i) => i % 2 === 0), keyed(d, (i) => i % 2 === 1), softLow(d), mixed];
       // Sonuncusu mezun (13. sınıf) olarak da: ilk ortamın adı değişir.
       return [
         ...sets.map((answers) => ({ grade, data: { engine: 'likert' as const, answers } })),

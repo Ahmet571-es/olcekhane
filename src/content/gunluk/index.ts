@@ -1,4 +1,5 @@
 import { besFaktorDaily } from './bes-faktor-kisilik';
+import { iyimserlikDaily } from './iyimserlik';
 import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
 import { okumaHiziDaily } from './okuma-hizi-ve-anlama';
@@ -20,4 +21,5 @@ export const DAILY: Record<string, DailyContent> = {
   'okuma-hizi-ve-anlama': okumaHiziDaily,
   'matematik-konu-tarama-testi': matematikDaily,
   'sesli-okuma-degerlendirmesi': sesliOkumaDaily,
+  iyimserlik: iyimserlikDaily,
 };
