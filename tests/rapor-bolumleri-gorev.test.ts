@@ -10,7 +10,7 @@ import { ADULT_GRADE } from '@/lib/config';
 import type { TaskInstrument } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import { SAME_ITEMS } from '@/lib/compare/tasks';
-import { partCards, type PartCard, type ReportPart } from '@/lib/reports/parts';
+import { partCards, type PartCard, type PartRow, type ReportPart } from '@/lib/reports/parts';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { QUALITY_TITLE } from '@/lib/reports/task-parts-core';
 import { ITEMS_MIN_RADIUS, ITEMS_WRAP_AT, drawVisual } from '@/lib/reports/visual-draw';
@@ -32,6 +32,7 @@ import { assemblyBody, assemblyRank, cubeBody, cubeRank, hiddenBody, hiddenRank,
 import { schoolWords } from './helpers/school';
 import { TASK_VARIANTS } from './helpers/task-variants';
 import { checkDrawn } from './helpers/visual-check';
+import { pdfFlat, pdfText } from './helpers/pdf-text';
 
 /**
  * Görev (zekâ ve dikkat) testlerinin ek rapor bölümleri (site sahibinin 2026-10-31 isteği; aşama b; lib/reports/task-parts.ts):
@@ -105,6 +106,42 @@ const UNREAD = new RegExp(`nedeni “${QUALITY_TITLE.replace('?', '\\?')}” bö
 /** Aynı soruların geldiği testlerde satırlarda cevap anahtarını ele verecek etiketler. */
 const KEY_TAGS = /^(?:tür:|tuzaklı soru|tuzaksız eş soru|ilk akla gelen cevap|tuzak varmış gibi cevap|ilk listeden|ikinci listeden|.*yeni kelime$|iki ayna görüntüsü|tam ters yön|sağ ile sol karışık|haritaya göre yön)/;
 
+/** Aynı soruların geldiği testlerde satırın yeri: düzey, bölüm ya da ekranda yazılı en az hamle sayısı; ya da hiçbir şey. */
+const PLACE = /^(?:\d+\. düzey|\d+\. bölüm|\d+ hamlelik problem|)$/;
+/** Satırın değeri yalnızca sonuçtur (testlerin doğru, yanlış ve cevapsız adları). */
+const HIDDEN_VALUES = new Set([
+  'Doğru',
+  'Yanlış',
+  '“Bilmiyorum”',
+  'Doğru yöne yakın',
+  'Uzak',
+  'Cevap verilmedi',
+  'Süre içinde cevap yok',
+  'En az hamlede',
+  'Fazla hamleyle',
+  'Süre içinde çözülemedi',
+  'Hiç top taşınmadı',
+]);
+/** Sayı yalnızca süre etiketinde ("12 sn", "ilk top 4 sn"). */
+const TIME_TAG = /^(?:ilk top )?\d+(?:,\d+)? sn$/;
+
+/** Aynı soruların geldiği testte bir satır: seçenek numarası, verilen ya da doğru cevap, soru yok. */
+function checkHiddenRow(row: PartRow, trace: ItemTrace, at: string) {
+  expect(row.text, at).toMatch(PLACE);
+  expect(row.say, at).toBeUndefined();
+  expect(row.spoken, at).toBeUndefined();
+  expect(HIDDEN_VALUES.has(row.value), `${at}: ${row.value}`).toBe(true);
+  for (const tag of row.tags) {
+    expect(tag, at).not.toMatch(KEY_TAGS);
+    if (tag !== 'çok hızlı' && !TIME_TAG.test(tag)) expect(tag, at).not.toMatch(/\d/);
+  }
+  expect([row.text, row.value, ...row.tags].join(' · '), at).not.toMatch(/\d+\.\s*seçenek|doğrusu/);
+  // Verilen cevabın kendisi (sayı, harf, kelime) satırda yok (yer ve süre dışında).
+  const all = [row.value, ...row.tags.filter((t) => !TIME_TAG.test(t))].join(' · ');
+  const given = typeof trace.response === 'string' || typeof trace.response === 'number' ? String(trace.response) : null;
+  if (given && given.length > 1) expect(all, at).not.toContain(given);
+}
+
 /** Bir raporun bütün ek bölüm kartları (bölümüyle). */
 const allCards = (r: SimpleReport): [ReportPart, PartCard][] => (r.parts ?? []).flatMap((p) => partCards(p).map((c) => [p, c] as [ReportPart, PartCard]));
 
@@ -152,13 +189,12 @@ describe('Görev testlerinin ek bölümleri: bütün testler, bütün örüntül
     }
   }, 300_000);
 
-  it('soru soru cevaplar puanlamayla aynı: sayı, doğru ve yanlışlar, verilen cevaplar', () => {
+  it('soru soru cevaplar puanlamayla aynı: sayı, doğru ve yanlışlar; aynı soruların geldiği testlerde cevap yazılmaz', () => {
     for (const d of TASKS) {
       for (const [name, make] of variantsOf(d.slug)) {
         const body = make();
         const traces = tracesOf(d.slug, body);
-        const [student, parent] = reportsOf(d.slug, body);
-        for (const r of [student, parent]) {
+        for (const r of reportsOf(d.slug, body)) {
           const cards = partCards(partOf(r, 'answers')!);
           for (const t of d.tasks) {
             const ts = traces[t.key];
@@ -176,18 +212,11 @@ describe('Görev testlerinin ek bölümleri: bütün testler, bütün örüntül
             expect(card!.badge, label).toBe(`${ts.length} ${card!.rowsHead!.item}`);
             // Doğru ve yanlış satırlar soluk değil; cevapsızlar soluk.
             expect(card!.rows!.filter((x) => !x.muted).length, label).toBe(count('correct') + count('wrong'));
-            // Aynı soruların geldiği testlerde satırlar cevap anahtarı olmaz: doğru cevap ve onu ele veren etiketler yazılmaz.
+            // Aynı soruların geldiği testlerde satırlar cevap anahtarı olmaz: soru, verilen ve doğru cevap yazılmaz; yalnızca yeri,
+            // doğru mu yanlış mı (ya da cevapsız), yanlışın türü, "çok hızlı" ve süre.
             if (SAME_ITEMS.has(t.kind)) {
-              for (const row of card!.rows!) {
-                expect(row.value, `${label} ${row.no}`).not.toMatch(/doğrusu/);
-                for (const tag of row.tags) expect(tag, `${label} ${row.no}`).not.toMatch(KEY_TAGS);
-              }
-            }
-            // Seçenekli sorularda verilen cevap satırda (karmaşık dizide sıralama farklı).
-            if ('options' in t || t.kind === 'matrix_reasoning') {
-              ts.forEach((x, i) => {
-                if (typeof x.response === 'number') expect(card!.rows![i].value, `${label} ${i}`).toMatch(new RegExp(`^${x.response}\\. seçenek`));
-              });
+              expect(card!.rowsHead!.value, label).toBe('Sonuç');
+              card!.rows!.forEach((row, i) => checkHiddenRow(row, ts[i], `${label} ${row.no}`));
             }
           }
         }
@@ -567,13 +596,65 @@ describe('Bağımsız inceleme bulguları (aşama b)', () => {
     }
   });
 
-  it('karşılaştırma bölümü aynı soruların geldiği testte raporun hangi cevapların doğru olduğunu yazdığını söyler', async () => {
+  it('karşılaştırma bölümü aynı soruların geldiği testte raporun cevapları değil, hangi soruların doğru bilindiğini yazdığını söyler', async () => {
     const { retestNote } = await import('@/components/test/compare-panel');
     for (const you of [true, false]) {
       const t = retestNote('items', you);
-      expect(t).toMatch(/hangi cevaplarının doğru olduğu yazılıdır/);
+      expect(t).toMatch(/yalnızca (?:çocuğunuzun )?hangi soruları doğru bildiği?n? yazılıdır/);
+      expect(t).not.toMatch(/cevaplarının doğru/);
       for (const s of sentences(t.replace(/\s*\([^()]*\d{4}\)/g, ''))) expect(s.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w)).length, s).toBeLessThanOrEqual(22);
     }
     expect(retestNote('practice', true)).not.toMatch(/aynı sorular/);
   });
+});
+
+describe('Aynı soruların geldiği testlerde rapor cevap anahtarı olmaz', () => {
+  const FIXED = TASKS.filter((d) => d.tasks.some((t) => SAME_ITEMS.has(t.kind)));
+  /** Kelime listesi görevinin bütün kelimeleri (iki liste ve tanıma listesi). */
+  const listWords = (d: TaskInstrument) =>
+    d.tasks.flatMap((t) => (t.kind === 'word_list' ? [...t.listA, ...t.listB, ...t.recognition] : [])).map((w) => w.toLocaleLowerCase('tr-TR'));
+  const hasWord = (text: string, w: string) => new RegExp(`(?:^|[^\\p{L}])${w}(?:[^\\p{L}]|$)`, 'u').test(text.toLocaleLowerCase('tr-TR'));
+
+  it('bölümün girişi ne verilen ne de doğru cevabın yazıldığını söyler; soruları değişen testte doğrusu yazılır', () => {
+    expect(FIXED.length).toBeGreaterThan(10);
+    for (const d of FIXED) {
+      for (const r of reportsOf(d.slug, (TASK_VARIANTS[d.slug].varsayilan as Make)())) {
+        const intro = partOf(r, 'answers')!.intro ?? '';
+        expect(intro, `${d.slug} ${r.audience}`).toMatch(/ne verilen cevap ne de doğru cevap yazılır/);
+        expect(intro, `${d.slug} ${r.audience}`).not.toMatch(/verilen cevap,|doğrusu/);
+      }
+    }
+    const [student] = reportsOf('zihinden-hesaplama-hizi', (TASK_VARIANTS['zihinden-hesaplama-hizi'].varsayilan as Make)());
+    expect(partOf(student, 'answers')!.intro).toMatch(/verilen cevap, doğru ya da yanlış olduğu, yanlışsa doğrusu/);
+  });
+
+  it('kelime listesinde yazılan kelimeler yazılmaz: ek bölümlerin hiçbir yerinde listelerin kelimeleri yok (bütün örüntüler)', () => {
+    const d = TASKS.find((x) => x.slug === 'kelime-listesi-hatirlama')!;
+    const words = listWords(d);
+    expect(words.length).toBeGreaterThan(20);
+    for (const [name, make] of variantsOf(d.slug)) {
+      for (const r of reportsOf(d.slug, make())) {
+        for (const [p, c] of allCards(r)) {
+          const text = [c.title, c.badge, c.text, ...(c.spoken ?? []), ...(c.rows ?? []).flatMap((x) => [x.text, x.value, x.say ?? '', ...x.tags])].join(' · ');
+          for (const w of words) expect(hasWord(text, w), `${name} ${r.audience} ${p.key} ${c.key}: ${w}`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('PDF: satırlar yalnızca yer, sonuç, etiketler ve süre; hiçbir yerde seçenek numarası ya da listenin kelimeleri yok', async () => {
+    for (const d of FIXED) {
+      const words = listWords(d);
+      for (const r of reportsOf(d.slug, (TASK_VARIANTS[d.slug].varsayilan as Make)())) {
+        const at = `${d.slug} ${r.audience}`;
+        const text = pdfText(await renderSimpleReportPdf(r, 'olcekhane.com'));
+        const flat = pdfFlat(text);
+        expect(flat, at).not.toMatch(/\d+\.seçenek|doğrusu/);
+        // PDF satırları raporun satırlarıyla aynı yazılır: numara, yer, sonuç (verilen cevap yok).
+        for (const c of partCards(partOf(r, 'answers')!))
+          for (const row of c.rows ?? []) expect(flat, `${at} ${c.key} ${row.no}`).toContain(pdfFlat(`${row.no}. ${row.text ? `${row.text} · ` : ''}${row.value}`));
+        for (const w of words) expect(hasWord(text.replace(/\s+/g, ' '), w), `${at}: ${w}`).toBe(false);
+      }
+    }
+  }, 600_000);
 });

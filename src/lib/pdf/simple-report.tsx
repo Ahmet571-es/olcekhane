@@ -1093,7 +1093,11 @@ function PartCardPdf({ card, you, visuals }: { card: PartCard; you: boolean; vis
                 <Text key={r.no} style={{ fontSize: 8.5, lineHeight: 1.4, marginTop: 2.5, color: r.muted ? C.ink3 : C.ink }}>
                   <Text style={{ color: C.ink3 }}>{r.label ?? `${r.no}.`} </Text>
                   {pdfMath(r.text)}
-                  <Text style={{ fontWeight: r.muted ? 400 : 700 }}> · {pdfMath(r.value)}</Text>
+                  {/* Metni boş satırda (aynı soruların geldiği testler) değer numaradan hemen sonra gelir. */}
+                  <Text style={{ fontWeight: r.muted ? 400 : 700 }}>
+                    {r.text ? ' · ' : ''}
+                    {pdfMath(r.value)}
+                  </Text>
                   {r.tags.length > 0 && <Text style={{ fontSize: 7.5, color: C.brassInk }}> · {pdfMath(r.tags.join(' · '))}</Text>}
                 </Text>
               ))}

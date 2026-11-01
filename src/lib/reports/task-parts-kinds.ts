@@ -300,6 +300,7 @@ function seriesKind(
       return {
         group: it.level - 1,
         shown: `${it.level}. düzey · ${terms}`,
+        place: `${it.level}. düzey`,
         say: `${it.level}. düzey. ${terms.replace('?', `eksik ${o.unit}`)}`,
         status: t.status,
         given: t.response === null ? null : String(t.response),
@@ -1103,9 +1104,11 @@ function rotation3dKind(c: Ctx, task: MentalRotation3dTask, r: Rotation3dResult)
       return {
         group: it.part - 1,
         shown: `${it.part}. bölüm`,
+        place: `${it.part}. bölüm`,
         status: t.status,
+        // Aynı sorular geldiği için satırda yalnızca bölüm, doğru ya da yanlış ve yanlışın türü yazılır (Ctx.fixed).
         given: `${pair(t.response as string)} şekil`,
-        // "İki ayna görüntüsü" yazılmaz: seçilmeyen iki şeklin doğru olduğunu ele verirdi (aynı sorular gelir).
+        // "İki ayna görüntüsü" yazılmaz: seçilmeyen iki şeklin doğru olduğunu ele verirdi.
         tags: t.lure === 'half' ? ['bir doğru şekil, bir ayna görüntüsü'] : [],
         rtMs: t.rtMs,
         rapid: !!t.rapid,
@@ -1305,9 +1308,9 @@ function perspectiveKind(c: Ctx, task: PerspectiveTask, r: PerspectiveResult): K
         shown: questionText(task.objects, task.items[x.index]),
         status,
         given: x.response === null ? null : sectorWords(x.response),
-        // Uzak cevapta açı farkı ve hata türü yazılmaz: verilen yönle birlikte doğru yönü ele verirdi (aynı sorular gelir).
-        // Türlerin sayısı "Belirli bir hata türü" denetimindedir.
-        tags: status === 'correct' ? [`${dec1(x.error)}° fark`] : [],
+        // Aynı sorular geldiği için soru, verilen yön, açı farkı ve hata türü satırda yazılmaz (Ctx.fixed); ortalama hata ve
+        // türlerin sayısı kendi kartlarındadır.
+        tags: [],
         rtMs: x.rt,
         rapid: x.response !== null && x.rt !== null && x.rt < PA_RAPID_MS && x.error > 45,
       };
@@ -3851,7 +3854,15 @@ function wordListKind(c: Ctx, task: WordListTask): KindParts | null {
     rows: recalls.map((x, i) => ({
       no: i + 1,
       text: x.label,
-      value: x.t.entries === 0 ? 'Kelime yazılmadı' : `${x.t.correct} kelime: ${x.t.recalled.map((p) => x.list[p]).join(', ') || '—'}`,
+      // Listeler her seferinde aynıdır (Ctx.fixed): yazılan kelimeler satırda yazılmaz, yalnızca doğru kelimelerin sayısı.
+      value:
+        x.t.entries === 0
+          ? 'Kelime yazılmadı'
+          : c.fixed
+            ? x.t.correct
+              ? `${x.t.correct} kelime`
+              : 'Doğru kelime yok'
+            : `${x.t.correct} kelime: ${x.t.recalled.map((p) => x.list[p]).join(', ') || '—'}`,
       tags: [
         ...(x.t.extra ? [`${x.t.extra} listede olmayan`] : []),
         ...(x.t.otherList ? [`${x.t.otherList} öteki listeden`] : []),
@@ -3860,8 +3871,9 @@ function wordListKind(c: Ctx, task: WordListTask): KindParts | null {
       ],
       ...(x.t.entries === 0 ? { muted: true } : {}),
     })),
-    rowsHead: { item: 'deneme', value: v(c, 'Yazdıkların', 'Yazılanlar') },
-    spoken: recalls.map((x) => `${x.label}: ${sayCount(x.t.correct, 'kelime')}.`),
+    // Satırlar denemenin adıyla okunur ("1. deneme (ilk liste)"); doğru kelime sayısı satırda okunduğu için ayrıca okunmaz.
+    rowsHead: c.fixed ? { item: 'deneme', value: 'Doğru yazılan', numbered: false } : { item: 'deneme', value: v(c, 'Yazdıkların', 'Yazılanlar') },
+    ...(c.fixed ? {} : { spoken: recalls.map((x) => `${x.label}: ${sayCount(x.t.correct, 'kelime')}.`) }),
   };
   const recog = itemsCard(c, {
     key: `${task.key}-tanima`,
@@ -4045,6 +4057,8 @@ function towerKind(c: Ctx, task: TowerTask): KindParts | null {
       return {
         group: moves.indexOf(it.minMoves),
         shown: `${it.minMoves} hamlelik problem`,
+        // En az hamle sayısı problemde ekranda yazılıdır; cevap anahtarı değildir.
+        place: `${it.minMoves} hamlelik problem`,
         status: t.status,
         given: t.status === 'skip' ? null : `${resp.moves} hamle`,
         tags: resp.pick !== null ? [`ilk top ${secTag(resp.pick)}`] : [],

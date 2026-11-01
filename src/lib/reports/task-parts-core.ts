@@ -23,6 +23,12 @@ export interface Ctx {
   /** Raporun sonuç kartı (yorumlanıp yorumlanmadığı, başlığı). */
   block: (key: string) => CognitiveBlock | undefined;
   traces: Record<string, ItemTrace[]>;
+  /**
+   * Testte her seferinde aynı sorular gelir (lib/compare/tasks.ts, `SAME_ITEMS`): soru soru satırlarda ne verilen ne de doğru
+   * cevap yazılır, soru da yazılmaz; yalnızca yeri (düzey, bölüm), doğru mu yanlış mı, yanlışın türü ve süre. Raporlar
+   * paylaşılıp birleştirilse de cevap anahtarı çıkmaz ve sorular yeniden çözülünce de işe yarar.
+   */
+  fixed: boolean;
 }
 
 /** Bir görevin üç bölüme katkısı: soru soru cevaplar, düzeyler ve ölçüler, denetimler. */
@@ -107,6 +113,8 @@ export interface ItemRow {
   group: number;
   /** Ekranda gösterilen (ör. "2. düzey · 3, 6, 12, ?"). */
   shown: string;
+  /** Sorunun yalnızca yeri (ör. "2. düzey", "3. bölüm"): aynı soruların geldiği testlerde satırda yalnızca bu yazılır. */
+  place?: string;
   /** Sesli okunuşu, ekrandakinden farklıysa. */
   say?: string;
   status: Status;
@@ -183,8 +191,12 @@ function timeAxis(rows: ItemRow[], rapidMs?: number): number | null {
   return niceMax(Math.max(pick(secs, 0.9) * 1.15, rapidMs ? (rapidMs / 1000) * 1.8 : 0, 1));
 }
 
-/** Soru soru cevaplar kartı: soru şeridi ve satırlar (soru, cevap, doğrusu, yanlışın türü, süre). */
+/**
+ * Soru soru cevaplar kartı: soru şeridi ve satırlar (soru, cevap, doğrusu, yanlışın türü, süre). Aynı soruların geldiği
+ * testlerde (`Ctx.fixed`) satırda soru, verilen ve doğru cevap yazılmaz: yalnızca yeri, doğru mu yanlış mı, etiketler, süre.
+ */
 export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
+  const hide = c.fixed && !s.showKey;
   // Uzun listede şerit satır satır çizilir ve süre çizilmez (lib/reports/visual-draw.ts, ITEMS_WRAP_AT).
   const wrapped = s.rows.length > ITEMS_WRAP_AT;
   const max = s.timed && !wrapped ? timeAxis(s.rows, s.rapid?.ms) : null;
@@ -218,9 +230,9 @@ export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
   const quietAll = long && s.rows.length - ok > SPEECH_NOTABLE_MAX;
   const rows: PartRow[] = s.rows.map((r, i) => ({
     no: i + 1,
-    text: r.shown,
-    ...(r.say ? { say: r.say } : {}),
-    value: rowValue(s, r),
+    text: hide ? (r.place ?? '') : r.shown,
+    ...(r.say && !hide ? { say: r.say } : {}),
+    value: rowValue(s, hide ? { ...r, given: null, expected: null } : r),
     tags: [...(r.tags ?? []), ...(r.rapid ? ['çok hızlı'] : []), ...(r.rtMs !== null && !s.noTime ? [secTag(r.rtMs)] : [])],
     ...(r.status === 'correct' || r.status === 'wrong' ? {} : { muted: true }),
     ...(quietAll || (long && r.status === 'correct') ? { silent: true } : {}),
@@ -250,7 +262,7 @@ export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
     note,
     visual,
     rows,
-    rowsHead: { item: s.noun, value: v(c, 'Cevabın', 'Cevabı') },
+    rowsHead: { item: s.noun, value: hide ? 'Sonuç' : v(c, 'Cevabın', 'Cevabı') },
     spoken: [
       `${cap(okName)}: ${sayCount(ok)}. ${cap(wrongName)}: ${sayCount(wrong)}.${none ? ` ${cap(noneName.replace(/[“”]/g, ''))}: ${sayCount(none)}.` : ''}`,
       ...(quietNote ? [quietNote] : []),

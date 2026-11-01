@@ -92,6 +92,7 @@ import {
   levelsCard,
   lower,
   measureCard,
+  pl,
   medianText,
   read,
   retake,
@@ -157,6 +158,7 @@ function choiceKind(c: Ctx, s: ChoiceSpec): KindParts {
     return {
       group: level - 1,
       shown: `${level}. düzey${sh.text ? ` · ${sh.text}` : ''}`,
+      place: `${level}. düzey`,
       ...(sh.say ? { say: `${level}. düzey. ${sh.say}` } : {}),
       status: t.status,
       given: s.given(t.response as number, t.index),
@@ -620,6 +622,8 @@ export function taskParts(input: {
     score: (k) => byKey.get(k),
     block: (k) => blocks.get(k),
     traces: input.traces,
+    // Her seferinde aynı soruların geldiği görevlerde rapor cevap anahtarı olmaz (lib/compare/tasks.ts, SAME_ITEMS).
+    fixed: def.tasks.some((t) => SAME_ITEMS.has(t.kind)),
   };
   const done = new Set<string>();
   const kinds = def.tasks.flatMap((t) => kindParts(c, t, done) ?? []);
@@ -628,8 +632,6 @@ export function taskParts(input: {
   const group = (k: KindParts, cards: PartCard[]): PartGroup => ({ ...(multi ? { title: k.name } : {}), cards });
   const trials = def.tasks.some((t) => TRIAL_KINDS.has(t.kind));
   const questions = def.tasks.every((t) => QUESTION_KINDS.has(t.kind));
-  // Her seferinde aynı soruların geldiği görevlerde rapor cevap anahtarı olmaz (lib/compare/tasks.ts, SAME_ITEMS).
-  const fixed = def.tasks.some((t) => SAME_ITEMS.has(t.kind));
 
   /* 3. Denetimler (önce kurulur: "Dikkat" varsa ölçüler de bunu söyler). */
   const checks = kinds.flatMap((k) => k.checks);
@@ -697,16 +699,18 @@ export function taskParts(input: {
         : v(c, 'Tek tek cevapların', 'Çocuğunuzun cevapları tek tek'),
     intro: [
       ...(itemNouns.length
-        ? [`Her ${joinWords(itemNouns)} tek tek yazılır: verilen cevap, doğru ya da yanlış olduğu${fixed ? '' : ', yanlışsa doğrusu'}, yanlışın türü ve süre.`]
+        ? [
+            c.fixed
+              ? `Her ${joinWords(itemNouns)} için ayrı satırda doğru ya da yanlış olduğu, yanlışın türü ve süre yazılır.`
+              : `Her ${joinWords(itemNouns)} tek tek yazılır: verilen cevap, doğru ya da yanlış olduğu, yanlışsa doğrusu, yanlışın türü ve süre.`,
+          ]
         : []),
       ...(summed ? ['Çok denemeli hızlı görevlerde denemeler bölüm bölüm özetlenir; her deneme bir parçada sayılır.'] : []),
-      ...(fixed
+      // Aynı soruların geldiği testlerde ne soru ne verilen ne de doğru cevap yazılır (Ctx.fixed).
+      ...(c.fixed
         ? [
-            v(
-              c,
-              'Bu testte her seferinde aynı sorular geldiği için doğru cevaplar yazılmaz; yalnızca cevabının doğru ya da yanlış olduğu yazılır.',
-              'Bu testte her seferinde aynı sorular geldiği için doğru cevaplar yazılmaz; yalnızca cevabın doğru ya da yanlış olduğu yazılır.',
-            ),
+            `Bu testte her seferinde aynı ${pl(itemNouns[0] ?? 'soru')} gelir; bu yüzden ne verilen cevap ne de doğru cevap yazılır.`,
+            'Böylece cevaplar raporlardan öğrenilemez; test yeniden çözüldüğünde de işe yarar.',
           ]
         : []),
       ...(c.adult ? [] : ['Görevdeki cevaplar bir görüş bildirmez, bir görevin nasıl yapıldığını gösterir; bu yüzden bu bölüm veli raporunda da yer alır.']),

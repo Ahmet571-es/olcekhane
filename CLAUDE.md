@@ -377,8 +377,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   en az %60'ı; raporda geçen her ölçünün ne olduğu ve nasıl hesaplandığı, değeri grafikte; başka kişilerle karşılaştırma yok),
   **Soru soru cevapların** (puanlamanın kendi soru soru sonuçlarından: `ItemTrace`, puanlama işlevleri `items` döndürür; düzey,
   gösterilen ve verilen cevap, doğru mu, yanılgı türü, süre; her seferinde aynı soruların geldiği testlerde (`SAME_ITEMS`,
-  `lib/compare/tasks.ts`) doğru cevap ve cevabı ele veren etiket yazılmaz (cevap anahtarı yayılmasın; karşılaştırma notu da
-  söyler), üretilen ya da alıştırma sorularında (dizi, zihinden hesaplama) doğrusu yazılır; grafik `items`: işaretler sırayla,
+  `lib/compare/tasks.ts`; `Ctx.fixed`) satırda soru, verilen cevap (seçenek numarası, yazılan sayı ya da kelime, kelime
+  listesinde hatırlanan kelimeler) ve doğru cevap yazılmaz; yalnızca yeri (düzey, bölüm), doğru mu yanlış mı, seçenek ya da
+  değer anmayan yanılgı türü, "çok hızlı" ve süre (raporlar birleştirilse de cevap anahtarı çıkmasın, sorular yeniden
+  çözülünce de işe yarasın; bölümün girişi ve karşılaştırma notu da söyler); üretilen ya da alıştırma sorularında (dizi,
+  zihinden hesaplama) verilen cevap ve doğrusu yazılır; grafik `items`: işaretler sırayla,
   yükseklik süre, "çok hızlı" bandı, 25'ten çok soruda her grup ayrı satırda ve süresiz; yüzlerce denemeli hızlı görevlerde
   "Deneme deneme sonuçların": çeyrek, yarı ya da bölüm özetleri, grafik `blocks`; görevdeki cevap bir performans olduğu için
   veli raporunda da var; uzun listelerde sesli dinleme yalnızca dikkat çeken satırları okur; PDF'te ek), **Sonuca ne kadar
@@ -392,7 +395,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   sonuç şansla açıklanabilir sayılır; "şansla açıklanamayacak kadar çok" yalnızca olasılık .05'in altındaysa yazılır. Bu kural
   bir sonucu değiştirebiliyorsa testin sürümü artırılır (küp açınımı, gizli şekiller, parçalardan şekil: 2). Yeni görev testinin
   türü `task-parts-kinds.ts`'e eklenir; `tests/rapor-bolumleri-gorev.test.ts` bütün örüntülerde (`task-variants.ts`) dener:
-  bölümler ve grafikleri, satırların puanlamayla aynı olması, aynı sorulu testlerde cevap anahtarı olmaması, denetimlerin
+  bölümler ve grafikleri, satırların puanlamayla aynı olması, aynı sorulu testlerde satırlarda ve PDF'te cevap olmaması (PDF'in
+  yazısı `tests/helpers/pdf-text.ts` ile okunur), denetimlerin
   uyarılarla ve çubuk bölgeleriyle uyumu, elle kurulan örüntüler (şans kuralı dahil), işaretlerin en küçük boyu, dil, ekrandaki
   sıra, sesli okuma, PDF.
 - Okuma, sesli okuma ve konu tarama (`lib/reports/reading-parts.ts`, `quiz-parts.ts`; `evaluate.ts` kurar; grafikler
