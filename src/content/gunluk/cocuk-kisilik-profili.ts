@@ -45,12 +45,12 @@ export const cocukKisilikDaily: SurveyDaily = {
           from: { school: ['E1', 'E2'], friends: ['E5', 'E4'], home: ['E6'] },
           student: {
             school: 'Sınıfa yeni gelen biriyle bazen konuşmayı sen başlatabilir, bazen onun gelmesini bekleyebilirsin.',
-            friends: 'Arkadaşlarınla oynarken bazen ortamı sen neşelendirebilir, bazen geride durmayı seçebilirsin.',
+            friends: 'Arkadaşlarınla oynarken bazen ortamı neşelendirebilir, bazen geride durmayı seçebilirsin.',
             home: 'Kalabalık bir sofrada bazen çok konuşabilir, bazen sessiz kalabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz sınıfa yeni gelen biriyle bazen konuşmayı kendisi başlatabilir, bazen onun gelmesini bekleyebilir.',
-            friends: 'Arkadaşlarıyla oynarken bazen ortamı o neşelendirebilir, bazen geride durmayı seçebilir.',
+            friends: 'Arkadaşlarıyla oynarken bazen ortamı neşelendirebilir, bazen geride durmayı seçebilir.',
             home: 'Kalabalık bir sofrada bazen çok konuşabilir, bazen sessiz kalabilir.',
           },
         },
@@ -58,12 +58,12 @@ export const cocukKisilikDaily: SurveyDaily = {
           from: { school: ['E3'], friends: ['E5'], home: ['E5'] },
           student: {
             school: 'Yeni bir sınıfa geçince kısa sürede yeni arkadaşlar edinebilirsin.',
-            friends: 'Arkadaşlarınla birlikteyken ortamı çoğu zaman sen neşelendirebilirsin.',
+            friends: 'Arkadaşlarınla birlikteyken ortamı çoğu zaman neşelendirebilirsin.',
             home: 'Uzun süre tek başına oynayınca canın sıkılabilir.',
           },
           parent: {
             school: 'Çocuğunuz yeni bir sınıfa geçince kısa sürede yeni arkadaşlar edinebilir.',
-            friends: 'Arkadaşlarıyla birlikteyken ortamı çoğu zaman o neşelendirebilir.',
+            friends: 'Arkadaşlarıyla birlikteyken ortamı çoğu zaman neşelendirebilir.',
             home: 'Uzun süre tek başına oynayınca canı sıkılabilir.',
           },
         },

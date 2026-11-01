@@ -25,6 +25,7 @@ import { iyimserlikDaily } from './iyimserlik';
 import { kagitKatlamaDaily } from './kagit-katlama';
 import { kelimeBilgisiDaily } from './kelime-bilgisi';
 import { kelimeListesiDaily } from './kelime-listesi-hatirlama';
+import { kisiligin10YonuDaily } from './kisiligin-10-yonu';
 import { kupAcinimiDaily } from './kup-acinimi';
 import { kuralDegistirmeDaily } from './kural-degistirme';
 import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
@@ -71,6 +72,7 @@ export const DAILY: Record<string, DailyContent> = {
   'cocuk-kisilik-profili': cocukKisilikDaily,
   'hizli-kisilik-testi': hizliKisilikDaily,
   'ayrintili-kisilik-profili': ayrintiliKisilikDaily,
+  'kisiligin-10-yonu': kisiligin10YonuDaily,
   'simge-bulma': simgeBulmaDaily,
   'sekil-akil-yurutme': sekilAkilYurutmeDaily,
   'okuma-hizi-ve-anlama': okumaHiziDaily,

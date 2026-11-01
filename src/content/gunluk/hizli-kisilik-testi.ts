@@ -49,12 +49,12 @@ export const hizliKisilikDaily: SurveyDaily = {
           from: { school: ['m06'], friends: ['m01', 'm16'], home: ['m11'], work: ['m06'] },
           student: {
             school: 'Bazı derslerde çok konuşabilir, bazılarında sessiz kalmayı seçebilirsin.',
-            friends: 'Arkadaş ortamında bazen havayı sen canlandırabilir, bazen geri planda kalabilirsin.',
+            friends: 'Arkadaş ortamında bazen havayı canlandırabilir, bazen geri planda kalabilirsin.',
             home: 'Misafir gelince bazı kişilerle uzun uzun konuşabilir, bazılarıyla az konuşabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı derslerde çok konuşabilir, bazılarında sessiz kalmayı seçebilir.',
-            friends: 'Arkadaş ortamında bazen havayı o canlandırabilir, bazen geri planda kalabilir.',
+            friends: 'Arkadaş ortamında bazen havayı canlandırabilir, bazen geri planda kalabilir.',
             home: 'Misafir gelince bazı kişilerle uzun uzun konuşabilir, bazılarıyla az konuşabilir.',
           },
           adult: {
@@ -165,12 +165,12 @@ export const hizliKisilikDaily: SurveyDaily = {
           from: { school: ['m03'], friends: ['m13'], home: ['m08'], work: ['m03'] },
           student: {
             school: 'Bazı ödevleri hemen yapabilir, bazılarını sonraya bırakabilirsin.',
-            friends: 'Arkadaşlarınla bir iş yaparken bazen düzeni sen kurabilir, bazen akışına bırakabilirsin.',
+            friends: 'Arkadaşlarınla bir iş yaparken bazen düzeni kurmak isteyebilir, bazen akışına bırakabilirsin.',
             home: 'Kullandığın şeyleri bazen hemen yerine koyabilir, bazen ortada bırakabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı ödevleri hemen yapabilir, bazılarını sonraya bırakabilir.',
-            friends: 'Arkadaşlarıyla bir iş yaparken bazen düzeni o kurabilir, bazen akışına bırakabilir.',
+            friends: 'Arkadaşlarıyla bir iş yaparken bazen düzeni kurmak isteyebilir, bazen akışına bırakabilir.',
             home: 'Kullandığı şeyleri bazen hemen yerine koyabilir, bazen ortada bırakabilir.',
           },
           adult: {

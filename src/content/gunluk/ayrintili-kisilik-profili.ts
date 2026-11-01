@@ -51,7 +51,7 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
         average: {
           from: { school: ['k012', 'k102'], friends: ['k007', 'k067'], home: ['k017', 'k107'], work: ['k072'] },
           student: {
-            school: 'Bazı grup çalışmalarında idareyi sen alabilir, bazılarında başkasının yol göstermesini bekleyebilirsin.',
+            school: 'Bazı grup çalışmalarında idareyi alabilir, bazılarında başkasının yol göstermesini bekleyebilirsin.',
             friends: 'Bazen kalabalık bir kutlamaya katılmak, bazen yalnız kalmak isteyebilirsin.',
             home: 'Bazı günler bir sürü işle meşgul olabilir, bazı günler rahat bir tempoyu seçebilirsin.',
           },
