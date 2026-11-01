@@ -1,6 +1,7 @@
 import type { AudienceText, BandGroup, NextPurpose, RoadmapTemplate } from '@/content/roadmaps/types';
 import type { Band } from '@/lib/instruments/types';
 import type { Audience, ReportContent } from './build';
+import { basisCaption, scaleGraphic, scalesGraphic, weeksGraphic, type RoadmapGraphic } from './roadmap-graphics';
 
 /**
  * Gelişim yol haritası: raporun sonundaki öneri bölümleri. Puanlardan ve şablondaki metinlerden kurulur; hiçbir şey
@@ -28,20 +29,42 @@ export interface Roadmap {
   /** Üç boyutlu grafiğin başlığı ve açıklaması; verilmezse "Profilin üç boyutlu" ve sütunun puanı gösterdiği söylenir. */
   barsTitle?: string;
   barsNote?: string;
-  standout: { title: string; text: string }[];
+  /**
+   * "Kısaca": öne çıkan sonuçlar. `keys`: satırın dayandığı ölçekler ya da ölçüler (ör. bir boyut, bir konu alanı, bir görev
+   * kartı); `graphic`: onların raporun kartındakiyle aynı grafiği (hesaplanmayan ya da yorumlanmayan sonuçta yok).
+   */
+  standout: { title: string; text: string; keys?: string[]; graphic?: RoadmapGraphic }[];
   /** Hiçbir boyut belirgin biçimde öne çıkmıyorsa gösterilen cümle. */
   standoutNote: string | null;
+  /** Notun grafiği: bütün ölçeklerin yeri (ör. hepsi orta bölgede). */
+  standoutGraphic?: RoadmapGraphic;
   study: {
     title: string;
     intro: string;
-    items: { key: string; title: string; badge: string; color: string; text: string }[];
+    /** Kartın grafiği: önerinin seçildiği ölçeğin ya da ölçünün sonucu (herkese aynı önerilerde yok). */
+    items: { key: string; title: string; badge: string; color: string; text: string; graphic?: RoadmapGraphic }[];
     links: { label: string; href: string }[];
   };
-  /** Ortamı olmayan şablonlarda (ör. çalışma alışkanlıkları) yoktur. */
-  settings: { title: string; intro: string; items: string[]; note: string } | null;
-  /** Yalnızca veli raporunda. */
-  approach: { title: string; items: { title: string; text: string }[] } | null;
-  weeks: { label: string; title: string; text: string }[];
+  /**
+   * Ortamı olmayan şablonlarda (ör. çalışma alışkanlıkları) yoktur. `keys` ve `graphic`: önerilerin seçildiği ölçekler ve
+   * grafikleri (herkese aynı verilen listelerde yok).
+   */
+  settings: { title: string; intro: string; items: string[]; note: string; keys?: string[]; graphic?: RoadmapGraphic } | null;
+  /**
+   * Yalnızca veli raporunda. `items[].keys`: önerinin seçildiği ölçek; `keys` ve `graphic`: bölümün önerilerinin seçildiği
+   * sonuçlar ve onların grafiği (ör. en belirgin boyutlar yan yana, okumada anlama soruları). Herkese aynı verilen önerilerde
+   * grafik yoktur.
+   */
+  approach: {
+    title: string;
+    items: { title: string; text: string; keys?: string[] }[];
+    keys?: string[];
+    graphic?: RoadmapGraphic;
+  } | null;
+  /** `fromResult`: haftanın içeriği kişinin sonucuna göre seçildi (zaman çizelgesinde dolu daire). */
+  weeks: { label: string; title: string; text: string; fromResult: boolean }[];
+  /** Haftaların zaman çizelgesi (lib/reports/visual-roadmap.ts). */
+  weeksGraphic: RoadmapGraphic;
   sources: { text: string; url?: string }[];
 }
 
@@ -154,8 +177,13 @@ export function buildRoadmap(
           })
           .sort((x, y) => prior(y) - prior(x) || distance(y) - distance(x))
           .slice(0, 2);
-  const standout = notable.map((s) => ({ title: s.name, text: s.summary }));
+  const standout = notable.map((s) => {
+    const g = scaleGraphic(s);
+    return { title: s.name, text: s.summary, keys: [s.scaleKey], ...(g ? { graphic: g } : {}) };
+  });
   const unit = t.unit?.one ?? 'boyut';
+  // Öne çıkan boyut yoksa notun grafiği bütün boyutların yeridir (ör. hepsi orta bölgede).
+  const standoutGraphic = standout.length > 0 ? undefined : scalesGraphic(sections, unit);
   // Cevaplarda bir kalite uyarısı varsa (ör. hep aynı seçenek, evet deme eğilimi) orta çıkan profil "dengeli" diye
   // anlatılmaz: puanların ortada toplanması cevap biçiminden de kaynaklanabilir.
   const standoutNote =
@@ -195,6 +223,7 @@ export function buildRoadmap(
   const study = focused.flatMap((s) => {
     const g = groupOf(s);
     if (!g) return [];
+    const graphic = scaleGraphic(s);
     return [
       {
         key: s.scaleKey,
@@ -202,6 +231,7 @@ export function buildRoadmap(
         badge: s.bandLabel === s.summary ? s.bandLabel : `${s.bandLabel} · ${s.summary}`,
         color: t.scales[s.scaleKey].color,
         text: pick(t.scales[s.scaleKey].study[g], a),
+        ...(graphic ? { graphic } : {}),
       },
     ];
   });
@@ -213,11 +243,28 @@ export function buildRoadmap(
   links.push(...(t.links ?? []));
 
   const hasSettings = Object.values(t.scales).some((x) => x.settings) && !!t.settingsNote;
-  const settingItems = focused.flatMap((s) => {
+  const settingFrom = focused.flatMap((s) => {
     const g = groupOf(s);
     const text = g ? t.scales[s.scaleKey].settings?.[g] : undefined;
-    return text ? [text] : [];
+    return text ? [{ s, text }] : [];
   });
+  const settingItems = settingFrom.map((x) => x.text);
+  // Ortamların grafiği: ortamların seçildiği boyutlar; hiç ortam yoksa önerilerin baktığı boyutların hepsi (ör. hepsi orta).
+  const settingSecs = settingFrom.length ? settingFrom.map((x) => x.s) : focused.filter((s) => s.value !== null);
+  const settingGraphic = basisCaption(scalesGraphic(settingSecs, unit), parent, settingSecs.filter((x) => x.value !== null).length > 1);
+  // Ortam yazılmamış bir boyut uçta olabilir (ör. 16 Faktörlü'de Düşünsel özgüven): o zaman profil "dengeli" diye anlatılmaz.
+  const noneExtreme = focused.every((s) => groupOf(s) !== 'low' && groupOf(s) !== 'high');
+
+  // Veliye yaklaşım: en belirgin boyutların her biri için bir öneri; bölümün grafiği o boyutlar yan yana.
+  const approachFrom = focused.filter((s) => {
+    const g = groupOf(s);
+    return !!((g && t.approach?.[s.scaleKey]?.[g]) || s.tips[0]);
+  });
+  const approachItems = approachFrom.map((s) => {
+    const g = groupOf(s);
+    return { title: s.name, text: ((g && t.approach?.[s.scaleKey]?.[g]) || s.tips[0])!, keys: [s.scaleKey] };
+  });
+  const approachGraphic = basisCaption(scalesGraphic(approachFrom, unit), parent, approachFrom.filter((s) => s.value !== null).length > 1);
 
   // Dört hafta: fark et → çalışma düzeni (ör. sorumluluk; başlık şablondan) → iyi oluş ya da en belirgin boyut → gözden
   // geçir.
@@ -245,12 +292,17 @@ export function buildRoadmap(
       ? action(secondKey)
       : null;
   const nextSentence = nextStep(opts.next, t.nextPurpose ?? { you: 'ilgilerini görmek', parent: 'çocuğunuzun ilgilerini görmek', general: true }, parent);
-  const middle = [second, third].filter((x): x is { name: string; text: string } => x !== null);
-  const weeks = [
-    { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a) },
-    ...middle.map((x, i) => ({ label: `${i + 2}. hafta`, title: x.name, text: x.text })),
+  // Haftanın içeriği bir boyutun düzeyinden seçildiyse (çalışma düzeni, iyi oluş, en belirgin boyut) zaman çizelgesinde
+  // "sonuca göre"; ilk ve son hafta ile tek boyutlu testteki ek deneme herkes için aynıdır.
+  const middle = [
+    ...(second ? [{ ...second, fromResult: true }] : []),
+    ...(third ? [{ ...third, fromResult: !!thirdKey }] : []),
   ];
-  weeks.push({ label: `${weeks.length + 1}. hafta`, title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextSentence });
+  const weeks = [
+    { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a), fromResult: false },
+    ...middle.map((x, i) => ({ label: `${i + 2}. hafta`, title: x.name, text: x.text, fromResult: x.fromResult })),
+  ];
+  weeks.push({ label: `${weeks.length + 1}. hafta`, title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextSentence, fromResult: false });
   const span = weeksPhrase(weeks.length);
 
   const contents = parent
@@ -267,6 +319,7 @@ export function buildRoadmap(
     bars,
     standout,
     standoutNote,
+    ...(standoutGraphic ? { standoutGraphic } : {}),
     study: {
       title: parent ? 'Çocuğunuz nasıl çalışabilir?' : 'Nasıl çalışabilirsin?',
       intro: focusing
@@ -281,26 +334,31 @@ export function buildRoadmap(
           title: a === 'adult' ? 'İş ve meslek planı için' : 'Okul ve meslek planı için',
           intro:
             settingItems.length === 0
-              ? parent
-                ? 'Çocuğunuzun profili dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
-                : 'Profilin dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
+              ? noneExtreme
+                ? parent
+                  ? 'Çocuğunuzun profili dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
+                  : 'Profilin dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
+                : parent
+                  ? 'Bu sonuçlara göre çocuğunuz için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
+                  : 'Bu sonuçlara göre tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
               : parent
                 ? 'Çocuğunuzun kendini daha rahat hissedebileceği ortamlar:'
                 : 'Kendini daha rahat hissedebileceğin ortamlar:',
           items: settingItems,
           note: pick(t.settingsNote!, a),
+          keys: settingSecs.map((x) => x.scaleKey),
+          ...(settingGraphic ? { graphic: settingGraphic } : {}),
         },
     approach: parent
       ? {
           title: 'Çocuğunuza nasıl yaklaşabilirsiniz?',
-          items: focused.flatMap((s) => {
-            const g = groupOf(s);
-            const text = (g && t.approach?.[s.scaleKey]?.[g]) || s.tips[0];
-            return text ? [{ title: s.name, text }] : [];
-          }),
+          items: approachItems,
+          keys: approachFrom.map((s) => s.scaleKey),
+          ...(approachGraphic ? { graphic: approachGraphic } : {}),
         }
       : null,
     weeks,
+    weeksGraphic: weeksGraphic(weeks, parent),
     sources: t.sources,
   };
 }

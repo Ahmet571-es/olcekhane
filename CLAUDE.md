@@ -312,8 +312,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 
 - Site sahibinin 2026-10-31 isteği: küçük çocuklar ve okumakta zorlananlar raporu dinleyebilsin. Raporun başında oynatıcı
   (`components/test/report-speech.tsx`; tek testte öğrenci, veli ve yetişkin sekmesinde, pakette açılan her raporda):
-  önce sonuçlar okunur, bitince (varsa) "Yol haritasını da dinle"; duraklat ve devam (kalınan cümlenin başından), durdur,
-  hız (Normal / Yavaş). Ayarlar yalnızca sayfada durur. Sekme değişince, rapor kapanınca susar; sayfa gizlenince ya da
+  tek dokunuşla rapor baştan sona, ekrandaki sırayla okunur (sonuçlar, ek bölümler, "Önceki sonucunla karşılaştır" bölümü ve
+  karşılaştırma yapıldıysa sonucu, yol haritası; site sahibinin 2026-10-31 isteği: "eksiksiz okusun"; ayrı bir yol haritası
+  düğmesi yok); duraklat ve devam (kalınan cümlenin başından), durdur, "Bölümü geç", hız (Normal / Yavaş). Ayarlar yalnızca
+  sayfada durur. Karşılaştırma sonucu bölümün kendisinden gelir (`compareSpeech`, `components/test/compare-panel.tsx`; durum
+  `onOutcome` ile oynatıcıya verilir); liste değişince okunan cümle yerindeyse okuma sürer (`SpeechPlayer.setList`). Sekme değişince, rapor kapanınca susar; sayfa gizlenince ya da
   sayfadan çıkarken duraklar; sayfada aynı anda yalnızca bir oynatıcı konuşur. Okuma kuyruğu tarayıcıdan bağımsız bir
   denetleyicidedir (`lib/speech/player.ts`; ilk parça düğmeye basılınca hemen okunur, iptal edilen konuşmanın geç gelen
   olayları yok sayılır, "bitti" olayı kaybolursa ilerler, başlattıktan hemen sonraki duraklatma yok sayılır).
@@ -326,7 +329,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   üretilir" ve Türkçe ses yoksa ayarlardan indirme önerisi. Site metni hiçbir yere göndermez, saklamaz.
 - Okunacak metin raporun verisinden kurulur, DOM'dan değil (`lib/speech/report-text.ts`): ekrandaki sırayla ve ekrandaki
   görünme koşullarıyla başlık, uyarılar, öne çıkan sayılar, grafik (değerleri sözle; görünüşünü anlatan cümleler okunmaz),
-  kartlar, ek bölümler (eksiksiz: düzeyler, günlük hayat örnekleri, maddeler ve cevaplar, denetimler; "Bölümü geç" düğmesi), notlar; yol haritasında giriş, kısaca, öneriler (varsa), ortamlar, yaklaşım, haftalar (kaynak listesi okunmaz).
+  kartlar, ek bölümler (eksiksiz: düzeyler, günlük hayat örnekleri, maddeler ve cevaplar, denetimler; "Bölümü geç" düğmesi), notlar;
+  yol haritasında giriş, (önizlemede) notu, üç boyutlu profilin değerleri, kısaca, öneriler ve bağlantıları, ortamlar, yaklaşım,
+  haftalar ve her grafiğin değerleri (`RoadmapGraphic.spoken`; rozet değeri zaten söylüyorsa yinelenmez); kaynak listesi okunmaz,
+  en sonda varlığı söylenir (`sourcesLine`). Okunmayanlar: sayfanın "Raporunu nasıl okumalısın?" kutusu, paylaşım ve indirme
+  kutuları, düğmeler.
   Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak gösterimleri ("(Kail, 1991)") ve kısa
   büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "62 kelime/dakika" →
   "dakikada 62 kelime", "1,5 sn" → "1,5 saniye", "5–8. sınıf" → "5. ile 8. sınıf", "{1 3/4}" → "1 tam 3 bölü 4", "102 045" tek
@@ -349,7 +356,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   "Bölümü geç" hepsini atlar; ~3 dakikadan uzun bölümün başında yaklaşık süresi söylenir). Sıra: sonuç kartları, destek
   kutusu (uzun listelerin altında kalmasın), ek bölümler, "tanı değildir" notu, karşılaştırma, yol haritası; PDF'te
   "Cevapların tek tek" yol haritasından sonra ektir (60'tan çok maddeli testte grafiksiz). Anket, görev, okuma, sesli
-  okuma ve matematik testlerinin hepsi bu modeli kullanır (her biri aşağıda).
+  okuma ve matematik testlerinin hepsi bu modeli kullanır (her biri aşağıda). Raporun ana bölümünde grafiksiz kalan açıklamalar
+  yalnızca standart notlardır: uyarı kutusu (denetimleri "Cevaplarına ne kadar güvenebiliriz?"de grafikli), destek kutusu, "tanı
+  değildir" notu, grafik notları ve yorumlanmayan kartlar; konu taramanın "Yanlışların neyi gösteriyor?" bölümünün grafiği hata
+  türlerinin görüldüğü soru sayısıdır (`misconceptionBars`, ek bölümdeki kartla aynı).
 - Anket testleri (`lib/reports/likert-parts.ts`, `evaluate.ts` kurar): **Düzeylerin anlamı** (her ölçekte kartın düzey
   çubuğunun aynısı; düzeylerin anlatımı şablondaki kısa başlıklar `summary`, düzeyin adını yinelemez, kartın uzun metni
   yinelenmez; şablonda metni olmayan ve ters maddesi olmayan ölçekte cevapların ortalamasının yakın olduğu seçenek, Holland
@@ -484,6 +494,18 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   konur: yalnızca `/testler/<adres>/coz?onizleme=yol-haritasi` bağlantısıyla görünür. Hoca belgesi istenirse
   "<Test adı> Gelişim Yol Haritası İncelemesi" hazırlanır (metinler içerik dosyasından üretilip belgeyle
   karşılaştırılır).
+- Grafikler (site sahibinin 2026-10-31 isteği: her açıklamanın içeriğine uygun grafiği; `lib/reports/roadmap-graphics.ts`,
+  `RoadmapGraphic`: grafik, sözlü anlatımı, bölüm grafiğinde "Bu bölümün dayandığı sonuçların" başlığı): kısacanın her satırı,
+  her öneri kartı ve önerileri bir sonuçtan seçilen bölüm (ortamlar, eğitim yolları, veliye yaklaşım) raporun kartlarındaki
+  grafiğin aynısını gösterir (ölçeğin düzey çubuğu; birkaç ölçekte yan yana, sekizden çoğunda düzeylere göre ölçek sayısı; konu
+  alanının soruları; anlama soruları ve okuma hızı; sesli okumada metnin düzeyi basamakları ve okumanın yönleri; görevlerde kartın
+  grafiği). Öne çıkan yoksa notun grafiği bütün ölçeklerdir. Haftalar zaman çizelgesiyle (`lib/reports/visual-roadmap.ts`; içeriği
+  sonuca göre seçilen hafta dolu daire, herkese aynı hafta içi boş; uzun başlıkta haftalar alt alta). Herkese aynı verilen
+  listelerde (görevlerin önerileri, "Bilmekte yarar var" ve yaklaşımı; okuma alışkanlığı; haftalık çalışma düzeni) sonuç grafiği
+  yoktur: grafik önerinin sonuca göre seçildiğini düşündürürdü. Yorumlanmayan ya da hesaplanamayan sonucun grafiği yoktur.
+  `tests/yol-haritasi-grafikleri.test.ts` yayındaki her yol haritasında, birçok örüntüde ve her kişide dener: grafiklerin varlığı,
+  değerlerin ve düzeylerin raporla (çoğunda kartın grafiğiyle) aynı olması, anahtarlar, sözlü anlatım ve dil, yazıların taşmaması,
+  PDF'te kelimelerin çakışmaması.
 - Etkili çalışma yöntemleri herkes için aynı anlatılır; kişiliğe göre "öğrenme stili" eşleştirmesi vaat edilmez.
   Ortamlar meslek önerisi değildir; meslek için ilgi testlerine yönlendirilir.
 

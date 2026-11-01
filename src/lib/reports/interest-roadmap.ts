@@ -2,6 +2,7 @@ import { RIASEC_TYPES, type RiasecKey } from '@/content/careers/riasec';
 import type { InterestRoadmapTemplate } from '@/content/roadmaps/types';
 import type { ReportContent } from './build';
 import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
+import { basisCaption, scaleGraphic, scalesGraphic, weeksGraphic } from './roadmap-graphics';
 
 /**
  * İlgi testlerinin gelişim yol haritası: ders çalışma yerine ilgilerin nasıl keşfedileceği. Raporun en belirgin alanları
@@ -64,7 +65,9 @@ export function buildInterestRoadmap(
   const badge = (s: (typeof sections)[number]) => (summary(s) === s.bandLabel ? s.bandLabel : `${s.bandLabel} · ${s.summary}`);
   // 2. ve 3. hafta: en belirgin iki alanın denemeleri; ikinci alan yoksa 3. hafta, hiç yoksa ikisi de genel denemedir.
   const week = (i: 0 | 1) =>
-    top[i] ? { title: top[i].name, text: pick(area(top[i].scaleKey).action, a) } : { title: t.openWeeks[i].title, text: pick(t.openWeeks[i].text, a) };
+    top[i]
+      ? { title: top[i].name, text: pick(area(top[i].scaleKey).action, a), fromResult: true }
+      : { title: t.openWeeks[i].title, text: pick(t.openWeeks[i].text, a), fromResult: false };
   const second = week(0);
   const third = week(1);
 
@@ -76,6 +79,16 @@ export function buildInterestRoadmap(
     : [];
   contents.push('dört haftalık küçük adımlar');
   const notVerdict = t.leisure ? 'Öneriler kesin hüküm değildir' : 'Öneriler bir meslek seçimi ya da kesin hüküm değildir';
+  // Öne çıkan alan yoksa "Kısaca"daki notun grafiği bütün alanların yeridir (ör. hepsi düşük bölgede).
+  const standoutGraphic = top.length ? undefined : scalesGraphic(sections, 'alan');
+  const approachGraphic = basisCaption(scalesGraphic(top, 'alan'), true, top.length > 1);
+  const pathGraphic = basisCaption(scalesGraphic(highTop, 'alan'), parent, highTop.length > 1);
+  const weeks = [
+    { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a), fromResult: false },
+    { label: '2. hafta', ...second },
+    { label: '3. hafta', ...third },
+    { label: '4. hafta', title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextSentence, fromResult: false },
+  ];
 
   return {
     preview: opts.preview,
@@ -94,7 +107,10 @@ export function buildInterestRoadmap(
       valueLabel: s.valueLabel,
       band: s.bandLabel,
     })),
-    standout: top.map((s) => ({ title: s.name, text: summary(s) })),
+    standout: top.map((s) => {
+      const g = scaleGraphic(s);
+      return { title: s.name, text: summary(s), keys: [s.scaleKey], ...(g ? { graphic: g } : {}) };
+    }),
     standoutNote: top.length
       ? null
       : allLow
@@ -102,16 +118,21 @@ export function buildInterestRoadmap(
           ? pick(t.lowNote, a)
           : lowNote(!!t.leisure, parent)
         : pick(t.openNote, a),
+    ...(standoutGraphic ? { standoutGraphic } : {}),
     study: {
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
       intro: pick(t.studyIntro, a),
-      items: top.map((s) => ({
-        key: s.scaleKey,
-        title: s.name,
-        badge: badge(s),
-        color: area(s.scaleKey).color,
-        text: pick(area(s.scaleKey).explore, a),
-      })),
+      items: top.map((s) => {
+        const g = scaleGraphic(s);
+        return {
+          key: s.scaleKey,
+          title: s.name,
+          badge: badge(s),
+          color: area(s.scaleKey).color,
+          text: pick(area(s.scaleKey).explore, a),
+          ...(g ? { graphic: g } : {}),
+        };
+      }),
       links: t.links,
     },
     settings:
@@ -129,17 +150,20 @@ export function buildInterestRoadmap(
               return `${s.name}: ${r.graduate ? forGraduate(paths) : paths}`;
             }),
             note: r.graduate && a !== 'adult' ? pick(GRADUATE_PATHS_NOTE, a) : pick(t.pathsNote!, a),
+            keys: highTop.map((s) => s.scaleKey),
+            ...(pathGraphic ? { graphic: pathGraphic } : {}),
           },
     approach:
       parent && top.length
-        ? { title: 'Çocuğunuza nasıl yaklaşabilirsiniz?', items: top.map((s) => ({ title: s.name, text: area(s.scaleKey).approach })) }
+        ? {
+            title: 'Çocuğunuza nasıl yaklaşabilirsiniz?',
+            items: top.map((s) => ({ title: s.name, text: area(s.scaleKey).approach, keys: [s.scaleKey] })),
+            keys: top.map((s) => s.scaleKey),
+            ...(approachGraphic ? { graphic: approachGraphic } : {}),
+          }
         : null,
-    weeks: [
-      { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a) },
-      { label: '2. hafta', title: second.title, text: second.text },
-      { label: '3. hafta', title: third.title, text: third.text },
-      { label: '4. hafta', title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextSentence },
-    ],
+    weeks,
+    weeksGraphic: weeksGraphic(weeks, parent),
     sources: t.sources,
   };
 }

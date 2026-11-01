@@ -9,6 +9,7 @@ import type { QuizChart, QuizTable } from '@/lib/instruments/types';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { OralReportBlock } from '@/lib/reports/oral';
 import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
+import type { RoadmapGraphic } from '@/lib/reports/roadmap-graphics';
 import type { OralMarkedToken } from '@/lib/scoring/oral';
 import { quadrantGeometry, type QuadrantChart, type RulerRow, type SimpleChart, type SimpleQuizReview, type SimpleReport } from '@/lib/reports/simple';
 import { drawVisual, type DrawnVisual, type Tone } from '@/lib/reports/visual-draw';
@@ -492,10 +493,11 @@ const TONES: Record<Tone, string> = {
   warnBg: C.warnBg,
 };
 
-function DrawnPdf({ v }: { v: DrawnVisual }) {
-  const d = drawVisual(v, VW, VFS);
+function DrawnPdf({ v, width = VW }: { v: DrawnVisual; width?: number }) {
+  // Yazı boyu genişlikle orantılı (ekranda ve PDF'te aynı geometri: 240 genişliğe 10, 176'ya 7).
+  const d = drawVisual(v, width, (VFS * width) / VW);
   return (
-    <Svg width={VW} height={d.height}>
+    <Svg width={width} height={d.height}>
       {d.shapes.map((s, i) => {
         switch (s.k) {
           case 'rect':
@@ -518,11 +520,14 @@ function DrawnPdf({ v }: { v: DrawnVisual }) {
   );
 }
 
-function ItemVisualPdf({ visual }: { visual: ItemVisual }) {
+function ItemVisualPdf({ visual, width = VW }: { visual: ItemVisual; width?: number }) {
   if (visual.type === 'gauge') return <GaugePdf v={visual} />;
   if (visual.type === 'compare') return <ComparePdf v={visual} />;
-  return <DrawnPdf v={visual} />;
+  return <DrawnPdf v={visual} width={width} />;
 }
+
+/** Yol haritasındaki haftaların zaman çizelgesinin genişliği (ekrandaki 24rem'lik çizimle aynı oran: yazı boyu genişlikle büyür). */
+const TIMELINE_W = 264;
 
 function Chart({ chart }: { chart: SimpleChart }) {
   if (chart.type === 'rulers') return <Rulers rows={chart.rows} />;
@@ -830,7 +835,25 @@ function Profile3DPdf({ rm }: { rm: Roadmap }) {
   );
 }
 
+/** İkişerli satırlar. */
+const pairs = <T,>(xs: T[]): T[][] => Array.from({ length: Math.ceil(xs.length / 2) }, (_, i) => xs.slice(i * 2, i * 2 + 2));
+
+/** Yol haritasındaki bir grafik (lib/reports/roadmap-graphics.ts): varsa başlığıyla, ekrandakiyle aynı çizim. */
+function RoadmapGraphicPdf({ g, width = VW }: { g: RoadmapGraphic; width?: number }) {
+  return (
+    <View style={{ width, paddingTop: 2 }}>
+      {g.caption && <Text style={{ fontSize: 8, color: C.ink3, marginBottom: 3 }}>{g.caption}</Text>}
+      <ItemVisualPdf visual={g.visual} width={width} />
+    </View>
+  );
+}
+
+/**
+ * Yol haritasının sayfaları. Bölümler sarmalayıcı `View` olmadan sayfanın doğrudan çocuklarıdır (bkz. PartsPdf); her kart ve
+ * bölümün başı kendi içinde bölünmez. Grafikler açıklamanın yanında (ekrandaki geniş görünüm gibi).
+ */
 function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: boolean; siteHost: string; kind: string; date: string }) {
+  const standoutGraphics = rm.standout.some((x) => x.graphic);
   return (
     <Page size="A4" style={s.page}>
       <View style={s.top} fixed>
@@ -858,28 +881,44 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
         </View>
       )}
 
-      <View wrap={false}>
-        <Text style={s.h2}>Kısaca</Text>
-        {rm.standout.length > 0 ? (
-          // Üçten çok kart (ör. zihinsel görevlerde beş sonuç) iki sütunda sıralanır; tek satırda okunmaz hâle gelir.
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {rm.standout.map((x) => (
-              <View
-                key={x.title}
-                style={[
-                  { borderWidth: 1, borderColor: C.rule, borderRadius: 6, padding: 8 },
-                  rm.standout.length > 3 ? { width: '48.5%' } : { flex: 1 },
-                ]}
-              >
-                <Text style={{ fontSize: 8.5, color: C.ink3 }}>{x.title}</Text>
-                <Text style={{ fontFamily: 'Bricolage', fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{x.text}</Text>
-              </View>
-            ))}
+      {rm.standout.length > 0 ? (
+        <>
+          <Text style={s.h2} minPresenceAhead={90}>
+            Kısaca
+          </Text>
+          {/* Üçten çok kart (ör. zihinsel görevlerde beş sonuç) ya da grafikli kartlar iki sütunda, satır satır (her satır
+              kendi içinde bölünmez; uzun bir liste sayfaya sığmazsa satırlar sonraki sayfaya geçer). */}
+          {(rm.standout.length > 3 || standoutGraphics ? pairs(rm.standout) : [rm.standout]).map((row, i) => (
+            <View key={i} style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }} wrap={false}>
+              {row.map((x) => (
+                <View
+                  key={x.title}
+                  style={[
+                    { borderWidth: 1, borderColor: C.rule, borderRadius: 6, padding: 8 },
+                    rm.standout.length > 3 || standoutGraphics ? { width: '48.5%' } : { flex: 1 },
+                  ]}
+                >
+                  <Text style={{ fontSize: 8.5, color: C.ink3 }}>{x.title}</Text>
+                  <Text style={{ fontFamily: 'Bricolage', fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{x.text}</Text>
+                  {x.graphic && (
+                    <View style={{ marginTop: 6 }}>
+                      <RoadmapGraphicPdf g={x.graphic} />
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          ))}
+        </>
+      ) : (
+        <View wrap={false}>
+          <Text style={s.h2}>Kısaca</Text>
+          <View style={{ flexDirection: 'row', gap: 14 }}>
+            <Text style={[s.para, { flex: 1 }]}>{rm.standoutNote}</Text>
+            {rm.standoutGraphic && <RoadmapGraphicPdf g={rm.standoutGraphic} />}
           </View>
-        ) : (
-          <Text style={s.para}>{rm.standoutNote}</Text>
-        )}
-      </View>
+        </View>
+      )}
 
       {rm.study.items.length > 0 && (
         <>
@@ -889,11 +928,16 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
           <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{rm.study.intro}</Text>
           {rm.study.items.map((it) => (
             <View key={it.key} style={[s.item, { borderTopColor: it.color, borderTopWidth: 2 }]} wrap={false}>
-              <View style={s.itemHead}>
-                <Text style={s.itemTitle}>{it.title}</Text>
-                <Text style={s.itemBadge}>{it.badge}</Text>
+              <View style={{ flexDirection: 'row', gap: 14 }}>
+                <View style={{ flex: 1 }}>
+                  <View style={s.itemHead}>
+                    <Text style={s.itemTitle}>{it.title}</Text>
+                    <Text style={s.itemBadge}>{it.badge}</Text>
+                  </View>
+                  <Text style={s.para}>{it.text}</Text>
+                </View>
+                {it.graphic && <RoadmapGraphicPdf g={it.graphic} />}
               </View>
-              <Text style={s.para}>{it.text}</Text>
             </View>
           ))}
           {rm.study.links.length > 0 && (
@@ -905,41 +949,57 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
       {rm.settings && (
         <View wrap={false}>
           <Text style={s.h2}>{rm.settings.title}</Text>
-          <Text style={[s.para, { marginBottom: 3 }]}>{rm.settings.intro}</Text>
-          {rm.settings.items.map((x) => (
-            <View key={x} style={s.bullet}>
-              <Text>•</Text>
-              <Text style={[s.para, { flex: 1 }]}>{x}</Text>
+          <View style={{ flexDirection: 'row', gap: 14 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.para, { marginBottom: 3 }]}>{rm.settings.intro}</Text>
+              {rm.settings.items.map((x) => (
+                <View key={x} style={s.bullet}>
+                  <Text>•</Text>
+                  <Text style={[s.para, { flex: 1 }]}>{x}</Text>
+                </View>
+              ))}
             </View>
-          ))}
+            {rm.settings.graphic && <RoadmapGraphicPdf g={rm.settings.graphic} />}
+          </View>
           <Text style={s.privacy}>{rm.settings.note}</Text>
         </View>
       )}
 
       {rm.approach && rm.approach.items.length > 0 && (
-        <View>
-          <Text style={s.h2} minPresenceAhead={150}>
-            {rm.approach.title}
-          </Text>
+        <>
+          {/* Başlık ve (varsa) bölümün grafiği bir arada: sayfanın dibinde tek başına kalmaz. */}
+          <View wrap={false} minPresenceAhead={90}>
+            <Text style={s.h2}>{rm.approach.title}</Text>
+            {rm.approach.graphic && (
+              <View style={{ marginBottom: 6 }}>
+                <RoadmapGraphicPdf g={rm.approach.graphic} />
+              </View>
+            )}
+          </View>
           {rm.approach.items.map((it) => (
             <View key={it.title} style={s.item} wrap={false}>
               <Text style={s.itemTitle}>{it.title}</Text>
               <Text style={s.para}>{it.text}</Text>
             </View>
           ))}
-        </View>
+        </>
       )}
 
-      <Text style={s.h2} minPresenceAhead={80}>
-        {weeksTitle(rm.weeks.length)}
-      </Text>
+      <View wrap={false} minPresenceAhead={80}>
+        <Text style={s.h2}>{weeksTitle(rm.weeks.length)}</Text>
+        <View style={{ marginBottom: 4 }}>
+          <RoadmapGraphicPdf g={rm.weeksGraphic} width={TIMELINE_W} />
+        </View>
+      </View>
+      {/* Haftanın sırası ve başlığı bir satırda, açıklaması altında (uzun başlık, ör. "Dürüstlük-Alçakgönüllülük", dar bir
+          sütuna sığmayıp açıklamanın üstüne taşmasın). */}
       {rm.weeks.map((w) => (
-        <View key={w.label} style={{ flexDirection: 'row', gap: 10, paddingVertical: 5 }} wrap={false}>
-          <View style={{ width: 84 }}>
-            <Text style={{ fontSize: 8.5, fontWeight: 700, color: C.ink3 }}>{w.label.toLocaleUpperCase('tr-TR')}</Text>
-            <Text style={{ fontWeight: 700, fontSize: 10.5 }}>{w.title}</Text>
-          </View>
-          <Text style={[s.para, { flex: 1 }]}>{w.text}</Text>
+        <View key={w.label} style={{ paddingVertical: 4 }} wrap={false}>
+          <Text style={{ fontWeight: 700, fontSize: 10.5, lineHeight: 1.3 }}>
+            <Text style={{ fontSize: 8.5, color: C.ink3 }}>{`${w.label.toLocaleUpperCase('tr-TR')}   `}</Text>
+            {w.title}
+          </Text>
+          <Text style={s.para}>{w.text}</Text>
         </View>
       ))}
 
@@ -1014,8 +1074,9 @@ function QuizVisualPdf({ table, chart, figure }: { table?: QuizTable; chart?: Qu
 }
 
 function QuizReviewPdf({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) {
+  // Sarmalayıcı `View` olmadan: bölümler sayfanın doğrudan çocuklarıdır (bkz. PartsPdf).
   return (
-    <View>
+    <>
       <Text style={s.h2} minPresenceAhead={80}>
         {quiz.title}
       </Text>
@@ -1050,11 +1111,17 @@ function QuizReviewPdf({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) 
         </View>
       ))}
       {(quiz.errors.length > 0 || quiz.questions.length > 0) && (
-        <View>
-          <Text style={s.h2} minPresenceAhead={80}>
-            {quiz.errorsTitle}
-          </Text>
-          <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{quiz.errorsNote}</Text>
+        <>
+          {/* Başlık, açıklama ve grafik bir arada: sayfanın dibinde ayrılmaz. */}
+          <View wrap={false} minPresenceAhead={60}>
+            <Text style={s.h2}>{quiz.errorsTitle}</Text>
+            <Text style={[s.para, { color: C.ink2, marginBottom: 4 }]}>{quiz.errorsNote}</Text>
+            {quiz.errorsVisual && (
+              <View style={{ width: VW, marginBottom: 6 }}>
+                <ItemVisualPdf visual={quiz.errorsVisual} />
+              </View>
+            )}
+          </View>
           {quiz.errors.map((e) => (
             <View key={e.name} style={s.item} wrap={false}>
               <View style={s.itemHead}>
@@ -1068,9 +1135,9 @@ function QuizReviewPdf({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) 
               </Text>
             </View>
           ))}
-        </View>
+        </>
       )}
-    </View>
+    </>
   );
 }
 

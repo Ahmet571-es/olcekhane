@@ -2,6 +2,9 @@ import type { AcademicRoadmapTemplate } from '@/content/roadmaps/types';
 import type { ReportContent } from './build';
 import { cautionText } from './reading-roadmap';
 import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
+import { basisCaption, graphic, weeksGraphic } from './roadmap-graphics';
+import { domainDots, quizGauge } from './simple';
+import type { DotsVisual } from './visuals';
 
 /**
  * Konu tarama testlerinin (ör. matematik) gelişim yol haritası: konu alanlarına göre nasıl çalışılacağı, haftalık
@@ -36,16 +39,30 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
       ? 'Bütün sorularda “Bilmiyorum” denildiği için bu alanın düzeyi belirlenemedi. Konular okulda henüz işlenmemiş de olabilir; önerileri öğretmeniyle birlikte gözden geçirin.'
       : 'Bütün sorularda “Bilmiyorum” dediğin için bu alanın düzeyi belirlenemedi. Konular okulda henüz işlenmemiş de olabilir; önerileri öğretmeninle birlikte gözden geçir.';
 
-  // Kısaca: genel sonuç ve düzeylerine göre alanlar (öncelikli, pekiştirilmeli, sağlam).
+  // Birkaç alanın soruları satır satır (kartlardaki grafiğin aynısı, her alan bir satır).
+  const domainsDots = (label: string, ds: typeof domains): DotsVisual => ({
+    type: 'dots',
+    label,
+    rows: ds.map((d) => ({ label: d.name, filled: d.correct, total: d.n, valueLabel: `${d.correct}/${d.n}` })),
+    legend: ['doğru', 'yanlış ya da “Bilmiyorum”'],
+  });
+  // Kısaca: genel sonuç ve düzeylerine göre alanlar (öncelikli, pekiştirilmeli, sağlam); grafikleri genel sonucun düzey
+  // çubuğu ve gruptaki alanların soruları. Sonuç yorumlanmadıysa grafik yoktur.
   const groups = (notRead ? [] : (['low', 'average', 'high'] as const))
     .map((g) => domains.filter((d) => level(d.band) === g))
     .filter((ds) => ds.length > 0)
     // Alan adlarında virgül ve "ve" geçtiği için (ör. "Kesirler, ondalık gösterim ve yüzde") noktalı virgülle ayrılır.
-    .map((ds) => ({ title: ds[0].bandLabel, text: ds.map((d) => d.name).join('; ') }));
+    .map((ds) => ({
+      title: ds[0].bandLabel,
+      text: ds.map((d) => d.name).join('; '),
+      keys: ds.map((d) => d.key),
+      graphic: graphic(ds.length === 1 ? domainDots(ds[0]) : domainsDots(ds[0].bandLabel, ds))!,
+    }));
+  const overall = !notRead && ac.bandNames ? graphic(quizGauge(ac)) : undefined;
 
   const week = (i: 0 | 1) => {
     const d = need[i];
-    if (d) return { title: d.name, text: pick(texts[d.key].action, a) };
+    if (d) return { title: d.name, text: pick(texts[d.key].action, a), fromResult: true };
     // Sonuç yorumlanmadıysa ikinci hafta öğretmenle hangi konulardan başlanacağı konuşulur.
     if (notRead && i === 0) {
       return {
@@ -53,13 +70,27 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
         text: parent
           ? 'Bu hafta raporu matematik öğretmeniyle paylaşın ve hangi konulardan başlanacağını birlikte seçin.'
           : 'Bu hafta raporunu öğretmeninle paylaş ve hangi konulardan başlaman gerektiğini birlikte seçin.',
+        fromResult: false,
       };
     }
-    return { title: t.extraWeeks[notRead ? 1 : i].title, text: pick(t.extraWeeks[notRead ? 1 : i].text, a) };
+    return { title: t.extraWeeks[notRead ? 1 : i].title, text: pick(t.extraWeeks[notRead ? 1 : i].text, a), fromResult: false };
   };
   const second = week(0);
   const third = week(1);
 
+  // 1. hafta yanlış soruların (ya da hepsi doğruysa bir adım ilerinin) haftasıdır: sonuca göre seçilir.
+  const weeks = [
+    {
+      label: '1. hafta',
+      title: missed ? 'Hata defteri' : 'Bir adım ileri',
+      // Hatanın nedeni yalnızca yanlış cevap varsa ve cevaplar tahmin değilse sorulur.
+      text: missed ? `${pick(t.firstWeek.wrong, a)}${ac.wrong > 0 && !ac.guessed ? ` ${pick(t.firstWeek.reason, a)}` : ''}` : pick(t.firstWeek.none, a),
+      fromResult: true,
+    },
+    { label: '2. hafta', ...second },
+    { label: '3. hafta', ...third },
+    { label: '4. hafta', title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent), fromResult: false },
+  ];
   const contents = [
     parent ? 'konu alanlarına göre nasıl çalışılabileceği' : 'konu alanlarına göre nasıl çalışabileceğin',
     'haftalık çalışma düzeni',
@@ -84,7 +115,15 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
       valueLabel: `${d.correct} / ${d.n}`,
       band: d.bandLabel,
     })),
-    standout: [{ title: 'Genel sonuç', text: notRead ? `${ac.correct} / ${ac.n} doğru; yorumlanmadı` : `${ac.correct} / ${ac.n} doğru` }, ...groups],
+    standout: [
+      {
+        title: 'Genel sonuç',
+        text: notRead ? `${ac.correct} / ${ac.n} doğru; yorumlanmadı` : `${ac.correct} / ${ac.n} doğru`,
+        keys: ['overall'],
+        ...(overall ? { graphic: overall } : {}),
+      },
+      ...groups,
+    ],
     standoutNote: null,
     study: {
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
@@ -107,6 +146,9 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
           badge: notRead ? `Yorumlanmadı · ${d.correct} / ${d.n} doğru` : `${d.bandLabel} · ${d.correct} / ${d.n} doğru`,
           color: t.colors[d.key] ?? '#5b6b82',
           text: notRead ? `${notReadLead} ${pick(texts[d.key].need, a)}` : g === 'high' ? pick(t.solid[d.key], a) : `${pick(t.lead[g], a)} ${pick(texts[d.key].need, a)}`,
+          // Kartın grafiği alanın soruları (raporun alan kartındakiyle aynı); yorumlanmayan sonuçta yok. Doğru sayısı rozette
+          // okunduğu için sesli dinlemede yinelenmez.
+          ...(notRead ? {} : { graphic: graphic(domainDots(d), [])! }),
         };
       }),
       links: t.links,
@@ -117,23 +159,26 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
       items: parent ? t.routine.items.parent : t.routine.items.student,
       note: pick(t.routine.note, a),
     },
+    // Bölümün grafiği önerilerin seçildiği alanların soruları: pekiştirilmeli ve öncelikli alanlar; hepsi sağlamsa öneriler bu
+    // yüzden seçildiği için bütün alanlar. Yorumlanmayan sonuçta grafik yoktur.
     approach: parent
       ? {
           title: 'Evde nasıl destek olabilirsiniz?',
-          items: need.length ? need.map((d) => ({ title: d.name, text: texts[d.key].approach })) : t.approachSolid,
+          items: need.length ? need.map((d) => ({ title: d.name, text: texts[d.key].approach, keys: [d.key] })) : t.approachSolid,
+          ...(notRead
+            ? {}
+            : {
+                keys: (need.length ? need : domains).map((d) => d.key),
+                graphic: basisCaption(
+                  graphic(need.length === 1 ? domainDots(need[0]) : domainsDots('Konu alanları', need.length ? need : domains)),
+                  true,
+                  need.length !== 1,
+                )!,
+              }),
         }
       : null,
-    weeks: [
-      {
-        label: '1. hafta',
-        title: missed ? 'Hata defteri' : 'Bir adım ileri',
-        // Hatanın nedeni yalnızca yanlış cevap varsa ve cevaplar tahmin değilse sorulur.
-        text: missed ? `${pick(t.firstWeek.wrong, a)}${ac.wrong > 0 && !ac.guessed ? ` ${pick(t.firstWeek.reason, a)}` : ''}` : pick(t.firstWeek.none, a),
-      },
-      { label: '2. hafta', title: second.title, text: second.text },
-      { label: '3. hafta', title: third.title, text: third.text },
-      { label: '4. hafta', title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent) },
-    ],
+    weeks,
+    weeksGraphic: weeksGraphic(weeks, parent),
     sources: t.sources,
   };
 }

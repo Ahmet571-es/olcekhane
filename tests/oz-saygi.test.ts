@@ -106,7 +106,7 @@ describe('Öz-saygı Ölçeği: cevap denetimi ve madde düzeyinde destek', () =
       expect(x).not.toMatch(/eleştirel bakış/);
     }
     // Dengeli profil cümlesi yok (tek boyutlu test); öne çıkan kart düzeyin kısa adıdır.
-    expect(r.student.roadmap!.standout).toEqual([{ title: 'Öz-saygı', text: 'Kendine bazen olumlu, bazen şüpheyle bakan' }]);
+    expect(r.student.roadmap!.standout.map(({ title, text }) => ({ title, text }))).toEqual([{ title: 'Öz-saygı', text: 'Kendine bazen olumlu, bazen şüpheyle bakan' }]);
   });
 
   it('toplam puan yüksekken tek bir cevap da destek kutusunu açar; "bazen işe yaramaz" cümlesine yalnızca "Katılıyorum" açmaz', () => {

@@ -96,6 +96,11 @@ export interface SimpleQuizReview {
   /** Hata türlerinin nasıl okunacağı (tek soruda görülen, yorumlanmayan). */
   errorsNote: string;
   errors: { name: string; seen: string; explain: string; tip: string }[];
+  /**
+   * Hata türlerinin görüldüğü soru sayısı (raporun "Düzeylerin ve ölçülerin anlamı" bölümündeki grafiğin aynısı): bölümün
+   * grafiği. Sesli dinlemede sayılar her hata türünün "… soruda görüldü" satırında okunur.
+   */
+  errorsVisual?: BarsVisual;
 }
 
 export interface SimpleReport {
@@ -648,6 +653,56 @@ export function quizGauge(a: Pick<NonNullable<ReportContent['academic']>, 'n' | 
   };
 }
 
+/** Hata türlerinin görüldüğü soru sayısı (konu tarama): her çubuk bir hata türü. */
+export function misconceptionBars(ms: { name: string; count: number }[]): BarsVisual {
+  return {
+    type: 'bars',
+    label: 'Hata türlerinin görüldüğü sorular',
+    scale: 'scale',
+    unit: 'soru',
+    max: Math.max(2, ...ms.map((m) => m.count)),
+    rows: ms.map((m) => ({ label: m.name, value: m.count, valueLabel: `${m.count} soru` })),
+  };
+}
+
+/** Konu alanının kartındaki grafik: alandaki sorular (dolu kare doğru cevap). Yol haritasında da aynısı kullanılır. */
+export function domainDots(d: Pick<NonNullable<ReportContent['academic']>['domains'][number], 'name' | 'correct' | 'n'>): DotsVisual {
+  return {
+    type: 'dots',
+    label: d.name,
+    rows: [{ label: 'Doğru', filled: d.correct, total: d.n, valueLabel: `${d.correct}/${d.n}` }],
+    legend: ['doğru', 'yanlış ya da “Bilmiyorum”'],
+  };
+}
+
+/** Okuma testinin "Anlama" kartındaki grafik: sorular (dolu kare doğru cevap). Yol haritasında da aynısı kullanılır. */
+export function comprehensionDots(correct: number, total: number): DotsVisual {
+  return { type: 'dots', label: 'Anlama soruları', rows: [{ label: 'Doğru', filled: correct, total, valueLabel: `${correct}/${total}` }], legend: ['doğru', 'yanlış'] };
+}
+
+/**
+ * Okuma testinin "Okuma hızı" kartındaki grafik: okuma hızı ve anlayarak okuma hızı (dakikada kelime); hız yorumlanmadıysa
+ * yoktur. `uncomputed`: anlayarak okuma hızı hesaplanmadıysa çubuğu boş ("hesaplanmadı") gösterilir ya da (yol haritasında)
+ * hiç gösterilmez.
+ */
+export function readingSpeedBars(x: { wpm: number; effectiveWpm?: number | null }, uncomputed: 'empty' | 'omit'): BarsVisual {
+  const eff = x.effectiveWpm ?? null;
+  return {
+    type: 'bars',
+    label: 'Dakikada kelime',
+    scale: 'scale',
+    unit: 'kelime',
+    rows: [
+      { label: 'Okuma hızı', value: Math.round(x.wpm), valueLabel: nf0.format(x.wpm) },
+      ...(eff !== null
+        ? [{ label: 'Anlayarak okuma hızı', value: eff, valueLabel: nf0.format(eff) }]
+        : uncomputed === 'empty'
+          ? [{ label: 'Anlayarak okuma hızı', value: 0, valueLabel: 'hesaplanmadı' }]
+          : []),
+    ],
+  };
+}
+
 export function toSimpleReport(r: ReportContent): SimpleReport {
   const you = r.audience !== 'parent';
   const base = {
@@ -895,14 +950,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
       items: [
         // Anlama kartının grafiği soruları gösterir (dolu kare doğru cevap).
         ...(comp
-          ? [
-              withVisual({ title: 'Anlama', badge: comp.bandLabel, text: comp.text }, {
-                type: 'dots',
-                label: 'Anlama soruları',
-                rows: [{ label: 'Doğru', filled: x.correct, total: x.total, valueLabel: `${x.correct}/${x.total}` }],
-                legend: ['doğru', 'yanlış'],
-              } satisfies DotsVisual),
-            ]
+          ? [withVisual({ title: 'Anlama', badge: comp.bandLabel, text: comp.text }, comprehensionDots(x.correct, x.total))]
           : []),
         // Hız yorumlanmıyorsa (çok kısa ya da çok uzun süre) kartın grafiği olmaz. Yorumlanıyorsa grafik okuma hızını ve
         // anlayarak okuma hızını yan yana gösterir; anlayarak okuma hızı hesaplanmadıysa onun çubuğu boş kalır.
@@ -924,20 +972,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
               .filter(Boolean)
               .join(' '),
           },
-          speedRead
-            ? ({
-                type: 'bars',
-                label: 'Dakikada kelime',
-                scale: 'scale',
-                unit: 'kelime',
-                rows: [
-                  { label: 'Okuma hızı', value: Math.round(x.wpm), valueLabel: nf0.format(x.wpm) },
-                  x.effectiveWpm !== null
-                    ? { label: 'Anlayarak okuma hızı', value: x.effectiveWpm, valueLabel: nf0.format(x.effectiveWpm) }
-                    : { label: 'Anlayarak okuma hızı', value: 0, valueLabel: 'hesaplanmadı' },
-                ],
-              } satisfies BarsVisual)
-            : undefined,
+          speedRead ? readingSpeedBars(x, 'empty') : undefined,
         ),
       ],
     };
@@ -982,6 +1017,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
         explain: m.explain,
         tip: m.tip,
       })),
+      ...(a.misconceptions.length > 0 ? { errorsVisual: misconceptionBars(a.misconceptions) } : {}),
     };
     const topics = (d: (typeof a.domains)[number]) => `Sorulan konular: ${d.plain.charAt(0).toLocaleLowerCase('tr-TR')}${d.plain.slice(1)}`;
     /** Alanın sonucu (sayı yinelenmez; doğru sayısı kartın grafiğinde). */
@@ -1046,15 +1082,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
         ...a.domains.map((d) =>
           notRead
             ? { title: d.name, badge: 'Yorumlanmadı', text: `${topics(d)} ${notReadDomain}` }
-            : withVisual(
-                { title: d.name, badge: d.bandLabel, text: `${domainResult(d)} ${topics(d)}` },
-                {
-                  type: 'dots',
-                  label: d.name,
-                  rows: [{ label: 'Doğru', filled: d.correct, total: d.n, valueLabel: `${d.correct}/${d.n}` }],
-                  legend: ['doğru', 'yanlış ya da “Bilmiyorum”'],
-                } satisfies DotsVisual,
-              ),
+            : withVisual({ title: d.name, badge: d.bandLabel, text: `${domainResult(d)} ${topics(d)}` }, domainDots(d)),
         ),
       ],
     };

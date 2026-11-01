@@ -1,10 +1,13 @@
 import { LEVEL_TEXT, prosodyLabel } from '@/content/reports/sesli-okuma';
 import type { OralAspect, OralRoadmapTemplate } from '@/content/roadmaps/sesli-okuma';
-import type { OralResult } from '@/lib/scoring/oral';
+import type { OralReadingInstrument } from '@/lib/instruments/types';
+import type { OralLevel, OralResult } from '@/lib/scoring/oral';
 import { countOf } from '@/lib/scoring/tasks';
 import type { Audience } from './build';
-import { levelText } from './oral';
+import { levelText, oralVisuals } from './oral';
 import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
+import { basisCaption, graphic, weeksGraphic, type RoadmapGraphic } from './roadmap-graphics';
+import type { StepsVisual } from './visuals';
 
 /**
  * Sesli Okuma Değerlendirmesinin gelişim yol haritası: okumanın dört yönüne (doğru okuma, akıcılık, anlama, yeniden
@@ -75,15 +78,41 @@ export function oralAspects(r: OralResult): AspectState[] {
   return [...list].sort((a, b) => Number(b.need) - Number(a.need) || PRIORITY[a.key] - PRIORITY[b.key]);
 }
 
+/** Metnin düzeyinin basamakları (kolaydan zora değil, metnin okura uygunluğuna göre: şimdilik zor, destekle, rahat). */
+const LEVEL_ORDER: OralLevel[] = ['hard', 'support', 'easy'];
+
 export function buildOralRoadmap(
   r: OralResult,
   audience: Audience,
   t: OralRoadmapTemplate,
-  opts: { preview: boolean; next: NextTest[]; grade: number },
+  opts: { preview: boolean; next: NextTest[]; grade: number; def: OralReadingInstrument },
 ): Roadmap {
   const parent = audience === 'parent';
   const aspects = oralAspects(r);
   const need = aspects.filter((x) => x.need);
+  // Grafikler raporun kartlarındakiyle aynıdır (lib/reports/oral.ts). Metnin düzeyi, doğru okuma ile anlamanın düşük olanıdır:
+  // üç basamakta gösterilir.
+  const v = oralVisuals(r, audience, opts.def, opts.grade);
+  const nf = (x: number) => nf0.format(x);
+  // Kartta rozet değeri zaten söylüyorsa ("5 sorudan 2 doğru") grafiğin sözlü anlatımı yinelenmez; akıcılıkta dört yön okunur.
+  const aspectGraphic = (key: OralAspect, inCard: boolean): RoadmapGraphic | undefined => graphic(v[key], inCard && key === 'comprehension' ? [] : undefined);
+  const levelSteps: StepsVisual = {
+    type: 'steps',
+    label: 'Metnin düzeyi',
+    steps: LEVEL_ORDER.map((l) => LEVEL_TEXT[l].short),
+    reached: LEVEL_ORDER.indexOf(r.level) + 1,
+    valueLabel: LEVEL_TEXT[r.level].short,
+    caption: 'Doğru okuma ve anlamadan düşük olanı',
+  };
+  const levelWhy = 'Düzey, doğru okuma ve anlamadan düşük olanıdır.';
+  // Kısacada düzeyin adı satırda okunur; veliye yaklaşımın grafiğinde adıyla.
+  const level = graphic(levelSteps, [levelWhy])!;
+  const levelNamed = graphic(levelSteps, [`Metnin düzeyi: ${LEVEL_TEXT[r.level].short}. ${levelWhy}`])!;
+  // Dakikada doğru okunan kelime satırda okunur; grafiğin sözlü anlatımı bütün kelimeler ve (varsa) sınıf ortalaması.
+  const ref = v.rate?.type === 'bars' ? v.rate.reference : undefined;
+  const rate = r.flags.tooFast
+    ? undefined
+    : graphic(v.rate, [`Dakikada okunan bütün kelime: ${nf(r.wpm)}.`, ...(ref ? [`${ref.label}: ${nf(ref.value)}.`] : [])]);
   const group = r.level === 'hard' ? 'low' : r.level === 'support' ? 'average' : 'high';
 
   const contents = [
@@ -95,11 +124,12 @@ export function buildOralRoadmap(
   // Doğru ve anlayarak okuyup okuması yavaş ya da akıcı olmayan öğrenci: tekrarlı okuma haftası, bir üst düzey önerilmez.
   const fluency = r.flags.fluencyConcern;
   const fluencyWeek = { title: t.fluencyWeek.title, text: pick(t.fluencyWeek.text, audience) };
+  const extraWeek = { title: t.extraWeek.title, text: pick(t.extraWeek.text, audience) };
   const second = need[0]
     ? { title: t.aspects[need[0].key].title, text: pick(t.aspects[need[0].key].action, audience) }
     : fluency
       ? fluencyWeek
-      : { title: t.extraWeek.title, text: pick(t.extraWeek.text, audience) };
+      : extraWeek;
   const levelKey = fluency && r.level === 'easy' ? 'support' : r.level;
   // Metin zorsa üçüncü hafta her zaman kolay metinlerle çalışmadır (raporun önerisiyle aynı).
   const third = r.level === 'hard'
@@ -119,6 +149,14 @@ export function buildOralRoadmap(
       : settled && r.level === 'hard' && r.passageGrade > Math.max(1, opts.grade - 1)
         ? t.lastWeek.down
         : t.lastWeek.same;
+  // Haftaların hepsi okumanın sonucundan seçilir; yalnızca 1. hafta (birlikte okuma) ve hiçbir yön çalışma gerektirmediğinde
+  // 2. hafta (ek deneme) herkes için aynıdır. 4. hafta metnin düzeyine göre (bir üst, bir alt ya da aynı düzey).
+  const weeks = [
+    { label: '1. hafta', title: 'Birlikte okuma', text: pick(t.firstWeek, audience), fromResult: false },
+    { label: '2. hafta', ...second, fromResult: second !== extraWeek },
+    { label: '3. hafta', ...third, fromResult: true },
+    { label: '4. hafta', title: 'Yeniden değerlendirme', text: pick(last, audience) + nextStep(opts.next, t.nextPurpose, parent), fromResult: true },
+  ];
 
   // Otomatik analizde öneriler yapay zekânın yaklaşık sonuçlarına dayanır; bu, girişte söylenir.
   const basis = r.flags.auto ? pick(t.autoBasis, audience) : 'Öneriler tek bir metnin sesli okunmasına dayanır; kesin hüküm değildir.';
@@ -129,10 +167,17 @@ export function buildOralRoadmap(
       : `Bu bölüm sonuçlarını günlük okumana taşıman için öneriler içerir: ${joinNames(contents)}. ${basis}`,
     bars: aspects.map((x) => ({ key: x.key, label: t.aspects[x.key].title, ciLow: null, ciHigh: null, color: t.aspects[x.key].color, ...x.bar })),
     standout: [
-      { title: 'Metnin düzeyi', text: parent ? levelText(r).label : levelText(r).you },
+      { title: 'Metnin düzeyi', text: parent ? levelText(r).label : levelText(r).you, keys: ['level'], graphic: level },
       // Süre metne göre çok kısaysa hız hesaplanmaz (raporda da gösterilmez).
-      ...(r.flags.tooFast ? [] : [{ title: 'Dakikada doğru okunan kelime', text: nf0.format(r.wcpm) }]),
-      ...(need[0] ? [{ title: parent ? 'Öncelikli çalışma' : 'Önce bunu çalış', text: t.aspects[need[0].key].title }] : []),
+      ...(r.flags.tooFast ? [] : [{ title: 'Dakikada doğru okunan kelime', text: nf0.format(r.wcpm), keys: ['rate'], ...(rate ? { graphic: rate } : {}) }]),
+      ...(need[0]
+        ? [
+            (() => {
+              const g = aspectGraphic(need[0].key, false);
+              return { title: parent ? 'Öncelikli çalışma' : 'Önce bunu çalış', text: t.aspects[need[0].key].title, keys: [need[0].key], ...(g ? { graphic: g } : {}) };
+            })(),
+          ]
+        : []),
     ],
     standoutNote: null,
     study: {
@@ -140,13 +185,17 @@ export function buildOralRoadmap(
       intro: parent
         ? 'Kartlar en çok çalışılacak yönden başlayarak sıralandı. Her biri tek bir metne dayandığı için yaklaşık bir fikir verir.'
         : 'Kartlar en çok çalışacağın yönden başlayarak sıralandı. Her biri tek bir metne dayandığı için yaklaşık bir fikir verir.',
-      items: aspects.map((x) => ({
-        key: x.key,
-        title: t.aspects[x.key].title,
-        badge: x.badge,
-        color: t.aspects[x.key].color,
-        text: pick(x.need ? t.aspects[x.key].need : t.aspects[x.key].full, audience),
-      })),
+      items: aspects.map((x) => {
+        const g = aspectGraphic(x.key, true);
+        return {
+          key: x.key,
+          title: t.aspects[x.key].title,
+          badge: x.badge,
+          color: t.aspects[x.key].color,
+          text: pick(x.need ? t.aspects[x.key].need : t.aspects[x.key].full, audience),
+          ...(g ? { graphic: g } : {}),
+        };
+      }),
       links: [{ label: 'Okuma hızı mı, okuduğunu anlama mı?', href: '/rehber/okuma-hizi-ve-okudugunu-anlama' }],
     },
     settings: {
@@ -155,13 +204,10 @@ export function buildOralRoadmap(
       items: parent ? t.habits.items.parent : t.habits.items.student,
       note: pick(t.habits.note, audience),
     },
-    approach: parent ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group] } : null,
-    weeks: [
-      { label: '1. hafta', title: 'Birlikte okuma', text: pick(t.firstWeek, audience) },
-      { label: '2. hafta', title: second.title, text: second.text },
-      { label: '3. hafta', title: third.title, text: third.text },
-      { label: '4. hafta', title: 'Yeniden değerlendirme', text: pick(last, audience) + nextStep(opts.next, t.nextPurpose, parent) },
-    ],
+    // Veliye öneriler metnin düzeyine göre seçilir: bölümün grafiği metnin düzeyi.
+    approach: parent ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group], keys: ['level'], graphic: basisCaption(levelNamed, true, false)! } : null,
+    weeks,
+    weeksGraphic: weeksGraphic(weeks, parent),
     sources: t.sources,
   };
 }

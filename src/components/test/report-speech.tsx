@@ -3,7 +3,8 @@
 import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { SpeechPlayer, type PlayerEnv, type SynthLike, type UtteranceLike } from '@/lib/speech/player';
-import { reportSpeech, utterancesOf } from '@/lib/speech/report-text';
+import { allSegments, reportSpeech, utterancesOf, type Utterance } from '@/lib/speech/report-text';
+import { compareSpeech, type PanelOutcome } from './compare-panel';
 import { pickTurkishVoice } from '@/lib/speech/voice';
 
 /**
@@ -12,8 +13,9 @@ import { pickTurkishVoice } from '@/lib/speech/voice';
  * çalışan diye bildiren seslere ve başka dillere geçilmez. Böyle bir ses yoksa (ya da sonradan kaybolursa) oynatıcı
  * görünmez. Site metni hiçbir yere göndermez; ayarlar yalnızca bu sayfada durur.
  *
- * Önce sonuçlar okunur; bitince (varsa) "Yol haritasını da dinle" önerilir: rapor uzun olduğu için çocuk her şeyi tek
- * seferde dinlemek zorunda kalmasın. Okuma kuyruğu lib/speech/player.ts'tedir.
+ * Tek dokunuşla rapor baştan sona, ekrandaki sırayla okunur: sonuçlar, ek bölümler, (varsa) "Önceki sonucunla karşılaştır"
+ * bölümü (karşılaştırma yapıldıysa sonucuyla) ve gelişim yol haritası (kaynak listesinin varlığı söylenir). Uzun bir bölüm
+ * "Bölümü geç" ile atlanır. Okuma kuyruğu lib/speech/player.ts'tedir.
  */
 
 const RATES = { normal: 1, yavas: 0.8 } as const;
@@ -61,25 +63,27 @@ function SpeakerIcon() {
   );
 }
 
-export function ReportSpeech({ report, you }: { report: SimpleReport; you: boolean }) {
+/** `compareOutcome`: "Önceki sonucunla karşılaştır" bölümünün durumu (karşılaştırma yapıldıysa sonucu da okunur). */
+export function ReportSpeech({ report, you, compareOutcome = null }: { report: SimpleReport; you: boolean; compareOutcome?: PanelOutcome }) {
   const voice = useTurkishVoice();
-  const lists = useMemo(() => {
-    const t = reportSpeech(report);
-    return { results: utterancesOf(t.results), roadmap: utterancesOf(t.roadmap) };
-  }, [report]);
-  if (!voice || lists.results.length === 0) return null;
+  const list = useMemo(
+    () => utterancesOf(allSegments(reportSpeech(report, report.compare ? compareSpeech(report.compare, compareOutcome, you) : []))),
+    [report, compareOutcome, you],
+  );
+  if (!voice || list.length === 0) return null;
   // Ses değişirse oynatıcı yeniden kurulur (eski oynatıcı susar).
-  return <Player key={voice.voiceURI || `${voice.name}|${voice.lang}`} voice={voice} lists={lists} you={you} />;
+  return <Player key={voice.voiceURI || `${voice.name}|${voice.lang}`} voice={voice} list={list} you={you} />;
 }
 
-function Player({ voice, lists, you }: { voice: SpeechSynthesisVoice; lists: Parameters<SpeechPlayer<SpeechSynthesisVoice>['setLists']>[0]; you: boolean }) {
-  const [player] = useState(() => new SpeechPlayer(browserEnv(window.speechSynthesis), lists, voice));
+function Player({ voice, list, you }: { voice: SpeechSynthesisVoice; list: Utterance[]; you: boolean }) {
+  const [player] = useState(() => new SpeechPlayer(browserEnv(window.speechSynthesis), list, voice));
   const state = useSyncExternalStore(player.subscribe, player.getState, player.getState);
   const [rate, setRate] = useState<Rate>('normal');
   const main = useRef<HTMLButtonElement>(null);
   const labelId = useId();
 
-  useEffect(() => player.setLists(lists), [player, lists]);
+  // Liste değişince (ör. karşılaştırma yapıldı) okunan cümle yerindeyse okuma sürer.
+  useEffect(() => player.setList(list), [player, list]);
   useEffect(() => () => player.destroy(), [player]);
 
   // Sayfa gizlenince (başka sekme, ekran kilidi) ya da sayfadan çıkılırken okuma duraklar.
@@ -96,8 +100,7 @@ function Player({ voice, lists, you }: { voice: SpeechSynthesisVoice; lists: Par
     };
   }, [player]);
 
-  const hasRoadmap = lists.roadmap.length > 0;
-  const { status, part, current } = state;
+  const { status, current } = state;
   const v = (s: string, p: string) => (you ? s : p);
 
   // Ana düğme her durumda aynı düğmedir (odak yerinde kalır); yazısı ve işi duruma göre değişir.
@@ -108,19 +111,14 @@ function Player({ voice, lists, you }: { voice: SpeechSynthesisVoice; lists: Par
         ? { label: v('Devam et', 'Devam edin'), icon: true, run: () => player.resume() }
         : status === 'error'
           ? { label: v('Yeniden dene', 'Yeniden deneyin'), icon: true, run: () => player.resume() }
-          : status === 'done' && part === 'results' && hasRoadmap
-            ? { label: v('Yol haritasını da dinle', 'Yol haritasını da dinleyin'), icon: true, run: () => player.play('roadmap') }
-            : status === 'done'
-              ? { label: v('Baştan dinle', 'Baştan dinleyin'), icon: true, run: () => player.play('results') }
-              : { label: v('Raporu sesli dinle', 'Raporu sesli dinleyin'), icon: true, run: () => player.play('results') };
-  const second: 'stop' | 'again' | null =
-    status === 'playing' || status === 'paused' ? 'stop' : status === 'done' && part === 'results' && hasRoadmap ? 'again' : null;
-  // Durdurunca odak ana düğmeye döner (ikinci düğme kaybolur).
-  function onSecond() {
-    if (second === 'stop') {
-      player.stop();
-      main.current?.focus();
-    } else player.play('results');
+          : status === 'done'
+            ? { label: v('Baştan dinle', 'Baştan dinleyin'), icon: true, run: () => player.play() }
+            : { label: v('Raporu sesli dinle', 'Raporu sesli dinleyin'), icon: true, run: () => player.play() };
+  const playing = status === 'playing' || status === 'paused';
+  // Durdurunca odak ana düğmeye döner (Durdur düğmesi kaybolur).
+  function onStop() {
+    player.stop();
+    main.current?.focus();
   }
 
   // Ekran okuyucuya yalnızca durum değişiklikleri bildirilir; "Okunuyor" satırı bildirilmez (sesle üst üste binmesin).
@@ -130,9 +128,7 @@ function Player({ voice, lists, you }: { voice: SpeechSynthesisVoice; lists: Par
       : status === 'error'
         ? v('Rapor bu cihazda seslendirilemedi. Yeniden dene.', 'Rapor bu cihazda seslendirilemedi. Yeniden deneyin.')
         : status === 'done'
-          ? part === 'results' && hasRoadmap
-            ? v('Sonuçlar bitti. İstersen yol haritasını da dinleyebilirsin.', 'Sonuçlar bitti. İsterseniz yol haritasını da dinleyebilirsiniz.')
-            : 'Rapor bitti.'
+          ? 'Rapor bitti.'
           : '';
 
   return (
@@ -146,13 +142,13 @@ function Player({ voice, lists, you }: { voice: SpeechSynthesisVoice; lists: Par
             {mainAction.icon && <SpeakerIcon />}
             {mainAction.label}
           </button>
-          {second && (
-            <button key="ikinci" type="button" className="btn btn-secondary" onClick={onSecond}>
-              {second === 'stop' ? 'Durdur' : v('Sonuçları baştan dinle', 'Sonuçları baştan dinleyin')}
+          {playing && (
+            <button key="ikinci" type="button" className="btn btn-secondary" onClick={onStop}>
+              Durdur
             </button>
           )}
           {/* Uzun bölümler (ör. cevaplar tek tek) için: okunan bölümün sonrasına geçer. */}
-          {(status === 'playing' || status === 'paused') && (
+          {playing && (
             <button key="gec" type="button" className="btn btn-secondary" onClick={() => player.skipSection()}>
               Bölümü geç
             </button>

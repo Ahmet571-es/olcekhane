@@ -12,10 +12,10 @@ import {
 import type { AcademicReport, ReportContent } from './build';
 import { WARN_MEANING, checkCard, checksSummary, hasWarn, nf1, secondsText, spokenCount } from './part-kit';
 import type { PartCard, PartRow, ReportPart } from './parts';
-import { quizGauge, type SimpleReport } from './simple';
+import { misconceptionBars, quizGauge, type SimpleReport } from './simple';
 import { niceMax } from './visual-draw';
 import type { GridMark, GridVisual } from './visual-cells';
-import type { BarsVisual, CompareVisual, MeterVisual, StackVisual, StripVisual, Zone } from './visuals';
+import type { CompareVisual, MeterVisual, StackVisual, StripVisual, Zone } from './visuals';
 
 /**
  * Konu tarama testlerinin (Matematik Konu Tarama Testi) ek rapor bölümleri (site sahibinin 2026-10-31 isteği; model
@@ -278,7 +278,6 @@ export function quizParts(input: { def: QuizInstrument; result: QuizResult; cont
   };
   const levelCards: PartCard[] = [overall, domainCard, answerKinds];
   if (a.misconceptions.length > 0) {
-    const most = Math.max(...a.misconceptions.map((m) => m.count));
     levelCards.push({
       key: 'errors',
       title: 'Hata türleri',
@@ -289,14 +288,7 @@ export function quizParts(input: { def: QuizInstrument; result: QuizResult; cont
         ...(report.quiz?.errorsTitle ? [`Her hata türünün açıklaması ve önerisi yukarıda, “${report.quiz.errorsTitle.replace(/\?$/, '')}” bölümünde.`] : []),
       ].join(' '),
       note: 'Her çubuk bir hata türü; uzunluğu, görüldüğü soru sayısıdır.',
-      visual: {
-        type: 'bars',
-        label: 'Hata türlerinin görüldüğü sorular',
-        scale: 'scale',
-        unit: 'soru',
-        max: Math.max(2, most),
-        rows: a.misconceptions.map((m) => ({ label: m.name, value: m.count, valueLabel: `${m.count} soru` })),
-      } satisfies BarsVisual,
+      visual: misconceptionBars(a.misconceptions),
       spoken: a.misconceptions.map((m) => `${m.name}: ${spokenCount(m.count, 'soru')}.`),
     });
   }

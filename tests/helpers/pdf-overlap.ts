@@ -1,8 +1,9 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 
 /**
- * PDF'te üst üste binen kelimeler (`pdftotext -bbox`; tests/pdf-ust-uste.test.ts'teki denetimin aynısı: alanlarının en az
- * %30'u çakışan kelime çiftleri). pdftotext yoksa (poppler-utils) `HAS_PDFTOTEXT` yanlıştır ve denetim atlanır.
+ * PDF'te üst üste binen kelimeler (`pdftotext -bbox`: alanlarının en az %30'u çakışan kelime çiftleri). Kullananlar:
+ * tests/pdf-ust-uste.test.ts, tests/gunluk-hayat.test.ts, tests/yol-haritasi-grafikleri.test.ts. pdftotext yoksa
+ * (poppler-utils) `HAS_PDFTOTEXT` yanlıştır ve denetim atlanır.
  */
 export const HAS_PDFTOTEXT = spawnSync('pdftotext', ['-v']).status === 0;
 

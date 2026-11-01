@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import { compareResults, gapText, readRecords, type CompareInfo, type CompareOutcome, type CompareRow, type CompareUnit } from '@/lib/compare/record';
+import type { SpeechSegment } from '@/lib/speech/report-text';
 
 /** En büyük dosya (bayt): raporlar birkaç yüz kilobayttır. */
 const MAX_BYTES = 20 * 1024 * 1024;
@@ -148,15 +149,84 @@ export function footerText(compare: CompareInfo, you: boolean): string {
     : `İndirdiğiniz PDF raporları, karşılaştırma için ${what} sayısal bir özetini de taşır; bu özet yalnızca sizin dosyanızdadır.`;
 }
 
+/** Bölümün durumu: henüz dosya seçilmedi (null), karşılaştırma sonucu, dosyada özet yok ya da dosya okunamadı. */
+export type PanelOutcome = CompareOutcome | { status: 'none' | 'error' } | null;
+
+const panelTitle = (you: boolean) => (you ? 'Önceki sonucunla karşılaştır' : 'Önceki sonuçla karşılaştırın');
+
+function introText(compare: CompareInfo, you: boolean): string {
+  return you
+    ? `Bu testi daha önce çözüp raporunun PDF’ini indirdiysen o dosyayı seç: ${compare.retest ? 'iki sonucun ana sayıları' : 'iki sonucun ölçek ölçek'} karşılaştırılsın. Dosya bu cihazdan çıkmaz, hiçbir yere gönderilmez.`
+    : `Çocuğunuz bu testi daha önce çözdüyse ve raporun PDF’ini indirdiyseniz o dosyayı seçin: ${compare.retest ? 'iki sonucun ana sayıları' : 'iki sonuç ölçek ölçek'} karşılaştırılsın. Dosya bu cihazdan çıkmaz, hiçbir yere gönderilmez.`;
+}
+
+const errorText = (you: boolean) => (you ? 'Dosya okunamadı. Başka bir dosya seçmeyi dene.' : 'Dosya okunamadı. Başka bir dosya seçmeyi deneyin.');
+const VERSION_TEXT = 'Testin soruları o tarihten bu yana değiştiği için iki sonuç karşılaştırılamaz.';
+const SHORT_GAP_TEXT = 'İki sonuç arasındaki süre kısa. Kısa sürede görülen farklar çoğunlukla cevapların günden güne biraz değişmesinden kaynaklanır.';
+const MEANING_TEXT =
+  '“Belirgin” değişim: fark, ölçeğin bilinen güvenirliğine göre hesaplanan ölçüm payını aşıyor (güvenilir değişim ölçütü, %95; Jacobson ve Truax, 1991).';
+const FINAL_TEXT = 'Tek bir karşılaştırmadan kesin sonuç çıkarılmamalı; insanlar zamanla değişir ve gelişir.';
+
+/** Karşılaştırmanın özeti: aradaki süre ve belirgin değişimler. */
+function summaryText(compare: CompareInfo, ok: Extract<CompareOutcome, { status: 'ok' }>): string {
+  const strong = ok.rows.filter((r) => r.verdict === 'up' || r.verdict === 'down');
+  const partly = compare.scales.some((x) => x.sem) && compare.scales.some((x) => !x.sem);
+  return [
+    Math.abs(ok.days) < 1 ? 'İki sonuç aynı güne ait.' : `İki sonuç arasında ${gapText(ok.days)} var.`,
+    !ok.known
+      ? compare.retest
+        ? 'Bu testin sonuçlarında ölçüm payı bilinmediği için yalnızca farkların yönü gösterilir.'
+        : 'Bu testte ölçeklerin ölçüm payı bilinmediği için yalnızca farkların yönü gösterilir; küçük farklar yorumlanmamalı.'
+      : strong.length === 0
+        ? 'Hiçbir ölçekte ölçüm payını aşan bir değişim yok.'
+        : `Ölçüm payını aşan değişim: ${strong.map((r) => r.label).join(', ')}.`,
+    ok.known && partly ? 'Ölçüm payı bilinmeyen ölçeklerde yalnızca farkın yönü gösterilir.' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * Bölümün sesli okunacak metni (components/test/report-speech.tsx; ekrandaki sırayla, raporun sonuçlarından sonra): başlık ve
+ * açıklama; karşılaştırma yapıldıysa sonucu, satır satır önceki ve şimdiki değer, fark ve anlamı. Çizgideki dairelerin
+ * anlatımı (görünüşü) okunmaz.
+ */
+export function compareSpeech(compare: CompareInfo, outcome: PanelOutcome, you: boolean): SpeechSegment[] {
+  const title = panelTitle(you);
+  const lines: string[] = [`${title}.`, introText(compare, you)];
+  if (outcome?.status === 'none') lines.push(noneText(compare));
+  else if (outcome?.status === 'error') lines.push(errorText(you));
+  else if (outcome?.status === 'other-test') lines.push(otherTestText(compare, !!outcome.many, you));
+  else if (outcome?.status === 'version') lines.push(VERSION_TEXT);
+  else if (outcome?.status === 'ok') {
+    lines.push(summaryText(compare, outcome));
+    if (compare.retest) lines.push(retestNote(compare.retest, you));
+    if (outcome.rows.length === 0) lines.push(compare.retest ? 'Karşılaştırılacak sonuç bulunamadı.' : 'Karşılaştırılacak ölçek bulunamadı.');
+    if (Math.abs(outcome.days) < 14) lines.push(SHORT_GAP_TEXT);
+    for (const r of outcome.rows) {
+      lines.push(`${r.label}: önce ${valueText(r.before, r)}, şimdi ${valueText(r.after, r)}; fark ${signed(r.after - r.before, r)}. ${rowText(r)}`);
+    }
+    if (outcome.known) lines.push(MEANING_TEXT);
+    lines.push(FINAL_TEXT);
+  }
+  lines.push(footerText(compare, you));
+  return [{ title, lines }];
+}
+
 /**
  * Gelişimini karşılaştır: kişi aynı testin önceki raporunun PDF'ini seçer; dosya yalnızca tarayıcıda okunur, PDF'in belge
  * bilgilerindeki sayısal özet şimdiki sonuçla ölçek ölçek karşılaştırılır. Hiçbir şey sunucuya gönderilmez, saklanmaz.
  */
-export function ComparePanel({ compare, you }: { compare: CompareInfo; you: boolean }) {
+export function ComparePanel({ compare, you, onOutcome }: { compare: CompareInfo; you: boolean; onOutcome?: (o: PanelOutcome) => void }) {
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
-  const [outcome, setOutcome] = useState<CompareOutcome | { status: 'none' | 'error' } | null>(null);
+  const [outcome, setOutcomeState] = useState<PanelOutcome>(null);
   const [busy, setBusy] = useState(false);
+  // Sonuç sesli dinlemeye de verilir (raporla birlikte okunur).
+  const setOutcome = (o: PanelOutcome) => {
+    setOutcomeState(o);
+    onOutcome?.(o);
+  };
 
   async function pick(file: File | undefined) {
     if (!file) return;
@@ -176,23 +246,14 @@ export function ComparePanel({ compare, you }: { compare: CompareInfo; you: bool
     }
   }
 
-  const v = (student: string, parent: string) => (you ? student : parent);
   const ok = outcome?.status === 'ok' ? outcome : null;
-  const strong = ok ? ok.rows.filter((r) => r.verdict === 'up' || r.verdict === 'down') : [];
-  // Ölçüm payı yalnızca bazı ölçeklerde biliniyorsa özet bunu da söyler.
-  const partly = compare.scales.some((s) => s.sem) && compare.scales.some((s) => !s.sem);
 
   return (
     <section aria-labelledby={`${id}-baslik`} className="panel flex flex-col gap-4 p-6">
       <h2 id={`${id}-baslik`} className="t-h3">
-        {v('Önceki sonucunla karşılaştır', 'Önceki sonuçla karşılaştırın')}
+        {panelTitle(you)}
       </h2>
-      <p className="text-ink-2">
-        {v(
-          `Bu testi daha önce çözüp raporunun PDF’ini indirdiysen o dosyayı seç: ${compare.retest ? 'iki sonucun ana sayıları' : 'iki sonucun ölçek ölçek'} karşılaştırılsın. Dosya bu cihazdan çıkmaz, hiçbir yere gönderilmez.`,
-          `Çocuğunuz bu testi daha önce çözdüyse ve raporun PDF’ini indirdiyseniz o dosyayı seçin: ${compare.retest ? 'iki sonucun ana sayıları' : 'iki sonuç ölçek ölçek'} karşılaştırılsın. Dosya bu cihazdan çıkmaz, hiçbir yere gönderilmez.`,
-        )}
-      </p>
+      <p className="text-ink-2">{introText(compare, you)}</p>
       <div className="flex flex-wrap items-center gap-3">
         <label className={`btn btn-secondary ${busy ? 'pointer-events-none opacity-60' : ''}`}>
           {busy ? 'Okunuyor…' : 'Önceki raporu (PDF) seç'}
@@ -212,37 +273,22 @@ export function ComparePanel({ compare, you }: { compare: CompareInfo; you: bool
           <p className="notice notice-warn">{noneText(compare)}</p>
         )}
         {outcome?.status === 'error' && (
-          <p className="notice notice-danger">{v('Dosya okunamadı. Başka bir dosya seçmeyi dene.', 'Dosya okunamadı. Başka bir dosya seçmeyi deneyin.')}</p>
+          <p className="notice notice-danger">{errorText(you)}</p>
         )}
         {outcome?.status === 'other-test' && (
           <p className="notice notice-warn">{otherTestText(compare, !!outcome.many, you)}</p>
         )}
         {outcome?.status === 'version' && (
-          <p className="notice notice-warn">Testin soruları o tarihten bu yana değiştiği için iki sonuç karşılaştırılamaz.</p>
+          <p className="notice notice-warn">{VERSION_TEXT}</p>
         )}
         {ok && (
           <>
-            <p className="font-bold">
-              {Math.abs(ok.days) < 1 ? 'İki sonuç aynı güne ait.' : `İki sonuç arasında ${gapText(ok.days)} var.`}{' '}
-              {!ok.known
-                ? compare.retest
-                  ? 'Bu testin sonuçlarında ölçüm payı bilinmediği için yalnızca farkların yönü gösterilir.'
-                  : 'Bu testte ölçeklerin ölçüm payı bilinmediği için yalnızca farkların yönü gösterilir; küçük farklar yorumlanmamalı.'
-                : strong.length === 0
-                  ? 'Hiçbir ölçekte ölçüm payını aşan bir değişim yok.'
-                  : `Ölçüm payını aşan değişim: ${strong.map((r) => r.label).join(', ')}.`}
-              {ok.known && partly ? ' Ölçüm payı bilinmeyen ölçeklerde yalnızca farkın yönü gösterilir.' : ''}
-            </p>
+            <p className="font-bold">{summaryText(compare, ok)}</p>
             {compare.retest && <p className="text-ink-2">{retestNote(compare.retest, you)}</p>}
             {ok.rows.length === 0 && (
               <p className="text-ink-2">{compare.retest ? 'Karşılaştırılacak sonuç bulunamadı.' : 'Karşılaştırılacak ölçek bulunamadı.'}</p>
             )}
-            {Math.abs(ok.days) < 14 && (
-              <p className="t-small text-ink-2">
-                İki sonuç arasındaki süre kısa. Kısa sürede görülen farklar çoğunlukla cevapların günden güne biraz değişmesinden
-                kaynaklanır.
-              </p>
-            )}
+            {Math.abs(ok.days) < 14 && <p className="t-small text-ink-2">{SHORT_GAP_TEXT}</p>}
             <ul className="flex flex-col divide-y divide-rule border-y border-rule">
               {ok.rows.map((r) => (
                 <li key={r.key} className="grid gap-x-6 gap-y-1.5 py-3 md:grid-cols-[minmax(0,1fr)_16.5rem] md:items-center">
@@ -260,10 +306,8 @@ export function ComparePanel({ compare, you }: { compare: CompareInfo; you: bool
               ))}
             </ul>
             <p className="t-small text-ink-3">
-              İçi boş daire önceki, dolu daire şimdiki {compare.retest ? 'sonuç' : 'puan'}.{' '}
-              {ok.known &&
-                '“Belirgin” değişim: fark, ölçeğin bilinen güvenirliğine göre hesaplanan ölçüm payını aşıyor (güvenilir değişim ölçütü, %95; Jacobson ve Truax, 1991). '}
-              Tek bir karşılaştırmadan kesin sonuç çıkarılmamalı; insanlar zamanla değişir ve gelişir.
+              İçi boş daire önceki, dolu daire şimdiki {compare.retest ? 'sonuç' : 'puan'}. {ok.known && `${MEANING_TEXT} `}
+              {FINAL_TEXT}
             </p>
           </>
         )}

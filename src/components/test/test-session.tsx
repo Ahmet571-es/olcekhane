@@ -18,7 +18,7 @@ import type { SimpleReport } from '@/lib/reports/simple';
 import { shareCardFor } from '@/lib/share/card';
 import { ReportSpeech } from './report-speech';
 import { RoadmapView } from './roadmap-view';
-import { ComparePanel } from './compare-panel';
+import { ComparePanel, type PanelOutcome } from './compare-panel';
 import { SimpleReportView } from './simple-report-view';
 
 /** Öğrencinin tek başına okuduğu, okumayı cihazdaki yapay zekânın incelediği sesli okuma (önizleme): yalnızca gerekince yüklenir. */
@@ -203,6 +203,8 @@ function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<Set<Audience>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
+  // "Önceki sonucunla karşılaştır" bölümünün sonucu: sesli dinlemede raporla birlikte okunur.
+  const [compareOutcome, setCompareOutcome] = useState<PanelOutcome>(null);
   // Paylaşım görseli öğrencinin ya da yetişkinin kendi raporundan çıkar; veli sekmesinde gösterilmez.
   const own = reports.student ?? reports.adult;
   const card = useMemo(() => (own ? shareCardFor(slug, own) : null), [slug, own]);
@@ -289,13 +291,13 @@ function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string
       )}
 
       {/* Rapor türü değişince oynatıcı yeniden kurulur: okunan rapor susar. */}
-      <ReportSpeech key={audience} report={report} you={audience !== 'parent'} />
+      <ReportSpeech key={audience} report={report} you={audience !== 'parent'} compareOutcome={compareOutcome} />
 
       {readingGuide(audience, report)}
 
       <SimpleReportView report={report} />
 
-      {report.compare && <ComparePanel compare={report.compare} you={audience !== 'parent'} />}
+      {report.compare && <ComparePanel compare={report.compare} you={audience !== 'parent'} onOutcome={setCompareOutcome} />}
 
       {report.roadmap && <RoadmapView roadmap={report.roadmap} you={audience !== 'parent'} />}
 

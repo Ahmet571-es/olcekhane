@@ -29,7 +29,7 @@ import { ORAL_CRITERIA, type OralLevel, type OralMarkedToken, type OralResult } 
 import { countOf } from '@/lib/scoring/tasks';
 import type { Audience } from './build';
 import type { SimpleItem, SimpleReport } from './simple';
-import type { BarsVisual, DotsVisual, GaugeVisual } from './visuals';
+import type { BarsVisual, DotsVisual, GaugeVisual, ItemVisual } from './visuals';
 
 /**
  * Sesli Okuma Değerlendirmesinin raporu. Öğrenciye ("sen") ve yetişkine (veli ya da öğretmen; öğrenciyi üçüncü kişi
@@ -477,6 +477,25 @@ function retellItem(r: OralResult, audience: Audience): SimpleItem {
  * zorlandıysa ya da hem sorularda hem metni anlatırken zorlandıysa. Anlama düzeyi 5 ya da 8 soruya dayandığı için
  * sorulardaki zorluk tek başına kutuyu açmaz; metin bitmeden duran okumada doğru okuma oranı okunan kısımdan hesaplanır.
  */
+/**
+ * Raporun kartlarındaki grafikler (doğru okuma, okuma hızı, akıcılık, anlama, yeniden anlatma): yol haritası da aynılarını
+ * kullanır. Hesaplanmayan ölçünün grafiği yoktur (ör. süre çok kısaysa hız, akıcılık derecelendirilmediyse akıcılık).
+ */
+export function oralVisuals(
+  r: OralResult,
+  audience: Audience,
+  def: OralReadingInstrument,
+  grade: number,
+): Partial<Record<'accuracy' | 'rate' | 'prosody' | 'comprehension' | 'retell', ItemVisual>> {
+  return {
+    accuracy: accuracyItem(r, audience).visual,
+    rate: rateItem(r, def, grade, audience).visual,
+    prosody: prosodyItem(r, audience)?.visual,
+    comprehension: comprehensionItem(r, audience).visual,
+    retell: retellItem(r, audience).visual,
+  };
+}
+
 export function needsSpecialistNote(r: OralResult, grade: number): boolean {
   if (r.passageGrade > grade) return false;
   const retellLow = !!r.retell && r.retell.core * 2 < r.retell.coreTotal;

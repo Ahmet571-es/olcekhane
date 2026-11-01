@@ -190,7 +190,7 @@ function prepare(slug: string, body: AnswersBody): (audience: Audience, now: Dat
       // (lib/reports/reading-parts.ts, daily-parts.ts).
       const base = oralParts({ def, passage, result, audience, grade: body.grade, answers: data.answers, ...(data.listened !== undefined ? { listened: data.listened } : {}) });
       const parts = withDaily(base, skillsDailyPart({ def, audience, grade: body.grade }));
-      return { ...report, ...(withRoadmap ? { roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade }) } : {}), parts };
+      return { ...report, ...(withRoadmap ? { roadmap: buildOralRoadmap(result, audience, template, { preview, next, grade: body.grade, def }) } : {}), parts };
     };
   }
   const { rows, notes, items, likert, traces } = score(def, body);

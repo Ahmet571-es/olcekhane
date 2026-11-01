@@ -14,14 +14,14 @@ import { isLocalTurkish, sameVoice, type VoiceLike } from './voice';
  * - Bazı tarayıcılar "bitti" olayını kaybedebilir: konuşma bitmiş göründüğü hâlde olay gelmezse (WATCHDOG_MS) sonraki
  *   parçaya geçilir.
  * - Sayfadaki oynatıcılardan aynı anda yalnızca biri konuşur (SpeechHub); biri başlayınca öteki duraklar.
+ * - Rapor baştan sona tek listedir (sonuçlar, karşılaştırma, yol haritası). Liste değişirse (ör. önceki sonuçla
+ *   karşılaştırma yapıldı) okunan parça yeni listede de aynı yerdeyse okuma oradan sürer; değilse susar.
  */
 
-export type SpeechPart = 'results' | 'roadmap';
 export type PlayerStatus = 'idle' | 'playing' | 'paused' | 'done' | 'error';
 
 export interface PlayerState {
   status: PlayerStatus;
-  part: SpeechPart;
   /** Okunan bölümün adı. */
   current: string | null;
   rate: number;
@@ -77,7 +77,7 @@ export class SpeechHub {
 export const defaultHub = new SpeechHub();
 
 export class SpeechPlayer<V extends VoiceLike> {
-  private state: PlayerState = { status: 'idle', part: 'results', current: null, rate: 1 };
+  private state: PlayerState = { status: 'idle', current: null, rate: 1 };
   private listeners = new Set<() => void>();
   /** Okunan parçanın sırası; duraklatınca buradan sürer. */
   private index = 0;
@@ -89,7 +89,7 @@ export class SpeechPlayer<V extends VoiceLike> {
 
   constructor(
     private env: PlayerEnv<V>,
-    private lists: Record<SpeechPart, Utterance[]>,
+    private list: Utterance[],
     private voice: V,
     private hub: SpeechHub = defaultHub,
   ) {}
@@ -126,9 +126,9 @@ export class SpeechPlayer<V extends VoiceLike> {
     if (this.hub.owns(this)) this.env.synth.cancel();
   }
 
-  /** `part` kısmını `from` parçasından okur. */
-  play(part: SpeechPart, from = 0) {
-    const list = this.lists[part];
+  /** Raporu `from` parçasından okur. */
+  play(from = 0) {
+    const list = this.list;
     if (list.length === 0) return;
     const gen = ++this.generation;
     this.clearTimer();
@@ -137,14 +137,14 @@ export class SpeechPlayer<V extends VoiceLike> {
     const synth = this.env.synth;
     if (synth.speaking || synth.pending) synth.cancel();
     this.startedAt = this.env.now();
-    this.set({ status: 'playing', part });
-    this.step(gen, part, Math.min(Math.max(0, from), list.length - 1));
+    this.set({ status: 'playing' });
+    this.step(gen, Math.min(Math.max(0, from), list.length - 1));
   }
 
-  private step(gen: number, part: SpeechPart, k: number) {
+  private step(gen: number, k: number) {
     if (gen !== this.generation) return;
     this.clearTimer();
-    const list = this.lists[part];
+    const list = this.list;
     if (k >= list.length) {
       this.utterance = null;
       this.index = 0;
@@ -168,7 +168,7 @@ export class SpeechPlayer<V extends VoiceLike> {
     const next = () => {
       if (moved || gen !== this.generation) return;
       moved = true;
-      this.step(gen, part, k + 1);
+      this.step(gen, k + 1);
     };
     u.onend = () => next();
     u.onerror = (e) => {
@@ -205,14 +205,14 @@ export class SpeechPlayer<V extends VoiceLike> {
 
   /** Kalınan parçanın başından sürer. */
   resume() {
-    this.play(this.state.part, this.index);
+    this.play(this.index);
   }
 
   stop() {
     this.halt();
     this.index = 0;
     this.hub.release(this);
-    this.set({ status: 'idle', part: 'results', current: null });
+    this.set({ status: 'idle', current: null });
   }
 
   /**
@@ -221,8 +221,7 @@ export class SpeechPlayer<V extends VoiceLike> {
    */
   skipSection() {
     if (this.state.status !== 'playing' && this.state.status !== 'paused') return;
-    const part = this.state.part;
-    const list = this.lists[part];
+    const list = this.list;
     const sectionOf = (k: number) => list[k]?.section ?? list[k]?.segment;
     const here = sectionOf(this.index);
     let k = this.index + 1;
@@ -234,14 +233,14 @@ export class SpeechPlayer<V extends VoiceLike> {
       this.set({ status: 'done', current: null });
       return;
     }
-    this.play(part, k);
+    this.play(k);
   }
 
   /** Hız; okurken değişirse okunan parça yeni hızla bir kez baştan okunur. */
   setRate(rate: number) {
     if (rate === this.state.rate) return;
     this.set({ rate });
-    if (this.state.status === 'playing') this.play(this.state.part, this.index);
+    if (this.state.status === 'playing') this.play(this.index);
   }
 
   /** Sayfa gizlenince ya da sayfadan çıkılırken: okuyorsa duraklar. */
@@ -259,11 +258,35 @@ export class SpeechPlayer<V extends VoiceLike> {
     if (this.state.status === 'playing') this.set({ status: 'paused' });
   }
 
-  /** Okunacak metin değişti (ör. rapor türü): susar ve baştan başlamaya hazır olur. */
-  setLists(lists: Record<SpeechPart, Utterance[]>) {
-    if (lists === this.lists) return;
-    this.lists = lists;
-    if (this.state.status !== 'idle') this.stop();
+  /**
+   * Okunacak metin değişti. Okunan (ya da duraklatılan) parça yeni listede de yerindeyse (değişiklik ondan sonra ya da
+   * öncesinde kaldıysa; ör. raporun ortasına karşılaştırma sonucu eklendi) okuma aynı parçadan sürer; parça değiştiyse
+   * oynatıcı susar ve baştan başlamaya hazır olur.
+   */
+  setList(list: Utterance[]) {
+    if (list === this.list) return;
+    const old = this.list;
+    this.list = list;
+    if (this.state.status === 'idle') return;
+    const same = (a: Utterance | undefined, b: Utterance | undefined) => !!a && !!b && a.text === b.text && a.segment === b.segment && a.section === b.section;
+    let prefix = 0;
+    while (prefix < old.length && prefix < list.length && same(old[prefix], list[prefix])) prefix++;
+    let suffix = 0;
+    while (suffix < old.length - prefix && suffix < list.length - prefix && same(old[old.length - 1 - suffix], list[list.length - 1 - suffix])) suffix++;
+    const active = this.state.status === 'playing' || this.state.status === 'paused';
+    if (active && this.index < prefix) return;
+    if (active && this.index >= old.length - suffix) {
+      // Okunan parça değişikliğin ardında: yeni listedeki yeri kayar (okunmaktaysa o cümle yeni yerinden bir kez baştan okunur).
+      const shift = list.length - old.length;
+      if (shift === 0) return;
+      if (this.state.status === 'paused') {
+        this.index += shift;
+        return;
+      }
+      this.play(this.index + shift);
+      return;
+    }
+    this.stop();
   }
 
   /** Oynatıcı kaldırılırken: susar, bağlayıcıdan çıkar. */

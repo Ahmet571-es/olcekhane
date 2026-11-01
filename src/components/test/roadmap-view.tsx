@@ -1,12 +1,28 @@
 import Link from 'next/link';
+import { ItemVisualView } from '@/components/report/item-visual';
 import { weeksTitle, type Roadmap } from '@/lib/reports/roadmap';
+import type { RoadmapGraphic } from '@/lib/reports/roadmap-graphics';
 import { Profile3D } from './profile-3d';
 
 /**
  * Gelişim yol haritası: raporun sonundaki öneri bölümleri. PDF'teki yol haritasıyla aynı içeriği gösterir.
  * Bağlantılar yeni sekmede açılır: rapor saklanmadığı için sayfadan ayrılmak raporu kaybettirir.
+ *
+ * Grafikler (lib/reports/roadmap-graphics.ts): "Kısaca"daki her satırın, her önerinin ve (önerileri bir sonuçtan seçilen)
+ * bölümlerin grafiği raporun kartlarındakiyle aynı çizimdir; haftaların zaman çizelgesi. Telefonda grafik başlığın altında,
+ * geniş ekranda açıklamanın yanında.
  */
+function Graphic({ g, wide }: { g: RoadmapGraphic; wide?: boolean }) {
+  return (
+    <figure className={`flex flex-col gap-1.5 ${wide ? 'max-w-[28rem]' : 'max-w-[22rem] md:max-w-none'}`}>
+      {g.caption && <figcaption className="t-meta">{g.caption}</figcaption>}
+      <ItemVisualView visual={g.visual} />
+    </figure>
+  );
+}
+
 export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boolean }) {
+  const standoutGraphics = rm.standout.some((s) => s.graphic);
   return (
     <article className="flex flex-col gap-10 border-t-2 border-ink pt-8" aria-labelledby="yol-haritasi">
       <header className="flex flex-col gap-3">
@@ -40,16 +56,23 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
           Kısaca
         </h3>
         {rm.standout.length > 0 ? (
-          <ul className="flex flex-wrap gap-2">
+          // Satırların grafiği varsa her satır grafiğiyle bir kart; yoksa (ör. yorumlanmayan sonuç) kısa kutular.
+          <ul className={standoutGraphics ? 'grid gap-3 sm:grid-cols-2' : 'flex flex-wrap gap-2'}>
             {rm.standout.map((s) => (
-              <li key={s.title} className="rounded-xl border border-rule bg-surface px-4 py-3">
-                <p className="t-meta">{s.title}</p>
-                <p className="font-display text-lg font-bold">{s.text}</p>
+              <li key={s.title} className="flex flex-col gap-3 rounded-xl border border-rule bg-surface px-4 py-3">
+                <div>
+                  <p className="t-meta">{s.title}</p>
+                  <p className="font-display text-lg font-bold">{s.text}</p>
+                </div>
+                {s.graphic && <Graphic g={s.graphic} />}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="measure text-ink-2">{rm.standoutNote}</p>
+          <div className={rm.standoutGraphic ? 'grid gap-x-8 gap-y-3 md:grid-cols-[minmax(0,1fr)_16.5rem]' : ''}>
+            <p className="measure text-ink-2">{rm.standoutNote}</p>
+            {rm.standoutGraphic && <Graphic g={rm.standoutGraphic} />}
+          </div>
         )}
       </section>
 
@@ -67,6 +90,11 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
                   <span className="font-display text-lg font-bold">{it.title}</span>
                   <span className="t-small font-bold text-brass-ink">{it.badge}</span>
                 </p>
+                {it.graphic && (
+                  <div className="py-1">
+                    <Graphic g={it.graphic} />
+                  </div>
+                )}
                 <p className="text-ink-2">{it.text}</p>
               </li>
             ))}
@@ -92,14 +120,19 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
           <h3 id="ortamlar" className="t-h2">
             {rm.settings.title}
           </h3>
-          <p className="measure text-ink-2">{rm.settings.intro}</p>
-          {rm.settings.items.length > 0 && (
-            <ul className="flex list-disc flex-col gap-1.5 pl-5">
-              {rm.settings.items.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ul>
-          )}
+          <div className={rm.settings.graphic ? 'grid gap-x-8 gap-y-3 md:grid-cols-[minmax(0,1fr)_16.5rem]' : 'flex flex-col gap-3'}>
+            <div className="flex flex-col gap-3">
+              <p className="measure text-ink-2">{rm.settings.intro}</p>
+              {rm.settings.items.length > 0 && (
+                <ul className="flex list-disc flex-col gap-1.5 pl-5">
+                  {rm.settings.items.map((s) => (
+                    <li key={s}>{s}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {rm.settings.graphic && <Graphic g={rm.settings.graphic} />}
+          </div>
           <p className="notice notice-info measure t-small">{rm.settings.note}</p>
         </section>
       )}
@@ -109,6 +142,7 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
           <h3 id="yaklasim" className="t-h2">
             {rm.approach.title}
           </h3>
+          {rm.approach.graphic && <Graphic g={rm.approach.graphic} />}
           <ul className="flex flex-col divide-y divide-rule border-y border-rule">
             {rm.approach.items.map((it) => (
               <li key={it.title} className="grid gap-1 py-3 sm:grid-cols-[11rem_1fr] sm:gap-6">
@@ -124,6 +158,7 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
         <h3 id="haftalar" className="t-h2">
           {weeksTitle(rm.weeks.length)}
         </h3>
+        <Graphic g={rm.weeksGraphic} wide />
         <ol className="relative flex flex-col gap-5 border-l-2 border-rule pl-6">
           {rm.weeks.map((w) => (
             <li key={w.label} className="relative flex flex-col gap-1">

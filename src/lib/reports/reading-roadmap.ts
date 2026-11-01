@@ -1,6 +1,9 @@
 import type { ReadingPace, ReadingRoadmapTemplate } from '@/content/roadmaps/types';
 import type { ReportContent } from './build';
 import { bandGroup, joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
+import { basisCaption, graphic, weeksGraphic, type RoadmapGraphic } from './roadmap-graphics';
+import { comprehensionDots, readingSpeedBars } from './simple';
+import type { DotsVisual } from './visuals';
 
 /**
  * Okuma Hızı ve Anlama testinin gelişim yol haritası: soru türlerine (okuma becerilerine) göre nasıl çalışılacağı,
@@ -81,9 +84,35 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
           : `${s.total} sorudan ${s.correct} doğru`;
 
   const second = need[0]
-    ? { title: need[0].label, text: pick(t.skills[need[0].key].action, a) }
-    : { title: t.extraWeek.title, text: pick(t.extraWeek.text, a) };
+    ? { title: need[0].label, text: pick(t.skills[need[0].key].action, a), fromResult: true }
+    : { title: t.extraWeek.title, text: pick(t.extraWeek.text, a), fromResult: false };
   const third = t.pace[pace].week;
+  // 3. hafta hız ile anlamanın birlikte değerlendirilmesinden seçilir (ör. yavaşla ve anla, tekrarlı okuma): sonuca göre.
+  const weeks = [
+    { label: '1. hafta', title: 'Okuma günlüğü', text: pick(t.firstWeek, a), fromResult: false },
+    { label: '2. hafta', ...second },
+    { label: '3. hafta', title: third.title, text: pick(third.text, a), fromResult: true },
+    { label: '4. hafta', title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent), fromResult: false },
+  ];
+
+  // Grafikler raporun kartlarındakiyle aynıdır: anlama soruları, soru türünün soruları, okuma hızı ve anlayarak okuma hızı.
+  // Hız yorumlanmadıysa hızın grafiği yoktur; anlayarak okuma hızı hesaplanmadıysa yalnızca okuma hızı gösterilir.
+  const correct = sum((x) => x.correct);
+  const total = sum((x) => x.total);
+  const comprehension = graphic(comprehensionDots(correct, total))!;
+  const skillDots = (s: (typeof skills)[number]): DotsVisual => ({
+    type: 'dots',
+    label: s.label,
+    rows: [{ label: 'Doğru', filled: s.correct, total: s.total, valueLabel: `${s.correct}/${s.total}` }],
+    legend: ['doğru', 'yanlış'],
+  });
+  // Okuma hızı satırın ya da kartın rozetinde okunur ("Dakikada 62 kelime"); grafiğin sözlü anlatımı anlayarak okuma hızıdır.
+  const speed: RoadmapGraphic | undefined = speedRead
+    ? graphic(
+        readingSpeedBars(rd, 'omit'),
+        rd.effectiveWpm != null ? [`Anlayarak okuma hızı: dakikada ${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(rd.effectiveWpm)} kelime.`] : [],
+      )
+    : undefined;
 
   const contents = [
     parent ? 'okuma becerilerine göre nasıl çalışılabileceği' : 'okuma becerilerine göre nasıl çalışabileceğin',
@@ -111,9 +140,17 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
     })),
     standout: [
       // Rapor şablonundaki özet üçüncü kişiyle yazılmıştır ("Anlamakta zorlandı"): öğrenciye doğru sayısı gösterilir.
-      { title: 'Anlama', text: parent ? section.summary || section.bandLabel : `${sum((x) => x.total)} sorudan ${sum((x) => x.correct)} doğru` },
-      { title: 'Okuma hızı', text: speedRead ? `Dakikada ${wpm} kelime` : 'Yorumlanmadı' },
-      ...(need[0] && ratio(need[0]) < 0.5 ? [{ title: parent ? 'En çok zorlandığı soru türü' : 'En çok zorlandığın soru türü', text: need[0].label }] : []),
+      // Öğrencinin satırı doğru sayısını zaten söyler: grafiğin sözlü anlatımı yinelenmez.
+      {
+        title: 'Anlama',
+        text: parent ? section.summary || section.bandLabel : `${total} sorudan ${correct} doğru`,
+        keys: ['comprehension'],
+        graphic: parent ? comprehension : { ...comprehension, spoken: [] },
+      },
+      { title: 'Okuma hızı', text: speedRead ? `Dakikada ${wpm} kelime` : 'Yorumlanmadı', keys: ['speed'], ...(speed ? { graphic: speed } : {}) },
+      ...(need[0] && ratio(need[0]) < 0.5
+        ? [{ title: parent ? 'En çok zorlandığı soru türü' : 'En çok zorlandığın soru türü', text: need[0].label, keys: [need[0].key], graphic: graphic(skillDots(need[0]))! }]
+        : []),
     ],
     standoutNote: null,
     study: {
@@ -126,8 +163,17 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
           badge: badge(s),
           color: t.skills[s.key].color,
           text: pick(s.correct === s.total ? t.skills[s.key].full : t.skills[s.key].need, a),
+          // Doğru sayısı rozette okunur ("3 sorudan 2 doğru"): sesli dinlemede yinelenmez.
+          graphic: graphic(skillDots(s), [])!,
         })),
-        { key: 'pace', title: 'Hız ve anlama', badge: speedRead ? `Dakikada ${wpm} kelime` : 'Hız yorumlanmadı', color: '#5b6b82', text: slowNote + pick(t.pace[pace].text, a) },
+        {
+          key: 'pace',
+          title: 'Hız ve anlama',
+          badge: speedRead ? `Dakikada ${wpm} kelime` : 'Hız yorumlanmadı',
+          color: '#5b6b82',
+          text: slowNote + pick(t.pace[pace].text, a),
+          ...(speed ? { graphic: speed } : {}),
+        },
       ],
       links: t.links,
     },
@@ -137,13 +183,10 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
       items: parent ? t.habits.items.parent : t.habits.items.student,
       note: pick(t.habits.note, a),
     },
-    approach: parent ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group] } : null,
-    weeks: [
-      { label: '1. hafta', title: 'Okuma günlüğü', text: pick(t.firstWeek, a) },
-      { label: '2. hafta', title: second.title, text: second.text },
-      { label: '3. hafta', title: third.title, text: pick(third.text, a) },
-      { label: '4. hafta', title: 'Gözden geçir', text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent) },
-    ],
+    // Veliye öneriler anlama düzeyine göre seçilir: bölümün grafiği anlama soruları.
+    approach: parent ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group], keys: ['comprehension'], graphic: basisCaption(comprehension, true, false)! } : null,
+    weeks,
+    weeksGraphic: weeksGraphic(weeks, parent),
     sources: t.sources,
   };
 }

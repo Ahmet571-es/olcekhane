@@ -8,9 +8,10 @@ import type { LikertInstrument } from '@/lib/instruments/types';
 import { oralWordCount } from '@/lib/oral/words';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { oralPassagesFor, type OralInput } from '@/lib/scoring/oral';
-import { MAX_UTTERANCE, reportSpeech, speakable, splitUtterances, spokenNote, utterancesOf } from '@/lib/speech/report-text';
+import { MAX_UTTERANCE, allSegments, reportSpeech, sourcesLine, speakable, splitUtterances, spokenNote, utterancesOf } from '@/lib/speech/report-text';
 import { PAUSE_GUARD_MS, SpeechHub, SpeechPlayer, WATCHDOG_MS, type PlayerEnv, type SynthLike, type UtteranceLike } from '@/lib/speech/player';
 import { pickTurkishVoice, type VoiceLike } from '@/lib/speech/voice';
+import { compareSpeech } from '@/components/test/compare-panel';
 import { likertBody, quizBody, readingBody } from './helpers/bodies';
 import { TASK_VARIANTS } from './helpers/task-variants';
 
@@ -31,7 +32,10 @@ function checkSpoken(r: SimpleReport, label: string) {
   for (const it of r.items.slice(0, 3)) expect(res.some((u) => u.segment === it.title), `${label} ${it.title}`).toBe(true);
   if (r.roadmap) expect(t.roadmap.length, label).toBeGreaterThan(0);
   else expect(t.roadmap, label).toEqual([]);
-  for (const u of [...res, ...utterancesOf(t.roadmap)]) {
+  // Oynatıcı tek listeyi okur: sonuçlar, (varsa) karşılaştırma bölümü ve yol haritası, ekrandaki sırayla.
+  const all = utterancesOf(allSegments(t));
+  expect(all.map((u) => u.text), label).toEqual([...res, ...utterancesOf(t.compare), ...utterancesOf(t.roadmap)].map((u) => u.text));
+  for (const u of all) {
     const at = `${label}: ${u.text}`;
     expect(u.text.length, at).toBeLessThanOrEqual(MAX_UTTERANCE);
     expect(u.text, at).toMatch(/[\p{L}\d]/u);
@@ -56,11 +60,41 @@ function checkSpoken(r: SimpleReport, label: string) {
     const kisaca = t.roadmap.find((x) => x.title === 'Kısaca');
     if (r.roadmap.standout.length > 0) for (const st of r.roadmap.standout) expect(kisaca?.lines.join(' '), label).toContain(st.text);
     else if (r.roadmap.standoutNote) expect(kisaca?.lines.join(' '), label).toContain(r.roadmap.standoutNote);
+    checkRoadmapSpoken(r, t.roadmap, label);
   }
   // Grafiğin görünüşünü anlatan cümleler okunmaz (görev testlerinin "Soru soru cevapların" bölümü soruların kendi metnini okur).
   const questions = new Set((r.parts ?? []).filter((p) => p.key === 'answers').map((p) => p.title.replace(/[.:?]$/, '')));
   for (const u of res) if (!questions.has(u.section ?? '')) expect(u.text, `${label}: ${u.text}`).not.toMatch(/(?<!\p{L})(?:kırmızı|sarı bant|kesikli)/iu);
   return res;
+}
+
+/**
+ * Yol haritası eksiksiz okunur (ekrandaki sırayla, ayrıca bir düğmeye basmadan): giriş, üç boyutlu profilin değerleri, kısaca,
+ * öneriler, ortamlar, yaklaşım, haftalar ve her grafiğin sözlü anlatımı; kaynak listesi okunmaz, varlığı en sonda söylenir.
+ */
+function checkRoadmapSpoken(r: SimpleReport, segs: ReturnType<typeof reportSpeech>['roadmap'], label: string) {
+  const rm = r.roadmap!;
+  const you = r.audience !== 'parent';
+  const text = segs.flatMap((x) => x.lines).join(' ');
+  expect(text, label).toContain(rm.intro);
+  if (rm.bars.length >= 3) for (const b of rm.bars) expect(text, `${label} ${b.label}`).toContain(`${b.label}: ${b.value === null ? 'hesaplanamadı' : b.valueLabel}`);
+  const graphics = [
+    ...rm.standout.map((x) => x.graphic),
+    rm.standout.length ? undefined : rm.standoutGraphic,
+    ...(rm.study.items.length ? rm.study.items.map((x) => x.graphic) : []),
+    rm.settings?.graphic,
+    rm.approach?.items.length ? rm.approach.graphic : undefined,
+    rm.weeksGraphic,
+  ];
+  for (const g of graphics) if (g) for (const line of g.spoken) expect(text, `${label}: ${line}`).toContain(line);
+  if (rm.settings) for (const it of rm.settings.items) expect(text, label).toContain(it);
+  for (const it of rm.approach?.items ?? []) expect(text, label).toContain(it.text);
+  for (const w of rm.weeks) expect(text, label).toContain(w.text);
+  for (const l of rm.study.links) expect(text, label).toContain(l.label);
+  // Kaynak listesi okunmaz; varlığı en sonda söylenir.
+  for (const s of rm.sources) expect(text.includes(s.text.slice(0, 40)), `${label} ${s.text}`).toBe(false);
+  expect(segs.at(-1)!.lines, label).toEqual([sourcesLine(you)]);
+  expect(sourcesLine(you), label).toContain(you ? 'görebilirsin.' : 'görebilirsiniz.');
 }
 
 describe('Raporu sesli dinle: okunuş', () => {
@@ -139,6 +173,8 @@ describe('Raporu sesli dinle: raporlardan okunacak metin', () => {
             expect(utterancesOf(t.roadmap)[0].text).toBe(head);
             // Yol haritasının kaynak listesi okunmaz.
             for (const s of r.roadmap.sources) expect(utterancesOf(t.roadmap).some((u) => u.text.includes(speakable(s.text).slice(0, 40))), s.text).toBe(false);
+            // Kaynak cümlesi kısa ve sade.
+            for (const sent of sourcesLine(r.audience !== 'parent').split(/(?<=[.;])\s+/)) expect(sent.split(/\s+/).length).toBeLessThanOrEqual(22);
           }
         }
       }
@@ -214,7 +250,9 @@ describe('Raporu sesli dinle: ses', () => {
     expect(ui).not.toMatch(/localStorage|sessionStorage|indexedDB|document\.cookie|fetch\(|XMLHttpRequest|sendBeacon/);
     expect(ui).toContain('setVoice(pickTurkishVoice(synth.getVoices()))');
     // Ses yoksa (ya da kaybolursa) oynatıcı görünmez.
-    expect(ui).toMatch(/if \(!voice \|\| lists\.results\.length === 0\) return null;/);
+    expect(ui).toMatch(/if \(!voice \|\| list\.length === 0\) return null;/);
+    // Rapor tek dokunuşla baştan sona okunur: yol haritası için ayrı bir düğme yoktur.
+    expect(ui).not.toMatch(/Yol haritasını da dinle|Sonuçları baştan dinle/);
     expect(ui).toContain("addEventListener('pagehide'");
     expect(ui).toContain("addEventListener('visibilitychange'");
     expect(ui).toContain('Site raporunu hiçbir yere göndermez');
@@ -298,18 +336,15 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
         due.fn();
       }
     };
-    const lists = {
-      results: Array.from({ length: n }, (_, i) => ({ text: `Sonuç ${i + 1}`, segment: `Bölüm ${i + 1}` })),
-      roadmap: [{ text: 'Yol haritası', segment: 'Yol haritası' }],
-    };
+    const list = Array.from({ length: n }, (_, i) => ({ text: `Sonuç ${i + 1}`, segment: `Bölüm ${i + 1}` }));
     const hub = new SpeechHub();
-    const player = new SpeechPlayer(env, lists, tr(), hub);
-    return { synth, env, player, tick, hub, lists };
+    const player = new SpeechPlayer(env, list, tr(), hub);
+    return { synth, env, player, tick, hub, list };
   }
 
   it('ilk parça düğmeye basılınca hemen okunur; her parça cihazdaki Türkçe sesle; bitince "done"', () => {
     const { synth, player, tick } = setup();
-    player.play('results');
+    player.play();
     expect(synth.spoken.map((u) => u.text)).toEqual(['Sonuç 1']);
     expect(player.getState()).toMatchObject({ status: 'playing', current: 'Bölüm 1' });
     // Ses listesi yenilenince (yeni nesne, aynı ses) yeni nesne kullanılır.
@@ -331,11 +366,11 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
   it('Bölümü geç: okunan bölümün hepsi atlanır; duraklatılmışken de sonraki bölümden başlar; son bölümde okuma biter', () => {
     const { synth, player, tick } = setup();
     const u = (text: string, section: string) => ({ text, segment: text, section });
-    player.setLists({ results: [u('A1', 'A'), u('B1', 'B'), u('B2', 'B'), u('B3', 'B'), u('C1', 'C'), u('C2', 'C')], roadmap: [] });
+    player.setList([u('A1', 'A'), u('B1', 'B'), u('B2', 'B'), u('B3', 'B'), u('C1', 'C'), u('C2', 'C')]);
     // Okunmuyorken bir şey yapmaz.
     player.skipSection();
     expect(synth.spoken).toEqual([]);
-    player.play('results');
+    player.play();
     tick(500);
     synth.finish();
     expect(synth.spoken.at(-1)!.text).toBe('B1');
@@ -360,7 +395,7 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
 
   it('ses kaybolursa ya da ağdan çalışan sese dönüşürse okuma durur, başka sese geçilmez', () => {
     const { synth, player } = setup();
-    player.play('results');
+    player.play();
     synth.voices = [{ ...tr(), localService: false }, { name: 'Samantha', lang: 'en-US', localService: true, voiceURI: 'sam' }];
     synth.finish();
     expect(synth.spoken).toHaveLength(1);
@@ -374,7 +409,7 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
   for (const style of ['error', 'end'] as const) {
     it(`iptal edilen konuşmanın geç gelen olayları yok sayılır (${style === 'error' ? 'onerror' : 'onend'}); devam aynı parçadan`, () => {
       const { synth, player, tick } = setup(style);
-      player.play('results');
+      player.play();
       tick(PAUSE_GUARD_MS + 1);
       synth.finish();
       expect(synth.spoken).toHaveLength(2);
@@ -393,7 +428,7 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
 
   it('dışarıdan kesinti duraklatır; başka bir hata okumayı "error"la durdurur', () => {
     const { synth, player } = setup();
-    player.play('results');
+    player.play();
     synth.current!.onerror!({ error: 'interrupted' });
     expect(player.getState().status).toBe('paused');
     player.resume();
@@ -406,7 +441,7 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
 
   it('"bitti" olayı gelmezse konuşma bitmiş görününce sonraki parçaya geçilir', () => {
     const { synth, player, tick } = setup();
-    player.play('results');
+    player.play();
     tick(WATCHDOG_MS);
     expect(synth.spoken).toHaveLength(1);
     synth.speaking = false;
@@ -416,7 +451,7 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
 
   it('başlattıktan hemen sonraki (çift dokunma) duraklatma yok sayılır', () => {
     const { synth, player, tick } = setup();
-    player.play('results');
+    player.play();
     player.pause();
     expect(player.getState().status).toBe('playing');
     expect(synth.cancels).toBe(0);
@@ -427,9 +462,9 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
 
   it('başka bir oynatıcı başlayınca bu oynatıcı duraklar; eski olayları yok sayılır', () => {
     const a = setup();
-    const b = new SpeechPlayer(a.env, a.lists, tr(), a.hub);
-    a.player.play('results');
-    b.play('roadmap');
+    const b = new SpeechPlayer(a.env, [{ text: 'Yol haritası', segment: 'Yol haritası' }], tr(), a.hub);
+    a.player.play();
+    b.play();
     expect(a.player.getState().status).toBe('paused');
     expect(b.getState().status).toBe('playing');
     expect(a.synth.spoken.map((u) => u.text)).toEqual(['Sonuç 1', 'Yol haritası']);
@@ -442,7 +477,7 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
 
   it('okurken hız değişince okunan parça yeni hızla bir kez baştan okunur', () => {
     const { synth, player, tick } = setup();
-    player.play('results');
+    player.play();
     synth.finish();
     synth.finish();
     expect(synth.spoken).toHaveLength(3);
@@ -461,17 +496,86 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
     expect(synth.spoken).toHaveLength(4);
   });
 
+  it('liste değişince (ör. karşılaştırma eklendi) okunan cümle yerindeyse okuma sürer; değiştiyse susar', () => {
+    const { synth, player, tick, list } = setup('error', 6);
+    const extra = [
+      { text: 'Karşılaştırma', segment: 'Karşılaştırma' },
+      { text: 'Fark', segment: 'Karşılaştırma' },
+    ];
+    player.play();
+    tick(500);
+    synth.finish();
+    synth.finish();
+    expect(synth.spoken.at(-1)!.text).toBe('Sonuç 3');
+    // Değişiklik okunan cümleden sonra: okuma kesilmeden sürer, yeni parçalar sırası gelince okunur.
+    player.setList([...list.slice(0, 4), ...extra, ...list.slice(4)]);
+    expect(player.getState().status).toBe('playing');
+    expect(synth.cancels).toBe(0);
+    synth.finish();
+    synth.finish();
+    synth.finish();
+    expect(synth.spoken.slice(-3).map((u) => u.text)).toEqual(['Sonuç 4', 'Karşılaştırma', 'Fark']);
+    // Değişiklik okunan cümleden önce: cümle yeni yerinden bir kez baştan okunur, sonrası aynı.
+    const now = [...list.slice(0, 4), ...extra, ...list.slice(4)];
+    tick(PAUSE_GUARD_MS + 1);
+    synth.finish();
+    expect(synth.spoken.at(-1)!.text).toBe('Sonuç 5');
+    player.setList([{ text: 'Yeni baş', segment: 'Baş' }, ...now]);
+    expect(synth.spoken.at(-1)!.text).toBe('Sonuç 5');
+    expect(player.getState().status).toBe('playing');
+    synth.finish();
+    expect(synth.spoken.at(-1)!.text).toBe('Sonuç 6');
+    // Okunan cümlenin kendisi değiştiyse oynatıcı susar.
+    player.setList([{ text: 'Başka bir rapor', segment: 'Başka' }]);
+    expect(player.getState()).toMatchObject({ status: 'idle', current: null });
+  });
+
+  it('karşılaştırma bölümü sonuçlarla yol haritası arasında okunur; karşılaştırma yapıldıysa sonucu da', () => {
+    const slug = 'bes-faktor-kisilik';
+    const r = evaluate(slug, likertBody(slug, 8, (i) => (i * 7 + 2) % 5)).student;
+    expect(r.compare).toBeDefined();
+    const empty = compareSpeech(r.compare!, null, true);
+    expect(empty[0].lines.join(' ')).toContain('Önceki sonucunla karşılaştır.');
+    const rows = r.compare!.scales.map((x, i) => ({
+      key: x.key,
+      label: x.label,
+      before: x.value,
+      after: Math.min(x.max, x.value + (i % 2 ? 0.6 : 0)),
+      min: x.min,
+      max: x.max,
+      decimals: x.decimals,
+      bandBefore: x.band,
+      bandAfter: x.band,
+      verdict: (i % 2 ? 'up' : 'same') as 'up' | 'same',
+    }));
+    const done = compareSpeech(r.compare!, { status: 'ok', rows, days: 120, known: true }, true);
+    const text = done[0].lines.join(' ');
+    expect(text).toContain('İki sonuç arasında yaklaşık 4 ay var.');
+    for (const row of rows) expect(text).toContain(`${row.label}: önce `);
+    expect(text).not.toMatch(/daire/);
+    const t = reportSpeech(r, done);
+    const all = allSegments(t).map((x) => x.title);
+    const at = all.indexOf(done[0].title);
+    expect(at).toBe(t.results.length);
+    expect(all[at + 1]).toBe('Senin yol haritan');
+    for (const u of utterancesOf(done)) {
+      expect(u.text.length).toBeLessThanOrEqual(MAX_UTTERANCE);
+      expect(u.text).not.toMatch(/[%“”"→←·°×≥≤{}/÷□]/u);
+    }
+    expect(compareSpeech(r.compare!, { status: 'none' }, false)[0].lines.join(' ')).toContain('Önceki sonuçla karşılaştırın.');
+  });
+
   it('sayfa gizlenince ya da sayfadan çıkılırken duraklar; kaldırılınca ve durdurulunca susar', () => {
     const { synth, player } = setup();
-    player.play('results');
+    player.play();
     player.hide();
     expect(player.getState().status).toBe('paused');
     expect(synth.cancels).toBe(1);
     player.resume();
     player.stop();
-    expect(player.getState()).toMatchObject({ status: 'idle', part: 'results', current: null });
+    expect(player.getState()).toMatchObject({ status: 'idle', current: null });
     expect(synth.cancels).toBe(2);
-    player.play('results');
+    player.play();
     player.destroy();
     expect(synth.cancels).toBe(3);
     synth.spoken.at(-1)!.onend!();

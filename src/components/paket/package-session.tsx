@@ -8,7 +8,7 @@ import { SharePanel } from '@/components/share/share-panel';
 import { PageGuide } from '@/components/site/page-guide';
 import { ReportSpeech } from '@/components/test/report-speech';
 import { RoadmapView } from '@/components/test/roadmap-view';
-import { ComparePanel } from '@/components/test/compare-panel';
+import { ComparePanel, type PanelOutcome } from '@/components/test/compare-panel';
 import { SimpleReportView } from '@/components/test/simple-report-view';
 import { uuid4, type TestPayload } from '@/components/test/test-session';
 import { AUDIENCE_LABELS } from '@/lib/config';
@@ -339,6 +339,8 @@ function PackageResult({
   const [saved, setSaved] = useState<Set<Audience>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<Set<string>>(() => new Set());
+  // Her testin "Önceki sonucunla karşılaştır" sonucu: sesli dinlemede o testin raporuyla birlikte okunur.
+  const [outcomes, setOutcomes] = useState<Record<string, PanelOutcome>>({});
   const you = audience !== 'parent';
 
   useLeaveWarning(solved.length > 0 && saved.size === 0, 'Raporu PDF olarak indirmeden ayrılırsan paketteki bütün raporlar silinir; hiçbir yere kaydedilmez. Yine de ayrılmak istiyor musun?', 1);
@@ -514,9 +516,11 @@ function PackageResult({
             </summary>
             <div className="flex flex-col gap-8 border-t border-rule p-5 sm:p-6">
               {/* Oynatıcı yalnızca açık raporda; rapor kapanınca ya da rapor türü değişince susar. */}
-              {open.has(e.slug) && <ReportSpeech key={`${e.slug}-${audience}`} report={e.report} you={you} />}
+              {open.has(e.slug) && <ReportSpeech key={`${e.slug}-${audience}`} report={e.report} you={you} compareOutcome={outcomes[e.slug] ?? null} />}
               <SimpleReportView report={e.report} />
-              {e.report.compare && <ComparePanel compare={e.report.compare} you={you} />}
+              {e.report.compare && (
+                <ComparePanel compare={e.report.compare} you={you} onOutcome={(o) => setOutcomes((m) => ({ ...m, [e.slug]: o }))} />
+              )}
               {e.report.roadmap && <RoadmapView roadmap={e.report.roadmap} you={you} />}
             </div>
           </details>

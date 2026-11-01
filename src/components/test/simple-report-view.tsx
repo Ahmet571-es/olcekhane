@@ -367,6 +367,12 @@ function QuizReview({ quiz, you }: { quiz: SimpleQuizReview; you: boolean }) {
             {quiz.errorsTitle}
           </h2>
           <p className="measure text-ink-2">{quiz.errorsNote}</p>
+          {/* Bölümün grafiği: her hata türünün görüldüğü soru sayısı. */}
+          {quiz.errorsVisual && (
+            <div className="max-w-[22rem]">
+              <ItemVisualView visual={quiz.errorsVisual} />
+            </div>
+          )}
           {quiz.errors.length > 0 && (
             <ul className="flex flex-col divide-y divide-rule border-y border-rule">
               {quiz.errors.map((e) => (

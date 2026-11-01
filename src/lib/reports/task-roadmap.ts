@@ -2,6 +2,7 @@ import type { TaskRoadmapTemplate } from '@/content/roadmaps/types';
 import { parentTitle } from '@/content/roadmaps/veli-basliklari';
 import type { ReportContent } from './build';
 import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
+import { graphic, weeksGraphic } from './roadmap-graphics';
 
 /**
  * Zihinsel görevlerin gelişim yol haritası: becerinin günlük hayatta nerede kullanıldığı ve o işleri kolaylaştıran
@@ -14,6 +15,10 @@ import { joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadma
  * hatırlananların oranı; hesapla ve hatırlada dizi uzunluklarına göre doğru yerde hatırlanan harflerin oranı; zihinden hesaplamada dört
  * işlemin 60 saniyelik bölümlerinde doğru işlem sayısı); öteki görevlerde
  * sonuçlar farklı birimlerde olduğu için yoktur.
+ *
+ * Grafikler: "Kısaca"daki her satırın grafiği raporun o kartının grafiğidir (kart yorumlanmadıysa grafik yoktur). Öneriler,
+ * bilmekte yarar olanlar ve veliye yaklaşım herkese aynı verilir (sonuca göre seçilmez): onlara sonuç grafiği konmaz;
+ * haftaların zaman çizelgesi de bütün haftaların herkes için aynı olduğunu gösterir.
  */
 export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts: { preview: boolean; next: NextTest[] }): Roadmap | undefined {
   const blocks = r.cognitive?.blocks ?? [];
@@ -27,6 +32,10 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
   // Ana sonuç (ilk kart) yorumlanmadıysa giriş, önerilerin sonuca değil herkese yönelik olduğunu söyler.
   const notRead = blocks[0].headline === 'Yorumlanmadı';
   const purpose = 'Öneriler puanı yükseltmek için değil, bu becerinin gerektiği işleri kolaylaştırmak içindir.';
+  const weeks = [
+    ...t.weeks.map((w, i) => ({ label: `${i + 1}. hafta`, title: title(w.title), text: pick(w.text, a), fromResult: false })),
+    { label: '4. hafta', title: title('Gözden geçir'), text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent), fromResult: false },
+  ];
   return {
     preview: opts.preview,
     intro: notRead
@@ -38,7 +47,10 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
         : `Bu bölüm sonuçlarını günlük hayata taşıman için öneriler içerir: ${joinNames(contents)}. ${purpose}`,
     bars: (r.cognitive?.profile?.bars ?? []).map((b) => ({ ...b, ciLow: null, ciHigh: null })),
     ...(r.cognitive?.profile ? { barsTitle: r.cognitive.profile.title, barsNote: r.cognitive.profile.note } : {}),
-    standout: blocks.map((b) => ({ title: b.name, text: b.headline })),
+    standout: blocks.map((b) => {
+      const g = b.interpreted === false || b.headline === 'Yorumlanmadı' ? undefined : graphic(b.visual);
+      return { title: b.name, text: b.headline, keys: [b.key], ...(g ? { graphic: g } : {}) };
+    }),
     standoutNote: null,
     study: {
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
@@ -53,10 +65,8 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
       note: pick(t.facts.note, a),
     },
     approach: parent ? { title: 'Çocuğunuza nasıl yaklaşabilirsiniz?', items: t.approach } : null,
-    weeks: [
-      ...t.weeks.map((w, i) => ({ label: `${i + 1}. hafta`, title: title(w.title), text: pick(w.text, a) })),
-      { label: '4. hafta', title: title('Gözden geçir'), text: pick(t.lastWeek, a) + nextStep(opts.next, t.nextPurpose, parent) },
-    ],
+    weeks,
+    weeksGraphic: weeksGraphic(weeks, parent),
     sources: t.sources,
   };
 }

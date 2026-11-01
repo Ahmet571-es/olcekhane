@@ -476,7 +476,9 @@ describe('gelişim yol haritası: rapora eklenmesi', () => {
     expect(rm.bars).toHaveLength(1);
     expect(rm.settings).toBeNull();
     expect(rm.intro).not.toContain('ortamlarda');
-    expect(rm.standout).toEqual([{ title: 'Öz-saygı', text: 'Kendine çoğu zaman eleştirel bakan' }]);
+    expect(rm.standout.map(({ title, text, keys }) => ({ title, text, keys }))).toEqual([{ title: 'Öz-saygı', text: 'Kendine çoğu zaman eleştirel bakan', keys: ['self_esteem'] }]);
+    // Kısaca'nın grafiği raporun kartındaki düzey çubuğunun aynısıdır.
+    expect(rm.standout[0].graphic?.visual).toEqual(low.student.items[0].visual);
     expect(rm.study.items[0].badge).toBe('Kendine karşı eleştirel · Kendine çoğu zaman eleştirel bakan');
     expect(rm.weeks.map((w) => w.title)).toEqual(['Fark et', 'Kendine bakış', 'Gerçek bir sorumluluk', 'Gözden geçir']);
     expect(rm.study.links.map((l) => l.href)).toEqual(['/rehber/etkili-ders-calisma-yontemleri', '/rehber/oz-saygi-nedir']);

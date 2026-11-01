@@ -411,7 +411,7 @@ describe('Ders çalışma motivasyonu: kısa adlar ve yol haritasının "Kısaca
 
   it('yüksek isteksizlik ve iç baskı, aynı uzaklıktaki merak ve önemini görmenin arkasında kalmaz', () => {
     const rm = evaluate(SLUG, bodyFor({ intrinsic: 5, identified: 5, introjected: 5, external: 3, amotivation: 5 })).student.roadmap!;
-    expect(rm.standout).toEqual([
+    expect(rm.standout.map(({ title, text }) => ({ title, text }))).toEqual([
       { title: 'İç baskı', text: 'Güçlü bir iç baskı' },
       { title: 'İsteksizlik', text: 'Çalışma şu sıralar anlamsız geliyor' },
     ]);

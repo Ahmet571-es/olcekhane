@@ -17,6 +17,7 @@ import {
 } from './visuals';
 import { drawCells, drawGrid, drawWordMap, type CellsKindVisual } from './visual-cells';
 import { drawContexts, drawPoles, type DailyKindVisual } from './visual-daily';
+import { drawTimeline, type RoadmapKindVisual } from './visual-roadmap';
 
 /**
  * Görev testlerinin kart grafiklerinin çizimi (lib/reports/visuals.ts'teki türler). Her grafik basit şekillere çevrilir;
@@ -63,7 +64,8 @@ export type DrawnVisual =
   | ItemsVisual
   | BlocksVisual
   | CellsKindVisual
-  | DailyKindVisual;
+  | DailyKindVisual
+  | RoadmapKindVisual;
 
 export const isDrawn = (v: ItemVisual): v is DrawnVisual => v.type !== 'gauge' && v.type !== 'compare';
 
@@ -878,6 +880,8 @@ export function drawVisual(v: DrawnVisual, width: number, fontSize: number): Dra
       return drawPoles(v, width, fontSize);
     case 'contexts':
       return drawContexts(v, width, fontSize);
+    case 'timeline':
+      return drawTimeline(v, width, fontSize);
     case 'answers':
       return drawAnswers(v, width, fontSize);
     case 'meter':

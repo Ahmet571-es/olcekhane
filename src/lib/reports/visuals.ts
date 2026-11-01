@@ -3,6 +3,7 @@ import type { AnchoredBands, Band } from '@/lib/instruments/types';
 import { DEFAULT_BAND_LABELS, nearestBand } from './bands';
 import { cellsDescription, type CellsKindVisual } from './visual-cells';
 import { dailyDescription, type DailyKindVisual } from './visual-daily';
+import { roadmapDescription, type RoadmapKindVisual } from './visual-roadmap';
 
 /**
  * Rapor kartlarının grafikleri: her sonuç kartının (ölçek, alan, birlikte yorum) yanında, kartın sözel açıklamasını
@@ -249,7 +250,9 @@ export type ItemVisual =
   // Okuma, sesli okuma ve konu taramanın ek bölümleri (lib/reports/visual-cells.ts): soru kutuları, metin haritası, sayı kutuları.
   | CellsKindVisual
   // "Günlük hayatta nasıl görünür" (lib/reports/visual-daily.ts): iki uç ve kullanıldığı yerler.
-  | DailyKindVisual;
+  | DailyKindVisual
+  // Gelişim yol haritasının dört haftalık planı (lib/reports/visual-roadmap.ts).
+  | RoadmapKindVisual;
 
 /**
  * Ölçeğin düzey bölgeleri: testin eşikleri (anchoredBands) ve şablonun düzey adları. Şablonda metni olmayan düzey en yakın
@@ -487,6 +490,8 @@ export function visualDescription(v: ItemVisual): string {
     case 'poles':
     case 'contexts':
       return dailyDescription(v);
+    case 'timeline':
+      return roadmapDescription(v);
     case 'meter': {
       const zone = (z: MeterVisual['zones'][number], i: number) => `${z.label} ${v.discrete ? meterRange(v, i) : `${formatTick(z.from)}–${formatTick(z.to)}`}`;
       return `${v.label}: ${v.rows.map((r) => `${r.label} ${r.valueLabel}`).join('; ')}. Bölgeler: ${v.zones.map(zone).join(', ')}.`;
