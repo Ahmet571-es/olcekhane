@@ -85,7 +85,6 @@ export const DAILY_PENDING: string[] = [
   'oz-yeterlik',
   'oz-denetim',
   'liderlik-egilimleri',
-  'oz-saygi',
   'mesleki-ilgi-profili',
   'meslek-ilgi-alanlari',
   'hobi-ve-serbest-zaman-ilgileri',

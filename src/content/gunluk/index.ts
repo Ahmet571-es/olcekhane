@@ -3,6 +3,7 @@ import { iyimserlikDaily } from './iyimserlik';
 import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
 import { okumaHiziDaily } from './okuma-hizi-ve-anlama';
+import { ozSaygiDaily } from './oz-saygi';
 import { sekilAkilYurutmeDaily } from './sekil-akil-yurutme';
 import { sesliOkumaDaily } from './sesli-okuma-degerlendirmesi';
 import { simgeBulmaDaily } from './simge-bulma';
@@ -22,4 +23,5 @@ export const DAILY: Record<string, DailyContent> = {
   'matematik-konu-tarama-testi': matematikDaily,
   'sesli-okuma-degerlendirmesi': sesliOkumaDaily,
   iyimserlik: iyimserlikDaily,
+  'oz-saygi': ozSaygiDaily,
 };
