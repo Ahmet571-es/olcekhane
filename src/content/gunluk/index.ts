@@ -1,16 +1,21 @@
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { duygusalZekaBilesenleriDaily } from './duygusal-zeka-bilesenleri';
 import { empatiDaily } from './empati';
+import { harfDizileriDaily } from './harf-dizileri';
 import { iyimserlikDaily } from './iyimserlik';
+import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
 import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
 import { okumaHiziDaily } from './okuma-hizi-ve-anlama';
 import { ozDenetimDaily } from './oz-denetim';
 import { ozSaygiDaily } from './oz-saygi';
 import { ozYeterlikDaily } from './oz-yeterlik';
+import { sayiDizileriDaily } from './sayi-dizileri';
 import { sekilAkilYurutmeDaily } from './sekil-akil-yurutme';
+import { sekilBenzetmeleriDaily } from './sekil-benzetmeleri';
 import { sesliOkumaDaily } from './sesli-okuma-degerlendirmesi';
 import { simgeBulmaDaily } from './simge-bulma';
+import { sozelAkilYurutmeDaily } from './sozel-akil-yurutme';
 import type { DailyContent } from './types';
 
 /**
@@ -32,4 +37,9 @@ export const DAILY: Record<string, DailyContent> = {
   'oz-yeterlik': ozYeterlikDaily,
   'oz-denetim': ozDenetimDaily,
   'duygusal-zeka-bilesenleri': duygusalZekaBilesenleriDaily,
+  'sekil-benzetmeleri': sekilBenzetmeleriDaily,
+  'sayi-dizileri': sayiDizileriDaily,
+  'harf-dizileri': harfDizileriDaily,
+  'sozel-akil-yurutme': sozelAkilYurutmeDaily,
+  'mantiksal-akil-yurutme': mantiksalAkilYurutmeDaily,
 };

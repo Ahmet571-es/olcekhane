@@ -91,11 +91,6 @@ export const DAILY_PENDING: string[] = [
   'erteleme-ve-zaman-yonetimi',
   'zihniyet',
   // Görev testleri
-  'sekil-benzetmeleri',
-  'sayi-dizileri',
-  'harf-dizileri',
-  'sozel-akil-yurutme',
-  'mantiksal-akil-yurutme',
   'kagit-katlama',
   'sayisal-akil-yurutme',
   'zihinden-hesaplama-hizi',
@@ -295,6 +290,33 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
     { pattern: /bilgi(?:yi)? bul|aradığı|arayıp|tarayıp/iu, rule: 'sorular metne bakmadan cevaplanır: metinde bilgi aramak ölçülmez' },
     { pattern: /akıcı/iu, sibling: 'sesli-okuma-degerlendirmesi' },
     { pattern: /gereken süre/iu, rule: 'okuma hızı dakikada okunan kelime sayısıdır' },
+  ],
+  'sekil-benzetmeleri': [
+    { pattern: /sayı|kelime|sözel|cümle/iu, limitation: 'sözel ve sayısal akıl yürütme' },
+    { pattern: /sıradaki|örüntü|devamını/iu, sibling: 'sekil-akil-yurutme' },
+    { pattern: /hızlı|çabuk/iu, limitation: 'bellek ve hız' },
+  ],
+  'sayi-dizileri': [
+    { pattern: /şekil|desen|kelime|sözcük/iu, limitation: 'Şekillerle ve sözcüklerle akıl yürütme' },
+    { pattern: /harf|alfabe/iu, sibling: 'harf-dizileri' },
+    { pattern: /adımlara ayır|plan yap/iu, sibling: 'planlama-kule-gorevi' },
+    { pattern: /zihinden|kafadan|hızlı hesap/iu, sibling: 'zihinden-hesaplama-hizi' },
+    { pattern: /grafik|tablo/iu, sibling: 'matematik-konu-tarama-testi' },
+  ],
+  'harf-dizileri': [
+    { pattern: /şekil|sayı|rakam/iu, limitation: 'Şekillerle ve sayılarla akıl yürütme' },
+    { pattern: /anlam|deyim/iu, sibling: 'kelime-bilgisi' },
+    { pattern: /sözlükte|alfabe sırasıyla diz/iu, rule: 'bilinen alfabe sırasını uygulamak kural bulmayı istemez' },
+  ],
+  'sozel-akil-yurutme': [
+    { pattern: /şekil|sayı/iu, limitation: 'Şekillerle ve sayılarla akıl yürütme' },
+    { pattern: /eş anlam|zıt anlam|deyim|anlamını bil/iu, sibling: 'kelime-bilgisi' },
+    { pattern: /eğer|ise …/iu, sibling: 'mantiksal-akil-yurutme' },
+  ],
+  'mantiksal-akil-yurutme': [
+    { pattern: /şekil|sayı|matematik/iu, limitation: 'şekillerle ya da sayılarla akıl yürütme' },
+    { pattern: /grupla|sırayı kur|ilişkiyi bul/iu, sibling: 'sozel-akil-yurutme' },
+    { pattern: /ilk akla gelen|acele/iu, sibling: 'dusunerek-karar-verme' },
   ],
 };
 
