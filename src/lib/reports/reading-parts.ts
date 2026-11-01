@@ -351,7 +351,8 @@ export function readingParts(input: {
           ]
         : []),
     ].join(' '),
-    ...(speedRead
+    // Hesaplanmayan ölçünün grafiği olmaz (CLAUDE.md "Kart grafikleri").
+    ...(speedRead && eff !== null
       ? {
           visual: {
             type: 'bars',
@@ -360,7 +361,7 @@ export function readingParts(input: {
             unit: 'kelime',
             rows: [
               { label: 'Okuma hızı', value: wpm, valueLabel: n0(wpm) },
-              eff !== null ? { label: 'Anlayarak okuma hızı', value: eff, valueLabel: n0(eff) } : { label: 'Anlayarak okuma hızı', value: 0, valueLabel: 'hesaplanmadı' },
+              { label: 'Anlayarak okuma hızı', value: eff, valueLabel: n0(eff) },
             ],
           } satisfies BarsVisual,
           // Anlayarak okuma hızı rozette okunur; burada yalnızca karşılaştırılan okuma hızı.

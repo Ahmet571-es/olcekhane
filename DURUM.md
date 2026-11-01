@@ -73,7 +73,19 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   güvenebiliriz?" (ortak model `lib/reports/parts.ts`, ayrıntı CLAUDE.md "Raporun ek bölümleri"). Claude'un kararı (site
   sahibi değiştirebilir): çocuğun cevapları tek tek yalnızca öğrencinin kendi raporunda; veli raporunda yok ("Çocuğunuz
   isterse birlikte bakabilirsiniz"); test başında öğrenciye söylenir. Sesli dinlemede "Bölümü geç". Bağımsız inceleme
-  bulguları uygulandı. Sıradaki: (b) görev testleri.
+  bulguları uygulandı.
+- (b) ve (c) **yayında (2026-11-01):** görev (zekâ ve dikkat) testlerinde "Düzeylerin ve ölçülerin anlamı", "Soru soru
+  cevapların" (çok denemeli hızlı görevlerde "Deneme deneme sonuçların"), "Sonuca ne kadar güvenebiliriz?"; okuma, sesli
+  okuma ve matematikte aynı üç bölüm (ayrıntı CLAUDE.md "Raporun ek bölümleri"). Claude'un kararı (site sahibi
+  değiştirebilir): her seferinde aynı soruların geldiği zekâ testlerinde (`SAME_ITEMS`) satırlarda ne verilen ne doğru cevap
+  yazar (yalnızca doğru/yanlış, düzey, yanılgı türü, süre): PDF'ler paylaşılınca cevap anahtarı çıkmasın, yeniden çözme ve
+  karşılaştırma anlamını korusun. Okuma ve matematikte doğru cevap öğretici olduğu için yazar (yeniden çözme uyarısıyla).
+  Küp Açınımı, Gizli Şekiller ve Parçalardan Şekil'de şans kuralı düzeltildi (yalnızca 1. düzeye, rastgele seçimle de
+  ulaşılabilecek kadar az doğruyla ulaşıldıysa sonuç yorumlanmaz; sürüm 2: bu üç testin eski PDF'leri karşılaştırılamaz).
+  İki bağımsız inceleme bulguları uygulandı.
+- (d) **hazırlanıyor:** "Günlük hayatta nasıl görünür" (anket) ve "Günlük hayatta nerede kullanılır" (görev, okuma,
+  matematik): altyapı ve 7 örnek test ayrı dalda (`asama-d`), iki bağımsız inceleme sürüyor; ardından kalan testlerin
+  metinleri gruplar hâlinde, her grup bağımsız denetimle. Sonra (e) ve (f).
 
 **Kalite incelemesi (2026-10-08): 6 acil hata, site sahibinin isteğiyle her işlemede bir hata düzeltilip yayına
 alınıyor.** Rapor: Claude Docs'taki **Ölçekhane Test Kalite Raporu** (https://claude.ai/artifact/8btJRknY53xATRsLhX2HsH;
@@ -1147,6 +1159,14 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-01 (66): Raporları genişletme (b) ve (c) yayına alındı: bütün görev (zekâ ve dikkat) testlerinde, okuma,
+  sesli okuma ve matematikte üç yeni bölüm, her kartın kendi grafiğiyle (düzeylerin ve ölçülerin anlamı, soru soru ya da
+  deneme deneme cevaplar, sonucun güvenilirliği). Aynı soruların geldiği zekâ testlerinde cevaplar yazılmaz (yalnızca
+  doğru/yanlış, düzey, süre); okuma ve matematikte doğru cevap yazar. Küp Açınımı, Gizli Şekiller, Parçalardan Şekil:
+  1. düzeyde şans kuralı (sürüm 2). İnceleme bulguları: grafikle çelişen 12 denetim kartı, "Yorumlanmadı" kartlarda
+  grafik ve neden, uzun listelerin sesli okuması (en uzun bölüm ~6,5 dk), okunmayan küçük işaretler, dil düzeltmeleri.
+  Telefonda ve masaüstünde Parçalardan Şekil, Simge Bulma, Okuma Hızı ve Anlama, Matematik Konu Tarama çözüldü; PDF'ler
+  ve sesli dinleme (sahte yerel sesle) denendi.
 - 2026-11-01 (65): Raporları genişletme (a) yayına alındı: bütün anket testlerinin öğrenci, veli ve yetişkin raporunda üç
   yeni bölüm, her kartın kendi grafiğiyle: "Düzeylerin anlamı" (düzeyler yan yana, kişinin düzeyi ve ölçümün doğal payı
   işaretli, sınıra yakınsa komşu düzeyde "Bu da uyabilir"), "Cevapların tek tek" (her ölçeğin cümleleri, verilen cevap,
@@ -1232,10 +1252,3 @@ En yeni üstte; en çok 10 madde tutulur.
   Yayındaki her test bir yuvada (test denetler; yeni testte yuvaya yazılır). Bağlantılar Testler sayfasında ve ana
   sayfada; site haritasında. Sıradaki yenilikler (site sahibinin seçimi): Gelişimini karşılaştır, Merak testi, Simge
   Arama testi.
-- 2026-10-30 (56): GitHub'ın ücretsiz aylık çalışma süresi bitti (ödeme sorunu değil; ayrıntı: Site sahibinin bekleyen
-  işleri). Kullanım azaltıldı (Ekim'e göre ayda ~600 dakika, ~%35): Kurulum provası artık `yayin.yml` değişince çalışmıyor
-  (Ekim'deki 53 provanın 52'si yalnızca bu yüzdendi; prova `yayin.yml`'yi çalıştırmaz); Denetim'deki ikinci üretim
-  derlemesi kaldırıldı (derleme Docker görüntüsünde zaten yapılıyor); dış sınamada site haritasındaki sayfalar altışar
-  altışar aynı anda isteniyor. `araclar/yayin-durumu.py` bu durumu tanıyor ("kodla ilgili değil, ayın 1'inden sonra
-  gönder"); CLAUDE.md'ye not eklendi. Testlerin varsayılan süresi 20 sn'ye çıkarıldı (Gizli Şekiller'deki şekil
-  karşılaştırma testi yerelde ~5 sn sürüyor, GitHub'da 5 sn'lik sınırı aştı).
