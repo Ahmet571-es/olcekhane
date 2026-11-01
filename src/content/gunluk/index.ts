@@ -5,6 +5,7 @@ import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
 import { okumaHiziDaily } from './okuma-hizi-ve-anlama';
 import { ozSaygiDaily } from './oz-saygi';
+import { ozYeterlikDaily } from './oz-yeterlik';
 import { sekilAkilYurutmeDaily } from './sekil-akil-yurutme';
 import { sesliOkumaDaily } from './sesli-okuma-degerlendirmesi';
 import { simgeBulmaDaily } from './simge-bulma';
@@ -26,4 +27,5 @@ export const DAILY: Record<string, DailyContent> = {
   iyimserlik: iyimserlikDaily,
   'oz-saygi': ozSaygiDaily,
   empati: empatiDaily,
+  'oz-yeterlik': ozYeterlikDaily,
 };
