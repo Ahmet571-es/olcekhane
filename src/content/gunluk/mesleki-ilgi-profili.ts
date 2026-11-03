@@ -60,12 +60,12 @@ export const meslekiIlgiDaily: SurveyDaily = {
           from: { school: ['R2', 'R7'], friends: ['R5'], home: ['R4', 'R1'] },
           student: {
             school: 'Derste bir maket, robot ya da devre kurmak sana çok keyifli gelebilir.',
-            friends: 'Arkadaşlarınla tahtadan ya da kumaştan bir şey yapmak hoşuna gidebilir.',
+            friends: 'Arkadaşlarınla bir tahta parçasından ya da eski bir kumaştan kullanışlı bir şey çıkarmak hoşuna gidebilir.',
             home: 'Bir şeyin nasıl çalıştığını söküp kurcalarken zamanın nasıl geçtiğini fark etmeyebilirsin.',
           },
           parent: {
             school: 'Derste bir maket, robot ya da devre kurmak çocuğunuza çok keyifli gelebilir.',
-            friends: 'Arkadaşlarıyla tahtadan ya da kumaştan bir şey yapmak hoşuna gidebilir.',
+            friends: 'Arkadaşlarıyla bir tahta parçasından ya da eski bir kumaştan kullanışlı bir şey çıkarmak hoşuna gidebilir.',
             home: 'Bir şeyin nasıl çalıştığını söküp kurcalarken zamanın nasıl geçtiğini fark etmeyebilir.',
           },
         },
@@ -77,12 +77,12 @@ export const meslekiIlgiDaily: SurveyDaily = {
         low: {
           from: { school: ['I2', 'I1'], friends: ['I5'], home: ['I8'] },
           student: {
-            school: 'Bir problem üzerinde uzun süre düşünmek ya da deney tasarlamak sana pek çekici gelmeyebilir.',
+            school: 'Tek bir zor soruyla saatlerce uğraşmak ya da bir deney kurgulamak sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarınla uzay ya da yıldızlar üzerine uzun sohbetler sana pek ilginç gelmeyebilir.',
             home: 'Bir tablodaki sayılarla uğraşmak yerine boş zamanını sevdiğin başka işlere ayırabilirsin.',
           },
           parent: {
-            school: 'Bir problem üzerinde uzun süre düşünmek ya da deney tasarlamak çocuğunuza pek çekici gelmeyebilir.',
+            school: 'Tek bir zor soruyla saatlerce uğraşmak ya da bir deney kurgulamak çocuğunuza pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarıyla uzay ya da yıldızlar üzerine uzun sohbetler ona pek ilginç gelmeyebilir.',
             home: 'Bir tablodaki sayılarla uğraşmak yerine boş zamanını sevdiği başka işlere ayırabilir.',
           },
@@ -92,12 +92,12 @@ export const meslekiIlgiDaily: SurveyDaily = {
           student: {
             school: 'Bazı deneyler ve problemler ilgini çekebilir, bazıları sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarınla uzay ya da bilim konuşmak bazen keyifli gelebilir, bazen başka konuları seçebilirsin.',
-            home: 'Duyduğun bir bilginin doğru olup olmadığını bazen araştırabilir, bazen üzerinde durmayabilirsin.',
+            home: 'Duyduğun bir haberin aslını bazen araştırabilir, bazen üzerinde durmayabilirsin.',
           },
           parent: {
             school: 'Bazı deneyler ve problemler çocuğunuzun ilgisini çekebilir, bazıları ona pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarıyla uzay ya da bilim konuşmak bazen keyifli gelebilir, bazen başka konuları seçebilir.',
-            home: 'Duyduğu bir bilginin doğru olup olmadığını bazen araştırabilir, bazen üzerinde durmayabilir.',
+            home: 'Duyduğu bir haberin aslını bazen araştırabilir, bazen üzerinde durmayabilir.',
           },
         },
         high: {
@@ -165,12 +165,12 @@ export const meslekiIlgiDaily: SurveyDaily = {
         low: {
           from: { school: ['S1'], friends: ['S6'], home: ['S2'] },
           student: {
-            school: 'Bir arkadaşına anlamadığı bir konuyu anlatmak sana pek çekici gelmeyebilir.',
+            school: 'Bir arkadaşına takıldığı bir yeri açıklamak sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşlar arasındaki bir anlaşmazlıkta arabuluculuk yapmayı başkasına bırakmayı seçebilirsin.',
             home: 'Küçük çocuklarla oyun kurmak yerine zamanını ilgini çeken başka işlere ayırabilirsin.',
           },
           parent: {
-            school: 'Bir arkadaşına anlamadığı bir konuyu anlatmak çocuğunuza pek çekici gelmeyebilir.',
+            school: 'Bir arkadaşına takıldığı bir yeri açıklamak çocuğunuza pek çekici gelmeyebilir.',
             friends: 'Arkadaşlar arasındaki bir anlaşmazlıkta arabuluculuk yapmayı başkasına bırakmayı seçebilir.',
             home: 'Küçük çocuklarla oyun kurmak yerine zamanını ilgisini çeken başka işlere ayırabilir.',
           },
@@ -192,13 +192,13 @@ export const meslekiIlgiDaily: SurveyDaily = {
           from: { school: ['S7', 'S1'], friends: ['S4', 'S6'], home: ['S5'] },
           student: {
             school: 'Yeni gelen birinin alışmasına yardım etmek ya da bir arkadaşına konu anlatmak sana keyifli gelebilir.',
-            friends: 'Üzgün bir arkadaşını dinlemek ya da bir anlaşmazlığın çözülmesine yardım etmek sana anlamlı gelebilir.',
-            home: 'Yaşlı ya da hasta birine yardım etmek sana anlamlı gelebilir; bu bazen kendi işlerini bekletebilir.',
+            friends: 'Üzgün bir arkadaşını dinlemek ya da küsen iki arkadaşı barıştırmaya çalışmak sana anlamlı gelebilir.',
+            home: 'Bakıma ihtiyacı olan birine yardım etmek sana anlamlı gelebilir; bu bazen kendi işlerini bekletebilir.',
           },
           parent: {
             school: 'Yeni gelen birinin alışmasına yardım etmek ya da bir arkadaşına konu anlatmak çocuğunuza keyifli gelebilir.',
-            friends: 'Üzgün bir arkadaşını dinlemek ya da bir anlaşmazlığın çözülmesine yardım etmek ona anlamlı gelebilir.',
-            home: 'Yaşlı ya da hasta birine yardım etmek ona anlamlı gelebilir; bu bazen kendi işlerini bekletebilir.',
+            friends: 'Üzgün bir arkadaşını dinlemek ya da küsen iki arkadaşı barıştırmaya çalışmak ona anlamlı gelebilir.',
+            home: 'Bakıma ihtiyacı olan birine yardım etmek ona anlamlı gelebilir; bu bazen kendi işlerini bekletebilir.',
           },
         },
       },
@@ -236,12 +236,12 @@ export const meslekiIlgiDaily: SurveyDaily = {
           from: { school: ['E1', 'E6'], friends: ['E4', 'E2'], home: ['E5', 'E7'] },
           student: {
             school: 'Bir etkinliği baştan sona düzenlemek ya da bir seçimde aday olmak sana heyecan verici gelebilir.',
-            friends: 'Bir tartışmada arkadaşlarını kendi görüşüne ikna etmek ya da bir grubu yönetmek sana keyifli gelebilir.',
+            friends: 'Bir tartışmada arkadaşlarını kendi fikrine kazanmak ya da bir grubu yönetmek sana keyifli gelebilir.',
             home: 'Bir iş fikri için plan yaparken saatlerce uğraşabilirsin; başka işler bekleyebilir.',
           },
           parent: {
             school: 'Bir etkinliği baştan sona düzenlemek ya da bir seçimde aday olmak çocuğunuza heyecan verici gelebilir.',
-            friends: 'Bir tartışmada arkadaşlarını kendi görüşüne ikna etmek ya da bir grubu yönetmek ona keyifli gelebilir.',
+            friends: 'Bir tartışmada arkadaşlarını kendi fikrine kazanmak ya da bir grubu yönetmek ona keyifli gelebilir.',
             home: 'Bir iş fikri için plan yaparken saatlerce uğraşabilir; başka işler bekleyebilir.',
           },
         },
@@ -253,40 +253,40 @@ export const meslekiIlgiDaily: SurveyDaily = {
         low: {
           from: { school: ['C4'], friends: ['C1'], home: ['C2'] },
           student: {
-            school: 'Bir yazıdaki yazım ve noktalama hatalarını tek tek düzeltmek sana pek çekici gelmeyebilir.',
+            school: 'Bir ödevi teslim etmeden önce harf ve virgül hatalarını tek tek aramak sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarınla bir etkinlik düzenlerken harcamaları tutma işini başka birine bırakabilirsin.',
-            home: 'Fotoğrafları ya da belgeleri sistemli biçimde düzenlemek yerine zamanını başka işlere ayırabilirsin.',
+            home: 'Kâğıtlarını ve fotoğraflarını bir düzene sokmak yerine zamanını başka işlere ayırabilirsin.',
           },
           parent: {
-            school: 'Bir yazıdaki yazım ve noktalama hatalarını tek tek düzeltmek çocuğunuza pek çekici gelmeyebilir.',
+            school: 'Bir ödevi teslim etmeden önce harf ve virgül hatalarını tek tek aramak çocuğunuza pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarıyla bir etkinlik düzenlerken harcamaları tutma işini başka birine bırakabilir.',
-            home: 'Fotoğrafları ya da belgeleri sistemli biçimde düzenlemek yerine zamanını başka işlere ayırabilir.',
+            home: 'Kâğıtlarını ve fotoğraflarını bir düzene sokmak yerine zamanını başka işlere ayırabilir.',
           },
         },
         average: {
           from: { school: ['C6'], friends: ['C1'], home: ['C2'] },
           student: {
-            school: 'Ayrıntılı bir plan ve takvim hazırlamak bazen hoşuna gidebilir, bazen kısa bir planla başlamayı seçebilirsin.',
+            school: 'Bir sınav haftası için gün gün plan yapmak bazen hoşuna gidebilir, bazen kısa bir listeyle başlayabilirsin.',
             friends: 'Bir etkinliğin bütçesini hesaplamak bazen ilgini çekebilir, bazen bu işi bir arkadaşına bırakabilirsin.',
-            home: 'Dosyaları ya da fotoğrafları düzenlemek bazı günler sana keyifli gelebilir, bazı günler pek çekici gelmeyebilir.',
+            home: 'Kâğıtlarını ya da fotoğraflarını düzenlemek bazı günler sana keyifli gelebilir, bazı günler pek çekici gelmeyebilir.',
           },
           parent: {
-            school: 'Ayrıntılı bir plan ve takvim hazırlamak bazen çocuğunuzun hoşuna gidebilir, bazen kısa bir planla başlamayı seçebilir.',
+            school: 'Bir sınav haftası için gün gün plan yapmak bazen çocuğunuzun hoşuna gidebilir, bazen kısa bir listeyle başlayabilir.',
             friends: 'Bir etkinliğin bütçesini hesaplamak bazen ilgisini çekebilir, bazen bu işi bir arkadaşına bırakabilir.',
-            home: 'Dosyaları ya da fotoğrafları düzenlemek bazı günler ona keyifli gelebilir, bazı günler pek çekici gelmeyebilir.',
+            home: 'Kâğıtlarını ya da fotoğraflarını düzenlemek bazı günler ona keyifli gelebilir, bazı günler pek çekici gelmeyebilir.',
           },
         },
         high: {
           from: { school: ['C4', 'C8'], friends: ['C1'], home: ['C2'] },
           student: {
-            school: 'Bir yazıdaki yazım hatalarını bulup düzeltmek ya da bir formu kontrol etmek sana keyifli gelebilir.',
-            friends: 'Arkadaşlarınla bir etkinlik düzenlerken bütçeyi hesaplayıp harcamaları takip etmek hoşuna gidebilir.',
-            home: 'Belgeleri ya da fotoğrafları düzenlerken her şeyi yerli yerine koymak için uzun süre uğraşabilirsin.',
+            school: 'Bir metindeki harf ve virgül hatalarını bulmak ya da bir formun eksiğini aramak sana keyifli gelebilir.',
+            friends: 'Arkadaşlarınla bir etkinlik düzenlerken paranın nereye gittiğini hesaplayıp yazmak hoşuna gidebilir.',
+            home: 'Fotoğrafları ya da kâğıtları klasörlere ayırırken her şeyi yerli yerine koymak için uzun süre uğraşabilirsin.',
           },
           parent: {
-            school: 'Bir yazıdaki yazım hatalarını bulup düzeltmek ya da bir formu kontrol etmek çocuğunuza keyifli gelebilir.',
-            friends: 'Arkadaşlarıyla bir etkinlik düzenlerken bütçeyi hesaplayıp harcamaları takip etmek hoşuna gidebilir.',
-            home: 'Belgeleri ya da fotoğrafları düzenlerken her şeyi yerli yerine koymak için uzun süre uğraşabilir.',
+            school: 'Bir metindeki harf ve virgül hatalarını bulmak ya da bir formun eksiğini aramak çocuğunuza keyifli gelebilir.',
+            friends: 'Arkadaşlarıyla bir etkinlik düzenlerken paranın nereye gittiğini hesaplayıp yazmak hoşuna gidebilir.',
+            home: 'Fotoğrafları ya da kâğıtları klasörlere ayırırken her şeyi yerli yerine koymak için uzun süre uğraşabilir.',
           },
         },
       },

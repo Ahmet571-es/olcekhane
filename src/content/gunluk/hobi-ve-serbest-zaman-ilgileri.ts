@@ -30,12 +30,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
           student: {
             school: 'Küçük sınıflarla yapılan bir etkinlikte görev almak sana yeni bir deneyim olabilir.',
             friends: 'Boş zamanını çoğu zaman arkadaşlarınla ya da başka uğraşlarla geçiriyor olabilirsin.',
-            home: 'Küçük bir çocuğa hikâye okumak ya da ona bakmak sana yeni bir iş gibi gelebilir.',
+            home: 'Küçük bir çocuğa masal anlatmak ya da ona göz kulak olmak sana yeni bir iş gibi gelebilir.',
           },
           parent: {
             school: 'Küçük sınıflarla yapılan bir etkinlikte görev almak çocuğunuz için yeni bir deneyim olabilir.',
             friends: 'Boş zamanını çoğu zaman arkadaşlarıyla ya da başka uğraşlarla geçiriyor olabilir.',
-            home: 'Küçük bir çocuğa hikâye okumak ya da ona bakmak ona yeni bir iş gibi gelebilir.',
+            home: 'Küçük bir çocuğa masal anlatmak ya da ona göz kulak olmak ona yeni bir iş gibi gelebilir.',
           },
           adult: {
             work: 'Günlük işlerin arasında küçük çocuklarla vakit geçirmek için sana pek fırsat kalmayabilir.',
@@ -54,7 +54,7 @@ export const hobiIlgileriDaily: SurveyDaily = {
             home: 'Küçük bir çocuğa ara sıra hikâye okumak ya da ona göz kulak olmak ona tanıdık gelebilir.',
           },
           adult: {
-            work: 'Ara sıra küçük bir çocuğu gezmeye götürmek ya da ona bakmak senin günlük işlerin arasında yer alabilir.',
+            work: 'Ara sıra küçük bir çocukla dışarı çıkmak ya da ona göz kulak olmak senin günlük işlerin arasında yer alabilir.',
           },
         },
         high: {
@@ -62,15 +62,15 @@ export const hobiIlgileriDaily: SurveyDaily = {
           student: {
             school: 'Küçük sınıflarla yapılan bir etkinlikte onlarla oyun kurmak sana tanıdık bir iş gibi gelebilir.',
             friends: 'Bir buluşmada küçük bir çocuk olunca onunla oynamak ya da oyunda onun kazanmasına izin vermek isteyebilirsin.',
-            home: 'Küçük bir çocuğa bakmak ya da onu gezdirmek senin boş zamanının çoğunu alabilir.',
+            home: 'Küçük bir çocuğa göz kulak olmak ya da onu gezdirmek senin boş zamanının çoğunu alabilir.',
           },
           parent: {
             school: 'Küçük sınıflarla yapılan bir etkinlikte onlarla oyun kurmak çocuğunuza tanıdık bir iş gibi gelebilir.',
             friends: 'Bir buluşmada küçük bir çocuk olunca onunla oynamak ya da oyunda onun kazanmasına izin vermek isteyebilir.',
-            home: 'Küçük bir çocuğa bakmak ya da onu gezdirmek boş zamanının çoğunu alabilir.',
+            home: 'Küçük bir çocuğa göz kulak olmak ya da onu gezdirmek boş zamanının çoğunu alabilir.',
           },
           adult: {
-            work: 'Küçük bir çocuğa hikâye okumak ya da onunla oyun oynamak senin günlük hayatında sık yer alabilir.',
+            work: 'Küçük bir çocuğa masal anlatmak ya da onunla oyun kurmak senin günlük hayatında sık yer alabilir.',
           },
         },
       },
@@ -138,12 +138,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
         low: {
           from: { school: ['h147', 'h082'], friends: ['h115', 'h200'], home: ['h050'], work: ['h147', 'h178', 'h082'] },
           student: {
-            school: 'Ders dışında resim yapmak ya da şiir yazmak şimdilik senin boş zamanında pek yer almıyor olabilir.',
+            school: 'Ders dışında bir şeyler çizmek ya da şiir karalamak şimdilik senin boş zamanında pek yer almıyor olabilir.',
             friends: 'Arkadaşların bir gösteri hazırlarken izleyici olmayı seçebilirsin.',
             home: 'Boş zamanını başka uğraşlara ayırıyor olabilirsin; yaratıcılık bu uğraşlarda da görünebilir.',
           },
           parent: {
-            school: 'Ders dışında resim yapmak ya da şiir yazmak şimdilik çocuğunuzun boş zamanında pek yer almıyor olabilir.',
+            school: 'Ders dışında bir şeyler çizmek ya da şiir karalamak şimdilik çocuğunuzun boş zamanında pek yer almıyor olabilir.',
             friends: 'Arkadaşları bir gösteri hazırlarken izleyici olmayı seçebilir.',
             home: 'Boş zamanını başka uğraşlara ayırıyor olabilir; yaratıcılık bu uğraşlarda da görünebilir.',
           },
@@ -155,13 +155,13 @@ export const hobiIlgileriDaily: SurveyDaily = {
           from: { school: ['h050'], friends: ['h017'], home: ['h147'], work: ['h050'] },
           student: {
             school: 'Bir sanat çalışmasına ara sıra katılmak isteyebilir, bazen başka bir etkinliği seçebilirsin.',
-            friends: 'Arkadaşlarınla bazen yeni bir şey denemek isteyebilir, bazen bildiğin uğraşlara dönebilirsin.',
-            home: 'Bazı günler resim yapmak sana keyifli gelebilir, bazı günler başka şeyler yapmayı seçebilirsin.',
+            friends: 'Arkadaşlarınla bazen ilk kez bir uğraşı denemek isteyebilir, bazen bildiğin uğraşlara dönebilirsin.',
+            home: 'Bazı günler boya ya da kalemle bir şeyler çizmek sana keyifli gelebilir, bazı günler başka şeyler yapmayı seçebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir sanat çalışmasına ara sıra katılmak isteyebilir, bazen başka bir etkinliği seçebilir.',
-            friends: 'Arkadaşlarıyla bazen yeni bir şey denemek isteyebilir, bazen bildiği uğraşlara dönebilir.',
-            home: 'Bazı günler resim yapmak ona keyifli gelebilir, bazı günler başka şeyler yapmayı seçebilir.',
+            friends: 'Arkadaşlarıyla bazen ilk kez bir uğraşı denemek isteyebilir, bazen bildiği uğraşlara dönebilir.',
+            home: 'Bazı günler boya ya da kalemle bir şeyler çizmek ona keyifli gelebilir, bazı günler başka şeyler yapmayı seçebilir.',
           },
           adult: {
             work: 'Yoğun günlerde yaratıcı uğraşlar bekleyebilir, sakin günlerde bir şey üretmek isteyebilirsin.',
@@ -171,12 +171,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
           from: { school: ['h200', 'h115'], friends: ['h017'], home: ['h147', 'h082'], work: ['h147', 'h178', 'h082'] },
           student: {
             school: 'Bir gösteride şarkı söylemek, çalgı çalmak ya da rol almak sana keyifli gelebilir.',
-            friends: 'Arkadaşlarınla tamamen yeni bir şey denemeyi önerebilirsin.',
+            friends: 'Arkadaşlarına ilk kez denenecek bir uğraş önerebilirsin.',
             home: 'Resim yaparken ya da şiir yazarken başka işleri unutabilirsin.',
           },
           parent: {
             school: 'Bir gösteride şarkı söylemek, çalgı çalmak ya da rol almak çocuğunuza keyifli gelebilir.',
-            friends: 'Arkadaşlarıyla tamamen yeni bir şey denemeyi önerebilir.',
+            friends: 'Arkadaşlarına ilk kez denenecek bir uğraş önerebilir.',
             home: 'Resim yaparken ya da şiir yazarken başka işleri unutabilir.',
           },
           adult: {
@@ -226,16 +226,16 @@ export const hobiIlgileriDaily: SurveyDaily = {
           from: { school: ['h040', 'h072'], friends: ['h040', 'h169', 'h137'], home: ['h040', 'h169'], work: ['h040', 'h007', 'h137'] },
           student: {
             school: 'Derste bir sanat eseri ya da müze anlatılınca bu konular sana tanıdık gelebilir.',
-            friends: 'Arkadaşlarınla bir sergiye, bir tiyatro oyununa ya da konsere gitmek sana keyifli gelebilir.',
+            friends: 'Arkadaşlarınla bir sergiye, tiyatroya ya da bir konsere gitmek sana keyifli gelebilir.',
             home: 'Görmek istediğin sergiler ve gösteriler boş zamanının büyük kısmını alabilir.',
           },
           parent: {
             school: 'Derste bir sanat eseri ya da müze anlatılınca bu konular çocuğunuza tanıdık gelebilir.',
-            friends: 'Arkadaşlarıyla bir sergiye, bir tiyatro oyununa ya da konsere gitmek ona keyifli gelebilir.',
+            friends: 'Arkadaşlarıyla bir sergiye, tiyatroya ya da bir konsere gitmek ona keyifli gelebilir.',
             home: 'Görmek istediği sergiler ve gösteriler boş zamanının büyük kısmını alabilir.',
           },
           adult: {
-            work: 'İş dışındaki zamanında bir sergiye, söyleşiye ya da konsere gitmek isteyebilirsin.',
+            work: 'İş dışındaki zamanında bir sergiye, söyleşiye ya da bir konsere gitmek isteyebilirsin.',
           },
         },
       },
@@ -264,12 +264,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
         average: {
           from: { school: ['h006', 'h129'], friends: ['h129'], home: ['h168'], work: ['h196'] },
           student: {
-            school: 'Beden eğitimi dışında da ara sıra koşmak ya da ip atlamak isteyebilirsin.',
+            school: 'Beden eğitimi dışında da ara sıra koşmak ya da biraz hareket etmek isteyebilirsin.',
             friends: 'Arkadaşlarınla bazen tempolu bir yürüyüşe çıkabilir, bazen oturup sohbet etmeyi seçebilirsin.',
             home: 'Bazı haftalar yoga gibi egzersizler yapabilir, bazı haftalar buna ara verebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz beden eğitimi dışında da ara sıra koşmak ya da ip atlamak isteyebilir.',
+            school: 'Çocuğunuz beden eğitimi dışında da ara sıra koşmak ya da biraz hareket etmek isteyebilir.',
             friends: 'Arkadaşlarıyla bazen tempolu bir yürüyüşe çıkabilir, bazen oturup sohbet etmeyi seçebilir.',
             home: 'Bazı haftalar yoga gibi egzersizler yapabilir, bazı haftalar buna ara verebilir.',
           },
@@ -280,12 +280,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
         high: {
           from: { school: ['h006', 'h196'], friends: ['h006', 'h129'], home: ['h104'], work: ['h104'] },
           student: {
-            school: 'Beden eğitimi dışında da koşmak ya da bir egzersiz programına katılmak sana iyi gelebilir.',
+            school: 'Beden eğitimi dışında da koşmak ya da düzenli bir egzersiz planına uymak sana iyi gelebilir.',
             friends: 'Arkadaşlarınla koşuya ya da tempolu bir yürüyüşe çıkmayı önerebilirsin.',
             home: 'Egzersize çok zaman ayırırken dinlenmeye zaman ayırmayı unutabilirsin.',
           },
           parent: {
-            school: 'Beden eğitimi dışında da koşmak ya da bir egzersiz programına katılmak çocuğunuza iyi gelebilir.',
+            school: 'Beden eğitimi dışında da koşmak ya da düzenli bir egzersiz planına uymak çocuğunuza iyi gelebilir.',
             friends: 'Arkadaşlarıyla koşuya ya da tempolu bir yürüyüşe çıkmayı önerebilir.',
             home: 'Egzersize çok zaman ayırırken dinlenmeye zaman ayırmayı unutabilir.',
           },
@@ -358,12 +358,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
         low: {
           from: { school: ['h151'], friends: ['h182'], home: ['h054', 'h119'], work: ['h086'] },
           student: {
-            school: 'Teneffüste satranç ya da dama oynayanlar olunca başka bir şey yapmayı seçebilirsin.',
+            school: 'Teneffüste satranç oynayanlar olunca başka bir şey yapmayı seçebilirsin.',
             friends: 'Arkadaşlarınla yeni bir kutu oyununun kurallarını öğrenmek biraz zaman alabilir.',
             home: 'Yapboz ya da tavla yerine boş zamanını başka uğraşlara ayırıyor olabilirsin.',
           },
           parent: {
-            school: 'Teneffüste satranç ya da dama oynayanlar olunca çocuğunuz başka bir şey yapmayı seçebilir.',
+            school: 'Teneffüste satranç oynayanlar olunca çocuğunuz başka bir şey yapmayı seçebilir.',
             friends: 'Arkadaşlarıyla yeni bir kutu oyununun kurallarını öğrenmek biraz zaman alabilir.',
             home: 'Yapboz ya da tavla yerine boş zamanını başka uğraşlara ayırıyor olabilir.',
           },
@@ -374,33 +374,33 @@ export const hobiIlgileriDaily: SurveyDaily = {
         average: {
           from: { school: ['h151'], friends: ['h086'], home: ['h054'], work: ['h119'] },
           student: {
-            school: 'Teneffüste bazen satranç ya da dama oynamak isteyebilir, bazen başka bir şey yapmayı seçebilirsin.',
+            school: 'Teneffüste bazen bir satranç partisine oturmak isteyebilir, bazen başka bir şey yapmayı seçebilirsin.',
             friends: 'Arkadaşlarınla buluşunca bazen bir kart oyunu açabilir, bazen sohbet etmeyi seçebilirsin.',
             home: 'Bir yapbozu bazen bir oturuşta bitirmek isteyebilir, bazen günlerce yarım bırakabilirsin.',
           },
           parent: {
-            school: 'Teneffüste çocuğunuz bazen satranç ya da dama oynamak isteyebilir, bazen başka bir şey yapmayı seçebilir.',
+            school: 'Teneffüste çocuğunuz bazen bir satranç partisine oturmak isteyebilir, bazen başka bir şey yapmayı seçebilir.',
             friends: 'Arkadaşlarıyla buluşunca bazen bir kart oyunu açabilir, bazen sohbet etmeyi seçebilir.',
             home: 'Bir yapbozu bazen bir oturuşta bitirmek isteyebilir, bazen günlerce yarım bırakabilir.',
           },
           adult: {
-            work: 'Yorucu bir günün ardından ara sıra bir masa oyunu oynamak sana iyi gelebilir.',
+            work: 'Yorucu bir günün ardından ara sıra bir masa oyunu açmak sana iyi gelebilir.',
           },
         },
         high: {
           from: { school: ['h151'], friends: ['h182'], home: ['h054'], work: ['h119', 'h086'] },
           student: {
-            school: 'Teneffüste satranç ya da dama oynamak sana keyifli gelebilir.',
-            friends: 'Arkadaşlarınla yeni bir kutu ya da kart oyunu öğrenmek sana heyecan verici gelebilir.',
+            school: 'Teneffüste bir satranç partisi oynamak sana keyifli gelebilir.',
+            friends: 'Arkadaşlarınla daha önce oynamadığın bir kutu oyununu öğrenmek sana heyecan verici gelebilir.',
             home: 'Bir yapboza ya da oyuna dalınca zamanın nasıl geçtiğini fark etmeyebilirsin.',
           },
           parent: {
-            school: 'Teneffüste satranç ya da dama oynamak çocuğunuza keyifli gelebilir.',
-            friends: 'Arkadaşlarıyla yeni bir kutu ya da kart oyunu öğrenmek ona heyecan verici gelebilir.',
+            school: 'Teneffüste bir satranç partisi oynamak çocuğunuza keyifli gelebilir.',
+            friends: 'Arkadaşlarıyla daha önce oynamadığı bir kutu oyununu öğrenmek ona heyecan verici gelebilir.',
             home: 'Bir yapboza ya da oyuna dalınca zamanın nasıl geçtiğini fark etmeyebilir.',
           },
           adult: {
-            work: 'Yakınlarınla tavla, kart ya da kutu oyunu oynamak günlük hayatında sık yer alabilir.',
+            work: 'Yakınlarınla tavla, kart ya da bir kutu oyunu oynamak günlük hayatında sık yer alabilir.',
           },
         },
       },
@@ -439,7 +439,7 @@ export const hobiIlgileriDaily: SurveyDaily = {
             home: 'Bir saksı bitkisine bazen düzenli bakabilir, bazen onu bir süre unutabilir.',
           },
           adult: {
-            work: 'Bir bitkinin saksısını değiştirmek gibi işler ara sıra senin günlük işlerin arasında yer alabilir.',
+            work: 'Bir bitkiyi daha büyük bir saksıya almak gibi işler ara sıra senin günlük işlerin arasında yer alabilir.',
           },
         },
         high: {
@@ -578,12 +578,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
         low: {
           from: { school: ['h113'], friends: ['h113'], home: ['h199'], work: ['h113'] },
           student: {
-            school: 'Ders kitapları dışında kitap okumak şimdilik senin gününde pek yer almıyor olabilir.',
+            school: 'Ders kitapları dışında bir kitap açmak şimdilik senin gününde pek yer almıyor olabilir.',
             friends: 'Arkadaşlarınla buluşmalarda kitaplardan çok başka konular öne çıkabilir.',
             home: 'Uyumadan önce kitap yerine başka şeylerle vakit geçirmeyi seçebilirsin.',
           },
           parent: {
-            school: 'Ders kitapları dışında kitap okumak şimdilik çocuğunuzun gününde pek yer almıyor olabilir.',
+            school: 'Ders kitapları dışında bir kitap açmak şimdilik çocuğunuzun gününde pek yer almıyor olabilir.',
             friends: 'Arkadaşlarıyla buluşmalarda kitaplardan çok başka konular öne çıkabilir.',
             home: 'Uyumadan önce kitap yerine başka şeylerle vakit geçirmeyi seçebilir.',
           },
@@ -612,12 +612,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
           student: {
             school: 'Ders dışında da kütüphaneye gitmek ya da yeni bir kitaba başlamak sana keyifli gelebilir.',
             friends: 'Arkadaşlarınla okuduğun kitaplar hakkında konuşmak sana keyifli gelebilir.',
-            home: 'Sevdiğin bir kitabı tek oturuşta bitirmek isterken uykunu erteleyebilirsin.',
+            home: 'Sevdiğin bir kitabı bir solukta bitirmek isterken uykunu erteleyebilirsin.',
           },
           parent: {
             school: 'Ders dışında da kütüphaneye gitmek ya da yeni bir kitaba başlamak çocuğunuza keyifli gelebilir.',
             friends: 'Arkadaşlarıyla okuduğu kitaplar hakkında konuşmak ona keyifli gelebilir.',
-            home: 'Sevdiği bir kitabı tek oturuşta bitirmek isterken uykusunu erteleyebilir.',
+            home: 'Sevdiği bir kitabı bir solukta bitirmek isterken uykusunu erteleyebilir.',
           },
           adult: {
             work: 'İş dışındaki zamanında kütüphaneye gitmek ya da uyumadan önce okumak sana keyifli gelebilir.',
@@ -633,13 +633,13 @@ export const hobiIlgileriDaily: SurveyDaily = {
         low: {
           from: { school: ['h128'], friends: ['h160'], home: ['h128'], work: ['h190', 'h063'] },
           student: {
-            school: 'Ders dışında kendi isteğinle bir konu çalışmak şimdilik senin gününde pek yer almıyor olabilir.',
-            friends: 'Arkadaşlarınla vakit geçirirken yeni bir beceri öğrenmek yerine bildiğin şeyleri yapmayı seçebilirsin.',
+            school: 'Ders dışında kimse istemeden bir konu çalışmak şimdilik senin gününde pek yer almıyor olabilir.',
+            friends: 'Arkadaşlarınla vakit geçirirken ilk kez bir şey öğrenmeye girişmek yerine bildiğin şeyleri yapmayı seçebilirsin.',
             home: 'Boş zamanını dinlenmeye ya da başka uğraşlara ayırıyor olabilirsin.',
           },
           parent: {
-            school: 'Ders dışında kendi isteğiyle bir konu çalışmak şimdilik çocuğunuzun gününde pek yer almıyor olabilir.',
-            friends: 'Arkadaşlarıyla vakit geçirirken yeni bir beceri öğrenmek yerine bildiği şeyleri yapmayı seçebilir.',
+            school: 'Ders dışında kimse istemeden bir konu çalışmak şimdilik çocuğunuzun gününde pek yer almıyor olabilir.',
+            friends: 'Arkadaşlarıyla vakit geçirirken ilk kez bir şey öğrenmeye girişmek yerine bildiği şeyleri yapmayı seçebilir.',
             home: 'Boş zamanını dinlenmeye ya da başka uğraşlara ayırıyor olabilir.',
           },
           adult: {
@@ -649,33 +649,33 @@ export const hobiIlgileriDaily: SurveyDaily = {
         average: {
           from: { school: ['h128'], friends: ['h160'], home: ['h063'], work: ['h160'] },
           student: {
-            school: 'Ders dışında merak ettiğin bir konuyu bazen kendi isteğinle çalışabilir, bazen ona ara verebilirsin.',
-            friends: 'Arkadaşlarınla bazen yeni bir beceri öğrenmeyi deneyebilir, bazen bildiğin uğraşlara dönebilirsin.',
+            school: 'Ders dışında ilgini çeken bir konuyu bazen kendiliğinden çalışabilir, bazen ona ara verebilirsin.',
+            friends: 'Arkadaşlarınla bazen birlikte bir şey öğrenmeye girişebilir, bazen bildiğin uğraşlara dönebilirsin.',
             home: 'Bir kişisel gelişim kitabını bazen merakla okuyabilir, bazen yarıda bırakabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz ders dışında merak ettiği bir konuyu bazen kendi isteğiyle çalışabilir, bazen ona ara verebilir.',
-            friends: 'Arkadaşlarıyla bazen yeni bir beceri öğrenmeyi deneyebilir, bazen bildiği uğraşlara dönebilir.',
+            school: 'Çocuğunuz ders dışında ilgisini çeken bir konuyu bazen kendiliğinden çalışabilir, bazen ona ara verebilir.',
+            friends: 'Arkadaşlarıyla bazen birlikte bir şey öğrenmeye girişebilir, bazen bildiği uğraşlara dönebilir.',
             home: 'Bir kişisel gelişim kitabını bazen merakla okuyabilir, bazen yarıda bırakabilir.',
           },
           adult: {
-            work: 'Yeni bir beceri öğrenmek bazen senin gündeminde olabilir, bazen geri planda kalabilir.',
+            work: 'Bir beceri edinmek bazen senin gündeminde olabilir, bazen geri planda kalabilir.',
           },
         },
         high: {
           from: { school: ['h128'], friends: ['h160', 'h190'], home: ['h128', 'h160'], work: ['h160', 'h190'] },
           student: {
-            school: 'Ders dışında merak ettiğin bir konuyu kendi isteğinle araştırmak sana keyifli gelebilir.',
-            friends: 'Arkadaşlarınla yeni bir beceri öğrenmek ya da bir kursa birlikte katılmak sana keyifli gelebilir.',
+            school: 'Ders dışında ilgini çeken bir konuyu kimse istemeden araştırmak sana keyifli gelebilir.',
+            friends: 'Arkadaşlarınla birlikte bir beceri edinmek ya da bir kursa katılmak sana keyifli gelebilir.',
             home: 'Öğrenmek istediğin şeylerin listesi uzayınca hepsine zaman bulmak zor olabilir.',
           },
           parent: {
-            school: 'Ders dışında merak ettiği bir konuyu kendi isteğiyle araştırmak çocuğunuza keyifli gelebilir.',
-            friends: 'Arkadaşlarıyla yeni bir beceri öğrenmek ya da bir kursa birlikte katılmak ona keyifli gelebilir.',
+            school: 'Ders dışında ilgisini çeken bir konuyu kimse istemeden araştırmak çocuğunuza keyifli gelebilir.',
+            friends: 'Arkadaşlarıyla birlikte bir beceri edinmek ya da bir kursa katılmak ona keyifli gelebilir.',
             home: 'Öğrenmek istediği şeylerin listesi uzayınca hepsine zaman bulmak zor olabilir.',
           },
           adult: {
-            work: 'İş dışındaki zamanında yeni bir beceri öğrenmek ya da bir kursa katılmak sana keyifli gelebilir.',
+            work: 'İş dışındaki zamanında bir beceri edinmek ya da bir kursa gitmek sana keyifli gelebilir.',
           },
         },
       },
@@ -721,12 +721,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
           from: { school: ['h004'], friends: ['h100', 'h068'], home: ['h035'], work: ['h100', 'h035'] },
           student: {
             school: 'Teneffüste maçları ve takımları konuşmak sana keyifli gelebilir.',
-            friends: 'Arkadaşlarınla bir takım sporu oynamak ya da bir maça gitmek sana heyecan verici gelebilir.',
+            friends: 'Arkadaşlarınla takım hâlinde top oynamak ya da bir maça gitmek sana heyecan verici gelebilir.',
             home: 'Önemli bir maç olduğunda başka işleri ertelemek isteyebilirsin.',
           },
           parent: {
             school: 'Teneffüste maçları ve takımları konuşmak çocuğunuza keyifli gelebilir.',
-            friends: 'Arkadaşlarıyla bir takım sporu oynamak ya da bir maça gitmek ona heyecan verici gelebilir.',
+            friends: 'Arkadaşlarıyla takım hâlinde top oynamak ya da bir maça gitmek ona heyecan verici gelebilir.',
             home: 'Önemli bir maç olduğunda başka işleri ertelemek isteyebilir.',
           },
           adult: {
@@ -760,13 +760,13 @@ export const hobiIlgileriDaily: SurveyDaily = {
           from: { school: ['h044'], friends: ['h011'], home: ['h109'], work: ['h044'] },
           student: {
             school: 'Bir doğa gezisine bazen istekle katılabilir, bazen başka bir etkinliği seçebilirsin.',
-            friends: 'Arkadaşlarınla bazen pikniğe gitmek isteyebilir, bazen şehir içinde buluşmayı seçebilirsin.',
-            home: 'Sıcak günlerde ara sıra yüzmeye gitmek isteyebilirsin.',
+            friends: 'Arkadaşlarınla bazen bir parkta oturup birlikte yemek isteyebilir, bazen kapalı bir yerde buluşmayı seçebilirsin.',
+            home: 'Sıcak günlerde ara sıra denize ya da havuza girmek isteyebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir doğa gezisine bazen istekle katılabilir, bazen başka bir etkinliği seçebilir.',
-            friends: 'Arkadaşlarıyla bazen pikniğe gitmek isteyebilir, bazen şehir içinde buluşmayı seçebilir.',
-            home: 'Sıcak günlerde ara sıra yüzmeye gitmek isteyebilir.',
+            friends: 'Arkadaşlarıyla bazen bir parkta oturup birlikte yemek isteyebilir, bazen kapalı bir yerde buluşmayı seçebilir.',
+            home: 'Sıcak günlerde ara sıra denize ya da havuza girmek isteyebilir.',
           },
           adult: {
             work: 'Yoğun dönemlerde doğaya çıkmak bekleyebilir, sakin günlerde bir yürüyüş yapmak isteyebilirsin.',
@@ -854,12 +854,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
           from: { school: ['h110'], friends: ['h077'], home: ['h012', 'h142'], work: ['h012', 'h110'] },
           student: {
             school: 'Bir teşekkür kartı yazma etkinliği sana yeni bir deneyim olabilir.',
-            friends: 'Arkadaşlarına elle mektup yazmak yerine başka yollarla haberleşiyor olabilirsin.',
+            friends: 'Arkadaşlarına kâğıda mektup yazmak yerine başka yollarla haberleşiyor olabilirsin.',
             home: 'Yaşadıklarını günlüğe yazmak ya da albümde biriktirmek yerine başka yollarla saklıyor olabilirsin.',
           },
           parent: {
             school: 'Bir teşekkür kartı yazma etkinliği çocuğunuz için yeni bir deneyim olabilir.',
-            friends: 'Arkadaşlarına elle mektup yazmak yerine başka yollarla haberleşiyor olabilir.',
+            friends: 'Arkadaşlarına kâğıda mektup yazmak yerine başka yollarla haberleşiyor olabilir.',
             home: 'Yaşadıklarını günlüğe yazmak ya da albümde biriktirmek yerine başka yollarla saklıyor olabilir.',
           },
           adult: {
@@ -870,12 +870,12 @@ export const hobiIlgileriDaily: SurveyDaily = {
           from: { school: ['h110'], friends: ['h077', 'h045'], home: ['h012'], work: ['h174', 'h142'] },
           student: {
             school: 'Bir teşekkür notu yazmak bazen sana keyifli gelebilir, bazen teşekkürünü sözle söylemeyi seçebilirsin.',
-            friends: 'Bir arkadaşına ara sıra elle bir not ya da kart yazmak isteyebilirsin.',
+            friends: 'Bir arkadaşına ara sıra elle birkaç satır yazmak isteyebilirsin.',
             home: 'Günlüğüne bazen her gün yazabilir, bazen uzun süre ara verebilirsin.',
           },
           parent: {
             school: 'Bir teşekkür notu yazmak bazen çocuğunuza keyifli gelebilir, bazen teşekkürünü sözle söylemeyi seçebilir.',
-            friends: 'Bir arkadaşına ara sıra elle bir not ya da kart yazmak isteyebilir.',
+            friends: 'Bir arkadaşına ara sıra elle birkaç satır yazmak isteyebilir.',
             home: 'Günlüğüne bazen her gün yazabilir, bazen uzun süre ara verebilir.',
           },
           adult: {
@@ -885,13 +885,13 @@ export const hobiIlgileriDaily: SurveyDaily = {
         high: {
           from: { school: ['h110'], friends: ['h077', 'h045'], home: ['h012', 'h174'], work: ['h012', 'h142'] },
           student: {
-            school: 'Bir teşekkür notu ya da kart yazmak sana keyifli gelebilir.',
-            friends: 'Arkadaşlarına elle mektup ya da kartpostal yazmak sana keyifli gelebilir.',
+            school: 'Bir öğretmene ya da arkadaşa teşekkür için birkaç satır yazmak sana keyifli gelebilir.',
+            friends: 'Bir arkadaşına kâğıda yazılmış bir mektup ya da gittiğin bir yerden kart göndermek sana keyifli gelebilir.',
             home: 'Günlüğüne yazarken ya da anı defterini düzenlerken zamanın nasıl geçtiğini fark etmeyebilirsin.',
           },
           parent: {
-            school: 'Bir teşekkür notu ya da kart yazmak çocuğunuza keyifli gelebilir.',
-            friends: 'Arkadaşlarına elle mektup ya da kartpostal yazmak ona keyifli gelebilir.',
+            school: 'Bir öğretmene ya da arkadaşa teşekkür için birkaç satır yazmak çocuğunuza keyifli gelebilir.',
+            friends: 'Bir arkadaşına kâğıda yazılmış bir mektup ya da gittiği bir yerden kart göndermek ona keyifli gelebilir.',
             home: 'Günlüğüne yazarken ya da anı defterini düzenlerken zamanın nasıl geçtiğini fark etmeyebilir.',
           },
           adult: {

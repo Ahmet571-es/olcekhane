@@ -66,7 +66,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
             home: 'Hep aynı biçimde yapılan bir iş onu çabuk sıkabilir.',
           },
           adult: {
-            work: 'Bir işte sürekli yeni şeyler öğrenmek ve merak ettiğin konularla uğraşmak senin için çok önemli olabilir.',
+            work: 'Bir işte hep yeni bir şey öğrenmek ve merak ettiğin konularla uğraşmak senin için çok önemli olabilir.',
           },
         },
       },
@@ -96,12 +96,12 @@ export const calismaDegerleriDaily: SurveyDaily = {
           student: {
             school: 'Bir meslek tanıtılırken o işin gelirini bazen merak edebilir, bazen başka yönlerine bakabilirsin.',
             friends: 'Arkadaşlarınla geleceği konuşurken rahat bir hayat bazen aklına gelebilir, bazen başka hayaller öne çıkabilir.',
-            home: 'Yakınlarınla meslekleri konuşurken emeğe değecek bir ücret bazen sana önemli gelebilir, bazen gelmeyebilir.',
+            home: 'Yakınlarınla meslekleri konuşurken emeğinin karşılığını veren bir ücret bazen sana önemli gelebilir, bazen gelmeyebilir.',
           },
           parent: {
             school: 'Bir meslek tanıtılırken çocuğunuz o işin gelirini bazen merak edebilir, bazen başka yönlerine bakabilir.',
             friends: 'Arkadaşlarıyla geleceği konuşurken rahat bir hayat bazen aklına gelebilir, bazen başka hayaller öne çıkabilir.',
-            home: 'Yakınlarıyla meslekleri konuşurken emeğe değecek bir ücret bazen ona önemli gelebilir, bazen gelmeyebilir.',
+            home: 'Yakınlarıyla meslekleri konuşurken emeğinin karşılığını veren bir ücret bazen ona önemli gelebilir, bazen gelmeyebilir.',
           },
           adult: {
             work: 'Bir işte ücret bazen senin için belirleyici olabilir, bazen işin başka yönleri ağır basabilir.',
@@ -143,7 +143,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
             home: 'Bir işin kimseye doğrudan yardım etmemesi onu pek rahatsız etmeyebilir.',
           },
           adult: {
-            work: 'Bir işi değerlendirirken toplumun bir ihtiyacını karşılaması senin için öncelikli olmayabilir.',
+            work: 'Bir işi değerlendirirken toplumdaki bir eksiği gidermesi senin için öncelikli olmayabilir.',
           },
         },
         average: {
@@ -245,12 +245,12 @@ export const calismaDegerleriDaily: SurveyDaily = {
           student: {
             school: 'Bir meslek tanıtılırken o işin ne kadar güvenceli olduğu senin için ilk sırada olmayabilir.',
             friends: 'Arkadaşlarınla geleceği konuşurken belirsizliği olan ama ilgini çeken bir yolu göze alabilirsin.',
-            home: 'Yakınlarınla meslekleri konuşurken uzun yıllar aynı işte çalışmak sana pek çekici gelmeyebilir.',
+            home: 'Yakınlarınla meslekleri konuşurken yıllarca aynı yerde çalışmak sana pek çekici gelmeyebilir.',
           },
           parent: {
             school: 'Bir meslek tanıtılırken o işin ne kadar güvenceli olduğu çocuğunuz için ilk sırada olmayabilir.',
             friends: 'Arkadaşlarıyla geleceği konuşurken belirsizliği olan ama ilgisini çeken bir yolu göze alabilir.',
-            home: 'Yakınlarıyla meslekleri konuşurken uzun yıllar aynı işte çalışmak ona pek çekici gelmeyebilir.',
+            home: 'Yakınlarıyla meslekleri konuşurken yıllarca aynı yerde çalışmak ona pek çekici gelmeyebilir.',
           },
           adult: {
             work: 'Bir işi değerlendirirken gelirin her ay aynı düzende gelmesi senin için öncelikli olmayabilir.',
@@ -316,12 +316,12 @@ export const calismaDegerleriDaily: SurveyDaily = {
           student: {
             school: 'Bir projeyi bazen grupla yapmak isteyebilir, bazen tek başına çalışmayı seçebilirsin.',
             friends: 'Bir gruptakilerle sıcak ilişkiler kurmak bazen sana önemli gelebilir, bazen işin kendisi ağır basabilir.',
-            home: 'Bir topluluğun parçası gibi hissetmek bazen sana önemli gelebilir, bazen kendi başına kalmak iyi gelebilir.',
+            home: 'Bir gruba ait hissetmek bazen sana önemli gelebilir, bazen kendi başına kalmak iyi gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz bir projeyi bazen grupla yapmak isteyebilir, bazen tek başına çalışmayı seçebilir.',
             friends: 'Bir gruptakilerle sıcak ilişkiler kurmak bazen ona önemli gelebilir, bazen işin kendisi ağır basabilir.',
-            home: 'Bir topluluğun parçası gibi hissetmek bazen ona önemli gelebilir, bazen kendi başına kalmak iyi gelebilir.',
+            home: 'Bir gruba ait hissetmek bazen ona önemli gelebilir, bazen kendi başına kalmak iyi gelebilir.',
           },
           adult: {
             work: 'Bir işte bazen ekiple çalışmak isteyebilir, bazen tek başına çalışmayı seçebilirsin.',
@@ -442,15 +442,15 @@ export const calismaDegerleriDaily: SurveyDaily = {
           student: {
             school: 'Ders dışında hobilerine ve sevdiklerine zaman kalması senin için çok önemli olabilir.',
             friends: 'Arkadaşlarınla geçirdiğin zamanı korumak sana önemli gelebilir.',
-            home: 'Akşamları ve hafta sonları da iş düşünmek zorunda kalınca canın sıkılabilir.',
+            home: 'Akşam ve hafta sonu da iş düşünmek zorunda kalınca canın sıkılabilir.',
           },
           parent: {
             school: 'Ders dışında hobilerine ve sevdiklerine zaman kalması çocuğunuz için çok önemli olabilir.',
             friends: 'Arkadaşlarıyla geçirdiği zamanı korumak ona önemli gelebilir.',
-            home: 'Akşamları ve hafta sonları da iş düşünmek zorunda kalınca canı sıkılabilir.',
+            home: 'Akşam ve hafta sonu da iş düşünmek zorunda kalınca canı sıkılabilir.',
           },
           adult: {
-            work: 'Bir işte çok uzun saatler çalışmak zorunda kalmamak senin için çok önemli olabilir.',
+            work: 'Bir işte çalışma saatlerinin fazla uzamaması senin için çok önemli olabilir.',
           },
         },
       },
