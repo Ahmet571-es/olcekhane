@@ -17,7 +17,13 @@ import type { SurveyDaily } from './types';
  * açabilir" (raporun yüksek düzey metni), sıcaklıkta "işin kendisine odaklanabilirsin" (Beş Faktör'ün uyumluluk örneğiyle
  * aynı yorum), uysallıkta düşük düzeyde "dile getirebilirsin" (raporun "sınır çizebildiğini" anlatımı), girişkenlikte uzun süre
  * kimseyle görüşmemenin çekici gelmemesi (kalabalık ortamları sevmenin öbür yüzü), sessizlikte özel hayatın "kendine ait bir
- * alan" bırakması ve çok özel şeyler için kişiyi tanımak (16 Faktörlü Kişilik Profili'nin raporundaki anlatım).
+ * alan" bırakması ve çok özel şeyler için kişiyi tanımak (16 Faktörlü Kişilik Profili'nin raporundaki anlatım), sıcaklıkta
+ * birinin içini rahatlatırken "kendi işini bir kenara bırakabilirsin" (Beş Faktör'ün uyumluluk örneğiyle aynı yorum).
+ * Mesafeli tarzda acındıran hikâyeyi bir arkadaş anlatmaz (arkadaş kandıran biri gibi gösterilmez); öne çıkmada düşük düzeyin
+ * zorluğu dikkati çekmekle ilgilidir, sesin duyulmaması geri planda kalmanın kendi satırındadır.
+ * Yetişkin evde yalnız yaşıyor olabilir: evdekilerden söz eden ev satırlarının yerine yetişkine "yakınların" diyen kendi satırı
+ * (`adult.home`) yazılır; misafir gelmesi ve evdeki bir plan herkese uyduğu için ortak kalır. Mezun (13. sınıf) okul
+ * satırlarını "Okulda ya da derslerde" başlığıyla gördüğü için o satırlarda "sınıf" yoktur.
  */
 export const kisilerarasiTarzDaily: SurveyDaily = {
   kind: 'survey',
@@ -31,19 +37,20 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
       poles: { low: 'İlgi odağı olmayı aramayan', high: 'İlgi odağı olmak isteyen' },
       bands: {
         low: {
-          from: { school: ['ipc06', 'ipc14'], friends: ['ipc22'], home: ['ipc14'], work: ['ipc06', 'ipc14'] },
+          from: { school: ['ipc06', 'ipc14'], friends: ['ipc30', 'ipc06'], home: ['ipc14'], work: ['ipc06', 'ipc14'] },
           student: {
             school: 'Bir grup çalışmasında ilgi odağı olmakta ısrar etmeyebilirsin; bu başkalarının fikirlerine de yer açabilir.',
-            friends: 'Kalabalık ve gürültülü bir ortamda yüksek sesle konuşmadığın için sesin pek duyulmayabilir.',
+            friends: 'Arkadaş grubunda herkesin dikkatini bir şeye çekmen gerektiğinde bu sana kolay gelmeyebilir.',
             home: 'Evdekilerle bir sohbette sözü uzun süre elinde tutmak istemeyebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir grup çalışmasında ilgi odağı olmakta ısrar etmeyebilir; bu başkalarının fikirlerine de yer açabilir.',
-            friends: 'Kalabalık ve gürültülü bir ortamda yüksek sesle konuşmadığı için sesi pek duyulmayabilir.',
+            friends: 'Arkadaş grubunda herkesin dikkatini bir şeye çekmesi gerektiğinde bu ona kolay gelmeyebilir.',
             home: 'Evdekilerle bir sohbette sözü uzun süre elinde tutmak istemeyebilir.',
           },
           adult: {
             work: 'Ortak bir işte ilgi odağı olmakta ısrar etmeyebilirsin; bu başkalarının fikirlerine de yer açabilir.',
+            home: 'Yakınlarınla bir sohbette sözü uzun süre elinde tutmak istemeyebilirsin.',
           },
         },
         average: {
@@ -60,6 +67,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bazı işlerde çok konuşup öne çıkabilir, bazılarında sözü başkalarına bırakabilirsin.',
+            home: 'Yakınlarının arasında bazen ilgiyi üzerine çekmeye çalışabilir, bazen buna gerek duymayabilirsin.',
           },
         },
         high: {
@@ -76,6 +84,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Ortak bir işte çok konuşmak ve fikrini yüksek sesle söylemek sana kolay gelebilir.',
+            home: 'Yakınlarınla bir sohbette çok konuşabilirsin; başkalarına söz bırakmak onların fikrini duymanı sağlayabilir.',
           },
         },
       },
@@ -91,12 +100,12 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
         low: {
           from: { school: ['ipc13'], friends: ['ipc29'], home: ['ipc21', 'ipc29'], work: ['ipc13', 'ipc21'] },
           student: {
-            school: 'Yeni bir sınıfta sohbeti başkası başlatınca katılmak sana daha rahat gelebilir.',
+            school: 'Yeni bir grupta sohbeti başkası başlatınca katılmak sana daha rahat gelebilir.',
             friends: 'Kalabalık bir kutlama yerine az kişiyle buluşmak sana daha keyifli gelebilir.',
             home: 'Kalabalık bir misafirlikte pek çok kişiyle sohbet etmek sana pek keyifli gelmeyebilir.',
           },
           parent: {
-            school: 'Yeni bir sınıfta sohbeti başkası başlatınca katılmak çocuğunuza daha rahat gelebilir.',
+            school: 'Yeni bir grupta sohbeti başkası başlatınca katılmak çocuğunuza daha rahat gelebilir.',
             friends: 'Kalabalık bir kutlama yerine az kişiyle buluşmak ona daha keyifli gelebilir.',
             home: 'Kalabalık bir misafirlikte pek çok kişiyle sohbet etmek ona pek keyifli gelmeyebilir.',
           },
@@ -107,12 +116,12 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
         average: {
           from: { school: ['ipc13'], friends: ['ipc29'], home: ['ipc21'], work: ['ipc05', 'ipc13'] },
           student: {
-            school: 'Sınıfta bazen sohbeti başlatabilir, bazen başkasının başlatmasını bekleyebilirsin.',
+            school: 'Ders arkadaşlarınla bazen sohbeti başlatabilir, bazen başkasının başlatmasını bekleyebilirsin.',
             friends: 'Bazen kalabalık bir kutlamadan keyif alabilir, bazen az kişiyle buluşmayı seçebilirsin.',
             home: 'Kalabalık bir misafirlikte bazen pek çok kişiyle konuşabilir, bazen birkaç kişiyle sohbet edebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfta bazen sohbeti başlatabilir, bazen başkasının başlatmasını bekleyebilir.',
+            school: 'Çocuğunuz ders arkadaşlarıyla bazen sohbeti başlatabilir, bazen başkasının başlatmasını bekleyebilir.',
             friends: 'Bazen kalabalık bir kutlamadan keyif alabilir, bazen az kişiyle buluşmayı seçebilir.',
             home: 'Kalabalık bir misafirlikte bazen pek çok kişiyle konuşabilir, bazen birkaç kişiyle sohbet edebilir.',
           },
@@ -123,12 +132,12 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
         high: {
           from: { school: ['ipc13', 'ipc05'], friends: ['ipc29', 'ipc21'], home: ['ipc29'], work: ['ipc13', 'ipc21'] },
           student: {
-            school: 'Yeni bir sınıfta ya da kulüpte sohbeti başlatmak sana kolay gelebilir.',
+            school: 'Yeni bir grupta ya da kulüpte sohbeti başlatmak sana kolay gelebilir.',
             friends: 'Kalabalık bir kutlamada birçok farklı kişiyle konuşmak sana keyifli gelebilir.',
             home: 'Uzun süre kimseyle görüşmeden evde kalmak sana pek çekici gelmeyebilir.',
           },
           parent: {
-            school: 'Yeni bir sınıfta ya da kulüpte sohbeti başlatmak çocuğunuza kolay gelebilir.',
+            school: 'Yeni bir grupta ya da kulüpte sohbeti başlatmak çocuğunuza kolay gelebilir.',
             friends: 'Kalabalık bir kutlamada birçok farklı kişiyle konuşmak ona keyifli gelebilir.',
             home: 'Uzun süre kimseyle görüşmeden evde kalmak ona pek çekici gelmeyebilir.',
           },
@@ -159,38 +168,41 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Birlikte iş yaptığın kişilerin hâlini sormak yerine işin kendisine odaklanabilirsin.',
+            home: 'Yakınlarının günlük hayatıyla pek ilgilenmeden kendi işlerine dönebilirsin.',
           },
         },
         average: {
           from: { school: ['ipc12'], friends: ['ipc04', 'ipc20'], home: ['ipc20'], work: ['ipc04', 'ipc12'] },
           student: {
-            school: 'Bazen üzgün bir sınıf arkadaşının içini rahatlatmaya çalışabilir, bazen kendi işine dönebilirsin.',
+            school: 'Bazen üzgün bir ders arkadaşının içini rahatlatmaya çalışabilir, bazen kendi işine dönebilirsin.',
             friends: 'Bazı arkadaşlarının hâlini sık sık sorabilir, bazılarıyla daha az ilgilenebilirsin.',
             home: 'Evdekilerin hâlini bazen sorabilir, yoğun günlerde bunu atlayabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazen üzgün bir sınıf arkadaşının içini rahatlatmaya çalışabilir, bazen kendi işine dönebilir.',
+            school: 'Çocuğunuz bazen üzgün bir ders arkadaşının içini rahatlatmaya çalışabilir, bazen kendi işine dönebilir.',
             friends: 'Bazı arkadaşlarının hâlini sık sık sorabilir, bazılarıyla daha az ilgilenebilir.',
             home: 'Evdekilerin hâlini bazen sorabilir, yoğun günlerde bunu atlayabilir.',
           },
           adult: {
             work: 'Birlikte iş yaptığın kişilerle bazen yakından ilgilenebilir, bazen işine odaklanabilirsin.',
+            home: 'Yakınlarının hâlini bazen sorabilir, yoğun günlerde bunu atlayabilirsin.',
           },
         },
         high: {
           from: { school: ['ipc12', 'ipc20'], friends: ['ipc28', 'ipc04'], home: ['ipc12'], work: ['ipc28', 'ipc20'] },
           student: {
-            school: 'Üzgün görünen bir sınıf arkadaşının hâlini sorup içini rahatlatmaya çalışabilirsin.',
+            school: 'Üzgün görünen bir ders arkadaşının hâlini sorup içini rahatlatmaya çalışabilirsin.',
             friends: 'Arkadaşlarınla çoğu zaman iyi geçinebilir, onların hayatıyla ilgilenebilirsin.',
             home: 'Evdekilerden birinin içini rahatlatmaya çalışırken kendi işini bir kenara bırakabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz üzgün görünen bir sınıf arkadaşının hâlini sorup içini rahatlatmaya çalışabilir.',
+            school: 'Çocuğunuz üzgün görünen bir ders arkadaşının hâlini sorup içini rahatlatmaya çalışabilir.',
             friends: 'Arkadaşlarıyla çoğu zaman iyi geçinebilir, onların hayatıyla ilgilenebilir.',
             home: 'Evdekilerden birinin içini rahatlatmaya çalışırken kendi işini bir kenara bırakabilir.',
           },
           adult: {
             work: 'Birlikte iş yaptığın kişilerle çoğu zaman iyi geçinebilir, hâllerini sorabilirsin.',
+            home: 'Yakınlarından birinin içini rahatlatmaya çalışırken kendi işini bir kenara bırakabilirsin.',
           },
         },
       },
@@ -264,15 +276,16 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           student: {
             school: 'Bir projede yaptığın işi anlatmaktan çekinmeyebilirsin.',
             friends: 'Arkadaşlarınla bir aradayken ilgi odağı olmak seni rahatsız etmeyebilir.',
-            home: 'Evdekilerle konuşurken onların sözünü bitirmesini bazen beklemeyebilirsin.',
+            home: 'Evdekilerle konuşurken birinin sözünü bitirmesini bazen beklemeyebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir projede yaptığı işi anlatmaktan çekinmeyebilir.',
             friends: 'Arkadaşlarıyla bir aradayken ilgi odağı olmak onu rahatsız etmeyebilir.',
-            home: 'Evdekilerle konuşurken onların sözünü bitirmesini bazen beklemeyebilir.',
+            home: 'Evdekilerle konuşurken birinin sözünü bitirmesini bazen beklemeyebilir.',
           },
           adult: {
             work: 'Yaptığın işi ve başarılarını anlatmaktan çekinmeyebilirsin.',
+            home: 'Yakınlarınla konuşurken birinin sözünü bitirmesini bazen beklemeyebilirsin.',
           },
         },
         average: {
@@ -289,6 +302,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bazı işlerde başarılarını anlatabilir, bazılarında geri planda kalmayı seçebilirsin.',
+            home: 'Yakınlarınla bazen alçak sesle, bazen daha yüksek sesle konuşabilirsin.',
           },
         },
         high: {
@@ -304,7 +318,8 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
             home: 'Evdekilerle alçak sesle konuşabilir; söyledikleri bazen duyulmayabilir.',
           },
           adult: {
-            work: 'Bir toplantıda başkalarının sözünü bitirmesini bekleyebilir, başarılarını pek anlatmayabilirsin.',
+            work: 'Ortak bir işte başkalarının sözünü bitirmesini bekleyebilir, başarılarını pek anlatmayabilirsin.',
+            home: 'Yakınlarınla alçak sesle konuşabilirsin; söylediklerin bazen duyulmayabilir.',
           },
         },
       },
@@ -319,17 +334,18 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
         low: {
           from: { school: ['ipc01'], friends: ['ipc09'], home: ['ipc25', 'ipc17'], work: ['ipc01'] },
           student: {
-            school: 'Yeni bir sınıfta tanımadığın kişilerle konuşmak sana zor gelmeyebilir.',
+            school: 'Yeni bir grupta tanımadığın kişilerle konuşmak sana zor gelmeyebilir.',
             friends: 'Özel hayatını arkadaşlarınla paylaşmaktan çekinmeyebilirsin; çok özel şeyler için kişiyi biraz tanımak iyi gelebilir.',
             home: 'Evdekilerle konuşurken çoğu zaman anlatacak bir şey bulabilirsin.',
           },
           parent: {
-            school: 'Yeni bir sınıfta tanımadığı kişilerle konuşmak çocuğunuza zor gelmeyebilir.',
+            school: 'Yeni bir grupta tanımadığı kişilerle konuşmak çocuğunuza zor gelmeyebilir.',
             friends: 'Özel hayatını arkadaşlarıyla paylaşmaktan çekinmeyebilir; çok özel şeyler için kişiyi biraz tanıması iyi gelebilir.',
             home: 'Evdekilerle konuşurken çoğu zaman anlatacak bir şey bulabilir.',
           },
           adult: {
             work: 'Yeni tanıştığın kişilerle konuşmak sana zor gelmeyebilir.',
+            home: 'Yakınlarınla konuşurken çoğu zaman anlatacak bir şey bulabilirsin.',
           },
         },
         average: {
@@ -378,32 +394,34 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           from: { school: ['ipc08'], friends: ['ipc16'], home: ['ipc32'], work: ['ipc08'] },
           student: {
             school: 'Grup çalışmasında işinde zorlanan bir arkadaşına yardım etmeyi düşünebilirsin.',
-            friends: 'Bir arkadaşın seni acındırmak için bir hikâye anlatınca buna kolayca inanabilirsin.',
+            friends: 'Arkadaşlarınla konuşurken acındırmak için anlatılan bir hikâyeye kolayca inanabilirsin.',
             home: 'Evdekilerden biri derdini anlatınca onu dinlemek isteyebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında işinde zorlanan bir arkadaşına yardım etmeyi düşünebilir.',
-            friends: 'Bir arkadaşı onu acındırmak için bir hikâye anlatınca buna kolayca inanabilir.',
+            friends: 'Arkadaşlarıyla konuşurken acındırmak için anlatılan bir hikâyeye kolayca inanabilir.',
             home: 'Evdekilerden biri derdini anlatınca onu dinlemek isteyebilir.',
           },
           adult: {
             work: 'Ortak bir işte zorda kalan birine yardım etmeyi düşünebilirsin.',
+            home: 'Yakınlarından biri derdini anlatınca onu dinlemek isteyebilirsin.',
           },
         },
         average: {
           from: { school: ['ipc08'], friends: ['ipc16'], home: ['ipc32'], work: ['ipc08'] },
           student: {
             school: 'Grup çalışmasında bazen herkesin kendi işini yapmasını bekleyebilir, bazen bir arkadaşına yardım edebilirsin.',
-            friends: 'Bir arkadaşın seni acındırmaya çalışınca bazen inanabilir, bazen mesafeli durabilirsin.',
+            friends: 'Arkadaşlarınla konuşurken acındırmak için anlatılan bir hikâyeye bazen inanabilir, bazen mesafeli durabilirsin.',
             home: 'Evdekilerin sorunlarıyla bazen ilgilenebilir, bazen kendi işine dönebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında bazen herkesin kendi işini yapmasını bekleyebilir, bazen bir arkadaşına yardım edebilir.',
-            friends: 'Bir arkadaşı onu acındırmaya çalışınca bazen inanabilir, bazen mesafeli durabilir.',
+            friends: 'Arkadaşlarıyla konuşurken acındırmak için anlatılan bir hikâyeye bazen inanabilir, bazen mesafeli durabilir.',
             home: 'Evdekilerin sorunlarıyla bazen ilgilenebilir, bazen kendi işine dönebilir.',
           },
           adult: {
             work: 'Bazı işlerde herkesin kendi işini halletmesini bekleyebilir, bazılarında yardıma koşabilirsin.',
+            home: 'Yakınlarının sorunlarıyla bazen ilgilenebilir, bazen kendi işine dönebilirsin.',
           },
         },
         high: {
@@ -420,6 +438,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Ortak bir işte herkesin kendi sorununu çözmesini bekleyebilirsin.',
+            home: 'Yakınlarından biri derdini anlatınca dinlemek sana pek çekici gelmeyebilir.',
           },
         },
       },
@@ -445,6 +464,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Birinin işini eleştirirken çoğu zaman yumuşak bir dil kullanabilirsin.',
+            home: 'Yakınlarınla bir anlaşmazlıkta çoğu zaman terslenmeden konuşabilirsin.',
           },
         },
         average: {
@@ -461,6 +481,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bazı konularda başkalarına karşı çıkabilir, bazılarında yumuşak bir dil seçebilirsin.',
+            home: 'Yakınlarına bazen terslenebilir, çoğu zaman sakin konuşabilirsin.',
           },
         },
         high: {
@@ -477,6 +498,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
           },
           adult: {
             work: 'Katılmadığın bir fikre açıkça karşı çıkabilirsin; eleştirin bazen sert gelebilir.',
+            home: 'Yakınlarınla konuşurken bazen terslenebilirsin.',
           },
         },
       },

@@ -121,10 +121,16 @@ const GROWTH_SLUGS = new Set(['oz-saygi', 'iyimserlik', 'oz-yeterlik', 'zihniyet
 /**
  * Tek tek gelişim tonundaki ölçekler: motivasyon profilinde isteksizlik; Öğrenme ve Başarı Özellikleri'nde zorlukla başa
  * çıkma (maddeleri öz-yeterliği sorar: "Kendimi her işi yapabilecek güçte hissederim"; öz-yeterlik de gelişim tonundadır).
+ * 16 Faktörlü Kişilik Profili'nde gerginlik (maddelerin hepsi yüksek ucu zorluk olarak sorar; aynı maddeler öteki kişilik
+ * testlerinde duygusal dengenin maddesidir) ve düşünsel özgüven (düşünme konusunda kendine güven; öz-yeterlikle aynı aile).
+ * Liderlik Eğilimleri'nde kararlılık ve sorumluluk (maddeler yalnızca düşük ucu zorluk olarak sorar; üçü Öz-denetim'de, biri
+ * Öz-yeterlik'te de sorulur). Bu ölçeklerin uçlarına "her uçta bir kolaylık ve bir zorluk" için uydurma bir yan eklenmez.
  */
 const GROWTH_SCALES: Record<string, string[]> = {
   'ders-calisma-motivasyonu': ['amotivation'],
   'ogrenme-ve-basari-ozellikleri': ['competence'],
+  '16-faktorlu-kisilik-profili': ['emotionality', 'intellect'],
+  'liderlik-egilimleri': ['purpose'],
 };
 
 export function scaleTone(def: LikertInstrument, key: string): DailyTone {

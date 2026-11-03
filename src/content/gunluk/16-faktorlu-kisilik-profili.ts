@@ -2,10 +2,13 @@ import type { SurveyDaily } from './types';
 
 /**
  * 16 Faktörlü Kişilik Profili: günlük hayatta nasıl görünür (9. sınıftan yetişkine). Uçlar testin kendi `poles` metninden
- * 2–4 sözcüğe kısaltıldı; yeni uç yazılmadı. Ton (lib/reports/daily-parts.ts, scaleTone): duygusal denge ve endişeye
- * yatkınlık "gelişim" tonundadır (şablonda destek kutusu açabilen düzeyler): sıkıntılı ucun örnekleri bugünkü durumu anlatır,
- * belirti sıralamaz, yanında bir dayanak söyler; sakin uca uydurma bir zorluk, sıkıntılı uca uydurma bir güçlü yan yazılmaz.
- * Öteki 14 özellik "özellik" tonundadır: iki uç da eşittir.
+ * 2–4 sözcüğe kısaltıldı (düşünsel özgüvende "Düşünme becerisine…" sığmadığı için "Düşünme gücüne…"; sosyal rahatlıkta
+ * "Tanışırken çekingen"); yeni uç yazılmadı. Ton (lib/reports/daily-parts.ts, scaleTone): duygusal denge ve endişeye yatkınlık
+ * (şablonda destek kutusu açabilen düzeyler), gerginlik (maddelerin hepsi yüksek ucu zorluk olarak sorar; aynı maddeler öteki
+ * kişilik testlerinde duygusal dengenin maddesidir) ve düşünsel özgüven (düşünme konusunda kendine güven; öz-yeterlikle aynı
+ * aile) "gelişim" tonundadır: sıkıntılı ucun örnekleri bugünkü durumu anlatır, belirti sıralamaz, yanında bir dayanak söyler;
+ * sakin uca uydurma bir zorluk ya da öğüt, sıkıntılı uca uydurma bir güçlü yan yazılmaz. Öteki 12 özellik "özellik" tonundadır:
+ * iki uç da eşittir.
  * Rapor metinlerindeki ilkeler burada da geçerlidir (src/content/reports/16-faktorlu-kisilik.ts): düşünsel özgüvenin örnekleri
  * zekâ, kavrama hızı ya da bir öğretme biçimi gibi okunmaz ("Çabuk öğrenirim", "Birçok sorunun cevabını bilirim", "Kendimi
  * ortalama biri sayarım" ve "Sıradan biri olduğumu biliyorum" maddelerine bilerek dayanılmadı); örnekler düşünme biçimini
@@ -14,15 +17,19 @@ import type { SurveyDaily } from './types';
  * kendimi yıkılmış hissederim", h07 "Başkalarının yanında sık sık kendimi huzursuz hissederim", a10 "İhtiyaç sahiplerini
  * düşünmemeye çalışırım", g08 "Küfürlü konuşurum", l06 "İnsanların özünde kötü olduğuna inanırım", q4_07 "İnsanları dış
  * görünüşlerine göre yargılarım") dayanılmadı. Her satırın dayandığı maddeler `from`'dadır.
- * Maddeye doğrudan dayanmayan, raporun metninden gelen uzantılar: sıcaklıkta "kendine zaman bırakmayı unutabilirsin";
- * atılganlıkta "uyum içinde katkı" ve "başkalarının fikrine de yer açmak"; neşe ve canlılıkta sessiz bir akşamın çekici
+ * Maddeye doğrudan dayanmayan uzantılar: sıcaklıkta "kendine zaman bırakmayı unutabilirsin" (raporun metni); atılganlıkta
+ * "uyum içinde katkı" ve "başkalarının fikrine de yer açmak" (raporun metni); neşe ve canlılıkta sessiz bir akşamın çekici
  * gelmemesi (kalabalık ve gürültülü ortamları sevmenin öbür yüzü); kurallara bağlılıkta bir kurala karşı çıkmanın tartışmaya
- * yol açabilmesi ve kuralı esneten birinin rahatsız etmesi; sosyal rahatlıkta "sözü başkalarına bırakmak da iyi gelebilir";
- * temkinlilikte "hayal kırıklıklarından koruyabilir", "yakınlık kurmayı kolaylaştırabilir" ve kişisel bilgileri paylaşmadan
- * önce beklemek; kendini kolay açmamada "kendine ait bir alan" ve "yükünü hafifletebilir"; düzen ve titizlikte mükemmellik
- * için uğraşmanın işi uzatması; gerginlikte "biraz durup sakinleşmek" ve "sakin bir dille söylemek".
- * Gerginliğin yüksek ucu: maddelerin hepsi bu ucu zorluk olarak sorar; maddede olmayan bir güçlü yan (raporun "işlerin doğru
- * yapılmasını önemsemek" yorumu gibi) yazılmadı, yanına bir dayanak kondu.
+ * yol açabilmesi ve kuralı esneten birinin rahatsız etmesi; sosyal rahatlıkta "sözü başkalarına bırakmak da iyi gelebilir"
+ * (Liderlik Eğilimleri raporunun çok konuşma üzerine araştırma notu); temkinlilikte "hayal kırıklıklarından koruyabilir",
+ * "yakınlık kurmayı kolaylaştırabilir" (raporun metni) ve "bazen önce sorgulamak iyi gelebilir" (l05'in düşük cevabı);
+ * kendini kolay açmamada "kendine ait bir alan" ve "yükünü hafifletebilir" (raporun metni); düzen ve titizlikte mükemmellik
+ * için uğraşmanın işi uzatması; gerginlikte "biraz durup sakinleşmek"; endişeye yatkınlıkta "kendine biraz zaman tanımak".
+ * Kurallara bağlılıkta g10 ("Kuralların açığını bulmayı bilirim") hile gibi okunmasın diye "boşlukları fark etmek" diye yazılır.
+ * Yetişkin evde yalnız yaşıyor olabilir: evdekilerden söz eden ev satırlarının yerine yetişkine kendi satırı (`adult.home`:
+ * "yakınların", "yaşadığın yer") yazılır; misafir gelmesi ve evdeki bir plan herkese uyduğu için ortak kalır. Mezun (13.
+ * sınıf) okul satırlarını "Okulda ya da derslerde" başlığıyla gördüğü için o satırlarda "sınıf" yoktur ("derste", "ders
+ * arkadaşı", "yeni bir grup").
  */
 export const onAltiFaktorDaily: SurveyDaily = {
   kind: 'survey',
@@ -52,38 +59,41 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'Birlikte çalıştığın kişilerin sorunlarına girmeden işine odaklanabilirsin.',
+            home: 'Yakınlarına uzun zaman ayırmak yerine kendi işlerine öncelik verebilirsin.',
           },
         },
         average: {
           from: { school: ['a05'], friends: ['a04'], home: ['a07'], work: ['a07'] },
           student: {
-            school: 'Bazen üzgün bir sınıf arkadaşının moralini yükseltmeye çalışabilir, bazen kendi işine dönebilirsin.',
+            school: 'Bazen üzgün bir ders arkadaşının moralini yükseltmeye çalışabilir, bazen kendi işine dönebilirsin.',
             friends: 'Bazı arkadaşlarının hayatıyla yakından ilgilenebilir, bazılarıyla daha az ilgilenebilirsin.',
             home: 'Evdekilere bazen uzun zaman ayırabilir, yoğun günlerde kendi işine öncelik verebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazen üzgün bir sınıf arkadaşının moralini yükseltmeye çalışabilir, bazen kendi işine dönebilir.',
+            school: 'Çocuğunuz bazen üzgün bir ders arkadaşının moralini yükseltmeye çalışabilir, bazen kendi işine dönebilir.',
             friends: 'Bazı arkadaşlarının hayatıyla yakından ilgilenebilir, bazılarıyla daha az ilgilenebilir.',
             home: 'Evdekilere bazen uzun zaman ayırabilir, yoğun günlerde kendi işine öncelik verebilir.',
           },
           adult: {
             work: 'Bazı günler başkalarına zaman ayırabilir, bazı günler kendi işine öncelik verebilirsin.',
+            home: 'Yakınlarına bazen uzun zaman ayırabilir, yoğun günlerde kendi işine öncelik verebilirsin.',
           },
         },
         high: {
           from: { school: ['a05', 'a01'], friends: ['a02'], home: ['a07'], work: ['a06', 'a07'] },
           student: {
-            school: 'Üzgün bir sınıf arkadaşının moralini yükseltmeye çalışabilirsin.',
+            school: 'Üzgün bir ders arkadaşının moralini yükseltmeye çalışabilirsin.',
             friends: 'Arkadaşlarını bir araya getirmek sana keyifli gelebilir.',
             home: 'Evdekilere zaman ayırırken kendine zaman bırakmayı unutabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz üzgün bir sınıf arkadaşının moralini yükseltmeye çalışabilir.',
+            school: 'Çocuğunuz üzgün bir ders arkadaşının moralini yükseltmeye çalışabilir.',
             friends: 'Arkadaşlarını bir araya getirmek çocuğunuzun hoşuna gidebilir.',
             home: 'Evdekilere zaman ayırırken kendine zaman bırakmayı unutabilir.',
           },
           adult: {
-            work: 'Birlikte çalıştığın kişilerin yanında rahat hissetmesini sağlamaya çalışabilirsin.',
+            work: 'Birlikte çalıştığın kişilerin senin yanında rahat hissetmesi için çaba gösterebilirsin.',
+            home: 'Yakınlarına zaman ayırırken kendine zaman bırakmayı unutabilirsin.',
           },
         },
       },
@@ -93,25 +103,26 @@ export const onAltiFaktorDaily: SurveyDaily = {
      * etme eğilimindeyim", b04 "Aklımı kullanırım", b05 "Çabuk öğrenirim", b06 "Başkalarının öne sürdüğü görüşlere karşı görüş
      * getiririm", b07 "Bir şey yapmadan önce üzerinde düşünürüm", b08 "Bir şeyin artılarını ve eksilerini tartarım"; ters: b09
      * "Kendimi ortalama biri sayarım", b10 "Kafam çabuk karışır", b11 "Sıradan biri olduğumu biliyorum", b12 "Kelime
-     * dağarcığım dardır", b13 "Okurken zor kelimeleri atlarım". Uçlar zekâ değil, kişinin düşüncesine güvenini anlatır.
+     * dağarcığım dardır", b13 "Okurken zor kelimeleri atlarım". Uçlar zekâ değil, kişinin düşünme gücüne güvenini anlatır.
+ * Gelişim tonu: düşük uca kolaylık (ör. artıları ve eksileri tartmamayı "hemen karar vermek" diye), yüksek uca bedel yazılmaz.
      */
     intellect: {
-      poles: { low: 'Düşüncesine pek güvenmeyen', high: 'Düşüncesine güvenen' },
+      poles: { low: 'Düşünme gücüne az güvenen', high: 'Düşünme gücüne güvenen' },
       bands: {
         low: {
-          from: { school: ['b10'], friends: ['b08'], home: ['b13'], work: ['b08', 'b07'] },
+          from: { school: ['b10'], friends: ['b01'], home: ['b13'], work: ['b10'] },
           student: {
             school: 'Derste yeni bir konu anlatılırken bazen kafanın karıştığını hissedebilirsin.',
-            friends: 'Arkadaşlarınla bir plan seçerken uzun uzun tartmadan hemen karar verebilirsin.',
+            friends: 'Arkadaşlarınla bir konuyu konuşurken yorumlarının yerinde olduğundan pek emin olmayabilirsin.',
             home: 'Okurken zor bir kelimeye takılınca onu atlayıp devam edebilirsin.',
           },
           parent: {
             school: 'Derste yeni bir konu anlatılırken çocuğunuz bazen kafasının karıştığını hissedebilir.',
-            friends: 'Arkadaşlarıyla bir plan seçerken uzun uzun tartmadan hemen karar verebilir.',
+            friends: 'Arkadaşlarıyla bir konuyu konuşurken yorumlarının yerinde olduğundan pek emin olmayabilir.',
             home: 'Okurken zor bir kelimeye takılınca onu atlayıp devam edebilir.',
           },
           adult: {
-            work: 'Bir işte uzun uzun tartmadan hemen karar verebilirsin.',
+            work: 'Bir işte yeni ve karışık bir konuyla karşılaşınca kafanın karıştığını hissedebilirsin.',
           },
         },
         average: {
@@ -134,12 +145,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
           from: { school: ['b03', 'b06'], friends: ['b08'], home: ['b07'], work: ['b08', 'b03'] },
           student: {
             school: 'Derste bir konuyu ayrıntısıyla incelemek hoşuna gidebilir. Bir görüşe karşı görüş de getirebilirsin.',
-            friends: 'Arkadaşlarınla bir plan seçerken artılarını ve eksilerini tartmak isteyebilirsin; bu kararı biraz uzatabilir.',
+            friends: 'Arkadaşlarınla bir plan seçerken artılarını ve eksilerini tartmak isteyebilirsin.',
             home: 'Bir işe girişmeden önce üzerinde düşünmeyi seçebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz derste bir konuyu ayrıntısıyla incelemekten hoşlanabilir. Bir görüşe karşı görüş de getirebilir.',
-            friends: 'Arkadaşlarıyla bir plan seçerken artılarını ve eksilerini tartmak isteyebilir; bu kararı biraz uzatabilir.',
+            friends: 'Arkadaşlarıyla bir plan seçerken artılarını ve eksilerini tartmak isteyebilir.',
             home: 'Bir işe girişmeden önce üzerinde düşünmeyi seçebilir.',
           },
           adult: {
@@ -162,12 +173,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
           from: { school: ['c10', 'c05'], friends: ['c06'], home: ['c03'], work: ['c10', 'c05'] },
           student: {
             school: 'Bir sınavda işler yolunda gitmeyince cesaretin çabuk kırılabilir; bunu birine anlatmak sana iyi gelebilir.',
-            friends: 'Arkadaşlarınla geçen bir günde duyguların sık sık iniş çıkış yapabilir; bunları paylaşmak seni rahatlatabilir.',
+            friends: 'Arkadaşlarınla geçen bir günde duyguların iniş çıkış yapabilir; bunları paylaşmak seni rahatlatabilir.',
             home: 'Bir aksilikten sonra toparlanmak zaman alabilir; seni üzen şeyi güvendiğin biriyle konuşmak iyi gelebilir.',
           },
           parent: {
             school: 'Bir sınavda işler yolunda gitmeyince çocuğunuzun cesareti çabuk kırılabilir; bunu birine anlatmak ona iyi gelebilir.',
-            friends: 'Arkadaşlarıyla geçen bir günde duyguları sık sık iniş çıkış yapabilir; bunları paylaşmak onu rahatlatabilir.',
+            friends: 'Arkadaşlarıyla geçen bir günde duyguları iniş çıkış yapabilir; bunları paylaşmak onu rahatlatabilir.',
             home: 'Bir aksilikten sonra toparlanması zaman alabilir; onu üzen şeyi güvendiği biriyle konuşmak iyi gelebilir.',
           },
           adult: {
@@ -195,12 +206,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
           student: {
             school: 'Zor bir sınav haftasında da çoğu zaman sakin kalabilirsin.',
             friends: 'Arkadaşlarınla yaşadığın bir aksiliği çoğu zaman kolayca atlatabilirsin.',
-            home: 'Çoğu zaman kendinle barışık hissedebilirsin; yine de seni üzen bir şeyi paylaşmak iyi gelebilir.',
+            home: 'Çoğu gün kendinle barışık hissedebilirsin; hüzünlü günlerin seyrek olabilir.',
           },
           parent: {
             school: 'Çocuğunuz zor bir sınav haftasında da çoğu zaman sakin kalabilir.',
             friends: 'Arkadaşlarıyla yaşadığı bir aksiliği çoğu zaman kolayca atlatabilir.',
-            home: 'Çoğu zaman kendisiyle barışık hissedebilir; yine de onu üzen bir şeyi paylaşmak iyi gelebilir.',
+            home: 'Çoğu gün kendisiyle barışık hissedebilir; hüzünlü günleri seyrek olabilir.',
           },
           adult: {
             work: 'İşler yolunda gitmediğinde de çoğu zaman kolay kolay bunalmayabilirsin.',
@@ -231,6 +242,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte kararları başkalarına bırakıp verilen yöne uyabilirsin.',
+            home: 'Yakınların senin yerine bir karar verdiğinde buna çoğu zaman ses çıkarmayabilirsin.',
           },
         },
         average: {
@@ -247,6 +259,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bazı işlerde idareyi ele alabilir, bazılarında yolu başkalarının göstermesini bekleyebilirsin.',
+            home: 'Yakınlarının bir kararına bazen itiraz edebilir, bazen sesini çıkarmayabilirsin.',
           },
         },
         high: {
@@ -263,6 +276,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte idareyi ele alabilir, gerektiğinde sert kararlar alabilirsin.',
+            home: 'Yakınlarınla bir karar verirken kendi fikrini öne koyabilirsin; başkalarının fikrine de yer açmak iyi gelebilir.',
           },
         },
       },
@@ -291,6 +305,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'İş arasında şakalaşmak yerine sakin ve ciddi bir ortamı seçebilirsin.',
+            home: 'Yüksek sesle müzik çalan bir ortamda kısa sürede rahatsız olabilirsin.',
           },
         },
         average: {
@@ -312,12 +327,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
         high: {
           from: { school: ['f03'], friends: ['f05', 'f03'], home: ['f04', 'f10'], work: ['f03'] },
           student: {
-            school: 'Ders arasında çok şaka yapabilir, çevrene neşe katabilirsin.',
+            school: 'Ders arasında çok şaka yapmak sana keyifli gelebilir.',
             friends: 'Arkadaşlarını şakalarınla eğlendirmek hoşuna gidebilir.',
             home: 'Sessiz bir akşam sana bir süre sonra pek çekici gelmeyebilir; müzik ya da kalabalık isteyebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz ders arasında çok şaka yapabilir, çevresine neşe katabilir.',
+            school: 'Çocuğunuz ders arasında çok şaka yapmaktan keyif alabilir.',
             friends: 'Arkadaşlarını şakalarıyla eğlendirmek hoşuna gidebilir.',
             home: 'Sessiz bir akşam ona bir süre sonra pek çekici gelmeyebilir; müzik ya da kalabalık isteyebilir.',
           },
@@ -339,48 +354,51 @@ export const onAltiFaktorDaily: SurveyDaily = {
           from: { school: ['g06', 'g09'], friends: ['g10'], home: ['g06', 'g09'], work: ['g09'] },
           student: {
             school: 'Bir öğretmenin koyduğu kuralı olduğu gibi kabul etmek yerine sorgulayabilirsin.',
-            friends: 'Bir oyunda kuralların açığını bulmak sana keyifli gelebilir.',
+            friends: 'Bir oyunun kurallarındaki boşlukları fark etmek sana keyifli gelebilir.',
             home: 'Evdekilerin koyduğu bir kurala karşı çıkabilirsin; bu bazen tartışmaya yol açabilir.',
           },
           parent: {
             school: 'Çocuğunuz bir öğretmenin koyduğu kuralı olduğu gibi kabul etmek yerine sorgulayabilir.',
-            friends: 'Bir oyunda kuralların açığını bulmak ona keyifli gelebilir.',
+            friends: 'Bir oyunun kurallarındaki boşlukları fark etmek ona keyifli gelebilir.',
             home: 'Evdekilerin koyduğu bir kurala karşı çıkabilir; bu bazen tartışmaya yol açabilir.',
           },
           adult: {
             work: 'Bir işte yukarıdan gelen bir karara karşı çıkabilir, onu sorgulayabilirsin.',
+            home: 'Yaşadığın yerde konan bir kurala karşı çıkabilirsin; bu bazen tartışmaya yol açabilir.',
           },
         },
         average: {
           from: { school: ['g02', 'g09'], friends: ['g07'], home: ['g04', 'g06'], work: ['g02'] },
           student: {
-            school: 'Sınıftaki kurallara çoğu zaman uyabilir, bazen birini sorgulayabilirsin.',
+            school: 'Derste konan kurallara çoğu zaman uyabilir, bazen birini sorgulayabilirsin.',
             friends: 'Bir oyunda kurallara çoğu zaman uyabilir, bazen onları esnetebilirsin.',
             home: 'Evdekilerin kurallarına çoğu zaman uyabilir, bazılarına karşı çıkabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıftaki kurallara çoğu zaman uyabilir, bazen birini sorgulayabilir.',
+            school: 'Çocuğunuz derste konan kurallara çoğu zaman uyabilir, bazen birini sorgulayabilir.',
             friends: 'Bir oyunda kurallara çoğu zaman uyabilir, bazen onları esnetebilir.',
             home: 'Evdekilerin kurallarına çoğu zaman uyabilir, bazılarına karşı çıkabilir.',
           },
           adult: {
             work: 'Bir işte kurallara çoğu zaman uyabilir, bazen bir kuralı esnetebilirsin.',
+            home: 'Yaşadığın yerdeki kurallara çoğu zaman uyabilir, bazılarına karşı çıkabilirsin.',
           },
         },
         high: {
           from: { school: ['g02', 'g07'], friends: ['g07'], home: ['g04'], work: ['g02', 'g04'] },
           student: {
-            school: 'Sınıftaki kurallara uymaya çalışabilir, kuralları çiğnemekten uzak durabilirsin.',
+            school: 'Derste konan kurallara uymaya çalışabilir, kuralları çiğnemekten uzak durabilirsin.',
             friends: 'Bir oyunda biri kuralı esnetmek isteyince bu seni rahatsız edebilir.',
             home: 'Evdekilerin koyduğu kurallara saygı gösterebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıftaki kurallara uymaya çalışabilir, kuralları çiğnemekten uzak durabilir.',
+            school: 'Çocuğunuz derste konan kurallara uymaya çalışabilir, kuralları çiğnemekten uzak durabilir.',
             friends: 'Bir oyunda biri kuralı esnetmek isteyince bu onu rahatsız edebilir.',
             home: 'Evdekilerin koyduğu kurallara saygı gösterebilir.',
           },
           adult: {
             work: 'Bir işte kurallara uymaya çalışabilir, sorumlu kişilere saygı gösterebilirsin.',
+            home: 'Yaşadığın yerde konan kurallara saygı gösterebilirsin.',
           },
         },
       },
@@ -393,17 +411,17 @@ export const onAltiFaktorDaily: SurveyDaily = {
      * olurum", h10 "Kalabalıkta geri planda kalmayı tercih ederim".
      */
     friendliness: {
-      poles: { low: 'Yeni insanlarla çekingen', high: 'İnsanların arasında rahat' },
+      poles: { low: 'Tanışırken çekingen', high: 'İnsanların arasında rahat' },
       bands: {
         low: {
           from: { school: ['h09', 'h06'], friends: ['h10'], home: ['h05'], work: ['h06', 'h09'] },
           student: {
-            school: 'Yeni bir sınıfta tanımadığın kişilerin yanında sessiz kalabilir, onlara yaklaşmayı zor bulabilirsin.',
+            school: 'Yeni bir grupta tanımadığın kişilerin yanında sessiz kalabilir, onlara yaklaşmayı zor bulabilirsin.',
             friends: 'Kalabalık bir grupta geri planda kalıp olanları izlemek sana daha rahat gelebilir.',
             home: 'Eve misafir gelince sohbeti başkasının başlatmasını bekleyebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz yeni bir sınıfta tanımadığı kişilerin yanında sessiz kalabilir, onlara yaklaşmayı zor bulabilir.',
+            school: 'Çocuğunuz yeni bir grupta tanımadığı kişilerin yanında sessiz kalabilir, onlara yaklaşmayı zor bulabilir.',
             friends: 'Kalabalık bir grupta geri planda kalıp olanları izlemek ona daha rahat gelebilir.',
             home: 'Eve misafir gelince sohbeti başkasının başlatmasını bekleyebilir.',
           },
@@ -414,12 +432,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
         average: {
           from: { school: ['h05', 'h09'], friends: ['h02', 'h10'], home: ['h03'], work: ['h04', 'h06'] },
           student: {
-            school: 'Tanıdığın sınıf arkadaşlarınla rahatça sohbet edebilir, tanımadıklarının yanında önce sessiz kalabilirsin.',
+            school: 'Tanıdığın ders arkadaşlarınla rahatça sohbet edebilir, tanımadıklarının yanında önce sessiz kalabilirsin.',
             friends: 'Kalabalık bir ortamda bazen pek çok kişiyle konuşabilir, bazen geri planda kalmayı seçebilirsin.',
             home: 'Eve misafir gelince bazen ilgi odağı olabilir, bazen bir köşede dinlemeyi seçebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz tanıdığı sınıf arkadaşlarıyla rahatça sohbet edebilir, tanımadıklarının yanında önce sessiz kalabilir.',
+            school: 'Çocuğunuz tanıdığı ders arkadaşlarıyla rahatça sohbet edebilir, tanımadıklarının yanında önce sessiz kalabilir.',
             friends: 'Kalabalık bir ortamda bazen pek çok kişiyle konuşabilir, bazen geri planda kalmayı seçebilir.',
             home: 'Eve misafir gelince bazen ilgi odağı olabilir, bazen bir köşede dinlemeyi seçebilir.',
           },
@@ -430,12 +448,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
         high: {
           from: { school: ['h04', 'h05'], friends: ['h02'], home: ['h03'], work: ['h05', 'h02'] },
           student: {
-            school: 'Yeni bir sınıfta sohbeti başlatıp kolayca arkadaş edinebilirsin.',
+            school: 'Yeni bir grupta sohbeti başlatıp kolayca arkadaş edinebilirsin.',
             friends: 'Kalabalık bir ortamda pek çok farklı kişiyle konuşmak sana rahat gelebilir.',
             home: 'Eve misafir gelince ilgi odağı olmak seni rahatsız etmeyebilir; bazen sözü başkalarına bırakmak da iyi gelebilir.',
           },
           parent: {
-            school: 'Çocuğunuz yeni bir sınıfta sohbeti başlatıp kolayca arkadaş edinebilir.',
+            school: 'Çocuğunuz yeni bir grupta sohbeti başlatıp kolayca arkadaş edinebilir.',
             friends: 'Kalabalık bir ortamda pek çok farklı kişiyle konuşmak ona rahat gelebilir.',
             home: 'Eve misafir gelince ilgi odağı olmak onu rahatsız etmeyebilir; bazen sözü başkalarına bırakmak da iyi gelebilir.',
           },
@@ -500,6 +518,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'Gün içinde verdiğin duygusal tepkileri çoğu zaman fark edebilirsin.',
+            home: 'Duygusal bir film izlerken gözlerin dolabilir; sonra film hakkında biriyle konuşmak sana keyifli gelebilir.',
           },
         },
       },
@@ -515,16 +534,16 @@ export const onAltiFaktorDaily: SurveyDaily = {
       poles: { low: 'İnsanlara kolayca güvenen', high: 'İnsanlara karşı temkinli' },
       bands: {
         low: {
-          from: { school: ['l07'], friends: ['l01'], home: ['l08'], work: ['l07', 'l08'] },
+          from: { school: ['l07'], friends: ['l01'], home: ['l07', 'l05'], work: ['l07', 'l08'] },
           student: {
-            school: 'Yeni bir sınıf arkadaşının söylediklerine kolayca güvenebilirsin; bu yakınlık kurmayı kolaylaştırabilir.',
+            school: 'Yeni bir ders arkadaşının söylediklerine kolayca güvenebilirsin; bu yakınlık kurmayı kolaylaştırabilir.',
             friends: 'Bir arkadaşın seni kırsa da onu affedebilirsin.',
-            home: 'İnternette yeni tanıştığın birine kolayca güvenebilirsin; kişisel bilgilerini paylaşmadan önce biraz beklemek iyi gelebilir.',
+            home: 'Duyduğun bir sözü çoğu zaman hemen doğru kabul edebilirsin; bazen önce sorgulamak iyi gelebilir.',
           },
           parent: {
-            school: 'Çocuğunuz yeni bir sınıf arkadaşının söylediklerine kolayca güvenebilir; bu yakınlık kurmayı kolaylaştırabilir.',
+            school: 'Çocuğunuz yeni bir ders arkadaşının söylediklerine kolayca güvenebilir; bu yakınlık kurmayı kolaylaştırabilir.',
             friends: 'Bir arkadaşı onu kırsa da affedebilir.',
-            home: 'İnternette yeni tanıştığı birine kolayca güvenebilir; kişisel bilgilerini paylaşmadan önce biraz beklemesi iyi gelebilir.',
+            home: 'Duyduğu bir sözü çoğu zaman hemen doğru kabul edebilir; bazen önce sorgulamak iyi gelebilir.',
           },
           adult: {
             work: 'Birlikte çalıştığın kişilerin söylediklerine kolayca güvenebilirsin.',
@@ -533,12 +552,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
         average: {
           from: { school: ['l03', 'l08'], friends: ['l01'], home: ['l05', 'l07'], work: ['l03', 'l08'] },
           student: {
-            school: 'Sınıftaki bazı kişilere hemen güvenebilir, bazılarına karşı temkinli kalabilirsin.',
+            school: 'Ders arkadaşlarından bazılarına hemen güvenebilir, bazılarına karşı temkinli kalabilirsin.',
             friends: 'Bir arkadaşını bazen kolayca affedebilir, bazen affetmek için zaman isteyebilirsin.',
             home: 'Duyduğun sözlerin bazılarına hemen inanabilir, bazılarını önce sorgulayabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıftaki bazı kişilere hemen güvenebilir, bazılarına karşı temkinli kalabilir.',
+            school: 'Çocuğunuz ders arkadaşlarından bazılarına hemen güvenebilir, bazılarına karşı temkinli kalabilir.',
             friends: 'Bir arkadaşını bazen kolayca affedebilir, bazen affetmek için zaman isteyebilir.',
             home: 'Duyduğu sözlerin bazılarına hemen inanabilir, bazılarını önce sorgulayabilir.',
           },
@@ -549,12 +568,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
         high: {
           from: { school: ['l03', 'l02'], friends: ['l01'], home: ['l07', 'l05'], work: ['l02', 'l03'] },
           student: {
-            school: 'Yeni bir sınıfta tanıştığın birine önce temkinli yaklaşabilirsin; bu seni bazı hayal kırıklıklarından koruyabilir.',
+            school: 'Yeni bir grupta tanıştığın birine önce temkinli yaklaşabilirsin; bu seni bazı hayal kırıklıklarından koruyabilir.',
             friends: 'Bir arkadaşın seni kırınca onu affetmek sana zor gelebilir.',
             home: 'Duyduğun bir sözü hemen doğru kabul etmek yerine önce sorgulayabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz yeni bir sınıfta tanıştığı birine önce temkinli yaklaşabilir; bu onu bazı hayal kırıklıklarından koruyabilir.',
+            school: 'Çocuğunuz yeni bir grupta tanıştığı birine önce temkinli yaklaşabilir; bu onu bazı hayal kırıklıklarından koruyabilir.',
             friends: 'Bir arkadaşı onu kırınca affetmek ona zor gelebilir.',
             home: 'Duyduğu bir sözü hemen doğru kabul etmek yerine önce sorgulayabilir.',
           },
@@ -635,44 +654,46 @@ export const onAltiFaktorDaily: SurveyDaily = {
         low: {
           from: { school: ['n10', 'n06'], friends: ['n08'], home: ['n09', 'n07'], work: ['n06', 'n10'] },
           student: {
-            school: 'Sınıfta kendinle ilgili bir şeyi anlatmaktan çekinmeyebilirsin.',
+            school: 'Derste kendinle ilgili bir şeyi anlatmaktan çekinmeyebilirsin.',
             friends: 'En özel düşüncelerini yeni tanıştığın birine de anlatabilirsin; biraz beklemek iyi gelebilir.',
             home: 'Evdekilere duygularını açıkça gösterebilirsin; bu yakınlık kurmayı kolaylaştırabilir.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfta kendisiyle ilgili bir şeyi anlatmaktan çekinmeyebilir.',
+            school: 'Çocuğunuz derste kendisiyle ilgili bir şeyi anlatmaktan çekinmeyebilir.',
             friends: 'En özel düşüncelerini yeni tanıştığı birine de anlatabilir; biraz beklemesi iyi gelebilir.',
             home: 'Evdekilere duygularını açıkça gösterebilir; bu yakınlık kurmayı kolaylaştırabilir.',
           },
           adult: {
             work: 'Birlikte çalıştığın kişilere kendinle ilgili şeyleri açıkça anlatabilirsin.',
+            home: 'Sevdiğin kişilere duygularını açıkça gösterebilirsin; bu yakınlık kurmayı kolaylaştırabilir.',
           },
         },
         average: {
           from: { school: ['n10', 'n05'], friends: ['n06'], home: ['n09', 'n04'], work: ['n01', 'n10'] },
           student: {
-            school: 'Sınıfta bazen kendinden söz edebilir, bazen düşüncelerini kendine saklayabilirsin.',
+            school: 'Derste bazen kendinden söz edebilir, bazen düşüncelerini kendine saklayabilirsin.',
             friends: 'Kendini bazı arkadaşlarına açabilir, bazılarına pek bir şey anlatmayabilirsin.',
             home: 'Evdekilere bazen duygularını belli edebilir, bazen onları içine atabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfta bazen kendinden söz edebilir, bazen düşüncelerini kendine saklayabilir.',
+            school: 'Çocuğunuz derste bazen kendinden söz edebilir, bazen düşüncelerini kendine saklayabilir.',
             friends: 'Kendini bazı arkadaşlarına açabilir, bazılarına pek bir şey anlatmayabilir.',
             home: 'Evdekilere bazen duygularını belli edebilir, bazen onları içine atabilir.',
           },
           adult: {
             work: 'Bazı iş arkadaşlarına kendinden söz edebilir, bazılarına pek bir şey anlatmayabilirsin.',
+            home: 'Yakınlarına bazen duygularını belli edebilir, bazen onları içine atabilirsin.',
           },
         },
         high: {
           from: { school: ['n01', 'n05'], friends: ['n02'], home: ['n04'], work: ['n05', 'n01'] },
           student: {
-            school: 'Sınıfta kendinle ilgili pek az şey anlatabilirsin; bu sana kendine ait bir alan bırakabilir.',
+            school: 'Derste kendinle ilgili pek az şey anlatabilirsin; bu sana kendine ait bir alan bırakabilir.',
             friends: 'Yeni tanıştığın kişilerin seni tanıması zaman alabilir.',
             home: 'Seni üzen bir şeyi içine atabilirsin; güvendiğin biriyle paylaşmak yükünü hafifletebilir.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfta kendisiyle ilgili pek az şey anlatabilir; bu ona kendine ait bir alan bırakabilir.',
+            school: 'Çocuğunuz derste kendisiyle ilgili pek az şey anlatabilir; bu ona kendine ait bir alan bırakabilir.',
             friends: 'Yeni tanıştığı kişilerin onu tanıması zaman alabilir.',
             home: 'Onu üzen bir şeyi içine atabilir; güvendiği biriyle paylaşmak yükünü hafifletebilir.',
           },
@@ -722,19 +743,20 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işteki hatanı bazen düşünebilir, çoğu zaman olup biteni geride bırakabilirsin.',
+            home: 'Yakınlarına “hayır” dediğinde bazen kendini suçlu hissedebilirsin.',
           },
         },
         high: {
           from: { school: ['o01'], friends: ['o03'], home: ['o09', 'o05'], work: ['o01', 'o04'] },
           student: {
-            school: 'Bir sınav yaklaşırken yanlış yapmaktan korkabilirsin. Bunu güvendiğin biriyle konuşmak iyi gelebilir.',
-            friends: 'Bir arkadaşının sözüyle gönlün çabuk kırılabilir; bunu ona söylemek seni rahatlatabilir.',
-            home: 'Olup bitmiş bir şeyi bir süre kafana takabilirsin; seni üzen şeyi paylaşmak iyi gelebilir.',
+            school: 'Derste bir soruya cevap verirken yanlış yapmaktan korkabilirsin. Bunu güvendiğin biriyle konuşmak iyi gelebilir.',
+            friends: 'Bir arkadaşının sözü seni çabuk kırabilir; bu kırgınlık zamanla hafifleyebilir.',
+            home: 'Olup bitmiş bir şeyi bir süre kafana takabilirsin; kendine biraz zaman tanımak iyi gelebilir.',
           },
           parent: {
-            school: 'Bir sınav yaklaşırken çocuğunuz yanlış yapmaktan korkabilir. Bunu güvendiği biriyle konuşmak iyi gelebilir.',
-            friends: 'Bir arkadaşının sözüyle gönlü çabuk kırılabilir; bunu ona söylemek onu rahatlatabilir.',
-            home: 'Olup bitmiş bir şeyi bir süre kafasına takabilir; onu üzen şeyi paylaşmak iyi gelebilir.',
+            school: 'Derste bir soruya cevap verirken çocuğunuz yanlış yapmaktan korkabilir. Bunu güvendiği biriyle konuşmak iyi gelebilir.',
+            friends: 'Bir arkadaşının sözü çocuğunuzu çabuk kırabilir; bu kırgınlık zamanla hafifleyebilir.',
+            home: 'Olup bitmiş bir şeyi bir süre kafasına takabilir; kendine biraz zaman tanıması iyi gelebilir.',
           },
           adult: {
             work: 'Bir işte yanlış bir şey yapmaktan korkabilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
@@ -841,6 +863,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bazı işlerde takım çalışmasından hoşlanabilir, bazılarında tek başına çalışmayı seçebilirsin.',
+            home: 'Bazı günler sessizlik, bazı günler yakınlarınla sohbet isteyebilirsin.',
           },
         },
         high: {
@@ -934,15 +957,16 @@ export const onAltiFaktorDaily: SurveyDaily = {
           student: {
             school: 'Grup çalışmasında bir arkadaşın hata yapınca kolay kolay sinirlenmeyebilirsin.',
             friends: 'Bir arkadaşınla tartıştıktan sonra affedip unutmaya çalışabilirsin.',
-            home: 'Evdekilerin her biri için iyi bir sözün olabilir. Rahatsız olduğun bir şeyi sakin bir dille söylemek de iyi gelebilir.',
+            home: 'Evdekilerin her biri hakkında iyi bir söz söyleyebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında bir arkadaşı hata yapınca kolay kolay sinirlenmeyebilir.',
             friends: 'Bir arkadaşıyla tartıştıktan sonra affedip unutmaya çalışabilir.',
-            home: 'Evdekilerin her biri için iyi bir sözü olabilir. Onu rahatsız eden bir şeyi sakin bir dille söylemek de iyi gelebilir.',
+            home: 'Evdekilerin her biri hakkında iyi bir söz söyleyebilir.',
           },
           adult: {
             work: 'Bir işte biri hata yapınca kolay kolay sinirlenmeyip affetmeye çalışabilirsin.',
+            home: 'Yakınlarının her biri hakkında iyi bir söz söyleyebilirsin.',
           },
         },
         average: {

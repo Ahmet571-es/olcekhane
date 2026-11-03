@@ -1,21 +1,25 @@
 import type { SurveyDaily } from './types';
 
 /**
- * Liderlik Eğilimleri: günlük hayatta nasıl görünür (9. sınıftan yetişkine). Ton: özellik (lib/reports/daily-parts.ts).
+ * Liderlik Eğilimleri: günlük hayatta nasıl görünür (9. sınıftan yetişkine). Ton (lib/reports/daily-parts.ts): öne çıkıp yön
+ * verme ve sosyal cesaret "özellik", kararlılık ve sorumluluk "gelişim" tonundadır (maddeler yalnızca düşük ucu zorluk olarak
+ * sorar; düşük uca uydurma bir kolaylık, yüksek uca uydurma bir bedel yazılmaz).
  * Rapor metinlerindeki ilkeler burada da geçerlidir (src/content/reports/liderlik-egilimleri.ts): örnekler eğilimleri
  * maddelerin söylediği gibi anlatır; liderlik becerisi, liderlik yeteneği ya da "lider olmaya uygun" olmak gibi bir şey
  * söylemez, kimseyi bir grupta sıraya koymaz ("ilk sen", "… kişi sen olabilirsin" yok); "lider", "liderlik" ve "beceri"
  * sözcükleri geçmez. Her yönün örnekleri yalnızca kendi maddelerinin konusundan söz eder: öne çıkıp yön vermenin örnekleri
  * topluluk önünde konuşmaktan ve işleri sürdürmekten, sosyal cesaretin örnekleri yön vermekten ve kararlardan, kararlılık ve
- * sorumluluğun örnekleri yön vermekten ve konuşmaktan söz etmez. "Liderlik yeteneğim var" (ces04) ve "Güçlü bir kişiliğim
+ * sorumluluğun örnekleri yön vermekten, ortak kararlardan ve konuşmaktan söz etmez (aynı sayfada iki kart çelişmesin:
+ * kar12'nin kararsızlığı kişinin kendi seçimiyle anlatılır). "Liderlik yeteneğim var" (ces04) ve "Güçlü bir kişiliğim
  * var" (ces05) maddelerine dayanılmadı (yetenek ve kişi tanımı gibi okunmasın). Her satırın dayandığı maddeler `from`'dadır.
  * Maddeye doğrudan dayanmayan, raporun metninden gelen uzantılar: yönü başkalarına bırakırken "işe katkı vermek" (raporun
  * düşük düzey metni), idareyi ele almanın "işlerin harekete geçmesine yardım" etmesi (raporun yüksek düzey metni), ilgi
  * odağı olmaktan rahatsız olmayanda "sözü başkalarına bırakmak da iyi gelebilir" (raporun çok konuşma üzerine araştırma
- * notu).
- * Kararlılık ve sorumluluğun düşük ucu: maddelerin hepsi bu ucu zorluk olarak sorar; maddede olmayan bir güçlü yan
- * uydurulmadı. Bu uçta tek kolaylık, planı değiştirmenin rahatsız etmemesidir (kar02'nin düşük cevabı; Beş Faktör'deki
- * sorumluluğun düşük ucuyla aynı yorum).
+ * notu). İkna maddesi (yon04) bir etki iddiası gibi okunmasın diye "kabul ettirmeye çalışabilirsin" diye yazılır (yon03'ün
+ * "çalışırım" dili).
+ * Yetişkin evde yalnız yaşıyor olabilir: evdekilerden söz eden ev satırlarının yerine yetişkine "yakınların" diyen kendi satırı
+ * (`adult.home`) yazılır. Mezun (13. sınıf) okul satırlarını "Okulda ya da derslerde" başlığıyla gördüğü için o satırlarda
+ * "sınıf" yoktur.
  */
 export const liderlikEgilimleriDaily: SurveyDaily = {
   kind: 'survey',
@@ -43,38 +47,41 @@ export const liderlikEgilimleriDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte yönü başkalarına bırakıp üzerine düşeni yapabilirsin.',
+            home: 'Yakınlarınla bir iş yapılırken yolu başkalarının göstermesini bekleyebilirsin.',
           },
         },
         average: {
           from: { school: ['yon01', 'yon05'], friends: ['yon04', 'yon06'], home: ['yon02'], work: ['yon01', 'yon06'] },
           student: {
             school: 'Bazı grup ödevlerinde idareyi ele alabilir, bazılarında yönü başkalarına bırakabilirsin.',
-            friends: 'Arkadaşlarınla plan yaparken bazen bir öneriyi kabul ettirebilir, bazen kararı başkalarına bırakabilirsin.',
+            friends: 'Arkadaşlarınla plan yaparken bazen önerini kabul ettirmeye çalışabilir, bazen kararı başkalarına bırakabilirsin.',
             home: 'Evdeki bazı işlerin başında olmak isteyebilir, bazılarını başkalarına bırakabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı grup ödevlerinde idareyi ele alabilir, bazılarında yönü başkalarına bırakabilir.',
-            friends: 'Arkadaşlarıyla plan yaparken bazen bir öneriyi kabul ettirebilir, bazen kararı başkalarına bırakabilir.',
+            friends: 'Arkadaşlarıyla plan yaparken bazen önerisini kabul ettirmeye çalışabilir, bazen kararı başkalarına bırakabilir.',
             home: 'Evdeki bazı işlerin başında olmak isteyebilir, bazılarını başkalarına bırakabilir.',
           },
           adult: {
             work: 'Bazı işlerde idareyi ele alabilir, bazılarında kararı başkalarına bırakabilirsin.',
+            home: 'Yakınlarınla yapılan bazı işlerin başında olmak isteyebilir, bazılarını başkalarına bırakabilirsin.',
           },
         },
         high: {
-          from: { school: ['yon01', 'yon02'], friends: ['yon04'], home: ['yon06'], work: ['yon01', 'yon02'] },
+          from: { school: ['yon01', 'yon02'], friends: ['yon04', 'yon03'], home: ['yon06'], work: ['yon01', 'yon02'] },
           student: {
             school: 'Bir grup ödevinde idareyi ele almak isteyebilirsin; bu işlerin harekete geçmesine yardım edebilir.',
-            friends: 'Arkadaşlarını bir plana katılmaya ikna edebilirsin.',
+            friends: 'Arkadaşlarınla bir plan yaparken kendi önerini kabul ettirmeye çalışabilirsin.',
             home: 'Evdekilerle bir plan yapılırken kararı başkalarına bırakmak sana zor gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz bir grup ödevinde idareyi ele almak isteyebilir; bu işlerin harekete geçmesine yardım edebilir.',
-            friends: 'Arkadaşlarını bir plana katılmaya ikna edebilir.',
+            friends: 'Arkadaşlarıyla bir plan yaparken kendi önerisini kabul ettirmeye çalışabilir.',
             home: 'Evdekilerle bir plan yapılırken kararı başkalarına bırakmak ona zor gelebilir.',
           },
           adult: {
             work: 'Bir işte idareyi ele almak isteyebilirsin; bu işlerin harekete geçmesine yardım edebilir.',
+            home: 'Yakınlarınla bir plan yapılırken kararı başkalarına bırakmak sana zor gelebilir.',
           },
         },
       },
@@ -93,12 +100,12 @@ export const liderlikEgilimleriDaily: SurveyDaily = {
         low: {
           from: { school: ['ces06', 'ces01'], friends: ['ces07', 'ces08'], home: ['ces09', 'ces07'], work: ['ces06', 'ces01'] },
           student: {
-            school: 'Sınıfın önünde konuşmak ya da hazırlıksız söz almak seni tedirgin edebilir.',
+            school: 'Derste herkesin önünde konuşmak ya da hazırlıksız söz almak seni tedirgin edebilir.',
             friends: 'Kalabalık bir grupta geri planda kalmayı seçebilir, tanımadığın birinin yanına gitmeyi zor bulabilirsin.',
             home: 'İlgi odağı olmadığın sakin bir ortam sana çoğu zaman iyi gelebilir.',
           },
           parent: {
-            school: 'Sınıfın önünde konuşmak ya da hazırlıksız söz almak çocuğunuzu tedirgin edebilir.',
+            school: 'Derste herkesin önünde konuşmak ya da hazırlıksız söz almak çocuğunuzu tedirgin edebilir.',
             friends: 'Kalabalık bir grupta geri planda kalmayı seçebilir, tanımadığı birinin yanına gitmeyi zor bulabilir.',
             home: 'İlgi odağı olmadığı sakin bir ortam ona çoğu zaman iyi gelebilir.',
           },
@@ -120,22 +127,24 @@ export const liderlikEgilimleriDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bazı topluluklarda rahatça söz alabilir, kalabalık önünde konuşurken bazen gerilebilirsin.',
+            home: 'Yakınlarınla bir sohbette bazen ilgi odağı olabilir, bazen geri planda kalmayı seçebilirsin.',
           },
         },
         high: {
           from: { school: ['ces06', 'ces01'], friends: ['ces08', 'ces03'], home: ['ces02'], work: ['ces01', 'ces06'] },
           student: {
-            school: 'Sınıfın önünde konuşmak seni çoğu zaman korkutmayabilir; hazırlıksız söz almak da sana kolay gelebilir.',
+            school: 'Derste herkesin önünde konuşmak seni çoğu zaman korkutmayabilir; hazırlıksız söz almak da sana kolay gelebilir.',
             friends: 'Tanımadığın birinin yanına gidip konuşmak sana zor gelmeyebilir.',
             home: 'Evdekilerin arasında ilgi odağı olmak seni rahatsız etmeyebilir; bazen sözü başkalarına bırakmak da iyi gelebilir.',
           },
           parent: {
-            school: 'Sınıfın önünde konuşmak çocuğunuzu çoğu zaman korkutmayabilir; hazırlıksız söz almak da ona kolay gelebilir.',
+            school: 'Derste herkesin önünde konuşmak çocuğunuzu çoğu zaman korkutmayabilir; hazırlıksız söz almak da ona kolay gelebilir.',
             friends: 'Tanımadığı birinin yanına gidip konuşmak ona zor gelmeyebilir.',
             home: 'Evdekilerin arasında ilgi odağı olmak onu rahatsız etmeyebilir; bazen sözü başkalarına bırakmak da iyi gelebilir.',
           },
           adult: {
             work: 'Bir toplulukta hazırlıksız söz almak ya da herkesin önünde konuşmak sana çoğu zaman kolay gelebilir.',
+            home: 'Yakınlarının arasında ilgi odağı olmak seni rahatsız etmeyebilir; bazen sözü başkalarına bırakmak da iyi gelebilir.',
           },
         },
       },
@@ -151,16 +160,16 @@ export const liderlikEgilimleriDaily: SurveyDaily = {
       poles: { low: 'İşi sürdürmekte zorlanan', high: 'İşi sonuna götüren' },
       bands: {
         low: {
-          from: { school: ['kar11', 'kar01'], friends: ['kar02'], home: ['kar12'], work: ['kar11', 'kar07'] },
+          from: { school: ['kar11', 'kar01'], friends: ['kar10'], home: ['kar12'], work: ['kar11', 'kar07'] },
           student: {
             school: 'Ödevlerini son ana bırakabilir, bir işe tam hazırlanmadan başlayabilirsin.',
-            friends: 'Arkadaşlarınla yaptığın bir planı değiştirmek seni pek rahatsız etmeyebilir.',
-            home: 'Evdekilerle bir şey seçerken karar vermek sana zor gelebilir.',
+            friends: 'Arkadaşlarına söz verdiğin bir işi sonuna kadar götürmek sana zor gelebilir.',
+            home: 'Boş bir akşamı nasıl geçireceğini seçerken karar vermek sana zor gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz ödevlerini son ana bırakabilir, bir işe tam hazırlanmadan başlayabilir.',
-            friends: 'Arkadaşlarıyla yaptığı bir planı değiştirmek onu pek rahatsız etmeyebilir.',
-            home: 'Evdekilerle bir şey seçerken karar vermek ona zor gelebilir.',
+            friends: 'Arkadaşlarına söz verdiği bir işi sonuna kadar götürmek ona zor gelebilir.',
+            home: 'Boş bir akşamı nasıl geçireceğini seçerken karar vermek ona zor gelebilir.',
           },
           adult: {
             work: 'Yapman gerekenleri son ana bırakabilirsin; iş sırasında dikkatin kolayca dağılabilir.',
@@ -187,12 +196,12 @@ export const liderlikEgilimleriDaily: SurveyDaily = {
           student: {
             school: 'Ödevlerine önceden hazırlanabilir, yapman gerekenleri son ana bırakmayabilirsin.',
             friends: 'Bir arkadaşına söz verdiğin bir işi sonuna kadar götürebilirsin.',
-            home: 'Bir günü planladığın gibi geçirmek isteyebilirsin; plan bozulunca canın sıkılabilir.',
+            home: 'Evdeki işler için yaptığın planı çoğu zaman uygulayabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz ödevlerine önceden hazırlanabilir, yapması gerekenleri son ana bırakmayabilir.',
             friends: 'Bir arkadaşına söz verdiği bir işi sonuna kadar götürebilir.',
-            home: 'Bir günü planladığı gibi geçirmek isteyebilir; plan bozulunca canı sıkılabilir.',
+            home: 'Evdeki işler için yaptığı planı çoğu zaman uygulayabilir.',
           },
           adult: {
             work: 'Bir işe hemen koyulup onu sorunsuz bir şekilde halledebilirsin.',

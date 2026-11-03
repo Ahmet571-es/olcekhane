@@ -6,14 +6,17 @@ import type { SurveyDaily } from './types';
  * örnekler riskli davranışı özendirmez. Maddelerdeki tehlikeli etkinlikler (bungee jumping, paraşütle atlama, fırtınada denize
  * açılmak, sert akıntıda kano) örnek olarak yazılmaz; örnekler maddelerin ortak konusunu (korku ve heyecan içeren deneyimler,
  * sıkılmak yerine heyecanı seçmek, anlık kararlar, yeni yerler ve deneyimler) güvenli günlük durumlarla anlatır. Tehlikeye ilgiyi
- * anlatan satırın yanında bir dayanak vardır ("Böyle bir isteği önce onlarla konuşmak", "önlemini almak"). "Risk" iki ölçekte
+ * anlatan satırın ve arkadaşların anlık önerisine hemen katılma isteğinin yanında bir dayanak vardır ("Böyle bir isteği önce
+ * onlarla konuşmak", "önlemini almak", "önce bir an düşünmek"); "Saçma şeyler yapmaya kolayca ikna olurum" (imp05) kesin
+ * bir söz gibi anlatılmaz (raporun ilkesi). "Risk" iki ölçekte
  * de sorulduğu için düşük düzeylerin örnekleri riskten söz etmez; korku iki ölçekte farklı anlamdadır (tehlikeli heyecanlarda
  * korkutucu deneyimlerin çekiciliği, göze almada kötü hava ve yükseklik karşısında çekinme). Her satırın dayandığı maddeler
  * `from`'dadır.
  * Maddeye doğrudan dayanmayan, sitedeki metinden gelen uzantılar: korkutucu bir film (dan02 "Korkutucu şeyler yapmayı
- * severim"in güvenli bir örneği), düşük tehlikeli heyecanda ve düşük göze almada "gereksiz tehlikelerden uzak tutabilir"
- * (raporun göze alma metni), düşük anlık heyecanda "çevrendekilere güven verebilir" (raporun metni), yüksek göze almada
- * önlem almak (raporun "gerekli önlemlerle birleştiğinde" anlatımı), yüksek tehlikeli heyecanda evdekilerle konuşmak.
+ * severim"in güvenli bir örneği), düşük göze almada "gereksiz tehlikelerden uzak tutabilir" (raporun göze alma metni; tehlikeli
+ * heyecanların kartında yinelenmez), düşük anlık heyecanda "çevrendekilere güven verebilir" (raporun metni), yüksek göze
+ * almada önlem almak (raporun "gerekli önlemlerle birleştiğinde" anlatımı), yüksek tehlikeli heyecanda evdekilerle (yetişkinde
+ * yakınlarla, `adult.home`) konuşmak.
  */
 export const heyecanArayisiDaily: SurveyDaily = {
   kind: 'survey',
@@ -31,16 +34,16 @@ export const heyecanArayisiDaily: SurveyDaily = {
       poles: { low: 'Tehlikeye ilgi duymayan', high: 'Tehlikeye ilgi duyan' },
       bands: {
         low: {
-          from: { school: ['dan08'], friends: ['dan02'], home: ['dan02', 'dan10'], work: ['dan08'] },
+          from: { school: ['dan08'], friends: ['dan02'], home: ['dan01', 'dan10'], work: ['dan08'] },
           student: {
             school: 'Sakin ve olaysız geçen bir ders günü seni pek rahatsız etmeyebilir.',
-            friends: 'Arkadaşların korkutucu bir film önerince başka bir şey izlemeyi tercih edebilirsin.',
-            home: 'Korku ve tehlike içeren deneyimler sana pek çekici gelmeyebilir; bu seni gereksiz tehlikelerden uzak tutabilir.',
+            friends: 'Arkadaşların korkutucu bir film izlemek isteyince onlara katılmak sana zor gelebilir.',
+            home: 'İzlediğin bir programda tehlikeli bir macera görünce onu denemek sana pek çekici gelmeyebilir.',
           },
           parent: {
             school: 'Sakin ve olaysız geçen bir ders günü çocuğunuzu pek rahatsız etmeyebilir.',
-            friends: 'Arkadaşları korkutucu bir film önerince başka bir şey izlemeyi tercih edebilir.',
-            home: 'Korku ve tehlike içeren deneyimler ona pek çekici gelmeyebilir; bu onu gereksiz tehlikelerden uzak tutabilir.',
+            friends: 'Arkadaşları korkutucu bir film izlemek isteyince onlara katılmak ona zor gelebilir.',
+            home: 'İzlediği bir programda tehlikeli bir macera görünce onu denemek ona pek çekici gelmeyebilir.',
           },
           adult: {
             work: 'Sakin ve olaysız geçen bir iş günü seni pek rahatsız etmeyebilir.',
@@ -76,6 +79,7 @@ export const heyecanArayisiDaily: SurveyDaily = {
           },
           adult: {
             work: 'Tekdüze geçen bir iş gününde sıkılmak yerine biraz heyecan isteyebilirsin.',
+            home: 'Yakınlarının tehlikeli bulduğu bir deneyim sana çekici gelebilir. Böyle bir isteği önce onlarla konuşmak iyi gelebilir.',
           },
         },
       },
@@ -124,15 +128,15 @@ export const heyecanArayisiDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['imp06', 'imp03'], friends: ['imp05', 'imp02'], home: ['imp04'], work: ['imp03', 'imp04'] },
+          from: { school: ['imp06', 'imp03'], friends: ['imp04', 'imp01'], home: ['imp04'], work: ['imp03', 'imp04'] },
           student: {
             school: 'Derste beklenmedik bir şey söyleyip çevrendekileri şaşırtabilirsin.',
-            friends: 'Arkadaşların saçma ya da çılgınca bir şey önerince kolayca ikna olabilirsin.',
+            friends: 'Arkadaşların anlık bir eğlence önerince hemen katılmak isteyebilirsin; önce bir an düşünmek iyi gelebilir.',
             home: 'Bir günü önceden planlamak yerine aklına estiği gibi geçirmek sana keyifli gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz derste beklenmedik bir şey söyleyip çevresindekileri şaşırtabilir.',
-            friends: 'Arkadaşları saçma ya da çılgınca bir şey önerince kolayca ikna olabilir.',
+            friends: 'Arkadaşları anlık bir eğlence önerince hemen katılmak isteyebilir; önce bir an düşünmesi iyi gelebilir.',
             home: 'Bir günü önceden planlamak yerine aklına estiği gibi geçirmek ona keyifli gelebilir.',
           },
           adult: {
@@ -152,7 +156,7 @@ export const heyecanArayisiDaily: SurveyDaily = {
       poles: { low: 'Güvenli olanı seçen', high: 'Göze alıp keşfeden' },
       bands: {
         low: {
-          from: { school: ['cal05'], friends: ['cal04'], home: ['cal08', 'cal09'], work: ['cal02'] },
+          from: { school: ['cal05'], friends: ['cal04'], home: ['cal08', 'cal09'], work: ['cal05', 'cal04'] },
           student: {
             school: 'Yeni bir etkinliğe katılmadan önce onu biraz tanımak isteyebilirsin.',
             friends: 'Arkadaşların alışılmadık bir yeri keşfetmeyi önerince bildiğin bir yeri seçebilirsin.',
@@ -164,7 +168,7 @@ export const heyecanArayisiDaily: SurveyDaily = {
             home: 'Kötü havada ya da yüksek bir yerde temkinli olabilir; bu temkin onu gereksiz tehlikelerden uzak tutabilir.',
           },
           adult: {
-            work: 'Risk içeren yeni bir işe girişmeden önce daha güvenli bir yol arayabilirsin.',
+            work: 'Yeni ve alışılmadık bir işe başlamadan önce onu biraz tanımak isteyebilirsin.',
           },
         },
         average: {
