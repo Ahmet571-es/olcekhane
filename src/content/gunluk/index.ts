@@ -1,6 +1,7 @@
 import { bakisAcisiAlmaDaily } from './bakis-acisi-alma';
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { dusunerekKararVermeDaily } from './dusunerek-karar-verme';
+import { dusunmeyiSevmeDaily } from './dusunmeyi-sevme-olcegi';
 import { duygusalZekaBilesenleriDaily } from './duygusal-zeka-bilesenleri';
 import { empatiDaily } from './empati';
 import { gizliSekillerDaily } from './gizli-sekiller';
@@ -12,6 +13,7 @@ import { kupAcinimiDaily } from './kup-acinimi';
 import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
 import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
+import { ogrenmeVeBasariDaily } from './ogrenme-ve-basari-ozellikleri';
 import { okumaHiziDaily } from './okuma-hizi-ve-anlama';
 import { ozDenetimDaily } from './oz-denetim';
 import { ozSaygiDaily } from './oz-saygi';
@@ -62,4 +64,6 @@ export const DAILY: Record<string, DailyContent> = {
   'gizli-sekiller': gizliSekillerDaily,
   'dusunerek-karar-verme': dusunerekKararVermeDaily,
   'kelime-bilgisi': kelimeBilgisiDaily,
+  'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariDaily,
+  'dusunmeyi-sevme-olcegi': dusunmeyiSevmeDaily,
 };
