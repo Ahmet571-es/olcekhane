@@ -2,6 +2,7 @@ import { bakisAcisiAlmaDaily } from './bakis-acisi-alma';
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { calismaAliskanliklariDaily } from './calisma-aliskanliklari';
 import { dersCalismaMotivasyonuDaily } from './ders-calisma-motivasyonu';
+import { desenDaily } from './desen-hatirlama';
 import { dikkatBellekDaily } from './dikkat-ve-bellek';
 import { durGitDaily } from './dur-git-gorevi';
 import { dusunerekKararVermeDaily } from './dusunerek-karar-verme';
@@ -10,11 +11,15 @@ import { dusunmeyiSevmeDaily } from './dusunmeyi-sevme-olcegi';
 import { duygusalZekaBilesenleriDaily } from './duygusal-zeka-bilesenleri';
 import { empatiDaily } from './empati';
 import { ertelemeZamanYonetimiDaily } from './erteleme-ve-zaman-yonetimi';
+import { geriyeDonukDaily } from './geriye-donuk-hatirlama';
 import { gizliSekillerDaily } from './gizli-sekiller';
 import { harfDizileriDaily } from './harf-dizileri';
+import { harfSayiDaily } from './harf-sayi-siralama';
+import { hesaplaDaily } from './hesapla-ve-hatirla';
 import { iyimserlikDaily } from './iyimserlik';
 import { kagitKatlamaDaily } from './kagit-katlama';
 import { kelimeBilgisiDaily } from './kelime-bilgisi';
+import { kelimeListesiDaily } from './kelime-listesi-hatirlama';
 import { kupAcinimiDaily } from './kup-acinimi';
 import { kuralDegistirmeDaily } from './kural-degistirme';
 import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
@@ -88,6 +93,11 @@ export const DAILY: Record<string, DailyContent> = {
   'renk-kelime-gorevi': renkKelimeDaily,
   'dur-git-gorevi': durGitDaily,
   'sirayla-birlestirme-gorevi': siraylaDaily,
+  'geriye-donuk-hatirlama': geriyeDonukDaily,
+  'hesapla-ve-hatirla': hesaplaDaily,
+  'harf-sayi-siralama': harfSayiDaily,
+  'desen-hatirlama': desenDaily,
+  'kelime-listesi-hatirlama': kelimeListesiDaily,
   'tepki-hizi': tepkiHiziDaily,
   'kural-degistirme': kuralDegistirmeDaily,
 };

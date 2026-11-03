@@ -87,11 +87,6 @@ export const DAILY_PENDING: string[] = [
   'duygusal-zeka-bilesenleri',
   // Görev testleri
   'planlama-kule-gorevi',
-  'geriye-donuk-hatirlama',
-  'hesapla-ve-hatirla',
-  'harf-sayi-siralama',
-  'desen-hatirlama',
-  'kelime-listesi-hatirlama',
   'zihinde-dondurme',
 ];
 /** Listenin örnek dosyalardan sonraki uzunluğu: liste bundan uzun olamaz (her yeni dosyada bu sayı da küçültülebilir). */
