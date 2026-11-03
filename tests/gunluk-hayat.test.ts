@@ -75,7 +75,6 @@ export const DAILY_PENDING: string[] = [
   'ayrintili-kisilik-profili',
   'kisiligin-10-yonu',
   'alti-boyutlu-kisilik-profili',
-  '16-faktorlu-kisilik-profili',
 
   // Görev testleri
 

@@ -52,6 +52,7 @@ import { zihniyetDaily } from './zihniyet';
 import { heyecanArayisiDaily } from './heyecan-arayisi';
 import { liderlikEgilimleriDaily } from './liderlik-egilimleri';
 import { kisilerarasiTarzDaily } from './kisilerarasi-tarz';
+import { onAltiFaktorDaily } from './16-faktorlu-kisilik-profili';
 import type { DailyContent } from './types';
 import { ucBoyutluZihindeDondurmeDaily } from './uc-boyutlu-zihinde-dondurme';
 import { zihindenHesaplamaDaily } from './zihinden-hesaplama-hizi';
@@ -118,4 +119,5 @@ export const DAILY: Record<string, DailyContent> = {
   'heyecan-arayisi': heyecanArayisiDaily,
   'liderlik-egilimleri': liderlikEgilimleriDaily,
   'kisilerarasi-tarz': kisilerarasiTarzDaily,
+  '16-faktorlu-kisilik-profili': onAltiFaktorDaily,
 };
