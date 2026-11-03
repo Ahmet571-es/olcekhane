@@ -83,17 +83,20 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   Küp Açınımı, Gizli Şekiller ve Parçalardan Şekil'de şans kuralı düzeltildi (yalnızca 1. düzeye, rastgele seçimle de
   ulaşılabilecek kadar az doğruyla ulaşıldıysa sonuç yorumlanmaz; sürüm 2: bu üç testin eski PDF'leri karşılaştırılamaz).
   İki bağımsız inceleme bulguları uygulandı.
-- (d) **57 testte yayında (2026-11-03):** "Günlük hayatta nasıl görünür" (anket: her ölçek ve düzey için okulda/işte,
+- (d) **bütün testlerde yayında (2026-11-03):** "Günlük hayatta nasıl görünür" (anket: her ölçek ve düzey için okulda/işte,
   arkadaşlarla, evde örnekler; grafikte ölçeğin iki ucu ve kişinin yeri) ve "Günlük hayatta nerede kullanılır" (görev, okuma,
   matematik: becerinin kullanıldığı yerler, kavram şeması). Her grubun metinlerini yazmamış bir ajan her satırı testin
   maddeleriyle karşılaştırdı (`from` alanı); bulgular uygulandı (ör. dikkat testlerinde DEHB belirtisi gibi okunan örnekler,
   iyimserlikte toplam kartın alt kartlarla çelişmesi, motivasyonda iki parçası ayrışan kart, 3–4. sınıfta yazılı sınav
-  olmaması; hobi testinde sıklık, beğeni değil; ilgi testlerinde meslek önerisi yok). Kalan 5 test (Beş kişilik ailesi: Çocuk, Hızlı, Ayrıntılı, 10 Yön, Altı Boyutlu) yazıldı ve denetlendi; yol haritası aşamasıyla birlikte yayına girecek (Altı Boyutlu PDF'inde uzun hafta başlığı o aşamada düzeliyor); `DAILY_PENDING`'de. Yazım kuralları `src/content/gunluk/types.ts`'te.
+  olmaması; hobi testinde sıklık, beğeni değil; ilgi testlerinde meslek önerisi yok). Bütün yayındaki testlerin metni var (`DAILY_PENDING` boş). Yazım kuralları `src/content/gunluk/types.ts`'te.
   Açık iş (Claude): aynı içeriğin her seferinde geldiği bellek testlerinde (dizi, desen, işlem) raporun içeriği yazmaması
   (ayrı dal `sabit-uyaran`); yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik,
   kural değiştirmede plan değiştirme): sonra uyumlanacak.
-- (e) yol haritası grafikleri ve (f) sesli dinlemenin raporu yol haritası dahil baştan sona okuması **hazırlanıyor**
-  (ayrı dal `asama-e`).
+- (e) ve (f) **yayında (2026-11-03):** yol haritasının sonuca dayanan her bölümünün grafiği (Kısaca, öneriler, ortamlar ve
+  yaklaşım "Bu bölümün dayandığı sonuçlar", dört haftalık zaman çizelgesi: sonuca göre seçilen ve genel öneri olan haftalar);
+  herkese aynı olan bölümler (görev önerileri, okuma alışkanlıkları, kaynaklar) grafiksiz. Matematikte hata türleri grafiği.
+  Sesli dinleme raporu tek düğmeyle baştan sona okur (sonuçlar, karşılaştırma, yol haritası; en başta yaklaşık süre ve "Bölümü
+  geç"; sonda kaynak listesinin varlığı). Yorumlanmayan görev kartlarının grafiği yok. İki bağımsız inceleme bulguları uygulandı.
 
 **Kalite incelemesi (2026-10-08): 6 acil hata, site sahibinin isteğiyle her işlemede bir hata düzeltilip yayına
 alınıyor.** Rapor: Claude Docs'taki **Ölçekhane Test Kalite Raporu** (https://claude.ai/artifact/8btJRknY53xATRsLhX2HsH;
@@ -1167,6 +1170,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-03 (70): Raporları genişletme tamamlandı: (d) "Günlük hayatta" bölümü bütün testlerde (son 5: Çocuk, Hızlı,
+  Ayrıntılı, Kişiliğin 10 Yönü, Altı Boyutlu kişilik); (e) yol haritası grafikleri; (f) raporun tek düğmeyle baştan sona sesli
+  okunması (yaklaşık süre, "Bölümü geç" sonuçları ve yol haritasını toptan atlar, karşılaştırma sonucu da okunur). Telefonda
+  ve masaüstünde Merak çözüldü, yol haritası ve sesli dinleme (sahte yerel sesle: duraklatma, sekme değişince susma, ağ sesinde
+  oynatıcı yok) denendi; tam test takımı geçti (1859 test).
 - 2026-11-03 (69): "Günlük hayatta" bölümü 8 teste daha eklendi (toplam 57): 16 Faktörlü, Kişilerarası Tarz, Heyecan Arayışı,
   Liderlik Eğilimleri, Mesleki İlgi Profili, Meslek İlgi Alanları, Hobi ve Serbest Zaman İlgileri, Çalışma Değerleri. Bağımsız
   denetim bulguları uygulandı: hobi örnekleri sıklığı anlatır (beğeniyi ya da imkânsızlığı değil), ilgi ve değer kartlarında
@@ -1242,15 +1250,3 @@ En yeni üstte; en çok 10 madde tutulur.
   soruların geldiği 16 testte hatırlananların da etkileyebileceği. Özetsiz dosyada, bu testin özeti olmayan paket
   raporunda ve sonuçsuz görev raporunda ayrı uyarı. Bağımsız kod ve metin incelemesinin bulguları uygulandı. Okuma, sesli
   okuma ve konu tarama testlerinde yok.
-- 2026-10-30 (60): Yeni test İşlem Hızı: Simge Bulma yayına alındı (3. listenin 8. testi; site sahibinin seçtiği dört
-  yeniliğin dördüncüsü; ayrıntı yukarıda). Ad: WÇZÖ-IV'teki "Simge Arama" alt testiyle karışmasın diye "Simge Bulma".
-  Yeni görev türü `symbol_search`; uygulama kimliğinden üretilen 240 deneme, sunucu yeniden üretip puanlar. Bağımsız
-  incelemelerin bulguları yayından önce uygulandı: kod ve mantık (tesadüfi farkları örüntü saymasın diye iki oran ve
-  log süre karşılaştırmasında z ≥ 2,24 ölçütü, sıfır etkili benzetimde her kart ≤ %5; hızlı ve yavaş yarılar ortanca
-  süreye göre ve süreler yakınsa karşılaştırılmaz; dengeli ortancalar; yorumlanmayan sonuçta çeyrek grafiği yok;
-  bütün denemeler bitince süre metni; alıştırma tekrarı; çift dokunma 200 ms; süre bitince gelen dokunuş sayılmaz;
-  sunucu karar sürelerini önceki cevaptan geçen süreyle sınar; kartta grafikteki sayılar yinelenmez; "herkes" yok) ve
-  kaynak ve sayı (Cronbach ve Warrington 1951, Wolfe 2021'in modeli yerine Langer 2017, RCH sayfasının beyin hasarı
-  bağlamı, 2.225 çocuk Öktem ve ark. 2016 aktaran Çelik 2021, Valentine ve Kratz 2023'te %35–39 ve oturumlar, Gersten
-  2009 önerisinin gerekçesi, Fry ve Hale sayfaları, Uluç ve Öktem künyesi). Telefonda dokunarak (4. sınıf) ve
-  masaüstünde klavyeyle (yetişkin) baştan sona çözüldü, PDF'ler açıldı. Site sahibinin seçtiği dört yenilik bitti.
