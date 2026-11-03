@@ -405,8 +405,8 @@ export function skillsDailyPart(input: {
   const intro = [
     `Bu bölüm, ${what} günlük hayatta nerede kullanıldığını anlatır.`,
     by(a, {
-      you: 'Örnekler senin sonucuna göre seçilmedi; bu testi çözen herkes için aynıdır.',
-      parent: oral ? 'Örnekler öğrencinin sonucuna göre seçilmedi; bu testi çözen herkes için aynıdır.' : 'Örnekler çocuğunuzun sonucuna göre seçilmedi; bu testi çözen herkes için aynıdır.',
+      you: 'Örnekler senin sonucuna göre seçilmedi; bu testi çözen herkese aynıdır.',
+      parent: oral ? 'Örnekler öğrencinin sonucuna göre seçilmedi; bu testi çözen herkese aynıdır.' : 'Örnekler çocuğunuzun sonucuna göre seçilmedi; bu testi çözen herkese aynıdır.',
     }),
     'Bu işlerde başka beceriler, alışkanlıklar ve deneyim de rol oynar.',
     'Bu yüzden tek bir test sonucu, bu işlerin nasıl gideceğini söylemez.',

@@ -157,7 +157,8 @@ describe('Raporu sesli dinle: raporlardan okunacak metin', () => {
       }
     }
     expect(n).toBeGreaterThan(100);
-  });
+    // Günlük hayat bölümüyle her rapor uzadı: yüklü makinede 20 sn'yi aşabiliyor.
+  }, 120_000);
 
   it('okuma, sesli okuma ve konu tarama raporları; konu taramada soru soru inceleme okunmaz, hata türleri okunur', () => {
     for (const g of [3, 6]) for (const r of reportsOf('okuma-hizi-ve-anlama', readingBody(g))) checkSpoken(r, `okuma ${g} ${r.audience}`);

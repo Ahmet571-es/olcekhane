@@ -83,12 +83,16 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   Küp Açınımı, Gizli Şekiller ve Parçalardan Şekil'de şans kuralı düzeltildi (yalnızca 1. düzeye, rastgele seçimle de
   ulaşılabilecek kadar az doğruyla ulaşıldıysa sonuç yorumlanmaz; sürüm 2: bu üç testin eski PDF'leri karşılaştırılamaz).
   İki bağımsız inceleme bulguları uygulandı.
-- (d) **kısmen yayında (2026-11-01):** "Günlük hayatta nasıl görünür" (anket: her ölçek ve düzey için okulda/işte,
+- (d) **49 testte yayında (2026-11-03):** "Günlük hayatta nasıl görünür" (anket: her ölçek ve düzey için okulda/işte,
   arkadaşlarla, evde örnekler; grafikte ölçeğin iki ucu ve kişinin yeri) ve "Günlük hayatta nerede kullanılır" (görev, okuma,
-  matematik: becerinin kullanıldığı yerler, kavram şeması). Altyapı ve 7 test yayında: Merak, Beş Faktör, Simge Bulma, Şekil
-  Akıl Yürütme, Okuma Hızı ve Anlama, Sesli Okuma, Matematik Konu Tarama. Kalan testler `tests/gunluk-hayat.test.ts`
-  `DAILY_PENDING` listesinde; gruplar hâlinde yazılıp her grup bağımsız denetimle (her satır testin maddelerine dayanır,
-  `from` alanı) yayına alınır. Yazım kuralları `src/content/gunluk/types.ts`'te.
+  matematik: becerinin kullanıldığı yerler, kavram şeması). Her grubun metinlerini yazmamış bir ajan her satırı testin
+  maddeleriyle karşılaştırdı (`from` alanı); bulgular uygulandı (ör. dikkat testlerinde DEHB belirtisi gibi okunan örnekler,
+  iyimserlikte toplam kartın alt kartlarla çelişmesi, motivasyonda iki parçası ayrışan kart, 3–4. sınıfta yazılı sınav
+  olmaması). Kalan 13 test (Beş kişilik ailesi 5, 16 Faktörlü, Kişilerarası Tarz, Heyecan Arayışı, Liderlik, ilgi ve değer
+  testleri 4) yazıldı, denetlendi, düzeltiliyor; `DAILY_PENDING`'de. Yazım kuralları `src/content/gunluk/types.ts`'te.
+  Açık iş (Claude): aynı içeriğin her seferinde geldiği bellek testlerinde (dizi, desen, işlem) raporun içeriği yazmaması
+  (ayrı dal `sabit-uyaran`); yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik,
+  kural değiştirmede plan değiştirme): sonra uyumlanacak.
 - (e) yol haritası grafikleri ve (f) sesli dinlemenin raporu yol haritası dahil baştan sona okuması **hazırlanıyor**
   (ayrı dal `asama-e`).
 
@@ -1164,6 +1168,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-03 (68): "Günlük hayatta" bölümü 42 teste daha eklendi (toplam 49): duygu ve öz algı (6), muhakeme ve uzamsal (15),
+  öğrenme ve motivasyon (7), dikkat ve bellek (14). Her grubu yazmamış bir ajan her satırı maddelerle ve testin kendi
+  anlatımıyla karşılaştırdı; bulgular uygulandı. Yeni kurallar: bileşik ölçeğin örnekleri alt kartlarla çelişebiliyorsa yönlendirme
+  (`pointer`), motivasyonda parçaları ayrışan bileşikte örnek yok, yetişkine ev satırı (yalnız yaşayana uysun), mezunda "sınıf"
+  yok. Dikkat ve Bellek raporunda yasak "herkes için" ifadesi kaldırıldı. Ağır testler hafifletildi (PDF'ler pdf-ust-uste'de bir
+  kez çizilir; günlük hayat testinde örneklem). Telefonda ve masaüstünde Öz-yeterlik ve Parçalardan Şekil çözüldü.
 - 2026-11-01 (67): PDF düzeltmesi: ek bölümlü bazı raporların PDF'inde yazılar üst üste biniyor, sayfa dışındakiler
   kayboluyordu (yayında 11 rapor, ör. Kişiliğin 10 Yönü, Çalışma Değerleri, Ayrıntılı Kişilik veli raporu); bölümler artık
   sayfaya doğrudan diziliyor, yeni test her testin PDF'inde kelime çakışmasını arıyor. Yol haritası profilinde uzun ad değerin
@@ -1250,9 +1260,3 @@ En yeni üstte; en çok 10 madde tutulur.
   O4'ün sekiz maddesi, Oleynick sayfa aralığı). Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle (yetişkin)
   çözüldü, PDF'ler açıldı, karşılaştırma denendi; karşılaştırmada "belirgin" tanımı artık yalnızca ölçüm payı bilinen
   testlerde gösteriliyor. Sıradaki yenilik: Simge Bulma (WÇZÖ-IV'teki "Simge Arama" alt testiyle karışmasın diye bu ad).
-- 2026-10-30 (58): "Gelişimini karşılaştır" (site sahibinin seçtiği dört yeniliğin ikincisi): anket testlerinin (26 test)
-  raporunda "Önceki sonucunla karşılaştır"; aynı testin önceki PDF'i seçilir, tarayıcıda okunur; ölçek ölçek önce → şimdi,
-  fark, belirgin mi (güvenilir değişim ölçütü; ölçüm payı yalnızca güvenirliği bilinen 7 testin ölçeklerinde,
-  ötekilerde yalnızca yön), düzey değişimi ve küçük grafik. PDF'lere (paket dahil) sonuçların sayısal özeti yazılıyor;
-  karşılaştırma yalnızca 2026-10-30'dan sonra indirilen PDF'lerle olur. Telefonda ve masaüstünde baştan sona denendi
-  (iki çözüm, PDF indirildi, yüklendi; özetsiz dosyada uyarı). Görev, okuma ve konu tarama testleri sonraki adımda.

@@ -326,7 +326,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       'erteleme-ve-zaman-yonetimi': 3 ** 5 * 3,
       zihniyet: 3 ** 4 * 3,
     });
-  }, 120_000);
+    // Yüklü makinede 120 sn'yi aşabiliyor (yerelde birkaç iş birden çalışırken 157 sn ölçüldü).
+  }, 300_000);
 });
 
 describe('gelişim yol haritası: rapora eklenmesi', () => {

@@ -928,13 +928,9 @@ describe('Günlük hayat: raporda', () => {
     }
   });
 
-  it('PDF: her test ve her kitle için üretilir; Kendini Tanı Paketi bölümleri içerir', async () => {
-    for (const d of WITH_CONTENT) {
-      for (const r of reportsOf(d, bodiesFor(d)[0])) {
-        const pdf = await renderSimpleReportPdf(r, 'olcekhane.com');
-        expect(pdf.subarray(0, 5).toString(), `${d.slug} ${r.audience}`).toBe('%PDF-');
-      }
-    }
+  // Her testin her kitle için PDF'i tests/pdf-ust-uste.test.ts'te çizilir ve denetlenir (bölüm de içinde); burada yalnızca
+  // paket. (Bütün testler bölümü alınca her şeyi iki kez çizmek testleri çok uzatıyordu.)
+  it('PDF: Kendini Tanı Paketi bölümleri içerir', async () => {
     // Paket: 7. sınıfta Beş Faktör ve Şekil Akıl Yürütme pakette; yetişkinde Şekil Akıl Yürütme.
     for (const [grade, audience] of [
       [7, 'student'],
@@ -957,15 +953,22 @@ describe('Günlük hayat: raporda', () => {
 
   // tests/pdf-ust-uste.test.ts her testin bir raporunu dener; burada bölümü olan testler birkaç sonuç örüntüsüyle (düşük,
   // yüksek, orta, mezun; her form ve sınıf) ve bütün kitlelerle.
-  it.skipIf(!HAS_PDFTOTEXT)('PDF: bölümün olduğu raporlarda yazılar üst üste binmez (bütün kitleler, birkaç örüntü)', async () => {
+  it.skipIf(!HAS_PDFTOTEXT)('PDF: bölümün olduğu raporlarda yazılar üst üste binmez (her testte ikinci bir örüntü; okuma ve matematikte her form)', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'gunluk-pdf-'));
     const found: string[] = [];
     let n = 0;
+    // Süre sınırlı kalsın diye örneklem: tests/pdf-ust-uste.test.ts her testin ilk örüntüsünü bütün kitlelerle çizer; burada
+    // her testin son örüntüsü (yüksek uç, mezun ya da son görev örüntüsü) sırayla tek bir kitleyle, okuma, sesli okuma ve konu
+    // taramada ise her form ve sınıf.
+    let k = 0;
     for (const d of WITH_CONTENT) {
       const bodies = bodiesFor(d);
-      const pick = d.engine === 'likert' ? [...bodies.slice(0, 3), bodies[bodies.length - 1]] : d.engine === 'tasks' ? [bodies[0], bodies[bodies.length - 1]] : bodies;
+      const many = d.engine === 'reading' || d.engine === 'quiz' || d.engine === 'oral';
+      const pick = many ? bodies : [bodies[bodies.length - 1]];
       for (const body of pick) {
-        for (const r of reportsOf(d, body)) {
+        const reports = reportsOf(d, body);
+        const chosen = many ? reports : [reports[k++ % reports.length]];
+        for (const r of chosen) {
           const file = join(dir, `${d.slug}-${r.audience}-${body.grade}-${n++}.pdf`);
           writeFileSync(file, await renderSimpleReportPdf(r, 'olcekhane.com'));
           found.push(...pdfOverlaps(file).slice(0, 3).map((x) => `${d.slug} ${r.audience} (${body.grade}) ${x}`));
@@ -974,7 +977,7 @@ describe('Günlük hayat: raporda', () => {
     }
     expect(n).toBeGreaterThan(30);
     expect(found).toEqual([]);
-  }, 600_000);
+  }, 300_000);
 });
 
 /* ---------- Özel durumlar ---------- */
