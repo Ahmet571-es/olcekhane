@@ -50,7 +50,7 @@ import { drawVisual } from '@/lib/reports/visual-draw';
 import type { GaugeVisual } from '@/lib/reports/visuals';
 import { likertItemFlags, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
 import { oralPassagesFor } from '@/lib/scoring/oral';
-import { reportSpeech, speakable, utterancesOf } from '@/lib/speech/report-text';
+import { allSegments, reportSpeech, speakable, utterancesOf } from '@/lib/speech/report-text';
 import { likertBody, quizBody, readingBody } from './helpers/bodies';
 import { schoolWords } from './helpers/school';
 import { TASK_VARIANTS } from './helpers/task-variants';
@@ -850,12 +850,18 @@ function checkSkills(d: InstrumentDef, r: SimpleReport, grade: number, label: st
   }
 }
 
-/** Sesli dinleme bölümü eksiksiz okur: başlık, giriş, her kartın adı, grafiğin sözle anlatımı ve her satır "Okulda: …". */
+/**
+ * Sesli dinleme bölümü eksiksiz okur: başlık, giriş, her kartın adı, grafiğin sözle anlatımı ve her satır "Okulda: …". Raporu
+ * baştan sona okuyan listede (ilk cümle raporun yaklaşık süresi) bölümün bütün parçaları art arda ve tek bölümdür.
+ */
 function checkSpeech(r: SimpleReport, label: string) {
   const p = partOf(r, 'daily')!;
-  const utter = utterancesOf(reportSpeech(r).results);
+  const utter = utterancesOf(allSegments(reportSpeech(r)));
+  expect(utter[0].text, label).toMatch(/^Rapor yaklaşık \d+ dakika sürer\.$/);
   const mine = utter.filter((u) => u.section === p.title);
   expect(mine.length, label).toBeGreaterThan(0);
+  const first = utter.indexOf(mine[0]);
+  expect(utter.slice(first, first + mine.length), label).toEqual(mine);
   const text = mine.map((u) => u.text).join(' ');
   expect(text, label).toContain(speakable(p.title));
   for (const c of partCards(p)) {
@@ -897,7 +903,8 @@ describe('Günlük hayat: raporda', () => {
     expect(cards).toBeGreaterThan(100);
   }, 240_000);
 
-  it('sesli dinleme bölümü eksiksiz okur', () => {
+  it('sesli dinleme bölümü eksiksiz okur (raporu baştan sona okuyan listede, metni olan her testte)', () => {
+    expect(WITH_CONTENT.length).toBeGreaterThanOrEqual(49);
     for (const d of WITH_CONTENT) for (const body of bodiesFor(d).slice(0, 2)) for (const r of reportsOf(d, body)) checkSpeech(r, `${d.slug} ${r.audience}`);
   }, 120_000);
 
