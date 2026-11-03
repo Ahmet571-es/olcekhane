@@ -11,7 +11,8 @@ import type { SurveyDaily } from './types';
  * maddelerin söylediği kadar anlatır. Kapsayıcılık: kendi odası, kendi masası, telefon ya da özel ders varsayılmaz.
  * Mesajlar yalnızca maddenin kendisi sorduğu yerde (Odaklanma, F2) ve koşullu geçer ("Yanında telefon varsa"): telefonu
  * olmayan biri de Odaklanma'da her düzeye düşebilir. "Dikkatini dağıtan şeylerin olmadığı bir yer" maddenin (F3) sözüdür,
- * ayrı bir oda demek değildir. "Ailem" (H5) yerine "evdekiler" de kullanılmadı: örnekler yalnızca
+ * ayrı bir oda demek değildir; F3'ün düşük ucu evde sessiz bir yer olmamasından da gelebileceği için kişinin bir yer seçtiğini
+ * varsaymaz ve onu suçlamaz ("Ders çalıştığın yerde çoğu zaman dikkatini dağıtan şeyler olabilir"). "Ailem" (H5) yerine "evdekiler" de kullanılmadı: örnekler yalnızca
  * arkadaşlardan yardım istemeyi anlatır.
  *
  * Kartlar birbiriyle çelişmesin diye: Anlayarak çalışma "Anlamadığım bir yeri atlamak yerine anlayana kadar üzerinde
@@ -160,12 +161,12 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
           from: { school: ['U1'], friends: ['U3'], home: ['U2'] },
           student: {
             school: 'Yeni öğrendiğin bir bilgiyi daha önce bildiklerinle ilişkilendirmeye çalışabilirsin.',
-            friends: 'Öğrendiğin bir konuyu bir arkadaşına kendi cümlelerinle anlatabilirsin.',
+            friends: 'Öğrendiğin bir konuyu bir arkadaşına kendi cümlelerinle anlatmaya çalışabilirsin.',
             home: 'Bir konuyu çalışırken kendine “Bu neden böyle?” diye sorabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz yeni öğrendiği bir bilgiyi daha önce bildikleriyle ilişkilendirmeye çalışabilir.',
-            friends: 'Öğrendiği bir konuyu bir arkadaşına kendi cümleleriyle anlatabilir.',
+            friends: 'Öğrendiği bir konuyu bir arkadaşına kendi cümleleriyle anlatmaya çalışabilir.',
             home: 'Bir konuyu çalışırken kendine “Bu neden böyle?” diye sorabilir.',
           },
         },
@@ -185,12 +186,12 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
           student: {
             school: 'Ders çalışırken aklın başka şeylere kayabilir ve bunu geç fark edebilirsin.',
             friends: 'Ders çalışırken yanında telefon varsa arkadaşlarından gelen mesajlara sık sık bakabilirsin.',
-            home: 'Çalışacağın yeri seçerken orada dikkatini dağıtan şeyler olup olmadığını pek düşünmeyebilirsin.',
+            home: 'Ders çalıştığın yerde çoğu zaman dikkatini dağıtan şeyler olabilir.',
           },
           parent: {
             school: 'Çocuğunuz ders çalışırken aklı başka şeylere kayabilir ve bunu geç fark edebilir.',
             friends: 'Ders çalışırken yanında telefon varsa arkadaşlarından gelen mesajlara sık sık bakabilir.',
-            home: 'Çalışacağı yeri seçerken orada dikkatini dağıtan şeyler olup olmadığını pek düşünmeyebilir.',
+            home: 'Ders çalıştığı yerde çoğu zaman dikkatini dağıtan şeyler olabilir.',
           },
         },
         average: {

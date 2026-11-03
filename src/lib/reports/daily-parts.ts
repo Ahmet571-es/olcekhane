@@ -27,6 +27,11 @@ import type { ContextsVisual, PolesVisual } from './visual-daily';
  *    kart bunu bir cümleyle söyler. Alt ölçekleri kendi kartlarında örneklenen bir bileşik ölçek örnek yerine bir
  *    yönlendirme taşıyabilir (`ScaleDaily.pointer`; ör. İyimserlik'in toplamı): rozet ve iki uç kalır, satırlar yerine o
  *    metin yazar. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
+ *    anlatıldı; motivasyon profilinde bileşik ölçeğin iki parçasından biri yüksek, öteki düşük (`motivationPartsSplit`:
+ *    örnekler parçaların maddelerinden yazıldığı için biri parçasının kartıyla çelişirdi; profil yorumu bu farkı anlatır);
+ *    destek önerisini bu ölçekteki bir cevap açtı (`flagged`: o cevap destek kutusunda ele alınır; düzeyin örnekleri kutunun
+ *    yanında yersiz kalabilirdi). Puanın ölçüm payı komşu bir düzey grubuna uzanıyorsa ("Bu da uyabilir")
+ *    kart bunu bir cümleyle söyler. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
  *    "özellik" (iki uç da eşit), değerlendirici, destek kutusu açabilen ve gelişime açık ölçeklerde "gelişim" (örnekler
  *    bugünkü durumu anlatır).
  *  - Görev, okuma, sesli okuma ve konu tarama testleri: her beceri (ya da konu alanı) için bir kart: tanım, grafik
@@ -116,8 +121,14 @@ export const skillInForm = (s: Pick<SkillDaily, 'forms'>, form: string | undefin
 export type DailyTone = 'trait' | 'growth';
 /** Bütün ölçekleri gelişim tonunda olan testler (şablonları değerlendirici değil, ama ölçtükleri şey bugünkü durumdur). */
 const GROWTH_SLUGS = new Set(['oz-saygi', 'iyimserlik', 'oz-yeterlik', 'zihniyet', 'duygusal-zeka-bilesenleri', 'empati', 'oz-denetim']);
-/** Tek tek gelişim tonundaki ölçekler (motivasyon profilinde isteksizlik). */
-const GROWTH_SCALES: Record<string, string[]> = { 'ders-calisma-motivasyonu': ['amotivation'] };
+/**
+ * Tek tek gelişim tonundaki ölçekler: motivasyon profilinde isteksizlik; Öğrenme ve Başarı Özellikleri'nde zorlukla başa
+ * çıkma (maddeleri öz-yeterliği sorar: "Kendimi her işi yapabilecek güçte hissederim"; öz-yeterlik de gelişim tonundadır).
+ */
+const GROWTH_SCALES: Record<string, string[]> = {
+  'ders-calisma-motivasyonu': ['amotivation'],
+  'ogrenme-ve-basari-ozellikleri': ['competence'],
+};
 
 export function scaleTone(def: LikertInstrument, key: string): DailyTone {
   const t = REPORT_TEMPLATES[def.slug];
@@ -153,6 +164,16 @@ export function nearGroups(sec: ReportSection): LevelGroup[] {
   if (i > 0 && gauge.ciLow < gauge.zones[i].from - 1e-9) near.push(bandGroup(gauge.zones[i - 1].band)!);
   if (i < gauge.zones.length - 1 && gauge.ciHigh > gauge.zones[i].to + 1e-9) near.push(bandGroup(gauge.zones[i + 1].band)!);
   return near.filter((g) => g && g !== own);
+}
+
+/**
+ * Motivasyon profilinde iki parçalı bir bileşik ölçeğin parçalarından biri yüksek, öteki düşük mü (ayrıntılı profildeki
+ * `facetSplit` kuralıyla aynı: düzey grupları). Böyle bir kartta örnek gösterilmez (surveyCard).
+ */
+export function motivationPartsSplit(def: LikertInstrument, scale: ScaleDef, content: Pick<ReportContent, 'sections'>): boolean {
+  if (def.profile !== 'motivation' || scale.of?.length !== 2) return false;
+  const groups = scale.of.map((k) => bandGroup(content.sections.find((s) => s.scaleKey === k)?.band ?? null));
+  return groups.includes('high') && groups.includes('low');
 }
 
 function surveyCard(input: {
@@ -205,6 +226,17 @@ function surveyCard(input: {
           parent: `${cap(unit.inThis)} cevaplar iki uca ayrıldığı için düzeye göre örnek seçilmedi. Karttaki anlatım bu ayrışmayı anlatıyor.`,
         });
     return { ...base, text };
+  }
+  if (motivationPartsSplit(def, scale, content)) {
+    // Motivasyon profilinde bileşik ölçeğin iki parçasından biri yüksek, öteki düşük: örnekler parçaların maddelerinden
+    // yazıldığı için hangi düzeyin örnekleri seçilse biri parçasının kendi kartıyla çelişirdi. Bu durumda buildMotivation
+    // (build.ts) profil yorumuna her zaman baskın parçayı anlatan cümleyi ekler (bileşik yüksek değilse `hidden`; yüksekse
+    // `lean`, çünkü gösterilen ortalamalar arasındaki fark en az 1,1'dir, eşik 1); profil hesaplanamadıysa (öbür bileşik
+    // ölçek eksik) o cümle yoktur, kart parçaların ayrı sonuçlarına yönlendirir.
+    const where = content.motivation?.pattern
+      ? 'Motivasyon profilindeki açıklama bu farkı anlatıyor.'
+      : 'Raporda iki parçanın sonucu ayrı ayrı gösteriliyor.';
+    return { ...base, text: `Bu türün iki parçasının düzeyi birbirinden çok farklı olduğu için düzeye göre örnek seçilmedi. ${where}` };
   }
   if (sec.flagged) {
     // Destek önerisini bu ölçekteki bir cevap açtı: o cevap destek kutusunda ele alınır; düzeyin örnekleri gösterilmez.

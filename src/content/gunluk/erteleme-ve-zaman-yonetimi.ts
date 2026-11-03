@@ -31,12 +31,12 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
           from: { school: ['S3'], friends: ['S1'], home: ['S2'], work: ['S3'] },
           student: {
             school: 'Teslimine bol zaman olan bir ödevi son güne bırakabilirsin.',
-            friends: 'Arkadaşlarınla ortak bir işte, sonra sıkışacağını bilsen de kendi kısmını erteleyebilirsin.',
+            friends: 'Arkadaşlarınla buluşmadan önce bitirmen gereken bir işi, sonra sıkışacağını bilsen de erteleyebilirsin.',
             home: 'Yapman gereken bir iş varken “Önce şunu da halledeyim” deyip başka şeylerle vakit geçirebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz teslimine bol zaman olan bir ödevi son güne bırakabilir.',
-            friends: 'Arkadaşlarıyla ortak bir işte, sonra sıkışacağını bilse de kendi kısmını erteleyebilir.',
+            friends: 'Arkadaşlarıyla buluşmadan önce bitirmesi gereken bir işi, sonra sıkışacağını bilse de erteleyebilir.',
             home: 'Yapması gereken bir iş varken “Önce şunu da halledeyim” deyip başka şeylerle vakit geçirebilir.',
           },
           adult: {
@@ -148,17 +148,17 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
         low: {
           from: { school: ['E2'], friends: ['E1'], home: ['E5'], work: ['E2'] },
           student: {
-            school: 'Yarım saat süreceğini düşündüğün bir ödev çok daha uzun sürebilir.',
+            school: 'Yarım saat sürer diye düşündüğün bir ödev daha uzun sürebilir.',
             friends: 'Arkadaşlarınla ortak bir işin ne kadar süreceğini isabetli tahmin etmek sana zor gelebilir.',
             home: 'Hafta sonu zamanın nereye gittiğini anlamadan akşam olduğunu fark edebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuzun yarım saat süreceğini düşündüğü bir ödev çok daha uzun sürebilir.',
+            school: 'Çocuğunuzun yarım saat sürer diye düşündüğü bir ödev daha uzun sürebilir.',
             friends: 'Arkadaşlarıyla ortak bir işin ne kadar süreceğini isabetli tahmin etmek ona zor gelebilir.',
             home: 'Hafta sonu zamanın nereye gittiğini anlamadan akşam olduğunu fark edebilir.',
           },
           adult: {
-            work: 'Yarım saat süreceğini düşündüğün bir iş çok daha uzun sürebilir.',
+            work: 'Yarım saat sürer diye düşündüğün bir iş daha uzun sürebilir.',
           },
         },
         average: {
@@ -280,7 +280,7 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
           },
         },
         average: {
-          from: { school: ['C3', 'C2'], friends: ['C5'], home: ['C1'], work: ['C3', 'C2'] },
+          from: { school: ['C3', 'C4'], friends: ['C5'], home: ['C1'], work: ['C3', 'C4'] },
           student: {
             school: 'Bazı haftalar önemli ödevlerine yetecek zamanı bulabilir, bazı haftalar işlerin üst üste bindiğini hissedebilirsin.',
             friends: 'Arkadaşlarınla sevdiğin şeylere bazen zaman ayırabilir, bazen işlerin buna izin vermeyebilir.',

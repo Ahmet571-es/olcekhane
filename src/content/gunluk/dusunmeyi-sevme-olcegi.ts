@@ -48,12 +48,12 @@ export const kafaYoranIsler: ScaleDaily = {
       from: { school: ['n01'], friends: ['n10'], home: ['n06', 'n09'], work: ['n01'] },
       student: {
         school: 'Bazı derslerde karmaşık bir problemle uğraşmak hoşuna gidebilir, bazılarında pek istekli olmayabilirsin.',
-        friends: 'Arkadaşlarınla “Doğru olan ne?” gibi bir sohbete bazen katılabilir, bazen konuyu değiştirebilirsin.',
+        friends: 'Arkadaşlarınla “İyi bir insan olmak ne demek?” gibi bir sohbete bazen katılabilir, bazen konuyu değiştirebilirsin.',
         home: 'Konusu ilgini çeken zor bir yazıyı okuyabilir, ötekileri okumak istemeyebilirsin.',
       },
       parent: {
         school: 'Bazı derslerde karmaşık bir problemle uğraşmak çocuğunuzun hoşuna gidebilir, bazılarında pek istekli olmayabilir.',
-        friends: 'Arkadaşlarıyla “Doğru olan ne?” gibi bir sohbete bazen katılabilir, bazen konuyu değiştirebilir.',
+        friends: 'Arkadaşlarıyla “İyi bir insan olmak ne demek?” gibi bir sohbete bazen katılabilir, bazen konuyu değiştirebilir.',
         home: 'Konusu ilgisini çeken zor bir yazıyı okuyabilir, ötekileri okumak istemeyebilir.',
       },
       adult: {

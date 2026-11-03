@@ -33,7 +33,7 @@ import {
   surveyDailyPart,
 } from '@/lib/reports/daily-parts';
 import type { PackageEntry } from '@/lib/reports/package';
-import { partCards, type ReportPart } from '@/lib/reports/parts';
+import { partCards, type PartCard, type ReportPart } from '@/lib/reports/parts';
 import { bandGroup } from '@/lib/reports/roadmap';
 import { gaugeOf, type SimpleReport } from '@/lib/reports/simple';
 import {
@@ -621,9 +621,10 @@ describe('Günlük hayat: dil', () => {
         const p = partOf(r, 'daily')!;
         const own = [p.title, p.intro, p.introNote ?? '', ...partCards(p).flatMap((c) => [c.title, c.badge ?? '', c.text ?? '', ...(c.spoken ?? [])])].filter(Boolean);
         const label = `${d.slug} ${r.audience}`;
-        // Kartın başlığı ölçeğin testteki adıdır (Zihniyet'te "Zekâya bakış"): bölümün kendi yazdığı bir yetenek ya da zekâ
-        // iddiası değildir; yetenek sözcükleri başlıkta aranmaz (öteki sözcükler aranır).
-        const titles = new Set(partCards(p).map((c) => c.title));
+        // Anket kartının başlığı ölçeğin testteki adıdır (Zihniyet'te "Zekâya bakış"): bölümün kendi yazdığı bir yetenek ya da
+        // zekâ iddiası değildir; yetenek sözcükleri yalnızca ölçek adlarında aranmaz (öteki sözcükler aranır). Görev ve okuma
+        // kartlarının başlığını yazar verir (SkillDaily.title); orada aranır.
+        const titles = new Set(d.engine === 'likert' ? d.scales.map((s) => s.name) : []);
         for (const t of own) {
           for (const re of [BANNED, PREVALENCE, PEER, CLINICAL, ...(titles.has(t) ? [] : [TALENT])]) expect(t, label).not.toMatch(re);
           for (const s of sentences(t)) expect(wordCount(s), `${label}: ${s}`).toBeLessThanOrEqual(22);
@@ -660,6 +661,18 @@ function checkSizes(v: DailyKindVisual, at: string) {
 
 const GROWTH_INTRO = 'Örnekler bugünkü durumu anlatır; bu durum zamanla değişebilir.';
 const TRAIT_INTRO = 'Örnekler bir ucu iyi, ötekini kötü diye anlatmaz; günlük hayatta neyin öne çıkabileceğini gösterir.';
+
+/**
+ * Motivasyon profilinde bileşik ölçeğin iki parçasından biri yüksek, öteki düşük mü: parçaların düzeyi "Düzeylerin
+ * anlamı"ndaki kartlarından okunur (bölümün kendi hesabından bağımsız).
+ */
+function motivationSplit(levels: Map<string, PartCard>, of: string[]): boolean {
+  const groups = of.map((k) => {
+    const g = levels.get(k)?.visual as GaugeVisual | undefined;
+    return g && g.active !== null ? bandGroup(g.zones[g.active].band) : null;
+  });
+  return groups.includes('high') && groups.includes('low');
+}
 
 function checkSurvey(d: LikertInstrument, r: SimpleReport, grade: number, flagged: string[], label: string, seen: Map<string, Set<string>>) {
   const content = DAILY[d.slug] as SurveyDaily;
@@ -713,6 +726,13 @@ function checkSurvey(d: LikertInstrument, r: SimpleReport, grade: number, flagge
     if (/ayrı(ş|l)/.test(c.text ?? '')) {
       // Cevaplar iki uca ayrıldıysa örnek seçilmez (kart da düzeyin genel anlatımı yerine ayrışmayı anlatır).
       expect(c.lines, at).toBeUndefined();
+      continue;
+    }
+    if (d.profile === 'motivation' && scale.of?.length === 2 && motivationSplit(levels, scale.of)) {
+      // Motivasyon profilinde bileşik ölçeğin iki parçası biri yüksek, öteki düşük: örnek yok; kart profil yorumuna (ya da
+      // profil hesaplanamadıysa parçaların ayrı sonuçlarına) yönlendirir.
+      expect(c.lines, at).toBeUndefined();
+      expect(c.text, at).toMatch(/^Bu türün iki parçasının düzeyi birbirinden çok farklı olduğu için düzeye göre örnek seçilmedi\. /);
       continue;
     }
     if (flagged.includes(c.key)) {
@@ -1004,6 +1024,7 @@ describe('Günlük hayat: özel durumlar', () => {
       'oz-saygi': 'hepsi',
       'calisma-aliskanliklari': 'hepsi',
       'ders-calisma-motivasyonu': ['amotivation'],
+      'ogrenme-ve-basari-ozellikleri': ['competence'],
       'erteleme-ve-zaman-yonetimi': 'hepsi',
       zihniyet: 'hepsi',
       'duygusal-zeka-bilesenleri': 'hepsi',
@@ -1013,6 +1034,58 @@ describe('Günlük hayat: özel durumlar', () => {
       for (const s of dailyScales(d)) expect(scaleTone(d, s.key), `${d.slug} ${s.key}`).toBe(want === 'hepsi' || want.includes(s.key) ? 'growth' : 'trait');
     }
     for (const slug of Object.keys(GROWTH)) expect(LIVE.map((d) => d.slug), slug).toContain(slug);
+  });
+
+  it('motivasyon profili: bileşik ölçeğin parçalarından biri yüksek, öteki düşükse örnek yok; profil yorumu bu farkı anlatır', () => {
+    const dcm = LIVE.find((d) => d.slug === 'ders-calisma-motivasyonu') as LikertInstrument;
+    // Parça başına cevaplar (her parçanın beş maddesine sırayla); verilmeyen ölçek 3, null verilen ölçek boş.
+    const answersOf = (per: Record<string, readonly number[] | null>) =>
+      Object.fromEntries(
+        dcm.items.flatMap((it) => {
+          const vs = per[it.scale] === undefined ? [3, 3, 3, 3, 3] : per[it.scale];
+          if (vs === null) return [];
+          const i = dcm.items.filter((x) => x.scale === it.scale).indexOf(it);
+          return [[it.key, { value: vs[i], rtMs: 3000 }]];
+        }),
+      );
+    const SPLIT = 'Bu türün iki parçasının düzeyi birbirinden çok farklı olduğu için düzeye göre örnek seçilmedi.';
+    const cases = [
+      // (a) Merak ve keyif yüksek (3,6), önemini görme düşük (1,2): bileşik düşük (2,4); profilde `hidden` cümlesi.
+      { per: { intrinsic: [4, 4, 3, 4, 3], identified: [1, 1, 1, 1, 2] }, key: 'autonomous', groups: ['high', 'low'], says: 'merak ve keyif tek başına yüksek' },
+      // (b) Merak ve keyif düşük (2), önemini görme yüksek (5): bileşik yüksek (3,5); profilde `lean` cümlesi.
+      { per: { intrinsic: [2, 2, 2, 2, 2], identified: [5, 5, 5, 5, 5] }, key: 'autonomous', groups: ['low', 'high'], says: 'önemini görme, merak ve keyiften daha güçlü' },
+      // Baskıyla çalışma: iç baskı yüksek, dış baskı ve ödül düşük: bileşik orta; profilde `hidden` cümlesi.
+      { per: { introjected: [5, 5, 5, 5, 5], external: [1, 1, 1, 1, 1] }, key: 'controlled', groups: ['high', 'low'], says: 'iç baskı tek başına yüksek' },
+      // Öbür bileşik ölçek hesaplanamadı (cevapsız): profil yok; kart parçaların ayrı sonuçlarına yönlendirir.
+      { per: { intrinsic: [4, 4, 3, 4, 3], identified: [1, 1, 1, 1, 2], introjected: null, external: null }, key: 'autonomous', groups: ['high', 'low'], says: null },
+    ] as const;
+    for (const audience of ['student', 'parent'] as const) {
+      for (const c of cases) {
+        const content = surveyContent(dcm, answersOf(c.per), audience);
+        const at = `${audience} ${JSON.stringify(c.per)}`;
+        const scale = dcm.scales.find((s) => s.key === c.key)!;
+        expect(scale.of!.map((k) => bandGroup(content.sections.find((s) => s.scaleKey === k)!.band)), at).toEqual(c.groups);
+        const card = partCards(surveyDailyPart({ def: dcm, content, parts: [] })!).find((x) => x.key === c.key)!;
+        expect(card.lines, at).toBeUndefined();
+        // Rozet ve iki uç kalır.
+        expect(card.badge, at).toBe(content.sections.find((s) => s.scaleKey === c.key)!.bandLabel);
+        expect((card.visual as PolesVisual).type, at).toBe('poles');
+        if (c.says) {
+          expect(card.text, at).toBe(`${SPLIT} Motivasyon profilindeki açıklama bu farkı anlatıyor.`);
+          // build.ts profil yorumuna baskın parçayı anlatan cümleyi ekledi: kartın sözü doğru.
+          expect(content.motivation!.pattern, at).not.toBeNull();
+          expect(content.motivation!.text.split('\n\n').slice(1).join(' '), at).toContain(c.says);
+        } else {
+          expect(card.text, at).toBe(`${SPLIT} Raporda iki parçanın sonucu ayrı ayrı gösteriliyor.`);
+          expect(content.motivation!.pattern, at).toBeNull();
+        }
+        for (const s of sentences(card.text!)) expect(wordCount(s), s).toBeLessThanOrEqual(22);
+        if (audience === 'parent') expect(hasSecondPerson(card.text!), card.text).toBe(false);
+        // Öbür bileşik ölçeğin kartı (parçaları ayrışmadıysa) örneklerini gösterir.
+        const other = partCards(surveyDailyPart({ def: dcm, content, parts: [] })!).find((x) => x.key === (c.key === 'autonomous' ? 'controlled' : 'autonomous'))!;
+        if (other.badge !== 'Hesaplanamadı') expect(other.lines?.length, at).toBe(3);
+      }
+    }
   });
 
   it('metni olmayan testte bölüm yok; sesli okumanın veli raporu öğrenciden söz eder', () => {

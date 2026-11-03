@@ -10,14 +10,16 @@ import type { SurveyDaily } from './types';
  * Maddeler inançları sorar; örnekler o inancın zorlanılan bir anda akla gelen düşünce ya da yapılan seçim olarak nasıl
  * görünebileceğini, maddelerin kendi sözlerine yakın anlatır ("Benim kafam buna çalışmıyor" ← "insanın ya kafası çalışır ya
  * çalışmaz"). "Zekâ" ve "yetenek" sözcükleri günlük hayat örneklerinde kullanılmaz (kişi hakkında bir yetenek ya da zekâ
- * yargısı gibi okunmasın); "akıl", "kafa" ve "bana göre değil" denir. "Zekâ oyunu" bir oyunun adıdır. "Beceriksiz görünmek"
+ * yargısı gibi okunmasın); "akıl", "kafa" ve "bana göre değil" denir. Zekâya bakış'ın örnekleri oyun anmaz: oyunla
+ * "aklın açılması" bir beyin çalıştırma inancı gibi okunurdu (sitede böyle bir vaat verilmez). "Beceriksiz görünmek"
  * (G5) "acemi görünmek", "başarısız olmak" (H2, H6) "yapamamak", "kaybetmek" diye anlatılır.
  *
  * Kartlar birbiriyle çelişmesin diye: Zekâya bakış aklın gelişip gelişmeyeceğini (Z2–Z6), Çabaya bakış çok çalışmak
  * gerekmesinin ne anlama geldiğini ve emeğin karşılığını (C1–C6), Hataya bakış hatanın ve kaybetmenin anlamını (H1–H6),
  * Zorluğa yaklaşım zorlayıcı işi seçmeyi (G1–G6) anlatır; bir başkasının başarısını doğuştan gelene ya da çalışmaya bağlama
  * yalnızca Çabaya bakış'ta (C3, C6) geçer. Okul satırları ders ve sınavdan söz eder, sınıfa özgü bir yer söylemez: sınava
- * hazırlanan bir mezun için de anlamlıdır.
+ * hazırlanan bir mezun için de anlamlıdır. Çabaya bakış'ın düşük ucundaki ev satırı evde başkalarını varsaydığı için
+ * yetişkinin kendi ev satırı vardır (`adult.home`).
  */
 export const zihniyetDaily: SurveyDaily = {
   kind: 'survey',
@@ -33,15 +35,15 @@ export const zihniyetDaily: SurveyDaily = {
       poles: { low: 'Aklı doğuştan belli sayar', high: 'Aklı gelişebilir sayar' },
       bands: {
         low: {
-          from: { school: ['Z5'], friends: ['Z1'], home: ['Z3'], work: ['Z5'] },
+          from: { school: ['Z5'], friends: ['Z1', 'Z3'], home: ['Z3'], work: ['Z5'] },
           student: {
             school: 'Matematik ya da yabancı dilde zorlanınca “Benim kafam buna çalışmıyor” diye düşünebilirsin.',
-            friends: 'Arkadaşlarınla bir zekâ oyunu oynarken kimin iyi olacağının doğuştan belli olduğunu düşünebilirsin.',
+            friends: 'Arkadaşlarınla konuşurken insanın aklının doğuştan belli olduğunu, sonradan pek değişmeyeceğini söyleyebilirsin.',
             home: 'Yeni bir şeyi öğrenmekte zorlanınca “Ben böyleyim, bu değişmez” diye düşünebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz matematik ya da yabancı dilde zorlanınca “Benim kafam buna çalışmıyor” diye düşünebilir.',
-            friends: 'Arkadaşlarıyla bir zekâ oyunu oynarken kimin iyi olacağının doğuştan belli olduğunu düşünebilir.',
+            friends: 'Arkadaşlarıyla konuşurken insanın aklının doğuştan belli olduğunu, sonradan pek değişmeyeceğini söyleyebilir.',
             home: 'Yeni bir şeyi öğrenmekte zorlanınca “Ben böyleyim, bu değişmez” diye düşünebilir.',
           },
           adult: {
@@ -52,12 +54,12 @@ export const zihniyetDaily: SurveyDaily = {
           from: { school: ['Z4', 'Z5'], friends: ['Z2'], home: ['Z4', 'Z3'], work: ['Z4', 'Z5'] },
           student: {
             school: 'Bazı derslerde çalıştıkça gelişebileceğini, bazılarında kafanın buna çalışmadığını düşünebilirsin.',
-            friends: 'Arkadaşlarınla zor bir zekâ oyunu oynarken uğraştıkça aklının açılacağını bazen düşünebilir, bazen düşünmeyebilirsin.',
+            friends: 'Arkadaşlarınla konuşurken insanın uğraştıkça aklının gelişebileceğini bazen söyleyebilir, bazen buna pek inanmayabilirsin.',
             home: 'Yeni bir şey öğrenirken bazen “Çalışırsam gelişirim”, bazen “Ben böyleyim” diye düşünebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı derslerde çalıştıkça gelişebileceğini, bazılarında kafasının buna çalışmadığını düşünebilir.',
-            friends: 'Arkadaşlarıyla zor bir zekâ oyunu oynarken uğraştıkça aklının açılacağını bazen düşünebilir, bazen düşünmeyebilir.',
+            friends: 'Arkadaşlarıyla konuşurken insanın uğraştıkça aklının gelişebileceğini bazen söyleyebilir, bazen buna pek inanmayabilir.',
             home: 'Yeni bir şey öğrenirken bazen “Çalışırsam gelişirim”, bazen “Ben böyleyim” diye düşünebilir.',
           },
           adult: {
@@ -68,12 +70,12 @@ export const zihniyetDaily: SurveyDaily = {
           from: { school: ['Z4'], friends: ['Z2'], home: ['Z6'], work: ['Z4'] },
           student: {
             school: 'Zorlandığın bir derste “Çalıştıkça aklım da gelişir” diye düşünebilirsin.',
-            friends: 'Arkadaşlarınla zor bir zekâ oyunu oynadıkça aklının açılabileceğini düşünebilirsin.',
+            friends: 'Arkadaşlarınla konuşurken insanın zorlandığı işlerle uğraştıkça aklının gelişebileceğini söyleyebilirsin.',
             home: 'Bugün zorlandığın bir şeyde yıllar içinde çok gelişebileceğine inanabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz zorlandığı bir derste “Çalıştıkça aklım da gelişir” diye düşünebilir.',
-            friends: 'Arkadaşlarıyla zor bir zekâ oyunu oynadıkça aklının açılabileceğini düşünebilir.',
+            friends: 'Arkadaşlarıyla konuşurken insanın zorlandığı işlerle uğraştıkça aklının gelişebileceğini söyleyebilir.',
             home: 'Bugün zorlandığı bir şeyde yıllar içinde çok gelişebileceğine inanabilir.',
           },
           adult: {
@@ -90,7 +92,7 @@ export const zihniyetDaily: SurveyDaily = {
      * örnek "öğrenmen uzun sürünce" der, başkalarıyla kıyaslamaz.
      */
     effort: {
-      poles: { low: 'Çabayı olumsuz yorar', high: 'Çabayı ilerleme sayar' },
+      poles: { low: 'Çabayı kötü işaret sayar', high: 'Çabayı ilerleme sayar' },
       bands: {
         low: {
           from: { school: ['C2', 'C4'], friends: ['C4'], home: ['C6', 'C3'], work: ['C2', 'C4'] },
@@ -106,6 +108,8 @@ export const zihniyetDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir konu için çok uğraşman gerekince “Bu iş bana göre değil” diye düşünebilirsin.',
+            // Öğrencinin ev satırı evde başkalarını varsayar; yalnız yaşayan bir yetişkin için kendi ev satırı.
+            home: 'Bir ev işini çok iyi yapan birini görünce bunun çalışmadan, doğuştan geldiğini düşünebilirsin.',
           },
         },
         average: {
@@ -168,7 +172,7 @@ export const zihniyetDaily: SurveyDaily = {
           },
         },
         average: {
-          from: { school: ['H1', 'H4'], friends: ['H6'], home: ['H3'], work: ['H1', 'H4'] },
+          from: { school: ['H1', 'H2'], friends: ['H6'], home: ['H3'], work: ['H1', 'H2'] },
           student: {
             school: 'Bir sınavdaki hatanın bazen neyi öğrenmen gerektiğini gösterdiğini, bazen seni geri götürdüğünü düşünebilirsin.',
             friends: 'Arkadaşlarınla kaybettiğin bir oyunu bazen yeniden düşünebilir, bazen aklından çıkarmak isteyebilirsin.',

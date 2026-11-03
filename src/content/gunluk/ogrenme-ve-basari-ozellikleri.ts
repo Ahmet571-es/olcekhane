@@ -2,8 +2,9 @@ import { kafaYoranIsler } from './dusunmeyi-sevme-olcegi';
 import type { DailyBand, ScaleDaily, SurveyDaily } from './types';
 
 /**
- * Öğrenme ve Başarı Özellikleri: günlük hayatta nasıl görünür (9. sınıftan yetişkine). Ton: özellik (şablon
- * değerlendirici değildir ve destek kutusu yoktur; lib/reports/daily-parts.ts, `scaleTone`). Örnekler kişinin öğrenirken ve
+ * Öğrenme ve Başarı Özellikleri: günlük hayatta nasıl görünür (9. sınıftan yetişkine). Ton (lib/reports/daily-parts.ts,
+ * `scaleTone`): Zorlukla başa çıkma gelişim tonundadır (`GROWTH_SCALES`: maddeleri öz-yeterliği sorar; kart bunu kendisi
+ * söyler), öteki beş ölçek özellik tonundadır (şablon değerlendirici değildir, destek kutusu yoktur). Örnekler kişinin öğrenirken ve
  * çalışırken ne yapmaya yatkın olduğunu maddelerin söylediği kadar anlatır; bir düzeyi bir öğretme biçimiyle ya da "en iyi
  * öğrenme yolu"yla eşleştirmez, bir yetenek ya da başarı söylemez.
  *
@@ -20,12 +21,14 @@ import type { DailyBand, ScaleDaily, SurveyDaily } from './types';
  * ve gerekçeleri dusunmeyi-sevme-olcegi.ts'tedir, burada yalnızca madde anahtarları çevrilir.
  *
  * Özellik tonunda her uçta bir kolaylık ve bir zorluk aranır; maddelere dayanmayan bir güçlü yan uydurulmadı. Zorlukla başa
- * çıkma'nın düşük ucundaki kolaylık bir rahatlıktır ("güvendiğin işi seçmek sana daha rahat gelebilir"); öteki maddeler o
- * uçta bir güçlü yan söylemez. Maddeye doğrudan dayanmayan, ucun doğal karşılığı olan uzantılar: Çaba ve sebat'ta "kalan
+ * çıkma gelişim tonunda bugünkü durumu anlatır: düşük uçta bir güçlü yan, yüksek uçta bir bedel yazılmaz ("güvendiğin kısmı
+ * seçmek daha rahat gelebilir" bugünkü tercihi anlatır). Maddeye doğrudan dayanmayan, ucun doğal karşılığı olan uzantılar:
+ * Çaba ve sebat'ta "kalan
  * zamanını başka şeylere ayırabilirsin" (dili06'nın kolay yanı) ve "yorulabilirsin" (dili01'in bedeli); İşe hemen koyulma'da
  * arkadaşların bir işi sonraya bırakmak istemesinin "pek uygun gelmeyebilir" oluşu (init02 ve init10'un öbür yüzü);
- * Planlı ve dikkatli çalışma'da "esneklik" (plan08'in kolay yanı; şablondaki "kendiliğindenlik bazı durumlarda işe yarar");
- * Zorlukla başa çıkma'da "hepsine yetişmek bazen zor olabilir" (comp02 ve comp03'ün bedeli).
+ * Planlı ve dikkatli çalışma'da "esneklik" (plan08'in kolay yanı; şablondaki "kendiliğindenlik bazı durumlarda işe yarar").
+ * İşe hemen koyulma'nın düşük ucunda init08 ("…birinin beni dürtmesi gerekir") başlamayı kolay değil, bir arkadaşın
+ * "Hadi başlayalım" demesini iyi gelen bir şey olarak anlatır.
  */
 
 /** Düşünmeyi Sevme Ölçeği'nin anahtarları (n01) bu testte ncog01'dir. */
@@ -121,12 +124,12 @@ export const ogrenmeVeBasariDaily: SurveyDaily = {
           from: { school: ['init09'], friends: ['init08'], home: ['init10'], work: ['init07'] },
           student: {
             school: 'Oturup ders çalışmaya başlamak sana zor gelebilir.',
-            friends: 'Bir arkadaşın “Hadi başlayalım” deyince işe koyulmak sana kolay gelebilir.',
+            friends: 'Bir işe başlarken bir arkadaşının “Hadi başlayalım” demesi sana iyi gelebilir.',
             home: 'Hoşuna gitmeyen bir ev işini sonraya bırakabilirsin.',
           },
           parent: {
             school: 'Oturup ders çalışmaya başlamak çocuğunuza zor gelebilir.',
-            friends: 'Bir arkadaşı “Hadi başlayalım” deyince işe koyulmak ona kolay gelebilir.',
+            friends: 'Bir işe başlarken bir arkadaşının “Hadi başlayalım” demesi ona iyi gelebilir.',
             home: 'Hoşuna gitmeyen bir ev işini sonraya bırakabilir.',
           },
           adult: {
@@ -233,7 +236,7 @@ export const ogrenmeVeBasariDaily: SurveyDaily = {
      * elimdeki işe veremem", comp09 "İşleri sonuna kadar götürmem". Örnekler bir beceriyi değil, kendine güveni anlatır.
      */
     competence: {
-      poles: { low: 'Zor işe temkinli yaklaşır', high: 'Zor işe güvenle yaklaşır' },
+      poles: { low: 'Zorlanınca güveni azalır', high: 'Zor işe güvenle yaklaşır' },
       bands: {
         low: {
           from: { school: ['comp04'], friends: ['comp02', 'comp03'], home: ['comp06'], work: ['comp04'] },
@@ -254,12 +257,12 @@ export const ogrenmeVeBasariDaily: SurveyDaily = {
         average: {
           from: { school: ['comp04'], friends: ['comp02'], home: ['comp06'], work: ['comp04'] },
           student: {
-            school: 'Bazı derslerde zorlu bir görevi hevesle üstlenebilir, bazılarında çekinebilirsin.',
+            school: 'Zorlu bir görev önerildiğinde bazen hevesle üstlenebilir, bazen çekinebilirsin.',
             friends: 'Arkadaşlarınla yeni bir işe girişirken bazen kendine güvenebilir, bazen emin olamayabilirsin.',
             home: 'Karşına çıkan bazı sorunları çözebileceğine güvenebilir, bazılarında emin olamayabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazı derslerde zorlu bir görevi hevesle üstlenebilir, bazılarında çekinebilir.',
+            school: 'Çocuğunuz zorlu bir görev önerildiğinde bazen hevesle üstlenebilir, bazen çekinebilir.',
             friends: 'Arkadaşlarıyla yeni bir işe girişirken bazen kendine güvenebilir, bazen emin olamayabilir.',
             home: 'Karşısına çıkan bazı sorunları çözebileceğine güvenebilir, bazılarında emin olamayabilir.',
           },
@@ -271,12 +274,12 @@ export const ogrenmeVeBasariDaily: SurveyDaily = {
           from: { school: ['comp04'], friends: ['comp02', 'comp03'], home: ['comp06'], work: ['comp04', 'comp06'] },
           student: {
             school: 'Zorlu bir proje ya da görev önerildiğinde onu üstlenmeye istekli olabilirsin.',
-            friends: 'Arkadaşlarınla bir iş yaparken pek çok görevi birden üstlenebilirsin; hepsine yetişmek bazen zor olabilir.',
+            friends: 'Arkadaşlarınla ortak bir işte hangi görev düşse yapabileceğini hissedebilirsin.',
             home: 'Beklenmedik bir sorun çıkınca üstesinden gelebileceğine güvenebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz zorlu bir proje ya da görev önerildiğinde onu üstlenmeye istekli olabilir.',
-            friends: 'Arkadaşlarıyla bir iş yaparken pek çok görevi birden üstlenebilir; hepsine yetişmek bazen zor olabilir.',
+            friends: 'Arkadaşlarıyla ortak bir işte hangi görev düşse yapabileceğini hissedebilir.',
             home: 'Beklenmedik bir sorun çıkınca üstesinden gelebileceğine güvenebilir.',
           },
           adult: {
@@ -314,12 +317,12 @@ export const ogrenmeVeBasariDaily: SurveyDaily = {
         average: {
           from: { school: ['open04'], friends: ['open03'], home: ['open05'], work: ['open04'] },
           student: {
-            school: 'Bazı derslerde konunun fazlasını öğrenmek isteyebilir, bazılarında bildiğin kadarı sana yetebilir.',
+            school: 'Bir konuyu öğrendikten sonra bazen devamını merak edebilir, bazen öğrendiğin kadarı sana yetebilir.',
             friends: 'Arkadaşlarınla bazen değişik bir şey denemeyi, bazen alıştığın şeyleri yapmayı seçebilirsin.',
             home: 'Hayatındaki bazı değişiklikleri merakla karşılayabilir, bazılarını istemeyebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazı derslerde konunun fazlasını öğrenmek isteyebilir, bazılarında bildiği kadarı ona yetebilir.',
+            school: 'Çocuğunuz bir konuyu öğrendikten sonra bazen devamını merak edebilir, bazen öğrendiği kadarı ona yetebilir.',
             friends: 'Arkadaşlarıyla bazen değişik bir şey denemeyi, bazen alıştığı şeyleri yapmayı seçebilir.',
             home: 'Hayatındaki bazı değişiklikleri merakla karşılayabilir, bazılarını istemeyebilir.',
           },

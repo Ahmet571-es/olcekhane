@@ -18,9 +18,13 @@ import type { SurveyDaily } from './types';
  *
  * Kartlar birbiriyle çelişmesin diye: Kendi isteğiyle çalışma "Öğrendiklerimin hayatta işime yarayacağını düşündüğüm için
  * çalışırım" (ID1) maddesini anlatmaz; aynı konu İsteksizlik'teki AM2'de ("…işime yaramayacağını düşünüyorum") anlatılır,
- * iki kart aynı konuyu iki yerden söylemez. Hassas iki madde örneğe kaynak olmaz: "…kendimi yetersiz biri gibi hissedeceğim
- * için" (IJ3) ve "Çevremdekilerin beni başarısız biri olarak görmesinden korktuğum için" (IJ4) yalnızca yumuşatılarak, bir
- * etiket sözcüğü kullanmadan anlatılır ("arkadaşlarının senin hakkında ne düşüneceği"). Kapsayıcılık: "ailem" (EX1) yerine
+ * iki kart aynı konuyu iki yerden söylemez. "…kendimi yetersiz biri gibi hissedeceğim için" (IJ3) örneğe kaynak olmaz;
+ * "Çevremdekilerin beni başarısız biri olarak görmesinden korktuğum için" (IJ4) yalnızca yumuşatılarak, bir etiket sözcüğü
+ * kullanmadan anlatılır ("arkadaşlarının senin hakkında ne düşüneceği").
+ *
+ * Bileşik bir ölçeğin iki parçasından biri yüksek, öteki düşükse kart örnek göstermez (lib/reports/daily-parts.ts,
+ * `motivationPartsSplit`): okul ve arkadaş satırları bir parçanın, ev satırı ötekinin maddelerinden yazıldığı için hangi
+ * düzeyin örnekleri seçilse biri parçasının kendi kartıyla çelişirdi; profil yorumu bu farkı anlatır. Kapsayıcılık: "ailem" (EX1) yerine
  * "evdekiler"; telefon ya da harçlık (EX2, EX3) varsayılmaz, "bir ödül" denir.
  */
 export const dersCalismaMotivasyonuDaily: SurveyDaily = {
@@ -143,15 +147,15 @@ export const dersCalismaMotivasyonuDaily: SurveyDaily = {
       poles: { low: 'Çalışmayı anlamsız bulmaz', high: 'Şu sıralar anlam göremez' },
       bands: {
         low: {
-          from: { school: ['AM3'], friends: ['AM5'], home: ['AM2'] },
+          from: { school: ['AM3'], friends: ['AM5', 'AM1'], home: ['AM2'] },
           student: {
             school: 'Bir sınava çalışmanın sonucu değiştirebileceğini düşünebilirsin.',
-            friends: 'Arkadaşlarınla dersleri konuşurken ders çalışmayı gereksiz bulmayabilirsin.',
+            friends: 'Arkadaşlarınla dersleri konuşurken ders çalışmanın bir anlamı olduğunu düşünebilirsin.',
             home: 'Derslerde öğrendiklerinin hayatta bir işe yarayabileceğini düşünebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir sınava çalışmanın sonucu değiştirebileceğini düşünebilir.',
-            friends: 'Arkadaşlarıyla dersleri konuşurken ders çalışmayı gereksiz bulmayabilir.',
+            friends: 'Arkadaşlarıyla dersleri konuşurken ders çalışmanın bir anlamı olduğunu düşünebilir.',
             home: 'Derslerde öğrendiklerinin hayatta bir işe yarayabileceğini düşünebilir.',
           },
         },

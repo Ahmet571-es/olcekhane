@@ -74,6 +74,17 @@ import type { LevelGroup } from '@/content/reports/types';
  *     açık testte öğrenci satırlarında "sınıf", "sınıf arkadaşı", "teneffüs" yok (mezun bu satırları "Okulda ya da
  *     derslerde" başlığıyla görür): "derste", "arkadaşların" gibi.
  *
+ * Ek kurallar (2026-11-03 incelemesi: öğrenme, düşünme tarzı ve motivasyon testleri):
+ *  - Motivasyon profilinin bileşik ölçekleri (kendi isteğiyle çalışma, baskıyla çalışma): iki uç da tarafsız betimlenir;
+ *    maddeler bir nedenin ne kadar uyduğunu sorar, uca bir güçlü yan ya da bedel eklemek bir nedeni yargılamak olurdu (5.
+ *    maddedeki "her uçta bir kolaylık ve bir zorluk" burada aranmaz). Bileşiğin iki parçasından biri yüksek, öteki düşükse kart
+ *    örnek göstermez ve profil yorumuna yönlendirir (lib/reports/daily-parts.ts, `motivationPartsSplit`; T): satırlar
+ *    parçaların maddelerinden yazıldığı için biri parçasının kendi kartıyla çelişirdi.
+ *  - 4. sınıftan büyüklere açık testte bir madde telefonu ya da mesajı sorarsa satır koşullu yazılır ("Yanında telefon
+ *    varsa …"): telefonu olmayan biri de her düzeye düşebilir. "Ekran" telefon varsaymaz.
+ *  - Öğrencinin arkadaş ya da ev satırı evde başka birini varsayıyorsa ("evdekilerden biri") yetişkine kendi satırı yazılır
+ *    (`adult.home`, `adult.friends`; yukarıdaki "yazılmaz" kuralının istisnası): yetişkin yalnız yaşıyor olabilir.
+ *
  * Temkinli dil (anket): her cümle bir olasılık söyler: "-abilir / -ebilir", "çoğu zaman", "bazen", "genellikle", "…e daha
  * yatkın olabilirsin" (T: her cümlede). "Her zaman", "asla", "kesinlikle", "hiçbir zaman", "daima", "mutlaka", "her
  * seferinde", "hiç" (T) ve kişiyi tanımlayan ad ("içe dönük biri", "dağınık") kullanılmaz; davranış anlatılır. Yetenek,

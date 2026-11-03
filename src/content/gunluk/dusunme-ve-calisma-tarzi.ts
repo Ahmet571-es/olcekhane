@@ -99,12 +99,12 @@ export const dusunmeVeCalismaTarziDaily: SurveyDaily = {
         low: {
           from: { school: ['inv10'], friends: ['inv05'], home: ['inv01'], work: ['inv01'] },
           student: {
-            school: 'Bir proje için yeni bir fikir gerekince bunu bulmak sana zor gelebilir.',
+            school: 'Bir proje için yeni bir fikir gerekince aklına pek bir şey gelmiyormuş gibi hissedebilirsin.',
             friends: 'Arkadaşlarınla plan yaparken cesur planlar yerine bilinen şeyleri seçebilirsin.',
             home: 'Bir işi yeni bir yol aramadan bildiğin yolla yapmak sana kolay gelebilir.',
           },
           parent: {
-            school: 'Bir proje için yeni bir fikir gerekince bunu bulmak çocuğunuza zor gelebilir.',
+            school: 'Bir proje için yeni bir fikir gerekince çocuğunuz aklına pek bir şey gelmiyormuş gibi hissedebilir.',
             friends: 'Arkadaşlarıyla plan yaparken cesur planlar yerine bilinen şeyleri seçebilir.',
             home: 'Bir işi yeni bir yol aramadan bildiği yolla yapmak ona kolay gelebilir.',
           },
