@@ -5,12 +5,14 @@ import type { SkillsDaily } from './types';
  * Kaynak: testin tanıtımı ve `whatItMeasures` (bir durumdaki sayıların nasıl ilişkili olduğunu görmek: iki nicelik aynı
  * oranda mı büyüyor, aradaki fark mı korunuyor, bir başlangıç miktarı mı var, sonuç değişmiyor mu; eşittir işaretini iki
  * yanın aynı değerde olduğu biçiminde okumak) ve yol haritası (src/content/roadmaps/gorevler.ts, sayisalAkilYurutme: bir
- * tarifi kalabalık bir sofraya göre büyütmek; "tarif büyüyünce malzemeler artar ama pişme süresi aynı kalabilir"). Test
+ * tarifi kalabalık bir sofraya göre büyütmek; "tarif büyüyünce malzemeler artar ama pişme süresi aynı kalabilir"; tarif ve
+ * "süre aynı kalır" ilkesi sy04, sy05, sy07 ve sy13'ün konusu olduğu için ev örneği çay demlemektir). Test
  * "sayılarla akıl yürütmenin yalnızca iki yönüne … bakar; matematik başarısını ya da konu bilgisini ölçmez": örnekler bir
  * konuyu değil, orantıyı farktan ayırmayı ve eşitliği dengelemeyi anlatır. Zihinden hızlı hesap (Zihinden Hesaplama Hızı) ve
  * sayı dizileri (Sayı Dizileri) burada yoktur. Testte her seferinde aynı sorular geldiği için örnekler soruların konularını
- * (simit, yaş farkı, gömlek kurutma, kek, taksi, koro, fidan, kumbara, koşu, terazi…) ve sayılarını kullanmaz. Elle denetlendi:
- * iki kişinin puanı her turda aynı miktar artarsa aradaki fark değişmez; sabit bir başlangıç ücreti olan hizmette iki kat
+ * (simit, yaş farkı, limonata, gömlek kurutma, kek, taksi, koro, fidan, kumbara, koşu turları, terazi, boyacı, bisiklet…) ve
+ * sayılarını kullanmaz (tests/gunluk-hayat.test.ts, `EXCLUDED`). Elle denetlendi: iki oyuncu her elde aynı sayıda puan alırsa
+ * aradaki fark değişmez; iki kat çayın demlenme süresi iki katına çıkmaz; sabit bir başlangıç ücreti olan hizmette iki kat
  * kullanım iki kat ödeme değildir (sabit ücret bir kez ödenir). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
  * söylenmez.
  */
@@ -26,18 +28,18 @@ export const sayisalAkilYurutmeDaily: SkillsDaily = {
       branches: {
         school: 'Eşitliği dengelemek',
         friends: 'Puan farkı',
-        home: 'Yemeği çoğaltmak',
+        home: 'Çayın demlenme süresi',
         work: 'Sabit ücretli hizmetler',
       },
       student: {
         school: 'Matematikte eşitliğin iki yanını dengeleyerek eksik sayıyı bulmak bu tür bir iştir.',
-        friends: 'Bir oyunda iki oyuncunun puanı her turda eşit artabilir. Aradaki farkın aynı kaldığını görmek bu beceriyi ister.',
-        home: 'Bir yemeği kalabalık bir sofra için çoğaltırken malzemeler aynı oranda artar. Pişme süresinin ise aynı kalabileceğini görmek bu beceriyi ister.',
+        friends: 'Bir oyunda iki oyuncu her elde aynı sayıda puan alabilir. Aradaki farkın değişmediğini görmek bu beceriyi ister.',
+        home: 'Kalabalık bir sofra için iki kat çay demlerken demlenme süresinin iki katına çıkmadığını görmek bu beceriyi ister.',
       },
       parent: {
         school: 'Çocuğunuzun matematikte eşitliğin iki yanını dengeleyerek eksik sayıyı bulması bu tür bir iştir.',
-        friends: 'Bir oyunda iki oyuncunun puanı her turda eşit artabilir. Aradaki farkın aynı kaldığını görmek bu beceriyi ister.',
-        home: 'Bir yemeği kalabalık bir sofra için çoğaltırken malzemeler aynı oranda artar. Pişme süresinin ise aynı kalabileceğini görmek bu beceriyi ister.',
+        friends: 'Bir oyunda iki oyuncu her elde aynı sayıda puan alabilir. Aradaki farkın değişmediğini görmek bu beceriyi ister.',
+        home: 'Kalabalık bir sofra için iki kat çay demlerken demlenme süresinin iki katına çıkmadığını görmek bu beceriyi ister.',
       },
       adult: {
         work: 'Bazı hizmetlerde kullanımdan bağımsız sabit bir ücret vardır. İki kat kullanımın iki kat ödeme olmadığını görmek bu beceriyi ister.',

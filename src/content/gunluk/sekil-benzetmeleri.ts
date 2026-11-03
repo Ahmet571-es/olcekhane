@@ -9,9 +9,10 @@ import type { SkillsDaily } from './types';
  * konuyu bildiğin bir konuya benzeterek anlamak" ve "bir problemin çözüm yolunu benzer bir probleme aktarmak" sözel ya da
  * sayısal benzetmedir: kullanılmaz. Örüntünün devamını bulmak Şekil Akıl Yürütme'nin örneğidir; burada yoktur. Değişiklik
  * türlerinden döndürme ve ayna görüntüsü örneklerde anılmaz (şekli zihinde döndürmeyi Zihinde Döndürme ölçer; karışmasın).
- * Örnekler A : B :: C : ? düzenindedir: bir değişikliği ya da ilişkiyi bir çiftte bulup başka bir şekle uygulamak (ev
- * örneğinde büyüklük ilişkisi: büyük kap : büyük kapak :: küçük kap : küçük kapak). Örnekler tanımlayıcıdır; zekâ puanı ya da
- * sonucun bu işlerde ne olacağı söylenmez.
+ * Örnekler A : B :: C : ? düzenindedir: bir şekilden ötekine olan değişikliği bulup başka biçimdeki bir şekle uygulamak (ev
+ * örneğinde düz kurabiye : süslü kurabiye :: başka biçimdeki kurabiye : ?; işte bir başlığa yapılan biçim değişikliği öteki
+ * başlıklara). Birbirine "uyan" şeyleri eşlemek (kaba kapak) bir değişiklik değil, Sözel Akıl Yürütme'nin sorduğu türden bir
+ * ilişkidir: kullanılmaz. Örnekler tanımlayıcıdır; zekâ puanı ya da sonucun bu işlerde ne olacağı söylenmez.
  */
 export const sekilBenzetmeleriDaily: SkillsDaily = {
   kind: 'skills',
@@ -25,21 +26,21 @@ export const sekilBenzetmeleriDaily: SkillsDaily = {
       branches: {
         school: 'Örnekteki değişiklik',
         friends: 'Benzetme bulmacaları',
-        home: 'Kaplara kapak eşlemek',
-        work: 'Tasarımda aynı değişiklik',
+        home: 'Kurabiyede aynı süsleme',
+        work: 'Başlıklarda aynı değişiklik',
       },
       student: {
         school: 'Derste örnekteki şekle yapılan değişikliği bulup başka bir şekle uygulamak bu tür bir iştir.',
         friends: '“Bu ona neyse, şu da …?” diye sorulan şekil bulmacalarını çözmek bu beceriyi ister.',
-        home: 'Büyük kaba büyük kapak gidiyorsa küçük kaba küçük kapağın gideceğini görmek de bir benzetmedir.',
+        home: 'Bir kurabiyeye yapılan süslemeyi görüp aynısını başka biçimdeki bir kurabiyeye uygulamak bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun derste örnekteki şekle yapılan değişikliği bulup başka bir şekle uygulaması bu tür bir iştir.',
         friends: '“Bu ona neyse, şu da …?” diye sorulan şekil bulmacalarını çözmek bu beceriyi ister.',
-        home: 'Büyük kaba büyük kapak gidiyorsa küçük kaba küçük kapağın gideceğini görmek de bir benzetmedir.',
+        home: 'Bir kurabiyeye yapılan süslemeyi görüp aynısını başka biçimdeki bir kurabiyeye uygulamak bu tür bir iştir.',
       },
       adult: {
-        work: 'Bir tasarımda bir öğeye yapılan değişikliği bulup aynısını başka bir öğeye uygulamak bu tür bir iştir.',
+        work: 'Bir belgede bir başlığa yapılan biçim değişikliğini görüp aynısını öteki başlıklara uygulamak bu tür bir iştir.',
       },
     },
   ],

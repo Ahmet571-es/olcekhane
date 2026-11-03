@@ -10,7 +10,8 @@ import type { SkillsDaily } from './types';
  * hakkında bilgi vermez": harita ve yön bulma örneği yoktur. Yol haritasındaki "bir eşyayı parçalarından kurmak" ve "bir
  * odaya eşya yerleştirmek" üç boyutlu cisimleri çevirmeyi de ister (Üç Boyutlu Zihinde Döndürme): kullanılmaz; örneklerin
  * parçaları düzdür. Katlamak (Kâğıt Katlama, Küp Açınımı) ve karmaşık bir çizimde şekil aramak (Gizli Şekiller) burada
- * yoktur. Örneklerde parçaların ters çevrilmesi gerekmez. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı söylenmez.
+ * yoktur. Örneklerde parçaların ters çevrilmesi gerekmez ve parçaların bir bütünü oluşturması gerekir (örnekteki ev, kartona
+ * boşluksuz sığan kalıplar; serbest bir kolaj değil). Tangramın paralelkenarı bazen ters çevrilir; bu örnekte kabul edildi. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı söylenmez.
  */
 export const parcalardanSekilDaily: SkillsDaily = {
   kind: 'skills',
@@ -25,20 +26,20 @@ export const parcalardanSekilDaily: SkillsDaily = {
         school: 'Parçalardan şekil kurmak',
         friends: 'Yapboz ve tangram',
         home: 'Kâğıt parçalarla resim',
-        work: 'Parçaları sayfaya sığdırmak',
+        work: 'Kalıpları kartona sığdırmak',
       },
       student: {
         school: 'Matematikte birkaç parçanın birleşince hangi şekli oluşturacağını görmek bu tür bir iştir.',
         friends: 'Yapboz ya da tangramda bir parçanın yerini ve yönünü bulmak bu beceriyi ister.',
-        home: 'Kâğıttan kesilmiş üçgen ve karelerle bir resim oluşturmak bu tür bir iştir.',
+        home: 'Kâğıttan üçgen ve karelerle örnekteki evi oluşturmak bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun matematikte birkaç parçanın birleşince hangi şekli oluşturacağını görmesi bu tür bir iştir.',
         friends: 'Yapboz ya da tangramda bir parçanın yerini ve yönünü bulmak bu beceriyi ister.',
-        home: 'Kâğıttan kesilmiş üçgen ve karelerle bir resim oluşturmak bu tür bir iştir.',
+        home: 'Kâğıttan üçgen ve karelerle örnekteki evi oluşturmak bu tür bir iştir.',
       },
       adult: {
-        work: 'Birkaç parçanın bir sayfaya boşluksuz nasıl sığacağını önceden görmek bu tür bir iştir.',
+        work: 'Birkaç kalıbın bir kartona boşluksuz nasıl sığacağını önceden görmek bu tür bir iştir.',
       },
     },
   ],

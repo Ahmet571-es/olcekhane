@@ -29,12 +29,12 @@ export const sayiDizileriDaily: SkillsDaily = {
       },
       student: {
         school: 'Matematikte bir sayı örüntüsünün kuralını bulup eksik sayıyı yazmak bu tür bir iştir.',
-        friends: 'Arkadaşlarınla sırayla “2, 5, 8… Sıradaki ne?” gibi sayı bulmacaları sormak bu beceriyi kullanır.',
+        friends: 'Arkadaşlarınla sırayla “2, 5, 8… Sıradaki ne?” gibi sayı bulmacaları sorup çözmek bu beceriyi kullanır.',
         home: 'Bir ayın takviminde salı günlerinin tarihlerinin yedişer arttığını fark etmek bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun matematikte bir sayı örüntüsünün kuralını bulup eksik sayıyı yazması bu tür bir iştir.',
-        friends: 'Arkadaşlarıyla sırayla “2, 5, 8… Sıradaki ne?” gibi sayı bulmacaları sormak bu beceriyi kullanır.',
+        friends: 'Arkadaşlarıyla sırayla “2, 5, 8… Sıradaki ne?” gibi sayı bulmacaları sorup çözmek bu beceriyi kullanır.',
         home: 'Bir ayın takviminde salı günlerinin tarihlerinin yedişer arttığını fark etmek bu tür bir iştir.',
       },
       adult: {

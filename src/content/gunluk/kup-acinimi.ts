@@ -9,8 +9,8 @@ import type { SkillsDaily } from './types';
  * ölçer; zihinde döndürme ya da yön bulma hakkında bilgi vermez": cismi çevirmek ve harita örneği yoktur; yol haritasındaki
  * "bir cismin farklı yönlerden nasıl göründüğünü kestirmek" ve "bir eşyayı kurulum çizimine bakarak kurmak" bu yüzden
  * kullanılmaz (Üç Boyutlu Zihinde Döndürme ve Bakış Açısı Alma'nın örnekleridir). Katlanan kâğıdı delmek ya da kesmek Kâğıt
- * Katlama'nın örneğidir. Örneklerin hepsi düz bir kalıbın kutuya ya da küpe katlanmasıdır (zar yaparken karşılıklı yüzleri
- * bulmak, karton kutu kurmak, ambalaj kalıbındaki yazıların yönü). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
+ * Katlama'nın örneğidir. Örneklerin hepsi düz bir kalıbın kutuya ya da küpe katlanmasıdır (açınımda yüzlerdeki şekillerin
+ * yönü, zar yaparken karşılıklı yüzleri bulmak, karton kutu kurmak, ambalaj kalıbındaki yazıların yönü). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
  * söylenmez.
  */
 export const kupAcinimiDaily: SkillsDaily = {
@@ -29,12 +29,12 @@ export const kupAcinimiDaily: SkillsDaily = {
         work: 'Ambalaj kalıpları',
       },
       student: {
-        school: 'Matematikte bir küp açınımında hangi yüzlerin karşı karşıya geleceğini bulmak bu beceriyi ister.',
+        school: 'Matematikte bir küp açınımı katlanınca yüzlerdeki şekillerin nasıl duracağını bulmak bu beceriyi ister.',
         friends: 'Kâğıttan zar yaparken hangi yüzlerin karşılıklı geleceğini katlamadan bulmak bu beceriyi ister.',
         home: 'Düz bir karton kutuyu kurarken kapakların nereye geleceğini görmek bu beceriyi ister.',
       },
       parent: {
-        school: 'Çocuğunuzun matematikte bir küp açınımında hangi yüzlerin karşı karşıya geleceğini bulması bu beceriyi ister.',
+        school: 'Çocuğunuzun matematikte bir küp açınımı katlanınca yüzlerdeki şekillerin nasıl duracağını bulması bu beceriyi ister.',
         friends: 'Kâğıttan zar yaparken hangi yüzlerin karşılıklı geleceğini katlamadan bulmak bu beceriyi ister.',
         home: 'Düz bir karton kutuyu kurarken kapakların nereye geleceğini görmek bu beceriyi ister.',
       },

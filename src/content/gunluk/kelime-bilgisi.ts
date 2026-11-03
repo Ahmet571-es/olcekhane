@@ -6,7 +6,8 @@ import type { SkillsDaily } from './types';
  * cümlede hangi anlamda kullanıldığını ayırt etmek, deyimlerin anlamını bilmek) ve yol haritası (src/content/roadmaps/
  * gorevler.ts, kelimeBilgisi: kelime bilgisi okuduğunu anlamakla yakından ilişkilidir; okurken bilmediği kelimenin anlamını
  * cümleden tahmin etmek). Test "kelimeleri konuşurken ve yazarken kullanabilmeyi, yazım ya da dil bilgisi bilgisini ölçmez":
- * örnekler bir kelimeyi kullanmayı ya da doğru yazmayı değil, okunan ya da duyulan bir kelimenin anlamını bilmeyi anlatır.
+ * örnekler bir kelimeyi kullanmayı ya da doğru yazmayı değil, okunan ya da duyulan bir kelimenin anlamını bilmeyi anlatır
+ * (bulmacada kelimeyi bulup yazmak değil, ipucundaki kelimenin anlamını bilmek).
  * Kelimeler arasındaki ilişkiyi bulup başka bir çifte uygulamak ve kelimeleri gruplamak Sözel Akıl Yürütme'nin örneğidir.
  * Testte her seferinde aynı sorular geldiği için örnekler testteki kelime ve deyimleri kullanmaz; "dört gözle beklemek"
  * ("çok istekle beklemek", Güncel Türkçe Sözlük) testte yoktur. Kelime bilgisi bir yetenek değil, okudukça ve duydukça
@@ -25,18 +26,18 @@ export const kelimeBilgisiDaily: SkillsDaily = {
       branches: {
         school: 'Kitaptaki kelimenin anlamı',
         friends: 'Deyimleri anlamak',
-        home: 'Bulmacada eş anlamlı',
+        home: 'Bulmaca ipuçlarını anlamak',
         work: 'Resmî yazıları anlamak',
       },
       student: {
         school: 'Ders kitabındaki bir kelimenin o cümlede hangi anlamda kullanıldığını anlamak bu bilgiyi ister.',
         friends: 'Sohbette geçen “dört gözle beklemek” gibi bir deyimi anlamak bu bilgiyi kullanır.',
-        home: 'Bir bulmacada ipucu olarak verilen kelimenin eş anlamlısını bulmak bu tür bir iştir.',
+        home: 'Bir bulmacanın ipucunda geçen bir kelimenin anlamını bilmek bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun ders kitabındaki bir kelimenin o cümlede hangi anlamda kullanıldığını anlaması bu bilgiyi ister.',
         friends: 'Sohbette geçen “dört gözle beklemek” gibi bir deyimi anlamak bu bilgiyi kullanır.',
-        home: 'Bir bulmacada ipucu olarak verilen kelimenin eş anlamlısını bulmak bu tür bir iştir.',
+        home: 'Bir bulmacanın ipucunda geçen bir kelimenin anlamını bilmek bu tür bir iştir.',
       },
       adult: {
         work: 'Resmî bir yazıda geçen az kullanılan kelimelerin anlamını bilmek bu tür bir iştir.',

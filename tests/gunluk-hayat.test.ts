@@ -318,6 +318,7 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
     { pattern: /konu bilgisi|matematik notu|karne/iu, limitation: 'matematik başarısını ya da konu bilgisini ölçmez' },
     { pattern: /dizi|örüntü/iu, sibling: 'sayi-dizileri' },
     { pattern: /zihinden|kafadan|çarpım tablosu|para üstü/iu, sibling: 'zihinden-hesaplama-hizi' },
+    { pattern: /simit|gömlek|limonata|(?<!\p{L})kek(?!\p{L})|tarif|yemeği çoğalt|taksi|koro|fidan|kumbara|(?<!\p{L})tur(?:da|u|lar)?(?!\p{L})|terazi|boyacı|bisiklet/iu, rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz' },
   ],
   'zihinden-hesaplama-hizi': [
     { pattern: /problem çöz/iu, limitation: 'problem çözmenin tamamını ölçmez' },
@@ -360,6 +361,7 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
   'dusunerek-karar-verme': [
     { pattern: /bütün kararlar|hayat kararı|önemli kararlar/iu, limitation: 'günlük hayattaki bütün kararlar' },
     { pattern: /haber|iddia/iu, sibling: 'mantiksal-akil-yurutme' },
+    { pattern: /tavuk|horoz|koşu|yarış|makine|yosun|koyun|kuyruk|asansör|kütük|sincap|dergi|(?<!\p{L})muz/iu, rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz' },
   ],
   'kelime-bilgisi': [
     { pattern: /yazarken|konuşurken|yazım|dil bilgisi|cümle kur|kompozisyon/iu, limitation: 'yazım ya da dil bilgisi' },

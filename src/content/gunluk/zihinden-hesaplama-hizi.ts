@@ -10,9 +10,12 @@ import type { SkillsDaily } from './types';
  * basamaklı sayılara) ve yol haritası (src/content/roadmaps/gorevler.ts, zihindenHesaplama: alışverişte para üstünü
  * hesaplamak). Test "matematik bilgisinin ya da problem çözmenin tamamını ölçmez": örnekler problem çözmeyi değil, işlemin
  * kendisini anlatır. Yol haritasındaki "bir tarifi ikiye katlamak" orantıdır (Sayısal Akıl Yürütme): kullanılmaz. Matematik
- * Konu Tarama Testi'nin örnekleri (sınıfı eşit gruplara ayırmak, kurabiyeyi paylaştırmak) yinelenmez.
- * Sayılar elle denetlendi: beşer puanlık 4 kart 20 puan eder; 30 sayfa 5 güne bölününce günde 6 sayfa düşer; 12 mandalina
- * 3 kişiye dörder düşer. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı söylenmez.
+ * Konu Tarama Testi'nin örnekleri (sınıfı eşit gruplara ayırmak, kurabiyeyi paylaştırmak) yinelenmez; puan farkı Sayısal Akıl
+ * Yürütme'nin örneğidir (burada kazanmak için kalan puan). Saate bakıp kalan süreyi bulmak saat okumayı ve saati aşmayı da
+ * ister: kullanılmaz.
+ * Sayılar elle denetlendi: beşer puanlık 7 kart 35 puan eder; 30 sayfa 5 güne bölününce günde 6 sayfa düşer; günde 3
+ * yumurta kullanılırsa 12 yumurta 4 gün yeter. Bu işlemlerin hiçbiri testteki işlemlerden değildir (4 × 5 testte olduğu için
+ * 4 kart yazılmaz). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı söylenmez.
  */
 export const zihindenHesaplamaDaily: SkillsDaily = {
   kind: 'skills',
@@ -21,7 +24,7 @@ export const zihindenHesaplamaDaily: SkillsDaily = {
     {
       key: 'zh-add',
       short: 'Toplama',
-      text: 'Zihinden toplama, birkaç sayıyı kâğıt kalem kullanmadan, doğru ve çabuk toplamayı gerektiren işlerde kullanılır.',
+      text: 'Bu beceri, birkaç sayıyı kâğıt kalem kullanmadan, doğru ve çabuk toplamayı gerektiren işlerde kullanılır.',
       branches: {
         school: 'İki basamaklı toplamalar',
         friends: 'Zarları toplamak',
@@ -45,31 +48,31 @@ export const zihindenHesaplamaDaily: SkillsDaily = {
     {
       key: 'zh-sub',
       short: 'Çıkarma',
-      text: 'Zihinden çıkarma, kalanı ya da iki sayı arasındaki farkı kâğıt kalem kullanmadan, doğru ve çabuk bulmayı gerektiren işlerde kullanılır.',
+      text: 'Bu beceri, kalanı ya da iki sayı arasındaki farkı kâğıt kalem kullanmadan, doğru ve çabuk bulmayı gerektiren işlerde kullanılır.',
       branches: {
-        school: 'Kalan süreyi bulmak',
-        friends: 'Puan farkını bulmak',
+        school: 'Kalan sayfayı bulmak',
+        friends: 'Kalan puanı bulmak',
         home: 'Para üstünü bulmak',
-        work: 'Kalan süreyi bulmak',
+        work: 'Kalan bütçeyi bulmak',
       },
       student: {
-        school: 'Sınavın bitmesine kaç dakika kaldığını saate bakıp zihinden bulmak bu tür bir iştir.',
-        friends: 'Bir oyunda iki takımın puan farkını zihinden bulmak bu tür bir iştir.',
+        school: 'Okuduğun kitabın bitmesine kaç sayfa kaldığını zihinden bulmak bu tür bir iştir.',
+        friends: 'Bir oyunda kazanmak için kaç puan kaldığını zihinden bulmak bu tür bir iştir.',
         home: 'Alışverişte para üstünü zihinden hesaplamak bu tür bir iştir.',
       },
       parent: {
-        school: 'Çocuğunuzun sınavın bitmesine kaç dakika kaldığını saate bakıp zihinden bulması bu tür bir iştir.',
-        friends: 'Bir oyunda iki takımın puan farkını zihinden bulmak bu tür bir iştir.',
+        school: 'Çocuğunuzun okuduğu kitabın bitmesine kaç sayfa kaldığını zihinden bulması bu tür bir iştir.',
+        friends: 'Bir oyunda kazanmak için kaç puan kaldığını zihinden bulmak bu tür bir iştir.',
         home: 'Alışverişte para üstünü zihinden hesaplamak bu tür bir iştir.',
       },
       adult: {
-        work: 'Bir toplantının bitmesine kaç dakika kaldığını saate bakıp zihinden bulmak bu tür bir iştir.',
+        work: 'Bir bütçeden harcananı çıkarıp kalanı kâğıda yazmadan bulmak bu tür bir iştir.',
       },
     },
     {
       key: 'zh-mul',
       short: 'Çarpma',
-      text: 'Zihinden çarpma, aynı miktardan birkaç tane olduğunda toplamı kâğıt kalem kullanmadan, doğru ve çabuk bulmayı gerektiren işlerde kullanılır.',
+      text: 'Bu beceri, aynı miktardan birkaç tane olduğunda toplamı kâğıt kalem kullanmadan, doğru ve çabuk bulmayı gerektiren işlerde kullanılır.',
       branches: {
         school: 'Çarpım tablosu',
         friends: 'Kartların puanı',
@@ -78,12 +81,12 @@ export const zihindenHesaplamaDaily: SkillsDaily = {
       },
       student: {
         school: 'Matematikte çarpım tablosundaki sonuçları sayarak bulmak yerine hemen hatırlamak bu tür bir iştir.',
-        friends: 'Beşer puanlık 4 kartın kaç puan ettiğini zihinden bulmak bu tür bir iştir.',
+        friends: 'Beşer puanlık 7 kartın kaç puan ettiğini zihinden bulmak bu tür bir iştir.',
         home: 'Aynı fiyattan birkaç ürünün tutarını zihinden bulmak bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun matematikte çarpım tablosundaki sonuçları sayarak bulmak yerine hemen hatırlaması bu tür bir iştir.',
-        friends: 'Beşer puanlık 4 kartın kaç puan ettiğini zihinden bulmak bu tür bir iştir.',
+        friends: 'Beşer puanlık 7 kartın kaç puan ettiğini zihinden bulmak bu tür bir iştir.',
         home: 'Aynı fiyattan birkaç ürünün tutarını zihinden bulmak bu tür bir iştir.',
       },
       adult: {
@@ -93,22 +96,22 @@ export const zihindenHesaplamaDaily: SkillsDaily = {
     {
       key: 'zh-div',
       short: 'Bölme',
-      text: 'Zihinden bölme, bir miktarı eşit parçalara ayırmayı kâğıt kalem kullanmadan, doğru ve çabuk yapmayı gerektiren işlerde kullanılır.',
+      text: 'Bu beceri, bir miktarı eşit parçalara ayırmayı kâğıt kalem kullanmadan, doğru ve çabuk yapmayı gerektiren işlerde kullanılır.',
       branches: {
         school: 'Ödevi günlere bölmek',
         friends: 'Kartları dağıtmak',
-        home: 'Eşit paylaştırmak',
+        home: 'Kaç gün yeteceği',
         work: 'Tutarı paylaştırmak',
       },
       student: {
         school: '30 sayfalık bir ödev 5 güne eşit bölünebilir. Günde kaç sayfa düştüğünü zihinden bulmak bu tür bir iştir.',
         friends: 'Kartları oyunculara eşit dağıtırken kaçar tane düşeceğini zihinden bulmak bu tür bir iştir.',
-        home: '12 mandalinayı 3 kişiye eşit paylaştırırken kaçar tane düşeceğini zihinden bulmak bu beceriyi ister.',
+        home: '12 yumurtalık bir koliden günde 3 yumurta kullanılırsa kaç gün yeteceğini zihinden bulmak bu beceriyi ister.',
       },
       parent: {
         school: 'Çocuğunuzun 30 sayfalık bir ödevi 5 güne eşit bölmesi gerekebilir. Günde kaç sayfa düştüğünü zihinden bulmak bu tür bir iştir.',
         friends: 'Kartları oyunculara eşit dağıtırken kaçar tane düşeceğini zihinden bulmak bu tür bir iştir.',
-        home: '12 mandalinayı 3 kişiye eşit paylaştırırken kaçar tane düşeceğini zihinden bulmak bu beceriyi ister.',
+        home: '12 yumurtalık bir koliden günde 3 yumurta kullanılırsa kaç gün yeteceğini zihinden bulmak bu beceriyi ister.',
       },
       adult: {
         work: 'Bir tutarı birkaç kişi arasında eşit bölmeyi kâğıda yazmadan yapmak bu tür bir iştir.',

@@ -9,7 +9,8 @@ import type { SkillsDaily } from './types';
  * hakkında bilgi vermez": döndürme ve harita ya da kroki örneği yoktur. Yol haritasındaki "bir kutunun açınımını düşünmek"
  * Küp Açınımı'nın, "bir eşyayı kurmak" Parçalardan Şekil'in ve Üç Boyutlu Zihinde Döndürme'nin örneğidir: kullanılmaz.
  * Örnekler katlamayı, katlanmış kâğıdı kesmeyi ya da delmeyi ve açılınca nasıl görüneceğini canlandırmayı ister (okulda
- * katlayarak simetri, kâğıttan süs, origami, broşür katlamak). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
+ * katlayarak simetri, kâğıttan süs, origami, mektubu zarfa katlamak; katlanınca yazının nereye geleceği Küp Açınımı'nın iş
+ * örneğidir). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
  * söylenmez.
  */
 export const kagitKatlamaDaily: SkillsDaily = {
@@ -25,7 +26,7 @@ export const kagitKatlamaDaily: SkillsDaily = {
         school: 'Katlayarak simetri',
         friends: 'Origami yapmak',
         home: 'Kâğıttan süs kesmek',
-        work: 'Broşür katlamak',
+        work: 'Mektubu katlamak',
       },
       student: {
         school: 'Matematikte bir şekli katlayınca iki yarısının üst üste gelip gelmeyeceğini düşünmek bu beceriyi ister.',
@@ -38,7 +39,7 @@ export const kagitKatlamaDaily: SkillsDaily = {
         home: 'Katlanmış kâğıttan süs keserken açılınca nasıl görüneceğini düşünmek bu tür bir iştir.',
       },
       adult: {
-        work: 'Bir broşürü katlarken yazıların nereye geleceğini önceden görmek bu tür bir iştir.',
+        work: 'Bir mektubu zarfa sığsın diye katlarken hangi bölümün dışta kalacağını önceden görmek bu tür bir iştir.',
       },
     },
   ],

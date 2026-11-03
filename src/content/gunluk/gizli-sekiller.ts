@@ -10,7 +10,8 @@ import type { SkillsDaily } from './types';
  * haritasındaki "bir haritada ya da grafikte aradığın bilgiyi bulmak" ve "kalabalık bir tabloda bir sayıyı seçmek" bir
  * listede ya da tabloda arama işidir (Simge Bulma'nın örnekleri: listede ad, tabloda kayıt bulmak): kullanılmaz; burada
  * aranan şekil, başka çizgilerin arasına karışmıştır. Parçaları birleştirmek (Parçalardan Şekil) ve şekli döndürmek (Zihinde
- * Döndürme) burada yoktur; testte şekil aynı yönde saklıdır. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
+ * Döndürme) burada yoktur; testte şekil aynı yönde saklıdır (gizli resim bulmacalarında nesne çoğu zaman döndürülür: tür adı
+ * kullanılmaz). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
  * söylenmez.
  */
 export const gizliSekillerDaily: SkillsDaily = {
@@ -24,18 +25,18 @@ export const gizliSekillerDaily: SkillsDaily = {
       text: 'Bu beceri, karmaşık bir çizimin içine karışmış basit bir şekli bulmayı, yani parçayı onu saran bütünden ayırmayı gerektiren işlerde kullanılır.',
       branches: {
         school: 'Şekildeki üçgenleri saymak',
-        friends: 'Gizli resim bulmacaları',
+        friends: 'Resimde saklı şekiller',
         home: 'Desende şekil seçmek',
         work: 'Şemada parça seçmek',
       },
       student: {
         school: 'Matematikte iç içe çizilmiş şekillerde kaç üçgen olduğunu bulmak bu tür bir iştir.',
-        friends: 'Bir resmin çizgileri arasına saklanmış şekilleri bulma bulmacaları bu beceriyi kullanır.',
+        friends: 'Bir resmin çizgileri arasına saklanmış şekilleri aramak bu beceriyi kullanır.',
         home: 'Bir halı deseninin çizgileri arasında bir yıldız şekli seçmek bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun matematikte iç içe çizilmiş şekillerde kaç üçgen olduğunu bulması bu tür bir iştir.',
-        friends: 'Bir resmin çizgileri arasına saklanmış şekilleri bulma bulmacaları bu beceriyi kullanır.',
+        friends: 'Bir resmin çizgileri arasına saklanmış şekilleri aramak bu beceriyi kullanır.',
         home: 'Bir halı deseninin çizgileri arasında bir yıldız şekli seçmek bu tür bir iştir.',
       },
       adult: {
