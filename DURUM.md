@@ -89,9 +89,7 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   maddeleriyle karşılaştırdı (`from` alanı); bulgular uygulandı (ör. dikkat testlerinde DEHB belirtisi gibi okunan örnekler,
   iyimserlikte toplam kartın alt kartlarla çelişmesi, motivasyonda iki parçası ayrışan kart, 3–4. sınıfta yazılı sınav
   olmaması; hobi testinde sıklık, beğeni değil; ilgi testlerinde meslek önerisi yok). Bütün yayındaki testlerin metni var (`DAILY_PENDING` boş). Yazım kuralları `src/content/gunluk/types.ts`'te.
-  Açık iş (Claude): aynı içeriğin her seferinde geldiği bellek testlerinde (dizi, desen, işlem) raporun içeriği yazmaması
-  (ayrı dal `sabit-uyaran`); yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik,
-  kural değiştirmede plan değiştirme): sonra uyumlanacak.
+  Açık iş (Claude): yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik, kural değiştirmede plan değiştirme): uyumlanıyor (dal `uyum-h2`); günlük hayat denetimleri sıkılaştırılıyor (dal `uyum-h1`).
 - (e) ve (f) **yayında (2026-11-03):** yol haritasının sonuca dayanan her bölümünün grafiği (Kısaca, öneriler, ortamlar ve
   yaklaşım "Bu bölümün dayandığı sonuçlar", dört haftalık zaman çizelgesi: sonuca göre seçilen ve genel öneri olan haftalar);
   herkese aynı olan bölümler (görev önerileri, okuma alışkanlıkları, kaynaklar) grafiksiz. Matematikte hata türleri grafiği.
@@ -1170,6 +1168,13 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-03 (71): Her seferinde aynı içeriğin geldiği bellek ve işlem testlerinde (Dikkat ve Bellek'in sayı ve kutu dizileri,
+  Harf-Sayı Sıralama, Hesapla ve Hatırla, Desen Hatırlama, Zihinden Hesaplama) rapor ve PDF artık dizileri, desenleri, işlemleri
+  ve cevapları yazmıyor; yalnızca uzunluk ya da düzey, doğru/yanlış, yanılgı türü ve süre (cevap anahtarı raporlardan
+  çıkmasın, test yeniden çözülünce işe yarasın; karşılaştırma notu da bunu söyler). Zihinden hesaplamada yanlış yazılan
+  işlemlerin listesi kaldırıldı. Yorumlanmayan görev kartlarında grafik yok; yalnızca "Düzey belirtilmedi" ve "En kısa dizi
+  doğru tekrarlanmadı" gibi en alt sonuçlarda grafik kalır (sonuç budur). Günlük hayat örneklerinde bu testlerin dizi ve
+  işlemlerinin geçmediği denetlendi.
 - 2026-11-03 (70): Raporları genişletme tamamlandı: (d) "Günlük hayatta" bölümü bütün testlerde (son 5: Çocuk, Hızlı,
   Ayrıntılı, Kişiliğin 10 Yönü, Altı Boyutlu kişilik); (e) yol haritası grafikleri; (f) raporun tek düğmeyle baştan sona sesli
   okunması (yaklaşık süre, "Bölümü geç" sonuçları ve yol haritasını toptan atlar, karşılaştırma sonucu da okunur). Telefonda
@@ -1238,15 +1243,3 @@ En yeni üstte; en çok 10 madde tutulur.
   sakin davranan liderler"; MacLaren (2020) küçük gruplar; Cheng (2013) iki yolun da etki kazandırdığı; De Neve künyesi.
   Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı, karşılaştırma denendi.
   Yol haritası testinin süre sınırı 120 sn'ye çıktı (test sayısı arttıkça 60 sn'ye yaklaşıyordu).
-- 2026-10-31 (61): "Gelişimini karşılaştır" görev (zekâ ve dikkat) testlerine genişletildi (site sahibinin 31 Ekim'deki
-  "birkaç yenilik daha" isteği; seçtiği yeniliklerin ilki). Yayındaki 30 görev testinin raporunda ve PDF'inde (pakette de)
-  raporda yazan ana sonuçların özeti: doğru sayısı ya da oranı, ulaşılan düzey, en uzun dizi, tipik süre
-  (`lib/compare/tasks.ts`). Sayılar raporun kendi yuvarlama yardımcılarıyla hesaplanır ve raporla aynı yazılır ("18/24",
-  "%88", "1 dk 15 sn", "8,2 derece"; sürelerde "uzadı/kısaldı"); test her sayının kendi kartında aynı biçimde yazdığını
-  denetler. Kartı kuran işlev yorumlanmayan sonucu açıkça işaretler (`interpreted: false`: "Yorumlanmadı", hesaplanamadı,
-  rastgele düzeyde doğru, soruların çoğunda "Bilmiyorum", hiç basılmadı gibi); o sayı özete girmez, hiçbir sonuç
-  yorumlanmadıysa bölüm yok. Zihinden hesaplamada toplamlar yalnızca dört bölüm de yorumlandıysa. Dökümler ve fark puanları
-  karşılaştırılmaz. Ölçüm payı bilinmediği için yalnızca yön; panelde alıştırma etkisi notu (Scharfen ve ark., 2018), aynı
-  soruların geldiği 16 testte hatırlananların da etkileyebileceği. Özetsiz dosyada, bu testin özeti olmayan paket
-  raporunda ve sonuçsuz görev raporunda ayrı uyarı. Bağımsız kod ve metin incelemesinin bulguları uygulandı. Okuma, sesli
-  okuma ve konu tarama testlerinde yok.
