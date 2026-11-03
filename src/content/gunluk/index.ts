@@ -50,6 +50,7 @@ import { tepkiHiziDaily } from './tepki-hizi';
 import { zihindeDondurmeDaily } from './zihinde-dondurme';
 import { zihniyetDaily } from './zihniyet';
 import { heyecanArayisiDaily } from './heyecan-arayisi';
+import { liderlikEgilimleriDaily } from './liderlik-egilimleri';
 import type { DailyContent } from './types';
 import { ucBoyutluZihindeDondurmeDaily } from './uc-boyutlu-zihinde-dondurme';
 import { zihindenHesaplamaDaily } from './zihinden-hesaplama-hizi';
@@ -114,4 +115,5 @@ export const DAILY: Record<string, DailyContent> = {
   'calisma-degerleri': calismaDegerleriDaily,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriDaily,
   'heyecan-arayisi': heyecanArayisiDaily,
+  'liderlik-egilimleri': liderlikEgilimleriDaily,
 };
