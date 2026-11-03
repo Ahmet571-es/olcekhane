@@ -260,7 +260,11 @@ describe('Harf işaretleme raporu', () => {
       expect(net.headline).toBe(`${result.net} net doğru`);
       expect(surdurme.headline).toBe('Son bölümlerde düştü');
       expect(surdurme.sections!.map((s) => s.value)).toEqual(result.sections.map((s) => s.net));
-      expect(c.tips.some((t) => t.includes('telefon'))).toBe(true);
+      // Dikkat dağıtıcılar için öneri var; öğrenciye: 3. sınıfa açık testte çocuğun kendi telefonu varsayılmaz.
+      if (audience === 'student') {
+        expect(c.tips.some((t) => t.includes('televizyonu kapat'))).toBe(true);
+        expect(c.tips.join(' ')).not.toContain('telefon');
+      } else expect(c.tips.some((t) => t.includes('dikkat dağıtıcı'))).toBe(true);
       expect(c.tips.join(' ')).not.toContain('Zihinden işlem');
     }
     expect(report('student').cognitive!.blocks[0].text).toContain('baktın');
