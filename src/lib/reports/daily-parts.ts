@@ -278,10 +278,20 @@ function surveyCard(input: {
 /** Ölçek profilinin türüne ve ölçeklerin tonuna göre girişteki cümle: bütün kartlar için doğru olmalıdır. */
 function kindSentence(def: LikertInstrument, content: ReportContent, tones: DailyTone[]): string {
   const a = content.audience;
-  if (def.profile === 'riasec' || def.profile === 'interests' || def.profile === 'activities') {
+  // "Yetenek" sözcüğü bölümün metinlerinde geçmez (tests/gunluk-hayat.test.ts, TALENT); ilginin yapabilmek olmadığı sözle söylenir.
+  if (def.profile === 'riasec' || def.profile === 'interests') {
     return by(a, {
-      you: 'Örnekler bir meslek ya da yetenek söylemez; ilgilerinin günlük hayatta nerede görünebileceğini anlatır.',
-      parent: 'Örnekler bir meslek ya da yetenek söylemez; çocuğunuzun ilgilerinin günlük hayatta nerede görünebileceğini anlatır.',
+      you: 'Örnekler bir meslek önermez; ilgilerinin günlük hayatta nerede görünebileceğini anlatır. Bir işe ilgi duymak, onu yapabilmek demek değildir.',
+      parent:
+        'Örnekler bir meslek önermez; çocuğunuzun ilgilerinin günlük hayatta nerede görünebileceğini anlatır. Bir işe ilgi duymak, onu yapabilmek demek değildir.',
+    });
+  }
+  // Hobi ilgileri etkinliklerin ne sıklıkla yapıldığını ölçer; sıklık ilgiye olduğu kadar zamana ve imkânlara da bağlıdır.
+  if (def.profile === 'activities') {
+    return by(a, {
+      you: 'Örnekler bir meslek önermez; boş zamanını nelere ayırdığının günlük hayatta nerede görünebileceğini anlatır. Bu sıklık zamana, imkânlara ve yaşanan yere de bağlıdır.',
+      parent:
+        'Örnekler bir meslek önermez; çocuğunuzun boş zamanını nelere ayırdığının günlük hayatta nerede görünebileceğini anlatır. Bu sıklık zamana, imkânlara ve yaşanan yere de bağlıdır.',
     });
   }
   if (def.profile === 'values') return 'Değerlerin doğrusu ya da yanlışı yoktur; örnekler yalnızca neyin öne çıkabileceğini anlatır.';
