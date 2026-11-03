@@ -49,6 +49,7 @@ import { surekliDikkatDaily } from './surekli-dikkat';
 import { tepkiHiziDaily } from './tepki-hizi';
 import { zihindeDondurmeDaily } from './zihinde-dondurme';
 import { zihniyetDaily } from './zihniyet';
+import { heyecanArayisiDaily } from './heyecan-arayisi';
 import type { DailyContent } from './types';
 import { ucBoyutluZihindeDondurmeDaily } from './uc-boyutlu-zihinde-dondurme';
 import { zihindenHesaplamaDaily } from './zihinden-hesaplama-hizi';
@@ -112,4 +113,5 @@ export const DAILY: Record<string, DailyContent> = {
   'meslek-ilgi-alanlari': meslekIlgiAlanlariDaily,
   'calisma-degerleri': calismaDegerleriDaily,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriDaily,
+  'heyecan-arayisi': heyecanArayisiDaily,
 };
