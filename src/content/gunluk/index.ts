@@ -17,6 +17,7 @@ import { gizliSekillerDaily } from './gizli-sekiller';
 import { harfDizileriDaily } from './harf-dizileri';
 import { harfSayiDaily } from './harf-sayi-siralama';
 import { hesaplaDaily } from './hesapla-ve-hatirla';
+import { hobiIlgileriDaily } from './hobi-ve-serbest-zaman-ilgileri';
 import { iyimserlikDaily } from './iyimserlik';
 import { kagitKatlamaDaily } from './kagit-katlama';
 import { kelimeBilgisiDaily } from './kelime-bilgisi';
@@ -110,4 +111,5 @@ export const DAILY: Record<string, DailyContent> = {
   'mesleki-ilgi-profili': meslekiIlgiDaily,
   'meslek-ilgi-alanlari': meslekIlgiAlanlariDaily,
   'calisma-degerleri': calismaDegerleriDaily,
+  'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriDaily,
 };
