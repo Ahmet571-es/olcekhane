@@ -1004,7 +1004,7 @@ function RoadmapPage({ rm, you, siteHost, kind, date }: { rm: Roadmap; you: bool
       ))}
 
       <View wrap={false}>
-        <Text style={[s.h2, { fontSize: 11.5 }]}>Dayandığı araştırmalar</Text>
+        <Text style={[s.h2, { fontSize: 11.5 }]}>Dayandığı kaynaklar</Text>
         {rm.sources.map((x, i) => (
           <Text key={x.text} style={[s.paraSmall, { color: C.ink2, marginBottom: 2 }]}>
             {i + 1}. {x.text} {x.url ?? ''}

@@ -11,6 +11,7 @@ import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
 import type { LikertInstrument, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
 import { oralWordCount } from '@/lib/oral/words';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
+import { partCards } from '@/lib/reports/parts';
 import type { Roadmap } from '@/lib/reports/roadmap';
 import type { RoadmapGraphic } from '@/lib/reports/roadmap-graphics';
 import type { SimpleReport } from '@/lib/reports/simple';
@@ -33,7 +34,9 @@ import { checkDrawn } from './helpers/visual-check';
  *    sonuç grafiği yoktur;
  *  - grafiklerin değerleri ve düzeyleri raporun değerleri ve düzeyleriyle, çoğunda raporun kartındaki grafikle aynıdır;
  *  - grafiklerin dayandığı anahtarlar vardır; yorumlanmayan ya da hesaplanamayan sonucun grafiği yoktur;
- *  - yazılar taşmaz, sözlü anlatımı vardır ve sadedir; PDF'te kelimeler üst üste binmez.
+ *  - önerinin düzeyi puanın düzeyinden farklıysa (destek maddesi, ayrışan alt özellikler) grafiğin başlığı nedenini söyler;
+ *  - zaman çizelgesinde sonuca göre seçilmeyen haftalar "Genel öneri"dir ("herkese aynı" denmez);
+ *  - yazılar taşmaz, sözlü anlatımı vardır, sadedir ve grafiğin görünüşünü anlatmaz; PDF'te kelimeler üst üste binmez.
  */
 
 type Kind = 'likert' | 'interest' | 'academic' | 'reading' | 'oral' | 'task';
@@ -213,6 +216,13 @@ function checkScaleValues(rm: Roadmap, v: ItemVisual, at: string) {
   }
 }
 
+/**
+ * Grafiğin görünüşünü anlatan sözler (nokta, çizgi, bant, sütun, çubuk…) ve ölçüm sayısı ("24 ölçüm") sözlü anlatımda geçmez.
+ * Görevin kendi içeriği olan sözler geçebilir: "Eşittir işareti" bir soru türü, "renk", "dik eksen", "3 kare" ve "daireler"
+ * görevlerin malzemesidir.
+ */
+const LOOK = /(?<!\p{L})(?:nokta|noktalar|çizgi|çizgisi|bant|bantlar|sütun|sütunlar|çubuk|çubuğu|kesikli|vurgulu)(?!\p{L})|\d+ ölçüm/iu;
+
 /** Sözlü anlatım ve başlık: boş değil (rozet değeri söylemiyorsa), eksik değer yok, cümleler kısa, kişiye uygun dil. */
 function checkSpoken(g: RoadmapGraphic, r: SimpleReport, at: string, mayBeSilent = false) {
   if (!mayBeSilent) expect(g.spoken.length, at).toBeGreaterThan(0);
@@ -223,6 +233,9 @@ function checkSpoken(g: RoadmapGraphic, r: SimpleReport, at: string, mayBeSilent
     if (you) expect(line, at).not.toMatch(/[Çç]ocuğunuz/);
     if (r.audience === 'adult') expect(schoolWords(line), at).toEqual([]);
   }
+  // Görünüş sözleri ve ölçüm sayısı okunmaz; grafiğin başlığı tek ve sade ("sonuçların:" gibi iki noktalı bağlama yok).
+  for (const line of g.spoken) expect(line, `${at}: ${line}`).not.toMatch(LOOK);
+  if (g.caption?.startsWith('Bu bölümün')) expect(g.caption, at).toMatch(/^Bu bölümün dayandığı (?:sonuç|sonuçlar)(?:$|\. )/);
 }
 
 function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
@@ -243,8 +256,16 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
   if (tl.type === 'timeline') {
     expect(tl.steps.map((s) => [s.label, s.title, s.result]), at).toEqual(rm.weeks.map((w) => [w.label, w.title, w.fromResult]));
     expect(tl.legend.result, at).toBe(parent ? 'Sonuca göre seçildi' : 'Sonucuna göre seçildi');
+    expect(tl.legend.general, at).toBe('Genel öneri');
   }
-  if (parent && rm.weeks.some((w) => w.fromResult)) expect(rm.weeksGraphic.spoken.join(' '), at).toContain('çocuğunuzun sonucuna göre');
+  // Sözlü anlatım hangi haftaların sonuca göre seçildiğini ve hangilerinin genel öneri olduğunu adlarıyla söyler (tekil, çoğul).
+  const weeksSaid = rm.weeksGraphic.spoken.join(' ');
+  expect(weeksSaid, at).not.toMatch(/herkese aynı|öteki haftalar/);
+  if (parent && rm.weeks.some((w) => w.fromResult)) expect(weeksSaid, at).toContain(kind === 'oral' ? 'öğrencinin sonucuna göre' : 'çocuğunuzun sonucuna göre');
+  const general = rm.weeks.filter((w) => !w.fromResult).map((w) => w.label.replace(/ hafta$/, ''));
+  if (general.length === rm.weeks.length) expect(weeksSaid, at).toBe('Bu plandaki haftaların hepsi genel öneridir.');
+  else if (general.length === 1) expect(weeksSaid, at).toContain(`${general[0]} hafta genel öneridir.`);
+  else if (general.length > 1) expect(weeksSaid, at).toContain(`${general.at(-1)} haftalar genel öneridir.`);
   // Zihinsel görevlerde haftaların hepsi herkes için aynıdır; ilk hafta hiçbir yol haritasında sonuca göre değildir
   // (konu taramada yanlış soruların haftası hariç).
   if (kind === 'task') expect(rm.weeks.every((w) => !w.fromResult), at).toBe(true);
@@ -275,12 +296,21 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
       expect(keys.has(it.key), at).toBe(true);
       const b = rm.bars.find((x) => x.key === it.key)!;
       expect(!!it.graphic, `${at} öneri ${it.title}`).toBe(b.value !== null);
-      if (it.graphic) {
-        checkScaleValues(rm, it.graphic.visual, `${at} öneri`);
-        // Raporun kartındaki düzey çubuğunun aynısı (kartı olan ölçekte).
-        const card = rv.find((x) => x.visual.type === 'gauge' && x.visual.label === b.label);
-        if (card) expect(it.graphic.visual, `${at} öneri ${it.title}`).toEqual(card.visual);
+      if (!it.graphic) continue;
+      // Düzey rozette okunur: sözlü anlatım yalnızca puandır.
+      if (it.graphic.visual.type === 'gauge') expect(it.graphic.spoken, at).toEqual([`Puan: ${b.valueLabel}.`]);
+      // Alt özellikleri ayrışan boyutta grafik alt özellikleri yan yana gösterir; başlık önerinin neden orta düzeyden seçildiğini söyler.
+      const group = r.groups?.find((g) => g.title === it.title);
+      if (it.graphic.visual.type === 'compare' && group) {
+        expect(it.graphic.caption, at).toBe('Alt özellikleri ayrıştığı için öneri orta düzeyden seçildi.');
+        expect(it.graphic.visual.rows.map((x) => [x.label, x.valueLabel]), at).toEqual(group.facets.filter((f) => f.value !== null).map((f) => [f.label, f.valueLabel]));
+        continue;
       }
+      if (it.graphic.caption) expect(it.graphic.caption, at).toMatch(/^Öneri, puan(?:a|ına) değil destek kutusunu açan cevab(?:a|ına) göre seçildi\.$|^Cevaplar(?:ın)? iki uca ayrıştığı için öneri orta düzeyden seçildi\.$/);
+      checkScaleValues(rm, it.graphic.visual, `${at} öneri`);
+      // Raporun kartındaki düzey çubuğunun aynısı (kartı olan ölçekte).
+      const card = rv.find((x) => x.visual.type === 'gauge' && x.visual.label === b.label);
+      if (card) expect(it.graphic.visual, `${at} öneri ${it.title}`).toEqual(card.visual);
     }
     if (rm.settings) {
       expect(rm.settings.keys?.every((k) => keys.has(k)), at).toBe(true);
@@ -303,8 +333,15 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
     const domains = new Set(rm.study.items.map((i) => i.key));
     for (const s of rm.standout) expect(s.keys?.every((k) => k === 'overall' || domains.has(k)), at).toBe(true);
     if (notRead) {
-      // Yorumlanmayan sonucun grafiği yoktur.
+      // Yorumlanmayan sonucun grafiği yoktur; yanlış soruların haftası da sonuca göre seçilmiş sayılmaz.
       expect(graphicsOf(rm).map((x) => x.where), at).toEqual(['haftalar']);
+      expect(rm.weeks[0].fromResult, at).toBe(false);
+      // Veliye "hepsi sağlam" önerileri verilmez: öneriler bölümündeki gibi bütün alanlar, başta öğretmenle konuşma.
+      if (rm.approach) {
+        expect(rm.approach.items[0].title, at).toBe('Önce öğretmeniyle konuşun');
+        expect(rm.approach.items.slice(1).map((it) => it.title), at).toEqual(rm.study.items.map((it) => it.title));
+        for (const solid of ACADEMIC_ROADMAPS['matematik-konu-tarama-testi'].approachSolid) expect(rm.approach.items.map((it) => it.text), at).not.toContain(solid.text);
+      }
     } else {
       same(rm.standout[0].graphic!.visual, 'Genel sonuç', 'genel sonuç');
       for (const s of rm.standout.slice(1)) {
@@ -328,11 +365,18 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
     const speedItem = r.items.find((it) => it.title === 'Okuma hızı')!;
     const speedRead = speedItem.badge !== 'Yorumlanmadı';
     expect(!!rm.standout[1].graphic, `${at} hız`).toBe(speedRead);
-    expect(!!rm.study.items.find((i) => i.key === 'pace')!.graphic, `${at} hız ve anlama`).toBe(speedRead);
-    if (speedRead && speedItem.visual?.type === 'bars' && rm.standout[1].graphic?.visual.type === 'bars') {
-      // Raporun hız grafiğinin satırları; hesaplanmayan anlayarak okuma hızı yol haritasında gösterilmez.
-      const computed = speedItem.visual.rows.filter((x) => x.valueLabel !== 'hesaplanmadı');
-      expect(rm.standout[1].graphic.visual.rows, at).toEqual(computed);
+    const pace = rm.study.items.find((i) => i.key === 'pace')!;
+    expect(!!pace.graphic, `${at} hız ve anlama`).toBe(speedRead);
+    if (speedRead) {
+      // Hızın grafiği raporun "Okuma hızı" kartındaki (Düzeylerin ve ölçülerin anlamı) düzey çubuğudur: metnin düzeyine göre
+      // Yavaş, Olağan, Hızlı; sözlü anlatımı bölgedir.
+      const card = (r.parts ?? []).flatMap(partCards).find((c) => c.key === 'speed')!;
+      expect(card.visual?.type, at).toBe('gauge');
+      for (const g of [rm.standout[1].graphic!, pace.graphic!]) {
+        expect(g.visual, at).toEqual(card.visual);
+        const v = g.visual.type === 'gauge' ? g.visual : null;
+        expect(g.spoken, at).toEqual([`Metnin düzeyine göre: ${v!.zones[v!.active!].label}.`]);
+      }
     }
     for (const it of rm.study.items.filter((i) => i.key !== 'pace')) expect(it.graphic, `${at} ${it.title}`).toBeDefined();
     if (rm.approach) {
@@ -351,7 +395,13 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
     else expect(rateItem?.visual, at).toBeUndefined();
     const level = rm.standout[0].graphic!.visual;
     expect(level.type === 'steps' && level.steps.length === 3 && level.reached >= 1, at).toBe(true);
-    if (rm.approach) expect(rm.approach.graphic?.visual, at).toEqual(level);
+    // Düzeyin adı raporun düzeyiyle aynıdır (akıcılığı gelişen öğrencide "Akıcılık gelişiyor").
+    if (level.type === 'steps') expect(r.oral!.level.label, at).toContain(level.valueLabel === 'Akıcılık gelişiyor' ? 'akıcılı' : '');
+    if (rm.approach) {
+      expect(rm.approach.graphic?.visual, at).toEqual(level);
+      expect(rm.approach.graphic?.spoken, at).toEqual(['Metnin düzeyi.']);
+    }
+    for (const { g } of graphicsOf(rm)) expect([g.caption ?? '', ...g.spoken].join(' '), at).not.toMatch(/anlamadan/);
     expect(rm.settings?.graphic, at).toBeUndefined();
   }
 
@@ -361,8 +411,13 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
     rm.standout.forEach((s, i) => {
       expect(s.keys?.length, at).toBe(1);
       const it = r.items[i];
-      if (it.badge === 'Yorumlanmadı') expect(s.graphic, `${at} ${s.title}`).toBeUndefined();
-      if (s.graphic) expect(s.graphic.visual, `${at} ${s.title}`).toEqual(it.visual);
+      if (it.badge === 'Yorumlanmadı' || it.interpreted === false) expect(s.graphic, `${at} ${s.title}`).toBeUndefined();
+      if (s.graphic) {
+        expect(s.graphic.visual, `${at} ${s.title}`).toEqual(it.visual);
+        // Satırda okunan grafiğin adı ya da değeri sesli dinlemede yinelenmez.
+        const said = `${s.title}: ${s.text}`.toLocaleLowerCase('tr-TR');
+        for (const line of s.graphic.spoken) expect(said.includes(line.replace(/\.$/, '').toLocaleLowerCase('tr-TR')), `${at} ${line}`).toBe(false);
+      }
     });
     // Öneriler, bilmekte yarar olanlar ve yaklaşım herkese aynı: sonuç grafiği yok.
     expect(rm.study.items.some((i) => i.graphic) || !!rm.settings?.graphic || !!rm.approach?.graphic, at).toBe(false);
@@ -388,14 +443,97 @@ describe('Yol haritası: her bölümün grafiği', () => {
     }, 120_000);
   }
 
-  it('16 özellikte dengeli profil: kısaca grafiği düzeylere göre özellik sayısı; ortam yazılmayan uçtaki özellikte "dengeli" denmez', () => {
+  it('16 özellikte dengeli profil: kısaca ve ortamlar grafiği düzeylere göre özellik sayısı; eşit puanlarda seçim söylenir', () => {
     const slug = '16-faktorlu-kisilik-profili';
-    const mid = evaluate(slug, likertBody(slug, 10, () => 2)).parent.roadmap!;
+    // Kalite uyarısı olmayan dengeli profil (cevaplar değişiyor ama her özellik orta).
+    const r = evaluate(slug, likertBody(slug, 10, (i) => (i % 2) + 1)).parent;
+    expect(r.cautions).toEqual([]);
+    const mid = r.roadmap!;
     expect(mid.standout).toEqual([]);
     const v = mid.standoutGraphic!.visual;
     expect(v.type === 'bars' && v.rows.map((x) => x.valueLabel)).toEqual(['0 / 16', '16 / 16', '0 / 16']);
     expect(mid.standoutGraphic!.spoken).toEqual(['Düşük: 0 özellik.', 'Orta: 16 özellik.', 'Yüksek: 0 özellik.']);
     expect(mid.settings!.intro).toContain('profili dengeli');
+    // Ortam önerilmediğinde grafiği bütün özelliklerin düzeylere dağılımı.
+    expect(mid.settings!.graphic!.visual).toEqual(v);
+    expect(mid.settings!.graphic!.spoken).toEqual(mid.standoutGraphic!.spoken);
+    // Bütün özellikler eşit uzaklıkta: öneriler testteki sırayla seçildi (söylenir); 3. hafta "sonuca göre seçildi" değil.
+    expect(mid.study.intro).toContain('Puanı ortadan eşit uzaklıkta olan özelliklerden testteki sırayla ilk gelenler seçildi.');
+    expect(mid.weeks[2].fromResult).toBe(false);
+  });
+
+  it('kalite uyarısı varken orta çıkan profil "dengeli" diye anlatılmaz; öne çıkan sonuç ortam vermezse bu söylenir', () => {
+    const slug = '16-faktorlu-kisilik-profili';
+    const r = evaluate(slug, likertBody(slug, 10, () => 2));
+    for (const rep of [r.student, r.parent]) {
+      expect(rep.cautions.length).toBeGreaterThan(0);
+      const intro = rep.roadmap!.settings!.intro;
+      expect(intro).not.toMatch(/dengeli|farklı ortamlarda/);
+      // Uyarı "Kısaca"daki notta; burada yinelenmez, nota yönlendirilir.
+      expect(intro).toContain('“Kısaca” bölümündeki not');
+      expect(rep.roadmap!.standoutNote).toContain('uyarı nedeniyle');
+    }
+    // Alt özellikleri ayrışan uçtaki boyutlar (ortam önerisi yok): "dengeli" ya da "farklı ortamlarda rahat edebilir" denmez.
+    const ay = 'ayrintili-kisilik-profili';
+    const d = def<LikertInstrument>(ay);
+    let seen = 0;
+    for (let k = 0; k < 40 && seen < 2; k++) {
+      const vals = d.items.map((_, i) => (i * (k + 3) + k) % d.options.length);
+      const rep = evaluate(ay, likertBody(ay, 9, (i) => vals[i])).parent;
+      const rm = rep.roadmap!;
+      const split = rm.study.items.filter((it) => it.graphic?.visual.type === 'compare');
+      if (split.length === 0) continue;
+      seen++;
+      for (const it of split) expect(it.graphic!.caption).toBe('Alt özellikleri ayrıştığı için öneri orta düzeyden seçildi.');
+      expect(rm.approach!.graphic!.caption).toMatch(/: alt özellikleri ayrıştığı için öneri(?:ler)? orta düzeyden seçildi\./);
+      if (rm.settings!.items.length === 0) expect(rm.settings!.intro).not.toMatch(/dengeli|farklı ortamlarda/);
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('destek kutusunu açan cevap: önerinin neden düşük düzeyden seçildiği grafiğin başlığında', () => {
+    // Öz-saygı orta (Dengeli) ama "Sonuçta kendimi başarısız biri gibi görme eğilimindeyim" cümlesine "Katılıyorum".
+    const slug = 'oz-saygi';
+    const vals = [2, 0, 3, 1, 1, 2, 2, 2, 2, 2];
+    const r = evaluate(slug, likertBody(slug, 9, (i) => vals[i]));
+    for (const rep of [r.student, r.parent]) {
+      const it = rep.roadmap!.study.items[0];
+      expect(it.badge).toMatch(/^Dengeli/);
+      expect(it.graphic!.caption).toBe(rep.audience === 'parent' ? 'Öneri, puana değil destek kutusunu açan cevaba göre seçildi.' : 'Öneri, puanına değil destek kutusunu açan cevabına göre seçildi.');
+    }
+    expect(r.parent.roadmap!.approach!.graphic!.caption).toBe('Bu bölümün dayandığı sonuç. Öz-saygı: öneri, puana değil destek kutusunu açan cevaba göre seçildi.');
+  });
+
+  it('sesli okuma: akıcılığı gelişen öğrencide grafik, açıklama ve veliye öneriler "rahat okuyor" değildir', () => {
+    const p = oralPassagesFor(sesliOkuma, 3)[0];
+    const words = oralWordCount(p.paragraphs);
+    const input: OralInput = {
+      passageKey: p.key,
+      recordMs: 200_000,
+      // Doğru ve anlayarak ama çok yavaş okuma: düzey "Doğru okuyor, akıcılığı gelişiyor".
+      readingMs: Math.round((words / 25) * 60_000),
+      timingAuto: true,
+      audio: { quality: 'good', pauses: [[1000, 1400]], speechMs: 150_000, contour: Array.from({ length: 60 }, (_, i) => (i * 7) % 100), interrupted: false },
+      marks: {},
+      listened: 1,
+      retell: { recorded: true, ideas: p.ideas.map((x) => x.key) },
+      answers: Object.fromEntries(p.questions.map((q) => [q.key, q.answer])),
+      prosody: { expression: 2, phrasing: 2, smoothness: 2, pace: 1 },
+    };
+    const r = evaluate(sesliOkuma.slug, { grade: 3, data: { engine: 'oral', ...input } });
+    const parent = r.parent as SimpleReport;
+    expect(parent.oral!.level.label).toBe('Doğru okuyor, akıcılığı gelişiyor');
+    for (const rep of [r.student, r.parent] as SimpleReport[]) {
+      const rm = rep.roadmap!;
+      const g = rm.standout[0].graphic!;
+      expect(g.visual.type === 'steps' && g.visual.valueLabel).toBe('Akıcılık gelişiyor');
+      expect(g.visual.type === 'steps' && g.visual.caption).toBe('Doğru okuma ve anlama rahat; akıcılık gelişiyor');
+      expect(g.spoken.join(' ')).toContain('akıcılık gelişiyor');
+    }
+    // Veliye öneriler "destekle okuyor" düzeyinin önerileridir (daha zor metinlere geçmek için acele edilmez).
+    const items = parent.roadmap!.approach!.items.map((it) => it.title);
+    expect(items).toEqual(ORAL_ROADMAPS[sesliOkuma.slug].approach.average.map((it) => it.title));
+    expect(parent.roadmap!.approach!.items.map((it) => it.text).join(' ')).not.toMatch(/Rahat okuduğu için/);
   });
 });
 

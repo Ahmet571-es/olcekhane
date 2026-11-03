@@ -225,12 +225,10 @@ describe('Tepki hızı: rapor', () => {
     const left = evaluate(SLUG, reactionBody(only('choice', () => ({ choice: 1, rtMs: 400 }))));
     expect(left.parent.items[1].badge).toBe('Yorumlanmadı');
     expect(left.parent.items[1].text).toContain('cevaplarının hepsinde dairenin hangi tarafta olduğuna bakmadan aynı düğmeye bastı (40 cevabın hepsinde sol düğmeye)');
-    // Grafik hangi düğmeye kaç kez basıldığını gösterir.
-    const sides = left.parent.items[1].visual?.type === 'stack' ? left.parent.items[1].visual.parts : [];
-    expect(sides.slice(0, 2).map((x) => [x.label, x.value])).toEqual([
-      ['Sol düğmeye basıldı', 40],
-      ['Sağ düğmeye basıldı', 0],
-    ]);
+    // Yorumlanmayan kartın grafiği yoktur (CLAUDE.md, kart grafikleri); hangi düğmeye kaç kez basıldığı kartın metninde ve
+    // raporun "Sonuca ne kadar güvenebiliriz?" bölümündedir.
+    expect(left.parent.items[1].interpreted).toBe(false);
+    expect(left.parent.items[1].visual).toBeUndefined();
     expect(left.parent.items[2].text).toBe('Seçmeli bölümde cevapların çoğunda aynı düğmeye basıldığı için karşılaştırma yapılmadı.');
     expect(left.parent.cautions.join(' ')).toContain('seçmeli bölümünde cevapların çoğunda aynı düğmeye basılmış');
     // İki tarafa karışık basılıyor, doğru taraf yarı yarıya.

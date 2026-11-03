@@ -35,6 +35,8 @@ export interface ReportSpeechText {
   results: SpeechSegment[];
   compare: SpeechSegment[];
   roadmap: SpeechSegment[];
+  /** Öğrenciye ya da yetişkine "sen", veliye "siz" (raporun başındaki süre cümlesi). */
+  you: boolean;
 }
 
 export interface Utterance {
@@ -204,13 +206,21 @@ function keyFigureLine(f: { label: string; value: string; note?: string }): stri
   return /^[\p{Ll}\d]/u.test(note) ? sentence(`${f.label}: ${value}, ${note}`) : `${sentence(`${f.label}: ${value}`)} ${sentence(note)}`;
 }
 
-/** Sonuçlar kısmı: ekrandaki sırayla (başlık, uyarılar, öne çıkan sayılar, grafik, kartlar, notlar). */
+/** Raporun sonuç kısmının bölüm adı: başlıktan hata türlerine kadar hepsi tek bölümdür ("Bölümü geç" hepsini atlar). */
+export const RESULTS_SECTION = 'Sonuçlar';
+
+/**
+ * Sonuçlar kısmı: ekrandaki sırayla (başlık, uyarılar, öne çıkan sayılar, grafik, kartlar, hata türleri, destek kutusu, ek
+ * bölümler, notlar). Başlıktan hata türlerine kadar her şey "Sonuçlar" bölümüdür; destek kutusu, her ek bölüm ve sondaki
+ * not kendi bölümüdür.
+ */
 function resultSegments(report: SimpleReport): SpeechSegment[] {
   const you = report.audience !== 'parent';
   const out: SpeechSegment[] = [];
+  let section: string | undefined = RESULTS_SECTION;
   const push = (title: string, lines: (string | null | undefined | false)[]) => {
     const l = lines.filter((x): x is string => !!x && x.trim() !== '');
-    if (l.length > 0) out.push({ title: title.trim().replace(/[.:]$/, ''), lines: l });
+    if (l.length > 0) out.push({ title: title.trim().replace(/[.:]$/, ''), lines: l, ...(section ? { section } : {}) });
   };
   const kind = report.audienceName ?? AUDIENCE_LABELS[report.audience].name;
   push(report.instrumentName, [sentence(report.instrumentName), sentence(kind), report.isPilot && 'Pilot test.']);
@@ -244,9 +254,10 @@ function resultSegments(report: SimpleReport): SpeechSegment[] {
     push('Sıradaki değerlendirme', [oral.next]);
   }
   if (report.quiz) {
-    // Soru soru inceleme (kesirli işlemler, tablolar, şekiller) sesli okunmaz; hata türleri okunur.
+    // Soru soru inceleme (kesirli işlemler, tablolar, şekiller) sesli okunmaz; hata türleri okunur. Bölümün başlığı ve notu
+    // ekrandaki gibi bölüm göründüğünde (hata türü ya da soru varsa) okunur.
     const q = report.quiz;
-    if (q.errors.length > 0) {
+    if (q.errors.length > 0 || q.questions.length > 0) {
       push(q.errorsTitle, [
         sentence(q.errorsTitle),
         q.errorsNote,
@@ -254,6 +265,7 @@ function resultSegments(report: SimpleReport): SpeechSegment[] {
       ]);
     }
   }
+  section = undefined;
   if (report.support) push(report.support.title, [sentence(report.support.title), ...report.support.lines.map(sentence)]);
   // Ek bölümler (düzeylerin anlamı, cevaplar tek tek, cevap kalitesi): ekrandaki sırayla, eksiksiz.
   for (const part of report.parts ?? []) out.push(...partSegments(part, you));
@@ -319,7 +331,7 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
     }
   }
   if (part.sources?.length) push('Kaynak', [part.sources.length > 1 ? 'Kaynaklar ekranda ve PDF dosyasında yazılıdır.' : 'Kaynak ekranda ve PDF dosyasında yazılıdır.']);
-  const seconds = out.reduce((n, seg) => n + seg.lines.join(' ').length, 0) / SPEECH_CHARS_PER_SECOND;
+  const seconds = speechSeconds(out);
   if (seconds > LONG_PART_SECONDS && out.length > 0) {
     const minutes = Math.round(seconds / 60);
     out[0].lines.push(`Bu bölüm yaklaşık ${minutes} dakika sürer. Geçmek için “Bölümü geç” düğmesine ${you ? 'basabilirsin' : 'basabilirsiniz'}.`);
@@ -327,29 +339,33 @@ function partSegments(part: ReportPart, you: boolean): SpeechSegment[] {
   return out;
 }
 
-/** Bir yol haritası grafiğinin sözlü anlatımı: (varsa) başlığı ve değerleri (lib/reports/roadmap-graphics.ts). */
+/** Bir yol haritası grafiğinin sözlü anlatımı: (varsa) başlığı ayrı bir cümle, sonra değerleri (lib/reports/roadmap-graphics.ts). */
 function graphicLines(g: RoadmapGraphic | undefined): string[] {
   if (!g) return [];
-  return g.caption ? [`${g.caption}: ${g.spoken.join(' ')}`] : g.spoken;
+  return g.caption ? [sentence(g.caption), ...g.spoken] : g.spoken;
 }
+
+/** Yol haritasının sonundaki kaynak listesinin başlığı (ekranda ve PDF'te). */
+export const SOURCES_TITLE = 'Dayandığı kaynaklar';
 
 /** Yol haritasının sonundaki kaynak listesinin varlığı (liste okunmaz). */
 export function sourcesLine(you: boolean): string {
-  return `Yol haritasının sonunda dayandığı araştırmaların listesi var. Bu liste sesli okunmaz; ekranda ve PDF dosyasında ${you ? 'görebilirsin' : 'görebilirsiniz'}.`;
+  return `Yol haritasının sonunda dayandığı kaynakların listesi var. Bu liste sesli okunmaz; ekranda ve PDF dosyasında ${you ? 'görebilirsin' : 'görebilirsiniz'}.`;
 }
 
 /**
  * Yol haritası kısmı: ekrandaki sırayla ve ekrandaki görünme koşullarıyla (giriş, önizleme notu, üç boyutlu profil, kısaca,
  * öneriler ve bağlantıları, ortamlar, yaklaşım, haftalar); her grafiğin değerleri sözle. Kaynak listesi okunmaz, varlığı
- * söylenir.
+ * söylenir. Bölümler ("Bölümü geç"): giriş, profil ve kısaca; öneriler; ortamlar; yaklaşım; haftalar ve kaynaklar.
  */
 function roadmapSegments(rm: Roadmap, you: boolean): SpeechSegment[] {
   const out: SpeechSegment[] = [];
+  const head = you ? 'Senin yol haritan' : 'Çocuğunuz için yol haritası';
+  let section = head;
   const push = (title: string, lines: (string | null | undefined | false)[]) => {
     const l = lines.filter((x): x is string => !!x && x.trim() !== '');
-    if (l.length > 0) out.push({ title: title.trim().replace(/[.:]$/, ''), lines: l });
+    if (l.length > 0) out.push({ title: title.trim().replace(/[.:]$/, ''), lines: l, section });
   };
-  const head = you ? 'Senin yol haritan' : 'Çocuğunuz için yol haritası';
   push(head, [
     sentence(head),
     rm.intro,
@@ -374,6 +390,7 @@ function roadmapSegments(rm: Roadmap, you: boolean): SpeechSegment[] {
   ]);
   // Öneriler bölümü ekranda yalnızca öneri varsa görünür.
   if (rm.study.items.length > 0) {
+    section = rm.study.title;
     push(rm.study.title, [sentence(rm.study.title), rm.study.intro]);
     for (const it of rm.study.items) push(it.title, [sentence(it.title), it.badge && sentence(it.badge), ...graphicLines(it.graphic), it.text]);
     if (rm.study.links.length > 0) {
@@ -381,6 +398,7 @@ function roadmapSegments(rm: Roadmap, you: boolean): SpeechSegment[] {
     }
   }
   if (rm.settings) {
+    section = rm.settings.title;
     push(rm.settings.title, [
       sentence(rm.settings.title),
       rm.settings.intro,
@@ -391,6 +409,7 @@ function roadmapSegments(rm: Roadmap, you: boolean): SpeechSegment[] {
   }
   // Yaklaşım önerileri ekranda yalnızca öneri varsa görünür.
   if (rm.approach && rm.approach.items.length > 0) {
+    section = rm.approach.title;
     push(rm.approach.title, [
       sentence(rm.approach.title),
       ...graphicLines(rm.approach.graphic),
@@ -400,10 +419,11 @@ function roadmapSegments(rm: Roadmap, you: boolean): SpeechSegment[] {
   // Haftalar bölümü ekranda her zaman görünür: zaman çizelgesinin anlamı, sonra haftalar.
   {
     const t = weeksTitle(rm.weeks.length);
+    section = t;
     push(t, [sentence(t), ...graphicLines(rm.weeksGraphic)]);
     for (const w of rm.weeks) push(`${w.label}: ${w.title}`, [sentence(w.label), sentence(w.title), w.text]);
   }
-  if (rm.sources.length > 0) push('Dayandığı araştırmalar', [sourcesLine(you)]);
+  if (rm.sources.length > 0) push(SOURCES_TITLE, [sourcesLine(you)]);
   return out;
 }
 
@@ -413,12 +433,30 @@ function roadmapSegments(rm: Roadmap, you: boolean): SpeechSegment[] {
  * Oynatıcı hepsini tek seferde, baştan sona okur (`allSegments`).
  */
 export function reportSpeech(report: SimpleReport, compare: SpeechSegment[] = []): ReportSpeechText {
+  const you = report.audience !== 'parent';
   return {
     results: resultSegments(report),
     compare,
-    roadmap: report.roadmap ? roadmapSegments(report.roadmap, report.audience !== 'parent') : [],
+    roadmap: report.roadmap ? roadmapSegments(report.roadmap, you) : [],
+    you,
   };
 }
 
-/** Raporun bütün okunacak bölümleri, ekrandaki sırayla. */
-export const allSegments = (t: ReportSpeechText): SpeechSegment[] => [...t.results, ...t.compare, ...t.roadmap];
+/** Okunacak satırların yaklaşık süresi (saniye, normal hızda). */
+export const speechSeconds = (segments: SpeechSegment[]): number =>
+  segments.reduce((n, seg) => n + seg.lines.join(' ').length, 0) / SPEECH_CHARS_PER_SECOND;
+
+/**
+ * Raporun başındaki cümle: yaklaşık süre ve "Bölümü geç" düğmesi. Süre sonuçlardan ve yol haritasından hesaplanır;
+ * karşılaştırma bölümü (kısa) katılmaz: karşılaştırma yapılınca raporun ilk cümlesi değişmesin (okuma yerinde sürer).
+ */
+export function durationLine(t: ReportSpeechText): string {
+  const minutes = Math.max(1, Math.round(speechSeconds([...t.results, ...t.roadmap]) / 60));
+  return `Rapor yaklaşık ${minutes} dakika sürer. Bir bölümü atlamak için “Bölümü geç” düğmesine ${t.you ? 'basabilirsin' : 'basabilirsiniz'}.`;
+}
+
+/** Raporun bütün okunacak bölümleri, ekrandaki sırayla; ilk satır raporun yaklaşık süresidir. */
+export const allSegments = (t: ReportSpeechText): SpeechSegment[] => {
+  const [first, ...rest] = [...t.results, ...t.compare, ...t.roadmap];
+  return first ? [{ ...first, lines: [durationLine(t), ...first.lines] }, ...rest] : [];
+};

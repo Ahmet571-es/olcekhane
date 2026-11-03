@@ -55,6 +55,8 @@ export interface SimpleItem {
   text: string;
   /** Kartın grafiği: kartın sözel açıklamasını görsel olarak da anlatır (lib/reports/visuals.ts). */
   visual?: ItemVisual;
+  /** Görev kartının sonucu yorumlanmadı (CognitiveBlock.interpreted): kartın grafiği yoktur. */
+  interpreted?: false;
 }
 
 /** Ayrıntılı profilde bir boyut: boyutun yorumu ve alt özelliklerinin cetvelleri (her cetvelin altında kısa yorum). */
@@ -653,14 +655,18 @@ export function quizGauge(a: Pick<NonNullable<ReportContent['academic']>, 'n' | 
   };
 }
 
-/** Hata türlerinin görüldüğü soru sayısı (konu tarama): her çubuk bir hata türü. */
-export function misconceptionBars(ms: { name: string; count: number }[]): BarsVisual {
+/**
+ * Hata türlerinin görüldüğü soru sayısı (konu tarama): her çubuk bir hata türü. Eksenin en çoğu yanlış cevaplanan soru
+ * sayısıdır: bir hata türü bütün yanlışlarda görüldüyse çubuk doludur (yalnızca birer soruda görülen hatalar yarım çubuk
+ * gibi görünmez).
+ */
+export function misconceptionBars(ms: { name: string; count: number }[], wrong: number): BarsVisual {
   return {
     type: 'bars',
     label: 'Hata türlerinin görüldüğü sorular',
     scale: 'scale',
     unit: 'soru',
-    max: Math.max(2, ...ms.map((m) => m.count)),
+    max: Math.max(1, wrong, ...ms.map((m) => m.count)),
     rows: ms.map((m) => ({ label: m.name, value: m.count, valueLabel: `${m.count} soru` })),
   };
 }
@@ -1017,7 +1023,7 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
         explain: m.explain,
         tip: m.tip,
       })),
-      ...(a.misconceptions.length > 0 ? { errorsVisual: misconceptionBars(a.misconceptions) } : {}),
+      ...(a.misconceptions.length > 0 ? { errorsVisual: misconceptionBars(a.misconceptions, a.wrong) } : {}),
     };
     const topics = (d: (typeof a.domains)[number]) => `Sorulan konular: ${d.plain.charAt(0).toLocaleLowerCase('tr-TR')}${d.plain.slice(1)}`;
     /** Alanın sonucu (sayı yinelenmez; doğru sayısı kartın grafiğinde). */
@@ -1090,7 +1096,13 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
 
   if (r.cognitive) {
     const blocks = r.cognitive.blocks;
-    const items = blocks.map((b) => withVisual({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') }, b.visual));
+    // Sonucu yorumlanmayan kartın (yorumlanmadı, hesaplanamadı, süre içinde tamamlanamadı, rastgele cevaplarla da çıkabilecek
+    // sonuç) grafiği yoktur: grafik, sonucun okunabilir olduğunu düşündürürdü. Sayısı kartın rozetinde ve metnindedir.
+    const items = blocks.map((b) =>
+      b.interpreted === false
+        ? { title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' '), interpreted: false as const }
+        : withVisual({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') }, b.visual),
+    );
     // Tek görevli testler (renk-kelime, dur-git, sırayla birleştirme, geriye dönük hatırlama, zihinde döndürme, tepki
     // hızı, şekil akıl yürütme): sonucu görevin kendi grafiği özetler.
     const own = r.cognitive.chart;

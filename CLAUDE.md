@@ -272,7 +272,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   yazılar taşmaz). Görev testlerinde grafik verinin türüne göre seçilir (düzeylere göre doğrular, ulaşılan düzey, türler,
   yanılgılar, süreler, dizi merdiveni; geometri `lib/reports/visual-draw.ts`); yeni görev testi `tests/helpers/task-variants.ts`'e
   birkaç sonuç örüntüsüyle eklenir ve `tests/gorev-grafikleri.test.ts` her kartı dener. "Yorumlanmadı" ya da hesaplanamayan
-  kartın grafiği olmaz; kartın metnindeki sayılar grafikte olduğu için metinde yinelenmez. Görev testlerinin kalan grupları
+  kartın grafiği olmaz (görevlerde `interpreted: false` olan her kartın; `toSimpleReport` grafiği kaldırır, test bütün
+  örüntülerde denetler); kartın metnindeki sayılar grafikte olduğu için metinde yinelenmez. Görev testlerinin kalan grupları
   `DURUM.md`'de.
 
 ## Paylaşım kartı
@@ -316,10 +317,16 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   karşılaştırma yapıldıysa sonucu, yol haritası; site sahibinin 2026-10-31 isteği: "eksiksiz okusun"; ayrı bir yol haritası
   düğmesi yok); duraklat ve devam (kalınan cümlenin başından), durdur, "Bölümü geç", hız (Normal / Yavaş). Ayarlar yalnızca
   sayfada durur. Karşılaştırma sonucu bölümün kendisinden gelir (`compareSpeech`, `components/test/compare-panel.tsx`; durum
-  `onOutcome` ile oynatıcıya verilir); liste değişince okunan cümle yerindeyse okuma sürer (`SpeechPlayer.setList`). Sekme değişince, rapor kapanınca susar; sayfa gizlenince ya da
+  `onOutcome` ile oynatıcıya verilir); liste değişince okunan cümle yerindeyse okuma sürer, değişen kısımdaysa (ör. başka dosya
+  seçildi) değişen kısmın başına geçer (okuyorsa okur, duraklatılmışsa orada bekler; hata durumu kalır; hiç ortak parça yoksa
+  susar; `SpeechPlayer.setList`). İlk cümle raporun yaklaşık süresi ve "Bölümü geç" düğmesidir (`durationLine`; süre sonuçlar ve
+  yol haritasından, karşılaştırma katılmaz ki ilk cümle değişmesin). "Bölümü geç" bölümleri: "Sonuçlar" (başlıktan hata
+  türlerine), destek kutusu, her ek bölüm, sondaki not, karşılaştırma, yol haritasında giriş ve kısaca, öneriler, ortamlar,
+  yaklaşım, haftalar ve kaynaklar; art arda iki dokunuşta ikincisi yok sayılır. Sekme değişince, rapor kapanınca susar; sayfa gizlenince ya da
   sayfadan çıkarken duraklar; sayfada aynı anda yalnızca bir oynatıcı konuşur. Okuma kuyruğu tarayıcıdan bağımsız bir
   denetleyicidedir (`lib/speech/player.ts`; ilk parça düğmeye basılınca hemen okunur, iptal edilen konuşmanın geç gelen
-  olayları yok sayılır, "bitti" olayı kaybolursa ilerler, başlattıktan hemen sonraki duraklatma yok sayılır).
+  olayları ve bitmiş parçanın geç gelen hatası yok sayılır, "bitti" olayı kaybolursa ilerler, düğmeyle başlattıktan hemen sonraki
+  duraklatma yok sayılır; liste ya da hız değişince yapılan iç yeniden başlatma bu korumayı yenilemez).
 - Ses, cihazın kendi konuşma özelliğinin Türkçe sesiyle üretilir: tarayıcının `localService === true` dediği ve dili `tr`
   (öncelik tr-TR) olan ses (`lib/speech/voice.ts`); ses her parçadan önce yeniden aranır, kaybolursa okuma durur ve oynatıcı
   gizlenir. Kendini ağdan çalışan diye bildiren seslere (ör. masaüstü Chrome'daki "Google Türkçe") ve başka dillere hiçbir
@@ -331,9 +338,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   görünme koşullarıyla başlık, uyarılar, öne çıkan sayılar, grafik (değerleri sözle; görünüşünü anlatan cümleler okunmaz),
   kartlar, ek bölümler (eksiksiz: düzeyler, günlük hayat örnekleri, maddeler ve cevaplar, denetimler; "Bölümü geç" düğmesi), notlar;
   yol haritasında giriş, (önizlemede) notu, üç boyutlu profilin değerleri, kısaca, öneriler ve bağlantıları, ortamlar, yaklaşım,
-  haftalar ve her grafiğin değerleri (`RoadmapGraphic.spoken`; rozet değeri zaten söylüyorsa yinelenmez); kaynak listesi okunmaz,
-  en sonda varlığı söylenir (`sourcesLine`). Okunmayanlar: sayfanın "Raporunu nasıl okumalısın?" kutusu, paylaşım ve indirme
-  kutuları, düğmeler.
+  haftalar ve her grafiğin değerleri (`RoadmapGraphic.spoken`: değerin anlamı, görünüşü ya da ölçüm sayısı değil; satırda ya da
+  rozette okunan ad ve değer yinelenmez; grafiğin başlığı ayrı cümle; bölüm grafiğinde yalnızca dayanılan sonuçların adları);
+  kaynak listesi okunmaz, en sonda varlığı söylenir (`sourcesLine`). Okunmayanlar: sayfanın "Raporunu nasıl okumalısın?" kutusu,
+  paylaşım ve indirme kutuları, düğmeler, Kendini Tanı Paketi'nin başındaki özet (her satırı testin kendi raporunda okunur).
   Konu taramada soru soru inceleme okunmaz, hata türleri okunur. Okunuş: kaynak gösterimleri ("(Kail, 1991)") ve kısa
   büyük harfli ayraçlar ("(A)", "(IQ)") okunmaz; "%88" → "yüzde 88", "3,4 / 5" → "5 üzerinden 3,4", "62 kelime/dakika" →
   "dakikada 62 kelime", "1,5 sn" → "1,5 saniye", "5–8. sınıf" → "5. ile 8. sınıf", "{1 3/4}" → "1 tam 3 bölü 4", "102 045" tek
@@ -495,12 +503,19 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   "<Test adı> Gelişim Yol Haritası İncelemesi" hazırlanır (metinler içerik dosyasından üretilip belgeyle
   karşılaştırılır).
 - Grafikler (site sahibinin 2026-10-31 isteği: her açıklamanın içeriğine uygun grafiği; `lib/reports/roadmap-graphics.ts`,
-  `RoadmapGraphic`: grafik, sözlü anlatımı, bölüm grafiğinde "Bu bölümün dayandığı sonuçların" başlığı): kısacanın her satırı,
+  `RoadmapGraphic`: grafik, sözlü anlatımı, bölüm grafiğinde "Bu bölümün dayandığı sonuç/sonuçlar" başlığı): kısacanın her satırı,
   her öneri kartı ve önerileri bir sonuçtan seçilen bölüm (ortamlar, eğitim yolları, veliye yaklaşım) raporun kartlarındaki
   grafiğin aynısını gösterir (ölçeğin düzey çubuğu; birkaç ölçekte yan yana, sekizden çoğunda düzeylere göre ölçek sayısı; konu
-  alanının soruları; anlama soruları ve okuma hızı; sesli okumada metnin düzeyi basamakları ve okumanın yönleri; görevlerde kartın
-  grafiği). Öne çıkan yoksa notun grafiği bütün ölçeklerdir. Haftalar zaman çizelgesiyle (`lib/reports/visual-roadmap.ts`; içeriği
-  sonuca göre seçilen hafta dolu daire, herkese aynı hafta içi boş; uzun başlıkta haftalar alt alta). Herkese aynı verilen
+  alanının soruları; anlama soruları ve okuma hızının metnin düzeyine göre bölgeleri (`readingPaceGauge`); sesli okumada metnin
+  düzeyi basamakları (akıcılığı gelişende işaret "Akıcılık gelişiyor", veliye "destekle okuyor" önerileri) ve okumanın yönleri;
+  görevlerde kartın grafiği). Öneri puanın düzeyinden değil başka bir düzeyden seçildiyse grafiğin başlığı nedenini söyler (destek
+  kutusunu açan cevap; ayrışan alt özellikler, o zaman grafik alt özellikleri yan yana gösterir; iki uca ayrışan cevaplar). Öne
+  çıkan yoksa notun ve (ortam önerilmediyse) ortamların grafiği bütün ölçeklerdir; kalite uyarısı varken ortası "dengeli" denmez.
+  Eşit puanlar arasından testteki sırayla seçilen öneriler söylenir, 3. hafta o zaman "sonuca göre" sayılmaz. Haftalar zaman
+  çizelgesiyle (`lib/reports/visual-roadmap.ts`; içeriği sonuca göre seçilen hafta dolu daire, ötekiler "Genel öneri" (her
+  sonuçta aynı ya da sonuç bir öneri seçtirmeyince verilen hafta; "herkese aynı" denmez); sözle hangi haftaların sonuca göre,
+  hangilerinin genel öneri olduğu; uzun başlıkta haftalar alt alta). Konu taramada sonuç yorumlanmadıysa veliye "hepsi sağlam"
+  önerileri değil bütün alanların önerileri, başta öğretmenle konuşma. Ekranda grafik en çok 16,5 rem (PDF'teki oran). Herkese aynı verilen
   listelerde (görevlerin önerileri, "Bilmekte yarar var" ve yaklaşımı; okuma alışkanlığı; haftalık çalışma düzeni) sonuç grafiği
   yoktur: grafik önerinin sonuca göre seçildiğini düşündürürdü. Yorumlanmayan ya da hesaplanamayan sonucun grafiği yoktur.
   `tests/yol-haritasi-grafikleri.test.ts` yayındaki her yol haritasında, birçok örüntüde ve her kişide dener: grafiklerin varlığı,

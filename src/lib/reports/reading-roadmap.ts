@@ -2,6 +2,7 @@ import type { ReadingPace, ReadingRoadmapTemplate } from '@/content/roadmaps/typ
 import type { ReportContent } from './build';
 import { bandGroup, joinNames, nextStep, pick, type NextTest, type Roadmap } from './roadmap';
 import { basisCaption, graphic, weeksGraphic, type RoadmapGraphic } from './roadmap-graphics';
+import { readingPaceGauge } from './reading-parts';
 import { comprehensionDots, readingSpeedBars } from './simple';
 import type { DotsVisual } from './visuals';
 
@@ -106,13 +107,18 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
     rows: [{ label: 'Doğru', filled: s.correct, total: s.total, valueLabel: `${s.correct}/${s.total}` }],
     legend: ['doğru', 'yanlış'],
   });
-  // Okuma hızı satırın ya da kartın rozetinde okunur ("Dakikada 62 kelime"); grafiğin sözlü anlatımı anlayarak okuma hızıdır.
-  const speed: RoadmapGraphic | undefined = speedRead
-    ? graphic(
-        readingSpeedBars(rd, 'omit'),
-        rd.effectiveWpm != null ? [`Anlayarak okuma hızı: dakikada ${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(rd.effectiveWpm)} kelime.`] : [],
-      )
-    : undefined;
+  // Hızın grafiği raporun "Okuma hızı" kartındaki düzey çubuğudur: metnin düzeyine göre Yavaş, Olağan, Hızlı (Ölçekhane'nin
+  // deneme ölçütleri; kartın metni de bu bölgeyi anlatır). Hız satırın ya da kartın rozetinde okunur ("Dakikada 62 kelime");
+  // grafiğin sözlü anlatımı bölgedir. Sınırları olmayan eski raporda okuma hızı ve anlayarak okuma hızı çubukları.
+  const paceGauge = speedRead && rd.paceLimits ? readingPaceGauge(rd, rd.paceLimits) : undefined;
+  const speed: RoadmapGraphic | undefined = !speedRead
+    ? undefined
+    : paceGauge
+      ? graphic(paceGauge, paceGauge.active === null ? [] : [`Metnin düzeyine göre: ${paceGauge.zones[paceGauge.active].label}.`])
+      : graphic(
+          readingSpeedBars(rd, 'omit'),
+          rd.effectiveWpm != null ? [`Anlayarak okuma hızı: dakikada ${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(rd.effectiveWpm)} kelime.`] : [],
+        );
 
   const contents = [
     parent ? 'okuma becerilerine göre nasıl çalışılabileceği' : 'okuma becerilerine göre nasıl çalışabileceğin',
@@ -184,7 +190,9 @@ export function buildReadingRoadmap(r: ReportContent, t: ReadingRoadmapTemplate,
       note: pick(t.habits.note, a),
     },
     // Veliye öneriler anlama düzeyine göre seçilir: bölümün grafiği anlama soruları.
-    approach: parent ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group], keys: ['comprehension'], graphic: basisCaption(comprehension, true, false)! } : null,
+    approach: parent
+      ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group], keys: ['comprehension'], graphic: basisCaption(comprehension, false, ['Anlama'])! }
+      : null,
     weeks,
     weeksGraphic: weeksGraphic(weeks, parent),
     sources: t.sources,

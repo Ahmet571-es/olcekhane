@@ -11,7 +11,10 @@ import { visualDescription, type BarsVisual, type ItemVisual } from './visuals';
  * listelerinde (ör. görevlerde günlük hayatı kolaylaştıran yollar, okuma alışkanlığı) sonuç grafiği yoktur: grafik, önerinin
  * sonuca göre seçildiğini düşündürürdü. Hesaplanamayan ya da yorumlanmayan ölçünün grafiği olmaz.
  *
- * Her grafiğin sözlü anlatımı (`spoken`) sesli dinlemede okunur: değerler ve düzeyler, grafiğin görünüşü değil.
+ * Her grafiğin sözlü anlatımı (`spoken`) sesli dinlemede okunur: değerler ve düzeyler, grafiğin görünüşü değil ("Her nokta bir
+ * soru", "çizgi tipik süre" gibi alttaki açıklamalar ve ölçüm sayısı okunmaz). Satırın ya da kartın metninde zaten söylenen
+ * değer ve grafiğin adı yinelenmez. Bölümün grafiğinde (`basisCaption`) yalnızca dayanılan sonuçların adları okunur:
+ * değerleri "Kısaca"da ve öneri kartlarında okunmuştur.
  */
 
 export interface RoadmapGraphic {
@@ -22,17 +25,41 @@ export interface RoadmapGraphic {
    */
   spoken: string[];
   /**
-   * Bölümün grafiğinin başlığı (ör. "Bu bölümün dayandığı sonuçların"): grafik bir kartın değil, bütün bölümün olduğunda
-   * neyi gösterdiğini söyler. Ekranda ve PDF'te grafiğin üstünde, sesli dinlemede değerlerden önce okunur.
+   * Grafiğin başlığı (ör. "Bu bölümün dayandığı sonuçlar"): grafik bir kartın değil, bütün bölümün olduğunda neyi
+   * gösterdiğini; ya da önerinin grafikteki düzeyden değil başka bir nedenle seçildiğini söyler. Ekranda ve PDF'te grafiğin
+   * üstünde, sesli dinlemede ayrı bir cümle olarak değerlerden önce okunur.
    */
   caption?: string;
 }
 
 const sentence = (s: string) => (/[.!?…]$/.test(s.trim()) ? s.trim() : `${s.trim()}.`);
 
-/** Grafiğin değerlerinin sözle anlatımı (düzey çubuğu, yan yana grafik ve satır satır kareler; ötekilerde ekran okuyucu metni). */
+const nf2 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 });
+
+/**
+ * Grafiğin değerlerinin sözle anlatımı: düzey çubuğu, yan yana grafik, satır satır kareler; basamaklarda düzey sayısı (ulaşılan
+ * düzey kartın metnindedir); nokta şeridinde tipik değer, çoğu ölçümün aralığı ve vurgulu bölgenin anlamı (alttaki açıklama ve
+ * ölçüm sayısı değil); dizi merdiveninde uzunluk uzunluk denemeler (en uzun dizi kartın metnindedir). Ötekilerde ekran okuyucu
+ * metni cümlelere bölünür.
+ */
 export function spokenOf(v: ItemVisual): string[] {
   switch (v.type) {
+    case 'steps':
+      return [sentence(`Toplam ${v.steps.length} düzey var`)];
+    case 'strip': {
+      const unit = v.unit === '°' ? ' derece' : ` ${v.unit}`;
+      const n = (x: number) => `${nf2.format(x)}${unit}`;
+      return [
+        v.marker ? sentence(/\d/.test(v.marker.label) ? v.marker.label : `${v.marker.label}: ${n(v.marker.value)}`) : '',
+        v.box ? sentence(`${v.box.label ? v.box.label.charAt(0).toLocaleUpperCase('tr-TR') + v.box.label.slice(1) : 'Çoğu ölçüm'} ${nf2.format(v.box.low)} ile ${n(v.box.high)} arasında`) : '',
+        v.zone ? sentence(`${v.zone.label}: ${nf2.format(v.zone.from)} ile ${n(v.zone.to)} arası`) : '',
+        v.reference ? sentence(v.reference.label) : '',
+      ].filter(Boolean);
+    }
+    case 'ladder': {
+      const [yes, no] = v.legend ?? ['doğru', 'yanlış'];
+      return v.rows.filter((r) => r.results.length).map((r) => sentence(`${r.length} ${v.unit}: ${r.results.map((x) => (x ? yes : no)).join(', ')}`));
+    }
     case 'gauge':
       return [sentence(v.value === null || v.active === null ? `${v.label}: hesaplanamadı` : `${v.label}: ${v.valueLabel}, ${v.zones[v.active].label}`)];
     case 'compare':
@@ -50,19 +77,42 @@ export function spokenOf(v: ItemVisual): string[] {
   }
 }
 
-/** Grafik ve sözlü anlatımı; grafik yoksa undefined. */
-export function graphic(visual: ItemVisual | undefined, spoken?: string[]): RoadmapGraphic | undefined {
-  return visual ? { visual, spoken: spoken ?? spokenOf(visual) } : undefined;
+/** Karşılaştırma için: küçük harf, noktalama ve fazla boşluk yok. */
+const flat = (x: string) =>
+  x
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[.,;:!?()“”"]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
+ * Grafik ve sözlü anlatımı; grafik yoksa undefined. `said`: grafiğin yanında zaten okunan metin (ör. "Kısaca" satırı):
+ * onda geçen cümle (grafiğin adı, aynı değer) yinelenmez.
+ */
+export function graphic(visual: ItemVisual | undefined, spoken?: string[], said?: string): RoadmapGraphic | undefined {
+  if (!visual) return undefined;
+  let all = spoken ?? spokenOf(visual);
+  if (!said) return { visual, spoken: all };
+  const heard = flat(said);
+  // Nokta şeridinin işareti (ör. "Tipik 8 sn") satırdaki değerse ("Soru başına tipik süre 8 sn") yinelenmez.
+  const nums = (x: string) => x.match(/\d+(?:,\d+)?/g) ?? [];
+  const has = (n: string) => new RegExp(`(?<![\\d,])${n.replace(',', '\\,')}(?![\\d,])`).test(said);
+  if (!spoken && visual.type === 'strip' && visual.marker) {
+    const [first, ...rest] = all;
+    if (first && nums(first).length > 0 && nums(first).every(has)) all = rest;
+  }
+  return { visual, spoken: all.filter((x) => !heard.includes(flat(x))) };
 }
 
 /**
  * Bir ölçeğin düzey çubuğu: raporun kartındakiyle aynı. Puan hesaplanamadıysa ya da ölçeğin bölgeleri yoksa grafik yoktur.
- * Sözlü anlatım kısadır ("Puan: 3,4 / 5, Orta"): ölçeğin adı kartın ya da satırın başlığında zaten okunur.
+ * Sözlü anlatım kısadır ("Puan: 3,4 / 5, Orta"): ölçeğin adı kartın ya da satırın başlığında zaten okunur. `zone: false`:
+ * düzey kartın rozetinde zaten okunur ("Puan: 3,4 / 5").
  */
-export function scaleGraphic(s: ReportSection | undefined): RoadmapGraphic | undefined {
+export function scaleGraphic(s: ReportSection | undefined, zone = true): RoadmapGraphic | undefined {
   if (!s || s.value === null) return undefined;
   const g = gaugeOf(s);
-  return g && g.active !== null ? { visual: g, spoken: [sentence(`Puan: ${g.valueLabel}, ${g.zones[g.active].label}`)] } : graphic(g);
+  return g && g.active !== null ? { visual: g, spoken: [sentence(`Puan: ${g.valueLabel}${zone ? `, ${g.zones[g.active].label}` : ''}`)] } : graphic(g);
 }
 
 /** Yan yana grafiğe sığan en çok satır; daha çok ölçekte (ör. 16 özellik) ölçeklerin düzeylere dağılımı gösterilir. */
@@ -72,13 +122,23 @@ export const COMPARE_MAX_ROWS = 8;
  * Birkaç ölçeğin grafiği (puanı hesaplananlar): tek ölçekte düzey çubuğu, en çok sekiz ölçekte yan yana grafik (raporun
  * kartlarındakiyle aynı), daha çoğunda (ör. 16 özellik) her düzeyde kaç ölçek olduğu (düzeyler raporun kartlarındaki
  * bölgelerdir; ölçek ölçek değerler üç boyutlu profilde ve sesli anlatımda). Ölçeklerin aralığı ya da bölgeleri farklıysa
- * grafik yoktur.
+ * grafik yoktur. `byZone`: yan yana grafiğin sözlü anlatımı ölçek ölçek değerler yerine düzey düzey adlardır ("Orta: A, B
+ * ve C."; bir düzeyde dörtten çok ölçek varsa sayısı: "Orta: 8 tarz."; değerler üç boyutlu profilde okunduysa).
  */
-export function scalesGraphic(list: ReportSection[], unit = 'ölçek'): RoadmapGraphic | undefined {
+export function scalesGraphic(list: ReportSection[], unit = 'ölçek', byZone = false): RoadmapGraphic | undefined {
   const scored = list.filter((s) => s.value !== null && s.zones?.length);
   if (scored.length === 0) return undefined;
   if (scored.length === 1) return scaleGraphic(scored[0]);
-  if (scored.length <= COMPARE_MAX_ROWS) return graphic(compareOf(scored));
+  if (scored.length <= COMPARE_MAX_ROWS) {
+    const v = compareOf(scored);
+    if (!v || !byZone) return graphic(v);
+    // Bir düzeyde dörtten çok ölçek varsa adlar yerine sayısı (cümle kısa kalsın).
+    const spoken = v.zones.flatMap((z, i) => {
+      const names = v.rows.filter((r) => r.active === i).map((r) => r.label);
+      return names.length ? [sentence(`${z.label}: ${names.length > 4 ? `${names.length} ${unit}` : joinList(names)}`)] : [];
+    });
+    return { visual: v, spoken };
+  }
   const zones = scored[0].zones!;
   const same = (s: ReportSection) => s.min === scored[0].min && s.max === scored[0].max && JSON.stringify(s.zones) === JSON.stringify(zones);
   if (!scored.every(same)) return undefined;
@@ -96,36 +156,51 @@ export function scalesGraphic(list: ReportSection[], unit = 'ölçek'): RoadmapG
   return { visual, spoken: visual.rows.map((r) => sentence(`${r.label}: ${r.value} ${unit}`)) };
 }
 
-/** Bölümün grafiğinin başlığı: bölümdeki önerilerin dayandığı sonuç ya da sonuçlar (öğrenci ve yetişkine "sen", veliye). */
-export function basisCaption(g: RoadmapGraphic | undefined, parent: boolean, many: boolean): RoadmapGraphic | undefined {
-  if (!g) return undefined;
-  const caption = parent ? `Bu bölümün dayandığı ${many ? 'sonuçlar' : 'sonuç'}` : `Bu bölümün dayandığı ${many ? 'sonuçların' : 'sonucun'}`;
-  return { ...g, caption };
-}
-
-/** Haftaların sıra sayıları sözle: "2. ve 3." */
-function joinOrdinals(xs: string[]): string {
+/** "A, B ve C"; adlardan biri "ve" içeriyorsa ("Merak ve Hayal Gücü") noktalı virgülle: "Duygusal Denge; Merak ve Hayal Gücü". */
+export function joinList(xs: string[]): string {
+  if (xs.some((x) => / ve /.test(x))) return xs.join('; ');
   return xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} ve ${xs[xs.length - 1]}`;
 }
 
 /**
- * Dört haftalık planın zaman çizelgesi: haftaların sırası ve başlığı; içeriği kişinin sonucuna göre seçilen haftalar dolu
- * daireyle. Sözlü anlatım, hangi haftaların sonuca göre seçildiğini söyler (başlıklar haftalarla birlikte zaten okunur).
+ * Bölümün grafiğinin başlığı: bölümdeki önerilerin dayandığı sonuç ya da sonuçlar ("Bu bölümün dayandığı sonuçlar"). Sesli
+ * dinlemede başlıktan sonra yalnızca o sonuçların adları okunur (`names`; değerleri daha önce okundu). Ad verilmezse
+ * grafiğin kendi sözlü anlatımı okunur (ör. düzeylere göre ölçek sayısı). `note`: başlığın ardından bir açıklama (ör.
+ * önerinin bir maddeye göre seçildiği).
  */
-export function weeksGraphic(weeks: { label: string; title: string; fromResult: boolean }[], parent: boolean): RoadmapGraphic {
+export function basisCaption(g: RoadmapGraphic | undefined, many: boolean, names?: string[], note?: string): RoadmapGraphic | undefined {
+  if (!g) return undefined;
+  const caption = `Bu bölümün dayandığı ${many ? 'sonuçlar' : 'sonuç'}`;
+  return {
+    ...g,
+    caption: note ? `${caption}. ${note}` : caption,
+    spoken: names?.length ? [sentence(joinList(names))] : g.spoken,
+  };
+}
+
+/**
+ * Dört haftalık planın zaman çizelgesi: haftaların sırası ve başlığı; içeriği kişinin sonucuna göre seçilen haftalar dolu
+ * daireyle, ötekiler "Genel öneri" (her sonuçta aynı olan hafta ya da sonuç bir öneri seçtirmediğinde verilen genel hafta;
+ * "herkese aynı" denmez: genel haftanın verilip verilmemesi de sonuca bağlı olabilir). Sözlü anlatım hangi haftaların
+ * sonuca göre seçildiğini ve hangilerinin genel öneri olduğunu söyler (başlıklar haftalarla birlikte zaten okunur).
+ * `whose`: kimin sonucu ("çocuğunuzun sonucuna", "öğrencinin sonucuna"; verilmezse veliye "çocuğunuzun", ötekilere "sonucuna").
+ */
+export function weeksGraphic(weeks: { label: string; title: string; fromResult: boolean }[], parent: boolean, whose?: string): RoadmapGraphic {
   const visual: TimelineVisual = {
     type: 'timeline',
     label: 'Haftaların sırası',
     steps: weeks.map((w) => ({ label: w.label, title: w.title, result: w.fromResult })),
-    legend: { result: parent ? 'Sonuca göre seçildi' : 'Sonucuna göre seçildi', general: 'Herkese aynı önerilir' },
+    legend: { result: parent ? 'Sonuca göre seçildi' : 'Sonucuna göre seçildi', general: 'Genel öneri' },
   };
-  const chosen = weeks.filter((w) => w.fromResult).map((w) => w.label.replace(/ hafta$/, ''));
-  const whose = parent ? 'çocuğunuzun sonucuna' : 'sonucuna';
+  const no = (w: { label: string }) => w.label.replace(/ hafta$/, '');
+  const chosen = weeks.filter((w) => w.fromResult).map(no);
+  const general = weeks.filter((w) => !w.fromResult).map(no);
+  const by = whose ?? (parent ? 'çocuğunuzun sonucuna' : 'sonucuna');
   const spoken =
     chosen.length === 0
-      ? 'Bu plandaki haftaların hepsi herkese aynı önerilir.'
-      : chosen.length === weeks.length
-        ? `Bu plandaki haftaların hepsi ${whose} göre seçildi.`
-        : `Bu planda ${joinOrdinals(chosen)} ${chosen.length > 1 ? 'haftalar' : 'hafta'} ${whose} göre seçildi; öteki haftalar herkese aynı önerilir.`;
+      ? 'Bu plandaki haftaların hepsi genel öneridir.'
+      : general.length === 0
+        ? `Bu plandaki haftaların hepsi ${by} göre seçildi.`
+        : `Bu planda ${joinList(chosen)} ${chosen.length > 1 ? 'haftalar' : 'hafta'} ${by} göre seçildi. ${joinList(general)} ${general.length > 1 ? 'haftalar' : 'hafta'} genel öneridir.`;
   return { visual, spoken: [spoken] };
 }

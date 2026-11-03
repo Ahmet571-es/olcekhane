@@ -269,7 +269,7 @@ import {
   paOf,
 } from '@/lib/scoring/tasks';
 import { PA_CLOSE, PA_EGO_MIN_SHIFT, PA_SMALL_MAX } from '@/lib/instruments/perspective';
-import { chanceLike, type ReadingResult } from '@/lib/scoring/reading';
+import { chanceLike, readingPace, type ReadingResult } from '@/lib/scoring/reading';
 
 /**
  * Raporun kime yazıldığı. Okul çağındaki biri için iki rapor hazırlanır: öğrenciye (ikinci tekil şahısla) ve veliye
@@ -384,6 +384,8 @@ export interface ReportContent {
     tooSlow?: boolean;
     /** Okuma hızı metnin sınıf düzeyine göre (lib/scoring/reading.ts, READING_PACE). */
     pace?: 'fast' | 'slow' | 'ok';
+    /** Hızın sınırları (metnin düzeyine göre; READING_PACE): yol haritasındaki hız çubuğu raporun kartındakiyle aynı çizilir. */
+    paceLimits?: { slow: number; fast: number; max: number };
   };
 }
 
@@ -829,6 +831,7 @@ export function buildReport(input: {
         tooFast: !!rr.flags?.tooFast,
         tooSlow: !!rr.flags?.tooSlow,
         pace: rr.pace,
+        ...(passage ? { paceLimits: (({ slow, fast, max }) => ({ slow, fast, max }))(readingPace(passage)) } : {}),
       };
     }
   }

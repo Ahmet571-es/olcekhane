@@ -596,8 +596,9 @@ describe('Hesapla ve hatırla: rapor', () => {
               noRead ? [] : r.bySize.map((s) => `${s.correct}/${s.letters}`),
             );
             expect(rep.roadmap!.bars.length, label).toBe(noRead ? 0 : 5);
+            // Yorumlanmayan kartın (ör. işlemlerin çoğu yanlış) grafiği yoktur.
             const opsParts = islem.visual?.type === 'stack' ? islem.visual.parts.map((x) => x.value) : [];
-            expect(opsParts, label).toEqual([r.ops.correct, r.ops.wrong, r.ops.timeouts]);
+            expect(opsParts, label).toEqual(islem.interpreted === false ? [] : [r.ops.correct, r.ops.wrong, r.ops.timeouts]);
           }
           expect(text(res.student), label).not.toContain('Çocuğunuz');
           expect(text(adult), label).not.toContain('Çocuğunuz');

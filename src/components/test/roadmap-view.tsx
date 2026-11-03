@@ -10,11 +10,12 @@ import { Profile3D } from './profile-3d';
  *
  * Grafikler (lib/reports/roadmap-graphics.ts): "Kısaca"daki her satırın, her önerinin ve (önerileri bir sonuçtan seçilen)
  * bölümlerin grafiği raporun kartlarındakiyle aynı çizimdir; haftaların zaman çizelgesi. Telefonda grafik başlığın altında,
- * geniş ekranda açıklamanın yanında.
+ * geniş ekranda açıklamanın yanında ya da üstünde. Grafik geniş ekranda da 16,5 rem'i geçmez (PDF'teki oranla aynı; yazıları
+ * büyüyüp sayfayı kaplamaz); zaman çizelgesi en çok 28 rem.
  */
 function Graphic({ g, wide }: { g: RoadmapGraphic; wide?: boolean }) {
   return (
-    <figure className={`flex flex-col gap-1.5 ${wide ? 'max-w-[28rem]' : 'max-w-[22rem] md:max-w-none'}`}>
+    <figure className={`flex w-full flex-col gap-1.5 ${wide ? 'max-w-[28rem]' : 'max-w-[22rem] md:max-w-[16.5rem]'}`}>
       {g.caption && <figcaption className="t-meta">{g.caption}</figcaption>}
       <ItemVisualView visual={g.visual} />
     </figure>
@@ -175,7 +176,7 @@ export function RoadmapView({ roadmap: rm, you }: { roadmap: Roadmap; you: boole
 
       <section aria-labelledby="yh-kaynaklar" className="flex flex-col gap-2">
         <h3 id="yh-kaynaklar" className="t-h3">
-          Dayandığı araştırmalar
+          Dayandığı kaynaklar
         </h3>
         <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-[0.9rem] text-ink-2">
           {rm.sources.map((s) => (

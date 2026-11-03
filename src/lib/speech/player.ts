@@ -15,7 +15,9 @@ import { isLocalTurkish, sameVoice, type VoiceLike } from './voice';
  *   parçaya geçilir.
  * - Sayfadaki oynatıcılardan aynı anda yalnızca biri konuşur (SpeechHub); biri başlayınca öteki duraklar.
  * - Rapor baştan sona tek listedir (sonuçlar, karşılaştırma, yol haritası). Liste değişirse (ör. önceki sonuçla
- *   karşılaştırma yapıldı) okunan parça yeni listede de aynı yerdeyse okuma oradan sürer; değilse susar.
+ *   karşılaştırma yapıldı) okunan parça yeni listede de aynı yerdeyse okuma oradan sürer; parça değişen kısımdaysa okuma
+ *   (ya da duraklatılmış okuma) değişen kısmın başına geçer. İki listenin hiç ortak parçası yoksa oynatıcı susar.
+ * - "Bölümü geç" art arda iki kez dokunulursa (SKIP_GUARD_MS) ikincisi yok sayılır: bir bölüm atlanmasın.
  */
 
 export type PlayerStatus = 'idle' | 'playing' | 'paused' | 'done' | 'error';
@@ -56,6 +58,8 @@ export interface PlayerEnv<V> {
 export const WATCHDOG_MS = 2000;
 /** Başlattıktan sonra duraklatmanın yok sayıldığı süre (ms): çift dokunma okumayı hemen durdurmasın. */
 export const PAUSE_GUARD_MS = 400;
+/** "Bölümü geç"ten sonra ikinci dokunmanın yok sayıldığı süre (ms). */
+export const SKIP_GUARD_MS = 400;
 
 /** Sayfadaki oynatıcıları bağlar: aynı anda yalnızca biri konuşur. */
 export class SpeechHub {
@@ -86,6 +90,7 @@ export class SpeechPlayer<V extends VoiceLike> {
   private utterance: UtteranceLike<V> | null = null;
   private timer: unknown = null;
   private startedAt = -Infinity;
+  private skippedAt = -Infinity;
 
   constructor(
     private env: PlayerEnv<V>,
@@ -128,6 +133,14 @@ export class SpeechPlayer<V extends VoiceLike> {
 
   /** Raporu `from` parçasından okur. */
   play(from = 0) {
+    this.run(from, true);
+  }
+
+  /**
+   * Okumayı başlatır. `fresh`: kişi bir düğmeye bastı (çift dokunma koruması yeniden başlar); liste ya da hız değişince
+   * yapılan iç yeniden başlatmalar korumayı yenilemez (kişinin hemen ardından bastığı "Duraklat" yok sayılmasın).
+   */
+  private run(from: number, fresh: boolean) {
     const list = this.list;
     if (list.length === 0) return;
     const gen = ++this.generation;
@@ -136,7 +149,7 @@ export class SpeechPlayer<V extends VoiceLike> {
     this.hub.claim(this);
     const synth = this.env.synth;
     if (synth.speaking || synth.pending) synth.cancel();
-    this.startedAt = this.env.now();
+    if (fresh) this.startedAt = this.env.now();
     this.set({ status: 'playing' });
     this.step(gen, Math.min(Math.max(0, from), list.length - 1));
   }
@@ -172,7 +185,9 @@ export class SpeechPlayer<V extends VoiceLike> {
     };
     u.onend = () => next();
     u.onerror = (e) => {
-      if (gen !== this.generation) return;
+      // Bitmiş parçanın geç gelen hatası (sonraki parça aynı kuşakta okunuyor) yok sayılır.
+      if (moved || gen !== this.generation) return;
+      moved = true;
       this.generation++;
       this.clearTimer();
       this.utterance = null;
@@ -221,6 +236,9 @@ export class SpeechPlayer<V extends VoiceLike> {
    */
   skipSection() {
     if (this.state.status !== 'playing' && this.state.status !== 'paused') return;
+    const now = this.env.now();
+    if (now - this.skippedAt < SKIP_GUARD_MS) return;
+    this.skippedAt = now;
     const list = this.list;
     const sectionOf = (k: number) => list[k]?.section ?? list[k]?.segment;
     const here = sectionOf(this.index);
@@ -240,7 +258,7 @@ export class SpeechPlayer<V extends VoiceLike> {
   setRate(rate: number) {
     if (rate === this.state.rate) return;
     this.set({ rate });
-    if (this.state.status === 'playing') this.play(this.index);
+    if (this.state.status === 'playing') this.run(this.index, false);
   }
 
   /** Sayfa gizlenince ya da sayfadan çıkılırken: okuyorsa duraklar. */
@@ -260,8 +278,10 @@ export class SpeechPlayer<V extends VoiceLike> {
 
   /**
    * Okunacak metin değişti. Okunan (ya da duraklatılan) parça yeni listede de yerindeyse (değişiklik ondan sonra ya da
-   * öncesinde kaldıysa; ör. raporun ortasına karşılaştırma sonucu eklendi) okuma aynı parçadan sürer; parça değiştiyse
-   * oynatıcı susar ve baştan başlamaya hazır olur.
+   * öncesinde kaldıysa; ör. raporun ortasına karşılaştırma sonucu eklendi) okuma aynı parçadan sürer. Parça değişen
+   * kısımdaysa (ör. karşılaştırma sonucu okunurken başka bir dosya seçildi) okuma değişen kısmın ilk parçasına geçer:
+   * okuyorsa oradan okur, duraklatılmışsa oradan sürer. Bitmiş ya da hata vermiş okuma olduğu gibi kalır. İki listenin
+   * hiç ortak parçası yoksa (başka bir rapor) oynatıcı susar.
    */
   setList(list: Utterance[]) {
     if (list === this.list) return;
@@ -273,20 +293,32 @@ export class SpeechPlayer<V extends VoiceLike> {
     while (prefix < old.length && prefix < list.length && same(old[prefix], list[prefix])) prefix++;
     let suffix = 0;
     while (suffix < old.length - prefix && suffix < list.length - prefix && same(old[old.length - 1 - suffix], list[list.length - 1 - suffix])) suffix++;
-    const active = this.state.status === 'playing' || this.state.status === 'paused';
-    if (active && this.index < prefix) return;
-    if (active && this.index >= old.length - suffix) {
-      // Okunan parça değişikliğin ardında: yeni listedeki yeri kayar (okunmaktaysa o cümle yeni yerinden bir kez baştan okunur).
-      const shift = list.length - old.length;
-      if (shift === 0) return;
-      if (this.state.status === 'paused') {
-        this.index += shift;
-        return;
-      }
-      this.play(this.index + shift);
+    if (prefix === 0 && suffix === 0) {
+      this.stop();
       return;
     }
-    this.stop();
+    const status = this.state.status;
+    if (status !== 'playing' && status !== 'paused') return;
+    if (this.index < prefix) return;
+    // Okunan parça değişikliğin ardında: yeni listedeki yeri kayar (okunmaktaysa o cümle yeni yerinden bir kez baştan
+    // okunur). Değişen kısımdaysa değişen kısmın başına geçer.
+    const after = this.index >= old.length - suffix;
+    const shift = list.length - old.length;
+    if (after && shift === 0) return;
+    const to = after ? this.index + shift : prefix;
+    if (to >= list.length) {
+      this.halt();
+      this.index = 0;
+      this.hub.release(this);
+      this.set({ status: 'done', current: null });
+      return;
+    }
+    if (status === 'paused') {
+      this.index = to;
+      this.set({ current: list[to].segment });
+      return;
+    }
+    this.run(to, false);
   }
 
   /** Oynatıcı kaldırılırken: susar, bağlayıcıdan çıkar. */

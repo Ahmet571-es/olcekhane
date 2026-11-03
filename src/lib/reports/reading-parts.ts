@@ -128,6 +128,36 @@ const CHANCE_WORDS: Record<number, string> = { 2: 'yarıdır', 3: 'üçte birdir
 /** "Çok uzun okuma süresi" çubuğunun ekseninin en çoğu (dakikada kelime): daha genişte "15" ile "0" üst üste biner. */
 export const SLOW_AXIS_MAX = 450;
 
+/** Okuma hızının sınırları (metnin düzeyine göre; lib/scoring/reading.ts, READING_PACE). */
+export type PaceLimits = { slow: number; fast: number; max: number };
+
+/**
+ * Okuma hızının düzey çubuğu: metnin düzeyine göre Yavaş, Olağan, Hızlı ve Çok hızlı bölgeleri (Ölçekhane'nin deneme
+ * ölçütleri). Raporun "Okuma hızı" kartında ve yol haritasında aynıdır. Süre çok uzunsa hız yorumlanmaz (bölge yok); metin
+ * çok kısa sürede geçildiyse Çok hızlı.
+ */
+export function readingPaceGauge(x: { wpm: number; tooFast: boolean; tooSlow?: boolean; pace?: 'fast' | 'slow' | 'ok' }, lim: PaceLimits): GaugeVisual {
+  const top = niceMax(lim.max * 1.25);
+  const zones: Zone[] = [
+    { from: 0, to: lim.slow, label: 'Yavaş', band: 'low' },
+    { from: lim.slow, to: lim.fast, label: 'Olağan', band: 'average' },
+    { from: lim.fast, to: lim.max, label: 'Hızlı', band: 'high' },
+    { from: lim.max, to: top, label: 'Çok hızlı', band: 'very_high' },
+  ];
+  return {
+    type: 'gauge',
+    label: 'Dakikada okunan kelime',
+    value: x.tooSlow ? null : x.wpm,
+    min: 0,
+    max: top,
+    ciLow: null,
+    ciHigh: null,
+    valueLabel: n0(x.wpm),
+    zones,
+    active: x.tooSlow ? null : x.tooFast ? 3 : x.pace === 'slow' ? 0 : x.pace === 'ok' ? 1 : 2,
+  };
+}
+
 export function readingParts(input: {
   def: ReadingInstrument;
   passage: ReadingPassage;
@@ -283,31 +313,15 @@ export function readingParts(input: {
     spoken: [`${v({ you: 'Doğru cevapların', parent: 'Doğru cevaplar' })}: ${rr.correct} / ${rr.total}.`, zonesSpoken(comp.zones, 'doğru')],
   };
 
-  const paceZones: Zone[] = [
-    { from: 0, to: lim.slow, label: 'Yavaş', band: 'low' },
-    { from: lim.slow, to: lim.fast, label: 'Olağan', band: 'average' },
-    { from: lim.fast, to: lim.max, label: 'Hızlı', band: 'high' },
-    { from: lim.max, to: top, label: 'Çok hızlı', band: 'very_high' },
-  ];
-  const paceActive = tooSlow ? null : tooFast ? 3 : rr.pace === 'slow' ? 0 : rr.pace === 'ok' ? 1 : 2;
+  const paceGauge = readingPaceGauge({ wpm, tooFast, tooSlow, pace: rr.pace }, lim);
+  const paceZones = paceGauge.zones;
+  const paceActive = paceGauge.active;
   const PACE_TEXT = [
     'Metnin düzeyine göre yavaş. Dikkatli okumaktan da kaynaklanabilir; akıcılık çalışması yararlı olabilir.',
     'Metnin düzeyine göre olağan bir hız.',
     'Metnin düzeyine göre hızlı. Anlama da iyiyse güzel bir işaret; anlama zayıfsa yavaşlamak iyi gelir.',
     'Bu sürede metnin hepsi okunamaz; hız yorumlanmaz.',
   ];
-  const paceGauge: GaugeVisual = {
-    type: 'gauge',
-    label: 'Dakikada okunan kelime',
-    value: tooSlow ? null : wpm,
-    min: 0,
-    max: top,
-    ciLow: null,
-    ciHigh: null,
-    valueLabel: n0(wpm),
-    zones: paceZones,
-    active: paceActive,
-  };
   const speedCard: PartCard = {
     key: 'speed',
     title: 'Okuma hızı',

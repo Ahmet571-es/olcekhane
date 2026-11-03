@@ -891,9 +891,10 @@ describe('Parçalardan şekil: rapor', () => {
               else if (result.reached === 0) expect([fig, r.items[1].badge], label).toEqual(['Belirtilmedi', 'Düzey belirtilmedi']);
               else expect([fig, r.items[1].badge], label).toEqual([`${result.reached}. düzey`, `${result.reached}. düzey`]);
               expect(r.chart?.type === 'bars' ? r.chart.rows.map((row) => row.valueLabel) : [], label).toEqual(result.levels.map((l) => `${l.correct}/4`));
-              // Her kartın grafiği var; yalnızca yorumlanmayan ve hesaplanamayan kartların yok.
+              // Her kartın grafiği var; yalnızca yorumlanmayan (sonucu rastgele seçimle de çıkabilecek kart dahil) ve
+              // hesaplanamayan kartların yok.
               for (const i of r.items) {
-                expect(!!i.visual, `${label} ${i.title}`).toBe(!(i.badge === 'Yorumlanmadı' || i.badge === 'Süre hesaplanamadı'));
+                expect(!!i.visual, `${label} ${i.title}`).toBe(!(i.badge === 'Yorumlanmadı' || i.badge === 'Süre hesaplanamadı' || i.interpreted === false));
               }
               expect([r.items[0].text, r.items[1].text].filter((x) => x.includes('dağılmasından')).length, label).toBeLessThanOrEqual(1);
               if (assemblyRapid(result)) expect(r.items[1].text, label).not.toMatch(/[345]\. düzeyde soruların (çoğunda zorlandı|hiçbirini)/);

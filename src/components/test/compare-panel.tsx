@@ -56,7 +56,7 @@ export function rowText(row: CompareRow): string {
     row.bandBefore && row.bandAfter && row.bandBefore !== row.bandAfter
       ? row.verdict === 'stable'
         ? ` Düzey “${row.bandBefore}” iken “${row.bandAfter}” oldu; ama fark ölçüm payı içinde, puan iki düzeyin sınırına yakın.`
-        : ` Düzey: “${row.bandBefore}” → “${row.bandAfter}”.`
+        : ` Düzey “${row.bandBefore}” iken “${row.bandAfter}” oldu.`
       : '';
   const t = !!row.time;
   switch (row.verdict) {

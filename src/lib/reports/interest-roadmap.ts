@@ -80,9 +80,11 @@ export function buildInterestRoadmap(
   contents.push('dört haftalık küçük adımlar');
   const notVerdict = t.leisure ? 'Öneriler kesin hüküm değildir' : 'Öneriler bir meslek seçimi ya da kesin hüküm değildir';
   // Öne çıkan alan yoksa "Kısaca"daki notun grafiği bütün alanların yeridir (ör. hepsi düşük bölgede).
-  const standoutGraphic = top.length ? undefined : scalesGraphic(sections, 'alan');
-  const approachGraphic = basisCaption(scalesGraphic(top, 'alan'), true, top.length > 1);
-  const pathGraphic = basisCaption(scalesGraphic(highTop, 'alan'), parent, highTop.length > 1);
+  // Üç boyutlu profil değerleri okuduysa (üç ve daha çok alan) sesli dinlemede düzey düzey adlar okunur.
+  const standoutGraphic = top.length ? undefined : scalesGraphic(sections, 'alan', sections.length >= 3);
+  // Bölümlerin grafiği: önerilerin seçildiği alanlar (sesli dinlemede adları; değerleri "Kısaca"da okundu).
+  const approachGraphic = basisCaption(scalesGraphic(top, 'alan'), top.length > 1, top.map((s) => s.name));
+  const pathGraphic = basisCaption(scalesGraphic(highTop, 'alan'), highTop.length > 1, highTop.map((s) => s.name));
   const weeks = [
     { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a), fromResult: false },
     { label: '2. hafta', ...second },
@@ -123,7 +125,8 @@ export function buildInterestRoadmap(
       title: parent ? t.studyTitle.parent : t.studyTitle.you,
       intro: pick(t.studyIntro, a),
       items: top.map((s) => {
-        const g = scaleGraphic(s);
+        // Düzey kartın rozetinde okunur.
+        const g = scaleGraphic(s, false);
         return {
           key: s.scaleKey,
           title: s.name,

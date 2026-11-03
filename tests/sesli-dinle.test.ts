@@ -8,8 +8,22 @@ import type { LikertInstrument } from '@/lib/instruments/types';
 import { oralWordCount } from '@/lib/oral/words';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { oralPassagesFor, type OralInput } from '@/lib/scoring/oral';
-import { MAX_UTTERANCE, allSegments, reportSpeech, sourcesLine, speakable, splitUtterances, spokenNote, utterancesOf } from '@/lib/speech/report-text';
-import { PAUSE_GUARD_MS, SpeechHub, SpeechPlayer, WATCHDOG_MS, type PlayerEnv, type SynthLike, type UtteranceLike } from '@/lib/speech/player';
+import { weeksTitle } from '@/lib/reports/roadmap';
+import {
+  MAX_UTTERANCE,
+  RESULTS_SECTION,
+  SOURCES_TITLE,
+  allSegments,
+  durationLine,
+  reportSpeech,
+  sourcesLine,
+  speakable,
+  speechSeconds,
+  splitUtterances,
+  spokenNote,
+  utterancesOf,
+} from '@/lib/speech/report-text';
+import { PAUSE_GUARD_MS, SKIP_GUARD_MS, SpeechHub, SpeechPlayer, WATCHDOG_MS, type PlayerEnv, type SynthLike, type UtteranceLike } from '@/lib/speech/player';
 import { pickTurkishVoice, type VoiceLike } from '@/lib/speech/voice';
 import { compareSpeech } from '@/components/test/compare-panel';
 import { likertBody, quizBody, readingBody } from './helpers/bodies';
@@ -32,9 +46,34 @@ function checkSpoken(r: SimpleReport, label: string) {
   for (const it of r.items.slice(0, 3)) expect(res.some((u) => u.segment === it.title), `${label} ${it.title}`).toBe(true);
   if (r.roadmap) expect(t.roadmap.length, label).toBeGreaterThan(0);
   else expect(t.roadmap, label).toEqual([]);
-  // Oynatıcı tek listeyi okur: sonuçlar, (varsa) karşılaştırma bölümü ve yol haritası, ekrandaki sırayla.
+  // Oynatıcı tek listeyi okur: önce raporun yaklaşık süresi ve "Bölümü geç" düğmesi, sonra sonuçlar, (varsa) karşılaştırma
+  // bölümü ve yol haritası, ekrandaki sırayla.
   const all = utterancesOf(allSegments(t));
-  expect(all.map((u) => u.text), label).toEqual([...res, ...utterancesOf(t.compare), ...utterancesOf(t.roadmap)].map((u) => u.text));
+  const lead = splitUtterances(durationLine(t));
+  expect(all.map((u) => u.text), label).toEqual([...lead, ...[...res, ...utterancesOf(t.compare), ...utterancesOf(t.roadmap)].map((u) => u.text)]);
+  const minutes = Math.max(1, Math.round(speechSeconds([...t.results, ...t.roadmap]) / 60));
+  expect(lead.join(' '), label).toBe(`Rapor yaklaşık ${minutes} dakika sürer. Bir bölümü atlamak için Bölümü geç düğmesine ${r.audience === 'parent' ? 'basabilirsiniz' : 'basabilirsin'}.`);
+  for (const sent of durationLine(t).split(/(?<=\.)\s+/)) expect(sent.split(/\s+/).length, label).toBeLessThanOrEqual(22);
+  expect(all[0].section, label).toBe(RESULTS_SECTION);
+  // "Bölümü geç": raporun başından hata türlerine kadar her şey tek bölüm ("Sonuçlar"); destek kutusu, her ek bölüm ve sondaki not
+  // kendi bölümü; yol haritası birkaç bölüm (giriş ve kısaca, öneriler, ortamlar, yaklaşım, haftalar ve kaynaklar).
+  const sections = [...new Set(res.map((u) => u.section))];
+  expect(sections[0], label).toBe(RESULTS_SECTION);
+  const own = new Set([RESULTS_SECTION, r.support?.title.trim().replace(/[.:]$/, ''), r.disclaimer.title.trim().replace(/[.:]$/, ''), ...(r.parts ?? []).map((p) => p.title.replace(/[.:?]$/, ''))]);
+  for (const x of sections) expect(own.has(x), `${label} ${x}`).toBe(true);
+  const end = res.findIndex((u) => u.section !== RESULTS_SECTION);
+  const block = new Set((end < 0 ? res : res.slice(0, end)).map((u) => u.segment));
+  for (const it of r.items) expect(block.has(it.title.trim().replace(/[.:]$/, '')), `${label} ${it.title}`).toBe(true);
+  if (r.roadmap) {
+    const rm = r.roadmap;
+    const head = r.audience === 'parent' ? 'Çocuğunuz için yol haritası' : 'Senin yol haritan';
+    const allowed = new Set([head, rm.study.title, rm.settings?.title, rm.approach?.title, weeksTitle(rm.weeks.length)]);
+    const rmSections = [...new Set(utterancesOf(t.roadmap).map((u) => u.section))];
+    for (const x of rmSections) expect(allowed.has(x), `${label} ${x}`).toBe(true);
+    expect(rmSections.length, label).toBeLessThanOrEqual(5);
+    expect(t.roadmap.find((x) => x.title === 'Kısaca')?.section, label).toBe(head);
+    expect(t.roadmap.find((x) => x.title === SOURCES_TITLE)?.section ?? weeksTitle(rm.weeks.length), label).toBe(weeksTitle(rm.weeks.length));
+  }
   for (const u of all) {
     const at = `${label}: ${u.text}`;
     expect(u.text.length, at).toBeLessThanOrEqual(MAX_UTTERANCE);
@@ -86,7 +125,16 @@ function checkRoadmapSpoken(r: SimpleReport, segs: ReturnType<typeof reportSpeec
     rm.approach?.items.length ? rm.approach.graphic : undefined,
     rm.weeksGraphic,
   ];
-  for (const g of graphics) if (g) for (const line of g.spoken) expect(text, `${label}: ${line}`).toContain(line);
+  for (const g of graphics) {
+    if (!g) continue;
+    for (const line of g.spoken) expect(text, `${label}: ${line}`).toContain(line);
+    // Grafiğin başlığı ayrı bir cümle olarak okunur (iki noktayla değerlere bağlanmaz).
+    if (g.caption) {
+      const cap = /[.!?]$/.test(g.caption) ? g.caption : `${g.caption}.`;
+      expect(segs.some((x) => x.lines.includes(cap)), `${label}: ${g.caption}`).toBe(true);
+      expect(text, label).not.toContain(`${g.caption}:`);
+    }
+  }
   if (rm.settings) for (const it of rm.settings.items) expect(text, label).toContain(it);
   for (const it of rm.approach?.items ?? []) expect(text, label).toContain(it.text);
   for (const w of rm.weeks) expect(text, label).toContain(w.text);
@@ -179,7 +227,7 @@ describe('Raporu sesli dinle: raporlardan okunacak metin', () => {
         }
       }
     }
-  });
+  }, 120_000);
 
   it('görev testleri: bütün sonuç örüntülerinde (yorumlanmayanlar dahil)', () => {
     let n = 0;
@@ -432,12 +480,29 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
     expect(player.getState().status).toBe('paused');
     player.skipSection();
     expect(player.getState()).toMatchObject({ status: 'done', current: null });
-    // Raporun kendi metninde: ek bölümün bütün parçaları tek bölüm; ötekilerde her kart ayrı.
+    // Raporun kendi metninde: ek bölümün bütün parçaları tek bölüm; sonuç kartlarının hepsi de tek bölüm ("Sonuçlar").
     const r = evaluate('empati', likertBody('empati', 9, (i) => (i * 3 + 1) % 5)).student;
     const list = utterancesOf(reportSpeech(r).results);
     const answers = list.filter((x) => x.section === 'Cevapların tek tek');
     expect(new Set(answers.map((x) => x.segment)).size).toBeGreaterThan(2);
-    expect(list.filter((x) => x.segment === r.items[0].title).every((x) => x.section === x.segment)).toBe(true);
+    const end = list.findIndex((x) => x.section !== RESULTS_SECTION);
+    const block = list.slice(0, end);
+    expect(end).toBeGreaterThan(0);
+    for (const it of r.items) expect(block.some((x) => x.segment === it.title)).toBe(true);
+  });
+
+  it('Bölümü geç art arda iki kez dokunulursa bir bölüm atlanır', () => {
+    const { synth, player, tick } = setup();
+    const u = (text: string, section: string) => ({ text, segment: text, section });
+    player.setList([u('A1', 'A'), u('B1', 'B'), u('C1', 'C'), u('D1', 'D')]);
+    player.play();
+    tick(1000);
+    player.skipSection();
+    player.skipSection();
+    expect(synth.spoken.map((x) => x.text)).toEqual(['A1', 'B1']);
+    tick(SKIP_GUARD_MS);
+    player.skipSection();
+    expect(synth.spoken.map((x) => x.text)).toEqual(['A1', 'B1', 'C1']);
   });
 
   it('ses kaybolursa ya da ağdan çalışan sese dönüşürse okuma durur, başka sese geçilmez', () => {
@@ -484,6 +549,19 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
     // Eski parçanın geç gelen "bitti" olayı bir şey başlatmaz.
     synth.spoken[1].onend!();
     expect(synth.spoken).toHaveLength(2);
+  });
+
+  it('bitmiş parçanın geç gelen hatası sonraki parçanın okunmasını durdurmaz', () => {
+    const { synth, player, tick } = setup();
+    player.play();
+    tick(500);
+    const first = synth.current!;
+    synth.finish();
+    expect(synth.current!.text).toBe('Sonuç 2');
+    first.onerror!({ error: 'interrupted' });
+    expect(player.getState()).toMatchObject({ status: 'playing', current: 'Bölüm 2' });
+    synth.finish();
+    expect(synth.spoken.at(-1)!.text).toBe('Sonuç 3');
   });
 
   it('"bitti" olayı gelmezse konuşma bitmiş görününce sonraki parçaya geçilir', () => {
@@ -543,7 +621,7 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
     expect(synth.spoken).toHaveLength(4);
   });
 
-  it('liste değişince (ör. karşılaştırma eklendi) okunan cümle yerindeyse okuma sürer; değiştiyse susar', () => {
+  it('liste değişince (ör. karşılaştırma eklendi) okunan cümle yerindeyse okuma sürer; başka bir raporsa susar', () => {
     const { synth, player, tick, list } = setup('error', 6);
     const extra = [
       { text: 'Karşılaştırma', segment: 'Karşılaştırma' },
@@ -572,9 +650,54 @@ describe('Raporu sesli dinle: okuma kuyruğu', () => {
     expect(player.getState().status).toBe('playing');
     synth.finish();
     expect(synth.spoken.at(-1)!.text).toBe('Sonuç 6');
-    // Okunan cümlenin kendisi değiştiyse oynatıcı susar.
+    // İki listenin hiç ortak parçası yoksa (başka bir rapor) oynatıcı susar.
     player.setList([{ text: 'Başka bir rapor', segment: 'Başka' }]);
     expect(player.getState()).toMatchObject({ status: 'idle', current: null });
+  });
+
+  it('okunan ya da duraklatılan cümle değişen kısımdaysa okuma değişen kısmın başına geçer; hata durumu kalır', () => {
+    const u = (text: string, section: string) => ({ text, segment: section, section });
+    const R = Array.from({ length: 6 }, (_, i) => u(`R${i}`, 'Sonuçlar'));
+    const M = Array.from({ length: 4 }, (_, i) => u(`M${i}`, 'Yol haritası'));
+    const A = [u('İki sonuç arasında 4 ay var.', 'Karşılaştır'), u('Önce 3,4, şimdi 4,0.', 'Karşılaştır'), u('Belirgin artış.', 'Karşılaştır')];
+    const B = [u('İki sonuç aynı güne ait.', 'Karşılaştır'), u('Önce 3,0, şimdi 4,0.', 'Karşılaştır'), u('Belirgin artış.', 'Karşılaştır')];
+    const head = [u('Önceki sonucunla karşılaştır.', 'Karşılaştır')];
+    const L = (x: typeof A) => [...R, ...head, ...x, ...M];
+    // Okurken: başka bir dosya seçildi; okuma yeni karşılaştırmanın başından sürer (susmaz).
+    {
+      const { synth, player, tick } = setup();
+      player.setList(L(A));
+      player.play(R.length + head.length + 1);
+      tick(1000);
+      player.setList(L(B));
+      expect(player.getState()).toMatchObject({ status: 'playing', current: 'Karşılaştır' });
+      expect(synth.spoken.at(-1)!.text).toBe('İki sonuç aynı güne ait.');
+      // Liste değişikliğinden hemen sonraki duraklatma yok sayılmaz (çift dokunma koruması yalnızca düğmeyle başlatınca).
+      tick(100);
+      player.pause();
+      expect(player.getState().status).toBe('paused');
+    }
+    // Duraklatılmışken: duraklatma sürer, "Devam" değişen kısmın başından okur.
+    {
+      const { synth, player, tick } = setup();
+      player.setList(L(A));
+      player.play(R.length + head.length + 1);
+      tick(1000);
+      player.pause();
+      player.setList(L(B));
+      expect(player.getState().status).toBe('paused');
+      player.resume();
+      expect(synth.spoken.at(-1)!.text).toBe('İki sonuç aynı güne ait.');
+    }
+    // Hata durumu liste değişince kaybolmaz.
+    {
+      const { synth, player } = setup();
+      player.setList(L(A));
+      player.play();
+      synth.current!.onerror!({ error: 'synthesis-failed' });
+      player.setList(L(B));
+      expect(player.getState().status).toBe('error');
+    }
   });
 
   it('karşılaştırma bölümü sonuçlarla yol haritası arasında okunur; karşılaştırma yapıldıysa sonucu da', () => {

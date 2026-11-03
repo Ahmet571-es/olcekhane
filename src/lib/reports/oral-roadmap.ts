@@ -96,24 +96,29 @@ export function buildOralRoadmap(
   const nf = (x: number) => nf0.format(x);
   // Kartta rozet değeri zaten söylüyorsa ("5 sorudan 2 doğru") grafiğin sözlü anlatımı yinelenmez; akıcılıkta dört yön okunur.
   const aspectGraphic = (key: OralAspect, inCard: boolean): RoadmapGraphic | undefined => graphic(v[key], inCard && key === 'comprehension' ? [] : undefined);
+  // Doğru okuyup iyi anlayan ama akıcılığı gelişen öğrenci (raporda "Doğru okuyor, akıcılığı gelişiyor"): basamaklarda doğru
+  // okuma ve anlamanın düzeyi (rahat) gösterilir, işaretin adı ve alttaki açıklama akıcılığın geliştiğini söyler; öneriler
+  // "rahat okuyor" önerileri değildir (daha zor metinlere geçmekte acele edilmez).
+  const fluencyEasy = r.level === 'easy' && r.flags.fluencyConcern;
   const levelSteps: StepsVisual = {
     type: 'steps',
     label: 'Metnin düzeyi',
     steps: LEVEL_ORDER.map((l) => LEVEL_TEXT[l].short),
     reached: LEVEL_ORDER.indexOf(r.level) + 1,
-    valueLabel: LEVEL_TEXT[r.level].short,
-    caption: 'Doğru okuma ve anlamadan düşük olanı',
+    valueLabel: levelText(r).short,
+    caption: fluencyEasy ? 'Doğru okuma ve anlama rahat; akıcılık gelişiyor' : 'Doğru okuma ve anlama sonuçlarının düşük olanı',
   };
-  const levelWhy = 'Düzey, doğru okuma ve anlamadan düşük olanıdır.';
-  // Kısacada düzeyin adı satırda okunur; veliye yaklaşımın grafiğinde adıyla.
+  const levelWhy = fluencyEasy
+    ? 'Doğru okuma ve anlama rahat düzeyde; okuma yavaş ya da yer yer kesik olduğu için akıcılık gelişiyor.'
+    : 'Düzeyi, doğru okuma ve anlama sonuçlarının düşük olanı belirler.';
+  // Kısacada düzeyin adı satırda okunur; grafiğin sözlü anlatımı düzeyin nasıl belirlendiği.
   const level = graphic(levelSteps, [levelWhy])!;
-  const levelNamed = graphic(levelSteps, [`Metnin düzeyi: ${LEVEL_TEXT[r.level].short}. ${levelWhy}`])!;
   // Dakikada doğru okunan kelime satırda okunur; grafiğin sözlü anlatımı bütün kelimeler ve (varsa) sınıf ortalaması.
   const ref = v.rate?.type === 'bars' ? v.rate.reference : undefined;
   const rate = r.flags.tooFast
     ? undefined
     : graphic(v.rate, [`Dakikada okunan bütün kelime: ${nf(r.wpm)}.`, ...(ref ? [`${ref.label}: ${nf(ref.value)}.`] : [])]);
-  const group = r.level === 'hard' ? 'low' : r.level === 'support' ? 'average' : 'high';
+  const group = r.level === 'hard' ? 'low' : r.level === 'support' || fluencyEasy ? 'average' : 'high';
 
   const contents = [
     parent ? 'okumanın yönlerine göre nasıl çalışılabileceği' : 'okumanın yönlerine göre nasıl çalışabileceğin',
@@ -157,6 +162,8 @@ export function buildOralRoadmap(
     { label: '3. hafta', ...third, fromResult: true },
     { label: '4. hafta', title: 'Yeniden değerlendirme', text: pick(last, audience) + nextStep(opts.next, t.nextPurpose, parent), fromResult: true },
   ];
+  // Veli ve öğretmen raporu öğrenciden üçüncü kişi olarak söz eder.
+  const whose = parent ? 'öğrencinin sonucuna' : undefined;
 
   // Otomatik analizde öneriler yapay zekânın yaklaşık sonuçlarına dayanır; bu, girişte söylenir.
   const basis = r.flags.auto ? pick(t.autoBasis, audience) : 'Öneriler tek bir metnin sesli okunmasına dayanır; kesin hüküm değildir.';
@@ -204,10 +211,12 @@ export function buildOralRoadmap(
       items: parent ? t.habits.items.parent : t.habits.items.student,
       note: pick(t.habits.note, audience),
     },
-    // Veliye öneriler metnin düzeyine göre seçilir: bölümün grafiği metnin düzeyi.
-    approach: parent ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group], keys: ['level'], graphic: basisCaption(levelNamed, true, false)! } : null,
+    // Veliye öneriler metnin düzeyine göre seçilir: bölümün grafiği metnin düzeyi (sesli dinlemede adı; düzey Kısaca'da okundu).
+    approach: parent
+      ? { title: 'Çocuğunuza nasıl destek olabilirsiniz?', items: t.approach[group], keys: ['level'], graphic: basisCaption(level, false, ['Metnin düzeyi'])! }
+      : null,
     weeks,
-    weeksGraphic: weeksGraphic(weeks, parent),
+    weeksGraphic: weeksGraphic(weeks, parent, whose),
     sources: t.sources,
   };
 }

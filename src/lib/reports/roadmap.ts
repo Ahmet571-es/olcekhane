@@ -2,6 +2,7 @@ import type { AudienceText, BandGroup, NextPurpose, RoadmapTemplate } from '@/co
 import type { Band } from '@/lib/instruments/types';
 import type { Audience, ReportContent } from './build';
 import { basisCaption, scaleGraphic, scalesGraphic, weeksGraphic, type RoadmapGraphic } from './roadmap-graphics';
+import { compareOf } from './simple';
 
 /**
  * Gelişim yol haritası: raporun sonundaki öneri bölümleri. Puanlardan ve şablondaki metinlerden kurulur; hiçbir şey
@@ -148,6 +149,40 @@ export function buildRoadmap(
     !!s.flagged && (!t.flaggedFromAverage || (s.band !== null && bandGroup(s.band) !== 'high'));
   const groupOf = (s: (typeof sections)[number]): BandGroup | null =>
     s.band === null ? null : flaggedLow(s) ? 'low' : s.split ? 'average' : bandGroup(s.band);
+  // Önerinin düzeyi puanın düzeyinden farklıysa (destek maddesi ya da ayrışan cevaplar) grafiğin başlığı nedenini söyler:
+  // grafik puanın yerini gösterir, öneri başka bir düzeyden seçildi.
+  type Why = 'flagged' | 'facets' | 'answers';
+  const whyOf = (s: (typeof sections)[number]): Why | null => {
+    const g = groupOf(s);
+    if (g === null || g === bandGroup(s.band)) return null;
+    return flaggedLow(s) ? 'flagged' : facetsOf(s).length > 1 ? 'facets' : 'answers';
+  };
+  /** Nedenin cümlesi: bir kartta "Öneri, …"; bölümün grafiğinde ölçeklerin adlarıyla ("A ve B: öneriler …"). */
+  const whyText = (w: Why, many = false): string => {
+    const o = many ? 'öneriler' : 'öneri';
+    if (w === 'flagged') return parent ? `${o}, puana değil destek kutusunu açan cevaba göre seçildi.` : `${o}, puanına değil destek kutusunu açan cevabına göre seçildi.`;
+    if (w === 'facets') return `alt özellikleri ayrıştığı için ${o} orta düzeyden seçildi.`;
+    return parent ? `cevaplar iki uca ayrıştığı için ${o} orta düzeyden seçildi.` : `cevapların iki uca ayrıştığı için ${o} orta düzeyden seçildi.`;
+  };
+  const cap = (x: string) => x.charAt(0).toLocaleUpperCase('tr-TR') + x.slice(1);
+  const why = (s: (typeof sections)[number]): string | null => {
+    const w = whyOf(s);
+    return w ? cap(whyText(w)) : null;
+  };
+  // Ayrıntılı profilde alt özellikleri ayrışan boyutun alt özellikleri (grafikte yan yana: ayrışma görünsün).
+  const facetsOf = (s: (typeof sections)[number]) => {
+    if (!s.split) return [];
+    const keys = r.facetGroups?.find((f) => f.domain === s.scaleKey)?.facets ?? [];
+    return keys.flatMap((k) => r.sections.filter((x) => x.scaleKey === k && x.value !== null));
+  };
+  // Bölümün grafiğinin başlığına eklenen not: önerisi puanının düzeyinden seçilmeyen ölçekler, nedenlerine göre.
+  const whyNote = (list: (typeof sections)[number][]) =>
+    (['flagged', 'facets', 'answers'] as const)
+      .flatMap((w) => {
+        const names = list.filter((s) => whyOf(s) === w).map((s) => s.name);
+        return names.length ? [`${joinNames(names)}: ${whyText(w, names.length > 1)}`] : [];
+      })
+      .join(' ') || undefined;
   const mid = (s: (typeof sections)[number]) => (s.min + s.max) / 2;
   const distance = (s: (typeof sections)[number]) => (s.value === null ? -1 : Math.abs(s.value - mid(s)));
 
@@ -182,8 +217,9 @@ export function buildRoadmap(
     return { title: s.name, text: s.summary, keys: [s.scaleKey], ...(g ? { graphic: g } : {}) };
   });
   const unit = t.unit?.one ?? 'boyut';
-  // Öne çıkan boyut yoksa notun grafiği bütün boyutların yeridir (ör. hepsi orta bölgede).
-  const standoutGraphic = standout.length > 0 ? undefined : scalesGraphic(sections, unit);
+  // Öne çıkan boyut yoksa notun grafiği bütün boyutların yeridir (ör. hepsi orta bölgede). Üç boyutlu profil değerleri
+  // okuduysa (üç ve daha çok boyut) sesli dinlemede düzey düzey adlar okunur.
+  const standoutGraphic = standout.length > 0 ? undefined : scalesGraphic(sections, unit, sections.length >= 3);
   // Cevaplarda bir kalite uyarısı varsa (ör. hep aynı seçenek, evet deme eğilimi) orta çıkan profil "dengeli" diye
   // anlatılmaz: puanların ortada toplanması cevap biçiminden de kaynaklanabilir.
   const standoutNote =
@@ -216,14 +252,23 @@ export function buildRoadmap(
     .find((x) => x.s);
   const stress = wellbeing?.s;
   const first = (s: (typeof sections)[number]) => (s === stress ? 1 : 0);
-  const focused = focusing
-    ? [...scored].sort((x, y) => first(y) - first(x) || extreme(y) - extreme(x) || distance(y) - distance(x)).slice(0, t.focus!.count)
-    : sections;
+  const rank = (x: (typeof sections)[number], y: (typeof sections)[number]) => first(y) - first(x) || extreme(y) - extreme(x) || distance(y) - distance(x);
+  const ranked = focusing ? [...scored].sort(rank) : [];
+  const focused = focusing ? ranked.slice(0, t.focus!.count) : sections;
+  // Sınır eşit puanların arasından geçiyorsa (ör. bütün özellikler aynı puanda) seçilenler testteki sıradır: söylenir.
+  const tieAtCut = focusing && rank(ranked[t.focus!.count - 1], ranked[t.focus!.count]) === 0;
+  const plural = (t.unit?.toPlural ?? 'boyutlara').replace(/a$/, 'dan').replace(/e$/, 'den');
+  const tieNote = tieAtCut ? ` Puanı ortadan eşit uzaklıkta olan ${plural} testteki sırayla ilk gelenler seçildi.` : '';
 
   const study = focused.flatMap((s) => {
     const g = groupOf(s);
     if (!g) return [];
-    const graphic = scaleGraphic(s);
+    // Kartın grafiği puanın düzey çubuğu (düzey rozette okunur); öneri başka düzeyden seçildiyse başlığı nedenini söyler,
+    // alt özellikleri ayrışan boyutta alt özellikler yan yana.
+    const w = why(s);
+    const facets = w ? compareOf(facetsOf(s)) : undefined;
+    const base = facets ? { visual: facets, spoken: facetsOf(s).map((f) => `${f.name}: ${f.valueLabel}, ${f.bandLabel}.`) } : scaleGraphic(s, false);
+    const graphic = base && w ? { ...base, caption: w } : base;
     return [
       {
         key: s.scaleKey,
@@ -249,11 +294,17 @@ export function buildRoadmap(
     return text ? [{ s, text }] : [];
   });
   const settingItems = settingFrom.map((x) => x.text);
-  // Ortamların grafiği: ortamların seçildiği boyutlar; hiç ortam yoksa önerilerin baktığı boyutların hepsi (ör. hepsi orta).
-  const settingSecs = settingFrom.length ? settingFrom.map((x) => x.s) : focused.filter((s) => s.value !== null);
-  const settingGraphic = basisCaption(scalesGraphic(settingSecs, unit), parent, settingSecs.filter((x) => x.value !== null).length > 1);
+  // Ortamların grafiği: ortamların seçildiği boyutlar (sesli dinlemede adları); hiç ortam yoksa bütün boyutlar (ör. hepsi
+  // orta; 16 özellikte düzeylere göre özellik sayısı; sesli dinlemede düzey düzey).
+  const settingSecs = settingFrom.length ? settingFrom.map((x) => x.s) : sections.filter((s) => s.value !== null);
+  const settingGraphic = settingFrom.length
+    ? basisCaption(scalesGraphic(settingSecs, unit), settingSecs.length > 1, settingSecs.map((x) => x.name), whyNote(settingSecs))
+    : basisCaption(scalesGraphic(settingSecs, unit, true), settingSecs.length > 1);
   // Ortam yazılmamış bir boyut uçta olabilir (ör. 16 Faktörlü'de Düşünsel özgüven): o zaman profil "dengeli" diye anlatılmaz.
-  const noneExtreme = focused.every((s) => groupOf(s) !== 'low' && groupOf(s) !== 'high');
+  // Dengeli profil puanların kendi düzeyine bakar (alt özellikleri ayrışan yüksek bir boyut da uçtadır).
+  const noneExtreme = focused.every((s) => bandGroup(s.band) !== 'low' && bandGroup(s.band) !== 'high');
+  // Cevaplarda bir kalite uyarısı varsa orta çıkan profil "dengeli" diye anlatılmaz (Kısaca'daki not gibi).
+  const cautioned = (r.qualityNotes?.length ?? 0) > 0;
 
   // Veliye yaklaşım: en belirgin boyutların her biri için bir öneri; bölümün grafiği o boyutlar yan yana.
   const approachFrom = focused.filter((s) => {
@@ -264,7 +315,8 @@ export function buildRoadmap(
     const g = groupOf(s);
     return { title: s.name, text: ((g && t.approach?.[s.scaleKey]?.[g]) || s.tips[0])!, keys: [s.scaleKey] };
   });
-  const approachGraphic = basisCaption(scalesGraphic(approachFrom, unit), parent, approachFrom.filter((s) => s.value !== null).length > 1);
+  const approachScored = approachFrom.filter((s) => s.value !== null);
+  const approachGraphic = basisCaption(scalesGraphic(approachFrom, unit), approachScored.length > 1, approachScored.map((s) => s.name), whyNote(approachFrom));
 
   // Dört hafta: fark et → çalışma düzeni (ör. sorumluluk; başlık şablondan) → iyi oluş ya da en belirgin boyut → gözden
   // geçir.
@@ -282,6 +334,9 @@ export function buildRoadmap(
   const ordered =
     t.thirdWeek === 'lowest' ? others.sort((x, y) => rel(x) - rel(y)) : others.sort((x, y) => distance(y) - distance(x));
   const thirdKey = stress?.scaleKey ?? ordered[0]?.scaleKey;
+  // En uzak boyut birden çoksa (eşit puanlar) 3. hafta testteki sırayla seçildi: "sonuca göre seçildi" denmez.
+  const key = (s: (typeof sections)[number]) => (t.thirdWeek === 'lowest' ? rel(s) : distance(s));
+  const thirdTie = !stress && ordered.length > 1 && key(ordered[0]) === key(ordered[1]);
   const third = thirdKey ? action(thirdKey) : t.extraWeek ? { name: t.extraWeek.title, text: pick(t.extraWeek.text, a) } : null;
   // Çalışma düzeni boyutu hesaplanamadıysa (ör. o boyutta çok madde boş bırakıldı) 2. hafta sıradaki boyuta ayrılır; plan
   // dört hafta kalır.
@@ -296,7 +351,7 @@ export function buildRoadmap(
   // "sonuca göre"; ilk ve son hafta ile tek boyutlu testteki ek deneme herkes için aynıdır.
   const middle = [
     ...(second ? [{ ...second, fromResult: true }] : []),
-    ...(third ? [{ ...third, fromResult: !!thirdKey }] : []),
+    ...(third ? [{ ...third, fromResult: !!thirdKey && !thirdTie }] : []),
   ];
   const weeks = [
     { label: '1. hafta', title: 'Fark et', text: pick(t.firstWeek, a), fromResult: false },
@@ -323,7 +378,7 @@ export function buildRoadmap(
     study: {
       title: parent ? 'Çocuğunuz nasıl çalışabilir?' : 'Nasıl çalışabilirsin?',
       intro: focusing
-        ? `${pick(t.studyIntro, a)} ${pick(t.focus!.note, a).replace('{n}', SAYILAR[study.length] ?? String(study.length))}`
+        ? `${pick(t.studyIntro, a)} ${pick(t.focus!.note, a).replace('{n}', SAYILAR[study.length] ?? String(study.length))}${tieNote}`
         : pick(t.studyIntro, a),
       items: study,
       links,
@@ -332,15 +387,21 @@ export function buildRoadmap(
       ? null
       : {
           title: a === 'adult' ? 'İş ve meslek planı için' : 'Okul ve meslek planı için',
+          // Ortam önerilmediyse nedeni: profil dengeli (ya da kalite uyarısıyla orta), ya da öne çıkan sonuçların ortam
+          // önerisi yok.
           intro:
             settingItems.length === 0
               ? noneExtreme
-                ? parent
-                  ? 'Çocuğunuzun profili dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
-                  : 'Profilin dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
+                ? cautioned
+                  ? parent
+                    ? `Hiçbir ${unit} öne çıkmadığı için burada bir ortam önerilmedi; “Kısaca” bölümündeki nota da bakın.`
+                    : `Hiçbir ${unit} öne çıkmadığı için burada bir ortam önerilmedi; “Kısaca” bölümündeki notu da oku.`
+                  : parent
+                    ? 'Çocuğunuzun profili dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
+                    : 'Profilin dengeli olduğu için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
                 : parent
-                  ? 'Bu sonuçlara göre çocuğunuz için tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilir.'
-                  : 'Bu sonuçlara göre tek bir ortam öne çıkmıyor; farklı ortamlarda rahat edebilirsin.'
+                  ? 'Çocuğunuzun öne çıkan sonuçları ortam seçimi için bir ipucu vermiyor.'
+                  : 'Öne çıkan sonuçların ortam seçimi için bir ipucu vermiyor.'
               : parent
                 ? 'Çocuğunuzun kendini daha rahat hissedebileceği ortamlar:'
                 : 'Kendini daha rahat hissedebileceğin ortamlar:',

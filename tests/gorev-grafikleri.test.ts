@@ -78,6 +78,12 @@ describe('görev testlerinin kart grafikleri', () => {
           expect(all, `${slug} ${name} ${rep.audience}`).not.toMatch(/\b(\d+) \S+ \1 tanes|(^|\s)[01] tanes/);
           for (const it of rep.items) {
             const label = `${slug} ${name} ${rep.audience} ${it.title}`;
+            // Sonucu yorumlanmayan kartın (yorumlanmadı, hesaplanamadı, süre içinde tamamlanamadı, rastgele cevaplarla da
+            // çıkabilecek sonuç) grafiği yoktur.
+            if (it.interpreted === false) {
+              expect(it.visual, label).toBeUndefined();
+              continue;
+            }
             // Sonucu hesaplanamayan ya da karşılaştırılamayan kartın çizecek bir verisi yoktur (ör. süreler alınamadı).
             if (!it.visual && NO_DATA.includes(it.badge ?? '')) continue;
             expect(it.visual, label).toBeDefined();

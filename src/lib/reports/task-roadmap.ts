@@ -48,7 +48,8 @@ export function buildTaskRoadmap(r: ReportContent, t: TaskRoadmapTemplate, opts:
     bars: (r.cognitive?.profile?.bars ?? []).map((b) => ({ ...b, ciLow: null, ciHigh: null })),
     ...(r.cognitive?.profile ? { barsTitle: r.cognitive.profile.title, barsNote: r.cognitive.profile.note } : {}),
     standout: blocks.map((b) => {
-      const g = b.interpreted === false || b.headline === 'Yorumlanmadı' ? undefined : graphic(b.visual);
+      // Satırda okunan grafiğin adı ve değeri sesli dinlemede yinelenmez.
+      const g = b.interpreted === false || b.headline === 'Yorumlanmadı' ? undefined : graphic(b.visual, undefined, `${b.name}: ${b.headline}`);
       return { title: b.name, text: b.headline, keys: [b.key], ...(g ? { graphic: g } : {}) };
     }),
     standoutNote: null,

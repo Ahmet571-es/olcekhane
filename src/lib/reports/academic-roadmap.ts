@@ -58,7 +58,9 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
       keys: ds.map((d) => d.key),
       graphic: graphic(ds.length === 1 ? domainDots(ds[0]) : domainsDots(ds[0].bandLabel, ds))!,
     }));
-  const overall = !notRead && ac.bandNames ? graphic(quizGauge(ac)) : undefined;
+  // Genel sonucun düzey çubuğu; doğru sayısı satırda okunduğu için sesli dinlemede yalnızca düzey.
+  const gauge = !notRead && ac.bandNames ? quizGauge(ac) : undefined;
+  const overall = gauge ? graphic(gauge, gauge.active === null ? [] : [`Düzey: ${gauge.zones[gauge.active].label}.`]) : undefined;
 
   const week = (i: 0 | 1) => {
     const d = need[i];
@@ -78,14 +80,15 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
   const second = week(0);
   const third = week(1);
 
-  // 1. hafta yanlış soruların (ya da hepsi doğruysa bir adım ilerinin) haftasıdır: sonuca göre seçilir.
+  // 1. hafta yanlış soruların (ya da hepsi doğruysa bir adım ilerinin) haftasıdır: sonuca göre seçilir. Sonuç
+  // yorumlanmadıysa her zaman hata defteridir (genel öneri).
   const weeks = [
     {
       label: '1. hafta',
       title: missed ? 'Hata defteri' : 'Bir adım ileri',
       // Hatanın nedeni yalnızca yanlış cevap varsa ve cevaplar tahmin değilse sorulur.
       text: missed ? `${pick(t.firstWeek.wrong, a)}${ac.wrong > 0 && !ac.guessed ? ` ${pick(t.firstWeek.reason, a)}` : ''}` : pick(t.firstWeek.none, a),
-      fromResult: true,
+      fromResult: !notRead,
     },
     { label: '2. hafta', ...second },
     { label: '3. hafta', ...third },
@@ -160,22 +163,33 @@ export function buildAcademicRoadmap(r: ReportContent, t: AcademicRoadmapTemplat
       note: pick(t.routine.note, a),
     },
     // Bölümün grafiği önerilerin seçildiği alanların soruları: pekiştirilmeli ve öncelikli alanlar; hepsi sağlamsa öneriler bu
-    // yüzden seçildiği için bütün alanlar. Yorumlanmayan sonuçta grafik yoktur.
+    // yüzden seçildiği için bütün alanlar (sesli dinlemede adları; doğru sayıları öneri kartlarında okundu). Sonuç
+    // yorumlanmadıysa, öneriler bölümündeki gibi, bütün alanların önerileri testteki sırayla ve başta öğretmenle konuşma
+    // önerisi; "hepsi sağlam" önerileri verilmez, grafik yoktur.
     approach: parent
-      ? {
-          title: 'Evde nasıl destek olabilirsiniz?',
-          items: need.length ? need.map((d) => ({ title: d.name, text: texts[d.key].approach, keys: [d.key] })) : t.approachSolid,
-          ...(notRead
-            ? {}
-            : {
-                keys: (need.length ? need : domains).map((d) => d.key),
-                graphic: basisCaption(
-                  graphic(need.length === 1 ? domainDots(need[0]) : domainsDots('Konu alanları', need.length ? need : domains)),
-                  true,
-                  need.length !== 1,
-                )!,
-              }),
-        }
+      ? notRead
+        ? {
+            title: 'Evde nasıl destek olabilirsiniz?',
+            items: [
+              {
+                title: 'Önce öğretmeniyle konuşun',
+                text: ac.guessed
+                  ? 'Cevapların bir kısmı tahmin olabileceği için alanların düzeyi belirlenemedi. Hangi alandan başlanacağını öğretmeniyle birlikte seçin; aşağıda her alan için öneriler var.'
+                  : 'Bütün sorularda “Bilmiyorum” denildiği için alanların düzeyi belirlenemedi. Hangi alandan başlanacağını öğretmeniyle birlikte seçin; aşağıda her alan için öneriler var.',
+              },
+              ...domains.map((d) => ({ title: d.name, text: texts[d.key].approach, keys: [d.key] })),
+            ],
+          }
+        : {
+            title: 'Evde nasıl destek olabilirsiniz?',
+            items: need.length ? need.map((d) => ({ title: d.name, text: texts[d.key].approach, keys: [d.key] })) : t.approachSolid,
+            keys: (need.length ? need : domains).map((d) => d.key),
+            graphic: basisCaption(
+              graphic(need.length === 1 ? domainDots(need[0]) : domainsDots('Konu alanları', need.length ? need : domains)),
+              need.length !== 1,
+              (need.length ? need : domains).map((d) => d.name),
+            )!,
+          }
       : null,
     weeks,
     weeksGraphic: weeksGraphic(weeks, parent),

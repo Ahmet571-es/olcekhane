@@ -287,8 +287,8 @@ export function quizParts(input: { def: QuizInstrument; result: QuizResult; cont
         'Tek soruda görülen hata dikkatsizlik ya da tahmin de olabilir.',
         ...(report.quiz?.errorsTitle ? [`Her hata türünün açıklaması ve önerisi yukarıda, “${report.quiz.errorsTitle.replace(/\?$/, '')}” bölümünde.`] : []),
       ].join(' '),
-      note: 'Her çubuk bir hata türü; uzunluğu, görüldüğü soru sayısıdır.',
-      visual: misconceptionBars(a.misconceptions),
+      note: 'Her çubuk bir hata türü; uzunluğu, görüldüğü soru sayısıdır. Eksenin sonu yanlış cevaplanan soruların sayısıdır.',
+      visual: misconceptionBars(a.misconceptions, a.wrong),
       spoken: a.misconceptions.map((m) => `${m.name}: ${spokenCount(m.count, 'soru')}.`),
     });
   }
