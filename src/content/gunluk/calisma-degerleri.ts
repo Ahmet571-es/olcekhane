@@ -9,8 +9,8 @@ import type { SurveyDaily } from './types';
  * Para, kurs ya da iş sahibi olmak varsayılmaz: kazanç ve güvence örnekleri meslekler konuşulurken ya da bir işi
  * değerlendirirken görünür. Yüksek ucun yumuşak zorluğu maddenin kendisinden gelir (ör. B2 "Birinin sürekli başımda
  * durmaması" → birinin başında durması canını sıkabilir; K2 → emeğin karşılığını tam vermeyen bir iş); güvencede şablonun
- * güvence ile belirsiz fırsat çiftinden (src/content/reports/calisma-degerleri.ts). Düşük uca bedel yazılmaz (types.ts, ek
- * kurallar); yalnızca yaşam dengesinde şablonun "dinlenmeye zaman ayırmak herkes için önemlidir" cümlesinden gelen yumuşak bir
+ * güvence ile belirsiz fırsat çiftinden (src/content/reports/calisma-degerleri.ts). Düşük uca bedel yazılmaz (types.ts,
+ * denetim listesinin 13. maddesi); yalnızca yaşam dengesinde şablonun "dinlenmeye zaman ayırmak herkes için önemlidir" cümlesinden gelen yumuşak bir
  * hatırlatma vardır. Düşük önem "işin kendisi" gibi bir iç değerle açıklanmaz: aynı sayfada ilgi ve öğrenme de düşük olabilir.
  * Yetişkinin iş satırları rozetteki "çok önemli"yi yinelemez; bir iş teklifine bakarken sorulabilecek şeyi anlatır. Profil düz
  * olduğunda (değerler arasındaki fark küçük) giriş, örneklerin birbirine benzeyebileceğini söyler (daily-parts.ts,

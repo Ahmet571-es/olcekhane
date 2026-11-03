@@ -14,7 +14,7 @@ import type { SurveyDaily } from './types';
  * araç, iş ya da yakın arkadaş varsayılmaz. Her satırın dayandığı maddeler `from`'dadır; "Şiir yazmak" (h082) yaratıcı
  * etkinliklerin asıl maddesidir, yazma alanında kullanılmaz.
  * Maddeye doğrudan dayanmayan tek uzantı: yüksek sıklıkta etkinliğin boş zamanın büyük kısmını alabileceği ya da onunla
- * uğraşırken zamanın fark edilmeyebileceği (merak.ts'teki gibi). Düşük ucun bedeli yoktur (types.ts, ek kurallar).
+ * uğraşırken zamanın fark edilmeyebileceği (merak.ts'teki gibi). Düşük ucun bedeli yoktur (types.ts, denetim listesinin 13. maddesi).
  */
 export const hobiIlgileriDaily: SurveyDaily = {
   kind: 'survey',

@@ -456,29 +456,40 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   raporla ve uyarı kutusuyla aynı olmasını, dili, sesli okumayı, ekranı ve PDF'i dener.
 - Günlük hayat örnekleri (aşama d; `lib/reports/daily-parts.ts`, `evaluate.ts` ilk ek bölümün ardına koyar; ekranda, PDF'te,
   sesli dinlemede ve pakette): metinler testin adresiyle `src/content/gunluk/<adres>.ts` (kayıt `index.ts`; model, örnekler ve
-  **yazarın denetim listesi** `types.ts`'in başında; yeni dosyayı yazmamış bir ajan her satırı maddelerle karşılaştırır).
+  **yazarın denetim listesi** `types.ts`'in başında: numaralı tek liste, testin denetlediği kurallar (T) işaretli). Her yeni
+  testin dosyasını, yayından önce onu yazmamış bir ajan satır satır maddelerle ve listeyle karşılaştırır.
   Anket testlerinde **Günlük hayatta nasıl görünür**: sonuç kartı olan her ölçek (`dailyScales`) için iki ucun günlük karşılığı
   (`poles`, 2–4 sözcük, değer taşıyan fiil yok; değerlendirici testte düşük uç "Henüz") ve düşük/orta/yüksek grubunda üç ortam:
   Okulda, Arkadaşlarla, Evde (yetişkinde "İşte ya da günlük işlerde"; mezunda "Okulda ya da derslerde"); her satırın dayandığı
-  maddeler `from`'da. Ton (`scaleTone`): kişilik, merak, ilgi ve değerde "özellik" (iki uç eşit, her uçta bir kolaylık ve bir
-  zorluk); değerlendirici, destek kutusu açabilen ve öz-saygı, iyimserlik, öz-yeterlik, zihniyet, duygusal zekâ, empati,
-  öz-denetim, isteksizlik ölçeklerinde "gelişim" (bugünkü durum; uydurma güçlü yan ya da zorluk yok). Giriş her kart için doğru
-  olur: örnekler testteki cümlelerin konusundan yazılır, tek tek cevapları yansıtmaz, hepsi uymayabilir; yaygınlık iddiası yok.
-  Rozet "Düzeylerin anlamı"ndaki rozettir; grafik `poles` (iki uç aynı boyda, düzeyin bölgesi, kişinin yeri; tek tonlu); sesli
-  okumada "Bir uç: … Öbür uç: … Senin yerin şu uca daha yakın: …" ve "Okulda: …". Puan hesaplanamadıysa, cevaplar iki uca
-  ayrıldıysa ya da destek önerisini bu ölçekteki bir cevap açtıysa örnek yok (kart kısa nedenini söyler; rozet ve iki uç
-  kalır); "Bu da uyabilir" komşu düzeyi başka gruptaysa kart onun örneklerinin de uyabileceğini söyler. Görev, okuma, sesli
-  okuma ve konu taramada **Günlük hayatta nerede kullanılır**: her beceri ya da konu alanı (`dailySources`; konu taramada
-  formdan forma değişen alan `forms` ile ayrı kart, metni gösterildiği her forma uyar) için tanım (başlıkla başlamaz), grafik
-  `contexts` (ortada kısa ad, üç dalda yerler; sesli okumada "Kullanıldığı yerler: …") ve üç ortam (Okulda, Oyunda ve
-  arkadaşlarla, Evde); sonuca göre değişmez; testin "bilgi vermez" dediği ya da başka bir testin ölçtüğü beceriye dayanan
-  örnek yok (`EXCLUDED`). Grafiklerde en küçük yazı ≈ 7,5 punto. Yazım: örnekler maddelerden ve sitedeki metinlerden çıkar,
-  yeni iddia yok; anket örneklerinin her cümlesi temkinli, öğrenci ve yetişkin satırı "sen" der, veli satırında ikinci kişi eki
-  yok; görevlerde tanımlayıcı ("bu tür işlerdir"), sonuç, zorlanma, test ve vaat yok; tanı, kıyas, yaygınlık, klinik sözcük,
-  yetenek, aile/cinsiyet varsayımı yok; 1–4. sınıfa açık testte telefon ve mesaj yok; cümle en çok 22, ortalama en çok 13
-  sözcük. Yeni testin dosyası eklenince `tests/gunluk-hayat.test.ts`'teki `DAILY_PENDING`'den adresi silinir; test kapsamı (her
-  ölçek, grup, ortam, kitle, madde anahtarı; her görev ve form), tonları, raporda yeri ve rozeti, işaretin bölgede olmasını,
-  dili, sesli okumayı, ekranı, PDF'i (üst üste binme dahil) ve paketi dener.
+  maddeler `from`'da (destek kutusunu açan madde dayanak olmaz). Satır bir maddeyi bütünüyle ya da bir maddeden art arda dört
+  sözcüğü aktarmaz (en çok bir içerik sözcüğü taşıyan kalıplar sayılmaz). Ton (`scaleTone`): kişilik, merak, tarz, ilgi ve
+  değerde "özellik" (iki uç eşit, her uçta bir kolaylık ve bir zorluk); "gelişim" (bugünkü durum; zor uca uydurma güçlü yan,
+  rahat uca uydurma zorluk yok; zor uç sıkıntının olduğu uçtur, HEXACO duygusallıkta yüksek uç): değerlendirici şablon, destek
+  kutusu açabilen ölçek, `GROWTH_SLUGS` (öz-saygı, iyimserlik, öz-yeterlik, zihniyet, duygusal zekâ, empati, öz-denetim) ve
+  `GROWTH_SCALES` (isteksizlik, zorlukla başa çıkma, 16 Faktörlü'de gerginlik ve düşünsel özgüven, Liderlik'te kararlılık; yeni
+  tek yönlü ölçek de buraya ve testteki GROWTH tablosuna). İlgi örnekleri meslek önermez, düşük ilgi eksiklik değildir; değerler
+  birbirinden üstün değildir ve farklar küçükse giriş örneklerin benzeyebileceğini söyler (`flatSentence`); hobi testinin
+  satırları beğeniyi ya da imkânı değil sıklığı anlatır. Motivasyon bileşiklerinin iki ucu tarafsızdır; iki parçadan biri yüksek,
+  öteki düşükse örnek yok (`motivationPartsSplit`). Alt ölçekleriyle çelişebilecek bileşik ölçeğe örnek yerine yönlendirme
+  yazılır (`pointer`). Giriş her kart için doğru olur: örnekler testteki cümlelerin konusundan yazılır, tek tek cevapları
+  yansıtmaz, hepsi uymayabilir; yaygınlık iddiası yok. Rozet "Düzeylerin anlamı"ndaki rozettir; grafik `poles` (iki uç aynı
+  boyda, düzeyin bölgesi, kişinin yeri; tek tonlu); sesli okumada "Bir uç: … Öbür uç: … Senin yerin şu uca daha yakın: …" ve
+  "Okulda: …". Puan hesaplanamadıysa, cevaplar iki uca ayrıldıysa ya da destek önerisini bu ölçekteki bir cevap açtıysa örnek yok
+  (kart kısa nedenini söyler; rozet ve iki uç kalır); "Bu da uyabilir" komşu düzeyi başka gruptaysa kart onun örneklerinin de
+  uyabileceğini söyler. Görev, okuma, sesli okuma ve konu taramada **Günlük hayatta nerede kullanılır**: her beceri ya da konu
+  alanı (`dailySources`; konu taramada formdan forma değişen alan `forms` ile ayrı kart, metni gösterildiği her forma uyar) için
+  tanım (başlıkla başlamaz), grafik `contexts` (ortada kısa ad, üç dalda yerler; sesli okumada "Kullanıldığı yerler: …") ve üç
+  ortam (Okulda, Oyunda ve arkadaşlarla, Evde); sonuca göre değişmez; testin "bilgi vermez" dediği ya da başka bir testin
+  ölçtüğü beceriye ve aynı soruların geldiği testte soruların konularına dayanan örnek yok (`EXCLUDED`). Grafiklerde en küçük
+  yazı ≈ 7,5 punto. Yazım: örnekler maddelerden ve sitedeki metinlerden çıkar, yeni iddia yok; anket örneklerinin her cümlesi
+  temkinli, öğrenci ve yetişkin satırı "sen" der, veli satırında kesin bir ikinci kişi işareti yok (testteki örnek tablosu);
+  görevlerde tanımlayıcı ("bu tür işlerdir"), sonuç, zorlanma, test ve vaat yok; tanı, kıyas, yaygınlık, klinik sözcük,
+  yetenek, öğrenme stili, aile/cinsiyet varsayımı yok; 1–4. sınıfa açık testte telefon ve mesaj yok; yetişkinin gördüğü satır
+  evde başka birini varsaymaz (gerekirse `adult.home`: "yakınların"); 13. sınıfa açık testte öğrenci ve veli metninde "sınıf",
+  "teneffüs" yok ("derste", "ders arkadaşı"); cümle en çok 22, ortalama en çok 13 sözcük; TDK yazımı. Yeni testin dosyası
+  eklenince `tests/gunluk-hayat.test.ts`'teki `DAILY_PENDING`'den adresi silinir; test kapsamı (her ölçek, grup, ortam, kitle,
+  madde anahtarı; her görev ve form), tonları, dil ve kapsayıcılık kurallarını, raporda yeri ve rozeti, işaretin bölgede
+  olmasını, sesli okumayı, ekranı, PDF'i (üst üste binme dahil) ve paketi dener.
 
 ## Kendini Tanı Paketi
 
