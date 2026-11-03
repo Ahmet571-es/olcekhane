@@ -265,7 +265,7 @@ export const dikkatBellek: TaskInstrument = {
     basedOn:
       'Bilişsel psikolojinin klasik deney düzenleri: sayı dizisi, blok dizisi (Corsi), ok/flanker görevi (Eriksen ve Eriksen, 1974) ve sembol eşleştirme. Uyaranlar ve görevler Ölçekhane tarafından özgün olarak hazırlanmıştır.',
     whatItMeasures:
-      'Kısa süreli ve çalışma belleğini (sayı ve kutu dizileri), seçici dikkati (ok görevi) ve işlem hızını (sembol eşleştirme) ölçer. Çalışma belleği, çok adımlı yönergeleri takip etmek ya da zihinden işlem yapmak gibi gündelik okul işlerinde kullanılır.',
+      'Kısa süreli ve çalışma belleğini (sayı ve kutu dizileri), seçici dikkati (ok görevi) ve işlem hızını (sembol eşleştirme) ölçer. Çalışma belleği, çok adımlı yönergeleri takip etmek gibi gündelik okul işlerinde kullanılır.',
     turkishVersion:
       'Özgün görevler. Yönergeler Türkçe yazılmıştır; görevlerin kendisi dilden büyük ölçüde bağımsızdır.',
     reliability:

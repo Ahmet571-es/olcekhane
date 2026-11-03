@@ -116,7 +116,7 @@ export const durGitGorevi: TaskInstrument = {
     basedOn:
       'Dur-git (go/no-go) düzeni: Donders’in (1868) tepki süresi çalışmalarındaki “yalnızca bir uyarana tepki ver” görevinden gelen ve bugün tepki ketlemesini ölçmek için yaygın olarak kullanılan düzen. Harfler, deneme sırası, süreler, puanlama ve rapor Ölçekhane tarafından özgün olarak hazırlanmıştır; ticari sürekli performans testlerinin uyaranları, puanlama kuralları ya da normları kullanılmaz.',
     whatItMeasures:
-      'Tepki ketlemesini, yani alışkanlık hâline gelmiş bir tepkiyi (basmayı) gerektiğinde vermeden durabilmeyi (X’te durma) ölçer. Diğer harflere kaçırmadan tepki verebilmek ise dikkatin görev boyunca açık tutulduğunu gösterir. Bu beceriler; sırasını beklemek, düşünmeden cevap vermemek ya da hızlı bir işin içinde bir kuralı uygulamak gibi durumlarda kullanılır.',
+      'Tepki ketlemesini, yani alışkanlık hâline gelmiş bir tepkiyi (basmayı) gerektiğinde vermeden durabilmeyi (X’te durma) ölçer. Diğer harflere kaçırmadan tepki verebilmek ise dikkatin görev boyunca açık tutulduğunu gösterir. Bu beceriler; hızlı bir işin içinde bir kuralı uygulamak ya da “süre bitti” denince yazmayı hemen kesmek gibi durumlarda kullanılır.',
     turkishVersion: 'Özgün görev. Görev harflerle yapılır; yönergeler Türkçe yazılmıştır.',
     reliability:
       'Bu görevin güvenirlik ve norm çalışması henüz yapılmadı. Dur-git görevlerinde X’te yanlışlıkla basma sayısı hızla da ilgilidir: çok hızlı çalışan biri daha sık yanılabilir. Bu yüzden raporda durabilme, tepki hızıyla birlikte yorumlanır.',

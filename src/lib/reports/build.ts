@@ -1452,7 +1452,7 @@ const SUSTAIN_THRESHOLD = 15;
 const SUSTAINED_TIPS: Record<Voice, string[]> = {
   student: [
     'Uzun bir işi kısa parçalara böl (ör. 15–20 dakika); aralarda birkaç dakika kalkıp hareket et.',
-    'Ders çalışırken telefonunu başka bir odaya koy; bildirimler dikkatini böler.',
+    'Ders çalışırken televizyonu kapat ve masanda yalnızca o işe gereken şeyleri bırak.',
     'Sınavda bir soruyu bitirince cevabını kısaca kontrol et; gözden kaçan ayrıntılar çoğu zaman acele etmekten olur.',
     'Okurken satırı kaybediyorsan parmağınla ya da bir cetvelle takip et.',
     'İyi uyumak, dikkat için en basit ve en etkili desteklerden biridir.',
@@ -7708,8 +7708,8 @@ function complexSpanBlocks(r: ComplexSpanResult, audience: Audience, card: CardO
     }
     parts.push(
       v(
-        'Bu beceri; zihinden işlem yaparken ara sonuçları akılda tutmak ya da birini dinlerken söylenenleri aklında tutup bir yandan başka bir şey yapmak gibi işlerde kullanılır.',
-        'Bu beceri; zihinden işlem yaparken ara sonuçları akılda tutmak, çok adımlı yönergeleri izlemek ya da okurken cümlenin başını akılda tutmak gibi işlerde kullanılır.',
+        'Bu beceri; birini dinlerken bir yandan not almak ya da sohbet sürerken söylenen bir saati aklında tutmak gibi işlerde kullanılır.',
+        'Bu beceri; öğretmeni dinlerken bir yandan not almak ya da çok adımlı bir yönergede sıradaki adımı unutmamak gibi işlerde kullanılır.',
       ),
     );
     if (rapid) {
@@ -11774,8 +11774,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
         student: 'Rakam dizilerini tersten en fazla {n} rakama kadar doğru tekrar edebildin.',
         parent: 'Çocuğunuz rakam dizilerini tersten en fazla {n} rakamlık uzunluğa kadar doğru tekrar etti.',
         everyday: you
-          ? 'Bilgiyi hem akılda tutup hem de üzerinde değişiklik yapmak, zihinden işlem yaparken ve çok adımlı yönergeleri takip ederken işine yarar. Tersten tekrar, çoğu kişi için ileri tekrardan daha zordur.'
-          : 'Bilgiyi akılda tutarken üzerinde işlem yapabilmek; zihinden işlem, çok adımlı yönergeleri takip etme ve okuduğunu anlama gibi işlerde kullanılır. Tersten tekrar, çoğu kişi için ileri tekrardan daha zordur.',
+          ? 'Bilgiyi hem akılda tutup hem de üzerinde değişiklik yapmak, ayları sondan başa sayarken ve çok adımlı yönergeleri takip ederken işine yarar. Tersten tekrar, çoğu kişi için ileri tekrardan daha zordur.'
+          : 'Bilgiyi akılda tutarken üzerinde işlem yapabilmek; ayları sondan başa saymak, çok adımlı yönergeleri takip etmek ve okuduğunu anlamak gibi işlerde kullanılır. Tersten tekrar, çoğu kişi için ileri tekrardan daha zordur.',
       }),
       ladder: bwd.ladder,
       visual: spanLadder('Geri sayı dizileri', bwd, 'rakam', spanTask('digit_span', 'backward')),
@@ -11846,8 +11846,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
             ? `${secs} saniye boyunca hiç sembol eşleştirmedin; bu yüzden bu görevin sonucu yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Öteki görevlerin sonuçları bundan etkilenmez.`
             : `Çocuğunuz ${secs} saniye boyunca hiç sembol eşleştirmedi; bu yüzden bu görevin sonucu yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Öteki görevlerin sonuçları bundan etkilenmez.`
           : you
-            ? `${spd.correct === spd.attempted ? `Eşleştirdiğin ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Eşleştirdiğin ${spd.attempted} sembolün hiçbiri doğru değildi` : `${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdin (${spd.errors} hata)`}. Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer. Bir tabloya bakarak işaretleri karşılıklarına çevirmek ya da şifreli bir notu çözmek bu tür işlerdir.`
-            : `${spd.correct === spd.attempted ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hiçbiri doğru değildi` : `Çocuğunuz ${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdi (${spd.errors} hata)`}. Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer. Bir tabloya bakarak işaretleri karşılıklarına çevirmek ya da şifreli bir notu çözmek bu tür işlerdir. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
+            ? `${spd.correct === spd.attempted ? `Eşleştirdiğin ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Eşleştirdiğin ${spd.attempted} sembolün hiçbiri doğru değildi` : `${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdin (${spd.errors} hata)`}. Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer. Bir tabloya bakarak işaretleri harflere ya da sayılara çevirmek (ör. bir şifre tablosuyla not çözmek) bu tür işlerdir.`
+            : `${spd.correct === spd.attempted ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hiçbiri doğru değildi` : `Çocuğunuz ${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdi (${spd.errors} hata)`}. Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer. Bir tabloya bakarak işaretleri harflere ya da sayılara çevirmek (ör. bir şifre tablosuyla not çözmek) bu tür işlerdir. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
       symbol: { correct: spd.correct, errors: spd.errors, perMinute: spd.perMinute },
       // Hiç cevap yoksa çizilecek bir şey yoktur.
       ...(spd.attempted > 0
@@ -11966,7 +11966,7 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
     ? [
         'Uzun ya da çok adımlı yönergeleri duyar duymaz kısaca not al.',
         'Zihinden işlem yaparken ara sonuçları kâğıda yaz; zihnini asıl işe ayır.',
-        'Ders çalışırken telefonunu başka bir odaya koy; dikkat dağıtıcılar çalışma belleğini doldurur.',
+        'Ders çalışırken televizyonu kapat ve masanda yalnızca o işe gereken şeyleri bırak.',
         'İyi uyumak, dikkat ve bellek için en basit ve en etkili desteklerden biridir.',
       ]
     : [

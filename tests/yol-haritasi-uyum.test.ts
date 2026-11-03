@@ -122,14 +122,14 @@ describe('zihinsel görevlerin yol haritası: günlük hayat örnekleriyle uyum'
     expect(problems).toEqual([]);
   });
 
-  it('Dikkat ve Bellek raporu: kutu dizisi ve sembol eşleştirme kartları kardeş testlerin örneklerini kullanmaz', () => {
+  it('Dikkat ve Bellek raporu: tersten sayı dizisi, kutu dizisi ve sembol eşleştirme kartları kardeş testlerin örneklerini kullanmaz', () => {
     const d = getInstrumentDef('dikkat-ve-bellek') as TaskInstrument;
-    const names = ['spatial', 'speed'].map((k) => d.scales.find((s) => s.key === k)!.name);
+    const names = ['digit_backward', 'spatial', 'speed'].map((k) => d.scales.find((s) => s.key === k)!.name);
     for (const [variant, make] of Object.entries(TASK_VARIANTS['dikkat-ve-bellek'])) {
       const r = evaluate('dikkat-ve-bellek', make());
       for (const who of ['student', 'parent'] as const) {
         const cards = r[who].items.filter((i) => names.includes(i.title));
-        expect(cards.length, `${variant} ${who}`).toBe(2);
+        expect(cards.length, `${variant} ${who}`).toBe(3);
         for (const c of cards) {
           for (const x of EXCLUDED['dikkat-ve-bellek']) expect(c.text, `${variant} ${who} ${c.title}: ${x.pattern}`).not.toMatch(x.pattern);
           // Tahtadan deftere geçirmek yazma hızına da dayanır.

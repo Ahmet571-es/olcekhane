@@ -43,7 +43,7 @@ export const EXCLUDED: Record<string, Excluded[]> = {
   ],
   'simge-bulma': [
     {
-      pattern: /deftere geçir|yazı yaz|okuma hızı|hızlı oku|hesapla|tutarı/iu,
+      pattern: /deftere geçir|yazı yaz|okuma hızı|hızlı oku|hesap|zihinden|tutarı/iu,
       limitation: 'yazma ya da okuma hızı hakkında doğrudan bilgi vermez',
       roadmap: {
         where: ['supports.akici'],
@@ -115,11 +115,14 @@ export const EXCLUDED: Record<string, Excluded[]> = {
     { pattern: /eş anlam|zıt anlam|deyim|anlamını bil/iu, sibling: 'kelime-bilgisi' },
     // "eğer" sözcük olarak aranır ("değerlendirin" içinde de geçer).
     { pattern: /(?<!\p{L})eğer(?!\p{L})|ise …/iu, sibling: 'mantiksal-akil-yurutme' },
+    // "uyan" değil: "ona uyanı ara" (ilişkiye uyan kelime) de geçer.
+    { pattern: /uyand|uyanma|yaşça|daha hızlı koşar|makas/iu, rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz' },
   ],
   'mantiksal-akil-yurutme': [
     { pattern: /şekil|sayı|matematik/iu, limitation: 'şekillerle ya da sayılarla akıl yürütme' },
     { pattern: /grupla|sırayı kur|ilişkiyi bul/iu, sibling: 'sozel-akil-yurutme' },
     { pattern: /ilk akla gelen|acele/iu, sibling: 'dusunerek-karar-verme' },
+    { pattern: /güller|(?<!\p{L})kuşlar|kediler|köpekler/iu, rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz' },
   ],
   'kagit-katlama': [
     { pattern: /döndür|çevir/iu, limitation: 'şekilleri zihinde döndürme' },
@@ -132,11 +135,11 @@ export const EXCLUDED: Record<string, Excluded[]> = {
     { pattern: /dizi|örüntü/iu, sibling: 'sayi-dizileri' },
     { pattern: /zihinden|kafadan|çarpım tablosu|para üstü/iu, sibling: 'zihinden-hesaplama-hizi' },
     {
-      pattern: /simit|gömlek|limonata|(?<!\p{L})kek(?!\p{L})|tarif|yemeği çoğalt|taksi|koro|fidan|kumbara|(?<!\p{L})tur(?:da|u|lar)?(?!\p{L})|terazi|boyacı|bisiklet/iu,
+      pattern: /simit|gömlek|limonata|(?<!\p{L})kek(?!\p{L})|tarif|yemeği çoğalt|taksi|koro|fidan|kumbara|(?<!\p{L})tur(?:da|u|lar)?(?!\p{L})|terazi|boyacı|bisiklet|yaşın|yaşında|abla|fotoğraf|yolculu/iu,
       rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz',
       roadmap: {
         where: ['supports.iki-kat', 'supports.terazi', 'approach.0', 'weeks.1', 'weeks.2', 'lastWeek'],
-        why: 'Yol haritası raporun anlattığı iki yanılgıyı (orantı ile farkı karıştırmak, eşittir işaretini “sonuç” diye okumak) çalışmayı önerir; tarif ve terazi bu çalışmanın örnekleridir. Sorulardaki sayılar ve cevaplar kullanılmaz. Becerinin kullanıldığı yerleri söyleyen giriş cümlesi ise soruların konularını anmaz.',
+        why: 'Yol haritası raporun anlattığı iki yanılgıyı (orantı ile farkı karıştırmak, eşittir işaretini “sonuç” diye okumak) çalışmayı önerir; tarif, terazi ve veliye yaklaşımdaki günlük durumlar (mutfak, alışveriş, yolculuk) bu çalışmanın örnekleridir. Sorulardaki sayılar ve cevaplar kullanılmaz; bir sorunun neredeyse aynısı olan örnek (yaş farkı) yoktur. Becerinin kullanıldığı yerleri söyleyen giriş cümlesi soruların konularını anmaz.',
       },
     },
   ],
@@ -206,7 +209,11 @@ export const EXCLUDED: Record<string, Excluded[]> = {
   'dusunerek-karar-verme': [
     { pattern: /bütün kararlar|hayat kararı|önemli kararlar/iu, limitation: 'günlük hayattaki bütün kararlar' },
     { pattern: /haber|iddia/iu, sibling: 'mantiksal-akil-yurutme' },
-    { pattern: /tavuk|horoz|koşu|yarış|makine|yosun|koyun|kuyruk|asansör|kütük|sincap|dergi|(?<!\p{L})muz/iu, rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz' },
+    {
+      // Kısa sözcükler sözcük başında aranır ("okuyup" içinde "kuyu" geçer).
+      pattern: /tavuk|horoz|koşu|yarış|makine|yosun|koyun|kuyruk|asansör|kütük|sincap|dergi|(?<!\p{L})muz|defter|(?<!\p{L})(?:kalem|usta|tren|kuyu|sopa)|ağaç dik|duvar|pembe|salyangoz|bilet|daha pahalı|çitin/iu,
+      rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz',
+    },
   ],
   'kelime-bilgisi': [
     {

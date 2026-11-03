@@ -520,9 +520,9 @@ const geriyeDonuk: TaskRoadmapTemplate = {
 const zihindeDondurme: TaskRoadmapTemplate = {
   version: 'zihinde-dondurme-yol-haritasi-1',
   what: {
-    student: 'şekillerle ve yönlerle uğraşmayı nasıl kolaylaştırabileceğin',
-    parent: 'çocuğunuzun şekillerle ve yönlerle uğraşmasını nasıl kolaylaştırabileceğiniz',
-    summary: 'şekillerle ve yönlerle uğraşmayı kolaylaştıran yollar',
+    student: 'döndürülmüş şekillerle uğraşmayı nasıl kolaylaştırabileceğin',
+    parent: 'çocuğunuzun döndürülmüş şekillerle uğraşmasını nasıl kolaylaştırabileceğiniz',
+    summary: 'döndürülmüş şekillerle uğraşmayı kolaylaştıran yollar',
   },
   studyTitle,
   studyIntro: t(
@@ -543,8 +543,8 @@ const zihindeDondurme: TaskRoadmapTemplate = {
       'Çocuğunuz döndürülmüş bir şekli karşılaştırırken şeklin belirgin bir yerini (bir köşe ya da bir çıkıntı) seçebilir. Şekil dönünce o yerin nereye gittiğini izleyip şeklin geri kalanının da ona göre yerinde olup olmadığına bakabilir.',
     )),
     support(3, 'oyun', 'Şekil oyunları', 'Etkinlik', t(
-      'Döndürülmüş şekiller arasından aynısını aradığın bulmacalar ve harf ya da şekil kartlarıyla oynanan “Aynı mı, ayna mı?” oyunları şekillerle düşünmeyi keyifli hâle getirir.',
-      'Döndürülmüş şekiller arasından aynısını aradığı bulmacalar ve harf ya da şekil kartlarıyla oynanan “Aynı mı, ayna mı?” oyunları çocuğunuz için şekillerle düşünmeyi keyifli hâle getirir.',
+      'Döndürülmüş şekiller arasından aynısını aradığın bulmacalar, şekillerle düşünmeyi keyifli hâle getirir. Harf kartlarını döndürüp “Düz mü, ayna mı?” diye sorduğun oyunlar da öyledir.',
+      'Döndürülmüş şekiller arasından aynısını aradığı bulmacalar, çocuğunuz için şekillerle düşünmeyi keyifli hâle getirir. Harf kartlarını döndürüp “Düz mü, ayna mı?” diye sorulan oyunlar da öyledir.',
     )),
   ],
   facts: facts(
@@ -559,15 +559,15 @@ const zihindeDondurme: TaskRoadmapTemplate = {
   ),
   approach: [
     { title: 'Somut malzeme', text: 'Kâğıttan kesilmiş şekiller ve harf kartları gibi malzemelerle şekilleri döndürüp karşılaştırmasına fırsat verin.' },
-    { title: 'Döndürerek konuşun', text: 'Bir şekil ya da harf döndürülünce nasıl görüneceğini birlikte tahmin edin; sonra kâğıdı çevirip bakın.' },
+    { title: 'Döndürerek konuşun', text: 'Bir şekil ya da harf döndürülünce nasıl görüneceğini birlikte tahmin edin; sonra kâğıdı masanın üstünde döndürüp bakın.' },
     { title: 'Çizerek çözme', text: 'Zorlandığı geometri sorularında şekli kâğıda çizmesini ya da kâğıttan kesip döndürmesini önerin.' },
   ],
   weeks: [
     {
       title: 'Fark et',
       text: t(
-        'Bu hafta şekillerle ya da yönlerle uğraştığın anları (geometri, çizim, ters duran bir yazı) ve sana kolay ya da zor gelenleri yaz.',
-        'Bu hafta çocuğunuzun şekillerle ya da yönlerle uğraştığı anları ve ona kolay ya da zor gelenleri birlikte gözlemleyin.',
+        'Bu hafta döndürülmüş şekillerle uğraştığın anları (geometri, çizim, ters duran bir yazı) ve sana kolay ya da zor gelenleri yaz.',
+        'Bu hafta çocuğunuzun döndürülmüş şekillerle uğraştığı anları ve ona kolay ya da zor gelenleri birlikte gözlemleyin.',
       ),
     },
     {
@@ -942,8 +942,8 @@ const sozelAkilYurutme: TaskRoadmapTemplate = {
     {
       title: 'Çiz ve sırala',
       text: t(
-        'Bu hafta kendi sıralama bulmacanı yaz (ör. evde kimin kimden önce uyandığı): üç bilgi ver, birine çözdür ve onun bilgileri nasıl çizdiğine bak.',
-        'Bu hafta çocuğunuzdan kendi sıralama bulmacasını yazmasını isteyin (ör. evde kimin kimden önce uyandığı): üç bilgi versin, siz çözün; sonra rolleri değiştirin.',
+        'Bu hafta kendi sıralama bulmacanı yaz (ör. buluşma yerine kimin kimden önce geldiği). Üç bilgi ver, birine çözdür ve bilgileri nasıl çizdiğine bak.',
+        'Bu hafta çocuğunuzdan kendi sıralama bulmacasını yazmasını isteyin (ör. buluşma yerine kimin kimden önce geldiği). Üç bilgi versin, siz çözün; sonra rolleri değiştirin.',
       ),
     },
     {
@@ -1047,8 +1047,8 @@ const kagitKatlama: TaskRoadmapTemplate = {
     {
       title: 'Adım adım aç',
       text: t(
-        'Bu hafta origami yaparken ya da katlanmış kâğıttan süs keserken her adımı kâğıda kısaca çiz ve sonucu kontrol et.',
-        'Bu hafta çocuğunuzla origami yaparken ya da katlanmış kâğıttan süs keserken her adımı kâğıda kısaca çizin ve sonucu kontrol edin.',
+        'Bu hafta katlanmış bir kâğıttan süs keserken, kâğıdı açmadan önce desenin nasıl görüneceğini çiz. Sonra katlamaları birer birer aç ve her açışta çiziminle karşılaştır.',
+        'Bu hafta çocuğunuzla katlanmış bir kâğıttan süs keserken, kâğıdı açmadan önce desenin nasıl görüneceğini çizin. Sonra katlamaları birer birer açın ve her açışta çizimle karşılaştırın.',
       ),
     },
   ],
@@ -1329,8 +1329,8 @@ const mantiksalAkilYurutme: TaskRoadmapTemplate = {
       'Gerçeği bir kenara bırak',
       'Yöntem',
       t(
-        'Bir sonucu gerçek hayatta doğru ya da yanlış bulduğun için kabul etme ya da reddetme; yalnızca bilgilerden çıkıp çıkmadığına bak. Cümledeki adların yerine uydurma sözcükler koymak (ör. “Bütün kuşlar” yerine “Bütün mopalar”) bunu kolaylaştırabilir.',
-        'Çocuğunuza bir sonucu gerçek hayatta doğru ya da yanlış bulduğu için kabul etmemesini ya da reddetmemesini, yalnızca bilgilerden çıkıp çıkmadığına bakmasını önerin. Cümledeki adların yerine uydurma sözcükler koymak (ör. “Bütün kuşlar” yerine “Bütün mopalar”) bunu kolaylaştırabilir.',
+        'Bir sonucu gerçek hayatta doğru ya da yanlış bulduğun için kabul etme ya da reddetme; yalnızca bilgilerden çıkıp çıkmadığına bak. Cümledeki adların yerine uydurma sözcükler koymak (ör. “Bütün sandalyeler” yerine “Bütün mopalar”) bunu kolaylaştırabilir.',
+        'Çocuğunuza bir sonucu gerçek hayatta doğru ya da yanlış bulduğu için kabul etmemesini ya da reddetmemesini, yalnızca bilgilerden çıkıp çıkmadığına bakmasını önerin. Cümledeki adların yerine uydurma sözcükler koymak (ör. “Bütün sandalyeler” yerine “Bütün mopalar”) bunu kolaylaştırabilir.',
       ),
     ),
     support(
@@ -1339,8 +1339,8 @@ const mantiksalAkilYurutme: TaskRoadmapTemplate = {
       'Çizerek düşün',
       'Araç',
       t(
-        '“Bütün”, “bazı” ve “hiçbir” cümlelerini iç içe ya da yan yana çemberlerle çiz: “Bütün güller çiçektir” cümlesinde güller çemberi, çiçekler çemberinin içindedir. Bilgiler çoğu zaman birden çok çizime izin verir: aklına gelen bütün çizimleri yap. Sonuç bu çizimlerden birinde bile tutmuyorsa kesin değildir.',
-        'Çocuğunuza “bütün”, “bazı” ve “hiçbir” cümlelerini iç içe ya da yan yana çemberlerle çizmesini önerin: “Bütün güller çiçektir” cümlesinde güller çemberi, çiçekler çemberinin içindedir. Bilgiler çoğu zaman birden çok çizime izin verir: akla gelen bütün çizimleri yapmak gerekir. Sonuç bu çizimlerden birinde bile tutmuyorsa kesin değildir.',
+        '“Bütün”, “bazı” ve “hiçbir” cümlelerini iç içe ya da yan yana çemberlerle çiz: “Bütün elmalar meyvedir” cümlesinde elmalar çemberi, meyveler çemberinin içindedir. Bilgiler çoğu zaman birden çok çizime izin verir: aklına gelen bütün çizimleri yap. Sonuç bu çizimlerden birinde bile tutmuyorsa kesin değildir.',
+        'Çocuğunuza “bütün”, “bazı” ve “hiçbir” cümlelerini iç içe ya da yan yana çemberlerle çizmesini önerin: “Bütün elmalar meyvedir” cümlesinde elmalar çemberi, meyveler çemberinin içindedir. Bilgiler çoğu zaman birden çok çizime izin verir: akla gelen bütün çizimleri yapmak gerekir. Sonuç bu çizimlerden birinde bile tutmuyorsa kesin değildir.',
       ),
     ),
   ],
@@ -1370,8 +1370,8 @@ const mantiksalAkilYurutme: TaskRoadmapTemplate = {
     {
       title: 'Gerçek mi, çıkarım mı?',
       text: t(
-        'Bu hafta gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yaz ve birine sor. Sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini onunla konuş.',
-        'Bu hafta çocuğunuz gerçeğe uymayan bilgilerle (ör. “Bütün kediler uçabilir”) iki soru yazsın ve size sorsun. Sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini birlikte konuşun.',
+        'Bu hafta gerçeğe uymayan bilgilerle (ör. “Bütün sandalyeler konuşabilir”) iki soru yaz ve birine sor. Sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini onunla konuş.',
+        'Bu hafta çocuğunuz gerçeğe uymayan bilgilerle (ör. “Bütün sandalyeler konuşabilir”) iki soru yazsın ve size sorsun. Sonucun bilgilerden mi yoksa gerçek hayattan mı geldiğini birlikte konuşun.',
       ),
     },
     {
@@ -1431,8 +1431,8 @@ const sayisalAkilYurutme: TaskRoadmapTemplate = {
     parent: 'Çocuğunuzun sayılarla düşünmesini ne kolaylaştırır?',
   },
   studyIntro: t(
-    'Bu test, bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görebilmeyi ölçer. Bu beceri, fiyatları karşılaştırmakta ve kalabalık bir sofra için iki kat çay demlerken neyin iki katına çıkmadığını görmekte kullanılır. Bir haritada uzaklığı hesaplamak ve bir yolculuğun ne kadar süreceğini kestirmek de bu beceriye dayanır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
-    'Bu test, bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görebilmeyi ölçer. Bu beceri, fiyatları karşılaştırmakta ve kalabalık bir sofra için iki kat çay demlerken neyin iki katına çıkmadığını görmekte kullanılır. Bir haritada uzaklığı hesaplamak ve bir yolculuğun ne kadar süreceğini kestirmek de bu beceriye dayanır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
+    'Bu test, bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görebilmeyi ölçer. Bu beceri, fiyatları karşılaştırmakta ve kalabalık bir sofra için iki kat çay demlerken demlenme süresinin iki katına çıkmadığını görmekte kullanılır. Bir haritada iki yer arasındaki gerçek uzaklığı ölçekten bulmak da bu beceriye dayanır. Aşağıdaki yollar, bu tür işlerde düşünmeni düzenlemeye yardım edebilir.',
+    'Bu test, bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görebilmeyi ölçer. Bu beceri, fiyatları karşılaştırmakta ve kalabalık bir sofra için iki kat çay demlerken demlenme süresinin iki katına çıkmadığını görmekte kullanılır. Bir haritada iki yer arasındaki gerçek uzaklığı ölçekten bulmak da bu beceriye dayanır. Aşağıdaki yollar, çocuğunuzun bu tür işlerde düşünmesini düzenlemeye yardım edebilir.',
   ),
   supports: [
     support(0, 'iki-kat', 'İki katı sorusu', 'Yöntem', t(
@@ -1448,8 +1448,8 @@ const sayisalAkilYurutme: TaskRoadmapTemplate = {
       'Çocuğunuza “=” işaretini “sonuç şudur” diye değil, “iki yan aynı ağırlıkta” diye okumasını önerin. Bir yanda bir sayı değişince terazi dengede kalsın diye öbür yanda neyin değişmesi gerektiğini birlikte konuşabilirsiniz.',
     )),
     support(3, 'kontrol', 'Cevabı durumla karşılaştır', 'Yöntem', t(
-      'Bir sayı bulunca durumu yeniden oku ve cevabın mantıklı olup olmadığına bak. Örneğin iki kardeşten küçüğü 5’ten 10 yaşına geldiğinde büyüğü 8’den 16’ya değil, 13 yaşına gelir. Küçüğün yaşı iki katına çıktı diye büyüğün yaşı da iki katına çıkmaz. Aradaki fark hep aynı kalır.',
-      'Çocuğunuza bir sayı bulunca durumu yeniden okuyup cevabın mantıklı olup olmadığına bakmasını önerin. Örneğin iki kardeşten küçüğü 5’ten 10 yaşına geldiğinde büyüğü 8’den 16’ya değil, 13 yaşına gelir. Küçüğün yaşı iki katına çıktı diye büyüğün yaşı da iki katına çıkmaz. Aradaki fark hep aynı kalır.',
+      'Bir sayı bulunca durumu yeniden oku ve cevabın mantıklı olup olmadığına bak. Örneğin bir oyunda iki oyuncu her elde aynı sayıda puan alıyor olsun. Biri 5 puandan 10 puana çıkınca öteki 8 puandan 16’ya değil, 13’e çıkar. Birinin puanı iki katına çıktı diye ötekinin puanı da iki katına çıkmaz. Aradaki fark hep aynı kalır.',
+      'Çocuğunuza bir sayı bulunca durumu yeniden okuyup cevabın mantıklı olup olmadığına bakmasını önerin. Örneğin bir oyunda iki oyuncu her elde aynı sayıda puan alıyor olsun. Biri 5 puandan 10 puana çıkınca öteki 8 puandan 16’ya değil, 13’e çıkar. Birinin puanı iki katına çıktı diye ötekinin puanı da iki katına çıkmaz. Aradaki fark hep aynı kalır.',
     )),
   ],
   facts: sayisalFacts,
@@ -2136,8 +2136,8 @@ const dusunerekKararVerme: TaskRoadmapTemplate = {
   ),
   supports: [
     support(0, 'sina', 'Cevabı sına', 'Yöntem', t(
-      'Bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koy ve uyuyor mu diye bak. Örneğin bir sopa ile bir top birlikte 110 lira olsun. Sopa toptan 100 lira daha pahalı olsun. “Top 10 lira” cevabını sınamak için sopanın fiyatını bul: 110 lira olur ve ikisi birlikte 120 lira eder. Demek ki cevap yanlış.',
-      'Çocuğunuza, bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koyup uyup uymadığına bakmasını önerin. Örneğin bir sopa ile bir top birlikte 110 lira olsun. Sopa toptan 100 lira daha pahalı olsun. “Top 10 lira” cevabını sınamak için sopanın fiyatı bulunur: 110 lira olur ve ikisi birlikte 120 lira eder. Demek ki cevap yanlış.',
+      'Bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koy ve uyuyor mu diye bak. Örneğin bir ceketin fiyatı önce yarıya iniyor, sonra bu yeni fiyatın yarısı kadar artıyor. İlk akla gelen “Eski fiyatına döner” cevabını sınamak için bir fiyat seç. 100 lira önce 50 lira olur, sonra 25 lira artarak 75 lira olur. Demek ki cevap yanlış.',
+      'Çocuğunuza, bir cevap çok çabuk geldiyse onu vermeden önce sorudaki bilgilere geri koyup uyup uymadığına bakmasını önerin. Örneğin bir ceketin fiyatı önce yarıya iniyor, sonra bu yeni fiyatın yarısı kadar artıyor. İlk akla gelen “Eski fiyatına döner” cevabı, bir fiyat seçilerek sınanabilir. 100 lira önce 50 lira olur, sonra 25 lira artarak 75 lira olur. Demek ki cevap yanlış.',
     )),
     support(1, 'oku', 'Soruyu sonuna kadar oku', 'Yöntem', t(
       'Kısa sorularda tuzak bazen tek bir sözcüktedir: “hariç”, “en az”, “daha fazla” gibi. Soruyu sonuna kadar oku ve sorunun gerçekten ne istediğini kendi cümlelerinle söyle; bazen soru, olmayan bir şeyi varmış gibi de sorabilir.',
@@ -2148,8 +2148,8 @@ const dusunerekKararVerme: TaskRoadmapTemplate = {
       'Bir araştırmada ilk akla gelen yanlış cevabı verenlerin bile bu cevaba, tuzaksız eş sorudaki cevaplarından daha az güvendiği görülmüştür. Çocuğunuza, bir cevaptan tam emin olmadığında bu hissin bir şeyin gözden kaçtığını gösterebileceğini ve soruyu bir kez daha okumasını söyleyebilirsiniz.',
     )),
     support(3, 'ciz', 'Çiz ya da tablo yap', 'Araç', t(
-      'Sayılarla ilgili kısa sorularda küçük bir çizim (ör. bir çitin direkleri ve aralarındaki boşluklar) ya da birkaç satırlık bir tablo, ilk akla gelen cevabın soruya uyup uymadığını görmeyi kolaylaştırabilir.',
-      'Sayılarla ilgili kısa sorularda küçük bir çizim (ör. bir çitin direkleri ve aralarındaki boşluklar) ya da birkaç satırlık bir tablo, çocuğunuzun ilk akla gelen cevabın soruya uyup uymadığını görmesini kolaylaştırabilir.',
+      'Sayılarla ilgili kısa sorularda durumu küçük bir çizimle ya da birkaç satırlık bir tabloyla göster. Böylece ilk akla gelen cevabın soruya uyup uymadığını görmek kolaylaşabilir.',
+      'Sayılarla ilgili kısa sorularda durumu küçük bir çizimle ya da birkaç satırlık bir tabloyla göstermesini önerin. Böylece çocuğunuz ilk akla gelen cevabın soruya uyup uymadığını daha kolay görebilir.',
     )),
   ],
   facts: dusunerekFacts,
@@ -2239,8 +2239,8 @@ const planlamaKuleGorevi: TaskRoadmapTemplate = {
       'Çocuğunuza birkaç adımlı bir işe başlamadan önce ilk iki üç adımı kafasında sırayla denemesini önerin: “Önce bunu yaparsam ne olur, sonra ne yapmam gerekir?” Bir çalışmada, başlamadan önce tam plan yapması söylenen kişiler bu tür problemlerin daha çoğunu çözmüştür; başka bir çalışmada bu fark görülmemiştir. Araştırmalar farklı sonuçlar bulduğu için bunu birlikte deneyin ve birkaç adımı önceden düşünmenin ona yardım edip etmediğine bakın.',
     )),
     support(1, 'geri', 'Hedeften geriye bak', 'Yöntem', t(
-      'Bazen hedefe bakıp geriye doğru düşünmek yolu kısaltır: “Hedefe ulaşmadan hemen önce ne olmalı?” Kule görevinde, hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır. Günlük işlerde de en son ne olacağını düşünüp oradan geriye doğru adımları sıralamak işe yarayabilir. Örneğin bir rafı düzenlerken en alta konacak eşya için önce hangi eşyaları kenara alman gerektiğini böyle bulabilirsin.',
-      'Bazen hedefe bakıp geriye doğru düşünmek yolu kısaltır: “Hedefe ulaşmadan hemen önce ne olmalı?” Kule görevinde, hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır. Çocuğunuza günlük işlerde de en son ne olacağını düşünüp oradan geriye doğru adımları sıralamasını önerebilirsiniz. Örneğin bir rafı düzenlerken en alta konacak eşya için önce hangi eşyaların kenara alınması gerektiğini böyle bulabilir.',
+      'Bazen hedefe bakıp geriye doğru düşünmek yolu kısaltır: “Hedefe ulaşmadan hemen önce ne olmalı?” Kule görevinde, hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır. Günlük işlerde de en son ne olacağını düşünüp oradan geriye doğru adımları sıralamak işe yarayabilir. Örneğin bir rafı düzenlerken arkaya konacak eşya için önce öndeki eşyaları kenara alman gerektiğini böyle bulabilirsin.',
+      'Bazen hedefe bakıp geriye doğru düşünmek yolu kısaltır: “Hedefe ulaşmadan hemen önce ne olmalı?” Kule görevinde, hedefte bir çubuğun en altındaki top, üstündekilerden önce yerine konmalıdır. Çocuğunuza günlük işlerde de en son ne olacağını düşünüp oradan geriye doğru adımları sıralamasını önerebilirsiniz. Örneğin bir rafı düzenlerken arkaya konacak eşya için önce öndeki eşyaların kenara alınması gerektiğini böyle bulabilir.',
     )),
     support(2, 'ara', 'Ara hedefler koy', 'Yöntem', t(
       'Uzun bir işi birkaç ara hedefe böl ve bir seferde yalnızca bir sonraki ara hedefi düşün. Bir araştırmada çoğu kişinin kafasında iki ara adımı doğru planlayabildiği, üçüncü adımda zorlandığı görülmüştür. Çok adımlı işleri küçük parçalara bölmek kafadaki yükü azaltabilir.',
@@ -2332,7 +2332,7 @@ const kelimeListesi: TaskRoadmapTemplate = {
     student:
       'Bu görev, tekrarlarla bir kelime listesini öğrenebilmeyi ve öğrendiğini hatırlayabilmeyi ölçer. Bu beceri, okuduğun bir alışveriş listesini ya da tahtaya yazılan birkaç kelimeyi birkaç dakika sonra bakmadan hatırlamak gibi durumlarda kullanılır. Aşağıdaki yollar, öğrendiklerini aklında tutmana yardım edebilir.',
     parent:
-      'Bu görev, tekrarlarla bir kelime listesini öğrenebilmeyi ve öğrendiğini hatırlayabilmeyi ölçer. Bu beceri, okunan bir alışveriş listesini ya da tahtaya yazılan birkaç kelimeyi birkaç dakika sonra bakmadan hatırlamak gibi durumlarda kullanılır. Aşağıdaki yollar, çocuğunuzun öğrendiklerini aklında tutmasına yardım edebilir.',
+      'Bu görev, tekrarlarla bir kelime listesini öğrenebilmeyi ve öğrendiğini hatırlayabilmeyi ölçer. Bu beceri, çocuğunuzun okuduğu bir alışveriş listesini ya da tahtaya yazılan birkaç kelimeyi birkaç dakika sonra bakmadan hatırlamak gibi durumlarda kullanılır. Aşağıdaki yollar, çocuğunuzun öğrendiklerini aklında tutmasına yardım edebilir.',
     adult:
       'Bu görev, tekrarlarla bir kelime listesini öğrenebilmeyi ve öğrendiğini hatırlayabilmeyi ölçer. Bu beceri, okuduğun bir alışveriş listesini ya da yapılacaklar listesini birkaç dakika sonra bakmadan hatırlamak gibi durumlarda kullanılır. Aşağıdaki yollar, öğrendiklerini aklında tutmana yardım edebilir.',
   },
@@ -2664,15 +2664,15 @@ const harfSayiSiralama: TaskRoadmapTemplate = {
     )),
     support(1, 'tekrar', 'İçinden tekrarla', 'Yöntem', t(
       'Kısa bir süre aklında tutman gereken bir bilgiyi (ör. bir tabelada gördüğün bir adresi) kullanana kadar içinden birkaç kez tekrarla. Bu sırada araya başka bir iş sokma. Bunun sana yardım edip etmediğini kendin dene.',
-      'Çocuğunuza, kısa bir süre aklında tutması gereken bir bilgiyi (ör. tahtada gördüğü bir numarayı) kullanana kadar içinden birkaç kez tekrarlamasını önerin. Bu sırada araya başka bir iş sokmamasını da önerebilirsiniz. Bunun ona yardım edip etmediğini birlikte deneyin.',
+      'Çocuğunuza, kısa bir süre aklında tutması gereken bir bilgiyi (ör. bir afişte gördüğü bir saati) kullanana kadar içinden birkaç kez tekrarlamasını önerin. Bu sırada araya başka bir iş sokmamasını da önerebilirsiniz. Bunun ona yardım edip etmediğini birlikte deneyin.',
     )),
     support(2, 'yaz', 'Önce yaz, sonra düzenle', 'Araç', t(
       'Bir bilgiyi hem aklında tutman hem de düzenlemen gerektiğinde (ör. birkaç adı alfabe sırasına koymak ya da birkaç tarihi sıraya dizmek) önce hepsini kâğıda yaz, sonra kâğıt üzerinde sırala. Böylece aklını bilgiyi tutmaya değil, düzenlemeye ayırırsın.',
       'Çocuğunuza, bir bilgiyi hem aklında tutması hem de düzenlemesi gerektiğinde (ör. birkaç sözcüğü alfabe sırasına koymak ya da birkaç tarihi sıraya dizmek) önce hepsini kâğıda yazmasını, sonra kâğıt üzerinde sıralamasını önerin. Böylece aklını bilgiyi tutmaya değil, düzenlemeye ayırır.',
     )),
     support(3, 'oyun', 'Sıralama oyunları', 'Etkinlik', t(
-      'Kısa süre gösterilen birkaç sözcüğü aklında alfabe sırasına koymak ya da kartlardaki sayıları küçükten büyüğe dizmek gibi oyunlar oynayabilirsin. Bu oyunlar bilgiyi aklında tutup düzenlemeyi keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir. Ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, birlikte keyifle oynamaktır.',
-      'Kısa süre gösterilen birkaç sözcüğü akılda alfabe sırasına koymak ya da kartlardaki sayıları küçükten büyüğe dizmek gibi oyunlar oynanabilir. Bu oyunlar çocuğunuz için bilgiyi akılda tutup düzenlemeyi keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir. Ama bunun derslere ve başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, birlikte keyifle oynamaktır.',
+      'Kısa süre gösterilen birkaç sözcüğü aklında alfabe sırasına koymak ya da açılıp kapanan kartlardaki sayıları aklında küçükten büyüğe dizmek gibi oyunlar oynayabilirsin. Bu oyunlar bilgiyi aklında tutup düzenlemeyi keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir. Ama bunun başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, birlikte keyifle oynamaktır.',
+      'Kısa süre gösterilen birkaç sözcüğü akılda alfabe sırasına koymak ya da açılıp kapanan kartlardaki sayıları akılda küçükten büyüğe dizmek gibi oyunlar oynanabilir. Bu oyunlar çocuğunuz için bilgiyi akılda tutup düzenlemeyi keyifli bir etkinliğe dönüştürür. Bellek alıştırmaları alıştırılan oyunda sonucu yükseltebilir. Ama bunun derslere ve başka işlere kendiliğinden yansıdığına dair güvenilir bir kanıt yoktur. Asıl kazanç, birlikte keyifle oynamaktır.',
     )),
   ],
   facts: harfSayiFacts,
@@ -2773,8 +2773,8 @@ const harfDizileri: TaskRoadmapTemplate = {
       'Harfler bir ileri bir geri gidiyorsa ya da düzen bir türlü bulunamıyorsa çocuğunuza diziyi ikiye ayırmasını önerin. Birinci, üçüncü, beşinci harfleri ve ikinci, dördüncü, altıncı harfleri ayrı ayrı yazabilir. Bazen iç içe geçmiş iki basit dizi ortaya çıkar. Bir harf belli aralıklarla tekrarlanıyorsa diziyi iki, üç ya da dört harflik gruplara bölüp grupları alt alta yazarak karşılaştırabilir.',
     )),
     support(3, 'alfabe', 'Alfabede rahat ol', 'Etkinlik', t(
-      'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri saymak işi kolaylaştırır. Türk alfabesini ileri ve geri söylemek, “Ğ’den iki önceki harf hangisi?” gibi kısa sorularla oynamak ve şifreli notları çözmek bu rahatlığı destekleyebilir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir. Asıl kazanç, harflerle düşünmekten keyif almaktır.',
-      'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri saymak işi kolaylaştırır. Türk alfabesini ileri ve geri söylemek, “Ğ’den iki önceki harf hangisi?” gibi sorularla oynamak ve şifreli notları çözmek çocuğunuzun bu rahatlığını destekleyebilir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir. Asıl kazanç, harflerle düşünmekten keyif almaktır.',
+      'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri saymak işi kolaylaştırır. Türk alfabesini ileri ve geri söylemek ve “Ğ’den iki önceki harf hangisi?” gibi sorularla oynamak bu rahatlığı destekleyebilir. Harfleri alfabede kaydırarak yazılmış şifreli notları çözmek de işe yarayabilir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir. Asıl kazanç, harflerle düşünmekten keyif almaktır.',
+      'Harf dizilerinde alfabenin sırasını rahat bilmek ve alfabede ileri geri saymak işi kolaylaştırır. Türk alfabesini ileri ve geri söylemek ve “Ğ’den iki önceki harf hangisi?” gibi sorularla oynamak çocuğunuzun bu rahatlığını destekleyebilir. Harfleri alfabede kaydırarak yazılmış şifreli notları çözmek de işe yarayabilir. Bu oyunlarda ustalaşmak her işe kendiliğinden yansımayabilir. Asıl kazanç, harflerle düşünmekten keyif almaktır.',
     )),
   ],
   facts: harfFacts,
@@ -3026,11 +3026,11 @@ const simgeBulma: TaskRoadmapTemplate = {
       title: 'Kısa ve sık',
       text: {
         student:
-          'Bu hafta her gün yaklaşık 10 dakika, sık kullandığın temel bir işi çalış (ör. çarpım tablosu ya da zihinden toplama). Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığına bak.',
+          'Bu hafta her gün yaklaşık 10 dakika, sık kullandığın temel bir işi çalış (ör. çarpım tablosu). Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığına bak.',
         parent:
-          'Bu hafta çocuğunuzla her gün yaklaşık 10 dakika, temel bir işi (ör. çarpım tablosu ya da zihinden toplama) çalışın. Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığını birlikte konuşun.',
+          'Bu hafta çocuğunuzla her gün yaklaşık 10 dakika, temel bir işi (ör. çarpım tablosu) çalışın. Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığını birlikte konuşun.',
         adult:
-          'Bu hafta her gün yaklaşık 10 dakika, sık yaptığın temel bir işi (ör. zihinden hesap ya da bir programdaki kısayollar) bilerek tekrarla. Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığına bak.',
+          'Bu hafta her gün yaklaşık 10 dakika, sık yaptığın temel bir işi (ör. bir programdaki kısayollar) bilerek tekrarla. Hafta sonunda bu işi ilk güne göre daha rahat yapıp yapmadığına bak.',
       },
     },
   ],

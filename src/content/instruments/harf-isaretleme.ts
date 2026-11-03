@@ -76,7 +76,7 @@ export const harfIsaretleme: TaskInstrument = {
     basedOn:
       'Bourdon’un (1895) harf işaretleme (iptal) görevi. Türkiye’de “Burdon dikkat testi” adıyla bilinen kâğıt-kalem uygulamaları da bu düzeni kullanır. Harf sayfaları, puanlama ve rapor Ölçekhane tarafından özgün olarak hazırlanmıştır; d2 gibi ticari testlerin sayfaları, işaretleri ya da normları kullanılmaz.',
     whatItMeasures:
-      'Sürekli ve seçici dikkati ölçer: aranan harfleri benzer harfler arasından ayırt edebilmeyi (seçici dikkat), bunu birkaç dakika boyunca aynı hız ve özenle sürdürebilmeyi (sürekli dikkat) ve çalışma hızını. Bu beceriler, uzun bir metni dikkatle okumak, sınavda soruları gözden kaçırmadan çözmek ya da yazılan bir metindeki hataları fark etmek gibi okul işlerinde kullanılır.',
+      'Sürekli ve seçici dikkati ölçer: aranan harfleri benzer harfler arasından ayırt edebilmeyi (seçici dikkat), bunu birkaç dakika boyunca aynı hız ve özenle sürdürebilmeyi (sürekli dikkat) ve çalışma hızını. Bu beceriler, uzun bir metni dikkatle okumak ya da sınavda soruları gözden kaçırmadan çözmek gibi okul işlerinde kullanılır.',
     turkishVersion:
       'Özgün görev. Harfler Türk alfabesinden seçilmiştir; aranan g harfinden yalnızca bir işaretle ayrılan ğ sayfalarda kullanılmaz. Yönergeler Türkçedir.',
     reliability:
