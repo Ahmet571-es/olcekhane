@@ -89,7 +89,7 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   maddeleriyle karşılaştırdı (`from` alanı); bulgular uygulandı (ör. dikkat testlerinde DEHB belirtisi gibi okunan örnekler,
   iyimserlikte toplam kartın alt kartlarla çelişmesi, motivasyonda iki parçası ayrışan kart, 3–4. sınıfta yazılı sınav
   olmaması; hobi testinde sıklık, beğeni değil; ilgi testlerinde meslek önerisi yok). Bütün yayındaki testlerin metni var (`DAILY_PENDING` boş). Yazım kuralları `src/content/gunluk/types.ts`'te.
-  Açık iş (Claude): yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik, kural değiştirmede plan değiştirme): uyumlanıyor (dal `uyum-h2`); günlük hayat denetimleri sıkılaştırılıyor (dal `uyum-h1`).
+  Açık iş (Claude): yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik, kural değiştirmede plan değiştirme): uyumlandı, bağımsız denetimde (dal `uyum-h2`).
 - (e) ve (f) **yayında (2026-11-03):** yol haritasının sonuca dayanan her bölümünün grafiği (Kısaca, öneriler, ortamlar ve
   yaklaşım "Bu bölümün dayandığı sonuçlar", dört haftalık zaman çizelgesi: sonuca göre seçilen ve genel öneri olan haftalar);
   herkese aynı olan bölümler (görev önerileri, okuma alışkanlıkları, kaynaklar) grafiksiz. Matematikte hata türleri grafiği.
@@ -1168,6 +1168,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-03 (72): "Günlük hayatta" denetimleri sıkılaştırıldı ve yazarın denetim listesi tek, numaralı listeye toplandı
+  (`src/content/gunluk/types.ts`, 25 kural; testle denetlenenler işaretli): ikinci kişi eklerinin doğru tanınması, maddeyi
+  neredeyse aynen yineleyen cümle yasağı (4 sözcüklük dizi), yalnız yaşayan yetişkine uymayan ev satırı, mezunda "sınıf",
+  destek kutusunu açan maddenin kaynak olmaması, hobide beğeni ya da imkân sözcükleri. 51 bilerek bozulmuş örneğin hepsi
+  yakalanıyor. Ortaya çıkan satırlar düzeltildi (43 aynen yineleme, 10 mezun, 2 yetişkin ev satırı, İyimserlik'te destek
+  maddesine dayanan satırlar).
 - 2026-11-03 (71): Her seferinde aynı içeriğin geldiği bellek ve işlem testlerinde (Dikkat ve Bellek'in sayı ve kutu dizileri,
   Harf-Sayı Sıralama, Hesapla ve Hatırla, Desen Hatırlama, Zihinden Hesaplama) rapor ve PDF artık dizileri, desenleri, işlemleri
   ve cevapları yazmıyor; yalnızca uzunluk ya da düzey, doğru/yanlış, yanılgı türü ve süre (cevap anahtarı raporlardan
@@ -1232,14 +1238,3 @@ En yeni üstte; en çok 10 madde tutulur.
   okunan sayılar, "1. Kazanç"ın bölünmesi, sesin her parçadan önce yeniden denetlenmesi, takılıp kalan oynatıcı, odak,
   ekranda görünmeyen bölümün okunması). Gerçek tarayıcıda sahte yerel Türkçe sesle denendi (telefon ve masaüstü: okuma,
   duraklatma, sekme değişince susma; ağ sesiyle oynatıcı görünmüyor). Gerçek telefonlarda (iPhone, Android) denenmedi.
-- 2026-10-31 (62): Yeni test Liderlik Eğilimleri yayına alındı (3. listenin 9. testi; site sahibinin 31 Ekim'de seçtiği
-  dört yeniliğin ikincisi; ayrıntı yukarıda). İki bağımsız inceleme yayından önce uygulandı. Metin ve mantık: düşük
-  puanlar "eksik beceri" gibi anlatılmıyor (yetişkin eğitimi bulgusu gençlere uygulanmıyor), "güven" dili düşük düzeyli
-  kurallardan çıktı, tek araştırmaya dayanan cümleler "bir araştırmada" diye; kartlar tek maddeyi değil ölçeğin ortak
-  temasını anlatıyor; aynı sayfada tekrar eden fikirler (geri durma, sunum, "kolaylaştırabilir") sınırlandı ve test
-  ediliyor; "Sosyal cesaret: Düşük" kartı cesaretin bütününü anlatmadığını söylüyor; yan yana iki "-mekte zorlanırım"
-  maddesi ayrıldı; giriş "yüksek puan iyi demek değildir" diyor. Kaynak ve sayı: maddeler, α'lar ve örtüşme sayıları
-  doğru; HEXACO değerleri Ashton, Lee ve Goldberg (2007, Tablo 2; 411 kişi); Grant ve ark. (2011) "girişken ekiplerde
-  sakin davranan liderler"; MacLaren (2020) küçük gruplar; Cheng (2013) iki yolun da etki kazandırdığı; De Neve künyesi.
-  Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı, karşılaştırma denendi.
-  Yol haritası testinin süre sınırı 120 sn'ye çıktı (test sayısı arttıkça 60 sn'ye yaklaşıyordu).
