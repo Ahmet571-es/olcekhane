@@ -83,7 +83,6 @@ export const DAILY_PENDING: string[] = [
   'meslek-ilgi-alanlari',
   'hobi-ve-serbest-zaman-ilgileri',
   'calisma-degerleri',
-  'erteleme-ve-zaman-yonetimi',
   'zihniyet',
   // Görev testleri
   'planlama-kule-gorevi',
