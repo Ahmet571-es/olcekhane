@@ -25,6 +25,7 @@ import { kuralDegistirmeDaily } from './kural-degistirme';
 import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
 import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
+import { meslekIlgiAlanlariDaily } from './meslek-ilgi-alanlari';
 import { meslekiIlgiDaily } from './mesleki-ilgi-profili';
 import { ogrenmeVeBasariDaily } from './ogrenme-ve-basari-ozellikleri';
 import { okumaHiziDaily } from './okuma-hizi-ve-anlama';
@@ -106,4 +107,5 @@ export const DAILY: Record<string, DailyContent> = {
   'tepki-hizi': tepkiHiziDaily,
   'kural-degistirme': kuralDegistirmeDaily,
   'mesleki-ilgi-profili': meslekiIlgiDaily,
+  'meslek-ilgi-alanlari': meslekIlgiAlanlariDaily,
 };

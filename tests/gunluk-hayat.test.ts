@@ -79,7 +79,6 @@ export const DAILY_PENDING: string[] = [
   '16-faktorlu-kisilik-profili',
   'heyecan-arayisi',
   'liderlik-egilimleri',
-  'meslek-ilgi-alanlari',
   'hobi-ve-serbest-zaman-ilgileri',
   'calisma-degerleri',
 
