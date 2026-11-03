@@ -24,9 +24,10 @@ export interface Ctx {
   block: (key: string) => CognitiveBlock | undefined;
   traces: Record<string, ItemTrace[]>;
   /**
-   * Testte her seferinde aynı sorular gelir (lib/compare/tasks.ts, `SAME_ITEMS`): soru soru satırlarda ne verilen ne de doğru
-   * cevap yazılır, soru da yazılmaz; yalnızca yeri (düzey, bölüm), doğru mu yanlış mı, yanlışın türü ve süre. Raporlar
-   * paylaşılıp birleştirilse de cevap anahtarı çıkmaz ve sorular yeniden çözülünce de işe yarar.
+   * Bu görevde her seferinde aynı içerik (sorular, kelimeler, problemler, diziler, desenler, işlemler) gelir (lib/compare/tasks.ts,
+   * `SAME_ITEMS`; görev görev verilir): satırlarda içerik, verilen ve doğru cevap yazılmaz; yalnızca yeri (düzey, bölüm, dizinin
+   * uzunluğu), doğru mu yanlış mı, içerik anmayan yanlış türü ve sayılar, "çok hızlı" ve süre. Raporlar paylaşılıp birleştirilse
+   * de cevap anahtarı çıkmaz ve test yeniden çözülünce de işe yarar.
    */
   fixed: boolean;
 }
@@ -121,8 +122,8 @@ export interface ItemRow {
   /** Verilen cevap (sözle); doğru ya da yanlış sözünden önce yazılır. */
   given?: string | null;
   /**
-   * Doğru cevap (yanlış ya da boş cevapta). Yalnızca `ItemsSpec.showKey` ile yazılır: aynı soruların geldiği testlerde rapor
-   * cevap anahtarı olmasın (bkz. lib/compare/tasks.ts, `SAME_ITEMS`).
+   * Doğru cevap (yanlış ya da boş cevapta). Yalnızca `ItemsSpec.showKey` ile ve içeriği her seferinde aynı gelmeyen görevde
+   * yazılır: aynı içeriğin geldiği testlerde rapor cevap anahtarı olmasın (`Ctx.fixed`; lib/compare/tasks.ts, `SAME_ITEMS`).
    */
   expected?: string | null;
   /** Yanlışın türü gibi kısa etiketler. */
@@ -154,7 +155,10 @@ export interface ItemsSpec {
   wrongLabel?: string;
   /** Satırda süre yazılmasın (ör. dizi görevlerinde cevabı yazma süresi bir şey anlatmaz). */
   noTime?: boolean;
-  /** Doğru cevap yazılsın (soruları her seferinde değişen ya da cevabı sorudan hesaplanan görevler; ör. zihinden hesaplama). */
+  /**
+   * Doğru cevap yazılsın: soruları her uygulamada yeniden üretilen görevler için. Aynı içeriğin geldiği görevde (`Ctx.fixed`)
+   * yok sayılır; bugün bütün soru soru kartları böyledir.
+   */
   showKey?: boolean;
   text?: string;
 }
@@ -196,7 +200,7 @@ function timeAxis(rows: ItemRow[], rapidMs?: number): number | null {
  * testlerde (`Ctx.fixed`) satırda soru, verilen ve doğru cevap yazılmaz: yalnızca yeri, doğru mu yanlış mı, etiketler, süre.
  */
 export function itemsCard(c: Ctx, s: ItemsSpec): PartCard {
-  const hide = c.fixed && !s.showKey;
+  const hide = c.fixed;
   // Uzun listede şerit satır satır çizilir ve süre çizilmez (lib/reports/visual-draw.ts, ITEMS_WRAP_AT).
   const wrapped = s.rows.length > ITEMS_WRAP_AT;
   const max = s.timed && !wrapped ? timeAxis(s.rows, s.rapid?.ms) : null;

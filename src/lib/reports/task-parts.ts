@@ -56,7 +56,7 @@ import {
   type VerbalResult,
   type VocabularyResult,
 } from '@/lib/scoring/tasks';
-import { SAME_ITEMS } from '@/lib/compare/tasks';
+import { SAME_ITEMS, SAME_PLURAL, sameNounOf } from '@/lib/compare/tasks';
 import type {
   CognitiveTask,
   CubeNetTask,
@@ -92,7 +92,6 @@ import {
   levelsCard,
   lower,
   measureCard,
-  pl,
   medianText,
   read,
   retake,
@@ -622,11 +621,14 @@ export function taskParts(input: {
     score: (k) => byKey.get(k),
     block: (k) => blocks.get(k),
     traces: input.traces,
-    // Her seferinde aynı soruların geldiği görevlerde rapor cevap anahtarı olmaz (lib/compare/tasks.ts, SAME_ITEMS).
-    fixed: def.tasks.some((t) => SAME_ITEMS.has(t.kind)),
+    // Her görev için ayrıca: aynı içeriğin geldiği görevlerde satırlarda içerik ve cevaplar yazılmaz (aşağıda, kindParts).
+    fixed: false,
   };
   const done = new Set<string>();
-  const kinds = def.tasks.flatMap((t) => kindParts(c, t, done) ?? []);
+  // Her seferinde aynı içeriğin (soruların, dizilerin, desenlerin…) geldiği görevde satırlar cevap anahtarı olmaz
+  // (lib/compare/tasks.ts, SAME_ITEMS).
+  const kinds = def.tasks.flatMap((t) => kindParts({ ...c, fixed: SAME_ITEMS.has(t.kind) }, t, done) ?? []);
+  const same = sameNounOf(def);
   if (!kinds.length) return [];
   const multi = kinds.length > 1;
   const group = (k: KindParts, cards: PartCard[]): PartGroup => ({ ...(multi ? { title: k.name } : {}), cards });
@@ -700,17 +702,17 @@ export function taskParts(input: {
     intro: [
       ...(itemNouns.length
         ? [
-            c.fixed
-              ? `Her ${joinWords(itemNouns)} için ayrı satırda doğru ya da yanlış olduğu, yanlışın türü ve süre yazılır.`
+            same
+              ? `Her ${joinWords(itemNouns)} için ayrı satırda doğru ya da yanlış olduğu yazılır; varsa yanlışın türü ve süre de yazılır.`
               : `Her ${joinWords(itemNouns)} tek tek yazılır: verilen cevap, doğru ya da yanlış olduğu, yanlışsa doğrusu, yanlışın türü ve süre.`,
           ]
         : []),
       ...(summed ? ['Çok denemeli hızlı görevlerde denemeler bölüm bölüm özetlenir; her deneme bir parçada sayılır.'] : []),
-      // Aynı soruların geldiği testlerde ne soru ne verilen ne de doğru cevap yazılır (Ctx.fixed).
-      ...(c.fixed
+      // Aynı içeriğin geldiği testlerde satırlarda ne içerik (soru, dizi, desen, işlem) ne de cevaplar yazılır (Ctx.fixed).
+      ...(same && itemNouns.length
         ? [
-            `Bu testte her seferinde aynı ${pl(itemNouns[0] ?? 'soru')} gelir; bu yüzden ne verilen cevap ne de doğru cevap yazılır.`,
-            'Böylece cevaplar raporlardan öğrenilemez; test yeniden çözüldüğünde de işe yarar.',
+            `Bu testte her seferinde aynı ${SAME_PLURAL[same]} gelir.`,
+            `Bu yüzden burada ne ${SAME_PLURAL[same]} ne de cevaplar yazılır; böylece cevaplar raporlardan öğrenilemez ve test yeniden çözüldüğünde de işe yarar.`,
           ]
         : []),
       ...(c.adult ? [] : ['Görevdeki cevaplar bir görüş bildirmez, bir görevin nasıl yapıldığını gösterir; bu yüzden bu bölüm veli raporunda da yer alır.']),

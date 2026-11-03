@@ -6,7 +6,7 @@ import { hasPublicRoadmap } from '@/content/roadmaps';
 import { evaluate, evaluateReports } from '@/lib/assessment/evaluate';
 import { answersBody } from '@/lib/assessment/schemas';
 import { ADULT_GRADE } from '@/lib/config';
-import { ARITH_OPS, arithAnswer, arithErrorKind } from '@/lib/instruments/arithmetic';
+import { ARITH_OPS, arithAnswer, arithErrorKind, arithText } from '@/lib/instruments/arithmetic';
 import type { ArithItem, ArithOp, MentalArithmeticTask } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import type { SimpleReport } from '@/lib/reports/simple';
@@ -369,12 +369,12 @@ describe('Zihinden hesaplama: rapor', () => {
           if (fig) expect(hiz.badge, tag).toBe(`Tipik süre ${fig.value}`);
           if (/Sayılar büyüdükçe/.test(hiz.text)) expect(hiz.text, tag).toMatch(/ ise /);
           if (read.reduce((t, s) => t + s.factCorrect, 0) >= 3 && read.reduce((t, s) => t + s.factRts.length, 0) < 3) expect(hiz.text, tag).toContain('yarım saniyeden kısa');
-          // Hata türü cümlesi yalnızca en az iki yanlışta ve örnek gerçek bir yanlıştır.
+          // İşlemler her seferinde aynı olduğu için yanlış yazılan işlemler ve cevaplar yazılmaz (lib/compare/tasks.ts,
+          // SAME_ITEMS): yalnızca yanlışların türü.
           const acc = r.items[5];
-          for (const m of acc.text.matchAll(/ör\. (\d+) ([+−×÷]) (\d+) için (\d+)/g)) {
-            const op = ARITH_OPS.find((o) => ({ add: '+', sub: '−', mul: '×', div: '÷' })[o] === m[2])!;
-            expect(arithAnswer(op, [Number(m[1]), Number(m[3])]), tag).not.toBe(Number(m[4]));
-          }
+          expect(acc.text, tag).not.toMatch(/ör\. \d+ [+−×÷] \d+ için|yazdın\)|yazdı\)/);
+          for (const w of read.flatMap((s) => s.wrongs.map((x) => arithText(s.op, tasks.find((t) => t.op === s.op)!.items[x.index]))))
+            expect(acc.text, `${tag} ${w}`).not.toContain(`${w} için`);
           const kinds = read.flatMap((s) => s.wrongs.map((w) => w.kind));
           if (kinds.filter((k) => k === 'regroup').length >= ARITH_ERROR_NOTE && read.reduce((t, s) => t + s.wrong, 0) > 2) expect(acc.text, tag).toMatch(/elde|onlar basamağını/);
           // Çarpma ve bölme yanlışları tek cümlede çelişmez.

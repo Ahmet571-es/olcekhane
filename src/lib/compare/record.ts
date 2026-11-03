@@ -65,11 +65,13 @@ export interface CompareInfo {
   date: string;
   scales: CompareScale[];
   /**
-   * Görev testi: yeniden çözünce alıştırma etkisiyle sonuç biraz yükselebilir. "items": her seferinde aynı sorular (ya da
-   * aynı kelimeler) gelir, hatırlananlar da sonucu etkileyebilir; "practice": sorular ya da denemeler hatırlanacak türden
-   * değildir ya da her seferinde yeniden üretilir. Anket testlerinde yoktur.
+   * Görev testi: yeniden çözünce alıştırma etkisiyle sonuç biraz yükselebilir. "items": her seferinde aynı sorular (kelimeler,
+   * diziler, desenler, işlemler) gelir, hatırlananlar da sonucu etkileyebilir; "practice": denemeler hatırlanacak bir içerik
+   * taşımaz ya da her seferinde yeniden üretilir. Anket testlerinde yoktur.
    */
   retest?: 'items' | 'practice';
+  /** "items" testinde her seferinde aynı gelen içeriğin adı, çoğul: "sorular", "diziler", "desenler" (lib/compare/tasks.ts). */
+  retestItems?: string;
   /** Bu testin özetinin PDF'lere yazılmaya başlandığı gün (ISO tarih; verilmezse 2026-10-30). */
   since?: string;
 }

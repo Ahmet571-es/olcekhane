@@ -474,15 +474,17 @@ describe('Gelişimini karşılaştır: görev testleri', () => {
       expect(p).toMatch(you ? /sayma\.$/ : /saymayın\.$/);
       expect(schoolWords(i)).toEqual([]);
     }
-    // Hangi testte aynı soruların geldiği, tablodan bağımsız olarak testlerin görev türünden: soru ve kelime listesi
-    // görevleri "items"; tepki, dikkat, bellek dizisi ve her seferinde yeniden üretilen görevler "practice".
-    const ITEMS = ['sekil-akil-yurutme', 'sekil-benzetmeleri', 'sayi-dizileri', 'harf-dizileri', 'sozel-akil-yurutme', 'kagit-katlama', 'kup-acinimi', 'gizli-sekiller', 'parcalardan-sekil', 'kelime-bilgisi', 'mantiksal-akil-yurutme', 'sayisal-akil-yurutme', 'uc-boyutlu-zihinde-dondurme', 'dusunerek-karar-verme', 'bakis-acisi-alma', 'planlama-kule-gorevi', 'kelime-listesi-hatirlama'];
+    // Hangi testte aynı içeriğin geldiği, tablodan bağımsız olarak testlerin görev türünden: soru, kelime listesi, problem,
+    // akılda tutulan dizi ve desen ve işlem görevleri "items"; tepki ve dikkat görevleri, içeriği raporda hiç yazılmayan
+    // akış ve yerleşimler (geriye dönük hatırlama, zihinde döndürme, sıralı birleştirme) ve her seferinde yeniden üretilen
+    // görevler "practice".
+    const ITEMS = ['sekil-akil-yurutme', 'sekil-benzetmeleri', 'sayi-dizileri', 'harf-dizileri', 'sozel-akil-yurutme', 'kagit-katlama', 'kup-acinimi', 'gizli-sekiller', 'parcalardan-sekil', 'kelime-bilgisi', 'mantiksal-akil-yurutme', 'sayisal-akil-yurutme', 'uc-boyutlu-zihinde-dondurme', 'dusunerek-karar-verme', 'bakis-acisi-alma', 'planlama-kule-gorevi', 'kelime-listesi-hatirlama', 'dikkat-ve-bellek', 'harf-sayi-siralama', 'hesapla-ve-hatirla', 'desen-hatirlama', 'zihinden-hesaplama-hizi'];
     for (const d of TASKS) {
       const c = variantReports(d, Object.keys(TASK_VARIANTS[d.slug])[0])[0].compare;
       if (c) expect(c.retest, d.slug).toBe(ITEMS.includes(d.slug) ? 'items' : 'practice');
     }
     const ui = readFileSync(new URL('../src/components/test/compare-panel.tsx', import.meta.url), 'utf8');
-    expect(ui).toContain('{compare.retest && <p className="text-ink-2">{retestNote(compare.retest, you)}</p>}');
+    expect(ui).toContain('{compare.retest && <p className="text-ink-2">{retestNote(compare.retest, you, compare.retestItems)}</p>}');
     for (const d of LIKERT) expect(reportsOf(d.slug, gradeFor(d), (i) => i % 5)[0].compare?.retest, d.slug).toBeUndefined();
     expect(readFileSync(new URL('../src/content/instruments/simge-bulma.ts', import.meta.url), 'utf8')).toContain('Scharfen, J., Peters, J. M. ve Holling, H. (2018).');
   });

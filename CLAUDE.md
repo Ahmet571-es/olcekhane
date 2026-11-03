@@ -272,8 +272,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   yazılar taşmaz). Görev testlerinde grafik verinin türüne göre seçilir (düzeylere göre doğrular, ulaşılan düzey, türler,
   yanılgılar, süreler, dizi merdiveni; geometri `lib/reports/visual-draw.ts`); yeni görev testi `tests/helpers/task-variants.ts`'e
   birkaç sonuç örüntüsüyle eklenir ve `tests/gorev-grafikleri.test.ts` her kartı dener. "Yorumlanmadı" ya da hesaplanamayan
-  kartın grafiği olmaz (görevlerde `interpreted: false` olan her kartın; `toSimpleReport` grafiği kaldırır, test bütün
-  örüntülerde denetler); kartın metnindeki sayılar grafikte olduğu için metinde yinelenmez. Görev testlerinin kalan grupları
+  kartın grafiği olmaz (görevlerde `interpreted: false` olan kartın; `toSimpleReport` grafiği kaldırır, test bütün
+  örüntülerde denetler; ölçülen en alt sonuç, yani hiçbir düzeye ulaşılmaması ya da en kısa dizinin de tekrarlanamaması bir
+  sonuçtur, yalnızca karşılaştırılmaz ve grafiği kalır: `floorVisual`); kartın metnindeki sayılar grafikte olduğu için metinde
+  yinelenmez. Görev testlerinin kalan grupları
   `DURUM.md`'de.
 
 ## Paylaşım kartı
@@ -304,7 +306,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   cevaplarla da çıkabileceğini yazdığı yerde `interpreted: false` verir (yeni kartta da). Dökümler ve fark puanları
   (renk-kelime etkisi, kural değiştirme gibi) karşılaştırılmaz; zihinden hesaplamada toplamlar yalnızca dört bölüm de
   yorumlandıysa. Ölçüm payı bilinmediği için yalnızca yön; testi yeniden çözmenin sonucu yükseltebileceği (Scharfen ve
-  ark., 2018) ve aynı soruların geldiği testlerde hatırlananların da etkileyebileceği söylenir. Anahtarlar ve anlamları
+  ark., 2018) ve aynı içeriğin (soruların, dizilerin, desenlerin, işlemlerin; `CompareInfo.retestItems`) geldiği testlerde
+  hatırlananların da etkileyebileceği ve raporda cevapların tek tek yazılmadığı söylenir. Anahtarlar ve anlamları
   kalıcıdır (eski PDF'lerle eşleşir): bir sayının anlamı, birimi ya da yuvarlaması değişirse testin sürümü artırılır; test
   tablonun kopyasını tutar. Yeni görev testi `TASK_COMPARE`'e yazılır. Okuma, sesli okuma ve konu tarama testlerinde yok
   (form ve metin sınıfa göre değişir). `tests/karsilastirma.test.ts` denetler (her sayı kendi kartında aynı biçimde yazar).
@@ -396,12 +399,17 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   kendi düzey anlatımları ve ulaşılan düzey, rozet raporun kartıyla aynı; düzey kuralı: o düzeyin ve o düzeye kadarki soruların
   en az %60'ı; raporda geçen her ölçünün ne olduğu ve nasıl hesaplandığı, değeri grafikte; başka kişilerle karşılaştırma yok),
   **Soru soru cevapların** (puanlamanın kendi soru soru sonuçlarından: `ItemTrace`, puanlama işlevleri `items` döndürür; düzey,
-  gösterilen ve verilen cevap, doğru mu, yanılgı türü, süre; her seferinde aynı soruların geldiği testlerde (`SAME_ITEMS`,
-  `lib/compare/tasks.ts`; `Ctx.fixed`) satırda soru, verilen cevap (seçenek numarası, yazılan sayı ya da kelime, kelime
-  listesinde hatırlanan kelimeler) ve doğru cevap yazılmaz; yalnızca yeri (düzey, bölüm), doğru mu yanlış mı, seçenek ya da
-  değer anmayan yanılgı türü, "çok hızlı" ve süre (raporlar birleştirilse de cevap anahtarı çıkmasın, sorular yeniden
-  çözülünce de işe yarasın; bölümün girişi ve karşılaştırma notu da söyler); üretilen ya da alıştırma sorularında (dizi,
-  zihinden hesaplama) verilen cevap ve doğrusu yazılır; grafik `items`: işaretler sırayla,
+  gösterilen ve verilen cevap, doğru mu, yanılgı türü, süre; her seferinde aynı içeriğin geldiği görevlerde (`SAME_ITEMS`,
+  `lib/compare/tasks.ts`: sorular, kelime listesi, kule problemleri, rakam, kutu, harf-sayı ve harf dizileri, desenler, zihinden
+  hesaplamanın işlemleri; görev görev `Ctx.fixed`) satırda içerik (soru, dizi, desen, işlem), verilen cevap (seçenek numarası,
+  yazılan sayı, harf ya da kelime, hatırlanan kelimeler) ve doğru cevap yazılmaz ve okunmaz; yalnızca yeri (düzey, bölüm,
+  dizinin uzunluğu), doğru mu yanlış mı, içerik anmayan yanılgı türü ve sayımlar, "çok hızlı" ve süre (raporlar birleştirilse
+  de cevap anahtarı çıkmasın, test yeniden çözülünce de işe yarasın; bölümün girişi ve karşılaştırma notu da söyler; zihinden
+  hesaplamanın doğruluk kartı da yanlış yazılan işlemleri değil yalnızca yanlışların türünü yazar, düzeylerin adındaki birer örnek
+  işlem ve ipuçları kalır). Bugün soru soru satırı olan her görev bu türdendir; içeriği her uygulamada yeniden üretilen bir görev
+  eklenirse (`ItemsSpec.showKey`) verilen cevap ve doğrusu yazılabilir. Denemeleri aynı olsa da raporda içeriği hiç yazılmayan
+  hız, dikkat ve akış görevleri (tepki, ok, sembol, renk-kelime, dur-git, kural değiştirme, geriye dönük hatırlama, zihinde
+  döndürme, sıralı birleştirme) bu kümede değildir; grafik `items`: işaretler sırayla,
   yükseklik süre, "çok hızlı" bandı, 25'ten çok soruda her grup ayrı satırda ve süresiz; yüzlerce denemeli hızlı görevlerde
   "Deneme deneme sonuçların": çeyrek, yarı ya da bölüm özetleri, grafik `blocks`; görevdeki cevap bir performans olduğu için
   veli raporunda da var; uzun listelerde sesli dinleme yalnızca dikkat çeken satırları okur; PDF'te ek), **Sonuca ne kadar
@@ -415,8 +423,9 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   sonuç şansla açıklanabilir sayılır; "şansla açıklanamayacak kadar çok" yalnızca olasılık .05'in altındaysa yazılır. Bu kural
   bir sonucu değiştirebiliyorsa testin sürümü artırılır (küp açınımı, gizli şekiller, parçalardan şekil: 2). Yeni görev testinin
   türü `task-parts-kinds.ts`'e eklenir; `tests/rapor-bolumleri-gorev.test.ts` bütün örüntülerde (`task-variants.ts`) dener:
-  bölümler ve grafikleri, satırların puanlamayla aynı olması, aynı sorulu testlerde satırlarda ve PDF'te cevap olmaması (PDF'in
-  yazısı `tests/helpers/pdf-text.ts` ile okunur), denetimlerin
+  bölümler ve grafikleri, satırların puanlamayla aynı olması, aynı içerikli testlerde satırlarda, sesli dinlemede ve PDF'te
+  içerik (diziler, desenler, işlemler) ve cevap olmaması (PDF'in yazısı `tests/helpers/pdf-text.ts` ile okunur), ana rapordaki
+  yorumlanmayan kartın grafiği olmaması, denetimlerin
   uyarılarla ve çubuk bölgeleriyle uyumu, elle kurulan örüntüler (şans kuralı dahil), işaretlerin en küçük boyu, dil, ekrandaki
   sıra, sesli okuma, PDF.
 - Okuma, sesli okuma ve konu tarama (`lib/reports/reading-parts.ts`, `quiz-parts.ts`; `evaluate.ts` kurar; grafikler

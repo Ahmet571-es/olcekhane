@@ -56,7 +56,7 @@ import type {
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
 import { VERBAL_TYPE_NAMES } from '@/lib/instruments/verbal';
-import { ARITH_ERROR_KINDS, ARITH_IN, ARITH_NAME, arithText, type ArithErrorKind } from '@/lib/instruments/arithmetic';
+import { ARITH_ERROR_KINDS, ARITH_IN, ARITH_NAME, type ArithErrorKind } from '@/lib/instruments/arithmetic';
 import { VOCABULARY_TYPE_NAMES } from '@/lib/instruments/vocabulary';
 import { scaleItems } from '@/lib/scoring/likert';
 import type { QuizChoice, QuizResult } from '@/lib/scoring/quiz';
@@ -5762,16 +5762,8 @@ function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audienc
   if (none || answered === 0) {
     dogruluk = { ...card('zh_dogruluk'), headline: 'Yorumlanmadı', interpreted: false, text: 'Yorumlanan bölüm olmadığı için doğruluk hesaplanmadı.' };
   } else {
-    // Örnek önce büyük sayılarla yapılan işlemlerden seçilir (tek basamaklı işlemde "elde" doğal bir açıklama değildir).
-    // Elde örneğinde tek basamaklı toplama en sona kalır.
-    const pick = (k: ArithErrorKind, op?: ArithOp) => {
-      const xs = wrongs.filter((x) => x.kind === k && (!op || x.op === op));
-      return xs.find((x) => !x.fact) ?? xs.find((x) => x.op !== 'add') ?? xs[0];
-    };
-    const example = (k: ArithErrorKind, op?: ArithOp) => {
-      const w = pick(k, op);
-      return w ? `${arithText(w.op, w.item)} için ${w.value}` : '';
-    };
+    // İşlemler her seferinde aynıdır: yanlış yazılan işlemler ve cevaplar yazılmaz, yalnızca yanlışların türü
+    // (lib/compare/tasks.ts, SAME_ITEMS; işlem işlem sonuçlar raporun ek bölümünde, işlemleri yazılmadan).
     const parts: string[] = [];
     const acc = correct / answered;
     const how = arithHow(acc);
@@ -5779,16 +5771,8 @@ function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audienc
       how === null
         ? v('Yazdığın cevapların hiçbiri doğru değildi.', 'Çocuğunuzun yazdığı cevapların hiçbiri doğru değildi.')
         : v(`Yazdığın cevapların ${how} doğruydu.`, `Çocuğunuzun yazdığı cevapların ${how} doğruydu.`);
-    if (wrong === 0) {
+    if (wrong <= 2) {
       parts.push(accSentence);
-    } else if (wrong <= 2) {
-      parts.push(
-        accSentence,
-        v(
-          `Yanlış yazdığın ${wrong === 1 ? 'işlem' : 'işlemler'}: ${joinTr(wrongs.map((w) => `${arithText(w.op, w.item)} (${w.value} yazdın)`))}.`,
-          `Yanlış yazdığı ${wrong === 1 ? 'işlem' : 'işlemler'}: ${joinTr(wrongs.map((w) => `${arithText(w.op, w.item)} (${w.value} yazdı)`))}.`,
-        ),
-      );
     } else {
       parts.push(accSentence + (typeChart ? ' Grafik, yanlışların türünü gösteriyor.' : ''));
       const share = (n: number) =>
@@ -5798,33 +5782,33 @@ function arithmeticBlocks(r: ArithResult, tasks: MentalArithmeticTask[], audienc
       const regroupFactAdd = regroups.length > 0 && regroups.every((w) => w.fact && w.op === 'add');
       const said: Record<Exclude<ArithErrorKind, 'other'>, [string, string]> = {
         operation: [
-          `başka bir işlemin sonucunu yazdın (ör. ${example('operation')}). Sonucu yazmadan önce işlemin işaretine bir an bakmak bu yanlışı önlemeye yardımcı olabilir.`,
-          `başka bir işlemin sonucu yazıldı (ör. ${example('operation')}). Sonucu yazmadan önce işlemin işaretine bir an bakmak bu yanlışı önlemeye yardımcı olabilir.`,
+          `başka bir işlemin sonucunu yazdın. Sonucu yazmadan önce işlemin işaretine bir an bakmak bu yanlışı önlemeye yardımcı olabilir.`,
+          `başka bir işlemin sonucu yazıldı. Sonucu yazmadan önce işlemin işaretine bir an bakmak bu yanlışı önlemeye yardımcı olabilir.`,
         ],
         regroup: regroupFactAdd
           ? [
-              `sonucun onlar basamağını yazmamış olabilirsin (ör. ${example('regroup')}). Cevabı göndermeden önce bir an bakmak yardımcı olabilir.`,
-              `sonucun onlar basamağı yazılmamış olabilir (ör. ${example('regroup')}). Cevabı göndermeden önce bir an bakmak yardımcı olabilir.`,
+              `sonucun onlar basamağını yazmamış olabilirsin. Cevabı göndermeden önce bir an bakmak yardımcı olabilir.`,
+              `sonucun onlar basamağı yazılmamış olabilir. Cevabı göndermeden önce bir an bakmak yardımcı olabilir.`,
             ]
           : [
-              `eldeyi ya da onluk bozmayı atlamış olabilirsin (ör. ${example('regroup')}). Bu işlemleri basamak basamak düşünmek yardımcı olabilir.`,
-              `elde ya da onluk bozma atlanmış olabilir (ör. ${example('regroup')}). Bu işlemleri basamak basamak düşünmek yardımcı olabilir.`,
+              `eldeyi ya da onluk bozmayı atlamış olabilirsin. Bu işlemleri basamak basamak düşünmek yardımcı olabilir.`,
+              `elde ya da onluk bozma atlanmış olabilir. Bu işlemleri basamak basamak düşünmek yardımcı olabilir.`,
             ],
         table: [
-          `çarpanlardan birinin tablosundaki başka bir sonucu yazdın (ör. ${example('table')}). Çarpım tablosunda yapılan yanlışların çoğu bu türdendir (Soltanlou ve ark., 2015’te aktarılan bir araştırma). Zorlandığın işlemi bildiğin bir işlemden türetmek yardımcı olabilir: 7 × 8, 7 × 7’ye bir 7 daha eklemektir.`,
-          `çarpanlardan birinin tablosundaki başka bir sonuç yazıldı (ör. ${example('table')}). Çarpım tablosunda yapılan yanlışların çoğu bu türdendir (Soltanlou ve ark., 2015’te aktarılan bir araştırma). Zorlanılan işlemi bilinen bir işlemden türetmek yardımcı olabilir: 7 × 8, 7 × 7’ye bir 7 daha eklemektir.`,
+          `çarpanlardan birinin tablosundaki başka bir sonucu yazdın. Çarpım tablosunda yapılan yanlışların çoğu bu türdendir (Soltanlou ve ark., 2015’te aktarılan bir araştırma). Zorlandığın işlemi bildiğin bir işlemden türetmek yardımcı olabilir: 7 × 8, 7 × 7’ye bir 7 daha eklemektir.`,
+          `çarpanlardan birinin tablosundaki başka bir sonuç yazıldı. Çarpım tablosunda yapılan yanlışların çoğu bu türdendir (Soltanlou ve ark., 2015’te aktarılan bir araştırma). Zorlanılan işlemi bilinen bir işlemden türetmek yardımcı olabilir: 7 × 8, 7 × 7’ye bir 7 daha eklemektir.`,
         ],
         quotient: [
-          `bölümü bir ya da iki eksik ya da fazla buldun (ör. ${example('quotient')}). Bölmeyi ilgili çarpma işleminden düşünmek yardımcı olabilir: 56 ÷ 8 için “8 kere kaç 56 eder?” diye sormak gibi.`,
-          `bölüm bir ya da iki eksik ya da fazla bulundu (ör. ${example('quotient')}). Bölmeyi ilgili çarpma işleminden düşünmek yardımcı olabilir: 56 ÷ 8 için “8 kere kaç 56 eder?” diye sormak gibi.`,
+          `bölümü bir ya da iki eksik ya da fazla buldun. Bölmeyi ilgili çarpma işleminden düşünmek yardımcı olabilir: 56 ÷ 8 için “8 kere kaç 56 eder?” diye sormak gibi.`,
+          `bölüm bir ya da iki eksik ya da fazla bulundu. Bölmeyi ilgili çarpma işleminden düşünmek yardımcı olabilir: 56 ÷ 8 için “8 kere kaç 56 eder?” diye sormak gibi.`,
         ],
         near: [
-          `sonucu bir eksik ya da bir fazla buldun (ör. ${example('near')}); sayarken bir adım atlanmış ya da fazladan sayılmış olabilir.`,
-          `sonuç bir eksik ya da bir fazla bulundu (ör. ${example('near')}); sayarken bir adım atlanmış ya da fazladan sayılmış olabilir.`,
+          `sonucu bir eksik ya da bir fazla buldun; sayarken bir adım atlanmış ya da fazladan sayılmış olabilir.`,
+          `sonuç bir eksik ya da bir fazla bulundu; sayarken bir adım atlanmış ya da fazladan sayılmış olabilir.`,
         ],
         reversal: [
-          `rakamların yerini değiştirdin (ör. ${example('reversal')}); bu bazen yalnızca yazarken olur.`,
-          `rakamların yeri değişti (ör. ${example('reversal')}); bu bazen yalnızca yazarken olur.`,
+          `rakamların yerini değiştirdin; bu bazen yalnızca yazarken olur.`,
+          `rakamların yeri değişti; bu bazen yalnızca yazarken olur.`,
         ],
       };
       for (const k of kinds) {

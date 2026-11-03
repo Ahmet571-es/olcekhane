@@ -1,7 +1,7 @@
 import type { CompareInfo } from '@/lib/compare/record';
 import { RIASEC_ORDER, RIASEC_TYPES } from '@/content/careers/riasec';
 import type { QuizChart, QuizFigure, QuizTable } from '@/lib/instruments/types';
-import type { Audience, InterestProfile, InterestRanking, ReportContent } from './build';
+import type { Audience, CognitiveBlock, InterestProfile, InterestRanking, ReportContent } from './build';
 import type { OralReportBlock } from './oral';
 import type { ReportPart } from './parts';
 import type { Roadmap } from './roadmap';
@@ -629,6 +629,14 @@ export function compareOf(list: Section[]): CompareVisual | undefined {
 const withVisual = <T extends object>(x: T, visual: ItemVisual | undefined): T & { visual?: ItemVisual } => (visual ? { ...x, visual } : x);
 
 /**
+ * Ölçülen en alt sonuç: hiçbir düzeye ulaşılmadı (`steps`, düzey 0) ya da en kısa dizi de tekrarlanmadı (`ladder`, dizi yok).
+ * Bu bir sonuçtur ve grafiği onu gösterir; kart yalnızca önceki sonuçla karşılaştırılmadığı için interpreted: false taşır
+ * (lib/compare/tasks.ts). Yorumlanmayan öteki kartların aksine grafiği kalır.
+ */
+export const floorVisual = (b: Pick<CognitiveBlock, 'visual'>) =>
+  (b.visual?.type === 'steps' && b.visual.reached === 0) || (b.visual?.type === 'ladder' && b.visual.reached === null);
+
+/**
  * Konu taramasının genel sonucu: doğru sayısı, testin eşikleriyle (doğruların %50'si ve %75'i) üç bölgeli düzey çubuğunda.
  * Bölgeler soru sayısından hesaplanır: 20 soruda 0–9, 10–14 ve 15–20 doğru.
  */
@@ -1098,8 +1106,9 @@ export function toSimpleReport(r: ReportContent): SimpleReport {
     const blocks = r.cognitive.blocks;
     // Sonucu yorumlanmayan kartın (yorumlanmadı, hesaplanamadı, süre içinde tamamlanamadı, rastgele cevaplarla da çıkabilecek
     // sonuç) grafiği yoktur: grafik, sonucun okunabilir olduğunu düşündürürdü. Sayısı kartın rozetinde ve metnindedir.
+    // Ölçülen en alt sonucun (floorVisual) grafiği kalır.
     const items = blocks.map((b) =>
-      b.interpreted === false
+      b.interpreted === false && !floorVisual(b)
         ? { title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' '), interpreted: false as const }
         : withVisual({ title: b.name, badge: b.headline, text: [b.detail, b.text].filter((x): x is string => !!x).map(sentence).join(' ') }, b.visual),
     );

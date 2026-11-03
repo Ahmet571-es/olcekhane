@@ -39,26 +39,61 @@ export const TASK_COMPARE_SINCE = '2026-10-31';
 /** Üst sınırı yalnızca bozuk değeri ayıklayan sayılar (süreler, dakikadaki harf): çizimde aralık iki değere göre seçilir. */
 const OPEN_CAP = 100_000;
 
-/** Her uygulamada aynı soruların (ya da aynı kelime listesinin) geldiği görev türleri: hatırlananlar sonucu etkileyebilir. */
-export const SAME_ITEMS = new Set<CognitiveTask['kind']>([
-  'matrix_reasoning',
-  'figural_analogy',
-  'number_series',
-  'letter_series',
-  'verbal_reasoning',
-  'logical_reasoning',
-  'paper_folding',
-  'numerical_reasoning',
-  'cube_net',
-  'mental_rotation_3d',
-  'perspective',
-  'hidden_figures',
-  'shape_assembly',
-  'cognitive_reflection',
-  'vocabulary',
-  'tower',
-  'word_list',
+/** Her uygulamada aynı gelen içeriğin adı (tekil; çoğulu `SAME_PLURAL`). */
+export type SameNoun = 'soru' | 'kelime' | 'problem' | 'dizi' | 'desen' | 'işlem';
+export const SAME_PLURAL: Record<SameNoun, string> = {
+  soru: 'sorular',
+  kelime: 'kelimeler',
+  problem: 'problemler',
+  dizi: 'diziler',
+  desen: 'desenler',
+  işlem: 'işlemler',
+};
+
+/**
+ * Her uygulamada aynı içeriğin geldiği ve bu içeriği önceden bilmenin yeniden çözmede işe yarayacağı görev türleri: sorular,
+ * kelime listesi, problemler, akılda tutulacak diziler ve desenler, işlemler. Hatırlananlar sonucu etkileyebilir; raporun
+ * soru soru satırlarında içerik ve cevaplar yazılmaz (lib/reports/task-parts.ts, `Ctx.fixed`).
+ *
+ * Bilerek dışarıda: içeriği her uygulamada yeniden üretilenler (harf işaretleme, simge bulma) ve denemeleri aynı olsa da
+ * yeniden kullanılacak bir içerik taşımayan hız ve dikkat görevleri (tepki, ok, sembol eşleme, renk-kelime, dur-git, kural
+ * değiştirme). Geriye dönük hatırlamanın uzun harf akışı, zihinde döndürmenin denemeleri ve sıralı birleştirmenin yerleşimi de
+ * her seferinde aynıdır, ama rapor bunları hiçbir yerde yazmaz ya da çizmez; yeniden çözmenin etkisi alıştırma notunda söylenir.
+ */
+export const SAME_ITEMS = new Map<CognitiveTask['kind'], SameNoun>([
+  ['matrix_reasoning', 'soru'],
+  ['figural_analogy', 'soru'],
+  ['number_series', 'soru'],
+  ['letter_series', 'soru'],
+  ['verbal_reasoning', 'soru'],
+  ['logical_reasoning', 'soru'],
+  ['paper_folding', 'soru'],
+  ['numerical_reasoning', 'soru'],
+  ['cube_net', 'soru'],
+  ['mental_rotation_3d', 'soru'],
+  ['perspective', 'soru'],
+  ['hidden_figures', 'soru'],
+  ['shape_assembly', 'soru'],
+  ['cognitive_reflection', 'soru'],
+  ['vocabulary', 'soru'],
+  ['tower', 'problem'],
+  ['word_list', 'kelime'],
+  ['digit_span', 'dizi'],
+  ['spatial_span', 'dizi'],
+  ['letter_number', 'dizi'],
+  ['complex_span', 'dizi'],
+  ['pattern_memory', 'desen'],
+  ['mental_arithmetic', 'işlem'],
 ]);
+
+/** Testte her seferinde aynı gelen içeriğin adı (ilk böyle görevinkine göre); yoksa null. */
+export const sameNounOf = (def: TaskInstrument): SameNoun | null => {
+  for (const t of def.tasks) {
+    const n = SAME_ITEMS.get(t.kind);
+    if (n) return n;
+  }
+  return null;
+};
 
 interface Ctx {
   def: TaskInstrument;
@@ -399,12 +434,13 @@ export function taskCompareInfo(def: TaskInstrument, content: ReportContent, row
     });
   }
   if (!scales.length) return undefined;
+  const same = sameNounOf(def);
   return {
     slug: def.slug,
     version: def.version,
     date: content.completedAt,
     scales,
-    retest: def.tasks.some((t) => SAME_ITEMS.has(t.kind)) ? 'items' : 'practice',
+    ...(same ? { retest: 'items' as const, retestItems: SAME_PLURAL[same] } : { retest: 'practice' as const }),
     since: TASK_COMPARE_SINCE,
   };
 }

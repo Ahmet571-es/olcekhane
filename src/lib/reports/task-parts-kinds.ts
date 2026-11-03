@@ -1557,6 +1557,8 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
         return {
           group: level - 1,
           shown: `${level}. düzey · ${a} ${OP[task.op].sym} ${b}`,
+          // İşlemler her seferinde aynıdır (Ctx.fixed): satırda yalnızca düzeyi.
+          place: `${level}. düzey`,
           status: t.status,
           given: t.response === null ? null : String(t.response),
           expected: t.status === 'correct' ? null : String(arithAnswer(task.op, task.items[t.index])),
@@ -1573,8 +1575,6 @@ function arithmeticKind(c: Ctx, tasks: MentalArithmeticTask[]): KindParts | null
       },
       none: 'geçilen',
       skipLabel: '“Geç”',
-      // İşlemin sonucu gösterilen işlemden hesaplanır; yanlış cevabın doğrusu yazılır.
-      showKey: true,
     });
   });
 
@@ -1878,6 +1878,8 @@ function spanKind(c: Ctx, task: DigitSpanTask | SpatialSpanTask, key: string): K
       return {
         group: lengths.indexOf(Number(t.kind)),
         shown: digit ? `${shown.length} rakam: ${shown.join(' ')}` : `${shown.length} kutuluk dizi`,
+        // Diziler her seferinde aynıdır (Ctx.fixed): satırda yalnızca dizinin uzunluğu.
+        place: `${shown.length} ${digit ? 'rakamlık' : 'kutuluk'} dizi`,
         status: t.status,
         given: digit ? (given.length ? given.join(' ') : null) : null,
         expected: digit && t.status !== 'correct' ? expected.join(' ') : null,
@@ -1888,8 +1890,6 @@ function spanKind(c: Ctx, task: DigitSpanTask | SpatialSpanTask, key: string): K
     noTime: true,
     none: 'boş',
     skipLabel: 'Boş',
-    // Dizi görevleri "yeniden çözmede alıştırma" türündedir (lib/compare/tasks.ts): doğru dizi yazılır.
-    showKey: true,
   });
   const maxLength = task.startLength + task.sequences.length - 1;
   const ladder: LadderVisual = {
@@ -4197,6 +4197,8 @@ function complexSpanKind(c: Ctx, task: ComplexSpanTask): KindParts | null {
       return {
         group: sizes.indexOf(Number(t.kind)),
         shown: `${set.letters.length} harf: ${set.letters.map((x) => task.letters[x]).join(' ')}`,
+        // Diziler her seferinde aynıdır (Ctx.fixed): satırda yalnızca dizinin uzunluğu ve sayılar.
+        place: `${set.letters.length} harflik dizi`,
         status: t.status,
         given: tr.recall.every((x) => x === null) ? null : tr.recall.map(letter).join(' '),
         tags: [
@@ -4357,9 +4359,11 @@ function patternKind(c: Ctx, task: PatternMemoryTask): KindParts | null {
     rows: r.items.map((x) => ({
       group: sizes.indexOf(x.size),
       shown: `${x.size} kareli desen`,
+      place: `${x.size} kareli desen`,
       status: x.skipped ? 'skip' : x.correct ? 'correct' : 'wrong',
-      given: x.skipped ? null : `${x.hits}/${x.size} kare doğru yerde${x.extra ? `, ${x.extra} fazla kare` : ''}`,
+      // Desenler her seferinde aynıdır (Ctx.fixed): işaretlenen kareler değil, yalnızca sayıları yazılır.
       tags: [
+        ...(!x.skipped && !x.correct ? [`${x.hits}/${x.size} kare doğru yerde`, ...(x.extra ? [`${x.extra} fazla kare`] : [])] : []),
         ...(x.near ? ['yalnızca bir kare farklı'] : []),
         ...(x.shifted ? ['bir kare yanına kaymış'] : []),
         ...(x.restarts ? [`desen ${x.restarts} kez yeniden gösterildi`] : []),
@@ -4512,6 +4516,8 @@ function letterNumberKind(c: Ctx, task: LetterNumberTask): KindParts | null {
     rows: r.items.map((x) => ({
       group: lengths.indexOf(x.length),
       shown: `${x.length} öğe: ${[...x.seq].join(' ')}`,
+      // Diziler her seferinde aynıdır (Ctx.fixed): satırda yalnızca dizinin uzunluğu ve yanlışın türü.
+      place: `${x.length} öğelik dizi`,
       status: x.skipped ? 'skip' : x.correct ? 'correct' : 'wrong',
       given: x.skipped ? null : x.response.join(' '),
       expected: x.correct ? null : lnAnswer(x.seq).join(' '),
@@ -4522,8 +4528,6 @@ function letterNumberKind(c: Ctx, task: LetterNumberTask): KindParts | null {
     timed: true,
     none: '“Hatırlamıyorum”',
     skipLabel: '“Hatırlamıyorum”',
-    // Dizi görevleri "yeniden çözmede alıştırma" türündedir (lib/compare/tasks.ts): doğru sıra yazılır.
-    showKey: true,
   });
   const ladder: LadderVisual = {
     type: 'ladder',

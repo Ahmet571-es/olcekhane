@@ -5,13 +5,17 @@ import { publicInstruments } from '@/content/instruments';
 import { SimpleReportView } from '@/components/test/simple-report-view';
 import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import type { AnswersBody } from '@/lib/assessment/schemas';
-import { taskScoreRows, type TaskInputs } from '@/lib/assessment/score-rows';
+import { taskScoreRows, toReportScore, type TaskInputs } from '@/lib/assessment/score-rows';
 import { ADULT_GRADE } from '@/lib/config';
+import { arithSpoken, arithText } from '@/lib/instruments/arithmetic';
+import { lnAnswer } from '@/lib/instruments/letter-number';
+import { patternText } from '@/lib/instruments/pattern';
 import type { TaskInstrument } from '@/lib/instruments/types';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
-import { SAME_ITEMS } from '@/lib/compare/tasks';
+import { SAME_ITEMS, SAME_PLURAL, sameNounOf } from '@/lib/compare/tasks';
+import { buildReport } from '@/lib/reports/build';
 import { partCards, type PartCard, type PartRow, type ReportPart } from '@/lib/reports/parts';
-import type { SimpleReport } from '@/lib/reports/simple';
+import { floorVisual, type SimpleReport } from '@/lib/reports/simple';
 import { QUALITY_TITLE } from '@/lib/reports/task-parts-core';
 import { ITEMS_MIN_RADIUS, ITEMS_WRAP_AT, drawVisual } from '@/lib/reports/visual-draw';
 import type { ItemsVisual, MeterVisual } from '@/lib/reports/visuals';
@@ -107,7 +111,7 @@ const UNREAD = new RegExp(`nedeni “${QUALITY_TITLE.replace('?', '\\?')}” bö
 const KEY_TAGS = /^(?:tür:|tuzaklı soru|tuzaksız eş soru|ilk akla gelen cevap|tuzak varmış gibi cevap|ilk listeden|ikinci listeden|.*yeni kelime$|iki ayna görüntüsü|tam ters yön|sağ ile sol karışık|haritaya göre yön)/;
 
 /** Aynı soruların geldiği testlerde satırın yeri: düzey, bölüm ya da ekranda yazılı en az hamle sayısı; ya da hiçbir şey. */
-const PLACE = /^(?:\d+\. düzey|\d+\. bölüm|\d+ hamlelik problem|)$/;
+const PLACE = /^(?:\d+\. düzey|\d+\. bölüm|\d+ hamlelik problem|\d+ (?:rakamlık|kutuluk|harflik|öğelik) dizi|\d+ kareli desen|)$/;
 /** Satırın değeri yalnızca sonuçtur (testlerin doğru, yanlış ve cevapsız adları). */
 const HIDDEN_VALUES = new Set([
   'Doğru',
@@ -121,9 +125,16 @@ const HIDDEN_VALUES = new Set([
   'Fazla hamleyle',
   'Süre içinde çözülemedi',
   'Hiç top taşınmadı',
+  'Boş',
+  '“Geç”',
+  '“Hatırlamıyorum”',
+  'Tam doğru',
+  'Eksik',
+  'Bütün yerler boş',
 ]);
-/** Sayı yalnızca süre etiketinde ("12 sn", "ilk top 4 sn"). */
+/** Sayı yalnızca süre etiketinde ("12 sn", "ilk top 4 sn") ve içerik anmayan sayımlarda ("3/5 harf doğru yerde"). */
 const TIME_TAG = /^(?:ilk top )?\d+(?:,\d+)? sn$/;
+const COUNT_TAG = /^(?:\d+\/\d+ (?:harf|kare) doğru yerde|işlemler \d+\/\d+ doğru|\d+ işlemde süre doldu|\d+ fazla kare|(?:desen|dizi) \d+ kez yeniden gösterildi)$/;
 
 /** Aynı soruların geldiği testte bir satır: seçenek numarası, verilen ya da doğru cevap, soru yok. */
 function checkHiddenRow(row: PartRow, trace: ItemTrace, at: string) {
@@ -133,11 +144,11 @@ function checkHiddenRow(row: PartRow, trace: ItemTrace, at: string) {
   expect(HIDDEN_VALUES.has(row.value), `${at}: ${row.value}`).toBe(true);
   for (const tag of row.tags) {
     expect(tag, at).not.toMatch(KEY_TAGS);
-    if (tag !== 'çok hızlı' && !TIME_TAG.test(tag)) expect(tag, at).not.toMatch(/\d/);
+    if (tag !== 'çok hızlı' && !TIME_TAG.test(tag) && !COUNT_TAG.test(tag)) expect(tag, at).not.toMatch(/\d/);
   }
   expect([row.text, row.value, ...row.tags].join(' · '), at).not.toMatch(/\d+\.\s*seçenek|doğrusu/);
   // Verilen cevabın kendisi (sayı, harf, kelime) satırda yok (yer ve süre dışında).
-  const all = [row.value, ...row.tags.filter((t) => !TIME_TAG.test(t))].join(' · ');
+  const all = [row.value, ...row.tags.filter((t) => !TIME_TAG.test(t) && !COUNT_TAG.test(t))].join(' · ');
   const given = typeof trace.response === 'string' || typeof trace.response === 'number' ? String(trace.response) : null;
   if (given && given.length > 1) expect(all, at).not.toContain(given);
 }
@@ -598,15 +609,25 @@ describe('Bağımsız inceleme bulguları (aşama b)', () => {
     }
   });
 
-  it('karşılaştırma bölümü aynı soruların geldiği testte raporun cevapları değil, hangi soruların doğru bilindiğini yazdığını söyler', async () => {
+  it('karşılaştırma bölümü aynı içeriğin geldiği testte içeriğin adını ve cevapların tek tek yazılmadığını söyler', async () => {
     const { retestNote } = await import('@/components/test/compare-panel');
-    for (const you of [true, false]) {
-      const t = retestNote('items', you);
-      expect(t).toMatch(/yalnızca (?:çocuğunuzun )?hangi soruları doğru bildiği?n? yazılıdır/);
-      expect(t).not.toMatch(/cevaplarının doğru/);
-      for (const s of sentences(t.replace(/\s*\([^()]*\d{4}\)/g, ''))) expect(s.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w)).length, s).toBeLessThanOrEqual(22);
+    for (const items of Object.values(SAME_PLURAL)) {
+      for (const you of [true, false]) {
+        const t = retestNote('items', you, items);
+        expect(t).toContain(`Bu testte her seferinde aynı ${items} gelir.`);
+        expect(t).toMatch(you ? /Raporunda cevapların tek tek yazılmaz;/ : /Raporda çocuğunuzun cevapları tek tek yazılmaz;/);
+        for (const s of sentences(t.replace(/\s*\([^()]*\d{4}\)/g, ''))) expect(s.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w)).length, s).toBeLessThanOrEqual(22);
+      }
     }
-    expect(retestNote('practice', true)).not.toMatch(/aynı sorular/);
+    expect(retestNote('practice', true)).not.toMatch(/aynı /);
+    // Raporun karşılaştırma bilgisi içeriğin adını taşır.
+    for (const d of TASKS) {
+      const noun = sameNounOf(d);
+      const c = reportsOf(d.slug, (TASK_VARIANTS[d.slug].varsayilan as Make)())[0].compare;
+      if (!c) continue;
+      expect(c.retest, d.slug).toBe(noun ? 'items' : 'practice');
+      expect(c.retestItems, d.slug).toBe(noun ? SAME_PLURAL[noun] : undefined);
+    }
   });
 });
 
@@ -617,17 +638,23 @@ describe('Aynı soruların geldiği testlerde rapor cevap anahtarı olmaz', () =
     d.tasks.flatMap((t) => (t.kind === 'word_list' ? [...t.listA, ...t.listB, ...t.recognition] : [])).map((w) => w.toLocaleLowerCase('tr-TR'));
   const hasWord = (text: string, w: string) => new RegExp(`(?:^|[^\\p{L}])${w}(?:[^\\p{L}]|$)`, 'u').test(text.toLocaleLowerCase('tr-TR'));
 
-  it('bölümün girişi ne verilen ne de doğru cevabın yazıldığını söyler; soruları değişen testte doğrusu yazılır', () => {
-    expect(FIXED.length).toBeGreaterThan(10);
-    for (const d of FIXED) {
+  it('bölümün girişi içeriğin ve cevapların neden yazılmadığını söyler; soru soru kartı olan her test bu türdendir', () => {
+    expect(FIXED.length).toBeGreaterThan(20);
+    for (const d of TASKS) {
       for (const r of reportsOf(d.slug, (TASK_VARIANTS[d.slug].varsayilan as Make)())) {
-        const intro = partOf(r, 'answers')!.intro ?? '';
-        expect(intro, `${d.slug} ${r.audience}`).toMatch(/ne verilen cevap ne de doğru cevap yazılır/);
-        expect(intro, `${d.slug} ${r.audience}`).not.toMatch(/verilen cevap,|doğrusu/);
+        const at = `${d.slug} ${r.audience}`;
+        const answers = partOf(r, 'answers')!;
+        const intro = answers.intro ?? '';
+        const noun = sameNounOf(d);
+        // Soru soru (dizi dizi, işlem işlem…) kartı olan her test, içeriği her seferinde aynı gelen testtir.
+        if (partCards(answers).some((c) => c.visual?.type === 'items')) expect(noun, at).not.toBeNull();
+        expect(intro, at).not.toMatch(/verilen cevap,|doğrusu/);
+        if (noun && partCards(answers).some((c) => c.visual?.type === 'items')) {
+          expect(intro, at).toContain(`Bu testte her seferinde aynı ${SAME_PLURAL[noun]} gelir.`);
+          expect(intro, at).toContain(`Bu yüzden burada ne ${SAME_PLURAL[noun]} ne de cevaplar yazılır;`);
+        }
       }
     }
-    const [student] = reportsOf('zihinden-hesaplama-hizi', (TASK_VARIANTS['zihinden-hesaplama-hizi'].varsayilan as Make)());
-    expect(partOf(student, 'answers')!.intro).toMatch(/verilen cevap, doğru ya da yanlış olduğu, yanlışsa doğrusu/);
   });
 
   it('kelime listesinde yazılan kelimeler yazılmaz: ek bölümlerin hiçbir yerinde listelerin kelimeleri yok (bütün örüntüler)', () => {
@@ -644,8 +671,94 @@ describe('Aynı soruların geldiği testlerde rapor cevap anahtarı olmaz', () =
     }
   });
 
+  /**
+   * Testin her seferinde aynı gelen içeriği, yazıyla: rakam, harf-sayı ve harf dizileri (gösterilen ve doğru sıra), desenler ve
+   * işlemler. `anywhere`: raporun hiçbir yerinde yok. `answersOnly`: soru soru bölümünde ve günlük hayat örneklerinde aranır
+   * (işlemlerde düzeylerin adları ve iki ipucu bilerek birer örnek işlem gösterir; kişinin cevabını göstermez).
+   */
+  function contentOf(d: TaskInstrument): { anywhere: string[]; answersOnly: string[] } {
+    const anywhere: string[] = [];
+    const answersOnly: string[] = [];
+    for (const t of d.tasks) {
+      if (t.kind === 'digit_span')
+        for (const seq of t.sequences.flat()) if (seq.length >= 3) anywhere.push(seq.join(' '), [...seq].reverse().join(' '));
+      if (t.kind === 'letter_number')
+        for (const seq of t.levels.flatMap((l) => l.items)) if (seq.length >= 3) anywhere.push([...seq].join(' '), lnAnswer(seq).join(' '));
+      if (t.kind === 'complex_span') for (const set of t.sets) anywhere.push(set.letters.map((i) => t.letters[i]).join(' '));
+      if (t.kind === 'pattern_memory') for (const it of t.levels.flatMap((l) => l.items)) anywhere.push(patternText(it));
+      if (t.kind === 'mental_arithmetic') for (const it of t.items) answersOnly.push(arithText(t.op, it), arithSpoken(t.op, it));
+    }
+    return { anywhere: [...new Set(anywhere)], answersOnly: [...new Set(answersOnly)] };
+  }
+  const NEW_KINDS = new Set(['digit_span', 'letter_number', 'complex_span', 'pattern_memory', 'mental_arithmetic']);
+  const CONTENT = TASKS.filter((d) => d.tasks.some((t) => NEW_KINDS.has(t.kind)));
+  const norm = (x: string) => x.replace(/\s+/g, ' ');
+
+  it('diziler, desenler ve işlemler ek bölümlerde, sesli dinlemede yazılmaz (bütün örüntüler, öğrenci, veli, yetişkin)', () => {
+    expect(CONTENT.map((d) => d.slug).sort()).toEqual(['desen-hatirlama', 'dikkat-ve-bellek', 'harf-sayi-siralama', 'hesapla-ve-hatirla', 'zihinden-hesaplama-hizi']);
+    for (const d of CONTENT) {
+      const { anywhere, answersOnly } = contentOf(d);
+      expect(anywhere.length + answersOnly.length, d.slug).toBeGreaterThanOrEqual(10);
+      for (const [name, make] of variantsOf(d.slug)) {
+        for (const r of reportsOf(d.slug, make())) {
+          const at = `${d.slug} ${name} ${r.audience}`;
+          const answersTitle = partOf(r, 'answers')!.title;
+          for (const [p, c] of allCards(r)) {
+            const text = norm([c.title, c.badge, c.text, ...(c.spoken ?? []), ...(c.rows ?? []).flatMap((x) => [x.text, x.value, x.say ?? '', x.spoken ?? '', ...x.tags])].join(' · '));
+            // İşlemler soru soru bölümünde ve günlük hayat örneklerinde de yok (örnekler testteki işlemlerden seçilmez).
+            for (const x of [...anywhere, ...(p.key === 'answers' || p.key === 'daily' ? answersOnly : [])]) expect(text, `${at} ${p.key} ${c.key}: ${x}`).not.toContain(x);
+          }
+          const utter = utterancesOf(reportSpeech(r).results);
+          const heard = norm(utter.map((u) => u.text).join(' '));
+          const dailyTitle = partOf(r, 'daily')?.title;
+          const heardAnswers = norm(utter.filter((u) => u.section === answersTitle.replace(/[.:?]$/, '')).map((u) => u.text).join(' '));
+          const heardDaily = dailyTitle ? norm(utter.filter((u) => u.section === dailyTitle.replace(/[.:?]$/, '')).map((u) => u.text).join(' ')) : '';
+          expect(heardAnswers.length, at).toBeGreaterThan(0);
+          for (const x of anywhere) expect(heard, `${at} sesli: ${x}`).not.toContain(x);
+          for (const x of answersOnly) expect(`${heardAnswers} ${heardDaily}`, `${at} sesli: ${x}`).not.toContain(x);
+        }
+      }
+    }
+  }, 600_000);
+
+  /**
+   * PDF'te denenen örüntüler: olağan sonuç ve yanlışların çok olduğu bir sonuç (PDF çizimi uzun sürer; bütün örüntülerde
+   * satırlar ve sesli okuma yukarıda denenir, PDF'in satırları da raporun satırlarıyla birebir aynı yazılır).
+   */
+  const PDF_VARIANTS: Record<string, string[]> = {
+    'desen-hatirlama': ['varsayilan', 'hicbiri'],
+    'dikkat-ve-bellek': ['varsayilan', 'zorlanan'],
+    'harf-sayi-siralama': ['varsayilan', 'hicbiri'],
+    'hesapla-ve-hatirla': ['varsayilan', 'uzunZor'],
+    'zihinden-hesaplama-hizi': ['varsayilan', 'elde'],
+  };
+
+  it('PDF: diziler, desenler ve işlemler yazılmaz (öğrenci, veli, yetişkin; işlemler ekte aranır)', async () => {
+    for (const d of CONTENT) {
+      const { anywhere, answersOnly } = contentOf(d);
+      for (const name of PDF_VARIANTS[d.slug]) {
+        const make = TASK_VARIANTS[d.slug][name] as Make;
+        for (const r of reportsOf(d.slug, make())) {
+          const at = `${d.slug} ${name} ${r.audience}`;
+          const text = norm(pdfText(await renderSimpleReportPdf(r, 'olcekhane.com')));
+          // Ek (soru soru bölümü) PDF'in sonundadır: başlığının son geçtiği yerden sonrası.
+          const title = partOf(r, 'answers')!.title;
+          const from = text.lastIndexOf(title);
+          expect(from, at).toBeGreaterThan(0);
+          const appendix = text.slice(from);
+          for (const x of anywhere) expect(text, `${at}: ${x}`).not.toContain(x);
+          for (const x of answersOnly) expect(appendix, `${at}: ${x}`).not.toContain(x);
+          // Ekin satırları raporun satırlarıyla aynı: numara, yer, sonuç.
+          for (const c of partCards(partOf(r, 'answers')!))
+            for (const row of c.rows ?? []) expect(pdfFlat(appendix), `${at} ${c.key} ${row.no}`).toContain(pdfFlat(`${row.no}. ${row.text ? `${row.text} · ` : ''}${row.value}`));
+        }
+      }
+    }
+  }, 900_000);
+
   it('PDF: satırlar yalnızca yer, sonuç, etiketler ve süre; hiçbir yerde seçenek numarası ya da listenin kelimeleri yok', async () => {
-    for (const d of FIXED) {
+    // Dizi, desen ve işlem testlerinin PDF'i yukarıda denenir.
+    for (const d of FIXED.filter((x) => !CONTENT.includes(x))) {
       const words = listWords(d);
       for (const r of reportsOf(d.slug, (TASK_VARIANTS[d.slug].varsayilan as Make)())) {
         const at = `${d.slug} ${r.audience}`;
@@ -659,4 +772,43 @@ describe('Aynı soruların geldiği testlerde rapor cevap anahtarı olmaz', () =
       }
     }
   }, 600_000);
+});
+
+describe('Ana rapordaki görev kartları', () => {
+  it('yorumlanmayan kartın (interpreted: false) grafiği yok, ölçülen en alt sonucunki kalır: bütün testler, örüntüler, kitleler', () => {
+    // Ölçülen en alt sonuç (hiçbir düzeye ulaşılmadı, en kısa dizi de tekrarlanmadı) bir sonuçtur, yalnızca karşılaştırılmaz:
+    // grafiği kalır (lib/reports/simple.ts, floorVisual). Ötekilerin grafiğini toSimpleReport kaldırır.
+    let unread = 0;
+    let floors = 0;
+    for (const d of TASKS) {
+      for (const [name, make] of variantsOf(d.slug)) {
+        const body = make();
+        if (body.data.engine !== 'tasks') continue;
+        const inputs = new Map<string, TaskInputs>(Object.entries(body.data.blocks).map(([k, v]) => [k, v as TaskInputs]));
+        const scores = taskScoreRows(d, inputs, body.data.seed).rows.map(toReportScore);
+        const reports = reportsOf(d.slug, body);
+        for (const audience of ['student', 'parent', ...(d.adults ? (['adult'] as const) : [])] as const) {
+          const grade = audience === 'adult' ? ADULT_GRADE : body.grade;
+          const r = reports.find((x) => x.audience === audience)!;
+          for (const b of buildReport({ def: d, scores, audience, studentName: '', grade, completedAt: new Date() }).cognitive!.blocks) {
+            if (b.interpreted !== false) continue;
+            const at = `${d.slug} ${name} ${audience} ${b.key}`;
+            const it = r.items.find((x) => x.title === b.name)!;
+            expect(it, at).toBeDefined();
+            if (floorVisual(b)) {
+              floors++;
+              expect(it.visual, at).toEqual(b.visual);
+              expect(it.interpreted, at).toBeUndefined();
+            } else {
+              unread++;
+              expect(it.visual, at).toBeUndefined();
+              expect(it.interpreted, at).toBe(false);
+            }
+          }
+        }
+      }
+    }
+    expect(unread).toBeGreaterThan(20);
+    expect(floors).toBeGreaterThan(0);
+  }, 300_000);
 });

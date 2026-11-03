@@ -229,6 +229,7 @@ describe('Tepki hızı: rapor', () => {
     // raporun "Sonuca ne kadar güvenebiliriz?" bölümündedir.
     expect(left.parent.items[1].interpreted).toBe(false);
     expect(left.parent.items[1].visual).toBeUndefined();
+    expect(reversed.student.items[1].visual).toBeUndefined();
     expect(left.parent.items[2].text).toBe('Seçmeli bölümde cevapların çoğunda aynı düğmeye basıldığı için karşılaştırma yapılmadı.');
     expect(left.parent.cautions.join(' ')).toContain('seçmeli bölümünde cevapların çoğunda aynı düğmeye basılmış');
     // İki tarafa karışık basılıyor, doğru taraf yarı yarıya.

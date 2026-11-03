@@ -111,20 +111,22 @@ function Track({ row }: { row: CompareRow }) {
 
 /**
  * Görev testlerinde alıştırma etkisi: testi yeniden çözmek sonucu biraz yükseltir (Scharfen ve ark., 2018); her seferinde
- * aynı sorular gelen testlerde hatırlananlar da etkiler.
+ * aynı sorular (diziler, desenler…) gelen testlerde hatırlananlar da etkiler. `items`: o içeriğin çoğul adı
+ * (`CompareInfo.retestItems`).
  */
-export function retestNote(retest: 'items' | 'practice', you: boolean): string {
+export function retestNote(retest: 'items' | 'practice', you: boolean, items = 'sorular'): string {
   const base = you
     ? 'Bu tür testleri yeniden çözünce, testi tanımaktan dolayı doğru sayısı çoğu zaman biraz artar, süreler de biraz kısalabilir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim sayma.'
     : 'Bu tür testler yeniden çözülünce, testi tanımaktan dolayı doğru sayısı çoğu zaman biraz artar, süreler de biraz kısalabilir (Scharfen ve ark., 2018). Bu yüzden küçük farkları gerçek bir değişim saymayın.';
-  // Aynı soruların geldiği testlerde rapor yalnızca hangi soruların doğru bilindiğini yazar (verilen ve doğru cevabı yazmaz).
-  const items =
+  // Aynı içeriğin geldiği testlerde rapor cevapları tek tek yazmaz, yalnızca doğru ya da yanlış olduklarını yazar
+  // (lib/reports/task-parts.ts, Ctx.fixed).
+  const same =
     retest !== 'items'
       ? ''
       : you
-        ? ' Bu testte her seferinde aynı sorular gelir ve raporunda yalnızca hangi soruları doğru bildiğin yazılıdır; önceki çözüşten akılda kalanlar sonucu yükseltebilir.'
-        : ' Bu testte her seferinde aynı sorular gelir ve raporda yalnızca çocuğunuzun hangi soruları doğru bildiği yazılıdır; önceki çözüşten akılda kalanlar sonucu yükseltebilir.';
-  return `${base}${items}`;
+        ? ` Bu testte her seferinde aynı ${items} gelir. Raporunda cevapların tek tek yazılmaz; yalnızca doğru ya da yanlış oldukları yazılır. Önceki çözüşten akılda kalanlar sonucu yükseltebilir.`
+        : ` Bu testte her seferinde aynı ${items} gelir. Raporda çocuğunuzun cevapları tek tek yazılmaz; yalnızca doğru ya da yanlış oldukları yazılır. Önceki çözüşten akılda kalanlar sonucu yükseltebilir.`;
+  return `${base}${same}`;
 }
 
 /** Seçilen dosyada hiç özet yoksa. Görev testinde, hiçbir sonucu yorumlanmayan raporun PDF'inde de özet yoktur. */
@@ -200,7 +202,7 @@ export function compareSpeech(compare: CompareInfo, outcome: PanelOutcome, you: 
   else if (outcome?.status === 'version') lines.push(VERSION_TEXT);
   else if (outcome?.status === 'ok') {
     lines.push(summaryText(compare, outcome));
-    if (compare.retest) lines.push(retestNote(compare.retest, you));
+    if (compare.retest) lines.push(retestNote(compare.retest, you, compare.retestItems));
     if (outcome.rows.length === 0) lines.push(compare.retest ? 'Karşılaştırılacak sonuç bulunamadı.' : 'Karşılaştırılacak ölçek bulunamadı.');
     if (Math.abs(outcome.days) < 14) lines.push(SHORT_GAP_TEXT);
     for (const r of outcome.rows) {
@@ -284,7 +286,7 @@ export function ComparePanel({ compare, you, onOutcome }: { compare: CompareInfo
         {ok && (
           <>
             <p className="font-bold">{summaryText(compare, ok)}</p>
-            {compare.retest && <p className="text-ink-2">{retestNote(compare.retest, you)}</p>}
+            {compare.retest && <p className="text-ink-2">{retestNote(compare.retest, you, compare.retestItems)}</p>}
             {ok.rows.length === 0 && (
               <p className="text-ink-2">{compare.retest ? 'Karşılaştırılacak sonuç bulunamadı.' : 'Karşılaştırılacak ölçek bulunamadı.'}</p>
             )}
