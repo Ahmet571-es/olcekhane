@@ -1,6 +1,7 @@
 import { bakisAcisiAlmaDaily } from './bakis-acisi-alma';
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { calismaAliskanliklariDaily } from './calisma-aliskanliklari';
+import { dersCalismaMotivasyonuDaily } from './ders-calisma-motivasyonu';
 import { dusunerekKararVermeDaily } from './dusunerek-karar-verme';
 import { dusunmeVeCalismaTarziDaily } from './dusunme-ve-calisma-tarzi';
 import { dusunmeyiSevmeDaily } from './dusunmeyi-sevme-olcegi';
@@ -70,4 +71,5 @@ export const DAILY: Record<string, DailyContent> = {
   'dusunmeyi-sevme-olcegi': dusunmeyiSevmeDaily,
   'dusunme-ve-calisma-tarzi': dusunmeVeCalismaTarziDaily,
   'calisma-aliskanliklari': calismaAliskanliklariDaily,
+  'ders-calisma-motivasyonu': dersCalismaMotivasyonuDaily,
 };
