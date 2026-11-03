@@ -62,6 +62,17 @@ import type { LevelGroup } from '@/content/reports/types';
  *  9. Uçlar (`poles`) bir maddeyi değil bütün ölçeği anlatır: testin `poles` metninden ve şablondaki `summary`'den başla.
  *     Değer taşıyan fiil yok ("yetinir", "kaçınır"; T: sözcük listesi). Sor: bu uç senin için söylense incitir mi?
  * 10. Yayından önce dosyayı yazmamış bir ajan her satırı dayandığı maddelerle karşılaştırır (Beyin Akademisi'ndeki gibi).
+ * 11. Aynı sayfadaki kartlar birbiriyle çelişmez. Bir bileşik ölçeğin (`of`) alt ölçekleri kendi kartlarında örnekleniyorsa
+ *     ve bileşiğin örnekleri onlarla çelişebilecekse (bileşik ile bir alt ölçek ayrı gruplara düşebilir; destek kutusunu
+ *     alt ölçekteki bir madde açar, bileşik işaretlenmez), bileşiğe örnek yerine yönlendirme yazılır (`pointer`, T: ya
+ *     `bands` ya `pointer`): "Bu toplam puanın örnekleri aşağıdaki üç konunun kartlarında." (İyimserlik). Şablon ölçeklerin
+ *     birbirinin konusuna girmediğini söylüyorsa (Empati, Öz-yeterlik, Öz-denetim) örnekler de girmez.
+ * 12. Destek kutusunu açan bir madde (ölçekte `supportItems`) örneklere dayanak olmaz: kutuyu açtıysa kart örnek
+ *     göstermez; açmadıysa kişi o cümleye eşiğin altında cevap vermiştir ve onu yineleyen bir örnek cevabıyla çelişirdi.
+ * 13. Herkesin evinde başkası yoktur: yetişkinlere açık testte öğrencinin ev satırı evdekilerden ya da aileden söz ediyorsa
+ *     yetişkine kendi ev satırı (`adult.home`) yazılır ya da ortak satır herkese uyacak biçimde yazılır. 13. sınıfa (mezun)
+ *     açık testte öğrenci satırlarında "sınıf", "sınıf arkadaşı", "teneffüs" yok (mezun bu satırları "Okulda ya da
+ *     derslerde" başlığıyla görür): "derste", "arkadaşların" gibi.
  *
  * Temkinli dil (anket): her cümle bir olasılık söyler: "-abilir / -ebilir", "çoğu zaman", "bazen", "genellikle", "…e daha
  * yatkın olabilirsin" (T: her cümlede). "Her zaman", "asla", "kesinlikle", "hiçbir zaman", "daima", "mutlaka", "her
@@ -83,11 +94,12 @@ import type { LevelGroup } from '@/content/reports/types';
  *  - Aynı ölçeğin bir kitledeki dokuz satırı birbirinden farklıdır (T: düzeyler kopyalanmaz); anket satırı öğrenci ve veli
  *    için aynı olamaz (T).
  *  - Yetişkin (`adult`; test yetişkinlere açıksa zorunlu, T): ilk ortam okul değil "İşte ya da günlük işlerde" (`work`);
- *    arkadaş ve ev satırları öğrenci metninde okul sözcüğü yoksa yazılmaz (öğrencininki kullanılır). Yetişkin metninde,
+ *    arkadaş ve ev satırları öğrenci metninde okul sözcüğü yoksa ve öğrencinin ev satırı evdekilerden söz etmiyorsa
+ *    yazılmaz (öğrencininki kullanılır; 13. madde: yalnız yaşayan yetişkin). Yetişkin metninde,
  *    kısa adda, başlıkta ve dallarda okul, ders, sınav, öğretmen, ödev, sınıf, teneffüs, karne, kantin, dershane, etüt gibi
  *    sözcükler geçmez (T: tests/helpers/school.ts).
- *  - Mezun (13. sınıf): yetişkinlere açık olmayan testte ilk ortamın adı "Okulda ya da derslerde" olur; örnekler aynıdır.
- *    Bu yüzden okul satırı sınava hazırlanan bir mezun için de anlamlı olmalıdır (ders, çalışma, sınav).
+ *  - Mezun (13. sınıf): ilk ortamın adı "Okulda ya da derslerde" olur; örnekler öğrencininkilerdir. Bu yüzden okul satırı
+ *    sınava hazırlanan bir mezun için de anlamlı olmalıdır (ders, çalışma, sınav; "sınıf", "teneffüs" yok: 13. madde).
  *  - Sınıf aralığı: test 3–4. sınıfa açıksa öğrenci metni 8–9 yaşındaki bir çocuğun anlayacağı kadar somut ve kısa olur
  *    (teneffüs, oyun, ödev, sofra); lise testlerinde ergenin hayatından örnekler (kulüp, proje, sınav haftası).
  *
@@ -113,7 +125,7 @@ export interface DailyLines {
 
 /**
  * Yetişkin metninde okul yerine iş ya da günlük işler (`work`); arkadaş ve ev satırları öğrenci metninde okul sözcüğü yoksa
- * yazılmaz (öğrenci metni kullanılır).
+ * ve öğrencinin ev satırı evdekilerden ya da aileden söz etmiyorsa yazılmaz (öğrenci metni kullanılır).
  */
 export interface AdultLines {
   work: string;
@@ -135,13 +147,34 @@ export interface DailyBand {
   adult?: AdultLines;
 }
 
-/** Bir ölçeğin günlük hayattaki görünüşü. */
-export interface ScaleDaily {
-  /** Grafiğin iki ucu: düşük ve yüksek puanın günlük karşılığı (2–4 sözcük; değerlendirici testte düşük uç "Henüz" ile başlar). */
-  poles: { low: string; high: string };
-  /** Düşük (çok düşük dahil), orta ve yüksek (çok yüksek dahil) düzeyin örnekleri. */
-  bands: Record<LevelGroup, DailyBand>;
+/** Örnek yerine kartta gösterilen yönlendirme (`ScaleDaily.pointer`; yetişkin metni verilmezse öğrencininki). */
+export interface DailyPointer {
+  student: string;
+  parent: string;
+  adult?: string;
 }
+
+/** Grafiğin iki ucu: düşük ve yüksek puanın günlük karşılığı (2–4 sözcük; değerlendirici testte düşük uç "Henüz" ile başlar). */
+interface ScalePoles {
+  poles: { low: string; high: string };
+}
+
+/**
+ * Bir ölçeğin günlük hayattaki görünüşü: ya düzeylerin örnekleri (`bands`) ya da örnek yerine bir yönlendirme (`pointer`).
+ * Yönlendirme, alt ölçekleri kendi kartlarında örneklenen ve kendi örnekleri onlarla çelişebilecek bileşik ölçek içindir
+ * (denetim listesinin 11. maddesi): kartta rozet ve iki uç kalır, satırların yerine bu metin yazar.
+ */
+export type ScaleDaily =
+  | (ScalePoles & {
+      /** Düşük (çok düşük dahil), orta ve yüksek (çok yüksek dahil) düzeyin örnekleri. */
+      bands: Record<LevelGroup, DailyBand>;
+      pointer?: undefined;
+    })
+  | (ScalePoles & {
+      /** Örnek yerine kartta yazan metin (ör. "Bu toplam puanın örnekleri aşağıdaki üç konunun kartlarında."). */
+      pointer: DailyPointer;
+      bands?: undefined;
+    });
 
 /**
  * Anket testi: sonuç kartı olan her ölçek için (`dailyScales`: ayrıntılı profilde ve motivasyon profilinde boyutlar ve kendi

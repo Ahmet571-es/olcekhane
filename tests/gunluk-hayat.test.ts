@@ -388,6 +388,15 @@ describe('Günlük hayat: kapsam', () => {
         if (evaluative) expect(s.poles.low, at).toMatch(/^Henüz /u);
         // Örneklerin dayandığı maddeler: testte var ve bu ölçeğin (ya da boyutun alt özelliklerinin) maddesi.
         const scale = d.scales.find((x) => x.key === key)!;
+        if (s.pointer) {
+          // Örnek yerine yönlendirme (checklist 11): yalnızca alt ölçekleri kendi kartlarında örneklenen bileşik ölçekte.
+          expect(s.bands, at).toBeUndefined();
+          expect(scale.of?.length, `${at}: yönlendirme yalnızca bileşik ölçekte`).toBeGreaterThan(0);
+          for (const k of scale.of!) expect(wanted, `${at}: ${k} kendi kartında örneklenmiyor`).toContain(k);
+          for (const k of scale.of!) expect(c.scales[k]?.bands, `${at}: ${k} örneksiz`).toBeDefined();
+          expect(s.pointer.student && s.pointer.parent, at).toBeTruthy();
+          continue;
+        }
         const own = new Set([key, ...(scale.of ?? [])]);
         for (const g of ['low', 'average', 'high'] as const) {
           const b = s.bands[g];
@@ -470,8 +479,23 @@ describe('Günlük hayat: dil', () => {
       const c = DAILY[d.slug];
       const groups: { kind: 'survey' | 'skills'; lines: Line[][] }[] = [];
       if (c.kind === 'survey') {
-        for (const [key, s] of Object.entries(c.scales))
+        for (const [key, s] of Object.entries(c.scales)) {
+          if (s.pointer) {
+            // Örnek yerine yönlendirme: kartın kendi metni gibi (kısa, yargısız; veliye ikinci kişi yok, yetişkine okul yok).
+            const at = `${d.slug} ${key} yönlendirme`;
+            const texts = { student: s.pointer.student, parent: s.pointer.parent, adult: s.pointer.adult ?? s.pointer.student };
+            for (const t of Object.values(texts)) {
+              for (const re of [BANNED, ABSOLUTE, PEER, PREVALENCE, CLINICAL, TALENT, INCLUSION]) expect(t, at).not.toMatch(re);
+              expect(sentences(t).length, at).toBeLessThanOrEqual(2);
+              for (const x of sentences(t)) expect(wordCount(x), `${at}: ${x}`).toBeLessThanOrEqual(22);
+            }
+            expect(texts.student, at).not.toMatch(/çocuğunuz/iu);
+            expect(hasSecondPerson(texts.parent), at).toBe(false);
+            if (d.adults) expect(schoolWords(texts.adult), at).toEqual([]);
+            continue;
+          }
           for (const g of ['low', 'average', 'high'] as const) groups.push({ kind: 'survey', lines: allLines(s.bands[g], `${d.slug} ${key} ${g}`, !!d.adults) });
+        }
       } else {
         for (const s of c.skills) {
           groups.push({ kind: 'skills', lines: allLines(s, `${d.slug} ${s.key}`, !!d.adults) });
@@ -509,9 +533,11 @@ describe('Günlük hayat: dil', () => {
       // Bir ölçeğin aynı kitledeki satırları düzeyden düzeye kopyalanmaz (dokuz satır, yetişkinde iş satırları da farklı).
       if (c.kind === 'survey') {
         for (const [key, s] of Object.entries(c.scales)) {
+          if (!s.bands) continue;
+          const bands = s.bands;
           for (const audience of ['student', 'parent', ...(d.adults ? (['adult'] as const) : [])] as const) {
-            const texts = (['low', 'average', 'high'] as const).flatMap((g) => linesOf(s.bands[g], audience));
-            const own = audience === 'adult' ? (['low', 'average', 'high'] as const).map((g) => s.bands[g].adult!.work) : texts;
+            const texts = (['low', 'average', 'high'] as const).flatMap((g) => linesOf(bands[g], audience));
+            const own = audience === 'adult' ? (['low', 'average', 'high'] as const).map((g) => bands[g].adult!.work) : texts;
             expect(new Set(own).size, `${d.slug} ${key} ${audience}: aynı satır birden çok düzeyde`).toBe(own.length);
             expect(new Set(texts).size, `${d.slug} ${key} ${audience}`).toBe(texts.length);
           }
@@ -627,8 +653,16 @@ function checkSurvey(d: LikertInstrument, r: SimpleReport, grade: number, flagge
       expect(r.support, at).not.toBeNull();
       continue;
     }
+    const daily = content.scales[c.key];
+    if (daily.pointer) {
+      // Örnek yerine yönlendirme: rozet ve iki uç kalır, satır yok; metin kitleye göre yönlendirmedir.
+      const p = daily.pointer;
+      expect(c.lines, at).toBeUndefined();
+      expect(c.text, at).toBe(r.audience === 'parent' ? p.parent : r.audience === 'adult' ? (p.adult ?? p.student) : p.student);
+      continue;
+    }
     expect(c.lines?.map((l) => l.label), at).toEqual(contexts);
-    expect(c.lines?.map((l) => l.text), at).toEqual(linesOf(content.scales[c.key].bands[group], r.audience as Audience));
+    expect(c.lines?.map((l) => l.text), at).toEqual(linesOf(daily.bands[group], r.audience as Audience));
     // "Bu da uyabilir" yazan komşu düzey başka bir gruptaysa kart onun örneklerinin de uyabileceğini söyler.
     const near = (lc.levels ?? [])
       .filter((l) => l.near)
@@ -708,7 +742,10 @@ describe('Günlük hayat: raporda', () => {
         }
       }
       // Anket testlerinde her ölçeğin üç düzey grubunun da örnekleri raporda göründü.
-      if (d.engine === 'likert') for (const s of dailyScales(d)) expect([...(seen.get(s.key) ?? [])].sort(), `${d.slug} ${s.key}`).toEqual(['average', 'high', 'low']);
+      // (Örnek yerine yönlendirme taşıyan bileşik ölçek hariç.)
+      if (d.engine === 'likert')
+        for (const s of dailyScales(d).filter((x) => !(DAILY[d.slug] as SurveyDaily).scales[x.key].pointer))
+          expect([...(seen.get(s.key) ?? [])].sort(), `${d.slug} ${s.key}`).toEqual(['average', 'high', 'low']);
     }
     expect(cards).toBeGreaterThan(100);
   }, 240_000);

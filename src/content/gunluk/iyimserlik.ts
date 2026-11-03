@@ -4,20 +4,23 @@ import type { SurveyDaily } from './types';
  * İyimserlik Ölçeği: günlük hayatta nasıl görünür (9. sınıftan yetişkine). Ton: gelişim (lib/reports/daily-parts.ts,
  * `scaleTone`): örnekler bugünkü durumu anlatır; düşük uca uydurma bir güçlü yan, yüksek uca uydurma bir zorluk yazılmaz.
  * Dört kartın da düşük düzeyi destek kutusu açar (src/content/reports/iyimserlik.ts): düşük örnekler çok yumuşaktır, belirti
- * saymaz, zor anın yanında bir dayanak söyler ("güvendiğin biriyle konuşmak iyi gelebilir"); bu bölüm destek kutusunu anmaz.
+ * saymaz, zor anın yanında bir dayanak söyler; dayanaklar birbirini yinelemez ve bu bölüm destek kutusunu anmaz.
  *
- * Kartların dayandığı maddeler bilerek ayrıldı:
- *  - Toplam (iyimserlik) kartı yalnızca hayata bakışı soran iki maddeye (o04, o09: iyi taraf ve zorluk) dayanır. Bu kart
- *    hiçbir zaman örneksiz kalmaz (madde işareti konu satırına düşer: "Sık sık kendimi hüzünlü hissederim" ruh hâline,
- *    "Kendimden hoşlanmam" kendine bakışa); ruh hâli ya da kendine bakış maddelerine dayansaydı, destek kutusu açıkken
- *    "çoğu gün keyifli olabilirsin" gibi bir örnek kutuyla çelişebilirdi.
- *  - Hayata ve geleceğe bakış kartı geleceği soran üç maddeye (o01, o05, o06) dayanır; iki kart aynı şeyi yinelemez.
+ * Kartlar:
+ *  - Toplam (iyimserlik) kartında örnek yok, yönlendirme var (`pointer`; types.ts, denetim listesinin 11. maddesi). On
+ *    maddenin her biri bir konunun kartında örneklenir. Toplamın kendi örnekleri ya bir konunun maddelerine dayanırdı (toplam
+ *    ile o konu ayrı gruplara düşünce kişinin kendi cevaplarıyla çelişirdi; "Bilmekte yarar var" da toplamın öteki
+ *    cümlelerden geldiğini söyleyebilir) ya da ruh hâli ve kendine bakış maddelerine (destek kutusunu açan cevap konu
+ *    kartına düşer, toplam işaretlenmez; kutunun yanında "çoğu gün keyifli olabilirsin" gibi bir örnek kalırdı).
+ *  - Hayata ve geleceğe bakış kartı geleceği soran üç maddeye (o01, o05, o06) dayanır.
  *  - Kendine bakış: düşük düzeyin örnekleri yalnızca "Kendimle barışığım" (o02) maddesine dayanır. Bu kartta örnek yalnızca
- *    "Kendimden hoşlanmam" (o07) maddesine "Oldukça doğru" ya da "Tamamen doğru" denmediyse ve iki cevap iki uca ayrılmadıysa
- *    görünür; o zaman o07'nin cevabı ortadadır ("Ne doğru ne yanlış"). "Kendinden hoşlanmayabilirsin" demek bu cevapla
- *    çelişirdi.
+ *    "Kendimden hoşlanmam" (o07) maddesine "Oldukça doğru" ya da "Tamamen doğru" denmediyse görünür; o zaman o07'nin cevabı
+ *    en çok ortadadır (düşük düzeyde o02 = 1 iken "Pek doğru değil" de olabilir: ayrışma kuralı düşük düzeye uygulanmaz).
+ *    "Kendinden hoşlanmayabilirsin" demek bu cevaplarla çelişirdi.
  *  - Ruh hâli: aynı nedenle düşük düzeyin örnekleri "sık sık hüzünlü" demez (o08 işaretli değilse cevabı en çok ortadadır);
  *    o03 ("Kendimi nadiren hüzünlü hissederim") ve o10 ("Sık sık keyifsiz olurum") maddelerine dayanır.
+ * Mezun (13. sınıf) okul satırlarını "Okulda ya da derslerde" başlığıyla gördüğü için "sınıf" yerine "derste" denir;
+ * yetişkinin ev satırı evdekilerden söz etmez (yalnız yaşayan yetişkin; geleceğe bakışın düşük düzeyinde `adult.home`).
  * Maddeye doğrudan dayanmayan tek uzantı dayanak cümleleridir (destek kutusunun ilk cümlesinin yumuşak bir yankısı). Her
  * satırın dayandığı maddeler `from`'dadır.
  */
@@ -26,65 +29,19 @@ export const iyimserlikDaily: SurveyDaily = {
   version: 'iyimserlik-gunluk-1',
   scales: {
     /*
-     * İyimserlik (on maddenin ortalaması). Örnekler: o04 "Hayatın iyi tarafından bakarım"; ters: o09 "Her şeyde bir zorluk
-     * görürüm". Uçlar bütün ölçeği anlatır (testin uçları "Daha karamsar" ↔ "Daha iyimser").
+     * İyimserlik (on maddenin ortalaması): örnek yerine yönlendirme (dosyanın başındaki açıklama). Uçlar bütün ölçeği
+     * anlatır (testin uçları "Daha karamsar" ↔ "Daha iyimser").
      */
     iyimserlik: {
       poles: { low: 'Çoğu zaman karamsar bakar', high: 'Çoğu zaman umutla bakar' },
-      bands: {
-        low: {
-          from: { school: ['o09'], friends: ['o09', 'o04'], home: ['o04'], work: ['o09'] },
-          student: {
-            school: 'Yeni bir proje ya da ödev verildiğinde önce onun zorluklarını görebilirsin.',
-            friends: 'Arkadaşlarınla bir plan yaparken her adımda bir zorluk görebilirsin.',
-            home: 'Evdeki bir aksilikten sonra işin iyi tarafını görmek sana zor gelebilir; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
-          },
-          parent: {
-            school: 'Yeni bir proje ya da ödev verildiğinde çocuğunuz önce onun zorluklarını görebilir.',
-            friends: 'Arkadaşlarıyla bir plan yaparken her adımda bir zorluk görebilir.',
-            home: 'Evdeki bir aksilikten sonra işin iyi tarafını görmek ona zor gelebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
-          },
-          adult: {
-            work: 'Yeni bir görev verildiğinde önce onun zorluklarını görebilirsin.',
-          },
-        },
-        average: {
-          from: { school: ['o09', 'o04'], friends: ['o04'], home: ['o09'], work: ['o09', 'o04'] },
-          student: {
-            school: 'Yeni bir projeye bazen umutla başlayabilir, bazen önce zorluklarını görebilirsin.',
-            friends: 'Arkadaşlarınla bir plan aksayınca bazen işin iyi tarafını görebilir, bazen karamsar kalabilirsin.',
-            home: 'Evdeki bir aksilik bazı günler sana küçük, bazı günler büyük bir zorluk gibi görünebilir.',
-          },
-          parent: {
-            school: 'Çocuğunuz yeni bir projeye bazen umutla başlayabilir, bazen önce zorluklarını görebilir.',
-            friends: 'Arkadaşlarıyla bir plan aksayınca bazen işin iyi tarafını görebilir, bazen karamsar kalabilir.',
-            home: 'Evdeki bir aksilik bazı günler ona küçük, bazı günler büyük bir zorluk gibi görünebilir.',
-          },
-          adult: {
-            work: 'Yeni bir işe bazen umutla başlayabilir, bazen önce zorluklarını görebilirsin.',
-          },
-        },
-        high: {
-          from: { school: ['o09', 'o04'], friends: ['o04'], home: ['o09'], work: ['o09', 'o04'] },
-          student: {
-            school: 'Zor bir proje verildiğinde de çoğu zaman işin iyi tarafını görebilirsin.',
-            friends: 'Arkadaşlarınla bir plan aksadığında da olanlara iyi tarafından bakabilirsin.',
-            home: 'Evdeki küçük aksilikler sana çoğu zaman büyük bir zorluk gibi görünmeyebilir.',
-          },
-          parent: {
-            school: 'Zor bir proje verildiğinde de çocuğunuz çoğu zaman işin iyi tarafını görebilir.',
-            friends: 'Arkadaşlarıyla bir plan aksadığında da olanlara iyi tarafından bakabilir.',
-            home: 'Evdeki küçük aksilikler ona çoğu zaman büyük bir zorluk gibi görünmeyebilir.',
-          },
-          adult: {
-            work: 'Zor bir görev verildiğinde de çoğu zaman işin iyi tarafını görebilirsin.',
-          },
-        },
+      pointer: {
+        student: 'Bu toplam puanın örnekleri aşağıdaki üç konunun kartlarında.',
+        parent: 'Bu toplam puanın örnekleri aşağıdaki üç konunun kartlarında.',
       },
     },
     /*
      * Hayata ve geleceğe bakış. Örnekler: o01 "Başarılı biri olacağımı biliyorum"; ters: o05 "Geleceğe karamsar bakarım",
-     * o06 "Hayatımın belli bir yönü olmadığını hissederim". (o04 ve o09 toplam kartının örneklerindedir.)
+     * o06 "Hayatımın belli bir yönü olmadığını hissederim". (o04 ve o09'a dayanılmadı: üç madde geleceği daha doğrudan sorar.)
      */
     gelecek: {
       poles: { low: 'Geleceğe karamsar bakar', high: 'Geleceğe umutla bakar' },
@@ -103,6 +60,7 @@ export const iyimserlikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Günlük işlerini yaparken hayatının belli bir yönü yokmuş gibi hissedebilirsin.',
+            home: 'Geleceğini düşündüğünde başarılı biri olacağından emin olmayabilirsin.',
           },
         },
         average: {
@@ -144,19 +102,19 @@ export const iyimserlikDaily: SurveyDaily = {
      * dayanır (dosyanın başındaki açıklama). Orta düzey, iki cevabın da ortada olduğu durumdur ("Ne doğru ne yanlış").
      */
     kendine_bakis: {
-      poles: { low: 'Kendine olumsuz bakar', high: 'Kendine olumlu bakar' },
+      poles: { low: 'Kendine eleştirel bakar', high: 'Kendine olumlu bakar' },
       bands: {
         low: {
           from: { school: ['o02'], friends: ['o02'], home: ['o02'], work: ['o02'] },
           student: {
-            school: 'Sınıfta kendini olduğun gibi kabul etmek sana zor gelebilir.',
+            school: 'Derste kendini olduğun gibi kabul etmek sana zor gelebilir.',
             friends: 'Arkadaşlarınla birlikteyken kendinle barışık hissetmeyebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
-            home: 'Kendi başına kaldığında kendinle barışık hissetmek sana kolay gelmeyebilir; bu duygu zamanla değişebilir.',
+            home: 'Kendi başına kaldığında kendinle barışık hissetmek sana kolay gelmeyebilir.',
           },
           parent: {
-            school: 'Sınıfta kendini olduğu gibi kabul etmek çocuğunuza zor gelebilir.',
+            school: 'Derste kendini olduğu gibi kabul etmek çocuğunuza zor gelebilir.',
             friends: 'Arkadaşlarıyla birlikteyken kendisiyle barışık hissetmeyebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
-            home: 'Kendi başına kaldığında kendisiyle barışık hissetmek ona kolay gelmeyebilir; bu duygu zamanla değişebilir.',
+            home: 'Kendi başına kaldığında kendisiyle barışık hissetmek ona kolay gelmeyebilir.',
           },
           adult: {
             work: 'Gün içinde işlerini yaparken kendini olduğun gibi kabul etmek sana zor gelebilir.',
@@ -165,12 +123,12 @@ export const iyimserlikDaily: SurveyDaily = {
         average: {
           from: { school: ['o02'], friends: ['o07'], home: ['o02', 'o07'], work: ['o02'] },
           student: {
-            school: 'Bazı günler sınıfta kendinle barışık hissedebilir, bazı günler bundan emin olamayabilirsin.',
+            school: 'Bazı günler derste kendinle barışık hissedebilir, bazı günler bundan emin olamayabilirsin.',
             friends: 'Arkadaşlarınla birlikteyken kendinin bazı yanlarından hoşlanabilir, bazılarından hoşlanmayabilirsin.',
             home: 'Kendin hakkındaki düşüncelerin günden güne değişebilir.',
           },
           parent: {
-            school: 'Çocuğunuz bazı günler sınıfta kendisiyle barışık hissedebilir, bazı günler bundan emin olamayabilir.',
+            school: 'Çocuğunuz bazı günler derste kendisiyle barışık hissedebilir, bazı günler bundan emin olamayabilir.',
             friends: 'Arkadaşlarıyla birlikteyken kendisinin bazı yanlarından hoşlanabilir, bazılarından hoşlanmayabilir.',
             home: 'Çocuğunuzun kendisi hakkındaki düşünceleri günden güne değişebilir.',
           },
@@ -179,15 +137,15 @@ export const iyimserlikDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['o02'], friends: ['o07'], home: ['o02'], work: ['o02'] },
+          from: { school: ['o02'], friends: ['o02'], home: ['o02'], work: ['o02'] },
           student: {
-            school: 'Sınıfta kendini çoğu zaman olduğun gibi kabul edebilirsin.',
-            friends: 'Arkadaşlarınla birlikteyken kendinden hoşnut hissedebilirsin.',
+            school: 'Derste kendini çoğu zaman olduğun gibi kabul edebilirsin.',
+            friends: 'Arkadaşlarınla birlikteyken çoğu zaman kendin gibi davranmak sana rahat gelebilir.',
             home: 'Kendi başına kaldığında da çoğu zaman kendinle barışık hissedebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfta kendini çoğu zaman olduğu gibi kabul edebilir.',
-            friends: 'Arkadaşlarıyla birlikteyken kendisinden hoşnut hissedebilir.',
+            school: 'Çocuğunuz derste kendini çoğu zaman olduğu gibi kabul edebilir.',
+            friends: 'Arkadaşlarıyla birlikteyken çoğu zaman kendisi gibi davranmak ona rahat gelebilir.',
             home: 'Kendi başına kaldığında da çoğu zaman kendisiyle barışık hissedebilir.',
           },
           adult: {
@@ -206,17 +164,17 @@ export const iyimserlikDaily: SurveyDaily = {
         low: {
           from: { school: ['o10', 'o03'], friends: ['o10'], home: ['o03'], work: ['o10', 'o03'] },
           student: {
-            school: 'Derste kendini keyifsiz ya da hüzünlü hissettiğin anlar olabilir; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
-            friends: 'Arkadaşlarınla birlikteyken de keyfin yerinde olmayabilir; bu durum zamanla değişebilir.',
-            home: 'Evdeyken hüzünlü hissettiğin zamanlar olabilir; nasıl hissettiğini evdekilerden birine anlatmak iyi gelebilir.',
+            school: 'Derste kendini keyifsiz ya da hüzünlü hissettiğin anlar olabilir; bunu yakın olduğun biriyle konuşmak iyi gelebilir.',
+            friends: 'Arkadaşlarınla birlikteyken de keyfin pek yerinde olmayabilir.',
+            home: 'Evdeyken hüzünlü hissettiğin zamanlar olabilir.',
           },
           parent: {
-            school: 'Çocuğunuz derste kendini keyifsiz ya da hüzünlü hissettiği anlar yaşayabilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
-            friends: 'Arkadaşlarıyla birlikteyken de keyfi yerinde olmayabilir; bu durum zamanla değişebilir.',
-            home: 'Evdeyken hüzünlü hissettiği zamanlar olabilir; nasıl hissettiğini evdekilerden birine anlatmak ona iyi gelebilir.',
+            school: 'Çocuğunuz derste kendini keyifsiz ya da hüzünlü hissettiği anlar yaşayabilir; bunu yakın olduğu biriyle konuşmak iyi gelebilir.',
+            friends: 'Arkadaşlarıyla birlikteyken de keyfi pek yerinde olmayabilir.',
+            home: 'Evdeyken hüzünlü hissettiği zamanlar olabilir.',
           },
           adult: {
-            work: 'Gün içinde işlerini yaparken kendini keyifsiz ya da hüzünlü hissettiğin zamanlar olabilir; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
+            work: 'Gün içinde işlerini yaparken kendini keyifsiz ya da hüzünlü hissettiğin zamanlar olabilir; bunu yakın olduğun biriyle konuşmak iyi gelebilir.',
           },
         },
         average: {

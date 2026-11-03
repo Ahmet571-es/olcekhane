@@ -24,7 +24,9 @@ import type { ContextsVisual, PolesVisual } from './visual-daily';
  *    rozet ve iki uç kalır): puan hesaplanamadı; cevaplar iki uca ayrıldığı için kartta düzeyin genel anlatımı yerine ayrışma
  *    anlatıldı; destek önerisini bu ölçekteki bir cevap açtı (`flagged`: o cevap destek kutusunda ele alınır; düzeyin
  *    örnekleri kutunun yanında yersiz kalabilirdi). Puanın ölçüm payı komşu bir düzey grubuna uzanıyorsa ("Bu da uyabilir")
- *    kart bunu bir cümleyle söyler. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
+ *    kart bunu bir cümleyle söyler. Alt ölçekleri kendi kartlarında örneklenen bir bileşik ölçek örnek yerine bir
+ *    yönlendirme taşıyabilir (`ScaleDaily.pointer`; ör. İyimserlik'in toplamı): rozet ve iki uç kalır, satırlar yerine o
+ *    metin yazar. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
  *    "özellik" (iki uç da eşit), değerlendirici, destek kutusu açabilen ve gelişime açık ölçeklerde "gelişim" (örnekler
  *    bugünkü durumu anlatır).
  *  - Görev, okuma, sesli okuma ve konu tarama testleri: her beceri (ya da konu alanı) için bir kart: tanım, grafik
@@ -213,6 +215,11 @@ function surveyCard(input: {
         parent: `${cap(unit.inThis)} örnek gösterilmedi; çocuğunuzun cevaplarından biri yukarıdaki destek kutusunda ayrıca ele alınıyor.`,
       }),
     };
+  }
+  if (t.pointer) {
+    // Bileşik ölçeğin örnekleri alt ölçeklerinin kartlarındadır (kendi örnekleri onlarla çelişebilirdi): rozet ve iki uç
+    // kalır, satırların yerine yönlendirme yazar.
+    return { ...base, text: by(a, { you: t.pointer.student, parent: t.pointer.parent, adult: t.pointer.adult }) };
   }
   const lines = linesOf(t.bands[group], a);
   const near = nearGroups(sec);
