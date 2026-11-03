@@ -42,9 +42,12 @@ const ncogBand = (b: DailyBand): DailyBand => ({
     ...(b.from.work ? { work: ncog(b.from.work) } : {}),
   },
 });
+// Düşünmeyi Sevme'nin ölçeği düzey örnekleriyle yazılır (yönlendirme değil); öyle kalmazsa derleme burada durur.
+const ncogBands = kafaYoranIsler.bands;
+if (!ncogBands) throw new Error('dusunmeyi-sevme: düzey örnekleri yok');
 const needForCognition: ScaleDaily = {
   poles: kafaYoranIsler.poles,
-  bands: { low: ncogBand(kafaYoranIsler.bands.low), average: ncogBand(kafaYoranIsler.bands.average), high: ncogBand(kafaYoranIsler.bands.high) },
+  bands: { low: ncogBand(ncogBands.low), average: ncogBand(ncogBands.average), high: ncogBand(ncogBands.high) },
 };
 
 export const ogrenmeVeBasariDaily: SurveyDaily = {

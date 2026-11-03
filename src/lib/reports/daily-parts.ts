@@ -22,16 +22,13 @@ import type { ContextsVisual, PolesVisual } from './visual-daily';
  *    (aynı düzey); grafik iki uç (`poles`): ölçeğin iki ucunun günlük karşılığı, kişinin düzeyinin bölgesi ve yeri; satırlar
  *    o düzeyin grubundaki (düşük, orta, yüksek) üç ortamın örnekleri. Örnek seçilmeyen durumlar (kart kısa nedenini söyler;
  *    rozet ve iki uç kalır): puan hesaplanamadı; cevaplar iki uca ayrıldığı için kartta düzeyin genel anlatımı yerine ayrışma
- *    anlatıldı; destek önerisini bu ölçekteki bir cevap açtı (`flagged`: o cevap destek kutusunda ele alınır; düzeyin
- *    örnekleri kutunun yanında yersiz kalabilirdi). Puanın ölçüm payı komşu bir düzey grubuna uzanıyorsa ("Bu da uyabilir")
- *    kart bunu bir cümleyle söyler. Alt ölçekleri kendi kartlarında örneklenen bir bileşik ölçek örnek yerine bir
- *    yönlendirme taşıyabilir (`ScaleDaily.pointer`; ör. İyimserlik'in toplamı): rozet ve iki uç kalır, satırlar yerine o
- *    metin yazar. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
  *    anlatıldı; motivasyon profilinde bileşik ölçeğin iki parçasından biri yüksek, öteki düşük (`motivationPartsSplit`:
  *    örnekler parçaların maddelerinden yazıldığı için biri parçasının kartıyla çelişirdi; profil yorumu bu farkı anlatır);
  *    destek önerisini bu ölçekteki bir cevap açtı (`flagged`: o cevap destek kutusunda ele alınır; düzeyin örnekleri kutunun
  *    yanında yersiz kalabilirdi). Puanın ölçüm payı komşu bir düzey grubuna uzanıyorsa ("Bu da uyabilir")
- *    kart bunu bir cümleyle söyler. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
+ *    kart bunu bir cümleyle söyler. Alt ölçekleri kendi kartlarında örneklenen bir bileşik ölçek örnek yerine bir
+ *    yönlendirme taşıyabilir (`ScaleDaily.pointer`; ör. İyimserlik'in toplamı): rozet ve iki uç kalır, satırlar yerine o
+ *    metin yazar. Her ölçeğin bir tonu vardır (`scaleTone`): kişilik, merak, ilgi ve değer gibi ölçeklerde
  *    "özellik" (iki uç da eşit), değerlendirici, destek kutusu açabilen ve gelişime açık ölçeklerde "gelişim" (örnekler
  *    bugünkü durumu anlatır).
  *  - Görev, okuma, sesli okuma ve konu tarama testleri: her beceri (ya da konu alanı) için bir kart: tanım, grafik
