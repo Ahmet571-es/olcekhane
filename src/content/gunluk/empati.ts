@@ -15,7 +15,8 @@ import type { SurveyDaily } from './types';
  *    "derdiyle dertlenme" der); bakış açısı (und05), yarar (und03) ve yardım (und04, und10) maddelerine dayanır.
  *  - Duygusal duyarlılığın düşük örnekleri yalnızca duygulanmayı anlatır, önemsemeyi değil.
  * "Başkalarını nasıl teselli edeceğimi bilirim" (war03) bir beceri gibi değil, davranış olarak yazılır ("teselli etmeye
- * çalışabilirsin"). "Nadiren gülümserim" (war11) kullanılmadı (kişiyi yargılar gibi okunabilir). Her satırın dayandığı
+ * çalışabilirsin"). "Nadiren gülümserim" (war11) kullanılmadı (kişiyi yargılar gibi okunabilir). Yetişkinin ev satırı
+ * evdekilerden değil yakınlardan ve komşulardan söz eder (`adult.home`; yalnız yaşayan yetişkin). Her satırın dayandığı
  * maddeler `from`'dadır.
  */
 export const empatiDaily: SurveyDaily = {
@@ -46,6 +47,7 @@ export const empatiDaily: SurveyDaily = {
           },
           adult: {
             work: 'Ortak bir işte başkalarının ne istediğinden çok kendi payına düşen kısma odaklanabilirsin.',
+            home: 'Bir yakının ya da komşun yardım isteyince önce kendi işlerini bitirmeyi seçebilirsin.',
           },
         },
         average: {
@@ -62,6 +64,7 @@ export const empatiDaily: SurveyDaily = {
           },
           adult: {
             work: 'Ortak bir işte bazen herkesin yararını gözetebilir, bazen önce kendi payını düşünebilirsin.',
+            home: 'Bir yakının ya da komşun yardım isteyince bazen hemen yardım edebilir, bazen önce kendi işini bitirebilirsin.',
           },
         },
         high: {
@@ -78,6 +81,7 @@ export const empatiDaily: SurveyDaily = {
           },
           adult: {
             work: 'Ortak bir işte başkalarının görüşüne değer verip herkesin yararını gözetebilirsin.',
+            home: 'Bir yakınınla ortak bir karar verirken onun ne hissettiğini de hesaba katabilirsin.',
           },
         },
       },
@@ -95,12 +99,12 @@ export const empatiDaily: SurveyDaily = {
           from: { school: ['aff03', 'aff10'], friends: ['aff01', 'aff02'], home: ['aff10', 'aff04'], work: ['aff03', 'aff10'] },
           student: {
             school: 'Derste üzücü bir olay anlatılınca çoğu zaman sakin kalabilirsin.',
-            friends: 'Bir arkadaşın derdini anlatırken onun duygusunu içinde pek hissetmeyebilirsin; bu, onu önemsemediğin anlamına gelmez.',
+            friends: 'Bir arkadaşın sana derdini anlatırken onun duygusunu içinde pek hissetmeyebilirsin; bu, onu önemsemediğin anlamına gelmez.',
             home: 'Duygusal bir film izlerken pek duygulanmayabilirsin.',
           },
           parent: {
             school: 'Derste üzücü bir olay anlatılınca çocuğunuz çoğu zaman sakin kalabilir.',
-            friends: 'Bir arkadaşı derdini anlatırken onun duygusunu içinde pek hissetmeyebilir; bu, onu önemsemediği anlamına gelmez.',
+            friends: 'Bir arkadaşı ona derdini anlatırken onun duygusunu içinde pek hissetmeyebilir; bu, onu önemsemediği anlamına gelmez.',
             home: 'Duygusal bir film izlerken pek duygulanmayabilir.',
           },
           adult: {
@@ -127,12 +131,12 @@ export const empatiDaily: SurveyDaily = {
           from: { school: ['aff03'], friends: ['aff01', 'aff02'], home: ['aff04', 'aff05'], work: ['aff03', 'aff01'] },
           student: {
             school: 'Derste üzücü bir olay anlatılınca derinden etkilenebilirsin.',
-            friends: 'Bir arkadaşın derdini anlatınca onun duygusunu içinde hissedip onunla dertlenebilirsin.',
+            friends: 'Bir arkadaşın sana derdini anlatınca onun duygusunu içinde hissedip onunla dertlenebilirsin.',
             home: 'Duygusal bir film izlerken gözlerin kolayca dolabilir, ağlayabilirsin.',
           },
           parent: {
             school: 'Derste üzücü bir olay anlatılınca çocuğunuz derinden etkilenebilir.',
-            friends: 'Bir arkadaşı derdini anlatınca onun duygusunu içinde hissedip onunla dertlenebilir.',
+            friends: 'Bir arkadaşı ona derdini anlatınca onun duygusunu içinde hissedip onunla dertlenebilir.',
             home: 'Duygusal bir film izlerken gözleri kolayca dolabilir, ağlayabilir.',
           },
           adult: {
@@ -164,23 +168,25 @@ export const empatiDaily: SurveyDaily = {
             home: 'Evdekilerden birine minnettar olduğunda bunu çoğu zaman sözle belli etmeyebilir.',
           },
           adult: {
-            work: 'Yeni biriyle tanışınca onu karşılamayı ve rahatlatmayı başkalarına bırakabilirsin.',
+            work: 'Bir ortama yeni biri katılınca onu karşılamayı ve rahatlatmayı başkalarına bırakabilirsin.',
+            home: 'Bir yakınına minnettar olduğunda bunu çoğu zaman sözle belli etmeyebilirsin.',
           },
         },
         average: {
-          from: { school: ['war06', 'war02'], friends: ['war03'], home: ['war04', 'war07'], work: ['war02', 'war06'] },
+          from: { school: ['war06', 'war02'], friends: ['war03'], home: ['war07'], work: ['war02', 'war06'] },
           student: {
             school: 'Derse ya da gruba yeni biri katılınca onu bazen sıcak karşılayabilir, bazen uzaktan izleyebilirsin.',
             friends: 'Üzgün bir arkadaşını bazen teselli etmeye çalışabilir, bazen ne diyeceğini bilemeyebilirsin.',
-            home: 'Evdekilere bazen hâl hatır sorup teşekkür edebilir, bazen bunu belli etmeyebilirsin.',
+            home: 'Evdekilerden birine minnettar olduğunda bunu bazen sözle belli edebilir, bazen içinde tutabilirsin.',
           },
           parent: {
             school: 'Derse ya da gruba yeni biri katılınca çocuğunuz onu bazen sıcak karşılayabilir, bazen uzaktan izleyebilir.',
             friends: 'Üzgün bir arkadaşını bazen teselli etmeye çalışabilir, bazen ne diyeceğini bilemeyebilir.',
-            home: 'Evdekilere bazen hâl hatır sorup teşekkür edebilir, bazen bunu belli etmeyebilir.',
+            home: 'Evdekilerden birine minnettar olduğunda bunu bazen sözle belli edebilir, bazen içinde tutabilir.',
           },
           adult: {
-            work: 'Yeni biriyle tanışınca onu bazen hemen rahatlatabilir, bazen ölçülü kalabilirsin.',
+            work: 'Bir ortama yeni biri katılınca onu bazen hemen rahatlatabilir, bazen ölçülü kalabilirsin.',
+            home: 'Bir yakınına minnettar olduğunda bunu bazen sözle belli edebilir, bazen içinde tutabilirsin.',
           },
         },
         high: {
@@ -196,7 +202,8 @@ export const empatiDaily: SurveyDaily = {
             home: 'Evdekilerin hâlini hatırını sorabilir, birine minnettar olduğunda bunu belli edebilir.',
           },
           adult: {
-            work: 'Yeni biriyle tanışınca onun rahat etmesini sağlayıp iyi karşılandığını hissettirebilirsin.',
+            work: 'Bir ortama yeni biri katılınca onun rahat etmesini sağlayıp iyi karşılandığını hissettirebilirsin.',
+            home: 'Yakınlarının hâlini hatırını sorabilir, birine minnettar olduğunda bunu belli edebilirsin.',
           },
         },
       },

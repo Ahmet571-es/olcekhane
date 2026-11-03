@@ -13,7 +13,8 @@ import type { SurveyDaily } from './types';
  * açmadıysa kişi o cümlelere katılmamıştır (ya da R6'ya yalnızca "Katılıyorum" demiştir) ve "işe yaramaz", "başarısız"
  * diyen bir örnek onunla çelişirdi. "Çoğu insan kadar" (R4) ve "En az diğer insanlar kadar" (R7) maddelerinin
  * karşılaştırması örneklere taşınmaz (başkalarıyla kıyas yok). 6. sınıftaki bir öğrencinin anlayacağı somut durumlar
- * (ders, sınav, arkadaşlar, akşam) kullanılır. Her satırın dayandığı maddeler `from`'dadır.
+ * (ders, sınav, arkadaşlar, gün sonu) kullanılır; orta düzeyin örnekleri dersten derse değil zamandan zamana değişimi
+ * anlatır (ölçek genel bir tutumu sorar; derse göre değişen güven Öz-yeterlik'in konusudur). Her satırın dayandığı maddeler `from`'dadır.
  */
 export const ozSaygiDaily: SurveyDaily = {
   kind: 'survey',
@@ -36,23 +37,23 @@ export const ozSaygiDaily: SurveyDaily = {
           student: {
             school: 'Derste emek verdiğin bir işle gurur duymak sana zor gelebilir.',
             friends: 'Arkadaşlarınla birlikteyken kendi iyi özelliklerini görmek sana zor gelebilir; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
-            home: 'Akşam günü düşündüğünde kendinden memnun hissetmek sana kolay gelmeyebilir; bu duygu zamanla değişebilir.',
+            home: 'Günün sonunda kendinden memnun hissetmek sana kolay gelmeyebilir; bu duygu zamanla değişebilir.',
           },
           parent: {
             school: 'Derste emek verdiği bir işle gurur duymak çocuğunuza zor gelebilir.',
             friends: 'Arkadaşlarıyla birlikteyken kendi iyi özelliklerini görmek ona zor gelebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
-            home: 'Akşam günü düşündüğünde kendinden memnun hissetmek ona kolay gelmeyebilir; bu duygu zamanla değişebilir.',
+            home: 'Günün sonunda kendinden memnun hissetmek ona kolay gelmeyebilir; bu duygu zamanla değişebilir.',
           },
         },
         average: {
           from: { school: ['R4', 'R2'], friends: ['R3'], home: ['R1', 'R10'] },
           student: {
-            school: 'Bazı derslerde iyi iş çıkarabileceğine inanabilir, bazılarında kendinden şüphe duyabilirsin.',
+            school: 'Bazı günler derste iyi iş çıkarabileceğine inanabilir, bazı günler kendinden şüphe duyabilirsin.',
             friends: 'Arkadaşlarınla birlikteyken bazen kendi iyi özelliklerini görebilir, bazen onlardan emin olamayabilirsin.',
             home: 'Bazı günler kendinden memnun olabilir, bazı günler kendini daha çok eleştirebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazı derslerde iyi iş çıkarabileceğine inanabilir, bazılarında kendinden şüphe duyabilir.',
+            school: 'Çocuğunuz bazı günler derste iyi iş çıkarabileceğine inanabilir, bazı günler kendinden şüphe duyabilir.',
             friends: 'Arkadaşlarıyla birlikteyken bazen kendi iyi özelliklerini görebilir, bazen onlardan emin olamayabilir.',
             home: 'Bazı günler kendinden memnun olabilir, bazı günler kendini daha çok eleştirebilir.',
           },

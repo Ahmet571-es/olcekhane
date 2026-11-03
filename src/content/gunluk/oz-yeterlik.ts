@@ -18,7 +18,8 @@ import type { SurveyDaily } from './types';
  * bu bölüm kutuyu anmaz. "Sık sık moralim bozuk olur" (cop02) hiçbir örneğin dayanağı değildir: bu cümle kutuyu açtıysa kart
  * örnek göstermez; açmadıysa kişi ona katılmamıştır ve "moralin sık sık bozulabilir" demek cevabıyla çelişirdi. "Birçok
  * şeyden korkarım" (cop04) da korkutucu okunmasın diye kullanılmadı. Yüksek ucun ev örneği şablonun cümlesini taşır: çok
- * zorlanınca yardım istemek bu güvenle çelişmez. Her satırın dayandığı maddeler `from`'dadır.
+ * zorlanınca yardım istemek bu güvenle çelişmez. Dayanaklar evdekileri değil "yakın olduğun biri"ni anar (yetişkin ev
+ * satırını öğrenciden alır; yalnız yaşayan yetişkin). Her satırın dayandığı maddeler `from`'dadır.
  */
 export const ozYeterlikDaily: SurveyDaily = {
   kind: 'survey',
@@ -108,7 +109,7 @@ export const ozYeterlikDaily: SurveyDaily = {
             home: 'Eve misafir gelince ilgi odağı olmak ona pek hoş gelmeyebilir.',
           },
           adult: {
-            work: 'Bir toplantıda birden söz verilince hazırlıksız konuşmak sana kolay gelmeyebilir.',
+            work: 'Bir toplantıda ya da bir toplulukta birden söz verilince hazırlıksız konuşmak sana kolay gelmeyebilir.',
           },
         },
         average: {
@@ -124,7 +125,7 @@ export const ozYeterlikDaily: SurveyDaily = {
             home: 'Eve misafir gelince bazen ilgi odağı olmaktan hoşlanabilir, bazen geri planda kalabilir.',
           },
           adult: {
-            work: 'Bazı toplantılarda kendini kolayca ifade edebilir, bazılarında sessiz kalmayı seçebilirsin.',
+            work: 'Bazı toplantılarda ya da topluluklarda kendini kolayca ifade edebilir, bazılarında sessiz kalmayı seçebilirsin.',
           },
         },
         high: {
@@ -140,7 +141,7 @@ export const ozYeterlikDaily: SurveyDaily = {
             home: 'Eve misafir gelince sohbete rahatça katılıp ilgi odağı olmaktan çekinmeyebilir.',
           },
           adult: {
-            work: 'Bir toplantıda birden söz verilince hazırlıksız konuşmak seni çoğu zaman rahatsız etmeyebilir.',
+            work: 'Bir toplantıda ya da bir toplulukta birden söz verilince hazırlıksız konuşmak seni çoğu zaman rahatsız etmeyebilir.',
           },
         },
       },
@@ -160,12 +161,12 @@ export const ozYeterlikDaily: SurveyDaily = {
           student: {
             school: 'Sınav haftasında işler üst üste gelince kendini bunalmış hissedebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
             friends: 'Arkadaşlarınla bir plan son anda bozulunca bu aksiliği atlatmak sana zor gelebilir.',
-            home: 'Evdeki bir sorun karşısında birinin içini rahatlatmasına ihtiyaç duyabilirsin; bunu evdekilerden istemek iyi gelebilir.',
+            home: 'Evdeki bir sorun karşısında birinin içini rahatlatmasına ihtiyaç duyabilirsin; bunu yakın olduğun birinden istemek iyi gelebilir.',
           },
           parent: {
             school: 'Sınav haftasında işler üst üste gelince çocuğunuz kendini bunalmış hissedebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
             friends: 'Arkadaşlarıyla bir plan son anda bozulunca bu aksiliği atlatmak ona zor gelebilir.',
-            home: 'Evdeki bir sorun karşısında birinin içini rahatlatmasına ihtiyaç duyabilir; bunu evdekilerden istemek iyi gelebilir.',
+            home: 'Evdeki bir sorun karşısında birinin içini rahatlatmasına ihtiyaç duyabilir; bunu yakın olduğu birinden istemek ona iyi gelebilir.',
           },
           adult: {
             work: 'Gün içinde işler üst üste gelince kendini bunalmış hissedebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',

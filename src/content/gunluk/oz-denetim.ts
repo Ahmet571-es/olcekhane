@@ -10,8 +10,10 @@ import type { SurveyDaily } from './types';
  * Şablonun çelişmezlik ilkesi örneklerde de geçerlidir: düşünerek davranmanın örnekleri işe başlamaktan ve isteklere
  * direnmekten, öz-disiplinin örnekleri acele kararlardan ve isteklerden, kendini tutabilmenin örnekleri işe başlamaktan ve
  * kararlardan söz etmez. Yemeyle ilgili maddeler testte sorulmadığı için (gençlerde hassas olabilir) kendini tutabilmenin
- * örnekleri de yemekten söz etmez; para, telefon, dizi ve oyun kullanılır (test 9. sınıftan başlar). Her satırın dayandığı
- * maddeler `from`'dadır.
+ * örnekleri de yemekten söz etmez; para, telefon, dizi ve oyun kullanılır (test 9. sınıftan başlar). Düşünerek davranmanın
+ * örnekleri "hemen" demez ("düşünmeden" der): öz-disiplinin yüksek ucunda "hemen başlamak" vardır. Yetişkinin ev satırı
+ * evde hatırlatacak birinin olduğunu varsaymaz (`adult.home`; yalnız yaşayan yetişkin). Her satırın dayandığı maddeler
+ * `from`'dadır.
  */
 export const ozDenetimDaily: SurveyDaily = {
   kind: 'survey',
@@ -29,33 +31,33 @@ export const ozDenetimDaily: SurveyDaily = {
         low: {
           from: { school: ['dus07', 'dus04'], friends: ['dus02', 'dus09'], home: ['dus10'], work: ['dus07', 'dus04'] },
           student: {
-            school: 'Bir projeye ne yapacağını düşünmeden hemen dalabilirsin.',
+            school: 'Bir projeye ne yapacağını düşünmeden dalabilirsin.',
             friends: 'Arkadaşlarınla konuşurken aklına geleni kelimelerini pek seçmeden hemen söyleyebilirsin.',
             home: 'Hafta sonu ne yapacağına çoğu zaman son dakikada karar verebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bir projeye ne yapacağını düşünmeden hemen dalabilir.',
+            school: 'Çocuğunuz bir projeye ne yapacağını düşünmeden dalabilir.',
             friends: 'Arkadaşlarıyla konuşurken aklına geleni kelimelerini pek seçmeden hemen söyleyebilir.',
             home: 'Hafta sonu ne yapacağına çoğu zaman son dakikada karar verebilir.',
           },
           adult: {
-            work: 'Yeni bir işe nasıl yapacağını düşünmeden hemen dalabilirsin.',
+            work: 'Yeni bir işe nasıl yapacağını düşünmeden dalabilirsin.',
           },
         },
         average: {
           from: { school: ['dus07'], friends: ['dus02'], home: ['dus10', 'dus05'], work: ['dus07'] },
           student: {
-            school: 'Bazı ödevlerde önce ne yapacağını düşünebilir, bazılarında acele edip hemen dalabilirsin.',
+            school: 'Bazı ödevlerde önce ne yapacağını düşünebilir, bazılarına düşünmeden dalabilirsin.',
             friends: 'Arkadaşlarınla konuşurken bazen kelimelerini özenle seçebilir, bazen aklına geleni hemen söyleyebilirsin.',
             home: 'Bazı planları önceden düşünüp yapabilir, bazılarına son dakikada karar verebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazı ödevlerde önce ne yapacağını düşünebilir, bazılarında acele edip hemen dalabilir.',
+            school: 'Çocuğunuz bazı ödevlerde önce ne yapacağını düşünebilir, bazılarına düşünmeden dalabilir.',
             friends: 'Arkadaşlarıyla konuşurken bazen kelimelerini özenle seçebilir, bazen aklına geleni hemen söyleyebilir.',
             home: 'Bazı planları önceden düşünüp yapabilir, bazılarına son dakikada karar verebilir.',
           },
           adult: {
-            work: 'Bazı işlerde önce ne yapacağını düşünebilir, bazılarında acele edip hemen dalabilirsin.',
+            work: 'Bazı işlerde önce ne yapacağını düşünebilir, bazılarına düşünmeden dalabilirsin.',
           },
         },
         high: {
@@ -100,6 +102,7 @@ export const ozDenetimDaily: SurveyDaily = {
           },
           adult: {
             work: 'Yapman gereken bir işe oturup başlamak sana zor gelebilir.',
+            home: 'Evdeki bir işe başlamak için bir şeyin ya da birinin seni dürtmesine ihtiyaç duyabilirsin.',
           },
         },
         average: {
@@ -116,6 +119,7 @@ export const ozDenetimDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bazı işlere hemen başlayabilir, bazılarına başlamak sana zor gelebilir.',
+            home: 'Evdeki işleri bazen hemen halledebilir, bazen bir hatırlatma bekleyebilirsin.',
           },
         },
         high: {
