@@ -9,8 +9,10 @@ import type { SkillsDaily } from './types';
  * ölçer). Tanıtımdaki "bir yapboz parçasının nereye oturacağını görmek" örneği, parçaları bir bütüne yerleştirmeyi ölçen
  * Parçalardan Şekil'e çok yakın olduğu için kullanılmaz; harita ve yön bulma (Bakış Açısı Alma) ve kâğıt katlama (Kâğıt
  * Katlama) örnekleri de yoktur. Yol haritasındaki "eşyanın yerleşimini planlamak" örneği üç boyutlu olduğu için
- * kullanılmaz. Test "matematik ya da geometri başarısı hakkında" bilgi vermez: okuldaki örnek yalnızca becerinin kullanıldığı
- * bir yeri söyler. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağını söylemez.
+ * kullanılmaz. Ters duran bir resmi tanımak çoğu zaman zihinde döndürme istemez; evdeki örnek bu yüzden ters duran bir
+ * yazıyı okumaktır (harflerin yönü, ayna görüntüsüyle karıştırılmadan bulunur). Test "matematik ya da geometri başarısı
+ * hakkında" bilgi vermez: okuldaki örnek yalnızca becerinin kullanıldığı bir yeri söyler. Örnekler tanımlayıcıdır; sonucun bu
+ * işlerde ne olacağını söylemez.
  */
 export const zihindeDondurmeDaily: SkillsDaily = {
   kind: 'skills',
@@ -24,17 +26,17 @@ export const zihindeDondurmeDaily: SkillsDaily = {
       branches: {
         school: 'Çevrilmiş şekli tanımak',
         friends: 'Şekil bulmacaları',
-        home: 'Ters duran resmi tanımak',
+        home: 'Ters yazıyı okumak',
       },
       student: {
         school: 'Geometride döndürülmüş iki şeklin aynı olup olmadığını anlamak bu beceriyi kullanır.',
         friends: 'Bulmacalarda döndürülmüş şekiller arasından aynısını bulmak da bu beceriyi kullanır.',
-        home: 'Ters duran bir resmin ne olduğunu kâğıdı çevirmeden anlamak bu beceriyi kullanır.',
+        home: 'Masanın öbür yanında ters duran bir yazıyı kâğıdı çevirmeden okumak bu beceriyi kullanır.',
       },
       parent: {
         school: 'Çocuğunuzun geometride döndürülmüş iki şeklin aynı olup olmadığını anlaması bu beceriyi kullanır.',
         friends: 'Bulmacalarda döndürülmüş şekiller arasından aynısını bulmak da bu beceriyi kullanır.',
-        home: 'Ters duran bir resmin ne olduğunu kâğıdı çevirmeden anlamak bu beceriyi kullanır.',
+        home: 'Masanın öbür yanında ters duran bir yazıyı kâğıdı çevirmeden okumak bu beceriyi kullanır.',
       },
     },
   ],

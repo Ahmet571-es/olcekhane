@@ -21,17 +21,17 @@ export const surekliDikkatDaily: SkillsDaily = {
       short: 'Sürekli dikkat',
       text: 'Bu beceri, uzun süre aynı işe odaklanıp hem hızlı hem dikkatli çalışmayı gerektiren işlerde kullanılır. Benzer şeyler arasından aranan şeyi ayırt etmek de bunun bir parçasıdır.',
       branches: {
-        school: 'Uzun sınavda özeni korumak',
+        school: 'Uzun çalışmada özeni korumak',
         friends: 'Kelime avı bulmacası',
         home: 'Pirinç ayıklamak',
       },
       student: {
-        school: 'Uzun bir sınavda son sorulara kadar aynı özenle çalışmak bu beceriyi kullanır.',
+        school: 'Uzun bir ödevde ya da sınavda son sorulara kadar aynı özenle çalışmak bu beceriyi kullanır.',
         friends: 'Kelime avı bulmacasında uzun süre harfler arasında kelime aramak bu beceriyi kullanır.',
         home: 'Pirinç ayıklarken taşları sonuna kadar gözden kaçırmamak bu tür bir iştir.',
       },
       parent: {
-        school: 'Çocuğunuzun uzun bir sınavda son sorulara kadar aynı özenle çalışması bu beceriyi kullanır.',
+        school: 'Çocuğunuzun uzun bir ödevde ya da sınavda son sorulara kadar aynı özenle çalışması bu beceriyi kullanır.',
         friends: 'Kelime avı bulmacasında uzun süre harfler arasında kelime aramak bu beceriyi kullanır.',
         home: 'Pirinç ayıklarken taşları sonuna kadar gözden kaçırmamak bu tür bir iştir.',
       },

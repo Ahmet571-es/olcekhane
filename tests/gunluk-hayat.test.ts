@@ -366,6 +366,7 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
     { pattern: /kural(?:ı|lar)? değiş|iki kural/iu, sibling: 'kural-degistirme' },
   'dur-git-gorevi': [
     { pattern: /dürtü|sabırsız|aceleci/iu, limitation: 'dürtüsellik' },
+    { pattern: /sözün(?:ü)? kes|araya gir|söze gir|lafa gir|sıra(?:nı|sını|n|sı)? bekle/iu, limitation: 'dürtüsellik' },
     { pattern: /değildir|tersini|ters oyun|ters komut/iu, sibling: 'renk-kelime-gorevi' },
   'sirayla-birlestirme-gorevi': [{ pattern: /kural/iu, sibling: 'kural-degistirme' }],
   'geriye-donuk-hatirlama': [
@@ -391,6 +392,11 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
       pattern:
         /(?<!\p{L})(?:tavşan|pencere|limon|köprü|gitar|para|gömlek|çekiç|balon|kibrit|araba|bayrak|ayna|anahtar|kulak|sabun|havuz|zarf|tabure|terazi|dürbün|mendil|yastık|pusula|heykel|kupa|sandık|şemsiye|maske|sepet|ekmek|saat|bardak)/iu,
       rule: 'her seferinde aynı kelimeler gelir: örnekler listedeki kelimeleri kullanmaz',
+    },
+    {
+      pattern: /(?<!\p{L})(?:zincir|tuğla|portakal|kucak|ceket|otobüs|tencere|keman|çatal|yaprak|kaktüs|sincap|(?:yara|boya|salon)(?!\p{L}))/iu,
+      rule: 'tanıma bölümündeki kelimeler de her seferinde aynıdır: örnekler onları kullanmaz',
+  ],
   'zihinde-dondurme': [
     { pattern: /üç boyut|küp|kutu|eşya|nesne|ayakkabı/iu, limitation: 'üç boyutlu nesneleri', sibling: 'uc-boyutlu-zihinde-dondurme' },
     { pattern: /harita|yön bul|yol tarif/iu, sibling: 'bakis-acisi-alma' },
@@ -401,6 +407,8 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
       pattern: /araba|araç|sürücü|direksiyon|trafik|fren|bisiklet|karşıdan karşıya/iu,
       rule: 'araç kullanma ve trafik örneği yok: görev sürüş güvenliği hakkında bir şey söylemez',
     { pattern: /heykel|kıpırda|sıra(?:nı|sını)? bekle/iu, sibling: 'dur-git-gorevi' },
+    { pattern: /aniden|çarpış|kaza/iu, rule: 'güvenlik ya da kaza çerçevesi yok: görev bu konuda bir şey söylemez' },
+  ],
   'kural-degistirme': [
     { pattern: /plan|uyum sağla|yeni durum|çözüm yolu/iu, limitation: 'plan değiştirebilmek' },
     { pattern: /simon/iu, sibling: 'dur-git-gorevi' },

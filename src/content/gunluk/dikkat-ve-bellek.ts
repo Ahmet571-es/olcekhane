@@ -4,14 +4,19 @@ import type { SkillsDaily } from './types';
  * Dikkat ve Çalışma Belleği Görevleri: günlük hayatta nerede kullanılır (4. sınıftan mezuna; yetişkinlere açık değil).
  * Rapor beş görevi beş ayrı kartla anlatır; burada da her görevin kendi kartı vardır ve her kart yalnızca o görevin ölçtüğü
  * beceriyi anlatır (görevlerin `measures` metinleri ve raporun kartları, src/lib/reports/build.ts):
- *  - Sayı dizisi: kısa süreli bellek (gösterilen ya da duyulan kısa bir bilgiyi aynı sırayla akılda tutmak; raporun örneği
- *    "öğretmenin söylediği sayfa numarasını açana kadar aklında tutmak").
+ *  - Sayı dizisi: kısa süreli bellek (gösterilen ya da duyulan kısa bir bilgiyi aynı sırayla akılda tutmak). Görevde rakamlar
+ *    ekranda gösterilir: arkadaş ve ev örnekleri görülen rakamlardır; okuldaki örnek raporun kendi örneğidir ("öğretmenin
+ *    söylediği sayfa numarasını açana kadar aklında tutmak"; tahtaya yazılan numara akılda tutulmayı istemezdi). Tek bir
+ *    sözcük (parola) sıra ve uzunluk istemediği için örnek değildir.
  *  - Tersten sayı dizisi: çalışma belleği (bilgiyi akılda tutarken sırasını tersine çevirmek): örneklerin üçü de bir sırayı
  *    tersine çevirmeyi ister.
- *  - Kutu dizisi: yerleri ve sıralarını akılda tutmak. Raporun "harita" ve "tahtadaki çizimi deftere geçirmek" örnekleri
- *    kullanılmaz: haritada yön bulmayı Bakış Açısı Alma, hareketsiz bir görüntüyü akılda tutmayı Desen Hatırlama ölçer.
- *  - Ok görevi: seçici dikkat (yanlardaki dikkat dağıtıcılara aldırmadan önemli olana odaklanmak).
- *  - Sembol eşleştirme: işlem hızı (bir tabloya bakarak işaretleri karşılıklarına çevirmek). Simge Bulma'nın örnekleri
+ *  - Kutu dizisi: yerleri ve sıralarını akılda tutmak (sırayla gösterilen yerlere aynı sırayla dokunmak, ışıklar, kumandada
+ *    gösterilen düğmeler). Raporun "harita" ve "tahtadaki çizimi deftere geçirmek" örnekleri kullanılmaz: haritada yön
+ *    bulmayı Bakış Açısı Alma, hareketsiz bir görüntüyü akılda tutmayı Desen Hatırlama ölçer. Bir eşyayı ararken bakılan
+ *    yerler sıra istemediği ve eşya kaybetmeyi çağrıştırdığı için örnek değildir.
+ *  - Ok görevi: seçici dikkat (yanlardaki dikkat dağıtıcılara aldırmadan ortadaki hedefe bakmak: oyun tahtasında kendi taşı).
+ *    Hareket eden bir topu izlemek görsel takiptir ve spora kayar: örnek değildir.
+ *  - Sembol eşleştirme: işlem hızı (bir tabloya bakarak işaretleri karşılıklarına hızla çevirmek). Simge Bulma'nın örnekleri
  *    (karşılaştırmak, farkı bulmak, listede ad aramak) burada kullanılmaz.
  * Kısa süreli bellek kartında alışveriş listesi (Kelime Listesi Hatırlama), hiçbir kartta zihinden hesap (Zihinden Hesaplama
  * Hızı) yoktur. 4. sınıfa açık olduğu için telefon ve mesaj varsayılmaz. Örnekler tanımlayıcıdır; sonucun bu işlerde ne
@@ -28,18 +33,18 @@ export const dikkatBellekDaily: SkillsDaily = {
       text: 'Bu beceri, görülen ya da duyulan kısa bir bilgiyi kullanılana kadar sırasıyla akılda tutmayı gerektiren işlerde kullanılır.',
       branches: {
         school: 'Sayfa numarasını tutmak',
-        friends: 'Parolayı tekrarlamak',
+        friends: 'Rakamları tekrarlamak',
         home: 'Numarayı akılda tutmak',
       },
       student: {
         school: 'Öğretmenin söylediği sayfa numarasını kitabı açana kadar aklında tutmak bu beceriyi kullanır.',
-        friends: 'Bir oyunda arkadaşının söylediği kısa bir parolayı aynen tekrarlamak bu beceriyi kullanır.',
-        home: 'Evdekilerden birinin söylediği bir numarayı yazana kadar aklında tutmak bu beceriyi kullanır.',
+        friends: 'Bir oyunda bir kez gösterilen birkaç rakamı aynı sırayla tekrarlamak bu beceriyi kullanır.',
+        home: 'Bir kâğıtta gördüğün kısa bir numarayı başka bir yere yazana kadar aklında tutmak bu beceriyi kullanır.',
       },
       parent: {
-        school: 'Çocuğunuzun, söylenen sayfa numarasını kitabı açana kadar aklında tutması bu beceriyi kullanır.',
-        friends: 'Bir oyunda söylenen kısa bir parolayı aynen tekrarlamak bu beceriyi kullanır.',
-        home: 'Evdekilerden birinin söylediği bir numarayı yazana kadar akılda tutmak bu beceriyi kullanır.',
+        school: 'Çocuğunuzun söylenen sayfa numarasını kitabı açana kadar aklında tutması bu beceriyi kullanır.',
+        friends: 'Bir oyunda bir kez gösterilen birkaç rakamı aynı sırayla tekrarlamak bu beceriyi kullanır.',
+        home: 'Bir kâğıtta görülen kısa bir numarayı başka bir yere yazana kadar akılda tutmak bu beceriyi kullanır.',
       },
     },
     {
@@ -71,17 +76,17 @@ export const dikkatBellekDaily: SkillsDaily = {
       branches: {
         school: 'Gösterilen yerleri izlemek',
         friends: 'Sırayı tekrarlama oyunu',
-        home: 'Bakılan yerleri tutmak',
+        home: 'Düğme sırasını tekrarlamak',
       },
       student: {
         school: 'Öğretmenin tahtada sırayla gösterdiği yerleri aynı sırayla hatırlamak bu beceriyi kullanır.',
         friends: 'Sırayla yanan ışıkları aynı sırayla tekrarlama oyunları da bu beceriyi kullanır.',
-        home: 'Bir eşyayı ararken baktığın yerleri sırasıyla aklında tutmak bu tür bir iştir.',
+        home: 'Birinin kumandada bir kez gösterdiği düğmelere aynı sırayla basmak bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun, öğretmenin tahtada sırayla gösterdiği yerleri aynı sırayla hatırlaması bu beceriyi kullanır.',
         friends: 'Sırayla yanan ışıkları aynı sırayla tekrarlama oyunları da bu beceriyi kullanır.',
-        home: 'Bir eşya aranırken bakılan yerleri sırasıyla akılda tutmak bu tür bir iştir.',
+        home: 'Birinin kumandada bir kez gösterdiği düğmelere aynı sırayla basmak bu tür bir iştir.',
       },
     },
     {
@@ -91,17 +96,17 @@ export const dikkatBellekDaily: SkillsDaily = {
       text: 'Bu beceri, çevredeki dikkat dağıtan şeylere aldırmadan önemli olana odaklanmayı gerektiren işlerde kullanılır.',
       branches: {
         school: 'İstenen soruya bakmak',
-        friends: 'Topu gözden kaçırmamak',
+        friends: 'Kendi taşına bakmak',
         home: 'Kendi işine odaklanmak',
       },
       student: {
         school: 'Kalabalık bir sayfada yanındaki sorulara takılmadan istenen soruya bakmak bu beceriyi kullanır.',
-        friends: 'Top oyununda çevredeki hareketlere aldırmadan topu izlemek de bu beceriyi kullanır.',
+        friends: 'Kalabalık bir oyun tahtasında yanındaki taşlara takılmadan kendi taşına bakmak bu beceriyi kullanır.',
         home: 'Yanında biri başka bir işle uğraşırken kendi işine odaklanmak bu beceriyi kullanır.',
       },
       parent: {
         school: 'Çocuğunuzun kalabalık bir sayfada yanındaki sorulara takılmadan istenen soruya bakması bu beceriyi kullanır.',
-        friends: 'Top oyununda çevredeki hareketlere aldırmadan topu izlemek de bu beceriyi kullanır.',
+        friends: 'Kalabalık bir oyun tahtasında yanındaki taşlara takılmadan kendi taşına bakmak bu beceriyi kullanır.',
         home: 'Yanında biri başka bir işle uğraşırken kendi işine odaklanmak bu beceriyi kullanır.',
       },
     },
@@ -118,12 +123,12 @@ export const dikkatBellekDaily: SkillsDaily = {
       student: {
         school: 'Derste bir tabloya bakarak işaretleri sayılara çevirmek bu tür bir iştir.',
         friends: 'Şifreli not oyunlarında işaretlerin karşılığı olan harfleri çabucak bulmak bu beceriyi kullanır.',
-        home: 'Sayılara göre boyamada her sayının rengini bulup sürmek bu tür bir iştir.',
+        home: 'Sayılara göre boyamada her sayının rengini tabloya bakarak çabucak bulmak bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun derste bir tabloya bakarak işaretleri sayılara çevirmesi bu tür bir iştir.',
         friends: 'Şifreli not oyunlarında işaretlerin karşılığı olan harfleri çabucak bulmak bu beceriyi kullanır.',
-        home: 'Sayılara göre boyamada her sayının rengini bulup sürmek bu tür bir iştir.',
+        home: 'Sayılara göre boyamada her sayının rengini tabloya bakarak çabucak bulmak bu tür bir iştir.',
       },
     },
   ],

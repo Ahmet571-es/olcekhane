@@ -5,8 +5,8 @@ import type { SkillsDaily } from './types';
  * Kaynak: testin tanıtımı ("otomatik hâle gelmiş bir cevabı (kelimeyi okumayı) durdurup göreve uygun cevabı (yazının
  * rengini) verebilmek"; "bir kuralı uygularken alışkanlıklara kapılmamak") ve yol haritası (src/content/roadmaps/gorevler.ts,
  * renkKelime: "değildir", "yanlıştır" gibi soru köklerinde alışkanlıkla verilen cevap). Örneklerin hepsinde alışkanlıkla gelen
- * bir cevap vardır ve yerine başka bir cevap verilir; bu, bu görevi Dur-Git Görevi'nden ayırır (orada alışkanlık hâline
- * gelmiş hareket hiç yapılmaz: sıra beklemek, heykel oyunu). İki kural arasında gidip gelmeyi Kural Değiştirme ölçer: burada
+ * bir cevap vardır ve yerine başka bir cevap verilir (eşyanın yeri değişince eski yerine değil yeni yerine uzanmak); bu, bu
+ * görevi Dur-Git Görevi'nden ayırır (orada alışkanlık hâline gelmiş hareket hiç yapılmaz: heykel oyunu). İki kural arasında gidip gelmeyi Kural Değiştirme ölçer: burada
  * kural tektir. Renk-kelime etkisi raporda yalnızca betimleyici olarak verilir; örnekler tanımlayıcıdır, sonucun bu işlerde ne
  * olacağını söylemez.
  */
@@ -22,17 +22,17 @@ export const renkKelimeDaily: SkillsDaily = {
       branches: {
         school: 'Olumsuz soruyu cevaplamak',
         friends: 'Ters komut oyunları',
-        home: 'Yeri değişen eşyayı bulmak',
+        home: 'Eski yere uzanmamak',
       },
       student: {
         school: 'Soruda “değildir” yazınca alışkanlıkla doğru olan şıkkı seçmemek bu tür bir iştir.',
         friends: '“Sağ” denince sola, “sol” denince sağa dönülen ters oyunlar da bu beceriyi kullanır.',
-        home: 'Yeri değişen bir eşyayı alışkanlıkla eski yerinde aramamak bu tür bir iştir.',
+        home: 'Eşyanın yeri değişince eski yerine değil yeni yerine uzanmak bu beceriyi kullanır.',
       },
       parent: {
         school: 'Çocuğunuzun soruda “değildir” yazınca alışkanlıkla doğru olan şıkkı seçmemesi bu tür bir iştir.',
         friends: '“Sağ” denince sola, “sol” denince sağa dönülen ters oyunlar da bu beceriyi kullanır.',
-        home: 'Yeri değişen bir eşyayı alışkanlıkla eski yerinde aramamak bu tür bir iştir.',
+        home: 'Eşyanın yeri değişince eski yerine değil yeni yerine uzanmak bu beceriyi kullanır.',
       },
     },
   ],

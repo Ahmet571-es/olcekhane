@@ -6,7 +6,8 @@ import type { SkillsDaily } from './types';
  * (sayılar ve harfler) aynı anda akılda tutmayı ve aralarında geçiş yapabilmeyi" gerektirir) ve yol haritası
  * (src/content/roadmaps/gorevler.ts, siraylaBirlestirme: bir sayfayı gözle tarayıp sırayı takip etmek). Örnekler dağınık
  * duran şeyler arasında sıradakini gözle bulmayı (noktaları birleştirme bulmacası) ve iki sırayı birlikte izleyip aralarında
- * gidip gelmeyi (soru kitapçığı ile cevap kâğıdı; takvimde gün adları ile tarihler) anlatır. Bir işaretle bir kuraldan
+ * gidip gelmeyi (soru kitapçığı ile cevap kâğıdı; tarihleri sayarken her birinin gün adını da söylemek: “3 Kasım salı,
+ * 4 Kasım çarşamba”) anlatır. Bir işaretle bir kuraldan
  * ötekine geçmeyi Kural Değiştirme ölçer: bu dosyada "kural" örneği yoktur. Örnekler tanımlayıcıdır; sonucun bu işlerde ne
  * olacağını söylemez.
  */
@@ -22,17 +23,17 @@ export const siraylaDaily: SkillsDaily = {
       branches: {
         school: 'Kitapçık ile cevap kâğıdı',
         friends: 'Noktaları birleştirmek',
-        home: 'Takvimde gün bulmak',
+        home: 'Tarihleri ve günleri saymak',
       },
       student: {
         school: 'Soru kitapçığı ile cevap kâğıdı arasında gidip gelirken sırayı kaybetmemek bu beceriyi kullanır.',
         friends: 'Noktaları sırayla birleştirip gizli resmi ortaya çıkaran bulmacalar da bu beceriyi kullanır.',
-        home: 'Takvimde gün adlarını ve tarihleri birlikte izlemek bu tür bir iştir.',
+        home: 'Tarihleri sırayla sayarken her birinin gün adını da söylemek bu beceriyi kullanır.',
       },
       parent: {
         school: 'Çocuğunuzun soru kitapçığı ile cevap kâğıdı arasında gidip gelirken sırayı kaybetmemesi bu beceriyi kullanır.',
         friends: 'Noktaları sırayla birleştirip gizli resmi ortaya çıkaran bulmacalar da bu beceriyi kullanır.',
-        home: 'Takvimde gün adlarını ve tarihleri birlikte izlemek bu tür bir iştir.',
+        home: 'Tarihleri sırayla sayarken her birinin gün adını da söylemek bu beceriyi kullanır.',
       },
     },
   ],

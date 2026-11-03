@@ -10,7 +10,7 @@ import type { SkillsDaily } from './types';
  * olmayan bilgileri hatırlama hakkında" bilgi vermez: raporun ve yol haritasının "yeni tanışılan kişilerin adları" örneği
  * (adlar çoğu zaman duyulur ve yüzle birlikte hatırlanır) ve ertesi gün hatırlama örneği kullanılmaz. Kelimelerin anlamını
  * bilmeyi Kelime Bilgisi ölçer: "yeni kelime öğrenmek" örneği yoktur. Her seferinde aynı kelimeler gelir: örnekler listedeki
- * kelimeleri kullanmaz. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağını söylemez.
+ * kelimeleri ve tanıma bölümündeki kelimeleri kullanmaz. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağını söylemez.
  */
 export const kelimeListesiDaily: SkillsDaily = {
   kind: 'skills',
@@ -25,16 +25,16 @@ export const kelimeListesiDaily: SkillsDaily = {
         school: 'Tahtadaki kelimeleri tutmak',
         friends: 'Kelime hatırlama oyunu',
         home: 'Alışveriş listesi',
-        work: 'Yapılacakları hatırlamak',
+        work: 'Yapılacaklar listesi',
       },
       student: {
         school: 'Tahtaya yazılan birkaç kelimeyi okuyup tahta silindikten sonra hatırlamak bu beceriyi kullanır.',
-        friends: 'Kâğıttaki kelimelere bakıp, kâğıt kapanınca hatırladıklarını yazma oyunları bu beceriyi kullanır.',
+        friends: 'Kâğıttaki kelimelere bakıp, kâğıt kapatılınca hatırladıklarını yazma oyunları bu beceriyi kullanır.',
         home: 'Okuduğun bir alışveriş listesini birkaç dakika sonra bakmadan hatırlamak bu beceriyi kullanır.',
       },
       parent: {
         school: 'Çocuğunuzun tahtaya yazılan kelimeleri okuyup tahta silindikten sonra hatırlaması bu beceriyi kullanır.',
-        friends: 'Kâğıttaki kelimelere bakıp, kâğıt kapanınca hatırlananları yazma oyunları bu beceriyi kullanır.',
+        friends: 'Kâğıttaki kelimelere bakıp, kâğıt kapatılınca hatırlananları yazma oyunları bu beceriyi kullanır.',
         home: 'Okunan bir alışveriş listesini birkaç dakika sonra bakmadan hatırlamak bu beceriyi kullanır.',
       },
       adult: {
