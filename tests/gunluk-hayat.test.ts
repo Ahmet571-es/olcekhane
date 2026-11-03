@@ -88,6 +88,21 @@ export const DAILY_PENDING: string[] = [
   // Görev testleri
   'planlama-kule-gorevi',
   'zihinde-dondurme',
+  'sekil-benzetmeleri',
+  'sayi-dizileri',
+  'harf-dizileri',
+  'sozel-akil-yurutme',
+  'mantiksal-akil-yurutme',
+  'kagit-katlama',
+  'sayisal-akil-yurutme',
+  'zihinden-hesaplama-hizi',
+  'kup-acinimi',
+  'parcalardan-sekil',
+  'uc-boyutlu-zihinde-dondurme',
+  'bakis-acisi-alma',
+  'gizli-sekiller',
+  'dusunerek-karar-verme',
+  'kelime-bilgisi',
 ];
 /** Listenin örnek dosyalardan sonraki uzunluğu: liste bundan uzun olamaz (her yeni dosyada bu sayı da küçültülebilir). */
 const PENDING_AT_START = 55;

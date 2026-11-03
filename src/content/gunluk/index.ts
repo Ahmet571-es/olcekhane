@@ -31,6 +31,7 @@ import { ozDenetimDaily } from './oz-denetim';
 import { ozSaygiDaily } from './oz-saygi';
 import { ozYeterlikDaily } from './oz-yeterlik';
 import { parcalardanSekilDaily } from './parcalardan-sekil';
+import { kuleDaily } from './planlama-kule-gorevi';
 import { renkKelimeDaily } from './renk-kelime-gorevi';
 import { sayiDizileriDaily } from './sayi-dizileri';
 import { sayisalAkilYurutmeDaily } from './sayisal-akil-yurutme';
@@ -42,6 +43,7 @@ import { siraylaDaily } from './sirayla-birlestirme-gorevi';
 import { sozelAkilYurutmeDaily } from './sozel-akil-yurutme';
 import { surekliDikkatDaily } from './surekli-dikkat';
 import { tepkiHiziDaily } from './tepki-hizi';
+import { zihindeDondurmeDaily } from './zihinde-dondurme';
 import { zihniyetDaily } from './zihniyet';
 import type { DailyContent } from './types';
 import { ucBoyutluZihindeDondurmeDaily } from './uc-boyutlu-zihinde-dondurme';
@@ -88,6 +90,7 @@ export const DAILY: Record<string, DailyContent> = {
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuDaily,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiDaily,
   'zihniyet': zihniyetDaily,
+  'planlama-kule-gorevi': kuleDaily,
   'dikkat-ve-bellek': dikkatBellekDaily,
   'surekli-dikkat': surekliDikkatDaily,
   'renk-kelime-gorevi': renkKelimeDaily,
@@ -98,6 +101,7 @@ export const DAILY: Record<string, DailyContent> = {
   'harf-sayi-siralama': harfSayiDaily,
   'desen-hatirlama': desenDaily,
   'kelime-listesi-hatirlama': kelimeListesiDaily,
+  'zihinde-dondurme': zihindeDondurmeDaily,
   'tepki-hizi': tepkiHiziDaily,
   'kural-degistirme': kuralDegistirmeDaily,
 };
