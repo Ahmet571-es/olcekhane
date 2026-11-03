@@ -7,8 +7,10 @@ import type { SurveyDaily } from './types';
  * Boyutlar kaynaktaki yönleriyle anlatılır (src/content/reports/alti-boyutlu-kisilik.ts):
  *  - Dürüstlük-Alçakgönüllülük özellik tonundadır. Düşük uç suçlanmaz: hırsızlık, dolandırıcılık ve kandırma maddelerine
  *    dayanılmadı; düşük ucun kolaylığı iyi yönlerini anlatmaktan çekinmemek (mode10'un olumlu yanı) ve konum isteğinin
- *    çalışmaya yöneltmesidir (raporun metni), zorluğu bir oyunda kuralları esnetmenin çekici gelmesidir. Yüksek ucun yumuşak
- *    zorluğu iyi yaptığı bir işi anlatmanın rahat gelmemesidir (alçakgönüllülük maddelerinin bedeli).
+ *    çalışmaya yöneltmesidir, zorluğu bir oyunda kuralları esnetmenin çekici gelmesidir. Yüksek ucun yumuşak zorluğu iyi
+ *    yaptığı bir işi anlatmanın rahat gelmemesidir (alçakgönüllülük maddelerinin bedeli). Uçlar birbirinin aynası olarak
+ *    yazılır ("Öne çıkmayı önemser" ↔ "Sade kalmayı önemser"); yüksek uç "içten" demez, düşük uç da içten değilmiş gibi
+ *    okunmasın.
  *  - Duygusallık gelişim tonundadır (Endişelenme alt özelliği yüksekse destek kutusu açılır). Bu boyutta yüksek puan
  *    duyguları daha yoğun yaşamak demektir; öteki testlerdeki Duygusal Denge'nin tersi gibi okunmaz. Zor anı anlatan uç
  *    yüksek uçtur: oraya uydurma bir güçlü yan, sakin uca (düşük uç) uydurma bir zorluk yazılmaz. Yüksek ucun örnekleri
@@ -18,12 +20,15 @@ import type { SurveyDaily } from './types';
  *  - Dışadönüklük, Uyumluluk (bu modelde öfke ve sabır buradadır), Sorumluluk ve Deneyime Açıklık özellik tonundadır: düşük
  *    ve yüksek düzeyin örneklerinden en az biri bir kolaylık, en az biri yumuşak bir zorluk söyler.
  * Beceri bildiren maddelere ("Hazırlıksız konuşma yapmakta iyiyim", "Liderlik yeteneğim var", "Çok iyi fikirler bulurum",
- * "Çoğu insandan daha yetenekliyim") ve sağlık bildirenlere (kondisyon, dinçlik) dayanılmadı.
- * Yetişkinin iş satırı `work`; arkadaş ve ev satırlarında okul sözcüğü olmadığı için yetişkin de onları görür.
- * Maddeye doğrudan dayanmayan, raporun kendi metninden gelen uzantılar: dışadönüklükte yüksek düzeyde "uzun süre yalnız
- * kalınca canın sıkılabilir" (soci01'in bedeli), uyumlulukta yüksek düzeyde "bazen bunu söylemek de iyi gelebilir" (gent01'in
- * bedeli), sorumlulukta yüksek düzeyde "bu bazen işi uzatabilir" (perf02'nin bedeli), deneyime açıklıkta düşük düzeyde "bu
- * sana zaman kazandırabilir" (crea05'in düşük ucu) ve duygusallıktaki dayanaklar.
+ * "Çoğu insandan daha yetenekliyim") ve sağlık bildirenlere (kondisyon, dinçlik, "Çabuk yorulurum") dayanılmadı.
+ * Yetişkinin iş satırı `work`; iş satırları bir büro işi varsaymaz ("toplantı" yerine bir grup ya da birlikte iş yapılan
+ * kişiler). Arkadaş ve ev satırlarında okul sözcüğü yoktur; evde başka biriyle yaşamayı varsayan ev satırlarına
+ * ("evdekiler") yetişkin için ayrı bir satır (`adult.home`, "yakınların") yazıldı.
+ * Maddeye doğrudan dayanmayan uzantılar: dürüstlük-alçakgönüllülükte düşük düzeyde "seni çalışmaya yöneltebilir" (gree05 ve
+ * mode05'in olumlu yanı; raporun metni), dışadönüklükte yüksek düzeyde "uzun süre yalnız kalınca canın sıkılabilir" (soci01'in
+ * bedeli), uyumlulukta yüksek düzeyde "bazen bunu söylemek de iyi gelebilir" (gent01'in bedeli), sorumlulukta yüksek
+ * düzeyde "bu bazen işi uzatabilir" (perf02'nin bedeli), deneyime açıklıkta düşük düzeyde "bu sana zaman kazandırabilir"
+ * (crea05'in düşük ucu) ve duygusallıktaki dayanaklar.
  */
 export const altiBoyutluKisilikDaily: SurveyDaily = {
   kind: 'survey',
@@ -39,7 +44,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
      * çekmeyi severim", mode10 "İyi yönlerimle övünürüm".
      */
     honesty_humility: {
-      poles: { low: 'Öne çıkmayı önemser', high: 'Sade ve içten davranır' },
+      poles: { low: 'Öne çıkmayı önemser', high: 'Sade kalmayı önemser' },
       bands: {
         low: {
           from: { school: ['mode10', 'mode07'], friends: ['fair07', 'fair05'], home: ['gree02', 'gree03'], work: ['gree05', 'mode05'] },
@@ -86,7 +91,8 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
             home: 'İyi yaptığı bir işi evdekilere anlatmak ona pek rahat gelmeyebilir.',
           },
           adult: {
-            work: 'Bir alışverişte para üstü fazla verilirse fazlasını geri vermeyi önemseyebilirsin.',
+            work: 'Bir alışverişte sana yanlışlıkla fazla para verilirse bunu geri vermeyi önemseyebilirsin.',
+            home: 'İyi yaptığın bir işi yakınlarına anlatmak sana pek rahat gelmeyebilir.',
           },
         },
       },
@@ -101,7 +107,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
      * ağlarım". Tehlikeden çekinme (fear01–fear10) kullanılmadı.
      */
     emotionality: {
-      poles: { low: 'Çoğu zaman sakin kalır', high: 'Duygularını yoğun yaşar' },
+      poles: { low: 'Olayları sakin karşılar', high: 'Duygularını yoğun yaşar' },
       bands: {
         low: {
           from: { school: ['anxi09', 'anxi06'], friends: ['anxi10'], home: ['depe05', 'depe08'], work: ['anxi09'] },
@@ -159,8 +165,8 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
      * konuşma yapmam gerekse korkardım", socb07 "Kalabalıkta geri planda kalmayı tercih ederim", socb09 "İlgi odağı olmaktan
      * nefret ederim". Sosyallik: soci01 "Boş zamanımı genellikle başkalarıyla geçirmeyi severim", soci02 "Kalabalık
      * ortamlarda birçok farklı kişiyle konuşurum", soci03 "Sohbet etmeyi çok severim", soci04 "Kolayca arkadaş edinirim",
-     * soci05 "Bir grubun parçası olmaktan keyif alırım". Canlılık: live03 "Genellikle aktif ve enerji dolu biriyim"; ters
-     * live09 "Çabuk yorulurum" (live10 "Sık sık kendimi hüzünlü hissederim" kullanılmadı).
+     * soci05 "Bir grubun parçası olmaktan keyif alırım". Canlılık: live01 "Gün boyunca enerjimi yüksek tutarım", live03 "Genellikle
+     * aktif ve enerji dolu biriyim" (live09 "Çabuk yorulurum" ve live10 "Sık sık kendimi hüzünlü hissederim" kullanılmadı).
      */
     extraversion: {
       poles: { low: 'Sakin ortamları sever', high: 'Sohbetten enerji alır' },
@@ -178,23 +184,23 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
             home: 'Boş zamanını kendi başına sakin geçirmek ona iyi gelebilir.',
           },
           adult: {
-            work: 'Bir toplantıda herkesin önünde konuşmak yerine geri planda kalmayı seçebilirsin.',
+            work: 'İşle ilgili bir konuyu bir grubun önünde anlatmak yerine geri planda kalmayı seçebilirsin.',
           },
         },
         average: {
-          from: { school: ['socb02', 'socb07'], friends: ['soci05', 'soci01'], home: ['live03', 'live09'], work: ['expr01', 'expr08'] },
+          from: { school: ['socb02', 'socb07'], friends: ['soci05', 'soci01'], home: ['live03', 'live01'], work: ['expr01', 'expr08'] },
           student: {
             school: 'Bazen sınıfta söz alıp öne çıkabilir, bazen geri planda kalmayı seçebilirsin.',
             friends: 'Bazen bir grubun içinde olmaktan keyif alabilir, bazen kendi başına kalmak isteyebilirsin.',
-            home: 'Bazı günler enerjin yüksek olabilir, bazı günler daha çabuk yorulabilirsin.',
+            home: 'Bazı günler enerji dolu olabilir, bazı günler daha sakin bir tempoyu seçebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazen sınıfta söz alıp öne çıkabilir, bazen geri planda kalmayı seçebilir.',
             friends: 'Bazen bir grubun içinde olmaktan keyif alabilir, bazen kendi başına kalmak isteyebilir.',
-            home: 'Bazı günler enerjisi yüksek olabilir, bazı günler daha çabuk yorulabilir.',
+            home: 'Bazı günler enerji dolu olabilir, bazı günler daha sakin bir tempoyu seçebilir.',
           },
           adult: {
-            work: 'Bir toplantıda bazen çok konuşabilir, bazen az konuşup dinleyebilirsin.',
+            work: 'Birlikte iş yaptığın kişilerle bazen çok konuşabilir, bazen az konuşup dinleyebilirsin.',
           },
         },
         high: {
@@ -210,7 +216,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
             home: 'Boş zamanını başkalarıyla geçirmeyi sevebilir; uzun süre yalnız kalınca canı sıkılabilir.',
           },
           adult: {
-            work: 'Bir toplantıda geri planda kalmak yerine söz alıp konuşmayı seçebilirsin.',
+            work: 'Bir grup işi konuşulurken geri planda kalmak yerine söz alıp konuşmayı seçebilirsin.',
           },
         },
       },
@@ -225,7 +231,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
      * "Sinirim nadiren bozulur"; ters pati06 "Kolayca sinirlenirim".
      */
     agreeableness: {
-      poles: { low: 'Tepkisini açıkça gösterir', high: 'Hoşgörülü ve sabırlı' },
+      poles: { low: 'Tepkisini açıkça gösterir', high: 'Tepkisini yumuşatır' },
       bands: {
         low: {
           from: { school: ['gent10'], friends: ['forg05', 'forg06'], home: ['flex06', 'flex10'], work: ['flex07', 'gent05'] },
@@ -241,6 +247,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte başkalarının hataları canını sıkabilir ve bunu açıkça gösterebilirsin.',
+            home: 'Yakınlarınla bir konuşmada kendi görüşünü kolay kolay bırakmayabilirsin.',
           },
         },
         average: {
@@ -257,6 +264,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte bazen tavsiyelere kulak verebilir, bazen görüşünde ısrar edebilirsin.',
+            home: 'Yakınlarına karşı çoğu zaman sabırlı olabilir, bazen küçük bir şeye sinirlenebilirsin.',
           },
         },
         high: {
@@ -272,7 +280,8 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
             home: 'Evdekilerle ilgili canını sıkan bir şey için çoğu zaman şikâyet etmeyebilir; bazen bunu söylemek de iyi gelebilir.',
           },
           adult: {
-            work: 'Bir işte işler aksayınca da çoğu zaman sabırlı kalabilirsin.',
+            work: 'İşler aksadığında da çoğu zaman sabırlı kalabilirsin.',
+            home: 'Yakınlarınla ilgili canını sıkan bir şey için çoğu zaman şikâyet etmeyebilirsin; bazen bunu söylemek de iyi gelebilir.',
           },
         },
       },
@@ -385,16 +394,16 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['inqu04', 'inqu01'], friends: ['unco02', 'crea04'], home: ['unco05', 'unco03'], work: ['crea05'] },
+          from: { school: ['inqu04', 'inqu01'], friends: ['unco02', 'crea04'], home: ['unco03', 'crea05'], work: ['crea05'] },
           student: {
             school: 'Bilime ya da anlamak için kafa yorman gereken metinlere ilgi duyabilirsin.',
             friends: 'Arkadaşlarınla konuşurken bazen onları şaşırtan fikirler ortaya atabilirsin.',
-            home: 'Çoğunluğa uymak yerine kendi yolunu seçebilirsin; bu bazen çevrendekilere garip gelebilir.',
+            home: 'Evdeki bir işi alışılmadık bir yolla yapabilirsin; bu bazen başkalarına garip gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz bilime ya da anlamak için kafa yorması gereken metinlere ilgi duyabilir.',
             friends: 'Arkadaşlarıyla konuşurken bazen onları şaşırtan fikirler ortaya atabilir.',
-            home: 'Çoğunluğa uymak yerine kendi yolunu seçebilir; bu bazen çevresindekilere garip gelebilir.',
+            home: 'Evdeki bir işi alışılmadık bir yolla yapabilir; bu bazen başkalarına garip gelebilir.',
           },
           adult: {
             work: 'Bir işi yapmanın yeni yollarını düşünüp bulmak sana keyifli gelebilir.',

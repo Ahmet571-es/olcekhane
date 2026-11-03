@@ -10,11 +10,15 @@ import type { SurveyDaily } from './types';
  * düşük uca uydurma bir güçlü yan, yüksek uca uydurma bir zorluk yazılmaz; zor anı anlatan her örneğin yanında bir dayanak
  * vardır; hassas maddelere ("Kendimden hoşlanmam", "Kolayca paniğe kapılırım", "baş edemeyeceğimi hissederim") ve aşırılık
  * maddelerine dayanılmadı. Başarı ve yetkinlik bildiren maddelere (yetkinlik duygusu, "Soyut fikirleri anlamakta zorlanırım")
- * ve tehlikeyi umursamama maddesine de dayanılmadı: örnekler beceri ya da risk önerisi gibi okunmasın.
- * Yetişkinin iş satırı `work`; arkadaş ve ev satırlarında okul sözcüğü olmadığı için yetişkin de onları görür.
- * Maddeye doğrudan dayanmayan, raporun kendi metninden gelen uzantılar: uyumlulukta düşük düzeyde "düşündüğünü açıkça
- * söyleyebilirsin" (k079'un olumlu yanı), sorumlulukta yüksek düzeyde "düzen bozulunca canın sıkılabilir" (k010'un bedeli),
- * deneyime açıklıkta yüksek düzeyde "düşüncelere dalıp işi unutabilirsin" (k093'ün bedeli) ve duygusal dengedeki dayanaklar.
+ * ve tehlikeyi umursamama maddesine de dayanılmadı: örnekler beceri ya da risk önerisi gibi okunmasın. Temkinliliğin
+ * "düşünmeden işlere atılırım" maddeleri düşük düzeyde bir kolaylık gibi anlatılmaz: arkadaşların ani önerisine katılmak
+ * yalnızca "Bir işe acele edip hemen dalarım" (k090) maddesine dayanır.
+ * Yetişkinin iş satırı `work`. Arkadaş ve ev satırlarında okul sözcüğü yoktur; evde başka biriyle yaşamayı varsayan ev
+ * satırlarına ("evdekiler") yetişkin için ayrı bir satır (`adult.home`, "bir yakının", "yakınların") yazıldı.
+ * Maddeye doğrudan dayanmayan uzantılar: uyumlulukta düşük düzeyde "düşündüğünü açıkça söyleyebilirsin" (k079'un olumlu
+ * yanı) ve yüksek düzeyde "bu bazen işlerini geciktirebilir" (k014 ve k104'ün bedeli), sorumlulukta yüksek düzeyde "düzen
+ * bozulunca canın sıkılabilir" (k010'un bedeli), deneyime açıklıkta yüksek düzeyde "düşüncelere dalıp işi unutabilirsin"
+ * (k093'ün bedeli) ve duygusal dengedeki dayanaklar.
  */
 export const ayrintiliKisilikDaily: SurveyDaily = {
   kind: 'survey',
@@ -91,7 +95,7 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
      * (k029, k059, k089, k119) kullanılmadı.
      */
     agreeableness: {
-      poles: { low: 'Kendi bakışını gözetir', high: 'Başkalarını gözetir' },
+      poles: { low: 'Kendi görüşünü gözetir', high: 'Başkalarını gözetir' },
       bands: {
         low: {
           from: { school: ['k079'], friends: ['k094', 'k064'], home: ['k104', 'k014'], work: ['k079'] },
@@ -107,6 +111,7 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte karşı çıktığın bir şeyi açıkça söyleyebilirsin; bu bazen birini kırabilir.',
+            home: 'Bir yakının yardım isteyince önce kendi işlerini bitirmeyi seçebilirsin.',
           },
         },
         average: {
@@ -123,6 +128,7 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Birlikte çalıştığın kişilere bazen yardım edebilir, bazen önce kendi işini bitirmek isteyebilirsin.',
+            home: 'Yakınlarınla bir anlaşmazlıkta çoğu zaman kırmadan konuşabilir, bazen sesini yükseltebilirsin.',
           },
         },
         high: {
@@ -130,15 +136,16 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
           student: {
             school: 'Grup çalışmasında arkadaşlarının iyi olup olmadığını önemseyip onlara yardım edebilirsin.',
             friends: 'İnsanların iyi niyetli olduğuna inanıp söylediklerine güvenebilirsin.',
-            home: 'Evdekilere yardım ederken kendi işlerine zaman ayırmayı unutabilirsin.',
+            home: 'Evdekilerden biri yardım isteyince kendi işini hemen bırakabilirsin; bu bazen işlerini geciktirebilir.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında arkadaşlarının iyi olup olmadığını önemseyip onlara yardım edebilir.',
             friends: 'İnsanların iyi niyetli olduğuna inanıp söylediklerine güvenebilir.',
-            home: 'Evdekilere yardım ederken kendi işlerine zaman ayırmayı unutabilir.',
+            home: 'Evdekilerden biri yardım isteyince kendi işini hemen bırakabilir; bu bazen işlerini geciktirebilir.',
           },
           adult: {
             work: 'Birlikte çalıştığın birinin iyi olup olmadığını önemseyip ona yardım etmek isteyebilirsin.',
+            home: 'Bir yakının yardım isteyince kendi işini hemen bırakabilirsin; bu bazen işlerini geciktirebilir.',
           },
         },
       },
@@ -155,15 +162,15 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
       poles: { low: 'Akışına göre ilerler', high: 'Planlı ve düzenli ilerler' },
       bands: {
         low: {
-          from: { school: ['k025', 'k055'], friends: ['k090', 'k030'], home: ['k100', 'k040'], work: ['k025', 'k055'] },
+          from: { school: ['k025', 'k055'], friends: ['k090'], home: ['k100', 'k040'], work: ['k025', 'k055'] },
           student: {
             school: 'Bir sınava son günlerde hazırlanabilir, yaptığın planı uygulamayı erteleyebilirsin.',
-            friends: 'Arkadaşların ani bir öneri getirince uzun düşünmeden hemen katılabilirsin.',
+            friends: 'Arkadaşlarının ani bir önerisine çoğu zaman hemen katılabilirsin.',
             home: 'Eşyalarını ortada bırakabilir, sonra aradığını bulmak için zaman harcayabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir sınava son günlerde hazırlanabilir, yaptığı planı uygulamayı erteleyebilir.',
-            friends: 'Arkadaşları ani bir öneri getirince uzun düşünmeden hemen katılabilir.',
+            friends: 'Arkadaşlarının ani bir önerisine çoğu zaman hemen katılabilir.',
             home: 'Eşyalarını ortada bırakabilir, sonra aradığını bulmak için zaman harcayabilir.',
           },
           adult: {

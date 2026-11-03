@@ -4,17 +4,21 @@ import type { SurveyDaily } from './types';
  * Çocuk Kişilik Profili: günlük hayatta nasıl görünür (3–5. sınıf; yetişkinlere açık değil).
  * Öğrenci metni 8–9 yaşındaki bir çocuğun anlayacağı kadar somut ve kısadır: teneffüs, oyun, okul çantası, sofra, misafir.
  * Telefon, mesaj ya da kendi odası varsayılmaz (C1 ve C2 maddeleri "odamı" der; örnekler yalnızca eşyalardan söz eder).
+ * Sakinliğin okul örnekleri "sınav ya da gösteri" der: 1–4. sınıfta yazılı sınav yapılmaz (MEB Ölçme ve Değerlendirme
+ * Yönetmeliği, 2023; incelemenin notu), test 5. sınıfa da açıktır.
  * Dört boyut özellik tonundadır (src/content/reports/cocuk-kisilik.ts: uçlar iyi ya da kötü değildir): düşük ve yüksek
  * düzeyin örneklerinden en az biri bir kolaylık, en az biri yumuşak bir zorluk söyler. Sakinlik gelişim tonundadır (düşük
  * düzeyi destek kutusunu açar; lib/reports/daily-parts.ts, scaleTone): düşük uca uydurma bir güçlü yan, yüksek uca uydurma
  * bir zorluk yazılmaz; zor anı anlatan her örneğin yanında bir dayanak vardır. Merak ve hayal gücünün örnekleri ilgi ve
  * tercihi anlatır, zekâ ya da beceri gibi okunmaz: "Bir şeyi hayal etmek bana zor gelir" (I2) maddesine bilerek
- * dayanılmadı. Her satırın dayandığı maddeler `from`'dadır.
- * Maddeye doğrudan dayanmayan, testin ya da raporun kendi metninden gelen uzantılar: sosyallikte yüksek düzeyde "uzun süre
- * tek başına oynayınca canın sıkılabilir" (testteki "arkadaşlarla birlikte olmaktan enerji alma" anlatımı), başkalarını
- * önemsemede "düşündüğünü olduğu gibi söyleyebilirsin" (A4'ün olumlu yanı), düzende yüksek düzeyde "ortalık karışınca canın
- * sıkılabilir" (C1'in bedeli), merakta "hayallere dalıp işi unutabilirsin" (I1'in bedeli) ve sakinlikteki dayanaklar (raporun
- * "birkaç derin nefes almak", "güvendiğin biriyle paylaşmak" önerileri).
+ * dayanılmadı. "Arkadaşlarımla birlikteyken ortamı ben neşelendiririm" (E5) maddesi gruptaki bir rol gibi yazılmaz:
+ * örnekler çok konuşup şaka yapmaktan hoşlanmayı anlatır. "Yarım yamalak" (C6) yerine "aceleyle bitirmek" denir. Her
+ * satırın dayandığı maddeler `from`'dadır.
+ * Maddeye doğrudan dayanmayan, testin ya da raporun kendi metninden gelen uzantılar: başkalarını önemsemede düşük düzeyde
+ * "düşündüğünü olduğu gibi söyleyebilirsin" (A4'ün olumlu yanı) ve yüksek düzeyde "kendi oyununa ya da ödevine zaman
+ * ayırmayı unutabilirsin" (A3'ün bedeli; raporun yüksek düzey metni de kendi isteğini söyleyebilmeyi önerir), düzende yüksek
+ * düzeyde "ortalık karışınca canın sıkılabilir" (C1'in bedeli), merakta "hayallere dalıp işi unutabilirsin" (I1'in bedeli)
+ * ve sakinlikteki dayanaklar (raporun "birkaç derin nefes almak", "güvendiğin biriyle paylaşmak" önerileri).
  */
 export const cocukKisilikDaily: SurveyDaily = {
   kind: 'survey',
@@ -26,7 +30,7 @@ export const cocukKisilikDaily: SurveyDaily = {
      * gelir", E4 "Kalabalık bir grupta geride durmayı severim", E6 "Çoğu zaman az konuşurum".
      */
     extraversion: {
-      poles: { low: 'Az konuşur, dinler', high: 'Konuşur, arkadaş edinir' },
+      poles: { low: 'Az konuşur, dinler', high: 'Konuşur, sohbet başlatır' },
       bands: {
         low: {
           from: { school: ['E6'], friends: ['E2'], home: ['E4'] },
@@ -44,27 +48,27 @@ export const cocukKisilikDaily: SurveyDaily = {
         average: {
           from: { school: ['E1', 'E2'], friends: ['E5', 'E4'], home: ['E6'] },
           student: {
-            school: 'Sınıfa yeni gelen biriyle bazen konuşmayı sen başlatabilir, bazen onun gelmesini bekleyebilirsin.',
-            friends: 'Arkadaşlarınla oynarken bazen ortamı neşelendirebilir, bazen geride durmayı seçebilirsin.',
+            school: 'Sınıfa yeni gelen biriyle bazen konuşmayı sen başlatabilir, bazen onun yanına gelmesini bekleyebilirsin.',
+            friends: 'Arkadaşlarınla oynarken bazen çok konuşup şakalar yapabilir, bazen geride durmayı seçebilirsin.',
             home: 'Kalabalık bir sofrada bazen çok konuşabilir, bazen sessiz kalabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfa yeni gelen biriyle bazen konuşmayı kendisi başlatabilir, bazen onun gelmesini bekleyebilir.',
-            friends: 'Arkadaşlarıyla oynarken bazen ortamı neşelendirebilir, bazen geride durmayı seçebilir.',
+            school: 'Çocuğunuz sınıfa yeni gelen biriyle bazen konuşmayı kendisi başlatabilir, bazen onun yanına gelmesini bekleyebilir.',
+            friends: 'Arkadaşlarıyla oynarken bazen çok konuşup şakalar yapabilir, bazen geride durmayı seçebilir.',
             home: 'Kalabalık bir sofrada bazen çok konuşabilir, bazen sessiz kalabilir.',
           },
         },
         high: {
-          from: { school: ['E3'], friends: ['E5'], home: ['E5'] },
+          from: { school: ['E3'], friends: ['E5', 'E6'], home: ['E4', 'E6'] },
           student: {
             school: 'Yeni bir sınıfa geçince kısa sürede yeni arkadaşlar edinebilirsin.',
-            friends: 'Arkadaşlarınla birlikteyken ortamı çoğu zaman neşelendirebilirsin.',
-            home: 'Uzun süre tek başına oynayınca canın sıkılabilir.',
+            friends: 'Arkadaşlarınla birlikteyken çok konuşup şakalar yapmak sana keyifli gelebilir.',
+            home: 'Kalabalık bir misafirlikte geride sessizce oturmak sana sıkıcı gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz yeni bir sınıfa geçince kısa sürede yeni arkadaşlar edinebilir.',
-            friends: 'Arkadaşlarıyla birlikteyken ortamı çoğu zaman neşelendirebilir.',
-            home: 'Uzun süre tek başına oynayınca canı sıkılabilir.',
+            friends: 'Arkadaşlarıyla birlikteyken çok konuşup şakalar yapmak ona keyifli gelebilir.',
+            home: 'Kalabalık bir misafirlikte geride sessizce oturmak ona sıkıcı gelebilir.',
           },
         },
       },
@@ -131,12 +135,12 @@ export const cocukKisilikDaily: SurveyDaily = {
           student: {
             school: 'Okul çantanı sabah son anda hazırlayabilir, bazen bir şeyi evde unutabilirsin.',
             friends: 'Arkadaşlarınla oynarken ortalık biraz karışınca bu seni pek rahatsız etmeyebilir.',
-            home: 'Sana verilen bir işi sonraya bırakabilir ya da yarım yamalak yapabilirsin.',
+            home: 'Sana verilen bir işi sonraya bırakabilir ya da aceleyle bitirebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz okul çantasını sabah son anda hazırlayabilir, bazen bir şeyi evde unutabilir.',
             friends: 'Arkadaşlarıyla oynarken ortalık biraz karışınca bu onu pek rahatsız etmeyebilir.',
-            home: 'Kendisine verilen bir işi sonraya bırakabilir ya da yarım yamalak yapabilir.',
+            home: 'Kendisine verilen bir işi sonraya bırakabilir ya da aceleyle bitirebilir.',
           },
         },
         average: {
@@ -178,12 +182,12 @@ export const cocukKisilikDaily: SurveyDaily = {
         low: {
           from: { school: ['ES4'], friends: ['ES2', 'ES6'], home: ['ES6', 'ES5'] },
           student: {
-            school: 'Bir sınavdan önce endişelenebilirsin; bunu öğretmenine söylemek iyi gelebilir.',
+            school: 'Bir sınav ya da gösteri yaklaşırken endişelenebilirsin; bunu öğretmenine söylemek iyi gelebilir.',
             friends: 'Bir oyunda işler ters gidince çabuk kızabilir ya da üzülebilirsin; birkaç derin nefes almak iyi gelebilir.',
             home: 'Çabuk üzülebilirsin; seni üzen şeyi güvendiğin bir büyüğüne anlatmak iyi gelebilir.',
           },
           parent: {
-            school: 'Çocuğunuz bir sınavdan önce endişelenebilir; bunu öğretmenine söylemek iyi gelebilir.',
+            school: 'Bir sınav ya da gösteri yaklaşırken çocuğunuz endişelenebilir; bunu öğretmenine söylemek iyi gelebilir.',
             friends: 'Bir oyunda işler ters gidince çabuk kızabilir ya da üzülebilir; birkaç derin nefes almak iyi gelebilir.',
             home: 'Çabuk üzülebilir; onu üzen şeyi güvendiği bir büyüğüne anlatmak iyi gelebilir.',
           },
@@ -191,12 +195,12 @@ export const cocukKisilikDaily: SurveyDaily = {
         average: {
           from: { school: ['ES3', 'ES4'], friends: ['ES1', 'ES2'], home: ['ES5', 'ES6'] },
           student: {
-            school: 'Çoğu gün sakin olabilirsin; bazen bir sınav için endişelenebilirsin.',
+            school: 'Çoğu gün sakin olabilirsin; bazen bir sınav ya da gösteri için endişelenebilirsin.',
             friends: 'Bir oyunda işler ters gidince bazen sakin kalabilir, bazen kızabilirsin.',
             home: 'Bazı günler üzgün hissedebilirsin; çoğu zaman bu duygu uzun sürmeyebilir.',
           },
           parent: {
-            school: 'Çocuğunuz çoğu gün sakin olabilir; bazen bir sınav için endişelenebilir.',
+            school: 'Çocuğunuz çoğu gün sakin olabilir; bazen bir sınav ya da gösteri için endişelenebilir.',
             friends: 'Bir oyunda işler ters gidince bazen sakin kalabilir, bazen kızabilir.',
             home: 'Bazı günler üzgün hissedebilir; çoğu zaman bu duygu uzun sürmeyebilir.',
           },
@@ -204,12 +208,12 @@ export const cocukKisilikDaily: SurveyDaily = {
         high: {
           from: { school: ['ES3', 'ES4'], friends: ['ES1', 'ES2'], home: ['ES5', 'ES3'] },
           student: {
-            school: 'Bir sınavdan önce de çoğu zaman sakin ve huzurlu kalabilirsin.',
+            school: 'Bir sınav ya da gösteri öncesinde de çoğu zaman sakin ve huzurlu kalabilirsin.',
             friends: 'Bir oyunda işler ters gidince çoğu zaman kızmadan oynamaya devam edebilirsin.',
             home: 'Çoğu gün huzurlu olabilirsin; yine de üzüldüğünde bunu paylaşmak iyi gelebilir.',
           },
           parent: {
-            school: 'Çocuğunuz bir sınavdan önce de çoğu zaman sakin ve huzurlu kalabilir.',
+            school: 'Çocuğunuz bir sınav ya da gösteri öncesinde de çoğu zaman sakin ve huzurlu kalabilir.',
             friends: 'Bir oyunda işler ters gidince çoğu zaman kızmadan oynamaya devam edebilir.',
             home: 'Çoğu gün huzurlu olabilir; yine de üzüldüğünde bunu paylaşmak iyi gelebilir.',
           },

@@ -9,14 +9,17 @@ import type { SurveyDaily } from './types';
  * gücünü ve soyut fikirlere ilgiyi anlatır. Dört boyut özellik tonundadır: düşük ve yüksek düzeyin örneklerinden en az
  * biri bir kolaylık, en az biri yumuşak bir zorluk söyler. Duygusal Denge gelişim tonundadır (düşük düzeyi destek kutusunu
  * açar): düşük uca uydurma bir güçlü yan, yüksek uca uydurma bir zorluk yazılmaz; zor anı anlatan her örneğin yanında bir
- * dayanak vardır; şablondaki gibi düşük düzey "sık sık" demez (3, 3, 2, 2 gibi cevaplar da bu düzeye düşer). "Soyut fikirleri
- * anlamakta zorlanırım" (m15) maddesine bilerek dayanılmadı: düşük uç bir beceri gibi okunmasın.
- * Yetişkinin iş satırı `work`; arkadaş ve ev satırlarında okul sözcüğü olmadığı için yetişkin de onları görür.
- * Maddeye doğrudan dayanmayan, testin ya da raporun kendi metninden gelen uzantılar: dışadönüklükte yüksek düzeyde
- * "başkalarına söz bırakmayı unutabilirsin" (m06'nın bedeli; raporun "sessiz kalan birine de konuşma fırsatı vermek"
- * önerisi), uyumlulukta yüksek düzeyde "bu duygu seni de yorabilir" (raporun metni), sorumlulukta yüksek düzeyde "düzen
- * bozulunca canın sıkılabilir" (m13'ün bedeli), merakta yüksek düzeyde "zamanın nasıl geçtiğini fark etmeyebilirsin" (m05'in
- * bedeli) ve duygusal dengedeki dayanaklar.
+ * dayanak vardır; şablondaki gibi düşük düzey "sık sık" demez (3, 3, 2, 2 gibi cevaplar da bu düzeye düşer). "Küçük şeylere
+ * kolayca bozulurum" (m14) maddesi testte öfke ve sinirlilik için çevrildiği için "canı sıkılmak" diye anlatılır, moral
+ * bozukluğu diye değil (hüznü m19 sorar). "Soyut fikirleri anlamakta zorlanırım" (m15) maddesine bilerek dayanılmadı: düşük
+ * uç bir beceri gibi okunmasın. "Arkadaş ortamlarında havayı canlandıran kişi genellikle benim" (m01) maddesi gruptaki bir
+ * rol gibi yazılmaz: örnekler neşeyle konuşmayı anlatır; uçlar m06 ve m16'dan gelir.
+ * Yetişkinin iş satırı `work`; iş satırları bir büro işi varsaymaz ("toplantı" yerine "birlikte bir iş konuşulurken").
+ * Arkadaş ve ev satırlarında okul sözcüğü yoktur; evde başka biriyle yaşamayı varsayan ev satırlarına ("evdekiler")
+ * yetişkin için ayrı bir satır (`adult.home`, "bir yakının") yazıldı, ötekiler herkese uyar (misafirlik).
+ * Maddeye doğrudan dayanmayan uzantılar: uyumlulukta yüksek düzeyde "bu duygu seni de yorabilir" (m12'nin bedeli; raporun
+ * metni), sorumlulukta yüksek düzeyde "düzen bozulunca canın sıkılabilir" (m13'ün bedeli), merakta yüksek düzeyde "zamanın
+ * nasıl geçtiğini fark etmeyebilirsin" (m05'in bedeli) ve duygusal dengedeki dayanaklar.
  */
 export const hizliKisilikDaily: SurveyDaily = {
   kind: 'survey',
@@ -27,7 +30,7 @@ export const hizliKisilikDaily: SurveyDaily = {
      * farklı kişiyle konuşurum"; ters: m06 "Çok konuşmam", m16 "Kalabalıkta geri planda kalmayı tercih ederim".
      */
     extraversion: {
-      poles: { low: 'Geri planda kalır', high: 'Ortamı canlandırır' },
+      poles: { low: 'Az konuşur, geride durur', high: 'Çok konuşur, öne çıkar' },
       bands: {
         low: {
           from: { school: ['m06'], friends: ['m16', 'm11'], home: ['m11'], work: ['m06'] },
@@ -42,39 +45,39 @@ export const hizliKisilikDaily: SurveyDaily = {
             home: 'Misafir gelince herkesle tek tek sohbet etmek ona zor gelebilir.',
           },
           adult: {
-            work: 'Bir toplantıda çok konuşmak yerine çoğu zaman başkalarını dinlemeyi seçebilirsin.',
+            work: 'Birlikte bir iş konuşulurken söz almak yerine çoğu zaman başkalarını dinlemeyi seçebilirsin.',
           },
         },
         average: {
           from: { school: ['m06'], friends: ['m01', 'm16'], home: ['m11'], work: ['m06'] },
           student: {
             school: 'Bazı derslerde çok konuşabilir, bazılarında sessiz kalmayı seçebilirsin.',
-            friends: 'Arkadaş ortamında bazen havayı canlandırabilir, bazen geri planda kalabilirsin.',
+            friends: 'Arkadaş ortamında bazen neşeyle konuşabilir, bazen geri planda kalabilirsin.',
             home: 'Misafir gelince bazı kişilerle uzun uzun konuşabilir, bazılarıyla az konuşabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı derslerde çok konuşabilir, bazılarında sessiz kalmayı seçebilir.',
-            friends: 'Arkadaş ortamında bazen havayı canlandırabilir, bazen geri planda kalabilir.',
+            friends: 'Arkadaş ortamında bazen neşeyle konuşabilir, bazen geri planda kalabilir.',
             home: 'Misafir gelince bazı kişilerle uzun uzun konuşabilir, bazılarıyla az konuşabilir.',
           },
           adult: {
-            work: 'Bir toplantıda bazen söz alıp konuşabilir, bazen dinlemeyi seçebilirsin.',
+            work: 'Birlikte bir iş konuşulurken bazen söz alıp konuşabilir, bazen dinlemeyi seçebilirsin.',
           },
         },
         high: {
-          from: { school: ['m16', 'm06'], friends: ['m01', 'm11'], home: ['m06'], work: ['m16', 'm06'] },
+          from: { school: ['m16', 'm06'], friends: ['m01', 'm11'], home: ['m06', 'm16'], work: ['m16', 'm06'] },
           student: {
             school: 'Grup çalışmasında geri planda kalmak yerine çoğu zaman öne çıkıp konuşabilirsin.',
-            friends: 'Arkadaş ortamında havayı canlandırabilir, pek çok farklı kişiyle sohbet edebilirsin.',
-            home: 'Sofrada çok konuşabilir, bazen başkalarına söz bırakmayı unutabilirsin.',
+            friends: 'Arkadaş ortamında neşeyle konuşabilir, pek çok farklı kişiyle sohbet edebilirsin.',
+            home: 'Misafirlikte çok konuşabilir; uzun süre sessizce dinlemek sana zor gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında geri planda kalmak yerine çoğu zaman öne çıkıp konuşabilir.',
-            friends: 'Arkadaş ortamında havayı canlandırabilir, pek çok farklı kişiyle sohbet edebilir.',
-            home: 'Sofrada çok konuşabilir, bazen başkalarına söz bırakmayı unutabilir.',
+            friends: 'Arkadaş ortamında neşeyle konuşabilir, pek çok farklı kişiyle sohbet edebilir.',
+            home: 'Misafirlikte çok konuşabilir; uzun süre sessizce dinlemek ona zor gelebilir.',
           },
           adult: {
-            work: 'Bir toplantıda geri planda kalmak yerine çoğu zaman söz alıp konuşabilirsin.',
+            work: 'Birlikte bir iş konuşulurken geri planda kalmak yerine çoğu zaman söz alabilirsin.',
           },
         },
       },
@@ -102,6 +105,7 @@ export const hizliKisilikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir iş üzerinde çalışırken insanların dertlerinden çok işin kendisiyle ilgilenebilirsin.',
+            home: 'Bir yakının sana üzüntüsünü anlatınca onun duygusuna kapılmadan kendi işini sürdürebilirsin.',
           },
         },
         average: {
@@ -118,6 +122,7 @@ export const hizliKisilikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Birlikte çalıştığın kişilerin duygularını bazen gözetebilir, bazen yalnızca işe odaklanabilirsin.',
+            home: 'Bir yakının üzüntüsünü bazen içinde hissedebilir, bazen pek etkilenmeyebilirsin.',
           },
         },
         high: {
@@ -134,6 +139,7 @@ export const hizliKisilikDaily: SurveyDaily = {
           },
           adult: {
             work: 'Birlikte çalıştığın biri zor bir gün geçirince onun duygularına ortak olabilirsin.',
+            home: 'Bir yakının üzüntüsünü içinde hissedebilirsin; bu duygu seni de yorabilir.',
           },
         },
       },
@@ -148,13 +154,13 @@ export const hizliKisilikDaily: SurveyDaily = {
         low: {
           from: { school: ['m03', 'm18'], friends: ['m13'], home: ['m08'], work: ['m03', 'm18'] },
           student: {
-            school: 'Bir ödevi hemen yapmak yerine sonraya bırakabilirsin; sonra işler üst üste binebilir.',
-            friends: 'Arkadaşlarınla buluştuğun yer biraz dağınık olsa da bu seni pek rahatsız etmeyebilir.',
+            school: 'Bir ödevi hemen yapmak yerine sonraya bırakabilirsin; sonra işler birbirine karışabilir.',
+            friends: 'Arkadaşlarınla bir iş yaparken ortalık biraz dağınık olsa da bu seni pek rahatsız etmeyebilir.',
             home: 'Kullandığın bir şeyi yerine koymayı unutabilir, sonra onu aramak zorunda kalabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bir ödevi hemen yapmak yerine sonraya bırakabilir; sonra işler üst üste binebilir.',
-            friends: 'Arkadaşlarıyla buluştuğu yer biraz dağınık olsa da bu onu pek rahatsız etmeyebilir.',
+            school: 'Çocuğunuz bir ödevi hemen yapmak yerine sonraya bırakabilir; sonra işler birbirine karışabilir.',
+            friends: 'Arkadaşlarıyla bir iş yaparken ortalık biraz dağınık olsa da bu onu pek rahatsız etmeyebilir.',
             home: 'Kullandığı bir şeyi yerine koymayı unutabilir, sonra onu aramak zorunda kalabilir.',
           },
           adult: {
@@ -206,17 +212,17 @@ export const hizliKisilikDaily: SurveyDaily = {
         low: {
           from: { school: ['m14'], friends: ['m14'], home: ['m04', 'm19'], work: ['m14'] },
           student: {
-            school: 'Derste küçük bir aksilik olunca moralin çabuk bozulabilir; bunu sonra biriyle konuşmak iyi gelebilir.',
+            school: 'Derste küçük bir aksilik canını çabuk sıkabilir; bunu sonra biriyle konuşmak sana iyi gelebilir.',
             friends: 'Bir arkadaşının küçük bir sözüne çabuk bozulabilirsin; sonra bunu ona söylemek seni rahatlatabilir.',
             home: 'Gün içinde duyguların inip çıkabilir; seni üzen şeyi güvendiğin biriyle konuşmak iyi gelebilir.',
           },
           parent: {
-            school: 'Derste küçük bir aksilik olunca çocuğunuzun morali çabuk bozulabilir; bunu sonra biriyle konuşmak iyi gelebilir.',
+            school: 'Derste küçük bir aksilik çocuğunuzun canını çabuk sıkabilir; bunu sonra biriyle konuşmak ona iyi gelebilir.',
             friends: 'Bir arkadaşının küçük bir sözüne çabuk bozulabilir; sonra bunu ona söylemek onu rahatlatabilir.',
             home: 'Gün içinde duyguları inip çıkabilir; onu üzen şeyi güvendiği biriyle konuşmak iyi gelebilir.',
           },
           adult: {
-            work: 'Bir işte küçük bir aksilik olunca moralin çabuk bozulabilir; bunu biriyle konuşmak iyi gelebilir.',
+            work: 'Bir işte küçük bir aksilik canını çabuk sıkabilir; bunu biriyle konuşmak sana iyi gelebilir.',
           },
         },
         average: {

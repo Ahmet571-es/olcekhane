@@ -11,9 +11,13 @@ import type { SurveyDaily } from './types';
  * gibi okunmasın. Düşünsel merakın beceri ve hız bildiren maddelerine (int01, int02, int04, int05, int06, int07, int10) ve
  * "İnsanları etkileme yeteneğim yoktur" (ass08) maddesine dayanılmadı: örnekler zekâ ya da yetenek gibi okunmasın; düşünsel
  * merakın örnekleri karmaşık problemlerden, felsefi tartışmalardan ve okuması zor metinlerden hoşlanmayı anlatır.
- * Yetişkinin iş satırı `work`; arkadaş ve ev satırlarında okul sözcüğü olmadığı için yetişkin de onları görür.
- * Maddeye doğrudan dayanmayan, raporun kendi metninden gelen uzantılar: dışadönüklükte yüksek düzeyde "başkalarının fikrini
- * sormayı unutabilirsin" (ass01'in bedeli), uyumlulukta düşük düzeyde "düşündüğünü dolandırmadan söyleyebilirsin" (pol05'in
+ * Yetişkinin iş satırı `work`; iş satırları bir büro işi varsaymaz ("toplantı" yerine "birlikte yapılan bir iş"). Arkadaş ve
+ * ev satırlarında okul sözcüğü yoktur; evde başka biriyle yaşamayı varsayan ev satırlarına ("evdekiler", "evdeki bir iş")
+ * yetişkin için ayrı bir satır (`adult.home`, "yakınların", "evle ilgili bir iş") yazıldı, ötekiler herkese uyar
+ * (misafirlik).
+ * Dışadönüklükte yüksek düzeyin zorluğu bir maddeye dayanır: "Yolu başkalarının göstermesini beklerim" (ass09, ters) düşük
+ * cevaplanınca başkasının yol göstermesini beklemek zor gelebilir.
+ * Maddeye doğrudan dayanmayan uzantılar: uyumlulukta düşük düzeyde "düşündüğünü dolandırmadan söyleyebilirsin" (pol05'in
  * olumlu yanı), deneyime açıklıkta yüksek düzeyde "zamanın nasıl geçtiğini fark etmeyebilirsin" (opn03'ün bedeli) ve duygusal
  * dengedeki dayanaklar.
  */
@@ -36,15 +40,15 @@ export const kisiligin10YonuDaily: SurveyDaily = {
           student: {
             school: 'Grup çalışmasında yolu başkalarının göstermesini bekleyebilir, fikrini kendine saklayabilirsin.',
             friends: 'Yeni tanıştığın insanlara ısınman biraz zaman alabilir.',
-            home: 'Evdeki kalabalık bir kutlamada coşkuya kapılmadan kendi temponu koruyabilirsin.',
+            home: 'Kalabalık bir misafirlikte coşkuya kapılmadan kendi temponu koruyabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında yolu başkalarının göstermesini bekleyebilir, fikrini kendine saklayabilir.',
             friends: 'Yeni tanıştığı insanlara ısınması biraz zaman alabilir.',
-            home: 'Evdeki kalabalık bir kutlamada coşkuya kapılmadan kendi temposunu koruyabilir.',
+            home: 'Kalabalık bir misafirlikte coşkuya kapılmadan kendi temposunu koruyabilir.',
           },
           adult: {
-            work: 'Bir toplantıda fikrini kendine saklayıp yolu başkalarının göstermesini bekleyebilirsin.',
+            work: 'Birlikte yapılan bir işte fikrini kendine saklayıp yolu başkalarının göstermesini bekleyebilirsin.',
           },
         },
         average: {
@@ -64,19 +68,20 @@ export const kisiligin10YonuDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['ass01', 'ass05'], friends: ['ent01', 'ent02'], home: ['ass01'], work: ['ass01', 'ass06'] },
+          from: { school: ['ass01', 'ass05'], friends: ['ent01', 'ent02'], home: ['ass01', 'ass09'], work: ['ass01', 'ass06'] },
           student: {
             school: 'Grup çalışmasında idareyi ele alıp arkadaşlarını bir plana ikna etmeye çalışabilirsin.',
             friends: 'Yeni bir ortamda insanlara çabuk ısınıp kolayca arkadaş edinebilirsin.',
-            home: 'Evdeki bir işte idareyi ele alabilir, bazen başkalarının fikrini sormayı unutabilirsin.',
+            home: 'Evdeki bir işte idareyi ele alabilirsin; başkalarının yol göstermesini beklemek sana zor gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında idareyi ele alıp arkadaşlarını bir plana ikna etmeye çalışabilir.',
             friends: 'Yeni bir ortamda insanlara çabuk ısınıp kolayca arkadaş edinebilir.',
-            home: 'Evdeki bir işte idareyi ele alabilir, bazen başkalarının fikrini sormayı unutabilir.',
+            home: 'Evdeki bir işte idareyi ele alabilir; başkalarının yol göstermesini beklemek ona zor gelebilir.',
           },
           adult: {
             work: 'Bir işte idareyi ele alıp harekete geçmek isteyebilirsin.',
+            home: 'Evle ilgili bir işte idareyi ele alabilirsin; başkasının yol göstermesini beklemek sana zor gelebilir.',
           },
         },
       },
@@ -106,6 +111,7 @@ export const kisiligin10YonuDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte önce kendi hedefini gözetip başkalarının ihtiyaçlarına daha az zaman ayırabilirsin.',
+            home: 'Yakınlarının dertleri yerine çoğu zaman kendi işlerinle ilgilenmeyi seçebilirsin.',
           },
         },
         average: {
@@ -122,6 +128,7 @@ export const kisiligin10YonuDaily: SurveyDaily = {
           },
           adult: {
             work: 'Bir işte çoğu zaman kimseyi baskı altına almadan çalışabilir, bazen isteğinde ısrar edebilirsin.',
+            home: 'Yakınların için bazen bir şeyler yapmak isteyebilir, bazen önce kendi işini bitirebilirsin.',
           },
         },
         high: {
@@ -138,6 +145,7 @@ export const kisiligin10YonuDaily: SurveyDaily = {
           },
           adult: {
             work: 'Birlikte çalıştığın kişiler için bir şeyler yapmak sana iyi gelebilir.',
+            home: 'Israrcı görünmemek için yakınlarına bir isteğini söylemeyi erteleyebilirsin.',
           },
         },
       },
@@ -218,12 +226,12 @@ export const kisiligin10YonuDaily: SurveyDaily = {
           student: {
             school: 'Bir sınav istediğin gibi geçmeyince cesaretin çabuk kırılabilir; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
             friends: 'Bir tartışmada çabuk öfkelenebilirsin; sonra olanı sakin bir anda konuşmak rahatlatabilir.',
-            home: 'Gün içinde ruh hâlin değişebilir; seni düşündüren şeyleri biriyle paylaşmak iyi gelebilir.',
+            home: 'Gün içinde ruh hâlin değişebilir; seni üzen şeyi biriyle paylaşmak iyi gelebilir.',
           },
           parent: {
             school: 'Bir sınav istediği gibi geçmeyince çocuğunuzun cesareti çabuk kırılabilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
             friends: 'Bir tartışmada çabuk öfkelenebilir; sonra olanı sakin bir anda konuşmak onu rahatlatabilir.',
-            home: 'Gün içinde ruh hâli değişebilir; onu düşündüren şeyleri biriyle paylaşmak iyi gelebilir.',
+            home: 'Gün içinde ruh hâli değişebilir; onu üzen şeyi biriyle paylaşmak iyi gelebilir.',
           },
           adult: {
             work: 'Yoğun bir dönemde birçok şey için endişelenebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
@@ -277,12 +285,12 @@ export const kisiligin10YonuDaily: SurveyDaily = {
           from: { school: ['int08'], friends: ['opn07', 'opn02'], home: ['opn09', 'opn08'], work: ['int09'] },
           student: {
             school: 'Derste felsefi bir tartışma açılınca ilgin azalabilir; somut konular sana daha çekici gelebilir.',
-            friends: 'Arkadaşların bir şiir ya da sergi konuşurken sen başka bir konuya geçmeyi seçebilirsin.',
+            friends: 'Arkadaşların bir şiir ya da sergi konuşurken bu konu sana pek çekici gelmeyebilir.',
             home: 'Hayallere ya da düşüncelere dalmak yerine çoğu zaman o an yaptığın işle ilgilenebilirsin.',
           },
           parent: {
             school: 'Derste felsefi bir tartışma açılınca çocuğunuzun ilgisi azalabilir; somut konular ona daha çekici gelebilir.',
-            friends: 'Arkadaşları bir şiir ya da sergi konuşurken o başka bir konuya geçmeyi seçebilir.',
+            friends: 'Arkadaşları bir şiir ya da sergi konuşurken bu konu ona pek çekici gelmeyebilir.',
             home: 'Hayallere ya da düşüncelere dalmak yerine çoğu zaman o an yaptığı işle ilgilenebilir.',
           },
           adult: {
