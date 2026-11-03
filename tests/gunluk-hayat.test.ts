@@ -84,6 +84,7 @@ export const DAILY_PENDING: string[] = [
   'hobi-ve-serbest-zaman-ilgileri',
   'calisma-degerleri',
   'zihniyet',
+  'duygusal-zeka-bilesenleri',
   // Görev testleri
   'planlama-kule-gorevi',
   'dikkat-ve-bellek',
@@ -620,8 +621,11 @@ describe('Günlük hayat: dil', () => {
         const p = partOf(r, 'daily')!;
         const own = [p.title, p.intro, p.introNote ?? '', ...partCards(p).flatMap((c) => [c.title, c.badge ?? '', c.text ?? '', ...(c.spoken ?? [])])].filter(Boolean);
         const label = `${d.slug} ${r.audience}`;
+        // Kartın başlığı ölçeğin testteki adıdır (Zihniyet'te "Zekâya bakış"): bölümün kendi yazdığı bir yetenek ya da zekâ
+        // iddiası değildir; yetenek sözcükleri başlıkta aranmaz (öteki sözcükler aranır).
+        const titles = new Set(partCards(p).map((c) => c.title));
         for (const t of own) {
-          for (const re of [BANNED, PREVALENCE, PEER, CLINICAL, TALENT]) expect(t, label).not.toMatch(re);
+          for (const re of [BANNED, PREVALENCE, PEER, CLINICAL, ...(titles.has(t) ? [] : [TALENT])]) expect(t, label).not.toMatch(re);
           for (const s of sentences(t)) expect(wordCount(s), `${label}: ${s}`).toBeLessThanOrEqual(22);
         }
         const joined = own.join(' ');

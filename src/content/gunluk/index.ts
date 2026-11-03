@@ -30,6 +30,7 @@ import { sekilBenzetmeleriDaily } from './sekil-benzetmeleri';
 import { sesliOkumaDaily } from './sesli-okuma-degerlendirmesi';
 import { simgeBulmaDaily } from './simge-bulma';
 import { sozelAkilYurutmeDaily } from './sozel-akil-yurutme';
+import { zihniyetDaily } from './zihniyet';
 import type { DailyContent } from './types';
 import { ucBoyutluZihindeDondurmeDaily } from './uc-boyutlu-zihinde-dondurme';
 import { zihindenHesaplamaDaily } from './zihinden-hesaplama-hizi';
@@ -74,4 +75,5 @@ export const DAILY: Record<string, DailyContent> = {
   'calisma-aliskanliklari': calismaAliskanliklariDaily,
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuDaily,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiDaily,
+  'zihniyet': zihniyetDaily,
 };
