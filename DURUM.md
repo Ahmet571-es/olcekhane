@@ -83,13 +83,12 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   Küp Açınımı, Gizli Şekiller ve Parçalardan Şekil'de şans kuralı düzeltildi (yalnızca 1. düzeye, rastgele seçimle de
   ulaşılabilecek kadar az doğruyla ulaşıldıysa sonuç yorumlanmaz; sürüm 2: bu üç testin eski PDF'leri karşılaştırılamaz).
   İki bağımsız inceleme bulguları uygulandı.
-- (d) **49 testte yayında (2026-11-03):** "Günlük hayatta nasıl görünür" (anket: her ölçek ve düzey için okulda/işte,
+- (d) **57 testte yayında (2026-11-03):** "Günlük hayatta nasıl görünür" (anket: her ölçek ve düzey için okulda/işte,
   arkadaşlarla, evde örnekler; grafikte ölçeğin iki ucu ve kişinin yeri) ve "Günlük hayatta nerede kullanılır" (görev, okuma,
   matematik: becerinin kullanıldığı yerler, kavram şeması). Her grubun metinlerini yazmamış bir ajan her satırı testin
   maddeleriyle karşılaştırdı (`from` alanı); bulgular uygulandı (ör. dikkat testlerinde DEHB belirtisi gibi okunan örnekler,
   iyimserlikte toplam kartın alt kartlarla çelişmesi, motivasyonda iki parçası ayrışan kart, 3–4. sınıfta yazılı sınav
-  olmaması). Kalan 13 test (Beş kişilik ailesi 5, 16 Faktörlü, Kişilerarası Tarz, Heyecan Arayışı, Liderlik, ilgi ve değer
-  testleri 4) yazıldı, denetlendi, düzeltiliyor; `DAILY_PENDING`'de. Yazım kuralları `src/content/gunluk/types.ts`'te.
+  olmaması; hobi testinde sıklık, beğeni değil; ilgi testlerinde meslek önerisi yok). Kalan 5 test (Beş kişilik ailesi: Çocuk, Hızlı, Ayrıntılı, 10 Yön, Altı Boyutlu) yazıldı ve denetlendi; yol haritası aşamasıyla birlikte yayına girecek (Altı Boyutlu PDF'inde uzun hafta başlığı o aşamada düzeliyor); `DAILY_PENDING`'de. Yazım kuralları `src/content/gunluk/types.ts`'te.
   Açık iş (Claude): aynı içeriğin her seferinde geldiği bellek testlerinde (dizi, desen, işlem) raporun içeriği yazmaması
   (ayrı dal `sabit-uyaran`); yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik,
   kural değiştirmede plan değiştirme): sonra uyumlanacak.
@@ -1168,6 +1167,11 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-03 (69): "Günlük hayatta" bölümü 8 teste daha eklendi (toplam 57): 16 Faktörlü, Kişilerarası Tarz, Heyecan Arayışı,
+  Liderlik Eğilimleri, Mesleki İlgi Profili, Meslek İlgi Alanları, Hobi ve Serbest Zaman İlgileri, Çalışma Değerleri. Bağımsız
+  denetim bulguları uygulandı: hobi örnekleri sıklığı anlatır (beğeniyi ya da imkânsızlığı değil), ilgi ve değer kartlarında
+  meslek önerisi ve uydurma bedel yok, düz profilde örneklerin benzeşebileceği söylenir, 16 Faktörlü'de gerginlik ve düşünsel
+  özgüven ile Liderlik'te kararlılık gelişim tonunda, heyecan arayışında risk özendirilmez.
 - 2026-11-03 (68): "Günlük hayatta" bölümü 42 teste daha eklendi (toplam 49): duygu ve öz algı (6), muhakeme ve uzamsal (15),
   öğrenme ve motivasyon (7), dikkat ve bellek (14). Her grubu yazmamış bir ajan her satırı maddelerle ve testin kendi
   anlatımıyla karşılaştırdı; bulgular uygulandı. Yeni kurallar: bileşik ölçeğin örnekleri alt kartlarla çelişebiliyorsa yönlendirme
@@ -1250,13 +1254,3 @@ En yeni üstte; en çok 10 madde tutulur.
   bağlamı, 2.225 çocuk Öktem ve ark. 2016 aktaran Çelik 2021, Valentine ve Kratz 2023'te %35–39 ve oturumlar, Gersten
   2009 önerisinin gerekçesi, Fry ve Hale sayfaları, Uluç ve Öktem künyesi). Telefonda dokunarak (4. sınıf) ve
   masaüstünde klavyeyle (yetişkin) baştan sona çözüldü, PDF'ler açıldı. Site sahibinin seçtiği dört yenilik bitti.
-- 2026-10-30 (59): Yeni test Merak yayına alındı (3. listenin 7. testi; site sahibinin seçtiği dört yeniliğin üçüncüsü;
-  ayrıntı yukarıda). İki yön (bilgi merakı, yenilik merakı), 20 madde, araştırma özetli "Birlikte bakınca", 2. hafta
-  "Önce tahmin et". Kayıtlar: test seçici (kişilik alanı), paylaşım kararı (kart yok), dış sınama, yetişkin ve yol haritası
-  testleri. İki bağımsız inceleme yayından önce uygulandı: metin ve mantık (madde sırası: iki "kafa yormam" uzaklaştı; üç
-  yeni madde olumlu ve somut cümleye çevrildi; aynı sayfada tekrar eden öneriler, yargılayan etiket, "merakı beslemek"
-  dili; bilgi kartlarından "tarih" çıktı) ve kaynak ve sayı (Jach 2024'te 15 kişilik ölçeği, OECD'de kontrol cümlesi
-  genel, Kashdan ve Steger 2007'de "merakı yüksek olanlar", Brod 2019'da karşılaştırma ve örneklem, resmî IPIP sayfalarında
-  O4'ün sekiz maddesi, Oleynick sayfa aralığı). Telefonda dokunarak (10. sınıf) ve masaüstünde klavyeyle (yetişkin)
-  çözüldü, PDF'ler açıldı, karşılaştırma denendi; karşılaştırmada "belirgin" tanımı artık yalnızca ölçüm payı bilinen
-  testlerde gösteriliyor. Sıradaki yenilik: Simge Bulma (WÇZÖ-IV'teki "Simge Arama" alt testiyle karışmasın diye bu ad).
