@@ -80,7 +80,6 @@ export const DAILY_PENDING: string[] = [
   'heyecan-arayisi',
   'liderlik-egilimleri',
   'hobi-ve-serbest-zaman-ilgileri',
-  'calisma-degerleri',
 
   // Görev testleri
 

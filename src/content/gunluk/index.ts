@@ -1,6 +1,7 @@
 import { bakisAcisiAlmaDaily } from './bakis-acisi-alma';
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { calismaAliskanliklariDaily } from './calisma-aliskanliklari';
+import { calismaDegerleriDaily } from './calisma-degerleri';
 import { dersCalismaMotivasyonuDaily } from './ders-calisma-motivasyonu';
 import { desenDaily } from './desen-hatirlama';
 import { dikkatBellekDaily } from './dikkat-ve-bellek';
@@ -108,4 +109,5 @@ export const DAILY: Record<string, DailyContent> = {
   'kural-degistirme': kuralDegistirmeDaily,
   'mesleki-ilgi-profili': meslekiIlgiDaily,
   'meslek-ilgi-alanlari': meslekIlgiAlanlariDaily,
+  'calisma-degerleri': calismaDegerleriDaily,
 };
