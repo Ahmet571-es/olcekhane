@@ -718,12 +718,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
           student: {
             school: 'Bir sınavda olan bir aksiliği çoğu zaman kolay kolay kafana takmayabilirsin.',
             friends: 'Biri cesaretini kırmaya çalışınca buna çoğu zaman izin vermeyebilirsin.',
-            home: 'Olup bitmiş şeyleri dert etmeyip önündeki işe dönebilirsin.',
+            home: 'Geçmişte kalan şeyleri pek dert etmeden önündeki işe dönebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir sınavda olan bir aksiliği çoğu zaman kolay kolay kafasına takmayabilir.',
             friends: 'Biri cesaretini kırmaya çalışınca buna çoğu zaman izin vermeyebilir.',
-            home: 'Olup bitmiş şeyleri dert etmeyip önündeki işe dönebilir.',
+            home: 'Geçmişte kalan şeyleri pek dert etmeden önündeki işe dönebilir.',
           },
           adult: {
             work: 'Bir işte bir şey ters gidince bunu kolay kolay kafana takmayabilirsin.',
@@ -811,12 +811,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
           student: {
             school: 'Derste soyut ya da felsefi bir konu açılınca ilgin artabilir.',
             friends: 'Arkadaşlarından yeni bir fikir duymak sana keyifli gelebilir.',
-            home: 'Hep aynı şeyleri yapmak sana bir süre sonra sıkıcı gelebilir.',
+            home: 'Her gün aynı işlerle uğraşmak sana bir süre sonra sıkıcı gelebilir.',
           },
           parent: {
             school: 'Derste soyut ya da felsefi bir konu açılınca çocuğunuzun ilgisi artabilir.',
             friends: 'Arkadaşlarından yeni bir fikir duymak ona keyifli gelebilir.',
-            home: 'Hep aynı şeyleri yapmak ona bir süre sonra sıkıcı gelebilir.',
+            home: 'Her gün aynı işlerle uğraşmak ona bir süre sonra sıkıcı gelebilir.',
           },
           adult: {
             work: 'Bir işi yapmanın yeni bir yolunu düşünüp bulmak sana keyifli gelebilir.',
@@ -930,12 +930,12 @@ export const onAltiFaktorDaily: SurveyDaily = {
           student: {
             school: 'Ödevlerini hemen halledip yaptığın işi titizlikle bitirebilirsin.',
             friends: 'Ortak bir işte etrafı dağıtan biri seni rahatsız edebilir.',
-            home: 'Her şey mükemmel olana kadar uğraşabilirsin; bu bir işi uzatabilir.',
+            home: 'Bir iş kusursuz olana kadar uğraşabilirsin; bu bazen işi uzatabilir.',
           },
           parent: {
             school: 'Çocuğunuz ödevlerini hemen halledip yaptığı işi titizlikle bitirebilir.',
             friends: 'Ortak bir işte etrafı dağıtan biri onu rahatsız edebilir.',
-            home: 'Her şey mükemmel olana kadar uğraşabilir; bu bir işi uzatabilir.',
+            home: 'Bir iş kusursuz olana kadar uğraşabilir; bu bazen işi uzatabilir.',
           },
           adult: {
             work: 'Bir işi mükemmel olana kadar titizlikle sürdürebilirsin; bu zaman alabilir.',

@@ -7,18 +7,20 @@ import type { SurveyDaily } from './types';
  * saymaz, zor anın yanında bir dayanak söyler; dayanaklar birbirini yinelemez ve bu bölüm destek kutusunu anmaz.
  *
  * Kartlar:
- *  - Toplam (iyimserlik) kartında örnek yok, yönlendirme var (`pointer`; types.ts, denetim listesinin 11. maddesi). On
+ *  - Toplam (iyimserlik) kartında örnek yok, yönlendirme var (`pointer`; types.ts, denetim listesinin 5. maddesi). On
  *    maddenin her biri bir konunun kartında örneklenir. Toplamın kendi örnekleri ya bir konunun maddelerine dayanırdı (toplam
  *    ile o konu ayrı gruplara düşünce kişinin kendi cevaplarıyla çelişirdi; "Bilmekte yarar var" da toplamın öteki
  *    cümlelerden geldiğini söyleyebilir) ya da ruh hâli ve kendine bakış maddelerine (destek kutusunu açan cevap konu
  *    kartına düşer, toplam işaretlenmez; kutunun yanında "çoğu gün keyifli olabilirsin" gibi bir örnek kalırdı).
  *  - Hayata ve geleceğe bakış kartı geleceği soran üç maddeye (o01, o05, o06) dayanır.
- *  - Kendine bakış: düşük düzeyin örnekleri yalnızca "Kendimle barışığım" (o02) maddesine dayanır. Bu kartta örnek yalnızca
- *    "Kendimden hoşlanmam" (o07) maddesine "Oldukça doğru" ya da "Tamamen doğru" denmediyse görünür; o zaman o07'nin cevabı
- *    en çok ortadadır (düşük düzeyde o02 = 1 iken "Pek doğru değil" de olabilir: ayrışma kuralı düşük düzeye uygulanmaz).
- *    "Kendinden hoşlanmayabilirsin" demek bu cevaplarla çelişirdi.
+ *  - Kendine bakış: örnekler yalnızca "Kendimle barışığım" (o02) maddesine dayanır (types.ts, denetim listesinin 4. maddesi:
+ *    destek kutusunu açan madde satıra dayanak olmaz). Bu kartta örnek yalnızca "Kendimden hoşlanmam" (o07) maddesine
+ *    "Oldukça doğru" ya da "Tamamen doğru" denmediyse görünür; o zaman o07'nin cevabı en çok ortadadır (düşük düzeyde o02 = 1
+ *    iken "Pek doğru değil" de olabilir: ayrışma kuralı düşük düzeye uygulanmaz). "Kendinden hoşlanmayabilirsin" demek bu
+ *    cevaplarla çelişirdi.
  *  - Ruh hâli: aynı nedenle düşük düzeyin örnekleri "sık sık hüzünlü" demez (o08 işaretli değilse cevabı en çok ortadadır);
- *    o03 ("Kendimi nadiren hüzünlü hissederim") ve o10 ("Sık sık keyifsiz olurum") maddelerine dayanır.
+ *    bütün düzeylerin örnekleri o03 ("Kendimi nadiren hüzünlü hissederim") ve o10 ("Sık sık keyifsiz olurum") maddelerine
+ *    dayanır.
  * Mezun (13. sınıf) okul satırlarını "Okulda ya da derslerde" başlığıyla gördüğü için "sınıf" yerine "derste" denir;
  * yetişkinin ev satırı evdekilerden söz etmez (yalnız yaşayan yetişkin; geleceğe bakışın düşük düzeyinde `adult.home`).
  * Maddeye doğrudan dayanmayan tek uzantı dayanak cümleleridir (destek kutusunun ilk cümlesinin yumuşak bir yankısı). Her
@@ -98,8 +100,8 @@ export const iyimserlikDaily: SurveyDaily = {
       },
     },
     /*
-     * Kendine bakış. o02 "Kendimle barışığım"; ters: o07 "Kendimden hoşlanmam". Düşük düzeyin örnekleri yalnızca o02'ye
-     * dayanır (dosyanın başındaki açıklama). Orta düzey, iki cevabın da ortada olduğu durumdur ("Ne doğru ne yanlış").
+     * Kendine bakış. o02 "Kendimle barışığım"; ters: o07 "Kendimden hoşlanmam" (destek kutusunu açar). Bütün düzeylerin
+     * örnekleri yalnızca o02'ye dayanır (dosyanın başındaki açıklama). Orta düzey, o02'nin cevabının ortada olduğu durumdur.
      */
     kendine_bakis: {
       poles: { low: 'Kendine eleştirel bakar', high: 'Kendine olumlu bakar' },
@@ -121,15 +123,15 @@ export const iyimserlikDaily: SurveyDaily = {
           },
         },
         average: {
-          from: { school: ['o02'], friends: ['o07'], home: ['o02', 'o07'], work: ['o02'] },
+          from: { school: ['o02'], friends: ['o02'], home: ['o02'], work: ['o02'] },
           student: {
             school: 'Bazı günler derste kendinle barışık hissedebilir, bazı günler bundan emin olamayabilirsin.',
-            friends: 'Arkadaşlarınla birlikteyken kendinin bazı yanlarından hoşlanabilir, bazılarından hoşlanmayabilirsin.',
+            friends: 'Arkadaşlarınla birlikteyken bazen kendin gibi davranmak sana rahat gelebilir, bazen gelmeyebilir.',
             home: 'Kendin hakkındaki düşüncelerin günden güne değişebilir.',
           },
           parent: {
             school: 'Çocuğunuz bazı günler derste kendisiyle barışık hissedebilir, bazı günler bundan emin olamayabilir.',
-            friends: 'Arkadaşlarıyla birlikteyken kendisinin bazı yanlarından hoşlanabilir, bazılarından hoşlanmayabilir.',
+            friends: 'Arkadaşlarıyla birlikteyken bazen kendisi gibi davranmak ona rahat gelebilir, bazen gelmeyebilir.',
             home: 'Çocuğunuzun kendisi hakkındaki düşünceleri günden güne değişebilir.',
           },
           adult: {
@@ -156,7 +158,8 @@ export const iyimserlikDaily: SurveyDaily = {
     },
     /*
      * Ruh hâli. o03 "Kendimi nadiren hüzünlü hissederim"; ters: o08 "Sık sık kendimi hüzünlü hissederim", o10 "Sık sık
-     * keyifsiz olurum". Düşük düzeyin örnekleri o03 ve o10'a dayanır (dosyanın başındaki açıklama).
+     * keyifsiz olurum". Örnekler o03 ve o10'a dayanır; o08 destek kutusunu açtığı için hiçbir satırın dayanağı değildir
+     * (dosyanın başındaki açıklama).
      */
     ruh_hali: {
       poles: { low: 'Sık sık keyifsiz olur', high: 'Çoğu zaman keyifli olur' },
@@ -178,7 +181,7 @@ export const iyimserlikDaily: SurveyDaily = {
           },
         },
         average: {
-          from: { school: ['o10'], friends: ['o03', 'o08'], home: ['o03'], work: ['o10'] },
+          from: { school: ['o10'], friends: ['o03'], home: ['o03'], work: ['o10'] },
           student: {
             school: 'Bazı ders günlerinde keyifli, bazılarında keyifsiz olabilirsin.',
             friends: 'Arkadaşlarınla birlikteyken bazen keyifli, bazen biraz hüzünlü hissedebilirsin.',
@@ -194,7 +197,7 @@ export const iyimserlikDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['o10'], friends: ['o03', 'o08'], home: ['o03', 'o10'], work: ['o10'] },
+          from: { school: ['o10'], friends: ['o03'], home: ['o03', 'o10'], work: ['o10'] },
           student: {
             school: 'Yoğun bir ders gününde de çoğu zaman keyifli olabilirsin.',
             friends: 'Arkadaşlarınla birlikteyken kendini nadiren hüzünlü hissedebilirsin.',

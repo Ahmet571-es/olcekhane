@@ -72,12 +72,12 @@ export const dersCalismaMotivasyonuDaily: SurveyDaily = {
         high: {
           from: { school: ['IN3'], friends: ['IN2'], home: ['ID2', 'ID5'] },
           student: {
-            school: 'Zor bir konuyu sonunda anladığında bundan keyif alabilirsin.',
+            school: 'Zor bir konuyu uğraşa uğraşa anlayınca bundan keyif alabilirsin.',
             friends: 'Arkadaşlarınla ders çalışırken merak ettiğin bir sorunun cevabını bulmak hoşuna gidebilir.',
             home: 'Kendi seçtiğin bir hedefe ulaşmak için ders çalışmayı önemli bulabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz zor bir konuyu sonunda anladığında bundan keyif alabilir.',
+            school: 'Çocuğunuz zor bir konuyu uğraşa uğraşa anlayınca bundan keyif alabilir.',
             friends: 'Arkadaşlarıyla ders çalışırken merak ettiği bir sorunun cevabını bulmak hoşuna gidebilir.',
             home: 'Kendi seçtiği bir hedefe ulaşmak için ders çalışmayı önemli bulabilir.',
           },
@@ -176,12 +176,12 @@ export const dersCalismaMotivasyonuDaily: SurveyDaily = {
           from: { school: ['AM4'], friends: ['AM3'], home: ['AM1', 'AM2'] },
           student: {
             school: 'Şu sıralar ne kadar uğraşsan da derslerde istediğin sonucu alamayacakmışsın gibi gelebilir.',
-            friends: 'Arkadaşlarınla bir sınavı konuşurken çalışsan da çalışmasan da sonucun aynı olacağını düşünebilirsin.',
+            friends: 'Arkadaşlarınla bir sınavı konuşurken çalışmanın sonucu değiştirmeyeceğini düşünebilirsin.',
             home: 'Ders çalışmak sana şu sıralar anlamsız gelebilir; öğrendiklerinin hayatta işine yarayacağını göremeyebilirsin.',
           },
           parent: {
             school: 'Çocuğunuza şu sıralar ne kadar uğraşsa da derslerde istediği sonucu alamayacakmış gibi gelebilir.',
-            friends: 'Arkadaşlarıyla bir sınavı konuşurken çalışsa da çalışmasa da sonucun aynı olacağını düşünebilir.',
+            friends: 'Arkadaşlarıyla bir sınavı konuşurken çalışmasının sonucu değiştirmeyeceğini düşünebilir.',
             home: 'Ders çalışmak ona şu sıralar anlamsız gelebilir; öğrendiklerinin hayatta işine yarayacağını göremeyebilir.',
           },
         },

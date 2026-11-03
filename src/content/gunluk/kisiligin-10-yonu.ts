@@ -134,12 +134,12 @@ export const kisiligin10YonuDaily: SurveyDaily = {
         high: {
           from: { school: ['com03', 'com01'], friends: ['com02', 'com04'], home: ['pol02', 'pol03'], work: ['com05', 'com01'] },
           student: {
-            school: 'Üzgün bir sınıf arkadaşının duygularına ortak olup yanında durabilirsin.',
+            school: 'Üzgün bir ders arkadaşının duygularına ortak olup yanında durabilirsin.',
             friends: 'Arkadaşlarının hâlini hatırını sorup hayatlarıyla ilgilenebilirsin.',
             home: 'Israrcı görünmemek için evdekilere bir isteğini söylemeyi erteleyebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz üzgün bir sınıf arkadaşının duygularına ortak olup yanında durabilir.',
+            school: 'Çocuğunuz üzgün bir ders arkadaşının duygularına ortak olup yanında durabilir.',
             friends: 'Arkadaşlarının hâlini hatırını sorup hayatlarıyla ilgilenebilir.',
             home: 'Israrcı görünmemek için evdekilere bir isteğini söylemeyi erteleyebilir.',
           },

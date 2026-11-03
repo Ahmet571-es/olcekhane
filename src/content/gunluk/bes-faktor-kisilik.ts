@@ -31,12 +31,12 @@ export const besFaktorDaily: SurveyDaily = {
         low: {
           from: { school: ['E2', 'E8'], friends: ['E4', 'E10', 'E5'], home: ['E3', 'E7'] },
           student: {
-            school: 'Sınıfta söz almak yerine çoğu zaman dinlemeyi seçebilirsin.',
+            school: 'Derste söz almak yerine çoğu zaman dinlemeyi seçebilirsin.',
             friends: 'Kalabalık bir grup yerine az kişiyle vakit geçirmek sana daha rahat gelebilir. Tanımadığın biriyle sohbete başlamak ise zor gelebilir.',
             home: 'Kalabalık bir günün ardından kendi başına sakin bir zaman geçirmek sana iyi gelebilir.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfta söz almak yerine çoğu zaman dinlemeyi seçebilir.',
+            school: 'Çocuğunuz derste söz almak yerine çoğu zaman dinlemeyi seçebilir.',
             friends: 'Kalabalık bir grup yerine az kişiyle vakit geçirmek ona daha rahat gelebilir. Tanımadığı biriyle sohbete başlamak ise zor gelebilir.',
             home: 'Kalabalık bir günün ardından kendi başına sakin bir zaman geçirmek ona iyi gelebilir.',
           },
@@ -57,12 +57,12 @@ export const besFaktorDaily: SurveyDaily = {
         high: {
           from: { school: ['E9', 'E2'], friends: ['E5', 'E7'], home: ['E3'] },
           student: {
-            school: 'Sınıfta söz almak ya da herkesin önünde konuşmak seni çoğu zaman rahatsız etmeyebilir.',
+            school: 'Derste söz almak ya da herkesin önünde konuşmak seni çoğu zaman rahatsız etmeyebilir.',
             friends: 'Yeni tanıştığın biriyle sohbeti sen başlatabilir, kalabalıkta pek çok kişiyle konuşabilirsin.',
             home: 'Uzun süre tek başına kalınca canın sıkılabilir; birileriyle konuşmak seni canlandırabilir.',
           },
           parent: {
-            school: 'Sınıfta söz almak ya da herkesin önünde konuşmak çocuğunuzu çoğu zaman rahatsız etmeyebilir.',
+            school: 'Derste söz almak ya da herkesin önünde konuşmak çocuğunuzu çoğu zaman rahatsız etmeyebilir.',
             friends: 'Yeni tanıştığı biriyle sohbeti o başlatabilir, kalabalıkta pek çok kişiyle konuşabilir.',
             home: 'Uzun süre tek başına kalınca canı sıkılabilir; birileriyle konuşmak onu canlandırabilir.',
           },
@@ -107,12 +107,12 @@ export const besFaktorDaily: SurveyDaily = {
         high: {
           from: { school: ['A10', 'A4'], friends: ['A8', 'A9'], home: ['A8'] },
           student: {
-            school: 'Grup çalışmasında herkesin rahat etmesini gözetebilir, üzgün bir sınıf arkadaşının yanına gidebilirsin.',
+            school: 'Grup çalışmasında herkesin rahat etmesini gözetebilir, üzgün bir ders arkadaşının yanına gidebilirsin.',
             friends: 'Bir arkadaşın derdini anlatınca ona zaman ayırır, ne hissettiğini anlamaya çalışabilirsin.',
             home: 'Evdekilere yardım ederken kendi işlerine zaman ayırmayı unutabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz grup çalışmasında herkesin rahat etmesini gözetebilir, üzgün bir sınıf arkadaşının yanına gidebilir.',
+            school: 'Çocuğunuz grup çalışmasında herkesin rahat etmesini gözetebilir, üzgün bir ders arkadaşının yanına gidebilir.',
             friends: 'Bir arkadaşı derdini anlatınca ona zaman ayırır, ne hissettiğini anlamaya çalışabilir.',
             home: 'Evdekilere yardım ederken kendi işlerine zaman ayırmayı unutabilir.',
           },

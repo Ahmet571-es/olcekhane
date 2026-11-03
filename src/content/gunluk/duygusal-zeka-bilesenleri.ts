@@ -75,16 +75,16 @@ export const duygusalZekaBilesenleriDaily: SurveyDaily = {
           student: {
             school: 'Sınavdan iyi bir not alınca sevincini çoğu zaman açıkça gösterebilirsin.',
             friends: 'Arkadaşlarınla bir şeye sevindiğinde bunu coşkuyla belli edebilirsin.',
-            home: 'Evdekilere sevgini sarılarak ya da dokunarak gösterebilirsin.',
+            home: 'Evdekilere sevgini bir sarılmayla ya da dokunuşla gösterebilirsin.',
           },
           parent: {
             school: 'Sınavdan iyi bir not alınca çocuğunuz sevincini çoğu zaman açıkça gösterebilir.',
             friends: 'Arkadaşlarıyla bir şeye sevindiğinde bunu coşkuyla belli edebilir.',
-            home: 'Evdekilere sevgisini sarılarak ya da dokunarak gösterebilir.',
+            home: 'Evdekilere sevgisini bir sarılmayla ya da dokunuşla gösterebilir.',
           },
           adult: {
             work: 'Bir işi iyi bitirince sevincini çoğu zaman açıkça gösterebilirsin.',
-            home: 'Sevdiklerine sevgini sarılarak ya da dokunarak gösterebilirsin.',
+            home: 'Sevdiklerine sevgini bir sarılmayla ya da dokunuşla gösterebilirsin.',
           },
         },
       },
@@ -427,12 +427,12 @@ export const duygusalZekaBilesenleriDaily: SurveyDaily = {
           from: { school: ['empc09', 'empc01'], friends: ['empc01', 'empc06'], home: ['empc02'], work: ['empc09', 'empc01'] },
           student: {
             school: 'Ders arkadaşlarından birinin sorununu bazen önemseyebilir, bazen onunla ilgilenmek istemeyebilirsin.',
-            friends: 'Arkadaş ortamında başkalarının iyi olup olmadığını bazen merak edebilir, bazen pek düşünmeyebilirsin.',
+            friends: 'Arkadaş ortamında başkalarının nasıl olduğunu bazen merak edebilir, bazen pek düşünmeyebilirsin.',
             home: 'Haberlerde zor durumdaki insanlar anlatılınca bazen onlara şefkat duyabilir, bazen mesafeli kalabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz ders arkadaşlarından birinin sorununu bazen önemseyebilir, bazen onunla ilgilenmek istemeyebilir.',
-            friends: 'Arkadaş ortamında başkalarının iyi olup olmadığını bazen merak edebilir, bazen pek düşünmeyebilir.',
+            friends: 'Arkadaş ortamında başkalarının nasıl olduğunu bazen merak edebilir, bazen pek düşünmeyebilir.',
             home: 'Haberlerde zor durumdaki insanlar anlatılınca bazen onlara şefkat duyabilir, bazen mesafeli kalabilir.',
           },
           adult: {
@@ -443,12 +443,12 @@ export const duygusalZekaBilesenleriDaily: SurveyDaily = {
           from: { school: ['empc01', 'empc09'], friends: ['empc01'], home: ['empc02'], work: ['empc01', 'empc09'] },
           student: {
             school: 'Ders arkadaşlarından birinin bir sorunu olduğunu duyunca bunu önemseyebilirsin.',
-            friends: 'Arkadaş ortamında başkalarının iyi olup olmadığını çoğu zaman merak edebilirsin.',
+            friends: 'Arkadaş ortamında başkalarının nasıl olduğunu çoğu zaman merak edebilirsin.',
             home: 'Haberlerde zor durumdaki insanlar anlatılınca onlara şefkat duyabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz ders arkadaşlarından birinin bir sorunu olduğunu duyunca bunu önemseyebilir.',
-            friends: 'Arkadaş ortamında başkalarının iyi olup olmadığını çoğu zaman merak edebilir.',
+            friends: 'Arkadaş ortamında başkalarının nasıl olduğunu çoğu zaman merak edebilir.',
             home: 'Haberlerde zor durumdaki insanlar anlatılınca onlara şefkat duyabilir.',
           },
           adult: {

@@ -36,12 +36,12 @@ export const cocukKisilikDaily: SurveyDaily = {
           from: { school: ['E6'], friends: ['E2'], home: ['E4'] },
           student: {
             school: 'Sınıfta söz almak yerine çoğu zaman arkadaşlarını dinlemeyi seçebilirsin.',
-            friends: 'Teneffüste tanımadığın bir çocukla konuşmaya başlamak sana zor gelebilir.',
+            friends: 'Teneffüste tanımadığın bir çocukla konuşmayı başlatmak sana zor gelebilir.',
             home: 'Kalabalık bir misafirlikte geride durmak sana daha rahat gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz sınıfta söz almak yerine çoğu zaman arkadaşlarını dinlemeyi seçebilir.',
-            friends: 'Teneffüste tanımadığı bir çocukla konuşmaya başlamak ona zor gelebilir.',
+            friends: 'Teneffüste tanımadığı bir çocukla konuşmayı başlatmak ona zor gelebilir.',
             home: 'Kalabalık bir misafirlikte geride durmak ona daha rahat gelebilir.',
           },
         },
@@ -232,12 +232,12 @@ export const cocukKisilikDaily: SurveyDaily = {
         low: {
           from: { school: ['I4'], friends: ['I3'], home: ['I1'] },
           student: {
-            school: 'Derste bir konuyu ayrıntısıyla araştırmak sana pek çekici gelmeyebilir.',
+            school: 'Derste bir konunun ayrıntılarını araştırmak sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarınla yeni bir oyun uydurmak yerine bildiğin bir oyunu oynamak sana keyifli gelebilir.',
             home: 'Hayal kurmak yerine çoğu zaman o an yaptığın işe odaklanabilirsin.',
           },
           parent: {
-            school: 'Derste bir konuyu ayrıntısıyla araştırmak çocuğunuza pek çekici gelmeyebilir.',
+            school: 'Derste bir konunun ayrıntılarını araştırmak çocuğunuza pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarıyla yeni bir oyun uydurmak yerine bildiği bir oyunu oynamak ona keyifli gelebilir.',
             home: 'Hayal kurmak yerine çoğu zaman o an yaptığı işe odaklanabilir.',
           },
@@ -258,13 +258,13 @@ export const cocukKisilikDaily: SurveyDaily = {
         high: {
           from: { school: ['I4', 'I6'], friends: ['I5', 'I3'], home: ['I1'] },
           student: {
-            school: 'Merak ettiğin bir konuyu ayrıntısıyla araştırmak ya da onunla ilgili bir kitap okumak isteyebilirsin.',
-            friends: 'Oyun oynarken sık sık yeni fikirler ya da yeni kurallar bulabilirsin.',
+            school: 'Merak ettiğin bir konunun ayrıntılarını araştırmak ya da onunla ilgili bir kitap okumak isteyebilirsin.',
+            friends: 'Oyun oynarken çoğu zaman yeni fikirler ya da yeni kurallar bulabilirsin.',
             home: 'Hayallere dalıp yapman gereken bir işi unutabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz merak ettiği bir konuyu ayrıntısıyla araştırmak ya da onunla ilgili bir kitap okumak isteyebilir.',
-            friends: 'Oyun oynarken sık sık yeni fikirler ya da yeni kurallar bulabilir.',
+            school: 'Çocuğunuz merak ettiği bir konunun ayrıntılarını araştırmak ya da onunla ilgili bir kitap okumak isteyebilir.',
+            friends: 'Oyun oynarken çoğu zaman yeni fikirler ya da yeni kurallar bulabilir.',
             home: 'Hayallere dalıp yapması gereken bir işi unutabilir.',
           },
         },

@@ -60,13 +60,13 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
         high: {
           from: { school: ['P3'], friends: ['P5'], home: ['P1', 'P2'] },
           student: {
-            school: 'Bir sınava son güne bırakmadan, günler öncesinden hazırlanmaya başlayabilirsin.',
-            friends: 'Arkadaşlarınla ortak bir ödevde işi küçük parçalara bölüp her birine zaman ayırabilirsin.',
+            school: 'Bir sınava çalışmaya son günü beklemeden, birkaç gün önceden başlayabilirsin.',
+            friends: 'Arkadaşlarınla ortak bir ödevde işi küçük adımlara ayırıp her adıma bir zaman verebilirsin.',
             home: 'Çalışmaya oturmadan önce o gün neyi çalışacağını belirleyebilir, haftalık planına uymaya çalışabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bir sınava son güne bırakmadan, günler öncesinden hazırlanmaya başlayabilir.',
-            friends: 'Arkadaşlarıyla ortak bir ödevde işi küçük parçalara bölüp her birine zaman ayırabilir.',
+            school: 'Çocuğunuz bir sınava çalışmaya son günü beklemeden, birkaç gün önceden başlayabilir.',
+            friends: 'Arkadaşlarıyla ortak bir ödevde işi küçük adımlara ayırıp her adıma bir zaman verebilir.',
             home: 'Çalışmaya oturmadan önce o gün neyi çalışacağını belirleyebilir, haftalık planına uymaya çalışabilir.',
           },
         },
@@ -112,12 +112,12 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
           student: {
             school: 'Bir sınavdan önce kendine sınavda çıkabilecek sorular sorabilirsin.',
             friends: 'Arkadaşlarınla çalışırken soru kartlarıyla ya da soru çözerek kendini sınayabilirsin.',
-            home: 'Bir konuyu çalıştıktan sonra kitaba bakmadan neler hatırladığını kontrol edebilirsin.',
+            home: 'Çalışmayı bitirince kitabı kapatıp aklında neler kaldığını kendine sorabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir sınavdan önce kendine sınavda çıkabilecek sorular sorabilir.',
             friends: 'Arkadaşlarıyla çalışırken soru kartlarıyla ya da soru çözerek kendini sınayabilir.',
-            home: 'Bir konuyu çalıştıktan sonra kitaba bakmadan neler hatırladığını kontrol edebilir.',
+            home: 'Çalışmayı bitirince kitabı kapatıp aklında neler kaldığını kendine sorabilir.',
           },
         },
       },
@@ -212,12 +212,12 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
           student: {
             school: 'Ders çalışırken dikkatini çoğu zaman işin üzerinde tutabilirsin.',
             friends: 'Yanında telefon varsa ders çalışırken mesajlara bakmayı çoğu zaman sonraya bırakabilirsin.',
-            home: 'Ders çalışmak için dikkatini dağıtan şeylerin olmadığı bir yer seçebilir, arada kısa molalar verebilirsin.',
+            home: 'Ders çalışmak için dikkatini çeken şeylerden uzak bir yer seçebilir, arada kısa molalar verebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz ders çalışırken dikkatini çoğu zaman işin üzerinde tutabilir.',
             friends: 'Yanında telefon varsa ders çalışırken mesajlara bakmayı çoğu zaman sonraya bırakabilir.',
-            home: 'Ders çalışmak için dikkatini dağıtan şeylerin olmadığı bir yer seçebilir, arada kısa molalar verebilir.',
+            home: 'Ders çalışmak için dikkatini çeken şeylerden uzak bir yer seçebilir, arada kısa molalar verebilir.',
           },
         },
       },

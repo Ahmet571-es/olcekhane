@@ -30,17 +30,17 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
         low: {
           from: { school: ['S3'], friends: ['S1'], home: ['S2'], work: ['S3'] },
           student: {
-            school: 'Teslimine bol zaman olan bir ödevi son güne bırakabilirsin.',
+            school: 'Teslim tarihi uzak bir ödevi son güne bırakabilirsin.',
             friends: 'Arkadaşlarınla buluşmadan önce bitirmen gereken bir işi, sonra sıkışacağını bilsen de erteleyebilirsin.',
-            home: 'Yapman gereken bir iş varken “Önce şunu da halledeyim” deyip başka şeylerle vakit geçirebilirsin.',
+            home: 'Yapman gereken bir iş dururken “Önce şu küçük işi bitireyim” deyip vakit geçirebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz teslimine bol zaman olan bir ödevi son güne bırakabilir.',
+            school: 'Çocuğunuz teslim tarihi uzak bir ödevi son güne bırakabilir.',
             friends: 'Arkadaşlarıyla buluşmadan önce bitirmesi gereken bir işi, sonra sıkışacağını bilse de erteleyebilir.',
-            home: 'Yapması gereken bir iş varken “Önce şunu da halledeyim” deyip başka şeylerle vakit geçirebilir.',
+            home: 'Yapması gereken bir iş dururken “Önce şu küçük işi bitireyim” deyip vakit geçirebilir.',
           },
           adult: {
-            work: 'Teslimine bol zaman olan bir işi son güne bırakabilirsin.',
+            work: 'Teslim tarihi uzak bir işi en sona bırakabilirsin.',
           },
         },
         average: {
@@ -72,7 +72,7 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
             home: 'Yapması gereken bir işe zamanı gelince başka şeylerle oyalanmadan başlayabilir.',
           },
           adult: {
-            work: 'Sana bir iş verildiğinde ona çoğu zaman aynı gün başlayabilirsin.',
+            work: 'Sana bir görev verilince ona çoğu zaman aynı gün başlayabilirsin.',
           },
         },
       },
@@ -89,17 +89,17 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
         low: {
           from: { school: ['P3'], friends: ['P4'], home: ['P1'], work: ['P3'] },
           student: {
-            school: 'Uzun bir proje ödevine ara hedefler ve tarihler koymadan başlayabilirsin.',
+            school: 'Uzun bir proje ödevine onu aşamalara ve günlere bölmeden başlayabilirsin.',
             friends: 'Arkadaşlarınla bir işin ne zaman ve nerede yapılacağını önceden pek kararlaştırmayabilirsin.',
             home: 'Yapacaklarını bir yere not etmek yerine aklında tutmaya çalışabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz uzun bir proje ödevine ara hedefler ve tarihler koymadan başlayabilir.',
+            school: 'Çocuğunuz uzun bir proje ödevine onu aşamalara ve günlere bölmeden başlayabilir.',
             friends: 'Arkadaşlarıyla bir işin ne zaman ve nerede yapılacağını önceden pek kararlaştırmayabilir.',
             home: 'Yapacaklarını bir yere not etmek yerine aklında tutmaya çalışabilir.',
           },
           adult: {
-            work: 'Uzun süren bir işe ara hedefler ve tarihler koymadan başlayabilirsin.',
+            work: 'Uzun süren bir işe onu aşamalara ve günlere bölmeden başlayabilirsin.',
           },
         },
         average: {
@@ -121,17 +121,17 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
         high: {
           from: { school: ['P3'], friends: ['P4'], home: ['P1', 'P2'], work: ['P3'] },
           student: {
-            school: 'Uzun süren bir ödev için kendine ara hedefler ve tarihler koyabilirsin.',
+            school: 'Uzun süren bir ödevi aşamalara ayırıp her aşamaya bir gün belirleyebilirsin.',
             friends: 'Arkadaşlarınla bir işin ne zaman ve nerede yapılacağını önceden kararlaştırmak isteyebilirsin.',
             home: 'Yapacaklarını bir yere not edip önem ve aciliyetine göre sıraya koyabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz uzun süren bir ödev için kendine ara hedefler ve tarihler koyabilir.',
+            school: 'Çocuğunuz uzun süren bir ödevi aşamalara ayırıp her aşamaya bir gün belirleyebilir.',
             friends: 'Arkadaşlarıyla bir işin ne zaman ve nerede yapılacağını önceden kararlaştırmak isteyebilir.',
             home: 'Yapacaklarını bir yere not edip önem ve aciliyetine göre sıraya koyabilir.',
           },
           adult: {
-            work: 'Uzun süren bir iş için kendine ara hedefler ve tarihler koyabilirsin.',
+            work: 'Uzun süren bir işi aşamalara ayırıp her aşamaya bir tarih koyabilirsin.',
           },
         },
       },
@@ -149,13 +149,13 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
           from: { school: ['E2'], friends: ['E1'], home: ['E5'], work: ['E2'] },
           student: {
             school: 'Yarım saat sürer diye düşündüğün bir ödev daha uzun sürebilir.',
-            friends: 'Arkadaşlarınla ortak bir işin ne kadar süreceğini isabetli tahmin etmek sana zor gelebilir.',
-            home: 'Hafta sonu zamanın nereye gittiğini anlamadan akşam olduğunu fark edebilirsin.',
+            friends: 'Arkadaşlarınla ortak bir işin kaç saat ya da kaç gün süreceğini kestirmek sana zor gelebilir.',
+            home: 'Hafta sonu saatlerin nasıl geçtiğini anlamadan akşam olduğunu fark edebilirsin.',
           },
           parent: {
             school: 'Çocuğunuzun yarım saat sürer diye düşündüğü bir ödev daha uzun sürebilir.',
-            friends: 'Arkadaşlarıyla ortak bir işin ne kadar süreceğini isabetli tahmin etmek ona zor gelebilir.',
-            home: 'Hafta sonu zamanın nereye gittiğini anlamadan akşam olduğunu fark edebilir.',
+            friends: 'Arkadaşlarıyla ortak bir işin kaç saat ya da kaç gün süreceğini kestirmek ona zor gelebilir.',
+            home: 'Hafta sonu saatlerin nasıl geçtiğini anlamadan akşam olduğunu fark edebilir.',
           },
           adult: {
             work: 'Yarım saat sürer diye düşündüğün bir iş daha uzun sürebilir.',
@@ -181,16 +181,16 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
           from: { school: ['E1'], friends: ['E3', 'E4'], home: ['E5'], work: ['E1'] },
           student: {
             school: 'Bir ödevin ne kadar süreceğini çoğu zaman isabetli tahmin edebilirsin.',
-            friends: 'Arkadaşlarınla bir iş planlarken benzer işlerin ne kadar sürdüğünü hesaba katıp biraz pay bırakabilirsin.',
-            home: 'Gün içinde zamanın nereye gittiğinin çoğu zaman farkında olabilirsin.',
+            friends: 'Arkadaşlarınla bir iş planlarken benzer işlerin ne kadar sürdüğünü düşünüp biraz pay bırakabilirsin.',
+            home: 'Gün boyunca zamanını nelere harcadığının çoğu zaman farkında olabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir ödevin ne kadar süreceğini çoğu zaman isabetli tahmin edebilir.',
-            friends: 'Arkadaşlarıyla bir iş planlarken benzer işlerin ne kadar sürdüğünü hesaba katıp biraz pay bırakabilir.',
-            home: 'Gün içinde zamanın nereye gittiğinin çoğu zaman farkında olabilir.',
+            friends: 'Arkadaşlarıyla bir iş planlarken benzer işlerin ne kadar sürdüğünü düşünüp biraz pay bırakabilir.',
+            home: 'Gün boyunca zamanını nelere harcadığının çoğu zaman farkında olabilir.',
           },
           adult: {
-            work: 'Bir işin ne kadar süreceğini çoğu zaman isabetli tahmin edebilirsin.',
+            work: 'Bir işin süresini çoğu zaman doğruya yakın kestirebilirsin.',
           },
         },
       },
@@ -207,17 +207,17 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
         low: {
           from: { school: ['F2'], friends: ['F3'], home: ['F1'], work: ['F2'] },
           student: {
-            school: 'Bir ödevin ortasında aklına gelen başka bir şeye geçiverebilirsin.',
+            school: 'Bir ödevi yaparken aklına başka bir şey gelince hemen ona geçebilirsin.',
             friends: 'Arkadaşların eğlenceli bir şey önerince yaptığın işi yarıda bırakabilirsin.',
             home: 'Bir işle uğraşırken kendini bir ekrana bakarken bulabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bir ödevin ortasında aklına gelen başka bir şeye geçiverebilir.',
+            school: 'Çocuğunuz bir ödevi yaparken aklına başka bir şey gelince hemen ona geçebilir.',
             friends: 'Arkadaşları eğlenceli bir şey önerince yaptığı işi yarıda bırakabilir.',
             home: 'Bir işle uğraşırken kendini bir ekrana bakarken bulabilir.',
           },
           adult: {
-            work: 'Bir işin ortasında aklına gelen başka bir şeye geçiverebilirsin.',
+            work: 'Bir işi yaparken aklına başka bir şey gelince hemen ona geçebilirsin.',
           },
         },
         average: {
@@ -268,12 +268,12 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
           student: {
             school: 'Sınav haftalarında yetiştirmen gereken işlerin altında ezildiğini hissedebilirsin.',
             friends: 'Yapacakların çok olduğu için arkadaşlarınla sevdiğin şeylere zaman ayırmak zor gelebilir.',
-            home: 'İşler üst üste binince hangisinden başlayacağını şaşırabilirsin.',
+            home: 'Birçok iş aynı anda birikince hangisinden başlayacağını şaşırabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz sınav haftalarında yetiştirmesi gereken işlerin altında ezildiğini hissedebilir.',
             friends: 'Yapacakları çok olduğu için arkadaşlarıyla sevdiği şeylere zaman ayırmak ona zor gelebilir.',
-            home: 'İşler üst üste binince hangisinden başlayacağını şaşırabilir.',
+            home: 'Birçok iş aynı anda birikince hangisinden başlayacağını şaşırabilir.',
           },
           adult: {
             work: 'Yoğun dönemlerde yetiştirmen gereken işlerin altında ezildiğini hissedebilirsin.',

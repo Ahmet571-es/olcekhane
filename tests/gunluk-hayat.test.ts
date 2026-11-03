@@ -190,37 +190,115 @@ const BANNED =
 const ABSOLUTE = /(?<!\p{L})(?:hiçbir zaman|daima|mutlaka|her seferinde|hiç)(?!\p{L})/iu;
 /** Başkalarıyla karşılaştırma ("arkadaşlarından daha", "sınıftakilerden daha"). */
 const PEER = /\p{L}+(?:dan|den|tan|ten) daha(?!\p{L})/iu;
-/** Yaygınlık ve gruptaki rol ("bu düzeydeki birçok kişide", "ortamı sakinleştiren kişi sen olabilirsin"). */
-const PREVALENCE = /(?:kişi|biri) (?:sen|o) olabil|birçok (?:kişi|çocuk|öğrenci|genç)|bu düzeydeki|çoğu (?:kişi|çocuk|öğrenci|genç)|herkes gibi/iu;
+/**
+ * Yaygınlık ve gruptaki rol ("bu düzeydeki birçok kişide", "çoğu çocuk", "ortamı sakinleştiren kişi sen olabilirsin").
+ * "Birçok kişi" yalın, -de ya da ilgi hâlindeyse yaygınlık söyler; "birçok kişiyle", "birçok kişiye" bir sahnedir.
+ */
+const PREVALENCE =
+  /(?:kişi|biri) (?:sen|o) olabil|(?:birçok|çoğu) (?:kişi|çocuk|öğrenci|genç|insan)(?:ler|lar)?(?:de|da|te|ta|in|ın|nin|nın)?(?!\p{L})|bu düzeydeki|herkes gibi/iu;
 /** Klinik ya da korkutan sözcükler. */
 const CLINICAL = /(?<!\p{L})(?:panik|atak|travma|kendine zarar|intihar|ilaç|tedavi|terapi|psikolog|psikiyatr|semptom|belirti)/iu;
 /** Yetenek ya da zekâ söyleyen sözcükler ("zekâ oyunu" bir oyunun adıdır). */
 const TALENT = /(?<!\p{L})(?:yetenek|kabiliyet|üstün(?!\p{L})|üstünlü|deha|zeki|zekâ(?! oyun)|zeka(?! oyun))/iu;
-/** Kapsayıcılık: herkesin hayatında olmayan şeyler (checklist 8). */
+/** Kapsayıcılık: herkesin hayatında olmayan şeyler (denetim listesinin 14. maddesi). */
 const INCLUSION = /(?<!\p{L})(?:asansör|kendi odan|kendi odası|özel ders|yurt dışı|bahçe|araba|otomobil|tatile|kardeş|yakın arkadaş|en iyi arkadaş|bir iki yakın)/iu;
 /** 1–4. sınıfa açık testlerde telefon, mesaj ve internet varsayılmaz. */
 const DEVICES = /(?<!\p{L})(?:telefon|mesaj|tablet|internet|bilgisayar|sosyal medya)/iu;
-/** Uçlarda değer taşıyan sözcükler (checklist 9). */
+/** Uçlarda değer taşıyan sözcükler (denetim listesinin 23. maddesi). */
 const POLE_BANNED = /(?<!\p{L})(?:yüzeysel|yetin|kaçın|zayıf|eksik|yetersiz|tembel|dağınık|pasif|sıkıcı|pratik)/iu;
-/** Veli metninde olmaması gereken "sen" ekleri ve sözcükleri. */
-const SECOND_PERSON =
-  /(?<!\p{L})(?:sen|senin|sana|seni|sende|senden|seninle)(?!\p{L})|\p{L}{3,}(?:sın|sin|sun|sün)(?!\p{L})|\p{L}+(?:ınla|inle|unla|ünle)(?!\p{L})/iu;
-// "Herkesin" ilgi hâlidir (herkes + -in); "olsun" ve "onunla" üçüncü kişidir.
-const SECOND_PERSON_OK = new Set(['olsun', 'onunla', 'herkesin']);
-const hasSecondPerson = (t: string) => {
-  const words = t.toLocaleLowerCase('tr-TR').match(/\p{L}+/gu) ?? [];
-  return words.some((w) => !SECOND_PERSON_OK.has(w) && SECOND_PERSON.test(w));
-};
+
+/* ---------- İkinci kişi ("sen") ---------- */
+
 /**
- * İkinci kişi iyelik eki ve "-dığın" ortacı ("ilgini çeken", "merak ettiğin", "eşyaların"): veli metninde olmaz, öğrenci
- * metninde "sen" dilinin işaretidir. ("Kendini", "kendine" üçüncü kişide de doğrudur; "bir arkadaşın derdi" ilgi hâlidir:
- * aranmaz.)
+ * Satırdaki ikinci tekil kişi ("sen") işaretleri. Öğrenci ve yetişkin satırı en az birini taşır; veli satırı hiçbir kesin
+ * işaret taşımaz. Metin tırnak içinden arındırılır (tırnak içi birinin sözüdür: “kalemler bırakılsın”), tr-TR küçük harfe
+ * çevrilir ("Seni") ve virgül, noktalı virgül gibi işaretlerde yan cümlelere bölünür; her sözcüğe bakılır.
+ *
+ * Kesin işaretler (yalnızca "sen" dilinde yazılır):
+ *  - zamirler: sen, senin, sana, seni, sende, senden, seninle, sence; dönüşlü kendin, kendinle, kendinin;
+ *  - kişi eki -sın ("edebilirsin", "alamayacakmışsın"): ama "herkesin", "olsun", "… -sın diye" (üçüncü kişi istek:
+ *    "sığsın diye") ve "-sa … -sın" ("ne yaparsa yapsın"; ikinci kişide "ne yaparsan yap") değil; s ile biten adın ilgi
+ *    hâli ("dersin sonunda") de değil;
+ *  - dilek-şart -san ("çalışsan", "zorlanırsan"): sözcüğün kendisi -san/-sen ile biten adlar ve -an ortacı ("insan",
+ *    "kesen", "küsen") değil;
+ *  - mastar + iyelik -man ("yapman", "duymanı"): "zaman", "hemen", "öğretmen" gibi kendisi -man ile bitenler değil; ilgi
+ *    hâli ("yapmanın yolu") herkes için aynı yazıldığı için aranmaz;
+ *  - sıfat-fiil + iyelik, yalın: -dığın, -acağın ("tanımadığın", "yapacağın"); çoğulu -dıkların, -acakların;
+ *  - iyelik + vasıta -ınla ("arkadaşlarınla"): kökü n ile bitenler ("sorunla", "oyunla") ve "onunla", "bununla",
+ *    "şununla" değil;
+ *  - ünlüyle biten adların -n'li iyeliği (üçüncü kişide -sı gelir: kafan/kafası): kafan, ilgini, çantanı, ailene… ("karşın"
+ *    bir bağlaç, "bilgin" bir addır);
+ *  - yalın iyelikli adlar (canın, moralin, dikkatin, eşyaların, sözlerin, arkadaşların…).
+ * Sıfat-fiilin çoğulu ve yalın iyelikli adlar ilgi hâliyle aynı yazılır ("eşyaların yerini", "duyduğu sözlerin
+ * bazılarına"): aynı yan cümlede ardından gelen iki sözcükten biri üçüncü kişi iyeliği taşıyorsa ilgi hâli sayılır.
+ *
+ * Belirsiz işaretler (üçüncü kişide de aynı yazılır: "onun hoşuna", "ne yapacağını"): hoşuna, aklına, aklında, kendini,
+ * kendine, -dığını, -acağına… Öğrenci satırında "sen" işareti sayılır, veli satırında aranmaz.
+ *
+ * Bilinen sınır: geçmiş zamanın -dın eki ("yaptın") ve ikinci kişi emir aranmaz (temkinli örneklerde kullanılmaz); sözlükte
+ * olmayan bir adın yalın iyeliği ("işin") ilgi hâliyle karıştığı için aranmaz. Örnek tablosu "dil denetimlerinin kendisi"
+ * testindedir.
  */
-const POSSESSIVE_2 =
-  /\p{L}+(?:dığın|diğin|duğun|düğün|tığın|tiğin|tuğun|tüğün)(?!\p{L})|(?<!\p{L})(?:kendin|ilgin|ilgini|canın|sinirin|moralin|hâlin|eşyaların|arkadaşların|arkadaşlarınla)(?!\p{L})/iu;
-/** "Sen" diliyle yazıldığını gösteren ekler ve sözcükler. */
-const ADDRESSES_YOU = /(?:sın|sin|sun|sün|sınız|siniz)(?!\p{L})|(?<!\p{L})(?:sen|sana|seni|senin)(?!\p{L})|\p{L}(?:ınla|inle|unla|ünle)(?!\p{L})/u;
-const addressesYou = (t: string) => ADDRESSES_YOU.test(t) || POSSESSIVE_2.test(t);
+const YOU_PRONOUN = /^(?:sen|senin|sana|seni|sende|senden|seninle|sence|kendin|kendinle|kendinin)$/u;
+const YOU_VERB = /^\p{L}{3,}(?:sın|sin|sun|sün)$/u;
+const YOU_VERB_NOT = new Set(['herkesin', 'olsun']);
+/** S ile biten adların ilgi hâli ("dersin sonunda", "sesin geldiği"). */
+const S_GENITIVE = new Set(['dersin', 'sesin', 'hissin', 'kasın', 'otobüsün', 'kursun']);
+const YOU_IF = /^\p{L}{2,}(?:san|sen)$/u;
+const YOU_IF_NOT = new Set(['insan', 'nisan', 'kesen', 'küsen', 'basan', 'susan', 'esen', 'asan', 'kısan']);
+const YOU_INF = /^\p{L}{2,}(?:ma|me)n(?:ı|i|a|e|da|de|dan|den|la|le)?$/u;
+const YOU_INF_NOT = /^(?:zaman|hemen|roman|pişman|öğretmen|eğitmen|yönetmen|uzman|düşman|tamamen|orman|kahraman|liman|duman|yaman|harman|derman|çimen)/u;
+const YOU_PART = /\p{L}(?:[dt][ıiuü]ğ[ıiuü]n|[ae]c[ae]ğ[ıi]n)$/u;
+const YOU_PART_PLURAL = /\p{L}(?:[dt][ıiuü]kl[ae]r[ıi]n|[ae]c[ae]kl[ae]r[ıi]n)$/u;
+const YOU_WITH = /\p{L}(?:ınla|inle|unla|ünle)$/u;
+const YOU_WITH_NOT = new Set(['onunla', 'bununla', 'şununla', 'sorunla', 'oyunla', 'düğünle', 'koyunla', 'burunla', 'boyunla']);
+const YOU_VOWEL_STEM = /^(?!(?:karşın|bilgin)$)(?:kafa|ilgi|aile|çanta|tempo|sevgi|öneri|bilgi|uyku|karşı|oda)n(?:ı|i|u|ü|a|e|da|de|dan|den|la|le)?$/u;
+const YOU_POSSESSED = new Set([
+  'canın', 'sinirin', 'moralin', 'hâlin', 'halin', 'cesaretin', 'keyfin', 'dikkatin', 'emeğin', 'düzenin', 'planın', 'aklın', 'arkadaşın',
+  'yakının', 'sözün', 'evin', 'arkadaşların', 'eşyaların', 'gözlerin', 'sözlerin', 'duyguların', 'düşüncelerin', 'yakınların', 'nedenlerin',
+  'günlerin',
+]);
+/** Üçüncü kişi iyeliği (ilgi hâlindeki adın baş adı): yerini, kısmını, listesi, bazılarına, derdi, gittiği… */
+const HEAD_3 =
+  /(?:[ıiuü]n(?:[ıiuü]|[ae]|d[ae]|d[ae]n|[ıiuü]n)|s[ıiuü](?:n(?:[ıiuü]|[ae]|d[ae]|d[ae]n|[ıiuü]n))?|l[ae]r[ıi](?:n(?:[ıiuü]|[ae]|d[ae]|d[ae]n|[ıiuü]n))?|[ıiuü]yl[ae]|[^aeıioöuül][ıiuü])$/u;
+/** Baş ad olmayan zamirler ve niceleyiciler. */
+const NOT_HEAD = /^(?:buna|şuna|ona|bunu|şunu|onu|bunda|onda|bundan|ondan|bunun|onun|kendi|bazı|iyi|biri|birini|birine|hepsi|ne|neyi|neye|çoğu|birçoğu)$/u;
+const YOU_WEAK =
+  /^(?:hoşuna|hoşunu|aklına|aklında|aklından|aklını|kendini|kendine|kendinde|kendinden)$|(?:[dt][ıiuü]ğ|[ae]c[ae]ğ)[ıiuü]n(?:[ıiuü]|[ae]|d[ae]|d[ae]n)$/u;
+
+/** "Ne yaparsa yapsın", "ne olursa olsun": aynı kökün -sa'lı biçiminden sonra gelen -sın üçüncü kişidir. */
+const concessive = (prev: string | undefined, w: string) => !!prev && /s[ae]$/u.test(prev) && prev.startsWith(w.slice(0, -3));
+
+function youMarks(text: string): { word: string; sure: boolean }[] {
+  const clauses = text
+    .replace(/“[^”]*”/g, ' ')
+    .toLocaleLowerCase('tr-TR')
+    .split(/[,;:.!?()–—]/u)
+    .map((c) => c.match(/\p{L}+/gu) ?? []);
+  const out: { word: string; sure: boolean }[] = [];
+  for (const ws of clauses) {
+    const head = (w: string | undefined) => !!w && w.length >= 4 && !NOT_HEAD.test(w) && HEAD_3.test(w);
+    const genitive = (i: number) => head(ws[i + 1]) || head(ws[i + 2]);
+    ws.forEach((w, i) => {
+      let sure = false;
+      if (YOU_PRONOUN.test(w)) sure = true;
+      else if (YOU_VERB.test(w)) sure = !YOU_VERB_NOT.has(w) && ws[i + 1] !== 'diye' && !concessive(ws[i - 1], w) && !(S_GENITIVE.has(w) && genitive(i));
+      else if (YOU_IF.test(w)) sure = !YOU_IF_NOT.has(w);
+      else if (YOU_INF.test(w)) sure = !YOU_INF_NOT.test(w);
+      else if (YOU_PART.test(w)) sure = true;
+      else if (YOU_PART_PLURAL.test(w)) sure = !genitive(i);
+      else if (YOU_WITH.test(w)) sure = !YOU_WITH_NOT.has(w);
+      else if (YOU_VOWEL_STEM.test(w)) sure = true;
+      else if (YOU_POSSESSED.has(w)) sure = !genitive(i);
+      if (sure || YOU_WEAK.test(w)) out.push({ word: w, sure });
+    });
+  }
+  return out;
+}
+/** Öğrenci ve yetişkin satırı: "sen" dilinde (kesin ya da belirsiz bir işaret). */
+const addressesYou = (t: string) => youMarks(t).length > 0;
+/** Veli satırı ve kişisiz metinler: kesin bir "sen" işareti yok. */
+const hasSecondPerson = (t: string) => youMarks(t).some((m) => m.sure);
 /** Öğrenciye "siz" denmez. */
 const PLURAL_YOU = /(?<!\p{L})(?:siz|size|sizi|sizin|sizinle|sizde)(?!\p{L})|\p{L}{3,}(?:sınız|siniz|sunuz|sünüz)(?!\p{L})|\p{L}+(?:dığınız|diğiniz|duğunuz|düğünüz|tığınız|tiğiniz|tuğunuz|tüğünüz)/iu;
 /** Anket örneklerinde olasılık bildiren biçimler (her cümlede). */
@@ -230,9 +308,56 @@ const RESULT_WORDS = /zorlan|başarı|sonucun|puanın|daha iyi|geliştir|güçle
 const CONTEXT_PREFIX = /^(?:Okulda|Arkadaşlarla|Evde|İşte|Oyunda|Boş zamanda)\b/u;
 
 /**
- * Görev, okuma ve konu tarama testlerinde örneklerin dayanamayacağı beceriler (checklist 6): testin kendi sınırlılıklarında
- * "bilgi vermez" dediği (`limitation`: o metinde geçen sözcük), sitede başka bir testin ölçtüğü (`sibling`: o testin adresi)
- * ya da testin çözülüş biçimine uymayan (`rule`: gerekçe) işler.
+ * Evde başka birini varsayan sözcükler (yetişkin yalnız yaşıyor olabilir; denetim listesinin 16. maddesi): evdekiler, evdeki
+ * biri, aile ve akrabalar. "Evdeki bir iş", "evdeki bir sorun" herkesin evinde olur: aranmaz.
+ */
+const OTHERS_AT_HOME =
+  /(?<!\p{L})(?:evdekiler|evdeki (?:biri|kimse|herkes|büyükler|küçükler)|aile|kardeş|ebeveyn|anne|baba|büyükanne|dede|teyze|amca|dayı|kuzen)/iu;
+/**
+ * Hobi ve serbest zaman testi ilgiyi değil sıklığı sorar: satırlar beğeni ("keyifli gelebilir", "hoşuna gidebilir",
+ * "isteyebilirsin") ya da ailenin imkânıyla ("pahalı", "harçlık") anlatmaz (denetim listesinin 13. maddesi).
+ */
+const ACTIVITY_NOT = /keyif|hoşuna|hoşlan|isteyebil|sevebil|çekici gel|imkân|imkan|pahalı|harçlık/iu;
+/** Mezunun (13. sınıf) hayatında olmayabilecek okul sahneleri ("sınıflama" bir soru türüdür; denetim listesinin 17. maddesi). */
+const CLASSROOM = /(?<!\p{L})(?:sınıf(?!lama)|teneffüs)/iu;
+
+/* ---------- Maddeler aynen aktarılmaz ---------- */
+
+/**
+ * Anket satırı testin hiçbir maddesinin bütününü ve bir maddeden art arda dört sözcüğü içermez (denetim listesinin 3.
+ * maddesi). Sözcükler büyük-küçük harf ve noktalama gözetilmeden, ekleriyle birlikte karşılaştırılır ("sakinimdir" ile
+ * "sakin" farklıdır). Örnek maddenin konusundan bir günlük sahnedir: maddeyi yineleyen satır o maddeye verilen cevabı
+ * anlatıyormuş gibi okunur (oysa düzeye göre seçilir; kişinin o maddeye cevabı tersi olabilir). Dört sözcüğün en çok birinin
+ * içerik sözcüğü olduğu diziler gündelik dilin kalıplarıdır ("ne zaman ve nerede", "bir konu için çok"): sayılmaz.
+ */
+const VERBATIM_RUN = 4;
+const FUNCTION_WORDS = new Set(
+  (
+    'bir ve ya da de ile ne neyi neye nerede nereye nasıl neden kadar için gibi göre çok az pek daha en bu şu o onu ona her hep hiç bazen ' +
+    'bazı çoğu birçok şey şeyi şeyler şeyleri zaman sonra önce ki mi mı ama ancak olan diye kendi başka'
+  ).split(' '),
+);
+const tokens = (s: string) => s.toLocaleLowerCase('tr-TR').match(/\p{L}+/gu) ?? [];
+/** Satırda geçen madde dizileri: bütün madde ("madde: …") ya da art arda dört sözcük ("dizi: …"). */
+function verbatimRuns(line: string, items: { key: string; text: string }[]): string[] {
+  const words = ` ${tokens(line).join(' ')} `;
+  const found: string[] = [];
+  for (const it of items) {
+    const w = tokens(it.text);
+    if (words.includes(` ${w.join(' ')} `)) found.push(`${it.key} madde: ${it.text}`);
+    for (let i = 0; i + VERBATIM_RUN <= w.length; i++) {
+      const run = w.slice(i, i + VERBATIM_RUN);
+      if (run.filter((x) => !FUNCTION_WORDS.has(x)).length <= 1) continue;
+      if (words.includes(` ${run.join(' ')} `)) found.push(`${it.key} dizi: ${run.join(' ')}`);
+    }
+  }
+  return found;
+}
+
+/**
+ * Görev, okuma ve konu tarama testlerinde örneklerin dayanamayacağı beceriler (denetim listesinin 20. ve 21. maddeleri):
+ * testin kendi sınırlılıklarında "bilgi vermez" dediği (`limitation`: o metinde geçen sözcük), sitede başka bir testin
+ * ölçtüğü (`sibling`: o testin adresi) ya da testin çözülüş biçimine uymayan (`rule`: gerekçe) işler.
  */
 const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?: string; rule?: string }[]> = {
   'sekil-akil-yurutme': [
@@ -442,8 +567,7 @@ function checkLine(l: Line, kind: 'survey' | 'skills', d: InstrumentDef) {
   expect(sentences(l.text).length, at).toBeLessThanOrEqual(2);
   for (const s of sentences(l.text)) expect(wordCount(s), `${at} (${s})`).toBeLessThanOrEqual(22);
   if (l.audience === 'parent') {
-    expect(hasSecondPerson(l.text), at).toBe(false);
-    expect(l.text, at).not.toMatch(POSSESSIVE_2);
+    expect(youMarks(l.text).filter((m) => m.sure), `${at} (veliye "sen")`).toEqual([]);
   } else {
     expect(l.text, at).not.toMatch(/çocuğunuz/iu);
     expect(l.text, at).not.toMatch(PLURAL_YOU);
@@ -508,7 +632,7 @@ describe('Günlük hayat: kapsam', () => {
         // Örneklerin dayandığı maddeler: testte var ve bu ölçeğin (ya da boyutun alt özelliklerinin) maddesi.
         const scale = d.scales.find((x) => x.key === key)!;
         if (s.pointer) {
-          // Örnek yerine yönlendirme (checklist 11): yalnızca alt ölçekleri kendi kartlarında örneklenen bileşik ölçekte.
+          // Örnek yerine yönlendirme (denetim listesinin 5. maddesi): yalnızca alt ölçekleri kendi kartlarında örneklenen bileşik ölçekte.
           expect(s.bands, at).toBeUndefined();
           expect(scale.of?.length, `${at}: yönlendirme yalnızca bileşik ölçekte`).toBeGreaterThan(0);
           for (const k of scale.of!) expect(wanted, `${at}: ${k} kendi kartında örneklenmiyor`).toContain(k);
@@ -533,6 +657,8 @@ describe('Günlük hayat: kapsam', () => {
               const item = d.items.find((it) => it.key === ik);
               expect(item, `${at} ${g} ${k}: ${ik} testte yok`).toBeDefined();
               expect(own.has(item!.scale), `${at} ${g} ${k}: ${ik} bu ölçeğin maddesi değil (${item!.scale})`).toBe(true);
+              // Destek kutusunu açan madde örneğe dayanak olmaz (kutuyu açtıysa örnek yok; açmadıysa cevap örnekle çelişirdi).
+              expect(d.supportItems?.some((x) => x.key === ik) ?? false, `${at} ${g} ${k}: ${ik} destek kutusunu açan madde`).toBe(false);
             }
           }
         }
@@ -572,8 +698,8 @@ describe('Günlük hayat: kapsam', () => {
         if (s.title) checkShort(s.title, 40, `${at} başlık`, [1, 6]);
         // Yetişkinin gördüğü kısa ad, başlık ve dallarda okul sözcüğü yok.
         if (d.adults) for (const t of [s.short, s.title ?? '', s.branches.work!, s.branches.friends, s.branches.home]) expect(schoolWords(t), `${at}: ${t}`).toEqual([]);
-        // 1–4. sınıfa açık testte dallarda da telefon ya da mesaj yok.
-        if (d.minGrade <= 4) for (const t of Object.values(s.branches)) expect(t, at).not.toMatch(DEVICES);
+        // 1–4. sınıfa açık testte dallarda, kısa adda ve başlıkta da telefon ya da mesaj yok.
+        if (d.minGrade <= 4) for (const t of [...Object.values(s.branches), s.short, s.title ?? '']) expect(t, at).not.toMatch(DEVICES);
         // Kartın metni başlığıyla başlamaz (başlığın hemen altında yinelenirdi).
         const title = s.title ?? dailySources(d, d.engine === 'quiz' ? (d as QuizInstrument).forms.find((f) => !s.forms || s.forms.includes(f.key))!.grade : d.minGrade).sources.find((x) => (s.covers ?? [s.key]).includes(x.key))!.name;
         expect(firstWord(s.text), `${at}: ${s.text}`).not.toBe(firstWord(title));
@@ -646,7 +772,7 @@ describe('Günlük hayat: dil', () => {
         student.forEach((l, i) => {
           if (l.text !== parent[i].text) return;
           expect(kind, `${l.where}: veli satırı öğrencininkiyle aynı`).toBe('skills');
-          expect(addressesYou(l.text), `${l.where}: ${l.text}`).toBe(false);
+          expect(hasSecondPerson(l.text), `${l.where}: ${l.text}`).toBe(false);
         });
       }
       // Bir ölçeğin aynı kitledeki satırları düzeyden düzeye kopyalanmaz (dokuz satır, yetişkinde iş satırları da farklı).
@@ -688,6 +814,144 @@ describe('Günlük hayat: dil', () => {
         if (r.audience === 'adult') expect(schoolWords(joined.replace(/“[^”]*”/g, '')), label).toEqual([]);
       }
     }
+  });
+
+  it('anket: hiçbir satır bir maddeyi bütünüyle ya da bir maddeden art arda dört sözcüğü aktarmaz', () => {
+    const found: string[] = [];
+    for (const d of WITH_CONTENT.filter((x): x is LikertInstrument => x.engine === 'likert')) {
+      const c = DAILY[d.slug] as SurveyDaily;
+      for (const [key, s] of Object.entries(c.scales)) {
+        const texts = s.pointer
+          ? Object.values(s.pointer)
+          : (['low', 'average', 'high'] as const).flatMap((g) => [...Object.values(s.bands[g].student), ...Object.values(s.bands[g].parent), ...Object.values(s.bands[g].adult ?? {})]);
+        for (const t of texts) found.push(...verbatimRuns(t, d.items).map((x) => `${d.slug} ${key}: ${x} → ${t}`));
+      }
+    }
+    expect(found).toEqual([]);
+  });
+});
+
+/* ---------- Kapsayıcılık ---------- */
+
+/** Bir testin bütün satır takımları (anket: ölçek × düzey grubu; görev: kart). */
+function lineSets(d: InstrumentDef): { where: string; t: { student: DailyLines; parent: DailyLines; adult?: AdultLines } }[] {
+  const c = DAILY[d.slug];
+  if (c.kind === 'skills') return c.skills.map((s) => ({ where: `${d.slug} ${s.key}`, t: s }));
+  return Object.entries(c.scales).flatMap(([key, s]) => {
+    const bands = s.bands;
+    return bands ? (['low', 'average', 'high'] as const).map((g) => ({ where: `${d.slug} ${key} ${g}`, t: bands[g] })) : [];
+  });
+}
+
+describe('Günlük hayat: kapsayıcılık', () => {
+  it('yetişkine açık testte yetişkinin gördüğü satırlar evde başka birini varsaymaz (öğrencinin ev satırı varsayıyorsa adult.home)', () => {
+    const found: string[] = [];
+    for (const d of WITH_CONTENT.filter((x) => x.adults)) {
+      for (const { where, t } of lineSets(d)) {
+        // Yetişkin, kendi satırı yazılmamış ortamda öğrencinin satırını görür (linesOf).
+        linesOf(t, 'adult').forEach((text, i) => {
+          if (OTHERS_AT_HOME.test(text)) found.push(`${where} ${SURVEY_CONTEXTS.adult[i]}${t.adult?.[(['work', 'friends', 'home'] as const)[i]] ? '' : ' (öğrenci satırı)'}: ${text}`);
+        });
+      }
+    }
+    expect(found).toEqual([]);
+  });
+
+  it('hobi ve serbest zaman (etkinlik profili): satırlar sıklığı anlatır; beğeni ve imkân sözcükleri yok', () => {
+    const found: string[] = [];
+    const tests = WITH_CONTENT.filter((x): x is LikertInstrument => x.engine === 'likert' && x.profile === 'activities');
+    expect(tests.length).toBeGreaterThan(0);
+    for (const d of tests) for (const { where, t } of lineSets(d)) for (const x of [...Object.values(t.student), ...Object.values(t.parent), ...Object.values(t.adult ?? {})]) if (ACTIVITY_NOT.test(x)) found.push(`${where}: ${x}`);
+    expect(found).toEqual([]);
+  });
+
+  it('mezuna (13. sınıf) açık testte öğrenci ve veli metinlerinde sınıf ve teneffüs yok', () => {
+    const found: string[] = [];
+    for (const d of WITH_CONTENT.filter((x) => x.maxGrade >= 13)) {
+      const c = DAILY[d.slug];
+      const texts: [string, string][] = lineSets(d).flatMap(({ where, t }) => [...Object.values(t.student), ...Object.values(t.parent)].map((x) => [where, x] as [string, string]));
+      if (c.kind === 'skills') for (const s of c.skills) for (const x of [s.text, s.short, s.title ?? '', s.branches.school, s.branches.friends, s.branches.home]) texts.push([`${d.slug} ${s.key}`, x]);
+      else for (const [key, s] of Object.entries(c.scales)) if (s.pointer) texts.push([`${d.slug} ${key}`, s.pointer.student], [`${d.slug} ${key}`, s.pointer.parent]);
+      for (const [where, x] of texts) if (CLASSROOM.test(x)) found.push(`${where}: ${x}`);
+    }
+    expect(found).toEqual([]);
+  });
+});
+
+/* ---------- Dil denetimlerinin kendisi ---------- */
+
+describe('Günlük hayat: dil denetimlerinin kendisi', () => {
+  it('"sen" işaretleri: öğrenci satırında bulunur, veli satırında yanlışlıkla bulunmaz (örnek tablosu)', () => {
+    // Öğrenci ve yetişkin satırı olarak "sen" der.
+    const YOU = [
+      'Seni üzen bir şey olunca biriyle konuşmak iyi gelebilir.',
+      'Yapacağın işi önceden düşünmek iyi gelebilir.',
+      'Yeni bir konu açılınca kafan karışabilir.',
+      'Sözlerin bazen bir arkadaşını kırabilir.',
+      'Eşyaların bazen derli toplu olabilir.',
+      'Arkadaşlarınla buluşmak keyifli gelebilir.',
+      'Çalışsan da sonucun değişmeyeceğini düşünebilirsin.',
+      'Yapman gereken bir işi unutabilir.',
+      'Merak ettiğin bir soruyu araştırabilir.',
+      'Konusu ilgini çekince sonuna kadar okuyabilir.',
+      // "-sa … -sın" yalnızca aynı kökte üçüncü kişidir: "kursa" bir addır.
+      'Sık sık bir kursa katılabilirsin.',
+    ];
+    // Yalnızca öğrenci satırında "sen" sayılır (üçüncü kişide de aynı yazılır).
+    const WEAK = ['Böyle bir oyun hoşuna gidebilir.', 'Ne yapacağını önceden düşünmek iyi gelebilir.'];
+    // "Sen" yok: üçüncü kişi, ilgi hâli, kökü n ya da s ile biten ad, tırnak içi.
+    const NOT_YOU = [
+      'Bir arkadaşın derdini dinlemek ona iyi gelebilir.',
+      'Eşyaların yerini değiştirmek ona keyifli gelebilir.',
+      'Eşyaların yeri bazen değişebilir.',
+      'Dersin sonunda soru sormak isteyebilir.',
+      'Her şey yolunda olsun diye çalışabilir.',
+      'Mektup zarfa sığsın diye katlanabilir.',
+      'Öğretmen “Sen de gel” deyince sevinebilir.',
+      'Bununla ya da şununla ilgilenmek ona keyifli gelebilir.',
+      'Bir sorunla karşılaşınca önce kendi başına çözmeyi deneyebilir.',
+      'Duyduğu sözlerin bazılarına hemen inanabilir.',
+      'Sınav bitince “kalemler bırakılsın” uyarısını bekleyebilir.',
+      'Herkesin önünde konuşmak çocuğunuza zor gelebilir.',
+      'Çocuğunuz işlerin bir kısmını sonraya bırakabilir.',
+      'Bir buluşmanın saatini önceden ayarlamak isteyebilir.',
+      'Zamanla bu duygu hafifleyebilir; öğretmeni de yardım edebilir.',
+      'Küsen iki arkadaşı barıştırmak ona anlamlı gelebilir.',
+      'Yorgun olmasına karşın işini bitirebilir.',
+    ];
+    // Veli satırında doğru (belirsiz biçimler üçüncü kişidir).
+    const PARENT_OK = [
+      ...WEAK,
+      'İnsanların iyi niyetli olduğuna inanabilir.',
+      'Çocuğunuz ne yapacağını önceden düşünebilir; bu ona güven verebilir.',
+      'Ne yaparsa yapsın sonucun değişmeyeceğini düşünebilir.',
+    ];
+    for (const t of [...YOU, ...WEAK]) expect(addressesYou(t), t).toBe(true);
+    for (const t of YOU) expect(hasSecondPerson(t), `veliye: ${t}`).toBe(true);
+    for (const t of PARENT_OK) expect(hasSecondPerson(t), `veliye: ${t}`).toBe(false);
+    for (const t of NOT_YOU) {
+      expect(addressesYou(t), `öğrenciye: ${t}`).toBe(false);
+      expect(hasSecondPerson(t), `veliye: ${t}`).toBe(false);
+    }
+  });
+
+  it('yaygınlık, maddeyi aktarma, evde başka biri ve okul sahnesi: örnek tablosu', () => {
+    for (const t of ['Bu düzeydeki birçok kişide görülebilir.', 'Çoğu çocuk böyle hissedebilir.', 'Çoğu öğrencinin aklına gelebilir.', 'Ortamı neşelendiren kişi sen olabilirsin.'])
+      expect(t).toMatch(PREVALENCE);
+    for (const t of ['Birçok kişiyle tanışmak sana keyifli gelebilir.', 'Birçok kişiye aynı anda bir şey anlatmak zor gelebilir.']) expect(t).not.toMatch(PREVALENCE);
+    const items = [
+      { key: 'a', text: 'Bir konuyu ayrıntısıyla araştırmak bana sıkıcı gelir.' },
+      { key: 'b', text: 'Bir işi ne zaman ve nerede yapacağımı önceden kararlaştırırım.' },
+      { key: 'c', text: 'Pikniğe gitmek' },
+    ];
+    expect(verbatimRuns('Derste bir konuyu ayrıntısıyla araştırmak sana pek çekici gelmeyebilir.', items)).toEqual(['a dizi: bir konuyu ayrıntısıyla araştırmak']);
+    expect(verbatimRuns('Arkadaşlarınla pikniğe gitmek hoşuna gidebilir.', items)).toEqual(['c madde: Pikniğe gitmek']);
+    for (const t of ['Arkadaşlarınla bir işin ne zaman ve nerede yapılacağını konuşabilirsin.', 'Bir konuyu araştırırken ayrıntılara inmek sana sıkıcı gelebilir.', 'Pikniğe gitmekten hoşlanabilirsin.'])
+      expect(verbatimRuns(t, items), t).toEqual([]);
+    for (const t of ['Evdekilerle sohbet etmek sana iyi gelebilir.', 'Ailenle bir plan yapabilirsin.', 'Evdeki biri yardım isteyince hemen koşabilirsin.']) expect(t).toMatch(OTHERS_AT_HOME);
+    for (const t of ['Evdeki bir işi hemen halledebilirsin.', 'Evdeki bir sorun karşısında sakin kalabilirsin.', 'Yakınlarınla bir plan yapabilirsin.']) expect(t).not.toMatch(OTHERS_AT_HOME);
+    for (const t of ['Sınıfta söz almak sana zor gelebilir.', 'Üzgün bir sınıf arkadaşının yanına gidebilirsin.', 'Teneffüste oynayabilirsin.']) expect(t).toMatch(CLASSROOM);
+    for (const t of ['Derste söz almak sana zor gelebilir.', 'Kelimeleri sınıflamak bu tür bir iştir.']) expect(t).not.toMatch(CLASSROOM);
   });
 });
 
@@ -1176,10 +1440,25 @@ describe('Günlük hayat: özel durumlar', () => {
   });
 
   it('metni olmayan testte bölüm yok; sesli okumanın veli raporu öğrenciden söz eder', () => {
-    const oz = LIVE.find((d) => d.slug === 'oz-saygi') as LikertInstrument;
-    if (!DAILY[oz.slug]) {
-      const r = evaluate(oz.slug, likertBody(oz.slug, oz.minGrade, (i) => i % 4));
-      expect(partOf(r.student, 'daily')).toBeUndefined();
+    // Yayındaki her testin metni var: dalı denemek için bir anket ve bir görev testinin metni geçici olarak kayıttan
+    // çıkarılır (yeni yayına giren testin metni de böyle bir an için eksik kalabilir).
+    for (const slug of ['oz-saygi', 'simge-bulma']) {
+      const d = LIVE.find((x) => x.slug === slug)!;
+      const saved = DAILY[slug];
+      expect(saved, slug).toBeDefined();
+      delete DAILY[slug];
+      try {
+        const reports = reportsOf(d, bodiesFor(d)[0]);
+        expect(reports.length, slug).toBeGreaterThanOrEqual(2);
+        for (const r of reports) {
+          expect(partOf(r, 'daily'), `${slug} ${r.audience}`).toBeUndefined();
+          // Öteki ek bölümler yerinde.
+          expect(partOf(r, 'levels'), `${slug} ${r.audience}`).toBeDefined();
+        }
+      } finally {
+        DAILY[slug] = saved;
+      }
+      expect(partOf(reportsOf(d, bodiesFor(d)[0])[0], 'daily'), slug).toBeDefined();
     }
     const oral = LIVE.find((d) => d.engine === 'oral')!;
     const fake: SkillsDaily = {

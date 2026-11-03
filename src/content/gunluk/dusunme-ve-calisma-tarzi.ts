@@ -20,6 +20,8 @@ import type { SurveyDaily } from './types';
  * içinde çalışabilirsin" (cpr02; şablondaki anlatım); enerji ve tempoda "acele etmeden, kendi temponda" (enl10; şablondaki
  * anlatım). Enerji ve tempo, Düzen ve plan kartıyla çelişmesin diye işlerin birikmesinden söz etmez (o kart işleri hemen
  * halletmeyi anlatır); düşük ucun zorluğu enl01'in öbür yüzüdür (aynı anda birkaç işle uğraşmak yorucu gelebilir).
+ * Başkalarının görüşüne önem vermenin yüksek ucundaki ev satırı evdekilerden söz ettiği için yetişkine kendi ev satırı yazıldı
+ * (`adult.home`, "yakınların": yalnız yaşayan yetişkin).
  */
 export const dusunmeVeCalismaTarziDaily: SurveyDaily = {
   kind: 'survey',
@@ -141,7 +143,7 @@ export const dusunmeVeCalismaTarziDaily: SurveyDaily = {
             home: 'Bir ev işini yapmanın yeni bir yolunu düşünüp bulmak ona keyifli gelebilir.',
           },
           adult: {
-            work: 'Bir işi yapmanın yeni yollarını düşünüp bulmak sana keyifli gelebilir.',
+            work: 'Bir işi yapmanın başka bir yolunu düşünüp bulmak sana keyifli gelebilir.',
           },
         },
       },
@@ -202,6 +204,7 @@ export const dusunmeVeCalismaTarziDaily: SurveyDaily = {
           },
           adult: {
             work: 'Ortak bir işte başkalarının görüşlerini dikkate alıp uyum içinde çalışabilirsin.',
+            home: 'Misafirlerin ya da yakınlarının senin hakkında ne düşündüğünü kafana takabilirsin.',
           },
         },
       },

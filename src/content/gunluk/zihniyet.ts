@@ -37,12 +37,12 @@ export const zihniyetDaily: SurveyDaily = {
         low: {
           from: { school: ['Z5'], friends: ['Z1', 'Z3'], home: ['Z3'], work: ['Z5'] },
           student: {
-            school: 'Matematik ya da yabancı dilde zorlanınca “Benim kafam buna çalışmıyor” diye düşünebilirsin.',
+            school: 'Matematikte ya da yabancı dilde zorlanınca “Benim kafam buna çalışmıyor” diye düşünebilirsin.',
             friends: 'Arkadaşlarınla konuşurken insanın aklının doğuştan belli olduğunu, sonradan pek değişmeyeceğini söyleyebilirsin.',
             home: 'Yeni bir şeyi öğrenmekte zorlanınca “Ben böyleyim, bu değişmez” diye düşünebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz matematik ya da yabancı dilde zorlanınca “Benim kafam buna çalışmıyor” diye düşünebilir.',
+            school: 'Çocuğunuz matematikte ya da yabancı dilde zorlanınca “Benim kafam buna çalışmıyor” diye düşünebilir.',
             friends: 'Arkadaşlarıyla konuşurken insanın aklının doğuştan belli olduğunu, sonradan pek değişmeyeceğini söyleyebilir.',
             home: 'Yeni bir şeyi öğrenmekte zorlanınca “Ben böyleyim, bu değişmez” diye düşünebilir.',
           },
@@ -55,12 +55,12 @@ export const zihniyetDaily: SurveyDaily = {
           student: {
             school: 'Bazı derslerde çalıştıkça gelişebileceğini, bazılarında kafanın buna çalışmadığını düşünebilirsin.',
             friends: 'Arkadaşlarınla konuşurken insanın uğraştıkça aklının gelişebileceğini bazen söyleyebilir, bazen buna pek inanmayabilirsin.',
-            home: 'Yeni bir şey öğrenirken bazen “Çalışırsam gelişirim”, bazen “Ben böyleyim” diye düşünebilirsin.',
+            home: 'Bir şeyi öğrenmeye çalışırken bazen “Çalışırsam gelişirim”, bazen “Ben böyleyim” diye düşünebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı derslerde çalıştıkça gelişebileceğini, bazılarında kafasının buna çalışmadığını düşünebilir.',
             friends: 'Arkadaşlarıyla konuşurken insanın uğraştıkça aklının gelişebileceğini bazen söyleyebilir, bazen buna pek inanmayabilir.',
-            home: 'Yeni bir şey öğrenirken bazen “Çalışırsam gelişirim”, bazen “Ben böyleyim” diye düşünebilir.',
+            home: 'Bir şeyi öğrenmeye çalışırken bazen “Çalışırsam gelişirim”, bazen “Ben böyleyim” diye düşünebilir.',
           },
           adult: {
             work: 'Bazı işlerde çalıştıkça gelişebileceğini, bazılarında kafanın buna çalışmadığını düşünebilirsin.',
@@ -176,12 +176,12 @@ export const zihniyetDaily: SurveyDaily = {
           student: {
             school: 'Bir sınavdaki hatanın bazen neyi öğrenmen gerektiğini gösterdiğini, bazen seni geri götürdüğünü düşünebilirsin.',
             friends: 'Arkadaşlarınla kaybettiğin bir oyunu bazen yeniden düşünebilir, bazen aklından çıkarmak isteyebilirsin.',
-            home: 'Kötü giden bir işten sonra bazen neyi farklı yapabileceğini düşünebilir, bazen üzerinde durmayabilirsin.',
+            home: 'Bir iş istediğin gibi gitmeyince bazen neyi farklı yapabileceğini düşünebilir, bazen üzerinde durmayabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir sınavdaki hatanın bazen neyi öğrenmesi gerektiğini gösterdiğini, bazen onu geri götürdüğünü düşünebilir.',
             friends: 'Arkadaşlarıyla kaybettiği bir oyunu bazen yeniden düşünebilir, bazen aklından çıkarmak isteyebilir.',
-            home: 'Kötü giden bir işten sonra bazen neyi farklı yapabileceğini düşünebilir, bazen üzerinde durmayabilir.',
+            home: 'Bir iş istediği gibi gitmeyince bazen neyi farklı yapabileceğini düşünebilir, bazen üzerinde durmayabilir.',
           },
           adult: {
             work: 'Bir işteki hatanın bazen neyi öğrenmen gerektiğini gösterdiğini, bazen seni geri götürdüğünü düşünebilirsin.',
@@ -192,12 +192,12 @@ export const zihniyetDaily: SurveyDaily = {
           student: {
             school: 'Bir sınavdaki hatalarının neyi öğrenmen gerektiğini gösterdiğini düşünebilirsin.',
             friends: 'Arkadaşlarınla oynadığın bir oyunu kaybedince bunu öğrenmenin bir adımı sayabilirsin.',
-            home: 'Kötü giden bir işten sonra neyi farklı yapabileceğini düşünebilirsin.',
+            home: 'Bir iş istediğin gibi gitmeyince bir dahaki sefere neyi farklı yapabileceğini düşünebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir sınavdaki hatalarının neyi öğrenmesi gerektiğini gösterdiğini düşünebilir.',
             friends: 'Arkadaşlarıyla oynadığı bir oyunu kaybedince bunu öğrenmenin bir adımı sayabilir.',
-            home: 'Kötü giden bir işten sonra neyi farklı yapabileceğini düşünebilir.',
+            home: 'Bir iş istediği gibi gitmeyince bir dahaki sefere neyi farklı yapabileceğini düşünebilir.',
           },
           adult: {
             work: 'Bir işte yaptığın hataların neyi öğrenmen gerektiğini gösterdiğini düşünebilirsin.',
@@ -251,12 +251,12 @@ export const zihniyetDaily: SurveyDaily = {
           student: {
             school: 'Hemen çözemediğin bir soru ilgini çekebilir; kolay sorular yerine zorlayıcı olanları seçebilirsin.',
             friends: 'Arkadaşlarının önünde zorlanabileceğin yeni bir oyunu denemekten çekinmeyebilirsin.',
-            home: 'Yeni bir şey öğrenirken başta acemi görünmek seni pek rahatsız etmeyebilir.',
+            home: 'Bir şeyi öğrenmeye yeni başladığında acemi görünmek seni pek rahatsız etmeyebilir.',
           },
           parent: {
             school: 'Hemen çözemediği bir soru çocuğunuzun ilgisini çekebilir; kolay sorular yerine zorlayıcı olanları seçebilir.',
             friends: 'Arkadaşlarının önünde zorlanabileceği yeni bir oyunu denemekten çekinmeyebilir.',
-            home: 'Yeni bir şey öğrenirken başta acemi görünmek onu pek rahatsız etmeyebilir.',
+            home: 'Bir şeyi öğrenmeye yeni başladığında acemi görünmek onu pek rahatsız etmeyebilir.',
           },
           adult: {
             work: 'Kolay işler yerine seni zorlayacak işleri seçebilirsin.',

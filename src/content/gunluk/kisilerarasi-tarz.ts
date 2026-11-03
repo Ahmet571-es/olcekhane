@@ -39,17 +39,17 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
         low: {
           from: { school: ['ipc06', 'ipc14'], friends: ['ipc30', 'ipc06'], home: ['ipc14'], work: ['ipc06', 'ipc14'] },
           student: {
-            school: 'Bir grup çalışmasında ilgi odağı olmakta ısrar etmeyebilirsin; bu başkalarının fikirlerine de yer açabilir.',
+            school: 'Bir grup çalışmasında herkesin ilgisini üstüne çekmeye uğraşmayabilirsin; bu başkalarının fikirlerine de yer açabilir.',
             friends: 'Arkadaş grubunda herkesin dikkatini bir şeye çekmen gerektiğinde bu sana kolay gelmeyebilir.',
             home: 'Evdekilerle bir sohbette sözü uzun süre elinde tutmak istemeyebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bir grup çalışmasında ilgi odağı olmakta ısrar etmeyebilir; bu başkalarının fikirlerine de yer açabilir.',
+            school: 'Çocuğunuz bir grup çalışmasında herkesin ilgisini üstüne çekmeye uğraşmayabilir; bu başkalarının fikirlerine de yer açabilir.',
             friends: 'Arkadaş grubunda herkesin dikkatini bir şeye çekmesi gerektiğinde bu ona kolay gelmeyebilir.',
             home: 'Evdekilerle bir sohbette sözü uzun süre elinde tutmak istemeyebilir.',
           },
           adult: {
-            work: 'Ortak bir işte ilgi odağı olmakta ısrar etmeyebilirsin; bu başkalarının fikirlerine de yer açabilir.',
+            work: 'Ortak bir işte herkesin ilgisini üstüne çekmeye uğraşmayabilirsin; bu başkalarının fikirlerine de yer açabilir.',
             home: 'Yakınlarınla bir sohbette sözü uzun süre elinde tutmak istemeyebilirsin.',
           },
         },

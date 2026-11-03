@@ -41,12 +41,12 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
           student: {
             school: 'Grup çalışmasında liderlik etmek yerine yolu başkalarının göstermesini bekleyebilirsin.',
             friends: 'Kalabalık bir eğlence yerine az kişiyle buluşmayı seçebilirsin; yeni insanlara açılman zaman alabilir.',
-            home: 'Boş zamanında yavaş ve rahat bir tempoda dinlenmek sana iyi gelebilir.',
+            home: 'Boş zamanında acele etmeden, sakin sakin dinlenmek sana iyi gelebilir.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında liderlik etmek yerine yolu başkalarının göstermesini bekleyebilir.',
             friends: 'Kalabalık bir eğlence yerine az kişiyle buluşmayı seçebilir; yeni insanlara açılması zaman alabilir.',
-            home: 'Boş zamanında yavaş ve rahat bir tempoda dinlenmek ona iyi gelebilir.',
+            home: 'Boş zamanında acele etmeden, sakin sakin dinlenmek ona iyi gelebilir.',
           },
           adult: {
             work: 'Bir işte idareyi ele almak yerine yolu başkalarının göstermesini bekleyebilirsin.',
@@ -135,12 +135,12 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
           from: { school: ['k014', 'k044'], friends: ['k064', 'k034'], home: ['k014', 'k104'], work: ['k044', 'k014'] },
           student: {
             school: 'Grup çalışmasında arkadaşlarının iyi olup olmadığını önemseyip onlara yardım edebilirsin.',
-            friends: 'İnsanların iyi niyetli olduğuna inanıp söylediklerine güvenebilirsin.',
+            friends: 'Çevrendeki insanların iyi niyetine inanıp söylediklerine güvenebilirsin.',
             home: 'Evdekilerden biri yardım isteyince kendi işini hemen bırakabilirsin; bu bazen işlerini geciktirebilir.',
           },
           parent: {
             school: 'Çocuğunuz grup çalışmasında arkadaşlarının iyi olup olmadığını önemseyip onlara yardım edebilir.',
-            friends: 'İnsanların iyi niyetli olduğuna inanıp söylediklerine güvenebilir.',
+            friends: 'Çevresindeki insanların iyi niyetine inanıp söylediklerine güvenebilir.',
             home: 'Evdekilerden biri yardım isteyince kendi işini hemen bırakabilir; bu bazen işlerini geciktirebilir.',
           },
           adult: {

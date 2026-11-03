@@ -65,12 +65,12 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
         average: {
           from: { school: ['fair05', 'gree10'], friends: ['mode07'], home: ['gree03', 'gree02'], work: ['gree05', 'gree04'] },
           student: {
-            school: 'Sınıfta çoğu zaman kurallara uyabilir, bazen kendi çıkarını öne alabilirsin.',
+            school: 'Derste çoğu zaman kurallara uyabilir, bazen kendi çıkarını öne alabilirsin.',
             friends: 'Arkadaş ortamında bazen dikkat çekmekten hoşlanabilir, bazen geri durmayı seçebilirsin.',
             home: 'Bazen şık ve güzel şeylere ilgi duyabilir, bazen sade olanı seçebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz sınıfta çoğu zaman kurallara uyabilir, bazen kendi çıkarını öne alabilir.',
+            school: 'Çocuğunuz derste çoğu zaman kurallara uyabilir, bazen kendi çıkarını öne alabilir.',
             friends: 'Arkadaş ortamında bazen dikkat çekmekten hoşlanabilir, bazen geri durmayı seçebilir.',
             home: 'Bazen şık ve güzel şeylere ilgi duyabilir, bazen sade olanı seçebilir.',
           },
@@ -174,12 +174,12 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
         low: {
           from: { school: ['socb06', 'socb09'], friends: ['soci02', 'socb07'], home: ['soci01'], work: ['socb06', 'socb07'] },
           student: {
-            school: 'Sınıfın önünde konuşmak ya da ilgi odağı olmak sana zor gelebilir.',
+            school: 'Derste herkesin önünde konuşmak ya da ilgi odağı olmak sana zor gelebilir.',
             friends: 'Kalabalık bir grup yerine az kişiyle sakin bir sohbet sana daha keyifli gelebilir.',
             home: 'Boş zamanını kendi başına sakin geçirmek sana iyi gelebilir.',
           },
           parent: {
-            school: 'Sınıfın önünde konuşmak ya da ilgi odağı olmak çocuğunuza zor gelebilir.',
+            school: 'Derste herkesin önünde konuşmak ya da ilgi odağı olmak çocuğunuza zor gelebilir.',
             friends: 'Kalabalık bir grup yerine az kişiyle sakin bir sohbet ona daha keyifli gelebilir.',
             home: 'Boş zamanını kendi başına sakin geçirmek ona iyi gelebilir.',
           },
@@ -190,12 +190,12 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
         average: {
           from: { school: ['socb02', 'socb07'], friends: ['soci05', 'soci01'], home: ['live03', 'live01'], work: ['expr01', 'expr08'] },
           student: {
-            school: 'Bazen sınıfta söz alıp öne çıkabilir, bazen geri planda kalmayı seçebilirsin.',
+            school: 'Bazen derste söz alıp öne çıkabilir, bazen geri planda kalmayı seçebilirsin.',
             friends: 'Bazen bir grubun içinde olmaktan keyif alabilir, bazen kendi başına kalmak isteyebilirsin.',
             home: 'Bazı günler enerji dolu olabilir, bazı günler daha sakin bir tempoyu seçebilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazen sınıfta söz alıp öne çıkabilir, bazen geri planda kalmayı seçebilir.',
+            school: 'Çocuğunuz bazen derste söz alıp öne çıkabilir, bazen geri planda kalmayı seçebilir.',
             friends: 'Bazen bir grubun içinde olmaktan keyif alabilir, bazen kendi başına kalmak isteyebilir.',
             home: 'Bazı günler enerji dolu olabilir, bazı günler daha sakin bir tempoyu seçebilir.',
           },
@@ -206,12 +206,12 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
         high: {
           from: { school: ['socb02', 'socb06'], friends: ['soci03', 'soci04'], home: ['soci01'], work: ['socb07', 'expr01'] },
           student: {
-            school: 'Sınıfın önünde konuşmak ya da ilgi odağı olmak seni çoğu zaman rahatsız etmeyebilir.',
+            school: 'Derste herkesin önünde konuşmak ya da ilgi odağı olmak seni çoğu zaman rahatsız etmeyebilir.',
             friends: 'Sohbet etmeyi sevebilir, yeni bir ortamda kolayca arkadaş edinebilirsin.',
             home: 'Boş zamanını başkalarıyla geçirmeyi sevebilirsin; uzun süre yalnız kalınca canın sıkılabilir.',
           },
           parent: {
-            school: 'Sınıfın önünde konuşmak ya da ilgi odağı olmak çocuğunuzu çoğu zaman rahatsız etmeyebilir.',
+            school: 'Derste herkesin önünde konuşmak ya da ilgi odağı olmak çocuğunuzu çoğu zaman rahatsız etmeyebilir.',
             friends: 'Sohbet etmeyi sevebilir, yeni bir ortamda kolayca arkadaş edinebilir.',
             home: 'Boş zamanını başkalarıyla geçirmeyi sevebilir; uzun süre yalnız kalınca canı sıkılabilir.',
           },
@@ -270,12 +270,12 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
         high: {
           from: { school: ['gent03', 'gent06'], friends: ['forg03', 'forg02'], home: ['gent01'], work: ['pati03', 'pati04'] },
           student: {
-            school: 'Sınıf arkadaşlarını oldukları gibi kabul edip onları hemen yargılamamaya çalışabilirsin.',
+            school: 'Ders arkadaşlarını oldukları gibi kabul edip onları hemen yargılamamaya çalışabilirsin.',
             friends: 'Seni kıran bir arkadaşını affedip olanı geride bırakabilirsin.',
             home: 'Evdekilerle ilgili canını sıkan bir şey için çoğu zaman şikâyet etmeyebilirsin; bazen bunu söylemek de iyi gelebilir.',
           },
           parent: {
-            school: 'Çocuğunuz sınıf arkadaşlarını oldukları gibi kabul edip onları hemen yargılamamaya çalışabilir.',
+            school: 'Çocuğunuz ders arkadaşlarını oldukları gibi kabul edip onları hemen yargılamamaya çalışabilir.',
             friends: 'Onu kıran bir arkadaşını affedip olanı geride bırakabilir.',
             home: 'Evdekilerle ilgili canını sıkan bir şey için çoğu zaman şikâyet etmeyebilir; bazen bunu söylemek de iyi gelebilir.',
           },
@@ -406,7 +406,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
             home: 'Evdeki bir işi alışılmadık bir yolla yapabilir; bu bazen başkalarına garip gelebilir.',
           },
           adult: {
-            work: 'Bir işi yapmanın yeni yollarını düşünüp bulmak sana keyifli gelebilir.',
+            work: 'Bir işi yapmak için yeni bir yöntem düşünüp bulmak sana keyifli gelebilir.',
           },
         },
       },

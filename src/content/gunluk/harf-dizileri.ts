@@ -11,7 +11,8 @@ import type { SkillsDaily } from './types';
  * alfabe sırasıyla dizmek kural bulmayı değil, bilinen sırayı uygulamayı ister: kullanılmaz; raf örneğinde de harfler birer
  * harf atlanarak verilir, yani önce kuralın bulunması gerekir. Harf dizisi bir Türkçe dersi etkinliği değildir: okul örneği bir
  * etkinlik kâğıdıdır. Şifreli not örneğinde harflerin
- * alfabede kaydırıldığı kural çözülerek bulunur. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı söylenmez.
+ * alfabede kaydırıldığı kural çözülerek bulunur. Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı söylenmez. Ev
+ * örneği evdekilerden söz ettiği için yetişkine kendi ev satırı yazıldı (`adult.home`, "bir yakının": yalnız yaşayan yetişkin).
  */
 export const harfDizileriDaily: SkillsDaily = {
   kind: 'skills',
@@ -40,6 +41,7 @@ export const harfDizileriDaily: SkillsDaily = {
       },
       adult: {
         work: 'Rafların harfleri birer harf atlanarak verilmişse bu düzeni bulup aranan rafı kestirmek bu tür bir iştir.',
+        home: 'Bir yakınının alfabede atlayarak söylediği harflerin kuralını bulmak bu tür bir iştir.',
       },
     },
   ],

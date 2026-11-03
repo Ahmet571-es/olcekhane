@@ -128,12 +128,12 @@ export const hizliKisilikDaily: SurveyDaily = {
         high: {
           from: { school: ['m02'], friends: ['m07', 'm02'], home: ['m12'], work: ['m02'] },
           student: {
-            school: 'Üzgün bir sınıf arkadaşının ne hissettiğini anlamaya çalışıp yanında olabilirsin.',
+            school: 'Üzgün bir ders arkadaşının ne hissettiğini anlamaya çalışıp yanında olabilirsin.',
             friends: 'Bir arkadaşın derdini anlatınca onu dinlemeye zaman ayırabilirsin.',
             home: 'Evdekilerden birinin üzüntüsünü içinde hissedebilirsin; bu duygu seni de yorabilir.',
           },
           parent: {
-            school: 'Çocuğunuz üzgün bir sınıf arkadaşının ne hissettiğini anlamaya çalışıp yanında olabilir.',
+            school: 'Çocuğunuz üzgün bir ders arkadaşının ne hissettiğini anlamaya çalışıp yanında olabilir.',
             friends: 'Bir arkadaşı derdini anlatınca onu dinlemeye zaman ayırabilir.',
             home: 'Evdekilerden birinin üzüntüsünü içinde hissedebilir; bu duygu onu da yorabilir.',
           },
