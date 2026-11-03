@@ -1,6 +1,7 @@
 import { bakisAcisiAlmaDaily } from './bakis-acisi-alma';
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { dusunerekKararVermeDaily } from './dusunerek-karar-verme';
+import { dusunmeVeCalismaTarziDaily } from './dusunme-ve-calisma-tarzi';
 import { dusunmeyiSevmeDaily } from './dusunmeyi-sevme-olcegi';
 import { duygusalZekaBilesenleriDaily } from './duygusal-zeka-bilesenleri';
 import { empatiDaily } from './empati';
@@ -66,4 +67,5 @@ export const DAILY: Record<string, DailyContent> = {
   'kelime-bilgisi': kelimeBilgisiDaily,
   'ogrenme-ve-basari-ozellikleri': ogrenmeVeBasariDaily,
   'dusunmeyi-sevme-olcegi': dusunmeyiSevmeDaily,
+  'dusunme-ve-calisma-tarzi': dusunmeVeCalismaTarziDaily,
 };
