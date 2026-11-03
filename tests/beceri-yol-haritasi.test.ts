@@ -368,15 +368,16 @@ describe('zihinsel görevler: yol haritası şablonları', () => {
     const SAME = new Set([
       'Aklın yerine kâğıt', 'Bir seferde bir iş', 'Bir seferde tek iş', 'Dikkat dağıtıcılardan uzak', 'Dinlenmiş bir zihin', 'Dinç olmak',
       'Düzenli bir sayfa', 'Görsel bellek oyunları', 'Görünür hatırlatıcılar', 'Gözlem oyunları', 'Hareket ve dinlenme', 'Hız ve doğruluk dengesi',
-      'Kelime defteri ve sözlük', 'Kelime ve mantık oyunları', 'Kimin sağı?', 'Kurallı oyunlar', 'Kuralı değişen oyunlar', 'Kısa bölümler',
+      'Kelime defteri ve sözlük', 'Kelime ve mantık oyunları', 'Kimin sağı?', 'Kural arama oyunları', 'Kuralı değişen oyunlar', 'Kısa bölümler',
       'Sade bir masa', 'Sessiz bir ortam', 'Tek bilgi kaynağı', 'Uzamsal oyunlar', 'Yön oyunları', 'Önce doğruluk', 'İki katı sorusu',
       'Şekil oyunları', '“Kesin mi, olabilir mi?”',
       'Anlamı değiştiren sözcükler', 'Aralıklı tekrar', 'Bir hamle sonrası', 'Deyim haftası', 'Doğruluk önce', 'Geriye doğru',
-      'Gerçek mi, çıkarım mı?', 'Gizli nesneler', 'Göndermeden önce', 'Hangisi aynı?', 'Karşı örnek avı', 'Kelime avı', 'Kuralı değişen oyun',
-      'Orantı mı, değil mi?', 'Parçalardan bütüne', 'Sade bir çalışma köşesi', 'Son kontrol', 'Tek iş', 'Tek iş saati', 'Terazi bulmacaları',
+      'Gerçek mi, çıkarım mı?', 'Saklı şekiller', 'Teslim etmeden önce', 'Hangisi aynı?', 'Karşı örnek avı', 'Kelime avı', 'Kuralı değişen oyun',
+      'Orantı mı, değil mi?', 'Desende şekil avı', 'Sade bir çalışma köşesi', 'Son kontrol', 'Tek iş', 'Tek iş saati', 'Terazi bulmacaları',
       'Tuzaklı bilmeceler', 'Yer imi', 'Zarın açınımı', 'İçinden tekrar', '“Kesin mi?” oyunu', 'Kısa ve sık', 'Türetme oyunu',
-      'Benzetme oyunları', 'Fark avı', 'Sözcüklerle benzetme', 'Sıralama oyunları', 'Alfabe oyunu', 'Yavaş ve doğru',
+      'Benzetme oyunları', 'Fark avı', 'Aynı değişiklik', 'Sıralama oyunları', 'Alfabe oyunu', 'Yavaş ve doğru',
       'Zorluk nereden gelir?', 'Birleştirme oyunları', 'Önce tahmin, sonra deneme',
+      'Durma oyunu', 'Ters yazı', '“Ne değişti?” oyunu', 'Yazarak ve yazmadan',
     ]);
     const titles = new Set(['Gözden geçir']);
     for (const t of Object.values(TASK_ROADMAPS)) for (const x of [...t.supports, ...t.weeks]) titles.add(x.title);

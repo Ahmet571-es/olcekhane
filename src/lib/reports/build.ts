@@ -11798,9 +11798,11 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
         },
         student: 'Yanan kutuların sırasını en fazla {n} kutuya kadar doğru hatırladın.',
         parent: 'Çocuğunuz yanan kutuların sırasını en fazla {n} kutuluk uzunluğa kadar doğru hatırladı.',
+        // Harita (Bakış Açısı Alma), hareketsiz bir çizimi akılda tutmak (Desen Hatırlama) ve deftere geçirmek (yazma hızı)
+        // kardeş testlerin ya da başka becerilerin örneğidir: burada yalnızca sırayla gösterilen yerler (src/content/gunluk).
         everyday: you
-          ? 'Bu beceri; bir yolu, bir haritayı ya da bir geometri çizimindeki yerleri akılda tutarken kullanılır.'
-          : 'Bu beceri; bir yolu hatırlamak, harita ve şekillerle çalışmak ya da tahtadaki bir çizimi deftere geçirmek gibi işlerde kullanılır.',
+          ? 'Bu beceri, öğretmenin tahtada sırayla gösterdiği yerleri ya da sırayla yanan ışıkları hatırlarken kullanılır.'
+          : 'Bu beceri, birbiri ardından gösterilen yerleri sırasıyla akılda tutmayı gerektiren işlerde kullanılır: öğretmenin tahtada sırayla gösterdiği yerleri hatırlamak gibi.',
       }),
       ladder: sp.ladder,
       visual: spanLadder('Kutu dizileri', sp, 'kutu', spanTask('spatial_span')),
@@ -11844,8 +11846,8 @@ function buildCognitive(def: TaskInstrument, byKey: Map<string, ReportScore>, au
             ? `${secs} saniye boyunca hiç sembol eşleştirmedin; bu yüzden bu görevin sonucu yorumlanmadı. Görevi yarıda bırakmış ya da yönergeyi tam anlamamış olabilirsin. Öteki görevlerin sonuçları bundan etkilenmez.`
             : `Çocuğunuz ${secs} saniye boyunca hiç sembol eşleştirmedi; bu yüzden bu görevin sonucu yorumlanmadı. Görev yarıda bırakılmış ya da yönerge tam anlaşılmamış olabilir. Öteki görevlerin sonuçları bundan etkilenmez.`
           : you
-            ? `${spd.correct === spd.attempted ? `Eşleştirdiğin ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Eşleştirdiğin ${spd.attempted} sembolün hiçbiri doğru değildi` : `${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdin (${spd.errors} hata)`}. Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer; örneğin tahtadan bir şeyi deftere geçirmek ya da sınavda basit işlemleri yapmak gibi.`
-            : `${spd.correct === spd.attempted ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hiçbiri doğru değildi` : `Çocuğunuz ${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdi (${spd.errors} hata)`}. Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer; tahtadan yazmak ya da sınavda basit işlemleri yapmak gibi işlerde kullanılır. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
+            ? `${spd.correct === spd.attempted ? `Eşleştirdiğin ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Eşleştirdiğin ${spd.attempted} sembolün hiçbiri doğru değildi` : `${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdin (${spd.errors} hata)`}. Bu görev, basit bir işi hızlı ve doğru yapabilmeyi ölçer. Bir tabloya bakarak işaretleri karşılıklarına çevirmek ya da şifreli bir notu çözmek bu tür işlerdir.`
+            : `${spd.correct === spd.attempted ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hepsi doğruydu` : spd.correct === 0 ? `Çocuğunuzun eşleştirdiği ${spd.attempted} sembolün hiçbiri doğru değildi` : `Çocuğunuz ${spd.attempted} sembolden ${spd.correct === 1 ? 'birini' : `${spd.correct} tanesini`} doğru eşleştirdi (${spd.errors} hata)`}. Bu görev işlem hızını, yani basit bir işi hem hızlı hem doğru yapabilmeyi ölçer. Bir tabloya bakarak işaretleri karşılıklarına çevirmek ya da şifreli bir notu çözmek bu tür işlerdir. İşlem hızı çocukluk ve ergenlik boyunca belirgin biçimde artar.`,
       symbol: { correct: spd.correct, errors: spd.errors, perMinute: spd.perMinute },
       // Hiç cevap yoksa çizilecek bir şey yoktur.
       ...(spd.attempted > 0
