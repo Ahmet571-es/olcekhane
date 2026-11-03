@@ -8,9 +8,13 @@ import type { SurveyDaily } from './types';
  * ötekinden üstün anlatılmaz; düşük önem bir eksiklik değildir ("Bu, öğrenmeyi sevmediğin anlamına gelmez", rapor metni).
  * Para, kurs ya da iş sahibi olmak varsayılmaz: kazanç ve güvence örnekleri meslekler konuşulurken ya da bir işi
  * değerlendirirken görünür. Yüksek ucun yumuşak zorluğu maddenin kendisinden gelir (ör. B2 "Birinin sürekli başımda
- * durmaması" → birinin başında durması canını sıkabilir); kazançta ve güvencede şablondaki karşıt değerlerden (iç değerler
- * ile kazanç, güvence ile belirsiz fırsat; src/content/reports/calisma-degerleri.ts). Yaşam dengesinde düşük ucun zorluğu
- * şablonun "dinlenmeye zaman ayırmak herkes için önemlidir" cümlesinden gelir. Her satırın dayandığı maddeler `from`'dadır.
+ * durmaması" → birinin başında durması canını sıkabilir; K2 → emeğin karşılığını tam vermeyen bir iş); güvencede şablonun
+ * güvence ile belirsiz fırsat çiftinden (src/content/reports/calisma-degerleri.ts). Düşük uca bedel yazılmaz (types.ts, ek
+ * kurallar); yalnızca yaşam dengesinde şablonun "dinlenmeye zaman ayırmak herkes için önemlidir" cümlesinden gelen yumuşak bir
+ * hatırlatma vardır. Düşük önem "işin kendisi" gibi bir iç değerle açıklanmaz: aynı sayfada ilgi ve öğrenme de düşük olabilir.
+ * Yetişkinin iş satırları rozetteki "çok önemli"yi yinelemez; bir iş teklifine bakarken sorulabilecek şeyi anlatır. Profil düz
+ * olduğunda (değerler arasındaki fark küçük) giriş, örneklerin birbirine benzeyebileceğini söyler (daily-parts.ts,
+ * `flatSentence`). Her satırın dayandığı maddeler `from`'dadır.
  */
 export const calismaDegerleriDaily: SurveyDaily = {
   kind: 'survey',
@@ -19,17 +23,17 @@ export const calismaDegerleriDaily: SurveyDaily = {
     /* İlgi ve öğrenme: L1 işi ilginç bulmak, L2 sürekli yeni şeyler öğrenmek, L3 tekdüze değil çeşitli işler, L4 merak edilen
        konular üzerinde çalışmak. */
     learning: {
-      poles: { low: 'İlginçlik öncelik değil', high: 'İlginç, öğretici iş arar' },
+      poles: { low: 'İlginç iş öncelik değil', high: 'İlginç, öğretici iş arar' },
       bands: {
         low: {
           from: { school: ['L1'], friends: ['L2'], home: ['L3'], work: ['L4'] },
           student: {
-            school: 'Bir proje konusu seçerken konunun ilginç olmasından çok başka şeylere bakabilirsin.',
+            school: 'Bir meslek tanıtılırken o işin ilginç olup olmadığından çok başka yönlerine bakabilirsin.',
             friends: 'Arkadaşlarınla meslekleri konuşurken bir işin sürekli yeni şeyler öğretmesi sana öncelikli gelmeyebilir.',
             home: 'Hep aynı biçimde yapılan bir iş seni pek sıkmayabilir.',
           },
           parent: {
-            school: 'Bir proje konusu seçerken çocuğunuz konunun ilginç olmasından çok başka şeylere bakabilir.',
+            school: 'Bir meslek tanıtılırken çocuğunuz o işin ilginç olup olmadığından çok başka yönlerine bakabilir.',
             friends: 'Arkadaşlarıyla meslekleri konuşurken bir işin sürekli yeni şeyler öğretmesi ona öncelikli gelmeyebilir.',
             home: 'Hep aynı biçimde yapılan bir iş onu pek sıkmayabilir.',
           },
@@ -58,15 +62,15 @@ export const calismaDegerleriDaily: SurveyDaily = {
           student: {
             school: 'Bir proje konusu seçerken merak ettiğin ve sana yeni şeyler öğretecek bir konuyu seçmek isteyebilirsin.',
             friends: 'Arkadaşlarınla meslekleri konuşurken bir işin ilginç ve çeşitli olup olmadığını merak edebilirsin.',
-            home: 'Hep aynı biçimde yapılan bir iş seni çabuk sıkabilir.',
+            home: 'Hep aynı biçimde yapılan bir iş seni zamanla sıkabilir.',
           },
           parent: {
             school: 'Bir proje konusu seçerken merak ettiği ve ona yeni şeyler öğretecek bir konuyu seçmek isteyebilir.',
             friends: 'Arkadaşlarıyla meslekleri konuşurken çocuğunuz bir işin ilginç ve çeşitli olup olmadığını merak edebilir.',
-            home: 'Hep aynı biçimde yapılan bir iş onu çabuk sıkabilir.',
+            home: 'Hep aynı biçimde yapılan bir iş onu zamanla sıkabilir.',
           },
           adult: {
-            work: 'Bir işte hep yeni bir şey öğrenmek ve merak ettiğin konularla uğraşmak senin için çok önemli olabilir.',
+            work: 'Bir işi değerlendirirken orada neler öğrenebileceğini sorabilirsin.',
           },
         },
       },
@@ -79,12 +83,12 @@ export const calismaDegerleriDaily: SurveyDaily = {
           from: { school: ['K1'], friends: ['K3'], home: ['K1', 'K3'], work: ['K4'] },
           student: {
             school: 'Bir meslek tanıtılırken o işin ne kadar kazandırdığı senin için ilk sırada olmayabilir.',
-            friends: 'Arkadaşlarınla geleceği konuşurken rahat bir hayat yerine yapacağın işin kendisini düşünebilirsin.',
+            friends: 'Arkadaşlarınla geleceği konuşurken rahat bir hayattan çok başka şeyleri düşünebilirsin.',
             home: 'Az kazandıran ama sana uyan bir işi seçmekte zorlanmayabilirsin.',
           },
           parent: {
             school: 'Bir meslek tanıtılırken o işin ne kadar kazandırdığı çocuğunuz için ilk sırada olmayabilir.',
-            friends: 'Arkadaşlarıyla geleceği konuşurken rahat bir hayat yerine yapacağı işin kendisini düşünebilir.',
+            friends: 'Arkadaşlarıyla geleceği konuşurken rahat bir hayattan çok başka şeyleri düşünebilir.',
             home: 'Az kazandıran ama ona uyan bir işi seçmekte zorlanmayabilir.',
           },
           adult: {
@@ -108,19 +112,19 @@ export const calismaDegerleriDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['K1'], friends: ['K3'], home: ['K1'], work: ['K2', 'K4'] },
+          from: { school: ['K1'], friends: ['K3'], home: ['K2'], work: ['K2', 'K4'] },
           student: {
             school: 'Bir meslek tanıtılırken ilk olarak o işin ne kadar kazandırdığını sorabilirsin.',
             friends: 'Arkadaşlarınla geleceği konuşurken rahat bir hayat kurabileceğin bir iş hayal edebilirsin.',
-            home: 'Az kazandıran ama ilgini çeken bir işi seçmek sana zor gelebilir.',
+            home: 'Emeğinin karşılığını tam vermeyen bir işi kabul etmek sana zor gelebilir.',
           },
           parent: {
             school: 'Bir meslek tanıtılırken çocuğunuz ilk olarak o işin ne kadar kazandırdığını sorabilir.',
             friends: 'Arkadaşlarıyla geleceği konuşurken rahat bir hayat kurabileceği bir iş hayal edebilir.',
-            home: 'Az kazandıran ama ilgisini çeken bir işi seçmek ona zor gelebilir.',
+            home: 'Emeğinin karşılığını tam vermeyen bir işi kabul etmek ona zor gelebilir.',
           },
           adult: {
-            work: 'Bir işte emeğinin karşılığını iyi bir ücretle almak ve gelirinin artması senin için çok önemli olabilir.',
+            work: 'Bir iş teklifine bakarken önce ücrete ve gelirin nasıl artacağına bakabilirsin.',
           },
         },
       },
@@ -151,19 +155,19 @@ export const calismaDegerleriDaily: SurveyDaily = {
           student: {
             school: 'Bir projenin başkalarına yararlı olması bazen sana önemli gelebilir, bazen başka şeyler ağır basabilir.',
             friends: 'Arkadaşlarınla meslekleri konuşurken bir işin insanlara desteği bazen aklına gelebilir, bazen gelmeyebilir.',
-            home: 'Yaptığın bir işin evdekilerin işini kolaylaştırması bazen sana önemli gelebilir, bazen pek aklına gelmeyebilir.',
+            home: 'Yaptığın bir işin başkalarının işini kolaylaştırması bazen sana önemli gelebilir, bazen başka yönleri öne çıkabilir.',
           },
           parent: {
             school: 'Bir projenin başkalarına yararlı olması bazen çocuğunuza önemli gelebilir, bazen başka şeyler ağır basabilir.',
             friends: 'Arkadaşlarıyla meslekleri konuşurken bir işin insanlara desteği bazen aklına gelebilir, bazen gelmeyebilir.',
-            home: 'Yaptığı bir işin evdekilerin işini kolaylaştırması bazen ona önemli gelebilir, bazen pek aklına gelmeyebilir.',
+            home: 'Yaptığı bir işin başkalarının işini kolaylaştırması bazen ona önemli gelebilir, bazen başka yönleri öne çıkabilir.',
           },
           adult: {
             work: 'Bir işte başkalarına yararını görmek bazen senin için önemli olabilir, bazen başka koşullar ağır basabilir.',
           },
         },
         high: {
-          from: { school: ['Y1'], friends: ['Y3'], home: ['Y4'], work: ['Y2', 'Y4'] },
+          from: { school: ['Y1'], friends: ['Y3'], home: ['Y4'], work: ['Y4', 'Y2'] },
           student: {
             school: 'Bir proje konusu seçerken başkalarının hayatını kolaylaştıracak bir konu seçmek isteyebilirsin.',
             friends: 'Arkadaşlarınla meslekleri konuşurken bir işin topluma nasıl yararı dokunduğunu merak edebilirsin.',
@@ -175,7 +179,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
             home: 'Yararı görünmeyen bir iş ona pek anlamlı gelmeyebilir.',
           },
           adult: {
-            work: 'Bir işte ihtiyacı olanlara destek olmak ve yaptığının yararını görmek senin için çok önemli olabilir.',
+            work: 'Bir işte yaptığının kime yararı dokunduğunu görmek isteyebilirsin.',
           },
         },
       },
@@ -218,7 +222,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['B1', 'B4'], friends: ['B3'], home: ['B2'], work: ['B1', 'B2'] },
+          from: { school: ['B1', 'B4'], friends: ['B3'], home: ['B2'], work: ['B4', 'B1'] },
           student: {
             school: 'Bir ödevi nasıl yapacağına ve işlerin sırasına kendin karar vermek senin için önemli olabilir.',
             friends: 'Arkadaşlarınla bir iş yaparken her adımda onay beklemeden ilerlemek isteyebilirsin.',
@@ -230,7 +234,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
             home: 'Bir iş yaparken biri sürekli başında durunca canı sıkılabilir.',
           },
           adult: {
-            work: 'Bir işte nasıl çalışacağına kendin karar vermek ve sürekli denetlenmemek senin için çok önemli olabilir.',
+            work: 'Bir işte işlerinin sırasını kendin belirleyebildiğinde rahat edebilirsin.',
           },
         },
       },
@@ -285,7 +289,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
             home: 'Yakınlarıyla meslekleri konuşurken düzenli bir gelir ve uzun yıllar sürecek bir iş ona önemli gelebilir.',
           },
           adult: {
-            work: 'Bir işte işini kaybetme kaygısı taşımamak ve gelirinin düzenli gelmesi senin için çok önemli olabilir.',
+            work: 'Yeni bir işe geçmeden önce o işin ne kadar güvenceli olduğunu sorabilirsin.',
           },
         },
       },
@@ -340,7 +344,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
             home: 'Uzun süre tek başına yapılan bir iş ona pek çekici gelmeyebilir.',
           },
           adult: {
-            work: 'Bir işte çalışma arkadaşlarınla sıcak ilişkiler kurmak ve bir ekibin parçası olmak senin için çok önemli olabilir.',
+            work: 'Yeni bir işte çalışma arkadaşlarını tanımaya ve onlarla yakınlaşmaya zaman ayırabilirsin.',
           },
         },
       },
@@ -355,12 +359,12 @@ export const calismaDegerleriDaily: SurveyDaily = {
           student: {
             school: 'Bir projede emeğinin herkesçe görülmesi senin için pek önemli olmayabilir.',
             friends: 'Arkadaşlarınla meslekleri konuşurken bir işin saygın sayılması sana öncelikli gelmeyebilir.',
-            home: 'İleride üst görevlere yükselmek yerine yaptığın işin kendisi sana önemli gelebilir.',
+            home: 'İleride üst görevlere yükselmek sana pek önemli gelmeyebilir.',
           },
           parent: {
             school: 'Bir projede emeğinin herkesçe görülmesi çocuğunuz için pek önemli olmayabilir.',
             friends: 'Arkadaşlarıyla meslekleri konuşurken bir işin saygın sayılması ona öncelikli gelmeyebilir.',
-            home: 'İleride üst görevlere yükselmek yerine yaptığı işin kendisi ona önemli gelebilir.',
+            home: 'İleride üst görevlere yükselmek ona pek önemli gelmeyebilir.',
           },
           adult: {
             work: 'Bir işte yaptığın işle tanınmak senin için öncelikli olmayabilir.',
@@ -383,19 +387,19 @@ export const calismaDegerleriDaily: SurveyDaily = {
           },
         },
         high: {
-          from: { school: ['S2'], friends: ['S1', 'S3'], home: ['S2'], work: ['S3', 'S4'] },
+          from: { school: ['S4'], friends: ['S1', 'S3'], home: ['S2'], work: ['S3', 'S2'] },
           student: {
-            school: 'Bir projede emeğinin görülüp takdir edilmesi senin için çok önemli olabilir.',
+            school: 'Bir proje sergilenirken onu senin yaptığının bilinmesi sana önemli gelebilir.',
             friends: 'Arkadaşlarınla meslekleri konuşurken saygı gören ve ilerleme fırsatı olan işler dikkatini çekebilir.',
             home: 'Emeğin fark edilmeyince canın sıkılabilir.',
           },
           parent: {
-            school: 'Bir projede emeğinin görülüp takdir edilmesi çocuğunuz için çok önemli olabilir.',
+            school: 'Bir proje sergilenirken onu çocuğunuzun yaptığının bilinmesi ona önemli gelebilir.',
             friends: 'Arkadaşlarıyla meslekleri konuşurken saygı gören ve ilerleme fırsatı olan işler dikkatini çekebilir.',
             home: 'Emeği fark edilmeyince canı sıkılabilir.',
           },
           adult: {
-            work: 'Bir işte zamanla üst görevlere yükselmek ve yaptığın işle tanınmak senin için çok önemli olabilir.',
+            work: 'Bir işte nasıl yükselinebileceğini ve emeğinin nasıl görüleceğini merak edebilirsin.',
           },
         },
       },
@@ -450,7 +454,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
             home: 'Akşam ve hafta sonu da iş düşünmek zorunda kalınca canı sıkılabilir.',
           },
           adult: {
-            work: 'Bir işte çalışma saatlerinin fazla uzamaması senin için çok önemli olabilir.',
+            work: 'Bir iş teklifine bakarken haftada kaç saat çalışılacağını sorabilirsin.',
           },
         },
       },

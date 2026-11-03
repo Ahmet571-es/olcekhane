@@ -281,22 +281,39 @@ function kindSentence(def: LikertInstrument, content: ReportContent, tones: Dail
   // "Yetenek" sözcüğü bölümün metinlerinde geçmez (tests/gunluk-hayat.test.ts, TALENT); ilginin yapabilmek olmadığı sözle söylenir.
   if (def.profile === 'riasec' || def.profile === 'interests') {
     return by(a, {
-      you: 'Örnekler bir meslek önermez; ilgilerinin günlük hayatta nerede görünebileceğini anlatır. Bir işe ilgi duymak, onu yapabilmek demek değildir.',
+      you: 'Örnekler bir meslek önermez; ilgilerinin günlük hayatta nerede görünebileceğini anlatır. Bir işe ilgi duymak, onu yapabilmek demek değildir; ilgi duymamak da yapamamak demek değildir.',
       parent:
-        'Örnekler bir meslek önermez; çocuğunuzun ilgilerinin günlük hayatta nerede görünebileceğini anlatır. Bir işe ilgi duymak, onu yapabilmek demek değildir.',
+        'Örnekler bir meslek önermez; çocuğunuzun ilgilerinin günlük hayatta nerede görünebileceğini anlatır. Bir işe ilgi duymak, onu yapabilmek demek değildir; ilgi duymamak da yapamamak demek değildir.',
     });
   }
   // Hobi ilgileri etkinliklerin ne sıklıkla yapıldığını ölçer; sıklık ilgiye olduğu kadar zamana ve imkânlara da bağlıdır.
   if (def.profile === 'activities') {
     return by(a, {
-      you: 'Örnekler bir meslek önermez; boş zamanını nelere ayırdığının günlük hayatta nerede görünebileceğini anlatır. Bu sıklık zamana, imkânlara ve yaşanan yere de bağlıdır.',
+      you: 'Örnekler, boş zamanını hangi uğraşlara ne sıklıkla ayırdığını anlatır. Sıklık ilgiye olduğu kadar zamana, imkânlara ve yaşanan yere de bağlıdır; az yaptığın bir alana da ilgi duyuyor olabilirsin.',
       parent:
-        'Örnekler bir meslek önermez; çocuğunuzun boş zamanını nelere ayırdığının günlük hayatta nerede görünebileceğini anlatır. Bu sıklık zamana, imkânlara ve yaşanan yere de bağlıdır.',
+        'Örnekler, çocuğunuzun boş zamanını hangi uğraşlara ne sıklıkla ayırdığını anlatır. Sıklık ilgiye olduğu kadar zamana, imkânlara ve yaşanan yere de bağlıdır; çocuğunuz az yaptığı bir alana da ilgi duyuyor olabilir.',
     });
   }
   if (def.profile === 'values') return 'Değerlerin doğrusu ya da yanlışı yoktur; örnekler yalnızca neyin öne çıkabileceğini anlatır.';
   if (tones.every((t) => t === 'growth')) return GROWTH_SENTENCE;
   return 'Örnekler bir ucu iyi, ötekini kötü diye anlatmaz; günlük hayatta neyin öne çıkabileceğini gösterir.';
+}
+
+/**
+ * İlgi, etkinlik ve değer profillerinde en yüksek ile en düşük ölçek arasındaki fark küçükse (raporun `flat` işareti) kartların
+ * çoğu aynı düzey grubundan örnek gösterir: giriş bunu söyler (kartlar birbirine benzeyince okur nedenini bilsin).
+ */
+export function flatSentence(def: LikertInstrument, content: ReportContent): string | null {
+  if (!(content.ranking?.flat ?? content.interests?.flat)) return null;
+  return def.profile === 'values'
+    ? by(content.audience, {
+        you: 'Değerler arasındaki farklar küçük olduğu için kartlardaki örnekler birbirine benzeyebilir.',
+        parent: 'Çocuğunuzun değerleri arasındaki farklar küçük olduğu için kartlardaki örnekler birbirine benzeyebilir.',
+      })
+    : by(content.audience, {
+        you: 'Alanlar arasındaki farklar küçük olduğu için kartlardaki örnekler birbirine benzeyebilir.',
+        parent: 'Çocuğunuzun alanları arasındaki farklar küçük olduğu için kartlardaki örnekler birbirine benzeyebilir.',
+      });
 }
 
 export function surveyDailyPart(input: {
@@ -352,6 +369,7 @@ export function surveyDailyPart(input: {
     }),
     by(a, { you: 'Tek tek cevaplarını yansıtmaz; hepsi sana uymayabilir.', parent: 'Onun tek tek cevaplarını yansıtmaz; hepsi çocuğunuza uymayabilir.' }),
     kindSentence(def, content, tones),
+    ...[flatSentence(def, content)].filter((x): x is string => x !== null),
     ...(quality && hasWarn(quality)
       ? [by(a, { you: 'Cevap denetimlerinde “Dikkat” olduğu için örnekleri de dikkatle oku.', parent: 'Cevap denetimlerinde “Dikkat” olduğu için örnekleri de dikkatle okuyun.' })]
       : []),

@@ -44,12 +44,12 @@ export const meslekIlgiAlanlariDaily: SurveyDaily = {
           student: {
             school: 'Bir proje grubunda bazen yön vermek isteyebilir, bazen başkasının planıyla çalışabilirsin.',
             friends: 'Bir tartışmada bazen görüşünü savunup ikna etmeye çalışabilir, bazen dinlemeyi seçebilirsin.',
-            home: 'Ortak bir karar verilirken bazen söz almak isteyebilir, bazen kararı başkalarına bırakabilirsin.',
+            home: 'Pek çok kişiyi ilgilendiren bir kararı vermek bazen sana çekici gelebilir, bazen bunu başkalarına bırakabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir proje grubunda bazen yön vermek isteyebilir, bazen başkasının planıyla çalışabilir.',
             friends: 'Bir tartışmada bazen görüşünü savunup ikna etmeye çalışabilir, bazen dinlemeyi seçebilir.',
-            home: 'Ortak bir karar verilirken bazen söz almak isteyebilir, bazen kararı başkalarına bırakabilir.',
+            home: 'Pek çok kişiyi ilgilendiren bir kararı vermek bazen ona çekici gelebilir, bazen bunu başkalarına bırakabilir.',
           },
           adult: {
             work: 'Bir işte bazen sorumluluğu üstlenmek isteyebilir, bazen başkasının yönettiği bir ekipte çalışabilirsin.',
@@ -138,15 +138,15 @@ export const meslekIlgiAlanlariDaily: SurveyDaily = {
           student: {
             school: 'Bir arkadaşının yeni bir konuyu öğrenmesine yardım etmek sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarınla bir etkinlik seçerken yardım etkinlikleri yerine başka uğraşları seçebilirsin.',
-            home: 'Bakım ve danışmanlık gibi işler yerine ilgini çeken başka işlere zaman ayırabilirsin.',
+            home: 'Bakım ya da danışmanlık gerektiren işler yerine başka alanlar ilgini çekebilir.',
           },
           parent: {
             school: 'Bir arkadaşının yeni bir konuyu öğrenmesine yardım etmek çocuğunuza pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarıyla bir etkinlik seçerken yardım etkinlikleri yerine başka uğraşları seçebilir.',
-            home: 'Bakım ve danışmanlık gibi işler yerine ilgisini çeken başka işlere zaman ayırabilir.',
+            home: 'Bakım ya da danışmanlık gerektiren işler yerine başka alanlar ilgisini çekebilir.',
           },
           adult: {
-            work: 'İş yerinde birine yeni bir şey öğretmek sana pek çekici gelmeyebilir.',
+            work: 'Birine yeni bir şey göstermek gereken işler sana pek çekici gelmeyebilir.',
           },
         },
         average: {
@@ -248,12 +248,12 @@ export const meslekIlgiAlanlariDaily: SurveyDaily = {
           student: {
             school: 'Derste bir deney tasarlamak sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarınla karmaşık bir bulmaca çözmek yerine başka bir oyunu seçebilirsin.',
-            home: 'Bir bilgisayar programı yazmak yerine boş zamanını sevdiğin başka işlere ayırabilirsin.',
+            home: 'Program yazmak gibi işler yerine boş zamanını sevdiğin başka işlere ayırabilirsin.',
           },
           parent: {
             school: 'Derste bir deney tasarlamak çocuğunuza pek çekici gelmeyebilir.',
             friends: 'Arkadaşlarıyla karmaşık bir bulmaca çözmek yerine başka bir oyunu seçebilir.',
-            home: 'Bir bilgisayar programı yazmak yerine boş zamanını sevdiği başka işlere ayırabilir.',
+            home: 'Program yazmak gibi işler yerine boş zamanını sevdiği başka işlere ayırabilir.',
           },
           adult: {
             work: 'Verilerle ya da deneylerle uğraşılan işler sana pek çekici gelmeyebilir.',
@@ -296,7 +296,7 @@ export const meslekIlgiAlanlariDaily: SurveyDaily = {
     /* Doğa ve Üretim: o22 bina yapmak, o30 orman, o38 bitki yetiştirmek, o46 doğa yürüyüşü, o54 ahşap işleri, o62 çiçek
        yetiştirmek, o78 alet ve makinelerle çalışmak (o06, o14, o70 hayvan, çiftçilik ve araç tamiri: kullanılmadı). */
     production: {
-      poles: { low: 'Elle işler geri planda', high: 'Doğayı, el işlerini sever' },
+      poles: { low: 'Doğa, alet geri planda', high: 'Doğayı, el işlerini sever' },
       bands: {
         low: {
           from: { school: ['o54', 'o78'], friends: ['o46'], home: ['o38', 'o62'], work: ['o78', 'o38'] },
@@ -354,16 +354,16 @@ export const meslekIlgiAlanlariDaily: SurveyDaily = {
       poles: { low: 'Sakin uğraşları seçer', high: 'Heyecanı, hareketi sever' },
       bands: {
         low: {
-          from: { school: ['o55'], friends: ['o15', 'o63'], home: ['o39', 'o15'], work: ['o39'] },
+          from: { school: ['o55'], friends: ['o15', 'o63'], home: ['o15', 'o39'], work: ['o39'] },
           student: {
             school: 'Bir spor yarışmasına katılmak sana pek çekici gelmeyebilir.',
             friends: 'Arkadaşların heyecanlı ya da riskli bir etkinlik önerince daha sakin bir plan seçebilirsin.',
-            home: 'Tehlike içeren maceralar yerine sakin uğraşlarla vakit geçirmek sana iyi gelebilir.',
+            home: 'Boş zamanında hareketli maceralar yerine sakin uğraşları seçebilirsin.',
           },
           parent: {
             school: 'Bir spor yarışmasına katılmak çocuğunuza pek çekici gelmeyebilir.',
             friends: 'Arkadaşları heyecanlı ya da riskli bir etkinlik önerince daha sakin bir plan seçebilir.',
-            home: 'Tehlike içeren maceralar yerine sakin uğraşlarla vakit geçirmek ona iyi gelebilir.',
+            home: 'Boş zamanında hareketli maceralar yerine sakin uğraşları seçebilir.',
           },
           adult: {
             work: 'Fiziksel risk içeren işler sana pek çekici gelmeyebilir.',
@@ -406,7 +406,7 @@ export const meslekIlgiAlanlariDaily: SurveyDaily = {
     /* Dil ve Edebiyat: o08 çeviri, o32 kelime bulmacaları hazırlamak, o40 gazete editörlüğü, o48 birçok dil bilmek, o64 her
        konuda akıcı konuşabilmek, o72 çok sayıda kitap okumak, o80 günlük tutmak (o56 kullanılmadı: yurt dışı). */
     erudition: {
-      poles: { low: 'Okuma, yazma geri planda', high: 'Okumayı, dilleri sever' },
+      poles: { low: 'Dil, edebiyat geri planda', high: 'Okumayı, dilleri sever' },
       bands: {
         low: {
           from: { school: ['o48', 'o72'], friends: ['o32'], home: ['o80'], work: ['o08', 'o40'] },

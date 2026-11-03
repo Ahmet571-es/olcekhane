@@ -253,13 +253,13 @@ export const meslekiIlgiDaily: SurveyDaily = {
         low: {
           from: { school: ['C4'], friends: ['C1'], home: ['C2'] },
           student: {
-            school: 'Bir ödevi teslim etmeden önce harf ve virgül hatalarını tek tek aramak sana pek çekici gelmeyebilir.',
-            friends: 'Arkadaşlarınla bir etkinlik düzenlerken harcamaları tutma işini başka birine bırakabilirsin.',
+            school: 'Bir metindeki harf ve virgül hatalarını tek tek aramak sana pek çekici gelmeyebilir.',
+            friends: 'Arkadaşlarınla bir etkinlik düzenlerken harcamaların hesabını tutma işini başka birine bırakabilirsin.',
             home: 'Kâğıtlarını ve fotoğraflarını bir düzene sokmak yerine zamanını başka işlere ayırabilirsin.',
           },
           parent: {
-            school: 'Bir ödevi teslim etmeden önce harf ve virgül hatalarını tek tek aramak çocuğunuza pek çekici gelmeyebilir.',
-            friends: 'Arkadaşlarıyla bir etkinlik düzenlerken harcamaları tutma işini başka birine bırakabilir.',
+            school: 'Bir metindeki harf ve virgül hatalarını tek tek aramak çocuğunuza pek çekici gelmeyebilir.',
+            friends: 'Arkadaşlarıyla bir etkinlik düzenlerken harcamaların hesabını tutma işini başka birine bırakabilir.',
             home: 'Kâğıtlarını ve fotoğraflarını bir düzene sokmak yerine zamanını başka işlere ayırabilir.',
           },
         },

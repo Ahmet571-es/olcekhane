@@ -1072,6 +1072,29 @@ describe('Günlük hayat: özel durumlar', () => {
     for (const c of partCards(partOf(adult, 'daily')!)) expect(c.lines![0].label).toBe(SKILL_CONTEXTS.adult[0]);
   });
 
+  it('düz profil: değer, ilgi ve etkinlik sıralamasında farklar küçükse giriş örneklerin birbirine benzeyebileceğini söyler', () => {
+    const FLAT = {
+      values: ['Değerler arasındaki farklar küçük olduğu için', 'Çocuğunuzun değerleri arasındaki farklar küçük olduğu için'],
+      other: ['Alanlar arasındaki farklar küçük olduğu için', 'Çocuğunuzun alanları arasındaki farklar küçük olduğu için'],
+    };
+    for (const slug of ['calisma-degerleri', 'mesleki-ilgi-profili', 'hobi-ve-serbest-zaman-ilgileri']) {
+      const d = LIVE.find((x) => x.slug === slug) as LikertInstrument;
+      const [you, parent] = d.profile === 'values' ? FLAT.values : FLAT.other;
+      const run = (answers: Answers) => {
+        const body = { grade: d.minGrade, data: { engine: 'likert' as const, answers } };
+        const r = evaluate(slug, body);
+        return [r.student, r.parent, ...(d.adults ? [evaluateAdult(slug, { ...body, grade: ADULT_GRADE }).adult] : [])];
+      };
+      // Bütün cevaplar aynı: profil düz. Ölçekler sırayla uçlarda: profil düz değil.
+      for (const r of run(all(d, middle(d)))) {
+        const intro = partOf(r, 'daily')!.intro;
+        expect(intro, `${slug} ${r.audience}`).toContain(r.audience === 'parent' ? parent : you);
+        if (r.audience === 'parent') expect(hasSecondPerson(intro), intro).toBe(false);
+      }
+      for (const r of run(keyed(d, (i) => i % 2 === 0))) expect(partOf(r, 'daily')!.intro, `${slug} ${r.audience}`).not.toContain('arasındaki farklar küçük');
+    }
+  });
+
   it('ölçeklerin tonu: özellik ya da gelişim (yayındaki her anket testi)', () => {
     // Gelişim tonundaki ölçekler; listede olmayan her ölçek özellik tonundadır ("hepsi": testin bütün kartları).
     const GROWTH: Record<string, string[] | 'hepsi'> = {

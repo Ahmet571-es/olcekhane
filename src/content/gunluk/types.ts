@@ -85,6 +85,15 @@ import type { LevelGroup } from '@/content/reports/types';
  *  - Öğrencinin arkadaş ya da ev satırı evde başka birini varsayıyorsa ("evdekilerden biri") yetişkine kendi satırı yazılır
  *    (`adult.home`, `adult.friends`; yukarıdaki "yazılmaz" kuralının istisnası): yetişkin yalnız yaşıyor olabilir.
  *
+ * Ek kurallar (2026-11-03 incelemesi: ilgi, değer ve hobi testleri):
+ *  - İlgi, değer ve hobi ölçeklerinin düşük ucuna uydurma bir bedel yazılmaz: düşük ilgi ya da az önem bir eksiklik değildir;
+ *    satır tarafsız betimler ("pek çekici gelmeyebilir", "öncelikli olmayabilir") ya da bir kolaylık söyler. 5. maddedeki "her
+ *    uçta bir zorluk" düşük uçta aranmaz.
+ *  - Hobi ve serbest zaman testi (profil: activities) ilgiyi değil, son bir yılda ne sıklıkla yapıldığını sorar: satırlar sıklığı
+ *    ya da ayrılan zamanı söyler ("sık sık … -ebilirsin", "seyrek yer alabilir"); "keyifli gelebilir", "hoşuna gidebilir",
+ *    "isteyebilirsin" yazılmaz. Düşük uç yenilik, bilgi eksiği ya da ailenin imkânıyla açıklanmaz (yer anılabilir: "her yerde
+ *    kolay bulunmaz"); sıklığın zamana ve imkânlara bağlı olduğunu bölümün girişi bir kez söyler. Yüksek ucun bedeli zamandır.
+ *
  * Temkinli dil (anket): her cümle bir olasılık söyler: "-abilir / -ebilir", "çoğu zaman", "bazen", "genellikle", "…e daha
  * yatkın olabilirsin" (T: her cümlede). "Her zaman", "asla", "kesinlikle", "hiçbir zaman", "daima", "mutlaka", "her
  * seferinde", "hiç" (T) ve kişiyi tanımlayan ad ("içe dönük biri", "dağınık") kullanılmaz; davranış anlatılır. Yetenek,
