@@ -89,7 +89,7 @@ test); (e) yol haritası ve kalan açıklamaların grafikleri; (f) sesli dinleme
   maddeleriyle karşılaştırdı (`from` alanı); bulgular uygulandı (ör. dikkat testlerinde DEHB belirtisi gibi okunan örnekler,
   iyimserlikte toplam kartın alt kartlarla çelişmesi, motivasyonda iki parçası ayrışan kart, 3–4. sınıfta yazılı sınav
   olmaması; hobi testinde sıklık, beğeni değil; ilgi testlerinde meslek önerisi yok). Bütün yayındaki testlerin metni var (`DAILY_PENDING` boş). Yazım kuralları `src/content/gunluk/types.ts`'te.
-  Açık iş (Claude): yol haritalarındaki bazı örnekler günlük hayat kurallarıyla çelişiyor (ör. tepki hızında trafik, kural değiştirmede plan değiştirme): uyumlandı, bağımsız denetimde (dal `uyum-h2`).
+ 
 - (e) ve (f) **yayında (2026-11-03):** yol haritasının sonuca dayanan her bölümünün grafiği (Kısaca, öneriler, ortamlar ve
   yaklaşım "Bu bölümün dayandığı sonuçlar", dört haftalık zaman çizelgesi: sonuca göre seçilen ve genel öneri olan haftalar);
   herkese aynı olan bölümler (görev önerileri, okuma alışkanlıkları, kaynaklar) grafiksiz. Matematikte hata türleri grafiği.
@@ -1168,6 +1168,12 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-03 (73): Zekâ ve dikkat testlerinin yol haritaları ve rapor kartları, testlerin kendi sınırlarıyla ve kardeş
+  testlerle uyumlandı: tepki hızında trafik ve spor, 3. sınıfa açık testlerde çocuğun telefonu, dur-git'te DEHB belirtisi gibi
+  okunan örnekler, kural değiştirmede plan değiştirme, 2 boyutlu döndürmede 3 boyutlu eşya, bellek testlerinde duyulan bilgi
+  gibi çelişen örnekler değişti. Aynı soruların geldiği Düşünerek Karar Verme ve Sayısal Akıl Yürütme'de yol haritası artık
+  testin sorusuna çok benzeyen bir soruyu çözmüyor. Günlük hayat dışlama tablosu ortak (`tests/helpers/gunluk-excluded.ts`) ve
+  yol haritalarına da uygulanıyor (`tests/yol-haritasi-uyum.test.ts`). Bağımsız denetimin bulguları uygulandı.
 - 2026-11-03 (72): "Günlük hayatta" denetimleri sıkılaştırıldı ve yazarın denetim listesi tek, numaralı listeye toplandı
   (`src/content/gunluk/types.ts`, 25 kural; testle denetlenenler işaretli): ikinci kişi eklerinin doğru tanınması, maddeyi
   neredeyse aynen yineleyen cümle yasağı (4 sözcüklük dizi), yalnız yaşayan yetişkine uymayan ev satırı, mezunda "sınıf",
@@ -1229,12 +1235,3 @@ En yeni üstte; en çok 10 madde tutulur.
   ve Embretson (2010) ile Shi ve ark. (2023) zorluk bulguları ayrı ayrı; Embretson (1996), Levine (1999, 2012), Uttal
   (2013), Wai (2009) ifadeleri kaynağa göre; künyeler. Düzeye ulaşma cümlesi (ortak) iki cümleye bölündü. Telefonda
   dokunarak (4. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.
-- 2026-10-31 (63): "Raporu sesli dinle" (site sahibinin 31 Ekim'de seçtiği dört yeniliğin dördüncüsü): her raporun
-  başında oynatıcı; önce sonuçlar, istenirse yol haritası; duraklat, durdur, hız. Ses yalnızca cihazın kendi Türkçe
-  sesiyle (tarayıcının "yerel" dediği tr sesi); ağ sesine ya da başka dile geçilmez, Türkçe ses yoksa oynatıcı görünmez.
-  Sayfa, Android'de "yerel" sesin nasıl üretildiğini denetleyemediği için "ses her zaman internetsiz" denmiyor; sayfada
-  "Site raporunu hiçbir yere göndermez" yazıyor. Okunacak metin raporun verisinden; sayılar ve işaretler sözle, kaynak
-  gösterimleri ve grafiğin görünüşünü anlatan cümleler okunmaz. Bağımsız incelemenin bulguları uygulandı (sıra sayısı gibi
-  okunan sayılar, "1. Kazanç"ın bölünmesi, sesin her parçadan önce yeniden denetlenmesi, takılıp kalan oynatıcı, odak,
-  ekranda görünmeyen bölümün okunması). Gerçek tarayıcıda sahte yerel Türkçe sesle denendi (telefon ve masaüstü: okuma,
-  duraklatma, sekme değişince susma; ağ sesiyle oynatıcı görünmüyor). Gerçek telefonlarda (iPhone, Android) denenmedi.
