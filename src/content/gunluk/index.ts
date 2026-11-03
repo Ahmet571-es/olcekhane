@@ -2,6 +2,8 @@ import { bakisAcisiAlmaDaily } from './bakis-acisi-alma';
 import { besFaktorDaily } from './bes-faktor-kisilik';
 import { calismaAliskanliklariDaily } from './calisma-aliskanliklari';
 import { dersCalismaMotivasyonuDaily } from './ders-calisma-motivasyonu';
+import { dikkatBellekDaily } from './dikkat-ve-bellek';
+import { durGitDaily } from './dur-git-gorevi';
 import { dusunerekKararVermeDaily } from './dusunerek-karar-verme';
 import { dusunmeVeCalismaTarziDaily } from './dusunme-ve-calisma-tarzi';
 import { dusunmeyiSevmeDaily } from './dusunmeyi-sevme-olcegi';
@@ -14,6 +16,7 @@ import { iyimserlikDaily } from './iyimserlik';
 import { kagitKatlamaDaily } from './kagit-katlama';
 import { kelimeBilgisiDaily } from './kelime-bilgisi';
 import { kupAcinimiDaily } from './kup-acinimi';
+import { kuralDegistirmeDaily } from './kural-degistirme';
 import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
 import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
@@ -23,13 +26,17 @@ import { ozDenetimDaily } from './oz-denetim';
 import { ozSaygiDaily } from './oz-saygi';
 import { ozYeterlikDaily } from './oz-yeterlik';
 import { parcalardanSekilDaily } from './parcalardan-sekil';
+import { renkKelimeDaily } from './renk-kelime-gorevi';
 import { sayiDizileriDaily } from './sayi-dizileri';
 import { sayisalAkilYurutmeDaily } from './sayisal-akil-yurutme';
 import { sekilAkilYurutmeDaily } from './sekil-akil-yurutme';
 import { sekilBenzetmeleriDaily } from './sekil-benzetmeleri';
 import { sesliOkumaDaily } from './sesli-okuma-degerlendirmesi';
 import { simgeBulmaDaily } from './simge-bulma';
+import { siraylaDaily } from './sirayla-birlestirme-gorevi';
 import { sozelAkilYurutmeDaily } from './sozel-akil-yurutme';
+import { surekliDikkatDaily } from './surekli-dikkat';
+import { tepkiHiziDaily } from './tepki-hizi';
 import { zihniyetDaily } from './zihniyet';
 import type { DailyContent } from './types';
 import { ucBoyutluZihindeDondurmeDaily } from './uc-boyutlu-zihinde-dondurme';
@@ -76,4 +83,11 @@ export const DAILY: Record<string, DailyContent> = {
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuDaily,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiDaily,
   'zihniyet': zihniyetDaily,
+  'dikkat-ve-bellek': dikkatBellekDaily,
+  'surekli-dikkat': surekliDikkatDaily,
+  'renk-kelime-gorevi': renkKelimeDaily,
+  'dur-git-gorevi': durGitDaily,
+  'sirayla-birlestirme-gorevi': siraylaDaily,
+  'tepki-hizi': tepkiHiziDaily,
+  'kural-degistirme': kuralDegistirmeDaily,
 };

@@ -87,19 +87,12 @@ export const DAILY_PENDING: string[] = [
   'duygusal-zeka-bilesenleri',
   // Görev testleri
   'planlama-kule-gorevi',
-  'dikkat-ve-bellek',
-  'surekli-dikkat',
-  'renk-kelime-gorevi',
-  'dur-git-gorevi',
-  'sirayla-birlestirme-gorevi',
   'geriye-donuk-hatirlama',
   'hesapla-ve-hatirla',
   'harf-sayi-siralama',
   'desen-hatirlama',
   'kelime-listesi-hatirlama',
   'zihinde-dondurme',
-  'tepki-hizi',
-  'kural-degistirme',
 ];
 /** Listenin örnek dosyalardan sonraki uzunluğu: liste bundan uzun olamaz (her yeni dosyada bu sayı da küçültülebilir). */
 const PENDING_AT_START = 55;
@@ -287,80 +280,121 @@ const EXCLUDED: Record<string, { pattern: RegExp; limitation?: string; sibling?:
     { pattern: /adımlara ayır|plan yap/iu, sibling: 'planlama-kule-gorevi' },
     { pattern: /zihinden|kafadan|hızlı hesap/iu, sibling: 'zihinden-hesaplama-hizi' },
     { pattern: /grafik|tablo/iu, sibling: 'matematik-konu-tarama-testi' },
-  ],
   'harf-dizileri': [
     { pattern: /şekil|sayı|rakam/iu, limitation: 'Şekillerle ve sayılarla akıl yürütme' },
     { pattern: /anlam|deyim/iu, sibling: 'kelime-bilgisi' },
     { pattern: /sözlükte|alfabe sırasıyla diz/iu, rule: 'bilinen alfabe sırasını uygulamak kural bulmayı istemez' },
-  ],
   'sozel-akil-yurutme': [
     { pattern: /şekil|sayı/iu, limitation: 'Şekillerle ve sayılarla akıl yürütme' },
     { pattern: /eş anlam|zıt anlam|deyim|anlamını bil/iu, sibling: 'kelime-bilgisi' },
     { pattern: /eğer|ise …/iu, sibling: 'mantiksal-akil-yurutme' },
-  ],
   'mantiksal-akil-yurutme': [
     { pattern: /şekil|sayı|matematik/iu, limitation: 'şekillerle ya da sayılarla akıl yürütme' },
     { pattern: /grupla|sırayı kur|ilişkiyi bul/iu, sibling: 'sozel-akil-yurutme' },
     { pattern: /ilk akla gelen|acele/iu, sibling: 'dusunerek-karar-verme' },
-  ],
   'kagit-katlama': [
     { pattern: /döndür|çevir/iu, limitation: 'şekilleri zihinde döndürme' },
     { pattern: /yön bul|harita|kroki/iu, limitation: 'yön bulma' },
     { pattern: /açınım|küp|kutu/iu, sibling: 'kup-acinimi' },
     { pattern: /yapboz|tangram|parçaları birleştir|eşya kur/iu, sibling: 'parcalardan-sekil' },
-  ],
   'sayisal-akil-yurutme': [
     { pattern: /konu bilgisi|matematik notu|karne/iu, limitation: 'matematik başarısını ya da konu bilgisini ölçmez' },
     { pattern: /dizi|örüntü/iu, sibling: 'sayi-dizileri' },
     { pattern: /zihinden|kafadan|çarpım tablosu|para üstü/iu, sibling: 'zihinden-hesaplama-hizi' },
     { pattern: /simit|gömlek|limonata|(?<!\p{L})kek(?!\p{L})|tarif|yemeği çoğalt|taksi|koro|fidan|kumbara|(?<!\p{L})tur(?:da|u|lar)?(?!\p{L})|terazi|boyacı|bisiklet/iu, rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz' },
-  ],
   'zihinden-hesaplama-hizi': [
     { pattern: /problem çöz/iu, limitation: 'problem çözmenin tamamını ölçmez' },
     { pattern: /orantı|tarif/iu, sibling: 'sayisal-akil-yurutme' },
-    { pattern: /dizi|örüntü/iu, sibling: 'sayi-dizileri' },
     { pattern: /eşit gruplara|kurabiye/iu, sibling: 'matematik-konu-tarama-testi' },
-  ],
   'kup-acinimi': [
     { pattern: /döndür|çevir/iu, limitation: 'zihinde döndürme' },
     { pattern: /yön bul|harita/iu, limitation: 'yön bulma' },
     { pattern: /delik|delin|delme/iu, sibling: 'kagit-katlama' },
     { pattern: /kurulum çizim|farklı yönlerden/iu, sibling: 'uc-boyutlu-zihinde-dondurme' },
     { pattern: /yapboz|tangram/iu, sibling: 'parcalardan-sekil' },
-  ],
   'parcalardan-sekil': [
-    { pattern: /yön bul|harita/iu, limitation: 'yön bulma' },
     { pattern: /katla|delik/iu, sibling: 'kagit-katlama' },
     { pattern: /açınım|küp/iu, sibling: 'kup-acinimi' },
     { pattern: /gizli|saklı/iu, sibling: 'gizli-sekiller' },
     { pattern: /eşya kur|kurulum|odaya/iu, sibling: 'uc-boyutlu-zihinde-dondurme' },
     { pattern: /ters çevir|ayna/iu, rule: 'parçalar ters çevrilemez: ayna görüntüsü aynı parça sayılmaz' },
-  ],
   'uc-boyutlu-zihinde-dondurme': [
     { pattern: /katla|açınım/iu, limitation: 'zihinde katlama' },
-    { pattern: /yön bul|harita/iu, limitation: 'yön bulma' },
     { pattern: /düz şekil|iki boyutlu|harf/iu, sibling: 'zihinde-dondurme' },
     { pattern: /bakış açısı|kendini .*yere/iu, sibling: 'bakis-acisi-alma' },
-  ],
   'bakis-acisi-alma': [
     { pattern: /yol bul|yolunu|kaybol/iu, limitation: 'gerçek bir ortamda yol bulmayı doğrudan ölçmez' },
     { pattern: /duygu|hisset|düşüncesini/iu, sibling: 'empati' },
     { pattern: /cismi|çevir|döndür/iu, sibling: 'uc-boyutlu-zihinde-dondurme' },
-  ],
   'gizli-sekiller': [
     { pattern: /kişilik|tarz/iu, limitation: 'kişilik özelliği' },
     { pattern: /liste|tablo|farkları bul/iu, sibling: 'simge-bulma' },
     { pattern: /yapboz|birleştir/iu, sibling: 'parcalardan-sekil' },
     { pattern: /döndür|çevril/iu, sibling: 'zihinde-dondurme' },
-  ],
   'dusunerek-karar-verme': [
     { pattern: /bütün kararlar|hayat kararı|önemli kararlar/iu, limitation: 'günlük hayattaki bütün kararlar' },
     { pattern: /haber|iddia/iu, sibling: 'mantiksal-akil-yurutme' },
     { pattern: /tavuk|horoz|koşu|yarış|makine|yosun|koyun|kuyruk|asansör|kütük|sincap|dergi|(?<!\p{L})muz/iu, rule: 'hep aynı sorular gelir: soruların konuları kullanılmaz' },
-  ],
   'kelime-bilgisi': [
     { pattern: /yazarken|konuşurken|yazım|dil bilgisi|cümle kur|kompozisyon/iu, limitation: 'yazım ya da dil bilgisi' },
     { pattern: /ilişkiyi bul|grupla|gruba uymayan/iu, sibling: 'sozel-akil-yurutme' },
+  'planlama-kule-gorevi': [
+    { pattern: /zamana yay|zamanında|takvim|ne zaman|günlere böl/iu, limitation: 'bir işi zamana yaymak' },
+    {
+      pattern: /(?<!\p{L})(?:top|topu|topları|çubuk\p{L}*|kule\p{L}*)(?!\p{L})/iu,
+      rule: 'her seferinde aynı problemler gelir: örnekler problemlerin konusunu (renkli toplar, çubuklar) anmaz',
+    },
+  'dikkat-ve-bellek': [
+    { pattern: /farkı bul|bir listede|karşılaştır/iu, sibling: 'simge-bulma' },
+    { pattern: /alışveriş|kelime listesi/iu, sibling: 'kelime-listesi-hatirlama' },
+    { pattern: /harita|yol tarif/iu, sibling: 'bakis-acisi-alma' },
+    { pattern: /çizimi|deftere geçir|desen/iu, sibling: 'desen-hatirlama' },
+    { pattern: /zihinden|hesap/iu, sibling: 'zihinden-hesaplama-hizi' },
+  'surekli-dikkat': [{ pattern: /hata ara|hataları fark|farkı bul|bir listede/iu, sibling: 'simge-bulma' }],
+  'renk-kelime-gorevi': [
+    { pattern: /sıra(?:nı|sını|n|sı)? bekle|heykel|simon/iu, sibling: 'dur-git-gorevi' },
+    { pattern: /kural(?:ı|lar)? değiş|iki kural/iu, sibling: 'kural-degistirme' },
+  'dur-git-gorevi': [
+    { pattern: /dürtü|sabırsız|aceleci/iu, limitation: 'dürtüsellik' },
+    { pattern: /değildir|tersini|ters oyun|ters komut/iu, sibling: 'renk-kelime-gorevi' },
+  'sirayla-birlestirme-gorevi': [{ pattern: /kural/iu, sibling: 'kural-degistirme' }],
+  'geriye-donuk-hatirlama': [
+    { pattern: /unut/iu, limitation: 'gündelik hayattaki bellek' },
+  'hesapla-ve-hatirla': [
+    { pattern: /hesap|zihinden|işlem/iu, limitation: 'matematik becerisini ölçmek için değil' },
+    { pattern: /sayfa numara/iu, sibling: 'dikkat-ve-bellek' },
+    { pattern: /skor/iu, sibling: 'geriye-donuk-hatirlama' },
+  'harf-sayi-siralama': [
+    { pattern: /söyle|duy(?:du|ul)|dinle/iu, limitation: 'Öğeler bu testte dinletilmez' },
+    { pattern: /unut|doğum gün/iu, limitation: 'günlük hayattaki unutkanlık' },
+    { pattern: /ters/iu, sibling: 'dikkat-ve-bellek' },
+  'desen-hatirlama': [
+    { pattern: /sırayla|sırasını|yol tarif/iu, limitation: 'Yerlerin sırasını hatırlamak' },
+    { pattern: /eşini bul|ezber/iu, rule: 'kartların yerini oyun boyunca hatırlamak hareketsiz bir görüntüyü hemen ardından hatırlamak değildir' },
+    { pattern: /farkı bul/iu, sibling: 'simge-bulma' },
+    { pattern: /yapboz/iu, sibling: 'parcalardan-sekil' },
+    { pattern: /kareli/iu, rule: 'her seferinde aynı desenler gelir: örnekler kareli desenleri anmaz' },
+  'kelime-listesi-hatirlama': [
+    { pattern: /ertesi gün|bir gün sonra|hafta sonra|yarım saat/iu, limitation: 'uzun süre sonra' },
+    { pattern: /duydu|duyul|söylen|dinle|tanıştı|yüz(?:ü|leri|ler)(?!\p{L})/iu, limitation: 'duyduğunu hatırlama' },
+    { pattern: /anlamı|yeni kelime|eş anlam|deyim/iu, sibling: 'kelime-bilgisi' },
+      pattern:
+        /(?<!\p{L})(?:tavşan|pencere|limon|köprü|gitar|para|gömlek|çekiç|balon|kibrit|araba|bayrak|ayna|anahtar|kulak|sabun|havuz|zarf|tabure|terazi|dürbün|mendil|yastık|pusula|heykel|kupa|sandık|şemsiye|maske|sepet|ekmek|saat|bardak)/iu,
+      rule: 'her seferinde aynı kelimeler gelir: örnekler listedeki kelimeleri kullanmaz',
+  'zihinde-dondurme': [
+    { pattern: /üç boyut|küp|kutu|eşya|nesne|ayakkabı/iu, limitation: 'üç boyutlu nesneleri', sibling: 'uc-boyutlu-zihinde-dondurme' },
+    { pattern: /harita|yön bul|yol tarif/iu, sibling: 'bakis-acisi-alma' },
+    { pattern: /yapboz|parçanın|yerine otur/iu, sibling: 'parcalardan-sekil' },
+    { pattern: /katla/iu, sibling: 'kagit-katlama' },
+  'tepki-hizi': [
+    { pattern: /spor|maç|futbol|basketbol|voleybol|tenis|kaleci|yakan top/iu, limitation: 'spordaki beceri' },
+      pattern: /araba|araç|sürücü|direksiyon|trafik|fren|bisiklet|karşıdan karşıya/iu,
+      rule: 'araç kullanma ve trafik örneği yok: görev sürüş güvenliği hakkında bir şey söylemez',
+    { pattern: /heykel|kıpırda|sıra(?:nı|sını)? bekle/iu, sibling: 'dur-git-gorevi' },
+  'kural-degistirme': [
+    { pattern: /plan|uyum sağla|yeni durum|çözüm yolu/iu, limitation: 'plan değiştirebilmek' },
+    { pattern: /simon/iu, sibling: 'dur-git-gorevi' },
+    { pattern: /noktaları|sırayla birleştir/iu, sibling: 'sirayla-birlestirme-gorevi' },
   ],
 };
 
