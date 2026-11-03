@@ -480,7 +480,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   alanı (`dailySources`; konu taramada formdan forma değişen alan `forms` ile ayrı kart, metni gösterildiği her forma uyar) için
   tanım (başlıkla başlamaz), grafik `contexts` (ortada kısa ad, üç dalda yerler; sesli okumada "Kullanıldığı yerler: …") ve üç
   ortam (Okulda, Oyunda ve arkadaşlarla, Evde); sonuca göre değişmez; testin "bilgi vermez" dediği ya da başka bir testin
-  ölçtüğü beceriye ve aynı soruların geldiği testte soruların konularına dayanan örnek yok (`EXCLUDED`). Grafiklerde en küçük
+  ölçtüğü beceriye ve aynı soruların geldiği testte soruların konularına dayanan örnek yok (`EXCLUDED`,
+  `tests/helpers/gunluk-excluded.ts`; görevlerin yol haritası da bu tabloyla denetlenir). Grafiklerde en küçük
   yazı ≈ 7,5 punto. Yazım: örnekler maddelerden ve sitedeki metinlerden çıkar, yeni iddia yok; anket örneklerinin her cümlesi
   temkinli, öğrenci ve yetişkin satırı "sen" der, veli satırında kesin bir ikinci kişi işareti yok (testteki örnek tablosu);
   görevlerde tanımlayıcı ("bu tür işlerdir"), sonuç, zorlanma, test ve vaat yok; tanı, kıyas, yaygınlık, klinik sözcük,
@@ -517,7 +518,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Konu tarama (`ACADEMIC_ROADMAPS`), okuma (`READING_ROADMAPS`) ve zihinsel görev (`TASK_ROADMAPS`) yol haritaları
   kendi kurulumlarındadır (`lib/reports/academic-roadmap.ts`, `reading-roadmap.ts`, `task-roadmap.ts`); denetim
   `tests/beceri-yol-haritasi.test.ts`. Kaynaklar `src/content/roadmaps/kaynaklar.ts`'teki, sitede zaten kullanılan
-  kaynaklardır. Zihinsel görevlerde puanı yükseltme ya da "beyni çalıştırma" vaadi verilmez.
+  kaynaklardır. Zihinsel görevlerde puanı yükseltme ya da "beyni çalıştırma" vaadi verilmez. Görevlerin yol haritası da
+  günlük hayat örneklerinin `EXCLUDED` tablosuna uyar (sınırlılık, kardeş testin becerisi, sabit soruların konuları; her
+  kitlede) ve 1–4. sınıfa açık testte telefon ve mesaj varsaymaz (`tests/yol-haritasi-uyum.test.ts`); metnin testi anlattığı
+  ya da sözcüğün başka anlamda geçtiği yer tabloda `roadmap` iznine gerekçesiyle yazılır.
 - Yeni yol haritası doğrudan yayına alınır (2026-10-07 kararı). Site sahibi isterse önce `ROADMAP_IN_REVIEW`'a
   konur: yalnızca `/testler/<adres>/coz?onizleme=yol-haritasi` bağlantısıyla görünür. Hoca belgesi istenirse
   "<Test adı> Gelişim Yol Haritası İncelemesi" hazırlanır (metinler içerik dosyasından üretilip belgeyle

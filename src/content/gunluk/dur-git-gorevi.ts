@@ -8,10 +8,8 @@ import type { SkillsDaily } from './types';
  * cevap verilmez (alışkanlıkla gelen cevabın yerine başka bir cevap vermeyi Renk-Kelime Görevi ölçer). Raporun ikinci ölçüsü
  * (öteki harflerde kaçırmadan basmak) tanımın ikinci cümlesindedir. Test "gündelik hayattaki dürtüsellik ya da dikkat
  * hakkında" bilgi vermez ve DEHB için tanı koymaz: örnekler kişiyi tanımlamaz ("sabırsız", "aceleci" yok) ve dürtüsellik
- * belirtilerini andıran davranışları (sırasını beklemek, cevabı ortaya atmak, söz kesmek, araya girmek) kullanmaz; tanıtımın
- * "sırasını beklemek, düşünmeden cevap vermemek" ve yol haritasının "sözü kesmeden sırasını beklemek" örnekleri bu yüzden
- * kullanılmaz (EXCLUDED). Yol haritasındaki "mesajı göndermeden önce durmak" örneği 3. sınıfa açık bir testte telefon
- * varsaydığı için kullanılmaz.
+ * belirtilerini andıran davranışları (sırasını beklemek, cevabı ortaya atmak, söz kesmek, araya girmek) kullanmaz (EXCLUDED;
+ * tanıtım ve yol haritası da bu örnekleri kullanmaz). 3. sınıfa açık bir testte telefon ve mesaj varsayılmaz.
  */
 export const durGitDaily: SkillsDaily = {
   kind: 'skills',

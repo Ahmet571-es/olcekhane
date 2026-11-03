@@ -11,7 +11,7 @@ import type { SkillsDaily } from './types';
  * konuyu değil, orantıyı farktan ayırmayı ve eşitliği dengelemeyi anlatır. Zihinden hızlı hesap (Zihinden Hesaplama Hızı) ve
  * sayı dizileri (Sayı Dizileri) burada yoktur. Testte her seferinde aynı sorular geldiği için örnekler soruların konularını
  * (simit, yaş farkı, limonata, gömlek kurutma, kek, taksi, koro, fidan, kumbara, koşu turları, terazi, boyacı, bisiklet…) ve
- * sayılarını kullanmaz (tests/gunluk-hayat.test.ts, `EXCLUDED`). Elle denetlendi: iki oyuncu her elde aynı sayıda puan alırsa
+ * sayılarını kullanmaz (tests/helpers/gunluk-excluded.ts, `EXCLUDED`). Elle denetlendi: iki oyuncu her elde aynı sayıda puan alırsa
  * aradaki fark değişmez; iki kat çayın demlenme süresi iki katına çıkmaz; sabit bir başlangıç ücreti olan hizmette iki kat
  * kullanım iki kat ödeme değildir (sabit ücret bir kez ödenir). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı
  * söylenmez.

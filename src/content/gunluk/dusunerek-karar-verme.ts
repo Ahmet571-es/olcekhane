@@ -12,7 +12,7 @@ import type { SkillsDaily } from './types';
  * cevabı durup denetlemeyi isteyen işleri anlatır. Yol haritasındaki "bir haberin ya da iddianın doğruluğunu sorgulamak"
  * Mantıksal Akıl Yürütme'nin de örneğidir (söylenenlerden kesin olarak ne çıkar?): karışmasın diye burada kullanılmaz. Testte
  * her seferinde aynı sorular geldiği için örnekler soruların konularını (tavuklar, koyunlar, horoz, koşu yarışı, makineler,
- * yosun, asansör, kuyruk…) kullanmaz (tests/gunluk-hayat.test.ts, `EXCLUDED`). Fiyat soruları da vardır (dk02 dergi ile muz,
+ * yosun, asansör, kuyruk…) kullanmaz (tests/helpers/gunluk-excluded.ts, `EXCLUDED`). Fiyat soruları da vardır (dk02 dergi ile muz,
  * dk19 defter ile kalem: "ikisi birlikte … lira, biri ötekinden … pahalı"); ev ve iş örneklerindeki fiyatlar bu düzende
  * değildir (indirim, teklifteki tutar). Örnekler tanımlayıcıdır; sonucun bu işlerde ne olacağı söylenmez.
  */
