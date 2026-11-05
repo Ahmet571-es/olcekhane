@@ -117,7 +117,17 @@ export const skillInForm = (s: Pick<SkillDaily, 'forms'>, form: string | undefin
  */
 export type DailyTone = 'trait' | 'growth';
 /** Bütün ölçekleri gelişim tonunda olan testler (şablonları değerlendirici değil, ama ölçtükleri şey bugünkü durumdur). */
-const GROWTH_SLUGS = new Set(['oz-saygi', 'iyimserlik', 'oz-yeterlik', 'zihniyet', 'duygusal-zeka-bilesenleri', 'empati', 'oz-denetim']);
+const GROWTH_SLUGS = new Set([
+  'oz-saygi',
+  'iyimserlik',
+  'oz-yeterlik',
+  'zihniyet',
+  'duygusal-zeka-bilesenleri',
+  'empati',
+  'oz-denetim',
+  // Kaygının üç yanında yüksek uç, baş etmenin iki yanında düşük uç zor uçtur; hiçbir uca uydurma bir yan eklenmez.
+  'sinav-kaygisi-ve-bas-etme',
+]);
 /**
  * Tek tek gelişim tonundaki ölçekler: motivasyon profilinde isteksizlik; Öğrenme ve Başarı Özellikleri'nde zorlukla başa
  * çıkma (maddeleri öz-yeterliği sorar: "Kendimi her işi yapabilecek güçte hissederim"; öz-yeterlik de gelişim tonundadır).

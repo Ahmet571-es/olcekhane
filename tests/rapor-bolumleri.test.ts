@@ -558,7 +558,8 @@ describe('Ek bölümlerin dili', () => {
             } else {
               expect(joined, label).not.toMatch(/Çocuğunuz/);
             }
-            if (r.audience === 'adult') expect(schoolWords(joined.replace(/“[^”]*”/g, '')), label).toEqual([]);
+            // Sınav Kaygısı ve Baş Etme'de "sınav" testin konusudur (tests/helpers/school.ts, EXAM_TESTS).
+            if (r.audience === 'adult') expect(schoolWords(joined.replace(/“[^”]*”/g, ''), d.slug), label).toEqual([]);
             for (const t of texts)
               for (const s of sentences(t)) {
                 const words = s.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w)).length;

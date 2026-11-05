@@ -30,6 +30,7 @@ import { cocukKisilik } from './cocuk-kisilik';
 import { dersCalismaMotivasyonu } from './ders-calisma-motivasyonu';
 import { ertelemeZamanYonetimi } from './erteleme-zaman-yonetimi';
 import { zihniyet } from './zihniyet';
+import { sinavKaygisiBasEtme } from './sinav-kaygisi';
 import { okumaHizi } from './okuma-hizi';
 import { ozSaygi } from './oz-saygi';
 import { renkKelimeGorevi } from './renk-kelime';
@@ -122,6 +123,7 @@ export const INSTRUMENTS: InstrumentDef[] = [
   dersCalismaMotivasyonu,
   ertelemeZamanYonetimi,
   zihniyet,
+  sinavKaygisiBasEtme,
   hobiIlgileri,
   calismaDegerleri,
 ].sort((a, b) => a.sortOrder - b.sortOrder);

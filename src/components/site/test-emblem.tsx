@@ -1607,6 +1607,45 @@ function clockTasks(r: Rng): ReactNode {
   );
 }
 
+/** Sınav kaygısı ve baş etme: cevap kâğıdı ve sivri dalgalardan yumuşak dalgaya dönen nabız çizgisi. */
+function examCalm(r: Rng): ReactNode {
+  const rows = 4;
+  const marks = Array.from({ length: rows }, () => Math.floor(r() * 3));
+  // Nabız: önce sivri tepeler (kaygı), sonra yumuşayan dalga (sakinleşme).
+  const x0 = -12;
+  const spikes = Array.from({ length: 4 }, (_, i) => between(r, 34, 50) * (i % 2 ? -1 : 1));
+  const jag = spikes.map((h, i) => `L${f(x0 + 10 + i * 14)} ${f(h)}L${f(x0 + 17 + i * 14)} 0`).join('');
+  const wave: [number, number][] = Array.from({ length: 9 }, (_, i) => [x0 + 66 + i * 7.5, f(Math.sin(i * 0.9) * (16 - i * 1.4))]);
+  return (
+    <>
+      <rect x={-118} y={-58} width={86} height={116} rx={10} style={{ fill: E3 }} />
+      <rect x={-104} y={-44} width={46} height={7} rx={3.5} style={{ fill: E2 }} />
+      {marks.map((m, i) => (
+        <M key={i} s={mv(0, -2, 0, 1, i * 60)}>
+          {[0, 1, 2].map((k) => (
+            <circle
+              key={k}
+              cx={-100 + k * 18}
+              cy={-18 + i * 20}
+              r={5.5}
+              style={k === m ? { fill: E1 } : { fill: SURF, stroke: E2, strokeWidth: 1.8 }}
+            />
+          ))}
+        </M>
+      ))}
+      <path
+        d={`M${x0 - 6} 0L${x0 + 3} 0${jag}L${x0 + 66} 0`}
+        style={{ fill: 'none', stroke: E4, strokeWidth: 3.4, strokeLinecap: 'round', strokeLinejoin: 'round' }}
+      />
+      <M s={mv(4, 0, 0, 1, 180)}>
+        <path d={smoothOpen(wave)} style={{ fill: 'none', stroke: E1, strokeWidth: 4, strokeLinecap: 'round' }} />
+        <circle cx={f(wave[wave.length - 1][0] + 6)} cy={wave[wave.length - 1][1]} r={6} style={{ fill: E1 }} />
+      </M>
+      <path d="M100 -46l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" style={{ fill: E2 }} />
+    </>
+  );
+}
+
 /** Zihniyet: büyüyen bir fidan. */
 function growth(r: Rng): ReactNode {
   const pts: [number, number][] = Array.from({ length: 6 }, (_, i) => [-112 + i * 30, 50 - i * 14 + between(r, -4, 4)]);
@@ -1827,6 +1866,7 @@ const BY_SLUG: Record<string, Draw> = {
   'ders-calisma-motivasyonu': (r) => gauge(r),
   'erteleme-ve-zaman-yonetimi': (r) => clockTasks(r),
   zihniyet: (r) => growth(r),
+  'sinav-kaygisi-ve-bas-etme': (r) => examCalm(r),
 
   'mesleki-ilgi-profili': (r) => hexagon(r),
   'meslek-ilgi-alanlari': (r) => orbits(r),

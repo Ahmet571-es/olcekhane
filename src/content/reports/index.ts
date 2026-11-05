@@ -25,6 +25,7 @@ import { cocukKisilikReport } from './cocuk-kisilik';
 import { dersCalismaMotivasyonuReport } from './ders-calisma-motivasyonu';
 import { ertelemeZamanYonetimiReport } from './erteleme-zaman-yonetimi';
 import { zihniyetReport } from './zihniyet';
+import { sinavKaygisiReport } from './sinav-kaygisi';
 import { okumaReport } from './okuma';
 import { ozSaygiReport } from './oz-saygi';
 import type { ReportTemplate } from './types';
@@ -57,6 +58,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'ders-calisma-motivasyonu': dersCalismaMotivasyonuReport,
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiReport,
   zihniyet: zihniyetReport,
+  'sinav-kaygisi-ve-bas-etme': sinavKaygisiReport,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriReport,
   'calisma-degerleri': calismaDegerleriReport,
   'dikkat-ve-bellek': { version: 'dikkat-bellek-rapor-1', bandLabels: {}, scales: {} },

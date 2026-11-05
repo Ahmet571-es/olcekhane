@@ -383,7 +383,8 @@ function checkLine(l: Line, kind: 'survey' | 'skills', d: InstrumentDef) {
     expect(l.text, at).not.toMatch(/çocuğunuz/iu);
     expect(l.text, at).not.toMatch(PLURAL_YOU);
   }
-  if (l.audience === 'adult') expect(schoolWords(l.text.replace(/“[^”]*”/g, '')), at).toEqual([]);
+  // Sınav Kaygısı ve Baş Etme'de "sınav" testin konusudur (tests/helpers/school.ts, EXAM_TESTS).
+  if (l.audience === 'adult') expect(schoolWords(l.text.replace(/“[^”]*”/g, ''), d.slug), at).toEqual([]);
   if (kind === 'survey') {
     // Her cümle bir olasılık söyler; öğrenci ve yetişkin satırı "sen" der.
     for (const s of sentences(l.text)) expect(s, `${at} (temkinli değil)`).toMatch(HEDGE);
@@ -547,7 +548,7 @@ describe('Günlük hayat: dil', () => {
             }
             expect(texts.student, at).not.toMatch(/çocuğunuz/iu);
             expect(hasSecondPerson(texts.parent), at).toBe(false);
-            if (d.adults) expect(schoolWords(texts.adult), at).toEqual([]);
+            if (d.adults) expect(schoolWords(texts.adult, d.slug), at).toEqual([]);
             continue;
           }
           for (const g of ['low', 'average', 'high'] as const) groups.push({ kind: 'survey', lines: allLines(s.bands[g], `${d.slug} ${key} ${g}`, !!d.adults) });
@@ -622,7 +623,7 @@ describe('Günlük hayat: dil', () => {
         const joined = own.join(' ');
         if (r.audience === 'parent') expect(hasSecondPerson(joined.replace(/“[^”]*”/g, '')), `${label}: ${joined}`).toBe(false);
         else expect(joined, label).not.toMatch(/çocuğunuz/iu);
-        if (r.audience === 'adult') expect(schoolWords(joined.replace(/“[^”]*”/g, '')), label).toEqual([]);
+        if (r.audience === 'adult') expect(schoolWords(joined.replace(/“[^”]*”/g, ''), d.slug), label).toEqual([]);
       }
     }
   });
@@ -1189,6 +1190,7 @@ describe('Günlük hayat: özel durumlar', () => {
       'liderlik-egilimleri': ['purpose'],
       'erteleme-ve-zaman-yonetimi': 'hepsi',
       zihniyet: 'hepsi',
+      'sinav-kaygisi-ve-bas-etme': 'hepsi',
       'duygusal-zeka-bilesenleri': 'hepsi',
     };
     for (const d of LIVE.filter((x): x is LikertInstrument => x.engine === 'likert')) {

@@ -460,4 +460,24 @@ export const KAYNAK = {
     text: 'Lacerenza, C. N., Reyes, D. L., Marlow, S. L., Joseph, D. L. ve Salas, E. (2017). Leadership training design, delivery, and implementation: A meta-analysis. Journal of Applied Psychology, 102(12), 1686–1718.',
     url: 'https://doi.org/10.1037/apl0000241',
   },
+  ramirezBeilock2011: {
+    text: 'Ramirez, G. ve Beilock, S. L. (2011). Writing about testing worries boosts exam performance in the classroom. Science, 331(6014), 211–213.',
+    url: 'https://doi.org/10.1126/science.1199427',
+  },
+  camerer2018: {
+    text: 'Camerer, C. F., Dreber, A., Holzmeister, F., Ho, T.-H., Huber, J., Johannesson, M., Kirchler, M., Nave, G., Nosek, B. A., Pfeiffer, T. ve ark. (2018). Evaluating the replicability of social science experiments in Nature and Science between 2010 and 2015. Nature Human Behaviour, 2(9), 637–644.',
+    url: 'https://doi.org/10.1038/s41562-018-0399-z',
+  },
+  jamieson2010: {
+    text: 'Jamieson, J. P., Mendes, W. B., Blackstock, E. ve Schmader, T. (2010). Turning the knots in your stomach into bows: Reappraising arousal improves performance on the GRE. Journal of Experimental Social Psychology, 46(1), 208–212.',
+    url: 'https://doi.org/10.1016/j.jesp.2009.08.015',
+  },
+  ergene2003: {
+    text: 'Ergene, T. (2003). Effective interventions on test anxiety reduction: A meta-analysis. School Psychology International, 24(3), 313–328.',
+    url: 'https://doi.org/10.1177/01430343030243004',
+  },
+  huntley2019: {
+    text: 'Huntley, C. D., Young, B., Temple, J., Longworth, M., Tudur Smith, C., Jha, V. ve Fisher, P. L. (2019). The efficacy of interventions for test-anxious university students: A meta-analysis of randomized controlled trials. Journal of Anxiety Disorders, 63, 36–50.',
+    url: 'https://doi.org/10.1016/j.janxdis.2019.01.007',
+  },
 } satisfies Record<string, { text: string; url: string }>;

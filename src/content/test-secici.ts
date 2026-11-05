@@ -132,6 +132,12 @@ export const SECICI_GOALS: SeciciGoal[] = [
         candidates: ['erteleme-ve-zaman-yonetimi'],
       },
       {
+        // Yetişkinlere de açık; "sınav" bu yuvada okula özgü sayılmaz (testin konusudur, tests/helpers/school.ts).
+        skill: 'Sınav kaygısı',
+        why: 'Sınavdan önce ve sınav sırasında ne kadar kaygılandığını ve kaygıyla nasıl baş ettiğini gösterir.',
+        candidates: ['sinav-kaygisi-ve-bas-etme'],
+      },
+      {
         skill: 'Motivasyon',
         why: 'Neden ders çalıştığını gösterir: merak ve istekle mi, baskıyla mı?',
         candidates: ['ders-calisma-motivasyonu'],

@@ -53,6 +53,7 @@ const HARF_SAYI = 'harf-sayi-siralama';
 const SIMGE = 'simge-bulma';
 const PARCA = 'parcalardan-sekil';
 const HARF = 'harf-dizileri';
+const SINAV = 'sinav-kaygisi-ve-bas-etme';
 
 /**
  * Raporda kişiye gösterilen bütün metinler. "Cevapların tek tek" bölümündeki madde metinleri testin kendi maddeleridir (kişi
@@ -106,7 +107,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT, HESAPLA, TARZ_DC, BAKIS, HEYECAN, GIZLI, IYIMSER, DESEN, HARF_SAYI, SIMGE, PARCA, HARF, EMPATI, ZIHINDEN, OZ_YETERLIK, OZ_DENETIM, MERAK, LIDERLIK, BENZETME].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT, HESAPLA, TARZ_DC, BAKIS, HEYECAN, GIZLI, IYIMSER, DESEN, HARF_SAYI, SIMGE, PARCA, HARF, EMPATI, ZIHINDEN, OZ_YETERLIK, OZ_DENETIM, MERAK, LIDERLIK, BENZETME, SINAV].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);
@@ -121,6 +122,7 @@ describe('yetişkinler', () => {
     }
   });
 
+  // Sınav Kaygısı ve Baş Etme'de "sınav" testin konusudur, okula özgü sayılmaz (tests/helpers/school.ts, EXAM_TESTS).
   it('yetişkine giden rapor metinlerinde okula ya da ergenliğe özgü sözcük yok', () => {
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       const t = REPORT_TEMPLATES[d.slug];
@@ -128,13 +130,13 @@ describe('yetişkinler', () => {
         for (const [band, bt] of Object.entries(bands)) {
           if (!bt) continue;
           const text = bt.adult ?? bt.student;
-          expect(schoolWords(text), `${d.slug} ${scale}/${band}`).toEqual([]);
+          expect(schoolWords(text, d.slug), `${d.slug} ${scale}/${band}`).toEqual([]);
           expect(text, `${d.slug} ${scale}/${band}`).not.toContain('Çocuğunuz');
           // Yetişkin metni, öğrenci metninin yerine geçer; aynı olması gereksizdir.
           if (bt.adult) expect(bt.adult, `${d.slug} ${scale}/${band}`).not.toBe(bt.student);
         }
       }
-      if (t.overview) expect(schoolWords(t.overview.adult ?? t.overview.student), d.slug).toEqual([]);
+      if (t.overview) expect(schoolWords(t.overview.adult ?? t.overview.student, d.slug), d.slug).toEqual([]);
       // Norm notu yetişkin raporunda da görünür.
       expect(schoolWords(d.science.normNote), `${d.slug} norm notu`).toEqual([]);
     }
@@ -145,7 +147,7 @@ describe('yetişkinler', () => {
     // çünkü ilgi testinde "ilkokul öğretmeni olmak" gibi meslekler yetişkin için de doğrudur.
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       const texts = [d.intro.title, ...d.intro.paragraphs, d.engine === 'likert' ? d.prompt : ''];
-      for (const text of texts) expect(schoolWords(text), `${d.slug}: ${text}`).toEqual([]);
+      for (const text of texts) expect(schoolWords(text, d.slug), `${d.slug}: ${text}`).toEqual([]);
     }
   });
 

@@ -36,7 +36,8 @@ describe('Hangi test bana uygun?: amaçlar ve yuvalar', () => {
       for (const s of g.slots) {
         expect(s.why, s.skill).toMatch(/[.?]$/);
         expect(`${s.skill} ${s.why}`, s.skill).not.toMatch(/(?<!\p{L})tanı(?!\p{L})|IQ/u);
-        if (s.candidates.some((c) => bySlug.get(c)?.adults)) expect(schoolWords(`${s.skill} ${s.why}`), `${g.key} ${s.skill}`).toEqual([]);
+        // Sınav kaygısı yuvasında "sınav" testin konusudur (tests/helpers/school.ts, EXAM_TESTS).
+        if (s.candidates.some((c) => bySlug.get(c)?.adults)) expect(schoolWords(`${s.skill} ${s.why}`, s.candidates), `${g.key} ${s.skill}`).toEqual([]);
       }
     }
     expect(SECICI_TIMES.map((t) => t.minutes)).toEqual([15, 30, 60]);
@@ -74,7 +75,7 @@ describe('Hangi test bana uygun?: öneriler', () => {
           for (const p of r.picks) {
             expect(gradeAllowed(p.test, grade), `${label} ${p.test.slug}`).toBe(true);
             expect(goals.includes(p.goal), label).toBe(true);
-            if (grade === ADULT_GRADE) expect(schoolWords(`${p.skill} ${p.why}`), `${label} ${p.test.slug}`).toEqual([]);
+            if (grade === ADULT_GRADE) expect(schoolWords(`${p.skill} ${p.why}`, p.test.slug), `${label} ${p.test.slug}`).toEqual([]);
           }
           expect(r.minutes, label).toBe(r.picks.reduce((a, p) => a + p.test.minutes, 0));
           if (r.overBudget) {

@@ -97,6 +97,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Sesli okuma (Okuma sekmesi, `engine: 'oral'`): yeni metin `src/content/instruments/sesli-okuma/sinif-*.ts`'e eklenir;
   kurallar (kelime sayısı, soru ve fikir düzeni, yazım) `tests/sesli-okuma.test.ts`'tedir. Metin özgündür, sınıfına
   göre yazılır ve eklenmeden önce bilgi doğruluğu ile soruların birbirini ele vermemesi denetlenir.
+- Konusu sınavların kendisi olan testte (Sınav Kaygısı ve Baş Etme) yetişkine giden metinlerde "sınav" okula özgü sayılmaz;
+  öteki okul sözcükleri yine aranır (`tests/helpers/school.ts`, `EXAM_TESTS`; genel denetimler `schoolWords(metin, slug)`).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır
   (`src/content/test-secici.ts`; `tests/test-secici.test.ts` yayındaki her testin bir yuvada olduğunu denetler).
 - Rapordaki kartlar, uyarılar ve kalite notları birbiriyle çelişmez: bütün durum birleşimleri `tests/<ad>.test.ts`

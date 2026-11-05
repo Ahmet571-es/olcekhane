@@ -304,6 +304,13 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert s["chart"]["type"] == "rulers" and len(s["chart"]["rows"]) == 4 and len(s["items"]) == 5 and s["items"][0]["title"] == "Birlikte bakınca"; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 4 and m["settings"] is None and m["weeks"][1]["title"] == "Hatadan öğrenmek" and m["weeks"][2]["title"] == "Zekâya bakış" and not m["preview"]'; then
             sorun="$sorun zihniyet-raporu"
           fi
+          # Sınav Kaygısı ve Baş Etme: 25 madde (k, uygulama sırası; tests/sinav-kaygisi.test.ts denetler), beş alan ve birlikte
+          # yorum; yetişkinlere de açık. Bu gövdede takılma yüksek: destek kutusu açık, 2. hafta sınava hazırlık, 3. hafta takılma.
+          SK_GOVDE=$(python3 -c 'import json; k=["P1","W1","B2","T2","C1","P2","W2","B4","T1","C2","P4","W3","B3","T3","C3","P3","W5","B1","T5","C4","P5","W4","B5","T4","C5"]; print(json.dumps({"grade": 8, "data": {"engine": "likert", "answers": {x: {"value": i % 5 + 1, "rtMs": 2500} for i, x in enumerate(k)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$SK_GOVDE" "https://$ALAN/api/rapor/sinav-kaygisi-ve-bas-etme" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert s["chart"]["type"] == "rulers" and len(s["chart"]["rows"]) == 5 and len(s["items"]) == 6 and s["items"][0]["title"] == "Birlikte bakınca" and s["support"] is not None; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 5 and m["settings"] is None and m["weeks"][1]["title"] == "Sınava hazırlık" and m["weeks"][2]["title"] == "Sınav sırasında takılma" and not m["preview"]'; then
+            sorun="$sorun sinav-kaygisi-raporu"
+          fi
           # Çalışma Değerleri: 32 ifade (k, uygulama sırası; tests/calisma-degerleri.test.ts denetler), sekiz değer kişinin kendi
           # içinde sıralı; bu gövdede en önemliler bağımsızlık, güvence, ilgi ve öğrenme, birlikte çalışma; yarışan değer çifti yok
           # (yalnızca bağımsızlık çok önemli; çiftler ikisi de çok önemliyken gösterilir), sıralamanın sonundaki değerler var.

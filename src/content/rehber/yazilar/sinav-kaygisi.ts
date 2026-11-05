@@ -11,11 +11,12 @@ export const sinavKaygisi: Guide = {
     'Biraz heyecan normaldir. Kaygı; hazırlanmayı, uykuyu ya da sınav anını engellemeye başladığında destek gerektirir.',
     'Sınav kaygısı ortalamada daha düşük sınav performansıyla ilişkilidir ve bu ilişki en çok ortaokul yıllarında belirgindir.',
     'İngiltere’de yapılan bir çalışmada ortaokul ve lise öğrencilerinin yaklaşık altıda biri yüksek sınav kaygısı bildirmiştir; oran kızlarda daha yüksektir.',
-    'Sınavdan önce endişeleri kısa bir yazıyla dökmek ve heyecanı “vücudum hazırlanıyor” diye yorumlamak gibi basit yöntemlerin deneylerde yararlı olduğu gösterilmiştir.',
+    'Heyecanı “vücudum hazırlanıyor” diye yorumlamak ve endişeleri sınavdan önce yazmak gibi basit yöntemler deneylerde yararlı bulunmuştur; ikincisinin etkisi bir tekrar çalışmasında görülmemiştir.',
   ],
   publishedAt: '2026-09-29',
-  updatedAt: '2026-09-29',
+  updatedAt: '2026-11-05',
   healthNotice: true,
+  relatedTests: ['sinav-kaygisi-ve-bas-etme'],
   body: `
 ## Sınav kaygısı nedir?
 
@@ -59,7 +60,7 @@ Sınav kaygısının tek bir nedeni yoktur. Sık karşılaşılan etkenler şunl
 
 ## Öğrenci neler yapabilir?
 
-- **Endişeleri kâğıda dökmek.** Dokuzuncu sınıf öğrencileriyle yapılan bir sınıf deneyinde, dönem sonu sınavından hemen önce sınavla ilgili endişeleri hakkında 10 dakika yazan öğrencilerin, özellikle kaygısı yüksek olanların, sınavda daha başarılı olduğu görülmüştür (Ramirez ve Beilock, 2011).
+- **Endişeleri kâğıda dökmek.** Dokuzuncu sınıf öğrencileriyle yapılan bir sınıf deneyinde, dönem sonu sınavından hemen önce sınavla ilgili endişeleri hakkında 10 dakika yazan öğrencilerin, özellikle kaygısı yüksek olanların, sınavda daha başarılı olduğu görülmüştür (Ramirez ve Beilock, 2011). Ancak bu araştırmanın deneylerinden birini daha büyük bir örneklemle tekrarlayan bir çalışmada aynı etki bulunamamıştır (Camerer ve ark., 2018); işe yarayıp yaramadığını kendin deneyerek görebilirsin.
 - **Heyecanı yeniden yorumlamak.** Bir deneyde, sınav öncesindeki bedensel heyecanın performansa zarar vermediği, hatta yardımcı olabileceği söylenen öğrencilerin matematik bölümünde daha yüksek puan aldığı bulunmuştur (Jamieson ve ark., 2010). “Kalbim hızlı atıyor, çünkü vücudum bu işe hazırlanıyor” demek, “Kalbim hızlı atıyor, demek ki kötü gidecek” demekten daha yararlıdır.
 - **Etkili hazırlanmak.** İyi hazırlanmış hissetmek kaygıyı azaltır. Kendini sınamak ve çalışmayı günlere yaymak, araştırmalarla desteklenen en etkili çalışma yöntemleridir: [Etkili ders çalışma yöntemleri](/rehber/etkili-ders-calisma-yontemleri)
 - **Sınav anında:** Önce emin olduğun sorularla başla. Takıldığında soruyu işaretle, birkaç yavaş nefes al, sonra devam et.
@@ -82,9 +83,13 @@ Kaygı çocuğunuzun uykusunu, okula gitmesini ya da gündelik hayatını birka�
 
 Çocuğunuz umutsuzluktan, kendine zarar vermekten ya da ölmek istemekten söz ediyorsa bunu ciddiye alın ve vakit kaybetmeden profesyonel destek isteyin. Acil bir durumda **112**’yi arayın.
 
-Ölçekhane’de sınav kaygısını ölçen bir test hazırlık aşamasındadır. Hiçbir test sonucu, bir uzmanın değerlendirmesinin yerini tutmaz.
+Sınavdan önceki düşüncelerini, bedenindeki tepkileri, sınav sırasında takılmayı ve kaygıyla nasıl baş ettiğini görmek istersen: [Sınav Kaygısı ve Baş Etme](/testler/sinav-kaygisi-ve-bas-etme) testi (5. sınıftan yetişkine, yaklaşık 5 dakika). Hiçbir test sonucu, bir uzmanın değerlendirmesinin yerini tutmaz.
 `,
   sources: [
+    {
+      text: 'Camerer, C. F., Dreber, A., Holzmeister, F., Ho, T.-H., Huber, J., Johannesson, M., Kirchler, M., Nave, G., Nosek, B. A., Pfeiffer, T. ve ark. (2018). Evaluating the replicability of social science experiments in Nature and Science between 2010 and 2015. Nature Human Behaviour, 2(9), 637–644.',
+      url: 'https://doi.org/10.1038/s41562-018-0399-z',
+    },
     {
       text: 'Cassady, J. C. ve Johnson, R. E. (2002). Cognitive test anxiety and academic performance. Contemporary Educational Psychology, 27(2), 270–295.',
       url: 'https://doi.org/10.1006/ceps.2001.1094',

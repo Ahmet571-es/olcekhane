@@ -47,6 +47,20 @@ Basamaklar:
 
 ## Sıradaki işler
 
+**ŞU AN: "Öğrenme ve akademik beceriler" alanına altı yeni anket testi (site sahibinin 2026-11-05 isteği ve sıra onayı;
+her mesajda bir test).** Bilgi ölçen değil, kendini değerlendirme testleri; her biri maddeleri yazılır, iki bağımsız
+incelemeden (maddeler ve bilim kartı; rapor, yol haritası ve günlük hayat metinleri) geçer, telefonda ve masaüstünde baştan
+sona çözülür, yayına alınır. Sıra:
+1. [x] Sınav Kaygısı ve Baş Etme (`sinav-kaygisi-ve-bas-etme`, 2026-11-05).
+2. [ ] Hedef Yönelimi: Ders Çalışırken Neyi Hedefliyorsun? (öğrenme hedefi, başarı gösterme, başarısızlıktan kaçınma, işten
+   kaçınma; 5. sınıftan yetişkine, ~5 dk).
+3. [ ] Ders Çalışırken Telefon ve Dikkat (bildirimler, ekranlar arası geçiş, kendini durdurma yolları; bağımlılık etiketi yok;
+   5. sınıftan yetişkine, ~4 dk).
+4. [ ] Başarıyı ve Başarısızlığı Neye Bağlıyorsun? (çaba, yetenek, şans, zorluk, öğretmen; iyi ve kötü sonuçlar ayrı; 5. sınıftan
+   yetişkine, ~5 dk).
+5. [ ] Derse Katılım ve Okula Bağlılık (davranış, duygusal bağ, zihinsel katılım, öğretmenle iletişim; 5–12. sınıf, ~5 dk).
+6. [ ] Derslerde Kendine Güven (Türkçe, matematik, fen, yabancı dil, sözel dersler; ders ders profil; 5–12. sınıf, ~5 dk).
+
 **ŞU AN: Raporları genişletme (site sahibinin 2026-10-31 isteği; seçimleri aynı gün).** Site sahibi sesli dinlemeyi
 telefonunda denedi ("her şey çalışıyor") ve raporların kapsamını düşük buldu: "Rapor çok daha kapsamlı, yol gösterici
 olsun; biz klinik değiliz, tanı koymuyoruz; her açıklamanın o açıklamaya uygun bir grafiği olsun; analizler çok bilimsel
@@ -972,6 +986,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Ders Çalışma Motivasyonu | ders-calisma-motivasyonu | Yayında (pilot; 5. sınıftan mezuna) |
 | Erteleme ve Zaman Yönetimi | erteleme-ve-zaman-yonetimi | Yayında (pilot; 6. sınıftan yetişkine) |
 | Zihniyet: Zekâ ve Öğrenme İnançları | zihniyet | Yayında (pilot; 5. sınıftan yetişkine) |
+| Sınav Kaygısı ve Baş Etme | sinav-kaygisi-ve-bas-etme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Çalışma Değerleri | calisma-degerleri | Yayında (pilot; 7. sınıftan yetişkine) |
 | Mantıksal Akıl Yürütme | mantiksal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sayısal Akıl Yürütme | sayisal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
@@ -1122,6 +1137,18 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-05 (78): Yeni test: Sınav Kaygısı ve Baş Etme (özgün, pilot; 5. sınıftan yetişkine; 25 madde). Kaygının üç yanı
+  (endişeli düşünceler, bedensel tepkiler, sınav sırasında takılma) ve baş etmenin iki yanı (sınava hazırlık, baş etme yolları);
+  ilk üçünde yüksek puan daha çok kaygı, son ikisinde daha sık baş etme. Rapor: "Birlikte bakınca" (kaygının hangi yanı öne
+  çıkıyor; endişe, takılma ve bedensel heyecanın sınav sonuçlarıyla ilişkisi araştırmalarla), kaygının bir yanı yüksekse destek
+  kutusu ve yol haritasında 3. hafta o yan, rehberdeki "Sınav kaygısı" yazısına bağlantı (yetişkine de). Yetişkin metinlerinde
+  "sınav" okula özgü sayılmaz (`tests/helpers/school.ts`, `EXAM_TESTS`). İki bağımsız inceleme: Sarason'un ölçeğine benzeyen
+  iki madde, sıklık ölçeğiyle çakışan sözler, kaygıyı varsayan baş etme maddeleri, Schillinger (2021) bulgusunun eksik
+  anlatımı, ters maddelerin sona yığılması, aynı öneri ve yönlendirmenin bir sayfada birkaç kez geçmesi düzeltildi. Endişeyi
+  sınavdan önce yazmanın etkisi (Ramirez ve Beilock, 2011) bir tekrar çalışmasında bulunamadığı için (Camerer ve ark., 2018)
+  öneride ve rehber yazısında bu açıkça söylenir. "Sınav kaygısı" rehber yazısı teste bağlandı; "Hangi test bana uygun?"da
+  "Öğrenme ve çalışma" altında yeni yuva; galeride kendi çizimi (cevap kâğıdı ve sakinleşen nabız). Telefonda (8. sınıf) ve
+  masaüstünde (yetişkin) baştan sona çözüldü; rapor, veli raporu ve PDF açıldı.
 - 2026-11-05 (77): Ana sayfa açılışı ödül düzeyine çıkarıldı (site sahibinin isteği: "awards formatında, gösterişli"):
   tam ekran sahne, canlı şekil büyük ve sağa taşan, telefonda başlığın üstünde; açılış koreografisi, kaydırınca derinlik,
   "Kaydır" ipucu; testlerin altında kaydırdıkça kelime kelime dolan "sözümüz" bölümü (ayrıntı CLAUDE.md "Görsel dil").
@@ -1171,9 +1198,3 @@ En yeni üstte; en çok 10 madde tutulur.
   denetim bulguları uygulandı: hobi örnekleri sıklığı anlatır (beğeniyi ya da imkânsızlığı değil), ilgi ve değer kartlarında
   meslek önerisi ve uydurma bedel yok, düz profilde örneklerin benzeşebileceği söylenir, 16 Faktörlü'de gerginlik ve düşünsel
   özgüven ile Liderlik'te kararlılık gelişim tonunda, heyecan arayışında risk özendirilmez.
-- 2026-11-03 (68): "Günlük hayatta" bölümü 42 teste daha eklendi (toplam 49): duygu ve öz algı (6), muhakeme ve uzamsal (15),
-  öğrenme ve motivasyon (7), dikkat ve bellek (14). Her grubu yazmamış bir ajan her satırı maddelerle ve testin kendi
-  anlatımıyla karşılaştırdı; bulgular uygulandı. Yeni kurallar: bileşik ölçeğin örnekleri alt kartlarla çelişebiliyorsa yönlendirme
-  (`pointer`), motivasyonda parçaları ayrışan bileşikte örnek yok, yetişkine ev satırı (yalnız yaşayana uysun), mezunda "sınıf"
-  yok. Dikkat ve Bellek raporunda yasak "herkes için" ifadesi kaldırıldı. Ağır testler hafifletildi (PDF'ler pdf-ust-uste'de bir
-  kez çizilir; günlük hayat testinde örneklem). Telefonda ve masaüstünde Öz-yeterlik ve Parçalardan Şekil çözüldü.

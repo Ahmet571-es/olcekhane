@@ -325,6 +325,8 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       // Yetişkinlere de açık: öğrenci, veli ve yetişkin.
       'erteleme-ve-zaman-yonetimi': 3 ** 5 * 3,
       zihniyet: 3 ** 4 * 3,
+      // Beş alan; yetişkinlere de açık.
+      'sinav-kaygisi-ve-bas-etme': 3 ** 5 * 3,
     });
     // Yüklü makinede 120 sn'yi aşabiliyor (yerelde birkaç iş birden çalışırken 157 sn ölçüldü).
   }, 300_000);
