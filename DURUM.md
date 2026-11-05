@@ -828,6 +828,14 @@ cihazında** yapılır (CLAUDE.md, "Sesli okumada otomatik analiz").
   avukat kontrolü bekleyen sürüm artık 8). "Evet" ekranına 18 yaş altı için veli/öğretmen bilgisi cümlesi eklendi.
   Bu ortamda denendi: yerel sunucuda sayfalar telefon ve masaüstünde sorunsuz; WebAssembly'siz cihaz taklidinde yedek yol
   bağlantısı çıkıyor ve sınıfı koruyarak yetişkin sürümünü açıyor; olağan cihazda bağlantı görünmüyor.
+- 2026-11-05 canlı denetim (site sahibinin izniyle; `araclar/sesli-okuma-dene.mjs`, piper tr_TR-dfki sesi, telefon
+  genişliği, vekil sunuculu Chromium): sayfa metinleri canlıda doğru (Okuma sayfası, çözme sayfası, test tanıtımı,
+  aydınlatma metni sürüm 8). Akış baştan sona çalıştı: mikrofon denemesi ilk seferde geçti, 58 sn'lik okuma ~60 sn'de
+  incelendi, rapor geldi. Doğru okuma: 0 hata, 7 "net anlaşılamadı". Bilerek hatalı okuma: 3 kelimelik atlama,
+  erik→elma, fazladan "küçük" üçü de bulundu; ek olarak doğru söylenen iki kelime ek farkıyla yanlış sayıldı
+  (önü→önüne, gürültülüydü→gürültülüyordu; aynı sesin doğru okumasında "net değil" çıkmıştı). Ek farkı eşiğini
+  gevşetmek denendi, geri alındı (fixture'da yakalama 34/36 → 26/36). Gerçek çocuk kayıtları olmadan daha ileri
+  gidilmez.
 - **Site sahibi canlıda telefondan denemeli** (8 Ekim'deki mikrofon sorunu aynı gün düzeltilmişti; o günden beri
   denemedi): mikrofon denemesi geçiyor mu, inceleme kaç dakika sürüyor, işaretli metin ve rapor beklediği gibi mi.
 - Akış: metin seçimi → sıkı mikrofon denemesi (izin, sessizlik ölçümü, cümle; yapay zekâ cümleyi tanımalı; model bu

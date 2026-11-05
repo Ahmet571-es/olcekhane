@@ -71,8 +71,9 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   `next.config.ts` içinde kalıcı olarak yönlendirilir.
 - Çalışmaların sonucu GitHub API'den özet uyarılarıyla (check-run annotations) okunur
   (`araclar/yayin-durumu.py`); çalışma kayıtları bu ortamdan indirilemez. `workflow_dispatch` bu ortamdan
-  tetiklenemez: yeniden yayın için `main`'e bir işleme gönderilir. Site bu ortamdan açılamaz (vekil sunucu
-  engeller); dış sınamayı Yayın iş akışı yapar.
+  tetiklenemez: yeniden yayın için `main`'e bir işleme gönderilir. Dış sınamayı Yayın iş akışı yapar; canlı site bu
+  ortamdan da açılabiliyor (2026-11-05'te `curl` ve vekil sunuculu Chromium ile; WebFetch eski bir kopyayı
+  gösterebilir, canlı metni `curl` ile doğrula). Açılamıyorsa vekil sunucu engelliyordur, zorlanmaz.
 - Sunucu: Hostinger VPS KVM 1, Almanya (Düsseldorf), `179.198.215.72`; alan adı `olcekhane.com` (Namecheap
   DNS, iki A kaydı). Ayarlar `yayin/ayarlar.env` dosyasındadır (gizli değildir). Gizli değerler yalnızca GitHub
   Secrets'ta durur (`ANA_SIFRE`, `SUNUCU_ROOT_SIFRE`); sohbette hiçbir zaman istenmez, yazılmaz, görülmez.
@@ -189,8 +190,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   sessizlik ölçümü engellemez, yalnızca anlaşılmazsa ne yapılacağını söyler; ses 90 Hz'in altı süzülerek incelenir.
 - Test sayfası çok iş parçacığı için COEP ile açılır (`next.config.ts`); model ve çalışma dosyaları sürümlü adreslerle
   süresiz HTTP önbelleğinde tutulur. Denetim ve Yayın, dosyaların sunulduğunu ve COEP başlığını dışarıdan sınar.
+- Uçtan uca deneme aracı `araclar/sesli-okuma-dene.mjs` (başlığında hazırlık ve ölçüm): piper ile üretilen Türkçe sesi
+  sahte mikrofona verir, canlı sitede ya da yerel sunucuda akışı baştan sona yürütür, işaretli metni ve sayıları yazar.
+  Yayına alınan her otomatik analiz değişikliğinden sonra canlıda doğru ve bilerek hatalı okumayla bir kez çalıştırılır.
 - Gerçek çocuk kayıtlarıyla doğruluk ölçümü henüz yapılmadı (ölçümler sentetik ses ve yetişkin FLEURS kayıtlarıyla);
-  site sahibi izinli kayıt sağlayınca ölçülür. Aydınlatma metni (sürüm 7) avukat kontrolü bekliyor.
+  site sahibi izinli kayıt sağlayınca ölçülür. Aydınlatma metni (sürüm 8) avukat kontrolü bekliyor.
 
 ## Görsel dil
 
