@@ -7,7 +7,7 @@ import { prosodyLabel } from '@/content/reports/sesli-okuma';
 import { SimpleReportView } from '@/components/test/simple-report-view';
 import { evaluate } from '@/lib/assessment/evaluate';
 import type { AnswersBody } from '@/lib/assessment/schemas';
-import type { OralPassage, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
+import type { OralPassage, ReadingInstrument } from '@/lib/instruments/types';
 import { MIN_MATCH_SHARE } from '@/lib/oral/auto';
 import { oralTokens, oralWordCount } from '@/lib/oral/words';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
@@ -18,21 +18,19 @@ import { drawVisual } from '@/lib/reports/visual-draw';
 import { cellRange, type CellsVisual, type GridVisual, type WordMapVisual } from '@/lib/reports/visual-cells';
 import type { BarsVisual, GaugeVisual, MeterVisual, StackVisual, StripVisual } from '@/lib/reports/visuals';
 import { MIN_LISTENED, ORAL_MAX_WPM, UNCLEAR_HIGH, UNCLEAR_MAX, oralPassagesFor, scoreOral, type OralInput, type OralMark } from '@/lib/scoring/oral';
-import { QUIZ_LETTER_SHARE, QUIZ_TOO_FAST_MS, formForGrade } from '@/lib/scoring/quiz';
 import { READING_TOO_SLOW, chanceLike, countWords, passageForGrade, readingPace } from '@/lib/scoring/reading';
 import { SLOW_AXIS_MAX } from '@/lib/reports/reading-parts';
 import { MAX_UTTERANCE, reportSpeech, speakable, utterancesOf } from '@/lib/speech/report-text';
 import { checkDrawn } from './helpers/visual-check';
 
 /**
- * Okuma, sesli okuma ve konu tarama raporlarının ek bölümleri (site sahibinin 2026-10-31 isteği; lib/reports/reading-parts.ts,
+ * Okuma ve sesli okuma raporlarının ek bölümleri (site sahibinin 2026-10-31 isteği; lib/reports/reading-parts.ts,
  * lib/reports/quiz-parts.ts): "Düzeylerin ve ölçülerin anlamı", soru soru (sesli okumada cümle cümle) cevaplar, "Sonuca ne
  * kadar güvenebiliriz?". Her kartın kendi grafiği; kartlar raporun kendi kartlarıyla ve uyarı kutusuyla çelişmez; veli
  * raporunda da cevaplar vardır (performans); ekranda, PDF'te ve sesli dinlemede aynı içerik.
  */
 
 const READING = getInstrumentDef('okuma-hizi-ve-anlama') as ReadingInstrument;
-const QUIZ = getInstrumentDef('matematik-konu-tarama-testi') as QuizInstrument;
 const ORAL = sesliOkuma;
 
 const partOf = (r: SimpleReport, key: ReportPart['key']) => r.parts!.find((p) => p.key === key)!;
@@ -64,41 +62,6 @@ function readingCases(): ReadingCase[] {
   out.push({ grade: 5, correct: 7, wpm: 120, skip: 7 });
   return out;
 }
-
-/* ---------- Konu tarama: cevap örüntüleri ---------- */
-
-type QuizKind = 'right' | 'wrong' | 'dk';
-function quizBody(grade: number, kind: (i: number) => QuizKind, rtMs: (i: number) => number | null = () => 40_000, letter?: 'A' | 'B' | 'C' | 'D'): AnswersBody {
-  const form = formForGrade(QUIZ, grade);
-  return {
-    grade,
-    data: {
-      engine: 'quiz',
-      answers: Object.fromEntries(
-        form.items.map((it, i) => {
-          const k = kind(i);
-          const choice = letter ?? (k === 'dk' ? 'X' : k === 'right' ? it.answer : (it.options.find((o) => o.key !== it.answer)!.key as 'A' | 'B' | 'C' | 'D'));
-          return [it.key, { choice, rtMs: rtMs(i) }];
-        }),
-      ),
-    },
-  };
-}
-
-const QUIZ_CASES: [string, (g: number) => AnswersBody][] = [
-  ['hepsi doğru', (g) => quizBody(g, () => 'right')],
-  ['üçte bir yanlış', (g) => quizBody(g, (i) => (i % 3 === 0 ? 'wrong' : 'right'))],
-  ['yarısı yanlış', (g) => quizBody(g, (i) => (i % 2 ? 'wrong' : 'right'))],
-  ['çoğu yanlış', (g) => quizBody(g, (i) => (i % 5 === 0 ? 'right' : 'wrong'))],
-  ['bazen bilmiyorum', (g) => quizBody(g, (i) => (i % 4 === 0 ? 'dk' : i % 3 ? 'right' : 'wrong'))],
-  ['yarıdan çok bilmiyorum', (g) => quizBody(g, (i) => (i < 11 ? 'dk' : 'right'))],
-  ['tam yarısı bilmiyorum', (g) => quizBody(g, (i) => (i < 10 ? 'dk' : 'right'))],
-  ['hepsi bilmiyorum', (g) => quizBody(g, () => 'dk')],
-  ['çok hızlı', (g) => quizBody(g, (i) => (i % 2 ? 'wrong' : 'right'), () => 2000)],
-  ['hep A', (g) => quizBody(g, () => 'right', () => 30_000, 'A')],
-  ['süre yok', (g) => quizBody(g, (i) => (i % 3 === 0 ? 'wrong' : 'right'), () => null)],
-  ['az seçenek', (g) => quizBody(g, (i) => (i < 13 ? 'dk' : 'right'), () => 2000)],
-];
 
 /* ---------- Sesli okuma: girdiler ---------- */
 
@@ -436,119 +399,6 @@ describe('Okuma Hızı ve Anlama: ek bölümler', () => {
 
 /* ======================= Konu tarama ======================= */
 
-describe('Matematik Konu Tarama: ek bölümler', () => {
-  it('bütün formlarda ve örüntülerde üç bölüm, grafikleri taşmaz; dil, sesli okuma', () => {
-    let n = 0;
-    for (const grade of [5, 6, 7, 8])
-      for (const [name, make] of QUIZ_CASES) {
-        for (const r of both(evaluate(QUIZ.slug, make(grade)))) {
-          const label = `matematik ${grade} ${name} ${r.audience}`;
-          checkVisuals(r, label);
-          checkLanguage(r, label, false);
-          checkSpeech(r, label);
-          n++;
-        }
-      }
-    expect(n).toBe(96);
-  }, 240_000);
-
-  it('Düzeylerin anlamı: genel sonuç ve alanlar raporun kartlarıyla aynı; yorumlanmayınca grafik ve düzey yok', () => {
-    for (const grade of [5, 8])
-      for (const [name, make] of QUIZ_CASES) {
-        for (const r of both(evaluate(QUIZ.slug, make(grade)))) {
-          const label = `matematik ${grade} ${name} ${r.audience}`;
-          const total = cardOf(r, 'levels', 'total')!;
-          const main = r.items.find((i) => i.title === 'Genel sonuç')!;
-          expect(total.badge, label).toBe(main.badge);
-          if (main.visual) {
-            expect(total.visual, label).toEqual(main.visual);
-            expect(total.levels!.filter((l) => l.active).map((l) => l.label), label).toEqual([main.badge]);
-          } else {
-            expect([total.visual, total.levels!.some((l) => l.active)], label).toEqual([undefined, false]);
-          }
-          const domains = cardOf(r, 'levels', 'domains')!;
-          if (main.visual) {
-            const rows = (domains.visual as { rows: { label: string; value: number }[] }).rows;
-            for (const row of rows) {
-              const item = r.items.find((i) => i.title === row.label)!;
-              expect(row.value, `${label} ${row.label}`).toBe((item.visual as { rows: { filled: number }[] }).rows[0].filled);
-            }
-          } else expect(domains.visual, label).toBeUndefined();
-          const kinds = cardOf(r, 'levels', 'kinds')!.visual as StackVisual;
-          expect(kinds.parts.reduce((s, p) => s + p.value, 0), label).toBe(20);
-          expect(String(kinds.parts[2].value), label).toBe(r.keyFigures[1].value);
-          expect(!!cardOf(r, 'levels', 'errors'), label).toBe((r.quiz?.errors.length ?? 0) > 0);
-        }
-      }
-  });
-
-  it('Cevaplar soru soru: bütün sorular alan alan; verilen ve doğru cevap, hata türü, süre; soru metni sesli okunmaz', () => {
-    const body = quizBody(6, (i) => (i % 4 === 0 ? 'dk' : i % 3 ? 'right' : 'wrong'));
-    const form = formForGrade(QUIZ, 6);
-    for (const r of both(evaluate(QUIZ.slug, body))) {
-      const cards = partCards(partOf(r, 'answers'));
-      expect(cards.map((c) => c.title)).toEqual(form.domains.map((d) => d.name));
-      const rows = cards.flatMap((c) => c.rows!);
-      expect(rows.map((x) => x.no)).toEqual(form.items.map((_, i) => i + 1));
-      form.items.forEach((it, i) => {
-        const row = rows[i];
-        const a = body.data.engine === 'quiz' ? body.data.answers[it.key] : undefined;
-        expect(row.text).toBe(it.text);
-        expect(row.spoken).toBe('');
-        if (a?.choice === 'X') expect([row.value, row.muted]).toEqual(['“Bilmiyorum”', true]);
-        else expect(row.value).toBe(`${a!.choice}) ${it.options.find((o) => o.key === a!.choice)!.text}`);
-        expect(row.tags).toContain('40 sn');
-        const review = r.quiz!.questions.find((q) => q.no === i + 1);
-        if (review) {
-          expect(row.tags).toContain(`doğru cevap: ${review.answer}`);
-          if (review.misconception) expect(row.tags).toContain(`hata türü: ${review.misconception}`);
-        } else expect(row.tags[0]).toBe('doğru');
-      });
-      // Grafik: alanın soruları sırayla; dolu kutu doğru, çerçeveli yanlış, gri "Bilmiyorum".
-      for (const c of cards) {
-        const g = c.visual as GridVisual;
-        expect(g.rows[0].cells.map((x) => Number(x.text))).toEqual(c.rows!.map((x) => x.no));
-        expect(g.rows[0].cells.map((x) => x.mark)).toEqual(c.rows!.map((x) => (x.tags[0] === 'doğru' ? 'on' : x.value === '“Bilmiyorum”' ? 'skip' : 'off')));
-      }
-      // Çözümler yinelenmez: yukarıdaki incelemeye gönderilir.
-      expect(partOf(r, 'answers').intro).toContain('çözümleri yukarıda');
-      for (const q of r.quiz!.questions) expect(JSON.stringify(r.parts), q.explain.slice(0, 20)).not.toContain(q.explain.slice(0, 40));
-    }
-  });
-
-  it('Sonuca ne kadar güvenebiliriz: uyarı kutusuyla aynı (hız, aynı seçenek, "Bilmiyorum")', () => {
-    const seen = new Set<string>();
-    for (const grade of [5, 6, 7, 8])
-      for (const [name, make] of QUIZ_CASES) {
-        for (const r of both(evaluate(QUIZ.slug, make(grade)))) {
-          for (const k of partCards(partOf(r, 'quality'))) seen.add(`${k.key} ${k.status}`);
-          const label = `matematik ${grade} ${name} ${r.audience}`;
-          const card = (k: string) => cardOf(r, 'quality', k)!;
-          const has = (s: string) => r.cautions.some((x) => x.startsWith(s));
-          expect(card('speed').status === 'warn', label).toBe(has('Sorular çok hızlı cevaplanmış'));
-          expect(card('letter').status === 'warn', label).toBe(has('Cevapların çoğu aynı seçenekte'));
-          expect(card('dontknow').status === 'warn', label).toBe(has('Bütün sorularda “Bilmiyorum”') || has('Soruların yarısından çoğunda “Bilmiyorum”'));
-          if (card('speed').status !== 'none') {
-            const v = card('speed').visual as StripVisual;
-            expect(v.zone!.to, label).toBe(QUIZ_TOO_FAST_MS / 1000);
-          }
-          if (card('letter').status !== 'none') {
-            const v = card('letter').visual as MeterVisual;
-            expect(v.zones[1].from, label).toBe(QUIZ_LETTER_SHARE * 100);
-            expect(v.rows[0].value >= v.zones[1].from, label).toBe(card('letter').status === 'warn');
-          }
-          const dk = card('dontknow').visual as MeterVisual;
-          expect(dk.rows[0].value > dk.zones[0].to, label).toBe(card('dontknow').status === 'warn');
-          if (name === 'süre yok') expect(card('speed').status, label).toBe('none');
-          if (name === 'az seçenek') expect([card('speed').status, card('letter').status], label).toEqual(['none', 'none']);
-        }
-      }
-    expect([...seen].sort()).toEqual(['dontknow ok', 'dontknow warn', 'letter none', 'letter ok', 'letter warn', 'speed none', 'speed ok', 'speed warn']);
-  });
-});
-
-/* ======================= Sesli okuma ======================= */
-
 describe('Sesli Okuma Değerlendirmesi: ek bölümler', () => {
   it('bütün örüntülerde (yetişkinin işaretlediği ve otomatik analiz) üç bölüm, grafikleri taşmaz; dil, sesli okuma', () => {
     let n = 0;
@@ -734,7 +584,7 @@ describe('Sesli Okuma Değerlendirmesi: ek bölümler', () => {
 
 /* ======================= Çizimler, okunuş, ekran ve PDF ======================= */
 
-describe('Okuma ve konu tarama bölümleri: çizimler, okunuş, ekran ve PDF', () => {
+describe('Okuma bölümleri: çizimler, okunuş, ekran ve PDF', () => {
   it('yeni çizimler uçlarda da taşmaz: uzun adlı soru kutuları, kalabalık metin haritası, çok değerli sayı kutuları', () => {
     const grid: GridVisual = {
       type: 'grid',
@@ -788,21 +638,10 @@ describe('Okuma ve konu tarama bölümleri: çizimler, okunuş, ekran ve PDF', (
     expect(speakable('0,25 125')).toBe('0,25 125');
   });
 
-  it('konu taramada kesirler ekranda alt alta, PDF’te düz yazıyla', async () => {
-    const r = evaluate(QUIZ.slug, quizBody(5, (i) => (i % 2 ? 'wrong' : 'right'))).student;
-    const html = renderToStaticMarkup(createElement(SimpleReportView, { report: r }));
-    const rows = partCards(partOf(r, 'answers')).flatMap((c) => c.rows!);
-    expect(rows.some((x) => x.text.includes('{') || x.value.includes('{') || x.tags.some((t) => t.includes('{')))).toBe(true);
-    expect(html).toContain('frac-stack');
-    const pdf = await renderSimpleReportPdf(r, 'olcekhane.com');
-    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
-  });
-
-  it('PDF: üç test, öğrenci ve veli; ek bölümler PDF’i uzatır (soru soru cevaplar ekte)', async () => {
+  it('PDF: iki test, öğrenci ve veli; ek bölümler PDF’i uzatır (soru soru cevaplar ekte)', async () => {
     const pages = (b: Buffer) => (b.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length;
     const reports = [
       ...both(evaluate(READING.slug, readingBody({ grade: 7, correct: 5, wpm: 150 }))),
-      ...both(evaluate(QUIZ.slug, quizBody(8, (i) => (i % 4 === 0 ? 'dk' : i % 3 ? 'right' : 'wrong')))),
       ...oralReports(oralCases().find((x) => x.name === 'karışık işaretler' && x.grade === 5)!),
       ...oralReports(oralCases().find((x) => x.name === 'otomatik karışık' && x.grade === 2)!),
     ];
@@ -862,19 +701,6 @@ describe('İnceleme bulguları: tanımlar, sınırlar ve sözcükler raporun say
     }
   });
 
-  it('matematikteki iddialar formlarla uyuşur: yanlış seçeneklerin çoğu bir hataya göre yazıldı; doğru cevaplar eşit dağıldı', () => {
-    for (const f of QUIZ.forms) {
-      const wrong = f.items.flatMap((it) => it.options.filter((o) => o.key !== it.answer));
-      expect(wrong.filter((o) => o.misconception).length * 2, f.key).toBeGreaterThan(wrong.length);
-      const counts = ['A', 'B', 'C', 'D'].map((l) => f.items.filter((it) => it.answer === l).length);
-      const r = evaluate(QUIZ.slug, quizBody(f.grade, (i) => (i % 3 ? 'right' : 'wrong'))).student;
-      expect(cardOf(r, 'quality', 'letter')!.text!.includes('eşit dağıtıldı'), f.key).toBe(counts.every((x) => x === counts[0]));
-      expect(cardOf(r, 'levels', 'kinds')!.text, f.key).toContain('Yanlış seçeneklerin çoğu');
-      expect(cardOf(r, 'levels', 'kinds')!.text, f.key).toContain('yapmış olabileceğini');
-      expect(cardOf(r, 'levels', 'kinds')!.text, f.key).toContain('öğrenilmemiş olabileceğini');
-    }
-  });
-
   it('karışık işaret örnekleri her işaret türünü içerir', () => {
     for (const c of oralCases().filter((x) => x.name.includes('karışık'))) {
       const res = scoreOral(ORAL, c.grade, c.input);
@@ -909,7 +735,6 @@ describe('İnceleme bulguları: tanımlar, sınırlar ve sözcükler raporun say
     const reports: [string, SimpleReport][] = [
       ...readingCases().flatMap((c) => both(evaluate(READING.slug, readingBody(c))).map((r) => [`okuma ${c.grade} ${c.correct} ${Math.round(c.wpm)}`, r] as [string, SimpleReport])),
       ...oralCases().flatMap((c) => oralReports(c).map((r) => [`sesli ${c.grade} ${c.name}`, r] as [string, SimpleReport])),
-      ...QUIZ_CASES.flatMap(([name, make]) => both(evaluate(QUIZ.slug, make(7))).map((r) => [`matematik ${name}`, r] as [string, SimpleReport])),
     ];
     for (const [label, r] of reports) {
       for (const p of r.parts!) {
@@ -953,7 +778,6 @@ describe('İnceleme bulguları: tanımlar, sınırlar ve sözcükler raporun say
         if (cardOf(r, 'quality', 'listen')) expect(cardOf(r, 'quality', 'listen')!.spoken!.join(' '), label).toContain("Uyarı: dinlenen kısım yüzde 90'ın altındaysa.");
       }
     }
-    for (const r of both(evaluate(QUIZ.slug, quizBody(6, () => 'right')))) expect(partOf(r, 'answers').intro).toContain('sonuç yüksek çıkabilir');
   });
 
   it('metin haritası işaretli metnin renkleriyle çizilir (hata kırmızı, gözlem sarı); pirinç kullanılmaz', () => {

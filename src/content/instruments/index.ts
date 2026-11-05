@@ -23,7 +23,6 @@ import { heyecanArayisi } from './heyecan-arayisi';
 import { iyimserlik } from './iyimserlik';
 import { kisilerarasiTarz } from './kisilerarasi-tarz';
 import { kisiligin10Yonu } from './kisiligin-10-yonu';
-import { matematik } from './matematik';
 import { meslekIlgiAlanlari } from './meslek-ilgi-alanlari';
 import { meslekiIlgi } from './mesleki-ilgi';
 import { ogrenmeVeBasari } from './ogrenme-ve-basari';
@@ -75,7 +74,6 @@ export const INSTRUMENTS: InstrumentDef[] = [
   calismaAliskanliklari,
   sesliOkuma,
   okumaHizi,
-  matematik,
   dikkatBellek,
   harfIsaretleme,
   renkKelimeGorevi,

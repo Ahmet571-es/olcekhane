@@ -44,8 +44,11 @@ const nextConfig: NextConfig = {
   // Test adları değişince eski adresler kalıcı olarak yenisine yönlendirilir (arama motorları ve paylaşılmış bağlantılar için).
   async redirects() {
     return [
-      { source: '/testler/matematik-tani-testi', destination: '/testler/matematik-konu-tarama-testi', permanent: true },
-      { source: '/testler/matematik-tani-testi/:rest*', destination: '/testler/matematik-konu-tarama-testi/:rest*', permanent: true },
+      // Matematik Konu Tarama Testi kaldırıldı (site sahibinin 2026-11-05 kararı); eski adresleri Testler sayfasına gider.
+      { source: '/testler/matematik-tani-testi', destination: '/testler', permanent: true },
+      { source: '/testler/matematik-tani-testi/:rest*', destination: '/testler', permanent: true },
+      { source: '/testler/matematik-konu-tarama-testi', destination: '/testler', permanent: true },
+      { source: '/testler/matematik-konu-tarama-testi/:rest*', destination: '/testler', permanent: true },
       // 2026-10-07'de indirilen Okuma Hızı ve Anlama PDF'lerinde rehber yazısının adresi yanlış basıldı.
       { source: '/rehber/okuma-hizi-ve-anlama', destination: '/rehber/okuma-hizi-ve-okudugunu-anlama', permanent: true },
       // 2026-11-05: Beyin Akademisi siteden kaldırıldı (site sahibinin kararı: site yalnızca test platformu). Eski

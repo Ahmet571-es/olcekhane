@@ -26,7 +26,7 @@ import {
 import { PAUSE_GUARD_MS, SKIP_GUARD_MS, SpeechHub, SpeechPlayer, WATCHDOG_MS, type PlayerEnv, type SynthLike, type UtteranceLike } from '@/lib/speech/player';
 import { pickTurkishVoice, type VoiceLike } from '@/lib/speech/voice';
 import { compareSpeech } from '@/components/test/compare-panel';
-import { likertBody, quizBody, readingBody } from './helpers/bodies';
+import { likertBody, readingBody } from './helpers/bodies';
 import { TASK_VARIANTS } from './helpers/task-variants';
 
 /**
@@ -244,16 +244,8 @@ describe('Raporu sesli dinle: raporlardan okunacak metin', () => {
     // Günlük hayat bölümüyle her rapor uzadı: yüklü makinede 20 sn'yi aşabiliyor.
   }, 120_000);
 
-  it('okuma, sesli okuma ve konu tarama raporları; konu taramada soru soru inceleme okunmaz, hata türleri okunur', () => {
+  it('okuma ve sesli okuma raporları', () => {
     for (const g of [3, 6]) for (const r of reportsOf('okuma-hizi-ve-anlama', readingBody(g))) checkSpoken(r, `okuma ${g} ${r.audience}`);
-    for (const g of [5, 8]) {
-      for (const r of reportsOf('matematik-konu-tarama-testi', quizBody(g, 3))) {
-        const res = checkSpoken(r, `matematik ${g} ${r.audience}`);
-        expect(r.quiz).toBeDefined();
-        for (const q of r.quiz!.questions) expect(res.some((u) => u.text.includes(speakable(q.text).slice(0, 30))), q.text).toBe(false);
-        if (r.quiz!.errors.length > 0) expect(res.some((u) => u.segment === r.quiz!.errorsTitle)).toBe(true);
-      }
-    }
     const p = oralPassagesFor(sesliOkuma, 3)[0];
     const input: OralInput = {
       passageKey: p.key,

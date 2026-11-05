@@ -910,6 +910,24 @@ ardından bu kaldırma işlemesinde silinen satırlar (menü, altbilgi, site har
 o işlemedeki CLAUDE.md'nin "Beyin Akademisi" bölümü (ders standardı, sade dil, derinlik ve kapsam kararları). Site sahibi
 istemedikçe beyin bölümü, beyin dersleri ya da beyin anatomisi içeriği yeniden eklenmez.
 
+## Matematik Konu Tarama Testi: kaldırıldı (site sahibinin 2026-11-05 kararı)
+
+Site sahibi: "Sitedeki akademik testleri kaldıralım." Sorulduğunda yalnızca Matematik Konu Tarama Testini seçti; anket
+tipi dört test (Çalışma Alışkanlıkları, Ders Çalışma Motivasyonu, Erteleme ve Zaman Yönetimi, Zihniyet) ve Kendini Tanı
+Paketi olduğu gibi kaldı. Çıkanlar: testin içeriği (`content/instruments/matematik`: 4 form, yanılgı tablosu), rapor
+şablonu kaydı, yol haritası (`content/roadmaps/matematik.ts`), günlük hayat örnekleri, "Hangi test bana uygun?" yuvası
+(Matematik), Ortaokul sayfasındaki "Nereden başlamalı?" önerisi, galeri amblemi, Yayın iş akışındaki rapor denetimi,
+`tests/matematik-rapor.test.ts` ve `tests/quiz.test.ts`; öteki testlerdeki matematik bölümleri. Zihinde Döndürme, Zihinden
+Hesaplama ve Okuma Hızı yol haritalarının "sonraki test" önerileri başka testlere çevrildi. Eski adresler
+(`/testler/matematik-konu-tarama-testi`, `/testler/matematik-tani-testi` ve altları) `/testler`'e kalıcı yönlenir.
+Konu tarama motoru (`lib/scoring/quiz.ts`, `lib/reports/quiz-parts.ts`, `academic-roadmap.ts`, `components/quiz`,
+`QuizRunner`) kodda duruyor ama hiçbir test kullanmıyor.
+
+Hepsi git geçmişinde durur: son hâli `abb3cd4` işlemesindedir. Geri getirmek gerekirse
+`git checkout abb3cd4 -- src/content/instruments/matematik src/content/roadmaps/matematik.ts src/content/gunluk/matematik-konu-tarama-testi.ts tests/matematik-rapor.test.ts tests/quiz.test.ts`
+ardından bu kaldırma işlemesinde silinen satırlar (kayıtlar, yuva, öneri, amblem, yönlendirme, Yayın denetimi, testler).
+Site sahibi istemedikçe yeniden eklenmez.
+
 ## Testler
 
 Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** listelerde ve arama motorlarında.
@@ -925,7 +943,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Sürekli Dikkat: Harf İşaretleme | surekli-dikkat | Yayında (pilot) |
 | Mesleki İlgi Profili | mesleki-ilgi-profili | Yayında (pilot) |
 | Okuma Hızı ve Anlama | okuma-hizi-ve-anlama | Yayında (pilot) |
-| Matematik Konu Tarama Testi | matematik-konu-tarama-testi | Yayında (pilot) |
+| Matematik Konu Tarama Testi | matematik-konu-tarama-testi | Kaldırıldı (2026-11-05; aşağıdaki bölüm) |
 | Ayrıntılı Kişilik Profili | ayrintili-kisilik-profili | Yayında (active) |
 | Kişiliğin 10 Yönü | kisiligin-10-yonu | Yayında (active; 9. sınıftan yetişkine) |
 | Meslek İlgi Alanları | meslek-ilgi-alanlari | Yayında (active) |

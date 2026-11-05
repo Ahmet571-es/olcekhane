@@ -51,7 +51,7 @@ import type { GaugeVisual } from '@/lib/reports/visuals';
 import { likertItemFlags, scoreLikert, type LikertAnswer } from '@/lib/scoring/likert';
 import { oralPassagesFor } from '@/lib/scoring/oral';
 import { allSegments, reportSpeech, speakable, utterancesOf } from '@/lib/speech/report-text';
-import { likertBody, quizBody, readingBody } from './helpers/bodies';
+import { likertBody, readingBody } from './helpers/bodies';
 import { schoolWords } from './helpers/school';
 import { TASK_VARIANTS } from './helpers/task-variants';
 import { HAS_PDFTOTEXT, pdfOverlaps } from './helpers/pdf-overlap';
@@ -136,8 +136,6 @@ function bodiesFor(d: InstrumentDef): AnswersBody[] {
     }
     case 'reading':
       return [3, 6, 9, 12, 13].filter((g) => g >= d.minGrade && g <= d.maxGrade).map((g) => readingBody(g));
-    case 'quiz':
-      return (d as QuizInstrument).forms.map((f) => quizBody(f.grade, 3));
     case 'oral':
       return [1, 4, 8].map((g) => oralBody(d, g));
     default:

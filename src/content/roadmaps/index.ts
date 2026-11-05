@@ -19,7 +19,6 @@ import { iyimserlikRoadmap } from './iyimserlik';
 import { hizliKisilikTestiRoadmap } from './hizli-kisilik-testi';
 import { kisilerarasiTarzRoadmap } from './kisilerarasi-tarz';
 import { kisiligin10YonuRoadmap } from './kisiligin-10-yonu';
-import { matematikRoadmap } from './matematik';
 import { meslekIlgiAlanlariRoadmap } from './meslek-ilgi-alanlari';
 import { meslekiIlgiProfiliRoadmap } from './mesleki-ilgi-profili';
 import { ogrenmeVeBasariRoadmap } from './ogrenme-ve-basari';
@@ -83,7 +82,6 @@ export const INTEREST_ROADMAPS: Record<string, InterestRoadmapTemplate> = {
 
 /** Konu tarama testlerinin yol haritaları: konu alanlarına göre çalışma planı (lib/reports/academic-roadmap.ts). */
 export const ACADEMIC_ROADMAPS: Record<string, AcademicRoadmapTemplate> = {
-  'matematik-konu-tarama-testi': matematikRoadmap,
 };
 
 /** Okuma testinin yol haritası: okuma becerilerine göre öneriler (lib/reports/reading-roadmap.ts). */

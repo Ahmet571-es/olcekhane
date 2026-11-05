@@ -20,7 +20,6 @@ import type {
   NBackTask,
   NumberSeriesTask,
   LetterSeriesTask,
-  QuizInstrument,
   ReactionTimeTask,
   ReadingInstrument,
   SpatialSpanTask,
@@ -66,7 +65,6 @@ import type {
 import type { CubeLure } from '@/lib/instruments/cube';
 import type { HiddenLure } from '@/lib/instruments/hidden';
 import { ruleAnswer, ruleCongruent, ruleSwitchKinds, type RuleSwitchKind } from '@/lib/instruments/rule-switch';
-import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
 import { expectedSpanResponse, spanStimulus } from '@/lib/scoring/tasks';
 import { keyOf, shortestPath, successors } from './tower-check';
@@ -81,23 +79,6 @@ export function likertBody(slug: string, grade: number, pick: (i: number) => num
   return {
     grade,
     data: { engine: 'likert', answers: Object.fromEntries(d.items.map((it, i) => [it.key, { value: values[pick(i) % values.length], rtMs: 2600 }])) },
-  };
-}
-
-export function quizBody(grade: number, wrongEvery = 0): AnswersBody {
-  const form = formForGrade(def<QuizInstrument>('matematik-konu-tarama-testi'), grade);
-  return {
-    grade,
-    data: {
-      engine: 'quiz',
-      answers: Object.fromEntries(
-        form.items.map((it, i) => {
-          const wrong = wrongEvery > 0 && i % wrongEvery === 0;
-          const choice = wrong ? (it.options.find((o) => o.key !== it.answer)!.key as 'A' | 'B' | 'C' | 'D') : it.answer;
-          return [it.key, { choice, rtMs: 40_000 }];
-        }),
-      ),
-    },
   };
 }
 

@@ -3,11 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { REPORT_TEMPLATES } from '@/content/reports';
 import { AssessmentError, evaluate } from '@/lib/assessment/evaluate';
 import { answersBody, pdfBody, type AnswersBody } from '@/lib/assessment/schemas';
-import type { LikertInstrument, QuizInstrument, TaskInstrument } from '@/lib/instruments/types';
+import type { LikertInstrument, TaskInstrument } from '@/lib/instruments/types';
 import { memoryRateLimit, memoryRateLimitSize, resetMemoryRateLimit } from '@/lib/memory-rate-limit';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
-import { formForGrade } from '@/lib/scoring/quiz';
-import { cancellationBody, def, likertBody, memoryTasksBody, quizBody, readingBody } from './helpers/bodies';
+import { cancellationBody, def, likertBody, memoryTasksBody, readingBody } from './helpers/bodies';
 
 describe('test raporları', () => {
   it('kişilik: cetvel grafiği, her boyut için düzey ve yorum; öğrenci ve veli ayrı', () => {
@@ -71,15 +70,6 @@ describe('test raporları', () => {
     expect(r.parent.chart?.type).toBe('bars');
   });
 
-  it('matematik: konu alanlarına göre doğru sayıları; cevap anahtarı sunucuda', () => {
-    const r = evaluate('matematik-konu-tarama-testi', quizBody(6, 4));
-    expect(r.student.chart?.type).toBe('bars');
-    const total = r.student.keyFigures.find((f) => f.label === 'Doğru')!.value;
-    const form = formForGrade(def<QuizInstrument>('matematik-konu-tarama-testi'), 6);
-    const wrong = form.items.filter((_, i) => i % 4 === 0).length;
-    expect(total).toBe(`${form.items.length - wrong}/${form.items.length}`);
-  });
-
   it('harf işaretleme: sayfa tohumdan sunucuda üretilir, bölüm grafiği', () => {
     const r = evaluate('surekli-dikkat', cancellationBody());
     expect(r.student.chart?.type).toBe('columns');
@@ -126,9 +116,6 @@ describe('test raporları', () => {
     const half = likertBody('oz-saygi', 8, () => 1);
     if (half.data.engine === 'likert') half.data.answers = Object.fromEntries(Object.entries(half.data.answers).slice(0, 2));
     expect(() => evaluate('oz-saygi', half)).toThrow('maddelerin çoğunu');
-    const quiz = quizBody(6);
-    if (quiz.data.engine === 'quiz') delete quiz.data.answers[Object.keys(quiz.data.answers)[0]];
-    expect(() => evaluate('matematik-konu-tarama-testi', quiz)).toThrow('Bütün soruları');
     const bad = cancellationBody();
     if (bad.data.engine === 'tasks') bad.data.blocks = {};
     expect(() => evaluate('surekli-dikkat', bad)).toThrow(AssessmentError);
@@ -179,7 +166,6 @@ describe('PDF rapor', () => {
       // 16 cetvelli uzun sıralama (serbest zaman etkinlikleri).
       ['hobi-ve-serbest-zaman-ilgileri', likertBody('hobi-ve-serbest-zaman-ilgileri', 7, (i) => (i * 3) % 5)],
       ['okuma-hizi-ve-anlama', readingBody(7)],
-      ['matematik-konu-tarama-testi', quizBody(7, 3)],
       ['surekli-dikkat', cancellationBody()],
     ];
     for (const [slug, body] of bodies) {

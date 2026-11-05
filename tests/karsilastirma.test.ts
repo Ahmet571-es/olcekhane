@@ -21,7 +21,7 @@ import { footerText, noneText, otherTestText, retestNote, rowText, signed, track
 import { TASK_COMPARE, TASK_COMPARE_SINCE, specKey } from '@/lib/compare/tasks';
 import { arithPct, pctValue, secondsValue, sgPct, snValue, towerTenths } from '@/lib/reports/build';
 import type { TaskInstrument } from '@/lib/instruments/types';
-import { likertBody, quizBody, readingBody } from './helpers/bodies';
+import { likertBody, readingBody } from './helpers/bodies';
 import { TASK_VARIANTS } from './helpers/task-variants';
 import { schoolWords } from './helpers/school';
 
@@ -71,10 +71,9 @@ describe('Gelişimini karşılaştır: raporlardaki bilgi', () => {
     }
   });
 
-  it('karşılaştırma yalnızca anket ve görev testlerinde: konu tarama, okuma ve sesli okumada yok', () => {
+  it('karşılaştırma yalnızca anket ve görev testlerinde: okuma ve sesli okumada yok', () => {
     const engines = new Set(publicInstruments().map((d) => d.engine));
-    expect([...engines].sort()).toEqual(['likert', 'oral', 'quiz', 'reading', 'tasks']);
-    for (const r of Object.values(evaluateReports('matematik-konu-tarama-testi', quizBody(6, 3))) as SimpleReport[]) expect(r.compare).toBeUndefined();
+    expect([...engines].sort()).toEqual(['likert', 'oral', 'reading', 'tasks']);
     for (const r of Object.values(evaluateReports('okuma-hizi-ve-anlama', readingBody(5))) as SimpleReport[]) expect(r.compare).toBeUndefined();
     // Sesli okumanın raporu kendi kurulumunda hazırlanır (karşılaştırma bilgisi eklenmeden döner).
     const src = readFileSync(new URL('../src/lib/assessment/evaluate.ts', import.meta.url), 'utf8');

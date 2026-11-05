@@ -24,7 +24,7 @@ export const GALLERY_SECTIONS: Record<string, { anchor: string; lede: string }> 
   },
   academic: {
     anchor: 'galeri-ogrenme',
-    lede: 'Ders çalışma alışkanlıkları, motivasyon, zaman yönetimi, öğrenmeye dair inançlar ve matematikte konu taraması.',
+    lede: 'Ders çalışma alışkanlıkları, motivasyon, zaman yönetimi ve öğrenmeye dair inançlar.',
   },
   career: {
     anchor: 'galeri-ilgi',

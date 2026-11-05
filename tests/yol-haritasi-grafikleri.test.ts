@@ -4,11 +4,11 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { publicInstruments } from '@/content/instruments';
 import { sesliOkuma } from '@/content/instruments/sesli-okuma';
-import { ACADEMIC_ROADMAPS, INTEREST_ROADMAPS, ORAL_ROADMAPS, READING_ROADMAPS, ROADMAPS, TASK_ROADMAPS } from '@/content/roadmaps';
+import { INTEREST_ROADMAPS, ORAL_ROADMAPS, READING_ROADMAPS, ROADMAPS, TASK_ROADMAPS } from '@/content/roadmaps';
 import { evaluate, evaluateReports } from '@/lib/assessment/evaluate';
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import { ADULT_GRADE, gradeAllowed } from '@/lib/config';
-import type { LikertInstrument, QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
+import type { LikertInstrument, ReadingInstrument } from '@/lib/instruments/types';
 import { oralWordCount } from '@/lib/oral/words';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import { partCards } from '@/lib/reports/parts';
@@ -16,7 +16,6 @@ import type { Roadmap } from '@/lib/reports/roadmap';
 import type { RoadmapGraphic } from '@/lib/reports/roadmap-graphics';
 import type { SimpleReport } from '@/lib/reports/simple';
 import type { ItemVisual } from '@/lib/reports/visuals';
-import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
 import { oralPassagesFor, type OralInput } from '@/lib/scoring/oral';
 import { def, likertBody } from './helpers/bodies';
@@ -27,7 +26,7 @@ import { checkDrawn } from './helpers/visual-check';
 
 /**
  * Gelişim yol haritasının grafikleri (site sahibinin 2026-10-31 isteği: raporda açıklama yapan her bölümün, yol haritası
- * dahil, kendi içeriğine uygun bir grafiği olsun). Bütün yol haritalarında (anket, ilgi, konu tarama, okuma, sesli okuma,
+ * dahil, kendi içeriğine uygun bir grafiği olsun). Bütün yol haritalarında (anket, ilgi, okuma, sesli okuma,
  * zihinsel görev), öğrenci, veli ve yetişkin raporunda ve birçok sonuç örüntüsünde:
  *  - içeriği olan her bölümün grafiği vardır (kısaca, öneriler, ortamlar, yaklaşım, haftalar); herkese aynı verilen öneri
  *    listelerinde (zihinsel görevlerin önerileri, bilmekte yarar olanlar ve yaklaşımı; okuma alışkanlığı; haftalık düzen)
@@ -39,21 +38,19 @@ import { checkDrawn } from './helpers/visual-check';
  *  - yazılar taşmaz, sözlü anlatımı vardır, sadedir ve grafiğin görünüşünü anlatmaz; PDF'te kelimeler üst üste binmez.
  */
 
-type Kind = 'likert' | 'interest' | 'academic' | 'reading' | 'oral' | 'task';
+type Kind = 'likert' | 'interest' | 'reading' | 'oral' | 'task';
 const kindOf = (slug: string): Kind | null =>
   ROADMAPS[slug]
     ? 'likert'
     : INTEREST_ROADMAPS[slug]
       ? 'interest'
-      : ACADEMIC_ROADMAPS[slug]
-        ? 'academic'
-        : READING_ROADMAPS[slug]
-          ? 'reading'
-          : ORAL_ROADMAPS[slug]
-            ? 'oral'
-            : TASK_ROADMAPS[slug]
-              ? 'task'
-              : null;
+      : READING_ROADMAPS[slug]
+        ? 'reading'
+        : ORAL_ROADMAPS[slug]
+          ? 'oral'
+          : TASK_ROADMAPS[slug]
+            ? 'task'
+            : null;
 
 /* ---------- Sonuç örüntüleri ---------- */
 
@@ -97,28 +94,6 @@ function readingBodies(): AnswersBody[] {
   return out;
 }
 
-function quizBodies(): AnswersBody[] {
-  const d = def<QuizInstrument>('matematik-konu-tarama-testi');
-  const out: AnswersBody[] = [];
-  for (const grade of [5, 8]) {
-    const form = formForGrade(d, grade);
-    const body = (pick: (it: (typeof form.items)[number], i: number) => 'A' | 'B' | 'C' | 'D' | 'X', rtMs = 40_000): AnswersBody => ({
-      grade,
-      data: { engine: 'quiz', answers: Object.fromEntries(form.items.map((it, i) => [it.key, { choice: pick(it, i), rtMs }])) },
-    });
-    const wrong = (it: (typeof form.items)[number]) => it.options.find((o) => o.key !== it.answer)!.key as 'A' | 'B' | 'C' | 'D';
-    out.push(
-      body((it) => it.answer as 'A'),
-      body((it, i) => (i % 3 === 0 ? wrong(it) : (it.answer as 'A'))),
-      body((it, i) => (i % 2 === 0 ? wrong(it) : i % 5 === 1 ? 'X' : (it.answer as 'A'))),
-      // Yorumlanmayan sonuç: bütün sorularda "Bilmiyorum" ya da çok hızlı ve hep aynı seçenek.
-      body(() => 'X'),
-      body(() => 'A', 1500),
-    );
-  }
-  return out;
-}
-
 function oralBodies(): AnswersBody[] {
   const out: AnswersBody[] = [];
   for (const grade of [2, 4]) {
@@ -151,7 +126,6 @@ function oralBodies(): AnswersBody[] {
 function bodiesFor(slug: string, kind: Kind): AnswersBody[] {
   if (kind === 'likert' || kind === 'interest') return likertBodies(slug);
   if (kind === 'reading') return readingBodies();
-  if (kind === 'academic') return quizBodies();
   if (kind === 'oral') return oralBodies();
   return Object.values(TASK_VARIANTS[slug] ?? {}).map((make) => make());
 }
@@ -266,10 +240,9 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
   if (general.length === rm.weeks.length) expect(weeksSaid, at).toBe('Bu plandaki haftaların hepsi genel öneridir.');
   else if (general.length === 1) expect(weeksSaid, at).toContain(`${general[0]} hafta genel öneridir.`);
   else if (general.length > 1) expect(weeksSaid, at).toContain(`${general.at(-1)} haftalar genel öneridir.`);
-  // Zihinsel görevlerde haftaların hepsi herkes için aynıdır; ilk hafta hiçbir yol haritasında sonuca göre değildir
-  // (konu taramada yanlış soruların haftası hariç).
+  // Zihinsel görevlerde haftaların hepsi herkes için aynıdır; ilk hafta hiçbir yol haritasında sonuca göre değildir.
   if (kind === 'task') expect(rm.weeks.every((w) => !w.fromResult), at).toBe(true);
-  if (kind !== 'academic') expect(rm.weeks[0].fromResult, at).toBe(false);
+  expect(rm.weeks[0].fromResult, at).toBe(false);
 
   const rv = reportVisuals(r);
   const same = (v: ItemVisual, title: string, where: string) => {
@@ -326,38 +299,6 @@ function checkRoadmap(r: SimpleReport, kind: Kind, label: string) {
       expect(rm.approach.graphic, `${at} yaklaşım`).toBeDefined();
       checkScaleValues(rm, rm.approach.graphic!.visual, `${at} yaklaşım`);
     }
-  }
-
-  if (kind === 'academic') {
-    const notRead = r.keyFigures.find((f) => f.label === 'Genel sonuç')?.value === 'Yorumlanmadı';
-    const domains = new Set(rm.study.items.map((i) => i.key));
-    for (const s of rm.standout) expect(s.keys?.every((k) => k === 'overall' || domains.has(k)), at).toBe(true);
-    if (notRead) {
-      // Yorumlanmayan sonucun grafiği yoktur; yanlış soruların haftası da sonuca göre seçilmiş sayılmaz.
-      expect(graphicsOf(rm).map((x) => x.where), at).toEqual(['haftalar']);
-      expect(rm.weeks[0].fromResult, at).toBe(false);
-      // Veliye "hepsi sağlam" önerileri verilmez: öneriler bölümündeki gibi bütün alanlar, başta öğretmenle konuşma.
-      if (rm.approach) {
-        expect(rm.approach.items[0].title, at).toBe('Önce öğretmeniyle konuşun');
-        expect(rm.approach.items.slice(1).map((it) => it.title), at).toEqual(rm.study.items.map((it) => it.title));
-        for (const solid of ACADEMIC_ROADMAPS['matematik-konu-tarama-testi'].approachSolid) expect(rm.approach.items.map((it) => it.text), at).not.toContain(solid.text);
-      }
-    } else {
-      same(rm.standout[0].graphic!.visual, 'Genel sonuç', 'genel sonuç');
-      for (const s of rm.standout.slice(1)) {
-        expect(s.graphic, `${at} ${s.title}`).toBeDefined();
-        const rows = s.graphic!.visual.type === 'dots' ? s.graphic!.visual.rows : [];
-        expect(rows.length, at).toBe(s.keys!.length);
-      }
-      for (const it of rm.study.items) same(it.graphic!.visual, it.title, `öneri ${it.title}`);
-      if (rm.approach) {
-        expect(rm.approach.graphic, `${at} yaklaşım`).toBeDefined();
-        const rows = rm.approach.graphic!.visual.type === 'dots' ? rm.approach.graphic!.visual.rows.length : 1;
-        expect(rows, at).toBe(rm.approach.keys!.length);
-      }
-    }
-    // Haftalık çalışma düzeni herkese aynıdır: sonuç grafiği yok.
-    expect(rm.settings?.graphic, at).toBeUndefined();
   }
 
   if (kind === 'reading') {
@@ -431,7 +372,7 @@ describe('Yol haritası: her bölümün grafiği', () => {
 
   it('yol haritası olan yayındaki her test sınanır', () => {
     expect(slugs.length).toBeGreaterThan(40);
-    for (const k of ['likert', 'interest', 'academic', 'reading', 'oral', 'task'] as const) expect(slugs.some((s) => kindOf(s) === k), k).toBe(true);
+    for (const k of ['likert', 'interest', 'reading', 'oral', 'task'] as const) expect(slugs.some((s) => kindOf(s) === k), k).toBe(true);
   });
 
   for (const slug of slugs) {

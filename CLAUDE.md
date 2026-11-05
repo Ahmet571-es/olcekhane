@@ -135,6 +135,15 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   işlemesindedir; geri getirme yolu `DURUM.md`'de. Site sahibi istemedikçe beyin bölümü, beyin dersleri ya da beyin
   anatomisi içeriği yeniden eklenmez.
 
+## Matematik Konu Tarama Testi: kaldırıldı
+
+- Site sahibinin 2026-11-05 kararı ("akademik testleri kaldıralım"; sorulunca yalnızca bu testi seçti): test bütün
+  parçalarıyla kaldırıldı, eski adresleri `/testler`'e kalıcı yönlenir; son hâli `abb3cd4`, geri getirme yolu `DURUM.md`'de.
+  "Öğrenme ve akademik beceriler" alanındaki dört anket testi kaldı. Konu tarama motoru (`engine: 'quiz'`: `lib/scoring/quiz.ts`,
+  `lib/reports/quiz-parts.ts`, `academic-roadmap.ts`, `components/quiz`, `QuizRunner`) kodda duruyor ama hiçbir test
+  kullanmıyor; bu belgede "konu tarama" geçen yerler o motoru anlatır. Site sahibi istemedikçe bilgi ölçen akademik test
+  eklenmez.
+
 ## Değişmez ilkeler
 
 - Hiçbir veri saklanmaz: veritabanı, hesap, çerez, tarayıcı deposu ve analiz aracı yoktur; test cevapları

@@ -265,10 +265,10 @@ export const okumaRoadmap: ReadingRoadmapTemplate = {
     parent:
       'Dört haftanın sonunda okuma günlüğüne çocuğunuzla birlikte bakın: en çok neyi okumaktan keyif aldı, ne daha kolay gelmeye başladı? Gelecek ay için birlikte bir okuma hedefi koyun.',
   },
-  nextTests: ['calisma-aliskanliklari', 'matematik-konu-tarama-testi'],
+  nextTests: ['calisma-aliskanliklari', 'sozel-akil-yurutme'],
   nextPurpose: {
-    you: 'derslerdeki öteki güçlü ve eksik yanlarını da görmek',
-    parent: 'çocuğunuzun derslerdeki öteki güçlü ve eksik yanlarını da görmek',
+    you: 'çalışma alışkanlıklarını ve sözel akıl yürütmeni de görmek',
+    parent: 'çocuğunuzun çalışma alışkanlıklarını ve sözel akıl yürütmesini de görmek',
   },
   links: [{ label: 'Okuma hızı mı, okuduğunu anlama mı?', href: '/rehber/okuma-hizi-ve-okudugunu-anlama' }],
   sources: [KAYNAK.gough, KAYNAK.kuhn, KAYNAK.nrp, KAYNAK.rayner],

@@ -88,11 +88,6 @@ export const EXCLUDED: Record<string, Excluded[]> = {
         why: 'Testin sınırlılığı sonucun sayı bilgisi ve hesap rahatlığıyla da ilişkili olduğunu söyler (LeFevre ve Bisanz, 1986); kart bu rahatlığı destekleyen işleri önerir, zihinden hesaplamanın bu becerinin kullanıldığı yer olduğunu söylemez.',
       },
     },
-    {
-      pattern: /grafik|tablo/iu,
-      sibling: 'matematik-konu-tarama-testi',
-      roadmap: { where: ['supports.oyna'], why: 'Buradaki “tablo” çarpım tablosudur; bir tablodaki ya da grafikteki veriyi yorumlamak değildir.' },
-    },
   ],
   'harf-dizileri': [
     { pattern: /şekil|sayı|rakam/iu, limitation: 'Şekillerle ve sayılarla akıl yürütme' },
@@ -151,7 +146,6 @@ export const EXCLUDED: Record<string, Excluded[]> = {
     },
     { pattern: /orantı|tarif/iu, sibling: 'sayisal-akil-yurutme' },
     { pattern: /dizi|örüntü/iu, sibling: 'sayi-dizileri' },
-    { pattern: /eşit gruplara|kurabiye/iu, sibling: 'matematik-konu-tarama-testi' },
   ],
   'kup-acinimi': [
     { pattern: /döndür|çevir/iu, limitation: 'zihinde döndürme' },

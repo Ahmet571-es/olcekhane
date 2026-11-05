@@ -146,11 +146,6 @@ export const SECICI_GOALS: SeciciGoal[] = [
         why: 'Çaba ve sebat, planlı çalışma, düşünmekten hoşlanma ve öğrenmeye açıklık gibi özellikleri gösterir.',
         candidates: ['ogrenme-ve-basari-ozellikleri', 'dusunme-ve-calisma-tarzi', 'dusunmeyi-sevme-olcegi'],
       },
-      {
-        skill: 'Matematik',
-        why: 'Bir önceki sınıfın temel matematik konularında neyin sağlam, neyin eksik olduğunu gösterir.',
-        candidates: ['matematik-konu-tarama-testi'],
-      },
     ],
   },
   {

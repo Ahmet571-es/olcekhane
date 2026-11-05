@@ -7,9 +7,8 @@ import { evaluate, evaluateAdult } from '@/lib/assessment/evaluate';
 import type { AnswersBody } from '@/lib/assessment/schemas';
 import { ADULT_GRADE } from '@/lib/config';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
-import type { QuizInstrument } from '@/lib/instruments/types';
 import type { SimpleReport } from '@/lib/reports/simple';
-import { likertBody, quizBody, readingBody } from './helpers/bodies';
+import { likertBody, readingBody } from './helpers/bodies';
 import { HAS_PDFTOTEXT, pdfOverlaps } from './helpers/pdf-overlap';
 import { TASK_VARIANTS } from './helpers/task-variants';
 
@@ -30,7 +29,7 @@ describe.skipIf(!HAS_PDFTOTEXT)('PDF: yazılar üst üste binmez', () => {
         const first = Object.values(TASK_VARIANTS[d.slug] as Record<string, () => AnswersBody>)[0]();
         body = { ...first, grade: Math.max(first.grade, d.minGrade) };
       } else if (d.engine === 'reading') body = readingBody(6);
-      else body = quizBody((d as QuizInstrument).forms[1].grade, 3);
+      else throw new Error(`${d.slug}: bu türün örnek gövdesi testte yok`);
       const r = evaluate(d.slug, body);
       const reps: [string, SimpleReport][] = [
         ['student', r.student],

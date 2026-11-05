@@ -4,17 +4,16 @@ import { sesliOkuma } from '@/content/instruments/sesli-okuma';
 import { ACCURACY_LABEL, ACCURACY_LABEL_YOU } from '@/content/reports/sesli-okuma';
 import { evaluate } from '@/lib/assessment/evaluate';
 import type { AnswersBody } from '@/lib/assessment/schemas';
-import type { QuizInstrument, ReadingInstrument } from '@/lib/instruments/types';
+import type { ReadingInstrument } from '@/lib/instruments/types';
 import { oralWordCount } from '@/lib/oral/words';
 import { renderSimpleReportPdf } from '@/lib/pdf/simple-report';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { oralPassagesFor, type OralInput, type OralMark } from '@/lib/scoring/oral';
-import { formForGrade } from '@/lib/scoring/quiz';
 import { passageForGrade } from '@/lib/scoring/reading';
 import { checkDrawn } from './helpers/visual-check';
 
 /**
- * Okuma Hızı ve Anlama, Sesli Okuma Değerlendirmesi ve Matematik Konu Tarama Testinin kart grafikleri (site sahibinin
+ * Okuma Hızı ve Anlama ile Sesli Okuma Değerlendirmesinin kart grafikleri (site sahibinin
  * 2026-10-22 isteği: her başlık sözel açıklamanın yanında grafikle de anlatılır). Grafik kartın rozetiyle ve öne çıkan
  * sayılarla aynı şeyi söyler; grafikteki sayılar metinde yinelenmez; yazılar ekranda ve PDF'te taşmaz. Grafiği olmayan
  * kartlar yalnızca yorumlanmayan ya da hesaplanamayan sonuçlardır.
@@ -31,81 +30,6 @@ function checkAll(r: SimpleReport, label: string, noVisual: string[] = []) {
     checkDrawn(it.visual!, at);
   }
 }
-
-describe('Matematik Konu Tarama Testi', () => {
-  const def = getInstrumentDef('matematik-konu-tarama-testi') as QuizInstrument;
-  const body = (grade: number, choose: (i: number, answer: string, other: string) => string, rtMs = 40_000): AnswersBody => {
-    const form = formForGrade(def, grade);
-    return {
-      grade,
-      data: {
-        engine: 'quiz',
-        answers: Object.fromEntries(
-          form.items.map((it, i) => [it.key, { choice: choose(i, it.answer, it.options.find((o) => o.key !== it.answer)!.key) as 'A', rtMs }]),
-        ),
-      },
-    };
-  };
-  const patterns: [string, (i: number, a: string, o: string) => string, number?][] = [
-    ['hepsi doğru', (_, a) => a],
-    ['her üçte bir yanlış', (i, a, o) => (i % 3 === 0 ? o : a)],
-    ['yarısı yanlış', (i, a, o) => (i % 2 === 0 ? o : a)],
-    ['hepsi yanlış', (_, __, o) => o],
-    ['bilmiyorum', (i, a) => (i < 8 ? 'X' : a)],
-    ['ilk alan bilinmiyor', (i, a) => (i % 5 === 0 ? 'X' : a)],
-    ['çok hızlı', (i, a, o) => (i % 2 ? o : a), 1500],
-  ];
-  const grades = [...new Set(def.forms.map((f) => f.grade))];
-
-  it('her kartın grafiği var; genel sonucun çubuğu rozetle, alanların kareleri doğru sayısıyla aynı', () => {
-    for (const grade of grades) {
-      for (const [name, choose, rt] of patterns) {
-        const reps = evaluate(def.slug, body(grade, choose, rt));
-        for (const r of [reps.student, reps.parent]) {
-          const label = `${grade}. sınıf ${name}`;
-          // Cevaplar tahmin olabilir (çok hızlı ya da çoğu aynı seçenek): rozetler "Yorumlanmadı", grafik yok.
-          if (r.items[0].badge === 'Yorumlanmadı') {
-            checkAll(r, label, r.items.map((x) => x.title));
-            expect(r.items.every((x) => x.badge === 'Yorumlanmadı'), label).toBe(true);
-            expect(r.cautions.length, label).toBeGreaterThan(0);
-            continue;
-          }
-          checkAll(r, label);
-          const [genel, ...alanlar] = r.items;
-          const g = genel.visual!;
-          expect(g.type, label).toBe('gauge');
-          if (g.type === 'gauge') {
-            expect(g.zones[g.active!].label, label).toBe(genel.badge);
-            expect(`${g.value}/${g.max}`, label).toBe(r.keyFigures[0].value);
-            // Bölgeler bütün aralığı boşluksuz kaplar.
-            expect(g.zones[0].from).toBe(0);
-            expect(g.zones[g.zones.length - 1].to).toBe(g.max);
-            for (let k = 1; k < g.zones.length; k++) expect(g.zones[k].from).toBe(g.zones[k - 1].to);
-          }
-          for (const a of alanlar) {
-            const v = a.visual!;
-            expect(v.type, `${label} ${a.title}`).toBe('dots');
-            if (v.type === 'dots') {
-              const { filled, total } = v.rows[0];
-              // Grafikteki doğru sayısı metinde yinelenmez; sonuç sözle de anlatılır.
-              expect(a.text, `${label} ${a.title}`).not.toContain(`${filled}/${total}`);
-              expect(a.text, `${label} ${a.title}`).toMatch(/doğru yaptı|zorlandı|“Bilmiyorum”/);
-              const ratio = filled / total;
-              const band = ratio >= 0.75 ? 'Sağlam' : ratio >= 0.5 ? 'Pekiştirilmeli' : 'Öncelikli';
-              expect(a.badge, `${label} ${a.title}`).toBe(band);
-            }
-          }
-        }
-      }
-    }
-  });
-
-  it('PDF', async () => {
-    const r = evaluate(def.slug, body(grades[0], (i, a, o) => (i % 3 === 0 ? o : a))).student;
-    const pdf = await renderSimpleReportPdf(r, 'olcekhane.com');
-    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
-  });
-});
 
 describe('Okuma Hızı ve Anlama', () => {
   const def = getInstrumentDef('okuma-hizi-ve-anlama') as ReadingInstrument;

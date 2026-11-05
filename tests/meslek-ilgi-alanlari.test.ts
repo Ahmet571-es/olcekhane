@@ -302,12 +302,12 @@ describe('Yayın durumu', () => {
 });
 
 describe('Ad değişiklikleri', () => {
-  it('Matematik Tanı Testi’nin eski adresi yeni adrese kalıcı olarak yönlenir', async () => {
+  it('kaldırılan Matematik Konu Tarama Testi’nin eski ve son adresi Testler sayfasına kalıcı olarak yönlenir', async () => {
     const redirects = (await nextConfig.redirects?.()) ?? [];
-    const r = redirects.find((x) => x.source === '/testler/matematik-tani-testi');
-    expect(r).toMatchObject({ destination: '/testler/matematik-konu-tarama-testi', permanent: true });
-    expect(redirects.some((x) => x.source === '/testler/matematik-tani-testi/:rest*')).toBe(true);
-    expect(def('matematik-konu-tarama-testi')).toBeDefined();
+    for (const src of ['/testler/matematik-tani-testi', '/testler/matematik-tani-testi/:rest*', '/testler/matematik-konu-tarama-testi', '/testler/matematik-konu-tarama-testi/:rest*']) {
+      expect(redirects.find((x) => x.source === src), src).toMatchObject({ destination: '/testler', permanent: true });
+    }
+    expect(INSTRUMENTS.some((i) => i.slug === 'matematik-konu-tarama-testi')).toBe(false);
   });
 
   it('test adlarında "tanı" sözcüğü geçmez', () => {

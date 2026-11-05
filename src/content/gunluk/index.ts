@@ -30,7 +30,6 @@ import { kisiligin10YonuDaily } from './kisiligin-10-yonu';
 import { kupAcinimiDaily } from './kup-acinimi';
 import { kuralDegistirmeDaily } from './kural-degistirme';
 import { mantiksalAkilYurutmeDaily } from './mantiksal-akil-yurutme';
-import { matematikDaily } from './matematik-konu-tarama-testi';
 import { merakDaily } from './merak';
 import { meslekIlgiAlanlariDaily } from './meslek-ilgi-alanlari';
 import { meslekiIlgiDaily } from './mesleki-ilgi-profili';
@@ -78,7 +77,6 @@ export const DAILY: Record<string, DailyContent> = {
   'simge-bulma': simgeBulmaDaily,
   'sekil-akil-yurutme': sekilAkilYurutmeDaily,
   'okuma-hizi-ve-anlama': okumaHiziDaily,
-  'matematik-konu-tarama-testi': matematikDaily,
   'sesli-okuma-degerlendirmesi': sesliOkumaDaily,
   iyimserlik: iyimserlikDaily,
   'oz-saygi': ozSaygiDaily,

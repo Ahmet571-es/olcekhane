@@ -1630,43 +1630,6 @@ function growth(r: Rng): ReactNode {
   );
 }
 
-/** Matematik konu taraması: işlem simgeleri ve işaretlenen sorular. */
-function mathTiles(r: Rng): ReactNode {
-  const ops = ['+', '−', '×', '÷'];
-  const hl = Math.floor(r() * 4);
-  return (
-    <>
-      {ops.map((op, i) => {
-        const x = -96 + (i % 2) * 52;
-        const y = -20 + Math.floor(i / 2) * 52;
-        return (
-          <M key={op} s={mv(0, -4, 0, 1, i * 60)}>
-            <Tile x={x} y={y} s={46} fill={i === hl ? E1 : E3} />
-            <T x={x} y={y - 1} size={26} fill={i === hl ? SURF : E4}>
-              {op}
-            </T>
-          </M>
-        );
-      })}
-      <rect x={6} y={-48} width={116} height={106} rx={12} style={{ fill: BG, stroke: E3, strokeWidth: 1.6 }} />
-      {[0, 1, 2, 3].map((i) => {
-        const y = -27 + i * 23;
-        const ok = (i + hl) % 3 !== 0;
-        return (
-          <g key={i}>
-            <circle cx={26} cy={y} r={7} style={{ fill: ok ? E1 : E2 }} />
-            <path
-              d={ok ? `M22.5 ${y}l2.6 2.6 4.6-5` : `M23 ${y - 3}l6 6m0 -6l-6 6`}
-              style={{ fill: 'none', stroke: SURF, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }}
-            />
-            <rect x={40} y={y - 4} width={f(between(r, 40, 70))} height={8} rx={4} style={{ fill: E3 }} />
-          </g>
-        );
-      })}
-    </>
-  );
-}
-
 /** Öğrenme: yükselen basamaklar ve hedef. */
 function steps(r: Rng): ReactNode {
   const n = 6;
@@ -1864,7 +1827,6 @@ const BY_SLUG: Record<string, Draw> = {
   'ders-calisma-motivasyonu': (r) => gauge(r),
   'erteleme-ve-zaman-yonetimi': (r) => clockTasks(r),
   zihniyet: (r) => growth(r),
-  'matematik-konu-tarama-testi': (r) => mathTiles(r),
 
   'mesleki-ilgi-profili': (r) => hexagon(r),
   'meslek-ilgi-alanlari': (r) => orbits(r),

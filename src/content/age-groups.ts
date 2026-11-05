@@ -97,7 +97,6 @@ export const AGE_GROUPS: AgeGroup[] = [
     starters: [
       { slug: 'okuma-hizi-ve-anlama', why: 'Kısa bir metinle okuma hızını ve okuduğunu anlamayı birlikte gösterir; metin sınıfına göre seçilir.' },
       { slug: 'dikkat-ve-bellek', why: 'Beş kısa görevle çalışma belleğini, seçici dikkati ve işlem hızını ayrı ayrı gösterir.' },
-      { slug: 'matematik-konu-tarama-testi', why: 'Bir önceki sınıfın matematik konularında neyin sağlam, neyin eksik olduğunu gösterir.' },
     ],
   },
   {
@@ -138,7 +137,7 @@ export const AGE_GROUPS: AgeGroup[] = [
 export const AREA_INTROS: Record<string, string> = {
   personality: 'Nasıl biri olduğunu; insanlarla, işlerle ve duygularla nasıl ilişki kurduğunu anlatır.',
   career: 'Hangi etkinliklerden hoşlandığını ve bunlara uyan alanları, meslekleri gösterir.',
-  academic: 'Ders konuları ve ders çalışma yöntemleri: neyin sağlam olduğunu, neyin geliştirilebileceğini gösterir.',
+  academic: 'Ders çalışma yöntemleri, motivasyon ve öğrenmeye dair inançlar: neyin sağlam olduğunu, neyin geliştirilebileceğini gösterir.',
   reading:
     'Sesli ve sessiz okuma: kelimeleri doğru ve akıcı okumayı, okuma hızını ve okuduğunu anlamayı gösterir. Sesli okumayı bir öğretmen ya da veli dinleyerek değerlendirir.',
   cognitive:
