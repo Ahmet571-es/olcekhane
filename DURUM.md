@@ -4,21 +4,21 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-10-30
+Son güncelleme: 2026-11-05
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
 Hedef: Türkiye'nin en büyük ücretsiz kişilik ve zekâ testleri platformu. Testler yaş ve sınıf gruplarına göre
 düzenlenir, her sayfada kullanıcıyı yönlendiren açıklamalar bulunur, raporlar bol (3B görünümlü) grafikli, tanı
 koymayan, öğrenciye yol haritası çizen ve PDF olarak verilen raporlardır; test sayısında sınır yoktur (telife dikkat);
-ayrıca iki dallı, bol animasyonlu ve 3B görselli bir nörobilim bölümü kurulur. Site sahibi "acele etmeden, adım adım"
+ayrıca iki dallı, bol animasyonlu ve 3B görselli bir nörobilim bölümü kurulur (2026-11-05: kaldırıldı; site yalnızca test
+platformu). Site sahibi "acele etmeden, adım adım"
 istedi. Kararları:
 
 - Sıra: 1 → 2 → 3; yeni testler her basamağın yanında sürer.
 - "Açık kaynak": testler ve raporlar ücretsiz, ileride ücretli rapor seçeneği açık kalır (bugünkü plan; "yalnızca
   ticari olmayan kullanım" izinli ölçekler yine kullanılmaz). Kod herkese açık değildir.
 - Yaş grupları: 3. sınıftan yetişkine (İlkokul 3–4, Ortaokul, Lise ve mezun, Üniversite ve yetişkin).
-- Beyin derslerini testleri onaylayan hocamız okur.
 - **2026-10-07 kararı:** hoca onayı beklenmez; testler ve yol haritaları doğrudan yayına alınır (özgün testler
   `pilot`). Site sahibi hocayla 2026-10-11'de buluşacak ve platformu bitmiş hâliyle sunacak; hoca yayındaki siteyi
   inceleyip düzeltme isteyecek. Platformun o güne hazır olması gerekiyor. **2026-10-13 güncellemesi:** buluşma 5–6 gün
@@ -34,9 +34,8 @@ Basamaklar:
 2. **Rapor yenileme ("Gelişim Yol Haritası"):** bitti (2026-10-07). Çözülebilen her testin raporunda (öğrenci, veli
    ve yetişkinlere açık testlerde yetişkin) yol haritası var; Beş Faktör, Ayrıntılı ve Altı Boyutlu Kişilik hoca onaylı,
    ötekiler 2026-10-07 kararıyla onay beklenmeden yayında (hoca yayındaki siteyi inceleyecek).
-3. **Nörobilim bölümü (Beyin Akademisi):** kuruldu (2026-10-08): 8 bölüm, 100 ders (2026-10-09: yalnızca beyin; kafatası dersleri yayından kalktı), üç boyutlu model (BodyParts3D),
-   her işlemede bir ders; ayrıntı ve sıradaki ders aşağıdaki "Beyin Akademisi" bölümünde. Kaynak erişimi: OpenStax,
-   UTHealth (Neuroscience Online), NINDS, MedlinePlus ve Europe PMC açılıyor; NCBI/PubMed ve CDC açılmıyor.
+3. **Nörobilim bölümü (Beyin Akademisi):** 2026-10-08'de kuruldu, **2026-11-05'te site sahibinin kararıyla kaldırıldı**
+   (site yalnızca kişilik ve zekâ testleri platformu); aşağıdaki "Beyin Akademisi: kaldırıldı" bölümü.
 4. **Okuma bölümü (site sahibinin 2026-10-07 isteği):** kişilik ve zekâ testlerinden ayrı "Okuma" sekmesi
    (`/okuma`). Kararlar: ses yalnızca cihazda kaydedilir, hataları öğretmen ya da veli dinleyerek işaretler (yapay
    zekâyla ses tanıma ve dış hizmet yok); 1–8. sınıflar ("İlkokul 1–2" grubu açıldı). İlk değerlendirme yayında:
@@ -872,109 +871,26 @@ okumada otomatik analiz").
 4. **4. dalga:** Türkçe ve Fen Konu Tarama, Kelime Bilgisi, Alan ve Bölüm Seçimi Rehberi, Hızlı Kişilik Testi (yayında);
    test paketleri (birkaç testi art arda çözüp tek PDF almak; cevaplar yine saklanmaz).
 5. **Etkileşimli anlatımlar (5, test değil):** unutma eğrisinde tekrar zamanlarını deneme, Stroop etkisini kendin
-   görme, ölçüm payını cetvel üzerinde görme, kişiliğin 30 alt boyutlu haritası, beyinle ilgili bilinenler ve
-   efsaneler.
+   görme, ölçüm payını cetvel üzerinde görme, kişiliğin 30 alt boyutlu haritası (beyinle ilgili bilinenler ve efsaneler
+   2026-11-05'te çıktı: site yalnızca test platformu).
 6. **Bekleyen:** Karakter Güçlü Yanları (2. dalga) avukat görüşünü bekliyor; görüş gelmeden başlanmaz. Maneviyat
    ölçeği kullanılmaz, test 23 güçlü yanla sunulur. Görüş gelene kadar sitede bu test için "yakında" denmez.
 
-## Beyin Akademisi (site sahibinin 2026-10-08 isteği)
+## Beyin Akademisi: kaldırıldı (site sahibinin 2026-11-05 kararı)
 
-İstek: kişilik ve zekâ testlerinin yanında ayrı bir bölümde çok kapsamlı bir nörobilim dalı: (1) beyin anatomisi:
-beyni oluşturan bütün yapılar, sıfırdan anlaşılır sade Türkçeyle ama tıp fakültesine yeni başlayan birine çok ayrıntılı
-bilgi verecek düzeyde; (2) beyin nasıl çalışır: nöronlar, öğrenme ve çalışma biçimleri. Bol görsel, üç boyutlu ve
-hareketli. Site sahibi bölümü **2026-10-13 dolayında alanında uzman kişilere tanıtacak**; adım adım, acele etmeden.
-Kararları: üç boyutlu model + hareketli çizimler; ad "Beyin Akademisi"; dersler hazır oldukça doğrudan yayına.
+Site sahibi: "Siteyi yalnızca kişilik ve zekâ testi yapan bir platform hâline getirmek istiyoruz; beyinle ilgili bütün
+bölümleri çıkaralım." Çıkanlar: bütün sayfalar (`/beyin-akademisi`, bölümler, dersler, beyin gezgini), üst menü ve
+altbilgi bağlantıları, ana sayfadaki tanıtım, site haritası kayıtları, üç boyutlu model (`public/beyin`), bileşenler
+(`components/beyin`), içerik (`content/beyin`), stiller, `tests/beyin.test.ts`, `araclar/beyin-modeli.mjs` ve yalnızca bu
+bölümün kullandığı `three`, `@types/three`, `meshoptimizer` paketleri. Eski adresler (`/beyin-akademisi` ve altındaki her
+adres) `/testler`'e kalıcı yönlenir (`next.config.ts`).
 
-Genişletilmiş hedef (site sahibinin 2026-10-08 ikinci isteği, onaylı): kişiyi sıfırdan uzman düzeyine taşıyan en
-büyük Türkçe beyin kaynağı; tıp, nörobilim ve psikoloji bir arada; lise ve sağlık lisesi öğrencileri, tıp, nörobilim
-ve psikoloji öğrencileri, meraklılar için; tıp fakültelerinin de kullanabileceği ücretsiz kaynak. Dört ayak: Dersler,
-Atlas, Ansiklopedi, Pratik. **Her işlemede bir ders**, acele yok, tek ölçüt kalite. Uzmanlarla site sahibi görüşür.
-Yanıtlanmamış iki soru (sorulmadan değiştirilmez): uzman adları sayfalarda görünsün mü (şimdilik "Uzman incelemesi
-bekliyor" yazar) ve içerik lisansı (şimdilik değişmedi).
-
-- Adresler: `/beyin-akademisi`, `/beyin-akademisi/<bölüm>` (8 bölüm), `/beyin-akademisi/<bölüm>/<ders>`,
-  `/beyin-akademisi/beyin-gezgini`. Eski `/beyin-akademisi/nasil-calisir` adresleri `hucre-ve-molekul`'e kalıcı yönlenir.
-- Program: 8 bölüm, 100 ders (`src/content/beyin/index.ts`; 2026-10-09'da üniteler eklenince 110'a çıktı, sonra site sahibinin kararıyla yalnızca beyin: kafatası dersleri ve kol-bacak sinirleri çıktı): Anatomi 30, Hücreden Sinyale 16, Sistem Nörobilimi 15,
-  Zihin ve Davranış 12, Yaşam Boyu Beyin 5, Klinik Nörobilim 12, İnceleme Yöntemleri 6, Tarih, Efsaneler ve Etkili
-  Öğrenme 4. Her dersin seviyesi var: Temel, Lisans, İleri ve klinik.
-- Ders standardı (site sahibinin 2026-10-08 üçüncü isteği: "öğrenciden profesöre, tıp ve beyin cerrahisi dahil, çok
-  kapsamlı ve çok derin"; Ders 1 bu ölçüyle yeniden yazıldı, **site sahibi beğenirse bütün dersler böyle yapılacak**):
-  üç katman: **Temel** (meraklı herkes, lise), **Lisans** (tıp, nörobilim, psikoloji öğrencisi), **Uzman** (asistan
-  hekim, beyin cerrahı, araştırmacı). Her blok `duzey` taşır; okuyucu düzey seçer, üstündeki katmanlar ve sorular
-  gizlenir (hiçbir yere kaydedilmez; temel anlatım tek başına tam). Kutular: Aklında kalsın, Biliyor muydun, Dikkat
-  (temel); Derinleş, Klinik bağlantı, Sınav notu, Görüntülemede (lisans); Beyin cerrahisinde, Araştırma sınırı
-  (uzman). Klinik vakalar (öykü, soru, "Çözümü göster"). Metin içinde yazar-yıl atıfları, sonda APA künyeleri. Ders
-  klasörü: `bolum-*.ts`, `sozluk.ts`, `sorular.ts` (her düzeyde 12, doğru şıklar dağıtılmış), `kaynaklar.ts`. Yayından
-  önce dersi yazmamış ayrı bir ajan bilgileri kaynaklarla karşılaştırır; bulduğu yanlışlar düzeltilir.
-- Kolay kullanım (2026-10-08, site sahibinin isteği): ders Temel ile açılır; en başta "Sen kimsin?" kartları; Lisans
-  ve Uzman bölümleri mavi ve mor kenar çizgisiyle ayrılır; her konunun sonunda "devamı var" kutusu; okurken altta
-  düzey şeridi; sahnelerde ilk dokunuşa kadar "Parmağınla döndür" ipucu. Uzmanlara gösterilecek doğrudan bağlantı:
-  https://olcekhane.com/beyin-akademisi/anatomi/sinir-sistemine-ilk-bakis?duzey=uzman
-- Hazır: Anatomi 1 "Sinir sistemine ilk bakış" (sürüm 4, 2026-10-09: sinir sistemi ünitesinin genel bakışı, yeni ölçüyle
-  baştan yazıldı; 13 bölüm: ne yapar ve nasıl bölünür, yön bulmak, sinir dokusu, sayılarla, beynin bölümleri, loblar,
-  gelişim, omurilik ve omurga, çevresel sinir sistemi, otonom ve enterik sistem, koruyanlar ve besleyenler, hasar nerede,
-  bugün nasıl inceliyoruz; 35 sahne, 9 hareketli çizim, 19 vaka, 44 tablo, 82 soru, 152 terim, 234 kaynak; okuma süresi
-  temel ~98, lisans ~252, tamamı ~320 dk; UÇEP: 127, 138, 154, 156, 164, 166, 216, 224, 225, 227, 246, 252, 291).
-  Dört araştırmayla 1472 doğrulanmış not satırı (Gray 1918, OpenStax, UTHealth, TA2, açık tam metinler); beş bağımsız
-  denetçi ~100 bulgu bildirdi, hepsi kaynağa bakılarak düzeltildi. Kanama, Monro–Kellie ve otonom çizimlerinin metinleri
-  kaynaklara göre düzeltildi (dayanaksız "%75 vagus", "40 mmHg", Cushing ve "normal 7–15" çıkarıldı). Modelde yeni
-  "omurga" paketi: C3–L5 omurları, sağrı kemiği ve omurlar arası diskler (sürüm 75b11dae6b); modelde omurilik ve
-  sinirler yoktur.
-- Hazır: Anatomi 2 "Anatominin dili: beyinde yön bulmak" (2026-10-09; 9 bölüm: anatomik duruş ve yön terimleri, beynin
-  ekseni (Forel–Meynert, bükülmeler), düzlemler ve kesitler, simetri ve ölçek merdiveni, MR ve BT'de yön (radyolojik ve
-  nörolojik gösterim), koordinatlar (RAS+/LPS+, Talairach, MNI, AC–PC, Leksell, derin beyin uyarımı hedefleri), taraf
-  hataları, kafanın dışından beyni bulmak (Taylor–Haughton, Kocher ve öteki giriş noktaları, EEG 10–20, TMS), terimlerin
-  kökeni; 21 sahne, 8 hareketli çizim (5'i yeni: yön çiftleri, eksen açıları, ölçek merdiveni, AC–PC ızgarası, kafadan
-  beyne çizgiler), 18 vaka, 41 tablo, 54 soru, 100 terim, 267 kaynak; okuma süresi temel ~77, lisans ~182, tamamı ~280
-  dk). Dört araştırmayla 1677 doğrulanmış not; dört bağımsız denetçi ~100 bulgu bildirdi, hepsi kaynağa bakılarak
-  düzeltildi; iki ayrı doğrulayıcı düzeltmeleri ve çizimleri yeniden denetledi. Kapsam kararına göre omurga ameliyatı,
-  kafa derisi ve kafatası ayrıntıları çıkarıldı. Gray 1918'in doğrulanmamış değerleri "tarihsel" diye işaretli.
-- Hazır: Anatomi 3 "Beyin zarları ve zarlar arası boşluklar" (2026-10-15; 13 bölüm: üç zar ve iki gerçek boşluk, sert
-  zarın yapısı, kıvrımları ve bölmeleri (orak, çadır, çentik), toplardamar sinüsleri ve köprü toplardamarları, sert zarın
-  atardamarları, sinirleri ve ağrı, örümcek ağı zar (engel hücreleri, Liliequist zarı, granülasyonlar), yumuşak zar ve
-  damar çevresi boşluklar, boşluklar ve sisternalar, yeni keşifler (zar lenf damarları, SLYM ve glenfatik tartışması),
-  gelişim ve keşif tarihi, kanamalar ve fıtıklaşmalar, menenjit, menenjiyom ve basınç bozuklukları, görüntüleme ve
-  cerrahi; 31 sahne, 6 hareketli çizim (5'i yeni: zar katmanları, sinüs haritası, köprü toplardamarları, sisternalar,
-  fıtıklaşmalar), 29 vaka, 77 tablo, 87 soru, 142 terim, 445 kaynak; okuma süresi temel ~121, lisans ~342, tamamı ~499
-  dk). Dört araştırmayla ~3.900 doğrulanmış not; altı bağımsız denetçi ~175 bulgu bildirdi, hepsi kaynağa bakılarak
-  düzeltildi; üç doğrulayıcı düzeltmeleri, çizimleri ve sahneleri yeniden denetledi, ikinci turda kalanlar düzeltildi.
-  Modele yeni "zar" paketi: beyincik çadırı (BodyParts3D'de yalnızca sağ yarı var; sol yarı ayna kopyası, orta hatta
-  sağ yarıya birleştirildi ve beyinciğin üstünde kalsın diye yer yer birkaç mm kaldırıldı) ve yan karıncığın koroid
-  pleksusu (model sürümü 08fd1ff5cb).
-- **Yayından kaldırıldı (2026-10-09, site sahibinin kararı):** "Kafatası: beynin kemik kalesi" ve "Kafatası 1: Kemikler
-  tek tek" (her biri bağımsız denetimden geçmiş, yayında kalmış derslerdi: 7 ve 10 bölüm, 7 ve 39 sahne, 167 ve 187
-  kaynak, 131 kemik işaret noktası). Klasörleri, işaret noktaları ve çizimleri depoda saklı; eski adresler ilk derse
-  geçici yönlenir. Site sahibi isterse geri gelir.
-- **Site sahibinin 2026-10-09 kararı:** kafatası dersi istediği kapsam ve derinlikte bulunmadı. Kalıcı istekleri: derinlik
-  sınırı açık erişimli tam metinler ve ders kitaplarıyla aşılacak (özetle yetinilmez); büyük konular birkaç derslik
-  üniteye bölünerek büyütülecek. Program 106 derse çıktı: mevcut kafatası dersi ünitenin genel bakışı oldu, ardından
-  altı ders: (1) kemikler tek tek, (2) beş yönden kafatası ve iç taban, (3) delikler, kanallar ve derin çukurlar,
-  (4) kafatası–boyun bileşkesi, (5) gelişim ve hastalıklar, (6) kırıklar, görüntüleme ve cerrahi anatomi.
-- **Site sahibinin 2026-10-09 ikinci kararı:** ilk ders ("Sinir sistemine ilk bakış") da istediği kapsam ve derinlikte
-  bulunmadı; önce bu ders üniteye çevrilip bitirilecek, sonra kafatası ünitesine dönülecek. Program 110 derse çıktı:
-  genel bakış (yeni ölçüyle baştan yazılacak) ve dört ders: (1) anatominin dili, (2) omurilik sinirleri ve
-  dermatomlar, (3) boyun ve kol sinir ağları, (4) bel-sakral ağ ve bacak sinirleri. Kafatası dersleri programda 6–12.
-  sıraya kaydı.
-- **Site sahibinin 2026-10-09 üçüncü kararı (kalıcı):** Beyin Akademisi atlas ve ansiklopedi derinliğinde olacak,
-  profesörler de yararlanabilmeli; ama dil her düzeyde (Uzman dahil) çok yalın ve sade: herkes okuyunca anlamalı. Her
-  konu çok kapsamlı işlenir, zaman sınırı yok. İlk dersin dili bu ölçüyle sadeleştirildi (bilgi, sayı ve kaynaklar
-  aynen kaldı; makineyle denetlendi).
-- **Site sahibinin 2026-10-09 dördüncü kararı (kalıcı):** Beyin Akademisi **yalnızca beyni** anlatır: beyin ve onu
-  oluşturan bütün yapılar, ne işe yaradıkları, beynin nasıl çalıştığı ve nasıl öğrendiği; nörobilim ve tıp öğrencisinden
-  profesöre, öğretmenden beyin cerrahına herkesin başvuracağı, Türkiye'de eşi olmayan bir beyin atlası ve ansiklopedisi.
-  Kafatası işlenmez (iki kafatası dersi yayından kalktı). Sinir sistemi ünitesinden yalnızca "Anatominin dili" kaldı
-  (kol-bacak sinirleri ve dermatomlar çıktı); omurilik ve çıkan-inen yollar dersleri kalır. Derinlik ve sade dil aynen.
-- **Sıradaki ders:** Anatomi 4 "Karıncıklar ve beyin-omurilik sıvısı" (dört karıncık; sıvının yapılışı, dolaşımı ve
-  emilmesi). Sonra programdaki sırayla: beynin atardamarları ve Willis halkası, atardamar alanları ve toplardamarlar...
-  Beyin zarları dersinde bu derslere "… dersinde anlatılacak" diye gönderme var; dersler yayına girince göndermeler
-  güncellenebilir. Denetçilerin önerdiği 2B çizimler (nöron biçimleri, glia, nörülasyon ve kesecikler, lokalizasyon
-  merdiveni, BOS yolu, Willis varyantları) ilgili derslerde yapılacak. Site sahibi başka bir ders isterse o yapılır.
-- **Beyin cerrahisi bölümü fikri ertelendi** (site sahibi, 2026-10-08): ayrı bir beyin cerrahisi bölümü şimdilik
-  eklenmez; site sahibi bu işler bitince en son karar verecek. Sorulmadan eklenmez. Derslerin Uzman düzeyindeki
-  cerrahi kutuları sürer.
-- Doğrulanamayan, derse girmeyen bilgiler: hemiparezi terimleri; kabuk kalınlığının 1–4,5 mm aralığı; lakünar
-  arter çapları; nimodipinin etkisi (bağımsız denetimde çıkarıldı).
-- Hiçbir şey saklanmaz: ilerleme işaretlenmez, "Kendini dene" cevapları yalnızca sayfanın belleğinde durur.
+Hepsi git geçmişinde durur: son hâli `f068d53` işlemesindedir (3 hazır ders: Sinir sistemine ilk bakış, Anatominin dili,
+Beyin zarları; yayından önce kalkmış iki kafatası dersi; model sürümü 08fd1ff5cb). Geri getirmek gerekirse:
+`git checkout f068d53 -- 'src/app/(site)/beyin-akademisi' src/components/beyin src/content/beyin public/beyin tests/beyin.test.ts araclar/beyin-modeli.mjs`,
+ardından bu kaldırma işlemesinde silinen satırlar (menü, altbilgi, site haritası, stiller, yönlendirmeler, paketler) ve
+o işlemedeki CLAUDE.md'nin "Beyin Akademisi" bölümü (ders standardı, sade dil, derinlik ve kapsam kararları). Site sahibi
+istemedikçe beyin bölümü, beyin dersleri ya da beyin anatomisi içeriği yeniden eklenmez.
 
 ## Testler
 
@@ -1103,7 +1019,9 @@ Plandaki 35 yazı, yazılacağı sırayla (yazılınca `[x]` ve adresi eklenir):
 - [ ] Uyku ve öğrenme: bilgi uykuda nasıl pekişir?
 - [ ] Telefon ve dikkat: bildirimler ders çalışmayı nasıl etkiler?
 
-**Beyin ve zihin**
+**Beyin ve zihin** (2026-11-05: site yalnızca test platformu. Testlerin ölçtüğü becerileri anlatan yazılar (çalışma
+belleği, dikkat, yürütücü işlevler) yazılabilir; beyin anatomisi ya da nörobilim ağırlıklı konular (ergen beyni,
+"yüzde 10" ve sağ-sol beyin efsaneleri, nöroplastisite) site sahibine sorulmadan yazılmaz.)
 - [ ] Çalışma belleği nedir, neden sınırlıdır?
 - [ ] Dikkat nasıl çalışır?
 - [ ] Yürütücü işlevler: plan yapma, kendini durdurma, esneklik
@@ -1168,6 +1086,18 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-05 (74): Beyin Akademisi siteden tamamen kaldırıldı (site sahibinin kararı: site yalnızca kişilik ve zekâ testleri
+  platformu; ayrıntı yukarıdaki "Beyin Akademisi: kaldırıldı" bölümünde). Ana sayfada yeni test galerisi
+  (`components/site/test-gallery.tsx`, `test-emblem.tsx`; site sahibinin isteği: "bütün testler ana sayfada kart kart,
+  ödül kalitesinde tasarım"): yayındaki bütün testler alanlarına göre bölüm bölüm ("Kendini keşfetmenin 62 yolu."); başta
+  bölümlere atlayan sekmeler; zihinsel beceriler yedi alt grupta (akıl yürütme, sözel, sayısal, uzamsal, bellek, planlama
+  ve karar verme, dikkat ve kendini yönetme). Her kartta testin ne yaptırdığını anımsatan kendine özgü çizim (kişilik
+  profillerinde ölçek sayısı kadar köşeli profil, kişilerarası tarzda sekiz dilimli çember, matriste eksik parça, kâğıt
+  katlama, küp açınımı, kule görevi, harf işaretleme, renk-kelime, sesli okumada ses dalgası, Holland altıgeni…; açık ve
+  koyu temada), süre ve sınıf aralığı, Pilot etiketi, "İncele" (kartın tamamı test sayfasına gider) ve "Çöz" düğmesi.
+  Telefonda her bölüm yana kaydırılan şerit; geniş ekranda bölüm başlığı solda sabit, kartlar sağda ızgara. Galeri
+  "Nereden başlamalı?"nın hemen altında; eski kart ızgarası (`TestCards`) Testler sayfasında süzgeçlerle sürüyor.
+  Denetim `tests/galeri.test.ts`.
 - 2026-11-03 (73): Zekâ ve dikkat testlerinin yol haritaları ve rapor kartları, testlerin kendi sınırlarıyla ve kardeş
   testlerle uyumlandı: tepki hızında trafik ve spor, 3. sınıfa açık testlerde çocuğun telefonu, dur-git'te DEHB belirtisi gibi
   okunan örnekler, kural değiştirmede plan değiştirme, 2 boyutlu döndürmede 3 boyutlu eşya, bellek testlerinde duyulan bilgi
@@ -1225,13 +1155,3 @@ En yeni üstte; en çok 10 madde tutulur.
   güvenebiliriz?" (hız, arka arkaya aynı cevap, karşıt çiftler, hep aynı cevap, boşlar; uyarı kutusuyla aynı sınırlar).
   Sesli dinleme yeni bölümleri de okuyor ve "Bölümü geç" düğmesi var. Bağımsız inceleme bulguları uygulandı (gizlilik,
   çelişen iki kart, yanlış anlatılan uyarı kuralı, tekrarlar, PDF süresi ve sayfa düzeni). Tarayıcıda denendi.
-- 2026-10-31 (64): Yeni test Parçalardan Şekil yayına alındı (3. listenin 10. testi; site sahibinin 31 Ekim'de seçtiği
-  dört yeniliğin üçüncüsü; ayrıntı yukarıda). Ad: WISC-R'deki "Parça Birleştirme" alt testiyle karışmasın diye. İki bağımsız
-  inceleme yayından önce uygulandı. Sorular: "dış hattı doğru, bölünüşü farklı" yanlış seçenekleri iki doğru cevap
-  doğurduğu için kaldırıldı; parçalar sayılarak (tam ve yarım kare) ya da seçenekler birbiriyle karşılaştırılarak doğru
-  cevabı bulma yolları (önce 10,25 ve 17,83 / 20) kapatıldı: yanlış seçenekler yeniden üretildi, 46 kestirme kuralının
-  hepsi en çok 5,4 / 20 (rastgele 5); bağımsız döşeme çözücüyle denetlendi. Rapor: kararsız ya da rastgele sonuçta soru
-  türleri kartı yorumlanmıyor; alıştırma açıklamaları harfleri söylüyor; ince çizgiler kalınlaştı. Kaynak ve sayı: Ivie
-  ve Embretson (2010) ile Shi ve ark. (2023) zorluk bulguları ayrı ayrı; Embretson (1996), Levine (1999, 2012), Uttal
-  (2013), Wai (2009) ifadeleri kaynağa göre; künyeler. Düzeye ulaşma cümlesi (ortak) iki cümleye bölündü. Telefonda
-  dokunarak (4. sınıf) ve masaüstünde klavyeyle (yetişkin) çözüldü, PDF'ler açıldı.

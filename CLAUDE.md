@@ -126,77 +126,13 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - İlgili testler `relatedTests` ile verilir: yalnızca yayındakiler görünür, incelemedekiler onaydan sonra
   kendiliğinden görünür. Yazı yayına girince adresi: `https://olcekhane.com/rehber/<adres>`.
 
-## Beyin Akademisi
+## Beyin Akademisi: kaldırıldı
 
-- Nörobilim bölümü (site sahibinin 2026-10-08 istekleri; durum ve sıradaki ders `DURUM.md`'de): sıfırdan uzman
-  düzeyine en büyük Türkçe beyin kaynağı; 8 bölüm, 100 ders, **her işlemede bir ders**, tek ölçüt kalite. Program ve
-  hazır derslerin kaydı `src/content/beyin/index.ts`; her ders bir klasördür: `src/content/beyin/dersler/<bölüm>/<ders>/`
-  (`index.ts`, `bolum-*.ts`, `sozluk.ts`, `sorular.ts`, `kaynaklar.ts`; türler `types.ts`; örnek ilk ders). Hazır olmayan ders programda "Hazırlanıyor" görünür, sayfası ve site haritası
-  kaydı olmaz. Bölüm adresi değişirse eski adres `next.config.ts`'te kalıcı yönlendirilir.
-- Ders standardı (site sahibinin isteği: öğrenciden profesöre, tıp ve beyin cerrahisi dahil, çok kapsamlı ve derin;
-  örnek ilk ders): üç okuma katmanı **Temel** (meraklı herkes, lise), **Lisans** (tıp, nörobilim, psikoloji
-  öğrencisi), **Uzman** (asistan hekim, beyin cerrahı, araştırmacı). Her blok `duzey` taşır (kutularda varsayılan
-  `KUTU_DUZEYI`); okuyucu düzey seçer, üstündeki katmanlar, hedefler ve sorular gizlenir (hiçbir yere kaydedilmez).
-  Kolay kullanım (site sahibinin 2026-10-08 isteği: ilk kez gelen neyin ne olduğunu hemen anlasın): ders Temel ile
-  açılır; en başta "Sen kimsin?" kartları (`components/beyin/duzey.tsx`, `okuma-duzeyi.tsx`); ardışık Lisans/Uzman
-  blokları bir grupta, kenarında düzeyin çizgisi (mavi Lisans, mor Uzman) ve başında adı; kutuların türü yalnızca üst
-  kenar rengiyle gösterilir ve düzey renklerini kullanmaz (test denetler); her konunun sonunda gizli kalan kısım haber
-  verilir; okurken ekranın altında düzey şeridi kalır; düzey değişince okunan yer kaymaz; düzey adreste durur
-  (`?duzey=lisans|uzman`, paylaşılabilir; depo ya da çerez yok). Arayüzde "katman" değil "düzey" denir ("katman"
-  anatomide ve modelde başka anlamda kullanılır).
-  Temel anlatım tek başına tam olmalı ve en az bir sahne ile çizim içermeli. Kutular: Aklında kalsın, Biliyor muydun,
-  Dikkat (temel); Derinleş, Klinik bağlantı, Sınav notu, Görüntülemede (lisans); Beyin cerrahisinde, Araştırma sınırı
-  (uzman). Klinik vakalar (`vaka`: öykü, soru, çözüm; eğitim için kurgulanmıştır). Tablolar, birkaç üç boyutlu sahne ve
-  hareketli çizim, sözlük, her düzeyde ~12 soru (doğru şıklar her düzeyde dağıtılır), metin içinde yazar-yıl atıfları
-  ve sonda APA künyeleri (bağlantılı), ilgiliyse UÇEP 2020 Sinir–Davranış maddeleri ve öğrenme düzeyi (`ucep`). Bilgi
-  açılıp okunmuş kaynaklardan alınır (rehber yazılarındaki kural); sade Türkçe, tıp terimi ilk geçtiği yerde Latince
-  adıyla; doğrulanamayan bilgi derse girmez. Yayından önce dersi yazmamış ayrı bir ajan her sayıyı ve iddiayı
-  kaynaklarla karşılaştırır; bulduğu yanlışlar düzeltilir. Kaynak erişimi: OpenStax, UTHealth, NINDS, MedlinePlus
-  tarayıcı kimliğiyle; makaleler Europe PMC REST'ten (StatPearls özetleri dahil); NCBI ve CDC açılmaz.
-  Sayfada "Uzman incelemesi bekliyor" yazar; uzman adları ve içerik lisansı site sahibine sorulmadan değiştirilmez.
-  `tests/beyin.test.ts` program, katalog, model, sahneler, katmanlar, vakalar, tablolar ve soruları denetler.
-- **Dil** (site sahibinin 2026-10-09 kalıcı isteği): Beyin Akademisi atlas ve ansiklopedi derinliğinde olur; nörobilim ve
-  tıp profesörleri de yararlanabilmeli. Ama dil **her düzeyde, Uzman dahil, çok yalın ve sade**: herkes okuyunca anlayabilmeli.
-  Derinlik bilgiden gelir, zor dilden değil. Kısa, tek fikirli cümleler (ortalama ~10–13 sözcük, 22'yi geçmez); her terim ilk
-  geçtiği yerde sade Türkçeyle açıklanır, Latincesi parantezde; Latince eş anlamlı yığınları ve kısaltmalar açılır; Türkçesi
-  olan yabancı sözcük kullanılmaz; sayılar anlamıyla birlikte verilir. Her ünite ve konu çok kapsamlı işlenir; zaman sınırı
-  yoktur, kalite tek ölçüttür.
-- **Derinlik** (site sahibinin 2026-10-09 kalıcı isteği): derinlik sınırı açık erişimli tam metinler ve ders kitaplarıyla
-  aşılır; makale özetiyle yetinilmez. Kaynak yolları: Gray's Anatomy 1918 (kamu malı; tam metin archive.org
-  `anatomyofhumanbo1918gray`, ayrıca Wikisource), OpenStax, LibreTexts'teki açık anatomi kitapları, Europe PMC'deki açık
-  erişimli makalelerin tam metni (`fullTextXML`; 500 verirse dergi sayfası ya da başka kaynak), açık kılavuzlar (NICE vb.).
-  Özet yalnızca tam metni bulunmayan kaynakta ve özette yazanla sınırlı kullanılır. Eski kitaptaki (Gray 1918) terim ve
-  bilgiler güncel kaynakla (Terminologia Anatomica, güncel kitap ya da makale) karşılaştırılır; eskimiş bilgi derse girmez.
-- **Kapsam** (site sahibinin 2026-10-09 kararı): bölüm **yalnızca beyni** anlatır: beyin ve onu oluşturan bütün yapılar,
-  ne işe yaradıkları, beynin nasıl çalıştığı ve nasıl öğrendiği; nörobilim ve tıp öğrencisinden profesöre, öğretmenden
-  beyin cerrahına herkesin başvuracağı, Türkiye'de eşi olmayan bir beyin atlası ve ansiklopedisi. **Kafatası işlenmez:**
-  iki kafatası dersi yayından kaldırıldı (klasörleri `dersler/anatomi/kafatasi*`, `noktalar.ts` ve kafatası çizimleri
-  depoda saklı; eski adresler ilk derse geçici yönlenir; site sahibi isterse geri gelir). Kol ve bacak sinirleri,
-  dermatomlar programdan çıktı; omurilik ve çıkan-inen yollar beyni anlamak için kalır. Büyük konular gerekirse birkaç
-  derse bölünür. Ayrı bir beyin cerrahisi bölümü eklenmez; site sahibi en son karar verecek.
-- Üç boyutlu model: BodyParts3D 4.0 (CC BY 4.0, atıf `components/beyin/model-notu.tsx`'te). Yapı kataloğu
-  `src/content/beyin/yapilar.ts` (Türkçe ad, Latince ad, bölge, lob, paket, parça dosyaları, görev). Yeni yapı
-  eklenince `node araclar/beyin-modeli.mjs` çalıştırılır: arşivi indirip SHA-256 ile doğrular, yalnızca katalogdaki
-  parçaları sıkıştırıp `public/beyin/model/<sürüm>/`'e yazar (git'e girer, ~2,5 MB) ve `model-surum.ts`'i günceller.
-  Paketler: kabuk, beyaz, derin, sap, karincik (koroid pleksus dahil), zar (beyincik çadırı), damar, kemik (beyin kutusunun
-  8 kemiği), yuz (yüz kemikleri, dil kemiği, atlas, aksis) ve omurga (C3–L5 omurları, sağrı kemiği, omurlar arası diskler).
-  Yalnızca bir yarısı modellenmiş yapı katalogda `<parça>~ayna` ile aynalanır (beyincik çadırı); araç aynalanan yarıyı
-  orta hatta asıl yarıya birleştirir ve `AYNA_ENGEL`'deki yapının (sol beyincik) üstüne kaldırır; model notu bunu söyler. Modelde omurilik, omurilik
-  sinirleri ve kafatası dışındaki sinirler yoktur; bunlar çizim ve tabloyla anlatılır. Kemik paketleri kamera çerçevesine ve kesit sınırına girmez; yalnızca kemik yüklü sahnede
-  kesit kemiklerin kutusuna göre konur. Bütün sahneyi (kemikler dahil) çerçevelemek için görünenler `vurgula`ya da yazılır.
-- Çizici `components/beyin/motor.ts` (three.js; sayfada tek WebGL bağlamı, tuval en çok görünen sahneye taşınır,
-  kare yalnızca bir şey değişince çizilir), sahne kutusu `beyin-sahnesi.tsx`, iki boyutlu hareketli çizimler
-  `components/beyin/animasyonlar/` (hareketi azaltmayı seçenlerde adım adım). Sahne ayarı (`Sahne`): paketler,
-  göster/gizle/vurgula/saydam seçicileri, renk, sahneye özel boya (`boya`), etiketler, bakış, yarım küre, kesit,
-  ayrıştırma (her şeyi dağıtır; yalnızca kemikleri ayırmaz). Etiketli sahne dönmez. Etiket noktası yapının görünen
-  yüzündeki bir köşedir; kesitle kaldırılan ya da önü kapalı noktanın etiketi gizlenir.
-- Kemik işaret noktaları (çıkıntı ucu, delik ağzı, çukur, köşe): `src/content/beyin/noktalar.ts` (model koordinatı, mm),
-  sahnede `noktalar`. Yeni nokta modelin kemik ağı üzerinde ölçülür ve iki bakıştan çizilip denetlenir; ağda görünmeyen
-  yapı işaretlenmez, metinde anlatılır (site sahibine söz: yeri tam doğru konamayan nokta açıkça söylenir). Test her
-  noktanın kendi kemiğinin yüzeyinde olduğunu denetler. Sahnenin bakışından görünmeyen nokta kullanılmaz. Etiket
-  yazılarının yeri `components/beyin/etiket-duzeni.ts`: yazılar noktaların ve birbirinin üstüne binmez.
-- Etkileşimli deneme: `tarayiciAc()` ile açılan Chromium'a WebGL için `--use-gl=angle --use-angle=swiftshader
-  --enable-unsafe-swiftshader` verilir; her sahne kutusunun ekran görüntüsü alınıp gözle denetlenir.
+- Site sahibinin 2026-11-05 kararı: site yalnızca kişilik ve zekâ testleri yapan bir platformdur. Beyin Akademisi
+  (nörobilim dersleri, üç boyutlu beyin modeli, beyin gezgini) bütün parçalarıyla kaldırıldı; eski adresler `/testler`'e
+  kalıcı yönlenir (`next.config.ts`). Son hâli ve kalıcı kararları (ders standardı, dil, derinlik, kapsam) `f068d53`
+  işlemesindedir; geri getirme yolu `DURUM.md`'de. Site sahibi istemedikçe beyin bölümü, beyin dersleri ya da beyin
+  anatomisi içeriği yeniden eklenmez.
 
 ## Değişmez ilkeler
 
@@ -253,6 +189,16 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 
 ## Görsel dil
 
+- Ana sayfanın test galerisi (site sahibinin 2026-11-05 isteği: yayındaki bütün testler ana sayfada, bölüm bölüm, ödül
+  kalitesinde kartlarla): `components/site/test-gallery.tsx`. Bölümler alanlardır (`DOMAIN_ORDER`; tanıtım cümleleri
+  `GALLERY_SECTIONS`), yeni test kendiliğinden görünür; zihinsel beceriler "Hangi test bana uygun?"daki becerilerin
+  adlarıyla alt gruplara ayrılır (`COGNITIVE_GROUPS`; yeni görev testi uygun gruba yazılır). Kartın amblemi
+  `test-emblem.tsx`: testin adresinden türetilen, her açılışta aynı, testin ne yaptırdığını anımsatan küçük çizim
+  (`BY_SLUG`; kişilik profillerinde ölçek sayısı kadar köşeli profil). Yeni teste kendi çizimi eklenir; çizimler aynı
+  dili konuşur (tonlar `--e0`–`--e4`, içerik ±125 × ±64 içinde, üst köşelerde sıra numarası ve "Pilot" etiketi durur).
+  Çizimdeki harf ve sayılar süstür, testin sorularından alınmaz. Renk yalnızca alanı tanıtır (tek istisna renk-kelime
+  görevi). `tests/galeri.test.ts` her testin galeride bir kez, bir alt grupta ve kendine özgü çizimle göründüğünü
+  denetler. Telefonda bölüm yana kaydırılan şerittir, geniş ekranda başlık solda sabittir.
 - Tanıtım sayfaları (`src/app/(site)`) "canlı şekil" dilini kullanır: beş kişilik boyutunun renkleri
   (`--dim-*`, `src/app/globals.css`), yuvarlak düğmeler, cam paneller, kaydırınca belirme (`data-reveal`),
   eğilen kartlar (`data-tilt`) ve mıknatıs düğmeler (`data-magnet`). Efektler tek yerdedir

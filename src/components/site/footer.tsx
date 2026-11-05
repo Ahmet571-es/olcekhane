@@ -53,7 +53,6 @@ export function SiteFooter() {
         </FooterCol>
         <FooterCol title="Ölçekhane">
           <FooterLink href="/okuma">Okuma</FooterLink>
-          <FooterLink href="/beyin-akademisi">Beyin Akademisi</FooterLink>
           <FooterLink href="/rehber">Rehber</FooterLink>
           <FooterLink href="/bilimsel-yaklasim">Bilimsel yaklaşım</FooterLink>
           <FooterLink href="/veliler-icin">Veliler için</FooterLink>

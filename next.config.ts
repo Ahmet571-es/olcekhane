@@ -48,14 +48,10 @@ const nextConfig: NextConfig = {
       { source: '/testler/matematik-tani-testi/:rest*', destination: '/testler/matematik-konu-tarama-testi/:rest*', permanent: true },
       // 2026-10-07'de indirilen Okuma Hızı ve Anlama PDF'lerinde rehber yazısının adresi yanlış basıldı.
       { source: '/rehber/okuma-hizi-ve-anlama', destination: '/rehber/okuma-hizi-ve-okudugunu-anlama', permanent: true },
-      // Beyin Akademisi 2026-10-08'de iki daldan sekiz bölüme geçti; "Beyin Nasıl Çalışır?" dalının yerini
-      // "Hücreden Sinyale" bölümü aldı.
-      { source: '/beyin-akademisi/nasil-calisir', destination: '/beyin-akademisi/hucre-ve-molekul', permanent: true },
-      { source: '/beyin-akademisi/nasil-calisir/:rest*', destination: '/beyin-akademisi/hucre-ve-molekul', permanent: true },
-      // 2026-10-09: kafatası dersleri yayından kaldırıldı (site sahibinin kararı: bölüm yalnızca beyni anlatır). Geri
-      // gelebilecekleri için yönlendirme geçicidir.
-      { source: '/beyin-akademisi/anatomi/kafatasi', destination: '/beyin-akademisi/anatomi/sinir-sistemine-ilk-bakis', permanent: false },
-      { source: '/beyin-akademisi/anatomi/kafatasinin-kemikleri', destination: '/beyin-akademisi/anatomi/sinir-sistemine-ilk-bakis', permanent: false },
+      // 2026-11-05: Beyin Akademisi siteden kaldırıldı (site sahibinin kararı: site yalnızca test platformu). Eski
+      // adresler (dersler, bölümler, beyin gezgini) bütün testlerin listelendiği sayfaya kalıcı olarak yönlenir.
+      { source: '/beyin-akademisi', destination: '/testler', permanent: true },
+      { source: '/beyin-akademisi/:rest*', destination: '/testler', permanent: true },
     ];
   },
   async headers() {
@@ -90,8 +86,7 @@ const nextConfig: NextConfig = {
       })),
       // Model ve çalışma dosyaları büyüktür ve adresleri sürümlerini içerir (src/lib/oral/auto.ts): tarayıcı bir kez
       // indirip HTTP önbelleğinde tutabilir; sürüm değişince adres de değişir.
-      // Beyin Akademisi'nin üç boyutlu modeli de sürümlü adreste durur (araclar/beyin-modeli.mjs).
-      ...['/model/:path*', '/ort/:path*', '/vendor/:path*', '/beyin/model/:path*'].map((source) => ({
+      ...['/model/:path*', '/ort/:path*', '/vendor/:path*'].map((source) => ({
         source,
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       })),

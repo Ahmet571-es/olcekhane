@@ -8,7 +8,7 @@ import { Marquee } from '@/components/site/marquee';
 import { MeasureStory } from '@/components/site/measure-story';
 import { PageGuide } from '@/components/site/page-guide';
 import { ReportPreview } from '@/components/site/report-preview';
-import { TestCards } from '@/components/site/test-cards';
+import { TestGallery } from '@/components/site/test-gallery';
 import { PersonaHero } from '@/components/persona/persona-hero';
 import { liveGroups } from '@/content/age-groups';
 import { publicInstruments } from '@/content/instruments';
@@ -215,45 +215,43 @@ export default function Home() {
           title="Bu sitede neler var?"
           className="mt-8"
           next={[
-            { href: '/testler', label: 'Bütün testler' },
-            { href: '/beyin-akademisi', label: 'Beyin Akademisi' },
+            { href: '#testler', label: 'Bütün testler' },
             { href: '/rehber', label: 'Rehber' },
           ]}
         >
           <p>
-            <strong>Testler:</strong> kişilik, zekâ ve zihinsel beceriler, okuma ve dersler, ilgi ve meslek.{' '}
-            <strong>Beyin Akademisi:</strong> beynin anatomisi ve nasıl çalıştığı, üç boyutlu bir beyin modeliyle.{' '}
+            <strong>Testler:</strong> kişilik, zekâ ve zihinsel beceriler, okuma ve dersler, ilgi ve meslek; hepsi aşağıda, bölüm bölüm.{' '}
             <strong>Rehber:</strong> öğrenciler ve veliler için bilimsel kaynaklara dayanan yazılar. <strong>Veliler için:</strong>{' '}
             raporu çocuğunuzla nasıl okuyacağınız ve ne zaman bir uzmana başvuracağınız.
           </p>
         </PageGuide>
       </section>
 
-      <Marquee />
-
-      <MeasureStory />
-
-      {/* Testler */}
-      <section className="container-page py-24 md:py-32" aria-labelledby="testler-baslik">
-        <div className="mb-12 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end" data-reveal>
+      {/* Testler: yayındaki bütün testler, bölüm bölüm kart olarak */}
+      <section id="testler" className="container-page scroll-mt-24 pb-24 md:pb-32" aria-labelledby="testler-baslik">
+        <div className="mb-10 grid gap-6 md:mb-14 lg:grid-cols-[1.1fr_1fr] lg:items-end" data-reveal>
           <div>
             <p className="kicker">Testler</p>
             <h2 id="testler-baslik" className="t-section mt-3">
-              Neyi ölçüyoruz?
+              Kendini keşfetmenin <span className="tayf-yazi">{LIVE.length} yolu.</span>
             </h2>
           </div>
           <div className="flex flex-col gap-4">
             <p className="t-lede">
-              Her test, yayımlanmış bir bilimsel ölçeğe ya da bizim geliştirip belgelediğimiz özgün bir göreve dayanır. Hepsi ücretsiz,
-              hepsi hesap açmadan çözülür.
+              Hepsi ücretsiz, hepsi hesap açmadan çözülür. Bir karta dokun; testin neyi ölçtüğünü ve ne kadar sürdüğünü gör. Hazırsan
+              “Çöz”e bas.
             </p>
             <Link href="/testler" className="self-start font-bold">
-              Bütün testler ve bilimsel dayanakları →
+              Sınıfa ve süreye göre süz →
             </Link>
           </div>
         </div>
-        <TestCards />
+        <TestGallery />
       </section>
+
+      <Marquee />
+
+      <MeasureStory />
 
       {/* Rapor önizleme */}
       <section className="relative border-y border-rule bg-surface-2/55" aria-labelledby="rapor">

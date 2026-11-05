@@ -151,8 +151,8 @@ import type { LevelGroup } from '@/content/reports/types';
  *     "hikâye"; özneden sonra virgül: "Bu beceri, …"). Ortamın adı satırın başına yazılmaz (T; bölüm ekler).
  *
  * Süreç
- * 24. Yayından önce dosyayı yazmamış bir ajan her satırı dayandığı maddelerle ve bu listeyle karşılaştırır (Beyin
- *     Akademisi'ndeki gibi); bulduğu yanlışlar düzeltilir.
+ * 24. Yayından önce dosyayı yazmamış bir ajan her satırı dayandığı maddelerle ve bu listeyle karşılaştırır; bulduğu
+ *     yanlışlar düzeltilir.
  * 25. Yeni dosya: örneklere bak (anket: merak.ts tek ölçekli olmayan, yetişkinli; bes-faktor-kisilik.ts beş boyutlu, beş
  *     düzeyli; görev: simge-bulma.ts, sekil-akil-yurutme.ts; okuma: okuma-hizi-ve-anlama.ts; konu tarama:
  *     matematik-konu-tarama-testi.ts). Dosyayı index.ts'e ekle; testin adresi tests/gunluk-hayat.test.ts'teki `DAILY_PENDING`
