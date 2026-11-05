@@ -4,6 +4,7 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { CountUp } from '@/components/site/count-up';
 import { GroupPicker } from '@/components/site/group-picker';
 import { SECICI_NAME, SECICI_PATH } from '@/content/test-secici';
+import { Manifesto } from '@/components/site/manifesto';
 import { Marquee } from '@/components/site/marquee';
 import { MeasureStory } from '@/components/site/measure-story';
 import { PageGuide } from '@/components/site/page-guide';
@@ -106,17 +107,22 @@ const STEPS = [
 
 const DOTS = ['var(--dim-ext)', 'var(--dim-agr)', 'var(--dim-con)', 'var(--dim-emo)', 'var(--dim-int)'];
 
+function HeroKicker() {
+  return (
+    <p className="kicker acilis-gec flex items-center gap-3" style={{ '--i': 0 } as CSSProperties}>
+      <span className="flex -space-x-1" aria-hidden="true">
+        {DOTS.map((c) => (
+          <span key={c} className="size-3 rounded-full ring-2 ring-paper" style={{ background: c }} />
+        ))}
+      </span>
+      Öğrenciler için bilimsel kişilik, ilgi ve öğrenme testleri
+    </p>
+  );
+}
+
 function HeroIntro() {
   return (
-    <div className="flex flex-col gap-7">
-      <p className="kicker flex items-center gap-3">
-        <span className="flex -space-x-1" aria-hidden="true">
-          {DOTS.map((c) => (
-            <span key={c} className="size-3 rounded-full ring-2 ring-paper" style={{ background: c }} />
-          ))}
-        </span>
-        Öğrenciler için bilimsel kişilik, ilgi ve öğrenme testleri
-      </p>
+    <>
       <h1 className="t-hero">
         <span className="satir">
           <span style={{ '--i': 0 } as CSSProperties}>Her insanın</span>
@@ -130,11 +136,11 @@ function HeroIntro() {
           </span>
         </span>
       </h1>
-      <p className="t-lede measure">
+      <p className="t-lede measure acilis-gec max-w-[34rem]" style={{ '--i': 4 } as CSSProperties}>
         Ölçekhane; kişiliği, ilgi alanlarını ve öğrenme becerilerini araştırmalarla desteklenmiş ölçeklerle ölçer. Sonucu öğrenciye ve
         veliye ayrı ayrı, herkesin anlayacağı bir dille anlatır.
       </p>
-      <div className="flex flex-wrap gap-3">
+      <div className="acilis-gec flex flex-wrap gap-3" style={{ '--i': 5 } as CSSProperties}>
         <Link href="/testler" className="btn btn-primary btn-lg btn-tayf" data-magnet>
           Ücretsiz test çöz
         </Link>
@@ -142,14 +148,14 @@ function HeroIntro() {
           Nasıl ölçüyoruz?
         </a>
       </div>
-      <ul className="flex flex-wrap gap-2" aria-label="Kısaca">
+      <ul className="acilis-gec flex flex-wrap gap-2" aria-label="Kısaca" style={{ '--i': 6 } as CSSProperties}>
         {['Hesap yok', 'Testler ücretsiz', 'Cevaplar saklanmaz'].map((b) => (
           <li key={b} className="glass rounded-full px-3.5 py-1.5 text-[0.875rem] font-bold text-ink-2">
             {b}
           </li>
         ))}
       </ul>
-    </div>
+    </>
   );
 }
 
@@ -183,15 +189,16 @@ export default function Home() {
     <>
       <JsonLd data={jsonLd} />
 
-      {/* Açılış: canlı kişilik şekli */}
-      <section className="relative overflow-hidden" aria-label="Giriş">
+      {/* Açılış: tam ekran sahne, canlı kişilik şekli */}
+      <section className="doku relative overflow-hidden" aria-label="Giriş">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="bulut -left-32 top-4 size-[26rem]" style={{ background: 'var(--dim-con)', opacity: 0.16 }} />
-          <div className="bulut -right-24 -top-20 size-[32rem]" style={{ background: 'var(--dim-int)', opacity: 0.2, animationDelay: '-7s' }} />
+          <div className="bulut -right-24 -top-20 size-[36rem]" style={{ background: 'var(--dim-int)', opacity: 0.22, animationDelay: '-7s' }} />
           <div className="bulut bottom-[-10rem] left-[38%] size-[26rem]" style={{ background: 'var(--dim-agr)', opacity: 0.13, animationDelay: '-12s' }} />
+          <div className="bulut right-[18%] top-[46%] size-[18rem]" style={{ background: 'var(--dim-emo)', opacity: 0.1, animationDelay: '-4s' }} />
         </div>
-        <div className="container-page relative pb-16 pt-4 sm:pt-8 md:pb-24 md:pt-12">
-          <PersonaHero intro={<HeroIntro />} />
+        <div className="container-page relative pb-14 pt-2 sm:pt-6 md:pb-20 lg:pt-0">
+          <PersonaHero kicker={<HeroKicker />} intro={<HeroIntro />} />
         </div>
       </section>
 
@@ -248,6 +255,8 @@ export default function Home() {
         </div>
         <TestGallery />
       </section>
+
+      <Manifesto />
 
       <Marquee />
 

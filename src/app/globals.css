@@ -976,15 +976,61 @@
   }
 }
 
-/* Açılış başlığı: satırlar maskenin altından yükselir */
+/* Açılış: tam ekran sahne. Başlığın satırları maskenin altından yükselir; metin parçaları ve şekil tek bir
+   koreografiyle belirir (--i: sıra); kaydırdıkça şekil geride kalıp solar (--kay: piksel, persona-hero). */
 @layer components {
   .t-hero {
     font-family: var(--font-display);
-    font-weight: 760;
-    font-stretch: 86%;
-    font-size: clamp(3rem, 6.5vw, 6.6rem);
-    line-height: 0.94;
-    letter-spacing: -0.028em;
+    font-weight: 780;
+    font-stretch: 84%;
+    font-size: clamp(3.4rem, 7.4vw, 7.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.034em;
+  }
+  .acilis-gec {
+    animation: yukari-cik 0.9s var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+  }
+  .acilis-sahne {
+    animation: sahne-gel 1.4s var(--ease-out) both;
+    animation-delay: 80ms;
+    transform-origin: 50% 60%;
+  }
+  .acilis-sahne > div {
+    /* Kaydırma derinliği: şekil metinden daha yavaş gider ve uzaklaşır. */
+    transform: translate3d(0, calc(var(--kay, 0) * 0.22px), 0) scale(calc(1 - var(--kay, 0) * 0.00022));
+    opacity: calc(1 - var(--kay, 0) * 0.0011);
+    will-change: transform, opacity;
+  }
+  .acilis-metin {
+    transform: translate3d(0, calc(var(--kay, 0) * 0.08px), 0);
+  }
+  .acilis-ipucu {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: calc(1 - var(--kay, 0) * 0.01);
+  }
+  .acilis-ipucu-cizgi {
+    position: relative;
+    display: inline-block;
+    width: 3.5rem;
+    height: 1px;
+    background: color-mix(in oklab, var(--ink) 25%, transparent);
+    overflow: hidden;
+  }
+  .acilis-ipucu-cizgi::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    transform-origin: left;
+    animation: ipucu-kay 2.2s var(--ease-out) infinite;
+  }
+  /* Telefonda şekil başlığın üstüne taşar: başlık şeklin önünde okunur. */
+  @media (max-width: 1023.98px) {
+    .acilis-metin {
+      transform: none;
+    }
   }
   /* Maske, harflerin üst ve alt uçlarını (Ş, ğ) kesmesin diye satırdan biraz geniş tutulur. */
   .satir {
@@ -1006,6 +1052,54 @@
   }
   to {
     transform: none;
+  }
+}
+@keyframes sahne-gel {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 2.5rem, 0) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ipucu-kay {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  55% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  56% {
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+
+/* Sözümüz: kelimeler kaydırdıkça dolar (components/site/manifesto; --p ve --n bölümde, --w kelimede) */
+@layer components {
+  .soz {
+    font-family: var(--font-display);
+    font-weight: 740;
+    font-stretch: 84%;
+    font-size: clamp(1.9rem, 4.9vw, 4.4rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  .soz-kelime {
+    --on: clamp(0, calc(var(--p, 1) * var(--n, 1) - var(--w, 0)), 1);
+    color: color-mix(in oklab, var(--ink) calc(var(--on) * 100%), color-mix(in oklab, var(--ink) 16%, transparent));
+    transition: color 0.3s ease;
+  }
+  .soz .block + .block {
+    margin-top: 0.35em;
   }
 }
 
@@ -1041,8 +1135,19 @@
 
 @media (prefers-reduced-motion: reduce) {
   .satir > span,
-  .sayfa-sekil {
+  .sayfa-sekil,
+  .acilis-gec,
+  .acilis-sahne,
+  .acilis-ipucu-cizgi::after {
     animation: none !important;
+  }
+  .acilis-sahne > div,
+  .acilis-metin {
+    transform: none;
+    opacity: 1;
+  }
+  .soz-kelime {
+    color: var(--ink);
   }
 }
 

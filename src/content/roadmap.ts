@@ -11,13 +11,6 @@ export interface UpcomingTest {
   grades: string;
 }
 
-export const UPCOMING: UpcomingTest[] = [
-  {
-    key: 'turkce-konu-tarama',
-    name: 'Türkçe Konu Tarama Testi',
-    domain: 'academic',
-    measures: 'Bir önceki sınıfın dil bilgisi, yazım-noktalama ve sözcük bilgisi konularında güçlü ve eksik noktalar',
-    basedOn: 'Özgün sorular; ortaokul Türkçe öğretim programının temel konularına göre, Matematik Konu Tarama Testi ile aynı yapıda',
-    grades: '5.–8. sınıf',
-  },
-];
+// Site sahibinin 2026-11-05 kararıyla bilgi ölçen akademik test eklenmiyor (Matematik Konu Tarama kaldırıldı); Türkçe Konu
+// Tarama Testi planı da buradan çıktı. Liste boşken "Hazırlanıyor" satırı hiçbir yerde görünmez.
+export const UPCOMING: UpcomingTest[] = [];

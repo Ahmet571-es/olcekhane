@@ -9,6 +9,7 @@ import { useEffect } from 'react';
  *    girince belirir. İlk görünümdeki öğeler hiç gizlenmez; JS yoksa içerik zaten görünür.
  *  - [data-tilt]: fareyle üzerine gelinince kart hafifçe eğilir ve ışık imleci izler.
  *  - [data-magnet]: düğme imlece doğru birkaç piksel çekilir.
+ *  - [data-soz]: ana sayfadaki "sözümüz" metninin kelimeleri kaydırdıkça sırayla dolar (--p).
  *  - #site-ust: aşağı kaydırınca üst menü gizlenir, yukarı kaydırınca geri gelir.
  * Hareketi azaltmayı seçenlerde yalnızca üst menü davranışı çalışır. Hiçbiri veri saklamaz.
  */
@@ -41,6 +42,35 @@ export function SiteEffects() {
           io.observe(el);
         });
         cleanups.push(() => io.disconnect());
+      }
+
+      // [data-soz]: kelimeler kaydırdıkça dolar. --p, bölümün ekranın altından üstüne yolculuğunun oranı (0–1);
+      // kelimeler --w sırasına göre --p * --n eşiğini geçince koyulaşır (globals.css .soz-kelime).
+      const soz = Array.from(document.querySelectorAll<HTMLElement>('[data-soz]'));
+      if (!reduced && soz.length) {
+        let ticking = false;
+        const update = () => {
+          ticking = false;
+          const vh = window.innerHeight;
+          for (const el of soz) {
+            const r = el.getBoundingClientRect();
+            // Bölüm ekranın alt %85'ine girince başlar, üst %30'una ulaşınca biter.
+            const p = (vh * 0.85 - r.top) / (r.height + vh * 0.55);
+            el.style.setProperty('--p', Math.max(0, Math.min(1, p)).toFixed(3));
+          }
+        };
+        const onScroll = () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(update);
+        };
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        cleanups.push(() => {
+          window.removeEventListener('scroll', onScroll);
+          window.removeEventListener('resize', onScroll);
+        });
       }
 
       if (!reduced && fine) {

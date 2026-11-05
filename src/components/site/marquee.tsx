@@ -1,4 +1,4 @@
-const WORDS = ['Kişilik', 'İlgi alanları', 'Öz-saygı', 'Okuma hızı', 'Matematik', 'Çalışma alışkanlıkları', 'Dikkat', 'Çalışma belleği'];
+const WORDS = ['Kişilik', 'İlgi alanları', 'Öz-saygı', 'Okuma hızı', 'Zihinden hesaplama', 'Çalışma alışkanlıkları', 'Dikkat', 'Çalışma belleği'];
 const DOTS = ['var(--dim-ext)', 'var(--dim-agr)', 'var(--dim-con)', 'var(--dim-emo)', 'var(--dim-int)'];
 
 /** Ölçülen alanların adları yavaşça kayar; üzerine gelince durur. Hareketi azaltmayı seçenlerde durur. */

@@ -217,6 +217,14 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   Çizimdeki harf ve sayılar süstür, testin sorularından alınmaz. Renk yalnızca alanı tanıtır (tek istisna renk-kelime
   görevi). `tests/galeri.test.ts` her testin galeride bir kez, bir alt grupta ve kendine özgü çizimle göründüğünü
   denetler. Telefonda bölüm yana kaydırılan şerittir, geniş ekranda başlık solda sabittir.
+- Ana sayfanın açılışı (site sahibinin 2026-11-05 isteği: "ödül formatında, gösterişli"): tam ekran sahne (`PersonaHero`,
+  `.acilis*` sınıfları, `globals.css`). Canlı şekil büyük ve sağa taşar; telefonda üst satırın altında, başlığın hemen
+  üstünde ve sağa taşarak durur (sıra: üst satır, şekil, başlık). Sayfa açılınca tek koreografi: başlık satırları
+  maskeden yükselir, metin parçaları `--i` sırasıyla belirir (`.acilis-gec`), şekil büyüyerek gelir (`.acilis-sahne`);
+  kaydırdıkça şekil geride kalıp solar (`--kay`, persona-hero'daki kaydırma dinleyicisi). Masaüstünde sol altta "Kaydır"
+  ipucu. Testlerin altında "sözümüz" (`components/site/manifesto.tsx`, `[data-soz]`): üç cümle, kelimeler kaydırdıkça
+  sırayla dolar (`--p`, site-effects; `--n`, `--w`). Hareketi azaltanlarda koreografi, derinlik ve dolma kapalıdır;
+  JS yokken her şey görünür. Gösteriş yalnızca açılıştadır; öteki bölümler sakin kalır.
 - Tanıtım sayfaları (`src/app/(site)`) "canlı şekil" dilini kullanır: beş kişilik boyutunun renkleri
   (`--dim-*`, `src/app/globals.css`), yuvarlak düğmeler, cam paneller, kaydırınca belirme (`data-reveal`),
   eğilen kartlar (`data-tilt`) ve mıknatıs düğmeler (`data-magnet`). Efektler tek yerdedir

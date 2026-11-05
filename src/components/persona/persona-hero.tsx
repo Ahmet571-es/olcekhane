@@ -44,15 +44,38 @@ function FallbackShape({ traits }: { traits: Traits }) {
 }
 
 /**
- * Ana sayfanın açılışı: solda sunucuda üretilen giriş metni (intro), sağda canlı şekil, altta beş
- * kaydırıcı. Değerler yalnızca bu sayfada durur; hiçbir yere gönderilmez ya da kaydedilmez.
+ * Ana sayfanın açılışı: tam ekran bir sahne. Solda sunucuda üretilen giriş metni (intro), sağda (telefonda üstte,
+ * başlıkla iç içe) canlı şekil; altında beş kaydırıcı. Sayfa açılınca şekil ve metin tek bir koreografiyle belirir;
+ * aşağı kaydırdıkça şekil hafifçe geride kalıp solar (derinlik; hareketi azaltanlarda kapalı). Değerler yalnızca bu
+ * sayfada durur; hiçbir yere gönderilmez ya da kaydedilmez.
  */
-export function PersonaHero({ intro }: { intro: React.ReactNode }) {
+export function PersonaHero({ kicker, intro }: { kicker: React.ReactNode; intro: React.ReactNode }) {
   const [traits, setTraits] = useState<Traits>(DEFAULT_TRAITS);
   const [enable3d, setEnable3d] = useState(false);
   const [ready, setReady] = useState(false);
   const pointer = useRef<PointerState>({ x: 0, y: 0, active: false });
   const stage = useRef<HTMLDivElement>(null);
+  const scene = useRef<HTMLDivElement>(null);
+
+  // Kaydırma derinliği: sahne görünürken --kay (piksel) güncellenir; şekil yavaşça geride kalır ve solar.
+  useEffect(() => {
+    const el = scene.current;
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = Math.max(0, Math.min(window.scrollY, 1400));
+      el.style.setProperty('--kay', String(Math.round(y)));
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     if (!webglAvailable()) return;
@@ -97,22 +120,33 @@ export function PersonaHero({ intro }: { intro: React.ReactNode }) {
   );
 
   return (
-    <div className="flex flex-col gap-8 lg:gap-4">
-      <div className="grid items-center gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] lg:gap-6">
-        <div className="relative z-10">{intro}</div>
-        <div
-          ref={stage}
-          className="relative order-first mx-auto aspect-square w-full max-w-[15rem] cursor-pointer select-none sm:max-w-[26rem] lg:order-none lg:max-w-[36rem]"
-          onClick={shuffle}
-          aria-hidden="true"
-          title="Dokun: yeni bir şekil"
-        >
-          {/* Yere düşen yumuşak gölge */}
-          <div className="absolute inset-x-[24%] bottom-[8%] h-[8%] rounded-[50%] bg-ink/20 blur-2xl" />
-          <div className={`absolute inset-0 transition-opacity duration-700 ${ready ? 'opacity-0' : 'opacity-100'}`}>
-            <FallbackShape traits={traits} />
+    <div ref={scene} className="acilis flex flex-col gap-10 lg:gap-6">
+      <div className="relative grid items-center gap-0 lg:min-h-[calc(100svh-9.5rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-4">
+        {/* Telefonda üst satır şeklin üstünde durur; masaüstünde metnin içindedir. */}
+        <div className="acilis-metin relative z-10 lg:hidden">{kicker}</div>
+        <div className="acilis-metin relative z-10 order-2 flex flex-col gap-6 md:gap-7 lg:order-none">
+          <div className="hidden lg:block">{kicker}</div>
+          {intro}
+        </div>
+        <p className="acilis-ipucu pointer-events-none absolute bottom-2 left-0 hidden items-center gap-3 text-[0.8125rem] font-bold text-ink-3 lg:flex" aria-hidden="true">
+          <span className="acilis-ipucu-cizgi" />
+          Kaydır
+        </p>
+        <div className="acilis-sahne relative order-1 -mx-5 -mb-14 -mt-3 sm:-mx-8 sm:-mb-20 lg:order-none lg:m-0 lg:-mr-16 xl:-mr-28">
+          <div
+            ref={stage}
+            className="relative ml-auto aspect-square w-[22rem] max-w-none cursor-pointer select-none sm:w-[30rem] lg:w-full lg:max-w-[46rem]"
+            onClick={shuffle}
+            aria-hidden="true"
+            title="Dokun: yeni bir şekil"
+          >
+            {/* Yere düşen yumuşak gölge */}
+            <div className="absolute inset-x-[24%] bottom-[8%] h-[8%] rounded-[50%] bg-ink/20 blur-2xl" />
+            <div className={`absolute inset-0 transition-opacity duration-700 ${ready ? 'opacity-0' : 'opacity-100'}`}>
+              <FallbackShape traits={traits} />
+            </div>
+            {enable3d && <PersonaBlob traits={traits} pointer={pointer} onReady={markReady} onLost={markLost} />}
           </div>
-          {enable3d && <PersonaBlob traits={traits} pointer={pointer} onReady={markReady} onLost={markLost} />}
         </div>
       </div>
       <PersonaConsole traits={traits} setOne={setOne} shuffle={shuffle} reset={reset} />

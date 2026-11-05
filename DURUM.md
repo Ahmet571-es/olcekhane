@@ -1122,6 +1122,14 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-05 (77): Ana sayfa açılışı ödül düzeyine çıkarıldı (site sahibinin isteği: "awards formatında, gösterişli"):
+  tam ekran sahne, canlı şekil büyük ve sağa taşan, telefonda başlığın üstünde; açılış koreografisi, kaydırınca derinlik,
+  "Kaydır" ipucu; testlerin altında kaydırdıkça kelime kelime dolan "sözümüz" bölümü (ayrıntı CLAUDE.md "Görsel dil").
+  Kayan şeritten "Matematik" çıktı ("Zihinden hesaplama" girdi); "Hazırlanıyor: Türkçe Konu Tarama Testi" planı
+  kaldırıldı (akademik test eklenmiyor). Renkler, yazı tipi ve öteki bölümler aynı.
+- 2026-11-05 (76): Matematik Konu Tarama Testi kaldırıldı (ayrıntı "Matematik Konu Tarama Testi: kaldırıldı" bölümünde).
+- 2026-11-05 (75): Sesli okumada otomatik analiz herkese açık varsayılan sürüm oldu; yetişkin sürümü `?surum=yetiskinli`
+  ile yedek yol; canlıda uçtan uca denendi (`araclar/sesli-okuma-dene.mjs`).
 - 2026-11-05 (74): Beyin Akademisi siteden tamamen kaldırıldı (site sahibinin kararı: site yalnızca kişilik ve zekâ testleri
   platformu; ayrıntı yukarıdaki "Beyin Akademisi: kaldırıldı" bölümünde). Ana sayfada yeni test galerisi
   (`components/site/test-gallery.tsx`, `test-emblem.tsx`; site sahibinin isteği: "bütün testler ana sayfada kart kart,
@@ -1169,25 +1177,3 @@ En yeni üstte; en çok 10 madde tutulur.
   (`pointer`), motivasyonda parçaları ayrışan bileşikte örnek yok, yetişkine ev satırı (yalnız yaşayana uysun), mezunda "sınıf"
   yok. Dikkat ve Bellek raporunda yasak "herkes için" ifadesi kaldırıldı. Ağır testler hafifletildi (PDF'ler pdf-ust-uste'de bir
   kez çizilir; günlük hayat testinde örneklem). Telefonda ve masaüstünde Öz-yeterlik ve Parçalardan Şekil çözüldü.
-- 2026-11-01 (67): PDF düzeltmesi: ek bölümlü bazı raporların PDF'inde yazılar üst üste biniyor, sayfa dışındakiler
-  kayboluyordu (yayında 11 rapor, ör. Kişiliğin 10 Yönü, Çalışma Değerleri, Ayrıntılı Kişilik veli raporu); bölümler artık
-  sayfaya doğrudan diziliyor, yeni test her testin PDF'inde kelime çakışmasını arıyor. Yol haritası profilinde uzun ad değerin
-  üstüne biniyordu; PDF'te kutu işareti "¡" çıkıyordu (düzeltildi). Raporları genişletme (d) ilk kısmı yayında: "Günlük
-  hayatta" bölümü 7 testte (yukarıda); iki bağımsız inceleme (metin-mantık; bilgi-kaynak) bulguları uygulandı (yanlış zar
-  örneği, maddeye dayanmayan satırlar, kişiliği öğretme yöntemine bağlama, sıklık iddiası). Öz-saygıda boş madde olunca
-  orantılanan toplam artık bir ondalıkla yazıyor ("25,6 / 30"; düzeyle çelişmesin). Telefonda ve masaüstünde denendi.
-- 2026-11-01 (66): Raporları genişletme (b) ve (c) yayına alındı: bütün görev (zekâ ve dikkat) testlerinde, okuma,
-  sesli okuma ve matematikte üç yeni bölüm, her kartın kendi grafiğiyle (düzeylerin ve ölçülerin anlamı, soru soru ya da
-  deneme deneme cevaplar, sonucun güvenilirliği). Aynı soruların geldiği zekâ testlerinde cevaplar yazılmaz (yalnızca
-  doğru/yanlış, düzey, süre); okuma ve matematikte doğru cevap yazar. Küp Açınımı, Gizli Şekiller, Parçalardan Şekil:
-  1. düzeyde şans kuralı (sürüm 2). İnceleme bulguları: grafikle çelişen 12 denetim kartı, "Yorumlanmadı" kartlarda
-  grafik ve neden, uzun listelerin sesli okuması (en uzun bölüm ~6,5 dk), okunmayan küçük işaretler, dil düzeltmeleri.
-  Telefonda ve masaüstünde Parçalardan Şekil, Simge Bulma, Okuma Hızı ve Anlama, Matematik Konu Tarama çözüldü; PDF'ler
-  ve sesli dinleme (sahte yerel sesle) denendi.
-- 2026-11-01 (65): Raporları genişletme (a) yayına alındı: bütün anket testlerinin öğrenci, veli ve yetişkin raporunda üç
-  yeni bölüm, her kartın kendi grafiğiyle: "Düzeylerin anlamı" (düzeyler yan yana, kişinin düzeyi ve ölçümün doğal payı
-  işaretli, sınıra yakınsa komşu düzeyde "Bu da uyabilir"), "Cevapların tek tek" (her ölçeğin cümleleri, verilen cevap,
-  ters puanlanan cümleler; yalnızca öğrencinin ve yetişkinin kendi raporunda, PDF'te ekte), "Cevaplarına ne kadar
-  güvenebiliriz?" (hız, arka arkaya aynı cevap, karşıt çiftler, hep aynı cevap, boşlar; uyarı kutusuyla aynı sınırlar).
-  Sesli dinleme yeni bölümleri de okuyor ve "Bölümü geç" düğmesi var. Bağımsız inceleme bulguları uygulandı (gizlilik,
-  çelişen iki kart, yanlış anlatılan uyarı kuralı, tekrarlar, PDF süresi ve sayfa düzeni). Tarayıcıda denendi.
