@@ -14,6 +14,7 @@ import { PageGuide } from '@/components/site/page-guide';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { ItemNoun } from '@/lib/instruments/nouns';
 import type { CognitiveTask, LikertOption } from '@/lib/instruments/types';
+import { oralAdultUrl } from '@/lib/oral/auto';
 import type { SimpleReport } from '@/lib/reports/simple';
 import { shareCardFor } from '@/lib/share/card';
 import { ReportSpeech } from './report-speech';
@@ -21,7 +22,7 @@ import { RoadmapView } from './roadmap-view';
 import { ComparePanel, type PanelOutcome } from './compare-panel';
 import { SimpleReportView } from './simple-report-view';
 
-/** Öğrencinin tek başına okuduğu, okumayı cihazdaki yapay zekânın incelediği sesli okuma (önizleme): yalnızca gerekince yüklenir. */
+/** Öğrencinin tek başına okuduğu, okumayı cihazdaki yapay zekânın incelediği sesli okuma (varsayılan sürüm): yalnızca gerekince yüklenir. */
 const OralAutoRunner = dynamic(() => import('@/components/runner/oral/oral-auto-runner').then((m) => m.OralAutoRunner), {
   loading: () => <p className="t-meta mx-auto w-full max-w-2xl">Yükleniyor…</p>,
 });
@@ -126,7 +127,10 @@ export function TestSession({
   siteUrl: string;
   /** Uzman incelemesindeki gelişim yol haritasının önizlemesi (`?onizleme=yol-haritasi`). */
   roadmapPreview?: boolean;
-  /** Sesli okumada otomatik analiz önizlemesi (`?onizleme=otomatik`): öğrenci tek başına okur, kaydı kimse dinlemez. */
+  /**
+   * Sesli okumada otomatik analiz (varsayılan sürüm): öğrenci tek başına okur, kaydı kimse dinlemez. Yetişkinin dinleyip
+   * işaretlediği sürüm (`?surum=yetiskinli`) için false.
+   */
   oralAuto?: boolean;
 }) {
   const [seed] = useState(uuid4);
@@ -177,6 +181,7 @@ export function TestSession({
             intro={payload.intro}
             grade={grade}
             passages={payload.passages}
+            adultUrl={oralAdultUrl(slug, grade)}
             onFinish={(data) => submit({ engine: 'oral', ...data })}
           />
         );

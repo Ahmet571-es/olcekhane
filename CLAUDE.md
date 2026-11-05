@@ -165,8 +165,13 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
 - Site sahibinin isteği (2026-10-07): öğrenci kendisi okur, **yetişkin kaydı dinlemez** (öğrenci mahremiyeti); okuma
   bitince "Okumanı analiz etmemizi ister misin?" sorulur, "Evet" denince sistem kaydı kendisi inceler ve rapor verir;
   hiçbir şey saklanmaz; öncelik doğruluktur. Aylık ek sunucu ücreti istemediği için analiz öğrencinin cihazında yapılır.
-- Şimdilik yalnızca önizleme bağlantısıyla açılır: `/testler/sesli-okuma-degerlendirmesi/coz?onizleme=otomatik`
-  (yetişkinin dinleyip işaretlediği sürüm herkese açık kalır; site sahibi onaylayınca otomatik sürüm varsayılan olur).
+- Site sahibinin 2026-11-05 kararıyla **herkese açık varsayılan sürüm**: `/testler/sesli-okuma-degerlendirmesi/coz` doğrudan
+  otomatik akışı açar (eski `?onizleme=otomatik` bağlantısı da aynı yere çıkar). Yetişkinin dinleyip işaretlediği sürüm
+  yalnızca `?surum=yetiskinli` ile açılır (`ORAL_VERSION_PARAM`, `oralAdultUrl`, `src/lib/oral/auto.ts`): yapay zekâyı
+  çalıştıramayan cihazlar için yedek yoldur; öğrencinin ekranlarında yalnızca "bu cihaz incelemeyi yapamıyor" durumlarında
+  bağlantısı gösterilir (`AdultFallback`, `oral-auto-runner.tsx`), site sayfalarında yalnızca Okuma sayfasının gizlilik
+  bölümünde anılır. Site metinleri (Okuma sayfası, test tanıtımı, bilim kartı, ana sayfa SSS, aydınlatma metni sürüm 8)
+  otomatik sürümü olağan biçim olarak anlatır; yetişkin sürümü kaldırılmaz (site sahibi istemedikçe).
 - Parçalar: ortak türler ve sabitler `src/lib/oral/auto.ts`; model Whisper small (`onnx-community/whisper-small_timestamped`,
   q8, ~250 MB, sabit sürüm ve SHA-256: `araclar/model-hazirla.mjs`, Docker'da ayrı katman; `public/model|ort|vendor`
   git'e girmez; büyük dosyalar HTTP önbelleğine sığsın diye 8 MiB'lık parçalar hâlinde sunulur, liste `parcalar.json`);

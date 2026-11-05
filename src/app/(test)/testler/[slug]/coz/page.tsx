@@ -8,6 +8,7 @@ import { ROADMAP_IN_REVIEW, ROADMAP_PREVIEW_PARAM, hasRoadmap } from '@/content/
 import { solvableInstrument } from '@/lib/assessment/evaluate';
 import { payloadFor } from '@/lib/assessment/payload';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam, siteUrl } from '@/lib/config';
+import { ORAL_ADULT_VERSION, ORAL_VERSION_PARAM } from '@/lib/oral/auto';
 
 export async function generateMetadata(props: PageProps<'/testler/[slug]/coz'>): Promise<Metadata> {
   const { slug } = await props.params;
@@ -16,10 +17,11 @@ export async function generateMetadata(props: PageProps<'/testler/[slug]/coz'>):
 }
 
 /**
- * Sesli okumada öğrencinin tek başına okuduğu, okumayı cihazdaki yapay zekânın incelediği akışın önizlemesi
- * (`?onizleme=otomatik`). Bağlantı olmadan herkes yetişkinin kaydı dinlediği sürümü görür.
+ * Sesli okumada varsayılan akış, öğrencinin tek başına okuduğu ve okumayı cihazdaki yapay zekânın incelediği otomatik
+ * analizdir (site sahibinin 2026-11-05 kararı). Yetişkinin kaydı dinleyip işaretlediği sürüm yalnızca `?surum=yetiskinli`
+ * ile açılır: yapay zekâyı çalıştıramayan cihazlar için yedek yol. Eski önizleme bağlantısı (`?onizleme=otomatik`) da
+ * varsayılan sürümü açar.
  */
-const ORAL_AUTO_PREVIEW_PARAM = 'otomatik';
 
 export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>) {
   const { slug } = await props.params;
@@ -37,8 +39,10 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
   const backUrl = `/testler/${def.slug}`;
   // İncelemedeki gelişim yol haritası yalnızca önizleme bağlantısıyla eklenir; seçim sınıf formunda da korunur.
   const roadmapPreview = q.onizleme === ROADMAP_PREVIEW_PARAM && hasRoadmap(def.slug) && ROADMAP_IN_REVIEW.has(def.slug);
-  const oralAuto = def.engine === 'oral' && q.onizleme === ORAL_AUTO_PREVIEW_PARAM;
-  const preview = roadmapPreview ? ROADMAP_PREVIEW_PARAM : oralAuto ? ORAL_AUTO_PREVIEW_PARAM : null;
+  const preview = roadmapPreview ? ROADMAP_PREVIEW_PARAM : null;
+  // Sesli okuma: yetişkinin dinlediği sürüm yalnızca adresle seçilir; seçim sınıf formunda da korunur.
+  const oralAdult = def.engine === 'oral' && q[ORAL_VERSION_PARAM] === ORAL_ADULT_VERSION;
+  const oralAuto = def.engine === 'oral' && !oralAdult;
 
   return (
     <>
@@ -73,7 +77,11 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
               </p>
               <h1 className="t-h1">{def.name}</h1>
               <p className="t-lede">
-                {oralAuto ? 'Bir metni sesli oku; okumanı bu cihazdaki yapay zekâ incelesin. Sonra soruları cevapla ve raporunu gör.' : def.tagline}
+                {oralAuto
+                  ? 'Bir metni sesli oku; okumanı bu cihazdaki yapay zekâ incelesin, hatalı okunan yerleri ekranda göstersin. Sonra soruları cevapla ve raporunu gör.'
+                  : oralAdult
+                    ? 'Öğrenci sınıfına uygun bir metni sesli okur; siz kaydı dinleyerek hataları kelime kelime işaretler, akıcılığı ve anlamayı değerlendirirsiniz.'
+                    : def.tagline}
               </p>
             </div>
 
@@ -83,12 +91,15 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
                 <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
                   <li>Sınıfını seç ve “Teste başla” düğmesine bas; sonra metni seç ve mikrofonu dene.</li>
                   <li>Metni sesli oku. İstersen okumanı bu cihazdaki yapay zekâ inceler; sen bu sırada soruları cevaplarsın.</li>
-                  <li>İnceleme bitince ses kaydın silinir ve raporun ekranda açılır. Yapay zekâ ilk seferde yaklaşık 250 MB indirir.</li>
+                  <li>
+                    İnceleme bitince ses kaydın silinir ve raporun ekranda açılır: Metin kelime kelime, hatalı okunan yerler işaretli olarak gösterilir;
+                    hata türleri, yanlış okunan kelimeler ve okuma hızı raporda yazar. Yapay zekâ ilk seferde yaklaşık 250 MB indirir.
+                  </li>
                 </ol>
               </PageGuide>
-            ) : def.engine === 'oral' ? (
+            ) : oralAdult ? (
               <PageGuide plain title="Nasıl ilerler?">
-                <p>Değerlendirmeyi öğrenci ve bir yetişkin (öğretmen ya da veli) birlikte yapar:</p>
+                <p>Bu sürümde değerlendirmeyi öğrenci ve bir yetişkin (öğretmen ya da veli) birlikte yapar:</p>
                 <ol className="flex list-decimal flex-col gap-1 pl-5 text-ink-2">
                   <li>Öğrencinin sınıfını seçin ve “Teste başla” düğmesine basın; sonra metni seçip mikrofonu deneyin.</li>
                   <li>Öğrenci metni sesli okur, kendi cümleleriyle anlatır ve soruları cevaplar.</li>
@@ -131,7 +142,14 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
             )}
             {oralAuto && (
               <p className="notice notice-info">
-                <strong>Önizleme:</strong> Okumayı yetişkin yerine bu cihazdaki yapay zekâ inceler. Bu sürüm deneme aşamasındadır.
+                Okumayı bu cihazdaki yapay zekâ inceler; kaydı hiçbir yetişkin dinlemez. Yapay zekânın net anlayamadığı kelimeler hata sayılmaz. Bu
+                cihaz yapay zekâyı çalıştıramazsa, bir yetişkinin kaydı dinleyip işaretlediği sürüm önerilir.
+              </p>
+            )}
+            {oralAdult && (
+              <p className="notice notice-info">
+                <strong>Yetişkinin dinlediği sürüm:</strong> Okuma hatalarını yapay zekâ değil, kaydı dinleyen yetişkin işaretler. Öğrencinin tek
+                başına okuduğu, kaydı kimsenin dinlemediği olağan sürüm için <Link href={`/testler/${def.slug}/coz`}>buraya dönün</Link>.
               </p>
             )}
 
@@ -143,6 +161,7 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
 
             <form method="get" className="panel flex flex-col gap-5 p-6">
               {preview && <input type="hidden" name="onizleme" value={preview} />}
+              {oralAdult && <input type="hidden" name={ORAL_VERSION_PARAM} value={ORAL_ADULT_VERSION} />}
               <div className="field">
                 <label htmlFor="sinif" className="field-label">
                   {def.adults ? 'Testi kim çözüyor?' : 'Testi çözen öğrencinin sınıfı'}

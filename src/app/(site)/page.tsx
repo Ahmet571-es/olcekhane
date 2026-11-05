@@ -69,7 +69,7 @@ const FAQ = [
   },
   {
     q: 'Hangi yaşlar için uygun?',
-    a: `Testler 3. sınıftan itibaren uygulanabilir; okuma değerlendirmeleri bir yetişkinle birlikte 1. sınıftan itibaren yapılabilir. Ana sayfanın başında ya da Testler sayfasında grubunuzu (${GROUP_NAMES}) seçerseniz o gruba uygun testler bölüm bölüm listelenir. Her testin uygun olduğu sınıf aralığı test sayfasında da yazıyor; teste başlarken yalnızca bu aralıktaki sınıflar seçilebilir.`,
+    a: `Testler 3. sınıftan itibaren uygulanabilir; sesli okuma değerlendirmesi 1. sınıftan itibaren yapılabilir (öğrenci tek başına okur; küçük sınıflarda bir büyük düğmelere basmaya yardım edebilir). Ana sayfanın başında ya da Testler sayfasında grubunuzu (${GROUP_NAMES}) seçerseniz o gruba uygun testler bölüm bölüm listelenir. Her testin uygun olduğu sınıf aralığı test sayfasında da yazıyor; teste başlarken yalnızca bu aralıktaki sınıflar seçilebilir.`,
   },
   {
     q: 'Bir test ne kadar sürüyor?',

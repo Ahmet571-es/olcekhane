@@ -813,14 +813,23 @@ her başlığı sözel açıklamanın yanında grafikle de anlatalım." Site sah
    (Öz-denetim) yayında (2026-10-27); 6., 7. ve 8. testler (Harf-Sayı Sıralama, Merak, Simge Bulma) yayında (2026-10-30); 9. test (Liderlik Eğilimleri) yayında (2026-10-31).
    10. test (Parçalardan Şekil) yayında (2026-10-31). Sıradaki: 3. listenin 11. testi (Yaratıcılık Eğilimi).
 
-**ÖNCE BU — Sesli okumada otomatik analiz: önizlemede (2026-10-08), site sahibinin denemesi bekleniyor.**
+**Sesli okumada otomatik analiz: herkese açık varsayılan sürüm (2026-11-05).**
 Site sahibinin isteği: öğrenci kendisi okur, yetişkin kaydı dinlemez; okuma bitince "Okumanı analiz etmemizi ister
-misin?" → "Evet" → sistem kaydı kendisi inceler ve rapor verir; hiçbir şey saklanmaz; öncelik doğruluk. Aylık ek sunucu
-ücreti istemediği için (KVM 4 konuşuldu, pahalı bulundu) analiz **öğrencinin cihazında** yapılır (CLAUDE.md, "Sesli
-okumada otomatik analiz").
-- Önizleme: https://olcekhane.com/testler/sesli-okuma-degerlendirmesi/coz?onizleme=otomatik (herkese açık sürüm hâlâ
-  yetişkinin dinlediği sürüm). Site sahibi bilgisayardan ve telefondan deneyecek; beğenirse otomatik sürüm varsayılan
-  olur, Okuma sayfası ve yetişkin sürümünü anlatan metinler ("konuşmayı yapay zekâyla tanımaya çalışmaz" vb.) güncellenir.
+misin?" → "Evet" → sistem kaydı kendisi inceler, hatalı yerleri ekranda gösterir ve hata raporu verir; hiçbir şey
+saklanmaz; öncelik doğruluk. Aylık ek sunucu ücreti istemediği için (KVM 4 konuşuldu, pahalı bulundu) analiz **öğrencinin
+cihazında** yapılır (CLAUDE.md, "Sesli okumada otomatik analiz").
+- 2026-11-05: Site sahibi "seçimi sana bırakıyorum; önemli olan hatasız dinleme ve analiz" dedi; seçilen yol: otomatik
+  sürüm varsayılan oldu (https://olcekhane.com/testler/sesli-okuma-degerlendirmesi/coz doğrudan açar; eski
+  `?onizleme=otomatik` bağlantısı da aynı yere çıkar). Yetişkinin dinleyip işaretlediği sürüm kaldırılmadı: yalnızca
+  `?surum=yetiskinli` ile açılır ve öğrenciye yalnızca cihaz yapay zekâyı çalıştıramadığında bağlantısı gösterilir (yedek
+  yol). Site metinleri güncellendi: Okuma sayfası (adımlar, "Neyi ölçer?", gizlilik bölümü; "konuşmayı yapay zekâyla
+  tanımaya çalışmaz" cümlesi kalktı), çözme sayfasının tanıtımı, test tanıtımındaki rapor içeriği, testin tanıtım cümlesi
+  ve bilim kartı, ana sayfa SSS ("bir yetişkinle birlikte" kalktı), aydınlatma metni sürüm 8 (otomatik analiz olağan biçim;
+  avukat kontrolü bekleyen sürüm artık 8). "Evet" ekranına 18 yaş altı için veli/öğretmen bilgisi cümlesi eklendi.
+  Bu ortamda denendi: yerel sunucuda sayfalar telefon ve masaüstünde sorunsuz; WebAssembly'siz cihaz taklidinde yedek yol
+  bağlantısı çıkıyor ve sınıfı koruyarak yetişkin sürümünü açıyor; olağan cihazda bağlantı görünmüyor.
+- **Site sahibi canlıda telefondan denemeli** (8 Ekim'deki mikrofon sorunu aynı gün düzeltilmişti; o günden beri
+  denemedi): mikrofon denemesi geçiyor mu, inceleme kaç dakika sürüyor, işaretli metin ve rapor beklediği gibi mi.
 - Akış: metin seçimi → sıkı mikrofon denemesi (izin, sessizlik ölçümü, cümle; yapay zekâ cümleyi tanımalı; model bu
   sırada iner, ~250 MB, ilk seferde) → okuma → kayıt denetimi → izin sorusu → analiz arka planda, öğrenci bu sırada
   soruları cevaplar → ses silinir → rapor ("net anlaşılamadı" kelimeler hata sayılmaz).
@@ -840,8 +849,9 @@ okumada otomatik analiz").
   gürültülü kayıtta ek/ses farkı hata sayılmıyor. Yapay gürültüyle denendi (iş makinesi, tadilat, kuş; konuşmayla eşit
   yükseklikte, tarayıcının gürültü bastırması olmadan): mikrofon ilk denemede geçti, planlı üç hata bulundu, doğru
   okumada hata yazılmadı. Site sahibi yeniden deneyecek; olmazsa cihazını ve ekrandaki yazıyı soracağız.
-- Bekleyen: aydınlatma metni sürüm 7 avukat kontrolü; "Evet" ekranına 18 yaş altı için veli izni cümlesi; WebGPU
-  (q4 dosyaları) denenmedi, şimdilik yalnızca WebAssembly.
+- Bekleyen: aydınlatma metni sürüm 8 avukat kontrolü; WebGPU (q4 dosyaları) denenmedi, şimdilik yalnızca WebAssembly;
+  gerçek çocuk kayıtlarıyla doğruluk ölçümü (site sahibinden izinli 30–50 kayıt). ("Evet" ekranındaki veli bilgisi
+  cümlesi 2026-11-05'te eklendi.)
 - Sunucu: canlı sunucu KVM 1 (aylık, 30 Eylül'de alındı, 30 Ekim civarı yenilenecek). KVM 4 fiyatları site sahibine
   çıkarıldı (24 ay peşin 15.926 TL, aylık ~2.300 TL tahmini); şimdilik gerek yok.
 

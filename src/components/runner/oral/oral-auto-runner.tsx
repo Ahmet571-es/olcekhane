@@ -124,6 +124,22 @@ type Job =
   | { status: 'done'; result: AutoAnalysisResult }
   | { status: 'error'; kind: AnalysisErrorKind };
 
+/**
+ * Yapay zekâ bu cihazda çalışamadığında yedek yol: yetişkinin kaydı dinleyip işaretlediği sürüm. Yalnızca bu durumda
+ * gösterilir; olağan akışta kaydı kimse dinlemez. Tam sayfa geçişi (sayfadan ayrılma uyarısı çıkar; kayıt ve cevaplar silinir).
+ */
+function AdultFallback({ href }: { href: string }) {
+  return (
+    <p className="text-[1rem]">
+      Yine de değerlendirme yapmak istersen bir yetişkin (öğretmen ya da veli) kaydı dinleyip hataları kendisi işaretleyebilir:{' '}
+      <a href={href} className="font-bold">
+        yetişkinin dinlediği sürüme geç
+      </a>
+      .
+    </p>
+  );
+}
+
 function Stepper({ step }: { step: Step }) {
   const shown = SHOWN[step] ?? step;
   const n = ORDER.indexOf(shown) + 1;
@@ -204,6 +220,8 @@ export function OralAutoRunner(props: {
   intro: { title: string };
   grade: number;
   passages: OralClientPassage[];
+  /** Yetişkinin kaydı dinleyip işaretlediği sürümün adresi: yalnızca bu cihaz yapay zekâyı çalıştıramazsa önerilir. */
+  adultUrl: string;
   onFinish: (data: OralFinish) => Promise<void>;
 }) {
   const { grade } = props;
@@ -635,6 +653,7 @@ export function OralAutoRunner(props: {
               Bu cihaz ya da tarayıcı, ses kaydını ya da okumayı inceleyen yapay zekâyı çalıştıramıyor. Bir bilgisayarda ya da daha yeni bir cihazda,
               Chrome, Edge ya da Safari’nin güncel sürümüyle yeniden dene.
             </p>
+            <AdultFallback href={props.adultUrl} />
           </div>
         )}
         <div>
@@ -705,10 +724,13 @@ export function OralAutoRunner(props: {
         </p>
         <ModelStatus model={model} onRetry={retryModel} />
         {unsupported ? (
-          <div>
-            <button type="button" className="btn btn-quiet" onClick={() => setStep('passage')}>
-              Geri
-            </button>
+          <div className="flex flex-col gap-4">
+            <AdultFallback href={props.adultUrl} />
+            <div>
+              <button type="button" className="btn btn-quiet" onClick={() => setStep('passage')}>
+                Geri
+              </button>
+            </div>
           </div>
         ) : (
           <MicCheck
@@ -857,6 +879,10 @@ export function OralAutoRunner(props: {
             ? 'Evet dersen okumanı bu cihazdaki yapay zekâ inceler. Kaydın hiçbir yere gitmez, kimse dinlemez. İnceleme bitince kaydın silinir. Hayır dersen kaydın hemen silinir.'
             : 'Evet dersen okumanı bu cihazdaki yapay zekâ inceler: Okuduğun kelimeleri metinle karşılaştırır, hızını ve duraklarını ölçer. Ses kaydın hiçbir yere gönderilmez ve kimse dinlemez; inceleme bitince hemen silinir. Sen bu sırada soruları cevaplarsın. Hayır dersen kaydın hemen silinir.'}
         </p>
+        {/* 18 yaş altı için veli bilgisi: inceleme yalnızca cihazda yapılsa da kayıt bir çocuğun sesidir. */}
+        <p className="t-small text-ink-2">
+          {simple ? 'Düğmeye basmadan önce bir büyüğüne sor.' : '18 yaşından küçüksen “Evet” düğmesine velinin ya da öğretmeninin bilgisiyle bas.'}
+        </p>
         <div className="flex flex-wrap gap-3">
           <button type="button" className="btn btn-primary btn-lg" onClick={analyse}>
             Evet, analiz et
@@ -1004,6 +1030,7 @@ export function OralAutoRunner(props: {
           {nomatch && (
             <p className="t-small text-ink-2">Aynı metni yeniden okursan soruları yeniden cevaplaman gerekmez: cevapların kaybolmadı.</p>
           )}
+          {giveUpNow && <AdultFallback href={props.adultUrl} />}
           <div className="flex flex-wrap gap-3">
             {nomatch ? (
               <>
@@ -1081,6 +1108,7 @@ export function OralAutoRunner(props: {
         <p className="text-lg">
           Bu cihaz okumanı inceleyemedi. Kaydın hiçbir yere gönderilmedi ve silindi. Bir bilgisayarda ya da başka bir cihazda yeniden deneyebilirsin.
         </p>
+        <AdultFallback href={props.adultUrl} />
         <div className="flex flex-wrap gap-3">
           <button type="button" className="btn btn-primary btn-lg" onClick={restart}>
             Baştan başla

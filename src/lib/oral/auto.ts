@@ -60,3 +60,17 @@ export const MIN_MATCH_SHARE = 0.3;
 
 /** Mikrofon denemesinde öğrencinin söylediği cümle; yapay zekâ bunu anlaşılır duymalı. */
 export const MIC_CHECK_SENTENCE = 'Merhaba, ben okumaya hazırım.';
+
+/**
+ * Otomatik analiz, sesli okumanın herkese açık varsayılan sürümüdür (site sahibinin 2026-11-05 kararı). Yetişkinin kaydı
+ * dinleyip işaretlediği sürüm yalnızca bu adres seçimiyle açılır (`?surum=yetiskinli`): yapay zekâyı çalıştıramayan
+ * cihazlar için yedek yoldur ve öğrencinin okuma ekranlarında yalnızca o durumda önerilir.
+ */
+export const ORAL_VERSION_PARAM = 'surum';
+export const ORAL_ADULT_VERSION = 'yetiskinli';
+
+/** Yetişkinin dinlediği sürümün çözme adresi (sınıf verilirse sınıf formu atlanır). */
+export function oralAdultUrl(slug: string, grade?: number): string {
+  const base = `/testler/${slug}/coz?${ORAL_VERSION_PARAM}=${ORAL_ADULT_VERSION}`;
+  return grade === undefined ? base : `${base}&sinif=${grade}`;
+}

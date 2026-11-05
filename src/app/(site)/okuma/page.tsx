@@ -6,31 +6,41 @@ import { TestCard, cardInfo } from '@/components/site/test-card';
 import { getInstrumentDef, publicInstruments } from '@/content/instruments';
 import { sesliOkuma } from '@/content/instruments/sesli-okuma';
 import { ORAL_CRITERIA } from '@/lib/scoring/oral';
+import { oralAdultUrl } from '@/lib/oral/auto';
 import { oralWordCount } from '@/lib/oral/words';
 import { pageMeta } from '@/lib/seo';
 
 export const metadata = pageMeta({
   title: 'Okuma: sesli okuma değerlendirmesi ve okuma testleri',
   description:
-    '1–8. sınıflar için sesli okuma değerlendirmesi: öğrenci metni sesli okur, öğretmen ya da veli kaydı dinleyerek doğru okumayı, hızı, akıcılığı ve anlamayı değerlendirir. Ses kaydı cihazdan çıkmaz.',
+    '1–8. sınıflar için sesli okuma değerlendirmesi: öğrenci metni sesli okur, cihazdaki yapay zekâ okumayı inceler, hatalı okunan kelimeleri ekranda gösterir ve hata raporu hazırlar. Ses kaydı cihazdan çıkmaz, kimse dinlemez.',
   path: '/okuma',
 });
 
 const ORAL = sesliOkuma;
 
 const STEPS = [
-  { t: 'Metni seçin', d: 'Öğrencinin sınıfına göre yazılmış metinlerden birini seçersiniz. Her sınıfa üç metin vardır: öykü ve bilgilendirici metin.' },
-  { t: 'Mikrofonu deneyin', d: 'Kısa bir deneme kaydıyla sesin iyi alındığını dinleyerek doğrularsınız. Ses kaydı yalnızca bu cihazda kalır.' },
-  { t: 'Öğrenci okur', d: 'Öğrenci metni sesli okur; sonra metni kendi cümleleriyle anlatır ve metne bakmadan soruları cevaplar.' },
-  { t: 'Siz dinleyip işaretlersiniz', d: 'Kaydı dinlerken hataları kelimeye dokunarak işaretlersiniz; kaydı yavaşlatabilir, geri alıp yeniden dinleyebilirsiniz.' },
-  { t: 'Rapor hazırlanır', d: 'Öğrenciye ve size ayrı yazılmış, sade ama ayrıntılı rapor ekranda açılır; PDF olarak indirirsiniz.' },
+  { t: 'Metni seç', d: 'Öğrenci, sınıfına göre yazılmış metinlerden birini seçer. Her sınıfa üç metin vardır: öykü ve bilgilendirici metin.' },
+  {
+    t: 'Mikrofonu dene',
+    d: 'Öğrenci kısa bir cümle söyler; yapay zekâ cümleyi anlayınca okumaya geçilir. Yapay zekâ ilk seferde cihaza bir kez iner (yaklaşık 250 MB); sonraki açılışlarda inmez.',
+  },
+  { t: 'Öğrenci okur', d: 'Öğrenci metni tek başına sesli okur ve “Bitirdim” düğmesine basar. Okurken kimse yardım etmez, kaydı kimse dinlemez.' },
+  {
+    t: 'Yapay zekâ inceler',
+    d: 'Öğrenci isterse (“Evet, analiz et”) kayıt yalnızca bu cihazda incelenir: Okunan kelimeler metinle tek tek karşılaştırılır, hız ve duraklamalar ölçülür. Öğrenci bu sırada soruları cevaplar; inceleme bitince ses kaydı silinir.',
+  },
+  {
+    t: 'Hatalı yerler ekranda, rapor hazır',
+    d: 'Metin kelime kelime ekranda gösterilir: yanlış okunan, atlanan ve eklenen kelimeler kırmızı; kendi düzeltme, tekrar, heceleme ve duraksama sarı işaretlidir. Hata türleri, yanlış okunan kelimeler, okuma hızı ve anlama raporda yazar; öğrenciye ve veliye ayrı rapor hazırlanır, PDF olarak indirilir.',
+  },
 ];
 
 const MEASURES = [
-  { t: 'Doğru okuma', d: 'Metindeki kelimelerin ne kadarının doğru okunduğu; hangi kelimelerde, nasıl hata yapıldığı (yanlış okuma, atlama, ekleme, yardımla okuma).' },
+  { t: 'Doğru okuma', d: 'Metindeki kelimelerin ne kadarının doğru okunduğu; hangi kelimelerde, nasıl hata yapıldığı (yanlış okuma, atlama, ekleme) ve hata sayılmayan gözlemler (kendi düzeltme, tekrar, heceleme, duraksama).' },
   { t: 'Okuma hızı', d: 'Dakikada doğru okunan kelime sayısı; okuma süresi kayıttan, ilk sesten son sese ölçülür.' },
-  { t: 'Akıcılık', d: 'Vurgu ve tonlama, anlamlı kelime gruplarıyla okuma, düzgünlük ve tempo; duraklamalar kayıttan otomatik ölçülür.' },
-  { t: 'Okuduğunu anlama', d: 'Metindeki bilgiyi hatırlama, çıkarım yapma, kelime anlamı ve ana fikir soruları; metni kendi cümleleriyle anlatma.' },
+  { t: 'Okumanın ritmi', d: 'Kayıttan ölçülen duraklamalar ve ses yüksekliği eğrisi. Vurgu ve tonlama derecelendirmesi yalnızca yetişkinin dinlediği sürümde vardır.' },
+  { t: 'Okuduğunu anlama', d: 'Metindeki bilgiyi hatırlama, çıkarım yapma, kelime anlamı ve ana fikir soruları.' },
 ];
 
 export default function ReadingPage() {
@@ -44,15 +54,15 @@ export default function ReadingPage() {
       <PageHeader
         kicker="Okuma bölümü"
         title="Okuma değerlendirmesi"
-        lede="Okuma becerisini en iyi gösteren yollardan biri, çocuğun bir metni sesli okumasını dinlemektir. Burada öğrencinin okumasını kelime kelime, bir öğretmenin yapacağı titizlikte değerlendirebilirsiniz."
+        lede="Okuma becerisini en iyi gösteren yollardan biri, çocuğun bir metni sesli okumasıdır. Burada öğrenci metni tek başına okur; cihazdaki yapay zekâ okumayı kelime kelime inceler, hatalı okunan yerleri ekranda gösterir ve hata raporunu hazırlar. Kaydı kimse dinlemez."
       >
         <PageGuide
-          steps={['Aşağıdan öğrencinin sınıfını seçin.', 'Metni seçip mikrofonu deneyin; öğrenci metni sesli okusun.', 'Kaydı dinleyerek değerlendirin, raporu PDF olarak saklayın.']}
+          steps={['Aşağıdan öğrencinin sınıfını seçin.', 'Öğrenci metni seçsin, mikrofonu denesin ve metni sesli okusun.', 'Yapay zekâ okumayı incelesin; hatalı yerler ekranda, rapor PDF olarak elinizde.']}
           next={oralLive ? [{ href: `/testler/${ORAL.slug}/coz`, label: 'Sesli okumaya başla' }, { href: '#nasil', label: 'Nasıl işler?' }] : undefined}
         >
           <p>
-            Bu bölümde okuma becerisini ölçen değerlendirmeler var. Asıl değerlendirme <strong>Sesli Okuma Değerlendirmesi</strong>: Öğrenci okur, siz
-            dinleyerek değerlendirirsiniz. Kişilik ve zihinsel beceri testleri <Link href="/testler">Testler</Link> sayfasındadır.
+            Bu bölümde okuma becerisini ölçen değerlendirmeler var. Asıl değerlendirme <strong>Sesli Okuma Değerlendirmesi</strong>: Öğrenci okur,
+            okumayı cihazdaki yapay zekâ inceler ve hataları gösterir. Kişilik ve zihinsel beceri testleri <Link href="/testler">Testler</Link> sayfasındadır.
           </p>
         </PageGuide>
       </PageHeader>
@@ -82,7 +92,7 @@ export default function ReadingPage() {
         </section>
       )}
 
-      <Section id="nasil" title="Nasıl işler?" intro="Değerlendirme yaklaşık 20 dakika sürer ve düğmelerle adım adım ilerler." className="border-t border-rule">
+      <Section id="nasil" title="Nasıl işler?" intro="Değerlendirme yaklaşık 20 dakika sürer ve düğmelerle adım adım ilerler; öğrenci tek başına yapabilir." className="border-t border-rule">
         <ol className="flex flex-col gap-6">
           {STEPS.map((s, i) => (
             <li key={s.t} className="grid grid-cols-[2.75rem_1fr] gap-5">
@@ -119,13 +129,20 @@ export default function ReadingPage() {
         </p>
       </Section>
 
-      <Section id="gizlilik" title="Ses kaydı cihazdan çıkmaz" className="border-t border-rule">
+      <Section id="gizlilik" title="Ses kaydı cihazdan çıkmaz, kimse dinlemez" className="border-t border-rule">
         <ul className="measure flex list-disc flex-col gap-2 pl-5">
-          <li>Mikrofon yalnızca siz düğmeye basınca ve tarayıcı izin istedikten sonra açılır; öğrencinin bölümü bitince kapanır.</li>
-          <li>Kayıt yalnızca açık olan sayfada, cihazınızın belleğinde durur. Sunucumuza ya da başka bir yere gönderilmez; sayfayı kapatınca silinir.</li>
+          <li>Mikrofon yalnızca düğmeye basılınca ve tarayıcı izin istedikten sonra açılır; okuma bitince kapanır.</li>
           <li>
-            Uygulama konuşmayı yapay zekâyla tanımaya çalışmaz. Kaydı siz dinlersiniz; uygulama yalnızca okuma süresini ve duraklamaları ölçer. Rapor için
-            yalnızca işaretleriniz, cevaplar ve bu süreler gönderilir; onlar da saklanmaz.
+            Kayıt yalnızca açık olan sayfada, cihazın belleğinde durur. Sunucumuza ya da başka bir yere gönderilmez; inceleme bitince (ya da öğrenci “Hayır”
+            derse hemen) silinir.
+          </li>
+          <li>
+            Okumayı, öğrencinin cihazında (tarayıcıda) çalışan bir konuşma tanıma modeli inceler; okunan kelimeleri yazıya döküp metinle karşılaştırır. Yapay
+            zekânın net anlayamadığı kelimeler hata sayılmaz. Rapor için yalnızca kelime işaretleri, cevaplar ve süreler gönderilir; onlar da saklanmaz.
+          </li>
+          <li>
+            Cihaz yapay zekâyı çalıştıramıyorsa yedek yol: bir yetişkin (öğretmen ya da veli) kaydı dinleyip hataları kendisi işaretler. Bu sürüm yalnızca{' '}
+            {oralLive ? <Link href={oralAdultUrl(ORAL.slug)}>ayrı bir bağlantıyla</Link> : 'ayrı bir bağlantıyla'} açılır.
           </li>
         </ul>
         <p className="t-small text-ink-2">
@@ -170,7 +187,7 @@ export default function ReadingPage() {
             </ul>
             {silent && live.includes(silent) && (
               <p className="t-small measure text-ink-2">
-                {silent.name} sessiz okumayı ölçer ve öğrenci tek başına çözebilir; Sesli Okuma Değerlendirmesini ise bir yetişkin dinleyerek yapar.
+                {silent.name} sessiz okumayı ölçer; Sesli Okuma Değerlendirmesinde ise öğrenci metni sesli okur ve okumayı cihazdaki yapay zekâ inceler. İkisini de öğrenci tek başına çözebilir.
               </p>
             )}
             <p className="t-small text-ink-2">

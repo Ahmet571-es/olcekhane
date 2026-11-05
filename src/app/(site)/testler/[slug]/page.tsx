@@ -110,7 +110,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           : def.engine === 'quiz'
             ? `${def.forms[0].items.length} soru`
             : def.engine === 'oral'
-              ? '1 metin: sesli okuma, anlatma ve 5–8 soru'
+              ? '1 metin: sesli okuma ve 5–8 soru'
               : '1 metin, 8 soru';
   const scales = def.scales.filter((s) => s.key !== 'total');
   /** Bileşik olmayan ölçekler (motivasyon profilinde türler). */
@@ -371,9 +371,9 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
               <>
                 <li>Metnin öğrenci için düzeyi: rahat, destekle ya da şimdilik zor; doğru okuma ve anlamaya göre</li>
                 <li>Dakikada doğru okunan kelime, doğru okuma oranı ve okuma süresi</li>
-                <li>İşaretlenmiş metin: hangi kelimede hangi hata yapıldı; hata türleri, kendi düzeltmeleri ve yanlış okunan kelimeler</li>
+                <li>İşaretlenmiş metin: hangi kelimede hangi hata yapıldı (kırmızı: yanlış okuma, atlama, ekleme; sarı: kendi düzeltme, tekrar, heceleme, duraksama); hata türleri ve yanlış okunan kelimeler</li>
                 <li>Okumanın ritmi: kayıttan ölçülen duraklamalar</li>
-                <li>Akıcılık (vurgu ve tonlama, öbekleme, düzgünlük, tempo), soru türlerine göre anlama ve yeniden anlatma</li>
+                <li>Soru türlerine göre okuduğunu anlama (yetişkinin dinlediği sürümde ayrıca akıcılık derecelendirmesi ve yeniden anlatma)</li>
                 <li>Bir sonraki değerlendirme için öneri: aynı, bir alt ya da bir üst sınıfın metni</li>
               </>
             )}
@@ -587,7 +587,7 @@ export default async function TestPage(props: PageProps<'/testler/[slug]'>) {
           </ul>
           <p className="measure t-small text-ink-2">
             Cevaplar yalnızca raporu hazırlamak için kullanılır ve saklanmaz; raporun tek kopyası size verilen PDF’tir.
-            {def.engine === 'oral' && ' Ses kaydı yalnızca cihazınızda kalır; sunucuya ya da başka bir yere gönderilmez.'}
+            {def.engine === 'oral' && ' Ses kaydı yalnızca cihazınızda kalır ve orada incelenir; sunucuya ya da başka bir yere gönderilmez, inceleme bitince silinir.'}
             {!roadmap && def.engine !== 'oral' && (
               <>
                 {' '}
