@@ -27,6 +27,7 @@ import { dersCalismaMotivasyonuRoadmap } from './ders-calisma-motivasyonu';
 import { ertelemeZamanYonetimiRoadmap } from './erteleme-zaman-yonetimi';
 import { zihniyetRoadmap } from './zihniyet';
 import { sinavKaygisiRoadmap } from './sinav-kaygisi';
+import { telefonVeDikkatRoadmap } from './telefon-ve-dikkat';
 import { okumaRoadmap } from './okuma';
 import { ozSaygiRoadmap } from './oz-saygi';
 import { sesliOkumaRoadmap, type OralRoadmapTemplate } from './sesli-okuma';
@@ -61,6 +62,7 @@ export const ROADMAPS: Record<string, RoadmapTemplate> = {
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiRoadmap,
   zihniyet: zihniyetRoadmap,
   'sinav-kaygisi-ve-bas-etme': sinavKaygisiRoadmap,
+  'ders-calisirken-telefon-ve-dikkat': telefonVeDikkatRoadmap,
 };
 
 /**

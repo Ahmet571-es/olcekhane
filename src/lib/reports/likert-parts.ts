@@ -95,6 +95,7 @@ export const UNIT_BY_SLUG: Record<string, keyof typeof UNITS> = {
   'erteleme-ve-zaman-yonetimi': 'alan',
   zihniyet: 'alan',
   'sinav-kaygisi-ve-bas-etme': 'alan',
+  'ders-calisirken-telefon-ve-dikkat': 'alan',
   'duygusal-zeka-bilesenleri': 'bileşen',
 };
 

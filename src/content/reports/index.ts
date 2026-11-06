@@ -26,6 +26,7 @@ import { dersCalismaMotivasyonuReport } from './ders-calisma-motivasyonu';
 import { ertelemeZamanYonetimiReport } from './erteleme-zaman-yonetimi';
 import { zihniyetReport } from './zihniyet';
 import { sinavKaygisiReport } from './sinav-kaygisi';
+import { telefonVeDikkatReport } from './telefon-ve-dikkat';
 import { okumaReport } from './okuma';
 import { ozSaygiReport } from './oz-saygi';
 import type { ReportTemplate } from './types';
@@ -59,6 +60,7 @@ export const REPORT_TEMPLATES: Record<string, ReportTemplate> = {
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiReport,
   zihniyet: zihniyetReport,
   'sinav-kaygisi-ve-bas-etme': sinavKaygisiReport,
+  'ders-calisirken-telefon-ve-dikkat': telefonVeDikkatReport,
   'hobi-ve-serbest-zaman-ilgileri': hobiIlgileriReport,
   'calisma-degerleri': calismaDegerleriReport,
   'dikkat-ve-bellek': { version: 'dikkat-bellek-rapor-1', bandLabels: {}, scales: {} },

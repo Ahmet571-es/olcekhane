@@ -74,7 +74,10 @@ export interface RoadmapTemplate {
    * belirgin boyut" diye bir haftaya başlık olmasın.
    */
   thirdWeekSkip?: { scale: string; group: BandGroup }[];
-  /** Tek boyutlu testlerde 3. hafta: 2. hafta dışında boyut olmadığında bu deneme verilir. */
+  /**
+   * 3. hafta için boyut kalmadığında verilen deneme: tek boyutlu testlerde (2. hafta dışında boyut yok) ve 2. hafta dışındaki
+   * bütün boyutların `thirdWeekSkip` ile atlanabildiği testlerde (ör. Telefon ve Dikkat'te bölünmenin üç yanı da düşükken).
+   */
   extraWeek?: { title: string; text: AudienceText };
   /** "Etkili ders çalışma yöntemleri"nin ardından her raporda verilen rehber yazıları. */
   links?: { label: string; href: string }[];

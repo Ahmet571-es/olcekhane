@@ -1646,6 +1646,49 @@ function examCalm(r: Rng): ReactNode {
   );
 }
 
+/**
+ * Ders Çalışırken Telefon ve Dikkat: solda bildirimleri yığılan bir telefon ve "rahatsız etme" ayı; ortada dikkatin geri
+ * döndüğü kesik bir yay; sağda satırları olan bir sayfa ve üzerinde odaklanılan satır.
+ */
+function phoneFocus(r: Rng): ReactNode {
+  const pills = 2 + Math.floor(r() * 2);
+  const widths = Array.from({ length: pills }, () => between(r, 22, 34));
+  const lines = Array.from({ length: 5 }, () => between(r, 46, 72));
+  const focus = 1 + Math.floor(r() * 3);
+  return (
+    <>
+      <rect x={-118} y={-60} width={56} height={120} rx={12} style={{ fill: E3 }} />
+      <rect x={-111} y={-48} width={42} height={92} rx={6} style={{ fill: SURF }} />
+      <circle cx={-90} cy={52} r={3.5} style={{ fill: E2 }} />
+      {widths.map((w, i) => (
+        <M key={i} s={mv(0, -3, 0, 1, i * 90)}>
+          <rect x={-106} y={f(-40 + i * 15)} width={f(w)} height={9} rx={4.5} style={{ fill: i === 0 ? E1 : E2 }} />
+        </M>
+      ))}
+      <M s={mv(0, 0, -12, 1, 160)} style={AROUND(-36, -38)}>
+        <circle cx={-36} cy={-38} r={10} style={{ fill: E2 }} />
+        <circle cx={-31} cy={-42} r={8.5} style={{ fill: BG }} />
+      </M>
+      <path d="M-52 22Q-22 52 6 18" style={{ fill: 'none', stroke: E4, strokeWidth: 3, strokeLinecap: 'round', strokeDasharray: '2 7' }} />
+      <path d="M-1 14l8 3-3 8" style={{ fill: 'none', stroke: E4, strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+      <rect x={14} y={-56} width={104} height={112} rx={10} style={{ fill: E3 }} />
+      {lines.map((w, i) => (
+        <rect key={i} x={28} y={f(-38 + i * 18)} width={f(w)} height={7} rx={3.5} style={{ fill: i === focus ? E1 : E2 }} />
+      ))}
+      <M s={mv(3, 0, 0, 1.04, 220)}>
+        <rect
+          x={21}
+          y={f(-38 + focus * 18 - 6)}
+          width={90}
+          height={19}
+          rx={9.5}
+          style={{ fill: 'none', stroke: E4, strokeWidth: 2.4 }}
+        />
+      </M>
+    </>
+  );
+}
+
 /** Zihniyet: büyüyen bir fidan. */
 function growth(r: Rng): ReactNode {
   const pts: [number, number][] = Array.from({ length: 6 }, (_, i) => [-112 + i * 30, 50 - i * 14 + between(r, -4, 4)]);
@@ -1867,6 +1910,7 @@ const BY_SLUG: Record<string, Draw> = {
   'erteleme-ve-zaman-yonetimi': (r) => clockTasks(r),
   zihniyet: (r) => growth(r),
   'sinav-kaygisi-ve-bas-etme': (r) => examCalm(r),
+  'ders-calisirken-telefon-ve-dikkat': (r) => phoneFocus(r),
 
   'mesleki-ilgi-profili': (r) => hexagon(r),
   'meslek-ilgi-alanlari': (r) => orbits(r),

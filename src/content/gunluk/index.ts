@@ -54,6 +54,7 @@ import { tepkiHiziDaily } from './tepki-hizi';
 import { zihindeDondurmeDaily } from './zihinde-dondurme';
 import { zihniyetDaily } from './zihniyet';
 import { sinavKaygisiDaily } from './sinav-kaygisi-ve-bas-etme';
+import { telefonVeDikkatDaily } from './ders-calisirken-telefon-ve-dikkat';
 import { heyecanArayisiDaily } from './heyecan-arayisi';
 import { liderlikEgilimleriDaily } from './liderlik-egilimleri';
 import { kisilerarasiTarzDaily } from './kisilerarasi-tarz';
@@ -108,6 +109,7 @@ export const DAILY: Record<string, DailyContent> = {
   'erteleme-ve-zaman-yonetimi': ertelemeZamanYonetimiDaily,
   'zihniyet': zihniyetDaily,
   'sinav-kaygisi-ve-bas-etme': sinavKaygisiDaily,
+  'ders-calisirken-telefon-ve-dikkat': telefonVeDikkatDaily,
   'planlama-kule-gorevi': kuleDaily,
   'dikkat-ve-bellek': dikkatBellekDaily,
   'surekli-dikkat': surekliDikkatDaily,

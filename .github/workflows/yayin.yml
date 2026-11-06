@@ -311,6 +311,14 @@ jobs:
             python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert s["chart"]["type"] == "rulers" and len(s["chart"]["rows"]) == 5 and len(s["items"]) == 6 and s["items"][0]["title"] == "Birlikte bakınca" and s["support"] is not None; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 5 and m["settings"] is None and m["weeks"][1]["title"] == "Sınava hazırlık" and m["weeks"][2]["title"] == "Sınav sırasında takılma" and not m["preview"]'; then
             sorun="$sorun sinav-kaygisi-raporu"
           fi
+          # Ders Çalışırken Telefon ve Dikkat: 24 madde (k, uygulama sırası; tests/telefon-ve-dikkat.test.ts denetler), dört alan ve
+          # birlikte yorum; yetişkinlere de açık. Bu gövdede bildirimler yüksek, kendini durdurma yolları düşük: 2. hafta odaklı çalışma
+          # düzeni, 3. hafta bildirimlerin çekimi; destek kutusu yok.
+          TD_GOVDE=$(python3 -c 'import json; k=["K1","N2","S2","R1","K2","N1","S6","R2","K3","N3","S3","R3","K4","N6","S4","R4","K6","N4","S1","R6","K5","N5","S5","R5"]; print(json.dumps({"grade": 8, "data": {"engine": "likert", "answers": {x: {"value": (i * 3 + 1) % 5 + 1, "rtMs": 2500} for i, x in enumerate(k)}}}))')
+          if ! "${C[@]}" -f -H 'content-type: application/json' -d "$TD_GOVDE" "https://$ALAN/api/rapor/ders-calisirken-telefon-ve-dikkat" |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); s=r["student"]; assert s["chart"]["type"] == "rulers" and len(s["chart"]["rows"]) == 4 and len(s["items"]) == 5 and s["items"][0]["title"] == "Birlikte bakınca" and s["support"] is None; m=r["parent"]["roadmap"]; assert len(m["bars"]) == 4 and m["settings"] is None and m["weeks"][1]["title"] == "Odaklı çalışma düzeni" and m["weeks"][2]["title"] == "Bildirimlerin çekimi" and not m["preview"]'; then
+            sorun="$sorun telefon-dikkat-raporu"
+          fi
           # Çalışma Değerleri: 32 ifade (k, uygulama sırası; tests/calisma-degerleri.test.ts denetler), sekiz değer kişinin kendi
           # içinde sıralı; bu gövdede en önemliler bağımsızlık, güvence, ilgi ve öğrenme, birlikte çalışma; yarışan değer çifti yok
           # (yalnızca bağımsızlık çok önemli; çiftler ikisi de çok önemliyken gösterilir), sıralamanın sonundaki değerler var.

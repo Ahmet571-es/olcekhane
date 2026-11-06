@@ -127,6 +127,8 @@ const GROWTH_SLUGS = new Set([
   'oz-denetim',
   // Kaygının üç yanında yüksek uç, baş etmenin iki yanında düşük uç zor uçtur; hiçbir uca uydurma bir yan eklenmez.
   'sinav-kaygisi-ve-bas-etme',
+  // Bölünmenin üç yanında yüksek uç, kendini durdurma yollarında düşük uç zor uçtur.
+  'ders-calisirken-telefon-ve-dikkat',
 ]);
 /**
  * Tek tek gelişim tonundaki ölçekler: motivasyon profilinde isteksizlik; Öğrenme ve Başarı Özellikleri'nde zorlukla başa

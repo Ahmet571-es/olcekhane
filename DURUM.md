@@ -54,8 +54,7 @@ sona çözülür, yayına alınır. Sıra:
 1. [x] Sınav Kaygısı ve Baş Etme (`sinav-kaygisi-ve-bas-etme`, 2026-11-05).
 2. [ ] Hedef Yönelimi: Ders Çalışırken Neyi Hedefliyorsun? (öğrenme hedefi, başarı gösterme, başarısızlıktan kaçınma, işten
    kaçınma; 5. sınıftan yetişkine, ~5 dk).
-3. [ ] Ders Çalışırken Telefon ve Dikkat (bildirimler, ekranlar arası geçiş, kendini durdurma yolları; bağımlılık etiketi yok;
-   5. sınıftan yetişkine, ~4 dk).
+3. [x] Ders Çalışırken Telefon ve Dikkat (`ders-calisirken-telefon-ve-dikkat`, 2026-11-06).
 4. [ ] Başarıyı ve Başarısızlığı Neye Bağlıyorsun? (çaba, yetenek, şans, zorluk, öğretmen; iyi ve kötü sonuçlar ayrı; 5. sınıftan
    yetişkine, ~5 dk).
 5. [ ] Derse Katılım ve Okula Bağlılık (davranış, duygusal bağ, zihinsel katılım, öğretmenle iletişim; 5–12. sınıf, ~5 dk).
@@ -987,6 +986,7 @@ Adresler `https://olcekhane.com/testler/<adres>` biçimindedir. **Yayında:** li
 | Erteleme ve Zaman Yönetimi | erteleme-ve-zaman-yonetimi | Yayında (pilot; 6. sınıftan yetişkine) |
 | Zihniyet: Zekâ ve Öğrenme İnançları | zihniyet | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sınav Kaygısı ve Baş Etme | sinav-kaygisi-ve-bas-etme | Yayında (pilot; 5. sınıftan yetişkine) |
+| Ders Çalışırken Telefon ve Dikkat | ders-calisirken-telefon-ve-dikkat | Yayında (pilot; 5. sınıftan yetişkine) |
 | Çalışma Değerleri | calisma-degerleri | Yayında (pilot; 7. sınıftan yetişkine) |
 | Mantıksal Akıl Yürütme | mantiksal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
 | Sayısal Akıl Yürütme | sayisal-akil-yurutme | Yayında (pilot; 5. sınıftan yetişkine) |
@@ -1137,6 +1137,22 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-06 (79): Yeni test: Ders Çalışırken Telefon ve Dikkat (özgün, pilot; 5. sınıftan yetişkine; 24 madde, ~4 dk). Dört
+  alan: bildirimlerin çekimi, ekranlar arası geçiş, telefona dönme isteği (ilk üçünde yüksek puan daha sık bölünme) ve kendini
+  durdurma yolları (yüksek puan bu yolların sık kullanılması). Bağımlılık etiketi ve destek kutusu yok; telefon kullanımı
+  alışkanlık düzeyinde anlatılır. Rapor: "Birlikte bakınca" (bölünmenin yüksek her yanı için bir araştırma cümlesi: bakılmayan
+  bildirim de dikkati böler, evde çalışırken gözlenen öğrenciler altı dakikadan kısa sürede başka şeye geçer; kendini durdurma
+  yollarının puanı işe yarayıp yaramadığını göstermez). Yol haritasında 2. hafta "Odaklı çalışma düzeni", 3. hafta bölünmenin en
+  belirgin yanı (üçü de düşükse "Odağını koru"; `extraWeek` artık bütün öteki boyutlar atlanabildiğinde de verilir,
+  `tests/roadmap.test.ts`). Telefonu olmayanlara tablet, bilgisayar ya da evde ortak kullanılan telefon önerilir; karşıt çiftler
+  birbirinin tam tersidir ve ters cümleler diziyi böler ki telefonu çalışmasını pek bölmeyen biri yanlış "tutarsız cevap"
+  uyarısı almasın. Testin adı site sahibinin seçtiğidir; yetişkine giden öteki metinler "çalışırken" der. İki bağımsız
+  inceleme: bağımlılık ölçeğindeki "niyet ettiğinden uzun kullanma" maddesine yakın bir madde ve tam karşıt olmayan çiftler
+  değişti; Ward (2017), Fitz (2019), Stothart (2015) ve PISA 2022 cümleleri kaynaklarına göre düzeltildi; kendini durdurma
+  yollarının önerileri "telefon çalışmanı bölüyorsa" diye koşullu oldu; aynı bulgunun bir sayfada iki kez geçmesi, maddeye
+  çok yakın günlük hayat satırları ve veliye gözetim çağrıştıran öneriler düzeltildi. "Hangi test bana uygun?"da "Öğrenme ve
+  çalışma" altında yeni yuva; galeride kendi çizimi (bildirimli telefon, odaklanılan satır). Telefonda ve masaüstünde baştan
+  sona çözüldü; rapor, veli raporu ve PDF açıldı.
 - 2026-11-05 (78): Yeni test: Sınav Kaygısı ve Baş Etme (özgün, pilot; 5. sınıftan yetişkine; 25 madde). Kaygının üç yanı
   (endişeli düşünceler, bedensel tepkiler, sınav sırasında takılma) ve baş etmenin iki yanı (sınava hazırlık, baş etme yolları);
   ilk üçünde yüksek puan daha çok kaygı, son ikisinde daha sık baş etme. Rapor: "Birlikte bakınca" (kaygının hangi yanı öne
@@ -1193,8 +1209,3 @@ En yeni üstte; en çok 10 madde tutulur.
   okunması (yaklaşık süre, "Bölümü geç" sonuçları ve yol haritasını toptan atlar, karşılaştırma sonucu da okunur). Telefonda
   ve masaüstünde Merak çözüldü, yol haritası ve sesli dinleme (sahte yerel sesle: duraklatma, sekme değişince susma, ağ sesinde
   oynatıcı yok) denendi; tam test takımı geçti (1859 test).
-- 2026-11-03 (69): "Günlük hayatta" bölümü 8 teste daha eklendi (toplam 57): 16 Faktörlü, Kişilerarası Tarz, Heyecan Arayışı,
-  Liderlik Eğilimleri, Mesleki İlgi Profili, Meslek İlgi Alanları, Hobi ve Serbest Zaman İlgileri, Çalışma Değerleri. Bağımsız
-  denetim bulguları uygulandı: hobi örnekleri sıklığı anlatır (beğeniyi ya da imkânsızlığı değil), ilgi ve değer kartlarında
-  meslek önerisi ve uydurma bedel yok, düz profilde örneklerin benzeşebileceği söylenir, 16 Faktörlü'de gerginlik ve düşünsel
-  özgüven ile Liderlik'te kararlılık gelişim tonunda, heyecan arayışında risk özendirilmez.

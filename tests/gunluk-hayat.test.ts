@@ -1191,6 +1191,7 @@ describe('Günlük hayat: özel durumlar', () => {
       'erteleme-ve-zaman-yonetimi': 'hepsi',
       zihniyet: 'hepsi',
       'sinav-kaygisi-ve-bas-etme': 'hepsi',
+      'ders-calisirken-telefon-ve-dikkat': 'hepsi',
       'duygusal-zeka-bilesenleri': 'hepsi',
     };
     for (const d of LIVE.filter((x): x is LikertInstrument => x.engine === 'likert')) {

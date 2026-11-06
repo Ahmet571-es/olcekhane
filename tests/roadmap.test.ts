@@ -174,8 +174,10 @@ describe('gelişim yol haritası: şablonlar', () => {
         }
       }
       expect(!!t.settingsNote, slug).toBe(hasSettings(slug));
-      // Tek boyutlu testte 3. hafta şablondaki ek denemedir.
-      expect(!!t.extraWeek, slug).toBe(scales.length === 1);
+      // Tek boyutlu testte ve 2. hafta dışındaki bütün boyutların 3. haftadan atlanabildiği testte (ör. Telefon ve Dikkat:
+      // bölünmenin üç yanı da düşükken) 3. hafta şablondaki ek denemedir.
+      const allSkippable = scales.filter((s) => s.key !== t.planningScale).every((s) => (t.thirdWeekSkip ?? []).some((p) => p.scale === s.key));
+      expect(!!t.extraWeek, slug).toBe(scales.length === 1 || allSkippable);
     }
   });
 
@@ -327,6 +329,7 @@ describe('gelişim yol haritası: bütün düzey birleşimleri', () => {
       zihniyet: 3 ** 4 * 3,
       // Beş alan; yetişkinlere de açık.
       'sinav-kaygisi-ve-bas-etme': 3 ** 5 * 3,
+      'ders-calisirken-telefon-ve-dikkat': 3 ** 4 * 3,
     });
     // Yüklü makinede 120 sn'yi aşabiliyor (yerelde birkaç iş birden çalışırken 157 sn ölçüldü).
   }, 300_000);

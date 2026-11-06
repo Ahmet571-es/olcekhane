@@ -480,4 +480,24 @@ export const KAYNAK = {
     text: 'Huntley, C. D., Young, B., Temple, J., Longworth, M., Tudur Smith, C., Jha, V. ve Fisher, P. L. (2019). The efficacy of interventions for test-anxious university students: A meta-analysis of randomized controlled trials. Journal of Anxiety Disorders, 63, 36–50.',
     url: 'https://doi.org/10.1016/j.janxdis.2019.01.007',
   },
+  stothart2015: {
+    text: 'Stothart, C., Mitchum, A. ve Yehnert, C. (2015). The attentional cost of receiving a cell phone notification. Journal of Experimental Psychology: Human Perception and Performance, 41(4), 893–897.',
+    url: 'https://doi.org/10.1037/xhp0000100',
+  },
+  kushlev2016: {
+    text: 'Kushlev, K., Proulx, J. ve Dunn, E. W. (2016). “Silence your phones”: Smartphone notifications increase inattention and hyperactivity symptoms. Proceedings of the 2016 CHI Conference on Human Factors in Computing Systems (s. 1011–1020). ACM.',
+    url: 'https://doi.org/10.1145/2858036.2858359',
+  },
+  fitz2019: {
+    text: 'Fitz, N., Kushlev, K., Jagannathan, R., Lewis, T., Paliwal, D. ve Ariely, D. (2019). Batching smartphone notifications can improve well-being. Computers in Human Behavior, 101, 84–94.',
+    url: 'https://doi.org/10.1016/j.chb.2019.07.016',
+  },
+  rosen2013: {
+    text: 'Rosen, L. D., Carrier, L. M. ve Cheever, N. A. (2013). Facebook and texting made me do it: Media-induced task-switching while studying. Computers in Human Behavior, 29(3), 948–958.',
+    url: 'https://doi.org/10.1016/j.chb.2012.12.001',
+  },
+  mayElder2018: {
+    text: 'May, K. E. ve Elder, A. D. (2018). Efficient, helpful, or distracting? A literature review of media multitasking in relation to academic performance. International Journal of Educational Technology in Higher Education, 15, 13.',
+    url: 'https://doi.org/10.1186/s41239-018-0096-z',
+  },
 } satisfies Record<string, { text: string; url: string }>;

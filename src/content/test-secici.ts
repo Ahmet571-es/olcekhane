@@ -138,6 +138,11 @@ export const SECICI_GOALS: SeciciGoal[] = [
         candidates: ['sinav-kaygisi-ve-bas-etme'],
       },
       {
+        skill: 'Telefon ve dikkat',
+        why: 'Çalışırken bildirimlerin, ekranlar arası geçişin ve telefona dönme isteğinin dikkatini ne kadar böldüğünü ve hangi yolları kullandığını gösterir.',
+        candidates: ['ders-calisirken-telefon-ve-dikkat'],
+      },
+      {
         skill: 'Motivasyon',
         why: 'Neden ders çalıştığını gösterir: merak ve istekle mi, baskıyla mı?',
         candidates: ['ders-calisma-motivasyonu'],

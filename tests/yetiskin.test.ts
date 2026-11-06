@@ -54,6 +54,7 @@ const SIMGE = 'simge-bulma';
 const PARCA = 'parcalardan-sekil';
 const HARF = 'harf-dizileri';
 const SINAV = 'sinav-kaygisi-ve-bas-etme';
+const TELEFON = 'ders-calisirken-telefon-ve-dikkat';
 
 /**
  * Raporda kişiye gösterilen bütün metinler. "Cevapların tek tek" bölümündeki madde metinleri testin kendi maddeleridir (kişi
@@ -107,7 +108,7 @@ describe('yetişkinler', () => {
   });
 
   it('yalnızca maddeleri ve rapor metinleri yetişkinlere uyan testler yetişkinlere açık', () => {
-    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT, HESAPLA, TARZ_DC, BAKIS, HEYECAN, GIZLI, IYIMSER, DESEN, HARF_SAYI, SIMGE, PARCA, HARF, EMPATI, ZIHINDEN, OZ_YETERLIK, OZ_DENETIM, MERAK, LIDERLIK, BENZETME, SINAV].sort());
+    expect(INSTRUMENTS.filter((d) => d.adults).map((d) => d.slug).sort()).toEqual([KISILIK, ALTI, DUYGU, TARZ, HOBI, ILGI, SEKIL, ONALTI, SAYI, SOZEL, KATLAMA, KELIME, KURAL, LISTE, OGRENME, ERTELEME, ZIHNIYET, DEGER, MANTIK, SAYISAL, KUP, DUSUNEREK, ON_YON, KULE, HIZLI, NFC, UC_BOYUT, HESAPLA, TARZ_DC, BAKIS, HEYECAN, GIZLI, IYIMSER, DESEN, HARF_SAYI, SIMGE, PARCA, HARF, EMPATI, ZIHINDEN, OZ_YETERLIK, OZ_DENETIM, MERAK, LIDERLIK, BENZETME, SINAV, TELEFON].sort());
     for (const d of INSTRUMENTS.filter((x) => x.adults)) {
       // Yetişkinlere de açılan test lise ve mezunlara kadar uzanır; bilim kartı yetişkinleri anar.
       expect(d.maxGrade, d.slug).toBe(13);
