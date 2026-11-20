@@ -134,7 +134,7 @@ export function TaskRunner(props: {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <TaskSteps tasks={tasks} done={done} current={current} />
         <h1 className="t-h1">
-          {timedEnd === 'time' ? 'Süre doldu; bu bölüm bitti.' : timedEnd === 'items' ? 'Bu bölümü süre dolmadan bitirdin.' : 'Harika, bir görevi daha bitirdin.'}
+          {timedEnd === 'time' ? 'Süre doldu; bu bölüm bitti.' : timedEnd === 'items' ? 'Bu bölümü süre dolmadan bitirdin.' : 'Harika, bu görevi bitirdin.'}
         </h1>
         <p className="text-lg">
           Sıradaki görev: <strong>{task.name}</strong>. İstersen biraz dinlenebilirsin; hazır olduğunda devam et.

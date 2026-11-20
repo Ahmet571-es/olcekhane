@@ -72,7 +72,7 @@ export const besFaktorDaily: SurveyDaily = {
     /*
      * Uyumluluk: A2 "İnsanlara ilgi duyarım", A4 "Başkalarının duygularını anlar, onlara ortak olurum", A6 "Yufka yürekli
      * biriyim", A8 "Başkalarına zaman ayırırım", A9 "Başkalarının ne hissettiğini içimde hissederim", A10 "İnsanların yanımda
-     * rahat hissetmesini sağlarım"; ters: A1 "Başkalarının iyi olup olmaması beni pek ilgilendirmez", A3 "Başkalarını kıracak
+     * kendini rahat hissetmesini sağlarım"; ters: A1 "Başkalarının iyi olup olmaması beni pek ilgilendirmez", A3 "Başkalarını kıracak
      * sözler söylerim", A5 "Başkalarının sorunları beni ilgilendirmez", A7 "Aslında diğer insanlara pek ilgi duymam".
      */
     agreeableness: {

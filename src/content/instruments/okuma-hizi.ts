@@ -6,11 +6,16 @@ import type { ReadingInstrument } from '@/lib/instruments/types';
  * Öğrenci kendi sınıf düzeyine uygun metni sessiz okur; süre ölçülür (sayfa gizliyken geçen süre sayılmaz). Metin
  * kapandıktan sonra 8 soru cevaplar (3 bilgi, 2 çıkarım, 2 kelime, 1 ana fikir). Metne ve geçilen sorulara geri
  * dönülemez. Sorular birbirinin cevabını ele vermeyecek biçimde yazılır (tests/okuma-hizi.test.ts denetler); çıkarım
- * soruları metinde açıkça yazmayanı sorar.
+ * soruları metinde açıkça yazmayanı sorar. Doğru şık şıkların en uzunu olmamaya çalışılır: 32 sorunun en çok 10'unda en
+ * uzun şık doğrudur (test denetler; "en uzunu seç" diyen öğrenci ipucu almasın).
+ *
+ * Sürüm 2 (2026-11-20, dil ve mantık denetimi): doğru şık 32 sorunun 22'sinde en uzun şıktı, şıklar dengelendi; arılar
+ * metninin çıkarım sorusu metinde açıkça yazanı soruyordu, metinde yazmayan durumu (sola eğik çizgi) sorar; karıncalar
+ * metninin girişindeki çelişki (yuvaya taşınan kırıntıya öteki karıncaların ulaşması) ve iki anlatım bozukluğu giderildi.
  */
 export const okumaHizi: ReadingInstrument = {
   slug: 'okuma-hizi-ve-anlama',
-  version: 1,
+  version: 2,
   engine: 'reading',
   name: 'Okuma Hızı ve Anlama',
   shortName: 'Okuma',
@@ -60,10 +65,10 @@ export const okumaHizi: ReadingInstrument = {
       minGrade: 3,
       maxGrade: 4,
       paragraphs: [
-        'Bir karıncanın ekmek kırıntısını bulup yuvasına taşıdığını görmüşsündür. Peki kısa süre sonra aynı kırıntıya uzun bir karınca sırasının ulaşması nasıl oluyor?',
+        'Bir karıncanın yerdeki ekmek kırıntılarından birini yuvasına taşıdığını görmüşsündür. Peki kısa süre sonra aynı kırıntılara uzun bir karınca sırasının ulaşması nasıl oluyor?',
         'Yiyecek bulan karınca, yuvaya dönerken yere çok küçük damlalar hâlinde özel bir koku bırakır. Bu koku, insanların burnunun fark edemeyeceği kadar hafiftir ama öteki karıncalar onu kolayca algılar. Karıncalar bu koku izini, bizim bir haritayı izlememiz gibi takip eder.',
         'Yiyeceğe ulaşan her karınca da dönüş yolunda aynı izi tazeler. Böylece iz güçlenir ve daha çok karınca yola çıkar. Yiyecek bitince yeni iz bırakılmaz. Bir süre sonra koku uçup gider, karıncalar da başka yerlere dağılır.',
-        'Bilim insanları bu kokulara "feromon" adını verir. Karıncalar feromonlarla yalnızca yol göstermez, tehlikeyi haber vermek için de başka kokular kullanır. Yani küçücük karıncalar, gözle görülmeyen bir dille konuşur.',
+        'Bilim insanları bu kokulara "feromon" adını verir. Karıncalar feromonları yalnızca yol göstermek için kullanmaz; tehlikeyi haber vermek için de başka feromonlar bırakır. Yani küçücük karıncalar, gözle görülmeyen bir dille konuşur.',
       ],
       questions: [
         {
@@ -93,7 +98,7 @@ export const okumaHizi: ReadingInstrument = {
             { key: 'a', text: 'Karıncalar yeni yiyecek gelene kadar orada bekler.' },
             { key: 'b', text: 'Karıncalar yolu taşlarla işaretler.' },
             { key: 'c', text: 'Karıncalar yuvayı başka bir yere taşır.' },
-            { key: 'd', text: 'Yeni iz bırakılmaz ve karıncalar başka yerlere dağılır.' },
+            { key: 'd', text: 'Karıncalar başka yerlere dağılır.' },
           ],
         },
         {
@@ -101,14 +106,14 @@ export const okumaHizi: ReadingInstrument = {
           text: 'Yiyecek bulan karınca yuvaya dönerken hiç iz bırakmasaydı büyük olasılıkla ne olurdu?',
           options: [
             { key: 'a', text: 'Kırıntıya daha çok karınca gelirdi.' },
-            { key: 'b', text: 'Öteki karıncalar yiyeceğin yerini kolayca bulamazdı.' },
+            { key: 'b', text: 'Öteki karıncalar yiyeceği kolay bulamazdı.' },
             { key: 'c', text: 'Kırıntı kendiliğinden yuvaya taşınırdı.' },
-            { key: 'd', text: 'Karıncalar birbirini hiç tanıyamazdı.' },
+            { key: 'd', text: 'Yuvadaki karıncalar birbirini artık tanıyamazdı.' },
           ],
         },
         {
           key: 'q5', skill: 'inference', answer: 'b',
-          text: 'Yazar, karıncaların izlediği yolu neden bir haritaya benzetiyor?',
+          text: 'Yazar, koku izini neden bir haritaya benzetiyor?',
           options: [
             { key: 'a', text: 'İkisi de kâğıttan yapıldığı için' },
             { key: 'b', text: 'İkisi de gidilecek yolu gösterdiği için' },
@@ -140,9 +145,9 @@ export const okumaHizi: ReadingInstrument = {
           key: 'q8', skill: 'main_idea', answer: 'c',
           text: 'Bu metin en çok neyi anlatıyor?',
           options: [
-            { key: 'a', text: 'Karınca yuvalarının nasıl yapıldığını' },
+            { key: 'a', text: 'Karınca yuvalarının toprağın altında nasıl yapıldığını' },
             { key: 'b', text: 'Karıncaların en çok hangi yiyecekleri sevdiğini' },
-            { key: 'c', text: 'Karıncaların yiyeceğe giden yolu birbirine nasıl gösterdiğini' },
+            { key: 'c', text: 'Karıncaların birbirine yolu nasıl gösterdiğini' },
             { key: 'd', text: 'Karıncaların tehlikeden nasıl kaçtığını' },
           ],
         },
@@ -166,7 +171,7 @@ export const okumaHizi: ReadingInstrument = {
           options: [
             { key: 'a', text: 'Sokağa açılan kapılardan' },
             { key: 'b', text: 'Yer altındaki tünellerden' },
-            { key: 'c', text: 'Çatıdaki bir açıklıktan, merdivenle' },
+            { key: 'c', text: 'Çatıdaki bir açıklıktan' },
             { key: 'd', text: 'Bahçeye açılan pencerelerden' },
           ],
         },
@@ -207,17 +212,17 @@ export const okumaHizi: ReadingInstrument = {
             { key: 'a', text: 'Tepelerde bugün de insanlar yaşamaktadır.' },
             { key: 'b', text: 'Tepeler yakın zamanda insanlar tarafından yapılmıştır.' },
             { key: 'c', text: 'Çatalhöyük’te hiç ev bulunmamıştır.' },
-            { key: 'd', text: 'Eski yerleşimin kalıntıları zamanla toprakla örtülmüştür.' },
+            { key: 'd', text: 'Eski yerleşimin kalıntıları toprakla örtülmüştür.' },
           ],
         },
         {
           key: 'q6', skill: 'vocabulary', answer: 'c',
           text: 'Metinde "kerpiç" ne anlama geliyor?',
           options: [
-            { key: 'a', text: 'Ovada yetişen bir tahıl' },
-            { key: 'b', text: 'Duvara yapılan resim' },
-            { key: 'c', text: 'Çamur ve samanla yapılıp güneşte kurutulan tuğla' },
-            { key: 'd', text: 'Taştan yapılmış bir alet' },
+            { key: 'a', text: 'Ovada yetişen dayanıklı bir tahıl' },
+            { key: 'b', text: 'Evlerin duvarına yapılan resim' },
+            { key: 'c', text: 'Çamur ve samandan yapılan tuğla' },
+            { key: 'd', text: 'Taştan yapılmış bir av aleti' },
           ],
         },
         {
@@ -234,10 +239,10 @@ export const okumaHizi: ReadingInstrument = {
           key: 'q8', skill: 'main_idea', answer: 'a',
           text: 'Metnin ana fikri nedir?',
           options: [
-            { key: 'a', text: 'Çatalhöyük, insanların yerleşik yaşama geçişini anlamamızı sağlayan çok eski bir yerleşimdir.' },
-            { key: 'b', text: 'Eski çağlarda insanlar yalnızca avlanarak geçinirdi.' },
-            { key: 'c', text: 'Arkeologlar her yıl yeni tepeler bulur.' },
-            { key: 'd', text: 'Dünya Mirası Listesi’ne giren yerler turistlerle dolar.' },
+            { key: 'a', text: 'Çatalhöyük, yerleşik yaşama geçişi anlamamızı sağlayan eski bir yerleşimdir.' },
+            { key: 'b', text: 'Dokuz bin yıl önce insanlar yalnızca avlanarak geçinir, tarım yapmayı bilmezdi.' },
+            { key: 'c', text: 'Arkeologlar kazı yaptıkları her yerde yeni tepeler ve yerleşimler bulur.' },
+            { key: 'd', text: 'Dünya Mirası Listesi’ne giren yerler kısa sürede turistlerle dolup taşar.' },
           ],
         },
       ],
@@ -250,7 +255,7 @@ export const okumaHizi: ReadingInstrument = {
       paragraphs: [
         'Bir bal arısı çiçeklerle dolu bir tarla bulduğunda, bu haberi kovandaki binlerce arkadaşına nasıl iletir? Arıların konuşamadığını düşünürsek bu soru bir bilmece gibi görünür. Bilmeceyi çözen, Avusturyalı bilim insanı Karl von Frisch oldu.',
         'Von Frisch yıllarca cam kovanlarda arıları gözlemledi. Yiyecek bulup dönen arıların petek üzerinde garip hareketler yaptığını fark etti. Yiyecek kovana yakınsa arı daireler çizerek dönüyordu. Yiyecek uzaktaysa hareket değişiyordu: Arı önce düz bir çizgi boyunca gövdesini sağa sola sallayarak ilerliyor, sonra bir yandan dönüp başa geliyor, ardından öbür yandan dönüp aynı çizgiyi tekrarlıyordu. Bu harekete "salınım dansı" dendi.',
-        'Von Frisch, dansın rastgele olmadığını gösterdi. Dans çizgisinin yönü, yiyeceğin güneşe göre hangi tarafta olduğunu anlatıyordu. Arı çizgiyi petek üzerinde dik yukarı doğru yapıyorsa yiyecek güneşin tam yönündeydi. Çizgi yukarıdan sağa doğru eğikse yiyecek de güneşin o kadar sağındaydı. Sallanma süresi ise mesafeyi gösteriyordu: Sallanma ne kadar uzun sürerse yiyecek o kadar uzaktı.',
+        'Von Frisch, dansın rastgele olmadığını gösterdi. Dans çizgisinin yönü, yiyeceğin güneşe göre hangi tarafta olduğunu anlatıyordu. Arı petek üzerinde bu çizgide dik yukarı doğru ilerliyorsa yiyecek güneşin tam yönündeydi. Çizgi yukarıdan sağa doğru eğikse yiyecek de güneşin o kadar sağındaydı. Sallanma süresi ise mesafeyi gösteriyordu: Sallanma ne kadar uzun sürerse yiyecek o kadar uzaktı.',
         'Dansı izleyen arılar bu bilgiyi kullanarak, daha önce hiç görmedikleri çiçeklerin bulunduğu bölgeye yönelebiliyordu. Von Frisch bu buluşuyla 1973 yılında, hayvan davranışları üzerine çalışan iki bilim insanıyla birlikte Nobel Fizyoloji veya Tıp Ödülü’nü aldı.',
         'Bugün bilim insanları, arıların dansını izleyerek hangi bölgelerde yeterli çiçek bulunduğunu anlamaya çalışıyor. Minik bir böceğin dansı, doğayı korumak için bize yol gösteriyor.',
       ],
@@ -279,7 +284,7 @@ export const okumaHizi: ReadingInstrument = {
           key: 'q3', skill: 'literal', answer: 'a',
           text: 'Salınım dansında sallanmanın süresi neyi gösterir?',
           options: [
-            { key: 'a', text: 'Yiyeceğin ne kadar uzakta olduğunu' },
+            { key: 'a', text: 'Yiyeceğin uzaklığını' },
             { key: 'b', text: 'Çiçeklerin rengini' },
             { key: 'c', text: 'Tarladaki çiçek sayısını' },
             { key: 'd', text: 'Havanın sıcaklığını' },
@@ -287,42 +292,42 @@ export const okumaHizi: ReadingInstrument = {
         },
         {
           key: 'q4', skill: 'inference', answer: 'c',
-          text: 'Bir arı dans çizgisini petek üzerinde dik yukarı doğru yapıyorsa, dansı izleyen arılar hangi yöne uçar?',
+          text: 'Bir arının dans çizgisi yukarıdan sola doğru eğikse yiyecek büyük olasılıkla nerededir?',
           options: [
-            { key: 'a', text: 'Güneşin tam tersi yönüne' },
-            { key: 'b', text: 'Kovanın hemen altına' },
-            { key: 'c', text: 'Güneşin bulunduğu yöne' },
-            { key: 'd', text: 'Rastgele bir yöne' },
+            { key: 'a', text: 'Güneşin tam tersi yönünde' },
+            { key: 'b', text: 'Güneşin sağında' },
+            { key: 'c', text: 'Güneşin solunda' },
+            { key: 'd', text: 'Güneşin tam yönünde' },
           ],
         },
         {
           key: 'q5', skill: 'inference', answer: 'a',
           text: 'Yiyecek kovana yakınken arının yön anlatan salınım dansını yapmamasının en olası nedeni nedir?',
           options: [
-            { key: 'a', text: 'Yakındaki yiyeceği bulmak için ayrıntılı yön bilgisine gerek olmaması' },
-            { key: 'b', text: 'Arının yakın yerlere gitmekten yorulması' },
-            { key: 'c', text: 'Kovandaki arıların yakın yerleri hiç sevmemesi' },
+            { key: 'a', text: 'Yakındaki yiyeceği bulmak için ayrıntılı yön bilgisi gerekmemesi' },
+            { key: 'b', text: 'Arının kısa yolculuklarda uzun yolculuklardan daha çok yorulması' },
+            { key: 'c', text: 'Kovandaki arıların yakındaki çiçeklere gitmeyi hiç sevmemesi' },
             { key: 'd', text: 'Yakındaki çiçeklerin hiç bal vermemesi' },
           ],
         },
         {
           key: 'q6', skill: 'vocabulary', answer: 'b',
-          text: '"Dansın rastgele olmadığı" anlaşıldı. Burada "rastgele" ne anlama gelir?',
+          text: 'Metinde dansın "rastgele olmadığı" söyleniyor. Burada "rastgele" ne anlama gelir?',
           options: [
-            { key: 'a', text: 'Çok hızlı biçimde' },
-            { key: 'b', text: 'Belirli bir kurala bağlı olmadan' },
-            { key: 'c', text: 'Her gün aynı saatte' },
-            { key: 'd', text: 'Yalnızca bir kez' },
+            { key: 'a', text: 'Olabildiğince hızlı bir biçimde' },
+            { key: 'b', text: 'Bir kurala bağlı olmadan' },
+            { key: 'c', text: 'Her gün aynı saatte ve aynı yerde' },
+            { key: 'd', text: 'Yalnızca güneşli günlerde' },
           ],
         },
         {
           key: 'q7', skill: 'vocabulary', answer: 'd',
           text: '"Yıllarca cam kovanlarda arıları gözlemledi" cümlesinde "gözlemledi" ne demektir?',
           options: [
-            { key: 'a', text: 'Hayal etti' },
-            { key: 'b', text: 'Kitaplardan okudu' },
+            { key: 'a', text: 'Hayalinde canlandırdı' },
+            { key: 'b', text: 'Kitaplardan okuyup öğrendi' },
             { key: 'c', text: 'Görmezden geldi' },
-            { key: 'd', text: 'Dikkatle izleyip inceledi' },
+            { key: 'd', text: 'Dikkatle izledi' },
           ],
         },
         {
@@ -331,7 +336,7 @@ export const okumaHizi: ReadingInstrument = {
           options: [
             { key: 'a', text: 'Arılar güneşin yönünü bilmezse kovana dönemez.' },
             { key: 'b', text: 'Bal üretmek çok uzun bir iştir.' },
-            { key: 'c', text: 'Arılar yiyeceğin yerini birbirlerine dansla anlatır.' },
+            { key: 'c', text: 'Arılar yiyeceğin yerini dansla anlatır.' },
             { key: 'd', text: 'Bilim insanları en çok arıları inceler.' },
           ],
         },
@@ -348,7 +353,7 @@ export const okumaHizi: ReadingInstrument = {
         'Bu sürecin önemini gösteren deneyler oldukça basit bir düzene sahip. Katılımcılar önce yeni kelimeler ya da bir beceri öğreniyor. Ardından bir grup uyuyor, diğer grup aynı süre uyanık kalıyor. Sonraki testte uyuyan grubun, öğrendiklerini genellikle daha iyi hatırladığı görülüyor. Uykusuz geçen bir gecenin ardından ise yeni bilgi öğrenmek de zorlaşıyor; çünkü dinlenmemiş beyin yeni bilgiyi kaydetmekte güçlük çekiyor.',
         'Uyku yalnızca ezber bilgiler için değil, problem çözme için de önemli. Bazı çalışmalarda, zor bir problemi çözemeden uyuyan kişilerin bir kısmı uyandıktan sonra çözümü daha kolay buldu. Beyin, uyku sırasında bilgiler arasında yeni bağlantılar kuruyor olabilir.',
         'Ergenlik döneminde vücudun uyku saati biraz ileri kayar; gençler akşamları daha geç uykuya dalma eğilimindedir. Uzmanlar 13–18 yaş arasındaki gençler için gecede 8 ila 10 saat uyku öneriyor. Oysa okul sabahları erken başladığında bu süreye ulaşmak zorlaşıyor.',
-        'Bu bilgilerden çıkan sonuç açık: Çalışma programı yaparken uyku, kaybedilen zaman değil, öğrenmenin bir parçasıdır. Sınavdan önceki geceyi uykusuz geçirmek yerine konuları günlere yaymak ve düzenli uyumak, hem hatırlamayı hem de sınavdaki dikkati destekler.',
+        'Bu bilgilerden çıkan sonuç açık: Çalışma programı yaparken uykuyu kaybedilen zaman değil, öğrenmenin bir parçası saymak gerekir. Sınavdan önceki geceyi uykusuz geçirmek yerine konuları günlere yaymak ve düzenli uyumak, hem hatırlamayı hem de sınavdaki dikkati destekler.',
       ],
       questions: [
         {
@@ -365,7 +370,7 @@ export const okumaHizi: ReadingInstrument = {
           key: 'q2', skill: 'literal', answer: 'a',
           text: 'Metne göre bilgiler uyku sırasında beynin hangi bölümüne aktarılır?',
           options: [
-            { key: 'a', text: 'Beynin dış katmanı olan kortekse' },
+            { key: 'a', text: 'Kortekse' },
             { key: 'b', text: 'Omuriliğe' },
             { key: 'c', text: 'Beyinciğe' },
             { key: 'd', text: 'Göz sinirlerine' },
@@ -387,8 +392,8 @@ export const okumaHizi: ReadingInstrument = {
           options: [
             { key: 'a', text: 'Sınavda her zamankinden daha dikkatli olması' },
             { key: 'b', text: 'O gece çalıştıklarını hiç unutmaması' },
-            { key: 'c', text: 'Ertesi gün yeni bilgileri daha kolay öğrenmesi' },
-            { key: 'd', text: 'O gece çalıştıklarının bir kısmını sınavda hatırlayamaması' },
+            { key: 'c', text: 'Ertesi gün yeni bilgileri her zamankinden kolay öğrenmesi' },
+            { key: 'd', text: 'O gece çalıştıklarının bir kısmını hatırlayamaması' },
           ],
         },
         {
@@ -407,7 +412,7 @@ export const okumaHizi: ReadingInstrument = {
           options: [
             { key: 'a', text: 'Bunu yapmak zorundadır' },
             { key: 'b', text: 'Bunu hiç yapmaz' },
-            { key: 'c', text: 'Buna yatkındır, çoğu zaman böyle olur' },
+            { key: 'c', text: 'Buna yatkındır' },
             { key: 'd', text: 'Bunu yapmaktan korkar' },
           ],
         },
@@ -418,7 +423,7 @@ export const okumaHizi: ReadingInstrument = {
             { key: 'a', text: 'Hızla unutulması' },
             { key: 'b', text: 'Uzun süre akılda kalması' },
             { key: 'c', text: 'Yanlış öğrenilmesi' },
-            { key: 'd', text: 'Başkasına anlatılması' },
+            { key: 'd', text: 'Başkalarına da anlatılması' },
           ],
         },
         {

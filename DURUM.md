@@ -60,7 +60,27 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: 0/8 grup.
+   İlerleme: **1/8 grup** (2026-11-20).
+   - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
+     İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
+     Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
+     (13 testin giriş cümlesi; "kendini rahat hissetmesini" maddesi 16 Faktörlü ve Empati'de; Ders Çalışma Motivasyonu'nun
+     girişi): o testlerin geri kalanı kendi grubunda okunacak.
+   - **2. grup (sıradaki):** Ayrıntılı Kişilik Profili, Kişiliğin 10 Yönü, Meslek İlgi Alanları, Renk-Kelime, Dur-Git, Sırayla
+     Birleştirme, Altı Boyutlu Kişilik Profili, Duygusal Zekâ Bileşenleri (kaldırılan Matematik testi atlanır). Üç uzun
+     kişilik testi (116, 100 ve 240 madde) bu gruptadır.
+   - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
+     aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
+     doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
+     (`tests/gunluk-hayat.test.ts`): madde yeniden yazılır. Kalıcı kurallar `tests/dil-denetimi.test.ts`'e eklenir.
+   - **Bilerek dokunulmayanlar (hocaya sorulabilir; yayımlanmış ölçeklerde maddenin anlamını ya da kapsamını değiştirir):**
+     Öz-saygı'da 2. ve 6. cümle Türkçede birbirine çok yakın ("hiçbir işe yaramadığımı" / "işe yaramaz hissediyorum";
+     özgün ölçekte de yakın: "no good at all" / "useless") ve 9. cümlede "Sonuçta"; Beş Faktör ve Hızlı Kişilik'te "İşleri
+     birbirine karıştırırım" ("Make a mess of things": "elime yüzüme bulaştırırım" daha yakın olabilir), "Duygularım gün içinde
+     sık sık iniş çıkış yapar" ("gün içinde" özgün maddede yok), "Başkalarını kıracak sözler söylerim" ("Insult people"
+     yumuşatılmış), Hızlı Kişilik'te "Küçük şeylere kolayca bozulurum" (gerekçesi dosyada). Çalışma Alışkanlıkları'nda ters madde
+     T3 (hiç tekrar yapmayan öğrenci "Hiçbir zaman" der). Dikkat ve Bellek'te 1–9 için hem "sayı" hem "rakam" deniyor (testin ve
+     raporun adları "Sayı Dizisi"). Tırnak işaretleri (düz ve kıvrık) testler arasında karışık: denetimin sonunda topluca.
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1164,6 +1184,23 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-20 (82): Dil ve mantık denetimi, 1. grup (8 test; site sahibinin isteği: "sorular ve şıklar Türkçeye çok uygun,
+  mantık hatasız"). Her testin yönergeleri, maddeleri, şıkları ve çözme ekranındaki yazıları okundu; ikinci bir denetçi
+  bağımsız okudu. **Çalışma Alışkanlıkları (sürüm 2):** şıklar sıklık sorduğu hâlde üç maddenin içinde de sıklık sözcüğü
+  vardı ("sık sık bakarım", "çoğu zaman bırakırım", "genellikle … okurum"); "yeniden tekrar ederim" yinelemesi; iki şeyi
+  birden söyleyen iki madde (haftalık plan; aklın kayması); telefonu olmayan öğrencinin cevaplayamadığı madde; girişte
+  "sana en çok işe yarayacak". **Okuma (sürüm 2):** doğru şık 32 sorunun 22'sinde en uzun şıktı (şimdi 6); arılar metninin
+  çıkarım sorusu metinde açıkça yazanı soruyordu (yeni soru: sola eğik çizgi); karıncalar metninin girişinde çelişki; iki
+  anlatım bozukluğu ("Çalışma programı yaparken uyku…", "çizgiyi … yapıyorsa"); bir sorunun kökündeki uydurma alıntı.
+  **Mesleki İlgi:** "oyun ve etkinlik yapmak" (oyun yapılmaz), eylemle bitmeyen tek madde, "parçalarından birleştirmek",
+  girişte kip uyumsuzluğu. **Sürekli Dikkat:** yönergede nesnesi eksik cümle; "4 bölüm"/"dört bölüm". **Dikkat ve Bellek:**
+  kutu görevinde bütün kutular yanacakmış gibi anlatım; cevabı gönderen "Tamam" düğmesi hiç anlatılmıyordu; sembol görevinde
+  basılacak yer belirsizdi; tersten alıştırmada ters sıra hatırlatılmıyordu; 4. sınıfa ağır "geri bildirim"; ilk görevden
+  sonra "bir görevi daha bitirdin"; "7 aranan harften". **Beş Faktör (ve 16 Faktörlü, Empati):** "rahat hissetmesini" →
+  "kendini rahat hissetmesini". **13 kişilik testinin girişi:** "seni anlatan N cümle" (ardından "ne kadar doğru anlatıyor"
+  diye sorulur). **Öz-saygı:** girişte söz dizimi. Ters puanlama işaretleri, cevap anahtarları ve okuma metinlerindeki bilgiler
+  denetlendi, hata bulunmadı. Kalıcı kurallar `tests/dil-denetimi.test.ts` ve `tests/okuma-hizi.test.ts`'te. Okuma testi
+  telefonda baştan sona çözüldü (7. sınıf metni, yeni soru, rapor); değişen beş testin sayfaları telefon ve masaüstünde açıldı.
 - 2026-11-20 (81): Sunucunun diski %94 doluydu (48 GB'ın 45'i): her yayında eski uygulama görüntüsü sunucuda kalıyordu.
   Yayın artık yeni sürüm açıldıktan sonra eski görüntüleri siliyor; durum özeti disk ve Docker alanını da yazıyor. Disk dolsaydı
   yeni sürüm yüklenemez, site de durabilirdi.
@@ -1232,9 +1269,3 @@ En yeni üstte; en çok 10 madde tutulur.
   gibi çelişen örnekler değişti. Aynı soruların geldiği Düşünerek Karar Verme ve Sayısal Akıl Yürütme'de yol haritası artık
   testin sorusuna çok benzeyen bir soruyu çözmüyor. Günlük hayat dışlama tablosu ortak (`tests/helpers/gunluk-excluded.ts`) ve
   yol haritalarına da uygulanıyor (`tests/yol-haritasi-uyum.test.ts`). Bağımsız denetimin bulguları uygulandı.
-- 2026-11-03 (72): "Günlük hayatta" denetimleri sıkılaştırıldı ve yazarın denetim listesi tek, numaralı listeye toplandı
-  (`src/content/gunluk/types.ts`, 25 kural; testle denetlenenler işaretli): ikinci kişi eklerinin doğru tanınması, maddeyi
-  neredeyse aynen yineleyen cümle yasağı (4 sözcüklük dizi), yalnız yaşayan yetişkine uymayan ev satırı, mezunda "sınıf",
-  destek kutusunu açan maddenin kaynak olmaması, hobide beğeni ya da imkân sözcükleri. 51 bilerek bozulmuş örneğin hepsi
-  yakalanıyor. Ortaya çıkan satırlar düzeltildi (43 aynen yineleme, 10 mezun, 2 yetişkin ev satırı, İyimserlik'te destek
-  maddesine dayanan satırlar).

@@ -127,7 +127,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
         ) : (
           <p className="measure text-lg">
             Alıştırmada {task.practice.length} denemenin {practiceScore} tanesini doğru yaptın.{' '}
-            {low ? 'Yalnızca ortadaki oka bakmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.' : 'Şimdi asıl görev başlıyor; artık geri bildirim olmayacak.'}
+            {low ? 'Yalnızca ortadaki oka bakmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.' : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığın gösterilmeyecek.'}
           </p>
         )}
         <div className="flex flex-wrap justify-center gap-3">

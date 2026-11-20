@@ -6,6 +6,13 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  * bulunan davranışlara göre yazılmıştır: kendini sınama ve aralıklı tekrar (Dunlosky ve ark., 2013),
  * anlamaya yönelik çalışma, planlama, dikkat dağıtıcıları yönetme, hatalardan öğrenme ve yardım isteme.
  * Her ölçekte ters yönlü maddeler vardır. Durum: pilot.
+ *
+ * Sürüm 2 (2026-11-20, dil ve mantık denetimi): cevap şıkları sıklık sorduğu için ("Hiçbir zaman"–"Her zaman") maddelerin
+ * içindeki sıklık sözcükleri kaldırıldı (F2 "sık sık", T3 "genellikle", P4 "çoğu zaman": "sık sık bakarım" cümlesine
+ * "Nadiren" demek iki ayrı sıklık bildirir); P2 ve F5 tek bir davranışı söyler ("planım vardır ve ona uymaya çalışırım" →
+ * "plana göre çalışırım"; "aklım kayar ve fark etmem" → "kaydığını geç fark ederim"); F1 telefonu olmayan öğrencinin de
+ * cevaplayabileceği biçimde yazıldı ("telefonumu" → "telefon ve tablet gibi cihazları"); T2'de "yeniden tekrar" yinelemesi
+ * giderildi. Cevaplar kayabileceği için eski sürümün sonuçlarıyla karşılaştırılmaz.
  */
 
 const P = 'planning';
@@ -18,22 +25,22 @@ const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
   { key: 'P1', scale: P, text: 'Ders çalışmaya başlamadan önce o gün neyi çalışacağımı belirlerim.' },
   { key: 'T1', scale: T, text: 'Bir konuyu çalıştıktan sonra kitaba bakmadan neler hatırladığımı kontrol ederim.' },
   { key: 'U1', scale: U, text: 'Yeni öğrendiğim bir bilgiyi daha önce bildiklerimle ilişkilendirmeye çalışırım.' },
-  { key: 'F1', scale: F, text: 'Ders çalışırken telefonumu başka bir odaya koyar ya da sessize alırım.' },
+  { key: 'F1', scale: F, text: 'Ders çalışırken telefon ve tablet gibi cihazları uzağımda tutar ya da sessize alırım.' },
   { key: 'H1', scale: H, text: 'Anlamadığım bir konuyu öğretmenime sorarım.' },
 
-  { key: 'P2', scale: P, text: 'Haftalık bir çalışma planım vardır ve ona uymaya çalışırım.' },
-  { key: 'T2', scale: T, text: 'Öğrendiğim konuları birkaç gün sonra yeniden tekrar ederim.' },
+  { key: 'P2', scale: P, text: 'Haftalık bir çalışma planına göre çalışırım.' },
+  { key: 'T2', scale: T, text: 'Öğrendiğim konuları birkaç gün sonra tekrar ederim.' },
   { key: 'U2', scale: U, text: 'Bir konuyu çalışırken “Bu neden böyle?” diye kendime sorarım.' },
-  { key: 'F2', scale: F, text: 'Ders çalışırken sık sık sosyal medyaya ya da mesajlarıma bakarım.', reverse: true },
+  { key: 'F2', scale: F, text: 'Ders çalışırken sosyal medyaya ya da mesajlarıma bakarım.', reverse: true },
   { key: 'H2', scale: H, text: 'Sınavda ya da ödevde yaptığım yanlışları inceleyip neden yanlış yaptığımı anlamaya çalışırım.' },
 
   { key: 'P3', scale: P, text: 'Sınavlara son güne bırakmadan, günler öncesinden hazırlanmaya başlarım.' },
-  { key: 'T3', scale: T, text: 'Bir konuyu tekrar etmek için genellikle yalnızca notlarımı yeniden okurum.', reverse: true },
+  { key: 'T3', scale: T, text: 'Bir konuyu tekrar etmek için yalnızca notlarımı yeniden okurum.', reverse: true },
   { key: 'U3', scale: U, text: 'Öğrendiğim bir konuyu kendi cümlelerimle anlatmaya çalışırım.' },
   { key: 'F3', scale: F, text: 'Ders çalışmak için dikkatimi dağıtan şeylerin olmadığı bir yer seçerim.' },
   { key: 'H3', scale: H, text: 'Anlamadığım bir şey olduğunda kimseye sormadan geçerim.', reverse: true },
 
-  { key: 'P4', scale: P, text: 'Ödevlerimi çoğu zaman son dakikaya bırakırım.', reverse: true },
+  { key: 'P4', scale: P, text: 'Ödevlerimi son dakikaya bırakırım.', reverse: true },
   { key: 'T4', scale: T, text: 'Soru çözerek ya da soru kartlarıyla kendimi sınarım.' },
   { key: 'U4', scale: U, text: 'Konuları anlamadan ezberlemeye çalışırım.', reverse: true },
   { key: 'F4', scale: F, text: 'Uzun süre çalışacaksam arada kısa molalar veririm.' },
@@ -42,13 +49,13 @@ const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
   { key: 'P5', scale: P, text: 'Büyük bir ödevi küçük parçalara bölüp her birine bir zaman ayırırım.' },
   { key: 'T5', scale: T, text: 'Sınavdan önce kendime sınavda çıkabilecek sorular sorarım.' },
   { key: 'U5', scale: U, text: 'Anlamadığım bir yeri atlamak yerine anlayana kadar üzerinde dururum.' },
-  { key: 'F5', scale: F, text: 'Ders çalışırken aklım başka şeylere kayar ve bunu uzun süre fark etmem.', reverse: true },
+  { key: 'F5', scale: F, text: 'Ders çalışırken aklımın başka şeylere kaydığını geç fark ederim.', reverse: true },
   { key: 'H5', scale: H, text: 'Takıldığımda arkadaşlarımdan ya da ailemden yardım isterim.' },
 ];
 
 export const calismaAliskanliklari: LikertInstrument = {
   slug: 'calisma-aliskanliklari',
-  version: 1,
+  version: 2,
   engine: 'likert',
   name: 'Çalışma Alışkanlıkları Envanteri',
   shortName: 'Çalışma alışkanlıkları',
@@ -67,7 +74,7 @@ export const calismaAliskanliklari: LikertInstrument = {
     title: 'Nasıl ders çalışıyorsun?',
     paragraphs: [
       'Birazdan ders çalışma alışkanlıklarınla ilgili 25 cümle göreceksin. Her birini ne sıklıkla yaptığını seç.',
-      'Nasıl çalışman gerektiğini değil, gerçekte nasıl çalıştığını düşün. Doğru ya da yanlış cevap yok; dürüst cevaplar sana en çok işe yarayacak raporu verir.',
+      'Nasıl çalışman gerektiğini değil, gerçekte nasıl çalıştığını düşün. Doğru ya da yanlış cevap yok; dürüst cevaplar işine en çok yarayacak raporu verir.',
     ],
   },
   prompt: 'Bunu ne sıklıkla yaparsın?',

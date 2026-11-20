@@ -108,7 +108,7 @@ export const hizliKisilikTesti: LikertInstrument = {
   intro: {
     title: 'Kendini nasıl tanımlıyorsun?',
     paragraphs: [
-      'Birazdan seni anlatan 20 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 20 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar.',
       'Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur. Yaklaşık 3 dakika sürer.',
     ],

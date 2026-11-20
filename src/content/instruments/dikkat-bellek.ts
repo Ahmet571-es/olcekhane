@@ -134,7 +134,7 @@ const symbolTask: SymbolMatchTask = {
   measures: 'İşlem hızı: basit bir işi hem hızlı hem doğru yapabilme.',
   instructions: [
     'Üstte, her sembolün altında bir rakam var. Ortada bir sembol belirecek.',
-    'O sembolün altındaki rakama olabildiğince hızlı ve doğru bas.',
+    'Üstte o sembolün altında yazan rakamı bul ve alttaki rakam düğmelerinden ona bas. Olabildiğince hızlı ve doğru ol.',
     'Önce kısa bir alıştırma yapacaksın. Sonra 90 saniye boyunca yapabildiğin kadarını yap.',
   ],
   durationMs: 90_000,
@@ -163,7 +163,7 @@ export const dikkatBellek: TaskInstrument = {
   intro: {
     title: 'Beş kısa görev',
     paragraphs: [
-      'Birazdan beş kısa görev yapacaksın: sayıları sırayla ve tersten hatırlamak, kutuların sırasını hatırlamak, okların yönünü bulmak ve sembolleri eşleştirmek.',
+      'Birazdan beş kısa görev yapacaksın: sayıları sırayla ve tersten hatırlamak, kutuların sırasını hatırlamak, ortadaki okun yönünü bulmak ve sembolleri eşleştirmek.',
       'Her görevin başında ne yapacağını anlatacağız. Görevler arasında dinlenebilirsin.',
       'Sessiz bir yerde, dikkatini dağıtacak şeyler olmadan yaparsan sonuç seni daha iyi yansıtır.',
     ],
@@ -183,7 +183,7 @@ export const dikkatBellek: TaskInstrument = {
       name: 'Sayı Dizisi',
       measures: 'Kısa süreli bellek: gördüğün sayıları sırasıyla akılda tutabilme.',
       instructions: [
-        'Ekranda sayılar tek tek belirecek. Hepsi bittikten sonra aynı sırayla tuşlara bas.',
+        'Ekranda sayılar tek tek belirecek. Sayılar bitince aynı sırayla tuşlara, sonra Tamam’a bas.',
         'Diziler giderek uzayacak. Aynı uzunluktaki iki dizinin ikisini de yanlış yaparsan görev biter; bu çok normal.',
       ],
       onMs: 800,
@@ -214,8 +214,8 @@ export const dikkatBellek: TaskInstrument = {
       name: 'Kutu Dizisi',
       measures: 'Görsel-uzamsal bellek: yerleri ve sıralarını akılda tutabilme.',
       instructions: [
-        'Ekranda dokuz kutu göreceksin. Kutular sırayla yanıp sönecek.',
-        'Hepsi bittikten sonra kutulara aynı sırayla dokun.',
+        'Ekranda dokuz kutu göreceksin. Bazı kutular teker teker yanıp sönecek; hangi sırayla yandıklarına dikkat et.',
+        'Yanıp sönme bitince yanan kutulara aynı sırayla dokun, sonra Tamam’a bas.',
       ],
       onMs: 800,
       offMs: 250,

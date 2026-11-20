@@ -161,7 +161,7 @@ export const dusunmeVeCalismaTarzi: LikertInstrument = {
   intro: {
     title: 'Nasıl düşünür, nasıl çalışırsın?',
     paragraphs: [
-      'Birazdan seni anlatan 50 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 50 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar.',
       'Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur. Yaklaşık 7 dakika sürer.',
     ],

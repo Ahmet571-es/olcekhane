@@ -134,7 +134,7 @@ export const merak: LikertInstrument = {
   intro: {
     title: 'Neyi merak ediyorsun?',
     paragraphs: [
-      'Birazdan seni anlatan 20 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 20 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Cümleler öğrenmekle, okumakla, yeni yerlerle ve değişiklikle ilgili. Belirli bir günü değil, genellikle nasıl olduğunu düşünerek cevap ver.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Yaklaşık 4 dakika sürer.',
     ],

@@ -18,11 +18,11 @@ const C = 'conventional';
 const BY_TYPE: Record<string, string[]> = {
   [R]: [
     'Bozulan bir eşyayı söküp tamir etmek',
-    'Bir mobilyayı ya da maketi parçalarından birleştirmek',
+    'Bir mobilyayı ya da maketi parçalarını birleştirerek kurmak',
     'Bahçede fide dikip sebze ya da çiçek yetiştirmek',
     'Bir bisikletin ya da motorun nasıl çalıştığını kurcalayarak anlamak',
     'Tahtadan, metalden ya da kumaştan bir şey yapmak',
-    'Kamp kurmak, yön bulmak gibi açık havada yapılan işler',
+    'Kamp kurmak, yön bulmak gibi açık hava etkinlikleri yapmak',
     'Bir robotu ya da elektronik devreyi kablolarını bağlayarak kurmak',
     'Bir aracın lastiğini değiştirmek ya da bakımını yapmak',
   ],
@@ -48,7 +48,7 @@ const BY_TYPE: Record<string, string[]> = {
   ],
   [S]: [
     'Bir arkadaşına anlamadığı bir konuyu anlatmak',
-    'Küçük çocuklarla oyun ve etkinlik yapmak',
+    'Küçük çocuklara oyun oynatmak ya da onlarla etkinlik yapmak',
     'Bir yardım kampanyasında gönüllü çalışmak',
     'Üzgün bir arkadaşını dinleyip ona destek olmak',
     'Yaşlı ya da hasta birinin bakımına yardım etmek',
@@ -117,7 +117,7 @@ export const meslekiIlgi: LikertInstrument = {
     paragraphs: [
       'Birazdan 48 farklı etkinlik göreceksin. Her birini yapmaktan ne kadar hoşlanacağını seç.',
       'O işi yapıp yapamayacağını, ne kadar para kazandıracağını ya da başkalarının ne düşüneceğini düşünme. Yalnızca hoşlanıp hoşlanmayacağını düşün.',
-      'Daha önce hiç denemediğin bir etkinlikse, deneseydin nasıl hissedeceğini hayal et.',
+      'Daha önce hiç denemediğin bir etkinlikse, denesen nasıl hissedeceğini hayal et.',
     ],
   },
   prompt: 'Bunu yapmaktan ne kadar hoşlanırsın?',

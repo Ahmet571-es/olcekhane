@@ -368,7 +368,7 @@ export const altiBoyutluKisilik: LikertInstrument = {
   intro: {
     title: 'Kendini nasıl tanımlıyorsun?',
     paragraphs: [
-      'Birazdan seni anlatan 240 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 240 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Bu uzun bir test; yaklaşık 30 dakika sürer. Acele etmeyeceğin, sessiz bir zamanda başla.',
       'Bazı cümleler henüz yaşamadığın durumları anlatabilir (bir iş, vergi ya da tehlikeli bir durum gibi). Bunlarda, öyle bir durumda olsan nasıl davranacağını düşünerek cevap ver.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur.',

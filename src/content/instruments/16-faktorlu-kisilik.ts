@@ -204,7 +204,7 @@ const ITEMS: [string, boolean, string, string][] = [
   ['q2_05', false, 'Tek başıma yemek yemek beni rahatsız etmez.', "Don't mind eating alone."],
   ['q3_09', true, 'Eşyalarımı ortada bırakırım.', 'Leave my belongings around.'],
   ['q4_05', false, 'Ufak şeylere çabuk bozulurum.', 'Am easily put out.'],
-  ['a06', false, 'İnsanların yanımda rahat hissetmesini sağlarım.', 'Make people feel at ease.'],
+  ['a06', false, 'İnsanların yanımda kendini rahat hissetmesini sağlarım.', 'Make people feel at ease.'],
   ['c05', false, 'İşler yolunda gitmediğinde kolay kolay bunalmam.', 'Am not easily frustrated.'],
   ['e05', false, 'İşlerin kontrolünü elime alırım.', 'Take control of things.'],
   ['f05', false, 'Arkadaşlarımı eğlendiririm.', 'Amuse my friends.'],
@@ -267,7 +267,7 @@ export const onAltiFaktorKisilik: LikertInstrument = {
   intro: {
     title: 'Kendini nasıl tanımlıyorsun?',
     paragraphs: [
-      'Birazdan seni anlatan 160 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 160 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Bu uzunca bir test; yaklaşık 20 dakika sürer. Acele etmeyeceğin, sessiz bir zamanda başla.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur.',
     ],

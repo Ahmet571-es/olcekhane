@@ -103,6 +103,13 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   göre yazılır ve eklenmeden önce bilgi doğruluğu ile soruların birbirini ele vermemesi denetlenir.
 - Konusu sınavların kendisi olan testte (Sınav Kaygısı ve Baş Etme) yetişkine giden metinlerde "sınav" okula özgü sayılmaz;
   öteki okul sözcükleri yine aranır (`tests/helpers/school.ts`, `EXAM_TESTS`; genel denetimler `schoolWords(metin, slug)`).
+- Dil ve mantık kuralları (2026-11-20'de başlayan denetimden; ilerleme `DURUM.md`'de, kalıcı denetim
+  `tests/dil-denetimi.test.ts`): şıklar sıklık soruyorsa maddenin içinde sıklık sözcüğü olmaz ("sık sık bakarım" + "Nadiren");
+  madde tek bir davranışı söyler ve şıkların sorusuna uyar (bir durumu değil yapılan işi); herkesin cevaplayabileceği biçimde
+  yazılır (ör. telefonu olmayan öğrenci); etkinlik maddeleri eylemle biter; giriş "seni anlatan N cümle" demez; görev yönergesi
+  cevabı gönderen düğmeyi de söyler ve hedef yaşın anlayacağı sözcüklerle yazılır; okuma sorularında doğru şık şıkların en uzunu
+  olmaz ve çıkarım sorusu metinde yazmayanı sorar (`tests/okuma-hizi.test.ts`). Aynı İngilizce maddenin çevirisi bütün testlerde
+  birlikte değişir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır
   (`src/content/test-secici.ts`; `tests/test-secici.test.ts` yayındaki her testin bir yuvada olduğunu denetler).
 - Rapordaki kartlar, uyarılar ve kalite notları birbiriyle çelişmez: bütün durum birleşimleri `tests/<ad>.test.ts`

@@ -147,7 +147,7 @@ export const liderlikEgilimleri: LikertInstrument = {
   intro: {
     title: 'Gruplarda ve üstlendiğin işlerde nasılsın?',
     paragraphs: [
-      'Birazdan seni anlatan 28 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 28 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Cümleler bir grupta yön vermekle, insanlar arasında konuşmakla ve üstlendiğin işleri yürütmekle ilgili. Belirli bir günü değil, çoğu zaman nasıl davrandığını düşünerek cevap ver.',
       'Doğru ya da yanlış cevap yok; yüksek puan iyi, düşük puan kötü demek değildir. En faydalı sonuç, olmak istediğin hâli değil, gerçekte nasıl olduğunu anlattığında çıkar. Yaklaşık 5 dakika sürer.',
     ],

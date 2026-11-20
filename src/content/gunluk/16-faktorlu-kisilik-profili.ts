@@ -38,7 +38,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
     /*
      * Sıcaklık: a01 "Başkalarını nasıl teselli edeceğimi bilirim", a02 "İnsanları bir araya getirmekten hoşlanırım", a03
      * "Başkalarının ne hissettiğini içimde hissederim", a04 "Başka insanların hayatlarına ilgi duyarım", a05 "İnsanların
-     * moralini yükseltirim", a06 "İnsanların yanımda rahat hissetmesini sağlarım", a07 "Başkalarına zaman ayırırım"; ters: a08
+     * moralini yükseltirim", a06 "İnsanların yanımda kendini rahat hissetmesini sağlarım", a07 "Başkalarına zaman ayırırım"; ters: a08
      * "Başkalarının sorunlarıyla ilgilenmekten hoşlanmam", a09 "Aslında diğer insanlara pek ilgi duymam", a10 "İhtiyaç
      * sahiplerini düşünmemeye çalışırım".
      */

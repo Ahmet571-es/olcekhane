@@ -128,7 +128,9 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
       <div className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {first
-            ? 'Önce kısa bir alıştırma yapalım. Sayıları dikkatle izle; hepsi bitince tuşlara bas.'
+            ? task.direction === 'backward'
+              ? 'Önce kısa bir alıştırma yapalım. Sayıları dikkatle izle; hepsi bitince sondan başa doğru gir.'
+              : 'Önce kısa bir alıştırma yapalım. Sayıları dikkatle izle; hepsi bitince aynı sırayla tuşlara bas.'
             : 'Alıştırma bitti. Şimdi asıl görev başlıyor. Diziler giderek uzayacak; elinden geleni yap.'}
         </p>
         <button

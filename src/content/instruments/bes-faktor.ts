@@ -32,7 +32,7 @@ export const besFaktor: LikertInstrument = {
   intro: {
     title: 'Kendini nasıl tanımlıyorsun?',
     paragraphs: [
-      'Birazdan seni anlatan 50 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 50 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, şu anki hâlini anlattığında çıkar.',
       'Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur. Yaklaşık 8 dakika sürer.',
     ],
@@ -152,7 +152,7 @@ export const besFaktor: LikertInstrument = {
     { key: 'ES9', scale: 'emotional_stability', reverse: true, text: 'Sinirim çabuk bozulur.', source: 'Get irritated easily.' },
     { key: 'I9', scale: 'intellect', text: 'Olaylar ve fikirler üzerine düşünmeye zaman ayırırım.', source: 'Spend time reflecting on things.' },
     { key: 'E10', scale: 'extraversion', reverse: true, text: 'Tanımadığım insanların yanında sessiz olurum.', source: 'Am quiet around strangers.' },
-    { key: 'A10', scale: 'agreeableness', text: 'İnsanların yanımda rahat hissetmesini sağlarım.', source: 'Make people feel at ease.' },
+    { key: 'A10', scale: 'agreeableness', text: 'İnsanların yanımda kendini rahat hissetmesini sağlarım.', source: 'Make people feel at ease.' },
     { key: 'C10', scale: 'conscientiousness', text: 'Yaptığım işte titizimdir.', source: 'Am exacting in my work.' },
     { key: 'ES10', scale: 'emotional_stability', reverse: true, text: 'Sık sık kendimi hüzünlü hissederim.', source: 'Often feel blue.' },
     { key: 'I10', scale: 'intellect', text: 'Aklım fikirlerle doludur.', source: 'Am full of ideas.' },

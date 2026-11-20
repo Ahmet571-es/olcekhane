@@ -354,7 +354,7 @@ export function Cancellation({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1" aria-live="polite">
               <p className="text-lg font-bold">
-                {hits === total && wrong === 0 ? 'Harika, hepsi doğru!' : `${total} aranan harften ${hits} tanesini buldun.`}
+                {hits === total && wrong === 0 ? 'Harika, hepsi doğru!' : `Aranan ${total} harften ${hits} tanesini buldun.`}
               </p>
               {missed > 0 && <p>Kesikli çerçeveli {missed} harfi atladın.</p>}
               {wrong > 0 && <p>Kırmızı zeminli {wrong} harf aranan harflerden değildi.</p>}

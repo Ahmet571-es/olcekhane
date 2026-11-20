@@ -101,7 +101,7 @@ export const besFaktorReport: ReportTemplate = {
       very_high: {
         summary: 'Çok şefkatli ve yardımsever',
         student:
-          'Başkalarının duygularına çok önem verdiğini, yardım etmekten mutluluk duyduğunu ve insanların yanında rahat hissetmesini sağladığını söylüyorsun.',
+          'Başkalarının duygularına çok önem verdiğini, yardım etmekten mutluluk duyduğunu ve insanların yanında kendini rahat hissetmesini sağladığını söylüyorsun.',
         parent: 'Çocuğunuz başkalarının duygularına çok duyarlı ve yardımsever olduğunu belirtiyor.',
         tipsStudent: [
           'Başkalarına yardım ederken kendi ihtiyaçlarını da unutma; bazen "hayır" demek de bir iyiliktir.',

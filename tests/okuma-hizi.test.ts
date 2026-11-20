@@ -61,6 +61,24 @@ describe('Okuma Hızı ve Anlama: sorular', () => {
     const patterns = okumaHizi.passages.map((p) => p.questions.map((q) => q.answer).join(''));
     expect(new Set(patterns).size).toBe(patterns.length);
   });
+
+  // 2026-11-20 dil ve mantık denetimi: doğru şık 32 sorunun 22'sinde en uzun şıktı ("en uzunu seç" diyen öğrenci ipucu
+  // alıyordu). Rastgele olsa dörtte biri (8 soru) beklenir.
+  it('doğru şık çoğu soruda en uzun şık değil; hiçbir soruda belirgin biçimde en uzun değil', () => {
+    let longest = 0;
+    let total = 0;
+    for (const p of okumaHizi.passages) {
+      for (const q of p.questions) {
+        total++;
+        const right = q.options.find((o) => o.key === q.answer)!.text.length;
+        const others = Math.max(...q.options.filter((o) => o.key !== q.answer).map((o) => o.text.length));
+        if (right > others) longest++;
+        // Tek kelimelik şıklarda birkaç harflik fark ipucu sayılmaz.
+        if (right > 12) expect(right / others, `${p.key} ${q.key}`).toBeLessThan(1.25);
+      }
+    }
+    expect(longest).toBeLessThanOrEqual(Math.ceil(total * 0.3));
+  });
 });
 
 describe('Okuma Hızı ve Anlama: puanlama ve rapor', () => {

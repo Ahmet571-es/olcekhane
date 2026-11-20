@@ -21,9 +21,9 @@ const harf: CancellationTask = {
   measures: 'Sürekli dikkat: uzun süre aynı işe odaklanıp hem hızlı hem dikkatli çalışabilme.',
   instructions: [
     'Ekranda satır satır dizilmiş harfler göreceksin. Aradığın harfler: a, b, d ve g.',
-    'Bu harflerin her birine dokunarak ya da tıklayarak işaretle. Yanlış bir harfi işaretlersen üzerine yeniden dokun; işaret kalkar.',
+    'Bu harflerin her birini, üzerine dokunarak ya da tıklayarak işaretle. Yanlış bir harfi işaretlersen üzerine yeniden dokun; işaret kalkar.',
     'Kitap okur gibi soldan sağa, satır satır ilerle ve satır atlama. Sayfa aşağı doğru devam eder.',
-    'Görev 90 saniyelik 4 bölümden oluşur. Her bölümde yeni bir sayfa gelir; yine ilk satırdan başla. Hem hızlı hem dikkatli olmaya çalış.',
+    'Görev 90 saniyelik dört bölümden oluşur. Her bölümde yeni bir sayfa gelir; yine ilk satırdan başla. Hem hızlı hem dikkatli olmaya çalış.',
   ],
   targets: ['a', 'b', 'd', 'g'],
   // Türk alfabesinin geri kalan harfleri; g'den yalnızca bir işaretle ayrılan ğ bilerek kullanılmaz.

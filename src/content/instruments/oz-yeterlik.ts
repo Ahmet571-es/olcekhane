@@ -135,7 +135,7 @@ export const ozYeterlik: LikertInstrument = {
   intro: {
     title: 'Kendine ne kadar güveniyorsun?',
     paragraphs: [
-      'Birazdan seni anlatan 29 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 29 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Cümleler işlerle, insanlarla ve zor anlarla ilgili. Belirli bir günü değil, genellikle nasıl olduğunu düşünerek cevap ver.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Yaklaşık 5 dakika sürer.',
     ],

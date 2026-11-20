@@ -146,7 +146,7 @@ export const empatiDaily: SurveyDaily = {
       },
     },
     /*
-     * Sıcaklık ve destek: war01 "İnsanlara ilgi duyarım", war02 "İnsanların yanımda rahat hissetmesini sağlarım", war03
+     * Sıcaklık ve destek: war01 "İnsanlara ilgi duyarım", war02 "İnsanların yanımda kendini rahat hissetmesini sağlarım", war03
      * "Başkalarını nasıl teselli edeceğimi bilirim", war04 "Başkalarının hâlini hatırını sorarım", war05 "Başkalarına zaman
      * ayırırım", war06 "İnsanlara iyi karşılandıklarını hissettiririm", war07 "Birine minnettar olduğumda bunu belli
      * ederim", war08 "Başkalarının kendilerini iyi hissetmelerini sağlarım"; ters: war10 "Aslında diğer insanlara pek ilgi

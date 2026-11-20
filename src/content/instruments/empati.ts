@@ -84,7 +84,7 @@ const ITEMS: [string, boolean, string, string][] = [
   ['war01', false, 'İnsanlara ilgi duyarım.', 'Am interested in people.'],
   ['und01', false, 'Başkalarının duygularını anlar, onlara ortak olurum.', "Sympathize with others' feelings."],
   ['aff01', false, 'Başkalarının ne hissettiğini içimde hissederim.', "Feel others' emotions."],
-  ['war02', false, 'İnsanların yanımda rahat hissetmesini sağlarım.', 'Make people feel at ease.'],
+  ['war02', false, 'İnsanların yanımda kendini rahat hissetmesini sağlarım.', 'Make people feel at ease.'],
   ['und06', true, 'Başkalarının iyi olup olmaması beni pek ilgilendirmez.', 'Feel little concern for others.'],
   ['aff02', false, 'Başkalarının derdiyle dertlenirim.', "Suffer from others' sorrows."],
   ['war05', false, 'Başkalarına zaman ayırırım.', 'Take time out for others.'],
@@ -144,7 +144,7 @@ export const empati: LikertInstrument = {
   intro: {
     title: 'Başkalarına nasıl yaklaşırsın?',
     paragraphs: [
-      'Birazdan seni anlatan 29 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 29 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Cümlelerin çoğu başka insanlarla ilgili. Belirli bir kişiyi değil, insanlara genel olarak nasıl yaklaştığını düşünerek cevap ver.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Yaklaşık 5 dakika sürer.',
     ],

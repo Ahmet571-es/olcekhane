@@ -34,7 +34,7 @@ export const ozSaygi: LikertInstrument = {
     title: 'Kendine nasıl bakıyorsun?',
     paragraphs: [
       'Birazdan kendin hakkında 10 cümle göreceksin. Her birine ne kadar katıldığını seç.',
-      'Genel olarak nasıl hissettiğini düşün, yalnızca bugünü değil. Doğru ya da yanlış cevap yok.',
+      'Yalnızca bugünü değil, genel olarak nasıl hissettiğini düşün. Doğru ya da yanlış cevap yok.',
     ],
   },
   prompt: 'Bu cümleye ne kadar katılıyorsun?',

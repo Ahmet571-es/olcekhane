@@ -80,7 +80,7 @@ export const dersCalismaMotivasyonu: LikertInstrument = {
     paragraphs: [
       'Birazdan ders çalışmayla ilgili 25 cümle göreceksin; çoğu bir ders çalışma nedenini anlatıyor. Her birinin sana ne kadar uyduğunu seç.',
       'Çoğu insanın birden çok nedeni vardır: bir cümleye “uyuyor” demen, ötekilere “uymuyor” demeni gerektirmez. Derslere göre farklı hissediyorsan çoğu zaman nasıl olduğunu düşün.',
-      'Doğru ya da yanlış cevap yok. Olması gerekeni değil, gerçekte nasıl olduğunu seçersen rapor sana en çok işe yarar.',
+      'Doğru ya da yanlış cevap yok. Olması gerekeni değil, gerçekte nasıl olduğunu seçersen rapor işine en çok yarar.',
     ],
   },
   prompt: 'Bu cümle sana ne kadar uyuyor?',

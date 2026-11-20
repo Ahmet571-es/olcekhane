@@ -125,7 +125,7 @@ export const ozDenetim: LikertInstrument = {
   intro: {
     title: 'Kendini ne kadar yönetebiliyorsun?',
     paragraphs: [
-      'Birazdan seni anlatan 28 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan 28 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Cümleler karar vermekle, işlere koyulmakla ve cazip gelen şeylerle ilgili. Belirli bir günü değil, genellikle nasıl olduğunu düşünerek cevap ver.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Yaklaşık 5 dakika sürer.',
     ],

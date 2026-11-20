@@ -24,9 +24,9 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
   version: 'calisma-aliskanliklari-gunluk-1',
   scales: {
     /*
-     * Planlama: P1 "Ders çalışmaya başlamadan önce o gün neyi çalışacağımı belirlerim", P2 "Haftalık bir çalışma planım vardır
-     * ve ona uymaya çalışırım", P3 "Sınavlara son güne bırakmadan, günler öncesinden hazırlanmaya başlarım", P5 "Büyük bir
-     * ödevi küçük parçalara bölüp her birine bir zaman ayırırım"; ters: P4 "Ödevlerimi çoğu zaman son dakikaya bırakırım".
+     * Planlama: P1 "Ders çalışmaya başlamadan önce o gün neyi çalışacağımı belirlerim", P2 "Haftalık bir çalışma planına göre
+     * çalışırım", P3 "Sınavlara son güne bırakmadan, günler öncesinden hazırlanmaya başlarım", P5 "Büyük bir
+     * ödevi küçük parçalara bölüp her birine bir zaman ayırırım"; ters: P4 "Ödevlerimi son dakikaya bırakırım".
      */
     planning: {
       poles: { low: 'Henüz plan yapmadan başlar', high: 'Önceden plan yapar' },
@@ -74,8 +74,8 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
     },
     /*
      * Kendini sınama ve tekrar: T1 "Bir konuyu çalıştıktan sonra kitaba bakmadan neler hatırladığımı kontrol ederim", T2
-     * "Öğrendiğim konuları birkaç gün sonra yeniden tekrar ederim", T4 "Soru çözerek ya da soru kartlarıyla kendimi sınarım",
-     * T5 "Sınavdan önce kendime sınavda çıkabilecek sorular sorarım"; ters: T3 "Bir konuyu tekrar etmek için genellikle
+     * "Öğrendiğim konuları birkaç gün sonra tekrar ederim", T4 "Soru çözerek ya da soru kartlarıyla kendimi sınarım",
+     * T5 "Sınavdan önce kendime sınavda çıkabilecek sorular sorarım"; ters: T3 "Bir konuyu tekrar etmek için
      * yalnızca notlarımı yeniden okurum".
      */
     retrieval: {
@@ -173,10 +173,10 @@ export const calismaAliskanliklariDaily: SurveyDaily = {
       },
     },
     /*
-     * Odaklanma: F1 "Ders çalışırken telefonumu başka bir odaya koyar ya da sessize alırım" (kullanılmadı: telefon ve ayrı
-     * oda varsayardı), F3 "Ders çalışmak için dikkatimi dağıtan şeylerin olmadığı bir yer seçerim", F4 "Uzun süre
-     * çalışacaksam arada kısa molalar veririm"; ters: F2 "Ders çalışırken sık sık sosyal medyaya ya da mesajlarıma bakarım",
-     * F5 "Ders çalışırken aklım başka şeylere kayar ve bunu uzun süre fark etmem".
+     * Odaklanma: F1 "Ders çalışırken telefon ve tablet gibi cihazları uzağımda tutar ya da sessize alırım" (örneklerde
+     * kullanılmadı: cihaz varsayardı), F3 "Ders çalışmak için dikkatimi dağıtan şeylerin olmadığı bir yer seçerim", F4 "Uzun süre
+     * çalışacaksam arada kısa molalar veririm"; ters: F2 "Ders çalışırken sosyal medyaya ya da mesajlarıma bakarım",
+     * F5 "Ders çalışırken aklımın başka şeylere kaydığını geç fark ederim".
      */
     focus: {
       poles: { low: 'Henüz dikkati çabuk kayar', high: 'Dikkatini işte tutar' },
