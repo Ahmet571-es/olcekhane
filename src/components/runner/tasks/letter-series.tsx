@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TURKISH_ALPHABET, type LetterSeriesItem, type LetterSeriesPracticeItem, type LetterSeriesTask } from '@/lib/instruments/types';
 import type { LetterSeriesTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -247,7 +247,7 @@ export function LetterSeries({ task, onDone }: { task: LetterSeriesTask; onDone:
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Harflerin her adımda alfabede kaç harf ilerlediğine ya da hangi harfin tekrarlandığına dikkatle bak. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}

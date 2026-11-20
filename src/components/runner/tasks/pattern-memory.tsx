@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PatternItem, PatternMemoryTask } from '@/lib/instruments/types';
 import type { PatternTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, usePageHidden, wait } from './common';
+import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, usePageHidden, wait, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 type Phase = 'wait' | 'show' | 'input' | 'feedback';
@@ -319,7 +319,7 @@ export function PatternMemory({ task, onDone }: { task: PatternMemoryTask; onDon
             ? 'Alıştırma desenlerinin hepsini doğru yaptın.'
             : practiceScore === 0
               ? 'Alıştırma desenlerini doğru yapamadın. Desen görünürken bütün tabloya bak; koyu karelerin nerede toplandığını ve hangi satırlarda olduğunu fark etmeye çalış.'
-              : `Alıştırmadaki ${task.practice.length} desenin ${practiceScore} tanesini doğru yaptın. Desen görünürken bütün tabloya bak; koyu karelerin nerede toplandığını fark etmeye çalış.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} desenin ${countOf(practiceScore, task.practice.length)} doğru yaptın. Desen görünürken bütün tabloya bak; koyu karelerin nerede toplandığını fark etmeye çalış.`}{' '}
           {all ? 'Şimdi asıl test başlıyor.' : 'İstersen alıştırmayı tekrarlayabilirsin.'}
         </p>
         <p className="measure text-ink-2">

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactionTimeTask } from '@/lib/instruments/types';
 import type { ReactionTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, primaryPointer, useKeys, usePageHidden, wait } from './common';
+import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, primaryPointer, useKeys, usePageHidden, wait, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 type Message = { title: string; text?: string; good: boolean } | null;
@@ -231,13 +231,13 @@ export function ReactionTime({ task, onDone }: { task: ReactionTimeTask; onDone:
     return (
       <div key={`${step}-${partIndex}`} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {part.practice.length} denemenin {practiceScore} tanesini doğru yaptın.{' '}
+          Alıştırmada {part.practice.length} denemenin {countOf(practiceScore, part.practice.length)} doğru yaptın.{' '}
           {low
             ? choice
               ? 'Dairenin olduğu taraftaki düğmeye basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
               : 'Daireyi bekleyip, görür görmez basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
             : choice
-              ? 'Şimdi asıl bölüm başlıyor; artık doğru mu yanlış mı olduğunu ve ne kadar hızlı bastığını görmeyeceksin. Daire belirmeden basarsan yine uyarı göreceksin.'
+              ? 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını ve ne kadar hızlı bastığını görmeyeceksin. Daire belirmeden basarsan yine uyarı göreceksin.'
               : 'Şimdi asıl bölüm başlıyor; artık ne kadar hızlı bastığını görmeyeceksin. Daire belirmeden basarsan yine uyarı göreceksin.'}
         </p>
         <div className="flex flex-wrap justify-center gap-3">

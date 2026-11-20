@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SymbolMatchTask } from '@/lib/instruments/types';
 import type { SymbolTrialInput } from '@/lib/scoring/tasks';
-import { PausedScreen, Stage, StatusLine, SymbolGlyph, afterPaint, primaryPointer, useKeys, usePageHidden } from './common';
+import { PausedScreen, Stage, StatusLine, SymbolGlyph, afterPaint, primaryPointer, useKeys, usePageHidden, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -127,7 +127,7 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
         <p className="measure text-lg">
           {first
             ? 'Üstteki anahtarda her sembolün altında bir rakam var. Önce altı denemelik bir alıştırma yapalım.'
-            : `Alıştırmada ${task.practice.length} sembolün ${practiceHits} tanesini doğru eşleştirdin. Şimdi ${Math.round(task.durationMs / 1000)} saniye boyunca yapabildiğin kadarını yap. Hem hızlı hem doğru olmaya çalış.`}
+            : `Alıştırmada ${task.practice.length} sembolün ${countOf(practiceHits, task.practice.length)} doğru eşleştirdin. Şimdi ${Math.round(task.durationMs / 1000)} saniye boyunca yapabildiğin kadarını yap. Hem hızlı hem doğru olmaya çalış.`}
         </p>
         <button
           type="button"

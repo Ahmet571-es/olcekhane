@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { VerbalItem, VerbalPracticeItem, VerbalReasoningTask } from '@/lib/instruments/types';
 import { VERBAL_LETTERS, VERBAL_PROMPTS, VERBAL_TYPE_NAMES } from '@/lib/instruments/verbal';
 import type { VerbalTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -276,7 +276,7 @@ export function VerbalReasoning({ task, onDone }: { task: VerbalReasoningTask; o
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? 'Alıştırmadaki soruların hepsini doğru cevapladın.'
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Soruları ve seçenekleri dikkatle oku; sıralama ve çıkarım sorularında yalnızca verilen bilgileri kullan. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

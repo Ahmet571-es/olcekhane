@@ -249,7 +249,7 @@ export function NBack({ task, onDone }: { task: NBackTask; onDone: (trials: NBac
           {s.falseAlarms === 0 ? 'hiç basmadın' : `${s.falseAlarms} kez bastın`}.{' '}
           {low
             ? `Kuralı hatırla: harf ${RULE[n]} harfle aynıysa bas. İstersen alıştırmayı tekrarlayabilirsin.`
-            : 'Şimdi asıl bölüm başlıyor; artık doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

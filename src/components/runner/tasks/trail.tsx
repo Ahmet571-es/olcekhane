@@ -177,6 +177,8 @@ export function Trail({ task, onDone }: { task: TrailTask; onDone: (parts: Trail
   const part = task.parts[partIdx];
   const board = step === 'practice' ? part.practice : { labels: part.labels, points: part.points };
   const isLast = partIdx + 1 >= task.parts.length;
+  // Bölümün süre sınırı: "2 dakika" (tam dakika değilse saniyeyle).
+  const limitText = task.maxMs % 60_000 === 0 ? `${task.maxMs / 60_000} dakika` : `${Math.round(task.maxMs / 1000)} saniye`;
 
   const reset = () => {
     doneRef.current = 0;
@@ -333,7 +335,7 @@ export function Trail({ task, onDone }: { task: TrailTask; onDone: (parts: Trail
     return (
       <div key={`${step}-${partIdx}`} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırma bitti. Şimdi asıl bölüm başlıyor: {part.labels.length} daire. Daireler ekrana gelince süre başlar. Olabildiğince hızlı ve
+          Alıştırma bitti. Şimdi asıl bölüm başlıyor: {part.labels.length} daire. Daireler ekrana gelince süre başlar, son daireye dokununca biter; bu bölüm en çok {limitText} sürer. Olabildiğince hızlı ve
           dikkatli ol; yanlış bir daireye dokunursan doğrusunu bulup devam et.
         </p>
         <ArmedButton
@@ -355,7 +357,7 @@ export function Trail({ task, onDone }: { task: TrailTask; onDone: (parts: Trail
       <div key={`${step}-${partIdx}`} className="flex flex-col items-center gap-6 text-center">
         <h2 className="t-h2">Süre doldu</h2>
         <p className="measure text-lg">
-          Bu bölüm için ayrılan {Math.round(task.maxMs / 1000)} saniye doldu; {part.labels.length} dairenin {done} tanesini birleştirdin. Sorun
+          Bu bölüm için ayrılan {limitText} doldu; {part.labels.length} dairenin {done} tanesini birleştirdin. Sorun
           değil, {isLast ? 'görev burada bitiyor.' : 'sıradaki bölüme geçebilirsin.'}
         </p>
         <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={nextPart}>

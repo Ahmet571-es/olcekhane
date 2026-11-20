@@ -220,6 +220,7 @@ export function RuleSwitch({ task, onDone }: { task: RuleSwitchTask; onDone: (tr
     return (
       <PausedScreen
         note={current.kind === 'block' ? 'Yaptığın denemeler kaybolmadı; kaldığın yerden devam edeceksin.' : 'Bu alıştırma baştan başlayacak.'}
+        cta={current.kind === 'block' ? undefined : 'Alıştırmayı baştan başlat'}
         onResume={() => setPaused(false)}
       />
     );
@@ -284,7 +285,7 @@ export function RuleSwitch({ task, onDone }: { task: RuleSwitchTask; onDone: (tr
       <div key={`${step}-${stage}`} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           Alıştırmada {n} denemenin {practiceScore === n ? 'hepsini' : `${practiceScore} tanesini`} doğru yaptın.{' '}
-          {low ? `${rule} İstersen alıştırmayı tekrarlayabilirsin.` : 'Şimdi asıl bölüm başlıyor; artık doğru mu yanlış mı olduğunu görmeyeceksin.'}
+          {low ? `${rule} İstersen alıştırmayı tekrarlayabilirsin.` : 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
         </p>
         <Key />
         <div className="flex flex-wrap justify-center gap-3">

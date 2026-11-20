@@ -73,8 +73,8 @@ const renkKelime: ColorWordTask = {
   measures: 'Ketleme: alışkanlıkla gelen cevabı (kelimeyi okumayı) durdurup doğru cevabı verebilme.',
   instructions: [
     'Ekranda renk adları göreceksin: KIRMIZI, MAVİ, YEŞİL ve SARI. Kelimeler bazen kendi renginde, bazen başka bir renkte yazılmış olacak.',
-    'Kelimeyi okumaya değil, yazının rengine bak ve o rengin düğmesine bas. Örneğin MAVİ kelimesi kırmızı renkte yazılmışsa KIRMIZI düğmesine basmalısın. Bilgisayarda 1, 2, 3 ve 4 tuşlarını da kullanabilirsin.',
-    'Hem hızlı hem doğru olmaya çalış. Önce renkleri tanımak için kısa bir renk denemesi ve bir alıştırma yapacaksın. Görev iki bölümden oluşur; arada kısa bir mola var.',
+    'Kelimeye değil, yazının rengine bak ve o rengin düğmesine bas. Örneğin MAVİ kelimesi kırmızı renkte yazılmışsa KIRMIZI düğmesine basmalısın. Bilgisayarda 1, 2, 3 ve 4 tuşlarını da kullanabilirsin; hangi tuşun hangi renk olduğu düğmelerin üzerinde yazar.',
+    'Hem hızlı hem doğru olmaya çalış. Her kelime ekranda en çok 3 saniye kalır; basmazsan sıradaki kelime gelir.',
   ],
   colors: COLORS,
   fixationMs: 500,

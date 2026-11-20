@@ -57,7 +57,7 @@ const durGit: GoNoGoTask = {
   name: 'Dur-Git',
   measures: 'Durabilme: hızla basmaya alışmışken gerektiğinde basmadan durabilme (tepki ketlemesi).',
   instructions: [
-    'Ekranda harfler tek tek, hızlıca belirecek. Her harf göründüğünde BAS düğmesine (ya da boşluk tuşuna) olabildiğince hızlı bas.',
+    'Ekranda harfler tek tek belirecek ve hemen kaybolacak; sıradaki harf kendiliğinden gelecek. Her harf göründüğünde BAS düğmesine (ya da boşluk tuşuna) olabildiğince hızlı bas.',
     'Ama X harfini görürsen basma: dur ve bir sonraki harfi bekle.',
     'Hem hızlı olmaya hem de X’te durmaya çalış; ara sıra yanılmak çok normal. Önce kısa bir alıştırma yapacaksın. Görev iki bölümden oluşur; arada kısa bir mola var.',
   ],
@@ -101,7 +101,7 @@ export const durGitGorevi: TaskInstrument = {
   intro: {
     title: 'Bas ya da dur',
     paragraphs: [
-      'Birazdan ekranda harfler tek tek belirecek. Her harfte düğmeye basacaksın; yalnızca X görünce durup basmayacaksın.',
+      'Birazdan ekranda harfler tek tek belirecek. Her harfte düğmeye basacaksın; yalnızca X’i görünce basmayacak, sıradaki harfi bekleyeceksin.',
       'Görev iki bölümden oluşur; aralarında kısa bir mola var. Başlamadan önce kısa bir alıştırma yapacaksın.',
       'Sessiz bir yerde, dikkatini dağıtacak şeyler olmadan yaparsan sonuç seni daha iyi yansıtır.',
     ],

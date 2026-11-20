@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { MATRIX_GRAY, MATRIX_INK, MATRIX_PAPER, cellPrims, describeCell, itemMaxCount } from '@/lib/instruments/matrix';
 import type { MatrixCell, MatrixItem, MatrixPracticeItem, MatrixReasoningTask } from '@/lib/instruments/types';
 import type { MatrixTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -266,7 +266,7 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Satırlarda neyin aynı kaldığına ve neyin değiştiğine dikkatle bak. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

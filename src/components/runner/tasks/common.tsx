@@ -144,6 +144,11 @@ export function PausedScreen({
   );
 }
 
+/** Alıştırma sonucu: sayı tam ise "hepsini", değilse "5 tanesini" ("8 denemenin 8 tanesini" denmez). */
+export function countOf(n: number, total: number, ending: 'ini' | 'inde' = 'ini'): string {
+  return n === total ? `heps${ending}` : `${n} tanes${ending}`;
+}
+
 /** Bölüm sıra adları: "Birinci bölüm bitti". */
 export const ORDINALS = ['Birinci', 'İkinci', 'Üçüncü', 'Dördüncü', 'Beşinci', 'Altıncı'];
 export const ordinal = (i: number) => ORDINALS[i] ?? `${i + 1}.`;

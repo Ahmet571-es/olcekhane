@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { shapePath } from '@/lib/instruments/rotation';
 import type { MentalRotationTask, RotationShape } from '@/lib/instruments/types';
 import type { RotationTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait } from './common';
+import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test' | 'break';
 type Shown = { shape: RotationShape; angle: number; mirror: boolean };
@@ -227,10 +227,10 @@ export function MentalRotation({ task, onDone }: { task: MentalRotationTask; onD
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {task.practice.length} denemenin {practiceScore} tanesini doğru yaptın.{' '}
+          Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
           {low
             ? 'Sağdaki şekli zihninde döndürüp soldakiyle karşılaştırmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl görev başlıyor; artık doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

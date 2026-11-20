@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GoNoGoTask } from '@/lib/instruments/types';
 import type { GoNoGoTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait } from './common';
+import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test' | 'break';
 type View = { kind: 'blank' } | { kind: 'stimulus'; letter: string } | { kind: 'feedback'; text: string; good: boolean };
@@ -139,6 +139,7 @@ export function GoNoGo({ task, onDone }: { task: GoNoGoTask; onDone: (trials: Go
       <PausedScreen
         autoFocus={false}
         note={step === 'test' ? 'Yaptığın denemeler kaybolmadı; kaldığın yerden devam edeceksin.' : 'Alıştırma baştan başlayacak.'}
+        cta={step === 'test' ? undefined : 'Alıştırmayı baştan başlat'}
         onResume={() => setPaused(false)}
       />
     );
@@ -156,10 +157,10 @@ export function GoNoGo({ task, onDone }: { task: GoNoGoTask; onDone: (trials: Go
           </p>
         ) : (
           <p className="measure text-lg">
-            Alıştırmada {task.practice.length} denemenin {practiceScore} tanesini doğru yaptın.{' '}
+            Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
             {low
               ? `Harf görünce hemen basmayı, ${task.stop} görünce durmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.`
-              : 'Şimdi asıl görev başlıyor; artık doğru mu yanlış mı olduğunu görmeyeceksin.'}
+              : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
           </p>
         )}
         <div className="flex flex-wrap justify-center gap-3">

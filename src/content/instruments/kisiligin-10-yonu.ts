@@ -117,7 +117,7 @@ const ITEMS: [string, boolean, string, string][] = [
   ['ind02', false, 'Başladığım işi bitiririm.', 'Finish what I start.'],
   ['wit08', false, 'Kendimle barışığım.', 'Feel comfortable with myself.'],
   ['ass02', false, 'Güçlü bir kişiliğim var.', 'Have a strong personality.'],
-  ['opn08', true, 'Pek düşüncelere dalıp gitmem.', 'Seldom get lost in thought.'],
+  ['opn08', true, 'Düşüncelere pek dalıp gitmem.', 'Seldom get lost in thought.'],
   ['pol02', false, 'Israrcı biri gibi görünmekten hiç hoşlanmam.', 'Hate to seem pushy.'],
   ['ord08', true, 'Dağınık insanlar beni rahatsız etmez.', 'Am not bothered by messy people.'],
   ['vol08', false, 'Duygularımı kontrol altında tutarım.', 'Keep my emotions under control.'],

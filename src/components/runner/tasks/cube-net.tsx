@@ -5,7 +5,7 @@ import { COLOR_HEX, COLOR_NAMES, CUBE_FACES, CUBE_VIEWBOX, SYMBOL_NAMES, SYMBOL_
 import type { CubeItem, CubeNetTask, CubePracticeItem } from '@/lib/instruments/types';
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import type { CubeTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -342,7 +342,7 @@ export function CubeNet({ task, onDone }: { task: CubeNetTask; onDone: (trials: 
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun ${task.practice.length === 2 ? 'ikisini de' : 'hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Açınımda bir kareyi küpün önü say ve komşu kareleri onun çevresine zihninde katla: açınımda yan yana duran iki kare küpte de yan yana kalır, düz bir sırada aralarında tek kare olan iki kare ise küpte karşı karşıya gelir. Bir köşede buluşan üç yüzün sırası, küp nasıl çevrilirse çevrilsin değişmez. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

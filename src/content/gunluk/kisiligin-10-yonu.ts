@@ -276,7 +276,7 @@ export const kisiligin10YonuDaily: SurveyDaily = {
      * kaçınırım", int09 "Okuması zor metinlerden kaçınırım" (beceri ve hız bildiren öteki maddeler kullanılmadı). Sanat ve
      * hayal gücü: opn01 "Doğanın güzelliğinden keyif alırım", opn02 "Sanatın önemli olduğuna inanırım", opn03 "Bir şeyler
      * üzerine düşünüp taşınmayı çok severim", opn04 "Kendimi müziğe tamamen kaptırırım", opn05, opn06; ters opn07 "Şiiri
-     * sevmem", opn08 "Pek düşüncelere dalıp gitmem", opn09 "Pek hayal kurmam", opn10. Düşük ucun örnekleri ilgiyi anlatır.
+     * sevmem", opn08 "Düşüncelere pek dalıp gitmem", opn09 "Pek hayal kurmam", opn10. Düşük ucun örnekleri ilgiyi anlatır.
      */
     openness: {
       poles: { low: 'Somut konuları tercih eder', high: 'Fikirlere ve sanata açık' },

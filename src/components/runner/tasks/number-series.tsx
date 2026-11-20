@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NumberSeriesItem, NumberSeriesPracticeItem, NumberSeriesTask } from '@/lib/instruments/types';
 import type { NumberSeriesTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -210,7 +210,7 @@ export function NumberSeries({ task, onDone }: { task: NumberSeriesTask; onDone:
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Sayıların her adımda nasıl değiştiğine dikkatle bak; aradaki farkları kâğıda yazmak işine yarar. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

@@ -94,8 +94,8 @@ export const duygusalZekaBilesenleriDaily: SurveyDaily = {
      * üzgün görünürüm", nexp03 "Korktuğumu belli ederim", nexp04 "Üzgün olduğumda yüz ifademin beni ele verdiğini
      * düşünürüm", nexp05 "Üzüldüğümü belli ederim"; ters: nexp06 "Ne kadar mutsuz olursam olayım, duygularımı kendime
      * saklarım", nexp07 "Birine kızdığımda bunu ona göstermekte zorlanırım", nexp08 "Ne kadar korkarsam korkayım,
-     * duygularımı kendime saklarım", nexp09 "Öfkemi nadiren belli ederim", nexp10 "Keşke olumsuz duygularımı daha kolay
-     * gösterebilsem".
+     * duygularımı kendime saklarım", nexp09 "Öfkemi nadiren belli ederim", nexp10 "Olumsuz duygularımı daha kolay
+     * gösterebilmeyi isterdim".
      */
     negative_expressivity: {
       poles: { low: 'Zor duygularını saklar', high: 'Zor duygularını gösterir' },
@@ -155,8 +155,8 @@ export const duygusalZekaBilesenleriDaily: SurveyDaily = {
     },
     /*
      * Duygularına dikkat etme: atte01 "Duygularımın nedenlerini düşünürüm", atte02 "Ne hissettiğime çok dikkat ederim",
-     * atte03 "Genellikle nasıl hissettiğimin farkındayım", atte04 "Duygularımı fark ederim", atte05 "Sık sık durup nasıl
-     * hissettiğimi analiz ederim"; ters: atte06 "Nasıl hissettiğimi pek düşünmem", atte07 "Duygularımı pek analiz etmem",
+     * atte03 "Genellikle ne hissettiğimin farkındayım", atte04 "Duygularımı fark ederim", atte05 "Sık sık durup ne
+     * hissettiğimi analiz ederim"; ters: atte06 "Ne hissettiğimi pek düşünmem", atte07 "Duygularımı pek analiz etmem",
      * atte08 "Kendi duygularımı pek tanımam", atte09 "Duygularımı sık sık görmezden gelirim", atte10 "Duygusal tepkilerimi
      * pek fark etmem".
      */
@@ -215,7 +215,7 @@ export const duygusalZekaBilesenleriDaily: SurveyDaily = {
     },
     /*
      * Duygulara göre karar verme: edec01 "Önemli kararlar verirken duygularımı dinlerim", edec02 "Hayattaki hedeflerimi
-     * mantık yerine ilhama göre belirlerim", edec03 "Hayatımı nasıl hissettiğime göre planlarım", edec04 "Duyguların hayata
+     * mantık yerine ilhama göre belirlerim", edec03 "Hayatımı ne hissettiğime göre planlarım", edec04 "Duyguların hayata
      * yön verdiğine inanırım", edec05 "Aklımdan çok kalbimi dinlerim"; ters: edec06 "Hayatımı mantığa göre planlarım", edec07
      * "Önemli kararların mantığa dayanması gerektiğine inanırım", edec08 "Kalbimden çok aklımı dinlerim", edec09 "Duygulara
      * göre değil, gerçeklere göre karar veririm". İki uç da eşittir.

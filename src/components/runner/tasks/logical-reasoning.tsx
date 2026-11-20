@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LOGIC_LEAD, LOGIC_LETTERS, LOGIC_OPTIONS, LOGIC_QUESTION } from '@/lib/instruments/logic';
 import type { LogicItem, LogicPracticeItem, LogicalReasoningTask } from '@/lib/instruments/types';
 import type { LogicTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -235,7 +235,7 @@ export function LogicalReasoning({ task, onDone }: { task: LogicalReasoningTask;
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? 'Alıştırmadaki soruların hepsini doğru cevapladın.'
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Bilgileri gerçekte öyle olmasa bile doğru kabul et ve yalnızca bu bilgileri kullan. Sonuç doğru olabilir ama kesin değilse “Hayır, kesin değil” seç. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

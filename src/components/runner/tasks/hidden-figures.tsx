@@ -5,7 +5,7 @@ import { HIDDEN_EXAMPLE_AT, HIDDEN_EXAMPLE_FIGURE, HIDDEN_EXAMPLE_TARGET, type H
 import type { HiddenFiguresTask, HiddenItem, HiddenPracticeItem } from '@/lib/instruments/types';
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import type { HiddenTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -311,7 +311,7 @@ export function HiddenFigures({ task, onDone }: { task: HiddenFiguresTask; onDon
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun ${task.practice.length === 2 ? 'ikisini de' : 'hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Şeklin en kolay ayırt edilen parçasını (ör. eğik bir kenarı ya da sivri bir köşesini) seç ve önce onu çizimlerde ara; bulunca şeklin öteki kenarlarının da orada olup olmadığına bak. Şeklin yönüne dikkat et: döndürülmüş ya da ters çevrilmiş biçimi doğru cevap değildir. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

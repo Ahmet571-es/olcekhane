@@ -108,8 +108,15 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   madde tek bir davranışı söyler ve şıkların sorusuna uyar (bir durumu değil yapılan işi); herkesin cevaplayabileceği biçimde
   yazılır (ör. telefonu olmayan öğrenci); etkinlik maddeleri eylemle biter; giriş "seni anlatan N cümle" demez; görev yönergesi
   cevabı gönderen düğmeyi de söyler ve hedef yaşın anlayacağı sözcüklerle yazılır; okuma sorularında doğru şık şıkların en uzunu
-  olmaz ve çıkarım sorusu metinde yazmayanı sorar (`tests/okuma-hizi.test.ts`). Aynı İngilizce maddenin çevirisi bütün testlerde
-  birlikte değişir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
+  olmaz ve çıkarım sorusu metinde yazmayanı sorar (`tests/okuma-hizi.test.ts`). Soru ile şıklar aynı kiptedir ("hoşlanırdın?" +
+  "hoşlanırım" olmaz) ve soru her maddeye uyar ("Kimyager olmak" gibi maddeler varsa "bunu yapmaktan" değil "bundan"); madde
+  bir yargıdır, dilek cümlesi ("Keşke …") olmaz; ortak yüklemde kişi eki eksilmez ("uğrar ve kızarım" değil "uğrarım ve
+  kızarım"); "-ip" ekinden sonra olumsuz yüklem iki türlü okunur ("durup basmayacaksın"), kaçınılır. Görev yönergesi süre
+  sınırını ve uyaranın kendiliğinden kaybolduğunu baştan söyler (yönergedeki süre görevin ayarıyla aynıdır, test denetler);
+  duraklama ekranında not ile düğme aynı şeyi söyler (`PausedScreen`'in `cta`'sı); alıştırma sonucu `countOf` ile yazılır
+  ("8 denemenin hepsini"). Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
+  ayrılık nedeniyle `KNOWN_DIFFERENT`'a yazılır; Çocuk Kişilik Profili yaşa göre uyarladığı için dışındadır); maddeyi alıntılayan
+  yorumlar da eşitlenir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır
   (`src/content/test-secici.ts`; `tests/test-secici.test.ts` yayındaki her testin bir yuvada olduğunu denetler).
 - Rapordaki kartlar, uyarılar ve kalite notları birbiriyle çelişmez: bütün durum birleşimleri `tests/<ad>.test.ts`

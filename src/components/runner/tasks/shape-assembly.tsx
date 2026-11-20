@@ -5,7 +5,7 @@ import { ASSEMBLY_EXAMPLE, drawShape, fillPath, layoutPieces, parseShape, segPat
 import type { AssemblyItem, AssemblyPracticeItem, ShapeAssemblyTask } from '@/lib/instruments/types';
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import type { AssemblyTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -337,7 +337,7 @@ export function ShapeAssembly({ task, onDone }: { task: ShapeAssemblyTask; onDon
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun hepsini doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Bir parça seç ve onu seçeneklerde ara: aynı biçimde ve büyüklükte bir parça var mı? Parçalar döndürülebilir ama ters çevrilemez; bütün şekildeki her parça üstteki parçalardan biriyle tıpatıp aynı olmalı. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

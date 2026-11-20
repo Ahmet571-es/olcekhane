@@ -587,7 +587,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
      * Hayal gücü: m01 "Başkalarının garip bulduğu şeyler yaparım", m02 "Düşüncelere dalıp gitmeyi severim", m03 "Uçsuz bucaksız
      * hayallere dalmaktan hoşlanırım", m04 "Hayal kurmayı çok severim", m05 "Çoğunluğa uymak yerine akıntıya karşı yüzerim",
      * m06 "Aykırı görüşler savunurum", m07 "Beklenmedik şeyler yaparım"; ters: m08 "İşleri usulüne uygun yaparım", m09 "Pek
-     * hayal kurmam", m10 "Pek düşüncelere dalıp gitmem".
+     * hayal kurmam", m10 "Düşüncelere pek dalıp gitmem".
      */
     imagination: {
       poles: { low: 'Ayakları yere basan', high: 'Hayallere dalan, sıra dışı' },

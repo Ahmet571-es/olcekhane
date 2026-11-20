@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FlankerTask } from '@/lib/instruments/types';
 import type { FlankerTrialInput } from '@/lib/scoring/tasks';
-import { Arrow, PausedScreen, Stage, StatusLine, afterPaint, isAbort, primaryPointer, useKeys, usePageHidden, wait } from './common';
+import { Arrow, PausedScreen, Stage, StatusLine, afterPaint, isAbort, primaryPointer, useKeys, usePageHidden, wait, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 type View =
@@ -112,6 +112,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
     return (
       <PausedScreen
         note={step === 'test' ? 'Yarıda kalan denemeden devam edeceksin.' : 'Alıştırma baştan başlayacak.'}
+        cta={step === 'test' ? undefined : 'Alıştırmayı baştan başlat'}
         onResume={() => setPaused(false)}
       />
     );
@@ -126,7 +127,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
           <p className="measure text-lg">Önce sekiz denemelik bir alıştırma yapalım. Her denemeden sonra doğru yapıp yapmadığını göreceksin.</p>
         ) : (
           <p className="measure text-lg">
-            Alıştırmada {task.practice.length} denemenin {practiceScore} tanesini doğru yaptın.{' '}
+            Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
             {low ? 'Yalnızca ortadaki oka bakmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.' : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığın gösterilmeyecek.'}
           </p>
         )}

@@ -32,7 +32,7 @@ const sirayla: TrailTask = {
     'Ekranda içinde sayı olan daireler göreceksin. 1’den başlayarak dairelere sırayla dokun (bilgisayarda tıkla): 1, 2, 3… Dokunduğun daireler bir çizgiyle birleşecek.',
     'İkinci bölümde sayılar ve harfler birlikte olacak. Bir sayıya, bir harfe sırayla dokun: 1, A, 2, B, 3, C… Harfler alfabe sırasıyla ilerler: A, B, C, Ç, D, E, F, G.',
     'Yanlış daireye dokunursan daire kısa bir süre işaretlenir; doğru daireyi bulup devam et. Olabildiğince hızlı ve dikkatli ol.',
-    'Her bölümden önce kısa bir alıştırma yapacaksın. Asıl bölümde daireler ekrana gelince süre başlar.',
+    'Her bölümden önce kısa bir alıştırma yapacaksın. Asıl bölümde daireler ekrana gelince süre başlar, son daireye dokununca biter; bir bölüm en çok 2 dakika sürer.',
   ],
   parts: [
     {
@@ -74,7 +74,7 @@ export const siraylaBirlestirme: TaskInstrument = {
   intro: {
     title: 'Daireleri sırayla birleştir',
     paragraphs: [
-      'Birazdan ekranda içinde sayı ya da harf olan daireler göreceksin. Görevin, dairelere doğru sırayla, olabildiğince hızlı dokunmak (bilgisayarda tıklamak).',
+      'Birazdan ekranda içinde sayı ya da harf olan daireler göreceksin. Görevin, dairelere sırasını bozmadan, olabildiğince hızlı dokunmak (bilgisayarda tıklamak).',
       'Görev iki bölümden oluşur: önce yalnızca sayılar, sonra sayılar ve harfler. Her bölümden önce kısa bir alıştırma yapacaksın.',
       'Tablet ya da bilgisayarla (fareyle) yapman önerilir; telefonda daireler küçük kalır. Görev klavyeyle yapılamaz. Sessiz bir yerde yaparsan sonuç seni daha iyi yansıtır.',
     ],

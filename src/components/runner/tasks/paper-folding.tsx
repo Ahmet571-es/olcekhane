@@ -6,7 +6,7 @@ import { HOLE_R, PAPER, type Pt } from '@/lib/instruments/folding';
 import type { FoldingItem, FoldingPracticeItem, PaperFoldingTask } from '@/lib/instruments/types';
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import type { FoldingTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -274,7 +274,7 @@ export function PaperFolding({ task, onDone }: { task: PaperFoldingTask; onDone:
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun hepsini doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Kâğıdı son katlamadan başlayarak zihninde adım adım aç: her açışta deliğin bir eşi, katlama çizgisinin öbür yanında ve çizgiye aynı uzaklıkta açılır; ama yalnızca katlanan parça o deliğe ulaşmışsa. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

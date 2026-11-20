@@ -5,7 +5,7 @@ import type { VocabularyItem, VocabularyPracticeItem, VocabularyTask } from '@/l
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import { VOCABULARY_TYPE_NAMES, vocabularyQuestion } from '@/lib/instruments/vocabulary';
 import type { VocabularyTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -237,7 +237,7 @@ export function Vocabulary({ task, onDone }: { task: VocabularyTask; onDone: (tr
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? 'Alıştırmadaki soruların hepsini doğru cevapladın.'
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Soruyu ve seçeneklerin hepsini dikkatle oku; cümlede anlam ve deyim sorularında cümlenin bütününe bak. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

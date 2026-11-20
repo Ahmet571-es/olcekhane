@@ -60,19 +60,26 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: **1/8 grup** (2026-11-20).
+   İlerleme: **2/8 grup** (2026-11-20).
    - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
      İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
      Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
      (13 testin giriş cümlesi; "kendini rahat hissetmesini" maddesi 16 Faktörlü ve Empati'de; Ders Çalışma Motivasyonu'nun
      girişi): o testlerin geri kalanı kendi grubunda okunacak.
-   - **2. grup (sıradaki):** Ayrıntılı Kişilik Profili, Kişiliğin 10 Yönü, Meslek İlgi Alanları, Renk-Kelime, Dur-Git, Sırayla
-     Birleştirme, Altı Boyutlu Kişilik Profili, Duygusal Zekâ Bileşenleri (kaldırılan Matematik testi atlanır). Üç uzun
-     kişilik testi (116, 100 ve 240 madde) bu gruptadır.
+   - **2. grup (bitti):** Ayrıntılı Kişilik Profili, Kişiliğin 10 Yönü, Meslek İlgi Alanları, Renk-Kelime, Dur-Git, Sırayla
+     Birleştirme, Altı Boyutlu Kişilik Profili, Duygusal Zekâ Bileşenleri. Bulunanlar ve düzeltilenler "Son yapılanlar"
+     (83)'te. Sürümü artan test yok (düzeltmeler anlamı değiştirmiyor). Bu grupta bulunan ortak hatalar bütün görev
+     testlerinde düzeltildi (duraklama ekranının düğmesi dört görevde; "artık doğru mu yanlış mı olduğunu görmeyeceksin"
+     yedi görevde; "8 denemenin 8 tanesini" 19 görevde) ve aynı İngilizce maddeyi kullanan testlerde birlikte değişti
+     (İyimserlik, 16 Faktörlü): o testlerin geri kalanı kendi grubunda okunacak.
+   - **3. grup (sıradaki):** Kişilerarası Tarz, Hobi ve Serbest Zaman İlgileri, Geriye Dönük Hatırlama, Zihinde Döndürme,
+     Tepki Hızı, Şekil Akıl Yürütme, 16 Faktörlü Kişilik Profili, Sayı Dizileri.
    - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
      aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
      doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
-     (`tests/gunluk-hayat.test.ts`): madde yeniden yazılır. Kalıcı kurallar `tests/dil-denetimi.test.ts`'e eklenir.
+     (`tests/gunluk-hayat.test.ts`): madde yeniden yazılır. Kalıcı kurallar `tests/dil-denetimi.test.ts`'e eklenir. Madde
+     değişince onu alıntılayan yorumlar da (`src/content/gunluk/*`, test dosyasının başı) eşitlenir. İkinci denetçinin
+     çeviri sadakatiyle ilgili bulguları (yumuşatma, eklenen sözcük) uygulanmaz, aşağıdaki listeye yazılır.
    - **Bilerek dokunulmayanlar (hocaya sorulabilir; yayımlanmış ölçeklerde maddenin anlamını ya da kapsamını değiştirir):**
      Öz-saygı'da 2. ve 6. cümle Türkçede birbirine çok yakın ("hiçbir işe yaramadığımı" / "işe yaramaz hissediyorum";
      özgün ölçekte de yakın: "no good at all" / "useless") ve 9. cümlede "Sonuçta"; Beş Faktör ve Hızlı Kişilik'te "İşleri
@@ -81,6 +88,19 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      yumuşatılmış), Hızlı Kişilik'te "Küçük şeylere kolayca bozulurum" (gerekçesi dosyada). Çalışma Alışkanlıkları'nda ters madde
      T3 (hiç tekrar yapmayan öğrenci "Hiçbir zaman" der). Dikkat ve Bellek'te 1–9 için hem "sayı" hem "rakam" deniyor (testin ve
      raporun adları "Sayı Dizisi"). Tırnak işaretleri (düz ve kıvrık) testler arasında karışık: denetimin sonunda topluca.
+     **2. gruptan:** "Öfkemi kontrol etmekte zorlanırım" ("Lose my temper" yumuşatılmış; Ayrıntılı ve Altı Boyutlu);
+     Kişiliğin 10 Yönü'nde "Fikirlerimi kafamda açık ve net bir biçimde oluştururum" ("Formulate ideas clearly"; "kafamda"
+     eklenmiş) ve "Kendimi elimdeki işe veremem" (özgünü "vermem"); Altı Boyutlu'da "Kalabalıkta geri planda kalmayı tercih
+     ederim" ve "Genellikle söyleyecek pek bir şeyim olmaz" (özgünde "kalabalıkta", "tercih" ve "genellikle" yok), koşulsuz
+     "-rdım" maddeleri ("Asla vergi kaçırmazdım", "Ünlü biri olmaktan hoşlanmazdım", "… keşfetmeyi çok isterdim"); Meslek
+     İlgi Alanları'nda "Uzun mesafe bisiklet yarışçısı olmak" (özgünde yarış yok), "Büyükbaş hayvanlara ya da atlara bakmak"
+     ve "Evinin dekorasyonunu yenilemek" (öteki maddeler kişisiz). "Rarely/Seldom" kimi maddede "nadiren", kimisinde "pek
+     …-mem": "Nadiren …" cümlesine "Hiç doğru değil" demek çift olumsuz gibi okunabiliyor; tek kalıba çekmek bütün
+     kişilik testlerini etkiler. Aynı İngilizce maddenin Beş Faktör'de farklı yazıldığı üç yer `tests/dil-denetimi.test.ts`
+     içinde nedeniyle listelidir (`KNOWN_DIFFERENT`). Bütün testlerde ortak ve dokunulmayanlar: görev girişlerindeki "sonuç
+     seni daha iyi yansıtır" (32 test), "hem hızlı hem doğru olmaya çalış", yönergenin üstündeki "neyi ölçer" satırında terimler
+     ("ketleme", "görsel tarama"; 3. sınıfa ağır olabilir), Dur-Git ile Renk-Kelime'de alıştırma ve mola bilgisinin giriş ve
+     yönerge ekranlarında yinelenmesi.
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1184,6 +1204,29 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-20 (83): Dil ve mantık denetimi, 2. grup (8 test; beş ankette 613 madde, üç görev). Maddeler,
+  şıklar, girişler, yönergeler ve çözme ekranındaki yazılar okundu; ikinci denetçi bağımsız okudu (31 bulgu; 1'i kesin hata).
+  **Kesin hata (dört görev: Renk-Kelime, Dur-Git, Dikkat ve Bellek'in ok görevi, Kural Değiştirme):** alıştırma sırasında
+  başka sekmeye geçilince ekran "alıştırma baştan başlayacak" diyor, düğme "Kaldığın yerden devam et" yazıyordu; düğme artık
+  "Alıştırmayı baştan başlat". **Meslek İlgi Alanları:** soru "hoşlanırdın?", şıklar "hoşlanırım" idi ve "Kimyager olmak"
+  gibi maddelere "bunu yapmaktan" uymuyordu (yeni soru: "Bundan ne kadar hoşlanırsın?"); "Oyuncu olmak" (oyun oynayan diye de
+  okunur) → "Tiyatro ya da sinema oyuncusu olmak"; "Çevirmen ya da tercüman" (eş anlamlı) → "Yazılı ya da sözlü çevirmen";
+  "Paraşüt, dağcılık gibi … sporlar" → "Paraşütçülük"; "Başkalarını görüşlerini değiştirmeye" (art arda iki nesne) →
+  "fikir değiştirmeye". **Altı Boyutlu:** "… hayal kırıklığına uğrar ve onlara kızarım" (özne karışıyor) → "uğrarım"; girişte
+  "sessiz bir zamanda" → "sakin" (16 Faktörlü'de de); Canlılık'ın açıklamasında nesnesiz "dinç hissetme". **Ayrıntılı Kişilik
+  ve İyimserlik:** "Hayatın iyi tarafından bakarım" → "Hayata iyi tarafından bakarım". **Kişiliğin 10 Yönü ve 16 Faktörlü:**
+  "Pek düşüncelere dalıp gitmem" → "Düşüncelere pek dalıp gitmem". **Duygusal Zekâ Bileşenleri:** dört maddede nesnesiz "nasıl
+  hissettiğim" → "ne hissettiğim" (aynı ölçekteki öteki madde gibi); "Keşke … gösterebilsem" dilek cümlesi "ne kadar doğru
+  anlatıyor?" sorusuna uymuyordu → "… gösterebilmeyi isterdim". **Renk-Kelime:** "Kelimeyi okumaya değil, yazının rengine
+  bak" (bozuk karşıtlık) → "Kelimeye değil"; kelimenin 3 saniyede kaybolduğu ve tuşların hangi renk olduğunun nerede yazdığı
+  yönergeye eklendi. **Dur-Git:** "X görünce durup basmayacaksın" ("durmayacaksın" diye de okunur) → "basmayacak, sıradaki
+  harfi bekleyeceksin"; harfin hemen kaybolduğu eklendi. **Sırayla Birleştirme:** "dairelere doğru sırayla dokunmak"
+  ("dairelere doğru" diye okunur) → "sırasını bozmadan"; bölümün neyle bittiği ve 2 dakikalık sınır artık baştan söyleniyor
+  (eskiden yalnızca süre dolunca; ekranda "120 saniye" → "2 dakika"). **Bütün görevler:** "artık doğru mu yanlış mı olduğunu
+  görmeyeceksin" (neyin?) → "doğru yapıp yapmadığını"; "8 denemenin 8 tanesini doğru yaptın" → "hepsini" (`countOf`,
+  `runner/tasks/common.tsx`). Ters puanlama işaretlerini iki denetçi de İngilizce asla ve Türkçe metne göre denetledi, hata yok.
+  Kalıcı kurallar (`tests/dil-denetimi.test.ts`): aynı İngilizce madde bütün testlerde aynı Türkçeyle (825 kaynakta üç
+  bilinçli ayrılık, nedeniyle); soru ve şıklar aynı kipte; yönergede yazan süre görevin ayarıyla aynı.
 - 2026-11-20 (82): Dil ve mantık denetimi, 1. grup (8 test; site sahibinin isteği: "sorular ve şıklar Türkçeye çok uygun,
   mantık hatasız"). Her testin yönergeleri, maddeleri, şıkları ve çözme ekranındaki yazıları okundu; ikinci bir denetçi
   bağımsız okudu. **Çalışma Alışkanlıkları (sürüm 2):** şıklar sıklık sorduğu hâlde üç maddenin içinde de sıklık sözcüğü
@@ -1263,9 +1306,3 @@ En yeni üstte; en çok 10 madde tutulur.
   Telefonda her bölüm yana kaydırılan şerit; geniş ekranda bölüm başlığı solda sabit, kartlar sağda ızgara. Galeri
   "Nereden başlamalı?"nın hemen altında; eski kart ızgarası (`TestCards`) Testler sayfasında süzgeçlerle sürüyor.
   Denetim `tests/galeri.test.ts`.
-- 2026-11-03 (73): Zekâ ve dikkat testlerinin yol haritaları ve rapor kartları, testlerin kendi sınırlarıyla ve kardeş
-  testlerle uyumlandı: tepki hızında trafik ve spor, 3. sınıfa açık testlerde çocuğun telefonu, dur-git'te DEHB belirtisi gibi
-  okunan örnekler, kural değiştirmede plan değiştirme, 2 boyutlu döndürmede 3 boyutlu eşya, bellek testlerinde duyulan bilgi
-  gibi çelişen örnekler değişti. Aynı soruların geldiği Düşünerek Karar Verme ve Sayısal Akıl Yürütme'de yol haritası artık
-  testin sorusuna çok benzeyen bir soruyu çözmüyor. Günlük hayat dışlama tablosu ortak (`tests/helpers/gunluk-excluded.ts`) ve
-  yol haritalarına da uygulanıyor (`tests/yol-haritasi-uyum.test.ts`). Bağımsız denetimin bulguları uygulandı.

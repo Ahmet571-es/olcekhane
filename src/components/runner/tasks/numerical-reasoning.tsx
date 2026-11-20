@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NumericItem, NumericPracticeItem, NumericalReasoningTask } from '@/lib/instruments/types';
 import type { NumericTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, afterPaint, useKeys } from './common';
+import { ArmedButton, StatusLine, afterPaint, useKeys, countOf } from './common';
 import { DigitPad } from './number-series';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
@@ -205,7 +205,7 @@ export function NumericalReasoning({ task, onDone }: { task: NumericalReasoningT
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${practiceScore} tanesini doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Soruyu dikkatle oku; istersen sayıları kâğıda yazarak düşün. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}

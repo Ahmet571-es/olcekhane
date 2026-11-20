@@ -179,7 +179,7 @@ const ITEMS: [number, string, boolean, string, string][] = [
   [114, A5, true, 'İyi yönlerimle övünürüm.', 'Boast about my virtues'],
   [115, C5, true, 'İşlere başlamakta zorlanırım.', 'Have difficulty starting tasks'],
   [116, N6, false, 'Baskı altında sakin kalırım.', 'Remain calm under pressure'],
-  [117, E6, false, 'Hayatın iyi tarafından bakarım.', 'Look at the bright side of life'],
+  [117, E6, false, 'Hayata iyi tarafından bakarım.', 'Look at the bright side of life'],
   [119, A6, true, 'İhtiyaç sahiplerini düşünmemeye çalışırım.', 'Try not to think about the needy'],
   [120, C6, true, 'Düşünmeden hareket ederim.', 'Act without thinking'],
 ];

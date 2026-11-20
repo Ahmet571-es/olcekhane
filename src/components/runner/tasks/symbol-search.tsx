@@ -185,7 +185,7 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
           {hits}{' '}
           {low
             ? 'Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var” de; bir çizgisi farklı benzer simge aynı simge sayılmaz. İstersen alıştırmayı tekrarlayabilirsin.'
-            : `Şimdi ${seconds % 60 === 0 ? `${seconds / 60} dakika` : `${seconds} saniye`} boyunca yapabildiğin kadar karar ver; hem hızlı hem doğru olmaya çalış. Asıl bölümde doğru mu yanlış mı olduğunu görmeyeceksin.`}
+            : `Şimdi ${seconds % 60 === 0 ? `${seconds / 60} dakika` : `${seconds} saniye`} boyunca yapabildiğin kadar karar ver; hem hızlı hem doğru olmaya çalış. Asıl bölümde doğru yapıp yapmadığını görmeyeceksin.`}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton className={`btn btn-lg ${low ? 'btn-primary' : 'btn-secondary'}`} autoFocus={low} onClick={startPractice}>

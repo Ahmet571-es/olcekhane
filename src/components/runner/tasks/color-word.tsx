@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ColorWordTask } from '@/lib/instruments/types';
 import type { ColorWordTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait } from './common';
+import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait, countOf } from './common';
 
 type Step = 'ready' | 'check' | 'check-done' | 'practice' | 'practice-done' | 'test' | 'break';
 type Mode = 'check' | 'practice' | 'test';
@@ -148,6 +148,7 @@ export function ColorWord({ task, onDone }: { task: ColorWordTask; onDone: (tria
     return (
       <PausedScreen
         note={step === 'test' ? 'Yaptığın denemeler kaybolmadı; kaldığın yerden devam edeceksin.' : 'Bu kısa bölüm baştan başlayacak.'}
+        cta={step === 'test' ? undefined : 'Bölümü baştan başlat'}
         onResume={() => setPaused(false)}
       />
     );
@@ -192,7 +193,7 @@ export function ColorWord({ task, onDone }: { task: ColorWordTask; onDone: (tria
           </p>
         )}
         <p className="measure text-lg">
-          Şimdi {task.practice.length} denemelik bir alıştırma yapalım: ekranda renk adları göreceksin. Kelimeyi okumaya değil, yazının rengine bak.
+          Şimdi {task.practice.length} denemelik bir alıştırma yapalım: ekranda renk adları göreceksin. Kelimeye değil, yazının rengine bak.
           Her denemeden sonra doğru yapıp yapmadığını göreceksin.
         </p>
         <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={() => setStep('practice')}>
@@ -207,10 +208,10 @@ export function ColorWord({ task, onDone }: { task: ColorWordTask; onDone: (tria
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {task.practice.length} denemenin {practiceScore} tanesini doğru yaptın.{' '}
+          Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
           {low
-            ? 'Kelimeyi okumaya değil, yazının rengine bakmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl görev başlıyor; artık doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            ? 'Kelimeye değil, yazının rengine bakmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
+            : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton
