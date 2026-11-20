@@ -244,7 +244,7 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Her soruda bir tablo ve altında sekiz seçenek göreceksin. Tablodaki kuralı bul, eksik parçaya uyan seçeneğe dokun; seçtiğin parça tablodaki boş yerde
+          Her soruda bir tablo ve altında sekiz seçenek göreceksin. Tablodaki kuralı bul, eksik parçaya uyan seçeneği seç; seçtiğin parça tablodaki boş yerde
           görünür. Emin olunca “Cevabı ver” düğmesine bas.
         </p>
         <p className="measure text-lg">
@@ -324,7 +324,7 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
           </div>
         ) : (
           <>
-            <p className="text-center text-ink-2">{selected === null ? 'Eksik parçaya uyan seçeneğe dokun.' : `${selected + 1}. seçeneği seçtin. Emin olunca cevabı ver.`}</p>
+            <p className="text-center text-ink-2">{selected === null ? 'Eksik parçaya uyan seçeneği seç.' : `${selected + 1}. seçeneği seçtin. Emin olunca cevabı ver.`}</p>
             <Options item={item} selected={selected} onSelect={setSelected} onConfirm={confirm} />
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>

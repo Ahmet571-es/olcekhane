@@ -121,8 +121,12 @@ describe('Sayı dizileri: sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '7b649b907ec16c1b';
+/**
+ * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-11-20'de yalnızca iki düzey
+ * açıklamasının ve ikinci alıştırma açıklamasının dili düzeltildi (sorular, cevap anahtarı ve tuzaklar aynı): iz güncellendi,
+ * sürüm artmadı (eski raporlarla karşılaştırma bozulmaz).
+ */
+const SORU_IZI = '76bf0bdc0f73c3d7';
 
 describe('Sayı dizileri: puanlama', () => {
   const all = (fn: (i: number) => Partial<NumberSeriesTrialInput> = () => ({})): NumberSeriesTrialInput[] =>

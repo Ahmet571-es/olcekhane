@@ -207,7 +207,7 @@ export function MentalRotation({ task, onDone }: { task: MentalRotationTask; onD
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Soldaki şekil hep düz durur. Sağdaki şekil ya onun döndürülmüş hâlidir ya da ayna görüntüsüdür. Ayna görüntüsünü ne kadar döndürsen de soldakiyle
+          Soldaki şekil hiç dönmez. Sağdaki şekil ya onun aynısıdır ya da ayna görüntüsüdür; ikisi de döndürülmüş olabilir. Ayna görüntüsünü ne kadar döndürsen de soldakiyle
           aynı olmaz.
         </p>
         <Example shape={task.practiceShape} />
@@ -227,7 +227,7 @@ export function MentalRotation({ task, onDone }: { task: MentalRotationTask; onD
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
+          Alıştırmada {task.practice.length} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, task.practice.length)} doğru yaptın`}.{' '}
           {low
             ? 'Sağdaki şekli zihninde döndürüp soldakiyle karşılaştırmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}

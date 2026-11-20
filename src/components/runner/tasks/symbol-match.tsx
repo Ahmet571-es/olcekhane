@@ -127,7 +127,7 @@ export function SymbolMatch({ task, onDone }: { task: SymbolMatchTask; onDone: (
         <p className="measure text-lg">
           {first
             ? 'Üstteki anahtarda her sembolün altında bir rakam var. Önce altı denemelik bir alıştırma yapalım.'
-            : `Alıştırmada ${task.practice.length} sembolün ${countOf(practiceHits, task.practice.length)} doğru eşleştirdin. Şimdi ${Math.round(task.durationMs / 1000)} saniye boyunca yapabildiğin kadarını yap. Hem hızlı hem doğru olmaya çalış.`}
+            : `Alıştırmada ${task.practice.length} sembolün ${practiceHits === 0 ? 'hiçbirini doğru eşleştiremedin' : `${countOf(practiceHits, task.practice.length)} doğru eşleştirdin`}. Şimdi ${Math.round(task.durationMs / 1000)} saniye boyunca yapabildiğin kadarını yap. Hem hızlı hem doğru olmaya çalış.`}
         </p>
         <button
           type="button"

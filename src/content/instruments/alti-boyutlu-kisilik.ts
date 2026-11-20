@@ -160,7 +160,7 @@ const ITEMS: [string, boolean, string, string][] = [
   ['depe03', false, 'Başkalarının onayına ihtiyaç duyarım.', 'Need the approval of others.'],
   ['soci02', false, 'Kalabalık ortamlarda birçok farklı kişiyle konuşurum.', 'Talk to a lot of different people at parties.'],
   ['flex02', false, 'Tavsiyelere kulak vermeyi bilirim.', 'Am good at taking advice.'],
-  ['perf02', false, 'Her şey mükemmel olana kadar devam ederim.', 'Continue until everything is perfect.'],
+  ['perf02', false, 'Her şey mükemmel olana kadar uğraşırım.', 'Continue until everything is perfect.'],
   ['crea02', false, 'Yeni bir şeyler düşünüp bulurum.', 'Come up with something new.'],
   ['mode02', false, 'Kendimi ortalama bir insan olarak görürüm.', 'See myself as an average person.'],
   ['sent02', false, 'Üzücü bir olay duyduğumda hemen hüzünlenirim.', 'Immediately feel sad when hearing of an unhappy event.'],

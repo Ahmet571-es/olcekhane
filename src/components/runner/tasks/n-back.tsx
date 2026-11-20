@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { nBackRoles } from '@/lib/instruments/sequences';
 import type { NBackBlock, NBackTask } from '@/lib/instruments/types';
 import type { NBackTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait } from './common';
+import { ArmedButton, PausedScreen, Stage, StatusLine, TOUCH_CLASSES, countOf, isAbort, ordinal, primaryPointer, useKeys, usePageHidden, wait } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test' | 'break';
 type View =
@@ -134,9 +134,11 @@ export function NBack({ task, onDone }: { task: NBackTask; onDone: (trials: NBac
           } else if (did) {
             stats.falseAlarms++;
             fb = {
-              title: 'Bu harf aynı değildi',
+              title: i < seq.n ? 'Burada basmaman gerekiyordu' : 'Bu harf aynı değildi',
               text:
-                role === 'lure'
+                i < seq.n
+                  ? 'Henüz karşılaştıracağın harf yoktu.'
+                  : role === 'lure'
                   ? `${letter}, bir önceki harfle aynıydı ama iki önceki harfle aynı değildi; burada basmaman gerekiyordu.`
                   : `${letter}, ${RULE[seq.n]} harfle aynı değildi; burada basmaman gerekiyordu.`,
               good: false,
@@ -225,7 +227,7 @@ export function NBack({ task, onDone }: { task: NBackTask; onDone: (trials: NBac
         <Example n={n} />
         {n === 2 && (
           <p className="measure text-lg">
-            Dikkat: art arda gelen iki aynı harf (ör. M, M) artık aynı sayılmaz. Bakman gereken harf, iki önceki harf.
+            Dikkat: artık bir önceki harfe değil, iki önceki harfe bakacaksın. Art arda gelen aynı harfler (ör. M, M) seni yanıltmasın.
           </p>
         )}
         <p className="measure text-lg">
@@ -245,7 +247,7 @@ export function NBack({ task, onDone }: { task: NBackTask; onDone: (trials: NBac
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada aynı olan {s.targets} harfin {s.hits === 0 ? 'hiçbirini yakalamadın' : `${s.hits} tanesini yakaladın`}; aynı olmayan harflerde{' '}
+          Alıştırmada aynı olan {s.targets} harfin {s.hits === 0 ? 'hiçbirini yakalamadın' : `${countOf(s.hits, s.targets)} yakaladın`}; aynı olmayan harflerde{' '}
           {s.falseAlarms === 0 ? 'hiç basmadın' : `${s.falseAlarms} kez bastın`}.{' '}
           {low
             ? `Kuralı hatırla: harf ${RULE[n]} harfle aynıysa bas. İstersen alıştırmayı tekrarlayabilirsin.`

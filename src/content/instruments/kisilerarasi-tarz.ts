@@ -55,7 +55,7 @@ const ITEMS: [string, string, string][] = [
   [BC, 'Başkalarını acımasızca eleştiririm.', 'Cut others to pieces.'],
   [DE, 'Herkesin kendi başının çaresine bakması gerektiğine inanırım.', 'Believe people should fend for themselves.'],
   [FG, 'Özel hayatımı pek kimseyle paylaşmam.', 'Am a very private person.'],
-  [HI, 'Başkalarının sözünü bitirmesine izin veririm.', 'Let others finish what they are saying.'],
+  [HI, 'Başkalarının sözünü bitirmesini beklerim.', 'Let others finish what they are saying.'],
   [JK, 'Olayları geldiği gibi karşılarım.', 'Take things as they come.'],
   [LM, 'Başkalarının içini rahatlatırım.', 'Reassure others.'],
   [NO, 'Sohbeti genellikle ben başlatırım.', 'Start conversations.'],
@@ -72,7 +72,7 @@ const ITEMS: [string, string, string][] = [
   [DE, 'Bir şeylere pek kafa yormam.', "Don't put a lot of thought into things."],
   [FG, 'Genellikle söyleyecek pek bir şeyim olmaz.', 'Have little to say.'],
   [HI, 'İlgi odağı olmaktan hoşlanmam.', 'Dislike being the center of attention.'],
-  [JK, 'Bir şey anlatırken nadiren abartırım.', 'Seldom stretch the truth.'],
+  [JK, 'Bir şey anlatırken pek abartmam.', 'Seldom stretch the truth.'],
   [LM, 'Başkalarıyla iyi geçinirim.', 'Get along well with others.'],
   [NO, 'Kalabalık kutlamaları ve eğlenceleri çok severim.', 'Love large parties.'],
   [PA, 'İlgiyi üzerime çekmeye çalışırım.', 'Demand attention.'],
@@ -109,7 +109,7 @@ export const kisilerarasiTarz: LikertInstrument = {
   intro: {
     title: 'İnsanlarla nasılsın?',
     paragraphs: [
-      'Birazdan insanlarla ilişkilerini anlatan 32 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
+      'Birazdan insanlarla ilişkiler hakkında 32 kısa cümle göreceksin. Her cümlenin seni ne kadar doğru anlattığını seç.',
       'Doğru ya da yanlış cevap yok. En faydalı sonuç, olmak istediğin hâli değil, genellikle nasıl olduğunu anlattığında çıkar. Çok düşünmene gerek yok; aklına ilk gelen genellikle en doğrusudur.',
     ],
   },
@@ -165,7 +165,7 @@ export const kisilerarasiTarz: LikertInstrument = {
       short: 'Uysal',
       angle: 315,
       plain: 'Başkalarının pek çok davranışına katlanma, olayları geldiği gibi karşılama, önce başkalarını düşünme ve abartmadan konuşma.',
-      poles: { low: 'Her şeye katlanmayan', high: 'Hoşgörülü ve uysal' },
+      poles: { low: 'Kolay kolay katlanmayan', high: 'Hoşgörülü ve uysal' },
     },
     {
       key: HI,
@@ -189,7 +189,7 @@ export const kisilerarasiTarz: LikertInstrument = {
       short: 'Mesafeli',
       angle: 180,
       plain: 'Herkesin kendi başının çaresine bakması gerektiğini düşünme; başkalarının sorunlarına ve acındırmaya mesafeli durma.',
-      poles: { low: 'Başkalarının derdine kayıtsız kalmayan', high: 'Başkalarının derdine mesafeli' },
+      poles: { low: 'Başkalarının derdiyle ilgilenen', high: 'Başkalarının derdine mesafeli' },
     },
     {
       key: BC,

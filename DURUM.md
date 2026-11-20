@@ -60,7 +60,7 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: **2/8 grup** (2026-11-20).
+   İlerleme: **3/8 grup** (2026-11-20).
    - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
      İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
      Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
@@ -72,8 +72,14 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      testlerinde düzeltildi (duraklama ekranının düğmesi dört görevde; "artık doğru mu yanlış mı olduğunu görmeyeceksin"
      yedi görevde; "8 denemenin 8 tanesini" 19 görevde) ve aynı İngilizce maddeyi kullanan testlerde birlikte değişti
      (İyimserlik, 16 Faktörlü): o testlerin geri kalanı kendi grubunda okunacak.
-   - **3. grup (sıradaki):** Kişilerarası Tarz, Hobi ve Serbest Zaman İlgileri, Geriye Dönük Hatırlama, Zihinde Döndürme,
-     Tepki Hızı, Şekil Akıl Yürütme, 16 Faktörlü Kişilik Profili, Sayı Dizileri.
+   - **3. grup (bitti):** Kişilerarası Tarz, Hobi ve Serbest Zaman İlgileri, Geriye Dönük Hatırlama, Zihinde Döndürme,
+     Tepki Hızı, Şekil Akıl Yürütme, 16 Faktörlü Kişilik Profili, Sayı Dizileri. Bulunanlar "Son yapılanlar" (84)'te. Sürümü
+     artan test yok. Sayı Dizileri'nin 24 dizisi ve iki alıştırması iki denetçi tarafından elle çözüldü: anahtar doğru.
+     Ortak düzeltmeler bütün görev testlerine uygulandı (duraklama cümlesi, tek görevli testte "Görev 1 / 1" satırı ve
+     bitiş başlığı, alıştırmada sıfır doğru, "olağandır", tanıtımdaki "sorulara nasıl çalışıldığı", Harf Dizileri'nin ölçek
+     açıklaması): o testlerin geri kalanı kendi grubunda okunacak.
+   - **4. grup (sıradaki):** Öğrenme ve Başarı Özellikleri, Düşünmeyi Sevme Ölçeği, Düşünme ve Çalışma Tarzı, Sözel Akıl
+     Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama.
    - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
      aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
      doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
@@ -101,6 +107,17 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      seni daha iyi yansıtır" (32 test), "hem hızlı hem doğru olmaya çalış", yönergenin üstündeki "neyi ölçer" satırında terimler
      ("ketleme", "görsel tarama"; 3. sınıfa ağır olabilir), Dur-Git ile Renk-Kelime'de alıştırma ve mola bilgisinin giriş ve
      yönerge ekranlarında yinelenmesi.
+     **3. gruptan:** "Seldom/Rarely" kararı sürüyor ("Kendimi nadiren hüzünlü hissederim" beş testte); yalnızca Kişilerarası
+     Tarz'da geçen "nadiren abartırım", aynı testteki "Kendimi pek övmem" gibi "pek abartmam" yapıldı. Asılda olmayan sözcükler:
+     "Aslında diğer insanlara pek ilgi duymam" ("aslında" ve "pek" birlikte; dört test), "Birçok şey için endişelenirim"
+     ("birçok"), "Kitap okumayı severim" ve "Çok kitap okurum" (aslı yalnızca "okumak"), "Yerinde ve derin yorumlar yaparım"
+     (tek sıfat ikiye bölünmüş). "Kendim hakkında konuşmaktan çekinmem" (aslı olumlu: "istekliyim"; "Hiç doğru değil" ile çift
+     olumsuz). "Başkalarının sorunları beni ilgilendirmez" ("karışmam" diye de okunur; yedi test). "Odamı dağınık bırakırım"
+     (kendi odası olmayan). 16 Faktörlü'de Kurallara bağlılık 7 maddedir ve üçü "otorite" sözcüğüne dayanır (9. sınıfa soyut
+     olabilir). Hobi'de "3 ile 10 kez arası" şıkkı. Sayı Dizileri sd15 ve sd19: en yalın kural anahtarı verir; iç içe iki dizi
+     diye okuyan 50 ve 15 bulabilir (zayıf okuma; değişirse sürüm artar). Geriye Dönük Hatırlama'da ekran başlıkları "Bir
+     geri / İki geri". Bütün görevlerde ortak ve dokunulmayan: alıştırması kötü giden kişiye "asıl bölümde doğru yapıp
+     yapmadığını görmeyeceksin" denmiyor (yalnızca iyi sonuçta yazıyor).
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1204,6 +1221,30 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-20 (84): Dil ve mantık denetimi, 3. grup (8 test; üç ankette 284 madde, beş görev). İkinci denetçi bağımsız
+  okudu (42 bulgu; 4'ü kesin hata, hepsi dil bilgisi). **Kesin hatalar:** 16 Faktörlü'de Kurallara bağlılık açıklaması
+  "kuralları çiğnemekten ve açığını aramaktan" (neyin açığı?) → "kuralların açığını"; Şekil Akıl Yürütme, Sayı Dizileri ve
+  Harf Dizileri'nde "Kuralı bulup eksik parçanın doğru seçildiği soruların sayısı" (etken-edilgen) → "Kuralın bulunup …";
+  Tepki Hızı'nda "Daireyi bekleyip, görür görmez" (zarf-fiilden sonra virgül) → "Daireyi beklemeyi ve görür görmez".
+  **Kişilerarası Tarz:** giriş "ilişkilerini anlatan 32 cümle" ("seni anlatan" kuralının aynısı) → "insanlarla ilişkiler
+  hakkında"; "nadiren abartırım" → "pek abartmam"; "sözünü bitirmesine izin veririm" → "bitirmesini beklerim"; iki uç adı
+  ("Her şeye katlanmayan" iki türlü okunuyordu; "kayıtsız kalmayan" çift olumsuzdu). **Hobi:** girişte "yapıp … yapmadıysan"
+  → "yaptıysan ama … yapmadıysan"; "Bir takım sporu oynamak" ("birtakım" diye okunur, spor oynanmaz) → "Futbol, voleybol gibi
+  bir takım sporu yapmak". **16 Faktörlü ve Altı Boyutlu:** "Her şey mükemmel olana kadar devam ederim" (neye?) →
+  "uğraşırım"; Sıcaklık açıklamasında nesnesiz "hissettirme". **Geriye Dönük Hatırlama:** harfin kaybolduğu ve sıradaki harf
+  gelene kadar basılabildiği yönergede yoktu; "daha önce gördüğün harflerle" → "bir ya da iki önce gelen harfle"; tanımsız "iki
+  geri"; "iki aynı harf artık aynı sayılmaz" cümlesi; dizinin ilk harfinde basana "bir önceki harfle aynı değildi" deniyordu
+  (önceki harf yok). **Zihinde Döndürme:** 7 saniyelik sınır yönergede yoktu; "sağdaki ya döndürülmüş hâli ya ayna
+  görüntüsü" eksikti (ayna görüntüsü de dönük gelir, aynısı bazen hiç dönmez); yönerge düğmeleri büyük harfle anıyordu,
+  ekranda küçük harfle yazıyor. **Tepki Hızı:** dairenin 2 saniyede kaybolduğu ve bekleme süresinin değiştiği eklendi.
+  **Sayı Dizileri:** 3. düzey "artışları küçülen dizi" diyordu (yok; azalışları büyüyen var), 5. düzeyde "çarpma ile
+  çıkarmayla"; soruların izi güncellendi, sürüm aynı (sorular ve anahtar değişmedi). **Şekil Akıl Yürütme:** "seçeneğe
+  dokun" (bilgisayarda tıklanır) → "seçeneği seç". **Bütün görevler:** duraklama ekranı ekran kilitlenince de çıkıyor, cümle
+  yalnızca "başka sekmeye geçtin" diyordu; tek görevli testte "Görev 1 / 1" satırı kalktı ve son başlık "Bitirdin!" oldu;
+  alıştırmada hiç doğru yoksa "6 denemenin 0 tanesini" yerine "hiçbirini doğru yapamadın"; 3. sınıfa açık altı yönergede
+  "olağandır" → "çok normal"; 15 tanıtımda "sorulara nasıl çalışıldığını" → "sorular üzerinde". Ters puanlama: 16
+  Faktörlü'nün 66 ters işareti iki denetçide de doğru. Kalıcı kurallar: giriş kuralı "…ını anlatan N cümle"yi de yakalar;
+  yönergedeki süre Zihinde Döndürme ve Tepki Hızı'nda da ayarla karşılaştırılır.
 - 2026-11-20 (83): Dil ve mantık denetimi, 2. grup (8 test; beş ankette 613 madde, üç görev). Maddeler,
   şıklar, girişler, yönergeler ve çözme ekranındaki yazılar okundu; ikinci denetçi bağımsız okudu (31 bulgu; 1'i kesin hata).
   **Kesin hata (dört görev: Renk-Kelime, Dur-Git, Dikkat ve Bellek'in ok görevi, Kural Değiştirme):** alıştırma sırasında
@@ -1294,15 +1335,3 @@ En yeni üstte; en çok 10 madde tutulur.
 - 2026-11-05 (76): Matematik Konu Tarama Testi kaldırıldı (ayrıntı "Matematik Konu Tarama Testi: kaldırıldı" bölümünde).
 - 2026-11-05 (75): Sesli okumada otomatik analiz herkese açık varsayılan sürüm oldu; yetişkin sürümü `?surum=yetiskinli`
   ile yedek yol; canlıda uçtan uca denendi (`araclar/sesli-okuma-dene.mjs`).
-- 2026-11-05 (74): Beyin Akademisi siteden tamamen kaldırıldı (site sahibinin kararı: site yalnızca kişilik ve zekâ testleri
-  platformu; ayrıntı yukarıdaki "Beyin Akademisi: kaldırıldı" bölümünde). Ana sayfada yeni test galerisi
-  (`components/site/test-gallery.tsx`, `test-emblem.tsx`; site sahibinin isteği: "bütün testler ana sayfada kart kart,
-  ödül kalitesinde tasarım"): yayındaki bütün testler alanlarına göre bölüm bölüm ("Kendini keşfetmenin 62 yolu."); başta
-  bölümlere atlayan sekmeler; zihinsel beceriler yedi alt grupta (akıl yürütme, sözel, sayısal, uzamsal, bellek, planlama
-  ve karar verme, dikkat ve kendini yönetme). Her kartta testin ne yaptırdığını anımsatan kendine özgü çizim (kişilik
-  profillerinde ölçek sayısı kadar köşeli profil, kişilerarası tarzda sekiz dilimli çember, matriste eksik parça, kâğıt
-  katlama, küp açınımı, kule görevi, harf işaretleme, renk-kelime, sesli okumada ses dalgası, Holland altıgeni…; açık ve
-  koyu temada), süre ve sınıf aralığı, Pilot etiketi, "İncele" (kartın tamamı test sayfasına gider) ve "Çöz" düğmesi.
-  Telefonda her bölüm yana kaydırılan şerit; geniş ekranda bölüm başlığı solda sabit, kartlar sağda ızgara. Galeri
-  "Nereden başlamalı?"nın hemen altında; eski kart ızgarası (`TestCards`) Testler sayfasında süzgeçlerle sürüyor.
-  Denetim `tests/galeri.test.ts`.

@@ -296,7 +296,7 @@ export const mantiksalAkilYurutme: TaskInstrument = {
   sortOrder: 49.75,
   tagline: 'Verilen bilgilerden kesin olarak neyin çıktığını bulabilmeyi ölçer; gerçek hayattaki bilginin kararını ne kadar etkilediğini de gösterir.',
   description:
-    'Bu test tümdengelimli akıl yürütmeyi, yani verilen bilgilerden kesin olarak neyin çıktığını, neyin çıkmadığını ayırt edebilmeyi ölçer. Her soruda iki bilgi ve bir sonuç vardır; bilgiler doğruysa sonucun da kesin olarak doğru olup olmadığına karar verilir. Soruların yarısı “eğer … ise …” kurallarıyla, yarısı “bütün, bazı, hiçbir” sözcükleriyle kurulmuştur ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, “eğer–ise” kurallarında kesin olanla olmayanın ayırt edilip edilmediğini, sonuç gerçek hayatta doğru ya da yanlış göründüğünde bu bilginin kararı etkileyip etkilemediğini ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test tümdengelimli akıl yürütmeyi, yani verilen bilgilerden kesin olarak neyin çıktığını, neyin çıkmadığını ayırt edebilmeyi ölçer. Her soruda iki bilgi ve bir sonuç vardır; bilgiler doğruysa sonucun da kesin olarak doğru olup olmadığına karar verilir. Soruların yarısı “eğer … ise …” kurallarıyla, yarısı “bütün, bazı, hiçbir” sözcükleriyle kurulmuştur ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, “eğer–ise” kurallarında kesin olanla olmayanın ayırt edilip edilmediğini, sonuç gerçek hayatta doğru ya da yanlış göründüğünde bu bilginin kararı etkileyip etkilemediğini ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Bilgilerden ne çıkar?',
     paragraphs: [

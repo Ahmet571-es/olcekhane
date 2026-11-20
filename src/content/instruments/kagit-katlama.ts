@@ -158,7 +158,7 @@ const task: PaperFoldingTask = {
   instructions: [
     'Her soruda kare bir kâğıdın nasıl katlandığını adım adım göreceksin: kesik çizgi kâğıdın katlanan parçasının katlanmadan önceki yerini, ok katlanma yönünü gösterir. Katlanan parçanın kâğıdın üstüne geldiği yer renkli ince bir çizgiyle görünür. Son resimde katlanmış kâğıt bir ya da iki yerden delinir.',
     'Delik, kâğıdın o yerdeki bütün katlarından geçer. Kâğıt yeniden açılınca deliklerin nerede olacağını beş seçenekten seç.',
-    'Sorular kolaydan zora doğru gider; sona doğru zorlanman olağandır. Süre sınırı yok. Kâğıt ya da kalem kullanmadan, zihninde çöz.',
+    'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Süre sınırı yok. Kâğıt ya da kalem kullanmadan, zihninde çöz.',
     `Önce doğru cevabı gösterilen ${PRACTICE_SPECS.length === 3 ? 'üç' : PRACTICE_SPECS.length} alıştırma sorusu çözeceksin.`,
   ],
   practice,
@@ -200,7 +200,7 @@ export const kagitKatlama: TaskInstrument = {
   sortOrder: 49.8,
   tagline: 'Katlanıp delinen bir kâğıdın açılınca nasıl görüneceğini zihinde canlandırabilmeyi, yani uzamsal görselleştirmeyi ölçer.',
   description:
-    'Bu test, uzamsal görselleştirmeyi ölçmek için uzun süredir kullanılan "kâğıt katlama" sorularına dayanır: kare bir kâğıt bir, iki ya da üç kez katlanır ve delinir; kâğıt açılınca deliklerin nerede olacağı beş seçenekten seçilir. Sorular kolaydan zora doğru beş düzeyde ilerler ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür katlamaların daha kolay geldiğini, yanlış cevapların neyi düşündürdüğünü ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, uzamsal görselleştirmeyi ölçmek için uzun süredir kullanılan "kâğıt katlama" sorularına dayanır: kare bir kâğıt bir, iki ya da üç kez katlanır ve delinir; kâğıt açılınca deliklerin nerede olacağı beş seçenekten seçilir. Sorular kolaydan zora doğru beş düzeyde ilerler ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür katlamaların daha kolay geldiğini, yanlış cevapların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Kâğıdı aç, delikleri bul',
     paragraphs: [

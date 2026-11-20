@@ -105,7 +105,7 @@ export const bakisAcisiAlma: TaskInstrument = {
   sortOrder: 49.87,
   tagline: 'Bir haritadaki nesnelere kendini başka bir yerde ve yönde hayal ederek bakabilmeyi, yani zihinde bakış açısı değiştirebilmeyi ölçer.',
   description:
-    'Bu test, uzamsal yönelimi ölçmek için kullanılan bakış açısı alma testlerinin düzenine dayanır. Ekranda yedi nesnenin olduğu bir harita vardır; her soruda bir nesnenin yanında durup başka bir nesneye baktığını hayal edersin ve üçüncü nesnenin senin için hangi yönde kaldığını bir çemberin üstünde okla gösterirsin. Harita, nesneler ve sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; gösterilen yönlerin doğru yönden ortalama kaç derece saptığını, kendini zihinde az ya da çok döndürmeyi gerektiren soruların karşılaştırmasını, yanlış yönlerde sağ ile solun karıştırılıp karıştırılmadığını ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, uzamsal yönelimi ölçmek için kullanılan bakış açısı alma testlerinin düzenine dayanır. Ekranda yedi nesnenin olduğu bir harita vardır; her soruda bir nesnenin yanında durup başka bir nesneye baktığını hayal edersin ve üçüncü nesnenin senin için hangi yönde kaldığını bir çemberin üstünde okla gösterirsin. Harita, nesneler ve sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; gösterilen yönlerin doğru yönden ortalama kaç derece saptığını, kendini zihinde az ya da çok döndürmeyi gerektiren soruların karşılaştırmasını, yanlış yönlerde sağ ile solun karıştırılıp karıştırılmadığını ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'O nesne senin için hangi yönde?',
     paragraphs: [

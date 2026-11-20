@@ -114,7 +114,7 @@ export function TaskRunner(props: {
   if (phase === 'finishing' || !task) {
     return (
       <div className="mx-auto flex max-w-xl flex-col items-center gap-4 text-center">
-        <h1 className="t-h1">Bütün görevleri bitirdin!</h1>
+        <h1 className="t-h1">{tasks.length === 1 ? 'Bitirdin!' : 'Bütün görevleri bitirdin!'}</h1>
         {finishError ? (
           <>
             <p className="notice notice-danger text-left">{finishError}</p>
@@ -154,9 +154,11 @@ export function TaskRunner(props: {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <TaskSteps tasks={tasks} done={done} current={current} />
         <div className="flex flex-col gap-2">
-          <p className="t-meta">
-            Görev {current + 1} / {tasks.length}
-          </p>
+          {tasks.length > 1 && (
+            <p className="t-meta">
+              Görev {current + 1} / {tasks.length}
+            </p>
+          )}
           <h1 className="t-h1">{task.name}</h1>
           <p className="text-lg text-ink-2">{task.measures}</p>
         </div>

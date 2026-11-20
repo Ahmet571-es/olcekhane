@@ -327,7 +327,7 @@ const matrix: MatrixReasoningTask = {
   instructions: [
     'Her soruda 3 satır ve 3 sütundan oluşan bir tablo göreceksin. Tablonun sağ alttaki parçası eksik.',
     'Satırlarda şekillerin nasıl değiştiğine bak ve kuralı bul. Sonra eksik parçayı aşağıdaki sekiz seçenekten seç ve “Cevabı ver” düğmesine bas.',
-    'Sorular kolaydan zora doğru gider; sona doğru zorlanman olağandır. Emin olamadığında sana en uygun gelen seçeneği seç. Süre sınırı yok.',
+    'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Emin olamadığında sana en uygun gelen seçeneği seç. Süre sınırı yok.',
     'Önce doğru cevabı gösterilen iki alıştırma sorusu çözeceksin.',
   ],
   practice: PRACTICE,
@@ -373,7 +373,7 @@ export const sekilAkilYurutme: TaskInstrument = {
   sortOrder: 49,
   tagline: 'Şekillerle kurulmuş tablolarda kuralı bulup eksik parçayı tamamlayabilmeyi, yani şekillerle akıl yürütebilmeyi ölçer.',
   description:
-    'Bu test, akıl yürütmeyi ölçmek için psikolojide yaygın olarak kullanılan “matris” düzenine dayanır: üç satır ve üç sütundan oluşan bir tablonun son parçası eksiktir; satırlardaki kuralı bulup eksik parçayı seçeneklerden seçmek gerekir. Sorular okuma bilgisi gerektirmez (yalnızca birkaç soruda şekilleri saymak ve küçük sayıları toplayıp çıkarmak gerekir) ve kolaydan zora doğru beş düzeyde ilerler. Sorular ve seçenekler Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, akıl yürütmeyi ölçmek için psikolojide yaygın olarak kullanılan “matris” düzenine dayanır: üç satır ve üç sütundan oluşan bir tablonun son parçası eksiktir; satırlardaki kuralı bulup eksik parçayı seçeneklerden seçmek gerekir. Sorular okuma bilgisi gerektirmez (yalnızca birkaç soruda şekilleri saymak ve küçük sayıları toplayıp çıkarmak gerekir) ve kolaydan zora doğru beş düzeyde ilerler. Sorular ve seçenekler Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Eksik parçayı bul',
     paragraphs: [
@@ -383,7 +383,7 @@ export const sekilAkilYurutme: TaskInstrument = {
     ],
   },
   scales: [
-    { key: 'sa_dogru', name: 'Doğru cevaplar', plain: 'Kuralı bulup eksik parçanın doğru seçildiği soruların sayısı.' },
+    { key: 'sa_dogru', name: 'Doğru cevaplar', plain: 'Kuralın bulunup eksik parçanın doğru seçildiği soruların sayısı.' },
     { key: 'sa_duzey', name: 'Ulaşılan düzey', plain: 'Soruların en az %60’ının doğru cevaplandığı en yüksek düzey; o düzeye kadarki soruların da en az %60’ı doğru olmalıdır.' },
     { key: 'sa_kural', name: 'Kural türleri', plain: 'Hangi tür kuralların daha kolay, hangilerinin daha zor bulunduğu.' },
     { key: 'sa_calisma', name: 'Çalışma biçimi', plain: 'Sorulara ne kadar zaman ayrıldığı ve zor sorularda acele edilip edilmediği.' },

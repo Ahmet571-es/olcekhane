@@ -384,7 +384,7 @@ const verbal: VerbalReasoningTask = {
   instructions: [
     'Her soruda beş seçenek göreceksin; yalnızca biri doğrudur. Dört tür soru var: kelime ilişkileri, sınıflama, sıralama ve mantıksal çıkarım. Her sorunun üstünde ne yapacağın yazar.',
     `Sıralama ve mantıksal çıkarım sorularında yalnızca verilen bilgileri kullan; bilgiler gerçeğe uymasa bile doğruymuş gibi düşün. Bilgiler cevabı bulmaya yetmiyorsa “${U}” seçeneğini seç.`,
-    'Sorular kolaydan zora doğru gider; sona doğru zorlanman olağandır. Süre sınırı yok; kâğıt ve kalem kullanabilirsin. Emin olamadığında sana en uygun gelen seçeneği seç.',
+    'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Süre sınırı yok; kâğıt ve kalem kullanabilirsin. Emin olamadığında sana en uygun gelen seçeneği seç.',
     'Önce her soru türünden birer tane olmak üzere, doğru cevabı gösterilen dört alıştırma sorusu çözeceksin.',
   ],
   practice: PRACTICE,
@@ -438,7 +438,7 @@ export const sozelAkilYurutme: TaskInstrument = {
   tagline:
     'Kelimeler arasındaki ilişkileri bulmayı, kelimeleri gruplamayı, karşılaştırmalardan sıralama kurmayı ve verilen bilgilerden kesin sonuç çıkarmayı, yani sözcüklerle akıl yürütebilmeyi ölçer.',
   description:
-    'Bu test, akıl yürütmeyi sözcüklerle ölçen dört tür sorudan oluşur: kelime ilişkileri, sınıflama, sıralama ve mantıksal çıkarım. Her soruda beş seçenek vardır ve yalnızca biri doğrudur. Sorular kolaydan zora doğru beş düzeyde ilerler ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi soru türlerinin daha kolay geldiğini, yanlış cevapların neyi düşündürdüğünü ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, akıl yürütmeyi sözcüklerle ölçen dört tür sorudan oluşur: kelime ilişkileri, sınıflama, sıralama ve mantıksal çıkarım. Her soruda beş seçenek vardır ve yalnızca biri doğrudur. Sorular kolaydan zora doğru beş düzeyde ilerler ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi soru türlerinin daha kolay geldiğini, yanlış cevapların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Doğru seçeneği bul',
     paragraphs: [

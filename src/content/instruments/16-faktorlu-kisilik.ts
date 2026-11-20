@@ -185,7 +185,7 @@ const ITEMS: [string, boolean, string, string][] = [
   ['o04', false, 'Birçok şey için endişelenirim.', 'Worry about things.'],
   ['q1_04', false, 'Sohbetin seviyesini yükseltirim.', 'Carry the conversation to a higher level.'],
   ['q2_04', false, 'Sessiz, sakin ortamlar ararım.', 'Seek quiet.'],
-  ['q3_04', false, 'Her şey mükemmel olana kadar devam ederim.', 'Continue until everything is perfect.'],
+  ['q3_04', false, 'Her şey mükemmel olana kadar uğraşırım.', 'Continue until everything is perfect.'],
   ['q4_04', false, 'Başkalarının hataları beni sinirlendirir.', "Am annoyed by others' mistakes."],
   ['b05', false, 'Çabuk öğrenirim.', 'Learn quickly.'],
   ['a05', false, 'İnsanların moralini yükseltirim.', 'Cheer people up.'],
@@ -296,7 +296,7 @@ export const onAltiFaktorKisilik: LikertInstrument = {
     {
       key: A,
       name: 'Sıcaklık',
-      plain: 'İnsanlarla ilgilenme, onları önemseme, moralini yükseltme ve yanında rahat hissettirme.',
+      plain: 'İnsanlarla ilgilenme, onları önemseme, morallerini yükseltme ve yanında rahat hissetmelerini sağlama.',
       poles: { low: 'Başkalarına mesafeli duran', high: 'İnsanlarla sıcak ve ilgili' },
     },
     {
@@ -327,7 +327,7 @@ export const onAltiFaktorKisilik: LikertInstrument = {
     {
       key: G,
       name: 'Kurallara bağlılık',
-      plain: 'Kurallara uyma ve otoriteye saygı gösterme; kuralları çiğnemekten ve açığını aramaktan kaçınma.',
+      plain: 'Kurallara uyma ve otoriteye saygı gösterme; kuralları çiğnemekten ve kuralların açığını aramaktan kaçınma.',
       poles: { low: 'Kuralları sorgulayan', high: 'Kurallara bağlı' },
     },
     {

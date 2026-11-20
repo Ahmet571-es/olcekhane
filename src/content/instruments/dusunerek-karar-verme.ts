@@ -397,7 +397,7 @@ export const dusunerekKararVerme: TaskInstrument = {
   sortOrder: 49.9,
   tagline: 'Kısa, günlük sorularla düşünerek karar vermeyi ölçer.',
   description:
-    'Bu test kısa, günlük sorularla düşünerek karar vermeyi ölçer. 24 kısa soru vardır; her sorunun dört seçeneği vardır. Soruların bir kısmı biraz hesap, bir kısmı yalnızca dikkatli okuma gerektirir. Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; soruların kaçında doğru cevaba ulaşıldığını, yanlışların neyi düşündürdüğünü ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test kısa, günlük sorularla düşünerek karar vermeyi ölçer. 24 kısa soru vardır; her sorunun dört seçeneği vardır. Soruların bir kısmı biraz hesap, bir kısmı yalnızca dikkatli okuma gerektirir. Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; soruların kaçında doğru cevaba ulaşıldığını, yanlışların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Kısa sorular, dört seçenek',
     paragraphs: [

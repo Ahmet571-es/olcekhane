@@ -127,7 +127,7 @@ export function Flanker({ task, onDone }: { task: FlankerTask; onDone: (trials: 
           <p className="measure text-lg">Önce sekiz denemelik bir alıştırma yapalım. Her denemeden sonra doğru yapıp yapmadığını göreceksin.</p>
         ) : (
           <p className="measure text-lg">
-            Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
+            Alıştırmada {task.practice.length} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, task.practice.length)} doğru yaptın`}.{' '}
             {low ? 'Yalnızca ortadaki oka bakmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.' : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığın gösterilmeyecek.'}
           </p>
         )}

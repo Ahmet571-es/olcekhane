@@ -40,10 +40,10 @@ const nBack: NBackTask = {
   name: 'Geriye Dönük Hatırlama',
   measures: 'Akıldaki bilgiyi sürekli güncelleyebilme: az önce gördüklerini aklında tutup her yeni harfle karşılaştırabilme (çalışma belleği).',
   instructions: [
-    'Ekranda harfler tek tek, belli bir hızla belirecek. Her harfi daha önce gördüğün harflerle karşılaştıracaksın.',
-    'Birinci bölümde: harf bir önceki harfle aynıysa AYNI düğmesine (ya da boşluk tuşuna) bas. Aynı değilse hiçbir şeye basma.',
+    'Ekranda harfler tek tek belirecek; her harf kısa bir süre görünüp kaybolacak ve sıradaki harf kendiliğinden gelecek. Her harfi, ondan bir ya da iki önce gelen harfle karşılaştıracaksın.',
+    'Birinci bölümde: harf bir önceki harfle aynıysa AYNI düğmesine (ya da boşluk tuşuna) bas; harf kaybolduktan sonra da, sıradaki harf gelene kadar basabilirsin. Aynı değilse hiçbir şeye basma.',
     'İkinci ve üçüncü bölümde: harf iki önceki harfle aynıysa bas. Örneğin K, M, K dizisinde ikinci K’de basarsın.',
-    'Her yeni kuraldan önce kısa bir alıştırma var. Ara sıra yanılmak çok normal; özellikle iki geri çoğu kişi için zordur.',
+    'Her yeni kuraldan önce kısa bir alıştırma var. Ara sıra yanılmak çok normal; özellikle iki önceki harfle karşılaştırmak çoğu kişi için zordur.',
   ],
   stimulusMs: 800,
   trialMs: 2500,

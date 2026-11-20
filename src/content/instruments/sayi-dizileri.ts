@@ -73,7 +73,7 @@ const PRACTICE: NumberSeriesPracticeItem[] = [
     terms: [30, 26, _, 18, 14],
     answer: 22,
     explain:
-      'Her adımda 4 azalıyor: 30’dan 26’ya, 18’den 14’e. Eksik sayı 26 − 4 = 22; 22 − 4 = 18 de tutuyor. Eksik sayı bazen dizinin ortasında olabilir.',
+      'Her adımda 4 azalıyor: 30’dan 26’ya, 18’den 14’e. Eksik sayı 26 − 4 = 22; 22 − 4 = 18 de tutuyor. Eksik sayı her zaman sonda olmaz; bazen dizinin ortasındadır.',
   },
 ];
 
@@ -87,7 +87,7 @@ const series: NumberSeriesTask = {
   instructions: [
     'Her soruda bir kurala göre ilerleyen bir sayı dizisi göreceksin. Dizideki sayılardan biri eksik: çoğunlukla sonuncusu, bazen ortadaki bir sayı.',
     'Sayıların nasıl değiştiğine bak ve kuralı bul. Sonra eksik sayıyı ekrandaki tuşlarla (ya da klavyeyle) yaz ve “Cevabı ver” düğmesine bas. Kâğıt ve kalem kullanabilirsin; hesap makinesi kullanma.',
-    'Sorular kolaydan zora doğru gider; sona doğru zorlanman olağandır. Bulamadığın bir soruda “Bilmiyorum” diyebilirsin. Süre sınırı yok.',
+    'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Bulamadığın bir soruda “Bilmiyorum” diyebilirsin. Süre sınırı yok.',
     'Önce doğru cevabı gösterilen iki alıştırma sorusu çözeceksin.',
   ],
   practice: PRACTICE,
@@ -104,7 +104,7 @@ const series: NumberSeriesTask = {
     {
       level: 3,
       name: '3. düzey',
-      plain: 'Artışları düzenli büyüyen ya da küçülen dizileri ve iç içe geçmiş iki basit diziyi çözmek, her adımda üçle çarpıldığını görmek ya da dizinin ortasındaki eksik sayıyı bulmak.',
+      plain: 'Artışları ya da azalışları düzenli büyüyen dizileri ve iç içe geçmiş iki basit diziyi çözmek, her adımda üçle çarpıldığını görmek ya da dizinin ortasındaki eksik sayıyı bulmak.',
     },
     {
       level: 4,
@@ -114,7 +114,7 @@ const series: NumberSeriesTask = {
     {
       level: 5,
       name: '5. düzey',
-      plain: 'Her sayının önceki iki ya da üç sayının toplamı olduğu ya da artışların kendi kuralı olan bir dizi oluşturduğu dizileri, “üç katının bir eksiği” gibi kuralları ve çarpma ile çıkarmayla ilerleyen iç içe iki diziyi çözmek.',
+      plain: 'Her sayının önceki iki ya da üç sayının toplamı olduğu ya da artışların kendi kuralı olan bir dizi oluşturduğu dizileri ve çarpma ve çıkarmayla ilerleyen iç içe iki diziyi çözmek ya da “üç katının bir eksiği” gibi bir kuralı bulmak.',
     },
   ],
   rapidMs: 2500,
@@ -138,7 +138,7 @@ export const sayiDizileri: TaskInstrument = {
   sortOrder: 49.5,
   tagline: 'Bir kurala göre ilerleyen sayı dizilerinde kuralı bulup eksik sayıyı yazabilmeyi, yani sayılarla akıl yürütebilmeyi ölçer.',
   description:
-    'Bu test, akıl yürütmeyi ölçmek için sık kullanılan “sayı dizisi” sorularına dayanır: bir kurala göre ilerleyen dizideki eksik sayıyı bulmak gerekir. Sorular seçenekli değildir, cevap yazılır; bu yüzden tahminle doğru bulmak çok zordur. Sorular kolaydan zora doğru beş düzeyde ilerler ve toplama, çıkarma, çarpma ve bölme bilgisi gerektirir. Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu, yanlış cevapların neyi düşündürdüğünü ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, akıl yürütmeyi ölçmek için sık kullanılan “sayı dizisi” sorularına dayanır: bir kurala göre ilerleyen dizideki eksik sayıyı bulmak gerekir. Sorular seçenekli değildir, cevap yazılır; bu yüzden tahminle doğru bulmak çok zordur. Sorular kolaydan zora doğru beş düzeyde ilerler ve toplama, çıkarma, çarpma ve bölme bilgisi gerektirir. Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu, yanlış cevapların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Eksik sayıyı bul',
     paragraphs: [
@@ -148,7 +148,7 @@ export const sayiDizileri: TaskInstrument = {
     ],
   },
   scales: [
-    { key: 'sd_dogru', name: 'Doğru cevaplar', plain: 'Kuralı bulup eksik sayının doğru yazıldığı soruların sayısı.' },
+    { key: 'sd_dogru', name: 'Doğru cevaplar', plain: 'Kuralın bulunup eksik sayının doğru yazıldığı soruların sayısı.' },
     { key: 'sd_duzey', name: 'Ulaşılan düzey', plain: 'Soruların en az %60’ının doğru cevaplandığı en yüksek düzey; o düzeye kadarki soruların da en az %60’ı doğru olmalıdır.' },
     { key: 'sd_kural', name: 'Kural türleri', plain: 'Hangi tür kuralların daha kolay, hangilerinin daha zor bulunduğu.' },
     { key: 'sd_calisma', name: 'Çalışma biçimi', plain: 'Sorulara ne kadar zaman ayrıldığı, kaç soruda “Bilmiyorum” dendiği ve zor sorularda acele edilip edilmediği.' },

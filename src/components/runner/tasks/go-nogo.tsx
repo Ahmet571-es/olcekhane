@@ -157,7 +157,7 @@ export function GoNoGo({ task, onDone }: { task: GoNoGoTask; onDone: (trials: Go
           </p>
         ) : (
           <p className="measure text-lg">
-            Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
+            Alıştırmada {task.practice.length} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, task.practice.length)} doğru yaptın`}.{' '}
             {low
               ? `Harf görünce hemen basmayı, ${task.stop} görünce durmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.`
               : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}

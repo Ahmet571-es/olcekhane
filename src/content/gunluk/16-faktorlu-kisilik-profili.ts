@@ -886,7 +886,7 @@ export const onAltiFaktorDaily: SurveyDaily = {
     },
     /*
      * Düzen ve titizlik: q3_01 "Her şeyin tam yerli yerinde olmasını isterim", q3_02 "Yapmam gereken işleri hemen hallederim",
-     * q3_03 "Düzeni severim", q3_04 "Her şey mükemmel olana kadar devam ederim", q3_05 "Yaptığım işte titizimdir"; ters: q3_06
+     * q3_03 "Düzeni severim", q3_04 "Her şey mükemmel olana kadar uğraşırım", q3_05 "Yaptığım işte titizimdir"; ters: q3_06
      * "Dağınık insanlar beni rahatsız etmez", q3_07 "Dağınıklık beni rahatsız etmez", q3_08 "Odamı dağınık bırakırım" (kendi
      * odası varsayılmasın diye kullanılmadı), q3_09 "Eşyalarımı ortada bırakırım", q3_10 "Hoşa gitmeyen işleri ertelerim".
      */

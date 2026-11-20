@@ -10,7 +10,7 @@ import type { SurveyDaily } from './types';
  *    demez; sıcaklıkta düşük düzey ilgisizlik ya da kavga anlatmaz: "iyi geçinirim" maddesinin düşük cevabına dayanılmadı).
  *  - Hiçbir satır bir tarzı karşıtından üstün göstermez; sert ve mesafeli tarzların yüksek düzeyi suçlamadan, gerçek bir
  *    kolaylık (açıkça karşı çıkabilmek, acındıran hikâyelere kanmamak) ve yumuşak bir zorlukla anlatılır.
- *  - "Bir şeylere pek kafa yormam" (ipc24) ve "Bir şey anlatırken nadiren abartırım" (ipc27) maddelerine dayanılmadı: ilki
+ *  - "Bir şeylere pek kafa yormam" (ipc24) ve "Bir şey anlatırken pek abartmam" (ipc27) maddelerine dayanılmadı: ilki
  *    mesafeli tarzın konusundan, ikincisinin düşük cevabı yargılayıcı okunabileceği için.
  * Her satırın dayandığı maddeler `from`'dadır. Maddeye doğrudan dayanmayan, raporun metninden gelen uzantılar: öne çıkmada
  * "başkalarına söz bırakmak onların fikrini duymanı sağlayabilir" ve düşük düzeyde "başkalarının fikirlerine de yer
@@ -209,7 +209,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
     },
     /*
      * Hoşgörülü ve uysal olma: ipc03 "İnsanların pek çok davranışına katlanırım", ipc11 "Olayları geldiği gibi karşılarım",
-     * ipc19 "Önce başkalarını düşünürüm", ipc27 "Bir şey anlatırken nadiren abartırım" (kullanılmadı).
+     * ipc19 "Önce başkalarını düşünürüm", ipc27 "Bir şey anlatırken pek abartmam" (kullanılmadı).
      */
     unassuming_ingenuous: {
       poles: { low: 'Her şeye katlanmayan', high: 'Hoşgörülü ve uysal' },
@@ -265,7 +265,7 @@ export const kisilerarasiTarzDaily: SurveyDaily = {
       },
     },
     /*
-     * Geri planda kalma: ipc02 "Alçak sesle konuşurum", ipc10 "Başkalarının sözünü bitirmesine izin veririm", ipc18 "Kendimi
+     * Geri planda kalma: ipc02 "Alçak sesle konuşurum", ipc10 "Başkalarının sözünü bitirmesini beklerim", ipc18 "Kendimi
      * pek övmem", ipc26 "İlgi odağı olmaktan hoşlanmam".
      */
     unassured_submissive: {

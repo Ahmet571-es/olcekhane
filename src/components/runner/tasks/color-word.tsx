@@ -208,7 +208,7 @@ export function ColorWord({ task, onDone }: { task: ColorWordTask; onDone: (tria
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {task.practice.length} denemenin {countOf(practiceScore, task.practice.length)} doğru yaptın.{' '}
+          Alıştırmada {task.practice.length} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, task.practice.length)} doğru yaptın`}.{' '}
           {low
             ? 'Kelimeye değil, yazının rengine bakmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl görev başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}

@@ -95,7 +95,7 @@ const series: LetterSeriesTask = {
   instructions: [
     'Her soruda bir kurala göre ilerleyen bir harf dizisi göreceksin. Dizideki harflerden biri eksik: çoğunlukla sonuncusu, bazen ortadaki bir harf.',
     'Dizilerde Türk alfabesinin 29 harfi kullanılır. Harflerin nasıl değiştiğine bak ve kuralı bul. Sonra eksik harfi ekrandaki harf tuşlarından (ya da klavyeyle) seç ve “Cevabı ver” düğmesine bas. Tuşlar alfabe sırasıyla dizilmiştir.',
-    'Sorular kolaydan zora doğru gider; sona doğru zorlanman olağandır. Bulamadığın bir soruda “Bilmiyorum” diyebilirsin. Süre sınırı yok; kâğıt ve kalem kullanabilirsin.',
+    'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Bulamadığın bir soruda “Bilmiyorum” diyebilirsin. Süre sınırı yok; kâğıt ve kalem kullanabilirsin.',
     'Önce doğru cevabı gösterilen iki alıştırma sorusu çözeceksin.',
   ],
   practice: PRACTICE,
@@ -144,7 +144,7 @@ export const harfDizileri: TaskInstrument = {
   estimatedMinutes: 10,
   sortOrder: 49.6,
   tagline: 'Bir kurala göre ilerleyen harf dizilerinde kuralı bulup eksik harfi seçebilmeyi, yani harflerle akıl yürütebilmeyi ölçer.',
-  description: `Bu test, akıl yürütmeyi ölçmek için uzun zamandır kullanılan “harf dizisi” sorularına dayanır: bir kurala göre ilerleyen dizideki eksik harfi bulmak gerekir. Diziler Türk alfabesinin ${TURKISH_ALPHABET.length} harfiyle yazılmıştır; cevap, alfabe sırasıyla dizilmiş harf tuşlarından seçilir. Sorular seçenekli değildir; bu yüzden tahminle doğru bulmak çok zordur. Sorular kolaydan zora doğru beş düzeyde ilerler. Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu, yanlış cevapların neyi düşündürdüğünü ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.`,
+  description: `Bu test, akıl yürütmeyi ölçmek için uzun zamandır kullanılan “harf dizisi” sorularına dayanır: bir kurala göre ilerleyen dizideki eksik harfi bulmak gerekir. Diziler Türk alfabesinin ${TURKISH_ALPHABET.length} harfiyle yazılmıştır; cevap, alfabe sırasıyla dizilmiş harf tuşlarından seçilir. Sorular seçenekli değildir; bu yüzden tahminle doğru bulmak çok zordur. Sorular kolaydan zora doğru beş düzeyde ilerler. Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi tür kuralların daha kolay bulunduğunu, yanlış cevapların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.`,
   intro: {
     title: 'Eksik harfi bul',
     paragraphs: [
@@ -154,7 +154,7 @@ export const harfDizileri: TaskInstrument = {
     ],
   },
   scales: [
-    { key: 'hd_dogru', name: 'Doğru cevaplar', plain: 'Kuralı bulup eksik harfin doğru seçildiği soruların sayısı.' },
+    { key: 'hd_dogru', name: 'Doğru cevaplar', plain: 'Kuralın bulunup eksik harfin doğru seçildiği soruların sayısı.' },
     { key: 'hd_duzey', name: 'Ulaşılan düzey', plain: 'Soruların en az %60’ının doğru cevaplandığı en yüksek düzey; o düzeye kadarki soruların da en az %60’ı doğru olmalıdır.' },
     { key: 'hd_kural', name: 'Kural türleri', plain: 'Hangi tür kuralların daha kolay, hangilerinin daha zor bulunduğu.' },
     { key: 'hd_calisma', name: 'Çalışma biçimi', plain: 'Sorulara ne kadar zaman ayrıldığı, kaç soruda “Bilmiyorum” dendiği ve zor sorularda acele edilip edilmediği.' },

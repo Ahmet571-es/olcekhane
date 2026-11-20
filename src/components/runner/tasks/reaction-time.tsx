@@ -231,11 +231,11 @@ export function ReactionTime({ task, onDone }: { task: ReactionTimeTask; onDone:
     return (
       <div key={`${step}-${partIndex}`} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {part.practice.length} denemenin {countOf(practiceScore, part.practice.length)} doğru yaptın.{' '}
+          Alıştırmada {part.practice.length} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, part.practice.length)} doğru yaptın`}.{' '}
           {low
             ? choice
               ? 'Dairenin olduğu taraftaki düğmeye basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
-              : 'Daireyi bekleyip, görür görmez basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
+              : 'Daireyi beklemeyi ve görür görmez basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
             : choice
               ? 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını ve ne kadar hızlı bastığını görmeyeceksin. Daire belirmeden basarsan yine uyarı göreceksin.'
               : 'Şimdi asıl bölüm başlıyor; artık ne kadar hızlı bastığını görmeyeceksin. Daire belirmeden basarsan yine uyarı göreceksin.'}

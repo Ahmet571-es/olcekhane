@@ -291,7 +291,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
      * orga07 "Eşyalarımı ortada bırakırım", orga10 "Dağınıklık beni rahatsız etmez". Çalışkanlık: dili02 "Bir işi yapmaya hemen
      * başlarım", dili03 "Yaptığım işte titizimdir", dili04 "Çok çalışırım"; ters dili06 "Sadece idare edecek kadar
      * çalışırım", dili07 "Yaptığım iş çok zorlaşınca bırakırım", dili10 "Başladığım işlere olan ilgimi çabuk kaybederim".
-     * Özenlilik: perf01 "Ayrıntılara dikkat ederim", perf02 "Her şey mükemmel olana kadar devam ederim", perf05 "Kusurlu
+     * Özenlilik: perf01 "Ayrıntılara dikkat ederim", perf02 "Her şey mükemmel olana kadar uğraşırım", perf05 "Kusurlu
      * işlerden hoşlanmam", perf08 "Kalite konusunda ısrarcıyım"; ters perf09 "Ayrıntılara gereğinden az dikkat ederim", perf10
      * "İşleri oluruna bırakmayı tercih ederim". Temkinlilik: prud02 "Plan yapar ve planıma bağlı kalırım", prud03 "İşleri bir
      * plana göre yaparım"; ters prud06 "Aceleci kararlar veririm".

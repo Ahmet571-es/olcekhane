@@ -40,7 +40,7 @@ const reaction: ReactionTimeTask = {
   instructions: [
     'Görev iki bölümden oluşur. Birinci bölümde ekranda bir kutu göreceksin. Kutuda bir daire belirdiği anda BAS düğmesine (ya da boşluk tuşuna) olabildiğince hızlı bas.',
     'İkinci bölümde yan yana iki kutu göreceksin. Daire hangi kutuda belirirse o taraftaki düğmeye olabildiğince hızlı bas. Telefonda ya da tablette iki başparmağını iki düğmenin üstünde tut; bilgisayarda fare yerine sol ve sağ ok tuşlarını kullan.',
-    'Daireyi bekle: daire belirmeden basarsan o deneme sayılmaz. Hem hızlı hem doğru olmaya çalış. Her bölümden önce kısa bir alıştırma yapacaksın.',
+    'Daireyi bekle: dairenin ne zaman belireceği her seferinde değişir; daire belirmeden basarsan o deneme sayılmaz. Daire en çok 2 saniye görünür; basmazsan kaybolur ve sıradaki deneme başlar. Hem hızlı hem doğru olmaya çalış. Her bölümden önce kısa bir alıştırma yapacaksın.',
   ],
   parts: [
     {

@@ -114,7 +114,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   kızarım"); "-ip" ekinden sonra olumsuz yüklem iki türlü okunur ("durup basmayacaksın"), kaçınılır. Görev yönergesi süre
   sınırını ve uyaranın kendiliğinden kaybolduğunu baştan söyler (yönergedeki süre görevin ayarıyla aynıdır, test denetler);
   duraklama ekranında not ile düğme aynı şeyi söyler (`PausedScreen`'in `cta`'sı); alıştırma sonucu `countOf` ile yazılır
-  ("8 denemenin hepsini"). Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
+  ("8 denemenin hepsini"; hiç doğru yoksa "hiçbirini doğru yapamadın"). Yönerge düğmeyi ekranda yazdığı gibi anar ve görevin
+  gerçek işleyişini anlatır (ör. ayna görüntüsü de döndürülmüş gelir); zarf-fiilden ("-ip") sonra virgül konmaz; "-ip" ile
+  bağlanan iki eylem aynı çatıdadır ("Kuralı bulup … seçildiği" değil "Kuralın bulunup … seçildiği"). Soruların izini tutan
+  testte (`SORU_IZI`) yalnızca açıklama metni değiştiyse iz güncellenir, sürüm artmaz. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
   ayrılık nedeniyle `KNOWN_DIFFERENT`'a yazılır; Çocuk Kişilik Profili yaşa göre uyarladığı için dışındadır); maddeyi alıntılayan
   yorumlar da eşitlenir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır

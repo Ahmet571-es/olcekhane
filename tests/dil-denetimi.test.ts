@@ -27,8 +27,9 @@ describe('dil ve mantık denetimi: kalıcı kurallar', () => {
   });
 
   it('giriş, cümlelerin hepsi kişiyi anlatıyormuş gibi başlamaz', () => {
-    // "Seni anlatan 50 cümle göreceksin" dedikten sonra "seni ne kadar doğru anlatıyor?" diye sormak çelişir.
-    for (const d of LIKERT) for (const p of d.intro.paragraphs) expect(/seni anlatan \d+/.test(p), `${d.slug}: ${p}`).toBe(false);
+    // "Seni anlatan 50 cümle göreceksin" (ya da "ilişkilerini anlatan 32 cümle") dedikten sonra "seni ne kadar doğru
+    // anlatıyor?" diye sormak çelişir.
+    for (const d of LIKERT) for (const p of d.intro.paragraphs) expect(/(seni|\S+(?:ını|ini|unu|ünü)) anlatan \d+/.test(p), `${d.slug}: ${p}`).toBe(false);
   });
 
   it('gereksiz yineleme yok: "yeniden tekrar", "tekrar yeniden", "geri iade"', () => {
@@ -65,9 +66,14 @@ describe('dil ve mantık denetimi: kalıcı kurallar', () => {
     const tasks = (publicInstruments().filter((d) => d.engine === 'tasks') as TaskInstrument[]).flatMap((d) => d.tasks);
     const colorWord = tasks.find((t) => t.kind === 'color_word');
     const trail = tasks.find((t) => t.kind === 'trail');
-    if (colorWord?.kind !== 'color_word' || trail?.kind !== 'trail') throw new Error('görev bulunamadı');
+    const rotation = tasks.find((t) => t.kind === 'mental_rotation');
+    const reaction = tasks.find((t) => t.kind === 'reaction_time');
+    if (colorWord?.kind !== 'color_word' || trail?.kind !== 'trail' || rotation?.kind !== 'mental_rotation' || reaction?.kind !== 'reaction_time')
+      throw new Error('görev bulunamadı');
     expect(colorWord.instructions.join(' ')).toContain(`en çok ${colorWord.timeoutMs / 1000} saniye`);
     expect(trail.instructions.join(' ')).toContain(`en çok ${trail.maxMs / 60_000} dakika`);
+    expect(rotation.instructions.join(' ')).toContain(`en çok ${rotation.timeoutMs / 1000} saniye`);
+    expect(reaction.instructions.join(' ')).toContain(`en çok ${reaction.timeoutMs / 1000} saniye`);
   });
 
   it('aynı İngilizce madde bütün testlerde aynı Türkçeyle yazılır', () => {

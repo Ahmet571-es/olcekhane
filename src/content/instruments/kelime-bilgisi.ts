@@ -309,7 +309,7 @@ const task: VocabularyTask = {
   instructions: [
     'Her soruda bir kelime ya da içinde bir kelimenin veya deyimin vurgulandığı bir cümle göreceksin. Soruya göre kelimenin eş anlamlısını, zıt anlamlısını ya da cümlede hangi anlamda kullanıldığını beş seçenekten seç.',
     'Bilmediğin bir kelimede tahmin edebilirsin; ama önce cümleyi ve seçeneklerin hepsini dikkatle oku.',
-    'Sorular kolaydan zora doğru gider; sona doğru zorlanman olağandır. Süre sınırı yok.',
+    'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Süre sınırı yok.',
     'Önce doğru cevabı gösterilen dört alıştırma sorusu çözeceksin.',
   ],
   practice,
@@ -347,7 +347,7 @@ export const kelimeBilgisi: TaskInstrument = {
   sortOrder: 49.9,
   tagline: 'Türkçe kelimelerin ve deyimlerin anlamlarını ne kadar bildiğini ölçer: eş ve zıt anlam, cümlede anlam ve deyimler.',
   description:
-    'Bu test, Türkçe kelime bilgisini dört soru türüyle ölçer: bir kelimenin eş anlamlısını ve zıt anlamlısını bulmak, birden çok anlamı olan bir kelimenin cümlede hangi anlamda kullanıldığını ayırt etmek ve deyimlerin anlamını bilmek. Sorular günlük konuşmadaki kelimelerden yazı dilindeki seyrek kelimelere doğru beş düzeyde ilerler ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi soru türlerinin daha kolay geldiğini, yanlış cevapların neyi düşündürdüğünü ve sorulara nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, Türkçe kelime bilgisini dört soru türüyle ölçer: bir kelimenin eş anlamlısını ve zıt anlamlısını bulmak, birden çok anlamı olan bir kelimenin cümlede hangi anlamda kullanıldığını ayırt etmek ve deyimlerin anlamını bilmek. Sorular günlük konuşmadaki kelimelerden yazı dilindeki seyrek kelimelere doğru beş düzeyde ilerler ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, hangi düzeye kadar ulaşıldığını, hangi soru türlerinin daha kolay geldiğini, yanlış cevapların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Kelimelerin anlamını bul',
     paragraphs: [

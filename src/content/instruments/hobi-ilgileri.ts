@@ -125,7 +125,7 @@ const ITEMS: [number, string | [string, string], string, string][] = [
   [89, CO, 'Koleksiyonundaki bir şeyi takas etmek', 'Traded something in my collection.'],
   [94, FA, 'Modayla ilgili bir dergi okumak', 'Read a fashion-related magazine.'],
   [95, SI, 'Kişisel gelişim kitabı satın almak', 'Bought a self-help book.'],
-  [100, SP, 'Bir takım sporu oynamak', 'Played a team sport.'],
+  [100, SP, 'Futbol, voleybol gibi bir takım sporu yapmak', 'Played a team sport.'],
   [104, EX, 'Bir seferde en az 40 dakika egzersiz yapmak', 'Exercised for 40 minutes or longer.'],
   [105, CU, 'Bir bale gösterisine gitmek', 'Attended a ballet performance.'],
   [106, TR, 'Otelde, pansiyonda ya da tatil köyünde kalmak', 'Stayed in a hotel, motel, or resort.'],
@@ -210,8 +210,8 @@ export const hobiIlgileri: LikertInstrument = {
   intro: {
     title: 'Boş zamanında neler yapıyorsun?',
     paragraphs: [
-      'Birazdan insanların boş zamanlarında yaptığı 92 etkinlik göreceksin. Her birini ne sıklıkla yaptığını seç: hiç yapmadıysan ilk seçeneği, daha önce yapıp son bir yılda yapmadıysan ikinci seçeneği, son bir yılda yaptıysan kaç kez yaptığını işaretle.',
-      'Zorunlu olarak yaptıklarını, örneğin eğitiminin ya da işinin gereği olarak yaptıklarını sayma. Ailecek, yakınlarınla ya da arkadaşlarınla birlikte yaptıkların ve evde üstlendiğin işler (ör. evcil hayvanı beslemek, küçük bir çocuğa bakmak) sayılır.',
+      'Birazdan insanların boş zamanlarında yaptığı 92 etkinlik göreceksin. Her birini ne sıklıkla yaptığını seç: hiç yapmadıysan ilk seçeneği, daha önce yaptıysan ama son bir yılda yapmadıysan ikinci seçeneği, son bir yılda yaptıysan kaç kez yaptığını işaretle.',
+      'Zorunlu olarak yaptıklarını, örneğin eğitiminin ya da işinin gereği olarak yaptıklarını sayma. Ailecek, yakınlarınla ya da arkadaşlarınla birlikte yaptıkların ve evde üstlendiğin işler (ör. evcil hayvana yemek vermek, küçük bir çocuğa bakmak) sayılır.',
       'Doğru ya da yanlış cevap yok. Tam sayıyı hatırlaman gerekmez; yaklaşık bir tahmin yeterli. Etkinliklerin bir kısmını hiç yapmamış olman çok olağan.',
     ],
   },

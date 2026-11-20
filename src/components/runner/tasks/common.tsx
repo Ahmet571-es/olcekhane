@@ -136,7 +136,7 @@ export function PausedScreen({
   return (
     <div className="flex flex-col items-center gap-6 text-center">
       <h2 className="t-h2">Görev duraklatıldı</h2>
-      <p className="measure text-lg">Başka bir sekmeye ya da uygulamaya geçtiğin için görev durdu. {note}</p>
+      <p className="measure text-lg">Ekran kapandığı ya da başka bir sekmeye, başka bir uygulamaya geçtiğin için görev durdu. {note}</p>
       <ArmedButton className="btn btn-primary btn-lg" autoFocus={autoFocus} onClick={onResume}>
         {cta}
       </ArmedButton>
