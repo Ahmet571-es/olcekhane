@@ -69,6 +69,12 @@ ekranları sade kalır; sıra aşağıdaki gibi.
 Site sahibine söylenenler: kişinin portresi gibi kişiye özel resim yapılmaz; "hatasız" sözü önceden verilmez, bulunan her
 hata düzeltilip listelenir.
 
+**Sunucunun diski doluyor (2026-11-20):** yayın özetindeki `sistem_diski_kullanim` 6 Kasım'da %92, 20 Kasım'da %94. Disk
+dolarsa yeni sürüm yüklenemez, site de durabilir. Sunucuya bu ortamdan girilemediği için durum özeti artık diskin dökümünü
+de yazıyor (`sunucu/kur.sh durum`: `sistem_diski`, `docker_alan`, `en_buyuk_klasorler`; yalnızca okur). **Sıradaki işin
+başında** son yayının "Sunucu durumu" notundaki dökümüne bakılır ve yer kaplayan şey (eski Docker katmanları, derleme
+önbelleği, günlükler…) için `kur.sh`'a temizlik eklenir; %97'yi geçerse başka işten önce yapılır. Site sahibine söylendi.
+
 **ŞU AN: "Öğrenme ve akademik beceriler" alanına altı yeni anket testi (site sahibinin 2026-11-05 isteği ve sıra onayı;
 her mesajda bir test).** Bilgi ölçen değil, kendini değerlendirme testleri; her biri maddeleri yazılır, iki bağımsız
 incelemeden (maddeler ve bilim kartı; rapor, yol haritası ve günlük hayat metinleri) geçer, telefonda ve masaüstünde baştan

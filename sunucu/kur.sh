@@ -315,6 +315,11 @@ komut_durum() {
   echo "takas=$(swapon --show=NAME --noheadings | wc -l | tr -d ' ') alan"
   echo "bellek_dokumu=$(cat /proc/sys/kernel/core_pattern)"
   echo "sistem_diski_kullanim=$(df --output=pcent / | tail -n1 | tr -d ' ')"
+  # Diskin nereye gittiği (2026-11-20'de kullanım %94'e çıktı): toplam/dolu/boş, Docker'ın kalemleri, en büyük klasörler.
+  # Yalnızca okur; hiçbir şeyi silmez. Bir kalem okunamazsa boş kalır, betik durmaz.
+  echo "sistem_diski=$(df -h --output=size,used,avail / 2>/dev/null | tail -n1 | xargs | tr ' ' '/' || true)"
+  echo "docker_alan=$(docker system df --format '{{.Type}} {{.Size}} (geri alinabilir {{.Reclaimable}})' 2>/dev/null | paste -sd ';' - || true)"
+  echo "en_buyuk_klasorler=$(du -xh --max-depth=3 / 2>/dev/null | sort -rh | sed -n '2,11p' | awk '{print $2 "=" $1}' | paste -sd ' ' - || true)"
   echo "yeniden_baslatma_gerekli=$([ -f /var/run/reboot-required ] && echo evet || echo hayir)"
   echo "calisma_suresi=$(uptime -p 2>/dev/null || true)"
 }
