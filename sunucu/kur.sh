@@ -279,6 +279,20 @@ uygulama_sagligi() { # saniye
   return 1
 }
 
+# Eski sürümlerin görüntüleri: her yayın görüntüyü hem "latest" hem işlemenin kimliğiyle etiketler (.github/actions/goruntu).
+# Kimlikli etiket kaldığı sürece eski görüntü "sahipsiz" sayılmaz ve `docker image prune` onu silmez; görüntüler birikir
+# (2026-11-20: 45 GB, disk %94). Yeni sürüm sağlıklı açıldıktan sonra, çalışan görüntünün dışındaki bütün olcekhane-app
+# etiketleri kaldırılır. Çalışan görüntüye dokunulmaz; geri dönüş zaten yeni bir yayınla (git revert) yapılır.
+eski_goruntuleri_sil() {
+  local simdiki kimlik etiket
+  simdiki=$(docker image inspect olcekhane-app:latest --format '{{.Id}}' 2>/dev/null || true)
+  [ -n "$simdiki" ] || return 0
+  docker image ls olcekhane-app --no-trunc --format '{{.ID}} {{.Repository}}:{{.Tag}}' 2>/dev/null |
+    while read -r kimlik etiket; do
+      [ "$kimlik" = "$simdiki" ] || docker image rm "$etiket" >/dev/null 2>&1 || true
+    done || true
+}
+
 komut_yayinla() {
   systemctl is-active --quiet docker || systemctl start docker
   docker image inspect olcekhane-app:latest >/dev/null 2>&1 || hata "Uygulama görüntüsü yüklenmemiş."
@@ -289,6 +303,7 @@ komut_yayinla() {
     hata "Kapsayıcılar sağlıklı olarak açılmadı."
   fi
   uygulama_sagligi 120 || hata "Uygulama sağlık denetimine yanıt vermiyor."
+  eski_goruntuleri_sil
   docker image prune -f >/dev/null 2>&1 || true
   bilgi "Uygulama çalışıyor: $(docker image inspect olcekhane-app:latest --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null | cut -c1-7)"
 }
@@ -315,11 +330,10 @@ komut_durum() {
   echo "takas=$(swapon --show=NAME --noheadings | wc -l | tr -d ' ') alan"
   echo "bellek_dokumu=$(cat /proc/sys/kernel/core_pattern)"
   echo "sistem_diski_kullanim=$(df --output=pcent / | tail -n1 | tr -d ' ')"
-  # Diskin nereye gittiği (2026-11-20'de kullanım %94'e çıktı): toplam/dolu/boş, Docker'ın kalemleri, en büyük klasörler.
-  # Yalnızca okur; hiçbir şeyi silmez. Bir kalem okunamazsa boş kalır, betik durmaz.
+  # Diskin durumu: toplam/dolu/boş ve Docker'ın kalemleri (2026-11-20'de eski görüntüler yüzünden kullanım %94'e çıkmıştı).
+  # Yalnızca okur. Bir kalem okunamazsa boş kalır, betik durmaz.
   echo "sistem_diski=$(df -h --output=size,used,avail / 2>/dev/null | tail -n1 | xargs | tr ' ' '/' || true)"
   echo "docker_alan=$(docker system df --format '{{.Type}} {{.Size}} (geri alinabilir {{.Reclaimable}})' 2>/dev/null | paste -sd ';' - || true)"
-  echo "en_buyuk_klasorler=$(du -xh --max-depth=3 / 2>/dev/null | sort -rh | sed -n '2,11p' | awk '{print $2 "=" $1}' | paste -sd ' ' - || true)"
   echo "yeniden_baslatma_gerekli=$([ -f /var/run/reboot-required ] && echo evet || echo hayir)"
   echo "calisma_suresi=$(uptime -p 2>/dev/null || true)"
 }

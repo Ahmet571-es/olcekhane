@@ -74,6 +74,10 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   tetiklenemez: yeniden yayın için `main`'e bir işleme gönderilir. Dış sınamayı Yayın iş akışı yapar; canlı site bu
   ortamdan da açılabiliyor (2026-11-05'te `curl` ve vekil sunuculu Chromium ile; WebFetch eski bir kopyayı
   gösterebilir, canlı metni `curl` ile doğrula). Açılamıyorsa vekil sunucu engelliyordur, zorlanmaz.
+- Sunucunun diski 48 GB'tır. Her yayın, yeni sürüm sağlıklı açıldıktan sonra eski uygulama görüntülerini siler
+  (`sunucu/kur.sh`, `eski_goruntuleri_sil`; 2026-11-20'ye kadar silinmiyordu ve disk %94'e çıkmıştı). Yayın özetindeki
+  "Sunucu durumu" notu disk kullanımını (`sistem_diski_kullanim`, `sistem_diski`, `docker_alan`) yazar: her yayında bakılır,
+  %80'i geçerse nedeni aranır ve site sahibine söylenir.
 - Sunucu: Hostinger VPS KVM 1, Almanya (Düsseldorf), `179.198.215.72`; alan adı `olcekhane.com` (Namecheap
   DNS, iki A kaydı). Ayarlar `yayin/ayarlar.env` dosyasındadır (gizli değildir). Gizli değerler yalnızca GitHub
   Secrets'ta durur (`ANA_SIFRE`, `SUNUCU_ROOT_SIFRE`); sohbette hiçbir zaman istenmez, yazılmaz, görülmez.

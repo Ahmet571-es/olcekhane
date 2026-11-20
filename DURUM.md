@@ -69,11 +69,10 @@ ekranları sade kalır; sıra aşağıdaki gibi.
 Site sahibine söylenenler: kişinin portresi gibi kişiye özel resim yapılmaz; "hatasız" sözü önceden verilmez, bulunan her
 hata düzeltilip listelenir.
 
-**Sunucunun diski doluyor (2026-11-20):** yayın özetindeki `sistem_diski_kullanim` 6 Kasım'da %92, 20 Kasım'da %94. Disk
-dolarsa yeni sürüm yüklenemez, site de durabilir. Sunucuya bu ortamdan girilemediği için durum özeti artık diskin dökümünü
-de yazıyor (`sunucu/kur.sh durum`: `sistem_diski`, `docker_alan`, `en_buyuk_klasorler`; yalnızca okur). **Sıradaki işin
-başında** son yayının "Sunucu durumu" notundaki dökümüne bakılır ve yer kaplayan şey (eski Docker katmanları, derleme
-önbelleği, günlükler…) için `kur.sh`'a temizlik eklenir; %97'yi geçerse başka işten önce yapılır. Site sahibine söylendi.
+**Sunucu diski (2026-11-20, düzeltildi):** yayın özetinde disk %94 görünüyordu. Neden: her yayın uygulama görüntüsünü hem
+`latest` hem işleme kimliğiyle etiketliyor; kimlikli eski görüntüler hiç silinmiyordu (45 GB, 37 GB'ı gereksiz). `kur.sh yayinla`
+artık yeni sürüm sağlıklı açılınca eski görüntüleri siliyor; durum özeti disk ve Docker alanını yazıyor (`sistem_diski`,
+`docker_alan`). Her yayından sonra "Sunucu durumu" notunda disk kullanımına bakılır; yeniden %80'i geçerse nedeni aranır.
 
 **ŞU AN: "Öğrenme ve akademik beceriler" alanına altı yeni anket testi (site sahibinin 2026-11-05 isteği ve sıra onayı;
 her mesajda bir test).** Bilgi ölçen değil, kendini değerlendirme testleri; her biri maddeleri yazılır, iki bağımsız
@@ -1165,6 +1164,9 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-20 (81): Sunucunun diski %94 doluydu (48 GB'ın 45'i): her yayında eski uygulama görüntüsü sunucuda kalıyordu.
+  Yayın artık yeni sürüm açıldıktan sonra eski görüntüleri siliyor; durum özeti disk ve Docker alanını da yazıyor. Disk dolsaydı
+  yeni sürüm yüklenemez, site de durabilirdi.
 - 2026-11-20 (80): Özet görsel (site sahibinin isteği: "her analiz raporunun yanında, raporu özetleyen JPEG/PNG görsel";
   örnek olarak tek sayfalık bir bilgi görseli gönderdi). Her raporun sonunda "Raporun özet görseli": başlık (testin adı,
   isteğe bağlı ad, pusula süslemesi ve testin galerideki çizimi), rapor tarihi, sınıf ve rapor türü, (varsa) ilk uyarı, öne
@@ -1236,10 +1238,3 @@ En yeni üstte; en çok 10 madde tutulur.
   destek kutusunu açan maddenin kaynak olmaması, hobide beğeni ya da imkân sözcükleri. 51 bilerek bozulmuş örneğin hepsi
   yakalanıyor. Ortaya çıkan satırlar düzeltildi (43 aynen yineleme, 10 mezun, 2 yetişkin ev satırı, İyimserlik'te destek
   maddesine dayanan satırlar).
-- 2026-11-03 (71): Her seferinde aynı içeriğin geldiği bellek ve işlem testlerinde (Dikkat ve Bellek'in sayı ve kutu dizileri,
-  Harf-Sayı Sıralama, Hesapla ve Hatırla, Desen Hatırlama, Zihinden Hesaplama) rapor ve PDF artık dizileri, desenleri, işlemleri
-  ve cevapları yazmıyor; yalnızca uzunluk ya da düzey, doğru/yanlış, yanılgı türü ve süre (cevap anahtarı raporlardan
-  çıkmasın, test yeniden çözülünce işe yarasın; karşılaştırma notu da bunu söyler). Zihinden hesaplamada yanlış yazılan
-  işlemlerin listesi kaldırıldı. Yorumlanmayan görev kartlarında grafik yok; yalnızca "Düzey belirtilmedi" ve "En kısa dizi
-  doğru tekrarlanmadı" gibi en alt sonuçlarda grafik kalır (sonuç budur). Günlük hayat örneklerinde bu testlerin dizi ve
-  işlemlerinin geçmediği denetlendi.
