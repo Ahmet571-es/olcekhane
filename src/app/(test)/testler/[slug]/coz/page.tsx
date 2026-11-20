@@ -3,12 +3,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LogoMark } from '@/components/site/logo';
 import { PageGuide } from '@/components/site/page-guide';
+import { TestEmblem } from '@/components/site/test-emblem';
 import { TestSession } from '@/components/test/test-session';
 import { ROADMAP_IN_REVIEW, ROADMAP_PREVIEW_PARAM, hasRoadmap } from '@/content/roadmaps';
 import { solvableInstrument } from '@/lib/assessment/evaluate';
 import { payloadFor } from '@/lib/assessment/payload';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, gradeAllowed, gradeRangeLabel, parseGradeParam, siteUrl } from '@/lib/config';
 import { ORAL_ADULT_VERSION, ORAL_VERSION_PARAM } from '@/lib/oral/auto';
+import { domainHex } from '@/lib/share/summary-emblem';
 
 export async function generateMetadata(props: PageProps<'/testler/[slug]/coz'>): Promise<Metadata> {
   const { slug } = await props.params;
@@ -68,6 +70,9 @@ export default async function SolvePage(props: PageProps<'/testler/[slug]/coz'>)
             siteUrl={siteUrl()}
             roadmapPreview={roadmapPreview}
             oralAuto={oralAuto}
+            // Özet görselin başlığındaki çizim: testin galerideki amblemi (ölçek sayısı galerideki gibi hesaplanır).
+            emblem={<TestEmblem slug={def.slug} domain={def.domain} name={def.name} dims={def.scales.filter((s) => !s.of).length} />}
+            accent={domainHex(def.domain)}
           />
         ) : (
           <div className="mx-auto flex w-full max-w-2xl flex-col gap-7">

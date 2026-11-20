@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { LikertRunner } from '@/components/runner/likert-runner';
 import { QuizRunner, type QuizClientItem } from '@/components/runner/quiz-runner';
 import { ReadingRunner } from '@/components/runner/reading-runner';
@@ -10,6 +10,7 @@ import type { OralClientPassage, OralProsodyDimension } from '@/components/runne
 import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
 import { SharePanel } from '@/components/share/share-panel';
+import { SummaryPanel } from '@/components/share/summary-panel';
 import { PageGuide } from '@/components/site/page-guide';
 import { AUDIENCE_LABELS } from '@/lib/config';
 import type { ItemNoun } from '@/lib/instruments/nouns';
@@ -118,6 +119,8 @@ export function TestSession({
   siteUrl,
   roadmapPreview = false,
   oralAuto = false,
+  emblem,
+  accent,
 }: {
   slug: string;
   grade: number;
@@ -132,6 +135,9 @@ export function TestSession({
    * işaretlediği sürüm (`?surum=yetiskinli`) için false.
    */
   oralAuto?: boolean;
+  /** Özet görselin başlığındaki çizim (testin galerideki amblemi) ve alanının rengi (açık tema, onaltılık). */
+  emblem?: ReactNode;
+  accent?: string;
 }) {
   const [seed] = useState(uuid4);
   const [result, setResult] = useState<{ reports: Reports; body: Body } | null>(null);
@@ -148,7 +154,9 @@ export function TestSession({
     [grade, slug, roadmapPreview],
   );
 
-  if (result) return <ResultView slug={slug} gradeLabel={gradeLabel} reports={result.reports} body={result.body} siteUrl={siteUrl} />;
+  if (result) {
+    return <ResultView slug={slug} gradeLabel={gradeLabel} reports={result.reports} body={result.body} siteUrl={siteUrl} emblem={emblem} accent={accent} />;
+  }
 
   switch (payload.engine) {
     case 'likert':
@@ -200,7 +208,23 @@ export function TestSession({
   }
 }
 
-function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string; gradeLabel: string; reports: Reports; body: Body; siteUrl: string }) {
+function ResultView({
+  slug,
+  gradeLabel,
+  reports,
+  body,
+  siteUrl,
+  emblem,
+  accent,
+}: {
+  slug: string;
+  gradeLabel: string;
+  reports: Reports;
+  body: Body;
+  siteUrl: string;
+  emblem?: ReactNode;
+  accent?: string;
+}) {
   const available = AUDIENCES.filter((a) => reports[a]);
   const [chosen, setAudience] = useState<Audience>(available[0] ?? 'student');
   const audience = reports[chosen] ? chosen : (available[0] ?? chosen);
@@ -305,6 +329,9 @@ function ResultView({ slug, gradeLabel, reports, body, siteUrl }: { slug: string
       {report.compare && <ComparePanel compare={report.compare} you={audience !== 'parent'} onOutcome={setCompareOutcome} />}
 
       {report.roadmap && <RoadmapView roadmap={report.roadmap} you={audience !== 'parent'} />}
+
+      {/* Özet görsel her raporda (öğrenci, veli, yetişkin) vardır ve yalnızca indirilir; paylaş düğmesi yalnızca paylaşım kartı olan testlerde. */}
+      <SummaryPanel slug={slug} report={report} siteUrl={siteUrl} emblem={emblem} accent={accent} />
 
       {card && audience !== 'parent' && <SharePanel card={card} siteUrl={siteUrl} student={audience === 'student'} />}
 

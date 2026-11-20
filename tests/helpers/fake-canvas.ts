@@ -1,9 +1,11 @@
 /**
- * Tuvalin yerine geçen kayıtçı (paylaşım kartı denetimleri: tests/paylasim.test.ts, tests/paket.test.ts): yazıların yerini ve
- * yaklaşık genişliğini (harf başına yazı boyunun 0,6'sı) tutar.
+ * Tuvalin yerine geçen kayıtçı (paylaşım kartı ve özet görsel denetimleri: tests/paylasim.test.ts, tests/paket.test.ts,
+ * tests/ozet-gorsel.test.ts): yazıların yerini ve yaklaşık genişliğini (harf başına yazı boyunun 0,6'sı) tutar; çizilen
+ * görsellerin (`drawImage`) sayısını `images` verir.
  */
 export function fakeContext() {
-  const texts: { text: string; left: number; right: number; size: number }[] = [];
+  const texts: { text: string; left: number; right: number; size: number; y: number }[] = [];
+  const images: unknown[] = [];
   let size = 16;
   const ctx = {
     textAlign: 'left',
@@ -23,12 +25,19 @@ export function fakeContext() {
       return `${size}px`;
     },
     measureText: (t: string) => ({ width: t.length * size * 0.6 }),
-    fillText(t: string, x: number) {
+    fillText(t: string, x: number, y = 0) {
       const w = t.length * size * 0.6;
       const left = this.textAlign === 'right' ? x - w : this.textAlign === 'center' ? x - w / 2 : x;
-      texts.push({ text: t, left, right: left + w, size });
+      texts.push({ text: t, left, right: left + w, size, y });
     },
     createRadialGradient: () => ({ addColorStop() {} }),
+    createLinearGradient: () => ({ addColorStop() {} }),
+    setLineDash() {},
+    clip() {},
+    rect() {},
+    drawImage(img: unknown) {
+      images.push(img);
+    },
     save() {},
     restore() {},
     beginPath() {},
@@ -41,5 +50,5 @@ export function fakeContext() {
     stroke() {},
     fillRect() {},
   };
-  return { ctx: ctx as unknown as CanvasRenderingContext2D, texts };
+  return { ctx: ctx as unknown as CanvasRenderingContext2D, texts, images };
 }

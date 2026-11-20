@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { PackageSession, type PackageClientTest } from '@/components/paket/package-session';
 import { LogoMark } from '@/components/site/logo';
 import { PageGuide } from '@/components/site/page-guide';
+import { TestEmblem } from '@/components/site/test-emblem';
 import { PACKAGE_AREAS, PACKAGE_NAME, PACKAGE_PATH, packageGrades, packageMinutes, packageTests } from '@/content/paket';
 import { payloadFor } from '@/lib/assessment/payload';
 import { ADULT_GRADE, ADULT_PARAM, GRADE_LABELS, parseGradeParam, siteUrl } from '@/lib/config';
+import { domainHex } from '@/lib/share/summary-emblem';
 
 export const metadata: Metadata = { title: `${PACKAGE_NAME}: başla` };
 
@@ -33,6 +35,13 @@ export default async function PackageSolvePage(props: PageProps<'/kendini-tani-p
         payload: payloadFor(def, grade, { sessionNote: false }),
       }))
     : [];
+  // Her testin özet görselindeki çizim (galerideki amblem) ve alanının rengi.
+  const emblems = Object.fromEntries(
+    (ready ? packageTests(grade) : []).map(({ def }) => [
+      def.slug,
+      { node: <TestEmblem slug={def.slug} domain={def.domain} name={def.name} dims={def.scales.filter((s) => !s.of).length} />, accent: domainHex(def.domain) },
+    ]),
+  );
   const longest = Math.max(...grades.map((g) => packageMinutes(packageTests(g))));
   const shortest = Math.min(...grades.map((g) => packageMinutes(packageTests(g))));
 
@@ -59,6 +68,7 @@ export default async function PackageSolvePage(props: PageProps<'/kendini-tani-p
             tests={tests}
             siteUrl={siteUrl()}
             packagePath={PACKAGE_PATH}
+            emblems={emblems}
           />
         ) : (
           <div className="mx-auto flex w-full max-w-2xl flex-col gap-7">

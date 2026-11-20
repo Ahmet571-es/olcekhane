@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-11-05
+Son güncelleme: 2026-11-20
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -46,6 +46,28 @@ Basamaklar:
    "Son yapılanlar"da ve CLAUDE.md'de.
 
 ## Sıradaki işler
+
+**ŞU AN: "Türkiye'nin en iyi analiz sitesi" (site sahibinin 2026-11-20 isteği; üç iş, her biri ayrı mesajda, bitince yayına).**
+İstek: "analizler ve site mükemmel olsun; testler hatasız, sorular ve şıklar Türkçeye çok uygun, mantık hatasız; her raporun
+yanında raporu özetleyen JPEG/PNG görsel; site ödül kalitesinde üç boyutlu hareketli görsellerle dolu olsun." Seçimleri
+(2026-11-20): özet görselde ad isteğe bağlı (yalnızca cihazda); özet görsel bütün testlerde, yalnızca indirme (paylaş düğmesi
+eskisi gibi yalnızca kişilik ve ilgi testlerinde); üç boyutlu görseller bütün tanıtım sayfalarında, test çözme ve rapor
+ekranları sade kalır; sıra aşağıdaki gibi.
+1. [x] **Özet görsel** (2026-11-20; ayrıntı CLAUDE.md "Özet görsel" ve "Son yapılanlar").
+2. [ ] **Dil ve mantık denetimi:** yayındaki 64 testin bütün yönergeleri, soruları (maddeleri) ve şıkları tek tek okunur:
+   yazım ve dil bilgisi (TDK), doğal Türkçe, şıkların soruyla uyumu (ör. sıklık sorusuna katılma şıkkı), çift anlam, çift
+   olumsuz, iki şeyi birden soran madde, ters maddelerin gerçekten ters olması, görev testlerinde tek doğru cevap ve
+   yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
+   yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
+   karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
+   İlerleme: 0/8 grup.
+3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
+   (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
+   yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
+   ölçen görevlerde sonucu bozar). Bitince CLAUDE.md "Görsel dil"deki "gösteriş yalnızca açılıştadır" cümlesi bu karara göre
+   güncellenir.
+Site sahibine söylenenler: kişinin portresi gibi kişiye özel resim yapılmaz; "hatasız" sözü önceden verilmez, bulunan her
+hata düzeltilip listelenir.
 
 **ŞU AN: "Öğrenme ve akademik beceriler" alanına altı yeni anket testi (site sahibinin 2026-11-05 isteği ve sıra onayı;
 her mesajda bir test).** Bilgi ölçen değil, kendini değerlendirme testleri; her biri maddeleri yazılır, iki bağımsız
@@ -1137,6 +1159,17 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-20 (80): Özet görsel (site sahibinin isteği: "her analiz raporunun yanında, raporu özetleyen JPEG/PNG görsel";
+  örnek olarak tek sayfalık bir bilgi görseli gönderdi). Her raporun sonunda "Raporun özet görseli": başlık (testin adı,
+  isteğe bağlı ad, pusula süslemesi ve testin galerideki çizimi), rapor tarihi, sınıf ve rapor türü, (varsa) ilk uyarı, öne
+  çıkan sayılar, raporun grafiği, kartlar (rapordaki grafikleriyle), "Kısaca", öneri başlıkları, haftalık adımlar, alt not ve
+  testin adresi. PNG ve JPEG indirme. Bütün testlerde (64), öğrenci, veli ve yetişkin raporunda, pakette açılan her raporda.
+  Görsel cihazda çizilir, hiçbir yere gönderilmez; ad yalnızca yazılırsa ve yalnızca cihazda. Görsel rapora yeni yorum
+  eklemez (her yazısı raporda yazar; test denetler); destek kutusu, maddeler ve cevaplar girmez. Örnekteki kişi portresi ve
+  "en uygun 10 meslek" listesi yok: kişiye özel resim yapılmıyor, rapor meslek seçmiyor (site sahibine söylendi). Telefonda
+  (Beş Faktör, 6. sınıf; Ayrıntılı Kişilik, yetişkin) ve masaüstünde (Mesleki İlgi, 8. sınıf) testler baştan sona çözüldü,
+  görseller indirildi ve gözle denetlendi; pakette (yetişkin, iki anket testi) açılan raporda da denendi. Çerez, tarayıcı
+  deposu ve dış istek yok. Denetim `tests/ozet-gorsel.test.ts`.
 - 2026-11-06 (79): Yeni test: Ders Çalışırken Telefon ve Dikkat (özgün, pilot; 5. sınıftan yetişkine; 24 madde, ~4 dk). Dört
   alan: bildirimlerin çekimi, ekranlar arası geçiş, telefona dönme isteği (ilk üçünde yüksek puan daha sık bölünme) ve kendini
   durdurma yolları (yüksek puan bu yolların sık kullanılması). Bağımlılık etiketi ve destek kutusu yok; telefon kullanımı
@@ -1204,8 +1237,3 @@ En yeni üstte; en çok 10 madde tutulur.
   işlemlerin listesi kaldırıldı. Yorumlanmayan görev kartlarında grafik yok; yalnızca "Düzey belirtilmedi" ve "En kısa dizi
   doğru tekrarlanmadı" gibi en alt sonuçlarda grafik kalır (sonuç budur). Günlük hayat örneklerinde bu testlerin dizi ve
   işlemlerinin geçmediği denetlendi.
-- 2026-11-03 (70): Raporları genişletme tamamlandı: (d) "Günlük hayatta" bölümü bütün testlerde (son 5: Çocuk, Hızlı,
-  Ayrıntılı, Kişiliğin 10 Yönü, Altı Boyutlu kişilik); (e) yol haritası grafikleri; (f) raporun tek düğmeyle baştan sona sesli
-  okunması (yaklaşık süre, "Bölümü geç" sonuçları ve yol haritasını toptan atlar, karşılaştırma sonucu da okunur). Telefonda
-  ve masaüstünde Merak çözüldü, yol haritası ve sesli dinleme (sahte yerel sesle: duraklatma, sekme değişince susma, ağ sesinde
-  oynatıcı yok) denendi; tam test takımı geçti (1859 test).

@@ -262,6 +262,31 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   (çocuklar arasında kıyas ve alay olmasın). Yeni anket testi `lib/share/card.ts`'te ya `SHAREABLE`'a ya nedeniyle
   `NOT_SHAREABLE`'a yazılır (`tests/paylasim.test.ts` denetler). Veli sekmesinde kart gösterilmez.
 
+## Özet görsel
+
+- Site sahibinin 2026-11-20 isteği ve seçimleri: her raporun yanında, raporu tek sayfada özetleyen ve PNG ya da JPEG olarak
+  indirilen görsel ("Raporun özet görseli", `components/share/summary-panel.tsx`; tek testte her rapor sekmesinde, pakette
+  açılan her raporda). **Bütün testlerde ve bütün rapor türlerinde (öğrenci, veli, yetişkin) vardır ve yalnızca indirilir**;
+  Instagram ve WhatsApp'ta paylaş düğmesi eskisi gibi yalnızca paylaşım kartı olan testlerdedir (yukarıdaki bölüm). **Ad isteğe
+  bağlıdır:** kişi rapor ekranındaki kutuya yazarsa ad yalnızca o cihazda görsele basılır; sunucuya gitmez, tarayıcı deposuna
+  yazılmaz, sayfa kapanınca kaybolur. Sitedeki "ad istemiyoruz" cümleleri doğru kalır (ad sorulmaz, test için gerekmez).
+- Görsel raporu özetler, **rapora yeni yorum eklemez**: içeriği `lib/share/summary.ts` raporun kendisinden aynen alır: öne
+  çıkan sayılar, raporun grafiği, kartların başlığı, rozeti ve rapordaki grafiği (en çok 8; fazlası "Raporda N başlık daha
+  var"), yol haritasının "Kısaca"sı, öneri başlıkları (yalnızca başlık önerinin kendisiyse, ölçek adı değilse), haftalar ve
+  ilk uyarı. Yinelenen bölüm atlanır: kartların hepsi grafikteki ölçeklerin kendisiyse kart bölümü, "Kısaca" kartlarla aynıysa
+  "Kısaca". Destek kutusu, maddeler ve cevaplar görsele girmez. Kişinin portresi gibi kişiye özel resim yoktur (fotoğraf
+  istenmez, ücretli görsel hizmeti kullanılmaz): başlıkta pusula süslemesi ve testin galerideki çizimi durur.
+- Çizim `lib/share/summary-draw.ts` (1080 piksel genişlik, yükseklik içeriğe göre: önce ölçülür, sonra çizilir; yalnızca
+  tarayıcıda). Kart grafikleri raporla aynı geometriden çizilir (`gaugeGeometry`, `compareGeometry`, `drawVisual`); renkler
+  hep açık temadır. Öne çıkan sayıların değeri hiçbir zaman kısaltılmaz (kutular gerekirse ikişerli ya da alt alta dizilir).
+  Başlıktaki çizim: çözme sayfası testin amblemini (`TestEmblem`) ve alan rengini verir; panel SVG'yi tek başına çizilebilir
+  hâle getirir (`lib/share/summary-emblem.ts`), çizilemezse Ölçekhane işareti çizilir. Yeni rapor grafiği türü ya da yeni
+  `SimpleChart` türü eklenirse özet görselde de çizilir.
+- `tests/ozet-gorsel.test.ts`: yayındaki her testte ve bütün sonuç örüntülerinde özetin her yazısının raporda yazdığını,
+  madde ve destek kutusunun girmediğini, görselin çizildiğini (yazılar taşmaz, değerler kısaltılmaz, en küçük yazı 13
+  piksel), adın yalnızca yazılınca göründüğünü, her amblemin çevrildiğini ve bileşenin hiçbir yere bir şey göndermediğini
+  denetler. Yeni test `TASK_VARIANTS`'a ya da anket testlerine eklenince kendiliğinden kapsanır.
+
 ## Gelişimini karşılaştır
 
 - Site sahibinin 2026-10-30 isteği: kişi aynı testi daha sonra yeniden çözünce önceki sonucuyla karşılaştırabilsin.

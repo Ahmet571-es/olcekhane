@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { LikertRunner } from '@/components/runner/likert-runner';
 import { useLeaveWarning } from '@/components/runner/tasks/common';
 import { TaskRunner } from '@/components/runner/tasks/task-runner';
 import { SharePanel } from '@/components/share/share-panel';
+import { SummaryPanel } from '@/components/share/summary-panel';
 import { PageGuide } from '@/components/site/page-guide';
 import { ReportSpeech } from '@/components/test/report-speech';
 import { RoadmapView } from '@/components/test/roadmap-view';
@@ -62,6 +63,7 @@ export function PackageSession({
   tests,
   siteUrl,
   packagePath,
+  emblems = {},
 }: {
   grade: number;
   gradeLabel: string;
@@ -70,6 +72,8 @@ export function PackageSession({
   tests: PackageClientTest[];
   siteUrl: string;
   packagePath: string;
+  /** Testlerin özet görselindeki çizimleri (galerideki amblem) ve alan renkleri; testin adresiyle. */
+  emblems?: Record<string, { node: ReactNode; accent: string }>;
 }) {
   const [phase, setPhase] = useState<Phase>('plan');
   const [chosen, setChosen] = useState<Set<string>>(() => new Set(tests.map((t) => t.slug)));
@@ -278,6 +282,7 @@ export function PackageSession({
       skipped={skipped}
       siteUrl={siteUrl}
       packagePath={packagePath}
+      emblems={emblems}
     />
   );
 }
@@ -323,6 +328,7 @@ function PackageResult({
   skipped,
   siteUrl,
   packagePath,
+  emblems = {},
 }: {
   grade: number;
   gradeLabel: string;
@@ -332,6 +338,8 @@ function PackageResult({
   skipped: string[];
   siteUrl: string;
   packagePath: string;
+  /** Testlerin özet görselindeki çizimleri (galerideki amblem) ve alan renkleri; testin adresiyle. */
+  emblems?: Record<string, { node: ReactNode; accent: string }>;
 }) {
   const audiences: Audience[] = adult ? ['adult'] : ['student', 'parent'];
   const [audience, setAudience] = useState<Audience>(audiences[0]);
@@ -522,6 +530,10 @@ function PackageResult({
                 <ComparePanel compare={e.report.compare} you={you} onOutcome={(o) => setOutcomes((m) => ({ ...m, [e.slug]: o }))} />
               )}
               {e.report.roadmap && <RoadmapView roadmap={e.report.roadmap} you={you} />}
+              {/* Özet görsel yalnızca açık raporda çizilir. */}
+              {open.has(e.slug) && (
+                <SummaryPanel slug={e.slug} report={e.report} siteUrl={siteUrl} emblem={emblems[e.slug]?.node} accent={emblems[e.slug]?.accent} />
+              )}
             </div>
           </details>
         ))}

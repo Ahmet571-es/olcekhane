@@ -6,7 +6,8 @@ import { SHARE_COLORS, SHARE_CTA, SHARE_FOOTER, SHARE_H, SHARE_PILOT, SHARE_W, t
  * Renkler sitenin açık temasıdır (globals.css); "canlı şekil" dilindeki yumuşak renk bulutları arka plandadır.
  */
 
-const C = {
+/** Sitenin açık temasının renkleri (globals.css); özet görsel de (summary-draw.ts) aynı renkleri kullanır. */
+export const SHARE_C = {
   paper: '#f3f5f8',
   surface: '#ffffff',
   ink: '#13203b',
@@ -26,23 +27,25 @@ export const SHARE_FONTS = {
 /** Tuval yazı tiplerinin yüklenmesi için `document.fonts.load` çağrıları (harf kümeleri metne göre iner). */
 export const SHARE_FONT_LOADS = ['700 80px "Bricolage Grotesque Variable"', '400 32px "Atkinson Hyperlegible Next"', '700 32px "Atkinson Hyperlegible Next"'];
 
-type Ctx = CanvasRenderingContext2D;
-type Family = keyof typeof SHARE_FONTS;
+const C = SHARE_C;
+
+export type Ctx = CanvasRenderingContext2D;
+export type Family = keyof typeof SHARE_FONTS;
 
 const M = 84;
 const PANEL_BOTTOM = 1588;
 
-const setFont = (ctx: Ctx, weight: 400 | 700, size: number, family: Family) => {
+export const setFont = (ctx: Ctx, weight: 400 | 700, size: number, family: Family) => {
   ctx.font = `${weight} ${size}px ${SHARE_FONTS[family]}`;
 };
 
-function rgba(hex: string, a: number): string {
+export function rgba(hex: string, a: number): string {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
 }
 
 /** Sözcük sözcük satırlara böler; tek sözcük satıra sığmıyorsa olduğu gibi bırakılır. */
-function wrap(ctx: Ctx, text: string, maxWidth: number): string[] {
+export function wrap(ctx: Ctx, text: string, maxWidth: number): string[] {
   const lines: string[] = [];
   let line = '';
   for (const word of text.split(/\s+/).filter(Boolean)) {
@@ -57,7 +60,7 @@ function wrap(ctx: Ctx, text: string, maxWidth: number): string[] {
 }
 
 /** Yazıyı genişliğe sığana kadar küçültür (en çok `min` piksele). */
-function fit(ctx: Ctx, text: string, maxWidth: number, weight: 400 | 700, size: number, family: Family, min: number): number {
+export function fit(ctx: Ctx, text: string, maxWidth: number, weight: 400 | 700, size: number, family: Family, min: number): number {
   let s = size;
   setFont(ctx, weight, s, family);
   while (s > min && ctx.measureText(text).width > maxWidth) {
@@ -68,14 +71,14 @@ function fit(ctx: Ctx, text: string, maxWidth: number, weight: 400 | 700, size: 
 }
 
 /** Sığmayan yazının sonunu "…" ile kısaltır. */
-function clip(ctx: Ctx, text: string, maxWidth: number): string {
+export function clip(ctx: Ctx, text: string, maxWidth: number): string {
   if (ctx.measureText(text).width <= maxWidth) return text;
   let t = text;
   while (t.length > 1 && ctx.measureText(`${t}…`).width > maxWidth) t = t.slice(0, -1);
   return `${t.trimEnd()}…`;
 }
 
-function rounded(ctx: Ctx, x: number, y: number, w: number, h: number, r: number) {
+export function rounded(ctx: Ctx, x: number, y: number, w: number, h: number, r: number) {
   const rr = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
   ctx.moveTo(x + rr, y);
@@ -87,7 +90,7 @@ function rounded(ctx: Ctx, x: number, y: number, w: number, h: number, r: number
 }
 
 /** Ölçekhane işareti (components/site/logo.tsx ile aynı çizim, 32 birimlik kare `size` piksele ölçeklenir). */
-function drawLogo(ctx: Ctx, x: number, y: number, size: number) {
+export function drawLogo(ctx: Ctx, x: number, y: number, size: number) {
   const k = size / 32;
   const P = (px: number, py: number) => [x + px * k, y + py * k] as const;
   ctx.save();
