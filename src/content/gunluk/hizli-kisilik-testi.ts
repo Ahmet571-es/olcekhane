@@ -244,7 +244,7 @@ export const hizliKisilikDaily: SurveyDaily = {
         high: {
           from: { school: ['m09'], friends: ['m14'], home: ['m04', 'm19'], work: ['m09', 'm14'] },
           student: {
-            school: 'Sınav haftasında da çoğu zaman rahat ve sakin kalabilirsin.',
+            school: 'Sınavların yaklaştığı bir haftada da çoğu zaman rahat ve sakin kalabilirsin.',
             friends: 'Bir arkadaşının küçük bir sözüne çoğu zaman bozulmadan gülüp geçebilirsin.',
             home: 'Gün içinde duyguların pek inip çıkmayabilir; yine de seni üzen bir şeyi paylaşmak iyi gelebilir.',
           },

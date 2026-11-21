@@ -196,15 +196,26 @@ describe('Şekil benzetmeleri: sorular', () => {
     expect(ITEMS.find((x) => x.it === p2)!.lures).toEqual(['wrong', 'extra', 'copy', null]);
     expect(p2.answer).toBe(4);
     expect(p2.explain).toContain('A’da şekil ayna yerine yarım tur döndürülmüş; B’de ayna görüntüsü doğru ama rengi de değişmiş; C’de hiçbir şey değişmemiş.');
-    // Doğru cevapta gri dik üçgen ayna görüntüsünde (dik köşesi sağ altta); A'da yarım tur dönmüş.
-    expect(p2.options[3][0]).toMatchObject({ shape: 'wedge', angle: 0, flip: true, fill: 'gray' });
-    expect(p2.options[0][0]).toMatchObject({ shape: 'wedge', angle: 180, flip: false, fill: 'gray' });
-    expect(p2.options[1][0]).toMatchObject({ shape: 'wedge', angle: 0, flip: true, fill: 'empty' });
+    // Doğru cevapta gri L biçimi ayna görüntüsünde (uzun kolu sağda); A'da yarım tur dönmüş.
+    expect(p2.options[3][0]).toMatchObject({ shape: 'ell', angle: 0, flip: true, fill: 'gray' });
+    expect(p2.options[0][0]).toMatchObject({ shape: 'ell', angle: 180, flip: false, fill: 'gray' });
+    expect(p2.options[1][0]).toMatchObject({ shape: 'ell', angle: 0, flip: true, fill: 'empty' });
     expect(ITEMS.find((x) => x.it === p3)!.lures).toEqual(['partial', null, 'wrong', 'copy']);
     expect(p3.answer).toBe(2);
-    expect(p3.explain).toContain('A’da yalnızca renk değişmiş, dönüş eksik; C’de bayrak ters yöne, saat yönünde dönmüş; D’de hiçbir şey değişmemiş.');
-    // Alıştırmanın çizimleri: doğru cevapta bayrak saat yönünün tersine çeyrek tur dönmüş ve gri.
-    expect(p3.options[1][0]).toMatchObject({ shape: 'flag', angle: 270, flip: false, fill: 'gray' });
+    expect(p3.explain).toContain('A’da yalnızca renk değişmiş, dönüş eksik; C’de dik üçgen ters yöne, saat yönünde dönmüş; D’de hiçbir şey değişmemiş.');
+    // Alıştırmanın çizimleri: doğru cevapta dik üçgen saat yönünün tersine çeyrek tur dönmüş ve gri.
+    expect(p3.options[1][0]).toMatchObject({ shape: 'wedge', angle: 270, flip: false, fill: 'gray' });
+  });
+
+  it('alıştırmanın doğru cevabı, asıl soruların doğru cevaplarındaki bir şekli aynı duruşla göstermez', () => {
+    // 2026-11-21'e kadar ikinci alıştırmanın cevabı (aynada gri dik üçgen) dört asıl sorunun cevabındaki parçaydı; üçüncü alıştırmanın
+    // cevabı (saat yönünün tersine dönmüş bayrak) 23. sorunun cevabındaydı. Duruşu olmayan (döndürülmemiş, aynalanmamış) parçalar sayılmaz.
+    const pose = (e: { shape: string; angle: number; flip: boolean }) => `${e.shape} ${((e.angle % 360) + 360) % 360} ${e.flip ? 'ayna' : ''}`;
+    const posed = (e: { angle: number; flip: boolean }) => e.flip || e.angle % 360 !== 0;
+    const itemPoses = new Set(task.items.flatMap((it, i) => it.options[task.answers[i] - 1].filter(posed).map(pose)));
+    for (const p of task.practice) {
+      for (const e of p.options[p.answer - 1].filter(posed)) expect(itemPoses.has(pose(e)), `${p.key}: ${pose(e)}`).toBe(false);
+    }
   });
 
   it('yanlış seçeneklerin türleri A–D arasında dengeli: bir sıradaki seçeneği hep seçmek bir yanılgı gibi görünmez', () => {
@@ -231,7 +242,10 @@ describe('Şekil benzetmeleri: sorular', () => {
 });
 
 /** Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '6a31438599d070ae';
+// 2026-11-21 (dil ve mantık denetimi): yalnızca alıştırmalar değişti (ikincisinin doğru cevabı dört asıl sorunun cevabındaki aynalı
+// dik üçgendi, üçüncüsününki 23. sorununkiyle aynı duruştaki bayraktı; şimdi aynalı L biçimi ve dönmüş dik üçgen). Puanlanan
+// sorular ve anahtar aynı, sürüm 2 kaldı.
+const SORU_IZI = '22ad1eec87dfacef';
 
 describe('Şekil benzetmeleri: puanlama', () => {
   const all = (fn: (i: number) => Partial<AnalogyTrialInput> = () => ({})): AnalogyTrialInput[] =>

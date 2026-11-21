@@ -78,10 +78,10 @@ const PRACTICE: LetterSeriesPracticeItem[] = [
     key: 'hdp2',
     level: 1,
     rule: 'repeat',
-    terms: letters('A K B K _ K Ç K'),
-    answer: 'C',
+    terms: letters('Ö K P K _ K S K'),
+    answer: 'R',
     explain:
-      'Harflerden biri hep K. Aradaki harfler alfabede sırayla ilerliyor: A, B, ?, Ç. B ile Ç arasında C var; bu yüzden eksik harf C. Eksik harf bazen dizinin ortasında olabilir.',
+      'Her ikinci harf K. K’lerin arasındaki harfler alfabede sırayla ilerliyor: Ö, P, ?, S. Türk alfabesinde P’den sonra R, R’den sonra S gelir; bu yüzden eksik harf R. Eksik harf her zaman sonda olmayabilir.',
   },
 ];
 
@@ -93,7 +93,7 @@ const series: LetterSeriesTask = {
   name: 'Harf Dizileri',
   measures: 'Bir kurala göre ilerleyen harf dizisinde kuralı bulup eksik harfi seçebilmeyi (harflerle akıl yürütme) ölçer.',
   instructions: [
-    'Her soruda bir kurala göre ilerleyen bir harf dizisi göreceksin. Dizideki harflerden biri eksik: çoğunlukla sonuncusu, bazen ortadaki bir harf.',
+    'Her soruda bir kurala göre ilerleyen bir harf dizisi göreceksin. Dizideki harflerden biri eksik: çoğunlukla sonuncusu, bazen aradaki bir harf.',
     'Dizilerde Türk alfabesinin 29 harfi kullanılır. Harflerin nasıl değiştiğine bak ve kuralı bul. Sonra eksik harfi ekrandaki harf tuşlarından (ya da klavyeyle) seç ve “Cevabı ver” düğmesine bas. Tuşlar alfabe sırasıyla dizilmiştir.',
     'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Bulamadığın bir soruda “Bilmiyorum” diyebilirsin. Süre sınırı yok; kâğıt ve kalem kullanabilirsin.',
     'Önce doğru cevabı gösterilen iki alıştırma sorusu çözeceksin.',
@@ -112,7 +112,7 @@ const series: LetterSeriesTask = {
     {
       level: 3,
       name: '3. düzey',
-      plain: 'İkişer harf atlayarak ya da her seferinde bir harf daha fazla atlayarak ilerleyen dizileri, farklı adımlarla ilerleyen iç içe iki diziyi ve üç harflik grupları çözmek, dizinin ortasındaki eksik harfi bulmak.',
+      plain: 'İkişer harf atlayarak ya da her seferinde bir harf daha fazla atlayarak ilerleyen dizileri, farklı adımlarla ilerleyen iç içe iki diziyi ve üç harflik grupları çözmek, dizinin sonunda olmayan eksik harfi bulmak.',
     },
     {
       level: 4,
@@ -149,7 +149,7 @@ export const harfDizileri: TaskInstrument = {
     title: 'Eksik harfi bul',
     paragraphs: [
       'Birazdan bir kurala göre ilerleyen harf dizileri göreceksin. Her dizide bir harf eksik; kuralı bulup eksik harfi seçeceksin.',
-      `Test ${SPECS.length} sorudan oluşur ve kolaydan zora doğru ilerler. Diziler Türk alfabesiyle yazılmıştır; harflerin sırası ekrandaki tuşlarda görünür. Süre sınırı yok. Yanında kâğıt ve kalem bulunabilir.`,
+      `Test ${SPECS.length} sorudan oluşur ve kolaydan zora doğru ilerler. Diziler Türk alfabesiyle yazılmıştır; harflerin sırası ekrandaki tuşlarda görünür. Süre sınırı yok. Yanına kâğıt ve kalem alabilirsin.`,
       'Sessiz bir yerde, dikkatini dağıtacak şeyler olmadan çözersen sonuç seni daha iyi yansıtır.',
     ],
   },

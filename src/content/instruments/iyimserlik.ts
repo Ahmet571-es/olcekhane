@@ -88,7 +88,7 @@ export const iyimserlik: LikertInstrument = {
   adults: true,
   estimatedMinutes: 2,
   sortOrder: 15.9,
-  tagline: 'Geleceğe, hayata ve kendine ne kadar umutla baktığını 10 kısa cümleyle gösterir.',
+  tagline: 'Geleceğe ve hayata ne kadar umutla, kendine ne kadar olumlu baktığını ve ruh hâlini 10 kısa cümleyle gösterir.',
   description:
     'Araştırmacılar iyimserliği, geleceğe dair genel olarak iyi şeyler bekleme eğilimi olarak tanımlar (Carver ve ark., 2010). Bu kısa ölçek, kamu malı olan Uluslararası Kişilik Madde Havuzu’ndaki (IPIP) 10 maddelik iyimserlik ölçeğine dayanır. Cümlelerin beşi hayata ve geleceğe bakışı, ikisi kendine bakışı, üçü ruh hâlini sorar; rapor toplam puanın yanında bu üç konuyu ayrı ayrı da gösterir. Yaklaşık 2 dakika sürer. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır. Tanı koymaz; bir ruh sağlığı değerlendirmesinin yerini tutmaz.',
   intro: {
@@ -135,7 +135,7 @@ export const iyimserlik: LikertInstrument = {
     {
       key: 'gelecek',
       name: 'Hayata ve geleceğe bakış',
-      plain: 'Başarılı olacağına inanma, hayatın iyi tarafını görme, geleceğe karamsar bakmama ve hayatında bir yön görme. Beş cümlenin ortalaması.',
+      plain: 'Başarılı olacağına inanma, hayatın iyi tarafını görme, her şeyde zorluk görmeme, geleceğe karamsar bakmama ve hayatında bir yön görme. Beş cümlenin ortalaması.',
       poles: { low: 'Karamsar cevaplar', high: 'Umutlu cevaplar' },
     },
     {

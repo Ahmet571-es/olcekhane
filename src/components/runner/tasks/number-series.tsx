@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NumberSeriesItem, NumberSeriesPracticeItem, NumberSeriesTask } from '@/lib/instruments/types';
 import type { NumberSeriesTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, StatusLine, TOUCH_CLASSES, useKeys } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -192,7 +192,7 @@ export function NumberSeries({ task, onDone }: { task: NumberSeriesTask; onDone:
           olunca “Cevabı ver” düğmesine bas.
         </p>
         <p className="measure text-lg">
-          Önce {task.practice.length} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
+          Önce {numberWord(task.practice.length)} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
         </p>
         <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={() => setStep('practice')}>
           Alıştırmaya başla
@@ -207,10 +207,10 @@ export function NumberSeries({ task, onDone }: { task: NumberSeriesTask; onDone:
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
             ? 'Sayıların her adımda nasıl değiştiğine dikkatle bak; aradaki farkları kâğıda yazmak işine yarar. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}

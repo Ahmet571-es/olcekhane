@@ -60,7 +60,7 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: **6/8 grup** (2026-11-21).
+   İlerleme: **7/8 grup** (2026-11-21).
    - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
      İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
      Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
@@ -99,8 +99,15 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      testin soru izi güncellendi, sürümleri aynı). Sekiz testin bütün soruları, işlemleri ve problemleri iki denetçi
      tarafından çözüldü ya da yeniden hesaplandı: anahtarlarda hata yok. 1. gruptan kalan sembol eşleştirme görevinin alıştırma
      sonu cümlesi de düzeltildi (o ekran tarayıcıda denenmedi: beş görevli testin son görevi; metin koddan okundu).
-   - **7. grup (sıradaki):** Heyecan Arayışı, Gizli Şekiller, İyimserlik Ölçeği, Desen Hatırlama, Harf Dizileri, Empati,
-     Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri.
+   - **7. grup (bitti):** Heyecan Arayışı, Gizli Şekiller, İyimserlik Ölçeği, Desen Hatırlama, Harf Dizileri, Empati,
+     Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri (dört etkin anket, dört özgün görev). Bulunanlar "Son yapılanlar"
+     (88)'de. **Sürümü artan test yok:** puanlanan soruların hiçbiri değişmedi; üç görevin yalnızca alıştırmaları ya da
+     açıklamaları değiştiği için soru izi güncellendi. Görevlerin bütün soruları iki denetçi tarafından çözüldü ya da
+     yeniden hesaplandı: anahtarlarda hata yok. Kalıcı denetime iki kural eklendi: alıştırma asıl soruların aynısı değil
+     (Harf Dizileri: aynı kuraldaki soruyla en çok iki ortak harf; Şekil Benzetmeleri: alıştırmanın cevabı, asıl cevaplardaki
+     bir şekli aynı duruşla göstermez).
+   - **8. grup (sıradaki, son):** Öz-denetim, Harf-Sayı Sıralama, Merak, İşlem Hızı: Simge Bulma, Liderlik Eğilimleri,
+     Parçalardan Şekil, Sesli Okuma Değerlendirmesi. Ardından denetimin sonunda topluca yapılacaklar (aşağıda).
    - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
      aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
      doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
@@ -177,6 +184,18 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      gelişebilir" cümlesi kaynağa dayanıyor ama "geliştirme vaadi yok" ilkesine yakın duruyor. Kule'de yönerge "düzen",
      bilim kartı "diziliş" diyor. Bilim kartlarındaki araştırma sayıları (yüzdeler, örneklem sayıları) bu denetimde
      kaynaklarından yeniden doğrulanmadı.
+     **7. gruptan (çeviriler etkin ölçeklerde; hocaya):** Empati'de "Başkalarının duygularını anlar, onlara ortak olurum"
+     (asıl "Sympathize with others' feelings"; "anlar" eklemesi maddeyi anlamaya kaydırıyor ve iki eylem soruyor; beş testte
+     ortak), "İnsanların … kendini rahat hissetmesini" ile "Başkalarının kendilerini iyi hissetmelerini" (çoğul uyumu);
+     İyimserlik'te "Sık sık keyifsiz olurum" (asıl "bad mood", öfke alt ölçeğinde: "huysuz" daha yakın olabilir; yalnızca bu
+     testte); Öz-yeterlik'te "Hazırlıksız konuşma yapmakta iyiyim" ("good at" kalıbı; üç testte ortak) ve "Karşılaştığım
+     zorluklarla baş edemeyeceğimi hissederim" (asıl "things", daha genel); Heyecan Arayışı'nda "Alışılmadık yerleri
+     keşfetmeyi çok isterdim" ("isterdim" pişmanlık gibi okunabilir; üç testte ortak) ve neredeyse aynı "Çılgınlıklar yaparım"
+     / "Çılgınca şeyler yaparım" (asıllarda da iki ayrı madde). Anket raporlarının düşük ve yüksek düzey metinleri ölçeğin
+     cümlelerini "… olduğunu söylüyorsun" diye özetliyor; ortalama, kişinin her cümleye katıldığını göstermez. Bu grupta en
+     özel ve hassas iddialar ("birçok şeyden korktuğunu", "sık sık hüzünlü", "kendi işlerine ve önceliklerine") çıkarıldı;
+     öteki testlerde de aynı kalıp var: denetimin sonunda topluca bakılacak. Kaynakçalarda "ve ark." kullanılıyor (APA 7'de 20
+     yazara kadar hepsi yazılır) ve "aktaran" ile anılan özgün kaynaklar da listede: denetimin sonunda.
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1280,6 +1299,30 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-21 (88): Dil ve mantık denetimi, 7. grup (dört etkin anket: Heyecan Arayışı 29, İyimserlik 10, Empati 29, Öz-yeterlik
+  29 madde; dört özgün görev: Harf Dizileri 24, Gizli Şekiller 20, Şekil Benzetmeleri 24 soru, Desen Hatırlama 39 desen). İkinci
+  denetçi bağımsız okudu ve soruları yeniden çözdü: anahtarlarda hata yok, ters maddeler doğru işaretli. **Alıştırmalar asıl
+  soruları ele veriyordu:** Harf Dizileri'nin ikinci alıştırması ("A K B K _ K Ç K") 7. sorunun ("M A M B M C M _") aynı kuralı ve
+  aynı harfleriydi → "Ö K P K _ K S K"; Şekil Benzetmeleri'nin ikinci alıştırmasının cevabı (aynadaki gri dik üçgen) dört asıl
+  sorunun cevabındaki parçaydı, 6. soru neredeyse aynısıydı → L biçimi; üçüncü alıştırmanın cevabı 23. sorudakiyle aynı duruşta
+  bayraktı → dik üçgen (iki kural da artık test ediliyor). **Mantık ve dil:** Gizli Şekiller alıştırmasında yarım tur
+  döndürülmüş biçime "baş aşağı çevrilmiş" deniyordu (yönerge "çevrilmiş"i aynaya ayırıyor); "Onu bul" (şekli mi çizimi mi?);
+  hazırlık ekranı ayna görüntüsündeki yanlış seçenekleri anmıyordu. Şekil Benzetmeleri: alıştırması kötü giden kişiye aynı uyarı
+  iki kez yazıyordu; bilim kartı kestirme yolların "şans düzeyinin altında" kaldığını söylüyordu (güvenirlik bölümü: en çok 7,
+  şans 6) → "şans düzeyine yakın"; "Değişmeyen şeyler aynı kalmalı" → "Birinci şekilden ikinciye değişmeyen şeyler üçüncü
+  şekilde de aynı kalmalı"; "renkleri ayırt etmeyi gerektirmez" (renk değişikliği soran testte) → "kırmızı ile yeşil gibi".
+  Desen Hatırlama: "boş tabloda dolu olan karelere" (boş tabloda dolu kare yok); duraklama notu "desen yarıda kaldı" diyordu,
+  oysa desen hiç gösterilmemiş olabiliyor; puan 0 olabildiği hâlde "(3 ile 15 arası)"; "çoğu kişi için 5–10 dakika" (veri yok)
+  → "sürmesi beklenir". Harf Dizileri: "bazen ortadaki bir harf" (tek örnek sondan ikinci) → "aradaki". Üç görevin yönergesine
+  cevabı gönderen düğme. **Raporlar:** İyimserlik'te ruh hâli düşükken "kendini sık sık hüzünlü hissettiğini söylüyor"
+  (ortalama bunu göstermez) → "hüzünlü ya da keyifsiz hissettiğin zamanların az olmadığını gösteriyor"; Empati'de "kendi
+  işlerine ve önceliklerine odaklandığını söylüyorsun" (hiçbir madde bunu sormuyor); Öz-yeterlik'te "birçok şeyden korktuğunu"
+  ve "katkı sağlayabileceğin pek bir şey olmadığını" çıktı, veli metninde "söylüyor" → "belirtiyor"; mezun da gördüğü için
+  "Sınav haftasında" → "Sınavların yaklaştığı bir haftada" (Öz-yeterlik, Hızlı Kişilik, Ayrıntılı Kişilik). İyimserlik'in
+  tanıtımı ruh hâlini anmıyordu; "hayata ve geleceğe bakış" açıklamasında bir madde eksikti. **Ortak:** alıştırma sonucunda sayı
+  hep yazıyla ("iki sorunun birini"; 13 görevde sonuca göre kimi zaman "2 sorunun", kimi zaman "iki sorunun"
+  yazıyordu); anket ekranında "en az 1 tanesini daha" →
+  "en az birini daha".
 - 2026-11-21 (87): Dil ve mantık denetimi, 6. grup (8 görev testi). İkinci denetçi bağımsız okudu ve bütün soruları yeniden
   çözdü (Sayısal 26, Düşünerek 26, Küp 22, Üç Boyutlu 22, Kule 22 problem, Bakış Açısı 16, Zihinden Hesaplama 200, Hesapla
   ve Hatırla 70 işlem): anahtarlarda hata yok. **Kesin hata:** Hesapla ve Hatırla'da dizi sonu ekranı yüzdeyi yukarı
@@ -1441,15 +1484,3 @@ En yeni üstte; en çok 10 madde tutulur.
   çok yakın günlük hayat satırları ve veliye gözetim çağrıştıran öneriler düzeltildi. "Hangi test bana uygun?"da "Öğrenme ve
   çalışma" altında yeni yuva; galeride kendi çizimi (bildirimli telefon, odaklanılan satır). Telefonda ve masaüstünde baştan
   sona çözüldü; rapor, veli raporu ve PDF açıldı.
-- 2026-11-05 (78): Yeni test: Sınav Kaygısı ve Baş Etme (özgün, pilot; 5. sınıftan yetişkine; 25 madde). Kaygının üç yanı
-  (endişeli düşünceler, bedensel tepkiler, sınav sırasında takılma) ve baş etmenin iki yanı (sınava hazırlık, baş etme yolları);
-  ilk üçünde yüksek puan daha çok kaygı, son ikisinde daha sık baş etme. Rapor: "Birlikte bakınca" (kaygının hangi yanı öne
-  çıkıyor; endişe, takılma ve bedensel heyecanın sınav sonuçlarıyla ilişkisi araştırmalarla), kaygının bir yanı yüksekse destek
-  kutusu ve yol haritasında 3. hafta o yan, rehberdeki "Sınav kaygısı" yazısına bağlantı (yetişkine de). Yetişkin metinlerinde
-  "sınav" okula özgü sayılmaz (`tests/helpers/school.ts`, `EXAM_TESTS`). İki bağımsız inceleme: Sarason'un ölçeğine benzeyen
-  iki madde, sıklık ölçeğiyle çakışan sözler, kaygıyı varsayan baş etme maddeleri, Schillinger (2021) bulgusunun eksik
-  anlatımı, ters maddelerin sona yığılması, aynı öneri ve yönlendirmenin bir sayfada birkaç kez geçmesi düzeltildi. Endişeyi
-  sınavdan önce yazmanın etkisi (Ramirez ve Beilock, 2011) bir tekrar çalışmasında bulunamadığı için (Camerer ve ark., 2018)
-  öneride ve rehber yazısında bu açıkça söylenir. "Sınav kaygısı" rehber yazısı teste bağlandı; "Hangi test bana uygun?"da
-  "Öğrenme ve çalışma" altında yeni yuva; galeride kendi çizimi (cevap kâğıdı ve sakinleşen nabız). Telefonda (8. sınıf) ve
-  masaüstünde (yetişkin) baştan sona çözüldü; rapor, veli raporu ve PDF açıldı.

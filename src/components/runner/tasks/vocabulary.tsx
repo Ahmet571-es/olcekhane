@@ -5,7 +5,7 @@ import type { VocabularyItem, VocabularyPracticeItem, VocabularyTask } from '@/l
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import { VOCABULARY_TYPE_NAMES, vocabularyQuestion } from '@/lib/instruments/vocabulary';
 import type { VocabularyTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, StatusLine, TOUCH_CLASSES, useKeys } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -234,10 +234,10 @@ export function Vocabulary({ task, onDone }: { task: VocabularyTask; onDone: (tr
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? 'Alıştırmadaki soruların hepsini doğru cevapladın.'
-              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
             ? 'Soruyu ve seçeneklerin hepsini dikkatle oku; cümlede anlam ve deyim sorularında cümlenin bütününe bak. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}

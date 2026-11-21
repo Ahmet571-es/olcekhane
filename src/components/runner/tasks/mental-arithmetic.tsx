@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ARITH_SIGN, arithAnswer, arithSpoken } from '@/lib/instruments/arithmetic';
 import type { ArithItem, MentalArithmeticTask } from '@/lib/instruments/types';
 import type { ArithTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, StatusLine, afterPaint, useKeys, usePageHidden } from './common';
+import { afterPaint, ArmedButton, numberWord, PausedScreen, StatusLine, useKeys, usePageHidden } from './common';
 import { DigitPad } from './number-series';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
@@ -186,7 +186,7 @@ export function MentalArithmetic({ task, onDone }: { task: MentalArithmeticTask;
     return (
       <div className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Önce {task.practice.length} alıştırma işlemi yapalım. Sonucu tuşlarla yaz ve “Tamam” düğmesine bas. Her cevaptan sonra doğru sonucu göreceksin.
+          Önce {numberWord(task.practice.length)} alıştırma işlemi yapalım. Sonucu tuşlarla yaz ve “Tamam” düğmesine bas. Her cevaptan sonra doğru sonucu göreceksin.
         </p>
         <p className="measure text-ink-2">Bilgisayarda rakam tuşlarıyla yazıp Enter tuşuyla da cevap verebilirsin.</p>
         <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={() => setStep('practice')}>

@@ -144,7 +144,7 @@ export function LikertRunner(props: {
       ? `İstersen ${these} cevaplayabilir ya da testi bitirebilirsin.`
       : need >= missing.length
         ? `Testi bitirmek için ${these} da cevaplaman gerekiyor.`
-        : `Testi bitirmek için bunlardan en az ${need} tanesini daha cevaplaman gerekiyor.`;
+        : `Testi bitirmek için bunlardan en az ${need === 1 ? 'birini' : `${need} tanesini`} daha cevaplaman gerekiyor.`;
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <ProgressRuler total={items.length} done={answeredCount} />

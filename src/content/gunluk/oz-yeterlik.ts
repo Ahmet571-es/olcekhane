@@ -159,12 +159,12 @@ export const ozYeterlikDaily: SurveyDaily = {
         low: {
           from: { school: ['cop01', 'cop07'], friends: ['cop06'], home: ['cop05', 'cop03'], work: ['cop01', 'cop07'] },
           student: {
-            school: 'Sınav haftasında işler üst üste gelince kendini bunalmış hissedebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
+            school: 'Sınavların yaklaştığı bir haftada işler üst üste gelince kendini bunalmış hissedebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
             friends: 'Arkadaşlarınla bir plan son anda bozulunca bu aksiliği atlatmak sana zor gelebilir.',
             home: 'Evdeki bir sorun karşısında birinin içini rahatlatmasına ihtiyaç duyabilirsin; bunu yakın olduğun birinden istemek iyi gelebilir.',
           },
           parent: {
-            school: 'Sınav haftasında işler üst üste gelince çocuğunuz kendini bunalmış hissedebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
+            school: 'Sınavların yaklaştığı bir haftada işler üst üste gelince çocuğunuz kendini bunalmış hissedebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
             friends: 'Arkadaşlarıyla bir plan son anda bozulunca bu aksiliği atlatmak ona zor gelebilir.',
             home: 'Evdeki bir sorun karşısında birinin içini rahatlatmasına ihtiyaç duyabilir; bunu yakın olduğu birinden istemek ona iyi gelebilir.',
           },
@@ -175,7 +175,7 @@ export const ozYeterlikDaily: SurveyDaily = {
         average: {
           from: { school: ['cop07', 'cop01'], friends: ['cop06', 'cop03'], home: ['cop05', 'cop03'], work: ['cop07', 'cop01'] },
           student: {
-            school: 'Sınav haftasında birçok işi bazen rahatça idare edebilir, bazen bunalabilirsin.',
+            school: 'Sınavların yaklaştığı bir haftada birçok işi bazen rahatça idare edebilir, bazen bunalabilirsin.',
             friends: 'Arkadaşlarınla bir plan bozulunca bazen bunu kolayca atlatabilir, bazen baş etmekte zorlanabilirsin.',
             home: 'Evdeki bir sorun karşısında bazen kendin baş edebilir, bazen birinin içini rahatlatmasına ihtiyaç duyabilirsin.',
           },
@@ -191,7 +191,7 @@ export const ozYeterlikDaily: SurveyDaily = {
         high: {
           from: { school: ['cop07', 'cop01'], friends: ['cop06'], home: ['cop03', 'cop08'], work: ['cop07', 'cop01'] },
           student: {
-            school: 'Sınav haftasında işler üst üste gelse de çoğu zaman bunları idare edebileceğine güvenebilirsin.',
+            school: 'Sınavların yaklaştığı bir haftada işler üst üste gelse de çoğu zaman bunları idare edebileceğine güvenebilirsin.',
             friends: 'Arkadaşlarınla bir plan bozulunca bu aksiliği çoğu zaman kolayca atlatabilirsin.',
             home: 'Evdeki bir sorun karşısında çoğu zaman baş edebileceğini hissedebilirsin; çok zorlanırsan yardım istemek de bu güvenle çelişmez.',
           },

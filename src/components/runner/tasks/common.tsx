@@ -144,9 +144,17 @@ export function PausedScreen({
   );
 }
 
-/** Alıştırma sonucu: sayı tam ise "hepsini", bir ise "birini", değilse "5 tanesini" ("8 denemenin 8 tanesini", "1 tanesini" denmez). */
-export function countOf(n: number, total: number, ending: 'ini' | 'inde' = 'ini'): string {
-  return n === total ? `heps${ending}` : n === 1 ? `bir${ending}` : `${n} tanes${ending}`;
+/** Alıştırma sayısı yazıyla: "iki sorunun birini", "üç sorunun hiçbirini" (aynı cümlede "iki sorunun ikisini de" geçer). */
+export function numberWord(n: number): string {
+  return ['sıfır', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz', 'on'][n] ?? String(n);
+}
+
+/**
+ * Alıştırma sonucu: sayı tam ise "hepsini", bir ise "birini", değilse "5 tanesini" ("8 denemenin 8 tanesini", "1 tanesini"
+ * denmez). `words`: sayı yazıyla ("üç sorunun iki tanesini"; toplam da `numberWord` ile yazıldığında).
+ */
+export function countOf(n: number, total: number, ending: 'ini' | 'inde' = 'ini', words = false): string {
+  return n === total ? `heps${ending}` : n === 1 ? `bir${ending}` : `${words ? numberWord(n) : n} tanes${ending}`;
 }
 
 /** Bölüm sıra adları: "Birinci bölüm bitti". */

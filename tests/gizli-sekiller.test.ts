@@ -248,7 +248,7 @@ describe('Gizli şekiller: sorular', () => {
       expect(p.explain).toContain(`Şekil ${letter}’`);
     }
     const [p1, p2] = task.practice;
-    expect(p1.explain).toMatch(/A’da şeklin baş aşağı çevrilmiş, C’de ayna görüntüsü gibi ters çevrilmiş biçimi var; D’deki şeklin bir köşesi farklı/);
+    expect(p1.explain).toMatch(/A’da şeklin yarım tur döndürülmüş, C’de ayna görüntüsü \(ters çevrilmiş\) biçimi var; D’deki şeklin bir köşesi farklı/);
     expect(ALL.find((q) => q.key === 'gsp1')!.lures).toEqual(['turned', null, 'turned', 'changed']);
     expect(p2.explain).toMatch(/A’daki ve B’deki şekillerin birer köşesi farklı; D’de şeklin döndürülmüş ve ters çevrilmiş biçimi var/);
     expect(ALL.find((q) => q.key === 'gsp2')!.lures).toEqual(['changed', 'changed', null, 'turned']);
@@ -316,8 +316,10 @@ function argmax(xs: number[]): number {
   return best;
 }
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '7763a73f6f6b3734';
+/** Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
+// 2026-11-21 (dil ve mantık denetimi): yalnızca birinci alıştırmanın açıklaması değişti (yarım tur döndürülen biçime "baş aşağı
+// çevrilmiş" değil "yarım tur döndürülmüş"; "ters çevrilmiş" ayna görüntüsü için kalır); sorular ve anahtar aynı, sürüm 2 kaldı.
+const SORU_IZI = 'a1d8b2ba60400ed6';
 
 describe('Gizli şekiller: puanlama', () => {
   const all = (fn: (i: number) => Partial<HiddenTrialInput> = () => ({})): HiddenTrialInput[] =>

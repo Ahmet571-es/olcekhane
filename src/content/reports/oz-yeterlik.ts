@@ -153,8 +153,8 @@ export const ozYeterlikReport: ReportTemplate = {
       ),
       low: t(
         'İşlerde kendinden pek emin olmayan',
-        'Genel olarak işleri başarıyla yapabileceğinden pek emin olmadığını, durumları yanlış değerlendirebileceğini ve katkı sağlayabileceğin pek bir şey olmadığını düşündüğünü söylüyorsun. Bu sonuç bir yetenek ölçümü değildir; kendine bugün nasıl baktığını gösterir ve zamanla değişebilir.',
-        'Çocuğunuz genel olarak işleri başarıyla yapabileceğinden pek emin olmadığını, durumları yanlış değerlendirebileceğini ve katkı sağlayabileceği pek bir şey olmadığını düşündüğünü belirtiyor. Bu sonuç bir yetenek ölçümü değildir; kendine bugün nasıl baktığını gösterir ve zamanla değişebilir.',
+        'Genel olarak işleri başarıyla yapabileceğinden ve iyi çözümler bulabileceğinden pek emin olmadığını söylüyorsun. Bu sonuç bir yetenek ölçümü değildir; kendine bugün nasıl baktığını gösterir ve zamanla değişebilir.',
+        'Çocuğunuz genel olarak işleri başarıyla yapabileceğinden ve iyi çözümler bulabileceğinden pek emin olmadığını belirtiyor. Bu sonuç bir yetenek ölçümü değildir; kendine bugün nasıl baktığını gösterir ve zamanla değişebilir.',
       ),
     },
     social: {
@@ -178,7 +178,7 @@ export const ozYeterlikReport: ReportTemplate = {
       high: t(
         'Zor anlarda kendinden emin',
         'Genel olarak aksilikleri kolayca atlattığını ve olaylar karşısında kolay kolay bunalmadığını söylüyorsun. Karşılaştığın zorluklarla baş edebileceğine ve aynı anda birçok şeyi idare edebileceğine güvendiğini de söylüyorsun. Bu güven, zor dönemlerde sakin kalmana yardım edebilir. Çok zorlandığında yardım istemek de bu güvenle çelişmez.',
-        'Çocuğunuz genel olarak aksilikleri kolayca atlattığını ve olaylar karşısında kolay kolay bunalmadığını belirtiyor. Karşılaştığı zorluklarla baş edebileceğine ve aynı anda birçok şeyi idare edebileceğine güvendiğini de söylüyor. Bu güven, zor dönemlerde sakin kalmasına yardım edebilir.',
+        'Çocuğunuz genel olarak aksilikleri kolayca atlattığını ve olaylar karşısında kolay kolay bunalmadığını belirtiyor. Karşılaştığı zorluklarla baş edebileceğine ve aynı anda birçok şeyi idare edebileceğine güvendiğini de belirtiyor. Bu güven, zor dönemlerde sakin kalmasına yardım edebilir.',
       ),
       average: t(
         'Zorluğa göre değişen',
@@ -187,12 +187,12 @@ export const ozYeterlikReport: ReportTemplate = {
       ),
       low: t(
         'Zor anlarda kolay bunalan',
-        'Genel olarak yaşadığın olaylar karşısında kolayca bunaldığını, karşılaştığın zorluklarla baş edemeyeceğini hissettiğini ve birçok şeyden korktuğunu söylüyorsun. Bu duygular yorucu olabilir; zamanla ve destekle değişebilir. Seni zorluyorsa güvendiğin bir yetişkinle konuşmak iyi gelir.',
-        'Çocuğunuz genel olarak yaşadığı olaylar karşısında kolayca bunaldığını, karşılaştığı zorluklarla baş edemeyeceğini hissettiğini ve birçok şeyden korktuğunu belirtiyor. Bu sonuç bir tanı değildir; ancak bu duyguların ne kadar süredir devam ettiğini ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir.',
+        'Genel olarak yaşadığın olaylar karşısında kolayca bunaldığını ve karşılaştığın zorluklarla baş edemeyeceğini hissettiğini söylüyorsun. Bu duygular yorucu olabilir; zamanla ve destekle değişebilir. Seni zorluyorsa güvendiğin bir yetişkinle konuşmak iyi gelir.',
+        'Çocuğunuz genel olarak yaşadığı olaylar karşısında kolayca bunaldığını ve karşılaştığı zorluklarla baş edemeyeceğini hissettiğini belirtiyor. Bu sonuç bir tanı değildir; ancak bu duyguların ne kadar süredir devam ettiğini ve günlük hayatını ne kadar etkilediğini onunla sakin bir anda konuşmanız önemlidir.',
         {
           support: true,
           adult:
-            'Genel olarak yaşadığın olaylar karşısında kolayca bunaldığını, karşılaştığın zorluklarla baş edemeyeceğini hissettiğini ve birçok şeyden korktuğunu söylüyorsun. Bu duygular yorucu olabilir; zamanla ve destekle değişebilir. Seni zorluyorsa güvendiğin biriyle ya da bir ruh sağlığı uzmanıyla konuşmak iyi gelir.',
+            'Genel olarak yaşadığın olaylar karşısında kolayca bunaldığını ve karşılaştığın zorluklarla baş edemeyeceğini hissettiğini söylüyorsun. Bu duygular yorucu olabilir; zamanla ve destekle değişebilir. Seni zorluyorsa güvendiğin biriyle ya da bir ruh sağlığı uzmanıyla konuşmak iyi gelir.',
         },
       ),
     },

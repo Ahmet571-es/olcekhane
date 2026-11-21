@@ -226,12 +226,12 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
         low: {
           from: { school: ['k091', 'k001'], friends: ['k036', 'k006'], home: ['k071', 'k011'], work: ['k091', 'k116'] },
           student: {
-            school: 'Sınav haftası yaklaşırken kolayca strese girebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
+            school: 'Sınavlar yaklaşırken kolayca strese girebilirsin; bunu güvendiğin biriyle konuşmak iyi gelebilir.',
             friends: 'Bir anlaşmazlıkta sinirin çabuk bozulabilir; sonra olanı sakin bir anda konuşmak rahatlatabilir.',
             home: 'Bazı günler moralin bozuk olabilir; seni üzen şeyi paylaşmak iyi gelebilir.',
           },
           parent: {
-            school: 'Sınav haftası yaklaşırken çocuğunuz kolayca strese girebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
+            school: 'Sınavlar yaklaşırken çocuğunuz kolayca strese girebilir; bunu güvendiği biriyle konuşmak iyi gelebilir.',
             friends: 'Bir anlaşmazlıkta siniri çabuk bozulabilir; sonra olanı sakin bir anda konuşmak onu rahatlatabilir.',
             home: 'Bazı günler morali bozuk olabilir; onu üzen şeyi paylaşmak iyi gelebilir.',
           },

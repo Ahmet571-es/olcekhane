@@ -298,8 +298,8 @@ export function FiguralAnalogy({ task, onDone }: { task: FiguralAnalogyTask; onD
         </p>
         <Example />
         <p className="measure text-lg">
-          Renk, büyüklük, yön (döndürme ya da ayna görüntüsü), yer ve sayı değişebilir. Bazı sorularda birden çok şey değişir; hepsini bul. Değişmeyen şeyler de
-          aynı kalmalı.
+          Renk, büyüklük, yön (döndürme ya da ayna görüntüsü), yer ve sayı değişebilir. Bazı sorularda birden çok şey değişir; hepsini bul. Birinci şekilden ikinciye
+          değişmeyen şeyler üçüncü şekilde de aynı kalmalı.
         </p>
         <p className="measure text-lg">
           Doğru olduğunu düşündüğün seçeneği seç, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu
@@ -331,7 +331,7 @@ export function FiguralAnalogy({ task, onDone }: { task: FiguralAnalogyTask; onD
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun ${task.practice.length === 2 ? 'ikisini de' : 'hepsini'} doğru cevapladın.`
               : `Alıştırmadaki ${countWord(task.practice.length)} sorudan ${countAcc(practiceScore)} doğru cevapladın.`}{' '}
           {low
-            ? 'Önce birinci ve ikinci şekil arasındaki farkları tek tek bul: renk mi, büyüklük mü, yön mü, yer mi, sayı mı değişti? Sonra her birini üçüncü şekle uygula ve değişmeyen şeyleri aynı bırak. İstersen alıştırmayı tekrarlayabilirsin. Asıl sorularda cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'
+            ? 'Önce birinci ve ikinci şekil arasındaki farkları tek tek bul: renk mi, büyüklük mü, yön mü, yer mi, sayı mı değişti? Sonra her birini üçüncü şekle uygula ve değişmeyen şeyleri aynı bırak. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">

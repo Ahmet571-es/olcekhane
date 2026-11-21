@@ -130,7 +130,11 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   sorunun ya da işlemin cevabını ele vermez (çarpanların sırası değişse de; test denetler); ekranda gösterilen yüzde ile
   ona bağlı uyarı aynı sayıya bakar (yuvarlama uyarıyla çelişmesin); ayna görüntüsü aranan görevde döndürmeye "çevirmek"
   denmez; iki ok ya da iki işaret yalnızca renkle ayırt ettirilmez. Soru ile şıklar aynı eki taşır ("kaç saniyede?" +
-  "60 saniyede"); alıştırma sonucunda "1 tanesini" değil "birini" yazılır (`countOf`). Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
+  "60 saniyede"); alıştırma sonucunda "1 tanesini" değil "birini" yazılır (`countOf`), sayılar aynı cümlede hep yazıyla
+  (`numberWord`: "iki sorunun birini"). Alıştırmanın doğru cevabı bir asıl sorunun cevabını göstermez (aynı kural ve aynı harfler;
+  aynı duruşta aynı şekil; Harf Dizileri ve Şekil Benzetmeleri'nde test denetler). Raporun düzey metni ortalamayı tek tek
+  maddelere çevirip kişiye hassas bir iddia yüklemez ("birçok şeyden korktuğunu söylüyorsun", "sık sık hüzünlü"); maddelerde
+  olmayan bir şeyi de söyletmez ("kendi önceliklerine odaklandığını"). Mezunun da gördüğü metinde "sınav haftası" denmez. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
   ayrılık nedeniyle `KNOWN_DIFFERENT`'a yazılır; Çocuk Kişilik Profili yaşa göre uyarladığı için dışındadır); maddeyi alıntılayan
   yorumlar da eşitlenir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır

@@ -5,7 +5,7 @@ import { HIDDEN_EXAMPLE_AT, HIDDEN_EXAMPLE_FIGURE, HIDDEN_EXAMPLE_TARGET, type H
 import type { HiddenFiguresTask, HiddenItem, HiddenPracticeItem } from '@/lib/instruments/types';
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import type { HiddenTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, StatusLine, TOUCH_CLASSES, useKeys } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -281,7 +281,7 @@ export function HiddenFigures({ task, onDone }: { task: HiddenFiguresTask; onDon
         </p>
         <p className="measure text-lg">
           Şekil çizimde aynı büyüklükte ve aynı yönde durur: döndürülmemiş, ters çevrilmemiştir. Kenarları çizimdeki daha uzun çizgilerin parçası olabilir ve
-          başka çizgiler şeklin içinden geçebilir. Bazı çizimlerde şeklin döndürülmüş biçimi ya da bir köşesi farklı bir benzeri vardır; onlar doğru cevap değildir.
+          başka çizgiler şeklin içinden geçebilir. Bazı çizimlerde şeklin döndürülmüş ya da ters çevrilmiş biçimi ya da bir köşesi farklı bir benzeri vardır; onlar doğru cevap değildir.
         </p>
         <Example />
         <p className="measure text-lg">
@@ -308,12 +308,12 @@ export function HiddenFigures({ task, onDone }: { task: HiddenFiguresTask; onDon
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun ${task.practice.length === 2 ? 'ikisini de' : 'hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
-            ? 'Şeklin en kolay ayırt edilen parçasını (ör. eğik bir kenarı ya da sivri bir köşesini) seç ve önce onu çizimlerde ara; bulunca şeklin öteki kenarlarının da orada olup olmadığına bak. Şeklin yönüne dikkat et: döndürülmüş ya da ters çevrilmiş biçimi doğru cevap değildir. İstersen alıştırmayı tekrarlayabilirsin.'
+            ? 'Şeklin en kolay ayırt edilen parçasını (ör. eğik bir kenarı ya da sivri bir köşesini) belirle ve önce onu çizimlerde ara; bulunca şeklin öteki kenarlarının da orada olup olmadığına bak. Şeklin yönüne dikkat et: döndürülmüş ya da ters çevrilmiş biçimi doğru cevap değildir. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">

@@ -110,6 +110,19 @@ describe('Harf dizileri: sorular', () => {
     for (const [i, it] of task.items.entries()) if (it.level > 1 && it.rule !== 'next') expect(task.traps[i].length, it.key).toBeGreaterThan(0);
   });
 
+  it('alıştırma asıl soruların aynısı değil: aynı kuraldaki hiçbir soruyla ikiden çok harf paylaşmaz', () => {
+    // 2026-11-21'e kadar ikinci alıştırma ("A K B K _ K Ç K" → C) 7. sorunun ("M A M B M C M _" → Ç) aynı kuralı ve aynı harfleriydi.
+    const lettersOf = (terms: readonly (string | null)[], answer: string) => new Set([...terms.filter((x): x is string => x !== null), answer]);
+    for (const p of task.practice) {
+      const mine = lettersOf(p.terms, p.answer);
+      for (const s of LETTER_SERIES_SPECS.filter((x) => x.rule === p.rule)) {
+        const theirs = lettersOf(s.terms.split(' ').map((x) => (x === '_' ? null : x)), s.answer);
+        const shared = [...mine].filter((x) => theirs.has(x));
+        expect(shared.length, `${p.key} ile ${s.key}: ${shared.join(' ')}`).toBeLessThanOrEqual(2);
+      }
+    }
+  });
+
   it('sorular sabit: sorular ya da cevap anahtarı değişirse testin sürüm numarası artırılmalı', () => {
     const hash = createHash('sha256')
       .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, traps: task.traps, levels: task.levels }))
@@ -121,7 +134,10 @@ describe('Harf dizileri: sorular', () => {
 });
 
 /** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '73a607459762c680';
+// 2026-11-21 (dil ve mantık denetimi): yalnızca ikinci alıştırma değişti ("A K B K _ K Ç K", 7. sorunun aynı kuralı ve aynı
+// harfleriydi: "M A M B M C M _"; şimdi "Ö K P K _ K S K"), yönergede "ortadaki" →
+// "aradaki" ve 3. düzeyin anlatımı. Puanlanan sorular ve anahtar aynı, sürüm 1 kaldı.
+const SORU_IZI = '9f1d15e0e6228e87';
 
 describe('Harf dizileri: puanlama', () => {
   const all = (fn: (i: number) => Partial<LetterSeriesTrialInput> = () => ({})): LetterSeriesTrialInput[] =>

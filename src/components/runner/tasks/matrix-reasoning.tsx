@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { MATRIX_GRAY, MATRIX_INK, MATRIX_PAPER, cellPrims, describeCell, itemMaxCount } from '@/lib/instruments/matrix';
 import type { MatrixCell, MatrixItem, MatrixPracticeItem, MatrixReasoningTask } from '@/lib/instruments/types';
 import type { MatrixTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, StatusLine, TOUCH_CLASSES, useKeys } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -248,7 +248,7 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
           görünür. Emin olunca “Cevabı ver” düğmesine bas.
         </p>
         <p className="measure text-lg">
-          Önce {task.practice.length} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
+          Önce {numberWord(task.practice.length)} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
         </p>
         <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={() => setStep('practice')}>
           Alıştırmaya başla
@@ -263,10 +263,10 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
             ? 'Satırlarda neyin aynı kaldığına ve neyin değiştiğine dikkatle bak. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}

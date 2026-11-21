@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NumericItem, NumericPracticeItem, NumericalReasoningTask } from '@/lib/instruments/types';
 import type { NumericTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, afterPaint, useKeys, countOf } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, StatusLine, useKeys } from './common';
 import { DigitPad } from './number-series';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
@@ -186,7 +186,7 @@ export function NumericalReasoning({ task, onDone }: { task: NumericalReasoningT
           Cevaplar kesirli ya da virgüllü değildir.
         </p>
         <p className="measure text-lg">
-          Önce {task.practice.length} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
+          Önce {numberWord(task.practice.length)} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
         </p>
         <p className="measure text-ink-2">İstersen kâğıt ve kalem kullanabilirsin; hesap makinesi kullanma. Bilgisayarda rakam tuşlarıyla yazıp Enter tuşuyla cevap verebilirsin.</p>
         <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={() => setStep('practice')}>
@@ -202,10 +202,10 @@ export function NumericalReasoning({ task, onDone }: { task: NumericalReasoningT
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? `Alıştırmadaki ${task.practice.length === 2 ? 'iki sorunun ikisini de' : 'soruların hepsini'} doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
             ? 'Soruyu dikkatle oku; istersen sayıları kâğıda yazarak düşün. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}

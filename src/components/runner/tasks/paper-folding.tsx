@@ -6,7 +6,7 @@ import { HOLE_R, PAPER, type Pt } from '@/lib/instruments/folding';
 import type { FoldingItem, FoldingPracticeItem, PaperFoldingTask } from '@/lib/instruments/types';
 import { VERBAL_LETTERS } from '@/lib/instruments/verbal';
 import type { FoldingTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, StatusLine, TOUCH_CLASSES, useKeys } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -271,10 +271,10 @@ export function PaperFolding({ task, onDone }: { task: PaperFoldingTask; onDone:
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
-              ? `Alıştırmadaki ${task.practice.length} sorunun hepsini doğru cevapladın.`
-              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
+              ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hepsini doğru cevapladın.`
+              : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
             ? 'Kâğıdı son katlamadan başlayarak zihninde adım adım aç. Katlanan parça deliğin olduğu yeri örtüyorsa, her açışta deliğin bir eşi katlama çizgisinin öbür yanında, çizgiye aynı uzaklıkta ortaya çıkar; örtmüyorsa yeni delik oluşmaz. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}

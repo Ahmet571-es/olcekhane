@@ -310,7 +310,7 @@ const PRACTICE_SPECS: PracticeSpec[] = [
     ],
     marks: ['1133 1141 3343 4143', '2123 2131 2353 3153', '2442 2454 4252 5254', '2332 2353 3132 3153'],
     explain:
-      'Şekil B’de saklı: yeşille gösterilen yerde. Uzun çapraz bir çizgi şeklin bir köşesinden geçip içini kesiyor. Turuncuyla gösterilenler doğru cevap değil: A’da şeklin baş aşağı çevrilmiş, C’de ayna görüntüsü gibi ters çevrilmiş biçimi var; D’deki şeklin bir köşesi farklı.',
+      'Şekil B’de saklı: yeşille gösterilen yerde. Uzun çapraz bir çizgi şeklin bir köşesinden geçip içini kesiyor. Turuncuyla gösterilenler doğru cevap değil: A’da şeklin yarım tur döndürülmüş, C’de ayna görüntüsü (ters çevrilmiş) biçimi var; D’deki şeklin bir köşesi farklı.',
     lures: ['turned', null, 'turned', 'changed'],
   },
 
@@ -355,7 +355,7 @@ const task: HiddenFiguresTask = {
   measures: 'Karmaşık bir çizimin içine saklanmış basit bir şekli bulabilmeyi ölçer.',
   instructions: [
     'Her soruda üstte basit bir şekil, altında dört karmaşık çizim göreceksin.',
-    'Şekil, dört çizimden yalnızca birinin içinde saklı. Onu bul.',
+    'Şekil, dört çizimden yalnızca birinin içinde saklı. Şeklin saklandığı çizimi bul, onu seç ve “Cevabı ver” düğmesine bas.',
     'Şekil çizimde aynı büyüklükte ve aynı yönde durur: döndürülmemiş, ters çevrilmemiştir. Kenarları çizimdeki daha uzun çizgilerin parçası olabilir.',
   ],
   grid: 6,

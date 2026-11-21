@@ -197,8 +197,8 @@ export const iyimserlikReport: ReportTemplate = {
       ),
       low: t(
         'Sık sık hüzünlü ya da keyifsiz',
-        'Ruh hâlini soran üç cümleye verdiğin cevaplar, kendini sık sık hüzünlü ya da keyifsiz hissettiğini söylüyor. Yol haritasındaki “Ruh hâli” haftasında sana iyi gelebilecek küçük adımlar var.',
-        'Çocuğunuzun ruh hâlini soran üç cümleye verdiği cevaplar, kendini sık sık hüzünlü ya da keyifsiz hissettiğini belirtiyor. Bu duyguların sevdiği şeylerden keyif almasını engelleyip engellemediğine dikkat etmek iyi olur.',
+        'Ruh hâlini soran üç cümleye verdiğin cevaplar, hüzünlü ya da keyifsiz hissettiğin zamanların az olmadığını gösteriyor. Yol haritasındaki “Ruh hâli” haftasında sana iyi gelebilecek küçük adımlar var.',
+        'Çocuğunuzun ruh hâlini soran üç cümleye verdiği cevaplar, hüzünlü ya da keyifsiz hissettiği zamanların az olmadığını gösteriyor. Bu duyguların sevdiği şeylerden keyif almasını engelleyip engellemediğine dikkat etmek iyi olur.',
         true,
       ),
     },

@@ -60,7 +60,7 @@ const task: PatternMemoryTask = {
   measures: 'Kısa bir süre gösterilen bir deseni akılda tutabilmeyi, yani kısa süreli görsel belleği ölçer.',
   instructions: [
     'Ekranda kareli bir tablo göreceksin; karelerin bazıları koyu renkli (dolu) olacak.',
-    'Desen 3 saniye görünecek, sonra kaybolacak. Ardından boş tabloda, dolu olan karelere dokunarak aynı deseni yap.',
+    'Desen 3 saniye görünecek, sonra kendiliğinden kaybolacak. Ardından boş tabloda, desende dolu olan kareleri işaretleyerek (karelere dokun ya da bilgisayarda tıkla) aynı deseni yap ve “Tamam” düğmesine bas.',
     'Desenler giderek büyüyecek. Hatırlamadığın bir desende “Hatırlamıyorum” düğmesine basabilirsin.',
   ],
   showMs: 3000,
@@ -92,12 +92,12 @@ export const desenHatirlama: TaskInstrument = {
     title: 'Deseni aklında tut',
     paragraphs: [
       'Birazdan kareli bir tabloda bazı karelerin koyu renkli olduğu desenler göreceksin. Her desen 3 saniye görünecek; sonra boş tabloda aynı kareleri işaretleyeceksin.',
-      `Önce iki alıştırma deseni var. Ardından desenler ${MIN} dolu kareden başlayıp giderek büyür; bir büyüklükteki üç desenin hiçbirini doğru hatırlayamadığında test biter. Bu yüzden testin süresi kişiden kişiye değişir; çoğu kişi için 5–10 dakikadır.`,
+      `Önce iki alıştırma deseni var. Ardından desenler ${MIN} dolu kareden başlayıp giderek büyür; bir büyüklükteki üç desenin hiçbirini doğru hatırlayamadığında test biter. Bu yüzden testin süresi kişiden kişiye değişir; genellikle 5–10 dakika sürmesi beklenir.`,
       'Sessiz bir yerde, kâğıt kalem kullanmadan ve dikkatini dağıtacak şeyler olmadan çözersen sonuç seni daha iyi yansıtır. Desen gösterilirken başka bir uygulamaya geçersen aynı desen yeniden gösterilir.',
     ],
   },
   scales: [
-    { key: 'dh_aralik', name: 'En büyük doğru desen', plain: `Bütün kareleriyle doğru hatırlanan en büyük desendeki dolu kare sayısı (${MIN} ile ${MAX} arası).` },
+    { key: 'dh_aralik', name: 'En büyük doğru desen', plain: `Bütün kareleriyle doğru hatırlanan en büyük desendeki dolu kare sayısı (en çok ${MAX}).` },
     {
       key: 'dh_desen',
       name: 'Doğru hatırlanan desenler',
@@ -127,7 +127,7 @@ export const desenHatirlama: TaskInstrument = {
     limitations: [
       'Zekâ puanı (IQ) vermez ve tanı koymaz; bellek ya da öğrenme sorunları gibi durumlar ancak uzman değerlendirmesiyle anlaşılabilir.',
       'Görsel belleğin yalnızca bir yönünü (3 saniye gösterilen hareketsiz bir deseni hemen ardından hatırlamayı) ölçer. Yerlerin sırasını hatırlamak, uzun süreli bellek ya da günlük hayattaki unutkanlık hakkında bilgi vermez.',
-      'Her büyüklükte yalnızca üç desen vardır ve bir büyüklükteki üç desenin hiçbiri doğru hatırlanamayınca test biter. Bu yüzden o günkü dikkatteki kısa bir dalgınlık sonucu düşürebilir; sonuç kabaca fikir verir.',
+      'Her büyüklükte yalnızca üç desen vardır ve bir büyüklükteki üç desenin hiçbiri doğru hatırlanamayınca test biter. Bu yüzden o günkü kısa bir dalgınlık sonucu düşürebilir; sonuç kabaca fikir verir.',
       'Desenlere sözcükle ad vermek hatırlamayı kolaylaştırabilir (Brown ve ark., 2006). Desenler, kolay ad verilebilecek biçimlerden kaçınılarak kurallarla seçildi; ama kişilere desenlere ad verdirilerek denetlenmedi, bazı desenler yine de kolay adlandırılabilir.',
       'Sonuç; o günkü yorgunluk, isteklilik, ortamdaki gürültü ve cihazdan etkilenebilir (telefonda kareler küçük görünür). Test yeniden çözüldüğünde desenleri hatırlamak sonucu yükseltebilir.',
       'Bellek görevleriyle yapılan alıştırmalar alıştırılan göreve benzer görevlerde sonucu kısa vadede yükseltebilir; ama bunun zekâ testlerine ve başka becerilere yansıdığına dair güvenilir bir kanıt yoktur (Melby-Lervåg ve Hulme, 2013; Melby-Lervåg ve ark., 2016). Bu görevi tekrar tekrar çözmenin başka becerileri geliştireceği beklenmemelidir.',

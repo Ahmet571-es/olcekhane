@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LOGIC_LEAD, LOGIC_LETTERS, LOGIC_OPTIONS, LOGIC_QUESTION } from '@/lib/instruments/logic';
 import type { LogicItem, LogicPracticeItem, LogicalReasoningTask } from '@/lib/instruments/types';
 import type { LogicTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, StatusLine, TOUCH_CLASSES, afterPaint, useKeys, countOf } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, StatusLine, TOUCH_CLASSES, useKeys } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 
@@ -209,7 +209,7 @@ export function LogicalReasoning({ task, onDone }: { task: LogicalReasoningTask;
           Her soruda iki bilgi ve bir sonuç göreceksin. Bilgileri, gerçekte öyle olmasa bile doğru kabul et ve şuna karar ver: bu bilgiler doğruysa, sonuç da kesin olarak doğru mu?
         </p>
         <p className="measure text-lg">
-          Önce {task.practice.length} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
+          Önce {numberWord(task.practice.length)} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
         </p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–2 ya da A–B tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
         <ArmedButton
@@ -232,10 +232,10 @@ export function LogicalReasoning({ task, onDone }: { task: LogicalReasoningTask;
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {practiceScore === 0
-            ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
+            ? `Alıştırmadaki ${numberWord(task.practice.length)} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
               ? 'Alıştırmadaki soruların hepsini doğru cevapladın.'
-              : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
+              : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
             ? 'Bilgileri gerçekte öyle olmasa bile doğru kabul et ve yalnızca onları kullan. Sonuç doğru olabilir ama kesin değilse “Hayır, kesin değil” seçeneğini seç. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}

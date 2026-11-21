@@ -139,13 +139,13 @@ export const empatiReport: ReportTemplate = {
       ),
       average: t(
         'Kimi zaman başkalarına, kimi zaman kendi işlerine öncelik veren',
-        'Başkalarının ihtiyaçlarını bazen ön plana aldığını, bazen de kendi işlerine ve önceliklerine yöneldiğini söylüyorsun. Birçok insan bu dengeyi kurar.',
-        'Çocuğunuz başkalarının ihtiyaçlarını bazen ön plana aldığını, bazen de kendi işlerine ve önceliklerine yöneldiğini belirtiyor. Birçok insan bu dengeyi kurar.',
+        'Başkalarının ihtiyaçlarını bazen ön plana aldığını, bazen de geri planda bıraktığını söylüyorsun. Birçok insan bu dengeyi kurar.',
+        'Çocuğunuz başkalarının ihtiyaçlarını bazen ön plana aldığını, bazen de geri planda bıraktığını belirtiyor. Birçok insan bu dengeyi kurar.',
       ),
       low: t(
         'Kendi önceliklerine odaklanan',
-        'Genel olarak başkalarının ihtiyaçlarından çok kendi işlerine ve önceliklerine odaklandığını söylüyorsun. Bu sonuç bir yargı değildir: yoğun ya da yorucu dönemlerde insanın başkalarına ayırabildiği güç azalabilir. Başkalarının bakış açısını merak edip sormak, ilişkilerinde işine yarayabilir.',
-        'Çocuğunuz genel olarak başkalarının ihtiyaçlarından çok kendi işlerine ve önceliklerine odaklandığını belirtiyor. Bu sonuç bir yargı değildir: yoğun ya da yorucu dönemlerde insanın başkalarına ayırabildiği güç azalabilir. Başkalarının bakış açısını merak edip sorması, ilişkilerinde işine yarayabilir.',
+        'Başkalarının ihtiyaçlarını ve bakış açısını gözetmeyi anlatan cümlelerin seni pek anlatmadığını söylüyorsun. Bu sonuç bir yargı değildir: yoğun ya da yorucu dönemlerde insanın başkalarına ayırabildiği güç azalabilir. Başkalarının bakış açısını merak edip sormak, ilişkilerinde işine yarayabilir.',
+        'Çocuğunuz başkalarının ihtiyaçlarını ve bakış açısını gözetmeyi anlatan cümlelerin onu pek anlatmadığını belirtiyor. Bu sonuç bir yargı değildir: yoğun ya da yorucu dönemlerde insanın başkalarına ayırabildiği güç azalabilir. Başkalarının bakış açısını merak edip sorması, ilişkilerinde işine yarayabilir.',
       ),
     },
     affective: {
