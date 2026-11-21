@@ -124,7 +124,7 @@ function Example() {
         </span>
       </div>
       <figcaption className="measure text-ink-2">
-        Solda açınımın bir parçası, sağda bu parça katlanınca küpte nasıl göründüğü. Küp eğik çizildiği için şekiller yatık görünür: artı çarpı gibi, kare
+        Solda açınımın bir parçasını, sağda bu parçanın katlanınca küpte nasıl göründüğünü görüyorsun. Küp eğik çizildiği için şekiller yatık görünür: artı çarpı gibi, kare
         baklava gibi, daire yumurta gibi görünebilir.
       </figcaption>
     </figure>

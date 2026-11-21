@@ -76,13 +76,13 @@ const task: TowerTask = {
   key: 'planlama-kule-gorevi',
   kind: 'tower',
   name: 'Kule Görevi',
-  measures: 'Topları en az hamleyle hedef düzene getirerek planlamayı ölçer.',
+  measures: 'Topları en az hamleyle hedef düzene getirme göreviyle planlamayı ölçer.',
   instructions: [
     'Alttaki tahtadaki topları, üstteki hedefle aynı düzene getireceksin.',
-    'Bir seferde yalnızca bir top taşıyabilirsin; yalnızca en üstteki top alınabilir.',
+    'Bir seferde yalnızca bir top taşıyabilirsin; yalnızca en üstteki top alınabilir. Bir topu bir çubuktan başka bir çubuğa koymak bir hamledir.',
     'Çubuklar farklı boydadır: soldaki 3, ortadaki 2, sağdaki 1 top alır.',
     'Her problemde en az kaç hamle gerektiği yazar; o kadar hamlede çözmeye çalış. Yaptığın hamle geri alınamaz; bir topu yeniden taşırsan yeni bir hamle sayılır.',
-    'Topa dokunmadan önce çözümü kafanda düşün. Her problem için 1 dakika süren var.',
+    'İlk topu almadan önce çözümü kafanda düşün. Her problem için 1 dakika süren var: süre problem ekrana gelince başlar (düşünme süren de bunun içindedir) ve dolunca problem kapanır.',
   ],
   practice: PRACTICE,
   items: ITEMS,
@@ -104,13 +104,13 @@ export const planlamaKuleGorevi: TaskInstrument = {
   adults: true,
   estimatedMinutes: 15,
   sortOrder: 49.95,
-  tagline: 'Topları en az hamleyle hedef düzene getirerek planlamayı ölçer.',
+  tagline: 'Topları en az hamleyle hedef düzene getirme göreviyle planlamayı ölçer.',
   description:
-    'Bu test, birkaç adımı başlamadan önce kafada sıraya koyabilmeyi, yani planlamayı ölçer. Üç çubuğa dizilmiş üç renkli top, en az hamleyle hedefteki düzene getirilir. 20 problem vardır; problemler 3 hamleden 7 hamleye doğru uzar. Problemler Ölçekhane tarafından özgün olarak seçilmiştir. Rapor; problemlerin kaçının en az hamlede çözüldüğünü, problemler uzadıkça sonucun nasıl değiştiğini ve başlamadan önce ne kadar düşünüldüğünü sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, birkaç adımı başlamadan önce kafada sıraya koyabilmeyi, yani planlamayı ölçer. Üç çubuğa dizilmiş kırmızı, mavi ve sarı üç top, en az hamleyle hedefteki düzene getirilir. 20 problem vardır; problemler 3 hamleden 7 hamleye doğru uzar. Problemler Ölçekhane tarafından özgün olarak seçilmiştir. Rapor; problemlerin kaçının en az hamlede çözüldüğünü, problemler uzadıkça sonucun nasıl değiştiğini ve başlamadan önce ne kadar düşünüldüğünü sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Topları hedef düzene getir',
     paragraphs: [
-      'Birazdan üç çubuk ve üç renkli top göreceksin. Alttaki tahtadaki topları, üstteki hedefle aynı düzene getireceksin; bunu en az hamleyle yapmaya çalışacaksın.',
+      'Birazdan üç çubuk ile kırmızı, mavi ve sarı üç top göreceksin. Alttaki tahtadaki topları, üstteki hedefle aynı düzene getireceksin; bunu en az hamleyle yapmaya çalışacaksın.',
       `Test ${ITEMS.length} problemden oluşur; önce ${PRACTICE.length} alıştırma problemi var. Her problem için 1 dakika süre vardır. Problemler kısadan uzuna doğru gider.`,
       'Sessiz bir yerde, dikkatini dağıtacak şeyler olmadan çözersen sonuç seni daha iyi yansıtır.',
     ],
@@ -124,7 +124,7 @@ export const planlamaKuleGorevi: TaskInstrument = {
   tasks: [task],
   science: {
     basedOn:
-      'Londra Kulesi düzeni (Shallice, 1982): üç çubuk (3, 2 ve 1 top alır) ve üç renkli top; başlangıçtaki diziliş en az hamleyle hedef dizilişe getirilir. Problemlerin en az hamle sayısına göre kısadan uzuna sıralanması, en az hamle sayısının ekranda gösterilmesi, her problem için 1 dakikalık süre ve en az hamlede çözülen problem sayısının asıl sonuç olması, bilgisayarlı Freiburg sürümündeki gibidir (Unterrainer ve ark., 2019). Problemler başka test setlerinden alınmamıştır; Ölçekhane tarafından, bu düzendeki 36 olası top dizilişi (Fimbel ve ark., 2009) arasından bilgisayarla seçilmiştir. Olası problem sayısı az olduğu için bazı problemler başka setlerdekilerle rastlantısal olarak aynı olabilir. Ticari ya da araştırma amaçlı test setlerinin puanlama kuralları ve normları kullanılmaz.',
+      'Londra Kulesi düzeni (Shallice, 1982): üç çubuk (3, 2 ve 1 top alır) ve ayrı renkte üç top; başlangıçtaki diziliş en az hamleyle hedef dizilişe getirilir. Problemlerin en az hamle sayısına göre kısadan uzuna sıralanması, en az hamle sayısının ekranda gösterilmesi, her problem için 1 dakikalık süre ve en az hamlede çözülen problem sayısının asıl sonuç olması, bilgisayarlı Freiburg sürümündeki gibidir (Unterrainer ve ark., 2019). Problemler başka test setlerinden alınmamıştır; Ölçekhane tarafından, bu düzendeki 36 olası top dizilişi (Fimbel ve ark., 2009) arasından bilgisayarla seçilmiştir. Olası problem sayısı az olduğu için bazı problemler başka setlerdekilerle rastlantısal olarak aynı olabilir. Ticari ya da araştırma amaçlı test setlerinin puanlama kuralları ve normları kullanılmaz.',
     whatItMeasures:
       'Planlamayı, yani bir hedefe ulaşmak için gereken adımları başlamadan önce kafada sıraya koyabilmeyi ölçer. Planlama, davranışı bir amaca göre düzenleyen zihinsel becerilerin (yürütücü işlevlerin) en tipik örneklerinden biri sayılır (Schumacher ve ark., 2026). Problemin en az hamle sayısı arttıkça problemler belirgin biçimde zorlaşır (Kaller ve ark., 2012; Waid-Ebbs ve ark., 2026); aynı hamle sayısındaki problemlerin zorluğu da hedef dizilişin biçimine ve en kısa çözüm yollarının sayısına göre değişebilir (Berg ve ark., 2010; Kaller ve ark., 2011). Bu yüzden her hamle sayısında farklı biçimlerde dört problem vardır. Bazı problemler (bu testteki ilk problem gibi) her topu doğrudan yerine taşıyarak çözülebilir; bazılarında ise bir topun önce geçici bir yere konması gerekir ve bu, ileriyi düşünmeyi gerektirir (Kaller ve ark., 2008). Asıl sonuç, en az hamlede çözülen problemlerin sayısıdır; bu sonuç, görevin süre ölçülerinden daha güvenilir bulunmuştur (Schumacher ve ark., 2026). Rapor ayrıca taşınan ilk topa dokunmadan önce geçen süreyi ve hedefe ulaşılan problemlerde bu sürenin bütün çözüm süresi içindeki payını (başlamadan önce düşünme payı; bir araştırmada önerilen adıyla ön planlama payı) anlatır; bu pay, en az hamlede çözülen problem sayısıyla olumlu yönde ilişkili ve tekrar ölçümlerde düşünme süresinden daha kararlı bulunmuştur (Schumacher ve ark., 2026). Başlamadan önce tam plan yapmanın söylendiği bir çalışmada daha çok problem çözülmüş (Unterrainer ve ark., 2003), başka bir çalışmada bu fark görülmemiştir; aynı çalışmada çoğu kişinin iki ara adımı kafada doğru planlayabildiği, üçüncüde zorlandığı görülmüştür (Phillips ve ark., 2001). Planlama ergenlik boyunca gelişmeyi sürdürür: kolay problemlerde 17 yaş dolayında yetişkin düzeyine ulaşılırken en zor problemlerde 20’li yaşların başına kadar ilerleme görülmüştür (Albert ve Steinberg, 2011). 9–20 yaş arasındakilerle yapılan bir çalışmada doğru çözümler 15–17 yaşa kadar artmış ve çalışma belleğiyle ilişkili bulunmuştur (Luciana ve ark., 2009); 4–8 yaş arasındaki çocuklarda sonuçlar bir akıl yürütme testiyle orta düzeyde ilişkili bulunmuştur (Malloy-Diniz ve ark., 2008). 40–80 yaş arasındaki yetişkinlerde bu tür bir görevdeki sonuçlar yaş ilerledikçe düşmüş ve eğitim düzeyiyle ilişkili bulunmuştur (Unterrainer ve ark., 2019).',
     turkishVersion: 'Özgün test. Problemler, yönergeler ve rapor Türkçe olarak hazırlanmıştır.',

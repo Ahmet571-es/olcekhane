@@ -133,7 +133,7 @@ const MEASURES: Record<ArithOp, string> = {
   div: 'Bölme işlemlerini zihinden, doğru ve hızlı yapabilmeyi ölçer.',
 };
 
-/** "toplama" → "Ekranda bir toplama işlemi göreceksin." */
+/** "toplama" → "Ekrana toplama işlemleri tek tek gelecek." */
 const NOUN: Record<ArithOp, string> = { add: 'toplama', sub: 'çıkarma', mul: 'çarpma', div: 'bölme' };
 
 function task(op: ArithOp): MentalArithmeticTask {
@@ -143,7 +143,7 @@ function task(op: ArithOp): MentalArithmeticTask {
     name: ARITH_NAME[op],
     measures: MEASURES[op],
     instructions: [
-      `Ekranda bir ${NOUN[op]} işlemi göreceksin. Sonucu zihninden bul, tuşlarla yaz ve “Tamam” düğmesine bas.`,
+      `Ekrana ${NOUN[op]} işlemleri tek tek gelecek. Her birinin sonucunu zihinden bul, tuşlarla yaz ve “Tamam” düğmesine bas.`,
       `İşlemler kolaydan zora gider. ${DURATION_MS / 1000} saniye boyunca yapabildiğin kadar işlem yap; olabildiğince hızlı ama dikkatli çalış. Bütün işlemleri bitirmen beklenmez.`,
       'Yapamadığın bir işlemde “Geç” diyebilirsin. Kâğıt, kalem ya da hesap makinesi kullanma. Önce iki alıştırma işlemi yapacaksın.',
     ],
@@ -177,17 +177,17 @@ export const zihindenHesaplama: TaskInstrument = {
   sortOrder: 49.82,
   tagline: 'Dört işlemi zihinden ne kadar doğru ve hızlı yapabildiğini ölçer: toplama, çıkarma, çarpma ve bölme.',
   description:
-    'Bu test aritmetik akıcılığı, yani dört işlemi zihinden doğru ve hızlı yapabilmeyi ölçer. Toplama, çıkarma, çarpma ve bölme için 60’ar saniyelik dört bölüm vardır. İşlemler kolaydan zora gider: tek basamaklı işlemler ve çarpım tablosuyla başlar, iki basamaklı sayılarla eldeli ve onluk bozmalı işlemlerle sürer. Cevaplar tuşlarla yazılır; test yaklaşık 8 dakika sürer. Rapor, her işlemde 60 saniyede kaç işlemin doğru yapıldığını ve hangi düzeye gelindiğini anlatır. Yanlışların türünü (ör. eldeyi atlamak) ve temel işlemlerde doğru cevap başına süreyi de sade bir dille açıklar. İşlemler Ölçekhane tarafından özgün olarak hazırlanmıştır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test aritmetik akıcılığı, yani dört işlemi zihinden doğru ve hızlı yapabilmeyi ölçer. Toplama, çıkarma, çarpma ve bölme için 60’ar saniyelik dört bölüm vardır. İşlemler kolaydan zora gider: tek basamaklı işlemler ve çarpım tablosuyla başlar, iki basamaklı sayılarla eldeli ve onluk bozmalı işlemlerle sürer. Cevaplar tuşlarla yazılır; test yaklaşık 8 dakika sürer. Rapor, dört bölümün her birinde 60 saniyede kaç işlemin doğru yapıldığını ve hangi düzeye gelindiğini anlatır. Yanlışların türünü (ör. eldeyi atlamak) ve temel işlemlerde doğru cevap başına süreyi de sade bir dille açıklar. İşlemler Ölçekhane tarafından özgün olarak hazırlanmıştır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Zihinden hesapla',
     paragraphs: [
       'Birazdan dört kısa bölümde toplama, çıkarma, çarpma ve bölme işlemleri göreceksin. Her bölüm 60 saniye sürer.',
-      'İşlemler kolaydan zora gider; herkesin bütün işlemleri bitirmesi beklenmez. Olabildiğince hızlı ama dikkatli çalış: yanlış yazmaktansa bir an düşünmek daha iyidir.',
+      'İşlemler kolaydan zora gider; kimseden bütün işlemleri bitirmesi beklenmez. Olabildiğince hızlı ama dikkatli çalış: yanlış yazmaktansa bir an düşünmek daha iyidir.',
       'Kâğıt, kalem ve hesap makinesi kullanma. Sessiz bir yerde, dikkatini dağıtacak bir şey olmadan çözersen sonuç seni daha iyi yansıtır.',
     ],
   },
   scales: [
-    { key: 'zh_genel', name: 'Dört işlemde doğru cevaplar', plain: 'Her işlemin 60 saniyelik bölümünde doğru yapılan işlem sayısı.' },
+    { key: 'zh_genel', name: 'Dört işlemde doğru cevaplar', plain: 'Dört bölümün (toplama, çıkarma, çarpma, bölme) her birinde 60 saniyede doğru yapılan işlem sayısı.' },
     { key: 'zh_toplama', name: 'Toplama', plain: '60 saniyede doğru yapılan toplama işlemleri ve ulaşılan düzey.' },
     { key: 'zh_cikarma', name: 'Çıkarma', plain: '60 saniyede doğru yapılan çıkarma işlemleri ve ulaşılan düzey.' },
     { key: 'zh_carpma', name: 'Çarpma', plain: '60 saniyede doğru yapılan çarpma işlemleri ve ulaşılan düzey.' },
@@ -210,9 +210,9 @@ export const zihindenHesaplama: TaskInstrument = {
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Her işlemin sonucu ve her düzeyin kuralı, işlemlerin sayılarından bağımsızca yeniden hesaplanarak denetlenir.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan anlatılır: her işlemde doğru yapılan işlem sayısı, ulaşılan düzey, yanlışların türü ve temel işlemlerde doğru cevap başına süre. Zekâ puanı (IQ) verilmez. Bir araştırmada büyük çocuklar küçüklerden daha çok işlemi doğru ve daha hızlı yaptı. Bölmedeki doğruluk, araştırmadaki en büyük çocuklarda bile öteki işlemlerden düşüktü (Gliksman ve ark., 2022). Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelebilir.',
+      'Türkiye normu yok; sonuçlar akranlarla karşılaştırılmadan anlatılır: her bölümde doğru yapılan işlem sayısı, ulaşılan düzey, yanlışların türü ve temel işlemlerde doğru cevap başına süre. Zekâ puanı (IQ) verilmez. Bir araştırmada büyük çocuklar küçüklerden daha çok işlemi doğru ve daha hızlı yaptı. Bölmedeki doğruluk, araştırmadaki en büyük çocuklarda bile öteki işlemlerden düşüktü (Gliksman ve ark., 2022). Bu yüzden aynı sonuç farklı yaşlarda farklı anlama gelebilir.',
     ageNote:
-      '4. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Çarpım tablosu 3. sınıfta 10’a kadar (10 dâhil) oluşturulur (Millî Eğitim Bakanlığı, 2026). Her bölüm 60 saniye sürer. Süreye cevabı tuşlarla yazmak da dahildir; tuş takımına ya da klavyeye alışkın olmak süreyi biraz etkileyebilir.',
+      '4. sınıftan itibaren uygulanır; yetişkinler de çözebilir. Çarpım tablosu 3. sınıfta 10’a kadar (10 dâhil) oluşturulur (Millî Eğitim Bakanlığı, 2026). Her bölüm 60 saniye sürer. Süreye cevabı tuşlarla yazmak da dâhildir; tuş takımına ya da klavyeye alışkın olmak süreyi biraz etkileyebilir.',
     license: 'Özgün test. İşlemler, puanlama ve rapor Ölçekhane tarafından geliştirilmiştir.',
     limitations: [
       'Zekâ puanı (IQ) vermez ve tanı koymaz; matematik bilgisinin ya da problem çözmenin tamamını ölçmez.',

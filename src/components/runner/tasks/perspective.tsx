@@ -461,11 +461,11 @@ export function Perspective({ task, onDone }: { task: PerspectiveTask; onDone: (
           <figcaption className="measure text-ink-2">
             Örnek: {questionText(objects, ex)} Kendini {objects[ex.at].gen} yanında, yüzün {objects[ex.facing].dat} dönük hayal edersen{' '}
             {objects[ex.target].name.toLocaleLowerCase('tr-TR')} {sectorWords(correctAngle(objects, ex))} kalır. Çemberin ortası durduğun yer, yukarıdaki ok
-            baktığın nesnedir; yeşil ok {objects[ex.target].gen} yönünü gösterir.
+            baktığın nesnenin yönüdür; yeşil ok {objects[ex.target].gen} yönünü gösterir.
           </figcaption>
         </figure>
         <p className="measure text-lg">
-          Çembere dokunarak ya da oku sürükleyerek yönü göster; emin olunca “Cevabı ver” düğmesine bas. Harita hiç dönmez: ekranı, telefonu ya da başını
+          Çembere dokunarak (bilgisayarda tıklayarak) yönü göster, çıkan oku sürükleyerek düzelt; emin olunca “Cevabı ver” düğmesine bas. Harita hiç dönmez: ekranı, telefonu ya da başını
           çevirmeden yalnızca zihninde dön. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim; alıştırmalarda doğru yönü göreceksin.
         </p>
         <p className="measure text-ink-2">Bilgisayarda oku ← ve → tuşlarıyla (Shift tuşuyla birlikte daha ince) çevirip Enter tuşuyla cevap verebilirsin.</p>
@@ -494,10 +494,10 @@ export function Perspective({ task, onDone }: { task: PerspectiveTask; onDone: (
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun hepsinde okun doğru yöne çok yakındı.`
               : `Alıştırmadaki ${countWord(task.practice.length)} sorunun ${practiceScore === 1 ? 'birinde' : `${countWord(practiceScore)} tanesinde`} okun doğru yöne çok yakındı (en çok ${PA_CLOSE} derece uzakta).`}{' '}
           {low
-            ? 'Kendini durduğun nesnenin yanına koy ve yüzünü bakılan nesneye çevir: çemberin yukarısı her zaman o nesnedir, haritanın yukarısı değil. Sonra hedefin önünde mi arkanda mı, sağında mı solunda mı kaldığını düşün. Baktığın nesne haritada aşağıdaysa senin sağın ekranın soluna düşer. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık doğru yönü görmeyeceksin.'}
+            ? 'Kendini durduğun nesnenin yanına koy ve yüzünü baktığın nesneye çevir: çemberin yukarısı her zaman o nesnedir, haritanın yukarısı değil. Sonra üçüncü nesnenin önünde mi arkanda mı, sağında mı solunda mı kaldığını düşün. Baktığın nesne haritada aşağıdaysa senin sağın ekranın soluna düşer. İstersen alıştırmayı tekrarlayabilirsin.'
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
-        <p className="measure text-ink-2">Test {task.items.length} sorudan oluşur. Süre sınırı yok; emin olamadığında sana en doğru gelen yönü göster.</p>
+        <p className="measure text-ink-2">Asıl sorularda artık doğru yönü görmeyeceksin. Test {task.items.length} sorudan oluşur. Süre sınırı yok; emin olamadığında sana en doğru gelen yönü göster.</p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton
             className={`btn btn-lg ${low ? 'btn-primary' : 'btn-secondary'}`}
@@ -562,7 +562,7 @@ export function Perspective({ task, onDone }: { task: PerspectiveTask; onDone: (
               <p className="measure mx-auto text-center text-lg">
                 {Math.round(fb.error) === 0
                   ? 'Turuncu ok senin gösterdiğin yön: tam doğru yönde.'
-                  : `Turuncu ok senin gösterdiğin yön: doğru yönden ${Math.round(fb.error)} derece uzakta.`}{' '}
+                  : `Ucunda “${target.name}” yazan yeşil ok doğru yön; turuncu ok senin gösterdiğin yön: doğru yönden ${Math.round(fb.error)} derece uzakta.`}{' '}
                 {explainText(objects, item)}
               </p>
               <div className="flex justify-center">
@@ -574,7 +574,7 @@ export function Perspective({ task, onDone }: { task: PerspectiveTask; onDone: (
           ) : (
             <>
               <p className="text-center text-ink-2" aria-live="polite">
-                {value === null ? 'Çembere dokun ya da oku sürükle.' : 'Emin olunca cevabı ver.'}
+                {value === null ? 'Yönü göstermek için çembere dokun.' : 'Oku sürükleyerek düzeltebilirsin. Emin olunca cevabı ver.'}
               </p>
               <button type="button" data-cevap className="btn btn-primary btn-lg min-w-[12rem]" disabled={value === null} onClick={(e) => confirm(e.timeStamp)}>
                 Cevabı ver

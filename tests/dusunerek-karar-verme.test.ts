@@ -199,8 +199,13 @@ describe('Düşünerek karar verme: sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '2fde7667dcfd6587';
+/**
+ * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-11-21'de (dil ve mantık
+ * denetimi) yalnızca dil değişti, sürüm 1 kaldı: asansör sorusunun şıkları soruyla aynı ekle yazıldı ("60 saniyede"), yosun
+ * sorusunun kipi durumla eşitlendi ("kaplar?") ve birinci alıştırma asıl sorulardan birine benzemesin diye değişti (elma →
+ * bilye). Cevap anahtarı aynı.
+ */
+const SORU_IZI = '09afda7fd2ae067b';
 
 describe('Düşünerek karar verme: puanlama', () => {
   const score = (pick?: (q: ReflectionCell) => { response: number; rtMs: number | null }) => scoreReflection(task, trialsOf(reflectionBody(pick))).result;
@@ -629,7 +634,7 @@ describe('Düşünerek karar verme: rapor', () => {
     expect(dusunerekKararVerme.science.citations.every((c) => c.url?.startsWith('https://doi.org/'))).toBe(true);
     const body = JSON.stringify({ ...dusunerekKararVerme.science, citations: [] });
     for (const a of [
-      'Bialek ve Pennycook, 2018',
+      'Białek ve Pennycook, 2018',
       'De Neys, Rossi ve Houdé, 2013',
       'Pennycook ve ark., 2016',
       'Sirota ve ark., 2021',

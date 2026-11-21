@@ -158,12 +158,16 @@ describe('Sayısal akıl yürütme: sorular', () => {
       .update(JSON.stringify({ items: task.items, practice: task.practice, answers: task.answers, kinds: task.kinds, ratios: task.ratios, lures: task.lures }))
       .digest('hex')
       .slice(0, 16);
-    expect({ version: sayisalAkilYurutme.version, hash }).toEqual({ version: 1, hash: SORU_IZI });
+    expect({ version: sayisalAkilYurutme.version, hash }).toEqual({ version: 2, hash: SORU_IZI });
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '5a3986511bee7610';
+/**
+ * Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. Sürüm 2 (2026-11-21, dil ve mantık
+ * denetimi): kumbara sorusunda "9 hafta sonra" baştan mı, üçüncü haftadan mı sayılacağı belli değildi ("3. haftanın sonunda"
+ * … "9. haftanın sonunda" oldu). Cevap anahtarı aynı.
+ */
+const SORU_IZI = 'a4563fc230d922da';
 
 describe('Sayısal akıl yürütme: puanlama', () => {
   const score = (pick?: (q: NumericCell) => { response: number | null; rtMs: number | null }) => scoreNumeric(task, trialsOf(numericBody(pick))).result;

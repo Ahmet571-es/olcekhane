@@ -361,8 +361,12 @@ describe('Küp açınımı: sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '1a83e7b509f4ca41';
+/**
+ * Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-11-21'de (dil ve mantık
+ * denetimi) yalnızca ikinci alıştırmanın açıklamasının dili değişti ("Açınım katlanınca da ok yeşil kareyi gösterir"); sürüm
+ * 2 kaldı.
+ */
+const SORU_IZI = 'f0dac06d57c7c0df';
 
 describe('Küp açınımı: puanlama', () => {
   const all = (fn: (i: number) => Partial<CubeTrialInput> = () => ({})): CubeTrialInput[] =>
@@ -746,18 +750,20 @@ describe('Küp açınımı: rapor', () => {
     expect(publicInstruments().some((i) => i.slug === SLUG)).toBe(true);
     expect(sitemap().some((u) => u.url.endsWith(`/testler/${SLUG}`))).toBe(true);
     expect(kupAcinimi.name.toLocaleLowerCase('tr-TR')).not.toContain('tanı');
-    expect(kupAcinimi.science.citations.every((c) => c.url?.startsWith('https://doi.org/'))).toBe(true);
+    // Araştırma kaynakları DOI bağlantılıdır; öğretim programı Millî Eğitim Bakanlığının kendi sayfasından gösterilir.
+    expect(kupAcinimi.science.citations.every((c) => c.url?.startsWith('https://doi.org/') || c.url?.startsWith('https://tymm.meb.gov.tr/'))).toBe(true);
     const body = JSON.stringify({ ...kupAcinimi.science, citations: [] });
     for (const a of [
       'Dahm ve Sachse, 2025',
       'Harris ve ark., 2013',
       'Hilton ve ark., 2022',
       'Hodgkiss ve ark., 2018',
+      'Millî Eğitim Bakanlığı, 2026',
       'Pawlak-Jakubowska ve Terczyńska, 2023',
       'Shepard ve Feng, 1972',
     ])
       expect(body, a).toContain(a);
-    expect(kupAcinimi.science.citations.map((c) => c.text.split(',')[0])).toEqual(['Dahm', 'Harris', 'Hilton', 'Hodgkiss', 'Pawlak-Jakubowska', 'Shepard']);
+    expect(kupAcinimi.science.citations.map((c) => c.text.split(/[,.]/)[0])).toEqual(['Dahm', 'Harris', 'Hilton', 'Hodgkiss', 'Millî Eğitim Bakanlığı', 'Pawlak-Jakubowska', 'Shepard']);
     // Yol haritasının kaynakları sitede kullanılan, künyesi doğrulanmış kaynaklardır.
     expect(TASK_ROADMAPS[SLUG].sources.every((s) => s.url?.startsWith('https://doi.org/'))).toBe(true);
   });

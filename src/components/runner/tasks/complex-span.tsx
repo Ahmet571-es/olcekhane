@@ -20,6 +20,8 @@ const GAP_MS = 250;
 const OK_MS = 700;
 /** İşlem alıştırmasında bundan az doğru yapılırsa alıştırmayı yinelemek önerilir (15 işlemde 12, yani %80). */
 const OPS_RETRY_BELOW = 0.8;
+/** İşlemlerde istenen en az doğruluk, yüzde (puanlamadaki `CS_OPS_TARGET` ve yönergedeki "%85" ile aynı). */
+const OPS_TARGET_PCT = 85;
 
 interface SetData {
   letters: number[];
@@ -40,8 +42,8 @@ const INTRO: Record<Phase, { title: string; text: string[]; cta: string }> = {
   letters: {
     title: 'Alıştırma 1: Harfleri hatırla',
     text: [
-      'Önce yalnızca harflerle kısa bir alıştırma yapalım. Harfler ekranda tek tek görünecek.',
-      'Hepsi bitince harfleri gösterildikleri sırayla seç. Hatırlayamadığın bir harfin yerine BOŞ düğmesine bas; böylece öteki harfler yerinde kalır. Yanlış seçersen SİL ile son harfi silebilirsin.',
+      'Önce yalnızca harflerle kısa bir alıştırma yapalım. Harfler ekranda tek tek, kısa bir süre görünecek.',
+      'Hepsi bitince harfleri gösterildikleri sırayla seç ve TAMAM düğmesine bas. Hatırlayamadığın bir harfin yerine BOŞ düğmesine bas; böylece öteki harfler yerinde kalır. Yanlış seçersen SİL ile son harfi silebilirsin.',
     ],
     cta: 'Alıştırmaya başla',
   },
@@ -64,7 +66,7 @@ const INTRO: Record<Phase, { title: string; text: string[]; cta: string }> = {
   test: {
     title: 'Asıl bölüm',
     text: [
-      'Alıştırmalar bitti. Şimdi asıl bölüm başlıyor. Diziler 3 ile 7 harf arasında ve karışık sırada gelecek; dizinin ne zaman biteceğini bilemezsin.',
+      'Alıştırmalar bitti. Şimdi asıl bölüm başlıyor. Dizilerde 3 ile 7 arasında harf olacak; kısa ve uzun diziler karışık sırada gelecek, bu yüzden dizinin ne zaman biteceğini bilemezsin.',
       'İki işe de özen göster: işlemlerin en az %85’ini doğru yapmaya ve harfleri sırasıyla hatırlamaya çalış. Her dizinin sonunda kısa bir sonuç göreceksin; istersen orada biraz dinlenebilirsin.',
     ],
     cta: 'Asıl bölüme başla',
@@ -362,7 +364,7 @@ export function ComplexSpan({ task, onDone }: { task: ComplexSpanTask; onDone: (
         ))}
         {(phase === 'ops' || phase === 'combo') && <p className="measure text-ink-2">Klavyen varsa D tuşu DOĞRU, Y tuşu YANLIŞ demektir.</p>}
         {phase === 'letters' && (
-          <p className="measure text-ink-2">Klavyen varsa harfleri klavyeden de yazabilirsin; boşluk tuşu BOŞ, silme tuşu SİL, giriş tuşu TAMAM demektir.</p>
+          <p className="measure text-ink-2">Klavyen varsa harfleri klavyeden de yazabilirsin; boşluk tuşu BOŞ, silme tuşu SİL, Enter tuşu TAMAM demektir.</p>
         )}
         <div>
           <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={begin}>
@@ -383,13 +385,13 @@ export function ComplexSpan({ task, onDone }: { task: ComplexSpanTask; onDone: (
           {opsScore === 0
             ? `${n} işlemin hiçbirini doğru cevaplayamadın.`
             : `${n} işlemin ${opsScore === n ? 'hepsini' : opsScore === 1 ? 'birini' : `${opsScore} tanesini`} doğru cevapladın.`}
-          {low ? ' İşlemlerde biraz zorlandın; istersen alıştırmayı yinele. Önce çarpmayı, sonra toplamayı ya da çıkarmayı yapmayı unutma.' : ''}
+          {low ? ' İşlemlerde biraz zorlandın; istersen alıştırmayı tekrarlayabilirsin. Önce çarpmayı, sonra toplamayı ya da çıkarmayı yapmayı unutma.' : ''}
         </p>
         <p className="measure text-lg">Bundan sonra her işlem için bir süre olacak. Süre dolarsa işlem yanlış sayılır ve harfe geçilir.</p>
         <div className="flex flex-wrap justify-center gap-3">
           {low && (
             <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={begin}>
-              Alıştırmayı yinele
+              Alıştırmayı tekrarla
             </ArmedButton>
           )}
           <ArmedButton
@@ -426,7 +428,8 @@ export function ComplexSpan({ task, onDone }: { task: ComplexSpanTask; onDone: (
 
   if (step === 'setFeedback' && feedback) {
     const practice = phase !== 'test';
-    const sofar = totals.current.n ? totals.current.correct / totals.current.n : null;
+    // Yüzde aşağı yuvarlanır ve uyarı aynı sayıya bakar: 11/13 (%84,6) "%85" diye yazılıp ardından "en az %85" denmesin.
+    const sofar = totals.current.n ? Math.floor((totals.current.correct * 100) / totals.current.n) : null;
     const last = idx + 1 >= count;
     return (
       <div className="flex flex-col items-center gap-5 text-center" aria-live="polite">
@@ -444,9 +447,9 @@ export function ComplexSpan({ task, onDone }: { task: ComplexSpanTask; onDone: (
           </p>
         )}
         {sofar !== null && (
-          <p className={`measure text-lg ${sofar < 0.85 ? 'font-bold' : 'text-ink-2'}`}>
-            {sofar === 1 ? 'Şu ana kadar işlemlerin hepsini doğru yaptın.' : `Şu ana kadar doğru yaptığın işlemler: %${Math.round(sofar * 100)}.`}
-            {sofar < 0.85 ? ' İşlemlere de özen göster: en az %85’ini doğru yapmaya çalış.' : ''}
+          <p className={`measure text-lg ${sofar < OPS_TARGET_PCT ? 'font-bold' : 'text-ink-2'}`}>
+            {sofar === 100 ? 'Şu ana kadar işlemlerin hepsini doğru yaptın.' : `Şu ana kadar doğru yaptığın işlemler: %${sofar}.`}
+            {sofar < OPS_TARGET_PCT ? ` İşlemlere de özen göster: en az %${OPS_TARGET_PCT}’ini doğru yapmaya çalış.` : ''}
           </p>
         )}
         <ArmedButton className="btn btn-primary btn-lg" autoFocus delayMs={700} onClick={nextSet}>

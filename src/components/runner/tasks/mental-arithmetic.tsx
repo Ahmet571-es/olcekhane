@@ -206,11 +206,11 @@ export function MentalArithmetic({ task, onDone }: { task: MentalArithmeticTask;
             : practiceScore === 0
               ? 'Alıştırmadaki işlemlerin ikisi de doğru olmadı.'
               : 'Alıştırmadaki işlemlerin birini doğru yaptın.'}{' '}
-          {low ? 'İstersen alıştırmayı tekrarlayabilirsin.' : 'Şimdi asıl bölüm başlıyor; artık cevabının doğru olup olmadığını görmeyeceksin.'}
+          {low ? 'İstersen alıştırmayı tekrarlayabilirsin.' : 'Şimdi asıl bölüm başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {seconds} saniye boyunca yapabildiğin kadar işlem yap. İşlemler kolaydan zora gider; bütün işlemleri bitirmen beklenmez. Olabildiğince hızlı ama dikkatli çalış.
-          Kalan süre üstteki çubukta görünür.
+          Asıl bölümde artık cevabının doğru olup olmadığını görmeyeceksin. {seconds} saniye boyunca yapabildiğin kadar işlem yap. İşlemler kolaydan zora gider; bütün işlemleri bitirmen beklenmez. Olabildiğince hızlı ama dikkatli çalış.
+          “Başla” düğmesine basınca süre başlar; kalan süre üstteki çubukta görünür. Süre dolunca bölüm kendiliğinden biter ve o an ekranda olan işlem sayılmaz.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

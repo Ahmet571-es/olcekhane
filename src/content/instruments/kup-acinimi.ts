@@ -198,7 +198,7 @@ const PRACTICE_SPECS: (Spec & { explain: string })[] = [
     faces: 'arrow:blue circle:orange square:teal ring:purple plus:amber four:rose',
     options: [{ top: 4, left: 0, change: 'turn:left:2' }, { top: 4, left: 0, change: 'opp:top:left' }, { top: 4, left: 0 }, { top: 4, left: 0, change: 'swap:left-right' }],
     explain:
-      'Açınımda mavi ok, sağındaki yeşil kareyi gösteriyor. Küp katlanınca da ok yeşil kareye doğru bakar; A’da ok ters yöne baktığı için o küp bu açınımdan olamaz. B’de mor halka ile mavi ok birlikte görünüyor ama bunlar karşılıklı yüzlerdir. D’de ok ile yeşil kare yer değiştirmiş: köşedeki sıra ters.',
+      'Açınımda mavi ok, sağındaki yeşil kareyi gösteriyor. Açınım katlanınca da ok yeşil kareyi gösterir; A’da ok ters yöne baktığı için o küp bu açınımdan olamaz. B’de mor halka ile mavi ok birlikte görünüyor ama bunlar karşılıklı yüzlerdir. D’de ok ile yeşil kare yer değiştirmiş: köşedeki sıra ters.',
   },
 ];
 
@@ -215,7 +215,7 @@ const task: CubeNetTask = {
     'Her soruda bir küpün açınımını ve dört küp göreceksin.',
     'Açınımı zihninde katla: dört küpten hangisi bu açınımdan oluşabilir? Açınım, şekiller küpün dışında kalacak biçimde katlanır.',
     'Küp eğik çizildiği için yüzlerdeki şekiller yatık görünür: artı çarpı gibi, kare baklava gibi, daire yumurta gibi görünebilir.',
-    'Yüzlerin yerine ve şekillerin yönüne dikkat et. Kâğıt ya da kalem kullanmadan, zihninde çöz.',
+    'Yüzlerin yerine ve şekillerin yönüne dikkat et; doğru küpü seç ve “Cevabı ver” düğmesine bas. Kâğıt ya da kalem kullanmadan, zihninde çöz.',
   ],
   practice: PRACTICE,
   items: SPECS.map(build),
@@ -266,7 +266,7 @@ export const kupAcinimi: TaskInstrument = {
     basedOn:
       'Zihinde katlama araştırmalarında kullanılan küp açınımı soruları (Shepard ve Feng, 1972; aktaran Hilton ve ark., 2022) ve açınımla küpün eşleştirildiği uzamsal görselleştirme soruları (Pawlak-Jakubowska ve Terczyńska, 2023). Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır; ticari ya da araştırma amaçlı test setlerinin soruları, puanlama kuralları ya da normları kullanılmaz.',
     whatItMeasures:
-      'Düz bir açınımı zihinde katlayıp oluşan küpün nasıl görüneceğini bulabilmeyi ölçer. Zihinde katlamanın zorluğu, her katlamada taşınması gereken kare sayısıyla artar (Shepard ve Feng, 1972; aktaran Hilton ve ark., 2022): yetişkinlerle yapılan bir çalışmada, açınımdaki iki işaretli kenarın küp katlanınca birleşip birleşmeyeceğine ekranda zihinden karar verilen sorular üç katlamada ortalama 4, beş katlamada ortalama 7,5 saniyede cevaplanmıştır (Dahm ve Sachse, 2025); katlama sayısı arttıkça doğru cevapların da azaldığı bilinmektedir (Shepard ve Feng, 1972; aktaran Dahm ve Sachse, 2025). Basit şekilleri zihinde katlama 5,5 yaş dolaylarında görülmeye başlar ve kişiler arasında büyük farklar vardır (Harris ve ark., 2013). 7–11 yaşındaki çocuklarla yapılan bir çalışmada zihinde katlama, yaş ve sözel beceri hesaba katıldıktan sonra da fen başarısıyla ilişkili bulunmuştur (Hodgkiss ve ark., 2018). Üniversite öğrencileriyle yapılan bir çalışmada açınımla küpün eşleştirildiği 16 soruluk bir testte soruların ortalama %55’i doğru cevaplanmıştır (Pawlak-Jakubowska ve Terczyńska, 2023). Türkiye’de geometrik cisimlerin açınımları ve karşılıklı yüzler arasındaki ilişki 4. sınıf matematik öğretim programında yer alır.',
+      'Düz bir açınımı zihinde katlayıp oluşan küpün nasıl görüneceğini bulabilmeyi ölçer. Zihinde katlamanın zorluğu, her katlamada taşınması gereken kare sayısıyla artar (Shepard ve Feng, 1972; aktaran Hilton ve ark., 2022): yetişkinlerle yapılan bir çalışmada, açınımdaki iki işaretli kenarın açınım katlanınca birleşip birleşmeyeceğine ekranda zihinden karar verilen sorular üç katlamada ortalama 4, beş katlamada ortalama 7,5 saniyede cevaplanmıştır (Dahm ve Sachse, 2025); katlama sayısı arttıkça doğru cevapların da azaldığı bilinmektedir (Shepard ve Feng, 1972; aktaran Dahm ve Sachse, 2025). Basit şekilleri zihinde katlama 5,5 yaş dolaylarında görülmeye başlar ve kişiler arasında büyük farklar vardır (Harris ve ark., 2013). 7–11 yaşındaki çocuklarla yapılan bir çalışmada zihinde katlama, yaş ve sözel beceri hesaba katıldıktan sonra da fen başarısıyla ilişkili bulunmuştur (Hodgkiss ve ark., 2018). Üniversite öğrencileriyle yapılan bir çalışmada açınımla küpün eşleştirildiği 16 soruluk bir testte soruların ortalama %55’i doğru cevaplanmıştır (Pawlak-Jakubowska ve Terczyńska, 2023). Türkiye’de geometrik cisimlerin açınımları ve karşılıklı yüzler arasındaki ilişki 4. sınıf matematik öğretim programında yer alır (Millî Eğitim Bakanlığı, 2026).',
     turkishVersion: 'Özgün test. Sorular ve yönergeler Türkçe olarak yazılmıştır.',
     reliability:
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Her sorunun doğru seçeneği, açınım kâğıt gibi katlanarak bağımsız ikinci bir hesapla yeniden bulunmuş; yanlış seçeneklerin hiçbirinin bu açınımdan oluşan küpün bir görünüşü olmadığı doğrulanmıştır.',
@@ -299,6 +299,10 @@ export const kupAcinimi: TaskInstrument = {
       {
         text: 'Hodgkiss, A., Gilligan, K. A., Tolmie, A. K., Thomas, M. S. C. ve Farran, E. K. (2018). Spatial cognition and science achievement: The contribution of intrinsic and extrinsic spatial skills from 7 to 11 years. British Journal of Educational Psychology, 88(4), 675–697.',
         url: 'https://doi.org/10.1111/bjep.12211',
+      },
+      {
+        text: 'Millî Eğitim Bakanlığı. (2026). İlkokul matematik dersi 4. sınıf, 4. tema: Nesnelerin geometrisi (1). Türkiye Yüzyılı Maarif Modeli.',
+        url: 'https://tymm.meb.gov.tr/ilkokul-matematik-dersi/unite/301',
       },
       {
         text: 'Pawlak-Jakubowska, A. ve Terczyńska, E. (2023). Evaluation of STEM students’ spatial abilities based on a novel net cube imagination test. Scientific Reports, 13, Article 17296.',

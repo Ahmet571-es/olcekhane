@@ -125,7 +125,12 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   dururum"; test denetler); madde girişin tanıdığı herkese uyar ("telefonum" değil "telefon"); tırnak içindeki cümle büyük harfle
   başlar; mantık sorusunda gönderim açıktır ("üstünde" değil "o şişenin üstünde") ve uydurma adlar gerçek bir sözcüğe benzemez;
   açıklama, verilmeyen bilgiyi eklemez ("bazı" → "yalnızca bazı" olmaz). Alıştırma sonu ekranı, asıl bölümde cevabın
-  gösterilmeyeceğini alıştırma puanı düşükken de söyler. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
+  gösterilmeyeceğini alıştırma puanı düşükken de söyler. Süreli görevde yönerge sürenin ne zaman başladığını ve dolunca ne
+  olduğunu da söyler (ör. "süre problem ekrana gelince başlar, dolunca problem kapanır"); yönergedeki örnek, testteki bir
+  sorunun ya da işlemin cevabını ele vermez (çarpanların sırası değişse de; test denetler); ekranda gösterilen yüzde ile
+  ona bağlı uyarı aynı sayıya bakar (yuvarlama uyarıyla çelişmesin); ayna görüntüsü aranan görevde döndürmeye "çevirmek"
+  denmez; iki ok ya da iki işaret yalnızca renkle ayırt ettirilmez. Soru ile şıklar aynı eki taşır ("kaç saniyede?" +
+  "60 saniyede"); alıştırma sonucunda "1 tanesini" değil "birini" yazılır (`countOf`). Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
   ayrılık nedeniyle `KNOWN_DIFFERENT`'a yazılır; Çocuk Kişilik Profili yaşa göre uyarladığı için dışındadır); maddeyi alıntılayan
   yorumlar da eşitlenir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır

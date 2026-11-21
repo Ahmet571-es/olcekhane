@@ -286,7 +286,7 @@ export function Tower({ task, onDone }: { task: TowerTask; onDone: (trials: Towe
           <Board state={task.practice[0].start} />
         </div>
         <p className="measure text-lg">
-          Üç çubuk var: soldaki 3, ortadaki 2, sağdaki 1 top alır. Bir topu almak için çubuğuna, koymak için başka bir çubuğa dokun. Bir seferde yalnızca en
+          Üç çubuk var: soldaki 3, ortadaki 2, sağdaki 1 top alır. Bir topu almak için çubuğuna, koymak için başka bir çubuğa dokun (bilgisayarda tıkla). Bir seferde yalnızca en
           üstteki top alınabilir.
         </p>
         <p className="measure text-lg">Önce {countWord(task.practice.length)} alıştırma problemi çözelim. Alıştırmada süre yok.</p>
@@ -302,11 +302,12 @@ export function Tower({ task, onDone }: { task: TowerTask; onDone: (trials: Towe
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırma bitti. Şimdi asıl problemler başlıyor: {task.items.length} problem var ve her problem için 1 dakika süren var. Problemler kısadan uzuna
-          doğru gider.
+          Alıştırma bitti. Şimdi asıl problemler başlıyor: {task.items.length} problem var ve her problem için 1 dakika süren var. Süre problem ekrana
+          gelince başlar; dolunca problem kapanır. Problemler kısadan uzuna doğru gider.
         </p>
         <p className="measure text-lg">
-          Topa dokunmadan önce çözümü kafanda düşün; yaptığın hamle geri alınamaz. Her problemde en az kaç hamle gerektiği yazar.
+          İlk topu almadan önce çözümü kafanda düşün; yaptığın hamle geri alınamaz. Asıl problemlerde bir problemi baştan başlatamazsın ve çözüm gösterilmez. Her
+          problemde en az kaç hamle gerektiği yazar.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton className="btn btn-secondary btn-lg" onClick={() => load('practice', 0)}>
@@ -321,7 +322,7 @@ export function Tower({ task, onDone }: { task: TowerTask; onDone: (trials: Towe
   }
 
   if (paused) {
-    return <PausedScreen note="Problemin süresi de durdu; döndüğünde kaldığı yerden işler." onResume={resume} />;
+    return <PausedScreen note="Problemin süresi de durdu; devam edince kaldığı yerden işler." onResume={resume} />;
   }
 
   if (!item) return null;
@@ -390,7 +391,7 @@ export function Tower({ task, onDone }: { task: TowerTask; onDone: (trials: Towe
               {ending.kind === 'timeout'
                 ? 'Süre doldu.'
                 : ending.kind === 'cap'
-                  ? 'Bu problemde hamle sınırına ulaştın.'
+                  ? 'Çok fazla hamle yaptın; bu problem burada bitti.'
                   : optimal
                     ? 'Harika! En az hamlede çözdün.'
                     : `Hedefe ${ending.moves} hamlede ulaştın.`}

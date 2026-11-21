@@ -152,9 +152,9 @@ const SPECS: Spec[] = [
     pair: 'dk17',
     stem: ['Bir binadaki asansör hiç durmadan ve hep aynı hızla çıkıyor.', 'Asansör bir kat yukarı 15 saniyede çıkıyor.'],
     question: 'Asansör 4 kat yukarı kaç saniyede çıkar?',
-    correct: '60 saniye',
-    lure: '45 saniye',
-    others: ['75 saniye', '30 saniye'],
+    correct: '60 saniyede',
+    lure: '45 saniyede',
+    others: ['75 saniyede', '30 saniyede'],
     at: [4, 1],
   },
   {
@@ -186,7 +186,7 @@ const SPECS: Spec[] = [
     role: 'lure',
     pair: 'dk05',
     stem: ['Bir göletteki yosun her gün iki katına çıkıyor.', 'Yosun, göletin tamamını 20 günde kaplıyor.'],
-    question: 'Yosun, göletin yarısını kaç günde kaplamıştı?',
+    question: 'Yosun, göletin yarısını kaç günde kaplar?',
     correct: '19 günde',
     lure: '10 günde',
     others: ['5 günde', '15 günde'],
@@ -345,11 +345,11 @@ const item = (s: Spec): ReflectionItem => ({ key: s.key, stem: s.stem, question:
 const PRACTICE: ReflectionPracticeItem[] = [
   {
     key: 'dkp1',
-    stem: ['Bir sepette 6 elma vardı.', 'Sepete 3 elma daha konuldu.'],
-    question: 'Sepette kaç elma var?',
-    options: ['9 elma', '6 elma', '3 elma', '12 elma'],
+    stem: ['Bir kavanozda 6 bilye vardı.', 'Kavanoza 2 bilye daha konuldu.'],
+    question: 'Kavanozda kaç bilye var?',
+    options: ['8 bilye', '6 bilye', '2 bilye', '4 bilye'],
     answer: 1,
-    explain: 'Sepette önce 6 elma vardı; 3 elma daha konulunca 6 + 3 = 9 elma oldu.',
+    explain: 'Kavanozda önce 6 bilye vardı; 2 bilye daha konulunca 6 + 2 = 8 bilye oldu.',
   },
   {
     key: 'dkp2',
@@ -368,7 +368,7 @@ const task: CognitiveReflectionTask = {
   measures: 'Kısa, günlük sorularda düşünerek karar vermeyi ölçer.',
   instructions: [
     'Her soruda kısa bir durum ve bir soru göreceksin.',
-    'Dört seçenekten doğru olduğunu düşündüğün cevabı seç.',
+    'Dört seçenekten doğru olduğunu düşündüğün cevabı seç ve “Cevabı ver” düğmesine bas.',
     'Süre sınırı yok; istersen kâğıt ve kalem de kullanabilirsin.',
   ],
   practice: PRACTICE,
@@ -417,7 +417,7 @@ export const dusunerekKararVerme: TaskInstrument = {
     basedOn:
       'Bilişsel Yansıtma Testi (Frederick, 2005; aktaran Sirota ve Juanchich, 2018), onun hesaba daha az dayanan (Thomson ve Oppenheimer, 2016) ve hesap gerektirmeyen (Sirota ve ark., 2021) sözel sürümleri ve çocuklara uygun sürümü (Young ve Shtulman, 2020a); dört seçenekli biçim (Sirota ve Juanchich, 2018) ve tuzaksız eş sorular (De Neys, Rossi ve Houdé, 2013). Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır; ticari ya da araştırma amaçlı test setlerinin soruları, puanlama kuralları ya da normları kullanılmaz.',
     whatItMeasures:
-      'Bilişsel yansıtmayı, yani ilk akla gelen ama yanlış olan cevabı fark edip durup düşünerek doğru cevaba ulaşma eğilimini ölçer. Bu tür sorularda ilk akla gelen cevap çok güçlüdür: üniversite öğrencilerinin yaklaşık %80’i, bir sopa ile bir topun fiyatını soran ünlü soruda ilk akla gelen yanlış cevabı verir (De Neys ve ark., 2013). Yanlış cevapların büyük çoğunluğu ilk akla gelen cevaptır. Düşünerek karar vermenin göstergesi doğru cevap sayısıdır; ilk akla gelen yanlış cevapların sayısı, sezgiye dayanma eğiliminin ayrı bir ölçüsü olarak geçerli bulunmamıştır (Pennycook ve ark., 2016). İlk akla gelen yanlış cevabı verenler, bu cevaba tuzaksız eş sorudaki cevaplarından daha az güvenmiştir (De Neys ve ark., 2013). Sayısal sorular hesap becerisiyle de ilişkilidir; sözel soruların hesap becerisiyle ilişkisi daha zayıftır (Thomson ve Oppenheimer, 2016; Sirota ve ark., 2021). Dört seçenekli biçim, cevabın yazıldığı biçimle benzer doğru cevap sayısı vermiş ve daha kısa sürmüştür (Sirota ve Juanchich, 2018). Okul çağındaki çocuklarla yapılan çalışmalarda çocuklara uygun sürümdeki sonuçlar, yaş hesaba katıldıktan sonra da fen ve matematik kavramlarını anlamayla ilişkili bulunmuştur (Young ve Shtulman, 2020a, 2020b). Yetişkinlerde sonuçlar zaman içinde oldukça kararlıdır (Stagnaro ve ark., 2018); bu tür soruları daha önce görmüş olmak doğru cevap sayısını artırabilir (Bialek ve Pennycook, 2018).',
+      'Bilişsel yansıtmayı, yani ilk akla gelen ama yanlış olan cevabı fark edip durup düşünerek doğru cevaba ulaşma eğilimini ölçer. Bu tür sorularda ilk akla gelen cevap çok güçlüdür: üniversite öğrencilerinin yaklaşık %80’i, bir sopa ile bir topun fiyatını soran ünlü soruda ilk akla gelen yanlış cevabı verir (De Neys ve ark., 2013). Yanlış cevapların büyük çoğunluğu ilk akla gelen cevaptır. Düşünerek karar vermenin göstergesi doğru cevap sayısıdır; ilk akla gelen yanlış cevapların sayısı, sezgiye dayanma eğiliminin ayrı bir ölçüsü olarak geçerli bulunmamıştır (Pennycook ve ark., 2016). İlk akla gelen yanlış cevabı verenler, bu cevaba tuzaksız eş sorudaki cevaplarından daha az güvenmiştir (De Neys ve ark., 2013). Sayısal sorular hesap becerisiyle de ilişkilidir; sözel soruların hesap becerisiyle ilişkisi daha zayıftır (Thomson ve Oppenheimer, 2016; Sirota ve ark., 2021). Dört seçenekli biçim, cevabın yazıldığı biçimle benzer doğru cevap sayısı vermiş ve daha kısa sürmüştür (Sirota ve Juanchich, 2018). Okul çağındaki çocuklarla yapılan çalışmalarda çocuklara uygun sürümdeki sonuçlar, yaş hesaba katıldıktan sonra da fen ve matematik kavramlarını anlamayla ilişkili bulunmuştur (Young ve Shtulman, 2020a, 2020b). Yetişkinlerde sonuçlar zaman içinde oldukça kararlıdır (Stagnaro ve ark., 2018); bu tür soruları daha önce görmüş olmak doğru cevap sayısını artırabilir (Białek ve Pennycook, 2018).',
     turkishVersion: 'Özgün test. Sorular ve yönergeler Türkçe olarak yazılmıştır.',
     reliability:
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Sayısal soruların doğru cevapları, sorudaki sayılardan ikinci ve bağımsız bir hesapla yeniden bulunmuştur. Hangi yanlış cevabın gerçekten en sık ilk akla geldiği henüz verilerle sınanmadı.',
@@ -437,7 +437,7 @@ export const dusunerekKararVerme: TaskInstrument = {
     ],
     citations: [
       {
-        text: 'Bialek, M. ve Pennycook, G. (2018). The cognitive reflection test is robust to multiple exposures. Behavior Research Methods, 50(5), 1953–1959.',
+        text: 'Białek, M. ve Pennycook, G. (2018). The cognitive reflection test is robust to multiple exposures. Behavior Research Methods, 50(5), 1953–1959.',
         url: 'https://doi.org/10.3758/s13428-017-0963-x',
       },
       {

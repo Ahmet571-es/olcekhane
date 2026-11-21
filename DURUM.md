@@ -60,7 +60,7 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: **5/8 grup** (2026-11-21).
+   İlerleme: **6/8 grup** (2026-11-21).
    - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
      İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
      Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
@@ -92,8 +92,15 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      cevabının doğru mu yanlış mı olduğunu görmeyeceksin" deniyor (13 seçmeli görev ve 7 hız görevi; kalanlar kendi grubunda:
      harf-sayı sıralama, zihinden hesaplama, bakış açısı, desen hatırlama, simge bulma, sembol eşleştirme, kule); anket
      ekranında atlanan cümleler iletisi.
-   - **6. grup (sıradaki):** Sayısal Akıl Yürütme, Zihinden Hesaplama Hızı, Küp Açınımı, Düşünerek Karar Verme, Planlama:
-     Kule Görevi, Üç Boyutlu Zihinde Döndürme, Çalışma Belleği: Hesapla ve Hatırla, Bakış Açısı Alma.
+   - **6. grup (bitti):** Sayısal Akıl Yürütme, Zihinden Hesaplama Hızı, Küp Açınımı, Düşünerek Karar Verme, Planlama:
+     Kule Görevi, Üç Boyutlu Zihinde Döndürme, Çalışma Belleği: Hesapla ve Hatırla, Bakış Açısı Alma (sekizi de görev testi).
+     Bulunanlar "Son yapılanlar" (87)'de. **Sürümü artan test:** Sayısal Akıl Yürütme (2; kumbara sorusu iki türlü
+     okunuyordu): 2026-11-21'den önce indirilen PDF'i yeni sonuçla karşılaştırılamaz. Ötekilerde yalnızca dil değişti (dört
+     testin soru izi güncellendi, sürümleri aynı). Sekiz testin bütün soruları, işlemleri ve problemleri iki denetçi
+     tarafından çözüldü ya da yeniden hesaplandı: anahtarlarda hata yok. 1. gruptan kalan sembol eşleştirme görevinin alıştırma
+     sonu cümlesi de düzeltildi (o ekran tarayıcıda denenmedi: beş görevli testin son görevi; metin koddan okundu).
+   - **7. grup (sıradaki):** Heyecan Arayışı, Gizli Şekiller, İyimserlik Ölçeği, Desen Hatırlama, Harf Dizileri, Empati,
+     Öz-yeterlik: Kendine Güven, Şekil Benzetmeleri.
    - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
      aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
      doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
@@ -145,7 +152,9 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      "kafası karışık" diye okunabilir; üç test); "Hoşa gitmeyen işleri ertelerim" (kimin hoşuna?); "İşlere bütün gönlümle
      dalarım"; "Olaylarda daha derin bir anlam pek aramam". "Plan yapar ve planıma bağlı kalırım" doğrudur (özne karışmıyor);
      kişi eki kuralı buna göre daraltıldı. **Denetimin sonunda topluca:** "meta analiz" (13 yer) ve "meta-analiz" (26 yer) iki
-     yazımla geçiyor; hata iletilerindeki "Lütfen tekrar deneyin" (siz) ile düğmedeki "Tekrar dene" (sen).
+     yazımla geçiyor; hata iletilerindeki "Lütfen tekrar deneyin" (siz) ile düğmedeki "Tekrar dene" (sen); "dahil" (çoğu
+     yerde) ve "dâhil" (5 dosyada; TDK yazımı); kaynak künyelerinde makale numarası kimi yerde "Article e7263", kimi yerde
+     yalnızca sayı; süreli bölümden sonraki ara ekranda "bu bölüm bitti" ile "Sıradaki görev" birlikte geçiyor.
      **5. gruptan:** Çocuk Kişilik Profili'nde soru "Bu cümle sana ne kadar benziyor?" (cümle kişiye benzemez; "seni ne kadar
      anlatıyor?" daha doğru, ama soru ve üç şık raporlarda ve PDF'lerde de geçiyor: hocayla birlikte), "Odamı ve eşyalarımı …"
      (iki şey; kendi odası olmayan çocuk), asılda olmayan "Bazen" ve "sık sık", 3. sınıf için "aldırmam" ve "endişelenirim".
@@ -158,6 +167,16 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      çağrıştırması (cevabı etkilemiyor). Beş girişin son cümlesi ("… seçersen rapor sana en çok yarar") gevşek ama anlaşılır.
      Site genelinde "öz-saygı", "öz-denetim" çizgili, "öz bildirim" ayrı, "dışadönüklük" bitişik yazılıyor (alan yazınında
      yaygın; TDK ayrı yazar): denetimin sonunda site sahibine ya da hocaya sorulacak.
+     **6. gruptan:** Bilim kartı test sayfasında, testten önce okunabiliyor ve ölçümü etkileyebilecek iki bilgi veriyor:
+     Düşünerek Karar Verme'de soruların bir kısmının "tuzaklı" olduğu (yönerge bunu bilerek söylemiyor), Hesapla ve
+     Hatırla'da işlem süresinin alıştırmadaki hıza göre nasıl hesaplandığı (alıştırmada bilerek yavaş cevap verilebilir).
+     Gerçeği söyleme ilkesiyle ölçümün korunması arasında bir karar: hocaya sorulacak. Hesapla ve Hatırla'da "başka bir
+     araştırmada internet sürümünde harfler kâğıda yazılmıştır" (kimin yazdığı belli değil; kaynağa bakılarak yazılmalı).
+     Üç Boyutlu Döndürme'de "döner tabla" ve "dik bir eksen" 5. sınıf için ağır olabilir (ölçek adında ve raporda da
+     geçiyor; yönergeye "hiçbiri yana yatırılmamıştır" eklendi); bilim kartındaki "uzamsal beceriler alıştırmayla da
+     gelişebilir" cümlesi kaynağa dayanıyor ama "geliştirme vaadi yok" ilkesine yakın duruyor. Kule'de yönerge "düzen",
+     bilim kartı "diziliş" diyor. Bilim kartlarındaki araştırma sayıları (yüzdeler, örneklem sayıları) bu denetimde
+     kaynaklarından yeniden doğrulanmadı.
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1261,6 +1280,30 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-21 (87): Dil ve mantık denetimi, 6. grup (8 görev testi). İkinci denetçi bağımsız okudu ve bütün soruları yeniden
+  çözdü (Sayısal 26, Düşünerek 26, Küp 22, Üç Boyutlu 22, Kule 22 problem, Bakış Açısı 16, Zihinden Hesaplama 200, Hesapla
+  ve Hatırla 70 işlem): anahtarlarda hata yok. **Kesin hata:** Hesapla ve Hatırla'da dizi sonu ekranı yüzdeyi yukarı
+  yuvarlıyordu ama uyarı yuvarlanmamış orana bakıyordu: 13 işlemin 11'i doğruyken "%85. … en az %85'ini doğru yapmaya çalış"
+  yazıyordu (şimdi aşağı yuvarlanıyor ve uyarı aynı sayıya bakıyor). **Mantık:** *Sayısal (sürüm 2):* kumbara sorusunda "3
+  hafta sonra … 9 hafta sonra" baştan mı, üçüncü haftadan mı sayılacağı belli değildi → "3. haftanın sonunda … 9. haftanın
+  sonunda". *Hesapla ve Hatırla:* yönergedeki örnek işlem (3 × 4) − 2 = 10, testte yanlış sonuçla gösterilen (4 × 3) − 2 =
+  8 işleminin cevabını ele veriyordu → (3 × 3) + 2 = 11 (test denetler). *Düşünerek:* birinci alıştırma (sepette elma) asıl
+  sorulardan birine (masada elma) benziyordu → kavanozda bilye; "kaç saniyede çıkar?" sorusunun şıkları "60 saniye" →
+  "60 saniyede"; yosun sorusunda durum şimdiki zamanda, soru geçmişteydi. *Üç Boyutlu:* yönerge ayna görüntülerinin de
+  döndürülmüş geldiğini söylemiyordu; "bir resim çevrilir gibi çevrilmiştir" (çevirmek aynayı da çağrıştırır) → "duvardaki
+  bir resim gibi sağa ya da sola yatırılmıştır"; seçmeli soruda "iki şekle dokun" → "iki şekli seç". *Kule:* sürenin problem
+  ekrana gelince başladığı (düşünme süresi içinde) ve dolunca problemin kapandığı söylenmiyordu; "hamle" tanımlanmıyordu
+  (3. sınıf); "üç renkli top" iki türlü okunuyordu; "Topa dokunmadan önce" → "İlk topu almadan önce"; asıl problemlerde
+  baştan başlanamadığı ve çözümün gösterilmediği; hiçbir yerde söylenmeyen "hamle sınırı" iletisi. *Zihinden Hesaplama:*
+  sürenin "Başla"ya basınca başladığı, dolunca bölümün kendiliğinden bittiği ve ekrandaki işlemin sayılmadığı; "her işlemde
+  kaç işlemin" (aynı sözcük iki anlamda) → "dört bölümün her birinde"; "zihninden bul" → "zihinden bul". *Bakış Açısı:*
+  "yukarıdaki ok baktığın nesnedir" → "nesnenin yönüdür"; ilk dokunuştan önce ok olmadığı hâlde "oku sürükle"; geri
+  bildirimde iki ok yalnızca renkle ayrılıyordu (şimdi "ucunda nesnenin adı yazan yeşil ok" deniyor); "Test 12 soru;".
+  *Küp:* "Küp katlanınca" (katlanan açınım); 4. sınıf öğretim programı cümlesinin kaynağı yoktu (MEB sayfası açılıp okundu,
+  künyesi eklendi). **Ortak:** alıştırması kötü giden kişiye geri bildirimin kalkacağı (Zihinden Hesaplama, Bakış Açısı,
+  sembol eşleştirme); yönerge listesinde cevabı gönderen düğme (altı test); alıştırma sonucunda "1 tanesini" → "birini"
+  (bütün görevler); "Alıştırmayı yinele" → "Alıştırmayı tekrarla"; "giriş tuşu" → "Enter tuşu"; sınıf aralığı "4.–10." →
+  "4–10.". Kalıcı denetime üç kural eklendi (Kule'de süre; örnek işlem; seçmeli soruda "dokun").
 - 2026-11-21 (86): Dil ve mantık denetimi, 5. grup (8 test, hepsi özgün; yedi ankette 185 madde, Mantıksal Akıl Yürütme'de
   35 soru). İkinci denetçi bağımsız okudu (64 bulgu; 7'si kesin hata). **Mantık hataları (sürüm artıranlar):** *Telefon ve
   Dikkat:* ters madde "Çalışırken ekranlara ancak mola verince bakarım" kendi içinde çelişiyordu ve ekranda çalışan kişiyi yanlış
@@ -1410,8 +1453,3 @@ En yeni üstte; en çok 10 madde tutulur.
   öneride ve rehber yazısında bu açıkça söylenir. "Sınav kaygısı" rehber yazısı teste bağlandı; "Hangi test bana uygun?"da
   "Öğrenme ve çalışma" altında yeni yuva; galeride kendi çizimi (cevap kâğıdı ve sakinleşen nabız). Telefonda (8. sınıf) ve
   masaüstünde (yetişkin) baştan sona çözüldü; rapor, veli raporu ve PDF açıldı.
-- 2026-11-05 (77): Ana sayfa açılışı ödül düzeyine çıkarıldı (site sahibinin isteği: "awards formatında, gösterişli"):
-  tam ekran sahne, canlı şekil büyük ve sağa taşan, telefonda başlığın üstünde; açılış koreografisi, kaydırınca derinlik,
-  "Kaydır" ipucu; testlerin altında kaydırdıkça kelime kelime dolan "sözümüz" bölümü (ayrıntı CLAUDE.md "Görsel dil").
-  Kayan şeritten "Matematik" çıktı ("Zihinden hesaplama" girdi); "Hazırlanıyor: Türkçe Konu Tarama Testi" planı
-  kaldırıldı (akademik test eklenmiyor). Renkler, yazı tipi ve öteki bölümler aynı.

@@ -55,7 +55,7 @@ export const NUMERIC_FORMAL: Record<string, Formal> = {
   sy15: { kind: 'a', a: 2, b: 10, c: 6 },
   // 6 × 8 = 12 × □
   sy16: { kind: 'comp', op: '×', l: [6, 8], r1: 12 },
-  // Kumbarada başta 15; 3 hafta sonra 30; 9 hafta sonra?
+  // Kumbarada başta 15; 3. haftanın sonunda 30; 9. haftanın sonunda?
   sy17: { kind: 'f', s: 15, x1: 3, y1: 30, x2: 9 },
   // Fotoğraf eni 6 boyu 8; eni 15 olunca boyu?
   sy18: { kind: 'p', a: 6, b: 8, c: 15 },

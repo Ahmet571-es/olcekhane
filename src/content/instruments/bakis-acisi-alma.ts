@@ -79,7 +79,7 @@ const task: PerspectiveTask = {
   instructions: [
     'Ekranda yedi nesnenin olduğu bir harita göreceksin. Harita hiç dönmez.',
     'Her soruda kendini bir nesnenin yanında, yüzün başka bir nesneye dönük hayal et. Sonra üçüncü nesnenin senin için hangi yönde kaldığını, çemberin üstünde bir okla göster.',
-    'Çemberin ortası durduğun yerdir; yukarıyı gösteren ok, baktığın nesnenin yönüdür. Çemberin üstüne dokun ya da oku sürükle; emin olunca cevabı ver.',
+    'Çemberin ortası durduğun yerdir; yukarıyı gösteren ok, baktığın nesnenin yönüdür. Çemberin üstüne dokun (bilgisayarda tıkla); çıkan oku sürükleyerek düzeltebilirsin. Emin olunca “Cevabı ver” düğmesine bas.',
     'Ekranı, telefonu ya da başını çevirme; yalnızca zihninde dön. Kâğıt ya da kalem kullanma.',
   ],
   objects: OBJECTS,
@@ -110,7 +110,7 @@ export const bakisAcisiAlma: TaskInstrument = {
     title: 'O nesne senin için hangi yönde?',
     paragraphs: [
       'Birazdan yedi nesnenin olduğu bir harita göreceksin. Her soruda kendini bir nesnenin yanında, yüzün başka bir nesneye dönük hayal edeceksin ve üçüncü nesnenin senin için hangi yönde kaldığını bir okla göstereceksin.',
-      `Test ${ITEMS.length} soru; önce ${PRACTICE.length} alıştırma sorusu var. Süre sınırı yok. Ekranı, telefonu ya da başını çevirmeden, yalnızca zihninde dönerek çöz.`,
+      `Test ${ITEMS.length} sorudan oluşur; önce ${PRACTICE.length} alıştırma sorusu var. Süre sınırı yok. Ekranı, telefonu ya da başını çevirmeden, yalnızca zihninde dönerek çöz.`,
       'Sessiz bir yerde, dikkatini dağıtacak şeyler olmadan çözersen sonuç seni daha iyi yansıtır. Harita büyük bir ekranda daha rahat görünür.',
     ],
   },

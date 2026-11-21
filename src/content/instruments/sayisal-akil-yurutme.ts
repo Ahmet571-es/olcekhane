@@ -163,8 +163,8 @@ const SPECS: Spec[] = [
   {
     key: 'sy17',
     kind: 'f',
-    stem: ['Ali’nin kumbarasında başta 15 lira vardı. Ali her hafta kumbarasına aynı miktarda para atıyor.', '3 hafta sonra kumbarada 30 lira vardı.'],
-    question: '9 hafta sonra kumbarada kaç lira olur?',
+    stem: ['Ali’nin kumbarasında başta 15 lira vardı. Ali her hafta kumbarasına aynı miktarda para atıyor.', '3. haftanın sonunda kumbarada 30 lira vardı.'],
+    question: '9. haftanın sonunda kumbarada kaç lira olur?',
     unit: 'lira',
     answer: 60,
     lures: { proportional: [90] },
@@ -263,7 +263,7 @@ const task: NumericalReasoningTask = {
   measures: 'Bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görüp eksik sayıyı bulabilmeyi ölçer.',
   instructions: [
     'Her soruda kısa bir durum ya da eksik sayısı olan bir eşitlik göreceksin.',
-    'Soruyu dikkatle oku ve cevabı tuşlarla yaz. Cevaplar kesirli ya da virgüllü değildir.',
+    'Soruyu dikkatle oku, cevabı tuşlarla yaz ve “Cevabı ver” düğmesine bas. Cevaplar kesirli ya da virgüllü değildir.',
     'Cevabı bulamadığın bir soruda “Bilmiyorum” diyebilirsin.',
   ],
   practice: PRACTICE,
@@ -283,7 +283,7 @@ const task: NumericalReasoningTask = {
 
 export const sayisalAkilYurutme: TaskInstrument = {
   slug: 'sayisal-akil-yurutme',
-  version: 1,
+  version: 2,
   engine: 'tasks',
   name: 'Sayısal Akıl Yürütme',
   shortName: 'Sayısal akıl yürütme',
@@ -323,7 +323,7 @@ export const sayisalAkilYurutme: TaskInstrument = {
     basedOn:
       'Sayılarla akıl yürütme araştırmalarında üzerinde çok durulan iki konu: orantılı ve orantılı olmayan durumları ayırt etmek (Van Dooren ve ark., 2004; Fernández ve ark., 2012) ve eşittir işaretini iki yanın aynı değerde olduğu biçiminde anlamak (Knuth ve ark., 2006). Sorular Ölçekhane tarafından özgün olarak hazırlanmıştır; ticari ya da araştırma amaçlı test setlerinin soruları, puanlama kuralları ya da normları kullanılmaz.',
     whatItMeasures:
-      'Bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görüp eksik sayıyı bulabilmeyi ölçer. Rapor iki şeye ayrıca bakar. Birincisi orantılı bir durumda aradaki farkı korumak ya da orantılı olmayan bir durumda orantı kurmaktır. İspanya’da 4.–10. sınıf öğrencileriyle yapılan bir çalışmada orantılı problemlerde farkı koruyan cevaplar 6. sınıfta %57, 10. sınıfta %21 oranında görülmüş; farkın korunduğu problemlerde orantı kuran cevaplar ise 4. sınıfta %3’ten 10. sınıfta %64’e çıkmıştır. Aynı çalışmada sayılar birbirinin tam katı olduğunda orantı, olmadığında fark daha sık kullanılmıştır (Fernández ve ark., 2012). Belçika’da 2.–6. sınıf öğrencileriyle yapılan bir çalışmada orantılı olmayan problemlere verilen cevapların %38,5’i orantı kuran cevaplardı (Van Dooren ve ark., 2004). İkincisi eşittir işaretini “sonuç şudur” anlamında okumaktır: ABD’de 6.–8. sınıf öğrencileriyle yapılan bir çalışmada öğrencilerin yalnızca %31–43’ü eşittir işaretini iki yanın aynı değerde olduğu biçiminde tanımlamış; böyle tanımlayanlar denklemleri daha sık doğru çözmüştür (Knuth ve ark., 2006).',
+      'Bir durumdaki sayıların birbiriyle nasıl ilişkili olduğunu görüp eksik sayıyı bulabilmeyi ölçer. Rapor iki şeye ayrıca bakar. Birincisi orantılı bir durumda aradaki farkı korumak ya da orantılı olmayan bir durumda orantı kurmaktır. İspanya’da 4–10. sınıf öğrencileriyle yapılan bir çalışmada orantılı problemlerde farkı koruyan cevaplar 6. sınıfta %57, 10. sınıfta %21 oranında görülmüş; farkın korunduğu problemlerde orantı kuran cevaplar ise 4. sınıfta %3’ten 10. sınıfta %64’e çıkmıştır. Aynı çalışmada sayılar birbirinin tam katı olduğunda orantı, olmadığında fark daha sık kullanılmıştır (Fernández ve ark., 2012). Belçika’da 2–6. sınıf öğrencileriyle yapılan bir çalışmada orantılı olmayan problemlere verilen cevapların %38,5’i orantı kuran cevaplardı (Van Dooren ve ark., 2004). İkincisi eşittir işaretini “sonuç şudur” anlamında okumaktır: ABD’de 6–8. sınıf öğrencileriyle yapılan bir çalışmada öğrencilerin yalnızca %31–43’ü eşittir işaretini iki yanın aynı değerde olduğu biçiminde tanımlamış; böyle tanımlayanlar denklemleri daha sık doğru çözmüştür (Knuth ve ark., 2006).',
     turkishVersion: 'Özgün test. Sorular ve yönergeler Türkçe olarak yazılmıştır.',
     reliability:
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı. Her sorunun doğru cevabı ve yanılgı cevapları, sorudaki sayılardan bağımsızca yeniden hesaplanarak doğrulanmıştır.',

@@ -393,12 +393,12 @@ export function MentalRotation3d({ task, onDone }: { task: MentalRotation3dTask;
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           Her soruda küplerden yapılmış bir şekil ve altında dört şekil göreceksin. Dört şekilden ikisi, üstteki şeklin döndürülmüş hâlidir: aynı şekildir,
-          yalnızca başka bir yönden görünür. Öteki ikisi ayna görüntüsüdür: ne kadar döndürülse de üstteki şekille çakışmaz.
+          yalnızca başka bir yönden görünür. Öteki ikisi ayna görüntüsüdür; onlar da döndürülmüş gelir ama ne kadar döndürülse de üstteki şekille çakışmaz.
         </p>
         <Example task={task} />
         <p className="measure text-lg">
-          Döndürülmüş iki şekle dokun, emin olunca “Cevabı ver” düğmesine bas. Her soruda tam iki doğru vardır; bir sorunun doğru sayılması için ikisini de
-          bulmalısın. Şekiller ekranda dönmez; onları zihninde döndür. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
+          Döndürülmüş iki şekli seç, emin olunca “Cevabı ver” düğmesine bas. Her soruda tam iki doğru vardır; bir sorunun doğru sayılması için ikisini de
+          bulmalısın. Soruyu çözerken şekiller ekranda dönmez; onları zihninde döndür. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
         </p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–4 ya da A–D tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
         <ArmedButton
@@ -431,7 +431,7 @@ export function MentalRotation3d({ task, onDone }: { task: MentalRotation3dTask;
         </p>
         <p className="measure text-ink-2">
           Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. Test {task.items.length} soru ve iki bölümden oluşur. İlk bölümde şekiller, bir döner tablanın üstündeymiş gibi yalnızca dik bir eksen çevresinde
-          döndürülmüştür. Süre sınırı yok; emin olamadığında sana en uygun gelen iki şekli seç.
+          döndürülmüştür; hiçbiri yana yatırılmamıştır. Süre sınırı yok; emin olamadığında sana en uygun gelen iki şekli seç.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton
@@ -490,11 +490,11 @@ export function MentalRotation3d({ task, onDone }: { task: MentalRotation3dTask;
   const status = practice ? `Alıştırma ${index + 1} / ${task.practice.length}` : `${item.part}. bölüm · Soru ${index + 1} / ${task.items.length}`;
   const hint =
     selected.length === 0
-      ? 'Üstteki şeklin döndürülmüş hâli olan iki şekle dokun.'
+      ? 'Üstteki şeklin döndürülmüş hâli olan iki şekli seç.'
       : selected.length === 1
         ? `${VERBAL_LETTERS[selected[0]]} seçeneğini seçtin. Bir şekil daha seç.`
         : full
-          ? 'İki şekil seçtin. Değiştirmek için seçtiğin şekillerden birine yeniden dokun.'
+          ? 'İki şekil seçtin. Değiştirmek için seçtiğin şekillerden birine yeniden bas.'
           : `${[...selected]
               .sort((a, b) => a - b)
               .map((x) => VERBAL_LETTERS[x])

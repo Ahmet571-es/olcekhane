@@ -144,9 +144,9 @@ export function PausedScreen({
   );
 }
 
-/** Alıştırma sonucu: sayı tam ise "hepsini", değilse "5 tanesini" ("8 denemenin 8 tanesini" denmez). */
+/** Alıştırma sonucu: sayı tam ise "hepsini", bir ise "birini", değilse "5 tanesini" ("8 denemenin 8 tanesini", "1 tanesini" denmez). */
 export function countOf(n: number, total: number, ending: 'ini' | 'inde' = 'ini'): string {
-  return n === total ? `heps${ending}` : `${n} tanes${ending}`;
+  return n === total ? `heps${ending}` : n === 1 ? `bir${ending}` : `${n} tanes${ending}`;
 }
 
 /** Bölüm sıra adları: "Birinci bölüm bitti". */

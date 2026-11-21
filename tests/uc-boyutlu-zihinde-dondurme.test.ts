@@ -340,8 +340,12 @@ describe('Üç boyutlu zihinde döndürme: şekiller ve sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = 'ab55915858d5f9b6';
+/**
+ * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-11-21'de (dil ve mantık
+ * denetimi) yalnızca iki bölümün tanıtım cümlesi değişti ("hiçbiri yana yatırılmamıştır"; "duvardaki bir resim gibi sağa ya
+ * da sola yatırılmıştır"); şekiller, sorular ve anahtar aynı, sürüm 1 kaldı.
+ */
+const SORU_IZI = '03e7808466d15515';
 
 describe('Üç boyutlu zihinde döndürme: puanlama', () => {
   const cell = (i: number): Rotation3dCell => {

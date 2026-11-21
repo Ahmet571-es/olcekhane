@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { publicInstruments } from '@/content/instruments';
 import type { LikertInstrument, TaskInstrument } from '@/lib/instruments/types';
@@ -89,6 +91,38 @@ describe('dil ve mantık denetimi: kalıcı kurallar', () => {
     expect(rotation.instructions.join(' ')).toContain(`en çok ${rotation.timeoutMs / 1000} saniye`);
     expect(reaction.instructions.join(' ')).toContain(`en çok ${reaction.timeoutMs / 1000} saniye`);
     expect(ruleSwitch.instructions.join(' ')).toContain(`en çok ${ruleSwitch.timeoutMs / 1000} saniye`);
+    const tower = tasks.find((t) => t.kind === 'tower');
+    if (tower?.kind !== 'tower') throw new Error('görev bulunamadı');
+    expect(tower.instructions.join(' ')).toContain(`Her problem için ${tower.limitMs / 60_000} dakika`);
+  });
+
+  it('yönergedeki örnek işlem görevin işlemlerinden biri değil (çarpanların sırası değişse de)', () => {
+    // Örnek "(3 × 3) + 2 = 11" gibi doğru bir işlemdir; aynı işlem testte yanlış bir sonuçla gösterilseydi örnek cevabı ele verirdi.
+    const span = (publicInstruments().filter((d) => d.engine === 'tasks') as TaskInstrument[]).flatMap((d) => d.tasks).find((t) => t.kind === 'complex_span');
+    if (span?.kind !== 'complex_span') throw new Error('görev bulunamadı');
+    const m = /\((\d+) × (\d+)\) ([+−]) (\d+) = (\d+)/.exec(span.instructions.join(' '));
+    if (!m) throw new Error('yönergede örnek işlem yok');
+    const [a, b, c, shown] = [Number(m[1]), Number(m[2]), Number(m[4]), Number(m[5])];
+    const sign = m[3] === '+' ? 1 : -1;
+    expect(a * b + sign * c).toBe(shown);
+    const key = (x: number, y: number, s: number, z: number) => `${Math.min(x, y)}×${Math.max(x, y)}${s > 0 ? '+' : '−'}${z}`;
+    const used = [...span.practiceOps, ...span.practiceSets.flatMap((x) => x.ops), ...span.sets.flatMap((x) => x.ops)].map((o) => key(o[0], o[1], o[2], o[3]));
+    expect(used).not.toContain(key(a, b, sign, c));
+  });
+
+  it('seçmeli soruda "dokun" denmez: bilgisayarda tıklanır, "seç" denir', () => {
+    // Seçenekleri (şıkları, şekilleri, küpleri) seçtiren ekranlar. Çembere, kutuya ya da daireye dokunulan görevler bu kuralın dışındadır.
+    const dir = join(process.cwd(), 'src/components/runner/tasks');
+    const found: string[] = [];
+    for (const file of readdirSync(dir).filter((f) => f.endsWith('.tsx'))) {
+      readFileSync(join(dir, file), 'utf8')
+        .split('\n')
+        .forEach((line, i) => {
+          if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;
+          if (/(seçeneğe|seçeneklere|şıkka|şekle|şekillere|küpe|küplere|cevaba) (yeniden )?dokun/i.test(line)) found.push(`${file}:${i + 1}: ${line.trim()}`);
+        });
+    }
+    expect(found).toEqual([]);
   });
 
   it('aynı İngilizce madde bütün testlerde aynı Türkçeyle yazılır', () => {
