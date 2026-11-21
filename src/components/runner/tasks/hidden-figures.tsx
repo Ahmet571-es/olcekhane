@@ -285,7 +285,7 @@ export function HiddenFigures({ task, onDone }: { task: HiddenFiguresTask; onDon
         </p>
         <Example />
         <p className="measure text-lg">
-          Doğru seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
+          Doğru seçeneği seç, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
         </p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–4 ya da A–D tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
         <ArmedButton
@@ -380,7 +380,7 @@ export function HiddenFigures({ task, onDone }: { task: HiddenFiguresTask; onDon
           <>
             <Options item={item} grid={task.grid} selected={selected} onSelect={setSelected} onConfirm={confirm} />
             <p className="text-center text-ink-2">
-              {selected === null ? 'Şeklin saklandığını düşündüğün çizime dokun.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}
+              {selected === null ? 'Şeklin saklandığını düşündüğün çizimi seç.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}
             </p>
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>

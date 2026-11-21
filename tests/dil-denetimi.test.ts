@@ -68,12 +68,14 @@ describe('dil ve mantık denetimi: kalıcı kurallar', () => {
     const trail = tasks.find((t) => t.kind === 'trail');
     const rotation = tasks.find((t) => t.kind === 'mental_rotation');
     const reaction = tasks.find((t) => t.kind === 'reaction_time');
-    if (colorWord?.kind !== 'color_word' || trail?.kind !== 'trail' || rotation?.kind !== 'mental_rotation' || reaction?.kind !== 'reaction_time')
+    const ruleSwitch = tasks.find((t) => t.kind === 'rule_switch');
+    if (colorWord?.kind !== 'color_word' || trail?.kind !== 'trail' || rotation?.kind !== 'mental_rotation' || reaction?.kind !== 'reaction_time' || ruleSwitch?.kind !== 'rule_switch')
       throw new Error('görev bulunamadı');
     expect(colorWord.instructions.join(' ')).toContain(`en çok ${colorWord.timeoutMs / 1000} saniye`);
     expect(trail.instructions.join(' ')).toContain(`en çok ${trail.maxMs / 60_000} dakika`);
     expect(rotation.instructions.join(' ')).toContain(`en çok ${rotation.timeoutMs / 1000} saniye`);
     expect(reaction.instructions.join(' ')).toContain(`en çok ${reaction.timeoutMs / 1000} saniye`);
+    expect(ruleSwitch.instructions.join(' ')).toContain(`en çok ${ruleSwitch.timeoutMs / 1000} saniye`);
   });
 
   it('aynı İngilizce madde bütün testlerde aynı Türkçeyle yazılır', () => {

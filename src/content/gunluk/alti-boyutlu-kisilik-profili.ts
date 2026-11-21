@@ -294,7 +294,7 @@ export const altiBoyutluKisilikDaily: SurveyDaily = {
      * Özenlilik: perf01 "Ayrıntılara dikkat ederim", perf02 "Her şey mükemmel olana kadar uğraşırım", perf05 "Kusurlu
      * işlerden hoşlanmam", perf08 "Kalite konusunda ısrarcıyım"; ters perf09 "Ayrıntılara gereğinden az dikkat ederim", perf10
      * "İşleri oluruna bırakmayı tercih ederim". Temkinlilik: prud02 "Plan yapar ve planıma bağlı kalırım", prud03 "İşleri bir
-     * plana göre yaparım"; ters prud06 "Aceleci kararlar veririm".
+     * plana göre yaparım"; ters prud06 "Aceleyle karar veririm".
      */
     conscientiousness: {
       poles: { low: 'Akışına göre ilerler', high: 'Planlı ve özenli ilerler' },

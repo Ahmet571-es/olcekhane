@@ -302,7 +302,7 @@ export function FiguralAnalogy({ task, onDone }: { task: FiguralAnalogyTask; onD
           aynı kalmalı.
         </p>
         <p className="measure text-lg">
-          Doğru olduğunu düşündüğün seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu
+          Doğru olduğunu düşündüğün seçeneği seç, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu
           çözelim.
         </p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–4 ya da A–D tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
@@ -395,7 +395,7 @@ export function FiguralAnalogy({ task, onDone }: { task: FiguralAnalogyTask; onD
         <>
           <Options item={item} selected={selected} onSelect={setSelected} onConfirm={confirm} />
           <p className="text-center text-ink-2">
-            {selected === null ? 'Doğru olduğunu düşündüğün şekle dokun.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin; soru işaretinin yerinde görebilirsin. Emin olunca cevabı ver.`}
+            {selected === null ? 'Doğru olduğunu düşündüğün şekli seç.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin; soru işaretinin yerinde görebilirsin. Emin olunca cevabı ver.`}
           </p>
           <div className="flex justify-center">
             <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>

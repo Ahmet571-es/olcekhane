@@ -21,7 +21,7 @@ export const ozDenetimDaily: SurveyDaily = {
   scales: {
     /*
      * Düşünerek davranma: dus01 "Hata yapmaktan kaçınırım", dus02 "Kelimelerimi özenle seçerim", dus03 "Seçtiğim yola bağlı
-     * kalırım"; ters: dus04 "Düşünmeden işlere atılırım", dus05 "Aceleci kararlar veririm", dus06 "Aklıma estiği gibi
+     * kalırım"; ters: dus04 "Düşünmeden işlere atılırım", dus05 "Aceleyle karar veririm", dus06 "Aklıma estiği gibi
      * davranmayı severim", dus07 "Bir işe acele edip hemen dalarım", dus08 "Çılgınlıklar yaparım", dus09 "Düşünmeden hareket
      * ederim", dus10 "Planlarımı sık sık son dakikada yaparım".
      */

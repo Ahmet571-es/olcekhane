@@ -4,7 +4,7 @@ Her sohbet işe başlamadan bu dosyayı okur; iş bitince değişikliği aynı i
 sohbette: istekten yayına"). Plan, Claude Docs'taki **Ölçekhane Platform Haritası** belgesidir:
 https://claude.ai/artifact/PqjqGWA4vWv2HUx2sEAPQa
 
-Son güncelleme: 2026-11-20
+Son güncelleme: 2026-11-21
 
 ## Büyük plan (site sahibinin 2026-10-07 isteği)
 
@@ -60,7 +60,7 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: **3/8 grup** (2026-11-20).
+   İlerleme: **4/8 grup** (2026-11-21).
    - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
      İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
      Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
@@ -78,8 +78,14 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      Ortak düzeltmeler bütün görev testlerine uygulandı (duraklama cümlesi, tek görevli testte "Görev 1 / 1" satırı ve
      bitiş başlığı, alıştırmada sıfır doğru, "olağandır", tanıtımdaki "sorulara nasıl çalışıldığı", Harf Dizileri'nin ölçek
      açıklaması): o testlerin geri kalanı kendi grubunda okunacak.
-   - **4. grup (sıradaki):** Öğrenme ve Başarı Özellikleri, Düşünmeyi Sevme Ölçeği, Düşünme ve Çalışma Tarzı, Sözel Akıl
-     Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama.
+   - **4. grup (bitti):** Öğrenme ve Başarı Özellikleri, Düşünmeyi Sevme Ölçeği, Düşünme ve Çalışma Tarzı, Sözel Akıl
+     Yürütme, Kâğıt Katlama, Kelime Bilgisi, Kural Değiştirme, Kelime Listesi Hatırlama. Bulunanlar "Son yapılanlar" (85)'te.
+     Sürümü artan test yok. Sözel Akıl Yürütme'nin 28, Kelime Bilgisi'nin 28 sorusu iki denetçi tarafından tek tek çözüldü:
+     cevap anahtarları doğru ve tek. Ortak düzeltmeler bütün testlere uygulandı (seçmeli sorularda "dokun" → "seç" dokuz
+     görevde; "Aceleyle karar veririm" dört, "Hayal gücüm pek iyi değildir" dört testte).
+   - **5. grup (sıradaki):** Çocuk Kişilik Profili, Ders Çalışma Motivasyonu, Erteleme ve Zaman Yönetimi, Zihniyet: Zekâ ve
+     Öğrenme İnançları, Sınav Kaygısı ve Baş Etme, Ders Çalışırken Telefon ve Dikkat, Çalışma Değerleri, Mantıksal Akıl
+     Yürütme.
    - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
      aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
      doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
@@ -118,6 +124,20 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      diye okuyan 50 ve 15 bulabilir (zayıf okuma; değişirse sürüm artar). Geriye Dönük Hatırlama'da ekran başlıkları "Bir
      geri / İki geri". Bütün görevlerde ortak ve dokunulmayan: alıştırması kötü giden kişiye "asıl bölümde doğru yapıp
      yapmadığını görmeyeceksin" denmiyor (yalnızca iyi sonuçta yazıyor).
+     **4. gruptan (sürüm artırmayı gerektirebileceği için bekletilenler):** Kelime Bilgisi'nde kb06 (cimri'nin zıttı) şıklarında
+     eş anlamlı "pinti" duruyor ama çeldirici olarak "zengin" işaretli; kb05'te (misafir'in eş anlamlısı) zıt anlamlı "ev sahibi"
+     şıklarda ama çeldirici "komşu": raporun "ilk bakışta doğru görünen seçenek" sayımı bu iki soruda eksik kalır (çeldirici
+     yerleri ve türleri testte dengelidir; değişirse denge yeniden kurulur). kb20'de (müphem) "açık" ile "anlaşılır" birbirinin eş
+     anlamlısı: kelimeyi bilmeyen ikisini birden eler. kb16 (somut-soyut, 4. düzey) ve kb24 ("kaş yapayım derken göz çıkarmak",
+     5. düzey) bulundukları düzey için kolay olabilir (veri gelince). Sözel'de sz14'ün en çekici yanlışı "zarf" ama işaretli
+     çeldirici "kütüphane"; sz21'de "su" da "baraj neyi tutar" diye savunulabilir (anahtar "sel" doğru). Kelime Listesi'nde
+     "ceket" (gömleğe anlamca yakın çeldirici) yeni listedeki "sepet"e sesçe de yakın; yeni listede gevşek kümeler var (sandık,
+     sepet, kupa; terazi, dürbün, pusula). **Çeviri tercihleri:** "Anlamak için kafa yormam gereken metinler okumayı severim"
+     (aslı "Love": aynı ölçekte başka maddede "çok severim"); "Karmaşık insanlardan uzak durmaya çalışırım" ("complex people";
+     "kafası karışık" diye okunabilir; üç test); "Hoşa gitmeyen işleri ertelerim" (kimin hoşuna?); "İşlere bütün gönlümle
+     dalarım"; "Olaylarda daha derin bir anlam pek aramam". "Plan yapar ve planıma bağlı kalırım" doğrudur (özne karışmıyor);
+     kişi eki kuralı buna göre daraltıldı. **Denetimin sonunda topluca:** "meta analiz" (13 yer) ve "meta-analiz" (26 yer) iki
+     yazımla geçiyor; hata iletilerindeki "Lütfen tekrar deneyin" (siz) ile düğmedeki "Tekrar dene" (sen).
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1221,6 +1241,25 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-21 (85): Dil ve mantık denetimi, 4. grup (8 test; üç ankette 116 madde, beş görev; Sözel Akıl Yürütme ve Kelime
+  Bilgisi'nde 28'er soru tek tek çözüldü). İkinci denetçi bağımsız okudu (47 bulgu; 3'ü kesin hata). **Kesin hatalar:**
+  Kelime Bilgisi'nde bir yanlış şık "Tarlayı sulayıp bakmak" (bakmak "-e" ister) → "çapalamak"; Sözel Akıl Yürütme yönergesi
+  "her sorunun üstünde ne yapacağın yazar" diyordu ama sıralama sorularında üstte yazı yok → "her soruda"; Öğrenme ve Başarı'da
+  ölçek açıklaması "görevleri kabul etme ve üstesinden gelebileceğine" → "bunların üstesinden". **Kural Değiştirme:** "her
+  bölümden önce alıştırma" yanlıştı (dördüncü bölümden önce yok) → "renk, şekil ve ilk karışık bölümden önce"; 4 saniyelik
+  sınır yönergede yoktu; "şekle rengine mi … bakarak cevap vereceğini" ve "aynı kural sürerkenkine göre" cümleleri; geri
+  bildirimde art arda iki iki nokta. **Sözel Akıl Yürütme:** "Bu bilgilerle bilinemez" seçeneği her soruda varmış gibi
+  anlatılıyordu; tür adlarına sade karşılık eklendi; dört düzey açıklaması ("mesleğin çalışma yeri", "bilgilerden kesin olanı
+  seçmek", "adı hiç geçmeyen" (adı geçiyor), "hâlini başka bir şeye uygulamak"). **Kelime Bilgisi:** giriş ve ölçek açıklaması
+  zıt anlam sorularına uymuyordu ("anlamına en uygun seçenek"); yönergede deyim unutulmuştu; 5. düzeyde "Çoğu yazı dilinde
+  geçen" → "Çoğunlukla"; sınırlılıkta "dil bilgisi bilgisini". **Kelime Listesi:** alıştırma kelimesi "bardak" asıl listedeki
+  "bayrak"a çok benziyordu → "yıldız"; "bu kez gösterilmeden yazacaksın" (çatı) → "yeniden görmeden"; "Yalnızca az önce …"
+  (yanlış yerde). **Kâğıt Katlama:** iki alıştırma açıklaması ve ipucu ("delik açıldı" ile "kâğıdı açınca" aynı cümlede;
+  3. sınıfa "diktir"). **Anketler:** "Aceleci kararlar veririm" (aceleci kişiyi niteler) → "Aceleyle karar veririm" (dört
+  test); "Hayal gücüm pek güçlü değildir" (kök yinelemesi) → "pek iyi değildir" (dört test); üç ölçek açıklaması ("şeylerin
+  derin anlamı", yinelenen "ne düşündüğüne … görüşlerine"); Düşünmeyi Sevme tanıtımında "karşılığına" (neyin?). **Dokuz
+  görev:** seçmeli sorularda "seçeneğe dokun" → "seçeneği seç". Soru izleri güncellendi, sürümler aynı (sorular ve anahtarlar
+  değişmedi). Ters puanlama: üç ankette 53 işaret doğru. Kalıcı kural: yönergedeki süre Kural Değiştirme'de de denetleniyor.
 - 2026-11-20 (84): Dil ve mantık denetimi, 3. grup (8 test; üç ankette 284 madde, beş görev). İkinci denetçi bağımsız
   okudu (42 bulgu; 4'ü kesin hata, hepsi dil bilgisi). **Kesin hatalar:** 16 Faktörlü'de Kurallara bağlılık açıklaması
   "kuralları çiğnemekten ve açığını aramaktan" (neyin açığı?) → "kuralların açığını"; Şekil Akıl Yürütme, Sayı Dizileri ve
@@ -1333,5 +1372,3 @@ En yeni üstte; en çok 10 madde tutulur.
   Kayan şeritten "Matematik" çıktı ("Zihinden hesaplama" girdi); "Hazırlanıyor: Türkçe Konu Tarama Testi" planı
   kaldırıldı (akademik test eklenmiyor). Renkler, yazı tipi ve öteki bölümler aynı.
 - 2026-11-05 (76): Matematik Konu Tarama Testi kaldırıldı (ayrıntı "Matematik Konu Tarama Testi: kaldırıldı" bölümünde).
-- 2026-11-05 (75): Sesli okumada otomatik analiz herkese açık varsayılan sürüm oldu; yetişkin sürümü `?surum=yetiskinli`
-  ile yedek yol; canlıda uçtan uca denendi (`araclar/sesli-okuma-dene.mjs`).

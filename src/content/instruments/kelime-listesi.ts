@@ -81,12 +81,12 @@ const task: WordListTask = {
   name: 'Kelime Listesi Hatırlama',
   measures: 'Sözel öğrenme ve bellek: tekrarlarla bir kelime listesini öğrenebilme, öğrendiğini koruyabilme ve öğrendiği kelimeleri tanıyabilme.',
   instructions: [
-    'Ekranda 15 kelime tek tek ve kısa süreyle gösterilecek. Kelimeleri okurken aklında tutmaya çalış; gösterilirken onları kâğıda ya da başka bir yere yazma.',
+    'Ekranda 15 kelime tek tek gösterilecek; her kelime kısa bir süre görünüp kaybolacak. Kelimeleri okurken aklında tutmaya çalış; gösterilirken onları kâğıda ya da başka bir yere yazma.',
     'Liste bitince hatırladığın bütün kelimeleri yaz; sıra önemli değil. Aynı liste üç kez gösterilecek: her seferinde, daha önce yazdıkların da dâhil, hatırladığın bütün kelimeleri yeniden yaz.',
-    'Sonra yeni bir liste göreceksin ve onu da yazacaksın. Ardından ilk listeyi, bu kez gösterilmeden, bir kez daha yazacaksın. En sonda kelimeler tek tek gelecek; her birinin ilk listede olup olmadığını söyleyeceksin.',
+    'Sonra yeni bir liste göreceksin ve onu da yazacaksın. Ardından ilk listeyi, bu kez yeniden görmeden, bir kez daha yazacaksın. En sonda kelimeler tek tek gelecek; her birinin ilk listede olup olmadığını söyleyeceksin.',
     'Kelimeleri gördüğün gibi yazmaya çalış. Türkçe harfleri (ç, ğ, ı, ö, ş, ü) kullanmasan da olur; uzun kelimelerde küçük bir yazım hatası da sorun değil.',
   ],
-  practice: ['ekmek', 'saat', 'bardak'],
+  practice: ['ekmek', 'saat', 'yıldız'],
   listA: LIST_A,
   listB: LIST_B,
   learningTrials: 3,
@@ -135,7 +135,7 @@ export const kelimeListesi: TaskInstrument = {
     whatItMeasures:
       'Sözel öğrenmeyi ve belleği ölçer: tekrarlarla bir kelime listesini öğrenebilmeyi (üç denemede hatırlanan kelimeler), araya yeni bir liste girdikten sonra öğrenileni koruyabilmeyi ve öğrenilen kelimeleri yeni ya da benzer kelimelerden ayırt edebilmeyi (tanıma). Raporda ayrıca listenin başından, ortasından ve sonundan ne kadar hatırlandığı ve yanlışlıkla tanınan kelimelerin türü anlatılır. Listenin başındaki kelimeleri hatırlamak, kelimeler sunulurken öncekileri içinden tekrar etmekle ilgilidir ve bu tür tekrar çocukluk boyunca gelişir (Lehmann, 2015). 5, 7, 9 ve 11 yaş gruplarından çocuklarla yapılan bir çalışmada, birbirine anlamca yakın kelimelerden oluşan listelerden sonra listede olmayan ama anlamca yakın bir kelimeyi yanlışlıkla tanıma 5 yaş grubunda öteki gruplardan daha az görülmüş, 7, 9 ve 11 yaş grupları arasında güvenilir bir fark bulunmamıştır; 5 yaş grubundaki çocuklar ise sesçe benzer kelimelerde, anlamca yakın kelimelerdekinden daha çok yanılmıştır (Dewhurst ve ark., 2012).',
     turkishVersion:
-      'Özgün görev. Kelimeler Türkçede sık kullanılan, somut ve kolay yazılan adlardan seçilmiştir; bir listedeki kelimeler farklı türlerdendir (ör. yalnızca bir hayvan, bir meyve, bir çalgı).',
+      'Özgün görev. Kelimeler Türkçede sık kullanılan, somut ve kolay yazılan adlardan seçilmiştir; ilk listedeki kelimeler farklı türlerdendir (ör. yalnızca bir hayvan, bir meyve, bir çalgı).',
     reliability:
       'Bu görevin güvenirlik ve norm çalışması henüz yapılmadı. Liste her denemede aynı sırayla gösterilir; herkes aynı kelimeleri görür. Tanıma bölümünde her yanılgı türünden yalnızca 5 kelime vardır; bu yüzden türler arasındaki farklar kaba bir göstergedir. Öğrenmedeki artış ya da araya giren listeden sonraki değişim gibi iki sonuç arasındaki farklar, kişiler arasındaki farkları güvenilir biçimde ölçmekte zorlanır (Hedge ve ark., 2018); raporda bu farklar yalnızca betimleyici olarak verilir.',
     normStatus: 'none',

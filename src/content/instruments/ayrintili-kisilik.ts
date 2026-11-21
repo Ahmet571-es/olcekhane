@@ -122,7 +122,7 @@ const ITEMS: [number, string, boolean, string, string][] = [
   [56, N6, true, 'Yaşadığım olaylar karşısında bunalırım.', 'Become overwhelmed by events'],
   [57, E6, false, 'Çok eğlenirim.', 'Have a lot of fun'],
   [59, A6, false, 'Benden daha zor durumda olanlara karşı şefkat duyarım.', 'Feel sympathy for those who are worse off than myself'],
-  [60, C6, true, 'Aceleci kararlar veririm.', 'Make rash decisions'],
+  [60, C6, true, 'Aceleyle karar veririm.', 'Make rash decisions'],
   [61, N1, true, 'Birçok şeyden korkarım.', 'Am afraid of many things'],
   [62, E1, true, 'Başkalarıyla görüşmekten kaçınırım.', 'Avoid contacts with others'],
   [63, O1, false, 'Hayal kurmayı çok severim.', 'Love to daydream'],

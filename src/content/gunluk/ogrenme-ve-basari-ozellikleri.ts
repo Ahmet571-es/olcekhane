@@ -177,7 +177,7 @@ export const ogrenmeVeBasariDaily: SurveyDaily = {
      * Planlı ve dikkatli çalışma: plan01 "Önceden plan yapmayı severim", plan02 "İşleri usulüne uygun yaparım", plan04
      * "Ayrıntılara dikkat ederim", plan05 "Plan yapar ve planıma bağlı kalırım"; ters: plan06 "Düşünmeden işlere atılırım"
      * (kullanılmadı), plan07 "Aklıma estiği gibi davranmayı severim", plan08 "Planlarımı sık sık son dakikada yaparım", plan09
-     * "Aceleci kararlar veririm", plan10 "İşleri birbirine karıştırırım".
+     * "Aceleyle karar veririm", plan10 "İşleri birbirine karıştırırım".
      */
     planfulness: {
       poles: { low: 'Anına göre davranır', high: 'Planlı ve dikkatli ilerler' },

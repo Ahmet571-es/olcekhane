@@ -208,7 +208,7 @@ export function Vocabulary({ task, onDone }: { task: VocabularyTask; onDone: (tr
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Her soruda bir kelime ya da bir cümle ve beş seçenek göreceksin; yalnızca biri doğrudur. Ne sorulduğunu kelimenin ya da cümlenin altındaki soru söyler. Seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas.
+          Her soruda bir kelime ya da bir cümle ve beş seçenek göreceksin; seçeneklerden yalnızca biri doğrudur. Ne sorulduğunu kelimenin ya da cümlenin altındaki soru söyler. Bir seçenek seç, emin olunca “Cevabı ver” düğmesine bas.
         </p>
         <p className="measure text-lg">
           Önce her soru türünden birer tane olmak üzere {task.practice.length} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı ve nedenini göreceksin.
@@ -302,7 +302,7 @@ export function Vocabulary({ task, onDone }: { task: VocabularyTask; onDone: (tr
         ) : (
           <>
             <Options item={item} selected={selected} onSelect={setSelected} onConfirm={confirm} />
-            <p className="text-center text-ink-2">{selected === null ? 'Doğru olduğunu düşündüğün seçeneğe dokun.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
+            <p className="text-center text-ink-2">{selected === null ? 'Doğru olduğunu düşündüğün seçeneği seç.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>
                 Cevabı ver

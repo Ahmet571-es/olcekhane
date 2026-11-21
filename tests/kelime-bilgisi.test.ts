@@ -149,9 +149,11 @@ describe('Kelime bilgisi: sorular', () => {
 
 /**
  * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-10-22'de yalnızca düzeylerin
- * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı.
+ * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı. 2026-11-21'de yalnızca dil
+ * düzeltildi (kb07'nin bir yanlış şıkkı "Tarlayı sulayıp bakmak" → "çapalamak", 5. düzeyin açıklaması, bir alıştırma
+ * açıklaması); sorulan kelimeler, doğru cevaplar ve çeldiriciler aynı: sürüm yine 1.
  */
-const SORU_IZI = '2258b3f253122682';
+const SORU_IZI = 'a0e27f59e8b08f25';
 
 describe('Kelime bilgisi: puanlama', () => {
   const all = (fn: (i: number) => Partial<VocabularyTrialInput> = () => ({})): VocabularyTrialInput[] =>

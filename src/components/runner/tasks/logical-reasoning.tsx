@@ -299,7 +299,7 @@ export function LogicalReasoning({ task, onDone }: { task: LogicalReasoningTask;
         ) : (
           <>
             <Options selected={selected} onSelect={setSelected} onConfirm={confirm} />
-            <p className="text-center text-ink-2">{selected === null ? 'Doğru olduğunu düşündüğün seçeneğe dokun.' : `${LOGIC_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
+            <p className="text-center text-ink-2">{selected === null ? 'Doğru olduğunu düşündüğün seçeneği seç.' : `${LOGIC_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>
                 Cevabı ver

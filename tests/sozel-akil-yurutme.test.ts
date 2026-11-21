@@ -182,9 +182,10 @@ describe('Sözel akıl yürütme: sorular', () => {
 
 /**
  * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-10-22'de yalnızca düzeylerin
- * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı.
+ * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı. 2026-11-21'de yalnızca dört
+ * düzey açıklamasının dili düzeltildi (sorular, şıklar ve cevap anahtarı aynı): sürüm yine 1.
  */
-const SORU_IZI = 'c2032d0c5dda02d4';
+const SORU_IZI = 'c761be41e797a56e';
 
 describe('Sözel akıl yürütme: puanlama', () => {
   const all = (fn: (i: number) => Partial<VerbalTrialInput> = () => ({})): VerbalTrialInput[] =>
@@ -311,7 +312,7 @@ describe('Sözel akıl yürütme: rapor', () => {
     expect(r.student.items[0].text).toContain('Sorular zorlaştıkça doğru cevapların azaldı');
     expect(r.student.items[1].badge).toBe('3. düzey');
     expect(r.student.items[1].text).toContain('1–3. düzeylerdeki soruların hepsini doğru cevapladın. 3. düzeydeki sorularda şunlar gerekiyordu: bir parçanın');
-    expect(r.student.items[1].text).toContain('Bu düzeydeki sorularda şunlar gerekiyordu: bir şeyin en hafif');
+    expect(r.student.items[1].text).toContain('Bu düzeydeki sorularda şunlar gerekiyordu: bir şeyin hafif ve güçlü hâli arasındaki ilişkiyi');
     const typeRows = r.student.items[2].visual?.type === 'bars' ? r.student.items[2].visual.rows : [];
     expect(typeRows.map((x) => `${x.label} ${x.valueLabel}`)).toEqual(['Kelime ilişkileri 6/6', 'Sınıflama 4/6', 'Sıralama 4/6', 'Mantıksal çıkarım 4/6']);
     expect(r.student.items[2].badge).toBe('4 soru türünün hepsinde soruların çoğu doğru');

@@ -261,7 +261,7 @@ export const hizliKisilikDaily: SurveyDaily = {
     },
     /*
      * Merak ve Hayal Gücü: m05 "Canlı bir hayal gücüm vardır"; ters: m10 "Soyut fikirler ilgimi çekmez", m15 "Soyut
-     * fikirleri anlamakta zorlanırım" (kullanılmadı), m20 "Hayal gücüm pek güçlü değildir". Soyut fikir örneği testin kendi
+     * fikirleri anlamakta zorlanırım" (kullanılmadı), m20 "Hayal gücüm pek iyi değildir". Soyut fikir örneği testin kendi
      * anlatımından: "adalet ya da sonsuzluk gibi elle tutulamayan kavramlar". Düşük ucun örnekleri ilgiyi anlatır.
      */
     intellect: {

@@ -205,7 +205,7 @@ export function CognitiveReflection({ task, onDone }: { task: CognitiveReflectio
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Her soruda kısa bir durum ve bir soru göreceksin. Dört seçenekten doğru olduğunu düşündüğün cevaba dokun, emin olunca “Cevabı ver” düğmesine bas.
+          Her soruda kısa bir durum ve bir soru göreceksin. Dört seçenekten doğru olduğunu düşündüğün cevabı seç, emin olunca “Cevabı ver” düğmesine bas.
         </p>
         <p className="measure text-lg">Önce {countWord(task.practice.length)} alıştırma sorusu çözelim. Her cevaptan sonra doğru cevabı göreceksin.</p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–4 ya da A–D tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
@@ -296,7 +296,7 @@ export function CognitiveReflection({ task, onDone }: { task: CognitiveReflectio
           <>
             <Options item={item} selected={selected} onSelect={setSelected} onConfirm={confirm} />
             <p className="text-center text-ink-2">
-              {selected === null ? 'Doğru olduğunu düşündüğün seçeneğe dokun.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}
+              {selected === null ? 'Doğru olduğunu düşündüğün seçeneği seç.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}
             </p>
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>

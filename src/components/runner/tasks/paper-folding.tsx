@@ -247,7 +247,7 @@ export function PaperFolding({ task, onDone }: { task: PaperFoldingTask; onDone:
           delik, o yerdeki bütün katlardan geçer.
         </p>
         <p className="measure text-lg">
-          Kâğıt yeniden açılınca nasıl görünür? Kâğıt ya da kalem kullanmadan, zihninde çöz. Doğru seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas.
+          Kâğıt yeniden açılınca nasıl görünür? Kâğıt ya da kalem kullanmadan, zihninde çöz. Doğru seçeneği seç, emin olunca “Cevabı ver” düğmesine bas.
           Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
         </p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–5 ya da A–E tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
@@ -273,10 +273,10 @@ export function PaperFolding({ task, onDone }: { task: PaperFoldingTask; onDone:
           {practiceScore === 0
             ? `Alıştırmadaki ${task.practice.length} sorunun hiçbirini doğru cevaplayamadın.`
             : practiceScore === task.practice.length
-              ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun hepsini doğru cevapladın.`
+              ? `Alıştırmadaki ${task.practice.length} sorunun hepsini doğru cevapladın.`
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
-            ? 'Kâğıdı son katlamadan başlayarak zihninde adım adım aç: her açışta deliğin bir eşi, katlama çizgisinin öbür yanında ve çizgiye aynı uzaklıkta açılır; ama yalnızca katlanan parça o deliğe ulaşmışsa. İstersen alıştırmayı tekrarlayabilirsin.'
+            ? 'Kâğıdı son katlamadan başlayarak zihninde adım adım aç. Katlanan parça deliğin olduğu yeri örtüyorsa, her açışta deliğin bir eşi katlama çizgisinin öbür yanında, çizgiye aynı uzaklıkta ortaya çıkar; örtmüyorsa yeni delik oluşmaz. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
         </p>
         <p className="measure text-ink-2">
@@ -336,7 +336,7 @@ export function PaperFolding({ task, onDone }: { task: PaperFoldingTask; onDone:
         ) : (
           <>
             <Options item={item} selected={selected} onSelect={setSelected} onConfirm={confirm} />
-            <p className="text-center text-ink-2">{selected === null ? 'Doğru olduğunu düşündüğün seçeneğe dokun.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
+            <p className="text-center text-ink-2">{selected === null ? 'Doğru olduğunu düşündüğün seçeneği seç.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>
                 Cevabı ver

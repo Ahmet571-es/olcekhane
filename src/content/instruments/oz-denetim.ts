@@ -81,7 +81,7 @@ const ITEMS: [string, boolean, string, string][] = [
   ['dus08', true, 'Çılgınlıklar yaparım.', 'Do crazy things.'],
   ['dis08', true, 'Bir işe başlamam için birinin beni dürtmesi gerekir.', 'Need a push to get started.'],
   ['tut06', false, 'Nadiren aşırıya kaçarım.', 'Rarely overindulge.'],
-  ['dus05', true, 'Aceleci kararlar veririm.', 'Make rash decisions.'],
+  ['dus05', true, 'Aceleyle karar veririm.', 'Make rash decisions.'],
   ['dis07', true, 'Zamanımı boşa harcarım.', 'Waste my time.'],
   ['tut03', true, 'Sonradan pişman olduğum şeyler yaparım.', 'Do things I later regret.'],
   ['dus01', false, 'Hata yapmaktan kaçınırım.', 'Avoid mistakes.'],

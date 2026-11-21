@@ -170,9 +170,10 @@ describe('Kâğıt katlama: sorular', () => {
 
 /**
  * Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-10-22'de yalnızca düzeylerin
- * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı.
+ * rapordaki sade anlatımı değişti (sorular, cevaplar ve puanlama aynı); bu yüzden sürüm 1 kaldı. 2026-11-21'de yalnızca iki
+ * alıştırma açıklamasının dili düzeltildi (katlamalar, delikler ve cevap anahtarı aynı): sürüm yine 1.
  */
-const SORU_IZI = '5ca0704ea9e763aa';
+const SORU_IZI = '330afd869259218e';
 
 describe('Kâğıt katlama: puanlama', () => {
   const all = (fn: (i: number) => Partial<FoldingTrialInput> = () => ({})): FoldingTrialInput[] =>

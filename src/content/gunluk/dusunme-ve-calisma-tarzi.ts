@@ -90,7 +90,7 @@ export const dusunmeVeCalismaTarziDaily: SurveyDaily = {
     /*
      * Yenilikçilik: inv01 "İşleri yapmanın yeni yollarını düşünüp bulmayı çok severim", inv02 "Canlı bir hayal gücüm vardır",
      * inv03 "Aklım fikirlerle doludur", inv04 "Sohbetin seviyesini yükseltirim" (kullanılmadı), inv05 "Cesur planlar
-     * kurarım", inv06 "Çok iyi fikirler bulurum" (kullanılmadı); ters: inv07 "Hayal gücüm pek güçlü değildir", inv08 "Bir
+     * kurarım", inv06 "Çok iyi fikirler bulurum" (kullanılmadı); ters: inv07 "Hayal gücüm pek iyi değildir", inv08 "Bir
      * şeyleri hayal etmekte zorlanırım", inv09 "Bir konunun derinine inmem" (kullanılmadı), inv10 "Yeni fikirler bulamam".
      * Test yaratıcılığı ölçmez: örnekler kişinin kendini nasıl gördüğünü anlatır ("aklının fikirlerle dolu olduğunu
      * hissedebilirsin"), fikirlerinin iyi olduğunu söylemez.

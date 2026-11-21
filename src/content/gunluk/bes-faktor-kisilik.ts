@@ -223,7 +223,7 @@ export const besFaktorDaily: SurveyDaily = {
      * Merak ve hayal gücü: I1 "Kelime dağarcığım zengindir", I3 "Hayal gücüm çok canlıdır", I5 "Çok iyi fikirler bulurum", I8
      * "Konuşurken zor ve az bilinen kelimeler kullanırım", I9 "Olaylar ve fikirler üzerine düşünmeye zaman ayırırım", I10
      * "Aklım fikirlerle doludur"; ters: I2 "Soyut fikirleri … anlamakta zorlanırım", I4 "Soyut fikirler ilgimi çekmez", I6
-     * "Hayal gücüm pek güçlü değildir". I7 "Bir şeyleri çabuk kavrarım" kullanılmadı (kavrama hızı gibi okunmasın). Düşük ucun
+     * "Hayal gücüm pek iyi değildir". I7 "Bir şeyleri çabuk kavrarım" kullanılmadı (kavrama hızı gibi okunmasın). Düşük ucun
      * örnekleri ilgiyi anlatır, beceriyi değil.
      */
     intellect: {

@@ -85,7 +85,7 @@ const SPECS: Spec[] = [
     lure: 'Fırında pişirilen yiyecek',
     lureKind: 'meaning',
     lurePos: 5,
-    others: ['Ürünü toplamak', 'Tarlayı sulayıp bakmak', 'Ürünü satmak'],
+    others: ['Ürünü toplamak', 'Tarlayı sulayıp çapalamak', 'Ürünü satmak'],
   },
   {
     key: 'kb08',
@@ -275,7 +275,7 @@ const PRACTICE_SPECS: PracticeSpec[] = [
     lure: 'ağzını kocaman açmak',
     lurePos: 3,
     others: ['çok üzülmek', 'çok yorulmak', 'çok acıkmak'],
-    explain: 'Deyimler, içindeki kelimelerin tek tek anlamından farklı bir anlam taşır. “Ağzı kulaklarına varmak” ağzını kocaman açmak değil, çok sevinmek demektir.',
+    explain: 'Bir deyim, içindeki kelimelerin tek tek anlamından farklı bir anlam taşır. “Ağzı kulaklarına varmak” ağzını kocaman açmak değil, çok sevinmek demektir.',
   },
 ];
 
@@ -307,8 +307,8 @@ const task: VocabularyTask = {
   name: 'Kelime Bilgisi',
   measures: 'Türkçe kelimelerin ve deyimlerin anlamlarını bilmeyi ölçer: eş ve zıt anlam, cümlede anlam ve deyimler.',
   instructions: [
-    'Her soruda bir kelime ya da içinde bir kelimenin veya deyimin vurgulandığı bir cümle göreceksin. Soruya göre kelimenin eş anlamlısını, zıt anlamlısını ya da cümlede hangi anlamda kullanıldığını beş seçenekten seç.',
-    'Bilmediğin bir kelimede tahmin edebilirsin; ama önce cümleyi ve seçeneklerin hepsini dikkatle oku.',
+    'Her soruda bir kelime ya da içinde bir kelimenin veya deyimin vurgulandığı bir cümle göreceksin. Soruya göre kelimenin eş anlamlısını, zıt anlamlısını ya da kelimenin veya deyimin cümlede hangi anlamda kullanıldığını beş seçenekten seç.',
+    'Bilmediğin bir kelimede tahminde bulunabilirsin; ama önce cümleyi ve seçeneklerin hepsini dikkatle oku.',
     'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Süre sınırı yok.',
     'Önce doğru cevabı gösterilen dört alıştırma sorusu çözeceksin.',
   ],
@@ -326,7 +326,7 @@ const task: VocabularyTask = {
     },
     { level: 3, name: '3. düzey', plain: 'Daha seyrek geçen kelimeleri, kelimelerin mecaz anlamlarını ve deyimlerin anlamını bilmek.' },
     { level: 4, name: '4. düzey', plain: 'Gazete, bilim ve iş hayatı yazılarında geçen kelimeleri, bu alanlara özgü anlamları ve daha az bilinen deyimleri bilmek.' },
-    { level: 5, name: '5. düzey', plain: 'Çoğu yazı dilinde geçen seyrek kelimeleri, soyut anlamları ve az bilinen deyimleri bilmek.' },
+    { level: 5, name: '5. düzey', plain: 'Çoğunlukla yazı dilinde geçen seyrek kelimeleri, soyut anlamları ve az bilinen deyimleri bilmek.' },
   ],
 };
 
@@ -351,13 +351,13 @@ export const kelimeBilgisi: TaskInstrument = {
   intro: {
     title: 'Kelimelerin anlamını bul',
     paragraphs: [
-      'Birazdan kelimeler ve cümleler göreceksin. Her soruda kelimenin ya da deyimin anlamına en uygun seçeneği beş seçenekten seçeceksin.',
+      'Birazdan kelimeler ve cümleler göreceksin. Her soruda kelimenin eş ya da zıt anlamlısını ya da cümledeki anlamını beş seçenekten seçeceksin.',
       `Test ${SPECS.length} sorudan oluşur ve kolaydan zora doğru ilerler. Süre sınırı yok.`,
       'Sessiz bir yerde, dikkatini dağıtacak şeyler olmadan çözersen sonuç seni daha iyi yansıtır.',
     ],
   },
   scales: [
-    { key: 'kb_dogru', name: 'Doğru cevaplar', plain: 'Kelimenin ya da deyimin anlamına uyan seçeneğin seçildiği soruların sayısı.' },
+    { key: 'kb_dogru', name: 'Doğru cevaplar', plain: 'Doğru seçeneğin seçildiği soruların sayısı.' },
     { key: 'kb_duzey', name: 'Ulaşılan düzey', plain: 'Soruların en az %60’ının doğru cevaplandığı en yüksek düzey; o düzeye kadarki soruların da en az %60’ı doğru olmalıdır.' },
     { key: 'kb_tur', name: 'Soru türleri', plain: 'Eş anlam, zıt anlam, cümlede anlam ve deyim sorularından hangilerinin daha kolay, hangilerinin daha zor geldiği.' },
     { key: 'kb_calisma', name: 'Çalışma biçimi', plain: 'Sorulara ne kadar zaman ayrıldığı ve zor sorularda acele edilip edilmediği.' },
@@ -379,7 +379,7 @@ export const kelimeBilgisi: TaskInstrument = {
     license: 'Özgün test. Sorular, puanlama ve rapor Ölçekhane tarafından geliştirilmiştir.',
     limitations: [
       'Zekâ puanı (IQ) vermez ve tanı koymaz; kapsamlı bir değerlendirme yalnızca uzmanlarca, geçerliği gösterilmiş testlerle yapılabilir.',
-      'Türkçe kelime bilgisinin yalnızca küçük bir örneğini (24 soru) ölçer; bir kişinin bildiği kelimelerin tamamını göstermez. Kelimeleri konuşurken ve yazarken kullanabilmeyi, yazım ya da dil bilgisi bilgisini ölçmez.',
+      'Türkçe kelime bilgisinin yalnızca küçük bir örneğini (24 soru) ölçer; bir kişinin bildiği kelimelerin tamamını göstermez. Kelimeleri konuşurken ve yazarken kullanabilmeyi, yazım ya da dil bilgisi kurallarını bilmeyi ölçmez.',
       'Kelime bilgisi; okuma alışkanlığından, evde ve çevrede konuşulan dilden ve Türkçenin ana dil olup olmamasından etkilenir. Türkçeyi sonradan öğrenen ya da evde başka bir dil konuşan biri için sonuç, düşünme becerisini değil Türkçe kelime bilgisini gösterir.',
       'Sonuç; o günkü yorgunluk, isteklilik ve dikkatten etkilenir. Test yeniden çözüldüğünde soruları hatırlamak sonucu yükseltebilir.',
       'Bu testin güvenirlik, geçerlik ve norm çalışması henüz yapılmadı.',

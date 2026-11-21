@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { RULE_NAMES, RULE_SWITCH_COLORS, ruleAnswer } from '@/lib/instruments/rule-switch';
 import type { RuleSwitchRule, RuleSwitchTask, RuleSwitchTrial } from '@/lib/instruments/types';
 import type { RuleSwitchTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, primaryPointer, useKeys, usePageHidden, wait } from './common';
+import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, countOf, isAbort, primaryPointer, useKeys, usePageHidden, wait } from './common';
 
 type Part = 'color' | 'shape' | 'mixed';
 type Stage = { kind: 'practice'; part: Part } | { kind: 'block'; block: number };
@@ -169,7 +169,7 @@ export function RuleSwitch({ task, onDone }: { task: RuleSwitchTask; onDone: (tr
               ? 'Biraz daha hızlı olmaya çalış.'
               : tooFast
                 ? 'Çok hızlı bastın; önce işarete ve şekle bak.'
-                : `İşarete bak: ${RULE_HELP[trial.rule]}`;
+                : `İşarete bak. ${RULE_HELP[trial.rule]}`;
           setView({ kind: 'feedback', text, good: correct });
           await wait(correct ? 700 : 1500, ac.signal);
         } else {
@@ -284,7 +284,7 @@ export function RuleSwitch({ task, onDone }: { task: RuleSwitchTask; onDone: (tr
     return (
       <div key={`${step}-${stage}`} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Alıştırmada {n} denemenin {practiceScore === n ? 'hepsini' : `${practiceScore} tanesini`} doğru yaptın.{' '}
+          Alıştırmada {n} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, n)} doğru yaptın`}.{' '}
           {low ? `${rule} İstersen alıştırmayı tekrarlayabilirsin.` : 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
         </p>
         <Key />

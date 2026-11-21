@@ -155,7 +155,7 @@ export const ayrintiliKisilikDaily: SurveyDaily = {
      * bırakırım". Görev bilinci: k015 "Verdiğim sözleri tutarım", k045; ters k075, k105 "Sözümden dönerim". Çalışkanlık: k020
      * "Çok çalışırım", k050 "Benden beklenenden fazlasını yaparım"; ters k080 "Sadece idare edecek kadar çalışırım", k110.
      * Öz disiplin: k025 "Her zaman hazırlıklı olurum", k055 "Yaptığım planları uygularım"; ters k085, k115. Temkinlilik: dört
-     * maddesi de ters: k030 "Düşünmeden işlere atılırım", k060 "Aceleci kararlar veririm", k090 "Bir işe acele edip hemen
+     * maddesi de ters: k030 "Düşünmeden işlere atılırım", k060 "Aceleyle karar veririm", k090 "Bir işe acele edip hemen
      * dalarım", k120. Yetkinlik duygusu (k005, k035, k065, k095) kullanılmadı.
      */
     conscientiousness: {

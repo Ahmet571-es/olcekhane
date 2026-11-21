@@ -46,7 +46,7 @@ const task: RuleSwitchTask = {
   instructions: [
     'Ekranda mavi ya da turuncu bir daire ya da kare göreceksin. Şeklin üstündeki işaret, hangi kurala göre basacağını söyler.',
     'RENK işaretinde şeklin rengine bak: mavi ise sol, turuncu ise sağ düğmeye bas. ŞEKİL işaretinde şeklin biçimine bak: daire ise sol, kare ise sağ düğmeye bas.',
-    'Önce yalnızca renk kuralıyla, sonra yalnızca şekil kuralıyla birer bölüm yapacaksın; sonra iki kural karışacak. Her bölümden önce kısa bir alıştırma var. Hem hızlı hem doğru olmaya çalış.',
+    'Önce yalnızca renk kuralıyla, sonra yalnızca şekil kuralıyla birer bölüm yapacaksın; sonra iki kural iki bölüm boyunca karışacak. Renk, şekil ve ilk karışık bölümden önce kısa bir alıştırma var. Hem hızlı hem doğru olmaya çalış: her şekil için en çok 4 saniyen var, süre dolunca sıradaki şekil gelir.',
     'Telefonda ya da tablette iki başparmağını iki düğmenin üstünde tut; bilgisayarda sol ve sağ ok tuşlarını kullan.',
   ],
   practice: { color: pureTrials('color', 0, 2, r), shape: pureTrials('shape', 1, 2, r), mixed: practiceMixed },
@@ -77,14 +77,14 @@ export const kuralDegistirme: TaskInstrument = {
   intro: {
     title: 'Kurala bak, doğru düğmeye bas!',
     paragraphs: [
-      'Birazdan ekranda renkli şekiller göreceksin. Şeklin üstündeki işaret, şekle rengine mi yoksa biçimine mi bakarak cevap vereceğini söyleyecek.',
-      'Görev dört bölümden oluşur. Her bölümden önce kısa bir alıştırma yapacaksın.',
+      'Birazdan ekranda renkli şekiller göreceksin. Şeklin üstündeki işaret, şeklin rengine mi yoksa biçimine mi bakacağını söyleyecek.',
+      'Görev dört bölümden oluşur: bir renk bölümü, bir şekil bölümü ve iki kuralın karıştığı iki bölüm. Renk, şekil ve ilk karışık bölümden önce kısa bir alıştırma yapacaksın.',
       'Sessiz bir yerde, dikkatini dağıtacak şeyler olmadan yaparsan sonuç seni daha iyi yansıtır.',
     ],
   },
   scales: [
     { key: 'kd_dogruluk', name: 'Doğruluk', plain: 'Şekillere, işaretin söylediği kurala göre doğru düğmeyle cevap verme oranı.' },
-    { key: 'kd_degisim', name: 'Kural değiştirme', plain: 'Kural değiştiğinde cevabın, aynı kural sürerkenkine göre ne kadar yavaşladığı.' },
+    { key: 'kd_degisim', name: 'Kural değiştirme', plain: 'Kural değiştiğinde cevabın, kuralın aynı kaldığı denemelere göre ne kadar yavaşladığı.' },
     { key: 'kd_karisik', name: 'İki kuralı akılda tutma', plain: 'İki kuralın karıştığı bölümde, kural değişmese bile cevabın tek kurallı bölümlere göre ne kadar yavaşladığı.' },
     { key: 'kd_calisma', name: 'Çalışma biçimi', plain: 'Tipik cevap süresi; süre içinde basılmayan, çok erken basılan ya da hep aynı düğmeye basılan denemeler.' },
   ],

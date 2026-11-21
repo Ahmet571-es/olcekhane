@@ -121,7 +121,7 @@ const PRACTICE_SPECS: (Omit<Spec, 'level'> & { explain: string })[] = [
     lurePos: 4,
     others: ['flipV', 'move:0,-3', 'add:6,6'],
     explain:
-      'Yalnızca sağdaki dar parça katlandı. Delik, kâğıdın tek kat olduğu yerden açıldı; bu yüzden açınca yalnızca bir delik olur. Delik iki kattan geçseydi, katlama çizgisinin öbür yanında da bir delik olurdu.',
+      'Yalnızca sağdaki dar parça katlandı. Kâğıt, tek kat olduğu bir yerden delindi; bu yüzden kâğıt açılınca yalnızca bir delik olur. Delik iki kattan geçseydi, katlama çizgisinin öbür yanında da bir delik olurdu.',
   },
   {
     key: 'kkp3',
@@ -133,7 +133,7 @@ const PRACTICE_SPECS: (Omit<Spec, 'level'> & { explain: string })[] = [
     lurePos: 2,
     others: ['none', 'flipV', 'flipH'],
     explain:
-      'Kâğıt, sağ üst köşeden sol alt köşeye uzanan çapraz çizgi boyunca katlandı: sağ alttaki üçgen, sol üstteki üçgenin üstüne geldi. Delik iki kattan da geçer. Kâğıt açılınca ikinci delik çapraz çizginin öbür yanında olur: katlama çizgisini bir ayna gibi düşün; iki delik bu aynaya aynı uzaklıktadır ve iki deliği birleştiren çizgi katlama çizgisine diktir.',
+      'Kâğıt, sağ üst köşeden sol alt köşeye uzanan çapraz çizgi boyunca katlandı: sağ alttaki üçgen, sol üstteki üçgenin üstüne geldi. Delik iki kattan da geçer. Kâğıt açılınca ikinci delik çapraz çizginin öbür yanında olur: katlama çizgisini bir ayna gibi düşün; iki delik bu aynaya aynı uzaklıktadır ve aynanın iki yanında tam karşı karşıya durur.',
   },
 ];
 

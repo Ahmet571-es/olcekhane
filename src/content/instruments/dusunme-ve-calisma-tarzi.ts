@@ -84,7 +84,7 @@ const ITEMS: [string, string, boolean, string, string][] = [
   ['cpx01', CPX, false, 'Sanatın önemli olduğuna inanırım.', 'Believe in the importance of art.'],
   ['cpr06', CPR, true, 'Başkalarının ne düşündüğünü umursamam.', "Don't care what others think."],
   ['enl04', ENL, false, 'Sürekli hareket hâlindeyim.', 'Am always on the go.'],
-  ['inv07', INV, true, 'Hayal gücüm pek güçlü değildir.', 'Do not have a good imagination.'],
+  ['inv07', INV, true, 'Hayal gücüm pek iyi değildir.', 'Do not have a good imagination.'],
   ['org02', ORG, false, 'Plan yapar ve planıma bağlı kalırım.', 'Make plans and stick to them.'],
   ['cpx06', CPX, true, 'Soyut fikirler ilgimi çekmez.', 'Am not interested in abstract ideas.'],
   ['cpr03', CPR, false, 'Başkalarının onayına ihtiyaç duyarım.', 'Need the approval of others.'],
@@ -214,7 +214,7 @@ export const dusunmeVeCalismaTarzi: LikertInstrument = {
       key: CPR,
       name: 'Başkalarının görüşüne önem verme',
       plain:
-        'İnsanların ne düşündüğüne, onayına ve görüşlerine önem verme; çevresindekiler gibi davranma. Düşük puan, kendi görüşünü kendisi oluşturmak istemeyi ve başkalarının ne düşündüğünü daha az dert etmeyi gösterir.',
+        'İnsanların kendisi hakkında ne düşündüğüne ve onayına önem verme; başkalarının görüşlerine uyma ve çevresindekiler gibi davranma. Düşük puan, kendi görüşünü kendisi oluşturmak istemeyi ve başkalarının ne düşündüğünü daha az dert etmeyi gösterir.',
       poles: { low: 'Kendi görüşüne göre hareket eden', high: 'Başkalarının görüşüne ve onayına önem veren' },
       alpha: 0.7,
       sdRef: 0.52,

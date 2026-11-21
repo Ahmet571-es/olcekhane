@@ -135,7 +135,7 @@ export const besFaktor: LikertInstrument = {
     { key: 'A6', scale: 'agreeableness', text: 'Yufka yürekli biriyim.', source: 'Have a soft heart.' },
     { key: 'C6', scale: 'conscientiousness', reverse: true, text: 'Kullandığım şeyleri yerine koymayı sık sık unuturum.', source: 'Often forget to put things back in their proper place.' },
     { key: 'ES6', scale: 'emotional_stability', reverse: true, text: 'Kolayca üzülürüm.', source: 'Get upset easily.' },
-    { key: 'I6', scale: 'intellect', reverse: true, text: 'Hayal gücüm pek güçlü değildir.', source: 'Do not have a good imagination.' },
+    { key: 'I6', scale: 'intellect', reverse: true, text: 'Hayal gücüm pek iyi değildir.', source: 'Do not have a good imagination.' },
     { key: 'E7', scale: 'extraversion', text: 'Kalabalık ortamlarda birçok farklı kişiyle konuşurum.', source: 'Talk to a lot of different people at parties.' },
     { key: 'A7', scale: 'agreeableness', reverse: true, text: 'Aslında diğer insanlara pek ilgi duymam.', source: 'Am not really interested in others.' },
     { key: 'C7', scale: 'conscientiousness', text: 'Düzeni severim.', source: 'Like order.' },

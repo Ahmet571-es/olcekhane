@@ -76,7 +76,7 @@ const ITEMS: [string, string, boolean, string, string][] = [
   ['m17', A, true, 'Aslında diğer insanlara pek ilgi duymam.', 'Am not really interested in others.'],
   ['m18', C, true, 'İşleri birbirine karıştırırım.', 'Make a mess of things.'],
   ['m19', ES, false, 'Kendimi nadiren hüzünlü hissederim.', 'Seldom feel blue.'],
-  ['m20', I, true, 'Hayal gücüm pek güçlü değildir.', 'Do not have a good imagination.'],
+  ['m20', I, true, 'Hayal gücüm pek iyi değildir.', 'Do not have a good imagination.'],
 ];
 
 const items: LikertItemDef[] = ITEMS.map(([key, scale, reverse, text, source]) => ({

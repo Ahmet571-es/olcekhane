@@ -110,14 +110,17 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   cevabı gönderen düğmeyi de söyler ve hedef yaşın anlayacağı sözcüklerle yazılır; okuma sorularında doğru şık şıkların en uzunu
   olmaz ve çıkarım sorusu metinde yazmayanı sorar (`tests/okuma-hizi.test.ts`). Soru ile şıklar aynı kiptedir ("hoşlanırdın?" +
   "hoşlanırım" olmaz) ve soru her maddeye uyar ("Kimyager olmak" gibi maddeler varsa "bunu yapmaktan" değil "bundan"); madde
-  bir yargıdır, dilek cümlesi ("Keşke …") olmaz; ortak yüklemde kişi eki eksilmez ("uğrar ve kızarım" değil "uğrarım ve
-  kızarım"); "-ip" ekinden sonra olumsuz yüklem iki türlü okunur ("durup basmayacaksın"), kaçınılır. Görev yönergesi süre
+  bir yargıdır, dilek cümlesi ("Keşke …") olmaz; ortak yüklemde kişi eki eksilince özne karışıyorsa ek yazılır ("İnsanlar …
+  hayal kırıklığına uğrar ve kızarım" değil "uğrarım ve kızarım"; "Plan yapar ve planıma bağlı kalırım" doğrudur); "-ip" ekinden sonra olumsuz yüklem iki türlü okunur ("durup basmayacaksın"), kaçınılır. Görev yönergesi süre
   sınırını ve uyaranın kendiliğinden kaybolduğunu baştan söyler (yönergedeki süre görevin ayarıyla aynıdır, test denetler);
   duraklama ekranında not ile düğme aynı şeyi söyler (`PausedScreen`'in `cta`'sı); alıştırma sonucu `countOf` ile yazılır
   ("8 denemenin hepsini"; hiç doğru yoksa "hiçbirini doğru yapamadın"). Yönerge düğmeyi ekranda yazdığı gibi anar ve görevin
   gerçek işleyişini anlatır (ör. ayna görüntüsü de döndürülmüş gelir); zarf-fiilden ("-ip") sonra virgül konmaz; "-ip" ile
   bağlanan iki eylem aynı çatıdadır ("Kuralı bulup … seçildiği" değil "Kuralın bulunup … seçildiği"). Soruların izini tutan
-  testte (`SORU_IZI`) yalnızca açıklama metni değiştiyse iz güncellenir, sürüm artmaz. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
+  testte (`SORU_IZI`) yalnızca açıklama metni ya da bir yanlış şıkkın dili değiştiyse iz güncellenir, sürüm artmaz. Seçmeli
+  soruda "seçeneğe dokun" denmez (bilgisayarda tıklanır), "seçeneği seç" denir; yönergedeki her cümle bütün soru türleri için
+  doğrudur ("her sorunun üstünde yazar", "her bölümden önce alıştırma" gibi genellemeler koda bakılarak doğrulanır); yanlış
+  şıklar da dil bilgisi bakımından doğru yazılır; puanlanmayan alıştırmanın içeriği asıl içeriğe benzemez. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
   ayrılık nedeniyle `KNOWN_DIFFERENT`'a yazılır; Çocuk Kişilik Profili yaşa göre uyarladığı için dışındadır); maddeyi alıntılayan
   yorumlar da eşitlenir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır

@@ -440,7 +440,7 @@ export function WordList({ task, onDone }: { task: WordListTask; onDone: (trials
       const title = rc.list === 'B' ? 'Yeni listeden hatırladığın kelimeleri yaz' : !rc.shown ? 'İlk listeden hatırladığın bütün kelimeleri yaz' : `${rc.trial + 1}. deneme: hatırladığın bütün kelimeleri yaz`;
       const hint =
         rc.list === 'B'
-          ? 'Yalnızca az önce bir kez gördüğün yeni listedeki kelimeleri yaz. Sıra önemli değil. Hatırladığın kelime kalmayınca Bitti düğmesine bas.'
+          ? 'Az önce bir kez gördüğün yeni listedeki kelimeleri yaz; ilk listedekileri yazma. Sıra önemli değil. Hatırladığın kelime kalmayınca Bitti düğmesine bas.'
           : !rc.shown
             ? 'Üç kez gördüğün ilk listedeki kelimeleri yaz; yeni listedekileri yazma. Sıra önemli değil. Hatırladığın kelime kalmayınca Bitti düğmesine bas.'
             : rc.trial === 0

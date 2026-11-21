@@ -108,7 +108,7 @@ const ITEMS: [string, boolean, string, string][] = [
   ['ncog10', true, 'Felsefi tartışmalardan kaçınırım.', 'Avoid philosophical discussions.'],
   ['dili05', false, 'Üstlendiğim işleri başarıyla tamamlarım.', 'Complete tasks successfully.'],
   ['comp05', false, 'Bildiklerimi nasıl uygulayacağımı bilirim.', 'Know how to apply my knowledge.'],
-  ['plan09', true, 'Aceleci kararlar veririm.', 'Make rash decisions.'],
+  ['plan09', true, 'Aceleyle karar veririm.', 'Make rash decisions.'],
   ['init05', false, 'Görevlerimi kısa sürede tamamlarım.', 'Finish tasks quickly.'],
   ['ncog05', false, 'Bir şeyleri çabuk kavrarım.', 'Am quick to understand things.'],
   ['open04', false, 'Bilgimi artırmak isterim.', 'Want to increase my knowledge.'],
@@ -195,7 +195,7 @@ export const ogrenmeVeBasari: LikertInstrument = {
     {
       key: COMP,
       name: 'Zorlukla başa çıkma',
-      plain: 'Zor görevleri kabul etme ve üstesinden gelebileceğine güvenme; kolay pes etmeden işi sonuna kadar götürme.',
+      plain: 'Zor görevleri kabul etme ve bunların üstesinden gelebileceğine güvenme; kolay pes etmeden işi sonuna kadar götürme.',
       poles: { low: 'Zorlanınca kendine güveni azalan', high: 'Zorlukları üstlenmeye hazır' },
     },
     {
@@ -207,7 +207,7 @@ export const ogrenmeVeBasari: LikertInstrument = {
     {
       key: OPEN,
       name: 'Öğrenmeye açıklık',
-      plain: 'Yeni bilgilere, fikirlere ve değişikliğe ilgi duyma; bildiklerinin dışına çıkmaktan ve şeylerin derin anlamını aramaktan hoşlanma.',
+      plain: 'Yeni bilgilere, fikirlere ve değişikliğe ilgi duyma; bildiklerinin dışına çıkmaktan ve olayların derin anlamını aramaktan hoşlanma.',
       poles: { low: 'Bildiği yollara bağlı kalan', high: 'Yeni bilgilere ve fikirlere açık' },
     },
   ],

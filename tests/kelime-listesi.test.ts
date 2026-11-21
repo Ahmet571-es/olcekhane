@@ -125,8 +125,12 @@ describe('Kelime listesi: kelimeler', () => {
   });
 });
 
-/** Kelimelerin ve sıralarının izi (sürüm 1). */
-const KELIME_IZI = '9f55540464edbeac';
+/**
+ * Kelimelerin ve sıralarının izi (sürüm 1). 2026-11-21'de yalnızca puanlanmayan alıştırmanın bir kelimesi değişti ("bardak"
+ * asıl listedeki "bayrak"a sesçe, yeni listedeki "kupa"ya anlamca yakındı → "yıldız"); iki liste ve tanıma bölümü aynı:
+ * sürüm yine 1.
+ */
+const KELIME_IZI = '7a3bed3caa1cd17e';
 
 describe('Kelime listesi: yazılan kelimeyi tanıma', () => {
   it('büyük-küçük harf, Türkçe harflerin işaretleri ve harf dışındaki işaretler önemsiz', () => {

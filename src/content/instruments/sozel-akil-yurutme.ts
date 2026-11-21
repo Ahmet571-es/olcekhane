@@ -382,8 +382,8 @@ const verbal: VerbalReasoningTask = {
   measures:
     'Kelimeler arasındaki ilişkileri bulmayı, kelimeleri gruplamayı, karşılaştırmalardan sıralama kurmayı ve verilen bilgilerden kesin sonuç çıkarmayı (sözcüklerle akıl yürütme) ölçer.',
   instructions: [
-    'Her soruda beş seçenek göreceksin; yalnızca biri doğrudur. Dört tür soru var: kelime ilişkileri, sınıflama, sıralama ve mantıksal çıkarım. Her sorunun üstünde ne yapacağın yazar.',
-    `Sıralama ve mantıksal çıkarım sorularında yalnızca verilen bilgileri kullan; bilgiler gerçeğe uymasa bile doğruymuş gibi düşün. Bilgiler cevabı bulmaya yetmiyorsa “${U}” seçeneğini seç.`,
+    'Her soruda beş seçenek göreceksin; yalnızca biri doğrudur. Dört tür soru var: kelime ilişkileri, sınıflama (kelimeleri gruplama), sıralama ve mantıksal çıkarım (verilen bilgilerden sonuç çıkarma). Ne yapacağın her soruda yazar.',
+    `Sıralama ve mantıksal çıkarım sorularında yalnızca verilen bilgileri kullan; bilgiler gerçeğe uymasa bile doğruymuş gibi düşün. Bazı sorularda “${U}” seçeneği vardır; bilgiler cevabı bulmaya yetmiyorsa onu seç.`,
     'Sorular kolaydan zora doğru gider; sona doğru zorlanman çok normal. Süre sınırı yok; kâğıt ve kalem kullanabilirsin. Emin olamadığında sana en uygun gelen seçeneği seç.',
     'Önce her soru türünden birer tane olmak üzere, doğru cevabı gösterilen dört alıştırma sorusu çözeceksin.',
   ],
@@ -400,22 +400,22 @@ const verbal: VerbalReasoningTask = {
     {
       level: 2,
       name: '2. düzey',
-      plain: 'Bir aletin işini ya da bir mesleğin çalışma yerini bulmak, aletler gibi bir grubu tanımak, karışık sırayla verilen karşılaştırmaları birleştirmek ve “her … gün” biçiminde verilen bir kuralı uygulamak.',
+      plain: 'Bir aletin işini ya da bir meslek sahibinin çalıştığı yeri bulmak, aletler gibi bir grubu tanımak, karışık sırayla verilen karşılaştırmaları birleştirmek ve “her … gün” biçiminde verilen bir kuralı uygulamak.',
     },
     {
       level: 3,
       name: '3. düzey',
-      plain: 'Bir parçanın ait olduğu bütünü bulmak (ör. gün ve hafta), kar ve yağmur gibi yağışları ya da kitap ve gazete gibi okunan yazıları bir grupta toplamak, birden çok sıralamaya uyan bilgilerden kesin olanı seçmek ve gerçekte doğru olmayan bir bilgiyi doğru sayıp sonuç çıkarmak.',
+      plain: 'Bir parçanın ait olduğu bütünü bulmak (ör. gün ve hafta), kar ve yağmur gibi yağışları ya da kitap ve gazete gibi okunan yazıları bir grupta toplamak, bilgiler birden çok sıralamaya uyduğunda hepsinde doğru olan cümleyi seçmek ve gerçekte doğru olmayan bir bilgiyi doğru sayıp sonuç çıkarmak.',
     },
     {
       level: 4,
       name: '4. düzey',
-      plain: 'Bir şeyin en hafif ve en güçlü hâlini başka bir şeye uygulamak, aynı işi yapanları (ör. bir şeyi durduranları) bir grupta toplamak, sıralamada adı hiç geçmeyen birinin yerini bulmak, bilgilerin cevaba yetmediğini fark etmek ve bir kuralın sonucu gerçekleşmediğinde bundan ne çıktığını bulmak.',
+      plain: 'Bir şeyin hafif ve güçlü hâli arasındaki ilişkiyi başka bir şeye uygulamak, aynı işi yapanları (ör. bir şeyi durduranları) bir grupta toplamak, sıralamada hakkında hiçbir bilgi verilmeyen kişinin yerini bulmak, bilgilerin cevaba yetmediğini fark etmek ve bir kuralın sonucu gerçekleşmediğinde bundan ne çıktığını bulmak.',
     },
     {
       level: 5,
       name: '5. düzey',
-      plain: 'Bir şeyin neyi önlediği gibi soyut ilişkileri ve gelişip başka bir şeye dönüşenler gibi soyut grupları bulmak, birden çok sıralamaya uyan bilgilerden (ör. kimin hangi katta oturduğu) kesin olanı seçmek ve iki ya da üç bilgiyi birleştirerek “hiçbir”, “bütün” ve “bazı” içeren çıkarımlar yapmak.',
+      plain: 'Bir şeyin neyi önlediği gibi soyut ilişkileri ve gelişip başka bir şeye dönüşenler gibi soyut grupları bulmak, bilgiler (ör. kimin hangi katta oturduğu) birden çok sıralamaya uyduğunda hepsinde doğru olan cümleyi seçmek ve iki ya da üç bilgiyi birleştirerek “hiçbir”, “bütün” ve “bazı” içeren çıkarımlar yapmak.',
     },
   ],
 };

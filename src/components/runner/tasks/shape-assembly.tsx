@@ -311,7 +311,7 @@ export function ShapeAssembly({ task, onDone }: { task: ShapeAssemblyTask; onDon
         ))}
         <Example />
         <p className="measure text-lg">
-          Doğru seçeneğe dokun, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
+          Doğru seçeneği seç, emin olunca “Cevabı ver” düğmesine bas. Önce {countWord(task.practice.length)} alıştırma sorusu çözelim.
         </p>
         <p className="measure text-ink-2">Bilgisayarda seçenekleri 1–4 ya da A–D tuşlarıyla seçip Enter tuşuyla cevap verebilirsin.</p>
         <ArmedButton
@@ -406,7 +406,7 @@ export function ShapeAssembly({ task, onDone }: { task: ShapeAssemblyTask; onDon
           <>
             <Options item={item} selected={selected} onSelect={setSelected} onConfirm={confirm} />
             <p className="text-center text-ink-2">
-              {selected === null ? 'Parçaların oluşturduğu şekle dokun.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}
+              {selected === null ? 'Parçaların oluşturduğu şekli seç.' : `${VERBAL_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}
             </p>
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>
