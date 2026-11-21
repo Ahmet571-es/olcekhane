@@ -269,10 +269,10 @@ export function MatrixReasoning({ task, onDone }: { task: MatrixReasoningTask; o
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Satırlarda neyin aynı kaldığına ve neyin değiştiğine dikkatle bak. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

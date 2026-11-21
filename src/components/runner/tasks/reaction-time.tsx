@@ -234,8 +234,8 @@ export function ReactionTime({ task, onDone }: { task: ReactionTimeTask; onDone:
           Alıştırmada {part.practice.length} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, part.practice.length)} doğru yaptın`}.{' '}
           {low
             ? choice
-              ? 'Dairenin olduğu taraftaki düğmeye basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
-              : 'Daireyi beklemeyi ve görür görmez basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin.'
+              ? 'Dairenin olduğu taraftaki düğmeye basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin. Asıl bölümde doğru yapıp yapmadığını ve ne kadar hızlı bastığını görmeyeceksin.'
+              : 'Daireyi beklemeyi ve görür görmez basmayı unutma. İstersen alıştırmayı tekrarlayabilirsin. Asıl bölümde ne kadar hızlı bastığını görmeyeceksin.'
             : choice
               ? 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını ve ne kadar hızlı bastığını görmeyeceksin. Daire belirmeden basarsan yine uyarı göreceksin.'
               : 'Şimdi asıl bölüm başlıyor; artık ne kadar hızlı bastığını görmeyeceksin. Daire belirmeden basarsan yine uyarı göreceksin.'}

@@ -178,8 +178,8 @@ export const sinavKaygisiReport: ReportTemplate = {
     prep: {
       high: t(
         'Önceden ve planlı hazırlık',
-        'Sınava çalışmaya genellikle erkenden başladığını, çalışmayı günlere yaydığını ve kendini soru çözerek ya da bakmadan anlatarak sınadığını söylüyorsun. Bu alışkanlıklar sınavdan önce daha hazır hissetmeni kolaylaştırabilir.',
-        'Çocuğunuz sınava çalışmaya genellikle erkenden başladığını, çalışmayı günlere yaydığını ve kendini soru çözerek ya da bakmadan anlatarak sınadığını belirtiyor. Bu alışkanlıklar sınavdan önce daha hazır hissetmesini kolaylaştırabilir.',
+        'Sınava çalışmayı genellikle günlere yaydığını, son geceye bırakmadığını ve kendini soru çözerek ya da konuyu notlarına bakmadan anlatarak sınadığını söylüyorsun. Bu alışkanlıklar sınavdan önce daha hazır hissetmeni kolaylaştırabilir.',
+        'Çocuğunuz sınava çalışmayı genellikle günlere yaydığını, son geceye bırakmadığını ve kendini soru çözerek ya da konuyu notlarına bakmadan anlatarak sınadığını belirtiyor. Bu alışkanlıklar sınavdan önce daha hazır hissetmesini kolaylaştırabilir.',
       ),
       average: t(
         'Sınava göre değişen hazırlık',

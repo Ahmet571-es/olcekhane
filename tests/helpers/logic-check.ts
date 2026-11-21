@@ -77,10 +77,10 @@ export const LOGIC_FORMAL: Record<string, Spec> = {
     premises: [all('balık', 'yüzer'), is('yüzer')],
     conclusion: is('balık'),
   },
-  // Eğer bir çiçek fuşa ise, yaprakları mordur. Bu çiçek bir fuşa değil. → Bu çiçeğin yaprakları mor değildir.
+  // Eğer bir çiçek vunda ise, yaprakları mordur. Bu çiçek bir vunda değil. → Bu çiçeğin yaprakları mor değildir.
   ma06: {
-    sets: ['fuşa', 'morYapraklı'],
-    premises: [all('fuşa', 'morYapraklı'), not('fuşa')],
+    sets: ['vunda', 'morYapraklı'],
+    premises: [all('vunda', 'morYapraklı'), not('vunda')],
     conclusion: not('morYapraklı'),
   },
   // Eğer bir bitki zemzer ise, yaprakları yuvarlaktır. Bu bitkinin yaprakları yuvarlak değil. → Bu bitki bir zemzer değildir.

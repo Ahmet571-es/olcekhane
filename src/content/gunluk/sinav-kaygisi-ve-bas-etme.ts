@@ -29,8 +29,7 @@ export const sinavKaygisiDaily: SurveyDaily = {
   version: 'sinav-kaygisi-gunluk-1',
   scales: {
     /*
-     * Endişeli düşünceler: W1 "Bir sınav yaklaşınca “Ya kötü geçerse?” diye düşünüp dururum", W2 "Sınav sonucumun
-     * başkalarının bana bakışını değiştireceğinden endişelenirim", W3 "Sınava hazırlanırken çalıştıklarımın yetmeyeceğinden
+     * Endişeli düşünceler: W1 "Bir sınav yaklaşınca “Ya kötü geçerse?” diye düşünürüm", W2 "Sınav sonucum yüzünden başkalarının beni farklı göreceğinden endişelenirim", W3 "Sınava hazırlanırken çalıştıklarımın yetmeyeceğinden
      * endişelenirim", W4 "Bir sınavda başarısız olursam her şeyin kötüye gideceğini düşünürüm"; ters: W5 "Bir sınav
      * yaklaşırken sonuç konusunda içim rahattır".
      */
@@ -91,7 +90,7 @@ export const sinavKaygisiDaily: SurveyDaily = {
     /*
      * Bedensel tepkiler: B1 "Sınav yaklaşınca midemde bir sıkışma hissederim", B2 "Sınav kâğıdı önüme gelince kalbim küt küt
      * atar", B3 "Sınav sırasında ellerim terler ya da titrer"; ters: B4 "Önemli bir sınavdan önceki gece rahatça uyurum", B5
-     * "Sınav sırasında kendimi bedenen rahat hissederim".
+     * "Sınav sırasında bedenim rahattır".
      */
     body: {
       poles: { low: 'Bedeni rahat kalır', high: 'Heyecanı bedeninde duyar' },
@@ -147,9 +146,8 @@ export const sinavKaygisiDaily: SurveyDaily = {
       },
     },
     /*
-     * Sınav sırasında takılma: T1 "Sınavda bildiğim bir şeyi o an hatırlayamam", T2 "Sınav sırasında aklım sorulardan kayıp
-     * kaygılarıma gider", T3 "Sınavda bir soruda takılınca sonraki sorulara odaklanamam", T4 "Sınavda gerildiğimde aynı soruyu
-     * tekrar tekrar okurum ama aklıma girmez"; ters: T5 "Sınav sırasında dikkatimi sorulara verebilirim".
+     * Sınav sırasında takılma: T1 "Sınavda bildiğim bir şeyi o an unuturum", T2 "Sınav sırasında aklım sorulardan kayıp
+     * kaygılarıma gider", T3 "Sınavda bir soruda takılınca aklım sonraki sorularda da o soruda kalır", T4 "Sınavda gerildiğimde bir soruyu anlamak için tekrar tekrar okumak zorunda kalırım"; ters: T5 "Sınav sırasında dikkatimi sorulara verebilirim".
      */
     block: {
       poles: { low: 'Dikkati sorularda kalır', high: 'Sınavda sık takılır' },
@@ -205,8 +203,7 @@ export const sinavKaygisiDaily: SurveyDaily = {
       },
     },
     /*
-     * Sınava hazırlık: P1 "Sınava çalışmaya erkenden başlar, çalışmayı günlere yayarım", P2 "Sınava çalışırken soru çözerek
-     * ya da bakmadan anlatarak kendimi sınarım", P3 "Sınavda nelerin sorulacağını öğrenip çalışmamı buna göre planlarım";
+     * Sınava hazırlık: P1 "Sınava çalışmayı birkaç güne yayarım", P2 "Sınava çalışırken soru çözerek ya da konuyu notlarıma bakmadan anlatarak kendimi sınarım", P3 "Sınavda nelerin sorulacağını öğrenip çalışmamı buna göre planlarım";
      * ters: P4 "Sınava çalışmayı son geceye bırakırım", P5 "Sınavı düşünmemek için başka şeylerle oyalanırım".
      */
     prep: {

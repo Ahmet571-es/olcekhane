@@ -21,8 +21,7 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
   scales: {
     /*
      * Ertelemeden başlama: S4 "Bana bir iş verildiğinde ona aynı gün başlarım", S5 "Yapmam gereken işlere, zamanı geldiğinde
-     * hemen başlarım"; ters: S1 "Bir işi, sonra sıkışacağımı bile bile ertelerim", S2 "Yapmam gereken bir iş varken “önce şunu
-     * da halledeyim” diyerek vakit geçiririm", S3 "Teslimine bol zaman olan bir işi son güne bırakırım".
+     * hemen başlarım"; ters: S1 "Bir işi, sonra sıkışacağımı bile bile ertelerim", S2 "Yapmam gereken bir iş varken “Önce şunu da halledeyim” diyerek vakit geçiririm", S3 "Teslimine bol zaman olan bir işi son güne bırakırım".
      */
     start: {
       poles: { low: 'Henüz işleri sık erteler', high: 'İşlere zamanında başlar' },
@@ -137,7 +136,7 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
       },
     },
     /*
-     * Süreyi tahmin etme: E1 "Bir işin ne kadar süreceğini isabetli tahmin ederim", E3 "Bir işe ayıracağım zamanı planlarken
+     * Süreyi tahmin etme: E1 "Bir işin ne kadar süreceğini doğru tahmin ederim", E3 "Bir işe ayıracağım zamanı planlarken
      * benzer işlerin daha önce ne kadar sürdüğünü hesaba katarım", E4 "Bir işe ayıracağım süreye, beklenmedik durumlar için
      * biraz pay eklerim"; ters: E2 "İşlerim tahmin ettiğimden uzun sürer", E5 "Gün içinde zamanın nereye gittiğini anlamadan
      * akşam olur".
@@ -164,28 +163,28 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
         average: {
           from: { school: ['E1', 'E2'], friends: ['E3'], home: ['E5'], work: ['E1', 'E2'] },
           student: {
-            school: 'Bazı ödevlerin süresini isabetli tahmin edebilir, bazılarında yanılabilirsin.',
+            school: 'Bazı ödevlerin süresini doğru tahmin edebilir, bazılarında yanılabilirsin.',
             friends: 'Arkadaşlarınla bir iş planlarken benzer işlerin ne kadar sürdüğünü bazen hesaba katabilir, bazen atlayabilirsin.',
             home: 'Bazı günler zamanın nereye gittiğinin farkında olabilir, bazı günler akşamın nasıl olduğunu anlamayabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bazı ödevlerin süresini isabetli tahmin edebilir, bazılarında yanılabilir.',
+            school: 'Çocuğunuz bazı ödevlerin süresini doğru tahmin edebilir, bazılarında yanılabilir.',
             friends: 'Arkadaşlarıyla bir iş planlarken benzer işlerin ne kadar sürdüğünü bazen hesaba katabilir, bazen atlayabilir.',
             home: 'Bazı günler zamanın nereye gittiğinin farkında olabilir, bazı günler akşamın nasıl olduğunu anlamayabilir.',
           },
           adult: {
-            work: 'Bazı işlerin süresini isabetli tahmin edebilir, bazılarında yanılabilirsin.',
+            work: 'Bazı işlerin süresini doğru tahmin edebilir, bazılarında yanılabilirsin.',
           },
         },
         high: {
           from: { school: ['E1'], friends: ['E3', 'E4'], home: ['E5'], work: ['E1'] },
           student: {
-            school: 'Bir ödevin ne kadar süreceğini çoğu zaman isabetli tahmin edebilirsin.',
+            school: 'Bir ödevin ne kadar süreceğini çoğu zaman doğru tahmin edebilirsin.',
             friends: 'Arkadaşlarınla bir iş planlarken benzer işlerin ne kadar sürdüğünü düşünüp biraz pay bırakabilirsin.',
             home: 'Gün boyunca zamanını nelere harcadığının çoğu zaman farkında olabilirsin.',
           },
           parent: {
-            school: 'Çocuğunuz bir ödevin ne kadar süreceğini çoğu zaman isabetli tahmin edebilir.',
+            school: 'Çocuğunuz bir ödevin ne kadar süreceğini çoğu zaman doğru tahmin edebilir.',
             friends: 'Arkadaşlarıyla bir iş planlarken benzer işlerin ne kadar sürdüğünü düşünüp biraz pay bırakabilir.',
             home: 'Gün boyunca zamanını nelere harcadığının çoğu zaman farkında olabilir.',
           },
@@ -196,8 +195,7 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
       },
     },
     /*
-     * Odağı koruma: F4 "Bir işe oturduğumda, bitirene kadar dikkatimi dağıtan şeyleri uzak tutarım", F5 "Sıkıcı bir işte de
-     * dikkatimi işin üzerinde tutarım"; ters: F1 "Bir işle uğraşırken kendimi telefona, tablete ya da başka bir ekrana bakarken
+     * Odağı koruma: F4 "Bir işe oturduğumda dikkatimi dağıtan şeyleri iş bitene kadar uzak tutarım", F5 "İş sıkıcı olsa da dikkatimi onun üzerinde tutarım"; ters: F1 "Bir işle uğraşırken kendimi telefona, tablete ya da başka bir ekrana bakarken
      * bulurum", F2 "Bir işin ortasında aklıma gelen başka bir şeye geçiveririm", F3 "Daha eğlenceli bir şey çıkınca yaptığım
      * işi yarıda bırakırım".
      */
@@ -255,7 +253,7 @@ export const ertelemeZamanYonetimiDaily: SurveyDaily = {
       },
     },
     /*
-     * Zamanın kontrolü: C1 "Gün içinde işlerimi ben yönlendiririm", C3 "Önemli işlerime yetecek zamanı bulurum", C5 "Yapmam
+     * Zamanın kontrolü: C1 "Gün içinde neyi ne zaman yapacağımı ben belirlerim", C3 "Önemli işlerime yetecek zamanı bulurum", C5 "Yapmam
      * gerekenlerin yanında dinlenmeye ve sevdiğim şeylere de zaman ayırırım"; ters: C2 "Yetiştirmem gereken işlerin altında
      * ezildiğimi hissederim", C4 "İşler üst üste binince ne yapacağımı şaşırırım". Düşük uç bir duyguyu anlatır; örnekler onu
      * büyütmeden, maddenin sözüyle söyler.

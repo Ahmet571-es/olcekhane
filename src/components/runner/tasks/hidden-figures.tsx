@@ -314,10 +314,10 @@ export function HiddenFigures({ task, onDone }: { task: HiddenFiguresTask; onDon
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Şeklin en kolay ayırt edilen parçasını (ör. eğik bir kenarı ya da sivri bir köşesini) seç ve önce onu çizimlerde ara; bulunca şeklin öteki kenarlarının da orada olup olmadığına bak. Şeklin yönüne dikkat et: döndürülmüş ya da ters çevrilmiş biçimi doğru cevap değildir. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var ve şekiller giderek daha iyi saklanıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var ve şekiller giderek daha iyi saklanıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

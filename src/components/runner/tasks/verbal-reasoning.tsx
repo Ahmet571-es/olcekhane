@@ -279,10 +279,10 @@ export function VerbalReasoning({ task, onDone }: { task: VerbalReasoningTask; o
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Soruları ve seçenekleri dikkatle oku; sıralama ve çıkarım sorularında yalnızca verilen bilgileri kullan. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; kâğıt ve kalem kullanabilirsin. Emin olamadığında sana en uygun gelen seçeneği seç.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; kâğıt ve kalem kullanabilirsin. Emin olamadığında sana en uygun gelen seçeneği seç.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

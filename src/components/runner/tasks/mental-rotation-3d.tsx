@@ -427,10 +427,10 @@ export function MentalRotation3d({ task, onDone }: { task: MentalRotation3dTask;
               : `Alıştırmadaki ${countWord(task.practice.length)} sorunun ${practiceScore === 1 ? 'birinde' : `${countWord(practiceScore)} tanesinde`} iki doğru şekli buldun.`}{' '}
           {low
             ? 'Ayna görüntüsünde de kolların sayısı ve uzunluğu üstteki şekildekiyle aynıdır; ikisini ayıran, kolların hangi yöne uzandığıdır. Ayırt etmek için bir uçtaki kolu ve ona bağlı kolu üstteki şekildeki yerlerine getirdiğini düşün, sonra kalan iki kola bak: döndürülmüş şekilde onlar da aynı yönlere uzanır, ayna görüntüsünde ise biri öbür yana uzanır. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          Test {task.items.length} soru ve iki bölümden oluşur. İlk bölümde şekiller, bir döner tablanın üstündeymiş gibi yalnızca dik bir eksen çevresinde
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. Test {task.items.length} soru ve iki bölümden oluşur. İlk bölümde şekiller, bir döner tablanın üstündeymiş gibi yalnızca dik bir eksen çevresinde
           döndürülmüştür. Süre sınırı yok; emin olamadığında sana en uygun gelen iki şekli seç.
         </p>
         <div className="flex flex-wrap justify-center gap-3">

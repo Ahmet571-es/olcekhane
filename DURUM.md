@@ -60,7 +60,7 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: **4/8 grup** (2026-11-21).
+   İlerleme: **5/8 grup** (2026-11-21).
    - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
      İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
      Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
@@ -83,9 +83,17 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      Sürümü artan test yok. Sözel Akıl Yürütme'nin 28, Kelime Bilgisi'nin 28 sorusu iki denetçi tarafından tek tek çözüldü:
      cevap anahtarları doğru ve tek. Ortak düzeltmeler bütün testlere uygulandı (seçmeli sorularda "dokun" → "seç" dokuz
      görevde; "Aceleyle karar veririm" dört, "Hayal gücüm pek iyi değildir" dört testte).
-   - **5. grup (sıradaki):** Çocuk Kişilik Profili, Ders Çalışma Motivasyonu, Erteleme ve Zaman Yönetimi, Zihniyet: Zekâ ve
+   - **5. grup (bitti):** Çocuk Kişilik Profili, Ders Çalışma Motivasyonu, Erteleme ve Zaman Yönetimi, Zihniyet: Zekâ ve
      Öğrenme İnançları, Sınav Kaygısı ve Baş Etme, Ders Çalışırken Telefon ve Dikkat, Çalışma Değerleri, Mantıksal Akıl
-     Yürütme.
+     Yürütme (sekizi de sitenin kendi yazdığı testler). Bulunanlar "Son yapılanlar" (86)'da. **Sürümü artan dört test (2):**
+     Erteleme ve Zaman Yönetimi, Sınav Kaygısı ve Baş Etme, Ders Çalışırken Telefon ve Dikkat, Mantıksal Akıl Yürütme: bu
+     testlerin 2026-11-21'den önce indirilen PDF'leri yeni sonuçla karşılaştırılamaz. Mantığın 35 sorusu iki denetçi
+     tarafından biçimsel olarak çözüldü: anahtar doğru. Ortak düzeltmeler: alıştırması kötü giden kişiye de "asıl sorularda
+     cevabının doğru mu yanlış mı olduğunu görmeyeceksin" deniyor (13 seçmeli görev ve 7 hız görevi; kalanlar kendi grubunda:
+     harf-sayı sıralama, zihinden hesaplama, bakış açısı, desen hatırlama, simge bulma, sembol eşleştirme, kule); anket
+     ekranında atlanan cümleler iletisi.
+   - **6. grup (sıradaki):** Sayısal Akıl Yürütme, Zihinden Hesaplama Hızı, Küp Açınımı, Düşünerek Karar Verme, Planlama:
+     Kule Görevi, Üç Boyutlu Zihinde Döndürme, Çalışma Belleği: Hesapla ve Hatırla, Bakış Açısı Alma.
    - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
      aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
      doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
@@ -138,6 +146,18 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      dalarım"; "Olaylarda daha derin bir anlam pek aramam". "Plan yapar ve planıma bağlı kalırım" doğrudur (özne karışmıyor);
      kişi eki kuralı buna göre daraltıldı. **Denetimin sonunda topluca:** "meta analiz" (13 yer) ve "meta-analiz" (26 yer) iki
      yazımla geçiyor; hata iletilerindeki "Lütfen tekrar deneyin" (siz) ile düğmedeki "Tekrar dene" (sen).
+     **5. gruptan:** Çocuk Kişilik Profili'nde soru "Bu cümle sana ne kadar benziyor?" (cümle kişiye benzemez; "seni ne kadar
+     anlatıyor?" daha doğru, ama soru ve üç şık raporlarda ve PDF'lerde de geçiyor: hocayla birlikte), "Odamı ve eşyalarımı …"
+     (iki şey; kendi odası olmayan çocuk), asılda olmayan "Bazen" ve "sık sık", 3. sınıf için "aldırmam" ve "endişelenirim".
+     Motivasyon'da "Ders çalışmak bana anlamsız geliyor" ile "Ders çalışmayı gereksiz buluyorum" neredeyse aynı (değişirse
+     sürüm artar); okula gitmeyen mezun için "öğretmenlerim" ve "notlarım". Erteleme'de iki şeyi birden soran maddeler ("ne
+     zaman ve nerede", "ara hedefler ve tarihler"; "ne zaman, nerede" planı kuramdan geliyor). Zihniyet'te olumsuz yüklemli üç
+     madde ve karşıt sayılan "çalışarak gelmiştir" / "çalışmasına pek gerek yoktur" çifti (ikisine birden katılmak tutarlı
+     olabilir). Sınav'da "Sınav kâğıdı önüme gelince" (ekranda yapılan sınav). Değerler'de olumsuz yazılmış dört ifade
+     ("… zorunda kalmamak"). Mantık'ta "Pıtı bir tilpidir" (Pıtı'nın hayvan olduğu söylenmiyor) ve "tilpi"nin "tilki"yi
+     çağrıştırması (cevabı etkilemiyor). Beş girişin son cümlesi ("… seçersen rapor sana en çok yarar") gevşek ama anlaşılır.
+     Site genelinde "öz-saygı", "öz-denetim" çizgili, "öz bildirim" ayrı, "dışadönüklük" bitişik yazılıyor (alan yazınında
+     yaygın; TDK ayrı yazar): denetimin sonunda site sahibine ya da hocaya sorulacak.
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1241,6 +1261,30 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-21 (86): Dil ve mantık denetimi, 5. grup (8 test, hepsi özgün; yedi ankette 185 madde, Mantıksal Akıl Yürütme'de
+  35 soru). İkinci denetçi bağımsız okudu (64 bulgu; 7'si kesin hata). **Mantık hataları (sürüm artıranlar):** *Telefon ve
+  Dikkat:* ters madde "Çalışırken ekranlara ancak mola verince bakarım" kendi içinde çelişiyordu ve ekranda çalışan kişiyi yanlış
+  puanlıyordu → "Telefona ve işimle ilgisi olmayan ekranlara ancak mola verince bakarım"; "Çalışırken telefon aklıma gelmez"e
+  "Hiçbir zaman" diyen tersini kastediyor olabilirdi → "Çalışırken telefonu unuturum"; giriş "telefonun yoksa ortak telefonu
+  düşün" derken beş madde "telefonum" diyordu (iyelik kalktı); "ayar kullanırım" → "odak moduyla kısıtlarım". *Sınav Kaygısı:*
+  sıklık şıklarıyla olumsuz yüklem ("hatırlayamam", "odaklanamam", "aklıma girmez") → "unuturum", "aklım … o soruda kalır",
+  "tekrar tekrar okumak zorunda kalırım"; "düşünüp dururum" (süreklilik + "Nadiren") → "düşünürüm"; iki davranışlı "erkenden
+  başlar, günlere yayarım" → "birkaç güne yayarım"; "bakmadan anlatarak" (neye, neyi?); 5. sınıfa ağır "bedenen" ve "sonucumun
+  başkalarının bana bakışını". *Erteleme:* "işlerimi ben yönlendiririm" (ne sorduğu belirsiz) → "neyi ne zaman yapacağımı ben
+  belirlerim"; "isabetli" → "doğru" (rapor ve günlük hayat metinlerinde de); iki maddede söz dizimi. *Mantıksal Akıl Yürütme:*
+  "Eğer bir şişenin kapağı kırmızıysa, üstünde yıldız vardır" (kapağın üstü mü?) → "o şişenin üstünde" (dolap sorusunda da);
+  uydurma ad "fuşa" gerçek "fuşya"ya (mor!) benziyordu → "vunda"; alıştırma açıklaması "kutuların yalnızca bazıları boş" diyerek
+  verilmeyen bilgiyi ekliyordu; yönerge "Cevabı ver" düğmesini söylemiyordu; "doğru olduğunu düşündüğün seçenek" bu testte A
+  şıkkını çağrıştırıyordu. **Sürüm artırmayanlar:** *Çocuk Kişilik:* nesnesiz "Üzgün hissettiğim" → "Üzgün olduğum"; "Çoğu
+  zaman az konuşurum" → "Az konuşurum"; "Pek az" → "Çok az"; "ayrıntısıyla" → "uzun uzun"; iki ölçeğin ucunda da "Sakin"
+  yazıyordu. *Motivasyon:* "konunun içine dalmak" → "konuya dalıp gitmek"; tırnak içindeki cümle büyük harfle (Erteleme'de de);
+  bilim kartında "ortadaki ikisi" (beş türün ortası olmaz). *Zihniyet:* "Bir şeyi … o iş", "bunun karşılığını", nesnesiz
+  "ilerlettiğine". *Çalışma Değerleri:* "en önem verilen" → "en çok önem verilen"; "yararını görebilmek" (kendi yararlanmak
+  diye okunur) → "yaradığını görebilmek"; "Gelirimin … gelmesi"; "değerleri kişinin kendi içinde sıralar". **Anket ekranı:**
+  atlanan cümleler ekranı "bunları da cevaplaman gerekiyor" diyordu, oysa birkaçı yetiyor; tek cümlede "bunları"; ilk 10'dan
+  sonrası görünmüyordu (bugün cümle atlanamadığı için bu ekran görünmüyor; atlama eklenirse doğru yazacak). **Görevler:** alıştırması kötü giden kişiye asıl sorularda cevabın gösterilmeyeceği söylenmiyordu (üç
+  grupta da bulundu; 20 görevde düzeltildi). Erteleme'de "uzmanla görüşmek gerekir" → "iyi gelebilir". Ters puanlama: 49
+  işaret doğru. Kalıcı kural: sıklık soran testte madde olumsuz yüklemle bitmez ve "-ip durmak" içermez.
 - 2026-11-21 (85): Dil ve mantık denetimi, 4. grup (8 test; üç ankette 116 madde, beş görev; Sözel Akıl Yürütme ve Kelime
   Bilgisi'nde 28'er soru tek tek çözüldü). İkinci denetçi bağımsız okudu (47 bulgu; 3'ü kesin hata). **Kesin hatalar:**
   Kelime Bilgisi'nde bir yanlış şık "Tarlayı sulayıp bakmak" (bakmak "-e" ister) → "çapalamak"; Sözel Akıl Yürütme yönergesi
@@ -1371,4 +1415,3 @@ En yeni üstte; en çok 10 madde tutulur.
   "Kaydır" ipucu; testlerin altında kaydırdıkça kelime kelime dolan "sözümüz" bölümü (ayrıntı CLAUDE.md "Görsel dil").
   Kayan şeritten "Matematik" çıktı ("Zihinden hesaplama" girdi); "Hazırlanıyor: Türkçe Konu Tarama Testi" planı
   kaldırıldı (akademik test eklenmiyor). Renkler, yazı tipi ve öteki bölümler aynı.
-- 2026-11-05 (76): Matematik Konu Tarama Testi kaldırıldı (ayrıntı "Matematik Konu Tarama Testi: kaldırıldı" bölümünde).

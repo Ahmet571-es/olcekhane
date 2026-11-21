@@ -34,8 +34,7 @@ export const dersCalismaMotivasyonuDaily: SurveyDaily = {
     /*
      * Kendi isteğiyle çalışma (merak ve keyif + önemini görme): IN1 "Bir konuyu öğrenirken iyi vakit geçirdiğim için ders
      * çalışırım", IN2 "Merak ettiğim bir şeyin cevabını bulmak bana keyif verdiği için çalışırım", IN3 "Zor bir konuyu sonunda
-     * anladığımda aldığım zevk için çalışırım", IN4 "Derslerdeki konular ilgimi çektiği için çalışırım", IN5 "Çalışırken
-     * konunun içine dalmaktan hoşlandığım için çalışırım"; ID1 "Öğrendiklerimin hayatta işime yarayacağını düşündüğüm için
+     * anladığımda aldığım zevk için çalışırım", IN4 "Derslerdeki konular ilgimi çektiği için çalışırım", IN5 "Bir konuya dalıp gitmekten hoşlandığım için çalışırım"; ID1 "Öğrendiklerimin hayatta işime yarayacağını düşündüğüm için
      * çalışırım" (kullanılmadı), ID2 "Kendi seçtiğim bir hedefe (bir okul ya da meslek gibi) ulaşmak istediğim için çalışırım",
      * ID3 "Bilgili biri olmayı önemsediğim için çalışırım", ID4 "Derslerdeki konuları öğrenmenin beni geliştirdiğine inandığım
      * için çalışırım", ID5 "Ders çalışmayı kendim de önemli bulduğum için çalışırım". Bütün maddeler düz yönlüdür.
@@ -88,7 +87,7 @@ export const dersCalismaMotivasyonuDaily: SurveyDaily = {
      * Baskıyla çalışma (iç baskı + dış baskı ve ödül): IJ1 "Çalışmadığım zaman kendimi suçlu hissettiğim için çalışırım", IJ2
      * "Kötü bir not alırsam utanacağım için çalışırım", IJ3 "Notlarım kötü olursa kendimi yetersiz biri gibi hissedeceğim için
      * çalışırım" (kullanılmadı), IJ4 "Çevremdekilerin beni başarısız biri olarak görmesinden korktuğum için çalışırım", IJ5
-     * "İçimden bir ses “çalışmalısın” dediği için çalışırım"; EX1 "Çalışmazsam ailemden azar işiteceğim için çalışırım", EX2
+     * "İçimden bir ses “Çalışmalısın” dediği için çalışırım"; EX1 "Çalışmazsam ailemden azar işiteceğim için çalışırım", EX2
      * "İyi not alınca ödül (harçlık, hediye ya da izin gibi) kazandığım için çalışırım", EX3 "Notlarım düşerse bazı şeyler
      * (telefon, oyun ya da dışarı çıkmak gibi) yasaklanacağı için çalışırım", EX4 "Öğretmenlerim çalışıp çalışmadığımı kontrol
      * ettiği için çalışırım", EX5 "Başka seçeneğim olmadığı, zorunda olduğum için çalışırım". Bütün maddeler düz yönlüdür.

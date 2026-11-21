@@ -27,7 +27,7 @@ export const telefonVeDikkatDaily: SurveyDaily = {
     /*
      * Bildirimlerin çekimi: N1 "Çalışırken bir bildirim sesi duyunca elimdeki işi bırakıp telefona bakarım", N2 "Çalışırken
      * gelen bir bildirime bakmasam da aklım bir süre ona gider", N3 "Çalışırken gelen mesajlara hemen cevap vermem gerektiğini
-     * hissederim", N4 "Çalışırken telefonumun ekranı yanınca gözüm ona kayar", N5 "Bir bildirime bakmak için telefonu elime
+     * hissederim", N4 "Çalışırken telefonun ekranı yanınca gözüm ona kayar", N5 "Bir bildirime bakmak için telefonu elime
      * alınca başka şeylere de bakmaya başlarım"; ters: N6 "Çalışırken bir bildirim gelse de aklım işimde kalır".
      */
     notify: {
@@ -87,7 +87,7 @@ export const telefonVeDikkatDaily: SurveyDaily = {
      * Ekranlar arası geçiş: S1 "Çalışırken işimle telefon ya da başka bir ekran arasında gidip gelirim", S2 "Çalışırken bir
      * yandan mesajlaşırım", S3 "Bilgisayarda ya da tablette çalışırken işimle ilgisi olmayan sayfalara geçerim", S4 "Çalışırken
      * bir yandan işimle ilgisi olmayan bir video ya da dizi izlerim", S5 "Telefona bakıp işime döndüğümde nerede kaldığımı bulmam
-     * zaman alır"; ters: S6 "Çalışırken ekranlara ancak mola verince bakarım".
+     * zaman alır"; ters: S6 "Telefona ve işimle ilgisi olmayan ekranlara ancak mola verince bakarım".
      */
     switching: {
       poles: { low: 'Dikkati işte kalır', high: 'Ekranlara sık geçer' },
@@ -144,9 +144,9 @@ export const telefonVeDikkatDaily: SurveyDaily = {
     },
     /*
      * Telefona dönme isteği: R1 "Çalışırken bir bildirim gelmese de “Bir bakayım” diye telefonu elime alırım", R2 "Çalışırken
-     * bir de bakarım ki telefonu elime almışım", R3 "Çalışırken telefonumda yeni bir şey olup olmadığını merak ederim", R4
-     * "Çalışırken işimle ilgisi olmayan bir şey aklıma gelince hemen telefondan bakarım", R5 "Çalışırken zorlandığım bir yere
-     * gelince telefona uzanırım"; ters: R6 "Çalışırken telefon aklıma gelmez".
+     * bir de bakarım ki telefonu elime almışım", R3 "Çalışırken telefonda yeni bir şey olup olmadığını merak ederim", R4
+     * "Çalışırken işimle ilgisi olmayan bir şey aklıma gelince ona hemen telefondan bakarım", R5 "Çalışırken zorlandığım bir yere
+     * gelince telefona uzanırım"; ters: R6 "Çalışırken telefonu unuturum".
      */
     pull: {
       poles: { low: 'Telefon pek akla gelmez', high: 'Telefona sık uzanır' },
@@ -202,10 +202,8 @@ export const telefonVeDikkatDaily: SurveyDaily = {
       },
     },
     /*
-     * Kendini durdurma yolları: K1 "Çalışırken telefonumu sessizde tutarım", K2 "Çalışırken telefonumu göremeyeceğim bir yere
-     * (çantaya, başka bir odaya) koyarım", K3 "Telefona ne zaman bakacağımı önceden belirlerim, örneğin bir bölümü bitirince",
-     * K4 "Çalışmaya başlamadan önce dikkatimi dağıtabilecek ekranları kapatırım", K5 "Çalışırken beni oyalayan uygulamalar için
-     * bir süre sınırı ya da ayar kullanırım"; ters: K6 "Çalışırken telefonum yanımda, elimin altında durur".
+     * Kendini durdurma yolları: K1 "Çalışırken telefonu sessizde tutarım", K2 "Çalışırken telefonu göremeyeceğim bir yerde (çantada, başka bir odada) tutarım", K3 "Telefona ne zaman bakacağımı önceden belirlerim, örneğin bir bölümü bitirince",
+     * K4 "Çalışmaya başlamadan önce dikkatimi dağıtabilecek ekranları kapatırım", K5 "Çalışırken beni oyalayan uygulamaları süre sınırı ya da odak moduyla kısıtlarım"; ters: K6 "Çalışırken telefon yanımda, elimin altında durur".
      */
     control: {
       poles: { low: 'Bu yolları az kullanır', high: 'Bu yolları sık kullanır' },

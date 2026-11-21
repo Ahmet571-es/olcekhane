@@ -85,9 +85,9 @@ export const zihniyetDaily: SurveyDaily = {
       },
     },
     /*
-     * Çabaya bakış: C1 "Emek verdiğim konularda bunun karşılığını alırım", C3 "Bir alanda çok iyi olan insanlar, o noktaya
+     * Çabaya bakış: C1 "Bir konuya emek verince karşılığını alırım", C3 "Bir alanda çok iyi olan insanlar, o noktaya
      * çoğunlukla çalışarak gelmiştir", C5 "Bir konuda takıldığımda yeni bir yol denemek beni ilerletir"; ters: C2 "Bir konu için
-     * çok çalışmam gerekiyorsa, o konuda yeteneğim yok demektir", C4 "Bir şeyi başkalarından daha geç öğreniyorsam, o iş bana
+     * çok çalışmam gerekiyorsa, o konuda yeteneğim yok demektir", C4 "Bir işi başkalarından daha geç öğreniyorsam, o iş bana
      * göre değildir", C6 "Doğuştan yetenekli olanların çalışmasına pek gerek yoktur". C4'ün karşılaştırması örneğe taşınmadı:
      * örnek "öğrenmen uzun sürünce" der, başkalarıyla kıyaslamaz.
      */

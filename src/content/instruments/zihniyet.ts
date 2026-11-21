@@ -24,7 +24,7 @@ const G = 'challenge';
 /** Uygulama sırası: alanlar sırayla döner (zekâ, çaba, hata, zorluk). */
 const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
   { key: 'Z1', scale: Z, reverse: true, text: 'Kimin ne kadar zeki olacağı daha doğarken bellidir.' },
-  { key: 'C1', scale: C, text: 'Emek verdiğim konularda bunun karşılığını alırım.' },
+  { key: 'C1', scale: C, text: 'Bir konuya emek verince karşılığını alırım.' },
   { key: 'H1', scale: H, text: 'Yaptığım hatalar, neyi öğrenmem gerektiğini gösterir.' },
   { key: 'G1', scale: G, text: 'Kolay işler yerine beni zorlayacak işleri seçerim.' },
 
@@ -39,7 +39,7 @@ const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
   { key: 'G3', scale: G, text: 'Hemen çözemediğim sorular ilgimi çeker.' },
 
   { key: 'Z4', scale: Z, text: 'Çalıştıkça benim zekâm da gelişebilir.' },
-  { key: 'C4', scale: C, reverse: true, text: 'Bir şeyi başkalarından daha geç öğreniyorsam, o iş bana göre değildir.' },
+  { key: 'C4', scale: C, reverse: true, text: 'Bir işi başkalarından daha geç öğreniyorsam, o iş bana göre değildir.' },
   { key: 'H4', scale: H, reverse: true, text: 'Bir hata yaptığımda, o işi aslında yapamayacağımı düşünürüm.' },
   { key: 'G4', scale: G, reverse: true, text: 'Başkalarının önünde zorlanacağım bir işi denemekten kaçınırım.' },
 
@@ -114,7 +114,7 @@ export const zihniyet: LikertInstrument = {
     {
       key: C,
       name: 'Çabaya bakış',
-      plain: 'Çabanın ve yöntem değiştirmenin ilerlettiğine inanma; çok çalışmak gerekmesini yeteneksizlik işareti saymama.',
+      plain: 'Çabanın ve yöntem değiştirmenin insanı ilerlettiğine inanma; çok çalışmak gerekmesini yeteneksizlik işareti saymama.',
       poles: { low: 'Çaba yeteneksizlik işaretidir', high: 'Çaba ilerletir' },
     },
     {
@@ -135,7 +135,7 @@ export const zihniyet: LikertInstrument = {
     basedOn:
       'Özgün ölçek (Ölçekhane, 2026). Maddeler sıfırdan yazılmıştır; başka bir ölçeğin maddeleri kullanılmamıştır. Dayanakları: zekâ hakkındaki örtük kuramlar ve bunların hedef seçimi ve zorlanınca kullanılan yollarla ilişkisi (Burnette ve ark., 2013), çaba hakkındaki inançlar (Blackwell, Trzesniewski ve Dweck, 2007) ve başarısızlığı öğretici ya da engelleyici görme (Haimovitz ve Dweck, 2016).',
     whatItMeasures:
-      'Öğrenmeyle ilgili dört inancı ölçer: zekânın gelişebileceği, çabanın ilerlettiği, hatanın öğrettiği ve zorlayıcı işlerin seçilmeye değer olduğu. Her alanda yüksek puan gelişim yönündeki inancı (“gelişim zihniyeti”), düşük puan sabitlik yönündeki inancı (“sabit zihniyet”) gösterir. Rapor alanları birlikte de yorumlar: inançlarla davranışlar her zaman örtüşmez. Araştırmalarda zihniyetin akademik başarıyla ilişkisi küçük bulunmuştur (Sisk ve ark., 2018); üniversite öğrencileriyle yapılan bir araştırmada kuramın altı temel öncülünden yalnızca ikisi desteklenmiştir (Burgoyne, Hambrick ve Macnamara, 2020). Zihniyetin hedeflerle ve zorlanınca seçilen yollarla ilişkisi en çok zorlanma ve başarısızlık anlarında belirginleşir (Burnette ve ark., 2013). Bu bir yetenek ya da zekâ testi değildir.',
+      'Öğrenmeyle ilgili dört inancı ölçer: zekânın gelişebileceği, çabanın insanı ilerlettiği, hatanın öğrettiği ve zorlayıcı işlerin seçilmeye değer olduğu. Her alanda yüksek puan gelişim yönündeki inancı (“gelişim zihniyeti”), düşük puan sabitlik yönündeki inancı (“sabit zihniyet”) gösterir. Rapor alanları birlikte de yorumlar: inançlarla davranışlar her zaman örtüşmez. Araştırmalarda zihniyetin akademik başarıyla ilişkisi küçük bulunmuştur (Sisk ve ark., 2018); üniversite öğrencileriyle yapılan bir araştırmada kuramın altı temel öncülünden yalnızca ikisi desteklenmiştir (Burgoyne, Hambrick ve Macnamara, 2020). Zihniyetin hedeflerle ve zorlanınca seçilen yollarla ilişkisi en çok zorlanma ve başarısızlık anlarında belirginleşir (Burnette ve ark., 2013). Bu bir yetenek ya da zekâ testi değildir.',
     turkishVersion:
       'Özgün Türkçe ölçek; bir çeviri değildir. Her alanda altı maddenin üçü ters yönlüdür; birbirinin tersini söyleyen beş cümle çiftinden en az üçünde iki cümleye de aynı yöndeki iki seçenekten biri (“Katılıyorum” ya da “Tamamen katılıyorum”; “Hiç katılmıyorum” ya da “Katılmıyorum”) verilirse raporda “evet ya da hayır deme eğilimi” uyarısı gösterilir.',
     reliability: 'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi.',

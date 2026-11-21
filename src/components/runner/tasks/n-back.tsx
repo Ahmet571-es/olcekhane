@@ -250,7 +250,7 @@ export function NBack({ task, onDone }: { task: NBackTask; onDone: (trials: NBac
           Alıştırmada aynı olan {s.targets} harfin {s.hits === 0 ? 'hiçbirini yakalamadın' : `${countOf(s.hits, s.targets)} yakaladın`}; aynı olmayan harflerde{' '}
           {s.falseAlarms === 0 ? 'hiç basmadın' : `${s.falseAlarms} kez bastın`}.{' '}
           {low
-            ? `Kuralı hatırla: harf ${RULE[n]} harfle aynıysa bas. İstersen alıştırmayı tekrarlayabilirsin.`
+            ? `Kuralı hatırla: harf ${RULE[n]} harfle aynıysa bas. İstersen alıştırmayı tekrarlayabilirsin. Asıl bölümde doğru yapıp yapmadığını görmeyeceksin.`
             : 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
         </p>
         <div className="flex flex-wrap justify-center gap-3">

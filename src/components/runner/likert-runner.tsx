@@ -137,6 +137,14 @@ export function LikertRunner(props: {
   if (phase === 'review') {
     const missing = items.map((it, i) => ({ ...it, i })).filter((it) => answers[it.key] === undefined);
     const canFinish = answeredCount >= props.minAnswered;
+    // Bitirmek için daha kaç cevap gerektiği: hepsi gerekmeyebilir (testin en az cevap sayısı).
+    const need = props.minAnswered - answeredCount;
+    const these = missing.length === 1 ? 'bunu' : 'bunları';
+    const missingHelp = canFinish
+      ? `İstersen ${these} cevaplayabilir ya da testi bitirebilirsin.`
+      : need >= missing.length
+        ? `Testi bitirmek için ${these} da cevaplaman gerekiyor.`
+        : `Testi bitirmek için bunlardan en az ${need} tanesini daha cevaplaman gerekiyor.`;
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <ProgressRuler total={items.length} done={answeredCount} />
@@ -144,7 +152,7 @@ export function LikertRunner(props: {
         {missing.length > 0 ? (
           <div className="flex flex-col gap-3">
             <p className="text-lg">
-              {missing.length} {ITEM_NOUN_ACCUSATIVE[props.itemNoun]} atlamışsın. {canFinish ? 'İstersen bunları cevaplayabilir ya da testi bitirebilirsin.' : 'Testi bitirmek için bunları da cevaplaman gerekiyor.'}
+              {missing.length} {ITEM_NOUN_ACCUSATIVE[props.itemNoun]} atlamışsın. {missingHelp}
             </p>
             <ul className="flex flex-col gap-2">
               {missing.slice(0, 10).map((m) => (
@@ -162,6 +170,7 @@ export function LikertRunner(props: {
                 </li>
               ))}
             </ul>
+            {missing.length > 10 && <p className="text-ink-2">Listede ilk 10 tanesi görünüyor; {missing.length - 10} tane daha var.</p>}
           </div>
         ) : (
           <p className="text-lg">Bitirdiğinde raporun hemen hazırlanacak.</p>

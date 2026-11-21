@@ -50,11 +50,11 @@ const RAW: { key: string; scale: string; text: string }[] = [
   { key: 'AM4', scale: AM, text: 'Ne kadar uğraşsam da derslerde başarılı olamayacakmışım gibi geliyor.' },
   { key: 'IJ4', scale: IJ, text: 'Çevremdekilerin beni başarısız biri olarak görmesinden korktuğum için çalışırım.' },
 
-  { key: 'IN5', scale: IN, text: 'Çalışırken konunun içine dalmaktan hoşlandığım için çalışırım.' },
+  { key: 'IN5', scale: IN, text: 'Bir konuya dalıp gitmekten hoşlandığım için çalışırım.' },
   { key: 'EX5', scale: EX, text: 'Başka seçeneğim olmadığı, zorunda olduğum için çalışırım.' },
   { key: 'ID5', scale: ID, text: 'Ders çalışmayı kendim de önemli bulduğum için çalışırım.' },
   { key: 'AM5', scale: AM, text: 'Ders çalışmayı gereksiz buluyorum.' },
-  { key: 'IJ5', scale: IJ, text: 'İçimden bir ses “çalışmalısın” dediği için çalışırım.' },
+  { key: 'IJ5', scale: IJ, text: 'İçimden bir ses “Çalışmalısın” dediği için çalışırım.' },
 ];
 
 export const dersCalismaMotivasyonu: LikertInstrument = {
@@ -79,7 +79,7 @@ export const dersCalismaMotivasyonu: LikertInstrument = {
     title: 'Neden ders çalışıyorsun?',
     paragraphs: [
       'Birazdan ders çalışmayla ilgili 25 cümle göreceksin; çoğu bir ders çalışma nedenini anlatıyor. Her birinin sana ne kadar uyduğunu seç.',
-      'Çoğu insanın birden çok nedeni vardır: bir cümleye “uyuyor” demen, ötekilere “uymuyor” demeni gerektirmez. Derslere göre farklı hissediyorsan çoğu zaman nasıl olduğunu düşün.',
+      'Çoğu insanın birden çok nedeni vardır: bir cümleye “uyuyor” demen, ötekilere “uymuyor” demeni gerektirmez. Nedenlerin derse göre değişiyorsa çoğu zaman nasıl olduğunu düşün.',
       'Doğru ya da yanlış cevap yok. Olması gerekeni değil, gerçekte nasıl olduğunu seçersen rapor işine en çok yarar.',
     ],
   },
@@ -151,7 +151,7 @@ export const dersCalismaMotivasyonu: LikertInstrument = {
     basedOn:
       'Özgün ölçek (Ölçekhane, 2026). Maddeler öz-belirleme kuramının motivasyon türlerine göre sıfırdan yazılmıştır (Ryan ve Deci, 2000). Nedenleri “…için çalışırım” biçiminde sorma yolu Ryan ve Connell’in (1989) çalışmasından gelir; o çalışmanın ya da başka bir ölçeğin maddeleri kullanılmamıştır.',
     whatItMeasures:
-      'Ders çalışma nedenlerini beş türde ölçer: merak ve keyif (iç motivasyon), önemini görme, iç baskı (suçluluk, utanç, değerini başarıya bağlama), dış baskı ve ödül, isteksizlik. İlk ikisi “kendi isteğiyle çalışma” (özerk motivasyon), ortadaki ikisi “baskıyla çalışma” (kontrollü motivasyon) olarak birleştirilir. Rapordaki motivasyon haritası bu ikisini birlikte gösterir ve araştırmalarda öğrencilerde bulunan dört profile göre yorumlanır (Vansteenkiste ve ark., 2009). Test motivasyonun yalnızca ne kadar olduğuna değil, nereden geldiğine de bakar: araştırmalarda başarı, vazgeçmeden sürdürme ve kendini iyi hissetmeyle en olumlu ilişkili olan, kendi isteğiyle çalışmadır (Howard ve ark., 2021).',
+      'Ders çalışma nedenlerini beş türde ölçer: merak ve keyif (iç motivasyon), önemini görme, iç baskı (suçluluk, utanç, değerini başarıya bağlama), dış baskı ve ödül, isteksizlik. İlk ikisi “kendi isteğiyle çalışma” (özerk motivasyon), sonraki ikisi “baskıyla çalışma” (kontrollü motivasyon) olarak birleştirilir. Rapordaki motivasyon haritası bu ikisini birlikte gösterir ve araştırmalarda öğrencilerde bulunan dört profile göre yorumlanır (Vansteenkiste ve ark., 2009). Test motivasyonun yalnızca ne kadar olduğuna değil, nereden geldiğine de bakar: araştırmalarda başarı, vazgeçmeden sürdürme ve kendini iyi hissetmeyle en olumlu ilişkili olan, kendi isteğiyle çalışmadır (Howard ve ark., 2021).',
     turkishVersion:
       'Özgün Türkçe ölçek; bir çeviri değildir. Maddeler ortaokul ve lise öğrencilerinin gündelik diline göre yazılmıştır.',
     reliability:

@@ -120,7 +120,12 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   testte (`SORU_IZI`) yalnızca açıklama metni ya da bir yanlış şıkkın dili değiştiyse iz güncellenir, sürüm artmaz. Seçmeli
   soruda "seçeneğe dokun" denmez (bilgisayarda tıklanır), "seçeneği seç" denir; yönergedeki her cümle bütün soru türleri için
   doğrudur ("her sorunun üstünde yazar", "her bölümden önce alıştırma" gibi genellemeler koda bakılarak doğrulanır); yanlış
-  şıklar da dil bilgisi bakımından doğru yazılır; puanlanmayan alıştırmanın içeriği asıl içeriğe benzemez. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
+  şıklar da dil bilgisi bakımından doğru yazılır; puanlanmayan alıştırmanın içeriği asıl içeriğe benzemez. Sıklık soran testte
+  madde olumsuz yüklemle bitmez ("hatırlayamam" + "Hiçbir zaman" tersini söyletir; "unuturum") ve süreklilik bildirmez ("düşünüp
+  dururum"; test denetler); madde girişin tanıdığı herkese uyar ("telefonum" değil "telefon"); tırnak içindeki cümle büyük harfle
+  başlar; mantık sorusunda gönderim açıktır ("üstünde" değil "o şişenin üstünde") ve uydurma adlar gerçek bir sözcüğe benzemez;
+  açıklama, verilmeyen bilgiyi eklemez ("bazı" → "yalnızca bazı" olmaz). Alıştırma sonu ekranı, asıl bölümde cevabın
+  gösterilmeyeceğini alıştırma puanı düşükken de söyler. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
   ayrılık nedeniyle `KNOWN_DIFFERENT`'a yazılır; Çocuk Kişilik Profili yaşa göre uyarladığı için dışındadır); maddeyi alıntılayan
   yorumlar da eşitlenir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır

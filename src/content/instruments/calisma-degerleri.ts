@@ -12,7 +12,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  * İfadeler Super'in envanteri, O*NET ifadeleri, Minnesota Önem Anketi ve Twenge ve ark.'nın (2010) kullandığı Monitoring
  * the Future ifadeleriyle bağımsız ajan tarafından karşılaştırıldı; yakın bulunan dört ifade (E3, Y3, S4, K3) yeniden yazıldı.
  * Ters yönlü ifade yoktur (önem derecelendirmesinde ters ifade yapaydır). Çoğu kişi birçok değeri önemli bulduğu için
- * (Lechner ve ark., 2017: iç değerler ölçeğin en üstüne yakın) rapor değerleri kişinin kendi içinde sıralar (profil:
+ * (Lechner ve ark., 2017: iç değerler ölçeğin en üstüne yakın) rapor kişinin değerlerini birbirine göre sıralar (profil:
  * values); ikisi de en önemliler arasında olan ve birbirine ters yönde çekebilen değerleri ayrıca anlatır (Schwartz, 2012).
  * İfadeler okula özgü değildir; yetişkinlere de açıktır. Durum: pilot.
  */
@@ -33,7 +33,7 @@ const RAW: { key: string; scale: string; text: string }[] = [
   { key: 'Y1', scale: Y, text: 'Yaptığım işle insanların hayatını kolaylaştırmak' },
   { key: 'B1', scale: B, text: 'İşimi nasıl yapacağıma kendim karar vermek' },
   { key: 'G1', scale: G, text: 'İşimi kaybetme kaygısı taşımamak' },
-  { key: 'E1', scale: E, text: 'Çalışma arkadaşlarımla sıcak ilişkiler kurmak' },
+  { key: 'E1', scale: E, text: 'İş arkadaşlarımla sıcak ilişkiler kurmak' },
   { key: 'S1', scale: S, text: 'Yaptığım işin insanlar arasında saygı görmesi' },
   { key: 'D1', scale: D, text: 'İş dışında sevdiklerime zaman ayırabilmek' },
 
@@ -41,7 +41,7 @@ const RAW: { key: string; scale: string; text: string }[] = [
   { key: 'K2', scale: K, text: 'Harcadığım emeğe değecek bir ücret almak' },
   { key: 'Y2', scale: Y, text: 'İhtiyacı olan insanlara destek olmak' },
   { key: 'B2', scale: B, text: 'Birinin sürekli başımda durmaması' },
-  { key: 'G2', scale: G, text: 'Gelirimin her ay aksamadan, düzenli gelmesi' },
+  { key: 'G2', scale: G, text: 'Her ay aksamayan, düzenli bir gelirimin olması' },
   { key: 'E2', scale: E, text: 'Tek başıma değil, bir ekiple birlikte çalışmak' },
   { key: 'S2', scale: S, text: 'Başardıklarımın başkalarınca görülüp takdir edilmesi' },
   { key: 'D2', scale: D, text: 'Akşamları ve hafta sonları iş düşünmek zorunda kalmamak' },
@@ -57,7 +57,7 @@ const RAW: { key: string; scale: string; text: string }[] = [
 
   { key: 'L4', scale: L, text: 'Merak ettiğim konular üzerinde çalışabilmek' },
   { key: 'K4', scale: K, text: 'Zamanla gelirimin artması' },
-  { key: 'Y4', scale: Y, text: 'Yaptığım işin başkalarına yararını görebilmek' },
+  { key: 'Y4', scale: Y, text: 'Yaptığım işin başkalarına yaradığını görebilmek' },
   { key: 'B4', scale: B, text: 'İşlerimi hangi sırayla yapacağımı kendim belirlemek' },
   { key: 'G4', scale: G, text: 'Geleceğimi güvenle planlayabileceğim bir işte çalışmak' },
   { key: 'E4', scale: E, text: 'Çalıştığım yerde kendimi bir topluluğun parçası gibi hissetmek' },
@@ -83,7 +83,7 @@ export const calismaDegerleri: LikertInstrument = {
   sortOrder: 33,
   tagline: 'Bir işte senin için en önemli olan ne: kazanç mı, güvence mi, öğrenme mi, insanlara yardım mı? Sekiz değeri sıralar.',
   description:
-    'Bu test bir işte neyin ne kadar önemli olduğunu sekiz değerle inceler: ilgi ve öğrenme, kazanç, güvence, saygınlık ve ilerleme, başkalarına yardım, birlikte çalışma, bağımsızlık ve yaşam dengesi. Çoğu kişi birçok şeyi önemli bulduğu için rapor değerleri kişinin kendi içinde sıralar: en önem verilen değerleri anlatır, ikisi de en önemliler arasında olup birbirine ters yönde çekebilen değerleri gösterir ve daha az önem verilenleri belirtir. Değerlerin doğrusu ya da yanlışı yoktur; test meslek seçmez, meslekleri tanırken neye bakılabileceğini gösterir. İfadeler sıfırdan yazılmıştır. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır.',
+    'Bu test bir işte neyin ne kadar önemli olduğunu sekiz değerle inceler: ilgi ve öğrenme, kazanç, güvence, saygınlık ve ilerleme, başkalarına yardım, birlikte çalışma, bağımsızlık ve yaşam dengesi. Çoğu kişi birçok şeyi önemli bulduğu için rapor kişinin değerlerini birbirine göre sıralar: en çok önem verilen değerleri anlatır, ikisi de en önemliler arasında olup birbirine ters yönde çekebilen değerleri gösterir ve daha az önem verilenleri belirtir. Değerlerin doğrusu ya da yanlışı yoktur; test meslek seçmez, meslekleri tanırken neye bakılabileceğini gösterir. İfadeler sıfırdan yazılmıştır. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır.',
   intro: {
     title: 'Bir işte neye önem veriyorsun?',
     paragraphs: [
@@ -143,7 +143,7 @@ export const calismaDegerleri: LikertInstrument = {
     {
       key: S,
       name: 'Saygınlık ve ilerleme',
-      plain: 'Yapılan işin saygı görmesi, başarıların takdir edilmesi, daha üst görevlere yükselmek ve yaptığı işle tanınmak.',
+      plain: 'Yapılan işin saygı görmesi, başarıların takdir edilmesi, daha üst görevlere yükselme ve yapılan işle tanınma.',
     },
     {
       key: D,
@@ -156,18 +156,18 @@ export const calismaDegerleri: LikertInstrument = {
     basedOn:
       'Özgün ölçek (Ölçekhane, 2026). İfadeler sıfırdan yazılmıştır; başka bir ölçeğin maddeleri kullanılmamıştır. Dayanakları: çalışma değerlerinin dört temel türü (işin kendisinden gelen iç değerler, kazanç ve güvence gibi dış değerler, insan ilişkileriyle ilgili sosyal değerler ve kişisel başarı, saygınlık ve yönetme isteğiyle ilgili statü değerleri; Busque-Carrier, Ratelle ve Le Corff, 2022), bağımsızlık değeri (Lechner ve ark., 2017), başkalarına yardım ve boş zaman değerleri (Twenge ve ark., 2010) ve değerlerin birbirleriyle uyumu ve çatışması (Schwartz, 2012).',
     whatItMeasures:
-      'Bir işte neyin ne kadar önemli olduğunu sekiz değerle ölçer: ilgi ve öğrenme, kazanç, güvence, saygınlık ve ilerleme, başkalarına yardım, birlikte çalışma, bağımsızlık ve yaşam dengesi. Çalışma değerleri, işleri ve çalışma ortamlarını değerlendirirken kullanılan ölçütlerdir (Busque-Carrier, Ratelle ve Le Corff, 2022). Çoğu kişi birçok değeri önemli bulduğu için rapor değerleri kişinin kendi içinde sıralar ve en önemlilerini anlatır. Değer kuramına göre değerler birbirleriyle yarışabilir: birini öne çıkaran bir seçim, karşı yöndeki bir değerden biraz vazgeçmeyi gerektirebilir (ör. güvence ile bağımsızlık; Schwartz, 2012); rapor, ikisi de en önemliler arasında olan böyle çiftleri ayrıca belirtir. Kişinin değerleriyle çalıştığı kurum arasındaki uyum, araştırmalarda daha yüksek iş doyumu ve kuruma bağlılıkla ilişkili bulunmuştur (Kristof-Brown, Zimmerman ve Johnson, 2005). Bu bir yetenek ya da ilgi testi değildir; meslek seçmez.',
+      'Bir işte neyin ne kadar önemli olduğunu sekiz değerle ölçer: ilgi ve öğrenme, kazanç, güvence, saygınlık ve ilerleme, başkalarına yardım, birlikte çalışma, bağımsızlık ve yaşam dengesi. Çalışma değerleri, işleri ve çalışma ortamlarını değerlendirirken kullanılan ölçütlerdir (Busque-Carrier, Ratelle ve Le Corff, 2022). Çoğu kişi birçok değeri önemli bulduğu için rapor kişinin değerlerini birbirine göre sıralar ve en önemlilerini anlatır. Değer kuramına göre değerler birbirleriyle yarışabilir: birini öne çıkaran bir seçim, karşı yöndeki bir değerden biraz vazgeçmeyi gerektirebilir (ör. güvence ile bağımsızlık; Schwartz, 2012); rapor, ikisi de en önemliler arasında olan böyle çiftleri ayrıca belirtir. Kişinin değerleriyle çalıştığı kurum arasındaki uyum, araştırmalarda daha yüksek iş doyumu ve kuruma bağlılıkla ilişkili bulunmuştur (Kristof-Brown, Zimmerman ve Johnson, 2005). Bu bir yetenek ya da ilgi testi değildir; meslek seçmez.',
     turkishVersion:
       'Özgün Türkçe ölçek; bir çeviri değildir. Her değer dört ifadeyle ölçülür; ters yönlü ifade yoktur. Bütün ifadelere aynı cevap verilirse ya da değerler arasındaki farklar küçükse raporda bu ayrıca belirtilir.',
     reliability: 'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
-      'Türkiye normu henüz yok. Puanlar, ifadelere verilen önem derecesine göre (1: hiç önemli değil, 5: son derece önemli) yorumlanır ve değerler kişinin kendi içinde sıralanır; kişi başkalarıyla karşılaştırılmaz.',
+      'Türkiye normu henüz yok. Puanlar, ifadelere verilen önem derecesine göre (1: hiç önemli değil, 5: son derece önemli) yorumlanır ve değerler birbirine göre sıralanır; kişi başkalarıyla karşılaştırılmaz.',
     ageNote:
       '7. sınıftan itibaren; mezunlar ve yetişkinler de çözebilir. İfadeler okula özgü değildir. 20–21 yaşından 25–26 yaşına kadar gençleri dört yıl izleyen bir araştırmada çalışma değerlerinin büyük ölçüde korunduğu görülmüştür (Lechner ve ark., 2017); yine de sonuç bugünkü öncelikleri gösterir ve deneyimle değişebilir.',
     license: 'Özgün ölçek. Ölçekhane tarafından geliştirilmiştir.',
     limitations: [
-      'Kişinin kendi bildirimine dayanır ve insanlar birçok değeri önemli bulma eğilimindedir; bu yüzden rapor değerleri kişinin kendi içinde sıralar. Puanlar tek başına değil, sıralamayla birlikte yorumlanmalıdır.',
+      'Kişinin kendi bildirimine dayanır ve insanlar birçok değeri önemli bulma eğilimindedir; bu yüzden rapor kişinin değerlerini birbirine göre sıralar. Puanlar tek başına değil, sıralamayla birlikte yorumlanmalıdır.',
       'Değerler bir meslek seçmez: aynı değer farklı mesleklerde, aynı meslekte de farklı iş yerlerinde karşılanabilir. Meslek için ilgi testleriyle birlikte değerlendirilmelidir.',
       'Toplumda takdir gören bazı değerler (ör. başkalarına yardım) olduğundan daha önemli işaretlenebilir; sıralama yorumlanırken bu akılda tutulmalıdır.',
       'Değerlerle iş arasındaki uyumun iş doyumuyla ilişkisi araştırmalarda ilişkiseldir; bu uyumun tek başına doyumu sağladığı söylenemez.',

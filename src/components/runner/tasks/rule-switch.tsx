@@ -285,7 +285,7 @@ export function RuleSwitch({ task, onDone }: { task: RuleSwitchTask; onDone: (tr
       <div key={`${step}-${stage}`} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           Alıştırmada {n} denemenin {practiceScore === 0 ? 'hiçbirini doğru yapamadın' : `${countOf(practiceScore, n)} doğru yaptın`}.{' '}
-          {low ? `${rule} İstersen alıştırmayı tekrarlayabilirsin.` : 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
+          {low ? `${rule} İstersen alıştırmayı tekrarlayabilirsin. Asıl bölümde doğru yapıp yapmadığını görmeyeceksin.` : 'Şimdi asıl bölüm başlıyor; artık doğru yapıp yapmadığını görmeyeceksin.'}
         </p>
         <Key />
         <div className="flex flex-wrap justify-center gap-3">

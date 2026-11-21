@@ -27,7 +27,7 @@ export const cocukKisilikDaily: SurveyDaily = {
     /*
      * Sosyallik: E1 "Yeni tanıştığım bir çocukla konuşmayı ilk ben başlatırım", E3 "Kolayca yeni arkadaş edinirim", E5
      * "Arkadaşlarımla birlikteyken ortamı ben neşelendiririm"; ters: E2 "Tanımadığım bir çocukla konuşmaya başlamak bana zor
-     * gelir", E4 "Kalabalık bir grupta geride durmayı severim", E6 "Çoğu zaman az konuşurum".
+     * gelir", E4 "Kalabalık bir grupta geride durmayı severim", E6 "Az konuşurum".
      */
     extraversion: {
       poles: { low: 'Az konuşur, dinler', high: 'Konuşur, sohbet başlatır' },
@@ -172,8 +172,7 @@ export const cocukKisilikDaily: SurveyDaily = {
       },
     },
     /*
-     * Sakinlik (gelişim tonu): ES1 "Pek az kızarım", ES3 "Çoğu zaman kendimi sakin ve huzurlu hissederim", ES5 "Üzgün
-     * hissettiğim zamanlar azdır"; ters: ES2 "Çabuk kızarım", ES4 "Birçok şey için endişelenirim", ES6 "Çabuk üzülürüm".
+     * Sakinlik (gelişim tonu): ES1 "Çok az kızarım", ES3 "Çoğu zaman kendimi sakin ve huzurlu hissederim", ES5 "Üzgün olduğum zamanlar azdır"; ters: ES2 "Çabuk kızarım", ES4 "Birçok şey için endişelenirim", ES6 "Çabuk üzülürüm".
      * Düşük düzeyin her örneği bir dayanakla biter; yüksek düzey gerçekten sakin kalmayı anlatır (duyguyu saklamayı değil).
      */
     emotional_stability: {
@@ -223,7 +222,7 @@ export const cocukKisilikDaily: SurveyDaily = {
     /*
      * Merak ve hayal gücü: I1 "Hayal gücüm çok geniştir", I3 "Bir şeyi yapmanın yeni yollarını bulmayı severim", I5 "Aklıma
      * sık sık yeni fikirler gelir"; ters: I2 "Bir şeyi hayal etmek bana zor gelir" (kullanılmadı: beceri gibi okunmasın), I4
-     * "Bir konuyu ayrıntısıyla araştırmak bana sıkıcı gelir", I6 "Bilmediğim konulardaki kitaplardan uzak dururum". Düşük
+     * "Bir konuyu uzun uzun araştırmak bana sıkıcı gelir", I6 "Bilmediğim konulardaki kitaplardan uzak dururum". Düşük
      * ucun örnekleri ilgiyi ve tercihi anlatır.
      */
     intellect: {

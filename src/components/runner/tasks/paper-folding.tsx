@@ -277,10 +277,10 @@ export function PaperFolding({ task, onDone }: { task: PaperFoldingTask; onDone:
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Kâğıdı son katlamadan başlayarak zihninde adım adım aç. Katlanan parça deliğin olduğu yeri örtüyorsa, her açışta deliğin bir eşi katlama çizgisinin öbür yanında, çizgiye aynı uzaklıkta ortaya çıkar; örtmüyorsa yeni delik oluşmaz. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

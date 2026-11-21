@@ -213,10 +213,10 @@ export function NumberSeries({ task, onDone }: { task: NumberSeriesTask; onDone:
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Sayıların her adımda nasıl değiştiğine dikkatle bak; aradaki farkları kâğıda yazmak işine yarar. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok. Kuralı bulamadığın bir soruda “Bilmiyorum” diyebilirsin.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok. Kuralı bulamadığın bir soruda “Bilmiyorum” diyebilirsin.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

@@ -14,10 +14,10 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *  - Endişeli düşünceler (worry): sonucun kötü olacağı, yeterince hazır olmama, başkalarının bakışı, başarısızlığın büyük
  *    sonuçları. Yüksek puan endişenin sık olduğunu gösterir.
  *  - Bedensel tepkiler (body): mide, kalp, ellerde terleme ya da titreme; ters: sınavdan önceki gece rahat uyuma, sınav
- *    sırasında bedenen rahat olma. Yüksek puan tepkilerin sık olduğunu gösterir.
- *  - Sınav sırasında takılma (block): bileni o an hatırlayamama, aklın sorudan kayıp kaygıya gitmesi, bir soruda takılınca
- *    sonrakilere odaklanamama, gerilince soruyu tekrar tekrar okuyup kavrayamama. Yüksek puan takılmanın sık olduğunu
- *    gösterir. Araştırmalardaki "interference" (dikkati dağıtan düşünceler) bu alanın bir parçasıdır (T2, T5).
+ *    sırasında bedenin rahat olması. Yüksek puan tepkilerin sık olduğunu gösterir.
+ *  - Sınav sırasında takılma (block): bilineni o an unutma, aklın sorudan kayıp kaygıya gitmesi, bir soruda takılınca aklın
+ *    sonraki sorularda da orada kalması, gerilince soruyu anlamak için tekrar tekrar okumak zorunda kalma. Yüksek puan
+ *    takılmanın sık olduğunu gösterir. Araştırmalardaki "interference" (dikkati dağıtan düşünceler) bu alanın bir parçasıdır (T2, T5).
  *  - Sınava hazırlık (prep): çalışmayı günlere yayma, kendini sınama (Dunlosky ve ark., 2013'te en yararlı bulunan iki
  *    yöntem), neyin sorulacağına göre plan; ters: son geceye bırakma, sınavı düşünmemek için başka şeylerle oyalanma
  *    (Stöber'deki kaçınma).
@@ -56,22 +56,22 @@ const C = 'calm';
  * beşliklere dağıtılır; karşıt çiftlerin ikinci cümlesi en az iki beşlik sonra gelir.
  */
 const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
-  { key: 'P1', scale: P, text: 'Sınava çalışmaya erkenden başlar, çalışmayı günlere yayarım.' },
-  { key: 'W1', scale: W, text: 'Bir sınav yaklaşınca “Ya kötü geçerse?” diye düşünüp dururum.' },
+  { key: 'P1', scale: P, text: 'Sınava çalışmayı birkaç güne yayarım.' },
+  { key: 'W1', scale: W, text: 'Bir sınav yaklaşınca “Ya kötü geçerse?” diye düşünürüm.' },
   { key: 'B2', scale: B, text: 'Sınav kâğıdı önüme gelince kalbim küt küt atar.' },
   { key: 'T2', scale: T, text: 'Sınav sırasında aklım sorulardan kayıp kaygılarıma gider.' },
   { key: 'C1', scale: C, text: 'Sınavdan önce birkaç yavaş nefes alarak kendimi toparlarım.' },
 
-  { key: 'P2', scale: P, text: 'Sınava çalışırken soru çözerek ya da bakmadan anlatarak kendimi sınarım.' },
-  { key: 'W2', scale: W, text: 'Sınav sonucumun başkalarının bana bakışını değiştireceğinden endişelenirim.' },
+  { key: 'P2', scale: P, text: 'Sınava çalışırken soru çözerek ya da konuyu notlarıma bakmadan anlatarak kendimi sınarım.' },
+  { key: 'W2', scale: W, text: 'Sınav sonucum yüzünden başkalarının beni farklı göreceğinden endişelenirim.' },
   { key: 'B4', scale: B, reverse: true, text: 'Önemli bir sınavdan önceki gece rahatça uyurum.' },
-  { key: 'T1', scale: T, text: 'Sınavda bildiğim bir şeyi o an hatırlayamam.' },
+  { key: 'T1', scale: T, text: 'Sınavda bildiğim bir şeyi o an unuturum.' },
   { key: 'C2', scale: C, text: 'Sınavlarla ilgili duygularımı güvendiğim biriyle konuşurum.' },
 
   { key: 'P4', scale: P, reverse: true, text: 'Sınava çalışmayı son geceye bırakırım.' },
   { key: 'W3', scale: W, text: 'Sınava hazırlanırken çalıştıklarımın yetmeyeceğinden endişelenirim.' },
   { key: 'B3', scale: B, text: 'Sınav sırasında ellerim terler ya da titrer.' },
-  { key: 'T3', scale: T, text: 'Sınavda bir soruda takılınca sonraki sorulara odaklanamam.' },
+  { key: 'T3', scale: T, text: 'Sınavda bir soruda takılınca aklım sonraki sorularda da o soruda kalır.' },
   { key: 'C3', scale: C, text: 'Sınavda takıldığım bir soruyu geçip sonra ona geri dönerim.' },
 
   { key: 'P3', scale: P, text: 'Sınavda nelerin sorulacağını öğrenip çalışmamı buna göre planlarım.' },
@@ -82,14 +82,14 @@ const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
 
   { key: 'P5', scale: P, reverse: true, text: 'Sınavı düşünmemek için başka şeylerle oyalanırım.' },
   { key: 'W4', scale: W, text: 'Bir sınavda başarısız olursam her şeyin kötüye gideceğini düşünürüm.' },
-  { key: 'B5', scale: B, reverse: true, text: 'Sınav sırasında kendimi bedenen rahat hissederim.' },
-  { key: 'T4', scale: T, text: 'Sınavda gerildiğimde aynı soruyu tekrar tekrar okurum ama aklıma girmez.' },
+  { key: 'B5', scale: B, reverse: true, text: 'Sınav sırasında bedenim rahattır.' },
+  { key: 'T4', scale: T, text: 'Sınavda gerildiğimde bir soruyu anlamak için tekrar tekrar okumak zorunda kalırım.' },
   { key: 'C5', scale: C, reverse: true, text: 'Sınavda takıldığım bir soruyu geçmek yerine onda uzun süre kalırım.' },
 ];
 
 export const sinavKaygisiBasEtme: LikertInstrument = {
   slug: 'sinav-kaygisi-ve-bas-etme',
-  version: 1,
+  version: 2,
   engine: 'likert',
   name: 'Sınav Kaygısı ve Baş Etme',
   shortName: 'Sınav kaygısı',
@@ -105,12 +105,12 @@ export const sinavKaygisiBasEtme: LikertInstrument = {
   tagline:
     'Sınav kaygısının üç yanını (endişeli düşünceler, bedensel tepkiler, sınav sırasında takılma) ve kaygıyla nasıl baş ettiğini gösterir.',
   description:
-    'Bu test sınav kaygısını üç yanıyla, onunla baş etmeyi de iki yanıyla inceler: sınav yaklaşınca akla gelen endişeli düşünceler, bedendeki tepkiler (mide, kalp, eller, uyku), sınav sırasında takılma (bilineni o an hatırlayamamak, dikkatin sorudan kayması), sınava hazırlık ve sakinleşme, güvenilen biriyle konuşma gibi baş etme yolları. Rapor her alanı ayrı ayrı anlatır, ardından birlikte yorumlar ve araştırmaların ne bulduğunu abartmadan söyler. Kaygının bir yanı yüksek çıkarsa rapora bir destek notu eklenir ve rehberdeki “Sınav kaygısı” yazısına bağlantı verilir. Maddeler sıfırdan yazılmıştır; test yaklaşık 5 dakika sürer. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır. Sonuç bir tanı değildir.',
+    'Bu test sınav kaygısını üç yanıyla, onunla baş etmeyi de iki yanıyla inceler: sınav yaklaşınca akla gelen endişeli düşünceler, bedendeki tepkiler (mide, kalp, eller, uyku), sınav sırasında takılma (bilineni o an hatırlayamamak, dikkatin sorudan kayması), sınava hazırlık ve baş etme yolları (sakinleşme, güvenilen biriyle konuşma gibi). Rapor her alanı ayrı ayrı anlatır, ardından birlikte yorumlar ve araştırmaların ne bulduğunu abartmadan söyler. Kaygının bir yanı yüksek çıkarsa rapora bir destek notu eklenir ve rehberdeki “Sınav kaygısı” yazısına bağlantı verilir. Maddeler sıfırdan yazılmıştır; test yaklaşık 5 dakika sürer. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır. Sonuç bir tanı değildir.',
   intro: {
     title: 'Sınavlar seni nasıl etkiliyor?',
     paragraphs: [
       'Birazdan sınavlarla ilgili 25 cümle göreceksin: sınavdan önceki düşüncelerin, bedenindeki tepkiler, sınav sırasında yaşadıkların ve kaygıyla nasıl baş ettiğin. Her birinin senin için ne sıklıkla doğru olduğunu seç.',
-      'Belirli bir sınavı değil, genellikle girdiğin ya da hazırlandığın sınavları düşün. Sınavlarda pek kaygılanmıyorsan bazı cümlelere “Hiçbir zaman” demen olağandır.',
+      'Belirli bir sınavı değil, girdiğin ya da hazırlandığın sınavların genelini düşün. Sınavlarda pek kaygılanmıyorsan bazı cümlelere “Hiçbir zaman” demen olağandır.',
       'Doğru ya da yanlış cevap yok; bu bir başarı testi değil. Olması gerekeni değil, gerçekte nasıl olduğunu seçersen rapor sana en çok yarar.',
     ],
   },
@@ -166,7 +166,7 @@ export const sinavKaygisiBasEtme: LikertInstrument = {
       key: P,
       name: 'Sınava hazırlık',
       plain:
-        'Sınava erkenden başlayıp çalışmayı günlere yayma, soru çözerek ya da bakmadan anlatarak kendini sınama, neyin sorulacağına göre plan yapma. Puan yüksekse hazırlık daha önceden ve planlıdır.',
+        'Çalışmayı günlere yayma, soru çözerek ya da konuyu notlara bakmadan anlatarak kendini sınama, neyin sorulacağına göre plan yapma. Puan yüksekse hazırlık daha önceden ve planlıdır.',
       poles: { low: 'Hazırlığı daha az planlı', high: 'Önceden ve planlı hazırlanır' },
     },
     {

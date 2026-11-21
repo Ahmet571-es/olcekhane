@@ -26,6 +26,19 @@ describe('dil ve mantık denetimi: kalıcı kurallar', () => {
     expect(found).toEqual([]);
   });
 
+  it('sıklık soran testte madde süreklilik bildirmez ve olumsuz yüklemle bitmez', () => {
+    // "… diye düşünüp dururum" + "Nadiren" kendi içinde çelişir. "Sınavda bildiğimi hatırlayamam" cümlesine "Hiçbir zaman"
+    // diyen kişi şıkkı cümleyle birleştirip ("hiçbir zaman hatırlayamam") kastettiğinin tersini işaretleyebilir.
+    const found: string[] = [];
+    for (const d of frequencyTests) {
+      for (const it of d.items) {
+        if (/(ıp|ip|up|üp) dur(ur|ar)/i.test(it.text)) found.push(`${d.slug} ${it.key} (süreklilik): ${it.text}`);
+        if (/(m[ae]m|m[ae]z|m[ae]yiz|değilim|değildir|yoktur|yok)\.?$/i.test(it.text.trim())) found.push(`${d.slug} ${it.key} (olumsuz yüklem): ${it.text}`);
+      }
+    }
+    expect(found).toEqual([]);
+  });
+
   it('giriş, cümlelerin hepsi kişiyi anlatıyormuş gibi başlamaz', () => {
     // "Seni anlatan 50 cümle göreceksin" (ya da "ilişkilerini anlatan 32 cümle") dedikten sonra "seni ne kadar doğru
     // anlatıyor?" diye sormak çelişir.

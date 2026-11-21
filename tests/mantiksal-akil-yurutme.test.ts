@@ -143,14 +143,19 @@ describe('Mantıksal akıl yürütme: sorular', () => {
       .digest('hex')
       .slice(0, 16);
     expect({ version: mantiksalAkilYurutme.version, hash }).toEqual({
-      version: 1,
+      version: 2,
       hash: SORU_IZI,
     });
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = '6209a849cb359bec';
+/**
+ * Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. Sürüm 2 (2026-11-21, dil ve
+ * mantık denetimi): ma25 ve ma22'de kural cümlesi tek okunuşlu yapıldı ("üstünde" → "o şişenin üstünde": kapağın üstü diye
+ * de okunuyordu), ma06'da "fuşya"yı çağrıştıran uydurma ad değişti, ikinci alıştırmanın açıklaması düzeltildi. Cevap
+ * anahtarı aynı.
+ */
+const SORU_IZI = '39cd7fde67645a5f';
 
 describe('Mantıksal akıl yürütme: puanlama', () => {
   const all = (fn: (i: number) => Partial<LogicTrialInput> = () => ({})): LogicTrialInput[] =>

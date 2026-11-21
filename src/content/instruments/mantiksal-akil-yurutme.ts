@@ -10,7 +10,7 @@ import type { LogicForm, LogicItem, LogicPracticeItem, LogicalReasoningTask, Tas
  *    koşul var → sonuç var (`mp`, kesin), sonuç yok → koşul yok (`mt`, kesin), sonuç var → koşul var (`ac`, kesin
  *    değil), koşul yok → sonuç yok (`da`, kesin değil). Kurallar uydurma bir dünyadandır; gerçek hayat bilgisi cevaba
  *    karışmaz (sonucun gerçekte doğru olup olmadığı bilinemez, başka bir açıklama akla gelmez). Her çıkarımın dört
- *    sorusundan ikisi uydurma canlı adlarıyla (fuşa, zemzer, lupu, tilpi, dorpa, nimbo, melgi, pelzi), ikisi gelişigüzel
+ *    sorusundan ikisi uydurma canlı adlarıyla (vunda, zemzer, lupu, tilpi, dorpa, nimbo, melgi, pelzi), ikisi gelişigüzel
  *    kurallarla kurulur: uydurma adlı kurallarda çocuklar koşullu cümleleri daha olgun yorumlar, gelişigüzel kurallarda
  *    ise 9 ve 12 yaşındakiler çoğunlukla "ikisi birlikte" diye yorumlar (Markovits, Brisson ve de Chantal, 2016).
  *  - Kategorik ("bütün", "hiçbir", "bazı"), 16 soru: sonucun geçerliği ile gerçek hayatta inandırıcı olup olmadığı
@@ -70,7 +70,7 @@ const SPECS: Spec[] = [
   {
     key: 'ma06',
     form: 'da',
-    premises: ['Eğer bir çiçek fuşa ise, yaprakları mordur.', 'Bu çiçek bir fuşa değil.'],
+    premises: ['Eğer bir çiçek vunda ise, yaprakları mordur.', 'Bu çiçek bir vunda değil.'],
     conclusion: 'Bu çiçeğin yaprakları mor değildir.',
   },
   {
@@ -166,7 +166,7 @@ const SPECS: Spec[] = [
   {
     key: 'ma22',
     form: 'da',
-    premises: ['Eğer bir dolabın kapısı maviyse, içinde battaniye vardır.', 'Bu dolabın kapısı mavi değil.'],
+    premises: ['Eğer bir dolabın kapısı maviyse, o dolabın içinde battaniye vardır.', 'Bu dolabın kapısı mavi değil.'],
     conclusion: 'Bu dolapta battaniye yoktur.',
   },
   {
@@ -184,7 +184,7 @@ const SPECS: Spec[] = [
   {
     key: 'ma25',
     form: 'mt',
-    premises: ['Eğer bir şişenin kapağı kırmızıysa, üstünde yıldız vardır.', 'Bu şişenin üstünde yıldız yok.'],
+    premises: ['Eğer bir şişenin kapağı kırmızıysa, o şişenin üstünde yıldız vardır.', 'Bu şişenin üstünde yıldız yok.'],
     conclusion: 'Bu şişenin kapağı kırmızı değildir.',
   },
   {
@@ -247,7 +247,7 @@ const PRACTICE: LogicPracticeItem[] = [
     premises: ['Bazı kutular boştur.', 'Bu bir kutudur.'],
     conclusion: 'Bu kutu boştur.',
     answer: 2,
-    explain: 'Bilgiler kutuların yalnızca bazılarının boş olduğunu söylüyor. Bu kutu boş olabilir ama dolu da olabilir; bu yüzden sonuç kesin değildir.',
+    explain: 'Bilgiler bazı kutuların boş olduğunu söylüyor; bu kutunun onlardan biri olup olmadığını söylemiyor. Bu kutu boş olabilir ama dolu da olabilir; bu yüzden sonuç kesin değildir.',
   },
   {
     key: 'map3',
@@ -267,7 +267,7 @@ const task: LogicalReasoningTask = {
   instructions: [
     'Her soruda iki bilgi ve bir sonuç göreceksin.',
     'Bilgileri, gerçekte öyle olmasa bile doğru kabul et. Sonra karar ver: bu bilgiler doğruysa, sonuç da kesin olarak doğru mu?',
-    'Sonuç bilgilerden kesin olarak çıkıyorsa “Evet, kesin olarak doğru”; doğru olabilir ama kesin değilse “Hayır, kesin değil” seç.',
+    'Sonuç bilgilerden kesin olarak çıkıyorsa “Evet, kesin olarak doğru” seçeneğini, kesin olarak çıkmıyorsa (doğru olabilir ama kesin değilse) “Hayır, kesin değil” seçeneğini seç ve “Cevabı ver” düğmesine bas.',
   ],
   practice: PRACTICE,
   items: SPECS.map((s): LogicItem => ({
@@ -281,7 +281,7 @@ const task: LogicalReasoningTask = {
 
 export const mantiksalAkilYurutme: TaskInstrument = {
   slug: 'mantiksal-akil-yurutme',
-  version: 1,
+  version: 2,
   engine: 'tasks',
   name: 'Mantıksal Akıl Yürütme',
   shortName: 'Mantıksal akıl yürütme',
@@ -296,7 +296,7 @@ export const mantiksalAkilYurutme: TaskInstrument = {
   sortOrder: 49.75,
   tagline: 'Verilen bilgilerden kesin olarak neyin çıktığını bulabilmeyi ölçer; gerçek hayattaki bilginin kararını ne kadar etkilediğini de gösterir.',
   description:
-    'Bu test tümdengelimli akıl yürütmeyi, yani verilen bilgilerden kesin olarak neyin çıktığını, neyin çıkmadığını ayırt edebilmeyi ölçer. Her soruda iki bilgi ve bir sonuç vardır; bilgiler doğruysa sonucun da kesin olarak doğru olup olmadığına karar verilir. Soruların yarısı “eğer … ise …” kurallarıyla, yarısı “bütün, bazı, hiçbir” sözcükleriyle kurulmuştur ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, “eğer–ise” kurallarında kesin olanla olmayanın ayırt edilip edilmediğini, sonuç gerçek hayatta doğru ya da yanlış göründüğünde bu bilginin kararı etkileyip etkilemediğini ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test tümdengelimli akıl yürütmeyi, yani verilen bilgilerden kesin olarak neyin çıktığını, neyin çıkmadığını ayırt edebilmeyi ölçer. Her soruda iki bilgi ve bir sonuç vardır; bilgiler doğruysa sonucun da kesin olarak doğru olup olmadığına karar verilir. Soruların yarısı “eğer … ise …” kurallarıyla, yarısı “bütün, bazı, hiçbir” sözcükleriyle kurulmuştur ve Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor; kaç sorunun doğru cevaplandığını, “eğer–ise” kurallarında kesin olanla olmayanın ayırt edilip edilmediğini, sonuç gerçek hayatta doğru ya da yanlış göründüğünde bunun kararı etkileyip etkilemediğini ve sorular üzerinde nasıl çalışıldığını sade bir dille anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Bilgilerden ne çıkar?',
     paragraphs: [
@@ -309,7 +309,7 @@ export const mantiksalAkilYurutme: TaskInstrument = {
     {
       key: 'ma_dogru',
       name: 'Doğru cevaplar',
-      plain: 'Sonucun bilgilerden kesin olarak çıkıp çıkmadığına doğru karar verilen soruların sayısı.',
+      plain: 'Sonucun bilgilerden kesin olarak çıkıp çıkmadığı konusunda doğru karar verilen soruların sayısı.',
     },
     {
       key: 'ma_kosul',

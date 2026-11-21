@@ -50,7 +50,7 @@ const ITEMS: [string, string, boolean, string, string][] = [
   ['A1', A, false, 'Bir arkadaşım üzüldüğünde ben de onun için üzülürüm.', "Sympathize with others' feelings."],
   ['C2', C, true, 'Odamı ve eşyalarımı dağınık bırakırım.', 'Leave a mess in my room.'],
   ['ES3', ES, false, 'Çoğu zaman kendimi sakin ve huzurlu hissederim.', 'Am relaxed most of the time.'],
-  ['I4', I, true, 'Bir konuyu ayrıntısıyla araştırmak bana sıkıcı gelir.', 'Will not probe deeply into a subject.'],
+  ['I4', I, true, 'Bir konuyu uzun uzun araştırmak bana sıkıcı gelir.', 'Will not probe deeply into a subject.'],
   ['E3', E, false, 'Kolayca yeni arkadaş edinirim.', 'Make friends easily.'],
   ['A4', A, true, 'Bazen arkadaşlarımı kıracak sözler söylerim.', 'Insult people.'],
   ['C3', C, false, 'Bana verilen işleri hemen yaparım.', 'Get chores done right away.'],
@@ -59,17 +59,17 @@ const ITEMS: [string, string, boolean, string, string][] = [
   ['E2', E, true, 'Tanımadığım bir çocukla konuşmaya başlamak bana zor gelir.', 'Find it difficult to approach others.'],
   ['A3', A, false, 'Başkalarına yardım etmeyi severim.', 'Love to help others.'],
   ['C4', C, true, 'Yapmam gereken işlerden kaçmaya çalışırım.', 'Shirk my duties.'],
-  ['ES5', ES, false, 'Üzgün hissettiğim zamanlar azdır.', 'Seldom feel blue.'],
+  ['ES5', ES, false, 'Üzgün olduğum zamanlar azdır.', 'Seldom feel blue.'],
   ['I2', I, true, 'Bir şeyi hayal etmek bana zor gelir.', 'Have difficulty imagining things.'],
   ['E5', E, false, 'Arkadaşlarımla birlikteyken ortamı ben neşelendiririm.', 'Am the life of the party.'],
   ['A2', A, true, 'Başkalarının ne hissettiğine pek aldırmam.', 'Am indifferent to the feelings of others.'],
   ['C1', C, false, 'Odamı ve eşyalarımı toplu tutmayı severim.', 'Like to tidy up.'],
   ['ES6', ES, true, 'Çabuk üzülürüm.', 'Get upset easily.'],
   ['I5', I, false, 'Aklıma sık sık yeni fikirler gelir.', 'Am full of ideas.'],
-  ['E6', E, true, 'Çoğu zaman az konuşurum.', "Don't talk a lot."],
+  ['E6', E, true, 'Az konuşurum.', "Don't talk a lot."],
   ['A5', A, false, 'Neredeyse herkesle iyi geçinirim.', 'Am on good terms with nearly everyone.'],
   ['C6', C, true, 'İşlerimi yarım yamalak yaparım.', 'Do things in a half-way manner.'],
-  ['ES1', ES, false, 'Pek az kızarım.', 'Seldom get mad.'],
+  ['ES1', ES, false, 'Çok az kızarım.', 'Seldom get mad.'],
   ['I6', I, true, 'Bilmediğim konulardaki kitaplardan uzak dururum.', 'Avoid difficult reading material.'],
 ];
 
@@ -97,7 +97,7 @@ export const cocukKisilik: LikertInstrument = {
     paragraphs: [
       'Birazdan 30 kısa cümle okuyacaksın. Her cümlenin sana ne kadar benzediğini seç: hiç benzemiyor, biraz benziyor ya da çok benziyor.',
       'Bu bir sınav değil; doğru ya da yanlış cevap yok. Olmak istediğin hâli değil, genellikle nasıl olduğunu düşünerek cevap ver.',
-      'Anlamadığın bir kelime olursa yanındaki yetişkine sorabilirsin, ama cevabı sen seç. Yaklaşık 6 dakika sürer.',
+      'Anlamadığın bir kelime olursa yanında bir yetişkin varsa ona sorabilirsin, ama cevabı sen seç. Yaklaşık 6 dakika sürer.',
     ],
   },
   prompt: 'Bu cümle sana ne kadar benziyor?',
@@ -120,7 +120,7 @@ export const cocukKisilik: LikertInstrument = {
       key: E,
       name: 'Sosyallik',
       plain: 'Arkadaşlarla birlikte olmaktan, konuşmaktan ve yeni arkadaşlıklar kurmaktan enerji alma (bilimsel adı: dışadönüklük).',
-      poles: { low: 'Sakin, dinlemeyi seven', high: 'Konuşkan, arkadaş canlısı' },
+      poles: { low: 'Sessiz, dinlemeyi seven', high: 'Konuşkan, arkadaş canlısı' },
     },
     {
       key: A,
@@ -144,7 +144,7 @@ export const cocukKisilik: LikertInstrument = {
       key: I,
       name: 'Merak ve hayal gücü',
       plain: 'Hayal kurmayı, yeni fikirler bulmayı ve bir konuyu merak edip araştırmayı sevme (bilimsel adı: deneyime açıklık).',
-      poles: { low: 'Somut ve bildiğini seven', high: 'Meraklı, hayal gücü güçlü' },
+      poles: { low: 'Somut ve bildiğini seven', high: 'Meraklı, hayal gücü geniş' },
     },
   ],
   items,
@@ -159,7 +159,7 @@ export const cocukKisilik: LikertInstrument = {
     basedOn:
       'IPIP Beş Faktör Belirteçleri (Goldberg, 1992; Uluslararası Kişilik Madde Havuzu). Bu belirteçlerin 100 maddelik formundan her boyut için altı madde (üçü düz, üçü ters yönlü) seçildi ve 3–5. sınıf çocuklarının anlayacağı dile uyarlandı. IPIP maddeleri kamu malıdır (Goldberg ve ark., 2006). 6. sınıftan itibaren aynı modelin 50 maddelik formu Beş Faktör Kişilik Profili’nde kullanılır.',
     whatItMeasures:
-      'Kişiliğin en çok araştırılmış beş temel boyutunda çocuğun kendini nasıl gördüğünü ölçer: sosyallik (dışadönüklük), yardımseverlik (uyumluluk), düzen ve sorumluluk (sorumluluk), sakinlik (duygusal denge) ve merak ve hayal gücü (deneyime açıklık). Çocuk ve ergenlerde beş boyutu öz bildirimle ölçen anketleri inceleyen bir derlemede, incelenen 10 anketin biri dışında hepsinin 7–18 yaş arasındaki çocuk ve ergenler için geliştirildiği görülmüş; çocuklarla kısa anketlerin tercih edilmesi önerilmiş, küçük çocuklara kısa ve kolay anlaşılır cümlelerin ve daha az cevap seçeneğinin kolaylık sağladığı belirtilmiştir. İki anketin küçük çocuklar için hazırlanan sürümlerinde üç seçenekli cevap ölçeği kullanılmıştır (Vicentini, Raccanello ve Burro, 2025). Bu test 30 cümle ve üç cevap seçeneği kullanır.',
+      'Kişiliğin en çok araştırılmış beş temel boyutunda çocuğun kendini nasıl gördüğünü ölçer: sosyallik (dışadönüklük), başkalarını önemseme (uyumluluk), düzen ve sorumluluk (sorumluluk), sakinlik (duygusal denge) ile merak ve hayal gücü (deneyime açıklık). Çocuk ve ergenlerde beş boyutu öz bildirimle ölçen anketleri inceleyen bir derlemede, incelenen 10 anketin biri dışında hepsinin 7–18 yaş arasındaki çocuk ve ergenler için geliştirildiği görülmüş; çocuklarla kısa anketlerin tercih edilmesi önerilmiş, küçük çocuklara kısa ve kolay anlaşılır cümlelerin ve daha az cevap seçeneğinin kolaylık sağladığı belirtilmiştir. İki anketin küçük çocuklar için hazırlanan sürümlerinde üç seçenekli cevap ölçeği kullanılmıştır (Vicentini, Raccanello ve Burro, 2025). Bu test 30 cümle ve üç cevap seçeneği kullanır.',
     turkishVersion:
       'Maddeler Ölçekhane tarafından 8–11 yaşındaki çocukların günlük hayatından somut davranışlarla (arkadaşlar, oda, okul çantası, kitaplar) Türkçeye uyarlandı; her madde IPIP’teki aslının anlamını ve yönünü korur. İki maddede çocuğun güvenliği ve okuma becerisi gözetildi: “başkalarına yaklaşmakta zorlanma” maddesinde tanımadığı bir yetişkin değil bir çocuk anılır; “zor okuma metinlerinden kaçınma” maddesi, okuma becerisinden çok merakı yansıtsın diye bilmediği konulardaki kitaplar üzerinden sorulur. Ters yönlü maddeler, biri dışında, “değil” gibi olumsuzluklarla değil, öteki ucu anlatan bir davranışla yazıldı. IPIP maddeleri kamu malı olduğu için çeviri ve uyarlama serbesttir. Bu uyarlamanın Türkiye’deki çocuklarla güvenirlik, geçerlik ve norm çalışması henüz yapılmadı.',
     reliability:

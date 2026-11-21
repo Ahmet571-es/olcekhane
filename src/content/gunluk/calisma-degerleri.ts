@@ -130,7 +130,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
       },
     },
     /* Başkalarına yardım: Y1 insanların hayatını kolaylaştırmak, Y2 ihtiyacı olana destek olmak, Y3 toplumun bir ihtiyacını
-       karşılamak, Y4 işin başkalarına yararını görebilmek. */
+       karşılamak, Y4 işin başkalarına yaradığını görebilmek. */
     helping: {
       poles: { low: 'Yardım öncelik değil', high: 'Yararlı olmayı önemser' },
       bands: {
@@ -239,7 +239,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
         },
       },
     },
-    /* Güvence: G1 işini kaybetme kaygısı taşımamak, G2 gelirin düzenli gelmesi, G3 uzun yıllar aynı işte güvenle çalışmak,
+    /* Güvence: G1 işini kaybetme kaygısı taşımamak, G2 her ay aksamayan, düzenli bir gelir, G3 uzun yıllar aynı işte güvenle çalışmak,
        G4 geleceği güvenle planlayabileceği bir iş. */
     security: {
       poles: { low: 'Belirsizliği göze alır', high: 'Güvenceyi önemser' },
@@ -294,7 +294,7 @@ export const calismaDegerleriDaily: SurveyDaily = {
         },
       },
     },
-    /* Birlikte çalışma: E1 çalışma arkadaşlarıyla sıcak ilişkiler, E2 tek başına değil bir ekiple çalışmak, E3 iş dışında da
+    /* Birlikte çalışma: E1 iş arkadaşlarıyla sıcak ilişkiler, E2 tek başına değil bir ekiple çalışmak, E3 iş dışında da
        görüşecek kadar yakın olmak, E4 kendini bir topluluğun parçası gibi hissetmek. */
     team: {
       poles: { low: 'Kendi başına rahat eder', high: 'Ekiple çalışmayı önemser' },

@@ -237,11 +237,11 @@ export function LogicalReasoning({ task, onDone }: { task: LogicalReasoningTask;
               ? 'Alıştırmadaki soruların hepsini doğru cevapladın.'
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
-            ? 'Bilgileri gerçekte öyle olmasa bile doğru kabul et ve yalnızca bu bilgileri kullan. Sonuç doğru olabilir ama kesin değilse “Hayır, kesin değil” seç. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            ? 'Bilgileri gerçekte öyle olmasa bile doğru kabul et ve yalnızca onları kullan. Sonuç doğru olabilir ama kesin değilse “Hayır, kesin değil” seçeneğini seç. İstersen alıştırmayı tekrarlayabilirsin.'
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var. Süre sınırı yok; acele etmeden, her soruda bilgileri yeniden okuyarak karar ver.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var. Süre sınırı yok; acele etmeden, her soruda bilgileri yeniden okuyarak karar ver.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton
@@ -299,7 +299,7 @@ export function LogicalReasoning({ task, onDone }: { task: LogicalReasoningTask;
         ) : (
           <>
             <Options selected={selected} onSelect={setSelected} onConfirm={confirm} />
-            <p className="text-center text-ink-2">{selected === null ? 'Doğru olduğunu düşündüğün seçeneği seç.' : `${LOGIC_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
+            <p className="text-center text-ink-2">{selected === null ? 'Kararını ver ve bir seçeneği seç.' : `${LOGIC_LETTERS[selected]} seçeneğini seçtin. Emin olunca cevabı ver.`}</p>
             <div className="flex justify-center">
               <button type="button" className="btn btn-primary btn-lg min-w-[12rem]" disabled={selected === null} onClick={(e) => confirm(e.timeStamp)}>
                 Cevabı ver

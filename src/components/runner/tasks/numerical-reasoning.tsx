@@ -208,10 +208,10 @@ export function NumericalReasoning({ task, onDone }: { task: NumericalReasoningT
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Soruyu dikkatle oku; istersen sayıları kâğıda yazarak düşün. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var. Süre sınırı yok; acele etmeden, her soruyu dikkatle okuyarak cevap ver. Cevabı bulamadığın bir soruda “Bilmiyorum” diyebilirsin.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var. Süre sınırı yok; acele etmeden, her soruyu dikkatle okuyarak cevap ver. Cevabı bulamadığın bir soruda “Bilmiyorum” diyebilirsin.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton

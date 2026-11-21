@@ -8,7 +8,7 @@ import type { LikertInstrument, LikertItemDef } from '@/lib/instruments/types';
  *    bırakmak"tır (Steel, 2007); maddeler bu tanımı, son ana sıkışmayı ve niyet ile eylem arasındaki boşluğu sorar.
  *  - Planlama ve öncelik: yapılacakları yazma, önem sırasına koyma, ara hedefler (Macan ve ark., 1990'daki hedef ve öncelik
  *    belirleme ile planlama) ve "ne zaman, nerede" planı (Gollwitzer ve Sheeran, 2006).
- *  - Süreyi tahmin etme: bir işin süresini isabetli tahmin etme, geçmiş deneyimi hesaba katma, pay bırakma, zamanın nereye
+ *  - Süreyi tahmin etme: bir işin süresini doğru tahmin etme, geçmiş deneyimi hesaba katma, pay bırakma, zamanın nereye
  *    gittiğinin farkında olma (sürenin kısa tahmin edilmesi: Buehler, Griffin ve Ross, 1994).
  *  - Odağı koruma: dikkat dağıtıcılara ve anlık isteklere kapılmamak (Steel, 2007'de ertelemeyle en güçlü ilişkili
  *    özelliklerden dikkat dağınıklığı ve dürtüsellik).
@@ -31,10 +31,10 @@ const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
   { key: 'S1', scale: S, reverse: true, text: 'Bir işi, sonra sıkışacağımı bile bile ertelerim.' },
   { key: 'P1', scale: P, text: 'Yapacaklarımı aklımda tutmaya çalışmak yerine bir yere not ederim.' },
   { key: 'F1', scale: F, reverse: true, text: 'Bir işle uğraşırken kendimi telefona, tablete ya da başka bir ekrana bakarken bulurum.' },
-  { key: 'E1', scale: E, text: 'Bir işin ne kadar süreceğini isabetli tahmin ederim.' },
-  { key: 'C1', scale: C, text: 'Gün içinde işlerimi ben yönlendiririm.' },
+  { key: 'E1', scale: E, text: 'Bir işin ne kadar süreceğini doğru tahmin ederim.' },
+  { key: 'C1', scale: C, text: 'Gün içinde neyi ne zaman yapacağımı ben belirlerim.' },
 
-  { key: 'S2', scale: S, reverse: true, text: 'Yapmam gereken bir iş varken “önce şunu da halledeyim” diyerek vakit geçiririm.' },
+  { key: 'S2', scale: S, reverse: true, text: 'Yapmam gereken bir iş varken “Önce şunu da halledeyim” diyerek vakit geçiririm.' },
   { key: 'P2', scale: P, text: 'Yapacaklarımı ne kadar önemli ve acil olduklarına göre sıraya koyarım.' },
   { key: 'F2', scale: F, reverse: true, text: 'Bir işin ortasında aklıma gelen başka bir şeye geçiveririm.' },
   { key: 'E2', scale: E, reverse: true, text: 'İşlerim tahmin ettiğimden uzun sürer.' },
@@ -48,20 +48,20 @@ const RAW: { key: string; scale: string; text: string; reverse?: boolean }[] = [
 
   { key: 'S4', scale: S, text: 'Bana bir iş verildiğinde ona aynı gün başlarım.' },
   { key: 'P4', scale: P, text: 'Bir işi ne zaman ve nerede yapacağımı önceden kararlaştırırım.' },
-  { key: 'F4', scale: F, text: 'Bir işe oturduğumda, bitirene kadar dikkatimi dağıtan şeyleri uzak tutarım.' },
+  { key: 'F4', scale: F, text: 'Bir işe oturduğumda dikkatimi dağıtan şeyleri iş bitene kadar uzak tutarım.' },
   { key: 'E4', scale: E, text: 'Bir işe ayıracağım süreye, beklenmedik durumlar için biraz pay eklerim.' },
   { key: 'C4', scale: C, reverse: true, text: 'İşler üst üste binince ne yapacağımı şaşırırım.' },
 
   { key: 'S5', scale: S, text: 'Yapmam gereken işlere, zamanı geldiğinde hemen başlarım.' },
   { key: 'P5', scale: P, reverse: true, text: 'Güne bir plan yapmadan, aklıma estiği gibi başlarım.' },
-  { key: 'F5', scale: F, text: 'Sıkıcı bir işte de dikkatimi işin üzerinde tutarım.' },
+  { key: 'F5', scale: F, text: 'İş sıkıcı olsa da dikkatimi onun üzerinde tutarım.' },
   { key: 'E5', scale: E, reverse: true, text: 'Gün içinde zamanın nereye gittiğini anlamadan akşam olur.' },
   { key: 'C5', scale: C, text: 'Yapmam gerekenlerin yanında dinlenmeye ve sevdiğim şeylere de zaman ayırırım.' },
 ];
 
 export const ertelemeZamanYonetimi: LikertInstrument = {
   slug: 'erteleme-ve-zaman-yonetimi',
-  version: 1,
+  version: 2,
   engine: 'likert',
   name: 'Erteleme ve Zaman Yönetimi',
   shortName: 'Erteleme ve zaman yönetimi',
@@ -76,12 +76,12 @@ export const ertelemeZamanYonetimi: LikertInstrument = {
   sortOrder: 35.6,
   tagline: 'İşleri ne kadar ertelediğini ve zamanını nasıl yönettiğini gösterir; ertelemenin hangi alışkanlıklarla birlikte görüldüğünü yorumlar.',
   description:
-    'Bu test beş alanı inceler: işlere ertelemeden başlama, planlama ve öncelik belirleme, bir işin süresini tahmin etme, dikkat dağıtıcılara karşı odağı koruma ve zamanının kontrolünün kendinde olduğu duygusu. Rapor her alanı ayrı ayrı anlatır, ardından alanları birlikte yorumlar: ertelemenin hangi zaman yönetimi alışkanlıklarıyla birlikte görüldüğünü (araştırmalarda ertelemeyle ilişkili bulunan plan eksikliği ve dikkat dağıtıcılar, sürenin kısa tahmin edilmesi, zamanın kontrolünü kaybetmiş hissetme) gösterir. Maddeler sıfırdan yazılmıştır. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır.',
+    'Bu test beş alanı inceler: işlere ertelemeden başlama, planlama ve öncelik belirleme, bir işin süresini tahmin etme, dikkat dağıtıcılara karşı odağı koruma ve zamanının kontrolünün kendinde olduğu duygusu. Rapor her alanı ayrı ayrı anlatır, ardından alanları birlikte yorumlar: ertelemenin hangi zaman yönetimi alışkanlıklarıyla birlikte görüldüğünü (araştırmalarda ertelemeyle ilişkili bulunan plan eksikliği ve dikkat dağıtıcılar, sürenin kısa tahmin edilmesi, zamanın kontrolünü kaybettiğini hissetme) gösterir. Maddeler sıfırdan yazılmıştır. Öğrenciye ve veliye ayrı raporlar, testi kendisi için çözen yetişkine ise ona yazılmış tek bir rapor hazırlanır.',
   intro: {
     title: 'Zamanını nasıl kullanıyorsun?',
     paragraphs: [
       'Birazdan işlere başlama, plan yapma ve zamanı kullanma ile ilgili 25 cümle göreceksin. Her birinin senin için ne sıklıkla doğru olduğunu seç.',
-      'Cümlelerdeki “iş” sözcüğü, sorumluluğundaki her şeyi kapsar: çalışmak, görevler, ev işleri gibi.',
+      'Cümlelerdeki “iş” sözcüğü, sorumluluğundaki her şeyi kapsar: çalışman gereken konular, sana verilen görevler, ev işleri gibi.',
       'Doğru ya da yanlış cevap yok. Olması gerekeni değil, genellikle nasıl olduğunu seçersen rapor sana en çok yarar.',
     ],
   },
@@ -127,7 +127,7 @@ export const ertelemeZamanYonetimi: LikertInstrument = {
     {
       key: E,
       name: 'Süreyi tahmin etme',
-      plain: 'Bir işin ne kadar süreceğini isabetli tahmin etme ve gün içinde zamanın nereye gittiğinin farkında olma.',
+      plain: 'Bir işin ne kadar süreceğini doğru tahmin etme ve gün içinde zamanın nereye gittiğinin farkında olma.',
       poles: { low: 'Süreyi kısa tahmin eden', high: 'Süreyi gerçekçi tahmin eden' },
     },
     {
@@ -140,7 +140,7 @@ export const ertelemeZamanYonetimi: LikertInstrument = {
       key: C,
       name: 'Zamanın kontrolü',
       plain: 'Zamanının kontrolünün kendinde olduğunu, işlere ve dinlenmeye yetecek zamanı bulabildiğini hissetme.',
-      poles: { low: 'İşlerin altında ezilmiş hisseden', high: 'Zamanını yönettiğini hisseden' },
+      poles: { low: 'İşlerin altında ezildiğini hisseden', high: 'Zamanını yönettiğini hisseden' },
     },
   ],
   items: RAW as LikertItemDef[],
@@ -150,7 +150,7 @@ export const ertelemeZamanYonetimi: LikertInstrument = {
     whatItMeasures:
       'Beş alanı ölçer: işlere ertelemeden başlama, planlama ve öncelik belirleme, bir işin süresini tahmin etme, dikkat dağıtıcılara karşı odağı koruma ve zamanın kontrolünün kişide olduğu duygusu. Her alanda yüksek puan o becerinin sık kullanıldığını gösterir; “Ertelemeden başlama” puanının düşük olması işlerin sık ertelendiği anlamına gelir. Rapor alanları ayrıca birlikte yorumlar: ertelemenin hangi zaman yönetimi alışkanlıklarıyla birlikte görüldüğünü gösterir. Erteleme tembellikle açıklanamaz: araştırmacılar onu çoğu zaman zor ya da sıkıcı bir işin o an verdiği kötü duygudan kaçmak olarak açıklar; bu kaçış sonradan çoğu zaman daha kötü hissettirir (Sirois ve Pychyl, 2013). Kişilik değil davranış ölçer; araştırmalarda zaman yönetimi başarıyla ve ondan biraz daha güçlü biçimde kendini iyi hissetmeyle ilişkili bulunmuştur (Aeon, Faber ve Panaccio, 2021).',
     turkishVersion:
-      'Özgün Türkçe ölçek; bir çeviri değildir. Her alanda ters yönlü maddeler vardır (toplam 25 maddenin 11’i); birbirinin tersini söyleyen beş cümle çiftinden en az üçünde iki cümleye de uçtaki seçeneklerden biri (“Sık sık” ya da “Her zaman”; “Hiçbir zaman” ya da “Nadiren”) verilirse raporda “evet ya da hayır deme eğilimi” uyarısı gösterilir.',
+      'Özgün Türkçe ölçek; bir çeviri değildir. Her alanda ters yönlü maddeler vardır (toplam 25 maddenin 11’i); birbirinin tersini söyleyen beş cümle çiftinden en az üçünde iki cümleye de aynı yöndeki iki seçenekten biri (“Sık sık” ya da “Her zaman”; “Hiçbir zaman” ya da “Nadiren”) verilirse raporda “evet ya da hayır deme eğilimi” uyarısı gösterilir.',
     reliability: 'Pilot aşamasındadır: iç tutarlılık ve yapı geçerliği henüz incelenmedi.',
     normStatus: 'none',
     normNote:
@@ -161,7 +161,7 @@ export const ertelemeZamanYonetimi: LikertInstrument = {
     limitations: [
       'Kişinin kendi bildirimine dayanır; insanlar zamanlarını nasıl kullandıklarını olduğundan farklı değerlendirebilir.',
       'Erteleme işe ve döneme göre değişir; bu test genel eğilimi sorar.',
-      'Erteleme bir tanı değildir, ama sıkıntılı bir dönemle birlikte görülebilir: araştırmalarda çökkünlükle (depresyon) de ilişkili bulunmuştur (Steel, 2007). Erteleme hayatı belirgin biçimde zorlaştırıyorsa bir uzmanla görüşmek gerekir.',
+      'Erteleme bir tanı değildir, ama sıkıntılı bir dönemle birlikte görülebilir: araştırmalarda çökkünlükle (depresyon) de ilişkili bulunmuştur (Steel, 2007). Erteleme hayatı belirgin biçimde zorlaştırıyorsa bir uzmanla görüşmek iyi gelebilir.',
       'Bulgular çoğunlukla ilişkiseldir: bir alışkanlığın ertelemeyle birlikte görülmesi, ertelemenin tek nedeni olduğu anlamına gelmez.',
       'Pilot aşamasındadır: güvenirlik ve geçerlik çalışması henüz yapılmadı.',
     ],

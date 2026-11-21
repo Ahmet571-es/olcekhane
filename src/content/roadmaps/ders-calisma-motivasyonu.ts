@@ -170,7 +170,7 @@ export const dersCalismaMotivasyonuRoadmap: RoadmapTemplate = {
         ),
         average: t(
           'Bu hafta “çalışmalıyım” dediğin her seferde cümleyi “… öğrenmek istiyorum, çünkü …” diye yeniden kur.',
-          'Bu hafta çocuğunuzla “çalışmalısın” yerine “bunu neden öğrenmek isteyebilirsin?” diye konuşmayı deneyin.',
+          'Bu hafta çocuğunuzla “Çalışmalısın” yerine “Bunu neden öğrenmek isteyebilirsin?” diye konuşmayı deneyin.',
         ),
         low: t(
           'Bu hafta kendini sınarken bilemediğin soruları bir listeye yaz; liste, tekrar etmen gereken yerleri gösterir.',

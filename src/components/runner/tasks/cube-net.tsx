@@ -345,10 +345,10 @@ export function CubeNet({ task, onDone }: { task: CubeNetTask; onDone: (trials: 
               : `Alıştırmadaki ${task.practice.length} sorunun ${countOf(practiceScore, task.practice.length)} doğru cevapladın.`}{' '}
           {low
             ? 'Açınımda bir kareyi küpün önü say ve komşu kareleri onun çevresine zihninde katla: açınımda yan yana duran iki kare küpte de yan yana kalır, düz bir sırada aralarında tek kare olan iki kare ise küpte karşı karşıya gelir. Bir köşede buluşan üç yüzün sırası, küp nasıl çevrilirse çevrilsin değişmez. İstersen alıştırmayı tekrarlayabilirsin.'
-            : 'Şimdi asıl sorular başlıyor; artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin.'}
+            : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">
-          {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
+          Asıl sorularda artık cevabının doğru mu yanlış mı olduğunu görmeyeceksin. {task.items.length} soru var ve sorular giderek zorlaşıyor. Süre sınırı yok; emin olamadığında sana en uygun gelen seçeneği seç.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton
