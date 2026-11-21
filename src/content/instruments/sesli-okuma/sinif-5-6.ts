@@ -319,7 +319,7 @@ export const passages: OralPassage[] = [
     genre: 'informational',
     title: 'Ses Nasıl Yol Alır?',
     paragraphs: [
-      'Bir arkadaşın sana seslendiğinde onun sesi kulağına nasıl ulaşır? Sesi göremeyiz ama her ses bir titreşimle başlar. Örneğin bir gitarın teline vurduğunda tel çok hızlı bir biçimde ileri geri hareket eder. Biz konuşurken de boğazımızdaki ses telleri titreşir.',
+      'Bir arkadaşın sana seslendiğinde onun sesi kulağına nasıl ulaşır? Sesi göremeyiz ama her ses bir titreşimle başlar. Örneğin bir gitarın telini çektiğinde tel çok hızlı bir biçimde ileri geri hareket eder. Biz konuşurken de boğazımızdaki ses telleri titreşir.',
       'Titreşen bir cisim, çevresindeki havanın gözle görülemeyecek kadar küçük taneciklerini iter. Bu tanecikler de yanlarındaki tanecikleri iter ve titreşim böylece bir dalga gibi yayılır. Titreşim kulağımıza ulaştığında kulak zarımız da titreşmeye başlar ve beynimiz bu titreşimi ses olarak algılar.',
       'Ses yalnızca havada yayılmaz; suyun ve katı maddelerin içinden de geçebilir. Hatta katılarda ve sıvılarda havadakinden daha hızlı ilerler. Sesin katılardan geçtiğini basit bir deneyle fark edebilirsin. Kulağını bir masaya daya ve bir arkadaşından masanın öbür ucuna hafifçe vurmasını iste. Vuruşu, başın masadan uzaktayken duyduğundan çok daha net duyarsın.',
       'Sesin yayılması için mutlaka bir madde gerekir. Uzay neredeyse bomboş olduğu için orada ses yayılamaz, bu yüzden astronotlar uzay yürüyüşü sırasında birbirleriyle telsizle konuşur. Ses büyük ve sert bir yüzeye çarptığında ise geri döner. Dağlarda ya da boş bir salonda duyduğumuz yankı, işte bu geri dönen sestir.',
@@ -518,7 +518,7 @@ export const passages: OralPassage[] = [
       { key: 'i4', text: 'Emir rüzgârı zayıf bulur, Nehir ise sorunun alette olduğunu düşünür.', core: false },
       { key: 'i5', text: 'Aleti inceleyince bir bardağın ters yapıştırıldığını bulurlar.', core: true },
       { key: 'i6', text: 'Bardağı düzeltince alet hızla dönmeye başlar.', core: true },
-      { key: 'i7', text: 'Turları saymak için bir bardağı kırmızıya boyarlar.', core: false },
+      { key: 'i7', text: 'Nehir turları saymak için bir bardağı kırmızıya boyar.', core: false },
       { key: 'i8', text: 'Bir hafta boyunca her gün turları sayıp tabloya yazarlar.', core: false },
       { key: 'i9', text: 'Bilim şenliğinde hazırladıkları tablo büyük ilgi görür.', core: false },
     ],
@@ -587,7 +587,7 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q6', skill: 'vocabulary', answer: 'c',
-        text: 'Metindeki "süslemelerle bezenmiş büyük bir kapıdan" sözünde "bezenmiş" ne anlama gelir?',
+        text: 'Metindeki "bezenmiş büyük bir kapıdan" sözünde "bezenmiş" ne anlama gelir?',
         options: [
           { key: 'a', text: 'Kırılmış' },
           { key: 'b', text: 'Kilitlenmiş' },

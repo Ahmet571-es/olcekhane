@@ -622,7 +622,7 @@ export function OralAutoRunner(props: {
             <li>Bir metin seçeceksin.</li>
             <li>Mikrofonu birlikte deneyeceğiz.</li>
             <li>Metni sesli okuyacaksın. Bitince “Bitirdim”e basacaksın.</li>
-            <li>İstersen okumanı yapay zekâ inceleyecek. Bu sırada sen soruları cevaplayacaksın.</li>
+            <li>İzin verirsen okumanı yapay zekâ inceleyecek; bu sırada sen soruları cevaplayacaksın. İzin vermezsen kaydın silinir ve rapor hazırlanmaz.</li>
             <li>Sonunda raporun ekranda açılacak.</li>
           </ol>
         </section>
@@ -639,7 +639,7 @@ export function OralAutoRunner(props: {
             Neler gerekiyor?
           </h2>
           <ul className="flex list-disc flex-col gap-1.5 pl-5">
-            <li>Sessiz bir oda ve yaklaşık 15 dakika.</li>
+            <li>Sessiz bir oda ve yaklaşık 15–20 dakika.</li>
             <li>Mikrofonu olan bir telefon, tablet ya da bilgisayar. Bilgisayarda inceleme daha hızlı biter.</li>
             <li>İnternet: Yapay zekâ ilk seferde yaklaşık 250 MB indirir. Mümkünse Wi-Fi kullan. Hazırlık ve inceleme birkaç dakika sürebilir.</li>
             <li>Daha önce okumadığın bir metin.</li>
@@ -695,8 +695,8 @@ export function OralAutoRunner(props: {
         {title('Bir metin seç')}
         <p className="text-lg">
           {simple
-            ? 'Daha önce okumadığın bir metne dokun.'
-            : `Kendi sınıfının (${grade}. sınıf) metinlerinden, daha önce okumadığın birine dokun. Sonra mikrofonu deneyeceğiz; metin, okumaya başlayınca açılacak.`}
+            ? 'Daha önce okumadığın bir metni seç.'
+            : `Kendi sınıfının (${grade}. sınıf) metinlerinden, daha önce okumadığın birini seç. Sonra mikrofonu deneyeceğiz; metin, okumaya başlayınca açılacak.`}
         </p>
         <ul className="flex flex-col gap-2.5">{own.map(card)}</ul>
         {other.length > 0 && (
@@ -764,14 +764,14 @@ export function OralAutoRunner(props: {
         <ul className="flex list-disc flex-col gap-2 pl-6 text-xl leading-relaxed">
           {simple ? (
             <>
-              <li>Düğmeye bas. Metin açılacak.</li>
+              <li>“Başla” düğmesine bas. Metin açılacak.</li>
               <li>Metni sesli oku.</li>
               <li>Bilmediğin kelimede elinden geleni yap.</li>
               <li>Bitince “Bitirdim”e bas.</li>
             </>
           ) : (
             <>
-              <li>Düğmeye basınca metin açılacak ve kayıt başlayacak.</li>
+              <li>“Başla” düğmesine basınca metin açılacak ve kayıt başlayacak.</li>
               <li>Metni baştan sona sesli oku. Her zamanki gibi oku: ne çok hızlı ne çok yavaş.</li>
               <li>Bilmediğin bir kelimede elinden geleni yap ve devam et.</li>
               <li>Son kelimeyi okuyunca “Bitirdim” düğmesine bas.</li>
@@ -881,7 +881,7 @@ export function OralAutoRunner(props: {
         </p>
         {/* 18 yaş altı için veli bilgisi: inceleme yalnızca cihazda yapılsa da kayıt bir çocuğun sesidir. */}
         <p className="t-small text-ink-2">
-          {simple ? 'Düğmeye basmadan önce bir büyüğüne sor.' : '18 yaşından küçüksen “Evet” düğmesine velinin ya da öğretmeninin bilgisiyle bas.'}
+          {simple ? 'Düğmeye basmadan önce bir büyüğüne sor.' : '“Evet, analiz et” düğmesine velinin ya da öğretmeninin bilgisiyle bas.'}
         </p>
         <div className="flex flex-wrap gap-3">
           <button type="button" className="btn btn-primary btn-lg" onClick={analyse}>

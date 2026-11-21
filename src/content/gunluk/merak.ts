@@ -43,12 +43,12 @@ export const merakDaily: SurveyDaily = {
           from: { school: ['bil10'], friends: ['bil05', 'bil09'], home: ['bil04', 'bil08'], work: ['bil10'] },
           student: {
             school: 'Bazı derslerde konunun ayrıntısına inmek isteyebilir, bazılarında ana noktaları öğrenmeyi yeterli bulabilirsin.',
-            friends: 'Bir tartışmanın konusu ilgini çekiyorsa katılır, çekmiyorsa dinlemeyi seçebilirsin.',
+            friends: 'Bir tartışmanın konusu ilgini çekiyorsa katılabilir, çekmiyorsa dinlemeyi seçebilirsin.',
             home: 'Konusu ilgini çektiğinde zorlayıcı bir yazıyı da sonuna kadar okuyabilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı derslerde konunun ayrıntısına inmek isteyebilir, bazılarında ana noktaları öğrenmeyi yeterli bulabilir.',
-            friends: 'Bir tartışmanın konusu ilgisini çekiyorsa katılır, çekmiyorsa dinlemeyi seçebilir.',
+            friends: 'Bir tartışmanın konusu ilgisini çekiyorsa katılabilir, çekmiyorsa dinlemeyi seçebilir.',
             home: 'Konusu ilgisini çektiğinde zorlayıcı bir yazıyı da sonuna kadar okuyabilir.',
           },
           adult: {
@@ -103,12 +103,12 @@ export const merakDaily: SurveyDaily = {
           student: {
             school: 'Yeni bir kulübe ya da etkinliğe katılmadan önce biraz bakıp sonra karar verebilirsin.',
             friends: 'Arkadaşlarınla bazen yeni bir yer denemeyi, bazen bildiğin bir yere gitmeyi seçebilirsin.',
-            home: 'Tanımadığın bir yemeği bazen dener, bazen bildiğin yemeği seçebilirsin.',
+            home: 'Tanımadığın bir yemeği bazen deneyebilir, bazen bildiğin bir yemeği seçebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz yeni bir kulübe ya da etkinliğe katılmadan önce biraz bakıp sonra karar verebilir.',
             friends: 'Arkadaşlarıyla bazen yeni bir yer denemeyi, bazen bildiği bir yere gitmeyi seçebilir.',
-            home: 'Tanımadığı bir yemeği bazen dener, bazen bildiği yemeği seçebilir.',
+            home: 'Tanımadığı bir yemeği bazen deneyebilir, bazen bildiği bir yemeği seçebilir.',
           },
           adult: {
             work: 'Yeni bir yönteme geçmeden önce biraz bakıp sonra karar verebilirsin.',

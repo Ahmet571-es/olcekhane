@@ -41,7 +41,7 @@ const rule = (when: InsightRule['when'], student: string, parent: string, extra:
 const LEAD_RESEARCH =
   'Araştırmalarda liderlikle en tutarlı ilişkili kişilik özelliği dışadönüklüktür: insanlarla birlikte olmaktan hoşlanma, girişken ve canlı olma eğilimi. Planlı ve özenli olma özelliği olan sorumluluk da ilişkilidir; testteki “Kararlılık ve sorumluluk” buna yakın ama daha dar bir eğilimdir. Yine de bu ilişkiler çok güçlü değildir: kişilik, kimin lider olacağını tek başına belirlemez.';
 const LEAD_YOUNG =
-  'Liderlik yalnızca sınıf başkanı ya da takım kaptanı olmak değildir; bir gruptaki farklı roller de liderliğin parçasıdır.';
+  'Liderlik yalnızca bir grubun başkanı ya da takım kaptanı olmak değildir; bir gruptaki farklı roller de liderliğin parçasıdır.';
 const LEAD_ADULT = 'Liderlik yalnızca yönetici olmak değildir; bir gruptaki farklı roller de liderliğin parçasıdır.';
 const LEAD_END = {
   you: 'Testin sonucu senin hakkında kalıcı bir yargı değil, bugünün bir resmidir.',

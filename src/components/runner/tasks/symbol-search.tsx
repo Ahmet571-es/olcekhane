@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { glyphOf, strokeEnds, symbolSearchTrials } from '@/lib/instruments/symbol-search';
 import type { SymbolRef, SymbolSearchTask, SymbolSearchTrial } from '@/lib/instruments/types';
 import type { SymbolSearchTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, primaryPointer, useKeys, usePageHidden } from './common';
+import { afterPaint, ArmedButton, countOf, numberWord, PausedScreen, primaryPointer, StatusLine, TOUCH_CLASSES, useKeys, usePageHidden } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 type Answer = 'var' | 'yok';
@@ -162,7 +162,7 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
     return (
       <div className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
-          Önce {task.practice.length} denemelik bir alıştırma yapalım. Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var”, yoksa “Yok” düğmesine bas.
+          Önce {numberWord(task.practice.length)} denemelik bir alıştırma yapalım. Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var”, yoksa “Yok” düğmesine bas.
         </p>
         <ArmedButton className="btn btn-primary btn-lg" autoFocus onClick={startPractice}>
           Alıştırmaya başla
@@ -177,15 +177,20 @@ export function SymbolSearch({ task, seed, onDone }: { task: SymbolSearchTask; s
     const low = practiceHits < 4;
     const hits =
       practiceHits === 0
-        ? `Alıştırmada ${n} denemenin hiçbirinde doğru karar veremedin.`
-        : `Alıştırmada ${n} denemenin ${practiceHits === n ? 'hepsinde' : `${practiceHits} tanesinde`} doğru karar verdin.`;
+        ? `Alıştırmada ${numberWord(n)} denemenin hiçbirinde doğru karar veremedin.`
+        : `Alıştırmada ${numberWord(n)} denemenin ${countOf(practiceHits, n, 'inde', true)} doğru karar verdin.`;
     return (
       <div key={step} className="flex flex-col items-center gap-6 text-center">
         <p className="measure text-lg">
           {hits}{' '}
           {low
             ? 'Aranan simgelerden biri sırada tıpatıp aynısıyla varsa “Var” de; bir çizgisi farklı benzer simge aynı simge sayılmaz. İstersen alıştırmayı tekrarlayabilirsin.'
-            : `Şimdi ${seconds % 60 === 0 ? `${seconds / 60} dakika` : `${seconds} saniye`} boyunca yapabildiğin kadar karar ver; hem hızlı hem doğru olmaya çalış. Asıl bölümde doğru yapıp yapmadığını görmeyeceksin.`}
+            : 'Şimdi asıl görev başlıyor.'}
+        </p>
+        <p className="measure text-ink-2">
+          Asıl görevde artık doğru yapıp yapmadığını görmeyeceksin. “Göreve başla” düğmesine basınca süre başlar:{' '}
+          {seconds % 60 === 0 ? `${numberWord(seconds / 60)} dakika` : `${seconds} saniye`} boyunca yapabildiğin kadar karar ver; hem hızlı hem doğru olmaya
+          çalış. Süre dolunca görev kendiliğinden biter.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <ArmedButton className={`btn btn-lg ${low ? 'btn-primary' : 'btn-secondary'}`} autoFocus={low} onClick={startPractice}>

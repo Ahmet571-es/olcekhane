@@ -29,7 +29,7 @@ export const passages: OralPassage[] = [
           { key: 'a', text: 'Evin kapısının yanına' },
           { key: 'b', text: 'Mutfak penceresinin önüne' },
           { key: 'c', text: 'Bahçe duvarının üstüne' },
-          { key: 'd', text: 'Erik ağacının dalına' },
+          { key: 'd', text: 'Evin çatısının kenarına' },
         ],
       },
       {
@@ -110,8 +110,8 @@ export const passages: OralPassage[] = [
     title: 'Bayrak Yarışı',
     paragraphs: [
       'Okulda spor şenliği yapılacaktı. Zeynep, Emir, Ece ve Ali bayrak yarışında aynı takımda koşacaklardı. Bu yarışta her çocuk biraz koşar, sonra elindeki kısa çubuğu sıradaki arkadaşına verir. Elden ele geçen bu çubuğa bayrak denir.',
-      'Ama antrenmanda bir sorun çıktı. Çubuk her seferinde yere düşüyordu. Ece çok hızlı koşuyor ama çubuğu uzatırken telaşlanıyordu. Ali de elini ya çok erken ya da çok geç açıyordu. Takım bu yüzden her turda zaman kaybediyordu.',
-      'Zeynep bir gün güzel bir fikir buldu. Çubuğu veren kişi yüksek sesle "şimdi" diyecekti. Alan kişi de elini geriye uzatıp avucunu açık tutacaktı. Dört arkadaş bu yolu bütün hafta denediler. Önce yavaş yavaş koştular, sonra giderek hızlandılar.',
+      'Ama antrenmanda bir sorun çıktı. Çubuk her seferinde yere düşüyordu. Ece çok hızlı koşuyordu ama çubuğu uzatırken telaşlanıyordu. Ali de elini ya çok erken ya da çok geç açıyordu. Takım bu yüzden her turda zaman kaybediyordu.',
+      'Zeynep bir gün güzel bir fikir buldu. Çubuğu veren kişi yüksek sesle "Şimdi" diyecekti. Alan kişi de elini geriye uzatıp avucunu açık tutacaktı. Dört arkadaş bu yolu bütün hafta denediler. Önce yavaş yavaş koştular, sonra giderek hızlandılar.',
       'Sonunda yarış günü geldi. Çubuk yarış boyunca bir kez bile yere düşmedi. Takım yarışı ikinci sırada bitirdi. Yine de dört arkadaş sevinçle birbirlerine sarıldılar.',
     ],
     questions: [
@@ -142,7 +142,7 @@ export const passages: OralPassage[] = [
           { key: 'a', text: 'Bir düdük çalacaktı.' },
           { key: 'b', text: 'Arkadaşına iki kez el sallayacaktı.' },
           { key: 'c', text: 'Çubuğu yere bırakacaktı.' },
-          { key: 'd', text: 'Yüksek sesle "şimdi" diyecekti.' },
+          { key: 'd', text: 'Yüksek sesle "Şimdi" diyecekti.' },
         ],
       },
       {
@@ -201,7 +201,7 @@ export const passages: OralPassage[] = [
       { key: 'i2', text: 'Bu yarışta koşucular kısa bir çubuğu elden ele verir.', core: false },
       { key: 'i3', text: 'Antrenmanda çubuk sık sık yere düşer.', core: true },
       { key: 'i4', text: 'Ece telaşlanır, Ali de elini ya erken ya da geç açar.', core: false },
-      { key: 'i5', text: 'Zeynep, veren kişinin "şimdi" demesini ve alanın avucunu açık tutmasını önerir.', core: true },
+      { key: 'i5', text: 'Zeynep, veren kişinin "Şimdi" demesini ve alanın avucunu açık tutmasını önerir.', core: true },
       { key: 'i6', text: 'Dört arkadaş bu yolu bütün hafta dener.', core: false },
       { key: 'i7', text: 'Yarışta çubuk hiç düşmez ve takım ikinci olur.', core: true },
       { key: 'i8', text: 'Arkadaşlar sevinçle birbirine sarılır.', core: false },
@@ -261,7 +261,7 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q5', skill: 'inference', answer: 'b',
-        text: 'Kütüğünde on iki halka sayılan bir ağaç kaç yaşında kesilmiştir?',
+        text: 'Kütüğünde on iki yıllık halka sayılan bir ağaç kaç yaşında kesilmiştir?',
         options: [
           { key: 'a', text: 'Altı yaşında' },
           { key: 'b', text: 'On iki yaşında' },
@@ -405,9 +405,9 @@ export const passages: OralPassage[] = [
     ideas: [
       { key: 'i1', text: 'Nehir, yaz tatilinde teyzesinin çömlek atölyesine gider.', core: true },
       { key: 'i2', text: 'Annesi için çamurdan bir fincan yapmaya karar verir.', core: false },
-      { key: 'i3', text: 'Acele ettiği için çamur her denemede bozulur.', core: true },
+      { key: 'i3', text: 'Acele ettiği için çamur ilk üç denemede bozulur.', core: true },
       { key: 'i4', text: 'Nehir’in her yeri çamur olur.', core: false },
-      { key: 'i5', text: 'Teyzesi ellerini ıslatıp acele etmemesini söyler.', core: true },
+      { key: 'i5', text: 'Teyzesi ellerini ıslatmasını ve acele etmemesini söyler.', core: true },
       { key: 'i6', text: 'Nehir yavaş çalışır ve biraz eğri bir fincan yapar.', core: true },
       { key: 'i7', text: 'Nehir fincanı maviye boyar, teyzesi onu fırında pişirir.', core: false },
       { key: 'i8', text: 'Annesi her sabah kahvesini bu fincanla içer.', core: false },
@@ -513,7 +513,7 @@ export const passages: OralPassage[] = [
       { key: 'i4', text: 'Uzun kirpikleri gözlerini kumdan korur.', core: false },
       { key: 'i5', text: 'Rüzgâr güçlenince burun deliklerini kapatabilir.', core: false },
       { key: 'i6', text: 'Geniş ve yumuşak ayakları kuma batmaz.', core: false },
-      { key: 'i7', text: 'İnsanlar çölde develerle yolculuk edip yük taşıdığı için ona "çölün gemisi" denir.', core: false },
+      { key: 'i7', text: 'İnsanlar çölde develerle yolculuk edip yük taşıdıkları için ona "çölün gemisi" denir.', core: false },
     ],
   },
   {

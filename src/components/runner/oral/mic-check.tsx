@@ -115,7 +115,7 @@ const SILENCE_TEXT: Record<'noisy' | 'sound' | 'cut', string> = {
 const OK_NOTE: Partial<Record<SentenceHint, string>> = {
   quiet: 'Sesin biraz kısık geliyordu: Okurken cihaza bir karış yakın dur ve normal sesinle oku.',
   loud: 'Sesin biraz cızırtılı geliyordu: Okurken cihazı biraz uzakta tut.',
-  noisy: 'Ortam biraz gürültülü ama yapay zekâ sesini ayırabildi. Mümkünse okurken gürültüyü azaltın.',
+  noisy: 'Ortam biraz gürültülü ama yapay zekâ sesini ayırabildi. Mümkünse okurken gürültüyü azalt.',
 };
 
 const SENTENCE_TEXT: Record<SentenceFail, string> = {
@@ -127,7 +127,7 @@ const SENTENCE_TEXT: Record<SentenceFail, string> = {
   noisy:
     'Arka planda gürültü var ve yapay zekâ cümleni seçemedi. Cihaza bir karış kadar yaklaş ve biraz daha yüksek sesle söyle; mümkünse daha sessiz bir yere geç.',
   short: 'Cümlenin tamamını duyamadık. Düğmeye bastıktan sonra cümlenin hepsini söyle.',
-  cut: 'Kayıt bitmeden cümleyi bitiremedin gibi görünüyor. Düğmeye basınca hemen söylemeye başla.',
+  cut: 'Cümleyi kayıt bitmeden bitirememişsin gibi görünüyor. Düğmeye basınca hemen söylemeye başla.',
   unrecognised: 'Yapay zekâ cümleni tam anlayamadı. Cümleyi ekrandaki gibi, tane tane ve normal sesinle söyle. Cihaza bir karış kadar yaklaş.',
   asrError: 'Yapay zekâ cümleni dinlerken bir sorun çıktı. Yeniden dene.',
 };
@@ -477,7 +477,7 @@ export function MicCheck(props: {
           </div>
         ) : (
           <>
-            <p>{simple ? 'Düğmeye bas. 2 saniye hiç konuşma.' : 'Düğmeye bas ve 2 saniye hiç konuşmadan bekle. Ortamın ne kadar sessiz olduğunu ölçeceğiz.'}</p>
+            <p>{simple ? '“Ölçmeyi başlat” düğmesine bas. 2 saniye hiç konuşma.' : '“Ölçmeyi başlat” düğmesine bas ve 2 saniye hiç konuşmadan bekle. Ortamın ne kadar sessiz olduğunu ölçeceğiz.'}</p>
             {silence === 'rec' ? (
               <Countdown startedAt={recAt} ms={LEAD_MS + SILENCE_MS} label="Sessiz kal…" />
             ) : (
@@ -502,7 +502,7 @@ export function MicCheck(props: {
         <StepHead id="mik-3" n={3} done={sentence === 'ok'}>
           Cümleyi söyle
         </StepHead>
-        <p>{simple ? 'Düğmeye bas. Bu cümleyi söyle:' : 'Düğmeye bas ve bu cümleyi normal sesinle söyle:'}</p>
+        <p>{simple ? '“Kaydı başlat” düğmesine bas. Bu cümleyi söyle:' : '“Kaydı başlat” düğmesine bas ve bu cümleyi normal sesinle söyle:'}</p>
         <p className="rounded-xl bg-surface-2 px-4 py-3 font-display text-[1.5rem] font-bold leading-snug sm:text-[1.75rem]">{MIC_CHECK_SENTENCE}</p>
         {sentence === 'rec' && <Countdown startedAt={recAt} ms={SENTENCE_MS} label="Şimdi söyle…" />}
         {sentence === 'asr' && (

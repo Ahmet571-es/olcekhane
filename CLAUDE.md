@@ -113,7 +113,8 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   bir yargıdır, dilek cümlesi ("Keşke …") olmaz; ortak yüklemde kişi eki eksilince özne karışıyorsa ek yazılır ("İnsanlar …
   hayal kırıklığına uğrar ve kızarım" değil "uğrarım ve kızarım"; "Plan yapar ve planıma bağlı kalırım" doğrudur); "-ip" ekinden sonra olumsuz yüklem iki türlü okunur ("durup basmayacaksın"), kaçınılır. Görev yönergesi süre
   sınırını ve uyaranın kendiliğinden kaybolduğunu baştan söyler (yönergedeki süre görevin ayarıyla aynıdır, test denetler);
-  duraklama ekranında not ile düğme aynı şeyi söyler (`PausedScreen`'in `cta`'sı); alıştırma sonucu `countOf` ile yazılır
+  duraklama ekranında not ile düğme aynı şeyi söyler (`PausedScreen`'in `cta`'sı; dizi görevlerinde "Bu dizi baştan
+  gösterilecek."); alıştırma sonucu `countOf` ile yazılır
   ("8 denemenin hepsini"; hiç doğru yoksa "hiçbirini doğru yapamadın"). Yönerge düğmeyi ekranda yazdığı gibi anar ve görevin
   gerçek işleyişini anlatır (ör. ayna görüntüsü de döndürülmüş gelir); zarf-fiilden ("-ip") sonra virgül konmaz; "-ip" ile
   bağlanan iki eylem aynı çatıdadır ("Kuralı bulup … seçildiği" değil "Kuralın bulunup … seçildiği"). Soruların izini tutan
@@ -127,14 +128,16 @@ kullanılmaz. Oturumun kendi talimatı yalnızca oturum dalına göndermeyi söy
   açıklama, verilmeyen bilgiyi eklemez ("bazı" → "yalnızca bazı" olmaz). Alıştırma sonu ekranı, asıl bölümde cevabın
   gösterilmeyeceğini alıştırma puanı düşükken de söyler. Süreli görevde yönerge sürenin ne zaman başladığını ve dolunca ne
   olduğunu da söyler (ör. "süre problem ekrana gelince başlar, dolunca problem kapanır"); yönergedeki örnek, testteki bir
-  sorunun ya da işlemin cevabını ele vermez (çarpanların sırası değişse de; test denetler); ekranda gösterilen yüzde ile
+  sorunun ya da işlemin cevabını ele vermez (çarpanların sırası değişse de; Parçalardan Şekil'de örneğin parçaları
+  hiçbir soruda ve seçenekte geçmez; test denetler); ekranda gösterilen yüzde ile
   ona bağlı uyarı aynı sayıya bakar (yuvarlama uyarıyla çelişmesin); ayna görüntüsü aranan görevde döndürmeye "çevirmek"
   denmez; iki ok ya da iki işaret yalnızca renkle ayırt ettirilmez. Soru ile şıklar aynı eki taşır ("kaç saniyede?" +
   "60 saniyede"); alıştırma sonucunda "1 tanesini" değil "birini" yazılır (`countOf`), sayılar aynı cümlede hep yazıyla
   (`numberWord`: "iki sorunun birini"). Alıştırmanın doğru cevabı bir asıl sorunun cevabını göstermez (aynı kural ve aynı harfler;
   aynı duruşta aynı şekil; Harf Dizileri ve Şekil Benzetmeleri'nde test denetler). Raporun düzey metni ortalamayı tek tek
   maddelere çevirip kişiye hassas bir iddia yüklemez ("birçok şeyden korktuğunu söylüyorsun", "sık sık hüzünlü"); maddelerde
-  olmayan bir şeyi de söyletmez ("kendi önceliklerine odaklandığını"). Mezunun da gördüğü metinde "sınav haftası" denmez. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
+  olmayan bir şeyi de söyletmez ("kendi önceliklerine odaklandığını"). Mezunun da gördüğü metinde "sınav haftası" ve "sınıf başkanı" denmez. Ekrandaki açıklama kodun gerçek eşiğini söyler (ör.
+  sesli okumada çizilen duraklamaların en kısası). Bir öğrenci metni baştan sona "sen" der. Aynı İngilizce maddenin çevirisi bütün testlerde aynıdır ve birlikte değişir (test denetler; bilinçli
   ayrılık nedeniyle `KNOWN_DIFFERENT`'a yazılır; Çocuk Kişilik Profili yaşa göre uyarladığı için dışındadır); maddeyi alıntılayan
   yorumlar da eşitlenir. Madde değişikliği cevapları kaydırabiliyorsa testin sürümü artırılır (eski PDF'lerle karşılaştırılmaz).
 - Yeni test "Hangi test bana uygun?" sayfasında (`/hangi-test`) uygun yuvanın adaylarına yazılır

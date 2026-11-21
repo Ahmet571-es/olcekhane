@@ -32,12 +32,12 @@ export const ozDenetimDaily: SurveyDaily = {
           from: { school: ['dus07', 'dus04'], friends: ['dus02', 'dus09'], home: ['dus10'], work: ['dus07', 'dus04'] },
           student: {
             school: 'Bir projeye ne yapacağını düşünmeden dalabilirsin.',
-            friends: 'Arkadaşlarınla konuşurken aklına geleni kelimelerini pek seçmeden hemen söyleyebilirsin.',
+            friends: 'Arkadaşlarınla konuşurken kelimelerini pek seçmeden aklına geleni söyleyebilirsin.',
             home: 'Hafta sonu ne yapacağına çoğu zaman son dakikada karar verebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bir projeye ne yapacağını düşünmeden dalabilir.',
-            friends: 'Arkadaşlarıyla konuşurken aklına geleni kelimelerini pek seçmeden hemen söyleyebilir.',
+            friends: 'Arkadaşlarıyla konuşurken kelimelerini pek seçmeden aklına geleni söyleyebilir.',
             home: 'Hafta sonu ne yapacağına çoğu zaman son dakikada karar verebilir.',
           },
           adult: {
@@ -48,12 +48,12 @@ export const ozDenetimDaily: SurveyDaily = {
           from: { school: ['dus07'], friends: ['dus02'], home: ['dus10', 'dus05'], work: ['dus07'] },
           student: {
             school: 'Bazı ödevlerde önce ne yapacağını düşünebilir, bazılarına düşünmeden dalabilirsin.',
-            friends: 'Arkadaşlarınla konuşurken bazen kelimelerini özenle seçebilir, bazen aklına geleni hemen söyleyebilirsin.',
+            friends: 'Arkadaşlarınla konuşurken bazen kelimelerini özenle seçebilir, bazen aklına geleni olduğu gibi söyleyebilirsin.',
             home: 'Bazı planları önceden düşünüp yapabilir, bazılarına son dakikada karar verebilirsin.',
           },
           parent: {
             school: 'Çocuğunuz bazı ödevlerde önce ne yapacağını düşünebilir, bazılarına düşünmeden dalabilir.',
-            friends: 'Arkadaşlarıyla konuşurken bazen kelimelerini özenle seçebilir, bazen aklına geleni hemen söyleyebilir.',
+            friends: 'Arkadaşlarıyla konuşurken bazen kelimelerini özenle seçebilir, bazen aklına geleni olduğu gibi söyleyebilir.',
             home: 'Bazı planları önceden düşünüp yapabilir, bazılarına son dakikada karar verebilir.',
           },
           adult: {

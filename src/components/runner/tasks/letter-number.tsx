@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { lnAnswer, lnCheck, lnCounts, lnIsDigit } from '@/lib/instruments/letter-number';
 import type { LetterNumberTask } from '@/lib/instruments/types';
 import type { LetterNumberTrialInput } from '@/lib/scoring/tasks';
-import { ArmedButton, PausedScreen, StatusLine, TOUCH_CLASSES, afterPaint, isAbort, useKeys, usePageHidden, wait } from './common';
+import { afterPaint, ArmedButton, countOf, isAbort, numberWord, PausedScreen, StatusLine, TOUCH_CLASSES, useKeys, usePageHidden, wait } from './common';
 
 type Step = 'ready' | 'practice' | 'practice-done' | 'test';
 type Phase = 'wait' | 'show' | 'input' | 'feedback';
@@ -224,8 +224,8 @@ export function LetterNumber({ task, onDone }: { task: LetterNumberTask; onDone:
   if (paused) {
     return (
       <PausedScreen
-        note="Dizi yarıda kaldığı için aynı dizi baştan gösterilecek."
-        cta="Diziyi yeniden göster"
+        note="Bu dizi baştan gösterilecek."
+        cta="Diziyi baştan göster"
         onResume={() => {
           setPaused(false);
           present();
@@ -280,8 +280,8 @@ export function LetterNumber({ task, onDone }: { task: LetterNumberTask; onDone:
           {all
             ? 'Alıştırma dizilerinin hepsini doğru sıraladın.'
             : practiceScore === 0
-              ? 'Alıştırma dizilerini doğru sıralayamadın. Kuralı hatırla: önce sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla.'
-              : `Alıştırmadaki ${task.practice.length} dizinin ${practiceScore === 1 ? 'birini' : `${practiceScore} tanesini`} doğru sıraladın. Kuralı hatırla: önce sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla.`}{' '}
+              ? 'Alıştırma dizilerinin hiçbirini doğru sıralayamadın. Kuralı hatırla: önce sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla.'
+              : `Alıştırmadaki ${numberWord(task.practice.length)} dizinin ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru sıraladın. Kuralı hatırla: önce sayılar küçükten büyüğe, sonra harfler alfabe sırasıyla.`}{' '}
           {all ? 'Şimdi asıl test başlıyor.' : 'İstersen alıştırmayı tekrarlayabilirsin.'}
         </p>
         <p className="measure text-ink-2">

@@ -60,7 +60,8 @@ ekranları sade kalır; sıra aşağıdaki gibi.
    yönergeyle uyum. Aşağıdaki "Testler" tablosunun sırasıyla sekizerli gruplar, her mesajda bir grup; her grubu metni
    yazmamış ikinci bir denetçi de okur; kaynağı doğrulanmış (`active`) ölçeklerde maddenin anlamı değiştirilmez; puanı ya da
    karşılaştırmayı etkileyen değişiklikte testin sürümü artırılır. Bulunan ve düzeltilen her şey site sahibine listelenir.
-   İlerleme: **7/8 grup** (2026-11-21).
+   İlerleme: **8/8 grup** (2026-11-21); sıradaki: denetimin sonunda topluca yapılacaklar (aşağıda, gruplardaki "Denetimin
+   sonunda" notları), sonra bu madde kapanır.
    - **1. grup (bitti):** Öz-saygı, Beş Faktör, Hızlı Kişilik, Çalışma Alışkanlıkları, Dikkat ve Bellek, Sürekli Dikkat, Mesleki
      İlgi Profili, Okuma Hızı ve Anlama. Bulunanlar ve düzeltilenler "Son yapılanlar" (82)'de. Sürümü artanlar: Çalışma
      Alışkanlıkları 2, Okuma Hızı ve Anlama 2. Bu grupta bulunan ortak hatalar öteki gruplardaki testlerde de düzeltildi
@@ -106,8 +107,12 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      yeniden hesaplandı: anahtarlarda hata yok. Kalıcı denetime iki kural eklendi: alıştırma asıl soruların aynısı değil
      (Harf Dizileri: aynı kuraldaki soruyla en çok iki ortak harf; Şekil Benzetmeleri: alıştırmanın cevabı, asıl cevaplardaki
      bir şekli aynı duruşla göstermez).
-   - **8. grup (sıradaki, son):** Öz-denetim, Harf-Sayı Sıralama, Merak, İşlem Hızı: Simge Bulma, Liderlik Eğilimleri,
-     Parçalardan Şekil, Sesli Okuma Değerlendirmesi. Ardından denetimin sonunda topluca yapılacaklar (aşağıda).
+   - **8. grup (bitti):** Öz-denetim, Harf-Sayı Sıralama, Merak, İşlem Hızı: Simge Bulma, Liderlik Eğilimleri,
+     Parçalardan Şekil, Sesli Okuma Değerlendirmesi. Bulunanlar "Son yapılanlar" (89)'da. **Sürümü artan test yok:** puanlanan
+     görev sorularının hiçbiri değişmedi (Parçalardan Şekil'in soru izi alıştırma açıklamaları için güncellendi); sesli okumanın
+     sürümü ve karşılaştırması yok, anlama sorularının cevap anahtarı aynı. Görevlerin bütün soruları ve sesli okumanın 174
+     anlama sorusu iki denetçi tarafından çözüldü: anahtarlarda hata yok, bilgi metinlerinde yanlış bilgi yok. Kalıcı denetime
+     bir kural eklendi: Parçalardan Şekil'in yönerge örneği hiçbir sorunun parçasını ya da seçeneğini göstermez.
    - **Yöntem (1. grupta işledi):** önce içerik dosyası baştan sona okunur, çözme ekranındaki yazılar da (bileşenler) denetlenir;
      aynı dosyaları metni yazmamış ikinci bir denetçi (salt okuyan ajan) bağımsız okur; iki liste birleştirilir, her bulgu
      doğrulanır. Günlük hayat örneklerinin "maddeden art arda dört sözcük aktarmaz" kuralı madde değişince çakışabilir
@@ -196,6 +201,17 @@ ekranları sade kalır; sıra aşağıdaki gibi.
      özel ve hassas iddialar ("birçok şeyden korktuğunu", "sık sık hüzünlü", "kendi işlerine ve önceliklerine") çıkarıldı;
      öteki testlerde de aynı kalıp var: denetimin sonunda topluca bakılacak. Kaynakçalarda "ve ark." kullanılıyor (APA 7'de 20
      yazara kadar hepsi yazılır) ve "aktaran" ile anılan özgün kaynaklar da listede: denetimin sonunda.
+     **8. gruptan (hocaya):** Harf-Sayı Sıralama'da "9 M D 8" dizisinde harfler sıralanınca "D M" (bir kısaltmayı
+     çağrıştırabilir; değişirse sürüm artar). Öz-denetim'de "Bir işe başlamam için birinin beni dürtmesi gerekir" (iki türlü
+     okunur), karşıt sayılan dis01/dis08 çifti ve parayla ilgili iki madde (harçlığı olmayan öğrenci). Merak'ta "kafa yormam"
+     (yorulmak mı, uğraşmak mı) ve günlük hayattaki düşük uç adı. Liderlik'te "İşleri birbirine karıştırırım", karşıt çift
+     ces01/ces06 ve "Hazırlıksız konuşma yapmakta iyiyim" (öteki testlerle ortak). Parçalardan Şekil'in 1. alıştırması 8. soruya
+     benziyor (aynı değil; alıştırma puanlanmıyor). Sesli okumada: bazı başlıklar ana fikir sorusunun cevabını sezdiriyor; birkaç
+     "çıkarım" sorusu metinde yazanı soruyor (Pusula q4/q5; çıkarım değil hatırlama); "bayrak" kelime sorusu; Bilim Şenliği'nde
+     q4'ün cevabı q8'i ele veriyor olabilir; Ay'ın Işığı'nda 14 kelimelik bir cümle (1–2. sınıf için uzun); raporlardaki
+     "analiz" sözcüğü (site sahibinin kendi isteği: "Okumanı analiz etmemizi ister misin?"); grafikteki "3. sınıf ortalaması"
+     etiketi (kaynağı Ankara, 2002); yol haritasında kronometreyle süre tutma önerisi ile "hız yarışı değil" vurgusu arasındaki
+     gerilim. Simge Bulma'nın bilim kartındaki beyin hasarı cümlesi kaynaklı; dokunulmadı.
 3. [ ] **Üç boyutlu hareketli görseller:** ana sayfa, Testler, yaş grubu sayfaları, her testin tanıtım sayfası ve rehber
    (bugün yalnızca ana sayfanın açılışında var). Kütüphanesiz WebGL (bugünkü `components/persona` gibi), WebGL yoksa CSS
    yedeği, hareketi azaltanlarda kapalı, telefonda akıcı. Test çözme ve rapor ekranlarına hareketli efekt taşınmaz (süre
@@ -1299,6 +1315,29 @@ hatırlatır; şifre ya da ödeme bilgisi istemez.
 
 En yeni üstte; en çok 10 madde tutulur.
 
+- 2026-11-21 (89): Dil ve mantık denetimi, 8. grup (son grup; üç etkin anket: Öz-denetim, Merak, Liderlik Eğilimleri; üç
+  özgün görev: Harf-Sayı Sıralama, Simge Bulma, Parçalardan Şekil; Sesli Okuma'nın 24 metni ve 174 sorusu). İkinci denetçi
+  bağımsız okudu, soruları yeniden çözdü ve bilgi metinlerini denetledi: anahtarlarda ve bilgilerde hata yok. **Yönerge örneği
+  bir soruyu ele veriyordu:** Parçalardan Şekil'in örneğindeki iki parça 10. sorunun parçalarıydı ve örneğin bütünü o sorunun
+  doğru şeklinin büyük kısmını gösteriyordu → hiçbir soruda geçmeyen yeni parçalar (artık test ediliyor). **Görevler:**
+  Harf-Sayı'da yönerge öğelerin kendiliğinden kaybolduğunu ve "Tamam" düğmesini söylemiyordu, alıştırma sonucu "2 dizinin"
+  yazıyordu; Simge Bulma'da sürenin ne zaman başladığı ve dolunca ne olduğu yazmıyordu, "Göreve başla" uyarısı yalnızca iyi
+  sonuçta görünüyordu; Parçalardan Şekil'de döndürmeye "çevirmek" deniyordu (yönerge "ters çevirmek"i aynaya ayırıyor), "her
+  parça yalnızca döndürülerek" (kaydırma da var), cevabı gönderen düğme yoktu; üç dizi görevinde duraklama notu "baştan
+  gösterilecek" demiyordu. Simge Bulma'nın bilim kartı WISC-IV'ün iki formunu tek sanıyordu. **Sesli okuma:** yetişkinin
+  işaretleme ekranı "turuncu bölgeler 1 saniyeden uzun duraklamalardır" diyordu, oysa çizim çeyrek saniyeden uzun her
+  duraklamayı gösteriyor; raporda "olsaydı da rapor verilmez" (kip), "tek bir ile aittir" → "yalnızca Ankara'da yapılmıştır";
+  kesin hükümler ("kolaylaştıracaktır", "rahatlayacak", "her on kelimeden en az birinde") yumuşatıldı; giriş ekranında süre
+  "15 dakika" (testin süresi 20) → "15–20 dakika", izin verilmezse ne olacağı eklendi; "18 yaşından küçüksen" cümlesi düğmenin
+  adını anmıyordu; "dokun" → "seç", düğmeler ekrandaki adlarıyla. Metinlerde: "Pazar çok kalabalıktı" (gün mü yer mi) → "Pazar
+  yeri"; "koşuyor ama … telaşlanıyordu" (kip); tırnak içi "şimdi" → "Şimdi"; "gitarın teline vurduğunda" → "telini çektiğinde";
+  7–8. sınıf metninde öğrenciye "siz" deniyordu; Kuş Yemliği'nde bir yanlış şık metinde yemliğin ikinci yeriydi; Taş Kemer ve
+  Tamir Günü'nde iki soru kökü cevabı içeriyordu; fikir listesinde "her denemede" (üç deneme var), "taşıdığı/düşündüğü için"
+  (çoğul özne). **Anketler:** Öz-denetim'in düşük düzey metni "sonradan pişman olduğun şeyler yaptığını" diyordu (hiçbir madde
+  sormuyor) ve "çoğu zaman düşünmeden atıldığını", "çoğu insanda" (veri yok); Merak'ta "15 kişilik ölçeği" (15 ayrı kişilik
+  ölçeği) ve günlük hayatta "katılır, … seçebilirsin" ek uyumsuzluğu; Liderlik'te mezun da gördüğü hâlde "sınıf başkanı".
+  Tarayıcıda: Parçalardan Şekil'in yeni örneği telefonda ve masaüstünde, Harf-Sayı ve Simge Bulma'nın alıştırma sonu ekranları,
+  sesli okumanın otomatik ve yetişkinli girişleri açıldı.
 - 2026-11-21 (88): Dil ve mantık denetimi, 7. grup (dört etkin anket: Heyecan Arayışı 29, İyimserlik 10, Empati 29, Öz-yeterlik
   29 madde; dört özgün görev: Harf Dizileri 24, Gizli Şekiller 20, Şekil Benzetmeleri 24 soru, Desen Hatırlama 39 desen). İkinci
   denetçi bağımsız okudu ve soruları yeniden çözdü: anahtarlarda hata yok, ters maddeler doğru işaretli. **Alıştırmalar asıl
@@ -1468,19 +1507,3 @@ En yeni üstte; en çok 10 madde tutulur.
   (Beş Faktör, 6. sınıf; Ayrıntılı Kişilik, yetişkin) ve masaüstünde (Mesleki İlgi, 8. sınıf) testler baştan sona çözüldü,
   görseller indirildi ve gözle denetlendi; pakette (yetişkin, iki anket testi) açılan raporda da denendi. Çerez, tarayıcı
   deposu ve dış istek yok. Denetim `tests/ozet-gorsel.test.ts`.
-- 2026-11-06 (79): Yeni test: Ders Çalışırken Telefon ve Dikkat (özgün, pilot; 5. sınıftan yetişkine; 24 madde, ~4 dk). Dört
-  alan: bildirimlerin çekimi, ekranlar arası geçiş, telefona dönme isteği (ilk üçünde yüksek puan daha sık bölünme) ve kendini
-  durdurma yolları (yüksek puan bu yolların sık kullanılması). Bağımlılık etiketi ve destek kutusu yok; telefon kullanımı
-  alışkanlık düzeyinde anlatılır. Rapor: "Birlikte bakınca" (bölünmenin yüksek her yanı için bir araştırma cümlesi: bakılmayan
-  bildirim de dikkati böler, evde çalışırken gözlenen öğrenciler altı dakikadan kısa sürede başka şeye geçer; kendini durdurma
-  yollarının puanı işe yarayıp yaramadığını göstermez). Yol haritasında 2. hafta "Odaklı çalışma düzeni", 3. hafta bölünmenin en
-  belirgin yanı (üçü de düşükse "Odağını koru"; `extraWeek` artık bütün öteki boyutlar atlanabildiğinde de verilir,
-  `tests/roadmap.test.ts`). Telefonu olmayanlara tablet, bilgisayar ya da evde ortak kullanılan telefon önerilir; karşıt çiftler
-  birbirinin tam tersidir ve ters cümleler diziyi böler ki telefonu çalışmasını pek bölmeyen biri yanlış "tutarsız cevap"
-  uyarısı almasın. Testin adı site sahibinin seçtiğidir; yetişkine giden öteki metinler "çalışırken" der. İki bağımsız
-  inceleme: bağımlılık ölçeğindeki "niyet ettiğinden uzun kullanma" maddesine yakın bir madde ve tam karşıt olmayan çiftler
-  değişti; Ward (2017), Fitz (2019), Stothart (2015) ve PISA 2022 cümleleri kaynaklarına göre düzeltildi; kendini durdurma
-  yollarının önerileri "telefon çalışmanı bölüyorsa" diye koşullu oldu; aynı bulgunun bir sayfada iki kez geçmesi, maddeye
-  çok yakın günlük hayat satırları ve veliye gözetim çağrıştıran öneriler düzeltildi. "Hangi test bana uygun?"da "Öğrenme ve
-  çalışma" altında yeni yuva; galeride kendi çizimi (bildirimli telefon, odaklanılan satır). Telefonda ve masaüstünde baştan
-  sona çözüldü; rapor, veli raporu ve PDF açıldı.

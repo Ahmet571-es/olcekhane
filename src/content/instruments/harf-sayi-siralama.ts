@@ -61,8 +61,8 @@ const task: LetterNumberTask = {
   name: 'Harf-Sayı Sıralama',
   measures: 'Karışık sayıları ve harfleri akılda tutup sıraya koyabilmeyi, yani çalışma belleğini ölçer.',
   instructions: [
-    'Ekranda sayılar ve harfler tek tek, karışık olarak görünecek.',
-    'Dizi bitince önce sayıları küçükten büyüğe, sonra harfleri alfabe sırasıyla gir. Örneğin “K 3 D 1” görürsen “1 3 D K” girersin.',
+    'Ekranda sayılar ve harfler tek tek, karışık olarak görünecek; her biri 1 saniye görünüp kendiliğinden kaybolacak.',
+    'Dizi bitince önce sayıları küçükten büyüğe, sonra harfleri alfabe sırasıyla gir. Örneğin “K 3 D 1” görürsen “1 3 D K” girersin. Bitince “Tamam” düğmesine bas.',
     'Diziler giderek uzayacak. Hatırlamadığın bir dizide “Hatırlamıyorum” düğmesine basabilirsin.',
   ],
   onMs: 1000,
@@ -98,12 +98,12 @@ export const harfSayiSiralama: TaskInstrument = {
     title: 'Aklında tut, sıraya koy',
     paragraphs: [
       'Birazdan ekranda sayılar ve harfler tek tek, karışık olarak görünecek. Dizi bitince önce sayıları küçükten büyüğe, sonra harfleri alfabe sırasıyla gireceksin.',
-      `Önce üç alıştırma dizisi var. Ardından diziler ${MIN} öğeden başlayıp giderek uzar; bir uzunluktaki üç dizinin hiçbirini doğru sıralayamadığında test biter. Bu yüzden testin süresi kişiden kişiye değişir; çoğu kişi için 5–10 dakikadır.`,
+      `Önce üç alıştırma dizisi var. Ardından diziler ${MIN} öğeden başlayıp giderek uzar; bir uzunluktaki üç dizinin hiçbirini doğru sıralayamadığında test biter. Bu yüzden testin süresi kişiden kişiye değişir; genellikle 10 dakikadan kısa sürer.`,
       'Sessiz bir yerde, kâğıt kalem kullanmadan ve dikkatini dağıtacak şeyler olmadan çözersen sonuç seni daha iyi yansıtır. Dizi gösterilirken başka bir uygulamaya geçersen aynı dizi yeniden gösterilir.',
     ],
   },
   scales: [
-    { key: 'hs_aralik', name: 'En uzun doğru dizi', plain: `Bütün öğeleri doğru sırada girilen en uzun dizideki öğe sayısı (${MIN} ile ${MAX} arası).` },
+    { key: 'hs_aralik', name: 'En uzun doğru dizi', plain: `Bütün öğeleri doğru sırada girilen en uzun dizideki öğe sayısı (en çok ${MAX}).` },
     { key: 'hs_dizi', name: 'Doğru sıralanan diziler', plain: 'Gösterilen dizilerin kaç tanesinin bütün öğeleriyle doğru sırada girildiği ve diziler uzadıkça bunun nasıl değiştiği.' },
     {
       key: 'hs_hata',

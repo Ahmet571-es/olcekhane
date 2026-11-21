@@ -116,8 +116,8 @@ export const ozDenetimReport: ReportTemplate = {
       ),
       rule(
         { deliberation: ['low'], discipline: ['low'], restraint: ['low'] },
-        'Üç alanda da puanın düşük: işlere çoğu zaman düşünmeden atıldığını, başlamakta zorlandığını ve cazip gelen şeylere kolayca kapıldığını söylüyorsun. Aşağıdaki kartlar her alanı ayrı ayrı anlatıyor; her birinde küçük bir başlangıç noktası bulabilirsin.',
-        'Çocuğunuzun puanı üç alanda da düşük: işlere çoğu zaman düşünmeden atıldığını, başlamakta zorlandığını ve cazip gelen şeylere kolayca kapıldığını belirtiyor. Bunu bir eksiklik gibi değil, onu tanımak için bir başlangıç olarak ele alabilirsiniz; aşağıdaki kartlar her alanı ayrı ayrı anlatıyor.',
+        'Üç alanda da puanın düşük: işlere düşünmeden atıldığını, başlamakta zorlandığını ve cazip gelen şeylere kolayca kapıldığını söylüyorsun. Aşağıdaki kartlar her alanı ayrı ayrı anlatıyor; her birinde küçük bir başlangıç noktası bulabilirsin.',
+        'Çocuğunuzun puanı üç alanda da düşük: işlere düşünmeden atıldığını, başlamakta zorlandığını ve cazip gelen şeylere kolayca kapıldığını belirtiyor. Bunu bir eksiklik gibi değil, onu tanımak için bir başlangıç olarak ele alabilirsiniz; aşağıdaki kartlar her alanı ayrı ayrı anlatıyor.',
       ),
     ],
     fallback: {
@@ -151,8 +151,8 @@ export const ozDenetimReport: ReportTemplate = {
       ),
       average: t(
         'Bazen hemen, bazen geç başlayan',
-        'Bazı işlere hemen koyulduğunu, bazılarına ise başlamakta zorlandığını söylüyorsun. Bu, çoğu insanda işin ne kadar ilgi çekici ya da zor olduğuna göre değişir.',
-        'Çocuğunuz bazı işlere hemen koyulduğunu, bazılarına ise başlamakta zorlandığını belirtiyor. Bu, çoğu insanda işin ne kadar ilgi çekici ya da zor olduğuna göre değişir.',
+        'Bazı işlere hemen koyulduğunu, bazılarına ise başlamakta zorlandığını söylüyorsun. Bu, işin ne kadar ilgi çekici ya da zor olduğuna göre değişebilir.',
+        'Çocuğunuz bazı işlere hemen koyulduğunu, bazılarına ise başlamakta zorlandığını belirtiyor. Bu, işin ne kadar ilgi çekici ya da zor olduğuna göre değişebilir.',
       ),
       low: t(
         'İşe başlamakta zorlanan',
@@ -173,11 +173,11 @@ export const ozDenetimReport: ReportTemplate = {
       ),
       low: t(
         'İsteklerine kolay kapılan',
-        'Genel olarak cazip gelen şeylere direnmekte zorlandığını, kendini kaptırıp aşırıya kaçtığını ve sonradan pişman olduğun şeyler yaptığını söylüyorsun. Bu yorucu olabilir; birçok insan için kendini tutmak, isteği uyandıran durumları baştan değiştirdikçe kolaylaşabilir. Bir alışkanlığın kontrolden çıktığını düşünüyorsan güvendiğin bir yetişkinle konuşmak iyi gelebilir.',
-        'Çocuğunuz genel olarak cazip gelen şeylere direnmekte zorlandığını, kendini kaptırıp aşırıya kaçtığını ve sonradan pişman olduğu şeyler yaptığını belirtiyor. Birçok insan için kendini tutmak, isteği uyandıran durumları baştan değiştirdikçe kolaylaşabilir. Bu sonuç bir tanı değildir; ancak bir alışkanlığın kontrolden çıktığını düşünüyorsanız onunla sakin bir anda konuşmanız ve gerekirse bir uzmandan destek almanız iyi olur.',
+        'Genel olarak cazip gelen şeylere karşı kendini tutmakta zorlandığını söylüyorsun. Bu yorucu olabilir; birçok insan için kendini tutmak, isteği uyandıran durumları baştan değiştirdikçe kolaylaşabilir. Bir alışkanlığın kontrolden çıktığını düşünüyorsan güvendiğin bir yetişkinle konuşmak iyi gelebilir.',
+        'Çocuğunuz genel olarak cazip gelen şeylere karşı kendini tutmakta zorlandığını belirtiyor. Birçok insan için kendini tutmak, isteği uyandıran durumları baştan değiştirdikçe kolaylaşabilir. Bu sonuç bir tanı değildir; ancak bir alışkanlığın kontrolden çıktığını düşünüyorsanız onunla sakin bir anda konuşmanız ve gerekirse bir uzmandan destek almanız iyi olur.',
         {
           adult:
-            'Genel olarak cazip gelen şeylere direnmekte zorlandığını, kendini kaptırıp aşırıya kaçtığını ve sonradan pişman olduğun şeyler yaptığını söylüyorsun. Bu yorucu olabilir; birçok insan için kendini tutmak, isteği uyandıran durumları baştan değiştirdikçe kolaylaşabilir. Bir alışkanlığın kontrolden çıktığını düşünüyorsan güvendiğin biriyle ya da bir uzmanla konuşmak iyi gelebilir.',
+            'Genel olarak cazip gelen şeylere karşı kendini tutmakta zorlandığını söylüyorsun. Bu yorucu olabilir; birçok insan için kendini tutmak, isteği uyandıran durumları baştan değiştirdikçe kolaylaşabilir. Bir alışkanlığın kontrolden çıktığını düşünüyorsan güvendiğin biriyle ya da bir uzmanla konuşmak iyi gelebilir.',
         },
       ),
     },

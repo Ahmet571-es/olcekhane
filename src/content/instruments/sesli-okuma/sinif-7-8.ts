@@ -11,7 +11,7 @@ export const passages: OralPassage[] = [
       'Dedesi onun bu hâlini görünce ertesi sabah erkenden birlikte yürüyüşe çıkmayı önerdi. Güneş daha yeni doğarken sessiz sokaklarda yürümeye başladılar. Dedesi her köşede durup Defne’ye sorular soruyordu: "Şu kapının tokmağına hiç dikkatle baktın mı? Fırından çıkan ekmeklerin buharı ışıkta nasıl görünüyor?"',
       'Bu sorular, Defne’nin kendi mahallesine sanki onu ilk kez görüyormuş gibi bakmasını sağladı. Eski çeşmenin taşlarında yeşil yosunlar vardı, bir kedi de pencere önünde güneşleniyordu. Simitçinin tablasındaki simitler, sabah ışığında altın gibi parlıyordu. Defne hepsinin fotoğrafını çekti ama hâlâ bir şeyin eksik olduğunu düşünüyordu.',
       'Dönüş yolunda dedesi, yıllardır tanıdığı simitçiyle selamlaştı ve ikisi bir süre sohbet edip birlikte güldü. Defne hiç beklemeden makinesini kaldırdı ve o gülüşü yakaladı. Fotoğrafta iki eski dostun gülen yüzleri ve arkalarında yükselen sabah güneşi vardı.',
-      'Defne, birkaç gün sonra yarışmaya gönderdiği fotoğrafına "Günaydın" adını verdi. Yarışmada birinci olamadı ama öğretmeni bu fotoğrafı okulun girişine astırdı. Defne artık bir mahalleyi asıl güzel yapanın, orada birbirini tanıyan ve seven insanlar olduğunu biliyordu.',
+      'Defne birkaç gün sonra fotoğrafını "Günaydın" adıyla yarışmaya gönderdi. Yarışmada birinci olamadı ama öğretmeni bu fotoğrafı okulun girişine astırdı. Defne artık bir mahalleyi asıl güzel yapanın, orada birbirini tanıyan ve seven insanlar olduğunu biliyordu.',
     ],
     questions: [
       {
@@ -392,12 +392,12 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q7', skill: 'vocabulary', answer: 'd',
-        text: 'Metinde geçen "gevşemiş bir kabloyu yerine sabitledi" sözündeki "sabitlemek" ne anlama gelir?',
+        text: 'Metinde geçen "yerine sabitledi" sözündeki "sabitlemek" ne anlama gelir?',
         options: [
           { key: 'a', text: 'Yerinden söküp atmak' },
           { key: 'b', text: 'Yenisiyle değiştirmek' },
           { key: 'c', text: 'Uzunluğunu ölçmek' },
-          { key: 'd', text: 'Oynamayacak biçimde tutturmak' },
+          { key: 'd', text: 'Sıkıca tutturmak' },
         ],
       },
       {
@@ -416,7 +416,7 @@ export const passages: OralPassage[] = [
       { key: 'i2', text: 'Emekli elektrik teknisyeni olan komşusu Sevim Hanım’a gider.', core: false },
       { key: 'i3', text: 'Apartmanın bahçesinde bir tamir günü düzenlemeye karar verirler.', core: true },
       { key: 'i4', text: 'Girişteki panoya bir duyuru asarlar.', core: false },
-      { key: 'i5', text: 'Komşular eski eşyaların onarılmaya değmeyeceğini düşündüğü için önce kimse gelmez.', core: true },
+      { key: 'i5', text: 'Komşular eski eşyaların onarılmaya değmeyeceğini düşündükleri için önce kimse gelmez.', core: true },
       { key: 'i6', text: 'Sevim Hanım, çöpün yanında bulunan lambayı bahçedeki masada onarır.', core: true },
       { key: 'i7', text: 'Bunu gören yönetici ve öteki komşular eşyalarıyla bahçeye gelir.', core: false },
       { key: 'i8', text: 'Akşama kadar on iki eşya onarılır ve tamir gününün her ay yapılmasına karar verilir.', core: false },
@@ -457,12 +457,12 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q3', skill: 'literal', answer: 'a',
-        text: 'Yapım sırasında taşlar, kilit taşı konana kadar neyin üstünde durur?',
+        text: 'Yapım sırasında kemerin altına ne kurulur?',
         options: [
-          { key: 'a', text: 'Ahşap bir kalıbın' },
-          { key: 'b', text: 'Demir bir direğin' },
-          { key: 'c', text: 'Toprak bir yığının' },
-          { key: 'd', text: 'Halatlı bir vincin' },
+          { key: 'a', text: 'Ahşap bir kalıp' },
+          { key: 'b', text: 'Demir bir direk' },
+          { key: 'c', text: 'Toprak bir yığın' },
+          { key: 'd', text: 'Halatlı bir vinç' },
         ],
       },
       {
@@ -534,7 +534,7 @@ export const passages: OralPassage[] = [
     genre: 'informational',
     title: 'Bitkiler Işığa Nasıl Döner?',
     paragraphs: [
-      'Pencerenin önüne koyduğunuz bir saksı bitkisini hiç çevirmeden birkaç gün bekletin ve sonra yeniden inceleyin. Büyük olasılıkla gövdesinin ve yapraklarının cama, yani ışığın geldiği yöne doğru eğildiğini görürsünüz. Oysa bitkilerin ne ışığı görecek gözleri ne de dönmelerini sağlayacak kasları vardır. Peki bitkiler ışığın hangi yönden geldiğini nasıl anlar ve ona doğru nasıl döner?',
+      'Pencerenin önüne koyduğun bir saksı bitkisini hiç çevirmeden birkaç gün beklet ve sonra yeniden incele. Büyük olasılıkla gövdesinin ve yapraklarının cama, yani ışığın geldiği yöne doğru eğildiğini görürsün. Oysa bitkilerin ne ışığı görecek gözleri ne de dönmelerini sağlayacak kasları vardır. Peki bitkiler ışığın hangi yönden geldiğini nasıl anlar ve ona doğru nasıl döner?',
       'Bilim insanları, bitkinin gövde ucunda ışığa duyarlı özel maddeler bulunduğunu keşfetmiştir. Işık yalnızca bir yandan geldiğinde bu maddeler ışığın yönünü algılar. Ardından oksin adı verilen bir büyüme maddesi, gövdenin gölgede kalan yanında toplanır. Oksin, bulunduğu yerdeki hücrelerin boyca daha fazla uzamasını sağlar.',
       'Böylece gövdenin gölgedeki yanı, ışık alan yanından daha hızlı büyür. Bir yanı öteki yanından daha çok uzayan gövde de doğal olarak ışığa doğru kıvrılır. Yani bitkinin dönüşü bir kas hareketi değil, iki yan arasındaki büyüme farkının sonucudur. Bu dönüş saatler ya da günler içinde, gözle izlenemeyecek kadar yavaş gerçekleşir; ancak arka arkaya çekilen fotoğraflarda açıkça görülebilir.',
       'Işığa yönelmek, kendi besinini kendisi üreten bir bitki için önemli bir kazançtır. Yapraklar daha çok ışık aldığında, bitki fotosentezle daha fazla besin üretebilir. Bitkiler yalnızca ışığa değil, yer çekimine de tepki verir. Bu sayede gövde yukarı doğru uzarken kökler suyu ve mineralleri bulabilecekleri toprağın derinliklerine ilerler. Kısacası bitkiler, yerlerinden kıpırdamadan çevrelerine şaşırtıcı bir ustalıkla uyum sağlar.',

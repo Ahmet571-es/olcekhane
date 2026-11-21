@@ -483,7 +483,7 @@ export function OralRunner(props: {
       <>
         {title('Metni seçin')}
         <p className="text-lg">
-          Öğrencinin kendi sınıfının ({grade}. sınıf) metinlerinden birine dokunun; ardından mikrofon denemesine geçilir. Öğrencinin daha önce okumadığı bir
+          Öğrencinin kendi sınıfının ({grade}. sınıf) metinlerinden birini seçin; ardından mikrofon denemesine geçilir. Öğrencinin daha önce okumadığı bir
           metin olmalı. Öteki metinleri, aynı öğrenciyi birkaç hafta sonra yeniden değerlendirmek için kullanabilirsiniz.
         </p>
         {grade === 1 && (
@@ -942,8 +942,8 @@ export function OralRunner(props: {
       <>
         {title('Yeniden anlatmayı değerlendirin')}
         <p className="text-lg">
-          Öğrencinin anlatırken söylediği fikirleri işaretleyin. Kelimesi kelimesine aynı olması gerekmez; anlamca söylediyse işaretleyin. “Temel”
-          yazanlar, metni anlamış birinin mutlaka söyleyeceği fikirlerdir.
+          Öğrencinin anlatırken söylediği fikirleri işaretleyin. Kelimesi kelimesine aynı olması gerekmez; anlamca söylediyse işaretleyin. “Temel fikir”
+          yazanlar, metni anlamış birinin büyük olasılıkla söyleyeceği fikirlerdir.
         </p>
         {retell && retell.analysis.quality !== 'silent' && (
           <div className="panel p-4">

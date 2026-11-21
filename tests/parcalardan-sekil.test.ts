@@ -237,8 +237,8 @@ describe('Parçalardan şekil: sorular', () => {
     expect(turned(4).map((x) => x.split('/')[0])).toEqual(['slide:0', 'turn:2', 'mirror:2', 'mirror:2']);
     for (const x of turned(5)) expect(x.split(':')[1].split('/')[0], x).toBe(x.split('/')[1]);
     expect(task.levels.map((l) => l.plain)).toEqual([
-      'Döndürülmeden gösterilen iki parçanın, yalnızca yan yana kaydırılınca hangi şekli oluşturduğunu bulmak.',
-      'İki ya da üç parçadan biri döndürülmüş gösterildiğinde, onu zihinde çevirip bütünü bulmak.',
+      'Döndürülmeden gösterilen iki parçanın, yalnızca kaydırılınca hangi şekli oluşturduğunu bulmak.',
+      'İki ya da üç parçadan biri döndürülmüş gösterildiğinde, onu zihinde döndürüp bütünü bulmak.',
       'Dağınık duran üç parçayı birleştirmek ve bazı sorularda ters çevrilmiş bir parçayla kurulan şekli doğru şekilden ayırmak.',
       'Dört parçayı (çoğu soruda ikisi döndürülmüşken) birleştirmek ve birbirine çok benzeyen seçenekleri ayırmak.',
       'Hepsi döndürülmüş dört ya da beş parçayı birleştirmek ve doğru şekle çok benzeyen seçenekleri ayırmak.',
@@ -395,6 +395,16 @@ describe('Parçalardan şekil: sorular', () => {
     const ex = ASSEMBLY_EXAMPLE.pieces.map((p) => outline(p.shape));
     expect(partsMatch(ASSEMBLY_EXAMPLE.whole, ex, 'translate')).toBe(true);
     expect(tiles(outline(ASSEMBLY_EXAMPLE.whole), ex, false)).toBe(true);
+    // Örnek hiçbir asıl sorunun cevabını önceden göstermez: örneğin parçaları ve bütünü (döndürülmüş ya da ters çevrilmiş
+    // biçimleri de) hiçbir sorunun parçalarında ve seçeneklerinin parçalarında ya da bütününde yoktur.
+    const exCanon = new Set([...ex, outline(ASSEMBLY_EXAMPLE.whole)].map((x) => canonOf(x, true)));
+    for (const s of ASSEMBLY_SPECS) {
+      const seen = [
+        ...s.pieces.map(([shape]) => outline(shape)),
+        ...s.options.flatMap((o) => [outline(o), ...parts(o).values()]),
+      ];
+      for (const x of seen) expect(exCanon.has(canonOf(x, true)), `örnek ${s.key}`).toBe(false);
+    }
     // Yönergede ve alıştırmalarda okula özgü sözcük yok (yetişkinler de çözer).
     expect(schoolWords([parcalardanSekil.intro.title, ...parcalardanSekil.intro.paragraphs, ...task.instructions, ...task.practice.map((p) => p.explain)].join(' '))).toEqual([]);
   });
@@ -428,8 +438,11 @@ describe('Parçalardan şekil: sorular', () => {
   });
 });
 
-/** Soruların izi (sürüm 1): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. */
-const SORU_IZI = 'cecf933fb5655d3a';
+/**
+ * Soruların izi (sürüm 2): sorular bilerek değiştirildiğinde sürümle birlikte güncellenir. 2026-11-21: yalnızca alıştırma
+ * açıklamalarının ve düzey anlatımlarının dili değişti ("zihninde döndürünce"); sorular ve cevaplar aynı, sürüm artmadı.
+ */
+const SORU_IZI = 'e51389a340d5dc19';
 
 describe('Parçalardan şekil: puanlama', () => {
   const all = (fn: (i: number) => Partial<AssemblyTrialInput> = () => ({})): AssemblyTrialInput[] =>

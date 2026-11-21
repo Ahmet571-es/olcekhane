@@ -165,11 +165,11 @@ export const PROFILE_TEXT: Record<string, Two> = {
   'easy-hard': {
     student: 'Kelimeleri doğru ve rahat okuyorsun, ama sorularda zorlandın. Okurken anlamı takip etmeye odaklanmak sana çok yardımcı olur.',
     parent:
-      'Kelimeleri doğru ve rahat okuyor, ama sorularda zorlandı. Zorluk kelimeleri çözmekte değil; kelime bilgisi ve okuduğunu anlama stratejileri üzerinde durmak daha yararlı olur.',
+      'Kelimeleri doğru ve rahat okuyor, ama sorularda zorlandı. Zorluk kelimeleri çözmekte görünmüyor; kelime bilgisi ve okuduğunu anlama stratejileri üzerinde durmak daha yararlı olur.',
   },
   'support-easy': {
     student: 'Bazı kelimelerde zorlandın ama soruları iyi cevapladın. Kelimeleri daha rahat okudukça anlamak da kolaylaşır.',
-    parent: 'Bazı kelimelerde zorlansa da soruları iyi cevapladı. Kelimeleri daha rahat çözmeye yönelik çalışmalar okumasını kolaylaştıracaktır.',
+    parent: 'Bazı kelimelerde zorlansa da soruları iyi cevapladı. Kelimeleri daha rahat çözmeye yönelik çalışmalar okumasını kolaylaştırabilir.',
   },
   'support-hard': {
     student: 'Bazı kelimelerde zorlandın ve sorular da zor geldi. Önce biraz daha kolay metinlerle çalışmak sana iyi gelir.',
@@ -177,12 +177,12 @@ export const PROFILE_TEXT: Record<string, Two> = {
       'Bazı kelimelerde zorlandı ve sorularda da güçlük çekti. Kelimeleri çözmek dikkatinin bir kısmını aldığı için anlamaya daha az yer kalmış olabilir.',
   },
   'hard-easy': {
-    student: 'Kelimeleri okumakta zorlandın ama soruları iyi cevapladın. Bu güzel bir işaret: Kelimeleri çözmeye çalıştıkça okuman da rahatlayacak.',
+    student: 'Kelimeleri okumakta zorlandın ama soruları iyi cevapladın. Bu güzel bir işaret: Kelimeleri çözmeye çalıştıkça okuman da rahatlayabilir.',
     parent:
       'Kelimeleri çözmekte belirgin biçimde zorlansa da soruları iyi cevapladı. Anlama becerisi iyi görünüyor; öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır.',
   },
   'hard-support': {
-    student: 'Kelimeleri okumakta zorlandın ama soruların çoğunu doğru cevapladın. Kelimeleri daha rahat okudukça anlaman da artacak.',
+    student: 'Kelimeleri okumakta zorlandın ama soruların çoğunu doğru cevapladın. Kelimeleri daha rahat okudukça anlaman da artabilir.',
     parent:
       'Kelimeleri çözmekte belirgin biçimde zorlansa da soruların çoğunu doğru cevapladı. Öncelik, kelimeleri doğru ve rahat çözmeye yönelik çalışmalardır; bu kolaylaştıkça anlama da güçlenir.',
   },
@@ -227,7 +227,7 @@ export const ACCURACY_TEXT: Record<OralLevel, Two> = {
   hard: {
     student: 'Kelimelerin bir kısmında zorlandın. Kelimeleri çözmek zaman alınca anlamak da zorlaşır; bu yüzden kolay metinlerle çalışmak önemli.',
     parent:
-      'Her on kelimeden en az birinde zorlandı. Kelimeleri çözmek dikkatinin büyük kısmını alıyor olabilir; bu da okuduğunu anlamayı zorlaştırır.',
+      'Ortalama on kelimeden birinden fazlasında zorlandı. Kelimeleri çözmek dikkatinin büyük kısmını alıyor olabilir; bu da okuduğunu anlamayı zorlaştırır.',
   },
 };
 

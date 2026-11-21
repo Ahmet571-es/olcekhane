@@ -149,8 +149,8 @@ export function MarkStep(props: {
           </div>
         </dl>
         <p className="t-small mt-4 text-ink-3">
-          Emin olamadığınız yerde “5 sn” düğmesiyle geri dönüp yeniden dinleyin; gerekirse “Hız” düğmesiyle kaydı yavaşlatın. Turuncu bölgeler 1
-          saniyeden uzun duraklamalardır.
+          Emin olamadığınız yerde “5 sn” düğmesiyle geri dönüp yeniden dinleyin; gerekirse “Hız” düğmesiyle kaydı yavaşlatın. Turuncu bölgeler
+          okurken durulan yerlerdir (kısa duraklar da gösterilir).
         </p>
       </details>
 

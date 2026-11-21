@@ -167,11 +167,15 @@ export function layoutPieces(pieces: { shape: string; dy: number }[], gap = 0.9)
   });
 }
 
-/** Yönergedeki örnek: iki parça ve onların (döndürülmeden, yan yana kaydırılarak) oluşturduğu bütün. */
+/**
+ * Yönergedeki örnek: iki parça ve onların (döndürülmeden, yalnızca kaydırılarak) oluşturduğu bütün. Örneğin parçaları hiçbir
+ * sorunun parçalarında ve seçeneklerinde yoktur (2026-11-21'e kadarki örnek, 10. sorunun doğru şeklinin bir bölümünü önceden
+ * gösteriyordu; test denetler).
+ */
 export const ASSEMBLY_EXAMPLE = {
   pieces: [
-    { shape: '1 1/1 1A', dy: 0 },
-    { shape: '. 1/1C 1', dy: 0.6 },
+    { shape: '1 1 1C', dy: 0 },
+    { shape: '. . 1A/1 1 1', dy: 0.6 },
   ],
-  whole: '1 1 2/1 1A2C 2',
+  whole: '1 1 1C2A/2 2 2',
 };

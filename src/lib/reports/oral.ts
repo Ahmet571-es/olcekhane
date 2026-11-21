@@ -299,7 +299,7 @@ function rateItem(r: OralResult, def: OralReadingInstrument, grade: number, audi
     // Erden, Kurdoğlu ve Uslu (2002): Ankara, ders yılının sonu (nisan–mayıs), sınıfa uygun metinde 1 dakikada doğru okunan kelime.
     parts.push(
       parent
-        ? `Ankara’da 2002’de yayımlanan bir çalışmada ${grade}. sınıf öğrencileri, ders yılının sonunda (nisan–mayıs), sınıflarına uygun bir metinde dakikada ortalama ${ref.wpm} kelimeyi doğru okumuştu. Öğrencilerin çoğu ${lo} ile ${hi} arasındaydı (Erden ve ark., 2002). Grafikteki kesikli çizgi bu ortalamadır. Bu çalışma eskidir ve tek bir ile aittir; ders yılının başında daha düşük hızlar olağandır.`
+        ? `Ankara’da 2002’de yayımlanan bir çalışmada ${grade}. sınıf öğrencileri, ders yılının sonunda (nisan–mayıs), sınıflarına uygun bir metinde dakikada ortalama ${ref.wpm} kelimeyi doğru okumuştu. Öğrencilerin çoğu ${lo} ile ${hi} arasındaydı (Erden ve ark., 2002). Grafikteki kesikli çizgi bu ortalamadır. Bu çalışma eskidir ve yalnızca Ankara’da yapılmıştır; ders yılının başında daha düşük hızlar olağandır.`
         : `Bir çalışmada ${grade}. sınıflar dakikada ortalama ${ref.wpm} kelimeyi doğru okumuş. Çoğu ${lo} ile ${hi} arasında. Grafikteki kesikli çizgi bu ortalamadır.`,
     );
     if (r.fluency.slowRate) {

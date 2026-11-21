@@ -31,12 +31,12 @@ export const parcalardanSekilDaily: SkillsDaily = {
       student: {
         school: 'Matematikte birkaç parçanın birleşince hangi şekli oluşturacağını görmek bu tür bir iştir.',
         friends: 'Yapboz ya da tangramda bir parçanın yerini ve yönünü bulmak bu beceriyi ister.',
-        home: 'Kâğıttan üçgen ve karelerle örnekteki evi oluşturmak bu tür bir iştir.',
+        home: 'Kâğıttan kesilmiş üçgen ve karelerle bir resimdeki evi oluşturmak bu tür bir iştir.',
       },
       parent: {
         school: 'Çocuğunuzun matematikte birkaç parçanın birleşince hangi şekli oluşturacağını görmesi bu tür bir iştir.',
         friends: 'Yapboz ya da tangramda bir parçanın yerini ve yönünü bulmak bu beceriyi ister.',
-        home: 'Kâğıttan üçgen ve karelerle örnekteki evi oluşturmak bu tür bir iştir.',
+        home: 'Kâğıttan kesilmiş üçgen ve karelerle bir resimdeki evi oluşturmak bu tür bir iştir.',
       },
       adult: {
         work: 'Birkaç kalıbın bir kartona boşluksuz nasıl sığacağını önceden görmek bu tür bir iştir.',

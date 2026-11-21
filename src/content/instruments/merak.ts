@@ -168,7 +168,7 @@ export const merak: LikertInstrument = {
       key: BIL,
       name: 'Bilgi merakı',
       plain:
-        'Yeni bilgiler öğrenme isteği: bilime, tarihe, siyasete ve toplumsal konulara ilgi duyma; anlamak için kafa yormayı gerektiren metinleri okumayı ve zekâ oyunlarını sevme, bir konunun derinine inme; alışılmadık yerleri keşfetmeyi isteme ve zengin bir kelime dağarcığı.',
+        'Yeni bilgiler öğrenme isteği: bilime, tarihe, siyasete ve toplumsal konulara ilgi duyma; anlamak için kafa yormayı gerektiren metinleri okumayı ve zekâ oyunlarını sevme, bir konunun derinine inme; alışılmadık yerleri keşfetmeyi isteme ve zengin bir kelime dağarcığına sahip olma.',
       poles: { low: 'Bilgi peşine pek düşmeyen', high: 'Bilgi peşine düşen' },
       alpha: 0.78,
     },
@@ -200,7 +200,7 @@ export const merak: LikertInstrument = {
     licenseUrl: 'https://ipip.ori.org/',
     limitations: [
       'Öz bildirime dayanır; sonuç kişinin kendini nasıl gördüğünü yansıtır. Merak anketlerinin cümleleri çoğu zaman ne sorduğunu açıkça belli eder ve kişinin kendini olumlu gösterme eğiliminden etkilenebilir. Bu yüzden insanlar kendilerini olduğundan biraz daha meraklı anlatabilir (Shin ve Kim, 2019).',
-      'Merak anketlerinin sonucu, insanların gerçekte nasıl bilgi aradığıyla her zaman örtüşmez. Bir çalışmada 820 kişi 15 kişilik ölçeğini (aralarında merak ölçekleri de var) doldurmuş ve dokuz bilgi arama görevi yapmıştır. Davranışı en iyi öngörenler, merakı en doğrudan ölçen ölçekler değil; düşünmeyi sevme, heyecan arama ve strese dayanma gibi ölçeklerdi (Jach ve ark., 2024).',
+      'Merak anketlerinin sonucu, insanların gerçekte nasıl bilgi aradığıyla her zaman örtüşmez. Bir çalışmada 820 kişi 15 ayrı kişilik ölçeğini (aralarında merak ölçekleri de var) doldurmuş ve dokuz bilgi arama görevi yapmıştır. Davranışı en iyi öngörenler, merakı en doğrudan ölçen ölçekler değil; düşünmeyi sevme, heyecan arama ve strese dayanma gibi ölçeklerdi (Jach ve ark., 2024).',
       'Test zekâyı, bilgiyi ya da ne kadar başarılı olduğunu ölçmez. Lise ve sonrasında merakın okul başarısıyla ilişkisi küçüktür ve bu ilişki meraklı olmanın notları yükselttiğini göstermez.',
       'Bilgi merakının on cümlesinden altısı düz, dördü ters yöndedir; yenilik merakında ise dördü düz, altısı ters yöndedir. Cümlelerin çoğuna “doğru” deme eğilimi bilgi merakının puanını biraz yükseltip yenilik merakının puanını biraz düşürebilir. Birbirinin tersini söyleyen üç cümle çiftinden (ikisi bilgi merakında, biri yenilik merakında) en az ikisinde iki cümleye de “Oldukça doğru” ya da “Tamamen doğru” denirse raporda bir uyarı gösterilir. Aynı uyarı, en az iki çiftte iki cümleye de “Hiç doğru değil” ya da “Pek doğru değil” denirse de gösterilir.',
       'Bilgi merakının iki cümlesi siyasete ve toplumsal sorunlara ilgiyi sorar; kişinin görüşünü sormaz. Bu konuların çevresinde pek konuşulmadığı biri bu iki cümleye daha düşük cevap verebilir.',

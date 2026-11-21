@@ -345,8 +345,8 @@ export function ComplexSpan({ task, onDone }: { task: ComplexSpanTask; onDone: (
   if (paused) {
     return (
       <PausedScreen
-        note={phase === 'ops' ? 'Aynı işlem yeniden gösterilecek.' : 'Dizi yarıda kaldığı için aynı dizi baştan gösterilecek.'}
-        cta={phase === 'ops' ? 'Devam et' : 'Diziyi yeniden göster'}
+        note={phase === 'ops' ? 'Aynı işlem yeniden gösterilecek.' : 'Bu dizi baştan gösterilecek.'}
+        cta={phase === 'ops' ? 'Devam et' : 'Diziyi baştan göster'}
         onResume={resume}
       />
     );

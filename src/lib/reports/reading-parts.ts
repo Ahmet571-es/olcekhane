@@ -507,7 +507,7 @@ export function oralParts(input: {
           'Yapay zekâ okumayı yazıya döker ve metindeki kelimelerle karşılaştırır.',
           'Net ayırt edemediği kelimeler hata sayılmaz; ama çok olursa sonuç yaklaşık olur.',
           `Okuma metinle eşleşmeseydi rapor verilmezdi: tanınan kelimelerin en az %${Math.round(MIN_MATCH_SHARE * 100)}’u metinde olmalı.`,
-          'Net anlaşılamayan kelime çok olsaydı da rapor verilmez, yeniden okuma istenirdi.',
+          'Net anlaşılamayan kelime çok olsaydı da rapor verilmezdi, yeniden okuma istenirdi.',
           r.flags.unclearHigh
             ? v({
                 you: 'Yapay zekâ okumanda birçok kelimeyi net ayırt edemedi; bu yüzden sonuçların yaklaşık. Sessiz bir yerde yeniden okursan daha net bir sonuç alırsın.',
@@ -724,7 +724,7 @@ export function oralParts(input: {
     if (compared && ref) {
       parts.push(
         'Karşılaştırma, Ankara’da yapılmış bir çalışmanın ders yılı sonundaki sonuçlarıyla yapılır (Erden ve ark., 2002).',
-        'Çalışma eskidir ve tek bir ile aittir; yalnızca kaba bir fikir verir.',
+        'Çalışma eskidir ve yalnızca Ankara’da yapılmıştır; yalnızca kaba bir fikir verir.',
         'Ders yılının başında daha düşük hızlar olağandır.',
         r.fluency.slowRate
           ? v({ you: 'Dakikada doğru okuduğun kelime sayın, o çalışmadaki öğrencilerin çoğundan az.', parent: 'Dakikada doğru okuduğu kelime sayısı, o çalışmadaki öğrencilerin çoğundan az.' })

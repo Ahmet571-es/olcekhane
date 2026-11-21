@@ -59,9 +59,9 @@ interface PracticeSpec extends Spec {
 }
 
 const EXPLAIN = [
-  'C şekli doğru: üstteki iki parça döndürülmeden, yalnızca yan yana kaydırılınca bu şekli oluşturur. A şeklinde parçalardan biri bir kare daha büyüktür. B şeklinde parçalardan biri başka biçimdedir. D şeklinde parça sayısı farklıdır: iki değil, üç parça vardır.',
-  'A şekli doğru: parçalardan biri döndürülmüş gösterildi; zihninde çevirince yerine oturur. B ve C şekillerinde parçalardan en az biri başka biçimdedir: kare sayısı aynı olsa da biçimi farklıdır. D şeklinde parçalardan biri bir kare daha büyüktür.',
-  'D şekli doğru: her parça yalnızca döndürülerek yerine oturur. B şekli, parçalardan birinin ters çevrilmiş (ayna görüntüsü) hâliyle kurulmuş. Parçalar ters çevrilemez; bu yüzden B doğru değildir. A ve C şekillerinde parçalardan en az biri başka biçimdedir.',
+  'C şekli doğru: üstteki iki parça döndürülmeden, yalnızca kaydırılınca bu şekli oluşturur. A şeklinde parçalardan biri bir kare daha büyüktür. B şeklinde parçalardan biri başka biçimdedir. D şeklinde parça sayısı farklıdır: iki değil, üç parça vardır.',
+  'A şekli doğru: parçalardan biri döndürülmüş gösterildi; zihninde döndürünce yerine oturur. B ve C şekillerinde parçalardan en az biri başka biçimdedir: kare sayısı aynı olsa da biçimi farklıdır. D şeklinde parçalardan biri bir kare daha büyüktür.',
+  'D şekli doğru: parçalar ters çevrilmeden, yalnızca kaydırılıp gerekirse döndürülerek yerine oturur. B şekli, parçalardan birinin ters çevrilmiş (ayna görüntüsü) hâliyle kurulmuş. Parçalar ters çevrilemez; bu yüzden B doğru değildir. A ve C şekillerinde parçalardan en az biri başka biçimdedir.',
 ];
 
 const SPECS: Spec[] = [
@@ -374,9 +374,9 @@ const task: ShapeAssemblyTask = {
   name: 'Parçalardan Şekil',
   measures: 'Ayrı ayrı gösterilen parçaları zihinde bir araya getirip hangi bütün şekli oluşturduklarını görebilmeyi ölçer.',
   instructions: [
-    'Her soruda üstte birkaç parça, altında dört bütün şekil göreceksin. Parçaların hepsi birleşince hangi şeklin oluşacağını bul.',
+    'Her soruda üstte birkaç parça, altında dört bütün şekil göreceksin. Parçaların hepsi birleşince hangi şeklin oluşacağını bul, o şekli seç ve “Cevabı ver” düğmesine bas.',
     'Parçaları zihninde kaydırabilir ve döndürebilirsin ama ters çeviremezsin: bir parçanın ayna görüntüsü aynı parça sayılmaz.',
-    'Bütün şekillerde parçaların birleştiği yerler ince çizgilerle gösterilir. Doğru şekilde her parça, üstteki parçalardan biriyle tıpatıp aynıdır. Hiçbir parça artmaz, eksik kalmaz.',
+    'Bütün şekillerde parçaların birleştiği yerler ince çizgilerle gösterilir. Doğru şekilde her parça, üstteki parçalardan biriyle (gerekirse döndürülünce) tıpatıp aynıdır. Hiçbir parça artmaz, eksik kalmaz.',
   ],
   practice: PRACTICE,
   items: SPECS.map(build),
@@ -386,12 +386,12 @@ const task: ShapeAssemblyTask = {
     {
       level: 1,
       name: '1. düzey',
-      plain: 'Döndürülmeden gösterilen iki parçanın, yalnızca yan yana kaydırılınca hangi şekli oluşturduğunu bulmak.',
+      plain: 'Döndürülmeden gösterilen iki parçanın, yalnızca kaydırılınca hangi şekli oluşturduğunu bulmak.',
     },
     {
       level: 2,
       name: '2. düzey',
-      plain: 'İki ya da üç parçadan biri döndürülmüş gösterildiğinde, onu zihinde çevirip bütünü bulmak.',
+      plain: 'İki ya da üç parçadan biri döndürülmüş gösterildiğinde, onu zihinde döndürüp bütünü bulmak.',
     },
     {
       level: 3,
@@ -428,7 +428,7 @@ export const parcalardanSekil: TaskInstrument = {
   sortOrder: 49.85,
   tagline: 'Ayrı ayrı gösterilen parçaları zihinde birleştirip hangi bütün şekli oluşturduklarını görebilmeyi, yani uzamsal görselleştirmeyi ölçer.',
   description:
-    'Bu test, uzamsal görselleştirmeyi ölçmek için yaygın olarak kullanılan “kâğıt şekil tahtası” türü sorulara dayanır. Üstte birkaç parça dağınık durur. Parçalar zihinde kaydırılıp döndürülerek birleştirilince hangi bütün şeklin oluşacağı dört seçenekten seçilir. Parçalar ters çevrilemez. Sorular kolaydan zora doğru beş düzeyde ilerler: parça sayısı artar, parçalar döndürülmüş durur ve yanlış seçenekler doğru şekle giderek daha çok benzer. Bütün parçalar, şekiller ve sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor, kaç sorunun doğru cevaplandığını ve hangi düzeye kadar ulaşıldığını sade bir dille anlatır. Hangi tür sorularda zorlanıldığını, yanlış cevapların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını da anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
+    'Bu test, uzamsal görselleştirmeyi ölçmek için yaygın olarak kullanılan “kâğıt şekil tahtası” türü sorulara dayanır. Üstte birkaç parça dağınık durur. Parçalar zihinde kaydırılıp döndürülerek birleştirilince hangi bütün şeklin oluşacağı dört seçenekten seçilir. Parçalar ters çevrilemez. Sorular kolaydan zora doğru beş düzeyde ilerler: parça sayısı artar, parçalar döndürülmüş durur ve yanlış seçenekler doğru şekle giderek daha çok benzer. Bütün parçalar, şekiller ve sorular Ölçekhane tarafından özgün olarak hazırlanmıştır. Rapor, kaç sorunun doğru cevaplandığını ve hangi düzeye ulaşıldığını sade bir dille anlatır. Hangi tür sorularda zorlanıldığını, yanlış cevapların neyi düşündürdüğünü ve sorular üzerinde nasıl çalışıldığını da anlatır. Zekâ puanı (IQ) vermez ve tanı koymaz.',
   intro: {
     title: 'Parçaları birleştir',
     paragraphs: [

@@ -339,7 +339,7 @@ export function ShapeAssembly({ task, onDone }: { task: ShapeAssemblyTask; onDon
               ? `Alıştırmadaki ${countWord(task.practice.length)} sorunun hepsini doğru cevapladın.`
               : `Alıştırmadaki ${numberWord(task.practice.length)} sorunun ${countOf(practiceScore, task.practice.length, 'ini', true)} doğru cevapladın.`}{' '}
           {low
-            ? 'Bir parça seç ve onu seçeneklerde ara: aynı biçimde ve büyüklükte bir parça var mı? Parçalar döndürülebilir ama ters çevrilemez; bütün şekildeki her parça üstteki parçalardan biriyle tıpatıp aynı olmalı. İstersen alıştırmayı tekrarlayabilirsin.'
+            ? 'Bir parça belirle ve onu seçeneklerde ara: aynı biçimde ve büyüklükte bir parça var mı? Parçalar döndürülebilir ama ters çevrilemez; bütün şekildeki her parça üstteki parçalardan biriyle tıpatıp aynı olmalı. İstersen alıştırmayı tekrarlayabilirsin.'
             : 'Şimdi asıl sorular başlıyor.'}
         </p>
         <p className="measure text-ink-2">

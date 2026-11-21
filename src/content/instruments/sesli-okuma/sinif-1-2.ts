@@ -207,7 +207,7 @@ export const passages: OralPassage[] = [
     genre: 'narrative',
     title: 'Unutulan Liste',
     paragraphs: [
-      'Cumartesi sabahı Can ile babası pazara gitti. Pazar çok kalabalıktı. Tezgâhlar renk renk meyve ve sebzeyle doluydu.',
+      'Cumartesi sabahı Can ile babası pazara gitti. Pazar yeri çok kalabalıktı. Tezgâhlar renk renk meyve ve sebzeyle doluydu.',
       'Babası alışveriş listesini aradı. Ceplerine baktı, çantasını açtı. Ama liste yoktu! Evde, masanın üstünde kalmıştı.',
       'Can bir an düşündü. Sabah listeyi annesiyle birlikte yazmıştı. Her şeyi renklerine göre aklında tutmuştu. Sonra tek tek saydı: "Kırmızı domates, sarı limon, yeşil biber, beyaz peynir."',
       'Babası hepsini aldı. Eve dönünce listeye baktılar. Hiçbir şey eksik değildi. Babası gülerek Can’a sarıldı: "Artık listemiz sensin!"',
@@ -291,7 +291,7 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q2', skill: 'literal', answer: 'a',
-        text: 'Lekenin kelebeğe benzediğini kim söyledi?',
+        text: 'Zeynep’in yanına kim geldi?',
         options: [
           { key: 'a', text: 'Ağabeyi' },
           { key: 'b', text: 'Annesi' },
@@ -342,7 +342,7 @@ export const passages: OralPassage[] = [
     title: 'Ay’ın Işığı',
     paragraphs: [
       'Çoğu gece gökyüzüne bakınca Ay’ı görürüz. Ay bize çok parlak görünür. Ama Ay’ın kendi ışığı yoktur. Güneş’in ışığı Ay’a vurur. Ay da bu ışıkla parlar.',
-      'Ay, Dünya’nın çevresinde döner. Ay’ın biçimi aslında hiç değişmez. Biz onun yalnızca ışık alan kısmını görürüz. Ay döndükçe bu kısım bize bazen büyük, bazen küçük görünür. Bu yüzden Ay kimi gece tam yuvarlak, kimi gece ince bir hilal gibi görünür.',
+      'Ay, Dünya’nın çevresinde döner. Ay’ın şekli aslında hiç değişmez. Biz onun yalnızca ışık alan kısmını görürüz. Ay döndükçe bu kısım bize bazen büyük, bazen küçük görünür. Bu yüzden Ay kimi gece tam yuvarlak, kimi gece ince bir hilal gibi görünür.',
       'Ay’da hava yoktur. Bu yüzden orada rüzgâr esmez. Ay’a giden insanlar Ay’ın tozlu toprağında ayak izleri bıraktı. Rüzgâr olmadığı için bu izler uzun yıllar kalabilir.',
     ],
     questions: [
@@ -357,7 +357,7 @@ export const passages: OralPassage[] = [
       },
       {
         key: 'q2', skill: 'literal', answer: 'b',
-        text: 'Metne göre Ay’ın biçimi değişir mi?',
+        text: 'Metne göre Ay’ın şekli değişir mi?',
         options: [
           { key: 'a', text: 'Her gece biraz küçülür' },
           { key: 'b', text: 'Aslında hiç değişmez' },
@@ -395,7 +395,7 @@ export const passages: OralPassage[] = [
     ideas: [
       { key: 'i1', text: 'Ay’ın kendi ışığı yoktur, Güneş’in ışığıyla parlar.', core: true },
       { key: 'i2', text: 'Ay, Dünya’nın çevresinde döner.', core: true },
-      { key: 'i3', text: 'Ay’ın biçimi değişmez, biz yalnızca ışık alan kısmını görürüz.', core: true },
+      { key: 'i3', text: 'Ay’ın şekli değişmez, biz yalnızca ışık alan kısmını görürüz.', core: true },
       { key: 'i4', text: 'Bu yüzden Ay bazen yuvarlak, bazen hilal gibi görünür.', core: false },
       { key: 'i5', text: 'Ay’da hava olmadığı için rüzgâr esmez.', core: false },
       { key: 'i6', text: 'Ay’a giden insanların ayak izleri uzun yıllar kalabilir.', core: false },

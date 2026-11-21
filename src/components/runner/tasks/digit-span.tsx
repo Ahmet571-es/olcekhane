@@ -112,8 +112,8 @@ export function DigitSpan({ task, onDone }: { task: DigitSpanTask; onDone: (tria
   if (paused) {
     return (
       <PausedScreen
-        note="Dizi yarıda kaldığı için aynı dizi baştan gösterilecek."
-        cta="Diziyi yeniden göster"
+        note="Bu dizi baştan gösterilecek."
+        cta="Diziyi baştan göster"
         onResume={() => {
           setPaused(false);
           present();
